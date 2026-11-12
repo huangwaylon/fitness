@@ -9,7 +9,7 @@ track: life
 seeds: [4, 5, 13, 24, 27, 51]
 features: { primary: numbers, review: self-repair }
 cando: "はっきり 言われない 数を、速い 注文の 言い回しから 聞き取れる"
-status: draft
+status: listened
 items:
   - kind: rush
     id: rush-zlattes-1

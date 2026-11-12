@@ -8,7 +8,7 @@ track: broadcast
 seeds: [62, 26, 59, 5, 24]
 features: { primary: self-repair, review: linking }
 cando: "ニュースの 最後の 訂正まで 聞いて 正しい 情報が わかる"
-status: draft
+status: listened
 cast: { isabelle: us-f4 }
 items:
   - kind: news

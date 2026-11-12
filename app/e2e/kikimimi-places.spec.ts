@@ -1,8 +1,7 @@
-// The ばしょ row of a lane's game (docs/kikimimi.md "Places"): every place can be tapped, none sunk; a place with no
-// content of its own plays the nearest place's, one line saying whose and harder or easier (catalog.ts nearOf), the
-// wire keeping the picked level. ことば タイル (かわ もり やま): ほし plays やま's made harder, はまべ かわ's made easier (my
-// first slot placed for me, the reveal's count of my words without it); しずえの ニュース shows the row (やま only); まるごと 聞く at はまべ lists ほし's pieces. The
-// logic tier (Playwright's Chromium is muted).
+// The ばしょ row of a lane's game (docs/kikimimi.md "Places"): every place can be tapped, none sunk, and since
+// 2026-11-13 every game has content at every place, so none borrows (no 「準備中」 line: catalog.ts nearOf, its vitest,
+// covers the borrowing); ことば タイル at ほし and はまべ deals that place's own sentences, the reveal's count of my words
+// without a given one; しずえの ニュース and まるごと 聞く show the row. The logic tier (Playwright's Chromium is muted).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
@@ -37,51 +36,42 @@ async function open(p: Page, group: string, id: string) {
   await toMode(p, group, id);
 }
 
-test('every place can be tapped; ほし with no content plays やま’s made harder, and says so', async ({ page }) => {
+const PLACE_IDS = ['hama', 'kawa', 'mori', 'yama', 'hoshi'];
+
+for (const [group, id] of [['quick', 'tile'], ['long', 'news'], ['long', 'long']] as const) {
+  test(`${id}: every place can be tapped, each its own (no 準備中 line)`, async ({ page }) => {
+    await open(page, group, id);
+    await expect(sheet(page).locator('[data-kiki-places] [data-stage]')).toHaveCount(5);
+    await expect(sheet(page).locator('[data-kiki-places] [aria-disabled="true"]')).toHaveCount(0);
+    for (const pl of PLACE_IDS) {
+      await place(page, pl).click();
+      await expect(place(page, pl)).toHaveAttribute('aria-checked', 'true');
+      await expect(sheet(page).locator('[data-kiki-place-near]')).toHaveCount(0);
+    }
+  });
+}
+
+test('ほし deals ほし’s own sentences', async ({ page }) => {
   await open(page, 'quick', 'tile');
-  await expect(sheet(page).locator('[data-kiki-places] [aria-disabled="true"]')).toHaveCount(0);
-  await expect(sheet(page).locator('[data-kiki-place-near]')).toHaveCount(0);
   await place(page, 'hoshi').click();
-  await expect(place(page, 'hoshi')).toHaveAttribute('aria-checked', 'true');
-  await expect(sheet(page).locator('[data-kiki-place-near="yama"]')).toHaveText('ほしの問題は準備中です。やまの問題を難しめに出します。');
-  await expect(sheet(page).locator('[data-kiki-omakase-hint]')).toHaveCount(0);
   await expect.poll(() => kiki(page, (k) => k.view().lv)).toBe(7);
   await sheet(page).locator('[data-kiki-start]').click();
   await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
   expect(await kiki(page, (k) => k.view().gm)).toBe('tile');
-  const yama = clipsAt(4);
-  expect((await kiki(page, (k) => k.items())).every((c) => yama.has(c))).toBe(true);
-  await expect(sheet(page).locator('[data-slot][data-given]')).toHaveCount(0);
+  const hoshi = clipsAt(5);
+  expect((await kiki(page, (k) => k.items())).every((c) => hoshi.has(c))).toBe(true);
 });
 
-test('はまべ with no content plays かわ’s made easier: my first slot placed for me, not counted as mine', async ({ page }) => {
+test('はまべ deals はまべ’s own sentences; the reveal counts my own slots only', async ({ page }) => {
   await open(page, 'quick', 'tile');
   await place(page, 'hama').click();
-  await expect(sheet(page).locator('[data-kiki-place-near="kawa"]')).toHaveText('はまべの問題は準備中です。かわの問題をやさしめに出します。');
   await sheet(page).locator('[data-kiki-start]').click();
   await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
-  const kawa = clipsAt(2);
-  expect((await kiki(page, (k) => k.items())).every((c) => kawa.has(c))).toBe(true);
-  await expect(sheet(page).locator('[data-slot][data-given]')).toHaveCount(1);
-  // one tile placed, time up: the reveal counts my own slots only
-  const mine = await sheet(page).locator('button[data-slot]').count();
+  const hama = clipsAt(1);
+  expect((await kiki(page, (k) => k.items())).every((c) => hama.has(c))).toBe(true);
+  // one tile placed, time up: the reveal counts my own slots (a given one not mine)
+  const mine = await sheet(page).locator('button[data-slot]:not([data-given])').count();
   await sheet(page).locator('[data-tile]:not([data-used])').first().click();
   await runToPhase(page, 'reveal');
   await expect(sheet(page).locator('[data-kiki-tile-words]')).toHaveText(new RegExp(` / ${mine} 語$`));
-});
-
-test('しずえの ニュース has the row (やま’s, もり easier)', async ({ page }) => {
-  await open(page, 'long', 'news');
-  await expect(sheet(page).locator('[data-kiki-places] [data-stage]')).toHaveCount(5);
-  await expect(place(page, 'yama')).toHaveAttribute('aria-checked', 'true');
-  await expect(sheet(page).locator('[data-kiki-place-near]')).toHaveCount(0);
-  await place(page, 'mori').click();
-  await expect(sheet(page).locator('[data-kiki-place-near="yama"]')).toHaveText('もりの問題は準備中です。やまの問題をやさしめに出します。');
-});
-
-test('まるごと 聞く at はまべ lists ほし’s pieces, made easier', async ({ page }) => {
-  await open(page, 'long', 'long');
-  await place(page, 'hama').click();
-  await expect(sheet(page).locator('[data-kiki-place-near="hoshi"]')).toHaveText('はまべの問題は準備中です。ほしの問題をやさしめに出します。');
-  await expect(sheet(page).locator('[data-kiki-long-pieces] [data-kiki-long-piece]').first()).toBeVisible();
 });

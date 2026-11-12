@@ -51,6 +51,8 @@ async function toTile(p: Page) {
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-mode-tile="tile"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="tile"]')).toBeVisible();
+  // (かわ: the place these files are at; はまべ, the demo's おまかせ, has its own since 2026-11-13)
+  await sheet(p).locator('[data-kiki-places] [data-stage="kawa"]').click();
 }
 
 /** The current sentence's words (by the clip it plays). */

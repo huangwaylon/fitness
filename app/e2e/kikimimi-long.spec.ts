@@ -18,7 +18,10 @@ const DAY = 'date=2026-11-07T10:00&kikimimi=fast';
 
 type Piece = { id: string; lines: { en: string }[]; questions: { choices: string[]; answer: number; line: number }[]; dict: { line: number; words: string }[]; credit?: unknown };
 const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');
-const PIECES = ['a', 'b', 'c', 'd'].flatMap((f) => (JSON.parse(readFileSync(join(LEVELS, 'parts', `s4-long-${f}.json`), 'utf8')) as { listen: { items: Piece[] } }).listen.items);
+/** Every listened long file's pieces (each place's: the page lists the picked place's). */
+const LONGS = Object.entries((JSON.parse(readFileSync(join(LEVELS, 'index.json'), 'utf8')) as { listen: Record<string, [string, number, string]> }).listen)
+  .filter(([, [gm, , st]]) => gm === 'long' && st === 'listened').map(([u]) => u);
+const PIECES = LONGS.flatMap((u) => (JSON.parse(readFileSync(join(LEVELS, 'parts', `${u}.json`), 'utf8')) as { listen: { items: Piece[] } }).listen.items);
 const BY_ID = new Map(PIECES.map((p) => [p.id, p]));
 
 type Kiki = { view(): { phase: string; i: number; gm: string | null }; items(): string[]; recorded(): { gm?: string; r: [string, number, number, number][] } | null };
@@ -44,6 +47,8 @@ async function toLong(p: Page) {
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-group="long"] [data-kiki-mode-tile="long"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="long"]')).toBeVisible();
+  // (ほし: its ten pieces, the real recordings among them)
+  await sheet(p).locator('[data-kiki-places] [data-stage="hoshi"]').click();
 }
 
 /** Question i (`<piece>-q<i+1>`), once its choices open: the right one (or `wrong`, another), tapped. */

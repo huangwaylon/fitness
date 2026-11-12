@@ -11,7 +11,7 @@ track: people
 seeds: [49, 48, 18, 37]
 features: { primary: linking, review: contraction }
 cando: "友だちや 近所の 人との 予定の 話を 通しで 聞いて、決まった ことと 本当の 気持ちが わかる"
-status: draft
+status: listened
 items:
   - kind: long
     id: lg-kawa-replan-dinner

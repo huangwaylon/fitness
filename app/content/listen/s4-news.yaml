@@ -9,7 +9,7 @@ track: broadcast
 seeds: [62, 30, 22, 5, 1, 59]
 features: { primary: stress, review: linking }
 cando: "情報の 多い ニュースで 条件や 例外まで 聞いて 正しく わかる"
-status: draft
+status: listened
 cast: { isabelle: us-f4 }
 items:
   - kind: news

@@ -22,7 +22,11 @@ const H = 3600_000;
 
 type Ask = { choices: string[]; answer: number };
 /** The bulletins as compiled: each one's right gist and detail. */
-const ITEMS = ['news-a', 'news-b'].flatMap((u) => (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', `${u}.json`), 'utf8')) as {
+const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');
+/** Every listened news file (each place's: the game deals at the player's place). */
+const NEWS = Object.entries((JSON.parse(readFileSync(join(LEVELS, 'index.json'), 'utf8')) as { listen: Record<string, [string, number, string]> }).listen)
+  .filter(([, [gm, , st]]) => gm === 'news' && st === 'listened').map(([u]) => u);
+const ITEMS = NEWS.flatMap((u) => (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', `${u}.json`), 'utf8')) as {
   listen: { items: { id: string; kind: string; gist?: Ask; detail?: Ask; segments?: { lines: unknown[] }[] }[] };
 }).listen.items);
 const BY_ID = new Map(ITEMS.filter((it) => it.kind === 'news').map((it) => [it.id, it]));
@@ -66,6 +70,8 @@ async function toNews(p: Page) {
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-group="long"] [data-kiki-mode-tile="news"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="news"]')).toBeVisible();
+  // (やま: the place whose bulletins carry 東京の天気 (the umbrella question))
+  await sheet(p).locator('[data-kiki-places] [data-stage="yama"]').click();
 }
 
 /** Question i, once its choices open: the right one (or `wrong`, another), tapped. */

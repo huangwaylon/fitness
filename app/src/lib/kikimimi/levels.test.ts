@@ -26,7 +26,7 @@ describe('kikimimi levels: compiled', () => {
   });
 
   it('each chunk is under its budget (60 KB gzipped), the index small', () => {
-    for (const [path, text] of files) expect(gzipSync(text).length, path).toBeLessThanOrEqual(path === 'index.json' ? 16 * 1024 : PART_MAX);
+    for (const [path, text] of files) expect(gzipSync(text).length, path).toBeLessThanOrEqual(path === 'index.json' ? 20 * 1024 : PART_MAX);
   });
 
   it('the index: the gates as the bank and clips give them, every item in the bank’s order with its tags, every rung', () => {

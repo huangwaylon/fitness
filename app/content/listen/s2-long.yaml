@@ -10,7 +10,7 @@ track: life
 seeds: [10, 39, 4, 31, 56]
 features: { primary: self-repair, review: linking }
 cando: "2〜3人の 会話を 通しで 聞いて、訂正された 情報と 遠回しな 気持ちが わかる"
-status: draft
+status: listened
 items:
   - kind: long
     id: lg-mori-rental-key

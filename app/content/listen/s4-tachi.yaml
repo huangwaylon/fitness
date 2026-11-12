@@ -10,7 +10,7 @@ track: people
 seeds: [3, 7, 8, 11, 27, 36, 50, 52, 53]
 features: { primary: intonation, review: idiom }
 cando: "速い 3人の 会話で 遠回しな 意見と 言わずに 変わる 考えが わかる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-hoshi-extend-trip

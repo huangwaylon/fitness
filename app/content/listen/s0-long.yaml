@@ -9,7 +9,7 @@ track: life
 seeds: [3, 13, 58, 51, 5]
 features: { primary: linking, review: contraction }
 cando: "旅先での 短い やり取りを 通しで 聞いて、時間と 場所と 次に する ことが わかる"
-status: draft
+status: listened
 items:
   - kind: long
     id: lg-hama-hotel-morning

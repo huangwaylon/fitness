@@ -57,6 +57,8 @@ async function toTachi(p: Page) {
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-mode-tile="tachi"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="tachi"]')).toBeVisible();
+  // (もり: the place these files are at; はまべ, the demo's おまかせ, has its own since 2026-11-13)
+  await sheet(p).locator('[data-kiki-places] [data-stage="mori"]').click();
 }
 
 /** The round now: its conversation and its place in it. */

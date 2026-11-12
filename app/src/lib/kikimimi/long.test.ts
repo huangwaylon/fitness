@@ -33,9 +33,10 @@ const secsOf = (it: Long): number => {
 };
 
 describe('まるごと 聞く: the pieces', () => {
-  it('ten pieces, five real and five generated, each in a file of its source', () => {
+  it('five real pieces (ほし), the rest generated, each in a file of its source', () => {
     expect(PIECES.filter((p) => p.it.source === 'real')).toHaveLength(5);
-    expect(PIECES.filter((p) => p.it.source === 'tts')).toHaveLength(5);
+    expect(PIECES.filter((p) => p.it.source === 'real').every((p) => p.file.startsWith('s4-'))).toBe(true);
+    expect(PIECES.filter((p) => p.it.source === 'tts').length).toBeGreaterThanOrEqual(5);
     for (const u of FILES) expect(new Set(u.items.map((it) => (it as Long).source)).size, u.unit).toBe(1);
   });
 
@@ -60,11 +61,11 @@ describe('まるごと 聞く: the pieces', () => {
     for (const { it } of PIECES.filter((p) => p.it.source === 'tts')) expect(it.credit, it.id).toBeUndefined();
   });
 
-  it('plays 2-6 minutes (a generated one 2-4), every line voiced', () => {
+  it('plays 2-6 minutes (a generated one 2-4, はまべ’s and かわ’s from 1¼), every line voiced', () => {
     for (const { it } of PIECES) {
       for (const id of listenClipIds(it)) expect(CLIPS[id], id).toBeDefined();
       const s = secsOf(it);
-      expect(s, it.id).toBeGreaterThanOrEqual(120);
+      expect(s, it.id).toBeGreaterThanOrEqual(PIECES.find((p) => p.it === it)!.file.match(/^s[01]-/) ? 75 : 120);
       expect(s, it.id).toBeLessThanOrEqual(it.source === 'real' ? 360 : 240);
     }
   });

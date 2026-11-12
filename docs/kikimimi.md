@@ -99,7 +99,8 @@ wire and the `listen` row keep plain `lv` (1–8). In the quiz a place this buil
 (`aria-disabled`). **A lane's game offers every place** (catalog.ts `PLACE_LVS`, news included): one with no content
 yet plays the nearest place's (a tie: the lower; `contentPlaceOf`), everyone a tier harder if that place is below,
 easier if above, and the row says so in one line (`nearOf`, `kiki.place.near.up|down`: 「ほしの問題は準備中です。やまの
-問題を難しめに出します。」). The wire keeps the picked `lv`. おまかせ stays on a place with content (registry.ts `levelFor`).
+問題を難しめに出します。」; since 2026-11-13 every lane has content at all five places, so no place borrows today: the
+fallback stays for a new lane or a retired file). The wire keeps the picked `lv`. おまかせ stays on a place with content (registry.ts `levelFor`).
 
 What a place changes on top of the content (authored per place: decoys, memo rows; the tier by my ear against the
 deck's place, ほし as やま's; kikimimi-engine.md "The listening games"):

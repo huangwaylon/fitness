@@ -9,7 +9,7 @@ track: life
 seeds: [4, 5, 13, 24, 27, 51]
 features: { primary: numbers, review: self-repair }
 cando: "みじかい 注文から 数・時刻・値段を 聞き取れる"
-status: draft
+status: listened
 items:
   - kind: rush
     id: rush-hcoffee-1

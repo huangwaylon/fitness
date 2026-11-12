@@ -9,7 +9,7 @@ track: people
 seeds: [17, 33, 35, 36, 37, 38, 48, 49, 50]
 features: { primary: weak-form, review: contraction }
 cando: "友だち3人の 会話で 遠回しな 断りと 決まった 予定が わかる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-kawa-bbq-sat

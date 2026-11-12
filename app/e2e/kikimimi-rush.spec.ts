@@ -48,6 +48,8 @@ async function toRush(p: Page) {
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-mode-tile="rush"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="rush"]')).toBeVisible();
+  // (かわ: the place these files are at; はまべ, the demo's おまかせ, has its own since 2026-11-13)
+  await sheet(p).locator('[data-kiki-places] [data-stage="kawa"]').click();
   // its own 8 s or なし (no 20 / 30 / 60 s)
   await expect(sheet(p).locator('[data-kiki-timer] [data-timer]')).toHaveCount(2);
   await expect(sheet(p).locator('[data-timer="8"]')).toHaveAttribute('aria-checked', 'true');

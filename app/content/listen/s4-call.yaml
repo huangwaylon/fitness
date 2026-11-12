@@ -9,7 +9,7 @@ track: life
 seeds: [1, 7, 8, 16, 22, 23, 26, 28, 29, 30, 31, 33]
 features: { primary: self-repair, review: numbers }
 cando: "条件の 多い でんわで、数字と 但し書きと 遠回しな 本音を ききとって メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call

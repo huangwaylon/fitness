@@ -11,7 +11,7 @@ track: people
 seeds: [1, 3, 7, 8, 15, 18, 27, 30, 33, 36, 52, 57]
 features: { primary: idiom, review: contraction }
 cando: "むずかしい 語いや 言い回しの ある 速い 文を、ことばごとに 聞き分けられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-hoshi-hold-drop-off

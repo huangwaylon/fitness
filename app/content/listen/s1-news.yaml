@@ -9,7 +9,7 @@ track: broadcast
 seeds: [59, 5, 24]
 features: { primary: linking, review: numbers }
 cando: "朝の ニュースで 予定の 変更と 大事な 数字が 聞き取れる"
-status: draft
+status: listened
 cast: { isabelle: us-f4 }
 items:
   - kind: news

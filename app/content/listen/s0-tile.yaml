@@ -9,7 +9,7 @@ track: life
 seeds: [1, 2, 3, 13, 24, 35, 37, 51, 58]
 features: { primary: ending, review: teen-ty }
 cando: "はっきり 話された 短い 文を、にた 音に まどわされずに 組み立てられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-hama-gate-fifteen

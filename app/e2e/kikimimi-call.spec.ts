@@ -50,6 +50,8 @@ async function toCall(p: Page) {
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-mode-tile="call"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="call"]')).toBeVisible();
+  // (かわ: the place these files are at; はまべ, the demo's おまかせ, has its own since 2026-11-13)
+  await sheet(p).locator('[data-kiki-places] [data-stage="kawa"]').click();
 }
 
 /** The current round's call (its id: round 2's is the call's with `-memo`). */

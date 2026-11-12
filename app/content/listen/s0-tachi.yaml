@@ -10,7 +10,7 @@ track: people
 seeds: [3, 13, 35, 36, 38, 48, 50, 52, 58]
 features: { primary: contrast, review: numbers }
 cando: "3人の ゆっくりした 会話で だれが 何を したいかが わかる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-hama-lunch

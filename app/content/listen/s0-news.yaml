@@ -8,7 +8,7 @@ track: broadcast
 seeds: [59, 24, 37, 4]
 features: { primary: numbers, review: teen-ty }
 cando: "ゆっくりした 朝の ニュースの 話題と 数字が 聞き取れる"
-status: draft
+status: listened
 cast: { isabelle: us-f4 }
 items:
   - kind: news

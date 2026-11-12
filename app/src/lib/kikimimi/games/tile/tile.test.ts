@@ -93,8 +93,11 @@ describe('ことば タイル: tiers and boards', () => {
     expect([0, 3].map((ear) => tierAt(ear, 7, 6))).toEqual(['hard', 'hard']);
     expect([0, 3].map((ear) => tierAt(ear, 1, 3))).toEqual(['easy', 'easy']);
     expect(tierAt(0, 2, 1)).toBeUndefined(); // (はまべ 2 on はまべ's: the same place, by ear)
-    expect(deckLv('tile', 7, INDEX.listen)).toBe(6);
-    expect(deckLv('tile', 4, INDEX.listen)).toBe(4);
+    // (every game has every place now: the borrowing, on an index with tiles at もり and やま only)
+    const some: Record<string, ListenEntry> = { 's2-tile': ['tile', 3, 'listened'], 's3-tile': ['tile', 4, 'listened'], 's4-tile': ['tile', 5, 'draft'] };
+    expect(deckLv('tile', 7, some)).toBe(6);
+    expect(deckLv('tile', 4, some)).toBe(4);
+    expect(deckLv('tile', 7, INDEX.listen)).toBe(7);
   });
 
   it('a board is the words and decoys, the same for a seed, never the sentence in order', () => {

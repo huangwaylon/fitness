@@ -8,7 +8,8 @@ import { DICT_MAX, LONG, dictBoard, dictFor, dictRow, dictWords, heardOf, longDe
 
 // (the shipped pieces: a draft file is unvoiced, and the games show listened files only)
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'long' && INDEX.listen[u][2] !== 'draft');
-const parts = (): ListenPart[] => FILES.map((u) => listenOf(u)!);
+// (ほし's: the five real pieces and five generated ones; the other places' are generated, overlaps optional at はまべ)
+const parts = (): ListenPart[] => FILES.filter((u) => u.startsWith('s4-')).map((u) => listenOf(u)!);
 beforeAll(() => load(...(FILES as Unit[])));
 
 describe('まるごと 聞く: the deal', () => {

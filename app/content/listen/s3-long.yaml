@@ -10,7 +10,7 @@ track: people
 seeds: [36, 7, 53, 61]
 features: { primary: overlap, review: linking }
 cando: "3人の 速い 会話を 通しで 聞いて、本音と 皮肉と 決まった ことが わかる"
-status: draft
+status: listened
 items:
   - kind: long
     id: lg-yama-onsen-plan
