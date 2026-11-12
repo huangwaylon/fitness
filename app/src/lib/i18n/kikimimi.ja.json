@@ -153,6 +153,7 @@
   "kiki.done": "終わる",
   "kiki.quit": "ここでやめますか？",
   "kiki.quitBody": "ここまでの記録は残ります",
+  "kiki.quitOthers": "相手はそのまま続けられます",
   "kiki.quitYes": "やめる",
   "kiki.closeAsk": "部屋を閉じますか？",
   "kiki.closeAskBody": "みんなの部屋がなくなります",

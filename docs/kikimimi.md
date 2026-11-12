@@ -198,10 +198,15 @@ first open: welcome ─ sound check ─ みみ チェック ─ result ─▶ hu
 A hub and one push/pop stack (nav.ts `Page`, ≤ 4 deep, `MAX_DEPTH`), not a tab bar: each page's foot is its sticky
 action row, and most opens are "do today's thing".
 - ‹, a backdrop tap or Esc pops, and closes at the hub; ✕ closes the sheet from any page (with others in my lobby it
-  asks first). In a game there is no ‹; ✕, a backdrop tap or Esc asks `kiki.quit` (the record so far is kept).
-- **Results:** 終わる goes to the hub (or the lesson's page); もう一度遊ぶ restarts the mode and re-invites.
+  asks first).
+- **A game** is a level over the page that started it: ‹ (a backdrop tap, Esc) leaves for that page, ✕ closes the
+  sheet. Mid-game both ask `kiki.quit` (the record so far is kept; with others, `kiki.quitOthers`: the game goes on
+  without me), except solo before my first answer. ‹ and 終わる land on the stack under the game with a fresh lobby of
+  mine (actions.ts `done`): a mode's page, the unit's page, みんなで, たいかい's page; from the hub or a lobby I joined, the
+  hub; the first run's みみ チェック, the welcome's last step.
+- **Results:** ‹ = 終わる (no ask); もう一度遊ぶ restarts the mode and re-invites.
 - **Deep links:** the invite opens `[lobby]` (`inviteStack`), the たいかい banner `[taikai]`, a mode `[asobu, mode]`.
-- StoryFrame is a game page (no ‹, a backdrop tap does nothing); its sleep timer ends it and the sheet fades closed
+- StoryFrame is a game page (‹ to 寝る前に, its place kept; a backdrop tap does nothing); its sleep timer ends it and the sheet fades closed
   over 2 s.
 
 ## Screens

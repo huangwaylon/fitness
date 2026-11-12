@@ -123,7 +123,7 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await atHub(page);
 });
 
-test('a menu card plays (きまぐれ: its mode, a lane game’s page first); ✕ asks first, やめる closes', async ({ page }) => {
+test('a menu card plays (きまぐれ: its mode, a lane game’s page first); ✕ before my first answer closes at once', async ({ page }) => {
   test.slow();
   await open(page);
   await fromMenu(page, 'kikimimi');
@@ -133,10 +133,8 @@ test('a menu card plays (きまぐれ: its mode, a lane game’s page first); �
   await expect(sheet(page).locator('[data-kiki-mode-page="henshin"]')).toBeVisible();
   await sheet(page).locator('[data-kiki-start]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
-  // ✕ asks 「ここでやめますか？」; やめる leaves the game
+  // nothing to lose yet (solo, the countdown): ✕ closes at once, no ask
   await page.locator('dialog[open] .navbar .close').click();
-  await expect(page.getByRole('dialog', { name: 'ここでやめますか？' })).toBeVisible();
-  await page.locator('dialog[open] [data-action="kiki-quit"]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 

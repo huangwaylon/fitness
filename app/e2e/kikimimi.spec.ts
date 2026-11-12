@@ -1,7 +1,7 @@
 // ききみみ クイズ (docs/kikimimi.md): the English listening game from the menu's 英語. Solo from the lobby to
 // the results and its review list; two players over the demo's relay (`?demo` and `?demo&as=B`, two tabs of one
 // browser: sync/live-local.ts plays the room) from B's invite banner to both phones' results, in co-op (the team's tally, never who missed) and in たいせん (the ranking); and the
-// 「やめますか？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). The reveal is untimed: solo taps
+// way out of a game (‹, Esc, ✕: asking first once something's answered; ‹ lands on the page the game came from). The reveal is untimed: solo taps
 // つぎへ, B taps よみおわった and A's つぎへ counts it. `?kikimimi=fast` shortens the answer window (session.ts
 // FAST_WINDOWS: 8 s, a tab behind is throttled) on every phone. The logic tier: no clip has to sound (a
 // headless browser's audio is a null sink), the schedule is the relay clock's, on the page's clock: stepped through
@@ -133,27 +133,45 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
   await expect(sheet(page).locator('[data-kiki-tally]')).toHaveText('1 / 1 問正解');
   await expect(sheet(page).locator('[data-kiki-retry]')).toHaveCount(0);
-  // おわる: back to the hub; ✕ closes, the island back
+  // 終わる: back to the page the game was started from (the mode's, a fresh lobby); ‹ ‹ the hub; ✕ closes, the island back
   await sheet(page).locator('[data-kiki-done]').click();
+  await expect(sheet(page).locator('[data-kiki-mode-page="quiz"]')).toBeVisible();
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
+  await page.locator('dialog[open] .navbar .back').click();
+  await page.locator('dialog[open] .navbar .back').click();
   await atHub(page);
   await page.locator('dialog[open] .navbar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(page.locator('.if-scene')).not.toHaveAttribute('data-covered', 'true');
 });
 
-test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめますか？」: its ✕ goes on, やめる closes it', async ({ page }) => {
+test('leaving a game: ‹ before my first answer leaves at once for the mode’s page; after it Esc (= ‹) asks: ‹ やめる lands on the page, ✕ やめる closes', async ({ page }) => {
   await open(page);
   await play(page);
   await toMode(page, 'quiz');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => phase(page)).toMatch(/countdown|lead|play/);
   const ask = page.getByRole('dialog', { name: 'ここでやめますか？' });
+  // nothing to lose yet (solo, no answer): ‹ leaves at once, back on the mode's page
+  await page.locator('dialog[open] .navbar .back').click();
+  await expect(ask).toHaveCount(0);
+  await expect(sheet(page).locator('[data-kiki-mode-page="quiz"]')).toBeVisible();
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
+  // one answered: Esc asks (its ✕ goes on); やめる lands on the mode's page
+  await sheet(page).locator('[data-kiki-start]').click();
+  await answer(page);
   await page.keyboard.press('Escape');
   await expect(ask).toBeVisible();
+  await expect(ask.locator('[data-kiki-ask-others]')).toHaveCount(0);
   await ask.locator('.navbar .close').click();
   await expect(ask).toHaveCount(0);
-  await expect(sheet(page)).toBeVisible();
-  // the backdrop: the sheet is the screen's whole height, so its ::backdrop has no room; ✕ then
+  await expect(sheet(page)).toHaveAttribute('data-phase', /reveal|lead|play|answer/);
+  await page.keyboard.press('Escape');
+  await ask.locator('[data-action="kiki-quit"]').click();
+  await expect(sheet(page).locator('[data-kiki-mode-page="quiz"]')).toBeVisible();
+  // ✕ mid-game asks too, and its やめる closes the sheet
+  await sheet(page).locator('[data-kiki-start]').click();
+  await answer(page);
   await page.locator('dialog[open] .titlebar button').last().click();
   await expect(ask).toBeVisible();
   await ask.locator('[data-action="kiki-quit"]').click();

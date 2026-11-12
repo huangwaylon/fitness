@@ -120,8 +120,10 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
   await expect(sheet(page).locator('[data-kiki-missed]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-review]')).toHaveCount(2);
   await snap(page, 'results', true);
-  // おわる: the hub's banner shows this weekend's trophy; きろく's shelf has it
+  // 終わる: back on たいかい's page (it was started there); ‹ the hub, whose banner shows this weekend's trophy; きろく's shelf has it
   await sheet(page).locator('[data-kiki-done]').click();
+  await expect(sheet(page)).toHaveAttribute('data-kiki-at', 'taikai');
+  await page.locator('dialog[open] .navbar .back').click();
   await atHub(page);
   await expect(sheet(page).locator(`[data-kiki-taikai="${cup}"]`)).toBeVisible();
   await snap(page, 'hub-banner-won');

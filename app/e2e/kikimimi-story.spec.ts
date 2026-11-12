@@ -47,7 +47,7 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
   await expect(sheet(page)).toHaveAttribute('data-kiki-at', 'story-frame');
   await expect(sheet(page)).toHaveAttribute('data-kiki-night', '');
   await expect(page.locator('dialog[open] .navbar h2')).toHaveText('おやすみ ものがたり');
-  await expect(page.locator('dialog[open] .navbar .back')).toHaveCount(0); // a game page: no ‹
+  await expect(page.locator('dialog[open] .navbar .back')).toHaveCount(1); // ‹: to 寝る前に, the place kept
   await expect(frame(page).locator('[data-kiki-story-title]')).toHaveText('The Empty Shop by the Pier');
   await expect(frame(page)).toHaveAttribute('data-kiki-story-playing', 'true');
   // no score, no questions

@@ -17,9 +17,11 @@
   // たいかい (its lobby, show and results: taikai/, their own chunks). ‹ pops one (a
   // shared lobby popped is cancelled), ✕ closes the sheet from any page (asking first when others are in my lobby), a
   // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
-  // the results (おわる back to the hub; a lesson's back to its page); a game whose lane has its own views (round/
-  // registry.ts; views.ts: the tournament's, みみ チェック's, a later game's) shows them in their place, each its own chunk. Another's lobby I joined is みんなで (‹ leaves it
-  // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここでやめますか？」 (キャンセル or ✕ goes on, the coral やめる leaves). Opened from the HUD's
+  // the results; a game whose lane has its own views (round/registry.ts; views.ts: the tournament's, みみ チェック's, a
+  // later game's) shows them in their place, each its own chunk. Another's lobby I joined is みんなで (‹ leaves it for the
+  // hub). A game is a level over the page that started it: its ‹ (a backdrop tap, Esc) and the results' 終わる land
+  // there (actions.ts done), its ✕ closes the sheet; mid-game both ask 「ここでやめますか？」 first unless nothing is lost
+  // (solo, before my first answer). Opened from the HUD's
   // ききみみ (my own lobby, kept alone: the hub) or the banner's さんか (that game joined: [hub, みんなで]). The voice
   // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip. A player's first
   // open on this phone (none played yet) has the welcome in the hub's place (onboarding/: hello, the sound check, then
@@ -69,9 +71,10 @@
   let { open = $bindable(), join = null }: { open: boolean; join?: string | null } = $props();
 
   let game = $state.raw<QuizGame | null>(null);
-  /** ✕ (or a backdrop tap, Esc) mid-game: 「ここでやめますか？」; ✕ with others in my lobby: 「部屋を閉じますか？」. The kit's
-   *  confirm (docs/design.md "Forms and confirms"): キャンセル + the coral verb, its ✕ the safe choice too. */
-  let asking = $state<false | 'quit' | 'close'>(false);
+  /** Mid-game ‹ (`leave`: to the page under the game) or ✕ (`quit`: the sheet closed): 「ここでやめますか？」; ✕ with
+   *  others in my lobby: 「部屋を閉じますか？」. The kit's confirm (docs/design.md "Forms and confirms"): キャンセル + the
+   *  coral verb, its ✕ the safe choice too. */
+  let asking = $state<false | 'leave' | 'quit' | 'close'>(false);
   /** A mic game's さんか asked first (role/MicJoin.svelte: joining is consenting): its game, and whether the mic is on. */
   let micJoin = $state<{ g: string; on: boolean } | null>(null);
   const v = $derived(game?.view ?? null);
@@ -89,7 +92,7 @@
   const hosting = $derived(inLobby && !lesson && !!v?.amHost);
   /** Another's lobby I joined: みんなで. */
   const guest = $derived(inLobby && !lesson && !v?.amHost);
-  /** おやすみ ものがたり playing (StoryFrame, a game page over the stack: no ‹): its serial, chapter and segment. */
+  /** おやすみ ものがたり playing (StoryFrame, a game page over the stack: ‹ to 寝る前に): its serial, chapter and segment. */
   let story = $state<{ unit: string; ch: number; seg: number } | null>(null);
   /** The hub shows: my lobby with nothing pushed, or no game of mine yet (an invite waiting). */
   const atHub = $derived(!story && !!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
@@ -127,10 +130,19 @@
     if (v?.phase === 'idle') act.startOwn();
     pages = pushOn(pages, p);
   }
-  /** ‹: a lesson's intro card back to its page (another's: leave it), another's lobby left for the hub, else one page
-   *  popped (my shared lobby popped: cancelled for everyone, mine kept alone again). */
+  /** Mid-game, nothing to lose yet: solo, in the countdown or round 1 before my answer. */
+  const lossless = $derived(!!v && v.players.length <= 1 && (v.phase === 'countdown' || (v.i === 0 && v.phase !== 'reveal' && !v.answers[0])));
+  /** ‹: a story back to 寝る前に (its place kept); a game left for the page it was started from (mid-game asked first,
+   *  the results' as 終わる); a lesson's intro card back to its page (another's: leave it), another's lobby left for the
+   *  hub, else one page popped (my shared lobby popped: cancelled for everyone, mine kept alone again). */
   function back() {
-    if (lesson && v?.amHost) game?.dropLesson();
+    if (story) toStories();
+    else if (mid) {
+      cue(lossless ? 'back' : 'tick');
+      if (lossless) leaveGame();
+      else asking = 'leave';
+    } else if (v?.phase === 'results') act.done();
+    else if (lesson && v?.amHost) game?.dropLesson();
     else if (lesson || guest) act.toHub();
     else {
       if (page?.k === 'lobby' && v && !v.local) game?.open(lastLv(), { timer: v.timer });
@@ -138,7 +150,12 @@
       pages = pop(pages);
     }
   }
-  const canBack = $derived(!story && !!v && !v.notice && inLobby && (!!lesson || guest || (hosting && !!page)));
+  const canBack = $derived(!!story || (!!v && !v.notice && (mid || v.phase === 'results' || (inLobby && (!!lesson || guest || (hosting && !!page))))));
+  /** 寝る前に (StoryList) on top of the stack (from the hub's card: pushed). */
+  function toStories() {
+    story = null;
+    if (page?.k !== 'story') pages = pushOn(pages, { k: 'story' });
+  }
   /** The 30-day rechecks (solo: in my lobby kept alone). */
   const due = $derived(hosting && page?.k === 'path' && v?.local ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
 
@@ -192,6 +209,8 @@
       pages = [];
       story = null;
       welcome = false;
+      welcomeAt = 1;
+      fromWelcome = false;
     };
   });
   $effect(() => {
@@ -199,11 +218,25 @@
     const r = currentReport();
     if (r && !r.games.length && !onboarded(me)) untrack(() => (welcome = true));
   });
-  /** The welcome left: あとで (the hub, its card for the check) or on into みみ チェック. */
+  /** The welcome left: あとで (the hub, its card for the check) or on into みみ チェック (its ‹ back to the welcome's
+   *  last step: `welcomeAt`). */
+  let welcomeAt = $state<1 | 2>(1);
+  let fromWelcome = false;
   function welcomed(check: boolean) {
     if (me) keepOnboarded(me);
     welcome = false;
+    fromWelcome = check;
     if (check) act.check();
+  }
+  $effect(() => {
+    if (v?.phase === 'results') fromWelcome = false;
+  });
+  /** A game left mid-way (‹): to the page it was started from (actions.ts done); the first run's check to the welcome. */
+  function leaveGame() {
+    const toWelcome = fromWelcome && v?.gm === 'check';
+    fromWelcome = false;
+    act.done();
+    if (toWelcome) [welcome, welcomeAt] = [true, 2];
   }
   // The voice session the opening tap began ends as the sheet closes (a game or not), and the packs held go.
   $effect(() => {
@@ -232,10 +265,10 @@
     if (v?.g) been.add(v.g);
   });
 
-  /** ✕: mid-game asks first, and so does my lobby with others in it; otherwise closes (my lobby is cancelled for
-   *  everyone: the session's leave). */
+  /** ✕: mid-game asks first (but with nothing to lose), and so does my lobby with others in it; otherwise closes (my
+   *  lobby is cancelled for everyone: the session's leave). */
   function requestClose() {
-    if (!story && (mid || (inLobby && v?.amHost && !v.local && v.players.length > 1))) {
+    if (!story && ((mid && !lossless) || (inLobby && v?.amHost && !v.local && v.players.length > 1))) {
       cue('tick');
       asking = mid ? 'quit' : 'close';
     } else {
@@ -243,22 +276,21 @@
       open = false;
     }
   }
-  /** A backdrop tap or Esc: mid-game asks; on a page it pops; at the hub it closes. */
+  /** A backdrop tap or Esc: ‹ where there is one (mid-game: asking as it does); at the hub it closes. */
   const dismiss = (): boolean => {
-    if (story) return false; // (a game page: a backdrop tap or Esc does nothing; ✕ closes)
-    if (mid) {
-      asking = 'quit';
-      return false;
-    }
+    if (story) return false; // (a backdrop tap or Esc never stops a bedtime story: its ‹ or ✕ does)
     if (canBack) {
       back();
       return false;
     }
     return true;
   };
+  /** やめる: ‹'s to the page under the game, else the sheet closed. */
   function quit() {
+    const to = asking;
     asking = false;
-    open = false;
+    if (to === 'leave') leaveGame();
+    else open = false;
   }
   function closed() {
     if (toasts.current) toasts.dismiss();
@@ -268,6 +300,7 @@
   const act = new KikiActions(() => game, {
     close: () => (open = false),
     pages: () => pages.length,
+    top: () => page?.k,
     setPages: (p) => (pages = p),
     story: () => playTonight()
   });
@@ -362,7 +395,7 @@
         <Lazy load={() => import('./story/StoryFrame.svelte')}>{#snippet children(StoryFrame)}
           {#key `${s.unit}:${s.ch}`}
             <StoryFrame me={g.me} unit={s.unit} ch={s.ch} seg={s.seg} onclose={() => (open = false)}
-              onlist={() => ((story = null), (pages = [{ k: 'story' }]))} />
+              onlist={toStories} />
           {/key}
         {/snippet}</Lazy>
       {:else if v.notice}
@@ -373,7 +406,7 @@
         </div>
       {:else if atHub && welcome}
         <Lazy load={() => import('./onboarding/Welcome.svelte')}>{#snippet children(Welcome)}
-          <Welcome game={g} onlater={() => welcomed(false)} onstart={() => welcomed(true)} />
+          <Welcome game={g} at={welcomeAt} onlater={() => welcomed(false)} onstart={() => welcomed(true)} />
         {/snippet}</Lazy>
       {:else if atHub}
         <Lazy load={() => import('./hub/Hub.svelte')}>{#snippet children(Hub)}
@@ -452,7 +485,8 @@
   {/if}
   <!-- the ask: キャンセル (and its ✕) goes on, the coral verb leaves (the other confirms' footer) -->
   <Sheet bind:open={() => !!asking, (o) => { if (!o) asking = false; }} title={t(asking === 'close' ? 'kiki.closeAsk' : 'kiki.quit')}>
-    <p class="ask-note">{t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')}</p>
+    <p class="ask-note" data-kiki-ask={asking || undefined}>{t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')}</p>
+    {#if asking !== 'close' && v && v.players.length > 1}<p class="ask-note" data-kiki-ask-others>{t('kiki.quitOthers')}</p>{/if}
     {#snippet footer()}
       <div class="two-cta">
         <button type="button" class="btn paper" data-action="cancel" data-sfx="back" onclick={() => (asking = false)}>{t('common.cancel')}</button>

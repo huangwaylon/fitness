@@ -3,13 +3,14 @@
   // and three points (1にち 3ぷんから · ふたりで いっしょに · まず みみ チェック), あとで / はじめる; 2 the sound check (🔊
   // 「きこえる？」 through the game's voice, the volume-0 line), then みみ チェック (the game itself: step 3). あとで goes to
   // the hub, which keeps a card for the check. Its own chunk.
+  import { untrack } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import Host from '../../characters/Host.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, onlater, onstart }: { game: QuizGame; onlater: () => void; onstart: () => void } = $props();
-  let step = $state<1 | 2>(1);
+  let { game, at = 1, onlater, onstart }: { game: QuizGame; at?: 1 | 2; onlater: () => void; onstart: () => void } = $props();
+  let step = $state<1 | 2>(untrack(() => at)); // (the check's ‹ comes back to step 2)
   let tested = $state(false);
   const zero = $derived(sound.settings.volume <= 0);
   async function test() {

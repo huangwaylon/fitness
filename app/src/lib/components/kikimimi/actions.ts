@@ -1,5 +1,5 @@
 // What the ききみみ sheet's buttons start (docs/kikimimi.md "UI details"), over the sheet's game: もういっかい, a lesson again or
-// the next one, おわる (back to the hub), はまべ's quick quiz, the hub's today card, the ずかん's phrase review, the
+// the next one, 終わる and a game's ‹ (back to the page it was started from), はまべ's quick quiz, the hub's today card, the ずかん's phrase review, the
 // misses again, おさらい, a recommendation's start, a unit's lesson, みみ チェック, a lobby of my own. The sheet keeps its own state
 // (open, its stack of pages: nav.ts) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
 // unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum.md "Playing together").
@@ -15,12 +15,14 @@ import type { Act } from '#lib/kikimimi/today.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
 import { keepLv, lastLv, lastTimer, sameDefault } from './prefs.ts';
 import { modeStack, taikaiStack, type Page } from './nav.ts';
+import { LANES } from '#lib/kikimimi/round/registry.ts';
 
 /** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
 interface SheetUi {
   close(): void;
-  /** How many pages are pushed over the hub (a lesson's おわる goes back to them). */
+  /** How many pages are pushed over the hub (終わる goes back to them), and the top one's kind. */
   pages(): number;
+  top(): Page['k'] | undefined;
   setPages(p: Page[]): void;
   /** おやすみ ものがたり's next chapter, at once (the night's きまぐれ card). */
   story?(): void;
@@ -96,19 +98,25 @@ export class KikiActions {
     this.#lesson(g, unit, l, recheck);
     if (now) g.go();
   };
-  /** おわる: a lesson's goes back to the page it came from (the unit's, the path's), a game's to the hub. */
+  /** 終わる, and a game's ‹ (mid-game: my answers so far kept): back to the page the game was started from, the stack
+   *  under it as it was, with a fresh lobby of my own at the game's settings (a mode's page sets its game again:
+   *  ModeDetail; みんなで keeps a lane's game, the same people one さそう away; たいかい's page its tournament). From the
+   *  hub, or a lobby I joined (theirs is gone for me): the hub. */
   done = (): void => {
     const g = this.#game(), v = g?.view;
-    if (g?.lesson && v?.local && this.#ui.pages()) {
-      g.close();
-      g.open(lastLv(), { timer: v.timer });
-    } else this.toHub();
+    if (!g || !v) return;
+    if (!v.amHost || !this.#ui.pages()) return this.toHub();
+    const { gm, lv, timer, same, vs, ladder } = v, top = this.#ui.top();
+    g.leave();
+    if (gm === 'taikai') return g.openTaikai({ vs, timer });
+    g.open(lastLv(), { timer, same, vs, ladder });
+    if (top === 'lobby' && LANES.isLater(gm) && gm) g.setGame(gm, { lv, timer });
   };
   /** Back to the hub: a lobby of my own, kept alone (leaving the game I was in: a lobby I'd shared is cancelled). */
   toHub = (): void => {
     const g = this.#game();
     if (!g) return;
-    g.close();
+    g.leave();
     g.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
     this.#ui.setPages([]);
   };

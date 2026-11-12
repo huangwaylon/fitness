@@ -321,9 +321,12 @@ export class QuizGame {
   ready(): void {
     this.#queue.then(() => [], () => this.#act((s, now) => s.ready(now)));
   }
-  /** Leave the game (✕, やめる). */
+  /** Leave the game (‹, やめる): mid-way, the questions I answered still count. */
   leave(): void {
-    this.#queue.then(() => [], () => this.#act((s, now) => s.leave(now)));
+    this.#queue.then(() => [], () => {
+      this.#keepMid();
+      this.#act((s, now) => s.leave(now));
+    });
   }
   /** Done with the results or a notice. */
   close(): void {
@@ -370,8 +373,7 @@ export class QuizGame {
   /** The sheet closed: leave the game, stop listening and every clip. */
   dispose(): void {
     if (this.#gone) return;
-    // a game left mid-way: the questions I answered still count
-    if (this.view?.g && this.view.phase !== 'lobby' && this.view.phase !== 'idle') this.#keep(this.view, this.#link.now(), false);
+    this.#keepMid();
     this.#act((s, now) => s.leave(now)); // (now: not after what waits for a chunk, which is dropped)
     this.#gone = true;
     clearTimeout(this.#timer);
@@ -471,6 +473,11 @@ export class QuizGame {
     if (!was || !r.length || this.#more === was.g) return;
     this.#more = was.g;
     this.#record?.({ d: was.d, g: was.g, ...(was.gm && { gm: was.gm }), lv: was.lv, n: 1, ms: Math.max(0, Math.min(3_600_000, Math.round(ms))), r });
+  }
+
+  /** A game left mid-way: the questions I answered still count. */
+  #keepMid(): void {
+    if (this.view?.g && this.view.phase !== 'lobby' && this.view.phase !== 'idle') this.#keep(this.view, this.#link.now(), false);
   }
 
   /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way (the tournament's: the
