@@ -6,8 +6,9 @@
   // round's one action (`action`: ことば タイル's できた) and at the reveal, in its place, the host's 次へ (with how many
   // tapped 読み終わった), the others' 読み終わった; the host gone, anyone's 次へ. Those two are armed ARM_MS after the reveal
   // shows (sunk till then, and a tap whose press began before never counts: a double tap on できた never skips the
-  // reveal). From round 2, 「‹ 前の問題」 at the top-left (LookBack: `review`, the
-  // game's own review row). The round sits mid-screen on a tall phone (`top`: at the top, so the reveal doesn't jump). Any game's.
+  // reveal). From round 2, 「👀 前の問題」 at the top-left (LookBack: `review`, the
+  // game's own review row). The round sits at the top in every phase and game, so nothing moves when the tiles, choices
+  // or reveal come in and 前の問題 is always in the same place. Any game's.
   import type { Snippet } from 'svelte';
   import { hook, hookFlag } from '../../island/devHooks.ts';
   import type { QuizGame } from '../game.svelte.ts';
@@ -33,7 +34,7 @@
     players: { who: Who; here: boolean; answered: boolean; ready: boolean; score: number; pick?: { ok: boolean } }[];
   }
 
-  let { game, v, now, me, type, answered, verdict, stage, input, after, action, review, top = false, onnext, onready }: {
+  let { game, v, now, me, type, answered, verdict, stage, input, after, action, review, onnext, onready }: {
     /** The game (前の問題's card). */
     game: QuizGame;
     v: FrameView;
@@ -53,7 +54,6 @@
     action?: Snippet;
     /** The game's review row for round i, opened (前の問題; none: the line and its Japanese), ▶︎ allowed. */
     review?: Snippet<[number, boolean]>;
-    top?: boolean;
     onnext: () => void;
     onready: () => void;
   } = $props();
@@ -88,7 +88,7 @@
   }
 </script>
 
-<div class="q" class:top data-kiki-q={v.i} data-type={type} data-phase={v.phase}>
+<div class="q" data-kiki-q={v.i} data-type={type} data-phase={v.phase}>
   {#if !solo || v.i > 0}
     <div class="players">
       <LookBack {game} row={review} />
@@ -133,10 +133,9 @@
 {/if}
 
 <style>
-  /* the round takes the scroller's room, its content centred: mid-screen on a tall phone, not a gap under it */
-  .q { display: grid; gap: 12px; align-content: center; }
+  /* the round takes the scroller's room, its content from the top (a reveal or the tiles never move what's above them) */
+  .q { display: grid; gap: 12px; align-content: start; }
   :global(.kk-body) > .q { flex: 1 0 auto; }
-  .q.top { align-content: start; }
   .players { position: relative; min-height: 44px; display: flex; justify-content: center; gap: 14px; }
   .timer { display: block; height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
   .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }

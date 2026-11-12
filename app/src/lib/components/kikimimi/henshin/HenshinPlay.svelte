@@ -2,8 +2,8 @@
   // A round of 音の へんしん (docs/kikimimi.md "音の へんしん"; games/henshin/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). The speaker pops in and the natural take plays (the situation, `ctx`, under the bubble);
   // then the line with its changed words blanked, and either 「なんて 言った？」's three full forms (one final tap), or
-  // 「書きとり」: the missing words typed (matched forgivingly: match.ts) or tapped from tiles (this phone's choice, kept), 「できた」
-  // sends it. 🔁 as often as wanted (a replay: "hard" for review, never points). The reveal: ○ / ×, the line as said with
+  // 「書きとり」: the missing words typed (matched forgivingly: match.ts) or tapped from tiles (this phone's choice, kept), 「できた」 (the foot's:
+  // RoundFrame `action`) sends it. 🔁 as often as wanted (a replay: "hard" for review, never points). The reveal: ○ / ×, the line as said with
   // its sound mark over the changed words, the full form beside the spelling as said (「didja」＝ did you), the Japanese,
   // the trap's note, my words, and 聞きくらべ: the phrase はっきり (the careful take), ふつう and 速く.
   import Note from '../frame/Note.svelte';
@@ -182,13 +182,18 @@
       <div class="acts">
         <button type="button" class="btn small paper" data-kiki-henshin-swap data-sfx="tick" onclick={swap}>{tiles ? t('kiki.henshin.useKeys') : t('kiki.henshin.useTiles')}</button>
         {#if tiles}<button type="button" class="btn small paper" data-kiki-henshin-clear aria-disabled={!placed.some((x) => x !== EMPTY)} data-sfx="back" onclick={clear}>{t('kiki.henshin.clear')}</button>{/if}
-        <button type="button" class="btn small" data-kiki-henshin-done aria-disabled={!canSend} data-sfx={canSend ? 'confirm' : 'none'} onclick={send}>{t('kiki.henshin.done')}</button>
       </div>
     {/if}
   {/if}
 {/snippet}
 
-<RoundFrame {game} {v} now={game.now} me={game.me} type={r.kind === 'henshin.pick' ? 'word' : 'tile'} answered={!!sent} {verdict} {stage} {input} onnext={() => game.next()} onready={() => game.ready()} />
+{#snippet action()}
+  {#if r.kind !== 'henshin.pick' && shown && !v.out && !sent && !reveal}
+    <button type="button" class="btn" data-kiki-henshin-done aria-disabled={!canSend} data-sfx={canSend ? 'confirm' : 'none'} onclick={send}>{t('kiki.henshin.done')}</button>
+  {/if}
+{/snippet}
+
+<RoundFrame {game} {v} now={game.now} me={game.me} type={r.kind === 'henshin.pick' ? 'word' : 'tile'} answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>

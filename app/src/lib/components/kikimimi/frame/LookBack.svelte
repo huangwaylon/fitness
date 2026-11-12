@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 「‹ 前の問題」 (docs/kikimimi.md "The game"): from round 2 on, a chip that opens the previous round's review on this phone
+  // 「👀 前の問題」 (docs/kikimimi.md "The game"): from round 2 on, a chip that opens the previous round's review on this phone
   // alone (the game goes on: its clip and clock, the live timer bar on the card), so a reveal skipped by mistake can still
   // be read and heard. The game's own review row (`row`, opened: the results' look), else the line, its Japanese and
   // note. Its ▶︎ is a review's play (game.hear: never the round's replay), off while the round's clip plays or another
@@ -25,7 +25,7 @@
 </script>
 
 {#if i >= 0 && it}
-  <button type="button" class="chip prev" data-kiki-prev aria-label={t('kiki.prevQAsk')} data-sfx="open" onclick={() => (open = true)}>‹ {t('kiki.prevQ')}</button>
+  <button type="button" class="chip prev" data-kiki-prev aria-label={t('kiki.prevQAsk')} data-sfx="open" onclick={() => (open = true)}><span aria-hidden="true">👀</span> {t('kiki.prevQ')}</button>
   <Sheet bind:open title={t('kiki.prevQ')}>
     <div class="card-body" data-kiki-prev-card={i}>
       {#if v.phase === 'answer' && Number.isFinite(v.limit)}
