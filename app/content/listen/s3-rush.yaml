@@ -1,0 +1,2040 @@
+# すうじ ラッシュ S3 やま: two or three numbers in a fast order, the asked one never first; a correction with its reason; dollars and cents; a quarter to six.
+# Written by scripts/kikimimi-rush.ts (npm run kikimimi:rush): edit the frames there, not this file. One item = one
+# customer = one clip; `options` the ticket's chips (ascending), `was` the one said before a self-correction.
+schema: 1
+unit: s3-rush
+game: rush
+stage: 4
+track: life
+seeds: [4, 5, 13, 24, 27, 51]
+features: { primary: numbers, review: self-repair }
+cando: "数字が いくつも 出る 速い 注文から、聞かれた 数字を 理由つきの 言い直しまで 追える"
+status: draft
+items:
+  - kind: rush
+    id: rush-ymuffins-1
+    at: cafe
+    speaker: diana
+    en: "Can I get four large cold brews and three blueberry muffins? They're for the office."
+    ja: "コールドブリューのLを4杯と、ブルーベリーマフィンを3個ください。会社の分です。"
+    ask: "マフィンは いくつ？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["3個", "4個", "5個", "13個"]
+    answer: 0
+    cja: ["3個", "4個", "5個", "13個"]
+    why: "マフィンは3個。先に言った4杯はコールドブリューの数。large はサイズ。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ymuffins-2
+    at: cafe
+    speaker: rosie
+    en: "Hey there. Can I get two large cold brews and four blueberry muffins? They're for the office."
+    ja: "どうも。コールドブリューのLを2杯と、ブルーベリーマフィンを4個ください。会社の分です。"
+    ask: "マフィンは いくつ？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["2個", "3個", "4個", "6個"]
+    answer: 2
+    cja: ["2個", "3個", "4個", "6個"]
+    why: "マフィンは4個。先に言った2杯はコールドブリューの数。large はサイズ。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ymuffins-3
+    at: cafe
+    speaker: bob
+    en: "Can I get four large cold brews and five blueberry muffins? Actually, make it six. My sister's meeting me here."
+    ja: "コールドブリューのLを4杯と、ブルーベリーマフィンを5個…やっぱり6個で。妹がここに来るので。"
+    ask: "マフィンは いくつ？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["4個", "5個", "6個", "16個"]
+    answer: 2
+    was: 1
+    cja: ["4個", "5個", "6個", "16個"]
+    why: "5個から Actually, make it で6個に言い直し。理由は妹が来るから。4杯はコールドブリュー。"
+    note: "言い直しの「make it」のあとが答え"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ymuffins-4
+    at: cafe
+    speaker: cherry
+    en: "Can I get two large cold brews and five blueberry muffins? They're for the office."
+    ja: "コールドブリューのLを2杯と、ブルーベリーマフィンを5個ください。会社の分です。"
+    ask: "マフィンは いくつ？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["2個", "4個", "5個", "6個"]
+    answer: 2
+    cja: ["2個", "4個", "5個", "6個"]
+    why: "マフィンは5個。先に言った2杯はコールドブリューの数。large はサイズ。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ybrunch-1
+    at: cafe
+    speaker: punchy
+    en: "Hey there. A table for four for now, please. The rest of our group gets here at a quarter to two."
+    ja: "どうも。とりあえず4人の席をお願いします。ほかのメンバーは1時45分に来ます。"
+    ask: "ほかの 人は 何時に 来る？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["1:45", "2:00", "2:15", "2:45"]
+    answer: 0
+    cja: ["1時45分", "2時", "2時15分", "2時45分"]
+    why: "「a quarter to two」は1時45分。4人は今いる人数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-ybrunch-2
+    at: cafe
+    speaker: maple
+    en: "Morning! A table for two for now, please. The rest of our group gets here at half past twelve."
+    ja: "おはようございます。とりあえず2人の席をお願いします。ほかのメンバーは12時30分に来ます。"
+    ask: "ほかの 人は 何時に 来る？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["11:30", "12:13", "12:15", "12:30"]
+    answer: 3
+    cja: ["11時30分", "12時13分", "12時15分", "12時30分"]
+    why: "「half past twelve」は12時30分。2人は今いる人数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ybrunch-3
+    at: cafe
+    speaker: apollo
+    en: "Hey there. A table for four for now, please. The rest of our group gets here at a quarter after one."
+    ja: "どうも。とりあえず4人の席をお願いします。ほかのメンバーは1時15分に来ます。"
+    ask: "ほかの 人は 何時に 来る？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["1:00", "1:15", "1:30", "1:50"]
+    answer: 1
+    cja: ["1時", "1時15分", "1時30分", "1時50分"]
+    why: "「a quarter after one」は1時15分。4人は今いる人数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ybrunch-4
+    at: cafe
+    speaker: dom
+    en: "A table for two for now, please. The rest of our group gets here at a quarter to twelve."
+    ja: "とりあえず2人の席をお願いします。ほかのメンバーは11時45分に来ます。"
+    ask: "ほかの 人は 何時に 来る？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["11:30", "11:45", "12:15", "12:45"]
+    answer: 1
+    cja: ["11時30分", "11時45分", "12時15分", "12時45分"]
+    why: "「a quarter to twelve」は11時45分。2人は今いる人数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-ycake-1
+    at: cafe
+    speaker: raymond
+    en: "Hi! I'd like to order a birthday cake for pickup on the 16th. It's for 40 people. Sorry, I mean 14. I counted wrong."
+    tts: "Hi! I'd like to order a birthday cake for pickup on the sixteenth. It's for forty people. Sorry, I mean fourteen. I counted wrong."
+    ja: "こんにちは。16日受け取りで、誕生日ケーキを注文したいんです。40人分…すみません、14人分です。数え間違えました。"
+    ask: "ケーキは 何人分？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["13人分", "14人分", "24人分", "40人分"]
+    answer: 1
+    was: 3
+    cja: ["13人分", "14人分", "24人分", "40人分"]
+    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の14人分。40人分は言い直す前です。14人分と40人分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「sorry」のあとが答え"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ycake-2
+    at: cafe
+    speaker: hamlet
+    en: "Morning! I'd like to order a birthday cake for pickup on the 20th. It's for 16 people."
+    tts: "Morning! I'd like to order a birthday cake for pickup on the twentieth. It's for sixteen people."
+    ja: "おはようございます。20日受け取りで、誕生日ケーキを注文したいんです。16人分です。"
+    ask: "ケーキは 何人分？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["15人分", "16人分", "17人分", "60人分"]
+    answer: 1
+    cja: ["15人分", "16人分", "17人分", "60人分"]
+    why: "「sixteen」で16人分。数は名詞の前に来ます。16人分と60人分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "16人分と60人分：-teenは後ろが強い"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ycake-3
+    at: cafe
+    speaker: diana
+    en: "I'd like to order a birthday cake for pickup on the 20th. It's for 12 people."
+    tts: "I'd like to order a birthday cake for pickup on the twentieth. It's for twelve people."
+    ja: "20日受け取りで、誕生日ケーキを注文したいんです。12人分です。"
+    ask: "ケーキは 何人分？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["11人分", "12人分", "13人分", "14人分"]
+    answer: 1
+    cja: ["11人分", "12人分", "13人分", "14人分"]
+    why: "「twelve」で12人分。数は名詞の前に来ます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ycake-4
+    at: cafe
+    speaker: rosie
+    en: "Hey there. I'd like to order a birthday cake for pickup on the 14th. It's for 15 people."
+    tts: "Hey there. I'd like to order a birthday cake for pickup on the fourteenth. It's for fifteen people."
+    ja: "どうも。14日受け取りで、誕生日ケーキを注文したいんです。15人分です。"
+    ask: "ケーキは 何人分？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["15人分", "16人分", "17人分", "50人分"]
+    answer: 0
+    cja: ["15人分", "16人分", "17人分", "50人分"]
+    why: "「fifteen」で15人分。数は名詞の前に来ます。15人分と50人分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "15人分と50人分：-teenは後ろが強い"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-yiced-1
+    at: cafe
+    speaker: cherry
+    en: "Hi! Five drinks altogether: two hot lattes, and the other three iced."
+    ja: "こんにちは。全部で5杯。ホットラテを2杯、残りの3杯はアイスで。"
+    ask: "アイスは 何杯？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["2杯", "3杯", "5杯", "13杯"]
+    answer: 1
+    cja: ["2杯", "3杯", "5杯", "13杯"]
+    why: "全部で5杯のうち、ホットが2杯。残り（the other）の3杯がアイス。"
+    note: "全部で5杯。ホットの数を引いて考える"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yiced-2
+    at: cafe
+    speaker: goldie
+    en: "Five drinks altogether: four hot lattes and two iced. Wait, that's six. One iced, then."
+    ja: "全部で5杯。ホットラテ4杯とアイス2杯…あ、それだと6杯だ。アイスは1杯で。"
+    ask: "アイスは 何杯？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["1杯", "2杯", "4杯", "5杯"]
+    answer: 0
+    was: 1
+    cja: ["1杯", "2杯", "4杯", "5杯"]
+    why: "ホット4杯とアイス2杯では6杯になるので、アイスを1杯に直した。全部で5杯。"
+    note: "全部で5杯。ホットの数を引いて考える"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yiced-3
+    at: cafe
+    speaker: punchy
+    en: "Hey there. Five drinks altogether: three hot lattes, and the other two iced."
+    ja: "どうも。全部で5杯。ホットラテを3杯、残りの2杯はアイスで。"
+    ask: "アイスは 何杯？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["2杯", "3杯", "4杯", "5杯"]
+    answer: 0
+    cja: ["2杯", "3杯", "4杯", "5杯"]
+    why: "全部で5杯のうち、ホットが3杯。残り（the other）の2杯がアイス。"
+    note: "全部で5杯。ホットの数を引いて考える"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yiced-4
+    at: cafe
+    speaker: maple
+    en: "Five drinks altogether: two hot lattes, and the other three iced."
+    ja: "全部で5杯。ホットラテを2杯、残りの3杯はアイスで。"
+    ask: "アイスは 何杯？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["2杯", "3杯", "4杯", "5杯"]
+    answer: 1
+    cja: ["2杯", "3杯", "4杯", "5杯"]
+    why: "全部で5杯のうち、ホットが2杯。残り（the other）の3杯がアイス。"
+    note: "全部で5杯。ホットの数を引いて考える"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yclose-1
+    at: cafe
+    speaker: dom
+    en: "Hi! You close at 9:00, right? Oh, the sign says half past eight. So we've got about 40 minutes."
+    tts: "Hi! You close at nine o'clock, right? Oh, the sign says half past eight. So we've got about forty minutes."
+    ja: "こんにちは。9時閉店ですよね？あ、看板には8時30分って。じゃあ、あと40分くらいか。"
+    ask: "何時に 閉まる？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["8:13", "8:30", "8:45", "9:00"]
+    answer: 1
+    was: 3
+    cja: ["8時13分", "8時30分", "8時45分", "9時"]
+    why: "9時と言ってから、看板を見て8時30分に言い直し。40分は残りの時間。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-yclose-2
+    at: cafe
+    speaker: celeste
+    en: "Morning! You close at 9:00, right? Oh, the sign says a quarter after nine. So we've got about 30 minutes."
+    tts: "Morning! You close at nine o'clock, right? Oh, the sign says a quarter after nine. So we've got about thirty minutes."
+    ja: "おはようございます。9時閉店ですよね？あ、看板には9時15分って。じゃあ、あと30分くらいか。"
+    ask: "何時に 閉まる？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["9:00", "9:15", "9:50", "10:15"]
+    answer: 1
+    was: 0
+    cja: ["9時", "9時15分", "9時50分", "10時15分"]
+    why: "9時と言ってから、看板を見て9時15分に言い直し。30分は残りの時間。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-yclose-3
+    at: cafe
+    speaker: raymond
+    en: "So we've got about 40 minutes? You close at half past nine, right?"
+    tts: "So we've got about forty minutes? You close at half past nine, right?"
+    ja: "あと40分くらいですか？9時30分閉店ですよね？"
+    ask: "何時に 閉まる？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["8:30", "9:13", "9:30", "10:30"]
+    answer: 2
+    cja: ["8時30分", "9時13分", "9時30分", "10時30分"]
+    why: "「half past nine」は9時30分。40分は残りの時間。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-yclose-4
+    at: cafe
+    speaker: hamlet
+    en: "Morning! You close at 10:00, right? Oh, the sign says a quarter to ten. So we've got about 30 minutes."
+    tts: "Morning! You close at ten o'clock, right? Oh, the sign says a quarter to ten. So we've got about thirty minutes."
+    ja: "おはようございます。10時閉店ですよね？あ、看板には9時45分って。じゃあ、あと30分くらいか。"
+    ask: "何時に 閉まる？"
+    ctx: "カフェのカウンターで注文を受けています"
+    scene: cafe
+    options: ["9:30", "9:45", "10:00", "10:45"]
+    answer: 1
+    was: 2
+    cja: ["9時30分", "9時45分", "10時", "10時45分"]
+    why: "10時と言ってから、看板を見て9時45分に言い直し。30分は残りの時間。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "clock"] }
+
+  - kind: rush
+    id: rush-ytopup-1
+    at: konbini
+    speaker: rosie
+    en: "Hi. There's only 340 yen left on my Suica. Can you put 2,000 yen on it?"
+    tts: "Hi. There's only three hundred forty yen left on my Suica. Can you put two thousand yen on it?"
+    ja: "こんにちは。Suicaの残りが340円しかないんです。2,000円チャージしてもらえますか？"
+    ask: "チャージは いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["340円", "1,000円", "2,000円", "5,000円"]
+    answer: 2
+    cja: ["340円", "1,000円", "2,000円", "5,000円"]
+    why: "「two thousand yen」で2,000円。円の値段は thousand（千）と hundred（百）の順に聞きます。340円はカードの残高。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytopup-2
+    at: konbini
+    speaker: bob
+    en: "Excuse me. There's only 910 yen left on my Suica. Can you put 3,000 yen on it? Actually, 4,000 yen. I'm going all the way to Narita."
+    tts: "Excuse me. There's only nine hundred ten yen left on my Suica. Can you put three thousand yen on it? Actually, four thousand yen. I'm going all the way to Narita."
+    ja: "すみません。Suicaの残りが910円しかないんです。3,000円…やっぱり4,000円チャージで。成田まで行くので。"
+    ask: "チャージは いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["910円", "3,000円", "4,000円", "5,000円"]
+    answer: 2
+    was: 1
+    cja: ["910円", "3,000円", "4,000円", "5,000円"]
+    why: "「actually」（やっぱり）で言い直し。答えは最後の4,000円。3,000円は言い直す前です。910円はカードの残高。"
+    note: "言い直しの「actually」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ytopup-3
+    at: konbini
+    speaker: cherry
+    en: "There's only 340 yen left on my Suica. Can you put 5,000 yen on it?"
+    tts: "There's only three hundred forty yen left on my Suica. Can you put five thousand yen on it?"
+    ja: "Suicaの残りが340円しかないんです。5,000円チャージしてもらえますか？"
+    ask: "チャージは いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["340円", "2,000円", "3,000円", "5,000円"]
+    answer: 3
+    cja: ["340円", "2,000円", "3,000円", "5,000円"]
+    why: "「five thousand yen」で5,000円。円の値段は thousand（千）と hundred（百）の順に聞きます。340円はカードの残高。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytopup-4
+    at: konbini
+    speaker: goldie
+    en: "Excuse me. There's only 120 yen left on my Suica. Can you put 3,000 yen on it?"
+    tts: "Excuse me. There's only one hundred twenty yen left on my Suica. Can you put three thousand yen on it?"
+    ja: "すみません。Suicaの残りが120円しかないんです。3,000円チャージしてもらえますか？"
+    ask: "チャージは いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["120円", "1,000円", "2,000円", "3,000円"]
+    answer: 3
+    cja: ["120円", "1,000円", "2,000円", "3,000円"]
+    why: "「three thousand yen」で3,000円。円の値段は thousand（千）と hundred（百）の順に聞きます。120円はカードの残高。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ybox-1
+    at: konbini
+    speaker: maple
+    en: "So it's 1,460 yen for the small box, and 1,760 yen for the big one? Oh, 1,860 yen. I misread it. The big one, please."
+    tts: "So it's one thousand four hundred sixty yen for the small box, and one thousand seven hundred sixty yen for the big one? Oh, one thousand eight hundred sixty yen. I misread it. The big one, please."
+    ja: "小さい箱が1,460円で、大きい箱が1,760円？あ、1,860円か。見間違えました。大きいほうで。"
+    ask: "大きい 箱は いくら？"
+    ctx: "コンビニで、宅配便の受付をしています"
+    options: ["1,460円", "1,760円", "1,860円", "1,960円"]
+    answer: 2
+    was: 1
+    cja: ["1,460円", "1,760円", "1,860円", "1,960円"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の1,860円。1,760円は言い直す前です。1,460円は小さい箱の値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ybox-2
+    at: konbini
+    speaker: apollo
+    en: "So it's 1,320 yen for the small box, and 1,720 yen for the big one? I'll go with the big one."
+    tts: "So it's one thousand three hundred twenty yen for the small box, and one thousand seven hundred twenty yen for the big one? I'll go with the big one."
+    ja: "小さい箱が1,320円で、大きい箱が1,720円ですか？大きいほうにします。"
+    ask: "大きい 箱は いくら？"
+    ctx: "コンビニで、宅配便の受付をしています"
+    options: ["1,320円", "1,620円", "1,720円", "2,720円"]
+    answer: 2
+    cja: ["1,320円", "1,620円", "1,720円", "2,720円"]
+    why: "「one thousand seven hundred twenty yen」で1,720円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ybox-3
+    at: konbini
+    speaker: dom
+    en: "So it's 1,060 yen for the small box, and 1,460 yen for the big one? I'll go with the big one."
+    tts: "So it's one thousand sixty yen for the small box, and one thousand four hundred sixty yen for the big one? I'll go with the big one."
+    ja: "小さい箱が1,060円で、大きい箱が1,460円ですか？大きいほうにします。"
+    ask: "大きい 箱は いくら？"
+    ctx: "コンビニで、宅配便の受付をしています"
+    options: ["1,060円", "1,460円", "1,640円", "2,460円"]
+    answer: 1
+    cja: ["1,060円", "1,460円", "1,640円", "2,460円"]
+    why: "「one thousand four hundred sixty yen」で1,460円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ybox-4
+    at: konbini
+    speaker: celeste
+    en: "So it's 1,630 yen for the small box, and 2,030 yen for the big one? I'll go with the big one."
+    tts: "So it's one thousand six hundred thirty yen for the small box, and two thousand thirty yen for the big one? I'll go with the big one."
+    ja: "小さい箱が1,630円で、大きい箱が2,030円ですか？大きいほうにします。"
+    ask: "大きい 箱は いくら？"
+    ctx: "コンビニで、宅配便の受付をしています"
+    options: ["1,630円", "2,030円", "2,300円", "3,030円"]
+    answer: 1
+    cja: ["1,630円", "2,030円", "2,300円", "3,030円"]
+    why: "「two thousand thirty yen」で2,030円。円の値段は thousand（千）と hundred（百）の順に聞きます。1,630円は小さい箱の値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytax-1
+    at: konbini
+    speaker: hamlet
+    en: "Hi. It says 800 yen on the shelf, so it's 880 yen with tax? Okay, that's fine."
+    tts: "Hi. It says eight hundred yen on the shelf, so it's eight hundred eighty yen with tax? Okay, that's fine."
+    ja: "こんにちは。棚には800円って書いてあるから、税込みで880円ですか？それでいいです。"
+    ask: "税込みで いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["780円", "800円", "880円", "1,880円"]
+    answer: 2
+    cja: ["780円", "800円", "880円", "1,880円"]
+    why: "「eight hundred eighty yen」で880円。円の値段は thousand（千）と hundred（百）の順に聞きます。800円は税抜きの値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytax-2
+    at: konbini
+    speaker: diana
+    en: "Excuse me. It says 500 yen on the shelf, so with tax it's 1,550 yen? Oh, 550 yen. Okay, that's fine."
+    tts: "Excuse me. It says five hundred yen on the shelf, so with tax it's one thousand five hundred fifty yen? Oh, five hundred fifty yen. Okay, that's fine."
+    ja: "すみません。棚には500円って書いてあるから、税込みで1,550円？あ、550円か。それでいいです。"
+    ask: "税込みで いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["500円", "550円", "600円", "1,550円"]
+    answer: 1
+    was: 3
+    cja: ["500円", "550円", "600円", "1,550円"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の550円。1,550円は言い直す前です。500円は税抜きの値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ytax-3
+    at: konbini
+    speaker: rosie
+    en: "It says 700 yen on the shelf, so with tax it's 670 yen? Oh, 770 yen. Okay, that's fine."
+    tts: "It says seven hundred yen on the shelf, so with tax it's six hundred seventy yen? Oh, seven hundred seventy yen. Okay, that's fine."
+    ja: "棚には700円って書いてあるから、税込みで670円？あ、770円か。それでいいです。"
+    ask: "税込みで いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["670円", "700円", "770円", "1,770円"]
+    answer: 2
+    was: 0
+    cja: ["670円", "700円", "770円", "1,770円"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の770円。670円は言い直す前です。700円は税抜きの値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ytax-4
+    at: konbini
+    speaker: bob
+    en: "Hi. It says 300 yen on the shelf, so it's 330 yen with tax? Okay, that's fine."
+    tts: "Hi. It says three hundred yen on the shelf, so it's three hundred thirty yen with tax? Okay, that's fine."
+    ja: "こんにちは。棚には300円って書いてあるから、税込みで330円ですか？それでいいです。"
+    ask: "税込みで いくら？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["300円", "330円", "380円", "1,330円"]
+    answer: 1
+    cja: ["300円", "330円", "380円", "1,330円"]
+    why: "「three hundred thirty yen」で330円。円の値段は thousand（千）と hundred（百）の順に聞きます。300円は税抜きの値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ycopies-1
+    at: konbini
+    speaker: goldie
+    en: "Hi. I need three copies of this, double-sided, and 32 of the map. No, 30 of the map. One for each family."
+    tts: "Hi. I need three copies of this, double-sided, and thirty-two of the map. No, thirty of the map. One for each family."
+    ja: "こんにちは。これを両面で3部、地図は32枚…いや、30枚です。1家族に1枚ずつなので。"
+    ask: "地図は 何枚？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["3枚", "13枚", "30枚", "32枚"]
+    answer: 2
+    was: 3
+    cja: ["3枚", "13枚", "30枚", "32枚"]
+    why: "地図は32枚から No で30枚に言い直し。1家族に1枚ずつだから。3部は両面コピーの数。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ycopies-2
+    at: konbini
+    speaker: punchy
+    en: "Excuse me. I need two copies of this, double-sided, and 17 of the map, in color."
+    tts: "Excuse me. I need two copies of this, double-sided, and seventeen of the map, in color."
+    ja: "すみません。これを両面で2部、地図はカラーで17枚コピーしたいです。"
+    ask: "地図は 何枚？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["2枚", "17枚", "27枚", "70枚"]
+    answer: 1
+    cja: ["2枚", "17枚", "27枚", "70枚"]
+    why: "地図は17枚。先に言った2部は両面コピーの数。"
+    note: "17枚と70枚：-teenは後ろが強い"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ycopies-3
+    at: konbini
+    speaker: maple
+    en: "Hi. I need five copies of this, double-sided, and 20 of the map, in color."
+    tts: "Hi. I need five copies of this, double-sided, and twenty of the map, in color."
+    ja: "こんにちは。これを両面で5部、地図はカラーで20枚コピーしたいです。"
+    ask: "地図は 何枚？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["5枚", "19枚", "20枚", "30枚"]
+    answer: 2
+    cja: ["5枚", "19枚", "20枚", "30枚"]
+    why: "地図は20枚。先に言った5部は両面コピーの数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ycopies-4
+    at: konbini
+    speaker: apollo
+    en: "Excuse me. I need four copies of this, double-sided, and 20 of the map. No, 19 of the map. One for each family."
+    tts: "Excuse me. I need four copies of this, double-sided, and twenty of the map. No, nineteen of the map. One for each family."
+    ja: "すみません。これを両面で4部、地図は20枚…いや、19枚です。1家族に1枚ずつなので。"
+    ask: "地図は 何枚？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["4枚", "19枚", "20枚", "90枚"]
+    answer: 1
+    was: 2
+    cja: ["4枚", "19枚", "20枚", "90枚"]
+    why: "地図は20枚から No で19枚に言い直し。1家族に1枚ずつだから。4部は両面コピーの数。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ydiff-1
+    at: konbini
+    speaker: celeste
+    en: "It's 780 yen today, but I paid 880 yen for it yesterday. Can I get the difference back?"
+    tts: "It's seven hundred eighty yen today, but I paid eight hundred eighty yen for it yesterday. Can I get the difference back?"
+    ja: "今日は780円なのに、きのう880円で買ったんです。差額を返してもらえますか？"
+    ask: "きのう いくら 払った？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["780円", "880円", "930円", "1,880円"]
+    answer: 1
+    cja: ["780円", "880円", "930円", "1,880円"]
+    why: "「eight hundred eighty yen」で880円。円の値段は thousand（千）と hundred（百）の順に聞きます。780円は今日の値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ydiff-2
+    at: konbini
+    speaker: raymond
+    en: "Um, hi. It's 980 yen today, but I paid 1,130 yen for it yesterday. No, sorry, 1,080 yen. Can I get the difference back?"
+    tts: "Um, hi. It's nine hundred eighty yen today, but I paid one thousand one hundred thirty yen for it yesterday. No, sorry, one thousand eighty yen. Can I get the difference back?"
+    ja: "あの、こんにちは。今日は980円なのに、きのう1,130円…いえ、すみません、1,080円で買ったんです。差額を返してもらえますか？"
+    ask: "きのう いくら 払った？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["980円", "1,080円", "1,130円", "1,180円"]
+    answer: 1
+    was: 2
+    cja: ["980円", "1,080円", "1,130円", "1,180円"]
+    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の1,080円。1,130円は言い直す前です。980円は今日の値段。"
+    note: "言い直しの「sorry」のあとが答え"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ydiff-3
+    at: konbini
+    speaker: hamlet
+    en: "Um, hi. It's 1,190 yen today, but I paid 1,290 yen for it yesterday. Can I get the difference back?"
+    tts: "Um, hi. It's one thousand one hundred ninety yen today, but I paid one thousand two hundred ninety yen for it yesterday. Can I get the difference back?"
+    ja: "あの、こんにちは。今日は1,190円なのに、きのう1,290円で買ったんです。差額を返してもらえますか？"
+    ask: "きのう いくら 払った？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["1,190円", "1,290円", "1,340円", "2,190円"]
+    answer: 1
+    cja: ["1,190円", "1,290円", "1,340円", "2,190円"]
+    why: "「one thousand two hundred ninety yen」で1,290円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ydiff-4
+    at: konbini
+    speaker: diana
+    en: "Excuse me. It's 550 yen today, but I paid 650 yen for it yesterday. Can I get the difference back?"
+    tts: "Excuse me. It's five hundred fifty yen today, but I paid six hundred fifty yen for it yesterday. Can I get the difference back?"
+    ja: "すみません。今日は550円なのに、きのう650円で買ったんです。差額を返してもらえますか？"
+    ask: "きのう いくら 払った？"
+    ctx: "コンビニのレジに、お客さんが来ました"
+    options: ["550円", "650円", "700円", "1,650円"]
+    answer: 1
+    cja: ["550円", "650円", "700円", "1,650円"]
+    why: "「six hundred fifty yen」で650円。円の値段は thousand（千）と hundred（百）の順に聞きます。550円は今日の値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ynagoya-1
+    at: ticket
+    speaker: bob
+    en: "Hi. Two to Nagoya, please. The 1:20's full, so the one at a quarter to two."
+    tts: "Hi. Two to Nagoya, please. The one twenty's full, so the one at a quarter to two."
+    ja: "こんにちは。名古屋まで2枚。1時20分のは満席なので、1時45分のにします。"
+    ask: "何時の 電車？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["1:20", "1:45", "2:00", "2:15"]
+    answer: 1
+    cja: ["1時20分", "1時45分", "2時", "2時15分"]
+    why: "「a quarter to two」は1時45分。1時20分は満席の電車。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-ynagoya-2
+    at: ticket
+    speaker: cherry
+    en: "Good morning. Two to Nagoya, please. The 1:50's full, so the one at a quarter after two."
+    tts: "Good morning. Two to Nagoya, please. The one fifty's full, so the one at a quarter after two."
+    ja: "おはようございます。名古屋まで2枚。1時50分のは満席なので、2時15分のにします。"
+    ask: "何時の 電車？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["1:50", "2:00", "2:15", "2:50"]
+    answer: 2
+    cja: ["1時50分", "2時", "2時15分", "2時50分"]
+    why: "「a quarter after two」は2時15分。1時50分は満席の電車。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ynagoya-3
+    at: ticket
+    speaker: goldie
+    en: "Excuse me. Two to Nagoya, please. The 10:50's full, so the one at a quarter after eleven."
+    tts: "Excuse me. Two to Nagoya, please. The ten fifty's full, so the one at a quarter after eleven."
+    ja: "すみません。名古屋まで2枚。10時50分のは満席なので、11時15分のにします。"
+    ask: "何時の 電車？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["10:50", "11:00", "11:15", "11:50"]
+    answer: 2
+    cja: ["10時50分", "11時", "11時15分", "11時50分"]
+    why: "「a quarter after eleven」は11時15分。10時50分は満席の電車。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ynagoya-4
+    at: ticket
+    speaker: punchy
+    en: "Good morning. Two to Nagoya, please. The 10:20's full, so the one at a quarter to eleven."
+    tts: "Good morning. Two to Nagoya, please. The ten twenty's full, so the one at a quarter to eleven."
+    ja: "おはようございます。名古屋まで2枚。10時20分のは満席なので、10時45分のにします。"
+    ask: "何時の 電車？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["10:20", "10:45", "11:00", "11:15"]
+    answer: 1
+    cja: ["10時20分", "10時45分", "11時", "11時15分"]
+    why: "「a quarter to eleven」は10時45分。10時20分は満席の電車。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-yseniors-1
+    at: ticket
+    speaker: apollo
+    en: "Good morning. Four adults, two kids, and three seniors to Nikko, please."
+    ja: "おはようございます。日光まで、大人4人、子ども2人、シニア3人でお願いします。"
+    ask: "シニアは 何人？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["2人", "3人", "4人", "5人"]
+    answer: 1
+    cja: ["2人", "3人", "4人", "5人"]
+    why: "「three」で3人。数は名詞の前に来ます。4人は大人の数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yseniors-2
+    at: ticket
+    speaker: dom
+    en: "Excuse me. Two adults, two kids, and three seniors to Nikko. Sorry, four. My aunt decided to come."
+    ja: "すみません。日光まで、大人2人、子ども2人、シニア3人…すみません、4人で。おばも来ることになったので。"
+    ask: "シニアは 何人？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["2人", "3人", "4人", "14人"]
+    answer: 2
+    was: 1
+    cja: ["2人", "3人", "4人", "14人"]
+    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の4人。3人は言い直す前です。2人は大人の数。"
+    note: "言い直しの「sorry」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yseniors-3
+    at: ticket
+    speaker: celeste
+    en: "Hi. Three adults, two kids, and four seniors to Nikko. Sorry, five. My aunt decided to come."
+    ja: "こんにちは。日光まで、大人3人、子ども2人、シニア4人…すみません、5人で。おばも来ることになったので。"
+    ask: "シニアは 何人？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["2人", "3人", "4人", "5人"]
+    answer: 3
+    was: 2
+    cja: ["2人", "3人", "4人", "5人"]
+    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の5人。4人は言い直す前です。3人は大人の数。"
+    note: "言い直しの「sorry」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yseniors-4
+    at: ticket
+    speaker: raymond
+    en: "Good morning. Two adults, two kids, and two seniors to Nikko. Sorry, three. My aunt decided to come."
+    ja: "おはようございます。日光まで、大人2人、子ども2人、シニア2人…すみません、3人で。おばも来ることになったので。"
+    ask: "シニアは 何人？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["2人", "3人", "4人", "13人"]
+    answer: 1
+    was: 0
+    cja: ["2人", "3人", "4人", "13人"]
+    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の3人。2人は言い直す前です。2人は大人の数。"
+    note: "言い直しの「sorry」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ytrack-1
+    at: ticket
+    speaker: diana
+    en: "So the 10:40 to Kamakura goes from track 12? Oh, they moved it to 13. Thanks."
+    tts: "So the ten forty to Kamakura goes from track twelve? Oh, they moved it to thirteen. Thanks."
+    ja: "10時40分の鎌倉行きは12番線…あ、13番線に変わったんですね。どうも。"
+    ask: "何番線？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["3番線", "12番線", "13番線", "30番線"]
+    answer: 2
+    was: 1
+    cja: ["3番線", "12番線", "13番線", "30番線"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の13番線。12番線は言い直す前です。13番線と30番線は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ytrack-2
+    at: ticket
+    speaker: rosie
+    en: "So the 9:10 to Kamakura goes from track 14?"
+    tts: "So the nine ten to Kamakura goes from track fourteen?"
+    ja: "9時10分の鎌倉行きは14番線から出るんですね？"
+    ask: "何番線？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["14番線", "15番線", "24番線", "40番線"]
+    answer: 0
+    cja: ["14番線", "15番線", "24番線", "40番線"]
+    why: "「fourteen」で14番線。番号は数字をそのまま言います。14番線と40番線は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "14番線と40番線：-teenは後ろが強い"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ytrack-3
+    at: ticket
+    speaker: bob
+    en: "So the 11:20 to Kamakura goes from track 15?"
+    tts: "So the eleven twenty to Kamakura goes from track fifteen?"
+    ja: "11時20分の鎌倉行きは15番線から出るんですね？"
+    ask: "何番線？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["5番線", "15番線", "16番線", "50番線"]
+    answer: 1
+    cja: ["5番線", "15番線", "16番線", "50番線"]
+    why: "「fifteen」で15番線。番号は数字をそのまま言います。15番線と50番線は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "15番線と50番線：-teenは後ろが強い"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ytrack-4
+    at: ticket
+    speaker: cherry
+    en: "So the 11:20 to Kamakura goes from track 3?"
+    tts: "So the eleven twenty to Kamakura goes from track three?"
+    ja: "11時20分の鎌倉行きは3番線から出るんですね？"
+    ask: "何番線？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["2番線", "3番線", "4番線", "13番線"]
+    answer: 1
+    cja: ["2番線", "3番線", "4番線", "13番線"]
+    why: "「three」で3番線。番号は数字をそのまま言います。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yseats-1
+    at: ticket
+    speaker: punchy
+    en: "Good morning. Car 12, if possible. We need six seats together."
+    tts: "Good morning. Car twelve, if possible. We need six seats together."
+    ja: "おはようございます。できれば12号車で、並びの席を6枚ください。"
+    ask: "席は 何枚？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["6枚", "7枚", "8枚", "16枚"]
+    answer: 0
+    cja: ["6枚", "7枚", "8枚", "16枚"]
+    why: "「six」で6枚。数は名詞の前に来ます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yseats-2
+    at: ticket
+    speaker: maple
+    en: "Excuse me. Car 11, if possible. We need four seats together."
+    tts: "Excuse me. Car eleven, if possible. We need four seats together."
+    ja: "すみません。できれば11号車で、並びの席を4枚ください。"
+    ask: "席は 何枚？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["3枚", "4枚", "5枚", "14枚"]
+    answer: 1
+    cja: ["3枚", "4枚", "5枚", "14枚"]
+    why: "「four」で4枚。数は名詞の前に来ます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yseats-3
+    at: ticket
+    speaker: apollo
+    en: "Good morning. Car 5, if possible. We need two seats together. Make that three. My friend just texted, she's coming."
+    tts: "Good morning. Car five, if possible. We need two seats together. Make that three. My friend just texted, she's coming."
+    ja: "おはようございます。できれば5号車で、並びの席を2枚…やっぱり3枚で。友だちも来るって連絡が来たので。"
+    ask: "席は 何枚？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["2枚", "3枚", "5枚", "13枚"]
+    answer: 1
+    was: 0
+    cja: ["2枚", "3枚", "5枚", "13枚"]
+    why: "「make that」（やっぱり〜に）で言い直し。答えは最後の3枚。2枚は言い直す前です。"
+    note: "言い直しの「make that」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yseats-4
+    at: ticket
+    speaker: dom
+    en: "Good morning. Car 5, if possible. We need four seats together. Make that five. My friend just texted, she's coming."
+    tts: "Good morning. Car five, if possible. We need four seats together. Make that five. My friend just texted, she's coming."
+    ja: "おはようございます。できれば5号車で、並びの席を4枚…やっぱり5枚で。友だちも来るって連絡が来たので。"
+    ask: "席は 何枚？"
+    ctx: "駅のきっぷ売り場の窓口です"
+    scene: platform
+    options: ["4枚", "5枚", "6枚", "15枚"]
+    answer: 1
+    was: 0
+    cja: ["4枚", "5枚", "6枚", "15枚"]
+    why: "「make that」（やっぱり〜に）で言い直し。答えは最後の5枚。4枚は言い直す前です。"
+    note: "言い直しの「make that」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ykids-1
+    at: ticket
+    speaker: raymond
+    en: "Hi. Adults are 1,000 yen, and kids are 1,500 yen? Oh, 500 yen, I see. One of each, then."
+    tts: "Hi. Adults are one thousand yen, and kids are fifteen hundred yen? Oh, five hundred yen, I see. One of each, then."
+    ja: "こんにちは。大人が1,000円で、子どもが1,500円？あ、500円ですね。じゃあ、1枚ずつ。"
+    ask: "子どもは いくら？"
+    ctx: "観光地の窓口でチケットを売っています"
+    scene: platform
+    options: ["400円", "500円", "1,000円", "1,500円"]
+    answer: 1
+    was: 3
+    cja: ["400円", "500円", "1,000円", "1,500円"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の500円。1,500円は言い直す前です。1,000円は大人の値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ykids-2
+    at: ticket
+    speaker: hamlet
+    en: "Adults are 1,200 yen, and kids are 600 yen? Okay, one of each."
+    tts: "Adults are twelve hundred yen, and kids are six hundred yen? Okay, one of each."
+    ja: "大人が1,200円で、子どもが600円ですか？じゃあ、1枚ずつ。"
+    ask: "子どもは いくら？"
+    ctx: "観光地の窓口でチケットを売っています"
+    scene: platform
+    options: ["500円", "600円", "650円", "1,200円"]
+    answer: 1
+    cja: ["500円", "600円", "650円", "1,200円"]
+    why: "「six hundred yen」で600円。円の値段は thousand（千）と hundred（百）の順に聞きます。1,200円は大人の値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ykids-3
+    at: ticket
+    speaker: diana
+    en: "Hi. Adults are 1,400 yen, and kids are 600 yen? Oh, 700 yen, I see. One of each, then."
+    tts: "Hi. Adults are fourteen hundred yen, and kids are six hundred yen? Oh, seven hundred yen, I see. One of each, then."
+    ja: "こんにちは。大人が1,400円で、子どもが600円？あ、700円ですね。じゃあ、1枚ずつ。"
+    ask: "子どもは いくら？"
+    ctx: "観光地の窓口でチケットを売っています"
+    scene: platform
+    options: ["600円", "700円", "800円", "1,400円"]
+    answer: 1
+    was: 0
+    cja: ["600円", "700円", "800円", "1,400円"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の700円。600円は言い直す前です。1,400円は大人の値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ykids-4
+    at: ticket
+    speaker: rosie
+    en: "Adults are 800 yen, and kids are 400 yen? Okay, one of each."
+    tts: "Adults are eight hundred yen, and kids are four hundred yen? Okay, one of each."
+    ja: "大人が800円で、子どもが400円ですか？じゃあ、1枚ずつ。"
+    ask: "子どもは いくら？"
+    ctx: "観光地の窓口でチケットを売っています"
+    scene: platform
+    options: ["400円", "450円", "500円", "800円"]
+    answer: 0
+    cja: ["400円", "450円", "500円", "800円"]
+    why: "「four hundred yen」で400円。円の値段は thousand（千）と hundred（百）の順に聞きます。800円は大人の値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ysplit-1
+    at: deli
+    speaker: cherry
+    en: "Hey, how's it going? Hers is $10.25, and mine's $13.75, since I got the soup too."
+    tts: "Hey, how's it going? Hers is ten twenty-five, and mine's thirteen seventy-five, since I got the soup too."
+    ja: "やあ、調子どう？彼女の分が10ドル25セントで、私の分は13ドル75セント。スープも頼んだので。"
+    ask: "自分の 分は いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$10.25", "$13.75", "$14.75", "$30.75"]
+    answer: 1
+    cja: ["10ドル25セント", "13ドル75セント", "14ドル75セント", "30ドル75セント"]
+    why: "「thirteen seventy-five」で13ドル75セント。ドルとセントは「14 50」のように2つに分けて言います。10ドル25セントは友だちの分。"
+    note: "13ドル75セントと30ドル75セント：-teenは後ろが強い"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ysplit-2
+    at: deli
+    speaker: goldie
+    en: "Hey, how's it going? Hers is $13.40, and mine's $14.40. No, $16.90. I forgot I got the soup."
+    tts: "Hey, how's it going? Hers is thirteen forty, and mine's fourteen forty. No, sixteen ninety. I forgot I got the soup."
+    ja: "やあ、調子どう？彼女の分が13ドル40セントで、私の分は14ドル40セント…いや、16ドル90セントだ。スープを頼んだのを忘れてた。"
+    ask: "自分の 分は いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$13.40", "$14.40", "$16.90", "$60.90"]
+    answer: 2
+    was: 1
+    cja: ["13ドル40セント", "14ドル40セント", "16ドル90セント", "60ドル90セント"]
+    why: "「no, wait」（いや、待って）で言い直し。答えは最後の16ドル90セント。14ドル40セントは言い直す前です。13ドル40セントは友だちの分。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ysplit-3
+    at: deli
+    speaker: punchy
+    en: "Hi! Hers is $11.10, and mine's $12.10. No, $14.60. I forgot I got the soup."
+    tts: "Hi! Hers is eleven ten, and mine's twelve ten. No, fourteen sixty. I forgot I got the soup."
+    ja: "こんにちは。彼女の分が11ドル10セントで、私の分は12ドル10セント…いや、14ドル60セントだ。スープを頼んだのを忘れてた。"
+    ask: "自分の 分は いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$11.10", "$12.10", "$14.60", "$40.60"]
+    answer: 2
+    was: 1
+    cja: ["11ドル10セント", "12ドル10セント", "14ドル60セント", "40ドル60セント"]
+    why: "「no, wait」（いや、待って）で言い直し。答えは最後の14ドル60セント。12ドル10セントは言い直す前です。11ドル10セントは友だちの分。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ysplit-4
+    at: deli
+    speaker: maple
+    en: "Hers is $11.75, and mine's $15.25, since I got the soup too."
+    tts: "Hers is eleven seventy-five, and mine's fifteen twenty-five, since I got the soup too."
+    ja: "彼女の分が11ドル75セントで、私の分は15ドル25セント。スープも頼んだので。"
+    ask: "自分の 分は いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$11.75", "$15.25", "$15.75", "$50.25"]
+    answer: 1
+    cja: ["11ドル75セント", "15ドル25セント", "15ドル75セント", "50ドル25セント"]
+    why: "「fifteen twenty-five」で15ドル25セント。ドルとセントは「14 50」のように2つに分けて言います。11ドル75セントは友だちの分。"
+    note: "15ドル25セントと50ドル25セント：-teenは後ろが強い"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ysesame-1
+    at: deli
+    speaker: dom
+    en: "Hi! Can I get four everything bagels and six sesame? And could you slice the sesame ones?"
+    ja: "こんにちは。エブリシングベーグルを4個と、ごまを6個。ごまのほうはスライスしてもらえますか？"
+    ask: "ごまベーグルは いくつ？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["4個", "5個", "6個", "16個"]
+    answer: 2
+    cja: ["4個", "5個", "6個", "16個"]
+    why: "「six」で6個。数は名詞の前に来ます。4個はエブリシングベーグルの数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ysesame-2
+    at: deli
+    speaker: celeste
+    en: "Hey, how's it going? Can I get three everything bagels and five sesame? And could you slice the sesame ones?"
+    ja: "やあ、調子どう？エブリシングベーグルを3個と、ごまを5個。ごまのほうはスライスしてもらえますか？"
+    ask: "ごまベーグルは いくつ？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["3個", "4個", "5個", "6個"]
+    answer: 2
+    cja: ["3個", "4個", "5個", "6個"]
+    why: "「five」で5個。数は名詞の前に来ます。3個はエブリシングベーグルの数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ysesame-3
+    at: deli
+    speaker: raymond
+    en: "Hey, how's it going? Can I get four everything bagels and three sesame? And could you slice the sesame ones?"
+    ja: "やあ、調子どう？エブリシングベーグルを4個と、ごまを3個。ごまのほうはスライスしてもらえますか？"
+    ask: "ごまベーグルは いくつ？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["2個", "3個", "4個", "13個"]
+    answer: 1
+    cja: ["2個", "3個", "4個", "13個"]
+    why: "「three」で3個。数は名詞の前に来ます。4個はエブリシングベーグルの数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ysesame-4
+    at: deli
+    speaker: hamlet
+    en: "Hey, how's it going? Can I get two everything bagels and three sesame? Actually, four. My roommate wants one too."
+    ja: "やあ、調子どう？エブリシングベーグルを2個と、ごまを3個…やっぱり4個で。ルームメイトも1つほしいって。"
+    ask: "ごまベーグルは いくつ？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["2個", "3個", "4個", "5個"]
+    answer: 2
+    was: 1
+    cja: ["2個", "3個", "4個", "5個"]
+    why: "「actually」（やっぱり）で言い直し。答えは最後の4個。3個は言い直す前です。2個はエブリシングベーグルの数。"
+    note: "言い直しの「actually」のあとが答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yswiss-1
+    at: deli
+    speaker: rosie
+    en: "A pound of turkey, and four slices of the Swiss. No, eight. We're making sandwiches for the whole team."
+    ja: "ターキーを1ポンドと、スイスチーズのスライスを4枚…いや、8枚。チーム全員のサンドイッチを作るので。"
+    ask: "チーズは 何枚？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["4枚", "8枚", "9枚", "18枚"]
+    answer: 1
+    was: 0
+    cja: ["4枚", "8枚", "9枚", "18枚"]
+    why: "「no, wait」（いや、待って）で言い直し。答えは最後の8枚。4枚は言い直す前です。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yswiss-2
+    at: deli
+    speaker: bob
+    en: "A pound of turkey, and ten slices of the Swiss, please."
+    ja: "ターキーを1ポンドと、スイスチーズのスライスを10枚ください。"
+    ask: "チーズは 何枚？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["9枚", "10枚", "11枚", "20枚"]
+    answer: 1
+    cja: ["9枚", "10枚", "11枚", "20枚"]
+    why: "「ten」で10枚。数は名詞の前に来ます。"
+    note: "数は名詞の前。最後まで聞いて答える"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yswiss-3
+    at: deli
+    speaker: cherry
+    en: "Hi! A pound of turkey, and 20 slices of the Swiss, please."
+    tts: "Hi! A pound of turkey, and twenty slices of the Swiss, please."
+    ja: "こんにちは。ターキーを1ポンドと、スイスチーズのスライスを20枚ください。"
+    ask: "チーズは 何枚？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["19枚", "20枚", "21枚", "30枚"]
+    answer: 1
+    cja: ["19枚", "20枚", "21枚", "30枚"]
+    why: "「twenty」で20枚。数は名詞の前に来ます。"
+    note: "数は名詞の前。最後まで聞いて答える"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yswiss-4
+    at: deli
+    speaker: goldie
+    en: "Hey, how's it going? A pound of turkey, and 15 slices of the Swiss, please."
+    tts: "Hey, how's it going? A pound of turkey, and fifteen slices of the Swiss, please."
+    ja: "やあ、調子どう？ターキーを1ポンドと、スイスチーズのスライスを15枚ください。"
+    ask: "チーズは 何枚？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["15枚", "17枚", "25枚", "50枚"]
+    answer: 0
+    cja: ["15枚", "17枚", "25枚", "50枚"]
+    why: "「fifteen」で15枚。数は名詞の前に来ます。15枚と50枚は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "15枚と50枚：-teenは後ろが強い"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty"] }
+
+  - kind: rush
+    id: rush-yrefills-1
+    at: deli
+    speaker: maple
+    en: "Hey, how's it going? It's $4.75 for a coffee, and refills are $1.75? Oh, $2.50. That's not bad."
+    tts: "Hey, how's it going? It's four seventy-five for a coffee, and refills are one seventy-five? Oh, two fifty. That's not bad."
+    ja: "やあ、調子どう？コーヒーが4ドル75セントで、おかわりは1ドル75セント？あ、2ドル50セントか。悪くないですね。"
+    ask: "おかわりは いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$1.50", "$1.75", "$2.50", "$4.75"]
+    answer: 2
+    was: 1
+    cja: ["1ドル50セント", "1ドル75セント", "2ドル50セント", "4ドル75セント"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の2ドル50セント。1ドル75セントは言い直す前です。4ドル75セントはコーヒーの値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yrefills-2
+    at: deli
+    speaker: apollo
+    en: "Hey, how's it going? It's $4.25 for a coffee, and refills are $2? That's not bad."
+    tts: "Hey, how's it going? It's four twenty-five for a coffee, and refills are two dollars? That's not bad."
+    ja: "やあ、調子どう？コーヒーが4ドル25セントで、おかわりは2ドルですか？悪くないですね。"
+    ask: "おかわりは いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$1.50", "$2", "$3", "$4.25"]
+    answer: 1
+    cja: ["1ドル50セント", "2ドル", "3ドル", "4ドル25セント"]
+    why: "「two dollars」で2ドル。ドルとセントは「14 50」のように2つに分けて言います。4ドル25セントはコーヒーの値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yrefills-3
+    at: deli
+    speaker: dom
+    en: "Hey, how's it going? It's $3.50 for a coffee, and refills are $1.25? That's not bad."
+    tts: "Hey, how's it going? It's three fifty for a coffee, and refills are one twenty-five? That's not bad."
+    ja: "やあ、調子どう？コーヒーが3ドル50セントで、おかわりは1ドル25セントですか？悪くないですね。"
+    ask: "おかわりは いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$1.25", "$2", "$2.50", "$3.50"]
+    answer: 0
+    cja: ["1ドル25セント", "2ドル", "2ドル50セント", "3ドル50セント"]
+    why: "「one twenty-five」で1ドル25セント。ドルとセントは「14 50」のように2つに分けて言います。3ドル50セントはコーヒーの値段。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yrefills-4
+    at: deli
+    speaker: celeste
+    en: "It's $3.75 for a coffee, and refills are $1.75? Oh, $1.50. That's not bad."
+    tts: "It's three seventy-five for a coffee, and refills are one seventy-five? Oh, one fifty. That's not bad."
+    ja: "コーヒーが3ドル75セントで、おかわりは1ドル75セント？あ、1ドル50セントか。悪くないですね。"
+    ask: "おかわりは いくら？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["$1.50", "$1.75", "$2.50", "$3.75"]
+    answer: 0
+    was: 1
+    cja: ["1ドル50セント", "1ドル75セント", "2ドル50セント", "3ドル75セント"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の1ドル50セント。1ドル75セントは言い直す前です。3ドル75セントはコーヒーの値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ylunch-1
+    at: deli
+    speaker: hamlet
+    en: "I ordered 18 sandwiches for the office. Can I pick them up at a quarter to six?"
+    tts: "I ordered eighteen sandwiches for the office. Can I pick them up at a quarter to six?"
+    ja: "会社用にサンドイッチを18個注文しました。5時45分に受け取れますか？"
+    ask: "受け取りは 何時？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["4:45", "5:45", "6:00", "6:15"]
+    answer: 1
+    cja: ["4時45分", "5時45分", "6時", "6時15分"]
+    why: "「a quarter to six」は5時45分。18個はサンドイッチの数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-ylunch-2
+    at: deli
+    speaker: diana
+    en: "Hey, how's it going? I ordered 15 sandwiches for the office. Can I pick them up at a quarter after twelve?"
+    tts: "Hey, how's it going? I ordered fifteen sandwiches for the office. Can I pick them up at a quarter after twelve?"
+    ja: "やあ、調子どう？会社用にサンドイッチを15個注文しました。12時15分に受け取れますか？"
+    ask: "受け取りは 何時？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["11:15", "12:00", "12:15", "12:50"]
+    answer: 2
+    cja: ["11時15分", "12時", "12時15分", "12時50分"]
+    why: "「a quarter after twelve」は12時15分。15個はサンドイッチの数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ylunch-3
+    at: deli
+    speaker: rosie
+    en: "So, um, I ordered 18 sandwiches for the office. Can I pick them up at a quarter after eleven?"
+    tts: "So, um, I ordered eighteen sandwiches for the office. Can I pick them up at a quarter after eleven?"
+    ja: "ええと、会社用にサンドイッチを18個注文しました。11時15分に受け取れますか？"
+    ask: "受け取りは 何時？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["10:15", "11:15", "11:50", "12:15"]
+    answer: 1
+    cja: ["10時15分", "11時15分", "11時50分", "12時15分"]
+    why: "「a quarter after eleven」は11時15分。18個はサンドイッチの数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ylunch-4
+    at: deli
+    speaker: bob
+    en: "Hi! I ordered 18 sandwiches for the office. Can I pick them up at a quarter to twelve?"
+    tts: "Hi! I ordered eighteen sandwiches for the office. Can I pick them up at a quarter to twelve?"
+    ja: "こんにちは。会社用にサンドイッチを18個注文しました。11時45分に受け取れますか？"
+    ask: "受け取りは 何時？"
+    ctx: "旅行先のアメリカのデリで注文を受けます"
+    scene: cafe
+    options: ["10:45", "11:30", "11:45", "12:45"]
+    answer: 2
+    cja: ["10時45分", "11時30分", "11時45分", "12時45分"]
+    why: "「a quarter to twelve」は11時45分。18個はサンドイッチの数。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-yterminal-1
+    at: taxi
+    speaker: goldie
+    en: "Hi, sorry. We need to be at the airport by a quarter to seven. Terminal 2, please."
+    tts: "Hi, sorry. We need to be at the airport by a quarter to seven. Terminal two, please."
+    ja: "すみません、6時45分までに空港に着きたいんです。第2ターミナルで。"
+    ask: "何番 ターミナル？"
+    ctx: "空港行きのタクシー乗り場で案内しています"
+    scene: street
+    options: ["1", "2", "3", "5"]
+    answer: 1
+    cja: ["1", "2", "3", "5"]
+    why: "ターミナルは第2。「a quarter to seven」は6時45分で、番号ではない。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yterminal-2
+    at: taxi
+    speaker: punchy
+    en: "Terminal 2, please. Wait, sorry, I was looking at the wrong ticket. Terminal 3. We need to be there by a quarter to six."
+    tts: "Terminal two, please. Wait, sorry, I was looking at the wrong ticket. Terminal three. We need to be there by a quarter to six."
+    ja: "第2ターミナルまで。あ、待って、すみません、別のチケットを見てました。第3ターミナルです。5時45分までに着きたいんです。"
+    ask: "何番 ターミナル？"
+    ctx: "空港行きのタクシー乗り場で案内しています"
+    scene: street
+    options: ["1", "2", "3", "5"]
+    answer: 2
+    was: 1
+    cja: ["1", "2", "3", "5"]
+    why: "第2から Wait, sorry で第3に言い直し。「a quarter to six」は5時45分で、番号ではない。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yterminal-3
+    at: taxi
+    speaker: maple
+    en: "We need to be at the airport by a quarter to six. Terminal 1, please."
+    tts: "We need to be at the airport by a quarter to six. Terminal one, please."
+    ja: "5時45分までに空港に着きたいんです。第1ターミナルで。"
+    ask: "何番 ターミナル？"
+    ctx: "空港行きのタクシー乗り場で案内しています"
+    scene: street
+    options: ["1", "2", "4", "5"]
+    answer: 0
+    cja: ["1", "2", "4", "5"]
+    why: "ターミナルは第1。「a quarter to six」は5時45分で、番号ではない。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yterminal-4
+    at: taxi
+    speaker: apollo
+    en: "Hi, sorry. Terminal 1, please. Wait, sorry, I was looking at the wrong ticket. Terminal 2. We need to be there by a quarter after six."
+    tts: "Hi, sorry. Terminal one, please. Wait, sorry, I was looking at the wrong ticket. Terminal two. We need to be there by a quarter after six."
+    ja: "すみません、第1ターミナルまで。あ、待って、すみません、別のチケットを見てました。第2ターミナルです。6時15分までに着きたいんです。"
+    ask: "何番 ターミナル？"
+    ctx: "空港行きのタクシー乗り場で案内しています"
+    scene: street
+    options: ["1", "2", "4", "5"]
+    answer: 1
+    was: 0
+    cja: ["1", "2", "4", "5"]
+    why: "第1から Wait, sorry で第2に言い直し。「a quarter after six」は6時15分で、番号ではない。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ytoll-1
+    at: taxi
+    speaker: celeste
+    en: "The app said 5,420 yen, but with the highway toll it's 6,140 yen? Okay."
+    tts: "The app said five thousand four hundred twenty yen, but with the highway toll it's six thousand one hundred forty yen? Okay."
+    ja: "アプリでは5,420円だったけど、高速代込みで6,140円ですか？わかりました。"
+    ask: "高速代 込みで いくら？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["1,640円", "5,420円", "6,140円", "6,410円"]
+    answer: 2
+    cja: ["1,640円", "5,420円", "6,140円", "6,410円"]
+    why: "「six thousand one hundred forty yen」で6,140円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytoll-2
+    at: taxi
+    speaker: raymond
+    en: "The app said 6,560 yen, but with the highway toll it's 7,280 yen? Okay."
+    tts: "The app said six thousand five hundred sixty yen, but with the highway toll it's seven thousand two hundred eighty yen? Okay."
+    ja: "アプリでは6,560円だったけど、高速代込みで7,280円ですか？わかりました。"
+    ask: "高速代 込みで いくら？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["2,780円", "6,560円", "7,280円", "7,820円"]
+    answer: 2
+    cja: ["2,780円", "6,560円", "7,280円", "7,820円"]
+    why: "「seven thousand two hundred eighty yen」で7,280円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytoll-3
+    at: taxi
+    speaker: hamlet
+    en: "Hi. The app said 7,630 yen, but with the highway toll it's 8,350 yen? Okay."
+    tts: "Hi. The app said seven thousand six hundred thirty yen, but with the highway toll it's eight thousand three hundred fifty yen? Okay."
+    ja: "こんにちは。アプリでは7,630円だったけど、高速代込みで8,350円ですか？わかりました。"
+    ask: "高速代 込みで いくら？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["7,630円", "8,250円", "8,350円", "8,530円"]
+    answer: 2
+    cja: ["7,630円", "8,250円", "8,350円", "8,530円"]
+    why: "「eight thousand three hundred fifty yen」で8,350円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ytoll-4
+    at: taxi
+    speaker: diana
+    en: "Excuse me. The app said 4,600 yen, but with the highway toll it's 5,320 yen? Okay."
+    tts: "Excuse me. The app said four thousand six hundred yen, but with the highway toll it's five thousand three hundred twenty yen? Okay."
+    ja: "すみません。アプリでは4,600円だったけど、高速代込みで5,320円ですか？わかりました。"
+    ask: "高速代 込みで いくら？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["4,600円", "5,320円", "5,370円", "5,420円"]
+    answer: 1
+    cja: ["4,600円", "5,320円", "5,370円", "5,420円"]
+    why: "「five thousand three hundred twenty yen」で5,320円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ysuitcases-1
+    at: taxi
+    speaker: bob
+    en: "Hi, sorry. We've got four suitcases and three people. No, two. My brother's taking the train."
+    ja: "すみません、スーツケースが4個で、3人…いや、2人です。兄は電車で行くので。"
+    ask: "何人 乗る？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["2人", "3人", "4人", "12人"]
+    answer: 0
+    was: 1
+    cja: ["2人", "3人", "4人", "12人"]
+    why: "3人から No で2人に言い直し。兄は電車だから。4個はスーツケース。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ysuitcases-2
+    at: taxi
+    speaker: cherry
+    en: "Excuse me. We've got four suitcases and five people. Will that all fit?"
+    ja: "すみません。スーツケースが4個で、5人です。全部乗りますか？"
+    ask: "何人 乗る？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["4人", "5人", "7人", "15人"]
+    answer: 1
+    cja: ["4人", "5人", "7人", "15人"]
+    why: "乗るのは5人。先に言った4個はスーツケースの数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ysuitcases-3
+    at: taxi
+    speaker: goldie
+    en: "We've got six suitcases and five people. No, four. My brother's taking the train."
+    ja: "スーツケースが6個で、5人…いや、4人です。兄は電車で行くので。"
+    ask: "何人 乗る？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["3人", "4人", "5人", "6人"]
+    answer: 1
+    was: 2
+    cja: ["3人", "4人", "5人", "6人"]
+    why: "5人から No で4人に言い直し。兄は電車だから。6個はスーツケース。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ysuitcases-4
+    at: taxi
+    speaker: punchy
+    en: "Hi. We've got five suitcases and four people. No, three. My brother's taking the train."
+    ja: "こんにちは。スーツケースが5個で、4人…いや、3人です。兄は電車で行くので。"
+    ask: "何人 乗る？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["2人", "3人", "4人", "5人"]
+    answer: 1
+    was: 2
+    cja: ["2人", "3人", "4人", "5人"]
+    why: "4人から No で3人に言い直し。兄は電車だから。5個はスーツケース。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ydinner-1
+    at: taxi
+    speaker: apollo
+    en: "Hi, sorry. It's 7:50 now, and our dinner's at a quarter after eight. Can we make it?"
+    tts: "Hi, sorry. It's seven fifty now, and our dinner's at a quarter after eight. Can we make it?"
+    ja: "すみません、今7時50分で、ディナーの予約が8時15分なんです。間に合いますか？"
+    ask: "予約は 何時？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["7:50", "8:00", "8:15", "8:50"]
+    answer: 2
+    cja: ["7時50分", "8時", "8時15分", "8時50分"]
+    why: "「a quarter after eight」は8時15分。7時50分は今の時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ydinner-2
+    at: taxi
+    speaker: dom
+    en: "Hi, sorry. It's 7:20 now, and our dinner's at a quarter to eight. Can we make it?"
+    tts: "Hi, sorry. It's seven twenty now, and our dinner's at a quarter to eight. Can we make it?"
+    ja: "すみません、今7時20分で、ディナーの予約が7時45分なんです。間に合いますか？"
+    ask: "予約は 何時？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["6:45", "7:20", "7:45", "8:00"]
+    answer: 2
+    cja: ["6時45分", "7時20分", "7時45分", "8時"]
+    why: "「a quarter to eight」は7時45分。7時20分は今の時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-ydinner-3
+    at: taxi
+    speaker: celeste
+    en: "Excuse me. It's 6:50 now, and our dinner's at a quarter after seven. Can we make it?"
+    tts: "Excuse me. It's six fifty now, and our dinner's at a quarter after seven. Can we make it?"
+    ja: "すみません。今6時50分で、ディナーの予約が7時15分なんです。間に合いますか？"
+    ask: "予約は 何時？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["6:50", "7:15", "7:30", "7:50"]
+    answer: 1
+    cja: ["6時50分", "7時15分", "7時30分", "7時50分"]
+    why: "「a quarter after seven」は7時15分。6時50分は今の時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ydinner-4
+    at: taxi
+    speaker: raymond
+    en: "Hi, sorry. It's 7:05 now, and our dinner's at a quarter after seven. No, half past seven, I moved it. Can we make it?"
+    tts: "Hi, sorry. It's seven oh five now, and our dinner's at a quarter after seven. No, half past seven, I moved it. Can we make it?"
+    ja: "すみません、今7時5分で、ディナーの予約が7時15分…いや、7時30分に変えたんだ。間に合いますか？"
+    ask: "予約は 何時？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["7:05", "7:13", "7:15", "7:30"]
+    answer: 3
+    was: 2
+    cja: ["7時5分", "7時13分", "7時15分", "7時30分"]
+    why: "7時15分から No で7時30分に言い直し。予約を変えたから。7時5分は今の時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-ywait-1
+    at: taxi
+    speaker: diana
+    en: "Excuse me. I'll pay 500 yen extra if you can wait ten minutes. I just need to grab my bags."
+    tts: "Excuse me. I'll pay five hundred yen extra if you can wait ten minutes. I just need to grab my bags."
+    ja: "すみません。500円多く払うので、10分待ってもらえますか？荷物を取ってくるだけなので。"
+    ask: "何分 待つ？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["5分", "10分", "15分", "20分"]
+    answer: 1
+    cja: ["5分", "10分", "15分", "20分"]
+    why: "待つのは10分。500円は追加で払う料金。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ywait-2
+    at: taxi
+    speaker: rosie
+    en: "I'll pay 1,000 yen extra if you can wait 15 minutes. Well, 20. The elevator's really slow."
+    tts: "I'll pay one thousand yen extra if you can wait fifteen minutes. Well, twenty. The elevator's really slow."
+    ja: "1,000円多く払うので、15分…いや、20分待ってもらえますか？エレベーターがすごく遅くて。"
+    ask: "何分 待つ？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["15分", "20分", "25分", "30分"]
+    answer: 1
+    was: 0
+    cja: ["15分", "20分", "25分", "30分"]
+    why: "15分と言ってから Well で20分に言い直し。エレベーターが遅いから。1,000円は追加の料金。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ywait-3
+    at: taxi
+    speaker: bob
+    en: "Excuse me. I'll pay 500 yen extra if you can wait ten minutes. Well, 15. The elevator's really slow."
+    tts: "Excuse me. I'll pay five hundred yen extra if you can wait ten minutes. Well, fifteen. The elevator's really slow."
+    ja: "すみません。500円多く払うので、10分…いや、15分待ってもらえますか？エレベーターがすごく遅くて。"
+    ask: "何分 待つ？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["10分", "15分", "25分", "50分"]
+    answer: 1
+    was: 0
+    cja: ["10分", "15分", "25分", "50分"]
+    why: "10分と言ってから Well で15分に言い直し。エレベーターが遅いから。500円は追加の料金。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ywait-4
+    at: taxi
+    speaker: cherry
+    en: "Hi. I'll pay 500 yen extra if you can wait five minutes. Well, ten. The elevator's really slow."
+    tts: "Hi. I'll pay five hundred yen extra if you can wait five minutes. Well, ten. The elevator's really slow."
+    ja: "こんにちは。500円多く払うので、5分…いや、10分待ってもらえますか？エレベーターがすごく遅くて。"
+    ask: "何分 待つ？"
+    ctx: "タクシー乗り場の受付で、行き先を聞きます"
+    scene: street
+    options: ["5分", "10分", "15分", "20分"]
+    answer: 1
+    was: 0
+    cja: ["5分", "10分", "15分", "20分"]
+    why: "5分と言ってから Well で10分に言い直し。エレベーターが遅いから。500円は追加の料金。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 4, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ycopay-1
+    at: pharmacy
+    speaker: punchy
+    en: "Hello. It's 4,600 yen without insurance, but with my plan it's 1,480 yen? Oh, 1,380 yen. Even better."
+    tts: "Hello. It's four thousand six hundred yen without insurance, but with my plan it's one thousand four hundred eighty yen? Oh, one thousand three hundred eighty yen. Even better."
+    ja: "こんにちは。保険なしだと4,600円で、私の保険だと1,480円？あ、1,380円か。もっといいですね。"
+    ask: "保険ありで いくら？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1,380円", "1,480円", "3,180円", "4,600円"]
+    answer: 0
+    was: 1
+    cja: ["1,380円", "1,480円", "3,180円", "4,600円"]
+    why: "「oh」（あ、〜）で言い直し。答えは最後の1,380円。1,480円は言い直す前です。4,600円は保険なしの値段。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ycopay-2
+    at: pharmacy
+    speaker: maple
+    en: "Hi. It's 7,130 yen without insurance, but with my plan it comes to 2,140 yen? Great."
+    tts: "Hi. It's seven thousand one hundred thirty yen without insurance, but with my plan it comes to two thousand one hundred forty yen? Great."
+    ja: "こんにちは。保険なしだと7,130円で、私の保険だと2,140円ですか？よかった。"
+    ask: "保険ありで いくら？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["2,040円", "2,140円", "3,140円", "7,130円"]
+    answer: 1
+    cja: ["2,040円", "2,140円", "3,140円", "7,130円"]
+    why: "「two thousand one hundred forty yen」で2,140円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ycopay-3
+    at: pharmacy
+    speaker: apollo
+    en: "Hello. It's 4,130 yen without insurance, but with my plan it comes to 1,240 yen? Great."
+    tts: "Hello. It's four thousand one hundred thirty yen without insurance, but with my plan it comes to one thousand two hundred forty yen? Great."
+    ja: "こんにちは。保険なしだと4,130円で、私の保険だと1,240円ですか？よかった。"
+    ask: "保険ありで いくら？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1,140円", "1,240円", "1,340円", "4,130円"]
+    answer: 1
+    cja: ["1,140円", "1,240円", "1,340円", "4,130円"]
+    why: "「one thousand two hundred forty yen」で1,240円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ycopay-4
+    at: pharmacy
+    speaker: dom
+    en: "Hi. It's 5,070 yen without insurance, but with my plan it comes to 1,520 yen? Great."
+    tts: "Hi. It's five thousand seventy yen without insurance, but with my plan it comes to one thousand five hundred twenty yen? Great."
+    ja: "こんにちは。保険なしだと5,070円で、私の保険だと1,520円ですか？よかった。"
+    ask: "保険ありで いくら？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1,250円", "1,420円", "1,520円", "5,070円"]
+    answer: 2
+    cja: ["1,250円", "1,420円", "1,520円", "5,070円"]
+    why: "「one thousand five hundred twenty yen」で1,520円。円の値段は thousand（千）と hundred（百）の順に聞きます。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ydrops-1
+    at: pharmacy
+    speaker: raymond
+    en: "So it's one drops in each eye, two times a day, for a week?"
+    ja: "じゃあ、両目に1滴ずつ、1日2回、1週間ですね？"
+    ask: "1日 何回？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1回", "2回", "5回", "6回"]
+    answer: 1
+    cja: ["1回", "2回", "5回", "6回"]
+    why: "1日2回（two times a day）。1滴は1回にさす数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ydrops-2
+    at: pharmacy
+    speaker: hamlet
+    en: "So it's two drops in each eye, five times a day? Oh, four. Sorry, I read the label wrong."
+    ja: "じゃあ、両目に2滴ずつ、1日5回…あ、4回ですね。ラベルを読み間違えました。"
+    ask: "1日 何回？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1回", "2回", "4回", "5回"]
+    answer: 2
+    was: 3
+    cja: ["1回", "2回", "4回", "5回"]
+    why: "5回から Oh で4回に言い直し。2滴は1回にさす数。"
+    note: "言い直しの「oh」のあとが答え"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-ydrops-3
+    at: pharmacy
+    speaker: diana
+    en: "So it's one drops in each eye, six times a day, for a week?"
+    ja: "じゃあ、両目に1滴ずつ、1日6回、1週間ですね？"
+    ask: "1日 何回？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1回", "3回", "5回", "6回"]
+    answer: 3
+    cja: ["1回", "3回", "5回", "6回"]
+    why: "1日6回（six times a day）。1滴は1回にさす数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ydrops-4
+    at: pharmacy
+    speaker: rosie
+    en: "So it's one drops in each eye, three times a day, for a week?"
+    ja: "じゃあ、両目に1滴ずつ、1日3回、1週間ですね？"
+    ask: "1日 何回？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["1回", "2回", "3回", "5回"]
+    answer: 2
+    cja: ["1回", "2回", "3回", "5回"]
+    why: "1日3回（three times a day）。1滴は1回にさす数。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yrefilldue-1
+    at: pharmacy
+    speaker: cherry
+    en: "I'm away from the 18th, and my refill's due on the 21st. Can I get it early?"
+    tts: "I'm away from the eighteenth, and my refill's due on the twenty-first. Can I get it early?"
+    ja: "18日から出かけるんですが、薬の補充が21日なんです。早めにもらえますか？"
+    ask: "補充の 予定日は？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["11日", "18日", "20日", "21日"]
+    answer: 3
+    cja: ["11日", "18日", "20日", "21日"]
+    why: "「twenty-first」で21日。日付は fourteenth のような序数で言います。18日は出かける日。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yrefilldue-2
+    at: pharmacy
+    speaker: goldie
+    en: "Hi. I'm away from the 17th, and my refill's due on the 30th. No, the 20th. I just checked the bottle."
+    tts: "Hi. I'm away from the seventeenth, and my refill's due on the thirtieth. No, the twentieth. I just checked the bottle."
+    ja: "こんにちは。17日から出かけるんですが、薬の補充が30日…いや、20日です。今ボトルを見ました。"
+    ask: "補充の 予定日は？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["17日", "20日", "21日", "30日"]
+    answer: 1
+    was: 3
+    cja: ["17日", "20日", "21日", "30日"]
+    why: "「no, wait」（いや、待って）で言い直し。答えは最後の20日。30日は言い直す前です。17日は出かける日。"
+    note: "言い直しの「no, wait」のあとが答え"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
+
+  - kind: rush
+    id: rush-yrefilldue-3
+    at: pharmacy
+    speaker: punchy
+    en: "Hi. I'm away from the 12th, and my refill's due on the 15th. Can I get it early?"
+    tts: "Hi. I'm away from the twelfth, and my refill's due on the fifteenth. Can I get it early?"
+    ja: "こんにちは。12日から出かけるんですが、薬の補充が15日なんです。早めにもらえますか？"
+    ask: "補充の 予定日は？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["5日", "12日", "15日", "16日"]
+    answer: 2
+    cja: ["5日", "12日", "15日", "16日"]
+    why: "「fifteenth」で15日。日付は fourteenth のような序数で言います。12日は出かける日。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yrefilldue-4
+    at: pharmacy
+    speaker: maple
+    en: "Hi there. I'm away from the 13th, and my refill's due on the 16th. Can I get it early?"
+    tts: "Hi there. I'm away from the thirteenth, and my refill's due on the sixteenth. Can I get it early?"
+    ja: "どうも。13日から出かけるんですが、薬の補充が16日なんです。早めにもらえますか？"
+    ask: "補充の 予定日は？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["6日", "13日", "16日", "26日"]
+    answer: 2
+    cja: ["6日", "13日", "16日", "26日"]
+    why: "「sixteenth」で16日。日付は fourteenth のような序数で言います。13日は出かける日。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-yhours-1
+    at: pharmacy
+    speaker: dom
+    en: "Hi there. I get off work at a quarter to eight. You're open till a quarter after nine, right?"
+    ja: "どうも。仕事が7時45分に終わるんです。9時15分まで開いてますよね？"
+    ask: "何時まで 開いてる？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["7:45", "8:15", "9:15", "9:50"]
+    answer: 2
+    cja: ["7時45分", "8時15分", "9時15分", "9時50分"]
+    why: "「a quarter after nine」は9時15分。7時45分は仕事が終わる時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-yhours-2
+    at: pharmacy
+    speaker: celeste
+    en: "Hi there. I get off work at 7:00. You're open till half past eight, right?"
+    tts: "Hi there. I get off work at seven o'clock. You're open till half past eight, right?"
+    ja: "どうも。仕事が7時に終わるんです。8時30分まで開いてますよね？"
+    ask: "何時まで 開いてる？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["7:00", "8:13", "8:30", "8:45"]
+    answer: 2
+    cja: ["7時", "8時13分", "8時30分", "8時45分"]
+    why: "「half past eight」は8時30分。7時は仕事が終わる時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-yhours-3
+    at: pharmacy
+    speaker: raymond
+    en: "Hi. I get off work at 8:00. You're open till half past nine, right?"
+    tts: "Hi. I get off work at eight o'clock. You're open till half past nine, right?"
+    ja: "こんにちは。仕事が8時に終わるんです。9時30分まで開いてますよね？"
+    ask: "何時まで 開いてる？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["8:00", "9:13", "9:15", "9:30"]
+    answer: 3
+    cja: ["8時", "9時13分", "9時15分", "9時30分"]
+    why: "「half past nine」は9時30分。8時は仕事が終わる時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty", "clock"] }
+
+  - kind: rush
+    id: rush-yhours-4
+    at: pharmacy
+    speaker: hamlet
+    en: "Hello. I get off work at a quarter after eight. You're open till a quarter to ten, right?"
+    ja: "こんにちは。仕事が8時15分に終わるんです。9時45分まで開いてますよね？"
+    ask: "何時まで 開いてる？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["8:15", "9:45", "10:00", "10:45"]
+    answer: 1
+    cja: ["8時15分", "9時45分", "10時", "10時45分"]
+    why: "「a quarter to ten」は9時45分。8時15分は仕事が終わる時刻。"
+    note: "quarter は15分。to は「前」、after は「過ぎ」"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "clock"] }
+
+  - kind: rush
+    id: rush-ygrandma-1
+    at: pharmacy
+    speaker: rosie
+    en: "Hi. It's for my grandmother. She takes two other medicines, and she's 81. Is this safe for her?"
+    tts: "Hi. It's for my grandmother. She takes two other medicines, and she's eighty-one. Is this safe for her?"
+    ja: "こんにちは。祖母の薬です。ほかに2種類の薬を飲んでいて、81歳です。これは大丈夫ですか？"
+    ask: "おばあさんは 何歳？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["80歳", "81歳", "82歳", "91歳"]
+    answer: 1
+    cja: ["80歳", "81歳", "82歳", "91歳"]
+    why: "「eighty-one」で81歳。年齢は数字だけで言うことが多いです。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ygrandma-2
+    at: pharmacy
+    speaker: bob
+    en: "Hello. It's for my grandmother. She takes four other medicines, and she's 84. Is this safe for her?"
+    tts: "Hello. It's for my grandmother. She takes four other medicines, and she's eighty-four. Is this safe for her?"
+    ja: "こんにちは。祖母の薬です。ほかに4種類の薬を飲んでいて、84歳です。これは大丈夫ですか？"
+    ask: "おばあさんは 何歳？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["83歳", "84歳", "85歳", "94歳"]
+    answer: 1
+    cja: ["83歳", "84歳", "85歳", "94歳"]
+    why: "「eighty-four」で84歳。年齢は数字だけで言うことが多いです。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
+
+  - kind: rush
+    id: rush-ygrandma-3
+    at: pharmacy
+    speaker: cherry
+    en: "Hi there. It's for my grandmother. She takes three other medicines, and she's 89. Sorry, 90. She just had a birthday."
+    tts: "Hi there. It's for my grandmother. She takes three other medicines, and she's eighty-nine. Sorry, ninety. She just had a birthday."
+    ja: "どうも。祖母の薬です。ほかに3種類の薬を飲んでいて、89歳…すみません、90歳です。誕生日が来たばかりで。"
+    ask: "おばあさんは 何歳？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["19歳", "89歳", "90歳", "91歳"]
+    answer: 2
+    was: 1
+    cja: ["19歳", "89歳", "90歳", "91歳"]
+    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の90歳。89歳は言い直す前です。19歳と90歳は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「sorry」のあとが答え"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "self-repair", "teen-ty"] }
+
+  - kind: rush
+    id: rush-ygrandma-4
+    at: pharmacy
+    speaker: goldie
+    en: "Hello. It's for my grandmother. She takes three other medicines, and she's 78. Is this safe for her?"
+    tts: "Hello. It's for my grandmother. She takes three other medicines, and she's seventy-eight. Is this safe for her?"
+    ja: "こんにちは。祖母の薬です。ほかに3種類の薬を飲んでいて、78歳です。これは大丈夫ですか？"
+    ask: "おばあさんは 何歳？"
+    ctx: "薬局のカウンターで、薬を渡す係です"
+    scene: pharmacy
+    options: ["77歳", "78歳", "79歳", "88歳"]
+    answer: 1
+    cja: ["77歳", "78歳", "79歳", "88歳"]
+    why: "「seventy-eight」で78歳。年齢は数字だけで言うことが多いです。"
+    note: "数字が2つ。何を聞かれているかに注意"
+    tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
