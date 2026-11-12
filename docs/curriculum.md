@@ -51,7 +51,7 @@ Stages are places, never やさしい / むずかしい; the UI shows ★ (kikim
 | Stage | CEFR | Role | Listening can-do ("I can…") | Rate (syl/s) | Conditions |
 |---|---|---|---|---|---|
 | **S0 はまべ** ★ | A2–B1 | floor, warm-up (L1–L2) | catch numbers, prices and key words in clear single sentences | 3.0–3.8 | studio-clean |
-| **S1 かわ** ★★ | B1+ | entry (L3) | follow casual exchanges with common reductions (gonna, didja, lemme), phrasal verbs and indirect replies; catch service-talk details | 3.8–4.5 | 1–2 speakers, light café or street noise |
+| **S1 かわ** ★★ | B1+ | entry (L3) | follow casual exchanges at natural speed (weak forms, contractions, gonna), phrasal verbs and indirect replies; catch service-talk details | 3.8–4.5 | 1–2 speakers, light café or street noise |
 | **S2 もり** ★★★ | B2 | core (L4) | follow native-speed talk between 2–3 people, phone calls and announcements; tell attitude and implied refusals; follow self-corrections ("Thursday — no, Friday") | 4.5–5.2 | overlap, phone band, PA reverb, SNR to +10 dB |
 | **S3 やま** ★★★★ | B2+ | core (L6) | follow fast group talk with interruptions, meetings, voicemail and support calls with complications; catch sarcasm, hedging, humour; cope with a less familiar accent | 5.0–5.8 | 3 speakers, interruptions, SNR to +5 dB; UK/AU ≤ 10 % |
 | **S4 ほし** ★★★★★ | C1 | stretch (L7) | follow podcasts, news, lectures and debates on unfamiliar topics; infer stance; follow structure | casual 5.5–6.2, news ~4.5 dense | long-form; UK/AU ≤ 10 % |
@@ -62,7 +62,7 @@ Stages are places, never やさしい / むずかしい; the UI shows ★ (kikim
 |---|---|
 | S0 | L/R, the æ/ʌ/ɑ contrasts, -teen/-ty, can/can't, final -s/-ed, katakana stress |
 | S1 | weak forms (to/for/of/and/can/have/them), contractions ('d, 'll, 've), US flapping, t/d elision, yod coalescence (did you, would you), gonna/wanna/gotta, the US glottal stop |
-| S2 | reduction chains (whaddaya, dunno, lemme, 'cause), h-dropping (tell 'im), assimilation (ten minutes), contrastive stress, attitude intonation, fillers and false starts |
+| S2 | fluent let me / have to / did you, 'cause, h-dropping (tell him), assimilation (ten minutes), contrastive stress, attitude intonation, fillers and false starts |
 | S3 | very fast casual speech, overlap and turn-taking, sarcasm prosody, upspeak, light US regional voices; UK/AU exposure |
 | S4 | news-reader density, academic stress shifts (PHOtograph/phoTOgraphy), signposting, argument structure |
 
@@ -216,7 +216,7 @@ long-form above.
 | アナウンス (level 5) | channel and noise tolerance: PA, voicemail, IVR menus | |
 | スピード はしご | rate tolerance, reductions | rungs climbed in order on the first listen; stops at the first miss |
 | 音の へんしん | decoding connected speech (reductions, flaps, linking, elision, weak forms) | daily, 8 phrases: the full form, then dictation ("Connected speech") |
-| ことば タイル | segmentation, weak forms, contractions, h-drop, chains | decoys are sound traps; tiles only after the first listen, so it stays listening |
+| ことば タイル | segmentation of natural-speed speech: weak forms, contractions, linking, numbers, stress | plain sentences, reductions capped (20/25/30 % by stage), gonna/wanna/gotta the only respelled tiles; decoys are sound traps; tiles only after the first listen |
 | たちぎき | tracking 3 speakers, attitude, mind change, inference through overlap | the only three-speaker training |
 | ようじ でんわ | multi-detail listening, self-repair, phone audio | chips, not typing; the units' チェック |
 | すうじ ラッシュ | numbers at speed, self-repair, teen/ty, yen and dollars | template-made; a miss never ends the run |
@@ -246,7 +246,7 @@ character in generated backdrops (kikimimi.md "Visuals").
 
 | Rule | Detail |
 |---|---|
-| `en` ≠ `tts` | `en` is standard spelling (shown); `tts` as said: gonna, wanna, lemme, dunno, 'cause, d'you, whaddaya. Never a respelling that voices the distractor. |
+| `en` and `tts` | `en` is standard spelling (shown); `tts` as said where the clip needs it (the quiz: gonna, lemme, 'cause, d'you). ことば タイル's `tts` is `en` but for digits and engine fixes; gonna/wanna/gotta are spelled in `en` (content/listen/README.md "tile"). Never a respelling that voices the distractor. |
 | Numbers as spoken | "six forty", "fifteen hundred yen", "the thirteenth", "oh-nine-oh"; no digits in `tts` (checked). |
 | Punctuation is prosody | comma = tone-unit break; "—" a break or self-repair; "…" trailing off. |
 | Disfluency on purpose | fillers, false starts, self-corrections, written in. |
@@ -415,7 +415,7 @@ lessons:
 
 - **The level banks:** kikimimi-engine.md "Content" (the counts).
 - **21 units** (かわ 11, もり 10), all `voiced`; the plan (units.ts `PLANNED`): はまべ 3, かわ 10, もり 14, やま 14, ほし 10.
-- **29 listening files**, all `listened`: tiles (232), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの
+- **29 listening files**, all `listened`: tiles (258, 131 to re-voice), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの
   ニュース (30 bulletins), まるごと 聞く (10 pieces).
 - **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
 - **3 bedtime serials** (st-johnny, st-cafe, st-tokyo), recycling the units' phrases.

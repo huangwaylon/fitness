@@ -300,7 +300,8 @@ co-op on the shipped files.
 
 Rebuild what you heard (`games/tile/`). 6 sentences, shortest first; the clip plays once with no tiles, then the words
 plus 1–4 sound decoys (weak forms, contractions) are tapped into order. A card's `id` is the clip, its `tile.id` the
-row's id.
+row's id. The sentences are plain speech at natural speed: the tiles are the written words (gonna, wanna, gotta the
+only respelled ones), each heard in its clip, in one order (content/listen/README.md "tile").
 - **Tiers:** easy, the first authored decoy and my first slot placed; hard, decoys topped up to 3–4 from a sound-swap
   table over the sentence's own words.
 - **Answer:** the board's index per slot (`EMPTY` none), each tile once. Right: every filled slot holds its word and they
