@@ -102,7 +102,10 @@ export class Store {
     if (d.notified !== undefined && !Array.isArray(d.notified)) throw new Error('bad state: notified');
     this.notifiedStarts = new Set(((d.notified ?? []) as unknown[]).map(parseInstant));
     const interval = d.interval_minutes ?? CHECK_INTERVAL_MINUTES;
-    if (typeof interval !== 'number' || !Number.isFinite(interval)) throw new Error('bad state: interval_minutes');
+    // at least a minute: 0 or less would check again at once, over and over (a hand-edited restore)
+    if (typeof interval !== 'number' || !Number.isFinite(interval) || interval < 1) {
+      throw new Error('bad state: interval_minutes');
+    }
     const paused = d.paused ?? false;
     if (typeof paused !== 'boolean') throw new Error('bad state: paused');
     this.intervalMinutes = interval;

@@ -506,6 +506,32 @@ describe('the alarm', () => {
     await gym.alarm();
     expect(state.alarm()).toBe(NOW + 60 * MIN);
   });
+
+  it('reads as running until the next alarm is set (LINE read after the check)', async () => {
+    up();
+    let seen: Awaited<ReturnType<GymBot['getStatus']>> | undefined;
+    quota.mockImplementation(async () => {
+      seen = await gym.getStatus(); // the alarm is unset here, mid-alarm
+      await gym.ensureAlarm(); // the cron or a tap meanwhile: no "checking now"
+      gym.lastCheck = NOW;
+      gym.store.setInterval(60);
+      await gym.wake(); // a new interval meanwhile: counted from the last check
+      return 200;
+    });
+    await gym.alarm();
+    expect(seen?.reasons).not.toContain('no_alarm');
+    expect(console.log).not.toHaveBeenCalledWith('no next check was set: checking now');
+    expect(state.alarm()).toBe(NOW + 60 * MIN);
+    expect((await gym.getStatus()).reasons).not.toContain('no_alarm');
+  });
+
+  it('is not left running if the alarm throws after the check', async () => {
+    up();
+    vi.spyOn(state.ctx.storage, 'setAlarm').mockRejectedValueOnce(new Error('storage'));
+    await expect(gym.alarm()).rejects.toThrow('storage');
+    await gym.ensureAlarm(); // the cron heals the chain
+    expect(state.alarm()).toBe(NOW);
+  });
 });
 
 describe('wake (the check settings changed)', () => {

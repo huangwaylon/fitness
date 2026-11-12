@@ -307,26 +307,30 @@ export class GymBot extends DurableObject<Env> implements Bot {
   async alarm(): Promise<void> {
     if (this.env.MODE !== 'bot') return console.log(`alarm ignored (MODE ${this.env.MODE})`);
     if (this.store.paused) return;
+    // `polling` stays set until the next alarm is: until then the alarm reads as unset, and a tap, the cron or
+    // /status would otherwise take that for a broken chain (and a settings change for "no alarm: check now")
     this.polling = true;
     this.woken = false;
-    let delay: number;
     try {
-      delay = await this.pollOnce();
-    } catch (e) { // never let the checks stop
-      console.error('unexpected error in poll loop', e);
-      delay = this.store.intervalMinutes * 60_000;
+      let delay: number;
+      try {
+        delay = await this.pollOnce();
+      } catch (e) { // never let the checks stop
+        console.error('unexpected error in poll loop', e);
+        delay = this.store.intervalMinutes * 60_000;
+      }
+      // after a push (pushes only happen in the alarm), or hourly (e.g. the month's reset)
+      const asOf = this.lineFacts.asOf;
+      if (this.pushed || asOf === null || Date.now() - asOf > LINE_FACTS_MS) await this.refreshLine();
+      await this.save();
+      if (this.store.paused) return;
+      const now = Date.now();
+      // the interval changed during the check: count the new one from the last check
+      const next = this.woken ? (this.lastCheck ?? now) + this.store.intervalMinutes * 60_000 : now + delay;
+      await this.ctx.storage.setAlarm(Math.max(now, next));
     } finally {
       this.polling = false;
     }
-    // after a push (pushes only happen in the alarm), or hourly (e.g. the month's reset)
-    const asOf = this.lineFacts.asOf;
-    if (this.pushed || asOf === null || Date.now() - asOf > LINE_FACTS_MS) await this.refreshLine();
-    await this.save();
-    if (this.store.paused) return;
-    const now = Date.now();
-    // the interval changed during the check: count the new one from the last check
-    const next = this.woken ? (this.lastCheck ?? now) + this.store.intervalMinutes * 60_000 : now + delay;
-    await this.ctx.storage.setAlarm(Math.max(now, next));
   }
 
   /** Run one check; return ms until the next one. */

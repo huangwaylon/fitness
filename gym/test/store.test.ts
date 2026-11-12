@@ -160,6 +160,8 @@ describe('Store', () => {
     { notified: ['nope'] },
     { notified: 'x' },
     { interval_minutes: '15' },
+    { interval_minutes: 0 },
+    { interval_minutes: -5 },
     { paused: 'no' },
   ])('refuses bad values (%j)', (bad) => {
     expect(() => new Store({ version: 3, ...bad })).toThrow();
