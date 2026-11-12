@@ -71,14 +71,14 @@ items:
   - kind: tile
     id: tile-hama-meal-tickets
     speaker: hamlet
-    en: "The airline gave us free meal tickets."
+    en: "The airline gave us free meal vouchers."
     ja: "航空会社が無料の食事券をくれたよ。"
-    tiles: ["The", "airline", "gave", "us", "free", "meal", "tickets"]
-    decoys: ["three", "ticket"]
+    tiles: ["The", "airline", "gave", "us", "free", "meal", "vouchers"]
+    decoys: ["three", "voucher"]
     marks: [[stress, "free"]]
     note: "free は唇をかむ f。three は舌を歯にあてる"
     ctx: "便が遅れて、パートナーが窓口から戻りました"
-    why: "free（無料の）は下唇をかむ f。three（3枚）は舌先を歯にあてる th。tickets は最後の「ツ」まで聞こえる。"
+    why: "free（無料の）は下唇をかむ f。three（3枚）は舌先を歯にあてる th。vouchers（食事券）は最後の「ズ」まで聞こえる。"
     scene: gate
     tags: { seed: 1, register: partner, pragmatic: literal, features: [th, ending] }
 
@@ -120,7 +120,7 @@ items:
     tiles: ["The", "plane", "is", "40", "minutes", "late"]
     decoys: ["14"]
     marks: [[stress, "40"]]
-    note: "forty は前が強く、最後は短い「ティ」"
+    note: "forty は前が強く、最後は短い「ディ」に近い"
     ctx: "空港で、友だちがスマホのお知らせを読んでいます"
     why: "FORty は前を強く言い、最後は短い「ディ」に近い。14（fourTEEN）なら後ろが強く長い。"
     scene: gate
@@ -492,9 +492,9 @@ items:
     tiles: ["We're", "lost", "aren't", "we"]
     decoys: ["last"]
     marks: [[stress, "lost"]]
-    note: "lost は口を丸めて「ロ」。last は「ラ」"
+    note: "lost は「ロースト」。last は「レァスト」に近い"
     ctx: "知らない町で、パートナーが地図を見ています"
-    why: "lost（迷った）は口を丸めて「ロースト」。last（最後）は口を大きく開けて「ラ」。aren't we は「でしょ？」。"
+    why: "lost（迷った）は口を縦に開けて「ロースト」。last（最後）は「エ」と「ア」の間の音で「レァスト」。aren't we は「〜だよね？」と確かめる言い方。"
     scene: street
     tags: { seed: 58, register: partner, pragmatic: literal, features: [vowel] }
 

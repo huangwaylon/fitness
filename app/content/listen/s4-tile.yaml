@@ -97,11 +97,11 @@ items:
     en: "The flight's oversold, so they're asking for volunteers with flexible plans."
     ja: "便が売れすぎちゃったから、予定に余裕がある人を募ってるって。"
     tiles: ["The", "flight's", "oversold", "so", "they're", "asking", "for", "volunteers", "with", "flexible", "plans"]
-    decoys: ["flights", "plan"]
+    decoys: ["they", "plan"]
     marks: [[stress, "oversold"], [link, "asking for"]]
-    note: "oversold＝席を売りすぎた。flight's＝flight is"
+    note: "oversold＝席を売りすぎた。they're の「ア」まで聞く"
     ctx: "空港で、パートナーが放送の内容を伝えています"
-    why: "flight's は flight is のちぢめた形。flights（便がいくつも）ではない。oversold は席を売りすぎたこと。予定を変えられる人をさがしている。"
+    why: "flight's＝flight is。oversold は席を売りすぎたこと。they're は「ゼア」と少し長く、they だけではない。予定を変えられる人をさがしている。"
     tags: { seed: 1, register: partner, pragmatic: literal, features: [contraction, ending] }
 
   - kind: tile
@@ -123,11 +123,11 @@ items:
     en: "I'd rather take the voucher than sit here for another six hours."
     ja: "ここでもう6時間待つくらいなら、バウチャーをもらうほうがいい。"
     tiles: ["I'd", "rather", "take", "the", "voucher", "than", "sit here", "for", "another", "six", "hours"]
-    decoys: ["then", "sixteen"]
+    decoys: ["and", "sixteen"]
     marks: [[stress, "rather"], [link, "than sit"]]
     note: "I'd rather A than B＝BよりAがいい"
     ctx: "便が遅れて、パートナーが代わりの便を選んでいます"
-    why: "than は弱く「ザン」で、then（それから）ではない。I'd rather A than B は「BよりAがいい」。six hours は6時間で、sixteen ではない。"
+    why: "than は弱く「ザン」。弱い and（アン）と聞くと「券をもらってここで待つ」になる。I'd rather A than B は「BよりAがいい」。six hours は6時間。"
     tags: { seed: 1, register: partner, pragmatic: attitude, features: [weak-form, teen-ty] }
 
   - kind: tile
@@ -201,11 +201,11 @@ items:
     en: "Apparently the leak's coming from upstairs, so it's not even on us."
     ja: "どうやら水もれは上の階からだって。だからうちの責任じゃないよ。"
     tiles: ["Apparently", "the", "leak's", "coming", "from", "upstairs", "so", "it's", "not", "even", "on", "us"]
-    decoys: ["leaks"]
+    decoys: ["it", "come"]
     marks: [[link, "leak's coming"], [stress, "us"]]
-    note: "on us＝こちらの責任。leak's＝leak is"
+    note: "on us＝こちらの責任。it's の s まで聞く"
     ctx: "天井のしみを見て、パートナーが話しています"
-    why: "leak's は leak is のちぢめた形で「リークス」。leaks（もれがいくつも）とまぎらわしい。not even on us は「うちの責任ですらない」。"
+    why: "leak's＝leak is で、水もれが上の階から来ている。coming は「カミン」と最後まで聞く。not even on us は「うちの責任ですらない」。"
     tags: { seed: 30, register: partner, pragmatic: literal, features: [contraction, idiom] }
 
   - kind: tile
@@ -214,7 +214,7 @@ items:
     en: "What the movers didn't mention is that the deposit's nonrefundable after Friday."
     ja: "引っ越し業者が言わなかったのは、金曜を過ぎると手付金が返ってこないってこと。"
     tiles: ["What", "the", "movers", "didn't", "mention", "is", "that", "the", "deposit's", "nonrefundable", "after", "Friday"]
-    decoys: ["refundable", "don't", "deposits"]
+    decoys: ["refundable", "don't"]
     marks: [[drop, "didn't", "t"], [stress, "nonrefundable"]]
     note: "What … is that ～＝大事なのは～。non を聞きのがさない"
     ctx: "引っ越しの見積もりのあと、友だちが規約を読んでいます"
@@ -393,14 +393,14 @@ items:
   - kind: tile
     id: tile-hoshi-wouldnt-count
     speaker: cj
-    en: "I'll see how I feel, but I wouldn't count on me."
+    en: "I'll see how I feel, but I wouldn't count on it."
     ja: "体調を見てみるけど、当てにはしないで。"
-    tiles: ["I'll", "see", "how", "I", "feel", "but", "I", "wouldn't", "count", "on", "me"]
+    tiles: ["I'll", "see", "how", "I", "feel", "but", "I", "wouldn't", "count", "on", "it"]
     decoys: ["would", "I'd"]
-    marks: [[stress, "wouldn't"], [link, "count on"]]
-    note: "wouldn't count on me＝あまり期待しないで"
-    ctx: "夕食に誘われて、ダイエット中の友だちが答えます"
-    why: "I'll see how I feel は様子見だが、I wouldn't count on me（当てにしないで）で、ほぼ断り。would なら「当てにして」で反対。"
+    marks: [[stress, "wouldn't"], [link, "count on it"]]
+    note: "wouldn't count on it＝あまり期待しないで"
+    ctx: "夕食に誘われて、かぜぎみの友だちが答えます"
+    why: "I'll see how I feel は様子見だが、I wouldn't count on it（当てにしないで）で、ほぼ断り。would なら「当てにして」で反対。"
     tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, linking] }
 
   - kind: tile
@@ -419,14 +419,14 @@ items:
   - kind: tile
     id: tile-hoshi-service-included
     speaker: tom-nook
-    en: "Service is included, so don't tip on top of that."
-    ja: "サービス料は含まれていますので、それ以上チップは不要です。"
-    tiles: ["Service", "is", "included", "so", "don't", "tip", "on", "top", "of", "that"]
-    decoys: ["isn't", "do"]
+    en: "Service is included, so no need to tip on top of that."
+    ja: "サービス料は含まれていますので、別にチップをいただく必要はありません。"
+    tiles: ["Service", "is", "included", "so", "no", "need", "to", "tip", "on", "top", "of", "that"]
+    decoys: ["isn't", "tips"]
     marks: [[stress, "included"], [link, "top of that"]]
-    note: "on top of that＝それに加えて"
+    note: "no need to＝〜しなくていい。on top of＝それに加えて"
     ctx: "レストランで、店員が伝票を渡しています"
-    why: "Service is included＝サービス料込み。isn't なら反対。don't の t は弱いが n は残る。on top of that＝それに加えて。"
+    why: "Service is included＝サービス料込み。isn't なら反対。no need to tip＝チップはいらない。on top of that＝サービス料に加えて。"
     tags: { seed: 27, register: service, pragmatic: literal, features: [contraction, linking] }
 
   - kind: tile
