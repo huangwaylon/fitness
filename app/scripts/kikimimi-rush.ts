@@ -142,7 +142,8 @@ type Cue = readonly [en: string, ja: string];
 const CUES = {
   makeThat: ['make that', 'やっぱり〜に'], mean: ['I mean', 'つまり〜'], sorry: ['sorry', 'ごめん、〜'], noWait: ['no, wait', 'いや、待って'],
   actually: ['actually', 'やっぱり'], scratch: ['scratch that', '今のはなし'], hangOn: ['hang on', 'ちょっと待って'], didISay: ['did I say', '〜って言った？'],
-  makeIt: ['make it', 'やっぱり〜に'], oh: ['oh', 'あ、〜'], neverMind: ['never mind', 'やっぱりいい'], except: ['except', '〜をのぞいて']
+  makeIt: ['make it', 'やっぱり〜に'], oh: ['oh', 'あ、〜'], neverMind: ['never mind', 'やっぱりいい'], except: ['except', '〜をのぞいて'],
+  no: ['no', 'いや、〜'], well: ['well', 'まあ、〜']
 } as const satisfies Record<string, Cue>;
 
 /** A frame: one setting's order with its number (`n`, the ticket's answer), as said plain (`en`) and with a slip first
@@ -468,7 +469,7 @@ const HAMA: readonly Frame[] = [
     en: (n) => `A ticket for the ${n} bus to Nara, please.`, fix: (w, n) => `A ticket for the ${w} bus to Nara, please. Sorry, the ${n}.`, cue: CUES.sorry,
     ja: (n) => `奈良行き${n}のバスのチケットを1枚ください。`, jaFix: (w, n) => `奈良行き${w}の…すみません、${n}のバスのチケットを1枚ください。` },
   { id: 'hyokohama', at: 'ticket', kind: 'qty', unit: '枚', ask: 'きっぷは 何枚？', pool: [2, 3, 4, 5, 6],
-    en: (n) => `Can I get ${n} tickets to Yokohama?`, fix: (w, n) => `Can I get ${w} tickets to Yokohama? Oh, no, ${n}.`, cue: CUES.noWait,
+    en: (n) => `Can I get ${n} tickets to Yokohama?`, fix: (w, n) => `Can I get ${w} tickets to Yokohama? Oh, no, ${n}.`, cue: CUES.oh,
     ja: (n) => `横浜までのきっぷを${n}ください。`, jaFix: (w, n) => `横浜までのきっぷを${w}…あ、いや、${n}で。` },
   { id: 'hplatform', at: 'ticket', kind: 'num', unit: '番線', ask: '何番線？', pool: [3, 4, 5, 6, 13, 14, 15, 16],
     en: (n) => `Which way is platform ${n}?`, fix: (w, n) => `Which way is platform ${w}? Sorry, I mean ${n}.`, cue: CUES.mean,
@@ -477,7 +478,7 @@ const HAMA: readonly Frame[] = [
     en: (n) => `I'd like a ticket for the ${n}, please.`, fix: (w, n) => `I'd like a ticket for the ${w}. Sorry, the ${n}.`, cue: CUES.sorry,
     ja: (n) => `${n}のきっぷをください。`, jaFix: (w, n) => `${w}の…すみません、${n}のきっぷをください。` },
   { id: 'hstudent', at: 'ticket', kind: 'yen', ask: '学生は いくら？', ctx: '美術館の窓口でチケットを売っています', pool: [400, 500, 600, 800, 1000, 1200],
-    en: (n) => `It's ${n} for students, right?`, fix: (w, n) => `It's ${w} for students, right? Oh, ${n}. Okay.`, cue: CUES.sorry,
+    en: (n) => `It's ${n} for students, right?`, fix: (w, n) => `It's ${w} for students, right? Oh, ${n}. Okay.`, cue: CUES.oh,
     ja: (n) => `学生は${n}ですよね？`, jaFix: (w, n) => `学生は${w}…あ、${n}ですね。わかりました。` },
   // the deli, on a trip
   { id: 'hsandwich', at: 'deli', kind: 'usd', ask: 'サンドイッチは いくら？', pool: [650, 750, 825, 950, 1150, 1375],
@@ -503,8 +504,8 @@ const HAMA: readonly Frame[] = [
     en: (n) => `We're a group of ${n}. Can we all fit?`, fix: (w, n) => `We're a group of ${w}. No, wait, ${n}. Can we all fit?`, cue: CUES.noWait,
     ja: (n) => `${n}のグループです。全員乗れますか？`, jaFix: (w, n) => `${w}…いや、待って、${n}のグループです。全員乗れますか？` },
   { id: 'hhotel', at: 'taxi', kind: 'mins', ask: '何分 かかる？', pool: [10, 15, 20, 30, 40, 50],
-    en: (n) => `It's about ${n} minutes to the hotel, right?`, fix: (w, n) => `It's about ${w} minutes to the hotel, right? Sorry, ${n}.`, cue: CUES.sorry,
-    ja: (n) => `ホテルまで${n}くらいですよね？`, jaFix: (w, n) => `ホテルまで${w}…すみません、${n}くらいですよね？` },
+    en: (n) => `It's about ${n} minutes to the hotel, right?`, fix: (w, n) => `It's about ${w} minutes to the hotel, right? I mean, ${n}.`, cue: CUES.mean,
+    ja: (n) => `ホテルまで${n}くらいですよね？`, jaFix: (w, n) => `ホテルまで${w}…じゃなくて、${n}くらいですよね？` },
   { id: 'hpickme', at: 'taxi', kind: 'time', ask: '何時に 迎え？', pool: times([5, 30], [6, 15], [6, 40], [7, 15], [7, 50], [8, 30]),
     en: (n) => `Can you pick me up at ${n}?`, fix: (w, n) => `Can you pick me up at ${w}? No, wait, ${n}.`, cue: CUES.noWait,
     ja: (n) => `${n}に迎えに来てもらえますか？`, jaFix: (w, n) => `${w}に…いや、待って、${n}に迎えに来てもらえますか？` },
@@ -557,9 +558,9 @@ const YAMA: readonly Frame[] = [
     note: '全部で5杯。ホットの数を引いて考える' },
   { id: 'yclose', at: 'cafe', kind: 'time', say: byClock, ask: '何時に 閉まる？', pool: times([8, 45], [9, 15], [9, 30], [9, 45], [10, 15], [8, 30]),
     o: (_n, r) => pick([15, 20, 30, 40], r), okind: 'mins',
-    en: (n, o) => `So we've got about ${o} minutes? You close at ${n}, right?`,
+    en: (n, o) => `Are we okay for about ${o} minutes? You close at ${n}, right?`,
     fix: (w, n, o) => `You close at ${w}, right? Oh, the sign says ${n}. So we've got about ${o} minutes.`, cue: CUES.oh,
-    ja: (n, o) => `あと${o}くらいですか？${n}閉店ですよね？`, jaFix: (w, n, o) => `${w}閉店ですよね？あ、看板には${n}って。じゃあ、あと${o}くらいか。`,
+    ja: (n, o) => `${o}くらい大丈夫ですか？${n}閉店ですよね？`, jaFix: (w, n, o) => `${w}閉店ですよね？あ、看板には${n}って。じゃあ、あと${o}くらいか。`,
     why: (n, o, w, x) => w ? `${w}と言ってから、看板を見て${n}に言い直し。${o}は残りの時間。` : `「${clockEn(x.n)}」は${n}。${o}は残りの時間。`, note: CLOCK_NOTE },
   // the konbini
   { id: 'ytopup', alts: [1000, 2000, 3000, 4000, 5000, 10000], at: 'konbini', kind: 'yen', ask: 'チャージは いくら？', pool: [2000, 3000, 4000, 5000], slip: (n) => n - 1000,
@@ -577,7 +578,7 @@ const YAMA: readonly Frame[] = [
     ja: (n, o) => `棚には${o}って書いてあるから、税込みで${n}ですか？それでいいです。`, jaFix: (w, n, o) => `棚には${o}って書いてあるから、税込みで${w}？あ、${n}か。それでいいです。` },
   { id: 'ycopies', at: 'konbini', kind: 'qty', unit: '枚', ounit: '部', ask: '地図は 何枚？', pool: [...TEENS, 20, 30], o: (_n, r) => pick([2, 3, 4, 5], r), oja: '両面コピーの数',
     en: (n, o) => `I need ${o} copies of this, double-sided, and ${n} of the map, in color.`,
-    fix: (w, n, o) => `I need ${o} copies of this, double-sided, and ${w} of the map. No, ${n} of the map. One for each family.`, cue: CUES.noWait,
+    fix: (w, n, o) => `I need ${o} copies of this, double-sided, and ${w} of the map. No, ${n} of the map. One for each family.`, cue: CUES.no,
     ja: (n, _o, x) => `これを両面で${x.say(x.o, 'num')}、地図はカラーで${n}コピーしたいです。`, jaFix: (w, n, _o, x) => `これを両面で${x.say(x.o, 'num')}、地図は${w}…いや、${n}です。1家族に1枚ずつなので。`,
     why: (n, _o, w, x) => w ? `地図は${w}から No で${n}に言い直し。1家族に1枚ずつだから。${x.say(x.o, 'num')}は両面コピーの数。` : `地図は${n}。先に言った${x.say(x.o, 'num')}は両面コピーの数。` },
   { id: 'ydiff', at: 'konbini', kind: 'yen', ask: 'きのう いくら 払った？', pool: [480, 650, 880, 1080, 1290], o: (n) => n - 100, oja: '今日の値段',
@@ -609,7 +610,7 @@ const YAMA: readonly Frame[] = [
   // the deli, on a trip
   { id: 'ysplit', at: 'deli', kind: 'usd', ask: '自分の 分は いくら？', pool: [1240, 1375, 1460, 1525, 1690], o: (n) => n - 350, slip: (n) => n - 250, oja: '友だちの分',
     en: (n, o) => `Hers is ${o}, and mine's ${n}, since I got the soup too.`,
-    fix: (w, n, o) => `Hers is ${o}, and mine's ${w}. No, ${n}. I forgot I got the soup.`, cue: CUES.noWait,
+    fix: (w, n, o) => `Hers is ${o}, and mine's ${w}. No, ${n}. I forgot I got the soup.`, cue: CUES.no,
     ja: (n, o) => `彼女の分が${o}で、私の分は${n}。スープも頼んだので。`, jaFix: (w, n, o) => `彼女の分が${o}で、私の分は${w}…いや、${n}だ。スープを頼んだのを忘れてた。` },
   { id: 'ysesame', at: 'deli', kind: 'qty', unit: '個', ask: 'ごまベーグルは いくつ？', pool: [3, 4, 5, 6], slip: (n) => n - 1, o: (n, r) => pick([2, 3, 4].filter((v) => v !== n && v !== n - 1), r), oja: 'エブリシングベーグルの数',
     en: (n, o) => `Can I get ${o} everything bagels and ${n} sesame? And could you slice the sesame ones?`,
@@ -617,7 +618,7 @@ const YAMA: readonly Frame[] = [
     ja: (n, o) => `エブリシングベーグルを${o}と、ごまを${n}。ごまのほうはスライスしてもらえますか？`, jaFix: (w, n, o) => `エブリシングベーグルを${o}と、ごまを${w}…やっぱり${n}で。ルームメイトも1つほしいって。` },
   { id: 'yswiss', at: 'deli', kind: 'qty', unit: '枚', ask: 'チーズは 何枚？', pool: [8, 10, 12, 14, 15, 16, 20], slip: (n) => n - 4,
     en: (n) => `A pound of turkey, and ${n} slices of the Swiss, please.`,
-    fix: (w, n) => `A pound of turkey, and ${w} slices of the Swiss. No, ${n}. We're making sandwiches for the whole team.`, cue: CUES.noWait,
+    fix: (w, n) => `A pound of turkey, and ${w} slices of the Swiss. No, ${n}. We're making sandwiches for the whole team.`, cue: CUES.no,
     ja: (n) => `ターキーを1ポンドと、スイスチーズのスライスを${n}ください。`, jaFix: (w, n) => `ターキーを1ポンドと、スイスチーズのスライスを${w}…いや、${n}。チーム全員のサンドイッチを作るので。` },
   { id: 'yrefills', alts: [125, 150, 175, 200, 250, 300], at: 'deli', kind: 'usd', ask: 'おかわりは いくら？', pool: [125, 150, 175, 200, 250], o: (n) => n + 225, oja: 'コーヒーの値段',
     en: (n, o) => `It's ${o} for a coffee, and refills are ${n}? That's not bad.`,
@@ -642,18 +643,18 @@ const YAMA: readonly Frame[] = [
     ja: (n, o) => `アプリでは${o}だったけど、高速代込みで${n}ですか？わかりました。`, jaFix: (w, n, o) => `アプリでは${o}だったから、高速代込みで${w}？あ、${n}か。カードで払います。` },
   { id: 'ysuitcases', at: 'taxi', kind: 'qty', unit: '人', ounit: '個', ask: '何人 乗る？', pool: [2, 3, 4, 5], slip: (n) => n + 1, o: (n, r) => pick([2, 3, 4, 5, 6].filter((v) => v !== n && v !== n + 1), r), oja: 'スーツケースの数',
     en: (n, o) => `We've got ${o} suitcases and ${n} people. Will that all fit?`,
-    fix: (w, n, o) => `We've got ${o} suitcases and ${w} people. No, ${n}. My brother's taking the train.`, cue: CUES.noWait,
+    fix: (w, n, o) => `We've got ${o} suitcases and ${w} people. No, ${n}. My brother's taking the train.`, cue: CUES.no,
     ja: (n, _o, x) => `スーツケースが${x.say(x.o, 'num')}で、${n}です。全部乗りますか？`, jaFix: (w, n, _o, x) => `スーツケースが${x.say(x.o, 'num')}で、${w}…いや、${n}です。兄は電車で行くので。`,
     why: (n, _o, w, x) => w ? `${w}から No で${n}に言い直し。兄は電車だから。${x.say(x.o, 'num')}はスーツケース。` : `乗るのは${n}。先に言った${x.say(x.o, 'num')}はスーツケースの数。` },
   { id: 'ydinner', at: 'taxi', kind: 'time', say: byClock, ask: '予約は 何時？', pool: times([6, 45], [7, 15], [7, 30], [7, 45], [8, 15]), o: (n) => n - 25,
     en: (n, o) => `It's ${o} now, and our dinner's at ${n}. Can we make it?`,
-    fix: (w, n, o) => `It's ${o} now, and our dinner's at ${w}. No, ${n}, I moved it. Can we make it?`, cue: CUES.noWait,
+    fix: (w, n, o) => `It's ${o} now, and our dinner's at ${w}. No, ${n}, I moved it. Can we make it?`, cue: CUES.no,
     ja: (n, o) => `今${o}で、ディナーの予約が${n}なんです。間に合いますか？`, jaFix: (w, n, o) => `今${o}で、ディナーの予約が${w}…いや、${n}に変えたんだ。間に合いますか？`,
     why: (n, o, w, x) => w ? `${w}から No で${n}に言い直し。予約を変えたから。${o}は今の時刻。` : `「${clockEn(x.n)}」は${n}。${o}は今の時刻。`, note: CLOCK_NOTE },
   { id: 'ywait', at: 'taxi', kind: 'mins', ask: '何分 待つ？', pool: [10, 15, 20], slip: (n) => n - 5, o: (_n, r) => pick([500, 1000], r), okind: 'yen',
     en: (n, o) => `I'll pay ${o} extra if you can wait ${n} minutes. I just need to grab my bags.`,
-    fix: (w, n, o) => `I'll pay ${o} extra if you can wait ${w} minutes. Well, ${n}. The elevator's really slow.`, cue: CUES.noWait,
-    ja: (n, o) => `${o}多く払うので、${n}待ってもらえますか？荷物を取ってくるだけなので。`, jaFix: (w, n, o) => `${o}多く払うので、${w}…いや、${n}待ってもらえますか？エレベーターがすごく遅くて。`,
+    fix: (w, n, o) => `I'll pay ${o} extra if you can wait ${w} minutes. Well, ${n}. The elevator's really slow.`, cue: CUES.well,
+    ja: (n, o) => `${o}多く払うので、${n}待ってもらえますか？荷物を取ってくるだけなので。`, jaFix: (w, n, o) => `${o}多く払うので、${w}…まあ、${n}待ってもらえますか？エレベーターがすごく遅くて。`,
     why: (n, o, w) => w ? `${w}と言ってから Well で${n}に言い直し。エレベーターが遅いから。${o}は追加の料金。` : `待つのは${n}。${o}は追加で払う料金。` },
   // the pharmacy
   { id: 'ycopay', at: 'pharmacy', kind: 'yen', ask: '保険ありで いくら？', pool: [860, 1240, 1380, 1520, 2140], o: (n) => Math.round(n / 0.3 / 10) * 10, oja: '保険なしの値段',
@@ -661,13 +662,13 @@ const YAMA: readonly Frame[] = [
     fix: (w, n, o) => `It's ${o} without insurance, but with my plan it's ${w}? Oh, ${n}. Even better.`, cue: CUES.oh,
     ja: (n, o) => `保険なしだと${o}で、私の保険だと${n}ですか？よかった。`, jaFix: (w, n, o) => `保険なしだと${o}で、私の保険だと${w}？あ、${n}か。もっといいですね。` },
   { id: 'ydrops', alts: [1, 2, 3, 4, 5, 6], at: 'pharmacy', kind: 'qty', unit: '回', ounit: '滴', ask: '1日 何回？', pool: [2, 3, 4, 5, 6], o: (n, r) => pick([1, 2].filter((v) => v !== n), r),
-    en: (n, o) => `So it's ${o} drops in each eye, ${n} times a day, for a week?`,
-    fix: (w, n, o) => `So it's ${o} drops in each eye, ${w} times a day? Oh, ${n}. Sorry, I read the label wrong.`, cue: CUES.oh,
+    en: (n, o, x) => `So it's ${o} drop${x.o === 1 ? '' : 's'} in each eye, ${n} times a day, for a week?`,
+    fix: (w, n, o, x) => `So it's ${o} drop${x.o === 1 ? '' : 's'} in each eye, ${w} times a day? Oh, ${n}. Sorry, I read the label wrong.`, cue: CUES.oh,
     ja: (n, _o, x) => `じゃあ、両目に${x.say(x.o, 'num')}ずつ、1日${n}、1週間ですね？`, jaFix: (w, n, _o, x) => `じゃあ、両目に${x.say(x.o, 'num')}ずつ、1日${w}…あ、${n}ですね。ラベルを読み間違えました。`,
     why: (n, _o, w, x) => w ? `${w}から Oh で${n}に言い直し。${x.say(x.o, 'num')}は1回にさす数。` : `1日${n}（${numberWords(x.n)} times a day）。${x.say(x.o, 'num')}は1回にさす数。` },
   { id: 'yrefilldue', at: 'pharmacy', kind: 'date', unit: '', ask: '補充の 予定日は？', pool: [14, 15, 16, 18, 20, 21], o: (n) => n - 3, oja: '出かける日',
     en: (n, o) => `I'm away from the ${o}, and my refill's due on the ${n}. Can I get it early?`,
-    fix: (w, n, o) => `I'm away from the ${o}, and my refill's due on the ${w}. No, the ${n}. I just checked the bottle.`, cue: CUES.noWait,
+    fix: (w, n, o) => `I'm away from the ${o}, and my refill's due on the ${w}. No, the ${n}. I just checked the bottle.`, cue: CUES.no,
     ja: (n, o) => `${o}から出かけるんですが、薬の補充が${n}なんです。早めにもらえますか？`, jaFix: (w, n, o) => `${o}から出かけるんですが、薬の補充が${w}…いや、${n}です。今ボトルを見ました。` },
   { id: 'yhours', at: 'pharmacy', kind: 'time', say: byClock, ask: '何時まで 開いてる？', pool: times([8, 30], [8, 45], [9, 15], [9, 30], [9, 45]), o: (n) => n - 90,
     en: (n, o) => `I get off work at ${o}. You're open till ${n}, right?`,
@@ -939,7 +940,7 @@ function itemOf(f: Frame, k: number, n: number, fixed: boolean, who: string, r: 
   // 解説 (≤ 90 字): the correction or the answer, the other number, the sound trap
   const pair = tw !== null && sorted.includes(tw) ? `${sh(Math.min(n, tw)).ja}と${sh(Math.max(n, tw)).ja}は、-teenと-tyの違い。-teenは後ろを強く長く言います。` : '';
   const parts = [
-    fixed ? `「${f.cue[0]}」（${f.cue[1]}）で言い直し。答えは最後の${sh(n).ja}。${sh(w!).ja}は言い直す前です。` : `「${N.tts}」で${sh(n).ja}。${TIP[f.kind]}`,
+    fixed ? `「${f.cue[0]}」（${f.cue[1]}）で言い直し。答えは最後の${sh(n).ja}。${sh(w!).ja}は言い直す前です。` : `「${N.tts}」で${sh(n).ja}。${(LEGACY.has(f) ? TIP : PLAIN_TIP)[f.kind]}`,
     o !== undefined && okind === f.kind && sorted.includes(o) ? `${sh(o).ja}は${f.oja ?? '別の数字'}。` : '',
     pair
   ];
@@ -951,7 +952,7 @@ function itemOf(f: Frame, k: number, n: number, fixed: boolean, who: string, r: 
   if ([...why].length > 90 || [...(fnote ?? '')].length > 40) throw new Error(`rush: ${f.id}'s why or note is too long: ${why} / ${fnote}`);
   const note = fnote ? fnote : fixed ? `言い直しの「${f.cue[0]}」のあとが答え`
     : pair ? `${sh(Math.min(n, tw!)).ja}と${sh(Math.max(n, tw!)).ja}：-teenは後ろが強い`
-      : o !== undefined ? `数字が2つ。何を聞かれているかに注意` : NOTE[f.kind];
+      : o !== undefined ? `数字が2つ。何を聞かれているかに注意` : (LEGACY.has(f) ? NOTE : PLAIN_NOTE)[f.kind];
   const features = ['numbers', ...(fixed ? ['self-repair'] : []), ...(pair ? ['teen-ty'] : []), ...(f.kind === 'time' ? ['clock'] : []), ...(f.feat ?? [])];
   return {
     id: `rush-${f.id}-${k + 1}`, at: f.at, speaker: who, en, ...(said_ !== en && { tts: said_ }), ja, ask: f.ask, ctx: f.ctx ?? st.ctx,
@@ -976,6 +977,11 @@ const NOTE: Readonly<Record<Kind, string>> = {
 
 /** What the engine says beyond the numbers: a year in words, a contraction (gonna, wanna, lemme are written so in `en`). */
 const spoken = (s: string) => s.replace(/([.?!] )([a-z])/g, (_, a: string, b: string) => a + b.toUpperCase()).replace(/\bWhat time is\b/g, "What time's").replace(/\b19(\d\d)\b/g, (_, d: string) => `nineteen ${numberWords(+d)}`);
+
+/** The new places' tip and note on a kind, in plain words (no 名詞 or 序数); KAWA and MORI keep theirs, voiced and shipped. */
+const LEGACY: ReadonlySet<Frame> = new Set([...KAWA, ...MORI]);
+const PLAIN_TIP: Readonly<Record<Kind, string>> = { ...TIP, qty: '数は物の名前の前に来ます。', date: '日付は fourteenth（14番目）の形で言います。' };
+const PLAIN_NOTE: Readonly<Record<Kind, string>> = { ...NOTE, qty: '数は物の名前の前。最後まで聞いて答える', date: '日付は the 14th（14番目）の形で言う' };
 
 interface FileSpec {
   unit: string;
