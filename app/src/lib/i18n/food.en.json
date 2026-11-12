@@ -63,6 +63,8 @@
   "food.kal.see": "See on kalori.jp",
   "food.kal.img": "An AI image by kalori.jp (may differ from the real thing)",
   "food.st.head": "As",
+  "food.st.size": "Size",
+  "food.st.milk": "Milk",
   "food.st.rawWhy": "The pack’s weight: raw",
   "food.st.dryWhy": "Weighed before boiling: dry",
   "food.st.more": "+{n} more",

@@ -5,7 +5,7 @@ import { untrack } from 'svelte';
 import { FOOD_GRAMS, round1 } from '#lib/contract/food.ts';
 import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
-import { foodDb, foodDbNow, gramsText, inState, parseAmount, MULT, nextMult, portionLabel, startOf, stepOf } from './foodUi.ts';
+import { foodDb, foodDbNow, gramsText, inState, parseAmount, MULT, nextMult, portionLabel, startOf, stateGroups, stepOf } from './foodUi.ts';
 
 interface AmountProps {
   item: Item;
@@ -22,7 +22,7 @@ export class AmountPick {
   #p: () => AmountProps;
   readonly ps = $derived.by(() => {
     const { item, serving } = this.#p();
-    return serving ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item);
+    return serving && !item.sv ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item);
   });
   /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
   readonly unit = $derived(this.ps.some((p) => unitOf(p.label) === 'ml') ? 'ml' : 'g');
@@ -84,10 +84,13 @@ export class AmountPick {
   /** −/＋ can't go further (×0.5, ×20; typed grams step on). */
   readonly atFloor = $derived(!this.custom && this.mult <= MULT.min);
   readonly atCap = $derived(!this.custom && this.mult >= MULT.max);
+  /** The food's states (a catalog food's, a chain menu's too: by the serving), none for a custom food or a snapshot. */
   readonly states = $derived.by(() => {
     const { item, serving, onitem } = this.#p();
-    return serving || !onitem ? [] : variantsOf(this.db, item);
+    return (serving && !item.sv) || !onitem ? [] : variantsOf(this.db, item);
   });
+  /** A chain menu's states as サイズ and ミルク chips (stateGroups); null: one 状態 group. */
+  readonly groups = $derived(this.item.shop && this.states.length ? stateGroups(this.states, this.item) : null);
   /** The line under the state chips, for the state picked: why that one (none for the rest). */
   readonly why = $derived.by(() => {
     const states = this.states;
@@ -112,7 +115,9 @@ export class AmountPick {
       this.typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(this.g + d * 10))));
       return;
     }
-    this.mult = nextMult(this.mult, d, this.serving ? 'half' : stepOf(this.ps[this.pi].label, this.item.name));
+    // (a chain menu's serving is counted, 1食 by 1食 past ×2; a custom food's or a recipe's by halves)
+    const chain = this.item.sv || this.item.id.startsWith('kal:');
+    this.mult = nextMult(this.mult, d, this.serving ? (chain ? 'count' : 'half') : stepOf(this.ps[this.pi].label, this.item.name));
   }
   grams(v: string) {
     this.#touched = true;

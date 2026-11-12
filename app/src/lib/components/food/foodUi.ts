@@ -259,6 +259,34 @@ export function stateItem(d: Item, v: Item): Item {
   portions.push(...own.filter((q) => !used.has(q)));
   return { ...v, name, portions: portions.length ? portions : v.portions };
 }
+/** A milk's word in a chain menu's state (ミルク, 豆乳, 低脂肪乳, ブレベ: food-data's kalori_convert.py MILKS). */
+const MILK = /ミルク|乳|ブレベ/;
+/** A chip group of a chain menu's states: its words of one kind, each the state it picks. */
+export interface StateGroup { head: 'size' | 'milk'; chips: { label: string; to: Item; on: boolean }[] }
+/** A chain menu's states (Kalori's `st`: 「Grande・豆乳」, 「大盛」) as chip groups, サイズ before ミルク: each word of
+ *  `st` (split on ・) a chip, the sizes smallest first (by kcal), the milks the group's default's first; a pick keeps
+ *  the other words (no such state: the first with that word). Null when the states don't split alike. */
+export function stateGroups(states: readonly Item[], it: Item): StateGroup[] | null {
+  const parts = states.map((v) => (v.st ?? '').split('・'));
+  const n = parts[0]?.length ?? 0;
+  if (!n || parts.some((p) => p.length !== n || p.some((w) => !w))) return null;
+  const mine = (it.st ?? '').split('・');
+  const dflt = (states.find((v) => v.id === v.vg)?.st ?? '').split('・');
+  const groups = Array.from({ length: n }, (_, gi): StateGroup => {
+    const words = [...new Set(parts.map((p) => p[gi]))];
+    const milk = words.some((w) => MILK.test(w));
+    const low = (w: string) => Math.min(...states.filter((_, i) => parts[i][gi] === w).map((v) => v.kcal));
+    words.sort((a, b) => (milk ? Number(b === dflt[gi]) - Number(a === dflt[gi]) : 0) || low(a) - low(b));
+    const chips = words.map((w) => {
+      const want = mine.map((x, j) => (j === gi ? w : x));
+      const i = parts.findIndex((p) => p.every((x, j) => x === want[j]));
+      return { label: w, to: states[i >= 0 ? i : parts.findIndex((p) => p[gi] === w)], on: mine[gi] === w };
+    });
+    return { head: milk ? 'milk' : 'size', chips };
+  });
+  return groups.sort((a, b) => Number(a.head === 'milk') - Number(b.head === 'milk'));
+}
+
 /** An item as the amount shows it: a state of a food in its states through stateItem (else as it is). */
 export function inState(db: FoodDb | null, it: Item): Item {
   const d = it.vg && it.id !== it.vg ? db?.variants.get(it.vg)?.find((x) => x.id === it.vg) : undefined;

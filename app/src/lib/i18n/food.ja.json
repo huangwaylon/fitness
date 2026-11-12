@@ -63,6 +63,8 @@
   "food.kal.see": "kalori.jpで見る",
   "food.kal.img": "kalori.jpのAI生成イメージ（実物と異なる場合があります）",
   "food.st.head": "状態",
+  "food.st.size": "サイズ",
+  "food.st.milk": "ミルク",
   "food.st.rawWhy": "パックの重さなら生",
   "food.st.dryWhy": "ゆでる前の重さなら乾",
   "food.st.more": "ほか {n}",

@@ -215,8 +215,9 @@ loads with the first search, or at idle, in a worker); kept mounted between open
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
   a chain menu's head adds 「<店> · <category>」, its values' trust (公式の値 · 公式の値（PFCは推定） · 推定の値（AI）) and
   「kalori.jpで見る ›」 (its product page, a new tab); Kalori is credited in the sources, its pictures too;
-  **状態** chips (the portion carried through its yield); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
-  portion's whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the
+  **状態** chips (the portion carried through its yield; a chain menu's: **サイズ** and **ミルク**, one chip per word of
+  its state, a pick keeping the other word and the ×n); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
+  portion's (and a chain menu's 1食) whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the
   keyboard.
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays fills each day it covers (🔁), counting like any
   entry; changes apply from tomorrow, stopping keeps past days; editing one of its items changes that day only.

@@ -1,6 +1,6 @@
 <script lang="ts">
   // ごはん's amount controls, in the order they're decided (docs/design.md "Gohan" Amount): 状態, a chip per state of the
-  // food with its kcal at the amount it would take, one line why; 量, its portions as chips (the first the default; 100 g
+  // food with its kcal at the amount it would take, one line why (a chain menu's: サイズ and ミルク, a chip per word); 量, its portions as chips (the first the default; 100 g
   // last); −/＋ (nextMult: ×0.5 to ×20, dimmed at either end; ×0.5 read 「0.5倍」) and the grams field (ml for a drink;
   // none for a serving). The picker (`a`: AmountPick) holds the rules; the amount level (FoodAmount) and a search row
   // opened in place (FoodOpen) both draw it with this.
@@ -18,7 +18,19 @@
 </script>
 
 <div class="ctl">
-  {#if a.states.length}
+  {#if a.groups}
+    {#each a.groups as gr (gr.head)}
+      <h4>{t(gr.head === 'milk' ? 'food.st.milk' : 'food.st.size')}</h4>
+      <div class="chips" role="group" aria-label={t(gr.head === 'milk' ? 'food.st.milk' : 'food.st.size')} data-states={gr.head}>
+        {#each gr.chips as c (c.label)}
+          {@const k = a.keepIn(c.to)}
+          <button type="button" class="chip big" aria-pressed={c.on} data-sfx={c.on ? 'none' : 'tick'} data-state={c.label} onclick={() => a.pickState(c.to)}>
+            {c.label}<small>{formatNum(nutrientsFor(c.to, k.g).kcal)} kcal</small>
+          </button>
+        {/each}
+      </div>
+    {/each}
+  {:else if a.states.length}
     <h4>{t('food.st.head')}</h4>
     <div class="chips" role="group" aria-label={t('food.st.head')} data-states>
       {#each a.states as v (v.id)}

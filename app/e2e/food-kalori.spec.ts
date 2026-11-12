@@ -93,7 +93,7 @@ test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (
   await expect(link).toHaveAttribute('href', 'https://kalori.jp/ja/shops/tameshi/products/900001/');
   await expect(link).toHaveAttribute('target', '_blank');
   await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-  expect(a.imgs.every((i) => i.url.startsWith('https://assets.kalori.jp/products/tameshi/generated/g/') && !i.referer)).toBe(true);
+  expect(a.imgs.filter((i) => !/^https:\/\/assets\.kalori\.jp\/products\/(tameshi|mihon)\/generated\/g\/\d+_(200|400)\.webp$/.test(i.url) || i.referer)).toEqual([]);
 });
 
 test('the shop chips: typed, the results’ shops; a tap writes the name, the field focused; ✕ resets; よく行く店 once I log one', async ({ browser }) => {
@@ -126,7 +126,36 @@ test('the shop chips: typed, the results’ shops; a tap writes the name, the fi
   await chips.locator('[data-shop-chip="mihon"]').click();
   await expect(q).toHaveValue('みほん珈琲 ');
   await expect(q).toBeFocused();
-  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(2);
+  // (its blend, its curry, its latte once in its five states)
+  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(3);
+});
+
+test('a chain menu’s sizes and milks: two chip groups, a pick keeps the ×n; a serving counted (×2 → ×3)', async ({ browser }) => {
+  const a = await search(browser, newRecord(), 'A');
+  await a.sheet.locator('[data-food-q]').fill('みほんラテ');
+  const row = a.sheet.locator('[data-food-results] [data-item="kal:900010"]');
+  await expect(row).toContainText('Tall・ミルク');
+  await row.click();
+  const open = a.sheet.locator('[data-food-open]');
+  const kcal = open.locator('[data-food-open-kcal]');
+  await expect(open.locator('[data-states="size"] [data-state]')).toHaveText([/^Short/, /^Tall/, /^Grande/]);
+  await expect(open.locator('[data-states="milk"] [data-state]')).toHaveText([/^ミルク/, /^豆乳/]);
+  await expect(open.locator('[data-states] [aria-pressed="true"]')).toHaveText([/^Tall/, /^ミルク/]);
+  await expect(kcal).toHaveText('190 kcal');
+  // ×0.5 → ×1 → ×1.5 → ×2: each chip says its kcal at it
+  for (let i = 0; i < 2; i++) await open.locator('[data-step="1"]').click();
+  await expect(open.locator('.mult')).toHaveText('×2');
+  await expect(open.locator('[data-state="Grande"] small')).toHaveText('480 kcal');
+  await open.locator('[data-state="Grande"]').click();
+  await open.locator('[data-state="豆乳"]').click();
+  await expect(open).toHaveAttribute('data-food-open', 'kal:900013');
+  await expect(open.locator('.mult')).toHaveText('×2');
+  await expect(kcal).toHaveText('430 kcal');
+  await expect(open.locator('[data-state="Short"] small')).toHaveText('280 kcal');
+  // a serving past ×2 counts whole ones (a custom food's goes by halves)
+  await open.locator('[data-step="1"]').click();
+  await expect(open.locator('.mult')).toHaveText('×3');
+  await expect(kcal).toHaveText('645 kcal');
 });
 
 test('the guest’s phone never asks for the chain menus: its search has none', async ({ browser }) => {

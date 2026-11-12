@@ -8,7 +8,7 @@ import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
   parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, nextMult, typedKcal,
-  catOf, kaloriPage, plateOf, recipeIdOf, recipePlate, recentShops, shopChips
+  catOf, kaloriPage, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups
 } from './foodUi.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
@@ -311,5 +311,25 @@ describe('kaloriPage', () => {
   it('a chain menu’s page on kalori.jp; none for another food', () => {
     expect(kaloriPage({ id: 'kal:57551', shop: 'sukiya' })).toBe('https://kalori.jp/ja/shops/sukiya/products/57551/');
     expect([kaloriPage({ id: 'kal:57551' }), kaloriPage({ id: 'mext:01088', shop: 'x' }), kaloriPage({ id: 'kal:x1', shop: 'x' })]).toEqual([null, null, null]);
+  });
+});
+
+describe('stateGroups: a chain menu’s states as サイズ and ミルク chips', () => {
+  const v = (n: number, st: string, kcal: number): Item => ({ id: `kal:${n}`, name: `ラテ（${st}）`, shop: 'x', kcal, sv: true, vg: 'kal:1', st });
+  const latte = [v(1, 'Tall・ミルク', 190), v(2, 'Grande・ミルク', 240), v(3, 'Tall・豆乳', 170), v(4, 'Grande・豆乳', 215), v(5, 'Short・ミルク', 140), v(6, 'Venti・アーモンドミルク', 230)];
+  const view = (gs: ReturnType<typeof stateGroups>) => gs?.map((g) => [g.head, g.chips.map((c) => `${c.label}${c.on ? '*' : ''}→${c.to.id}`)]);
+  it('splits on ・: the sizes smallest first, the milks the default’s first; a pick keeps the other word', () => {
+    expect(view(stateGroups(latte, latte[3]))).toEqual([
+      ['size', ['Short→kal:5', 'Tall→kal:3', 'Grande*→kal:4', 'Venti→kal:6']],
+      ['milk', ['ミルク→kal:2', '豆乳*→kal:4', 'アーモンドミルク→kal:6']]
+    ]);
+    // the milk first in the name: still サイズ before ミルク
+    const flipped = latte.map((x) => ({ ...x, st: x.st!.split('・').reverse().join('・') }));
+    expect(stateGroups(flipped, flipped[0])?.map((g) => g.head)).toEqual(['size', 'milk']);
+  });
+  it('one word: one group (大盛 a size); states that don’t split alike: none', () => {
+    const don = [v(1, '並盛', 700), v(2, '大盛', 950), v(3, 'ミニ', 500)];
+    expect(view(stateGroups(don, don[0]))).toEqual([['size', ['ミニ→kal:3', '並盛*→kal:1', '大盛→kal:2']]]);
+    expect(stateGroups([v(1, 'Tall・ミルク', 1), v(2, '大盛', 2)], v(1, 'Tall・ミルク', 1))).toBeNull();
   });
 });
