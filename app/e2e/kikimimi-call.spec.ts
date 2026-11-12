@@ -78,7 +78,7 @@ async function send(p: Page) {
   await sheet(p).locator('[data-kiki-call-done]').click();
 }
 
-test('solo: the mode once listened, the call with its memo, a chip changed, メモできた; round 2 from memory; the reveal and the results; my row', async ({ context }) => {
+test('solo: the mode once listened, the call with its memo, a chip changed, メモできた; round 2 from memory (no 前の問題 then); the reveal and the results; my row', async ({ context }) => {
   const page = await phone(context, DAY);
   await toCall(page);
   await snap(page, 'mode');
@@ -112,6 +112,8 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
   await runToQuestion(page, 1);
   await expect(sheet(page).locator('[data-kiki-call-ended="1"]')).toBeVisible();
   await expect(sheet(page).locator('[data-kiki-frame="phone"]')).toHaveCount(0);
+  // no 前の問題 while the same call is remembered (its text would give the memo away); a new call's round has it
+  await expect(sheet(page).locator('[data-kiki-prev]')).toHaveCount(0);
   await fill(page, true);
   await snap(page, 'memo-2');
   await send(page);
@@ -129,6 +131,7 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
   // the rest right
   for (let i = 2; i < 6; i++) {
     await runToQuestion(page, i);
+    await expect(sheet(page).locator('[data-kiki-prev]')).toHaveCount(i % 2 ? 0 : 1);
     await fill(page);
     await send(page);
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');

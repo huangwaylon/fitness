@@ -81,7 +81,7 @@
   {/if}
 {/snippet}
 
-<RoundFrame {game} {v} now={game.now} me={game.me} type="news-{it.news.q}" answered={!!sent} {verdict} {stage} {input} {after} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {game} {v} now={game.now} me={game.me} type="news-{it.news.q}" answered={!!sent} {verdict} {stage} {input} {after} peek={false} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>

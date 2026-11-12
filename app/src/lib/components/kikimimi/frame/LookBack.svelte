@@ -1,20 +1,22 @@
 <script lang="ts">
   // 「👀 前の問題」 (docs/kikimimi.md "The game"): from round 2 on, a chip that opens the previous round's review on this phone
   // alone (the game goes on: its clip and clock, the live timer bar on the card), so a reveal skipped by mistake can still
-  // be read and heard. The game's own review row (`row`, opened: the results' look), else the line, its Japanese and
-  // note. Its ▶︎ is a review's play (game.hear: never the round's replay), off while the round's clip plays or another
+  // be read and heard. The game's own review row (`row`, opened: the results' look), else the line, its Japanese, note
+  // and 解説. Its ▶︎ is a review's play (game.hear: never the round's replay), off while the round's clip plays or another
   // phone speaks for this one (音を1台にまとめる).
   import type { Snippet } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import Sheet from '../../ui/Sheet.svelte';
   import HearButton from './HearButton.svelte';
   import Note from './Note.svelte';
+  import Why from './Why.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { game, row }: { game: QuizGame; row?: Snippet<[number, boolean]> } = $props();
   const v = $derived(game.view);
   const i = $derived(v.i - 1);
   const it = $derived(game.items[i]);
+  const why = $derived((it as { why?: string } | undefined)?.why);
   let open = $state(false);
   const canHear = $derived(!game.listenOnly && v.phase !== 'lead' && v.phase !== 'play' && !(game.sounding && game.sounding.i === v.i));
   // (a new round keeps the card on the one before it: closed, so it never changes under the eyes)
@@ -41,6 +43,7 @@
           </div>
           {#if it.ja}<p class="ja">{it.ja}</p>{/if}
           {#if it.note}<Note text={it.note} />{/if}
+          {#if why}<Why text={why} />{/if}
         </div>
       {/if}
     </div>
