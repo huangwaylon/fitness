@@ -18,7 +18,7 @@ items:
     lines:
       - { who: poppy, at: 0, en: "So, we're doing a barbecue at my place on Saturday. You two should come!", ja: "でね、土曜にうちでバーベキューするの。2人とも来てよ！" }
       - { who: punchy, at: 0.3, en: "Saturday? Sure, I'm free. I can pick up drinks on the way.", ja: "土曜？いいよ、空いてる。途中で飲み物買っていくよ。" }
-      - { who: bea, at: 0.4, en: "Oh, that sounds fun. I'll try to make it, but it's kind of a busy weekend.", tts: "Oh, that sounds fun. I'll try to make it, but it's kinda a busy weekend.", ja: "わあ、楽しそう。行けたら行くね、でもちょっと忙しい週末で。" }
+      - { who: bea, at: 0.4, en: "Oh, that sounds fun. I'll try to make it, but it's kind of a busy weekend.", ja: "わあ、楽しそう。行けたら行くね、でもちょっと忙しい週末で。" }
       - { who: poppy, at: -0.3, en: "Oh, okay. Well, come by whenever.", ja: "あ、そっか。じゃあ、いつでも寄ってね。" }
       - { who: punchy, at: 0.3, en: "Wait, isn't it supposed to rain on Saturday?", ja: "待って、土曜って雨じゃなかった？" }
       - { who: poppy, at: 0.4, en: "Ugh, you're right. Let's move it to Sunday, then.", ja: "うわ、そうだ。じゃあ日曜にずらそう。" }
@@ -27,7 +27,7 @@ items:
     rounds:
       - { type: opinions, claims: ["飲み物を 買っていく", "行けたら 行く", "日曜に ずらそう"], answer: [punchy, bea, poppy], ctx: "カフェで、友だちが週末のバーベキューに誘っています", why: "パンチーは pick up drinks。ビーは I'll try to make it。ポピーは雨と聞いて move it to Sunday。" }
       - { type: changed, answer: poppy, ctx: "土曜の天気の話が出ます", why: "ポピーは土曜に開くつもりだったが、雨と聞いて日曜にずらした。パンチーは最初から参加、ビーは最後まで返事をにごす。" }
-      - { type: plan, ask: "日曜は どうなりそう？", choices: ["All three of them will be at the barbecue on Sunday.", "Two of them will be there, and the third probably won't come.", "The barbecue is canceled because it's going to rain."], answer: 1, ja: "2人は来る。もう1人はたぶん来ない。", ctx: "最後に、日曜の予定の話になります", why: "I'll try to make it、I'll have to see は遠回しな断り。ビーはたぶん来ない。バーベキューは中止ではなく日曜に移った。", cja: ["3人ともバーベキューに来る", "2人は来るが、3人目はたぶん来ない", "雨でバーベキューは中止"] }
+      - { type: plan, ask: "日曜は どうなりそう？", choices: ["All three of them will be at the barbecue.", "Two will come, and one probably won't.", "It's canceled because of the rain."], answer: 1, ja: "2人は来る。もう1人はたぶん来ない。", ctx: "最後に、日曜の予定の話になります", why: "I'll try to make it、I'll have to see は遠回しな断り。ビーはたぶん来ない。バーベキューは中止ではなく日曜に移った。", cja: ["3人ともバーベキューに来る", "2人は来るが、1人はたぶん来ない", "雨でバーベキューは中止"] }
     note: "I'll try to make it は「たぶん行かない」"
     tags: { seed: 48, register: friend, pragmatic: refusal, conditions: [cafe], features: [weak-form, contraction, overlap] }
 
@@ -46,7 +46,7 @@ items:
     rounds:
       - { type: opinions, claims: ["遅い 回に ずらそう", "仕事で 遅くなる", "全員で 行きたい"], answer: [kicks, maple, julian], ctx: "夜の約束の前に、友だちから連絡が来ます", why: "キックスは push it to the 9:15 show。メイプルは stay late at work。ジュリアンは leave anyone out しない。" }
       - { type: changed, answer: julian, ctx: "遅い回の話が出ます", why: "ジュリアンは最初 go without you と言ったが、9時15分の案を聞いて I'm in. Let's not leave anyone out に変わった。" }
-      - { type: plan, ask: "このあと どうなる？", choices: ["They'll meet at seven and watch the 7:30 show.", "They'll meet at the theater at nine for the later show.", "Two of them will go to the movie without the third."], answer: 1, ja: "9時に映画館で集合し、遅い回を見る。", ctx: "最後に、集合の時間と場所が決まります", why: "9時15分の回にずらし、meet at the theater at nine。7時集合は元の予定、2人だけで行く案は取り消し。", cja: ["7時に集合して7時半の回を見る", "9時に映画館で集合して遅い回を見る", "2人だけで映画に行く"] }
+      - { type: plan, ask: "このあと どうなる？", choices: ["They'll meet at seven for the 7:30 show.", "They'll meet at nine for the later show.", "Two of them will go without the third."], answer: 1, ja: "9時に映画館で集合し、遅い回を見る。", ctx: "最後に、集合の時間と場所が決まります", why: "9時15分の回にずらし、meet at the theater at nine。7時集合は元の予定、2人だけで行く案は取り消し。", cja: ["7時に集合して7時半の回を見る", "9時に集合して遅い回を見る", "2人だけで映画に行く"] }
     note: "push it to＝あとにずらす。9:15 と 9:00 を混ぜない"
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [street], features: [clock, numbers, overlap] }
 

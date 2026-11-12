@@ -35,18 +35,18 @@ items:
     ask: "空港まで どう 行く？"
     scene: platform
     lines:
-      - { who: kicks, at: 0, en: "Our flight is at 3:40. Let's take a taxi.", tts: "Our flight is at three forty. Let's take a taxi.", ja: "飛行機は3時40分だよ。タクシーで行こう。" }
+      - { who: kicks, at: 0, en: "Our flight is at 3:40. Let's leave the hotel by one.", tts: "Our flight is at three forty. Let's leave the hotel by one.", ja: "飛行機は3時40分だよ。1時までにホテルを出よう。" }
       - { who: maple, at: 0.4, en: "A taxi costs 8,000 yen. The train is cheaper.", tts: "A taxi costs eight thousand yen. The train is cheaper.", ja: "タクシーは8,000円もするよ。電車のほうが安い。" }
       - { who: raymond, at: 0.4, en: "The bus is cheap too, and it's direct.", ja: "バスも安いし、直行だよ。" }
       - { who: maple, at: -0.2, en: "Hmm.", ja: "うーん。" }
       - { who: kicks, at: 0.3, en: "But the bus takes ninety minutes. That's too long.", ja: "でもバスは90分かかる。長すぎるよ。" }
       - { who: maple, at: 0.4, en: "The train takes fifty minutes. It's cheap and fast.", ja: "電車なら50分。安くて速いよ。" }
       - { who: raymond, at: 0.3, en: "Okay, you're right. Let's take the train.", ja: "わかった、そうだね。電車で行こう。" }
-      - { who: kicks, at: 0.3, en: "Fine. But next time, I want a taxi.", ja: "いいよ。でも次はタクシーがいいな。" }
+      - { who: kicks, at: 0.3, en: "Good. Then we leave at one.", ja: "よし。じゃあ1時に出よう。" }
     rounds:
-      - { type: opinions, claims: ["タクシーで 行きたい", "電車の ほうが 安い", "バスは 直行"], answer: [kicks, maple, raymond], ctx: "駅で、旅行中の3人が空港への行き方を話しています", why: "キックスは Let's take a taxi。メイプルは The train is cheaper。レイモンドは The bus is ... direct と言った。" }
+      - { type: opinions, claims: ["1時に 出たい", "電車の ほうが 安い", "最初は バスが よかった"], answer: [kicks, maple, raymond], ctx: "駅で、旅行中の3人が空港への行き方を話しています", why: "キックスは by one と1時に出たい。メイプルは The train is cheaper。レイモンドは最初、直行のバスをすすめた。" }
       - { type: changed, answer: raymond, ctx: "バスの時間の話が出ます", why: "レイモンドはバスをすすめたが、90分かかると聞いて you're right. Let's take the train と電車に変えた。" }
-      - { type: plan, ask: "空港まで 何で 行く？", choices: ["By train.", "By taxi.", "By bus."], answer: 0, ja: "電車で空港へ行く。", ctx: "最後に、行き方が決まります", why: "Let's take the train で決まり。キックスも Fine と言った。next time はタクシーの話で、今回ではない。", cja: ["電車で", "タクシーで", "バスで"] }
+      - { type: plan, ask: "空港まで 何で 行く？", choices: ["By train.", "By taxi.", "By bus."], answer: 0, ja: "電車で空港へ行く。", ctx: "最後に、行き方が決まります", why: "Let's take the train で決まり、1時に出る。タクシーは8,000円で高く、バスは90分かかる。", cja: ["電車で", "タクシーで", "バスで"] }
     note: "eight thousand は8,000。eighteen と聞き分ける"
     tags: { seed: 58, register: friend, pragmatic: literal, features: [numbers, clock, overlap] }
 
@@ -55,18 +55,18 @@ items:
     ask: "友だちへの プレゼント"
     scene: cafe
     lines:
-      - { who: goldie, at: 0, en: "It's Ken's birthday on Friday. What can we buy?", ja: "金曜日はケンの誕生日だね。何を買おうか？" }
+      - { who: goldie, at: 0, en: "It's Ken's birthday on Friday. What should we get him?", ja: "金曜日はケンの誕生日だね。何を買おうか？" }
       - { who: bob, at: 0.4, en: "He likes coffee. Let's buy him a nice mug.", ja: "彼はコーヒーが好きだよ。いいマグカップを買おう。" }
-      - { who: celeste, at: 0.4, en: "He has many mugs. I want to buy a book.", ja: "マグはたくさん持ってるよ。私は本がいいな。" }
+      - { who: celeste, at: 0.4, en: "He has a lot of mugs. I want to buy a book.", ja: "マグはたくさん持ってるよ。私は本がいいな。" }
       - { who: bob, at: -0.2, en: "A book?", ja: "本？" }
       - { who: celeste, at: 0.3, en: "Yes. He reads on the train every day.", ja: "うん。毎日電車で本を読んでるから。" }
-      - { who: goldie, at: 0.4, en: "Okay, you're right. A book is better than a mug.", ja: "そうだね。マグより本のほうがいい。" }
-      - { who: bob, at: 0.3, en: "Fine. Let's go to the bookstore after lunch.", ja: "わかった。お昼のあとで本屋に行こう。" }
+      - { who: goldie, at: 0.4, en: "A book is a nice idea.", ja: "本、いいね。" }
+      - { who: bob, at: 0.3, en: "Okay, you're right. No mug. Let's go to the bookstore after lunch.", ja: "わかった、そうだね。マグはやめ。お昼のあとで本屋に行こう。" }
     rounds:
-      - { type: opinions, claims: ["マグカップを 買おう", "本を 買いたい", "何を 買うか 聞いた"], answer: [bob, celeste, goldie], ctx: "カフェで、3人が友だちの誕生日プレゼントを相談中", why: "ボブは a nice mug。セレストは I want to buy a book。ゴールディは What can we buy? と聞いて、最後に本に賛成。" }
-      - { type: changed, answer: bob, ctx: "マグをたくさん持っていると分かります", why: "ボブはマグをすすめたが、最後に Fine. Let's go to the bookstore と本に変えた。ゴールディは最初に案がなかった。" }
+      - { type: opinions, claims: ["マグカップを 買おう", "本を 買いたい", "何を 買うか 聞いた"], answer: [bob, celeste, goldie], ctx: "カフェで、3人が友だちの誕生日プレゼントを相談中", why: "ボブは a nice mug。セレストは I want to buy a book。ゴールディは What should we get him? と聞いて、本に賛成。" }
+      - { type: changed, answer: bob, ctx: "マグをたくさん持っていると分かります", why: "ボブはマグをすすめたが、最後に you're right. No mug と本に変えた。ゴールディは最初に案がなかった。" }
       - { type: plan, ask: "このあと どうする？", choices: ["Buy a mug at the cafe now.", "Give the gift on Friday at lunch.", "Shop for a book after lunch."], answer: 2, ja: "お昼のあと本屋に行く。", ctx: "最後に、このあとの予定が決まります", why: "Let's go to the bookstore after lunch。マグはやめた。金曜日は誕生日で、昼に渡すとは言っていない。", cja: ["今カフェでマグを買う", "金曜の昼にプレゼントを渡す", "お昼のあと本を買いに行く"] }
-    note: "He has many mugs＝もう持っているからいらない"
+    note: "He has a lot of mugs＝もう持っているからいらない"
     tags: { seed: 35, register: friend, pragmatic: literal, features: [contrast, overlap] }
 
   - kind: tachi
@@ -74,17 +74,17 @@ items:
     ask: "夕ごはんに 何を 作る？"
     scene: living
     lines:
-      - { who: lily, at: 0, en: "What do we want for dinner? I can cook tonight.", ja: "夕ごはん何にする？今夜は私が作れるよ。" }
+      - { who: lily, at: 0, en: "What do you want for dinner? I can cook tonight.", ja: "夕ごはん何にする？今夜は私が作れるよ。" }
       - { who: al, at: 0.4, en: "Let's make tacos. I love tacos.", ja: "タコスにしよう。タコス大好き。" }
       - { who: tangy, at: 0.4, en: "It's so cold today. I want hot soup.", ja: "今日はすごく寒いね。温かいスープがいいな。" }
-      - { who: lily, at: 0.3, en: "Tacos need meat, and we have no meat.", ja: "タコスにはお肉がいるけど、お肉がないよ。" }
+      - { who: lily, at: 0.3, en: "Tacos need meat, and we don't have any meat.", ja: "タコスにはお肉がいるけど、お肉がないよ。" }
       - { who: al, at: 0.3, en: "Oh. Then I want soup too.", ja: "あ、じゃあ僕もスープがいい。" }
       - { who: tangy, at: 0.3, en: "Great. I can buy bread at the store.", ja: "よかった。私はお店でパンを買ってくるね。" }
     rounds:
       - { type: opinions, claims: ["今夜 料理 できる", "最初は タコスが よかった", "温かい スープが いい"], answer: [lily, al, tangy], ctx: "寒い日の夕方、3人が夕ごはんの相談をしています", why: "リリーは I can cook tonight。アルは I love tacos と言っていた。タンジーは I want hot soup。" }
       - { type: changed, answer: al, ctx: "家にお肉がないとわかります", why: "アルはタコスがよかったが、お肉がないと聞いて Then I want soup too とスープに変えた。" }
       - { type: plan, ask: "夕ごはんは？", choices: ["Tacos with meat from the store.", "Soup, and bread from the store.", "Soup and tacos at a restaurant."], answer: 1, ja: "スープと、お店で買うパン。", ctx: "最後に、夕ごはんが決まります", why: "スープに決まり、タンジーが buy bread at the store。お肉は買わないので、タコスはなし。", cja: ["お店で買ったお肉でタコス", "スープと、お店で買うパン", "レストランでスープとタコス"] }
-    note: "we have no meat＝お肉がない。だからタコスはやめる"
+    note: "we don't have any meat＝お肉がない。だからタコスはやめる"
     tags: { seed: 35, register: friend, pragmatic: literal, features: [contrast, weak-form] }
 
   - kind: tachi
@@ -93,7 +93,7 @@ items:
     scene: cafe
     lines:
       - { who: sherb, at: 0, en: "Let's have the party in the park on Saturday.", ja: "土曜のパーティーは公園でやろうよ。" }
-      - { who: melba, at: 0.4, en: "It will rain on Saturday. Let's have it at my house.", ja: "土曜は雨だよ。うちでやろう。" }
+      - { who: melba, at: 0.4, en: "It's going to rain on Saturday. Let's have it at my house.", ja: "土曜は雨だよ。うちでやろう。" }
       - { who: bunnie, at: 0.4, en: "I can bring some games and a cake.", ja: "私はゲームとケーキを持っていけるよ。" }
       - { who: sherb, at: 0.3, en: "Rain? Oh. Then your house is better.", ja: "雨？そっか。じゃあ君の家のほうがいいね。" }
       - { who: melba, at: 0.3, en: "Good. Please come at five.", ja: "よかった。5時に来てね。" }
@@ -102,7 +102,7 @@ items:
       - { type: opinions, claims: ["最初は 公園が よかった", "雨だから 家で やろう", "ゲームと ケーキを 持っていく"], answer: [sherb, melba, bunnie], ctx: "カフェで、3人が週末のパーティーの相談をしています", why: "シャーベットは in the park と言っていた。メルバは雨なので at my house。バニーは games and a cake を持っていく。" }
       - { type: changed, answer: sherb, ctx: "土曜の天気の話が出ます", why: "シャーベットは公園がよかったが、雨と聞いて your house is better と家に変えた。" }
       - { type: plan, ask: "パーティーは？", choices: ["In the park, at five.", "At the cake shop, on Saturday.", "At a friend's house, at five."], answer: 2, ja: "友だちの家で、5時から。", ctx: "最後に、場所と時間が決まります", why: "your house is better、come at five。公園は雨でやめた。ケーキは持っていくもので、ケーキ屋に行くのではない。", cja: ["公園で5時から", "土曜にケーキ屋で", "友だちの家で5時から"] }
-    note: "It will rain＝雨が降る。だから公園はやめる"
+    note: "It's going to rain＝雨が降る。だから公園はやめる"
     tags: { seed: 48, register: friend, pragmatic: literal, features: [contrast, overlap] }
 
   - kind: tachi
@@ -112,7 +112,7 @@ items:
     lines:
       - { who: molly, at: 0, en: "Amy has a bad cold. Let's buy her some medicine.", ja: "エイミーがひどいかぜなの。薬を買ってあげよう。" }
       - { who: gulliver, at: 0.4, en: "She needs a doctor. Let's take her to one.", ja: "医者に見てもらわないと。連れていこうよ。" }
-      - { who: charlise, at: 0.4, en: "But it's Sunday. The doctors are closed today.", ja: "でも今日は日曜だよ。病院はお休み。" }
+      - { who: charlise, at: 0.4, en: "But it's Sunday. The clinics are closed today.", ja: "でも今日は日曜だよ。病院はお休み。" }
       - { who: gulliver, at: 0.3, en: "Oh, right. Then medicine is fine.", ja: "あ、そうか。じゃあ薬でいいね。" }
       - { who: charlise, at: 0.3, en: "Let's get some oranges too. She loves oranges.", ja: "オレンジも買おうよ。彼女、オレンジが大好きだから。" }
       - { who: molly, at: 0.3, en: "Good idea. The drugstore is open until nine.", ja: "いいね。ドラッグストアは9時まで開いてるよ。" }

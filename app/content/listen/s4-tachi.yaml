@@ -21,17 +21,17 @@ items:
       - { who: sterling, at: 0.4, en: "Same rate is nice, but our flights are nonrefundable. Changing them isn't exactly free.", ja: "同じ料金はいいけど、飛行機は払い戻し不可だよ。変更はタダってわけにいかない。" }
       - { who: kitt, at: 0.3, en: "How much is the change fee, out of curiosity?", ja: "ちなみに、変更手数料っていくら？" }
       - { who: sterling, at: 0.3, en: "A hundred and fifty each, plus whatever the fare difference is. Which, this week, is not nothing.", ja: "1人150ドル、それに運賃の差額。今週だと、それがばかにならない。" }
-      - { who: kitt, at: -0.3, en: "Right. And I've got that thing on Wednesday that I'd technically be skipping.", ja: "だよね。それに水曜のあれ、厳密にはすっぽかすことになるし。" }
+      - { who: kitt, at: -0.3, en: "Right. For what it's worth, I'm in. I'd just have to move that thing on Wednesday.", ja: "だよね。一応言うと、私は残りたい派。水曜のあれをずらせばいいだけだし。" }
       - { who: whitney, at: 0.4, en: "The \"thing\" being a dentist appointment you've rescheduled three times.", ja: "「あれ」って、もう3回も延ばした歯医者でしょ。" }
-      - { who: kitt, at: 0.3, en: "Four, actually. Which is sort of my point.", ja: "4回だよ、実は。だからこそ言ってるんだけど。" }
+      - { who: kitt, at: 0.3, en: "Four, actually. At this point, what's one more?", ja: "4回だよ、実は。ここまで来たら、もう1回くらい同じでしょ。" }
       - { who: sterling, at: 0.4, en: "Hang on. If the airline waives the fee for the storm on Tuesday, the math is completely different.", ja: "待って。火曜の嵐で航空会社が手数料を免除してくれるなら、計算がまるで変わる。" }
       - { who: whitney, at: 0.3, en: "Is that a real thing, or wishful thinking?", ja: "それって本当にあるの？それとも希望的観測？" }
       - { who: sterling, at: 0.4, en: "It's on their site. Free changes for anyone flying out Tuesday. Okay, I'm calling the hotel back.", ja: "サイトに出てる。火曜出発の人は無料で変更可。よし、ホテルに折り返し電話する。" }
       - { who: kitt, at: -0.2, en: "And I'll be calling my dentist. Again.", ja: "で、私は歯医者に電話ね。また。" }
     rounds:
-      - { type: opinions, claims: ["延長を それとなく 勧めている", "予定が あって 乗り気で ない", "手数料しだい で 考えが 変わる"], answer: [whitney, kitt, sterling], ctx: "旅先のカフェで、3人が帰る日を相談しています", why: "ホイットニーは putting that out there で延長を勧める。キットは水曜の予定を理由にしぶる。スターリングは手数料が免除なら計算が変わると言う。" }
+      - { type: opinions, claims: ["延長を それとなく 勧めている", "予約を また ずらしても 残りたい", "最初は 変更の 費用で しぶった"], answer: [whitney, kitt, sterling], ctx: "旅先のカフェで、3人が帰る日を相談しています", why: "ホイットニーは putting that out there で延長を勧める。キットは what's one more? で歯医者をまたずらす気。スターリングは費用でしぶった。" }
       - { type: changed, answer: sterling, ctx: "嵐の影響で、航空会社の対応がわかります", why: "スターリングは払い戻し不可で費用がかかると渋ったが、無料変更と知り I'm calling the hotel back と延長に動いた。" }
-      - { type: plan, ask: "このあと どうなる？", choices: ["They'll fly home Tuesday as planned to save money.", "Only the one with the appointment will fly home early.", "They'll pay the change fee and stay through Thursday.", "They'll extend the stay, and one of them will move an appointment again."], answer: 3, ja: "滞在を延ばし、1人はまた予約を変える。", ctx: "最後に、帰る日の結論が出ます", why: "手数料は嵐で免除なので払わない。ホテルに延長の電話をし、キットは Again と歯医者をまた延期。1人だけ帰る話はない。", cja: ["節約のため予定どおり火曜に帰る", "予約のある1人だけ先に帰る", "変更手数料を払って木曜まで残る", "滞在を延ばし、1人はまた予約を変える"] }
+      - { type: plan, ask: "このあと どうなる？", choices: ["They'll fly home Tuesday as planned to save money.", "Only the one with the appointment will fly home early.", "They'll pay the change fee and stay through Thursday.", "They'll stay on, and one will move an appointment again."], answer: 3, ja: "滞在を延ばし、1人はまた予約を変える。", ctx: "最後に、帰る日の結論が出ます", why: "手数料は嵐で免除なので払わない。ホテルに延長の電話をし、キットは Again と歯医者をまた延期。1人だけ帰る話はない。", cja: ["節約のため予定どおり火曜に帰る", "予約のある1人だけ先に帰る", "変更手数料を払って木曜まで残る", "滞在を延ばし、1人はまた予約を変える"] }
     note: "not nothing＝ばかにならない額。Again は渋々"
     tags: { seed: 8, register: friend, pragmatic: understatement, features: [intonation, idiom, numbers, overlap] }
 
@@ -64,7 +64,7 @@ items:
     scene: gate
     lines:
       - { who: diana, at: 0, en: "Okay, two options. The red-eye tonight, or the 7 a.m. tomorrow and one more night at the airport hotel.", tts: "Okay, two options. The red-eye tonight, or the seven a.m. tomorrow and one more night at the airport hotel.", ja: "選択肢は2つ。今夜の夜行便か、明日の朝7時の便にして空港ホテルにもう1泊か。" }
-      - { who: curt, at: 0.4, en: "The red-eye's eighty bucks cheaper. And we'd save the hotel, too.", ja: "夜行便のほうが80ドル安い。ホテル代も浮くしね。" }
+      - { who: curt, at: 0.4, en: "The red-eye's eighty bucks a head cheaper. And we'd save on the hotel, too.", ja: "夜行便のほうが1人80ドル安い。ホテル代も浮くしね。" }
       - { who: tammy, at: 0.3, en: "Sure, if you can sleep sitting up. Some of us can't.", ja: "まあ、座ったまま眠れる人ならね。眠れない人もいるの。" }
       - { who: curt, at: -0.3, en: "It's five hours. You'll survive.", ja: "5時間だよ。死にはしないって。" }
       - { who: diana, at: 0.4, en: "The catch is the layover. It's in Denver, and it's only forty minutes.", ja: "問題は乗り継ぎ。デンバーで、たった40分しかない。" }
@@ -73,11 +73,11 @@ items:
       - { who: diana, at: 0.3, en: "Whereas the morning flight is nonstop. We'd land by noon either way.", ja: "一方、朝の便は直行。どっちにしても昼には着くよ。" }
       - { who: curt, at: 0.4, en: "What does the hotel run us, split three ways?", ja: "ホテルは3人で割るといくら？" }
       - { who: diana, at: 0.3, en: "About sixty each, breakfast included.", ja: "1人60ドルくらい。朝食付き。" }
-      - { who: curt, at: 0.4, en: "Then the red-eye's not really saving us much. Book the room before it's gone.", ja: "なら夜行便はたいして安くならないな。なくなる前に部屋を取ろう。" }
+      - { who: curt, at: 0.4, en: "So a hundred and forty each, to not risk a whole day in Denver. ...Book the room before it's gone.", ja: "じゃあ1人140ドルで、デンバーで丸一日足止めされる心配がなくなるのか。…なくなる前に部屋を取ろう。" }
     rounds:
       - { type: opinions, claims: ["座ったままでは 眠れない", "乗り継ぎが 短すぎる", "安い ほうが いい"], answer: [tammy, diana, curt], ctx: "空港で、3人が帰りの便を選んでいます", why: "タミーは Some of us can't と眠れないことを皮肉まじりに。ダイアナは The catch is the layover で40分を問題視。カートは安さを推した。" }
-      - { type: changed, answer: curt, ctx: "乗り継ぎとホテル代がわかります", why: "カートは夜行便が安いと推したが、40分の乗り継ぎと1人60ドルと聞き、not really saving us much と部屋を取る側に。" }
-      - { type: plan, ask: "どうする？", choices: ["They'll take the red-eye and connect in Denver tonight.", "They'll stay at the airport hotel and fly nonstop in the morning.", "They'll take the red-eye and book a hotel in Denver.", "They'll split up and take different flights."], answer: 1, ja: "空港ホテルに泊まり、朝の直行便で帰る。", ctx: "最後に、帰り方が決まります", why: "Book the room before it's gone＝ホテルに泊まる。朝の便は nonstop。デンバーのホテルは足止めの話で、予約ではない。", cja: ["夜行便でデンバー乗り継ぎで帰る", "空港ホテルに泊まり、朝の直行便で帰る", "夜行便に乗り、デンバーでホテルを取る", "別々の便で帰る"] }
+      - { type: changed, answer: curt, ctx: "乗り継ぎとホテル代がわかります", why: "カートは夜行便が安いと推したが、40分の乗り継ぎを聞き、1人140ドルで足止めの心配がなくなると計算して Book the room と部屋を取る側に。" }
+      - { type: plan, ask: "どうする？", choices: ["The red-eye tonight, connecting in Denver.", "The airport hotel, then the nonstop at seven.", "The red-eye, then a hotel in Denver.", "They'll split up and fly separately."], answer: 1, ja: "空港ホテルに泊まり、朝の直行便で帰る。", ctx: "最後に、帰り方が決まります", why: "Book the room before it's gone＝ホテルに泊まる。朝の便は nonstop。デンバーのホテルは足止めの話で、予約ではない。", cja: ["夜行便でデンバー乗り継ぎで帰る", "空港ホテルに泊まり、朝の直行便で帰る", "夜行便に乗り、デンバーでホテルを取る", "別々の便で帰る"] }
     note: "What could possibly go wrong? は皮肉"
     tags: { seed: 8, register: friend, pragmatic: sarcasm, features: [intonation, idiom, numbers, overlap] }
 
@@ -230,7 +230,7 @@ items:
       - { who: ken, at: -0.2, en: "Mornings covered, evenings mine. I can work with that.", ja: "朝はおまかせで、夜は僕。それならやれる。" }
       - { who: marshal, at: 0.3, en: "I'll book someone tonight. And I'm buying a self-watering pot. No offense.", ja: "今夜誰か予約しておく。それと自動で水をやる植木鉢も買うね。悪気はないよ。" }
     rounds:
-      - { type: opinions, claims: ["ペットホテルは 1週間で 4万円 以上", "友だちに 全部 任せるのは 不安", "最初は 1人で 全部 引き受ける つもり"], answer: [pekoe, marshal, ken], ctx: "旅行の前に、カップルと友だちが犬の世話を相談しています", why: "ペコは over forty-five thousand。マーシャルは植物が枯れた話で、遠回しに不安を言う。ケンは I can just stay と全部やるつもりだった。" }
+      - { type: opinions, claims: ["ペットホテルは 1週間で 4万5千円 以上", "友だちに 全部 任せるのは 不安", "最初は 1人で 全部 引き受ける つもり"], answer: [pekoe, marshal, ken], ctx: "旅行の前に、カップルと友だちが犬の世話を相談しています", why: "ペコは over forty-five thousand。マーシャルは植物が枯れた話で、遠回しに不安を言う。ケンは I can just stay と全部やるつもりだった。" }
       - { type: changed, answer: ken, ctx: "朝の散歩の時間がわかります", why: "ケンは全部引き受けるつもりだったが、朝7時前と聞いて didn't sign up for と言い、夜だけなら I can work with that に変わった。" }
       - { type: plan, ask: "旅行中、犬は？", choices: ["The dog stays at the kennel for the whole week.", "The friend stays over and does both of the walks.", "Mornings with a sitter, evenings with the friend.", "They take the dog along with them on the trip."], answer: 2, ja: "朝はシッター、夜は友だちが散歩をする。", ctx: "最後に、犬の世話が決まります", why: "Mornings covered, evenings mine＝朝はアプリのシッター、夜はケン。ペットホテルは高いのでやめた。ケンが2回とも散歩するのではない。", cja: ["1週間ペットホテルに預ける", "友だちが泊まり、散歩を2回ともする", "朝はシッター、夜は友だちが散歩する", "旅行に犬も連れていく"] }
     note: "didn't sign up for＝そこまでは引き受けていない"
