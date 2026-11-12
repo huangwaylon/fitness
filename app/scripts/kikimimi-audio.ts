@@ -10,15 +10,23 @@
 //     --out <dir>               a scratch dir instead of the work folder (no packs): clips.json, clips.src.json and
 //                               report.json land there too
 //     --force                   re-speak every selected item
+//     --dry-run                 print what would be spoken (the clips whose source changed or is missing), speak nothing
 //     --seed 1234               the first take's seed (a re-roll of a weak take: --only <id> --force --seed 2000)
 //     --retries 5               the gate: re-roll a clip with the next seed while whisper mishears a content word or
 //                               its voice drifts (--min-sim 0.5: ECAPA cosine to the reference)
 //     --l1-tempo 0.92           level 1's normal clips gently slowed (atempo); 1 = as spoken
 //     --no-mos, --no-sv         skip UTMOS or the speaker-similarity check
+//     --tone-takes 4            a toned clip's seeds tried (tone.ts): the best by takeScore is kept in
+//                               scripts/tts/tone-picks.json (every take's score with it) and spoken from then on
 //   node scripts/kikimimi-audio.ts --refs [--design-seeds 7,11,23] [--only <regex over cast ids>]
 //                               make the cast's missing reference clips (scripts/tts/refs/<id>.m4a, committed); with
 //                               --design-seeds the VoiceDesign voices are re-rolled over those seeds and the best by
 //                               UTMOS (heard word for word) is kept, its seed written back to cast.json
+//   node scripts/kikimimi-audio.ts --tone-refs [--only <regex over cast ids>]
+//                               make the missing tone references (scripts/tts/refs/<id>-soft.m4a, -firm.m4a, committed)
+//                               of the voices a toned clip uses: the cast reference cloned saying tone.ts TONE_TEXT,
+//                               over 3 seeds, the best by UTMOS heard word for word and near the voice (ECAPA ≥ 0.7),
+//                               its seed written to cast.json `tones`
 //   node scripts/kikimimi-audio.ts --list           the listen-through list (each clip with its cast voice and text)
 //   node scripts/kikimimi-audio.ts --listen [--only <regex>]   play each clip (afplay) with its text: a person's check
 //
@@ -28,6 +36,11 @@
 // Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi-engine.md
 // "Generation").
 // Spoken text: speech.ts spokenText (`tts`, else `en` with its numbers written out).
+// Tone (src/lib/kikimimi/tone.ts; a ことば タイル's `tone`): a soft or firm clip is cloned from its voice's tone
+// reference (cast.json `tones`, refs/<id>-<tone>.m4a), a toned clip's wh- and either/or questions end in "." for the
+// engine (tone.ts engineText: report.json keeps the spoken text), and its seed is the best of --tone-takes by tone.ts
+// takeScore (tts.py prosody's endings, pace and range, whisper, ECAPA, UTMOS), pinned in tts/tone-picks.json. An
+// untoned clip's source hash is what it was.
 // Each clip: the engine (seeded) → a raw WAV cached by source hash and seed under .cache/tts/raw (the masters) → ffmpeg:
 // edge silence trimmed, loudness gain to −16 LUFS (true peak ≤ −1.5 dBTP via a limiter), mono AAC ~48 kbps at 24 kHz,
 // +faststart. Levels 1-2 get `<id>-slow.m4a`: the take as spoken time-stretched to 0.75 by ffmpeg atempo (the same take,
@@ -88,6 +101,7 @@ import { readListen, readPairs, readStories, unitItems } from '../src/lib/kikimi
 import { pairClipItems } from '../src/lib/kikimimi/games/pair/pairs.ts';
 import { LONG_KBPS, listenClipItems, realClipIds } from '../src/lib/kikimimi/listen.ts';
 import { storyItems } from '../src/lib/kikimimi/story.ts';
+import { TONE_REFS, TONE_TEXT, engineText, sentences, takeScore, type Prosody, type Tone } from '../src/lib/kikimimi/tone.ts';
 
 const APP = join(import.meta.dirname, '..');
 const TTS = join(import.meta.dirname, 'tts');
@@ -143,7 +157,12 @@ interface CastEntry {
   /** Kokoro's voice for this slot (US and UK). */
   kokoro?: string;
   ref: { text: string; voice?: string; file?: string; origin: string; licence: string; attribution?: string; mos?: number };
+  /** Its tone references (refs/<id>-<tone>.m4a): the cast reference cloned saying TONE_TEXT[tone] with this seed. */
+  tones?: Partial<Record<ToneRef, { text: string; seed: number; mos?: number; sim?: number }>>;
 }
+type ToneRef = (typeof TONE_REFS)[number];
+/** The reference a tone clones (neutral, or none: the cast reference's own). */
+const toneRefOf = (tone: Tone | undefined): ToneRef | null => (tone && (TONE_REFS as readonly string[]).includes(tone) ? (tone as ToneRef) : null);
 const CASTS: Record<CastId, CastEntry> = JSON.parse(readFileSync(CAST_FILE, 'utf8'));
 
 // ---- arguments -------------------------------------------------------------------------------------------------------
@@ -156,6 +175,7 @@ const SEED = Number(opt('--seed') ?? 1234);
 /** A person's re-roll kept across runs: the first take's seed of a clip whose default takes were weak (a `--seed` given
  *  on the command line wins). */
 const PINNED: Readonly<Record<string, number>> = {
+  // (the tiles re-voiced with a tone, 2026-11-12, lost their old pins: their words changed, tone-picks.json keeps theirs)
   'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000,
   // wave 1's units (their listening check: docs/curriculum.md "Listening check"): the corrected detail heard over the heavy street
   // (dk-fast-replan's "seven", "did you say the pub"), Ikebukuro heard as said, and short exclamations off-voice
@@ -172,7 +192,7 @@ const PINNED: Readonly<Record<string, number>> = {
   'w1-fly': 2004, 'dmw-standup-4': 4000, 'dmw-gossip-4': 5000,
   // wave 2's batch A1 (2026-11-07), each the best of five seed runs: a take heard as written (ya, ta, whaddaya), and
   // takes nearer their voice or cleaner (UTMOS) than the default's
-  'tachi-hanami-spot-2': 4000, 'tachi-im-easy-6': 4000, 'tile-leave-it-out-front': 4000, 'tachi-film-verdict-1': 4000,
+  'tachi-hanami-spot-2': 4000, 'tachi-im-easy-6': 4000, 'tachi-film-verdict-1': 4000,
   'tachi-film-verdict-7': 5000, 'call-next-friday-1': 4000, 'call-next-friday-4': 3000, 'tachi-noisy-neighbour-5': 5000,
   'tachi-standup-blocked-5': 3000, 'call-handouts-favour-5': 2000,
   // wave 2's batch A2 (2026-11-07), each the best of five seed runs: takes heard as written (soup er salad, fer here er
@@ -183,8 +203,8 @@ const PINNED: Readonly<Record<string, number>> = {
   'dk-for-here-1': 2000, 'kw-meetcha': 2000, 'dk-cookies-2': 3000, 'dk-rain-sunday-3': 3000, 'dk-dentist-day-4': 5002,
   'kw-great-on': 3004,
   // s1-tile-c's tiles of those same lines in the same voices, the same takes
-  'tile-ord-soup-or-salad': 4001, 'tile-shop-great-on-you': 3004, 'tile-nbr-eye-on-him': 2000, 'tile-cln-prescription': 3000,
-  'tile-intro-nice-to-meet': 2000,
+  'tile-shop-great-on-you': 3004,
+  
   // batch A3 (2026-11-07), the best of five seed runs: "colds" heard as said, a slip-and-fix order 14.4 → 12.9 s (under
   // a listening clip's 14), an "um" line's UTMOS 3.44 → 4.01
   'news-plaza-lights-5': 2001, 'rush-lunch-4': 3000, 'rush-bagels-1': 5000,
@@ -195,9 +215,9 @@ const PINNED: Readonly<Record<string, number>> = {
   // leavin', row B, sign back in), a phone line's mix under its bound, and short lines' UTMOS or voice (Ha. Mostly. 2.53
   // → 3.92; Oh, nice! sim 0.49 → 0.55); the tiles of the same lines in the same voices, the same takes
   'call-screen-ready-3': 4005, 'cu-fast-july-4': 2000, 'cu-r-landlord': 2005, 'dr-trip-next-3': 2000, 'fn-fast-no-sushi-1': 4004,
-  'fn-w-feel-like': 4003, 'tile-din-feel-like-tonight': 4003, 'fn-w-share': 2000, 'tile-din-share-a-few': 2000,
-  'rp-fast-truck-1': 5002, 'tile-rep-truck-broke-down': 4005, 'rp-fast-truck-4': 4000, 'sm-fast-ready-3': 2002,
-  'tachi-deposit-letter-1': 4001, 'tachi-flight-canceled-2': 5000, 'tile-ch-didja-get-a-chance': 3000, 'tile-ch-whaddaya-think': 3000,
+  'fn-w-feel-like': 4003, 'fn-w-share': 2000, 
+  'rp-fast-truck-1': 5002, 'rp-fast-truck-4': 4000, 'sm-fast-ready-3': 2002,
+  'tachi-deposit-letter-1': 4001, 'tachi-flight-canceled-2': 5000, 
   'tile-fl-well-actually': 4000, 'tile-tix-standing-room': 2001, 'tk-w-standing': 2001, 'tk-fast-balcony-4': 3000,
   'tk-game-row-b-4': 5000, 'wg-couch-joke-3': 5003, 'wg-toast-3': 2000,
   // はつおん's words (M6, 2026-11-07), each the best of ten seed runs by UTMOS among the takes heard as written (a word
@@ -217,7 +237,15 @@ const PINNED: Readonly<Record<string, number>> = {
   'hs-gotta-bus-here-c': 2000, 'hs-lemme-give-hand': 2000, 'hs-lemme-let-think': 2000, 'hs-lemme-give-ride': 2000, 'hs-kinda-what-music': 4000,
   'hs-kinda-out-time': 5000, 'hs-dunno-if-open': 2000, 'hs-dunno-what-mean': 2000, 'hs-chain-know-mean': 9000
 };
-const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
+/** A toned clip's kept take (--tone-takes): its seed, the takes' scores, and `key`, the voice and engine text it was
+ *  picked for (a changed line or reference is picked again). */
+const PICKS_FILE = join(TTS, 'tone-picks.json');
+const PICKS: Record<string, { key: string; seed: number; scores: Record<string, number> }> = existsSync(PICKS_FILE) ? JSON.parse(readFileSync(PICKS_FILE, 'utf8')) : {};
+const TONE_TAKES = Number(opt('--tone-takes') ?? 4);
+/** What a tone pick is for: the voice (its reference's hash) and the engine text. */
+const pickKey = (voice: unknown, say: string) => sha(JSON.stringify([voice, say]), 10);
+const seedOf = (id: string, key?: string): number =>
+  opt('--seed') ? SEED : PINNED[id] ?? (key && PICKS[id]?.key === key ? PICKS[id].seed : SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
 const RETRIES = Number(opt('--retries') ?? 5);
 /** Level 1's normal clips a touch slower (Qwen speaks L1 lines at ~205 wpm; 0.92 → ~190, `say` v1 was 160): within
@@ -472,19 +500,25 @@ const rungSrc = (lineSrc: string, n: number) => sha(JSON.stringify([lineSrc, n, 
 
 // ---- the cast's reference clips --------------------------------------------------------------------------------------
 
-const refM4a = (id: CastId) => join(REFS, `${id}.m4a`);
-/** The reference as the engines take it (24 kHz mono WAV, cached; made from the committed m4a when missing). */
-function refWav(id: CastId): string {
-  const wav = join(dirOf(CACHE, 'refs'), `${id}.wav`);
+const refM4a = (id: CastId, tone: ToneRef | null = null) => join(REFS, `${id}${tone ? `-${tone}` : ''}.m4a`);
+/** The reference as the engines take it (24 kHz mono WAV, cached; made from the committed m4a when missing): the
+ *  voice's, or its tone reference. */
+function refWav(id: CastId, tone: ToneRef | null = null): string {
+  const wav = join(dirOf(CACHE, 'refs'), `${id}${tone ? `-${tone}` : ''}.wav`);
   if (!existsSync(wav)) {
-    if (!existsSync(refM4a(id))) throw new Error(`no reference for ${id}: run with --refs`);
-    staged([wav], ([t]) => ff('-i', refM4a(id), '-ac', '1', '-ar', String(SR), '-c:a', 'pcm_s16le', t));
+    if (!existsSync(refM4a(id, tone))) throw new Error(`no ${tone ? `${tone} ` : ''}reference for ${id}: run with ${tone ? '--tone-refs' : '--refs'}`);
+    staged([wav], ([t]) => ff('-i', refM4a(id, tone), '-ac', '1', '-ar', String(SR), '-c:a', 'pcm_s16le', t));
   }
   return wav;
 }
-const refHash = (id: CastId) => sha(readFileSync(refM4a(id)), 10);
+const refHash = (id: CastId, tone: ToneRef | null = null) => sha(readFileSync(refM4a(id, tone)), 10);
+/** What a clip is cloned from: the voice's reference, or its tone's. */
+const refOf = (p: Pick<Plan, 'cast' | 'it'>) => {
+  const tone = toneRefOf(p.it.tone);
+  return { audio: refWav(p.cast, tone), text: tone ? CASTS[p.cast].tones![tone]!.text : CASTS[p.cast].ref.text };
+};
 /** Commit-sized reference: mono AAC 64 kbps (a 15 s clip ~120 KB). */
-const encodeRef = (wav: string, id: CastId) => staged([refM4a(id)], ([t]) =>
+const encodeRef = (wav: string, id: CastId, tone: ToneRef | null = null) => staged([refM4a(id, tone)], ([t]) =>
   ff('-i', wav, '-ac', '1', '-ar', String(SR), '-c:a', 'aac', '-b:a', '64k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', t));
 
 function makeRefs(): void {
@@ -570,7 +604,14 @@ interface Plan {
   it: Item;
   cast: CastId;
   engine: Engine;
+  /** What's spoken (speech.ts spokenText): the report's text and the ASR's reference. */
   text: string;
+  /** What the engine is given: `text`, a toned clip's with its wh- and either/or questions ending in "." (tone.ts). */
+  say: string;
+  /** The first take's seed. */
+  seed: number;
+  /** A toned clip's tone pick key (pickKey); undefined untoned. */
+  key?: string;
   /** The clean master's hash: the raw takes are cached by it. */
   master: string;
   /** The speech condition mixed over the clean take (null: clean). */
@@ -581,24 +622,27 @@ interface Plan {
 const bedFile = (b: Bed) => join(BEDS, `${b}.m4a`);
 /** The assets a condition uses (its bed's file), by hash: part of the clip's source. */
 const condAssets = (c: CondPlan): Record<string, string> => (c.bed ? { [`bed:${c.bed.id}`]: sha(readFileSync(bedFile(c.bed.id)), 10) } : {});
-function planOf(it: Item): Plan {
+function planOf(it: Item, seedFor?: number): Plan {
   const cast = castOf(it), engine = ENGINE[it.voice], entry = CASTS[cast];
   if (!entry) throw new Error(`${it.id}: no cast.json entry for ${cast}`);
   if (engine === 'say') {
     // v1's hash, so a say run keeps the shipped clips
     const text = it.tts ?? it.en, voice = sayVoice(it);
     const src = sha(JSON.stringify([text, voice, RATE[it.lv], hasSlow(it) && SAY_SLOW, 1]), 10);
-    return { it, cast, engine, text, master: src, cond: null, src };
+    return { it, cast, engine, text, say: text, seed: seedOf(it.id), master: src, cond: null, src };
   }
   if (engine === 'kokoro' && !entry.kokoro) throw new Error(`${it.id}: kokoro has no ${cast} voice (no Australian voices: --engine kokoro,au=qwen3)`);
-  const text = spokenText(it);
-  const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
+  const text = spokenText(it), say = it.tone ? engineText(text) : text, tone = CLONES(engine) ? toneRefOf(it.tone) : null;
+  if (tone && !entry.tones?.[tone]) throw new Error(`${it.id}: ${cast} has no ${tone} reference (run with --tone-refs)`);
+  // an untoned clip's voice and text as before: its hash unchanged
+  const voice = CLONES(engine) ? (tone ? [cast, tone, refHash(cast, tone), entry.tones![tone]!.text] : [cast, refHash(cast), entry.ref.text]) : [entry.kokoro];
+  const key = it.tone ? pickKey(voice, say) : undefined, seed = seedFor ?? seedOf(it.id, key);
   const tempo = tempoOf(it);
-  const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE,
+  const master = sha(JSON.stringify([engine, MODEL[engine], voice, say, seed, hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE,
     ...(SOFT.has(it.id) ? [['story', STORY_LUFS]] : []), ...(kbpsOf(it) !== 48 ? [['kbps', kbpsOf(it)]] : [])]), 10);
   const c = condOf(it), cond = c && condPlan(c);
   if (cond && hasSlow(it)) throw new Error(`${it.id}: no conditions at levels 1-2 (their slow clip is the clean take)`);
-  return { it, cast, engine, text, master, cond, src: condSource(master, cond, cond ? condAssets(cond) : {}) };
+  return { it, cast, engine, text, say, seed, key, master, cond, src: condSource(master, cond, cond ? condAssets(cond) : {}) };
 }
 
 interface Take {
@@ -661,16 +705,16 @@ function speak(plans: Plan[]): Map<string, Take> {
   for (let k = 0; k <= RETRIES && todo.length; k++) {
     const takes = new Map<string, Take>();
     for (const p of todo) {
-      const seed = seedOf(p.it.id) + k;
+      const seed = p.seed + k;
       takesOf.set(p.it.id, k + 1);
       takes.set(p.it.id, { seed, raw: join(raws, `${p.master}-s${seed}.wav`), wav: join(work, `${p.it.id}-${k}.wav`), m4a: join(work, `${p.it.id}-${k}.m4a`) });
     }
     for (const engine of ['qwen3', 'voxcpm2', 'kokoro'] as const) {
       const jobs = todo.filter((p) => p.engine === engine && !existsSync(takes.get(p.it.id)!.raw)).map((p) => {
-        const t = takes.get(p.it.id)!, e = CASTS[p.cast];
-        return CLONES(engine)
-          ? { out: t.raw, text: p.text, seed: t.seed, ref_audio: refWav(p.cast), ref_text: e.ref.text }
-          : { out: t.raw, text: p.text, seed: t.seed, voice: e.kokoro };
+        const t = takes.get(p.it.id)!, e = CASTS[p.cast], ref = CLONES(engine) ? refOf(p) : null;
+        return ref
+          ? { out: t.raw, text: p.say, seed: t.seed, ref_audio: ref.audio, ref_text: ref.text }
+          : { out: t.raw, text: p.say, seed: t.seed, voice: e.kokoro };
       });
       if (jobs.length) console.log(`${engine}: ${jobs.length} clips (try ${k + 1})`);
       const res = py<{ gen: number; dur: number }>(engine === 'kokoro' ? 'kokoro' : 'gen', 'synth', jobs, ['--engine', engine, '--model', MODEL[engine]]);
@@ -710,6 +754,81 @@ function speak(plans: Plan[]): Map<string, Take> {
   return best;
 }
 
+// ---- tone: a toned clip's best take, and the voices' tone references --------------------------------------------------
+
+/** The toned clips (`tone`) without a pick for their voice and engine text get --tone-takes seeds (from --seed's
+ *  default), each scored by tone.ts takeScore on the clean take as spoken; the best seed is kept in tone-picks.json
+ *  with every take's score (a disagreeing listener's other take is its seed, from the raw cache), and the plans are made
+ *  again with it (its raw take is cached, so the gate's first try isn't spoken twice). A PINNED seed wins. */
+function pickTones(plans: Plan[]): Plan[] {
+  const need = plans.filter((p) => p.key && CLONES(p.engine) && PINNED[p.it.id] === undefined && !opt('--seed') && PICKS[p.it.id]?.key !== p.key);
+  if (!need.length) return plans;
+  const work = dirOf(CACHE, 'work', 'tone'), raws = dirOf(CACHE, 'raw');
+  const takes = need.flatMap((p) => Array.from({ length: TONE_TAKES }, (_, k) => {
+    const seed = SEED + k, q = planOf(p.it, seed);
+    return { p, seed, raw: join(raws, `${q.master}-s${seed}.wav`), wav: join(work, `${p.it.id}-s${seed}.wav`) };
+  }));
+  console.log(`tone: ${need.length} toned clips, ${TONE_TAKES} takes each`);
+  for (const engine of ['qwen3', 'voxcpm2'] as const) {
+    const jobs = takes.filter((t) => t.p.engine === engine && !existsSync(t.raw)).map((t) => {
+      const ref = refOf(t.p);
+      return { out: t.raw, text: t.p.say, seed: t.seed, ref_audio: ref.audio, ref_text: ref.text };
+    });
+    const res = py<{ gen: number; dur: number }>('gen', 'synth', jobs, ['--engine', engine, '--model', MODEL[engine]]);
+    for (const [raw, r] of Object.entries(res)) writeAtomic(`${raw}.json`, JSON.stringify(r));
+  }
+  for (const t of takes) trim(t.raw, t.wav);
+  const heard = py<{ content: number }>('qa', 'wer', takes.map((t) => ({ wav: t.wav, refs: [t.p.it.en, t.p.text] })));
+  const sim = flag('--no-sv') ? {} : py<number>('sv', 'sv', takes.map((t) => ({ wav: t.wav, ref: refWav(t.p.cast) })));
+  const mos = flag('--no-mos') ? {} : py<number>('qa', 'mos', takes.map((t) => t.wav));
+  const pros = py<Prosody>('qa', 'prosody', takes.map((t) => ({
+    wav: t.wav, text: t.p.text, gender: CASTS[t.p.cast].gender, words: sentences(t.p.text).map((s) => s.n), syl: syllables(t.p.text)
+  })));
+  for (const p of need) {
+    const types = sentences(p.text).map((s) => s.type);
+    const scores = Object.fromEntries(takes.filter((t) => t.p === p).map((t) => [String(t.seed),
+      Math.round(takeScore(types, { ...pros[t.wav], content: heard[t.wav].content, sim: sim[t.wav] ?? 1, mos: mos[t.wav] ?? 0 }) * 100) / 100]));
+    const seed = Number(Object.entries(scores).sort((a, b) => b[1] - a[1] || Number(a[0]) - Number(b[0]))[0][0]);
+    PICKS[p.it.id] = { key: p.key!, seed, scores };
+    console.log(`  ${p.it.id} (${p.it.tone}): seed ${seed} of ${JSON.stringify(scores)}`);
+  }
+  writeAtomic(PICKS_FILE, JSON.stringify(Object.fromEntries(Object.keys(PICKS).sort().map((k) => [k, PICKS[k]])), null, 1) + '\n');
+  return plans.map((p) => (need.includes(p) ? planOf(p.it) : p));
+}
+
+/** The tone references the toned clips need (each voice's soft and firm, as used): the cast reference cloned saying
+ *  TONE_TEXT over 3 seeds, the best heard word for word, near the voice (ECAPA ≥ 0.7) and by UTMOS; cast.json `tones`
+ *  gets its seed. (The pilot chose by an emotion model too: every clone moved alike, so UTMOS decides here.) */
+function makeToneRefs(): void {
+  const want = new Map<string, [CastId, ToneRef]>();
+  for (const it of ALL) {
+    const t = toneRefOf(it.tone), id = castOf(it);
+    if (t && CLONES(ENGINE[it.voice]) && (!only || only.test(id))) want.set(`${id}-${t}`, [id, t]);
+  }
+  const pairs = [...want.values()].filter(([id, t]) => !existsSync(refM4a(id, t)) || !CASTS[id].tones?.[t]);
+  if (!pairs.length) return console.log('every toned voice has its tone references');
+  const tmp = dirOf(CACHE, 'refs/cand');
+  const cands = pairs.flatMap(([id, t]) => [11, 22, 33].map((seed) =>
+    ({ id, t, seed, out: join(tmp, `${id}-${t}_s${seed}-${sha(refHash(id) + TONE_TEXT[t], 6)}.wav`) })));
+  py('gen', 'synth', cands.filter((c) => !existsSync(c.out)).map((c) =>
+    ({ out: c.out, text: TONE_TEXT[c.t], seed: c.seed, ref_audio: refWav(c.id), ref_text: CASTS[c.id].ref.text })), ['--engine', 'qwen3', '--model', MODEL.qwen3]);
+  const heard = py<{ hyp: string; content: number }>('qa', 'wer', cands.map((c) => ({ wav: c.out, refs: [TONE_TEXT[c.t]] })));
+  const mos = py<number>('qa', 'mos', cands.map((c) => c.out));
+  const sim = py<number>('sv', 'sv', cands.map((c) => ({ wav: c.out, ref: refWav(c.id) })));
+  for (const [id, t] of pairs) {
+    const mine = cands.filter((c) => c.id === id && c.t === t).map((c) => ({ ...c, content: heard[c.out].content, mos: mos[c.out], sim: sim[c.out] }))
+      .sort((a, b) => a.content - b.content || Number(a.sim < 0.7) - Number(b.sim < 0.7) || b.mos - a.mos);
+    for (const c of mine) console.log(`  ${id} ${t} seed ${c.seed}: UTMOS ${c.mos.toFixed(2)}, sim ${c.sim.toFixed(2)}, ${c.content} content errors`);
+    const best = mine[0];
+    if (best.content || best.sim < 0.7) throw new Error(`${id} ${t}: no take heard word for word near the voice; try other seeds`);
+    staged([join(dirOf(CACHE, 'refs'), `${id}-${t}.wav`)], ([w]) => copyFileSync(best.out, w));
+    encodeRef(best.out, id, t);
+    CASTS[id].tones = { ...CASTS[id].tones, [t]: { text: TONE_TEXT[t], seed: best.seed, mos: best.mos, sim: best.sim } };
+    console.log(`${id} ${t}: seed ${best.seed} kept`);
+  }
+  writeAtomic(CAST_FILE, JSON.stringify(CASTS, null, 1) + '\n');
+}
+
 function listen(): void {
   if (!SCRATCH) unpackClips();
   for (const it of BANK) {
@@ -741,12 +860,14 @@ function run(): void {
   const oldSrc: Record<string, string> = existsSync(SRCS) ? JSON.parse(readFileSync(SRCS, 'utf8')) : {};
   const clips: Record<string, Clip> = { ...old }, srcs: Record<string, string> = { ...oldSrc };
   const fileOf = (id: string, slow = false) => join(OUT, `${id}${slow ? '-slow' : ''}.m4a`);
-  const plans = BANK.filter((it) => !only || only.test(it.id)).map(planOf);
-  const todo = plans.filter((p) => {
+  const plans = BANK.filter((it) => !only || only.test(it.id)).map((it) => planOf(it));
+  const stale = plans.filter((p) => {
     const files = [fileOf(p.it.id), ...(hasSlow(p.it) ? [fileOf(p.it.id, true)] : []), ...(p.it.hs ? [fileOf(`${p.it.id}-f`)] : [])];
     const fast = !p.it.hs || (old[`${p.it.id}-f`] && oldSrc[`${p.it.id}-f`] === fastSrc(p.master));
     return flag('--force') || !old[p.it.id] || oldSrc[p.it.id] !== p.src || !fast || !files.every((f) => existsSync(f));
   });
+  if (flag('--dry-run')) return console.log(`${stale.length} of ${plans.length} to speak${stale.length ? `: ${stale.map((p) => p.it.id).join(' ')}` : ''}`);
+  const todo = pickTones(stale);
   // スピード はしご: a ladder whose rung clips are missing or out of date has its line spoken (a take already made, a
   // level-4 line's own included, comes from the raw cache) and every rung made again from it
   const ladderPlans = SAY ? [] : LADDERS.filter((l) => !only || only.test(l.id)).map((l) => ({ l, p: planOf(l.line) }));
@@ -768,7 +889,7 @@ function run(): void {
     });
     srcs[p.it.id] = p.src;
     const dur = clips[p.it.id].dur, words = p.text.match(/[A-Za-z']+/g)?.length ?? 0;
-    rows[p.it.id] = { src: p.src, cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60), seed: seedOf(p.it.id), tries: 1, flags: [], ...extra };
+    rows[p.it.id] = { src: p.src, cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60), seed: p.seed, tries: 1, flags: [], ...extra };
   };
   const sorted = <T>(o: Record<string, T>) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
   try {
@@ -953,6 +1074,7 @@ function preflight(): void {
 }
 
 if (flag('--refs')) { preflight(); makeRefs(); }
+else if (flag('--tone-refs')) { preflight(); makeToneRefs(); }
 else if (flag('--listen')) listen();
 else if (flag('--list')) printList(existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {});
 else { preflight(); run(); }

@@ -13,6 +13,7 @@ import { CAST_IDS } from './speech.ts';
 import { ALERTS, HI_MAX, HI_MIN, SKIES, hiKey, type Alert, type Sky } from './games/news/weather.ts';
 import { PHENOMENA, type Phenomenon } from './henshin.ts';
 import { FEATURES as BANK_FEATURES } from './tags.ts';
+import { TONES, type Tone } from './tone.ts';
 
 const isBankFeature = (f: string): f is Feature => (BANK_FEATURES as readonly string[]).includes(f);
 
@@ -68,6 +69,9 @@ interface TileItem extends Common {
   why?: string;
   /** Its words changed since its clip was spoken: left out of the part (never dealt) until it's re-voiced. */
   revoice?: true;
+  /** How it's said (tone.ts): its voice's soft or firm reference, or its own (neutral), its wh- and either/or questions
+   *  ending in "." for the engine, the best of four takes. Audio only (not in the part); an own clip's only. */
+  tone?: Tone;
 }
 
 interface MemoSlot {
@@ -494,6 +498,8 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
         if (isStr(it.tts) && ttsDrops(it.tts).length) at(where, `tts respells ${ttsDrops(it.tts).join(', ')}: say the words (README "tile")`);
       }
       if (it.revoice !== undefined && it.revoice !== true) at(where, 'revoice: true or nothing');
+      if (it.tone !== undefined && !(TONES as readonly unknown[]).includes(it.tone)) at(where, `tone ${it.tone}: ${TONES.join(', ')} or nothing`);
+      if (it.tone !== undefined && it.clip !== undefined) at(where, "a derived tile's tone is its bank item's clip (no tone)");
       help(where, it, ['ctx', 'why']);
       for (const k of ['note', 'why'] as const) if (isStr(it[k]) && GRAMMAR.test(it[k])) at(where, `${k} uses a grammar term (${(it[k] as string).match(GRAMMAR)![0]}): say it in plain words`);
       if (!strs(it.tiles) || it.tiles.length < 3 || it.tiles.length > 12) at(where, 'tiles: 3-12');
@@ -794,7 +800,7 @@ export function listenClipItems(raw: unknown): Item[] {
     if (it.kind === 'tile' || it.kind === 'rush') {
       if (it.kind === 'tile' && it.clip) return [];
       const cast = castOf(it.speaker);
-      return [{ ...base, id: it.id, en: it.en, ja: it.ja, speaker: it.speaker, voice: accentOf(cast), cast, ...(it.tts && { tts: it.tts }) }];
+      return [{ ...base, id: it.id, en: it.en, ja: it.ja, speaker: it.speaker, voice: accentOf(cast), cast, ...(it.tts && { tts: it.tts }), ...(it.kind === 'tile' && it.tone && { tone: it.tone }) }];
     }
     // (a real piece's lines are cut from its recording: scripts/kikimimi-real.ts)
     if (it.kind === 'long' && it.source === 'real') return [];
@@ -816,7 +822,7 @@ export function listenClipItems(raw: unknown): Item[] {
 export const realClipIds = (raw: unknown): string[] =>
   listenUnit(raw).items.flatMap((it) => (it.kind === 'long' && it.source === 'real' ? listenClipIds(it) : []));
 
-/** A file as its part holds it: the header and the items less `tts` (`en` is what the reveal shows; the marks the
+/** A file as its part holds it: the header and the items less `tts` and a tile's `tone` (`en` is what the reveal shows; the marks the
  *  spoken shape), each tile and line with its clip id (listenClipIds), a derived tile with its bank item's speaker. A
  *  tile to re-voice (`revoice`) isn't in it: its clip still says its old words. */
 export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 'speaker'>>): ListenPart {
@@ -826,7 +832,10 @@ export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 's
     unit, game, stage, status, cando,
     items: items.filter((it) => !(it.kind === 'tile' && it.revoice)).map((it): ListenItem => {
       const ids = listenClipIds(it);
-      if (it.kind === 'tile') return { ...drop(it), ...(it.clip && { speaker: bank.get(it.clip)!.speaker }), clip: ids[0] };
+      if (it.kind === 'tile') {
+        const { tone: _, ...tile } = drop(it);
+        return { ...tile, ...(it.clip && { speaker: bank.get(it.clip)!.speaker }), clip: ids[0] };
+      }
       if (it.kind === 'rush') return { ...drop(it), clip: ids[0] };
       if (it.kind === 'weather') return { ...it, sentences: wxSentences(it).map(drop) };
       if (it.kind === 'news') {

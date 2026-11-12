@@ -9,6 +9,7 @@
 import { seeded, shuffle } from '#lib/random.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
+import type { Tone } from './tone.ts';
 
 /** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
  *  a plausible wrong inference as distractors). `gist` and `next` (level 4, dialogues.ts): over a 2-4-line dialogue
@@ -114,6 +115,8 @@ export interface Item {
   ctx?: string;
   /** Level 4: the cast voice (its accent is `voice`, its gender the speaker's). */
   cast?: CastId;
+  /** How it's said (tone.ts; a ことば タイル's `tone`): the audio script's tone reference and engine text. */
+  tone?: Tone;
   /** Level 4: the scenario it was made from. */
   tags?: Tags;
   /** A dialogue's lines (`gist`, `next`): played in turn, one clip each; `en` is them joined, `speaker` the first's. */

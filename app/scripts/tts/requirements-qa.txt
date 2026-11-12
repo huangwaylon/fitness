@@ -6,3 +6,4 @@ soundfile==0.14.0
 torch==2.15.0
 torchaudio==2.11.1  # the newest wheel (none for torch 2.15 yet); SpeechMOS and speechbrain only load and resample
 speechbrain==1.1.2
+praat-parselmouth==0.4.7  # tts.py prosody: a toned take's pitch and silences (src/lib/kikimimi/tone.ts)

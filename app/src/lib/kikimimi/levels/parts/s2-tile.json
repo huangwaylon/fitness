@@ -1,4 +1,36 @@
-{"listen":{"unit":"s2-tile","game":"tile","stage":3,"status":"listened","cando":"should've・could've など ちぢめた 形と 弱く 短く なる ことばを 聞きとれる","items":[]},
-"packs":[],
-"clips":{},
-"words":{}}
+{"listen":{"unit":"s2-tile","game":"tile","stage":3,"status":"listened","cando":"should've・could've など ちぢめた 形と 弱く 短く なる ことばを 聞きとれる","items":[
+{"kind":"tile","id":"tile-shoulda-told-him","speaker":"audie","en":"I should've just told him the truth.","ja":"最初から本当のことを言えばよかった。","tiles":["I","should've","just","told","him","the","truth"],"decoys":["shouldn't have","them"],"marks":[["link","told him"]],"note":"should've＝〜すればよかった。n の音はない","ctx":"カフェで、友だちが悩みを話しています","why":"should've は弱く「シュダヴ」。shouldn't have なら n と t が聞こえる。told him は h が聞こえず「トールディム」。them なら「エム」。","scene":"cafe","tags":{"seed":57,"register":"friend","pragmatic":"attitude","features":["contraction","h-drop"]},"clip":"tile-shoulda-told-him"},
+{"kind":"tile","id":"tile-coulda-fixed-it","speaker":"stitches","en":"If you'd called sooner, I could've fixed it for half the price.","ja":"もっと早く呼んでくれてたら、半額で直せたんだけどね。","tiles":["If","you'd","called","sooner","I","could've","fixed","it","for","half","the","price"],"decoys":["you","couldn't have"],"marks":[["link","fixed it"]],"note":"you'd の d はほぼ聞こえない。could've＝できたのに","ctx":"修理屋さんが、壊れた物を見ながら話しています","why":"you'd の d はほぼ聞こえず you に近いが、called の前なので you'd。could've は弱く「クダヴ」。couldn't have なら n が聞こえる。","tags":{"seed":31,"register":"service","pragmatic":"literal","features":["contraction"]},"clip":"tile-coulda-fixed-it"},
+{"kind":"tile","id":"tile-dunno-not-that-hungry","speaker":"kid-cat","en":"I don't know, I'm not that hungry, to be honest.","ja":"どうかな、正直そんなにお腹すいてないんだよね。","tiles":["I","don't","know","I'm","not","that","hungry","to","be","honest"],"decoys":["don't mind","so"],"marks":[["link","to be honest"]],"note":"not that hungry＝そこまでお腹すいてない","ctx":"街で、友だちと夕ごはんの話をしています","why":"I don't know は速く短いが「ノウ」で終わる。don't mind（気にしない）なら「マインド」が聞こえる。not that は「ナッザッ」で、so ではない。","scene":"street","tags":{"seed":18,"register":"friend","pragmatic":"refusal","features":["weak-form","idiom"]},"clip":"tile-dunno-not-that-hungry"},
+{"kind":"tile","id":"tile-word-with-him","speaker":"tom-nook","en":"I'll talk to him and get back to you.","ja":"彼に話しておいて、また連絡します。","tiles":["I'll","talk","to","him","and","get","back","to","you"],"decoys":["them","I'd"],"marks":[["link","to him and"]],"note":"to him and は h が聞こえず「トゥイマン」","ctx":"電話で、大家さんが話しています","why":"him は h が聞こえず「イム」。them なら th か「エム」。and は弱く「ン」に近い。I'll（アル）と I'd（アイド）は一瞬だが、これからするので I'll。","scene":"living","tags":{"seed":30,"register":"neighbour","pragmatic":"hedge","conditions":["phone"],"features":["h-drop","weak-form"]},"clip":"tile-word-with-him"},
+{"kind":"tile","id":"tile-wedve-been-fine","speaker":"zucker","en":"We'd have been fine if they hadn't changed the specs.","ja":"向こうが仕様を変えなければ、問題なかったのに。","tiles":["We'd","have","been","fine","if","they","hadn't","changed","the","specs"],"decoys":["We'll","had"],"marks":[["link","We'd have"],["stress","hadn't"]],"note":"We'd have は弱く「ウィダヴ」。We'll ではない","ctx":"会議のあと、同僚が愚痴をこぼしています","why":"We'd have は have が弱く「ウィダヴ」。We'll（ウィル）ならこれからの話になる。hadn't は強く言われる。had なら意味が逆。","scene":"office","tags":{"seed":40,"register":"colleague","pragmatic":"attitude","features":["contraction","weak-form"]},"clip":"tile-wedve-been-fine"},
+{"kind":"tile","id":"tile-head-out-text-me","speaker":"lucky","en":"Sorry, I need to head out. Text me when you get home.","ja":"ごめん、もう行かなきゃ。家に着いたら連絡してね。","tiles":["Sorry","I","need","to","head","out","Text","me","when","you","get","home"],"decoys":["Tell","got"],"marks":[["link","head out"],["drop","Text","t"]],"note":"Text me は t が聞こえず「テクスミ」","ctx":"夜、友だちが先に帰ります","why":"Text me は最後の t が聞こえず「テクスミ」。Tell me（テルミ）なら l が聞こえる。get home は「ゲッホーム」で、got（ガッ）とは口の形がちがう。","scene":"street","tags":{"seed":49,"register":"friend","pragmatic":"formula","features":["elision","idiom"]},"clip":"tile-head-out-text-me"},
+{"kind":"tile","id":"tile-room-at-the-back","speaker":"poppy","en":"If I were you, I'd ask for a room in the back.","ja":"わたしなら、奥のお部屋をお願いしますね。","tiles":["If","I","were","you","I'd","ask","for","a","room","in","the","back"],"decoys":["I'll","front"],"marks":[["link","for a"],["link","I'd ask"]],"note":"I'd＝わたしなら〜する（助言）。I'll なら今からする","ctx":"ホテルのフロントで、係がこっそり助言しています","why":"for a は弱く「ファラ」とつながる。I'd＝わたしなら〜する。I'll なら係が自分でする話になる。in the back＝奥の静かな側。front ではない。","tags":{"seed":3,"register":"service","pragmatic":"indirect","conditions":["desk"],"features":["contraction","weak-form"]},"clip":"tile-room-at-the-back"},
+{"kind":"tile","id":"tile-too-much-on","speaker":"bea","en":"I'd love to, but I've got way too much going on.","ja":"行きたいんだけど、いろいろ立てこんでて。","tiles":["I'd","love","to","but","I've","got","way","too","much","going","on"],"decoys":["I'll","I"],"marks":[["drop","going","g"]],"note":"I'd love to, but＝やんわり断る言い方","ctx":"友だちを週末のパーティーに誘いました","why":"I'd love to, but＝やんわり断る決まり文句。I'll なら「行く」になる。I've の ve は弱いが got の前に必要。going on＝立てこんでいる。","scene":"street","tags":{"seed":18,"register":"friend","pragmatic":"refusal","features":["contraction","idiom"]},"clip":"tile-too-much-on"},
+{"kind":"tile","id":"tile-go-over-it","speaker":"goldie","en":"Do you want me to go over it again?","ja":"もう一度説明しようか？","tiles":["Do","you","want","me","to","go","over","it","again"],"decoys":["Did","won't"],"marks":[["link","Do you"],["link","over it again"]],"note":"go over＝もう一度説明する。over it again はひと続き","ctx":"職場で、同僚が手順を説明し終えました","why":"Do you は弱く「ジュ」に近い。Did なら「ディ」が聞こえる。want me to は「ワンミタ」で、won't（ウォウント）ではない。go over＝もう一度説明する。","scene":"office","tags":{"seed":43,"register":"colleague","pragmatic":"literal","features":["yod","linking"]},"clip":"tile-go-over-it"},
+{"kind":"tile","id":"tile-leave-it-out-front","speaker":"kabuki","en":"They said to leave it out front, so that's what I did.","ja":"玄関の前に置いといてって言われたから、そうしたよ。","tiles":["They","said","to","leave","it","out","front","so","that's","what","I","did"],"decoys":["the","at"],"marks":[["link","leave it out"],["link","what I"]],"note":"leave it out は「リーヴィダウ」と一続き","ctx":"玄関先で、配達員が説明しています","why":"to は弱く「タ」に近く、the に聞こえやすい。leave it out は「リーヴィダウ」と一続き。out front＝玄関の前。at ではない。","scene":"door","tags":{"seed":37,"register":"stranger","pragmatic":"literal","features":["linking","flap"]},"clip":"tile-leave-it-out-front"}
+]},
+"packs":["s2-tile.4fa1da77"],
+"clips":{
+"tile-shoulda-told-him":[158,"44dd5c9e",0,0,10596],
+"tile-coulda-fixed-it":[281,"76f71f31",0,10596,18038],
+"tile-dunno-not-that-hungry":[226,"b38aab2b",0,28634,14813],
+"tile-word-with-him":[153,"7cfad3b0",0,43447,12014],
+"tile-wedve-been-fine":[220,"ca59edd2",0,55461,14610],
+"tile-head-out-text-me":[287,"d68e37bc",0,133481,18396],
+"tile-room-at-the-back":[264,"98fcba88",0,70071,16986],
+"tile-too-much-on":[281,"ece811f6",0,87057,17884],
+"tile-go-over-it":[143,"61460c2f",0,104941,9619],
+"tile-leave-it-out-front":[284,"3e9f41da",0,114560,18921]
+},
+"words":{
+"tile-shoulda-told-him":["f0420e3a",4,5,63,71,90,104,110,161],
+"tile-coulda-fixed-it":["1faace17",5,8,34,67,88,94,146,175,196,203,229,243,292],
+"tile-dunno-not-that-hungry":["3501e828",4,6,24,50,68,94,109,158,173,182,241],
+"tile-word-with-him":["0bab0f48",4,21,42,46,60,74,88,107,131,162],
+"tile-wedve-been-fine":["f2361431",5,14,29,45,59,66,81,103,130,141,201],
+"tile-room-at-the-back":["cd47a382",5,16,17,37,66,111,120,134,141,174,187,210,280],
+"tile-too-much-on":["2d97f5db",6,21,56,72,84,126,153,170,193,223,261,304],
+"tile-go-over-it":["a1a1c640",6,14,36,63,76,105,107,134,147,195],
+"tile-leave-it-out-front":["03b12727",5,24,46,57,86,97,114,157,192,211,238,244,299]
+}}

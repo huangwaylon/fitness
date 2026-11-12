@@ -24,7 +24,7 @@ items:
     note: "ask him は h が聞こえず「アスキム」"
     ctx: "職場で、同僚が飲み会の人数を数えています"
     why: "ask him は him の h が聞こえず「アスキム」とつながる。them なら「ゼム」か「エム」。if he's は「イフィーズ」で、she's なら「シ」が聞こえる。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [h-drop, linking] }
 
@@ -39,7 +39,7 @@ items:
     note: "in his は h が聞こえず「イニズ」"
     ctx: "玄関先で、友だちが鍵を探しています"
     why: "in his は h が聞こえず「イニズ」とつながる。is（イズ）ではなく、だれの車かを言う his。her keys も弱く「アキーズ」。the（ザ）ではない。"
-    revoice: true
+    tone: neutral
     scene: door
     tags: { seed: 35, register: friend, pragmatic: literal, features: [h-drop] }
 
@@ -55,7 +55,7 @@ items:
     note: "what he は h が聞こえず「ワディ」"
     ctx: "電話で、友だちが修理屋の話をしています"
     why: "what he は h が聞こえず、t が弾んで「ワディ」。she なら「シ」、you なら「ユ」が聞こえる。last の t も落ちて「ラスウィーク」。"
-    revoice: true
+    tone: firm
     tags: { seed: 30, register: friend, pragmatic: attitude, conditions: [phone], features: [h-drop, elision] }
 
   - kind: tile
@@ -69,7 +69,7 @@ items:
     note: "should've は弱く「シュダヴ」。n の音はない"
     ctx: "カフェで、友だちがサプライズの話をしています"
     why: "should've は弱く「シュダヴ」。shouldn't have なら n と t が聞こえる。on his は h が聞こえず「オニズ」。her なら s の音がない。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 54, register: friend, pragmatic: humour, conditions: [cafe], features: [h-drop, contraction] }
 
@@ -84,7 +84,7 @@ items:
     note: "Give him a は「ギヴィマ」と一続き"
     ctx: "大家さんが、電話の終わりに言いました"
     why: "Give him a は h が聞こえず「ギヴィマ」。them なら「エム」。and は弱く「ン」に近く in とまぎらわしいが、二つの頼みをつないでいる。"
-    revoice: true
+    tone: neutral
     tags: { seed: 30, register: neighbour, pragmatic: formula, conditions: [phone], features: [h-drop, weak-form] }
 
   - kind: tile
@@ -98,7 +98,7 @@ items:
     note: "Has he had は h が聞こえず「ハズィハッド」"
     ctx: "病院の受付で、看護師が家族に聞いています"
     why: "Has he は he の h が聞こえず「ハズィ」。Is he なら had が続かない。she なら「シ」が聞こえる。lately＝最近。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [h-drop] }
 
   # ---- weak function words ----
@@ -114,7 +114,7 @@ items:
     note: "What are you は are が弱く「ワダユ」"
     ctx: "年末に、友だちが予定を聞いています"
     why: "What are you は are が弱く「ワダユ」とつながる。did you なら「ディジュ」が聞こえ、もうした話になる。for は弱く「ファ」で、four（フォー）ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: friend, pragmatic: literal, features: [weak-form] }
 
   - kind: tile
@@ -129,7 +129,7 @@ items:
     note: "What do you は do が弱く「ワダユ」"
     ctx: "電話で、友だちが誕生日会の相談をしています"
     why: "What do you は do が弱く「ワダユ」。did you なら「ディジュ」になる。to は弱く「タ」で、日曜へ移す話。on なら日曜に移す作業をする話になる。"
-    revoice: true
+    tone: neutral
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form] }
 
   - kind: tile
@@ -143,7 +143,7 @@ items:
     note: "Did you は つながって「ディジュ」"
     ctx: "職場で、同僚が返事を待っています"
     why: "Did you はつながって「ディジュ」。Didn't なら n が聞こえる。get a は t が弾んで「ゲダ」。a chance で、the ではない。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 43, register: colleague, pragmatic: indirect, features: [yod, flap] }
 
@@ -158,7 +158,7 @@ items:
     note: "would've＝〜したのに（実際は迎えに行っていない）"
     ctx: "駅に着いた友だちから、電話がありました"
     why: "would've は弱く「ウダヴ」。wouldn't have なら n と t が聞こえる。I'd known＝知っていたら。I'll（アル）ならこれからの話になる。"
-    revoice: true
+    tone: soft
     tags: { seed: 49, register: friend, pragmatic: attitude, conditions: [phone], features: [contraction] }
 
   - kind: tile
@@ -172,7 +172,7 @@ items:
     note: "gonna＝going to。間に合うか不安"
     ctx: "電車が遅れて、友だちから電話です"
     why: "gonna＝going to。wanna（want to）ではない。make it in は「メイキディン」とつながる。in time＝間に合って。on time ではない。"
-    revoice: true
+    tone: soft
     tags: { seed: 5, register: friend, pragmatic: hedge, conditions: [phone], features: [gonna, linking] }
 
   - kind: tile
@@ -186,7 +186,7 @@ items:
     note: "gotta＝got to。もう行かなきゃ"
     ctx: "カフェで、友だちが急いで席を立ちます"
     why: "gotta は got to で「ガダ」。got だけなら「ガッ」で止まる。I've の ve は弱いが残る。goes は「ゴウズ」と s で終わり、go ではない。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: formula, conditions: [cafe], features: [gotta, lemme] }
 
@@ -218,7 +218,7 @@ items:
     note: "in person は「イムパーソン」。本人が行く"
     ctx: "区役所で、職員が手続きを説明しています"
     why: "in の n は p の前で m になり「イムパーソン」。on なら「オン」。You'll の ll は弱いが、これからの話なので You'll。"
-    revoice: true
+    tone: firm
     scene: office
     tags: { seed: 43, register: official, pragmatic: literal, features: [assimilation, weak-form] }
 
@@ -234,7 +234,7 @@ items:
     note: "Why don't you〜?＝〜したら？（提案）"
     ctx: "カフェで、友だちが相談に乗っています"
     why: "don't you は t と y が混ざって「ドンチュ」。didn't なら「ディドン」と聞こえ、もうした話を責める意味になる。her は弱く「ア」に近く、him なら「イム」。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: indirect, conditions: [cafe], features: [assimilation, h-drop] }
 
@@ -249,7 +249,7 @@ items:
     note: "got you a は「ガッチュア」。買ってきたよ"
     ctx: "朝、同僚が職場に戻ってきました"
     why: "got you は t と y が混ざって「ガッチュ」。get なら「ゲ」で、これから買う話になる。a coffee で the ではない。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [assimilation] }
 
@@ -264,7 +264,7 @@ items:
     note: "Could you は つながって「クジュ」"
     ctx: "電話で、友だちと待ち合わせを決めています"
     why: "Could you は d と y が混ざって「クジュ」。Can you なら「キャニュ」。決まった店の住所なので the address。an なら「アナドレス」。"
-    revoice: true
+    tone: neutral
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [assimilation, yod] }
 
   - kind: tile
@@ -309,7 +309,7 @@ items:
     note: "You know,＝ほら（相手も知っている前提）"
     ctx: "街で、友だちが店の場所を説明しています"
     why: "You know は「ほら」のつなぎ。next to は t が落ちて「ネクストゥ」。bank は n が入り、back ではない。知っている銀行なので a ではない。"
-    revoice: true
+    tone: neutral
     scene: street
     tags: { seed: 58, register: friend, pragmatic: literal, conditions: [street], features: [filler, elision] }
 
@@ -338,7 +338,7 @@ items:
     note: "So, um＝えっと。本題の前のつなぎ"
     ctx: "電話で、友だちが約束を確かめています"
     why: "So, um は言いにくいことの前置き。still on for＝予定はまだ生きている？ on で in ではない。for は弱く「ファ」で four ではない。"
-    revoice: true
+    tone: soft
     tags: { seed: 49, register: friend, pragmatic: hedge, conditions: [phone], features: [filler, weak-form] }
 
   - kind: tile
@@ -352,7 +352,7 @@ items:
     note: "we're は弱く「ウィア」。were とまぎらわしい"
     ctx: "カフェで、友だちが恋愛の近況を話しています"
     why: "we're は弱く短い「ウィア」。were（ワー）なら もうした話になる。yet は t で終わり、yes ではない。not really＝ちゃんとは〜ない。"
-    revoice: true
+    tone: soft
     scene: cafe
     tags: { seed: 53, register: friend, pragmatic: hedge, conditions: [cafe], features: [filler, contraction] }
 
@@ -397,7 +397,7 @@ items:
     note: "must be＝きっと〜でしょう。t は消える"
     ctx: "パーティーで、初めて会う人に声をかけます"
     why: "must の t は b の前で落ちて「マスビ」。much（マッチ）ではない。just like her は「ジャスライカー」。ケイトのことなので him ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 53, register: stranger, pragmatic: literal, features: [elision, h-drop] }
 
   - kind: tile
@@ -427,7 +427,7 @@ items:
     note: "first time は t が一つ消えて「ファースタイム」"
     ctx: "旅行者に、レストランの店員が話しかけています"
     why: "first の t は time の t と重なり、1回しか聞こえない。fast（ファスト）とは口の形がちがう。in Tokyo で on ではない。your は弱く「ヤ」に近い。"
-    revoice: true
+    tone: neutral
     tags: { seed: 58, register: service, pragmatic: formula, features: [elision, weak-form] }
 
   - kind: tile
@@ -442,7 +442,7 @@ items:
     note: "just need は「ジャスニード」。t が落ちる"
     ctx: "店を出る前に、友だちが席に戻ります"
     why: "just の t は n の前で落ちる。to は弱く「タ」に近く、the とまぎらわしい。stuff（荷物）と staff（職員）はカタカナでは同じだが、stuff は短い「ア」。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: friend, pragmatic: literal, features: [elision, vowel] }
 
   - kind: tile

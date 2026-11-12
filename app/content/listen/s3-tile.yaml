@@ -21,7 +21,7 @@ items:
     note: "been going on＝ずっと続いている。being ではない"
     ctx: "玄関先で、隣の人が言いにくそうに話しています"
     why: "wouldn't have は「ウドゥンタヴ」と速い。would なら「ない」が消えて意味が逆。been going on＝ずっと続いている。being とは長さがちがう。"
-    revoice: true
+    tone: soft
     scene: door
     tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [contraction, weak-form] }
 
@@ -51,7 +51,7 @@ items:
     note: "was gonna＝was going to。するつもりだった（でもしていない）"
     ctx: "家で、パートナーに頼んでいた件を聞きました"
     why: "was gonna＝was going to で、するつもりだった（でもしていない）。wanna（〜したい）ではない。forgot は「ガッ」で、forget（ゲッ）ではない。"
-    revoice: true
+    tone: soft
     scene: living
     tags: { seed: 36, register: partner, pragmatic: attitude, features: [gonna, weak-form] }
 
@@ -66,7 +66,7 @@ items:
     note: "haven't の t は弱いが、n は聞こえる"
     ctx: "薬局で、薬剤師が確認しています"
     why: "haven't の t は弱いが n は残る。You've なら意味が逆。been は「ビン」と短く、being ではない。文末の have you?＝念押し。"
-    revoice: true
+    tone: neutral
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [contraction, intonation] }
 
@@ -96,7 +96,7 @@ items:
     note: "would you have は速く「ウジュヴ」とつながる"
     ctx: "面談で、上司が振り返りを聞いています"
     why: "would you have は「ウジュヴ」と速い。done は「ダン」で、do（ドゥ）ではない。had なら d が聞こえる。looking back＝振り返ってみて。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 46, register: boss, pragmatic: literal, features: [weak-form, yod] }
 
@@ -111,7 +111,7 @@ items:
     note: "弱い can は「クン」。can't とまぎらわしい"
     ctx: "空港のカウンターで、乗り遅れた客と話しています"
     why: "弱い can は「クン」。can't なら強く「キャン」で、but it's tight と合わない。get you は「ゲッチュ」。night は nine と終わりがちがう。"
-    revoice: true
+    tone: neutral
     scene: gate
     tags: { seed: 8, register: service, pragmatic: literal, conditions: [desk], features: [yod, can-cant] }
 
@@ -139,7 +139,7 @@ items:
     note: "did you は つながって「ディジュ」"
     ctx: "にぎやかなカフェで、店員が聞き返しています"
     why: "did you は「ディジュ」とつながる。do なら今の話。large or は「ラージョア」。here（ヒア）と hair（ヘア）は口の形がちがう。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 51, register: service, pragmatic: literal, conditions: [cafe], features: [yod, linking] }
 
@@ -154,7 +154,7 @@ items:
     note: "want it は「ワニッ」。they'll は弱くて聞き落としやすい"
     ctx: "職場で、上司が取引先の注文について話しています"
     why: "want it は「ワニッ」とつながる。won't なら「ほしくない」。they'll は「ゼル」と弱く、there（ゼア）に聞こえやすい。rush fee＝特急料金。"
-    revoice: true
+    tone: firm
     scene: office
     tags: { seed: 41, register: boss, pragmatic: literal, features: [chain, contraction] }
 
@@ -198,7 +198,7 @@ items:
     note: "gonna＝going to。〜したほうがいいよ"
     ctx: "ジムで、友だちが次の種目を説明しています"
     why: "gonna＝going to で、〜したほうがいいよ。wanna ではない。You're の re は弱いが必要。elbows in は「エルボウズィン」。and ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 17, register: friend, pragmatic: indirect, features: [gonna, linking] }
 
   - kind: tile

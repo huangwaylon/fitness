@@ -102,6 +102,14 @@ describe('listen content', () => {
     expect(checkListenAll([file(10, 3)]).join()).toContain("stage 2's tiles: 3 of 10 say a reduction (cap 20 %)");
   });
 
+  it('a tile’s tone: neutral, soft or firm on an own clip, given to the audio script, never in the part', () => {
+    expect(bad([{ ...tile, tone: 'soft' }])).toBe('');
+    expect(bad([{ ...tile, tone: 'happy' }])).toContain('tone happy: neutral, soft, firm or nothing');
+    const unit = { unit: 'x', game: 'tile', stage: 2, status: 'listened', cando: 'x', items: [{ ...tile, tone: 'firm' }] };
+    expect(listenClipItems(unit)[0].tone).toBe('firm');
+    expect(JSON.stringify(listenPart(unit, new Map()))).not.toContain('"tone":');
+  });
+
   it('a tile to re-voice is left out of its part; every other own tile clip says its words', () => {
     const it = { ...tile, revoice: true } as unknown as ListenItem;
     expect(listenPart({ unit: 'x', game: 'tile', stage: 2, status: 'listened', cando: 'x', items: [it, tile as unknown as ListenItem] }, new Map()).items).toHaveLength(1);
@@ -135,7 +143,7 @@ describe('listen content', () => {
   it('a part keeps what is shown, not the engine text, and each clip id', () => {
     for (const { raw } of FILES) {
       const p = listenPart(raw, new Map(BANK.map((it) => [it.id, it])));
-      expect(JSON.stringify(p)).not.toContain('"tts":');
+      expect(JSON.stringify(p)).not.toMatch(/"(tts|tone)":/);
       expect(p.items.length).toBe((raw as { items: { revoice?: true }[] }).items.filter((it) => !it.revoice).length);
       for (const it of p.items) if (it.kind !== 'news' && it.kind !== 'weather') expect('lines' in it ? it.lines.map((l) => l.clip) : [it.clip]).toEqual(listenClipIds(it));
     }

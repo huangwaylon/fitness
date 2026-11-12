@@ -20,7 +20,7 @@ items:
     note: "Did you は「ディジュ」。今の注文のていねいな聞き方"
     ctx: "カフェで、店員が注文を確認しています"
     why: "Did you はつながって「ディジュ」。Do に聞こえても、店員は Did you want とていねいに聞く。that は t が止まり「ザッ」。it ではない。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 51, register: service, pragmatic: formula, conditions: [cafe], features: [yod, linking] }
 
@@ -35,7 +35,7 @@ items:
     note: "What did you は「ワディジュ」。end up＝結局〜する"
     ctx: "朝、友だちがゆうべのことを聞いています"
     why: "What did you はつながって「ワディジュ」。end up は「エンダップ」とつながる。and ではない。doing は最後の「イング」まで聞く。do ではない。"
-    revoice: true
+    tone: neutral
     scene: street
     tags: { seed: 50, register: friend, pragmatic: literal, features: [yod, linking] }
 
@@ -50,7 +50,7 @@ items:
     note: "won't は「ウォウント」と口が丸い。want は「ワント」"
     ctx: "薬局で、客が薬剤師に相談しています"
     why: "won't は口が丸い「ウォウント」で、want（ワント）ではない。Could you は「クッジュ」。Can なら「キャン」。drowsy＝眠くなる。"
-    revoice: true
+    tone: neutral
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [yod, contraction] }
 
@@ -65,7 +65,7 @@ items:
     note: "let me は「レミ」。let's とちがい「ミ」が残る"
     ctx: "電話で、近所の人が渡したい物があるそうです"
     why: "let me はつながって「レミ」。let's なら「レッツ」と「ス」が聞こえる。you're は「ヨー」と短いが、you だけではない。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 30, register: neighbour, pragmatic: literal, conditions: [phone], features: [lemme] }
 
@@ -80,7 +80,7 @@ items:
     note: "them は弱く「ゼム」と短い。him ではない"
     ctx: "服屋で、店員が声をかけてきました"
     why: "try them on は「トライゼモン」とつながる。him なら「ヒム」で、服には合わない。弱い can は「クン」、can't なら「キャン」と強い。"
-    revoice: true
+    tone: neutral
     tags: { seed: 26, register: service, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
@@ -94,7 +94,7 @@ items:
     note: "for は弱く「ファ」。数の four なら長く強い"
     ctx: "玄関先で、配達員が荷物を渡しています"
     why: "Could you はつながって「クッジュ」。Can なら「キャン」。for は弱く「ファ」で、数の four なら長く強い。initials is fine＝イニシャルで大丈夫。"
-    revoice: true
+    tone: neutral
     scene: door
     tags: { seed: 37, register: stranger, pragmatic: literal, features: [yod, weak-form] }
 
@@ -109,7 +109,7 @@ items:
     note: "stay in＝外出しない。out の逆"
     ctx: "金曜の夜、パートナーと予定を話しています"
     why: "I'm の m は弱いが、I だけではない。kind of はつながって「カインダ」。stay in＝家にいる。stay out（外にいる）の逆。"
-    revoice: true
+    tone: soft
     scene: living
     tags: { seed: 35, register: partner, pragmatic: indirect, features: [kinda, weak-form] }
 
@@ -125,7 +125,7 @@ items:
     note: "a bit earlier は「アビデーリア」とつながる"
     ctx: "電話で、歯医者の受付から連絡がありました"
     why: "Would you はつながって「ウッジュ」。Will なら L が残る。bit の t がやわらかく「ビデ」。a bit＝少し。little なら「リル」が聞こえる。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 16, register: service, pragmatic: indirect, conditions: [phone], features: [yod, flap] }
 
@@ -140,7 +140,7 @@ items:
     note: "sent you は「センチュ」。send なら t の音がない"
     ctx: "ビデオ会議の前に、同僚が確認しています"
     why: "sent you は t と you がまざって「センチュ」。send なら t がなく、今の話になる。Did you は「ディジュ」。Do なら「ドゥ」。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 39, register: colleague, pragmatic: literal, conditions: [video], features: [yod] }
 
@@ -156,7 +156,7 @@ items:
     note: "get off work＝仕事が終わる。off は f がはっきり残る"
     ctx: "電話で、友だちが今夜の予定を話しています"
     why: "get off は「ゲドフ」とつながる。off は f がはっきり残る。of なら「ア」くらいに弱い。I'll（アル）と I'd（アイド）は一瞬のちがい。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form, flap] }
 
@@ -171,7 +171,7 @@ items:
     note: "heat that up＝温める。that up は「ザダップ」"
     ctx: "デリで、店員が買った物を渡しています"
     why: "Would you はつながって「ウッジュ」。to は弱く「タ」に近い。that up は「ザダップ」と t がやわらかい。it（イッ）ではなく that。"
-    revoice: true
+    tone: neutral
     tags: { seed: 26, register: service, pragmatic: formula, features: [yod, weak-form] }
 
   - kind: tile
@@ -185,7 +185,7 @@ items:
     note: "of は弱く「ア」。have ではない。think of＝どう思う"
     ctx: "職場で、同僚が書類を見せてきました"
     why: "Let me は「レミ」。Let's なら「ス」が聞こえる。弱い of は「ア」で have とまぎらわしい。think of＝〜をどう思う。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 42, register: colleague, pragmatic: literal, features: [lemme, yod] }
 
@@ -200,7 +200,7 @@ items:
     note: "can は弱く「クン」。can't なら強い「キャン」"
     ctx: "家で、パートナーが声をかけてきました"
     why: "Did you eat は「ディジュイート」と一続き。Do なら「ドゥ」。弱い can は「クン」。can't なら「キャン」と強く、申し出の文に合わない。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 35, register: partner, pragmatic: literal, features: [yod, can-cant] }
 
@@ -215,6 +215,6 @@ items:
     note: "an aisle は「アナイル」、or a は「オラ」とつながる"
     ctx: "空港のチェックインで、係が質問しています"
     why: "Do you は「ドゥユ」と短い。Did なら「ディ」がはっきり聞こえる。an aisle は「アナイル」、or a は「オラ」とつながる。and なら選ぶ意味にならない。"
-    revoice: true
+    tone: neutral
     scene: gate
     tags: { seed: 2, register: service, pragmatic: literal, conditions: [desk], features: [yod, linking] }

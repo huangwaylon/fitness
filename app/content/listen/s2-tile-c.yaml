@@ -39,7 +39,7 @@ items:
     note: "couldn't be happier＝最高に幸せ"
     ctx: "披露宴で、新郎が友人に話しています"
     why: "couldn't の t は落ちるが、n は残る。could be happier なら「もっと幸せになれる」で意味が逆。happier（ハピア）で happy ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 54, register: friend, pragmatic: formula, features: [intonation, elision] }
 
   - kind: tile
@@ -53,7 +53,7 @@ items:
     note: "raise your glasses＝乾杯の合図"
     ctx: "披露宴で、乾杯の音頭が始まります"
     why: "raise は「レイズ」と z の音で、race（レイス）ではない。your は弱く「ヨ」と短いが、the（ザ）ではない。乾杯の合図。"
-    revoice: true
+    tone: neutral
     tags: { seed: 54, register: friend, pragmatic: ritual, conditions: [party], features: [weak-form] }
 
   - kind: tile
@@ -68,7 +68,7 @@ items:
     note: "RSVP＝出欠の返事"
     ctx: "結婚する友だちが、電話で頼んでいます"
     why: "RSVP は1字ずつ「アーエスヴィーピー」。first（ファースト）は fast と口の形がちがう。Can you は「キャニュ」で Could ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form, numbers] }
 
   - kind: tile
@@ -82,7 +82,7 @@ items:
     note: "the bride and groom＝新郎新婦"
     ctx: "披露宴で、同じテーブルの人が"
     why: "do you は弱く「ドゥユ」と速い。did なら前のこと。bride（花嫁）は d で終わり、bright ではない。and は弱く「ン」に近い。"
-    revoice: true
+    tone: neutral
     tags: { seed: 54, register: stranger, pragmatic: ritual, conditions: [party], features: [weak-form, yod] }
 
   - kind: tile
@@ -96,7 +96,7 @@ items:
     note: "tux＝タキシード。そこまではいらない"
     ctx: "友だちが、結婚式の服装を説明しています"
     why: "don't は「ドウン」、won't は「ウォウン」で口の形がちがう。tux（タックス）＝タキシード。tax（税金）とは口の形がちがう。"
-    revoice: true
+    tone: neutral
     tags: { seed: 54, register: friend, pragmatic: literal, features: [weak-form, vowel] }
 
   # ---- fd-dinner: 食事で 決める ----
@@ -111,7 +111,7 @@ items:
     note: "What do you feel like?＝何がいい？"
     ctx: "夕方、友だちと夕食を決めています"
     why: "What do you は速く「ワドゥユ」で、do は弱い。did なら前のこと。feel like＝〜の気分。fill（満たす）は短い「イ」。"
-    revoice: true
+    tone: neutral
     tags: { seed: 18, register: friend, pragmatic: literal, features: [weak-form] }
 
   - kind: tile
@@ -125,7 +125,7 @@ items:
     note: "in it は「イニッ」とつながる"
     ctx: "レストランで、アレルギーのある客が"
     why: "in it は「イニッ」と一続き。on it なら上にのっている。Does it は「ダズィッ」で、Did（ディッ）ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 18, register: service, pragmatic: literal, features: [linking] }
 
   - kind: tile
@@ -139,7 +139,7 @@ items:
     note: "share a few は「シェアラフュー」"
     ctx: "レストランで、友だちが注文の仕方を提案しています"
     why: "share a few は「シェアラフュー」とつながる。a few plates＝何皿か。the ではない。Let's は最後の「ス」まで聞く。Let ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 18, register: friend, pragmatic: literal, features: [linking] }
 
   - kind: tile
@@ -153,7 +153,7 @@ items:
     note: "I'm good with whatever＝何でもいいよ"
     ctx: "何を食べるか聞かれた友だちが"
     why: "good with whatever は一続きで、whatever の t は弾んで「ワレヴァ」。water ではない。I'm の m も聞く。I だけではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 18, register: friend, pragmatic: hedge, features: [linking, flap] }
 
   - kind: tile
@@ -181,7 +181,7 @@ items:
     note: "in the mood for＝〜の気分"
     ctx: "夕食に何を食べるか、友だちが言っています"
     why: "kind of は「カインダ」。of は弱く「ア」に近いが、a ではない。mood（ムード）は food と最初の音がちがう。in the mood for＝〜の気分。"
-    revoice: true
+    tone: neutral
     tags: { seed: 18, register: friend, pragmatic: hedge, features: [weak-form, linking] }
 
   # ---- hl-doctor: 診察で ----
@@ -196,7 +196,7 @@ items:
     note: "on and off＝出たり引いたり"
     ctx: "診察室で、患者が症状を話しています"
     why: "on and off は「オナノフ」と一続き。been は「ビン」と短く、being ではない。It's の s も聞こえる。It だけではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress, linking] }
 
   - kind: tile
@@ -210,7 +210,7 @@ items:
     note: "how long has this been going on?＝いつから？"
     ctx: "診察室で、看護師が問診をしています"
     why: "how long が強く、期間を聞いている。has this been は弱く速いが、is ではない。going on＝続いている。on で、in ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress, weak-form] }
 
   - kind: tile
@@ -224,7 +224,7 @@ items:
     note: "take it easy＝無理しないで"
     ctx: "ねんざの診察の最後に、医者が"
     why: "take it easy は「テイキディージー」と一続き。for は弱く「ファ」で、four（4）ではない。a few days＝数日。the ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress, flap] }
 
   - kind: tile
@@ -238,7 +238,7 @@ items:
     note: "Does it hurt when～?＝〜すると痛む？"
     ctx: "診察室で、医者がのどを診ています"
     why: "hurt は口をあまり開けない「ハー」で、heart（ハート）は口を大きく開ける。swallow（飲み込む）は s の音で、follow ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress, vowel] }
 
   - kind: tile
@@ -252,7 +252,7 @@ items:
     note: "push back＝延期する"
     ctx: "旅行を控えた患者に、医者が答えています"
     why: "Push it back a は一続き。push back＝後ろにずらす。a week で1週間、weeks ではない。文末の can は弱く「クン」、can't ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress, linking, can-cant] }
 
   - kind: tile
@@ -266,7 +266,7 @@ items:
     note: "keep an eye on it＝様子を見る"
     ctx: "湿疹を診た医者が、指示を出しています"
     why: "Keep an eye on it は「キーパナイオニッ」と一続き。and は弱く「ン」に近い。come back in a week＝1週間後にまた来る。at ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress, linking] }
 
   # ---- hm-repair: 修理を 頼む ----
@@ -281,7 +281,7 @@ items:
     note: "have him call＝彼に電話させる"
     ctx: "電話で、大家さんが修理の手配を話しています"
     why: "have him は h が聞こえず「ハヴィム」。them なら th の音が入る。I'll（アル）はこれからの約束で、I だけではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [h-drop] }
 
   - kind: tile
@@ -295,7 +295,7 @@ items:
     note: "tell her は h が聞こえず「テラ」"
     ctx: "電話で、大家さんが伝言を受けています"
     why: "tell her は h が聞こえず「テラ」。him なら「テリム」。called の ed は小さいが、電話はもうあった。call ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 30, register: neighbour, pragmatic: formula, conditions: [phone], features: [h-drop] }
 
   - kind: tile
@@ -309,7 +309,7 @@ items:
     note: "that his は つながって「ザディズ」"
     ctx: "窓の外を見て、住人が"
     why: "that his は h が聞こえず「ザディズ」。this なら「ディス」。truck（トラック）は track（線路）と口の形がちがう。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 30, register: friend, pragmatic: literal, features: [h-drop, flap] }
 
@@ -324,7 +324,7 @@ items:
     note: "gonna＝going to。run you＝（費用が）かかる"
     ctx: "修理屋が、見積もりを伝えています"
     why: "gonna＝going to で、これからの話。wanna（〜したい）ではない。run you about＝だいたい〜かかる。run は rent（レント）ではない。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 30, register: service, pragmatic: literal, features: [gonna, numbers] }
 
@@ -339,6 +339,7 @@ items:
     note: "can't は強く長い。今日は来られない"
     ctx: "電話で、大家さんが悪い知らせを伝えています"
     why: "so he の he は弱く短い。she（シー）ではない。can't は「キャーン」と長く強く、can ではない。broke down＝故障した。"
+    tone: neutral
     revoice: true
     tags: { seed: 30, register: neighbour, pragmatic: literal, conditions: [phone], features: [h-drop, can-cant] }
 
@@ -353,7 +354,7 @@ items:
     note: "on his way＝こちらへ向かっている"
     ctx: "修理会社の受付が、電話で説明しています"
     why: "have him は h が聞こえず「ハヴィム」。them なら th の音が入る。text（テクスト）は x の音で、test ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 30, register: service, pragmatic: literal, conditions: [phone], features: [h-drop] }
 
   # ---- sh-phone: スマホの トラブル ----
@@ -368,7 +369,7 @@ items:
     note: "back it up＝バックアップを取る"
     ctx: "携帯ショップで、店員が修理の前に"
     why: "You'd の d は弱いが聞こえる。You だけではない。have to は速く「ハフタ」。back it up は「バキダップ」。first は fast と口の形がちがう。"
-    revoice: true
+    tone: neutral
     tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation, linking] }
 
   - kind: tile
@@ -382,7 +383,7 @@ items:
     note: "修理は8時まで。お店は10時まで"
     ctx: "携帯ショップで、店員が営業時間を説明しています"
     why: "eight と ten が強く、2つの時間をくらべている。we're は「ウィア」で、were（ワー）ではない。ten は「テン」で、then（ゼン）ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 22, register: service, pragmatic: literal, features: [stress, numbers] }
 
   - kind: tile
@@ -410,7 +411,7 @@ items:
     note: "Would you は つながって「ウジュ」"
     ctx: "携帯ショップのレジで、店員が"
     why: "Would you は d と y がつながり「ウジュ」。Wouldn't なら n と t が聞こえる。case（ケース）は cash（キャッシュ）と最後の音がちがう。"
-    revoice: true
+    tone: neutral
     tags: { seed: 22, register: service, pragmatic: formula, features: [assimilation, yod] }
 
   - kind: tile
@@ -424,7 +425,7 @@ items:
     note: "Why don't you～?＝〜してみたら？"
     ctx: "携帯ショップで、店員がまず提案しています"
     why: "don't you は t と y がつながり「ドンチュ」。didn't ではない。理由ではなく提案。restarting（再起動）で、starting ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 22, register: service, pragmatic: indirect, features: [assimilation] }
 
   - kind: tile
@@ -453,7 +454,7 @@ items:
     note: "How have you been?＝元気にしてた？"
     ctx: "久しぶりに会った友だちが"
     why: "have you は弱く速く「ハヴュ」とつながる。How are you とちがい、会っていなかった間のこと。been は「ビン」で being ではない。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: ritual, features: [weak-form, linking] }
 
@@ -468,7 +469,7 @@ items:
     note: "ran into＝偶然会った"
     ctx: "カフェで、友だちが話し始めます"
     why: "you'll の ll は弱いが「当てられないよ」とこれからの話。ran into＝偶然会った。run（ラン）なら今の話で、yesterday と合わない。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [weak-form, contraction] }
 
@@ -497,7 +498,7 @@ items:
     note: "move out＝引っ越して出ていく"
     ctx: "カフェで、友だちが近況を話しています"
     why: "have to は速く「ハフタ」。had to（ハッタ）なら、もう した 話。move out は「ムーヴァウ」。by March＝3月までに。in ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 57, register: friend, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
@@ -511,7 +512,7 @@ items:
     note: "Whatever happened with～?＝あれ、どうなった？"
     ctx: "久しぶりに会った友だちが"
     why: "your は弱く「ヨ」と短いが、the ではない。Did you は「ディジュ」とつながる。fixed の ed は小さいが聞こえる。fix ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 57, register: friend, pragmatic: literal, features: [yod, weak-form] }
 
   - kind: tile
@@ -540,7 +541,7 @@ items:
     note: "aisle seat＝通路側の席"
     ctx: "チケット売り場で、係の人が"
     why: "Would you は「ウジュ」とつながる。an aisle は「アナイル」と一続き。seat（シート）は sit（スィット）と長さがちがう。"
-    revoice: true
+    tone: neutral
     tags: { seed: 24, register: service, pragmatic: formula, features: [yod, linking] }
 
   - kind: tile
@@ -595,7 +596,7 @@ items:
     note: "a four-ticket limit＝1人4枚まで"
     ctx: "チケット売り場で、係の人が説明しています"
     why: "four-ticket は数字の4で、for（ファ）ではない。There's の s も聞く。There だけではない。limit per person＝1人あたりの上限。"
-    revoice: true
+    tone: firm
     tags: { seed: 24, register: service, pragmatic: literal, features: [numbers, weak-form] }
 
   - kind: tile

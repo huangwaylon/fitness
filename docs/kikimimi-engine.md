@@ -202,6 +202,13 @@ file stops the compiler; content.test runs the same checker.
 - **The gate:** whisper-cli hears every clip; a content word wrong or the voice drifting re-rolls with the next seed,
   the best take kept and the rest flagged; a person's re-rolls are pinned (`PINNED`). `app/scripts/tts/report.json` has
   every clip's numbers and flags (curriculum.md "Listening check").
+- **Tone** (a ことば タイル's `tone`, `src/lib/kikimimi/tone.ts`): every voice's one reference is a cheerful greeting, so
+  every line came out at its energy. A soft or firm tile is cloned from its voice's tone reference (cast.json `tones`,
+  `refs/<id>-soft.m4a`, made by `--tone-refs`: the cast reference cloned saying the tone's line); a toned clip's wh- and
+  either/or questions end in "." for the engine (Qwen rose on most "?"); its seed is the best of 4 by a silent score
+  (endings vs sentence type, pace, pitch range, whisper, ECAPA, UTMOS: `tts.py prosody`), kept in `tone-picks.json`
+  with every take's score. Untoned clips keep their hashes. (The 2026-11-12 pilot: wh/alt endings falling 2/11 → 11/11,
+  soft lines' energy −0.1 → −1.3 σ within the voice; excited and dry references moved nothing, VoxCPM2 drifted the voice.)
 - **音の へんしん's takes:** careful (speech.ts `carefulText`, slowed by `CAREFUL_TEMPO`, through the gate) and fast (the
   natural take sped up, `FAST`; flagged, never re-rolled). `npm run kikimimi:reduce` checks each phrase is heard reduced
   into `reduce.json`.

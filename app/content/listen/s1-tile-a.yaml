@@ -35,7 +35,7 @@ items:
     note: "You'll の ll は弱いが、You だけではない"
     ctx: "駅のホームで、駅員が乗客に声をかけています"
     why: "You'll の ll は弱いが、You だけではない。and は弱く「ン」に近く、in とまぎらわしい。catch the next one＝次のに乗る。"
-    revoice: true
+    tone: firm
     scene: platform
     tags: { seed: 5, register: service, pragmatic: literal, conditions: [station], features: [weak-form, contraction] }
 
@@ -50,7 +50,7 @@ items:
     note: "don't は「ドウン」と d で始まる。won't ではない"
     ctx: "薬局で、薬剤師が薬の飲み方を説明しています"
     why: "these は「ズィーズ」、those は「ゾウズ」と口の形がちがう。don't は「ドウン」、won't は「ウォウン」と w で始まる。and は弱く「ン」に近い。"
-    revoice: true
+    tone: neutral
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [weak-form] }
 
@@ -65,7 +65,7 @@ items:
     note: "us are は「アサ」と一続き。are を聞きのがさない"
     ctx: "仕事の終わりに、同僚が声をかけてきました"
     why: "us are は「アサ」とつながる。were（ワー）だと前の話になる。これからの話なので are。Wanna＝want to で「ワナ」。Won't なら口が丸い「ウォウン」。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 48, register: colleague, pragmatic: literal, features: [weak-form, wanna, linking] }
 
@@ -80,7 +80,7 @@ items:
     note: "won't は口が丸い「ウォウント」。want とちがう"
     ctx: "搭乗口で、係員が乗客の荷物を見ています"
     why: "We'll の ll は弱いが、これからのことなので We'll。We だけではない。won't は「ウォウント」と口が丸く、want（ワント）とちがう。"
-    revoice: true
+    tone: firm
     scene: gate
     tags: { seed: 1, register: service, pragmatic: literal, conditions: [desk], features: [contraction, weak-form] }
 
@@ -95,7 +95,7 @@ items:
     note: "I'll は「アル」。I'd（アイド）とは一瞬のちがい"
     ctx: "玄関先で、配達員が話しています"
     why: "I'll は「アル」と短い。I'd なら最後に「ド」が入る。これから預けるので I'll。your は弱く「ヤ」に近いが、you だけではない。"
-    revoice: true
+    tone: neutral
     scene: door
     tags: { seed: 37, register: stranger, pragmatic: literal, features: [weak-form, contraction] }
 
@@ -110,7 +110,7 @@ items:
     note: "to the は「タザ」と一続き。the thing＝例の集まり"
     ctx: "職場で、同僚が週末前に話しかけてきました"
     why: "Are you は「アーユ」と短い。Were なら前の話になる。to the は「タザ」とひと続きで、a ではなく the。the thing＝例の集まり。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: ritual, features: [weak-form, linking] }
 
@@ -125,7 +125,7 @@ items:
     note: "your は弱く「ヤ」に近い。the ではない"
     ctx: "ジムで、友だちがスクワットのコツを教えています"
     why: "your は弱く「ヤ」に近く、the とまぎらわしい。自分の体の話なので your。and は弱く「ン」に近いが、in ではない。lock your knees＝ひざを伸ばしきる。"
-    revoice: true
+    tone: neutral
     tags: { seed: 17, register: friend, pragmatic: literal, features: [weak-form] }
 
   - kind: tile
@@ -139,7 +139,7 @@ items:
     note: "gonna＝going to。wanna（したい）ではない"
     ctx: "電話で、友だちが今夜の約束について話しています"
     why: "gonna＝going to で「ゴナ」。wanna（ワナ）なら「したい」。I'm の m は弱いが、I だけではない。can は弱く「クン」。can't なら強い。"
-    revoice: true
+    tone: soft
     scene: living
     tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone], features: [gonna, weak-form] }
 
@@ -154,7 +154,7 @@ items:
     note: "for は弱く「ファ」。数の four なら長く強い"
     ctx: "街角で、道を聞かれた人が答えています"
     why: "for two は「ファトゥー」と弱く短い。four なら「フォー」と長く強い。left は L で、R の right とはちがう。turn left＝左に曲がる。"
-    revoice: true
+    tone: neutral
     scene: street
     tags: { seed: 58, register: stranger, pragmatic: literal, features: [weak-form, linking, l-r] }
 
@@ -185,7 +185,7 @@ items:
     note: "about an hour は「アバウダナワ」とひと息で"
     ctx: "ホテルのフロントで、早く着いた客に係が話しています"
     why: "about an hour は「アバウダナワ」とひと息。hour の h は読まないので an。in about an hour＝1時間ほどで。at や a ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [desk], features: [flap, linking] }
 
   - kind: tile
@@ -199,7 +199,7 @@ items:
     note: "I've の ve はほぼ聞こえない。I だけではない"
     ctx: "カフェで、友だちと待ち合わせています"
     why: "I've の ve は弱く I に聞こえるが、already eaten の前には have が要る。I'll（アル）と I'd（アイド）は一瞬。これからするので I'll。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 35, register: friend, pragmatic: literal, features: [contraction] }
 
@@ -214,7 +214,7 @@ items:
     note: "弱い can は「クン」。can't なら「キャン」と強く長い"
     ctx: "郵便局の窓口で、係が送り方を説明しています"
     why: "弱い can は「クン」と短い。can't なら「キャン」と強く長い。by air＝航空便で。but it's more expensive＝でも高い。"
-    revoice: true
+    tone: neutral
     tags: { seed: 24, register: service, pragmatic: literal, features: [can-cant, weak-form] }
 
   - kind: tile
@@ -228,6 +228,6 @@ items:
     note: "and は弱く「ン」に近い。or ではない"
     ctx: "電話で、業者が訪問の時間を伝えています"
     why: "between A and B なので and。弱い and は「ン」に近く、eight and は「エイタン」とつながる。or や in ではない。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 25, register: service, pragmatic: literal, conditions: [phone], features: [weak-form] }

@@ -9,6 +9,8 @@ KIKIMIMI_SV_PY).
   wer   --jobs <in.json> --result <out.json>      jobs: [{wav, refs: [text, ...]}] -> {wav: {hyp, wer, content}}
   mos   --jobs <in.json> --result <out.json>      jobs: [wav, ...] -> {wav: utmos}
   sv    --jobs <in.json> --result <out.json>      jobs: [{wav, ref}] -> {wav: cosine}
+  prosody --jobs <in.json> --result <out.json>    jobs: [{wav, text, gender, words: [n, ...], syl}] -> {wav: {finals, sylS, rangeSt}}
+        (how each sentence ends, the pace and the pitch range: src/lib/kikimimi/tone.ts takeScore picks a toned take)
 """
 import argparse, json, os, re, subprocess, sys, tempfile, time
 
@@ -227,13 +229,83 @@ def sv(a, jobs):
     return {j['wav']: round(float(emb(j['wav']) @ emb(j['ref'])), 3) for j in jobs}
 
 
+# ---- prosody: a toned take's endings, pace and range (tone.ts) ------------------------------------------------------
+
+def prosody(a, jobs):
+    """Per take: each sentence's final movement (its last 80 ms of pitch against its last 400 ms: a rise ends >= 2.5 st
+    over the low and near the peak, a fall >= 2.5 st under the peak, else level), the syllables a second over the
+    speech (Praat's silences trim the edges) and the p5-p95 pitch range. Sentence ends come from whisper's word times
+    (DTW), the job's words aligned to whisper's. The 2026-11-12 tone pilot's method (checked by eye on plotted takes)."""
+    import difflib
+    import numpy as np, parselmouth
+    from parselmouth.praat import call
+    tok = lambda s: re.findall(r"[A-Za-z][A-Za-z'\-]*|'[A-Za-z]+", s)
+    norm = lambda w: re.sub(r"[^a-z']", '', w.lower()).strip("'")
+    res = {}
+    with tempfile.TemporaryDirectory() as td:
+        for i, j in enumerate(jobs):
+            subprocess.run([FFMPEG, '-loglevel', 'error', '-y', '-i', j['wav'], '-ar', '16000', '-ac', '1', f'{td}/{i}.wav'], check=True)
+        for k in range(0, len(jobs), 64):
+            args = ['whisper-cli', '-m', WHISPER_MODEL, '-l', 'en', '-np', '-ml', '1', '-sow', '-oj', '-dtw', 'large.v3.turbo']
+            for i in range(k, min(k + 64, len(jobs))):
+                args += ['-f', f'{td}/{i}.wav']
+            subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for i, j in enumerate(jobs):
+            snd = parselmouth.Sound(f'{td}/{i}.wav')
+            fem = j['gender'] == 'f'
+            pt = snd.to_pitch_ac(time_step=0.01, pitch_floor=110 if fem else 65, pitch_ceiling=500 if fem else 300)
+            t = pt.xs(); f0 = pt.selected_array['frequency']
+            S = np.where(f0 > 0, 12 * np.log2(np.where(f0 > 0, f0, 100) / 100.0), np.nan)
+            # octave jumps: frames > 7 st off the 9-frame running median go; voiced runs under 40 ms go
+            med = np.array([np.nanmedian(S[max(0, n - 4):n + 5]) if not np.all(np.isnan(S[max(0, n - 4):n + 5])) else np.nan for n in range(len(S))])
+            S = np.where(np.abs(S - med) > 7, np.nan, S)
+            run = 0
+            for n in range(len(S) + 1):
+                if n < len(S) and not np.isnan(S[n]):
+                    run += 1; continue
+                if 0 < run < 4: S[n - run:n] = np.nan
+                run = 0
+            tg = call(snd.to_intensity(minimum_pitch=100), 'To TextGrid (silences)', -28, 0.12, 0.06, 'sil', 'snd')
+            ivs = [(call(tg, 'Get start time of interval', 1, n), call(tg, 'Get end time of interval', 1, n), call(tg, 'Get label of interval', 1, n))
+                   for n in range(1, call(tg, 'Get number of intervals', 1) + 1)]
+            snd_ivs = [(x, y) for x, y, l in ivs if l == 'snd']
+            t0, t1 = (snd_ivs[0][0], snd_ivs[-1][1]) if snd_ivs else (0, snd.duration)
+            with open(f'{td}/{i}.wav.json') as f:
+                segs = json.load(f)['transcription']
+            hw = [(norm(s['text']), s['offsets']['to'] / 1000) for s in segs if s['text'].strip()]
+            tn = [norm(w) for w in tok(j['text'])]
+            mp = {}
+            for x, y, n in difflib.SequenceMatcher(None, tn, [w for w, _ in hw], autojunk=False).get_matching_blocks():
+                for q in range(n): mp[x + q] = y + q
+
+            def end_time(ti):
+                for q in range(ti, -1, -1):
+                    if q in mp: return hw[mp[q]][1] + (ti - q) * 0.2
+                return t1 * (ti + 1) / max(1, len(tn))
+            finals, acc = [], 0
+            for n in j['words']:
+                acc += n
+                e = min(end_time(acc - 1), t1)
+                win = [(tt, ss) for tt, ss in zip(t, S) if e - 0.7 <= tt <= e + 0.25 and not np.isnan(ss)]
+                tt = np.array([x for x, _ in win]); ss = np.array([y for _, y in win])
+                if len(win) < 6 or len(ss[tt >= tt.max() - 0.4]) < 6:
+                    finals.append(dict(final='unclear', fall=0)); continue
+                last = tt.max(); end_st = float(np.median(ss[tt >= last - 0.08])); w4 = ss[tt >= last - 0.4]
+                rise, fall = end_st - float(w4.min()), float(w4.max()) - end_st
+                finals.append(dict(final='rise' if rise >= 2.5 and fall <= 1.5 else 'fall' if fall >= 2.5 else 'level', fall=round(fall, 1)))
+            vs = S[~np.isnan(S)]
+            res[j['wav']] = dict(finals=finals, sylS=round(j['syl'] / max(t1 - t0, 0.1), 2),
+                                 rangeSt=round(float(np.percentile(vs, 95) - np.percentile(vs, 5)), 1) if len(vs) > 10 else 0)
+    return res
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('cmd', choices=['synth', 'wer', 'mos', 'sv'])
+    ap.add_argument('cmd', choices=['synth', 'wer', 'mos', 'sv', 'prosody'])
     ap.add_argument('--engine'); ap.add_argument('--model')
     ap.add_argument('--jobs', required=True); ap.add_argument('--result', required=True)
     a = ap.parse_args()
     jobs = load(a.jobs)
     if not jobs:
         save(a.result, {}); sys.exit(0)
-    save(a.result, {'synth': synth, 'wer': wer, 'mos': mos, 'sv': sv}[a.cmd](a, jobs))
+    save(a.result, {'synth': synth, 'wer': wer, 'mos': mos, 'sv': sv, 'prosody': prosody}[a.cmd](a, jobs))

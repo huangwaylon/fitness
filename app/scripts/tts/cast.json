@@ -11,6 +11,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.412
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 11,
+    "mos": 4.517,
+    "sim": 0.848
+   }
   }
  },
  "us-f2": {
@@ -25,6 +33,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.426
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 33,
+    "mos": 4.526,
+    "sim": 0.832
+   }
   }
  },
  "us-f3": {
@@ -53,6 +69,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.478
+  },
+  "tones": {
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 33,
+    "mos": 4.525,
+    "sim": 0.825
+   }
   }
  },
  "us-f5": {
@@ -67,6 +91,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.52
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 11,
+    "mos": 4.565,
+    "sim": 0.9
+   }
   }
  },
  "us-f6": {
@@ -81,6 +113,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.316
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 11,
+    "mos": 4.541,
+    "sim": 0.873
+   }
   }
  },
  "us-m1": {
@@ -95,6 +135,20 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.444
+  },
+  "tones": {
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 22,
+    "mos": 4.513,
+    "sim": 0.823
+   },
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 33,
+    "mos": 4.482,
+    "sim": 0.814
+   }
   }
  },
  "us-m2": {
@@ -109,6 +163,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.379
+  },
+  "tones": {
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 22,
+    "mos": 4.51,
+    "sim": 0.774
+   }
   }
  },
  "us-m3": {
@@ -123,6 +185,20 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.46
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 22,
+    "mos": 4.51,
+    "sim": 0.838
+   },
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 33,
+    "mos": 4.544,
+    "sim": 0.835
+   }
   }
  },
  "us-m4": {
@@ -137,6 +213,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.205
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 22,
+    "mos": 4.457,
+    "sim": 0.759
+   }
   }
  },
  "us-m5": {
@@ -151,6 +235,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.43
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 11,
+    "mos": 4.527,
+    "sim": 0.837
+   }
   }
  },
  "us-m6": {
@@ -165,6 +257,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.273
+  },
+  "tones": {
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 11,
+    "mos": 4.471,
+    "sim": 0.728
+   }
   }
  },
  "uk-f1": {

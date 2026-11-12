@@ -20,7 +20,7 @@ items:
     note: "should've＝〜すればよかった。n の音はない"
     ctx: "カフェで、友だちが悩みを話しています"
     why: "should've は弱く「シュダヴ」。shouldn't have なら n と t が聞こえる。told him は h が聞こえず「トールディム」。them なら「エム」。"
-    revoice: true
+    tone: soft
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: attitude, features: [contraction, h-drop] }
 
@@ -35,7 +35,7 @@ items:
     note: "you'd の d はほぼ聞こえない。could've＝できたのに"
     ctx: "修理屋さんが、壊れた物を見ながら話しています"
     why: "you'd の d はほぼ聞こえず you に近いが、called の前なので you'd。could've は弱く「クダヴ」。couldn't have なら n が聞こえる。"
-    revoice: true
+    tone: firm
     tags: { seed: 31, register: service, pragmatic: literal, features: [contraction] }
 
   - kind: tile
@@ -49,7 +49,7 @@ items:
     note: "not that hungry＝そこまでお腹すいてない"
     ctx: "街で、友だちと夕ごはんの話をしています"
     why: "I don't know は速く短いが「ノウ」で終わる。don't mind（気にしない）なら「マインド」が聞こえる。not that は「ナッザッ」で、so ではない。"
-    revoice: true
+    tone: soft
     scene: street
     tags: { seed: 18, register: friend, pragmatic: refusal, features: [weak-form, idiom] }
 
@@ -64,7 +64,7 @@ items:
     note: "to him and は h が聞こえず「トゥイマン」"
     ctx: "電話で、大家さんが話しています"
     why: "him は h が聞こえず「イム」。them なら th か「エム」。and は弱く「ン」に近い。I'll（アル）と I'd（アイド）は一瞬だが、これからするので I'll。"
-    revoice: true
+    tone: neutral
     scene: living
     tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [h-drop, weak-form] }
 
@@ -79,7 +79,7 @@ items:
     note: "We'd have は弱く「ウィダヴ」。We'll ではない"
     ctx: "会議のあと、同僚が愚痴をこぼしています"
     why: "We'd have は have が弱く「ウィダヴ」。We'll（ウィル）ならこれからの話になる。hadn't は強く言われる。had なら意味が逆。"
-    revoice: true
+    tone: firm
     scene: office
     tags: { seed: 40, register: colleague, pragmatic: attitude, features: [contraction, weak-form] }
 
@@ -94,7 +94,7 @@ items:
     note: "Text me は t が聞こえず「テクスミ」"
     ctx: "夜、友だちが先に帰ります"
     why: "Text me は最後の t が聞こえず「テクスミ」。Tell me（テルミ）なら l が聞こえる。get home は「ゲッホーム」で、got（ガッ）とは口の形がちがう。"
-    revoice: true
+    tone: neutral
     scene: street
     tags: { seed: 49, register: friend, pragmatic: formula, features: [elision, idiom] }
 
@@ -109,7 +109,7 @@ items:
     note: "I'd＝わたしなら〜する（助言）。I'll なら今からする"
     ctx: "ホテルのフロントで、係がこっそり助言しています"
     why: "for a は弱く「ファラ」とつながる。I'd＝わたしなら〜する。I'll なら係が自分でする話になる。in the back＝奥の静かな側。front ではない。"
-    revoice: true
+    tone: soft
     tags: { seed: 3, register: service, pragmatic: indirect, conditions: [desk], features: [contraction, weak-form] }
 
   - kind: tile
@@ -124,7 +124,7 @@ items:
     note: "I'd love to, but＝やんわり断る言い方"
     ctx: "友だちを週末のパーティーに誘いました"
     why: "I'd love to, but＝やんわり断る決まり文句。I'll なら「行く」になる。I've の ve は弱いが got の前に必要。going on＝立てこんでいる。"
-    revoice: true
+    tone: soft
     scene: street
     tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, idiom] }
 
@@ -139,7 +139,7 @@ items:
     note: "go over＝もう一度説明する。over it again はひと続き"
     ctx: "職場で、同僚が手順を説明し終えました"
     why: "Do you は弱く「ジュ」に近い。Did なら「ディ」が聞こえる。want me to は「ワンミタ」で、won't（ウォウント）ではない。go over＝もう一度説明する。"
-    revoice: true
+    tone: neutral
     scene: office
     tags: { seed: 43, register: colleague, pragmatic: literal, features: [yod, linking] }
 
@@ -155,6 +155,6 @@ items:
     note: "leave it out は「リーヴィダウ」と一続き"
     ctx: "玄関先で、配達員が説明しています"
     why: "to は弱く「タ」に近く、the に聞こえやすい。leave it out は「リーヴィダウ」と一続き。out front＝玄関の前。at ではない。"
-    revoice: true
+    tone: neutral
     scene: door
     tags: { seed: 37, register: stranger, pragmatic: literal, features: [linking, flap] }

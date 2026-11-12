@@ -106,6 +106,12 @@ voice says the written words and that already sounds American.
   hint (「ディジュ」), never the respelling.
 - **Caps:** at most 20 % of a stage's tiles say a reduction at かわ, 25 % at もり, 30 % at やま (the trio, or a derived
   clip's lemme, hafta, -cha…); chains never.
+- `tone` (optional, an own clip's only): how it's said, from `ctx`, register and pragmatic. `soft` (tired, sorry,
+  hesitant, a gentle no), `firm` (staff stating a rule, venting, a little annoyed), else `neutral`. A toned clip is
+  cloned from its voice's soft or firm reference (scripts/tts/cast.json `tones`; neutral is the voice's own), its wh- and
+  either/or questions end in "." for the engine only, and the best of 4 seeds by the silent score is kept
+  (scripts/tts/tone-picks.json; src/lib/kikimimi/tone.ts). Excited and dry have no reference: the pilot's moved nothing.
+  No tone: spoken as before (adding one re-voices the clip).
 - **`revoice: true`:** its words changed since its clip was spoken. The compiler leaves it out of the part (never dealt,
   a unit's おと falls back to its quiz) until it's re-voiced (`npm run audio:kikimimi -- --only '^tile-<id>$'`) and the
   line deleted; content.test fails while another tile's clip says other words than its `tts ?? en`.

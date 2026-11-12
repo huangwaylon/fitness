@@ -23,7 +23,7 @@ items:
     note: "or は「ア」と弱く、soup とつながる"
     ctx: "レストランで、店員がメインの注文のあとに"
     why: "soup or は or が弱く、つながって「スーパ」に聞こえる。super salad という料理ではない。soup and なら「ン」が聞こえる。どちらかを選ぶ質問。"
-    revoice: true
+    tone: neutral
     tags: { seed: 27, register: service, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
@@ -37,7 +37,7 @@ items:
     note: "for here＝店内で。to go＝持ち帰り"
     ctx: "カフェのレジで、店員が聞いています"
     why: "for は弱く「ファ」で、four（フォー）ではない。to も弱く「タ」で、the（ザ）ではない。here or は つながって「ヒアラ」。"
-    revoice: true
+    tone: neutral
     scene: cafe
     tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
 
@@ -52,7 +52,7 @@ items:
     note: "仕事ではなく「まだ食べてる？」"
     ctx: "レストランで、店員がお皿を見ながら"
     why: "working on that＝まだ食べている？で、お皿を下げていいかの確認。walking（ウォーキング）は口の形がちがう。on that で、in ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 27, register: service, pragmatic: indirect, features: [weak-form] }
 
   - kind: tile
@@ -66,7 +66,7 @@ items:
     note: "I'll の ll は弱いが、これからの約束"
     ctx: "レストランで、注文を取った店員が"
     why: "I'll の ll はほとんど聞こえないが、これからすること。I だけではない。your は弱く「ヤ」に近く、the（ザ）とは別。"
-    revoice: true
+    tone: neutral
     tags: { seed: 27, register: service, pragmatic: formula, features: [weak-form, contraction] }
 
   - kind: tile
@@ -80,7 +80,7 @@ items:
     note: "a side of＝付け合わせ。of は弱く「ア」"
     ctx: "レストランで、店員がメニューを説明しています"
     why: "side of は of が弱く、つながって「サイダ」。and なら「ン」に近い。fries は r の音で、flies（ハエ）ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 27, register: service, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
@@ -94,7 +94,7 @@ items:
     note: "did you say＝言いましたか？（聞き返し）"
     ctx: "騒がしい店で、店員が聞き返しています"
     why: "did you は つながって「ディジュ」。do you なら「ドゥユ」。or は弱く「ア」に近く、and（ン）ではない。どちらだったかを聞き返している。"
-    revoice: true
+    tone: neutral
     tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form, yod] }
 
   # ---- sh-shop: お店で 聞く ----
@@ -110,7 +110,7 @@ items:
     note: "little は「リドゥ」。bigger と better に注意"
     ctx: "服屋で、客が店員にサイズを聞いています"
     why: "little の tt は弾んで「リドゥ」。bigger は g の音で、better（ベダー）ではない。Do you は弱く短く「ドゥユ」で、Did ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 26, register: service, pragmatic: literal, features: [flap] }
 
   - kind: tile
@@ -153,7 +153,7 @@ items:
     note: "wanna＝want to。try it on＝試着する"
     ctx: "服屋で、友だちが服を手に取っています"
     why: "wanna（ワナ）は want to。gonna（ガナ）なら「〜するつもり」。it on は t が弾み「イドン」。try on＝試着する。in ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 26, register: friend, pragmatic: literal, features: [flap, wanna] }
 
   - kind: tile
@@ -181,7 +181,7 @@ items:
     note: "What about は「ワダバウト」"
     ctx: "服屋で、店員が別の色をすすめています"
     why: "What about は t が弾み「ワダバウト」。black（ブラック）と block は口の形がちがう。in black＝黒で。on ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 26, register: service, pragmatic: literal, features: [flap, linking] }
 
   # ---- hm-neighbor: 近所の 人 ----
@@ -197,7 +197,7 @@ items:
     note: "Just so you know＝念のため言っておくと"
     ctx: "玄関先で、隣の人が言いました"
     why: "Just の t は落ちて「ジャソ」。you know は「ユノウ」で、now（ナウ）ではない。sticks＝引っかかる。最後の s まで聞こえる。"
-    revoice: true
+    tone: neutral
     scene: door
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [elision] }
 
@@ -227,7 +227,7 @@ items:
     note: "I hate to ask＝頼みにくいんだけど"
     ctx: "近所の人が、頼みごとを切り出しました"
     why: "hate to は t が重なって「ヘイトゥ」。have to（ハフタ）ではない。around は「アラウン」で、a round ではなく「近くにいる？」。"
-    revoice: true
+    tone: soft
     scene: door
     tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [elision, weak-form] }
 
@@ -243,7 +243,7 @@ items:
     note: "last night の t が落ちて「ラスナイ」"
     ctx: "朝、マンションの廊下で隣の人が"
     why: "last の t は n の前で落ちて「ラスナイ」。noise（ノイズ）と nose（ノウズ）は口の形がちがう。that noise で、the ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [elision, yod] }
 
   - kind: tile
@@ -257,7 +257,7 @@ items:
     note: "keep an eye on＝見ていてあげる"
     ctx: "近所の人が、犬を連れて頼みに来ました"
     why: "keep an eye on は「キーパナイオン」と一続き。him は h が弱く「オニム」とつながり、them ではない。Can't なら最後に t が聞こえる。"
-    revoice: true
+    tone: neutral
     scene: street
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [linking, h-drop] }
 
@@ -287,7 +287,7 @@ items:
     note: "allergic to＝〜にアレルギーがある"
     ctx: "薬局で、薬剤師が確認しています"
     why: "allergic は「アラージック」と真ん中が強い。allergy（アラジー）ではない。to anything は弱く「タエニシング」とつながり、any だけではない。"
-    revoice: true
+    tone: neutral
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: formula, features: [weak-form] }
 
@@ -316,7 +316,7 @@ items:
     note: "with food＝食後に（何か食べてから）"
     ctx: "薬局で、薬剤師が薬を渡しています"
     why: "with food は食べ物と一緒に、つまり食後に飲む。without なら「アウト」が聞こえる。food（フード）と foot（フット）は最後の音がちがう。"
-    revoice: true
+    tone: neutral
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [linking] }
 
@@ -331,7 +331,7 @@ items:
     note: "prescription＝処方薬。'sで「できている」"
     ctx: "薬局で、名前を呼ばれました"
     why: "Your は弱く「ヤ」に近い。The（ザ）ではなく、あなたの薬。description（説明）ではなく prescription（処方薬）。"
-    revoice: true
+    tone: neutral
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: formula, features: [weak-form] }
 
@@ -346,7 +346,7 @@ items:
     note: "fifteen は後ろ、fifty は前が強い"
     ctx: "クリニックの受付が、電話で予約を取っています"
     why: "fifteen は「ティーン」を長く強く言う。fifty なら「フィフ」が強く、「ティ」は短い。come in＝来院する。on ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [teen-ty, clock] }
 
   - kind: tile
@@ -360,7 +360,7 @@ items:
     note: "come in in＝in が2回。〜分後に来院"
     ctx: "クリニックの受付が、キャンセルが出たと電話してきました"
     why: "come in（来院する）と in twenty minutes（20分後）で in が2回続き「カミニン」。and ではない。twelve ではなく twenty。"
-    revoice: true
+    tone: neutral
     tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers, linking] }
 
   # ---- mc-weekend: 週末 どこ行く ----
@@ -375,7 +375,7 @@ items:
     note: "Let me は つながって「レミ」。Let's とは別"
     ctx: "誘われた友だちが、すぐには決めずに"
     why: "Let me は つながって「レミ」と短い。Let's（レッツ）なら「一緒に〜しよう」。my calendar で、the ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 36, register: friend, pragmatic: hedge, features: [lemme] }
 
   - kind: tile
@@ -389,7 +389,7 @@ items:
     note: "supposed to＝〜らしい。「スポウスタ」"
     ctx: "週末の予定を、友だちが天気を見ながら"
     why: "supposed to は d と t がまとまって「スポウスタ」。suppose（思う）ではなく、予報の「〜らしい」。rain で、train ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 36, register: friend, pragmatic: literal, features: [weak-form, elision] }
 
   - kind: tile
@@ -417,7 +417,7 @@ items:
     note: "meet you は t と y が混ざって「ミーチュ」"
     ctx: "友だちが、現地で待ち合わせると言っています"
     why: "meet you は t と y が混ざって「ミーチュ」。I'll（アル）はこれからのことで、I'd ではない。there（そこ）で、here ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 36, register: friend, pragmatic: literal, features: [yod, contraction] }
 
   - kind: tile
@@ -431,7 +431,7 @@ items:
     note: "and は弱く「ン」に近い。in とはちがう"
     ctx: "週末の誘いに、友だちが答えています"
     why: "and は弱く「ン」に近く、in ではない。text（テクスト）は test（テスト）とちがい、x の音がある。check with＝〜に聞いてみる。"
-    revoice: true
+    tone: neutral
     tags: { seed: 36, register: friend, pragmatic: hedge, features: [weak-form] }
 
   - kind: tile
@@ -445,7 +445,7 @@ items:
     note: "Let me check＝確認させて"
     ctx: "バーベキューの持ち寄りを、友だちと決めています"
     why: "Let me は つながって「レミ」で、Let's ではない。what's in は「ワッツイン」とつながり、what だけではない。fridge＝冷蔵庫。"
-    revoice: true
+    tone: neutral
     tags: { seed: 36, register: friend, pragmatic: literal, features: [lemme, linking] }
 
   # ---- gl-intro: 紹介する ----
@@ -460,7 +460,7 @@ items:
     note: "meet you は t と y が混ざって「ミーチュ」"
     ctx: "パーティーで、友だちに紹介されました"
     why: "meet you は t と y が混ざって「ミーチュ」。to は弱く「タ」で、the ではない。see you（また会えた）ではなく、初対面の meet。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: stranger, pragmatic: ritual, features: [yod, weak-form] }
 
   - kind: tile
@@ -474,7 +474,7 @@ items:
     note: "Did you は つながって「ディジュ」"
     ctx: "パーティーで、友だちが聞いてきました"
     why: "Did you は d と y が混ざって「ディジュ」。Didn't なら「ン」が聞こえる。Marshal's の s で「マーシャルの」妹。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: friend, pragmatic: literal, features: [yod] }
 
   - kind: tile
@@ -488,7 +488,7 @@ items:
     note: "about you は「アバウチュ」"
     ctx: "友だちの友だちに、初めて会いました"
     why: "about you は t と y が混ざって「アバウチュ」。I've の 've は弱いが heard の前に残り、I だけではない。heard（ハード）で、hurt ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: stranger, pragmatic: ritual, features: [yod, contraction] }
 
   - kind: tile
@@ -502,7 +502,7 @@ items:
     note: "are は弱く、what are you は「ワダユ」"
     ctx: "パーティーで、隣の人が話しかけてきました"
     why: "what are you は are が弱く、つながって「ワダユ」。did なら「ディ」の音がある。drinking（ドリンキング）で、thinking ではない。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: stranger, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
@@ -516,7 +516,7 @@ items:
     note: "How do you know～?＝どういう知り合い？"
     ctx: "パーティーで、友だちが二人に聞いています"
     why: "do you は弱く短く「ドゥユ」。did なら「ディ」。know（ノウ）と now（ナウ）は口の形がちがう。each other＝お互い。"
-    revoice: true
+    tone: neutral
     tags: { seed: 38, register: friend, pragmatic: literal, features: [yod, linking] }
 
   - kind: tile
@@ -530,7 +530,7 @@ items:
     note: "what was your name again?＝もう一度名前を"
     ctx: "パーティーで、さっき紹介された人が"
     why: "your は弱く「ヤ」に近く、the（ザ）ではない。was（ワズ）で、is ではない。さっき聞いた名前を忘れたときの言い方。"
-    revoice: true
+    tone: soft
     tags: { seed: 51, register: stranger, pragmatic: formula, features: [weak-form] }
 
   # ---- gl-invite: 誘う・断る ----
@@ -571,7 +571,7 @@ items:
     note: "I'll try to make it＝行けたら行く（来ないことも）"
     ctx: "パーティーに誘われた同僚が"
     why: "I'll の ll は弱いが、I だけではなく、これからの話。to は弱く「タ」。make it＝都合をつけて来る。take it ではない。"
-    revoice: true
+    tone: soft
     tags: { seed: 48, register: colleague, pragmatic: hedge, features: [weak-form] }
 
   - kind: tile
@@ -599,7 +599,7 @@ items:
     note: "have to は「ハフタ」"
     ctx: "夕方の誘いに、同僚が答えています"
     why: "have to は v が f に近くなり「ハフタ」。had to（ハットゥ）なら、もうした話。work（ワーク）と walk（ウォーク）は口の形がちがう。"
-    revoice: true
+    tone: soft
     tags: { seed: 48, register: colleague, pragmatic: refusal, features: [weak-form, vowel] }
 
   - kind: tile
@@ -613,5 +613,5 @@ items:
     note: "grab＝さっと食べる。Wanna＝Want to"
     ctx: "仕事のあと、同僚が誘っています"
     why: "We're（ウィア）で、Were（ワー）ではない。Wanna（ワナ）は Want to で、Gonna（ガナ）ではない。grab ramen＝さっとラーメンを食べる。"
-    revoice: true
+    tone: neutral
     tags: { seed: 48, register: colleague, pragmatic: literal, features: [wanna] }
