@@ -113,8 +113,9 @@ function carefulItems(it: Item): Item[] {
 /** 音の へんしん's careful takes, slowed to this (atempo, as level 1's): はっきり, each word heard as written. */
 const CAREFUL_TEMPO = 0.8;
 const CAREFUL_IDS: ReadonlySet<string> = new Set(ITEMS.filter((it) => it.hs).map((it) => `${it.id}-c`));
-/** A clip's tempo: level 1's gently slowed, a careful take slowed, else as spoken. */
-const tempoOf = (it: Item): number => (it.lv === 1 ? L1_TEMPO : CAREFUL_IDS.has(it.id) ? CAREFUL_TEMPO : 1);
+/** A clip's tempo: a listening file's by its place (LISTEN_TEMPO), level 1's gently slowed, a careful take slowed, else
+ *  as spoken. */
+const tempoOf = (it: Item): number => LISTEN_TEMPO.get(it.id) ?? (it.lv === 1 ? L1_TEMPO : CAREFUL_IDS.has(it.id) ? CAREFUL_TEMPO : 1);
 /** A fast take's source hash: its natural take's master, the tempo and its version. */
 const fastSrc = (master: string) => sha(JSON.stringify([master, FAST, STRETCH, FAST_V]), 10);
 const SLOW = 0.75;
@@ -271,6 +272,16 @@ const kbpsOf = (it: Item): number => (LONG.has(it.id) ? LONG_KBPS : 48);
  *  たちぎき, `<item>-<n>`, at its stage's level): a draft file's only when --only names them (it's voiced after its
  *  review, curriculum.md "Authoring pipeline"). */
 const LISTEN_ITEMS = readListen().filter(({ raw }) => only || (raw as { status: string }).status !== 'draft').flatMap(({ raw }) => listenClipItems(raw));
+/** ほし's short listening games a touch faster (atempo, then gated as any take: the ladder's 1.2-1.4× rungs show whisper
+ *  still hears it). */
+const PACE = 1.1;
+const PACED: ReadonlySet<string> = new Set(['tile', 'call', 'rush', 'tachi']);
+/** The listening files' clips not as spoken, by place (docs/kikimimi.md "Places"): はまべ's slowed as level 1's, ほし's
+ *  tile, call, rush and たちぎき at PACE; news and long as spoken above はまべ. */
+const LISTEN_TEMPO: ReadonlyMap<string, number> = new Map(readListen().flatMap(({ raw }) => {
+  const { stage, game } = raw as { stage: number; game: string }, t = stage === 1 ? L1_TEMPO : stage === 5 && PACED.has(game) ? PACE : 1;
+  return t === 1 ? [] : listenClipItems(raw).map((it) => [it.id, t] as const);
+}));
 /** まるごと 聞く's real pieces' lines (scripts/kikimimi-real.ts cuts them): kept, never spoken. */
 const REAL_IDS = readListen().flatMap(({ raw }) => realClipIds(raw));
 /** はつおん's words (content/mic/pairs.yaml, games/pair/pairs.ts): each alone, `<pair>-1`, `<pair>-2`, in the pair's
@@ -679,7 +690,7 @@ function speak(plans: Plan[]): Map<string, Take> {
       if (tempoOf(p.it) !== 1) {
         const s = t.wav.replace(/\.wav$/, '-t.wav');
         stretch(t.wav, tempoOf(p.it), s);
-        finish(s, t.m4a);
+        finish(s, t.m4a, lufsOf(p.it), kbpsOf(p.it));
       } else finish(t.wav, t.m4a, lufsOf(p.it), kbpsOf(p.it));
     }
     const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', todo.map((p) => ({ wav: takes.get(p.it.id)!.m4a, refs: [p.it.en, p.text] })));

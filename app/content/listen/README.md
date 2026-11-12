@@ -141,7 +141,7 @@ reducing US items, keeping the reviewed help; a new one has `review: true` until
 
 - Exactly three speakers, with three different voices, ideally three accents.
 - `at` is the gap in seconds from the previous line's end to this line's start: the first line is 0, then −1.5 to 3.
-  A negative value overlaps the previous line, and every たちぎき has at least one. Keep overlaps mild (−0.2 to −0.5) and
+  A negative value overlaps the previous line, and every たちぎき above はまべ has at least one. Keep overlaps mild (−0.2 to −0.5) and
   on lines whose start doesn't carry the answer.
 - `rounds` come in this order: `opinions`, `changed`, `plan`.
   - `opinions`: three claims, each held by one speaker **by the end**; `answer` names the speaker for each claim.
@@ -184,7 +184,7 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
   ctx: "月曜の 朝の ニュース。週末の 予定と 東京の 暮らし"
   segments:
     - { topic: island, lines: [{ en: "...", ja: "..." }] }   # island | season, 3-5 lines of 6-32 words
-    - { topic: tokyo, lines: [...] }                         # 100-170 words in all
+    - { topic: tokyo, lines: [...] }                         # 100-170 words in all (はまべ 80-120, ほし 150-220)
   gist: { choices: [4 English], answer: 0, trap: 2, cja: [...], why: "..." }
   detail: { ask: "フリーマーケットは 何時 開始？", choices: [...], answer: 2, trap: 1, cja: [...], why: "..." }
 ```

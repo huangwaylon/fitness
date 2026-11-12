@@ -51,7 +51,7 @@ test('every place can be tapped; ほし with no content plays やま’s made ha
   expect(await kiki(page, (k) => k.view().gm)).toBe('tile');
   const yama = clipsAt(4);
   expect((await kiki(page, (k) => k.items())).every((c) => yama.has(c))).toBe(true);
-  await expect(sheet(page).locator('button[data-slot][data-filled]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-slot][data-given]')).toHaveCount(0);
 });
 
 test('はまべ with no content plays かわ’s made easier: my first slot placed for me', async ({ page }) => {
@@ -62,7 +62,7 @@ test('はまべ with no content plays かわ’s made easier: my first slot plac
   await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
   const kawa = clipsAt(2);
   expect((await kiki(page, (k) => k.items())).every((c) => kawa.has(c))).toBe(true);
-  await expect(sheet(page).locator('button[data-slot][data-filled]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-slot][data-given]')).toHaveCount(1);
 });
 
 test('しずえの ニュース has the row (やま’s, もり easier)', async ({ page }) => {

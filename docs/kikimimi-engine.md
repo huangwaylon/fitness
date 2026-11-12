@@ -197,7 +197,8 @@ file stops the compiler; content.test runs the same checker.
 - **The cast** (`app/scripts/tts/cast.json`, 18 voices): 12 US designed by VoiceDesign (no real person); UK and AU for
   `accent-exposure` items only. Each villager has one US voice for good (cast.ts `CAST`).
 - **Each clip:** `speech.ts spokenText` (`tts`, else `en` with numbers written out) → the seeded take → −16 LUFS mono
-  AAC (stories and しずえの ニュース softer: `SOFT`); L1/L2's slow takes by atempo.
+  AAC (stories and しずえの ニュース softer: `SOFT`); L1/L2's slow takes by atempo. By atempo too, before the gate: L1's and
+  はまべ's listening clips at 0.92, ほし's tile, call, rush and たちぎき at 1.1 (`LISTEN_TEMPO`; news and long as spoken).
 - **The gate:** whisper-cli hears every clip; a content word wrong or the voice drifting re-rolls with the next seed,
   the best take kept and the rest flagged; a person's re-rolls are pinned (`PINNED`). `app/scripts/tts/report.json` has
   every clip's numbers and flags (curriculum.md "Listening check").

@@ -72,6 +72,13 @@ describe('しずえの ニュース: the content', () => {
   const sources = readListen().filter((s) => FILES.includes(s.file.replace(/\.yaml$/, '')));
   const items = (): ListenItem[] => sources.flatMap((s) => (s.raw as { items: ListenItem[] }).items);
 
+  it('a bulletin’s length by place: はまべ 80-120 words, ほし 150-220, else 100-170', () => {
+    const at = (stage: number) => sources.flatMap((s) => checkListen({ ...s, raw: { ...(s.raw as object), status: 'listened', stage } })).filter((p) => p.includes('at this place'));
+    expect(at(4)).toEqual([]);
+    expect(at(5).length).toBeGreaterThan(0);
+    expect(at(1).length).toBeGreaterThan(0);
+  });
+
   it('30 bulletins (15 a file, every season, each weekday once) that check with their help as if listened', () => {
     for (const s of sources) expect(checkListen({ ...s, raw: { ...(s.raw as object), status: 'listened' } })).toEqual([]);
     const news = items().flatMap((it) => (it.kind === 'news' ? [it] : []));

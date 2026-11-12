@@ -6,7 +6,8 @@ import type { Who } from '../../../types.ts';
 import { ITEM_ID_RE } from '../../../contract/listen.ts';
 import { BED_LEAD, bedLoop, itemDur, lineGaps, sequenceStarts, LINE_GAP } from '../../clips.ts';
 import { INDEX, listenOf, load, type Unit } from '../../pool.ts';
-import type { ListenEntry, ListenPart } from '../../listen.ts';
+import { checkListen, type ListenEntry, type ListenPart } from '../../listen.ts';
+import { readListen } from '../../compile.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
@@ -63,6 +64,17 @@ describe('たちぎき: the deal', () => {
     const party = cards.filter((c) => c.bed === 'party').map((c) => c.id);
     expect(new Set(party)).toEqual(new Set(cards.filter((c) => (c.tags?.conditions as readonly string[] | undefined)?.includes('party')).map((c) => c.id)));
     expect(party.length).toBeGreaterThan(0);
+  });
+});
+
+describe('たちぎき: the checks', () => {
+  it('an overlap is needed above はまべ only', () => {
+    const src = readListen().find((s) => s.file === 's2-tachi-a.yaml')!;
+    const raw = src.raw as { items: { lines?: { at?: number }[] }[] };
+    const flat = { ...raw, items: raw.items.map((it) => ({ ...it, lines: it.lines?.map((l) => ({ ...l, at: Math.max(0, l.at ?? 0) })) })) };
+    const overlaps = (stage: number) => checkListen({ ...src, raw: { ...flat, stage } }).filter((p) => p.includes('no overlap'));
+    expect(overlaps(3).length).toBeGreaterThan(0);
+    expect(overlaps(1)).toEqual([]);
   });
 });
 

@@ -506,7 +506,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
         spoken(`${where} line ${i}`, l);
         if (typeof l.at !== 'number' || l.at < -1.5 || l.at > 3 || (i === 0 && l.at !== 0)) at(`${where} line ${i}`, `at ${l.at} (the first 0; then -1.5…3 s)`);
       });
-      if (!lines.some((l) => typeof l.at === 'number' && l.at < 0)) at(where, 'no overlap: give some line a negative `at`');
+      if (u.stage !== 1 && !lines.some((l) => typeof l.at === 'number' && l.at < 0)) at(where, 'no overlap: give some line a negative `at` (はまべ may have none)');
       const who = [...new Set(lines.map((l) => l.who as string))];
       if (who.length !== 3) at(where, `three speakers, not ${who.length}`);
       distinct(where, who);
@@ -521,8 +521,8 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
       rounds.forEach((r, i) => help(`${where} round ${i}`, r.type === 'plan' ? r : { ctx: r.ctx, why: r.why }, ['ctx', 'why']));
     }
 
-    if (it.kind === 'news') checkNews(where, it, { at, speaker, spoken, help });
-    if (it.kind === 'long') checkLong(where, it, { at, speaker, spoken, help, distinct });
+    if (it.kind === 'news') checkNews(where, it, { at, speaker, spoken, help }, u.stage);
+    if (it.kind === 'long') checkLong(where, it, { at, speaker, spoken, help, distinct }, u.stage);
     if (it.kind === 'weather') checkWeather(where, it, at, u.game === 'news');
   }
   return bad;
@@ -541,10 +541,13 @@ interface Checks {
 const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const strsOf = (v: unknown): string[] => (strs(v) ? v : []);
 
+/** A bulletin's words in all by its file's stage (about 45 s before the weather; はまべ shorter, ほし denser). */
+const NEWS_WORDS = (stage: unknown): readonly [number, number] => (stage === 1 ? [80, 120] : stage === 5 ? [150, 220] : [100, 170]);
+
 /** A bulletin's problems: its season and weekday; two segments (an island or seasonal item, then Tokyo's) of 3-5 lines
- *  of 6-32 words, 100-170 words in all, read by しずえ; the gist and the detail, each 4 choices with the answer and the
+ *  of 6-32 words, NEWS_WORDS in all, read by しずえ; the gist and the detail, each 4 choices with the answer and the
  *  trap apart; the help (ctx, each question's cja and why) past draft; US English. */
-function checkNews(where: string, it: Obj, c: Checks) {
+function checkNews(where: string, it: Obj, c: Checks, stage: unknown) {
   const { at } = c;
   if (!(SEASONS as readonly unknown[]).includes(it.season)) at(where, `season ${it.season}`);
   if (it.weekday !== undefined && !(WEEKDAYS as readonly unknown[]).includes(it.weekday)) at(where, `weekday ${it.weekday}`);
@@ -559,7 +562,8 @@ function checkNews(where: string, it: Obj, c: Checks) {
     if (isStr(l.en) && (wordCount(l.en) < 6 || wordCount(l.en) > 32)) at(`${where} line ${k}`, `${wordCount(l.en)} words (6-32)`);
   });
   const total = lines.reduce((n, l) => n + (isStr(l.en) ? wordCount(l.en) : 0), 0);
-  if (total < 100 || total > 170) at(where, `${total} words (100-170: about 45 s before the weather)`);
+  const [lo, hi] = NEWS_WORDS(stage);
+  if (total < lo || total > hi) at(where, `${total} words (${lo}-${hi} at this place: about 45 s before the weather)`);
   c.help(where, { ctx: it.ctx }, ['ctx']);
   for (const k of ['gist', 'detail'] as const) {
     const q = (it[k] ?? {}) as Obj;
@@ -579,24 +583,27 @@ export const LONG_KBPS = 32;
 /** A long piece's bounds: its lines, its words (about 2-4 minutes), a real one's seconds and a real line's. */
 const LONG_LINES = [20, 90] as const;
 const LONG_WORDS = [280, 800] as const;
+/** はまべ's floor (short sentences: two minutes hold fewer words). */
+const LONG_WORDS_HAMA = 200;
 const LONG_SECS = [90, 330] as const;
 const LONG_LINE_SECS = 16;
 const isUrl = (v: unknown): v is string => isStr(v) && /^https?:\/\/\S+$/.test(v);
 
-/** A long piece's problems: its id (≤ 24: its rows add -q5, -k12), title and source; its lines (20-90, 280-800 words):
- *  a generated piece's villagers with distinct US voices, `at` gaps with an overlap; a real piece's speakers, its lines
+/** A long piece's problems: its id (≤ 24: its rows add -q5, -k12), title and source; its lines (20-90, 280-800 words,
+ *  はまべ from 200): a generated piece's villagers with distinct US voices, `at` gaps with an overlap (はまべ: may have none); a real piece's speakers, its lines
  *  cut end to end from 0 (each ≤ 16 s, 90-330 s in all) and its credit (where, whose, the licence and its credit line);
  *  4-5 questions (the gist first, 3 angles at least), 3 distinct choices each, the line that answers them; 2-4
  *  dictation lines (their words in the line, a connected-speech feature); the help (ctx, each question's cja and why)
  *  past draft; US English. */
-function checkLong(where: string, it: Obj, c: Checks) {
+function checkLong(where: string, it: Obj, c: Checks, stage: unknown) {
   const { at } = c;
   if (String(it.id).length > 24) at(where, 'a long piece’s id ≤ 24 characters (its rows add -q5, -k12)');
   if (!isStr(it.name) || chars(it.name) > 20) at(where, 'name: its title, ≤ 20 字');
   const lines = (Array.isArray(it.lines) ? it.lines : []) as Obj[];
   if (lines.length < LONG_LINES[0] || lines.length > LONG_LINES[1]) at(where, `${lines.length} lines (${LONG_LINES.join('-')})`);
   const words = lines.reduce((n, l) => n + (isStr(l.en) ? wordCount(l.en) : 0), 0);
-  if (words < LONG_WORDS[0] || words > LONG_WORDS[1]) at(where, `${words} words (${LONG_WORDS.join('-')}: about 2-4 minutes)`);
+  const floor = stage === 1 ? LONG_WORDS_HAMA : LONG_WORDS[0];
+  if (words < floor || words > LONG_WORDS[1]) at(where, `${words} words (${floor}-${LONG_WORDS[1]}: about 2-4 minutes)`);
   if (it.source === 'tts') {
     if (it.speakers !== undefined || it.credit !== undefined) at(where, 'a generated piece has no speakers or credit (its villagers speak)');
     lines.forEach((l, i) => {
@@ -605,7 +612,7 @@ function checkLong(where: string, it: Obj, c: Checks) {
       if (l.t !== undefined) at(`${where} line ${i}`, 'a generated line has no `t`');
       if (typeof l.at !== 'number' || l.at < -1.5 || l.at > 3 || (i === 0 && l.at !== 0)) at(`${where} line ${i}`, `at ${l.at} (the first 0; then -1.5…3 s)`);
     });
-    if (!lines.some((l) => typeof l.at === 'number' && l.at < 0)) at(where, 'no overlap: give some line a negative `at`');
+    if (stage !== 1 && !lines.some((l) => typeof l.at === 'number' && l.at < 0)) at(where, 'no overlap: give some line a negative `at` (はまべ may have none)');
     const who = [...new Set(lines.map((l) => l.who as string))];
     if (who.length < 2 || who.length > 4) at(where, `2-4 speakers, not ${who.length}`);
     c.distinct?.(where, who);
