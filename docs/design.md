@@ -100,8 +100,11 @@ the menu's ベル row opens it at once, full height, no tabs, its own chunk, at 
 **設定** (`panel/SettingsSheet.svelte`): the menu's 設定 pill → its own full-height sheet: **姿** (the look's portrait,
 the よびな and what's worn → [the 姿 level](#sugata)), **プロフィール** ([Profile](#profile)), **サウンド**
 ([Sound settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
-[Weather](#weather)'s switch too) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's is the same, with a
-line saying it's visiting. Its own chunk.
+[Weather](#weather)'s switch too), **ジムボット** (one row, 動作状況 → its level: `panel/GymPage.svelte`,
+`gym/status.ts`; the LINE gym bot's health from its Worker's public `/status` (gym/README.md): a verdict card, the
+facts, the last checks; fetched on open and each minute while shown; hidden while `VITE_GYM_URL` is empty) and **図鑑**
+(設定 closes, [the 図鑑](#zukan) opens). The guest's is the same but for ジムボット, with a line saying it's visiting.
+Its own chunk.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),
@@ -576,7 +579,7 @@ phone"](ops/runbook.md#10-pair-a-phone)). `?demo&as=G` is its phone.
 
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
   (`guest.jarNote` in place of the rewards), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
-  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours ([Settings](#settings)).
+  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours but ジムボット ([Settings](#settings)).
   ききみみ: the members' games as their summaries. Its island opens at its own villager (far up the island; only the
   open position, `IslandScene` `GUEST_OPEN_BACK`).
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every

@@ -88,6 +88,25 @@ export class Line {
     }
   }
 
+  // For /status (the bot refreshes them now and then: bot.ts refreshLine)
+
+  /** The month's push limit; null when there is none. */
+  async quota(): Promise<number | null> {
+    const r = await this.call('GET', '/message/quota');
+    return r.type === 'none' ? null : Number(r.value);
+  }
+
+  /** Pushes counted this month. */
+  async quotaUsed(): Promise<number> {
+    return Number((await this.call('GET', '/message/quota/consumption')).totalUsage);
+  }
+
+  /** Where LINE sends the webhook, and whether it's on. */
+  async webhook(): Promise<{ endpoint: string; active: boolean }> {
+    const r = await this.call('GET', '/channel/webhook/endpoint');
+    return { endpoint: String(r.endpoint), active: r.active === true };
+  }
+
   private async call(
     method: string, path: string, body?: object, timeoutMs = TIMEOUT_MS, retryKey?: string,
   ): Promise<Record<string, unknown>> {

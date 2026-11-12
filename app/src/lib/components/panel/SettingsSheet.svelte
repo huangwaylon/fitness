@@ -2,9 +2,10 @@
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
-  // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection) and
-  // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
-  // 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner here);
+  // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
+  // ジムボット (one row, members only, hidden while GYM_URL is empty: its 動作状況 level, gym/status.ts) and
+  // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06) but for ジムボット, with a line saying it's visiting. The island is arranged in /editor, not here.
+  // 姿 and ジムボット push a level with ‹ (姿's edits are sent as it's left, with a 取り消す banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -17,6 +18,8 @@
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
+  import GymPage from './GymPage.svelte';
+  import { GYM_URL } from '#lib/gym/status.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -33,8 +36,8 @@
   /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
   let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
 
-  /** The levels pushed: すがた. */
-  let stack = $state<'look'[]>([]);
+  /** The levels pushed: すがた, ジムボット. */
+  let stack = $state<('look' | 'gym')[]>([]);
   const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
@@ -42,7 +45,7 @@
   let zukanTop = 0;
 
   const view = $derived(week.view);
-  const title = $derived(push ? t(`panel.${push}`) : t('title.settings'));
+  const title = $derived(push === 'gym' ? t('gym.title') : push ? t(`panel.${push}`) : t('title.settings'));
   /** This phone's villager (the guest's own on the guest's phone). */
   const me = $derived(view ? mine(view) : null);
   const myVillager = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
@@ -63,7 +66,7 @@
   /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'look') {
+  async function go(to: 'look' | 'gym') {
     if (!stack.length) savedTop = body?.scrollTop ?? 0;
     stack = [...stack, to];
     await tick();
@@ -106,9 +109,11 @@
 
 <Sheet bind:open tunes label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
   <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
-  <div class="panel-body" class:fill={push !== null} data-settings bind:this={body}>
+  <div class="panel-body" class:fill={push === 'look'} data-settings bind:this={body}>
     {#if push === 'look' && view}
       <div class="page"><LookPage {view} /></div>
+    {:else if push === 'gym'}
+      <div class="page"><GymPage /></div>
     {:else if !push && view && me && worn}
       {#if unsent}
         <div class="prow static" data-unsent={unsent}>
@@ -129,9 +134,19 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
+      {#if GYM_URL && !guest}
+        <section class="sec" aria-labelledby="sec-gym">
+          <h2 id="sec-gym" class="sec-label">{t('gym.title')}</h2>
+          <button type="button" class="prow go" data-push="gym" data-sfx="page" onclick={() => go('gym')}>
+            <span class="ic"><OfficialArt key="items/nook-yoga-mat" size={36} /></span>
+            <span class="prl">{t('gym.status')}</span>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          </button>
+        </section>
+      {/if}
       <section class="sec" aria-labelledby="sec-zukan">
         <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
-        <button type="button" class="prow zukan" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
+        <button type="button" class="prow go" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
           onclick={toZukan}>
           <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={36} /></span>
           <span class="prl">{t('zukan.open')}</span>
@@ -161,8 +176,9 @@
   .sec { display: grid; gap: 8px; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .me .btn { flex: none; }
-  .zukan .ic { flex: none; display: flex; width: 40px; justify-content: center; }
-  .zukan .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
+  /* a row that goes somewhere (ジムボット, 図鑑): an icon, the label, a chevron */
+  .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
+  .go .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 

@@ -7,12 +7,15 @@ import type { Env } from './env.ts';
 import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
 import * as messages from './messages.ts';
+import { CHECKS_KEPT, FAILURES_BEFORE_WARNING, outcomeOf, statusOf, type Check, type GymStatus } from './status.ts';
 import { Store, type StateJson } from './store.ts';
 import { dayOf } from './time.ts';
 import { handle } from './ui.ts';
 
 export const MAX_BACKOFF_MINUTES = 120;
-export const FAILURES_BEFORE_WARNING = 3;
+/** LINE's quota and webhook (for /status) are read again on an alarm once they are this old. */
+const LINE_FACTS_MS = 3600_000;
+const NO_LINE_FACTS: GymStatus['line'] = { used: null, limit: null, webhookOk: null, asOf: null };
 
 /** Storage keys: the state (the Python state.json, Store.toJSON), and what the Python bot kept in memory, saved too
  *  so an eviction loses nothing. A saved state that can't be read is kept aside under STATE_BAD. */
@@ -26,6 +29,10 @@ interface Runtime {
   retry: [string, string] | null;
   lastCheck: number | null;
   lastManualCheck: number | null;
+  checks: Check[];
+  lastOk: number | null;
+  lastError: GymStatus['lastError'];
+  line: GymStatus['line'];
 }
 
 export class GymBot extends DurableObject<Env> implements Bot {
@@ -40,6 +47,13 @@ export class GymBot extends DurableObject<Env> implements Bot {
   retry: [string, string] | null = null;
   lastCheck: number | null = null;
   lastManualCheck: number | null = null;
+  /** For /status: the recent checks (newest first), the last fully good one, the last error, LINE's facts. */
+  checks: Check[] = [];
+  lastOk: number | null = null;
+  lastError: GymStatus['lastError'] = null;
+  lineFacts = NO_LINE_FACTS;
+  /** A push went out since LINE's facts were read (the quota changed). */
+  private pushed = false;
   checking = false;
   /** The Python check_lock: one check at a time (an alarm and a 🔎 tap can interleave at each await). */
   private lock: Promise<void> = Promise.resolve();
@@ -66,14 +80,15 @@ export class GymBot extends DurableObject<Env> implements Bot {
     }
     const rt = await this.ctx.storage.get<Runtime>(RUNTIME);
     if (rt) ({ failures: this.failures, siteDownSent: this.siteDownSent, retry: this.retry, lastCheck: this.lastCheck,
-      lastManualCheck: this.lastManualCheck } = rt);
+      lastManualCheck: this.lastManualCheck, checks: this.checks = [], lastOk: this.lastOk = null,
+      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS } = rt); // the defaults: saved before /status
     this.savedRuntime = JSON.stringify(this.runtime());
     if (!this.groupId) console.warn("LINE_GROUP_ID isn't set: alerts can't be sent until it is");
   }
 
   private runtime(): Runtime {
-    const { failures, siteDownSent, retry, lastCheck, lastManualCheck } = this;
-    return { failures, siteDownSent, retry, lastCheck, lastManualCheck };
+    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError } = this;
+    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts };
   }
 
   /** Write the state if it changed, and the runtime fields if they did. */
@@ -102,6 +117,21 @@ export class GymBot extends DurableObject<Env> implements Bot {
   async getState(): Promise<StateJson> {
     await this.ensureAlarm();
     return this.store.toJSON();
+  }
+
+  /** GET /status: memory only (and the alarm); never writes or sets an alarm. */
+  async getStatus(): Promise<GymStatus> {
+    const now = Date.now();
+    const nextCheck = await this.nextCheck();
+    const { failures, checks, lineFacts: line } = this;
+    const mode = this.env.MODE, paused = this.store.paused, retryPending = this.retry !== null;
+    return {
+      v: 1, now, mode, sha: this.env.COMMIT ?? null,
+      ...statusOf({ now, mode, paused, nextCheck, failures, retryPending, checks, line, groupSet: !!this.groupId,
+        running: this.polling }),
+      intervalMin: this.store.intervalMinutes, paused, nextCheck, lastCheck: this.lastCheck, lastOk: this.lastOk,
+      lastError: this.lastError, failures, siteDownSent: this.siteDownSent, retryPending, checks, line,
+    };
   }
 
   /** Replace the state (a restore, or an edit by hand). Refused if it isn't a valid v3 state. */
@@ -172,19 +202,26 @@ export class GymBot extends DurableObject<Env> implements Bot {
     this.store.purge(now);
     let windows = this.store.windows(now);
     const lastDay = [...windows.keys()].at(-1) ?? today; // windows are in date order
+    const idle = !windows.size;
 
     const found: Slot[] = [];
     const errors: Error[] = [];
-    for (const [i, program] of (windows.size ? PROGRAMS : []).entries()) {
+    const r = {} as NonNullable<Check['r']>;
+    for (const [i, program] of (idle ? [] : PROGRAMS).entries()) {
       if (i) await this.sleep(2000 + Math.random() * 3000); // space out requests
       try {
         // Always from today, so the response is never legitimately empty.
         found.push(...(await fetchOpenSlots(program, today, lastDay)));
+        r[program.key] = 'ok';
       } catch (e) {
         console.warn(`fetch failed for ${program.key}: ${e}`);
         errors.push(e instanceof Error ? e : new Error(String(e)));
+        r[program.key] = outcomeOf(e);
       }
     }
+    const failed = Object.values(r).find((o) => o !== 'ok');
+    if (failed) this.lastError = { t: now, code: failed };
+    else if (!idle) this.lastOk = now;
 
     windows = this.store.windows(now); // again: a tap may have changed a setting while fetching
     const open = found.filter((s) => {
@@ -194,18 +231,28 @@ export class GymBot extends DurableObject<Env> implements Bot {
 
     // Once per slot time: every program open at a new time is listed, later ones at that time aren't.
     const fresh = open.filter((s) => !this.store.isNotified(s.start));
+    let push: Check['push'] = 'none';
     if (fresh.length) {
       try {
         if (alert) await this.push(messages.newSlots(fresh));
         this.store.markNotified(fresh.map((s) => s.start));
+        push = alert ? 'ok' : 'held';
       } catch (e) { // still new next check
         console.warn(`could not send the alert to LINE: ${e}`);
+        push = 'failed';
       }
     }
     this.lastCheck = now;
+    this.record({ t: now, by: alert ? 'alarm' : 'tap', ms: Date.now() - now, ...(idle ? { idle: true } : { r }),
+      open: open.length, fresh: fresh.length, push });
     console.log(`check: ${open.length} open, ${fresh.length} new, ${errors.length} errors (through ${lastDay})`);
     if (errors.length) throw new CheckFailed(errors, open, errors.length === PROGRAMS.length);
     return open;
+  }
+
+  /** Keep a check for /status (the newest CHECKS_KEPT). */
+  private record(check: Check): void {
+    this.checks = [check, ...this.checks].slice(0, CHECKS_KEPT);
   }
 
   /** Spaces out the gym requests (a method so the tests can skip the wait). */
@@ -218,8 +265,26 @@ export class GymBot extends DurableObject<Env> implements Bot {
   async push(lines: string[]): Promise<void> {
     const text = lines.join('\n');
     if (!this.retry || this.retry[0] !== text) this.retry = [text, crypto.randomUUID()];
-    await this.line.push(this.groupId, lines, this.retry[1]);
+    try {
+      await this.line.push(this.groupId, lines, this.retry[1]);
+    } catch (e) {
+      this.lastError = { t: Date.now(), code: 'push_failed' };
+      throw e;
+    }
     this.retry = null;
+    this.pushed = true;
+  }
+
+  /** Read LINE's quota and webhook for /status. A failure keeps the old values. */
+  private async refreshLine(): Promise<void> {
+    this.pushed = false;
+    try {
+      const [limit, used, webhook] = await Promise.all([this.line.quota(), this.line.quotaUsed(), this.line.webhook()]);
+      const webhookOk = webhook.active && webhook.endpoint === `${this.env.URL}/line/webhook`;
+      this.lineFacts = { used, limit, webhookOk, asOf: Date.now() };
+    } catch (e) {
+      console.warn(`could not read LINE's quota and webhook: ${e}`);
+    }
   }
 
   /** Push a notice; true if it went out. Failures are only logged. */
@@ -251,6 +316,9 @@ export class GymBot extends DurableObject<Env> implements Bot {
     } finally {
       this.polling = false;
     }
+    // after a push (pushes only happen in the alarm), or hourly (e.g. the month's reset)
+    const asOf = this.lineFacts.asOf;
+    if (this.pushed || asOf === null || Date.now() - asOf > LINE_FACTS_MS) await this.refreshLine();
     await this.save();
     if (this.store.paused) return;
     const now = Date.now();
@@ -263,7 +331,11 @@ export class GymBot extends DurableObject<Env> implements Bot {
   async pollOnce(): Promise<number> {
     const interval = this.store.intervalMinutes * 60_000;
     let delay = interval * (0.85 + Math.random() * 0.3);
-    if (!this.store.windows(Date.now()).size) return delay; // nothing to check: says nothing about the site
+    const now = Date.now();
+    if (!this.store.windows(now).size) { // nothing to check: says nothing about the site
+      this.record({ t: now, by: 'alarm', ms: 0, idle: true, open: 0, fresh: 0, push: 'none' });
+      return delay;
+    }
     try {
       await this.runCheck(true);
     } catch (e) {

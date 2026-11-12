@@ -13,6 +13,8 @@ preview_urls = false
 # 'bot': this Worker checks the gym and answers the taps. 'off': the stop switch, LINE's events ignored and nothing
 # checked (README "Operations").
 MODE = "bot"
+# The Worker's address: /status says whether LINE's webhook points at $URL/line/webhook.
+URL = "https://gym-bot.island-fund-relay.workers.dev"
 
 # The bot: the state, the checks (on its alarm) and the taps' answers.
 [[durable_objects.bindings]]

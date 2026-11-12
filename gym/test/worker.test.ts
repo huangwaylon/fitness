@@ -58,6 +58,7 @@ beforeEach(() => {
   bot = {
     handle: (e: never) => (rec('BOT.handle', e), Promise.resolve()),
     getState: () => (rec('BOT.getState'), Promise.resolve({ version: 3 })),
+    getStatus: () => (rec('BOT.getStatus'), Promise.resolve({ v: 1, verdict: 'healthy', n: calls['BOT.getStatus'].length })),
     putState: (j: never) => (rec('BOT.putState', j), Promise.resolve((j as { version?: number }).version === 3 ? { ok: true } : { ok: false, error: 'bad' }))
   };
 });
@@ -73,6 +74,25 @@ describe('routing', () => {
     expect((await call('/')).status).toBe(404);
     expect((await call('/line/webhook')).status).toBe(404);
     expect((await call('/gym/ws')).status).toBe(404);
+  });
+});
+
+describe('/status', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('answers the bot’s status to any origin, asking the bot at most once a minute', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.parse('2026-10-12T12:00:00+09:00'));
+    const res = await call('/status');
+    expect(await res.json()).toEqual({ v: 1, verdict: 'healthy', n: 1 });
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(res.headers.get('Cache-Control')).toBe('max-age=30');
+    vi.advanceTimersByTime(59_000);
+    expect(await (await call('/status')).json()).toEqual({ v: 1, verdict: 'healthy', n: 1 }); // the kept answer
+    expect(calls['BOT.getStatus']).toHaveLength(1);
+    vi.advanceTimersByTime(2_000);
+    expect(await (await call('/status')).json()).toEqual({ v: 1, verdict: 'healthy', n: 2 });
+    expect(calls['BOT.getStatus']).toHaveLength(2);
   });
 });
 

@@ -92,6 +92,23 @@ describe('the API', () => {
     expect(await line.memberName(GROUP, '')).toBe(''); // an event without a user
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it('reads the quota, its use and the webhook endpoint', async () => {
+    let fetch = answering(200, '{"type":"limited","value":200}');
+    expect(await line.quota()).toBe(200);
+    expect(fetch.mock.calls[0][0]).toBe(`${API}/message/quota`);
+    expect(fetch.mock.calls[0][1]!.method).toBe('GET');
+    answering(200, '{"type":"none"}');
+    expect(await line.quota()).toBeNull();
+    fetch = answering(200, '{"totalUsage":42}');
+    expect(await line.quotaUsed()).toBe(42);
+    expect(fetch.mock.calls[0][0]).toBe(`${API}/message/quota/consumption`);
+    fetch = answering(200, '{"endpoint":"https://x/line/webhook","active":true}');
+    expect(await line.webhook()).toEqual({ endpoint: 'https://x/line/webhook', active: true });
+    expect(fetch.mock.calls[0][0]).toBe(`${API}/channel/webhook/endpoint`);
+    answering(500);
+    await expect(line.quota()).rejects.toThrow(LineError);
+  });
 });
 
 describe('texts', () => {

@@ -67,7 +67,7 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/e2e/` | Playwright tests |
 | `app/design/` | Design sources: the avatar's render tools and signed-off outfits ([players.md](docs/players.md)), the icon |
 | `relay/` | The Cloudflare Worker: the record, the live room, the log, the weather, the Shortcut parser; `scripts/` the admin tools (`record.ts`, `logs.ts`), smoke and latency |
-| `gym/` | Not the game: a LINE bot that tells a group when a gym slot opens, as its own Worker on the same account ([gym/README.md](gym/README.md)) |
+| `gym/` | Not the game: a LINE bot that tells a group when a gym slot opens, as its own Worker on the same account; its health in 設定 → ジムボット ([gym/README.md](gym/README.md)) |
 | `food-data/` | The food data pipeline (Python): `scripts/` builds `out/` from `raw/` (gitignored) and `data_src/`; `npm run food:data` ships it |
 | `docs/` | Below |
 

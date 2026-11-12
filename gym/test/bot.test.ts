@@ -13,12 +13,13 @@ vi.mock('cloudflare:workers', () => ({
   }
 }));
 
-import { FAILURES_BEFORE_WARNING, GymBot, MAX_BACKOFF_MINUTES } from '../src/bot.ts';
+import { GymBot, MAX_BACKOFF_MINUTES } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
 import { CheckFailed, HacomonoError, PROGRAMS, RateLimited } from '../src/hacomono.ts';
 import { Line, LineError } from '../src/line.ts';
 import * as messages from '../src/messages.ts';
 import { ANY, SKIP, type Rule } from '../src/store.ts';
+import { CHECKS_KEPT, FAILURES_BEFORE_WARNING } from '../src/status.ts';
 import { at, isoJst, type Day } from '../src/time.ts';
 import { GROUP, NOON, NOW, inDays, today } from './fakeBot.ts';
 import { DAYS_TO_CHECK } from '../src/config.ts';
@@ -68,12 +69,15 @@ let gym: GymBot;
 let slept: number[];
 let push: ReturnType<typeof vi.fn<Line['push']>>;
 let reply: ReturnType<typeof vi.fn<Line['reply']>>;
+let quota: ReturnType<typeof vi.fn<Line['quota']>>;
+let webhookEndpoint: ReturnType<typeof vi.fn<Line['webhook']>>;
+const URL_ = 'https://gym.example';
 
 /** A bot over `state` (a fresh one: as after an eviction), with LINE mocked and the request spacing recorded. */
 async function start(env: Partial<Env> = {}): Promise<GymBot> {
-  const b = new GymBot(state.ctx as never, { MODE: 'bot', LINE_GROUP_ID: GROUP, LINE_CHANNEL_TOKEN: 't', ...env } as Env);
+  const b = new GymBot(state.ctx as never, { MODE: 'bot', LINE_GROUP_ID: GROUP, LINE_CHANNEL_TOKEN: 't', URL: URL_, ...env } as Env);
   await state.loaded();
-  b.line = { push, reply, memberName: vi.fn(async () => 'Bob') } as unknown as Line;
+  b.line = { push, reply, memberName: vi.fn(async () => 'Bob'), quota, quotaUsed: vi.fn(async () => 42), webhook: webhookEndpoint } as unknown as Line;
   vi.spyOn(b, 'sleep').mockImplementation(async (ms) => void slept.push(ms));
   return b;
 }
@@ -106,6 +110,8 @@ beforeEach(async () => {
   }));
   push = vi.fn<Line['push']>(async () => {});
   reply = vi.fn<Line['reply']>(async () => {});
+  quota = vi.fn<Line['quota']>(async () => 200);
+  webhookEndpoint = vi.fn<Line['webhook']>(async () => ({ endpoint: `${URL_}/line/webhook`, active: true }));
   state = fakeState();
   gym = await start();
 });
@@ -578,5 +584,131 @@ describe('state', () => {
     expect(reply).toHaveBeenCalledTimes(1);
     expect(reply.mock.calls[0][0]).toBe('r1');
     expect(state.alarm()).toBe(NOW);
+  });
+});
+
+describe('/status', () => {
+  const runtime = () => state.kv.get('runtime') as Record<string, unknown>;
+
+  it('records each check, newest first: the trigger, the outcome per program, open and new, the push', async () => {
+    up({ training: schedule(tomorrowAt('12:00')) });
+    responses.pilates = new RateLimited(null);
+    await failed(gym.runCheck());
+    vi.setSystemTime(NOW + MIN);
+    up({ training: schedule(tomorrowAt('12:00'), tomorrowAt('13:00')) });
+    await gym.runCheck(false);
+    expect(gym.checks).toEqual([
+      { t: NOW + MIN, by: 'tap', ms: 0, r: { training: 'ok', pilates: 'ok' }, open: 2, fresh: 1, push: 'held' },
+      { t: NOW, by: 'alarm', ms: 0, r: { training: 'ok', pilates: 'rate_limited' }, open: 1, fresh: 1, push: 'ok' },
+    ]);
+    expect(runtime().checks).toEqual(gym.checks); // saved with the check
+    up({ training: schedule(tomorrowAt('14:00')) });
+    push.mockRejectedValueOnce(new LineError('429'));
+    await gym.runCheck();
+    expect(gym.checks[0]).toMatchObject({ open: 1, fresh: 1, push: 'failed' });
+    await gym.runCheck();
+    expect(gym.checks[0]).toMatchObject({ fresh: 1, push: 'ok' });
+    await gym.runCheck();
+    expect(gym.checks[0]).toMatchObject({ open: 1, fresh: 0, push: 'none' });
+  });
+
+  it('records an alarm with nothing to check as idle, and keeps the newest CHECKS_KEPT across an eviction', async () => {
+    for (let i = 0; i < DAYS_TO_CHECK; i++) setRule(inDays(i), SKIP);
+    for (let i = 0; i < CHECKS_KEPT + 3; i++) {
+      vi.setSystemTime(NOW + i * MIN);
+      await gym.alarm();
+    }
+    expect(ranges).toEqual([]);
+    expect(gym.checks).toHaveLength(CHECKS_KEPT);
+    expect(gym.checks[0]).toEqual({ t: NOW + (CHECKS_KEPT + 2) * MIN, by: 'alarm', ms: 0, idle: true, open: 0, fresh: 0, push: 'none' });
+    gym = await start();
+    expect(gym.checks).toHaveLength(CHECKS_KEPT);
+    expect(gym.checks[0].t).toBe(NOW + (CHECKS_KEPT + 2) * MIN);
+  });
+
+  it('keeps the last good check and the last error', async () => {
+    up();
+    await gym.runCheck();
+    expect([gym.lastOk, gym.lastError]).toEqual([NOW, null]);
+    vi.setSystemTime(NOW + MIN);
+    responses.pilates = new HacomonoError('HTTP 502');
+    await failed(gym.runCheck());
+    expect([gym.lastOk, gym.lastError]).toEqual([NOW, { t: NOW + MIN, code: 'http_5xx' }]);
+    vi.setSystemTime(NOW + 2 * MIN);
+    up({ training: schedule(tomorrowAt('12:00')) });
+    push.mockRejectedValueOnce(new LineError('429'));
+    await gym.runCheck();
+    expect([gym.lastOk, gym.lastError]).toEqual([NOW + 2 * MIN, { t: NOW + 2 * MIN, code: 'push_failed' }]);
+    gym = await start();
+    expect([gym.lastOk, gym.lastError]).toEqual([NOW + 2 * MIN, { t: NOW + 2 * MIN, code: 'push_failed' }]);
+  });
+
+  it('reads LINE’s quota and webhook on the alarm after a push that went out, not after one that failed', async () => {
+    await gym.alarm(); // the first read
+    vi.setSystemTime(NOW + MIN);
+    up({ training: schedule(tomorrowAt('12:00')) });
+    push.mockRejectedValueOnce(new LineError('500'));
+    await gym.alarm();
+    expect(quota).toHaveBeenCalledTimes(1);
+    quota.mockResolvedValue(null);
+    webhookEndpoint.mockResolvedValue({ endpoint: 'https://elsewhere/line/webhook', active: true });
+    await gym.alarm(); // the retried alert goes out
+    expect(quota).toHaveBeenCalledTimes(2);
+    expect(gym.lineFacts).toEqual({ used: 42, limit: null, webhookOk: false, asOf: NOW + MIN });
+    expect(runtime().line).toEqual(gym.lineFacts);
+    webhookEndpoint.mockResolvedValue({ endpoint: `${URL_}/line/webhook`, active: false });
+    down();
+    gym.failures = FAILURES_BEFORE_WARNING - 1;
+    await gym.alarm(); // a notice goes out
+    expect(pushes().at(-1)).toEqual([messages.SITE_DOWN]);
+    expect(quota).toHaveBeenCalledTimes(3);
+    expect(gym.lineFacts.webhookOk).toBe(false);
+    await gym.alarm(); // no push
+    expect(quota).toHaveBeenCalledTimes(3);
+  });
+
+  it('reads them on an alarm once they are an hour old; a failure keeps the old values', async () => {
+    for (let i = 0; i < DAYS_TO_CHECK; i++) setRule(inDays(i), SKIP); // idle alarms: no push
+    await gym.alarm();
+    expect(quota).toHaveBeenCalledTimes(1);
+    vi.setSystemTime(NOW + 60 * MIN);
+    await gym.alarm();
+    expect(quota).toHaveBeenCalledTimes(1);
+    vi.setSystemTime(NOW + 61 * MIN);
+    quota.mockRejectedValueOnce(new LineError('500'));
+    await gym.alarm();
+    expect(quota).toHaveBeenCalledTimes(2);
+    expect(gym.lineFacts).toEqual({ used: 42, limit: 200, webhookOk: true, asOf: NOW });
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("could not read LINE's quota"));
+    await gym.alarm(); // still old: tried again
+    expect(gym.lineFacts.asOf).toBe(NOW + 61 * MIN);
+  });
+
+  it('getStatus: the payload, from memory, never writing or setting an alarm', async () => {
+    gym = await start({ COMMIT: 'abc1234' });
+    up({ training: schedule(tomorrowAt('12:00')) });
+    await gym.alarm();
+    await state.ctx.storage.deleteAlarm();
+    state.kv.clear();
+    const s = await gym.getStatus();
+    expect(s).toEqual({
+      v: 1, now: NOW, mode: 'bot', sha: 'abc1234', verdict: 'broken', reasons: ['no_alarm'], intervalMin: 15,
+      paused: false, nextCheck: null, lastCheck: NOW, lastOk: NOW, lastError: null, failures: 0, siteDownSent: false,
+      retryPending: false, checks: gym.checks, line: { used: 42, limit: 200, webhookOk: true, asOf: NOW },
+    });
+    expect(state.kv.size).toBe(0);
+    expect(state.alarm()).toBeNull();
+    await state.ctx.storage.setAlarm(NOW + INTERVAL);
+    expect(await gym.getStatus()).toMatchObject({ verdict: 'healthy', reasons: [], nextCheck: NOW + INTERVAL });
+    const text = JSON.stringify(await gym.getStatus());
+    expect(text).not.toContain(GROUP);
+    expect(text).not.toContain(isoJst(tomorrowAt('12:00')));
+  });
+
+  it('getStatus: stopped and off', async () => {
+    gym.store.setPaused(true);
+    expect(await gym.getStatus()).toMatchObject({ verdict: 'stopped', paused: true, nextCheck: null });
+    gym = await start({ MODE: 'off', LINE_GROUP_ID: '' });
+    expect(await gym.getStatus()).toMatchObject({ verdict: 'off', reasons: ['mode_off', 'no_group'], mode: 'off' });
   });
 });

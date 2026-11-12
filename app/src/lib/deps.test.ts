@@ -59,7 +59,9 @@ const ALLOW: Record<string, string[]> = {
   // `/stt` and the key (sync)
   mic: ['sync', 'sound'],
   offline: ['travel', 'hiking', 'sync'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline']
+  // 設定's ジムボット (docs/design.md "Settings"): the gym bot's /status, read and worded for its page
+  gym: ['i18n'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym']
 };
 
 function files(dir: string): string[] {

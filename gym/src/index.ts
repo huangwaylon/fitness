@@ -1,7 +1,9 @@
-// The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), and the state's import/export. MODE
-// (wrangler.toml) 'bot' hands each event to the bot; 'off', the stop switch, answers LINE but ignores its events.
+// The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), the state's import/export, and the
+// runner's public status (status.ts). MODE (wrangler.toml) 'bot' hands each event to the bot; 'off', the stop switch,
+// answers LINE but ignores its events.
 import type { Env } from './env.ts';
 import { signatureOk } from './line.ts';
+import type { GymStatus } from './status.ts';
 
 export { GymBot } from './bot.ts';
 
@@ -11,6 +13,7 @@ export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(req.url);
     if (pathname === '/health') return Response.json({ ok: true, mode: env.MODE, sha: env.COMMIT ?? null });
+    if (pathname === '/status') return status(env);
     if (pathname === '/line/webhook' && req.method === 'POST') return webhook(req, env, ctx);
     if (pathname !== '/gym/state') return new Response('not found', { status: 404 });
 
@@ -29,6 +32,18 @@ export default {
     return Response.json(r, { status: r.ok ? 200 : 400 });
   }
 } satisfies ExportedHandler<Env>;
+
+/** /status's answer as the bot last gave it (per isolate), and how long that holds: an anonymous URL, so a flood
+ *  spends Worker requests, not the object's (workers.dev has no Cache API). */
+let statusSeen: { at: number; status: GymStatus } | null = null;
+const STATUS_MS = 60_000;
+
+/** The runner's health, for the app (status.ts): public and harmless by construction, so any origin may read it. */
+async function status(env: Env): Promise<Response> {
+  const now = Date.now();
+  if (!statusSeen || now - statusSeen.at > STATUS_MS) statusSeen = { at: now, status: await bot(env).getStatus() };
+  return Response.json(statusSeen.status, { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'max-age=30' } });
+}
 
 /** LINE's webhook: answered 200 at once (LINE retries or gives up on a slow one), the events handled after. */
 async function webhook(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

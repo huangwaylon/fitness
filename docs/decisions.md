@@ -15,6 +15,11 @@ Logs live in their own Durable Object (`IslandLog`), capped, allow-listed, never
 ([observability](ops/observability.md)). Why: a restore must not roll back the logs, a runaway log must never stop the
 record's writes, and a trail needs no private data.
 
+### The gym bot
+A LINE bot for a gym's free slots runs as its own Worker (`gym/`, [its README](../gym/README.md)) on the relay's
+account, and 設定's ジムボット reads its public `/status`. Why: no machine or tunnel to keep alive, its deploys never touch
+the relay's, and a status of totals and codes needs no keys.
+
 ### Per-person keys
 `KEY_A`, `KEY_B` (and the guest's `KEY_C`) are Worker secrets; a key identifies its person and travels in a `text/plain`
 POST body, never the URL. Why: no accounts for three people, and no CORS preflight.

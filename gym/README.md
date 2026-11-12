@@ -1,88 +1,109 @@
 # The gym bot
 
 A LINE bot that posts in a LINE group when a 💪 パーソナルトレーニング or 🧘 マシンピラティス slot opens at ELEMENT
-戸越銀座店 (the gym's hacomono booking site), for a small group of Japanese-speaking friends. Not part of the game: it
-only shares the Cloudflare account with the relay. It is a TypeScript port of the Python bot in
-[huangwaylon/gym](https://github.com/huangwaylon/gym) (its `CLAUDE.md` is the product and domain reference: rules per
-day, ⏳, 🧹, alerts once per start time, the notices; every Japanese string here is copied from its `messages.py`).
+戸越銀座店 (the gym's hacomono booking site), for a few Japanese-speaking friends. Not part of the game: it only shares
+the Cloudflare account with the relay. A TypeScript port of the retired Python bot,
+[huangwaylon/gym](https://github.com/huangwaylon/gym): its `CLAUDE.md` is the product reference (rules per day, ⏳, 🧹,
+alerts once per start time, the notices), and every Japanese string here is copied from its `messages.py`.
 
-Address: `https://gym-bot.island-fund-relay.workers.dev`. One Worker, one SQLite-backed Durable Object (`GymBot`),
-Workers Free. LINE's webhook comes straight here, so nothing needs a tunnel or a machine left on.
-
-`MODE` (wrangler.toml) is `bot`: the Worker answers the taps, checks the gym and pushes alerts. `off` is the stop
-switch: LINE's events are answered 200 and ignored, and the alarm checks nothing and sets no next alarm.
+`https://gym-bot.island-fund-relay.workers.dev`: one Worker and one SQLite-backed Durable Object (`GymBot`), Workers
+Free. `MODE` (wrangler.toml) is `bot`; `off` is the stop switch (LINE's events answered 200 and ignored, the alarm
+checks nothing and sets no next alarm).
 
 ## How it works
 
 | File | Role |
 |---|---|
-| `src/index.ts` | The Worker's routes (below), MODE's dispatch |
-| `src/bot.ts` | `GymBot` (Python `gymbot.py`): state, `runCheck`, `pollOnce`, the alarm, push with a retry key, RPC for the Worker |
+| `src/index.ts` | The routes (below), MODE's dispatch, `/status`'s 60 s cache |
+| `src/bot.ts` | `GymBot`: the state, the checks on its alarm, pushes (with a retry key), what `/status` reads |
+| `src/status.ts` | `/status`'s payload and its verdict |
 | `src/ui.ts`, `actions.ts`, `line.ts` | The cards and taps, what the buttons do, LINE's API and signature check |
 | `src/store.ts`, `hacomono.ts`, `messages.ts` | The rules per day, the gym API, every user-facing string |
 | `src/time.ts`, `config.ts`, `env.ts` | Tokyo days and clock times, fixed settings, bindings and secrets |
 
 | Route | |
 |---|---|
-| `POST /line/webhook` | LINE's webhook; 403 without a valid `X-Line-Signature`; always 200 at once, the events handled after |
-| `GET`, `PUT /gym/state` | Export or import the state (`Authorization: Bearer <GYM_TOKEN>`, else 401). PUT answers 400 `{ok: false, error}` for anything but a valid version-3 state |
+| `POST /line/webhook` | LINE's webhook: 403 without a valid `X-Line-Signature`; 200 at once, the events handled after |
+| `GET /status` | The runner's health (below), for the app's 設定 → ジムボット; public, any origin |
+| `GET`, `PUT /gym/state` | The state, exported or imported (`Authorization: Bearer <GYM_TOKEN>`); PUT refuses anything but a valid version-3 state (400) |
 | `GET /health` | `{ok, mode, sha}` |
 
-- **Checks** (MODE `bot`): the alarm replaces Python's `poll_forever`. Each alarm runs `pollOnce` (one check: both
-  programs 2–5 s apart, from today to the last checked day; nothing when no day is checked) and sets the next alarm:
-  the interval ±15%, or the backoff when every program failed (doubling, at least a 429's `Retry-After`, capped at
-  120 min). `SITE_DOWN` after 3 failed checks in a row, `SITE_BACK` once it answers. Stopped (⏸️) = no alarm.
-  `wake()` (a settings change): restarted → check now; new interval → from the last check. Every tap and every
-  `/gym/state` call makes sure an alarm is set (that's how the first one starts after the switch).
-- **State**: DO storage, key `state` = the Python `state.json`, byte-for-byte (version 3), so it moves between the two
-  unchanged; key `runtime` = what Python kept in memory (failures in a row, notice sent, the failed push's retry key,
-  last checks), so an eviction loses nothing. A saved state that can't be read is kept under `state.bad` and the bot
-  starts empty (log: `could not read the saved state`). No git backup: `GET /gym/state` is the backup.
-- **Logs**: the same lines as the Python bot (`tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`,
-  `check: 2 open, 1 new, 0 errors (through …)`), in Workers Logs for 3 days (dashboard → Workers → gym-bot → Logs)
-  or live with `npx wrangler tail`.
+- **Checks**: each alarm checks both programs (2–5 s apart, today to the last checked day; nothing when no day is
+  checked) and sets the next: the interval ±15%, or after a fully failed check a backoff (doubling, at least a 429's
+  `Retry-After`, at most 120 min). `SITE_DOWN` is pushed after 3 failed checks in a row, `SITE_BACK` once the site
+  answers. Stopped (⏸️) = no alarm; restarting checks at once, a new interval counts from the last check. A tap or a
+  `/gym/state` call sets an alarm if none is set.
+- **State**: DO storage. `state` is the Python bot's `state.json` (version 3); `runtime` holds failures in a row, the
+  notice sent, a failed push's retry key, the last checks and what `/status` shows. A saved state that can't be read
+  is kept as `state.bad` and the bot starts empty (log: `could not read the saved state`). `GET /gym/state` is the
+  backup.
+- **Status**: a verdict with every reason that applies (rules in `status.ts`), the last and next check, the last
+  success and error, failures in a row, LINE's quota and whether its webhook points here, and the last 12 checks
+  (alarm or 🔎, a code per program, open and new counts, the push). Public on purpose: totals and codes only, never
+  names, IDs, the group, the days' settings, slot times or error text. It reads the object's memory only; LINE's
+  facts are read by the alarm after a push, and hourly. The Worker keeps the answer 60 s, so a flood costs Worker
+  requests, not the object's.
+- **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors (through …)`,
+  every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with `npx wrangler tail`.
 
 ## Secrets
 
-Never in this public repo. `npx wrangler secret put <NAME>` from `gym/`:
+`npx wrangler secret put <NAME>` from `gym/`; never in this public repo. Cloudflare can't show them again: the
+coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 
 | Name | Value |
 |---|---|
 | `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings) |
-| `LINE_GROUP_ID` | Empty: other groups' events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
+| `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
-
-Secrets can't be read back from Cloudflare: the coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 
 ## Develop and deploy
 
 ```sh
 npm ci
 npm run check && npm run knip && npm test   # CI runs these for gym/** (.github/workflows/gym.yml)
-npm run deploy                              # production: a clean gym/ at a commit on origin/main
-curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mode":…,"sha":<the commit>}
+npm run deploy                              # a clean gym/ at a commit on origin/main
+curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mode":"bot","sha":<the commit>}
 ```
 
-The account is pinned in wrangler.toml (the relay's). Tests run on Node with `cloudflare:workers` mocked; no network.
+Tests run on Node with `cloudflare:workers` mocked, no network. The account is pinned in wrangler.toml (the relay's).
+A deploy keeps the state and the alarm.
 
 ## Operations
 
-`$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` as in Secrets.
+`$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
-- **Watch it**: `npx wrangler tail` (taps, changes, `check: …` each interval); in the group, 📋 設定を見る shows the
-  last and next check.
-- **Stop everything** (e.g. alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
-  `MODE = "off"`. Back on: `MODE = "bot"`, deploy, then one `GET /gym/state` to set the first alarm.
+- **Look**: the app's 設定 → ジムボット (the verdict, the facts, the last checks; up to a minute old), or
+  `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
+- **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
+  `MODE = "off"`. Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`
+  to set the first alarm.
 - **Back up or edit the state**: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > state.json`;
-  put it back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
-- **LINE's webhook** must be `$URL/line/webhook` (LINE Developers Console, or
-  `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json' -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint`).
+  back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
+- **Point LINE here** (the webhook must be `$URL/line/webhook`): LINE Developers Console, or
+  `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json' -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint`.
+
+## Diagnose
+
+The verdict is the first reason that applies (`/status`'s `reasons`, in this order):
+
+| Reason | Verdict | Means | Do |
+|---|---|---|---|
+| `mode_off` | off | Deployed with `MODE = "off"` | Back on (Operations) |
+| `paused` | stopped | ⏸️ in the group's 🔧 チェック設定 | ▶️ チェックを再開 in LINE |
+| `no_alarm` | broken | No next check scheduled | `GET /gym/state` sets one; then `wrangler tail` for why it stopped |
+| `no_group` | broken | `LINE_GROUP_ID` unset | Put the secret |
+| `webhook_wrong` | broken | LINE's webhook isn't `$URL/line/webhook` or is inactive (taps go nowhere) | Point LINE here |
+| `overdue` | late | 5+ min past the next check | Usually passes; if it stays, `wrangler tail` |
+| `site_failing` | failing (3+), else degraded | Whole checks failing: the codes say how (`timeout`, `rate_limited`, `http_5xx`, …) | Wait: it backs off and warns the group; `http_4xx` or `empty` for long may mean the gym's API changed (`hacomono.ts`) |
+| `program_failing` | degraded | One program failed in the last check | Usually passes |
+| `push_retry` | degraded | An alert or notice didn't reach LINE; retried each check | LINE status; a 429 in the logs = the month's quota is used up |
+| `quota_high` | degraded | 80%+ of the month's LINE pushes used | Fewer days or a longer interval until the 1st |
 
 ## Quotas
 
-- LINE free plan: 200 pushed messages a month, each counted once per group member. Alerts and the site notices
-  are pushes; answers to taps are free. A 429 on a push = the month's quota is used up (logged; the alert is retried
-  each check).
-- Workers Free: 100,000 requests a day; Durable Objects 100,000 requests and 13,000 GB-s a day. A check every 15
-  minutes is ~100 alarms a day of a few seconds each, taps a handful: far inside.
+- LINE free plan: 200 pushed messages a month, each counted once per group member. Alerts and notices are pushes;
+  answers to taps are free.
+- Workers Free: 100,000 requests a day; Durable Objects 100,000 requests, 13,000 GB-s and 100,000 rows written a day,
+  account-wide, shared with the relay. A check every 15 minutes is ~100 alarms and ~100 rows a day.
 - The gym site: 2 requests a check, browser User-Agent and Referer, backoff on failures.
