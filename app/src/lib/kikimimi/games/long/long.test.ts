@@ -6,7 +6,8 @@ import { INDEX, listenOf, load, type Unit } from '../../pool.ts';
 import { longDictId, type ListenPart } from '../../listen.ts';
 import { DICT_MAX, LONG, dictBoard, dictFor, dictRow, dictWords, heardOf, longDeal, longOpts, longRounds, longTier, pieceFor, piecesAt, shownOf, speakersOf } from './def.ts';
 
-const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'long');
+// (the shipped pieces: a draft file is unvoiced, and the games show listened files only)
+const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'long' && INDEX.listen[u][2] !== 'draft');
 const parts = (): ListenPart[] => FILES.map((u) => listenOf(u)!);
 beforeAll(() => load(...(FILES as Unit[])));
 

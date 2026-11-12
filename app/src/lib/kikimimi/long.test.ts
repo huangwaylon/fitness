@@ -14,7 +14,8 @@ import alignJson from './align.json';
 type Long = Extract<ListenItem, { kind: 'long' }>;
 const CLIPS = clipsJson as Record<string, { dur: number; hash: string }>;
 const ALIGN = alignJson as unknown as Record<string, [hash: string, wer: number]>;
-const FILES = readListen().map(({ raw }) => listenUnit(raw)).filter((u) => u.game === 'long');
+// (the shipped pieces: a draft file isn't voiced yet)
+const FILES = readListen().map(({ raw }) => listenUnit(raw)).filter((u) => u.game === 'long' && u.status !== 'draft');
 const PIECES: { file: string; status: string; it: Long }[] = FILES.flatMap((u) => u.items.flatMap((it) => (it.kind === 'long' ? [{ file: u.unit, status: u.status, it }] : [])));
 
 /** The licences a real piece may ship under (the app is shared, non-commercial): each one's deed. */

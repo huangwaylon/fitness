@@ -115,6 +115,22 @@
   "cv": "b0741b",
   "decks": "281d112838be461d"
  },
+ "long:s0-long": {
+  "cv": "6fd23f",
+  "decks": "4bf33a362d95eed2"
+ },
+ "long:s1-long": {
+  "cv": "426ab9",
+  "decks": "9dfaac28b427806f"
+ },
+ "long:s2-long": {
+  "cv": "d6c872",
+  "decks": "42cdf149d336f95c"
+ },
+ "long:s3-long": {
+  "cv": "5ff747",
+  "decks": "54f24381e382f886"
+ },
  "long:s4-long-a": {
   "cv": "0cdf81",
   "decks": "29801df4678634df"
@@ -138,6 +154,22 @@
  "news:news-b": {
   "cv": "3b16bc",
   "decks": "8adc58439589524e"
+ },
+ "news:s0-news": {
+  "cv": "b41477",
+  "decks": "ba06099dcacaf9cc"
+ },
+ "news:s1-news": {
+  "cv": "3852cd",
+  "decks": "5f4e030b4c6e8e81"
+ },
+ "news:s2-news": {
+  "cv": "7af9ba",
+  "decks": "22cc0a2e137876b7"
+ },
+ "news:s4-news": {
+  "cv": "9c2b7c",
+  "decks": "b4eec5110989e2b0"
  },
  "pair:mic-pairs": {
   "cv": "0b122b",
