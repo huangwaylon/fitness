@@ -17,18 +17,24 @@ export const RELOAD_WINDOW_MS = 30_000;
 
 /** Reloads the page unless it already reloaded itself in the last RELOAD_WINDOW_MS. Returns whether it did. `why`: the
  *  log's `app.reload` (written before the page goes: a reload fires no hidden event). */
-export function safeReload(now = Date.now(), why: 'update' | 'launch' | 'chunk' | 'other' = 'other'): boolean {
+export function safeReload(now = Date.now(), why: Why = 'other'): boolean {
   try {
     if (now - Number(sessionStorage.getItem(KEY) ?? 0) < RELOAD_WINDOW_MS) return false;
     sessionStorage.setItem(KEY, String(now));
   } catch {
     return false; // no storage: no loop guard, so no automatic reload
   }
+  reloadNow(why);
+  return true;
+}
+
+type Why = 'update' | 'launch' | 'chunk' | 'mic' | 'other';
+/** The page reloaded now, no loop guard (a tap's: a refused mic's 「もう一度試す」, lib/mic/retry.ts), `why` logged first. */
+export function reloadNow(why: Why): void {
   log('app.reload', { why });
   persistLog();
   markLeaving();
   location.reload();
-  return true;
 }
 
 const waits = new WeakMap<ServiceWorkerContainer, Promise<boolean>>();

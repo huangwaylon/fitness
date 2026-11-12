@@ -157,7 +157,8 @@ test('the mic opt-in: a refused permission leaves it off, with how to change it'
   const optin = await toSettings(page);
   await optin.locator('[data-mic-switch]').click();
   await expect(optin.locator('[data-mic-refused]')).toHaveAttribute('data-mic-refused', 'denied');
-  await expect(optin.locator('[data-mic-refused]')).toContainText('Safari › マイク');
+  await expect(optin.locator('[data-mic-refused]')).toContainText('Safari');
+  await expect(optin.locator('[data-mic-retry]')).toBeVisible();
   await expect(optin.locator('[data-mic-switch]')).toHaveAttribute('aria-checked', 'false');
   expect(await page.evaluate(() => localStorage.getItem('island.mic'))).toBeNull();
 });

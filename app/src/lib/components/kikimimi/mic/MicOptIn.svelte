@@ -15,6 +15,10 @@
   import { relayReady } from '#lib/mic/backends/relay.ts';
   import { sttMB } from '#lib/mic/models.ts';
   import type { Got } from '#lib/mic/session.ts';
+  import { deniedKey, micReturn, retryMic } from '#lib/mic/retry.ts';
+  import { reloadNow } from '#lib/ui-state/reload.ts';
+  import { isStandalone } from '#lib/ui-state/standalone.ts';
+  import { log } from '#lib/sync/log.ts';
   import MicButton from './MicButton.svelte';
 
   let { onprobe }: { onprobe: () => void } = $props();
@@ -35,9 +39,18 @@
   const be = $derived(pickBackend(prefs.be, can));
   const mb = (n: number) => Math.round(n / 1e5) / 10;
 
-  // the mic core fetched ahead (the switch's permission ask, the check)
-  const core = () => import('#lib/mic/session.ts');
-  onMount(() => void (lookModel(), core()));
+  // the mic core fetched ahead (the switch's permission ask, the check), kept so the tap asks before any await
+  let mic: typeof import('#lib/mic/session.ts') | null = null;
+  const core = () => import('#lib/mic/session.ts').then((m) => (mic = m));
+  /** Back from a refusal's 「もう一度試す」 (its reload): the switch's next tap asks afresh. */
+  const retried = micReturn({ take: true }) === 'optin';
+  const pwa = isStandalone();
+  let sec = $state<HTMLElement>();
+  onMount(() => {
+    void (lookModel(), core());
+    if (retried) sec?.scrollIntoView({ block: 'center' });
+  });
+  const retry = () => retryMic('optin', { reload: () => reloadNow('mic') });
 
   async function lookModel() {
     model = (await whisperCached()) ? 'have' : (await whisperServed()) ? 'ready' : 'none';
@@ -53,10 +66,13 @@
       heard = undefined;
       return keep({ ...prefs, on: false });
     }
+    // the permission asked first, inside the tap (an await before it may lose the tap: WebKit then refuses unasked)
+    const t0 = performance.now(), ask = mic ? mic.micAllowed() : core().then((m) => m.micAllowed());
     asking = true;
     refused = null;
-    const a = await (await core()).micAllowed();
+    const a = await ask;
     asking = false;
+    log('mic.perm', { st: a, ms: Math.round(performance.now() - t0), at: 'optin', retry: retried, pwa });
     if (a !== 'granted') {
       refused = a;
       return cue('boop');
@@ -86,20 +102,22 @@
   }
 </script>
 
-<section class="sec" aria-labelledby="kk-mic" data-mic-optin data-mic-on={prefs.on ? 1 : 0}>
+<section class="sec" aria-labelledby="kk-mic" data-mic-optin data-mic-on={prefs.on ? 1 : 0} bind:this={sec}>
   <h3 id="kk-mic" class="sec-label">{t('kiki.mic.title')}</h3>
   <button type="button" class="row tile-btn" role="switch" aria-checked={prefs.on} data-mic-switch data-sfx="self" aria-disabled={asking} onclick={toggle}>
     <span class="rl">🎤 {t('kiki.mic.use')}<small>{asking ? t('kiki.mic.asking') : t('kiki.mic.useSub')}</small></span>
     <span class="sw" aria-hidden="true"><i></i></span>
   </button>
-  {#if refused}<p class="hint warn" role="alert" data-mic-refused={refused}>{refused === 'denied' ? t('kiki.mic.perm.denied') : t('kiki.mic.unsupported')}</p>{/if}
+  {#if refused}<p class="hint warn" role="alert" data-mic-refused={refused}>{refused === 'denied' ? t(deniedKey(pwa, retried)) : t('kiki.mic.unsupported')}</p>
+  {:else if retried && !prefs.on}<p class="hint" role="status" data-mic-retried>{t('kiki.mic.retried')}</p>{/if}
+  {#if refused === 'denied'}<button type="button" class="btn small" data-mic-retry data-sfx="confirm" onclick={retry}>↻ {t('kiki.mic.retry')}</button>{/if}
 
   {#if prefs.on}
     <p class="hint">🔒 {t('kiki.mic.rule')}</p>
     <div class="card box check">
       <h4>{t('kiki.mic.check')}</h4>
       <p class="soft">{t('kiki.mic.check.how')}</p>
-      <MicButton onheard={(g) => (heard = g)} />
+      <MicButton onheard={(g) => (heard = g)} onretry={retry} />
       {#if heard !== undefined}
         <p class="res" role="status" data-mic-heard={heard ? 'yes' : 'no'}>{heard ? `✓ ${t('kiki.mic.check.heard', { s: Math.round(heard.s * 10) / 10 })}` : t('kiki.mic.check.none')}</p>
       {/if}

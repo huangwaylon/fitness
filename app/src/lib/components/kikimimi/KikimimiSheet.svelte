@@ -51,6 +51,7 @@
   import { heardQuiz, liveInvite, quizLive } from './invite.svelte.ts';
   import { levelMark } from './look.ts';
   import { inviteStack, pop, push as pushOn, taikaiStack, type Page } from './nav.ts';
+  import { micReturn } from '#lib/mic/retry.ts';
   import type { Tile, HubInvite } from './hub/Hub.svelte';
   import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
   import { tierFor, type Lesson, type UnitPlay } from '#lib/kikimimi/lesson.ts';
@@ -182,6 +183,7 @@
           else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
         });
         game = it;
+        if (!joining && micReturn()) enter({ k: 'settings' }); // (a refused mic's retry: back to its 設定, lib/mic/retry.ts)
         // (tests: `deck(ids, help?)` starts my lobby kept alone on these items, as おさらい does: a dialogue before its
         // clips; `help` a fixture's Japanese help over an item, its cja aligned to the choices as authored)
         if (hooksOn())

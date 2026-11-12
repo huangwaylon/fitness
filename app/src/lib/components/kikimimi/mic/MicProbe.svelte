@@ -25,6 +25,9 @@
     takeSpeech, webkitOnce, type Heard
   } from '#lib/mic/probe/run.ts';
   import { relayReady } from '#lib/mic/backends/relay.ts';
+  import { deniedKey, micReturn, retryMic } from '#lib/mic/retry.ts';
+  import { reloadNow } from '#lib/ui-state/reload.ts';
+  import { isStandalone } from '#lib/ui-state/standalone.ts';
 
   let { onback }: { onback: () => void } = $props();
 
@@ -42,7 +45,10 @@
   const EARS: readonly Ear[] = ['none', 'wired', 'bluetooth'];
   const LOUD: readonly Loud[] = ['none', 'quiet', 'ok'];
 
-  let phase = $state<Phase>('intro');
+  /** Back from a refusal's 「もう一度試す」 (its reload): straight to the permission step, its next tap asked afresh. */
+  const retried = micReturn({ take: true }) === 'probe';
+  const pwa = isStandalone();
+  let phase = $state<Phase>(retried ? 'perm' : 'intro');
   let busy = $state(false);
   const before = (() => { try { return !!localStorage.getItem(MARK); } catch { return false; } })();
   /** What goes to the log on 「結果を送信」. */
@@ -114,9 +120,11 @@
 
   async function allow() {
     busy = true;
+    // the mic asked first, inside the tap (an await before it may lose the tap: WebKit then refuses at once, unasked)
+    const asking = askMic();
     const st0 = await permState();
-    perm = await askMic();
-    keep('mic.perm', { st: perm.st, ms: perm.ms, again: before, asked: st0 === 'prompt', ec: perm.ec, sr: perm.sr, inp: perm.inp });
+    perm = await asking;
+    keep('mic.perm', { st: perm.st, ms: perm.ms, again: before, asked: st0 === 'prompt', ec: perm.ec, sr: perm.sr, inp: perm.inp, at: 'probe', retry: retried, pwa });
     if (perm.st === 'granted') try { localStorage.setItem(MARK, '1'); } catch { /* private mode */ }
     busy = false;
   }
@@ -344,13 +352,17 @@
     <div class="card box">
       <h3>{t('kiki.mic.perm')}</h3>
       {#if !perm}<p>{t('kiki.mic.perm.how')}</p>
-      {:else}<p class="res" data-mic-perm={perm.st}>{perm.st === 'granted' ? `✓ ${t('kiki.mic.perm.granted')}` : t('kiki.mic.perm.denied')}</p>{/if}
+      {#if retried}<p class="soft" data-mic-retried>{t('kiki.mic.retried')}</p>{/if}
+      {:else}<p class="res" data-mic-perm={perm.st}>{perm.st === 'granted' ? `✓ ${t('kiki.mic.perm.granted')}` : t(deniedKey(pwa, retried))}</p>{/if}
     </div>
+    {#if perm && perm.st !== 'granted' && perm.st !== 'unsupported'}
+      <button type="button" class="btn" data-mic-retry data-sfx="confirm" onclick={() => retryMic('probe', { reload: () => reloadNow('mic') })}>↻ {t('kiki.mic.retry')}</button>
+    {/if}
     {#if !perm}
       <button type="button" class="btn" data-mic-allow data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && allow()}>🎤 {t('kiki.mic.perm.ask')}</button>
       <button type="button" data-sfx="tick" class="btn paper" data-mic-skip onclick={next}>{t('kiki.mic.skip')}</button>
     {:else}
-      <button type="button" data-sfx="tick" class="btn" data-mic-next onclick={() => go(perm?.st === 'granted' ? 'duplex' : 'result')}>{t('kiki.mic.next')}</button>
+      <button type="button" data-sfx="tick" class="btn" class:paper={perm.st !== 'granted'} data-mic-next onclick={() => go(perm?.st === 'granted' ? 'duplex' : 'result')}>{t('kiki.mic.next')}</button>
     {/if}
 
   {:else if phase === 'again'}

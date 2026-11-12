@@ -16,6 +16,7 @@
   import { PLACES, placeOfLv } from '#lib/kikimimi/catalog.ts';
   import { currentPlacement } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { micReturn } from '#lib/mic/retry.ts';
 
   let { game, ja, onja, oncheck }: { game: QuizGame; ja: JaMode; onja: (m: JaMode) => void; oncheck: () => void } = $props();
   /** Where my last みみ チェック placed me (null: none yet). */
@@ -28,7 +29,7 @@
   let same = $state(sameDefault());
   let goal = $state<WeekGoal>(weekGoal());
   /** The mic probe open in this page's place. */
-  let probing = $state(false);
+  let probing = $state(micReturn() === 'probe'); // (a refused mic's retry came back to the probe: lib/mic/retry.ts)
   const zero = $derived(sound.settings.volume <= 0);
   async function test() {
     tested = true;

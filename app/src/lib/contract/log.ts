@@ -46,7 +46,7 @@ export const LOG_EVENTS = {
   "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n' } },
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
-  "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'other'] } },
+  "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'mic', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
   // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), its content
   // ready (`content`: the last change inside it before 300 ms of none once the opening is done), its open animation's end
@@ -97,7 +97,8 @@ export const LOG_EVENTS = {
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },
   // ききみみ's mic probe (docs/kikimimi-mic.md "The probe"): numbers and closed sets only, never heard text
   "mic.env": { src: 'c', f: { pwa: 'b', coi: 'b', gpu: 'b', gpuW: 'b', f16: 'b', arch: 't', wks: 'b', ses: 'b', mr: ['mp4', 'webm', 'none'], wl: 'b' } },
-  "mic.perm": { src: 'c', f: { st: ['granted', 'denied', 'prompt', 'unsupported'], ms: 'n', again: 'b', asked: 'b', ec: 'b', sr: 'n', inp: ['builtin', 'bluetooth', 'wired', 'other'] } },
+  // (at: the probe's step, 設定's switch, a talk button; retry: the ask after 「もう一度試す」's reload; pwa: the Home Screen app)
+  "mic.perm": { src: 'c', f: { st: ['granted', 'denied', 'prompt', 'unsupported'], ms: 'n', again: 'b', asked: 'b', ec: 'b', sr: 'n', inp: ['builtin', 'bluetooth', 'wired', 'other'], at: ['probe', 'optin', 'button'], retry: 'b', pwa: 'b' } },
   "mic.duplex": { src: 'c', f: { ear: ['none', 'wired', 'bluetooth'], aec: 'b', bleed: 'n', rtl: 'n', loud: ['none', 'quiet', 'ok'], pick: 'b', restored: 'b', err: 't' } },
   "mic.stt": { src: 'c', f: { be: ['whisper-gpu', 'whisper-wasm', 'webkit', 'relay'], model: ['tiny.en', 'base.en', 'tiny.en-f16', 'turbo', 'none'], step: ['dl', 'load', 'clip', 'spoken'], ms: 'n', mb: 'n', audS: 'n', wer: 'n', ok: 'b', err: ['not-allowed', 'service-not-allowed', 'network', 'no-speech', 'aborted', 'audio-capture', 'oom', 'timeout', 'other'] } },
   // ---- the relay

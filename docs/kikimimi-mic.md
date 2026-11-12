@@ -178,18 +178,32 @@ model and ok. 300 calls per role a UTC day (`STT_DAY_MAX`, then 429); `STT_OFF =
 
 - sound.svelte.ts `micSession(on)` layers the type: `play-and-record` over a game's `playback`, restored once both end.
   Capture uses the voice's context (`audioCtx()`). Music stays ducked while recording. MicOptIn asks the permission
-  first (refused: off, with where to change it); `DEVICE.mic` `{ on, be }`.
+  first (refused: off, 「もう一度試す」: "A refused mic"); `DEVICE.mic` `{ on, be }`.
 - session.ts owns a take, ended by stop / cancel, the VAD (1 s quiet), the 15 s cap, 8 s without speech, a new take,
   `visibilitychange` hidden or `pagehide`; each end releases the track (the orange dot goes off at once). A take that
   opens after its button is gone is cancelled.
+
+### A refused mic
+
+- **WebKit (main, `UserMediaPermissionRequestManagerProxy.cpp`):** a refused page's later getUserMedia made outside a
+  tap is refused at once, unasked, until the page's document changes (a reload); one inside a tap asks again.
+  `permissions.query` says `prompt` for a stored refusal unless this page was refused already. Safari's recogniser
+  needs its own speech permission too (`service-not-allowed`). Not documented by Apple: where a Home Screen app keeps
+  its decision (bug 327237 reports it apart from Safari's per-site setting) or what resets it besides a relaunch.
+- So every ask is getUserMedia first thing in the tap (no await before it: MicOptIn, MicButton, the probe), and nothing
+  keeps a refusal. Refused, 設定's switch, its check and the probe's step offer 「もう一度試す」: lib/mic/retry.ts notes
+  the step in sessionStorage (`DEVICE.micRetry`, 2 min) and reloads; KikimimiHost opens the sheet back on 設定 (the
+  probe on its permission step) for a fresh tap. The copy differs for the Home Screen app (retry, then close and
+  reopen it) and a Safari tab (Safari's mic setting). Logged: `mic.perm` `at`, `retry`, `pwa`; `app.reload` `mic`.
 
 ### Tests
 
 - **vitest:** pitch, prosody, vad on synthetic signals; match.ts, pick.ts, models.ts, stt.ts; each GameDef; relay
   stt.test (auth, sizes, the cap, nothing kept); log.ts refusing text.
 - **e2e:** project `chromium-mic` (`kikimimi-mic*.spec.ts`): Chromium's fake media device on a committed clip,
-  `--mute-audio`, no network, the stub recogniser via `localStorage['e2e.stt']`. Not tested: loading whisper, WebGPU,
-  the analysis's numbers; feel is judged on the phones.
+  `--mute-audio`, no network, the stub recogniser via `localStorage['e2e.stt']`; `mic-retry.spec.ts` (chromium,
+  webkit): a shimmed refusal, 「もう一度試す」's reload back to its step. Not tested: loading whisper, WebGPU, the
+  analysis's numbers; feel is judged on the phones.
 
 ## The privacy rule
 

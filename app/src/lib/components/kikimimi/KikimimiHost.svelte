@@ -1,7 +1,8 @@
 <script lang="ts">
   // ききみみ クイズ's always-loaded host (docs/kikimimi.md "UI details"), in the island scene beside its shared Live: the invite
   // banner (「ウェイが ききみみに さそっています」 [さんか], through the one toast host) and the game's sheet, its
-  // own chunk, mounted from its first opening (せってい's あそぶ, the banner's さんか: invite.svelte.ts openQuiz).
+  // own chunk, mounted from its first opening (せってい's あそぶ, the banner's さんか: invite.svelte.ts openQuiz), or at once
+  // when a refused mic's 「もう一度試す」 reloaded the app (lib/mic/retry.ts: the sheet goes back to its 設定).
   import type { Live } from '#lib/sync/live.ts';
   import type { Who } from '#lib/types.ts';
   import { loadKikimimi as loadSheet } from '../island/sheetChunks.ts';
@@ -11,9 +12,12 @@
   import { voiceSession } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { listenQuiz, openQuiz, quiz } from './invite.svelte.ts';
+  import { micReturn } from '#lib/mic/retry.ts';
+  import { onMount } from 'svelte';
 
   let { live }: { live: Live | null } = $props();
   let Sheet = $state.raw<typeof import('./KikimimiSheet.svelte').default | null>(null);
+  onMount(() => void (micReturn() && openQuiz()));
 
   // The sheet's chunk from its first opening; failed to load (offline, a deploy's moment): not open (the voice session
   // the tap began ended, the island uncovered), and the next tap tries again.
