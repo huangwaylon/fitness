@@ -1,0 +1,407 @@
+# しずえの ニュース S4 ほし: dense bulletins. Lower-frequency vocabulary, embedded and participial clauses, signposting
+# (That said, In other words, Meanwhile); the detail turns on a condition or an exception, and the gist's trap is the
+# plausible wrong inference, not a swapped topic.
+schema: 1
+unit: s4-news
+game: news
+stage: 5
+track: broadcast
+seeds: [62, 30, 22, 5, 1, 59]
+features: { primary: stress, review: linking }
+cando: "情報の 多い ニュースで 条件や 例外まで 聞いて 正しく わかる"
+status: draft
+cast: { isabelle: us-f4 }
+items:
+  - kind: news
+    id: news-hoshi-museum-wing
+    season: any
+    ctx: "朝の ニュース。博物館の 工事と 東京の 自転車"
+    note: "That said の 後が 例外。対象外の ものを 聞く"
+    tags: { seed: 5, register: broadcast, pragmatic: literal, features: [stress, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. This is Isabelle, and we'll start at the museum, where the long-awaited renovation of the east wing finally gets underway on Monday.", ja: "おはようございます。しずえです。まずは博物館の話題。待ちに待った東棟の改修が、いよいよ月曜に始まります。" }
+          - { en: "The work will be phased, so rather than shutting the museum outright, Blathers will close one gallery at a time over roughly six weeks.", ja: "工事は段階的に進むため、博物館を丸ごと閉めるのではなく、約六週間かけて展示室を一つずつ閉めていきます。" }
+          - { en: "The fossil hall is first in line, which means the insect and fish galleries stay open throughout, at least for now.", ja: "最初は化石の部屋なので、虫と魚の展示室は、少なくとも当面はずっと開いています。" }
+          - { en: "New donations are still welcome at the front desk, though Blathers asks that anything bulky be held back until the work wraps up.", ja: "新しい寄贈は引き続き受付で受け付けますが、大きなものは工事が終わるまで待ってほしいとフータさんは言っています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Meanwhile, several Tokyo wards are expanding a pilot program that lets commuters rent bicycles by the month rather than by the ride.", ja: "一方、東京のいくつかの区では、自転車を一回ごとではなく月単位で借りられる試験事業を広げています。" }
+          - { en: "Officials say the monthly plan works out cheaper for anyone riding more than about four times a week.", ja: "担当者によると、週におよそ四回以上乗る人なら月額プランの方が安くなるそうです。" }
+          - { en: "That said, it doesn't cover the electric models, which are still charged by the minute, a detail that's tripped up a few early users.", ja: "ただし電動タイプは対象外で、今も分単位で料金がかかります。この点で戸惑った初期の利用者もいます。" }
+          - { en: "Sign-ups are handled through the ward's app, and the plan renews automatically unless you cancel before the first of the month.", ja: "申し込みは区のアプリで行い、月初め前に解約しない限り自動で更新されます。" }
+    gist:
+      choices: ["The museum closing for six weeks, and cheaper bike rentals for everyone", "A phased museum renovation, and a monthly bike plan that suits frequent riders", "A new museum wing opening, and electric bikes now charged by the month", "Museum repairs that were delayed, and a bike program that's ending"]
+      answer: 1
+      trap: 0
+      cja: ["六週間の 博物館の 休館と、誰でも 安く なる 自転車", "段階的な 博物館の 改修と、よく 乗る 人向けの 月額 自転車", "博物館の 新しい 棟の 開館と、月額に なった 電動 自転車", "遅れて いた 博物館の 工事と、終わる 自転車の 事業"]
+      why: "rather than shutting outright＝丸ごと閉めず一部屋ずつ。月額は週四回以上乗る人に得なので、誰でも安くなるわけではありません。"
+    detail:
+      ask: "月額プランで 借りられない ものは？"
+      choices: ["週末の 利用", "電動の 自転車", "四回目 以降の 利用", "夜の 利用"]
+      answer: 1
+      trap: 2
+      cja: ["週末の利用", "電動の自転車", "四回目以降の利用", "夜の利用"]
+      why: "it doesn't cover the electric models＝電動は対象外。four times a week は得になる目安で、回数の制限ではない。"
+
+  - kind: news
+    id: news-hoshi-water-rates
+    season: summer
+    ctx: "夏の 朝の ニュース。島の 水と 東京の 携帯"
+    note: "In other words の 後が 本当の 意味。言い換えを 待つ"
+    tags: { seed: 22, register: broadcast, pragmatic: literal, features: [stress, linking] }
+    segments:
+      - topic: season
+        lines:
+          - { en: "Good morning, everyone. With the dry spell dragging on, the island council has approved a temporary ordinance on water use.", ja: "皆さん、おはようございます。日照りが長引くなか、島の議会は水の使用に関する臨時の条例を可決しました。" }
+          - { en: "Watering gardens is restricted to before eight in the morning and after six at night, except at the community farm, which runs on rainwater.", ja: "庭の水やりは朝八時前と夜六時以降に限られます。ただし雨水を使う共同農園は例外です。" }
+          - { en: "In other words, nobody's being told to stop, just to shift their watering to the cooler hours.", ja: "つまり、やめろということではなく、水やりを涼しい時間帯にずらしてほしいということです。" }
+          - { en: "The council will review the measure in two weeks, and it could be lifted sooner if the forecast rain actually materializes.", ja: "議会は二週間後に見直す予定で、予報どおり雨が降れば、もっと早く解除される可能性もあります。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, if you're traveling abroad this summer, it's worth taking a closer look at your phone plan before you leave.", ja: "続いて東京の話題です。この夏海外に行くなら、出発前に携帯のプランをよく確認しておく価値があります。" }
+          - { en: "Several carriers have switched to daily roaming passes, which are billed only on days you actually use data.", ja: "いくつかの携帯会社は一日単位のローミングパスに切り替えました。実際にデータを使った日だけ請求されます。" }
+          - { en: "The catch is that a single background app update can count as use, so travelers are advised to turn off automatic updates first.", ja: "落とし穴は、裏で動くアプリの更新一回でも利用とみなされること。まず自動更新を切るよう勧められています。" }
+          - { en: "Otherwise, a trip you'd budgeted for carefully could come with a surprisingly hefty bill once you're back home.", ja: "そうしないと、きちんと予算を立てた旅行でも、帰国後に思いがけず高い請求が来るかもしれません。" }
+    gist:
+      choices: ["A ban on watering gardens, and cheaper phone plans abroad", "Watering moved to cooler hours, and how daily roaming passes are billed", "Rain finally arriving, and carriers ending roaming charges", "A new community farm, and phones that update automatically abroad"]
+      answer: 1
+      trap: 0
+      cja: ["庭の 水やり 禁止と、海外で 安く なる 携帯", "水やりは 涼しい 時間に、一日単位の ローミングの 請求の しくみ", "ついに 降る 雨と、ローミング料金の 廃止", "新しい 共同農園と、海外で 自動更新する 携帯"]
+      why: "nobody's being told to stop＝禁止ではなく時間をずらすだけ。東京は使った日だけ請求されるローミングの話で、安くなるとは言っていません。"
+    detail:
+      ask: "時間の 制限が ないのは？"
+      choices: ["夜の 水やり", "共同農園", "朝 八時前の 庭", "雨の 日の 庭"]
+      answer: 1
+      trap: 0
+      cja: ["夜の水やり", "共同農園", "朝八時前の庭", "雨の日の庭"]
+      why: "except at the community farm＝雨水を使う共同農園は例外。夜と朝八時前は水やりしてよい時間帯で、例外ではない。"
+
+  - kind: news
+    id: news-hoshi-rent-notice
+    season: spring
+    ctx: "春の 朝の ニュース。島の 家と 東京の 部屋探し"
+    note: "only if の 条件を 落とさない。返金は 全員 では ない"
+    tags: { seed: 30, register: broadcast, pragmatic: literal, features: [stress, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. Tom Nook's office has announced that the spring home upgrades, originally slated for April, have been pushed back a month.", ja: "おはようございます。たぬきちさんの事務所によると、四月の予定だった春の家の増築は一か月延期になりました。" }
+          - { en: "Residents who've already paid will have their deposits refunded only if they cancel by the end of this week.", ja: "支払い済みの住民は、今週末までにキャンセルした場合に限り、手付金が返金されます。" }
+          - { en: "Those who keep their booking will get a prorated discount instead, reflecting the delay.", ja: "予約を続ける人には、代わりに延期分を日割りで反映した割引があります。" }
+          - { en: "The office attributes the holdup to a shortage of lumber, which, it says, should ease once the ferry deliveries resume.", ja: "事務所によると延期の原因は木材不足で、フェリーでの配送が再開すれば解消する見込みだそうです。" }
+      - topic: tokyo
+        lines:
+          - { en: "Meanwhile, as moving season peaks in Tokyo, housing advisers are urging renters to read the fine print on so-called free-rent offers.", ja: "一方、東京では引っ越しシーズンが山場を迎え、住まいの相談員が「フリーレント」の細かい条件を読むよう呼びかけています。" }
+          - { en: "Many come with a penalty for leaving within two years, which can easily wipe out whatever you saved up front.", ja: "多くは二年以内に退去すると違約金がかかり、最初に得した分があっさり消えることもあります。" }
+          - { en: "So, a deal that looks generous on paper may not be one, depending on how long you plan to stay.", ja: "つまり、紙の上では気前よく見える条件も、住む期間によってはお得ではないかもしれません。" }
+          - { en: "Advisers also suggest asking whether the key money and cleaning fee are included, since those are rarely mentioned in the listing.", ja: "相談員は、礼金や清掃費が含まれるかも確かめるよう勧めています。物件情報にはほとんど書かれていないからです。" }
+    gist:
+      choices: ["Home upgrades canceled, and free rent now banned in Tokyo", "Home upgrades delayed, and why free-rent deals can cost you later", "Home deposits refunded to all, and rents falling in Tokyo", "A busy moving season, and new two-year leases on the island"]
+      answer: 1
+      trap: 2
+      cja: ["増築の 中止と、東京で 禁止される フリーレント", "増築の 延期と、フリーレントが 後で 高く つく わけ", "全員への 手付金 返金と、東京の 家賃 下落", "忙しい 引っ越しシーズンと、島の 新しい 二年契約"]
+      why: "増築は中止ではなく一か月延期。返金は今週中にキャンセルした人だけで、全員ではありません。フリーレントは禁止ではなく違約金に注意という話。"
+    detail:
+      ask: "予約を 続ける 人は どう なる？"
+      choices: ["手付金が 全額 返る", "日割りの 割引が ある", "四月に 増築される", "違約金を はらう"]
+      answer: 1
+      trap: 0
+      cja: ["手付金が全額返る", "日割りの割引がある", "四月に増築される", "違約金を払う"]
+      why: "予約を続けると a prorated discount＝日割りの割引。返金は今週中にキャンセルした人だけ（only if）。"
+
+  - kind: news
+    id: news-hoshi-flight-shift
+    season: autumn
+    ctx: "秋の 朝の ニュース。島の 飛行機と 旅の 予約"
+    note: "while の 前と 後で 対象が ちがう。誰の 話か 聞く"
+    tags: { seed: 1, register: broadcast, pragmatic: literal, features: [stress, linking, clock] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone. Starting with travel, Dodo Airlines has confirmed that its winter timetable takes effect at the end of the month.", ja: "皆さん、おはようございます。まずは旅の話題。ドードー エアラインズは、月末から冬のダイヤに切り替えると発表しました。" }
+          - { en: "The two afternoon flights to the mainland will be merged into a single departure at three-forty, a change the airline attributes to a shortage of pilots.", ja: "本土行きの午後の二便は、三時四十分発の一便にまとめられます。航空会社はパイロット不足を理由に挙げています。" }
+          - { en: "Passengers booked on the earlier flight will be moved automatically, while those on the later one can switch for free or request a full refund.", ja: "早い便の予約客は自動で移されますが、遅い便の予約客は無料で変更するか、全額の払い戻しを求めることができます。" }
+          - { en: "Either way, travelers are asked to confirm by Friday, after which the standard change fees kick back in.", ja: "いずれにせよ金曜までに確認するよう求められていて、それを過ぎると通常の変更手数料がまたかかります。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, with the autumn leaves drawing crowds to places like Nikko and Hakone, booking sites are seeing a surge in last-minute cancellations.", ja: "続いて東京です。紅葉で日光や箱根に人が集まるなか、予約サイトでは直前のキャンセルが急増しています。" }
+          - { en: "Consumer groups point out that free cancellation rarely means what it sounds like, since the deadline is often several days before arrival.", ja: "消費者団体は、「キャンセル無料」は聞こえるほど甘くないと指摘します。期限が到着の数日前であることが多いからです。" }
+          - { en: "What's more, it's usually set in the hotel's local time, which can trip up travelers booking from overseas.", ja: "しかも期限はたいていホテルの現地時間で決まっていて、海外から予約する人がつまずく原因になります。" }
+          - { en: "And the cheapest rates are typically nonrefundable, so saving a few thousand yen can end up costing you the whole stay.", ja: "さらに最安の料金はたいてい返金不可なので、数千円の節約が、宿泊代まるごとの損になることもあります。" }
+    gist:
+      choices: ["Flights canceled for the winter, and hotels now banning late cancellations", "Fewer afternoon flights, and why free cancellation deserves a closer look", "A pilot shortage ending, and cheaper hotel rates near Nikko", "A new afternoon flight, and refunds guaranteed on every booking"]
+      answer: 1
+      trap: 0
+      cja: ["冬の 欠航と、直前 キャンセルを 禁じる ホテル", "午後の 便の 削減と、「キャンセル無料」の 落とし穴", "パイロット不足の 解消と、日光の 安い 宿", "午後の 新しい 便と、どの 予約でも 保証される 返金"]
+      why: "二便が一便にまとまるだけで欠航ではありません。ホテルはキャンセルを禁じてはおらず、無料の期限や返金不可の料金に注意という話。"
+    detail:
+      ask: "遅い 便の 予約客が できる ことは？"
+      choices: ["自動で 移して もらう", "無料の 変更か 全額 返金", "金曜 以降に 無料で 変更", "三時四十分の 便を 割引で"]
+      answer: 1
+      trap: 0
+      cja: ["自動で移してもらう", "無料の変更か全額返金", "金曜以降に無料で変更", "三時四十分の便を割引で"]
+      why: "自動で移されるのは早い便の客。while の後の遅い便の客は switch for free or request a full refund。金曜を過ぎると手数料。"
+
+  - kind: news
+    id: news-hoshi-marathon
+    season: autumn
+    ctx: "秋の 朝の ニュース。島の 訓練と 東京の マラソン"
+    note: "voluntary＝自由参加。provided の 後が 条件"
+    tags: { seed: 59, register: broadcast, pragmatic: literal, features: [stress, idiom, numbers] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. The island council holds its annual emergency drill on Saturday, and this year, the exact time won't be announced in advance.", ja: "おはようございます。島の議会は土曜に毎年の防災訓練を行います。今年は正確な時間を事前に知らせません。" }
+          - { en: "Sirens will sound at some point between nine and noon, at which point residents are asked to make their way to the plaza.", ja: "九時から正午のどこかでサイレンが鳴るので、そのときは広場へ向かってください。" }
+          - { en: "Taking part is voluntary, but households that do will be first in line for the new emergency kits being handed out afterward.", ja: "参加は自由ですが、参加した世帯は、訓練後に配られる新しい防災セットを優先して受け取れます。" }
+          - { en: "Anyone who'd rather sit it out is asked to let Resident Services know, so that nobody wastes time searching for them.", ja: "参加しない人は、誰かが捜しに行かずにすむよう、役場に伝えてください。" }
+      - topic: tokyo
+        lines:
+          - { en: "Meanwhile, entries for next spring's Tokyo Marathon open this week, and if past years are any guide, the odds of getting in are long.", ja: "一方、来春の東京マラソンの申し込みが今週始まります。これまでを見る限り、当選の見込みは低そうです。" }
+          - { en: "Typically, only about one applicant in ten is drawn in the general lottery.", ja: "一般の抽選で当たるのは、例年十人に一人ほどです。" }
+          - { en: "Runners who'd rather not leave it to chance can secure a charity spot instead, provided they donate at least a hundred thousand yen.", ja: "運に任せたくない人は、十万円以上を寄付すれば、チャリティー枠で確実に出られます。" }
+          - { en: "Charity places are capped, though, and tend to go within days, so anyone on the fence shouldn't wait too long.", ja: "ただしチャリティー枠には上限があり、数日で埋まりがちなので、迷っている人は早めに。" }
+    gist:
+      choices: ["A drill every resident must attend, and a marathon that's hard to get into", "A canceled drill, and a marathon now open only to charity runners", "A surprise drill that's optional, and the long odds of a marathon spot", "Emergency kits for sale, and free charity entries to the marathon"]
+      answer: 2
+      trap: 0
+      cja: ["全員 参加の 訓練と、出るのが 難しい マラソン", "中止に なった 訓練と、チャリティー 枠 だけの マラソン", "時間を 知らせない 自由参加の 訓練と、当選しにくい マラソン", "防災セットの 販売と、無料の チャリティー 枠"]
+      why: "Taking part is voluntary＝自由参加で、全員参加ではありません。防災セットは売るのではなく参加者に優先で配られます。"
+    detail:
+      ask: "抽選 なしで 出るには？"
+      choices: ["今週中に 申し込む", "十万円 以上 寄付する", "十人の グループで 申し込む", "去年の 大会に 出ている"]
+      answer: 1
+      trap: 0
+      cja: ["今週中に申し込む", "十万円以上寄付する", "十人のグループで申し込む", "去年の大会に出ている"]
+      why: "provided they donate at least a hundred thousand yen＝十万円以上の寄付が条件。今週始まるのは一般の申し込みで、抽選です。"
+
+  - kind: news
+    id: news-hoshi-heat-aid
+    season: winter
+    ctx: "冬の 朝の ニュース。島の 暖房 支援と 東京の 寄付"
+    note: "Go over that limit＝その数を 超えたら。数の 条件を 聞く"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [stress, numbers, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. With the cold snap expected to linger into next week, the island council has reopened its heating assistance program.", ja: "おはようございます。寒波が来週まで続く見込みのため、島の議会は暖房費の支援を再開しました。" }
+          - { en: "Residents over sixty-five qualify automatically and don't need to do anything; the credit will simply appear on their next bill.", ja: "六十五歳以上の住民は自動的に対象となり、手続きは不要です。次の請求書で差し引かれます。" }
+          - { en: "Everyone else has to apply in person by the fifteenth and bring proof of income, since the program is means-tested.", ja: "それ以外の人は、収入によって決まる制度なので、十五日までに窓口で申し込み、収入の証明を持ってきてください。" }
+          - { en: "Late applications won't be turned away, but they'll only be processed once the first round of payments has gone out.", ja: "締め切り後の申し込みも受け付けますが、処理されるのは最初の支払いが終わってからです。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, the end of the year is the deadline for furusato nozei, the hometown tax donation program.", ja: "続いて東京です。年末は、ふるさと納税の締め切りです。" }
+          - { en: "Donations made by December thirty-first count toward this year's taxes, and many residents leave it until the final week.", ja: "十二月三十一日までの寄付が今年の税金に反映されるため、最後の週まで残しておく人が多くいます。" }
+          - { en: "If you give to five or fewer towns and don't otherwise file a tax return, a simple form sent to each town takes care of the deduction.", ja: "寄付先が五つ以下で、ほかに確定申告をしない人は、各自治体に簡単な書類を送るだけで控除が受けられます。" }
+          - { en: "Go over that limit, though, and you'll need to file a return yourself, a step that a surprising number of first-timers overlook.", ja: "ただしその数を超えると自分で確定申告が必要で、初めての人には見落とす人が意外と多いのです。" }
+    gist:
+      choices: ["Heating aid for all residents, and a tax deadline that's been moved", "Heating aid that most people must apply for, and how the hometown tax deduction works", "Higher heating bills on the island, and donations no longer deductible", "Heating aid for seniors only, and a tax form that every donor must file"]
+      answer: 1
+      trap: 3
+      cja: ["全員への 暖房 支援と、変わった 税の 締め切り", "多くの 人は 申し込みが 必要な 暖房 支援と、ふるさと納税の 控除の しくみ", "島の 暖房費の 値上がりと、控除 されなく なった 寄付", "高齢者 だけの 暖房 支援と、寄付した 全員が 出す 申告"]
+      why: "六十五歳以上は自動、それ以外は申し込めば対象で、高齢者だけではありません。確定申告が要るのは寄付先が六つ以上などの場合です。"
+    detail:
+      ask: "自分で 確定申告が 必要に なるのは？"
+      choices: ["寄付先が 五つの とき", "十二月に 寄付した とき", "寄付先が 六つ 以上の とき", "六十五歳 以上の とき"]
+      answer: 2
+      trap: 0
+      cja: ["寄付先が五つのとき", "十二月に寄付したとき", "寄付先が六つ以上のとき", "六十五歳以上のとき"]
+      why: "five or fewer towns なら簡単な書類ですむ。Go over that limit＝六つ以上なら自分で申告。五つはまだ書類ですむ範囲です。"
+
+  - kind: news
+    id: news-hoshi-ski-bus
+    season: winter
+    ctx: "冬の 朝の ニュース。島の 雪かきと スキーの ツアー"
+    note: "doesn't usually count＝返金に ならない。例外を 聞く"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [stress, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone. After last night's heavy snowfall, Resident Services is asking everyone to clear the path in front of their own home by noon.", ja: "皆さん、おはようございます。昨夜の大雪を受けて、役場は正午までに自宅前の道の雪かきをするよう呼びかけています。" }
+          - { en: "Residents who can't manage it themselves can request help, although requests will be handled in order of need rather than in the order they come in.", ja: "自分でできない人は手伝いを頼めますが、受け付けた順ではなく、必要度の高い順に対応します。" }
+          - { en: "The main road to the airfield has already been plowed, but the hill path remains closed until further notice.", ja: "飛行場への大通りはすでに除雪されましたが、丘の道は追って知らせがあるまで通れません。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, ski season is in full swing, and overnight bus tours from Shinjuku to the slopes are booking up fast.", ja: "続いて東京です。スキーシーズンが本番を迎え、新宿発の夜行バスのスキーツアーは予約が急速に埋まっています。" }
+          - { en: "Most packages bundle the bus, a lift pass and sometimes rentals, which can work out far cheaper than arranging each piece separately.", ja: "多くはバスとリフト券、ときにはレンタルもセットで、一つずつ手配するよりずっと安くなることがあります。" }
+          - { en: "The catch lies in the cancellation terms: fees typically climb steeply in the final week, reaching half the price the day before departure.", ja: "落とし穴はキャンセルの条件です。料金は最後の一週間で急に上がり、前日には半額になるのが一般的です。" }
+          - { en: "And while the operator will refund you in full if it calls off the trip, a lack of snow on the mountain doesn't usually count.", ja: "また、会社がツアーを中止すれば全額返金されますが、山に雪が少ないというだけでは、たいてい対象になりません。" }
+    gist:
+      choices: ["Help with snow for whoever asks first, and ski buses canceled for lack of snow", "The airfield road closed by snow, and cheaper lift passes in Shinjuku", "A new snowplow for the hill path, and ski buses refunding every cancellation", "Residents clearing their own paths, and the fine print on ski bus packages"]
+      answer: 3
+      trap: 0
+      cja: ["先に 頼んだ 人への 雪かきの 手伝いと、雪不足で 中止の スキーバス", "雪で 閉じた 飛行場の 道と、新宿の 安い リフト券", "丘の 道の 新しい 除雪車と、どの キャンセルも 返金する スキーバス", "住民 自身の 雪かきと、スキーバスの 細かい 条件"]
+      why: "手伝いは頼んだ順ではなく必要度の順。閉じているのは丘の道で、飛行場への道は除雪済み。バスの話は中止ではなくキャンセル条件の注意。"
+    detail:
+      ask: "全額 返金 されるのは？"
+      choices: ["山に 雪が 少ない とき", "会社が ツアーを 中止した とき", "一週間 前に キャンセルした とき", "前の 日に キャンセルした とき"]
+      answer: 1
+      trap: 0
+      cja: ["山に雪が少ないとき", "会社がツアーを中止したとき", "一週間前にキャンセルしたとき", "前の日にキャンセルしたとき"]
+      why: "calls off the trip＝会社が中止すれば全額返金。雪不足だけでは doesn't usually count で対象外。前日のキャンセルは半額かかる。"
+
+  - kind: news
+    id: news-hoshi-compost
+    season: spring
+    ctx: "春の 朝の ニュース。島の ごみと 東京の スマホ"
+    note: "hinges on＝〜 次第。安さの 条件を 聞く"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [stress, idiom, numbers] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. Resident Services is launching a pilot program this spring that separates food scraps from the regular trash.", ja: "おはようございます。役場はこの春、生ごみを普通のごみと分ける試験的な取り組みを始めます。" }
+          - { en: "Households that opt in will receive a small compost bin, with pickups on Tuesdays in place of one of the usual trash days.", ja: "参加する世帯には小さな堆肥用の箱が配られ、いつものごみの日の一日に代わって、火曜日に回収があります。" }
+          - { en: "Those who'd rather not take part can stick with the current schedule; nothing changes unless you sign up.", ja: "参加しない人は今の予定のままで大丈夫です。申し込まない限り、何も変わりません。" }
+          - { en: "The scheme will be reviewed after three months, and if fewer than a third of homes join, it may be quietly dropped.", ja: "三か月後に見直され、参加が三分の一の家に届かなければ、ひっそり取りやめになるかもしれません。" }
+      - topic: tokyo
+        lines:
+          - { en: "Meanwhile, with new students and workers settling into Tokyo, carriers are heavily promoting what they call one-yen smartphones.", ja: "一方、新しい学生や社会人が東京での暮らしを始めるなか、携帯会社は「一円スマホ」を盛んに売り込んでいます。" }
+          - { en: "Consumer advisers caution that the headline price usually hinges on returning the handset after two years, in good condition.", ja: "消費生活の相談員は、宣伝の価格はたいてい、二年後に端末をよい状態で返すことが前提だと注意しています。" }
+          - { en: "Keep the phone, or hand it back with a cracked screen, and the remaining installments, often well over fifty thousand yen, come due.", ja: "端末を手元に残したり、画面が割れた状態で返したりすると、残りの分割代金、しばしば五万円をゆうに超える額を払うことになります。" }
+          - { en: "In other words, it's less a purchase than a rental, which may suit some people but is rarely spelled out at the counter.", ja: "つまり買うというより借りるに近く、それが合う人もいますが、店頭ではめったにはっきり説明されません。" }
+    gist:
+      choices: ["Compost bins for every home, and a ban on one-yen phones", "Fewer trash days on the island, and free phones for new students", "An optional compost trial, and why cheap phones work more like rentals", "A compost plan being dropped, and phones you must return within a year"]
+      answer: 2
+      trap: 1
+      cja: ["全世帯への 堆肥箱と、一円スマホの 禁止", "島の ごみの 日の 削減と、新しい 学生への 無料の スマホ", "希望者 だけの 堆肥の 試みと、安い スマホが 借りるのに 近い わけ", "取りやめに なる 堆肥の 計画と、一年で 返す スマホ"]
+      why: "火曜の回収は参加した家だけで、ほかの家のごみの日は変わりません。一円スマホは禁止ではなく、二年後に返すのが前提という話。"
+    detail:
+      ask: "残りの 代金を 払うのは？"
+      choices: ["二年後に よい 状態で 返した とき", "端末を 返さずに 使い続けた とき", "三か月 以内に 解約した とき", "店で 新しい 機種に 変えた とき"]
+      answer: 1
+      trap: 0
+      cja: ["二年後によい状態で返したとき", "端末を返さずに使い続けたとき", "三か月以内に解約したとき", "店で新しい機種に変えたとき"]
+      why: "Keep the phone＝返さずに持ち続けると、残りの分割代金がかかる。二年後によい状態で返すのは、安いままですむ条件です。"
+
+  - kind: news
+    id: news-hoshi-campsite
+    season: summer
+    ctx: "夏の 朝の ニュース。島の キャンプ場と 旅の 保険"
+    note: "only if の 条件と、Even then の 弱点"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [stress, idiom, numbers] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone. Demand for the campsite has outstripped supply this summer, so weekend spots will now be allocated by lottery.", ja: "皆さん、おはようございます。この夏はキャンプ場の希望が空きを上回っているため、週末の枠は抽選になります。" }
+          - { en: "Residents who haven't stayed yet this season get two entries instead of one, which the council hopes will spread the spots around more fairly.", ja: "今シーズンまだ泊まっていない住民は一口ではなく二口もらえます。枠がより公平に行き渡るように、という議会のねらいです。" }
+          - { en: "Weekday stays remain first come, first served, and frankly, they're rarely full.", ja: "平日はこれまでどおり先着順で、正直なところ、満員になることはめったにありません。" }
+          - { en: "The first draw is on Thursday, and winners have forty-eight hours to confirm, or the spot goes to the next name on the list.", ja: "最初の抽選は木曜日で、当選者は四十八時間以内に確定しないと、枠は次の人に回ります。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, if you're counting on your credit card's travel insurance for a trip abroad this summer, it may be worth double-checking the terms.", ja: "続いて東京です。この夏の海外旅行で、クレジットカードの旅行保険を当てにしているなら、条件を確かめ直す価値があります。" }
+          - { en: "Many cards now cover you only if the trip itself, typically the airfare or a tour, was charged to that card.", ja: "多くのカードでは、航空券やツアーなど、旅行そのものの代金をそのカードで払った場合にしか補償されません。" }
+          - { en: "Even then, the medical limit can be modest, a real concern in the United States, where a short hospital stay can run into millions of yen.", ja: "それでも医療の上限は低めのことがあります。短い入院でも数百万円かかることがあるアメリカでは深刻な問題です。" }
+          - { en: "Advisers suggest topping it up with a separate policy, rather than assuming you're fully covered.", ja: "相談員は、十分に守られていると思い込まず、別の保険で補うよう勧めています。" }
+    gist:
+      choices: ["Campsite spots now first come, first served, and free insurance on every card", "Extra campsite spots for new residents, and cheaper hospital stays abroad", "The campsite closing on weekends, and new insurance rules in the United States", "A lottery for weekend camping, and the gaps in credit card travel insurance"]
+      answer: 3
+      trap: 0
+      cja: ["先着順に なった キャンプ場と、どの カードにも つく 無料の 保険", "新しい 住民への 追加の 枠と、海外での 安い 入院", "週末 閉まる キャンプ場と、アメリカの 新しい 保険の 決まり", "週末の キャンプの 抽選と、カードの 旅行保険の 穴"]
+      why: "先着順なのは平日だけで、週末は抽選。カードの保険は旅行代をそのカードで払ったときだけで、医療の上限も低めという注意です。"
+    detail:
+      ask: "カードの 保険が 使えるのは？"
+      choices: ["カードを 持って いる だけで", "旅行代を その カードで 払った とき", "アメリカに 行く とき", "入院が 短い とき"]
+      answer: 1
+      trap: 0
+      cja: ["カードを持っているだけで", "旅行代をそのカードで払ったとき", "アメリカに行くとき", "入院が短いとき"]
+      why: "only if the trip was charged to that card＝そのカードで旅行代を払ったときだけ。持っているだけでは対象外です。"
+
+  - kind: news
+    id: news-hoshi-pier-plan
+    season: any
+    ctx: "朝の ニュース。島の 計画と 新幹線の 荷物"
+    note: "advisory, not binding＝意見を 聞く だけ。投票では ない"
+    tags: { seed: 5, register: broadcast, pragmatic: literal, features: [stress, numbers, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. The council has unveiled plans for a second pier on the east beach, and it wants to hear from residents before anything is decided.", ja: "おはようございます。議会は東の浜に二つ目の桟橋を造る計画を発表しました。決める前に住民の声を聞きたいそうです。" }
+          - { en: "Feedback forms are available at Resident Services until the end of the month, though the council stresses the survey is advisory, not a binding vote.", ja: "意見の用紙は月末まで役場にありますが、議会は、これは参考のための調査で、結果に従う投票ではないと強調しています。" }
+          - { en: "Supporters say the pier would ease congestion at the dock, while some neighbors on the east side worry about noise from early morning boats.", ja: "賛成する人は桟橋の混雑がやわらぐと言い、東側の一部の住民は早朝の船の音を心配しています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, a reminder for anyone taking the bullet train with large luggage: bags over a certain size now need a reservation.", ja: "続いて東京です。大きな荷物を持って新幹線に乗る人へ。一定の大きさを超える荷物には予約が必要です。" }
+          - { en: "If the length, width and height of your bag add up to more than a hundred and sixty centimeters, you'll need a seat with an oversized baggage area.", ja: "荷物の縦・横・高さの合計が百六十センチを超えるなら、特大荷物スペースつきの座席が必要です。" }
+          - { en: "Board without one, and you'll be charged a thousand yen on the train, assuming there's even space to store the bag.", ja: "予約せずに乗ると、車内で千円かかります。そもそも置き場所があればの話ですが。" }
+          - { en: "Baby strollers are exempt, but nothing over two hundred and fifty centimeters can be brought on at all.", ja: "ベビーカーは対象外ですが、二百五十センチを超えるものは一切持ち込めません。" }
+    gist:
+      choices: ["A pier that residents will vote on, and a ban on large bags", "A new pier opening, and a fee on every bag on the bullet train", "A proposed pier open to comment, and booking space for big bags", "Noise from the dock, and baby strollers now needing a reservation"]
+      answer: 2
+      trap: 0
+      cja: ["住民が 投票で 決める 桟橋と、大きな 荷物の 禁止", "新しい 桟橋の 完成と、すべての 荷物に かかる 料金", "意見を 募る 桟橋の 計画と、大きな 荷物の 予約", "桟橋の 騒音と、予約が 必要に なった ベビーカー"]
+      why: "the survey is advisory, not a binding vote＝投票ではなく意見を聞くだけ。大きな荷物は禁止ではなく予約が必要で、禁止は二百五十センチ超だけ。"
+    detail:
+      ask: "予約 なしで 百六十センチを 超える 荷物を 持ち込むと？"
+      choices: ["持ち込めない", "車内で 千円 払う", "ベビーカーと 同じで 無料", "次の 駅で 降ろされる"]
+      answer: 1
+      trap: 0
+      cja: ["持ち込めない", "車内で千円払う", "ベビーカーと同じで無料", "次の駅で降ろされる"]
+      why: "Board without one＝予約せずに乗ると a thousand yen＝千円。持ち込めないのは二百五十センチを超えるものです。"
+
+  - kind: news
+    id: news-hoshi-power-plan
+    season: any
+    ctx: "朝の ニュース。島の 市場と 東京の 電気"
+    note: "The trade-off＝その 代わりの 損。誰に 損か 聞く"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [stress, linking, contrast] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone. While the plaza is being resurfaced, the weekly market will move to the dock, starting this Saturday.", ja: "皆さん、おはようございます。広場の舗装工事のあいだ、毎週の市場は今週の土曜から桟橋に移ります。" }
+          - { en: "Most stalls are coming along, with the exception of the fish counter, whose freezers can't run on the dock's power supply.", ja: "ほとんどの店が一緒に移りますが、魚の売り場は例外です。冷凍庫が桟橋の電源では動かないためです。" }
+          - { en: "C.J. will sell straight from his boat instead, but only until his catch runs out, which on a good day is around ten in the morning.", ja: "代わりにジャスティンさんが船から直接売りますが、魚がなくなるまでで、売れ行きのいい日は朝十時ごろです。" }
+          - { en: "Otherwise, the market keeps its usual hours, from seven until one.", ja: "それ以外は、いつもどおり七時から一時までです。" }
+      - topic: tokyo
+        lines:
+          - { en: "Meanwhile, more Tokyo households are being offered electricity plans that charge different rates depending on the time of day.", ja: "一方、東京では時間帯によって料金が変わる電気のプランを勧められる家庭が増えています。" }
+          - { en: "Power used late at night can cost roughly a third less, which sounds like a bargain, particularly if you run the washer or charge a car overnight.", ja: "深夜の電気はおよそ三分の一安くなることがあり、夜に洗濯機を回したり車を充電したりするなら特にお得に聞こえます。" }
+          - { en: "The trade-off is that afternoon rates, especially on hot summer days, can be considerably higher than on a standard plan.", ja: "その代わり、午後の料金は、特に暑い夏の日には普通のプランよりかなり高くなることがあります。" }
+          - { en: "So for anyone who works from home with the air conditioner running, switching could end up costing more, not less.", ja: "ですから、エアコンをつけて在宅で働く人は、切り替えるとかえって高くつくかもしれません。" }
+    gist:
+      choices: ["The market moving for now, and plans that favor using power at night", "The market closing for repairs, and cheaper electricity for every home", "A new fish market at the dock, and higher electricity prices at night", "The plaza closing for good, and a ban on running air conditioners"]
+      answer: 0
+      trap: 1
+      cja: ["一時的に 移る 市場と、夜に 電気を 使う 人向けの プラン", "工事で 休む 市場と、どの 家でも 安く なる 電気", "桟橋の 新しい 魚市場と、夜に 高く なる 電気", "閉鎖される 広場と、エアコンの 使用 禁止"]
+      why: "市場は休まず桟橋に移るだけ。時間帯のプランは夜が安く午後が高いので、在宅でエアコンを使う人にはかえって高くつく、という話。"
+    detail:
+      ask: "魚は どう 買える？"
+      choices: ["桟橋の 冷凍庫から 一時まで", "ジャスティンさんの 船から、なくなる まで", "広場で 朝 七時から", "土曜の 朝に 予約して"]
+      answer: 1
+      trap: 0
+      cja: ["桟橋の冷凍庫から一時まで", "ジャスティンさんの船から、なくなるまで", "広場で朝七時から", "土曜の朝に予約して"]
+      why: "冷凍庫は桟橋の電源で動かないので、魚は C.J. の船から。only until his catch runs out＝なくなるまで。一時はほかの店の時間です。"
+
+  - kind: news
+    id: news-hoshi-card-refund
+    season: any
+    ctx: "朝の ニュース。島の 仕立て屋と 交通系 カード"
+    note: "only until の 後が 期限。rather than で 何から 引くか"
+    tags: { seed: 5, register: broadcast, pragmatic: literal, features: [stress, numbers, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. The tailor shop is bringing back its made-to-order service, after a break of nearly a year.", ja: "おはようございます。仕立て屋が、一年近く休んでいた注文仕立てを再開します。" }
+          - { en: "Orders take about three weeks, and a deposit of half the price is required up front.", ja: "仕上がりまで三週間ほどで、代金の半分を前金として払います。" }
+          - { en: "Mabel says the deposit can be returned if you change your mind, but only until the fabric has been cut, usually within two days of ordering.", ja: "あさみさんによると、気が変わったら前金は返せますが、布を裁つまでで、たいてい注文から二日以内だそうです。" }
+          - { en: "Alterations to clothes bought at the shop remain free, as long as you bring the receipt.", ja: "店で買った服のお直しは、レシートがあればこれまでどおり無料です。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, if you're leaving Japan for good, you may be able to get back some of the money on your transit card.", ja: "続いて東京です。日本を離れて帰国するなら、交通系カードのお金の一部を取り戻せるかもしれません。" }
+          - { en: "Return the card at a station office, and you'll receive the five-hundred-yen deposit along with whatever balance is left.", ja: "駅の窓口でカードを返すと、デポジットの五百円と、残っている残高が戻ってきます。" }
+          - { en: "There's a small handling fee, though it comes out of the balance rather than the deposit, so a nearly empty card costs nothing to return.", ja: "少し手数料がかかりますが、デポジットではなく残高から引かれるので、ほとんど空のカードなら返しても損はありません。" }
+          - { en: "Visitors on a short trip, on the other hand, may prefer to keep the card, since it stays valid as long as it's used once every ten years.", ja: "一方、短い旅行の人はカードを持っておくのもいいでしょう。十年に一度使えば、ずっと有効だからです。" }
+    gist:
+      choices: ["Free custom orders at the tailor's, and transit cards that now expire", "Custom orders back at the tailor's, and getting money back on a transit card", "The tailor closing for a year, and a new fee on every transit card", "Alterations no longer free, and deposits kept when you return a card"]
+      answer: 1
+      trap: 0
+      cja: ["無料の 注文仕立てと、期限が 来る 交通系 カード", "仕立て屋の 注文の 再開と、交通系 カードの 払い戻し", "一年 休む 仕立て屋と、すべての カードに かかる 新しい 料金", "有料に なる お直しと、返しても 戻らない デポジット"]
+      why: "注文仕立ては無料ではなく前金が要ります。カードは十年に一度使えば有効で、期限切れの話ではありません。手数料は残高から引かれます。"
+    detail:
+      ask: "前金が 戻るのは？"
+      choices: ["三週間 以内に やめた とき", "布を 裁つ 前に やめた とき", "レシートを 持って 行った とき", "注文から 二日 たって やめた とき"]
+      answer: 1
+      trap: 0
+      cja: ["三週間以内にやめたとき", "布を裁つ前にやめたとき", "レシートを持って行ったとき", "注文から二日たってやめたとき"]
+      why: "only until the fabric has been cut＝布を裁つまで。三週間は仕上がりまでの日数です。レシートはお直しの話。"
