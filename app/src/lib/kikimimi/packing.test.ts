@@ -86,8 +86,8 @@ describe('kikimimi packs: as committed', () => {
         at += bytes;
       }
       expect(at, name).toBe(b.length);
-      // (a まるごと 聞く file is one pack: s4-long-*, fetched as slices)
-      if (e.clips.length > 1) expect(b.length, name).toBeLessThanOrEqual(e.slow ? SLOW_PACK_MAX : name.startsWith('s4-long-') ? LONG_PACK_MAX : PACK_MAX);
+      // (a まるごと 聞く file is one pack: s0-long … s4-long-*, fetched as slices)
+      if (e.clips.length > 1) expect(b.length, name).toBeLessThanOrEqual(e.slow ? SLOW_PACK_MAX : /^s\d-long(-|$)/.test(name) ? LONG_PACK_MAX : PACK_MAX);
     }
     expect(readdirSync(LISTEN).sort()).toEqual(Object.entries(packs).map(([name, e]) => packFile(name, e)).sort());
   });

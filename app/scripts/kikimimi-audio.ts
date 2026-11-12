@@ -133,7 +133,8 @@ const tempoOf = (it: Item): number => LISTEN_TEMPO.get(it.id) ?? (it.lv === 1 ? 
 /** A fast take's source hash: its natural take's master, the tempo and its version. */
 const fastSrc = (master: string) => sha(JSON.stringify([master, FAST, STRETCH, FAST_V]), 10);
 const SLOW = 0.75;
-const hasSlow = (it: Item): boolean => it.lv <= 2;
+/** Levels 1-2's slow copies; never a listening kind's (はまべ's calls and tiles are slowed by LISTEN_TEMPO instead). */
+const hasSlow = (it: Item): boolean => it.lv <= 2 && !LISTEN_IDS.has(it.id);
 
 type Engine = 'qwen3' | 'voxcpm2' | 'kokoro' | 'say';
 const MODEL: Readonly<Record<Engine | 'design' | 'phonon', string>> = {
@@ -310,6 +311,8 @@ const LISTEN_TEMPO: ReadonlyMap<string, number> = new Map(readListen().flatMap((
   const { stage, game } = raw as { stage: number; game: string }, t = stage === 1 ? L1_TEMPO : stage === 5 && PACED.has(game) ? PACE : 1;
   return t === 1 ? [] : listenClipItems(raw).map((it) => [it.id, t] as const);
 }));
+/** Every listening file's own clips, a draft's too (no slow copy: hasSlow). */
+const LISTEN_IDS: ReadonlySet<string> = new Set(readListen().flatMap(({ raw }) => listenClipItems(raw).map((it) => it.id)));
 /** まるごと 聞く's real pieces' lines (scripts/kikimimi-real.ts cuts them): kept, never spoken. */
 const REAL_IDS = readListen().flatMap(({ raw }) => realClipIds(raw));
 /** はつおん's words (content/mic/pairs.yaml, games/pair/pairs.ts): each alone, `<pair>-1`, `<pair>-2`, in the pair's

@@ -13,6 +13,7 @@ status: draft
 items:
   - kind: tile
     id: tile-hama-gate-fifteen
+    tone: neutral
     speaker: diana
     en: "Our flight leaves from Gate 15."
     tts: "Our flight leaves from Gate fifteen."
@@ -28,6 +29,7 @@ items:
 
   - kind: tile
     id: tile-hama-cant-eat-fish
+    tone: neutral
     speaker: dom
     en: "I can't eat raw fish."
     ja: "生の魚は食べられないんだ。"
@@ -42,6 +44,7 @@ items:
 
   - kind: tile
     id: tile-hama-walked-hotel
+    tone: neutral
     speaker: goldie
     en: "We walked back to the hotel."
     ja: "私たちは歩いてホテルに戻りました。"
@@ -56,6 +59,7 @@ items:
 
   - kind: tile
     id: tile-hama-collect-bags
+    tone: neutral
     speaker: rosie
     en: "Where do I collect my bags?"
     ja: "荷物はどこで受け取ればいいですか？"
@@ -70,6 +74,7 @@ items:
 
   - kind: tile
     id: tile-hama-meal-tickets
+    tone: neutral
     speaker: hamlet
     en: "The airline gave us free meal vouchers."
     ja: "航空会社が無料の食事券をくれたよ。"
@@ -84,6 +89,7 @@ items:
 
   - kind: tile
     id: tile-hama-suitcase-didnt
+    tone: neutral
     speaker: maple
     en: "My suitcase didn't arrive."
     ja: "スーツケースが届いていないんです。"
@@ -98,6 +104,7 @@ items:
 
   - kind: tile
     id: tile-hama-gate-sixteen
+    tone: neutral
     speaker: bob
     en: "They changed our gate to 16."
     tts: "They changed our gate to sixteen."
@@ -113,6 +120,7 @@ items:
 
   - kind: tile
     id: tile-hama-plane-forty
+    tone: neutral
     speaker: celeste
     en: "The plane is 40 minutes late."
     tts: "The plane is forty minutes late."
@@ -128,6 +136,7 @@ items:
 
   - kind: tile
     id: tile-hama-boarding-thirty
+    tone: neutral
     speaker: punchy
     en: "Boarding starts at three thirty."
     ja: "搭乗は3時半からだよ。"
@@ -142,6 +151,7 @@ items:
 
   - kind: tile
     id: tile-hama-thirteenth-floor
+    tone: neutral
     speaker: whitney
     en: "Your room is on the 13th floor."
     tts: "Your room is on the thirteenth floor."
@@ -156,6 +166,7 @@ items:
 
   - kind: tile
     id: tile-hama-booked-three
+    tone: neutral
     speaker: kicks
     en: "I booked a room for three nights."
     ja: "3泊で部屋を予約しました。"
@@ -169,6 +180,7 @@ items:
 
   - kind: tile
     id: tile-hama-ac-doesnt-work
+    tone: neutral
     speaker: raymond
     en: "Our air conditioner doesn't work."
     ja: "部屋のエアコンが動かないんです。"
@@ -182,6 +194,7 @@ items:
 
   - kind: tile
     id: tile-hama-left-key
+    tone: soft
     speaker: coco
     en: "I left my key in the room."
     ja: "部屋に鍵を置いてきてしまいました。"
@@ -195,6 +208,7 @@ items:
 
   - kind: tile
     id: tile-hama-sleepy
+    tone: neutral
     speaker: tia
     en: "This medicine can make you sleepy."
     ja: "この薬は眠くなることがあります。"
@@ -209,6 +223,7 @@ items:
 
   - kind: tile
     id: tile-hama-son-fever
+    tone: soft
     speaker: apollo
     en: "My son has a high fever."
     ja: "息子が高い熱を出しているんです。"
@@ -223,6 +238,7 @@ items:
 
   - kind: tile
     id: tile-hama-thirty-minutes
+    tone: neutral
     speaker: judy
     en: "It works in about thirty minutes."
     ja: "30分くらいで効いてきます。"
@@ -237,6 +253,7 @@ items:
 
   - kind: tile
     id: tile-hama-throat-hurts
+    tone: neutral
     speaker: sherb
     en: "My throat really hurts."
     ja: "のどがすごく痛いんです。"
@@ -251,6 +268,7 @@ items:
 
   - kind: tile
     id: tile-hama-total-840
+    tone: neutral
     speaker: pietro
     en: "Your total is 840 yen."
     tts: "Your total is eight hundred forty yen."
@@ -265,6 +283,7 @@ items:
 
   - kind: tile
     id: tile-hama-on-the-back
+    tone: neutral
     speaker: molly
     en: "Write your number on the back."
     ja: "裏に電話番号を書いてください。"
@@ -278,6 +297,7 @@ items:
 
   - kind: tile
     id: tile-hama-coffee-machine
+    tone: neutral
     speaker: stitches
     en: "The coffee machine is over there."
     ja: "コーヒーマシンはあちらです。"
@@ -291,6 +311,7 @@ items:
 
   - kind: tile
     id: tile-hama-pay-bill
+    tone: neutral
     speaker: audie
     en: "Can I pay my bill here?"
     ja: "ここで請求書の支払いはできますか？"
@@ -304,6 +325,7 @@ items:
 
   - kind: tile
     id: tile-hama-used-butter
+    tone: firm
     speaker: mabel
     en: "You used all the butter."
     ja: "バター、全部使っちゃったんだね。"
@@ -318,6 +340,7 @@ items:
 
   - kind: tile
     id: tile-hama-water-boiling
+    tone: neutral
     speaker: wilbur
     en: "The water is boiling."
     ja: "お湯がわいてるよ。"
@@ -332,6 +355,7 @@ items:
 
   - kind: tile
     id: tile-hama-chop-onions
+    tone: neutral
     speaker: julian
     en: "Can you chop the onions?"
     ja: "玉ねぎを切ってくれる？"
@@ -346,6 +370,7 @@ items:
 
   - kind: tile
     id: tile-hama-rang-bell
+    tone: neutral
     speaker: redd
     en: "I rang the bell twice."
     ja: "2回ベルを鳴らしました。"
@@ -360,6 +385,7 @@ items:
 
   - kind: tile
     id: tile-hama-driver-left
+    tone: neutral
     speaker: lily
     en: "The driver left this with me."
     ja: "配達の人がこれを私に預けていきましたよ。"
@@ -374,6 +400,7 @@ items:
 
   - kind: tile
     id: tile-hama-tried-to-call
+    tone: neutral
     speaker: walker
     en: "We tried to call you."
     ja: "お電話したんですが。"
@@ -388,6 +415,7 @@ items:
 
   - kind: tile
     id: tile-hama-called-name
+    tone: neutral
     speaker: orville
     en: "They just called your name."
     ja: "今、名前を呼ばれたよ。"
@@ -402,6 +430,7 @@ items:
 
   - kind: tile
     id: tile-hama-isnt-ordered
+    tone: neutral
     speaker: brewster
     en: "This isn't what I ordered."
     ja: "これは注文したものと違います。"
@@ -416,6 +445,7 @@ items:
 
   - kind: tile
     id: tile-hama-line-long
+    tone: neutral
     speaker: nana
     en: "The line is really long."
     ja: "列がすごく長いね。"
@@ -430,6 +460,7 @@ items:
 
   - kind: tile
     id: tile-hama-little-bitter
+    tone: neutral
     speaker: pekoe
     en: "This coffee is a little bitter."
     ja: "このコーヒー、ちょっと苦いな。"
@@ -444,6 +475,7 @@ items:
 
   - kind: tile
     id: tile-hama-exit-closed
+    tone: neutral
     speaker: henry
     en: "The east exit is closed."
     ja: "東口は閉まっていますよ。"
@@ -458,6 +490,7 @@ items:
 
   - kind: tile
     id: tile-hama-third-stop
+    tone: neutral
     speaker: tex
     en: "Change trains at the third stop."
     ja: "3つ目の駅で乗り換えてください。"
@@ -472,6 +505,7 @@ items:
 
   - kind: tile
     id: tile-hama-walk-station
+    tone: neutral
     speaker: melba
     en: "You can walk to the station."
     ja: "駅まで歩いて行けますよ。"
@@ -486,6 +520,7 @@ items:
 
   - kind: tile
     id: tile-hama-lost-arent-we
+    tone: soft
     speaker: phoebe
     en: "We're lost, aren't we?"
     ja: "私たち、迷子だよね？"
@@ -500,6 +535,7 @@ items:
 
   - kind: tile
     id: tile-hama-bath-first-floor
+    tone: neutral
     speaker: cherry
     en: "The bath is on the first floor."
     ja: "大浴場は1階です。"

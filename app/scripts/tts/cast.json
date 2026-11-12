@@ -55,6 +55,14 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.466
+  },
+  "tones": {
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 22,
+    "mos": 4.536,
+    "sim": 0.709
+   }
   }
  },
  "us-f4": {
@@ -76,6 +84,12 @@
     "seed": 33,
     "mos": 4.525,
     "sim": 0.825
+   },
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 11,
+    "mos": 4.525,
+    "sim": 0.82
    }
   }
  },
@@ -98,6 +112,12 @@
     "seed": 11,
     "mos": 4.565,
     "sim": 0.9
+   },
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 22,
+    "mos": 4.569,
+    "sim": 0.89
    }
   }
  },
@@ -120,6 +140,12 @@
     "seed": 11,
     "mos": 4.541,
     "sim": 0.873
+   },
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 22,
+    "mos": 4.522,
+    "sim": 0.84
    }
   }
  },
@@ -170,6 +196,12 @@
     "seed": 22,
     "mos": 4.51,
     "sim": 0.774
+   },
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 22,
+    "mos": 4.495,
+    "sim": 0.797
    }
   }
  },
@@ -220,6 +252,12 @@
     "seed": 22,
     "mos": 4.457,
     "sim": 0.759
+   },
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 11,
+    "mos": 4.493,
+    "sim": 0.828
    }
   }
  },
@@ -242,6 +280,12 @@
     "seed": 11,
     "mos": 4.527,
     "sim": 0.837
+   },
+   "firm": {
+    "text": "Look, I've already asked you twice. This has to be done by Friday, and I mean it this time. No more excuses, please.",
+    "seed": 33,
+    "mos": 4.557,
+    "sim": 0.778
    }
   }
  },
@@ -264,6 +308,12 @@
     "seed": 11,
     "mos": 4.471,
     "sim": 0.728
+   },
+   "soft": {
+    "text": "Sorry, I know it's late. I'm just really tired tonight, and I don't think I can make it. Maybe another time, if that's okay.",
+    "seed": 22,
+    "mos": 4.471,
+    "sim": 0.731
    }
   }
  },

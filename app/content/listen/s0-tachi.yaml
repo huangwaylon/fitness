@@ -38,7 +38,7 @@ items:
       - { who: kicks, at: 0, en: "Our flight is at 3:40. Let's leave the hotel by one.", tts: "Our flight is at three forty. Let's leave the hotel by one.", ja: "飛行機は3時40分だよ。1時までにホテルを出よう。" }
       - { who: maple, at: 0.4, en: "A taxi costs 8,000 yen. The train is cheaper.", tts: "A taxi costs eight thousand yen. The train is cheaper.", ja: "タクシーは8,000円もするよ。電車のほうが安い。" }
       - { who: raymond, at: 0.4, en: "The bus is cheap too, and it's direct.", ja: "バスも安いし、直行だよ。" }
-      - { who: maple, at: -0.2, en: "Hmm.", ja: "うーん。" }
+      - { who: maple, at: -0.2, en: "Hmm, I'm not sure.", ja: "うーん、どうかな。" }
       - { who: kicks, at: 0.3, en: "But the bus takes ninety minutes. That's too long.", ja: "でもバスは90分かかる。長すぎるよ。" }
       - { who: maple, at: 0.4, en: "The train takes fifty minutes. It's cheap and fast.", ja: "電車なら50分。安くて速いよ。" }
       - { who: raymond, at: 0.3, en: "Okay, you're right. Let's take the train.", ja: "わかった、そうだね。電車で行こう。" }

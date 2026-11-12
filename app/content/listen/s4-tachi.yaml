@@ -116,7 +116,7 @@ items:
       - { who: reneigh, at: 0.3, en: "From here to Kichijoji? That's nine thousand yen, minimum, and that's if we can even find one at one a.m.", ja: "ここから吉祥寺まで？最低でも9,000円だし、それも夜中の1時にタクシーがつかまればの話。" }
       - { who: cyrano, at: 0.4, en: "Which, on a Saturday in Shibuya, is a big if.", ja: "土曜の渋谷で、それはかなりあやしいよね。" }
       - { who: lucky, at: 0.3, en: "Okay, but they're about to bring out the cake, and leaving before the cake is just rude.", ja: "わかったけど、もうすぐケーキが出てくるんだよ。ケーキの前に帰るのは失礼でしょ。" }
-      - { who: reneigh, at: 0.4, en: "Then we eat the cake fast and go at five to twelve. Actually, no, make it a quarter to. Five to is cutting it way too close.", ja: "じゃあケーキを急いで食べて、12時5分前に出よう。いや、やっぱり15分前。5分前はぎりぎりすぎる。" }
+      - { who: reneigh, at: 0.4, en: "Then we eat the cake fast and go at five to twelve. Actually, no, make it a quarter to. Five to is cutting it way too close.", tts: "Then we eat the cake fast and go at five to twelve... Actually, no — make it a quarter to. Five to is cutting it way too close.", ja: "じゃあケーキを急いで食べて、12時5分前に出よう。いや、やっぱり15分前。5分前はぎりぎりすぎる。" }
       - { who: cyrano, at: 0.3, en: "A quarter to it is. I'm setting an alarm, because I know us.", ja: "15分前で決まり。アラームかけとく。私たちのことだからね。" }
       - { who: lucky, at: 0.4, en: "Fine. I'll walk out with you. No point being the last one here.", ja: "わかったよ。いっしょに出る。最後の1人になっても仕方ないし。" }
     rounds:

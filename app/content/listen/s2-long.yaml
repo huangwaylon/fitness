@@ -134,7 +134,7 @@ items:
       - { who: molly, at: 0.4, en: "Why would it come back?", ja: "どうしてまた詰まるんですか？" }
       - { who: gruff, at: 0.4, en: "Because the pipe itself is old, and the inside is rough, so grease sticks to it easily.", ja: "管そのものが古くて内側がざらざらなので、油がくっつきやすいんです。" }
       - { who: molly, at: 0.5, en: "And option two?", ja: "二つ目は？" }
-      - { who: gruff, at: 0.4, en: "I replace the trap and the old pipe behind it. That's eighteen... sorry, no, twenty-two thousand, once you add the parts.", ja: "トラップと、その奥の古い管を交換します。一万八千…いや、すみません、部品を足すと二万二千円です。" }
+      - { who: gruff, at: 0.4, en: "I replace the trap and the old pipe behind it. That's eighteen... sorry, no, twenty-two thousand, once you add the parts.", tts: "I replace the trap and the old pipe behind it. That's eighteen... sorry, no — twenty-two thousand, once you add the parts.", ja: "トラップと、その奥の古い管を交換します。一万八千…いや、すみません、部品を足すと二万二千円です。" }
       - { who: molly, at: -0.3, en: "Twenty-two, with the parts.", ja: "部品込みで二万二千円。" }
       - { who: gruff, at: 0.3, en: "Right. It costs more, but you won't be calling me again next spring.", ja: "そうです。高くはなりますけど、来年の春にまた私を呼ぶことはないでしょう。" }
       - { who: molly, at: 0.5, en: "Can you do that one today, too?", ja: "そっちも今日やってもらえますか？" }

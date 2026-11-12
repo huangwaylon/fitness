@@ -15,6 +15,7 @@ status: draft
 items:
   - kind: tile
     id: tile-hoshi-hold-drop-off
+    tone: neutral
     speaker: lopez
     en: "The hold on your card should drop off within five business days."
     ja: "カードの仮押さえは、5営業日以内に消えるはずです。"
@@ -28,6 +29,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-unless-coverage
+    tone: firm
     speaker: cyrano
     en: "Unless you take the full coverage, you're liable for any damage."
     ja: "フルカバーの保険に入らない限り、損害はすべてお客様の負担になります。"
@@ -41,6 +43,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-upsold-bigger
+    tone: firm
     speaker: bud
     en: "They upsold me on a bigger car I didn't even need."
     ja: "いらなかったのに、大きい車を売りつけられたよ。"
@@ -54,6 +57,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-had-i-known
+    tone: firm
     speaker: keaton
     en: "Had I known the ferry was canceled, I'd have taken the train."
     ja: "フェリーが欠航だと知っていたら、電車にしたのに。"
@@ -67,6 +71,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-nine-hour-layover
+    tone: soft
     speaker: gulliver
     en: "The only flight that gets us there tonight has a nine-hour layover."
     ja: "今夜中に着ける便は、乗り継ぎで9時間待つのしかないよ。"
@@ -80,6 +85,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-made-connection
+    tone: soft
     speaker: fauna
     en: "If we'd made the connection, we'd be in Lisbon by now."
     ja: "乗り継ぎに間に合っていたら、今ごろリスボンにいるのに。"
@@ -93,6 +99,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-oversold-volunteers
+    tone: neutral
     speaker: bunnie
     en: "The flight's oversold, so they're asking for volunteers with flexible plans."
     ja: "便が売れすぎちゃったから、予定に余裕がある人を募ってるって。"
@@ -106,6 +113,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-anyones-guess
+    tone: neutral
     speaker: kitt
     en: "Whether they'll honor the voucher on another airline is anyone's guess."
     ja: "その券をほかの航空会社で使わせてくれるかどうかは、だれにもわからないよ。"
@@ -119,6 +127,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-rather-voucher
+    tone: firm
     speaker: flick
     en: "I'd rather take the voucher than sit here for another six hours."
     ja: "ここでもう6時間待つくらいなら、バウチャーをもらうほうがいい。"
@@ -132,6 +141,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-anything-but-free
+    tone: neutral
     speaker: freya
     en: "They'll upgrade us to a suite, but it's anything but free."
     ja: "スイートにアップグレードしてくれるって。でも、ただどころじゃないよ。"
@@ -145,6 +155,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-defeats-point
+    tone: soft
     speaker: anchovy
     en: "Check-in isn't till three, which defeats the whole point."
     ja: "チェックインは3時からなんだって。それじゃ早く来た意味がまったくないよ。"
@@ -158,6 +169,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-city-view
+    tone: neutral
     speaker: sylvia
     en: "What they call a city view is really a parking garage."
     ja: "「市街の眺め」って言うけど、見えるのは立体駐車場だよ。"
@@ -171,6 +183,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-holding-breath
+    tone: neutral
     speaker: shep
     en: "He swears it'll be fixed soon, not that I'm holding my breath."
     ja: "大家はすぐ直るって言い張ってるけど、期待はしてない。"
@@ -184,6 +197,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-should-be-fine
+    tone: neutral
     speaker: portia
     en: "The landlord said it should be fine, which is what worries me."
     ja: "大家さんは「大丈夫なはず」って言ったの。そこが心配なんだけど。"
@@ -197,6 +211,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-not-on-us
+    tone: neutral
     speaker: chief
     en: "Apparently the leak's coming from upstairs, so it's not even on us."
     ja: "どうやら水もれは上の階からだって。だからうちの責任じゃないよ。"
@@ -210,6 +225,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-deposit-catch
+    tone: neutral
     speaker: genji
     en: "What the movers didn't mention is that the deposit's nonrefundable after Friday."
     ja: "引っ越し業者が言わなかったのは、金曜を過ぎると手付金が返ってこないってこと。"
@@ -223,6 +239,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-elevator-isnt
+    tone: neutral
     speaker: curt
     en: "The quote assumes there's an elevator, which there isn't."
     ja: "見積もりはエレベーターがある前提なんだけど、うちにはないんだよね。"
@@ -236,6 +253,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-tack-on-fee
+    tone: neutral
     speaker: nana
     en: "They tack on a fee for anything over the third floor."
     ja: "4階以上は何でも、追加料金を取るんだって。"
@@ -249,6 +267,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-commute-old
+    tone: neutral
     speaker: vivian
     en: "It's not a dealbreaker, but that commute would get old fast."
     ja: "決定的にダメってわけじゃないけど、あの通勤はすぐうんざりしそう。"
@@ -262,6 +281,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-easy-traffic
+    tone: neutral
     speaker: bea
     en: "I'm easy, as long as we don't spend Saturday stuck in traffic."
     ja: "どこでもいいよ。土曜日を渋滞で過ごさなければね。"
@@ -275,6 +295,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-wouldnt-mind
+    tone: neutral
     speaker: merengue
     en: "I wouldn't mind skipping the trip if it rains again."
     ja: "また雨なら、旅行はやめてもいいかな。"
@@ -288,6 +309,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-masterpiece
+    tone: neutral
     speaker: label
     en: "It was a masterpiece, if you like falling asleep halfway through."
     ja: "傑作だったよ。途中で寝るのが好きならね。"
@@ -301,6 +323,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-high-school-play
+    tone: neutral
     speaker: kid-cat
     en: "I've seen better acting at a high school play, no offense."
     ja: "悪いけど、高校の劇のほうがまだ演技がうまかったよ。"
@@ -314,6 +337,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-book-ending
+    tone: neutral
     speaker: daisy-mae
     en: "Let's just say the book did a better job with the ending."
     ja: "まあ、結末は原作のほうがよかったってことで。"
@@ -327,6 +351,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-for-granted
+    tone: firm
     speaker: frett
     en: "Honestly, it sounds like they've been taking you for granted."
     ja: "正直、みんなあなたがいるのを当たり前だと思ってるみたいだね。"
@@ -340,6 +365,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-every-right
+    tone: firm
     speaker: saharah
     en: "You had every right to be upset, whatever she says."
     ja: "彼女が何て言おうと、あなたが怒ったのは当然だよ。"
@@ -353,6 +379,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-in-your-shoes
+    tone: neutral
     speaker: kappn
     en: "I'd have said something too, if I'd been in your shoes."
     ja: "あなたの立場だったら、私も何か言ってたと思う。"
@@ -366,6 +393,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-dessert-bite
+    tone: soft
     speaker: olivia
     en: "Dessert sounds amazing, but I'll probably just have a bite of yours."
     ja: "デザートおいしそう。でも私は、たぶんあなたのをひと口もらうだけにする。"
@@ -379,6 +407,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-off-carbs
+    tone: soft
     speaker: marshal
     en: "Normally I'd jump at it, but I'm off carbs for now."
     ja: "いつもなら飛びつくんだけど、今は糖質を控えてて。"
@@ -392,6 +421,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-wouldnt-count
+    tone: soft
     speaker: cj
     en: "I'll see how I feel, but I wouldn't count on it."
     ja: "体調を見てみるけど、当てにはしないで。"
@@ -405,6 +435,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-lobster-tip
+    tone: neutral
     speaker: faith
     en: "Since you had the lobster, you can cover the tip."
     ja: "ロブスター食べたんだから、チップはあなた持ちね。"
@@ -418,6 +449,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-service-included
+    tone: neutral
     speaker: tom-nook
     en: "Service is included, so no need to tip on top of that."
     ja: "サービス料は含まれていますので、別にチップをいただく必要はありません。"
@@ -431,6 +463,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-call-it-even
+    tone: neutral
     speaker: lucky
     en: "Let's just split it down the middle and call it even."
     ja: "もう半分ずつにして、それで貸し借りなしにしよう。"
@@ -444,6 +477,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-fine-to-fly
+    tone: neutral
     speaker: lily
     en: "You should be fine to fly, provided the swelling goes down."
     ja: "腫れが引けば、飛行機に乗っても大丈夫でしょう。"
@@ -457,6 +491,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-rash-reassess
+    tone: neutral
     speaker: audie
     en: "If the rash hasn't cleared up by Monday, we'll reassess."
     ja: "月曜までに発疹が引かなければ、もう一度診ましょう。"
@@ -470,6 +505,7 @@ items:
 
   - kind: tile
     id: tile-hoshi-number-stomach
+    tone: neutral
     speaker: poppy
     en: "Take it with food, or it'll do a number on your stomach."
     ja: "食事と一緒に飲んでください。でないと胃をひどく痛めますよ。"

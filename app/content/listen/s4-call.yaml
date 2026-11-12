@@ -55,7 +55,7 @@ items:
       - { who: henry, en: "We've reserved a comparable room at our sister property, the Bayside, at no extra cost, and we'll cover your cab from the airport.", ja: "系列のベイサイドに同等のお部屋を追加料金なしでご用意し、空港からのタクシー代もお持ちします。" }
       - { who: me, en: "Is it far? I picked your hotel because it's close to the convention center.", ja: "遠いですか？コンベンションセンターに近いからそちらにしたんです。" }
       - { who: henry, en: "It's a bit further out, about twenty minutes on foot from the convention center, but it's right by the light rail.", ja: "少し離れていて、コンベンションセンターから徒歩20分ほどですが、ライトレールの駅のすぐそばです。" }
-      - { who: henry, en: "We'll also take ten percent off your stay. Actually, let me correct that: your first night is complimentary, on us.", ja: "また宿泊料金を1割お引きします。あ、訂正します。1泊目は無料とさせていただきます。", repair: true }
+      - { who: henry, en: "We'll also take ten percent off your stay. Actually, let me correct that: your first night is complimentary, on us.", tts: "We'll also take ten percent off your stay... Actually, let me correct that — your first night is complimentary, on us.", ja: "また宿泊料金を1割お引きします。あ、訂正します。1泊目は無料とさせていただきます。", repair: true }
       - { who: me, en: "Okay. And if a room becomes available there after all?", ja: "わかりました。もしそちらに空きが出たら？" }
       - { who: henry, en: "I can't promise anything, but I'll put a note on your file, and if something frees up for your second night, we'll move you back.", ja: "お約束はできませんが、記録に残しておき、2泊目に空きが出ればこちらに戻っていただきます。" }
     half: [0, 0, 0, 1, 1, 1, 0, 1, 1]
@@ -313,7 +313,7 @@ items:
       - { who: me, en: "And what would a new one run me?", ja: "新しいのだと、いくらくらいですか？" }
       - { who: cj, en: "Installed, around ¥240,000. I know, it's not what anybody wants to hear.", tts: "Installed, around two hundred forty thousand yen. I know, it's not what anybody wants to hear.", ja: "取り付け込みで24万円くらい。ええ、誰も聞きたくない額ですよね。" }
       - { who: me, en: "That's a lot. Let me think it over.", ja: "高いですね。考えさせてください。" }
-      - { who: cj, en: "Sure. If you go with the repair, the part's only under warranty for ninety days. No, wait, that's for refurbished parts. A new thermostat's covered for a year.", ja: "どうぞ。修理にする場合、部品の保証は90日だけ…いや、待って、それは再生部品でした。新しい部品なら1年保証です。", repair: true }
+      - { who: cj, en: "Sure. If you go with the repair, the part's only under warranty for ninety days. No, wait, that's for refurbished parts. A new thermostat's covered for a year.", tts: "Sure. If you go with the repair, the part's only under warranty for ninety days... No, wait — that's for refurbished parts. A new thermostat's covered for a year.", ja: "どうぞ。修理にする場合、部品の保証は90日だけ…いや、待って、それは再生部品でした。新しい部品なら1年保証です。", repair: true }
     half: [0, 0, 0, 0, 1, 1, 1, 1]
     memo:
       - why: "途切れたあとで The thermostat と言い直した。修理は部品と工賃で18,000円、木曜までに。新品は取り付け込みで24万円。"
