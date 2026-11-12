@@ -10,7 +10,7 @@ import { newsOpts, shownOf, type NewsCard, type NewsSeg } from '#lib/kikimimi/ga
 /** The choices a card shows me (easy: the answer and its trap), as their authored places. */
 export function shownFor(v: Pick<QuizView, 'o'>, c: NewsCard): number[] {
   const o = newsOpts.decode(v.o);
-  return shownOf(c, !!o && tierAt(o.ear, o.lv) === 'easy');
+  return shownOf(c, !!o && tierAt(o.ear, o.lv, c.lv) === 'easy');
 }
 
 /** Whether an answer (as the view keeps it) is right for a card. */

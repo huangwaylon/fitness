@@ -11,7 +11,7 @@
   import { ORDER } from '#lib/kikimimi/round/session.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
-  import { lvForMode, modeOf, modeOfGame, sharable, type ModeId } from '#lib/kikimimi/catalog.ts';
+  import { PLACE_LVS, lvForMode, modeOf, modeOfGame, sharable, type ModeId } from '#lib/kikimimi/catalog.ts';
   import { LANES, laneLevels, levelFor } from '#lib/kikimimi/round/registry.ts';
   import type { QuizGame } from './game.svelte.ts';
   import PlayerChip from './frame/PlayerChip.svelte';
@@ -35,7 +35,7 @@
   /** The games that can be shared (the quiz family's, the lanes' this build can play). */
   const games = sharable({ levels: LEVELS, ladder: LADDER_OK, review: false, games: (gm) => LANES.ready(gm) });
   const now = $derived<ModeId>(modeOfGame(v.gm ?? '')?.id ?? (v.ladder ? 'ladder' : v.lv === 5 ? 'announce' : 'quiz'));
-  /** A lane's game's places (its content's), when its mode offers them. */
+  /** A lane's game's content places, when its mode offers the ばしょ (every place: StageRow says whose a place plays). */
   const places = $derived(modeOf(now).game && modeOf(now).places ? laneLevels(v.gm ?? '') : null);
 
   function pickGame(id: ModeId) {
@@ -84,7 +84,7 @@
   {:else if now === 'quiz'}
     <StageRow lv={v.lv} levels={LEVELS.filter((x) => x !== 5)} readonly={!v.amHost} onpick={level} />
   {:else if places?.length}
-    <StageRow lv={v.lv} levels={places} readonly={!v.amHost} onpick={level} />
+    <StageRow lv={v.lv} levels={PLACE_LVS} content={places} readonly={!v.amHost} onpick={level} />
   {/if}
   <TimerRow timer={v.timer} window={modeOf(now).window} readonly={!v.amHost} onpick={timer} />
 

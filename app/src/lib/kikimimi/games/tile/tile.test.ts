@@ -8,7 +8,7 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
-import { EMPTY, cvOver, filesOf, listenOpts, tierAt, type ListenOpts, listenGame, listenRecord } from '../listened.ts';
+import { EMPTY, cvOver, deckLv, filesOf, listenOpts, tierAt, type ListenOpts, listenGame, listenRecord } from '../listened.ts';
 import {
   TILE_QS, boardOf, decoysFor, slotsOf, tileDeal, tileOk, TILE, tileRounds, tileValid, unionOf, wrongMask, type TileCard
 } from './def.ts';
@@ -35,11 +35,14 @@ function answerFor(r: { tiles: readonly string[]; board: readonly string[] }, on
 }
 
 describe('ことば タイル: the deal', () => {
-  it('deals the listened files at the lobby’s place only', () => {
+  it('deals the listened files at the lobby’s place (none there: the nearest place’s, a tie the lower)', () => {
     const listen: Record<string, ListenEntry> = { 's1-tile-a': ['tile', 2, 'listened'], 's2-tile': ['tile', 3, 'listened'], 's2-tile-bank': ['tile', 3, 'draft'], 's2-call-a': ['call', 3, 'listened'] };
     expect(filesOf('tile', 4, listen)).toEqual(['s2-tile']);
     expect(filesOf('tile', 3, listen)).toEqual(['s1-tile-a']);
-    expect(filesOf('tile', 6, listen)).toEqual([]);
+    expect([6, 7].map((lv) => filesOf('tile', lv, listen))).toEqual([['s2-tile'], ['s2-tile']]);
+    expect(filesOf('tile', 1, listen)).toEqual(['s1-tile-a']);
+    expect(filesOf('tile', 6, { ...listen, 's3-tile': ['tile', 4, 'listened'] })).toEqual(['s3-tile']);
+    expect(filesOf('tile', 4, { 's1-tile-a': ['tile', 2, 'listened'], 'x': ['tile', 4, 'listened'] })).toEqual(['s1-tile-a']);
     expect(filesOf('tile', 4, INDEX.listen)).toEqual(['s2-tile', 's2-tile-b', 's2-tile-bank', 's2-tile-c']); // (this build: all listened, wave 2's -b and -c since A4)
   });
 
@@ -82,6 +85,16 @@ describe('ことば タイル: tiers and boards', () => {
   it('a player’s tier is their ear against the deck’s place', () => {
     expect([0, 1, 2, 3].map((ear) => tierAt(ear, 4))).toEqual(['easy', 'easy', undefined, 'hard']);
     expect(tierAt(1, 3)).toBeUndefined();
+    // (ほし as やま: no ear above it)
+    expect([0, 2, 3].map((ear) => tierAt(ear, 7))).toEqual(['easy', 'easy', undefined]);
+  });
+
+  it('a place with no content of its own: the nearest’s, everyone hard from below, easy from above', () => {
+    expect([0, 3].map((ear) => tierAt(ear, 7, 6))).toEqual(['hard', 'hard']);
+    expect([0, 3].map((ear) => tierAt(ear, 1, 3))).toEqual(['easy', 'easy']);
+    expect(tierAt(0, 2, 1)).toBeUndefined(); // (はまべ 2 on はまべ's: the same place, by ear)
+    expect(deckLv('tile', 7, INDEX.listen)).toBe(6);
+    expect(deckLv('tile', 4, INDEX.listen)).toBe(4);
   });
 
   it('a board is the words and decoys, the same for a seed, never the sentence in order', () => {

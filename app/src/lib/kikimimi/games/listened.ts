@@ -5,7 +5,7 @@
 import { fnv1a } from '#lib/random.ts';
 import type { ListenRow } from '../../contract/listen.ts';
 import type { Item, Level } from '../bank.ts';
-import { PLACES } from '../catalog.ts';
+import { PLACES, contentLevels, contentPlaceOf } from '../catalog.ts';
 import type { ListenEntry } from '../listen.ts';
 import type { Tier } from '../lesson.ts';
 import { RIGHT } from '../score.ts';
@@ -38,15 +38,30 @@ export const listenOpts = {
   }
 };
 
-/** A game's files a level's deck deals from: the `listened` ones at its place, by name. */
+/** The stage (1-5) a game's deck at a level deals from (docs/kikimimi.md "Places"): the level's place when a `listened`
+ *  file of the game is there, else the nearest place with one (a tie: the lower); none anywhere: the level's. */
+export const stageOf = (gm: GameId, lv: number, listen: Readonly<Record<string, ListenEntry>>): number => contentPlaceOf(lv, contentLevels(gm, listen)) + 1;
+/** The level of the place a game's deck at a level deals from (the level itself when its place has content). */
+export const deckLv = (gm: GameId, lv: number, listen: Readonly<Record<string, ListenEntry>>): number => {
+  const st = stageOf(gm, lv, listen);
+  return st === placeOf(lv) + 1 ? lv : PLACES[st - 1].lvs[0];
+};
+
+/** A game's files a level's deck deals from: the `listened` ones at its place (none there: the nearest place's,
+ *  stageOf), by name. */
 export function filesOf(gm: GameId, lv: number, listen: Readonly<Record<string, ListenEntry>>): string[] {
-  const stage = placeOf(lv) + 1;
+  const stage = stageOf(gm, lv, listen);
   return Object.entries(listen).filter(([, [g, st, s]]) => g === gm && st === stage && s === 'listened').map(([u]) => u).sort();
 }
 
-/** A player's tier on a deck: their ear against its place (below it easy, above it hard). */
-export const tierAt = (ear: number, lv: number): Tier | undefined => {
-  const at = placeOf(lv);
+/** A player's tier on a deck picked at `lv` and dealt from `deck`'s place (a card's `lv`; the same: `lv`). A deck from
+ *  a place below the picked one is everyone's hard, from above everyone's easy (the place has no content yet:
+ *  stageOf). Else their ear against its place (ほし's as やま's, the top ear: EARS): below it easy, above it hard, at it
+ *  as authored. */
+export const tierAt = (ear: number, lv: number, deck: number = lv): Tier | undefined => {
+  const pick = placeOf(lv), from = placeOf(deck);
+  if (from !== pick) return from < pick ? 'hard' : 'easy';
+  const at = Math.min(from, EARS - 1);
   return ear < at ? 'easy' : ear > at ? 'hard' : undefined;
 };
 

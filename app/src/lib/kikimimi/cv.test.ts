@@ -51,7 +51,7 @@ function decksOf(key: string): unknown {
   // しずえの ニュース's: the bulletin of a day a seed (spread over the year), each card's answer, trap and clips, on a rainy 23 °C day
   if (gm === 'news') return SEEDS.map((s) => newsDeal(20_400 + s * 19, [listenOf(unit)!], { sky: 'rain', fog: false, hi: 23 }).map((c) => [c.id, c.answer, c.news.trap, c.choices.length, c.lines?.map((l) => l.clip) ?? []]));
   // まるごと 聞く's: each piece of the file, each question's choices shown and answer at every ear, the lines' gaps
-  if (gm === 'long') { const p = listenOf(unit)!; return piecesAt([p]).map((_, piece) => { const cs = longDeal([p], { piece }); return [cs[0].lines!.map((l) => [l.clip, (l as { at?: number }).at]), [0, 1, 2, 3].map((ear) => longRounds(cs, { ear }, () => 0).map((r) => [r.id, r.shown, r.answer]))]; }); }
+  if (gm === 'long') { const p = listenOf(unit)!; return piecesAt([p]).map((_, piece) => { const cs = longDeal([p], { piece }); return [cs[0].lines!.map((l) => [l.clip, (l as { at?: number }).at]), [0, 1, 2, 3].map((ear) => longRounds(cs, { lv: cs[0].lv, ear }, () => 0).map((r) => [r.id, r.shown, r.answer]))]; }); }
   // はつおん's: 8 pairs a seed, the word to say on each
   if (gm === 'pair') return SEEDS.map((s) => pairDeal(s, partItems(unit as Unit) as PairCard[]).map((c) => [c.id, sayOf(s, c.id)]));
   // 音の へんしん's: 8 phrases a seed for a few days' phenomena, each round's kind, choices and tiles at every ear

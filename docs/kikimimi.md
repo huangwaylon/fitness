@@ -95,7 +95,22 @@ One ladder named after places, never "easy / hard" (choosing the easy one in fro
 | ほし | ★★★★★ | C1 | L7 |
 
 L5 is the アナウンス mode beside もり. The mapping is a UI table (catalog.ts `PLACES`, `placeOfLv`, `lvOfPlace`), so the
-wire and the `listen` row keep plain `lv` (1–8). A place with no content in this build is sunk (`aria-disabled`).
+wire and the `listen` row keep plain `lv` (1–8). In the quiz a place this build has no level for is sunk
+(`aria-disabled`). **A lane's game offers every place** (catalog.ts `PLACE_LVS`, news included): one with no content
+yet plays the nearest place's (a tie: the lower; `contentPlaceOf`), everyone a tier harder if that place is below,
+easier if above, and the row says so in one line (`nearOf`, `kiki.place.near.up|down`: 「ほしの問題は準備中です。やまの
+問題を難しめに出します。」). The wire keeps the picked `lv`. おまかせ stays on a place with content (registry.ts `levelFor`).
+
+What a place changes on top of the content (authored per place: decoys, memo rows; the tier by my ear against the
+deck's place, ほし as やま's; kikimimi-engine.md "The listening games"):
+
+| Game | easy (below the place, or a place with none above its content) | as authored | hard (above, or below its content) |
+|---|---|---|---|
+| ことば タイル | the first decoy, my first slot placed | the file's 1–4 decoys | decoys topped up to 3–4 |
+| ようじ でんわ | 2 memo rows | 3 | 4, plus a sound-trap chip |
+| すうじ ラッシュ | 3 chips, `was` dropped | 3 | all 4 |
+| たちぎき | the third claim placed | all three to place | as authored |
+| しずえの ニュース, まるごと 聞く | the answer and one wrong choice | all | all |
 **おまかせ**, the place row's default (catalog.ts `omakaseLv`): the latest みみ チェック's level, else the comfortable
 level (stages.ts `stageAt`), else はまべ 2. A tap overrides it per mode; おまかせに戻す clears it.
 
@@ -166,7 +181,7 @@ speech"; the deal and audio, kikimimi-engine.md "音の へんしん".
 ## まるごと 聞く
 
 C1 listening, everyday and travel (curriculum.md "Long listening"; the engine, kikimimi-engine.md "まるごと 聞く"). At
-ほし, on じっくり (never きまぐれ); about 6 minutes, solo or co-op.
+ほし (the other places play ほし's easier till theirs are written), on じっくり (never きまぐれ); about 6 minutes, solo or co-op.
 - **A game:** one 2–5 minute piece played whole (its speakers on the stage, `ctx` under it; nothing to answer while it
   plays), then 4–5 questions with no clip (the point, the implied meaning, the feeling, the next step), 3 English choices
   each (easy: two). 通しでもう一度 replays it all.
@@ -263,8 +278,9 @@ playable items (`playIds`); the phrases caught k / n → 図鑑; 飛ばしてチ
 
 ### Mode detail
 
-`mode/ModeDetail.svelte`: backdrop, cast and blurb, the place row (`mode/StageRow.svelte`: only places its files cover,
-catalog.ts `contentLevels`), 答える時間, and the foot 誘う / 始める. At volume 0, `kiki.testZero`. Units live on the path,
+`mode/ModeDetail.svelte`: backdrop, cast and blurb, the place row (`mode/StageRow.svelte`: the quiz's
+levels; a lane's game every place, its files' places beside them, catalog.ts `contentLevels`, for the
+「準備中」 line), 答える時間, and the foot 誘う / 始める. At volume 0, `kiki.testZero`. Units live on the path,
 not here.
 
 ### しゅうまつ たいかい

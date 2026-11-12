@@ -67,7 +67,7 @@ const MODES: ModeMeta[] = [
   { id: 'announce', group: 'scene', icon: '📢', mins: 4, qs: 8, coop: true, ok: (c) => c.levels.includes(5) },
   { id: 'call', group: 'scene', icon: '📞', mins: 3, qs: 6, coop: true, game: 'call', places: true },
   { id: 'tachi', group: 'scene', icon: '👂', mins: 3, qs: 6, coop: true, game: 'tachi', places: true },
-  { id: 'news', group: 'long', icon: '📻', mins: 2, qs: 3, coop: true, game: 'news', hours: [5, 11] },
+  { id: 'news', group: 'long', icon: '📻', mins: 2, qs: 3, coop: true, game: 'news', places: true, hours: [5, 11] },
   { id: 'long', group: 'long', icon: '🎧', mins: 6, qs: 5, coop: true, game: 'long', places: true },
   { id: 'story', group: 'night', icon: '🌙', mins: 4, qs: 0, coop: false, ok: (c) => !!c.story },
   { id: 'taikai', group: 'event', icon: '🏆', mins: 6, qs: 8, coop: true, ok: (c) => !!c.taikai && quizLevels(c) }
@@ -125,6 +125,23 @@ export function lvOfPlace(place: Place, levels: readonly number[], lv?: number):
 export function contentLevels(gm: string, listen: Readonly<Record<string, readonly [game: string, stage: number, status: string]>>): number[] {
   const at = new Set(Object.values(listen).flatMap(([g, stage, status]) => (g === gm && status === 'listened' ? [stage - 1] : [])));
   return PLACES.flatMap((p, k) => (at.has(k) ? [p.lvs[0]] : []));
+}
+
+/** The first level of each place: a lane's game's ばしょ row (every place can be picked: contentPlaceOf). */
+export const PLACE_LVS: readonly number[] = PLACES.map((p) => p.lvs[0]);
+
+/** The place (0 はまべ … 4 ほし) whose content a lane's game deals when `lv` is picked (docs/kikimimi.md "Places"):
+ *  lv's own when its content (contentLevels) has it, else the nearest that has (a tie: the lower); none: lv's. */
+export function contentPlaceOf(lv: number, content: readonly number[]): number {
+  const at = PLACES.findIndex((p) => p.lvs.includes(lv)), have = content.map((x) => PLACES.findIndex((p) => p.lvs.includes(x)));
+  return have.includes(at) || !have.length ? at : [...have].sort((a, b) => Math.abs(a - at) - Math.abs(b - at) || a - b)[0];
+}
+
+/** StageRow's line for a picked place with no content yet: its name, the place whose content it plays and whether
+ *  that's made harder (it's below) or easier; null: the place has its own. */
+export function nearOf(lv: number, content: readonly number[]): { at: Place; near: Place; harder: boolean } | null {
+  const at = PLACES.findIndex((p) => p.lvs.includes(lv)), near = contentPlaceOf(lv, content);
+  return at < 0 || near === at ? null : { at: PLACES[at].id, near: PLACES[near].id, harder: near < at };
 }
 
 /** The level a mode opens at: アナウンス 5; the quiz the one remembered unless that's アナウンス's (then はまべ 1). */

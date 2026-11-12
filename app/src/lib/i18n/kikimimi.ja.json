@@ -546,6 +546,8 @@
   "kiki.omakase": "おまかせ",
   "kiki.omakase.reset": "おまかせに戻す",
   "kiki.omakase.hint": "今のあなたにちょうどいい場所です。",
+  "kiki.place.near.up": "{at}の問題は準備中です。{near}の問題を難しめに出します。",
+  "kiki.place.near.down": "{at}の問題は準備中です。{near}の問題をやさしめに出します。",
   "kiki.welcome.step": "{n} / 3",
   "kiki.welcome.hello": "はじめまして！ ここは えいごの みみを そだてる ところです。",
   "kiki.welcome.p1": "1日3分から",

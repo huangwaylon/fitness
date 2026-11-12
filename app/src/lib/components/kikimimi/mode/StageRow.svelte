@@ -1,15 +1,18 @@
 <script lang="ts">
   // The ばしょ row (docs/kikimimi.md "Places", "Mode detail"): the five places はまべ → ほし with their ★s, the picked one yuzu, a
   // place this build has no level for sunk (aria-disabled); はまべ's two sub-steps (1 · 2) under it while it's picked.
+  // `content` (a lane's game: every place offered, its content's places): a picked place with none says whose it plays
+  // and whether harder or easier (catalog.ts nearOf).
   // `readonly`: another's lobby (the host picks; the others see it). `omakase` (a mode's page): 「おまかせ」 by the label
   // while the place is the suggested one (みみ チェック's), else 「おまかせに もどす」.
-  import { PLACES, lvOfPlace, placeOfLv } from '#lib/kikimimi/catalog.ts';
+  import { PLACES, lvOfPlace, nearOf, placeOfLv } from '#lib/kikimimi/catalog.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { lv, levels, readonly = false, onpick, omakase }: {
-    lv: number; levels: readonly number[]; readonly?: boolean; onpick: (lv: number) => void; omakase?: { on: boolean; onreset: () => void };
+  let { lv, levels, content, readonly = false, onpick, omakase }: {
+    lv: number; levels: readonly number[]; content?: readonly number[]; readonly?: boolean; onpick: (lv: number) => void; omakase?: { on: boolean; onreset: () => void };
   } = $props();
   const at = $derived(placeOfLv(lv));
+  const near = $derived(content ? nearOf(lv, content) : null);
   const hama = $derived(PLACES[0].lvs.filter((x) => levels.includes(x)));
   function pick(x: number | null) {
     if (x === null || readonly || x === lv) return;
@@ -33,7 +36,8 @@
       </button>
     {/each}
   </div>
-  {#if omakase?.on}<p class="hint" data-kiki-omakase-hint>{t('kiki.omakase.hint')}</p>{/if}
+  {#if near}<p class="hint" data-kiki-place-near={near.near}>{t(`kiki.place.near.${near.harder ? 'up' : 'down'}`, { at: t(`kiki.stage.${near.at}`), near: t(`kiki.stage.${near.near}`) })}</p>
+  {:else if omakase?.on}<p class="hint" data-kiki-omakase-hint>{t('kiki.omakase.hint')}</p>{/if}
   {#if at === 'hama' && hama.length > 1}
     <div class="subs" role="radiogroup" aria-label={t('kiki.stage.hama')}>
       {#each hama as x (x)}

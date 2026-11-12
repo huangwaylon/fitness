@@ -108,9 +108,8 @@ export interface RushRound extends Round {
 
 /** A deck's rounds at an ear (`playMs`: a clip's length, unknown: PLAY_UNKNOWN). */
 export const rushRounds = (cards: readonly RushCard[], o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: RushCard) => number | undefined): RushRound[] => {
-  const tier = tierAt(o.ear, o.lv);
   return cards.map((c) => {
-    const map = chipsAt(c, tier);
+    const map = chipsAt(c, tierAt(o.ear, o.lv, c.lv));
     return { kind: 'rush', id: c.id, map, answer: map.indexOf(c.answer), play: playMs(c) ?? PLAY_UNKNOWN, b: c.rush.b };
   });
 };

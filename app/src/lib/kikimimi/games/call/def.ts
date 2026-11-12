@@ -163,9 +163,8 @@ export interface CallRound extends Round {
 
 /** A deck's rounds at an ear (`playMs`: a call's length, unknown: undefined). */
 export function callRounds(cards: readonly CallCard[], o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: CallCard) => number | undefined): CallRound[] {
-  const tier = tierAt(o.ear, o.lv);
   return cards.map((c) => {
-    const { info, part } = c.call;
+    const { info, part } = c.call, tier = tierAt(o.ear, o.lv, c.lv);
     const rows = roundRows(info, tier)[part].map((r) => ({ n: r.n, ask: r.ask, ...chipsOf(r, tier) }));
     return { kind: 'call', id: info.id, part, rows, play: part ? 0 : (playMs(c) ?? PLAY_UNKNOWN * info.lines.length) };
   });

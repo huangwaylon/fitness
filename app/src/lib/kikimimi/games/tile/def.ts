@@ -105,8 +105,7 @@ export interface TileRound extends Round {
 
 /** A deck's rounds at an ear (`playMs`: a card's clip length, unknown: PLAY_UNKNOWN). */
 export const tileRounds = (cards: readonly TileCard[], seed: number, o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: TileCard) => number | undefined): TileRound[] => {
-  const tier = tierAt(o.ear, o.lv);
-  return cards.map((c) => ({ kind: 'tile', id: c.tile.id, tiles: c.tile.tiles, board: boardOf(c.tile, seed, tier), play: playMs(c) ?? PLAY_UNKNOWN }));
+  return cards.map((c) => ({ kind: 'tile', id: c.tile.id, tiles: c.tile.tiles, board: boardOf(c.tile, seed, tierAt(o.ear, o.lv, c.lv)), play: playMs(c) ?? PLAY_UNKNOWN }));
 };
 
 /** A role's slots of a sentence of n (solo: every one). */

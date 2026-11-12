@@ -4,7 +4,8 @@ import type { Who } from '#lib/types.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import type { GameId } from '#lib/kikimimi/round/types.ts';
 import type { QuizGame } from './game.svelte.ts';
-import { EMPTY, listenOpts, tierAt } from '#lib/kikimimi/games/listened.ts';
+import { EMPTY, deckLv, listenOpts, tierAt } from '#lib/kikimimi/games/listened.ts';
+import { INDEX } from '#lib/kikimimi/pool.ts';
 
 /** The results' しずえ line's key for `made` of `n` (`prefix`.all / .some, half or more / .few). */
 export const hostLine = (prefix: string, made: number, n: number): string => `${prefix}.${n && made >= n ? 'all' : made * 2 >= n ? 'some' : 'few'}`;
@@ -15,10 +16,10 @@ export const isCoop = (v: Pick<QuizView, 'players' | 'vs'>): boolean => v.player
 /** My role (co-op), else null. */
 export const roleOf = (v: Pick<QuizView, 'players' | 'vs' | 'roles'>, me: Who): number | null => (isCoop(v) ? (v.roles[me] ?? 0) : null);
 
-/** Whether I'm on easy (my ear below the deck's place). */
-export function easy(v: Pick<QuizView, 'o'>): boolean {
+/** Whether I'm on easy (my ear below the deck's place, or the deck from a place above the picked one: tierAt). */
+export function easy(v: Pick<QuizView, 'o'> & { gm?: GameId | null }): boolean {
   const o = listenOpts.decode(v.o);
-  return !!o && tierAt(o.ear, o.lv) === 'easy';
+  return !!o && tierAt(o.ear, o.lv, v.gm ? deckLv(v.gm, o.lv, INDEX.listen) : o.lv) === 'easy';
 }
 
 /** An empty answer (every slot or row EMPTY). */

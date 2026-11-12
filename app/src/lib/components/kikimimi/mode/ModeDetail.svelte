@@ -13,7 +13,7 @@
   import type { Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
-  import { modeOf, modeOfGame, type ModeId } from '#lib/kikimimi/catalog.ts';
+  import { PLACE_LVS, modeOf, modeOfGame, type ModeId } from '#lib/kikimimi/catalog.ts';
   import { laneLevels, levelFor } from '#lib/kikimimi/round/registry.ts';
   import { REVIEW_CAP } from '#lib/kikimimi/srs.ts';
   import { currentOmakase, currentReport } from '../progress.svelte.ts';
@@ -29,9 +29,11 @@
   let { game, m, oninvite, onpractice }: { game: QuizGame; m: ModeId; oninvite: () => void; onpractice: () => void } = $props();
   const v = $derived(game.view);
   const meta = $derived(modeOf(m));
-  /** A lane's game (the page is keyed by its mode), and the levels its ばしょ row offers (the quiz's: this build's). */
+  /** A lane's game (the page is keyed by its mode), the levels its ばしょ row offers (a lane's: every place, its
+   *  content's places beside them; the quiz's: this build's). */
   const gm = untrack(() => modeOf(m).game);
-  const levels = gm ? (modeOf(untrack(() => m)).places ? laneLevels(gm) : []) : LEVELS.filter((x) => x !== 5);
+  const levels = gm ? (modeOf(untrack(() => m)).places ? PLACE_LVS : []) : LEVELS.filter((x) => x !== 5);
+  const content = gm ? laneLevels(gm) : undefined;
   const due = $derived(Math.min(REVIEW_CAP, currentReport()?.due ?? 0));
   const zero = $derived(sound.settings.volume <= 0);
 
@@ -89,7 +91,7 @@
   </div>
 
   {#if meta.places && levels.length}
-    <StageRow lv={v.lv} {levels} onpick={level} omakase={{ on: pick === null, onreset: reset }} />
+    <StageRow lv={v.lv} {levels} {content} onpick={level} omakase={{ on: pick === null, onreset: reset }} />
   {:else if m === 'ladder'}
     <section class="ladder card" data-kiki-ladder-about>
       <LadderSteps size="big" step={(k) => (k === SPEEDS.length - 1 ? 'up' : 'soft')} />
@@ -100,7 +102,7 @@
       <Mastery onpick={() => game.setGame('henshin', { lv: HENSHIN_LV, timer: v.timer })} />
     {/snippet}</Lazy>
   {/if}
-  {#if m === 'long' && levels.includes(v.lv)}
+  {#if m === 'long' && v.gm === 'long'}
     <Lazy load={() => import('../long/LongPieces.svelte')}>{#snippet children(LongPieces)}
       <LongPieces lv={v.lv} onpick={() => game.setGame('long', { lv: v.lv, timer: v.timer })} />
     {/snippet}</Lazy>

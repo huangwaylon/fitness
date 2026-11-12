@@ -546,6 +546,8 @@
   "kiki.omakase": "Suggested",
   "kiki.omakase.reset": "Back to suggested",
   "kiki.omakase.hint": "The right place for you now.",
+  "kiki.place.near.up": "{at} questions are on the way. Playing {near}'s, made harder.",
+  "kiki.place.near.down": "{at} questions are on the way. Playing {near}'s, made easier.",
   "kiki.welcome.step": "{n} / 3",
   "kiki.welcome.hello": "Nice to meet you! This is where your English ears grow.",
   "kiki.welcome.p1": "From 3 minutes a day",

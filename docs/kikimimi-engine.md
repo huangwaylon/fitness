@@ -287,8 +287,11 @@ lv: <placed>, u: <a digit a skill, x unsampled>}`. Other games' tiers come from 
 ことば タイル, たちぎき, ようじ でんわ, すうじ ラッシュ and しずえの ニュース deal `listened` files at the lobby's place and
 share `games/listened.ts` (pure: `EMPTY` 63, `ROLES` 2, `listenOpts` `[lv, timer, ear]`, `filesOf`, `tierAt`, `shareOf`,
 `cvOver`, `listenGame` / `listenRecord` over a game's `ListenRules`); each lane.ts is one `listenLane(RULES, deal, more?)`.
-**The ear** is each player's tier (0 はまべ … 3 やま: `tierOf`) against the deck's place: below, easy; above, hard; else
-as authored. Co-op has two roles; the team tally is `team.all`. The pages share `components/kikimimi/listenView.ts`. A
+**The ear** is each player's tier (0 はまべ … 3 やま: `tierOf`) against the deck's place (ほし's counts as やま's, so a
+やま ear plays ほし as authored): below, easy; above, hard; else as authored. **A place with no content** (`stageOf`,
+catalog.ts `contentPlaceOf`): `filesOf` deals the nearest place's files (a tie: the lower) and `tierAt(ear, lv, deck)`
+(deck: a card's `lv`) makes everyone hard on a deck from below the picked place, easy from above. The wire keeps the
+picked `lv`; an older build deals nothing there, so its cv differs and it's blocked (更新する). Co-op has two roles; the team tally is `team.all`. The pages share `components/kikimimi/listenView.ts`. A
 unit's lesson on recipe 2 deals their cards the same way (curriculum.md "Recipe 2"). Each has an e2e solo, at night and
 co-op on the shipped files.
 
@@ -383,6 +386,7 @@ The long piece (`games/long/`). Content: content/listen/s4-long-a…d.yaml (`gam
 and d real), compiled as listen parts; their questions and dictation lines also go into the index's `long` (listen.ts
 `longEntries`), so 記録 and おさらい know them.
 - **Options** `[lv, timer, ear, piece]` (`longOpts`): the host's piece (a pick, else def.ts `pieceFor`).
+- **Tiers** (`longTier`, the listening games' `tierAt`): easy shows the answer and the first wrong choice; else all 3.
 - **Deck** (`longDeal`): the piece's questions in order, the first card carrying its lines; the piece plays before the
   first question, +8 s to read. **Row:** `[q id, ok, choice, rp]`; the dictation a row of its own after it
   (`QuizGame.keepMore`, nothing on the wire).

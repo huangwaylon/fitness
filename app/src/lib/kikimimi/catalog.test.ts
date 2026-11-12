@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMode, contentLevels, lvForMode, lvOfPlace, modeOf, placeOfLv, playable, sharable, shelves, whims } from './catalog.ts';
+import { PLACE_LVS, addMode, contentLevels, contentPlaceOf, nearOf, lvForMode, lvOfPlace, modeOf, placeOfLv, playable, sharable, shelves, whims } from './catalog.ts';
 
 const ALL = { levels: [1, 2, 3, 4, 5, 6, 7], ladder: true, review: true, story: true };
 
@@ -42,7 +42,7 @@ describe('the later games’ modes', () => {
     ]);
     expect(sharable(lanes('tile', 'news')).map((m) => m.id)).toEqual(['quiz', 'ladder', 'tile', 'announce', 'news']);
     expect(whims(lanes('call')).sort()).toEqual(['announce', 'call', 'ladder', 'quiz']);
-    expect([modeOf('tile').icon, modeOf('news').places, modeOf('call').places]).toEqual(['🧩', undefined, true]);
+    expect([modeOf('tile').icon, modeOf('news').places, modeOf('call').places]).toEqual(['🧩', true, true]);
   });
   it('a mode from a registry line (a mic mode): on 声に出す, last, while its gate is open; never きまぐれ’s', () => {
     let on = false;
@@ -61,6 +61,16 @@ describe('the later games’ modes', () => {
     expect(contentLevels('tile', listen)).toEqual([1, 3, 6]);
     expect(contentLevels('call', listen)).toEqual([4]);
     expect(contentLevels('news', listen)).toEqual([]);
+  });
+  it('every place can be picked: one with no content plays the nearest place’s (a tie the lower), and says so', () => {
+    const content = [3, 4]; // (かわ, もり)
+    expect([1, 2, 3, 4, 6, 7].map((lv) => contentPlaceOf(lv, content))).toEqual([1, 1, 1, 2, 2, 2]);
+    expect(contentPlaceOf(4, [3, 6])).toBe(1);
+    expect(contentPlaceOf(7, [])).toBe(4);
+    expect([nearOf(1, content), nearOf(3, content), nearOf(7, content)]).toEqual([
+      { at: 'hama', near: 'kawa', harder: false }, null, { at: 'hoshi', near: 'mori', harder: true }
+    ]);
+    expect(PLACE_LVS).toEqual([1, 3, 4, 6, 7]);
   });
 });
 

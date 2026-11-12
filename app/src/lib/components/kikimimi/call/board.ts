@@ -66,7 +66,7 @@ export function basketOf(v: Pick<QuizView, 'g' | 'o' | 'tiers' | 'answers' | 'ph
   const c = cards[i];
   if (!c) return [];
   const first = i - c.call.part, info = c.call.info, o = listenOpts.decode(v.o);
-  const rows = roundRows(info, o ? tierAt(o.ear, o.lv) : undefined);
+  const rows = roundRows(info, o ? tierAt(o.ear, o.lv, c.lv) : undefined);
   const authored = new Map(info.memo.flatMap((m) => m.rows).map((r) => [r.n, r]));
   return rows.flatMap((rs, part) => {
     const at = first + part, done = v.phase === 'results' || at < v.i || (at === v.i && v.phase === 'reveal');

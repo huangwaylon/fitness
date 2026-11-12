@@ -28,11 +28,11 @@ const answerFor = (r: Pick<CallRound, 'rows'>, only?: readonly number[]): number
 const callsOf = (us: readonly string[]) => parts(us).flatMap((p) => p.items.flatMap((it) => (it.kind === 'call' ? [it] : [])));
 
 describe('ようじ でんわ: the deal', () => {
-  it('deals the listened files at the lobby’s place only', () => {
+  it('deals the listened files at the lobby’s place (none there: the nearest’s)', () => {
     const listen: Record<string, ListenEntry> = { 's1-call': ['call', 2, 'listened'], 's2-call-a': ['call', 3, 'listened'], 's2-call-b': ['call', 3, 'draft'], 's2-tile': ['tile', 3, 'listened'] };
     expect(filesOf('call', 4, listen)).toEqual(['s2-call-a']);
     expect(filesOf('call', 3, listen)).toEqual(['s1-call']);
-    expect(filesOf('call', 6, listen)).toEqual([]);
+    expect(filesOf('call', 6, listen)).toEqual(['s2-call-a']); // (none at やま: もり's)
     expect(filesOf('call', 4, INDEX.listen)).toEqual(['s2-call-a', 's2-call-b', 's2-call-c']); // (this build: A1's listened, wave 2's s2-call-c since A4)
   });
 

@@ -24,7 +24,8 @@ import { focusOf, phenomenaOf, type PhState } from '#lib/kikimimi/henshin.ts';
 import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
 import { LESSONS } from '#lib/kikimimi/stages.ts';
 import { levelRank } from '#lib/kikimimi/bank.ts';
-import { omakaseLv } from '#lib/kikimimi/catalog.ts';
+import { PLACES, omakaseLv } from '#lib/kikimimi/catalog.ts';
+import { stageOf } from '#lib/kikimimi/games/listened.ts';
 import { lastPlacement } from '#lib/kikimimi/games/check/def.ts';
 import { hooksOn } from '../island/devHooks.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -130,11 +131,12 @@ let longPick = $state<string | null>(null);
 /** Pick まるごと 聞く's piece (null: back to the one of the day). */
 export const pickLong = (id: string | null): void => void (longPick = id);
 
-/** まるごと 聞く at a place's level now: its pieces by id (the index's questions: those of `listened` files), how I've
+/** まるごと 聞く at a place's level now (none there: the nearest place's, games/listened.ts stageOf): its pieces by id (the index's questions: those of `listened` files), how I've
  *  heard each (games/long/def.ts heardOf, from my answers), the one of the day (pieceFor) and the one the game plays
  *  (picked, else the day's), as its place among them. Reactive. */
 export function currentLong(lv: number): { ids: string[]; heard: Map<string, Heard>; today: number; piece: number; picked: boolean } {
-  const ids = [...new Set(LONG_ENTRIES.filter((e) => e.lv === lv && /-q1$/.test(e.id)).map((e) => e.id.replace(/-q1$/, '')))].sort();
+  const at = PLACES[stageOf('long', lv, INDEX.listen) - 1]?.lvs[0];
+  const ids = [...new Set(LONG_ENTRIES.filter((e) => e.lv === at && /-q1$/.test(e.id)).map((e) => e.id.replace(/-q1$/, '')))].sort();
   const m = memoNow();
   const heard = heardOf(currentAnswers().map((a) => ({ id: a.id, ok: a.ok, day: dayNum(a.d) })));
   const today = pieceFor(ids, heard, dayNum(m?.day ?? localDateAt(Date.now())));

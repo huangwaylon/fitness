@@ -7,6 +7,7 @@
 import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
 import { CHANNELS, HENSHIN_LV, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpProblems, type Accent, type CastId, type Channel, type Feature, type Item, type ItemType, type Level, type SoundMark, type Tags } from './bank.ts';
 import { CAST } from './cast.ts';
+import { PLACES } from './catalog.ts';
 import { isInt } from '../contract/ops.ts';
 import { CAST_IDS } from './speech.ts';
 import { ALERTS, HI_MAX, HI_MIN, SKIES, hiKey, type Alert, type Sky } from './games/news/weather.ts';
@@ -756,8 +757,8 @@ export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 's
   };
 }
 
-/** A long piece's place on the bank's level scale (its questions' level: やま 6, ほし 7). */
-export const longLevel = (stage: number): Level => (stage >= 5 ? 7 : 6);
+/** A long piece's place on the bank's level scale (its questions' level: its place's first, はまべ 1 … ほし 7). */
+export const longLevel = (stage: number): Level => (PLACES[Math.min(5, Math.max(1, stage)) - 1].lvs[0] as Level);
 /** A question's angle as the quiz's item type (きろく's skills, the learned difficulty and a review's sibling: the
  *  implied meaning and the attitude `mean`, the gist and the next step `gist`). */
 const LONG_TYPE = { gist: 'gist', mean: 'mean', attitude: 'mean', next: 'gist' } as const satisfies Record<LongQ['type'], ItemType>;

@@ -13,7 +13,7 @@ export function boardFor(v: Pick<QuizView, 'o' | 'seed' | 'tiers'>, c: TileCard,
   const o = listenOpts.decode(v.o);
   if (!o) return [...c.tile.tiles];
   const ear = who ? (v.tiers[who] ?? o.ear) : o.ear;
-  return boardOf(c.tile, v.seed, tierAt(ear, o.lv));
+  return boardOf(c.tile, v.seed, tierAt(ear, o.lv, c.lv));
 }
 
 /** My slots of a sentence of n: solo every one, co-op my role's. */

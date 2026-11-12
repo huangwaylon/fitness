@@ -5,7 +5,7 @@
 // step (3 English choices). The transcript and a dictation of a line or two near my misses come after, on the results
 // page (dictFor; its answers a row of their own). Pure.
 //
-// Tiers per player on the same audio (GameDef.tier, the listening games' ear: 0 はまべ … 3 やま): at かわ or below, two
+// Tiers per player on the same audio (GameDef.tier, the listening games' ear: games/listened.ts tierAt): easy, two
 // choices (the answer and its first wrong one) and one decoy tile; else as authored. Co-op: everyone answers every
 // question, the team has a question when anyone does (the session's `team.all`).
 import { fnv1a, mulberry32, shuffle } from '#lib/random.ts';
@@ -16,13 +16,11 @@ import type { Tier } from '../../lesson.ts';
 import type { GameDef, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
 import { swapsOf } from '../henshin/def.ts';
-import { EARS, listenGame, listenOpts, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
+import { EARS, listenGame, listenOpts, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 
 type LongYaml = Extract<ListenItem, { kind: 'long' }>;
 /** The answer window's extra for a question (ms): three English sentences to read. */
 const READ_MS = 8000;
-/** At this ear or below (かわ), the easy tier. */
-const EASY_EAR = 1;
 /** A miss's dictation lines, at most; with no miss, one. */
 export const DICT_MAX = 2;
 
@@ -157,8 +155,9 @@ export interface LongRound extends Round {
   play: number;
 }
 
-/** A player's tier at an ear: easy at かわ or below, else as authored. */
-export const longTier = (ear: number): Tier | undefined => (ear <= EASY_EAR ? 'easy' : undefined);
+/** A player's tier at an ear on a deck from `deck`'s place (a card's `lv`): the listening games' (tierAt). Hard is as
+ *  authored (three choices are the most). */
+export const longTier = (o: Pick<ListenOpts, 'ear' | 'lv'>, deck?: number): Tier | undefined => tierAt(o.ear, o.lv, deck);
 
 /** The choices a card shows at a tier: easy the answer and the first wrong one (in their order), else all three. */
 export const shownOf = (c: Pick<LongCard, 'choices' | 'answer'>, tier: Tier | undefined): number[] => {
@@ -167,8 +166,8 @@ export const shownOf = (c: Pick<LongCard, 'choices' | 'answer'>, tier: Tier | un
 };
 
 /** A deck's rounds at an ear (`playMs`: the piece's length, unknown: undefined). */
-export const longRounds = (cards: readonly LongCard[], o: Pick<ListenOpts, 'ear'>, playMs: (c: LongCard) => number | undefined): LongRound[] => {
-  const tier = longTier(o.ear);
+export const longRounds = (cards: readonly LongCard[], o: Pick<ListenOpts, 'ear' | 'lv'>, playMs: (c: LongCard) => number | undefined): LongRound[] => {
+  const tier = longTier(o, cards[0]?.lv);
   return cards.map((c, k) => ({
     kind: 'long', id: c.id, q: c.long.q, shown: shownOf(c, tier), answer: c.answer,
     play: k === 0 ? (playMs(c) ?? PLAY_UNKNOWN * (c.lines?.length ?? 1)) : 0

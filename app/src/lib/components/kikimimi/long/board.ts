@@ -10,7 +10,7 @@ import { longOpts, longTier, shownOf, type LongCard, type LongSpeaker } from '#l
 /** The choices a card shows me (easy: the answer and one wrong one), as their authored places. */
 export function shownFor(v: Pick<QuizView, 'o'>, c: LongCard): number[] {
   const o = longOpts.decode(v.o);
-  return shownOf(c, o ? longTier(o.ear) : undefined);
+  return shownOf(c, o ? longTier(o, c.lv) : undefined);
 }
 
 /** Whether an answer (as the view keeps it) is right for a card. */

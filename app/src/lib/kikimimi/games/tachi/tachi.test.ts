@@ -29,11 +29,11 @@ const answerFor = (c: TachiCard, faces = [0, 1, 2]): number | number[] =>
   Array.isArray(c.tachi.answer) ? (c.tachi.answer as number[]).map((f) => (faces.includes(f) ? f : EMPTY)) : (c.tachi.answer as number);
 
 describe('たちぎき: the deal', () => {
-  it('deals the listened files at the lobby’s place only', () => {
+  it('deals the listened files at the lobby’s place (none there: the nearest’s)', () => {
     const listen: Record<string, ListenEntry> = { 's2-tachi-a': ['tachi', 3, 'listened'], 's2-tachi-b': ['tachi', 3, 'draft'], 's3-tachi-a': ['tachi', 4, 'listened'], 's2-tile': ['tile', 3, 'listened'] };
     expect(filesOf('tachi', 4, listen)).toEqual(['s2-tachi-a']);
     expect(filesOf('tachi', 6, listen)).toEqual(['s3-tachi-a']);
-    expect(filesOf('tachi', 3, listen)).toEqual([]);
+    expect(filesOf('tachi', 3, listen)).toEqual(['s2-tachi-a']); // (none at かわ: もり's)
     expect([4, 6].map((lv) => filesOf('tachi', lv, INDEX.listen))).toEqual([['s2-tachi-a', 's2-tachi-b', 's2-tachi-c'], ['s3-tachi-a', 's3-tachi-b', 's3-tachi-c']]); // (this build: all listened, B4's -c since A4)
   });
 

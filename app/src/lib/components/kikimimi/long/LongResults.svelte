@@ -49,7 +49,7 @@
   const missed = untrack(() => rows.some((r) => !r.ok));
   const tier = $derived.by(() => {
     const o = longOpts.decode(v.o);
-    return o ? longTier(o.ear) : undefined;
+    return o ? longTier(o, cards[0]?.lv) : undefined;
   });
   let written = $state<boolean[][] | null>(null);
   const began = Date.now();

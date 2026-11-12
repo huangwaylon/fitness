@@ -102,9 +102,8 @@ export interface TachiRound extends Round {
 
 /** A deck's rounds at an ear (`playMs`: a conversation's length, unknown: PLAY_UNKNOWN). */
 export const tachiRounds = (cards: readonly TachiCard[], o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: TachiCard) => number | undefined): TachiRound[] => {
-  const given = tierAt(o.ear, o.lv) === 'easy';
   return cards.map((c) => ({
-    kind: 'tachi', id: c.tachi.row, type: c.tachi.type, answer: c.tachi.answer, given: given && c.tachi.type === 'opinions',
+    kind: 'tachi', id: c.tachi.row, type: c.tachi.type, answer: c.tachi.answer, given: c.tachi.type === 'opinions' && tierAt(o.ear, o.lv, c.lv) === 'easy',
     play: c.tachi.k === 0 ? (playMs(c) ?? PLAY_UNKNOWN) : 0, n: c.tachi.type === 'opinions' ? c.tachi.who.length : c.choices.length
   }));
 };

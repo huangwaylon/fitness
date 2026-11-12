@@ -64,10 +64,10 @@ export function recipeDeck(c: UnitChunk, lesson: Lesson, seed: number, tier: Tie
 
 /** A card's game options at a tier (the listening games' tiers are an ear against a place: games/listened.ts tierAt):
  *  its place's level, and that place's ear a step down for easy, up for hard (within the places' ears, 0-3: はまべ has
- *  no easier, やま no harder). */
+ *  no easier, やま and ほし no harder). */
 export function listenAt(lv: number, tier: Tier | undefined, timer: QuizTimer): ListenOpts {
-  const at = Math.max(0, placeOf(lv));
-  return { lv: PLACES[at].lvs[0] as ListenOpts['lv'], timer, ear: Math.max(0, Math.min(EARS - 1, at + (tier === 'easy' ? -1 : tier === 'hard' ? 1 : 0))) };
+  const at = Math.max(0, placeOf(lv)), ear = Math.min(at, EARS - 1);
+  return { lv: PLACES[at].lvs[0] as ListenOpts['lv'], timer, ear: Math.max(0, Math.min(EARS - 1, ear + (tier === 'easy' ? -1 : tier === 'hard' ? 1 : 0))) };
 }
 
 /** A deck's rounds at a tier: a quiz item's the quiz's (games/quiz/kinds.ts roundOf), a card's its game's at that tier. */

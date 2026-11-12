@@ -125,9 +125,8 @@ export const shownOf = (c: Pick<NewsCard, 'choices' | 'answer' | 'news'>, easy: 
 
 /** A deck's rounds at an ear (`playMs`: the bulletin's length, unknown: undefined). */
 export const newsRounds = (cards: readonly NewsCard[], o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: NewsCard) => number | undefined): NewsRound[] => {
-  const easy = tierAt(o.ear, o.lv) === 'easy';
   return cards.map((c) => ({
-    kind: 'news', id: c.id, q: c.news.q, shown: shownOf(c, easy), answer: c.answer,
+    kind: 'news', id: c.id, q: c.news.q, shown: shownOf(c, tierAt(o.ear, o.lv, c.lv) === 'easy'), answer: c.answer,
     play: c.news.q === 'gist' ? (playMs(c) ?? PLAY_UNKNOWN * (c.lines?.length ?? 1)) : 0
   }));
 };

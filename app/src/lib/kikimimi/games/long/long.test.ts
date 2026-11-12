@@ -74,10 +74,11 @@ describe('まるごと 聞く: the piece of the day', () => {
 });
 
 describe('まるごと 聞く: rounds', () => {
-  it('easy at かわ or below: the answer and the first wrong one; else all three', () => {
-    expect(longTier(0)).toBe('easy');
-    expect(longTier(1)).toBe('easy');
-    expect(longTier(2)).toBeUndefined();
+  it('the listening games’ tiers (ほし as やま); easy: the answer and the first wrong one; else all three', () => {
+    expect([0, 1, 2, 3].map((ear) => longTier({ lv: 7, ear }))).toEqual(['easy', 'easy', 'easy', undefined]);
+    expect([0, 1, 2, 3].map((ear) => longTier({ lv: 4, ear }))).toEqual(['easy', 'easy', undefined, 'hard']);
+    // (はまべ picked, ほし's pieces: everyone easy; ほし picked, もり's: everyone hard)
+    expect([longTier({ lv: 1, ear: 3 }, 7), longTier({ lv: 7, ear: 0 }, 4)]).toEqual(['easy', 'hard']);
     expect(shownOf({ choices: ['x', 'y', 'z'], answer: 2 }, 'easy')).toEqual([0, 2]);
     expect(shownOf({ choices: ['x', 'y', 'z'], answer: 0 }, 'easy')).toEqual([0, 1]);
     expect(shownOf({ choices: ['x', 'y', 'z'], answer: 1 }, undefined)).toEqual([0, 1, 2]);
@@ -85,12 +86,12 @@ describe('まるごと 聞く: rounds', () => {
 
   it('the piece plays before the first question only; a shown choice is valid, the answer right', () => {
     const cs = longDeal(parts(), { piece: 0 });
-    const rs = longRounds(cs, { ear: 3 }, () => 150_000);
+    const rs = longRounds(cs, { lv: 7, ear: 3 }, () => 150_000);
     expect(rs.map((r) => r.play)).toEqual([150_000, ...cs.slice(1).map(() => 0)]);
     const w = { lead: 1000 } as Parameters<typeof LONG.timing>[2];
     expect(LONG.timing(rs[0], 30_000, w)).toMatchObject({ lead: 1000, play: 150_000 });
     expect(LONG.timing(rs[1], 30_000, w)).toMatchObject({ lead: 0, play: 0 });
-    const easy = longRounds(cs, { ear: 0 }, () => 1)[0];
+    const easy = longRounds(cs, { lv: 7, ear: 0 }, () => 1)[0];
     const hidden = [0, 1, 2].find((k) => !easy.shown.includes(k))!;
     expect(LONG.valid(easy, hidden)).toBe(false);
     expect(LONG.valid(easy, easy.answer)).toBe(true);
