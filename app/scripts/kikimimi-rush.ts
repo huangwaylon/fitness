@@ -143,7 +143,7 @@ const CUES = {
   makeThat: ['make that', 'やっぱり〜に'], mean: ['I mean', 'つまり〜'], sorry: ['sorry', 'ごめん、〜'], noWait: ['no, wait', 'いや、待って'],
   actually: ['actually', 'やっぱり'], scratch: ['scratch that', '今のはなし'], hangOn: ['hang on', 'ちょっと待って'], didISay: ['did I say', '〜って言った？'],
   makeIt: ['make it', 'やっぱり〜に'], oh: ['oh', 'あ、〜'], neverMind: ['never mind', 'やっぱりいい'], except: ['except', '〜をのぞいて'],
-  no: ['no', 'いや、〜'], well: ['well', 'まあ、〜']
+  no: ['no', 'いや、〜'], well: ['well', 'まあ、〜'], waitNo: ['wait, no', '待って、違う']
 } as const satisfies Record<string, Cue>;
 
 /** A frame: one setting's order with its number (`n`, the ticket's answer), as said plain (`en`) and with a slip first
@@ -219,14 +219,14 @@ const KAWA: readonly Frame[] = [
     en: (n) => `Could I get ${n} scones to go? They're for the whole office.`, fix: (w, n) => `Could I get ${w} scones to go? Sorry, ${n}. They're for the whole office.`, cue: CUES.sorry,
     ja: (n) => `スコーンを${n}、持ち帰りでもらえますか？職場のみんなの分なんです。`, jaFix: (w, n) => `スコーンを${w}…ごめんなさい、${n}で。持ち帰りで、職場のみんなの分です。` },
   { id: 'bread', at: 'cafe', kind: 'yen', ask: 'バナナブレッドは いくら？', pool: [380, 420, 450, 480, 520, 550],
-    en: (n) => `The banana bread is ${n}, right? I'll take a slice.`, fix: (w, n) => `The banana bread is ${w}, right? Oh, ${n}. Sorry, I read it wrong. I'll take a slice.`, cue: CUES.sorry,
+    en: (n) => `The banana bread is ${n}, right? I'll take a slice.`, fix: (w, n) => `The banana bread is ${w}, right? Oh, ${n}. Sorry, I read it wrong. I'll take a slice.`, cue: CUES.oh,
     ja: (n) => `バナナブレッドは${n}ですよね？1切れください。`, jaFix: (w, n) => `バナナブレッドは${w}ですよね？あ、${n}か。見間違えました。1切れください。` },
   // the konbini
   { id: 'stamps', at: 'konbini', kind: 'qty', unit: '枚', ask: '切手は 何枚？', pool: [2, 3, 5, 6, 10, 15, 50],
     en: (n) => `Can I get ${n} stamps for postcards?`, fix: (w, n) => `Can I get ${w} stamps for postcards? Actually, make that ${n}.`, cue: CUES.makeThat,
     ja: (n) => `はがき用の切手を${n}ください。`, jaFix: (w, n) => `はがき用の切手を${w}…やっぱり${n}にします。` },
   { id: 'bill', at: 'konbini', kind: 'yen', ask: '支払いは いくら？', pool: [2760, 3480, 4150, 5300, 6840, 1980, 4620],
-    en: (n) => `I'd like to pay this bill. It's ${n}.`, fix: (w, n) => `I'd like to pay this bill. It's ${w}. Oh, no, ${n}. Sorry.`, cue: CUES.sorry,
+    en: (n) => `I'd like to pay this bill. It's ${n}.`, fix: (w, n) => `I'd like to pay this bill. It's ${w}. Oh, no, ${n}. Sorry.`, cue: CUES.oh,
     ja: (n) => `この請求書を払いたいんです。${n}です。`, jaFix: (w, n) => `この請求書を払いたいんです。${w}…あ、違う、${n}です。すみません。` },
   { id: 'copies', at: 'konbini', kind: 'qty', unit: '枚', ask: 'コピーは 何枚？', pool: [...TEENS, 30, 40, 50],
     en: (n) => `I need ${n} copies of this. Black and white is fine.`, fix: (w, n) => `I need ${w} copies of this. Hang on, ${n}. Black and white is fine.`, cue: CUES.hangOn,
@@ -261,7 +261,7 @@ const KAWA: readonly Frame[] = [
     en: (n) => `Can I get ${n} everything bagels?`, fix: (w, n) => `Can I get ${w} everything bagels? Actually, make that ${n}.`, cue: CUES.makeThat,
     ja: (n) => `エブリシングベーグルを${n}ください。`, jaFix: (w, n) => `エブリシングベーグルを${w}…やっぱり${n}で。` },
   { id: 'soup', at: 'deli', kind: 'usd', ask: 'スープは いくら？', pool: [650, 725, 850, 1350, 1450, 1625],
-    en: (n) => `The soup's ${n}, right? Okay, I'll take a large.`, fix: (w, n) => `The soup's ${w}, right? Oh, ${n}. Okay, I'll take a large.`, cue: CUES.sorry,
+    en: (n) => `The soup's ${n}, right? Okay, I'll take a large.`, fix: (w, n) => `The soup's ${w}, right? Oh, ${n}. Okay, I'll take a large.`, cue: CUES.oh,
     ja: (n) => `スープは${n}だよね？じゃあLサイズで。`, jaFix: (w, n) => `スープは${w}だよね？あ、${n}か。じゃあLサイズで。` },
   { id: 'pickup', at: 'deli', kind: 'time', ask: '受け取りは 何時？', pool: times([11, 30], [12, 15], [12, 40], [1, 15], [5, 30], [6, 15]),
     en: (n) => `I called in an order for pickup at ${n}. The name's Lee.`, fix: (w, n) => `I called in an order for pickup at ${w}. I mean ${n}. The name's Lee.`, cue: CUES.mean,
@@ -271,7 +271,7 @@ const KAWA: readonly Frame[] = [
     ja: (n) => `土曜日に、${n}のパーティー用の盛り合わせがほしいんです。`, jaFix: (w, n) => `土曜日に、${w}…すみません、${n}のパーティー用の盛り合わせを。` },
   // the taxi stand
   { id: 'cash', alts: [1000, 1500, 2000, 2500, 3000, 4000, 5000, 10000], at: 'taxi', kind: 'yen', ask: '手持ちは いくら？', pool: [2000, 2500, 3000, 4000, 5000],
-    en: (n) => `How much is it to Roppongi? I only have ${n} on me.`, fix: (w, n) => `How much is it to Roppongi? I only have ${w} on me. Oh, wait, ${n}.`, cue: CUES.noWait,
+    en: (n) => `How much is it to Roppongi? I only have ${n} on me.`, fix: (w, n) => `How much is it to Roppongi? I only have ${w} on me. Oh, wait, ${n}.`, cue: CUES.oh,
     ja: (n) => `六本木までいくらですか？手持ちが${n}しかなくて。`, jaFix: (w, n) => `六本木までいくらですか？手持ちが${w}…あ、待って、${n}しかなくて。` },
   { id: 'station', at: 'taxi', kind: 'time', ask: '何時までに 着きたい？', pool: times([6, 15], [6, 40], [7, 30], [8, 15], [9, 50], [4, 30]),
     en: (n) => `I need to be at Tokyo Station by ${n}. Is that okay?`, fix: (w, n) => `I need to be at Tokyo Station by ${w}. No, sorry, ${n}. Is that okay?`, cue: CUES.sorry,
@@ -287,7 +287,7 @@ const KAWA: readonly Frame[] = [
     ja: (n) => `明日の朝${n}にタクシーを予約できますか？`, jaFix: (w, n) => `明日の朝${w}に…やっぱり${n}にタクシーを予約できますか？念のため。` },
   // the pharmacy
   { id: 'ready', at: 'pharmacy', kind: 'time', ask: '何時に できる 予定？', pool: times([3, 15], [3, 50], [4, 30], [4, 40], [5, 15], [2, 30]),
-    en: (n) => `Hi, the doctor said my prescription would be ready at ${n}.`, fix: (w, n) => `The doctor said my prescription would be ready at ${w}. Oh, wait, it was ${n}.`, cue: CUES.noWait,
+    en: (n) => `Hi, the doctor said my prescription would be ready at ${n}.`, fix: (w, n) => `The doctor said my prescription would be ready at ${w}. Oh, wait, it was ${n}.`, cue: CUES.oh,
     ja: (n) => `お医者さんが、処方薬は${n}にできると言っていました。`, jaFix: (w, n) => `お医者さんが、処方薬は${w}に…あ、待って、${n}だったかな。` },
   { id: 'birthday', at: 'pharmacy', kind: 'date', unit: '3月', ask: '生年月日は 3月 何日？', pool: [3, 13, 14, 15, 16, 23, 30],
     en: (n) => `Sure. My date of birth is March ${n}.`, fix: (w, n) => `Sure. My date of birth is March ${w}. Sorry, March ${n}.`, cue: CUES.sorry,
@@ -296,10 +296,10 @@ const KAWA: readonly Frame[] = [
     en: (n) => `It should be a ${n}-day supply, right?`, fix: (w, n) => `It should be a ${w}-day supply, right? No, wait, ${n} days.`, cue: CUES.noWait,
     ja: (n) => `${n}の薬のはずですよね？`, jaFix: (w, n) => `${w}…いや、待って、${n}の薬のはずですよね？` },
   { id: 'tablets', alts: [1, 2, 3, 4, 6], at: 'pharmacy', kind: 'qty', unit: '錠', ask: '1日 何錠？', pool: [1, 2, 3, 4],
-    en: (n) => `So I take ${n} a day, right?`, fix: (w, n) => `So I take ${w} a day, right? Oh, ${n}. I mixed it up.`, cue: CUES.sorry,
+    en: (n) => `So I take ${n} a day, right?`, fix: (w, n) => `So I take ${w} a day, right? Oh, ${n}. I mixed it up.`, cue: CUES.oh,
     ja: (n) => `じゃあ、1日${n}飲めばいいんですよね？`, jaFix: (w, n) => `じゃあ、1日${w}…あ、${n}ですね。勘違いしてました。` },
   { id: 'copay', at: 'pharmacy', kind: 'yen', ask: '支払いは いくら？', pool: [860, 1240, 1380, 1520, 2140, 940],
-    en: (n) => `It's ${n} with my insurance? Great, thanks.`, fix: (w, n) => `It's ${w} with my insurance? Oh, ${n}. Even better. Thanks.`, cue: CUES.sorry,
+    en: (n) => `It's ${n} with my insurance? Great, thanks.`, fix: (w, n) => `It's ${w} with my insurance? Oh, ${n}. Even better. Thanks.`, cue: CUES.oh,
     ja: (n) => `保険を使って${n}ですか？よかった、ありがとう。`, jaFix: (w, n) => `保険を使って${w}…あ、${n}ですか。もっといいですね。ありがとう。` }
 ];
 
@@ -310,16 +310,16 @@ const MORI: readonly Frame[] = [
     en: (n, o) => `Can I get ${o} lattes and ${n} cappuccinos? The cappuccinos are for my coworkers.`, fix: (w, n, o) => `Can I get ${o} lattes and ${w} cappuccinos? Wait, scratch that, ${n} cappuccinos.`, cue: CUES.scratch,
     ja: (n, o) => `ラテ${o}とカプチーノ${n}ください。カプチーノは同僚の分です。`, jaFix: (w, n, o) => `ラテ${o}とカプチーノ${w}…いや、今のはなし、カプチーノは${n}で。` },
   { id: 'checkin', at: 'cafe', kind: 'num', unit: '番', ask: 'テーブルは 何番？', pool: [...TEENS, 30, 40, 50], o: () => 20, okind: 'mins',
-    en: (n, o) => `Hey, um, we ordered about ${o} minutes ago. Table ${n}? Just checking.`, fix: (w, n, o) => `Hey, um, we ordered about ${o} minutes ago. Table ${w}. Wait, no, we moved. Table ${n}.`, cue: CUES.noWait,
-    ja: (n, o) => `あの、${o}くらい前に注文したんですけど。${n}テーブルです。念のため。`, jaFix: (w, n, o) => `あの、${o}くらい前に注文したんですけど。${w}…いや、席を移ったんだ。${n}テーブルです。` },
+    en: (n, o) => `Hey, um, we ordered about ${o} minutes ago. Table ${n}? Just checking.`, fix: (w, n, o) => `Hey, um, we ordered about ${o} minutes ago. Table ${w}. Wait, no, we moved. Table ${n}.`, cue: CUES.waitNo,
+    ja: (n, o) => `あの、${o}くらい前に注文したんですけど。${n}テーブルです。念のため。`, jaFix: (w, n, o) => `あの、${o}くらい前に注文したんですけど。${w}…待って、違う、席を移ったんだ。${n}テーブルです。` },
   { id: 'resv', ounit: '人', at: 'cafe', kind: 'time', ask: '予約は 何時？', pool: times([6, 30], [6, 45], [7, 15], [7, 50], [8, 15], [12, 30]), o: (_n, r) => pick([4, 5, 6, 8], r), okind: 'qty',
     en: (n, o) => `I'm gonna need a table for ${o} at ${n} tonight, under Tanaka.`, fix: (w, n, o) => `I'm gonna need a table for ${o} at ${w} tonight. Actually, can we do ${n}? Under Tanaka.`, cue: CUES.actually,
     ja: (n, o) => `今夜${n}に${o}で席をお願いしたいんです。田中で。`, jaFix: (w, n, o) => `今夜${w}に${o}で…やっぱり${n}にできますか？田中で。` },
   { id: 'beans', alts: [150, 200, 250, 300, 500], at: 'cafe', kind: 'num', unit: 'グラム', ask: '豆は 何グラム？', pool: [150, 200, 250, 300, 500],
-    en: (n) => `I'll take a bag of the house blend, too. The ${n}-gram one.`, fix: (w, n) => `I'll take a bag of the house blend, too. The ${w}-gram one. Hmm, no, let's do ${n}.`, cue: CUES.noWait,
-    ja: (n) => `ハウスブレンドの豆も1袋ください。${n}のを。`, jaFix: (w, n) => `ハウスブレンドの豆も1袋ください。${w}の…うーん、やっぱり${n}で。` },
+    en: (n) => `I'll take a bag of the house blend, too. The ${n}-gram one.`, fix: (w, n) => `I'll take a bag of the house blend, too. The ${w}-gram one. Hmm, no, let's do ${n}.`, cue: CUES.no,
+    ja: (n) => `ハウスブレンドの豆も1袋ください。${n}のを。`, jaFix: (w, n) => `ハウスブレンドの豆も1袋ください。${w}の…うーん、いや、${n}で。` },
   { id: 'lunch', at: 'cafe', kind: 'yen', ask: 'ランチセットは いくら？', pool: [980, 1150, 1280, 1350, 1480, 1650], o: (n) => n + 200,
-    oja: 'ドリンク付きの値段', en: (n, o) => `The lunch set's ${n}, and it's ${o} with a drink? Okay, just the set, then.`, fix: (w, n, o) => `The lunch set's ${w}... oh, no, ${n}. I misread it. And ${o} with a drink? Okay, just the set.`, cue: CUES.sorry,
+    oja: 'ドリンク付きの値段', en: (n, o) => `The lunch set's ${n}, and it's ${o} with a drink? Okay, just the set, then.`, fix: (w, n, o) => `The lunch set's ${w}... oh, no, ${n}. I misread it. And ${o} with a drink? Okay, just the set.`, cue: CUES.oh,
     ja: (n, o) => `ランチセットは${n}で、ドリンク付きだと${o}？じゃあセットだけで。`, jaFix: (w, n, o) => `ランチセットは${w}…あ、違う、${n}か。見間違えた。ドリンク付きで${o}？じゃあセットだけで。` },
   // the konbini
   { id: 'track4', at: 'konbini', kind: 'digits', ask: '番号の 下4けたは？', pool: [4718, 3062, 8154, 2749, 5306, 7193, 6480],
@@ -339,13 +339,13 @@ const MORI: readonly Frame[] = [
     ja: (n) => `ネット注文の支払いです。${n}、現金で。`, jaFix: (w, n) => `ネット注文の支払いです。${w}…あれ、${w}って言った？${n}です。` },
   // the ticket window
   { id: 'hakone', at: 'ticket', kind: 'time', ask: '第一希望は 何時？', pool: times([8, 15], [8, 40], [9, 15], [9, 50], [10, 30], [1, 15]), o: (n) => n + 30, oja: '満席のときの時間',
-    en: (n, o) => `Two adults on the ${n} to Hakone, please. If it's full, the ${o} works too.`, fix: (w, n, o) => `Two adults on the ${w} to Hakone. Oh, no, the ${n}. If it's full, the ${o} works too.`, cue: CUES.noWait,
-    ja: (n, o) => `箱根行き、${n}の電車に大人2枚。満席なら${o}でもいいです。`, jaFix: (w, n, o) => `箱根行き、${w}の…いや、${n}の電車に大人2枚。満席なら${o}でも。` },
+    en: (n, o) => `Two adults on the ${n} to Hakone, please. If it's full, the ${o} works too.`, fix: (w, n, o) => `Two adults on the ${w} to Hakone. Oh, no, the ${n}. If it's full, the ${o} works too.`, cue: CUES.oh,
+    ja: (n, o) => `箱根行き、${n}の電車に大人2枚。満席なら${o}でもいいです。`, jaFix: (w, n, o) => `箱根行き、${w}の…あ、違う、${n}の電車に大人2枚。満席なら${o}でも。` },
   { id: 'kids', at: 'ticket', kind: 'qty', unit: '人', ask: '子どもは 何人？', pool: [2, 3, 4, 5], o: (n, r) => pick([2, 3, 4].filter((x) => x !== n), r), oja: '大人の数',
     en: (n, o) => `${cap(o)} adults and ${n} kids, please. The kids are all under twelve.`, fix: (w, n, o) => `${cap(o)} adults and ${w} kids, please. No, wait, ${n} kids. They're all under twelve.`, cue: CUES.noWait,
     ja: (n, o) => `大人${o}、子ども${n}でお願いします。子どもは全員12歳未満です。`, jaFix: (w, n, o) => `大人${o}、子ども${w}…いや、待って、子どもは${n}。全員12歳未満です。` },
   { id: 'lasttrain', at: 'ticket', kind: 'time', ask: '最終は 何時？', pool: times([11, 15], [11, 40], [10, 50], [12, 15], [11, 30]),
-    en: (n) => `What time's the last train back? Is it ${n}? I don't wanna miss it.`, fix: (w, n) => `What time's the last train back? Is it ${w}? Oh, it says ${n} up there. Okay.`, cue: CUES.sorry,
+    en: (n) => `What time's the last train back? Is it ${n}? I don't wanna miss it.`, fix: (w, n) => `What time's the last train back? Is it ${w}? Oh, it says ${n} up there. Okay.`, cue: CUES.oh,
     ja: (n) => `帰りの終電は何時ですか？${n}ですか？乗り遅れたくなくて。`, jaFix: (w, n) => `帰りの終電は何時ですか？${w}？あ、あそこに${n}って書いてある。了解です。` },
   { id: 'show', at: 'ticket', kind: 'qty', unit: '枚', ask: 'チケットは 何枚？', pool: [2, 3, 4, 5, 6], o: (_n, r) => pick(times([2, 30], [4, 15], [6, 40], [7, 30]), r), okind: 'time',
     en: (n, o) => `We need ${n} tickets for the ${o} show at the planetarium.`, fix: (w, n, o) => `We need ${w} tickets for the ${o} show at the planetarium. Actually, make it ${n}. My sister's coming.`, cue: CUES.makeThat,
@@ -355,7 +355,7 @@ const MORI: readonly Frame[] = [
     ja: (n, o) => `金沢まで往復で。行きは${o}、帰りは${n}です。`, jaFix: (w, n, o) => `金沢まで往復で。行きは${o}、帰りは${w}…すみません、${n}です。` },
   // the deli, on a trip
   { id: 'twenty', at: 'deli', kind: 'usd', ask: '合計は いくら？', pool: [1350, 1475, 1625, 1740, 1899, 1590], o: () => 2000, oja: '出したお札',
-    en: (n) => `So that's ${n}? Here's a twenty. Keep the change.`, fix: (w, n) => `So that's ${w}? Oh, ${n}. Here's a twenty. Keep the change.`, cue: CUES.sorry,
+    en: (n) => `So that's ${n}? Here's a twenty. Keep the change.`, fix: (w, n) => `So that's ${w}? Oh, ${n}. Here's a twenty. Keep the change.`, cue: CUES.oh,
     ja: (n) => `じゃあ${n}だね？20ドル札で。おつりはいいよ。`, jaFix: (w, n) => `じゃあ${w}？あ、${n}か。20ドル札で。おつりはいいよ。` },
   { id: 'onions', at: 'deli', kind: 'num', unit: '番', ask: '玉ねぎ抜きは 何番？', pool: [4, 5, 7, 8, 9, 12], o: (n, r) => pick([3, 6, 10, 11, 14].filter((x) => x !== n), r), oja: 'もう1つの注文',
     en: (n, o) => `Can I get a number ${o} and a number ${n}? And no onions on the ${n}, please.`, fix: (w, n, o) => `Can I get a number ${o} and a number ${w}? Scratch that, a number ${n}. No onions on the ${n}, please.`, cue: CUES.scratch,
@@ -367,7 +367,7 @@ const MORI: readonly Frame[] = [
     en: (n) => `I've got an order under Kim for pickup at ${n}. Is it ready yet?`, fix: (w, n) => `I've got an order under Kim for pickup at ${w}. Wait, did I say ${w}? I meant ${n}. Is it ready?`, cue: CUES.didISay,
     ja: (n) => `キムで、${n}受け取りの注文があるんだけど。もうできてる？`, jaFix: (w, n) => `キムで、${w}…あれ、${w}って言った？${n}受け取りの注文です。できてる？` },
   { id: 'large', at: 'deli', kind: 'usd', ask: 'Lサイズは いくら？', pool: [850, 925, 1350, 1450, 1575], o: (n) => n - 200, oja: 'Mサイズの値段',
-    en: (n, o) => `The large is ${n} and the medium's ${o}, right? I'll do the large.`, fix: (w, n, o) => `The large is ${w}... no, ${n}, and the medium's ${o}, right? I'll do the large.`, cue: CUES.noWait,
+    en: (n, o) => `The large is ${n} and the medium's ${o}, right? I'll do the large.`, fix: (w, n, o) => `The large is ${w}... no, ${n}, and the medium's ${o}, right? I'll do the large.`, cue: CUES.no,
     ja: (n, o) => `Lが${n}で、Mが${o}だよね？Lにする。`, jaFix: (w, n, o) => `Lが${w}…いや、${n}で、Mが${o}だよね？Lにする。` },
   // the taxi stand
   { id: 'shibuya', alts: [1000, 1500, 2000, 2500, 3000, 4000, 5000], at: 'taxi', kind: 'yen', ask: '現金は いくら ある？', pool: [2000, 3000, 4000, 2500], o: (n) => n + 1000, oja: '渋谷までの運賃の目安',
@@ -390,13 +390,13 @@ const MORI: readonly Frame[] = [
     en: (n) => `I'm picking up for my mom. Her birthday's November ${n}, 1954.`, fix: (w, n) => `I'm picking up for my mom. Her birthday's November ${w}... no, wait, the ${n}, 1954.`, cue: CUES.noWait,
     ja: (n) => `母の薬を受け取りに来ました。誕生日は1954年11月${n}です。`, jaFix: (w, n) => `母の薬を受け取りに来ました。誕生日は${w}…いや、待って、1954年${n}です。` },
   { id: 'morning', at: 'pharmacy', kind: 'qty', unit: '錠', ask: '朝は 何錠？', pool: [1, 2, 3], o: (n) => (n === 1 ? 2 : 1), oja: '夜の数',
-    en: (n, o) => `The doctor said ${n} in the morning and ${o} at night. Is that what the label says?`, fix: (w, n, o) => `The doctor said ${w} in the morning. Wait, no, ${n} in the morning and ${o} at night. Is that right?`, cue: CUES.noWait,
-    ja: (n, o) => `お医者さんは朝${n}、夜${o}って言ってました。ラベルもそうなってますか？`, jaFix: (w, n, o) => `お医者さんは朝${w}…いや、朝${n}、夜${o}って。合ってますか？` },
+    en: (n, o) => `The doctor said ${n} in the morning and ${o} at night. Is that what the label says?`, fix: (w, n, o) => `The doctor said ${w} in the morning. Wait, no, ${n} in the morning and ${o} at night. Is that right?`, cue: CUES.waitNo,
+    ja: (n, o) => `お医者さんは朝${n}、夜${o}って言ってました。ラベルもそうなってますか？`, jaFix: (w, n, o) => `お医者さんは朝${w}…待って、違う、朝${n}、夜${o}って。合ってますか？` },
   { id: 'lasttime', at: 'pharmacy', kind: 'yen', ask: '今日の 支払いは？', pool: [1240, 1380, 1460, 1720, 980], o: (n) => n + 300, oja: '前回の値段',
     en: (n, o) => `It's ${n} today? Last time it was ${o}. Did something change?`, fix: (w, n, o) => `It's ${w} today? Oh, ${n}, sorry. Last time it was ${o}. Did something change?`, cue: CUES.sorry,
     ja: (n, o) => `今日は${n}ですか？前は${o}でした。何か変わったんですか？`, jaFix: (w, n, o) => `今日は${w}？あ、${n}か、すみません。前は${o}でした。何か変わったんですか？` },
   { id: 'trip', at: 'pharmacy', kind: 'qty', unit: '日分', ask: '何日分？', pool: [14, 30, 60, 90], o: (n, r) => pick([10, 16, 20, 40].filter((x) => x !== n), r), oja: '旅行の日数',
-    en: (n, o) => `It's a ${n}-day supply, right? I'm traveling for ${o} days, so I just wanna be sure.`, fix: (w, n, o) => `It's a ${w}-day supply, right? Oh, ${n}. I'm traveling for ${o} days, so I just wanna be sure.`, cue: CUES.sorry,
+    en: (n, o) => `It's a ${n}-day supply, right? I'm traveling for ${o} days, so I just wanna be sure.`, fix: (w, n, o) => `It's a ${w}-day supply, right? Oh, ${n}. I'm traveling for ${o} days, so I just wanna be sure.`, cue: CUES.oh,
     ja: (n, o) => `${n}ですよね？${o.replace('分', '間')}旅行するので、確かめたくて。`, jaFix: (w, n, o) => `${w}ですよね？あ、${n}か。${o.replace('分', '間')}旅行するので、確かめたくて。` },
   { id: 'son', at: 'pharmacy', kind: 'age', ask: '息子さんは 何歳？', pool: [3, 4, 6, 7, 13, 14, 15],
     en: (n) => `It's for my son. He's ${n}. Is the children's dose okay for him?`, fix: (w, n) => `It's for my son. He's ${w}. Sorry, ${n}. Is the children's dose okay for him?`, cue: CUES.sorry,
@@ -940,7 +940,7 @@ function itemOf(f: Frame, k: number, n: number, fixed: boolean, who: string, r: 
   // 解説 (≤ 90 字): the correction or the answer, the other number, the sound trap
   const pair = tw !== null && sorted.includes(tw) ? `${sh(Math.min(n, tw)).ja}と${sh(Math.max(n, tw)).ja}は、-teenと-tyの違い。-teenは後ろを強く長く言います。` : '';
   const parts = [
-    fixed ? `「${f.cue[0]}」（${f.cue[1]}）で言い直し。答えは最後の${sh(n).ja}。${sh(w!).ja}は言い直す前です。` : `「${N.tts}」で${sh(n).ja}。${(LEGACY.has(f) ? TIP : PLAIN_TIP)[f.kind]}`,
+    fixed ? `「${f.cue[0]}」（${f.cue[1]}）で言い直し。答えは最後の${sh(n).ja}。${sh(w!).ja}は言い直す前です。` : `「${N.tts}」で${sh(n).ja}。${TIP[f.kind]}`,
     o !== undefined && okind === f.kind && sorted.includes(o) ? `${sh(o).ja}は${f.oja ?? '別の数字'}。` : '',
     pair
   ];
@@ -952,7 +952,7 @@ function itemOf(f: Frame, k: number, n: number, fixed: boolean, who: string, r: 
   if ([...why].length > 90 || [...(fnote ?? '')].length > 40) throw new Error(`rush: ${f.id}'s why or note is too long: ${why} / ${fnote}`);
   const note = fnote ? fnote : fixed ? `言い直しの「${f.cue[0]}」のあとが答え`
     : pair ? `${sh(Math.min(n, tw!)).ja}と${sh(Math.max(n, tw!)).ja}：-teenは後ろが強い`
-      : o !== undefined ? `数字が2つ。何を聞かれているかに注意` : (LEGACY.has(f) ? NOTE : PLAIN_NOTE)[f.kind];
+      : o !== undefined ? `数字が2つ。何を聞かれているかに注意` : NOTE[f.kind];
   const features = ['numbers', ...(fixed ? ['self-repair'] : []), ...(pair ? ['teen-ty'] : []), ...(f.kind === 'time' ? ['clock'] : []), ...(f.feat ?? [])];
   return {
     id: `rush-${f.id}-${k + 1}`, at: f.at, speaker: who, en, ...(said_ !== en && { tts: said_ }), ja, ask: f.ask, ctx: f.ctx ?? st.ctx,
@@ -961,27 +961,23 @@ function itemOf(f: Frame, k: number, n: number, fixed: boolean, who: string, r: 
   };
 }
 
-/** 解説's tip on a kind, when there's no correction. */
+/** 解説's tip on a kind, when there's no correction (plain words: no 名詞 or 序数). */
 const TIP: Readonly<Record<Kind, string>> = {
-  qty: '数は名詞の前に来ます。', yen: '円の値段は thousand（千）と hundred（百）の順に聞きます。', usd: 'ドルとセントは「14 50」のように2つに分けて言います。',
-  time: '時刻は時と分を続けて言います。', num: '番号は数字をそのまま言います。', date: '日付は fourteenth のような序数で言います。',
+  qty: '数は物の名前の前に来ます。', yen: '円の値段は thousand（千）と hundred（百）の順に聞きます。', usd: 'ドルとセントは「14 50」のように2つに分けて言います。',
+  time: '時刻は時と分を続けて言います。', num: '番号は数字をそのまま言います。', date: '日付は fourteenth（14番目）の形で言います。',
   mins: 'minutes の前の数を聞きます。', age: '年齢は数字だけで言うことが多いです。', digits: '番号は1けたずつ読みます。'
 };
 
 /** What a kind's ear should listen for, when nothing else is the trap. */
 const NOTE: Readonly<Record<Kind, string>> = {
-  qty: '数は名詞の前。最後まで聞いて答える', yen: '値段は千の位から順に聞く', usd: 'ドルは「14 50」のように2つに分けて言う',
-  time: '時刻は「3 15」のように時と分を続けて言う', num: '番号はそのまま数字で言う', date: '日付は the 14th のように序数で言う',
+  qty: '数は物の名前の前。最後まで聞いて答える', yen: '値段は千の位から順に聞く', usd: 'ドルは「14 50」のように2つに分けて言う',
+  time: '時刻は「3 15」のように時と分を続けて言う', num: '番号はそのまま数字で言う', date: '日付は the 14th（14番目）の形で言う',
   mins: '分の数を聞き取る', age: '年齢は数字だけで言うことが多い', digits: '番号は1けたずつ読む'
 };
 
 /** What the engine says beyond the numbers: a year in words, a contraction (gonna, wanna, lemme are written so in `en`). */
 const spoken = (s: string) => s.replace(/([.?!] )([a-z])/g, (_, a: string, b: string) => a + b.toUpperCase()).replace(/\bWhat time is\b/g, "What time's").replace(/\b19(\d\d)\b/g, (_, d: string) => `nineteen ${numberWords(+d)}`);
 
-/** The new places' tip and note on a kind, in plain words (no 名詞 or 序数); KAWA and MORI keep theirs, voiced and shipped. */
-const LEGACY: ReadonlySet<Frame> = new Set([...KAWA, ...MORI]);
-const PLAIN_TIP: Readonly<Record<Kind, string>> = { ...TIP, qty: '数は物の名前の前に来ます。', date: '日付は fourteenth（14番目）の形で言います。' };
-const PLAIN_NOTE: Readonly<Record<Kind, string>> = { ...NOTE, qty: '数は物の名前の前。最後まで聞いて答える', date: '日付は the 14th（14番目）の形で言う' };
 
 interface FileSpec {
   unit: string;

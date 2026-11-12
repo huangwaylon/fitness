@@ -74,7 +74,7 @@ items:
     options: ["2杯", "3杯", "4杯", "5杯"]
     answer: 1
     cja: ["2杯", "3杯", "4杯", "5杯"]
-    why: "「three」で3杯。数は名詞の前に来ます。2杯はラテの数。"
+    why: "「three」で3杯。数は物の名前の前に来ます。2杯はラテの数。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -101,7 +101,7 @@ items:
     speaker: rosie
     en: "Hey, um, we ordered about 20 minutes ago. Table 50. Wait, no, we moved. Table 40."
     tts: "Hey, um, we ordered about twenty minutes ago. Table fifty. Wait, no, we moved. Table forty."
-    ja: "あの、20分くらい前に注文したんですけど。50番…いや、席を移ったんだ。40番テーブルです。"
+    ja: "あの、20分くらい前に注文したんですけど。50番…待って、違う、席を移ったんだ。40番テーブルです。"
     ask: "テーブルは 何番？"
     ctx: "カフェのカウンターで注文を受けています"
     scene: cafe
@@ -109,8 +109,8 @@ items:
     answer: 1
     was: 3
     cja: ["14番", "40番", "41番", "50番"]
-    why: "「no, wait」（いや、待って）で言い直し。答えは最後の40番。50番は言い直す前です。14番と40番は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
-    note: "言い直しの「no, wait」のあとが答え"
+    why: "「wait, no」（待って、違う）で言い直し。答えは最後の40番。50番は言い直す前です。14番と40番は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「wait, no」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
 
   - kind: rush
@@ -119,7 +119,7 @@ items:
     speaker: punchy
     en: "Hey, um, we ordered about 20 minutes ago. Table 60. Wait, no, we moved. Table 50."
     tts: "Hey, um, we ordered about twenty minutes ago. Table sixty. Wait, no, we moved. Table fifty."
-    ja: "あの、20分くらい前に注文したんですけど。60番…いや、席を移ったんだ。50番テーブルです。"
+    ja: "あの、20分くらい前に注文したんですけど。60番…待って、違う、席を移ったんだ。50番テーブルです。"
     ask: "テーブルは 何番？"
     ctx: "カフェのカウンターで注文を受けています"
     scene: cafe
@@ -127,8 +127,8 @@ items:
     answer: 2
     was: 3
     cja: ["15番", "49番", "50番", "60番"]
-    why: "「no, wait」（いや、待って）で言い直し。答えは最後の50番。60番は言い直す前です。15番と50番は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
-    note: "言い直しの「no, wait」のあとが答え"
+    why: "「wait, no」（待って、違う）で言い直し。答えは最後の50番。60番は言い直す前です。15番と50番は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「wait, no」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
 
   - kind: rush
@@ -222,7 +222,7 @@ items:
     speaker: hamlet
     en: "Hey there. I'll take a bag of the house blend, too. The 500-gram one. Hmm, no, let's do 200."
     tts: "Hey there. I'll take a bag of the house blend, too. The five hundred-gram one. Hmm, no, let's do two hundred."
-    ja: "どうも。ハウスブレンドの豆も1袋ください。500グラムの…うーん、やっぱり200グラムで。"
+    ja: "どうも。ハウスブレンドの豆も1袋ください。500グラムの…うーん、いや、200グラムで。"
     ask: "豆は 何グラム？"
     ctx: "カフェのカウンターで注文を受けています"
     scene: cafe
@@ -230,8 +230,8 @@ items:
     answer: 1
     was: 3
     cja: ["150グラム", "200グラム", "250グラム", "500グラム"]
-    why: "「no, wait」（いや、待って）で言い直し。答えは最後の200グラム。500グラムは言い直す前です。"
-    note: "言い直しの「no, wait」のあとが答え"
+    why: "「no」（いや、〜）で言い直し。答えは最後の200グラム。500グラムは言い直す前です。"
+    note: "言い直しの「no」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -257,7 +257,7 @@ items:
     speaker: cherry
     en: "Hi! I'll take a bag of the house blend, too. The 250-gram one. Hmm, no, let's do 150."
     tts: "Hi! I'll take a bag of the house blend, too. The two hundred fifty-gram one. Hmm, no, let's do one hundred fifty."
-    ja: "こんにちは。ハウスブレンドの豆も1袋ください。250グラムの…うーん、やっぱり150グラムで。"
+    ja: "こんにちは。ハウスブレンドの豆も1袋ください。250グラムの…うーん、いや、150グラムで。"
     ask: "豆は 何グラム？"
     ctx: "カフェのカウンターで注文を受けています"
     scene: cafe
@@ -265,8 +265,8 @@ items:
     answer: 0
     was: 1
     cja: ["150グラム", "250グラム", "300グラム", "500グラム"]
-    why: "「no, wait」（いや、待って）で言い直し。答えは最後の150グラム。250グラムは言い直す前です。"
-    note: "言い直しの「no, wait」のあとが答え"
+    why: "「no」（いや、〜）で言い直し。答えは最後の150グラム。250グラムは言い直す前です。"
+    note: "言い直しの「no」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -300,8 +300,8 @@ items:
     answer: 1
     was: 2
     cja: ["880円", "980円", "1,080円", "1,180円"]
-    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の980円。1,080円は言い直す前です。1,180円はドリンク付きの値段。"
-    note: "言い直しの「sorry」のあとが答え"
+    why: "「oh」（あ、〜）で言い直し。答えは最後の980円。1,080円は言い直す前です。1,180円はドリンク付きの値段。"
+    note: "言い直しの「oh」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -318,8 +318,8 @@ items:
     answer: 1
     was: 0
     cja: ["1,050円", "1,150円", "1,350円", "1,510円"]
-    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の1,150円。1,050円は言い直す前です。1,350円はドリンク付きの値段。"
-    note: "言い直しの「sorry」のあとが答え"
+    why: "「oh」（あ、〜）で言い直し。答えは最後の1,150円。1,050円は言い直す前です。1,350円はドリンク付きの値段。"
+    note: "言い直しの「oh」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -353,8 +353,8 @@ items:
     answer: 0
     was: 1
     cja: ["1,480円", "1,580円", "1,680円", "1,840円"]
-    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の1,480円。1,580円は言い直す前です。1,680円はドリンク付きの値段。"
-    note: "言い直しの「sorry」のあとが答え"
+    why: "「oh」（あ、〜）で言い直し。答えは最後の1,480円。1,580円は言い直す前です。1,680円はドリンク付きの値段。"
+    note: "言い直しの「oh」のあとが答え"
     tags: { seed: 51, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -500,7 +500,7 @@ items:
     options: ["3個", "4個", "5個", "14個"]
     answer: 1
     cja: ["3個", "4個", "5個", "14個"]
-    why: "「four」で4個。数は名詞の前に来ます。"
+    why: "「four」で4個。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -533,7 +533,7 @@ items:
     options: ["1個", "2個", "3個", "12個"]
     answer: 1
     cja: ["1個", "2個", "3個", "12個"]
-    why: "「two」で2個。数は名詞の前に来ます。"
+    why: "「two」で2個。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -549,7 +549,7 @@ items:
     options: ["2個", "3個", "4個", "13個"]
     answer: 1
     cja: ["2個", "3個", "4個", "13個"]
-    why: "「three」で3個。数は名詞の前に来ます。"
+    why: "「three」で3個。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -565,7 +565,7 @@ items:
     options: ["21日", "22日", "23日", "24日"]
     answer: 1
     cja: ["21日", "22日", "23日", "24日"]
-    why: "「twenty-second」で22日。日付は fourteenth のような序数で言います。24日は第二希望の日。"
+    why: "「twenty-second」で22日。日付は fourteenth（14番目）の形で言います。24日は第二希望の日。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -615,7 +615,7 @@ items:
     options: ["4日", "14日", "15日", "16日"]
     answer: 1
     cja: ["4日", "14日", "15日", "16日"]
-    why: "「fourteenth」で14日。日付は fourteenth のような序数で言います。16日は第二希望の日。"
+    why: "「fourteenth」で14日。日付は fourteenth（14番目）の形で言います。16日は第二希望の日。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 24, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -781,7 +781,7 @@ items:
     options: ["2人", "4人", "6人", "14人"]
     answer: 1
     cja: ["2人", "4人", "6人", "14人"]
-    why: "「four」で4人。数は名詞の前に来ます。2人は大人の数。"
+    why: "「four」で4人。数は物の名前の前に来ます。2人は大人の数。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -797,7 +797,7 @@ items:
     options: ["2人", "3人", "4人", "13人"]
     answer: 1
     cja: ["2人", "3人", "4人", "13人"]
-    why: "「three」で3人。数は名詞の前に来ます。2人は大人の数。"
+    why: "「three」で3人。数は物の名前の前に来ます。2人は大人の数。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -813,7 +813,7 @@ items:
     options: ["3人", "5人", "6人", "15人"]
     answer: 1
     cja: ["3人", "5人", "6人", "15人"]
-    why: "「five」で5人。数は名詞の前に来ます。3人は大人の数。"
+    why: "「five」で5人。数は物の名前の前に来ます。3人は大人の数。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -848,8 +848,8 @@ items:
     answer: 1
     was: 2
     cja: ["10時15分", "10時50分", "11時5分", "11時50分"]
-    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の10時50分。11時5分は言い直す前です。"
-    note: "言い直しの「sorry」のあとが答え"
+    why: "「oh」（あ、〜）で言い直し。答えは最後の10時50分。11時5分は言い直す前です。10時15分と10時50分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「oh」のあとが答え"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair", "teen-ty", "clock"] }
 
   - kind: rush
@@ -866,8 +866,8 @@ items:
     answer: 2
     was: 3
     cja: ["10時40分", "11時14分", "11時40分", "11時55分"]
-    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の11時40分。11時55分は言い直す前です。"
-    note: "言い直しの「sorry」のあとが答え"
+    why: "「oh」（あ、〜）で言い直し。答えは最後の11時40分。11時55分は言い直す前です。11時14分と11時40分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    note: "言い直しの「oh」のあとが答え"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers", "self-repair", "teen-ty", "clock"] }
 
   - kind: rush
@@ -900,7 +900,7 @@ items:
     options: ["3枚", "4枚", "5枚", "13枚"]
     answer: 0
     cja: ["3枚", "4枚", "5枚", "13枚"]
-    why: "「three」で3枚。数は名詞の前に来ます。"
+    why: "「three」で3枚。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -917,7 +917,7 @@ items:
     options: ["5枚", "6枚", "7枚", "15枚"]
     answer: 0
     cja: ["5枚", "6枚", "7枚", "15枚"]
-    why: "「five」で5枚。数は名詞の前に来ます。"
+    why: "「five」で5枚。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -934,7 +934,7 @@ items:
     options: ["3枚", "4枚", "5枚", "6枚"]
     answer: 1
     cja: ["3枚", "4枚", "5枚", "6枚"]
-    why: "「four」で4枚。数は名詞の前に来ます。"
+    why: "「four」で4枚。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -951,7 +951,7 @@ items:
     options: ["6枚", "7枚", "8枚", "16枚"]
     answer: 0
     cja: ["6枚", "7枚", "8枚", "16枚"]
-    why: "「six」で6枚。数は名詞の前に来ます。"
+    why: "「six」で6枚。数は物の名前の前に来ます。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -986,7 +986,7 @@ items:
     options: ["11日", "14日", "15日", "25日"]
     answer: 2
     cja: ["11日", "14日", "15日", "25日"]
-    why: "「fifteenth」で15日。日付は fourteenth のような序数で言います。11日は行きの日。"
+    why: "「fifteenth」で15日。日付は fourteenth（14番目）の形で言います。11日は行きの日。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 5, register: service, pragmatic: literal, conditions: ["station"], features: ["numbers"] }
 
@@ -1057,8 +1057,8 @@ items:
     answer: 1
     was: 0
     cja: ["16ドル40セント", "17ドル40セント", "20ドル", "70ドル40セント"]
-    why: "「sorry」（ごめん、〜）で言い直し。答えは最後の17ドル40セント。16ドル40セントは言い直す前です。20ドルは出したお札。"
-    note: "言い直しの「sorry」のあとが答え"
+    why: "「oh」（あ、〜）で言い直し。答えは最後の17ドル40セント。16ドル40セントは言い直す前です。20ドルは出したお札。"
+    note: "言い直しの「oh」のあとが答え"
     tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers", "self-repair", "teen-ty"] }
 
   - kind: rush
@@ -1176,7 +1176,7 @@ items:
     options: ["4個", "5個", "6個", "12個"]
     answer: 1
     cja: ["4個", "5個", "6個", "12個"]
-    why: "「five」で5個。数は名詞の前に来ます。12個は全部の数（1ダース）。"
+    why: "「five」で5個。数は物の名前の前に来ます。12個は全部の数（1ダース）。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -1209,7 +1209,7 @@ items:
     options: ["4個", "5個", "6個", "12個"]
     answer: 0
     cja: ["4個", "5個", "6個", "12個"]
-    why: "「four」で4個。数は名詞の前に来ます。12個は全部の数（1ダース）。"
+    why: "「four」で4個。数は物の名前の前に来ます。12個は全部の数（1ダース）。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -1225,7 +1225,7 @@ items:
     options: ["5個", "6個", "12個", "16個"]
     answer: 1
     cja: ["5個", "6個", "12個", "16個"]
-    why: "「six」で6個。数は名詞の前に来ます。12個は全部の数（1ダース）。"
+    why: "「six」で6個。数は物の名前の前に来ます。12個は全部の数（1ダース）。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 27, register: service, pragmatic: literal, conditions: ["cafe"], features: ["numbers"] }
 
@@ -1745,8 +1745,8 @@ items:
     options: ["11月6日", "11月15日", "11月16日", "11月26日"]
     answer: 2
     cja: ["11月6日", "11月15日", "11月16日", "11月26日"]
-    why: "「sixteenth」で11月16日。日付は fourteenth のような序数で言います。"
-    note: "日付は the 14th のように序数で言う"
+    why: "「sixteenth」で11月16日。日付は fourteenth（14番目）の形で言います。"
+    note: "日付は the 14th（14番目）の形で言う"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
 
   - kind: rush
@@ -1762,8 +1762,8 @@ items:
     options: ["11月2日", "11月3日", "11月4日", "11月13日"]
     answer: 1
     cja: ["11月2日", "11月3日", "11月4日", "11月13日"]
-    why: "「third」で11月3日。日付は fourteenth のような序数で言います。"
-    note: "日付は the 14th のように序数で言う"
+    why: "「third」で11月3日。日付は fourteenth（14番目）の形で言います。"
+    note: "日付は the 14th（14番目）の形で言う"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
 
   - kind: rush
@@ -1779,7 +1779,7 @@ items:
     options: ["11月13日", "11月20日", "11月29日", "11月30日"]
     answer: 3
     cja: ["11月13日", "11月20日", "11月29日", "11月30日"]
-    why: "「thirtieth」で11月30日。日付は fourteenth のような序数で言います。"
+    why: "「thirtieth」で11月30日。日付は fourteenth（14番目）の形で言います。"
     note: "11月13日と11月30日：-teenは後ろが強い"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty"] }
 
@@ -1788,7 +1788,7 @@ items:
     at: pharmacy
     speaker: goldie
     en: "Hi. The doctor said three in the morning. Wait, no, one in the morning and two at night. Is that right?"
-    ja: "こんにちは。お医者さんは朝3錠…いや、朝1錠、夜2錠って。合ってますか？"
+    ja: "こんにちは。お医者さんは朝3錠…待って、違う、朝1錠、夜2錠って。合ってますか？"
     ask: "朝は 何錠？"
     ctx: "薬局のカウンターで、薬を渡す係です"
     scene: pharmacy
@@ -1796,8 +1796,8 @@ items:
     answer: 0
     was: 2
     cja: ["1錠", "2錠", "3錠", "11錠"]
-    why: "「no, wait」（いや、待って）で言い直し。答えは最後の1錠。3錠は言い直す前です。2錠は夜の数。"
-    note: "言い直しの「no, wait」のあとが答え"
+    why: "「wait, no」（待って、違う）で言い直し。答えは最後の1錠。3錠は言い直す前です。2錠は夜の数。"
+    note: "言い直しの「wait, no」のあとが答え"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -1812,7 +1812,7 @@ items:
     options: ["1錠", "3錠", "5錠", "13錠"]
     answer: 1
     cja: ["1錠", "3錠", "5錠", "13錠"]
-    why: "「three」で3錠。数は名詞の前に来ます。1錠は夜の数。"
+    why: "「three」で3錠。数は物の名前の前に来ます。1錠は夜の数。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
 
@@ -1821,7 +1821,7 @@ items:
     at: pharmacy
     speaker: bob
     en: "Hello. The doctor said four in the morning. Wait, no, two in the morning and one at night. Is that right?"
-    ja: "こんにちは。お医者さんは朝4錠…いや、朝2錠、夜1錠って。合ってますか？"
+    ja: "こんにちは。お医者さんは朝4錠…待って、違う、朝2錠、夜1錠って。合ってますか？"
     ask: "朝は 何錠？"
     ctx: "薬局のカウンターで、薬を渡す係です"
     scene: pharmacy
@@ -1829,8 +1829,8 @@ items:
     answer: 1
     was: 3
     cja: ["1錠", "2錠", "3錠", "4錠"]
-    why: "「no, wait」（いや、待って）で言い直し。答えは最後の2錠。4錠は言い直す前です。1錠は夜の数。"
-    note: "言い直しの「no, wait」のあとが答え"
+    why: "「wait, no」（待って、違う）で言い直し。答えは最後の2錠。4錠は言い直す前です。1錠は夜の数。"
+    note: "言い直しの「wait, no」のあとが答え"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "self-repair"] }
 
   - kind: rush
@@ -1845,7 +1845,7 @@ items:
     options: ["1錠", "2錠", "3錠", "11錠"]
     answer: 0
     cja: ["1錠", "2錠", "3錠", "11錠"]
-    why: "「one」で1錠。数は名詞の前に来ます。2錠は夜の数。"
+    why: "「one」で1錠。数は物の名前の前に来ます。2錠は夜の数。"
     note: "数字が2つ。何を聞かれているかに注意"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers"] }
 
@@ -1931,7 +1931,7 @@ items:
     options: ["10日分", "16日分", "60日分", "70日分"]
     answer: 2
     cja: ["10日分", "16日分", "60日分", "70日分"]
-    why: "「sixty」で60日分。数は名詞の前に来ます。10日分は旅行の日数。16日分と60日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    why: "「sixty」で60日分。数は物の名前の前に来ます。10日分は旅行の日数。16日分と60日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
     note: "16日分と60日分：-teenは後ろが強い"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty"] }
 
@@ -1948,7 +1948,7 @@ items:
     options: ["13日分", "30日分", "32日分", "40日分"]
     answer: 1
     cja: ["13日分", "30日分", "32日分", "40日分"]
-    why: "「thirty」で30日分。数は名詞の前に来ます。40日分は旅行の日数。13日分と30日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    why: "「thirty」で30日分。数は物の名前の前に来ます。40日分は旅行の日数。13日分と30日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
     note: "13日分と30日分：-teenは後ろが強い"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty"] }
 
@@ -1965,7 +1965,7 @@ items:
     options: ["10日分", "14日分", "16日分", "40日分"]
     answer: 1
     cja: ["10日分", "14日分", "16日分", "40日分"]
-    why: "「fourteen」で14日分。数は名詞の前に来ます。10日分は旅行の日数。14日分と40日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    why: "「fourteen」で14日分。数は物の名前の前に来ます。10日分は旅行の日数。14日分と40日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
     note: "14日分と40日分：-teenは後ろが強い"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty"] }
 
@@ -1982,7 +1982,7 @@ items:
     options: ["19日分", "20日分", "90日分", "91日分"]
     answer: 2
     cja: ["19日分", "20日分", "90日分", "91日分"]
-    why: "「ninety」で90日分。数は名詞の前に来ます。20日分は旅行の日数。19日分と90日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
+    why: "「ninety」で90日分。数は物の名前の前に来ます。20日分は旅行の日数。19日分と90日分は、-teenと-tyの違い。-teenは後ろを強く長く言います。"
     note: "19日分と90日分：-teenは後ろが強い"
     tags: { seed: 13, register: service, pragmatic: literal, features: ["numbers", "teen-ty"] }
 
