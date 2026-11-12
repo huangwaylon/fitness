@@ -1,4 +1,8 @@
 {
+ "call:s0-call": {
+  "cv": "06a869",
+  "decks": "ea72bd0605422675"
+ },
  "call:s1-call": {
   "cv": "2ad17e",
   "decks": "30b5d72dc5b5db3a"
@@ -22,6 +26,10 @@
  "call:s3-call": {
   "cv": "fef082",
   "decks": "a48de96bfaf5c9b3"
+ },
+ "call:s4-call": {
+  "cv": "598d30",
+  "decks": "a9fe54701aa72880"
  },
  "henshin:8": {
   "cv": "6ceb4c",
@@ -223,6 +231,14 @@
   "cv": "8e59fb",
   "decks": "bee3f7af647fdc82"
  },
+ "tachi:s0-tachi": {
+  "cv": "43b710",
+  "decks": "1716f66913e6a962"
+ },
+ "tachi:s1-tachi": {
+  "cv": "459a76",
+  "decks": "8ff5512b8c12308a"
+ },
  "tachi:s2-tachi-a": {
   "cv": "6bccdd",
   "decks": "5bd76bffd183c866"
@@ -246,6 +262,10 @@
  "tachi:s3-tachi-c": {
   "cv": "05409c",
   "decks": "1d8083ada9afdf82"
+ },
+ "tachi:s4-tachi": {
+  "cv": "e77eb1",
+  "decks": "b529166b6c5e3688"
  },
  "taikai:all": {
   "cv": "94b03c",

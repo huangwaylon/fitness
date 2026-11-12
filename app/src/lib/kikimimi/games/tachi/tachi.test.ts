@@ -51,7 +51,7 @@ describe('たちぎき: the deal', () => {
 
   it('every file’s rounds fit: three speakers, row ids within the row’s, each round’s help, the party file’s bed', () => {
     const cards = parts(FILES).flatMap((p) => p.items.flatMap((it) => (it.kind === 'tachi' ? tachiDeal(0, [{ ...p, items: [it] }]) : [])));
-    expect(cards.length).toBe(FILES.length * 5 * 3);
+    expect(cards.length).toBe(parts(FILES).flatMap((p) => p.items.filter((it) => it.kind === 'tachi')).length * 3);
     for (const c of cards) {
       expect(c.tachi.who).toHaveLength(3);
       expect(c.tachi.row).toMatch(ITEM_ID_RE);

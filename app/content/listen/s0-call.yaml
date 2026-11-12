@@ -1,0 +1,288 @@
+# ようじ でんわ S0 はまべ: short, clear calls (4-6 lines, ≤ 12 words a line), one plain change ("four... sorry, five"),
+# everyday errands; 3-4 memo rows of numbers, times and things. The change is a time, a price or a count in a quarter
+# of the calls at most; the rest change a day, a place or a thing. Clean line, no noise.
+schema: 1
+unit: s0-call
+game: call
+stage: 1
+track: life
+seeds: [3, 4, 13, 16, 17, 24, 34, 37, 48, 49, 50, 51]
+features: { primary: numbers, review: teen-ty }
+cando: "みじかい でんわで 時間や 数や ものを ききとって メモできる"
+status: draft
+cast: { me: us-m3 }
+items:
+  - kind: call
+    id: call-hama-parcel
+    ask: "宅配の 人から でんわ"
+    ctx: "外出中に、宅配の人から電話がかかってきました"
+    scene: street
+    channel: phone
+    lines:
+      - { who: kicks, en: "Hello, this is City Delivery. I have a package for you.", ja: "もしもし、シティ配送です。お荷物があります。" }
+      - { who: me, en: "Oh, thanks. I'm not home right now.", ja: "あ、どうも。今、家にいないんです。" }
+      - { who: kicks, en: "No problem. I can come back at four. Sorry, at five.", ja: "大丈夫です。4時にまた来ます。すみません、5時に。", repair: true }
+      - { who: me, en: "Five is fine. Thank you.", ja: "5時で大丈夫です。ありがとう。" }
+      - { who: kicks, en: "Great. It's a small box from Osaka. See you at five.", ja: "わかりました。大阪からの小さい箱です。では5時に。" }
+    half: [0, 0, 0, 1, 1]
+    memo:
+      - why: "four と言ってから Sorry, at five と言い直した。荷物は大阪からの小さい箱。"
+        slots:
+          - { ask: "何時に 来る？", options: ["4時", "5時", "15時"], answer: 1, cja: ["4時", "5時", "15時"] }
+          - { ask: "どこから？", options: ["大阪", "名古屋", "福岡"], answer: 0, cja: ["大阪", "名古屋", "福岡"] }
+          - { ask: "にもつは？", options: ["小さい 箱", "大きい 箱", "手紙"], answer: 0, cja: ["小さい箱", "大きい箱", "手紙"] }
+          - { ask: "今 家に いる？", options: ["いる", "いない"], answer: 1, cja: ["いる", "いない"] }
+    note: "Sorry の後が本当の時間。4時ではない"
+    tags: { seed: 37, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+
+  - kind: call
+    id: call-hama-pharmacy
+    ask: "薬局から でんわ"
+    ctx: "薬を頼んだ薬局から電話が来ました"
+    scene: pharmacy
+    channel: phone
+    lines:
+      - { who: tia, en: "Hi, this is Green Pharmacy. Your medicine is ready.", ja: "こんにちは、グリーン薬局です。お薬の準備ができました。" }
+      - { who: me, en: "Great. How much is it?", ja: "よかった。おいくらですか？" }
+      - { who: tia, en: "It's ¥1,300. Oh, no, it's ¥1,030. Sorry.", tts: "It's thirteen hundred yen. Oh, no, it's one thousand thirty yen. Sorry.", ja: "1,300円です。あ、いえ、1,030円でした。すみません。", repair: true }
+      - { who: me, en: "Okay. Can I come tomorrow?", ja: "わかりました。明日行ってもいいですか？" }
+      - { who: tia, en: "Sure. We close at seven, and please bring your card.", ja: "はい。7時に閉まります。保険証を持ってきてください。" }
+    half: [0, 0, 0, 1, 1]
+    memo:
+      - why: "thirteen hundred（1,300円）と言ってから one thousand thirty（1,030円）に訂正。閉まるのは7時で、保険証がいる。"
+        slots:
+          - { ask: "いくら？", options: ["1,030円", "1,300円", "3,000円"], answer: 0, cja: ["1,030円", "1,300円", "3,000円"] }
+          - { ask: "何時に 閉まる？", options: ["6時", "7時", "11時"], answer: 1, cja: ["6時", "7時", "11時"] }
+          - { ask: "持って いく ものは？", options: ["保険証", "お薬手帳", "印鑑"], answer: 0, cja: ["保険証", "お薬手帳", "印鑑"] }
+    note: "thirteen hundred は 1,300。訂正の後は 1,030"
+    tags: { seed: 13, register: service, pragmatic: literal, conditions: [phone], features: [numbers, teen-ty, self-repair] }
+
+  - kind: call
+    id: call-hama-movie-late
+    ask: "友だちから でんわ"
+    ctx: "映画の約束をしている友だちから電話です"
+    scene: street
+    channel: phone
+    lines:
+      - { who: rosie, en: "Hi! I'm on the train. I'm a little late.", ja: "もしもし！今電車なの。ちょっと遅れる。" }
+      - { who: me, en: "That's okay. The movie starts at 6:40.", tts: "That's okay. The movie starts at six forty.", ja: "大丈夫。映画は6時40分からだよ。" }
+      - { who: rosie, en: "I can be there at 6:30. Can you buy two tickets?", tts: "I can be there at six thirty. Can you buy two tickets?", ja: "6時半には着けるよ。チケット2枚買っておいてくれる？" }
+      - { who: me, en: "Sure. Where do you want to meet?", ja: "いいよ。どこで待ち合わせる？" }
+      - { who: rosie, en: "At the front door. No, wait, at the coffee shop next to it.", ja: "入り口で。あ、待って、その隣のカフェで。", repair: true }
+    half: [0, 1, 0, 1, 1]
+    memo:
+      - why: "映画は six forty（6:40）、友だちは six thirty（6:30）に着く。チケットは2枚。待ち合わせは入り口から隣のカフェに変更。"
+        slots:
+          - { ask: "友だちが 着くのは？", options: ["6:13", "6:30", "6:40"], answer: 1, cja: ["6時13分", "6時半", "6時40分"] }
+          - { ask: "チケットは 何枚？", options: ["1枚", "2枚", "3枚"], answer: 1, cja: ["1枚", "2枚", "3枚"] }
+          - { ask: "どこで 会う？", options: ["入り口", "となりの カフェ", "駅"], answer: 1, cja: ["入り口", "隣のカフェ", "駅"] }
+    note: "No, wait の後が待ち合わせ場所"
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [clock, can-cant, self-repair] }
+
+  - kind: call
+    id: call-hama-post-canada
+    ask: "郵便局に でんわ"
+    ctx: "カナダに荷物を送りたくて、郵便局に電話しています"
+    scene: office
+    channel: phone
+    lines:
+      - { who: me, en: "Hi. I want to send a small box to Canada.", ja: "こんにちは。カナダに小さい箱を送りたいんです。" }
+      - { who: coco, en: "Sure. By air, it takes five days. It's ¥2,400.", tts: "Sure. By air, it takes five days. It's two thousand four hundred yen.", ja: "はい。航空便だと5日かかります。2,400円です。" }
+      - { who: me, en: "Five days is good. Can I pay by card?", ja: "5日ならいいですね。カードで払えますか？" }
+      - { who: coco, en: "Yes, you can. Oh, sorry. Not for packages. It's cash only.", ja: "はい、使えます。あ、すみません。荷物はだめでした。現金だけです。", repair: true }
+      - { who: me, en: "Okay, cash is fine. When do you close?", ja: "わかりました、現金で大丈夫です。何時に閉まりますか？" }
+      - { who: coco, en: "At five. Please bring the box before then.", ja: "5時です。それまでに箱を持ってきてください。" }
+    half: [0, 0, 1, 1, 1, 1]
+    memo:
+      - why: "航空便で5日、2,400円。カードはいいと言ってから Not for packages と訂正し、荷物は現金だけ。閉まるのは5時。"
+        slots:
+          - { ask: "何日で 届く？", options: ["5日", "7日", "15日"], answer: 0, cja: ["5日", "7日", "15日"] }
+          - { ask: "いくら？", options: ["2,040円", "2,400円", "4,200円"], answer: 1, cja: ["2,040円", "2,400円", "4,200円"] }
+          - { ask: "払い方は？", options: ["カード", "現金"], answer: 1, cja: ["カード", "現金"] }
+          - { ask: "何時に 閉まる？", options: ["3時", "4時", "5時"], answer: 2, cja: ["3時", "4時", "5時"] }
+    note: "Not for packages＝荷物はカードではだめ"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: [phone], features: [numbers, can-cant, self-repair] }
+
+  - kind: call
+    id: call-hama-water-wednesday
+    ask: "マンションの 管理室から でんわ"
+    ctx: "住んでいるマンションの管理室から電話です"
+    scene: door
+    channel: phone
+    lines:
+      - { who: gruff, en: "Hello, this is the building office. It's about the water.", ja: "もしもし、管理室です。水道の件です。" }
+      - { who: gruff, en: "There's no water on Tuesday, from ten to two.", ja: "火曜日の10時から2時まで、水が止まります。" }
+      - { who: me, en: "Okay. Is that this Tuesday?", ja: "わかりました。今週の火曜ですか？" }
+      - { who: gruff, en: "Oh, sorry. Not Tuesday. The work is on Wednesday.", ja: "あ、すみません。火曜ではなく、工事は水曜日です。", repair: true }
+      - { who: me, en: "Wednesday. Got it. What should I do?", ja: "水曜ですね。わかりました。何をすればいいですか？" }
+      - { who: gruff, en: "Please keep some water in bottles. Thank you.", ja: "ボトルに水をためておいてください。よろしくお願いします。" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "Tuesday と言ってから Not Tuesday と言い直し、工事は水曜。時間は10時から2時のまま。ボトルに水をためておく。"
+        slots:
+          - { ask: "水が 止まるのは 何曜日？", options: ["火曜", "水曜", "木曜"], answer: 1, cja: ["火曜", "水曜", "木曜"] }
+          - { ask: "何時から 何時まで？", options: ["10時から 12時", "10時から 2時", "2時から 4時"], answer: 1, cja: ["10時から12時", "10時から2時", "2時から4時"] }
+          - { ask: "する ことは？", options: ["水を ためておく", "家に いる", "お金を 払う"], answer: 0, cja: ["水をためておく", "家にいる", "お金を払う"] }
+    note: "Not Tuesday の後が本当の曜日"
+    tags: { seed: 34, register: official, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+
+  - kind: call
+    id: call-hama-cake-strawberry
+    ask: "ケーキ屋から でんわ"
+    ctx: "誕生日ケーキを頼んだ店から電話です"
+    scene: cafe
+    channel: phone
+    lines:
+      - { who: melba, en: "Hi, this is Sweet Bakery. Your birthday cake is ready.", ja: "こんにちは、スイート・ベーカリーです。誕生日ケーキができました。" }
+      - { who: me, en: "Great! Is it the chocolate cake?", ja: "よかった！チョコレートケーキですか？" }
+      - { who: melba, en: "Yes, chocolate. Oh, wait. Sorry, yours is the strawberry cake.", ja: "はい、チョコです。あ、待ってください。すみません、お客様のはいちごのケーキです。", repair: true }
+      - { who: me, en: "Right, strawberry. When can I pick it up?", ja: "そう、いちごです。いつ取りに行けますか？" }
+      - { who: melba, en: "Any time today. We're open until seven.", ja: "今日ならいつでも。7時まで開いています。" }
+      - { who: melba, en: "And the candles are free. See you soon!", ja: "ろうそくは無料です。お待ちしています！" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "chocolate と言ってから Sorry, yours is the strawberry cake と訂正。店は7時まで。ろうそくは free＝無料。"
+        slots:
+          - { ask: "ケーキは？", options: ["チーズ", "チョコ", "いちご"], answer: 2, cja: ["チーズ", "チョコ", "いちご"] }
+          - { ask: "何時まで 開いている？", options: ["7時", "8時", "11時"], answer: 0, cja: ["7時", "8時", "11時"] }
+          - { ask: "ろうそくは？", options: ["無料", "100円", "ない"], answer: 0, cja: ["無料", "100円", "ない"] }
+    note: "yours is の後が自分のケーキ"
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, weak-form] }
+
+  - kind: call
+    id: call-hama-taxi-black
+    ask: "タクシー会社から でんわ"
+    ctx: "呼んだタクシーの会社から電話がかかってきました"
+    scene: street
+    channel: phone
+    lines:
+      - { who: judy, en: "Hello, this is Blue Taxi. Your car is outside now.", ja: "もしもし、ブルータクシーです。お車が外に着きました。" }
+      - { who: me, en: "Thanks. What color is it?", ja: "ありがとう。何色ですか？" }
+      - { who: judy, en: "It's white. The number is 28.", tts: "It's white. The number is twenty-eight.", ja: "白です。番号は28です。" }
+      - { who: me, en: "Hmm, I only see a black car.", ja: "うーん、黒い車しか見えないんですが。" }
+      - { who: judy, en: "Oh, sorry. Your car is black. The white car is for someone else.", ja: "あ、すみません。お客様の車は黒です。白い車は別のお客様のです。", repair: true }
+      - { who: judy, en: "The driver is waiting at the front door.", ja: "運転手は正面の入り口で待っています。" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "white と言ってから Your car is black と訂正。番号は twenty-eight（28）。運転手は front door＝正面の入り口で待つ。"
+        slots:
+          - { ask: "車の 色は？", options: ["白", "黒", "青"], answer: 1, cja: ["白", "黒", "青"] }
+          - { ask: "車の 番号は？", options: ["20", "28", "82"], answer: 1, cja: ["20", "28", "82"] }
+          - { ask: "どこで 待っている？", options: ["正面の 入り口", "駐車場", "駅の 前"], answer: 0, cja: ["正面の入り口", "駐車場", "駅の前"] }
+    note: "twenty-eight は28。82と聞きまちがえない"
+    tags: { seed: 4, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+
+  - kind: call
+    id: call-hama-table-for-five
+    ask: "レストランから でんわ"
+    ctx: "金曜に予約したレストランから電話です"
+    scene: cafe
+    channel: phone
+    lines:
+      - { who: olivia, en: "Hi, this is Rossi's. I'm calling about your table on Friday.", ja: "こんにちは、ロッシーズです。金曜日のご予約の件でお電話しました。" }
+      - { who: olivia, en: "It's for four people at seven, right?", ja: "7時に4名様ですね？" }
+      - { who: me, en: "Yes. Oh, sorry, it's five people now. My sister is coming.", ja: "はい。あ、すみません、今は5人です。妹も来るので。", repair: true }
+      - { who: olivia, en: "No problem. Five people at seven.", ja: "大丈夫です。7時に5名様ですね。" }
+      - { who: olivia, en: "We have a big table by the window for you.", ja: "窓ぎわの大きいテーブルをご用意しています。" }
+      - { who: me, en: "Perfect. Thank you!", ja: "よかった。ありがとう！" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "four people と言われて、five people now と人数を変えた。時間は7時のまま。席は窓ぎわの大きいテーブル。"
+        slots:
+          - { ask: "何人？", options: ["4人", "5人", "6人"], answer: 1, cja: ["4人", "5人", "6人"] }
+          - { ask: "何時？", options: ["7時", "8時", "11時"], answer: 0, cja: ["7時", "8時", "11時"] }
+          - { ask: "何曜日？", options: ["木曜", "金曜", "土曜"], answer: 1, cja: ["木曜", "金曜", "土曜"] }
+          - { ask: "席は？", options: ["窓ぎわ", "外", "カウンター"], answer: 0, cja: ["窓ぎわ", "外", "カウンター"] }
+    note: "five people now＝人数が変わった"
+    tags: { seed: 50, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+
+  - kind: call
+    id: call-hama-yoga-towel
+    ask: "ジムから でんわ"
+    ctx: "入会したばかりのジムから電話です"
+    scene: office
+    channel: phone
+    lines:
+      - { who: phoebe, en: "Hi, this is Sunny Gym. Your first yoga class is on Sunday.", ja: "こんにちは、サニージムです。初めてのヨガのクラスは日曜日です。" }
+      - { who: me, en: "Great. What time does it start?", ja: "よかった。何時に始まりますか？" }
+      - { who: phoebe, en: "At nine. Please come ten minutes early.", ja: "9時です。10分早く来てください。" }
+      - { who: phoebe, en: "And bring a mat. Oh, wait, we have mats. Just bring a towel.", ja: "それとマットを…あ、待って、マットはあります。タオルだけ持ってきてください。", repair: true }
+      - { who: me, en: "Okay. Just a towel. See you on Sunday.", ja: "わかりました。タオルだけですね。では日曜に。" }
+    half: [0, 0, 0, 1, 1]
+    memo:
+      - why: "クラスは日曜の9時。ten minutes early＝10分早く。マットと言ってから we have mats と言い直し、持っていくのはタオルだけ。"
+        slots:
+          - { ask: "何曜日？", options: ["金曜", "土曜", "日曜"], answer: 2, cja: ["金曜", "土曜", "日曜"] }
+          - { ask: "何時に 始まる？", options: ["9時", "10時", "19時"], answer: 0, cja: ["9時", "10時", "19時"] }
+          - { ask: "何分 早く 行く？", options: ["5分", "10分", "15分"], answer: 1, cja: ["5分", "10分", "15分"] }
+          - { ask: "持って いく ものは？", options: ["マット", "タオル", "水"], answer: 1, cja: ["マット", "タオル", "水"] }
+    note: "we have mats＝マットは持っていかなくていい"
+    tags: { seed: 17, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+
+  - kind: call
+    id: call-hama-party-ice
+    ask: "友だちから でんわ。パーティー"
+    ctx: "引っ越したばかりの友だちから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: nana, en: "Hi! I'm having a party on Saturday. Can you come?", ja: "もしもし！土曜日にパーティーをするの。来られる？" }
+      - { who: me, en: "Sure! What time?", ja: "いいよ！何時？" }
+      - { who: nana, en: "At six. It's at my new place near Ueno Park.", ja: "6時。上野公園の近くの新しい家でやるよ。" }
+      - { who: nana, en: "Can you bring some cups? Oh, no, I have cups. Bring ice.", ja: "コップを持ってきてくれる？あ、ちがう、コップはあった。氷を持ってきて。", repair: true }
+      - { who: me, en: "Ice. No problem. See you Saturday!", ja: "氷ね。大丈夫。じゃあ土曜に！" }
+    half: [0, 0, 1, 1, 1]
+    memo:
+      - why: "パーティーは土曜の6時、上野公園の近くの家。cups と言ってから I have cups. Bring ice と変えた。持っていくのは氷。"
+        slots:
+          - { ask: "何曜日？", options: ["金曜", "土曜", "日曜"], answer: 1, cja: ["金曜", "土曜", "日曜"] }
+          - { ask: "何時？", options: ["6時", "7時", "8時"], answer: 0, cja: ["6時", "7時", "8時"] }
+          - { ask: "どこ？", options: ["上野公園の 近く", "上野駅の 中", "友だちの 店"], answer: 0, cja: ["上野公園の近く", "上野駅の中", "友だちの店"] }
+          - { ask: "持って いく ものは？", options: ["おかし", "コップ", "氷"], answer: 2, cja: ["お菓子", "コップ", "氷"] }
+    note: "I have cups＝コップはいらない"
+    tags: { seed: 48, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, weak-form] }
+
+  - kind: call
+    id: call-hama-haircut-friday
+    ask: "美容院から でんわ"
+    ctx: "木曜に予約した美容院から電話です"
+    scene: office
+    channel: phone
+    lines:
+      - { who: pekoe, en: "Hello, this is Hair Studio Mint. It's about your haircut on Thursday.", ja: "もしもし、ヘアスタジオ・ミントです。木曜日のカットのご予約の件です。" }
+      - { who: pekoe, en: "I'm sorry. Your stylist is sick that day.", ja: "申し訳ありません。担当の美容師がその日病気でお休みなんです。" }
+      - { who: pekoe, en: "Can you come on Friday at four instead?", ja: "代わりに金曜日の4時はいかがですか？", repair: true }
+      - { who: me, en: "Friday at four is fine.", ja: "金曜の4時で大丈夫です。" }
+      - { who: pekoe, en: "Thank you. It's the same stylist and the same price.", ja: "ありがとうございます。同じ美容師で、料金も同じです。" }
+    half: [0, 0, 1, 1, 1]
+    memo:
+      - why: "木曜は美容師が sick＝病気。instead＝代わりに金曜の4時。美容師も料金も同じ。"
+        slots:
+          - { ask: "新しい 予約は 何曜日？", options: ["木曜", "金曜", "土曜"], answer: 1, cja: ["木曜", "金曜", "土曜"] }
+          - { ask: "何時？", options: ["4時", "5時", "14時"], answer: 0, cja: ["4時", "5時", "14時"] }
+          - { ask: "変わった 理由は？", options: ["美容師が 病気", "店が 休み", "予約が いっぱい"], answer: 0, cja: ["美容師が病気", "店が休み", "予約がいっぱい"] }
+    note: "instead＝代わりに。木曜ではなく金曜"
+    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+
+  - kind: call
+    id: call-hama-hotel-late
+    ask: "ホテルに でんわ。おそく 着く"
+    ctx: "旅行の日、今夜泊まるホテルに電話しています"
+    scene: gate
+    channel: phone
+    lines:
+      - { who: me, en: "Hi, I have a room for tonight. I'll arrive late, at eleven.", ja: "こんにちは、今夜予約しています。遅くなって、11時に着きます。" }
+      - { who: hamlet, en: "That's fine. The front desk is open all night.", ja: "大丈夫です。フロントは一晩中開いています。" }
+      - { who: me, en: "Thanks. Is breakfast on the second floor?", ja: "ありがとう。朝食は2階ですか？" }
+      - { who: hamlet, en: "Yes, the second floor. Oh, sorry, it's on the first floor now.", ja: "はい、2階です。あ、すみません、今は1階です。", repair: true }
+      - { who: hamlet, en: "Breakfast is from seven to ten.", ja: "朝食は7時から10時までです。" }
+    half: [0, 0, 1, 1, 1]
+    memo:
+      - why: "着くのは eleven（11時）。フロントは all night＝一晩中。朝食は second floor から first floor に訂正して1階。7時から。"
+        slots:
+          - { ask: "何時に 着く？", options: ["9時", "10時", "11時"], answer: 2, cja: ["9時", "10時", "11時"] }
+          - { ask: "フロントは？", options: ["一晩中 開いている", "10時まで", "12時まで"], answer: 0, cja: ["一晩中開いている", "10時まで", "12時まで"] }
+          - { ask: "朝食の 場所は？", options: ["1階", "2階", "7階"], answer: 0, cja: ["1階", "2階", "7階"] }
+          - { ask: "朝食は 何時から？", options: ["6時", "7時", "10時"], answer: 1, cja: ["6時", "7時", "10時"] }
+    note: "Oh, sorry の後が今の場所。2階ではない"
+    tags: { seed: 3, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
