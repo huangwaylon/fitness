@@ -58,6 +58,7 @@ beforeEach(() => {
   bot = {
     handle: (e: never) => (rec('BOT.handle', e), Promise.resolve()),
     getState: () => (rec('BOT.getState'), Promise.resolve({ version: 3 })),
+    ensureAlarm: () => (rec('BOT.ensureAlarm'), Promise.resolve()),
     getStatus: () => (rec('BOT.getStatus'), Promise.resolve({ v: 1, verdict: 'healthy', n: calls['BOT.getStatus'].length })),
     putState: (j: never) => (rec('BOT.putState', j), Promise.resolve((j as { version?: number }).version === 3 ? { ok: true } : { ok: false, error: 'bad' }))
   };
@@ -146,5 +147,12 @@ describe('/gym/state', () => {
     expect([notJson.status, await notJson.json()]).toEqual([400, { ok: false, error: 'not JSON' }]);
     expect(calls['BOT.putState']).toEqual([[{ version: 3 }], [{ version: 2 }]]);
     expect((await call('/gym/state', { method: 'DELETE', headers: bearer() })).status).toBe(405);
+  });
+});
+
+describe('the hourly cron', () => {
+  it('asks the bot to restart its checks if they stopped', async () => {
+    await worker.scheduled({} as ScheduledController, envOf({ MODE: 'bot' }));
+    expect(calls['BOT.ensureAlarm']).toEqual([[]]);
   });
 });

@@ -16,6 +16,11 @@ MODE = "bot"
 # The Worker's address: /status says whether LINE's webhook points at $URL/line/webhook.
 URL = "https://gym-bot.island-fund-relay.workers.dev"
 
+# Hourly: sets the checks' alarm again if none is set (src/index.ts `scheduled`). The Free plan allows 5 cron triggers
+# an account; the relay uses 2.
+[triggers]
+crons = ["7 * * * *"]
+
 # The bot: the state, the checks (on its alarm) and the taps' answers.
 [[durable_objects.bindings]]
 name = "BOT"

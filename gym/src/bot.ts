@@ -151,7 +151,9 @@ export class GymBot extends DurableObject<Env> implements Bot {
   /** Start the checks if they aren't scheduled: the first alarm after the switch to MODE 'bot'. */
   async ensureAlarm(): Promise<void> {
     if (this.env.MODE !== 'bot' || this.store.paused || this.polling) return;
-    if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now());
+    if ((await this.ctx.storage.getAlarm()) !== null) return;
+    console.log('no next check was set: checking now');
+    await this.ctx.storage.setAlarm(Date.now());
   }
 
   // --- Bot (actions.ts) ---

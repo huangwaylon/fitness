@@ -2,13 +2,45 @@
 
 A LINE bot that posts in a LINE group when a 💪 パーソナルトレーニング or 🧘 マシンピラティス slot opens at ELEMENT
 戸越銀座店 (the gym's hacomono booking site), for a few Japanese-speaking friends. Not part of the game: it only shares
-the Cloudflare account with the relay. A TypeScript port of the retired Python bot,
-[huangwaylon/gym](https://github.com/huangwaylon/gym): its `CLAUDE.md` is the product reference (rules per day, ⏳, 🧹,
-alerts once per start time, the notices), and every Japanese string here is copied from its `messages.py`.
+the Cloudflare account with the relay. A TypeScript port of a retired Python bot, whose state format and card data it
+keeps.
 
 `https://gym-bot.island-fund-relay.workers.dev`: one Worker and one SQLite-backed Durable Object (`GymBot`), Workers
 Free. `MODE` (wrangler.toml) is `bot`; `off` is the stop switch (LINE's events answered 200 and ignored, the alarm
 checks nothing and sets no next alarm).
+
+## Product rules
+
+- **Japanese, short, natural.** Every user-facing string is in `src/messages.ts`; logs, code and docs are English.
+  LINE shows plain text: `・` for list items, a card's first line is its bold title, no walls of text, no link buttons.
+- **Buttons first.** Everything is done by tapping cards. The only text read is メニュー (めにゅー, menu) or a mention of
+  the bot, which shows the menu; other chat in the group is ignored.
+- **Never silent.** An invalid choice gets a short 🤔 hint and the card keeps working; an unexpected error gets 😕.
+- **Answers are replies**, seen by the whole group: a change says who made it. Replies are free; pushes (alerts,
+  the site notices) count toward LINE's quota.
+- **Old cards keep working**: the postback data (`a=any&d=2026-10-07`) never changes shape; a tap for a day that has
+  passed gets a hint.
+- **Each slot time is announced once** (the day and start, whichever program; every program open then is named). A
+  failed push is retried each check with the same `X-Line-Retry-Key`, so LINE drops a copy that did arrive.
+
+Each day has at most one rule (`src/store.ts`):
+
+| Rule | Label | Means |
+|---|---|---|
+| any | 🔔 終日 | Any open slot |
+| skip | 🔕 通知オフ | None that day |
+| `[start, end]` | ⏰ 12:00〜14:00 | Slots that start and end inside it (picked on the half hour; the end suggested an hour after the start) |
+| none | 🔔 or 💤 | 🔔 for the next 4 days (`DAYS_TO_CHECK`, today included), else 💤 not checked yet |
+
+- **⏳ check from** a time: the day is ignored until then. Kept between 🔔 and ⏰, cleared by 🔕; set on a 🔕 or 💤 day it
+  makes the day 🔔. In the future and no later than the day; the picker ends at the last slot (21:30).
+- **🧹 reset** clears a day's rule, ⏳ and announced times, so its open slots alert again (shown only when there's
+  something to clear).
+- **🔎 check now**: once a minute for everyone, refused while stopped or while a check runs; lists everything open,
+  and the times it lists aren't announced later.
+- **🔧 チェック設定**: the interval (10, 15, 30 or 60 minutes; 15 at first) and stop/restart.
+- Days are picked from 🗓️ buttons, one bubble per week, 25 days ahead (the gym publishes about 4 weeks). Past days,
+  passed ⏳ times and announced times that have started are dropped at each check.
 
 ## How it works
 
@@ -31,8 +63,9 @@ checks nothing and sets no next alarm).
 - **Checks**: each alarm checks both programs (2–5 s apart, today to the last checked day; nothing when no day is
   checked) and sets the next: the interval ±15%, or after a fully failed check a backoff (doubling, at least a 429's
   `Retry-After`, at most 120 min). `SITE_DOWN` is pushed after 3 failed checks in a row, `SITE_BACK` once the site
-  answers. Stopped (⏸️) = no alarm; restarting checks at once, a new interval counts from the last check. A tap or a
-  `/gym/state` call sets an alarm if none is set.
+  answers. Stopped (⏸️) = no alarm; restarting checks at once, a new interval counts from the last check. If no alarm
+  is set (and the checks aren't stopped), an hourly cron (:07), a tap or a `/gym/state` call sets one (log: `no next
+  check was set: checking now`).
 - **State**: DO storage. `state` is the Python bot's `state.json` (version 3); `runtime` holds failures in a row, the
   notice sent, a failed push's retry key, the last checks and what `/status` shows. A saved state that can't be read
   is kept as `state.bad` and the bot starts empty (log: `could not read the saved state`). `GET /gym/state` is the
@@ -91,7 +124,7 @@ The verdict is the first reason that applies (`/status`'s `reasons`, in this ord
 |---|---|---|---|
 | `mode_off` | off | Deployed with `MODE = "off"` | Back on (Operations) |
 | `paused` | stopped | ⏸️ in the group's 🔧 チェック設定 | ▶️ チェックを再開 in LINE |
-| `no_alarm` | broken | No next check scheduled | `GET /gym/state` sets one; then `wrangler tail` for why it stopped |
+| `no_alarm` | broken | No next check scheduled | The hourly cron sets one (or `GET /gym/state` now); if it recurs, `wrangler tail` for why |
 | `no_group` | broken | `LINE_GROUP_ID` unset | Put the secret |
 | `webhook_wrong` | broken | LINE's webhook isn't `$URL/line/webhook` or is inactive (taps go nowhere) | Point LINE here |
 | `overdue` | late | 5+ min past the next check | Usually passes; if it stays, `wrangler tail` |
@@ -105,5 +138,6 @@ The verdict is the first reason that applies (`/status`'s `reasons`, in this ord
 - LINE free plan: 200 pushed messages a month, each counted once per group member. Alerts and notices are pushes;
   answers to taps are free.
 - Workers Free: 100,000 requests a day; Durable Objects 100,000 requests, 13,000 GB-s and 100,000 rows written a day,
-  account-wide, shared with the relay. A check every 15 minutes is ~100 alarms and ~100 rows a day.
+  account-wide, shared with the relay; 5 cron triggers an account (the relay 2, this 1). A check every 15 minutes is
+  ~100 alarms and ~100 rows a day, the cron 24 requests.
 - The gym site: 2 requests a check, browser User-Agent and Referer, backoff on failures.

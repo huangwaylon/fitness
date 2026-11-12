@@ -10,6 +10,11 @@ export { GymBot } from './bot.ts';
 const bot = (env: Env) => env.BOT.get(env.BOT.idFromName('gym'));
 
 export default {
+  /** The hourly cron (wrangler.toml): restarts the checks if their alarm chain ever broke, which otherwise only a tap
+   *  or /gym/state would (status.ts `no_alarm`). Nothing when an alarm is set, MODE is off or checks are stopped. */
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await bot(env).ensureAlarm();
+  },
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(req.url);
     if (pathname === '/health') return Response.json({ ok: true, mode: env.MODE, sha: env.COMMIT ?? null });
