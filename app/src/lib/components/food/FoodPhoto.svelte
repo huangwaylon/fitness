@@ -11,10 +11,12 @@
 
   interface Props {
     item: Item;
-    img: FoodImg;
+    img: FoodImg | null;
+    /** A chain menu's picture, hotlinked (FoodThumb `src`). */
+    src?: string | null;
     onclose: () => void;
   }
-  let { item, img, onclose }: Props = $props();
+  let { item, img, src = null, onclose }: Props = $props();
 
   let dlg: HTMLDialogElement | undefined = $state();
   const size = Math.round(Math.min(window.innerWidth - 64, 360));
@@ -32,7 +34,7 @@
   <div class="card in">
     <span class="x"><NavButton kind="close" onclick={() => dlg?.close()} /></span>
     <div class="pic">
-      <FoodThumb cat={item.cat} {size} {img} alt={t('food.img.alt', { name: item.name })} />
+      <FoodThumb cat={item.cat} {size} {img} {src} alt={t('food.img.alt', { name: item.name })} />
       <span class="badge">{t('food.img.badge')}</span>
     </div>
     <h3>{item.name}</h3>

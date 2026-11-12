@@ -10,7 +10,9 @@
   // particular food) and the category's word in small type; night tints darker. `img`, a cell of a packed sprite sheet
   // (its url, the cell's x / y and size in the sheet's pixels), drawn into the box's canvas (food/cells.ts: the sheet
   // decoded a moment, not held) once the box nears the screen, fades in over the tint, the tile again if it fails: the
-  // box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`.
+  // box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`. `src`, a
+  // picture hotlinked from elsewhere (a chain menu's: images.ts kaloriImg), a plain lazy <img> the box's size over the
+  // tint, faded in once loaded, the tile again on an error or offline.
   // A recipe's (マイレシピ: `plate`, foodUi.ts plateOf): its ingredients' pictures in one box (1 whole, 2 halves, 3 a
   // half and two quarters, 4 a 2 × 2; one with no picture, or whose sheet fails, its category's tile, darker by night as
   // the box's), drawn over the レシピ tile (cells.ts drawPlate, kept per what it holds), and a small round pot on the
@@ -27,6 +29,8 @@
     img?: { url: string; x: number; y: number; size: number } | null;
     /** What the picture shows (the amount's: 「…の イメージ」); none: decorative. */
     alt?: string;
+    /** A picture's URL from elsewhere (a chain menu's: images.ts kaloriImg), instead of `img`. */
+    src?: string | null;
     /** A smaller cell of the same picture, in already (the row's thumbnail): shown scaled up while `img` loads. */
     under?: { url: string; x: number; y: number; size: number } | null;
     /** A picture is on screen (`img`, or `under` for it): FoodAmount's イメージ badge. */
@@ -34,7 +38,7 @@
     /** A recipe's ingredients, its box's cells (none, or empty: a food's, `img` / the tile). */
     plate?: readonly PlatePart[] | null;
   }
-  let { cat, size = 48, img = null, alt, under = null, pictured = $bindable(false), plate = null }: Props = $props();
+  let { cat, size = 48, img = null, src = null, alt, under = null, pictured = $bindable(false), plate = null }: Props = $props();
 
   const isPlate = $derived(!!plate?.length);
   const key = $derived(isPlate ? 'レシピ' : cat && FOOD_CAT[cat] ? cat : 'その他');
@@ -43,7 +47,9 @@
   const id = (c: { url: string; x: number; y: number }) => `${c.url}#${c.x},${c.y}`;
   let failed = $state<string | null>(null);
   let loaded = $state<string | null>(null);
-  const shown = $derived(!!img && failed !== id(img) && loaded === id(img));
+  /** `src` loaded, or failed (each by its URL). */
+  let srcIn = $state<string | null>(null), srcBad = $state<string | null>(null);
+  const shown = $derived((!!img && failed !== id(img) && loaded === id(img)) || (!!src && srcIn === src));
   let underIn = $state<string | null>(null);
   const stand = $derived(!shown && !!under && !!img && failed !== id(img) && underIn === id(under));
   $effect.pre(() => {
@@ -130,6 +136,10 @@
     <svg viewBox="0 0 24 24" width={Math.round(size * 0.46)} height={Math.round(size * 0.46)}><path d={GLYPH[tile.glyph]} /></svg>
     <span class="w">{tile.word}</span>
   {/if}
+  {#if src && srcBad !== src}
+    <img class="cell" class:in={shown} {src} alt="" width={size} height={size} loading="lazy" decoding="async" referrerpolicy="no-referrer"
+      onload={(e) => (srcIn = e.currentTarget.getAttribute('src'))} onerror={(e) => (srcBad = e.currentTarget.getAttribute('src'))} />
+  {/if}
   {#if img && failed !== id(img)}
     <!-- the cell alone, drawn at the box's size -->
     <canvas class="cell" class:in={shown} bind:this={cv}></canvas>
@@ -158,6 +168,7 @@
   .w { font: 700 calc(var(--s) * 0.21)/1 var(--font-ui); white-space: nowrap; letter-spacing: -0.02em; }
   /* (clipped to the box's corners itself: the box doesn't clip, so the recipe's pot may sit over its edge) */
   .cell { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; border-radius: inherit; }
+  img.cell { object-fit: cover; }
   /* the recipe's pot: ~40 % of the box, over its lower-right corner, a cream sticker with the brown edge */
   .pot {
     position: absolute; right: calc(var(--s) * -0.1); bottom: calc(var(--s) * -0.1); z-index: 1; display: grid; place-items: center;

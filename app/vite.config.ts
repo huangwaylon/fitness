@@ -298,8 +298,9 @@ export default defineConfig({
           // MapLibre's worker; its fonts are ours), and トレイル's raster topo (components/hiking/map/style.ts TOPO: USGS
           // Topo, GSI 地理院タイル; fetched, then decoded from blob:)
           'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
-          // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
-          'img-src': ['self', 'data:', 'blob:'],
+          // the tent's models carry their textures inside (three.js decodes them from blob: URLs); a member's chain
+          // menus show Kalori's pictures hotlinked (lib/food/images.ts kaloriImg)
+          'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
           'media-src': ['self', 'blob:'],
           'style-src': ['self', 'unsafe-inline'],

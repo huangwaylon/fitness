@@ -54,6 +54,7 @@
   "food.img.alt": "{name}のイメージ",
   "food.img.big": "{name}のイメージを拡大",
   "food.img.credit": "AI生成のイメージ（実物と異なる場合があります）",
+  "food.shop": "店のメニュー：",
   "food.st.head": "状態",
   "food.st.rawWhy": "パックの重さなら生",
   "food.st.dryWhy": "ゆでる前の重さなら乾",

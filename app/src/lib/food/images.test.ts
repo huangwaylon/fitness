@@ -5,7 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { imgOf, loadFoodImages, type FoodImageIndex } from './images.ts';
+import { imgOf, kaloriImg, loadFoodImages, type FoodImageIndex } from './images.ts';
 import { addDataset, emptyDb, searchFoods } from './db.ts';
 import type { Dataset, FoodIndex } from './types.ts';
 import { STATIC_MAX_FILES } from '../static-budget.ts';
@@ -31,6 +31,14 @@ function webpSize(b: Buffer): [number, number] {
 }
 
 const fixture: FoodImageIndex = { v: 1, t: 128, d: 384, sheets: ['t-a-0-00000000.webp', 'd-a-0-00000000.webp'], keys: [[0, 256, 128, 1, 384, 0]], ids: { 'mext:01088': 0, 'dishes:nikujaga': 0 } };
+
+describe('kaloriImg', () => {
+  it('hotlinks a chain menu’s picture: 200 px for a row, 400 px for the amount; none without one', () => {
+    expect(kaloriImg({ shop: 'seven-eleven', img: 57551 }, 48)).toBe('https://assets.kalori.jp/products/seven-eleven/generated/g/57551_200.webp');
+    expect(kaloriImg({ shop: 'seven-eleven', img: 57551 }, 104)).toBe('https://assets.kalori.jp/products/seven-eleven/generated/g/57551_400.webp');
+    expect([kaloriImg({ shop: 'sukiya' }, 48), kaloriImg({ img: 1 }, 48), kaloriImg(undefined, 48)]).toEqual([null, null, null]);
+  });
+});
 
 describe('imgOf', () => {
   it('gives a row the thumbnail cell and the amount the detail cell', () => {

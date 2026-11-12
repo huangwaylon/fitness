@@ -10,6 +10,8 @@ import { newRecord } from './record.ts';
 import { KEY_OF, RELAY } from './relay.ts';
 
 const DATA = readFileSync(new URL('./fixtures/kalori.json', import.meta.url), 'utf8');
+/** Kalori's hotlinked pictures, never fetched from the real host: a row's (_200) a 1 px PNG, the amount's (_400) failing. */
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 type Rec = ReturnType<typeof newRecord>;
 
 /** A fresh phone paired as `who` on `rec`, the relay's chain menus routed to the fixture (each request's key kept),
@@ -19,6 +21,12 @@ async function search(browser: Browser, rec: Rec, who: 'A' | 'G') {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const auth: string[] = [];
+  const imgs: { url: string; referer?: string }[] = [];
+  await context.route('https://assets.kalori.jp/**', (route) => {
+    const url = route.request().url();
+    imgs.push({ url, referer: route.request().headers()['referer'] });
+    return url.endsWith('_200.webp') ? route.fulfill({ status: 200, contentType: 'image/png', body: PNG }) : route.abort();
+  });
   await context.route(`${RELAY}/food/kalori`, (route) => {
     const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Expose-Headers': 'ETag' };
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
@@ -32,7 +40,7 @@ async function search(browser: Browser, rec: Rec, who: 'A' | 'G') {
   const sheet = page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
   await sheet.locator('[data-add=l]').click();
   await sheet.locator('[data-food-q]').fill('ためし丼');
-  return { page, sheet, auth };
+  return { page, sheet, auth, imgs };
 }
 
 test('a member’s search has the chain menus: the shop on the row, logged by the serving with the phone’s key', async ({ browser }) => {
@@ -59,9 +67,32 @@ test('a member’s search has the chain menus: the shop on the row, logged by th
   ]);
 });
 
+test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (no referrer); the amount’s failing: its tile', async ({ browser }) => {
+  const a = await search(browser, newRecord(), 'A');
+  const row = a.sheet.locator('[data-food-results] [data-item="kal:900001"]');
+  await expect(row.locator('[data-thumb="img"] img')).toHaveAttribute('src', 'https://assets.kalori.jp/products/tameshi/generated/g/900001_200.webp');
+  await expect(row.locator('[data-shop]')).toBeVisible();
+  await expect(row).toContainText('店のメニュー：');
+  // no picture: the category's tile, and no mark on a generic food's row
+  await a.sheet.locator('[data-food-q]').fill('みほん');
+  await expect(a.sheet.locator('[data-item="kal:900003"] [data-thumb="cat"]')).toBeVisible();
+  await a.sheet.locator('[data-food-q]').fill('ごはん');
+  await expect(a.sheet.locator('[data-food-results] [data-item^="mext:"]').first()).toBeVisible();
+  await expect(a.sheet.locator('[data-food-results] [data-item^="mext:"] [data-shop]')).toHaveCount(0);
+  await a.sheet.locator('[data-food-q]').fill('ためし丼');
+  await row.click();
+  await a.sheet.locator('[data-food-open-more]').click();
+  const pic = a.sheet.locator('[data-food-pic]');
+  await expect.poll(() => a.imgs.some((i) => i.url.endsWith('/900001_400.webp'))).toBe(true);
+  await expect(pic.locator('[data-thumb="cat"]')).toBeVisible();
+  await expect(pic.locator('img')).toHaveCount(0);
+  expect(a.imgs.every((i) => i.url.startsWith('https://assets.kalori.jp/products/tameshi/generated/g/') && !i.referer)).toBe(true);
+});
+
 test('the guest’s phone never asks for the chain menus: its search has none', async ({ browser }) => {
   const g = await search(browser, newRecord(), 'G');
   await expect(g.sheet.locator('[data-food-none]')).toBeVisible({ timeout: 15_000 });
   await expect(g.sheet.locator('[data-item^="kal:"]')).toHaveCount(0);
   expect(g.auth).toEqual([]);
+  expect(g.imgs).toEqual([]);
 });

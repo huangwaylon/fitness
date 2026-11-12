@@ -204,7 +204,9 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   自分で作る, then **近いもの**, the names holding most of it (`nearby`: 「とんこつ醤油ラーメン味玉…」 → 豚骨醤油ラーメン).
   Offline: a message, a retry, the recent list.
   A member's search also holds the chain menus (Kalori, [food-data.md](food-data.md#kalori)): the shop on the row's
-  meta line, 1食 as the portion, logged by the serving; under the generic foods (牛丼 → 牛丼（並盛） first) unless a
+  meta line after a 12 px storefront mark (read 「店のメニュー：<店>」), Kalori's own generated picture hotlinked from
+  assets.kalori.jp (a plain lazy `<img>`, no referrer, the tile on an error or offline), 1食 as the portion, logged by
+  the serving; under the generic foods (牛丼 → 牛丼（並盛） first) unless a
   word names a shop (its name or our short name: セブン, スタバ, すき家), which narrows the search to that shop's menu,
   the other words searched within it (nothing there: everything).
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;

@@ -1,6 +1,7 @@
 <script lang="ts">
   // ごはん's amount (a level over the search or the day; docs/design.md "Gohan" Amount). The head: its picture when it
-  // has one (104 px beside the name, the イメージ badge: every picture is generated; a tap: FoodPhoto, it enlarged),
+  // has one (104 px beside the name, the イメージ badge: every picture is generated, a chain menu's Kalori's own; a tap:
+  // FoodPhoto, it enlarged),
   // its name, everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
   // (the sheet's loudest number) with the grams it's for, P · F · C · 塩分, and under them behind 「100gあたりの栄養」
   // (closed on each open) the values per 100 g.
@@ -20,7 +21,7 @@
   import { MEALS } from '#lib/contract/food.ts';
   import { itemById, verifyOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
+  import { imgOf, kaloriImg, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
   import FoodPortion from './FoodPortion.svelte';
@@ -61,6 +62,8 @@
   /** The picture's box beside the name (its detail cell scaled down: sharp at 3×). */
   const PIC = 104;
   const pic = $derived(imgOf(imgs, item.id, 160));
+  /** A chain menu's (Kalori's, hotlinked): the 400 px file. */
+  const src = $derived(kaloriImg(item, PIC));
   /** The values per 100 g (or per serving) shown: closed on every open, never remembered. */
   let perOpen = $state(false);
   /** The grams field focused (the keyboard up): the meal row leaves the foot, which then covers less, and 保存 says
@@ -87,11 +90,11 @@
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
   <section class="card head" data-food-live>
     <div class="id">
-      {#if pic}
+      {#if pic || src}
         <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
-          <FoodThumb cat={item.cat} size={PIC} img={pic} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured}<span class="badge">{t('food.img.badge')}</span>{/if}
+          <FoodThumb cat={item.cat} size={PIC} img={pic} {src} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured}<span class="badge">{t('food.img.badge')}</span>{/if}
         </button>
-        {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
+        {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} {src} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
       {/if}
       <div class="txt">
         <h3>{item.name}</h3>

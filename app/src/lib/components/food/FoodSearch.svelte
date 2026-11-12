@@ -2,7 +2,7 @@
   // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
   // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
-  // brand, its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
+  // brand (a chain menu's shop, after a storefront mark; its picture Kalori's, hotlinked), its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
   // and the others after it: 「(生) 焼き ゆで」, past four 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; one row per name and kcal: search.ts, a brand's copy of another's too). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
@@ -22,11 +22,11 @@
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { entryKcal, nearFoods, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { entryKcal, itemById, nearFoods, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
-  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
+  import { imgOf, kaloriImg, type FoodImageIndex } from '#lib/food/images.ts';
   import { flushSync, type Snippet } from 'svelte';
   import FoodThumb from './FoodThumb.svelte';
   import Phrases from '../ui/Phrases.svelte';
@@ -258,6 +258,9 @@
 
 {#snippet plus()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{/snippet}
 
+<!-- a chain menu's mark before its shop's name: a storefront, its awning scalloped -->
+{#snippet store()}<svg class="shop" data-shop viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4h17L22 9a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1-5 0z M4 12v8h16v-8 M10 20v-4.5h4V20" /></svg>{/snippet}
+
 {#snippet bolt()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" /></svg>{/snippet}
 
 <!-- a row's own ＋: logged as it comes, in one tap; hidden while its row is open (one add there: FoodOpen's 追加) -->
@@ -350,7 +353,7 @@
         {#snippet cells()}
           {@const gl = snapGloss(db, e.f)}
           {@const r = recipeOfEntry(recipeById, e)}
-          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
+          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} src={kaloriImg(itemById(db, e.f.id), 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
           <span class="nm"><Phrases text={e.f.n} name /></span>
           <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>
@@ -384,9 +387,9 @@
   {@const solo = !it.brand && !gl && !vs.length}
   {@const ok = v && v.n >= 2 ? v.n : 0}
   {#snippet cells()}
-    <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
+    <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} src={kaloriImg(it, 48)} />
     <span class="nm"><Phrases text={vs.length ? stemName(it) : it.name} name />{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
-    <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
+    <small class="meta">{#if it.brand}{#if it.shop}<span class="sr-only">{t('food.shop')}</span>{@render store()}{/if}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
     <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
   {/snippet}
   {@render row({ key: `f:${it.id}`, data: { 'data-item': it.id, 'data-per100': it.kcal }, name: it.name, item: () => it, pick: () => onpick(it),
@@ -466,6 +469,7 @@
   .ok.short { padding: 2px 5px; }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
   .br { color: var(--text); }
+  .shop { width: 12px; height: 12px; margin-right: 3px; vertical-align: -1px; flex: none; fill: none; stroke: var(--text); stroke-width: 2.2; stroke-linejoin: round; }
   /* the shown state a chip within the line (inline padding: the row no taller), the others faded */
   .sts { white-space: nowrap; }
   .sts > * + * { margin-left: 6px; }

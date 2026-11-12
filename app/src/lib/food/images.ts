@@ -4,8 +4,10 @@
 // a 128 px one in a thumbnail sheet (rows and lists, 40-64 px) and a 384 px one in a detail sheet (the amount's
 // picture). Sheet names carry their content hash, so a URL never changes (cached on first use, service worker).
 // A food without one (custom foods, a product no word names) gets none: FoodThumb shows its category's tile.
+// A chain menu's (Kalori, a member's) is Kalori's own generated picture, hotlinked (kaloriImg).
 import { quiet } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
+import type { Item } from './types.ts';
 
 /** A cell of a sheet: FoodThumb's `img` (its url, the cell's x / y and size in the sheet's pixels). */
 export interface FoodImg {
@@ -57,4 +59,11 @@ export function imgOf(index: FoodImageIndex | null | undefined, id: string, px: 
   const [s, x, y] = px <= THUMB_MAX ? c.slice(0, 3) : c.slice(3, 6);
   const sheet = index.sheets[s];
   return sheet ? { url: fileUrl(sheet), x, y, size: px <= THUMB_MAX ? index.t : index.d } : null;
+}
+
+/** A chain menu's picture (Kalori's generated one, `img`) for a box of `px` CSS px: its 200 px file for a row, the
+ *  400 px one above THUMB_MAX; null without one. Hotlinked as a plain <img> (FoodThumb `src`): assets.kalori.jp sends
+ *  no CORS headers, so never through cells.ts. */
+export function kaloriImg(it: Pick<Item, 'shop' | 'img'> | undefined, px: number): string | null {
+  return it?.shop && it.img ? `https://assets.kalori.jp/products/${encodeURIComponent(it.shop)}/generated/g/${it.img}_${px <= THUMB_MAX ? 200 : 400}.webp` : null;
 }
