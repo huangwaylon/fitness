@@ -204,7 +204,7 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   自分で作る, then **近いもの**, the names holding most of it (`nearby`: 「とんこつ醤油ラーメン味玉…」 → 豚骨醤油ラーメン).
   Offline: a message, a retry, the recent list.
   A member's search also holds the chain menus (Kalori, [food-data.md](food-data.md#kalori)): the shop on the row's
-  meta line after a 12 px storefront mark (read 「店のメニュー：<店>」), Kalori's own generated picture hotlinked from
+  meta line (さいきん's too, after the amount) after a 12 px storefront mark (read 「店のメニュー：<店>」), Kalori's own generated picture hotlinked from
   assets.kalori.jp (a plain lazy `<img>`, no referrer, the tile on an error or offline), 1食 as the portion, logged by
   the serving; under the generic foods (牛丼 → 牛丼（並盛） first) unless a
   word names a shop (its name or our short name: セブン, スタバ, すき家), which narrows the search to that shop's menu,
@@ -214,7 +214,7 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   up), so ✕ clears it; never in the demo or for the guest (no chain menus).
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
   a chain menu's head adds 「<店> · <category>」, its values' trust (公式の値 · 公式の値（PFCは推定） · 推定の値（AI）) and
-  「kalori.jpで見る ›」 (its product page, a new tab); Kalori is credited in the sources, its pictures too;
+  「kalori.jpで見る ›」 (its product page, a new tab, at the end of the per-serving toggle's row); Kalori is credited in the sources, its pictures too;
   **状態** chips (the portion carried through its yield; a chain menu's: **サイズ** and **ミルク**, one chip per word of
   its state, a pick keeping the other word and the ×n); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
   portion's (and a chain menu's 1食) whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the

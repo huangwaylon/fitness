@@ -381,9 +381,11 @@
         {#snippet cells()}
           {@const gl = snapGloss(db, e.f)}
           {@const r = recipeOfEntry(recipeById, e)}
-          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} src={kaloriImg(itemById(db, e.f.id), 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
+          {@const ci = itemById(db, e.f.id)}
+          {@const shop = ci?.shop && ci.brand}
+          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} src={kaloriImg(ci, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
           <span class="nm"><Phrases text={e.f.n} name /></span>
-          <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
+          <small class="meta"><span class="as">{amountText(e)}{#if gl || shop}{' · '}{/if}</span>{#if shop}<span class="sr-only">{t('food.shop')}</span><ShopMark /><span class="br" data-brand>{shop}</span>{:else if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>
         {/snippet}
         {@const item = () => itemOf(e.f, db, e.g)}

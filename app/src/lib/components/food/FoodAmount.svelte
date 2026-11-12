@@ -106,7 +106,7 @@
         {#if item.shop && item.brand}<p class="sh" data-food-shop><span class="sr-only">{t('food.shop')}</span><ShopMark />{item.brand}{#if item.cat}{' · '}{item.cat}{/if}</p>{/if}
         {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
-        {#if page}<p class="tr" data-food-trust={item.est ?? 'o'}>{trust}<a href={page} target="_blank" rel="noopener noreferrer" data-sfx="open" data-food-kalori>{t('food.kal.see')}<span aria-hidden="true"> ›</span></a></p>{/if}
+        {#if page}<p class="tr" data-food-trust={item.est ?? 'o'}>{trust}</p>{/if}
         <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>
@@ -116,9 +116,12 @@
       <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<small>g</small></dd></div>
       <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<small>g</small></dd></div>
     </dl>
-    <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
-      {serving ? t('food.perOneNut', { u: a.ps[0].label }) : t('food.per100Head', { u: a.unit })}<span class="caret" aria-hidden="true">▾</span>
-    </button>
+    <div class="per-row">
+      <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
+        {serving ? t('food.perOneNut', { u: a.ps[0].label }) : t('food.per100Head', { u: a.unit })}<span class="caret" aria-hidden="true">▾</span>
+      </button>
+      {#if page}<a class="kl" href={page} target="_blank" rel="noopener noreferrer" data-sfx="open" data-food-kalori>{t('food.kal.see')}<span aria-hidden="true"> ›</span></a>{/if}
+    </div>
     {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
   </section>
 
@@ -160,10 +163,12 @@
   .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
   .sh { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
-  /* the values' trust and the shop's page: one quiet line, the link a 44 px target on it */
-  .tr { margin: -6px 0 -8px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .tr a { display: inline-flex; align-items: center; min-height: var(--hit); color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
-  .tr a:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
+  .tr { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  /* the per-serving toggle, and a chain menu's page at the row's other end (a 44 px target) */
+  .per-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: -8px 0 -6px; }
+  .per-row .per-t { margin: 0; }
+  .kl { display: inline-flex; align-items: center; min-height: var(--hit); font-size: var(--fs-s); font-weight: 700; color: var(--text); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+  .kl:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* what this amount holds, live: the kcal (the loudest thing on the sheet) and the amount it's for at the name column's

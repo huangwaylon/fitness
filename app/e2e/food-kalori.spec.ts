@@ -123,6 +123,8 @@ test('the shop chips: typed, the results’ shops; a tap writes the name, the fi
   await expect(q).toHaveValue('');
   await expect(chips).toHaveAttribute('data-food-shops', 'often');
   await expect(chips).toContainText('よく行く店');
+  // さいきん's row says its shop too
+  await expect(a.sheet.locator('[data-food-recent] [data-item="kal:900005"] [data-brand]')).toHaveText('みほん珈琲');
   await chips.locator('[data-shop-chip="mihon"]').click();
   await expect(q).toHaveValue('みほん珈琲 ');
   await expect(q).toBeFocused();
