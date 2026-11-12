@@ -16,7 +16,7 @@ items:
     id: news-hoshi-museum-wing
     season: any
     ctx: "朝の ニュース。博物館の 工事と 東京の 自転車"
-    note: "That said の 後が 例外。対象外の ものを 聞く"
+    note: "That said の 後が 条件。料金が かかる 分を 聞く"
     tags: { seed: 5, register: broadcast, pragmatic: literal, features: [stress, linking] }
     segments:
       - topic: island
@@ -29,21 +29,21 @@ items:
         lines:
           - { en: "Meanwhile, several Tokyo wards are expanding a pilot program that lets commuters rent bicycles by the month rather than by the ride.", ja: "一方、東京のいくつかの区では、自転車を一回ごとではなく月単位で借りられる試験事業を広げています。" }
           - { en: "Officials say the monthly plan works out cheaper for anyone riding more than about four times a week.", ja: "担当者によると、週におよそ四回以上乗る人なら月額プランの方が安くなるそうです。" }
-          - { en: "That said, it doesn't cover the electric models, which are still charged by the minute, a detail that's tripped up a few early users.", ja: "ただし電動タイプは対象外で、今も分単位で料金がかかります。この点で戸惑った初期の利用者もいます。" }
+          - { en: "That said, it only covers the first thirty minutes of each ride, and anything longer is still charged by the minute, a detail that's tripped up a few early users.", ja: "ただし対象は一回の最初の三十分だけで、超えた分は今も分単位で料金がかかります。この点で戸惑った初期の利用者もいます。" }
           - { en: "Sign-ups are handled through the ward's app, and the plan renews automatically unless you cancel before the first of the month.", ja: "申し込みは区のアプリで行い、月初め前に解約しない限り自動で更新されます。" }
     gist:
-      choices: ["The museum closing for six weeks, and cheaper bike rentals for everyone", "A phased museum renovation, and a monthly bike plan that suits frequent riders", "A new museum wing opening, and electric bikes now charged by the month", "Museum repairs that were delayed, and a bike program that's ending"]
+      choices: ["The museum closing for six weeks, and cheaper bike rentals for everyone", "A phased museum renovation, and a bike plan for frequent riders", "A new museum wing opening, and bike rides now free all month", "Museum repairs that were delayed, and a bike program that's ending"]
       answer: 1
       trap: 0
-      cja: ["六週間の 博物館の 休館と、誰でも 安く なる 自転車", "段階的な 博物館の 改修と、よく 乗る 人向けの 月額 自転車", "博物館の 新しい 棟の 開館と、月額に なった 電動 自転車", "遅れて いた 博物館の 工事と、終わる 自転車の 事業"]
+      cja: ["六週間の 博物館の 休館と、誰でも 安く なる 自転車", "段階的な 博物館の 改修と、よく 乗る 人向けの 自転車", "博物館の 新しい 棟の 開館と、一か月 乗り放題の 自転車", "遅れて いた 博物館の 工事と、終わる 自転車の 事業"]
       why: "rather than shutting outright＝丸ごと閉めず一部屋ずつ。月額は週四回以上乗る人に得なので、誰でも安くなるわけではありません。"
     detail:
-      ask: "月額プランで 借りられない ものは？"
-      choices: ["週末の 利用", "電動の 自転車", "四回目 以降の 利用", "夜の 利用"]
+      ask: "月額プランでも 料金が かかるのは？"
+      choices: ["週末の 利用", "三十分を 超えた 分", "四回目 以降の 利用", "夜の 利用"]
       answer: 1
       trap: 2
-      cja: ["週末の利用", "電動の自転車", "四回目以降の利用", "夜の利用"]
-      why: "it doesn't cover the electric models＝電動は対象外。four times a week は得になる目安で、回数の制限ではない。"
+      cja: ["週末の利用", "三十分を超えた分", "四回目以降の利用", "夜の利用"]
+      why: "first thirty minutes＝一回三十分まで。超えた分は分単位でかかる。four times a week は得になる目安で、回数の制限ではない。"
 
   - kind: news
     id: news-hoshi-water-rates
@@ -65,10 +65,10 @@ items:
           - { en: "The catch is that a single background app update can count as use, so travelers are advised to turn off automatic updates first.", ja: "落とし穴は、裏で動くアプリの更新一回でも利用とみなされること。まず自動更新を切るよう勧められています。" }
           - { en: "Otherwise, a trip you'd budgeted for carefully could come with a surprisingly hefty bill once you're back home.", ja: "そうしないと、きちんと予算を立てた旅行でも、帰国後に思いがけず高い請求が来るかもしれません。" }
     gist:
-      choices: ["A ban on watering gardens, and cheaper phone plans abroad", "Watering moved to cooler hours, and how daily roaming passes are billed", "Rain finally arriving, and carriers ending roaming charges", "A new community farm, and phones that update automatically abroad"]
+      choices: ["A ban on watering gardens, and cheaper phone plans abroad", "Watering moved to cooler hours, and roaming billed by the day", "Rain finally arriving, and carriers ending roaming charges", "A new community farm, and phones that update automatically abroad"]
       answer: 1
       trap: 0
-      cja: ["庭の 水やり 禁止と、海外で 安く なる 携帯", "水やりは 涼しい 時間に、一日単位の ローミングの 請求の しくみ", "ついに 降る 雨と、ローミング料金の 廃止", "新しい 共同農園と、海外で 自動更新する 携帯"]
+      cja: ["庭の 水やり 禁止と、海外で 安く なる 携帯", "水やりは 涼しい 時間に、一日単位の ローミング", "ついに 降る 雨と、ローミング料金の 廃止", "新しい 共同農園と、海外で 自動更新する 携帯"]
       why: "nobody's being told to stop＝禁止ではなく時間をずらすだけ。東京は使った日だけ請求されるローミングの話で、安くなるとは言っていません。"
     detail:
       ask: "時間の 制限が ないのは？"
@@ -98,10 +98,10 @@ items:
           - { en: "So, a deal that looks generous on paper may not be one, depending on how long you plan to stay.", ja: "つまり、紙の上では気前よく見える条件も、住む期間によってはお得ではないかもしれません。" }
           - { en: "Advisers also suggest asking whether the key money and cleaning fee are included, since those are rarely mentioned in the listing.", ja: "相談員は、礼金や清掃費が含まれるかも確かめるよう勧めています。物件情報にはほとんど書かれていないからです。" }
     gist:
-      choices: ["Home upgrades canceled, and free rent now banned in Tokyo", "Home upgrades delayed, and why free-rent deals can cost you later", "Home deposits refunded to all, and rents falling in Tokyo", "A busy moving season, and new two-year leases on the island"]
+      choices: ["Home upgrades canceled, and free rent now banned in Tokyo", "Home upgrades delayed, and the catch in free-rent deals", "Home deposits refunded to all, and rents falling in Tokyo", "A busy moving season, and new two-year leases on the island"]
       answer: 1
       trap: 2
-      cja: ["増築の 中止と、東京で 禁止される フリーレント", "増築の 延期と、フリーレントが 後で 高く つく わけ", "全員への 手付金 返金と、東京の 家賃 下落", "忙しい 引っ越しシーズンと、島の 新しい 二年契約"]
+      cja: ["増築の 中止と、東京で 禁止される フリーレント", "増築の 延期と、フリーレントの 落とし穴", "全員への 手付金 返金と、東京の 家賃 下落", "忙しい 引っ越しシーズンと、島の 新しい 二年契約"]
       why: "増築は中止ではなく一か月延期。返金は今週中にキャンセルした人だけで、全員ではありません。フリーレントは禁止ではなく違約金に注意という話。"
     detail:
       ask: "予約を 続ける 人は どう なる？"
@@ -197,10 +197,10 @@ items:
           - { en: "If you give to five or fewer towns and don't otherwise file a tax return, a simple form sent to each town takes care of the deduction.", ja: "寄付先が五つ以下で、ほかに確定申告をしない人は、各自治体に簡単な書類を送るだけで控除が受けられます。" }
           - { en: "Go over that limit, though, and you'll need to file a return yourself, a step that a surprising number of first-timers overlook.", ja: "ただしその数を超えると自分で確定申告が必要で、初めての人には見落とす人が意外と多いのです。" }
     gist:
-      choices: ["Heating aid for all residents, and a tax deadline that's been moved", "Heating aid that most people must apply for, and how the hometown tax deduction works", "Higher heating bills on the island, and donations no longer deductible", "Heating aid for seniors only, and a tax form that every donor must file"]
+      choices: ["Heating aid for all residents, and a tax deadline that's been moved", "Heating aid most must apply for, and how the tax deduction works", "Higher heating bills on the island, and donations no longer deductible", "Heating aid for seniors only, and a tax form that every donor must file"]
       answer: 1
       trap: 3
-      cja: ["全員への 暖房 支援と、変わった 税の 締め切り", "多くの 人は 申し込みが 必要な 暖房 支援と、ふるさと納税の 控除の しくみ", "島の 暖房費の 値上がりと、控除 されなく なった 寄付", "高齢者 だけの 暖房 支援と、寄付した 全員が 出す 申告"]
+      cja: ["全員への 暖房 支援と、変わった 税の 締め切り", "多くの 人は 申し込む 暖房 支援と、控除の しくみ", "島の 暖房費の 値上がりと、控除 されなく なった 寄付", "高齢者 だけの 暖房 支援と、寄付した 全員が 出す 申告"]
       why: "六十五歳以上は自動、それ以外は申し込めば対象で、高齢者だけではありません。確定申告が要るのは寄付先が六つ以上などの場合です。"
     detail:
       ask: "自分で 確定申告が 必要に なるのは？"
@@ -327,7 +327,7 @@ items:
           - { en: "Board without one, and you'll be charged a thousand yen on the train, assuming there's even space to store the bag.", ja: "予約せずに乗ると、車内で千円かかります。そもそも置き場所があればの話ですが。" }
           - { en: "Baby strollers are exempt, but nothing over two hundred and fifty centimeters can be brought on at all.", ja: "ベビーカーは対象外ですが、二百五十センチを超えるものは一切持ち込めません。" }
     gist:
-      choices: ["A pier that residents will vote on, and a ban on large bags", "A new pier opening, and a fee on every bag on the bullet train", "A proposed pier open to comment, and booking space for big bags", "Noise from the dock, and baby strollers now needing a reservation"]
+      choices: ["A pier that residents will vote on, and a ban on large bags", "A new pier opening, and a fee on every bag on the bullet train", "A proposed pier open to comment, and booking big-bag space", "Noise from the dock, and baby strollers now needing a reservation"]
       answer: 2
       trap: 0
       cja: ["住民が 投票で 決める 桟橋と、大きな 荷物の 禁止", "新しい 桟橋の 完成と、すべての 荷物に かかる 料金", "意見を 募る 桟橋の 計画と、大きな 荷物の 予約", "桟橋の 騒音と、予約が 必要に なった ベビーカー"]
@@ -367,7 +367,7 @@ items:
       why: "市場は休まず桟橋に移るだけ。時間帯のプランは夜が安く午後が高いので、在宅でエアコンを使う人にはかえって高くつく、という話。"
     detail:
       ask: "魚は どう 買える？"
-      choices: ["桟橋の 冷凍庫から 一時まで", "ジャスティンさんの 船から、なくなる まで", "広場で 朝 七時から", "土曜の 朝に 予約して"]
+      choices: ["桟橋の 冷凍庫から 一時まで", "船から、なくなる まで", "広場で 朝 七時から", "土曜の 朝に 予約して"]
       answer: 1
       trap: 0
       cja: ["桟橋の冷凍庫から一時まで", "ジャスティンさんの船から、なくなるまで", "広場で朝七時から", "土曜の朝に予約して"]
@@ -384,7 +384,7 @@ items:
         lines:
           - { en: "Good morning. The tailor shop is bringing back its made-to-order service, after a break of nearly a year.", ja: "おはようございます。仕立て屋が、一年近く休んでいた注文仕立てを再開します。" }
           - { en: "Orders take about three weeks, and a deposit of half the price is required up front.", ja: "仕上がりまで三週間ほどで、代金の半分を前金として払います。" }
-          - { en: "Mabel says the deposit can be returned if you change your mind, but only until the fabric has been cut, usually within two days of ordering.", ja: "あさみさんによると、気が変わったら前金は返せますが、布を裁つまでで、たいてい注文から二日以内だそうです。" }
+          - { en: "Sable says the deposit can be returned if you change your mind, but only until the fabric has been cut, usually within two days of ordering.", ja: "あさみさんによると、気が変わったら前金は返せますが、布を裁つまでで、たいてい注文から二日以内だそうです。" }
           - { en: "Alterations to clothes bought at the shop remain free, as long as you bring the receipt.", ja: "店で買った服のお直しは、レシートがあればこれまでどおり無料です。" }
       - topic: tokyo
         lines:
@@ -393,7 +393,7 @@ items:
           - { en: "There's a small handling fee, though it comes out of the balance rather than the deposit, so a nearly empty card costs nothing to return.", ja: "少し手数料がかかりますが、デポジットではなく残高から引かれるので、ほとんど空のカードなら返しても損はありません。" }
           - { en: "Visitors on a short trip, on the other hand, may prefer to keep the card, since it stays valid as long as it's used once every ten years.", ja: "一方、短い旅行の人はカードを持っておくのもいいでしょう。十年に一度使えば、ずっと有効だからです。" }
     gist:
-      choices: ["Free custom orders at the tailor's, and transit cards that now expire", "Custom orders back at the tailor's, and getting money back on a transit card", "The tailor closing for a year, and a new fee on every transit card", "Alterations no longer free, and deposits kept when you return a card"]
+      choices: ["Free custom orders at the tailor's, and transit cards that now expire", "Custom orders back at the tailor's, and transit card refunds", "The tailor closing for a year, and a new fee on every transit card", "Alterations no longer free, and deposits kept when you return a card"]
       answer: 1
       trap: 0
       cja: ["無料の 注文仕立てと、期限が 来る 交通系 カード", "仕立て屋の 注文の 再開と、交通系 カードの 払い戻し", "一年 休む 仕立て屋と、すべての カードに かかる 新しい 料金", "有料に なる お直しと、返しても 戻らない デポジット"]

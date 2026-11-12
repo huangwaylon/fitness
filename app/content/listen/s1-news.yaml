@@ -65,7 +65,7 @@ items:
           - { en: "Seats usually go on sale one month before the travel date, at ten in the morning.", ja: "指定席はふつう乗る日の一か月前の朝十時に発売されます。" }
           - { en: "If you miss out, the non-reserved cars are an option, but be ready to stand for a while.", ja: "取れなかったら自由席もありますが、しばらく立つ覚悟をしておきましょう。" }
     gist:
-      choices: ["Fewer island buses and crowded holiday flights", "A new island bus route and cheaper holiday trains", "More frequent island buses and booking holiday train seats", "Free bus cards and a new shinkansen line"]
+      choices: ["Fewer island buses and crowded holiday flights", "A new island bus route and cheaper holiday trains", "More island buses and booking holiday seats", "Free bus cards and a new shinkansen line"]
       answer: 2
       trap: 1
       cja: ["島の バスの 減便と 混む 連休の 飛行機", "島の 新しい バス路線と 安く なる 連休の 電車", "島の バスの 増便と 連休の 指定席の 予約", "無料の バスカードと 新しい 新幹線の 路線"]
@@ -199,10 +199,10 @@ items:
           - { en: "Lines get long after dark, so try to arrive just before the lights come on.", ja: "暗くなると行列が長くなるので、明かりがつく少し前に着くのがおすすめです。" }
           - { en: "And bring a warm jacket, because it gets cold quickly once the sun goes down.", ja: "日が沈むとすぐ冷えるので、暖かい上着を持っていきましょう。" }
     gist:
-      choices: ["A cooking contest and a garden closing early", "A big dinner with food from residents, and gardens lit up at night", "A vegetable market and night tours of a temple", "A big dinner at a restaurant, and red leaves in the mountains"]
+      choices: ["A cooking contest and a garden closing early", "A shared dinner and gardens lit up at night", "A vegetable market and night tours of a temple", "A restaurant dinner and red leaves in the hills"]
       answer: 1
       trap: 3
-      cja: ["料理 コンテストと 早く 閉まる 庭園", "住民の 材料で 作る 夕食会と 夜の ライトアップ", "野菜の 市場と お寺の 夜の ツアー", "レストランの 夕食と 山の 紅葉"]
+      cja: ["料理 コンテストと 早く 閉まる 庭園", "材料を 持ちよる 夕食会と 庭園の ライトアップ", "野菜の 市場と お寺の 夜の ツアー", "レストランの 夕食と 山の 紅葉"]
       why: "島はみんなの材料で作るフランクリンさんの夕食、東京は庭園の夜のライトアップ。山の紅葉の話ではありません。"
     detail:
       ask: "夕食は いつ？"
@@ -233,10 +233,10 @@ items:
           - { en: "Some stores now show you what's inside, but many still keep it a surprise.", ja: "中身を見せる店も増えましたが、まだお楽しみにしている店も多くあります。" }
           - { en: "The popular ones sell out in the first days of January, so people often line up before the doors open.", ja: "人気の福袋は一月の最初の数日で売り切れるので、開店前から並ぶ人も多いです。" }
     gist:
-      choices: ["A dance class and a New Year sale on shoes", "A feather contest and stores closed for the holidays", "A parade with feathers to trade and New Year lucky bags", "A parade with costumes and free gift bags for everyone"]
+      choices: ["A dance class and a New Year sale on shoes", "A feather contest and stores closed for the holidays", "A feather parade and New Year lucky bags", "A parade with costumes and free gift bags for everyone"]
       answer: 2
       trap: 3
-      cja: ["ダンス教室と 新年の 靴の セール", "羽の コンテストと 休みで 閉まる 店", "羽を 交換できる パレードと 新年の 福袋", "衣装の パレードと みんなに 無料の 袋"]
+      cja: ["ダンス教室と 新年の 靴の セール", "羽の コンテストと 休みで 閉まる 店", "羽の パレードと 新年の 福袋", "衣装の パレードと みんなに 無料の 袋"]
       why: "島はジョンさんのパレードと羽の交換、東京は新年の福袋。福袋はお金を払って買うもので、無料ではありません。"
     detail:
       ask: "パレードは いつ 始まる？"
@@ -262,7 +262,7 @@ items:
       - topic: tokyo
         lines:
           - { en: "Turning to the city, many people head out on New Year's Eve to visit shrines and temples.", ja: "続いて東京です。大みそかには神社やお寺に出かける人がたくさんいます。" }
-          - { en: "Some train lines run extra trains through the night, so people can get home after midnight.", ja: "夜通し臨時の電車を走らせる路線もあり、夜中の十二時を過ぎても帰れます。" }
+          - { en: "Some train lines run extra trains late into the night, so people can get home after midnight.", ja: "夜遅くまで臨時の電車を走らせる路線もあり、夜中の十二時を過ぎても帰れます。" }
           - { en: "But not every line does this, and some stations get very crowded.", ja: "でも全部の路線ではなく、とても混む駅もあります。" }
           - { en: "So check your line before you go, and pick a meeting place in case you get separated.", ja: "出かける前に自分の路線を確認し、はぐれたときの待ち合わせ場所を決めておきましょう。" }
     gist:
@@ -270,7 +270,7 @@ items:
       answer: 3
       trap: 1
       cja: ["料理教室と 新年の 初もうで", "応急手当の 教室と 大みそかに 早く 終わる 全路線", "新しい 診療所と 通勤の 臨時電車", "応急手当の 教室と 大みそかの 夜の 電車"]
-      why: "島は応急手当の教室、東京は大みそかの夜通しの電車。全部の路線ではありませんが、早く終わるという話でもありません。"
+      why: "島は応急手当の教室、東京は大みそかの夜遅くの臨時電車。全部の路線ではありませんが、早く終わるという話でもありません。"
     detail:
       ask: "教室の 定員は 何人？"
       choices: ["12人", "20人", "2人", "120人"]
@@ -333,10 +333,10 @@ items:
           - { en: "A wash and dry usually takes about an hour, so bring something to read.", ja: "洗って乾かすまでたいてい一時間ほどなので、読む物を持っていきましょう。" }
           - { en: "Some shops also let you check on your phone when your load is done.", ja: "洗濯が終わったかスマホで確認できる店もあります。" }
     gist:
-      choices: ["Morning stretches canceled and new washing machines at home", "A new exercise class and cheaper coin laundries", "Earlier morning stretches and washing big things at coin laundries", "Later morning stretches and laundry shops that pick up"]
+      choices: ["Morning stretches canceled and new washing machines at home", "A new exercise class and cheaper coin laundries", "Earlier stretches and washing futons at coin laundries", "Later morning stretches and laundry shops that pick up"]
       answer: 2
       trap: 3
-      cja: ["朝の 体操の 中止と 家の 新しい 洗濯機", "新しい 運動教室と 安く なる コインランドリー", "早く なる 朝の 体操と コインランドリーで 大物 洗い", "遅く なる 朝の 体操と 取りに 来る 洗濯屋"]
+      cja: ["朝の 体操の 中止と 家の 新しい 洗濯機", "新しい 運動教室と 安く なる コインランドリー", "早く なる 体操と コインランドリーで 布団 洗い", "遅く なる 朝の 体操と 取りに 来る 洗濯屋"]
       why: "島の体操は七時半から六時四十五分へ、早くなります。東京は布団などをコインランドリーで洗う話です。"
     detail:
       ask: "体操は 何時から に なる？"
@@ -367,7 +367,7 @@ items:
           - { en: "In some wards, people who break the rule can be fined a few thousand yen.", ja: "決まりを破ると、数千円の過料を取られる区もあります。" }
           - { en: "Most restaurants are smoke-free inside now, too, so look for a sign if you need to know.", ja: "今はほとんどの飲食店も店内禁煙なので、気になるならお店の表示を見てください。" }
     gist:
-      choices: ["A dog show and new smoking areas", "A lost cat and a ban on smoking in parks", "A new pet shop and cheaper cigarettes", "A missing dog and the rules on smoking in Tokyo"]
+      choices: ["A dog show and new smoking areas", "A lost cat and a ban on smoking in parks", "A new pet shop and cheaper cigarettes", "A missing dog and smoking rules in Tokyo"]
       answer: 3
       trap: 1
       cja: ["犬の ショーと 新しい 喫煙所", "迷子の 猫と 公園での 禁煙", "新しい ペットショップと 安く なる たばこ", "迷子の 犬と 東京の たばこの 決まり"]

@@ -65,10 +65,10 @@ items:
           - { en: "The catch is that most of these campaigns have a monthly limit, and the points stop once you hit it.", ja: "ただし、多くのキャンペーンには月の上限があり、そこに届くとポイントはつかなくなります。" }
           - { en: "Quick fix to something I said earlier: the stamp rally has eight spots this year, not six.", ja: "さっきの話の訂正です。スタンプラリーは今年は六か所ではなく八か所です。" }
     gist:
-      choices: ["A new post office and cashless shops in Tokyo", "A stamp rally on the island and extra points for paying by phone", "A stamp rally on the island and cash refunds at Tokyo shops", "A prize contest on the island and points with no limit"]
+      choices: ["A new post office and cashless shops in Tokyo", "A stamp rally and extra points for paying by phone", "A stamp rally on the island and cash refunds at Tokyo shops", "A prize contest on the island and points with no limit"]
       answer: 1
       trap: 3
-      cja: ["新しい 郵便局と 東京の 現金を 使わない 店", "島の スタンプラリーと スマホ払いで 増える ポイント", "島の スタンプラリーと 東京の 店の 現金 返金", "島の 賞品 コンテストと 上限の ない ポイント"]
+      cja: ["新しい 郵便局と 東京の 現金を 使わない 店", "スタンプラリーと スマホ払いで 増える ポイント", "島の スタンプラリーと 東京の 店の 現金 返金", "島の 賞品 コンテストと 上限の ない ポイント"]
       why: "島はスタンプラリー、東京はスマホ払いのポイント。The catch is ... a monthly limit＝月の上限があるので、上限なしは逆です。"
     detail:
       ask: "スタンプの 場所は いくつ？"
@@ -99,10 +99,10 @@ items:
           - { en: "Delivery and service fees can add several hundred yen, and some restaurants charge more on the app than in the shop.", ja: "配達料や手数料で数百円増えることがあり、アプリでは店より高くしている店もあります。" }
           - { en: "So if you're ordering for one, it's often cheaper to go and pick it up yourself.", ja: "一人分なら、自分で取りに行く方が安いことが多いです。" }
     gist:
-      choices: ["A new radio station and free delivery in Tokyo", "A radio call-in show and food apps shutting down", "A radio call-in show and the extra costs of food delivery", "A singing contest and restaurants raising their prices"]
+      choices: ["A new radio station and free delivery in Tokyo", "A radio call-in show and food apps shutting down", "A radio call-in show and delivery fees", "A singing contest and restaurants raising their prices"]
       answer: 2
       trap: 1
-      cja: ["新しい ラジオ局と 東京の 無料 配達", "ラジオの 電話 番組と なくなる 出前アプリ", "ラジオの 電話 番組と 出前に かかる 追加の お金", "歌の コンテストと 値上げする レストラン"]
+      cja: ["新しい ラジオ局と 東京の 無料 配達", "ラジオの 電話 番組と なくなる 出前アプリ", "ラジオの 電話 番組と 出前の 手数料", "歌の コンテストと 値上げする レストラン"]
       why: "島はとたけけさんの電話リクエストの番組、東京は出前の手数料の話。アプリがなくなる話ではなく、高くつくことがあるという話です。"
     detail:
       ask: "電話できるのは いつ？"
@@ -132,10 +132,10 @@ items:
           - { en: "Owners say no-shows hurt them the most with set courses, which are prepared ahead of time and can't be sold to anyone else.", ja: "店主によると、前もって準備し、ほかの客に出せないコース料理で無断キャンセルされるのが一番痛いそうです。" }
           - { en: "One correction before we go: voting on the town tune closes on Tuesday, not Thursday. Sorry for the mix-up.", ja: "最後に訂正です。メロディーの投票は木曜ではなく火曜日までです。混乱させてすみません。" }
     gist:
-      choices: ["A concert in the plaza and cheaper set courses", "A vote on a town tune and restaurants that stop taking bookings", "A new town hall and paying by card at restaurants", "A vote on a new town tune and fees for missed restaurant bookings"]
+      choices: ["A concert in the plaza and cheaper set courses", "A vote on a town tune and restaurants that stop taking bookings", "A new town hall and paying by card at restaurants", "A town tune vote and no-show fees at restaurants"]
       answer: 3
       trap: 1
-      cja: ["広場の コンサートと 安く なる コース料理", "島の メロディーの 投票と 予約を 受けなく なる 店", "新しい 役場と レストランの カード払い", "島の メロディーの 投票と 予約に 来ない 客の 料金"]
+      cja: ["広場の コンサートと 安く なる コース料理", "島の メロディーの 投票と 予約を 受けなく なる 店", "新しい 役場と レストランの カード払い", "島の メロディーの 投票と 無断キャンセルの 料金"]
       why: "島は新しいメロディーの投票、東京は予約して来ない客への料金。予約をやめる店の話ではありません。"
     detail:
       ask: "投票の しめきりは？"
@@ -203,7 +203,7 @@ items:
       answer: 2
       trap: 0
       cja: ["八月で 終わる 船の ツアーと 空港への 新しい 電車", "週末だけの 船の ツアーと 安い ホテルの バス", "毎日の 船の ツアーと 空港まで バスで 行く こと", "島の 新しい 桟橋と 成田からの 長い 便"]
-      why: "through August＝八月いっぱい毎日出るという意味で、八月で終わる新しい話ではありません。東京は空港リムジンバスの話です。"
+      why: "島は船のツアーが through August＝八月いっぱい毎日出る話、東京は空港リムジンバスの話。空港への新しい電車の話はありません。"
     detail:
       ask: "午後の 船は 何時に 出る？"
       choices: ["2時", "3時", "10時", "4時"]
@@ -232,10 +232,10 @@ items:
           - { en: "Officials say hikers should wear a bell, stay on the trail, and avoid walking alone early or late in the day.", ja: "担当者は、鈴をつけ、道からそれず、朝早くや夕方に一人で歩かないよう呼びかけています。" }
           - { en: "And if you do see a bear, back away slowly, and never run or turn your back on it.", ja: "もしクマを見たら、ゆっくり後ろに下がり、走ったり背中を向けたりしないでください。" }
     gist:
-      choices: ["A flower show and closed mountain trails", "A bulb sale and a warning about bears near hiking trails", "A bulb sale and bears seen in the middle of Tokyo", "A gardening class and new hiking trails in Okutama"]
+      choices: ["A flower show and closed mountain trails", "A bulb sale and bears near hiking trails", "A bulb sale and bears seen in the middle of Tokyo", "A gardening class and new hiking trails in Okutama"]
       answer: 1
       trap: 2
-      cja: ["花の 展示会と 閉鎖される 山道", "球根の セールと ハイキング道の クマへの 注意", "球根の セールと 東京の 真ん中に 出た クマ", "庭づくり 教室と 奥多摩の 新しい 山道"]
+      cja: ["花の 展示会と 閉鎖される 山道", "球根の セールと ハイキング道の クマ", "球根の セールと 東京の 真ん中に 出た クマ", "庭づくり 教室と 奥多摩の 新しい 山道"]
       why: "島はレイジさんの球根のセール、東京近くの山でクマに注意という話。クマが出たのは都の西の山で、都心ではありません。"
     detail:
       ask: "クマを 見たら どう する？"
@@ -265,10 +265,10 @@ items:
           - { en: "Officials suggest going on a weekday morning, and bringing the reminder postcard that came in the mail.", ja: "担当者は、平日の朝に行き、郵便で届いたお知らせのはがきを持っていくよう勧めています。" }
           - { en: "And one correction: check-in for the fun run is at seven-thirty, not eight. Please don't be late!", ja: "それから訂正です。ファンランの受付は八時ではなく七時半です。遅れないでくださいね！" }
     gist:
-      choices: ["A marathon on the island and new driving rules", "A walking club and licenses renewed by mail", "A fun run on the island and license centers closed on weekends", "A fun run around the island and when to renew a driver's license"]
+      choices: ["A marathon on the island and new driving rules", "A walking club and licenses renewed by mail", "A fun run on the island and license centers closed on weekends", "A fun run and the best time to renew a license"]
       answer: 3
       trap: 2
-      cja: ["島の マラソンと 新しい 運転の 決まり", "歩く クラブと 郵便で できる 免許 更新", "島の ファンランと 週末に 閉まる 試験場", "島を 一周する ファンランと 免許の 更新に 行く 日"]
+      cja: ["島の マラソンと 新しい 運転の 決まり", "歩く クラブと 郵便で できる 免許 更新", "島の ファンランと 週末に 閉まる 試験場", "ファンランと 免許の 更新に いい 日"]
       why: "島は一周のファンラン、東京は免許の更新は平日の朝がいいという話。試験場は週末に混むだけで、閉まってはいません。"
     detail:
       ask: "受付は 何時 までに？"
@@ -398,10 +398,10 @@ items:
           - { en: "Many buildings have house rules about this, so it's worth reading yours if you've just moved in.", ja: "多くの建物には決まりがあるので、引っ越したばかりなら読んでおくといいでしょう。" }
           - { en: "And if a neighbor does knock on your door, a quick apology and a quieter schedule usually go a long way.", ja: "もし隣の人が文句を言いに来たら、すぐに謝って時間を変えれば、たいていうまくいきます。" }
     gist:
-      choices: ["A sailing trip and new apartment rules", "A packing class and quieter washing machines", "A talk at the museum and a ban on cleaning at night", "A travel talk and avoiding noise problems in apartments"]
+      choices: ["A sailing trip and new apartment rules", "A packing class and quieter washing machines", "A talk at the museum and a ban on cleaning at night", "A travel talk and noise between neighbors"]
       answer: 3
       trap: 2
-      cja: ["船の 旅と 新しい アパートの 決まり", "荷造り 教室と 静かな 洗濯機", "博物館の 話と 夜の 掃除の 禁止", "旅の 話と アパートの 音の 問題を 避ける こと"]
+      cja: ["船の 旅と 新しい アパートの 決まり", "荷造り 教室と 静かな 洗濯機", "博物館の 話と 夜の 掃除の 禁止", "旅の 話と 隣人との 音の 問題"]
       why: "島はジョニーさんの旅の話、東京は部屋の音の問題。夜の掃除が禁止されたのではなく、音が伝わるので気をつけようという話です。"
     detail:
       ask: "話は どこで 何時から？"

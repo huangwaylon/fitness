@@ -27,8 +27,8 @@ items:
           - { en: "Please bring a hat and some water. It will be hot.", ja: "帽子と水を持ってきてください。暑くなりそうです。" }
       - topic: tokyo
         lines:
-          - { en: "In Tokyo, many pools open for the summer this week.", ja: "東京では今週、多くのプールが夏の営業を始めます。" }
-          - { en: "A ticket for one adult is fifteen hundred yen.", ja: "大人一人のチケットは千五百円です。" }
+          - { en: "In Tokyo, the big outdoor pools open for the summer this week.", ja: "東京では今週、大きな屋外プールが夏の営業を始めます。" }
+          - { en: "A ticket for one adult is about fifteen hundred yen.", ja: "大人一人のチケットは千五百円くらいです。" }
           - { en: "Children under six can swim for free, but they need an adult.", ja: "六歳未満の子どもは無料で泳げますが、大人と一緒に来てください。" }
           - { en: "The pools are busy on weekends, so try to go early.", ja: "週末は混むので、早めに行くのがおすすめです。" }
           - { en: "Most pools close at six in the evening.", ja: "ほとんどのプールは夕方六時に閉まります。" }
@@ -98,7 +98,7 @@ items:
       - topic: tokyo
         lines:
           - { en: "In Tokyo, many people get packages at the end of the year.", ja: "東京では、年末に荷物を受け取る人がたくさんいます。" }
-          - { en: "If you are not home, the driver can't leave your box outside.", ja: "家にいないと、配達の人は荷物を外に置いていけません。" }
+          - { en: "If a box needs your signature, the driver can't leave it outside.", ja: "サインがいる荷物は、配達の人が外に置いていけません。" }
           - { en: "But you can pick a new time on your phone.", ja: "でも、スマホで新しい時間を選べます。" }
           - { en: "You can also pick it up at a convenience store near you.", ja: "近くのコンビニで受け取ることもできます。" }
           - { en: "Many stores keep your box for about one week.", ja: "多くのお店では一週間ほど荷物を預かってくれます。" }
@@ -109,7 +109,7 @@ items:
       cja: ["冬の 市場と 荷物の 受け取り", "冬の 市場と 冬の コート 選び", "お茶会と 荷物の 受け取り", "寒い 夜と 閉まる コンビニ"]
       why: "島は広場の冬の市場、東京は年末の荷物の受け取り方。無料のお茶は市場のおまけで、お茶会ではありません。"
     detail:
-      ask: "家に いないと 荷物は？"
+      ask: "サインが いる 荷物は？"
       choices: ["外に 置いて いく", "置いて いけない", "となりの 家に あずける", "次の 日に また 来る"]
       answer: 1
       trap: 0
@@ -138,7 +138,7 @@ items:
           - { en: "Most books are due in fourteen days.", ja: "ほとんどの本は十四日以内に返します。" }
           - { en: "You can return them in a box by the front door, even at night.", ja: "夜でも、入り口のそばの箱に返せます。" }
     gist:
-      choices: ["An egg hunt and new library hours in Tokyo", "A Bunny Day sale and free books in Tokyo", "An egg hunt and self-checkout at Tokyo libraries", "A tree-planting day and library machines"]
+      choices: ["An egg hunt and new library hours in Tokyo", "A Bunny Day sale and free books in Tokyo", "An egg hunt and library machines in Tokyo", "A tree-planting day and library machines"]
       answer: 2
       trap: 0
       cja: ["卵探しと 東京の 図書館の 新しい 開館時間", "イースターの セールと 東京の 無料の 本", "卵探しと 東京の 図書館の 自動貸出機", "木を 植える 日と 図書館の 機械"]
@@ -224,7 +224,7 @@ items:
     id: news-hama-tailor-sale
     season: summer
     ctx: "夏の 朝の ニュース。島の お店と 東京の 雨"
-    note: "seventy と seventeen。強い ところを 聞く"
+    note: "forty と fourteen。強い ところを 聞く"
     tags: { seed: 59, register: broadcast, pragmatic: literal, features: [teen-ty, numbers] }
     segments:
       - topic: island
@@ -237,7 +237,7 @@ items:
         lines:
           - { en: "In Tokyo, June is the rainy season.", ja: "東京では、六月は梅雨の季節です。" }
           - { en: "If you forget your umbrella, you can rent one at some stations and stores.", ja: "傘を忘れたら、一部の駅やお店で借りられます。" }
-          - { en: "You use an app on your phone, and it costs about seventy yen a day.", ja: "スマホのアプリを使い、一日七十円くらいです。" }
+          - { en: "You use an app on your phone, and it costs about a hundred and forty yen a day.", ja: "スマホのアプリを使い、一日百四十円くらいです。" }
           - { en: "You can give it back at a different place, too.", ja: "別の場所で返すこともできます。" }
           - { en: "So you don't need to buy a new one every time it rains.", ja: "雨のたびに新しい傘を買わなくてすみます。" }
     gist:
@@ -248,11 +248,11 @@ items:
       why: "島は仕立て屋の夏のセール、東京は傘を借りるサービス。新しい傘を買わなくてすむという話で、安く売る話ではありません。"
     detail:
       ask: "傘は 一日 いくら？"
-      choices: ["17円", "70円", "700円", "7円"]
+      choices: ["114円", "140円", "1,400円", "40円"]
       answer: 1
       trap: 0
-      cja: ["17円", "70円", "700円", "7円"]
-      why: "seventy yen＝七十円。seventy は「セ」が強く最後が短い「ティ」。seventeen は後ろの teen が長く強い。"
+      cja: ["114円", "140円", "1,400円", "40円"]
+      why: "a hundred and forty＝百四十円。forty は「フォー」が強く最後が短い「ディ」。fourteen なら後ろの teen が長く強い。"
 
   - kind: news
     id: news-hama-apple-day
