@@ -312,7 +312,11 @@ only respelled ones), each heard in its clip, in one order (content/listen/READM
   drops onto a slot (a filled one: inserted, the rest shifting into the nearest empty slot of mine, else replaced),
   moves a placed tile (a list reorder) or takes it back; the sentence previews the drop while held (`tile/drop.ts`,
   pure). Shifting walks my slots only (never the partner's or easy's given word, which is fixed: no lip, a pin). The
-  window's end cancels a drag. With my slots full, a tile's tap flashes the sentence's outline.
+  window's end cancels a drag. With my slots full, a tile's tap flashes the sentence's outline. 全部戻す reads 取り消す
+  for 4 s after.
+- **Time up:** 300 ms before the window ends the phone sends what's placed (the session takes a partial answer; wrong
+  unless whole), so the reveal shows my words and the missing ones (—); never a solo half that `tileOk` would take for
+  a co-op half.
 
 ### たちぎき
 

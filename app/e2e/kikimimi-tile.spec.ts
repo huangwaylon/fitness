@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Locator, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToPhase, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/tile';
@@ -159,6 +159,7 @@ test('one action in the foot: できた there, then 次へ in its place, sunk fo
 
 /** A drag with the finger (the mouse: pointer events) from one element's middle to another's, in steps. */
 async function dragTo(p: Page, from: Locator, to: Locator) {
+  await from.hover(); // (stable: the round laid out)
   const [a, b] = [await from.boundingBox(), await to.boundingBox()];
   await p.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2);
   await p.mouse.down();
@@ -166,7 +167,7 @@ async function dragTo(p: Page, from: Locator, to: Locator) {
   await p.mouse.up();
 }
 
-test('drag alongside tap: onto a slot (not the next one), onto a filled one (inserted, the rest shifting), a move, back to the pool; the next slot outlined', async ({ context }) => {
+test('drag alongside tap: onto a slot (not the next one), onto a filled one (inserted), a move, a reorder, back to the pool; the next slot outlined', async ({ context }) => {
   const page = await phone(context, DAY);
   await toTile(page);
   await sheet(page).locator('[data-kiki-start]').click();
@@ -185,16 +186,23 @@ test('drag alongside tap: onto a slot (not the next one), onto a filled one (ins
   await expect(slot(0)).not.toHaveAttribute('data-filled');
   await expect(slot(0)).toHaveAttribute('data-next', 'true');
   await expect(sheet(page).locator('[data-kiki-tile-lift]')).toHaveCount(0);
-  // my 1st onto my 2nd slot (filled): inserted, the 2nd word shifting into my 3rd
+  // my 1st onto my 2nd slot (filled): inserted (the 2nd shifting on, or back to the pool when no slot after is empty)
   await dragTo(page, tile(word(0)), slot(1));
   await expect(slot(1)).toHaveText(word(0));
-  await expect(slot(2)).toHaveText(word(1));
-  // moves: my 2nd slot's to my 1st (empty), my 3rd's to my 2nd
+  if (m.length > 2) await expect(slot(2)).toHaveText(word(1));
+  else await expect(tile(word(1))).not.toHaveAttribute('data-used');
+  // a move onto an empty slot, then a reorder onto a filled one (the two swap places) and back
   await dragTo(page, slot(1), slot(0));
-  await dragTo(page, slot(2), slot(1));
   await expect(slot(0)).toHaveText(word(0));
+  await expect(slot(1)).not.toHaveAttribute('data-filled');
+  if (m.length > 2) await dragTo(page, slot(2), slot(1));
+  else await tile(word(1)).click();
   await expect(slot(1)).toHaveText(word(1));
-  await expect(slot(2)).not.toHaveAttribute('data-filled');
+  await dragTo(page, slot(0), slot(1));
+  await expect(slot(0)).toHaveText(word(1));
+  await expect(slot(1)).toHaveText(word(0));
+  await dragTo(page, slot(1), slot(0));
+  await expect(slot(0)).toHaveText(word(0));
   // my 2nd back to the pool: its tile there again
   await dragTo(page, slot(1), sheet(page).locator('[data-kiki-tile-pool]'));
   await expect(slot(1)).not.toHaveAttribute('data-filled');
@@ -203,6 +211,63 @@ test('drag alongside tap: onto a slot (not the next one), onto a filled one (ins
   await build(page);
   await sheet(page).locator('[data-kiki-tile-done]').click();
   await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
+});
+
+test('前の問題: from round 2 a chip opens the round before’s review on this phone; the game goes on under it; its ▶︎ waits for the clip', async ({ context }) => {
+  const page = await phone(context, DAY);
+  await toTile(page);
+  await sheet(page).locator('[data-kiki-start]').click();
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
+  await expect(sheet(page).locator('[data-kiki-prev]')).toHaveCount(0);
+  await build(page, true);
+  await sheet(page).locator('[data-kiki-tile-done]').click();
+  await sheet(page).locator('[data-kiki-next]').click();
+  // round 2, its clip playing: the card has round 1's row opened (wrong, what I put), ▶︎ off while the clip plays
+  await runToQuestion(page, 1, 'play');
+  await sheet(page).locator('[data-kiki-prev]').click();
+  const card = page.locator('[data-kiki-prev-card="0"]');
+  await expect(card).toBeVisible();
+  await expect(card.locator('[data-review="0"]')).toHaveAttribute('data-ok', 'false');
+  await expect(card.locator('[data-kiki-review-en]')).toBeVisible();
+  await expect(card.locator('[data-kiki-tile-heard]')).toBeVisible();
+  await expect(card.locator('[data-kiki-hear="0"]')).toHaveAttribute('aria-disabled', 'true');
+  // the game goes on: the answer window, the timer on the card, ▶︎ on (a review's play, not round 2's replay)
+  await runToQuestion(page, 1, 'answer');
+  await expect(card.locator('.timer')).toHaveCount(await sheet(page).locator('.q > .timer').count());
+  await expect(card.locator('[data-kiki-hear="0"]')).toHaveAttribute('aria-disabled', 'false');
+  await card.locator('[data-kiki-hear="0"]').click();
+  expect(await page.evaluate(() => (window as unknown as { __kiki: { view(): { answers: unknown[] } } }).__kiki.view().answers[1] ?? null)).toBeNull();
+  await page.locator('dialog[open]:has([data-kiki-prev-card]) .navbar .close').last().click();
+  await expect(card).toHaveCount(0);
+  await build(page);
+  await sheet(page).locator('[data-kiki-tile-done]').click();
+  await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
+});
+
+test('全部戻す offers 取り消す; time up sends what’s placed: the reveal shows my words and what was missing', async ({ context }) => {
+  const page = await phone(context, DAY);
+  await toTile(page);
+  await sheet(page).locator('[data-kiki-start]').click();
+  await runToQuestion(page, 0, 'answer');
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
+  const words = await sentence(page);
+  const j = Number(await sheet(page).locator('button[data-slot]').first().getAttribute('data-slot'));
+  await sheet(page).locator(`[data-tile][data-word="${words[j].replace(/"/g, '\\"')}"]`).first().click();
+  await expect(sheet(page).locator(`button[data-slot="${j}"]`)).toHaveText(words[j]);
+  // 全部戻す, then 取り消す puts it back
+  const clear = sheet(page).locator('[data-kiki-tile-clear]');
+  await clear.click();
+  await expect(sheet(page).locator(`button[data-slot="${j}"]`)).not.toHaveAttribute('data-filled');
+  await expect(clear).toHaveAttribute('data-undo', 'true');
+  await expect(clear).toHaveText('取り消す');
+  await clear.click();
+  await expect(sheet(page).locator(`button[data-slot="${j}"]`)).toHaveText(words[j]);
+  await expect(clear).toHaveText('全部戻す');
+  // the window runs out: sent as it is, wrong, my word kept and the rest shown missing
+  await runToPhase(page, 'reveal');
+  await expect(sheet(page).locator('[data-kiki-verdict="wrong"]')).toBeVisible();
+  await expect(sheet(page).locator(`[data-kiki-tile-sentence] [data-slot="${j}"]`)).toHaveAttribute('data-mark', 'right');
+  await expect(sheet(page).locator('[data-kiki-tile-sentence] .put').first()).toHaveText('—');
 });
 
 test('night: the board in the night palette', async ({ context }) => {

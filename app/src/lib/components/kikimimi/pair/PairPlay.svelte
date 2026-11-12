@@ -208,7 +208,7 @@
   {/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="pair" answered={!!sent} {verdict} {stage} {input} {after} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {game} {v} now={game.now} me={game.me} type="pair" answered={!!sent} {verdict} {stage} {input} {after} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>

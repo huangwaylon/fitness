@@ -11,6 +11,7 @@
   "kiki.tile.pool": "タイル",
   "kiki.tile.done": "できた",
   "kiki.tile.clear": "全部戻す",
+  "kiki.tile.undo": "取り消す",
   "kiki.tile.words": "{k} / {n} 語",
   "kiki.tile.made": "ふたりで完成！",
   "kiki.tile.short": "ふたりの文は、あと {k} 語",

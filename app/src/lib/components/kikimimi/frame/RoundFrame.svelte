@@ -6,9 +6,12 @@
   // round's one action (`action`: ことば タイル's できた) and at the reveal, in its place, the host's 次へ (with how many
   // tapped 読み終わった), the others' 読み終わった; the host gone, anyone's 次へ. Those two are armed ARM_MS after the reveal
   // shows (sunk till then, and a tap whose press began before never counts: a double tap on できた never skips the
-  // reveal). The round sits mid-screen on a tall phone (`top`: at the top, so the reveal doesn't jump). Any game's.
+  // reveal). From round 2, 「‹ 前の問題」 at the top-left (LookBack: `review`, the
+  // game's own review row). The round sits mid-screen on a tall phone (`top`: at the top, so the reveal doesn't jump). Any game's.
   import type { Snippet } from 'svelte';
   import { hook, hookFlag } from '../../island/devHooks.ts';
+  import type { QuizGame } from '../game.svelte.ts';
+  import LookBack from './LookBack.svelte';
   import type { Who } from '#lib/types.ts';
   import type { RoundPhase } from '#lib/kikimimi/round/types.ts';
   import Host from '../../characters/Host.svelte';
@@ -30,7 +33,9 @@
     players: { who: Who; here: boolean; answered: boolean; ready: boolean; score: number; pick?: { ok: boolean } }[];
   }
 
-  let { v, now, me, type, answered, verdict, stage, input, after, action, top = false, onnext, onready }: {
+  let { game, v, now, me, type, answered, verdict, stage, input, after, action, review, top = false, onnext, onready }: {
+    /** The game (前の問題's card). */
+    game: QuizGame;
     v: FrameView;
     /** The relay's clock (the bar's place). */
     now: number;
@@ -46,6 +51,8 @@
     after?: Snippet;
     /** The round's one action in the foot (できた) while there's no 次へ / 読み終わった. */
     action?: Snippet;
+    /** The game's review row for round i, opened (前の問題; none: the line and its Japanese), ▶︎ allowed. */
+    review?: Snippet<[number, boolean]>;
     top?: boolean;
     onnext: () => void;
     onready: () => void;
@@ -82,9 +89,10 @@
 </script>
 
 <div class="q" class:top data-kiki-q={v.i} data-type={type} data-phase={v.phase}>
-  {#if !solo}
+  {#if !solo || v.i > 0}
     <div class="players">
-      {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} ready={p.ready} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
+      <LookBack {game} row={review} />
+      {#if !solo}{#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} ready={p.ready} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}{/if}
     </div>
   {/if}
 
@@ -129,7 +137,7 @@
   .q { display: grid; gap: 12px; align-content: center; }
   :global(.kk-body) > .q { flex: 1 0 auto; }
   .q.top { align-content: start; }
-  .players { display: flex; justify-content: center; gap: 14px; }
+  .players { position: relative; min-height: 44px; display: flex; justify-content: center; gap: 14px; }
   .timer { display: block; height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
   .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }
   .status { min-height: 1.4em; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }

@@ -11,6 +11,7 @@
   "kiki.tile.pool": "Tiles",
   "kiki.tile.done": "Done",
   "kiki.tile.clear": "Take all back",
+  "kiki.tile.undo": "Undo",
   "kiki.tile.words": "{k} / {n} words",
   "kiki.tile.made": "Built it together!",
   "kiki.tile.short": "{k} words short together",

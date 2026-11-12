@@ -209,7 +209,7 @@
 {/snippet}
 
   {@render show?.()}
-  <RoundFrame {v} now={game.now} me={game.me} type={it.type} answered={!!mine} {verdict} {stage} {input} {after}
+  <RoundFrame {game} {v} now={game.now} me={game.me} type={it.type} answered={!!mine} {verdict} {stage} {input} {after}
     onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 

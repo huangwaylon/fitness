@@ -154,6 +154,8 @@
   "kiki.quit": "Stop here?",
   "kiki.quitBody": "What you’ve played so far is kept",
   "kiki.quitOthers": "The others can carry on",
+  "kiki.prevQ": "Previous",
+  "kiki.prevQAsk": "See the previous question",
   "kiki.quitYes": "Quit",
   "kiki.closeAsk": "Close the room?",
   "kiki.closeAskBody": "The room closes for everyone",

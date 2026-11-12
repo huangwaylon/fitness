@@ -302,7 +302,10 @@ games included), `PathCard` (the host picks a unit and lesson for everyone), who
 The frame (frame/RoundFrame, RevealFrame) owns the bar, countdown, replay row, timer and foot; a game supplies its stage,
 input and reveal. The round's one action sits in the sticky foot (できた, `action`) and the reveal's 次へ / 読み終わった
 take its place, sunk for 1.2 s after the reveal shows (a press begun before never counts; `?kikimimi=fast` skips it
-unless `&arm`); secondary actions sit by their content. しずえ's words are polite (です／ます); casual cheers are the villagers'. The results: しずえ's line with the team tally or ranking, my tally and 1回目で正解 count, the missed features, the review list, 終わる /
+unless `&arm`); secondary actions sit by their content. From round 2 the frame's `‹ 前の問題` chip (frame/LookBack)
+opens the previous round's review on this phone only (the game's own row, `review`, else its line, Japanese and note;
+ことば タイル passes TileRow): the round goes on under it with its timer on the card, and its ▶︎ is a review's play,
+off while the round's clip plays or another phone speaks. One round back; earlier ones are in the results. しずえ's words are polite (です／ます); casual cheers are the villagers'. The results: しずえ's line with the team tally or ranking, my tally and 1回目で正解 count, the missed features, the review list, 終わる /
 もう一度遊ぶ. A lesson adds a strip: the unit's dots, the next lesson, after a チェック the stamp (two for a double) or
 `kiki.stamp.notYet`, and the letter the first time. 読んでから もう一度 on a review row is よみきき サンド
 (kikimimi-engine.md "よみきき サンド").

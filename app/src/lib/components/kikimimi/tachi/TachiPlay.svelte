@@ -180,7 +180,7 @@
   {/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="tachi-{r.type}" answered={!!sent} {verdict} {stage} {input} {after} {action} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {game} {v} now={game.now} me={game.me} type="tachi-{r.type}" answered={!!sent} {verdict} {stage} {input} {after} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>

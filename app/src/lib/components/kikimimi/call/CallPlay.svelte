@@ -156,7 +156,7 @@
   {/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="call" answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {game} {v} now={game.now} me={game.me} type="call" answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>

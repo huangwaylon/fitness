@@ -10,6 +10,7 @@
   // The reveal: ○ / × and my words right, the spoken shape over the written (the bubble's sound marks: should've →
   // shoulda) with the karaoke as it replays, the Japanese, the trap's note, each slot's word (○, or × with what was put
   // there: co-op the team's), then 解説 (`why`).
+  import { untrack } from 'svelte';
   import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { TileCard } from '#lib/kikimimi/games/tile/def.ts';
@@ -19,6 +20,7 @@
   import { boardFor, mySlots, teamWords } from './board.ts';
   import { dropOn, type From, type To } from './drop.ts';
   import { TileDrag } from './drag.svelte.ts';
+  import TileRow, { tileRow } from './TileRow.svelte';
   import { blank, easy, isCoop } from '../listenView.ts';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import RevealFrame from '../frame/RevealFrame.svelte';
@@ -86,6 +88,14 @@
   $effect(() => {
     if (!open) drag.cancel();
   });
+  /** Each slot's width as the drag began, kept while it lasts: the preview never reflows the sentence under the
+   *  finger (what's let go onto is what was shown). */
+  let widths = $state.raw<Record<number, number>>({});
+  $effect.pre(() => {
+    if (!drag.lift) return void (widths = {});
+    if (Object.keys(untrack(() => widths)).length) return;
+    widths = Object.fromEntries([...(sentenceEl?.querySelectorAll<HTMLElement>('[data-slot]') ?? [])].map((el) => [Number(el.dataset.slot), el.getBoundingClientRect().width]));
+  });
   const press = (e: PointerEvent, from: From, word: string) => open && drag.down(e, from, word);
   /** What the sentence shows: while a tile is held, what letting go would make (the slot it left empty). */
   const shownA = $derived.by<readonly number[]>(() => {
@@ -120,8 +130,39 @@
   function unplace(j: number) {
     if (open && j !== given && placed[j] !== EMPTY) edit((a) => (a[j] = EMPTY));
   }
-  const clear = () => open && edit((a) => slots.forEach((j) => j !== given && (a[j] = EMPTY)));
+  /** 全部戻す, then 取り消す for UNDO_MS (the words as they were). */
+  const UNDO_MS = 4000;
+  let undo = $state.raw<{ key: string; a: number[] } | null>(null);
+  function clear() {
+    if (!open) return;
+    if (undo?.key === key) {
+      work = undo;
+      undo = null;
+      return;
+    }
+    if (!mine.some((j) => placed[j] !== EMPTY)) return;
+    const was = { key, a: [...placed] };
+    edit((a) => mine.forEach((j) => (a[j] = EMPTY)));
+    undo = was;
+    setTimeout(() => undo === was && (undo = null), UNDO_MS);
+  }
+  const undoing = $derived(open && undo?.key === key);
   const done = () => open && full && game.answer([...placed]);
+  // Time up: what's placed is sent just before the window ends (graded as any answer: wrong unless whole), so the
+  // reveal shows my words and what was missing. Never only my own tile-less given word, nor a solo half that the
+  // grading would take for a co-op half (def.ts tileOk).
+  const EARLY_MS = 300;
+  $effect(() => {
+    if (!open || !Number.isFinite(v.limit) || !it) return;
+    const k = key, r = { tiles: it.tile.tiles, board };
+    const h = setTimeout(() => {
+      const a = [...placed];
+      if (key !== k || !open || !mine.some((j) => a[j] !== EMPTY) || (!coop && !full && tileOk(r, a))) return;
+      drag.cancel();
+      game.answer(a);
+    }, Math.max(0, v.limit - game.clock() - EARLY_MS));
+    return () => clearTimeout(h);
+  });
 
   const right = $derived(!!sentA && !!it && tileOk({ tiles: it.tile.tiles, board }, sentA));
   const verdict = $derived(v.out ? 'out' : right ? 'right' : sent ? 'wrong' : 'none');
@@ -208,7 +249,7 @@
         {:else if own}
           {@const over = !!drag.to && drag.to !== 'back' && drag.to.slot === j}
           <li>
-            <button type="button" class="slot tile-btn mine" data-slot={j} data-filled={k !== EMPTY || undefined} data-next={j === nextSlot || undefined} data-over={over || undefined}
+            <button type="button" class="slot tile-btn mine" style:width={widths[j] ? `${widths[j]}px` : undefined} data-slot={j} data-filled={k !== EMPTY || undefined} data-next={j === nextSlot || undefined} data-over={over || undefined}
               data-shift={!!drag.lift && k !== EMPTY && k !== placed[j] && !over || undefined}
               aria-disabled={!open || k === EMPTY} aria-label={k === EMPTY ? t('kiki.tile.slot', { n: j + 1 }) : t('kiki.tile.remove', { w: board[k] })}
               data-sfx={open && k !== EMPTY ? 'tick' : 'none'} onclick={() => unplace(j)} onpointerdown={(e) => k !== EMPTY && press(e, { slot: j }, board[k])}>
@@ -231,7 +272,8 @@
       {/each}
     </div>
     <div class="acts">
-      <button type="button" class="btn small paper" data-kiki-tile-clear aria-disabled={!slots.some((j) => j !== given && placed[j] !== EMPTY)} data-sfx="back" onclick={clear}>{t('kiki.tile.clear')}</button>
+      <button type="button" class="btn small paper" data-kiki-tile-clear data-undo={undoing || undefined} aria-disabled={!undoing && !mine.some((j) => placed[j] !== EMPTY)}
+        data-sfx={undoing ? 'undo' : 'back'} onclick={clear}>{undoing ? t('kiki.tile.undo') : t('kiki.tile.clear')}</button>
     </div>
   {/if}
 
@@ -244,7 +286,9 @@
   {/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} top={shown} onnext={() => game.next()} onready={() => game.ready()} />
+{#snippet review(i: number, canHear: boolean)}<TileRow {game} r={tileRow(game, i)} open ontoggle={() => {}} {canHear} />{/snippet}
+
+<RoundFrame {game} {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} {review} top={shown} onnext={() => game.next()} onready={() => game.ready()} />
 {#if drag.lift}
   {@const l = drag.lift}
   <!-- the lifted tile at the finger, raised over it (its containing block's origin read off `origin`) -->
@@ -280,6 +324,7 @@
   .sentence { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
   .sentence li:not(.slot) { display: contents; }
   .slot {
+    box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     min-width: 52px; min-height: var(--hit); padding: 4px 10px; border-radius: 12px; display: inline-grid; place-items: center;
     font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui);
   }
@@ -292,7 +337,7 @@
   .sentence[data-flash] .mine { animation: flash 500ms var(--ease) both; }
   .sentence[data-flash='2'] .mine { animation-name: flash2; }
   /* easy's given word: a static card (its soft lip only), a pin, not a control */
-  .slot.given { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 2px 0 var(--lip); position: relative; }
+  .slot.given { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 2px 0 var(--lip); position: relative; overflow: visible; }
   .pin { position: absolute; top: -9px; right: -5px; font-size: 14px; line-height: 1; }
   .num { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   /* the partner's slots: dashed and set back, never a target (mine are solid) */
