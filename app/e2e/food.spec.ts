@@ -546,12 +546,15 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true'); // the meal's own
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('195');
   expect(await overflowOf(page)).toEqual([]);
+  await sheet(page).locator('[data-step="-1"]').click(); // half a serving
+  await expect(sheet(page).locator('.mult')).toHaveText('×0.5');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('98');
   await sheet(page).locator('[data-done]').click();
   await sheet(page).locator('[data-food-finish]').click(); // 完了: the day
   await expect(h2).toHaveText('ごはん');
-  await expect.poll(() => kcalOf(page)).toBe(before + 390); // 保存して追加's serving and this one
+  await expect.poll(() => kcalOf(page)).toBe(before + 293); // 保存して追加's serving and this half
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('テストごはん');
-  await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('1人前（125g）');
+  await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('1人前×0.5（62.5g）');
 
   // mine: its amount opens the editor, 保存 waits until something changes; 削除 asks twice, back to the search
   await sheet(page).locator('[data-add=d]').click();
@@ -1297,7 +1300,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   const row = sheet(page).locator('section[data-meal=l] [data-entry]').last();
   await expect(row).toContainText('会社の弁当');
   await expect(row.locator('.amt')).toHaveText('1食'); // never a nominal weight
-  // tapped: its amount by the serving: by half servings, no grams anywhere
+  // tapped: its amount by the serving: by half servings (×0.5 saved: 「1食×0.5」, 325 kcal), no grams anywhere
   await row.click();
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toHaveText('1食');
@@ -1309,7 +1312,14 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('975'); // ×1.5
   await expect(sheet(page).locator('[data-amount-open]')).toHaveCount(0); // an entry: no opening its food
   expect(await overflowOf(page)).toEqual([]);
-  await sheet(page).getByRole('button', { name: '戻る' }).click();
+  await sheet(page).locator('[data-step="-1"]').click();
+  await sheet(page).locator('[data-step="-1"]').click();
+  await expect(sheet(page).locator('.mult')).toHaveText('×0.5'); // half a serving, the floor
+  await expect(sheet(page).locator('[data-step="-1"]')).toHaveAttribute('aria-disabled', 'true');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('325');
+  await sheet(page).locator('[data-done]').click(); // 保存
+  await expect(row.locator('.amt')).toHaveText('1食×0.5'); // in servings still
+  await expect.poll(() => kcalOf(page)).toBe(before + 325);
 
   // the next search: under マイ食品 (all of them before anything is typed; the matching ones when typed)
   await sheet(page).locator('[data-add=d]').click();
@@ -1336,7 +1346,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await expect(h2).toHaveText('夜ごはん');
   await expect(mine).toHaveCount(0);
   await sheet(page).getByRole('button', { name: '戻る' }).click();
-  await expect.poll(() => kcalOf(page)).toBe(before + 650); // the meal logged stays
+  await expect.poll(() => kcalOf(page)).toBe(before + 325); // the meal logged stays
 });
 
 // With a weight: made while picking a recipe's ingredient (the editor goes on to the ingredient's amount, by grams too),
