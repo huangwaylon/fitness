@@ -7,7 +7,7 @@
 // Chromium is muted).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Locator, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
@@ -155,6 +155,54 @@ test('one action in the foot: できた there, then 次へ in its place, sunk fo
   await next.click();
   await expect(sheet(page)).not.toHaveAttribute('data-phase', 'reveal');
   expect(await kiki(page, (k) => k.view().i)).toBe(1);
+});
+
+/** A drag with the finger (the mouse: pointer events) from one element's middle to another's, in steps. */
+async function dragTo(p: Page, from: Locator, to: Locator) {
+  const [a, b] = [await from.boundingBox(), await to.boundingBox()];
+  await p.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2);
+  await p.mouse.down();
+  await p.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, { steps: 8 });
+  await p.mouse.up();
+}
+
+test('drag alongside tap: onto a slot (not the next one), onto a filled one (inserted, the rest shifting), a move, back to the pool; the next slot outlined', async ({ context }) => {
+  const page = await phone(context, DAY);
+  await toTile(page);
+  await sheet(page).locator('[data-kiki-start]').click();
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
+  const words = await sentence(page);
+  const tile = (w: string) => sheet(page).locator(`[data-tile][data-word="${w.replace(/"/g, '\\"')}"]`).first();
+  // my slots (easy's given word, if any, is fixed: not a button, never moved)
+  const m = await sheet(page).locator('button[data-slot]').evaluateAll((bs) => bs.map((b) => Number(b.getAttribute('data-slot'))));
+  const slot = (k: number) => sheet(page).locator(`button[data-slot="${m[k]}"]`);
+  const word = (k: number) => words[m[k]];
+  await expect(sheet(page).locator('button[data-given]')).toHaveCount(0);
+  await expect(slot(0)).toHaveAttribute('data-next', 'true');
+  // my 2nd word onto my 2nd slot: there, my 1st still the next
+  await dragTo(page, tile(word(1)), slot(1));
+  await expect(slot(1)).toHaveText(word(1));
+  await expect(slot(0)).not.toHaveAttribute('data-filled');
+  await expect(slot(0)).toHaveAttribute('data-next', 'true');
+  await expect(sheet(page).locator('[data-kiki-tile-lift]')).toHaveCount(0);
+  // my 1st onto my 2nd slot (filled): inserted, the 2nd word shifting into my 3rd
+  await dragTo(page, tile(word(0)), slot(1));
+  await expect(slot(1)).toHaveText(word(0));
+  await expect(slot(2)).toHaveText(word(1));
+  // moves: my 2nd slot's to my 1st (empty), my 3rd's to my 2nd
+  await dragTo(page, slot(1), slot(0));
+  await dragTo(page, slot(2), slot(1));
+  await expect(slot(0)).toHaveText(word(0));
+  await expect(slot(1)).toHaveText(word(1));
+  await expect(slot(2)).not.toHaveAttribute('data-filled');
+  // my 2nd back to the pool: its tile there again
+  await dragTo(page, slot(1), sheet(page).locator('[data-kiki-tile-pool]'));
+  await expect(slot(1)).not.toHaveAttribute('data-filled');
+  await expect(tile(word(1))).not.toHaveAttribute('data-used');
+  // the rest by tap; できた: right
+  await build(page);
+  await sheet(page).locator('[data-kiki-tile-done]').click();
+  await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
 });
 
 test('night: the board in the night palette', async ({ context }) => {

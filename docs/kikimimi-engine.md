@@ -302,6 +302,12 @@ row's id.
 - **Answer:** the board's index per slot (`EMPTY` none), each tile once. Right: every filled slot holds its word and they
   are the whole sentence or one role's half. 100 a sentence.
 - **Co-op:** role 0 the odd slots, role 1 the others. **Row:** `[tile id, ok, wrong-slot mask, rp]`.
+- **Input:** a tap fills my next empty slot (its dashed yuzu outline) or takes a placed tile back; a drag past 8 px
+  (`tile/drag.svelte.ts`, Pointer Events, `touch-action: none` on tiles and my slots only while the window is open)
+  drops onto a slot (a filled one: inserted, the rest shifting into the nearest empty slot of mine, else replaced),
+  moves a placed tile (a list reorder) or takes it back; the sentence previews the drop while held (`tile/drop.ts`,
+  pure). Shifting walks my slots only (never the partner's or easy's given word, which is fixed: no lip, a pin). The
+  window's end cancels a drag. With my slots full, a tile's tap flashes the sentence's outline.
 
 ### たちぎき
 
