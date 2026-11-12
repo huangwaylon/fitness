@@ -52,22 +52,22 @@ items:
       - { who: henry, en: "Good afternoon, this is Henry at the Harborview. I'm calling about your reservation for tomorrow night.", ja: "こんにちは、ハーバービューのヘンリーです。明日のご予約の件でお電話しました。" }
       - { who: henry, en: "We've had a plumbing issue on two floors, and as a result we're oversold. So, the short version is we won't be able to accommodate you here.", ja: "2つのフロアで配管のトラブルがあり、満室を超えてしまいまして。要するに、当館ではお泊めできない状況です。" }
       - { who: me, en: "Oh, no. So where does that leave me?", ja: "えっ。じゃあ私はどうなるんですか？" }
-      - { who: henry, en: "We've reserved a comparable room at our sister property, the Bayside, at no extra cost, and we'll cover a cab from here.", ja: "系列のベイサイドに同等のお部屋を追加料金なしでご用意し、こちらからのタクシー代もお持ちします。" }
+      - { who: henry, en: "We've reserved a comparable room at our sister property, the Bayside, at no extra cost, and we'll cover your cab from the airport.", ja: "系列のベイサイドに同等のお部屋を追加料金なしでご用意し、空港からのタクシー代もお持ちします。" }
       - { who: me, en: "Is it far? I picked your hotel because it's close to the convention center.", ja: "遠いですか？コンベンションセンターに近いからそちらにしたんです。" }
-      - { who: henry, en: "It's a bit further out, about twenty minutes on foot, but it's right by the light rail.", ja: "少し離れていて、徒歩20分ほどですが、ライトレールの駅のすぐそばです。" }
-      - { who: henry, en: "We'll also refund your first night in full. Actually, let me correct that: we refund the difference, and the first night is complimentary.", ja: "また1泊目は全額返金いたします。あ、訂正します。差額を返金し、1泊目は無料とさせていただきます。", repair: true }
+      - { who: henry, en: "It's a bit further out, about twenty minutes on foot from the convention center, but it's right by the light rail.", ja: "少し離れていて、コンベンションセンターから徒歩20分ほどですが、ライトレールの駅のすぐそばです。" }
+      - { who: henry, en: "We'll also take ten percent off your stay. Actually, let me correct that: your first night is complimentary, on us.", ja: "また宿泊料金を1割お引きします。あ、訂正します。1泊目は無料とさせていただきます。", repair: true }
       - { who: me, en: "Okay. And if a room becomes available there after all?", ja: "わかりました。もしそちらに空きが出たら？" }
       - { who: henry, en: "I can't promise anything, but I'll put a note on your file, and if something frees up for your second night, we'll move you back.", ja: "お約束はできませんが、記録に残しておき、2泊目に空きが出ればこちらに戻っていただきます。" }
     half: [0, 0, 0, 1, 1, 1, 0, 1, 1]
     memo:
-      - why: "配管のトラブルで oversold（満室超過）。系列のベイサイドへ、タクシー代はホテル持ち。徒歩20分だがライトレールの近く。"
+      - why: "配管のトラブルで oversold（満室超過）。系列のベイサイドへ、タクシー代はホテル持ち。会場から徒歩20分だがライトレールの近く。"
         slots:
           - { ask: "泊まれない 理由は？", options: ["配管の トラブル", "予約の ミス", "工事の 騒音"], answer: 0, cja: ["配管のトラブル", "予約のミス", "工事の騒音"] }
           - { ask: "代わりの ホテルは？", options: ["同じ ホテルの 別の 階", "系列の ホテル", "自分で 探す"], answer: 1, cja: ["同じホテルの別の階", "系列のホテル", "自分で探す"] }
           - { ask: "会場まで 歩くと？", options: ["2分", "12分", "20分"], answer: 2, cja: ["2分", "12分", "20分"] }
-      - why: "全額返金と言ってから let me correct that と訂正。1泊目は無料。I can't promise anything＝期待はできない、という含み。"
+      - why: "1割引きと言ってから let me correct that と訂正し、1泊目は無料。I can't promise anything＝期待はできない、という含み。"
         slots:
-          - { ask: "1泊目は？", options: ["全額 返金", "無料", "半額"], answer: 1, cja: ["全額返金", "無料", "半額"] }
+          - { ask: "1泊目は？", options: ["1割 引き", "無料", "半額"], answer: 1, cja: ["1割引き", "無料", "半額"] }
           - { ask: "2泊目に 戻れる？", options: ["必ず 戻れる", "空きが 出れば", "戻れない"], answer: 1, cja: ["必ず戻れる", "空きが出れば戻れる", "戻れない"] }
     note: "let me correct that の後が本当の条件"
     tags: { seed: 1, register: service, pragmatic: formula, conditions: [phone], features: [self-repair, numbers, linking] }
@@ -108,15 +108,15 @@ items:
       - { who: walker, en: "Thanks for calling Atlas Travel Insurance, this is Walker. I've pulled up your policy. You're calling about the camera, I take it?", ja: "アトラス旅行保険のウォーカーです。ご契約を確認しました。カメラの件ですね？" }
       - { who: me, en: "Yes. It was stolen from a café in Barcelona on the last day of my trip.", ja: "はい。旅行の最終日に、バルセロナのカフェで盗まれたんです。" }
       - { who: walker, en: "Sorry to hear that. For theft, we'll need a police report filed locally, not one from back home, plus proof of purchase.", ja: "それは大変でしたね。盗難の場合は、帰国後ではなく現地で出した警察の届けと、購入の証明が必要です。" }
-      - { who: me, en: "I did file a report there. The receipt might be harder to find, though. I bought it three years ago.", ja: "現地で届けは出しました。ただ領収書は見つからないかもしれません。3年前に買ったので。" }
+      - { who: me, en: "I did file a report there. The receipt might be harder to find, though. I bought it about four years ago.", ja: "現地で届けは出しました。ただ領収書は見つからないかもしれません。4年ほど前に買ったので。" }
       - { who: walker, en: "A bank statement's fine. Just bear in mind that for anything over three years old, we pay depreciated value, not replacement cost.", ja: "銀行の明細で大丈夫です。ただ、3年を超えた品物は、買い直す値段ではなく、古くなった分を引いた額のお支払いになります。" }
       - { who: me, en: "So I'd get less than what a new one costs.", ja: "つまり、新品の値段より少ないんですね。" }
       - { who: walker, en: "Considerably less, in all likelihood. Your deductible is ¥10,000, and claims have to be in within thirty days of the loss.", tts: "Considerably less, in all likelihood. Your deductible is ten thousand yen, and claims have to be in within thirty days of the loss.", ja: "おそらく、かなり少なくなります。自己負担額は1万円で、請求は盗難から30日以内に出していただく必要があります。" }
-      - { who: walker, en: "Sorry, let me rephrase that: thirty days from when you got home, so you actually have until the 28th.", tts: "Sorry, let me rephrase that: thirty days from when you got home, so you actually have until the twenty-eighth.", ja: "すみません、言い直します。帰国から30日なので、実際には28日まで大丈夫です。", repair: true }
+      - { who: walker, en: "Sorry, let me clarify that: thirty days from when you got home, so you actually have until the 28th.", tts: "Sorry, let me clarify that: thirty days from when you got home, so you actually have until the twenty-eighth.", ja: "すみません、正確に言います。帰国から30日なので、実際には28日まで大丈夫です。", repair: true }
       - { who: walker, en: "And between you and me, the sooner it's in, the fewer follow-up questions you tend to get.", ja: "ここだけの話、早く出していただくほど、あとからの問い合わせは少なくなるものです。" }
     half: [0, 0, 0, 0, 1, 1, 1, 1, 1]
     memo:
-      - why: "締め切りは盗難から30日と言ったあと let me rephrase で帰国から30日に。自己負担 deductible は1万円。届けは現地の警察のもの。"
+      - why: "締め切りは盗難から30日と言ったあと let me clarify で帰国から30日に。自己負担 deductible は1万円。届けは現地の警察のもの。"
         slots:
           - { ask: "請求の 締め切りは？", options: ["盗まれてから 30日", "帰国してから 30日", "3年 以内"], answer: 1, cja: ["盗まれてから30日", "帰国してから30日", "3年以内"] }
           - { ask: "自己負担額は？", options: ["¥1,000", "¥10,000", "¥30,000"], answer: 1, cja: ["1,000円", "10,000円", "30,000円"] }
@@ -124,7 +124,7 @@ items:
         slots:
           - { ask: "ウォーカーが それとなく すすめたのは？", options: ["早めに 請求する", "締め切りまで 待つ", "領収書を 探しつづける"], answer: 0, cja: ["早めに請求する", "締め切りまで待つ", "領収書を探し続ける"] }
           - { ask: "支払われる 額は？", options: ["新品と 同じ", "新品より かなり 少ない", "1万円 だけ"], answer: 1, cja: ["新品と同じ", "新品よりかなり少ない", "1万円だけ"] }
-    note: "rephrase＝言い直す。30日の数え方が変わる"
+    note: "clarify＝はっきりさせる。30日の数え方が変わる"
     tags: { seed: 28, register: service, pragmatic: indirect, conditions: [phone], features: [numbers, self-repair, linking] }
 
   - kind: call
@@ -138,10 +138,10 @@ items:
       - { who: me, en: "Hi, I have an appointment tomorrow at ten to get my crown put on, and I need to move it. A work trip came up.", ja: "明日10時に、かぶせ物を入れる予約をしているんですが、変えたいんです。急に出張が入って。" }
       - { who: portia, en: "Let me pull that up. I should let you know we normally charge a $50 fee for changes with less than twenty-four hours' notice.", tts: "Let me pull that up. I should let you know we normally charge a fifty-dollar fee for changes with less than twenty-four hours' notice.", ja: "お調べします。念のため、24時間を切ってからの変更は、通常50ドルの手数料をいただいております。" }
       - { who: me, en: "Even when it's for work?", ja: "仕事の都合でもですか？" }
-      - { who: portia, en: "Officially, yes. That said, you've never canceled on us before, so I can probably get it waived. I just can't promise anything until the office manager signs off.", ja: "規則ではそうです。ただ、これまで一度もキャンセルされていないので、たぶん免除にできると思います。院長の確認が取れるまで、お約束はできませんが。" }
+      - { who: portia, en: "Officially, yes. That said, you've never canceled on us before, so I can probably get it waived. I just can't promise anything until the office manager signs off.", ja: "規則ではそうです。ただ、これまで一度もキャンセルされていないので、たぶん免除にできると思います。事務長の確認が取れるまで、お約束はできませんが。" }
       - { who: portia, en: "As for openings, I have the 9th at 3:15, or the 12th, first thing in the morning.", tts: "As for openings, I have the ninth at three fifteen, or the twelfth, first thing in the morning.", ja: "空きは、9日の3時15分か、12日の朝一番です。" }
       - { who: me, en: "The 12th would be better.", tts: "The twelfth would be better.", ja: "12日のほうがいいです。" }
-      - { who: portia, en: "Oh, hold on. The 12th is the doctor's surgery day, so that's out after all. It would have to be the 9th.", tts: "Oh, hold on. The twelfth is the doctor's surgery day, so that's out after all. It would have to be the ninth.", ja: "あ、お待ちください。12日は先生の手術の日なので、やはり無理でした。9日になります。", repair: true }
+      - { who: portia, en: "Oh, hold on. The doctor's in surgery all day on the 12th, so that's out after all. It would have to be the 9th.", tts: "Oh, hold on. The doctor's in surgery all day on the twelfth, so that's out after all. It would have to be the ninth.", ja: "あ、お待ちください。12日は先生が一日中手術なので、やはり無理でした。9日になります。", repair: true }
       - { who: me, en: "Okay, the 9th at 3:15, then.", tts: "Okay, the ninth at three fifteen, then.", ja: "では、9日の3時15分で。" }
       - { who: portia, en: "Got it. And since your temporary crown has to last until then, I'd go easy on anything chewy in the meantime.", ja: "承知しました。それまで仮のかぶせ物でもたせるので、その間はねばる物は控えめにされたほうがいいですよ。" }
     half: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
@@ -199,7 +199,7 @@ items:
       - { who: tex, en: "Then you're not charged. The catch is that \"use\" includes anything running in the background, so an app quietly syncing your photos would count.", ja: "その日はかかりません。ただ落とし穴は、裏で動いているものも「使った」に入ることで、写真を勝手に同期するアプリでも1日分になります。" }
       - { who: me, en: "So in practice, it could end up being every day.", ja: "つまり実際には、毎日かかるかもしれないと。" }
       - { who: tex, en: "It could. Alternatively, there's a monthly plan at ¥6,000. After fifteen gigs, your speed's throttled rather than billed.", tts: "It could. Alternatively, there's a monthly plan at six thousand yen. After fifteen gigs, your speed's throttled rather than billed.", ja: "あり得ます。ほかに月額6,000円のプランもあって、15ギガを超えると、請求ではなく速度が落ちます。" }
-      - { who: me, en: "I'm only there for nine days, so it's pretty close either way.", ja: "9日しかいないので、どっちでも大差ないですね。" }
+      - { who: me, en: "I'm only there for four days, so it's pretty close either way.", ja: "4日しかいないので、どっちでも大差ないですね。" }
       - { who: tex, en: "Correction, sorry: the monthly plan only covers the US, not Canada. So for you, it'd have to be the day pass.", ja: "すみません、訂正します。月額プランはアメリカだけで、カナダは対象外です。なので、お客様はデイパスになります。", repair: true }
       - { who: tex, en: "And if I were you, I'd take a look at which apps you've let refresh in the background before you board.", ja: "それと私なら、乗る前に、どのアプリに裏での更新を許しているか見ておきますね。" }
     half: [0, 0, 0, 0, 1, 1, 1, 1, 1]
@@ -207,7 +207,7 @@ items:
       - why: "デイパスは使った日だけ1,500円。月額プランもあったが、Correction でアメリカだけと訂正。カナダではデイパスしか使えない。"
         slots:
           - { ask: "デイパスは 1日？", options: ["¥1,050", "¥1,500", "¥6,000"], answer: 1, cja: ["1,050円", "1,500円", "6,000円"] }
-          - { ask: "月額 プランを 使えない 理由は？", options: ["アメリカ だけ", "9日では 短い", "15ギガ しか ない"], answer: 0, cja: ["アメリカだけだから", "9日では短いから", "15ギガしかないから"] }
+          - { ask: "月額 プランを 使えない 理由は？", options: ["アメリカ だけ", "4日では 短い", "15ギガ しか ない"], answer: 0, cja: ["アメリカだけだから", "4日では短いから", "15ギガしかないから"] }
       - why: "裏で動くアプリでも1日分かかると言ったうえで、乗る前にアプリの設定を見ておけと言った。遠回しに、裏の通信を止めろということ。"
         slots:
           - { ask: "テックスの 遠回しな 助言は？", options: ["裏で 動く アプリを 止める", "写真を 撮らない", "電話を 使わない"], answer: 0, cja: ["裏で動くアプリを止める", "写真を撮らない", "電話を使わない"] }
@@ -238,8 +238,8 @@ items:
           - { ask: "払い戻しの 受付は？", options: ["今日から 7日", "今日から 17日", "2日まで"], answer: 0, cja: ["今日から7日", "今日から17日", "2日まで"] }
       - why: "I'd be surprised if they were quick＝転売サイトは遅そう、という含み。席は correct myself で、同じエリアの別の席かもしれない、に。"
         slots:
-          - { ask: "フェイスが それとなく 言ったのは？", options: ["転売サイトは 対応が 遅そう", "払い戻しは できない", "席が 良く なる"], answer: 0, cja: ["転売サイトは対応が遅そう", "払い戻しはできない", "席が良くなる"] }
-          - { ask: "2日の 席は？", options: ["同じ 席", "同じ エリアの 別の 席 かも", "まだ 決まって いない"], answer: 1, cja: ["同じ席", "同じエリアの別の席かもしれない", "まだ決まっていない"] }
+          - { ask: "フェイスが それとなく 言ったのは？", options: ["転売サイトは 遅そう", "払い戻しは できない", "劇場が 返金して くれる"], answer: 0, cja: ["転売サイトは対応が遅そう", "払い戻しはできない", "劇場が返金してくれる"] }
+          - { ask: "2日の 席は？", options: ["同じ 席", "同じ エリアの どこか", "別の エリア"], answer: 1, cja: ["同じ席", "同じエリアのどこかの席", "別のエリアの席"] }
     note: "not necessarily＝とは限らない"
     tags: { seed: 26, register: service, pragmatic: understatement, conditions: [phone], features: [numbers, self-repair, stress] }
 
@@ -313,7 +313,7 @@ items:
       - { who: me, en: "And what would a new one run me?", ja: "新しいのだと、いくらくらいですか？" }
       - { who: cj, en: "Installed, around ¥240,000. I know, it's not what anybody wants to hear.", tts: "Installed, around two hundred forty thousand yen. I know, it's not what anybody wants to hear.", ja: "取り付け込みで24万円くらい。ええ、誰も聞きたくない額ですよね。" }
       - { who: me, en: "That's a lot. Let me think it over.", ja: "高いですね。考えさせてください。" }
-      - { who: cj, en: "Sure. If you go with the repair, the part's only under warranty for ninety days. No, wait, that's for used parts. A new thermostat's covered for a year.", ja: "どうぞ。修理にする場合、部品の保証は90日だけ…いや、待って、それは中古部品でした。新しい部品なら1年保証です。", repair: true }
+      - { who: cj, en: "Sure. If you go with the repair, the part's only under warranty for ninety days. No, wait, that's for refurbished parts. A new thermostat's covered for a year.", ja: "どうぞ。修理にする場合、部品の保証は90日だけ…いや、待って、それは再生部品でした。新しい部品なら1年保証です。", repair: true }
     half: [0, 0, 0, 0, 1, 1, 1, 1]
     memo:
       - why: "途切れたあとで The thermostat と言い直した。修理は部品と工賃で18,000円、木曜までに。新品は取り付け込みで24万円。"
@@ -334,7 +334,7 @@ items:
     scene: living
     channel: phone
     lines:
-      - { who: lopez, en: "Hi, this is Ryan with Pacific Express. I'm calling about an international package that's being held at customs under your name.", ja: "パシフィック・エクスプレスのライアンです。お客様のお名前で、税関で止まっている海外からの荷物の件でお電話しました。" }
+      - { who: lopez, en: "Hi, this is Ryan with Sky Express. I'm calling about an international package that's being held at customs under your name.", ja: "スカイ・エクスプレスのライアンです。お客様のお名前で、税関で止まっている海外からの荷物の件でお電話しました。" }
       - { who: me, en: "Held at customs? I'm not expecting anything from overseas.", ja: "税関で？海外から何も届く予定はないんですが。" }
       - { who: lopez, en: "It's listed as a gift, so the sender's details are withheld. That happens a lot this time of year.", ja: "贈り物扱いなので、送り主の情報は伏せられています。この時期はよくあるんですよ。" }
       - { who: lopez, en: "To release it, there's an import duty of ¥3,980, and it has to be settled within two hours, or the package is sent back.", tts: "To release it, there's an import duty of three thousand nine hundred eighty yen, and it has to be settled within two hours, or the package is sent back.", ja: "受け取るには輸入関税が3,980円かかり、2時間以内にお支払いいただかないと、荷物は送り返されます。" }
@@ -352,7 +352,7 @@ items:
           - { ask: "払う 期限は？", options: ["2時間", "12時間", "2日"], answer: 0, cja: ["2時間", "12時間", "2日"] }
       - why: "送り主は不明、2時間と急がせる、プリペイドカードの番号を読ませる、追跡番号は言えない。どれもだましの電話のしるし。"
         slots:
-          - { ask: "この 電話は 本当は？", options: ["お金を だまし取る 電話", "本物の 配達の 連絡", "贈り物の 知らせ"], answer: 0, cja: ["お金をだまし取る電話", "本物の配達の連絡", "贈り物の知らせ"] }
-          - { ask: "払い方で あやしいのは？", options: ["銀行で 払う", "届いた ときに 現金", "カードの 番号を 読ませる"], answer: 2, cja: ["銀行で払う", "届いたときに現金で払う", "プリペイドカードの番号を読ませる"] }
+          - { ask: "この 電話は 本当は？", options: ["だましの 電話", "本物の 配達の 連絡", "贈り物の 知らせ"], answer: 0, cja: ["お金をだまし取る電話", "本物の配達の連絡", "贈り物の知らせ"] }
+          - { ask: "払い方で あやしいのは？", options: ["銀行で 払う", "届いた ときに 現金", "番号を 読み上げる"], answer: 2, cja: ["銀行で払う", "届いたときに現金で払う", "プリペイドカードの番号を読み上げる"] }
     note: "I'll take my chances＝それでもかまわない"
     tags: { seed: 23, register: stranger, pragmatic: deception, conditions: [phone], features: [numbers, self-repair, stress] }
