@@ -67,6 +67,8 @@ export interface Credit {
 export interface Dataset extends Partial<Credit> {
   source: string;
   items: Item[];
+  /** The chain menus' (Kalori) shops: each id's Japanese name (its items' `brand`) and our short names (セブン, スタバ). */
+  shops?: Record<string, { name: string; aliases?: string[] }>;
 }
 
 /** `index.json`: the data's content version (the files' `?v=`) and its datasets. `secondary` ones (regional, school

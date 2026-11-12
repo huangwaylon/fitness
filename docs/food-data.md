@@ -180,7 +180,7 @@ forbid redistribution (第8条), so it never goes public: the file lives in the 
   (`db.wantMore`), in the parsing worker, its key in `Authorization`; never in the demo or for the guest. Kept in the
   Cache API (`food-kalori`) for offline, asked again at each catalog load with its ETag (304: the kept copy); 401,
   403 or 404 drop the copy, not asked again till the next load; offline or a 5xx use the copy. Ranked under the
-  other secondary sets (pen 1.75), over the products; logged as an `sv` snapshot (whole servings, no grams). About
+  other secondary sets (pen 1.75), over the products; a shop's name or alias in the query scopes to its menu (`db.ts shopIn`); logged as an `sv` snapshot (whole servings, no grams). About
   25 MB of heap once in (V8, synthetic 38k rows; each item's one `1食` portion is left out, portionsOf's default).
 - **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows only (no Kalori data in the repo).
 

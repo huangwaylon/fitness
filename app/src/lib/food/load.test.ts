@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { addDataset, credits, emptyDb, nearFoods, searchFoods, SLICE, verifyOf, type FoodDb } from './db.ts';
+import { addDataset, credits, emptyDb, nearFoods, searchFoods, shopIn, SLICE, verifyOf, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item } from './types.ts';
 import { tierOf, type Entry } from './search.ts';
@@ -261,6 +261,60 @@ describe('the golden queries', () => {
       if (firstProduct >= 0 && ids.slice(firstProduct).some((id) => !isProduct(id))) fails.push(`${q}: ${ids.join(' ')}`);
     }
     expect(fails).toEqual([]);
+  });
+});
+
+describe('the chain menus (a member’s: Kalori, invented items)', () => {
+  const kal = (id: number, shop: string, brand: string, name: string, kcal: number, more: Partial<Item> = {}): Item =>
+    ({ id: `kal:${id}`, name, brand, shop, cat: 'その他', kcal, p: 10, f: 10, c: 10, sv: true, ...more });
+  const chains: Dataset = {
+    source: 'kalori',
+    shops: {
+      sukiya: { name: 'すき家' }, 'seven-eleven': { name: 'セブン-イレブン', aliases: ['セブン', 'セブイレ'] },
+      starbucks: { name: 'スターバックス', aliases: ['スタバ'] }, karaage: { name: '唐揚げ' }
+    },
+    items: [
+      kal(1, 'sukiya', 'すき家', '牛丼 並盛', 733, { vg: 'kal:1', st: '並盛' }), kal(2, 'sukiya', 'すき家', '牛丼 大盛', 960, { vg: 'kal:1', st: '大盛' }),
+      kal(3, 'seven-eleven', 'セブン-イレブン', '唐揚げ棒', 198), kal(4, 'seven-eleven', 'セブン-イレブン', '手巻おにぎり 鮭', 182),
+      kal(5, 'seven-eleven', 'セブン-イレブン', '牛丼', 640),
+      kal(6, 'starbucks', 'スターバックス', 'カフェ モカ（Tall・ミルク）', 288, { vg: 'kal:6', st: 'Tall・ミルク', aliases: ['カフェ モカ（トール・ミルク）'] }),
+      kal(7, 'starbucks', 'スターバックス', 'カフェ モカ（Grande・ミルク）', 376, { vg: 'kal:6', st: 'Grande・ミルク', aliases: ['カフェ モカ（グランデ・ミルク）'] }),
+      kal(8, 'karaage', '唐揚げ', 'から揚げ定食', 900)
+    ]
+  };
+  let k: FoodDb;
+  beforeAll(async () => {
+    k = { ...db, entries: [...db.entries], byId: new Map(db.byId), variants: new Map(db.variants), sets: [...db.sets], shopKeys: new Map() };
+    await addDataset(k, { file: 'kalori', source: 'kalori', badge: '店', secondary: true, lazy: true }, chains);
+  });
+  const ids = (q: string, n = 60) => searchFoods(k, q, n).map((x) => x.id);
+
+  it('rank under the generic foods when no shop is named: 牛丼 finds 牛丼（並盛） first, a chain’s after', () => {
+    const got = ids('牛丼');
+    expect(got[0]).toBe('dishes:gyudon');
+    expect(got.findIndex((id) => id.startsWith('kal:'))).toBeGreaterThan(got.findIndex((id) => !id.startsWith('kal:') && !isProduct(id)));
+    for (const [q, top] of GOLDEN) expect(searchFoods(k, q, 1)[0]?.id, q).toBe(top);
+  });
+
+  it('a shop named (its name, our short name, any width or case) narrows to its menu, the other words searched within', () => {
+    expect(ids('すき家 牛丼')).toEqual(['kal:1']);
+    expect(ids('セブン 唐揚げ')).toEqual(['kal:3']);
+    expect(ids('唐揚げ セブンイレブン')).toEqual(['kal:3']);
+    expect(ids('ｾﾌﾞﾝ 牛丼')).toEqual(['kal:5']);
+    expect(ids('スタバ モカ グランデ')).toEqual(['kal:7']);
+    expect(ids('スタバ モカ')).toEqual(['kal:6']);
+    // the name alone: the whole menu (a food in its states once)
+    expect(ids('セブン').sort()).toEqual(['kal:3', 'kal:4', 'kal:5']);
+    expect(ids('すき家')).toEqual(['kal:1']);
+    expect(shopIn(k, 'スタバ  モカ')).toEqual({ shop: 'starbucks', rest: 'モカ' });
+  });
+
+  it('nothing on the shop’s menu: the query over everything; a shop called as a food is never a shop word', () => {
+    expect(ids('すき家 おにぎり')).toEqual(searchFoods(db, 'すき家 おにぎり').map((x) => x.id));
+    expect(ids('セブン おにぎり')).toEqual(['kal:4']);
+    expect(shopIn(k, '唐揚げ')).toBeNull();
+    expect(ids('唐揚げ')[0]).toBe('dishes:karaage');
+    expect(shopIn(db, 'セブン')).toBeNull();
   });
 });
 

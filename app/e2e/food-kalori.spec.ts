@@ -44,6 +44,14 @@ test('a member’s search has the chain menus: the shop on the row, logged by th
   await expect(row.locator('.kc')).toContainText('1,180');
   await expect(row.locator('.kc small')).toHaveText('1食');
   expect(a.auth).toEqual([`Bearer ${KEY_OF.A}`]);
+  // a shop named narrows to its menu (the header's aliases: ためし), the other words within it
+  const q = a.sheet.locator('[data-food-q]');
+  await q.fill('ためし');
+  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(1);
+  await q.fill('みほん珈琲 ブレンド');
+  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(1);
+  await expect(a.sheet.locator('[data-food-results] [data-item="kal:900003"]')).toBeVisible();
+  await q.fill('ためし丼');
   await row.click();
   await a.sheet.locator('[data-food-open-add]').click();
   await expect.poll(() => rec.sent.filter((e) => e.type === 'food').map((e) => [e.ok, e.data.g, e.data.f])).toEqual([

@@ -77,10 +77,11 @@ const rare = (it: Item): number => (RARE_PART.test(it.name) && (it.cat === '肉'
 /** Every query token (split on spaces) in an item's text, best first. One row per normalized name + kcal, one per
  *  cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of its
  *  best hit, so a school lunch's closer name never hides the core item; and one per food in its states (`vg`): its
- *  best hit, the default state among the equally good (豚ロース: 生; 豚ロース 焼き: 焼き, the one holding every word). */
-export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined): Item[] {
+ *  best hit, the default state among the equally good (豚ロース: 生; 豚ロース 焼き: 焼き, the one holding every word). With
+ *  `all`, an empty query finds every entry (a shop's whole menu: db.ts searchFoods). */
+export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, all = false): Item[] {
   const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
-  if (!tokens.length) return [];
+  if (!tokens.length && !all) return [];
   const q = tokens.join('');
   type Hit = { e: Entry; s: number; i: number };
   const hits: Hit[] = [];
