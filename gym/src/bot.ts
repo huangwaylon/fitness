@@ -98,13 +98,13 @@ export class GymBot extends DurableObject<Env> implements Bot {
     await this.ensureAlarm();
   }
 
-  /** The state, as the Python bot's state.json (the backup, and what goes back to the Mac on a rollback). */
+  /** The state, in the Python bot's state.json format (the backup). */
   async getState(): Promise<StateJson> {
     await this.ensureAlarm();
     return this.store.toJSON();
   }
 
-  /** Replace the state (the cut-over's import of the Mac's state.json). Refused if it isn't a valid v3 state. */
+  /** Replace the state (a restore, or an edit by hand). Refused if it isn't a valid v3 state. */
   async putState(json: unknown): Promise<{ ok: true } | { ok: false; error: string }> {
     try {
       this.store = new Store(json);
@@ -235,8 +235,8 @@ export class GymBot extends DurableObject<Env> implements Bot {
 
   // --- polling ---
 
-  /** One automatic check, then the next alarm. Nothing (and no next alarm) unless MODE is 'bot': while the Mac runs
-   *  the bot, a second checker would alert twice. */
+  /** One automatic check, then the next alarm. Nothing (and no next alarm) unless MODE is 'bot' (MODE 'off' is the
+   *  stop switch). */
   async alarm(): Promise<void> {
     if (this.env.MODE !== 'bot') return console.log(`alarm ignored (MODE ${this.env.MODE})`);
     if (this.store.paused) return;

@@ -2,7 +2,7 @@
 import type { GymBot } from './bot.ts';
 
 export interface Env {
-  /** 'off' (the Mac runs the bot: LINE's events are ignored, no checks) or 'bot' (this Worker is the bot). */
+  /** 'bot' (this Worker is the bot) or 'off' (the stop switch: LINE's events ignored, no checks). */
   MODE: 'off' | 'bot';
   BOT: DurableObjectNamespace<GymBot>;
   LINE_CHANNEL_TOKEN: string;

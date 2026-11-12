@@ -9,9 +9,8 @@ day, ⏳, 🧹, alerts once per start time, the notices; every Japanese string h
 Address: `https://gym-bot.island-fund-relay.workers.dev`. One Worker, one SQLite-backed Durable Object (`GymBot`),
 Workers Free. LINE's webhook comes straight here, so nothing needs a tunnel or a machine left on.
 
-`MODE` (wrangler.toml) is `off` until the cut-over: LINE's events are answered 200 and ignored, and the alarm checks
-nothing and sets no next alarm, so the Worker never checks while the Mac's bot does (two checkers would alert twice).
-`bot`: this Worker answers the taps, checks the gym and pushes alerts.
+`MODE` (wrangler.toml) is `bot`: the Worker answers the taps, checks the gym and pushes alerts. `off` is the stop
+switch: LINE's events are answered 200 and ignored, and the alarm checks nothing and sets no next alarm.
 
 ## How it works
 
@@ -49,9 +48,11 @@ Never in this public repo. `npx wrangler secret put <NAME>` from `gym/`:
 
 | Name | Value |
 |---|---|
-| `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | The Mac's `.env` (LINE Developers Console → the channel) |
-| `LINE_GROUP_ID` | The Mac's `.env`. Empty: other groups' events log `LINE_GROUP_ID=…`, alerts wait |
-| `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state`; a copy in the Mac's `.env` |
+| `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings) |
+| `LINE_GROUP_ID` | Empty: other groups' events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
+| `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
+
+Secrets can't be read back from Cloudflare: the coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 
 ## Develop and deploy
 
@@ -64,29 +65,18 @@ curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mod
 
 The account is pinned in wrangler.toml (the relay's). Tests run on Node with `cloudflare:workers` mocked; no network.
 
-## Cutting over
+## Operations
 
-One step from the Python bot on the Mac (`~/gymbot` on mbp2, still on ngrok) to this Worker; taps in the few minutes
-between go unanswered. `$URL` = `https://gym-bot.island-fund-relay.workers.dev`, `$GYM_TOKEN` and
-`$LINE_CHANNEL_TOKEN` as in Secrets (all in the Mac's `.env`).
+`$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` as in Secrets.
 
-1. With the four secrets put and MODE `off` deployed, `/health` says `"mode":"off"`.
-2. Stop the Mac's bot for good, keeping the plist for a rollback (a bootout alone restarts it at the next login):
-   `launchctl bootout gui/$(id -u)/local.gymbot && mv ~/Library/LaunchAgents/local.gymbot.plist ~/gymbot/`
-3. Import its settings: `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @$HOME/gymbot/state.json $URL/gym/state` → `{"ok":true}`.
-4. `MODE = "bot"` in wrangler.toml, commit, push, `npm run deploy`; `/health` says `"mode":"bot"`.
-5. Point LINE's webhook here:
-   `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json' -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint`
-6. Start the checks: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state` (shows the imported state and
-   sets the first alarm). In the group: メニュー → 📋 設定を見る shows the days and the next check;
-   `npx wrangler tail` shows `check: …` every interval.
-
-**Rollback to the Mac.**
-1. `MODE = "off"` and deploy (in a hurry, from a clean main: `npm run deploy -- --var MODE:off`, then commit the
-   change). The Worker stops checking at its next alarm.
-2. Carry the settings back: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > ~/gymbot/state.json`.
-3. Start the Mac's bot: `mv ~/gymbot/local.gymbot.plist ~/Library/LaunchAgents/ && launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.gymbot.plist`.
-   At startup it registers its ngrok address with LINE again, so the webhook follows; メニュー answers from the Mac.
+- **Watch it**: `npx wrangler tail` (taps, changes, `check: …` each interval); in the group, 📋 設定を見る shows the
+  last and next check.
+- **Stop everything** (e.g. alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
+  `MODE = "off"`. Back on: `MODE = "bot"`, deploy, then one `GET /gym/state` to set the first alarm.
+- **Back up or edit the state**: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > state.json`;
+  put it back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
+- **LINE's webhook** must be `$URL/line/webhook` (LINE Developers Console, or
+  `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json' -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint`).
 
 ## Quotas
 

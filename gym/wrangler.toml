@@ -10,8 +10,8 @@ workers_dev = true
 preview_urls = false
 
 [vars]
-# 'off': LINE's events are ignored and nothing is checked, while the Mac runs the bot. 'bot': this Worker checks the gym
-# and answers the taps. README "Cutting over".
+# 'bot': this Worker checks the gym and answers the taps. 'off': the stop switch, LINE's events ignored and nothing
+# checked (README "Operations").
 MODE = "bot"
 
 # The bot: the state, the checks (on its alarm) and the taps' answers.

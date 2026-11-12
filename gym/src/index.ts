@@ -1,6 +1,5 @@
 // The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), and the state's import/export. MODE
-// (wrangler.toml) 'off' answers LINE but ignores its events, so the Worker stays out of the way while the Mac runs the
-// bot; 'bot' hands each event to the bot.
+// (wrangler.toml) 'bot' hands each event to the bot; 'off', the stop switch, answers LINE but ignores its events.
 import type { Env } from './env.ts';
 import { signatureOk } from './line.ts';
 
