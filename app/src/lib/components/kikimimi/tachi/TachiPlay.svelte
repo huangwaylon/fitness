@@ -134,11 +134,6 @@
           </li>
         {/each}
       </ol>
-      {#if open}
-        <div class="acts">
-          <button type="button" class="btn small" data-kiki-tachi-done aria-disabled={!full} data-sfx={full ? 'confirm' : 'none'} onclick={done}>{t('kiki.tachi.done')}</button>
-        </div>
-      {/if}
     {:else if r.type === 'changed'}
       <div class="pick3" role="group" aria-label={t('kiki.tachi.ask.changed')} data-kiki-tachi-changed>
         {#each r.who as w, f (w)}
@@ -179,7 +174,13 @@
   {/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="tachi-{r.type}" answered={!!sent} {verdict} {stage} {input} {after} onnext={() => game.next()} onready={() => game.ready()} />
+{#snippet action()}
+  {#if r.type === 'opinions' && right && v.phase === 'answer' && !v.out}
+    <button type="button" class="btn" data-kiki-tachi-done aria-disabled={!full || !!sent} data-sfx={full && !sent ? 'confirm' : 'none'} onclick={done}>{t('kiki.tachi.done')}</button>
+  {/if}
+{/snippet}
+
+<RoundFrame {v} now={game.now} me={game.me} type="tachi-{r.type}" answered={!!sent} {verdict} {stage} {input} {after} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>
@@ -213,8 +214,6 @@
   .sym { position: absolute; right: -4px; top: -6px; font: 700 18px/1 var(--font-ui); }
   .sym.ok { color: var(--leaf-text); }
   .sym.ng { color: var(--coral-text); }
-  .acts { display: flex; justify-content: center; }
-  .acts .btn { min-width: 8em; }
 
   /* changed: the three faces as big buttons */
   .pick3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }

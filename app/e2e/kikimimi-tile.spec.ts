@@ -135,6 +135,28 @@ test('solo: the mode once listened, the clip before the tiles, tap to place and 
   expect(missed[2]).toBe(1 << (WORDS.get(ids[1])!.tiles.length - 1));
 });
 
+test('one action in the foot: できた there, then 次へ in its place, sunk for 1.2 s after the reveal (a second tap never skips it)', async ({ context }) => {
+  const page = await phone(context, `${DAY}&arm`);
+  await toTile(page);
+  await sheet(page).locator('[data-kiki-start]').click();
+  await build(page);
+  const done = sheet(page).locator('.level-acts [data-kiki-tile-done]');
+  await expect(done).toHaveAttribute('aria-disabled', 'false');
+  // (the clock held, so the 1.2 s pass only when stepped)
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 200));
+  await done.click();
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
+  const next = sheet(page).locator('.level-acts [data-kiki-next]');
+  await expect(next).toHaveAttribute('aria-disabled', 'true');
+  await next.click({ force: true }); // (the double tap: swallowed)
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
+  await page.clock.runFor(1300);
+  await expect(next).toHaveAttribute('aria-disabled', 'false');
+  await next.click();
+  await expect(sheet(page)).not.toHaveAttribute('data-phase', 'reveal');
+  expect(await kiki(page, (k) => k.view().i)).toBe(1);
+});
+
 test('night: the board in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
   const page = await phone(context, NIGHT);

@@ -135,10 +135,6 @@
 
   {#if v.phase === 'play' && !v.out && !sent}
     <p class="hint-line" data-kiki-call-after>{t('kiki.call.after')}</p>
-  {:else if v.phase === 'answer' && !v.out && !sent}
-    <div class="acts">
-      <button type="button" class="btn" data-kiki-call-done aria-disabled={!full} data-sfx={full ? 'confirm' : 'none'} onclick={done}>✓ {t('kiki.call.done')}</button>
-    </div>
   {/if}
 
   {#if reveal && !v.out}
@@ -154,7 +150,13 @@
   {/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="call" answered={!!sent} {verdict} {stage} {input} onnext={() => game.next()} onready={() => game.ready()} />
+{#snippet action()}
+  {#if v.phase === 'answer' && !v.out}
+    <button type="button" class="btn" data-kiki-call-done aria-disabled={!full || !!sent} data-sfx={full && !sent ? 'confirm' : 'none'} onclick={done}>✓ {t('kiki.call.done')}</button>
+  {/if}
+{/snippet}
+
+<RoundFrame {v} now={game.now} me={game.me} type="call" answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>
@@ -168,8 +170,6 @@
   .hint { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .ask { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .hint-line { margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .acts { display: flex; justify-content: center; }
-  .acts .btn { min-width: 10em; }
   .rows { font: 700 var(--fs-body)/1.2 var(--font-ui); color: var(--text); }
   .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .log-btn { justify-self: center; }

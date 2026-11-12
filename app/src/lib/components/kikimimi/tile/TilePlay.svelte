@@ -3,7 +3,7 @@
   // (frame/RoundFrame.svelte: the players' chips, the timer, the status line, つぎへ / よみおわった). The speaker pops in and
   // the clip plays once with no tiles (the situation, `ctx`, under the bubble); then the sentence's slots and the board's
   // tiles: a tap puts a tile in my next empty slot, a tap on a placed one takes it back (no drag), 「できた」 sends it once
-  // my slots are full. 🔁 as often as wanted (a replay: "hard" for review, never points). Co-op: one sentence, my slots
+  // my slots are full (the foot's: RoundFrame `action`). 🔁 as often as wanted (a replay: "hard" for review, never points). Co-op: one sentence, my slots
   // every other one (role 0 the 1st, 3rd…), the partner's shown as theirs; easy: my first slot placed for me.
   // The reveal: ○ / × and my words right, the spoken shape over the written (the bubble's sound marks: should've →
   // shoulda) with the karaoke as it replays, the Japanese, the trap's note, each slot's word (○, or × with what was put
@@ -175,14 +175,19 @@
     </div>
     <div class="acts">
       <button type="button" class="btn small paper" data-kiki-tile-clear aria-disabled={!slots.some((j) => j !== given && placed[j] !== EMPTY)} data-sfx="back" onclick={clear}>{t('kiki.tile.clear')}</button>
-      <button type="button" class="btn small" data-kiki-tile-done aria-disabled={!full} data-sfx={full ? 'confirm' : 'none'} onclick={done}>{t('kiki.tile.done')}</button>
     </div>
   {/if}
 
   {#if reveal && it.why}<Why text={it.why} />{/if}
 {/snippet}
 
-<RoundFrame {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} onnext={() => game.next()} onready={() => game.ready()} />
+{#snippet action()}
+  {#if v.phase === 'answer' && !v.out}
+    <button type="button" class="btn" data-kiki-tile-done aria-disabled={!full || !!sent} data-sfx={full && !sent ? 'confirm' : 'none'} onclick={done}>{t('kiki.tile.done')}</button>
+  {/if}
+{/snippet}
+
+<RoundFrame {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} top={shown} onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>
@@ -229,8 +234,8 @@
   .pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-top: 4px; }
   .tile { min-height: 48px; min-width: 48px; padding: 6px 14px; border-radius: 14px; font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui); }
   .tile[data-used] { opacity: .3; }
-  .acts { display: flex; justify-content: center; gap: 10px; }
-  .acts .btn { flex: 0 1 auto; min-width: 7em; }
+  /* 全部戻す by the pool, at its start: apart from the foot's できた */
+  .acts { display: flex; justify-content: flex-start; }
 
   .words { font: 700 var(--fs-body)/1.2 var(--font-ui); color: var(--text); }
   .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
