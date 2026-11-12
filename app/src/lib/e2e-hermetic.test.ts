@@ -19,7 +19,7 @@ const src = (f: string) => readFileSync(join(E2E, f), 'utf8');
 // the real relay's harness (RELAY_E2E=1, its own opt-in)
 const ROUTED: Record<string, string> = {
   'board.spec.ts': 'the record routed (pairedWithPost)',
-  'food-kalori.spec.ts': "Kalori's pictures (assets.kalori.jp) answered or aborted by context.route, never fetched",
+  'food-kalori.spec.ts': "Kalori's pictures (assets.kalori.jp) answered or aborted by context.route, never fetched; a product link's href asserted, never opened",
   'gymbot.spec.ts': "the gym bot's /status routed (page.route), never fetched",
   'liveRoom.ts': 'the record and the room routed in-process',
   'log.spec.ts': 'the record and /log routed (LIVE=1 forwards to the test relay on purpose)',

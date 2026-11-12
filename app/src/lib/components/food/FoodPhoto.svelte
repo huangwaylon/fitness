@@ -39,7 +39,7 @@
     </div>
     <h3>{item.name}</h3>
     {#if item.desc}<p data-desc>{item.desc}</p>{/if}
-    <p class="credit" data-photo-credit>{t('food.img.credit')}</p>
+    <p class="credit" data-photo-credit>{t(src ? 'food.kal.img' : 'food.img.credit')}</p>
   </div>
 </dialog>
 

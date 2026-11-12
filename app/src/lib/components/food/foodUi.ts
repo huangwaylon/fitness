@@ -291,6 +291,12 @@ export function recentOf(mine: readonly FoodEntry[], limit = 20): FoodEntry[] {
   return out;
 }
 
+/** A chain menu's page on kalori.jp (its shop and number: `kal:<n>`), for the amount's link; null for any other food. */
+export function kaloriPage(it: Pick<Item, 'id' | 'shop'>): string | null {
+  const n = /^kal:(\d+)$/.exec(it.id)?.[1];
+  return n && it.shop ? `https://kalori.jp/ja/shops/${encodeURIComponent(it.shop)}/products/${n}/` : null;
+}
+
 /** The chips under the search's field (FoodSearch): at most 6 while typing, the shops of the results (shopsFor) when
  *  two or more hold some and none is named. */
 const SHOP_CHIPS = 6;

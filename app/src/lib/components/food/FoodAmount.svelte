@@ -2,7 +2,8 @@
   // ごはん's amount (a level over the search or the day; docs/design.md "Gohan" Amount). The head: its picture when it
   // has one (104 px beside the name, the イメージ badge: every picture is generated, a chain menu's Kalori's own; a tap:
   // FoodPhoto, it enlarged),
-  // its name, everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
+  // its name, a chain menu's shop and category (its mark: ShopMark) with how far its values are the shop's own (公式の値,
+  // PFCは推定, 推定の値（AI）) and 「kalori.jpで見る ›」 (its page), the everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
   // (the sheet's loudest number) with the grams it's for, P · F · C · 塩分, and under them behind 「100gあたりの栄養」
   // (closed on each open) the values per 100 g.
   // Then the controls (FoodPortion, their rules amount.svelte.ts) in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
@@ -27,7 +28,8 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { glossOf, withImages } from './foodUi.ts';
+  import { glossOf, kaloriPage, withImages } from './foodUi.ts';
+  import ShopMark from './ShopMark.svelte';
 
   interface Props {
     item: Item;
@@ -80,6 +82,9 @@
     const v = a.db ? verifyOf(a.db, item.id) : null;
     return v && v.n >= 2 ? v.n : 0;
   });
+  /** A chain menu's (Kalori): its page, and how far its values are the shop's own. */
+  const page = $derived(kaloriPage(item));
+  const trust = $derived(t(item.est === 'e' ? 'food.kal.est' : item.est === 'p' ? 'food.kal.pfc' : 'food.kal.official'));
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
   function done() {
@@ -98,8 +103,10 @@
       {/if}
       <div class="txt">
         <h3>{item.name}</h3>
+        {#if item.shop && item.brand}<p class="sh" data-food-shop><span class="sr-only">{t('food.shop')}</span><ShopMark />{item.brand}{#if item.cat}{' · '}{item.cat}{/if}</p>{/if}
         {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
+        {#if page}<p class="tr" data-food-trust={item.est ?? 'o'}>{trust}<a href={page} target="_blank" rel="noopener noreferrer" data-sfx="open" data-food-kalori>{t('food.kal.see')}<span aria-hidden="true"> ›</span></a></p>{/if}
         <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>
@@ -152,6 +159,11 @@
   }
   .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+  .sh { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+  /* the values' trust and the shop's page: one quiet line, the link a 44 px target on it */
+  .tr { margin: -6px 0 -8px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .tr a { display: inline-flex; align-items: center; min-height: var(--hit); color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+  .tr a:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* what this amount holds, live: the kcal (the loudest thing on the sheet) and the amount it's for at the name column's

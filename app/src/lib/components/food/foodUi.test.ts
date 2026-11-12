@@ -8,7 +8,7 @@ import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
   parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, nextMult, typedKcal,
-  catOf, plateOf, recipeIdOf, recipePlate, recentShops, shopChips
+  catOf, kaloriPage, plateOf, recipeIdOf, recipePlate, recentShops, shopChips
 } from './foodUi.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
@@ -304,5 +304,12 @@ describe('the shop chips', () => {
     expect(recentShops(mine.slice(3), db, '2026-11-01', 4).map((s) => s.shop)).toEqual(['a', 'b']);
     // no chain menus in the catalog (the demo, the guest) or none of mine: none
     expect([recentShops(mine, null, '2026-10-13'), recentShops(mine, emptyDb({ version: 'x', datasets: [] }), '2026-10-13'), recentShops([], db, '')]).toEqual([[], [], []]);
+  });
+});
+
+describe('kaloriPage', () => {
+  it('a chain menu’s page on kalori.jp; none for another food', () => {
+    expect(kaloriPage({ id: 'kal:57551', shop: 'sukiya' })).toBe('https://kalori.jp/ja/shops/sukiya/products/57551/');
+    expect([kaloriPage({ id: 'kal:57551' }), kaloriPage({ id: 'mext:01088', shop: 'x' }), kaloriPage({ id: 'kal:x1', shop: 'x' })]).toEqual([null, null, null]);
   });
 });

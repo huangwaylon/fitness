@@ -213,6 +213,8 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   last 30 days of chain menus; hidden with none). A chip only writes the shop's name into the query (the keyboard stays
   up), so ✕ clears it; never in the demo or for the guest (no chain menus).
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
+  a chain menu's head adds 「<店> · <category>」, its values' trust (公式の値 · 公式の値（PFCは推定） · 推定の値（AI）) and
+  「kalori.jpで見る ›」 (its product page, a new tab); Kalori is credited in the sources, its pictures too;
   **状態** chips (the portion carried through its yield); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
   portion's whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the
   keyboard.

@@ -67,7 +67,7 @@ test('a member’s search has the chain menus: the shop on the row, logged by th
   ]);
 });
 
-test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (no referrer); the amount’s failing: its tile', async ({ browser }) => {
+test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (no referrer); its amount: the shop, the values’ trust, its kalori.jp page, the picture failing: its tile', async ({ browser }) => {
   const a = await search(browser, newRecord(), 'A');
   const row = a.sheet.locator('[data-food-results] [data-item="kal:900001"]');
   await expect(row.locator('[data-thumb="img"] img')).toHaveAttribute('src', 'https://assets.kalori.jp/products/tameshi/generated/g/900001_200.webp');
@@ -86,6 +86,13 @@ test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (
   await expect.poll(() => a.imgs.some((i) => i.url.endsWith('/900001_400.webp'))).toBe(true);
   await expect(pic.locator('[data-thumb="cat"]')).toBeVisible();
   await expect(pic.locator('img')).toHaveCount(0);
+  // the amount's head: the shop and category, how far the values are its own, its page on kalori.jp
+  await expect(a.sheet.locator('[data-food-shop]')).toHaveText('店のメニュー：ためし食堂 · 丼・定食');
+  await expect(a.sheet.locator('[data-food-trust="p"]')).toContainText('公式の値（PFCは推定）');
+  const link = a.sheet.locator('[data-food-kalori]');
+  await expect(link).toHaveAttribute('href', 'https://kalori.jp/ja/shops/tameshi/products/900001/');
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   expect(a.imgs.every((i) => i.url.startsWith('https://assets.kalori.jp/products/tameshi/generated/g/') && !i.referer)).toBe(true);
 });
 

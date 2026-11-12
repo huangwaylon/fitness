@@ -8,13 +8,15 @@
 
   let { open = $bindable(false) }: { open?: boolean } = $props();
   let list = $state.raw<Credit[] | null>(null);
+  /** The chain menus are in (a member's): their pictures are Kalori's, credited beside ours. */
+  let kal = $state(false);
   let failed = $state(false);
 
   function toggle() {
     open = !open;
     if (!open || list) return;
     failed = false; // (opened again after a failure: loading again)
-    foodDb().then((db) => (list = credits(db)), () => (failed = true));
+    foodDb().then((db) => ((kal = db.sets.some((s) => s.source === 'kalori')), (list = credits(db))), () => (failed = true));
   }
 </script>
 
@@ -25,7 +27,7 @@
   {#if open}
     {#if list}
       <ul>
-        <li data-credit-img><b>{t('food.img.badge')}</b><span>{t('food.img.credit')}</span></li>
+        <li data-credit-img><b>{t('food.img.badge')}</b><span>{t('food.img.credit')}</span>{#if kal}<span data-credit-kalori-img>{t('food.kal.img')}</span>{/if}</li>
         {#each list as c (c.label)}
           <li>
             <b>{#if c.url}<a href={c.url} target="_blank" rel="noopener noreferrer" data-sfx="open">{c.label}</a>{:else}{c.label}{/if}</b>

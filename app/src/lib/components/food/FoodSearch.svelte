@@ -29,6 +29,7 @@
   import { imgOf, kaloriImg, type FoodImageIndex } from '#lib/food/images.ts';
   import { flushSync, type Snippet } from 'svelte';
   import FoodThumb from './FoodThumb.svelte';
+  import ShopMark from './ShopMark.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import FoodOpen, { type Set } from './FoodOpen.svelte';
   import NavButton from '../ui/NavButton.svelte';
@@ -276,9 +277,6 @@
 
 {#snippet plus()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>{/snippet}
 
-<!-- a chain menu's mark before its shop's name: a storefront, its awning scalloped -->
-{#snippet store()}<svg class="shop" data-shop viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4h17L22 9a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1-5 0z M4 12v8h16v-8 M10 20v-4.5h4V20" /></svg>{/snippet}
-
 {#snippet bolt()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" /></svg>{/snippet}
 
 <!-- a row's own ＋: logged as it comes, in one tap; hidden while its row is open (one add there: FoodOpen's 追加) -->
@@ -419,7 +417,7 @@
   {#snippet cells()}
     <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} src={kaloriImg(it, 48)} />
     <span class="nm"><Phrases text={vs.length ? stemName(it) : it.name} name />{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
-    <small class="meta">{#if it.brand}{#if it.shop}<span class="sr-only">{t('food.shop')}</span>{@render store()}{/if}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
+    <small class="meta">{#if it.brand}{#if it.shop}<span class="sr-only">{t('food.shop')}</span><ShopMark />{/if}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
     <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
   {/snippet}
   {@render row({ key: `f:${it.id}`, data: { 'data-item': it.id, 'data-per100': it.kcal }, name: it.name, item: () => it, pick: () => onpick(it),
@@ -501,8 +499,7 @@
   .meta .ok { margin-left: 0; }
   .ok.short { padding: 2px 5px; }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
-  .br { color: var(--text); }
-  .shop { width: 12px; height: 12px; margin-right: 3px; vertical-align: -1px; flex: none; fill: none; stroke: var(--text); stroke-width: 2.2; stroke-linejoin: round; }
+  .br, .meta > :global([data-shop]) { color: var(--text); }
   /* the shown state a chip within the line (inline padding: the row no taller), the others faded */
   .sts { white-space: nowrap; }
   .sts > * + * { margin-left: 6px; }
