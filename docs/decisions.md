@@ -117,6 +117,12 @@ change's past never changes. Why: a calorie tracker whose history never rewrites
 食物繊維 and アルコール are optional snapshot keys (`fi`, `al`), kept only when the source says; default goals from the
 食事摂取基準 2025 and 健康日本21 (alcohol at most 20 g). Why: unknown never reads as zero, and one plain national line.
 
+### Kalori for the members only
+kalori.jp's chain menus reach the food search from the relay's Workers KV (`GET /food/kalori`), a member's key only:
+never in git, on Pages or in the demo, the guest refused; values per serving, estimates labelled and never ✓n
+([food-data](food-data.md#kalori)). Why: chain meals are what we eat out, and their terms forbid publishing them; KV
+needs no R2 and no deploy, and the Durable Object's row cap and daily backup don't fit 9 MB of reference data.
+
 ## Economy
 
 ### Bells are play money

@@ -16,7 +16,8 @@ Shortcut (`ingest`).
 
 One Worker, three SQLite-backed Durable Objects (`relay/wrangler.toml`): `ROOM` (`IslandRoom`: [Live
 relay](#live-relay)), `STORE` (`IslandStore`) and `LOG` (`IslandLog`: [observability](ops/observability.md)); it also
-serves `/stt`, ききみみ's recogniser ([kikimimi-mic.md](kikimimi-mic.md)).
+serves `/stt`, ききみみ's recogniser ([kikimimi-mic.md](kikimimi-mic.md)), and `/food/kalori` from Workers KV
+([Kalori](#kalori)).
 
 <a id="tabs"></a>
 ## Tables
@@ -237,7 +238,7 @@ never data of record: the record still catches an offline phone up.
   `src/room.ts`) at `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}`
   (`sha`: the deployed commit); `POST /api`, `/admin`, `/notify` ([Push](#push)), `/log`
-  ([observability](ops/observability.md)), `/stt`.
+  ([observability](ops/observability.md)), `/stt`, `GET /food/kalori` ([Kalori](#kalori)).
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key (`contract/ticket.ts`, `auth.ts admission`), else 403; a ticketed
   hello must be that person's. A phone clock over 5 minutes off has no live socket.
@@ -318,6 +319,22 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
 - **The phones:** a member's draws the guest's villager as a third actor (`ui-state/cast.ts`: `mine`, `partner`,
   `third`; on the guest's phone `third` is B); the guest's phone guards what it sends by the same rules.
 - **Tests:** `relay/test/guest.test.ts`, `contract/guest.test.ts`, `e2e/guest.spec.ts`; `npm run smoke` with `KEY_C`.
+
+## Kalori
+`GET /food/kalori` (`relay/src/foodRoute.ts`): Kalori's chain menus for the members' food search
+([food-data](food-data.md#kalori)), from the Workers KV namespace `FOOD` (`wrangler.toml`: prod and `[env.test]`
+each their own), written by `relay/scripts/kalori-put.sh`, never by a deploy.
+
+- **Auth:** `Authorization: Bearer <KEY_A|KEY_B>`; no or a wrong key 401 `unauthorized`, the guest's 403 `forbidden`
+  (one key fewer holding the data). CORS for `ALLOWED_ORIGINS` and localhost (another origin: 403), the preflight
+  allowing `Authorization, If-None-Match`; no Origin (curl) is served.
+- **Caching:** KV `kalori` (the file, metadata `{v}`) and `kalori:v` (its version: the sha256, 16 hex). `ETag: "<v>"`
+  (Cloudflare's gzip makes it `W/"<v>"`; both match), `Cache-Control: private, no-cache`, `Access-Control-Expose-Headers:
+  ETag`; a matching `If-None-Match` is a 304 from the version key alone. Nothing uploaded: 404 `no_data`. Errors are
+  `no-store`.
+- **Size:** 9.7 MB, 1.2 MB gzipped on the wire (38,383 items): a KV read a fetch, one a revalidation.
+- **Tests:** `relay/test/food-route.test.ts` (a fake KV); `npm run smoke` (a member's 200 or 404, a 304, the guest,
+  a stranger and another origin refused).
 
 ## Ambient life
 What the island does on its own (a villager's outing or small move, the visitor's beat, a fish, bubbles or a bug) is

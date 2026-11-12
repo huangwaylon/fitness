@@ -156,8 +156,29 @@ sheet layout):
 - **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/, ≤ 400 KB a sheet, a common search's
   top 20 ≤ 128 KB of thumbnails on average, and every generic food in a table row.
 
+## Kalori
+Chain and konbini menus (すき家, セブン, スタバ ...) from kalori.jp, for the members only
+([decisions](decisions.md#kalori-for-the-members-only)). **Never in git, on Pages or in `app/static`**: its terms
+forbid redistribution (第8条), so it never goes public: the file lives in the relay's Workers KV and `GET /food/kalori` hands it to a member's key
+([backend](backend.md#kalori)); the guest and the demo get none.
+
+- **Convert:** `python3 -I food-data/scripts/kalori_convert.py <raw>/kalori/items.jsonl` (shops.csv beside it) →
+  gitignored `food-data/out/private/kalori.json`, its counts printed. The crawl and export stay on a local branch.
+- **Upload:** from `relay/`, `sh scripts/kalori-put.sh --env test`, check, then `sh scripts/kalori-put.sh` (prod).
+  The ETag is the file's hash, so phones refetch only after a change. Check:
+  `curl -so /dev/null -w '%{http_code}' -H "Authorization: Bearer $KEY_A" <relay>/food/kalori` → 200 (`npm run smoke`
+  covers the test copy).
+- **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` and items `kal:<id>`: `brand`
+  the shop's name, `shop` its id, values **per serving** (`sv: true`, one `1食` portion of a nominal 100 g), `est`
+  (`p`: estimated PFC, `e`: estimated kcal; absent: official), `img` (the generated picture's id, hotlinked from
+  `assets.kalori.jp`), `vg`/`st` for a trailing size or milk (牛丼 並盛 · 大盛, （Tall・豆乳）) and katakana aliases
+  for Short/Tall/Grande/Venti. Our shop aliases (セブン, サイゼ ...) are `data_src/kalori_shops.json`.
+- **Dropped:** no name or kcal, a name over 60 characters, over the custom-food limits (5,000 kcal, 500 g), or an
+  OFF product of the same name whose brand is the shop (the label wins; the same name by another maker stays).
+  Never in `verify.json`: estimates get no ✓n.
+- **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows only (no Kalori data in the repo).
+
 ## Sources evaluated and not used
-- Konbini and chain menus (7-Eleven, Lawson, FamilyMart, McDonald's, Yoshinoya, Sukiya ...): every ToS forbids copying. Link out or let a person enter values; never bundle them.
 - Commercial recipe sites (Cookpad, Kikkoman, Ajinomoto) and 女子栄養大学 calorie guides: no reuse license.
 - GS1 Japan (GEPIR closed; Verified by GS1 forbids redistribution) and JICFS (paid): no nutrition data either.
 - FatSecret: Japanese data only in the paid tier. Yahoo/Rakuten product APIs: product name only.

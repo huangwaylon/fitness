@@ -388,3 +388,18 @@ if (KEY_C) {
   const stats = await admin({ op: 'logstats' });
   check(stats.ok === true && typeof stats.e1h === 'number', `the log's stats (${stats.e1h} errors this hour, ${stats.budgetPct} % of the day's cap)`);
 }
+
+// Kalori (src/foodRoute.ts): a member gets the file (or 404 before its upload) and a 304 on its ETag; the guest, a
+// stranger and another origin are refused.
+{
+  const url = new URL('/food/kalori', http);
+  const as_ = (key: string, h: Record<string, string> = {}) => fetch(url, { headers: { Origin: ORIGIN, Authorization: `Bearer ${key}`, ...h } });
+  const a = await as_(KEY_A);
+  const etag = a.headers.get('ETag');
+  const n = a.status === 200 ? ((await a.json()) as { items: unknown[] }).items.length : 0;
+  check(a.status === 404 || (a.status === 200 && !!etag && n > 0), `/food/kalori: a member gets it (${a.status}, ${n} items)`);
+  if (etag) check((await as_(KEY_B, { 'If-None-Match': etag })).status === 304, '/food/kalori: 304 on its ETag');
+  if (KEY_C) check((await as_(KEY_C)).status === 403, '/food/kalori: the guest is refused');
+  check((await as_('c3'.repeat(32))).status === 401, '/food/kalori: a stranger is refused');
+  check((await fetch(url, { headers: { Origin: 'https://evil.test', Authorization: `Bearer ${KEY_A}` } })).status === 403, '/food/kalori: another origin is refused');
+}
