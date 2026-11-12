@@ -53,8 +53,8 @@ items:
       - { type: gist, ask: "どんな 通話？", line: 4, choices: ["A host explains the key box, checkout and the heater before the guests arrive.", "A host apologizes because the house isn't ready and offers a cheaper room.", "Two guests call the host to complain that the code for the key box doesn't work."], answer: 0, cja: ["家主が到着前に、鍵の箱、チェックアウト、暖房を説明する", "家の準備ができていないと家主が謝り、安い部屋をすすめる", "鍵の箱の番号で開かないと、二人が家主に苦情の電話をする"], why: "到着前のビデオ通話で、鍵の箱の場所と番号、チェックアウトの時間、暖房の注意を伝えている。番号で開かないのは、もしもの話。" }
       - { type: mean, ask: "鍵の 番号は？", line: 5, choices: ["Four, seven, two, nine.", "Four, seven, nine, two.", "Four, nine, seven, two."], answer: 1, cja: ["四、七、二、九", "四、七、九、二", "四、九、七、二"], why: "最初の four, seven, two, nine は that's the old one＝前の番号。言い直した four, seven, nine, two が正しい。" }
       - { type: mean, ask: "for a small fee が 示すのは？", line: 16, choices: ["Late checkout is free if they ask by Friday.", "Late checkout costs extra, and more on weekends.", "Late checkout is only possible on weekdays."], answer: 1, cja: ["金曜までに頼めば無料", "遅めのチェックアウトは有料で、週末は高め", "遅めのチェックアウトは平日だけ"], why: "a small fee＝無料ではない。ふだん三千円くらい、週末は a bit more。金曜までというのは頼む期限で、料金とは関係ない。" }
-      - { type: attitude, ask: "ボブは 延長に ついて どう 思っている？", line: 18, choices: ["Pleased: three thousand yen is a good deal.", "Wary: the weekend price for the late checkout is still unclear.", "Annoyed: he wants to leave the house at ten o'clock no matter what."], answer: 1, cja: ["喜んでいる：三千円ならお得", "警戒している：遅めのチェックアウトの週末料金がまだはっきりしない", "いらいら：どうしても十時に出たい"], why: "How small are we talking? や A bit more meaning what? と金額を問いつめる。週末の値段があいまいなので警戒している。" }
-      - { type: next, ask: "当日、2人は まず 何を する？", line: 24, choices: ["Call the host as soon as their plane lands in Sapporo.", "Text the host before they leave the airport.", "Turn on the heater from the host's app."], answer: 1, cja: ["着陸したらすぐ家主に電話する", "空港を出る前に家主にメッセージを送る", "家主のアプリで暖房をつける"], why: "家主は電話ではなくメッセージを希望。ボブが空港を出る前に送ると言い、家主はそれを見て暖房をつける。" }
+      - { type: attitude, ask: "ボブは 延長に ついて どう 思っている？", line: 18, choices: ["Pleased: three thousand yen is a good deal.", "Wary: the weekend price is still unclear.", "Annoyed: he wants to leave the house at ten o'clock no matter what."], answer: 1, cja: ["喜んでいる：三千円ならお得", "警戒している：遅めのチェックアウトの週末料金がまだはっきりしない", "いらいら：どうしても十時に出たい"], why: "How small are we talking? や A bit more meaning what? と金額を問いつめる。週末の値段があいまいなので警戒している。" }
+      - { type: next, ask: "当日、2人は まず 何を する？", line: 24, choices: ["Call the host as soon as their plane lands in Sapporo.", "Text the host before they leave the airport.", "Turn the heater on themselves from the host's app."], answer: 1, cja: ["着陸したらすぐ家主に電話する", "空港を出る前に家主にメッセージを送る", "自分で家主のアプリから暖房をつける"], why: "家主は電話ではなくメッセージを希望。ボブが空港を出る前に送ると言い、家主はそれを見て暖房をつける。" }
     dict:
       - { line: 7, words: "who comes on Mondays", feature: weak-form }
       - { line: 14, words: "push it back to one", feature: linking }
@@ -74,7 +74,7 @@ items:
       - { who: whitney, at: 0.5, en: "Great. I'm meeting a friend for dinner, and I'm already running a little late.", ja: "よかった。友だちと夕食なんですけど、もう少し遅れてて。" }
       - { who: kappn, at: 0.4, en: "Traffic isn't too bad tonight, so we should make good time.", ja: "今夜は道がそれほど混んでいないので、早めに着けると思いますよ。" }
       - { who: whitney, at: 0.5, en: "Is it okay if I pay by card? I only have a few thousand yen in cash.", ja: "カードで払ってもいいですか？現金は数千円しかなくて。" }
-      - { who: kappn, at: 0.4, en: "Card is fine. There's a screen on the back of my seat that you can tap it on.", ja: "カードで大丈夫です。私の座席の後ろの画面にかざしてください。" }
+      - { who: kappn, at: 0.4, en: "Card is fine. You can tap it on the screen on the back of my seat.", ja: "カードで大丈夫です。私の座席の後ろの画面にかざしてください。" }
       - { who: whitney, at: 2.5, en: "Sorry, are we close? The map on my phone says we're going the wrong way.", ja: "すみません、もうすぐですか？スマホの地図だと、逆の方に向かってるみたいで。" }
       - { who: kappn, at: 0.4, en: "We're almost there. Garden Place is just past the next light, on the right.", ja: "もうすぐです。ガーデンプレイスは次の信号を過ぎて右です。" }
       - { who: whitney, at: -0.3, en: "Oh, no, wait. I said Garden Court, not Garden Place.", ja: "あ、違う、待ってください。ガーデンプレイスじゃなくて、ガーデンコートって言ったんです。" }
@@ -102,8 +102,8 @@ items:
       - { type: gist, ask: "どんな 話？", line: 9, choices: ["The driver misheard the place, and they find it with the friend's help.", "The driver took a long way on purpose, and the passenger complains.", "The passenger gave the driver the wrong address, so her friend comes out to meet her."], answer: 0, cja: ["運転手が行き先を聞き違え、友だちの助けで見つける", "運転手がわざと遠回りし、客が文句を言う", "客が住所を間違えたので、友だちが外に迎えに来る"], why: "客は Garden Court と言ったのに、運転手は Garden Place と聞き違えた。友だちの説明で郵便局の裏だとわかり、着く。" }
       - { type: mean, ask: "ガーデンコートは どこ？", line: 14, choices: ["Next to the big shopping area, past the light.", "Behind the old post office, on the bakery's street.", "Across from the park, next to a white bakery."], answer: 1, cja: ["大きな商業施設の隣、信号の先", "古い郵便局の裏、パン屋の通り", "公園の向かい、白いパン屋の隣"], why: "友だちが behind the old post office, on the street with the bakery と説明。信号の先は聞き違えた場所。白いのは建物。" }
       - { type: mean, ask: "運転手が メーターを 止める わけは？", line: 20, choices: ["The passenger asked him to, because she's short of cash.", "It was his mistake that made the trip longer.", "Taxis in Tokyo always do that for foreign passengers."], answer: 1, cja: ["客が現金が足りないと頼んだから", "遠回りになったのは自分の聞き違いのせいだから", "東京のタクシーは海外の客にいつもそうするから"], why: "since it was my mistake＝自分の聞き違いだから。客は文句ではなく気になっただけで、カードで払うので現金の心配もない。" }
-      - { type: attitude, ask: "最後の 客の 気持ちは？", line: 27, choices: ["Grateful that the driver was patient and fair.", "Upset that she arrived so late for dinner.", "Embarrassed that her friend had to come outside."], answer: 0, cja: ["根気よく公平に対応してくれて感謝している", "夕食にひどく遅れて怒っている", "友だちに外に出てもらって恥ずかしい"], why: "Thank you so much for being so patient＝根気よく付き合ってくれて感謝。メーターも止めてもらった。怒りや恥ずかしさは言っていない。" }
-      - { type: next, ask: "郵便局に 着いたら どう する？", line: 23, choices: ["Turn right at the light and stop by the park.", "Turn left at the bakery and find a white building.", "Wait outside the post office until the friend comes to get her."], answer: 1, cja: ["信号で右に曲がり、公園のそばで止まる", "パン屋で左に曲がり、白い建物を探す", "郵便局の外で友だちが迎えに来るまで待つ"], why: "友だちの言葉を伝えて turn left at the bakery and look for a white building。右に曲がるのは聞き違えた場所への道。" }
+      - { type: attitude, ask: "最後の 客の 気持ちは？", line: 27, choices: ["Grateful that the driver was patient and fair.", "Upset that she arrived far too late for dinner.", "Embarrassed that her friend had to come outside."], answer: 0, cja: ["根気よく公平に対応してくれて感謝している", "夕食にひどく遅れて怒っている", "友だちに外に出てもらって恥ずかしい"], why: "Thank you so much for being so patient＝根気よく付き合ってくれて感謝。メーターも止めてもらった。怒りや恥ずかしさは言っていない。" }
+      - { type: next, ask: "郵便局に 着いたら どう する？", line: 23, choices: ["Turn right at the light and stop by the park.", "Turn left at the bakery and find a white building.", "Wait at the post office for the friend."], answer: 1, cja: ["信号で右に曲がり、公園のそばで止まる", "パン屋で左に曲がり、白い建物を探す", "郵便局で友だちを待つ"], why: "友だちの言葉を伝えて turn left at the bakery and look for a white building。右に曲がるのは聞き違えた場所への道。" }
     dict:
       - { line: 3, words: "running a little late", feature: flap }
       - { line: 10, words: "Do you have the address", feature: weak-form }
@@ -126,6 +126,8 @@ items:
       - { who: gruff, at: 0.3, en: "That's the smell, and it's why the water's taking so long to go down.", ja: "においもそれだし、水がなかなか流れないのもそのせいです。" }
       - { who: molly, at: 0.5, en: "I thought it was the dishwasher. My neighbor said hers did the same thing last year.", ja: "食洗機のせいだと思ってました。お隣さんが、去年うちも同じだったって言ってたので。" }
       - { who: gruff, at: 0.4, en: "Could be, in some buildings, but not here. Your dishwasher drains into a different pipe.", ja: "建物によってはありえますけど、ここは違います。食洗機は別の管に流れてますから。" }
+      - { who: molly, at: 0.4, en: "So my neighbor was wrong.", ja: "じゃあ、お隣さんの話は違ったんですね。" }
+      - { who: gruff, at: 0.3, en: "Her building, her pipes. Every place is a little different.", ja: "あちらの建物はあちらの配管ですから。家ごとに少しずつ違うんです。" }
       - { who: molly, at: 0.5, en: "So what are my options?", ja: "じゃあ、どうすればいいですか？" }
       - { who: gruff, at: 0.4, en: "Option one, I clean out the trap and run a snake through the pipe. That's a long metal cable that breaks up the clog.", ja: "一つ目は、トラップを掃除して、管にスネークを通す。詰まりを崩す長い金属のワイヤーです。" }
       - { who: gruff, at: 0.5, en: "That's eight thousand yen, and I can do it right now. But honestly, it might come back in a few months.", ja: "それは八千円で、今すぐできます。ただ正直、数か月でまた詰まるかもしれません。" }
@@ -145,18 +147,20 @@ items:
       - { who: gruff, at: 0.4, en: "Nine-thirty it is. And until then, try not to pour any cooking oil down the sink.", ja: "では九時半に。それまでは、流しに料理の油を流さないようにしてください。" }
       - { who: molly, at: 0.5, en: "Where am I supposed to put it, then?", ja: "じゃあ、どこに捨てればいいんですか？" }
       - { who: gruff, at: 0.4, en: "Let it cool, wipe the pan with a paper towel, and throw that out with the burnable trash.", ja: "冷ましてから、フライパンをキッチンペーパーでふいて、燃えるごみに出してください。" }
+      - { who: molly, at: 0.4, en: "That sounds like a lot of paper towels.", ja: "キッチンペーパーがたくさんいりそうですね。" }
+      - { who: gruff, at: 0.3, en: "It is, but paper towels are a lot cheaper than me. Trust me on that one.", ja: "いりますね。でも、私を呼ぶよりずっと安いですよ。そこは信じてください。" }
       - { who: molly, at: 0.5, en: "Got it. And how long will the job take on Thursday?", ja: "わかりました。木曜の作業はどのくらいかかりますか？" }
       - { who: gruff, at: 0.4, en: "About an hour, maybe less. Just clear out the cabinet under the sink before I get there, so I'm not moving all your cleaning supplies around.", ja: "一時間くらい、もっと早いかも。来る前に流しの下の棚を空けておいてください。掃除用品をあちこち動かさずに済むので。" }
     questions:
-      - { type: gist, ask: "どんな やり取り？", line: 21, choices: ["A plumber finds a grease clog and they agree on a two-day plan.", "A plumber says the main pipe under the floor is broken and needs a bigger job.", "A plumber blames the dishwasher and offers to replace it."], answer: 0, cja: ["業者が油の詰まりを見つけ、二日に分けた作業で決まる", "業者が床下の本管が壊れていると言い、大工事になる", "業者が食洗機のせいだと言い、交換をすすめる"], why: "原因はトラップの油。今日は掃除、木曜に交換する二段の計画で決まる。本管ではなく、食洗機も関係ない。" }
-      - { type: mean, ask: "交換は いくら？", line: 15, choices: ["Eight thousand yen, done right now.", "Eighteen thousand yen, with the parts.", "Twenty-two thousand yen, with the parts."], answer: 2, cja: ["八千円、今すぐ", "部品込みで一万八千円", "部品込みで二万二千円"], why: "eighteen と言いかけて sorry, no と訂正し、部品を足して twenty-two thousand。八千円は掃除とスネークの方。" }
-      - { type: mean, ask: "今日 交換 できない 理由は？", line: 19, choices: ["The plumber is booked until Thursday.", "The pipe he needs isn't in stock right now.", "The new pipe has to dry for a few days before he can fit it."], answer: 1, cja: ["業者が木曜まで予約でいっぱい", "必要な部品がまだ手に入らない", "新しい管を取りつける前に数日乾かす必要がある"], why: "The pipe I need is out of stock＝必要な管が品切れ。それで早くて木曜になる。予定がいっぱいとは言っていない。" }
-      - { type: attitude, ask: "モリーが 木曜まで 待つ ことを どう 感じる？", line: 20, choices: ["Unhappy: she can't stand the smell that long.", "Relaxed: a few more days doesn't matter.", "Suspicious: she thinks he's making it up."], answer: 0, cja: ["不満：そんなに長くにおいに耐えられない", "気にしない：あと数日くらい平気", "疑っている：作り話だと思う"], why: "I really don't want to live with this smell until Thursday＝木曜までにおいと暮らすのは嫌。それで今日の掃除の案が出る。" }
-      - { type: next, ask: "それまで 油は どう する？", line: 27, choices: ["Pour it down the sink with hot water.", "Wipe it up with paper and put it in the burnable trash.", "Keep it in a bottle under the sink and give it to the plumber on Thursday."], answer: 1, cja: ["お湯と一緒に流しに流す", "紙でふき取って燃えるごみに出す", "流しの下の瓶にためて、木曜に業者に渡す"], why: "冷まして、キッチンペーパーでふき、燃えるごみへ。流しに油を流すのが詰まりの原因なので、それはやめる。" }
+      - { type: gist, ask: "どんな やり取り？", line: 23, choices: ["A plumber finds a grease clog and they agree on a two-day plan.", "A plumber says the main pipe under the floor is broken and needs a bigger job.", "A plumber blames the dishwasher and offers to replace it."], answer: 0, cja: ["業者が油の詰まりを見つけ、二日に分けた作業で決まる", "業者が床下の本管が壊れていると言い、大工事になる", "業者が食洗機のせいだと言い、交換をすすめる"], why: "原因はトラップの油。今日は掃除、木曜に交換する二段の計画で決まる。本管ではなく、食洗機も関係ない。" }
+      - { type: mean, ask: "交換は いくら？", line: 17, choices: ["Eight thousand yen, done right now.", "Eighteen thousand yen, with the parts.", "Twenty-two thousand yen, with the parts."], answer: 2, cja: ["八千円、今すぐ", "部品込みで一万八千円", "部品込みで二万二千円"], why: "eighteen と言いかけて sorry, no と訂正し、部品を足して twenty-two thousand。八千円は掃除とスネークの方。" }
+      - { type: mean, ask: "今日 交換 できない 理由は？", line: 21, choices: ["The plumber is booked until Thursday.", "The pipe he needs isn't in stock right now.", "The new pipe has to dry for a few days before he can fit it."], answer: 1, cja: ["業者が木曜まで予約でいっぱい", "必要な部品がまだ手に入らない", "新しい管を取りつける前に数日乾かす必要がある"], why: "The pipe I need is out of stock＝必要な管が品切れ。それで早くて木曜になる。予定がいっぱいとは言っていない。" }
+      - { type: attitude, ask: "モリーが 木曜まで 待つ ことを どう 感じる？", line: 22, choices: ["Unhappy: the smell is too much.", "Relaxed: a few more days doesn't matter.", "Suspicious: she thinks he's making it up."], answer: 0, cja: ["不満：そんなに長くにおいに耐えられない", "気にしない：あと数日くらい平気", "疑っている：作り話だと思う"], why: "I really don't want to live with this smell until Thursday＝木曜までにおいと暮らすのは嫌。それで今日の掃除の案が出る。" }
+      - { type: next, ask: "それまで 油は どう する？", line: 29, choices: ["Pour it down the sink with hot water.", "Wipe it up with paper and put it in the burnable trash.", "Keep it in a bottle under the sink and give it to the plumber on Thursday."], answer: 1, cja: ["お湯と一緒に流しに流す", "紙でふき取って燃えるごみに出す", "流しの下の瓶にためて、木曜に業者に渡す"], why: "冷まして、キッチンペーパーでふき、燃えるごみへ。流しに油を流すのが詰まりの原因なので、それはやめる。" }
     dict:
       - { line: 6, words: "taking so long to go down", feature: weak-form }
-      - { line: 13, words: "the inside is rough", feature: linking }
-      - { line: 26, words: "supposed to put it", feature: flap }
+      - { line: 15, words: "the inside is rough", feature: linking }
+      - { line: 28, words: "supposed to put it", feature: flap }
 
   - kind: long
     id: lg-mori-next-friday
@@ -169,6 +173,8 @@ items:
       - { who: julian, at: 0, en: "So, I have a surprise. I finally got us a table at that Italian place in Daikanyama.", ja: "ねえ、サプライズがあるんだ。代官山のあのイタリアンの席、やっと取れたよ。" }
       - { who: fauna, at: 0.4, en: "Wait, the one that's always booked? How did you manage that?", ja: "待って、いつも予約でいっぱいのお店？どうやって取ったの？" }
       - { who: julian, at: 0.4, en: "Someone canceled, and I happened to be checking the website at the right moment.", ja: "キャンセルが出て、ちょうどいいタイミングでサイトを見てたんだ。" }
+      - { who: fauna, at: 0.4, en: "I tried for my sister's birthday, and they were booked solid for two months.", ja: "妹の誕生日に予約しようとしたら、二か月先までいっぱいだったのに。" }
+      - { who: julian, at: 0.3, en: "I know. I've been refreshing that page every morning for a week.", ja: "だよね。一週間、毎朝そのページを更新してたんだ。" }
       - { who: fauna, at: 0.4, en: "That's amazing. When is it?", ja: "すごい。いつ？" }
       - { who: julian, at: 0.4, en: "Next Friday, at seven-thirty. For our anniversary.", ja: "来週の金曜、七時半。記念日だからね。" }
       - { who: fauna, at: 0.5, en: "This Friday? Oh, perfect, I'm free. I'll leave work early.", ja: "今週の金曜？ああ、ちょうどいい、空いてる。仕事を早めに切り上げるね。" }
@@ -187,6 +193,8 @@ items:
       - { who: julian, at: 0.5, en: "No idea. The website says changes have to be made by phone, at least three days ahead.", ja: "わからない。サイトには、変更は電話で、三日前までにって書いてある。" }
       - { who: fauna, at: 0.4, en: "So you'd have to call them by Tuesday at the latest.", ja: "じゃあ遅くても火曜までに電話しないとね。" }
       - { who: julian, at: 0.4, en: "Actually, they open at noon tomorrow. I'll call them on my lunch break.", ja: "実は明日は十二時に開くんだ。昼休みに電話するよ。" }
+      - { who: fauna, at: 0.4, en: "Ask for the same time if you can. Seven-thirty is perfect, because I can go home and change first.", ja: "できれば同じ時間で頼んで。七時半なら一度帰って着替えられるから、ちょうどいいの。" }
+      - { who: julian, at: 0.3, en: "Seven-thirty, same table if they have it. Anything else, boss?", ja: "七時半、できれば同じ席。ほかにご注文は、ボス？" }
       - { who: fauna, at: 0.5, en: "And if Saturday's full?", ja: "もし土曜がいっぱいだったら？" }
       - { who: julian, at: 0.4, en: "Then I'll ask about Sunday. And if that's full too, we keep the fourteenth, and you go to your dinner first.", ja: "そしたら日曜を聞く。それもだめなら十四日のままにして、きみは先に送別会に行く。" }
       - { who: fauna, at: -0.2, en: "And come to dessert late? That's actually not a bad plan B.", ja: "で、デザートから合流？それ、予備の案としては悪くないね。" }
@@ -198,11 +206,11 @@ items:
       - { who: fauna, at: 0.4, en: "Which is true. And mention that it's our anniversary. Some places bring out a little cake if you ask.", ja: "それは本当。あと記念日だって伝えて。頼むと小さなケーキを出してくれるお店もあるから。" }
       - { who: julian, at: 0.4, en: "Now who's the one with all the good plans?", ja: "おや、いい案だらけなのはどっちかな？" }
     questions:
-      - { type: gist, ask: "どんな 話？", line: 8, choices: ["They mean different Fridays and try to move a dinner booking.", "They argue because he forgot their anniversary dinner.", "They cancel the dinner booking because the restaurant is full that night."], answer: 0, cja: ["別々の金曜を思っていて、夕食の予約を動かそうとする", "記念日の夕食を彼が忘れていてけんかになる", "その夜は店がいっぱいなので夕食の予約を取り消す"], why: "next Friday を彼女は今度の金曜、彼は翌週の十四日と思っていた。十四日は送別会なので、土曜に変えようとする。" }
-      - { type: mean, ask: "予約は 何日？", line: 6, choices: ["This coming Friday.", "Friday the fourteenth.", "Saturday the fifteenth."], answer: 1, cja: ["今度の金曜", "十四日の金曜", "十五日の土曜"], why: "not this Friday. Next Friday. The fourteenth＝十四日。土曜の十五日は、これから変えたい日。" }
-      - { type: mean, ask: "I could, technically が 示すのは？", line: 13, choices: ["She's happy to skip the farewell dinner.", "She really doesn't want to skip it, since she organized it.", "She hasn't decided yet whether she'll go to the farewell dinner or not."], answer: 1, cja: ["喜んで送別会を休む", "幹事なので、本当は休みたくない", "送別会に行くかまだ決めていない"], why: "technically（できなくはない）と幹事だという話で、本音は休みたくない。彼も that's a no と気づき、彼女は「気まずい いいよ」と言う。" }
-      - { type: next, ask: "ジュリアンは 明日 何を する？", line: 20, choices: ["Change the booking on the website tonight.", "Call the restaurant at lunch to ask about Saturday.", "Go to the restaurant at noon to book in person."], answer: 1, cja: ["今夜サイトで予約を変える", "昼休みに店に電話して土曜を聞く", "十二時に店に行って直接予約する"], why: "変更は電話のみ。店は十二時に開くので I'll call them on my lunch break。サイトでは変えられない。" }
+      - { type: gist, ask: "どんな 話？", line: 10, choices: ["They mean different Fridays and move the booking.", "They argue because he forgot their anniversary dinner.", "They cancel the dinner booking because the restaurant is full that night."], answer: 0, cja: ["別々の金曜を思っていて、夕食の予約を動かそうとする", "記念日の夕食を彼が忘れていてけんかになる", "その夜は店がいっぱいなので夕食の予約を取り消す"], why: "next Friday を彼女は今度の金曜、彼は翌週の十四日と思っていた。十四日は送別会なので、土曜に変えようとする。" }
+      - { type: mean, ask: "予約は 何日？", line: 8, choices: ["This coming Friday.", "Friday the fourteenth.", "Saturday the fifteenth."], answer: 1, cja: ["今度の金曜", "十四日の金曜", "十五日の土曜"], why: "not this Friday. Next Friday. The fourteenth＝十四日。土曜の十五日は、これから変えたい日。" }
+      - { type: mean, ask: "I could, technically が 示すのは？", line: 15, choices: ["She's happy to skip the farewell dinner.", "She really doesn't want to skip it, since she organized it.", "She can't decide yet if she'll go to the farewell dinner."], answer: 1, cja: ["喜んで送別会を休む", "幹事なので、本当は休みたくない", "送別会に行くかまだ決めていない"], why: "technically（できなくはない）と幹事だという話で、本音は休みたくない。彼も that's a no と気づき、彼女は「気まずい いいよ」と言う。" }
+      - { type: next, ask: "ジュリアンは 明日 何を する？", line: 22, choices: ["Change the booking on the website tonight.", "Call the restaurant at lunch to ask about Saturday.", "Go to the restaurant at noon to book in person."], answer: 1, cja: ["今夜サイトで予約を変える", "昼休みに店に電話して土曜を聞く", "十二時に店に行って直接予約する"], why: "変更は電話のみ。店は十二時に開くので I'll call them on my lunch break。サイトでは変えられない。" }
     dict:
       - { line: 2, words: "at the right moment", feature: weak-form }
-      - { line: 12, words: "Can you skip it", feature: linking }
-      - { line: 17, words: "only got because", feature: t-glottal }
+      - { line: 14, words: "Can you skip it", feature: linking }
+      - { line: 19, words: "only got because", feature: t-glottal }

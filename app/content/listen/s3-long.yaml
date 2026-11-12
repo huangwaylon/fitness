@@ -27,6 +27,8 @@ items:
       - { who: rosie, at: 0.3, en: "Anyway. Option one is a small inn up in the hills. Private outdoor bath, dinner included, about twenty-two thousand yen each.", ja: "とにかく。一つ目は山の上の小さな旅館。貸切の露天風呂つき、夕食込みで一人二万二千円くらい。" }
       - { who: tia, at: 0.4, en: "Ooh. A private bath.", ja: "わあ。貸切風呂。" }
       - { who: rosie, at: 0.3, en: "Option two is a business hotel by the station. Fourteen thousand, no dinner, but there's a public bath across the street.", ja: "二つ目は駅前のビジネスホテル。一万四千円、夕食なし。でも向かいに銭湯がある。" }
+      - { who: tia, at: 0.4, en: "A business hotel. For our big relaxing weekend away. Sounds magical.", ja: "ビジネスホテルね。せっかくのくつろぎの週末に。夢みたい。" }
+      - { who: rosie, at: 0.3, en: "It's clean, it's cheap, and it's two minutes from the station. I'm just laying out the options.", ja: "きれいだし安いし、駅から二分だよ。選択肢を並べてるだけ。" }
       - { who: kicks, at: 0.4, en: "Honestly, I'm easy. Whatever you guys want.", ja: "正直、どっちでもいいよ。二人に任せる。" }
       - { who: tia, at: 0.3, en: "You always say that, and then you complain about the price afterwards.", ja: "いつもそう言って、あとで値段に文句言うじゃない。" }
       - { who: kicks, at: 0.3, en: "I don't complain. I just... mention it. Out loud. A few times.", ja: "文句じゃないよ。ちょっと…言うだけ。声に出して。何回か。" }
@@ -46,6 +48,8 @@ items:
       - { who: tia, at: 0.2, en: "Yes.", ja: "うん。" }
       - { who: kicks, at: 0.3, en: "Yes. But I'm driving, so I get to pick the music.", ja: "いいよ。でも運転はおれだから、音楽はおれが選ぶ。" }
       - { who: tia, at: -0.3, en: "Oh no.", ja: "うわ、最悪。" }
+      - { who: rosie, at: 0.3, en: "Nothing from the eighties this time. We heard the same album four times last trip.", ja: "今回は八十年代の曲は禁止ね。前の旅行で同じアルバムを四回も聞いたんだから。" }
+      - { who: kicks, at: -0.2, en: "Five times. And you both sang along.", ja: "五回だよ。しかも二人とも一緒に歌ってた。" }
       - { who: rosie, at: 0.4, en: "Okay, one problem. The inn only has a room for Saturday. Friday's full.", ja: "あ、一つ問題。旅館は土曜しか空いてない。金曜は満室。" }
       - { who: kicks, at: 0.4, en: "Saturday works for me. I've got that thing Friday night anyway.", ja: "おれは土曜で大丈夫。どうせ金曜の夜は用事があるし。" }
       - { who: tia, at: 0.4, en: "Saturday's fine. Can we leave early, though? Like, eight? I want to stop at the lake on the way.", ja: "土曜でいいよ。でも早めに出られる？八時とか。途中で湖に寄りたいの。" }
@@ -53,20 +57,22 @@ items:
       - { who: rosie, at: 0.3, en: "Great. I'm booking it right now, before anyone changes their mind.", ja: "よし。誰かの気が変わる前に、今すぐ予約しちゃう。" }
       - { who: tia, at: 0.4, en: "Wait, does the private bath cost extra, or is it included?", ja: "待って、貸切風呂って別料金？それとも込み？" }
       - { who: rosie, at: 0.5, en: "It's included, but you have to reserve a time slot when you check in. They go fast, apparently.", ja: "込みだけど、チェックインのときに時間を予約しないといけないって。すぐ埋まるらしい。" }
+      - { who: tia, at: 0.4, en: "How fast is fast?", ja: "早いって、どのくらい？" }
+      - { who: rosie, at: 0.4, en: "The reviews say the evening slots are usually gone by four, so whoever gets there first signs us up.", ja: "口コミだと、夜の枠はたいてい四時にはなくなるって。だから先に着いた人が申し込んでね。" }
       - { who: kicks, at: 0.4, en: "Then we should get there by three, not stop at every lake on the way.", ja: "じゃあ三時までには着かないとな。途中の湖に全部寄ってる場合じゃない。" }
       - { who: tia, at: -0.3, en: "One lake. I said one lake.", ja: "湖は一つ。一つって言ったでしょ。" }
       - { who: rosie, at: 0.4, en: "Okay, it's booked. Saturday night, three people, dinner included. Nobody's allowed to cancel.", ja: "はい、予約完了。土曜の夜、三人、夕食つき。キャンセルは禁止ね。" }
       - { who: kicks, at: 0.4, en: "I wasn't going to cancel. I was going to mention the price. Once. Quietly.", ja: "キャンセルなんかしないよ。値段のことを言うだけ。一回。小声で。" }
     questions:
-      - { type: gist, ask: "どんな 話？", line: 22, choices: ["Three friends argue about money and decide to cancel the trip.", "Three friends compare two places and book the inn with dinner.", "Three friends pick the cheaper hotel so they can eat at the soba place."], answer: 1, cja: ["お金でもめて旅行をやめる", "二つの宿を比べ、夕食つきの旅館を予約する", "そば屋で食べられるよう安いホテルを選ぶ"], why: "旅館とビジネスホテルを比べ、夕食なし案も出たが、最後は夕食つきの旅館に決まり、土曜で予約する。" }
-      - { type: mean, ask: "I'm easy と 言った 人の 本音は？", line: 11, choices: ["He really doesn't care which place they choose.", "He thinks the inn costs too much for one night.", "He wants to stay at the inn but not drive."], answer: 1, cja: ["どちらでも本当に気にしない", "一泊にしては旅館が高いと思っている", "旅館に泊まりたいが運転はしたくない"], why: "I'm easy と言いつつ、it's a lot for one night＝一泊にしては高い、が本音。ティアもそれを「高すぎる」だと指摘する。" }
-      - { type: attitude, ask: "less like a vacation and more like a race と 言った 人の 気持ちは？", line: 18, choices: ["Excited: she likes a busy schedule.", "Doubtful: the no-dinner plan sounds rushed.", "Angry: she thinks the others are wasting time."], answer: 1, cja: ["わくわく：忙しい予定が好き", "乗り気でない：夕食なし案は慌ただしい", "怒っている：二人が時間をむだにしている"], why: "そば屋が七時半に閉まるので、全部急がないといけない。休暇ではなくレースだ、と冗談まじりに夕食なし案に反対している。" }
-      - { type: mean, ask: "金曜で なく 土曜に なった 理由は？", line: 26, choices: ["The inn is full on Friday.", "Kicks has to work on Saturday.", "The lake is closed on Friday."], answer: 0, cja: ["旅館が金曜は満室", "キックスが土曜に仕事", "湖が金曜は閉まっている"], why: "The inn only has a room for Saturday. Friday's full＝土曜しか空いていない。キックスの用事は金曜の夜。" }
-      - { type: next, ask: "当日の 朝は どう なる？", line: 29, choices: ["They meet at the station at eight and take the train.", "Kicks picks them up at eight, and they stop at a lake.", "They leave after lunch and go straight to the inn."], answer: 1, cja: ["八時に駅で集まり、電車で行く", "八時にキックスが迎えに来て、湖に寄る", "昼過ぎに出て、まっすぐ旅館へ"], why: "ティアが八時に出て湖に寄りたいと言い、キックスが I'll pick you both up＝二人を迎えに行く、と答える。" }
+      - { type: gist, ask: "どんな 話？", line: 24, choices: ["Three friends argue about money and decide to cancel the trip.", "Three friends compare two places and book the inn.", "Three friends pick the cheaper hotel so they can eat at the soba place."], answer: 1, cja: ["お金でもめて旅行をやめる", "二つの宿を比べ、夕食つきの旅館を予約する", "そば屋で食べられるよう安いホテルを選ぶ"], why: "旅館とビジネスホテルを比べ、夕食なし案も出たが、最後は夕食つきの旅館に決まり、土曜で予約する。" }
+      - { type: mean, ask: "I'm easy と 言った 人の 本音は？", line: 13, choices: ["He really doesn't care which they choose.", "He thinks the inn costs too much for one night.", "He wants to stay at the inn but not drive."], answer: 1, cja: ["どちらでも本当に気にしない", "一泊にしては旅館が高いと思っている", "旅館に泊まりたいが運転はしたくない"], why: "I'm easy と言いつつ、it's a lot for one night＝一泊にしては高い、が本音。ティアもそれを「高すぎる」だと指摘する。" }
+      - { type: attitude, ask: "less like a vacation and more like a race と 言った 人の 気持ちは？", line: 20, choices: ["Excited: she likes a busy schedule.", "Doubtful: the no-dinner plan sounds rushed.", "Angry: she thinks the others are wasting time."], answer: 1, cja: ["わくわく：忙しい予定が好き", "乗り気でない：夕食なし案は慌ただしい", "怒っている：二人が時間をむだにしている"], why: "そば屋が七時半に閉まるので、全部急がないといけない。休暇ではなくレースだ、と冗談まじりに夕食なし案に反対している。" }
+      - { type: mean, ask: "金曜で なく 土曜に なった 理由は？", line: 30, choices: ["The inn is full on Friday.", "Kicks has to work on Saturday.", "The lake is closed on Friday."], answer: 0, cja: ["旅館が金曜は満室", "キックスが土曜に仕事", "湖が金曜は閉まっている"], why: "The inn only has a room for Saturday. Friday's full＝土曜しか空いていない。キックスの用事は金曜の夜。" }
+      - { type: next, ask: "当日の 朝は どう なる？", line: 33, choices: ["They meet at the station at eight and take the train.", "Kicks picks them up at eight, and they stop at a lake.", "They leave after lunch and go straight to the inn."], answer: 1, cja: ["八時に駅で集まり、電車で行く", "八時にキックスが迎えに来て、湖に寄る", "昼過ぎに出て、まっすぐ旅館へ"], why: "ティアが八時に出て湖に寄りたいと言い、キックスが I'll pick you both up＝二人を迎えに行く、と答える。" }
     dict:
-      - { line: 11, words: "it's a lot for one night", feature: linking }
-      - { line: 13, words: "what if we skip", feature: flap }
-      - { line: 21, words: "If I'm going to spend", feature: gonna }
+      - { line: 13, words: "it's a lot for one night", feature: linking }
+      - { line: 15, words: "what if we skip", feature: flap }
+      - { line: 23, words: "If I'm going to spend", feature: gonna }
 
   - kind: long
     id: lg-yama-rental-counter
@@ -112,7 +118,7 @@ items:
       - { type: mean, ask: "secondary coverage の 意味は？", line: 12, choices: ["The card pays first, then your car insurance.", "Your own car insurance pays first.", "It only covers the car's mirrors and windows."], answer: 1, cja: ["カードが先に払い、次に自動車保険", "まず自分の自動車保険が払う", "車のミラーと窓だけを補償する"], why: "secondary coverage, meaning your own car insurance pays first＝自分の保険が先。ミラーは道が細いという話で出ただけ。" }
       - { type: attitude, ask: "Funny how that didn't come up と 言う オーディーの 気持ちは？", line: 19, choices: ["Amused: she's enjoying her chat with the agent.", "Suspicious: the agent left out a key detail on purpose.", "Grateful: the agent saved them some money."], answer: 1, cja: ["楽しんでいる：係の人との会話を楽しんでいる", "疑っている：大事なことをわざと言わなかった", "感謝している：お金を節約してくれた"], why: "パックに入るとカードの補償が使えないことを、売りこみの間は言わなかった。それを皮肉っている。最後の thanks も皮肉まじり。" }
       - { type: mean, ask: "二百ドルは どう なる？", line: 22, choices: ["It's charged and refunded only if the tank is full.", "It's held on the card and drops off after the car is back.", "It's paid in cash at the counter on Saturday."], answer: 1, cja: ["請求され、満タンのときだけ返金される", "カードで仮押さえされ、返却後に消える", "土曜にカウンターで現金で払う"], why: "a hold on the card＝仮押さえ。返却後七から十営業日で drops off。満タンでないときは別に給油料金がかかる。" }
-      - { type: next, ask: "車に 乗る 前に する ことは？", line: 29, choices: ["Fill up the tank at the station by the airport.", "Take photos of any scratches on the car.", "Sign up for the full protection package."], answer: 1, cja: ["空港そばのスタンドで満タンにする", "車の傷の写真を撮る", "補償パックに申しこむ"], why: "Snap a few photos of any scratches before you drive off＝出発前に傷を撮る。給油は金曜の夜、返す前の話。" }
+      - { type: next, ask: "車に 乗る 前に する ことは？", line: 29, choices: ["Fill up the tank at the station by the airport.", "Take photos of any scratches.", "Sign up for the full protection package."], answer: 1, cja: ["空港そばのスタンドで満タンにする", "車の傷の写真を撮る", "補償パックに申しこむ"], why: "Snap a few photos of any scratches before you drive off＝出発前に傷を撮る。給油は金曜の夜、返す前の話。" }
     dict:
       - { line: 5, words: "Hard pass", feature: elision }
       - { line: 13, words: "let me just double-check that", feature: elision }
@@ -143,6 +149,9 @@ items:
       - { who: nana, at: 0.3, en: "That's the guy. And they had that little paper flag on top, the kind they use at Pekoe's bakery.", ja: "その人。しかも上に小さい紙の旗が立ってて、ペコのパン屋で使ってるやつだったの。" }
       - { who: phoebe, at: 0.4, en: "So either he's taking baking lessons from her, or he's trying really hard to impress somebody.", ja: "つまり、彼女にお菓子作りを習ってるか、だれかにすごくいいところを見せたいかのどっちか。" }
       - { who: static, at: 0.4, en: "Or both. Honestly, that's a long shot, but I'll admit it's not nothing.", ja: "両方かもな。正直こじつけっぽいけど、何もないとは言わないよ。" }
+      - { who: phoebe, at: 0.4, en: "Also, last Friday he asked me if I knew any good bakeries. He lives above one. Why would he need another bakery?", ja: "それに先週の金曜、いいパン屋を知らないかって聞かれたの。パン屋の上に住んでるのに。なんで別のパン屋がいるの？" }
+      - { who: nana, at: 0.3, en: "Unless it's a very specific bakery.", ja: "すごく特定のパン屋なら別だけど。" }
+      - { who: static, at: -0.2, en: "Okay, that one's a little suspicious.", ja: "うん、それはちょっとあやしい。" }
       - { who: nana, at: 0.5, en: "Wait, wait, stop talking. They're coming back. Act normal.", ja: "待って、しゃべるのやめて。戻ってくる。普通にして。" }
       - { who: phoebe, at: 0.2, en: "I'm always normal.", ja: "私はいつも普通だよ。" }
       - { who: static, at: -0.2, en: "That's the least normal thing anyone's ever said.", ja: "それ、今まで聞いた中で一番普通じゃないセリフだな。" }
@@ -150,18 +159,21 @@ items:
       - { who: phoebe, at: 0.4, en: "And look who's holding it. She didn't even go to the store with him, supposedly.", ja: "しかも持ってるのはだれか見て。一緒に店に行ってないはずなのにね。" }
       - { who: static, at: 0.4, en: "Okay, fine, I'm convinced. So do we say something, or do we let them tell us when they're ready?", ja: "わかった、納得した。で、何か言う？それとも二人から言ってくれるのを待つ？" }
       - { who: nana, at: 0.4, en: "We let them tell us. If we push, Lucky will just put it off for another six months out of pure stubbornness.", ja: "待とう。せかしたら、ラッキーは意地でもあと半年言わないから。" }
+      - { who: static, at: 0.4, en: "Six months? He took a year to tell us he'd changed jobs.", ja: "六か月？転職したって言うのに一年かかった人だよ。" }
+      - { who: nana, at: 0.3, en: "And we only found out because his new badge fell out of his wallet.", ja: "しかも新しい社員証が財布から落ちたから、やっとわかったんだし。" }
       - { who: phoebe, at: 0.4, en: "Fine. But I'm putting him next to her for the photo. That's not pushing. That's just good composition.", ja: "いいよ。でも写真では彼を彼女の隣にする。せかすんじゃなくて、構図がいいだけ。" }
       - { who: static, at: 0.4, en: "You're a terrible person, and I love it. Hey, Lucky! Did they run out of ice at the first three stores?", ja: "ひどいやつだな、最高。おーいラッキー！最初の三軒で氷が売り切れてたのか？" }
       - { who: nana, at: -0.3, en: "Static! You literally just agreed not to push.", ja: "スタティック！せかさないって今言ったばっかりでしょ。" }
       - { who: static, at: 0.3, en: "That wasn't pushing. That was a perfectly innocent question about ice.", ja: "せかしてないよ。氷についての、まったく罪のない質問だ。" }
       - { who: phoebe, at: 0.4, en: "Look at his face, though. He's turning the same color as the sausages.", ja: "でも顔見て。ソーセージと同じ色になってる。" }
       - { who: nana, at: 0.4, en: "And Pekoe's suddenly very interested in the grill.", ja: "ペコは急に網にすごく興味しんしんだし。" }
+      - { who: phoebe, at: 0.3, en: "She's been reading the same sauce bottle for a full minute.", ja: "ソースの瓶を、もう一分も読んでるよ。" }
       - { who: static, at: 0.4, en: "Okay, I'll back off. For now. But for the record, I said it was a long shot, and I was wrong.", ja: "わかった、引くよ。今はね。でも言っとく、こじつけだって言ったのはおれで、間違ってたのもおれだ。" }
     questions:
       - { type: gist, ask: "3人は 何の 話を して いる？", line: 10, choices: ["Who Lucky keeps leaving the barbecue with, and why.", "Why the food keeps burning on the grill.", "Which shop nearby has the cheapest drinks and snacks."], answer: 0, cja: ["ラッキーがだれと抜け出しているのか、そしてなぜか", "なぜ網の上の肉が焦げるのか", "近くで飲み物とお菓子がいちばん安い店"], why: "ラッキーが何度も抜けることから、だれと付き合っているかを推理している。氷と焦げた肉は話のきっかけにすぎない。" }
       - { type: mean, ask: "ラッキーの 相手は だれ だと 思われて いる？", line: 14, choices: ["Tangy, because of the concert.", "Pekoe, from the bakery.", "Nana, who saw the cupcakes."], answer: 1, cja: ["コンサートの件でタンジー", "パン屋のペコ", "カップケーキを見たナナ"], why: "同じ車で来た、ペコのパン屋の旗がついたカップケーキ、氷を持っているのも彼女。タンジーの件は何でもなかった。" }
       - { type: attitude, ask: "最初、スタティックは この うわさを どう 見て いる？", line: 11, choices: ["Convinced from the start.", "Doubtful: living nearby proves nothing.", "Bored: he wants to talk about something else."], answer: 1, cja: ["最初から信じている", "疑っている：家が近いだけでは証拠にならない", "退屈：別の話をしたい"], why: "doesn't really prove anything や a long shot と最初は疑っていたが、氷の袋を見て I'm convinced に変わる。" }
-      - { type: next, ask: "3人は どう する ことに した？", line: 23, choices: ["Ask Lucky about it right away, in front of everyone.", "Wait for the two of them to tell the group.", "Tell Tangy what they found out."], answer: 1, cja: ["みんなの前ですぐラッキーに聞く", "二人が自分から言うのを待つ", "わかったことをタンジーに話す"], why: "We let them tell us＝本人たちが言うまで待つ。せかすと put it off する。最後のからかいは冗談で、問いつめてはいない。" }
+      - { type: next, ask: "3人は どう する ことに した？", line: 26, choices: ["Ask Lucky about it right away, in front of everyone.", "Wait for the two of them to tell the group.", "Tell Tangy what they found out."], answer: 1, cja: ["みんなの前ですぐラッキーに聞く", "二人が自分から言うのを待つ", "わかったことをタンジーに話す"], why: "We let them tell us＝本人たちが言うまで待つ。せかすと put it off する。最後のからかいは冗談で、問いつめてはいない。" }
     dict:
       - { line: 4, words: "he's been gone for twenty", feature: h-drop }
       - { line: 6, words: "it's not ice he's after", feature: linking }
@@ -193,6 +205,9 @@ items:
       - { who: tammy, at: 0.3, en: "So I just showed him the guesthouse on my phone, and he nodded, and moved a sack of potatoes so I could sit down.", ja: "それでスマホで宿を見せたら、うなずいて、私が座れるようにじゃがいもの袋をどけてくれたんです。" }
       - { who: kk-slider, at: 0.4, en: "Riding shotgun with the potatoes. I like it.", ja: "じゃがいもと助手席。いいですね。" }
       - { who: tammy, at: 0.4, en: "And it was forty minutes away! In the opposite direction from his farm. He wouldn't take any money, either.", ja: "しかも四十分かかったんです！彼の畑とは逆方向に。お金も受け取ってくれなくて。" }
+      - { who: kk-slider, at: 0.4, en: "Forty minutes out of his way, at night, for a stranger with a backpack.", ja: "夜に、リュックの見知らぬ人のために、四十分も回り道か。" }
+      - { who: tammy, at: 0.3, en: "And he talked the whole way. I understood maybe one word in ten, but I nodded a lot.", ja: "しかもずっとしゃべってたの。わかったのは十語に一語くらいだけど、とにかくうなずいてた。" }
+      - { who: kk-slider, at: -0.2, en: "The international language of nodding.", ja: "うなずきは世界共通語だね。" }
       - { who: apollo, at: 0.4, en: "So the disaster turned out to be the best part of the trip.", ja: "じゃあ、失敗がいちばんの思い出になったわけだ。" }
       - { who: tammy, at: 0.4, en: "Pretty much. The next morning, he dropped off a bag of potatoes at the guesthouse with a note that said—", ja: "まさに。次の朝、宿にじゃがいもを一袋届けてくれて、メモには…（電波が途切れる）" }
       - { who: kk-slider, at: 1.2, en: "Oh, no, not now. Tammy? What did the note say?", ja: "ああ、今はやめて。タミーさん？メモには何て？" }
@@ -201,18 +216,20 @@ items:
       - { who: tammy, at: 0.4, en: "So that's why I'm calling. I'm stopping at his farm tomorrow to say thanks, and I was hoping you'd play something for him.", ja: "それで電話したんです。明日、お礼を言いに彼の畑に寄るので、彼のために何か一曲かけてもらえたらと思って。" }
       - { who: apollo, at: 0.4, en: "Does he even listen to the show? It's past midnight.", ja: "その人、番組を聴いてるんですか？夜中の十二時過ぎですよ。" }
       - { who: tammy, at: 0.4, en: "Probably not. Farmers go to bed at like eight. But I'll know, and I'll tell him.", ja: "たぶん聴いてません。農家の人って八時くらいに寝るし。でも私が知ってるし、伝えます。" }
+      - { who: apollo, at: 0.4, en: "So what are you bringing him?", ja: "で、何を持っていくの？" }
+      - { who: tammy, at: 0.4, en: "A box of chocolates from Sapporo, and a photo of me catching my bus this morning. Proof that I learned.", ja: "札幌のチョコと、今朝ちゃんとバスに間に合った私の写真。学んだっていう証拠にね。" }
       - { who: kk-slider, at: 0.4, en: "That's good enough for me. Tammy, drive safe, and say hi to the potatoes.", ja: "それで十分。タミーさん、安全運転で、じゃがいもによろしく。" }
       - { who: apollo, at: 0.4, en: "And for everyone else still on the road tonight, pull over if you're getting sleepy. The rest stops up there are open all night.", ja: "まだ運転中のみなさんも、眠くなったら車を止めてください。あちらのサービスエリアは一晩中開いています。" }
       - { who: kk-slider, at: 0.4, en: "Wise words from a man who once fell asleep in the middle of his own show.", ja: "自分の番組の途中で寝ちゃった男の、ありがたいお言葉です。" }
       - { who: apollo, at: -0.3, en: "That was one time, and the song was nine minutes long.", ja: "一回だけだし、あの曲は九分もあったんだ。" }
       - { who: kk-slider, at: 0.3, en: "Excuses, excuses. Anyway, this one goes out to a farmer in Hokkaido who's definitely asleep.", ja: "言い訳、言い訳。さて、この曲は北海道の、ぜったい寝ている農家さんへ。" }
     questions:
-      - { type: gist, ask: "電話の 話は？", line: 18, choices: ["A caller tells how a farmer helped her after she missed a bus, and asks for a song.", "A caller complains about a bus company in Hokkaido and wants an apology.", "A caller asks for advice on driving to Furano at night."], answer: 0, cja: ["バスに乗り遅れた時に助けてくれた農家の話をし、曲を頼む", "北海道のバス会社に文句を言い、謝ってほしい", "夜に富良野まで運転するこつを聞く"], why: "二年前、最終バスに乗り遅れ、農家の人が宿まで送ってくれた話。お礼にその人へ曲をかけてほしいと頼む。" }
+      - { type: gist, ask: "電話の 話は？", line: 21, choices: ["A caller tells how a farmer helped her after she missed a bus, and asks for a song.", "A caller complains about a bus company in Hokkaido and wants an apology.", "A caller asks for advice on driving to Furano at night."], answer: 0, cja: ["バスに乗り遅れた時に助けてくれた農家の話をし、曲を頼む", "北海道のバス会社に文句を言い、謝ってほしい", "夜に富良野まで運転するこつを聞く"], why: "二年前、最終バスに乗り遅れ、農家の人が宿まで送ってくれた話。お礼にその人へ曲をかけてほしいと頼む。" }
       - { type: mean, ask: "バスには どのくらい 遅れた？", line: 7, choices: ["By a minute: she saw it turn the corner.", "By forty minutes, after a long walk.", "By hours: the next one wasn't until seven."], answer: 0, cja: ["一分：角を曲がるのが見えた", "四十分：長く歩いたあと", "何時間も：次は七時までなかった"], why: "途切れた後、By one minute＝一分。四十分は宿までの距離、七時は次のバスの時間。" }
       - { type: mean, ask: "a work in progress が 示すのは？", line: 13, choices: ["Her Japanese was very good back then.", "Her Japanese wasn't very good yet.", "She was busy working on the trip."], answer: 1, cja: ["当時日本語がとても上手だった", "日本語はまだあまり話せなかった", "旅行中、仕事が忙しかった"], why: "a work in progress＝発展途上、つまりまだ下手だった。アポロも polite way of putting it（上品な言い方）と言っている。" }
-      - { type: attitude, ask: "Next time, run faster. の メモから わかる 農家の 人は？", line: 21, choices: ["Annoyed that he had to drive so far.", "Kind, with a dry sense of humor.", "Worried she would miss the bus again."], answer: 1, cja: ["遠くまで運転させられていらだっている", "親切で、さらっとした冗談が言える", "また乗り遅れないか心配している"], why: "逆方向に四十分送り、お金も受け取らず、じゃがいもまで届けた親切な人。メモは冗談で、K.K.も A farmer and a comedian と笑う。" }
-      - { type: next, ask: "タミーは 明日 何を する？", line: 23, choices: ["Catch the first bus to her old guesthouse.", "Stop at the farmer's place to thank him in person.", "Call the show again tomorrow with the farmer."], answer: 1, cja: ["昔の宿への始発バスに乗る", "農家の人の所に寄って直接お礼を言う", "明日、農家の人と番組に電話する"], why: "I'm stopping at his farm tomorrow to say thanks＝明日お礼を言いに寄る。番組は聴いていないと思うので、自分で伝える。" }
+      - { type: attitude, ask: "Next time, run faster. の メモから わかる 農家の 人は？", line: 24, choices: ["Annoyed that he had to drive so far.", "Kind, with a dry sense of humor.", "Worried she would miss the bus again."], answer: 1, cja: ["遠くまで運転させられていらだっている", "親切で、さらっとした冗談が言える", "また乗り遅れないか心配している"], why: "逆方向に四十分送り、お金も受け取らず、じゃがいもまで届けた親切な人。メモは冗談で、K.K.も A farmer and a comedian と笑う。" }
+      - { type: next, ask: "タミーは 明日 何を する？", line: 26, choices: ["Catch the first bus to her old guesthouse.", "Stop at the farmer's place to thank him in person.", "Call the show again tomorrow with the farmer."], answer: 1, cja: ["昔の宿への始発バスに乗る", "農家の人の所に寄って直接お礼を言う", "明日、農家の人と番組に電話する"], why: "I'm stopping at his farm tomorrow to say thanks＝明日お礼を言いに寄る。番組は聴いていないと思うので、自分で伝える。" }
     dict:
       - { line: 1, words: "if the line holds up", feature: linking }
       - { line: 11, words: "I was about to, honestly", feature: flap }
-      - { line: 24, words: "Does he even listen", feature: h-drop }
+      - { line: 27, words: "Does he even listen", feature: h-drop }
