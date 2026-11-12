@@ -28,7 +28,7 @@
   import MarkLegend from '../scene/MarkLegend.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, r, open, ontoggle, canHear = true }: { game: QuizGame; r: TileRowData; open: boolean; ontoggle: () => void; canHear?: boolean } = $props();
+  let { game, r, open, ontoggle, canHear = true }: { game: QuizGame; r: TileRowData; open: boolean; ontoggle?: () => void; canHear?: boolean } = $props();
   const playing = $derived(game.sounding && game.sounding.i === -1 && game.sounding.at === r.c.id ? game.sounding.from : null);
 </script>
 

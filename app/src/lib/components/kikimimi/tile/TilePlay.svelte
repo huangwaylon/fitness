@@ -89,13 +89,21 @@
     if (!open) drag.cancel();
   });
   /** Each slot's width as the drag began, kept while it lasts: the preview never reflows the sentence under the
-   *  finger (what's let go onto is what was shown). */
+   *  finger (what's let go onto is what was shown). A word previewed in a slot narrower than it shrinks to fit there
+   *  (`fit`: its text's width off the pool's tiles, as the drag began) rather than being cut off. */
   let widths = $state.raw<Record<number, number>>({});
+  let wordW = $state.raw<Record<number, number>>({});
   $effect.pre(() => {
-    if (!drag.lift) return void (widths = {});
+    if (!drag.lift) return void ((widths = {}), (wordW = {}));
     if (Object.keys(untrack(() => widths)).length) return;
     widths = Object.fromEntries([...(sentenceEl?.querySelectorAll<HTMLElement>('[data-slot]') ?? [])].map((el) => [Number(el.dataset.slot), el.getBoundingClientRect().width]));
+    wordW = Object.fromEntries([...(sentenceEl?.parentElement?.querySelectorAll<HTMLElement>('[data-kiki-tile-pool] [data-tile] > span') ?? [])].map((el) => [Number(el.parentElement!.dataset.tile), el.getBoundingClientRect().width]));
   });
+  /** A previewed word's size in slot j (em), when it wouldn't fit there (its padding: 10 px a side). */
+  const fit = (j: number, k: number) => {
+    const room = (widths[j] ?? 0) - 20, need = wordW[k] ?? 0;
+    return room > 0 && need > room ? `${Math.max(0.7, room / need).toFixed(3)}em` : undefined;
+  };
   const press = (e: PointerEvent, from: From, word: string) => open && drag.down(e, from, word);
   /** What the sentence shows: while a tile is held, what letting go would make (the slot it left empty). */
   const shownA = $derived.by<readonly number[]>(() => {
@@ -253,7 +261,7 @@
               data-shift={!!drag.lift && k !== EMPTY && k !== placed[j] && !over || undefined}
               aria-disabled={!open || k === EMPTY} aria-label={k === EMPTY ? t('kiki.tile.slot', { n: j + 1 }) : t('kiki.tile.remove', { w: board[k] })}
               data-sfx={open && k !== EMPTY ? 'tick' : 'none'} onclick={() => unplace(j)} onpointerdown={(e) => k !== EMPTY && press(e, { slot: j }, board[k])}>
-              {#if k === EMPTY}<span class="num" aria-hidden="true">{j + 1}</span>{:else}{#key k}<span lang="en">{board[k]}</span>{/key}{/if}
+              {#if k === EMPTY}<span class="num" aria-hidden="true">{j + 1}</span>{:else}{#key k}<span lang="en" style:font-size={drag.lift ? fit(j, k) : undefined}>{board[k]}</span>{/key}{/if}
             </button>
           </li>
         {:else}
@@ -286,9 +294,9 @@
   {/if}
 {/snippet}
 
-{#snippet review(i: number, canHear: boolean)}<TileRow {game} r={tileRow(game, i)} open ontoggle={() => {}} {canHear} />{/snippet}
+{#snippet review(i: number, canHear: boolean)}<TileRow {game} r={tileRow(game, i)} open {canHear} />{/snippet}
 
-<RoundFrame {game} {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} {review} top={shown} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {game} {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} {review} onnext={() => game.next()} onready={() => game.ready()} />
 {#if drag.lift}
   {@const l = drag.lift}
   <!-- the lifted tile at the finger, raised over it (its containing block's origin read off `origin`) -->
@@ -356,7 +364,7 @@
   .pool.live .tile, .sentence.live .mine { touch-action: none; }
   .lift {
     position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none; display: inline-grid; place-items: center; box-sizing: border-box;
-    background: var(--ctl); color: var(--text); transform-origin: 50% 50%; will-change: transform;
+    padding-inline: 0; white-space: nowrap; background: var(--ctl); color: var(--text); transform-origin: 50% 50%; will-change: transform;
     box-shadow: inset 0 0 0 2px var(--edge), 0 8px 0 var(--lip), 0 14px 22px rgba(0, 0, 0, .18);
   }
   .lift.back { transition: transform 160ms var(--ease), box-shadow 160ms var(--ease); box-shadow: inset 0 0 0 2px var(--edge), 0 4px 0 var(--lip); }

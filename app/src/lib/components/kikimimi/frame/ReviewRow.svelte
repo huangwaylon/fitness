@@ -1,6 +1,7 @@
 <script lang="ts">
   // One row of a game's review list (frame/ReviewList.svelte): the whole head a button (○ / × for each round it holds,
-  // a face, the summary, 一発, ▾) and, opened, the detail under it: ▶︎ first (`hear`, under the line it plays), then the
+  // a face, the summary, 一発, ▾) and, opened, the detail under it (no `ontoggle`: always open, the head plain text with no ▾,
+// as in 前の問題's card): ▶︎ first (`hear`, under the line it plays), then the
   // game's text, the note and 解説 (`children`). Every game's review row is this one.
   import type { Snippet } from 'svelte';
   import type { HTMLLiAttributes } from 'svelte/elements';
@@ -12,7 +13,7 @@
     i: number;
     ok: boolean;
     open: boolean;
-    ontoggle: () => void;
+    ontoggle?: () => void;
     /** Each round's ○ / × when the row holds several (たちぎき's conversation): `data-kiki-round` on each. */
     marks?: { i: number; ok: boolean }[];
     /** 一発 on the head. */
@@ -29,13 +30,20 @@
 {/snippet}
 
 <li class="item card" data-review={i} data-ok={ok} data-open={open} {...rest}>
-  <button type="button" class="head" aria-expanded={open} data-kiki-row={i} data-sfx="tick" onclick={ontoggle}>
+  {#snippet head()}
     <span class="marks">{#if marks}{#each marks as m (m.i)}{@render sym(m.ok, m.i)}{/each}{:else}{@render sym(ok)}{/if}</span>
     {@render lead?.()}
     <span class="sum">{@render summary()}</span>
     {#if first}<FirstStamp sm />{/if}
-    <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-  </button>
+  {/snippet}
+  {#if ontoggle}
+    <button type="button" class="head" aria-expanded={open} data-kiki-row={i} data-sfx="tick" onclick={ontoggle}>
+      {@render head()}
+      <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
+    </button>
+  {:else}
+    <div class="head" data-kiki-row={i}>{@render head()}</div>
+  {/if}
   {#if open}
     <div class="txt" data-kiki-detail={i}>
       {#if hear}<div class="hear">{@render hear()}</div>{/if}
@@ -47,9 +55,10 @@
 <style>
   .item { display: grid; gap: 8px; padding: 0; }
   .head {
-    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
+    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;
     display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; min-height: var(--hit);
   }
+  button.head { cursor: pointer; }
   .marks, .chev { flex: none; }
   .marks { display: inline-flex; gap: 4px; }
   .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
