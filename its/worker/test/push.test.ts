@@ -360,6 +360,26 @@ describe('a report’s events, the outbox and the alarm', () => {
     expect(bot.rec.subs.every((s) => s.lastOk === NOW + 1000)).toBe(true);
   });
 
+  it('a report that queues more while the alarm’s sends are in flight: its entries stay for the next alarm', async () => {
+    await bot.report(report({ events: [ev(1, 'hold')] }));
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    let calls = 0;
+    bot.pushDeps = { hosts: [HOST], fetch: async (req) => { calls++; await gate; return service.fetch(req); } };
+    const sending = bot.alarm();
+    await vi.waitFor(() => expect(calls).toBe(2));   // both holds' fetches out, unanswered
+    await bot.report(report({ events: [ev(2, 'confirmed', { detail: 'A1' })] }));
+    expect(jobs().map((j) => j.kind)).toEqual(['hold', 'hold', 'confirmed', 'confirmed']);
+    release();
+    await sending;
+    expect(jobs().map((j) => [j.kind, j.tries])).toEqual([['confirmed', 0], ['confirmed', 0]]);
+    expect(state.kv.get('pushq')).toEqual(jobs());
+    expect(service.delivered.map((d) => (d.message as ItsPushPayload).kind)).toEqual(['hold', 'hold']);
+    await bot.alarm();
+    expect(jobs()).toEqual([]);
+    expect(service.delivered.map((d) => (d.message as ItsPushPayload).kind)).toEqual(['hold', 'hold', 'confirmed', 'confirmed']);
+  });
+
   it('a near stay’s hold pushes once, by its human_needed (high, till the hold lapses); 予約確定 replaces it (same Topic)', async () => {
     await bot.bookings([holdBooking(1, NEAR)], RUN);
     await bot.report(report({ events: [ev(1, 'hold', { date: NEAR }), ev(2, 'human_needed', { date: NEAR, detail: 'near_date' })] }));

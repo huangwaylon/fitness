@@ -404,6 +404,23 @@ describe('the runner’s routes', () => {
     const ok = new Request('https://its.example/runner/claim', { method: 'POST', headers: { Authorization: `Bearer ${RUNNER}` }, body: new Blob([JSON.stringify(example.claimInput)]).stream(), duplex: 'half' } as RequestInit);
     expect((await (await import('../src/index.ts')).default.fetch(ok, env)).status).toBe(200);
   });
+
+  it('refuse a body past 64 KB whose Content-Length lies (says small), reading no further', async () => {
+    let pulled = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(c) {
+        pulled++;
+        if (pulled > 100) return c.close();
+        c.enqueue(new Uint8Array(16 * 1024).fill(0x20));
+      },
+    });
+    const req = new Request('https://its.example/runner/report', { method: 'POST', headers: { Authorization: `Bearer ${RUNNER}`, 'Content-Length': '200' }, body: stream, duplex: 'half' } as RequestInit);
+    expect(req.headers.get('Content-Length')).toBe('200');
+    const r = await (await import('../src/index.ts')).default.fetch(req, env);
+    expect([r.status, ((await r.json()) as { error: string }).error]).toEqual([413, 'too_large']);
+    expect(pulled).toBeLessThan(10);
+    expect(warned()).toContain('its refused status=413 why=too_large method=POST path=/runner/report run=-');
+  });
 });
 
 describe('the allow-list (search)', () => {
