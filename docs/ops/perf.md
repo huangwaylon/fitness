@@ -36,7 +36,7 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   ([testing.md](testing.md#the-ios-simulator-check-the-real-target-on-the-mac)); the phones' own numbers:
   `npm run logs -- report` (`perf.boot`, `perf.sheet`).
 - **The relay's latency** (from Tokyo, edge NRT): `npm run latency` in `relay/` (ping RTT median ~20 ms, partner one
-  way ~19 ms, a notify → `changed` on both phones ~60 ms); tap → the partner's villager sets off ~35-40 ms
+  way ~19 ms); `npm run smoke`: an ingest → `changed` on both phones; tap → the partner's villager sets off ~35-40 ms
   (`RELAY_E2E=1` sync-harness).
 - **The record's size:** [backend](../backend.md#the-record) "Snapshot size".
 - **Traps:**

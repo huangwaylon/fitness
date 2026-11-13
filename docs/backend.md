@@ -189,7 +189,8 @@ On launch (after painting from the cache), on becoming visible (≤ every 30 s),
 relay's `changed` ([Push](#push)); each refresh flushes the queue, then fetches (waits: `store/live.ts`'s constants).
 A launch or becoming visible waits briefly for the `welcome`: when the cache already has its `rec {at, rev}` and is
 recent, it only flushes. Every welcome whose `rec` is past the cache fetches (`e2e/live-sync.spec.ts`). An ack carries
-its stored row's `at` and the row goes into the cache at once; only a duplicate's ack is followed by a re-read.
+its stored row's `at` and the row goes into the cache at once; only a duplicate's ack is followed by a re-read. A failed
+fetch while the socket is up is tried again after 10 s, 30 s, then every 60 s (`FAIL_RETRY_MS`).
 
 **One device, one socket:** each hello names the device and tab (`dev`) and replaces only that tab's earlier socket
 (4002); the person's other devices hear their decor ops live, and only the writing page skips its own `changed`
@@ -398,8 +399,8 @@ While the app is on screen, a change to the record reaches the other phones in w
 through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) still catches up a phone that missed it.
 
 - **Record → room:** after a write that added rows (never a duplicate, a refusal or a read), the record calls the room
-  (an RPC, after its commit) with `{what: 'ingest'|'event', who, at, rev, sid?}`. No server POSTs a notice (the
-  signed `POST /notify` went on 2026-11-13: nothing called it); `npm run smoke` times an ingest → `changed`.
+  (an RPC, after its commit) with `{what: 'ingest'|'event', who, at, rev, sid?}`. No server POSTs a notice; `npm run smoke`
+  times an ingest → `changed`.
 - **Relay → phones:** `changed {what, who, at, rev, sid?, calm?, t}` to every authenticated socket, the writer's too (a
   Shortcut upload reaches its own phone), the guest's only of what it may see; the last mark is the welcomes' `rec`.
 - **The nudge:** after an ack the phone sends `saved {}`, relayed like any intent, until a `changed` has reached it

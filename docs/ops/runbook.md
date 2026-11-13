@@ -30,7 +30,7 @@ Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with th
 `version.json`, CSP header and the relay's CORS for it), red (GitHub mails the owner) unless all pass; it warns when the
 weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s `wx` is the real weather
 ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over 30 is normal; older, or
-`fails` > 0, is Open-Meteo failing (`npx wrangler tail`: `wx-fail <why>`). A fetch now: the signed `/admin` op
+`fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed fetch; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`).
 
 The Free plan's tightest limit is likely 100k rows written a day: `npm run logs -- stats` (from `relay/`) gives today's
