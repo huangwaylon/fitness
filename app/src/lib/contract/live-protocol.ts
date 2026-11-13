@@ -223,15 +223,15 @@ export const HB_PING = '{"v":3,"kind":"hb"}';
 export const HB_PONG = '{"v":3,"kind":"hb","t":0}';
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen: the day's
- *  world after it comes as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b` (the
- *  relay logged it as `ws.hello` until 2026-11-13); absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
+ *  world after it comes as `replay` messages, mine included; a build's hello from 2026-11-05 to 11-13 also says
+ *  `build`, left out). An intent's `c` (this phone's sequence number, increasing
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
   /** `beat` (2026-11-05): this phone sends something, the heartbeat at least, whenever it has sent nothing for 20 s, so
    *  the room may take a minute's silence for a ghost (relay/src/room.ts sweepSilent).
    *  `dev` (2026-11-09): this device's id (sync/live.ts deviceId), so a hello replaces only this device's earlier socket,
    *  not the person's other devices' (one without it replaces only the others without it: the phones before it). */
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; build?: string; beat?: true; dev?: string }
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; beat?: true; dev?: string }
   | { v: LiveV; kind: 'ping'; c: number }
   /** I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
@@ -351,8 +351,6 @@ const ID = /^[\w:.-]{1,32}$/;
 /** What was caught, picked or put: a token, `kind:id` (a find's) or `kind:id:id` (a present's catalog item). */
 const WHAT = /^[a-z][\w:.-]{0,63}$/;
 const KEY = /^[0-9a-f]{32,128}$/;
-/** An app version as vite.config.ts appVersion makes it (`2026-11-05.ef93d8b`, `dev`). */
-const BUILD = /^[0-9A-Za-z.-]{1,24}$/;
 const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
 const REV = /^[0-9a-z]{1,24}$/;
 /** A device's or a session's id (sync/log.ts logId's shape). */
@@ -639,10 +637,8 @@ export function parseClient(raw: unknown): ClientMsg | null {
   const v = o.v as LiveV;
   if (o.kind === 'hello') {
     if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
-    // (a build that isn't one is left out, never the hello refused)
-    const build = typeof o.build === 'string' && BUILD.test(o.build) ? o.build : undefined;
     const dev = typeof o.dev === 'string' && SID.test(o.dev) ? o.dev : undefined;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(build ? { build } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}) };
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   if (o.kind === 'got') return isTime(o.at) ? { v, kind: 'got', at: o.at } : null;

@@ -182,16 +182,14 @@ describe('live protocol: the very walk, acks and the day in one replay', () => {
     expect(j({ ...most, c: 1_793_500_000_123 }).length).toBeLessThanOrEqual(MAX_BYTES);
     expect(parseServer(j({ ...most, who: 'A', t: 1_793_500_000_123 }))).not.toBeNull();
   });
-  it('an intent may carry its sequence number c (a positive integer); a hello its build', () => {
+  it('an intent may carry its sequence number c (a positive integer)', () => {
     expect(parseClient(j({ kind: 'pick', id: 'a', what: 'weed', c: 7 }))).toEqual({ v: 3, c: 7, kind: 'pick', id: 'a', what: 'weed' });
     expect(parseClient(j({ kind: 'pick', id: 'a', what: 'weed', c: 0 }))).toBeNull();
     expect(parseClient(j({ kind: 'pick', id: 'a', what: 'weed', c: 1.5 }))).toBeNull();
     // (an older phone's batch flag: every replay is batched now, the flag left out)
     expect(parseClient(j({ kind: 'hello', key: KEY, batch: true }))).toEqual({ v: 3, kind: 'hello', key: KEY });
-    // the build (2026-11-05): kept when it is one, left out (the hello still taken) when not
-    expect(parseClient(j({ kind: 'hello', key: KEY, build: '2026-11-05.ef93d8b' }))).toEqual({ v: 3, kind: 'hello', key: KEY, build: '2026-11-05.ef93d8b' });
-    expect(parseClient(j({ kind: 'hello', key: KEY, build: 'a b<script>' }))).toEqual({ v: 3, kind: 'hello', key: KEY });
-    expect(parseClient(j({ kind: 'hello', key: KEY, build: 'x'.repeat(40) }))).toEqual({ v: 3, kind: 'hello', key: KEY });
+    // an older phone's build (2026-11-05 … 11-13): left out, the hello still taken
+    expect(parseClient(j({ kind: 'hello', key: KEY, build: '2026-11-05.ef93d8b' }))).toEqual({ v: 3, kind: 'hello', key: KEY });
     expect(parseClient(j({ kind: 'act', act: 'wake', id: 'B', at: 1_793_500_000_000 }))).toMatchObject({ act: 'wake', id: 'B' });
     expect(parseClient(j({ kind: 'world', op: 'woke', id: 'gulliver' }))).toMatchObject({ op: 'woke' });
   });

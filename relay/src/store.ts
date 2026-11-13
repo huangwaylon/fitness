@@ -33,7 +33,7 @@ import { isPackType, packClean, PackBook, packRowOf, packSlot, PACK_TYPES, type 
 import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_CHARS, type WedVerdict } from '../../app/src/lib/contract/wedding.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import { CALM_EVENTS, type Notice } from '../../app/src/lib/contract/live-protocol.ts';
-import { verifyNotify } from './notify.ts';
+import { verifyAdmin } from './sign.ts';
 import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
@@ -354,7 +354,7 @@ export class StoreCore {
 
   /** A signed `/admin` body: its `{op, ...}`, or the status and reply refusing it. */
   async signedOp(text: string, t: string | null, sig: string | null): Promise<{ op: Rec } | { status: number; body: string }> {
-    if (!(await verifyNotify(this.io.keys, t, sig, text, this.io.now()))) return { status: 401, body: 'unauthorized' };
+    if (!(await verifyAdmin(this.io.keys, t, sig, text, this.io.now()))) return { status: 401, body: 'unauthorized' };
     let o: unknown;
     try {
       o = JSON.parse(text);

@@ -6,12 +6,12 @@
 // - `POST /api`: the app's and the Shortcut's requests, one body (`{key, action, ...}` as text/plain JSON, a simple
 //   request: no preflight from a page, no key in a URL or a header); every reply is JSON with status 200 (`{ok:false,
 //   error}` included), so a client tells a refusal from an outage.
-// - `POST /admin`: the record tool's operations (relay/scripts/record.ts: counts, bookmarks, restore, a new epoch, a dump, a load, the log, the weather), signed (notify.ts): only who holds both keys can sign.
+// - `POST /admin`: the record tool's operations (relay/scripts/record.ts: counts, bookmarks, restore, a new epoch, a dump, a load, the log, the weather), signed (sign.ts): only who holds both keys can sign.
 // Each `/api` request is timed here (the wall time of the record's answer: in a Worker the clock moves only across
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { corsOf, keyOwner, preflight, type Keys } from './auth.ts';
-import { SIG_HEADER, TIME_HEADER, sigShaped, verifyNotify } from './notify.ts';
+import { SIG_HEADER, TIME_HEADER, sigShaped, verifyAdmin } from './sign.ts';
 import { isRec, MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
 import { isLogId, LOG_ACTIONS } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
@@ -120,7 +120,7 @@ export async function adminRoute(req: Request, store: () => StoreRoom, keys: Key
   const text = await req.text();
   if (text.length > ADMIN_MAX_CHARS) return new Response('too large', { status: 413 });
   // the signature itself, here too (the record checks it again): a forged one never spends a Durable Object request
-  if (!(await verifyNotify(keys, t, sig, text, now()))) return unauthorized();
+  if (!(await verifyAdmin(keys, t, sig, text, now()))) return unauthorized();
   const r = await store().adminSigned(text, t, sig);
   return new Response(r.body, { status: r.status, headers: { 'Content-Type': r.status === 200 ? 'application/json' : 'text/plain', 'Cache-Control': 'no-store' } });
 }

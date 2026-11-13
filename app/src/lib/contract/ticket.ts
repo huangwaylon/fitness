@@ -19,7 +19,7 @@ export const TICKET_TTL_MS = 5 * 60_000;
 const TICKET_RE = /^tk\.([ABG])\.([0-9a-z]{1,12})\.([0-9a-f]{64})$/;
 const enc = new TextEncoder();
 
-/** HMAC-SHA256 of `msg` under `key`, hex. @public (relay/src/notify.ts: the server-to-server signature) */
+/** HMAC-SHA256 of `msg` under `key`, hex. @public (relay/src/sign.ts: the server-to-server signature) */
 export async function hmacHex(key: string, msg: string): Promise<string> {
   const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', k, enc.encode(msg))), (b) => b.toString(16).padStart(2, '0')).join('');

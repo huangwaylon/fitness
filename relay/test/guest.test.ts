@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 import { keyOwner } from '../src/auth.ts';
-import { notifySecret } from '../src/notify.ts';
+import { adminSecret } from '../src/sign.ts';
 import type { Notice, ServerMsg } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
@@ -20,7 +20,7 @@ describe('the guest key', () => {
   it('is the guest (G), and the notify secret stays the two members’ own', async () => {
     expect(keyOwner(KEY_C, { KEY_A, KEY_B, KEY_C })).toBe('G');
     expect(keyOwner(KEY_C, { KEY_A, KEY_B })).toBeNull();
-    expect(await notifySecret({ KEY_A, KEY_B, KEY_C })).toBe(await notifySecret({ KEY_A, KEY_B }));
+    expect(await adminSecret({ KEY_A, KEY_B, KEY_C })).toBe(await adminSecret({ KEY_A, KEY_B }));
   });
 });
 

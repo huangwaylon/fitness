@@ -18,10 +18,10 @@ vi.mock('cloudflare:workers', () => ({
 import { IslandRoom, type Env } from '../src/index.ts';
 import { SILENT_MS } from '../src/room.ts';
 import { LIVE_V } from '../../app/src/lib/contract/live-protocol.ts';
-import { IslandStore } from '../src/storeObject.ts';
+import { IslandStore, twice } from '../src/storeObject.ts';
 import { IslandLog } from '../src/logObject.ts';
 import { CAPS_SAVE_MS, LogCore, type RelayEvent } from '../src/log.ts';
-import { notifySecret, notifySig } from '../src/notify.ts';
+import { adminSecret, adminSig } from '../src/sign.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
 
@@ -119,7 +119,7 @@ describe('IslandStore', () => {
   const make = (extra: Partial<Env> = {}) => new IslandStore(fakeState().state, envOf(extra));
   const sign = async (o: unknown, t = String(NOW)) => {
     const body = JSON.stringify(o);
-    return [body, t, await notifySig((await notifySecret({ KEY_A, KEY_B }))!, t, body)] as const;
+    return [body, t, await adminSig((await adminSecret({ KEY_A, KEY_B }))!, t, body)] as const;
   };
   const admin = async (s: IslandStore, o: unknown) => {
     const r = await s.adminSigned(...(await sign(o)));
@@ -413,5 +413,15 @@ describe('IslandRoom', () => {
     await st.storage.put('restore', { due: NOW, tries: 9 });
     await r.alarm();
     expect(st.kv.has('restore')).toBe(false);
+  });
+});
+
+describe('twice', () => {
+  it('tries a failed call once more, then gives up with its error', async () => {
+    let n = 0;
+    expect(await twice(async () => (++n === 1 ? Promise.reject(new Error('reset')) : 'ok'))).toBe('ok');
+    expect(n).toBe(2);
+    n = 0;
+    await expect(twice(async () => (++n, Promise.reject(new Error(`no ${n}`))))).rejects.toThrow('no 2');
   });
 });

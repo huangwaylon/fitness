@@ -1136,14 +1136,11 @@ describe('the real weather (wx)', () => {
 
   it('goes after the welcome, then to every phone when it changes', () => {
     now = at + 5 * 60_000;
-    const hellos: unknown[][] = [];
-    room = new RoomCore({ ...io(), onHello: (...a) => void hellos.push(a) }, [], null, {}, {}, wx);
+    room = new RoomCore(io(), [], null, {}, {}, wx);
     const a = join(KEY_A);
     expect(a.kinds().slice(0, 2)).toEqual(['welcome', 'wx']);
     expect(a.sent[1]).toEqual({ v: 3, kind: 'wx', ...wx, t: now });
     expect(parseServer(JSON.stringify(a.sent[1]))).toEqual({ v: 3, kind: 'wx', ...wx, t: now });
-    // whose, the version and the build (none here), for the log's ws.hello
-    expect(hellos).toEqual([['A', 3, undefined, 0]]);
     const next: Wx = { ...wx, s: 'rrhhhh', rev: 5 };
     expect([room.setWx(next, false), a.kinds().filter((k) => k === 'wx').length]).toEqual([0, 1]); // kept, not sent
     const b = join(KEY_B);
@@ -1154,19 +1151,17 @@ describe('the real weather (wx)', () => {
     expect(join(KEY_A).sent[1]).toMatchObject({ kind: 'wx', rev: 5 });
   });
 
-  it('says whose hello it welcomed, in which version and from which build', () => {
-    const hellos: unknown[][] = [];
-    room = new RoomCore({ ...io(), onHello: (...a) => void hellos.push(a) });
+  it("says when it welcomed a hello (the ghosts' watch, the weather): an older phone's build too, never an unknown key", () => {
+    let hellos = 0;
+    room = new RoomCore({ ...io(), onHello: () => void hellos++ });
     const s = join();
     room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: KEY_B, build: '2026-11-05.ef93d8b' }));
-    expect(hellos).toEqual([['B', 3, '2026-11-05.ef93d8b', 0]]);
-    // an unknown key is never welcomed: nothing said
+    expect(hellos).toBe(1);
     join('f'.repeat(32));
-    expect(hellos).toHaveLength(1);
-    // the same phone back before its old socket closed: the old one replaced (the others hear no presence off and on)
-    const t = join();
-    room.message(t, JSON.stringify({ v: 3, kind: 'hello', key: KEY_B }));
-    expect(hellos.at(-1)).toEqual(['B', 3, undefined, 1]);
+    expect(hellos).toBe(1);
+    // the same phone back before its old socket closed: the old one replaced, welcomed again
+    room.message(join(), JSON.stringify({ v: 3, kind: 'hello', key: KEY_B }));
+    expect(hellos).toBe(2);
   });
 
   it('a timeline that no longer covers the hour, or 36 hours old, is never sent', () => {

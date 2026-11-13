@@ -159,7 +159,8 @@ function report(rows: Row[], since: number): void {
   table(`Builds (the newest 10 of ${builds.length})`, ['build', 'sessions', 'events', 'errors', 'os', 'last (Tokyo)'], builds.slice(0, 10).map(({ b, xs, last }) => [b, new Set(xs.map((x) => x.sid)).size, xs.length, xs.filter((x) => x.lvl === 3).length, [...new Set(xs.map((x) => x.os ?? '-'))].join(' '), tokyo(last)]));
   if (builds.length > 10) console.log(`  … ${builds.length - 10} older: ${builds.slice(10).reduce((n, x) => n + x.xs.length, 0)} events`);
   // each person's newest live socket: the protocol version and build their phone speaks (docs/backend.md: before
-  // dropping an old version): the phone's ws.close `v` (the relay's ws.hello before 2026-11-13)
+  // dropping an old version): the phone's ws.close `v` (the relay's ws.hello before 2026-11-13: drop after 12-13,
+  // when the last ages out)
   const hellos = new Map<string, Row>();
   for (const r of rows) if (((r.ev === 'ws.close' && r.d.v !== undefined) || r.ev === 'ws.hello') && r.role && (!hellos.has(r.role) || hellos.get(r.role)!.id < r.id)) hellos.set(r.role, r);
   table('Live protocol (each person\'s newest socket)', ['who', 'v', 'build', 'when (Tokyo)'], [...hellos].sort().map(([w, r]) => [w, String(r.d.v), String(r.d.build ?? r.build ?? '-'), tokyo(r.ts)]));
@@ -193,7 +194,7 @@ try {
       const rows = (r.rows ?? []).reverse().filter(osOk);
       if (flag('json')) console.log(JSON.stringify(rows, null, 1));
       else for (const x of rows) console.log(line(x));
-      if (r.next) console.error(`(the newest ${limit}: --limit or --since for more)`);
+      if (r.next) console.error(`(the newest ${limit}${limit < 1000 ? ': --limit up to 1000, or' : ', the most a list shows:'} narrow --since/--until)`);
       break;
     }
     case 'report': {

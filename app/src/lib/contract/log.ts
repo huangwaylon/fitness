@@ -72,7 +72,7 @@ export const LOG_EVENTS = {
   // the point lights (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', pts: 'n', pm: 'b' } },
-    // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
+  // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
   "api.ok": { src: 'c', f: API },
@@ -86,7 +86,7 @@ export const LOG_EVENTS = {
   // an event set aside (the record failed it 30 times, or too large alone) / a batch refused whole, halved
   "queue.poison": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
   "queue.split": { src: 'c', f: { n: 'n', err: LOG_STATUS } },
-    // a welcome after failed tries only (the rest say it on their ws.close)
+  // a welcome after failed tries only (the rest say it on their ws.close)
   "ws.open": { src: 'c', f: { ms: 'n', retries: 'n' } },
   // why: sync/live.ts CloseWhy; quiet: s since the socket last heard anything; rtt: its shortest ping round trip (ms);
   // v: the protocol its hello spoke (which phones speak what: the one source since the relay's ws.hello went,

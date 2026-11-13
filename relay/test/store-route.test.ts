@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { adminRoute, apiRoute, type StoreRoom } from '../src/storeRoute.ts';
-import { notifySecret, notifySig } from '../src/notify.ts';
+import { adminSecret, adminSig } from '../src/sign.ts';
 import { StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
@@ -97,8 +97,8 @@ describe('/api before the record (the Worker)', () => {
 
 describe('/admin', () => {
   const signed = async (body: string, t = NOW) => {
-    const secret = (await notifySecret({ KEY_A, KEY_B }))!;
-    return new Request('https://relay.example/admin', { method: 'POST', body, headers: { 'X-Island-Time': String(t), 'X-Island-Sig': await notifySig(secret, String(t), body) } });
+    const secret = (await adminSecret({ KEY_A, KEY_B }))!;
+    return new Request('https://relay.example/admin', { method: 'POST', body, headers: { 'X-Island-Time': String(t), 'X-Island-Sig': await adminSig(secret, String(t), body) } });
   };
 
   it('takes an op signed by who holds both keys (a load: a dump’s rows, idempotent); refuses an unsigned, stale or tampered one', async () => {

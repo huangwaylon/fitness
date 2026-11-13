@@ -4,7 +4,7 @@
 import { createHmac } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { NOTIFY_LABEL, SIG_HEADER, TIME_HEADER } from '../src/notify.ts';
+import { SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
 
 export const TEST = process.argv.includes('--test');
 export const RELAY = TEST ? 'https://island-fund-relay-test.island-fund-relay.workers.dev' : 'https://island-fund-relay.island-fund-relay.workers.dev';
@@ -28,7 +28,7 @@ function secretOf(): string {
     console.error('set KEY_A and KEY_B in the environment, or KEYS_FILE');
     process.exit(1);
   }
-  return (secret = createHmac('sha256', `${a}:${b}`).update(NOTIFY_LABEL).digest('hex'));
+  return (secret = createHmac('sha256', `${a}:${b}`).update(SIGN_LABEL).digest('hex'));
 }
 
 /** A signed POST to the record's /admin. */

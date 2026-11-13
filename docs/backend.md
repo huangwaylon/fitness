@@ -108,7 +108,7 @@ a retry of a kept group is all duplicates.
 ## Auth and limits
 - **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
   [The guest](#the-guest)), in constant time. `KEY_A` and `KEY_B` also derive the secret that signs
-  `/admin` (never `KEY_C`; `relay/src/notify.ts`: the derivation, the headers, the 5-minute window): a rotation
+  `/admin` (never `KEY_C`; `relay/src/sign.ts`: the derivation, the headers, the 5-minute window): a rotation
   updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)).
 - **Rate limit:** `RATE_PER_MINUTE` (120) requests per key a minute, in the record's memory; over it, `busy`. A
   snapshot's later pages have their own `PAGES_PER_MINUTE`.
@@ -243,7 +243,7 @@ never data of record: the record still catches an offline phone up.
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key (`contract/ticket.ts`, `auth.ts admission`), else 403; a ticketed
   hello must be that person's. A phone clock over 5 minutes off has no live socket.
-- **Auth:** the first message is `hello {key, since?, build?, beat?, dev?}`; the room compares the key in constant time
+- **Auth:** the first message is `hello {key, since?, beat?, dev?}`; the room compares the key in constant time
   and answers `welcome {me, peer, t, rec?, here, gone?, hb?, mine?}` (`rec`: the record's last change; `gone`: when
   each person's last socket closed; `mine`: another device of mine is here).
 - **Close codes:** 4001 bad key, 4002 replaced by the same device's newer socket, 4003 no hello within `HELLO_MS`,

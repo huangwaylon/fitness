@@ -1,0 +1,46 @@
+import { createHmac } from 'node:crypto';
+import { describe, expect, it } from 'vitest';
+import { SIGN_LABEL, SIGN_WINDOW_MS, adminSecret, adminSig, verifyAdmin } from '../src/sign.ts';
+
+const KEY_A = 'a1'.repeat(16);
+const KEY_B = 'b2'.repeat(16);
+const keys = { KEY_A, KEY_B };
+const body = JSON.stringify({ what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'mhf0a1b2c3' });
+const now = 1_793_000_000_000;
+const hex = (key: string, msg: string) => createHmac('sha256', key).update(msg).digest('hex');
+
+describe('the admin secret', () => {
+  it('is HMAC-SHA256 of the label under "keyA:keyB" (what relay/scripts/admin.ts computes)', async () => {
+    expect(await adminSecret(keys)).toBe(hex(`${KEY_A}:${KEY_B}`, SIGN_LABEL));
+    expect(await adminSecret({ KEY_A: ` ${KEY_A.toUpperCase()}\n`, KEY_B })).toBe(await adminSecret(keys));
+  });
+
+  it('needs both keys', async () => {
+    expect(await adminSecret({ KEY_A })).toBeNull();
+    expect(await adminSecret({ KEY_A: '', KEY_B })).toBeNull();
+  });
+});
+
+describe('a signed /admin request', () => {
+  const signed = async (t: number, b = body, k: { KEY_A: string; KEY_B: string } = keys) => adminSig((await adminSecret(k))!, String(t), b);
+
+  it('is accepted within the window', async () => {
+    expect(await verifyAdmin(keys, String(now), await signed(now), body, now)).toBe(true);
+    expect(await verifyAdmin(keys, String(now), await signed(now), body, now + SIGN_WINDOW_MS)).toBe(true);
+    expect(hex((await adminSecret(keys))!, `${now}.${body}`)).toBe(await signed(now));
+  });
+
+  it('is refused when old, early, tampered, signed with other keys, or malformed', async () => {
+    const sig = await signed(now);
+    expect(await verifyAdmin(keys, String(now), sig, body, now + SIGN_WINDOW_MS + 1)).toBe(false);
+    expect(await verifyAdmin(keys, String(now), sig, body, now - SIGN_WINDOW_MS - 1)).toBe(false);
+    expect(await verifyAdmin(keys, String(now), sig, body.replace('"A"', '"B"'), now)).toBe(false);
+    expect(await verifyAdmin(keys, String(now + 1), sig, body, now)).toBe(false);
+    expect(await verifyAdmin(keys, String(now), await signed(now, body, { KEY_A, KEY_B: 'c3'.repeat(16) }), body, now)).toBe(false);
+    expect(await verifyAdmin(keys, null, sig, body, now)).toBe(false);
+    expect(await verifyAdmin(keys, String(now), null, body, now)).toBe(false);
+    expect(await verifyAdmin(keys, 'soon', sig, body, now)).toBe(false);
+    expect(await verifyAdmin(keys, String(now), sig.toUpperCase(), body, now)).toBe(false);
+    expect(await verifyAdmin({ KEY_A }, String(now), sig, body, now)).toBe(false);
+  });
+});

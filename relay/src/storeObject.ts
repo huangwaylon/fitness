@@ -13,9 +13,17 @@ import { roleOfKey } from './auth.ts';
 import { relaySink } from './logRoute.ts';
 import type { RelayEvent } from './log.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
-import { twice } from './notify.ts';
 import { errName } from './log.ts';
 import { after, backoff, due, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
+
+/** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
+export async function twice<T>(f: () => Promise<T>): Promise<T> {
+  try {
+    return await f();
+  } catch {
+    return f();
+  }
+}
 
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';

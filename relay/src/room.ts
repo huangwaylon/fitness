@@ -57,10 +57,9 @@ export interface RoomIO<S extends Sock> {
   /** When the runtime last answered this socket's heartbeat (ms; the auto-response's timestamp: HB_PING never reaches
    *  the room), or null. */
   heardAt?(s: S): number | null;
-  /** A hello was welcomed: whose, in which version, from which build (absent before 2026-11-05), and how many sockets of
-   *  theirs it replaced (`rep`: a phone back before the room saw its old socket go, so the others heard no presence
-   *  off and on). The room arms the ghosts' watch and fetches the real weather then, when it's due (weather.ts). */
-  onHello?(who: Who, v: LiveV, build: string | undefined, rep: number): void;
+  /** A hello was welcomed: the room arms the ghosts' watch and fetches the real weather then, when it's due
+   *  (weather.ts). */
+  onHello?(): void;
 }
 
 /** The high-fives held for people while they were away, one per (sender, recipient) pair (`<from>><to>`, e.g. `G>A`):
@@ -334,7 +333,7 @@ export class RoomCore<S extends Sock> {
     this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
   }
 
-  private hello(s: S, meta: Meta, { key, since, v, build, beat, dev }: Extract<ClientMsg, { kind: 'hello' }>): void {
+  private hello(s: S, meta: Meta, { key, since, v, beat, dev }: Extract<ClientMsg, { kind: 'hello' }>): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     // a ticket's socket is its person's alone
@@ -389,7 +388,7 @@ export class RoomCore<S extends Sock> {
     }
     if (!theirs.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
     else for (const p of this.mine(s, who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
-    this.io.onHello?.(who, v, build, was.length);
+    this.io.onHello?.();
   }
 
   /** The real sky was fetched (weather.ts): kept for the welcomes, and when it changed (`send`) every phone hears it.

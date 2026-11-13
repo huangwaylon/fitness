@@ -5,7 +5,7 @@
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
-import { NOTIFY_LABEL, SIG_HEADER, TIME_HEADER } from '../src/notify.ts';
+import { SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
 // the app's page (Cloudflare Pages); the old one, GitHub Pages, is refused since 2026-11-05
@@ -82,8 +82,8 @@ const { KEY_A, KEY_B, KEY_C } = keys();
 const http = URL_.replace(/^ws/, 'http');
 /** A socket with `who`'s admission ticket (made now, under their key). */
 const as = async (who: 'A' | 'B' | 'G'): Promise<Client> => new Client(await makeTicket(who === 'A' ? KEY_A : who === 'B' ? KEY_B : KEY_C!, who, Date.now() + TICKET_TTL_MS));
-/** The server-to-server signature's headers (src/notify.ts) for `text` at `t`. */
-const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update(NOTIFY_LABEL).digest('hex');
+/** The server-to-server signature's headers (src/sign.ts) for `text` at `t`. */
+const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update(SIGN_LABEL).digest('hex');
 const signedBy = (t: string, text: string) => ({ [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') });
 /** A signed POST to the test relay's /admin. */
 const admin = async (body: object): Promise<Record<string, unknown>> => {

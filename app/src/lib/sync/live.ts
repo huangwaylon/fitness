@@ -55,8 +55,6 @@ interface LiveOptions {
   /** Whose key it is (read at each connect): with it, each socket offers the room an admission ticket (contract/ticket.ts)
    *  made under the key; without (the demo's test relays), none. */
   me?: () => Who | null;
-  /** The app's version, said in the hello. */
-  build?: () => string | undefined;
   /** This device's id, said in the hello (`dev`): the relay replaces only this device's earlier socket. Without it (the
    *  tests' relays), a hello replaces the person's other sockets that said none. */
   dev?: () => string | undefined;
@@ -675,11 +673,10 @@ export function createLive(o: LiveOptions): Live {
       if (!key) return drop(1000, 'rekey');
       // a new Tokyo day since the page loaded: that day's whole world
       lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
-      const build = o.build?.();
       // `beat`: this phone sends something at least every PING_EVERY_MS (quiet), so the room may take one it hears
       // nothing from for a minute for a ghost
       const dev = o.dev?.();
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, ...(build ? { build } : {}), beat: true, ...(dev ? { dev } : {}) });
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, beat: true, ...(dev ? { dev } : {}) });
     };
     s.onmessage = (e: MessageEvent) => {
       heardAt = Date.now();
@@ -967,7 +964,6 @@ function safe(f: () => void): void {
 }
 
 let shared: Live | null = null;
-let appBuild: string | undefined;
 
 /** This device's id (LIVE.device: made once, logId's shape) and this tab's (LIVE.tab, sessionStorage: 4 more), or none
  *  when storage can't keep it. Two tabs of one browser (a Mac's editor and island) were one device: the second
@@ -990,14 +986,11 @@ export function deviceId(): string | undefined {
   return id.slice(0, 11) + tab;
 }
 
-/** The app's version for the hello (+layout.svelte, from `$app/env`). */
-export const setLiveBuild = (b: string): void => void (appBuild = b);
-
 /**
  * The phone's one relay socket, keyed by the paired key. Everything that talks to the relay shares it (the sync's push
  * now, the island's presence later): a second socket of this device (another tab) would replace this one (4002); my
  * other devices' sockets stay (the hello's `dev`).
  */
 export function liveRelay(): Live {
-  return (shared ??= createLive({ key: getKey, me: getStoredMe, build: () => appBuild, dev: deviceId }));
+  return (shared ??= createLive({ key: getKey, me: getStoredMe, dev: deviceId }));
 }
