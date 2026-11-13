@@ -102,9 +102,10 @@ the よびな and what's worn → [the 姿 level](#sugata)), **プロフィー�
 ([Sound settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
 [Weather](#weather)'s switch too), **ジムボット** (one row, 動作状況 → its level: `panel/GymPage.svelte`,
 `gym/status.ts`; the LINE gym bot's health from its Worker's public `/status` (gym/README.md): a verdict card, the
-facts, the last checks; fetched on open and each minute while shown; hidden while `VITE_GYM_URL` is empty) and **図鑑**
-(設定 closes, [the 図鑑](#zukan) opens). The guest's is the same but for ジムボット, with a line saying it's visiting.
-Its own chunk.
+facts, the last checks; fetched on open and each minute while shown; hidden while `VITE_GYM_URL` is empty),
+**保養所ボット** (→ `panel/ItsPage.svelte`: the ITS booker's health, 開始 / 停止 and settings; hidden unless `VITE_ITS_URL`) and
+**図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's is the same but for the two bots, with a line
+saying it's visiting. Its own chunk.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),

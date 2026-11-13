@@ -21,6 +21,7 @@ const ROUTED: Record<string, string> = {
   'board.spec.ts': 'the record routed (pairedWithPost)',
   'food-kalori.spec.ts': "Kalori's pictures (assets.kalori.jp) answered or aborted by context.route, never fetched; a product link's href asserted, never opened",
   'gymbot.spec.ts': "the gym bot's /status routed (page.route), never fetched",
+  'its.spec.ts': "the its-bot Worker routed (page.route), never fetched; the run link is only read",
   'liveRoom.ts': 'the record and the room routed in-process',
   'log.spec.ts': 'the record and /log routed (LIVE=1 forwards to the test relay on purpose)',
   'record.ts': 'the record routed in-process',

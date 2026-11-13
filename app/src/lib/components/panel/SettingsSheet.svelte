@@ -3,10 +3,13 @@
   // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
   // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
-  // ジムボット (one row, members only, hidden while GYM_URL is empty: its 動作状況 level, gym/status.ts) and
-  // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06) but for ジムボット, with a line saying it's visiting. The island is arranged in /editor, not here.
-  // 姿 and ジムボット push a level with ‹ (姿's edits are sent as it's left, with a 取り消す banner here);
-  // ✕, the backdrop and Esc close it, and the next opening starts at its top.
+  // ジムボット (one row, members only, hidden while GYM_URL is empty: its 動作状況 level, gym/status.ts), 保養所ボット (one
+  // row, members only, hidden while ITS_URL is empty: its 予約設定・動作状況 level, ItsPage, lib/its) and
+  // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06) but for ジムボット and 保養所ボット, with a line saying it's visiting. The island is arranged in /editor, not here.
+  // 姿, ジムボット and 保養所ボット push a level with ‹ (姿's edits are sent as it's left, with a 取り消す banner here; 保養所ボット's
+  // ‹ asks before throwing an unsaved draft away);
+  // ✕, the backdrop and Esc close it (asking first while a draft holds changes: Sheet's guard), and the next opening starts
+  // at its top.
   import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -19,7 +22,9 @@
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
   import GymPage from './GymPage.svelte';
+  import ItsPage from './ItsPage.svelte';
   import { GYM_URL } from '#lib/gym/status.ts';
+  import { ITS_URL } from '#lib/its/client.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -36,16 +41,19 @@
   /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
   let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
 
-  /** The levels pushed: すがた, ジムボット. */
-  let stack = $state<('look' | 'gym')[]>([]);
+  /** The levels pushed: すがた, ジムボット, 保養所ボット. */
+  let stack = $state<('look' | 'gym' | 'its')[]>([]);
+  /** 保養所ボット's ‹ guard (its draft). */
+  let itsLeave = $state<((run: () => void) => void) | undefined>();
   const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
+  let sheet: ReturnType<typeof Sheet> | undefined = $state();
   let savedTop = 0;
   /** The list's scroll as 図鑑's row opened ずかん (its ‹ comes back to it). */
   let zukanTop = 0;
 
   const view = $derived(week.view);
-  const title = $derived(push === 'gym' ? t('gym.title') : push ? t(`panel.${push}`) : t('title.settings'));
+  const title = $derived(push === 'gym' ? t('gym.title') : push === 'its' ? t('its.title') : push ? t(`panel.${push}`) : t('title.settings'));
   /** This phone's villager (the guest's own on the guest's phone). */
   const me = $derived(view ? mine(view) : null);
   const myVillager = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
@@ -66,15 +74,19 @@
   /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'look' | 'gym') {
+  async function go(to: 'look' | 'gym' | 'its') {
     if (!stack.length) savedTop = body?.scrollTop ?? 0;
     stack = [...stack, to];
     await tick();
     body?.scrollTo({ top: 0 });
   }
 
-  /** ‹: back to the list, where it was scrolled to, focus on the row it came from. */
-  async function back() {
+  /** ‹: back to the list, where it was scrolled to, focus on the row it came from (保養所ボット's after its guard). */
+  function back() {
+    if (push === 'its' && itsLeave) itsLeave(() => void pop());
+    else void pop();
+  }
+  async function pop() {
     cue('back');
     const from = push;
     stack = stack.slice(0, -1);
@@ -107,13 +119,15 @@
   }
 </script>
 
-<Sheet bind:open tunes label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
-  <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+<Sheet bind:this={sheet} bind:open tunes label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
+  <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (sheet ? sheet.guard(() => (open = false)) : (open = false))} sfx="self" /></div>
   <div class="panel-body" class:fill={push === 'look'} data-settings bind:this={body}>
     {#if push === 'look' && view}
       <div class="page"><LookPage {view} /></div>
     {:else if push === 'gym'}
       <div class="page"><GymPage /></div>
+    {:else if push === 'its'}
+      <div class="page"><ItsPage bind:leave={itsLeave} /></div>
     {:else if !push && view && me && worn}
       {#if unsent}
         <div class="prow static" data-unsent={unsent}>
@@ -140,6 +154,16 @@
           <button type="button" class="prow go" data-push="gym" data-sfx="page" onclick={() => go('gym')}>
             <span class="ic"><OfficialArt key="items/nook-yoga-mat" size={36} /></span>
             <span class="prl">{t('gym.status')}</span>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          </button>
+        </section>
+      {/if}
+      {#if ITS_URL && !guest}
+        <section class="sec" aria-labelledby="sec-its">
+          <h2 id="sec-its" class="sec-label">{t('its.title')}</h2>
+          <button type="button" class="prow go" data-push="its" data-sfx="page" onclick={() => go('its')}>
+            <span class="ic"><OfficialArt key="items/oil-barrel-bathtub" size={36} /></span>
+            <span class="prl">{t('its.status')}</span>
             <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </button>
         </section>
