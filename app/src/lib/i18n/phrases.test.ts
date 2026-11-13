@@ -47,9 +47,19 @@ describe('phrases', () => {
     expect(names('納豆（たれ・からし付き）')).toEqual(['納豆', '（たれ・', 'からし付き）']);
     expect(names('カップラーメン（しょうゆ・レギュラー）')).toEqual(['カップラーメン', '（しょうゆ・', 'レギュラー）']);
     expect(names('カップラーメン しょうゆ味（乾）')).toEqual(['カップラーメン しょうゆ味', '（乾）']);
-    expect(names('ラーメン＋半チャーハンセット')).toEqual(['ラーメン', '＋半チャーハンセット']);
+    expect(names('ラーメン＋半チャーハンセット')).toEqual(['ラーメン', '＋半チャーハン', 'セット']);
     expect(names('ごはん（150g）')).toEqual(['ごはん', '（150g）']);
     expect(nameParts('ごはん（150g）')[1]).toEqual(['', '（150', 'g）']);
     expect(nameParts('納豆（たれ・からし付き）')[1]).toEqual(['', '（た', 'れ・']);
+  });
+  // review 11/13 r1 (近いもの at 393 px: 「豚骨醤油ラーメンスナッ／ク」): a long run with nothing to break at comes apart at
+  // its words (Intl.Segmenter), never at a dictionary's crumbs
+  it('breaks a long unbroken name between its words', () => {
+    const names = (t: string) => nameParts(t).map((p) => p.join(''));
+    expect(names('豚骨醤油ラーメンスナック')).toEqual(['豚骨醤油', 'ラーメン', 'スナック']);
+    expect(names('にんにく豚骨醤油ラーメン')).toEqual(['にんにく', '豚骨醤油', 'ラーメン']);
+    expect(names('らーめん山頭火監修チャーシュー')).toEqual(['らーめん', '山頭火', '監修', 'チャーシュー']);
+    expect(names('ハーゲンダッツミニカップバニラ')).toEqual(['ハーゲンダッツミニカップ', 'バニラ']);
+    expect(names('カップラーメン')).toEqual(['カップラーメン']);
   });
 });
