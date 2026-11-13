@@ -40,6 +40,8 @@ describe('a race lost across a reload', () => {
     // killed (its tally held a minute, in the queue), opened again: new modules, the same storage
     vi.resetModules();
     (await import('#lib/sync/storage.ts')).configureStorage({ local: mem });
+    // the new page's transport too: unset, its queue's flush went to the live relay
+    (await import('#lib/sync/transport.ts')).configureTransport({ fetch: (() => new Promise<Response>(() => {})) as typeof fetch, url: 'https://script.example/exec' });
     const q = await import('#lib/sync/queue.ts');
     const w2 = (await import('./week.svelte.ts')).week;
     const { reduce } = await import('#lib/model/state.ts');

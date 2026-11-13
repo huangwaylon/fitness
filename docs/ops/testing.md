@@ -154,7 +154,8 @@ same island.
   do, `island.now()`, `rec.now()`, never `Date.now()`.
 - **No network**: a request off the local preview fails the test, naming it. Mock a relay with `page.route` /
   `context.route` (board.spec, record.ts, liveRoom.ts); map tiles are answered already; the real relay's harness is the
-  one opt-out (`test.use({ network: 'any' })`).
+  one opt-out (`test.use({ network: 'any' })`). Unit tests too: a real fetch, WebSocket or socket off this machine
+  fails the test (src/no-network.setup.ts, vitest's `setupFiles`).
 - **No randomness**: no `Math.random` in a spec; pin the island with `?seed=`, `&rock=`, `&shake=`, `?critter=`,
   `?visitor=`.
 - **Storage**: each test its own context, service workers blocked; two phones in one context share `localStorage` and a
