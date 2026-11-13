@@ -4,8 +4,10 @@
   // FoodPhoto, it enlarged),
   // its name, a chain menu's shop and category (its mark: ShopMark) with how far its values are the shop's own (公式の値,
   // PFCは推定, 推定の値（AI）; 販売終了かも if it may be gone) and 「kalori.jpで見る ›」 (its page), the everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
-  // (the sheet's loudest number) with the grams it's for, P · F · C · 塩分, and under them behind 「100gあたりの栄養」
-  // (closed on each open) the values per 100 g.
+  // (the sheet's loudest number) with the grams it's for, P · F · C · 塩分 (食物繊維 a fifth when known and above 0), how
+  // its values were got (the data's `note`, whole: 廃棄率, 一般的な推定値…; a chain menu's its trust line), and under them
+  // behind 「100gあたりの栄養」 (closed on each open) the values per 100 g (fibre too, when known): more than the search's
+  // opened row, which opens this as its くわしく ›.
   // Then the controls (FoodPortion, their rules amount.svelte.ts) in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
   // state with its kcal at the amount it would take (`onitem` swaps the food: a portion label the state also has stays
   // picked at its own grams, typed grams stay typed, else its default), one line why (パックの重さなら 生 / ゆでる前の
@@ -28,7 +30,7 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { glossOf, kaloriPage, kaloriTrust } from './foodUi.ts';
+  import { fibreAt, glossOf, kaloriPage, kaloriTrust } from './foodUi.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import ShopMark from './ShopMark.svelte';
 
@@ -87,6 +89,9 @@
   const page = $derived(kaloriPage(item));
   const trust = $derived(kaloriTrust(item));
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
+  /** The catalog's own item (an entry's is its snapshot), for how its values were got. */
+  const note = $derived(trust ? null : (itemById(a.db, item.id) ?? item).note ?? null);
+  const fib = $derived(fibreAt(item, a.ok ? a.g : 0));
 
   function done() {
     if (a.ok) ondone({ m, g: a.g, u: a.u });
@@ -108,6 +113,7 @@
         {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
         {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
+        {#if note}<p class="tr" data-food-note>{note}</p>{/if}
         <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>
@@ -116,6 +122,7 @@
       <div><dt>{t('food.fa')}</dt><dd class="money">{n.fa.toFixed(1)}<small>g</small></dd></div>
       <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<small>g</small></dd></div>
       <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<small>g</small></dd></div>
+      {#if fib !== null}<div data-food-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
     <div class="per-row">
       <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
@@ -123,7 +130,7 @@
       </button>
       {#if page}<a class="kl" href={page} target="_blank" rel="noopener noreferrer" data-sfx="open" data-food-kalori>{t('food.kal.see')}<span aria-hidden="true"> ›</span></a>{/if}
     </div>
-    {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
+    {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}{#if typeof item.fib === 'number'} · {t('food.fi')} {per(item.fib)}{/if}</p>{/if}
   </section>
 
   <section class="card form ctl"><FoodPortion {a} bind:typing /></section>
@@ -184,9 +191,12 @@
   .caret { transition: transform 160ms; }
   .per-t[aria-expanded='true'] .caret { transform: rotate(180deg); }
   .per { margin: -4px 0 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
-  .nut { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0;
+  .nut { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; margin: 0;
     padding-top: 10px; border-top: 1.5px dashed var(--stitch); }
   .nut div { min-width: 0; }
+  /* five (fibre too): each as wide as its label, spread (たんぱく質 whole on an iPhone 15) */
+  .nut:has(> :nth-child(5)) { display: flex; justify-content: space-between; }
+  .nut:has(> :nth-child(5)) div { min-width: auto; }
   .nut dt { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nut dd { margin: 2px 0 0; font-size: var(--fs-body); }
   .nut small { margin-left: 2px; font-size: var(--fs-s); color: var(--text-soft); }
