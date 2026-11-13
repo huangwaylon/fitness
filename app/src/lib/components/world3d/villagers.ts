@@ -111,8 +111,9 @@ const ACT: Partial<Record<Motion, Action>> = {
   // the visitors' own: Celeste points at a falling star, a wave up at it
   point: 'wave'
 };
-/** The small moments in place (a nod, a bow, a wave: K.K.'s beat, the visitors'), stepped at the ambient rate. */
-const SMALL: ReadonlySet<Action> = new Set(['wave']);
+/** The small moments in place (a nod, a bow, a wave: K.K.'s beat, the visitors'; a surprise, Gulliver's sleeping
+ *  twitch: the user's call 2026-11-13; a hop stays at the full rate), stepped at the ambient rate. */
+const SMALL: ReadonlySet<Action> = new Set(['wave', 'surprise', 'twitch']);
 /** A director's motion as a moment: the action it plays (the sting's fright for a stung surprise), how long it keeps
  *  the villager busy (its own length: a flat 1.8 s held a 720 ms hop at the full rate a second past its pose, the
  *  island's rest at ~15 fps, review 2026-11-13; the pose's crossfade after it is `going`'s) and whether it's a small

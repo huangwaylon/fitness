@@ -423,8 +423,8 @@ The game draws at most **30** frames a second (`store/frameRate.ts` FPS) while s
 still scene draws nothing. One pacer runs every surface's frames (`world3d/pace.ts`); the simulation runs on real time,
 so nothing moves slower. **At rest** (no finger for a moment, only ambience on screen) the island draws its ambience at
 **12** a second (engine.ts REST_MS, REST_FPS), the museum its tanks and bugs at 15, the tent only a blink; any move or
-touch is back at the full rate at once. A villager's small moves in place (a turn, a nod: villagers.ts SMALL) are
-ambience too; a walk or a hop is the full rate.
+touch is back at the full rate at once. A villager's small moves in place (a turn, a nod, a surprise: villagers.ts
+SMALL) are ambience too; a walk or a hop is the full rate.
 
 **One renderer lifecycle:** every WebGL surface makes and lets go of its renderer the same way (`world3d/stage.ts`: its
 header); the rooms keep their models page-wide (`world3d/modelCache.ts`); shadows redraw only when a caster changes
