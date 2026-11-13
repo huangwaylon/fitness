@@ -46,6 +46,14 @@ describe('parseStatus', () => {
     expect(parseStatus(older)).not.toHaveProperty('lastPreflight');
     expect(parseStatus({ ...wire(), recentScans: [{ t: 1, ok: false, code: 'bad code!', ms: 3, avail: 0 }, { ok: true }, 'x'] })!.recentScans).toEqual([{ t: 1, ok: false, ms: 3, avail: 0 }]);
   });
+  it('reads a newer Worker’s push status (counts, its VAPID key, codes) and leaves a garbled one or key out', () => {
+    const push = example.statusNewer.push;
+    expect(parseStatus({ ...wire(), push })!.push).toEqual(push);
+    expect(parseStatus(wire())).not.toHaveProperty('push');
+    expect(parseStatus({ ...wire(), push: { A: 'x' } })).not.toHaveProperty('push');
+    expect(parseStatus({ ...wire(), push: { ...push, vapidPublic: 'short' } })!.push!.vapidPublic).toBeNull();
+    expect(parseStatus({ ...wire(), push: { ...push, vapidPublic: null, lastOutcome: null } })!.push).toMatchObject({ vapidPublic: null, lastOutcome: null });
+  });
   it('reads who pressed 開始 / 停止 last (C3), and leaves a garbled one out', () => {
     const control = { action: 'stop', by: 'B', at: example.status.now - 60_000 };
     expect(parseStatus({ ...wire(), control })!.control).toEqual(control);
@@ -145,6 +153,22 @@ describe('the calls', () => {
     older();
     expect(await d.putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'offline' });
     expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('the push routes: POST with the key, `{ok: true, push}` read back, a refusal’s code; never the endpoint in the log', async () => {
+    const c = await fresh();
+    fetch.mockResolvedValueOnce(answer(200, { ok: true, push: example.statusNewer.push }));
+    expect(await c.pushCall('subscribe', example.pushSubscribeInput as never, undefined, URL)).toEqual({ ok: true, push: example.statusNewer.push });
+    expect([fetch.mock.calls[0][0], fetch.mock.calls[0][1]?.method, JSON.parse(String(fetch.mock.calls[0][1]?.body))]).toEqual([`${URL}/its/push/subscribe`, 'POST', example.pushSubscribeInput]);
+    expect(fetch.mock.calls[0][1]?.headers).toMatchObject({ Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' });
+    fetch.mockResolvedValueOnce(answer(429, { ok: false, error: 'rate_limited' }));
+    expect(await c.pushCall('test', example.pushEndpointInput, undefined, URL)).toEqual({ ok: false, err: 'rate_limited', http: 429 });
+    fetch.mockResolvedValueOnce(answer(404, { ok: false, error: 'not_found' }));
+    expect(await c.pushCall('unsubscribe', example.pushEndpointInput, undefined, URL)).toEqual({ ok: false, err: 'not_found', http: 404 });
+    fetch.mockResolvedValueOnce(answer(200, example.status));   // not a push reply
+    expect(await c.pushCall('test', example.pushEndpointInput, undefined, URL)).toMatchObject({ ok: false, err: 'json' });
+    expect(logged.map(([, d, l]) => [(d as { op: string }).op, (d as { err: string }).err, l])).toEqual([['push_test', 'rate_limited', 1], ['push_unsubscribe', 'not_found', 2], ['push_test', 'json', 2]]);
+    expect(JSON.stringify(logged)).not.toContain('web.push.apple.com');
   });
 
   it('leaving (the abort) is not logged', async () => {

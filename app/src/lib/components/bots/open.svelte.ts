@@ -4,13 +4,14 @@
 // A dot (the menu's pill, a tab) while that bot needs a person: ITS 要対応 (a hold to finish by mail), 不調 or 遅れ
 // (its/view.ts needsAttention); the gym bot 不調, 要対応 or 遅れ (gym/status.ts needsAttention). Read once as the menu
 // unfolds (ITS) or the sheet opens (the tab not shown), at most once a minute, and from each page's own reads; never
-// polled: the pages poll while shown.
+// polled: the pages poll while shown. A notification's tap opens it on 保養所 (openIts, listenOpen).
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 import { week } from '#lib/store/week.svelte.ts';
 
 export type BotTab = 'its' | 'gym';
 
-export const botsSheet = lazySheet(() => import('./BotsSheet.svelte'));
+/** `show(tab)`: open on that tab (a notification's tap: 保養所). */
+export const botsSheet = lazySheet<BotTab>(() => import('./BotsSheet.svelte'));
 
 // (the URLs as lib/its/client.ts and lib/gym/status.ts read them: empty hides that bot; read here so the island's
 // chunk carries neither client)
@@ -43,4 +44,21 @@ export function readBadge(k: BotTab): void {
 export function setBadge(k: BotTab, v: boolean): void {
   readAt[k] = performance.now();
   botsBadge[k] = v;
+}
+
+/** A notification's tap (the service worker: service-worker/notify.ts): ボット opened on 保養所, for a phone that has it. */
+export function openIts(): void {
+  if (botTabs().includes('its')) botsSheet.show('its');
+}
+
+/** The service worker's word that a notification was tapped while the app was open ({k: 'open', to: 'its'}); the
+ *  listener's removal. (A tap that opens the app comes as `?open=its`: Hud reads it once after boot.) */
+export function listenOpen(): () => void {
+  const sw = typeof navigator === 'undefined' ? undefined : navigator.serviceWorker;
+  const on = (e: MessageEvent) => {
+    const d = e.data as { k?: unknown; to?: unknown } | null;
+    if (d?.k === 'open' && d.to === 'its') openIts();
+  };
+  sw?.addEventListener('message', on);
+  return () => sw?.removeEventListener('message', on);
 }

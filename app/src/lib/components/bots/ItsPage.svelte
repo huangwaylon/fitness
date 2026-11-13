@@ -4,7 +4,8 @@
   // the verdict card (tinted by tone, 開始 / 停止 at once, outside the draft, and who pressed it), the bookings (a
   // hold's deadline and what to do), 状況 (くわしく folds the rest), the stays (日付: one at a time or まとめて追加, each
   // with what can take it), the facilities (施設: 探す is the allow-list; groups, presets, a name filter, the new ones on
-  // top), 詳細 (確認の間隔, 人数, 自動で確定), the recent events and the foot. The settings are one draft saved with 保存
+  // top), 詳細 (確認の間隔, 人数, 自動で確定), 通知 (this phone's push: ItsNotify), the recent events and the foot. The
+  // settings are one draft saved with 保存
   // (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕, the backdrop
   // and Esc ask first: guardForm, a tab switch too: `leave`). Fetched on open, then every 15 s while the runner is on its way or
   // running and every minute otherwise, only while shown; leaving it (the other tab, the sheet closed) aborts, and 保存 / 開始 / 停止 abort a read in
@@ -34,6 +35,7 @@
     stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, needsAttention, STRIP_MIN, type Draft, type HotelRow
   } from '#lib/its/view.ts';
   import { setBadge } from './open.svelte.ts';
+  import ItsNotify from './ItsNotify.svelte';
 
   /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
@@ -508,6 +510,8 @@
         <span class="sw" aria-hidden="true"><i></i></span>
       </button>
     </section>
+
+    <ItsNotify push={status.push} />
 
     {#if events.length}
       <section class="sec" aria-labelledby="its-recent" data-its-recent>

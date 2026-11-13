@@ -47,7 +47,8 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `perf.drag` | info | the first drag's pixel-ratio swaps (ms, their first frames' CPU) | once a load (world3d/drag.ts) |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
-| `its.fail` | info offline / warn | `op` (status, settings, run), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `http`, `ms` | a 保養所ボット call failed (lib/its/client.ts) |
+| `its.fail` | info offline, rate_limited, not_subscribed / warn | `op` (status, settings, run, push_subscribe, push_unsubscribe, push_test), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `rid`, `http`, `ms` | a 保養所ボット call failed (lib/its/client.ts) |
+| `its.push` | warn | `step` (permission, ready, subscribe, unsubscribe), `err` (the error's name) | 保養所's 通知 failed in the browser (lib/its/push.ts; never the endpoint) |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
 | `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
 | `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |

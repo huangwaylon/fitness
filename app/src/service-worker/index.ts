@@ -1,8 +1,9 @@
-// Island Fund service worker: caches the app shell so the PWA opens offline. (No push or notificationclick handlers:
-// notifications are gone, 2026-11-02.)
+// Island Fund service worker: caches the app shell so the PWA opens offline, and shows the ITS bot's notifications
+// (ボット → 保養所's 通知, the only push: notify.ts; nothing else in the app subscribes).
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
+import { notificationFor, openApp } from './notify.ts';
 import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
@@ -398,3 +399,16 @@ self.addEventListener('message', (event) => {
   })());
 });
 
+// An ITS notification (lib/its/push.ts subscribed this phone): shown at once, nothing fetched first (iOS drops a
+// subscription whose push shows nothing); the app icon's badge set too (保養所 clears it).
+self.addEventListener('push', (event) => {
+  const n = notificationFor(event.data, SCOPE);
+  const badge = (self.navigator as Navigator & { setAppBadge?: (n: number) => Promise<void> }).setAppBadge?.(1)?.catch(() => {});
+  event.waitUntil(Promise.all([self.registration.showNotification(n.title, n.options), badge]));
+});
+
+// A tap on it: the app forward on ボット → 保養所 (an open window told, else opened at ?open=its).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(openApp(self.clients, SCOPE));
+});

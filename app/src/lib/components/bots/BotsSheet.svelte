@@ -2,18 +2,19 @@
   // ボット (docs/design.md "Bots"): the menu's ボット opens it (members only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
   // tabs (a tablist): 保養所 (ItsPage) on the left, ジム (GymPage); with one bot only (demo mode: ジム), no tabs. It opens
-  // on the tab last shown on this phone (DEVICE.botsTab; 保養所 by default). Only the shown page is mounted: it reads
+  // on the tab last shown on this phone (DEVICE.botsTab; 保養所 by default), or the one asked (show(tab): a
+  // notification's tap opens 保養所). Only the shown page is mounted: it reads
   // and polls while shown, and the other tab, ✕ or a close unmounts it (nothing polls while closed). A tab's dot: that
   // bot needs a person (open.svelte.ts: the tab not shown is read once as the sheet opens). 保養所's unsaved draft: a
   // tab switch asks first (its `leave`), ✕, Esc and the backdrop too (Sheet's guard); its sticky 保存 bar sits at the
   // scroller's foot, over the tabs.
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import TabBar from '../ui/TabBar.svelte';
   import ItsPage from './ItsPage.svelte';
   import GymPage from './GymPage.svelte';
-  import { botTabs, botsBadge, readBadge, type BotTab } from './open.svelte.ts';
+  import { botTabs, botsBadge, botsSheet, readBadge, type BotTab } from './open.svelte.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -32,6 +33,12 @@
 
   const ICONS = { its: 'bed', gym: 'barbell' } as const;
   const items = $derived(tabs.map((id) => ({ id, label: t(`bots.${id}`), icon: ICONS[id], dot: botsBadge[id], note: t('bots.attention') })));
+
+  // asked for a tab (a notification's tap: 保養所), as a tab's tap would (保養所's draft asks first)
+  $effect(() => {
+    const a = botsSheet.ask;
+    if (a) untrack(() => pick(a.arg));
+  });
 
   // opening: the other tab's dot read (the shown page reads its own)
   $effect(() => {

@@ -1,5 +1,5 @@
 // The ITS booker's Worker (its/README.md) as ボット's 保養所 tab talks to it: GET /its/status, PUT /its/settings,
-// POST /its/run, each with this phone's member key (a guest's is refused there; the page never asks for the guest).
+// POST /its/run and the push routes (POST /its/push/*: lib/its/push.ts), each with this phone's member key (a guest's is refused there; the page never asks for the guest).
 // Answers are checked (parseStatus: another version, a proxy's page or garbage is null); a call never throws, and a
 // failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id; never the key).
 // Each call carries an `X-Request-Id` (the Worker logs it as `rid=`); a Worker from before it refuses the header in its
@@ -8,8 +8,9 @@
 // (a lost PUT's or POST's reply is never sent twice). No demo mode:
 // ボット has no 保養所 tab there (the e2e mocks the Worker).
 import {
-  BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, REASONS, VERDICTS, isDate, isId, isName,
-  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member,
+  BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, PUSH_ROUTES, REASONS, VERDICTS, isDate, isId, isName,
+  type BookingEntry, type IntervalSec, type ItsEvent, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member,
+  type PushEndpointInput, type PushKind, type PushOutcome, type PushSubscribeInput,
   type Reason, type RunInput, type ScanEntry, type ScanMinute, type Verdict
 } from './contract.ts';
 import { getKey } from '#lib/sync/storage.ts';
@@ -99,6 +100,7 @@ export function parseStatus(x: unknown): ItsStatus | null {
   const dispatch = isObj(x.dispatch) && num(x.dispatch.at) !== null ? { at: x.dispatch.at as number, ok: x.dispatch.ok === true, status: num(x.dispatch.status) } : null;
   const c = x.control;
   const control = isObj(c) && (c.action === 'start' || c.action === 'stop') && member(c.by) && num(c.at) !== null ? { action: c.action as RunInput['action'], by: member(c.by)!, at: c.at as number } : null;
+  const push = parsePush(x.push);
   return {
     v: 1, now: x.now as number, mode: x.mode === 'on' ? 'on' : 'off', sha: str(x.sha), verdict: x.verdict as Verdict,
     reasons: strs(x.reasons).filter((r): r is Reason => REASONS.includes(r as Reason)),
@@ -110,15 +112,35 @@ export function parseStatus(x: unknown): ItsStatus | null {
     ...('lastPreflight' in x ? { lastPreflight: num(x.lastPreflight) } : {}),
     ...(Array.isArray(x.recentScans) ? { recentScans: x.recentScans.map(parseScan).filter((e) => e !== null) } : {}),
     // the reads per minute (the strip's source when present: every read of the hour)
-    ...(Array.isArray(x.recentMinutes) ? { recentMinutes: x.recentMinutes.map(parseMinute).filter((e) => e !== null) } : {})
+    ...(Array.isArray(x.recentMinutes) ? { recentMinutes: x.recentMinutes.map(parseMinute).filter((e) => e !== null) } : {}),
+    // Web Push (absent: a Worker without it, 通知's 準備中)
+    ...(push ? { push } : {})
+  };
+}
+
+/** A push status (`ItsStatus.push`, a push route's `push`), or null when garbled. */
+function parsePush(x: unknown): ItsPushStatus | null {
+  if (!isObj(x) || num(x.A) === null || num(x.B) === null) return null;
+  const o = isObj(x.lastOutcome) && num(x.lastOutcome.at) !== null ? x.lastOutcome : null;
+  return {
+    A: x.A as number, B: x.B as number, vapidPublic: typeof x.vapidPublic === 'string' && /^[A-Za-z0-9_-]{80,100}$/.test(x.vapidPublic) ? x.vapidPublic : null,
+    lastSentAt: num(x.lastSentAt),
+    lastOutcome: o && {
+      // (codes as the Worker sent them: the page shows none of it yet)
+      at: o.at as number, kind: str(o.kind) as PushKind, code: str(o.code) as PushOutcome, status: num(o.status) ?? 0, ...(typeof o.reason === 'string' ? { reason: o.reason } : {})
+    }
   };
 }
 
 /** A call's outcome: the status (every answer carries the current one), or why not: the Worker's error code (`conflict`
  *  for a 409: someone saved since this draft began, with the current status) or the phone's own (offline, timeout,
  *  json, no_key, http). */
-export type ItsReply = { ok: true; status: ItsStatus } | { ok: false; err: string; http: number | null; status: ItsStatus | null; rid?: string };
-type Op = 'status' | 'settings' | 'run';
+export type ItsReply = { ok: true; status: ItsStatus } | ItsFail;
+type ItsFail = { ok: false; err: string; http: number | null; status: ItsStatus | null; rid?: string };
+/** A push route's outcome: the push status after it, or why not (the Worker's code: rate_limited, not_subscribed,
+ *  push_off, …, or the phone's). */
+export type PushReply = { ok: true; push: ItsPushStatus } | { ok: false; err: string; http: number | null };
+type Op = 'status' | 'settings' | 'run' | 'push_subscribe' | 'push_unsubscribe' | 'push_test';
 
 /** A Worker's error code as the log may keep it (a short token), else `http`. */
 const code = (x: unknown): string => (typeof x === 'string' && /^[a-z_]{1,32}$/.test(x) ? x : 'http');
@@ -128,7 +150,9 @@ const newRid = (): string => Array.from(crypto.getRandomValues(new Uint8Array(4)
 /** The header this session: `try` until an answer came with it (`yes`) or a read got through only without (`no`). */
 let rid: 'try' | 'yes' | 'no' = 'try';
 
-async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: unknown, signal: AbortSignal | undefined, url: string): Promise<ItsReply> {
+/** One call: the answer read by `parse` (null: not one), or why not. */
+async function call<T>(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: unknown, signal: AbortSignal | undefined, url: string,
+  parse: (json: unknown) => T | null): Promise<{ ok: true; value: T } | ItsFail> {
   const key = getKey();
   if (!key || !url) return { ok: false, err: 'no_key', http: null, status: null };
   const id = newRid();
@@ -143,7 +167,7 @@ async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: 
     headers: { Authorization: `Bearer ${key}`, ...(withRid ? { 'X-Request-Id': id } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) })
   });
-  let r: ItsReply;
+  let r: { ok: true; value: T } | ItsFail;
   try {
     let res: Response;
     try {
@@ -162,8 +186,8 @@ async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: 
       json = undefined;
     }
     if (res.ok) {
-      const s = parseStatus(json);
-      r = s ? { ok: true, status: s } : { ok: false, err: 'json', http: res.status, status: null, rid: id };
+      const v = parse(json);
+      r = v ? { ok: true, value: v } : { ok: false, err: 'json', http: res.status, status: null, rid: id };
     } else {
       const o = isObj(json) ? json : {};
       r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json), rid: id };
@@ -176,14 +200,26 @@ async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: 
   }
   // leaving the page (its abort) is no failure
   if (!r.ok && !signal?.aborted) {
-    log('its.fail', { op, err: r.err, rid: id, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
+    // (a refusal the page words and expects: info)
+    const level = r.err === 'offline' || r.err === 'rate_limited' || r.err === 'not_subscribed' ? 1 : 2;
+    log('its.fail', { op, err: r.err, rid: id, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, level);
   }
   return r;
 }
 
+const asStatus = (r: { ok: true; value: ItsStatus } | ItsFail): ItsReply => (r.ok ? { ok: true, status: r.value } : r);
+const statusCall = (op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: unknown, signal: AbortSignal | undefined, url: string) =>
+  call(op, method, path, body, signal, url, parseStatus).then(asStatus);
+
 /** GET /its/status. */
-export const fetchStatus = (signal?: AbortSignal, url = ITS_URL): Promise<ItsReply> => call('status', 'GET', '/its/status', undefined, signal, url);
+export const fetchStatus = (signal?: AbortSignal, url = ITS_URL): Promise<ItsReply> => statusCall('status', 'GET', '/its/status', undefined, signal, url);
 /** PUT /its/settings: the draft, from the `updatedAt` it began at. */
-export const putSettings = (input: ItsSettingsInput, signal?: AbortSignal, url = ITS_URL): Promise<ItsReply> => call('settings', 'PUT', '/its/settings', input, signal, url);
+export const putSettings = (input: ItsSettingsInput, signal?: AbortSignal, url = ITS_URL): Promise<ItsReply> => statusCall('settings', 'PUT', '/its/settings', input, signal, url);
 /** POST /its/run: 開始 or 停止, at once. */
-export const postRun = (action: RunInput['action'], signal?: AbortSignal, url = ITS_URL): Promise<ItsReply> => call('run', 'POST', '/its/run', { action } satisfies RunInput, signal, url);
+export const postRun = (action: RunInput['action'], signal?: AbortSignal, url = ITS_URL): Promise<ItsReply> => statusCall('run', 'POST', '/its/run', { action } satisfies RunInput, signal, url);
+
+/** POST /its/push/subscribe, /unsubscribe, /test (lib/its/push.ts): `{ok: true, push}`, or why not (a Worker without
+ *  the routes: 404). Logged as the other calls (never the endpoint or the keys: they are in the body only). */
+export const pushCall = (route: keyof typeof PUSH_ROUTES, body: PushSubscribeInput | PushEndpointInput, signal?: AbortSignal, url = ITS_URL): Promise<PushReply> =>
+  call(`push_${route}`, 'POST', PUSH_ROUTES[route], body, signal, url, (x) => (isObj(x) && x.ok === true ? parsePush(x.push) : null))
+    .then((r) => (r.ok ? { ok: true, push: r.value } : { ok: false, err: r.err, http: r.http }));

@@ -4,7 +4,7 @@
 // merged by normName, in groups; 探す = the allow-list `search`, the presets), the verdict card, the facts, the bookings
 // that need a person (the hold's deadline, what to do) and the recent events. Pure but for t().
 import {
-  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
+  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, HUMAN_NEEDED_DETAILS, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanEntry, type ScanMinute, type Verdict
 } from './contract.ts';
 import { D4, ROSTER, SUMMER_LAST, WINTER_FIRST, WINTER_LAST, type Region, type RosterHotel } from '#lib/its/roster.ts';
@@ -396,10 +396,10 @@ export function factRows(s: ItsStatus, today: string): Fact[] {
 // ---- Bookings ----
 type BookingState = 'action' | 'applying' | 'hold' | 'confirmed' | 'lapsed';
 const STATE_ORDER: Record<BookingState, number> = { action: 0, applying: 1, hold: 2, confirmed: 3, lapsed: 4 };
-const NEEDS = ['near_date', 'auto_off', 'no_mail', 'leg_failed', 'bookings_unsynced', 'submit_unknown', 'no_completion', 'hold_expired', 'room_taken',
-  'leg_timeout', 'unmapped', 'id_conflict', 'bad_booking', 'not_wanted', 'lease_stale', 'confirming_unacked', 'leg_error', 'queue_failed', 'run_ended'];
+/** The human_needed codes the page words: the runner's (the contract's list, the push's too) and an older runner's. */
+const NEEDS = [...HUMAN_NEEDED_DETAILS, 'leg_failed', 'bookings_unsynced', 'queue_failed'];
 /** Why a person must finish the mail's 申込 (the runner held it but didn't apply). */
-const BY_MAIL = ['near_date', 'auto_off', 'not_wanted', 'lease_stale', 'confirming_unacked', 'unmapped', 'queue_failed', 'run_ended'];
+const BY_MAIL = ['near_date', 'auto_off', 'not_wanted', 'lease_stale', 'confirming_unacked', 'unmapped', 'fill_rejected', 'browser_busy', 'queue_failed', 'run_ended'];
 /** A human_needed detail as the page words it: the code (an older runner's 「unmapped: 事業所名」 or 「leg_room_taken」
  *  read as its code), `other` when unknown. */
 export function needOf(detail: string): string {

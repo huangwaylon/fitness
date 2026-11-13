@@ -19,7 +19,7 @@
   import { farmSheet } from '../farm/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
-  import { botsSheet } from '../bots/open.svelte.ts';
+  import { botsSheet, listenOpen, openIts } from '../bots/open.svelte.ts';
   import { loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
 
   interface Props {
@@ -44,15 +44,21 @@
   let settingsMounted = $state(false);
   /** ずかん (opened from 設定's row, its only door) going back by ‹: 設定 reopens where it was. */
   let settingsResume = $state(false);
-  // the old /jar page (`?panel=rewards`): the panel open at once
+  // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所
   // every sheet's chunk ahead of its first tap, once the island is in and the worker serves them
   onMount(prefetchSheets);
-  onMount(() => {
-    if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
-    // the param goes (a reload opens the island as ever), the rest of the query stays as it was written
-    const q = location.search.replace(/([?&])panel=rewards(&|$)/, (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
+  /** A one-time param read: it goes (a reload opens the island as ever), the rest of the query stays as it was written. */
+  function take(k: string, v: string): boolean {
+    if (new URLSearchParams(location.search).get(k) !== v) return false;
+    const q = location.search.replace(new RegExp(`([?&])${k}=${v}(&|$)`), (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
     replaceState(location.pathname + q + location.hash, page.state);
-    opened = panelOpen = true;
+    return true;
+  }
+  onMount(() => {
+    if (take('panel', 'rewards')) opened = panelOpen = true;
+    // a notification's tap opened the app (service-worker/notify.ts): ボット on 保養所; one while open: its message
+    if (take('open', 'its')) openIts();
+    return listenOpen();
   });
 </script>
 

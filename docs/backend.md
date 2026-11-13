@@ -412,8 +412,14 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   doesn't draw: live-protocol.ts CALM_EVENTS, the meal log, ききみみ, packing, the wedding board; `CALM_WAIT_MS` 10 s).
 
 ## Service worker
-`app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`). No `push` or `notificationclick` handler
-([decisions](decisions.md#no-notifications), `e2e/no-notify.spec.ts`).
+`app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`).
+
+- **Notifications** (ボット → 保養所's 通知 only: [decisions](decisions.md#no-notifications), `e2e/no-notify.spec.ts`;
+  `notify.ts`): `push` shows the its-bot Worker's title, body and `tag` at once inside `waitUntil`, nothing fetched
+  first, a generic 「保養所ボット：お知らせがあります」 when unreadable, and sets the app badge (保養所 clears it).
+  `notificationclick` focuses an open window and posts `{k: 'open', to: 'its'}`, else opens `?open=its`; the app opens
+  ボット on 保養所 either way (`bots/open.svelte.ts`). The subscription is `lib/its/push.ts`'s (refreshed on opening
+  保養所; no `pushsubscriptionchange`: iOS sends none).
 
 - **Registration:** by the app (`lib/ui-state/swLate.ts`) once the 3D island has its models in or can't draw (30 s at
   the latest), so a first visit's precache never competes with them; the page then posts its resource timings' URLs
