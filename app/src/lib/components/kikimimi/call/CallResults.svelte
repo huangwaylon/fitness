@@ -84,7 +84,6 @@
 </ResultsFrame>
 
 <style>
-  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .who { line-height: 0; }
   .review b { font: 700 var(--fs-body)/1.35 var(--font-ui); }
   .ctx { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }

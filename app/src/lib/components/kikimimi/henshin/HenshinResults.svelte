@@ -69,7 +69,6 @@
 
 <style>
   .today { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
   .en.big { font-size: max(17px, var(--fs-talk)); }
   .form { margin: 0; justify-self: start; padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); font: 700 var(--fs-body)/1.3 var(--font-ui); }

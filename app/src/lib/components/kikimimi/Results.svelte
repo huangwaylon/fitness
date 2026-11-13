@@ -305,7 +305,6 @@
   }
   .none { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .tags { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .en.big { font-size: max(17px, var(--fs-talk)); }
   .retry { width: 100%; }
   .opts { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 4px; }

@@ -35,6 +35,8 @@
 
 <style>
   .sec { display: grid; gap: 8px; }
+  /* the game's rows (each game's <ul class="review">) */
+  .sec :global(ul.review) { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .rev-head { display: flex; align-items: center; justify-content: space-between; }
   .rev-head .chip { min-height: var(--hit); }
   .none { margin: 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }

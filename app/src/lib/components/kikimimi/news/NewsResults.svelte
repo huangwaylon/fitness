@@ -71,7 +71,6 @@
 </ResultsFrame>
 
 <style>
-  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); word-break: normal; line-break: strict; }
   .picked { color: var(--coral-text); }
   .script { display: grid; gap: 8px; padding: 12px; }

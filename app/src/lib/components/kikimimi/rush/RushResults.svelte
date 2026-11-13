@@ -71,7 +71,6 @@
 
 <style>
   .best { padding: 3px 10px; border-radius: var(--r-pill); color: var(--c-ink); background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); font: 700 var(--fs-s)/1.3 var(--font-ui); }
-  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .review b { font: 700 var(--fs-body)/1.3 var(--font-num); margin-left: 4px; }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
   .ja, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); word-break: normal; line-break: strict; }

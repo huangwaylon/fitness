@@ -77,7 +77,6 @@
 </ResultsFrame>
 
 <style>
-  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .round { display: grid; gap: 4px; }
   .round h4 { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .sym { color: var(--coral-text); }
