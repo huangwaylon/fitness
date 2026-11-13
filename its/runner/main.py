@@ -140,8 +140,12 @@ def url_monitor(stop_event=None):
                     url_log(f"{G}New URL saved — {new_url}{X}")
                     book_hotels.notify('solve', ok=True, secs=info.get('secs'), spot=info.get('spot'))
                     continue
-                url_log(f"{R}CAPTCHA solve failed, will retry next cycle{X}")
-                book_hotels.notify('solve', ok=False, secs=info.get('secs'), cls='no_token')
+                if info.get('secs') is None:
+                    # Chrome was busy filing an application: deferred, not a failed solve.
+                    book_hotels.notify('solve', ok=None)
+                else:
+                    url_log(f"{R}CAPTCHA solve failed, will retry next cycle{X}")
+                    book_hotels.notify('solve', ok=False, secs=info.get('secs'), cls='no_token')
             except Exception as e:
                 url_log(f"{R}CAPTCHA solve error: {e!r}{X}")
                 book_hotels.notify('solve', ok=False, cls=type(e).__name__.lower()[:40])

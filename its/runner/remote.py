@@ -318,7 +318,9 @@ class Remote:
                 self.solving = True
             elif kind == 'solve':
                 self.solving = False
-                if f.get('ok'):
+                if f.get('ok') is None:
+                    pass   # deferred (Chrome busy filing): neither a solve nor a failure
+                elif f.get('ok'):
                     self.solves['ok'] += 1
                     self.solves['lastOkAt'] = self._ms()
                     self.solves['lastSecs'] = f.get('secs')
