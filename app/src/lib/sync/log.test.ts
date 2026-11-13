@@ -3,10 +3,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE } from './storage.ts';
 import {
-  clearLog, configureLog, count, DAY_MAX, flushLog, leaving, log, logError, osOf, persistLog, PIN, restoreLog, RING_MAX, SESSION_ERRORS, SESSION_MAX
+  clearLog, configureLog, count, DAY_MAX, flushLog, leaving, log, logError, osOf, persistLog, PIN, restoreLog, RING_MAX, SESSION_ERRORS, SESSION_MAX, sheetShown
 } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
-import { quiet, swallowed } from '#lib/quiet.ts';
+import { caught, quiet, swallowed } from '#lib/quiet.ts';
+import { keyed } from '#lib/keyed.ts';
 
 const KEY = '3f9a'.repeat(16);
 const T0 = Date.parse('2026-11-05T03:00:00.000Z');
@@ -115,11 +116,11 @@ describe('the ring', () => {
   it('a usage counter is summed into one event a flush; sampling keeps a share', async () => {
     count('sheet:island.food');
     count('sheet:island.food');
-    count('ev:tally');
+    count('act:tally');
     log('api.ok', { ms: 1 }, 1, { sample: 0.4 }); // rand 0.5: not kept
     log('api.ok', { ms: 2 }, 1, { sample: 0.6 });
     await flushLog();
-    expect(evs().map((e) => [e.e, e.d])).toEqual([['api.ok', { ms: 2 }], ['use', { 'sheet:island.food': 2, 'ev:tally': 1 }]]);
+    expect(evs().map((e) => [e.e, e.d])).toEqual([['api.ok', { ms: 2 }], ['use', { 'sheet:island.food': 2, 'act:tally': 1 }]]);
   });
 
   it('a swallowed failure (quiet.ts) is a `swallow:` counter, the caller given its fallback', async () => {
@@ -129,6 +130,66 @@ describe('the ring', () => {
     swallowed('tex.idb');
     await flushLog();
     expect(evs().map((e) => [e.e, e.d])).toEqual([['use', { 'swallow:food.verify': 1, 'swallow:tex.idb': 2 }]]);
+  });
+});
+
+describe('where and how often', () => {
+  it('a failure says the topmost timed sheet; a caught bug is a js.error from its tag, one of them at most 5 a session', async () => {
+    const offHealth = sheetShown('health'), offFarm = sheetShown('farm');
+    log('api.fail', { action: 'events', err: 'busy' }, 2);
+    offFarm();
+    caught(new TypeError('x is undefined'), 'world');
+    log('perf.sheet', { sheet: 'food' });
+    offHealth();
+    log('sync.fail', { err: 'busy' }, 2);
+    await flushLog();
+    expect(evs().map((e) => [e.e, e.d?.sheet, e.d?.src])).toEqual([
+      ['api.fail', 'farm', undefined], ['js.error', 'health', 'world'], ['perf.sheet', 'food', undefined], ['sync.fail', undefined, undefined]
+    ]);
+    sent = [];
+    for (let i = 0; i < 8; i++) {
+      caught(new Error('again'), 'bus.fruit');
+      await flushLog();
+    }
+    expect(evs().filter((e) => e.e === 'js.error')).toHaveLength(5);
+    expect(evs().find((e) => e.e === 'log.drop')?.d).toEqual({ n: 1, why: 'cap' });
+  });
+
+  it('a members-only call that failed is one keyed.fail an incident by endpoint and kind; none unpaired', async () => {
+    const was = globalThis.fetch;
+    globalThis.fetch = (async () => new Response('', { status: 503 })) as typeof fetch;
+    try {
+      for (let i = 0; i < 3; i++) await keyed('https://relay/food/kalori', KEY);
+      await keyed('https://relay/stt', KEY);
+      await keyed('https://relay/stt', null);
+    } finally {
+      globalThis.fetch = was;
+    }
+    await flushLog();
+    expect(evs().filter((e) => e.e === 'keyed.fail').map((e) => [e.l, e.d])).toEqual([
+      [2, { ep: 'kalori', why: 'failed', http: 503, n: 3 }], [2, { ep: 'stt', why: 'failed', http: 503, n: 1 }]
+    ]);
+  });
+
+  it('leaving sends every unacked batch at once (one at a time left an update reload\'s sessions behind); a restore past three counts the events it drops', async () => {
+    const batch = (s: string) => ({ b: `b${s}00000`, s: `s${s}00000`, build: 'b1', os: 'ios18.7', es: [{ t: T0, l: 1, e: 'app.show', q: 1 }, { t: T0, l: 1, e: 'app.show', q: 2 }] });
+    const saved = (p: string[]) => kv.setItem(LIVE.log, JSON.stringify({ v: 1, s: 'old0000001', build: 'b1', os: 'o', ring: [], pending: p.map(batch), day: { d: '2026-11-05', n: 10 } }));
+    saved(['a', 'b']);
+    restoreLog();
+    reply = () => null; // the page dies before the replies
+    log('app.show');
+    leaving();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sent.map((x) => [x.body.s, x.keepalive])).toEqual([['sa00000', true], ['sb00000', true], [expect.any(String), true]]);
+    // five kept: the oldest two's events counted (were let go uncounted)
+    configureLog({ reset: true, on: true });
+    saved(['a', 'b', 'c', 'd', 'e']);
+    restoreLog();
+    reply = () => ({ ok: true });
+    sent = [];
+    while (!(await flushLog())) now += 120_000;
+    expect(sent.map((x) => x.body.s).slice(0, 3)).toEqual(['sc00000', 'sd00000', 'se00000']);
+    expect(evs().find((e) => e.e === 'log.drop')?.d).toEqual({ n: 4, why: 'pending' });
   });
 });
 
@@ -166,7 +227,7 @@ describe('sending', () => {
     expect(sent.length).toBe(2);
   });
 
-  it('offline, the unacked batches past three fold the oldest two into one: none of their events dropped', async () => {
+  it('offline, past three unacked batches the newest takes more (else the ring waits): none of their events dropped', async () => {
     reply = () => null;
     for (let i = 0; i < 6; i++) {
       log('app.show', { awayS: i });
@@ -181,7 +242,7 @@ describe('sending', () => {
     expect(evs().some((e) => e.e === 'log.drop')).toBe(false);
   });
 
-  it('persists when leaving and sends one batch with keepalive; a reload sends what was left, as its old session', async () => {
+  it('persists when leaving and sends with keepalive; a reload sends what was left, as its old session', async () => {
     reply = () => null; // the page dies before the reply
     log('app.show', { awayS: 1 });
     logError('rejection', new Error('kaput'));

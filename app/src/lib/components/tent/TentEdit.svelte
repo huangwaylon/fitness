@@ -770,7 +770,7 @@
   {/snippet}
 </Sheet>
 
-<Sheet bind:open={savesOpen} label={t('tent.saves')} title={saving.k === 'save' ? t('tent.saveTitle') : t('tent.saves')}>
+<Sheet bind:open={savesOpen} name="tent.saves" label={t('tent.saves')} title={saving.k === 'save' ? t('tent.saveTitle') : t('tent.saves')}>
   {#if saving.k === 'list'}
     <div class="slots" data-tent-slots>
       {#each Array.from({ length: SAVE_SLOTS }, (_, i) => i + 1) as n (n)}

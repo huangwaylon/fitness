@@ -157,7 +157,7 @@
   }
 </script>
 
-<Sheet bind:open tunes label={t('farm.title')} variant="full">
+<Sheet bind:open tunes label={t('farm.title')} variant="full" timed="farm">
   <div class="titlebar"><NavBar pad title={t('farm.title')} onclose={() => (open = false)} sfx="self" /></div>
   <div class="fs-body" data-farm-sheet>
     {#if view}

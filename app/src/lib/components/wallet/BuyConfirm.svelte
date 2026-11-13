@@ -35,7 +35,7 @@
   });
 </script>
 
-<Sheet bind:open title={t('wallet.buyTitle')} {onclose}>
+<Sheet bind:open title={t('wallet.buyTitle')} {onclose} name="buy">
   {#if shown}
     <div class="ask">
       <span class="ic"><OfficialArt key={itemArt(shown)} size="72px" /></span>

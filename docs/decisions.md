@@ -43,7 +43,8 @@ hibernation makes idle sockets free, and the edge is ~20 ms from Tokyo.
 
 ### Relay versions side by side
 The relay speaks every version in `LIVE_VS`; any other is closed 4004. A change ships relay first, then the app; the old
-version goes once the `ws.hello` log shows every phone on the new one. Why: the phones update at different times.
+version goes once the log shows every phone on the new one (the phones' `ws.close` `v`: `npm run logs -- report`'s
+*Live protocol*). Why: the phones update at different times.
 
 ### Push through the relay
 When the record changes the room tells the open phones to fetch now ([backend](backend.md#push)); polling stays. Why: a

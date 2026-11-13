@@ -9,6 +9,7 @@ import { Texture, type Material, type Mesh, type Object3D } from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { keepUsed } from './keepUsed.ts';
 import { lean } from './release.ts';
+import { swallowed } from '#lib/quiet.ts';
 
 /** A model's GPU copies let go of on every renderer (its geometries, materials and their textures); `close`: its
  *  decoded images too (evicted: it's not to be drawn again). `seen`: what's already let go of. */
@@ -50,6 +51,7 @@ export function modelCache(keep: number, fetch: (key: string) => Promise<GLTF>, 
       return lean(g);
     }, (e: unknown) => {
       console.warn(label, k, e);
+      swallowed('model.load');
       if (models.get(k) === p) models.delete(k);
       return null;
     });

@@ -85,10 +85,12 @@ describe('/api before the record (the Worker)', () => {
     const metas: ReqMeta[] = [];
     const fake = 'a1'.repeat(32);
     await apiRoute(req(JSON.stringify({ key: fake, action: 'whoami' })), ALLOWED, () => room, (m) => void metas.push(m), keys);
-    await apiRoute(req(JSON.stringify({ key: fake.toUpperCase(), action: 'whoami' })), ALLOWED, () => room, (m) => void metas.push(m), keys);
+    await apiRoute(req(JSON.stringify({ key: fake.toUpperCase(), action: 'ingest', rid: 'r1abcdef', sid: 's1abcdef' })), ALLOWED, () => room, (m) => void metas.push(m), keys);
     await apiRoute(req('x'.repeat(5000)), ALLOWED, () => room, (m) => void metas.push(m), keys);
     const want = createHash('sha256').update(fake).digest('hex').slice(0, 4);
     expect(metas.map((m) => [m.st, m.kh])).toEqual([['unauthorized', want], ['unauthorized', want], ['unauthorized', undefined]]);
+    // the caller named: its action and ids (the stale key's: a Shortcut's ingest, an old app)
+    expect(metas.map((m) => [m.action, m.rid, m.sid])).toEqual([['whoami', null, null], ['ingest', 'r1abcdef', 's1abcdef'], ['other', null, null]]);
     expect(JSON.stringify(metas)).not.toContain(fake);
   });
 });

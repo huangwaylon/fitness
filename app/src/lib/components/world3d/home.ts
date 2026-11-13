@@ -11,7 +11,7 @@ import { loadTexture } from './ktx2.ts';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
 import { splitSides } from './sides.ts';
 import { lean } from './release.ts';
-import { quiet } from '#lib/quiet.ts';
+import { quiet, swallowed } from '#lib/quiet.ts';
 import { glbLoader } from './gltf.ts';
 import { keepUsed } from './keepUsed.ts';
 import { freeModel } from './modelCache.ts';
@@ -68,6 +68,7 @@ function glb(base: string, family: string): Promise<GLTF | null> {
   if (!p) {
     p = loader.loadAsync(`${base}${family}.glb?v=${FAMILIES[family]?.v ?? 0}`).then(lean, (e: unknown) => {
       console.warn('home: model', family, e);
+      swallowed('model.load');
       return null;
     });
     glbs.set(family, p);

@@ -59,7 +59,7 @@ export interface RoomIO<S extends Sock> {
   heardAt?(s: S): number | null;
   /** A hello was welcomed: whose, in which version, from which build (absent before 2026-11-05), and how many sockets of
    *  theirs it replaced (`rep`: a phone back before the room saw its old socket go, so the others heard no presence
-   *  off and on). The room logs it (`ws.hello`) and fetches the real weather then, when it's due (weather.ts). */
+   *  off and on). The room arms the ghosts' watch and fetches the real weather then, when it's due (weather.ts). */
   onHello?(who: Who, v: LiveV, build: string | undefined, rep: number): void;
 }
 

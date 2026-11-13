@@ -52,8 +52,7 @@
   import { hasFields } from '#lib/layout/fields.ts';
   import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
   import { watchRest } from './rest.ts';
-  import { watchDrag } from './drag.ts';
-  import { DPR_MOVING, NoWebGL } from './stage.ts';
+  import { NoWebGL } from './stage.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
@@ -580,7 +579,7 @@
   /** A model's move slower on screen than SLOW_PX (pace.ts) or off it is ambience (the ambient rate: a fish's shadow
    *  drifting); the canvas's size from the ResizeObserver (a read in the frame forced a layout each frame). */
   let cw = 0, ch = 0, slowAmbient = true;
-  /** The last pixel-ratio swaps (on, the set's ms, its first frame's ms): the e2e's and a measure's (perf.drag). */
+  /** The last pixel-ratio swaps (on, the set's ms, its first frame's ms): the e2e's. */
   const swaps: [boolean, number, number][] = [];
   function mirror(e: Island3, t: number): boolean | 'ambient' {
     // (per frame for every model: nothing new made where nothing changed, its sets kept from frame to frame)
@@ -1011,9 +1010,7 @@
     if (timed) e.onDrawn(timed.frame);
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
-    // (the first drag's pixel-ratio swaps, once a load: perf.drag)
-    const logSwap = watchDrag({ stats: () => e.stats() }, num('dprmove') ?? DPR_MOVING);
-    e.onSwap((on, set, frame) => (logSwap(on, set, frame), swaps.push([on, set, frame]) > 20 && swaps.shift()));
+    e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
     const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);

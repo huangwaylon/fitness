@@ -101,11 +101,22 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, kalori?:
   const add = (meta: FoodIndex['datasets'][number], d: Dataset) =>
     (indexing = indexing.then(() => addDataset(db, meta, d, pause)).then(() => listeners.forEach((f) => f()), () => swallowed('food.index')));
   // (the relay's no to the chain menus is final: kalori.ts Refused)
+  // (the log: once an incident, its first failure and, the retries spent, its giving up: `swallow:food.load` /
+  // `food.gaveup`, the chain menus' `food.kalori` / `food.kalori.gaveup` / `food.kalori.refused`)
   type Get = () => Promise<Dataset>;
+  const tag = (meta: FoodIndex['datasets'][number]) => (meta === KALORI ? 'food.kalori' : 'food');
   const again = (meta: FoodIndex['datasets'][number], get: Get, n: number): void =>
-    void chance?.(n).then(() => get().then((d) => void add(meta, d), (e) => n < RETRIES && !(e instanceof Refused) && again(meta, get, n + 1)));
+    void chance?.(n).then(() => get().then((d) => void add(meta, d), (e) => {
+      if (e instanceof Refused) return swallowed(`${tag(meta)}.refused`);
+      if (n < RETRIES) again(meta, get, n + 1);
+      else swallowed(`${tag(meta)}.gaveup`);
+    }));
   const load = (meta: FoodIndex['datasets'][number], get: Get = () => fetchDataset(url(meta.file, index.version))) =>
-    get().then((d) => add(meta, d), (e) => void (e instanceof Refused || again(meta, get, 0)));
+    get().then((d) => add(meta, d), (e) => {
+      if (e instanceof Refused) return swallowed(`${tag(meta)}.refused`);
+      swallowed(meta === KALORI ? 'food.kalori' : 'food.load');
+      again(meta, get, 0);
+    });
   const core = index.datasets.filter((d) => !d.lazy);
   const lazy = index.datasets.filter((d) => d.lazy);
   // all at once, added in the order they arrive (search ranks by match, not by file)

@@ -173,8 +173,8 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
     if (!clock.done()) return void (raf = requestAnimationFrame(loop));
     stop();
     if (back) {
-      const { mount, first, loaded, shown, long, draw, appear, steps } = clock.marks();
-      log('perf.back', { first: first - mount, loaded: loaded - mount, shown: shown - mount, long, draw, appear, steps, progs: extra(clock.marks()).progs });
+      const { mount, first, loaded, shown, long, appear, steps } = clock.marks();
+      log('perf.back', { first: first - mount, loaded: loaded - mount, shown: shown - mount, long, appear, steps, progs: extra(clock.marks()).progs });
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);

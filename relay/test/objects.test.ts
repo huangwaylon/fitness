@@ -40,6 +40,10 @@ let promises: Promise<unknown>[];
 const settle = async () => {
   while (promises.length) await Promise.allSettled(promises.splice(0));
 };
+/** A few microtasks (the hello's weather fetch, not one the log waits on). */
+const ticks = async () => {
+  for (let i = 0; i < 20; i++) await Promise.resolve();
+};
 const added = () => (calls['LOG.add'] ?? []).flatMap((a) => a[0] as RelayEvent[]);
 
 const ns = (stub: () => object) => ({ idFromName: (n: string) => n, get: () => stub() });
@@ -172,14 +176,16 @@ describe('IslandStore', () => {
     expect(await s.adminSigned(...again)).toEqual({ status: 409, body: 'replayed' });
   });
 
-  it('runs a signed op and audits it: counts, rev, an unknown op refused', async () => {
+  it('runs a signed op and audits it (a read only when it fails): counts, rev, a check, an unknown op refused', async () => {
     const s = make();
     expect(await admin(s, { op: 'counts' })).toEqual({ status: 200, body: { ok: true, counts: expect.any(Object), rev: expect.any(String), newest: null, schema_v: expect.any(Number) } });
     expect((await admin(s, { op: 'rev' })).body).toEqual({ ok: true, rev: expect.stringMatching(/^e\d+$/) });
     expect((await admin(s, { op: 'nope' })).body).toEqual({ ok: false, error: 'bad_request' });
+    await admin(s, { op: 'decorcheck' });
+    await admin(s, { op: 'decorcheck', fix: true });
     await settle();
     expect(added().map((e) => [e.e, e.l, (e.d as { op: string; st: string }).op, (e.d as { st: string }).st])).toEqual([
-      ['admin', 1, 'counts', 'ok'], ['admin', 1, 'rev', 'ok'], ['admin', 2, 'nope', 'bad_request']
+      ['admin', 1, 'rev', 'ok'], ['admin', 2, 'nope', 'bad_request'], ['admin', 1, 'decorcheck', 'ok']
     ]);
   });
 
@@ -316,7 +322,7 @@ describe('IslandRoom', () => {
     expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'ws.message', name: 'RangeError' } }]);
   });
 
-  it('a hello: logged as `ws.hello`, the ghosts\' watch armed, the weather fetched (here failing) and the presence kept', async () => {
+  it('a hello: not logged (the phone\'s ws.close says its protocol), the ghosts\' watch armed, the weather fetched (here failing) and the presence kept', async () => {
     let meta: unknown = { who: null, opened: NOW };
     const sent: string[] = [];
     const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send: (d: string) => void sent.push(d), close() {} };
@@ -328,15 +334,16 @@ describe('IslandRoom', () => {
     await settle();
     expect(meta).toMatchObject({ who: 'A' });
     expect(JSON.parse(sent[0])).toMatchObject({ kind: 'welcome' });
-    expect(added()).toEqual([{ e: 'ws.hello', l: 1, role: 'A', d: { v: LIVE_V } }]);
+    expect(added()).toEqual([]);
     expect(st.alarm()).toBe(NOW + SILENT_MS);
     expect(fetched).toHaveLength(1);
+    await ticks();
     expect(st.kv.get('wx')).toMatchObject({ fails: 1 });
     r.webSocketClose(ws as unknown as WebSocket, 1000);
     expect(st.kv.get('gone')).toEqual({ A: NOW });
   });
 
-  it('its rows written: kept with the record\'s marks (one row a notify), said on the next hello or close, kept across a restart', async () => {
+  it('its rows written: kept with the record\'s marks (one row a notify), said on the next close, kept across a restart', async () => {
     let meta: unknown = { who: null, opened: NOW };
     const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send() {}, close() {} };
     const { r, st } = await make({ sockets: () => [ws] });
@@ -346,16 +353,17 @@ describe('IslandRoom', () => {
     r.notify({ what: 'event', who: 'B', at: '2026-11-02T02:59:01.000Z', rev: 'e1' });
     // one key for both marks (was two rows a notify)
     expect([st.kv.has('rec'), st.kv.has('rec-g'), st.kv.get('marks')]).toEqual([false, false, { rec: { at: '2026-11-02T02:59:01.000Z', rev: 'e1' }, recG: { at: '2026-11-02T02:59:01.000Z', rev: 'e1' }, rw: 2, sent: 0 }]);
-    // a restart (a hibernation) keeps the count; the hello says it (and the weather's failure, a row)
+    // a restart (a hibernation) keeps the count; the close says it with the hello's (the weather's failure, a row) and
+    // its own `gone`
     const again = new IslandRoom(st.state, envOf());
     await settle();
     again.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
-    await settle();
-    expect(added().find((e) => e.e === 'ws.hello')).toMatchObject({ d: { rw: 2 } });
+    await ticks();
+    expect(st.kv.get('wx')).toMatchObject({ fails: 1 });
     again.webSocketClose(ws as unknown as WebSocket, 1000);
     await settle();
-    // since the hello: the weather's failure and the close's `gone`
-    expect(added().find((e) => e.e === 'room.close')).toMatchObject({ d: { rw: 2 } });
+    // since the hello: the weather's failure, the close's `gone` and the two marks
+    expect(added().find((e) => e.e === 'room.close')).toMatchObject({ d: { rw: 4 } });
   });
 
   it('a closing socket is logged as `room.close` and closed with a clean code', async () => {

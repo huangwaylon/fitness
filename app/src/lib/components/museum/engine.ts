@@ -1667,7 +1667,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   };
   document.addEventListener('visibilitychange', onVis);
   // a lost context (iOS taking a backgrounded room's memory back): three restores what it can, drawn again once back
-  const unwatchGL = watchContext(canvas, 'other', () => {
+  const unwatchGL = watchContext(canvas, 'museum', () => {
     invalidate();
   });
 

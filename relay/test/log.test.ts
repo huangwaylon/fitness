@@ -113,7 +113,7 @@ describe('the relay’s events, the query, retention', () => {
     log.ingestText(batch([ev('app.show'), ev('app.show')]));
     // 2 events + the batch id (the caps' rows not yet: CAPS_SAVE_MS)
     expect(log.stats()).toMatchObject({ rowsLog: 3, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
-    log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 40_000 } }, { e: 'room.close', l: 1, d: { code: 1000, rw: 12_000 } }, { e: 'ws.hello', l: 1, role: 'A', d: { v: 3, rw: 7 } }]);
+    log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 40_000 } }, { e: 'room.close', l: 1, d: { code: 1000, rw: 12_000 } }, { e: 'room.close', l: 1, role: 'A', d: { code: 1000, rw: 7 } }]);
     // + 3 events
     expect(log.stats()).toMatchObject({ rowsLog: 6, rowsStore: 40_000, rowsRoom: 12_007, rowsPct: 52 });
     // written once CAPS_SAVE_MS passed (here by the object's timer): 3 caps rows (c:A:i, r:i, all); kept across a

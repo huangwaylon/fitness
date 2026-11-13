@@ -8,6 +8,8 @@
 //   inside remove(): until the next map, that Error's unformatted stack held remove()'s receivers, the whole map and its
 //   WebGL context. Reading its stack formats it, which lets the frames go.
 import { getGlobalDispatcher, type Map as GLMap } from 'maplibre-gl';
+import { swallowed } from '#lib/quiet.ts';
+import { log } from '#lib/sync/log.ts';
 
 export function removeMap(map: GLMap): void {
   const glyphs = map.style?.glyphManager;
@@ -32,9 +34,13 @@ export function watchMode(map: GLMap, base: string, mode: (m: EngineMode) => voi
   map.on('error', (e) => {
     if ((e as { sourceId?: string }).sourceId === base) {
       if (tiles !== 'down') ((tiles = 'down'), report());
-    } else console.error(e.error);
+    } else {
+      console.error(e.error);
+      // (counted, not its message: a MapLibre error can quote a URL)
+      swallowed('map.error');
+    }
   });
-  map.on('webglcontextlost', () => ((lost = true), report()));
+  map.on('webglcontextlost', () => ((lost = true), log('gl.lost', { where: 'map', restored: false }, 2), report()));
   map.on('webglcontextrestored', () => ((lost = false), report()));
   return () => ((loaded = true), report());
 }

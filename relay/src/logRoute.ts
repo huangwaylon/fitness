@@ -8,8 +8,7 @@
 //   (a secret the health workflow holds: it reads counts, nothing else).
 // - `relaySink`: the relay's own events to the object, best effort, never in a reply's path; once the relay's day is
 //   capped it stops sending until midnight (per isolate).
-import { corsOf } from './auth.ts';
-import { sameKey } from '../../app/src/lib/contract/ticket.ts';
+import { bearerOf, corsOf, tokenOk } from './auth.ts';
 import { LOG_BODY_MAX } from '../../app/src/lib/contract/log.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -72,9 +71,8 @@ export async function logRoute(req: Request, env: LogEnv, log: () => LogRoom): P
 
 /** `GET /health/log` with the health token: the log's counts (log.ts stats); without it, 404 (as if there were none). */
 export async function logHealthRoute(req: Request, token: string | undefined, log: () => LogRoom): Promise<Response> {
-  const auth = req.headers.get('Authorization') ?? '';
-  const t = token?.trim();
-  if (!t || t.length < 32 || !auth.startsWith('Bearer ') || !sameKey(auth.slice(7).trim(), t)) return new Response('not found', { status: 404 });
+  // (a short secret is none: under 32 characters it could be guessed)
+  if ((token?.trim().length ?? 0) < 32 || !(await tokenOk(bearerOf(req), token))) return new Response('not found', { status: 404 });
   try {
     return Response.json(await log().stats(), { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {

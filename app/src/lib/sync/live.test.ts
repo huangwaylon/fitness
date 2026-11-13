@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE_URL, backoff, bestOffset, createLive, deviceId, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
-import { dayStart, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
+import { dayStart, LIVE_V, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
 import { configureStorage, LIVE, type KV } from './storage.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../contract/ticket.ts';
 import { log } from './log.ts';
@@ -1128,7 +1128,9 @@ describe('live: why a socket ended (the log’s ws.close)', () => {
     vi.advanceTimersByTime(1000);
     visible = false;
     fire();
-    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80 }]);
+    // (the welcome said here, not as a ws.open of its own: a first try's; its protocol, ms and tries)
+    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80, v: LIVE_V, openMs: 0, retries: 0 }]);
+    expect(vi.mocked(log).mock.calls.filter((c) => c[0] === 'ws.open')).toEqual([]);
     // shown again; the network drops it
     visible = true;
     fire();

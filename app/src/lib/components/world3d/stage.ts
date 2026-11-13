@@ -67,7 +67,7 @@ export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): {
 /** A lost context on `canvas` (the phone reclaiming the GPU, a backgrounded page under memory pressure) kept for three
  *  to restore what it can, and logged both ways (gl.lost, by `where`: how often iOS takes a surface's memory back);
  *  `restored()` once it's back (what three can't upload again made again, a frame asked for). The unwatch. */
-export function watchContext(canvas: HTMLCanvasElement, where: 'island' | 'tent' | 'other', restored: () => void): () => void {
+export function watchContext(canvas: HTMLCanvasElement, where: 'island' | 'tent' | 'shop' | 'museum', restored: () => void): () => void {
   const onLost = (e: Event) => {
     e.preventDefault();
     log('gl.lost', { where, restored: false }, 2);

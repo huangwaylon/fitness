@@ -88,7 +88,7 @@
   </div></div></div>
 </section>
 
-<Sheet bind:open title={t('wallet.eraseTitle')} onclose={() => (open = false)}>
+<Sheet bind:open title={t('wallet.eraseTitle')} onclose={() => (open = false)} name="erase">
   {#if ask}
     <div class="ask">
       <span class="big"><OfficialArt key={itemArt(ask.item)} size="64px" /></span>

@@ -16,6 +16,7 @@ import { claimOf, tokyoDay, type Intent, type Relayed, type Who } from '#lib/con
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { dayKey, now } from '#lib/time/clock.ts';
+import { caught } from '#lib/quiet.ts';
 
 /** A partner's change this recent is played as it happens (their villager walks over and does it); older (a
  *  replay when this phone opens) it only changes the island. */
@@ -336,14 +337,14 @@ class SharedWorld {
       try {
         this.lost?.(k, e.who, n.live, e.kind);
       } catch (err) {
-        console.error('world:', err);
+        caught(err, 'world');
       }
     }
     for (const f of this.#subs) {
       try {
         f(n);
       } catch (err) {
-        console.error('world:', err);
+        caught(err, 'world');
       }
     }
   }
@@ -381,7 +382,7 @@ class SharedWorld {
     try {
       this.lost?.(k, who, false, i.kind);
     } catch (err) {
-      console.error('world:', err);
+      caught(err, 'world');
     }
   }
 

@@ -15,13 +15,13 @@
 // - A batch id is taken once (`batches`, two days): a phone re-sends a batch it never saw acked.
 // - The account's rows written a UTC day, by object (the day's `all` cap row's `rw`, written with it: no row of its
 //   own): the log's own (its SQLite cursors' counts, reqMeta.ts countingSql, as the record's), the record's (each
-//   `req`'s `rw`) and the room's (`ws.hello` and `room.close` `rw`); `stats` says them against the Free plan's ROWS_DAY.
+//   `req`'s `rw`) and the room's (`room.close`'s `rw`); `stats` says them against the Free plan's ROWS_DAY.
 // - Retention: 30 days (`prune`, the object's daily alarm, 5,000 rows a chunk).
 import { roleOfKey, type Keys } from './auth.ts';
 import type { Sql } from './store.ts';
 import { countingSql } from './reqMeta.ts';
 import {
-  cleanData, isLogEvent, isLogId, isToken, levelOf, LOG_BATCH_MAX, LOG_EVENTS, LOG_V,
+  cleanData, isLogEvent, isLogId, levelOf, LOG_BATCH_MAX, LOG_EVENTS, LOG_V,
   type LogData, type LogEventName, type LogLevel
 } from '../../app/src/lib/contract/log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -289,7 +289,7 @@ export class LogCore {
         // (the record's rows for a request, the room's since it last said: before the cap, so a capped day still
         // counts those it hears)
         if (ev.e === 'req') this.wrote('store', Number(ev.d?.rw));
-        if (ev.e === 'room.close' || ev.e === 'ws.hello') this.wrote('room', Number(ev.d?.rw));
+        if (ev.e === 'room.close') this.wrote('room', Number(ev.d?.rw));
         if (!this.take(`r:${l === 3 ? 'e' : 'i'}`)) continue;
         const role = ev.role === 'A' || ev.role === 'B' || ev.role === 'G' ? ev.role : null;
         this.insert([this.nextId(), null, l, ev.e, 'r', role, isLogId(ev.sid) ? ev.sid : null, isLogId(ev.rid) ? ev.rid : null, null, null, null, JSON.stringify(cleanData(ev.e, ev.d))]);
@@ -413,8 +413,4 @@ export class LogCore {
   }
 }
 
-/** A word for a thrown thing: its class (`TypeError`), never its message. */
-export const errName = (e: unknown): string => {
-  const n = e instanceof Error ? e.name : typeof e;
-  return isToken(n) ? n : 'Error';
-};
+export { errName } from '../../app/src/lib/contract/log.ts';

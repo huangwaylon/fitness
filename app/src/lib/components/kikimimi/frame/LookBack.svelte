@@ -28,7 +28,7 @@
 
 {#if i >= 0 && it}
   <button type="button" class="chip prev" data-kiki-prev aria-label={t('kiki.prevQAsk')} data-sfx="open" onclick={() => (open = true)}><span aria-hidden="true">👀</span> {t('kiki.prevQ')}</button>
-  <Sheet bind:open title={t('kiki.prevQ')}>
+  <Sheet bind:open title={t('kiki.prevQ')} name="kiki.prev">
     <div class="card-body" data-kiki-prev-card={i}>
       {#if v.phase === 'answer' && Number.isFinite(v.limit)}
         <span class="timer" aria-hidden="true">{#key `${v.i}:${v.playEnd}`}<i style:animation-duration="{Math.max(1, v.limit - v.playEnd)}ms" style:animation-delay="{-Math.max(0, game.now - v.playEnd)}ms"></i>{/key}</span>

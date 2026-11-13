@@ -98,7 +98,7 @@ export class IslandRoom extends DurableObject<Env> {
     this.marks.rw++;
     return this.ctx.storage.put(k, v);
   }
-  /** The rows written since the log last heard (ws.hello's and room.close's `rw`), now heard. */
+  /** The rows written since the log last heard (room.close's `rw`), now heard. */
   private unsaid(): number {
     const n = this.marks.rw - this.marks.sent;
     this.marks.sent = this.marks.rw;
@@ -137,11 +137,9 @@ export class IslandRoom extends DurableObject<Env> {
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
         heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
-        onHello: (who, v, build, rep) => {
-          // each phone's protocol version and build (the log's ws.hello: which phones speak what), and a socket it
-          // replaced
-          const rw = this.unsaid();
-          this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}), ...(rep ? { rep } : {}), ...(rw ? { rw } : {}) } }]);
+        // (no log of its own since 2026-11-13: the phone's ws.close says its protocol, `v`, and the build is on every
+        // phone event; a replaced socket's end is its room.close, code CLOSE.replaced)
+        onHello: () => {
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
@@ -302,7 +300,7 @@ export default {
     // 03:00 Tokyo: the record's backup, on its own alarm (archive.ts; storeObject.ts archiveKick); nothing else
     if (ev.cron === ARCHIVE_CRON) {
       ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).archiveKick().then(
-        (r) => console.log('backup-kick', r.due),
+        () => {},
         (e) => {
           console.warn('backup-kick-fail', errName(e));
           log([{ e: 'do.error', l: 3, d: { where: 'backup', name: errName(e) } }]);
@@ -312,7 +310,7 @@ export default {
     }
     if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) {
       ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).compactTick().then(
-        (r) => console.log('compact', JSON.stringify(r)),
+        () => {},
         (e) => {
           console.warn('compact-fail', errName(e));
           log([{ e: 'do.error', l: 3, d: { where: 'compact', name: errName(e) } }]);
@@ -322,9 +320,11 @@ export default {
     ctx.waitUntil(
       env.ROOM.get(env.ROOM.idFromName('island')).weatherTick().then(
         (r) => {
-          if (r.fetched) console.log('wx', JSON.stringify({ ok: r.ok, fail: r.fail, hours: r.health.hours }));
-          // a tick that fetched (at :15 and :45) or failed: the log's `cron.wx`
-          if (r.fetched) log([{ e: 'cron.wx', l: r.ok ? 1 : 2, d: { ok: r.ok, fetched: true, fail: r.fail, hours: r.health.hours, age: r.health.age, ms: Date.now() - t0 } }]);
+          // the log's `cron.wx`: a fetch that failed, and the weather's health once a Tokyo day (00:15; 46 ok fetches a
+          // day said nothing a reader used)
+          if ((r.fetched && !r.ok) || isWxDaily(ev.scheduledTime)) {
+            log([{ e: 'cron.wx', l: r.ok ? 1 : 2, d: { ok: r.ok, fetched: r.fetched, fail: r.fail, hours: r.health.hours, age: r.health.age, fails: r.health.fails, ms: Date.now() - t0 } }]);
+          }
           // the wet days into the record (the fields' rain: store.ts wetTick), every tick (the game mode's too)
           return env.STORE.get(env.STORE.idFromName('record')).wetTick(r.wet).then(
             (kept) => kept.length && console.log('wet', kept.join(',')),
@@ -368,6 +368,9 @@ export default {
     return env.ROOM.get(env.ROOM.idFromName('island')).fetch(adm);
   }
 } satisfies ExportedHandler<Env>;
+
+/** The cron tick that says the weather's health (00:15 Tokyo, 15:15 UTC). */
+const isWxDaily = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) === 15 * 60 + 15;
 
 /** `/health`'s weather as the room last said it (per isolate), and how long that holds. */
 let wxSeen: { at: number; wx: WxHealth | null } | null = null;

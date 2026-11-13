@@ -12,7 +12,8 @@
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { corsOf, keyOwner, preflight, type Keys } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, sigShaped, verifyNotify } from './notify.ts';
-import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
+import { isRec, MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
+import { isLogId, LOG_ACTIONS } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 
@@ -55,6 +56,19 @@ async function keyHash(key: string): Promise<string> {
   return Array.from(d.slice(0, 2), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** A refused body's action and ids for its `req` row (which caller a stale key is: a Shortcut's ingest, an old app),
+ *  parsed only when small (the Worker's CPU: a refused body is a few hundred bytes). */
+function callerOf(text: string): { action: string; rid: string | null; sid: string | null } {
+  let b: unknown = null;
+  try {
+    b = text.length <= 8_192 ? JSON.parse(text) : null;
+  } catch {
+    b = null;
+  }
+  const o = isRec(b) ? b : {};
+  return { action: (LOG_ACTIONS as readonly unknown[]).includes(o.action) ? String(o.action) : 'other', rid: isLogId(o.rid) ? o.rid : null, sid: isLogId(o.sid) ? o.sid : null };
+}
+
 /** A request's `req` event, with its wall time (ms). */
 export type OnReq = (meta: ReqMeta, ms: number) => void;
 
@@ -82,7 +96,7 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   // no person's key: refused here (a stranger's body never reaches the record), its key's hash in the log
   const gate = keys ? keyGate(text, keys) : { ok: true };
   if (!gate.ok) {
-    onReq?.({ ...bare('unauthorized', text.length), ...(gate.seen ? { kh: await keyHash(gate.seen) } : {}) }, Date.now() - t0);
+    onReq?.({ ...bare('unauthorized', text.length), ...callerOf(text), ...(gate.seen ? { kh: await keyHash(gate.seen) } : {}) }, Date.now() - t0);
     return json('{"ok":false,"error":"unauthorized"}');
   }
   try {

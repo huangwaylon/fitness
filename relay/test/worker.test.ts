@@ -201,20 +201,29 @@ describe('the cron', () => {
   const TICK = Date.parse('2026-11-04T19:15:00.000Z'); // 04:15 Tokyo
   const run = (t: number, env = envOf()) => worker.scheduled({ scheduledTime: t, cron: '*/15 * * * *', noRetry() {} } as ScheduledController, env, ctx());
 
-  it('ticks the weather every time, logging a fetch as `cron.wx`', async () => {
+  it('ticks the weather every time, logging a failed fetch and the health once a Tokyo day as `cron.wx`', async () => {
     expect(isCompactTick(TICK)).toBe(true);
     await run(TICK);
     await settle();
     expect(calls['ROOM.weatherTick']).toHaveLength(1);
     expect(calls['STORE.compactTick']).toBeUndefined();
-    expect(added()).toEqual([{ e: 'cron.wx', l: 1, d: { ok: true, fetched: true, fail: undefined, hours: 48, age: 600_000, ms: 0 } }]);
+    // an ok fetch: nothing (46 a day)
+    expect(calls['LOG.add']).toBeUndefined();
+    room.weatherTick = () => Promise.resolve({ ok: false, fetched: true, fail: 'timeout', heard: 0, health: { ...WX, fails: 2 } });
+    await run(TICK);
+    await settle();
+    expect(added()).toEqual([{ e: 'cron.wx', l: 2, d: { ok: false, fetched: true, fail: 'timeout', hours: 48, age: 600_000, fails: 2, ms: 0 } }]);
   });
 
-  it('logs nothing for a tick that didn’t fetch, an error for one that threw', async () => {
-    room.weatherTick = () => Promise.resolve({ ok: true, fetched: false, heard: 0, health: WX });
+  it('says the weather\'s health at 00:15 Tokyo, fetched or not; an error for a tick that threw', async () => {
+    room.weatherTick = () => Promise.resolve({ ok: true, fetched: false, heard: 0, health: { ...WX, fails: 0 } });
     await run(TICK - 900_000);
     await settle();
     expect(calls['LOG.add']).toBeUndefined();
+    await run(Date.parse('2026-11-04T15:15:00.000Z'));
+    await settle();
+    expect(added()).toEqual([{ e: 'cron.wx', l: 1, d: { ok: true, fetched: false, fail: undefined, hours: 48, age: 600_000, fails: 0, ms: 0 } }]);
+    calls['LOG.add'] = [];
     room.weatherTick = () => Promise.reject(new TypeError('net'));
     await run(TICK - 900_000);
     await settle();

@@ -24,6 +24,7 @@ import { procScene } from './proc3d.ts';
 import { FLAPS, flapGlsl, wingHinge } from './wings.ts';
 import { loadRoomModel, roomLamp } from './outdoorModels.ts';
 import { isRoomModel, outdoorByCode } from '#lib/layout/outdoor.ts';
+import { swallowed } from '#lib/quiet.ts';
 
 /** Where a lit model's light is (a share of its height; or `e`, its emitter in model units, its own frame: turned and
  *  scaled with it, as the rooms' lamps' are, tent/grid.ts toRoom), its colour and the halo's and pool's sizes (u). */
@@ -273,6 +274,7 @@ function load(url: string, name: string): Promise<GLTF | null> {
     },
     (e: unknown) => {
       console.warn('world3d: model', name, e);
+      swallowed('model.load');
       loaded.delete(url);
       return null;
     }

@@ -1,6 +1,7 @@
 // The log's schema (contract/log.ts): the registry keeps only known fields of their kinds, and the scrubbers leave
 // nothing that could be a key, a health value, a name or a URL in a message or a stack.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { cleanData, isLogId, isToken, logRoute, scrubMsg, scrubStack, LOG_EVENTS, type LogEventName } from './log.ts';
 
 const KEY = '3f9a'.repeat(16);
@@ -63,7 +64,7 @@ describe('cleanData', () => {
   it('numbers bounded and rounded, closed sets closed, counters by kind', () => {
     expect(cleanData('api.fail', { action: 'events', err: 'busy', ms: 123.456, http: Infinity, tries: '3' })).toEqual({ action: 'events', err: 'busy', ms: 123.5 });
     expect(cleanData('api.fail', { action: 'drop_table', err: 'whatever' })).toEqual({});
-    expect(cleanData('use', { 'sheet:island.food': 2, 'ev:tally': 1, 'x:y': 1, 'route:/tent': 1, 'act:fish': true, 'swallow:tex.idb': 3 })).toEqual({ 'sheet:island.food': 2, 'ev:tally': 1, 'swallow:tex.idb': 3 });
+    expect(cleanData('use', { 'sheet:island.food': 2, 'ev:tally': 1, 'x:y': 1, 'route:/tent': 1, 'act:fish': true, 'swallow:tex.idb': 3 })).toEqual({ 'sheet:island.food': 2, 'swallow:tex.idb': 3 });
     expect(cleanData('req', { why: 'pocket short', ms: 1e12 })).toEqual({ ms: 1e7 });
     expect(cleanData('perf.sheet', { sheet: 'food', first: true, chunk: 12.34, long: 48, title: 'ごはん', sheetName: 'x' })).toEqual({ sheet: 'food', first: true, chunk: 12.3, long: 48 });
     expect(cleanData('perf.sheet', { sheet: 'island.food' })).toEqual({});
@@ -79,5 +80,14 @@ describe('cleanData', () => {
     expect([isToken('tent_full'), isToken('a b'), isToken(KEY.slice(0, 16)), isToken('Island3D.BkX9a2.js')]).toEqual([true, false, false, true]);
     expect([isLogId('k2j4h5g6f7'), isLogId(KEY), isLogId('abc')]).toEqual([true, false, false]);
     expect([logRoute('/tent/x?y'), logRoute(`/pair#key=${KEY}`), logRoute('/'), logRoute('/nope')]).toEqual(['/tent', '/pair', '/', 'other']);
+  });
+});
+
+describe('docs/ops/observability.md', () => {
+  it('names every event of the registry in its table, and none else', () => {
+    const doc = readFileSync(new URL('../../../../docs/ops/observability.md', import.meta.url), 'utf8');
+    const table = doc.slice(doc.indexOf('### What we log'), doc.indexOf('### Naming and levels'));
+    const named = new Set(table.split('\n').filter((l) => l.startsWith('| `')).flatMap((l) => [...l.split('|')[1].matchAll(/`([\w.]+)`/g)].map((m) => m[1])));
+    expect([...named].sort()).toEqual(Object.keys(LOG_EVENTS).sort());
   });
 });

@@ -10,6 +10,7 @@ import { finalMs, lastLockAt } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type ApiResult } from './transport.ts';
+import { caught } from '#lib/quiet.ts';
 
 export interface SnapshotCache {
   v: 1;
@@ -341,6 +342,7 @@ async function fetchSnapshot(clientNow: () => number): Promise<ApiResult<{ cache
   } catch (e) {
     // a malformed reply (mergeRows throws) or a storage failure: report it as a failed sync, never a stuck one
     console.warn('snapshot refresh failed', e);
+    caught(e, 'snapshot');
     return { ok: false, error: 'unavailable', detail: String(e) };
   }
 }

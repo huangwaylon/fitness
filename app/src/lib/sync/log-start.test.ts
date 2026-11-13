@@ -68,7 +68,7 @@ describe('the log started on a phone', () => {
     setDrawnFps(() => 30);
     await vi.advanceTimersByTimeAsync(16_000);
     await flushLog();
-    expect(named('app.open')[0].d).toMatchObject({ route: '/', w: 393, dpr: 3, pwa: true, crashed: false, q: 2, qAgeS: 4 });
+    expect(named('app.open')[0].d).toMatchObject({ route: '/', w: 393, dpr: 3, pwa: true, q: 2, qAgeS: 4 });
     expect(named('app.ready')).toHaveLength(1);
     const f = named('perf.frames')[0]?.d;
     expect(f).toMatchObject({ hz: 60, when: 'ready', mode: '3d', drawFps: 30, long: 0 });
@@ -87,15 +87,22 @@ describe('the log started on a phone', () => {
     stop();
   });
 
-  it('a chunk not fetched is a chunk.fail, but not once the page is leaving (the app\'s own reload cut its imports off): an error then is a warning', async () => {
+  it('a chunk not fetched is one chunk.fail an incident, by file, its import error not one more; none once the page is leaving (the app\'s own reload cut its imports off): an error then is a warning', async () => {
     const stop = start();
-    win.dispatchEvent(new Event('vite:preloadError'));
-    markLeaving();
-    win.dispatchEvent(new Event('vite:preloadError'));
+    const fail = (msg: string) => win.dispatchEvent(Object.assign(new Event('vite:preloadError'), { payload: new TypeError(msg) }));
+    // Safari's: no file, 4 in the same ms, and the unhandled rejection after them
+    for (let i = 0; i < 4; i++) fail('Importing a module script failed.');
     win.dispatchEvent(Object.assign(new Event('error'), { error: new TypeError('Importing a module script failed.') }));
+    // Chrome's names it (the base name only)
+    fail('Failed to fetch dynamically imported module: https://x/_app/immutable/nodes/3.Ab12.js?v=1');
+    markLeaving();
+    fail('Importing a module script failed.');
+    win.dispatchEvent(Object.assign(new Event('error'), { error: new TypeError('Importing a module script failed.') }));
+    win.dispatchEvent(Object.assign(new Event('error'), { error: new Error('boom') }));
     await flushLog();
-    expect(named('chunk.fail')).toHaveLength(1);
-    expect(named('js.error')[0]).toMatchObject({ l: 2, d: { leaving: true } });
+    expect(named('chunk.fail').map((e) => [e.l, e.d])).toEqual([[2, { n: 4 }], [2, { file: '3.Ab12.js', n: 1 }]]);
+    expect(named('js.error').map((e) => [e.l, e.d?.msg, e.d?.leaving])).toEqual([[2, 'Error: boom', true]]);
+    expect(named('use')[0].d).toMatchObject({ 'swallow:import.chunk': 1, 'swallow:import.leaving': 1 });
     stop();
   });
 

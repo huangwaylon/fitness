@@ -24,7 +24,9 @@
   // opened let go, all of them when the page is hidden or on a lost WebGL context; `keep` false while closed lets it go
   // too). The sheet resets what each opening resets itself.
   // `tunes`: its open and close tunes (panel-open / panel-close; mounted already open, on the first tap: that is an open too).
-  // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts).
+  // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts), and the `sheet` of an error while
+  // it's the topmost; `name` (else `timed`): its usage counter's id (`sheet:<name>`, a stable token, never the title's
+  // i18n key: a rename split the series).
   // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then.
   // A half-filled form in it (`dirty`, or one registered inside it: ui/discard.svelte.ts) makes every close ask first,
   // 「入力した内容を破棄しますか？」 [破棄する] [編集を続ける], in a paper sheet over it; a caller's own ✕ goes through `guard`.
@@ -37,8 +39,7 @@
   import { withKeyboardInset } from './keyboardInset.svelte.ts';
   import { lockScroll } from './scrollLock.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { count, logOn } from '#lib/sync/log.ts';
-  import { keyOfText } from '#lib/i18n/index.ts';
+  import { count, logOn, sheetShown } from '#lib/sync/log.ts';
   import type { LogSheet } from '#lib/contract/log.ts';
   import { timeSheet } from '#lib/ui-state/sheetTiming.ts';
   import { keepSheet, unkeepSheet } from '#lib/ui-state/keptSheets.ts';
@@ -66,10 +67,12 @@
     tunes?: boolean;
     /** Time its openings for the log, by this name. */
     timed?: LogSheet;
+    /** Its usage counter's id (default: `timed`, else `other`). */
+    name?: string;
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
-  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, dirty }: Props = $props();
+  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
   const forms = new Set<() => boolean>();
@@ -103,12 +106,14 @@
     if (!open) return;
     untrack(() => {
       ui.sheets = [...ui.sheets.filter((x) => x !== id), id];
-      // the log's usage counter: the sheet by its title's i18n key (never its text: sync/log.ts)
-      if (logOn()) count(`sheet:${keyOfText(label) ?? 'other'}`);
+      // the log's usage counter, by a stable id (never its text: sync/log.ts)
+      if (logOn()) count(`sheet:${name ?? timed ?? 'other'}`);
     });
+    const shown = timed ? sheetShown(timed) : null;
     return () =>
       untrack(() => {
         ui.sheets = ui.sheets.filter((x) => x !== id);
+        shown?.();
       });
   });
 

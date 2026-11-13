@@ -98,7 +98,7 @@
   <button type="submit" form="{uid}-f" class="btn" data-wed-save data-sfx="confirm">{t('common.save')}</button>
 {/snippet}
 
-<Sheet bind:open title={task ? t('wed.editTask') : t('wed.newTask')} focusField {footer} dirty={unsaved}>
+<Sheet bind:open title={task ? t('wed.editTask') : t('wed.newTask')} focusField {footer} dirty={unsaved} name="wed.task">
   <form class="form" id="{uid}-f" data-wed-form onsubmit={submit}>
     <label class="f">
       <span class="fl">{t('wed.field.title')}<b class="req">{t('wed.field.required')}</b></span>

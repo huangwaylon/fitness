@@ -6,12 +6,23 @@
 // and the relay recogniser (mic/backends/relay.ts).
 
 type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
+
+/** The log's failure (sync/log.ts plugs it in; a worker's stays a no-op): one `keyed.fail` an incident by endpoint and
+ *  kind. Not for `unpaired` or `aborted`: no call, or the caller's own. */
+let sink: (url: string, why: KeyedMiss, http?: number) => void = () => {};
+export const keyedSink = (fn: typeof sink): void => void (sink = fn);
 /** The answer (2xx or a 304), or why not; a refused or failed one carries the reply. */
 export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; res?: Response };
 
 /** `init` sent to `url` with `key`; `answerMs`: how long its answer (the headers, never the body's download) is waited
  *  for (`timeout`). */
 export async function keyed(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number): Promise<Keyed> {
+  const r = await call(url, key, init, answerMs);
+  if (!r.ok && r.why !== 'unpaired' && r.why !== 'aborted') sink(url, r.why, r.res?.status);
+  return r;
+}
+
+async function call(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number): Promise<Keyed> {
   if (!key || !url) return { ok: false, why: 'unpaired' };
   const late = answerMs === undefined ? null : new AbortController();
   const timer = late && setTimeout(() => late.abort(new DOMException('no answer', 'TimeoutError')), answerMs);

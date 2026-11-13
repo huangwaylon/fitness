@@ -9,7 +9,7 @@ import { HOME_ID, OBJ_ID, PART, TILE_RE, TOKEN, WORLD_X, WORLD_Z, X_MAX, Z_MAX, 
 
 export const LIVE_V = 3;
 /** @public (relay/) The versions the relay speaks: v3 only (the rolling-log world with the guest, `G`:
- *  docs/backend.md#the-guest). v1 and v2 went on 2026-11-05, once every phone's hello said v3 (the log's `ws.hello`). */
+ *  docs/backend.md#the-guest). v1 and v2 went on 2026-11-05, once every phone's hello said v3 (the log's `ws.hello` then; the phone's `ws.close` `v` since 2026-11-13). */
 export const LIVE_VS = [3] as const;
 /** @public (relay/, sync/live.ts) */
 export type LiveV = (typeof LIVE_VS)[number];
@@ -223,8 +223,8 @@ export const HB_PING = '{"v":3,"kind":"hb"}';
 export const HB_PONG = '{"v":3,"kind":"hb","t":0}';
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen: the day's
- *  world after it comes as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b`, for the log's
- *  `ws.hello`; absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
+ *  world after it comes as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b` (the
+ *  relay logged it as `ws.hello` until 2026-11-13); absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
   /** `beat` (2026-11-05): this phone sends something, the heartbeat at least, whenever it has sent nothing for 20 s, so

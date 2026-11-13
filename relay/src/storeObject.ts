@@ -19,6 +19,8 @@ import { after, backoff, due, NO_STATE, retryAt, runArchive, type ArchiveRun, ty
 
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
+/** The signed ops that only read (no audit row when they succeed). */
+const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held']);
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -119,7 +121,6 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     if (retry !== null) await this.ctx.storage.setAlarm(retry);
     const { slot: _slot, ...d } = r;
     this.log([{ e: 'cron.backup', l: r.ok ? 1 : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...(force ? { force } : {}) } }]);
-    console.log('backup', JSON.stringify({ ...d, rw, rr }));
     return r;
   }
 
@@ -134,8 +135,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   async adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> {
     const v = await this.core.signedOp(text, t, sig);
     if ('status' in v) return v;
-    // each signed op in the log (an audit: its name and outcome)
-    const audit = (st: string) => this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(v.op.op) ? v.op.op : 'other', st } }]);
+    // each signed op that changes or exports something in the log (an audit: its name and outcome); a read (the log's
+    // own, the counts, a check without `fix`) only when it fails: reading the log wrote to it (~40 rows a day)
+    const read = READ_OPS.has(String(v.op.op)) || (/check$/.test(String(v.op.op)) && v.op.fix !== true);
+    const audit = (st: string) => (read && st === 'ok') || this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(v.op.op) ? v.op.op : 'other', st } }]);
     try {
       const r = await this.admin(v.op);
       audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'));

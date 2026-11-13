@@ -2051,7 +2051,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   };
   document.addEventListener('visibilitychange', onVis);
   // a lost context (iOS taking a backgrounded room's memory back): three restores what it can, drawn again once back
-  const unwatchGL = watchContext(canvas, 'tent', () => {
+  const unwatchGL = watchContext(canvas, o.shell ? 'shop' : 'tent', () => {
     shadowsDirty = true;
     invalidate();
   });

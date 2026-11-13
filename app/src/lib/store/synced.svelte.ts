@@ -7,6 +7,7 @@ import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { opClock } from './world.svelte.ts';
+import { caught } from '#lib/quiet.ts';
 
 export abstract class Synced<E extends { who: Who }, O extends object, N> {
   /** Bumped at every change. */
@@ -121,6 +122,7 @@ export abstract class Synced<E extends { who: Who }, O extends object, N> {
         f(n);
       } catch (err) {
         console.error(`${this.label}:`, err);
+        caught(err, `synced.${this.label}`);
       }
     }
   }

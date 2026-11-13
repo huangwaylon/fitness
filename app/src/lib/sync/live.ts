@@ -4,7 +4,7 @@
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, getStoredMe, localKV, readJson, remove, sessionKV, writeJson } from './storage.ts';
 import { fnv1a } from '../random.ts';
-import { log, logId } from './log.ts';
+import { log, logError, logId } from './log.ts';
 import { isLogId } from '../contract/log.ts';
 import { takeWx } from './wx.ts';
 import { ROOM_PROTOCOL, TICKET_TTL_MS, makeTicket } from '../contract/ticket.ts';
@@ -55,7 +55,7 @@ interface LiveOptions {
   /** Whose key it is (read at each connect): with it, each socket offers the room an admission ticket (contract/ticket.ts)
    *  made under the key; without (the demo's test relays), none. */
   me?: () => Who | null;
-  /** The app's version, said in the hello (the relay logs it: `ws.hello`). */
+  /** The app's version, said in the hello. */
   build?: () => string | undefined;
   /** This device's id, said in the hello (`dev`): the relay replaces only this device's earlier socket. Without it (the
    *  tests' relays), a hello replaces the person's other sockets that said none. */
@@ -598,12 +598,14 @@ export function createLive(o: LiveOptions): Live {
   };
 
   /** A socket's end, as the log's ws.close: its code (a close of this phone's own: 1000, STALE, NO_WELCOME), how long
-   *  it lived (from its welcome, else from its making), why, how long it had heard nothing, and its best round trip. */
+   *  it lived (from its welcome, else from its making), why, how long it had heard nothing, its best round trip, and
+   *  (welcomed) the protocol its hello spoke, its welcome's ms and the failed tries before it (ws.open's, once). */
   const closed = (code: number, why: CloseWhy) => {
     const now = Date.now();
     log('ws.close', {
       code, secs: Math.round((now - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0, why,
-      ...(heardAt >= madeAt ? { quiet: (now - heardAt) / 1000 } : {}), ...(sockRtt < Infinity ? { rtt: sockRtt } : {})
+      ...(heardAt >= madeAt ? { quiet: (now - heardAt) / 1000 } : {}), ...(sockRtt < Infinity ? { rtt: sockRtt } : {}),
+      ...(welcomedAt ? { v: LIVE_V, openMs: welcomedAt - madeAt, retries: openRetries } : {})
     });
   };
 
@@ -619,7 +621,7 @@ export function createLive(o: LiveOptions): Live {
 
   /** When this socket was made, and when its welcome came (0: not yet): the log's ws.open and ws.close; its shortest
    *  ping round trip (ws.close). */
-  let madeAt = 0, welcomedAt = 0, sockRtt = Infinity;
+  let madeAt = 0, welcomedAt = 0, sockRtt = Infinity, openRetries = 0;
 
   /** A ticket being made for the next socket (Web Crypto: a tick or two), and the ticketed sockets in a row that failed
    *  before they opened. */
@@ -696,7 +698,9 @@ export function createLive(o: LiveOptions): Live {
           }
           if (welcomeTimer) clearTimeout(welcomeTimer);
           welcomeTimer = null;
-          log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
+          // (a first try's welcome is said on its ws.close: one event a socket)
+          openRetries = fails;
+          if (fails) log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
           fails = 0;
           // the welcome left the relay at m.t: the offset is between `guess` (no time on the way) and guess + this
           // socket's age. The pings' measure from before (an earlier socket's) holds while it's within that, so a
@@ -958,6 +962,7 @@ function safe(f: () => void): void {
     f();
   } catch (e) {
     console.error('live:', e);
+    logError('error', e, { tag: 'live' });
   }
 }
 

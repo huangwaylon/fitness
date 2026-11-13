@@ -9,7 +9,7 @@ What the phones and the relay log, where it goes, how to read it, and what the r
 | Piece | Holds | Kept | Read with |
 |---|---|---|---|
 | **The log** (`IslandLog`, the relay's third SQLite Durable Object, binding `LOG`) | the phones' events (`src c`) and the relay's own (`src r`) | 30 days | `npm run logs` (the signed `/admin` op `logs`) |
-| **Workers Logs** (`[observability]`, sampling 1, no invocation logs) | the relay's `console` lines: an error's class, the weather's fetch | 3 days | dashboard → Workers → island-fund-relay → Logs; `npx wrangler tail` |
+| **Workers Logs** (`[observability]`, sampling 1, no invocation logs) | the relay's `console` lines: failures by class (the ok paths say nothing: the log has them) | 3 days | dashboard → Workers → island-fund-relay → Logs; `npx wrangler tail` |
 | **`/health/log`** (with `HEALTH_TOKEN`) | the log's counts (errors in 1 h / 6 h, warnings, `unavailable` answers, caps, oldest) | — | `.github/workflows/health.yml` (opens an issue on a spike) |
 
 Not used: Logpush (paid); Workers Analytics Engine (its SQL API needs an account token everywhere); the record's own
@@ -27,7 +27,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `ev` | the event's name (the registry's; anything else is dropped) |
 | `src`, `role` | `c` a phone / `r` the relay; `A` · `B` · `G` from the key (the key itself is never kept) |
 | `sid`, `rid`, `q` | the app session's id (random, per load), a request's id (`api.*` ↔ the relay's `req`), the event's number in its session |
-| `build`, `os` | the app's version (`2026-11-05.ef93d8b`), the device in a word (`ios27.1`) |
+| `build`, `os` | the app's version (`2026-11-05.ef93d8b`), the device in a word (`ios18.7`, `macos`): the user agent's, which Safari 26 froze, so iOS 26 and 27 both say `ios18.7` (kept as is: no feature sniffing) |
 | `d` | the payload: **only the registry's fields for that event, each of its kind** (a number, a boolean, a closed set, a short token never 16+ letters and digits in a row; `js.error`'s scrubbed `msg` and `stack`), enforced by the relay |
 
 ### What we log
@@ -35,44 +35,53 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 
 | Event | Level | Fields | When |
 |---|---|---|---|
-| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill when short) | each load |
+| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill when short); the user swipes the app closed, so short ones are those too | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
-| `app.reload` | info | `why` (update, launch: a cold open into a waiting deploy, chunk) | the app reloads itself |
+| `app.reload` | info | `why` (update, launch: a cold open into a waiting deploy, chunk, stale, mic, other) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
 | `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (300 ms quiet after opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`, `data` (the record's first model); the longest frames, programs, steps by what held them, `late`/`lastM` (models in after `loaded`), `fieldsMs`/`fields` (cache, worker, main), `ask`/`held` (the launch's version check, ui-state/launchUpdate.ts) | once a load, 1 s after the island is whole (world3d/boot.ts) |
-| `perf.back` | info | `perf.boot`'s marks for the first return from a room | once a load (world3d/boot.ts) |
+| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`, `data` (the record's first model); the longest frames, programs, steps by what held them, `late`/`lastM` (models in after `loaded`), `fieldsMs`/`fields` (cache, worker, main), `sw` (the service worker: ctl, none, no), `warm` (every model from a cache), `net`, `ask`/`held` (the launch's version check, ui-state/launchUpdate.ts) | once a load, 1 s after the island is whole (world3d/boot.ts) |
+| `perf.back` | info | `perf.boot`'s marks (but `draw`) for the first return from a room | once a load (world3d/boot.ts) |
 | `perf.rest` | info | the rest since the last show (every second 2 s+ untouched): `s`, `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (point lights, their mask: on unless `?pointmask=0`) | at each hide, or the island going, with 3 s+ of rest (world3d/rest.ts) |
-| `perf.drag` | info | the first drag's pixel-ratio swaps (ms, their first frames' CPU) | once a load (world3d/drag.ts) |
-| `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
-| `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
+| `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src` (`file:line`, or the tag of the code that caught it: `live`, `world`, `synced.<store>`, `bus.<event>`, `snapshot`), `n` (folded repeats), `leaving`, `route`, `sheet` | `error`, `unhandledrejection`, a caught bug (quiet.ts `caught`); one message and frame ≤ 5 a session; an import cut off by leaving or just said by `chunk.fail`: counted only (`swallow:import.*`) |
+| `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`, `sheet` (fail); `r` | a `/api` call |
+| `keyed.fail` | info unreached / warn | `ep` (kalori, stt, other), `why` (refused, failed, unreached, timeout), `http`, `n` (its repeats folded), `sheet` | a members-only call failed (keyed.ts), once an incident |
 | `its.fail` | info offline, rate_limited, not_subscribed / warn | `op` (status, settings, run, push_subscribe, push_unsubscribe, push_test), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `rid`, `http`, `ms` | a 保養所ボット call failed (lib/its/client.ts) |
 | `its.push` | warn | `step` (permission, ready, subscribe, unsubscribe), `err` (the error's name) | 保養所's 通知 failed in the browser (lib/its/push.ts; never the endpoint) |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
-| `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
+| `sync.fail` | info offline / warn | `err`, `cached`, `sheet` | a refresh failed (what threw: a `js.error` from `snapshot`) |
 | `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
 | `queue.poison` / `queue.split` | error / warn | `type`, `err`, `tries` / `n`, `err` | the write queue sets an event aside (kept: [backend](../backend.md#write-queue)) / halves a batch refused whole |
-| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why` (hidden, offline, stale, late/stuck, rekey, stop, closed), `quiet`, `rtt`; `code` | the live socket, every socket's end |
+| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why` (hidden, offline, stale, late/stuck, rekey, stop, closed), `quiet`, `rtt`, and once welcomed `v` (its hello's protocol: which phone speaks what), `openMs`, `retries`; `code` | a welcome after failed tries (a first try's says it on its close), every socket's end |
 | `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
-| `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
-| `chunk.fail` | warn | | a chunk failed to load (not while the page is leaving: pagehide, the app's own reload) |
+| `gl.lost` | warn | `where` (island, tent, shop, museum, map), `restored`, `sheet` | WebGL context lost / back |
+| `chunk.fail` | warn | `file` (the chunk's base name: Chrome's error names it, Safari's doesn't), `n` (its repeats folded), `sheet` | a chunk failed to load, once an incident (not while the page is leaving: pagehide, the app's own reload) |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
 | `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
 | `storage.use` | info | `useMb`, `quotaMb`, `persisted`; each cache's MB (`shell`, `room`, `listen`, `art`, `photos`, `tiles`, `foodImg`, `food`, `fonts`, `audio`, `other`) and `stt` (the recogniser kept: sync/cacheSizes.ts) | once a Tokyo day, after a sync (sync/persist.ts) |
-| `use` | info | counters `sheet:`, `ev:`, `route:`, `act:`, `swallow:<tag>` (a failure the app went on without: quiet.ts) | summed, one a flush |
-| `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
+| `use` | info | counters `sheet:<id>` (a stable id: the sheet's `timed` or `name`, never its title), `route:`, `act:`, `swallow:<tag>` (a failure the app went on without: quiet.ts; e.g. `model.load`, `map.error`, `kiki.chunk`, `food.load` / `food.gaveup`, `food.kalori` / `.gaveup` / `.refused`) | summed, one a flush |
+| `log.drop` | warn | `n` (events), `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets ([kikimimi-mic.md](../kikimimi-mic.md) "The probe"). **Never heard text, a device label or a sentence** | 設定's mic test, on its send |
-| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st`, `ms`, `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule), ingest's counts, `pg`, `rw`, `rr`, `exc`, `kh` (a refused key's first 4 hex of its SHA-256) | every `/api` request |
-| `room.close` / `room.full` | info / warn | `code`, `secs`, `socks`, `rw` (the room's storage rows written since it last said, on `ws.hello` too; kept with its `marks`) | the live room |
-| `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that device's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
+| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st`, `ms`, `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule), ingest's counts, `pg`, `rw`, `rr`, `exc`, `kh` (a refused key's first 4 hex of its SHA-256; its `action`, `rid`, `sid` read from the body: which caller) | every `/api` request |
+| `room.close` / `room.full` | info / warn | `code` (`CLOSE.replaced`: a hello replaced the device's old socket), `secs`, `socks`, `rw` (the room's storage rows written since it last said; kept with its `marks`) | the live room (the relay's `ws.hello` went 2026-11-13: the phone's `ws.close` says `v`) |
+| `do.error` (relay) | error | `where` (ws.message, backup, compact), `name` (the class), `msg` | a Durable Object call that threw, caught |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
-| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15 and :45 when one is due) |
+| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `fails` (since the last good one), `ms` | a failed weather fetch; the weather's health once a Tokyo day (00:15) |
 | `cron.backup` | info; warn `no_token`; error failed | `ok`, `st` (ok, no_token, empty, github, epoch, an error's class), `step`, `http`, `kB` (the file), `rawkB` (the dump before gzip), row counts, ms per step, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)) |
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (off: COMPACT_CRON) |
-| `admin` | info | `op`, `st` | each signed admin op (an audit) |
+| `admin` | info; warn refused | `op`, `st` | each signed admin op that changes or exports (an audit); a read (`logs`, `logstats`, `counts`, `held`, a check without `fix`) only when it fails |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
 | `stt` (relay) | info; warn refused or failed | `ms`, `inB` (the WAV's bytes), `model` (turbo), `ok`, `err` (off, too_large, bad_request, capped, ai) | each keyed `POST /stt` (sttRoute.ts): never the audio or its text |
+
+### Naming and levels
+- Names are `area.verb` / `area.noun` (app, perf, api, sync, queue, ws, gl, chunk, storage, mic, log, cron, room, admin,
+  …); `use`, `req`, `admin`, `stt` stay bare (a live name is never renamed: the history reads it).
+- error: the app lost something or a bug threw; warn: degraded but recovered, or a refusal; info: lifecycle and
+  samples; debug: polls (ITS's 15 s status).
+- An ok path logs only sampled (`api.ok`) or as a daily summary (`cron.wx`); a routine failure is a `swallow:` counter,
+  one that needs fields an event. The registry (`contract/log.ts`) and this table are checked against each other
+  (`contract/log.test.ts`).
 
 **Never logged:** keys (or a piece of one), health values, food names, board text, names, e-mails, URLs' queries or
 fragments (`#key=`), IP addresses, user agents (only `os`), the record's `detail` / ingest `warnings` text. A
@@ -90,8 +99,11 @@ than the 30 days.
   per-session and per-day caps, drops counted (`log.drop`). Sizes, caps and timings: `sync/log.ts`'s header.
 - Persisted to `localStorage` (`island.log`) when idle and when the page goes; on a quota error the log goes first,
   never the app's data.
-- Flushed in batches (`keepalive` when hidden), each kept until the relay acks its id; a capped day: errors only until
-  midnight UTC.
+- Flushed in batches, each kept until the relay acks its id; when hidden, every unacked batch at once with `keepalive`
+  (≤ 60 KB). Past three unacked, the newest takes more of the ring, else the ring waits. A capped day (the relay's):
+  errors only until midnight UTC.
+- An error event (`js.error`, `chunk.fail`, `gl.lost`, `api.fail`, `sync.fail`) carries `sheet`, the topmost open timed
+  sheet (Sheet.svelte's `timed`), and `js.error` the route.
 - Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
   pairing as someone else clears them.
 - `/api` requests carry `rid` (per request) and `sid` (per load) in the body; the relay logs them on `req` and echoes
@@ -118,8 +130,10 @@ npm run logs -- --since 1d --event js.error --person A     # an event, or a pref
 npm run logs -- --rid 0ny9a14zf0                           # one request, the phone's side and the relay's
 npm run logs -- --sid ra3im9x4q5                           # one app session, start to end
 npm run logs -- --src relay --event req --since 6h --json  # raw rows
-npm run logs -- report --since 7d                          # errors by fingerprint, /api p50/p95 by action, refusals by rule,
-                                                           # the phones' view, sync, socket closes, load and frames, builds, usage
+npm run logs -- report --since 7d                          # errors by fingerprint, warnings by event, /api p50/p95 by action,
+                                                           # refusals, the phones' view, sync, socket closes, load and frames
+                                                           # (phones only), the newest 10 builds, live protocol, usage
+npm run logs -- report --os ios                            # the phones only (--os: a prefix of `os`); --help: all options
 npm run logs -- stats                                      # the alert's numbers
 npm run logs -- --test ...                                 # the test relay
 ```

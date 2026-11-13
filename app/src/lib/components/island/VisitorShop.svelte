@@ -46,7 +46,7 @@
   }
 </script>
 
-<Sheet bind:open title={t('guestShop.title', { name })}>
+<Sheet bind:open title={t('guestShop.title', { name })} name="guestShop">
   <div class="gs sheet-copy" data-guest-shop={id}>
     <span class="chip s wallet" data-guest-shells={mine?.shells ?? 0}>{t('shop.wallet', { v: formatNum(mine?.shells ?? 0) })}</span>
     <ul class="grid">

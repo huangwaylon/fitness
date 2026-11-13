@@ -3,6 +3,7 @@
 import { load, loaded, type Unit } from '#lib/kikimimi/pool.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
+import { swallowed } from '#lib/quiet.ts';
 
 export class ChunkQueue {
   /** What's waiting, in order; null when nothing is. */
@@ -42,6 +43,7 @@ export class ChunkQueue {
   #settle(p: Promise<void>): void {
     const q: Promise<void> = p.catch((e) => {
       console.warn('kikimimi: a chunk didn’t load', e);
+      swallowed('kiki.chunk');
       // (a game never played on this phone, offline: its part isn't kept, service-worker/caches.ts isKikiPart)
       if (globalThis.navigator?.onLine === false) toasts.show(t('panel.sheetOffline'), 4000);
     }).then(() => {

@@ -131,7 +131,7 @@ under the same cv fail with "bump BUILD_V"; a deliberate change is `vitest -u`.
 `{kind:'quiz'}` is the quiz family's wire from builds before `QUIZ_ON_PLAY`: heard, never sent. `SEND_PLAY` and
 `QUIZ_ON_PLAY` are on (round/wire.ts `WIRE` 'play'), and every build since the dual stack hears both; `?wire=quiz|
 guarded|play` forces a mode in the e2e. Left: stop parsing `quiz` on the client (no sooner than 11-24), then drop it
-from the contract, relay last, gated on the `ws.hello` log.
+from the contract, relay last, gated on the log's live protocol (the phones' `ws.close` `v`).
 
 ### The listen row
 

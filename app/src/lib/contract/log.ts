@@ -18,8 +18,9 @@ export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', '
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
 const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
-/** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts). */
-const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'bots', 'other'] as const;
+/** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts), the `use` counters' `sheet:` and the
+ *  error events' `sheet` (the topmost open one). */
+const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'bots', 'farm', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `world` `mirror` its scene's:
@@ -29,10 +30,12 @@ export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
  *  `msg` / `stack` scrubbed text. */
 type Kind = 'n' | 'b' | 't' | 'msg' | 'stack' | readonly string[];
-/** `*`: counters (`use`): `sheet:` · `ev:` · `route:` · `act:` · `swallow:` and a token, at most 40 of them, each a number. */
+/** `*`: counters (`use`): `sheet:` · `route:` · `act:` · `swallow:` and a token, at most 40 of them, each a number. */
 type Fields = Readonly<Record<string, Kind>>;
 
 const API = { action: LOG_ACTIONS, err: LOG_STATUS, http: 'n', ms: 'n', tries: 'n' } as const;
+/** Where a failure happened: the topmost open sheet (sync/log.ts adds it). */
+const AT = { sheet: LOG_SHEETS } as const;
 /**
  * The registry: each event's fields. `c` a phone's, `r` the relay's own (a phone can't send those).
  * Units: a duration in ms is unsuffixed in perf.* (mount, first, onSet) and suffixed elsewhere (fieldsMs); any other
@@ -43,8 +46,8 @@ const API = { action: LOG_ACTIONS, err: LOG_STATUS, http: 'n', ms: 'n', tries: '
 export const LOG_EVENTS = {
   // ---- the phones
   // coldS: a fresh load's seconds since this phone last hid the app (none: it was shown last, or a reload
-  // of ours): a cold open soon after a hide is iOS's background kill
-  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n' } },
+  // of ours): a cold open soon after a hide is iOS's background kill (or, as the user does, a swipe closed)
+  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n' } },
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'mic', 'other'] } },
@@ -66,28 +69,33 @@ export const LOG_EVENTS = {
   // second, and the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
   // map's size; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
   // the point lights (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
-  "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n' } },
+  "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', pts: 'n', pm: 'b' } },
-  // the island's first drag a load (world3d/drag.ts): the pixel ratio's swap down as it starts and back once
-  // still, each one's own ms and its first frame's, a frame's usual CPU (ms), the pixel ratios and the shadow map's size
-  "perf.drag": { src: 'c', f: { onSet: 'n', onFrame: 'n', offSet: 'n', offFrame: 'n', cpu: 'n', dpr: 'n', move: 'n', sm: 'n' } },
-  "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES } },
-  "api.fail": { src: 'c', f: API },
+    // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
+  "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
+  "api.fail": { src: 'c', f: { ...API, ...AT } },
   "api.ok": { src: 'c', f: API },
+  // a members-only call (keyed.ts: the chain menus, the relay recogniser) that failed: which, why, its status; n: the
+  // same one's repeats folded while unsent (once an incident)
+  "keyed.fail": { src: 'c', f: { ep: ['kalori', 'stt', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
   "auth.lost": { src: 'c', f: { from: ['refresh', 'flush', 'ws'], code: 'n' } },
-  "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b' } },
+  "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b', ...AT } },
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },
   "queue.drop": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
   // an event set aside (the record failed it 30 times, or too large alone) / a batch refused whole, halved
   "queue.poison": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
   "queue.split": { src: 'c', f: { n: 'n', err: LOG_STATUS } },
+    // a welcome after failed tries only (the rest say it on their ws.close)
   "ws.open": { src: 'c', f: { ms: 'n', retries: 'n' } },
-  // why: sync/live.ts CloseWhy; quiet: s since the socket last heard anything; rtt: its shortest ping round trip (ms)
-  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n' } },
+  // why: sync/live.ts CloseWhy; quiet: s since the socket last heard anything; rtt: its shortest ping round trip (ms);
+  // v: the protocol its hello spoke (which phones speak what: the one source since the relay's ws.hello went,
+  // 2026-11-13); openMs, retries: its welcome's ms from the making and the failed tries before it
+  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n' } },
   "ws.park": { src: 'c', f: { code: 'n' } },
   "ws.unacked": { src: 'c', f: { kind: 't', tries: 'n' } },
-  "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'other'], restored: 'b' } },
-  "chunk.fail": { src: 'c', f: { reloaded: 'b' } },
+  "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'shop', 'museum', 'map', 'other'], restored: 'b', ...AT } },
+  // file: the chunk's base name (vite:preloadError's); n: its failures folded while unsent
+  "chunk.fail": { src: 'c', f: { file: 't', n: 'n', ...AT } },
   // the installed app's storage kept from eviction (sync/persist.ts: asked once): granted, already so, and the quota's MB
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
   // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
@@ -113,14 +121,11 @@ export const LOG_EVENTS = {
   // `unauthorized`: the first 4 hex of the SHA-256 of the key it presented (never the key: a stale device, an e2e's
   // fake and a stranger told apart)
   req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n', rw: 'n', rr: 'n', kh: 't' } },
-  // rw (here and on ws.hello): the rows the room wrote (its storage puts) since it last said (the Free plan's rows
-  // written a day)
+  // rw: the rows the room wrote (its storage puts) since it last said (the Free plan's rows written a day)
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n', rw: 'n' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
-  // rep: that person's sockets the hello replaced (a phone back before the room saw its old socket go: the others
-  // hear no presence off and on)
-  "ws.hello": { src: 'r', f: { v: 'n', build: 't', rep: 'n', rw: 'n' } },
-  "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n' } },
+  // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
+  "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
@@ -143,7 +148,7 @@ const TOKEN = /^[A-Za-z0-9_.:/-]{1,40}$/;
 const LONGRUN = /[0-9A-Za-z]{16,}/;
 export const isToken = (v: unknown): v is string => typeof v === 'string' && TOKEN.test(v) && !LONGRUN.test(v);
 /** A counter's name (`use`): its kind and a token. */
-const COUNTER = /^(sheet|ev|route|act|swallow):[A-Za-z0-9_.-]{1,32}$/;
+const COUNTER = /^(sheet|route|act|swallow):[A-Za-z0-9_.-]{1,32}$/;
 /** A session, request or batch id: 6–15 of [0-9a-z] (never long enough to hold a key). */
 const ID = /^[0-9a-z]{6,15}$/;
 export const isLogId = (v: unknown): v is string => typeof v === 'string' && ID.test(v);
@@ -194,6 +199,12 @@ export function scrubStack(s: unknown, n = 4): string {
   }
   return out.join('\n');
 }
+
+/** A word for a thrown thing: its class (`TypeError`), never its message. @public (relay/src/log.ts) */
+export const errName = (e: unknown): string => {
+  const n = e instanceof Error ? e.name : typeof e;
+  return isToken(n) ? n : 'Error';
+};
 
 /** A finite number held to ±1e7, to a tenth; else null. */
 const tenth = (v: unknown): number | null => (isNum(v) ? Math.round(Math.max(-1e7, Math.min(1e7, v)) * 10) / 10 : null);

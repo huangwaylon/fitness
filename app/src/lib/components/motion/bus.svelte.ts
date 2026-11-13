@@ -3,6 +3,8 @@
 // ripening, a received high-five) are detected inside the scene from the `view` prop instead.
 //   import { emit } from '#lib/components/motion/bus.svelte.ts';
 //   emit('highfive-sent');
+import { caught } from '#lib/quiet.ts';
+
 type IslandEvent =
   | 'highfive-sent' | 'sync-error'
   /** Dev gallery only: play a catalogue reaction by id (`detail` = 'R1'…'R19'), or force an event. */
@@ -17,6 +19,7 @@ export function emit(event: IslandEvent, detail?: string): void {
       h(detail);
     } catch (e) {
       console.error('[island bus]', event, e);
+      caught(e, `bus.${event}`);
     }
   }
 }

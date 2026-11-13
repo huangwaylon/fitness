@@ -139,7 +139,6 @@ export function enqueue(type: EventType, data: Record<string, unknown>, now = Da
     saveQueue(rest);
     count('act:queue.superseded');
   }
-  count(`ev:${type}`);
   return ev;
 }
 
@@ -148,7 +147,6 @@ export function enqueueAll(events: readonly { type: EventType; data: Record<stri
   const evs = events.map(({ type, data }): QueuedEvent => ({ id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now, ...(group ? { group } : {}) }));
   if (!evs.length) return evs;
   saveQueue([...queued(), ...evs]);
-  for (const e of evs) count(`ev:${e.type}`);
   return evs;
 }
 
