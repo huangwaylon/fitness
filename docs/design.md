@@ -56,17 +56,17 @@ on empty ground walks my villager there.
   (the guest's six), right-aligned under the leaf, the same width, 44px tall, its name then its icon or number:
   1. **ベル 121** (my wallet's balance, both members' on the guest's phone; the number is the picture) →
      [the panel](#panel), ごほうび. Its label carries today's ベル for a screen reader.
-  2. **旅行** (Orville's head) → [Trips](#trips)
-  3. **結婚式** (Harvey's head) → [wedding.md](wedding.md)
+  2. **旅行** (a plane) → [Trips](#trips)
+  3. **結婚式** (a heart) → [wedding.md](wedding.md)
   4. **登山** (a mountain) → [hiking.md](hiking.md)
-  5. **英語** (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「誘われています！」 under its name, and a coral dot on
+  5. **英語** (a speech balloon) → [ききみみ クイズ](#ききみみ-クイズ) (「誘われています！」 under its name, and a coral dot on
      the folded leaf, while someone's invite is live)
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](#bots)
   7. **設定** (a gear) → [設定](#settings)
 
   Labels are kanji ([Copy](#copy)). No "+N" badge on the leaf (it reads as a notification). It folds back on a second
   tap of the leaf, a tap elsewhere (which still does what it would), Esc, any sheet opening, and a pick; folded, the
-  pills are `inert`.
+  pills are `inert`. The icons are one drawn set: the gear's soft brown (#A88B68), details cream.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
   villagers glance up and the health popup opens at once on the tab shown last: [健康](#kenkou) or [ごはん](#gohan). One
   kept sheet; ごはん mounts the first time its tab shows.

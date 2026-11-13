@@ -19,8 +19,6 @@
   import { tick, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import OfficialArt from '../characters/OfficialArt.svelte';
-  import Host from '../characters/Host.svelte';
   import { invitedNow, openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
@@ -203,15 +201,21 @@
       {/if}
       {#if open}{@render plus()}{/if}
     </button>
-    <!-- 旅行: the trips (Orville's head on the pill only) -->
+    <!-- 旅行: the trips -->
     <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('travel')} onclick={() => pick(() => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
-      <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
+      <span class="ic">
+        <!-- a plane in the gear's soft brown, a cream windscreen -->
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M21.5 16.2v-2.1l-8-5V3.6a1.6 1.6 0 0 0-3.2 0v5.5l-8 5v2.1l8-2.5v5.4l-2 1.5v1.6l3.6-1 3.6 1v-1.6l-2-1.5v-5.4z" /><path class="snow" d="M11.9 4.2a.8.8 0 0 1 .8.8v3.4a.8.8 0 0 1-1.6 0V5a.8.8 0 0 1 .8-.8Z" /></svg>
+      </span>
     </button>
-    <!-- 結婚式: the wedding board (Harvey's head on the pill only) -->
+    <!-- 結婚式: the wedding board -->
     <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('wedding')} onclick={() => pick(() => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
-      <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
+      <span class="ic">
+        <!-- a heart in the gear's soft brown, its shine cream -->
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="m12 21.4-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.6z" /><ellipse class="snow" cx="7.2" cy="8.4" rx="1.9" ry="2.8" transform="rotate(-35 7.2 8.4)" /></svg>
+      </span>
     </button>
     <!-- 登山: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
     <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('hiking')} onclick={() => pick(openTrails)}>
@@ -224,7 +228,10 @@
     <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
       onclick={() => (wakeQuizVoice(), pick(() => openQuiz()))}>
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
-      <span class="ic"><Host head size={30} animate={false} eager /></span>
+      <span class="ic">
+        <!-- a speech balloon in the gear's soft brown, three cream dots -->
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>
+      </span>
     </button>
     {#if bots.length}
       <!-- ボット: the bots' sheet (members only); a dot while one needs a person -->
