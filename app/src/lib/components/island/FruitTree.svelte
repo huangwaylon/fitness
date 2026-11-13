@@ -20,6 +20,7 @@
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { pickUp } from '../motion/transitions.ts';
+  import { holdLoop } from './clouds.ts';
   import { timers } from './timers.ts';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
@@ -411,9 +412,9 @@
   {#if allMet}
     <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(-W / 2)} style:top={u(-H)} style:width={u(W)}
       style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < site.midX ? 0 : 0.33}s">
-      <span class="glow"></span>
+      <span class="glow" {@attach holdLoop}></span>
       {#each GLINTS as [gx, gy], k (k)}
-        <svg class="glint" viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:--k={k}>
+        <svg class="glint" {@attach holdLoop} viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:--k={k}>
           <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
         </svg>
       {/each}

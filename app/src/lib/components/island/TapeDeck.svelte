@@ -10,6 +10,7 @@
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or test mode) brings the deck out now.
   import { hookFlag } from './devHooks.ts';
+  import { holdLoop } from './clouds.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';
   import { site } from './site.svelte.ts';
@@ -94,7 +95,7 @@
     {#if playing}
       <span class="notes" data-m3art style:--total="{STRETCH_MS}ms">{#each [0, 1, 2, 3] as i (i)}<i style:--i={i}>♪</i>{/each}</span>
     {:else if ready}
-      <span class="hint">♪</span>
+      <span class="hint" {@attach holdLoop}>♪</span>
     {/if}
   </span>
 </div>

@@ -21,6 +21,7 @@
   //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
   //   hooks); ?seed= varies the island's seed.
   import { fx3d } from './fx3d.ts';
+  import { holdLoop } from './clouds.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { hook, islandSeed } from './devHooks.ts';
@@ -567,7 +568,7 @@
   <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
   <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt('message-bottle'), id: `find-${bottle.uid}`, yaw: 0.6, wash: wi ?? undefined } })}>
     <span class="item bottle" data-find="bottle" data-uid={bottle.uid}>
-      <i class="foam"></i>
+      <i class="foam" {@attach holdLoop}></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(28 * var(--su))" /></span>
     </span>
   </div>

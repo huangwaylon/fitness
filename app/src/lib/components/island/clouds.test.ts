@@ -1,6 +1,6 @@
 // The sky's clouds held and stepped by the island's frames (clouds.ts): no endless animation running at rest.
 import { describe, expect, it } from 'vitest';
-import { holdClouds, stepClouds } from './clouds.ts';
+import { holdClouds, holdLoop, stepClouds, stepLoops } from './clouds.ts';
 
 /** A cloud whose animation the browser makes late (WebKit: at the first style after the mount); its getAnimations()
  *  calls and playState reads counted (each flushes pending style). */
@@ -52,5 +52,53 @@ describe('the clouds', () => {
     expect(c.state()).toBe('running');
     stepClouds(9000);
     expect(c.a.currentTime).toBe(5300);
+  });
+});
+
+describe('the island\'s endless little loops (a twinkle, a glint, the foam, the ♪)', () => {
+  it('held once there, set to each island frame\'s time, looked for at most each 500 ms till then, let go on release', () => {
+    const c = cloud();
+    const release = holdLoop(c.el);
+    stepLoops(1000, false);
+    stepLoops(1083, false);
+    // (not there yet: looked for once in 500 ms, no style flush a frame)
+    expect(c.asked.n).toBe(1);
+    c.make();
+    stepLoops(1166, false);
+    expect(c.a.currentTime).toBe(0);
+    stepLoops(1500, false);
+    expect([c.state(), c.a.currentTime]).toEqual(['paused', 1500]);
+    // (every frame: the island's 12 a second at rest, its 30 while it moves)
+    stepLoops(1583, false);
+    expect(c.a.currentTime).toBe(1583);
+    stepLoops(1616, false);
+    expect([c.a.currentTime, c.asked.n, c.asked.state]).toEqual([1616, 2, 0]);
+    // cancelled (out of the tree a while) and made again: taken up again
+    c.cancel();
+    c.make();
+    stepLoops(2200, false);
+    expect([c.asked.n, c.a.currentTime]).toEqual([3, 2200]);
+    release();
+    expect(c.state()).toBe('running');
+    stepLoops(3000, false);
+    expect(c.a.currentTime).toBe(2200);
+  });
+  it('under reduced motion: held where it was taken up, never stepped', () => {
+    const c = cloud();
+    c.make();
+    const release = holdLoop(c.el);
+    stepLoops(10_000, true);
+    stepLoops(10_083, true);
+    expect([c.state(), c.a.currentTime]).toEqual(['paused', 0]);
+    release();
+  });
+  it('stepped with the clouds in the island\'s frames', () => {
+    const c = cloud();
+    c.make();
+    const release = holdLoop(c.el);
+    stepClouds(20_000);
+    stepClouds(20_040);
+    expect(c.a.currentTime).toBe(20_040);
+    release();
   });
 });

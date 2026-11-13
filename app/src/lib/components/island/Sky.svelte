@@ -8,6 +8,7 @@
   // `lights`, the sun or moon and the stars over it, high in the band (above the time-of-day tint's reach); both behind
   // every world thing. (The balloon present flies over the island in 3D: Balloon.svelte.)
   import Clouds from './Clouds.svelte';
+  import { holdLoop } from './clouds.ts';
   import type { Tod } from './scene.ts';
 
   interface Props {
@@ -33,7 +34,7 @@
   <div class="band">
     {#if night}
       {#each STARS as [x, y], i (i)}
-        <svg class="star" class:still={i !== 2 && i !== 7} viewBox="0 0 24 24" style:left="{x}%" style:top="{y}%" style:width="{6 + (i % 3) * 2}px"
+        <svg class="star" class:still={i !== 2 && i !== 7} {@attach i === 2 || i === 7 ? holdLoop : undefined} viewBox="0 0 24 24" style:left="{x}%" style:top="{y}%" style:width="{6 + (i % 3) * 2}px"
           style:animation-duration="{2.4 + (i % 5) * 0.4}s" style:animation-delay="{-i * 0.37}s">
           <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
         </svg>
