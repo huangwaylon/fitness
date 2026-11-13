@@ -15,8 +15,8 @@
 //   World's step runs in each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
-  Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, PerspectiveCamera, Scene, Sphere, Texture, Vector3,
-  PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
+  Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, NearestFilter, PerspectiveCamera, Scene, Sphere, Texture, Vector3,
+  WebGLRenderTarget, PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
 import { bendTree, bendU, pointMask, unbendRay } from './bend.ts';
@@ -348,6 +348,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   sun.shadow.mapSize.set(opts.shadowSize ?? 2048, opts.shadowSize ?? 2048);
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 1.2;
+  // the map made now, as three's pass would make it in the first shadowed frame (WebGLShadowMap: its size, nearest
+  // filtering), so the first prepare compiles the casters' depth programs ahead (shadowsAhead): with none yet, each
+  // mount's first frame linked 1-3 of them in the frame (review 11/13 r3 O2)
+  if (opts.shadows) sun.shadow.map = new WebGLRenderTarget(sun.shadow.mapSize.x, sun.shadow.mapSize.y, { minFilter: NearestFilter, magFilter: NearestFilter });
   scene.add(hemi, sun, sun.target);
   let todLook = TOD.day;
 
@@ -925,7 +929,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  customDepthMaterial or a plain RGBA one, its side, cut-out and map from the mesh's material), compiled ahead
    *  for `root`'s casters with the shadow map bound (its target's colour space: the same program keys): the pass
    *  compiled and linked them in the frame the island appeared, ~40 ms in the iOS Simulator. Its programs' links and
-   *  first uses go through the warm-up too. None before the map exists (the first frame's). */
+   *  first uses go through the warm-up too. None before the map exists (made with the engine: shadows turned on later,
+   *  three's pass makes it). */
   const plainDepth = new Map<string, MeshDepthMaterial>();
   /** The pass draws into no scene of its own (three's empty one: no fog), with the island's lights. */
   const noScene = new Scene();

@@ -12,7 +12,9 @@ vi.mock('#lib/layout/mesh.ts', async (orig) => {
   return { ...m, chunkMesh: (l: Layout, c: number) => (built.n++, m.chunkMesh(l, c)) };
 });
 
-const renderer = { getRenderTarget: () => null, setRenderTarget() {}, render() {} } as unknown as WebGLRenderer;
+/** The bake's compiles (buildGround compiles its program as it builds). */
+const compiles = { n: 0 };
+const renderer = { getRenderTarget: () => null, setRenderTarget() {}, render() {}, compile: () => void compiles.n++ } as unknown as WebGLRenderer;
 const image = () => ({ addEventListener() {}, removeEventListener() {}, style: {}, set src(_: string) {} });
 beforeEach(() => vi.stubGlobal('document', { baseURI: 'http://x/', createElementNS: image, createElement: image }));
 afterEach(() => vi.unstubAllGlobals());
@@ -128,8 +130,11 @@ describe('each band baked once per real change (2026-11-11: a launch baked its 8
   };
 
   it('a launch with its textures in (the launch asked for them): each band once, as it\'s built; frames after, none', async () => {
+    const was = compiles.n;
     const g = await launch('http://a/', true);
     expect(bakes.n).toBe(8);
+    // (the bake's program compiled as the ground is built: the first frame's bake linked it in the frame, review 11/13 r3)
+    expect(compiles.n - was).toBe(1);
     g.near(0);
     expect(bakes.n).toBe(8);
     for (const z of [0, 0, 300, 138]) g.near(z);

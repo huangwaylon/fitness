@@ -699,6 +699,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   quad.frustumCulled = false;
   bakeScene.add(quad);
   const bakeCam = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  // (its program linked now, off the main thread where the GPU can: the first frame's bake linked it in the frame)
+  renderer.compile(bakeScene, bakeCam);
 
   /** A band: one row of chunks across the island, drawn as one (4 draws: the ground, the walls, the falls, the
    *  water), baked into one texture: the draw calls stay flat however long the island grows. */
