@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, glossOf, goalChip, itemOf, recentOf, sameItems, stateItem, catOf, kaloriPage, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups } from './foodUi.ts';
+import { DAYS, daysText, glossOf, goalChip, itemOf, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups } from './foodUi.ts';
 import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { customDraft, customErrors, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -300,8 +300,19 @@ describe('the shop chips', () => {
       e(2, '2026-10-20'), e(3, '2026-10-13'), e(4, '2026-10-12')];
     expect(recentShops(mine, db, '2026-10-13')).toEqual([{ shop: 'b', name: '店b' }, { shop: 'a', name: '店a' }, { shop: 'f', name: '店f' }, { shop: 'c', name: '店c' }]);
     expect(recentShops(mine.slice(3), db, '2026-11-01', 4).map((s) => s.shop)).toEqual(['a', 'b']);
-    // no chain menus in the catalog (the demo, the guest) or none of mine: none
+    // no chain menus in the catalog (not in yet) or none of mine: none
     expect([recentShops(mine, null, '2026-10-13'), recentShops(mine, emptyDb({ version: 'x', datasets: [] }), '2026-10-13'), recentShops([], db, '')]).toEqual([[], [], []]);
+  });
+});
+
+describe('kaloriTrust', () => {
+  it('a chain menu’s values’ trust, 販売終了かも after it when it may be gone; none for another food', () => {
+    const kal = { id: 'kal:57551', shop: 'sukiya' };
+    expect([kaloriTrust(kal), kaloriTrust({ ...kal, est: 'p' }), kaloriTrust({ ...kal, est: 'e' })]).toEqual(['公式の値', '公式の値（PFCは推定）', '推定の値（AI）']);
+    expect(kaloriTrust({ ...kal, est: 'p', ended: true })).toBe('公式の値（PFCは推定） · 販売終了かも');
+    // kcal and P/F/C the shop's, fibre or salt estimated (kalori_convert.py `s`)
+    expect([kaloriTrust({ ...kal, est: 's' }), kaloriTrust({ ...kal, est: 's', ended: true })]).toEqual(['公式の値（食物繊維・塩分は推定）', '公式の値（食物繊維・塩分は推定） · 販売終了かも']);
+    expect(kaloriTrust({ id: 'mext:01088', ended: true })).toBeNull();
   });
 });
 

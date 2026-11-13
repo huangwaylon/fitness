@@ -78,8 +78,9 @@ const rare = (it: Item): number => (RARE_PART.test(it.name) && (it.cat === '肉'
  *  cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of its
  *  best hit, so a school lunch's closer name never hides the core item; and one per food in its states (`vg`): its
  *  best hit, the default state among the equally good (豚ロース: 生; 豚ロース 焼き: 焼き, the one holding every word). With
- *  `all`, an empty query finds every entry (a shop's whole menu: db.ts searchFoods). */
-export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, all = false): Item[] {
+ *  `all`, an empty query finds every entry (a shop's whole menu: db.ts searchFoods); `onHit`, told each entry found
+ *  (db.ts findFoods' shop chips, from this pass: never a second one). */
+export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, all = false, onHit?: (e: Entry) => void): Item[] {
   const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
   if (!tokens.length && !all) return [];
   const q = tokens.join('');
@@ -87,7 +88,10 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
   const hits: Hit[] = [];
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (tokens.every((t) => e.h.includes(t)) && !lookalike(e.it, q)) hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i });
+    if (tokens.every((t) => e.h.includes(t)) && !lookalike(e.it, q)) {
+      hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i });
+      onHit?.(e);
+    }
   }
   /** The ranking: score, then curated pop, then the shorter name, then the list's order. */
   const before = (a: Hit, b: Hit): number => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length || a.i - b.i;
@@ -164,9 +168,13 @@ function covered(names: readonly string[], q: string): { n: number; at: number }
  *  brand's whose name holds a little more of the query. */
 const SECONDARY_NEAR = 0.8;
 
+/** A chain's menu (Kalori: an item with a `shop`) takes at most this share of 近いもの's rows: its ~54k long dish names
+ *  hold a run of most queries, and would push the generic foods (ラーメン（醤油）) out of sight. */
+const CHAIN_NEAR_SHARE = 0.25;
+
 /** 近いもの, when search() finds nothing (「とんこつ醤油ラーメン味玉チャーシュー増し」): the items whose name or an alias
  *  holds the most of the query (covered: 豚骨醤油ラーメン first), then the earlier in it, a core, popular, shorter name
- *  first at a tie; one row per name + kcal and per food in its states. */
+ *  first at a tie; one row per name + kcal and per food in its states, a chain's menu in a quarter of them at most. */
 export function nearby(entries: readonly Entry[], query: string, limit = 8): Item[] {
   const q = SPELLINGS.reduce((k, [re, to]) => k.replace(re, to), searchKey(query));
   if (q.length < 2) return [];
@@ -179,10 +187,12 @@ export function nearby(entries: readonly Entry[], query: string, limit = 8): Ite
   hits.sort((a, b) => b.c.n - a.c.n || a.c.at - b.c.at || a.e.pen - b.e.pen || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
   const seen = new Set<string>();
   const out: Item[] = [];
+  let chains = Math.max(1, Math.floor(limit * CHAIN_NEAR_SHARE));
   for (const { e } of hits) {
     const k = e.it.vg ? `v:${e.it.vg}` : `${e.n}|${e.it.kcal}`;
-    if (seen.has(k)) continue;
+    if (seen.has(k) || (e.it.shop && !chains)) continue;
     seen.add(k);
+    if (e.it.shop) chains--;
     if (out.push(e.it) >= limit) break;
   }
   return out;

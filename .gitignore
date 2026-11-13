@@ -4,9 +4,8 @@
 # a stray npm install / svelte-kit sync at the repo root
 node_modules
 .svelte-kit/
-# the food-data pipeline: third-party raw downloads (never committed: the repo is public), its build output
-# (app/static/food/ ships it, via npm run food:data; out/private/, Kalori's, never ships: docs/food-data.md#kalori), a
-# build's staging dir
+# the food-data pipeline: third-party raw downloads (never committed), its build output (app/static/food/ ships it,
+# via npm run food:data; Kalori's kalori.json included: docs/food-data.md#kalori), a build's staging dir
 food-data/raw/
 food-data/out/
 food-data/.build-*/

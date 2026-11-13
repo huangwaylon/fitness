@@ -209,6 +209,15 @@ export function recentOf(mine: readonly FoodEntry[], limit = 20): FoodEntry[] {
   return out;
 }
 
+const TRUST = { p: 'food.kal.pfc', s: 'food.kal.fibsalt', e: 'food.kal.est' } as const;
+/** A chain menu's trust line (the amount's head): how far its values are the shop's own (公式の値, PFCは推定, 食物繊維・
+ *  塩分は推定, 推定の値（AI）) and, one Kalori says may be gone (`ended`), 販売終了かも; null for any other food. */
+export function kaloriTrust(it: Pick<Item, 'id' | 'shop' | 'est' | 'ended'>): string | null {
+  if (!kaloriPage(it)) return null;
+  const est = t(it.est ? TRUST[it.est] : 'food.kal.official');
+  return it.ended ? `${est} · ${t('food.kal.ended')}` : est;
+}
+
 /** A chain menu's page on kalori.jp (its shop and number: `kal:<n>`), for the amount's link; null for any other food. */
 export function kaloriPage(it: Pick<Item, 'id' | 'shop'>): string | null {
   const n = /^kal:(\d+)$/.exec(it.id)?.[1];

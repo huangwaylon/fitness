@@ -6,7 +6,7 @@ How to rebuild (from the repo root; then `cd app && npm run food:data` copies ou
   python3 -I food-data/scripts/build.py check          # rebuild into a temp dir, validate, byte-compare with out/
   python3 -I food-data/scripts/build.py <target> ...   # one or more targets (verify.json and index.json too)
   python3 -I food-data/scripts/build.py all --out DIR  # write somewhere else (e.g. /tmp/x) instead of out/
-Targets: mext dishes eatout maff_kyodo takatsuki kurume toyonaka kumagaya tokyo_hokeniryo jbfd off verify index
+Targets: mext dishes eatout maff_kyodo takatsuki kurume toyonaka kumagaya tokyo_hokeniryo jbfd off kalori verify index
 Inputs: food-data/raw/ or $FOOD_RAW (raw downloads, gitignored; fetch them with food-data/scripts/fetch.py) and
 food-data/data_src/ (hand-authored recipes, popular list, frozen alias + weight-change tables). Targets whose raw
 inputs are missing are skipped and their current out/ file is reused (an error when out/ has none). `check`
@@ -585,6 +585,21 @@ def build_off(b):
     return doc
 
 
+# ---------------------------------------------------------------- Kalori (chain and konbini menus, kalori.jp)
+def build_kalori(b):
+    """Per-serving estimates (kalori_convert.py): never in verify.json. An OFF product of the same name by the shop
+    drops the row (its label wins). A partial input fails (kalori_convert.partial; KALORI_ALLOW_PARTIAL=1 allows it)."""
+    import kalori_convert
+    doc, b.reports['kalori'] = kalori_convert.build([os.path.join(RAW, 'kalori')], b.get('off')['items'])
+    errs = kalori_convert.errors(doc)
+    if errs:
+        fail('kalori: %d problems, e.g. %s' % (len(errs), errs[:5]))
+    why = kalori_convert.partial(b.reports['kalori'])
+    if why:
+        fail(why)
+    return doc
+
+
 # ---------------------------------------------------------------- verify.json (cross-source confirmation)
 # Values are keyed by dataset source; n counts independent families. Our recipe sets (dishes, eatout and the MAFF /
 # Takatsuki recipes we convert with MEXT values) are one family; MEXT, each city, JBFD and USDA are their own.
@@ -689,9 +704,9 @@ def verify_stats(v):
 
 # ---------------------------------------------------------------- index.json
 BADGE = {'mext': 'MEXT', 'dishes': '料理', 'eatout': '外食', 'maff_kyodo': '郷土', 'toyonaka': '給食', 'kumagaya': '給食',
-         'takatsuki': '給食', 'kurume': '久留米', 'tokyo_hokeniryo': '東京都', 'jbfd': '市販品', 'off': '商品'}
+         'takatsuki': '給食', 'kurume': '久留米', 'tokyo_hokeniryo': '東京都', 'jbfd': '市販品', 'off': '商品', 'kalori': '店'}
 PRIMARY = {'mext', 'dishes', 'eatout'}
-LAZY = {'off'}
+LAZY = {'off', 'kalori'}
 
 
 def build_index(dirs):
@@ -818,6 +833,7 @@ TARGETS = {
     'tokyo_hokeniryo': (build_tokyo_hokeniryo, 'extra_tokyo_hokeniryo.json', ['tokyo_hokeniryo']),
     'jbfd': (build_jbfd, 'jbfd.json', [JBFD_CSV]),
     'off': (build_off, 'products.json', ['off/off_jp.jsonl']),
+    'kalori': (build_kalori, 'kalori.json', ['kalori']),
 }
 # Our recipe sets, in the order a shared name stays plain; the word that tells a later one apart (MAFF: its prefecture)
 SAME_NAME = ['dishes', 'eatout', 'maff_kyodo', 'takatsuki']
@@ -840,7 +856,7 @@ def qualified(name, word):
 # A school lunch named after a story (読書 menus: 「かさこじぞう」の恩返し味噌汁, ごんぎつねのみそ汁): pop -1, a tier under
 # the plain dishes (search.ts POP_WEIGHT)
 STORY = re.compile(r'「[^」]+」|ごんぎつね')
-NO_ALIAS_ENRICH = {'mext', 'off'}   # foods.json aliases are curated; OFF names are brand product names
+NO_ALIAS_ENRICH = {'mext', 'off', 'kalori'}   # foods.json aliases are curated; OFF and Kalori names are brand menu names
 VERIFY_INPUTS = [JBFD_CSV, CORR_CSV, MEXT_XLSX]
 
 
@@ -946,7 +962,7 @@ def write_outputs(b, names, out):
 
 
 def check_verify(v, b):
-    kcal = {it['id']: it['kcal'] for n in TARGETS if n != 'off' for it in b.get(n)['items']}
+    kcal = {it['id']: it['kcal'] for n in TARGETS if n not in ('off', 'kalori') for it in b.get(n)['items']}
     errs = ['group %d: <2 sources, bad n or spread' % i for i, g in enumerate(v['groups'])
             if len(g['kcal']) < 2 or not 0 <= g['n'] <= len(g['kcal']) or set(g['kcal']) - set(v['sources'])
             or g['n'] >= 2 and max(g['kcal'].values()) > SPREAD_MAX * min(g['kcal'].values())]

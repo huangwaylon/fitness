@@ -9,7 +9,7 @@ export interface FoodDb {
   version: string;
   /** The datasets loaded so far, each with its badge (「MEXT」, 「給食」) and credit line. */
   sets: (Partial<Credit> & { source: string; badge: string })[];
-  /** Grows when a lazy dataset (products) is in. */
+  /** Grows when a lazy dataset (products, the chain menus) is in. */
   entries: Entry[];
   verify: Verify | null;
   /** Each item by its id (the first dataset's, should two hold one): an entry's food in O(1), never a scan of 20k. */
@@ -21,7 +21,7 @@ export interface FoodDb {
   shopKeys: Map<string, string>;
   /** Settles once the lazy datasets are in (or failed): search again then. Never before one asks for them (wantMore). */
   more: Promise<void>;
-  /** The lazy datasets (products, 2.7 MB) fetched now, once: the search's open asks, never the sheet's (`more`). */
+  /** The lazy datasets (products, the chain menus) fetched now, once: the search's open asks, never the sheet's (`more`). */
   wantMore(): Promise<void>;
   /** The lazy datasets asked for and not yet in (or failed): a search says 読み込み中, never 見つかりませんでした. */
   pending: boolean;
@@ -37,7 +37,7 @@ export const SLICE = 2000;
 /** The packaged products' datasets (Open Food Facts, the JBFD's 市販品): ranked a little under the other secondary
  *  ones (search.ts PRODUCT_PENALTY). */
 const PRODUCT_SOURCES: ReadonlySet<string> = new Set(['off', 'jbfd']);
-/** The members' chain menus (Kalori, load.ts): a little under the other secondary ones, over the products: 牛丼 finds
+/** The chain menus (Kalori, a lazy dataset): a little under the other secondary ones, over the products: 牛丼 finds
  *  牛丼（並盛） before a chain's. */
 const KALORI_PENALTY = 0.25;
 
@@ -85,25 +85,30 @@ export function shopIn(db: FoodDb, query: string): { shop: string; rest: string 
   return null;
 }
 
-/** The chain menus' shops holding every word of a query (no shop named in it: shopIn), the most foods first (a food
- *  in its states once), each with its name; the chips under the search's field (FoodSearch). */
-export function shopsFor(db: FoodDb, query: string): { shop: string; name: string; n: number }[] {
-  const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
-  if (!tokens.length || !db.shopKeys.size || shopIn(db, query)) return [];
-  const by = new Map<string, { shop: string; name: string; n: number; seen: Set<string> }>();
-  for (const e of db.entries) {
-    const shop = e.it.shop;
-    if (!shop || !tokens.every((t) => e.h.includes(t))) continue;
-    const s = by.get(shop) ?? by.set(shop, { shop, name: e.it.brand ?? shop, n: 0, seen: new Set() }).get(shop)!;
-    const k = e.it.vg ?? e.it.id;
-    if (!s.seen.has(k)) s.seen.add(k), s.n++;
-  }
-  return [...by.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ja')).map(({ shop, name, n }) => ({ shop, name, n }));
+/** A shop chip (FoodSearch): a chain's id, its name and how many of its foods the query finds. */
+export interface ShopHit {
+  shop: string;
+  name: string;
+  n: number;
 }
 
-/** A product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys. */
+/** The chain menus' shops holding every word of a query (no shop named in it: shopIn), the most foods first (a food
+ *  in its states once), each with its name; the chips under the search's field (FoodSearch, from findFoods). */
+export const shopsFor = (db: FoodDb, query: string): ShopHit[] => findFoods(db, query, 1).shops;
+/** A product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys; a chain
+ *  menu's (Kalori: kalori_convert.py ships neither) `sv` and its shop's name as its `brand` (the header's `shops`),
+ *  before its keys are built; a serving's lone 1食 portion left out (portionsOf's default for an `sv` item; older
+ *  files shipped one). */
 export function withJan(d: Dataset): Dataset {
-  for (const it of d.items) if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);
+  const shops = d.source === 'kalori' ? (d.shops ?? {}) : null;
+  for (const it of d.items) {
+    if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);
+    if (shops) {
+      it.sv ??= true;
+      if (it.shop) it.brand ??= shops[it.shop]?.name ?? it.shop;
+    }
+    if (it.sv && it.portions?.length === 1 && it.portions[0].g === 100 && it.portions[0].label === '1食') delete it.portions;
+  }
   return d;
 }
 
@@ -124,11 +129,26 @@ export function variantsOf(db: FoodDb | null, it: Item): Item[] {
 /** The best `limit` items for a query (search.ts: exact > prefix > substring > alias, one row per verify group). A
  *  shop named in it (shopIn: セブン, スタバ, すき家) narrows it to that shop's menu, the other words searched within it
  *  (the shop's name alone: its whole menu); nothing there: the query as it is, over everything. */
-export function searchFoods(db: FoodDb, query: string, limit = 60): Item[] {
+export const searchFoods = (db: FoodDb, query: string, limit = 60): Item[] => findFoods(db, query, limit).items;
+
+/** searchFoods' items and, from the same pass (a keystroke's one scan of the catalog), the shops its hits are on
+ *  (shopsFor's chips: none once a shop is named, nor without the chain menus). */
+export function findFoods(db: FoodDb, query: string, limit = 60): { items: Item[]; shops: ShopHit[] } {
   const groupOf = (id: string) => db.verify?.byId[id];
   const s = shopIn(db, query);
   const scoped = s ? search(db.entries.filter((e) => e.it.shop === s.shop), s.rest, limit, groupOf, true) : [];
-  return scoped.length ? scoped : search(db.entries, query, limit, groupOf);
+  if (scoped.length) return { items: scoped, shops: [] };
+  const by = new Map<string, ShopHit & { seen: Set<string> }>();
+  const tally = (e: Entry): void => {
+    const shop = e.it.shop;
+    if (!shop) return;
+    const t = by.get(shop) ?? by.set(shop, { shop, name: e.it.brand ?? shop, n: 0, seen: new Set() }).get(shop)!;
+    const k = e.it.vg ?? e.it.id;
+    if (!t.seen.has(k)) t.seen.add(k), t.n++;
+  };
+  const items = search(db.entries, query, limit, groupOf, false, s || !db.shopKeys.size ? undefined : tally);
+  const shops = [...by.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ja')).map(({ shop, name, n }) => ({ shop, name, n }));
+  return { items, shops };
 }
 /** 近いもの for a query searchFoods finds nothing for (search.ts nearby: the names holding the most of it). */
 export const nearFoods = (db: FoodDb, query: string, limit = 8): Item[] => nearby(db.entries, query, limit);

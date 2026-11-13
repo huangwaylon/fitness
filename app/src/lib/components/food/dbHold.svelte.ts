@@ -1,21 +1,11 @@
 // ごはん's food catalog, held for the session (docs/design.md "Gohan"): loaded once when the search or an amount first
-// needs it (or at idle once a day is up), the members' chain menus (Kalori) with it, and the pictures' index; let go
+// needs it (or at idle once a day is up), and the pictures' index; let go
 // with the sheet. What the components render from is `held` (runes): never a copy of their own, so a let-go catalog
 // is let go everywhere at once.
 import { quiet } from '#lib/quiet.ts';
-import { loadFoodDb, type FoodDb, type KaloriSource } from '#lib/food/index.ts';
+import { loadFoodDb, type FoodDb } from '#lib/food/index.ts';
 import { dropFoodImages, loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
-import { getKey } from '#lib/sync/storage.ts';
-import { relayUrl } from '#lib/sync/transport.ts';
-import { week } from '#lib/store/week.svelte.ts';
-
-/** The members' chain menus (Kalori): the relay's `/food/kalori` with this phone's key; none in the
- *  demo, for the guest, unpaired or with no relay. */
-function kaloriSource(): KaloriSource | null {
-  const key = getKey(), href = relayUrl('/food/kalori');
-  return week.demo || week.guest || !key || !href ? null : { href, key };
-}
 
 /** The catalog and the pictures' index while held (null: not in yet, or let go): what ごはん's components read. A load
  *  let go before it came in never lands here (the next one does: one catalog at a time). */
@@ -28,7 +18,7 @@ let dbP: Promise<FoodDb> | null = null;
 /** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
  *  failure lets the next call try again. */
 export function foodDb(): Promise<FoodDb> {
-  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance, kaloriSource).then(
+  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance).then(
     (db) => {
       if (dbP === p) held.db = db;
       return db;
@@ -44,8 +34,8 @@ let holders = 0;
 let dropT: ReturnType<typeof setTimeout> | undefined;
 /** How long the catalog outlives ごはん's close: a quick reopen stays instant. */
 export const FOOD_KEEP_MS = 5 * 60_000;
-/** ごはん open (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products, ~25 MB more with a member's
- *  chain menus) and the pictures' index kept while it is, and FOOD_KEEP_MS after its close (a reopen cancels that);
+/** ごはん open (Food.svelte's $effect): the catalog (~18 MB of JS heap with the products, ~35 MB more with the chain
+ *  menus' 54k items: measured in V8, 2026-11-13) and the pictures' index kept while it is, and FOOD_KEEP_MS after its close (a reopen cancels that);
  *  the next opening reads them again from the service worker's cache, at idle (foodDbSoon). */
 export function holdFoodDb(): () => void {
   holders++;

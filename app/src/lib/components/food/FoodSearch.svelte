@@ -2,7 +2,7 @@
   // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
   // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
-  // brand (a chain menu's shop, after a storefront mark; its picture Kalori's, hotlinked), its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
+  // brand (a chain menu's shop, after a storefront mark, then 販売終了かも if Kalori says it may be gone; its picture Kalori's, hotlinked), its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
   // and the others after it: 「(生) 焼き ゆで」, past four 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; one row per name and kcal: search.ts, a brand's copy of another's too). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
@@ -22,7 +22,7 @@
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { entryKcal, itemById, nearFoods, searchFoods, shopsFor, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { entryKcal, findFoods, itemById, nearFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
@@ -129,13 +129,17 @@
   /** A dataset coming in (the products, the chain menus) never reshuffles the rows already shown for this query: those
    *  still found keep their order, the new ones go under them (`shown`: this query's, as listed). */
   let shown: { q: string; items: Item[] } = { q: '', items: [] };
-  const results = $derived.by(() => {
+  /** A keystroke's one pass over the catalog: the foods and the shops they're on (findFoods: the chips, `shops`). */
+  const found = $derived.by(() => {
     void more;
     const query = q.trim(), again = shown.q === query && shown.items.length > 0;
-    const found = db && query ? searchFoods(db, q, again ? 80 : 40) : [];
-    if (!again) return (shown = { q: query, items: found }).items;
-    const ids = new Set(found.map((it) => it.id)), had = new Set(shown.items.map((it) => it.id));
-    return (shown.items = [...shown.items.filter((it) => ids.has(it.id)), ...found.filter((it) => !had.has(it.id))]);
+    return { query, again, ...(db && query ? findFoods(db, q, again ? 80 : 40) : { items: [], shops: [] }) };
+  });
+  const results = $derived.by(() => {
+    const { query, again, items } = found;
+    if (!again) return (shown = { q: query, items }).items;
+    const ids = new Set(items.map((it) => it.id)), had = new Set(shown.items.map((it) => it.id));
+    return (shown.items = [...shown.items.filter((it) => ids.has(it.id)), ...items.filter((it) => !had.has(it.id))]);
   });
   /** The lazy datasets still coming (db.pending): no 見つかりませんでした yet. */
   const pending = $derived.by(() => {
@@ -168,12 +172,12 @@
     io.observe(node);
     return { destroy: () => io.disconnect() };
   }
-  /** The shop chips under the field: typing, the results' shops (two or more, none named: shopChips) with their
-   *  counts; nothing typed, よく行く店. None without the chain menus (the demo, the guest). */
+  /** The shop chips under the field: typing, the results' shops (found's: two or more, none named, shopChips) with
+   *  their counts; nothing typed, よく行く店. None without the chain menus (not in yet). */
   const shops = $derived.by((): { shop: string; name: string; n?: number }[] => {
     void more;
     if (!db) return [];
-    return q.trim() ? shopChips(shopsFor(db, q)) : recentShops(mine, db, since);
+    return q.trim() ? shopChips(found.shops) : recentShops(mine, db, since);
   });
   /** A shop chip's tap: its name written into the query, before what's typed (no filter kept anywhere else: ✕ clears
    *  it), the field kept focused (the keyboard stays up). */
@@ -429,12 +433,12 @@
   {@const gl = glossOf(it, it.name)}
   {@const vs = variantsOf(db, it)}
   <!-- ✓n beside the name, or on the second line when that would be empty: a row two lines, never three -->
-  {@const solo = !it.brand && !gl && !vs.length}
+  {@const solo = !it.brand && !it.ended && !gl && !vs.length}
   {@const ok = v && v.n >= 2 ? v.n : 0}
   {#snippet cells()}
     <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} src={kaloriImg(it, 48)} />
     <span class="nm"><Phrases text={vs.length ? stemName(it) : it.name} name />{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
-    <small class="meta">{#if it.brand}{#if it.shop}<span class="sr-only">{t('food.shop')}</span><ShopMark />{/if}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
+    <small class="meta">{#if it.brand}{#if it.shop}<span class="sr-only">{t('food.shop')}</span><ShopMark />{/if}<span class="br" data-brand>{it.brand}</span>{#if it.ended || gl}{' · '}{/if}{/if}{#if it.ended}<span data-food-ended>{t('food.kal.ended')}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand || it.ended}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
     <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
   {/snippet}
   {@render row({ key: `f:${it.id}`, data: { 'data-item': it.id, 'data-per100': it.kcal }, name: it.name, item: () => it, pick: () => onpick(it),

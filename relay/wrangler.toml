@@ -87,12 +87,6 @@ redact_query_string = true
 enabled = true
 invocation_logs = false
 
-# Workers KV for `GET /food/kalori` (src/foodRoute.ts, docs/backend.md#kalori): Kalori's chain menus, members only,
-# uploaded by hand (`sh scripts/kalori-put.sh`), never in git. Not tied to a deploy.
-[[kv_namespaces]]
-binding = "FOOD"
-id = "744ce18433b243bfbbece7fe57fdf471"
-
 [env.test]
 name = "island-fund-relay-test"
 
@@ -113,10 +107,6 @@ ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj
 
 [env.test.ai]
 binding = "AI"
-
-[[env.test.kv_namespaces]]
-binding = "FOOD"
-id = "931a82d2c26944f8bf86211755d80e13"
 
 [[env.test.durable_objects.bindings]]
 name = "ROOM"

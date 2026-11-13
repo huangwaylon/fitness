@@ -21,7 +21,7 @@ let url = RECORD_URL;
 /** False when the build has no record URL: the app shows its "not set up yet" screen (demo still works). */
 export const RECORD_CONFIGURED = RECORD_URL.trim() !== '';
 
-/** The relay's `path` beside the record's `/api` (`/log`: docs/ops/observability.md, `/stt`, `/food/kalori`), or ''
+/** The relay's `path` beside the record's `/api` (`/log`: docs/ops/observability.md, `/stt`), or ''
  *  when the build has no relay. */
 export const relayUrl = (path: string): string => url.replace(/\/api$/, path);
 /** The log's endpoint beside the record's. */

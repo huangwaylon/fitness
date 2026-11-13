@@ -18,7 +18,7 @@ const ALLOW: Record<string, string[]> = {
   // packStore.ts (files in packs: planned, read on the phone; ききみみ's audio and the players' parts)
   math: [],
   quiet: [],
-  // keyed.ts: a members-only call (the key's header, one failure vocabulary): the chain menus' worker, the mic, the bots
+  // keyed.ts: a members-only call (the key's header, one failure vocabulary): the mic, the bots
   keyed: [],
   // strip.ts: the bots' status strip, its slots placed (保養所's minutes, ジム's checks)
   strip: [],

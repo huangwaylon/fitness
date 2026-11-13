@@ -199,7 +199,6 @@ meals, only the owner changes an entry. A day renders from its entries' snapshot
 loads with the first search, or at idle, in a worker); kept mounted between openings.
 
 - **Tabs:** 記録 · グラフ. 記録 has ‹ the day › and 今日; › goes past today only to tomorrow, when a いつもの fills it.
-  Recipes and custom foods are reached from a meal's search.
 - **Summary card:** the day's kcal with its goal chip and bar (coral only past 20 % over); P · F · C · 塩分 (coral past a
   ceiling), a fold with every nutrient, and the **PFC balance** (Atwater 4/9/4) against 食事摂取基準 2025 (never coral).
   A past day with nothing logged says so, not 0.
@@ -208,14 +207,15 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   fibre by sex and age; alcohol 20 g ([decisions](decisions.md#fibre-and-alcohol)); none for fat and carbs. **Warn,
   allow** ([decisions](decisions.md#low-kcal-goals-warn-allow)): a low kcal goal gets a note, never a block.
 - **Meals:** breakfast · lunch · dinner · おやつ, a card each, a row per entry. On my day ＋ opens the search (the
-  keyboard up in the same tap); anyone else's day is read-only. An entry keeps its food as logged (mine offers a changed food's latest values); an empty meal offers
-  yesterday's and another person's, copied as mine with 取り消す; **quick** (⚡, or a kcal typed) logs one serving.
+  keyboard up in the same tap); anyone else's day is read-only. An entry keeps its food as logged (mine offers a
+  changed food's latest values); an empty meal offers yesterday's and another person's, copied as mine with 取り消す;
+  **quick** (⚡, or a kcal typed) logs one serving.
 - **Search** (`FoodSearch`'s header; the ranking `food/search.ts`, its golden queries `food/load.test.ts`): my recent
   foods, then the best matches, a food's states one row. Nothing holding the whole query: 見つかりませんでした, 自分で作る,
   then **近いもの**, the names holding most of it (`nearby`). Offline: a retry and the recent list.
-  A member's search also holds the chain menus ([food-data.md](food-data.md#kalori)), logged by the serving: under the
-  generic foods unless a word names a shop (セブン, スタバ…), which narrows to its menu; the shop chips and marks:
-  `FoodSearch.svelte`'s header. None in test mode or for the guest.
+  The chain menus ([food-data.md](food-data.md#kalori)), logged by the serving, rank under the generic foods (in
+  近いもの, two rows of eight at most) unless a word names a shop (セブン, スタバ…), which narrows to its menu; one
+  Kalori marks 販売終了かも lower still. Chips and marks: `FoodSearch.svelte`'s header.
 - **Amount** (`FoodAmount`, `FoodPortion`; their headers): one screen on an iPhone 15: the picture (marked as an AI
   image), kcal, P · F · C · 塩分, the state and amount controls; the foot (the meal and add, or 保存 / 削除) over the
   keyboard.

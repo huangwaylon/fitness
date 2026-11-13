@@ -3,7 +3,7 @@
   // has one (104 px beside the name, the イメージ badge: every picture is generated, a chain menu's Kalori's own; a tap:
   // FoodPhoto, it enlarged),
   // its name, a chain menu's shop and category (its mark: ShopMark) with how far its values are the shop's own (公式の値,
-  // PFCは推定, 推定の値（AI）) and 「kalori.jpで見る ›」 (its page), the everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
+  // PFCは推定, 推定の値（AI）; 販売終了かも if it may be gone) and 「kalori.jpで見る ›」 (its page), the everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
   // (the sheet's loudest number) with the grams it's for, P · F · C · 塩分, and under them behind 「100gあたりの栄養」
   // (closed on each open) the values per 100 g.
   // Then the controls (FoodPortion, their rules amount.svelte.ts) in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
@@ -28,7 +28,7 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { glossOf, kaloriPage } from './foodUi.ts';
+  import { glossOf, kaloriPage, kaloriTrust } from './foodUi.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import ShopMark from './ShopMark.svelte';
 
@@ -83,9 +83,9 @@
     const v = a.db ? verifyOf(a.db, item.id) : null;
     return v && v.n >= 2 ? v.n : 0;
   });
-  /** A chain menu's (Kalori): its page, and how far its values are the shop's own. */
+  /** A chain menu's (Kalori): its page, and how far its values are the shop's own (販売終了かも too, if it may be gone). */
   const page = $derived(kaloriPage(item));
-  const trust = $derived(t(item.est === 'e' ? 'food.kal.est' : item.est === 'p' ? 'food.kal.pfc' : 'food.kal.official'));
+  const trust = $derived(kaloriTrust(item));
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
   function done() {
@@ -107,7 +107,7 @@
         {#if item.shop && item.brand}<p class="sh" data-food-shop><span class="sr-only">{t('food.shop')}</span><ShopMark />{item.brand}{#if item.cat}{' · '}{item.cat}{/if}</p>{/if}
         {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
-        {#if page}<p class="tr" data-food-trust={item.est ?? 'o'}>{trust}</p>{/if}
+        {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
         <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 {
-  "_comment": "Our own short names for Kalori's shops (kalori_convert.py -> the dataset's shops header; the search's shop scope, docs/food-data.md Kalori). Hand-made: Kalori's own keywords aren't in our data. Key: Kalori's shop id; the shop's full name needs no alias (the items' brand has it).",
+  "_comment": "Our own short names for Kalori's shops (kalori_convert.py -> the dataset's shops header; the search's shop scope, docs/food-data.md Kalori). Hand-made: Kalori's own keywords aren't in our data. Key: Kalori's shop id; the value: its aliases (the shop's full name needs none: the items' brand has it), or {name, aliases?} where Kalori's shop name isn't one to show.",
   "seven-eleven": ["セブン", "セブイレ", "セブンイレブン"],
   "family-mart": ["ファミマ"],
   "lawson": ["ローソン"],
@@ -53,5 +53,6 @@
   "gindaco": ["銀だこ"],
   "pizzahut": ["ピザハット"],
   "pizza-la": ["ピザーラ"],
-  "dominos": ["ドミノ"]
+  "dominos": ["ドミノ"],
+  "chawan": {"name": "chawan"}
 }

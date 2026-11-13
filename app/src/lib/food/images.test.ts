@@ -93,8 +93,11 @@ describe('static/food-img', () => {
   it("maps only shipped foods' ids, each to a picture (a product's in a product sheet, p-, or its picture's own)", () => {
     const food = join(STATIC, 'food');
     const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
-    const idsOf = (lazy: boolean) => new Set(fi.datasets.filter((d) => !d.lazy === !lazy).flatMap((d) => (JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Dataset).items.map((it) => it.id)));
-    const generic = idsOf(false), products = idsOf(true);
+    const items = (lazy: boolean) => fi.datasets.filter((d) => !d.lazy === !lazy).flatMap((d) => (JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Dataset).items);
+    const lazyItems = items(true);
+    const generic = new Set(items(false).map((it) => it.id)), products = new Set(lazyItems.filter((it) => !it.shop).map((it) => it.id));
+    // the chain menus (Kalori, an item with a `shop`): Kalori's own pictures (images.ts kaloriImg), never these sheets
+    const chains = lazyItems.filter((it) => it.shop);
     expect(Object.keys(index.ids).filter((id) => !generic.has(id) && !products.has(id))).toEqual([]);
     for (const [id, k] of Object.entries(index.ids)) {
       expect(index.keys[k]).toBeDefined();
@@ -103,6 +106,9 @@ describe('static/food-img', () => {
     }
     // the products' confident matches (food-data/images/pmatch.py): 8,944 of 13,916 on 2026-11-10, was 7,978
     expect([...products].filter((id) => id in index.ids).length / products.size).toBeGreaterThan(0.62);
+    // the chain menus: hotlinked, each its own; 53,802 of 53,830 carried one in the first whole build
+    expect(chains.filter((it) => it.id in index.ids)).toEqual([]);
+    if (chains.length) expect(chains.filter((it) => kaloriImg(it, 48)).length / chains.length).toBeGreaterThan(0.9);
   });
 
   it("fits the whole table's pictures in static/'s file cap (projected from what is shipped)", () => {

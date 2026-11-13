@@ -19,11 +19,15 @@ export interface Item {
   cat?: string;
   /** Packaged products only; a chain menu's (Kalori) its shop's name, set at load from `shop`. */
   brand?: string;
-  /** A chain menu's (Kalori, members only): its shop's id (the header's `shops`), its values' trust (`p` estimated
-   *  PFC, `e` all estimated; absent: official) and its picture's generation id. */
+  /** A chain menu's (Kalori): its shop's id (the header's `shops`), its values' trust (`p` estimated
+   *  PFC, `s` kcal and PFC official but fibre and/or salt estimated, `e` all estimated; absent: official) and its
+   *  picture's generation id. */
   shop?: string;
-  est?: 'p' | 'e';
+  est?: 'p' | 'e' | 's';
   img?: number;
+  /** A chain menu Kalori says may be gone (販売終了かも？, or on its sitemap only): labelled 販売終了かも, ranked lower
+   *  (its `pop` -1). */
+  ended?: true;
   /** Values per serving, not per 100 g (a chain menu's: no weight known): logged as FoodSnap `sv`, its portion a nominal
    *  100 g serving. */
   sv?: true;
@@ -71,10 +75,13 @@ export interface Dataset extends Partial<Credit> {
   shops?: Record<string, { name: string; aliases?: string[] }>;
 }
 
-/** `index.json`: the data's content version (the files' `?v=`) and its datasets. `secondary` ones (regional, school
- *  lunch, products) rank below the core ones (MEXT, dishes, eatout); `lazy` ones (products) load after the rest. */
+/** `index.json`: each data file's own content version (`files`: its `?v=`, so a refresh of one refetches that one;
+ *  an older index without it: `version`, that of them all, for every file) and its datasets. `secondary` ones
+ *  (regional, school lunch, products) rank below the core ones (MEXT, dishes, eatout); `lazy` ones (products, the
+ *  chain menus) load after the rest. */
 export interface FoodIndex {
   version: string;
+  files?: Record<string, string>;
   datasets: { file: string; source: string; badge: string; secondary: boolean; lazy: boolean }[];
 }
 

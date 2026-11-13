@@ -429,10 +429,11 @@ describe('food data cache', () => {
     expect(isFoodData('/fitness/food/foods.json')).toBe(true);
     expect(isFoodData('/fitness/art/fruit/peach.webp')).toBe(false);
   });
-  it('a new data version drops the other versions’ files, never index.json', () => {
+  it('a new index drops the files it no longer names (a file’s other versions, a dataset gone), never index.json', () => {
     const f = (file: string, v?: string) => `https://x.example/fitness/food/${file}${v ? `?v=${v}` : ''}`;
-    expect(staleFood([f('index.json'), f('foods.json', 'aaa'), f('products.json', 'aaa'), f('foods.json', 'bbb')], 'bbb')).toEqual([f('foods.json', 'aaa'), f('products.json', 'aaa')]);
-    expect(staleFood([f('index.json'), f('foods.json', 'bbb')], 'bbb')).toEqual([]);
+    const keep = [f('foods.json', 'f1'), f('kalori.json', 'k2')];
+    expect(staleFood([f('index.json'), f('foods.json', 'f1'), f('kalori.json', 'k1'), f('kalori.json', 'k2'), f('gone.json', 'f1')], keep)).toEqual([f('kalori.json', 'k1'), f('gone.json', 'f1')]);
+    expect(staleFood([f('index.json'), ...keep], keep)).toEqual([]);
   });
 });
 
@@ -537,6 +538,34 @@ describe('food data fetches (foodFetch)', () => {
     expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...files('bbb')].sort());
     offline = true;
     expect(await get(`${BASE}index.json`)).toBe(index('bbb'));
+  });
+
+  it('each file under its own version: a refresh of one refetches that one, the rest answered from the cache', async () => {
+    // (index.json's `files`: foods.json and verify.json unchanged, products.json new)
+    const own = (p: string) => JSON.stringify({ version: `all-${p}`, files: { 'foods.json': 'f1', 'products.json': p, 'verify.json': 'v1' }, datasets: [{ file: 'foods.json' }, { file: 'products.json' }] });
+    const urls = (p: string) => [`${BASE}foods.json?v=f1`, `${BASE}products.json?v=${p}`, `${BASE}verify.json?v=v1`];
+    const serveOwn = (p: string) => {
+      served = { [`${BASE}index.json`]: own(p) };
+      for (const u of urls(p)) served[u] = `${u}-body`;
+    };
+    serveOwn('p1');
+    expect(await get(`${BASE}index.json`)).toBe(own('p1'));
+    for (const u of urls('p1')) await get(u);
+    await settled();
+    serveOwn('p2');
+    const asked: string[] = [];
+    const spy = async (r: Request) => (asked.push(r.url), net(r));
+    const getVia = async (url: string) => (await foodFetch(new Request(url), cache as unknown as Cache, spy, (p) => bg.push(p), 40)).text();
+    expect(await getVia(`${BASE}index.json`)).toBe(own('p2'));
+    for (const u of urls('p2')) expect(await getVia(u)).toBe(`${u}-body`);
+    await settled();
+    expect(asked).toEqual([`${BASE}index.json`, `${BASE}products.json?v=p2`]);
+    expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...urls('p2')].sort());
+  });
+
+  it('an index without per-file versions: every file under its `version` (an older build’s)', async () => {
+    await loadAll('aaa');
+    expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...files('aaa')].sort());
   });
 
   it('never stores a failed answer', async () => {

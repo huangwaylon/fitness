@@ -19,7 +19,9 @@ CATS = ('主食', '麺', '丼・定食', '主菜', '副菜', '汁物', '寿司',
         '外食', 'その他')
 META_KEYS = ('source', 'label', 'attribution', 'license', 'url')
 ITEM_KEYS = {'id', 'name', 'full', 'en', 'aliases', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'fib', 'alc', 'portions', 'jan',
-             'brand', 'note', 'pop', 'vg', 'st', 'desc', 'gloss'}
+             'brand', 'note', 'pop', 'vg', 'st', 'desc', 'gloss',
+             'shop', 'est', 'img', 'sv', 'ended'}   # the last five: Kalori's chain menus only (kalori_convert.py)
+ID_PREFIX = {'kalori': 'kal'}   # a dataset whose item ids don't start with its source
 DESC_MAX = 40   # a 「これは…」 line (data_src/descriptions.json): one short line
 GLOSS_MAX = 20  # an everyday name (data_src/glosses.json)
 
@@ -375,7 +377,7 @@ def validate(doc, kind='dataset'):
 def _item_errors(it, source):
     e = []
     iid = it.get('id')
-    if not isinstance(iid, str) or not iid.startswith('%s:' % source):
+    if not isinstance(iid, str) or not iid.startswith('%s:' % ID_PREFIX.get(source, source)):
         e.append('bad id prefix %s' % iid)
     extra = set(it) - ITEM_KEYS
     if extra:

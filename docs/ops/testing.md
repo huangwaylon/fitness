@@ -182,7 +182,7 @@ tabs (`sync/live-local.ts`), and the URL and window hooks. It switches on (`ui-s
 
 So the e2e tests the very build that ships, and a visitor's `?demo` on the live site is the normal app (pairing, or
 their data). A feature that calls a Worker gets no in-app fixture: its spec pairs a phone (e2e/record.ts) and routes
-the Worker (`page.route`: gymbot.spec, its.spec, food-kalori.spec).
+the Worker (`page.route`: gymbot.spec, its.spec).
 
 ## URL params
 Read on each call by `world/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev

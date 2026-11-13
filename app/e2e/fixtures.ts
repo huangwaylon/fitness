@@ -138,6 +138,9 @@ export const test = base.extend<Options & { hermetic: void }>({
         // spec answers them (its.spec's and gymbot.spec's page.route come first), so a dot just stays off
         await c.route('https://its-bot.island-fund-relay.workers.dev/**', (r) => r.abort());
         await c.route('https://gym-bot.island-fund-relay.workers.dev/**', (r) => r.abort());
+        // the chain menus' pictures, hotlinked from Kalori (lib/food/images.ts kaloriImg): refused unless a spec answers
+        // them (food-kalori's serveChains comes after), so a chain's row keeps its category's tile
+        await c.route('https://assets.kalori.jp/**', (r) => r.abort());
         // what went out: one Chromium refused to resolve, or one a server answered (WebKit has no such block); a request
         // the test routes and fulfils or aborts itself (a mocked relay: board.spec, record.ts) never left
         const blocked = (e: string | undefined) => /NAME_NOT_RESOLVED|NAME_RESOLUTION_FAILED/.test(e ?? '');

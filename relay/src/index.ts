@@ -12,7 +12,6 @@ import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
 import { sttRoute, type SttAi } from './sttRoute.ts';
-import { foodRoute } from './foodRoute.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -47,8 +46,6 @@ export interface Env {
   AI?: SttAi;
   STT_OFF?: string;
   STT_DAY_MAX?: string;
-  /** Workers KV: Kalori's chain menus for `/food/kalori` (foodRoute.ts; scripts/kalori-put.sh uploads them). */
-  FOOD?: KVNamespace;
   /** The daily backup (archive.ts): the private repo (`owner/name`), its release's tag, the age recipient (public), and
    *  the GitHub token (a secret: a fine-grained token, that repo's Contents read/write). No token: no backup. */
   ARCHIVE_REPO?: string;
@@ -357,7 +354,6 @@ export default {
       return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
     if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 300), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
-    if (url.pathname === '/food/kalori') return foodRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), kv: env.FOOD });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });

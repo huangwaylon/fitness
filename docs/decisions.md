@@ -131,11 +131,13 @@ than ½ is the grams field's job, and a counted ×1 → ×5 is five taps, not ei
 食物繊維 and アルコール are optional snapshot keys (`fi`, `al`), kept only when the source says; default goals from the
 食事摂取基準 2025 and 健康日本21 (alcohol at most 20 g). Why: unknown never reads as zero, and one plain national line.
 
-### Kalori for the members only
-kalori.jp's chain menus reach the food search from the relay's Workers KV (`GET /food/kalori`), a member's key only:
-never in git, on Pages or in the demo, the guest refused; values per serving, estimates labelled and never ✓n
-([food-data](food-data.md#kalori)). Why: chain meals are what we eat out, and their terms forbid publishing them; KV
-needs no R2 and no deploy, and the Durable Object's row cap and daily backup don't fit 9 MB of reference data.
+### Kalori as a lazy dataset
+kalori.jp's chain and konbini menus ship as `kalori.json` in `static/food/`, a lazy secondary dataset like the products:
+in git and on Pages, the guest's and the demo's search alike; values per serving, estimates labelled and never ✓n
+([food-data](food-data.md#kalori)). Why: chain meals are what we eat out, and the owner chose (the call recorded in
+the commit) to publish kalori.jp's data in this public repo, knowingly superseding the rule that its terms (第8条) kept
+it out, behind a members-only relay route (Workers KV, a key, its own cache and upload script); one way in for every
+dataset beats that route for one of them.
 
 ## Economy
 

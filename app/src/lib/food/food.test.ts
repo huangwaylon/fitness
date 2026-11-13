@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { searchKey } from './text.ts';
-import { entryOf, headOf, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
+import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
 import { nutrientsFor, portionsOf, toSnap } from './nutrition.ts';
 import { addDataset, credits, emptyDb, searchFoods, verifyOf } from './db.ts';
 import type { Item } from './types.ts';
@@ -14,6 +14,16 @@ describe('searchKey', () => {
     expect(searchKey('nattou')).toBe(searchKey('natto'));
     expect(searchKey('misoshiru')).toBe(searchKey('misosiru'));
     expect([searchKey(undefined), searchKey('')]).toEqual(['', '']);
+  });
+});
+
+describe('nearby (近いもの)', () => {
+  it('a chain’s menu (an item with a shop) in a quarter of the rows at most: the generic foods stay in sight', () => {
+    const chains = Array.from({ length: 8 }, (_, i) => entryOf(item(`kal:${i}`, `濃厚豚骨醤油ラーメン${'あいうえおかきく'[i]}`, { shop: 's', kcal: i }), SECONDARY_PENALTY + 0.25));
+    const generic = entryOf(item('eatout:1', 'ラーメン（醤油）'));
+    const got = nearby([...chains, generic], 'とんこつ醤油ラーメン味玉', 8).map((it) => it.id);
+    expect(got).toEqual(['kal:0', 'kal:1', 'eatout:1']);
+    expect(nearby(chains, 'とんこつ醤油ラーメン味玉', 3).length).toBe(1);
   });
 });
 

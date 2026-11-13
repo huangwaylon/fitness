@@ -25,8 +25,9 @@ MEXT Excel and the 熊谷市 CSVs are downloaded by hand (`fetch.py`'s docstring
 dump is needed only to refresh its Japan subset, `raw/off/off_jp.jsonl`, which the build reads.
 
 `npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole; `jan/`
-is built but not shipped (no barcode scanning). The app fetches the files (`lib/food/load.ts`) under
-`?v=<index.version>`. A meal keeps a per-100 g snapshot, so a data refresh never rewrites one.
+is built but not shipped (no barcode scanning). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
+(index.json's `files`), so a refresh of one file (Kalori's, weekly) refetches that file alone. A meal keeps a per-100 g
+snapshot, so a data refresh never rewrites one.
 
 ## Format
 
@@ -45,7 +46,7 @@ header fields as they are written in the file.
 | `kcal` `p` `f` `c` `salt` | **per 100 g** (100 ml of a drink counts as 100 g). `kcal` is an int; the others have 1 decimal or are `null` when unknown. `c` = total carbohydrate as on Japanese labels; `salt` = 食塩相当量 |
 | `fib` `alc` | optional, per 100 g, 1 decimal, **absent when unknown**: 食物繊維総量, アルコール (g). MEXT's own; the recipe sets sum their ingredients'; `alc` only on a 酒 (`lib.tidy`: a dish's みりん or 料理酒 cooks off) |
 | `portions` | optional `[{label, g}]`; the first one is the default. The app always adds a 100 g option |
-| `pop` | optional 1–3, a curated search boost (`data_src/popular.json`, `mext_overrides.txt`); -1 ranks a rare form lower (`mext_names.py` RARE, `build.py` STORY) |
+| `pop` | optional 1–3, a curated search boost (`data_src/popular.json`, `mext_overrides.txt`); -1 ranks a rare form lower (`mext_names.py` RARE, `build.py` STORY; a discontinued [Kalori](#kalori) item) |
 | `vg`, `st` | MEXT only, optional: one food in its states (豚ロース 生 · 焼き · ゆで; `mext_names.py` variant_groups): `vg` the group's default item's id, `st` the state the app's chip shows |
 | `jan`, `brand` | packaged products only |
 | `note` | how the value was derived, shown in the picker |
@@ -55,9 +56,10 @@ header fields as they are written in the file.
 MEXT markers: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark dropped. kcal is MEXT's
 energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their ingredient lists.
 
-**`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `version`: 12 hex
-digits of a sha256 over the shipped files (`food-data.ts`), the cache key of every data URL. `secondary` datasets rank
-slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`) load only when asked
+**`index.json`**: `{ "version", "files", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `files`:
+each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its bytes; `version`: the same over all of
+them (`food-data.ts`), every file's key for an index without `files` (an older build's; the service worker reads both). `secondary` datasets rank
+slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`, `kalori.json`) load only when asked
 for (`db.wantMore`: the search open, or a day with a product logged), parsed in a worker; a late dataset calls
 `db.onAdd` and the search runs again.
 
@@ -83,6 +85,7 @@ JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13
 | `extra_tokyo_hokeniryo.json` | 東京都 島しょ保健所「一人でもできる簡単レシピ」 | 14 | CC BY | 「…を加工して作成」 | Official per-serving values ÷ serving weight estimated from the ingredient list (`data_src/tokyo_hokeniryo_recipes.json`) | Estimated weights |
 | `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item; spread-out or mixed-basis boxes skipped | The SD is in `note` |
 | `products.json`, `jan/` | Open Food Facts (Japan) | 13,916 (search) / 42,850 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; `products.json` deduplicated, ≤ 3 MB (most-scanned first) |
+| `kalori.json` | kalori.jp chain and konbini menus ([Kalori](#kalori)) | (per build) | kalori.jp 利用規約 | 「kalori.jp（各社の公表値と kalori.jp の AI 推定値）」 | Shops' published values and Kalori's AI estimates, per serving | `est` marks estimates; may-be-discontinued items kept, marked |
 
 **School-lunch adult portions** (Toyonaka, Kumagaya): the default portion is 「1人前（目安）」, the median adult portion
 of the same dish elsewhere, else the school portion × the city's measured adult/school ratio (「目安・給食量から換算」);
@@ -157,32 +160,50 @@ sheet layout):
   top 20 ≤ 128 KB of thumbnails on average, and every generic food in a table row.
 
 ## Kalori
-Chain and konbini menus (すき家, セブン, スタバ ...) from kalori.jp, for the members only
-([decisions](decisions.md#kalori-for-the-members-only)). **Never in git, on Pages or in `app/static`**: its terms
-forbid redistribution (第8条), so it never goes public: the file lives in the relay's Workers KV and `GET /food/kalori` hands it to a member's key
-([backend](backend.md#kalori)); the guest and the demo get none.
+Chain and konbini menus (すき家, セブン, スタバ ...) from kalori.jp, shipped as `kalori.json`, a lazy secondary dataset
+like the products ([decisions](decisions.md#kalori-as-a-lazy-dataset)); public in git and on Pages by the owner's call,
+knowingly over kalori.jp's terms (第8条), which had kept it out.
 
-- **Convert:** `python3 -I food-data/scripts/kalori_convert.py <raw>/kalori/items.jsonl` (shops.csv beside it) →
-  gitignored `food-data/out/private/kalori.json`, its counts printed. The crawl and export stay on a local branch.
-- **Upload:** from `relay/`, `sh scripts/kalori-put.sh --env test`, check, then `sh scripts/kalori-put.sh` (prod).
-  The ETag is the file's hash, so phones refetch only after a change. Check:
-  `curl -so /dev/null -w '%{http_code}' -H "Authorization: Bearer $KEY_A" <relay>/food/kalori` → 200 (`npm run smoke`
-  covers the test copy).
-- **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` and items `kal:<id>`: `brand`
-  the shop's name, `shop` its id, values **per serving** (`sv: true`, one `1食` portion of a nominal 100 g), `est`
-  (`p`: estimated PFC, `e`: estimated kcal; absent: official), `img` (the generated picture's id, hotlinked from
-  `assets.kalori.jp`), `vg`/`st` for a trailing size or milk (牛丼 並盛 · 大盛, （Tall・豆乳）) and katakana aliases
-  for Short/Tall/Grande/Venti. Our shop aliases (セブン, サイゼ ...) are `data_src/kalori_shops.json`.
-- **Dropped:** no name or kcal, a name over 60 characters, over the custom-food limits (5,000 kcal, 500 g), or an
-  OFF product of the same name whose brand is the shop (the label wins; the same name by another maker stays).
-  Never in `verify.json`: estimates get no ✓n.
-- **On the phone** (`app/src/lib/food/kalori.ts`): a member's paired phone fetches it with the lazy datasets
-  (`db.wantMore`), in the parsing worker, its key in `Authorization`; never in the demo or for the guest. Kept in the
-  Cache API (`food-kalori`) for offline, asked again at each catalog load with its ETag (304: the kept copy); 401,
-  403 or 404 drop the copy, not asked again till the next load; offline or a 5xx use the copy. Ranked under the
-  other secondary sets (pen 1.75), over the products; a shop's name or alias in the query scopes to its menu (`db.ts shopIn`); logged as an `sv` snapshot (whole servings, no grams). About
-  25 MB of heap once in (V8, synthetic 38k rows; each item's one `1食` portion is left out, portionsOf's default).
-- **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows only (no Kalori data in the repo).
+- **Source:** the public scraper repo [huangwaylon/test](https://github.com/huangwaylon/test) writes
+  `data/products/shard-0.jsonl` … `shard-19.jsonl`, append-only, one product page fetch a line. Format v2 lines carry
+  `nutrients` (only the rows the page shows, each `{v, est}`), `name`, `shop_name`, `shop_category`, `genre`, `ended`,
+  `listed`, `image_id`; v1 lines (no `nutrients`) are skipped. Per product (shop, id) the latest `fetched_at` wins.
+- **Build:** `fetch.py kalori` (all 20 shards, whole, into `raw/kalori/`), then `build.py kalori` (or `all`) →
+  `out/kalori.json` (`kalori_convert.py`, its counts printed; alone: `python3 -I food-data/scripts/kalori_convert.py
+  food-data/raw/kalori`), then `npm run food:data` (lazy: no search keys added). A partial input fails the build and
+  writes nothing: one of `data_src/kalori_shops.json`'s shops with no items, or under 45,000 items (the site lists
+  ~54,000; a whole fetch ships ~53,800 after the drops); `KALORI_ALLOW_PARTIAL=1` writes it anyway, for a local or partial run.
+- **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
+  id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
+  absent), never 0; what every item would carry is the loader's (`db.ts withJan`): `sv: true` (one `1食` portion of a
+  nominal 100 g, portionsOf's) and `brand` (its shop's name), so 53.8k items are 9.9 MB, not 14 (1.67 MB gzipped);
+  `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
+  salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
+  `vg`/`st` for a trailing size or milk (牛丼 並盛 · 大盛, LL, ジャンボ, （Tall・豆乳）) and katakana aliases for
+  Short/Tall/Grande/Venti. Our shop aliases (セブン, サイゼ ...) and display names (`{name}`, chawan) are
+  `data_src/kalori_shops.json`.
+- **Names:** half-width kana made full, newlines and doubled spaces folded, a trailing ` /` cut; then, each only where
+  no two of the shop's names would meet, the shop's leading order code (`LEAD_CODES`: いかり's 【38】 and Ｓ/Ｏ/M,
+  ビッグボーイ's and フライングガーデン's TO, コージーコーナー's 【1】; a letter code only before a space, TO also
+  before 【 or Japanese), a ※ note (a bracketed (※2) anywhere,
+  a trailing ※… with no space after it) or a trailing price (（税込…円）, 12,000円), and a name over 60 characters cut
+  before its last bracket, comma or space.
+- **Discontinued:** a page titled 販売終了かも？ (`ended`) or a product gone from the shop's listing (`listed: false`)
+  stays, marked `ended: true` and `pop: -1` (ranked under the current menu; a current size is its variant group's default);
+  its page shows no 推定 badges, so its values count as estimated (`est: e`), never official.
+- **Categories:** the item's `genre` (`GENRE_CAT`; a pastry in a sweets shop, or a cake/tart one in a cafe, is
+  菓子・デザート; an alcohol name (`ALCOHOL`: サワー, 酒, 緑茶ハイ ...) in a drink or soup genre is 酒); with no genre (or
+  `other`), the name's (alcohol, sweets, drinks), else the shop's kind where it says (ramen/udon/soba, sushi,
+  gyudon/teishoku, bread, sweets: `SHOP_CAT`), else その他.
+- **Dropped:** no name or kcal; over the custom-food limits (5,000 kcal, 500 g, fibre 100 g); kcal off Atwater
+  (4P+9F+4C) by over half and 50 kcal, alcohol aside, or 0 kcal with 10 kcal of protein and fat (`implausible`: 幸楽苑's
+  47 kcal メガたんめん; a 0 kcal jelly or zero drink stays); an OFF product of
+  the same name whose brand is the shop (the label wins; the same name by another maker stays); a near-duplicate (the
+  shop's same name but for width or spaces: the current, then latest `lastmod`, then higher id stays); a long name that,
+  cut, meets another. Never in `verify.json`: estimates get no ✓n.
+- **On the phone:** ranked under the other secondary sets (`db.ts` KALORI_PENALTY), over the products; a shop's name
+  or alias in the query scopes to its menu (`db.ts shopIn`); logged as an `sv` snapshot (whole servings, no grams).
+- **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows.
 
 ## Sources evaluated and not used
 - Commercial recipe sites (Cookpad, Kikkoman, Ajinomoto) and 女子栄養大学 calorie guides: no reuse license.
@@ -200,4 +221,5 @@ sources as built; keep both when a source is added or changed. The raw downloads
 - **PDL1.0 / CC BY** (MAFF, Kumagaya, Kurume, Toyonaka, Takatsuki, Tokyo): attribution plus a 「加工して作成」 notice. Each file's `attribution` carries it.
 - **ODbL** (Open Food Facts): attribution, and share-alike for the derived database. Shipping `products.json` (and `jan/`, were it shipped) means offering that extract under ODbL.
 - **CC BY-SA** (Wikipedia-derived aliases): only short names and readings are kept.
+- **Kalori**: the header's `label`, `attribution`, `license` and `url` are its credit line; its pictures stay on `assets.kalori.jp` (hotlinked, never copied).
 - **CC0** (JBFD, MEXT↔USDA table, Wikidata) and USDA FoodData Central (public domain): no obligation; credit as a courtesy (`verify.json` `sources` carries the credit lines).

@@ -28,8 +28,6 @@ export function newRecord() {
       await context.addInitScript((key) => localStorage.setItem('island.key', key), KEY_OF[who]);
       await context.routeWebSocket(/\/room/, () => {});
       await context.route(`${RELAY}/**`, (route) => {
-        // (the chain menus: none uploaded, as a fresh relay says; e2e/food-kalori.spec.ts routes its own)
-        if (route.request().url().endsWith('/food/kalori')) return route.fulfill({ status: 404, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: '{"ok":false,"error":"no_data"}' });
         const text = route.request().postData() ?? '';
         const reply = store.handleText(text);
         try {

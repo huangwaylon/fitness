@@ -76,9 +76,9 @@ export const LOG_EVENTS = {
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
   "api.ok": { src: 'c', f: API },
-  // a members-only call (keyed.ts: the chain menus, the relay recogniser) that failed: which, why, its status; n: the
+  // a members-only call (keyed.ts: the relay recogniser, ジム's settings) that failed: which, why, its status; n: the
   // same one's repeats folded while unsent (once an incident)
-  "keyed.fail": { src: 'c', f: { ep: ['kalori', 'stt', 'gym', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
+  "keyed.fail": { src: 'c', f: { ep: ['stt', 'gym', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
   "auth.lost": { src: 'c', f: { from: ['refresh', 'flush', 'ws'], code: 'n' } },
   "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b', ...AT } },
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },

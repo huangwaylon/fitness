@@ -141,7 +141,8 @@ export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTE
 }
 
 /** The meal log's food data (static/food/, lib/food/load.ts): ~5 MB, fetched when the food sheet first opens and kept in
- *  a cache of its own that outlives builds. Its files carry the data's version (`?v=`); index.json, which names it,
+ *  a cache of its own that outlives builds. Each file carries its own version (`?v=`: index.json's `files`, an older
+ *  index's `version` for all), so a refresh of one (Kalori's, weekly) refetches that one; index.json, which names them,
  *  doesn't. */
 export const FOOD_CACHE = 'island-food-v1';
 export const isFoodData = (path: string): boolean => /\/food\/[\w-]+\.json$/.test(path);
@@ -177,32 +178,35 @@ export function foodImgStale(keys: readonly string[], index: string): string[] {
     return p.endsWith('.webp') && !named.has(p.slice(p.lastIndexOf('/') + 1));
   });
 }
-/** The cached food files of another data version than `v` (`keys`: their URLs). */
-export const staleFood = (keys: readonly string[], v: string): string[] =>
-  keys.filter((k) => {
-    const kv = new URL(k, 'https://x/').searchParams.get('v');
-    return kv !== null && kv !== v;
-  });
+/** The cached food files (`keys`: their URLs) that are not one of `keep` (the URLs a whole index names: foodFiles): a
+ *  file's other versions, a dataset dropped. index.json (no `?v=`) never. */
+export function staleFood(keys: readonly string[], keep: readonly string[]): string[] {
+  const named = new Set(keep);
+  return keys.filter((k) => new URL(k, 'https://x/').searchParams.get('v') !== null && !named.has(k));
+}
 /** index.json waits this long for the network (a basement, one bar), then its cached copy answers (NAV_TIMEOUT_MS's
  *  rule for the shell): every dataset waits behind it. */
 const FOOD_INDEX_TIMEOUT_MS = 2500;
 /** Where a newer index.json waits (beside the cached one) until every file it names is cached. */
 const NEXT = '?next';
 
-/** The files an index.json names (its datasets and verify.json), as the app fetches them: under its version, beside it. */
-function foodFiles(index: unknown, indexUrl: string): { v: string; urls: string[] } | null {
-  const x = index as { version?: unknown; datasets?: { file?: unknown }[] } | null;
+/** The files an index.json names (its datasets and verify.json), as the app fetches them (load.ts fileV): each under
+ *  its own version (`files`), else the index's `version`, beside it. */
+function foodFiles(index: unknown, indexUrl: string): string[] | null {
+  const x = index as { version?: unknown; files?: unknown; datasets?: { file?: unknown }[] } | null;
   if (!x || typeof x.version !== 'string' || !Array.isArray(x.datasets)) return null;
   const files = [...x.datasets.map((d) => d.file), 'verify.json'];
   if (files.some((f) => typeof f !== 'string')) return null;
-  return { v: x.version, urls: files.map((f) => new URL(`${f}?v=${encodeURIComponent(x.version as string)}`, indexUrl).href) };
+  const own = x.files && typeof x.files === 'object' ? (x.files as Record<string, unknown>) : {};
+  const v = (f: string) => (typeof own[f] === 'string' ? (own[f] as string) : (x.version as string));
+  return (files as string[]).map((f) => new URL(`${f}?v=${encodeURIComponent(v(f))}`, indexUrl).href);
 }
 
 type FoodCacheLike = Pick<Cache, 'match' | 'put' | 'delete'> & { keys(): Promise<readonly Request[]> };
 
 /**
  * A newer index.json (waiting at NEXT) replaces the cached one once every file it names is cached, and only then are
- * the other versions' files dropped: going offline mid-update leaves the last whole version (the cached index.json
+ * the files it doesn't name (their older versions) dropped: going offline mid-update leaves the last whole version (the cached index.json
  * still names it), never a mix. The first index.json is kept at once (nothing to keep whole yet).
  */
 async function promoteFood(cache: FoodCacheLike, indexUrl: string): Promise<void> {
@@ -212,14 +216,14 @@ async function promoteFood(cache: FoodCacheLike, indexUrl: string): Promise<void
   const files = foodFiles(JSON.parse(text), indexUrl);
   const keep = () => new Response(text, { headers: { 'content-type': 'application/json' } });
   if (!files) return void (await cache.delete(indexUrl + NEXT));
-  const have = await Promise.all(files.urls.map((u) => cache.match(u)));
+  const have = await Promise.all(files.map((u) => cache.match(u)));
   if (!have.every(Boolean)) {
     if (!(await cache.match(indexUrl))) await cache.put(indexUrl, keep());
     return;
   }
   await cache.put(indexUrl, keep());
   await cache.delete(indexUrl + NEXT);
-  for (const old of staleFood((await cache.keys()).map((k) => k.url), files.v)) await cache.delete(old);
+  for (const old of staleFood((await cache.keys()).map((k) => k.url), files)) await cache.delete(old);
 }
 
 /**

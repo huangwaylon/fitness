@@ -159,7 +159,7 @@ describe('where and how often', () => {
     const was = globalThis.fetch;
     globalThis.fetch = (async () => new Response('', { status: 503 })) as typeof fetch;
     try {
-      for (let i = 0; i < 3; i++) await keyed('https://relay/food/kalori', KEY);
+      for (let i = 0; i < 3; i++) await keyed('https://relay/gym/config', KEY);
       await keyed('https://relay/stt', KEY);
       await keyed('https://relay/stt', null);
     } finally {
@@ -167,7 +167,7 @@ describe('where and how often', () => {
     }
     await flushLog();
     expect(evs().filter((e) => e.e === 'keyed.fail').map((e) => [e.l, e.d])).toEqual([
-      [2, { ep: 'kalori', why: 'failed', http: 503, n: 3 }], [2, { ep: 'stt', why: 'failed', http: 503, n: 1 }]
+      [2, { ep: 'gym', why: 'failed', http: 503, n: 3 }], [2, { ep: 'stt', why: 'failed', http: 503, n: 1 }]
     ]);
   });
 

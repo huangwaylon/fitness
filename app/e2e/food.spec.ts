@@ -37,11 +37,16 @@ async function amountOf(page: Page, row: Locator) {
 }
 
 /** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level (once a
- *  level's slide-in has played). */
+ *  level's slide-in has played). What a box inside the edge clips (a ChipRow scrolling sideways: the shop chips) doesn't. */
 const overflowOf = (page: Page) => dlg(page).evaluate(async (d) => {
   await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))); // (one cancelled: done too)
   const right = d.getBoundingClientRect().right;
-  return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
+  const out = (e: Element) => e.getBoundingClientRect().right > right + 0.5;
+  const clipped = (e: Element) => {
+    for (let p = e.parentElement; p && p !== d; p = p.parentElement) if (getComputedStyle(p).overflowX !== 'visible') return !out(p);
+    return false;
+  };
+  return [...d.querySelectorAll('*')].filter((e) => out(e) && !clipped(e)).map((e) => e.className).slice(0, 3);
 });
 
 test('ごはん is けんこう’s second tab (no bowl in the HUD); search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up', async ({ page }) => {
@@ -121,7 +126,10 @@ test('search: a long query nothing holds whole offers 近いもの; names break 
   await sheet(page).locator('[data-food-q]').fill('とんこつ醤油ラーメン味玉チャーシュー増し');
   await expect(sheet(page).locator('[data-food-none]')).toContainText('見つかりませんでした', { timeout: 15_000 });
   const near = sheet(page).locator('[data-food-near] > li');
-  await expect(near.first()).toContainText('豚骨醤油ラーメン');
+  // the name holding the most of it first (a chain's 味玉チャーシュー醤油ラーメン with the chain menus in); the generic ones
+  // stay in sight (search.ts CHAIN_NEAR_SHARE)
+  await expect(near.first()).toContainText('醤油ラーメン');
+  await expect(sheet(page).locator('[data-food-near]')).toContainText('豚骨醤油ラーメン');
   await expect(sheet(page).locator('[data-food-near]')).toContainText('ラーメン（醤油）');
   await expect(sheet(page).locator('[data-food-near]').locator('xpath=preceding-sibling::h3[1]')).toHaveText('近いもの');
   // a name wrapped by its parts: a <wbr> before 「（」 (kept with what follows) and after 「・」, none inside 「しょうゆ」

@@ -238,7 +238,7 @@ const keyedEvs = new Map<string, Ev>();
 keyedSink((url, why, http) => {
   if (!st.on) return;
   const path = url.split(/[?#]/)[0];
-  const ep = /\/food\/kalori$/.test(path) ? 'kalori' : /\/stt$/.test(path) ? 'stt' : /\/gym\/config$/.test(path) ? 'gym' : 'other';
+  const ep = /\/stt$/.test(path) ? 'stt' : /\/gym\/config$/.test(path) ? 'gym' : 'other';
   const had = keyedEvs.get(`${ep}|${why}`);
   if (had && st.ring.includes(had)) return void (had.d = { ...had.d, n: Number(had.d?.n ?? 1) + 1 });
   log('keyed.fail', { ep, why, n: 1, ...(http ? { http } : {}) }, why === 'unreached' ? 1 : 2);

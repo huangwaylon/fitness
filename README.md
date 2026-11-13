@@ -20,7 +20,6 @@ the live room).
 |---|---|---|---|
 | The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | health.yml's site checks: red mails the owner |
 | The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml hourly: red mails, the log's spikes open an `alert` issue |
-| Kalori's chain menus (the relay's KV `FOOD`) | `food-data/`, `relay/scripts/kalori-put.sh` | [food-data.md "Kalori"](docs/food-data.md#kalori); roll back: put an older converted file | `npm run smoke` (test copy) |
 | The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `/health`, ボット → ジム; nothing watches it |
 | The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml every 30 min: the `its-alert` issue |
 

@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { addDataset, credits, emptyDb, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, type FoodDb } from './db.ts';
+import { addDataset, credits, emptyDb, findFoods, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item } from './types.ts';
 import { tierOf, type Entry } from './search.ts';
@@ -34,19 +34,26 @@ describe('static/food', () => {
   it('holds index.json, verify.json and exactly the datasets index.json lists (no barcode shards)', () => {
     expect(readdirSync(DIR).sort()).toEqual(['index.json', 'verify.json', ...index.datasets.map((d) => d.file)].sort());
     expect(index.version).toMatch(/^[0-9a-f]{12}$/);
-    expect(index.datasets.filter((d) => d.lazy).map((d) => d.file)).toEqual(['products.json']);
+    // the lazy ones: the products and the chain menus (Kalori), both secondary
+    expect(index.datasets.filter((d) => d.lazy).map((d) => d.file).sort()).toEqual(['kalori.json', 'products.json']);
+    expect(index.datasets.find((d) => d.file === 'kalori.json')).toMatchObject({ source: 'kalori', secondary: true, lazy: true });
   });
 
-  it('versions the files as shipped (scripts/food-data.ts): a change to any of them is a new ?v= for every phone', () => {
+  it('versions each file as shipped (scripts/food-data.ts): a refresh of one (Kalori’s, weekly) is a new ?v= for that one alone', () => {
+    const shipped = ['verify.json', ...index.datasets.map((d) => d.file)];
+    const own = Object.fromEntries(shipped.map((f) => [f, createHash('sha256').update(readFileSync(join(DIR, f))).digest('hex').slice(0, 12)]));
+    expect(index.files).toEqual(own);
+    // `version`, of them all: an older app's or worker's ?v=, and an index without `files`' for every file
     const hash = createHash('sha256');
-    for (const f of ['verify.json', ...index.datasets.map((d) => d.file)]) hash.update(`${f}\0`).update(readFileSync(join(DIR, f))).update('\0');
+    for (const f of shipped) hash.update(`${f}\0`).update(readFileSync(join(DIR, f))).update('\0');
     expect(index.version).toBe(hash.digest('hex').slice(0, 12));
   });
 
   it('every item makes a snapshot the record accepts, and has a 100 g portion to pick', () => {
     const bad: string[] = [];
     for (const d of index.datasets) {
-      for (const it of (JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset).items) {
+      // (as the loader has them: a chain menu's sv and brand are its, db.ts withJan)
+      for (const it of withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset).items) {
         const [first] = portionsOf(it);
         const op = foodOp({ id: 'f0000000', at: 1.8e12, d: '2026-11-03', m: 'l', g: first.g, f: toSnap(it, first.label) });
         if (!op || op.rm || op.f.n !== toSnap(it).n) bad.push(it.id);
@@ -71,10 +78,13 @@ describe('static/food', () => {
 });
 
 describe('loadFoodDb', () => {
-  it('fetches index.json bare and every data file under its version, from the app’s base', () => {
+  it('fetches index.json bare and every data file under its own version, from the app’s base', () => {
     expect(fetched[0]).toMatch(/\/food\/index\.json$/);
-    expect(fetched.slice(1).every((h) => h.endsWith(`?v=${index.version}`))).toBe(true);
-    expect(fetched.at(-1)).toMatch(/\/food\/products\.json\?v=/);
+    const asked = fetched.slice(1).map((h) => h.match(/\/food\/([\w-]+\.json)\?v=(\w+)$/)?.slice(1));
+    expect(asked.filter((m) => !m || m[1] !== index.files?.[m[0]])).toEqual([]);
+    // (the lazy ones last: at wantMore)
+    const lazy = index.datasets.filter((d) => d.lazy).map((d) => d.file);
+    expect(fetched.slice(-lazy.length).map((h) => h.match(/\/food\/([\w-]+\.json)\?v=/)?.[1]).sort()).toEqual(lazy.sort());
     expect(db.sets.length).toBe(index.datasets.length);
   });
 
@@ -91,9 +101,9 @@ describe('loadFoodDb', () => {
     for (const d of index.datasets) {
       const data = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset;
       expect(data.items.every((it) => typeof it.keys === (d.lazy ? 'undefined' : 'string')), d.file).toBe(true);
-      // the data as it was: no keys, every barcode
-      const items = data.items.map(({ keys: _k, ...it }) => (it.id.startsWith('off:') ? { ...it, jan: it.id.slice(4) } : it));
-      await addDataset(ref, d, { ...data, items });
+      // the data as it was: no keys, every barcode (a chain menu's brand: its shop's, withJan)
+      const items = data.items.map(({ keys: _k, ...it }) => it);
+      await addDataset(ref, d, withJan({ ...data, items }));
     }
     ref.verify = db.verify;
     // the same order as loadFoodDb's (datasets in the order they came): the same ties
@@ -208,9 +218,15 @@ describe('a query nothing holds whole', () => {
   it('the foods whose names hold the most of it first', () => {
     const q = 'とんこつ醤油ラーメン味玉チャーシュー増し';
     expect(searchFoods(db, q)).toEqual([]);
-    const near = nearFoods(db, q).map((x) => x.name);
-    expect(near[0]).toBe('豚骨醤油ラーメン');
+    const hits = nearFoods(db, q);
+    const near = hits.map((x) => x.name);
+    // the name holding the most of it first (with the chain menus in, a chain's 味玉チャーシュー醤油ラーメン); the chain
+    // menus in two rows of eight at most, so the generic 豚骨醤油ラーメン and ラーメン（醤油） stay in sight
+    // (search.ts CHAIN_NEAR_SHARE)
+    expect(near[0]).toContain('醤油ラーメン');
+    expect(near).toContain('豚骨醤油ラーメン');
     expect(near).toContain('ラーメン（醤油）');
+    expect(hits.filter((x) => x.id.startsWith('kal:')).length).toBeLessThanOrEqual(2);
     expect(nearFoods(db, 'とんこつラーメン煮卵のせ')[0].name).toBe('豚骨ラーメン');
     expect(nearFoods(db, 'zzzz')).toEqual([]);
   });
@@ -264,7 +280,7 @@ describe('the golden queries', () => {
   });
 });
 
-describe('the chain menus (a member’s: Kalori, invented items)', () => {
+describe('the chain menus (Kalori, invented items)', () => {
   const kal = (id: number, shop: string, brand: string, name: string, kcal: number, more: Partial<Item> = {}): Item =>
     ({ id: `kal:${id}`, name, brand, shop, cat: 'その他', kcal, p: 10, f: 10, c: 10, sv: true, ...more });
   const chains: Dataset = {
@@ -284,10 +300,27 @@ describe('the chain menus (a member’s: Kalori, invented items)', () => {
   };
   let k: FoodDb;
   beforeAll(async () => {
-    k = { ...db, entries: [...db.entries], byId: new Map(db.byId), variants: new Map(db.variants), sets: [...db.sets], shopKeys: new Map() };
+    // (the shipped catalog without its own chain menus: these invented ones in their place)
+    const real = (it: Item) => it.id.startsWith('kal:');
+    k = {
+      ...db, entries: db.entries.filter((e) => !real(e.it)), byId: new Map([...db.byId].filter(([, it]) => !real(it))),
+      variants: new Map([...db.variants].filter(([, vs]) => !vs.some(real))), sets: db.sets.filter((s) => s.source !== 'kalori'), shopKeys: new Map()
+    };
     await addDataset(k, { file: 'kalori', source: 'kalori', badge: '店', secondary: true, lazy: true }, chains);
   });
   const ids = (q: string, n = 60) => searchFoods(k, q, n).map((x) => x.id);
+
+  it('the file ships no sv, portion or brand (kalori_convert.py): the loader gives each its own (db.ts withJan)', () => {
+    const shipped: Dataset = { source: 'kalori', shops: chains.shops, items: [{ id: 'kal:1', name: '牛丼 並盛', shop: 'sukiya', kcal: 733 }, { id: 'kal:9', name: 'x', shop: 'gone', kcal: 1 }] };
+    const [don, stray] = withJan(shipped).items;
+    expect([don.sv, don.brand, stray.brand, portionsOf(don)]).toEqual([true, 'すき家', 'gone', [{ label: '1食', g: 100 }]]);
+    expect(toSnap(don).sv).toBe(true);
+    // (an older file's, as shipped: its lone 1食 dropped; another set's items untouched)
+    const old = withJan({ source: 'kalori', shops: {}, items: [{ id: 'kal:2', name: 'y', shop: 's', brand: 'S', kcal: 1, sv: true, portions: [{ label: '1食', g: 100 }] }] }).items[0];
+    expect([old.brand, old.portions]).toEqual(['S', undefined]);
+    const off = withJan({ source: 'off', items: [{ id: 'off:4901', name: 'z', shop: 'x', kcal: 1 }] }).items[0];
+    expect([off.sv, off.brand, off.jan]).toEqual([undefined, undefined, '4901']);
+  });
 
   it('rank under the generic foods when no shop is named: 牛丼 finds 牛丼（並盛） first, a chain’s after', () => {
     const got = ids('牛丼');
@@ -313,7 +346,12 @@ describe('the chain menus (a member’s: Kalori, invented items)', () => {
     expect(shopsFor(k, '牛丼')).toEqual([{ shop: 'sukiya', name: 'すき家', n: 1 }, { shop: 'seven-eleven', name: 'セブン-イレブン', n: 1 }]);
     expect(shopsFor(k, 'モカ')).toEqual([{ shop: 'starbucks', name: 'スターバックス', n: 1 }]);
     expect(shopsFor(k, '定食').map((s) => s.shop)).toEqual(['karaage']);
-    expect([shopsFor(k, 'すき家 牛丼'), shopsFor(k, ''), shopsFor(db, '牛丼')]).toEqual([[], [], []]);
+    // (and none without the chain menus in: the catalog before they come)
+    expect([shopsFor(k, 'すき家 牛丼'), shopsFor(k, ''), shopsFor({ ...k, shopKeys: new Map() }, '牛丼')]).toEqual([[], [], []]);
+    // the search's own pass (findFoods) gives both: the chips count every hit, not only the items asked for
+    const found = (q: string, n: number) => { const r = findFoods(k, q, n); return [r.items.map((x) => x.id), r.shops.map((s) => s.shop)]; };
+    expect(found('牛丼', 1)).toEqual([['dishes:gyudon'], ['sukiya', 'seven-eleven']]);
+    expect(found('すき家 牛丼', 60)).toEqual([['kal:1'], []]);
   });
 
   it('nothing on the shop’s menu: the query over everything; a shop called as a food is never a shop word', () => {
@@ -321,11 +359,27 @@ describe('the chain menus (a member’s: Kalori, invented items)', () => {
     expect(ids('セブン おにぎり')).toEqual(['kal:4']);
     expect(shopIn(k, '唐揚げ')).toBeNull();
     expect(ids('唐揚げ')[0]).toBe('dishes:karaage');
-    expect(shopIn(db, 'セブン')).toBeNull();
+    // (and no shop word before the chain menus come: the catalog's own, without them)
+    expect(shopIn({ ...k, shopKeys: new Map() }, 'セブン')).toBeNull();
   });
 });
 
 describe('a dataset that fails to load', () => {
+  it('an index without per-file versions (an older build’s): every file under its `version`', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (href: string) => {
+      asked.push(href);
+      if (href.includes('index.json')) return new Response(JSON.stringify({ version: 'v0', datasets: [] }));
+      return new Response(null, { status: 404 });
+    });
+    try {
+      await loadFoodDb();
+      expect(asked.slice(1).map((h) => h.replace(/^.*\/food\//, ''))).toEqual(['verify.json?v=v0']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('is left out at first, fetched again at its next chance, and added when it comes (onAdd: search again)', async () => {
     const real = JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Dataset;
     const small: Dataset = { ...real, items: real.items.slice(0, 20) };

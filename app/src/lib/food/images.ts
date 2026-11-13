@@ -4,7 +4,7 @@
 // a 128 px one in a thumbnail sheet (rows and lists, 40-64 px) and a 384 px one in a detail sheet (the amount's
 // picture). Sheet names carry their content hash, so a URL never changes (cached on first use, service worker).
 // A food without one (custom foods, a product no word names) gets none: FoodThumb shows its category's tile.
-// A chain menu's (Kalori, a member's) is Kalori's own generated picture, hotlinked (kaloriImg).
+// A chain menu's (Kalori) is Kalori's own generated picture, hotlinked (kaloriImg).
 import { quiet } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 import type { Item } from './types.ts';

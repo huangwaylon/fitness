@@ -8,7 +8,7 @@
 
   let { open = $bindable(false) }: { open?: boolean } = $props();
   let list = $state.raw<Credit[] | null>(null);
-  /** The chain menus are in (a member's): their pictures are Kalori's, credited beside ours. */
+  /** The chain menus are in: their pictures are Kalori's, credited beside ours. */
   let kal = $state(false);
   let failed = $state(false);
 

@@ -10,6 +10,7 @@ Steps (raw files go to food-data/raw/<dir>/ or $FOOD_RAW/<dir>/, gitignored and 
   bodik                  BODIK CKAN CSVs: Toyonaka, Takatsuki, Kurume -> muni_*/
   tokyo                  東京都 簡単レシピ CSVs listed in data_src/tokyo_hokeniryo_recipes.json -> tokyo_hokeniryo/
   jbfd                   jbfd + jbfd-correspondence-table CSVs (GitHub, CC0) -> reliab_github/
+  kalori                 kalori.jp menus, the 20 shard-N.jsonl of github.com/huangwaylon/test (data/products/) -> kalori/
   aliases                Wikidata + ja.wikipedia readings of the dish names in out/ -> data_src/aliases_*.json
   weight-change          MEXT 表12 重量変化率 from the ebook PDF (needs `pdftotext`) -> data_src/mext_weight_change.json
 Manual downloads (no stable URL): MEXT 八訂増補2023 Excel + ebook PDF (mext/main_2023_ch2.xlsx, main_2023_ebook.pdf;
@@ -181,12 +182,24 @@ def jbfd():
         save(os.path.join(RAW, 'reliab_github', sub, f), get(gh + repo + '/main/data/' + f))
 
 
+KALORI = 'https://raw.githubusercontent.com/huangwaylon/test/main/data/products/shard-%d.jsonl'
+KALORI_SHARDS = 20
+
+
+def kalori():
+    """The scraper's shards, whole each time (append-only files: a kept copy would go stale)."""
+    for i in range(KALORI_SHARDS):
+        data = get(KALORI % i, timeout=300)
+        save(os.path.join(RAW, 'kalori', 'shard-%d.jsonl' % i), data)
+        print('shard-%d.jsonl' % i, data.count(b'\n'), 'lines')
+
+
 # ---------------------------------------------------------------- aliases (frozen in data_src/)
 def dish_names():
-    """Base names (parentheticals stripped) of every non-MEXT, non-OFF item currently in out/."""
+    """Base names (parentheticals stripped) of every non-MEXT, non-OFF, non-Kalori item in out/."""
     names = []
     for f in sorted(os.listdir(lib.OUT)):
-        if f.endswith('.json') and f not in ('foods.json', 'products.json', 'index.json', 'verify.json'):
+        if f.endswith('.json') and f not in ('foods.json', 'products.json', 'kalori.json', 'index.json', 'verify.json'):
             for it in lib.load_json(os.path.join(lib.OUT, f)).get('items', []):
                 n = re.sub(r'\s.*$', '', re.sub(r'[（(][^）)]*[）)]', '', it['name']).strip())
                 if 1 < len(n) <= 15 and n not in names:
@@ -331,7 +344,7 @@ def weight_change():
 
 
 STEPS = {'off-csv': off_csv, 'off-api': off_api, 'maff': maff, 'maff-en': maff_en, 'bodik': bodik, 'tokyo': tokyo,
-         'jbfd': jbfd, 'aliases': aliases, 'weight-change': weight_change}
+         'jbfd': jbfd, 'kalori': kalori, 'aliases': aliases, 'weight-change': weight_change}
 
 if __name__ == '__main__':
     if len(sys.argv) < 2 or sys.argv[1] not in STEPS:
