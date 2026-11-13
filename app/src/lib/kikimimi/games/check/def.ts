@@ -3,8 +3,8 @@
 // adaptive (GameDef.next: each round picked from the answers so far), solo, nothing on the wire.
 //
 // The walk: it starts at かわ (B1+), goes up a band after 2 right in a row and down after 1 wrong, and stops after two
-// reversals (at least CHECK_MIN items) or at CHECK_MAX. The skills take turns (CHECK_SEQ: すうじ, つながる おと, へんじ,
-// にた おと, one gist). The result is the placed band (the reversals' mean, rounded down: a place where the answers
+// reversals (at least CHECK_MIN items) or at CHECK_MAX. The skills take turns (CHECK_SEQ: 数字, つながる音, 返事・本音,
+// 似た音, one gist). The result is the placed band (the reversals' mean, rounded down: a place where the answers
 // still came) as a starting stage, and a band per skill (its answers' bands, a miss a band lower) for とくい / これから.
 // It's written on the `listen` row as `gm` 'check', `lv` the placed level and `u` the profile (one digit a skill).
 // Pure.
@@ -24,8 +24,8 @@ export const START_BAND = 2;
 export const CHECK_MIN = 8;
 export const CHECK_MAX = 12;
 
-/** The sub-skills the check samples (its profile's order): すうじ, つながる おと, へんじ・ほんね, にた おと (L/R, vowels,
- *  consonants), だいたいの ないよう (a dialogue's gist; a picture's key word below もり). */
+/** The sub-skills the check samples (its profile's order, `kiki.checkSkill.*`): 数字, つながる音, 返事・本音, 似た音
+ *  (L/R, vowels, consonants), だいたいの内容 (a dialogue's gist; a picture's key word below もり). */
 export const CHECK_SKILLS = ['num', 'reduce', 'reply', 'pair', 'gist'] as const;
 export type CheckSkill = (typeof CHECK_SKILLS)[number];
 /** Which skill each item samples, in turn: the long gist once, the others two or three times. */

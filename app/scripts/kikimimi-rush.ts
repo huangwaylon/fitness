@@ -1,6 +1,6 @@
 // すうじ ラッシュ's content (docs/kikimimi-engine.md "すうじ ラッシュ", content/listen/README.md "rush"): seeded frames (a setting's
-// line with its number, by a customer, with or without a self-correction) expanded into content/listen/s1-rush.yaml
-// (かわ) and s2-rush.yaml (もり). Each frame is an order said the American way at one of six counters (a café, a
+// line with its number, by a customer, with or without a self-correction) expanded into content/listen/s0-rush.yaml
+// … s4-rush.yaml, one a place (FILES). Each frame is an order said the American way at one of six counters (a café, a
 // konbini, a ticket window, a deli on a trip, a taxi stand, a pharmacy); each item one customer's 1-2 lines, one clip,
 // and the ticket's four chips: the right number, the one said before a self-correction, another number heard in the
 // line, a sound trap (teen / -ty, two digits swapped) or a near value. About a third of the items correct themselves,

@@ -1,6 +1,6 @@
 // まるごと 聞く as a GameDef (docs/kikimimi.md "まるごと 聞く", kikimimi-engine.md "まるごと 聞く"): one 2-4 minute
-// conversation from the `listened` long files at the lobby's place (content/listen/s4-long-*.yaml: generated scenes and
-// real recordings, pool.ts listenOf), the piece the host's (its options' `piece`: the sheet's pick, pieceFor), played
+// conversation from the `listened` long files at the lobby's place (content/listen/s*-long*.yaml: generated scenes, and
+// ほし's real recordings; pool.ts listenOf), the piece the host's (its options' `piece`: the sheet's pick, pieceFor), played
 // whole before the first question; then 4-5 questions with no clip: the gist, the implied meaning, the attitude, the next
 // step (3 English choices). The transcript and a dictation of a line or two near my misses come after, on the results
 // page (dictFor; its answers a row of their own). Pure.

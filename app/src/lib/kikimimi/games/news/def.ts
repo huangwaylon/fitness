@@ -1,9 +1,9 @@
-// しずえの ニュース as a GameDef (docs/kikimimi-engine.md "しずえの ニュース"): one bulletin a day from the news files (content/listen/
-// news-a.yaml, news-b.yaml; pool.ts listenOf), picked by the date (the lobby's seed is the Tokyo day: lane.ts) among
+// しずえの ニュース as a GameDef (docs/kikimimi-engine.md "しずえの ニュース"): one bulletin a day from the lobby's place's news files
+// (content/listen/s*-news.yaml, やま's news-a and news-b; pool.ts listenOf), picked by the date (the lobby's seed is the Tokyo day: lane.ts) among
 // those of its season, a weekday's only on that day. しずえ reads it as one sequence of clips: an island or seasonal
 // item, a Tokyo-life one, today's real weather (weather.ts, the host's, in the options) and the sign-off. Then the
 // questions, answers after the play: the gist (the first round, its clip the bulletin), a detail, and 「傘は いる？」
-// (only with the weather). Pure.
+// (only with the weather: news-a's `weather` item, so at やま). Pure.
 //
 // Tiers per player on the same audio (GameDef.tier, ことば タイル's tierAt): easy, each question offers the answer and its
 // trap only; else all four choices. Co-op: everyone answers every question, the team's count the questions both got

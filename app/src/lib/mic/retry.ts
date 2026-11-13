@@ -3,6 +3,11 @@
 // 「もう一度 試す」 reloads the app with a note in sessionStorage (DEVICE.micRetry: which mic step, when), and the app comes
 // back to that step (ききみみ › 設定 › マイク, or the probe's permission step), where the next tap asks afresh. Nothing
 // remembers a refusal: every ask is getUserMedia inside a tap. Pure but for the store and the reload it's handed.
+// The evidence (WebKit main, UserMediaPermissionRequestManagerProxy.cpp): a refused page's later ask outside a tap is
+// refused unasked until its document changes, one inside a tap asks again; permissions.query says `prompt` for a stored
+// refusal unless this page was refused already; Safari's recogniser needs its own speech permission
+// (`service-not-allowed`). Undocumented: where a Home Screen app keeps its decision (WebKit bug 327237) and what but a
+// relaunch resets it.
 import { DEVICE, readJson, sessionKV, type KV } from '#lib/sync/storage.ts';
 
 export type MicStep = 'optin' | 'probe';
