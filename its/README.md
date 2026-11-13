@@ -125,10 +125,12 @@ later one replaces the earlier; each is sent once per hold / stay whichever run 
 | Event | When | Title · body (ja; en from the subscription's `lang`) | Urgency, TTL |
 |---|---|---|---|
 | `hold` | auto-confirm on and the stay ≥ 11 days away (the bot finishes it) | 仮押さえしました · NAGU 勝浦・11/22(日)・自動で確定します | normal, till the hold lapses |
-| `human_needed` | a hold that waits for a person (`near_date`, `auto_off`, `no_mail`, `queue_failed`, `run_ended`, `leg_*`) while it lasts: the stay's earliest hold within 30 min | 仮押さえ・要対応 · NAGU 勝浦・11/22(日)・16:05までにメールから申込 | high, what's left; ≤ 120 s left: not sent (`push skip expired`) |
+| `human_needed` | a hold that waits for a person (any detail but those below: `near_date`, `auto_off`, `no_mail`, `unmapped`, `fill_rejected`, `lease_stale`, `leg_error`, …) while it lasts: the stay's earliest hold within 30 min | 仮押さえ・要対応 · NAGU 勝浦・11/22(日)・16:05までにメールから申込 | high, what's left; ≤ 120 s left: not sent (`push skip expired`) |
+| `human_needed` `submit_unknown`, `no_completion` | the leg may have filed (`maybe_filed`), with or without a live hold | 仮押さえ・要確認 · NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認 | high, 1 day |
+| `human_needed` `room_taken`, `hold_expired` | a definite non-booking: nothing helps | not sent (`push skip not_booked`) | |
 | `confirmed` | 予約確定 | 予約が確定しました · NAGU 勝浦・11/22(日)・申込受付番号 A1234567 | normal, 1 day |
 
-A hold the bot won't finish pushes only its `human_needed` (one notification per hold). Times are Tokyo's; titles and
+A hold the bot won't finish pushes only its `human_needed` (one notification per hold). The detail lists are the contract's (`NOT_BOOKED_DETAILS`, `MAYBE_FILED_DETAILS`, `HUMAN_NEEDED_DETAILS`). Times are Tokyo's; titles and
 bodies are written here, so an older service worker shows a newer kind. The decrypted message is the contract's
 `ItsPushPayload` (≤ 3000 bytes).
 
@@ -164,7 +166,7 @@ sees `push.vapidPublic` change and re-subscribes on its next refresh; until then
 
 **Logs**: `its push queued kind=human_needed id=<run>:<seq> urgency=high ttl=1720s subs=2`, `its push kind=… id=…
 ep=<6 hex of the endpoint's SHA-256> who=A status=201 ms=180 outcome=ok` (one per attempt; `reason=` on a refusal),
-`its push skip <expired|no_hold|manual|detail|done|no_vapid> …`, `its push gave_up …`, `its push expired …`,
+`its push skip <expired|no_hold|manual|not_booked|done|no_vapid> …`, `its push gave_up …`, `its push expired …`,
 `its push subscribe by=A ep=… lang=ja subs=A1/B1 moved=0 replaced=0`, `its push unsubscribe by=A ep=… removed=1`,
 `its push test refused rate_limited …`. Never an endpoint, a key or a message's text.
 

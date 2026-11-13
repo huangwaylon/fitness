@@ -355,7 +355,23 @@ export interface PushEndpointInput { endpoint: string }
  *  retry (429/5xx/network: tried again until its TTL), expired (its TTL ran out first). @public (its/worker) */
 export type PushOutcome = 'ok' | 'gone' | 'config' | 'bug' | 'retry' | 'expired';
 /** @public (its/worker) */
-export type PushKind = 'hold' | 'human_needed' | 'confirmed' | 'test';
+export type PushKind = 'hold' | 'human_needed' | 'maybe_filed' | 'confirmed' | 'test';
+
+/** A `human_needed` event's detail (the runner's outcome codes: its/runner/README.md "Outcome codes"; a leg may send
+ *  others, e.g. apply_page_<status>), as the push and the page read it:
+ *  - NOT_BOOKED_DETAILS: a definite non-booking where no action helps (the room went, the hold lapsed): no push.
+ *  - MAYBE_FILED_DETAILS: the leg may have filed (the budget ran out after 申込する, or no completion page): the
+ *    mailbox and the site decide; pushed as `maybe_filed` (申込済みの可能性).
+ *  - any other: the hold waits for a person; pushed as `human_needed` (要対応) while the hold lasts. @public (its/worker) */
+export const NOT_BOOKED_DETAILS: readonly string[] = ['room_taken', 'hold_expired'];
+/** @public (its/worker) */
+export const MAYBE_FILED_DETAILS: readonly string[] = ['submit_unknown', 'no_completion'];
+/** The codes the runner sends today (README's list; the leg's are open-ended). @public (its/worker) */
+export const HUMAN_NEEDED_DETAILS: readonly string[] = [
+  'near_date', 'auto_off', 'no_mail', 'unmapped', 'fill_rejected', 'hold_expired', 'confirming_unacked', 'lease_stale',
+  'not_wanted', 'browser_busy', 'no_completion', 'submit_unknown', 'leg_timeout', 'leg_error', 'room_taken', 'bad_booking',
+  'id_conflict', 'run_ended',
+];
 
 /** `ItsStatus.push`, and every push route's `push`: live subscriptions per member, the VAPID public key the Worker signs
  *  with (`vapidPublic`: the page's applicationServerKey, read here at runtime, never built into the app: an

@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
 import {
-  HOLD_SEC, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TESTS_PER_DAY, PUSH_TEST_EVERY_SEC,
+  HOLD_SEC, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TESTS_PER_DAY, PUSH_TEST_EVERY_SEC,
   type BookingInput, type EventInput, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus,
 } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
@@ -121,19 +121,34 @@ describe('push.ts: what a report’s events push', () => {
     expect(r2.notices[0].expiresAt).toBe(NOW - 12 * MIN + HOLD_MS);
   });
 
-  it('human_needed: only for a hold that waits (leg_*, no_mail, …), only while it lasts, skipped with ≤ 120 s left', () => {
+  it('human_needed: every code the runner sends for a waiting hold (its README’s list), only while the hold lasts, skipped with ≤ 120 s left', () => {
     const hold = e('hold', 1, { t: NOW - 10 * MIN });
-    for (const detail of ['leg_failed', 'leg_error', 'no_mail', 'run_ended', 'queue_failed', 'auto_off']) {
-      expect(run([e('human_needed', 2, { detail })], { events: [hold] }).notices, detail).toHaveLength(1);
+    const push = (detail: string | undefined) => run([e('human_needed', 2, { detail })], { events: [hold] });
+    // the round-2 runner's codes: the old leg_* / near_date list missed most of these
+    const waiting = HUMAN_NEEDED_DETAILS.filter((d) => !NOT_BOOKED_DETAILS.includes(d) && !MAYBE_FILED_DETAILS.includes(d));
+    expect(waiting).toEqual(expect.arrayContaining(['unmapped', 'fill_rejected', 'confirming_unacked', 'lease_stale', 'not_wanted', 'browser_busy', 'bad_booking', 'id_conflict']));
+    for (const detail of [...waiting, 'queue_failed', 'apply_page_500', undefined]) {
+      expect(push(detail).notices.map((n) => [n.kind, n.urgency]), String(detail)).toEqual([['human_needed', 'high']]);
     }
-    for (const detail of ['id_conflict', 'bookings_unsynced', undefined]) {
-      expect(run([e('human_needed', 2, { detail })], { events: [hold] }).skipped, String(detail)).toEqual([{ kind: 'human_needed', id: `${RUN}:2`, why: 'detail' }]);
+    // a definite non-booking: nothing a person can do
+    for (const detail of ['room_taken', 'hold_expired']) {
+      expect(push(detail), detail).toEqual({ notices: [], skipped: [{ kind: 'human_needed', id: `${RUN}:2`, why: 'not_booked' }], done: [] });
     }
     expect(run([e('human_needed', 2, { detail: 'no_mail' })]).skipped).toEqual([{ kind: 'human_needed', id: `${RUN}:2`, why: 'no_hold' }]);
     const old = e('hold', 1, { t: NOW - HOLD_MS + MIN_LEFT_MS });
     expect(run([e('human_needed', 2, { detail: 'no_mail' })], { events: [old] }).skipped).toEqual([{ kind: 'human_needed', id: `${RUN}:2`, why: 'expired', left: 120 }]);
     const lapsed = e('hold', 1, { t: NOW - HOLD_MS });
     expect(run([e('human_needed', 2, { detail: 'no_mail' })], { events: [lapsed] }).skipped[0].why).toBe('no_hold');
+  });
+
+  it('a leg that may have filed (submit_unknown, no_completion): its own message, high, a day, with or without a live hold', () => {
+    for (const detail of MAYBE_FILED_DETAILS) {
+      const r = run([e('human_needed', 2, { detail })]);
+      expect(r.notices, detail).toEqual([{ kind: 'maybe_filed', id: `${RUN}:2`, date: FAR, hotel: HOTEL, urgency: 'high', until: NOW + CONFIRMED_TTL_MS }]);
+    }
+    const at = { id: 'r:2', date: '2026-11-22', hotel: HOTEL };
+    expect(payloadOf({ kind: 'maybe_filed', ...at }, 'ja', 'T')).toMatchObject({ title: '仮押さえ・要確認', body: 'NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認' });
+    expect(payloadOf({ kind: 'maybe_filed', ...at }, 'en', 'T')).toMatchObject({ title: 'Room held: check', body: 'NAGU 勝浦 · Sun 22 Nov · may already be booked: check the email and the site' });
   });
 
   it('confirmed: normal, a day, the 申込受付番号', () => {

@@ -3,7 +3,7 @@
 // for how long), the messages in each language (Tokyo times), what a push service's answer means, and the status's
 // counts. Never an endpoint in a log line or the status: a subscription is known by `ep`, its endpoint's SHA-256.
 import {
-  AUTO_CONFIRM_MIN_DAYS, HOLD_SEC, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, normName,
+  AUTO_CONFIRM_MIN_DAYS, HOLD_SEC, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, normName,
   type BookingEntry, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type Member, type PushKind,
   type PushLang, type PushOutcome,
 } from '../../../app/src/lib/its/contract.ts';
@@ -65,8 +65,6 @@ const DONE_KEPT = 50;
 const RETRY_FIRST_MS = 30_000;
 const RETRY_MAX_MS = 15 * 60_000;
 const KEEP_MS = PUSH_KEEP_DAYS * 86_400_000;
-/** human_needed details tied to a hold that waits for a person (the runner's: book_hotels / confirm_booking / remote). */
-const HOLD_DETAILS = /^(near_date|auto_off|no_mail|queue_failed|run_ended|leg_[a-z_]+)$/;
 
 /** The VAPID pair from the Worker's var and secret, or null (push is off): VAPID_PUBLIC an uncompressed P-256 point
  *  (65 bytes, base64url), VAPID_PRIVATE its 32-byte scalar. */
@@ -143,7 +141,7 @@ export interface Notice {
   number?: string;
 }
 
-export interface Skip { kind: PushKind; id: string; why: 'expired' | 'no_hold' | 'manual' | 'detail' | 'done'; left?: number }
+export interface Skip { kind: PushKind; id: string; why: 'expired' | 'no_hold' | 'manual' | 'not_booked' | 'done'; left?: number }
 
 const stayKey = (date: string, hotel: string) => `${date}|${normName(hotel)}`;
 
@@ -160,8 +158,10 @@ function holdAt(bookings: BookingEntry[], events: ItsEvent[], date: string, hote
 /** The notices for a report's added events (README "Push"):
  *  - hold, when the bot will confirm it (auto-confirm on, the stay ≥ AUTO_CONFIRM_MIN_DAYS away): normal, till the
  *    hold lapses. Otherwise nothing: its human_needed says it.
- *  - human_needed for a hold that waits for a person (HOLD_DETAILS) while it lasts: high, till it lapses; skipped with
- *    MIN_LEFT_MS or less left.
+ *  - human_needed for a hold that waits for a person (any detail but the contract's NOT_BOOKED_DETAILS and
+ *    MAYBE_FILED_DETAILS) while it lasts: high, till it lapses; skipped with MIN_LEFT_MS or less left.
+ *  - human_needed for a leg that may have filed (MAYBE_FILED_DETAILS): `maybe_filed`, high, CONFIRMED_TTL_MS, live
+ *    hold or not (the mailbox and the site decide).
  *  - confirmed: normal, CONFIRMED_TTL_MS, the 申込受付番号.
  *  Each once (`done`). `events`: the record's important ones, the added included. */
 export function noticesFor(added: ItsEvent[], ctx: { settings: ItsSettings; bookings: BookingEntry[]; events: ItsEvent[]; done: string[] }, now: number): { notices: Notice[]; skipped: Skip[]; done: string[] } {
@@ -173,12 +173,15 @@ export function noticesFor(added: ItsEvent[], ctx: { settings: ItsSettings; book
     const id = `${e.runId}:${e.seq}`;
     if (!e.date || !e.hotel) continue;
     const base = { id, date: e.date, hotel: e.hotel };
+    const detail = e.detail ?? '';
     let n: Notice;
     if (e.kind === 'confirmed') {
       n = { ...base, kind: 'confirmed', urgency: 'normal', until: now + CONFIRMED_TTL_MS, ...(e.detail && { number: e.detail }) };
+    } else if (e.kind === 'human_needed' && MAYBE_FILED_DETAILS.includes(detail)) {
+      n = { ...base, kind: 'maybe_filed', urgency: 'high', until: now + CONFIRMED_TTL_MS };
     } else {
       if (e.kind === 'hold' && !(ctx.settings.autoConfirm && daysUntil(e.date, now) >= AUTO_CONFIRM_MIN_DAYS)) { skipped.push({ kind: e.kind, id, why: 'manual' }); continue; }
-      if (e.kind === 'human_needed' && !HOLD_DETAILS.test(e.detail ?? '')) { skipped.push({ kind: e.kind, id, why: 'detail' }); continue; }
+      if (e.kind === 'human_needed' && NOT_BOOKED_DETAILS.includes(detail)) { skipped.push({ kind: e.kind, id, why: 'not_booked' }); continue; }
       const at = holdAt(ctx.bookings, ctx.events, e.date, e.hotel, now);
       if (at === null) { skipped.push({ kind: e.kind, id, why: 'no_hold' }); continue; }
       const expiresAt = at + HOLD_MS;
@@ -217,6 +220,7 @@ const TEXT = {
   ja: {
     hold: ['仮押さえしました', () => '自動で確定します'],
     human_needed: ['仮押さえ・要対応', (j: Pick<PushJob, 'expiresAt'>) => `${tokyoTime(j.expiresAt!)}までにメールから申込`],
+    maybe_filed: ['仮押さえ・要確認', () => '申込済みの可能性：メールとサイトで確認'],
     confirmed: ['予約が確定しました', (j: Pick<PushJob, 'number'>) => (j.number ? `申込受付番号 ${j.number}` : '')],
     test: ['テスト通知', () => '保養所ボットの通知はこの端末に届きます'],
     sep: '・',
@@ -224,6 +228,7 @@ const TEXT = {
   en: {
     hold: ['Room held', () => 'confirming automatically'],
     human_needed: ['Room held: action needed', (j: Pick<PushJob, 'expiresAt'>) => `apply from the email by ${tokyoTime(j.expiresAt!)}`],
+    maybe_filed: ['Room held: check', () => 'may already be booked: check the email and the site'],
     confirmed: ['Booking confirmed', (j: Pick<PushJob, 'number'>) => (j.number ? `ref. ${j.number}` : '')],
     test: ['Test notification', () => 'ITS bot notifications reach this device'],
     sep: ' · ',
