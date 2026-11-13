@@ -9,7 +9,8 @@
     "test": "vitest run",
     "dev": "wrangler dev",
     "deploy": "sh scripts/deploy.sh",
-    "its:logs": "node scripts/its-logs.ts"
+    "its:logs": "node scripts/its-logs.ts",
+    "vapid:keys": "node scripts/vapid-keys.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261031.1",
