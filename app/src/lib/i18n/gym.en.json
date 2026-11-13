@@ -31,6 +31,8 @@
   "gym.unknown": "Unknown",
   "gym.none": "None",
   "gym.recent": "Recent checks",
+  "gym.config": "Current settings",
+  "gym.configFailed": "Couldn't load the current settings",
   "gym.by.alarm": "Scheduled",
   "gym.by.tap": "Manual",
   "gym.prog.training": "Training",

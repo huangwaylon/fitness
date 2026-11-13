@@ -59,8 +59,9 @@ const ALLOW: Record<string, string[]> = {
   // `/stt` and the key (sync)
   mic: ['sync', 'sound'],
   offline: ['travel', 'hiking', 'sync'],
-  // 設定's ジムボット (docs/design.md "Settings"): the gym bot's /status, read and worded for its page
-  gym: ['i18n'],
+  // 設定's ジムボット (docs/design.md "Settings"): the gym bot's /status, read and worded for its page, and its
+  // /gym/config with the member key
+  gym: ['i18n', 'sync'],
   // 設定's 保養所ボット (docs/design.md "Settings"): the its-bot Worker's client (the member key, the log) and the page's view
   its: ['i18n', 'sync'],
   components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its']

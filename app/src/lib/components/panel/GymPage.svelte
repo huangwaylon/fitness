@@ -1,14 +1,18 @@
 <script lang="ts">
   // 設定's ジムボット level (docs/design.md "Settings"): the gym bot's health as its Worker reports it (gym/: GET
-  // /status, gym/status.ts): the verdict card, the facts, the recent checks and a soft footer. Fetched on open, then
-  // every minute while it's open and on screen; leaving it (‹ or ✕ unmounts it) stops that. A failed fetch keeps
-  // the last answer shown (its footer says when it was) under a row with もう一度. Demo mode: a fixture.
+  // /status, gym/status.ts): the verdict card, the facts, 現在の設定 (📋 設定を見る's answer in the LINE group, in the
+  // bot's own words: GET /gym/config with this phone's key, gym/config.ts), the recent checks and a soft footer. Both
+  // fetched on open, then every minute while it's open and on screen; leaving it (‹ or ✕ unmounts it) stops that. A
+  // failed fetch keeps the last answer shown (its footer says when it was) under a row with もう一度; 現在の設定 has
+  // its own (the status stays), and stays out of sight while the Worker doesn't serve it. Demo mode: the status's
+  // fixture, no 現在の設定.
   import { untrack } from 'svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { checkLine, demoStatus, factRows, fetchStatus, verdictView, type GymStatus } from '#lib/gym/status.ts';
+  import { configRows, fetchConfig, type GymConfig } from '#lib/gym/config.ts';
 
   const EVERY_MS = 60_000;
 
@@ -16,8 +20,27 @@
   let failed = $state(false);
   let loading = $state(false);
   let ctl: AbortController | null = null;
+  /** 現在の設定: the last answer; `cfgState` 'hidden' until one comes (or while the Worker won't serve it). */
+  let cfg = $state<GymConfig | null>(null);
+  let cfgState = $state<'hidden' | 'ok' | 'failed'>('hidden');
+  let cfgLoading = $state(false);
+  let cfgCtl: AbortController | null = null;
+
+  async function loadConfig() {
+    if (week.demo || week.guest) return; // demo mode: no section, nothing asked
+    cfgCtl?.abort();
+    const c = (cfgCtl = new AbortController());
+    cfgLoading = true;
+    const r = await fetchConfig(c.signal);
+    if (cfgCtl === c) cfgLoading = false;
+    if (c.signal.aborted) return;
+    if (r.ok) [cfg, cfgState] = [r.config, 'ok'];
+    else if (r.why === 'hide') [cfg, cfgState] = [null, 'hidden'];
+    else cfgState = 'failed';
+  }
 
   async function load() {
+    void loadConfig();
     if (week.demo) {
       data = demoStatus(Date.now());
       return;
@@ -44,6 +67,7 @@
       clearInterval(id);
       document.removeEventListener('visibilitychange', onVisible);
       ctl?.abort();
+      cfgCtl?.abort();
     };
   });
 
@@ -51,7 +75,34 @@
   const verdict = $derived(data && verdictView(data));
   const facts = $derived(data ? factRows(data, today) : []);
   const checks = $derived(data ? data.checks.map((c) => checkLine(c, today)) : []);
+  const cfgRows = $derived(cfg ? configRows(cfg) : []);
 </script>
+
+{#snippet current()}
+  {#if cfgState !== 'hidden'}
+    <section class="sec" aria-labelledby="gym-config" data-gym-config>
+      <h3 id="gym-config" class="sec-label">{t('gym.config')}</h3>
+      {#if cfgState === 'failed'}
+        <div class="prow static" data-gym-config-error>
+          <span class="prl">{t('gym.configFailed')}</span>
+          <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={cfgLoading} onclick={() => cfgLoading || void loadConfig()}>{t('state.retry')}</button>
+        </div>
+      {/if}
+      {#if cfg}
+        <div class="card config">
+          <b class="ctitle">{cfg.title}</b>
+          <dl class="days">
+            {#each cfgRows as d (d.day)}
+              <div data-gym-day={d.day} class:soft={d.soft}><dt>{d.date}</dt><dd>{d.rule}{#if d.from}<small>{d.from}</small>{/if}</dd></div>
+            {/each}
+          </dl>
+          {#if cfg.notice}<p class="notice" data-gym-notice>{cfg.notice}</p>{/if}
+          <p class="cline" data-gym-config-check data-paused={cfg.paused ? '' : undefined}>{cfg.check}</p>
+        </div>
+      {/if}
+    </section>
+  {/if}
+{/snippet}
 
 <div class="gym" data-gym-page aria-busy={loading}>
   {#if failed}
@@ -70,6 +121,7 @@
         <div data-gym-fact={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>
       {/each}
     </dl>
+    {@render current()}
     {#if checks.length}
       <section class="sec" aria-labelledby="gym-recent">
         <h3 id="gym-recent" class="sec-label">{t('gym.recent')}</h3>
@@ -93,6 +145,8 @@
     <p class="foot" data-gym-foot>{[data.mode, data.sha?.slice(0, 7), t('gym.updated', { time: formatSyncTime(new Date(data.now), today) })].filter(Boolean).join(' · ')}</p>
   {:else if !failed}
     {#each [0, 1, 2] as i (i)}<div class="card skel" data-gym-skeleton aria-hidden="true"><span></span></div>{/each}
+  {:else}
+    {@render current()}
   {/if}
 </div>
 
@@ -114,6 +168,17 @@
   .facts div { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-body); }
   .facts dt { color: var(--text-soft); font-weight: 700; }
   .facts dd { margin: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .config { display: grid; gap: 8px; }
+  .ctitle { font-size: var(--fs-body); }
+  .days { margin: 0; display: grid; gap: 6px; }
+  .days div { display: flex; gap: 12px; font-size: var(--fs-body); font-weight: 700; }
+  .days dt { flex: none; min-width: 5.5em; font-variant-numeric: tabular-nums; }
+  .days dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .days dd small { display: block; font-size: var(--fs-s); color: var(--text-soft); }
+  .days .soft dd { color: var(--text-soft); }
+  .notice { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--coral-text); }
+  .cline { margin: 0; padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
 
   .checks { list-style: none; display: grid; gap: 8px; }
   .checks li + li { padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }

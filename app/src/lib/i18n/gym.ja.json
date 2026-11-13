@@ -31,6 +31,8 @@
   "gym.unknown": "不明",
   "gym.none": "なし",
   "gym.recent": "最近のチェック",
+  "gym.config": "現在の設定",
+  "gym.configFailed": "現在の設定を読み込めませんでした",
   "gym.by.alarm": "定時",
   "gym.by.tap": "手動",
   "gym.prog.training": "トレーニング",

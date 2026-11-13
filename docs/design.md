@@ -100,9 +100,9 @@ the menu's ベル row opens it at once, full height, no tabs, its own chunk, at 
 **設定** (`panel/SettingsSheet.svelte`): the menu's 設定 pill → its own full-height sheet: **姿** (the look's portrait,
 the よびな and what's worn → [the 姿 level](#sugata)), **プロフィール** ([Profile](#profile)), **サウンド**
 ([Sound settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
-[Weather](#weather)'s switch too), **ジムボット** (one row, 動作状況 → its level: `panel/GymPage.svelte`,
-`gym/status.ts`; the LINE gym bot's health from its Worker's public `/status` (gym/README.md): a verdict card, the
-facts, the last checks; fetched on open and each minute while shown; hidden while `VITE_GYM_URL` is empty),
+[Weather](#weather)'s switch too), **ジムボット** (one row, 動作状況 → `panel/GymPage.svelte`: the bot's public
+`/status` (gym/README.md) as its verdict, facts, last checks; 現在の設定, 📋's LINE answer verbatim, from
+`/gym/config` (members: `gym/config.ts`); each minute while shown; hidden while `VITE_GYM_URL` is empty),
 **保養所ボット** (→ `panel/ItsPage.svelte`: the ITS booker's health, 開始 / 停止 and settings; hidden unless `VITE_ITS_URL`) and
 **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's is the same but for the two bots, with a line
 saying it's visiting. Its own chunk.
