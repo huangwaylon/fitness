@@ -77,9 +77,10 @@ export const isDecorArt = (path: string): boolean =>
 export const ROOM_CACHE = 'island-room-v1';
 export const isRoomAsset = (path: string): boolean => path.includes('/room/');
 /** The room cache's bound: its bytes past this, the least recently used go (the players' parts alone are ~23 MB in
- *  their packs, the villagers' models ~29 MB: grown whole, with the shell and the record's IndexedDB under one origin,
- *  WebKit may evict all of it at once). */
-export const ROOM_CAP_BYTES = 40_000_000;
+ *  their packs, the villagers' models ~29 MB). 100 MB since 2026-11-13 (the user's call, review 11-13 N3): at 40 MB a
+ *  phone sat at its cap and the shop's and museum's packs went after 3 days unused; both phones' origins are persisted
+ *  (not evicted under storage pressure), a 39 GB quota. */
+export const ROOM_CAP_BYTES = 100_000_000;
 /** What was used within this is never evicted for the bound (what the island, the tent and the museum show now). */
 export const ROOM_KEEP_MS = 3 * 24 * 3600_000;
 /** The room cache's own index (beside its files, under this path in the scope): each URL's bytes and last use. */
@@ -538,7 +539,7 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  *
  * | cache | cap | kept (used within) | stale at once |
  * |---|---|---|---|
- * | room (models, packs) | ROOM_CAP_BYTES 40 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
+ * | room (models, packs) | ROOM_CAP_BYTES 100 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
  * | listen (ききみみ packs) | LISTEN_CAP_BYTES 30 MB | LISTEN_KEEP_MS 10 min: a game in progress | a pack's slices; its older hash once unused 10 min |
  * | art (on use) | ART_CAP_BYTES 30 MB | ART_KEEP_MS 24 h: what the island shows now | - |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB | 0 | the sheets a new index no longer names (foodImgStale) |
