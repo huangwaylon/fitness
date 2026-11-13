@@ -175,6 +175,9 @@ describe('/log and /health/log (the Worker)', () => {
     expect(await res(post(batch([], { key: 'f'.repeat(64) })))).toEqual({ ok: false, error: 'unauthorized' });
     expect(await res(post('{x'))).toEqual({ ok: false, error: 'bad_request' });
     expect((await logRoute(post('{}', 'https://evil.example'), env(), () => r)).status).toBe(403);
+    // the preflight (auth.ts preflight): POST with Content-Type, a day's cache, never the object
+    const pre = await logRoute(new Request('https://r/log', { method: 'OPTIONS', headers: { Origin: 'https://island-fund.pages.dev' } }), env(), () => r);
+    expect([pre.status, pre.headers.get('Access-Control-Allow-Methods'), pre.headers.get('Access-Control-Allow-Headers'), pre.headers.get('Access-Control-Max-Age'), pre.headers.get('Cache-Control')]).toEqual([204, 'POST', 'Content-Type', '86400', 'no-store']);
     expect(r.calls).toBe(0);
     expect(await res(post(batch([ev('app.show')])))).toEqual({ ok: true, kept: 1, dropped: 0 });
     expect(await res(post(batch([ev('app.show')])), env({ off: true }))).toEqual({ ok: true, off: true });
