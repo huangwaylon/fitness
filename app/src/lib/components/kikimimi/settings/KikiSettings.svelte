@@ -60,8 +60,8 @@
       {:else if tested}<p class="hint"><Phrases text={t('kiki.testHint')} /></p>
       {:else}<p class="hint"><Phrases text={t('kiki.set.earphones')} /></p>{/if}
     </div>
-    <button type="button" class="row tile-btn" role="switch" aria-checked={same} data-kiki-set-same data-sfx="self" onclick={toggleSame}>
-      <span class="rl">{t('kiki.same')}<small><Phrases text={t('kiki.set.sameSub')} /></small></span>
+    <button type="button" class="prow" role="switch" aria-checked={same} data-kiki-set-same data-sfx="self" onclick={toggleSame}>
+      <span class="prl">{t('kiki.same')}<small><Phrases text={t('kiki.set.sameSub')} /></small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
   </section>
@@ -78,8 +78,8 @@
 
   <section class="sec" aria-labelledby="kk-check">
     <h3 id="kk-check" class="sec-label">{t('kiki.check.title')}</h3>
-    <button type="button" class="row tile-btn" data-kiki-set-check data-sfx="confirm" onclick={oncheck}>
-      <span class="rl">{t('kiki.check.again')}<small data-kiki-set-placed>{placed ? t('kiki.check.now', { stage: placed }) : t('kiki.check.none')}</small></span>
+    <button type="button" class="prow" data-kiki-set-check data-sfx="confirm" onclick={oncheck}>
+      <span class="prl">{t('kiki.check.again')}<small data-kiki-set-placed>{placed ? t('kiki.check.now', { stage: placed }) : t('kiki.check.none')}</small></span>
       <span class="chev" aria-hidden="true">›</span>
     </button>
   </section>
@@ -108,8 +108,5 @@
   .chips .chip { flex: 1; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hint.warn { color: var(--coral-text); }
-  .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); text-align: left; width: 100%; }
-  .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--text-soft); }
 </style>

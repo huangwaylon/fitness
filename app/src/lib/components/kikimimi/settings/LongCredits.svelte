@@ -20,8 +20,8 @@
 
 <section class="sec" aria-labelledby="kk-credits">
   <h3 id="kk-credits" class="sec-label">{t('kiki.set.credits')}</h3>
-  <button type="button" class="row tile-btn" aria-expanded={open} data-kiki-set-credits data-sfx="tick" onclick={toggle}>
-    <span class="rl">{t('kiki.mode.long')}<small><Phrases text={t('kiki.set.creditsAbout')} /></small></span>
+  <button type="button" class="prow" aria-expanded={open} data-kiki-set-credits data-sfx="tick" onclick={toggle}>
+    <span class="prl">{t('kiki.mode.long')}<small><Phrases text={t('kiki.set.creditsAbout')} /></small></span>
     <span class="chev" aria-hidden="true">{open ? '⌄' : '›'}</span>
   </button>
   {#if open && pieces}
@@ -40,9 +40,6 @@
 
 <style>
   .sec { display: grid; gap: 8px; }
-  .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); text-align: left; width: 100%; }
-  .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--text-soft); }
   .list { list-style: none; margin: 0; padding: 12px 14px; display: grid; gap: 12px; }
   .list li { display: grid; gap: 2px; font: 500 var(--fs-s)/1.5 var(--font-ui); color: var(--text-soft); overflow-wrap: anywhere; }

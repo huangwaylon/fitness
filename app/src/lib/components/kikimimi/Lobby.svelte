@@ -104,13 +104,13 @@
       <Segmented label={t('kiki.vs')} attr="kiki-vs-pick" value={v.vs ? 'vs' : 'coop'} items={VS} onpick={(id) => versus(id === 'vs')} />
       <p class="hint">{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</p>
     </section>
-    <button type="button" class="row tile-btn" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
-      <span class="rl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
+    <button type="button" class="prow" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
+      <span class="prl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
   {:else}
-    <p class="row static" data-kiki-vs-flag={v.vs}><span class="rl">{t(v.vs ? 'kiki.vs.vs' : 'kiki.vs.coop')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span></p>
-    <p class="row static"><span class="rl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
+    <p class="prow static" data-kiki-vs-flag={v.vs}><span class="prl">{t(v.vs ? 'kiki.vs.vs' : 'kiki.vs.coop')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span></p>
+    <p class="prow static"><span class="prl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
       <span class="flag">{v.same ? '✓' : '—'}</span></p>
   {/if}
   {#if zero}<p class="hint warn" data-kiki-zero>🔊 {t('kiki.testZero')}</p>{/if}
@@ -134,10 +134,6 @@
   .ladder.card { padding: 12px 14px; gap: 10px; }
   .about { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .ladder .hint { margin: 0; }
-  .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); text-align: left; width: 100%; }
-  .row.static { background: var(--card); box-shadow: var(--sh-lip); }
-  .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .flag { font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); }
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 14px 10px 12px; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }

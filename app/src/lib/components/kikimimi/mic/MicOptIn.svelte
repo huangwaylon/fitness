@@ -104,8 +104,8 @@
 
 <section class="sec" aria-labelledby="kk-mic" data-mic-optin data-mic-on={prefs.on ? 1 : 0} bind:this={sec}>
   <h3 id="kk-mic" class="sec-label">{t('kiki.mic.title')}</h3>
-  <button type="button" class="row tile-btn" role="switch" aria-checked={prefs.on} data-mic-switch data-sfx="self" aria-disabled={asking} onclick={toggle}>
-    <span class="rl">🎤 {t('kiki.mic.use')}<small>{asking ? t('kiki.mic.asking') : t('kiki.mic.useSub')}</small></span>
+  <button type="button" class="prow" role="switch" aria-checked={prefs.on} data-mic-switch data-sfx="self" aria-disabled={asking} onclick={toggle}>
+    <span class="prl">🎤 {t('kiki.mic.use')}<small>{asking ? t('kiki.mic.asking') : t('kiki.mic.useSub')}</small></span>
     <span class="sw" aria-hidden="true"><i></i></span>
   </button>
   {#if refused}<p class="hint warn" role="alert" data-mic-refused={refused}>{refused === 'denied' ? t(deniedKey(pwa, retried)) : t('kiki.mic.unsupported')}</p>
@@ -154,8 +154,8 @@
     <button type="button" class="btn paper small del" data-mic-del data-sfx="confirm" onclick={del}>🗑 {t('kiki.mic.del', { mb: sttMB() })}</button>
   {:else if deleted}<p class="hint" role="status" data-mic-deleted>{t('kiki.mic.deleted')}</p>{/if}
 
-  <button type="button" class="row tile-btn probe" data-kiki-set-mic data-sfx="confirm" onclick={onprobe}>
-    <span class="rl">{t('kiki.mic.probe')}<small>{t('kiki.mic.probeSub')}</small></span>
+  <button type="button" class="prow probe" data-kiki-set-mic data-sfx="confirm" onclick={onprobe}>
+    <span class="prl">{t('kiki.mic.probe')}<small>{t('kiki.mic.probeSub')}</small></span>
     <span class="chev" aria-hidden="true">›</span>
   </button>
 </section>
@@ -174,10 +174,7 @@
   .btn.small { justify-self: start; }
   .btn.small.del { width: 100%; }
   progress { width: 100%; height: 8px; accent-color: var(--c-leaf); }
-  .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); text-align: left; width: 100%; }
-  .row.probe { min-height: 48px; padding: 6px 16px; }
-  .probe .rl { font-size: var(--fs-s); }
-  .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
+  .prow.probe { min-height: 48px; padding: 6px 12px; }
+  .probe .prl { font-size: var(--fs-s); }
   .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--text-soft); }
 </style>

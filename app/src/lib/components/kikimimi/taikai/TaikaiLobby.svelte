@@ -59,7 +59,7 @@
       <p class="hint">{t(v.vs ? 'kiki.taikai.vsOn' : 'kiki.taikai.vsOff')}</p>
     </section>
   {:else}
-    <p class="row static" data-kiki-vs-flag={v.vs}><span class="rl">{t(v.vs ? 'kiki.vs.vs' : 'kiki.vs.coop')}<small>{t(v.vs ? 'kiki.taikai.vsOn' : 'kiki.taikai.vsOff')}</small></span></p>
+    <p class="prow static" data-kiki-vs-flag={v.vs}><span class="prl">{t(v.vs ? 'kiki.vs.vs' : 'kiki.vs.coop')}<small>{t(v.vs ? 'kiki.taikai.vsOn' : 'kiki.taikai.vsOff')}</small></span></p>
   {/if}
 </div>
 
@@ -83,9 +83,5 @@
   .sec { display: grid; gap: 8px; }
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 14px 10px 12px; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); }
-  .row.static { background: var(--card); box-shadow: var(--sh-lip); }
-  .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
 </style>

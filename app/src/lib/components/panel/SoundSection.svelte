@@ -34,8 +34,6 @@
 </div>
 
 <style>
-  .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .prow[aria-checked='true'] .prl small { color: var(--c-ink-soft); }
 
 
   /* 音量: a cream row with a track that fills leaf green up to the knob */

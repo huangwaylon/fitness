@@ -157,12 +157,16 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .prow {
   appearance: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
   border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text);
-  box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
+  box-shadow: var(--sh-ctl); text-align: left; width: 100%; margin: 0; font: inherit;
 }
-.prow:not(.static):active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+.prow:not(.static, :disabled, [aria-disabled='true']):active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+@media (prefers-reduced-motion: reduce) { .prow:not(.static, :disabled, [aria-disabled='true']):active { transform: none; } }
 .prow.static { box-shadow: var(--sh-lip); background: var(--card); cursor: default; }
 .prow[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
 .prl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); text-wrap: balance; line-height: 1.3; }
+/* its line under the label (what the row does) */
+.prl small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+.prow[aria-checked='true'] .prl small { color: var(--c-ink-soft); }
 /* the switch in a role="switch" row (`<span class="sw" aria-hidden="true"><i></i></span>`, the row holds aria-checked): a
    sunk track (off) or a leaf one (on), its knob a cream object (the brown edge at every time of day); .s the small one */
 .sw {
