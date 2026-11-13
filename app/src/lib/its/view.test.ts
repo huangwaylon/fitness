@@ -1,14 +1,16 @@
-// 設定's 保養所ボット page's view (view.ts): the draft and its PUT body (Tokyo's day boundaries), the date notes, the
-// facilities merged from the roster and the runner's names (normName, U+FA1A), ★ and 除外 never both, the verdict's
-// tones, the poll's pace, the facts, the bookings that need a person and the recent events.
+// 設定's 保養所ボット page's view (view.ts): the draft and its PUT body (Tokyo's day boundaries), the date notes, まとめて
+// 追加 and what can take each stay, the facilities merged from the roster and the runner's names (normName, U+FA1A) in
+// their groups, the allow-list (derived from a Worker without one), the presets, ★ and off never both, the verdict's
+// tones, the poll's pace, the facts, the bookings that need a person (a hold's deadline) and the recent events.
 import { describe, expect, it } from 'vitest';
 import example from '../../../../its/contract-example.json';
-import { parseSettingsInput, type ItsStatus } from './contract.ts';
+import { parseSettingsInput, type ItsStatus, type ScanEntry } from './contract.ts';
 import { parseStatus } from './client.ts';
-import type { RosterHotel } from './roster.ts';
+import { D10, D4, ROSTER, type Region, type RosterHotel } from './roster.ts';
 import {
-  addDate, bookingRows, controlLine, dateBounds, dateRows, draftOf, duration, eventLines, factRows, footLine, hotelNote, hotelRows, pollMs, removeDate,
-  sameDraft, saveError, toInput, toggleSkip, toggleStar, verdictView, type Draft
+  addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, duration, errorText, eventLines, factRows,
+  footLine, hotelGroups, hotelNote, hotelRows, legacy, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError, savedLine, setSearch, toInput,
+  toggleSearch, toggleStar, verdictView, weekday, scanCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -22,7 +24,7 @@ const draft = (over: Partial<Draft> = {}): Draft => ({ ...draftOf(STATUS.setting
 describe('the draft', () => {
   it('is the settings’ editable part; the same when only the order of dates or skips or their spelling differs', () => {
     const d = draft();
-    expect(d).toEqual({ intervalSec: 15, dates: ['2026-11-21', '2026-11-22'], guests: 2, skip: ['ゆふいん山水館', 'ブルーベリーヒル勝浦'], priority: ['NAGU'], autoConfirm: false });
+    expect({ ...d, search: [] }).toEqual({ intervalSec: 15, dates: ['2026-11-21', '2026-11-22'], guests: 2, search: [], skip: ['ゆふいん山水館', 'ブルーベリーヒル勝浦'], priority: ['NAGU'], autoConfirm: false });
     expect(sameDraft(d, draft({ dates: ['2026-11-22', '2026-11-21'], skip: ['ﾌﾞﾙｰﾍﾞﾘｰﾋﾙ勝浦', 'ゆふいん 山水館'] }))).toBe(true);
     expect(sameDraft(d, draft({ priority: ['nagu'] }))).toBe(true);
     expect(sameDraft(d, draft({ priority: ['NAGU', 'リソル'] }))).toBe(false);
@@ -34,8 +36,9 @@ describe('the draft', () => {
 
   it('becomes a body the Worker takes, from the updatedAt it began at', () => {
     const body = toInput(draft(), 1794540000000, NOW);
-    expect(body).toEqual(example.settingsInput);
-    expect(parseSettingsInput(body, NOW)).toEqual({ ok: true, value: body });
+    expect({ ...body, search: undefined }).toEqual({ ...example.settingsInput, search: undefined });
+    // the Worker keeps the allow-list as sent (its spaces folded)
+    expect(parseSettingsInput(body, NOW)).toEqual({ ok: true, value: { ...body, search: body.search.map((n) => n.replace(/\s+/g, ' ')) } });
   });
 
   it('drops a stay that passed in Tokyo while it was open (so the body still passes)', () => {
@@ -94,77 +97,201 @@ describe('dateRows', () => {
   });
 });
 
-describe('hotelRows', () => {
-  const R = (name: string, region: 'kanto' | 'other', verified = true): RosterHotel => ({ name, region, kind: 'year', cutoff: 10, verified });
-  const roster = [R('鳴子温泉　湯元　吉祥', 'other'), R('NAGU 勝浦', 'kanto'), R('リソルの森', 'kanto', false), R('ゆふいん山水館', 'other'), R('ホテル日航アリビラ', 'other')];
-
-  it('merges the runner’s names into the roster by normName (U+FA1A, full-width spaces), the rest on top as new', () => {
-    const d = draft({ skip: [], priority: [] });
-    const { search, skipped } = hotelRows(d, ['鳴子温泉 湯元 吉祥', 'ＮＡＧＵ　勝浦', '新しいホテル'], null, roster);
-    expect(skipped).toEqual([]);
-    expect(search.map((r) => [r.name, r.fresh])).toEqual([
-      ['新しいホテル', true], ['NAGU 勝浦', false], ['リソルの森', false], ['鳴子温泉　湯元　吉祥', false], ['ゆふいん山水館', false], ['ホテル日航アリビラ', false]
-    ]);
-    expect(search.every((r) => r.search && r.star === null)).toBe(true);
+describe('the stays: まとめて追加, months, what can take each', () => {
+  it('adds a period’s chosen weekdays from tonight, less those listed, up to MAX_DATES', () => {
+    const d = draft({ dates: ['2026-11-21'] });
+    // 11/13 (金) to 11/30: Fridays and Saturdays, the 21st already listed
+    expect(bulkDates(d, '2026-11-13', '2026-11-30', [5, 6], NOW)).toEqual({ add: ['2026-11-13', '2026-11-14', '2026-11-20', '2026-11-27', '2026-11-28'], over: 0 });
+    expect(bulkDates(d, '2026-11-30', '2026-11-13', [5, 6], NOW).add).toHaveLength(5);   // either order
+    expect(bulkDates(d, '2026-11-01', '2026-11-14', [5, 6], NOW).add).toEqual(['2026-11-13', '2026-11-14']);   // nothing past
+    expect(bulkDates(d, '2026-11-13', '2026-11-30', [], NOW).add).toEqual([]);
+    expect(bulkDates(d, '', '2026-11-30', [5], NOW).add).toEqual([]);
+    expect(bulkDates(d, '2027-12-17', '2028-01-30', [0, 1, 2, 3, 4, 5, 6], NOW).add).toEqual(['2027-12-17', '2027-12-18']);   // MAX_DAYS_AHEAD
+    const year = bulkDates(draft({ dates: [] }), '2026-11-14', '2027-11-14', [0, 1, 2, 3, 4, 5, 6], NOW);
+    expect([year.add.length, year.over]).toEqual([20, 346]);
+    expect(weekday('2026-11-15')).toBe(0);
+    const added = addDates(draft({ dates: ['2026-11-12', '2026-11-21'] }), ['2026-11-20', '2026-11-21'], NOW);
+    expect(added.dates).toEqual(['2026-11-20', '2026-11-21']);
+    expect(parseSettingsInput(toInput(added, null, NOW), NOW).ok).toBe(true);
   });
 
-  it('puts ★ first in priority order (a priority entry is a substring), and the skipped in 除外中', () => {
-    const d = draft({ skip: ['ゆふいん 山水館', '消えた施設'], priority: ['アリビラ', 'nagu'] });
-    const { search, skipped } = hotelRows(d, [], null, roster);
-    expect(search.map((r) => [r.name, r.star])).toEqual([['ホテル日航アリビラ', 0], ['NAGU 勝浦', 1], ['リソルの森', null], ['鳴子温泉　湯元　吉祥', null]]);
-    expect(skipped.map((r) => r.name)).toEqual(['ゆふいん山水館', '消えた施設']);
+  it('heads the stays by month', () => {
+    const rows = dateRows(draft({ dates: ['2026-12-01', '2026-11-21', '2027-01-09', '2026-11-22'] }), NOW);
+    expect(dateMonths(rows).map((m) => [m.label, m.rows.map((r) => r.date)])).toEqual([
+      ['2026年11月', ['2026-11-21', '2026-11-22']], ['2026年12月', ['2026-12-01']], ['2027年1月', ['2027-01-09']]
+    ]);
+  });
+
+  it('counts the searched facilities that can take a stay: its cutoff, 夏季 up to 9/30, the new ones D−4, none on no roster', () => {
+    const R = (name: string, kind: RosterHotel['kind'], cutoff: 4 | 10 | null): RosterHotel => ({ name, region: 'kanto', kind, cutoff, verified: true });
+    const roster = [R('四日', 'year', 4), R('十日', 'year', 10), R('夏', 'summer', 4), R('冬と夏', 'both', 4), R('契約なし', null, null)];
+    const d = draft({ search: roster.map((r) => r.name).concat('新顔'), skip: [], priority: [], dates: ['2026-11-15', '2026-11-20', '2026-11-30', '2027-09-30', '2027-10-01'] });
+    const rows = hotelRows(d, ['新顔'], null, roster);
+    expect(dateRows(d, NOW, rows).map((r) => [r.date, r.able])).toEqual([
+      ['2026-11-15', []],
+      ['2026-11-20', ['四日', '冬と夏', '新顔']],
+      ['2026-11-30', ['四日', '十日', '冬と夏', '新顔']],
+      ['2027-09-30', ['四日', '十日', '夏', '冬と夏', '新顔']],
+      ['2027-10-01', ['四日', '十日', '冬と夏', '新顔']]
+    ]);
+    // only the searched
+    expect(dateRows(setSearch(d, ['四日'], false), NOW, hotelRows(setSearch(d, ['四日'], false), ['新顔'], null, roster))[1].able).toEqual(['冬と夏', '新顔']);
+  });
+
+  it('a stay with a 予約確定 says it is booked and no longer searched', () => {
+    const b = { id: 'r:1', kind: 'confirmed' as const, date: '2026-11-21', hotel: 'NAGU 勝浦', number: 'A1', at: NOW, runId: 'r' };
+    const rows = dateRows(draft(), NOW, hotelRows(draft(), []), [b, { ...b, kind: 'hold', date: '2026-11-22' }]);
+    expect(rows.map((r) => [r.date, r.note, r.text, r.able.length > 0])).toEqual([
+      ['2026-11-21', 'booked', 'あと8日 · 予約済み・探していません', false], ['2026-11-22', 'd4', 'あと9日 · 4日前までの施設のみ', true]
+    ]);
+  });
+});
+
+describe('hotelRows', () => {
+  const R = (name: string, region: Region, verified = true, over: Partial<RosterHotel> = {}): RosterHotel => ({ name, region, kind: 'year', cutoff: 10, verified, ...over });
+  const roster = [R('鳴子温泉　湯元　吉祥', 'far'), R('NAGU 勝浦', 'kanto'), R('リソルの森', 'kanto', false), R('ゆふいん山水館', 'far'), R('ホテル日航アリビラ', 'far'), R('熱海後楽園ホテル', 'near')];
+  /** Every listed name searched (the allow-list), nothing skipped or starred. */
+  const open = (over: Partial<Draft> = {}) => draft({ search: [...roster.map((r) => r.name)], skip: [], priority: [], ...over });
+
+  it('merges the runner’s names into the roster by normName (U+FA1A, full-width spaces), a stable order by group, the rest as new', () => {
+    const rows = hotelRows(open(), ['鳴子温泉 湯元 吉祥', 'ＮＡＧＵ　勝浦', '新しいホテル'], null, roster);
+    expect(rows.map((r) => [r.name, r.group, r.fresh])).toEqual([
+      ['NAGU 勝浦', 'kanto', false], ['リソルの森', 'kanto', false], ['熱海後楽園ホテル', 'near', false],
+      ['鳴子温泉　湯元　吉祥', 'far', false], ['ゆふいん山水館', 'far', false], ['ホテル日航アリビラ', 'far', false], ['新しいホテル', 'new', true]
+    ]);
+    // 探す is the allow-list: the new one is in it nowhere, so undecided (the banner), not searched
+    expect(rows.filter((r) => !r.search).map((r) => [r.name, r.undecided])).toEqual([['新しいホテル', true]]);
+    // a switch or a ★ never moves a row
+    const after = hotelRows(toggleStar(toggleSearch(open(), rows[0]), 'ホテル日航アリビラ'), ['新しいホテル'], null, roster);
+    expect(after.map((r) => r.name)).toEqual(rows.map((r) => r.name));
+    expect(after.find((r) => r.name === 'NAGU 勝浦')).toMatchObject({ search: false, undecided: false });
+  });
+
+  it('numbers ★ in priority order (a priority entry is a substring); skipping wins over the allow-list', () => {
+    const rows = hotelRows(open({ skip: ['ゆふいん 山水館', '消えた施設'], priority: ['アリビラ', 'nagu'] }), [], null, roster);
+    expect(rows.filter((r) => r.star !== null).map((r) => [r.name, r.star])).toEqual([['NAGU 勝浦', 1], ['ホテル日航アリビラ', 0]]);
+    expect(rows.filter((r) => !r.search).map((r) => [r.name, r.group, r.undecided])).toEqual([['ゆふいん山水館', 'far', false], ['消えた施設', 'new', false]]);
     // a priority entry naming nothing listed still shows (★, so it can be taken off)
-    expect(hotelRows(draft({ skip: [], priority: ['どこか'] }), [], null, roster).search[0]).toMatchObject({ name: 'どこか', star: 0, roster: null });
+    expect(hotelRows(open({ search: ['どこか'], priority: ['どこか'] }), [], null, roster).at(-1)).toMatchObject({ name: 'どこか', star: 0, roster: null });
   });
 
   it('notes the roster’s kind and cutoff, 名前未確認 and 新しい施設', () => {
-    const { search } = hotelRows(draft({ skip: [], priority: [] }), ['新しいホテル'], null, roster);
-    expect(search.map(hotelNote)).toEqual(['新しい施設', '通年 · 10日前まで', '通年 · 10日前まで · 名前未確認', '通年 · 10日前まで', '通年 · 10日前まで', '通年 · 10日前まで']);
+    const rows = hotelRows(open(), ['新しいホテル'], null, roster);
+    expect(rows.map(hotelNote)).toEqual(['通年 · 10日前まで', '通年 · 10日前まで · 名前未確認', '通年 · 10日前まで', '通年 · 10日前まで', '通年 · 10日前まで', '通年 · 10日前まで', '新しい施設']);
   });
 
-  it('keeps a saved skip or ★ listed after the draft lets it go (on no roster, never seen)', () => {
-    const saved = { skip: ['消えた施設'], priority: ['どこか'] };
-    const d = draft({ skip: [], priority: [] });
-    expect(hotelRows(d, [], null, roster).search.map((r) => r.name)).not.toContain('消えた施設');
-    const { search } = hotelRows(d, [], saved, roster);
-    expect(search.filter((r) => r.roster === null).map((r) => [r.name, r.search, r.star])).toEqual([['消えた施設', true, null], ['どこか', true, null]]);
-    // and 除外 again from there
-    expect(hotelRows(toggleSkip(d, '消えた施設'), [], saved, roster).skipped.map((r) => r.name)).toEqual(['消えた施設']);
+  it('keeps a saved entry listed after the draft lets it go (on no roster, never seen)', () => {
+    const saved = { search: ['昔の施設'], skip: ['消えた施設'], priority: ['どこか'] };
+    const d = open();
+    expect(hotelRows(d, [], null, roster).map((r) => r.name)).not.toContain('消えた施設');
+    expect(hotelRows(d, [], saved, roster).filter((r) => r.roster === null).map((r) => [r.name, r.search, r.undecided])).toEqual([
+      ['昔の施設', false, true], ['消えた施設', false, true], ['どこか', false, true]
+    ]);
   });
 
-  it('links an unverified roster name and a site name, one inside the other: a 除外 on one doesn’t cover the other', () => {
-    const d = draft({ skip: ['リソルの森'], priority: [] });
-    const { search, skipped } = hotelRows(d, ['リソルの森 グランヴォー スパヴィレッジ'], null, roster);
-    const site = search.find((r) => r.fresh)!;
-    expect([site.name, site.search, site.similar]).toEqual(['リソルの森 グランヴォー スパヴィレッジ', true, 'リソルの森']);
+  it('links an unverified roster name and a site name, one inside the other: 探す on one doesn’t cover the other', () => {
+    const d = open({ skip: ['リソルの森'] });
+    const rows = hotelRows(d, ['リソルの森 グランヴォー スパヴィレッジ'], null, roster);
+    const site = rows.find((r) => r.fresh)!;
+    expect([site.name, site.search, site.similar]).toEqual(['リソルの森 グランヴォー スパヴィレッジ', false, 'リソルの森']);
     expect(hotelNote(site)).toBe('新しい施設 · 似た名前「リソルの森」');
-    expect(skipped.map((r) => [r.name, r.similar])).toEqual([['リソルの森', 'リソルの森 グランヴォー スパヴィレッジ']]);
-    expect(hotelNote(skipped[0])).toBe('通年 · 10日前まで · 名前未確認 · 似た名前「リソルの森 グランヴォー スパヴィレッジ」');
+    expect(hotelNote(rows.find((r) => r.name === 'リソルの森')!)).toBe('通年 · 10日前まで · 名前未確認 · 似た名前「リソルの森 グランヴォー スパヴィレッジ」');
     // a verified roster name isn't linked (its spelling is the site's)
-    expect(hotelRows(d, ['NAGU 勝浦 別館'], null, roster).search.every((r) => r.similar === null)).toBe(true);
+    expect(hotelRows(d, ['NAGU 勝浦 別館'], null, roster).every((r) => r.similar === null)).toBe(true);
   });
 
-  it('keeps ★ and 除外 apart: skipping drops the priority, ★ un-skips', () => {
-    const d = draft({ skip: [], priority: ['NAGU'] });
-    const skipped = toggleSkip(d, 'NAGU 勝浦');
-    expect([skipped.skip, skipped.priority]).toEqual([['NAGU 勝浦'], []]);
-    const starred = toggleStar(skipped, 'NAGU 勝浦');
-    expect([starred.skip, starred.priority]).toEqual([[], ['NAGU 勝浦']]);
+  it('keeps ★ and off apart: off drops the priority, ★ searches', () => {
+    const d = open({ priority: ['NAGU'] });
+    const off = setSearch(d, ['NAGU 勝浦'], false);
+    expect([off.search.includes('NAGU 勝浦'), off.skip, off.priority]).toEqual([false, ['NAGU 勝浦'], []]);
+    const starred = toggleStar(off, 'NAGU 勝浦');
+    expect([starred.search.includes('NAGU 勝浦'), starred.skip, starred.priority]).toEqual([true, [], ['NAGU 勝浦']]);
     expect(toggleStar(starred, 'ＮＡＧＵ 勝浦').priority).toEqual([]);
-    expect(toggleSkip(toggleSkip(d, 'リソルの森'), 'リソルの森').skip).toEqual([]);
+    expect(sameDraft(setSearch(setSearch(d, ['リソルの森'], false), ['リソルの森'], true), d)).toBe(true);
     // a site's name past MAX_NAME: ★ keeps its first MAX_NAME UTF-16 units (whole code points), which still names it
-    const long = `${'𠮷'.repeat(30)}${'あ'.repeat(150)}`;
+    const long = `${'𠮷'.repeat(30)}${'あ'.repeat(120)}`;   // 180 UTF-16 units (a site's name is at most 200)
     const longStar = toggleStar(d, long);
     const entry = longStar.priority[1];
     expect(entry.length).toBeLessThanOrEqual(80);
     expect(entry).toBe(`${'𠮷'.repeat(30)}${'あ'.repeat(20)}`);
     expect(long.startsWith(entry)).toBe(true);
-    expect(hotelRows(longStar, [long]).search.find((r) => r.name === long)?.star).toBe(1);
+    expect(hotelRows(longStar, [long]).find((r) => r.name === long)?.star).toBe(1);
     expect(toggleStar(longStar, long).priority).toEqual(['NAGU']);
     const odd = toggleStar(d, `${'あ'.repeat(79)}𠮷${'い'.repeat(10)}`).priority[1];
     expect(odd).toBe('あ'.repeat(79));   // never half a surrogate pair
     // every draft it makes still passes the contract
-    for (const x of [skipped, starred, longStar]) expect(parseSettingsInput(toInput(x, null, NOW), NOW).ok).toBe(true);
+    for (const x of [off, starred, longStar]) expect(parseSettingsInput(toInput(x, null, NOW), NOW).ok).toBe(true);
+  });
+
+  it('groups 関東 / 近郊 / 遠方 / 新しい施設 with their counts, filtered by name (normName)', () => {
+    const rows = hotelRows(open({ skip: ['ゆふいん山水館'] }), ['新しいホテル'], null, roster);
+    expect(hotelGroups(rows).map((g) => [g.id, g.label, g.rows.length, g.on])).toEqual([['kanto', '関東', 2, 2], ['near', '近郊', 1, 1], ['far', '遠方', 3, 2], ['new', '新しい施設', 1, 0]]);
+    expect(hotelGroups(rows, 'ﾅｸﾞ').length).toBe(0);
+    expect(hotelGroups(rows, 'nagu').map((g) => [g.id, g.rows.map((r) => r.name), g.on])).toEqual([['kanto', ['NAGU 勝浦'], 2]]);
+    expect(hotelGroups(rows, 'ホテル ').flatMap((g) => g.rows.map((r) => r.name))).toEqual(['熱海後楽園ホテル', 'ホテル日航アリビラ', '新しいホテル']);
+    // 全部探す / 全部除外: a group's rows at once
+    const far = hotelGroups(rows).find((g) => g.id === 'far')!.rows.map((r) => r.name);
+    expect(hotelRows(setSearch(open(), far, false), [], null, roster).filter((r) => !r.search).map((r) => r.name)).toEqual(far);
+  });
+
+  it('presets: 関東だけ, 近郊まで, 直営だけ, 全部; the one matching is shown', () => {
+    const r2 = [...roster, R('トスラブ箱根ビオーレ', 'kanto', true, { kind: 'direct', cutoff: 4 }), R('スキージャム勝山', 'far', false, { kind: null, cutoff: null })];
+    const rows = (d: Draft) => hotelRows(d, ['新しいホテル'], null, r2);
+    const base = open({ priority: ['NAGU', 'アリビラ'] });
+    const on = (d: Draft) => rows(d).filter((r) => r.search).map((r) => r.name);
+    const kanto = applyPreset(base, rows(base), 'kanto');
+    expect(on(kanto)).toEqual(['NAGU 勝浦', 'リソルの森', 'トスラブ箱根ビオーレ']);
+    expect(kanto.priority).toEqual(['NAGU']);   // ★ goes with the facilities switched off
+    expect(presetOf(rows(kanto))).toBe('kanto');
+    expect(on(applyPreset(base, rows(base), 'near'))).toEqual(['NAGU 勝浦', 'リソルの森', 'トスラブ箱根ビオーレ', '熱海後楽園ホテル']);
+    expect(on(applyPreset(base, rows(base), 'direct'))).toEqual(['トスラブ箱根ビオーレ']);
+    const all = applyPreset(kanto, rows(kanto), 'all');
+    expect(rows(all).every((r) => r.search)).toBe(true);
+    expect(presetOf(rows(all))).toBe('all');
+    expect(presetOf(rows(setSearch(all, ['リソルの森'], false)))).toBeNull();
+    expect(parseSettingsInput(toInput(kanto, null, NOW), NOW).ok).toBe(true);
+  });
+});
+
+describe('the allow-list', () => {
+  it('saved settings without one (a Worker from before it): derived from the roster and the names seen, less the skipped', () => {
+    const legacySettings = { ...STATUS.settings };
+    expect(legacy(legacySettings)).toBe(true);
+    const d = draftOf(legacySettings, ['NAGU 勝浦', '新しいホテル']);
+    expect(d.search).toContain('新しいホテル');
+    expect(d.search).toContain('NAGU 勝浦');
+    expect(d.search).not.toContain('ゆふいん山水館');
+    expect(d.search).not.toContain('ブルーベリーヒル勝浦');
+    expect(d.search.length).toBe(ROSTER.length - 2 + 1);
+    // the same derivation twice is no change (no draft to save, nothing to ask on leaving)
+    expect(sameDraft(d, draftOf(legacySettings, ['NAGU 勝浦', '新しいホテル']))).toBe(true);
+    // and the PUT carries it, the skipped left out
+    const body = toInput(setSearch(d, ['リソルの森'], false), null, NOW);
+    expect(body.search).not.toContain('リソルの森');
+    expect(body.skip).toContain('リソルの森');
+    expect(parseSettingsInput(body, NOW).ok).toBe(true);
+  });
+  it('saved with one: taken as it is; a facility offered since is undecided until someone switches it', () => {
+    const s = { ...STATUS.settings, search: ['NAGU 勝浦'] };
+    expect(legacy(s)).toBe(false);
+    expect(draftOf(s, ['新しいホテル']).search).toEqual(['NAGU 勝浦']);
+    const rows = hotelRows(draftOf(s), ['新しいホテル']);
+    expect(rows.filter((r) => r.search).map((r) => r.name)).toEqual(['NAGU 勝浦']);
+    expect(rows.find((r) => r.name === '新しいホテル')).toMatchObject({ group: 'new', undecided: true });
+    expect(rows.find((r) => r.name === 'ゆふいん山水館')).toMatchObject({ undecided: false });   // skipped: decided
+    expect(sameDraft(draftOf(s), draftOf({ ...s, search: ['ＮＡＧＵ 勝浦'] }))).toBe(true);
+    expect(sameDraft(draftOf(s), setSearch(draftOf(s), ['新しいホテル'], true))).toBe(false);
+  });
+});
+
+describe('the roster', () => {
+  it('tags every facility 関東, 近郊 or 遠方, with a known cutoff', () => {
+    expect(ROSTER.every((r) => ['kanto', 'near', 'far'].includes(r.region))).toBe(true);
+    expect(ROSTER.every((r) => r.cutoff === null || r.cutoff === D4 || r.cutoff === D10)).toBe(true);
+    const of = (n: string) => ROSTER.find((r) => r.name === n)!.region;
+    expect([of('トスラブ箱根ビオーレ'), of('ホテルハーヴェスト那須'), of('日光千姫物語')]).toEqual(['kanto', 'kanto', 'kanto']);
+    expect([of('熱海後楽園ホテル'), of('ラビスタ富士河口湖'), of('ホテルハーヴェスト旧軽井沢'), of('ホテルハーヴェスト伊東')]).toEqual(['near', 'near', 'near', 'near']);
+    expect([of('ホテル日航アリビラ'), of('定山渓 ゆらく草庵'), of('ゆふいん山水館')]).toEqual(['far', 'far', 'far']);
   });
 });
 
@@ -207,15 +334,17 @@ describe('factRows', () => {
   it('reads the last report', () => {
     expect(Object.fromEntries(factRows(STATUS, today).map((f) => [f.id, f.value]))).toEqual({
       phase: '空室を確認中', uptime: '12:50から（20分）', report: '13:10', scan: '13:10（120回）', solves: '成功 2 · 失敗 0（前回 19秒）',
-      error: 'calendar_get · timeout（13:01）', run: '#19283746'
+      error: '空室の確認 · 時間切れ（13:01）', run: '#19283746'
     });
+    // 状態, 最終確認 and 実行 shown; the rest under くわしく
+    expect(factRows(STATUS, today).filter((f) => !f.more).map((f) => f.id)).toEqual(['phase', 'scan', 'run']);
     expect(factRows(STATUS, today).find((f) => f.id === 'run')!.href).toBe('https://github.com/huangwaylon/fitness/actions/runs/19283746');
   });
   it('without a report, only 最終報告; a failed dispatch, failures and the unsynced are shown when there are any', () => {
     expect(factRows(status({ runner: null }), today)).toEqual([{ id: 'report', label: '最終報告', value: 'まだ' }]);
     const r = { ...STATUS.runner!, scanFailures: 3, lastOkAt: STATUS.runner!.lastScanAt! - 60_000, unsynced: 1, runUrl: 'https://evil.example/x' };
     const ids = factRows(status({ runner: r, dispatch: { at: STATUS.now, ok: false, status: 403 } }), today).map((f) => f.id);
-    expect(ids).toEqual(['dispatch', 'phase', 'uptime', 'report', 'scan', 'ok', 'failures', 'solves', 'error', 'unsynced']);
+    expect(ids).toEqual(['dispatch', 'phase', 'scan', 'uptime', 'report', 'ok', 'failures', 'solves', 'error', 'unsynced']);
   });
   it('a runner silent past LATE_AFTER_SEC has ended', () => {
     const later = status({ now: STATUS.now + 50 * 60_000 });
@@ -230,7 +359,7 @@ describe('factRows', () => {
 describe('bookingRows', () => {
   const b = (kind: 'hold' | 'confirming' | 'confirmed' | 'failed', at: number, over: object = {}) => ({ id: `r:${at}`, kind, date: '2026-11-22', hotel: 'NAGU 勝浦', at, runId: 'r', ...over });
   it('a hold with a human_needed after it needs a person, with why', () => {
-    expect(bookingRows(STATUS, TODAY)).toEqual([{ key: '2026-11-22\nnagu勝浦', state: 'action', date: '2026-11-22', hotel: 'NAGU 勝浦', label: '要対応', detail: '日付が近いため、メールから申込してください' }]);
+    expect(bookingRows(STATUS, TODAY)).toMatchObject([{ key: '2026-11-22\nnagu勝浦', state: 'action', date: '2026-11-22', hotel: 'NAGU 勝浦', label: '要対応', detail: '日付が近いため、メールから申込してください' }]);
   });
   it('予約確定 wins over an older human_needed; a hold alone is 仮押さえ; past stays are left out', () => {
     const t0 = STATUS.now;
@@ -256,5 +385,83 @@ describe('eventLines', () => {
     const many = status({ events: Array.from({ length: 15 }, (_, i) => ({ runId: 'r', seq: 15 - i, t: STATUS.now - i, kind: 'run_end' as const, detail: 'time_up' })) });
     expect(eventLines(many, TODAY)).toHaveLength(10);
     expect(eventLines(many, TODAY)[0].info).toBe('時間切れ');
+  });
+});
+
+describe('a hold’s deadline and what to do', () => {
+  it('a hold to finish by mail: the time left from its `at` + HOLD_SEC, the mail, that doing nothing costs nothing, inside D−10 the fee', () => {
+    // the example's hold: 12:55, the stay 9 days away, near_date
+    const [row] = bookingRows(STATUS, TODAY);
+    expect([row.state, row.left, row.expired]).toEqual(['action', 'あと15分ごろで無効', false]);
+    expect(row.steps).toEqual(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます（料金なし）', '確定後の取り消しは有料です']);
+    const later = bookingRows(STATUS, TODAY, STATUS.now + 15 * 60_000)[0];
+    expect([later.left, later.expired, later.steps]).toEqual(['期限切れ', true, []]);
+    expect(bookingRows(STATUS, TODAY, STATUS.now + 14.5 * 60_000)[0].left).toBe('あと1分ごろで無効');
+  });
+  it('no fee line for a stay 10+ days away; none of it for a failed leg, an application filed or a reservation', () => {
+    const t0 = STATUS.now;
+    const far = status({
+      bookings: [{ ...STATUS.bookings[0], date: '2026-12-05' }],
+      events: [{ ...STATUS.events[0], date: '2026-12-05', detail: 'auto_off' }]
+    });
+    expect(bookingRows(far, TODAY)[0].steps).toHaveLength(2);
+    const b = (kind: 'hold' | 'confirming' | 'confirmed' | 'failed', at: number, over: object = {}) => ({ id: `r:${at}`, kind, date: '2026-12-05', hotel: 'NAGU 勝浦', at, runId: 'r', ...over });
+    const rows = bookingRows(status({ events: [], bookings: [b('hold', t0 - 60_000), b('confirming', t0), b('hold', t0 - 60_000, { hotel: 'A' }), b('failed', t0, { hotel: 'A' }), b('hold', t0, { hotel: 'B' }), b('confirmed', t0, { hotel: 'B', number: '1' })] }), TODAY);
+    expect(rows.map((r) => [r.hotel, r.state, r.left, r.steps.length])).toEqual([['A', 'action', null, 0], ['NAGU 勝浦', 'applying', null, 0], ['B', 'confirmed', null, 0]]);
+    // a hold alone (auto-confirm on its way) shows its time left, no steps
+    expect(bookingRows(status({ events: [], bookings: [b('hold', t0)] }), TODAY)[0]).toMatchObject({ state: 'hold', left: 'あと30分ごろで無効', steps: [] });
+  });
+});
+
+describe('the words', () => {
+  it('遅れ says how long nothing was heard; 設定’s row says 要対応 while a booking waits', () => {
+    expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'], now: STATUS.runner!.lastSeen + 52 * 60_000 })).sentence).toBe('52分報告がありません。');
+    expect(rowBadge(STATUS)).toEqual({ tone: 'bad', word: '要対応' });
+    expect(rowBadge(status({ events: [], bookings: [], verdict: 'healthy', reasons: [] }))).toEqual({ tone: 'good', word: '順調' });
+    expect(rowBadge(status({ events: [], bookings: [], verdict: 'stopped' }))).toEqual({ tone: 'idle', word: '停止中' });
+  });
+  it('who saved the settings last', () => {
+    const name = (m: string) => (m === 'B' ? 'うめ' : 'ウェイ');
+    expect(savedLine(status({ settings: { ...STATUS.settings, updatedBy: 'B', updatedAt: jst('2026-11-13T12:03:00') } }), name, TODAY)).toBe('設定の変更：うめ・12:03');
+    expect(savedLine(status({ settings: { ...STATUS.settings, updatedBy: null, updatedAt: null } }), name, TODAY)).toBeNull();
+  });
+  it('words the last error: the step and the outcome, an unknown code as it is', () => {
+    const e = (step: string, cls: string) => errorText({ at: 0, step, status: null, cls });
+    expect(e('calendar_get', 'timeout')).toBe('空室の確認 · 時間切れ');
+    expect(e('calendar_get', 'http_503')).toBe('空室の確認 · サイトの応答 503');
+    expect(e('solve', 'chrome_TimeoutException')).toBe('認証 · ブラウザの不具合');
+    expect(e('step9_final', 'no_completion')).toBe('仮押さえ · 完了画面が出ず');
+    expect(e('imap', 'web_login_required')).toBe('メールの確認 · ウェブでのログインが必要');
+    expect(e('thread', 'KeyError')).toBe('thread · KeyError');
+  });
+});
+
+describe('直近1時間', () => {
+  const at = (s: string) => jst(`2026-11-13T${s}`);
+  const scan = (time: string, over: Partial<ScanEntry> = {}): ScanEntry => ({ t: at(time), ok: true, ms: 800, avail: 0, ...over });
+  it('buckets the last 60 Tokyo minutes up to now’s, oldest first: a failure red, else a room yellow, else green; a gap empty', () => {
+    const now = at('12:00:30');
+    const cells = scanCells([
+      scan('11:00:59'),                                   // older than the hour: left out
+      scan('11:01:00'), scan('11:01:59.999', { avail: 2 }),   // one minute, a room seen
+      scan('11:30:05'), scan('11:30:20', { ok: false, code: 'timeout' }), scan('11:30:40', { ok: false, code: 'timeout', avail: 1 }), scan('11:30:50', { ok: false }),
+      scan('11:59:00'), scan('12:00:00'), scan('12:00:59')    // the current minute is the last cell
+    ], now);
+    expect(cells).toHaveLength(60);
+    expect([cells[0].time, cells[59].time]).toEqual(['11:01', '12:00']);
+    expect(cells[0]).toMatchObject({ n: 2, avail: 1, fails: 0, state: 'avail', text: '11:01 · 2回 · 空きあり1' });
+    expect(cells[29]).toMatchObject({ time: '11:30', n: 4, fails: 3, state: 'fail', text: '11:30 · 4回 · 失敗3（timeout） · 空きあり1' });
+    expect(cells[58]).toMatchObject({ time: '11:59', state: 'ok', text: '11:59 · 1回' });
+    expect(cells[59]).toMatchObject({ n: 2, state: 'ok' });
+    expect(cells[1]).toMatchObject({ state: 'none', text: '11:02 · 確認なし' });
+    expect(cells.filter((c) => c.state === 'none')).toHaveLength(56);
+    expect(scanSummary(cells)).toBe('直近1時間：確認9回、失敗3回、空きあり2回');
+    expect(scanTicks(cells)).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
+  });
+  it('a failure without a code says only how many; the Tokyo minute holds whatever the phone’s zone (UTC minutes)', () => {
+    const cells = scanCells([{ t: Date.parse('2026-11-13T02:59:59Z'), ok: false, ms: 0, avail: 0 }], Date.parse('2026-11-13T03:00:00Z'));
+    expect(cells.at(-2)).toMatchObject({ time: '11:59', text: '11:59 · 1回 · 失敗1' });
+    expect(cells.at(-1)).toMatchObject({ time: '12:00', state: 'none' });
+    expect(scanCells([], STATUS.now).every((c) => c.state === 'none')).toBe(true);
   });
 });

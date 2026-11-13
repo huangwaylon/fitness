@@ -103,7 +103,7 @@ export const LOG_EVENTS = {
   "mic.stt": { src: 'c', f: { be: ['whisper-gpu', 'whisper-wasm', 'webkit', 'relay'], model: ['tiny.en', 'base.en', 'tiny.en-f16', 'turbo', 'none'], step: ['dl', 'load', 'clip', 'spoken'], ms: 'n', mb: 'n', audS: 'n', wer: 'n', ok: 'b', err: ['not-allowed', 'service-not-allowed', 'network', 'no-speech', 'aborted', 'audio-capture', 'oom', 'timeout', 'other'] } },
   // 設定's 保養所ボット (lib/its/client.ts): a call to the its-bot Worker that failed: which, its HTTP status (none:
   // no answer), the Worker's error code or the phone's (offline, timeout, json, no_key), ms
-  "its.fail": { src: 'c', f: { op: ['status', 'settings', 'run'], err: 't', http: 'n', ms: 'n' } },
+  "its.fail": { src: 'c', f: { op: ['status', 'settings', 'run'], err: 't', rid: 't', http: 'n', ms: 'n' } },
   // ---- the relay
   // rw, rr: the rows the record wrote and read for it (SQLite cursors: the Free plan's 100k rows written a day); kh, on
   // `unauthorized`: the first 4 hex of the SHA-256 of the key it presented (never the key: a stale device, an e2e's

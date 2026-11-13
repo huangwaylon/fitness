@@ -35,6 +35,17 @@ describe('parseStatus', () => {
       bookings: [{ ...example.status.bookings[0], hotel: long }, { ...example.status.bookings[0], hotel: 'x'.repeat(201) }] })!;
     expect([s.seen, s.settings.skip, s.settings.priority, s.bookings.map((b) => b.hotel)]).toEqual([[long], [long], ['NAGU'], [long]]);
   });
+  it('reads the allow-list when the Worker keeps one, and leaves it absent when it doesn’t', () => {
+    expect(parseStatus(wire())!.settings).not.toHaveProperty('search');
+    expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: ['NAGU 勝浦', 'a\u202eb', 3] } })!.settings.search).toEqual(['NAGU 勝浦']);
+    expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: [] } })!.settings.search).toEqual([]);
+  });
+  it('reads a newer Worker’s last preflight and last hour of reads; an older one’s status has neither', () => {
+    const { lastPreflight: _p, recentScans: _r, ...older } = wire();
+    expect(parseStatus(older)).not.toHaveProperty('recentScans');
+    expect(parseStatus(older)).not.toHaveProperty('lastPreflight');
+    expect(parseStatus({ ...wire(), recentScans: [{ t: 1, ok: false, code: 'bad code!', ms: 3, avail: 0 }, { ok: true }, 'x'] })!.recentScans).toEqual([{ t: 1, ok: false, ms: 3, avail: 0 }]);
+  });
   it('reads who pressed 開始 / 停止 last (C3), and leaves a garbled one out', () => {
     const control = { action: 'stop', by: 'B', at: example.status.now - 60_000 };
     expect(parseStatus({ ...wire(), control })!.control).toEqual(control);
@@ -70,28 +81,49 @@ describe('the calls', () => {
 
   it('a 409 is `conflict`, with the current status (bare or under `status`)', async () => {
     fetch.mockResolvedValueOnce(answer(409, { error: 'conflict', status: example.status }));
-    expect(await putSettings(example.settingsInput as never, undefined, URL)).toEqual({ ok: false, err: 'conflict', http: 409, status: example.status });
+    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'conflict', http: 409, status: example.status });
     fetch.mockResolvedValueOnce(answer(409, example.status));
     expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ err: 'conflict', status: example.status });
   });
 
   it('a refusal keeps the Worker’s code; garbage, a dropped line and no key are the phone’s; each logged without the key', async () => {
     fetch.mockResolvedValueOnce(answer(400, { error: 'bad_hotels' }));
-    expect(await putSettings(example.settingsInput as never, undefined, URL)).toEqual({ ok: false, err: 'bad_hotels', http: 400, status: null });
+    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'bad_hotels', http: 400, status: null, rid: expect.stringMatching(/^[0-9a-f]{8}$/) });
     fetch.mockResolvedValueOnce(answer(502, '<html>bad gateway</html>'));
     expect(await fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'http', http: 502 });
     fetch.mockResolvedValueOnce(answer(200, { v: 1 }));
     expect(await fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'json', http: 200 });
-    fetch.mockRejectedValueOnce(new TypeError('Load failed'));
-    expect(await postRun('start', undefined, URL)).toEqual({ ok: false, err: 'offline', http: null, status: null });
+    fetch.mockRejectedValueOnce(new TypeError('Load failed')).mockRejectedValueOnce(new TypeError('Load failed'));
+    expect(await postRun('start', undefined, URL)).toMatchObject({ ok: false, err: 'offline', http: null, status: null });
     expect(logged.map(([e, d, l]) => [e, (d as { op: string }).op, (d as { err: string }).err, (d as { http?: number }).http, l])).toEqual([
       ['its.fail', 'settings', 'bad_hotels', 400, 2], ['its.fail', 'status', 'http', 502, 2], ['its.fail', 'status', 'json', 200, 2], ['its.fail', 'run', 'offline', undefined, 1]
     ]);
     expect(JSON.stringify(logged)).not.toContain(KEY);
 
+    // each line names its request (the Worker logs the same id)
+    expect(logged.every(([, d]) => /^[0-9a-f]{8}$/.test((d as { rid: string }).rid))).toBe(true);
+
     key.value = null;
     expect(await fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'no_key' });
+    expect(fetch).toHaveBeenCalledTimes(5);   // the offline one tried once without its id too
+  });
+
+  it('sends an X-Request-Id; a Worker whose preflight refuses it is asked again without, and not sent it again', async () => {
+    fetch.mockResolvedValueOnce(answer(200, example.status));
+    await fetchStatus(undefined, URL);
+    const rid = (fetch.mock.calls[0][1]?.headers as Record<string, string>)['X-Request-Id'];
+    expect(rid).toMatch(/^[0-9a-f]{8}$/);
+    // an older Worker: the CORS preflight fails the call carrying the header (a TypeError), the plain one goes through
+    fetch.mockImplementation(async (_, init) => {
+      if ((init?.headers as Record<string, string>)['X-Request-Id']) throw new TypeError('Load failed');
+      return answer(200, example.status);
+    });
+    expect((await fetchStatus(undefined, URL)).ok).toBe(true);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect((await postRun('stop', undefined, URL)).ok).toBe(true);
     expect(fetch).toHaveBeenCalledTimes(4);
+    expect(fetch.mock.calls[3][1]?.headers).not.toHaveProperty('X-Request-Id');
+    expect(logged).toEqual([]);
   });
 
   it('leaving (the abort) is not logged', async () => {

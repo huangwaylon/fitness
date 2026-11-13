@@ -1,14 +1,15 @@
 // 設定's 保養所ボット page's view (docs/design.md "Settings"), so ItsPage stays thin: the draft the page edits and how
-// it becomes a PUT /its/settings body, the date rows' notes, the facilities (the roster, the names the runner has seen
-// and the settings' lists, merged by normName), the verdict card, the facts, the bookings that need a person and the
-// recent events. Pure but for t().
+// it becomes a PUT /its/settings body, the stays (one at a time or a period's weekdays; each with its note and the
+// facilities that can take it), the facilities (the roster, the names the runner has seen and the settings' lists,
+// merged by normName, in groups; 探す = the allow-list `search`, the presets), the verdict card, the facts, the bookings
+// that need a person (the hold's deadline, what to do) and the recent events. Pure but for t().
 import {
-  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
-  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member, type Verdict
+  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
+  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanEntry, type Verdict
 } from './contract.ts';
-import { ROSTER, type RosterHotel } from '#lib/its/roster.ts';
+import { D4, ROSTER, SUMMER_LAST, type Region, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
-import { formatDate, formatSyncTime } from '#lib/i18n/format.ts';
+import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
 
 // ---- The draft ----
@@ -17,37 +18,63 @@ export interface Draft {
   intervalSec: IntervalSec;
   dates: string[];
   guests: number;
+  /** The allow-list: the facilities searched (a name in `skip` too is not). */
+  search: string[];
   skip: string[];
   priority: string[];
   autoConfirm: boolean;
 }
 
-export const draftOf = (s: ItsSettings): Draft => ({
-  intervalSec: s.intervalSec, dates: [...s.dates], guests: s.guests, skip: [...s.skip], priority: [...s.priority], autoConfirm: s.autoConfirm
-});
+/** The saved settings carry no allow-list (a Worker from before it): every facility not skipped was searched. */
+export const legacy = (s: ItsSettings): boolean => !Array.isArray(s.search);
+
+/** The saved settings as a draft. Without an allow-list (legacy) it is derived: the roster and the names seen, less
+ *  the skipped (what that Worker searched), so 保存 keeps today's facilities and stops taking new ones unasked. */
+export function draftOf(s: ItsSettings, seen: readonly string[] = [], roster: readonly RosterHotel[] = ROSTER): Draft {
+  const skipped = new Set(s.skip.map(normName));
+  const search = legacy(s) ? uniq([...roster.map((r) => r.name), ...seen]).filter((n) => !skipped.has(normName(n))) : [...s.search!];
+  return { intervalSec: s.intervalSec, dates: [...s.dates], guests: s.guests, search, skip: [...s.skip], priority: [...s.priority], autoConfirm: s.autoConfirm };
+}
+
+/** Names unique by normName, the first spelling kept. */
+function uniq(xs: readonly string[]): string[] {
+  const seen = new Set<string>();
+  return xs.filter((x) => {
+    const k = normName(x);
+    return k !== '' && !seen.has(k) && (seen.add(k), true);
+  });
+}
 
 const sortedNorm = (xs: string[]) => [...new Set(xs.map(normName))].sort().join('\n');
-/** The same settings: dates and skips as sets (skips by normName), priority in its order. */
+/** The same settings: dates, skips and the allow-list as sets (names by normName), priority in its order. */
 export function sameDraft(a: Draft, b: Draft): boolean {
   return a.intervalSec === b.intervalSec && a.guests === b.guests && a.autoConfirm === b.autoConfirm
     && [...new Set(a.dates)].sort().join() === [...new Set(b.dates)].sort().join()
-    && sortedNorm(a.skip) === sortedNorm(b.skip) && a.priority.map(normName).join('\n') === b.priority.map(normName).join('\n');
+    && sortedNorm(a.skip) === sortedNorm(b.skip) && sortedNorm(a.search) === sortedNorm(b.search)
+    && a.priority.map(normName).join('\n') === b.priority.map(normName).join('\n');
 }
 
-/** The PUT body: dates sorted, any that passed while the draft was open dropped (the Worker refuses those). */
-export function toInput(d: Draft, baseUpdatedAt: number | null, now: number): ItsSettingsInput {
+/** The PUT body: dates sorted, any that passed while the draft was open dropped (the Worker refuses those); the
+ *  allow-list less the skipped (skipping wins). */
+export function toInput(d: Draft, baseUpdatedAt: number | null, now: number): ItsSettingsInput & { search: string[] } {
   const dates = [...new Set(d.dates)].filter((x) => daysUntil(x, now) >= 0).sort();
-  return { intervalSec: d.intervalSec, dates, guests: Math.min(GUESTS_MAX, Math.max(GUESTS_MIN, d.guests)), skip: [...d.skip], priority: [...d.priority], autoConfirm: d.autoConfirm, baseUpdatedAt };
+  const skipped = new Set(d.skip.map(normName));
+  return {
+    intervalSec: d.intervalSec, dates, guests: Math.min(GUESTS_MAX, Math.max(GUESTS_MIN, d.guests)), search: uniq(d.search).filter((n) => !skipped.has(normName(n))),
+    skip: [...d.skip], priority: [...d.priority], autoConfirm: d.autoConfirm, baseUpdatedAt
+  };
 }
 
-/** The date field's bounds: tonight in Tokyo to MAX_DAYS_AHEAD days on. */
+// ---- The stays ----
+/** The date fields' bounds: tonight in Tokyo to MAX_DAYS_AHEAD days on. */
 export function dateBounds(now: number): { min: string; max: string } {
   const min = tokyoToday(now);
   return { min, max: new Date(Date.parse(min) + MAX_DAYS_AHEAD * 86_400_000).toISOString().slice(0, 10) };
 }
 
+type AddWhy = 'bad' | 'past' | 'far' | 'dup' | 'full';
 /** A date added, or why not. */
-export function addDate(d: Draft, date: string, now: number): { ok: true; draft: Draft } | { ok: false; why: 'bad' | 'past' | 'far' | 'dup' | 'full' } {
+export function addDate(d: Draft, date: string, now: number): { ok: true; draft: Draft } | { ok: false; why: AddWhy } {
   if (!isDate(date)) return { ok: false, why: 'bad' };
   const n = daysUntil(date, now);
   if (n < 0) return { ok: false, why: 'past' };
@@ -61,31 +88,84 @@ export function addDate(d: Draft, date: string, now: number): { ok: true; draft:
 
 export const removeDate = (d: Draft, date: string): Draft => ({ ...d, dates: d.dates.filter((x) => x !== date) });
 
+/** 0 = 日 … 6 = 土, of a YYYY-MM-DD. */
+export const weekday = (date: string): number => new Date(`${date}T00:00:00Z`).getUTCDay();
+
+/** まとめて追加: the nights from `from` to `to` (either order) on the chosen weekdays (0 = 日), from tonight to
+ *  MAX_DAYS_AHEAD, less those already listed; `add` stops at MAX_DATES (`over`: how many didn't fit). */
+export function bulkDates(d: Draft, from: string, to: string, days: readonly number[], now: number): { add: string[]; over: number } {
+  if (!isDate(from) || !isDate(to)) return { add: [], over: 0 };
+  const [a, b] = from <= to ? [from, to] : [to, from];
+  const live = d.dates.filter((x) => daysUntil(x, now) >= 0);
+  const all: string[] = [];
+  for (let ms = Date.parse(a), end = Date.parse(b); ms <= end && all.length <= MAX_DAYS_AHEAD; ms += 86_400_000) {
+    const date = new Date(ms).toISOString().slice(0, 10);
+    const n = daysUntil(date, now);
+    if (n >= 0 && n <= MAX_DAYS_AHEAD && days.includes(weekday(date)) && !live.includes(date)) all.push(date);
+  }
+  const room = Math.max(0, MAX_DATES - live.length);
+  return { add: all.slice(0, room), over: Math.max(0, all.length - room) };
+}
+
+/** The draft with these dates added (past ones let go, as addDate). */
+export const addDates = (d: Draft, dates: readonly string[], now: number): Draft =>
+  ({ ...d, dates: [...new Set([...d.dates.filter((x) => daysUntil(x, now) >= 0), ...dates])].sort() });
+
+/** A facility can take a stay: searched, on a roster (or new: the site offered it), the stay at least its cutoff away
+ *  (D4 for one the roster doesn't know), a 夏季-only one up to SUMMER_LAST. */
+function canTake(r: HotelRow, date: string, days: number): boolean {
+  if (!r.search) return false;
+  if (r.roster && r.roster.kind === null) return false;
+  if (days < (r.roster?.cutoff ?? D4)) return false;
+  return r.roster?.kind !== 'summer' || date.slice(5) <= SUMMER_LAST;
+}
+
 /** A stay's note: 自動で確定 (on, and AUTO_CONFIRM_MIN_DAYS+ away), only the D−4 facilities (under 10 days), past
- *  every cutoff (under 4), or none. A stay already past in Tokyo isn't listed (保存 drops it: toInput). */
-export type DateNote = 'auto' | 'd4' | 'late' | null;
-export function dateRows(d: Draft, now: number): { date: string; label: string; days: number; note: DateNote; text: string }[] {
-  return [...d.dates].sort().map((date) => ({ date, days: daysUntil(date, now) })).filter((r) => r.days >= 0).map(({ date, days }) => {
-    const note: DateNote = days < 4 ? 'late' : days < 10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
+ *  every cutoff (under 4), or none; 予約済み once one is 予約確定 (the runner stops looking for it). A stay already past
+ *  in Tokyo isn't listed (保存 drops it: toInput). `able`: the searched facilities that can take it. */
+type DateNote = 'auto' | 'd4' | 'late' | 'booked' | null;
+export interface DateRow { date: string; label: string; days: number; note: DateNote; text: string; able: string[] }
+export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = [], bookings: readonly BookingEntry[] = []): DateRow[] {
+  const booked = new Set(bookings.filter((b) => b.kind === 'confirmed').map((b) => b.date));
+  return [...new Set(d.dates)].sort().map((date) => ({ date, days: daysUntil(date, now) })).filter((r) => r.days >= 0).map(({ date, days }) => {
+    const note: DateNote = booked.has(date) ? 'booked' : days < 4 ? 'late' : days < 10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
     const left = days === 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
-    return { date, label: formatDate(date), days, note, text: note ? `${left} · ${t(`its.date.note.${note}`)}` : left };
+    const able = note === 'booked' ? [] : hotels.filter((h) => canTake(h, date, days)).map((h) => h.name);
+    return { date, label: formatDate(date), days, note, text: note ? `${left} · ${t(`its.date.note.${note}`)}` : left, able };
   });
 }
 
+/** The stays under month headings (2026年11月). */
+export function dateMonths(rows: readonly DateRow[]): { month: string; label: string; rows: DateRow[] }[] {
+  const out: { month: string; label: string; rows: DateRow[] }[] = [];
+  for (const r of rows) {
+    const month = r.date.slice(0, 7);
+    if (out.at(-1)?.month !== month) out.push({ month, label: monthLabel(r.date, { long: true }), rows: [] });
+    out.at(-1)!.rows.push(r);
+  }
+  return out;
+}
+
 // ---- The facilities ----
+export type Group = Region | 'new';
+const GROUPS: readonly Group[] = ['kanto', 'near', 'far', 'new'];
+
 export interface HotelRow {
   /** normName(name): the row's identity. */
   key: string;
   name: string;
   roster: RosterHotel | null;
+  group: Group;
   /** Offered by the site but on no roster here (a new facility, or a spelling the roster doesn't have). */
   fresh: boolean;
-  /** Not skipped: the runner may book it. */
+  /** In the allow-list and not skipped: the runner may book it. */
   search: boolean;
+  /** Neither searched nor skipped: offered since the allow-list was saved, nobody decided yet (新しい施設：○○). */
+  undecided: boolean;
   /** Its place in the priority (0 = tried first), or null. */
   star: number | null;
   /** The other spelling of what may be the same facility (an unverified roster name and a site name, one inside the
-   *  other after normName): a 除外 on one doesn't cover the other (skips match exactly). */
+   *  other after normName): 探す on one doesn't cover the other (the lists match exactly). */
   similar: string | null;
 }
 
@@ -100,23 +180,23 @@ function starOf(key: string, priority: string[]): number | null {
   return i < 0 ? null : i;
 }
 
-const GROUP = (r: HotelRow): number => (r.star !== null ? 0 : r.fresh ? 1 : r.roster?.region === 'kanto' ? 2 : 3);
-
-/** Every facility the page lists: the roster, the seen names it doesn't have (新しい施設), and any skip or priority
- *  entry (the draft's, and the saved settings' so one un-skipped in the draft stays listed) matching neither. 探す: ★
- *  first (in priority order), the new ones, 関東, the rest; then 除外中. An unverified roster name and a seen name, one
- *  inside the other, note each other (`similar`). */
-export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 'skip' | 'priority'> | null = null, roster: readonly RosterHotel[] = ROSTER): { search: HotelRow[]; skipped: HotelRow[] } {
+/** Every facility the page lists, in a stable order (a switch never moves a row): the roster by group (関東, 近郊,
+ *  遠方), then 新しい施設: the seen names it doesn't have and any listed entry (the draft's, and the saved settings' so
+ *  one let go in the draft stays listed) matching neither. An unverified roster name and a seen name, one inside the
+ *  other, note each other (`similar`). */
+export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 'skip' | 'priority'> & { search?: string[] } | null = null, roster: readonly RosterHotel[] = ROSTER): HotelRow[] {
   const skipped = new Set(d.skip.map(normName));
+  const searched = new Set(d.search.map(normName));
   const rows = new Map<string, HotelRow>();
   const add = (name: string, r: RosterHotel | null, fresh: boolean) => {
     const key = normName(name);
     if (!key || rows.has(key)) return;
-    rows.set(key, { key, name, roster: r, fresh, search: !skipped.has(key), star: null, similar: null });
+    const search = searched.has(key) && !skipped.has(key);
+    rows.set(key, { key, name, roster: r, group: r?.region ?? 'new', fresh, search, undecided: !search && !skipped.has(key), star: null, similar: null });
   };
   for (const r of roster) add(r.name, r, false);
   for (const n of seen) add(n, null, true);
-  for (const n of [...d.skip, ...(saved?.skip ?? [])]) add(n, null, false);
+  for (const n of [...d.search, ...d.skip, ...(saved?.search ?? []), ...(saved?.skip ?? [])]) add(n, null, false);
   for (const p of [...d.priority, ...(saved?.priority ?? [])]) {
     let named = false;
     for (const k of rows.keys()) if ((named = names(k, p))) break;
@@ -129,17 +209,42 @@ export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 
     const u = r.fresh ? unverified.find((x) => !x.similar && (x.key.includes(r.key) || r.key.includes(x.key))) : undefined;
     if (u) [r.similar, u.similar] = [u.name, r.name];
   }
-  const search = all.map((r, i) => ({ r, i })).filter(({ r }) => r.search)
-    .sort((a, b) => GROUP(a.r) - GROUP(b.r) || (a.r.star ?? 0) - (b.r.star ?? 0) || a.i - b.i).map(({ r }) => r);
-  return { search, skipped: all.filter((r) => !r.search) };
+  return GROUPS.flatMap((g) => all.filter((r) => r.group === g));
 }
 
-/** 探す ↔ 除外. Skipping a facility takes it out of the priority too (★ and 除外 never both). */
-export function toggleSkip(d: Draft, name: string): Draft {
-  const key = normName(name);
-  if (d.skip.some((s) => normName(s) === key)) return { ...d, skip: d.skip.filter((s) => normName(s) !== key) };
-  return { ...d, skip: [...d.skip, name], priority: d.priority.filter((p) => !names(key, p)) };
+/** The rows by group, those whose name holds the filter (normName, so ｶﾅ and spaces don't matter); empty groups left out. */
+export function hotelGroups(rows: readonly HotelRow[], filter = ''): { id: Group; label: string; rows: HotelRow[]; on: number }[] {
+  const f = normName(filter);
+  return GROUPS.map((id) => {
+    const g = rows.filter((r) => r.group === id);
+    return { id, label: t(`its.group.${id}`), rows: f ? g.filter((r) => r.key.includes(f)) : g, on: g.filter((r) => r.search).length };
+  }).filter((g) => g.rows.length);
 }
+
+/** Searched (on) or not (off), a facility at a time: off skips it and takes it out of the priority (★ and off never
+ *  both); on lists it and un-skips it. */
+export function setSearch(d: Draft, names_: readonly string[], on: boolean): Draft {
+  const keys = new Set(names_.map(normName));
+  const search = d.search.filter((s) => !keys.has(normName(s)));
+  const skip = d.skip.filter((s) => !keys.has(normName(s)));
+  return on
+    ? { ...d, search: [...search, ...names_], skip }
+    : { ...d, search, skip: [...skip, ...names_], priority: d.priority.filter((p) => ![...keys].some((k) => names(k, p))) };
+}
+export const toggleSearch = (d: Draft, r: Pick<HotelRow, 'name' | 'search'>): Draft => setSearch(d, [r.name], !r.search);
+
+/** The presets: 関東だけ, 近郊まで (関東 and 近郊), 直営だけ, 全部 (every row, the new ones too). */
+export type Preset = 'kanto' | 'near' | 'direct' | 'all';
+export const PRESETS: readonly Preset[] = ['kanto', 'near', 'direct', 'all'];
+const inPreset = (p: Preset, r: HotelRow): boolean =>
+  p === 'all' || (!!r.roster?.kind && (p === 'direct' ? r.roster.kind === 'direct' : r.group === 'kanto' || (p === 'near' && r.group === 'near')));
+
+/** A preset applied: its facilities searched, every other listed one off. */
+export function applyPreset(d: Draft, rows: readonly HotelRow[], p: Preset): Draft {
+  return setSearch(setSearch(d, rows.filter((r) => !inPreset(p, r)).map((r) => r.name), false), rows.filter((r) => inPreset(p, r)).map((r) => r.name), true);
+}
+/** The preset the draft is now (exactly its facilities searched), or null. */
+export const presetOf = (rows: readonly HotelRow[]): Preset | null => PRESETS.find((p) => rows.every((r) => r.search === inPreset(p, r))) ?? null;
 
 /** A priority entry for a facility: its name, or (a site's name may run to MAX_SITE_NAME) its first MAX_NAME UTF-16
  *  units, whole code points, still naming it (a substring, as the runner matches). */
@@ -151,11 +256,11 @@ function priorityEntry(name: string, key: string): string {
   return cut.trim();
 }
 
-/** ★ on (last in the priority; a skipped one is searched again) or off (every entry matching it). */
+/** ★ on (last in the priority; one not searched is searched) or off (every entry matching it). */
 export function toggleStar(d: Draft, name: string): Draft {
   const key = normName(name);
   if (starOf(key, d.priority) !== null) return { ...d, priority: d.priority.filter((p) => !names(key, p)) };
-  return { ...d, priority: [...d.priority, priorityEntry(name, key)], skip: d.skip.filter((s) => normName(s) !== key) };
+  return { ...setSearch(d, [name], true), priority: [...d.priority, priorityEntry(name, key)] };
 }
 
 /** A facility's small line: 通年 · 10日前まで, and 名前未確認 / 新しい施設. */
@@ -173,8 +278,18 @@ export function hotelNote(r: HotelRow): string {
 export type Tone = 'good' | 'warn' | 'bad' | 'idle';
 const TONE: Record<Verdict, Tone> = { healthy: 'good', starting: 'good', idle: 'idle', degraded: 'warn', late: 'warn', failing: 'bad', stopped: 'idle', off: 'idle' };
 
+/** The card: its tone, word and sentence (遅れ: how long nothing was heard). */
 export function verdictView(s: ItsStatus): { tone: Tone; word: string; sentence: string } {
-  return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`), sentence: t(`its.reason.${s.reasons[0] ?? 'none'}`, { n: s.runner?.scanFailures ?? 0 }) };
+  const why = s.reasons[0] ?? 'none';
+  const sentence = why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
+    : t(`its.reason.${why}`, { n: s.runner?.scanFailures ?? 0 });
+  return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`), sentence };
+}
+
+/** 設定's row: 要対応 (coral) while a booking waits for a person, else the verdict's word and tone. */
+export function rowBadge(s: ItsStatus): { tone: Tone; word: string } {
+  if (bookingRows(s, tokyoToday(s.now), s.now).some((b) => b.state === 'action')) return { tone: 'bad', word: t('its.booking.action') };
+  return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`) };
 }
 
 /** Running, or about to: polled every 15 s while shown, else every minute. */
@@ -194,6 +309,10 @@ export const footLine = (s: ItsStatus, today: string): string =>
 export const controlLine = (s: ItsStatus, name: (m: Member) => string, today: string): string | null =>
   s.control ? t('its.ctl.by', { action: t(`its.ctl.${s.control.action}`), who: name(s.control.by), time: at(s.control.at, today) }) : null;
 
+/** Who saved the settings last, and when: 「設定の変更：うめ・12:03」, or null (never saved). */
+export const savedLine = (s: ItsStatus, name: (m: Member) => string, today: string): string | null =>
+  s.settings.updatedBy && s.settings.updatedAt !== null ? t('its.savedBy', { who: name(s.settings.updatedBy), time: at(s.settings.updatedAt, today) }) : null;
+
 /** `2時間10分`, `12分`, `40秒`. */
 export function duration(ms: number): string {
   const s = Math.max(0, Math.round(ms / 1000));
@@ -204,9 +323,21 @@ export function duration(ms: number): string {
 
 const at = (ms: number | null, today: string): string => formatSyncTime(ms === null ? null : new Date(ms), today);
 
-export interface Fact { id: string; label: string; value: string; href?: string }
-/** The rows under the card. Without a report yet only 最終報告 (まだ); 最後の成功 only when it isn't the last scan,
- *  連続失敗 only when there are any, 起動 only when the dispatch failed. */
+const STEPS = ['calendar', 'scan', 'empty_create', 'solve', 'imap', 'worker', 'bookings', 'hold'];
+const CLASSES = ['timeout', 'transport', 'session_dead', 'ban', 'no_token', 'unsolved', 'no_calendar', 'record_full', 'id_conflict', 'auth_failed',
+  'web_login_required', 'submit_unknown', 'no_completion', 'hold_expired', 'room_taken'];
+/** The last error in words: 「空室の確認 · 時間切れ」 (a code the page doesn't know stays as it is). */
+export function errorText(e: LastError): string {
+  const step = e.step.startsWith('calendar_') ? 'calendar' : /^step\d/.test(e.step) ? 'hold' : e.step;
+  const http = /^http_(\d{3})$/.exec(e.cls);
+  const what = http ? t('its.cls.http', { n: http[1] }) : CLASSES.includes(e.cls) ? t(`its.cls.${e.cls}`) : e.cls.startsWith('chrome_') ? t('its.cls.chrome') : e.cls;
+  return [STEPS.includes(step) ? t(`its.step.${step}`) : e.step, what].join(' · ');
+}
+
+export interface Fact { id: string; label: string; value: string; href?: string; more?: boolean }
+/** The rows under the card: 状態, 最終確認 and 実行 shown, the rest (`more`) folded under くわしく. Without a report yet
+ *  only 最終報告 (まだ); 最後の成功 only when it isn't the last scan, 連続失敗 only when there are any, 起動 only when the
+ *  dispatch failed. */
 export function factRows(s: ItsStatus, today: string): Fact[] {
   const r = s.runner;
   const out: Fact[] = [];
@@ -215,34 +346,43 @@ export function factRows(s: ItsStatus, today: string): Fact[] {
   const live = s.now - r.lastSeen < LATE_AFTER_SEC * 1000 && r.phase !== 'stopping';
   out.push(
     { id: 'phase', label: t('its.fact.phase'), value: live ? t(`its.phase.${r.phase}`) : t('its.phase.ended') },
-    { id: 'uptime', label: t('its.fact.uptime'), value: t('its.fact.since', { time: at(r.startedAt, today), dur: duration((live ? s.now : r.lastSeen) - r.startedAt) }) },
-    { id: 'report', label: t('its.fact.report'), value: at(r.lastSeen, today) },
     { id: 'scan', label: t('its.fact.scan'), value: r.lastScanAt === null ? at(null, today) : t('its.fact.scans', { time: at(r.lastScanAt, today), n: r.scans }) }
   );
-  if (r.lastOkAt !== r.lastScanAt) out.push({ id: 'ok', label: t('its.fact.ok'), value: at(r.lastOkAt, today) });
-  if (r.scanFailures > 0) out.push({ id: 'failures', label: t('its.fact.failures'), value: t('its.fact.failuresN', { n: r.scanFailures }) });
-  const sv = r.solves;
-  out.push({ id: 'solves', label: t('its.fact.solves'), value: sv.lastSecs === null ? t('its.fact.solvesN', sv) : t('its.fact.solvesLast', { ...sv, secs: sv.lastSecs }) });
-  if (r.lastError) {
-    const e = r.lastError;
-    out.push({ id: 'error', label: t('its.fact.error'), value: `${[e.step, e.cls, e.status ? `HTTP ${e.status}` : ''].filter(Boolean).join(' · ')}（${at(e.at, today)}）` });
-  }
-  if (r.unsynced > 0) out.push({ id: 'unsynced', label: t('its.fact.unsynced'), value: t('its.fact.unsyncedN', { n: r.unsynced }) });
   if (r.runUrl?.startsWith('https://github.com/')) out.push({ id: 'run', label: t('its.fact.run'), value: `#${r.runId}`, href: r.runUrl });
-  return out;
+  const more: Fact[] = [
+    { id: 'uptime', label: t('its.fact.uptime'), value: t('its.fact.since', { time: at(r.startedAt, today), dur: duration((live ? s.now : r.lastSeen) - r.startedAt) }) },
+    { id: 'report', label: t('its.fact.report'), value: at(r.lastSeen, today) }
+  ];
+  if (r.lastOkAt !== r.lastScanAt) more.push({ id: 'ok', label: t('its.fact.ok'), value: at(r.lastOkAt, today) });
+  if (r.scanFailures > 0) more.push({ id: 'failures', label: t('its.fact.failures'), value: t('its.fact.failuresN', { n: r.scanFailures }) });
+  const sv = r.solves;
+  more.push({ id: 'solves', label: t('its.fact.solves'), value: sv.lastSecs === null ? t('its.fact.solvesN', sv) : t('its.fact.solvesLast', { ...sv, secs: sv.lastSecs }) });
+  if (r.lastError) more.push({ id: 'error', label: t('its.fact.error'), value: `${errorText(r.lastError)}（${at(r.lastError.at, today)}）` });
+  if (r.unsynced > 0) more.push({ id: 'unsynced', label: t('its.fact.unsynced'), value: t('its.fact.unsyncedN', { n: r.unsynced }) });
+  return [...out, ...more.map((f) => ({ ...f, more: true }))];
 }
 
 // ---- Bookings ----
 type BookingState = 'action' | 'applying' | 'hold' | 'confirmed';
 const STATE_ORDER: Record<BookingState, number> = { action: 0, applying: 1, hold: 2, confirmed: 3 };
 const NEEDS = ['near_date', 'auto_off', 'no_mail', 'leg_failed', 'bookings_unsynced'];
+/** Why a person must finish the mail's 申込 (the runner held it but won't apply). */
+const BY_MAIL = ['near_date', 'auto_off'];
 const DAY_MS = 86_400_000;
 
-export interface BookingRow { key: string; state: BookingState; date: string; hotel: string; label: string; detail: string }
+export interface BookingRow {
+  key: string; state: BookingState; date: string; hotel: string; label: string; detail: string;
+  /** A live hold's time left (「あと18分ごろで無効」) or 「期限切れ」; null without one. */
+  left: string | null;
+  expired: boolean;
+  /** What to do, a line a step (the mail, that doing nothing costs nothing, a near stay's paid cancellation). */
+  steps: string[];
+}
 
 /** 要対応 · 申込中 · 仮押さえ · 予約確定, one row a stay and facility still ahead: 要対応 for a failed leg or a
- *  human_needed event newer than any 予約確定 for it within the last 24 h (with why), else its furthest step. */
-export function bookingRows(s: ItsStatus, today: string): BookingRow[] {
+ *  human_needed event newer than any 予約確定 for it within the last 24 h (with why), else its furthest step. A hold
+ *  not yet applied for shows its deadline (its `at` + HOLD_SEC), and a 要対応 one to finish by mail, the steps. */
+export function bookingRows(s: ItsStatus, today: string, now: number = s.now): BookingRow[] {
   const pairs = new Map<string, { date: string; hotel: string; entries: BookingEntry[]; need: ItsEvent | null }>();
   const pair = (date: string, hotel: string) => {
     const k = `${date}\n${normName(hotel)}`;
@@ -262,10 +402,10 @@ export function bookingRows(s: ItsStatus, today: string): BookingRow[] {
     const done = latest('confirmed'), failed = latest('failed'), applying = latest('confirming'), hold = latest('hold');
     const since = done?.at ?? -Infinity;
     const needAt = Math.max(p.need && p.need.t > since ? p.need.t : -Infinity, failed && failed.at > since && s.now - failed.at <= DAY_MS ? failed.at : -Infinity);
-    let state: BookingState, detail: string;
+    let state: BookingState, detail: string, why = '';
     if (needAt > -Infinity) {
       state = 'action';
-      const why = p.need && p.need.t === needAt ? p.need.detail ?? '' : 'leg_failed';
+      why = p.need && p.need.t === needAt ? p.need.detail ?? '' : 'leg_failed';
       detail = t(`its.need.${NEEDS.includes(why) ? why : 'other'}`);
     } else if (done) {
       state = 'confirmed';
@@ -277,10 +417,61 @@ export function bookingRows(s: ItsStatus, today: string): BookingRow[] {
       state = 'hold';
       detail = t('its.booking.heldAt', { time: at(hold.at, today) });
     } else continue;
-    rows.push({ key, state, date: p.date, hotel: p.hotel, label: t(`its.booking.${state}`), detail });
+    // a hold's deadline, while nothing came after it (applying, a number, a failure)
+    const open = hold && !done && !(applying && applying.at >= hold.at) && !(failed && failed.at >= hold.at) && (state === 'hold' || BY_MAIL.includes(why));
+    const end = open ? hold.at + HOLD_SEC * 1000 : null;
+    const expired = end !== null && now >= end;
+    const left = end === null ? null : expired ? t('its.hold.expired') : t('its.hold.left', { n: Math.max(1, Math.ceil((end - now) / 60_000)) });
+    const steps = state === 'action' && end !== null && !expired
+      ? [t('its.hold.mail', { hotel: p.hotel }), t('its.hold.free'), ...(daysUntil(p.date, now) < 10 ? [t('its.hold.paid')] : [])]
+      : [];
+    rows.push({ key, state, date: p.date, hotel: p.hotel, label: t(`its.booking.${state}`), detail, left, expired, steps });
   }
   return rows.sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state] || a.date.localeCompare(b.date) || a.hotel.localeCompare(b.hotel));
 }
+
+// ---- 直近1時間: the scans a minute at a time ----
+type CellState = 'ok' | 'avail' | 'fail' | 'none';
+export interface ScanCell { t: number; time: string; n: number; fails: number; avail: number; state: CellState; text: string }
+const MIN_MS = 60_000;
+export const STRIP_MIN = 60;
+const hhmm = (ms: number): string => new Date(ms + 9 * 3600_000).toISOString().slice(11, 16);
+
+/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first: each minute's reads, red when any failed, else yellow
+ *  when any saw a room, else green; none read (a gap: a solve, between runs) empty. `text`: 「15:32 · 4回 · 失敗1（timeout）」. */
+export function scanCells(scans: readonly ScanEntry[], now: number): ScanCell[] {
+  const last = Math.floor(now / MIN_MS) * MIN_MS;   // Tokyo is whole hours off UTC: its minutes are UTC's
+  const first = last - (STRIP_MIN - 1) * MIN_MS;
+  const cells = Array.from({ length: STRIP_MIN }, (_, i) => ({ t: first + i * MIN_MS, n: 0, fails: 0, avail: 0, codes: [] as string[] }));
+  for (const s of scans) {
+    const i = Math.floor((s.t - first) / MIN_MS);
+    if (i < 0 || i >= STRIP_MIN) continue;
+    const c = cells[i];
+    c.n++;
+    if (s.avail > 0) c.avail++;
+    if (!s.ok) {
+      c.fails++;
+      if (s.code && !c.codes.includes(s.code)) c.codes.push(s.code);
+    }
+  }
+  return cells.map(({ t: start, n, fails, avail, codes }) => {
+    const state: CellState = !n ? 'none' : fails ? 'fail' : avail ? 'avail' : 'ok';
+    const parts = [hhmm(start), n ? t('its.scan.n', { n }) : t('its.scan.none')];
+    if (fails) parts.push(codes.length ? t('its.scan.failsWhy', { n: fails, why: codes.join('・') }) : t('its.scan.fails', { n: fails }));
+    if (avail) parts.push(t('its.scan.avail', { n: avail }));
+    return { t: start, time: hhmm(start), n, fails, avail, state, text: parts.join(' · ') };
+  });
+}
+
+/** The strip's one line for VoiceOver: 「直近1時間：確認238回、失敗2回、空きあり3回」. */
+export function scanSummary(cells: readonly ScanCell[]): string {
+  const sum = (k: 'n' | 'fails' | 'avail') => cells.reduce((a, c) => a + c[k], 0);
+  return t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
+}
+
+/** The ticks under it: each quarter hour (15:00 · 15:15 …), at its cell's index. */
+export const scanTicks = (cells: readonly ScanCell[]): { i: number; label: string }[] =>
+  cells.flatMap((c, i) => (Number(c.time.slice(3)) % 15 === 0 ? [{ i, label: c.time }] : []));
 
 // ---- Recent events ----
 const EVENTS_SHOWN = 10;
@@ -294,6 +485,6 @@ export function eventLines(s: ItsStatus, today: string): { key: string; time: st
       : e.kind === 'human_needed' ? t(`its.need.${NEEDS.includes(d) ? d : 'other'}`)
       : e.kind === 'confirmed' && d ? t('its.booking.number', { number: d }) : d;
     const info = [e.date ? formatDate(e.date) : '', e.hotel ?? '', why].filter(Boolean).join(' · ');
-    return { key: `${e.runId}:${e.seq}`, time: at(e.t, today), what: t(`its.ev.${e.kind}`), info, bad: ['ban', 'error', 'human_needed', 'solve_failed'].includes(e.kind) };
+    return { key: `${e.runId}:${e.seq}`, time: at(e.t, today), what: t(`its.ev.${e.kind}`), info, bad: ['ban', 'error', 'human_needed', 'solve_failed', 'prev_unclean'].includes(e.kind) };
   });
 }

@@ -134,6 +134,9 @@ export const test = base.extend<Options & { hermetic: void }>({
         c.on('page', own);
         if (network === 'any') return;
         await serveMapTiles(c);
+        // 設定's 保養所ボット row reads the ITS Worker's status as the list shows: refused unless a spec answers it
+        // (its.spec's page.route comes first), so the row just shows no state
+        await c.route('https://its-bot.island-fund-relay.workers.dev/**', (r) => r.abort());
         // what went out: one Chromium refused to resolve, or one a server answered (WebKit has no such block); a request
         // the test routes and fulfils or aborts itself (a mocked relay: board.spec, record.ts) never left
         const blocked = (e: string | undefined) => /NAME_NOT_RESOLVED|NAME_RESOLUTION_FAILED/.test(e ?? '');

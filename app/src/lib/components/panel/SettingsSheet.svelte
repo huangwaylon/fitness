@@ -4,7 +4,8 @@
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
   // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
   // ジムボット (one row, members only, hidden while GYM_URL is empty: its 動作状況 level, gym/status.ts), 保養所ボット (one
-  // row, members only, hidden while ITS_URL is empty and in demo mode: its 予約設定・動作状況 level, ItsPage, lib/its) and
+  // row, members only, hidden while ITS_URL is empty and in demo mode, its state on it (● 要対応: view.ts rowBadge, read as the
+  // list shows): its 予約設定・動作状況 level, ItsPage, lib/its) and
   // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06) but for ジムボット and 保養所ボット, with a line saying it's visiting. The island is arranged in /editor, not here.
   // 姿, ジムボット and 保養所ボット push a level with ‹ (姿's edits are sent as it's left, with a 取り消す banner here; 保養所ボット's
   // ‹ asks before throwing an unsaved draft away);
@@ -24,7 +25,8 @@
   import GymPage from './GymPage.svelte';
   import ItsPage from './ItsPage.svelte';
   import { GYM_URL } from '#lib/gym/status.ts';
-  import { ITS_URL } from '#lib/its/client.ts';
+  import { ITS_URL, fetchStatus } from '#lib/its/client.ts';
+  import { rowBadge, type Tone } from '#lib/its/view.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -112,6 +114,16 @@
     }
   });
 
+  /** 保養所ボット's row: the verdict's dot and word (● 要対応), read as the list shows (opening, back from its level). */
+  let itsBadge = $state<{ tone: Tone; word: string } | null>(null);
+  const itsRow = $derived(open && !push && !!ITS_URL && !guest && !week.demo);
+  $effect(() => {
+    if (!itsRow) return;
+    const ctl = new AbortController();
+    void fetchStatus(ctl.signal).then((r) => ctl.signal.aborted || (itsBadge = r.ok ? rowBadge(r.status) : null));
+    return () => ctl.abort();
+  });
+
   function toZukan() {
     zukanTop = body?.scrollTop ?? 0;
     open = false;
@@ -164,6 +176,7 @@
           <button type="button" class="prow go" data-push="its" data-sfx="page" onclick={() => go('its')}>
             <span class="ic"><OfficialArt key="items/oil-barrel-bathtub" size={36} /></span>
             <span class="prl">{t('its.status')}</span>
+            {#if itsBadge}<span class="badge" data-its-badge={itsBadge.tone}><i class="dot {itsBadge.tone}" aria-hidden="true"></i>{itsBadge.word}</span>{/if}
             <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </button>
         </section>
@@ -202,6 +215,13 @@
   /* a row that goes somewhere (ジムボット, 図鑑): an icon, the label, a chevron */
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
   .go .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
+  /* 保養所ボット's state on its row: a dot and the word */
+  .badge { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .badge .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--edge); }
+  .dot.good { background: var(--c-leaf); }
+  .dot.warn { background: var(--c-yuzu); }
+  .dot.bad { background: var(--c-coral); }
+  .dot.idle { background: var(--ctl-off); }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 
   /* Rows shared by the sections (サウンド). */

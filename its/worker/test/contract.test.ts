@@ -59,8 +59,8 @@ describe('the Worker on the example', () => {
     await bot.report(example.report as never);
     at(example.status.now);
     const status = await bot.status();
-    const { lease: _l, ...want } = example.status;
-    // the newer fields are the example's statusNewer (the app's client.test reads `status` whole and keeps none yet)
+    const { lease: _l, lastPreflight: _p, recentScans: _r, ...want } = example.status;
+    // the example's lastPreflight and recentScans come from a preflight and a newer runner's report (the next test)
     const { lease, lastPreflight, recentScans, ...got } = status;
     expect(got).toEqual(want);
     expect([lastPreflight, recentScans]).toEqual([null, []]);
@@ -70,7 +70,7 @@ describe('the Worker on the example', () => {
 
   it('answers the example’s newer status fields from a newer runner’s report and a preflight', async () => {
     const bot = await start(fakeState(), { COMMIT: 'abc1234' });
-    vi.setSystemTime(example.statusNewer.lastPreflight);
+    vi.setSystemTime(example.status.lastPreflight);
     await bot.config(null);
     vi.setSystemTime(example.report.startedAt);
     await bot.claim(example.claimInput as never);
@@ -78,7 +78,7 @@ describe('the Worker on the example', () => {
     await bot.report({ ...example.report, ...example.reportNewer } as never);
     vi.setSystemTime(example.status.now);
     const s = await bot.status();
-    expect({ lastPreflight: s.lastPreflight, recentScans: s.recentScans }).toEqual(example.statusNewer);
+    expect({ lastPreflight: s.lastPreflight, recentScans: s.recentScans }).toEqual({ lastPreflight: example.status.lastPreflight, recentScans: example.status.recentScans });
     expect(s.runner).toMatchObject({ settingsAt: example.reportNewer.settingsAt, mailOk: true });
   });
 
@@ -90,7 +90,7 @@ describe('the Worker on the example', () => {
     await bot.bookings([example.bookingInput as never], null);
     await bot.report(example.report as never);
     const s = await bot.status();
-    const { dispatch: _d, control: _c, ...exampleRest } = example.status;
+    const { dispatch: _d, control: _c, lastPreflight: _p, recentScans: _r, ...exampleRest } = example.status;
     const { dispatch, control, lastPreflight, recentScans, ...rest } = s;
     expect([dispatch, control, lastPreflight, recentScans]).toEqual([null, null, null, []]);
     expect(shape(rest)).toEqual(shape(exampleRest));

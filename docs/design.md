@@ -103,7 +103,7 @@ the よびな and what's worn → [the 姿 level](#sugata)), **プロフィー�
 [Weather](#weather)'s switch too), **ジムボット** (one row, 動作状況 → `panel/GymPage.svelte`: the bot's public
 `/status` (gym/README.md) as its verdict, facts, last checks; 現在の設定, 📋's LINE answer verbatim, from
 `/gym/config` (members: `gym/config.ts`); each minute while shown; hidden while `VITE_GYM_URL` is empty),
-**保養所ボット** (→ `panel/ItsPage.svelte`: ITS booker health, 開始 / 停止, settings; only with `VITE_ITS_URL`, not in demo) and
+**保養所ボット** (● its state; → `panel/ItsPage.svelte`: health, 開始 / 停止, holds, 探す; with `VITE_ITS_URL`, not in demo) and
 **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's is the same but for the two bots, with a line
 saying it's visiting. Its own chunk.
 

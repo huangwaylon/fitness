@@ -1,12 +1,15 @@
 // The ITS booker's Worker (its/README.md) as 設定's 保養所ボット page talks to it: GET /its/status, PUT /its/settings,
 // POST /its/run, each with this phone's member key (a guest's is refused there; the page never asks for the guest).
 // Answers are checked (parseStatus: another version, a proxy's page or garbage is null); a call never throws, and a
-// failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code; never the key). No demo mode:
+// failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id; never the key).
+// Each call carries an `X-Request-Id` (the Worker logs it as `rid=`); a Worker from before it refuses the header in its
+// CORS preflight, so a call that can't get through with it is tried once without, and the session stops sending it once
+// that worked. No demo mode:
 // 設定 hides the row there (the e2e mocks the Worker).
 import {
-  BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, REASONS, VERDICTS, isDate, isName,
+  BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, REASONS, VERDICTS, isDate, isId, isName,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member,
-  type Reason, type RunInput, type Verdict
+  type Reason, type RunInput, type ScanEntry, type Verdict
 } from './contract.ts';
 import { getKey } from '#lib/sync/storage.ts';
 import { log } from '#lib/sync/log.ts';
@@ -31,7 +34,9 @@ function parseSettings(x: unknown): ItsSettings | null {
   if (!Number.isInteger(x.guests) || !Array.isArray(x.dates) || !x.dates.every(isDate)) return null;
   return {
     v: 1, paused: x.paused, intervalSec: x.intervalSec as IntervalSec, dates: [...x.dates as string[]], guests: x.guests as number,
-    skip: names(x.skip, MAX_SITE_NAME), priority: names(x.priority, MAX_NAME), autoConfirm: x.autoConfirm, updatedAt: num(x.updatedAt), updatedBy: member(x.updatedBy)
+    skip: names(x.skip, MAX_SITE_NAME), priority: names(x.priority, MAX_NAME), autoConfirm: x.autoConfirm, updatedAt: num(x.updatedAt), updatedBy: member(x.updatedBy),
+    // the allow-list, from a Worker that keeps one (absent: every facility not skipped is searched)
+    ...(Array.isArray(x.search) ? { search: names(x.search, MAX_SITE_NAME) } : {})
   };
 }
 
@@ -66,6 +71,12 @@ function parseRunner(x: unknown): ItsStatus['runner'] {
   };
 }
 
+/** One read of the last hour's (`recentScans`), or null when garbled. */
+function parseScan(x: unknown): ScanEntry | null {
+  if (!isObj(x) || num(x.t) === null || typeof x.ok !== 'boolean') return null;
+  return { t: x.t as number, ok: x.ok, ...(isId(x.code) ? { code: x.code } : {}), ms: num(x.ms) ?? 0, avail: num(x.avail) ?? 0 };
+}
+
 /** A GET /its/status answer as the page reads it, or null when it isn't one. The verdict, the time and the settings
  *  must be there; a garbled booking, event or reason is left out. */
 export function parseStatus(x: unknown): ItsStatus | null {
@@ -82,35 +93,53 @@ export function parseStatus(x: unknown): ItsStatus | null {
     settings, runner: parseRunner(x.runner), lease, dispatch, ...(control ? { control } : {}),
     bookings: Array.isArray(x.bookings) ? x.bookings.map(parseBooking).filter((b): b is BookingEntry => b !== null) : [],
     events: Array.isArray(x.events) ? x.events.map(parseEvent).filter((e): e is ItsEvent => e !== null) : [],
-    seen: names(x.seen, MAX_SITE_NAME)
+    seen: names(x.seen, MAX_SITE_NAME),
+    // from a newer Worker (absent from an older one): the last preflight, the last hour's reads (absent: no strip)
+    ...('lastPreflight' in x ? { lastPreflight: num(x.lastPreflight) } : {}),
+    ...(Array.isArray(x.recentScans) ? { recentScans: x.recentScans.map(parseScan).filter((e) => e !== null) } : {})
   };
 }
 
 /** A call's outcome: the status (every answer carries the current one), or why not: the Worker's error code (`conflict`
  *  for a 409: someone saved since this draft began, with the current status) or the phone's own (offline, timeout,
  *  json, no_key, http). */
-export type ItsReply = { ok: true; status: ItsStatus } | { ok: false; err: string; http: number | null; status: ItsStatus | null };
+export type ItsReply = { ok: true; status: ItsStatus } | { ok: false; err: string; http: number | null; status: ItsStatus | null; rid?: string };
 type Op = 'status' | 'settings' | 'run';
 
 /** A Worker's error code as the log may keep it (a short token), else `http`. */
 const code = (x: unknown): string => (typeof x === 'string' && /^[a-z_]{1,32}$/.test(x) ? x : 'http');
 
+/** A request's id: 8 hex digits, the Worker's log and the phone's (`its.fail`) say the same. */
+const newRid = (): string => Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, '0')).join('');
+/** Sent until a Worker without it in its CORS allow-list showed it can't be (this session). */
+let sendRid = true;
+
 async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: unknown, signal: AbortSignal | undefined, url: string): Promise<ItsReply> {
   const key = getKey();
   if (!key || !url) return { ok: false, err: 'no_key', http: null, status: null };
+  const rid = newRid();
   const ctl = new AbortController();
   const stop = () => ctl.abort();
   signal?.addEventListener('abort', stop);
   let timedOut = false;
   const timer = setTimeout(() => ((timedOut = true), ctl.abort()), TIMEOUT_MS);
   const t0 = performance.now();
+  const send = (withRid: boolean) => fetch(`${url}${path}`, {
+    method, signal: ctl.signal, cache: 'no-store',
+    headers: { Authorization: `Bearer ${key}`, ...(withRid ? { 'X-Request-Id': rid } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+  });
   let r: ItsReply;
   try {
-    const res = await fetch(`${url}${path}`, {
-      method, signal: ctl.signal, cache: 'no-store',
-      headers: { Authorization: `Bearer ${key}`, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) })
-    });
+    let res: Response;
+    try {
+      res = await send(sendRid);
+    } catch (e) {
+      if (!sendRid || ctl.signal.aborted) throw e;
+      // the preflight may have refused the header (a Worker from before it): once without
+      res = await send(false);
+      sendRid = false;
+    }
     let json: unknown = null;
     try {
       json = await res.json();
@@ -119,20 +148,20 @@ async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: 
     }
     if (res.ok) {
       const s = parseStatus(json);
-      r = s ? { ok: true, status: s } : { ok: false, err: 'json', http: res.status, status: null };
+      r = s ? { ok: true, status: s } : { ok: false, err: 'json', http: res.status, status: null, rid };
     } else {
       const o = isObj(json) ? json : {};
-      r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json) };
+      r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json), rid };
     }
   } catch {
-    r = { ok: false, err: timedOut ? 'timeout' : 'offline', http: null, status: null };
+    r = { ok: false, err: timedOut ? 'timeout' : 'offline', http: null, status: null, rid };
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', stop);
   }
   // leaving the page (its abort) is no failure
   if (!r.ok && !signal?.aborted) {
-    log('its.fail', { op, err: r.err, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
+    log('its.fail', { op, err: r.err, rid, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
   }
   return r;
 }
