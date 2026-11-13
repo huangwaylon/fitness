@@ -126,12 +126,13 @@ describe('push.ts: what a report’s events push', () => {
     const push = (detail: string | undefined) => run([e('human_needed', 2, { detail })], { events: [hold] });
     // the round-2 runner's codes: the old leg_* / near_date list missed most of these
     const waiting = HUMAN_NEEDED_DETAILS.filter((d) => !NOT_BOOKED_DETAILS.includes(d) && !MAYBE_FILED_DETAILS.includes(d));
-    expect(waiting).toEqual(expect.arrayContaining(['unmapped', 'fill_rejected', 'confirming_unacked', 'lease_stale', 'not_wanted', 'browser_busy', 'bad_booking', 'id_conflict']));
+    expect(waiting).toEqual(expect.arrayContaining(['unmapped', 'fill_rejected', 'confirming_unacked', 'lease_stale', 'browser_busy', 'bad_booking', 'id_conflict']));
     for (const detail of [...waiting, 'queue_failed', 'apply_page_500', undefined]) {
       expect(push(detail).notices.map((n) => [n.kind, n.urgency]), String(detail)).toEqual([['human_needed', 'high']]);
     }
-    // a definite non-booking: nothing a person can do
-    for (const detail of ['room_taken', 'hold_expired']) {
+    // a definite non-booking, or a hold nobody wants (not_wanted: the date or facility was dropped mid-chain): no push
+    expect(waiting).not.toContain('not_wanted');
+    for (const detail of ['room_taken', 'hold_expired', 'not_wanted']) {
       expect(push(detail), detail).toEqual({ notices: [], skipped: [{ kind: 'human_needed', id: `${RUN}:2`, why: 'not_booked' }], done: [] });
     }
     expect(run([e('human_needed', 2, { detail: 'no_mail' })]).skipped).toEqual([{ kind: 'human_needed', id: `${RUN}:2`, why: 'no_hold' }]);
@@ -339,7 +340,10 @@ describe('a report’s events, the outbox and the alarm', () => {
     vi.setSystemTime(NOW + 20 * MIN);
     await bot.report(report({ events: [ev(3, 'confirmed', { date: NEAR, detail: 'A1234567' })] }));
     await bot.alarm();
-    const [hn, , conf] = service.delivered;
+    // per phone (both are sent to concurrently, so their order within an alarm isn't fixed): the ja phone's two
+    const ja = service.delivered.filter((d) => /[\u3040-\u30ff\u4e00-\u9fff]/.test((d.message as ItsPushPayload).title));
+    const [hn, conf] = [ja.find((d) => (d.message as ItsPushPayload).kind === 'human_needed')!, ja.find((d) => (d.message as ItsPushPayload).kind === 'confirmed')!];
+    expect(service.delivered).toHaveLength(4);
     expect([hn.urgency, hn.ttl, conf.urgency, conf.ttl]).toEqual(['high', 1800, 'normal', 86400]);
     expect(hn.topic).toBe(await topicOf(NEAR, HOTEL));
     expect(conf.topic).toBe(hn.topic);
@@ -481,7 +485,9 @@ describe('end to end: a phone, a runner’s hold that needs a person, the alarm,
     expect(service.refused).toEqual([]);
     const deadline = tokyoTime(NOW + HOLD_MS);
     const topic = await topicOf(NEAR, HOTEL);
-    expect(service.delivered).toEqual([
+    // both phones are sent to concurrently: their order at the push service is not fixed (it varied under load)
+    const byPhone = [...service.delivered].sort((x, y) => phones.findIndex((p) => p.endpoint === x.endpoint) - phones.findIndex((p) => p.endpoint === y.endpoint));
+    expect(byPhone).toEqual([
       {
         endpoint: phones[0].endpoint, ttl: 1798, urgency: 'high', topic,
         claims: { aud: `https://${HOST}`, exp: Math.floor((NOW + 2000) / 1000) + 12 * 3600, sub: 'https://island-fund.pages.dev' },

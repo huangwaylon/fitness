@@ -359,11 +359,12 @@ export type PushKind = 'hold' | 'human_needed' | 'maybe_filed' | 'confirmed' | '
 
 /** A `human_needed` event's detail (the runner's outcome codes: its/runner/README.md "Outcome codes"; a leg may send
  *  others, e.g. apply_page_<status>), as the push and the page read it:
- *  - NOT_BOOKED_DETAILS: a definite non-booking where no action helps (the room went, the hold lapsed): no push.
+ *  - NOT_BOOKED_DETAILS: no action helps (the room went, the hold lapsed) or none is wanted (not_wanted: the date was
+ *    removed or the facility skipped mid-chain; the hold lapses free): no push.
  *  - MAYBE_FILED_DETAILS: the leg may have filed (the budget ran out after 申込する, or no completion page): the
  *    mailbox and the site decide; pushed as `maybe_filed` (申込済みの可能性).
  *  - any other: the hold waits for a person; pushed as `human_needed` (要対応) while the hold lasts. @public (its/worker) */
-export const NOT_BOOKED_DETAILS: readonly string[] = ['room_taken', 'hold_expired'];
+export const NOT_BOOKED_DETAILS: readonly string[] = ['room_taken', 'hold_expired', 'not_wanted'];
 /** @public (its/worker) */
 export const MAYBE_FILED_DETAILS: readonly string[] = ['submit_unknown', 'no_completion'];
 /** The codes the runner sends today (README's list; the leg's are open-ended). @public (its/worker) */
