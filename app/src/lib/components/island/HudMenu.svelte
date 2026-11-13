@@ -204,7 +204,7 @@
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
     </button>
-    <!-- トレイル: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
+    <!-- 登山: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
     <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('hiking')} onclick={() => pick(openTrails)}>
       <span class="lbl">{t('panel.hiking')}</span>
       <span class="ic">

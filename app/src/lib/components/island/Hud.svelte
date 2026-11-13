@@ -3,7 +3,7 @@
   // [the health button] [the menu]. The health button (NH's dumbbell) → けんこう and ごはん's sheet (HealthSheet: two
   // tabs); the menu (NH's leaf, at the screen's side) drops six pills under it (HudMenu): the ベル row (my
   // wallet's balance, the guest's each member's; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the others (旅行,
-  // 結婚式, トレイル, 英語, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
+  // 結婚式, 登山, 英語, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
   // Only when sync is not ok, the sync chip centred under the row; under it, while 設定's 季節 is on, its chip. The
   // panel, the popups and every sheet are their own chunks, loaded on first open.
   import { onMount } from 'svelte';

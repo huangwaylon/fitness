@@ -15,7 +15,7 @@
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (けんこう, the island's other
   // sheets). The full-height sheets open from the island at once (the user, 2026-11-08: no zoom, slide or fade, and
   // none closing): no motion of their own, and the opening finishes any their content's levels would start then
-  // (settle). variant="full": the pop's column for the info sheets (docs/design.md "Unified kit": 旅行, 結婚式, トレイル): the paper edge to
+  // (settle). variant="full": the pop's column for the info sheets (docs/design.md "Unified kit": 旅行, 結婚式, 登山): the paper edge to
   // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar, one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
   // `focusField` puts the keyboard up on its first field.

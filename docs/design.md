@@ -264,7 +264,7 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける, ききみみ's やめる) a sheet
   with キャンセル + the verb (`.two-cta`, `.btn.danger` when it loses something). A delete that can be undone acts at
   once with 取り消す on its banner.
-- The island's full-height sheets (健康, the panel, 旅行, 結婚式, トレイル, ききみみ, 設定) open and close at once: no
+- The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, ききみみ, 設定) open and close at once: no
   zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
 
 ### Unified kit
