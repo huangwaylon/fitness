@@ -277,10 +277,8 @@ stay trip data).
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header.
 - **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
-  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's small classes: a settings
-  row `.prow` (+ `.prl`, its `small` line) with the switch `.sw` (`.s` small), `.card.pad` / `.card.form`, the scroller
-  `.sheet-scroll`, `.btn.small`, `.btn.yuzu` (taking in what's ready: 畑's 収穫), `.tag`. A sample of all of it:
-  `/dev/kit` (`vite dev`).
+  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's small classes (`.prow` + `.sw`,
+  `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu`, `.tag`). A sample of all of it: `/dev/kit`.
 - **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`; an unknown name draws
   a pin. No emoji in chrome; ききみみ keeps emoji as decoration only (medals, badges, a domain's mark), its controls and
   locks drawn.
@@ -812,9 +810,7 @@ person has a pocket and かいがら, the guest too.
   tap on the twins (their bodies and the counter's top), their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
 - **The list** (`shop/Counter.svelte`: its header has the rows and the bar): 売る · 買う, my かいがら in the bar. A world
-  object, not a sheet: cream at every time of day (`.obj-cream`) with its own rows; 畑 is a sheet and follows the time of
-  day (the two keep their two looks). The rooms' top row (‹ しまへ, the discs, かいがら) is the world's too: cream at
-  night.
+  object: cream at every hour (`.obj-cream`), its own rows (畑, a sheet, follows the hour), as the rooms' top row.
 - **うる**: my pocket (caught, found or picked up, less sold) by section; a row picks its stack, − / + one, 全部 all of
   it. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: today's stock, 24 pieces a day, seeded (a pack's pieces side by side), less what the island had by midnight;
@@ -1054,16 +1050,10 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
   always-cream object (a bubble, a cream button, a ticket) carries `.obj-cream`, the day colours back inside it. Content
   text ≥ 13px (`--fs-s`); ききみみ's `readability.test.ts` holds both.
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
-- **Tokens** (`styles/tokens.css`, the one source; `styles/vars.test.ts`: every `var(--x)` without a fallback is
-  defined): ink `#4A3A2C`, cream `#FFF9E3`, paper `#F5E4BC`, card `#FFFCF2`, sunk `#EAD7AC`, edge `#937047`, leaf
-  `#6ED07A`, yuzu `#FFD84D`, mint `#7BD7C1`, coral `#FF8F7A` (errors only), sky `#4F9BE0`, rose `#E88FAE`, lilac
-  `#CDB4F2`, gold / silver (medals, NEW), bar `#3E9E4C`, each text colour (`--c-*-text`), the chart pair `--person-a`
-  `#2F86BD` / `--person-b` `#D2701F` (night `#7EC8F0` / `#FFB066`; CVD-checked). Radii chip 8 · bar 4 · row 14 · button
-  16 · game card 22 (ききみみ) · card 24 · sheet 32 · pill. Depth: the 4px / 2px lips, `--sh-ctl(-s)`, `--sh-obj`,
-  `--sh-drop`, `--sh-sel` / `--sh-open` rings, `--sh-float`. Type 11 · 13 · 15 · 18 · title · hero, `--fs-en` (ききみみ's
-  English). Motion `--dur-*` (`--dur-sheet` 240ms with `--ease-out`) and `--ease-*`. One `--z-*` stacking scale.
+- **Tokens:** `styles/tokens.css` is the one source, block by block (`styles/vars.test.ts`: every `var(--x)`
+  is defined). Coral is for errors only; the chart pair `--person-a` / `--person-b` is CVD-checked.
 - **Theme:** `data-tod` comes only from the Tokyo clock (`prefers-color-scheme` ignored); night chrome the `--n-*`
-  primitives (`--n-bg` `#3A4886`). The HUD, plate, dialogue and choices stay cream/yellow.
+  primitives. The HUD, plate, dialogue and choices stay cream/yellow.
 
 ## Copy
 
