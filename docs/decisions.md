@@ -427,6 +427,14 @@ The English listening game's decisions in force; detail in [kikimimi](kikimimi.m
 - **The microphone** is off by default and per phone; recordings stay in memory for their round; recognition runs on
   the phone first, with disclosed fallbacks; no transcript or speaking score leaves the phone. Why: the voice is the
   most personal data the app would touch.
+- **Every place playable:** a lane's game offers all five places (catalog.ts `PLACE_LVS`), each with content of its own
+  level: harder words and sentences up the island, not only more decoys. Why: everyone picks their level.
+- **Plain speech in the tiles:** a contraction shows as said, never expanded; only gonna / wanna / gotta are respelled
+  tiles; a stage caps its reduced tiles (listen.ts `REDUCED_CAP`: 20 / 25 / 30 %), and a recorded line carries its
+  `tone:` (scripts/tts/tone-picks.json). Why: listening, not slang drills, and a tone that fits the line.
+- **‹ back to the English page, a look-back not a rewind:** ‹ mid-game returns where it started, ✕ to the island;
+  「前の問題」 only shows the last question. Why: simple for kids and non-technical players.
+- **Stories stop at the auto-lock** (no wake lock, no lock-screen playback). Why: the screen doesn't stay on at bedtime.
 
 ## Trips and offline
 

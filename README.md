@@ -7,6 +7,34 @@ the live room).
 
 **App:** https://island-fund.pages.dev/
 
+## First day
+1. Node ≥ 24; `gh auth login`; `npx wrangler login` (once per machine, for the relay and the bots).
+2. `cd app && npm ci` (also sets the pre-push hook, `.githooks/pre-push`); `cd relay && npm ci` (verify's knip-relay);
+   `npx playwright install webkit` in `app/`; Xcode's iOS Simulator for `npm run ios:check`.
+3. The keys files, from the password manager (below); `app/.env` from `.env.example` for a dev build on the relay.
+4. Read [design.md](docs/design.md) "Product", [decisions.md](docs/decisions.md), then the doc that owns your area
+   (Docs, below). Before a push: `cd app && npm run verify`.
+
+## Services
+| Deployable | Code | Deploy · roll back | Health · who alerts |
+|---|---|---|---|
+| The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | health.yml's site checks: red mails the owner |
+| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml every 6 h: red mails, the log's spikes open an `alert` issue |
+| Kalori's chain menus (the relay's KV `FOOD`) | `food-data/`, `relay/scripts/kalori-put.sh` | [food-data.md "Kalori"](docs/food-data.md#kalori); roll back: put an older converted file | `npm run smoke` (test copy) |
+| The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `/health`, ボット → ジム; nothing watches it |
+| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml every 30 min: the `its-alert` issue |
+
+Other signals: a red *e2e logic full* after a deploy is the next push's to fix; *Pages alias lag* is a warning; the flake
+hunt gates nothing ([testing.md "CI"](docs/ops/testing.md#ci-githubworkflowspagesyml)).
+
+**Secrets** (names only; never in this public repo):
+- Relay (`npx wrangler secret put`; the test copy's keys: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`,
+  `KEY_C` (the guest), `HEALTH_TOKEN`, `ARCHIVE_TOKEN` (a fine-grained GitHub token: rotate before it expires). Rotation: [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
+- Repo (`gh secret set`): `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Pages), `HEALTH_TOKEN` (health.yml), the
+  `ITS_*` ([its/README.md](its/README.md) "Secrets"). The gym bot's: [gym/README.md](gym/README.md) "Secrets".
+- On the Mac: `~/.config/island-fund/keys` (KEY_A/B, mode 600), `~/.config/island-fund/archive-age.key` (the dumps'
+  age key), `relay/.smoke-keys` (the test relay's), `~/.config/gym-bot/secrets.env`, `~/.config/its-bot/`.
+
 ## Run it
 ```sh
 cd app
@@ -57,17 +85,19 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/src/lib/layout/` | The island's editable layout: its grid, ops, default, nav and checks |
 | `app/src/lib/food/`, `sound/` | The food data's loading and search; the music and sounds |
 | `app/src/lib/kikimimi/`, `mic/` | ききみみ: decks, content, the round's rules; the mic (capture, VAD, recognisers, matching) |
-| `app/src/lib/travel/`, `hiking/`, `wedding/` | 旅行's trip guides (`trips/`); トレイル's trails and tracks; 結婚式's board settings and progress |
+| `app/src/lib/travel/`, `hiking/`, `wedding/` | 旅行's trip guides (`trips/`); 登山's trails and tracks; 結婚式's board settings and progress |
+| `app/src/lib/gym/`, `its/` | ボット's clients: the gym bot's and the ITS booker's pages |
 | `app/src/lib/offline/` | Map areas saved ahead for offline: their tiles and size |
 | `app/src/lib/time/`, `ui-state/`, `villagers/`, `i18n/`, `styles/` | Clocks and holidays; UI state and test switches; the villager roster; ja/en strings; CSS tokens |
-| `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `editor/` and `layoutEdit/`, … |
+| `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `farm/`, `wallet/`, `editor/` and `layoutEdit/`, … |
 | `app/src/routes/` | The pages (the island, `/tent`, `/editor`, `/pair`, …) |
 | `app/static/` | Art, 3D models, audio, food data (`npm run unused` lists what nothing uses) |
 | `app/scripts/` | Asset and model pipelines, the e2e's CI helpers, the benchmark |
 | `app/e2e/` | Playwright tests |
 | `app/design/` | Design sources: the avatar's render tools and signed-off outfits ([players.md](docs/players.md)), the icon |
 | `relay/` | The Cloudflare Worker: the record, the live room, the log, the weather, the Shortcut parser; `scripts/` the admin tools (`record.ts`, `logs.ts`), smoke and latency |
-| `gym/` | Not the game: a LINE bot that tells a group when a gym slot opens, as its own Worker on the same account; its health in 設定 → ジムボット ([gym/README.md](gym/README.md)) |
+| `gym/` | Not the game: a LINE bot that tells a group when a gym slot opens, as its own Worker on the same account; its page in ボット → ジム ([gym/README.md](gym/README.md)) |
+| `its/` | Not the game: the ITS 保養所 booker, a Worker (`worker/`) and a GitHub Actions runner (`runner/`); its page in ボット → 保養所 ([its/README.md](its/README.md)) |
 | `food-data/` | The food data pipeline (Python): `scripts/` builds `out/` from `raw/` (gitignored) and `data_src/`; `npm run food:data` ships it |
 | `docs/` | Below |
 
@@ -85,7 +115,7 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [farming.md](docs/farming.md) | The fields: rules, balance, the record's ops, how it plays |
 | [food-data.md](docs/food-data.md) | ごはん's food catalog and pictures: sources, build, shipping |
 | [sound-sync.md](docs/sound-sync.md) | How music and sounds stay in step across phones |
-| [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, 旅行, 結婚式, トレイル |
+| [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, 旅行, 結婚式, 登山 |
 | [kikimimi.md](docs/kikimimi.md) | ききみみ, the English listening games, as the player sees them: games, hub, progress, rewards; its open items |
 | [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's round engine, wire, content loading and packs; the mic modes and their privacy rule |
 | [curriculum.md](docs/curriculum.md) | What ききみみ teaches: stages, scenarios, units, content and TTS rules, the listening check, its backlog |
@@ -95,3 +125,4 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [ops/testing.md](docs/ops/testing.md) | The test tiers and why, CI (the lean gate, shards, the flaky ledger) and how to write a stable spec |
 | [ops/observability.md](docs/ops/observability.md) | The log, its reader, the alert, the costs |
 | [ops/shortcut-health-sync.md](docs/ops/shortcut-health-sync.md) | The iOS Shortcut that sends Health data |
+| [gym/README.md](gym/README.md) · [its/README.md](its/README.md) ([SITE.md](its/SITE.md), [runner](its/runner/README.md)) | The two bots: rules, routes, secrets, operations |
