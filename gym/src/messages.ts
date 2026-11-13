@@ -46,13 +46,17 @@ export function timeRange(start: Clock | number, end: Clock | number): string {
 export function ruleLabel(rule: Rule | undefined): string {
   if (rule === ANY) return ANY_LABEL;
   if (rule === SKIP) return SKIP_LABEL;
-  if (rule === undefined) return `💤 まだチェックしない（${DAYS_TO_CHECK - 1}日前から自動で${timeRange(...DEFAULT_WINDOW)}）`;
+  if (rule === undefined) return `💤 まだチェックしない（${DAYS_TO_CHECK - 1}日前から自動で${timeRange(...DEFAULT_WINDOW)}をチェック）`;
   return `⏰ ${timeRange(...rule)}`;
 }
 
-/** A day's full setting: its rule, plus when checking starts if that's set. */
+/** After the default days' rule (nothing saved): the usual, which 🧹 goes back to. */
+const USUAL = '（ふだん）';
+
+/** A day's full setting: its rule (marked when it's the default), plus when checking starts if that's set. */
 export function daySetting(store: Store, day: Day, today: Day): string {
-  const label = ruleLabel(store.effectiveRule(day, today));
+  const rule = store.effectiveRule(day, today);
+  const label = ruleLabel(rule) + (rule !== undefined && store.rule(day) === undefined ? USUAL : '');
   const checkFrom = store.checkFrom(day);
   if (checkFrom === undefined) return label;
   const when = dayOf(checkFrom) === day ? clockOf(checkFrom) : `${dayLabel(dayOf(checkFrom))}${clockOf(checkFrom)}`;
@@ -116,6 +120,11 @@ ${CHECK_NOW}　いま空いている枠を一覧で表示（ここで出た枠�
 
 export const ERROR = '😕 エラーが発生しました。もう一度お試しください。';
 export const FROM_PASSED = 'その日時はもう過ぎています。';
+
+/** ⏳ at or after the day's window's last slot: nothing could ever be found. */
+export function fromAfterWindow(day: Day, window: [Clock, Clock]): string {
+  return `その時刻からだと、${dayLabel(day)}の ⏰ ${timeRange(...window)} の枠は残りません。先に時間帯を変えてください。`;
+}
 export const OUTDATED = 'このボタンは古くなっています。メニューから開き直してください。';
 
 export function fromAfterDay(day: Day): string {

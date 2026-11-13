@@ -1,10 +1,11 @@
 // What the LINE buttons do, apart from drawing cards. Each returns the reply text; settings changes return
 // [reply text, whether anything changed]. Also the bot interface they and the cards (ui.ts) need.
-import { CheckFailed, type Slot } from './hacomono.ts';
+import { DEFAULT_WINDOW } from './config.ts';
+import { CheckFailed, PROGRAMS, type Slot } from './hacomono.ts';
 import type { Line } from './line.ts';
 import * as messages from './messages.ts';
-import type { Rule, Store } from './store.ts';
-import { dayOf, type Day } from './time.ts';
+import { SKIP, type Rule, type Store } from './store.ts';
+import { at, dayOf, type Day } from './time.ts';
 
 /** What the buttons need from the bot (the Durable Object implements it). */
 export interface Bot {
@@ -80,11 +81,21 @@ export function resetDay(bot: Bot, day: Day): [string, boolean] {
   return [messages.dayReset(bot.store, day, today), true];
 }
 
-/** Only check a day from `when` on (null = right away). Throws Refused for a time that has passed or is after the day. */
+/** Only check a day from `when` on (null = right away). Throws Refused for a time that has passed, is after the day,
+ *  or leaves no slot in the day's ⏰ window (a 🔕 or 💤 day gets DEFAULT_WINDOW). */
 export function setCheckFrom(bot: Bot, day: Day, when: number | null): [string, boolean] {
   const now = Date.now();
   if (when !== null && when <= now) throw new Refused(messages.FROM_PASSED);
   if (when !== null && dayOf(when) > day) throw new Refused(messages.fromAfterDay(day));
+  if (when !== null) {
+    const rule = bot.store.effectiveRule(day, dayOf(now));
+    const window: Rule = rule === SKIP || rule === undefined ? [DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]] : rule;
+    // the window's last slot starts a slot's length before its end, and only slots after the ⏳ time count
+    const slotMs = Math.min(...PROGRAMS.map((p) => p.minutes)) * 60_000;
+    if (Array.isArray(window) && when >= at(day, window[1]) - slotMs) {
+      throw new Refused(messages.fromAfterWindow(day, window));
+    }
+  }
   return dayReply(bot, day, dayOf(now), bot.store.setCheckFrom(day, when, dayOf(now)));
 }
 

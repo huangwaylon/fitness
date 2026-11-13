@@ -5,7 +5,7 @@ import { DAYS_TO_CHECK } from '../src/config.ts';
 import { CheckFailed, PROGRAMS, type Slot } from '../src/hacomono.ts';
 import * as messages from '../src/messages.ts';
 import { dayLabel as label } from '../src/messages.ts';
-import { SKIP } from '../src/store.ts';
+import { ANY, SKIP } from '../src/store.ts';
 import { at } from '../src/time.ts';
 import { NOON, NOW, fakeBot, inDays, today } from './fakeBot.ts';
 
@@ -31,7 +31,7 @@ describe('day settings', () => {
     expect(text.startsWith(`👍 ${label(inDays(10))}の設定をリセットしました。いまは 💤`)).toBe(true);
     expect(bot.store.rules()).toEqual([]);
     // Nothing to clear: says how the day already is, not that it was reset.
-    expect(actions.resetDay(bot, inDays(1))).toEqual([`${label(inDays(1))}はすでに ⏰ 12:00〜13:00 になっています。`, false]);
+    expect(actions.resetDay(bot, inDays(1))).toEqual([`${label(inDays(1))}はすでに ⏰ 12:00〜13:00（ふだん） になっています。`, false]);
   });
 
   it('needs a check-from time ahead and not after the day', () => {
@@ -45,6 +45,20 @@ describe('day settings', () => {
     expect(text).toContain('⏳');
     expect(actions.setCheckFrom(bot, inDays(2), null)[1]).toBe(true);
     expect(actions.setCheckFrom(bot, inDays(2), null)[1]).toBe(false);
+  });
+
+  it("refuses a check-from that leaves no slot in the day's window", () => {
+    // the default 12:00–13:00: its last slot starts at 12:30, so ⏳ must be before then
+    expect(() => actions.setCheckFrom(bot, inDays(2), at(inDays(2), '12:30'))).toThrow(
+      new actions.Refused(messages.fromAfterWindow(inDays(2), ['12:00', '13:00'])));
+    expect(actions.setCheckFrom(bot, inDays(2), at(inDays(2), '12:29'))[1]).toBe(true);
+    bot.store.setRule(inDays(10), SKIP, today()); // 🔕 and 💤 days get the default window too
+    expect(() => actions.setCheckFrom(bot, inDays(10), at(inDays(10), '14:00'))).toThrow(/12:00〜13:00 の枠は残りません/);
+    bot.store.setRule(inDays(10), ['18:00', '20:00'], today());
+    expect(actions.setCheckFrom(bot, inDays(10), at(inDays(10), '14:00'))[1]).toBe(true);
+    expect(() => actions.setCheckFrom(bot, inDays(10), at(inDays(10), '19:30'))).toThrow(actions.Refused);
+    bot.store.setRule(inDays(11), ANY, today()); // all day: any time up to the picker's end
+    expect(actions.setCheckFrom(bot, inDays(11), at(inDays(11), '21:00'))[1]).toBe(true);
   });
 });
 

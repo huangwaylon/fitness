@@ -29,10 +29,11 @@ Each day has at most one rule (`src/store.ts`):
 | any | 🔔 終日 | Any open slot |
 | skip | 🔕 通知オフ | None that day |
 | `[start, end]` | ⏰ 12:00〜14:00 | Slots that start and end inside it (picked on the half hour; the end suggested an hour after the start) |
-| none | ⏰ or 💤 | ⏰ 12:00〜13:00 (`DEFAULT_WINDOW`: the 12:00 and 12:30 slots) for the next 4 days (`DAYS_TO_CHECK`, today included), else 💤 not checked yet |
+| none | ⏰ or 💤 | ⏰ 12:00〜13:00（ふだん） (`DEFAULT_WINDOW`: the 12:00 and 12:30 slots) for the next 4 days (`DAYS_TO_CHECK`, today included), else 💤 not checked yet |
 
 - **⏳ check from** a time: the day is ignored until then. Kept between 🔔 and ⏰, cleared by 🔕; set on a 🔕 or 💤 day it
-  gives the day ⏰ 12:00〜13:00. In the future and no later than the day; the picker ends at the last slot (21:30).
+  gives the day ⏰ 12:00〜13:00. In the future, no later than the day, and before the ⏰ window's last slot (a hint
+  otherwise: it would never find one); the picker ends at the last slot (21:30).
 - **🧹 reset** clears a day's rule, ⏳ and announced times, so its open slots alert again (shown only when there's
   something to clear).
 - **🔎 check now**: once a minute for everyone, refused while stopped or while a check runs; lists everything open,

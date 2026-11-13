@@ -27,19 +27,19 @@ describe('messages', () => {
     expect(m.ruleLabel(SKIP)).toBe('🔕 通知オフ');
     expect(m.ruleLabel(['12:00', '13:00'])).toBe('⏰ 12:00〜13:00');
     expect(m.timeRange(oct(3, '21:30'), '22:00')).toBe('21:30〜22:00');
-    expect(m.ruleLabel(undefined)).toBe('💤 まだチェックしない（3日前から自動で12:00〜13:00）');
+    expect(m.ruleLabel(undefined)).toBe('💤 まだチェックしない（3日前から自動で12:00〜13:00をチェック）');
   });
 
   it('includes the check-from in the day setting', () => {
     const s = new Store();
     s.setCheckFrom('2026-10-05', oct(4, '16:00'), TODAY);
-    expect(m.daySetting(s, '2026-10-05', TODAY)).toBe('⏰ 12:00〜13:00　⏳ 10/4（日）16:00から');
+    expect(m.daySetting(s, '2026-10-05', TODAY)).toBe('⏰ 12:00〜13:00（ふだん）　⏳ 10/4（日）16:00から');
   });
 
   it('leaves out the date of a same-day check-from', () => {
     const s = new Store();
-    s.setCheckFrom('2026-10-05', oct(5, '16:00'), TODAY);
-    expect(m.daySetting(s, '2026-10-05', TODAY)).toBe('⏰ 12:00〜13:00　⏳ 16:00から');
+    s.setCheckFrom('2026-10-05', oct(5, '11:00'), TODAY);
+    expect(m.daySetting(s, '2026-10-05', TODAY)).toBe('⏰ 12:00〜13:00（ふだん）　⏳ 11:00から');
   });
 
   it('groups slot lines by day and time', () => {
@@ -91,10 +91,10 @@ describe('messages', () => {
     const s = setStore();
     expect(m.status(s, TODAY, oct(3, '08:45'), null, true)).toEqual([
       '📋 日ごとの設定',
-      '・10/3（土）　⏰ 12:00〜13:00',
+      '・10/3（土）　⏰ 12:00〜13:00（ふだん）',
       '・10/4（日）　🔕 通知オフ',
       '・10/5（月）　⏰ 12:00〜14:00　⏳ 10/4（日）16:00から',
-      '・10/6（火）　⏰ 12:00〜13:00',
+      '・10/6（火）　⏰ 12:00〜13:00（ふだん）',
       '・10/20（火）　🔔 終日',
       '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。',
       '15分ごとにチェック・前回 08:45・次回 —',
@@ -137,7 +137,7 @@ describe('messages', () => {
     const s = setStore();
     expect(m.dayChanged(s, '2026-10-05', TODAY)).toBe('👍 10/5（月）を ⏰ 12:00〜14:00　⏳ 10/4（日）16:00から にしました。');
     expect(m.dayReset(s, '2026-10-07', TODAY)).toBe(
-      '👍 10/7（水）の設定をリセットしました。いまは 💤 まだチェックしない（3日前から自動で12:00〜13:00） です。',
+      '👍 10/7（水）の設定をリセットしました。いまは 💤 まだチェックしない（3日前から自動で12:00〜13:00をチェック） です。',
     );
     expect(m.dayUnchanged(s, '2026-10-04', TODAY)).toBe('10/4（日）はすでに 🔕 通知オフ になっています。');
   });
