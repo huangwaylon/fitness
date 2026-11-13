@@ -106,6 +106,10 @@ class WorkerModel:
                 return 401, {'error': 'unauthorized'}
             if self.garble:
                 return 200, {'settings': 'nope'}
+            if len(json.dumps(body, ensure_ascii=False).encode()) > 64 * 1024:
+                return 413, {'error': 'too_large'}
+            if u.path == '/runner/report' and len(body['events']) > 100:
+                return 400, {'error': 'events'}
             now = self.ms()
             if method == 'POST' and u.path == '/runner/claim':
                 rid = body['runId']
@@ -697,6 +701,30 @@ def test_imap_check_when_auto_confirm():
     finally:
         cb.imap_check = saved
         _cleanup(sup)
+
+
+def test_report_fits_the_workers_limits():
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    for i in range(300):
+        rem.on_event('offered', {'date': TARGET, 'names': [f'施設{i}-{j}' * 4 for j in range(30)], 'eligible': [1]})
+    rem.error('step with spaces', 'x', 'Not An Id!')
+    for i in range(40):
+        rem.error(f'step{i}', 503, 'http_503')
+    rep = rem._fit(rem.build_report())
+    size = len(json.dumps(rep, ensure_ascii=False).encode())
+    check('limits: the report is under the body cap', size <= remote.BODY_MAX, str(size))
+    check('limits: events wait rather than overflow', 0 < len(rep['events']) <= remote.EVENTS_PER_REPORT)
+    check('limits: an offered list is capped', all(len(e.get('hotel', '')) <= remote.OFFERED_MAX for e in rep['events']))
+    check('limits: steps capped, odd ones renamed', len(rep['failuresByStep']) <= remote.STEPS_MAX
+          and 'unknown' in rep['failuresByStep'] and 'other' in rep['failuresByStep'], str(len(rep['failuresByStep'])))
+    check('limits: a bad status is null', rem.last_by_step['unknown'] == (None, 'error'), str(rem.last_by_step['unknown']))
+    check('limits: the Worker took it', rem.report() is not None and len(model.reports) == 1)
+    bid = rem.record('hold', TARGET, 'X' * 200 + '\u202e', number='9' * 99)
+    b = rem.unsynced[bid]
+    check('limits: a booking name and number capped', len(b['hotel']) == remote.NAME_MAX and len(b['number']) == 40)
 
 
 def test_turnstile_click_spot():

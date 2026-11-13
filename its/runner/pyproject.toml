@@ -1,7 +1,9 @@
 [project]
-name = "its-calendar-booker"
-version = "0.1.0"
+name = "its-runner"
+version = "0.2.0"
+description = "The ITS booker's runner (its/README.md): scans as.its-kenpo.or.jp and takes holds; Actions or local."
 requires-python = ">=3.10"
+# Pinned with hashes for the workflow in requirements.txt; this is for a local `uv run`.
 dependencies = [
-    "pydoll-python",
+    "pydoll-python==2.22.0",
 ]

@@ -24,6 +24,7 @@ never applied for again, whichever run held it), its lease renews the fence.
 Never logs the token. Dates and hotel names go to the Worker (members only) and the private log, never `logs.public`.
 """
 import json
+import re
 import threading
 import time
 import urllib.error
@@ -47,6 +48,28 @@ HOLD_UNRESOLVED_SEC = 30 * 60    # a hold younger than this at the end of a run,
 BOOKING_KINDS = ('hold', 'confirming', 'confirmed', 'failed')
 STOP_REASONS = ('paused', 'mode_off', 'no_dates', 'lease_lost')
 DEFAULT_URL = 'https://its-bot.island-fund-relay.workers.dev'
+# The Worker's own limits (its/worker/src/validate.ts): a report or a batch over them is a 400, retried forever.
+BODY_MAX = 60_000            # bytes, under the Worker's 64 KB cap
+BOOKINGS_PER_POST = 50
+STEPS_MAX = 30
+NAME_MAX = 80                # a hotel name (the contract's MAX_NAME)
+OFFERED_MAX = 600            # an `available` event's joined names
+NUMBER_MAX = 40
+
+_BAD_CHARS = re.compile('[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]')
+_ID_RE = re.compile(r'[A-Za-z0-9._:-]{1,64}\Z')
+
+
+def _text(s, limit):
+    """A name or detail as the Worker accepts it: no controls or bidi overrides, trimmed, capped; None if empty."""
+    if s is None:
+        return None
+    s = _BAD_CHARS.sub('', str(s)).strip()[:limit]
+    return s or None
+
+
+def _id(s, default):
+    return s if isinstance(s, str) and _ID_RE.match(s) else default
 
 
 class Client:
@@ -198,12 +221,13 @@ class Remote:
         with self.lock:
             self.seq += 1
             e = {'seq': self.seq, 'kind': kind}
+            hotel, detail = _text(hotel, OFFERED_MAX), _text(detail, DETAIL_MAX)
             if date:
                 e['date'] = date
             if hotel:
                 e['hotel'] = hotel
             if detail:
-                e['detail'] = str(detail)[:DETAIL_MAX]
+                e['detail'] = detail
             self.events.append(e)
             if len(self.events) > EVENTS_QUEUED_MAX:
                 # A long outage: drop the oldest routine event, never an important one.
@@ -219,7 +243,8 @@ class Remote:
         with self.lock:
             self.seq += 1
             bid = f'{self.run_id}:{self.seq}'
-            b = {'id': bid, 'kind': kind, 'date': date, 'hotel': hotel, 'runId': self.run_id}
+            b = {'id': bid, 'kind': kind, 'date': date, 'hotel': _text(hotel, NAME_MAX) or '?', 'runId': self.run_id}
+            number = _text(number, NUMBER_MAX)
             if number:
                 b['number'] = number
             self.unsynced[bid] = b
@@ -227,7 +252,12 @@ class Remote:
         return bid
 
     def error(self, step, status=None, cls='error'):
+        step, cls = _id(step, 'unknown'), _id(cls, 'error')
+        if not (_is_int(status) and 0 <= status < 1000):
+            status = None
         with self.lock:
+            if step not in self.failures_by_step and len(self.failures_by_step) >= STEPS_MAX - 1:
+                step = 'other'
             self.failures_by_step[step] = self.failures_by_step.get(step, 0) + 1
             self.last_error = {'at': self._ms(), 'step': step, 'status': status, 'cls': cls}
             self.last_by_step[step] = (status, cls)
@@ -248,7 +278,7 @@ class Remote:
             elif kind == 'fail':
                 self.error(f.get('step') or 'unknown', f.get('status'), f.get('cls') or 'error')
             elif kind == 'offered':
-                names = [n for n in f.get('names') or [] if isinstance(n, str)]
+                names = [t for t in (_text(n, NAME_MAX) for n in f.get('names') or []) if t]
                 for n in names:
                     if len(self.seen) < SEEN_MAX:
                         self.seen.add(n)
@@ -409,7 +439,7 @@ class Remote:
     def post_bookings(self):
         """Send the unsynced entries; True when none is left."""
         with self.lock:
-            batch = list(self.unsynced.values())
+            batch = list(self.unsynced.values())[:BOOKINGS_PER_POST]
         if not batch:
             return True
         # ?runId= so the answer carries this run's ackSeq and lease (the Worker's, not the body's).
@@ -432,8 +462,19 @@ class Remote:
                 'seen': sorted(self.seen)[:SEEN_MAX],
             }
 
+    @staticmethod
+    def _fit(rep):
+        """Trim a report under BODY_MAX: the newest events wait for the next report, then the seen names go."""
+        def size():
+            return len(json.dumps(rep, ensure_ascii=False).encode('utf-8'))
+        while size() > BODY_MAX and rep['events']:
+            rep['events'].pop()
+        while size() > BODY_MAX and rep['seen']:
+            del rep['seen'][len(rep['seen']) // 2:]
+        return rep
+
     def report(self):
         """Bookings first (they gate holds), then the heartbeat. The RunnerConfig, or None."""
         self.urgent.clear()
         self.post_bookings()
-        return self._call_config('POST', '/runner/report', self.build_report())
+        return self._call_config('POST', '/runner/report', self._fit(self.build_report()))

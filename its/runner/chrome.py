@@ -36,7 +36,7 @@ pydoll is imported inside the functions that need it, never at module scope: it 
 one dependency, and a booking that already holds a room and has had its mail sent must
 not be lost to its absence.
 
-    .venv/bin/python chrome.py       # solve, cache the calendar URL
+    python3 chrome.py       # solve, cache the calendar URL
 """
 import asyncio
 import contextlib

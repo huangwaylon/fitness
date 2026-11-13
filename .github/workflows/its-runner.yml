@@ -1,0 +1,129 @@
+# The ITS booker's runner (its/runner/README.md): headed Chrome under xvfb solves Turnstile, curl scans every interval,
+# holds and outcomes go to the its-bot Worker's record. Inert until the repo variable ITS_RUNNER_ENABLED is '1' (set at
+# cutover, once mbp2's bot is stopped: never two runners; the Worker's lease is the second guard). Secrets live only in
+# the `its` environment (deployments from main only). The Actions log is public: the runner prints only logs.public
+# lines; its private log is age-encrypted to ITS_LOG_RECIPIENT and uploaded as the only artifact (3 days).
+name: ITS runner
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: its-runner
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: >-
+      github.repository == 'huangwaylon/fitness' && github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request' && vars.ITS_RUNNER_ENABLED == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    environment: its
+    env:
+      ITS_WORKER_URL: https://its-bot.island-fund-relay.workers.dev
+    steps:
+      # First, before anything is installed: a stopped bot (paused, MODE off, no dates, another runner's lease) ends
+      # the job here in seconds. Reads the config only (the claim is main.py's); prints the stop flag and its code.
+      - name: Preflight
+        id: pre
+        env:
+          ITS_RUNNER_TOKEN: ${{ secrets.ITS_RUNNER_TOKEN }}
+        run: |
+          echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+          echo "ITS_STATE_DIR=$RUNNER_TEMP/its-state" >> "$GITHUB_ENV"   # config.STATE_DIR: outside the checkout
+          f="$RUNNER_TEMP/preflight.json"
+          code=$(curl -sS -o "$f" -w '%{http_code}' --max-time 20 \
+            -H "Authorization: Bearer $ITS_RUNNER_TOKEN" "$ITS_WORKER_URL/runner/config") || code=000
+          stop=$(jq -r 'if .stop == false then "false" else "true" end' "$f" 2>/dev/null || echo true)
+          reason=$(jq -r '.stopReason // "none"' "$f" 2>/dev/null || echo none)
+          rm -f "$f"   # the settings: dates and hotel names, never printed
+          case "$reason" in paused|mode_off|no_dates|lease_lost|none) ;; *) reason=other ;; esac
+          echo "preflight: worker=$code stop=$stop reason=$reason"
+          if [ "$code" != 200 ]; then echo "::error::preflight: the Worker answered $code"; exit 1; fi
+          echo "run=$([ "$stop" = false ] && echo 1 || echo 0)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        if: steps.pre.outputs.run == '1'
+        with:
+          persist-credentials: false
+          sparse-checkout: its/runner
+
+      # No pip cache, no actions/cache at all: nothing of a run (s=, cookies, the Chrome profile) outlives it.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.pre.outputs.run == '1'
+        with:
+          python-version: '3.12'
+
+      - name: Install pydoll (hashed) and the fonts, age
+        if: steps.pre.outputs.run == '1'
+        run: |
+          python -m pip install --quiet --disable-pip-version-check --require-hashes --only-binary=:all: \
+            -r its/runner/requirements.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends fonts-noto-cjk age
+          google-chrome --version
+          command -v xvfb-run
+
+      # The secrets are this step's env only. --deadline: no new hold 320 min after the job started; main.py drains
+      # for up to 15 more, sends run_end and exits 0 well inside the job's 350.
+      - name: Run
+        if: steps.pre.outputs.run == '1'
+        timeout-minutes: 340
+        working-directory: its/runner
+        env:
+          START: ${{ steps.pre.outputs.start }}
+          ITS_RUNNER_TOKEN: ${{ secrets.ITS_RUNNER_TOKEN }}
+          ITS_IMAP_USER: ${{ secrets.ITS_IMAP_USER }}
+          ITS_IMAP_APP_PASSWORD: ${{ secrets.ITS_IMAP_APP_PASSWORD }}
+          ITS_EMAIL: ${{ secrets.ITS_EMAIL }}
+          ITS_KIGOU: ${{ secrets.ITS_KIGOU }}
+          ITS_BANGOU: ${{ secrets.ITS_BANGOU }}
+          ITS_KANA_SEI: ${{ secrets.ITS_KANA_SEI }}
+          ITS_KANA_MEI: ${{ secrets.ITS_KANA_MEI }}
+          ITS_KANA_NAME: ${{ secrets.ITS_KANA_NAME }}
+          ITS_NAME_SEI: ${{ secrets.ITS_NAME_SEI }}
+          ITS_NAME_MEI: ${{ secrets.ITS_NAME_MEI }}
+          ITS_BIRTH: ${{ secrets.ITS_BIRTH }}
+          ITS_SEX: ${{ secrets.ITS_SEX }}
+          ITS_ZOKUGARA: ${{ secrets.ITS_ZOKUGARA }}
+          ITS_TEL: ${{ secrets.ITS_TEL }}
+          ITS_OFFICE_NAME: ${{ secrets.ITS_OFFICE_NAME }}
+          ITS_ZIP: ${{ secrets.ITS_ZIP }}
+          ITS_STATE: ${{ secrets.ITS_STATE }}
+          ITS_ADDR: ${{ secrets.ITS_ADDR }}
+        run: |
+          deadline=$((START + 320 * 60))
+          xvfb-run -a --server-args='-screen 0 1280x1600x24' python main.py --remote --deadline "$deadline"
+
+      # Encryption failure (or no recipient) uploads nothing: the plaintext never leaves the runner.
+      - name: Encrypt the private log
+        if: always() && steps.pre.outputs.run == '1'
+        env:
+          RECIPIENT: ${{ vars.ITS_LOG_RECIPIENT }}
+        run: |
+          out="$RUNNER_TEMP/its-private.tar.gz.age"
+          rm -f "$out"
+          if [ -z "$RECIPIENT" ] || [ ! -d "$ITS_STATE_DIR" ]; then
+            echo "::warning::no private log uploaded (no ITS_LOG_RECIPIENT or no state dir)"; exit 0
+          fi
+          if tar -C "$ITS_STATE_DIR" -czf - . | age -r "$RECIPIENT" -o "$out"; then
+            echo "encrypted: $(stat -c %s "$out") bytes"
+          else
+            rm -f "$out"; echo "::warning::encryption failed: nothing uploaded"
+          fi
+          rm -rf "$ITS_STATE_DIR"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always() && steps.pre.outputs.run == '1'
+        with:
+          name: its-private-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/its-private.tar.gz.age
+          if-no-files-found: ignore
+          retention-days: 3
+          compression-level: 0

@@ -138,7 +138,7 @@ def _imap_messages(since_epoch):
     """Raw bytes of candidate messages from the site, newest last."""
     if not (IMAP_USER and IMAP_APP_PASSWORD):
         log(f"  {R}No IMAP credentials — cannot read the confirmation mail. "
-            f"See `uv run main.py --check`{X}")
+            f"See `python3 main.py --check`{X}")
         return []
     since = datetime.fromtimestamp(since_epoch, timezone.utc).strftime('%d-%b-%Y')
     out = []

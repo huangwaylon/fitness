@@ -14,8 +14,8 @@ nothing.
 
 Pass a substring to select tests, `-v` to see the flow's own logging:
 
-    .venv/bin/python test_its.py
-    .venv/bin/python test_its.py -v test_503
+    python3 test_its.py
+    python3 test_its.py -v test_503
 """
 import json
 import os

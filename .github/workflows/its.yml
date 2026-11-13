@@ -1,0 +1,73 @@
+# The ITS booker's checks (its/README.md): the its-bot Worker's type-check, knip and unit tests, and the runner's
+# Python tests (stdlib only: pydoll is never installed here; the tests run against localhost fakes, never the site).
+# Deploying the Worker stays manual (`npm run deploy` from its/worker); the runner is its-runner.yml.
+name: ITS booker checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'its/**'
+      - 'app/src/lib/its/**'
+      - 'app/src/lib/contract/**'
+      - 'relay/src/auth.ts'
+      - '.github/workflows/its.yml'
+  pull_request:
+    paths:
+      - 'its/**'
+      - 'app/src/lib/its/**'
+      - 'app/src/lib/contract/**'
+      - 'relay/src/auth.ts'
+      - '.github/workflows/its.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: its/worker
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          # The Worker imports the shared contract (app/src/lib/its, and lib/contract through relay's auth) and
+          # relay/src/auth.ts; nothing else of the repo is needed (app/static's 521 MB above all). A file in the
+          # list, so not cone mode.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /its/
+            /app/src/lib/its/
+            /app/src/lib/contract/
+            /relay/src/auth.ts
+            /.github/workflows/
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: its/worker/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm run knip
+      - run: npm test
+
+  runner:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: its/runner
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            its
+            .github/workflows
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python test_its.py
+      - run: python test_remote.py
