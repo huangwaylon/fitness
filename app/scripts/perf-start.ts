@@ -18,7 +18,12 @@ const warm = process.env.WARM === '1';
 const browser = await (eng === 'chromium' ? chromium : webkit).launch(eng === 'chromium' ? { args: ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] } : {});
 type Row = Record<string, number | string | boolean>;
 const out: Row[] = [];
-const fresh = () => browser.newContext({ ...devices[eng === 'chromium' ? 'iPhone 13' : 'iPhone 15'], serviceWorkers: warm ? 'allow' : 'block' });
+// (test mode allowed: `?demo` works in this production build only with it, ui-state/testMode.ts)
+const fresh = async () => {
+  const c = await browser.newContext({ ...devices[eng === 'chromium' ? 'iPhone 13' : 'iPhone 15'], serviceWorkers: warm ? 'allow' : 'block' });
+  await c.addInitScript(() => localStorage.setItem('e2e.testMode', '1'));
+  return c;
+};
 const url = `http://127.0.0.1:${port}/${Q}`;
 let shared: BrowserContext | null = null;
 if (warm) {

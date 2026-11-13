@@ -148,6 +148,7 @@ try {
   const crit = join(import.meta.dirname, '..', 'static', 'room', 'world3d', 'critters');
   const finds = (['fish', 'bugs'] as const).flatMap((k) => readdirSync(join(crit, k)).filter((f) => f.endsWith('.glb')).map((f) => [k === 'bugs' ? 'bug' : 'fish', f.slice(0, -4)]));
   await wd('POST', `/session/${sid}/url`, { url: `${BASE}manifest.webmanifest` }).catch(() => {});
+  await run(`localStorage.setItem('e2e.testMode', '1');`); // ?demo's test mode (ui-state/testMode.ts)
   await run(`const at = Date.parse('2026-11-04T09:00:00+09:00'), who = ['A', 'B', 'G'];
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: arguments[0].map(([kind, id], i) =>
       ({ id: 'seed-' + i, type: 'find', data: { kind, id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person: who[i % 3] })) }));`, finds);

@@ -27,6 +27,7 @@ let requests = 0;
 const browser = await chromium.launch({ channel: 'chrome' });
 for (const q of scenes) {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, serviceWorkers: 'block' });
+  await ctx.addInitScript(() => localStorage.setItem('e2e.testMode', '1')); // ?demo's test mode (ui-state/testMode.ts)
   const p = await ctx.newPage();
   p.on('request', (r) => {
     const u = new URL(r.url());

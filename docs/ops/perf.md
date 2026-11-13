@@ -42,7 +42,7 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 - **Traps:**
   1. Headless Chromium draws with SwiftShader, which has no KHR_parallel_shader_compile: its "2 s long task" is
      shader compiles in software. For Chromium timings use `--use-angle=metal --enable-gpu --ignore-gpu-blocklist`.
-  2. `?demo` turns on three's shader checks (`renderer.debug.checkShaderErrors`, testMode.ts): ~350 ms of sync
+  2. Test mode (`?demo`; the scripts allow it with `e2e.testMode`) turns on three's shader checks (`renderer.debug.checkShaderErrors`, testMode.ts): ~350 ms of sync
      readbacks a launch that no phone pays. Measure with `&checks=0`.
   3. The first frame has one draw call (the ground); the island as seen is `perf.boot`'s `shown`.
 

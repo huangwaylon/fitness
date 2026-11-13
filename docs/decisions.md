@@ -167,8 +167,14 @@ tallies, the stock from the date. Why: NH's prices, nothing stored for the stock
 
 ### PWA on Cloudflare Pages
 A static SvelteKit SPA on Pages, deployed from CI after the gate, with a strict CSP
-([runbook §1](ops/runbook.md#1-deploy-the-ui)); without a key it shows only pairing or `?demo`. Why: the pairing key is
+([runbook §1](ops/runbook.md#1-deploy-the-ui)); without a key it shows only pairing. Why: the pairing key is
 in localStorage, so the origin must be ours alone.
+
+### Test mode, not a demo
+`?demo`'s made-up data and hooks are a test harness: on in the dev server and, in the shipped build, only in a test's
+browser (`localStorage['e2e.testMode']`, [testing](ops/testing.md#test-mode)); a visitor's `?demo` is the normal app.
+A feature's Worker is faked by its spec's route mock, never by an in-app fixture. The param keeps its name. Why: no one
+uses a demo, the e2e must test the very build that ships, and in-app fakes are code that only tests read.
 
 ### Offline shell
 The service worker precaches the build (not audio, art beyond the defaults or the trip photos), opens this version's

@@ -9,8 +9,8 @@
 //   --device  a simulator by name (default: the first available "iPhone 1…" of the newest iOS)
 //   --out     where the report and screenshots go (default: app/test-results/ios-sim/<date>)
 //   --keep    leave the simulator booted
-//   --seed    a JSON file of localStorage entries ({key: value}) put in before the island loads (the page is opened,
-//             seeded, and opened again): a demo island with things on it (the gym's ten pieces: docs/design.md)
+//   --seed    a JSON file of localStorage entries ({key: value}) put in before the island loads (set on the site's
+//             manifest page, then the page opened): a demo island with things on it (the gym's ten pieces: docs/design.md)
 //   --then    a JS file run in the page once the island is up, before the measures (put my villager on a piece)
 //   --boots   N warm launches instead of the measures: each launch's own clock (world3d/boot.ts), and their medians
 //             (with a URL whose query has checks=0: npm run ios:check -- --boots 8 --url 'http://127.0.0.1:PORT/?demo&checks=0')
@@ -97,13 +97,14 @@ try {
       await sleep(1000);
     }
   }
+  // a page of the site that isn't the app first: test mode allowed (`?demo` works only with it, ui-state/testMode.ts),
+  // the seed put in, then the page
+  await wd('POST', `/session/${sid}/url`, { url: new URL('manifest.webmanifest', URL_).href });
+  await run(`localStorage.setItem('e2e.testMode', '1');`);
+  const seed = opt('--seed', '');
+  if (seed) await run(`for (const [k, v] of Object.entries(arguments[0])) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));`, JSON.parse(readFileSync(seed, 'utf8')));
   const t0 = Date.now();
   await wd('POST', `/session/${sid}/url`, { url: URL_ });
-  const seed = opt('--seed', '');
-  if (seed) {
-    await run(`for (const [k, v] of Object.entries(arguments[0])) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));`, JSON.parse(readFileSync(seed, 'utf8')));
-    await wd('POST', `/session/${sid}/url`, { url: URL_ });
-  }
   // the page's errors from here on (the load's own are in its console: the 3D island's loaded() says it came up)
   await run(`window.__iosErrs = []; addEventListener('error', (e) => __iosErrs.push(String(e.message).slice(0, 200))); addEventListener('unhandledrejection', (e) => __iosErrs.push('rejection: ' + String(e.reason).slice(0, 200)));`);
   let loaded = false;

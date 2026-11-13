@@ -170,13 +170,25 @@ same island.
 - **Vitest's module cache** never keeps a module with an `import.meta.glob` (vite.config.ts `globsUncached`); anything
   odd after a big rebase: `npx vitest run --clearCache`.
 
+## Test mode
+`?demo` is a test harness, not a feature: made-up rows (`store/demo/`) instead of the relay, the two players as two
+tabs (`sync/live-local.ts`), and the URL and window hooks. It switches on (`ui-state/testMode.ts`) only
+- in the dev server (`import.meta.env.DEV`; there without `VITE_RECORD_URL` even with no `?demo`), or
+- in a production build when the browser has `localStorage['e2e.testMode'] = '1'` before the app loads:
+  e2e/fixtures.ts sets it on every context (`test.use({ testMode: false })` is a real visitor's phone, boot.spec), and
+  the perf and Simulator scripts set it (perf-start, leak-probe, unused-probe, ios-sim-check, ios-sim-indoor).
+
+So the e2e tests the very build that ships, and a visitor's `?demo` on the live site is the normal app (pairing, or
+their data). A feature that calls a Worker gets no in-app fixture: its spec pairs a phone (e2e/record.ts) and routes
+the Worker (`page.route`: gymbot.spec, its.spec, food-kalori.spec).
+
 ## URL params
 Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev
-builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
+builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 
 | Param | Effect |
 |---|---|
-| `?demo` (`=harvest`, `&as=B\|G`, `&weeks=60`, `&health=none`) | Made-up data, no backend; the harvest recap; play as B or the guest; a longer history; no Health rows |
+| `?demo` (`=harvest`, `&as=B\|G`, `&weeks=60`, `&health=none`) | [Test mode](#test-mode): made-up data, no backend; the harvest recap; play as B or the guest; a longer history; no Health rows |
 | `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
 | `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
 | `?seed=` | The island's seed (finds, weather, visitors) |
@@ -196,7 +208,7 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 | `?awake`, `?grace=<ms>`, `?wake=<ms>` | Everyone counts as online (no villager sleeps); the [Sleep](../design.md#sleep) grace and a tap's wake that long |
 | `?idle=none`, `?stars=none` | No idle beats; no ordinary night's shooting stars |
 | `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
-| `?relay=<wss url>&key=<key>` | The demo over a real relay (`e2e/sync-harness.spec.ts`) |
+| `?relay=<wss url>&key=<key>` | Test mode over a real relay (`e2e/sync-harness.spec.ts`) |
 | `?quietafter=<ms>` | How long a phone gone quiet inside a room stays shown there |
 | `?render=none` | The 3D engines run but draw nothing (logic mode: `ui-state/testMode.ts`) |
 

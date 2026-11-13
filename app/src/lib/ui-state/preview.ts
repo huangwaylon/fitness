@@ -6,6 +6,7 @@
 // keys and whatever the island yields (critters, finds, eggs, ベル) stay the real day's. Pure.
 import { foliageFor, seasonFor, SEASONS, type Foliage, type Season, type TimeOfDay } from './season.ts';
 import { ZONE_OFFSET_MS, localDateAt } from '#lib/time/dates.ts';
+import { testModeAsked } from './testMode.ts';
 
 /** The events the preview can bring on: NH's dated ones (island/events.ts EventId), ours and the sky's. */
 export const PREVIEW_EVENTS = ['birthday-B', 'bunny-day', 'cherry', 'fireworks', 'birthday-A', 'wedding', 'halloween', 'maple', 'turkey-day', 'toy-day', 'shower'] as const;
@@ -97,8 +98,8 @@ export function shownAt(at: Date, s: Pick<Scene, 'event' | 'tod'>): Date {
   return new Date(`${day}T${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+09:00`);
 }
 
-/** Whether the dev hooks apply (island/devHooks.ts): a dev build, or `?demo`. */
-export const hooksOn = (q: URLSearchParams): boolean => import.meta.env.DEV || q.has('demo');
+/** Whether the dev hooks apply (island/devHooks.ts): a dev build, or test mode (ui-state/testMode.ts). */
+export const hooksOn = (q: URLSearchParams): boolean => import.meta.env.DEV || testModeAsked(q);
 
 /** The dev params' part (the hooks on, for all but `?season=` and `?theme=`). */
 export function devChoice(search: string): Partial<Choice> {

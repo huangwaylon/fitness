@@ -5,13 +5,13 @@ stand minutes grow fruit and earn ベル into a wallet each, spent on small luxu
 Japanese-first PWA on Cloudflare Pages; its server is a Cloudflare relay (`relay/`: the record in a Durable Object, and
 the live room).
 
-**App:** https://island-fund.pages.dev/ (demo data: add `?demo`)
+**App:** https://island-fund.pages.dev/
 
 ## Run it
 ```sh
 cd app
 npm ci
-npm run dev        # demo data unless VITE_RECORD_URL is set in .env (see .env.example)
+npm run dev        # test mode's made-up data unless VITE_RECORD_URL is set in .env (see .env.example)
 npm test           # unit tests (vitest)
 npm run check      # svelte-check
 npm run build      # → build-pages/

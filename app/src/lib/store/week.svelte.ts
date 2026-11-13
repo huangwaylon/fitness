@@ -1,6 +1,7 @@
 // The week store. Paints at once from the backend's rows + events, computing the WeekView in the browser
 // (lib/model), and recomputes when they change or the minute ticks. The backend is the live sync with the relay's
-// record (live.ts) or, with `?demo` (or dev without VITE_RECORD_URL), generated rows (demo/backend.ts, loaded only then).
+// record (live.ts) or, in test mode (`?demo` in dev or a test's browser: ui-state/testMode.ts; or dev without
+// VITE_RECORD_URL), generated rows (demo/backend.ts, loaded only then).
 import { untrack } from 'svelte';
 import { dev } from '$app/env';
 import type { WeekView, Who } from '#lib/types.ts';
@@ -13,6 +14,7 @@ import { setWeddingSource } from '#lib/time/holidays.ts';
 import { wedBookOf, wedDate } from '#lib/contract/wedding.ts';
 import { DEMO, DEVICE, getStoredMe, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
 import { RECORD_CONFIGURED } from '#lib/sync/transport.ts';
+import { testModeAllowed, testModeAsked } from '#lib/ui-state/testMode.ts';
 import { composeModel, type ComposedModel } from './view.ts';
 import { LiveBackend } from './live.ts';
 import type { Backend, Host, SendOptions, SendResult } from './backend.ts';
@@ -44,11 +46,11 @@ class WeekStore implements Host {
   /** The device's locale as last read or written (DEVICE.locale: the first paint's before any rows). */
   #locale: unknown;
 
-  /** Read `?demo` / `?demo=harvest` once; it sticks for the tab session. */
+  /** Read `?demo` / `?demo=harvest` once (test mode only: a visitor's `?demo` is the normal app); it sticks for the tab session. */
   init(): void {
     const p = new URLSearchParams(location.search);
     const ss = sessionKV();
-    if (p.has('demo')) {
+    if (testModeAsked(p)) {
       const mode: DemoMode = p.get('demo') === 'harvest' ? 'harvest' : 'plain';
       writeRaw(ss, DEMO.mode, mode);
       // `as=B`: うめ's phone; `as=G`: the guest's (docs/design.md "The guest")
@@ -57,7 +59,7 @@ class WeekStore implements Host {
       writeRaw(ss, DEMO.health, p.get('health') ?? '');
       this.demo = mode;
       this.view = null;
-    } else {
+    } else if (testModeAllowed()) {
       const s = ss?.getItem(DEMO.mode);
       if (s === 'plain' || s === 'harvest') this.demo = s;
     }

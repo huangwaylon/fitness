@@ -16,6 +16,9 @@
 // - storage: each test's own context (Playwright's), service workers blocked; two phones in one context share it.
 //   ききみみ's first-run welcome counts as seen for every player (DEVICE.kikiOnboarded, unless the test set it):
 //   `test.use({ kikiFirstRun: true })` keeps it for the onboarding spec;
+// - test mode: allowed (`localStorage['e2e.testMode'] = '1'`, src/lib/ui-state/testMode.ts), so `?demo` gives the
+//   made-up data and the hooks in this production build, as nowhere else but the dev server; `test.use({ testMode:
+//   false })` is a real visitor's phone (boot.spec);
 // - ambient life: off (`localStorage['e2e.ambient'] = 'off'`, read with the hooks on, `?demo`: island/devHooks.ts),
 //   as if the URL said `?critter=none&visitor=events&balloon=none&idle=none&stars=none` (devHooks.ts AMBIENT): no
 //   critter visits, no day's visitor (an event's host still comes), no balloon, no idle beats of the villagers or しずえ
@@ -73,6 +76,8 @@ type Options = {
   kikiFirstRun: boolean;
   /** The island's ambient life ('off': none, island/devHooks.ts AMBIENT; 'on': as on a phone). */
   ambient: 'off' | 'on';
+  /** Test mode allowed (`?demo`: ui-state/testMode.ts); false: a real visitor's phone. */
+  testMode: boolean;
 };
 
 export const test = base.extend<Options & { hermetic: void }>({
@@ -80,21 +85,24 @@ export const test = base.extend<Options & { hermetic: void }>({
   network: ['local', { option: true }],
   kikiFirstRun: [false, { option: true }],
   ambient: ['off', { option: true }],
+  testMode: [true, { option: true }],
   hermetic: [
-    async ({ context, browser, ownClock, network, kikiFirstRun, ambient }, use) => {
+    async ({ context, browser, ownClock, network, kikiFirstRun, ambient, testMode }, use) => {
       const seen: string[] = [];
       const watch = async (c: BrowserContext) => {
         // (before any page script, every load: a fresh context's storage, or one the test changed)
-        await c.addInitScript(([d, a]) => {
+        await c.addInitScript(([d, a, t]) => {
           try {
             if (d) localStorage.setItem('e2e.date', d);
             else localStorage.removeItem('e2e.date');
             if (a === 'off') localStorage.setItem('e2e.ambient', a);
             else localStorage.removeItem('e2e.ambient');
+            if (t) localStorage.setItem('e2e.testMode', '1');
+            else localStorage.removeItem('e2e.testMode');
           } catch {
             /* about:blank: no storage */
           }
-        }, [ownClock ? null : PINNED_DATE, ambient] as const);
+        }, [ownClock ? null : PINNED_DATE, ambient, testMode] as const);
         if (!kikiFirstRun)
           await c.addInitScript(() => {
             try {

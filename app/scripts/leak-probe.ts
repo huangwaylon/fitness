@@ -32,6 +32,7 @@ const Q = `?demo&date=2026-11-04T12:00${flow === 'fpv' ? '&fpv=1' : ''}${process
 
 const browser = WK ? await webkit.launch() : await chromium.launch({ channel: 'chrome', args: ['--enable-unsafe-swiftshader', '--js-flags=--expose-gc'] });
 const ctx = await browser.newContext({ ...(WK ? devices['iPhone 15'] : devices['iPhone 13']), locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+await ctx.addInitScript(() => localStorage.setItem('e2e.testMode', '1')); // ?demo's test mode (ui-state/testMode.ts)
 if (process.env.LOGIC) await ctx.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
 await ctx.addInitScript(() => {
   const W = window as unknown as Record<string, unknown>;
