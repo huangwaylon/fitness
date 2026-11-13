@@ -189,7 +189,7 @@ describe('the stays: まとめて追加, months, what can take each', () => {
       { why: 'season', names: ['夏', '冬', '冬と夏'], lines: ['夏季は9/30まで', '冬季は12/19〜3/31', '冬季は12/19から'] },
       { why: 'gone', names: ['契約なし'], lines: [] }
     ]);
-    expect(dr[1].aria).toBe('11月20日(金)、あと7日、4日前までの施設のみ。7件中2件を探しています。締切で1件、季節外で3件、掲載なしで1件除外。');
+    expect(dr[1].aria).toBe('11月20日(金)、あと7日、4日前までの施設のみ。7件中2件を探しています。受付終了で1件、季節外で3件、掲載なしで1件除外。');
     expect(dr[2].aria).toBe('11月30日(月)、あと17日。7件中3件を探しています。季節外で3件、掲載なしで1件除外。');
     expect(dr.map((r) => r.noSeason)).toEqual([false, false, false, false, false, false, true, true]);
     // only the searched; ★ first in the order
@@ -232,7 +232,7 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     const late = every(['2026-11-15', '2026-11-20']);
     const lr = hotelRows(late, [], null, roster);
     const lp = hotelParts(lr, dateRows(late, NOW, lr));
-    expect([lp.unfit.find((r) => r.name === '夏')!.reason, lp.unfit.find((r) => r.name === '十日')!.reason]).toEqual(['季節外（夏季は9/30まで）', '締切（10日前まで）']);
+    expect([lp.unfit.find((r) => r.name === '夏')!.reason, lp.unfit.find((r) => r.name === '十日')!.reason]).toEqual(['季節外（夏季は9/30まで）', '申込は10日前まで（11/10で受付終了）']);
     expect(lp.search.find((r) => r.name === '四日')!.meta).toBe('い · 通年 · 4日前まで');
     const only = every(['2026-11-15']);
     const op = hotelParts(hotelRows(only, [], null, roster), dateRows(only, NOW, hotelRows(only, [], null, roster)));

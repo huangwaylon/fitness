@@ -301,6 +301,13 @@ export interface HotelParts {
   unfit: ListRow[];
   off: ListRow[];
 }
+/** A row closed by its application window: 「申込は10日前まで（11/12で受付終了）」, the date the last of those nights closed
+ *  (the site's 「利用日のn日前まで」: the last day it takes an application for that night). */
+function cutoffReason(n: number, nights: readonly string[]): string {
+  const last = [...nights].sort().at(-1)!;
+  return t('its.hotel.why.cutoff', { n, date: md(daysBefore(last, n)) });
+}
+
 export function hotelParts(rows: readonly HotelRow[], dates: readonly DateRow[]): HotelParts {
   // a night past every cutoff (申込期限切れ) takes no facility: it would make every row 「…のみ」 and 締切, so it's left
   // out unless it's all there is (the bars still say it)
@@ -324,7 +331,8 @@ export function hotelParts(rows: readonly HotelRow[], dates: readonly DateRow[])
     const all = WHYS.filter((w) => each.some((x) => x.why === w));
     const why = all.length > 1 ? all.filter((w) => w !== 'cutoff') : all;
     const reason = why.map((w) => w === 'season' ? t('its.hotel.why.season', { line: each.find((x) => x.why === w)!.line })
-      : w === 'cutoff' ? t('its.hotel.why.cutoff', { n: r.roster?.cutoff ?? D4 }) : t(`its.hotel.why.${w}`)).join('・');
+      : w === 'cutoff' ? cutoffReason(r.roster?.cutoff ?? D4, each.filter((x) => x.why === 'cutoff').map((x) => x.date))
+        : t(`its.hotel.why.${w}`)).join('・');
     unfit.push({ ...r, meta: reason, reason, label: [r.name, t('its.hotel.onState'), reason].join('、') });
   }
   const starred = search.filter((r) => r.star !== null);
