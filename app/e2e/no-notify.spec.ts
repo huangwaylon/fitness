@@ -1,6 +1,7 @@
 // Notifications are ボット → 保養所's alone (docs/decisions.md; lib/its/push.ts): nothing in the app asks for the
 // notification permission, subscribes to push or calls a /push/ route, until a member taps 保養所's 通知 switch, and
 // then only the its-bot Worker's /its/push/subscribe is called. (The relay's old /push/* routes are gone: 2026-11-05.)
+// The guard that nothing else in src prompts or subscribes is push.test.ts (a grep); this proves it in the running app.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
@@ -61,7 +62,8 @@ test('nothing asks, subscribes or calls /push/ but 保養所’s 通知 switch, 
   await page.locator('[data-hud-bots]').click();
   const notify = page.locator('dialog[open] [data-its-notify]');
   await expect(notify.locator('[role="switch"]')).toHaveAttribute('aria-checked', 'false');
-  await page.waitForTimeout(500); // (proving nothing happens)
+  // the Worker's key read and the switch usable: the opening's refresh (refreshPush) has run, and did nothing
+  await expect(notify.locator('[role="switch"]')).toHaveAttribute('aria-disabled', 'false');
   expect(await probe(page)).toEqual({ asked: 0, subscribed: 0, unsubscribed: 0 });
   expect(pushCalls).toEqual([]);
   // the tap: asked once, subscribed once, handed to the its-bot Worker only

@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import example from '../../contract-example.json';
 import {
   HOLD_SEC, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TESTS_PER_DAY, PUSH_TEST_EVERY_SEC,
-  type BookingInput, type EventInput, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus,
+  type BookingEntry, type BookingInput, type EventInput, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus,
 } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
@@ -35,9 +35,13 @@ describe('push.ts: what may be stored', () => {
     const ok = (s: unknown) => endpointOk(s, PUSH_HOSTS);
     expect(ok('https://web.push.apple.com/QGuQyavXutnMH4hx')).toBe(true);
     expect(ok('https://fcm.googleapis.com/fcm/send/abc:def')).toBe(true);
+    // URL's normal form: the host lower-cased, an explicit :443 the default port
+    expect(ok('https://WEB.PUSH.APPLE.COM/x')).toBe(true);
+    expect(ok('https://web.push.apple.com:443/x')).toBe(true);
     for (const bad of [
       'http://web.push.apple.com/x', 'https://web.push.apple.com:8443/x', 'https://u:p@web.push.apple.com/x', 'https://evil.web.push.apple.com/x',
       'https://web.push.apple.com.evil.example/x', 'https://127.0.0.1/x', 'https://[::1]/x', 'https://localhost/x', 'https://updates.push.services.mozilla.com/x',
+      'https://web.push.apple.com./x', 'https://web.push.apple.com:443./x', 'https://xn--wb-uga.push.apple.com/x', 'https://wéb.push.apple.com/x',
       `https://web.push.apple.com/${'a'.repeat(500)}`, 'https://web.push.apple.com/x#f', 'https://web.push.apple.com/ x', 'not a url', 5, null,
     ]) expect(ok(bad), String(bad)).toBe(false);
     // the allow-list is injected (tests: a fake push service), never widened by an env flag
@@ -77,11 +81,11 @@ describe('push.ts: the messages', () => {
     const at = { id: 'r:1', date: '2026-11-22', hotel: HOTEL };
     const p = (x: object, lang: 'ja' | 'en' = 'ja') => payloadOf({ kind: 'hold', ...at, ...x } as never, lang, 'T');
     expect(p({ kind: 'hold', expiresAt: exp })).toEqual({ v: 1, kind: 'hold', id: 'r:1', tag: 'T', title: '仮押さえしました', body: 'NAGU 勝浦・11/22(日)・自動で確定します', open: 'its', date: '2026-11-22', hotel: HOTEL, expiresAt: exp });
-    expect(p({ kind: 'human_needed', expiresAt: exp })).toMatchObject({ title: '仮押さえ・要対応', body: 'NAGU 勝浦・11/22(日)・16:05までにメールから申込' });
+    expect(p({ kind: 'human_needed', expiresAt: exp })).toMatchObject({ title: '仮押さえ・要対応', body: 'NAGU 勝浦・11/22(日)・16:05ごろまでにメールから申込' });
     expect(p({ kind: 'confirmed', number: 'A1234567' })).toMatchObject({ title: '予約が確定しました', body: 'NAGU 勝浦・11/22(日)・申込受付番号 A1234567', number: 'A1234567' });
     expect(p({ kind: 'confirmed' })).toMatchObject({ body: 'NAGU 勝浦・11/22(日)' });
     expect(p({ kind: 'hold', expiresAt: exp }, 'en')).toMatchObject({ title: 'Room held', body: 'NAGU 勝浦 · Sun 22 Nov · confirming automatically' });
-    expect(p({ kind: 'human_needed', expiresAt: exp }, 'en')).toMatchObject({ title: 'Room held: action needed', body: 'NAGU 勝浦 · Sun 22 Nov · apply from the email by 16:05' });
+    expect(p({ kind: 'human_needed', expiresAt: exp }, 'en')).toMatchObject({ title: 'Room held: action needed', body: 'NAGU 勝浦 · Sun 22 Nov · apply from the email by about 16:05' });
     expect(p({ kind: 'confirmed', number: 'A1234567' }, 'en')).toMatchObject({ title: 'Booking confirmed', body: 'NAGU 勝浦 · Sun 22 Nov · ref. A1234567' });
     expect(payloadOf({ kind: 'test', id: 'test' }, 'ja', 'its-test')).toEqual({ v: 1, kind: 'test', id: 'test', tag: 'its-test', title: 'テスト通知', body: '保養所ボットの通知はこの端末に届きます', open: 'its' });
   });
@@ -103,8 +107,8 @@ describe('push.ts: the messages', () => {
 describe('push.ts: what a report’s events push', () => {
   const settings = (autoConfirm: boolean): ItsSettings => ({ ...DEFAULT_SETTINGS, autoConfirm });
   const e = (kind: ItsEvent['kind'], seq: number, x: Partial<ItsEvent> = {}): ItsEvent => ({ runId: RUN, seq, t: NOW, kind, date: FAR, hotel: HOTEL, ...x });
-  const run = (added: ItsEvent[], x: { auto?: boolean; events?: ItsEvent[]; done?: string[]; now?: number } = {}) =>
-    noticesFor(added, { settings: settings(x.auto ?? true), bookings: [], events: [...(x.events ?? []), ...added], done: x.done ?? [] }, x.now ?? NOW);
+  const run = (added: ItsEvent[], x: { auto?: boolean; events?: ItsEvent[]; bookings?: BookingEntry[]; done?: string[]; now?: number } = {}) =>
+    noticesFor(added, { settings: settings(x.auto ?? true), bookings: x.bookings ?? [], events: [...(x.events ?? []), ...added], done: x.done ?? [] }, x.now ?? NOW);
 
   it('a hold the bot will confirm: normal, till the hold lapses', () => {
     expect(run([e('hold', 1)]).notices).toEqual([{ kind: 'hold', id: `${RUN}:1`, date: FAR, hotel: HOTEL, urgency: 'normal', until: NOW + HOLD_MS, expiresAt: NOW + HOLD_MS }]);
@@ -150,6 +154,31 @@ describe('push.ts: what a report’s events push', () => {
     const at = { id: 'r:2', date: '2026-11-22', hotel: HOTEL };
     expect(payloadOf({ kind: 'maybe_filed', ...at }, 'ja', 'T')).toMatchObject({ title: '仮押さえ・要確認', body: 'NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認' });
     expect(payloadOf({ kind: 'maybe_filed', ...at }, 'en', 'T')).toMatchObject({ title: 'Room held: check', body: 'NAGU 勝浦 · Sun 22 Nov · may already be booked: check the email and the site' });
+  });
+
+  it('never “apply by mail” when the application may be filed: chrome_*, link_used, or an open confirming whatever the detail', () => {
+    const hold = e('hold', 1, { t: NOW - 10 * MIN });
+    const maybe = { kind: 'maybe_filed', id: `${RUN}:2`, date: FAR, hotel: HOTEL, urgency: 'high', until: NOW + CONFIRMED_TTL_MS };
+    // by detail: Chrome failing mid-leg (the runner can't always tell 申込する was pressed), the mail's link already used
+    for (const detail of ['chrome_x', 'chrome_runtimeerror', 'link_used']) {
+      expect(run([e('human_needed', 2, { detail })], { events: [hold] }).notices, detail).toEqual([maybe]);
+      expect(run([e('human_needed', 2, { detail })]).notices, `${detail}, no live hold`).toEqual([maybe]);
+    }
+    // a leg in flight for the stay (a confirming, no later confirmed / failed): whatever the detail
+    const b = (kind: BookingEntry['kind'], at: number, x: Partial<BookingEntry> = {}): BookingEntry => ({ id: `${RUN}:${at}`, kind, date: FAR, hotel: 'NAGU　勝浦', at, runId: RUN, ...x });
+    const open = [b('hold', NOW - 10 * MIN), b('confirming', NOW - 9 * MIN)];
+    for (const detail of ['run_ended', 'near_date', 'lease_stale', 'room_taken', 'hold_expired', undefined]) {
+      expect(run([e('human_needed', 2, { detail })], { events: [hold], bookings: open }).notices, String(detail)).toEqual([maybe]);
+    }
+    expect(run([e('human_needed', 2, { detail: 'run_ended' })], { bookings: open }).notices).toEqual([maybe]);   // the hold lapsed: still
+    // settled (a later failed or confirmed), another stay's, or none: 要対応 while the hold lasts
+    const near = (bookings: BookingEntry[]) => run([e('human_needed', 2, { detail: 'near_date' })], { events: [hold], bookings }).notices.map((n) => n.kind);
+    expect(near([...open, b('failed', NOW - 8 * MIN)])).toEqual(['human_needed']);
+    expect(near([...open, b('confirmed', NOW - 8 * MIN, { number: 'A1' })])).toEqual(['human_needed']);
+    expect(near([b('confirming', NOW - 9 * MIN, { date: NEAR }), b('confirming', NOW - 9 * MIN, { hotel: 'ホテル' })])).toEqual(['human_needed']);
+    expect(near([b('failed', NOW - 9 * MIN), b('confirming', NOW - 8 * MIN)])).toEqual(['maybe_filed']);   // a failed before it settles nothing
+    expect(near([])).toEqual(['human_needed']);
+    expect(run([e('human_needed', 2, { detail: 'room_taken' })], { events: [hold] }).notices).toEqual([]);
   });
 
   it('confirmed: normal, a day, the 申込受付番号', () => {
@@ -421,6 +450,23 @@ describe('a report’s events, the outbox and the alarm', () => {
     expect(allLogs()).toContain('its push skip no_vapid notices=1');
   });
 
+  it('a queued push whose subscription went, or with the VAPID key removed since: dropped, and logged', async () => {
+    await bot.report(report({ events: [ev(1, 'hold')] }));
+    const [a, b] = jobs();
+    bot.rec.subs = bot.rec.subs.filter((s) => s.ep !== a.ep);
+    await bot.alarm();
+    expect(jobs()).toEqual([]);
+    expect(allLogs()).toContain(`its push dropped why=no_sub kind=hold id=${RUN}:1 ep=${a.ep.slice(0, 6)}`);
+    expect(service.delivered).toHaveLength(1);
+    await bot.report(report({ events: [ev(2, 'confirmed', { detail: 'A1' })] }));
+    expect(jobs()).toHaveLength(1);
+    (bot as unknown as { env: Env }).env.VAPID_PRIVATE = undefined;
+    await bot.alarm();
+    expect(jobs()).toEqual([]);
+    expect(allLogs()).toContain(`its push dropped why=no_vapid kind=confirmed id=${RUN}:2 ep=${b.ep.slice(0, 6)}`);
+    expect(service.delivered).toHaveLength(1);
+  });
+
   it('logs no endpoint, key or message text', async () => {
     await bot.report(report({ events: [ev(1, 'hold'), ev(2, 'confirmed', { detail: 'A1234567' })] }));
     answers.set(phones[1].endpoint, () => new Response('{"reason":"BadJwtToken"}', { status: 403 }));
@@ -491,9 +537,9 @@ describe('end to end: a phone, a runner’s hold that needs a person, the alarm,
       {
         endpoint: phones[0].endpoint, ttl: 1798, urgency: 'high', topic,
         claims: { aud: `https://${HOST}`, exp: Math.floor((NOW + 2000) / 1000) + 12 * 3600, sub: 'https://island-fund.pages.dev' },
-        message: { v: 1, kind: 'human_needed', id: `${RUN}:4`, tag: topic, title: '仮押さえ・要対応', body: `NAGU 勝浦・11/22(日)・${deadline}までにメールから申込`, open: 'its', date: NEAR, hotel: HOTEL, expiresAt: NOW + HOLD_MS },
+        message: { v: 1, kind: 'human_needed', id: `${RUN}:4`, tag: topic, title: '仮押さえ・要対応', body: `NAGU 勝浦・11/22(日)・${deadline}ごろまでにメールから申込`, open: 'its', date: NEAR, hotel: HOTEL, expiresAt: NOW + HOLD_MS },
       },
-      expect.objectContaining({ endpoint: phones[1].endpoint, message: expect.objectContaining({ title: 'Room held: action needed', body: `NAGU 勝浦 · Sun 22 Nov · apply from the email by ${deadline}` }) }),
+      expect.objectContaining({ endpoint: phones[1].endpoint, message: expect.objectContaining({ title: 'Room held: action needed', body: `NAGU 勝浦 · Sun 22 Nov · apply from the email by about ${deadline}` }) }),
     ]);
     expect((await status()).push).toEqual({ A: 1, B: 1, vapidPublic: vapid.publicKey, lastSentAt: NOW + 2000, lastOutcome: { at: NOW + 2000, kind: 'human_needed', code: 'ok', status: 201 } });
     // the example's status.push (statusNewer) is this shape

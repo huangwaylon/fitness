@@ -2,6 +2,8 @@
 // unsupported browser, a refusal), the permission asked first and synchronously in the tap, the subscription for the
 // Worker's key handed over and kept, a rotated key (unsubscribed, subscribed anew), the weekly refresh, a revoked
 // permission, off (forgotten here first), テスト通知, and nothing ever throwing (failures logged without an endpoint).
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import example from '../../../../its/contract-example.json';
 
@@ -222,6 +224,72 @@ describe('the refresh on opening 保養所', () => {
   });
 });
 
+describe('a stale reply never undoes 通知 off', () => {
+  /** The Worker's next subscribe answer held until released. */
+  const held = (b: ReturnType<typeof browser>) => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    b.post.mockImplementationOnce(async (route: string) => {
+      b.order.push(`post.${route}`);
+      await gate;
+      return { ok: true, push: example.statusNewer.push as never };
+    });
+    return () => release();
+  };
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+
+  it('a refresh answered after the switch went off: not saved on, the Worker told to forget it', async () => {
+    const b = browser();
+    await enablePush(VAPID, 'ja');
+    b.now.t += RESYNC_MS + 1;   // the weekly hand-over
+    const release = held(b);
+    const refreshing = refreshPush(VAPID, 'ja');
+    await flush();
+    expect(b.order.at(-1)).toBe('post.subscribe');
+    await disablePush();
+    expect(pushOn()).toBe(false);
+    b.order.length = 0;
+    release();
+    expect(await refreshing).toBe(false);
+    expect(pushOn()).toBe(false);
+    expect(JSON.parse(b.store.get('island.itsPush')!)).toEqual({ on: false });
+    expect(b.order).toEqual(['post.unsubscribe']);
+    expect(b.post).toHaveBeenLastCalledWith('unsubscribe', { endpoint: 'https://web.push.apple.com/E1' });
+  });
+
+  it('turning on answered after an off: not on; the subscription made meanwhile let go here and at the Worker', async () => {
+    const b = browser();
+    const release = held(b);
+    const enabling = enablePush(VAPID, 'ja');
+    await flush();
+    expect(b.order).toEqual(['permission', 'subscribe', 'post.subscribe']);
+    await disablePush();
+    b.order.length = 0;
+    release();
+    expect(await enabling).toBe('failed');
+    expect(pushOn()).toBe(false);
+    expect(b.order).toEqual(['post.unsubscribe']);
+    expect(b.sub()).toBeNull();
+  });
+
+  it('a stale reply while a newer on is in flight: ignored (the newer one decides, nothing unsubscribed)', async () => {
+    const b = browser();
+    await enablePush(VAPID, 'ja');
+    b.now.t += RESYNC_MS + 1;
+    const release = held(b);
+    const refreshing = refreshPush(VAPID, 'ja');
+    await flush();
+    await disablePush();
+    const again = enablePush(VAPID, 'en');
+    expect(await again).toBe('on');
+    b.order.length = 0;
+    release();
+    expect(await refreshing).toBe(true);
+    expect(b.order).toEqual([]);
+    expect(JSON.parse(b.store.get('island.itsPush')!)).toMatchObject({ on: true, lang: 'en' });
+  });
+});
+
 describe('テスト通知', () => {
   it('sent; the Worker’s rate: wait; a Worker that lost it: handed over again and asked once more', async () => {
     const b = browser();
@@ -244,5 +312,19 @@ describe('テスト通知', () => {
     b.post.mockClear();
     expect(await testPush(VAPID, 'ja')).toBe('failed');
     expect(b.post).not.toHaveBeenCalled();
+  });
+});
+
+describe('nothing else asks or subscribes', () => {
+  // the real guard behind e2e/no-notify.spec: push.ts (and this test) alone may prompt or subscribe, anywhere in src
+  const SRC = join(import.meta.dirname, '../..');
+  const ALLOWED = ['lib/its/push.ts', 'lib/its/push.test.ts'];
+  const CALLS = /pushManager\s*\.\s*subscribe\b|Notification\s*\.\s*requestPermission\b|requestPermission\s*\(/;
+  const files = (p: string): string[] =>
+    readdirSync(p, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(p, e.name)) : /\.(ts|js|svelte)$/.test(e.name) ? [join(p, e.name)] : []));
+  it('pushManager.subscribe, Notification.requestPermission and requestPermission( only in lib/its/push.ts', () => {
+    const found = files(SRC).map((f) => relative(SRC, f)).filter((f) => !ALLOWED.includes(f) && CALLS.test(readFileSync(join(SRC, f), 'utf8')));
+    expect(found).toEqual([]);
+    expect(CALLS.test(readFileSync(join(SRC, 'lib/its/push.ts'), 'utf8'))).toBe(true);   // the pattern still sees push.ts's own
   });
 });

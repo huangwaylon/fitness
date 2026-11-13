@@ -3,7 +3,8 @@
 // and a 予約確定. On (a tap): the notification permission asked first, in the tap (iOS grants the prompt only to a user
 // gesture: nothing is awaited before it), then a subscription for the Worker's VAPID key (ItsPushStatus.vapidPublic,
 // read from its status: never built in) handed to POST /its/push/subscribe; the switch shows on only once the Worker
-// took it. Off: forgotten here first (nothing later re-subscribes), then unsubscribed at the Worker and in the browser.
+// took it. Off: forgotten here first (nothing later re-subscribes), then unsubscribed at the Worker and in the browser;
+// a subscribe answered after an off (a refresh or an on still in flight) is not saved and is unsubscribed again.
 // Opening 保養所 (refreshPush): a phone that is on hands its subscription over again when the endpoint, the key (a
 // rotated pair: unsubscribed and subscribed anew) or the language changed, or a week went by (the Worker drops one not
 // refreshed in PUSH_KEEP_DAYS), and turns off when the permission was revoked. Where it can't work, why (pushSupport):
@@ -136,13 +137,36 @@ async function subscription(vapid: string, p: PushPref): Promise<PushSubscriptio
   return sub ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }));
 }
 
-/** The Worker's copy: handed over; the pref kept on success. */
-async function register(sub: PushSubscription, vapid: string, lang: PushLang): Promise<PushReply> {
+/** The switch's turns (on or off), counted: a reply to a call made before the latest turn is stale. `last`: that turn. */
+let turns = 0;
+let last: 'on' | 'off' | null = null;
+const turn = (to: 'on' | 'off'): number => ((last = to), ++turns);
+
+/** The Worker's copy: handed over; the pref kept on success, if the switch wasn't turned since `seen` (turns then). A
+ *  stale reply is ignored; when the latest turn was off, the Worker (and the browser, if it still has it) let go of it
+ *  again: the subscribe may have landed after the off's unsubscribe. `stale` in the answer then. */
+async function register(sub: PushSubscription, vapid: string, lang: PushLang, seen: number): Promise<PushReply & { stale?: true }> {
   const j = sub.toJSON();
   const keys = { p256dh: j.keys?.p256dh ?? '', auth: j.keys?.auth ?? '' };
   const r = await d().post('subscribe', { endpoint: sub.endpoint, keys, lang });
+  if (seen !== turns) {
+    if (r.ok && last === 'off') await forget(sub.endpoint);
+    return { ...r, stale: true };
+  }
   if (r.ok) savePref({ on: true, endpoint: sub.endpoint, key: vapid, lang, at: d().now() });
   return r;
+}
+
+/** A stale subscribe after an off: unsubscribed at the Worker, and in the browser if it is still this one. */
+async function forget(endpoint: string): Promise<void> {
+  try {
+    await d().post('unsubscribe', { endpoint });
+    const reg = await registration();
+    const sub = reg ? await reg.pushManager.getSubscription() : null;
+    if (sub?.endpoint === endpoint && last === 'off') await sub.unsubscribe();
+  } catch (e) {
+    fail('unsubscribe', e);
+  }
 }
 
 /** The Worker isn't ready for push (no routes yet, or no VAPID key): 準備中. */
@@ -158,6 +182,7 @@ export async function enablePush(vapid: string | null, lang: PushLang): Promise<
   const support = pushSupport();
   if (support !== 'ok' && support !== 'denied') return support;
   if (!vapid) return 'soon';
+  const seen = turn('on');
   let asked: Promise<NotificationPermission>;
   try {
     asked = Promise.resolve(d().win.Notification!.requestPermission());
@@ -169,7 +194,8 @@ export async function enablePush(vapid: string | null, lang: PushLang): Promise<
     if ((await asked) !== 'granted') return 'denied';
     const sub = await subscription(vapid, pref());
     if (!sub) return 'failed';
-    const r = await register(sub, vapid, lang);
+    const r = await register(sub, vapid, lang, seen);
+    if (r.stale) return pushOn() ? 'on' : 'failed';
     return r.ok ? 'on' : notReady(r) ? 'soon' : 'failed';
   } catch (e) {
     fail('subscribe', e);
@@ -180,6 +206,7 @@ export async function enablePush(vapid: string | null, lang: PushLang): Promise<
 /** The switch turned off: forgotten here first (so nothing re-subscribes), then at the Worker and in the browser. */
 export async function disablePush(): Promise<void> {
   const was = pref();
+  turn('off');
   savePref({ on: false });
   try {
     const reg = await registration();
@@ -208,10 +235,11 @@ export async function refreshPush(vapid: string | null, lang: PushLang, force = 
     return false;
   }
   if (!vapid) return true;   // push off at the Worker: kept, handed over once it's back
+  const seen = turns;
   try {
     const sub = await subscription(vapid, p);
-    if (!sub) return true;
-    if (force || sub.endpoint !== p.endpoint || p.key !== vapid || p.lang !== lang || d().now() - (p.at ?? 0) > RESYNC_MS) await register(sub, vapid, lang);
+    if (!sub) return pref().on;
+    if (force || sub.endpoint !== p.endpoint || p.key !== vapid || p.lang !== lang || d().now() - (p.at ?? 0) > RESYNC_MS) await register(sub, vapid, lang, seen);
   } catch (e) {
     fail('subscribe', e);
   }

@@ -361,12 +361,17 @@ export type PushKind = 'hold' | 'human_needed' | 'maybe_filed' | 'confirmed' | '
  *  others, e.g. apply_page_<status>), as the push and the page read it:
  *  - NOT_BOOKED_DETAILS: no action helps (the room went, the hold lapsed) or none is wanted (not_wanted: the date was
  *    removed or the facility skipped mid-chain; the hold lapses free): no push.
- *  - MAYBE_FILED_DETAILS: the leg may have filed (the budget ran out after 申込する, or no completion page): the
- *    mailbox and the site decide; pushed as `maybe_filed` (申込済みの可能性).
- *  - any other: the hold waits for a person; pushed as `human_needed` (要対応) while the hold lasts. @public (its/worker) */
+ *  - MAYBE_FILED_DETAILS, or one starting with a MAYBE_FILED_PREFIXES entry: the leg may have filed (the budget ran
+ *    out after 申込する, no completion page, the mail's link already used, Chrome failing mid-leg): the mailbox and the
+ *    site decide; pushed as `maybe_filed` (申込済みの可能性).
+ *  - any other: the hold waits for a person; pushed as `human_needed` (要対応) while the hold lasts.
+ *  Whatever the detail, a stay with an open `confirming` (no later `confirmed` or `failed`) is pushed as `maybe_filed`:
+ *  a leg may be filing it. @public (its/worker) */
 export const NOT_BOOKED_DETAILS: readonly string[] = ['room_taken', 'hold_expired', 'not_wanted'];
 /** @public (its/worker) */
-export const MAYBE_FILED_DETAILS: readonly string[] = ['submit_unknown', 'no_completion'];
+export const MAYBE_FILED_DETAILS: readonly string[] = ['submit_unknown', 'no_completion', 'link_used'];
+/** `chrome_<exception>`: the runner can't always tell whether 申込する was pressed. @public (its/worker) */
+export const MAYBE_FILED_PREFIXES: readonly string[] = ['chrome_'];
 /** The codes the runner sends today (README's list; the leg's are open-ended). @public (its/worker) */
 export const HUMAN_NEEDED_DETAILS: readonly string[] = [
   'near_date', 'auto_off', 'no_mail', 'unmapped', 'fill_rejected', 'hold_expired', 'confirming_unacked', 'lease_stale',

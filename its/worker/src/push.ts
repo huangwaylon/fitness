@@ -3,7 +3,7 @@
 // for how long), the messages in each language (Tokyo times), what a push service's answer means, and the status's
 // counts. Never an endpoint in a log line or the status: a subscription is known by `ep`, its endpoint's SHA-256.
 import {
-  AUTO_CONFIRM_MIN_DAYS, HOLD_SEC, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, normName,
+  AUTO_CONFIRM_MIN_DAYS, HOLD_SEC, MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, normName,
   type BookingEntry, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type Member, type PushKind,
   type PushLang, type PushOutcome,
 } from '../../../app/src/lib/its/contract.ts';
@@ -155,13 +155,24 @@ function holdAt(bookings: BookingEntry[], events: ItsEvent[], date: string, hote
   return ts.length ? Math.min(...ts) : null;
 }
 
+/** A leg may be filing the stay: a `confirming` with no later `confirmed` or `failed` for it. */
+function confirmingOpen(bookings: BookingEntry[], date: string, hotel: string): boolean {
+  const k = stayKey(date, hotel);
+  const mine = bookings.filter((b) => stayKey(b.date, b.hotel) === k);
+  return mine.some((c) => c.kind === 'confirming' && !mine.some((b) => (b.kind === 'confirmed' || b.kind === 'failed') && b.at >= c.at));
+}
+
+/** A detail after which the leg may have filed (the contract's MAYBE_FILED_DETAILS and MAYBE_FILED_PREFIXES). */
+const maybeFiled = (detail: string): boolean => MAYBE_FILED_DETAILS.includes(detail) || MAYBE_FILED_PREFIXES.some((p) => detail.startsWith(p));
+
 /** The notices for a report's added events (README "Push"):
  *  - hold, when the bot will confirm it (auto-confirm on, the stay ≥ AUTO_CONFIRM_MIN_DAYS away): normal, till the
  *    hold lapses. Otherwise nothing: its human_needed says it.
- *  - human_needed for a hold that waits for a person (any detail but the contract's NOT_BOOKED_DETAILS and
- *    MAYBE_FILED_DETAILS) while it lasts: high, till it lapses; skipped with MIN_LEFT_MS or less left.
- *  - human_needed for a leg that may have filed (MAYBE_FILED_DETAILS): `maybe_filed`, high, CONFIRMED_TTL_MS, live
- *    hold or not (the mailbox and the site decide).
+ *  - human_needed when the application may be filed: the stay has an open `confirming` (whatever the detail), or the
+ *    detail says so (MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES): `maybe_filed`, high, CONFIRMED_TTL_MS, live hold or
+ *    not (the mailbox and the site decide). Never 「メールから申込」 for one that may be filed.
+ *  - any other human_needed but NOT_BOOKED_DETAILS: the hold waits for a person, while it lasts: high, till it lapses
+ *    (the deadline an estimate: the Worker's receive time + HOLD_SEC); skipped with MIN_LEFT_MS or less left.
  *  - confirmed: normal, CONFIRMED_TTL_MS, the 申込受付番号.
  *  Each once (`done`). `events`: the record's important ones, the added included. */
 export function noticesFor(added: ItsEvent[], ctx: { settings: ItsSettings; bookings: BookingEntry[]; events: ItsEvent[]; done: string[] }, now: number): { notices: Notice[]; skipped: Skip[]; done: string[] } {
@@ -177,7 +188,7 @@ export function noticesFor(added: ItsEvent[], ctx: { settings: ItsSettings; book
     let n: Notice;
     if (e.kind === 'confirmed') {
       n = { ...base, kind: 'confirmed', urgency: 'normal', until: now + CONFIRMED_TTL_MS, ...(e.detail && { number: e.detail }) };
-    } else if (e.kind === 'human_needed' && MAYBE_FILED_DETAILS.includes(detail)) {
+    } else if (e.kind === 'human_needed' && (maybeFiled(detail) || confirmingOpen(ctx.bookings, e.date, e.hotel))) {
       n = { ...base, kind: 'maybe_filed', urgency: 'high', until: now + CONFIRMED_TTL_MS };
     } else {
       if (e.kind === 'hold' && !(ctx.settings.autoConfirm && daysUntil(e.date, now) >= AUTO_CONFIRM_MIN_DAYS)) { skipped.push({ kind: e.kind, id, why: 'manual' }); continue; }
@@ -219,7 +230,7 @@ export const tokyoTime = (ms: number): string => new Date(ms + 9 * 3600_000).toI
 const TEXT = {
   ja: {
     hold: ['仮押さえしました', () => '自動で確定します'],
-    human_needed: ['仮押さえ・要対応', (j: Pick<PushJob, 'expiresAt'>) => `${tokyoTime(j.expiresAt!)}までにメールから申込`],
+    human_needed: ['仮押さえ・要対応', (j: Pick<PushJob, 'expiresAt'>) => `${tokyoTime(j.expiresAt!)}ごろまでにメールから申込`],
     maybe_filed: ['仮押さえ・要確認', () => '申込済みの可能性：メールとサイトで確認'],
     confirmed: ['予約が確定しました', (j: Pick<PushJob, 'number'>) => (j.number ? `申込受付番号 ${j.number}` : '')],
     test: ['テスト通知', () => '保養所ボットの通知はこの端末に届きます'],
@@ -227,7 +238,7 @@ const TEXT = {
   },
   en: {
     hold: ['Room held', () => 'confirming automatically'],
-    human_needed: ['Room held: action needed', (j: Pick<PushJob, 'expiresAt'>) => `apply from the email by ${tokyoTime(j.expiresAt!)}`],
+    human_needed: ['Room held: action needed', (j: Pick<PushJob, 'expiresAt'>) => `apply from the email by about ${tokyoTime(j.expiresAt!)}`],
     maybe_filed: ['Room held: check', () => 'may already be booked: check the email and the site'],
     confirmed: ['Booking confirmed', (j: Pick<PushJob, 'number'>) => (j.number ? `ref. ${j.number}` : '')],
     test: ['Test notification', () => 'ITS bot notifications reach this device'],

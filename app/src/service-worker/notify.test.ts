@@ -3,7 +3,7 @@
 // 保養所, else the app opened at ?open=its.
 import { describe, expect, it, vi } from 'vitest';
 import example from '../../../its/contract-example.json';
-import { notificationFor, openApp } from './notify.ts';
+import { notificationFor, openApp, showPush } from './notify.ts';
 
 const data = (s: string) => ({ text: () => s });
 
@@ -12,7 +12,7 @@ describe('notificationFor', () => {
     const p = example.pushPayload;
     expect(notificationFor(data(JSON.stringify(p)), '/')).toEqual({
       title: '仮押さえ・要対応',
-      options: { body: 'NAGU 勝浦・11/22(日)・13:25までにメールから申込', tag: p.tag, icon: '/icons/icon-192.png', data: { url: '/?open=its' } }
+      options: { body: 'NAGU 勝浦・11/22(日)・13:25ごろまでにメールから申込', tag: p.tag, icon: '/icons/icon-192.png', data: { url: '/?open=its' } }
     });
     // a newer kind the worker doesn't know: still its words
     expect(notificationFor(data(JSON.stringify({ ...p, kind: 'later', title: 'x'.repeat(200) })), '/fitness/').title).toHaveLength(80);
@@ -22,6 +22,32 @@ describe('notificationFor', () => {
     const fallback = { title: '保養所ボット', options: { body: 'お知らせがあります', tag: 'its', icon: '/icons/icon-192.png', data: { url: '/?open=its' } } };
     for (const d of [null, data('not json'), data('null'), data('[]'), data('{"title": ""}'), data('{"body": "no title"}'), { text: () => { throw new Error('x'); } }]) {
       expect(notificationFor(d, '/')).toEqual(fallback);
+    }
+  });
+});
+
+describe('showPush', () => {
+  const reg = () => ({ showNotification: vi.fn(async (_t: string, _o: NotificationOptions) => {}) });
+  it('shows the notification and sets the badge, both inside the one promise', async () => {
+    const r = reg();
+    let badged = false;
+    const nav = { setAppBadge: vi.fn(async () => void (badged = true)) };
+    const p = showPush(r, nav, data(JSON.stringify(example.pushPayload)), '/');
+    expect(r.showNotification).toHaveBeenCalledWith('仮押さえ・要対応', expect.objectContaining({ tag: example.pushPayload.tag }));
+    await p;
+    expect([nav.setAppBadge.mock.calls, badged]).toEqual([[[1]], true]);
+  });
+  it('a badge that throws, rejects or is missing never stops the notification nor fails the promise', async () => {
+    for (const nav of [
+      { setAppBadge: () => { throw new TypeError('no'); } },
+      { setAppBadge: () => Promise.reject(new DOMException('x', 'NotAllowedError')) },
+      { setAppBadge: () => undefined as unknown as Promise<void> },
+      {},
+      null,
+    ]) {
+      const r = reg();
+      await expect(showPush(r, nav as never, data('not json'), '/')).resolves.toBeUndefined();
+      expect(r.showNotification).toHaveBeenCalledWith('保養所ボット', expect.objectContaining({ body: 'お知らせがあります' }));
     }
   });
 });

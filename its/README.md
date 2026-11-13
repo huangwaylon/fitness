@@ -125,14 +125,17 @@ later one replaces the earlier; each is sent once per hold / stay whichever run 
 | Event | When | Title · body (ja; en from the subscription's `lang`) | Urgency, TTL |
 |---|---|---|---|
 | `hold` | auto-confirm on and the stay ≥ 11 days away (the bot finishes it) | 仮押さえしました · NAGU 勝浦・11/22(日)・自動で確定します | normal, till the hold lapses |
-| `human_needed` | a hold that waits for a person (any detail but those below: `near_date`, `auto_off`, `no_mail`, `unmapped`, `fill_rejected`, `lease_stale`, `leg_error`, …) while it lasts: the stay's earliest hold within 30 min | 仮押さえ・要対応 · NAGU 勝浦・11/22(日)・16:05までにメールから申込 | high, what's left; ≤ 120 s left: not sent (`push skip expired`) |
-| `human_needed` `submit_unknown`, `no_completion` | the leg may have filed (`maybe_filed`), with or without a live hold | 仮押さえ・要確認 · NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認 | high, 1 day |
-| `human_needed` `room_taken`, `hold_expired` | a definite non-booking: nothing helps | not sent (`push skip not_booked`) | |
+| `human_needed` | a hold that waits for a person (any detail but those below: `near_date`, `auto_off`, `no_mail`, `unmapped`, `fill_rejected`, `lease_stale`, `leg_error`, …) while it lasts: the stay's earliest hold within 30 min | 仮押さえ・要対応 · NAGU 勝浦・11/22(日)・16:05ごろまでにメールから申込 | high, what's left; ≤ 120 s left: not sent (`push skip expired`) |
+| `human_needed` that may be filed (`maybe_filed`) | the stay has an open `confirming` (no later `confirmed` / `failed` in the bookings: a leg may be filing it), whatever the detail; or the detail is `submit_unknown`, `no_completion`, `link_used` or `chrome_*`; with or without a live hold | 仮押さえ・要確認 · NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認 | high, 1 day |
+| `human_needed` `room_taken`, `hold_expired`, `not_wanted` | a definite non-booking, or a hold nobody wants (no open `confirming`) | not sent (`push skip not_booked`) | |
 | `confirmed` | 予約確定 | 予約が確定しました · NAGU 勝浦・11/22(日)・申込受付番号 A1234567 | normal, 1 day |
 
-A hold the bot won't finish pushes only its `human_needed` (one notification per hold). The detail lists are the contract's (`NOT_BOOKED_DETAILS`, `MAYBE_FILED_DETAILS`, `HUMAN_NEEDED_DETAILS`). Times are Tokyo's; titles and
-bodies are written here, so an older service worker shows a newer kind. The decrypted message is the contract's
-`ItsPushPayload` (≤ 3000 bytes).
+A hold the bot won't finish pushes only its `human_needed` (one notification per hold). A notice never says
+「メールから申込」 when the application may already be filed: that one is `maybe_filed`. The 要対応 deadline is an estimate
+(「ごろ」, "by about"): the Worker's receive time of the stay's first hold + HOLD_SEC, not the site's own clock. The
+detail lists are the contract's (`NOT_BOOKED_DETAILS`, `MAYBE_FILED_DETAILS`, `MAYBE_FILED_PREFIXES`,
+`HUMAN_NEEDED_DETAILS`). Times are Tokyo's; titles and bodies are written here, so an older service worker shows a
+newer kind. The decrypted message is the contract's `ItsPushPayload` (≤ 3000 bytes).
 
 **Routes** (member key, CORS, `POST`; answer `{ok: true, push}`, the status's `push`):
 `/its/push/subscribe {endpoint, keys: {p256dh, auth}, lang}` (the endpoint `https://web.push.apple.com/…` or
@@ -161,12 +164,14 @@ the next retry. The runner's report never waits for or fails on a push.
 expiry). `npm run vapid:keys -- ~/.config/its-bot/vapid-private` prints `VAPID_PUBLIC=…` and writes the private part
 (mode 600, never printed); `VAPID_PUBLIC` goes in wrangler.toml's `[vars]` (committed: it's public), `npx wrangler
 secret put VAPID_PRIVATE < ~/.config/its-bot/vapid-private`, then `npm run deploy`. **Rotating**: a new pair the same
-way (commit the var, put the secret, deploy together); every phone's subscription is tied to the old key, so the page
-sees `push.vapidPublic` change and re-subscribes on its next refresh; until then Apple answers 403 (`config`).
+way (runbook §12's order: commit the var, then put the secret and deploy back to back); every phone's subscription
+is tied to the old key, so the page sees `push.vapidPublic` change and re-subscribes on its next refresh; until then
+Apple answers 403 (`config`).
 
 **Logs**: `its push queued kind=human_needed id=<run>:<seq> urgency=high ttl=1720s subs=2`, `its push kind=… id=…
 ep=<6 hex of the endpoint's SHA-256> who=A status=201 ms=180 outcome=ok` (one per attempt; `reason=` on a refusal),
 `its push skip <expired|no_hold|manual|not_booked|done|no_vapid> …`, `its push gave_up …`, `its push expired …`,
+`its push dropped why=<no_sub|no_vapid> kind=… id=… ep=…` (a queued push whose subscription went, or the key removed),
 `its push subscribe by=A ep=… lang=ja subs=A1/B1 moved=0 replaced=0`, `its push unsubscribe by=A ep=… removed=1`,
 `its push test refused rate_limited …`. Never an endpoint, a key or a message's text.
 

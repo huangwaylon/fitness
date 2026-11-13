@@ -28,6 +28,23 @@ export function notificationFor(data: { text(): string } | null, scope: string):
   return { title: n.title, options: { body: n.body, tag: n.tag, icon: `${scope}icons/icon-192.png`, data: { url: openUrl(scope) } } };
 }
 
+/** The app icon's badge (Badging API; absent on most browsers). */
+type BadgeNav = { setAppBadge?: (n: number) => Promise<void> } | null | undefined;
+
+/** A push shown: the notification first (nothing fetched before it), then the app icon's badge (保養所 clears it), the
+ *  badge's failure, thrown or rejected, swallowed: it never stops or fails the notification. For the push event's
+ *  waitUntil. */
+export async function showPush(reg: { showNotification(title: string, o: NotificationOptions): Promise<void> }, nav: BadgeNav, data: { text(): string } | null, scope: string): Promise<void> {
+  const n = notificationFor(data, scope);
+  const shown = reg.showNotification(n.title, n.options);
+  try {
+    await nav?.setAppBadge?.(1);
+  } catch {
+    /* no badge: the notification still shows */
+  }
+  await shown;
+}
+
 interface WindowLike {
   url: string;
   focus(): Promise<unknown>;

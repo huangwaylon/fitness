@@ -180,9 +180,12 @@ site's mails) is the ground truth for holds and 予約確定. Rotating a token b
 **Push** (its/README.md "Push"). Turning it on, once: `cd its/worker && npm run vapid:keys --
 ~/.config/its-bot/vapid-private` → put the printed `VAPID_PUBLIC=…` in wrangler.toml's `[vars]` and commit it →
 `npx wrangler secret put VAPID_PRIVATE < ~/.config/its-bot/vapid-private` → `npm run deploy` → `/its/status`'s
-`push.vapidPublic` is the new key. Rotating VAPID: the same steps with a new file (the script never overwrites one);
-the phones see the key change and re-subscribe at their next refresh (until then Apple answers 403, logged
-`outcome=config`). The hand check after a deploy that touches push (Playwright's WebKit has no push service):
+`push.vapidPublic` is the new key. Rotating VAPID, in this order: `npm run vapid:keys --` a new file (the script never
+overwrites one) → commit the new `VAPID_PUBLIC` (committing deploys nothing) → `npx wrangler secret put VAPID_PRIVATE <
+<new file>` and `npm run deploy` back to back (between the two the live Worker signs with the new private half under
+the old public key: Apple answers 403 and those pushes are dropped, logged `outcome=config`) → `/its/status`'s
+`push.vapidPublic` is the new key. The phones see the key change and re-subscribe at their next refresh (until then
+their pushes are refused the same way). The hand check after a deploy that touches push (Playwright's WebKit has no push service):
 1. macOS Safari, the site, ボット → 保養所 → 通知 on → テスト通知: a notification within seconds;
    `npx wrangler tail --search "its push"` shows `status=201 outcome=ok` (a `403 reason=BadJwtToken` here: the two
    halves of the pair don't match).

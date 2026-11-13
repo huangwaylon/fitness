@@ -328,7 +328,8 @@ export class ItsBot extends DurableObject<Env> {
         continue;
       }
       const s = done.get(j.key);
-      if (s?.code !== 'retry') continue;
+      if (!s) { console.warn(`its push dropped why=${vapid ? 'no_sub' : 'no_vapid'} kind=${j.kind} id=${j.id} ep=${j.ep.slice(0, 6)}`); continue; }
+      if (s.code !== 'retry') continue;
       const next = retryAt(j, now, s.retryAfter);
       if (next) pushq.push({ ...j, tries: j.tries + 1, next });
       else { s.code = 'expired'; console.warn(`its push gave_up kind=${j.kind} id=${j.id} ep=${j.ep.slice(0, 6)} tries=${j.tries + 1}`); }
