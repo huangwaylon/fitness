@@ -37,7 +37,7 @@ export type Ctx = {
 };
 export type Selection = { gate: string[]; x3: string[]; once: string[]; reached: Map<string, string>; gateOnly: string[]; notes: string[]; ms: number };
 
-const reOf = (glob: string) =>
+export const reOf = (glob: string) =>
   new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\?/g, '[^/]').replace(/\*\*\/?/g, '\u0000').replace(/\*/g, '([^/]*?)').replace(/\u0000/g, '.*')}$`);
 const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 

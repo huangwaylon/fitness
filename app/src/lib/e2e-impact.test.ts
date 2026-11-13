@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { context, fill, mapFile, oldCopy, select, type Ctx } from '../../scripts/e2e-impact.ts';
+import { context, fill, mapFile, oldCopy, reOf, select, type Ctx } from '../../scripts/e2e-impact.ts';
 import { runnerTrouble, tally } from '../../scripts/e2e-flakes.ts';
 import { failedSpecs, missed, rulesFor } from '../../scripts/e2e-missed.ts';
 
@@ -118,6 +118,11 @@ describe('e2e/impact.json', () => {
     expect(phone.filter((f) => !ran.has(f)), 'specs opening /editor/?view=phone left out').toEqual([]);
     for (const f of ['src/lib/components/layoutEdit/PlanStage.svelte', 'src/lib/components/editor/Preview3D.svelte', 'src/routes/editor/+page.svelte'])
       expect(phone.filter((p) => !repo.gate.includes(p) && !mapFile(f, repo).includes(p)), f).toEqual([]);
+  });
+
+  it('each rule matches a file there is (the lib/world move left 14 on the old island paths)', () => {
+    const all = [...dirs.values()].flat();
+    expect(impact.rules.filter(([glob]) => !all.some((f) => reOf(glob).test(f))).map(([glob]) => glob)).toEqual([]);
   });
 
   it('names only specs there are', () => {
