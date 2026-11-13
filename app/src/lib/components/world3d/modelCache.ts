@@ -67,6 +67,14 @@ export function modelCache(keep: number, fetch: (key: string) => Promise<GLTF>, 
           if (!used.has(k)) (used.add(k), kept.use(k));
           return load(k);
         },
+        /** One model handed back mid-visit (a preview tried and let go: none of it left in the room), its GPU copies
+         *  let go of on this renderer; asked for again, it is uploaded again. */
+        unload(k: string) {
+          if (!used.delete(k)) return;
+          const g = loaded.get(k);
+          if (g) freeModel(g.scene);
+          kept.unuse(k);
+        },
         /** At once (a quick way back in must not have its new room's uploads let go of a tick later), and handed
          *  back (the unused past `keep` evicted). */
         release(seen = new Set<object>()) {

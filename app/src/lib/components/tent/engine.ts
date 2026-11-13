@@ -12,7 +12,7 @@ import {
 } from 'three';
 import { cubicOut } from '#lib/math.ts';
 import { FULL, HALF, TILE, centreOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
-import { footprint, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
+import { footprint, freeTexUrl, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
 import { VILLAGER_S, createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { hitsSkinned } from '../player3d/hit.ts';
 import type { Person3 } from '../person3d/person3d.ts';
@@ -562,6 +562,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       const [url, glow] = await Promise.all([texUrl(kind, code), glowUrl(code)]);
       const get = (u: string | null) => (u ? tex.loadAsync(u).catch(() => null) : Promise.resolve(null));
       const [t, e] = await Promise.all([get(url), get(glow)]);
+      freeTexUrl(url);
+      freeTexUrl(glow);
       if (disposed || cur[kind] !== code) return void (t?.dispose(), e?.dispose());
       for (const x of [t, e]) if (x) {
         x.colorSpace = SRGBColorSpace;
@@ -775,9 +777,28 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   const ghostKids = new Group();
   ghostRoot.add(ghostKids);
   let ghostTurn: { from: number; to: number; t0: number } | null = null;
+  /** Previews tried and let go of (the ghost's item changed or gone): a second later, the ones nothing in the room
+   *  uses (no piece, held or ghost; a preview placed is a piece by then) handed back, their GPU copies with them
+   *  (もようがえ's catalogue: a texture and a geometry a rug tried, else kept till the room is left). */
+  const tried = new Set<string>();
+  let sweepT = 0;
+  const sweep = () => {
+    sweepT = 0;
+    if (disposed) return;
+    const inUse = new Set([ghostKey, ...[...live.values()].map((l) => l.spot.item), ...[...heldBy.values()].map((h) => h.item)]);
+    for (const k of tried) if (!inUse.has(k)) models.unload(k);
+    tried.clear();
+  };
+  const tryOut = (k: string) => {
+    if (!k) return;
+    tried.add(k);
+    clearTimeout(sweepT);
+    sweepT = window.setTimeout(sweep, 1000);
+  };
   function ghost(g: Ghost | null) {
     foot.visible = ring.visible = ghostRoot.visible = handle.visible = !!g;
     if (!g) {
+      tryOut(ghostKey);
       ghostKey = '';
       ghostKidsKey = '[]';
       ghostKids.clear();
@@ -805,6 +826,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       ring.position.set(um, y, 0.3);
       ring.rotation.set(0, 0, 0);
       if (ghostKey !== g.item) {
+        tryOut(ghostKey);
         ghostKey = g.item;
         if (ghostBody) ghostRoot.remove(ghostBody);
         ghostBody = null;
@@ -862,6 +884,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       ghostRoot.rotation.y = was;
     }
     if (ghostKey !== g.item) {
+      tryOut(ghostKey);
       ghostKey = g.item;
       if (ghostBody) ghostRoot.remove(ghostBody);
       ghostBody = null;
@@ -2143,6 +2166,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       clearTimeout(blinkT);
       clearTimeout(holdT);
       clearTimeout(primeT);
+      clearTimeout(sweepT);
       document.removeEventListener('visibilitychange', onVis);
       unwatchGL();
       clearTimeout(warmT);

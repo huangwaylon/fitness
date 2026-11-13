@@ -101,24 +101,29 @@ export const modelUrl = (code: string): string => `${staticUrl(`room/models/${co
 
 /** A packed piece's model, cut from its pack (null: not packed, or the pack can't be had). */
 export const modelBytes = (code: string): Promise<ArrayBuffer | null> => (ITEMS[code]?.pk ? roomPacks.bytes(ITEMS[code].pk!) : Promise.resolve(null));
-/** Object URLs of packed pictures, made once (a few KB each: kept for the page's life). */
+/** Object URLs of packed icons, made once and kept for the page's life (~2 KB each, the lists' <img>s share them). */
 const blobs = new Map<string, Promise<string | null>>();
+const blobOf = (ref: PackRef): Promise<string | null> =>
+  roomPacks.bytes(ref).then((b) => (b ? URL.createObjectURL(new Blob([b], { type: 'image/webp' })) : null));
 function blobUrl(ref: PackRef): Promise<string | null> {
   const k = ref.join(':');
   let p = blobs.get(k);
   if (!p) {
-    p = roomPacks.bytes(ref).then((b) => (b ? URL.createObjectURL(new Blob([b], { type: 'image/webp' })) : null));
+    p = blobOf(ref);
     blobs.set(k, p);
     void p.then((u) => u || blobs.delete(k));
   }
   return p;
 }
 /** A wallpaper's or a floor's picture (2 tiles wide and the wall's height; a floor 4 × 4 tiles), and its glow (lit in
- *  the dark: NH's emissive wallpapers and floors), null for none. */
+ *  the dark: NH's emissive wallpapers and floors), null for none. A packed one's is an object URL of its own (up to
+ *  100 KB): `freeTexUrl` it once its texture is in. */
 export function texUrl(kind: 'wall' | 'floor', code: string): Promise<string | null> {
-  return TEX[code] ? blobUrl(TEX[code]) : Promise.resolve(staticUrl(`room/${kind}/${code}.webp`));
+  return TEX[code] ? blobOf(TEX[code]) : Promise.resolve(staticUrl(`room/${kind}/${code}.webp`));
 }
-export const glowUrl = (code: string): Promise<string | null> => (TEX[`${code}.e`] ? blobUrl(TEX[`${code}.e`]) : Promise.resolve(null));
+export const glowUrl = (code: string): Promise<string | null> => (TEX[`${code}.e`] ? blobOf(TEX[`${code}.e`]) : Promise.resolve(null));
+/** A texUrl's or glowUrl's object URL let go (its texture loaded or failed; a file's URL: nothing to do). */
+export const freeTexUrl = (u: string | null): void => void (u?.startsWith('blob:') && URL.revokeObjectURL(u));
 /** Whether an icon is packed (its picture is `iconSrc`'s, not a URL of its own). */
 export const iconPacked = (code: string): boolean => !!ICONS[code];
 /** An item's or a surface's icon: NH's own, or the ずかん's (the same NH icon, already on the phone); a packed one's
