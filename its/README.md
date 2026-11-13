@@ -60,6 +60,7 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 | `worker/src/bot.ts` | `ItsBot`: the record in memory (one storage read at start), one batched put per change, the log lines |
 | `worker/src/rules.ts` | The lease, the events' rings, bookings, seen names, RunnerConfig and the verdict |
 | `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's bodies, GitHub's dispatch, bindings and secrets |
+| `worker/src/push.ts`, `webpush.ts` | Web Push (Push below): what's sent when, the messages, the outcomes; RFC 8291/8292 with WebCrypto |
 
 | Route | Who | |
 |---|---|---|
@@ -68,6 +69,7 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 | `GET /its/status` | member | `ItsStatus`: verdict, reasons, settings, last report, lease, dispatch, control, bookings, events, seen, lastPreflight, recentScans (the last hour's reads, for the page's minute strip) |
 | `PUT /its/settings` | member | `ItsSettingsInput` (the contract's `parseSettingsInput`); 409 with the bare current `ItsStatus` as the body if `baseUpdatedAt` isn't the current `updatedAt` |
 | `POST /its/run` | member | `{action: 'start' \| 'stop'}`; start clears `paused` and dispatches a run (below); answers the status |
+| `POST /its/push/subscribe`, `/unsubscribe`, `/test` | member | Web Push (Push below) → `{ok, push}` |
 | `GET /runner/config[?runId=]` | runner | `RunnerConfig`: without `runId`, the workflow's preflight (`stop` → the job ends in seconds; its time is the status's `lastPreflight`) |
 | `POST /runner/claim` | runner | `{runId, host}` → `ClaimReply` (the lease when free, expired or already this run's; taking over another run's unreleased lease records `prev_unclean`) |
 | `POST /runner/report` | runner | `RunnerReport` → `RunnerConfig`; the holder's renews the lease, a `run_end` event releases it |
@@ -90,7 +92,7 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   `detail` the run whose lease was taken over), `seen` (facility names, the newest 300; a known name's time is
   rewritten at most daily), `acks` (the highest event seq per run, the newest 20 runs: a retried report adds nothing
   twice), `preflight` (the last one's time), `scans` (the last hour's calendar reads from the reports' `scansLog`, one
-  batch per report, ≤ 300 entries, aged out by receive time). Times are the Worker's receive time; the verdict
+  batch per report, ≤ 300 entries, aged out by receive time), `subs`, `pushq`, `pushlog` (Push below). Times are the Worker's receive time; the verdict
   compares only those. A change is one put, then memory (a failed put acknowledges nothing).
 - **Lease**: a report from the holder renews it, also after it expired if nobody claimed it (`its lease
   renewed_late`); a released lease (`run_end`) is granted only by a claim.
@@ -110,6 +112,75 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   confirmed id=…`; every refusal `its refused <status> <why> <route>` (a page's with `rid=`; and `its bookings refused
   id_conflict … had=… got=…` / `refused=N record_full` as errors). Never a key or token; dates and names are fine
   (the logs are private). Invocation logs off.
+
+## Push
+
+Web Push to the members' phones, opt-in per phone from ボット → 保養所 (docs/decisions.md "No notifications": the
+bots' exception). The site's mail stays the backstop: Focus, Sleep or a dead battery can hold a push back.
+
+**What's sent when** (`worker/src/push.ts`, from the events a report adds; never raw bookings, never problems: those
+are its-health's issue). One stay's notifications share a Topic and tag (base64url(SHA-256(`date|hotel`))[:32]), so a
+later one replaces the earlier; each is sent once per hold / stay whichever run reports it.
+
+| Event | When | Title · body (ja; en from the subscription's `lang`) | Urgency, TTL |
+|---|---|---|---|
+| `hold` | auto-confirm on and the stay ≥ 11 days away (the bot finishes it) | 仮押さえしました · NAGU 勝浦・11/22(日)・自動で確定します | normal, till the hold lapses |
+| `human_needed` | a hold that waits for a person (`near_date`, `auto_off`, `no_mail`, `queue_failed`, `run_ended`, `leg_*`) while it lasts: the stay's earliest hold within 30 min | 仮押さえ・要対応 · NAGU 勝浦・11/22(日)・16:05までにメールから申込 | high, what's left; ≤ 120 s left: not sent (`push skip expired`) |
+| `confirmed` | 予約確定 | 予約が確定しました · NAGU 勝浦・11/22(日)・申込受付番号 A1234567 | normal, 1 day |
+
+A hold the bot won't finish pushes only its `human_needed` (one notification per hold). Times are Tokyo's; titles and
+bodies are written here, so an older service worker shows a newer kind. The decrypted message is the contract's
+`ItsPushPayload` (≤ 3000 bytes).
+
+**Routes** (member key, CORS, `POST`; answer `{ok: true, push}`, the status's `push`):
+`/its/push/subscribe {endpoint, keys: {p256dh, auth}, lang}` (the endpoint `https://web.push.apple.com/…` or
+`fcm.googleapis.com` (desktop dev) exactly: default port, no userinfo or IP, ≤ 512; p256dh must be a P-256 point;
+unique: re-subscribing refreshes it, another member's moves; 4 per member, a fifth replaces the least recently
+refreshed; not refreshed in 30 days: dropped; the page refreshes weekly), `/its/push/unsubscribe {endpoint}` (the
+caller's own only; ok either way), `/its/push/test {endpoint}` (the caller's own only, else 404 `not_subscribed`; sent
+at once, the outcome in `push.lastOutcome`; 1 per 30 s and 20 a Tokyo day per endpoint, else 429 `rate_limited`).
+Refusals: 400 `bad_push_endpoint` / `bad_push_keys` / `bad_push_lang`, 503 `push_off` (no VAPID key).
+`ItsStatus.push`: `{A, B, vapidPublic, lastSentAt, lastOutcome: {at, kind, code, status, reason?}}`: counts and codes,
+never an endpoint (a capability URL) or its hash; `vapidPublic` is the key the page subscribes with.
+
+**Sending**: a report's notices go into the outbox (`pushq`, one entry per notice × live subscription) in the report's
+one put, then `setAlarm(now)`; the alarm sends what's due concurrently (10 s timeout each) and sets itself again for
+the next retry. The runner's report never waits for or fails on a push.
+
+| Answer | Outcome | Then |
+|---|---|---|
+| 201, 202 | `ok` | `lastOk`, `lastSentAt` |
+| 404, 410 | `gone` | the subscription deleted (the phone re-subscribes at its next refresh) |
+| 401, 403 | `config` | kept, not retried; Apple's `reason` logged (error) and in `lastOutcome` |
+| 400, 413 | `bug` | dropped, logged (error) |
+| 429, 5xx, no answer | `retry` | 30 s, doubling to 15 min (a longer Retry-After honoured), until its TTL; then `gave_up` (`expired`) |
+
+**Keys**: VAPID (RFC 8292, ES256, `sub` `https://island-fund.pages.dev`, the JWT reused an hour per push service, 12 h
+expiry). `npm run vapid:keys -- ~/.config/its-bot/vapid-private` prints `VAPID_PUBLIC=…` and writes the private part
+(mode 600, never printed); `VAPID_PUBLIC` goes in wrangler.toml's `[vars]` (committed: it's public), `npx wrangler
+secret put VAPID_PRIVATE < ~/.config/its-bot/vapid-private`, then `npm run deploy`. **Rotating**: a new pair the same
+way (commit the var, put the secret, deploy together); every phone's subscription is tied to the old key, so the page
+sees `push.vapidPublic` change and re-subscribes on its next refresh; until then Apple answers 403 (`config`).
+
+**Logs**: `its push queued kind=human_needed id=<run>:<seq> urgency=high ttl=1720s subs=2`, `its push kind=… id=…
+ep=<6 hex of the endpoint's SHA-256> who=A status=201 ms=180 outcome=ok` (one per attempt; `reason=` on a refusal),
+`its push skip <expired|no_hold|manual|detail|done|no_vapid> …`, `its push gave_up …`, `its push expired …`,
+`its push subscribe by=A ep=… lang=ja subs=A1/B1 moved=0 replaced=0`, `its push unsubscribe by=A ep=… removed=1`,
+`its push test refused rate_limited …`. Never an endpoint, a key or a message's text.
+
+| `lastOutcome` / log | Means | Do |
+|---|---|---|
+| `config` 403 `BadJwtToken` | Apple refused the JWT: `VAPID_PRIVATE` doesn't match `VAPID_PUBLIC`, or the phones subscribed with another key | Check both halves came from one `vapid:keys` run; redeploy; the phones re-subscribe (or turn 通知 off and on) |
+| `config` 403 `BadAuthorizationHeader`, 401 | A malformed header, a clock far off | `npx wrangler tail`; this is a bug if it persists |
+| `config` 403 `BadWebPushTopic` / `bug` 400 | A header Apple rejects | A bug: the log line's `kind`, then the code |
+| `gone` | The phone dropped the subscription (app removed, permission revoked, Safari reset) | Nothing: it re-subscribes when 通知 is on again |
+| `retry` / `gave_up` | Apple slow or unreachable | Nothing; the site's mail is the backstop |
+| `push skip no_vapid` | A notice with no key set | Set the pair (above) |
+| `push_off` (503) on subscribe | The same | The same |
+
+The real check is the device's (Playwright's WebKit has no push service): after a deploy that touches push, macOS
+Safari subscribed to web.push.apple.com and テスト通知 (catches `BadJwtToken`), then each iPhone's Home Screen app
+(docs/ops/runbook.md §12).
 
 ## Runner
 
@@ -131,6 +202,7 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 | `ITS_KIGOU`, `ITS_BANGOU`, `ITS_KANA_*`, `ITS_NAME_*`, `ITS_BIRTH`, `ITS_SEX`, `ITS_ZOKUGARA`, `ITS_TEL`, … | `its` env | The applicant, every field the form asks (the full list: its-runner.yml's run step) |
 | `ITS_LOG_RECIPIENT` | `its` env **variable** | The age public key the private log is encrypted to (the relay's `ARCHIVE_RECIPIENT`; its secret half is `~/.config/island-fund/archive-age.key`, for fetch-logs.sh) |
 | `ITS_RUNNER_ENABLED` | repo variable | `1`: the workflow may run (`gh variable delete ITS_RUNNER_ENABLED`: no job starts) |
+| `VAPID_PRIVATE` | Worker | Web Push's private key (Push below; `npm run vapid:keys`). Its public half is the `VAPID_PUBLIC` var in wrangler.toml, not a secret. Either unset or a placeholder: push is off |
 
 Rotating a token shared by two places (`ITS_RUNNER_TOKEN`, `KEY_A`/`KEY_B`, `ITS_HEALTH_TOKEN`): **停止 → change both →
 開始** (a run between the two changes would be refused: 401s, `runner_silent`). The applicant's and the IMAP secrets
@@ -234,4 +306,5 @@ This Worker, while a runner runs all day: a report every 30 s = 2,880 Worker + 2
 page's polls (15 s while the page is open and a runner is active: 240 an hour of viewing). About **3,200 requests and
 6,500 rows written a day**, a few GB-s (each request is milliseconds; storage is read once per object start), ~3,500
 log lines. Even on the busiest day so far that totals ~7k of 100k Worker requests, ~19k of 100k DO requests and ~35k
-of 100k rows written. Stopped: the preflight only (48 a day).
+of 100k rows written. Stopped: the preflight only (48 a day). Push: one subrequest per phone per notice, an alarm and
+a few rows per hold; holds are rare.

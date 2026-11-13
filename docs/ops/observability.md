@@ -177,6 +177,12 @@ one issue labelled `its-alert` open while the verdict is late / failing or a rea
 | A `prev_unclean` event (`took_over=<run>` in Workers Logs) | the run in `detail`: cancelled or died mid-run | its:logs on it; Gmail for a hold or 申込 it left |
 | A hold in Gmail the record doesn't have | its:logs on the run that was running then (`confirming` written? `unsynced`?) | Seed it into the record (its/README.md "Operations") so it's never applied for again |
 | Cancelled its-runner runs in Actions | a scheduled run queued behind a running one (`concurrency: its-runner`) and replaced by a newer one | Noise, not a failure, unless every run is cancelled |
+| A push that didn't arrive | `wrangler tail --search "its push"`: `queued` (was it sent at all? `skip expired` / `manual` / `done` say why not), then the attempt's `status=` / `outcome=`; the status's `push` (counts per member, `lastOutcome`) | its/README.md "Push" (the outcome table, BadJwtToken); a phone's Focus or Sleep holds it back: the mail stays the backstop |
+
+Push lines (its/README.md "Push"): `its push queued kind= id= urgency= ttl= subs=`, one `its push kind= id= ep=<6 hex>
+who= status= ms= outcome=` per attempt (`reason=` Apple's on a refusal; `config` and `bug` at error), `its push skip
+<why>`, `gave_up`, `expired`, `subscribe` / `unsubscribe` / `test refused`. A subscription is only ever `ep=` (a hash
+prefix): never the endpoint, a key or the message. its-health ignores push.
 
 ## Costs
 ### The log (Free plan)

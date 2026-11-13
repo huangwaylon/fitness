@@ -169,3 +169,16 @@ The 保養所ボット's Worker and runner: [its/README.md](../../its/README.md)
 timeline: `cd its/worker && npm run its:logs -- <run>[-<attempt>]`, then `rm -rf` the decrypted dir it names. The
 `its-alert` issue and what each reason means: [observability.md](observability.md#its-investigating). Gmail (the
 site's mails) is the ground truth for holds and 予約確定. Rotating a token both sides share: 停止 → change both → 開始.
+
+**Push** (its/README.md "Push"). Turning it on, once: `cd its/worker && npm run vapid:keys --
+~/.config/its-bot/vapid-private` → put the printed `VAPID_PUBLIC=…` in wrangler.toml's `[vars]` and commit it →
+`npx wrangler secret put VAPID_PRIVATE < ~/.config/its-bot/vapid-private` → `npm run deploy` → `/its/status`'s
+`push.vapidPublic` is the new key. Rotating VAPID: the same steps with a new file (the script never overwrites one);
+the phones see the key change and re-subscribe at their next refresh (until then Apple answers 403, logged
+`outcome=config`). The hand check after a deploy that touches push (Playwright's WebKit has no push service):
+1. macOS Safari, the site, ボット → 保養所 → 通知 on → テスト通知: a notification within seconds;
+   `npx wrangler tail --search "its push"` shows `status=201 outcome=ok` (a `403 reason=BadJwtToken` here: the two
+   halves of the pair don't match).
+2. Each iPhone, the Home Screen app (a Safari tab can't subscribe): 通知 on, テスト通知, locked screen shows it; tap
+   opens 保養所.
+3. The next real hold: the notification on both phones (`its push queued kind=… subs=…`).
