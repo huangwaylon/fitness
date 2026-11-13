@@ -59,6 +59,12 @@ describe('the draft', () => {
     expect(addDate(draft(), '2026-11-21', NOW)).toEqual({ ok: false, why: 'dup' });
     const full = draft({ dates: Array.from({ length: 20 }, (_, i) => `2026-12-${String(i + 1).padStart(2, '0')}`) });
     expect(addDate(full, '2027-01-05', NOW)).toEqual({ ok: false, why: 'full' });
+    // stays already past in Tokyo (hidden, never sent) don't count toward MAX_DATES, and leave the draft
+    const stale = draft({ dates: [...Array.from({ length: 19 }, (_, i) => `2026-10-${String(i + 1).padStart(2, '0')}`), '2026-11-12', '2026-11-20'] });
+    const added = addDate(stale, '2026-11-21', NOW);
+    expect(added.ok && added.draft.dates).toEqual(['2026-11-20', '2026-11-21']);
+    expect(addDate(stale, '2026-11-12', NOW)).toEqual({ ok: false, why: 'past' });
+    expect(addDate(draft({ dates: ['2026-11-12'] }), '2026-11-20', NOW)).toMatchObject({ ok: true, draft: { dates: ['2026-11-20'] } });
     const r = addDate(draft(), '2026-11-15', NOW);
     expect(r.ok && r.draft.dates).toEqual(['2026-11-15', '2026-11-21', '2026-11-22']);
     expect(r.ok && parseSettingsInput(toInput(r.draft, null, NOW), NOW).ok).toBe(true);
@@ -146,8 +152,19 @@ describe('hotelRows', () => {
     expect([starred.skip, starred.priority]).toEqual([[], ['NAGU 勝浦']]);
     expect(toggleStar(starred, 'ＮＡＧＵ 勝浦').priority).toEqual([]);
     expect(toggleSkip(toggleSkip(d, 'リソルの森'), 'リソルの森').skip).toEqual([]);
+    // a site's name past MAX_NAME: ★ keeps its first MAX_NAME UTF-16 units (whole code points), which still names it
+    const long = `${'𠮷'.repeat(30)}${'あ'.repeat(150)}`;
+    const longStar = toggleStar(d, long);
+    const entry = longStar.priority[1];
+    expect(entry.length).toBeLessThanOrEqual(80);
+    expect(entry).toBe(`${'𠮷'.repeat(30)}${'あ'.repeat(20)}`);
+    expect(long.startsWith(entry)).toBe(true);
+    expect(hotelRows(longStar, [long]).search.find((r) => r.name === long)?.star).toBe(1);
+    expect(toggleStar(longStar, long).priority).toEqual(['NAGU']);
+    const odd = toggleStar(d, `${'あ'.repeat(79)}𠮷${'い'.repeat(10)}`).priority[1];
+    expect(odd).toBe('あ'.repeat(79));   // never half a surrogate pair
     // every draft it makes still passes the contract
-    for (const x of [skipped, starred]) expect(parseSettingsInput(toInput(x, null, NOW), NOW).ok).toBe(true);
+    for (const x of [skipped, starred, longStar]) expect(parseSettingsInput(toInput(x, null, NOW), NOW).ok).toBe(true);
   });
 });
 

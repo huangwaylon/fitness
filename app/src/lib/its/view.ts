@@ -3,7 +3,7 @@
 // and the settings' lists, merged by normName), the verdict card, the facts, the bookings that need a person and the
 // recent events. Pure but for t().
 import {
-  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, daysUntil, isDate, normName, tokyoToday,
+  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member, type Verdict
 } from './contract.ts';
 import { ROSTER, type RosterHotel } from '#lib/its/roster.ts';
@@ -52,9 +52,11 @@ export function addDate(d: Draft, date: string, now: number): { ok: true; draft:
   const n = daysUntil(date, now);
   if (n < 0) return { ok: false, why: 'past' };
   if (n > MAX_DAYS_AHEAD) return { ok: false, why: 'far' };
-  if (d.dates.includes(date)) return { ok: false, why: 'dup' };
-  if (d.dates.length >= MAX_DATES) return { ok: false, why: 'full' };
-  return { ok: true, draft: { ...d, dates: [...d.dates, date].sort() } };
+  // a stay already past in Tokyo is hidden and never sent (toInput): it doesn't count, and goes from the draft here
+  const live = d.dates.filter((x) => daysUntil(x, now) >= 0);
+  if (live.includes(date)) return { ok: false, why: 'dup' };
+  if (live.length >= MAX_DATES) return { ok: false, why: 'full' };
+  return { ok: true, draft: { ...d, dates: [...live, date].sort() } };
 }
 
 export const removeDate = (d: Draft, date: string): Draft => ({ ...d, dates: d.dates.filter((x) => x !== date) });
@@ -139,11 +141,21 @@ export function toggleSkip(d: Draft, name: string): Draft {
   return { ...d, skip: [...d.skip, name], priority: d.priority.filter((p) => !names(key, p)) };
 }
 
+/** A priority entry for a facility: its name, or (a site's name may run to MAX_SITE_NAME) its first MAX_NAME UTF-16
+ *  units, whole code points, still naming it (a substring, as the runner matches). */
+function priorityEntry(name: string, key: string): string {
+  if (name.length <= MAX_NAME) return name;
+  let cut = '';
+  for (const c of name) { if (cut.length + c.length > MAX_NAME) break; cut += c; }
+  while (cut && !names(key, cut)) cut = [...cut].slice(0, -1).join('');
+  return cut.trim();
+}
+
 /** ★ on (last in the priority; a skipped one is searched again) or off (every entry matching it). */
 export function toggleStar(d: Draft, name: string): Draft {
   const key = normName(name);
   if (starOf(key, d.priority) !== null) return { ...d, priority: d.priority.filter((p) => !names(key, p)) };
-  return { ...d, priority: [...d.priority, name], skip: d.skip.filter((s) => normName(s) !== key) };
+  return { ...d, priority: [...d.priority, priorityEntry(name, key)], skip: d.skip.filter((s) => normName(s) !== key) };
 }
 
 /** A facility's small line: 通年 · 10日前まで, and 名前未確認 / 新しい施設. */
