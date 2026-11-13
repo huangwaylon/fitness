@@ -174,6 +174,10 @@ test('overspending is refused: a piece past my かいがら is dimmed with how m
   await expect(tile.locator('[data-short]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}`);
   // its price shown too, as on the others (not only once tapped, on the disabled button)
   await expect(tile.locator('.price')).toHaveText(price.toLocaleString('ja-JP'));
+  // only its art faded: the name stays the tile's full ink (a faded whole tile read ≈3:1, the grid looked disabled)
+  await expect(tile.locator('.ic')).toHaveCSS('opacity', '0.55');
+  await expect(tile).toHaveCSS('opacity', '1');
+  await expect(tile.locator('.nm')).toHaveCSS('color', await tile.evaluate((e) => getComputedStyle(e).color));
   // the panel one height on both tabs (its top never jumps: 売る's few rows, an empty pocket, かう's grid)
   const top = () => page.locator('[data-shop-panel]').evaluate((e) => Math.round(e.getBoundingClientRect().top));
   const buyTop = await top();

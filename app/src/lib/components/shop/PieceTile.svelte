@@ -1,6 +1,6 @@
 <script module lang="ts">
   // One tile of the shops' grids (タヌキ商店's かう and its 苗, a visitor's few pieces: island/VisitorShop.svelte): the
-  // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」 under it); yuzu when picked. Its
+  // icon, the name on two lines, the price (or 持っている; past my かいがら the art faded, 「あと{n}」 under it); yuzu when picked. Its
   // colours are the sheet's controls (--ctl, --ctl-sel, --sh-ctl), so it fits the shop's cream sheet and a Sheet alike.
   // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
   import { isLong, words } from './words.ts';
@@ -55,8 +55,9 @@
   .on .pickable { background: var(--ctl-sel); color: var(--c-ink); }
   .owned .pickable { background: var(--ctl-off); }
   .owned .ic { opacity: .55; }
-  /* past my かいがら: still tappable (its card says so), dimmed */
-  .short:not(.on) .pickable { opacity: .55; }
+  /* past my かいがら: still tappable (its card says so), its art faded and its price soft; the name stays ink (>= 4.5:1) */
+  .short:not(.on) .ic { opacity: .55; }
+  .short:not(.on) .price { color: var(--text-soft); }
   .ic { position: relative; width: 46px; height: 46px; display: grid; place-items: center; line-height: 0; }
   .ic :global(img) { width: 46px; height: 46px; object-fit: contain; }
   /* a long name breaks only between its words (its <wbr>s: words.ts), balanced (プラスチックの / ベンチ, not プラスチッ / クの
