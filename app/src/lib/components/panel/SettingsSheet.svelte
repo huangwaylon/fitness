@@ -177,7 +177,6 @@
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>
       </section>
-      {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
     {/if}
   </div>
 </Sheet>
@@ -204,7 +203,6 @@
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
   .go .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
-  .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 
   /* Rows shared by the sections (サウンド). */
   .panel-body :global(.prows) { display: grid; gap: 10px; }

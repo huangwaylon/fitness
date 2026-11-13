@@ -1,8 +1,7 @@
 // `?demo`: believable sheet rows for both people (ウェイ = A = me, うめ = B), generated around the real clock and fed
 // through the same model as the live app, so the island, the wallet and きろく agree and every tap really recomputes.
 // Activity rows start 8 weeks before this one (`?demo&weeks=N`: N; the economy's first week follows the data), with a
-// day now and then without the Watch (steps only; `?demo&health=zero`: its Move, Exercise and Stand sent as 0, as the
-// live Shortcut does when Health has no samples), so けんこう has a 記録なし day either way, and the last days' meals
+// day now and then without the Watch (steps only), so けんこう has a 記録なし day, and the last days' meals
 // (ごはん) with a kcal goal each, and a recipe of A's (マイレシピ). Deterministic per date
 // (a seeded RNG), so a reload shows the same history.
 import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
@@ -118,7 +117,7 @@ const WED_IMPORTED = 'wdemo01';
 const WED_NOTE = '# メモ\n\n- 式場: 架空チャペル（見学 済み）\n- **予算** は月末に もう一度\n- 参考: [れい](https://example.com)\n';
 
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
-function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
+function demoRows(now: number, weeksBack: number): SnapshotRows {
   const today = localDateAt(now);
   const cur = weekKeyOf(today);
   const first = addDays(cur, -7 * weeksBack);
@@ -157,7 +156,7 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
             [iso(syncAt), p, d, 'exercise_min', Math.max(0, mins)], [iso(syncAt), p, d, 'move_kcal', Math.max(30, kcal)],
             [iso(syncAt), p, d, 'stand_min', Math.max(5, stand)]
           );
-        } else if (zeros) metrics.push([iso(syncAt), p, d, 'exercise_min', 0], [iso(syncAt), p, d, 'move_kcal', 0], [iso(syncAt), p, d, 'stand_min', 0]);
+        }
       }
     }
   }
@@ -294,13 +293,12 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   return { metrics: byAt(metrics), events: byAt(events) };
 }
 
-/** The demo's Health rows: `some` (the no-watch days steps only), `zero` (their watch metrics 0), `none` (no rows). */
-type DemoHealth = 'some' | 'zero' | 'none';
+/** The demo's Health rows: `some` (the no-watch days steps only), `none` (no rows). */
+type DemoHealth = 'some' | 'none';
 
-/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`; no Health rows with `?demo&health=none`, the
- *  no-watch days as 0/0/0 with `?demo&health=zero`). */
+/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`; no Health rows with `?demo&health=none`). */
 export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK, health: DemoHealth = 'some'): SnapshotCache {
-  const made = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))), health === 'zero');
+  const made = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
   const all = health !== 'none' ? made : { ...made, metrics: [] };
   // what the record would send this key (contract/guest.ts rowsFor): the guest's (`?demo&as=G`) without the からだ rows
   const rows = rowsFor(me, all);

@@ -176,7 +176,7 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 
 | Param | Effect |
 |---|---|
-| `?demo` (`=harvest`, `&as=B\|G`, `&weeks=60`, `&health=none\|zero`) | Made-up data, no backend; the harvest recap; play as B or the guest; a longer history; no Health rows / no-watch days |
+| `?demo` (`=harvest`, `&as=B\|G`, `&weeks=60`, `&health=none`) | Made-up data, no backend; the harvest recap; play as B or the guest; a longer history; no Health rows |
 | `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
 | `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
 | `?seed=` | The island's seed (finds, weather, visitors) |

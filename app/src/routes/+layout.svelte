@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { asset, resolve } from '$app/paths';
+  import { asset } from '$app/paths';
   import { routeOf } from '#lib/ui-state/paths.ts';
   // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks).
   import '@fontsource/fredoka/latin-600.css';
@@ -175,7 +175,6 @@
       {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
     </OfficialArt></span>
     <h1><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><small lang="en">{t('state.notSetUp', undefined, 'en')}</small></h1>
-    <a class="btn" href={resolve('/') + '?demo'} data-sveltekit-reload data-sfx="confirm">{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
   </main>
 {:else if onPair}
   {@render children()}

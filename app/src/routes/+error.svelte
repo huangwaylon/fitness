@@ -1,6 +1,6 @@
 <script lang="ts">
   // Any route error or unknown URL: Tom Nook and a cozy bilingual line instead of SvelteKit's raw
-  // "500 Internal Error", with safe areas, and two ways back: the island and the demo.
+  // "500 Internal Error", with safe areas, and a way back to the island.
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
@@ -29,7 +29,6 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-island" /></svg>
     <span class="two"><span lang="ja">{t('error.home', undefined, 'ja')}</span><small lang="en">{t('error.home', undefined, 'en')}</small></span>
   </a>
-  <a class="demo" href={resolve('/') + '?demo'} data-sveltekit-reload data-sfx="confirm">{t('state.tryDemo', undefined, 'ja')}{#if en} · {t('state.tryDemo', undefined, 'en')}{/if}</a>
 </main>
 
 <style>
@@ -47,6 +46,5 @@
   .two { display: grid; line-height: 1.2; text-align: left; }
   .two small { font-size: var(--fs-s); }
   .btn svg { width: 22px; height: 22px; }
-  .demo { min-height: 44px; display: inline-flex; align-items: center; font-weight: 700; color: var(--text-soft); }
   @media (max-height: 700px), (max-width: 359px) { .err { --nook-h: 96px; gap: 10px; } }
 </style>
