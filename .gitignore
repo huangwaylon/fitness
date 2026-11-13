@@ -13,3 +13,6 @@ food-data/.build-*/
 food-data/**/__pycache__/
 # agents' worktrees and local settings (git worktree add .claude/worktrees/…): never committed
 .claude/
+# its-bot's local dev (wrangler dev): the DO's local storage and the secrets file
+its/worker/.wrangler/
+its/worker/.dev.vars

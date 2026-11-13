@@ -67,20 +67,27 @@ ids are `${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}` (a re-run is a new run) or a lo
 The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NAME`, `ID_RE`.
 
 - **Record** (DO storage, one key each): `settings`, `bookings` (append-only; pruned only `BOOKINGS_KEEP_DAYS` = 60
-  days after the stay; at 500 entries new ones are refused with an error log), `runner` (the holder's last report +
-  the Worker's `lastSeen`), `lease`, `dispatch`, `events` (two rings of `EVENTS_KEPT` = 40: routine, and hold /
-  confirmed / human_needed / ban, so routine ones never evict those), `seen` (facility names, the newest 300), `acks`
-  (the highest event seq per run: a retried report adds nothing twice). Times are the Worker's receive time.
+  days after the stay; at 500 entries new ones are refused, 507, with an error log; an id reused for other content is
+  409 `id_conflict`), `runner` (the holder's last report + the Worker's `lastSeen`, and when it saw `lastOkAt` /
+  `solves.lastOkAt` move), `lease`, `dispatch`, `control` (the last 開始 / 停止: who, when), `events` (two rings of
+  `EVENTS_KEPT` = 40: routine, and hold / confirmed / human_needed / ban, so routine ones never evict those), `seen`
+  (facility names, the newest 300; a known name's time is rewritten at most daily), `acks` (the highest event seq per
+  run, the newest 20 runs: a retried report adds nothing twice). Times are the Worker's receive time; the verdict
+  compares only those. A change is one put, then memory (a failed put acknowledges nothing).
+- **Lease**: a report from the holder renews it, also after it expired if nobody claimed it (`its lease
+  renewed_late`); a released lease (`run_end`) is granted only by a claim.
 - **開始's dispatch**: `POST api.github.com/repos/huangwaylon/fitness/actions/workflows/its-runner.yml/dispatches`
   `{ref: 'main'}`, recorded as `dispatch: {at, ok, status}` (204 = accepted, 0 = no answer; `status: null, ok: true` =
   no token set, nothing sent: the schedule starts a run). Nothing is sent while MODE is off, without a date, while a run
-  is scanning, or within 2 min of a dispatch no report has followed.
+  is scanning, or within 2 min of a dispatch no report has followed (`dispatch=skip_recent`); the dispatch is recorded
+  before GitHub is asked, so a double tap sends one.
 - **Verdict**: computed on each status read from the Worker's clock (no cron, no alarm), every reason that applies in
   the contract's `REASONS` order, the verdict the first's (Diagnose below).
 - **Logs** (Workers Logs, 3 days: dashboard → Workers → its-bot → Logs, or `npx wrangler tail`): one line per request
   class, `its status by=A verdict=…`, `its settings by=B dates=2 skip=12 pri=1 int=15 …`, `its run start by=A
   dispatch=204`, `its claim run=… ok=1`, `its report run=… phase=scanning scans=… fail=0 ev=1/2 lease=renewed stop=0`,
-  `its event hold … date=… hotel=…`, `its booking confirmed id=…`; every refusal `its refused <status> <why> <route>`.
+  `its event hold … date=… hotel=…`, `its booking confirmed id=…`; every refusal `its refused <status> <why> <route>`
+  (and `its bookings refused id_conflict … had=… got=…` / `refused=N record_full` as errors).
   Never a key or token; dates and names are fine (the logs are private). Invocation logs off.
 
 ## Runner
@@ -108,7 +115,18 @@ curl -s https://its-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mod
 ```
 
 Tests run on Node with `cloudflare:workers` mocked (test/setup.ts), a fake storage that counts its calls, the clock
-pinned, fetch stubbed: no network. The Worker imports `app/src/lib/its/contract.ts` and `relay/src/auth.ts`, so a
+pinned, fetch stubbed: no network.
+
+Locally, end to end (nothing deployed, no Cloudflare account touched; `.dev.vars` and `.wrangler/` are gitignored):
+
+```sh
+cd its/worker
+printf 'ITS_RUNNER_TOKEN=dev\nKEY_A=%s\n' "$(openssl rand -hex 32)" > .dev.vars
+WRANGLER_SEND_METRICS=false npx wrangler dev --local --port 8799 --var MODE:on   # the DO's storage in .wrangler/
+# another shell: settings + 開始 with KEY_A (PUT /its/settings, POST /its/run), then the runner against it and FakeITS
+cd its/runner && ITS_WORKER_URL=http://127.0.0.1:8799 ITS_RUNNER_TOKEN=dev ITS_BASE_URL=http://127.0.0.1:<FakeITS port> \
+  python3 main.py --remote --deadline $(( $(date +%s) + 600 ))
+``` The Worker imports `app/src/lib/its/contract.ts` and `relay/src/auth.ts`, so a
 checkout needs `its/`, `app/src/lib/its`, `app/src/lib/contract` and `relay/src/auth.ts`. A deploy keeps the record.
 
 ## Operations
@@ -148,7 +166,7 @@ The verdict is the first reason that applies (`reasons`, in this order). `starti
 | `scan_failing` | failing | 3+ failed calendar reads in a row (`runner.lastError`: step, status, class) | Usually the site; `session_dead` for long = the Turnstile solve |
 | `solve_failing` | degraded | The last 3 Turnstile solves failed | The run's public log (`solve` lines, spot, secs); SITE.md §6 |
 | `unsynced` | degraded | The runner holds booking entries the Worker hasn't acknowledged (no new hold meanwhile) | `wrangler tail` for `its refused … /runner/bookings`; it retries each report |
-| `human_needed` | degraded | A hold or a failed 申込 leg needs a person (within 24 h, no later 予約確定 for that stay): `events` say why (`near_date`, `auto_off`, `no_mail`, `leg_failed`, …) | Finish or cancel it from the site's mail before the 30-min hold lapses |
+| `human_needed` | degraded | Within 24 h and no later 予約確定 for that stay: a failed 申込 leg, a `human_needed` event (`events` say why: `near_date`, `auto_off`, `no_mail`, `leg_failed`, …), or a `confirming` with no outcome after 10 min; or a hold under 30 min old the runner won't finish (auto-confirm off, or the stay < 11 days away) | Finish or cancel it from the site's mail before the 30-min hold lapses |
 
 ## Quotas
 
