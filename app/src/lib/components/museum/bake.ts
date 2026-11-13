@@ -132,6 +132,23 @@ export function floorBake(r: Rect, blocks: readonly Block[], pools: readonly Poo
   const n = o.size ?? 256;
   return { ao: texture(aoValues(r, blocks, o.gaps ?? [], n, n), n, n, true), light: texture(lightValues(r, pools, n, n), n, n, false) };
 }
+/** A floor's two textures as floorBake makes them, not baked yet (no shade, no light): a floor's material has its maps
+ *  (its program) from the start, its bake's pixels sent once it's known what stands on it. */
+export function floorBlank(size = 256): { ao: DataTexture; light: DataTexture } {
+  return { ao: texture(new Float32Array(size * size).fill(1), size, size, true), light: texture(new Float32Array(size * size * 3), size, size, false) };
+}
+/** Each floor's last bake (by `id`, its room), page-wide: the same floor with the same things on it (a later visit, a
+ *  wing rebuilt as it was) takes its pixels again, no bake (each entry baked every floor twice, ~370 ms at 4x CPU,
+ *  review 11/13 r2). One a floor (~2 × 64 KB at 128 px). */
+const keptFloors = new Map<string, { key: string; ao: Uint8Array; light: Uint8Array }>();
+/** floorBake's pixels (RGBA bytes: its ao, its light) for floor `id`, kept (keptFloors). */
+export function floorPixels(id: string, r: Rect, blocks: readonly Block[], pools: readonly Pool[], o: { gaps?: readonly Gap[]; size?: number } = {}): { ao: Uint8Array; light: Uint8Array } {
+  const key = JSON.stringify([r, blocks, pools, o]), had = keptFloors.get(id);
+  if (had?.key === key) return had;
+  const b = floorBake(r, blocks, pools, o), out = { key, ao: b.ao.image.data as Uint8Array, light: b.light.image.data as Uint8Array };
+  keptFloors.set(id, out);
+  return out;
+}
 
 /** The walls' ramps (n values from the foot, v 0, to the top): ao 0.6 at the foot to 1 by a quarter up, 0.9 just under
  *  the cornice; the uplight a soft band 70-95 % up, 0…1 (times UPLIGHT). */

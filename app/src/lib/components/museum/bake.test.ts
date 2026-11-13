@@ -3,7 +3,7 @@
 // with its caustics; the walls' ramps; the textures' sizes and colour spaces; the cards merged into one geometry.
 import { describe, expect, test } from 'vitest';
 import { AdditiveBlending, LinearFilter, NoColorSpace, SRGBColorSpace, Texture } from 'three';
-import { CARD, aoValues, cardsGeometry, cardsMesh, floorBake, lightValues, rampValues, texel, wallRamps, type Pool } from './bake.ts';
+import { CARD, aoValues, cardsGeometry, cardsMesh, floorBake, floorBlank, floorPixels, lightValues, rampValues, texel, wallRamps, type Pool } from './bake.ts';
 import { HALL, OPENINGS, type Rect } from './plan.ts';
 
 const N = 64;
@@ -97,6 +97,18 @@ describe('the textures', () => {
     expect(px[mid]).toBeGreaterThan(240);
     expect(px[3]).toBe(255);
     expect(px[0]).toBe(0);
+  });
+  test('a floor unbaked has the bake\'s textures (no shade, no light); its bake kept: the same floor and things again take it, a change bakes', () => {
+    const blank = floorBlank(32), baked = floorBake(R, [], [], { size: 32 });
+    expect([blank.ao.image.width, blank.ao.colorSpace, blank.light.colorSpace, blank.light.magFilter]).toEqual([32, baked.ao.colorSpace, baked.light.colorSpace, baked.light.magFilter]);
+    expect([(blank.ao.image.data as Uint8Array)[0], (blank.light.image.data as Uint8Array)[0], (blank.light.image.data as Uint8Array)[3]]).toEqual([255, 0, 255]);
+    const pools: Pool[] = [{ x: 60, z: 100, rx: 30, color: 0xffffff }];
+    const a = floorPixels('t', R, [], pools, { size: 32 });
+    expect(a.light).toEqual(floorBake(R, [], pools, { size: 32 }).light.image.data);
+    expect(floorPixels('t', { ...R }, [], [{ ...pools[0] }], { size: 32 })).toBe(a);
+    const b = floorPixels('t', R, [{ x0: 50, x1: 70, z0: 90, z1: 110 }], pools, { size: 32 });
+    expect(b).not.toBe(a);
+    expect(b.ao).not.toEqual(a.ao);
   });
   test("the walls' ramps: ao 0.6 at the foot to 1 a quarter up, 0.9 under the cornice; the uplight high up only", () => {
     const { ao, up } = rampValues(64);

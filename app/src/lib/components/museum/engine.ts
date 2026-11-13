@@ -41,7 +41,7 @@ import {
   boundsOf, navOf, roomHeld, roomIdAt, roomOf, walkable, wallDistance, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
 } from './plan.ts';
 import { GAIN, LAMP_MODELS, LIFT, LOOK, POOL, PORTAL, TINT, WALL_GLOW, applyLook, lookAt, type Look as Light } from './look.ts';
-import { CARD, cardsMesh, floorBake, wallRamps, type Block, type Card, type Pool } from './bake.ts';
+import { CARD, cardsMesh, floorBlank, floorPixels, wallRamps, type Block, type Card, type Pool } from './bake.ts';
 import { BENCHES, benchRect } from './seats.ts';
 import { FOV, PITCH, enter, follow, framingOf, plaqueOf, type CamTune, type Framing } from './camera.ts';
 import { DIP_MS, HALL_NAME, PLAQUE_FOOT_Y, fingerQuad, inPoly, segDist, type Px } from './hud.ts';
@@ -906,17 +906,21 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const bakeDue = new Set<RoomId>();
   let bakeT: ReturnType<typeof setTimeout> | undefined;
   /** A room's floors baked again and the walk's grid made again (soon, once for all: an exhibit's rebuild drops one and
-   *  puts another, a dozen at the way in). */
+   *  puts another, a dozen at the way in). Before the first frame, baked by it (bakeDue): the way in's exhibits come in
+   *  two or three tasks, and each floor was baked at the start and again for each (14 bakes for 7 floors). */
   function rebake(room: RoomId) {
     bakeDue.add(room);
     bakeT ??= setTimeout(() => {
       bakeT = undefined;
       if (disposed) return;
       blocksChanged();
-      for (const r of bakeDue) bakeNow(r);
-      bakeDue.clear();
+      if (frames) bakesDue();
       invalidate();
     }, 0);
+  }
+  function bakesDue() {
+    for (const r of bakeDue) bakeNow(r);
+    bakeDue.clear();
   }
   function bakeNow(room: RoomId) {
     const mine = exhibits.filter((e) => e.room === room);
@@ -925,21 +929,21 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     for (const f of floors) {
       if (f.room !== room) continue;
       const near = blocks.filter((b) => b.x1 > f.r.x0 - 8 && b.x0 < f.r.x1 + 8 && b.z1 > f.r.z0 - 8 && b.z0 < f.r.z1 + 8);
-      const b = floorBake(f.r, near, pools, { gaps: GAPS, size: BAKE });
-      if (!f.mat.aoMap) {
-        (f.mat.aoMap = b.ao), (f.mat.lightMap = b.light), baked.push(f.mat);
-        disposables.push(b.ao, b.light);
-        continue;
-      }
+      const b = floorPixels(f.room, f.r, near, pools, { gaps: GAPS, size: BAKE });
       // (into the textures it has: the same program, no texture to warm, only its pixels sent again)
-      for (const [to, from] of [[f.mat.aoMap, b.ao], [f.mat.lightMap!, b.light]] as const) {
-        (to.image.data as Uint8Array).set(from.image.data as Uint8Array);
+      for (const [to, from] of [[f.mat.aoMap!, b.ao], [f.mat.lightMap!, b.light]] as const) {
+        (to.image.data as Uint8Array).set(from);
         to.needsUpdate = true;
-        from.dispose();
       }
     }
   }
-  for (const r of new Set(floors.map((f) => f.room))) bakeNow(r);
+  // (their maps from the start, unbaked: baked by the first frame, with what the way in put on them)
+  for (const f of floors) {
+    const b = floorBlank(BAKE);
+    (f.mat.aoMap = b.ao), (f.mat.lightMap = b.light), baked.push(f.mat);
+    disposables.push(b.ao, b.light);
+    bakeDue.add(f.room);
+  }
   relight();
 
   // ---- the villagers ----
@@ -1789,6 +1793,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // and before the draw, never after it: see draw)
     const dpr = rview.ratio(dprFull);
     if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
+    // (the floors' first bakes: rebake)
+    if (!frames) bakesDue();
     const c0 = now();
     draw();
     cost.push(now() - c0);
