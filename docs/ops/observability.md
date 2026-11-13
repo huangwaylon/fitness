@@ -149,8 +149,9 @@ Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (
 ## ITS investigating
 The 保養所ボット (its/README.md) has its own record and logs: the its-bot Worker's status (events, bookings, the last
 report; Workers Logs 3 days, `npx wrangler tail` in `its/worker/`), each run's public Actions log (counts and codes
-only) and its private log (an encrypted artifact, 3 days). **Gmail is the ground truth**: the site mails every hold
-(「申込手続きのご案内」) and every 予約確定; when the record and the mail disagree, the mail is what happened.
+only) and its private log (an encrypted artifact: 14 days once the runner branch that raises it merges, 3 before).
+**Gmail is the ground truth**: the site mails every hold (「申込手続きのご案内」) and every 予約確定; when the record and
+the mail disagree, the mail is what happened.
 
 One run, everything in one Tokyo-time timeline (the Worker's events by seq, the run's bookings, its decrypted private
 log), then delete the decrypted copy (it holds credentials):
