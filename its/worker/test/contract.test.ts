@@ -45,6 +45,8 @@ describe('the Worker on the example', () => {
     await bot.putSettings({ ...olderInput, baseUpdatedAt: null } as never, 'A', 'r-test');
     await bot.run({ action: 'start' }, 'A', 'r-test');
     bot.rec.dispatch = null;   // the example's run came from the schedule
+    at(example.status.lastPreflight);
+    await bot.config(null);   // its preflight
     at(example.report.startedAt);
     expect((await bot.claim(example.claimInput as never)).ok).toBe(true);
     at(example.config.bookings[0].at);
@@ -62,27 +64,13 @@ describe('the Worker on the example', () => {
     await bot.report(example.report as never);
     at(example.status.now);
     const status = await bot.status();
-    const { lease: _l, lastPreflight: _p, recentScans: _r, ...want } = example.status;
-    // the example's lastPreflight and recentScans come from a preflight and a newer runner's report (the next test)
-    const { lease, lastPreflight, recentScans, recentMinutes, push, ...got } = status;
+    // the example's push has two phones and a key (test/push.test.ts); this Worker has neither
+    const { lease: _l, push: _p, ...want } = example.status;
+    const { lease, push, ...got } = status;
     expect(got).toEqual(want);
-    expect([lastPreflight, recentScans, recentMinutes, push]).toEqual([null, [], [], { A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }]);   // push: test/push.test.ts
+    expect(push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
     expect(lease).toEqual({ ...example.config.lease, until: example.status.runner.lastSeen + 300_000 });
     expect(status.settings).toEqual(example.config.settings as ItsSettings);
-  });
-
-  it('answers the example’s newer status fields from a newer runner’s report and a preflight', async () => {
-    const bot = await start(fakeState(), { COMMIT: 'abc1234' });
-    vi.setSystemTime(example.status.lastPreflight);
-    await bot.config(null);
-    vi.setSystemTime(example.report.startedAt);
-    await bot.claim(example.claimInput as never);
-    vi.setSystemTime(example.status.runner.lastSeen);
-    await bot.report({ ...example.report, ...example.reportNewer } as never);
-    vi.setSystemTime(example.status.now);
-    const s = await bot.status();
-    expect({ lastPreflight: s.lastPreflight, recentScans: s.recentScans, recentMinutes: s.recentMinutes }).toEqual({ lastPreflight: example.status.lastPreflight, recentScans: example.status.recentScans, recentMinutes: example.statusNewer.recentMinutes });
-    expect(s.runner).toMatchObject({ settingsAt: example.reportNewer.settingsAt, mailOk: true });
   });
 
   it('the status’s shape matches the example’s (every key, every type)', async () => {
@@ -93,10 +81,11 @@ describe('the Worker on the example', () => {
     await bot.bookings([example.bookingInput as never], null);
     await bot.report(example.report as never);
     const s = await bot.status();
-    const { dispatch: _d, control: _c, lastPreflight: _p, recentScans: _r, ...exampleRest } = example.status;
-    const { dispatch, control, lastPreflight, recentScans, recentMinutes: _m, push: _p2, ...rest } = s;
-    expect([dispatch, control, lastPreflight, recentScans]).toEqual([null, null, null, []]);
+    const { dispatch: _d, control: _c, lastPreflight: _p, recentMinutes: _m, push: _push, ...exampleRest } = example.status;   // push: test/push.test.ts
+    const { dispatch, control, lastPreflight, recentMinutes, push: _p2, ...rest } = s;
+    expect([dispatch, control, lastPreflight]).toEqual([null, null, null]);   // no 開始, no preflight
     expect(shape(rest)).toEqual(shape(exampleRest));
+    expect(shape(recentMinutes)).toEqual(shape(example.status.recentMinutes));
   });
 });
 
@@ -145,20 +134,20 @@ describe('the runner’s bodies’ bounds', () => {
     expect(parseSettingsInput({ ...example.settingsInput, priority: [long] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
   });
 
-  it('takes a newer runner’s settingsAt and mailOk, an older runner’s report without them as it is', () => {
+  it('takes settingsAt and mailOk; a lagging runner’s report without them (or scansLog) is not refused: null, null, []', () => {
     const r = parseReport({ ...report(), settingsAt: 1794540000000, mailOk: false });
     expect(r.ok && [r.value.settingsAt, r.value.mailOk]).toEqual([1794540000000, false]);
     const nulls = parseReport({ ...report(), settingsAt: null, mailOk: null });
     expect(nulls.ok && [nulls.value.settingsAt, nulls.value.mailOk]).toEqual([null, null]);
-    const old = parseReport(report());
-    expect(old.ok && ['settingsAt' in old.value, 'mailOk' in old.value]).toEqual([false, false]);
+    const { settingsAt: _s, mailOk: _m, scansLog: _l, ...lagging } = report();
+    const old = parseReport(lagging);
+    expect(old.ok && [old.value.settingsAt, old.value.mailOk, old.value.scansLog]).toEqual([null, null, []]);
     expect(parseReport({ ...report(), settingsAt: '1' })).toEqual({ ok: false, error: 'bad_report_times' });
     expect(parseReport({ ...report(), mailOk: 'no' })).toEqual({ ok: false, error: 'bad_report_mail' });
   });
 
-  it('takes a newer runner’s scansLog (the example’s), capped at SCANS_PER_REPORT, each entry checked', () => {
-    const newer = { ...report(), ...example.reportNewer };
-    expect(parseReport(newer)).toEqual({ ok: true, value: newer });
+  it('takes the example’s report whole; scansLog capped at SCANS_PER_REPORT, each entry checked', () => {
+    expect(parseReport(report())).toEqual({ ok: true, value: example.report });
     const scan = { t: 1, ok: true, ms: 800, avail: 0 };
     const log = (n: number) => Array.from({ length: n }, (_, i) => ({ ...scan, t: i + 1 }));
     expect(parseReport({ ...report(), scansLog: log(SCANS_PER_REPORT) }).ok).toBe(true);

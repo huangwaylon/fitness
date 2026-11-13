@@ -300,7 +300,7 @@ def test_contract_parity():
     rem.on_event('hold', {'date': '2026-11-22', 'hotel': 'NAGU 勝浦'})
     rem.on_event('offered', {'date': '2026-11-22', 'names': ['NAGU 勝浦'], 'eligible': []})
     rep = rem.build_report()
-    want = dict(ex['report'], **ex['reportNewer'])   # the runner sends the newer fields (an older Worker ignores them)
+    want = ex['report']
     check('contract: RunnerReport keys', set(rep) == set(want), str(set(rep) ^ set(want)))
     for k, v in want.items():
         if v is not None and rep[k] is not None:

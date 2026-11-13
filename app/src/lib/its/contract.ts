@@ -195,15 +195,14 @@ export interface RunnerReport {
   failuresByStep: Record<string, number>;
   lastError: LastError | null;
   unsynced: number;            // bookings entries not yet acknowledged by the Worker
-  /** The `updatedAt` of the settings this run applies (null: the defaults, none received yet). Absent from an older
-   *  runner. Older than the saved ones for SETTINGS_STALE_SEC: `settings_stale`. */
-  settingsAt?: number | null;
+  /** The `updatedAt` of the settings this run applies (null: the defaults, none received yet). Older than the saved
+   *  ones for SETTINGS_STALE_SEC: `settings_stale`. */
+  settingsAt: number | null;
   /** The last IMAP check (the confirm leg's mailbox): true ok, false failed (with auto-confirm on: `mail_failing`),
-   *  null none yet. Absent from an older runner. */
-  mailOk?: boolean | null;
-  /** The calendar reads since the last acknowledged report, oldest first, at most SCANS_PER_REPORT (the newest kept).
-   *  Absent from an older runner. */
-  scansLog?: ScanEntry[];
+   *  null none yet. */
+  mailOk: boolean | null;
+  /** The calendar reads since the last acknowledged report, oldest first, at most SCANS_PER_REPORT (the newest kept). */
+  scansLog: ScanEntry[];
   events: EventInput[];        // new since the last acknowledged report
   seen: string[];              // facility names the site offered this run
 }
@@ -212,7 +211,7 @@ export const REPORT_EVERY_SEC = 30;
 /** Saved settings a running run still hasn't applied after this long (four reports: two flickered): `settings_stale`. @public (its/worker) */
 export const SETTINGS_STALE_SEC = 4 * REPORT_EVERY_SEC;
 
-/** One calendar read, for the page's minute strip (the last hour, across runs). No date or facility: counts and codes.
+/** One calendar read (a report's scansLog), folded into the status's minutes. No date or facility: counts and codes.
  *  @public (its/worker) */
 export interface ScanEntry {
   t: number;         // the runner's clock (ms), when the read ended; with the run's id, what a retried report repeats
@@ -223,14 +222,9 @@ export interface ScanEntry {
 }
 /** @public (its/worker) */
 export const SCANS_PER_REPORT = 30;
-/** The status's `recentScans`: the last RECENT_SCANS_SEC by the Worker's clock, at most RECENT_SCANS_KEPT. @public (its/worker) */
-export const RECENT_SCANS_SEC = 3600;
-/** @public (its/worker) */
-export const RECENT_SCANS_KEPT = 300;
 
 /** One minute of calendar reads (the page's minute strip; a Tokyo minute is a UTC one), from every run that reported
- *  reads in it, by the reads' own time: every read of the hour, however many runs scan (RECENT_SCANS_KEPT holds 20
- *  minutes of two runs at 15 s). @public (its/worker) */
+ *  reads in it, by the reads' own time: every read of the hour, however many runs scan. @public (its/worker) */
 export interface ScanMinute {
   minute: number;    // the minute's start (ms, the runner's clock)
   n: number;         // reads
@@ -292,28 +286,23 @@ export interface ItsStatus {
   reasons: Reason[];           // every reason that applies, in REASONS order; verdict = the first's
   settings: ItsSettings;
   /** The last report (null before any), with the Worker's receive time. */
-  runner: (Omit<RunnerReport, 'v' | 'events' | 'seen'> & { lastSeen: number }) | null;
+  runner: (Omit<RunnerReport, 'v' | 'events' | 'seen' | 'scansLog'> & { lastSeen: number }) | null;
   lease: Lease | null;
   /** 開始's GitHub dispatch: `status` 204 = accepted, 0 = no answer; `{ok: true, status: null}` = no token set, nothing
    *  sent (the schedule starts a run). */
   dispatch: { at: number; ok: boolean; status: number | null } | null;
-  /** The last 開始 / 停止: who pressed it and when (Worker clock). Absent from an older Worker. */
-  control?: { action: RunInput['action']; by: Member; at: number } | null;
+  /** The last 開始 / 停止: who pressed it and when (Worker clock). */
+  control: { action: RunInput['action']; by: Member; at: number } | null;
   bookings: BookingEntry[];    // newest first
   events: ItsEvent[];          // newest first
   seen: string[];              // every facility name ever offered, sorted
-  /** The last preflight (GET /runner/config without runId: a run deciding whether to start), Worker clock. Absent
-   *  from an older Worker. */
-  lastPreflight?: number | null;
-  /** The calendar reads of the last RECENT_SCANS_SEC (by the Worker's receive time), oldest first, from every run that
-   *  reported them. Absent from an older Worker. */
-  recentScans?: ScanEntry[];
+  /** The last preflight (GET /runner/config without runId: a run deciding whether to start), Worker clock. */
+  lastPreflight: number | null;
   /** The last RECENT_MINUTES minutes of reads, aggregated per minute, oldest first (minutes without a read left out):
-   *  the strip's source once the page reads it (recentScans stays until then). Absent from an older Worker. */
-  recentMinutes?: ScanMinute[];
-  /** Web Push (the Push section below): counts and codes only, never an endpoint or its hash. Absent from an older
-   *  Worker. */
-  push?: ItsPushStatus;
+   *  the page's 直近1時間 strip. */
+  recentMinutes: ScanMinute[];
+  /** Web Push (the Push section below): counts and codes only, never an endpoint or its hash. */
+  push: ItsPushStatus;
 }
 
 // ---- Push (members; its/README.md "Push") ----

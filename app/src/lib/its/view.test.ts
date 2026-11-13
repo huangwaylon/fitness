@@ -275,13 +275,12 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     expect(dateRows(draft(), NOW, hotelRows(draft(), []), [b], false)[0].text).toBe('あと8日 · 予約済み');
   });
 
-  it('claims what the runner does only for one that does it (its report has settingsAt)', () => {
-    const { settingsAt: _, ...older } = { ...STATUS.runner!, settingsAt: 1 };
-    expect(stopsAtBooked(status({ runner: older }))).toBe(false);
+  it('claims what the runner does once one has reported', () => {
     expect(stopsAtBooked(status({ runner: null }))).toBe(false);
-    expect(stopsAtBooked(status({ runner: { ...older, settingsAt: null } }))).toBe(true);
+    expect(stopsAtBooked(status({ runner: { ...STATUS.runner!, settingsAt: null } }))).toBe(true);
     expect(parseStatus({ ...example.status, runner: { ...example.status.runner, settingsAt: 5 } })!.runner!.settingsAt).toBe(5);
-    expect(parseStatus(example.status)!.runner).not.toHaveProperty('settingsAt');
+    const { settingsAt: _, ...lagging } = example.status.runner;   // a runner that lags behind the contract: null
+    expect(parseStatus({ ...example.status, runner: lagging })!.runner!.settingsAt).toBeNull();
     // 施設's line: 申込 only with 自動で確定, a booked night only from a runner that stops
     expect(hotelHint(true, true)).toBe('空きが出た施設はすべて仮押さえします。★の施設から順に申込し、予約が確定した日はそれ以上探しません。');
     expect(hotelHint(true, false)).toBe('空きが出た施設はすべて仮押さえします。★の施設から順に申込します。');
@@ -473,7 +472,6 @@ describe('the verdict card and the poll', () => {
     expect(controlLine(status({ control: { action: 'stop', by: 'B', at: jst('2026-11-13T12:03:00') } }), name, TODAY)).toBe('停止（うめ・12:03）');
     expect(controlLine(status({ control: { action: 'start', by: 'A', at: jst('2026-11-12T08:00:00') } }), name, TODAY)).toMatch(/^開始（ウェイ・.+8:00）$/);
     expect(controlLine(status({ control: null }), name, TODAY)).toBeNull();
-    expect(controlLine({ ...STATUS, control: undefined }, name, TODAY)).toBeNull();   // an older Worker
     expect(controlLine(STATUS, name, TODAY)).toBe('開始（ウェイ・12:20）');
   });
 });
@@ -635,9 +633,10 @@ describe('直近1時間', () => {
     expect(scanSummary(cells)).toBe('直近1時間：確認10回、失敗3回、空きあり2分');
     expect(scanTicks(cells)).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
     // the client reads it, a garbled minute or code left out
-    const s = parseStatus({ ...example.status, recentMinutes: [...example.statusNewer.recentMinutes, { minute: 'x' }, { minute: 1, n: 1, codes: { 'bad code': 1, ok_code: 2 } }] })!;
-    expect(s.recentMinutes).toEqual([...example.statusNewer.recentMinutes, { minute: 1, n: 1, ok: 0, fail: 0, avail: 0, codes: { ok_code: 2 } }]);
-    expect(parseStatus(example.status)).not.toHaveProperty('recentMinutes');
+    const s = parseStatus({ ...example.status, recentMinutes: [...example.status.recentMinutes, { minute: 'x' }, { minute: 1, n: 1, codes: { 'bad code': 1, ok_code: 2 } }] })!;
+    expect(s.recentMinutes).toEqual([...example.status.recentMinutes, { minute: 1, n: 1, ok: 0, fail: 0, avail: 0, codes: { ok_code: 2 } }]);
+    const { recentMinutes: _m, ...without } = example.status;
+    expect(parseStatus(without)!.recentMinutes).toEqual([]);
   });
   it('a failure without a code says only how many; the Tokyo minute holds whatever the phone’s zone (UTC minutes)', () => {
     const cells = minuteCells([{ minute: Date.parse('2026-11-13T02:59:00Z'), n: 1, ok: 0, fail: 1, avail: 0 }], Date.parse('2026-11-13T03:00:00Z'));

@@ -15,12 +15,12 @@ import {
   retryAt, topicOf, vapidOf, type PushJob, type PushLog, type PushSub,
 } from './push.ts';
 import {
-  addBookings, addEvents, addMinutes, addOwnEvent, addScans, addSeen, claimLease, freshScans, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
+  addBookings, addEvents, addMinutes, addOwnEvent, addSeen, claimLease, freshScans, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
   type ItsRecord,
 } from './rules.ts';
 import { pushRequest } from './webpush.ts';
 
-const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight', 'scans', 'minutes', 'subs', 'pushq', 'pushlog'] as const satisfies readonly (keyof ItsRecord)[];
+const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight', 'scanned', 'minutes', 'subs', 'pushq', 'pushlog'] as const satisfies readonly (keyof ItsRecord)[];
 
 /** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way; the
  *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too), unless a 停止 came after
@@ -31,7 +31,7 @@ const RUNNING = new Set(['starting', 'solving', 'scanning']);
 
 const empty = (): ItsRecord => ({
   settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null, control: null,
-  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scans: [], minutes: [], subs: [], pushq: [], pushlog: emptyPushLog(),
+  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: emptyPushLog(),
 });
 
 /** A name or detail in a log line: one line, short (they are checked already; this only keeps lines readable). */
@@ -163,10 +163,10 @@ export class ItsBot extends DurableObject<Env> {
     if (ev) Object.assign(patch, { events: ev.events, acks: ev.acks });
     const seen = addSeen(this.rec.seen, r.seen, now);
     if (seen) patch.seen = seen;
-    const minutes = addMinutes(this.rec.minutes, freshScans(this.rec.scans, r.runId, r.scansLog), now);
+    const scans = freshScans(this.rec.scanned, r.runId, r.scansLog);
+    if (scans.scanned) patch.scanned = scans.scanned;
+    const minutes = addMinutes(this.rec.minutes, scans.fresh, now);
     if (minutes) patch.minutes = minutes;
-    const scans = addScans(this.rec.scans, r.runId, r.scansLog, now);
-    if (scans) patch.scans = scans;
     const held = this.rec.lease;
     const ended = r.events.some((e) => e.kind === 'run_end');
     const late = !ended && held?.holder === r.runId && held.until <= now;

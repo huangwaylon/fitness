@@ -421,10 +421,9 @@ export function rowBadge(s: ItsStatus): { tone: Tone; word: string } {
   return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`) };
 }
 
-/** The runner reporting is one that applies the allow-list and stops at a booked night (its report carries
- *  settingsAt); an older one searched every facility not skipped and kept on after a 予約確定, so the page claims
- *  neither for it. */
-export const stopsAtBooked = (s: ItsStatus): boolean => !!s.runner && s.runner.settingsAt !== undefined;
+/** A runner has reported: it applies the allow-list and stops at a booked night (before any report the page claims
+ *  neither). */
+export const stopsAtBooked = (s: ItsStatus): boolean => !!s.runner;
 
 /** 施設's line: what happens to a room (held; applied for, ★ first, with 自動で確定; else from the mail), and, from a
  *  runner that does, that a booked night is searched no more. */

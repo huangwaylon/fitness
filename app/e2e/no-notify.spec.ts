@@ -44,7 +44,7 @@ test('nothing asks, subscribes or calls /push/ but 保養所’s 通知 switch, 
   await page.route(`${ORIGIN}/**`, (route) => {
     const req = route.request();
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors() });
-    const body = new URL(req.url()).pathname.startsWith('/its/push/') ? { ok: true, push: example.statusNewer.push } : { ...payload(rec.now()), push: example.statusNewer.push };
+    const body = new URL(req.url()).pathname.startsWith('/its/push/') ? { ok: true, push: example.status.push } : { ...payload(rec.now()), push: example.status.push };
     return route.fulfill({ status: 200, contentType: 'application/json', headers: cors(), body: JSON.stringify(body) });
   });
   await fakePush(page);

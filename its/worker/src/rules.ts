@@ -3,7 +3,7 @@
 // (ItsStatus). Every time is the Worker's clock (`now`), except the runner's own fields in its report.
 import {
   AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, HOLD_SEC, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS,
-  RECENT_MINUTES, RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SCAN_MINUTE_CODES, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
+  RECENT_MINUTES, SCAN_MINUTE_CODES, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
   type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsHealth, type ItsSettings,
   type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type ScanEntry, type ScanMinute, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
@@ -33,18 +33,16 @@ export interface ItsRecord {
   acks: [string, number][];
   /** The last preflight (GET /runner/config without a runId). */
   preflight: number | null;
-  /** The calendar reads of the last RECENT_SCANS_SEC, one batch per report that brought new ones: when it arrived
-   *  (what ages it out) and from which run (a retry repeats that run's `t`s). */
-  scans: ScanBatch[];
-  /** The same reads per minute (the status's recentMinutes), the last RECENT_MINUTES. */
+  /** The newest calendar read counted per run, `[runId, t]`, the newest ACKS_KEPT runs: a retried report repeats its
+   *  `t`s, counted once. */
+  scanned: [string, number][];
+  /** The reports' calendar reads per minute (the status's recentMinutes), the last RECENT_MINUTES. */
   minutes: ScanMinute[];
   /** Web Push (push.ts): the phones subscribed, the outbox (the alarm sends it), the last outcome. */
   subs: PushSub[];
   pushq: PushJob[];
   pushlog: PushLog;
 }
-
-export interface ScanBatch { at: number; runId: string; log: ScanEntry[] }
 
 export const SEEN_KEPT = 300;
 /** A seen name offered again moves its time on the record at most this often (not a write per report for it). */
@@ -114,26 +112,13 @@ export function addOwnEvent(events: ItsRecord['events'], e: Omit<ItsEvent, 'seq'
   return { ...events, important: [...events.important, { ...e, seq: 0 }].slice(-EVENTS_KEPT) };
 }
 
-/** A report's scans (those after the run's newest kept: a retried report adds nothing twice) as a batch received
- *  `now`; batches older than RECENT_SCANS_SEC dropped, then the oldest entries past RECENT_SCANS_KEPT. Null: nothing to
- *  write (nothing new, nothing aged out). */
-export function addScans(batches: ScanBatch[], runId: string, log: ScanEntry[] | undefined, now: number): ScanBatch[] | null {
-  const fresh = freshScans(batches, runId, log);
-  const kept = batches.filter((b) => now - b.at < RECENT_SCANS_SEC * 1000);
-  if (!fresh.length && kept.length === batches.length) return null;
-  const next = fresh.length ? [...kept, { at: now, runId, log: fresh }] : kept;
-  let over = next.reduce((n, b) => n + b.log.length, 0) - RECENT_SCANS_KEPT;
-  while (over > 0) {
-    const [first] = next;
-    if (first.log.length <= over) { over -= first.log.length; next.shift(); } else { next[0] = { ...first, log: first.log.slice(over) }; over = 0; }
-  }
-  return next;
-}
-
-/** A report's scans not yet kept: after the run's newest kept (a retried report repeats its `t`s), oldest first. */
-export function freshScans(batches: ScanBatch[], runId: string, log: ScanEntry[] | undefined): ScanEntry[] {
-  const newest = Math.max(-1, ...batches.filter((b) => b.runId === runId).flatMap((b) => b.log.map((e) => e.t)));
-  return (log ?? []).filter((e) => e.t > newest).sort((a, b) => a.t - b.t);
+/** A report's reads not yet counted: after the run's newest counted (a retried report repeats its `t`s), oldest first;
+ *  and `scanned` with the run's newest (null: nothing new). */
+export function freshScans(scanned: ItsRecord['scanned'], runId: string, log: ScanEntry[]): { fresh: ScanEntry[]; scanned: ItsRecord['scanned'] | null } {
+  const newest = scanned.find(([r]) => r === runId)?.[1] ?? -1;
+  const fresh = log.filter((e) => e.t > newest).sort((a, b) => a.t - b.t);
+  if (!fresh.length) return { fresh, scanned: null };
+  return { fresh, scanned: [...scanned.filter(([r]) => r !== runId), [runId, fresh.at(-1)!.t] as [string, number]].slice(-ACKS_KEPT) };
 }
 
 const MINUTE_MS = 60_000;
@@ -166,10 +151,6 @@ export function addMinutes(minutes: ScanMinute[], fresh: ScanEntry[], now: numbe
 
 /** The status's recentMinutes: the window's, oldest first. */
 const recentMinutes = (minutes: ScanMinute[], now: number): ScanMinute[] => minutes.filter((m) => m.minute >= windowStart(now));
-
-/** The status's recentScans: the batches received in the last RECENT_SCANS_SEC, flattened, oldest first. */
-const recentScans = (batches: ScanBatch[], now: number): ScanEntry[] =>
-  batches.filter((b) => now - b.at < RECENT_SCANS_SEC * 1000).flatMap((b) => b.log);
 
 /** Entries kept: until their stay is more than BOOKINGS_KEEP_DAYS past (a reservation is a liability till then). */
 const pruneBookings = (list: BookingEntry[], now: number): BookingEntry[] =>
@@ -269,10 +250,10 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
   const sinceDispatch = d && lastSeen < d.at;   // no report since 開始
   const starting = active && !!sinceDispatch && now - d.at < START_GRACE_SEC * 1000;
   const ban = rec.events.important.findLast((e) => e.kind === 'ban');
-  // the run that holds the lease still applies settings older than the saved ones (an older runner sends no settingsAt)
+  // the run that holds the lease still applies settings older than the saved ones
   const saved = rec.settings.updatedAt;
   const holds = !!r && rec.lease?.holder === r.runId && rec.lease.until > now;
-  const stale = holds && r.settingsAt !== undefined && saved !== null && (r.settingsAt ?? -1) < saved && now - saved > SETTINGS_STALE_SEC * 1000;
+  const stale = holds && saved !== null && (r.settingsAt ?? -1) < saved && now - saved > SETTINGS_STALE_SEC * 1000;
   const solveFails = r ? rec.events.routine.filter((e) => e.kind === 'solve_failed' && e.runId === r.runId && e.t > (r.solveOkSeenAt ?? 0)).length : 0;
   const rules: Record<Reason, [boolean, Verdict]> = {
     mode_off: [mode === 'off', 'off'],
@@ -304,7 +285,8 @@ function shownRunner(r: RunnerRecord | null): ItsStatus['runner'] {
 /** The newest first: by receive time, then seq. */
 const newestFirst = (a: ItsEvent, b: ItsEvent) => b.t - a.t || b.seq - a.seq;
 
-export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: number): ItsStatus {
+/** The status but its push (bot.ts adds it: the VAPID key is the Worker's env). */
+export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: number): Omit<ItsStatus, 'push'> {
   return {
     v: 1, now, mode, sha,
     ...verdictOf(rec, mode, now),
@@ -317,7 +299,6 @@ export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: nu
     events: [...rec.events.routine, ...rec.events.important].sort(newestFirst),
     seen: Object.keys(rec.seen).sort(),
     lastPreflight: rec.preflight,
-    recentScans: recentScans(rec.scans, now),
     recentMinutes: recentMinutes(rec.minutes, now),
   };
 }

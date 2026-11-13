@@ -10,9 +10,9 @@ export const cors = (allow = HEADERS) => ({ 'Access-Control-Allow-Origin': '*', 
 
 export type Status = ItsStatus;
 
-/** The contract's example status with its times moved to `now` (its stays, the 21st and 22nd, still ahead), from a
- *  runner that reports settingsAt; with an allow-list (every roster name but the skipped) unless `legacy` (a Worker
- *  from before it). */
+/** The contract's example status with its times moved to `now` (its stays, the 21st and 22nd, still ahead), no read
+ *  this hour and push off (specs add them); with an allow-list (every roster name but the skipped) unless `legacy`
+ *  (settings saved without one). */
 export function payload(now: number, legacy = false): Status {
   const s = structuredClone(example.status) as ItsStatus;
   const dt = now - s.now;
@@ -25,6 +25,8 @@ export function payload(now: number, legacy = false): Status {
     bookings: s.bookings.map((b) => ({ ...b, at: b.at + dt })),
     events: s.events.map((e) => ({ ...e, t: e.t + dt })),
     control: s.control && { ...s.control, at: s.control.at + dt },
-    lastPreflight: s.lastPreflight! + dt
+    lastPreflight: s.lastPreflight! + dt,
+    recentMinutes: [],
+    push: { A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }
   };
 }

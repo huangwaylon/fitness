@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
-import { EVENTS_KEPT, LEASE_SEC, RECENT_MINUTES, RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SCANS_PER_REPORT, type BookingInput, type EventInput, type ItsSettingsInput, type ScanEntry } from '../../../app/src/lib/its/contract.ts';
+import { EVENTS_KEPT, LEASE_SEC, RECENT_MINUTES, type BookingInput, type EventInput, type ItsSettingsInput, type ScanEntry } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
 import { ACKS_KEPT, MAX_BOOKINGS, SEEN_KEPT, SEEN_REFRESH_MS } from '../src/rules.ts';
 import { MIN, NOW, fakeState, quiet, report, start, type State } from './fakeBot.ts';
@@ -216,9 +216,8 @@ describe('reports', () => {
     vi.setSystemTime(NOW + 1000);
     await bot.report(report());
     const { runner } = await bot.status();
-    const { v: _v, events: _e, seen: _s, ...rest } = report();
+    const { v: _v, events: _e, seen: _s, scansLog: _l, ...rest } = report();
     expect(runner).toEqual({ ...rest, lastSeen: NOW + 1000 });
-    expect(runner && 'settingsAt' in runner).toBe(false);   // an older runner's report: no new field appears
   });
 
   it('keep the applied settings’ time and the last IMAP check when the runner sends them', async () => {
@@ -276,56 +275,34 @@ describe('the Worker’s own events and stamps', () => {
   });
 });
 
-describe('recent scans (the page’s minute strip)', () => {
+describe('the reads counted (a retried report’s count once)', () => {
   const scan = (t: number, x: Partial<ScanEntry> = {}): ScanEntry => ({ t, ok: true, ms: 800, avail: 0, ...x });
-  const recent = async () => (await bot.status()).recentScans;
+  const n = async () => ((await bot.status()).recentMinutes ?? []).reduce((k, m) => k + m.n, 0);
   beforeEach(async () => {
     await bot.claim({ runId: RUN, host: 'actions' });
   });
 
-  it('appends a report’s scans, oldest first, in the report’s one put', async () => {
-    expect(await recent()).toEqual([]);
+  it('keeps each run’s newest read only, in the report’s one put; another run’s reads at the same t are its own', async () => {
     const puts = state.count.puts;
-    await bot.report(report({ scansLog: [scan(NOW - 20_000), scan(NOW - 5000, { ok: false, code: 'timeout', ms: 20_000 })] }));
-    expect(state.count.puts).toBe(puts + 1);
-    vi.setSystemTime(NOW + 30_000);
-    await bot.report(report({ scansLog: [scan(NOW + 10_000, { avail: 1 })] }));
-    expect(await recent()).toEqual([scan(NOW - 20_000), scan(NOW - 5000, { ok: false, code: 'timeout', ms: 20_000 }), scan(NOW + 10_000, { avail: 1 })]);
-  });
-
-  it('a retried report (the same run, the same t) adds nothing; another run’s scans at the same t are its own', async () => {
     await bot.report(report({ scansLog: [scan(NOW - 1000)] }));
+    expect(state.count.puts).toBe(puts + 1);
     await bot.report(report({ scansLog: [scan(NOW - 1000), scan(NOW)] }));
-    await bot.report(report({ runId: 'stray-1', scansLog: [scan(NOW)] }));   // without the lease: its scans still count
-    expect((await recent())?.map((s) => s.t)).toEqual([NOW - 1000, NOW, NOW]);
+    await bot.report(report({ runId: 'stray-1', scansLog: [scan(NOW)] }));   // without the lease: its reads still count
+    expect(await n()).toBe(3);
+    expect(state.kv.get('scanned')).toEqual([[RUN, NOW], ['stray-1', NOW]]);
+    expect(state.kv.has('scans')).toBe(false);
   });
 
-  it('ages out by the Worker’s receive time after RECENT_SCANS_SEC, across runs (nothing cleared at a run’s end)', async () => {
-    await bot.report(report({ scansLog: [scan(NOW)], events: [ev(1, 'run_end')] }));
-    vi.setSystemTime(NOW + 30 * MIN);
-    await bot.claim({ runId: 'next', host: 'actions' });
-    await bot.report(report({ runId: 'next', scansLog: [scan(NOW + 30 * MIN)] }));
-    expect((await recent())?.length).toBe(2);
-    vi.setSystemTime(NOW + RECENT_SCANS_SEC * 1000 + 1);
-    expect((await recent())?.map((s) => s.t)).toEqual([NOW + 30 * MIN]);   // on read, nothing written
-    await bot.report(report({ runId: 'next' }));
-    expect((state.kv.get('scans') as { log: unknown[] }[]).flatMap((b) => b.log)).toHaveLength(1);   // and dropped at the next write
-  });
-
-  it('keeps at most RECENT_SCANS_KEPT, the newest; an older runner’s report (no scansLog) changes nothing', async () => {
-    for (let i = 0; i < 11; i++) {
-      vi.setSystemTime(NOW + i * 30_000);
-      await bot.report(report({ scansLog: Array.from({ length: SCANS_PER_REPORT }, (_, j) => scan(NOW + i * 30_000 + j * 1000)) }));
-    }
-    const all = (await recent())!;
-    expect(all).toHaveLength(RECENT_SCANS_KEPT);
-    expect(all.at(-1)!.t).toBe(NOW + 10 * 30_000 + (SCANS_PER_REPORT - 1) * 1000);
+  it('remembers the newest ACKS_KEPT runs; a report without new reads writes nothing for them', async () => {
+    for (let i = 0; i <= ACKS_KEPT; i++) await bot.report(report({ runId: `run-${i}`, scansLog: [scan(NOW + i)] }));
+    const kept = state.kv.get('scanned') as [string, number][];
+    expect(kept).toHaveLength(ACKS_KEPT);
+    expect(kept[0][0]).toBe('run-1');
+    await bot.report(report({ scansLog: [scan(NOW)] }));
     const rows = state.count.rows;
     await bot.report(report());
-    expect(state.count.rows - rows).toBe(2);   // runner + lease only
-    expect((await recent())!).toHaveLength(RECENT_SCANS_KEPT);
-    // what the page reads stays small: 240 entries ≈ 12 KB
-    expect(JSON.stringify(all.slice(-240)).length).toBeLessThan(13_000);
+    await bot.report(report({ scansLog: [scan(NOW - 1000)] }));   // older than the run's newest: a retry's
+    expect(state.count.rows - rows).toBe(4);   // runner + lease, twice
   });
 
   it('never shows the scans in the runner’s last report', async () => {
@@ -357,7 +334,7 @@ describe('recent minutes (the strip, aggregated: every read of the hour, however
     expect((await minutes())![0].n).toBe(5);
   });
 
-  it('keeps every read of the hour past RECENT_SCANS_KEPT (two runs at 15 s: 480 an hour), bounded at RECENT_MINUTES', async () => {
+  it('keeps every read of the hour (two runs at 15 s: 480 an hour), bounded at RECENT_MINUTES', async () => {
     for (let i = 0; i < 120; i++) {   // 2 h of reports every 60 s, 8 reads each from two runs
       vi.setSystemTime(M0 + i * MIN);
       for (const run of [RUN, 'other-1']) await bot.report(report({ runId: run, scansLog: [0, 15, 30, 45].map((s) => scan(M0 + i * MIN + s * 1000)) }));
@@ -367,7 +344,6 @@ describe('recent minutes (the strip, aggregated: every read of the hour, however
     expect(all.every((m) => m.n === 8)).toBe(true);
     expect(all.at(-1)!.minute).toBe(M0 + 119 * MIN);
     expect(all.reduce((n, m) => n + m.n, 0)).toBe(480);
-    expect((await bot.status()).recentScans).toHaveLength(RECENT_SCANS_KEPT);   // the older field, as before
     expect((state.kv.get('minutes') as unknown[]).length).toBeLessThanOrEqual(RECENT_MINUTES + 1);
     expect(JSON.stringify(all).length).toBeLessThan(5000);
     // read later: aged out on read, nothing written

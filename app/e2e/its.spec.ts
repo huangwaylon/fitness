@@ -479,19 +479,6 @@ test('a Worker without the allow-list: the page derives it, says new facilities 
   expect(body.search).not.toContain('ゆふいん山水館');
 });
 
-test('an older runner (no settingsAt): the page claims neither the allow-list nor the stop at a booked night', async ({ page, context }) => {
-  const { sheet, its } = await phone(page, context, 'A', undefined, {
-    legacy: true,
-    edit: (s) => ({ ...s, runner: { ...s.runner!, settingsAt: undefined }, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
-  });
-  await open(sheet);
-  await expect(its.locator('[data-its-verdict]')).toBeVisible();
-  await expect(its.locator('[data-its-migrate]')).toHaveCount(0);
-  await expect(its.locator('[data-its-date="2026-11-21"] small')).toHaveText(/^あと\d+日 · 予約済み$/);
-  // 自動で確定 off: nothing is applied for by the bot
-  await expect(its.locator('[data-its-hotel-hint]')).toHaveText('空きが出た施設は★の施設から順にすべて仮押さえします。申込はメールから行ってください。');
-});
-
 test('the stays: a bar a night (its parts named, VoiceOver’s line), tapped open by why; まとめて追加 (a period’s weekdays, the preview), by month, 予約済み', async ({ page, context }) => {
   const { sheet: bots, its } = await phone(page, context, 'A', undefined, {
     edit: (s) => ({ ...s, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
@@ -611,10 +598,10 @@ test('直近1時間 from the Worker’s per-minute aggregate: every read of the 
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8回 · 失敗2（http_503） · 空き3日$/);
 });
 
-test('直近1時間 is hidden from a Worker without it; a Worker whose CORS doesn’t allow X-Request-Id still answers', async ({ page, context }) => {
+test('a Worker whose CORS doesn’t allow X-Request-Id still answers', async ({ page, context }) => {
   const { sheet, its, calls } = await phone(page, context, 'A', undefined, { allow: 'Authorization, Content-Type' });
   await open(sheet);
-  await expect(its.locator('[data-its-scans]')).toHaveCount(0);
+  await expect(its.locator('[data-its-verdict]')).toBeVisible();
   await expect(its.locator('[data-its-error]')).toHaveCount(0);
   await its.locator('[data-its-action="stop"]').click();
   await expect(its.locator('[data-its-run="stopped"]')).toBeVisible();

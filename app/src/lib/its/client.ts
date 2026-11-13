@@ -72,9 +72,7 @@ function parseRunner(x: unknown): ItsStatus['runner'] {
     failuresByStep: fails,
     lastError: err && { at: err.at as number, step: str(err.step) ?? '?', status: num(err.status), cls: str(err.cls) ?? '?' },
     unsynced: num(x.unsynced) ?? 0, lastSeen: x.lastSeen as number,
-    // from a newer runner (absent from an older one: view.ts stopsAtBooked)
-    ...('settingsAt' in x ? { settingsAt: num(x.settingsAt) } : {}),
-    ...('mailOk' in x ? { mailOk: typeof x.mailOk === 'boolean' ? x.mailOk : null } : {})
+    settingsAt: num(x.settingsAt), mailOk: typeof x.mailOk === 'boolean' ? x.mailOk : null
   };
 }
 
@@ -96,20 +94,17 @@ export function parseStatus(x: unknown): ItsStatus | null {
   const dispatch = isRec(x.dispatch) && num(x.dispatch.at) !== null ? { at: x.dispatch.at as number, ok: x.dispatch.ok === true, status: num(x.dispatch.status) } : null;
   const c = x.control;
   const control = isRec(c) && (c.action === 'start' || c.action === 'stop') && member(c.by) && num(c.at) !== null ? { action: c.action as RunInput['action'], by: member(c.by)!, at: c.at as number } : null;
-  const push = parsePush(x.push);
   return {
     v: 1, now: x.now as number, mode: x.mode === 'on' ? 'on' : 'off', sha: str(x.sha), verdict: x.verdict as Verdict,
     reasons: strs(x.reasons).filter((r): r is Reason => REASONS.includes(r as Reason)),
-    settings, runner: parseRunner(x.runner), lease, dispatch, ...(control ? { control } : {}),
+    settings, runner: parseRunner(x.runner), lease, dispatch, control,
     bookings: Array.isArray(x.bookings) ? x.bookings.map(parseBooking).filter((b): b is BookingEntry => b !== null) : [],
     events: Array.isArray(x.events) ? x.events.map(parseEvent).filter((e): e is ItsEvent => e !== null) : [],
     seen: names(x.seen, MAX_SITE_NAME),
-    // from a newer Worker (absent from an older one): the last preflight, the last hour's reads per minute (absent:
-    // no strip)
-    ...('lastPreflight' in x ? { lastPreflight: num(x.lastPreflight) } : {}),
-    ...(Array.isArray(x.recentMinutes) ? { recentMinutes: x.recentMinutes.map(parseMinute).filter((e) => e !== null) } : {}),
-    // Web Push (absent: a Worker without it, 通知's 準備中)
-    ...(push ? { push } : {})
+    lastPreflight: num(x.lastPreflight),
+    recentMinutes: Array.isArray(x.recentMinutes) ? x.recentMinutes.map(parseMinute).filter((e) => e !== null) : [],
+    // garbled: as push off (no key: 通知's 準備中)
+    push: parsePush(x.push) ?? { A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }
   };
 }
 

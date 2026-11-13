@@ -68,7 +68,7 @@ export const asRunner = (env: Env, path: string, body?: unknown, token = RUNNER)
   call(env, path, body === undefined ? { headers: { Authorization: `Bearer ${token}` } } : { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
 
 /** The example's report, with changes. */
-export const report = (x: Partial<RunnerReport> = {}): RunnerReport => ({ ...structuredClone(example.report), events: [], seen: [], ...x }) as RunnerReport;
+export const report = (x: Partial<RunnerReport> = {}): RunnerReport => ({ ...structuredClone(example.report), events: [], seen: [], scansLog: [], ...x }) as RunnerReport;
 
 /** Logs silenced, kept for the tests that read them. */
 export function quiet() {

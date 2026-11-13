@@ -564,9 +564,9 @@ describe('end to end: a phone, a runner’s hold that needs a person, the alarm,
       expect.objectContaining({ endpoint: phones[1].endpoint, message: expect.objectContaining({ title: 'Room held: action needed', body: `NAGU 勝浦 · Sun 22 Nov · apply from the email by about ${deadline}` }) }),
     ]);
     expect((await status()).push).toEqual({ A: 1, B: 1, vapidPublic: vapid.publicKey, lastSentAt: NOW + 2000, lastOutcome: { at: NOW + 2000, kind: 'human_needed', code: 'ok', status: 201 } });
-    // the example's status.push (statusNewer) is this shape
+    // the example's status.push is this shape
     const types = (o: object): unknown => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v && typeof v === 'object' ? types(v) : typeof v]));
-    expect(types((await status()).push!)).toEqual(types(example.statusNewer.push));
+    expect(types((await status()).push!)).toEqual(types(example.status.push));
     // a key the service doesn't know (a rotation not yet deployed to it): Apple's 403 BadJwtToken
     const stranger = fakePushService((await vapidPair()).publicKey, phones);
     bot.pushDeps = { hosts: [HOST], fetch: stranger.fetch };

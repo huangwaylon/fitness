@@ -13,7 +13,7 @@ const { RESYNC_MS, configurePush, disablePush, enablePush, pushOn, pushSupport, 
 import type { PushDeps } from './push.ts';
 import type { PushReply } from './client.ts';
 
-const VAPID = example.statusNewer.push.vapidPublic;
+const VAPID = example.status.push.vapidPublic;
 /** Another key (the pair rotated): the same bytes but the last. */
 const ROTATED = VAPID.slice(0, -2) + (VAPID.endsWith('A8') ? 'B8' : 'A8');
 const bytes = (b64: string) => Uint8Array.from(atob(b64.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (b64.length % 4)) % 4)), (c) => c.charCodeAt(0));
@@ -50,7 +50,7 @@ function browser(o: { permission?: NotificationPermission; grant?: NotificationP
   const post = vi.fn(async (route: string, body: unknown): Promise<PushReply> => {
     order.push(`post.${route}`);
     void body;
-    return replies[route] ?? { ok: true, push: example.statusNewer.push as never };
+    return replies[route] ?? { ok: true, push: example.status.push as never };
   });
   const now = { t: 1_800_000_000_000 };
   const deps: Partial<PushDeps> = {
@@ -232,7 +232,7 @@ describe('a stale reply never undoes 通知 off', () => {
     b.post.mockImplementationOnce(async (route: string) => {
       b.order.push(`post.${route}`);
       await gate;
-      return { ok: true, push: example.statusNewer.push as never };
+      return { ok: true, push: example.status.push as never };
     });
     return () => release();
   };
@@ -302,7 +302,7 @@ describe('テスト通知', () => {
     b.post.mockImplementation(async (route: string) => {
       b.order.push(`post.${route}`);
       if (route === 'test' && lost) return (lost = false), { ok: false, err: 'not_subscribed', http: 404 };
-      return { ok: true, push: example.statusNewer.push as never };
+      return { ok: true, push: example.status.push as never };
     });
     b.order.length = 0;
     expect(await testPush(VAPID, 'ja')).toBe('sent');

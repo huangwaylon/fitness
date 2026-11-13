@@ -1,5 +1,5 @@
 {
- "_": "One of each message (app/src/lib/its/contract.ts). The Worker's and the runner's tests parse these; keep them valid. reportNewer / statusNewer: the fields a newer runner adds to `report`, a newer Worker to `status` (absent from older ones); each folded in once the other side reads them. push: statusNewer.push, pushSubscribeInput, pushEndpointInput (the page's push routes) and pushPayload (the decrypted message its service worker reads).",
+ "_": "One of each message (app/src/lib/its/contract.ts). The Worker's and the runner's tests parse these; keep them valid. status's recentMinutes are report's scansLog per minute; status.push, pushSubscribeInput, pushEndpointInput (the page's push routes) and pushPayload (the decrypted message its service worker reads) are Web Push's.",
  "settingsInput": {
   "intervalSec": 15,
   "dates": [
@@ -65,6 +65,23 @@
    "cls": "timeout"
   },
   "unsynced": 0,
+  "settingsAt": 1794540000000,
+  "mailOk": true,
+  "scansLog": [
+   {
+    "t": 1794542985000,
+    "ok": false,
+    "code": "timeout",
+    "ms": 20000,
+    "avail": 0
+   },
+   {
+    "t": 1794543000000,
+    "ok": true,
+    "ms": 812,
+    "avail": 1
+   }
+  ],
   "events": [
    {
     "seq": 3,
@@ -183,6 +200,8 @@
     "cls": "timeout"
    },
    "unsynced": 0,
+   "settingsAt": 1794540000000,
+   "mailOk": true,
    "lastSeen": 1794543010000
   },
   "lease": {
@@ -230,65 +249,6 @@
    "ゆふいん山水館"
   ],
   "lastPreflight": 1794541740000,
-  "recentScans": [
-   {
-    "t": 1794542985000,
-    "ok": false,
-    "code": "timeout",
-    "ms": 20000,
-    "avail": 0
-   },
-   {
-    "t": 1794543000000,
-    "ok": true,
-    "ms": 812,
-    "avail": 1
-   }
-  ]
- },
- "pushSubscribeInput": {
-  "endpoint": "https://web.push.apple.com/QGuQyavXutnMH4hx1zXbjMoTk6hS0l_L8NnYp8P2Ufa6o4nDTp7ZqF9Kb0sv1ltn9eQz7a3QwX3d8cU2y9mJ0Fs3N_ag",
-  "keys": {
-   "p256dh": "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4",
-   "auth": "BTBZMqHH6r4Tts7J_aSIgg"
-  },
-  "lang": "ja"
- },
- "pushEndpointInput": {
-  "endpoint": "https://web.push.apple.com/QGuQyavXutnMH4hx1zXbjMoTk6hS0l_L8NnYp8P2Ufa6o4nDTp7ZqF9Kb0sv1ltn9eQz7a3QwX3d8cU2y9mJ0Fs3N_ag"
- },
- "pushPayload": {
-  "v": 1,
-  "kind": "human_needed",
-  "id": "19283746:4",
-  "tag": "F-Y_wpSGhthLZ_Cuwu3qFunUOgBnbZ2I",
-  "title": "仮押さえ・要対応",
-  "body": "NAGU 勝浦・11/22(日)・13:25ごろまでにメールから申込",
-  "open": "its",
-  "date": "2026-11-22",
-  "hotel": "NAGU 勝浦",
-  "expiresAt": 1794543900000
- },
- "reportNewer": {
-  "settingsAt": 1794540000000,
-  "mailOk": true,
-  "scansLog": [
-   {
-    "t": 1794542985000,
-    "ok": false,
-    "code": "timeout",
-    "ms": 20000,
-    "avail": 0
-   },
-   {
-    "t": 1794543000000,
-    "ok": true,
-    "ms": 812,
-    "avail": 1
-   }
-  ]
- },
- "statusNewer": {
   "recentMinutes": [
    {
     "minute": 1794542940000,
@@ -320,5 +280,28 @@
     "status": 201
    }
   }
+ },
+ "pushSubscribeInput": {
+  "endpoint": "https://web.push.apple.com/QGuQyavXutnMH4hx1zXbjMoTk6hS0l_L8NnYp8P2Ufa6o4nDTp7ZqF9Kb0sv1ltn9eQz7a3QwX3d8cU2y9mJ0Fs3N_ag",
+  "keys": {
+   "p256dh": "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4",
+   "auth": "BTBZMqHH6r4Tts7J_aSIgg"
+  },
+  "lang": "ja"
+ },
+ "pushEndpointInput": {
+  "endpoint": "https://web.push.apple.com/QGuQyavXutnMH4hx1zXbjMoTk6hS0l_L8NnYp8P2Ufa6o4nDTp7ZqF9Kb0sv1ltn9eQz7a3QwX3d8cU2y9mJ0Fs3N_ag"
+ },
+ "pushPayload": {
+  "v": 1,
+  "kind": "human_needed",
+  "id": "19283746:4",
+  "tag": "F-Y_wpSGhthLZ_Cuwu3qFunUOgBnbZ2I",
+  "title": "仮押さえ・要対応",
+  "body": "NAGU 勝浦・11/22(日)・13:25ごろまでにメールから申込",
+  "open": "its",
+  "date": "2026-11-22",
+  "hotel": "NAGU 勝浦",
+  "expiresAt": 1794543900000
  }
 }

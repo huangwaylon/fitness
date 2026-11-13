@@ -19,7 +19,7 @@ const entry = (kind: BookingEntry['kind'], at: number, x: Partial<BookingEntry> 
 
 /** A healthy record: running, reported 10 s ago; with changes. */
 function rec(x: Partial<ItsRecord> = {}): ItsRecord {
-  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scans: [], minutes: [], subs: [], pushq: [], pushlog: { lastSentAt: null, lastOutcome: null, done: [] }, ...x };
+  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: { lastSentAt: null, lastOutcome: null, done: [] }, ...x };
 }
 const verdict = (r: ItsRecord, mode: Mode = 'on', now = NOW) => verdictOf(r, mode, now);
 
@@ -140,11 +140,10 @@ describe('verdictOf', () => {
   it('settings_stale → degraded: the run holding the lease still applies older settings SETTINGS_STALE_SEC after a save', () => {
     const saved = { ...settings, updatedAt: NOW - 3 * MIN };
     const lease = { holder: '19283746', host: 'actions' as const, until: NOW + 4 * MIN };
-    const r = (settingsAt: number | null | undefined, x: Partial<ItsRecord> = {}) => rec({ settings: saved, lease, runner: runner({ settingsAt }), ...x });
+    const r = (settingsAt: number | null, x: Partial<ItsRecord> = {}) => rec({ settings: saved, lease, runner: runner({ settingsAt }), ...x });
     expect(verdict(r(NOW - 3 * HOUR))).toEqual({ verdict: 'degraded', reasons: ['settings_stale'] });
     expect(verdict(r(null)).reasons).toEqual(['settings_stale']);   // never got any
     expect(verdict(r(NOW - 3 * MIN)).reasons).toEqual([]);          // applied
-    expect(verdict(r(undefined)).reasons).toEqual([]);              // an older runner says nothing
     // within four reports (two minutes) of the save: two cycles flickered
     expect(SETTINGS_STALE_SEC).toBe(120);
     expect(verdict(r(NOW - 3 * HOUR, { settings: { ...saved, updatedAt: NOW - 90_000 } })).reasons).toEqual([]);

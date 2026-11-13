@@ -5,7 +5,7 @@ import norm from '../../../../its/norm-cases.json';
 import example from '../../../../its/contract-example.json';
 import {
   MAX_NAME, MAX_SEARCH, MAX_SITE_NAME, PUSH_HOSTS, PUSH_LANGS, PUSH_MAX_ENDPOINT, PUSH_ROUTES, daysUntil, isDate, isId, isName, normName,
-  parseSettingsInput, tokyoToday, type ItsPushPayload, type ItsPushStatus, type PushSubscribeInput,
+  parseSettingsInput, tokyoToday, type ItsPushPayload, type ItsPushStatus, type ItsStatus, type RunnerReport, type PushSubscribeInput,
 } from './contract.ts';
 
 // 2026-11-13 12:00 JST
@@ -108,9 +108,22 @@ describe('isName and isId (the Worker’s checks, the runner mirrors them)', () 
   });
 });
 
+describe('the example’s report and status carry every field (none optional any more)', () => {
+  it('report: settingsAt, mailOk, scansLog; status: control, lastPreflight, recentMinutes, push (no recentScans)', () => {
+    const r: RunnerReport = example.report as RunnerReport;
+    expect([typeof r.settingsAt, typeof r.mailOk, Array.isArray(r.scansLog)]).toEqual(['number', 'boolean', true]);
+    const s: ItsStatus = example.status as ItsStatus;
+    for (const k of ['control', 'lastPreflight', 'recentMinutes', 'push'] as const) expect(s[k], k).toBeTruthy();
+    expect(s).not.toHaveProperty('recentScans');
+    expect(s.runner).toMatchObject({ settingsAt: r.settingsAt, mailOk: r.mailOk });
+    expect(s.runner).not.toHaveProperty('scansLog');
+    expect(Object.keys(example).filter((k) => k.endsWith('Newer'))).toEqual([]);
+  });
+});
+
 describe('push (the page reads the Worker’s, the service worker its message)', () => {
   it('the example’s status.push, inputs and message have the contract’s fields', () => {
-    const push: ItsPushStatus = example.statusNewer.push as ItsPushStatus;
+    const push: ItsPushStatus = example.status.push as ItsPushStatus;
     expect(Object.keys(push).sort()).toEqual(['A', 'B', 'lastOutcome', 'lastSentAt', 'vapidPublic']);
     expect(push.vapidPublic).toMatch(/^B[A-Za-z0-9_-]{86}$/);   // 65 bytes, uncompressed
     const sub: PushSubscribeInput = example.pushSubscribeInput as PushSubscribeInput;

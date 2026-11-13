@@ -65,7 +65,7 @@ async function phone(page: Page, context: BrowserContext, o: Opts = {}) {
   await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'its'));
   await rec.pair(context, 'A');
   await stubPush(context, o);
-  const push = o.push === undefined ? (example.statusNewer.push as Status['push']) : o.push;
+  const push = o.push === undefined ? (example.status.push as Status['push']) : o.push;
   const calls: Call[] = [];
   await page.route(`${ORIGIN}/**`, async (route: Route) => {
     const req = route.request();
@@ -103,7 +103,7 @@ test('off by default; only the tap asks; on once the Worker took the subscriptio
 
   await sw.click();
   await expect(sw).toHaveAttribute('aria-checked', 'true');
-  expect(await probe(page)).toMatchObject({ asked: 1, subscribed: 1, key: example.statusNewer.push.vapidPublic });
+  expect(await probe(page)).toMatchObject({ asked: 1, subscribed: 1, key: example.status.push.vapidPublic });
   expect(pushes()).toEqual([{ path: '/its/push/subscribe', body: { endpoint: 'https://web.push.apple.com/QE2E', keys: { p256dh: expect.any(String), auth: 'BTBZMqHH6r4Tts7J_aSIgg' }, lang: 'ja' } }]);
 
   // a reload: still on, nothing asked or handed over again (fresh)

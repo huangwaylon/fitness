@@ -12,8 +12,8 @@ const client = await import('./client.ts');
 const { fetchStatus, parseStatus, postRun, putSettings } = client;
 
 const URL = 'https://its.test';
-/** The example's status as the page reads it (not the reads one by one). */
-const { recentScans: _, ...parsed } = example.status;
+/** The example's status as the page reads it. */
+const parsed = example.status;
 const wire = () => JSON.parse(JSON.stringify(example.status)) as Record<string, unknown>;
 const answer = (status: number, body: unknown) => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
@@ -42,23 +42,25 @@ describe('parseStatus', () => {
     expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: ['NAGU 勝浦', 'a\u202eb', 3] } })!.settings.search).toEqual(['NAGU 勝浦']);
     expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: [] } })!.settings.search).toEqual([]);
   });
-  it('reads a newer Worker’s last preflight; an older one’s status has none', () => {
-    const { lastPreflight: _p, ...older } = wire();
-    expect(parseStatus(older)).not.toHaveProperty('lastPreflight');
+  it('reads the last preflight; a missing or garbled one is null', () => {
+    const { lastPreflight: _p, ...without } = wire();
+    expect(parseStatus(without)!.lastPreflight).toBeNull();
+    expect(parseStatus({ ...wire(), lastPreflight: 'soon' })!.lastPreflight).toBeNull();
     expect(parseStatus(wire())!.lastPreflight).toBe(example.status.lastPreflight);
   });
-  it('reads a newer Worker’s push status (counts, its VAPID key, codes) and leaves a garbled one or key out', () => {
-    const push = example.statusNewer.push;
-    expect(parseStatus({ ...wire(), push })!.push).toEqual(push);
-    expect(parseStatus(wire())).not.toHaveProperty('push');
-    expect(parseStatus({ ...wire(), push: { A: 'x' } })).not.toHaveProperty('push');
+  it('reads the push status (counts, its VAPID key, codes); a missing or garbled one reads as push off, a bad key as none', () => {
+    const push = example.status.push;
+    expect(parseStatus(wire())!.push).toEqual(push);
+    const { push: _p, ...without } = wire();
+    expect(parseStatus(without)!.push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
+    expect(parseStatus({ ...wire(), push: { A: 'x' } })!.push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
     expect(parseStatus({ ...wire(), push: { ...push, vapidPublic: 'short' } })!.push!.vapidPublic).toBeNull();
     expect(parseStatus({ ...wire(), push: { ...push, vapidPublic: null, lastOutcome: null } })!.push).toMatchObject({ vapidPublic: null, lastOutcome: null });
   });
   it('reads who pressed 開始 / 停止 last (C3), and leaves a garbled one out', () => {
     const control = { action: 'stop', by: 'B', at: example.status.now - 60_000 };
     expect(parseStatus({ ...wire(), control })!.control).toEqual(control);
-    for (const c of [null, { ...control, by: 'G' }, { ...control, action: 'pause' }, { ...control, at: 'now' }]) expect(parseStatus({ ...wire(), control: c })).not.toHaveProperty('control');
+    for (const c of [null, { ...control, by: 'G' }, { ...control, action: 'pause' }, { ...control, at: 'now' }]) expect(parseStatus({ ...wire(), control: c })!.control).toBeNull();
   });
 });
 
@@ -158,8 +160,8 @@ describe('the calls', () => {
 
   it('the push routes: POST with the key, `{ok: true, push}` read back, a refusal’s code; never the endpoint in the log', async () => {
     const c = await fresh();
-    fetch.mockResolvedValueOnce(answer(200, { ok: true, push: example.statusNewer.push }));
-    expect(await c.pushCall('subscribe', example.pushSubscribeInput as never, undefined, URL)).toEqual({ ok: true, push: example.statusNewer.push });
+    fetch.mockResolvedValueOnce(answer(200, { ok: true, push: example.status.push }));
+    expect(await c.pushCall('subscribe', example.pushSubscribeInput as never, undefined, URL)).toEqual({ ok: true, push: example.status.push });
     expect([fetch.mock.calls[0][0], fetch.mock.calls[0][1]?.method, JSON.parse(String(fetch.mock.calls[0][1]?.body))]).toEqual([`${URL}/its/push/subscribe`, 'POST', example.pushSubscribeInput]);
     expect(fetch.mock.calls[0][1]?.headers).toMatchObject({ Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' });
     fetch.mockResolvedValueOnce(answer(429, { ok: false, error: 'rate_limited' }));
