@@ -17,8 +17,13 @@ record's writes, and a trail needs no private data.
 
 ### The gym bot
 A LINE bot for a gym's free slots runs as its own Worker (`gym/`, [its README](../gym/README.md)) on the relay's
-account, and 設定's ジムボット reads its public `/status`. Why: no machine or tunnel to keep alive, its deploys never touch
-the relay's, and a status of totals and codes needs no keys.
+account; ボット → ジム reads its public `/status` and, with a member key, `/gym/config` and `/gym/act`. Why: no machine
+or tunnel to keep alive, its deploys never touch the relay's, and a status of totals and codes needs no keys.
+
+### The ITS booker
+The 保養所 booker is the `its-bot` Worker (settings, record, verdict) plus a runner on GitHub Actions that checks out
+main each run ([its/README.md](../its/README.md)). Why: no Mac to keep awake, the site's Turnstile needs a real headed
+Chrome (a hosted runner has one, a Worker can't), and both fit the Free plans.
 
 ### Per-person keys
 `KEY_A`, `KEY_B` (and the guest's `KEY_C`) are Worker secrets; a key identifies its person and travels in a `text/plain`
@@ -61,7 +66,7 @@ needs no taps, and a second source would conflict with Health.
 
 ### No notifications
 No notification of any kind (no Web Push, no service worker `push`); in-app banners and the relay's record-change notice
-stay. Why: unused, and the one piece of iOS-only, hard-to-test machinery. One exception, the bots: ITS holds and
+stay. Why: unused, and the one piece of iOS-only, hard-to-test machinery. One exception, 保養所: ITS holds and
 confirmations, opt-in per phone in ボット → 保養所, members only, from the its-bot Worker
 (its/README.md "Push"). Why: a hold lapses in 30 min and the site's mail was the only alert; the game, the island and
 health stay push-free.

@@ -29,7 +29,8 @@ hunt gates nothing ([testing.md "CI"](docs/ops/testing.md#ci-githubworkflowspage
 
 **Secrets** (names only; never in this public repo):
 - Relay (`npx wrangler secret put`; the test copy's keys: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`,
-  `KEY_C` (the guest), `HEALTH_TOKEN`, `ARCHIVE_TOKEN` (a fine-grained GitHub token: rotate before it expires). Rotation: [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
+  `KEY_C` (the guest), `HEALTH_TOKEN`, `ARCHIVE_TOKEN` (a fine-grained GitHub token: rotate before it expires).
+  Rotation: [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
 - Repo (`gh secret set`): `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Pages), `HEALTH_TOKEN` (health.yml), the
   `ITS_*` ([its/README.md](its/README.md) "Secrets"). The gym bot's: [gym/README.md](gym/README.md) "Secrets".
 - On the Mac: `~/.config/island-fund/keys` (KEY_A/B, mode 600), `~/.config/island-fund/archive-age.key` (the dumps'
@@ -64,6 +65,12 @@ npm test               # unit tests (vitest); npm run check, npm run knip
 npm run deploy         # production, from a clean tree on origin/main
 ```
 
+The ITS booker ([its/README.md](its/README.md)):
+```sh
+cd its/worker && npm ci && npm run check && npm run knip && npm test   # the Worker
+cd its/runner && python3 test_its.py && python3 test_remote.py         # the runner (Python ≥ 3.10, stdlib)
+```
+
 The food data (`app/static/food/`), from the repo root ([food-data.md](docs/food-data.md); Python ≥ 3.9, stdlib only):
 ```sh
 python3 -I food-data/scripts/build.py all    # → food-data/out/
@@ -90,7 +97,7 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/src/lib/gym/`, `app/src/lib/its/` | ボット's clients: the gym bot's and the ITS booker's pages |
 | `app/src/lib/offline/` | Map areas saved ahead for offline: their tiles and size |
 | `app/src/lib/time/`, `ui-state/`, `villagers/`, `i18n/`, `styles/` | Clocks and holidays; UI state and test switches; the villager roster; ja/en strings; CSS tokens |
-| `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `farm/`, `wallet/`, `editor/` and `layoutEdit/`, … |
+| `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `bots/` (ボット), `farm/`, `wallet/`, `editor/` and `layoutEdit/`, … |
 | `app/src/routes/` | The pages (the island, `/tent`, `/editor`, `/pair`, …) |
 | `app/static/` | Art, 3D models, audio, food data (`npm run unused` lists what nothing uses) |
 | `app/scripts/` | Asset and model pipelines, the e2e's CI helpers, the benchmark |

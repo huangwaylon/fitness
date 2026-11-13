@@ -27,7 +27,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `ev` | the event's name (the registry's; anything else is dropped) |
 | `src`, `role` | `c` a phone / `r` the relay; `A` · `B` · `G` from the key (the key itself is never kept) |
 | `sid`, `rid`, `q` | the app session's id (random, per load), a request's id (`api.*` ↔ the relay's `req`), the event's number in its session |
-| `build`, `os` | the app's version (`2026-11-05.ef93d8b`), the device in a word (`ios18.7`, `macos`): the user agent's, which Safari 26 froze, so iOS 26 and 27 both say `ios18.7` (kept as is: no feature sniffing) |
+| `build`, `os` | the app's version (`2026-11-05.ef93d8b`), the device in a word (`ios18.7`, `macos`): from the UA string, which Safari 26 froze, so iOS 26 and 27 both say `ios18.7` (kept as is: no feature sniffing) |
 | `d` | the payload: **only the registry's fields for that event, each of its kind** (a number, a boolean, a closed set, a short token never 16+ letters and digits in a row; `js.error`'s scrubbed `msg` and `stack`), enforced by the relay |
 
 ### What we log
@@ -44,11 +44,11 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `perf.boot` | info | the launch's marks (`mount` → `shown`, `data`), its longest frames and steps by what held them, `fields`, `sw`, `warm`, `net`, `ask`/`held` (world3d/boot.ts BootReport; the registry has them all) | once a load, 1 s after the island is whole (world3d/boot.ts) |
 | `perf.back` | info | `perf.boot`'s marks (but `draw`) for the first return from a room | once a load (world3d/boot.ts) |
 | `perf.rest` | info | the rest since the last show (every second 2 s+ untouched): `s`, `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (point lights, their mask: on unless `?pointmask=0`) | at each hide, or the island going, with 3 s+ of rest (world3d/rest.ts) |
-| `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src` (`file:line`, or the tag of the code that caught it: `live`, `world`, `synced.<store>`, `bus.<event>`, `snapshot`), `n` (folded repeats), `leaving`, `route`, `sheet` | `error`, `unhandledrejection`, a caught bug (quiet.ts); ≤ 5 a message a session; an import cut off by leaving or by a `chunk.fail`: `swallow:import.*` |
+| `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src` (`file:line`, or the catcher's tag: `live`, `world`, `synced.<store>`, `bus.<event>`, `snapshot`), `n` (folded repeats), `leaving`, `route`, `sheet` | `error`, `unhandledrejection`, a caught bug (quiet.ts); ≤ 5 a message a session; an import cut off by leaving or by a `chunk.fail`: `swallow:import.*` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`, `sheet` (fail); `r` | a `/api` call |
 | `keyed.fail` | info unreached / warn | `ep` (kalori, stt, gym, other), `why` (refused, failed, unreached, timeout), `http`, `n` (its repeats folded), `sheet` | a members-only call failed (keyed.ts), once an incident |
-| `its.fail` | info offline, rate_limited, not_subscribed / warn | `op` (status, settings, run, push_subscribe, push_unsubscribe, push_test), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `rid`, `http`, `ms` | a 保養所ボット call failed (lib/its/client.ts) |
-| `gym.fail` | info offline / warn | `op` (status), `err` (offline, http, json), `http`, `ms` | a read of the gym bot's public /status failed (lib/gym/status.ts; no `rid`: a header of ours would need a preflight the public route doesn't answer; /gym/config is `keyed.fail` `gym`) |
+| `its.fail` | info offline, rate_limited, not_subscribed / warn | `op` (status, settings, run, push_subscribe, push_unsubscribe, push_test), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `rid`, `http`, `ms` | a ボット → 保養所 call failed (lib/its/client.ts) |
+| `gym.fail` | info offline or an expected refusal / warn | `op` (status, act), `err` (the gym bot's code: stale, cooldown, …; or offline, timeout, http, json, no_key), `rid` (`act` only: a public /status takes no header of ours), `http`, `ms` | a read of /status (lib/gym/status.ts) or a POST /gym/act (lib/gym/config.ts) failed; /gym/config is `keyed.fail` `gym` |
 | `its.push` | warn | `step` (permission, ready, subscribe, unsubscribe), `err` (the error's name) | 保養所's 通知 failed in the browser (lib/its/push.ts; never the endpoint) |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
 | `sync.fail` | info offline / warn | `err`, `cached`, `sheet` | a refresh failed (what threw: a `js.error` from `snapshot`) |
@@ -163,43 +163,18 @@ Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (
 `gh secret set HEALTH_TOKEN`.
 
 ## ITS investigating
-The 保養所ボット (its/README.md) has its own record and logs: the its-bot Worker's status (events, bookings, the last
-report; Workers Logs 3 days, `npx wrangler tail` in `its/worker/`), each run's public Actions log (counts and codes
-only) and its private log (an encrypted artifact, kept 14 days).
-**Gmail is the ground truth**: the site mails every hold (「申込手続きのご案内」) and every 予約確定; when the record and
-the mail disagree, the mail is what happened.
-
-One run, everything in one Tokyo-time timeline (the Worker's events by seq, the run's bookings, its decrypted private
-log), then delete the decrypted copy (it holds credentials):
+The ITS booker's record and logs are its own ([its/README.md](../../its/README.md)): the its-bot Worker's status
+(events, bookings, the last report), Workers Logs (3 days; `npx wrangler tail` in `its/worker/`), each run's public
+Actions log (counts and codes) and its private log (an encrypted artifact, 14 days). **Gmail is the ground truth**: the
+site mails every hold (「申込手続きのご案内」) and every 予約確定; when the record and the mail disagree, the mail is
+what happened. One run in one Tokyo-time timeline (the Worker's events, the run's bookings, its decrypted log), then
+delete the decrypted copy (it holds credentials):
 ```sh
 cd its/worker && npm run its:logs -- <run>[-<attempt>]     # --no-log: the Worker's record only
 rm -rf /tmp/its-logs-<run>[-<attempt>]
 ```
-Requests from the page carry `rid=` (its `X-Request-Id`, also in the phone's `its.fail`): `npx wrangler tail --search
-rid=<id>`, or the dashboard's search. The page's 15 s poll (`its status …`) is debug level: filter on info+.
-
-The alert: `its-health.yml` (every 30 min) reads `GET /health/its` with `ITS_HEALTH_TOKEN` (codes only) and keeps
-one issue labelled `its-alert` open while the verdict is late / failing or a reason needs a person (its/README.md
-"Diagnose"); healthy closes it.
-
-| Seen | Look at | Then |
-|---|---|---|
-| `its-alert`: `late` (`runner_silent` / `never_ran`) | Actions: the last its-runner runs (failed? cancelled? the preflight's `stop`?); `lastPreflightAgeSec` (is the schedule even asking?) | `wrangler tail` for `its refused 401` (a token rotated on one side only); `ITS_RUNNER_ENABLED` |
-| `failing`: `banned` | the run's `ban` event | Nothing: the next run has another IP. Recurring: a longer interval |
-| `failing`: `scan_failing`, `degraded`: `solve_failing` | `runner.lastError` (step, status, cls); its:logs for the failing step and the saved HTML/screenshot | The site changed (SITE.md), or Turnstile |
-| `human_needed` | the status's bookings and events (`near_date`, `auto_off`, `leg_failed`, …); Gmail | Finish or cancel the hold from the mail within 30 min (`HOLD_SEC`) |
-| `unsynced` 30+ min | `its refused … /runner/bookings` in Workers Logs (409 `id_conflict`, 507 `record_full`) | The runner keeps them and retries; a full record: back it up (its/README.md "Operations") |
-| `mail_failing` | `runner.lastError` step `imap` (`auth_failed`, `web_login_required`) | The Gmail app password, Gmail's security alerts |
-| `settings_stale` | its:logs on the run: its reports' `settingsAt`, a settings parse refusal | 停止 → 開始 |
-| A `prev_unclean` event (`took_over=<run>` in Workers Logs) | the run in `detail`: cancelled or died mid-run | its:logs on it; Gmail for a hold or 申込 it left |
-| A hold in Gmail the record doesn't have | its:logs on the run that was running then (`confirming` written? `unsynced`?) | Seed it into the record (its/README.md "Operations") so it's never applied for again |
-| Cancelled its-runner runs in Actions | a scheduled run queued behind a running one (`concurrency: its-runner`) and replaced by a newer one | Noise, not a failure, unless every run is cancelled |
-| A push that didn't arrive | `wrangler tail --search "its push"`: `queued` (was it sent at all? `skip expired` / `manual` / `done` say why not), then the attempt's `status=` / `outcome=`; the status's `push` (counts per member, `lastOutcome`) | its/README.md "Push" (the outcome table, BadJwtToken); a phone's Focus or Sleep holds it back: the mail stays the backstop |
-
-Push lines (its/README.md "Push"): `its push queued kind= id= urgency= ttl= subs=`, one `its push kind= id= ep=<6 hex>
-who= status= ms= outcome=` per attempt (`reason=` Apple's on a refusal; `config` and `bug` at error), `its push skip
-<why>`, `gave_up`, `expired`, `subscribe` / `unsubscribe` / `test refused`. A subscription is only ever `ep=` (a hash
-prefix): never the endpoint, a key or the message. its-health ignores push.
+A page's request carries `rid=` (its `X-Request-Id`, also in the phone's `its.fail`): `npx wrangler tail --search
+rid=<id>`; the 15 s poll is debug level. The alert, each reason and what to do: its/README.md "Investigating".
 
 ## Costs
 ### The log (Free plan)

@@ -11,9 +11,10 @@ How it works: [backend.md](../backend.md). Code and workflows cite these section
 Push to `main`: any change under `app/**` runs *Deploy UI* (`.github/workflows/pages.yml`), jobs in
 [testing.md](testing.md#ci-githubworkflowspagesyml).
 
-**Cloudflare Pages:** project `island-fund` on the island's account (`account_id` in relay/wrangler.toml), direct upload (no Git integration:
-the workflow is the gate). Repo secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (a **Custom token**,
-*Account → Cloudflare Pages → Edit*, that account only; `gh secret set …`). By hand, from `app/`: `npm run build`, then
+**Cloudflare Pages:** project `island-fund` on the island's account (`account_id` in relay/wrangler.toml), direct
+upload (no Git integration: the workflow is the gate). Repo secrets `CLOUDFLARE_ACCOUNT_ID` and
+`CLOUDFLARE_API_TOKEN` (a **Custom token**, *Account → Cloudflare Pages → Edit*, that account only; `gh secret set
+…`). By hand, from `app/`: `npm run build`, then
 `npx wrangler pages deploy build-pages --project-name island-fund --branch main` (another `--branch` is a preview at
 `<branch>.island-fund.pages.dev`). The build writes `build-pages/_headers` (`scripts/headers.ts`) and copies
 `index.html` to `404.html` on purpose: a missing chunk then gets a real 404, which the stale-chunk reload relies on.
@@ -28,9 +29,10 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"a
 ```
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
 `version.json`, CSP header and the relay's CORS for it), red (GitHub mails the owner) unless all pass; it warns when the
-weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s `wx` is the real weather
-([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over 30 is normal; older, or
-`fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed fetch; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
+weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
+`wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
+30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
+fetch; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`).
 
 The Free plan's tightest limit is likely 100k rows written a day: `npm run logs -- stats` (from `relay/`) gives today's
@@ -40,6 +42,7 @@ The Free plan's tightest limit is likely 100k rows written a day: `npm run logs 
 Lost phone, leak, any doubt:
 1. `openssl rand -hex 32`, into the password manager.
 2. The relay first: from `relay/`, `npx wrangler secret put KEY_A` (or `KEY_B`); the old key is `unauthorized` at once.
+   Then the same `secret put` from `gym/` and `its/worker/` (the bots hold copies); for ITS, 停止 → both → 開始.
 3. That person's app shows the pairing screen: paste the new key, and into their Shortcut's **Key** text.
 4. The keys file (`~/.config/island-fund/keys`, `KEY_A=…`/`KEY_B=…` lines, or `KEYS_FILE`): the secret that signs
    `/admin` derives from `KEY_A:KEY_B` (`relay/src/sign.ts`), so without the new key there
@@ -107,8 +110,8 @@ The 3D-rendered art ([design](../design.md#official-art)): edit `JOBS` in `app/s
 commit anything from the model folder itself.
 
 ## 8. Deploy the live relay
-The Worker in `relay/` ([backend.md](../backend.md#live-relay)), Workers Free plan, the account pinned in its wrangler.toml. Once
-per machine: `npx wrangler login`. Then, from `relay/`:
+The Worker in `relay/` ([backend.md](../backend.md#live-relay)), Workers Free plan, the account pinned in its
+wrangler.toml. Once per machine: `npx wrangler login`. Then, from `relay/`:
 
 1. `npm ci`, `npm run check`, `npm run knip`, `npm test`.
 2. `npm run deploy:test`, then `npm run smoke` against the test copy (keys: gitignored `relay/.smoke-keys`; new ones:
@@ -125,7 +128,8 @@ behind` (`null`: an unstamped deploy).
 
 **Keys:** §3. **Logs:** §11; live: `npx wrangler tail`. No off switch: the relay is the record (never
 `npx wrangler delete`). A protocol or contract change is two pushes: the relay and `contract/` first (steps 1–3), then
-the app (a push under `app/**` deploys it at once).
+the app (a push under `app/**` deploys it at once). The bots' contracts the same: the Worker (`gym/`, `its/worker/`)
+first, then the app.
 
 **Roll back.** The relay: `npx wrangler deployments list`, then `npx wrangler rollback <version-id>`; a Durable Object
 migration can't be rolled back. The app: `git revert` and push (the deploy's order guard, `scripts/deploy-order.ts`,
@@ -171,24 +175,9 @@ there; a `https://island-fund.pages.dev/#key=<key>` link works only inside the i
 The phones' and the relay's structured events in `IslandLog` for 30 days, numbers and enums only: what is logged,
 `npm run logs`, the checklist, the alert and `LOG_OFF`: [observability.md](observability.md).
 
-## 12. ITS investigating
-The 保養所ボット's Worker and runner: [its/README.md](../../its/README.md) (Operations, Diagnose, Secrets). A run in one
-timeline: `cd its/worker && npm run its:logs -- <run>[-<attempt>]`, then `rm -rf` the decrypted dir it names. The
-`its-alert` issue and what each reason means: [observability.md](observability.md#its-investigating). Gmail (the
-site's mails) is the ground truth for holds and 予約確定. Rotating a token both sides share: 停止 → change both → 開始.
-
-**Push** (its/README.md "Push"). Turning it on, once: `cd its/worker && npm run vapid:keys --
-~/.config/its-bot/vapid-private` → put the printed `VAPID_PUBLIC=…` in wrangler.toml's `[vars]` and commit it →
-`npx wrangler secret put VAPID_PRIVATE < ~/.config/its-bot/vapid-private` → `npm run deploy` → `/its/status`'s
-`push.vapidPublic` is the new key. Rotating VAPID, in this order: `npm run vapid:keys --` a new file (the script never
-overwrites one) → commit the new `VAPID_PUBLIC` (committing deploys nothing) → `npx wrangler secret put VAPID_PRIVATE <
-<new file>` and `npm run deploy` back to back (between the two the live Worker signs with the new private half under
-the old public key: Apple answers 403 and those pushes are dropped, logged `outcome=config`) → `/its/status`'s
-`push.vapidPublic` is the new key. The phones see the key change and re-subscribe at their next refresh (until then
-their pushes are refused the same way). The hand check after a deploy that touches push (Playwright's WebKit has no push service):
-1. macOS Safari, the site, ボット → 保養所 → 通知 on → テスト通知: a notification within seconds;
-   `npx wrangler tail --search "its push"` shows `status=201 outcome=ok` (a `403 reason=BadJwtToken` here: the two
-   halves of the pair don't match).
-2. Each iPhone, the Home Screen app (a Safari tab can't subscribe): 通知 on, テスト通知, locked screen shows it; tap
-   opens 保養所.
-3. The next real hold: the notification on both phones (`its push queued kind=… subs=…`).
+## 12. The bots
+- The gym bot (`gym-bot`): deploy, secrets, the stop switch and its checks: [gym/README.md](../../gym/README.md).
+- The ITS booker (`its-bot` + the Actions runner): deploy, secrets, stop, back up the record, Push (VAPID setup,
+  rotation, the hand check): [its/README.md](../../its/README.md); the `its-alert` issue and a run's timeline:
+  its/README.md "Investigating" (Gmail is the ground truth for holds and 予約確定).
+- Rotating a token both sides share (§3's keys, the runner's): 停止 → change both → 開始.

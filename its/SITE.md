@@ -1,14 +1,14 @@
 # The ITS site — everything the code cannot tell you
 
-Published rules read 2026-08-19 from [申し込みから利用まで](https://www.its-kenpo.or.jp/shisetsu/moushikomi.html)
+Published rules from [申し込みから利用まで](https://www.its-kenpo.or.jp/shisetsu/moushikomi.html)
 (procedures, 申込受付期間一覧表, cancellation terms), the
 [直営](https://www.its-kenpo.or.jp/shisetsu/chokuei/) /
 [通年](https://www.its-kenpo.or.jp/shisetsu/keiyaku/tsunen/) /
-[夏季](https://www.its-kenpo.or.jp/shisetsu/keiyaku/kaki/) rosters, and
+[夏季](https://www.its-kenpo.or.jp/shisetsu/keiyaku/kaki/) /
+[冬季](https://www.its-kenpo.or.jp/shisetsu/keiyaku/touki/) rosters, and
 [notice id=144](https://as.its-kenpo.or.jp/column_comments/notice_info?id=144).
-**measured** marks facts derived from this repository's own history; **unverified** says so.
-
-Verified live end to end on 2026-08-19: ブルーベリーヒル勝浦, 2026-09-01, 申込受付番号 **12345678**, 予約確定.
+**measured** marks facts derived from this repository's own runs; **unverified** says so. A live end-to-end 予約確定
+(ブルーベリーヒル勝浦, 申込受付番号 **12345678**) passed. Read: §1–5 and the run 2026-08-19, §6 and the seasons 2026-11-13.
 
 `runner/test_its.py`'s `FakeITS` replays every page below and is checked on every run.
 **Where this doc and the fake disagree, the fake is right.**
@@ -23,26 +23,10 @@ Verified live end to end on 2026-08-19: ブルーベリーヒル勝浦, 2026-09-
 - **Two cutoffs, and which applies is a property of the facility.** **D−4** for 直営 (the three
   トスラブ), ブルーベリーヒル勝浦, 日光千姫物語, 熱海後楽園ホテル and all 夏季/冬季. **D−10** for
   every other 通年.
-- **Rosters** — the only place a `SKIP_HOTELS` / `PRIORITY_HOTELS` entry can be classified.
-  - *直営 (3), D−4:* トスラブ箱根 ビオーレ・和奏林, トスラブ館山 ルアーナ
-  - *夏季 (13), D−4:* グランドメルキュール伊勢志摩, スパリゾートハワイアンズ モノリスタワー,
-    フルーツパーク富士屋, 定山渓 ゆらく草庵, 鎌倉パークホテル, **NAGU勝浦**, 伊豆赤沢温泉,
-    軽井沢マリオット, 蓼科東急, 高山グリーン, NASPAニューオータニ, アオアヲナルトリゾート, ホテル日航アリビラ
-  - *通年 (24), D−10 except the three marked:* ラビスタ熱海テラス, ハーヴェスト鬼怒川, 鳴子温泉 湯元 吉祥,
-    ハーヴェスト那須, **日光千姫物語 (D−4)**, 草津温泉 ホテルヴィレッジ, 伊香保温泉 ホテル天坊,
-    ラビスタ横須賀観音崎テラス, ホテルオークラ東京ベイ, リソルの森, **ブルーベリーヒル勝浦 (D−4)**,
-    和倉温泉 あえの風, ラビスタ富士河口湖, ハーヴェスト斑尾・旧軽井沢, **熱海後楽園ホテル (D−4)**,
-    ハーヴェスト伊東・浜名湖, ホテル琵琶レイクオーツカ, ホテル日航プリンセス京都,
-    ハーヴェスト京都鷹峯・有馬六彩・南紀田辺, ゆふいん山水館
-  - *冬季 (5), D−4:* ラビスタ函館ベイANNEX, ホテル日航アリビラ, NAGU勝浦, NASPAニューオータニ,
-    蓼科東急ホテル — so all but 函館ベイANNEX also sit on the 夏季 roster. Read from
-    `/shisetsu/keiyaku/touki/index.html` 2026-08-19.
-  - **Season windows (FY2026, each facility's page: `/shisetsu/keiyaku/{kaki,touki}/<facility>/index.html`).**
-    夏季 2026-07-01 … 09-30; 冬季 2026-12-19 … 2027-03-31 (the rosters' index pages give no dates). So a
-    夏季・冬季 facility is closed 10-01 … 12-18. Each facility also lists 利用不可日, which "may change":
-    NAGU勝浦 every Tue and Wed + 12/31, 1/1–1/3; ラビスタ函館ベイANNEX 12/31, 1/1, 2/24, 2/25; NASPAニューオータニ
-    12/30–1/2 (and summer 7/24–26); 蓼科東急ホテル 1/25–29, 2/15–18, 3/8–12; ホテル日航アリビラ 12/30–1/3. Read the
-    pages again each fiscal year (the app's roster keeps them per FY, app/src/lib/its/roster.ts).
+- **Rosters** (直営 · 通年 · 夏季 · 冬季): `app/src/lib/its/roster.ts` is the one home: each facility's kind, cutoff,
+  region, its season windows and 利用不可日 per fiscal year (each facility's page,
+  `/shisetsu/keiyaku/{kaki,touki}/<facility>/index.html`; the rosters' index pages give no dates). A 夏季・冬季 facility
+  is closed between the seasons. 利用不可日 "may change": read the pages again each fiscal year.
   - `ホテルハーヴェスト スキージャム勝山` is on **none** of the four rosters, nor 提携施設 —
     presumably delisted. `SKIP_HOTELS` keeps it anyway: skipping a facility that never
     appears is free, dropping it books the place if ITS re-contracts it.
@@ -51,8 +35,8 @@ Verified live end to end on 2026-08-19: ブルーベリーヒル勝浦, 2026-09-
   「グランドメルキュール 伊勢志摩リゾート＆スパ」. `is_skipped()` compares normalised names for
   *exact* equality, so the roster spelling would never match — always prefer a string
   observed in a 「Found N hotels: …」 log line over one transcribed from the website.
-- **`PRIORITY_HOTELS = ['NAGU']` is NAGU勝浦, 夏季**: D−4, and never listed for stays past 9/30
-  (「夏季保養施設の9/30～2泊…は選択いただけません」 — the season boundary itself is inferred).
+- **`PRIORITY_HOTELS = ['NAGU']` is NAGU勝浦, 夏季 and 冬季**: D−4, and not listed for stays past 9/30 until
+  冬季 opens (12-19) (「夏季保養施設の9/30～2泊…は選択いただけません」).
 - **Month-end two-night stays** open only from the 照会開始日 of the month the *second* night
   falls in. Applications are per stay month, hence one scanner thread per month.
 - **Cancellation is the only supply after the release instant, and it is structured.** Web
@@ -72,13 +56,12 @@ Verified live end to end on 2026-08-19: ブルーベリーヒル勝浦, 2026-09-
 
 - **A 503 carrying `<title>セキュリティアラート</title>` is a ~24-hour, IP-scoped ban, not site
   load.** The body says so: アクセス過多 from this IP, blocked 約**24時間**. All 467 non-empty
-  recovered dumps are that page, across three episodes (2026-04-07, 2026-04-12, 2026-08-17)
-  over three egress IPs, every one on the scanner's `calendar_get` — the most frequent request.
+  recovered dumps are that page, across three episodes over three egress IPs, every one on the scanner's
+  `calendar_get` — the most frequent request.
   **So request volume is the dominant operational constraint**: one ban costs a full day of
   every target date at once, and budget freed by `SCAN_REUSE_SESSION` should be banked.
 - **The dump corpus is not a census.** `DEBUG_DUMP_KEEP` prunes oldest-first, so what survives
-  is survivorship-biased. An earlier reading of the timestamps alone concluded these 503s were
-  ordinary office-hours load; the bodies flatly contradict it. **Read the bodies.**
+  is survivorship-biased; the timestamps alone look like office-hours load, the bodies say ban. **Read the bodies.**
 - **22% of availability episodes begin at exactly D−10, 57% within D−9…D−14** — the published
   free-cancellation boundary predicting the observed data.
 - **Episodes are not seconds long.** Of 104 intra-episode gaps, 38 are 20–21 s (still there a
@@ -179,10 +162,9 @@ form's markup having changed under the parser — or from a link another hold al
 
 ### `POST /apply/confirm` refuses curl and accepts Chrome — why Chrome commits
 
-Measured 2026-08-19 against a live hold, cause still unresolved. **curl is 0 for 3 and Chrome
-is 2 for 2** (申込受付番号 12345678 and 12345679), so the curl attempt has been deleted rather
-than kept as a dead first try; the GET and the form parse still run over curl, which works
-every time. The POST is answered `302 → /service_category/index`, empty body,
+Measured against a live hold, cause unresolved. **curl is 0 for 3 and Chrome is 2 for 2**
+(申込受付番号 12345678 and 12345679), so the commit is Chrome's only; the GET and the form parse run over curl, which
+works every time. The POST is answered `302 → /service_category/index`, empty body,
 `x-runtime ≈ 0.02` — a Rails `before_action`, bouncing before the body is read. Served
 identically for:
 
@@ -207,13 +189,12 @@ not evidence.
 
 ## 6. Turnstile
 
-Measured 2026-11-13 (the Actions probe, pydoll 2.22.0, real Google Chrome):
+Measured (the Actions probe, pydoll 2.22.0, real Google Chrome):
 
 - **The checkbox is centred, not at the left edge.** The widget is a centred 300 px box inside the `.cf-turnstile`
-  container (960 px wide on the page), so the checkbox is at **`x + w/2 − 150 + 22`**, vertically centred — not
-  `x + 28`, which the bot clicked until then. The Mac passed anyway because Turnstile trusted it silently (no click
-  needed). `chrome.py` clicks the centred spot first and the left-edge spot as the second attempt, and records which
-  one solved (`spot`) and how long it took.
+  container (960 px wide on the page), so the checkbox is at **`x + w/2 − 150 + 22`**, vertically centred, not
+  `x + 28` (a trusted browser passes with no click, which hides a wrong spot). `chrome.py` clicks the centred spot
+  first and the left-edge spot as the second attempt, and records which one solved (`spot`) and how long it took.
 - **Headed Chrome under xvfb passes on ubuntu runners: 5/5** solves on 5 US IPs (with `fonts-noto-cjk`, `--no-sandbox
   --lang=ja-JP`): 2 at the first click (~19 s), 3 at the third (~90 s). curl with the minted `s=` from the same runner
   reads the calendar (200).
