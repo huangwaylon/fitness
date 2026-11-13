@@ -73,6 +73,16 @@ test('the Japanese help: the situation before the clip, the choices’ Japanese 
       const [v, w, c] = await Promise.all(['[data-kiki-verdict]', '[data-kiki-why]', '[data-choice]'].map((s) => sheet(page).locator(s).first().boundingBox()));
       expect(v!.y).toBeLessThan(w!.y);
       expect(w!.y).toBeLessThan(c!.y);
+      // the Japanese wraps by phrase (ui/Phrases.svelte: <wbr>s between them), 解説 and the choices' alike
+      await expect(why.locator('wbr').first()).toBeAttached();
+      await expect(sheet(page).locator('[data-kiki-cja] wbr').first()).toBeAttached();
+      // ○ / × beside a marked choice's lines, never over them (a long one wraps the full width)
+      const over = await sheet(page).locator('[data-mark]:has(.sym)').evaluateAll((els) => els.filter((e) => {
+        const s = e.querySelector('.sym')!.getBoundingClientRect(), r = document.createRange();
+        r.selectNodeContents(e.querySelector('.tx')!);
+        return [...r.getClientRects()].some((l) => l.right > s.left && l.left < s.right && l.bottom > s.top && l.top < s.bottom);
+      }).length);
+      expect(over).toBe(0);
     } else await expect(sheet(page).locator('[data-kiki-cja], [data-kiki-why]')).toHaveCount(0);
     await snap(page, `${i + 1}-${id}-reveal`, true);
     await sheet(page).locator('[data-kiki-next]').click();

@@ -43,6 +43,7 @@
   import { isStaged, rosterName as name, speakersOf } from './scene/stage.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Mark from '../ui/Mark.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import { villagerArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -166,7 +167,7 @@
         {:else if reveal && parts}
           {#if rs}<p class="height" data-kiki-height={height}>{height ? t('kiki.rung.height', { x: sx(SPEEDS[height - 1]) }) : t('kiki.rung.none')}</p>{/if}
           <p class="en" data-kiki-en><SoundLine en={it.en} focus={it.focus} marks={it.marks} clip={it.id} from={playFrom} {clock} /></p>
-          <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
+          <p class="ja">{#each jaLines(it) as l, n (n)}<span><Phrases text={l} /></span>{/each}</p>
           <!-- the accent and the marks' key on one row (the key wraps under it when long) -->
           <div class="meta">
             <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
@@ -238,7 +239,7 @@
   }
   .notes { margin: 0; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
   .en { margin: 0; font: 700 var(--fs-en)/1.4 var(--font-ui); position: relative; }
-  .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
+  .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; line-break: strict; overflow-wrap: anywhere; }
   .ja span { display: block; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; position: relative; }
   .accent {

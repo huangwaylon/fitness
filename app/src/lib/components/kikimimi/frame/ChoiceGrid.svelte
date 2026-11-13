@@ -7,6 +7,7 @@
   // (mic/MicAnswer.svelte, its own chunk, loaded at the first such round and kept to the game's end).
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import OfficialArt from '../../characters/OfficialArt.svelte';
+  import Phrases from '../../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { localKV } from '#lib/sync/storage.ts';
   import { readMic } from '#lib/mic/pick.ts';
@@ -71,7 +72,7 @@
     <button type="button" class="ch tile-btn" class:obj-cream={m === 'right' || m === 'wrong'} data-choice={k} data-mark={m ?? undefined} aria-pressed={picked === k}
       aria-disabled={!open} aria-label={label?.(c)} data-sfx={open ? 'choice-pick' : 'none'}
       onclick={() => open && onpick(k)}>
-      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k] && ja[k] !== c}<span class="cja" lang="ja" data-kiki-cja={k}>{ja[k]}</span>{/if}{/if}
+      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k] && ja[k] !== c}<span class="cja" lang="ja" data-kiki-cja={k}><Phrases text={ja[k]} /></span>{/if}{/if}
       {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
     </button>
     {/if}
@@ -99,12 +100,14 @@
   .ch[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 30%, var(--c-card)); color: var(--c-ink); }
   /* set aside after the reveal: sunk (the off control: no edge, no lip), its soft text >= 4.5:1 (night 7.5, day 4.9) */
   .choices:has([data-mark='right']) .ch:not([data-mark]) { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; }
+  /* a marked text choice: room for its ○ / × either side (the text kept centred), never over a long choice's words */
+  .ch:is([data-mark='right'], [data-mark='wrong']):not(.pics .ch) { padding-inline: 40px; }
   .ch .sym { position: absolute; top: 4px; right: 10px; font: 700 26px/1 var(--font-ui); }
   .ch .sym.ok { color: var(--leaf-text); }
   .ch .sym.ng { color: var(--coral-text); }
   .tx { overflow-wrap: anywhere; }
   /* the Japanese under it: smaller, in the choice's own full colour (any tile, any time of day: >= 4.5:1 even on a
      set-aside choice) */
-  .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); }
+  .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); overflow-wrap: anywhere; }
   @media (prefers-reduced-motion: reduce) { .choices { transition: none; } }
 </style>

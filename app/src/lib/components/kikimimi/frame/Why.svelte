@@ -1,12 +1,13 @@
 <script lang="ts">
   // 解説 (docs/kikimimi.md "Japanese help"): an item's `why`, why the answer is right and the trap wrong, in a box under
   // the verdict and in the review list's open row.
+  import Phrases from '../../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { text }: { text: string } = $props();
 </script>
 
-<aside class="why obj-cream" data-kiki-why lang="ja"><b>{t('kiki.why')}</b><p>{text}</p></aside>
+<aside class="why obj-cream" data-kiki-why lang="ja"><b>{t('kiki.why')}</b><p><Phrases {text} /></p></aside>
 
 <style>
   /* a soft mint card, its label on top: the fixed cream and ink, readable at any time of day */
@@ -15,5 +16,5 @@
     background: color-mix(in srgb, var(--c-mint) 30%, var(--c-card)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c-mint) 85%, var(--c-ink));
   }
   .why b { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .why p { margin: 0; font: 700 var(--fs-body)/1.55 var(--font-ui); }
+  .why p { margin: 0; font: 700 var(--fs-body)/1.55 var(--font-ui); overflow-wrap: anywhere; }
 </style>

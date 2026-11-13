@@ -5,6 +5,7 @@
 
 <script lang="ts">
   import Icon from '../../ui/Icon.svelte';
+  import Phrases from '../../ui/Phrases.svelte';
   // A line of まねっこ シャドーイング (docs/kikimimi-mic.md "まねっこ シャドーイング"; games/mane/def.ts), its own chunk. The villager pops in
   // and says it once (the session's clip: listen only, the situation under them). Then, untimed: the line and its
   // Japanese, 重ねて言う (earphones: the mic's tap plays the line and I speak over it) or あとから言う (hear it with お手本,
@@ -164,7 +165,7 @@
           {/if}
           <p class="en" lang="en" data-kiki-en>{it.en}</p>
           {#if it.tts && it.tts !== it.en}<p class="said"><small>{t('kiki.mane.said')}</small> <span lang="en">{it.tts}</span></p>{/if}
-          <p class="ja">{lineJa(it)}</p>
+          <p class="ja"><Phrases text={lineJa(it)} /></p>
         {:else}
           <p class="notes"><span aria-hidden="true">♪…</span><span class="sr-only">{t('kiki.listen')}</span></p>
           <ClipBar {bar} now={game.now} height={8} />
@@ -225,7 +226,7 @@
   .bubble::before { content: ''; position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; rotate: 45deg; background: var(--c-card); border-radius: 4px; }
   .notes { margin: 0; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
   .en { margin: 0; font: 700 var(--fs-en)/1.4 var(--font-ui); position: relative; }
-  .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
+  .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; line-break: strict; overflow-wrap: anywhere; }
   .said { margin: 0; font: 700 var(--fs-body)/1.35 var(--font-ui); color: var(--c-ink-soft); position: relative; }
   .said small { font-size: var(--fs-s); }
   .react { margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--coral-text); position: relative; }
