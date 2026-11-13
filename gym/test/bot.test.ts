@@ -122,12 +122,22 @@ afterEach(() => {
 });
 
 describe('what gets checked', () => {
-  it('alerts on any time of day', async () => {
+  it('alerts only on 12:00 and 12:30 for a day without a setting', async () => {
+    const times = ['10:00', '11:30', '12:00', '12:30', '13:00', '21:30'].map(tomorrowAt);
+    up({ training: schedule(...times) });
+    expect(starts(await gym.runCheck())).toEqual([tomorrowAt('12:00'), tomorrowAt('12:30')]);
+    expect(sentText()).toContain('12:00〜12:30');
+    expect(sentText()).toContain('12:30〜13:00');
+    expect(sentText()).not.toContain('13:00〜13:30'); // ends after 13:00
+    expect(gym.lastCheck).toBe(NOW);
+  });
+
+  it('alerts on any time of day set to 🔔 終日', async () => {
+    gym.store.setRule(inDays(1), ANY, today());
     up({ training: schedule(tomorrowAt('10:00'), tomorrowAt('21:30')) });
     expect(starts(await gym.runCheck())).toEqual([tomorrowAt('10:00'), tomorrowAt('21:30')]);
     expect(sentText()).toContain('10:00〜10:30');
     expect(sentText()).toContain('21:30〜22:00');
-    expect(gym.lastCheck).toBe(NOW);
   });
 
   it('spaces out the requests', async () => {
@@ -210,17 +220,17 @@ describe('alerting', () => {
     await gym.runCheck();
     expect(pushes()).toHaveLength(1);
 
-    up({ training: schedule(noon, tomorrowAt('13:00')) }); // a new time on the same day
+    up({ training: schedule(noon, tomorrowAt('12:30')) }); // a new time on the same day
     await gym.runCheck();
     expect(pushes()).toHaveLength(2);
-    expect(pushes()[1].at(-1)).toContain('13:00〜13:30');
+    expect(pushes()[1].at(-1)).toContain('12:30〜13:00');
   });
 
   it('announces once per time, not per program', async () => {
-    const noon = tomorrowAt('12:00'), one = tomorrowAt('13:00');
+    const noon = tomorrowAt('12:00'), one = tomorrowAt('12:30');
     up({ training: schedule(noon, one), pilates: schedule(one) });
-    await gym.runCheck(); // both open at 13:00 together: one line naming both
-    expect(sentText()).toContain('13:00〜13:30　💪 パーソナルトレーニング・🧘 マシンピラティス');
+    await gym.runCheck(); // both open at 12:30 together: one line naming both
+    expect(sentText()).toContain('12:30〜13:00　💪 パーソナルトレーニング・🧘 マシンピラティス');
     up({ training: schedule(noon, one), pilates: schedule(noon, one) }); // pilates at 12:00: that time was announced
     await gym.runCheck();
     expect(pushes()).toHaveLength(1);
@@ -308,7 +318,7 @@ describe('when LINE fails', () => {
     expect(gym.retry).toBeNull();
     expect(retryKeys()[0]).toBeTruthy();
     expect(new Set(retryKeys()).size).toBe(1);
-    up({ training: schedule(tomorrowAt('12:00'), tomorrowAt('13:00')) }); // a different alert: a new key
+    up({ training: schedule(tomorrowAt('12:00'), tomorrowAt('12:30')) }); // a different alert: a new key
     await gym.runCheck();
     expect(retryKeys().at(-1)).not.toBe(retryKeys()[0]);
   });
@@ -621,14 +631,14 @@ describe('/status', () => {
     responses.pilates = new RateLimited(null);
     await failed(gym.runCheck());
     vi.setSystemTime(NOW + MIN);
-    up({ training: schedule(tomorrowAt('12:00'), tomorrowAt('13:00')) });
+    up({ training: schedule(tomorrowAt('12:00'), tomorrowAt('12:30')) });
     await gym.runCheck(false);
     expect(gym.checks).toEqual([
       { t: NOW + MIN, by: 'tap', ms: 0, r: { training: 'ok', pilates: 'ok' }, open: 2, fresh: 1, push: 'held' },
       { t: NOW, by: 'alarm', ms: 0, r: { training: 'ok', pilates: 'rate_limited' }, open: 1, fresh: 1, push: 'ok' },
     ]);
     expect(runtime().checks).toEqual(gym.checks); // saved with the check
-    up({ training: schedule(tomorrowAt('14:00')) });
+    up({ training: schedule(daysAhead(2, '12:00')) });
     push.mockRejectedValueOnce(new LineError('429'));
     await gym.runCheck();
     expect(gym.checks[0]).toMatchObject({ open: 1, fresh: 1, push: 'failed' });

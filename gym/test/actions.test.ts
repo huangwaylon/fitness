@@ -31,7 +31,7 @@ describe('day settings', () => {
     expect(text.startsWith(`👍 ${label(inDays(10))}の設定をリセットしました。いまは 💤`)).toBe(true);
     expect(bot.store.rules()).toEqual([]);
     // Nothing to clear: says how the day already is, not that it was reset.
-    expect(actions.resetDay(bot, inDays(1))).toEqual([`${label(inDays(1))}はすでに 🔔 終日 になっています。`, false]);
+    expect(actions.resetDay(bot, inDays(1))).toEqual([`${label(inDays(1))}はすでに ⏰ 12:00〜13:00 になっています。`, false]);
   });
 
   it('needs a check-from time ahead and not after the day', () => {
@@ -71,9 +71,8 @@ describe('status', () => {
     bot.store.setRule(inDays(1), SKIP, today());
     bot.store.setRule(inDays(20), NOON, today());
     const text = (await actions.status(bot)).join('\n');
-    expect(text.split('🔔 終日').length - 1).toBe(DAYS_TO_CHECK - 1);
+    expect(text.split('⏰ 12:00〜13:00').length - 1).toBe(DAYS_TO_CHECK); // the 3 default days left, and the 20th
     expect(text).toContain('🔕 通知オフ');
-    expect(text).toContain('⏰ 12:00〜13:00');
     expect(text).not.toContain('💤');
   });
 

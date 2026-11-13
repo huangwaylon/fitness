@@ -120,8 +120,8 @@ describe('cards', () => {
     const weeks = bubbles(message).map((b) => b.footer.contents.map((x: Json) => x.action));
     expect(weeks.map((w) => w.length)).toEqual([7, 7, 7, 4]); // 25 days, Mon–Sun
     expect(weeks.flat()).toHaveLength(ui.DAYS_SHOWN);
-    expect(weeks[0].slice(0, 5).map((a: Json) => a.label)).toEqual(['10/12（月） 🔔', '10/13（火） 🔕', '10/14（水） ⏰⏳',
-      '10/15（木） 🔔', '10/16（金） 💤']);
+    expect(weeks[0].slice(0, 5).map((a: Json) => a.label)).toEqual(['10/12（月） ⏰', '10/13（火） 🔕', '10/14（水） ⏰⏳',
+      '10/15（木） ⏰', '10/16（金） 💤']);
     expect(weeks[0][0].data).toBe('a=day&d=2026-10-12');
     expect(bubbles(message)[0].footer.contents[0].style).toBe('primary');
     expect(bubbles(message)[0].footer.contents[1].style).toBe('secondary');
@@ -266,7 +266,8 @@ describe('day settings', () => {
   });
 
   it('says an unchanged setting is so, without saving or a name', async () => {
-    await ui.handle(bot, tap(`a=any&d=${inDays(1)}`)); // already 🔔 by default
+    bot.store.setRule(inDays(1), SKIP, today());
+    await ui.handle(bot, tap(`a=skip&d=${inDays(1)}`)); // already 🔕
     expect(replyText()).toBe(messages.dayUnchanged(bot.store, inDays(1), today()));
     expect(bot.save).not.toHaveBeenCalled();
     expect(bot.line.memberName).not.toHaveBeenCalled();

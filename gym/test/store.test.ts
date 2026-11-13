@@ -1,4 +1,4 @@
-// Tests for the state store (port of test_units.py's store tests).
+// Tests for the state store.
 import { describe, expect, it } from 'vitest';
 import { CHECK_INTERVAL_MINUTES, DAYS_TO_CHECK } from '../src/config.ts';
 import { ANY, SKIP, Store, VERSION, type Rule } from '../src/store.ts';
@@ -6,7 +6,9 @@ import { addDays, at } from '../src/time.ts';
 
 const TODAY = '2026-10-03'; // a Saturday
 const NOW = at(TODAY, '09:00');
+/** DEFAULT_WINDOW: what a day without a setting is checked for. */
 const NOON: Rule = ['12:00', '13:00'];
+const EVENING: Rule = ['18:00', '20:00'];
 /** 2026-10-<day> at a Tokyo time. */
 const oct = (day: number, clock: string): number => at(`2026-10-${String(day).padStart(2, '0')}`, clock);
 
@@ -14,13 +16,15 @@ describe('Store', () => {
   it('gives each day exactly one rule', () => {
     const s = new Store();
     const d = addDays(TODAY, 1);
-    expect(s.effectiveRule(d, TODAY)).toBe(ANY);
+    expect(s.effectiveRule(d, TODAY)).toEqual(NOON);
     expect(s.setRule(d, SKIP, TODAY)).toBe(true);
     expect(s.rule(d)).toBe(SKIP);
-    expect(s.setRule(d, NOON, TODAY)).toBe(true); // replaces the skip
-    expect(s.rule(d)).toEqual(NOON);
-    expect(s.setRule(d, ['12:00', '13:00'], TODAY)).toBe(false); // no change
-    expect(s.setRule(d, ANY, TODAY)).toBe(true);
+    expect(s.setRule(d, EVENING, TODAY)).toBe(true); // replaces the skip
+    expect(s.rule(d)).toEqual(EVENING);
+    expect(s.setRule(d, ['18:00', '20:00'], TODAY)).toBe(false); // no change
+    expect(s.setRule(d, ANY, TODAY)).toBe(true); // all day is saved: it isn't the default
+    expect(s.rule(d)).toBe(ANY);
+    expect(s.setRule(d, ['12:00', '13:00'], TODAY)).toBe(true);
     expect(s.rule(d)).toBeUndefined(); // the default isn't saved
     expect(s.rules()).toEqual([]);
   });
@@ -38,24 +42,24 @@ describe('Store', () => {
     const s = new Store();
     const days = Array.from({ length: DAYS_TO_CHECK }, (_, i) => addDays(TODAY, i));
     s.setRule(days[1]!, SKIP, TODAY);
-    s.setRule(days[2]!, NOON, TODAY);
-    s.setRule(addDays(TODAY, 40), ANY, TODAY);
+    s.setRule(days[2]!, ANY, TODAY);
+    s.setRule(addDays(TODAY, 40), EVENING, TODAY);
     s.setRule(addDays(TODAY, 30), SKIP, TODAY); // far-off skip: nothing to check
     expect([...s.windows(NOW)]).toEqual([
-      [days[0], null], [days[2], NOON], ...days.slice(3).map((d) => [d, null]), [addDays(TODAY, 40), null],
+      [days[0], NOON], [days[2], null], ...days.slice(3).map((d) => [d, NOON]), [addDays(TODAY, 40), EVENING],
     ]);
   });
 
   it('purges what has passed', () => {
     const s = new Store();
     s.setRule('2026-10-02', SKIP, TODAY);
-    s.setRule('2026-10-03', NOON, TODAY);
+    s.setRule('2026-10-03', EVENING, TODAY);
     s.setCheckFrom('2026-10-05', oct(3, '08:00'), TODAY); // passed
     s.setCheckFrom('2026-10-06', oct(4, '16:00'), TODAY); // still ahead
     s.markNotified([oct(3, '08:00'), oct(3, '10:00')]);
     s.dirty = false;
     s.purge(NOW);
-    expect(s.rules()).toEqual([[TODAY, NOON]]); // today's rule stays until the day is over
+    expect(s.rules()).toEqual([[TODAY, EVENING]]); // today's rule stays until the day is over
     expect(s.checkFrom('2026-10-05')).toBeUndefined();
     expect(s.checkFrom('2026-10-06')).toBe(oct(4, '16:00'));
     expect(s.notified()).toEqual([oct(3, '10:00')]);
@@ -68,7 +72,7 @@ describe('Store', () => {
     expect(s.setCheckFrom(day, oct(4, '16:00'), TODAY)).toBe(true);
     expect(s.windows(NOW).has(day)).toBe(false);
     expect(s.windows(oct(4, '15:59')).has(day)).toBe(false);
-    expect(s.windows(oct(4, '16:00')).get(day)).toBeNull();
+    expect(s.windows(oct(4, '16:00')).get(day)).toEqual(NOON);
   });
 
   it.each([undefined, SKIP] as const)('turns on a day that is not checked when given a check-from (%s)', (before) => {
@@ -76,17 +80,26 @@ describe('Store', () => {
     const far = '2026-10-20';
     if (before) s.setRule(far, before, TODAY);
     expect(s.setCheckFrom(far, oct(18, '16:00'), TODAY)).toBe(true);
-    expect(s.rule(far)).toBe(ANY);
-    expect(s.windows(oct(18, '16:00')).has(far)).toBe(true);
+    expect(s.rule(far)).toEqual(NOON); // the default's window, saved: the day is past the default days
+    expect(s.windows(oct(18, '16:00')).get(far)).toEqual(NOON);
+  });
+
+  it('gives a skipped default day its default back with a check-from', () => {
+    const s = new Store();
+    const day = '2026-10-05';
+    s.setRule(day, SKIP, TODAY);
+    expect(s.setCheckFrom(day, oct(4, '16:00'), TODAY)).toBe(true);
+    expect(s.rule(day)).toBeUndefined();
+    expect(s.effectiveRule(day, TODAY)).toEqual(NOON);
   });
 
   it('keeps the check-from through rule changes except off', () => {
     const s = new Store();
     const day = '2026-10-05';
     s.setCheckFrom(day, oct(4, '16:00'), TODAY);
-    s.setRule(day, NOON, TODAY);
+    s.setRule(day, EVENING, TODAY);
     expect(s.checkFrom(day)).toBe(oct(4, '16:00'));
-    expect(s.windows(oct(4, '16:00')).get(day)).toEqual(NOON);
+    expect(s.windows(oct(4, '16:00')).get(day)).toEqual(EVENING);
     s.setRule(day, ANY, TODAY);
     expect(s.checkFrom(day)).toBe(oct(4, '16:00'));
     s.setRule(day, SKIP, TODAY);
@@ -113,14 +126,14 @@ describe('Store', () => {
   it('round-trips through JSON', () => {
     const s = new Store();
     s.setRule('2026-10-05', SKIP, TODAY);
-    s.setRule('2026-10-06', NOON, TODAY);
+    s.setRule('2026-10-06', EVENING, TODAY);
     s.setRule('2026-10-20', ANY, TODAY);
     s.setCheckFrom('2026-10-06', oct(5, '16:00'), TODAY);
     s.markNotified([oct(6, '12:00')]);
     s.setInterval(30);
     s.setPaused(true);
     const data = JSON.parse(JSON.stringify(s));
-    expect(data.days).toEqual({ '2026-10-05': 'skip', '2026-10-06': ['12:00', '13:00'], '2026-10-20': 'any' });
+    expect(data.days).toEqual({ '2026-10-05': 'skip', '2026-10-06': ['18:00', '20:00'], '2026-10-20': 'any' });
     expect(data.check_from).toEqual({ '2026-10-06': '2026-10-05T16:00:00+09:00' });
     const s2 = new Store(data);
     expect(s2.toJSON()).toEqual(s.toJSON());
@@ -179,7 +192,7 @@ describe('Store', () => {
 
   it('tracks whether it changed', () => {
     const s = new Store();
-    s.setRule(TODAY, ANY, TODAY); // already the default
+    s.setRule(TODAY, NOON, TODAY); // already the default
     s.markNotified([]);
     s.purge(NOW);
     expect(s.dirty).toBe(false);

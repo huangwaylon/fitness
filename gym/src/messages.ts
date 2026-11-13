@@ -1,6 +1,6 @@
 // All user-facing text (Japanese) and message formatting.
 // LINE shows text as typed (no Markdown), so lists use `・` and a card's first line is its bold title.
-import { DAYS_TO_CHECK } from './config.ts';
+import { DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { PROGRAMS, slotEnd, type Slot } from './hacomono.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
 import { clockOf, dayOf, weekday, type Clock, type Day } from './time.ts';
@@ -46,7 +46,7 @@ export function timeRange(start: Clock | number, end: Clock | number): string {
 export function ruleLabel(rule: Rule | undefined): string {
   if (rule === ANY) return ANY_LABEL;
   if (rule === SKIP) return SKIP_LABEL;
-  if (rule === undefined) return `💤 まだチェックしない（${DAYS_TO_CHECK - 1}日前から自動で終日）`;
+  if (rule === undefined) return `💤 まだチェックしない（${DAYS_TO_CHECK - 1}日前から自動で${timeRange(...DEFAULT_WINDOW)}）`;
   return `⏰ ${timeRange(...rule)}`;
 }
 
@@ -94,7 +94,7 @@ ${PROGRAMS.map((p) => p.label).join('・')}（トレーナー指名なし）
 
 export const HELP_TEXT = `${HELP}
 予約に空きが出たら、このグループでお知らせします。
-今日から${DAYS_TO_CHECK}日間は、特に設定しなくても終日チェックします。
+今日から${DAYS_TO_CHECK}日間は、特に設定しなくても${timeRange(...DEFAULT_WINDOW)}の枠をチェックします。
 
 日ごとの設定
 ${ANY_LABEL}　空きが出たらいつでも通知

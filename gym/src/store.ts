@@ -4,7 +4,7 @@
 //   - ANY          → alert for any open slot that day (🔔 終日)
 //   - SKIP         → no alerts that day (🔕 通知オフ)
 //   - [start, end] → only slots inside that time range (⏰)
-//   - nothing      → ANY within the next DAYS_TO_CHECK days, otherwise not checked yet (💤)
+//   - nothing      → DEFAULT_WINDOW within the next DAYS_TO_CHECK days, otherwise not checked yet (💤)
 //
 // A checked day can also have a "check from" time (⏳): the day is ignored until then. It's kept when the rule
 // changes between ANY and a range, cleared by SKIP, and dropped once it has passed.
@@ -14,7 +14,7 @@
 //
 // Also the bot-wide check settings: the interval between checks and whether checks are paused.
 // Mutations set `dirty`; the bot then saves the state.
-import { CHECK_INTERVAL_MINUTES, DAYS_TO_CHECK } from './config.ts';
+import { CHECK_INTERVAL_MINUTES, DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { addDays, dayOf, isoJst, type Clock, type Day } from './time.ts';
 
 export const VERSION = 3;
@@ -33,10 +33,13 @@ export interface StateJson {
   notified: string[];
 }
 
-/** Days checked all day unless set otherwise. */
+/** Days checked (for DEFAULT_WINDOW) unless set otherwise. */
 export function defaultDays(today: Day): Day[] {
   return Array.from({ length: DAYS_TO_CHECK }, (_, i) => addDays(today, i));
 }
+
+/** DEFAULT_WINDOW as a rule (a fresh copy: rules are stored as given). */
+const defaultRule = (): Rule => [DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]];
 
 const sameRule = (a: Rule | undefined, b: Rule | undefined): boolean =>
   a === b || (Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1]);
@@ -131,16 +134,16 @@ export class Store {
     return this.rulesByDay.get(day);
   }
 
-  /** The rule in force: the saved one, else ANY for the default days, else undefined (not checked yet). */
+  /** The rule in force: the saved one, else DEFAULT_WINDOW for the default days, else undefined (not checked yet). */
   effectiveRule(day: Day, today: Day): Rule | undefined {
-    return this.rulesByDay.get(day) ?? (defaultDays(today).includes(day) ? ANY : undefined);
+    return this.rulesByDay.get(day) ?? (defaultDays(today).includes(day) ? defaultRule() : undefined);
   }
 
   /** Give a day its rule. Returns false if that's what it already was. */
   setRule(day: Day, rule: Rule, today: Day): boolean {
     const before = this.effectiveRule(day, today);
     if (rule === SKIP) this.changeCheckFrom(day, null);
-    if (rule === ANY && defaultDays(today).includes(day)) {
+    if (sameRule(rule, defaultRule()) && defaultDays(today).includes(day)) {
       // The default anyway; keeps the saved list short.
       if (this.rulesByDay.delete(day)) this.dirty = true;
     } else if (!sameRule(this.rulesByDay.get(day), rule)) {
@@ -171,12 +174,12 @@ export class Store {
     return this.checkFromByDay.get(day);
   }
 
-  /** Only check the day from `when` on (null = right away). A day that isn't checked becomes ANY.
+  /** Only check the day from `when` on (null = right away). A day that isn't checked gets DEFAULT_WINDOW.
    *  Returns false if nothing changed. */
   setCheckFrom(day: Day, when: number | null, today: Day): boolean {
     if (when !== null) {
       const rule = this.effectiveRule(day, today);
-      if (rule === SKIP || rule === undefined) this.setRule(day, ANY, today);
+      if (rule === SKIP || rule === undefined) this.setRule(day, defaultRule(), today);
     }
     return this.changeCheckFrom(day, when);
   }

@@ -5,7 +5,7 @@
 // Every answer is a reply (free), visible to the whole group; a tap for a day that has passed gets a short hint.
 import * as actions from './actions.ts';
 import type { Bot } from './actions.ts';
-import { CLOSES, OPENS } from './config.ts';
+import { CLOSES, DEFAULT_WINDOW, OPENS } from './config.ts';
 import { LineError, texts } from './line.ts';
 import * as messages from './messages.ts';
 import { ANY, SKIP } from './store.ts';
@@ -114,7 +114,7 @@ export function dayCard(bot: Bot, day: Day): Json {
   const store = bot.store;
   const rule = store.rule(day);
   const checkFrom = store.checkFrom(day);
-  const start = Array.isArray(rule) ? rule[0] : '12:00';
+  const start = Array.isArray(rule) ? rule[0] : DEFAULT_WINDOW[0];
   const buttons = [
     button(postback(messages.ANY_LABEL, { a: 'any', d: day }), true),
     button(postback(messages.SKIP_LABEL, { a: 'skip', d: day })),
