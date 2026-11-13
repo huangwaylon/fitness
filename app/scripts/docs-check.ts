@@ -122,7 +122,7 @@ function checkHeadings(file: string, line: string, at: (msg: string) => void, ex
 }
 
 /** Per doc, the most it may weigh (KB of UTF-8); a doc not named gets DEFAULT_KB. README.md + docs/ together: TOTAL_KB. */
-const BUDGET_KB: Record<string, number> = { 'docs/design.md': 100 };
+const BUDGET_KB: Record<string, number> = { 'docs/design.md': 92 };
 const DEFAULT_KB = 45, TOTAL_KB = 500;
 /** A line longer than this (characters) is a warning: wrap prose at ~120. */
 export const LONG = 400;

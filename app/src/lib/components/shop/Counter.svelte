@@ -3,7 +3,7 @@
   // tabs pinned, the list scrolling under them, the bar at the foot. うる: my pocket (everything I caught, found or picked
   // up less what I sold: model/shop.ts) in rows by its sections (shop/pocket.ts), a row's tap its whole stack, − / + one,
   // a section's 全部 all of it (shop/sell.ts); the starts 苗 apart, with no 全部 (they're held to plant); the button says
-  // what the sale comes to.
+  // what the sale comes to. A row counts picked/held (「2/5」).
   // かう: the day's stock (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short, and the
   // fields' starts in rows as うる's: first when my free plots want them (stock.ts startsFirst), else after the stock with
   // a 苗へ chip in its header to jump there (the order as the tab opened); the button says what it costs. Section headers stick while their rows scroll. A sell or a buy shows at once with 取り消す
