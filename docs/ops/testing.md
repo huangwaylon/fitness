@@ -69,7 +69,8 @@ After a deploy, never holding one back:
   `e2e/gate.json`, 18 fast, stable spec files over the core flows; (2) the specs the push **changed**, each test 3×,
   never retried (the `chromium-x3` projects, `E2E_X3`): one failure in three is a flake the push brought, red; (3) the
   specs its files **reach**: a changed e2e helper's importers (over `MAX_IMPORTERS`, 10, and fixtures.ts: the gate set instead), a src or content file's by
-  `e2e/impact.json` (path globs to spec names; else the file's own name). Changes count from the commit live on the
+  `e2e/impact.json` (path globs to spec names; else the file's own name), and a changed i18n catalog's every spec that
+  spells one of its old strings (a value changed or dropped: copy a spec clicks by). Changes count from the commit live on the
   site (an unusable base: the gate set and more up to the budget, with a warning). Over the budget (`CAP_MS`, ~1300 s of
   tests) the reached specs drop out first, then the changed run once each (so do over `MAX_CHANGED`, 8, changed specs: a sweep). Every directory under `src/` and `content/`
   maps to a spec or is in `impact.json`'s `unmapped` with why, and every spec opening `/editor/?view=phone` is in the

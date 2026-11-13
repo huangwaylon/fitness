@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { context, fill, mapFile, select, type Ctx } from '../../scripts/e2e-impact.ts';
+import { context, fill, mapFile, oldCopy, select, type Ctx } from '../../scripts/e2e-impact.ts';
 import { runnerTrouble, tally } from '../../scripts/e2e-flakes.ts';
 import { failedSpecs, missed, rulesFor } from '../../scripts/e2e-missed.ts';
 
@@ -66,6 +66,17 @@ describe('e2e impact', () => {
     expect([s.x3, s.once]).toEqual([[], many]);
     expect(s.ms).toBe(10 * 10_000);
     expect(s.notes[0]).toMatch(/11 specs changed.*1 left to the full logic tier/);
+  });
+
+  it("a catalog's changed or dropped strings reach the specs that spell them (edff9222: もういちど → もう一度)", () => {
+    const before = { retry: 'もういちど', same: 'そのまま', n: '{n} こ のこり', gone: 'けした', ok: 'OK', off: 'Offline' };
+    const after = { retry: 'もう一度', same: 'そのまま', n: '{n} 個 残り', ok: 'Okay', off: 'Offline!' };
+    expect(oldCopy(before, after)).toEqual(['もういちど', 'こ のこり', 'けした', 'Offline']);
+    const source = (s: string) => (s === 'tent.spec.ts' ? "getByRole('button', { name: 'もういちど' })" : s === 'offline.spec.ts' ? 'けした' : '');
+    const s = select(['src/lib/i18n/ja.json'], { ...ctx, source }, new Map([['src/lib/i18n/ja.json', oldCopy(before, after)]]));
+    expect([...s.reached]).toEqual([['tent.spec.ts', 'src/lib/i18n/ja.json: 「もういちど」'], ['offline.spec.ts', 'src/lib/i18n/ja.json: 「けした」']]);
+    expect(s.gateOnly).toEqual([]);
+    expect(select(['src/lib/i18n/ja.json'], { ...ctx, source }).gateOnly).toEqual(['src/lib/i18n/ja.json']);
   });
 
   it('no base: the gate set, then the cheapest specs up to the budget', () => {

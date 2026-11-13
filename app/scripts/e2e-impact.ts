@@ -32,6 +32,8 @@ export type Ctx = {
   gate: string[];
   /** a spec's tests' time, ms */
   cost: (spec: string) => number;
+  /** a spec's source (for the copy a changed i18n catalog took away) */
+  source?: (spec: string) => string;
 };
 export type Selection = { gate: string[]; x3: string[]; once: string[]; reached: Map<string, string>; gateOnly: string[]; notes: string[]; ms: number };
 
@@ -52,8 +54,21 @@ export function mapFile(file: string, ctx: Pick<Ctx, 'rules' | 'specs'>): string
   return file.startsWith('src/') && stem.length >= 4 ? named(`${stem}*`) : [];
 }
 
-/** the gate's e2e for these changed files (paths under app/) */
-export function select(changed: string[], ctx: Ctx): Selection {
+/** a catalog's old strings the change took away (a value changed or the key gone), each as a spec would spell it: the
+ *  longest piece between {placeholders}, 2+ characters (4+ if ASCII: `OK`, `km` are everywhere) */
+export function oldCopy(before: Record<string, unknown>, after: Record<string, unknown>): string[] {
+  const out = new Set<string>();
+  for (const [k, v] of Object.entries(before)) {
+    if (typeof v !== 'string' || after[k] === v) continue;
+    const bit = v.split(/\{[^}]*\}/).map((x) => x.trim()).sort((a, b) => b.length - a.length)[0] ?? '';
+    if (bit.length >= (/^[\x00-\x7f]*$/.test(bit) ? 4 : 2)) out.add(bit);
+  }
+  return [...out];
+}
+
+/** the gate's e2e for these changed files (paths under app/); `copy`: a changed catalog → its old strings (oldCopy),
+ *  every spec spelling one reached (edff9222 renamed もういちど and wedding-board.spec still clicked it) */
+export function select(changed: string[], ctx: Ctx, copy = new Map<string, string[]>()): Selection {
   const has = new Set(ctx.specs);
   const changedSpecs: string[] = [], reached = new Map<string, string>(), gateOnly: string[] = [], notes: string[] = [];
   const reach = (spec: string, why: string) => reached.has(spec) || reached.set(spec, why);
@@ -67,8 +82,10 @@ export function select(changed: string[], ctx: Ctx): Selection {
     } else if (/\.test\.ts$/.test(f)) continue; // vitest's: the checks
     else {
       const specs = mapFile(f, ctx);
-      if (specs.length) specs.forEach((s) => reach(s, f));
-      else gateOnly.push(f);
+      const spelled = (copy.get(f) ?? []).flatMap((t) => ctx.specs.filter((s) => ctx.source?.(s).includes(t)).map((s) => [s, `${f}: 「${t}」`]));
+      specs.forEach((s) => reach(s, f));
+      spelled.forEach(([s, why]) => reach(s, why));
+      if (!specs.length && !spelled.length) gateOnly.push(f);
     }
   }
   const sum = (xs: string[]) => xs.reduce((a, s) => a + ctx.cost(s), 0);
@@ -170,14 +187,15 @@ export function context(app = '.'): Ctx {
     }));
   }
   const times: Record<string, number> = JSON.parse(readFileSync(join(e2e, 'timings.json'), 'utf8'));
-  const perFile = new Map<string, number>();
+  const perFile = new Map<string, number>(), sources = new Map<string, string>();
   for (const [k, ms] of Object.entries(times)) perFile.set(k.split(' › ')[0], (perFile.get(k.split(' › ')[0]) ?? 0) + ms);
   return {
     specs,
     importers,
     rules: (JSON.parse(readFileSync(join(e2e, 'impact.json'), 'utf8')) as { rules: Rule[] }).rules,
     gate: Object.keys((JSON.parse(readFileSync(join(e2e, 'gate.json'), 'utf8')) as { specs: Record<string, string> }).specs),
-    cost: (s) => perFile.get(s) ?? UNTIMED_MS
+    cost: (s) => perFile.get(s) ?? UNTIMED_MS,
+    source: (s) => sources.get(s) ?? sources.set(s, readFileSync(join(e2e, s), 'utf8')).get(s)!
   };
 }
 
@@ -222,7 +240,10 @@ if (import.meta.main) {
     from += `; ${short(point)} is ${changed.length > MAX_FILES ? `${changed.length} files from HEAD (over ${MAX_FILES})` : 'the first commit'}: no base`;
     [point, changed] = ['', []];
   }
-  const sel = point ? select(changed, ctx) : fill(ctx);
+  // (a changed catalog's old strings: the specs that still spell them)
+  const json = (rev: string, f: string) => { try { return JSON.parse(git('show', `${rev}:app/${f}`)); } catch { return {}; } };
+  const copy = new Map(changed.filter((f) => /^src\/lib\/i18n\/[^/]+\.json$/.test(f)).map((f) => [f, oldCopy(json(point, f), json(head, f))]));
+  const sel = point ? select(changed, ctx, copy) : fill(ctx);
   // (a workflow command, on stderr: stdout is the summary)
   if (!point) console.error(`::warning title=e2e-impact::no base to diff against (${from}): the gate set and more specs up to the budget`);
   const out = opt('--out');
