@@ -122,6 +122,10 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
+/* (a disabled one sunk too, as any: by night the cream pill read as live on the navy card; its soft text then the
+   night's, but in a cream object, whose --ctl-off is the day's tan) */
+.btn.paper:is(:disabled, [aria-disabled='true']) { --fill: var(--ctl-off); }
+:root[data-tod="night"] .btn.paper:is(:disabled, [aria-disabled='true']):not(.obj-cream *) { color: var(--n-soft); }
 /* a confirm's 削除 (the action that takes something away): coral */
 .btn.danger { --fill: var(--c-coral); --lip-c: var(--c-coral-text); }
 /* .yuzu: taking in what's ready (畑's 収穫: a gift to collect, not the leaf's "do"); sunk like any while it can't */
@@ -133,7 +137,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* ---------- an always-cream object (a bubble, a cream button, a transcript line, a legend, a scene's pill, 解説): cream at
    every time of day, so the theme's text colours inside it are put back to the day ones. Day-only --c-* text colours go on
    these alone; themed surfaces (the panel, a .card) take the theme ones (night: light on navy). A disabled cream button
-   keeps its cream fill, so its soft text is the day ink-soft (6:1), not night's light one. The controls inside one (a
+   is sunk as any (the night's --ctl-off and soft text; the day's in a cream object). The controls inside one (a
    ticket's choices) take the day ones too: cream with the brown edge, sunk tan (ink on night's navy was 2:1). ---------- */
 .obj-cream, .btn.paper {
   --text: var(--c-ink); --text-soft: var(--c-ink-soft); --leaf-text: var(--c-leaf-text); --coral-text: var(--c-coral-text);
