@@ -139,8 +139,8 @@ test('テスト通知 goes to this phone’s endpoint, then waits 5 s on the but
   await expect(btn).toHaveAttribute('aria-disabled', 'false', { timeout: 8000 });
   await expect(btn).toHaveText('テスト通知');
   expect(calls.filter((c) => c.path === '/its/push/test').map((c) => c.body)).toEqual([{ endpoint: 'https://web.push.apple.com/QE2E' }]);
-  const box = (await btn.boundingBox())!;
-  expect(box.height).toBeGreaterThanOrEqual(44);
+  // the layout height (the 44 px rule's): a bounding box mid-transition from the disabled translateY reads 43.99997
+  expect(await btn.evaluate((e) => (e as HTMLElement).offsetHeight)).toBeGreaterThanOrEqual(44);
 });
 
 test('where it can’t work, one line says why: an iPhone’s Safari tab, refused notifications, a Worker without push yet', async ({ browser }) => {
