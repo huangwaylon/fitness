@@ -16,7 +16,7 @@
   import { weather } from './weatherNow.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
 
-  /** `skyH`: the sky's height (px), on the sky's own boxes (Sky.svelte's `h`). */
+  /** `skyH`: the sky's height (px), on the sky's own boxes (Sky.svelte's `h`), and where the wet tint fades out. */
   let { where, skyH = 0 }: { where: 'sky' | 'stage'; skyH?: number } = $props();
   /** The fades' length (ms). */
   const FADE_MS = 60_000;
@@ -83,7 +83,7 @@
   {#if sky !== 'clear'}<div class="overcast" class:fading data-sky={sky} aria-hidden="true" style:--sky-h="{skyH}px" style:opacity={OVERCAST[sky] * level}></div>{/if}
 {:else}
   {#if sky !== 'clear'}
-    <div class="wet" class:fading data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1] * level}></div>
+    <div class="wet" class:fading data-sky={sky} aria-hidden="true" style:--sky-h="{skyH}px" style:--wet={WET[sky][0]} style:opacity={WET[sky][1] * level}></div>
   {/if}
   {#if weather.fog}
     <div class="fog" aria-hidden="true"><i class="bank b1"></i><i class="bank b2"></i></div>
@@ -133,9 +133,11 @@
   /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
      stage's own tokens, IslandScene) ---- */
   .wet, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  /* the wet day's darkening (weather.ts WET): on the ground like the time-of-day tint, fading out up the sky (no edge);
-     the sprites take it in their own filter (IslandScene --tod-filter) */
-  .wet { z-index: var(--z-ground-tint); mix-blend-mode: multiply; -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask); }
+  /* the wet day's darkening (weather.ts WET): over the 3D island's ground and sea, under every world node (no z-index: the
+     nodes' depths stand over it; the sprites take it in their own filter, IslandScene --tod-filter), fading out up the
+     sky from the horizon (no edge: the overcast greys the sky). A gradient, not a mask: WebKit drops the multiply of a
+     masked layer over the canvas (it drew a pale veil) */
+  .wet { mix-blend-mode: multiply; background: linear-gradient(transparent calc(var(--sky-h) - 70px), var(--wet) calc(var(--sky-h) - 16px)); }
   /* NH's soft morning haze (the user: "morning fog is too strong"): the far end (the top of the view) softened, the
      near and middle island clear; two light banks drifting over the far half */
   .fog { z-index: calc(var(--z-tint) + 1); background: linear-gradient(180deg, #F4F6F8c0 0%, #F4F6F880 20%, #F4F6F830 42%, #F4F6F800 62%); opacity: .7; }

@@ -1286,7 +1286,7 @@
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />
         <KikimimiHost live={relay ?? demoRelay} />
-        {#if WeatherC}<WeatherC where="stage" />{/if}
+        {#if WeatherC}<WeatherC where="stage" skyH={horizonPx + 6} />{/if}
         {#if nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
         {#if bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
         {#if (wedding.arch || wedding.day) && WeddingC}<WeddingC arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
