@@ -212,8 +212,11 @@ file stops the compiler; content.test runs the same checker.
   AAC (stories and しずえの ニュース softer: `SOFT`); L1/L2's slow takes by atempo. By atempo too, before the gate: L1's and
   はまべ's listening clips at 0.92, ほし's tile, call, rush and たちぎき at 1.1 (`LISTEN_TEMPO`; news and long as spoken).
 - **The gate:** whisper-cli hears every clip; a content word wrong or the voice drifting re-rolls with the next seed,
-  the best take kept and the rest flagged; a person's re-rolls are pinned (`PINNED`). `app/scripts/tts/report.json` has
-  every clip's numbers and flags (curriculum.md "Listening check").
+  the best take kept and the rest flagged; a person's re-rolls are pinned (`PINNED`). The full report (every clip's
+  numbers and flags) is `app/.cache/tts/report.json`, kept in the assets release's `tts-work` (assets-release.sh;
+  the release before it has it as `tts-report.json.gz`); the run needs it, so a fresh checkout restores it
+  first. `app/scripts/tts/report.json` is its committed slim copy: the summary (its `flagged`, curriculum.md "Listening
+  check") and each clip's source, text and condition, what the tests read.
 - **Tone** (a ことば タイル's `tone`; tone.ts, the audio script's header): a soft or firm tile is cloned from its voice's
   tone reference (cast.json `tones`, made by `--tone-refs`), its wh- and either/or questions end in "." for the engine,
   and its seed is the best of 4 by a silent score (`tts.py prosody`), kept in scripts/tts/tone-picks.json. Untoned

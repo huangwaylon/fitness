@@ -38,3 +38,11 @@ export function staged<T>(outs: readonly string[], make: (tmps: string[]) => T):
 
 /** writeFileSync through a temp file and a rename. */
 export const writeAtomic = (file: string, data: string | NodeJS.ArrayBufferView): void => staged([file], ([t]) => writeFileSync(t, data));
+
+/** The committed report (scripts/tts/report.json): the full one's summary and, per clip, what the tests read (its
+ *  source hash, its text, its condition and whisper's WER over it), a clip a line; the rest stays in the full report. */
+export function slimReport(summary: unknown, items: Record<string, { src: string; text: string; cond?: string; condWer?: number }>): string {
+  const rows = Object.entries(items).map(([id, { src, text, cond, condWer }]) =>
+    `  ${JSON.stringify(id)}: ${JSON.stringify({ src, text, ...(cond ? { cond } : {}), ...(typeof condWer === 'number' ? { condWer } : {}) })}`);
+  return `{\n "summary": ${JSON.stringify(summary)},\n "items": {\n${rows.join(',\n')}\n }\n}\n`;
+}

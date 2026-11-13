@@ -65,8 +65,10 @@
 // condition, a little softer than the quiz (−18 LUFS: heard in bed, one after another); --levels doesn't select them.
 // QA: whisper-cli large-v3-turbo hears each clip; a content word wrong (articles and fillers aside; numbers and reductions
 // normalised) re-rolls it with the next seed, up to --retries times, then it's flagged. UTMOS (SpeechMOS utmos22) and
-// ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. scripts/tts/report.json gets every clip's
-// numbers, and a summary prints.
+// ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. The full report (every clip's numbers:
+// .cache/tts/report.json, beside the clips; in the assets-* release's tts-work, assets-release.sh) and, committed, its
+// summary and each clip's source, text and condition (scripts/tts/report.json: what the tests read); a summary prints.
+// No full report here (a fresh checkout): restore it from the newest assets-* release first (docs/kikimimi-engine.md).
 // Before a run the work folder gets every clip from the packs (kikimimi-packs.ts unpackClips: what's missing or stale),
 // so a clip whose source didn't change is never spoken again; after it, the packs are written (kikimimi-packs.ts
 // writePacks) and the levels compiled with their offsets (kikimimi-levels.ts).
@@ -82,7 +84,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { clipItems, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
 import { AUTHORED as ITEMS } from '../src/lib/kikimimi/source.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
@@ -91,7 +93,7 @@ import { CAST_IDS, carefulText, castOf, spokenText } from '../src/lib/kikimimi/s
 import { codecArgs, condOf, condPlan, condSource, dropGaps, dropOut, stepFilter, type CondPlan, type Step } from '../src/lib/kikimimi/conditions.ts';
 import type { Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
-import { FFMPEG, FFPROBE, WHISPER_MODEL, measureLoudness, staged, writeAtomic } from './tts/tools.ts';
+import { FFMPEG, FFPROBE, WHISPER_MODEL, measureLoudness, slimReport, staged, writeAtomic } from './tts/tools.ts';
 import { fnv1a, mulberry32 } from '../src/lib/random.ts';
 import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
@@ -282,7 +284,10 @@ const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
 const OUT = SCRATCH ?? WORK;
 const CLIPS = SCRATCH ? join(SCRATCH, 'clips.json') : join(APP, 'src/lib/kikimimi/clips.json');
 const SRCS = SCRATCH ? join(SCRATCH, 'clips.src.json') : join(import.meta.dirname, 'kikimimi-clips.src.json');
-const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json');
+/** The full report (each clip's numbers, kept for the next run's unchanged clips) and the committed slim one (no
+ *  scratch run writes it). */
+const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(dirname(WORK), 'report.json');
+const SLIM = SCRATCH ? null : join(TTS, 'report.json');
 /** The bedtime serials' segments, a clip each (story.ts storyItems): spoken whatever --levels says (never by say). */
 const STORY_ITEMS = storyItems(readStories());
 const STORY: ReadonlySet<string> = new Set(STORY_ITEMS.map((it) => it.id));
@@ -1026,6 +1031,8 @@ function run(): void {
   if (SAY) return console.log(`\n${todo.length} items spoken by say; ${files.length} files, ${(bytes / 1024).toFixed(0)} KB`);
 
   // the report covers every clip made by this pipeline: earlier runs' rows kept while their clip is unchanged
+  if (!existsSync(REPORT) && SLIM && existsSync(SLIM))
+    throw new Error(`no full report at ${REPORT}: restore it from the newest assets-* release's tts-work (docs/kikimimi-engine.md "Audio")`);
   const prev: Record<string, Row> = existsSync(REPORT) ? JSON.parse(readFileSync(REPORT, 'utf8')).items ?? {} : {};
   for (const [id, r] of Object.entries(prev)) if (!rows[id] && r.src && srcs[id] === r.src && clips[id]) rows[id] = r;
   const R = Object.values(rows);
@@ -1058,6 +1065,7 @@ function run(): void {
     }))
   };
   writeAtomic(REPORT, JSON.stringify({ summary, items: sorted(rows) }, null, 1) + '\n');
+  if (SLIM) writeAtomic(SLIM, slimReport(summary, sorted(rows)));
   console.log(`\n${todo.length} spoken in ${summary.wallSeconds}s. All ${R.length} clips: whisper word for word ${summary.perfect}, content clean ${summary.contentClean}, re-rolled ${summary.rerolled}`);
   console.log(`UTMOS mean ${summary.mos} (min ${summary.mosMin}); similarity to the ref mean ${summary.sim} (min ${summary.simMin}); RTF ${summary.rtf}; wpm by level ${JSON.stringify(wpm)}`);
   if (stories.clips) console.log(`stories: ${stories.clips} clips, ${stories.minutes} min, ${stories.wpm} wpm, UTMOS ${stories.mos}, content clean ${stories.contentClean}`);

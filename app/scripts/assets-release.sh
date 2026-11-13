@@ -1,6 +1,7 @@
 #!/bin/sh
 # The raw sources git doesn't hold, as release assets of this repo (outside git history): the full-size ごはん
-# picture generations, ききみみ's clean takes and voice references, the raw food-data downloads. Run it after a
+# picture generations, ききみみ's clean takes, voice references and full audio report (.cache/tts/report.json: the
+# committed scripts/tts/report.json is its slim copy), the raw food-data downloads. Run it after a
 # batch regenerates or re-downloads them; it keeps the newest 2 `assets-*` releases. Needs zstd and gh.
 # Restore: gh release download <tag> -p '*' && shasum -a 256 -c SHA256SUMS && cat NAME.tar.zst.part-* | zstd -d | tar -xf - -C <dest>
 set -eu
@@ -16,7 +17,7 @@ pack() { # name, dir, path...
   tar -C "$dir" -cf - "$@" | zstd -q -T0 -10 | split -b 1900m - "$OUT/$name.tar.zst.part-"
 }
 pack food-images-raw "$HOME" food-images-raw            # → ~/food-images-raw
-pack tts-work "$ROOT/app/.cache/tts" clean refs          # → app/.cache/tts/
+pack tts-work "$ROOT/app/.cache/tts" clean refs report.json   # → app/.cache/tts/
 pack food-data-raw "$ROOT/food-data" raw                 # → food-data/
 (cd "$OUT" && shasum -a 256 *.part-* > SHA256SUMS)
 gh release create "$TAG" -R "$REPO" --latest=false -t "$TAG" -F "$HERE/assets-release.md" "$OUT"/*
