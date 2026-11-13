@@ -55,10 +55,14 @@ const ENC = ['-ktx2', '-mipmap', '-srgb', '-uastc', '-uastc_level', '2', '-uastc
  *  island's camera (review 11/10: 1.86 → 0.60 MB of the first launch's KTX2 for all 12, a 256 cap's
  *  PSNR against the 512 ≥ 36.5 dB for these). By model and image index; a capped image is its every pack's, so each
  *  model carrying it is listed (the script fails on one that isn't: a model seen up close keeps the full size).
- *  Held back for a look at full pinch zoom on the phone (28.7-38.7 dB): shop.glb #6, tent.glb #0 #2 (campsite-winter's
- *  too), bridge-stone.glb #0. */
+ *  The four held back for a look at full pinch zoom (28.7-38.7 dB: shop.glb #6, tent.glb #0 #2, bridge-stone.glb #0)
+ *  capped too, the user's call (review 11-13 N7). */
 const CAPS: [model: string, px: number, images: number[]][] = [
-  ['world3d/shop.glb', 256, [2, 3, 10]],
+  ['world3d/shop.glb', 256, [2, 3, 6, 10]],
+  ['world3d/tent.glb', 256, [0, 2]],
+  ['world3d/deco/campsite-winter.glb', 256, [0, 2]],
+  ['world3d/bridge-stone.glb', 256, [0]],
+  ['world3d/bridges/stone-winter.glb', 256, [0]],
   ['world3d/museum.glb', 256, [0, 2, 3]],
   ['structures/stairs-stone-stair.glb', 256, [0]],
   ['world3d/deco/bulletin-board.glb', 256, [0]],
