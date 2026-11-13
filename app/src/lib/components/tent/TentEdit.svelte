@@ -778,11 +778,11 @@
         <div class="slot card dense" data-tent-slot={n} data-filled={sv ? 'true' : 'false'}>
           <div class="who"><span class="nm">{sv ? sv.name : t('tent.saveEmpty')}</span>{#if sv}<span class="dt">{savedAt(sv.at)} · {t('tent.savePieces', { n: sv.pieces.length })}</span>{/if}</div>
           <div class="acts">
-            <button type="button" class="btn paper sm" data-slot-act="save" data-sfx="tick" onclick={() => ask('save', n)}>{t('common.save')}</button>
+            <button type="button" class="btn paper small" data-slot-act="save" data-sfx="tick" onclick={() => ask('save', n)}>{t('common.save')}</button>
             <!-- (an empty slot: 保存 only) -->
             {#if sv}
-              <button type="button" class="btn sm" data-slot-act="load" data-sfx="tick" onclick={() => ask('load', n)}>{t('tent.load')}</button>
-              <button type="button" class="btn paper sm danger" data-slot-act="del" data-sfx="tick" onclick={() => ask('del', n)}>{t('tent.saveDelete')}</button>
+              <button type="button" class="btn small" data-slot-act="load" data-sfx="tick" onclick={() => ask('load', n)}>{t('tent.load')}</button>
+              <button type="button" class="btn paper small danger" data-slot-act="del" data-sfx="tick" onclick={() => ask('del', n)}>{t('tent.saveDelete')}</button>
             {/if}
           </div>
         </div>
@@ -831,7 +831,6 @@
   .slot[data-filled='false'] .nm { color: var(--text-soft); }
   .slot .dt { font-size: var(--fs-xs); color: var(--text-soft); }
   .slot .acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .btn.sm { min-height: 40px; padding: 0 8px; font-size: var(--fs-s); }
   .ask { display: grid; gap: 10px; padding: 0 0 8px; text-align: center; }
   .ask .miss { font-size: var(--fs-s); color: var(--text-soft); }
   .field { display: grid; gap: 4px; text-align: left; }
