@@ -1,8 +1,15 @@
 # The ITS booker's runner (its/runner/README.md): headed Chrome under xvfb solves Turnstile, curl scans every interval,
-# holds and outcomes go to the its-bot Worker's record. Inert until the repo variable ITS_RUNNER_ENABLED is '1' (set at
-# cutover, once mbp2's bot is stopped: never two runners; the Worker's lease is the second guard). Secrets live only in
-# the `its` environment (deployments from main only). The Actions log is public: the runner prints only logs.public
-# lines; its private log is age-encrypted to ITS_LOG_RECIPIENT and uploaded as the only artifact (3 days).
+# holds and outcomes go to the its-bot Worker's record. Live since the cutover (2026-11-13: mbp2's bot stopped, the repo
+# variable ITS_RUNNER_ENABLED = 1; unset it to stop every job before it starts). Every run checks out main, so what lands
+# there runs at the next run. Never two runners: this workflow's concurrency group, and the Worker's lease. Secrets live
+# only in the `its` environment (deployments from main only). The Actions log is public: the runner prints only
+# logs.public lines; its private log is age-encrypted to ITS_LOG_RECIPIENT and uploaded as the only artifact (14 days).
+#
+# Timings (test_remote's workflow test parses this file): no new hold ITS_RUN_MIN after the job started, then main.py's
+# drain (≤ 15 min) and run_end, inside the Run step's timeout, inside the job's. A run lasts ~5.5 h and the schedule
+# ticks every 30 min, so most ticks find a run in progress: the gate job ends those at once (no pending run that the next
+# tick would cancel, the old "cancelled" noise), except the tick in the last 30 min of a run, which queues the next run
+# to start the moment this one ends. 開始's dispatch always queues.
 name: ITS runner
 
 on:
@@ -13,17 +20,49 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: its-runner
-  cancel-in-progress: false
+env:
+  ITS_RUN_MIN: 320          # minutes from the job's start to the last new hold
+  ITS_SKIP_YOUNGER_MIN: 290 # a scheduled tick skips while another run started less than this ago (ITS_RUN_MIN − 30)
 
 jobs:
-  run:
+  # No concurrency here: it answers at once while a run holds the group.
+  gate:
     if: >-
       github.repository == 'huangwaylon/fitness' && github.ref == 'refs/heads/main' &&
       github.event_name != 'pull_request' && vars.ITS_RUNNER_ENABLED == '1'
     runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: read
+    outputs:
+      go: ${{ steps.gate.outputs.go }}
+    steps:
+      - name: Skip a scheduled tick while a young run is in progress
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != schedule ]; then echo "go=1" >> "$GITHUB_OUTPUT"; echo "gate: $GITHUB_EVENT_NAME, go"; exit 0; fi
+          # Another run of this workflow, not finished, started (or queued) under ITS_SKIP_YOUNGER_MIN ago. Any failure
+          # to ask: go (the concurrency group still queues it, as before the gate).
+          young=$(gh run list -R "$GITHUB_REPOSITORY" -w its-runner.yml -L 20 --json databaseId,status,startedAt,createdAt \
+            --jq "[.[] | select(.databaseId != $GITHUB_RUN_ID and .status != \"completed\")
+                   | select(((.startedAt // .createdAt) | sub(\"\\\\.[0-9]+Z$\"; \"Z\") | fromdateiso8601) > (now - $ITS_SKIP_YOUNGER_MIN * 60))]
+                   | length" 2>/dev/null) || young=
+          case "$young" in
+            ''|*[!0-9]*) echo "go=1" >> "$GITHUB_OUTPUT"; echo "gate: could not list the runs, go" ;;
+            0) echo "go=1" >> "$GITHUB_OUTPUT"; echo "gate: no young run, go" ;;
+            *) echo "go=0" >> "$GITHUB_OUTPUT"; echo "gate: $young young run(s) in progress, skip" ;;
+          esac
+
+  run:
+    needs: gate
+    if: needs.gate.outputs.go == '1'
+    runs-on: ubuntu-latest
     timeout-minutes: 350
+    concurrency:
+      group: its-runner
+      cancel-in-progress: false
     environment: its
     env:
       ITS_WORKER_URL: https://its-bot.island-fund-relay.workers.dev
@@ -64,11 +103,11 @@ jobs:
           google-chrome --version
           command -v xvfb-run
 
-      # The secrets are this step's env only. --deadline: no new hold 320 min after the job started; main.py drains
-      # for up to 15 more, sends run_end and exits 0 well inside the job's 350.
+      # The secrets are this step's env only. --deadline: no new hold ITS_RUN_MIN after the job started; main.py drains
+      # for up to 15 more (DRAIN_SEC), sends run_end and exits 0 inside this step's timeout.
       - name: Run
         if: steps.pre.outputs.run == '1'
-        timeout-minutes: 340
+        timeout-minutes: 345
         working-directory: its/runner
         env:
           START: ${{ steps.pre.outputs.start }}
@@ -92,7 +131,7 @@ jobs:
           ITS_STATE: ${{ secrets.ITS_STATE }}
           ITS_ADDR: ${{ secrets.ITS_ADDR }}
         run: |
-          deadline=$((START + 320 * 60))
+          deadline=$((START + ITS_RUN_MIN * 60))
           xvfb-run -a --server-args='-screen 0 1280x1600x24' python main.py --remote --deadline "$deadline"
 
       # Encryption failure (or no recipient) uploads nothing: the plaintext never leaves the runner.
@@ -120,5 +159,5 @@ jobs:
           name: its-private-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/its-private.tar.gz.age
           if-no-files-found: ignore
-          retention-days: 3
+          retention-days: 14
           compression-level: 0

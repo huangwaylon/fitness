@@ -1,0 +1,64 @@
+# The ITS booker's alert (its/README.md "Investigating"): every 30 min, the its-bot Worker's GET /health/its (Bearer
+# ITS_HEALTH_TOKEN, a repository secret: no environment here) → one issue labelled `its-alert`, opened or commented when
+# something needs a look, closed when healthy. Mirrors health.yml's alert. The repo is public: the Worker answers codes
+# and counts only, and this prints and posts nothing else (each field below is held to a code or a number). Inert until
+# the secret exists: no token, a notice and a green exit.
+name: ITS health
+
+on:
+  schedule:
+    - cron: '23,53 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health:
+    if: github.repository == 'huangwaylon/fitness'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: The booker's health
+        env:
+          ITS_HEALTH_TOKEN: ${{ secrets.ITS_HEALTH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$ITS_HEALTH_TOKEN" ]; then echo "::notice::no ITS_HEALTH_TOKEN secret: the ITS alert is off (its/README.md)"; exit 0; fi
+          code=$(curl -sS --max-time 30 -o h.json -w '%{http_code}' -H "Authorization: Bearer $ITS_HEALTH_TOKEN" \
+            https://its-bot.island-fund-relay.workers.dev/health/its) || code=000
+          # codes and numbers only, whatever the body holds: anything else becomes "?"
+          c='if type == "string" and test("^[a-z_]{1,40}$") then . else "?" end'
+          n='if type == "number" then floor else null end'
+          s=$(jq -c "{verdict: (.verdict | $c), reasons: [(.reasons // [])[] | $c], phase: (.phase | if . == null then null else $c end),
+                      lastSeenAgeSec: (.lastSeenAgeSec | $n), unsynced: (.unsynced | $n), unsyncedAgeSec: (.unsyncedAgeSec | $n),
+                      lastPreflightAgeSec: (.lastPreflightAgeSec | $n)}" h.json 2>/dev/null) || s=
+          rm -f h.json
+          if [ "$code" != 200 ] || [ -z "$s" ]; then echo "::error::/health/its answered $code (its/README.md \"Investigating\")"; exit 1; fi
+          echo "$s"
+          # verdict late or failing; human_needed, dispatch_failed, mail_failing, settings_stale; unsynced for 30+ min
+          why=$(echo "$s" | jq -r '[
+            (if .verdict == "late" or .verdict == "failing" then "verdict_\(.verdict)" else empty end),
+            (.reasons[] | select(. == "human_needed" or . == "dispatch_failed" or . == "mail_failing" or . == "settings_stale")),
+            (if (.reasons | index("unsynced")) and (.unsyncedAgeSec // 0) > 1800 then "unsynced" else empty end)
+          ] | join(" ")')
+          counts=$(echo "$s" | jq -r '"verdict \(.verdict); reasons \(.reasons | join(" ")); phase \(.phase // "-"); last report \(.lastSeenAgeSec // "-") s ago; unsynced \(.unsynced // 0) (\(.unsyncedAgeSec // "-") s); last preflight \(.lastPreflightAgeSec // "-") s ago"')
+          open=$(gh issue list --label its-alert --state open --json number --jq '.[0].number // empty')
+          body="$why
+
+          $counts
+
+          Investigate: its/README.md \"Investigating\" (the app's 設定 → 保養所ボット, \`cd its/worker && npm run its:logs -- <run>\`). Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -n "$why" ]; then
+            echo "::warning::$why"
+            gh label create its-alert --color B60205 --description "the ITS booker's alert (its-health.yml)" 2>/dev/null || true
+            if [ -z "$open" ]; then gh issue create --label its-alert --title "ITS alert: $why" --body "$body"
+            else
+              last=$(gh issue view "$open" --json comments,body --jq '(.comments | last | .body) // .body' | head -1)
+              [ "$last" = "$why" ] || gh issue comment "$open" --body "$body"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Healthy again: $counts"
+          fi

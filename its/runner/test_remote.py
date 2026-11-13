@@ -2089,6 +2089,53 @@ def test_scan_history(port):
                                                          'avail': 0, 'code': 'error'}, str(model.reports[-1]['scansLog'][-1]))
 
 
+def test_workflow_timings():
+    """its-runner.yml's timings nest (parsed by hand: the stdlib has no YAML): the last hold ITS_RUN_MIN after the
+    start, plus main.py's drain and a margin, inside the Run step's timeout, inside the job's; the Worker's LATE_AFTER
+    longer than the schedule's period; the gate skips ticks while a run younger than ITS_RUN_MIN − one period is in
+    progress, the run job alone holds the concurrency group; its.yml runs on a change to it; its-health.yml is inert
+    without its secret and reads no other."""
+    root = os.path.dirname(ITS_DIR)
+    wf = lambda name: open(os.path.join(root, '.github', 'workflows', name), encoding='utf-8').read()
+    y = wf('its-runner.yml')
+    num = lambda pat, text=y: int(re.search(pat, text, re.M).group(1))
+    run_min, skip_min = num(r'^  ITS_RUN_MIN: (\d+)'), num(r'^  ITS_SKIP_YOUNGER_MIN: (\d+)')
+    jobs = re.split(r'^  (?=[a-z]+:\n)', y.split('\njobs:\n', 1)[1], flags=re.M)
+    job = {j.split(':', 1)[0]: j for j in jobs if j.strip()}
+    job_timeout = num(r'^    timeout-minutes: (\d+)', job['run'])
+    step = job['run'].split('- name: Run\n', 1)[1].split('\n      - ', 1)[0]
+    step_timeout = num(r'^        timeout-minutes: (\d+)', step)
+    drain_min = M.DRAIN_SEC / 60
+    check('workflow: run + drain + 5 < the Run step\'s timeout < the job\'s',
+          run_min + drain_min + 5 < step_timeout < job_timeout, f'{run_min} + {drain_min} + 5, {step_timeout}, {job_timeout}')
+    check('workflow: the deadline is ITS_RUN_MIN from the start', 'deadline=$((START + ITS_RUN_MIN * 60))' in step)
+    minutes = sorted(int(m) for m in re.search(r"cron: '([0-9,]+) \* \* \* \*'", y).group(1).split(','))
+    period = min((b - a) % 60 or 60 for a, b in zip(minutes, minutes[1:] + minutes[:1]))
+    ts = open(os.path.join(root, 'app', 'src', 'lib', 'its', 'contract.ts'), encoding='utf-8').read()
+    late = num(r'export const LATE_AFTER_SEC = (\d+) \* 60;', ts)
+    check('workflow: LATE_AFTER is longer than the schedule\'s period', late > period, f'{late} vs {period}')
+    check('workflow: the gate skips only while the next tick is not the last of a run',
+          0 < skip_min == run_min - period, f'{skip_min} vs {run_min} − {period}')
+    check('workflow: the gate has no concurrency; the run job holds the group',
+          not re.search(r'^ +concurrency:', job['gate'], re.M) and 'group: its-runner' in job['run'] and 'needs: gate' in job['run']
+          and "needs.gate.outputs.go == '1'" in job['run'] and '\nconcurrency' not in y)
+    check('workflow: the gate asks for a schedule only, and goes when it cannot ask',
+          'if [ "$GITHUB_EVENT_NAME" != schedule ]' in job['gate'] and "''|*[!0-9]*) echo \"go=1\"" in job['gate'])
+    check('workflow: the private log kept 14 days', 'retention-days: 14' in y)
+    its = wf('its.yml')
+    check('workflow: its.yml runs on a change to the runner\'s workflows',
+          its.count("- '.github/workflows/its-runner.yml'") == 2 and its.count("- '.github/workflows/its-health.yml'") == 2)
+    h = wf('its-health.yml')
+    check('health: inert without its secret (before any request)',
+          h.index('if [ -z "$ITS_HEALTH_TOKEN" ]') < h.index('curl ') and 'exit 0; fi' in h)
+    check('health: no other secret, no environment', re.findall(r'secrets\.(\w+)', h) == ['ITS_HEALTH_TOKEN']
+          and 'environment:' not in h)
+    check('health: every field held to a code or a number before it is printed',
+          'test("^[a-z_]{1,40}$")' in h and 'rm -f h.json' in h and h.index('rm -f h.json') < h.index('echo "$s"'))
+    check('health: one its-alert issue, closed when healthy', 'gh issue create --label its-alert' in h
+          and 'gh issue close' in h)
+
+
 def main_(argv=()):
     verbose = '-v' in argv
     names = [a for a in argv if not a.startswith('-')]

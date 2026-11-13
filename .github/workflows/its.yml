@@ -13,6 +13,8 @@ on:
       - 'relay/src/auth.ts'
       - 'app/src/lib/types.ts'
       - '.github/workflows/its.yml'
+      - '.github/workflows/its-runner.yml'
+      - '.github/workflows/its-health.yml'
   pull_request:
     paths:
       - 'its/**'
@@ -21,6 +23,8 @@ on:
       - 'relay/src/auth.ts'
       - 'app/src/lib/types.ts'
       - '.github/workflows/its.yml'
+      - '.github/workflows/its-runner.yml'
+      - '.github/workflows/its-health.yml'
   workflow_dispatch:
 
 permissions:
