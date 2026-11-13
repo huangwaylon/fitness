@@ -20,8 +20,8 @@
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { pickUp } from '../motion/transitions.ts';
-  import { holdLoop } from './clouds.ts';
-  import { timers } from './timers.ts';
+  import { holdLoop } from '../../world/clouds.ts';
+  import { timers } from '../../world/timers.ts';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
@@ -33,23 +33,23 @@
   import { lastSyncLine } from '#lib/i18n/format.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { islandDay } from './ambientClock.ts';
-  import { todayPct } from './progress.ts';
+  import { todayPct } from '../../world/progress.ts';
   import { RULES, STRETCH } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
+  import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from '../../world/fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy } from '#lib/sync/world-day.ts';
-  import { fx3d } from './fx3d.ts';
-  import { echo3d } from './echo3d.ts';
-  import { GOAL_TREES, offBuildingsAt } from './world.ts';
+  import { fx3d } from '../../world/fx3d.ts';
+  import { echo3d } from '../../world/echo3d.ts';
+  import { GOAL_TREES, offBuildingsAt } from '../../world/world.ts';
   import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';
-  import { MAIN_MEALS, mealsLogged } from './mealChecks.ts';
+  import { MAIN_MEALS, mealsLogged } from '../../world/mealChecks.ts';
   import { askFood } from '../health/open.svelte.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';

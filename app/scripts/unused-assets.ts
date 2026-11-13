@@ -30,14 +30,14 @@ const SEEN = new Set(seenArg ? readFileSync(seenArg, 'utf8').split('\n').filter(
 
 /** The island's world: its DOM nodes stay over the 3D canvas (taps, the m3 keys), but an art key named here is drawn
  *  only where the 3D island has no model for it (a card, or the node's own art: Island3D's m3off). */
-const WORLD = /^lib\/components\/(island|world3d|board)\//;
+const WORLD = /^lib\/(components\/(island|world3d|board)|world)\//;
 /** In island/ but UI over the canvas on either island (the HUD, the plates, the speech, the balloon catalogue's
  *  presents): their art stays. */
 const OVERLAY = new Set([
   'Hud.svelte', 'Jar.svelte', 'CoinFlow.svelte', 'Plate.svelte', 'CatchStack.svelte', 'catchStack.svelte.ts', 'catchCard.ts',
-  'catchLine.ts', 'catchLines.ts', 'Talk.svelte', 'Says.svelte', 'SayPicker.svelte', 'SayButton.svelte',
-  'PartnerNews.svelte', 'partnerNews.ts', 'catalog.ts', 'catalog.json', 'pager.ts', 'HitOverlay.svelte'
-].map((f) => `lib/components/island/${f}`));
+  'catchLine.ts', 'Talk.svelte', 'Says.svelte', 'SayPicker.svelte', 'SayButton.svelte',
+  'PartnerNews.svelte', 'partnerNews.ts', 'catalog.ts', 'catalog.json', 'HitOverlay.svelte'
+].map((f) => `lib/components/island/${f}`).concat(['lib/world/catchLines.ts', 'lib/world/pager.ts']));
 /** Dev pages and tools: what they name keeps nothing (the gallery shows every key). */
 const DEV = /^(routes\/(dev|world3d)\/|lib\/components\/dev\/)/;
 type Kind = 'world' | 'app' | 'dev';
@@ -196,18 +196,18 @@ function reach(): Set<string> {
 // what they name is the app's. One step only, and not world.ts: the app reads its positions (the walk, the relay's
 // checks, the sound's surfaces), while its art keys (the scenery) are the island's to draw.
 for (const f of modFiles) {
-  if (kindOf0(f) !== 'app' || /^lib\/components\/(island|board)\//.test(f)) continue;
-  for (const e of edges.get(f) ?? []) if (/^lib\/components\/(island|board)\/.*\.(ts|json)$/.test(e.to) && e.to !== 'lib/components/island/world.ts' && kindOf0(e.to) === 'world') SHARED.add(e.to);
+  if (kindOf0(f) !== 'app' || /^lib\/(components\/(island|board)|world)\//.test(f)) continue;
+  for (const e of edges.get(f) ?? []) if (/^lib\/(components\/(island|board)|world)\/.*\.(ts|json)$/.test(e.to) && e.to !== 'lib/world/world.ts' && kindOf0(e.to) === 'world') SHARED.add(e.to);
 }
 const now = reach();
 const unreachedNow = modFiles.filter((f) => !now.has(f) && !f.endsWith('.json') && !f.startsWith('service-worker/') && !f.endsWith('.d.ts')).sort();
 /** world.ts's exports and who still reads each. */
-const worldTs = readFileSync(join(SRC, 'lib/components/island/world.ts'), 'utf8');
+const worldTs = readFileSync(join(SRC, 'lib/world/world.ts'), 'utf8');
 const worldExports = [...worldTs.matchAll(/^export (?:const|function|type|interface) ([A-Za-z_]\w*)/gm)].map((m) => m[1]);
 const readers = Object.fromEntries(worldExports.map((x) => [x, [...now].filter((f) => {
-  if (f === 'lib/components/island/world.ts' || !(edges.get(f) ?? []).some((e) => e.to === 'lib/components/island/world.ts')) return false;
+  if (f === 'lib/world/world.ts' || !(edges.get(f) ?? []).some((e) => e.to === 'lib/world/world.ts')) return false;
   return new RegExp(`\\b${x}\\b`).test(readFileSync(join(SRC, f), 'utf8'));
-}).map((f) => f.replace(/^lib\/components\//, ''))]));
+}).map((f) => f.replace(/^lib\/(components\/)?/, ''))]));
 
 // ---- each static file's users ---------------------------------------------------------------------------------------
 

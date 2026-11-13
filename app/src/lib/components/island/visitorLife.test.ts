@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import { MOTION_MS } from '../motion/reactions.ts';
-import { VISITORS } from './visitors.ts';
+import { VISITORS } from '../../world/visitors.ts';
 import {
   BEHAVIOUR, EDGE_FADE_MS, GULLIVER_WAKE, MEET_GAP, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs,
   type BeatState, type VisitorAct

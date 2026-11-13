@@ -11,10 +11,10 @@ import type { LocalDate } from '#lib/types.ts';
 import type { PersonId as Who, Who as Islander } from '#lib/types.ts';
 import { mulberry32, pickOne } from '#lib/random.ts';
 import { IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
-import { BUBBLE_ODDS } from './critters.ts';
-import { dayRand } from './daySeed.ts';
-import { MAX_HOPS, POI_LINGER } from './wander.ts';
-import type { FreshWhere, Pt } from './world.ts';
+import { BUBBLE_ODDS } from '../../world/critters.ts';
+import { dayRand } from '../../world/daySeed.ts';
+import { MAX_HOPS, POI_LINGER } from '../../world/wander.ts';
+import type { FreshWhere, Pt } from '../../world/world.ts';
 
 // ---------- the slot clock ----------
 

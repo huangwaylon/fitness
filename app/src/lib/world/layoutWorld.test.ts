@@ -3,7 +3,7 @@ import { worldOf } from './layoutWorld.ts';
 import * as W from './world.ts';
 import { walkNav, buildingAt, doorOf } from './nav.ts';
 import { route, walkGeo, walkable } from './walkGraph.ts';
-import { planTap } from './tapWalk.ts';
+import { planTap } from '../components/island/tapWalk.ts';
 import { guestSpot } from './buildings.ts';
 import { mushroomSpots } from './mushrooms.ts';
 import { defaultLayout, withChanges } from '#lib/layout/model.ts';

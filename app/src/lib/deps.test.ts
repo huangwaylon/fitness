@@ -68,7 +68,11 @@ const ALLOW: Record<string, string[]> = {
   gym: ['i18n', 'sync', 'contract'],
   // ボット's 保養所 (docs/design.md "Bots"): the its-bot Worker's client (the member key, the log) and the page's view
   its: ['i18n', 'sync', 'contract'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its']
+  // the island's game model (world.ts, the walk, the critters, the sea, the day's weather and seeds, the farm's batch
+  // writes…): pure, never a component, so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
+  // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
+  world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'world']
 };
 
 function files(dir: string): string[] {

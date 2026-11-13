@@ -5,10 +5,10 @@
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BUGS, FISH as FISH_TABLE } from '../src/lib/components/island/critters.ts';
-import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
-import { SEA as SEA_TABLE } from '../src/lib/components/island/sea.ts';
-import { FOSSILS } from '../src/lib/components/island/beach.ts';
+import { BUGS, FISH as FISH_TABLE } from '../src/lib/world/critters.ts';
+import { POND_FISH } from '../src/lib/world/pondFish.ts';
+import { SEA as SEA_TABLE } from '../src/lib/world/sea.ts';
+import { FOSSILS } from '../src/lib/world/beach.ts';
 import { CROPS, FENCES, FENCE_PARTS, FENCE_SNOW, PLANTS, PUMPKINS, VINES } from '../src/lib/layout/garden.ts';
 
 /** The bugs (critters.ts BugId) → NH's Insect<Name> models. */
@@ -294,7 +294,7 @@ const decos: AssetJob[] = [
   { name: 'bridges/stone-winter', parts: [['BridgeStone', 'BridgeStone03']], snow: true, tris: 8000, uses: ['deck', 'front'].map((p): Use => ({ key: `bridges/stone-${p}-winter`, cat: 'scenery', s: 1.18 })) }
 ];
 
-// the decorations (island/decor.ts: もようがえ), one model each in its first colour, turned for its four facings
+// the decorations (world/decor.ts: もようがえ), one model each in its first colour, turned for its four facings
 const DECOR: [string, string][] = [
   ['stone-lantern', 'FtrStonelantern'], ['birdbath', 'FtrBirdbus'], ['garden-wagon', 'FtrGardenwagon'], ['iron-table', 'FtrIrongardenTable'],
   ['iron-chair', 'FtrIrongardenChair'], ['brick-well', 'FtrWellBrick'], ['tanuki', 'FtrOrnamentTanuki'], ['monstera', 'FtrPlantMonstera'],

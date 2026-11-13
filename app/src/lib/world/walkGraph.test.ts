@@ -1,7 +1,7 @@
 import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import { actionSpots, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
-import { plan } from './avatar.ts';
+import { plan } from '../components/island/avatar.ts';
 import { BRIDGE_RAIL, CAMPSITE, FLOWERS, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver, onBridge } from './world.ts';
 
 const crosses = (a: Pt, b: Pt, o: Box) => {

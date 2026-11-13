@@ -7,7 +7,7 @@ import { milestoneOn } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { EventNow } from './events.ts';
 import { mulberry32 } from '#lib/random.ts';
-import { has3d } from '../villager3d/manifest.ts';
+import { has3d } from '../components/villager3d/manifest.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 

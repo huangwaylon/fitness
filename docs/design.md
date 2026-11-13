@@ -373,7 +373,7 @@ comes only on its days (a visitor, the tape deck, the cake, the weather, the fir
 the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Only `transform`
 and `opacity` animate in the DOM; everything pauses while hidden (`data-paused`), a sheet pauses particles, critters and
 idle life (`data-covered`), and under a full-height sheet every animation holds (`data-sheet`) and the 3D island draws
-nothing. Nothing on the island pays ベル. **Dev params:** the island's URL params (`island/devHooks.ts`,
+nothing. Nothing on the island pays ベル. **Dev params:** the island's URL params (`world/devHooks.ts`,
 `ui-state/preview.ts`): [ops/testing.md "URL params"](ops/testing.md#url-params).
 
 ### World
@@ -404,7 +404,7 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
 - **Layout:** the default island (`layout/default.json`; what stands where: [island-layout.md](island-layout.md)):
   the homes A (ウェイ, left) and B (うめ, right) on every phone (never mirrored), the goal trees on their outer sides.
   The wild flowers (clumps of one kind, the season's in turn) and weed spots are scattered, seeded
-  (`npm run layout` → `island/scatter.json`). **Decor** (`island/fixedDecor.ts`): NH's outdoor furniture and seasonal
+  (`npm run layout` → `world/scatter.json`). **Decor** (`world/fixedDecor.ts`): NH's outdoor furniture and seasonal
   pieces, each a walk obstacle; a tap answers in place (the pump waters, the shishi-odoshi tips, the rest knock); lamps
   and the campfire light from dusk. **The decor's life** (`island/ambient.ts`): 19–22 a villager sits at the campfire;
   on an exercise-goal day pull-ups now and then; when both met every goal, at dusk side by side on the front bench.
@@ -435,7 +435,7 @@ so nothing moves slower. **At rest** (no finger for a moment, only ambience on s
 touch is back at the full rate at once. A villager's small moves in place (a turn, a nod, a surprise: villagers.ts
 SMALL) are ambience too; a walk or a hop is the full rate. The endless CSS loops over the island (the sky's clouds,
 the night's twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
-(`island/clouds.ts`), never running at the display's 60 Hz; held still under reduced motion.
+(`world/clouds.ts`), never running at the display's 60 Hz; held still under reduced motion.
 
 **One renderer lifecycle:** every WebGL surface makes and lets go of its renderer the same way (`world3d/stage.ts`: its
 header); the rooms keep their models page-wide (`world3d/modelCache.ts`); shadows redraw only when a caster changes
@@ -443,7 +443,7 @@ header); the rooms keep their models page-wide (`world3d/modelCache.ts`); shadow
 
 ### Buildings
 
-`island/buildings.ts`, `island/doorOut.ts`. The campsite, the homes, the museum ([The museum](#the-museum)) and the
+`world/buildings.ts`, `island/doorOut.ts`. The campsite, the homes, the museum ([The museum](#the-museum)) and the
 shop ([The shop](#the-shop); each one to an island, moved and turned in the editor, never removed): a tap on one walks
 my villager up to its door and goes in. ‹ しまへ comes out of the door, NH's way: my villager stands just in front of it,
 facing out, on every phone at once (`layout/nav.ts` exitOf). Inside, my villager is nowhere on the others' islands.
@@ -466,7 +466,7 @@ the balloon present.
 
 ### Weather
 
-`island/weather.ts` (pure), relay `src/weather.ts`. The island has **Tokyo's real weather by the hour**, or the game's own
+`world/weather.ts` (pure), relay `src/weather.ts`. The island has **Tokyo's real weather by the hour**, or the game's own
 seeded days; every phone shows the same sky at the same hour: **fine**, **cloudy**, **rain**, **a downpour**, **snow**,
 with **fog** as an hour's extra.
 
@@ -487,7 +487,7 @@ with **fog** as an hour's extra.
 
 ### Trees
 
-`island/FruitTree.svelte`, `island/fruitDay.ts`. A tree's fruit through one Tokyo day:
+`island/FruitTree.svelte`, `world/fruitDay.ts`. A tree's fruit through one Tokyo day:
 
 - **Hanging:** each goal's fruit, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour toward the goal.
 - **Falling:** met, the tree shakes and the fruit drops in front of the trunk with a thud and a puff; once per phone;
@@ -529,7 +529,7 @@ a flower is watered ([Island care](#island-care)); any water casts the line ther
 sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes; the sun glints; the moon bobs; the night sky
 twinkles (and grants a wish while a shooting star crosses: [Shooting stars](#shooting-stars)); the campfire is poked.
 
-**Tap targets** (`island/hitbox.ts`): everything tappable answers on its whole visible body, at least 44 × 44px; in
+**Tap targets** (`world/hitbox.ts`): everything tappable answers on its whole visible body, at least 44 × 44px; in
 front wins, exactly under the finger over a character's loose reach; a building is its model's silhouette.
 **Nothing lies on a building's ground** (`layout/clear.ts`): what's dropped or spawned takes a spot off its footprint,
 door step and the strip its model hides. On water only what's drawn takes a tap, so a tap on the sea beside a dig spot
@@ -538,9 +538,9 @@ casts. A touch goes where the finger was, never moved by WebKit's touch adjustme
 
 ### Balloon
 
-NH's balloon present (`island/balloonFlight.ts`: its header; `island/Balloon.svelte`): by day every 45–90 s of
+NH's balloon present (`world/balloonFlight.ts`: its header; `island/Balloon.svelte`): by day every 45–90 s of
 on-screen time it flies over the island in 3D, sea to sea. A tap pops it: the present falls to open ground clear of
-every control (`island/presentLanding.ts`) and lies there for every phone until tapped open. What's inside follows NH's
+every control (`world/presentLanding.ts`) and lies there for every phone until tapped open. What's inside follows NH's
 drop rates without Bells or materials (`island/catalog.ts`: furniture, clothing, a season's DIY recipe), counted in the
 ずかん. On Bunny Day a sky egg instead. The catalogue: `npm run catalog:build`.
 
@@ -602,7 +602,7 @@ home's look is its owner's, its room anyone's; anyone changes the outdoors, in /
 
 ### Decorating
 
-`layoutEdit/IslandEdit.svelte` (in /editor), `island/Decor.svelte`, `island/decor.ts`. Any of us (the guest too) puts
+`layoutEdit/IslandEdit.svelte` (in /editor), `island/Decor.svelte`, `world/decor.ts`. Any of us (the guest too) puts
 NH's outdoor furniture on the island, moves, turns and removes it, in /editor only ([island-layout.md "Phone
 editing"](island-layout.md#phone-editing)); every phone shows it at once, kept: the decorations are the layout's
 objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the record's cap).
@@ -673,7 +673,7 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
 
 ### Critters
 
-`island/critters.ts`, `island/critterPath.ts` (each header has its numbers). NH species on the Tokyo clock, frequent,
+`world/critters.ts`, `island/critterPath.ts` (each header has its numbers). NH species on the Tokyo clock, frequent,
 the same on every phone (ambient life's slots: [backend](backend.md) "Ambient life"):
 
 - **Who comes:** a shadow off every stretch of the coast most of the time, the front beach's bubbles on a channel of
@@ -682,7 +682,7 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
   NH northern months; hours still hold.
 - **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks every swim, landing and hop at its
   time, so every phone has it at the same spot; a catch or an escape is shared by its id (first wins).
-- **Fishing** (`island/fishing.ts`, its header: the reach, the nibbles, the window): a tap on any water casts there
+- **Fishing** (`world/fishing.ts`, its header: the reach, the nibbles, the window): a tap on any water casts there
   from where my villager stands (no walk). A shadow near the float nibbles, then bites (NH's 「！」); while the line is
   out any tap but a door is the reel: on the bite it catches, earlier it scares the fish. 1 in 14 a boot, tire or can.
 - **How the bugs move** (`critterPath.ts` bugPath, NH's paces): butterflies meander and land on a flower, a bee never
@@ -690,7 +690,7 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
 - **Fish:** NH's sea and pier fish, NH's shadows by size. **Bugs:** NH's, each where NH keeps it (`critters.ts` where
   the island lacks the spot); a tap nets one; a near miss startles it; at night the tarantula and the scorpion rear up
   at a first tap and charge off at a second.
-- **Diving** (`island/sea.ts`, NH's sea creatures): bubbles rise off the front beach now and then; a tap dives; 1 spot
+- **Diving** (`world/sea.ts`, NH's sea creatures): bubbles rise off the front beach now and then; a tap dives; 1 spot
   in 25 is a pearl.
 - **The catch:** the official icon pops onto a plate with NH's catch line; every catch's and find's plate (anyone's)
   goes in one stack at the bottom centre (`island/CatchStack.svelte`), at most 3. World cues `scene-<kind>`
@@ -698,7 +698,7 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
 
 ### Beach finds
 
-`island/Finds.svelte`, `island/beach.ts`. The day's items derive from the Tokyo date and time plus a seed, so every
+`island/Finds.svelte`, `world/beach.ts`. The day's items derive from the Tokyo date and time plus a seed, so every
 phone agrees; what anyone picks up, digs or opens is gone on all ([Shared world](#shared-world): first wins). The first
 of each shell, fossil and fragment is a ずかん `find`.
 
@@ -706,7 +706,7 @@ of each shell, fossil and fragment is a ずかん `find`.
   ([World](#world) "The sea's wash"); what lies there as the island opens just lies. `?find=washed` washes a bottle in.
 - **Fossils** (NH's): **four dig spots a day** as in NH (`beach.ts` `DIGS_A_DAY`), shown only clear of every
   control; a tap digs one up, gone till tomorrow.
-- **Mushrooms** (`island/mushrooms.ts`): November's, beside the trunks, NH's weights. No `find`.
+- **Mushrooms** (`world/mushrooms.ts`): November's, beside the trunks, NH's weights. No `find`.
 - **Message bottle:** every 8–14 minutes one rocks at the water's edge for 6; a tap reads its note (16 notes).
 - **Star fragments:** each wish on a shooting star is one fragment on the beach the next morning (at most 8).
 - **A balloon's present:** where it lands; what's inside is decided at the tap and shown on every phone. A tree's
@@ -714,7 +714,7 @@ of each shell, fossil and fragment is a ずかん `find`.
 
 ### Island care
 
-`island/Care.svelte`, `island/care.ts` (no ベル, no find):
+`island/Care.svelte`, `world/care.ts` (no ベル, no find):
 
 - **Weeds** sprout every 30–60 minutes on the day's free weed spots, the newest three at a time; a tap pulls one, gone
   on every phone.
@@ -728,7 +728,7 @@ of each shell, fossil and fragment is a ずかん `find`.
 
 ### Pond
 
-`island/pondFish.ts`. NH's pond (lily pads and a slow ripple), the river and its mouth, and the spring and the river
+`world/pondFish.ts`. NH's pond (lily pads and a slow ripple), the river and its mouth, and the spring and the river
 above the cliff.
 
 - **Fresh water by where you cast** (NH's locations: the pond, the river, its mouth, the clifftop); the river's own
@@ -822,29 +822,29 @@ person has a pocket and かいがら, the guest too.
 
 ### Dialogue
 
-`island/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`. The speech balloon and the catch plate read like NH's
+`world/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`. The speech balloon and the catch plate read like NH's
 box: 33 ms a glyph, two lines a page. A tap finishes the page, the next turns it, the last closes it; an orange ▼ bobs
 while another page follows. Left alone a page turns after 6 s. The name tag is tilted on its top-left in the speaker's
 NH colour. No voices. A visitor's first tap is their introduction, a first find adds 「ずかんに のったよ！」; a line may end on
 NH's answers (Jack, K.K.).
 
-Where it stands, one rule for every speaker (`island/placement.ts` `placeBy`): by the speaker, its tail pointing at
+Where it stands, one rule for every speaker (`world/placement.ts` `placeBy`): by the speaker, its tail pointing at
 them, nearness first; clear of every control if it can, never over the HUD, しずえ's box, a popup or the speaker. It
-follows a speaker who moves (`island/balloonFollow.ts`) and closes if they go.
+follows a speaker who moves (`world/balloonFollow.ts`) and closes if they go.
 
 ### Villager taps
 
 A tap on my villager is a squish and the tap sound (seated, where it sits), and in NH's flea months now and then a flea
 hops off ([Critters](#critters)); nothing opens.
 
-**Phrases** (`island/SayPicker.svelte`, `island/say.ts`): the say button ([Island](#island)) opens the phrase picker
+**Phrases** (`island/SayPicker.svelte`, `world/say.ts`): the say button ([Island](#island)) opens the phrase picker
 above it: my own last four (newest first, kept on this phone) and a field (at most 20 characters). No presets: only my
 own words. A pick hops my villager and shows the phrase in its balloon for 4 s (the name on a tag in the person's
 colour), on every phone (presence only). One balloon at a time.
 
 A tap on the partner's villager is a **ハイタッチ** at once, in place: they stop (woken first if asleep), a sparkle flies
 from my villager to them, both turn and hop, hearts as it lands. Their phone plays the same moment from the same
-start; closed, it hears it when it opens, once (`island/highFives.ts`). A tap while one is under way adds nothing. Off
+start; closed, it hears it when it opens, once (`world/highFives.ts`). A tap while one is under way adds nothing. Off
 screen, the edge chip brings the camera to them.
 
 ### Players
@@ -857,7 +857,7 @@ heads (`characters/Avatar.svelte`) show the look's portrait. A part a look can't
 
 ### Visitors
 
-`island/Visitor.svelte`, `island/visitors.ts` (its header: who comes when). NH's visitors, one at a time, each NH's own
+`island/Visitor.svelte`, `world/visitors.ts` (its header: who comes when). NH's visitors, one at a time, each NH's own
 3D model (a character with none never comes), seeded by the date: **Daisy Mae** on Sunday mornings, Monday to Saturday
 one of NH's weekday visitors (none on Saturday from 18:00: [K.K. on his stool](#kk-on-his-stool)); **Jack**,
 **Celeste**, the holiday hosts and the wedding couple on their days. Priority (`visitorAt`): the event's host, the
@@ -868,7 +868,7 @@ the first time, then a line. No trading, no ベル.
 
 ### Visitors: roles
 
-`island/visitorRoles.ts` (pure; who plays which role). NH's other special characters come as **guests** through the
+`world/visitorRoles.ts` (pure; who plays which role). NH's other special characters come as **guests** through the
 visitors' one slot, each NH's own 3D model, each with a role the one framework plays from per-character data:
 **shop** (グレース, ナッティー: 6 pieces of the shop's list, seeded, never today's stock or one the island has),
 **gift** (a piece for the rooms, once a visit, to whoever asks first), **fortune** (ハッケミィ: each person's luck and
@@ -903,13 +903,13 @@ back to its spot, turns with a hop and speaks. On a page's first paint they're s
 
 ### Halloween
 
-`island/events.ts`, `island/Halloween.svelte`. NH's Halloween on Oct 31 (Tokyo): NH's pumpkins on the lawn all day;
+`world/events.ts`, `island/Halloween.svelte`. NH's Halloween on Oct 31 (Tokyo): NH's pumpkins on the lawn all day;
 17:00–24:00 they light up and **Jack** comes; his 「トリック オア トリート！」 ends on NH's answers (no candy is his trick: party
 nose glasses on my villager for a minute).
 
 ### Holiday hosts
 
-`island/events.ts`, `island/visitors.ts` (`HOSTS`), `island/eggs.ts`. Each NH holiday is one date rule in `events.ts`
+`world/events.ts`, `world/visitors.ts` (`HOSTS`), `world/eggs.ts`. Each NH holiday is one date rule in `events.ts`
 (`nthWeekday`, `easter`); its host takes the visitor slot with an introduction, four lines and two villager day lines:
 
 - **Franklin**, Turkey Day (the fourth Thursday of November, 09:00–24:00): he asks for a fish; the next fish caught that
@@ -920,7 +920,7 @@ nose glasses on my villager for a minute).
 
 ### Birthdays
 
-`island/birthday.ts`, `island/Birthday.svelte`, `island/Cake.svelte`, `villagers/birthdays.ts`. Ours come from `PEOPLE`
+`world/birthday.ts`, `island/Birthday.svelte`, `island/Cake.svelte`, `villagers/birthdays.ts`. Ours come from `PEOPLE`
 in `config/rules.ts` (null turns one off; Feb 29 falls on Feb 28). On one: both villagers wear NH's birthday hat; NH's
 cake by centre stage, confetti, しずえ's greeting; a tap on the cake plays ハッピーバースデー on the island's [shared
 stage](#shared-music) and blows the candles out for the day on every phone. An NH villager's own birthday puts the hat
@@ -928,7 +928,7 @@ on it.
 
 ### Wedding countdown
 
-`island/wedding.ts`, `island/Wedding.svelte`. The wedding date is the 結婚式 board's `date` setting
+`world/wedding.ts`, `island/Wedding.svelte`. The wedding date is the 結婚式 board's `date` setting
 ([wedding.md](wedding.md); `time/holidays.ts` `weddingDate`); the island, its weather and its music read that one date.
 On the milestone days (`wedding.ts`) Reese and Cyrus are the visitor under a heart float, Reese's introduction ending on
 the count. On the day the villagers bow and glow, confetti (`scene-wedding`) and fireworks from 19:00. Every June Sunday
@@ -936,18 +936,18 @@ NH's wedding arch stands behind centre stage.
 
 ### Shooting stars
 
-`island/stars.ts`, `island/SceneTaps.svelte`. On a clear night (19:00–04:00): every 3–8 minutes of on-screen night 1–3
+`world/stars.ts`, `island/SceneTaps.svelte`. On a clear night (19:00–04:00): every 3–8 minutes of on-screen night 1–3
 streaks (1 in 6 a shower of 5–8); a meteor shower's night one every 3–8 s. A quick white streak to the lower left, clear
 of every control. **A wish:** a tap in the sky while one crosses: sparkles, a chime (`scene-wish`), 「ながれぼしに おねがい！」, and
 a fragment the next morning.
 
-<a id="celeste-and-meteor-showers"></a>**Celeste and meteor showers** (`island/meteor.ts`): about one night in ten, at
+<a id="celeste-and-meteor-showers"></a>**Celeste and meteor showers** (`world/meteor.ts`): about one night in ten, at
 most one a week (seeded by its Monday), Celeste visits 20:00–04:00 and shooting stars cross every 3–8 s; her lines
 explain wishing, the fragments and the season's sign (the zodiac fragment twice as likely).
 
 ### Fireworks
 
-`island/fireworks.ts`, `island/Fireworks.svelte`. Every Sunday in August 19:00–24:00; New Year's countdown (Dec 31
+`world/fireworks.ts`, `island/Fireworks.svelte`. Every Sunday in August 19:00–24:00; New Year's countdown (Dec 31
 23:00, a volley at midnight, the show until 01:00); the wedding night from 19:00; and a volley of 3–5 the evening both
 of us meet all four goals (once a day per phone, from 18:00). A shell rises from behind the island and bursts in NH's
 colours, clear of every control; a tap in the sky during a show sends one more. ≤ 4 bursts at once.
@@ -1014,7 +1014,7 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
 
 ### Walking
 
-`island/walkGraph.ts`, `island/tapWalk.ts` (their headers: the walk mask, the routing, the speeds), `layout/nav.ts`,
+`world/walkGraph.ts`, `island/tapWalk.ts` (their headers: the walk mask, the routing, the speeds), `layout/nav.ts`,
 `island/avatar.ts`.
 
 - **Only empty ground walks my villager:** a tap on something to do (a tree, a bush, a flower, the rock, a weed, a

@@ -5,7 +5,7 @@ import type { Who } from '#lib/types.ts';
 import type { Pt, Relayed } from '#lib/contract/live-protocol.ts';
 import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
 import { createLocalLive } from '#lib/sync/live-local.ts';
-import { hook } from '../island/devHooks.ts';
+import { hook } from '../../world/devHooks.ts';
 
 /** The e2e's own relay (`relay` and `key` hooks: a ws(s) URL and its key), if named. */
 export function testRelay(): Live | null {

@@ -7,7 +7,7 @@ import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, poseBuf, sit, walk, type Body } from './poses.ts';
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
-import { GUESTS } from '../island/visitorRoles.ts';
+import { GUESTS } from '../../world/visitorRoles.ts';
 import { withWebps } from '../../../../scripts/glb-webp.ts';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', '..', 'static', 'room', 'villagers3d');
@@ -30,7 +30,7 @@ describe('the villagers’ 3D models (villagers.json)', () => {
 
   it('accounts for every villager the picker offers: a model, or why not', () => {
     for (const id of ROSTER_IDS) expect(id in M.villagers || id in M.none, id).toBe(true);
-    // (and the characters outside the roster: the holiday hosts, Jack, the wedding's pair: island/visitors.ts; the shop's twins)
+    // (and the characters outside the roster: the holiday hosts, Jack, the wedding's pair: world/visitors.ts; the shop's twins)
     const visitorsOnly = ['franklin', 'jack', 'jingle', 'zipper', 'reese', 'cyrus', 'timmy', ...GUESTS, 'pave'];
     for (const id of Object.keys(M.villagers)) expect((ROSTER_IDS as readonly string[]).includes(id) || visitorsOnly.includes(id), id).toBe(true);
     // (the map the converter read: a model where it found a body)

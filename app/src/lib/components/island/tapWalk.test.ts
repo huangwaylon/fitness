@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { walkNav } from './nav.ts';
-import { worldOf } from './layoutWorld.ts';
-import { CAMPSITE, CLIFF, HOMES, POND, setWorld, surfaceAt } from './world.ts';
+import { walkNav } from '../../world/nav.ts';
+import { worldOf } from '../../world/layoutWorld.ts';
+import { CAMPSITE, CLIFF, HOMES, POND, setWorld, surfaceAt } from '../../world/world.ts';
 import { planTap, standAt, stepCue } from './tapWalk.ts';
 import { CUES } from '#lib/sound/cues.ts';
-import { SPEED } from './speed.ts';
+import { SPEED } from '../../world/speed.ts';
 import { walkable } from '#lib/layout/nav.ts';
 import { defaultLayout } from '#lib/layout/model.ts';
 

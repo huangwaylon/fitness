@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { hybridsOf, HYBRID_ODDS, MAX_WEEDS, hybridFor, rockTap, weedsAt } from './care.ts';
 import { DIG_SPOTS, LAWN } from './beach.ts';
 import { mulberry32 } from '#lib/random.ts';
-import { WILD } from './scene.ts';
+import { WILD } from '../components/island/scene.ts';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -50,7 +50,7 @@ describe('hybrids', () => {
   it('every wild flower has hybrids, each with its official art', () => {
     for (const k of new Set(Object.values(WILD).flat())) {
       expect(hybridsOf(k).length, k).toBeGreaterThan(0);
-      for (const f of hybridsOf(k)) expect(existsSync(join(import.meta.dirname, '../../../../static/art/flowers', `${f}.webp`)), f).toBe(true);
+      for (const f of hybridsOf(k)) expect(existsSync(join(import.meta.dirname, '../../../static/art/flowers', `${f}.webp`)), f).toBe(true);
     }
   });
 });

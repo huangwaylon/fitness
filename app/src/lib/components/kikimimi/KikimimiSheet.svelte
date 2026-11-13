@@ -65,7 +65,7 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { hook, hooksOn } from '../island/devHooks.ts';
+  import { hook, hooksOn } from '../../world/devHooks.ts';
   import { nextOf, pickSerial } from '#lib/kikimimi/bedtime.ts';
   import { SERIALS, serialOf, storyProgress } from './story/serials.svelte.ts';
 

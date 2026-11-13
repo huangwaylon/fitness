@@ -9,12 +9,12 @@ import { navOf, type LayoutNav } from '#lib/layout/nav.ts';
 import { onBuilding } from '#lib/layout/clear.ts';
 import { daySpots } from '#lib/layout/spots.ts';
 import { validate } from '#lib/layout/validate.ts';
-import { worldOf } from './layoutWorld.ts';
-import { setWorld } from './world.ts';
+import { worldOf } from '../../world/layoutWorld.ts';
+import { setWorld } from '../../world/world.ts';
 import { dropAt, dropSpots, goalTree, sceneryTrees, type ShakeTree } from './treeShake.ts';
 import { giftAt } from './treeGifts.ts';
-import { mushroomsOn } from './mushrooms.ts';
-import { bottleAt, fragmentsOn, shellsAt } from './beach.ts';
+import { mushroomsOn } from '../../world/mushrooms.ts';
+import { bottleAt, fragmentsOn, shellsAt } from '../../world/beach.ts';
 
 export const userLayout = (): Layout => {
   const m = new Map<string, LayoutEntry>();

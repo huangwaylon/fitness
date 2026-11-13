@@ -45,7 +45,7 @@ export interface KindDef {
   /** A building one goes into at the middle of its front edge (the museum): its door's tile(s) must stay clear and
    *  reachable, as a home's (validate.ts), and nav.ts walks up to it (`door-<id>`; a tap on it snaps to its door). */
   door?: boolean;
-  /** A pack's (scripts/world3d-assets.ts PACKS): a decoration (island/decor.ts) drawn as its model `decor/<k>`, its
+  /** A pack's (scripts/world3d-assets.ts PACKS): a decoration (world/decor.ts) drawn as its model `decor/<k>`, its
    *  icon the ずかん's or NH's own. */
   packed?: true;
   /** The outdoor catalogue's (layout/outdoor.ts: `nh-<code>`): its room piece's code (tent/items.json, more.json), drawn
@@ -181,7 +181,7 @@ const LIST: KindDef[] = [
   // his guitar every day, one on the island, never deleted; moved and turned (he faces its way); listeners stand on the
   // tile in front of it, which stays clear and reachable (`front`). Its height is his, seated.
   k({ k: 'kk-stool', group: 'furniture', ja: 'とたけけ', en: 'K.K. Slider', w: 1, d: 1, block: true, foot: [24, 16], on: 'land', h: 75, icon: 'villagers/kk-slider-icon', turns: true, fixed: true, front: true }),
-  // the decorations NH's outdoor furniture the phones put down (island/decor.ts's ten), on the layout's tiles now
+  // the decorations NH's outdoor furniture the phones put down (world/decor.ts's ten), on the layout's tiles now
   k({ k: 'stone-lantern', group: 'furniture', ja: 'いしどうろう', en: 'Stone lantern', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 40, icon: 'decor/stone-lantern-0', turns: true }),
   k({ k: 'birdbath', group: 'furniture', ja: 'バードバス', en: 'Birdbath', w: 1, d: 1, block: true, foot: [24, 20], on: 'land', h: 30, icon: 'decor/birdbath-0', turns: true }),
   k({ k: 'garden-wagon', group: 'furniture', ja: 'ガーデンワゴン', en: 'Garden wagon', w: 2, d: 1, block: true, foot: [58, 22], on: 'land', h: 36, icon: 'decor/garden-wagon-0', turns: true }),
@@ -242,7 +242,7 @@ const LIST: KindDef[] = [
   // nothing in play. Without one (or where it can't be used now) the island's own spot, derived from the layout.
   k({ k: 'plaza', group: 'visitor', ja: 'お客さんの場所', en: "Visitors' spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/campsite-sign', one: true }),
   k({ k: 'beach-spot', group: 'visitor', ja: 'ジョニーの場所', en: "Gulliver's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'villagers/gulliver-icon', one: true }),
-  // where the day's guest stands (NH's special characters: island/visitorRoles.ts; spots.ts guestSpot), one an island
+  // where the day's guest stands (NH's special characters: world/visitorRoles.ts; spots.ts guestSpot), one an island
   k({ k: 'guest-spot', group: 'visitor', ja: 'ゲストの場所', en: "Guest's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/party-popper', one: true }),
   // named spots: where a villager stands at home, nothing drawn (the old fixed visitors' spot, variant 'stage', is
   // dropped as a layout is read: model.ts isLegacyStage; the visitors' stage is derived, spots.ts stageOf)

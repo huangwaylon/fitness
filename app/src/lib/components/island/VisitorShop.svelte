@@ -8,7 +8,7 @@
   import { buyPrice } from '#lib/contract/stock.ts';
   import { buyPiece, buyRefusal, foundBefore, shortBy } from '../shop/stock.ts';
   import { offerOf } from './visitorShop.ts';
-  import type { GuestId } from './visitorRoles.ts';
+  import type { GuestId } from '../../world/visitorRoles.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { undoBanner } from '#lib/store/actions.ts';

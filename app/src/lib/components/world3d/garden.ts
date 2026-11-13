@@ -7,7 +7,7 @@ import { MODELS } from './models3d.ts';
 import type { AssetModel } from './assets.ts';
 import { isGarden } from '#lib/layout/garden.ts';
 import type { Layout } from '#lib/layout/model.ts';
-import { WINDOWS } from '../island/fixedDecor.ts';
+import { WINDOWS } from '../../world/fixedDecor.ts';
 
 let ready = false;
 let loading: Promise<void> | null = null;

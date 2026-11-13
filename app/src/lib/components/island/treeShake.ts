@@ -17,9 +17,9 @@
 import type { Drop, Pt } from '#lib/contract/live-protocol.ts';
 import { NEST_GAP_MS } from '#lib/contract/live-protocol.ts';
 import type { Put, Shake } from '#lib/sync/world-day.ts';
-import { BUGS, inHours } from './critters.ts';
-import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from './world.ts';
-import { ISLAND_SEED, dayRand } from './daySeed.ts';
+import { BUGS, inHours } from '../../world/critters.ts';
+import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from '../../world/world.ts';
+import { ISLAND_SEED, dayRand } from '../../world/daySeed.ts';
 import { site } from './site.svelte.ts';
 import { FRUIT_SPOTS, fruitLean } from './scene.ts';
 import { seeded } from '#lib/random.ts';

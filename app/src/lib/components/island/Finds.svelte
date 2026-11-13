@@ -20,11 +20,11 @@
   //   ?find=bottle | washed | fragment | mushroom | rare-mushroom (dev or test mode): a bottle, a bottle washing in 1.5 s
   //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
   //   hooks); ?seed= varies the island's seed.
-  import { fx3d } from './fx3d.ts';
-  import { holdLoop } from './clouds.ts';
+  import { fx3d } from '../../world/fx3d.ts';
+  import { holdLoop } from '../../world/clouds.ts';
   import { showCatch } from './catchCard.ts';
-  import { timers } from './timers.ts';
-  import { hook, islandSeed } from './devHooks.ts';
+  import { timers } from '../../world/timers.ts';
+  import { hook, islandSeed } from '../../world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import { onMount, tick } from 'svelte';
@@ -36,15 +36,15 @@
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
-  import { guardsU, clearAt, place, stageGeo } from './placement.ts';
-  import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
-  import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
-  import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
-  import { fragmentsDue, wishDays } from './stars.ts';
-  import { showerNight } from './meteor.ts';
-  import { eggTime, eventNow } from './events.ts';
-  import { eggInDig } from './eggs.ts';
-  import { mushroomSpots, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
+  import { guardsU, clearAt, place, stageGeo } from '../../world/placement.ts';
+  import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from '../../world/hitbox.ts';
+  import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '../../world/beach.ts';
+  import { take, takenOn, wish as addWish, wishes } from '../../world/sceneDay.ts';
+  import { fragmentsDue, wishDays } from '../../world/stars.ts';
+  import { showerNight } from '../../world/meteor.ts';
+  import { eggTime, eventNow } from '../../world/events.ts';
+  import { eggInDig } from '../../world/eggs.ts';
+  import { mushroomSpots, mushroomsOn, rareMushroom, type Mushroom } from '../../world/mushrooms.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { lying, taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
@@ -57,7 +57,7 @@
   import { treeById } from './treeShake.ts';
   import { SvelteSet } from 'svelte/reactivity';
   import { site } from './site.svelte.ts';
-  import { offBuildingsAt } from './world.ts';
+  import { offBuildingsAt } from '../../world/world.ts';
   import { fieldsOf } from '#lib/layout/fields.ts';
   import { nextRunUp, washAt, washFrom, washMs, type WashIn } from '#lib/layout/swash.ts';
 

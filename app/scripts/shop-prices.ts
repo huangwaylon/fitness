@@ -17,7 +17,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { slug } from './catalog.ts';
-import { FOSSILS, FRAGMENTS, SHELLS } from '../src/lib/components/island/beach.ts';
+import { FOSSILS, FRAGMENTS, SHELLS } from '../src/lib/world/beach.ts';
 import { GOODS } from '../src/lib/contract/pocket.ts';
 
 const APP = join(import.meta.dirname, '..');

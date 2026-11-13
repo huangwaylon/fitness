@@ -2,7 +2,7 @@
 // sweep, its own file to run beside it): every tree's drops, the day's spots, mushrooms and beach finds.
 import { afterAll, describe } from 'vitest';
 import { defaultLayout, withChanges, type Layout } from '#lib/layout/model.ts';
-import { setWorld } from './world.ts';
+import { setWorld } from '../../world/world.ts';
 import { movedBeside, noDropOn, treeTiles, userLayout } from './offBuildings.cases.ts';
 
 afterAll(() => setWorld(null));

@@ -5,7 +5,7 @@ import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { ART_SPOTS, DAIS, PANELS, PANEL_H, artIn, artOnShow, artPack, plinthOf } from './art.ts';
 import { ART, ART_IDS, isArt } from './artIds.ts';
 import { SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS } from './seaTanks.ts';
-import { SEA } from '../island/sea.ts';
+import { SEA } from '../../world/sea.ts';
 import { onShow } from './species.ts';
 import { ENTRANCE, FISH_WING, inRect, navOf, rectsOf, walkPath, walkable, type Rect } from './plan.ts';
 import { allBlocks, spot } from './spots.ts';

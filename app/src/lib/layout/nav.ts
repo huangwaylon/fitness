@@ -1,4 +1,4 @@
-// Walking on the layout (docs/island-layout.md "Derived, never hand-made"), pure: island/nav.ts's job for a layout
+// Walking on the layout (docs/island-layout.md "Derived, never hand-made"), pure: world/nav.ts's job for a layout
 // anyone can change, and its drop-in (tapWalk.ts planTap takes either): a walk grid at half a tile (15u), A* over it
 // with the corners pulled straight, the same snapping rules for a tap.
 //   A cell is walkable on land (not the sea, a river or a pond, but a bridge's deck over them), off every blocking
@@ -13,7 +13,7 @@ import { goesIn, kindDef } from './catalog.ts';
 import { outdoorSeatOn } from './outdoor.ts';
 
 type Pt = readonly [number, number];
-/** A box (u; y is z, as island/geom.ts's). */
+/** A box (u; y is z, as world/geom.ts's). */
 export interface Box {
   x0: number;
   x1: number;
@@ -287,7 +287,7 @@ export function levelAt(g: LayoutNav, x: number, z: number): number {
 /** Whether a step from cell a to its neighbour b is one a walker may take. */
 const stepOk = (g: LayoutNav, a: number, b: number) => !!g.open[b] && Math.abs(g.level[a] - g.level[b]) <= STEP;
 
-/** @public (island/nav.ts's) Whether a straight walk from a to b is clear (every cell it crosses walkable, every step level enough). */
+/** @public (world/nav.ts's) Whether a straight walk from a to b is clear (every cell it crosses walkable, every step level enough). */
 export function clear(g: LayoutNav, a: Pt, b: Pt, extra?: Extra): boolean {
   const L = dist(a, b), n = Math.max(1, Math.ceil(L / 4));
   let prev = cellIndex(a);
@@ -315,7 +315,7 @@ export function reachable(g: LayoutNav, x: number, z: number, extra?: Extra): bo
   return k >= 0 && walkable(g, x, z, extra) && g.comp[k] === g.main;
 }
 
-/** @public (island/nav.ts's) The nearest walkable point within `max` u (`main`: in the main region only). */
+/** @public (world/nav.ts's) The nearest walkable point within `max` u (`main`: in the main region only). */
 export function nearestWalkable(g: LayoutNav, x: number, z: number, max = SNAP_NEAR, extra?: Extra, main = false): Pt | null {
   const ok = main ? (px: number, pz: number) => reachable(g, px, pz, extra) : (px: number, pz: number) => walkable(g, px, pz, extra);
   if (ok(x, z)) return [x, z];
@@ -407,7 +407,7 @@ export function findPath(g: LayoutNav, from: Pt, to: Pt, extra?: Extra): Pt[] | 
   return out;
 }
 
-/** @public (island/nav.ts's) A route's length from `from`. */
+/** @public (world/nav.ts's) A route's length from `from`. */
 export function pathLength(from: Pt, pts: readonly Pt[]): number {
   let len = 0, at = from;
   for (const p of pts) {
@@ -419,7 +419,7 @@ export function pathLength(from: Pt, pts: readonly Pt[]): number {
 
 // ---- snapping a tap ---------------------------------------------------------------------------------------------------
 
-/** @public (island/nav.ts's) The water at a point, or null (a bridge's deck is none). */
+/** @public (world/nav.ts's) The water at a point, or null (a bridge's deck is none). */
 export function waterAt(g: LayoutNav, x: number, z: number): WaterKind | null {
   const k = cellIndex([x, z]);
   if (k >= 0 && g.open[k]) return null;
@@ -428,13 +428,13 @@ export function waterAt(g: LayoutNav, x: number, z: number): WaterKind | null {
   return kind === 'sea' || kind === 'river' || kind === 'pond' ? kind : null;
 }
 
-/** @public (island/nav.ts's) The home whose footprint (a few units grace) holds a point, or null. */
+/** @public (world/nav.ts's) The home whose footprint (a few units grace) holds a point, or null. */
 export function buildingAt(g: LayoutNav, x: number, z: number): string | null {
   for (const [id, d] of Object.entries(g.doors)) if (x >= d.box.x0 - 2 && x <= d.box.x1 + 2 && z >= d.box.y0 - 2 && z <= d.box.y1 + 2) return id;
   return null;
 }
 
-/** Where a tap at (x, z) sends my villager (island/nav.ts snapTap's rules), or null. */
+/** Where a tap at (x, z) sends my villager (world/nav.ts snapTap's rules), or null. */
 export function snapTap(g: LayoutNav, x: number, z: number, extra?: Extra): Snap | null {
   const face = (to: Pt) => (Math.abs(x - to[0]) >= 3 ? (x < to[0] ? 'l' : 'r') : undefined);
   if (walkable(g, x, z, extra)) {

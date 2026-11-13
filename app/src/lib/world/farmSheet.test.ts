@@ -1,8 +1,8 @@
-// The 畑 sheet's batches and readings (components/farm/sheet.ts), over a 10 × 4 field of mine and one of the partner's.
+// The 畑 sheet's batches and readings (world/farmSheet.ts), over a 10 × 4 field of mine and one of the partner's.
 import { describe, expect, it } from 'vitest';
 import { FARM, emptyFarm, farmStep, plotOf, type Farm, type Watered } from '#lib/contract/farm.ts';
 import { fieldPlots } from '#lib/layout/field.ts';
-import { fillPlan, harvestOps, harvestSummary, orphans, wateredBy, waterNext, waterTargets, yieldRange } from './sheet.ts';
+import { fillPlan, harvestOps, harvestSummary, orphans, wateredBy, waterNext, waterTargets, yieldRange } from './farmSheet.ts';
 
 const D = '2026-11-04', D1 = '2026-11-05', D2 = '2026-11-06', D3 = '2026-11-07';
 const MINE = fieldPlots({ id: 'field-A', x: 10, z: 17, s: 'a-10x4' }), HERS = fieldPlots({ id: 'field-B', x: 10, z: 22, s: 'b-10x4' });

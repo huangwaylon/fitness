@@ -1,6 +1,6 @@
 // The dated days of the island's year on the Tokyo calendar (docs/design.md "Event music", "Halloween", "Holiday hosts",
 // "Fireworks", "Wedding countdown"): NH's events and our own. Pure date rules, one table shared by the island
-// (components/island/events.ts, fireworks.ts, wedding.ts) and its music and jingles (sound/events.ts, sound/radio.ts),
+// (world/events.ts, fireworks.ts, wedding.ts) and its music and jingles (sound/events.ts, sound/radio.ts),
 // so a date is never worked out twice. Every NH rule verified on Nookipedia:
 //   Halloween Oct 31 (Jack 17:00–24:00) · Turkey Day the fourth Thursday of November (Franklin 09:00–24:00) ·
 //   Toy Day Dec 24 (all day) · Bunny Day Easter Sunday (all day) · Festivale the Monday before Ash Wednesday, 48 days

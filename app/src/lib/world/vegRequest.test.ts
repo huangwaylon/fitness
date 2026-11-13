@@ -4,7 +4,7 @@ import { CROPS } from '#lib/contract/farm.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { GARDEN, GIFT_ONE_IN, askerOn, asks, requestOn, vegGift } from './vegRequest.ts';
 import { GUESTS, ROLES, guestOn } from './visitorRoles.ts';
-import { treeFurniture } from './catalog.ts';
+import { treeFurniture } from '../components/island/catalog.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 

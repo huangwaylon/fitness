@@ -210,7 +210,7 @@ to `/pair`). In test mode `?demo` runs it on the made-up island (`?demo&as=B` be
   its footprint's back-left tile); its door's tile must stay clear and reachable (`validate.ts` `door`); `nav.ts` keeps
   it in `doors` (`door-<id>` named, a tap on it snaps to its door: `catalog.ts goesIn`).
 - **Drawn:** NH's StrcMuseumA02 / StrcMarketA02 and their doors (`npm run world3d-models -- --only=museum|shop`), at
-  3u a model unit, steps on the footprint's front edge. On the island each is a building (`island/layoutWorld.ts`
+  3u a model unit, steps on the footprint's front edge. On the island each is a building (`world/layoutWorld.ts`
   BUILDINGS: its tap area, its door) and a tap walks up and goes in (`/museum`, `/shop`); the editor's palette offers
   one only while the island has none.
 - **The default** (default.json): the museum on the clifftop behind the campsite (tiles 6…12 × 54…57), the shop in
@@ -334,7 +334,7 @@ the API: `layout.current`, `on(fn)` with each change's diff, `apply(ops)`; kept 
 - **The homes:** `homePlaces(layout.current)` → `buildHome(style)` (`world3d/built.ts` createBuilt, with the bridges,
   stairs and ponds; rebuilt on `diff.homes`); a tap on `home-B` / `home-G` walks to its door and goes in to
   `/tent?home=B|G` (the campsite's to `/tent`); their lamps `homeTod`.
-- **The gameplay:** `island/site.svelte.ts` `site.on`: `island/layoutWorld.ts worldOf(layout)` derives every place
+- **The gameplay:** `island/site.svelte.ts` `site.on`: `world/layoutWorld.ts worldOf(layout)` derives every place
   world.ts exports (its homes, buildings, stage, seats, scenery, flowers, goal trees, waters, boxes, cameras and spots)
   and `setWorld` swaps them in (ES live bindings; a cache keys on `worldGen()`; a DOM overlay reads `site.rev`). Before
   it's applied (and in the unit tests), world.ts's own.

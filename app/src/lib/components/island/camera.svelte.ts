@@ -9,9 +9,9 @@
 // what components need to know when the camera is still.
 import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
-import { hull, zIndexAt } from './geom.ts';
-import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from './world.ts';
-import type { NodeFrame } from './balloonFollow.ts';
+import { hull, zIndexAt } from '../../world/geom.ts';
+import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from '../../world/world.ts';
+import type { NodeFrame } from '../../world/balloonFollow.ts';
 import type { At } from '../world3d/engine.ts';
 
 /** Scratch points for the projector (Proj3 at()'s `out`): placing every node each frame made an object a call. */
@@ -380,7 +380,7 @@ export class World {
 
   /** The map of the world node `el` is in (itself or an ancestor), on screen now: its origin in client px and its scale,
    *  from the 3D camera as the projector places it (no layout read: a speech balloon follows its speaker through a camera
-   *  move, island/balloonFollow.ts). Null when `el` is in none, or in a body's (no plain map). */
+   *  move, world/balloonFollow.ts). Null when `el` is in none, or in a body's (no plain map). */
   frameOf(el: Element): (() => NodeFrame | null) | null {
     let at: Element | null = el, n: Node | undefined;
     while (at && !(n = this.byEl.get(at))) at = at.parentElement;

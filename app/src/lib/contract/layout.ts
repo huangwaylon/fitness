@@ -29,7 +29,7 @@ export const X_MAX = CHUNK * CHUNKS_ACROSS - 1, Z_MAX = CHUNK * CHUNKS_DEEP - 1;
 /** A tile's side and the grid's corner (world units: lib/layout/grid.ts TILE and GRID's x0, z0 are these). */
 export const TILE = 30, GRID_X0 = -90, GRID_Z0 = -90;
 /** The world's extent (world units): the grid at its largest, and the sea in front of it and to its left as far as the
- *  island's plan (island/world.ts PLAN). A walk's, a cast's or a drag's point (live-protocol.ts) and the villager's
+ *  island's plan (world/world.ts PLAN). A walk's, a cast's or a drag's point (live-protocol.ts) and the villager's
  *  spot in the record (island.ts) lie within it. */
 export const WORLD_X = [-230, GRID_X0 + (X_MAX + 1) * TILE] as const, WORLD_Z = [-460, GRID_Z0 + (Z_MAX + 1) * TILE] as const;
 /** A tile's character: kind × 4 + tier, base 36 (lib/layout/grid.ts). */

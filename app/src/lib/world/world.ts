@@ -379,7 +379,7 @@ export function surfaceAt(x: number, z: number): Surface {
 
 // ---- the island's layout (the 3D island on the long layout: docs/island-layout.md "How the 3D island reads it")
 
-/** Everything above that the layout gives instead (island/layoutWorld.ts worldOf): the values, and the tests that read
+/** Everything above that the layout gives instead (world/layoutWorld.ts worldOf): the values, and the tests that read
  *  the layout's tiles rather than the shapes. */
 export interface WorldGeo {
   LAND: RoundRect; SHORE_Z: number; GRASS: RoundRect; CAMS: { mae: number; oku: number };

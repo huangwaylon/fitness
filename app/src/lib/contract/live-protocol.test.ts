@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
-import { PLAN } from '#lib/components/island/world.ts';
+import { PLAN } from '#lib/world/world.ts';
 import { CHUNK, GRID, tileMid, tileX, tileZ } from '#lib/layout/grid.ts';
 import { WORLD_X, WORLD_Z, layoutOpOf } from './layout.ts';
 
@@ -103,7 +103,7 @@ describe('live protocol: relay messages', () => {
 });
 
 describe('live protocol: world points', () => {
-  it('takes a node id or an integer point within the world extent (island/world.ts PLAN lies inside it)', () => {
+  it('takes a node id or an integer point within the world extent (world/world.ts PLAN lies inside it)', () => {
     expect(WORLD_X[0]).toBeLessThanOrEqual(PLAN.x0);
     expect(WORLD_X[1]).toBeGreaterThanOrEqual(PLAN.x1);
     expect(WORLD_Z[0]).toBeLessThanOrEqual(PLAN.z0);
@@ -259,7 +259,7 @@ describe('live protocol: the island layout at the grid\'s far end (o, c ops, wal
     ];
     for (const op of ops) expect(parseClient(j({ kind: 'decor', ...op })) !== null, JSON.stringify(op)).toBe(layoutOpOf(op) !== null);
   });
-  it('the world extent holds the grid at its largest and the island plan (island/world.ts PLAN: its depth order to the grid\'s far end)', () => {
+  it('the world extent holds the grid at its largest and the island plan (world/world.ts PLAN: its depth order to the grid\'s far end)', () => {
     expect(WORLD_X[1]).toBeGreaterThanOrEqual(tileX(128));
     expect(WORLD_Z[1]).toBeGreaterThanOrEqual(tileZ(256));
     expect(PLAN.z1).toBe(tileZ(GRID.rows));

@@ -2,7 +2,7 @@
   // What my villager says (docs/design.md "Villager taps"): the say button at the island's bottom right (SayButton)
   // opens this small NH-style picker above it (the reactions wheel's spirit in the app's cream): only my own words (no
   // presets; the user: "get rid of all the default messages. only custom messages"), my last RECENT_MAX (kept on this
-  // phone, island/say.ts, newest first) and 「じぶんで かく…」, a field of SAY_MAX characters with いう (Enter sends); with
+  // phone, world/say.ts, newest first) and 「じぶんで かく…」, a field of SAY_MAX characters with いう (Enter sends); with
   // ‹ (top-left) back to them; none kept yet it opens straight on the field, without ‹. A pick closes it and is said
   // (IslandScene: the balloon over my villager on both phones). ✕, Esc or a tap anywhere else closes it (on the ground
   // that tap only closes: it walks nobody; on the button again it only closes). It stands above the button, its right edge at the button's (inside the screen, EDGE
@@ -13,8 +13,8 @@
   import { t } from '#lib/i18n/index.ts';
   import { cleanSay, SAY_MAX } from '#lib/contract/live-protocol.ts';
   import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
-  import { EDGE } from './placement.ts';
-  import { recentSays } from './say.ts';
+  import { EDGE } from '../../world/placement.ts';
+  import { recentSays } from '../../world/say.ts';
   import NavButton from '../ui/NavButton.svelte';
 
   let { scene, anchor, onpick, onclose }: { scene: HTMLElement; anchor: Element; onpick: (text: string) => void; onclose: (e?: Event) => void } = $props();

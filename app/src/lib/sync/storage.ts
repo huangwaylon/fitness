@@ -105,7 +105,7 @@ export const DEVICE = {
   /** localStorage: the language last shown (`ja` / `en`), so an English launch loads its strings before the first paint
    *  (the `locale` pref stays the truth). */
   locale: 'island.locale',
-  /** localStorage: `[text…]`: my own phrases for my villager's balloon, the last few, newest first (island/say.ts). */
+  /** localStorage: `[text…]`: my own phrases for my villager's balloon, the last few, newest first (world/say.ts). */
   says: 'island.says',
   /** localStorage: `[code…]`: the tent's pieces I picked last, newest first (tent/TentEdit.svelte's さいきん tab). */
   tentRecent: 'island.tentRecent',
@@ -209,19 +209,19 @@ export const SCENE = {
   /** localStorage `if-<beat>` = the Tokyo day a startup beat (open, morning, evening, lowweek) last played. */
   beat: (beat: string) => `if-${beat}`,
   /** localStorage `hf-got.<A|B>` = `{ day, ats }`: the partner's high-fives this person's phone heard that Tokyo day, by
-   *  their tap's relay time (island/highFives.ts: each one's banner once; per person: the demo's two tabs share it). */
+   *  their tap's relay time (world/highFives.ts: each one's banner once; per person: the demo's two tabs share it). */
   highFivesGot: (me: string) => `hf-got.${me}`,
   /** localStorage `bells-seen` = `{ date, parts: { A, B } }`: today's ベル per person and fruit already shown flying into
    *  the wallet, so only new earnings fly in. */
   bellsSeen: 'bells-seen',
   /** localStorage `scene-day` = `{ date, picked: [uid…] }`: the day items (shells, fossils, the bottle, fragments, weeds)
-   *  this phone picked up, dug or pulled today (island/sceneDay.ts; a new day starts empty). */
+   *  this phone picked up, dug or pulled today (world/sceneDay.ts; a new day starts empty). */
   day: 'scene-day',
   /** localStorage `fruit-day` = `{ date, dropped: [id…], picked: [id…] }`: today's met fruit this phone has shown
-   *  falling and picked up (`A:pear`; island/fruitDay.ts; a new day starts empty). */
+   *  falling and picked up (`A:pear`; world/fruitDay.ts; a new day starts empty). */
   fruit: 'fruit-day',
   /** localStorage `scene-wish` = `{ <Tokyo date>: n }`: this phone's wishes on shooting stars, each a star fragment on
-   *  that morning's beach (island/stars.ts, sceneDay.ts). */
+   *  that morning's beach (world/stars.ts, sceneDay.ts). */
   wish: 'scene-wish',
   /** localStorage `fireworks-day` = the Tokyo date this phone last showed the both-of-us-met-everything volley
    *  (island/Fireworks.svelte: once a day). */
@@ -246,7 +246,7 @@ export const SCENE = {
   /** localStorage `scene-presence.<A|B|G>` = `{ here, gone, at }`: what the relay last said of who's online, for this
    *  person's phone (ui-state/cast.ts: a reload's villagers asleep or awake as they were, till the welcome). */
   presence: (me: string) => `scene-presence.${me}`,
-  /** localStorage `scene-birthday` = `{ date, confetti, candles }`: a birthday on this phone (island/birthday.ts): whether the
+  /** localStorage `scene-birthday` = `{ date, confetti, candles }`: a birthday on this phone (world/birthday.ts): whether the
    *  confetti has burst and whether the cake's candles are out. */
   birthday: 'scene-birthday'
 } as const;

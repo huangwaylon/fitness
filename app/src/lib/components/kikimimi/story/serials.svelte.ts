@@ -6,7 +6,7 @@ import { SLEEP_TIMERS, type SerialProgress, type SleepTimer, type StoryProgress 
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { hooksOn } from '../../island/devHooks.ts';
+import { hooksOn } from '../../../world/devHooks.ts';
 
 interface ChapterLine {
   /** Its chunk (`st-johnny-3`: pool.ts loadChapter), number from 1, title, caption, segments and length (s). */

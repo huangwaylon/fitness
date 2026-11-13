@@ -61,7 +61,7 @@ function takeBack(b: Batch, ops: readonly FarmOp[]): boolean {
   return true;
 }
 
-/** A plot's tap (held 2 s for the next): a plant, or the ripe plants of its 3 × 3 (island/farmTap.ts), one replace of
+/** A plot's tap (held 2 s for the next): a plant, or the ripe plants of its 3 × 3 (world/farmTap.ts), one replace of
  *  the held batch a tap. */
 export const plant = (d: LocalDate, p: string, c: Crop, src: FarmSrc): SendResult => add(d, [{ o: 'plant', p, c, src }]);
 export const harvestMany = (d: LocalDate, ops: readonly { p: string; n: number }[]): SendResult => add(d, ops.map(({ p, n }) => ({ o: 'harvest', p, n })));

@@ -1,14 +1,14 @@
 // Wet days (docs/farming.md "Rules"): a Tokyo day with an hour of rain or snow waters every plant on the field. The
 // record keeps one `wet` row a wet day, its own (relay/src/store.ts wetTick, from the room's weather cron): in the
 // `real` mode a day the relay's timeline had a wet hour of (wxWetDays), in the `game` mode a seeded wet day (gameWet:
-// the island's seeded weather, components/island/weather.ts dayWeather, draws its wet days by this). Here too the
+// the island's seeded weather, world/weather.ts dayWeather, draws its wet days by this). Here too the
 // island's seed and the week's meteor shower (a shower's night is always fine), since the record needs them. Pure.
 import { seeded } from '../random.ts';
 import type { Wx } from './live-protocol.ts';
 import { addDays, dayNum, localDateAt } from './tokyo.ts';
 import type { LocalDate } from '../types.ts';
 
-/** The island's own seed (`?seed=` in the demo varies it: components/island/devHooks.ts). */
+/** The island's own seed (`?seed=` in the demo varies it: world/devHooks.ts). */
 export const ISLAND_SEED = 'island-fund';
 
 /** A seeded PRNG for one stream of one day. */
@@ -21,7 +21,7 @@ const mondayOf = (date: string): LocalDate => addDays(date, -((dayNum(date) + 3)
  *  nights (7 × 1/10). */
 const SHOWER_WEEK_ODDS = 0.7;
 
-/** Whether the night that starts on the evening of `date` brings a meteor shower (components/island/meteor.ts). */
+/** Whether the night that starts on the evening of `date` brings a meteor shower (world/meteor.ts). */
 export function showerNight(date: string, seed = ISLAND_SEED): boolean {
   const monday = mondayOf(date);
   const r = dayRand(monday, 'meteor-week', seed);

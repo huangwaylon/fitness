@@ -87,16 +87,16 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
   // (the modules loaded once in the hook, under the tests' stubs: their ~0.5–1.5 s of transform isn't charged to the first test)
   beforeAll(async () => {
     stub();
-    await import('../motion/director.svelte.ts');
-    await import('./avatar.ts');
+    await import('../components/motion/director.svelte.ts');
+    await import('../components/island/avatar.ts');
   });
   afterAll(unstub);
   // (both members' apps open: their villagers awake, in the island's life: ui-state/cast.ts)
   beforeEach(async () => (stub(), (await import('#lib/ui-state/cast.ts')).setEveryoneAwake(true)));
   afterEach(async () => (unstub(), (await import('#lib/ui-state/cast.ts')).setEveryoneAwake(false)));
   async function scene() {
-    const d = await import('../motion/director.svelte.ts');
-    const a = await import('./avatar.ts');
+    const d = await import('../components/motion/director.svelte.ts');
+    const a = await import('../components/island/avatar.ts');
     const { HOMES } = await import('./world.ts');
     d.resetAll();
     d.setHome('mine', HOMES.A[0], HOMES.A[1]);

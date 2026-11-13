@@ -7,11 +7,11 @@ import { artKeys } from '#lib/art.ts';
 import {
   BUILDINGS, CENTRE_STAGE, CLIFF, DECOR_SLOTS, DIG_SPOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
   flowerById, riverNear, inOval, onGrass, onLand, type Pt
-} from './world.ts';
+} from '../../world/world.ts';
 import { WILD, sceneryKey, wildFlower } from './scene.ts';
-import { hybridsOf } from './care.ts';
+import { hybridsOf } from '../../world/care.ts';
 import MODELS from '../world3d/assets.json';
-import { route, walkGeo } from './walkGraph.ts';
+import { route, walkGeo } from '../../world/walkGraph.ts';
 
 const segDist = (line: readonly Pt[], x: number, z: number) => {
   let d = Infinity;

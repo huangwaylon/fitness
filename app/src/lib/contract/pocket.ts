@@ -17,12 +17,12 @@ export const GOODS: Readonly<Record<string, string>> = {
   weeds: 'clump of weeds',
   // the goal trees' fruit (island/FruitTree.svelte) and a palm's coconuts
   apple: 'apple', pear: 'pear', peach: 'peach', cherry: 'cherry', coconut: 'coconut',
-  // mushroom season's (island/mushrooms.ts), the rare one dug up
+  // mushroom season's (world/mushrooms.ts), the rare one dug up
   'round-mushroom': 'round mushroom', 'skinny-mushroom': 'skinny mushroom', 'flat-mushroom': 'flat mushroom',
   'elegant-mushroom': 'elegant mushroom', 'rare-mushroom': 'rare mushroom',
-  // Bunny Day's eggs (island/eggs.ts): dug up, off a balloon, on the line
+  // Bunny Day's eggs (world/eggs.ts): dug up, off a balloon, on the line
   'earth-egg': 'earth egg', 'sky-egg': 'sky egg', 'water-egg': 'water egg',
-  // junk off the line (island/critters.ts JUNK)
+  // junk off the line (world/critters.ts JUNK)
   boot: 'boot', 'old-tire': 'old tire', 'empty-can': 'empty can',
   // the field's (contract/farm.ts): a harvest's vegetables and the starts (the shop's かう, a dug-up plant)
   tomato: 'tomato', wheat: 'wheat', sugarcane: 'sugarcane', potato: 'potato', carrot: 'carrot', pumpkin: 'orange pumpkin',

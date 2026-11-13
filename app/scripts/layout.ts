@@ -3,7 +3,7 @@
 // slots). Seeded best-candidate sampling (Mitchell's, a Poisson-disk sampler): a jittered grid of candidates on the
 // open lawn, each pick the candidate farthest from everything already there, so the lawn fills evenly with no clumps
 // and no dead zones; every kind keeps its own minimum gap to every other (GAP). Writes
-// src/lib/components/island/scatter.json (world.ts reads it) and prints each section's emptiest spot before and after.
+// src/lib/world/scatter.json (world.ts reads it) and prints each section's emptiest spot before and after.
 //
 // Usage (from app/): node scripts/layout.ts [--dry]
 import { writeFileSync, readFileSync } from 'node:fs';
@@ -12,8 +12,8 @@ import { mulberry32 } from '../src/lib/random.ts';
 import {
   BUILDINGS, CENTRE_STAGE, CLIFF, DIG_SPOTS, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
   inOval, onGrass, riverNear, type Pt
-} from '../src/lib/components/island/world.ts';
-import { mushroomSpots } from '../src/lib/components/island/mushrooms.ts';
+} from '../src/lib/world/world.ts';
+import { mushroomSpots } from '../src/lib/world/mushrooms.ts';
 
 const OUT = join(import.meta.dirname, '..', 'src', 'lib', 'components', 'island', 'scatter.json');
 const SEED = 0x15_1a_2d;

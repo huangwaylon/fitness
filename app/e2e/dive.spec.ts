@@ -4,8 +4,8 @@
 // `?sea=<id>|pearl` (with ?demo) brings a bubble spot at once and keeps it until dived.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
-import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { CHASE_MS, SEA } from '../src/lib/components/island/sea.ts';
+import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
+import { CHASE_MS, SEA } from '../src/lib/world/sea.ts';
 import { fromMenu, hudBells } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');

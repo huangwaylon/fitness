@@ -4,8 +4,8 @@
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
 import { geo, islandUp, loaded3d, quiet, tapAt, tapBox } from './island.ts';
-import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
+import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
+import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/world/critters.ts';
 import { hudBells } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');

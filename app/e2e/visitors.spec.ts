@@ -6,7 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure } from './island.ts';
 import { hudBells } from './hud.ts';
-import { guestOn, ROLES } from '../src/lib/components/island/visitorRoles.ts';
+import { guestOn, ROLES } from '../src/lib/world/visitorRoles.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
 
 // the day's visitor and their life are ambient life (e2e/fixtures.ts): on here; a test pins its own with ?visitor=
@@ -214,7 +214,7 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
 });
 
-// The guests (docs/design.md "Visitors: roles", island/visitorRoles.ts): NH's other special characters, each with a role.
+// The guests (docs/design.md "Visitors: roles", world/visitorRoles.ts): NH's other special characters, each with a role.
 test('a guest every day with no hook: Sunday afternoon Nov 8 2026 (after Daisy Mae) the day’s guest at centre stage, Redd’s Wednesday beside him, their introduction', async ({ page }) => {
   for (const [date, wd, beside] of [['2026-11-08', 0, false], ['2026-11-04', 3, true]] as const) {
     const g = guestOn(date);

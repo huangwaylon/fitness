@@ -17,18 +17,18 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, V3, World } from '../island/camera.svelte.ts';
-  import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../island/world.ts';
+  import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../../world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
-  import { stepClouds } from '../island/clouds.ts';
-  import { dayFindKeys } from '../island/dayModels.ts';
-  import { islandSeed } from '../island/devHooks.ts';
+  import { stepClouds } from '../../world/clouds.ts';
+  import { dayFindKeys } from '../../world/dayModels.ts';
+  import { islandSeed } from '../../world/devHooks.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
-  import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
-  import type { Scenery } from '../island/world.ts';
-  import { listen3d, listenPose3d } from '../island/echo3d.ts';
-  import { listenFx3 } from '../island/fx3d.ts';
+  import { LAMP_GLOW, type Piece } from '../../world/fixedDecor.ts';
+  import type { Scenery } from '../../world/world.ts';
+  import { listen3d, listenPose3d } from '../../world/echo3d.ts';
+  import { listenFx3 } from '../../world/fx3d.ts';
   import { ambient3 } from '../island/ambient3d.svelte.ts';
-  import PLACES from '../island/models.json' with { type: 'json' };
+  import PLACES from '../../world/models.json' with { type: 'json' };
   import { createIsland, type At, type Island3 } from './engine.ts';
   import { assetFor } from './assets.ts';
   import { keyModel, modelBounds } from './models3d.ts';
@@ -46,7 +46,7 @@
   import { pace, SLOW_PX } from './pace.ts';
   import { anglerOf, onAngle } from './fishing3d.ts';
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
-  import { BITE_WINDOW_MS } from '../island/fishing.ts';
+  import { BITE_WINDOW_MS } from '../../world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
@@ -68,13 +68,13 @@
   import { POND_Y } from './pond.ts';
   import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
   import { washAt } from '#lib/layout/swash.ts';
-  import { inOval } from '../island/world.ts';
+  import { inOval } from '../../world/world.ts';
   import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
   import { drawOff } from '../../ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
-  import { timers } from '../island/timers.ts';
+  import { timers } from '../../world/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { logError, setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
@@ -156,7 +156,7 @@
   /** The ground's look today: the season's, the petals' or the fallen leaves' weeks. */
   const lookNow = (): Look => lookOf(season, foliage);
 
-  // ---- what has no model yet: a card of today's art, standing on its feet point (island/models.json) ----
+  // ---- what has no model yet: a card of today's art, standing on its feet point (world/models.json) ----
   const P = PLACES as unknown as Record<string, { ax: number; ay: number }>;
   function artCard(key: string, h: number): Omit<CardSpec, 'x' | 'z'> | null {
     const a = art(key), url = artUrl(key);
@@ -277,7 +277,7 @@
   let visN = 0;
   // K.K. on his stool (island/KKSlider.svelte): one more, the director's 'kk' actor, seated on it, facing its way
   const kkSpec: VSpec = { ...visSpecs[0], slot: 'kk' };
-  // the day's guest (island/visitorRoles.ts: its own slot, the director's 'guest' actor, at the guest spot)
+  // the day's guest (world/visitorRoles.ts: its own slot, the director's 'guest' actor, at the guest spot)
   const npcGuestSpec: VSpec = { ...visSpecs[0], slot: 'npc-guest' };
   let npcGuestOn = false;
   /** K.K. is out (his node registered), and has been in view: his model loads the first time he is (never fetched for
@@ -767,7 +767,7 @@
     }
   }
 
-  // ---- the balloon present flying over the island (balloon3d.ts: its flight is island/balloonFlight.ts') ----
+  // ---- the balloon present flying over the island (balloon3d.ts: its flight is world/balloonFlight.ts') ----
   let b3: Balloon3 | null = null;
 
   // ---- the island's day: its models and stand-ins ----
@@ -1067,7 +1067,7 @@
       }
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
-      // (the sky's clouds behind the canvas drift in its frames: island/clouds.ts)
+      // (the sky's clouds behind the canvas drift in its frames: world/clouds.ts)
       stepClouds(t);
       const more = world.step(t);
       const camMoved = e.rev() !== revWas;

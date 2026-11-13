@@ -1,12 +1,12 @@
 // NH's own head icons of its special characters (the export's `Layout_NpcIcon_<code>`, 128 px) as 96 px WebPs,
 // static/room/npc/<id>.webp (under /room/: cached on first use, never at install): the ずかん's cast (components/kiroku/Cast.svelte), Resetti in the editor's reset, Booker and
-// Copper at the pairing page's gate. Which character is which code: island/visitorRoles.ts CAST.
+// Copper at the pairing page's gate. Which character is which code: world/visitorRoles.ts CAST.
 // Usage (from app/): NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run npc-icons
 // The model folder is untrusted input: only a folder's PNG is read (by cwebp); nothing in it is run.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { CAST } from '../src/lib/components/island/visitorRoles.ts';
+import { CAST } from '../src/lib/world/visitorRoles.ts';
 
 const OUT = join(import.meta.dirname, '..', 'static', 'room', 'npc');
 const ROOT = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');

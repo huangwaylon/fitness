@@ -2,11 +2,11 @@
 // day) gives the engine's instance list (Inst, ids = the layout's object ids) and the stand-ins (a card each) for what
 // has no model yet. NH's models at the island's sizes and looks (the day's season, its hedge pair, the fixed decor's
 // seasonal pieces, the scenery's swaps), at the layout's spots, turned by their facing. A default object keeps today's size (world.ts's height for its id) wherever it is moved.
-import ISLAND_MODELS from '../island/models.json' with { type: 'json' };
+import ISLAND_MODELS from '../../world/models.json' with { type: 'json' };
 import W3D from './models.json' with { type: 'json' };
-import { DECOR_U, TREE_H, WORLD_2D } from '../island/world.ts';
+import { DECOR_U, TREE_H, WORLD_2D } from '../../world/world.ts';
 import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
-import type { Piece } from '../island/fixedDecor.ts';
+import type { Piece } from '../../world/fixedDecor.ts';
 import { assetFor } from './assets.ts';
 import { keyModel, modelBounds } from './models3d.ts';
 import { POND_LILIES, POND_Y } from './pond.ts';

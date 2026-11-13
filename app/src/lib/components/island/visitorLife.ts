@@ -9,8 +9,8 @@
 import type { EmoteIcon } from '#lib/art.ts';
 import { pickOne, shuffle } from '#lib/random.ts';
 import type { FxKind, Motion } from '../motion/reactions.ts';
-import type { VisitorId } from './visitors.ts';
-import type { Pt } from './walkGraph.ts';
+import type { VisitorId } from '../../world/visitors.ts';
+import type { Pt } from '../../world/walkGraph.ts';
 
 /** How a visitor comes and goes: from the campsite on foot (or hopping), floating or flying down from the sky (and back
  *  up), appearing where they stand (Gulliver already washed up), or Jack's spooky puff. */

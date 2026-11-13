@@ -3,9 +3,9 @@
 // it opens: ui.outAt) and on every other at once: the put is my villager's newest walk in the shared day, sent now
 // (the island's own link tells nothing until its socket's welcome, and keeps it as where my villager is).
 import { site } from './site.svelte.ts';
-import { outOf } from './buildings.ts';
+import { outOf } from '../../world/buildings.ts';
 import { walkOf } from './villagerSync.ts';
-import type { BuildingId } from './world.ts';
+import type { BuildingId } from '../../world/world.ts';
 import { ui } from '#lib/ui-state/ui.svelte.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';

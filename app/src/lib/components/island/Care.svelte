@@ -9,27 +9,27 @@
   // here (their villager turns to it). The weeds stand on world.ts LAWN_SPOTS and the rock at world.ts ROCK, each a world node at its
   // foot. SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`, client px).
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
-  import { timers } from './timers.ts';
+  import { timers } from '../../world/timers.ts';
   import { recordGoods } from '#lib/store/actions.ts';
-  import { hookOneOf, islandSeed } from './devHooks.ts';
+  import { hookOneOf, islandSeed } from '../../world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { islandDay } from './ambientClock.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
-  import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { digSpots, findArt } from './beach.ts';
-  import { ROCK, rockTap, weedsAt, type Weed } from './care.ts';
-  import { weedArt } from './dayModels.ts';
-  import { take, takenOn } from './sceneDay.ts';
+  import { clearAt, guardsU, stageGeo } from '../../world/placement.ts';
+  import { digSpots, findArt } from '../../world/beach.ts';
+  import { ROCK, rockTap, weedsAt, type Weed } from '../../world/care.ts';
+  import { weedArt } from '../../world/dayModels.ts';
+  import { take, takenOn } from '../../world/sceneDay.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
-  import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
-  import { fx3d } from './fx3d.ts';
-  import { echo3d } from './echo3d.ts';
+  import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from '../../world/hitbox.ts';
+  import { fx3d } from '../../world/fx3d.ts';
+  import { echo3d } from '../../world/echo3d.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { site } from './site.svelte.ts';
 

@@ -8,7 +8,7 @@
   import { useWorld } from './camera.svelte.ts';
   import { livePos } from '../motion/director.svelte.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
-  import { stageGeo } from './placement.ts';
+  import { stageGeo } from '../../world/placement.ts';
   import { VILLAGER } from './scene.ts';
   import { onDestroy } from 'svelte';
 

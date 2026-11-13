@@ -8,7 +8,7 @@
 //   each tank showing at most seven of its own at a time, a new pick each hour (onDisplay), the great tank's first a
 //   caught predator (feeding.ts PREDATORS: there's always a hunter for its feeders, once one's been caught);
 //   at most ten bugs at a time, a new pick each hour (bugShow.ts), each in a place of its own;
-//   a bug where NH's garden would have it, by how it lives (island/critters.ts BUGS: its flight, its ground, its tree):
+//   a bug where NH's garden would have it, by how it lives (world/critters.ts BUGS: its flight, its ground, its tree):
 //     fly the flowers' air (the butterflies, the moths, the bees: on paths round the beds), dart over the pond (the
 //     dragonflies), drift over it (the fireflies), flower (sat on a bloom), hop (in the grass), trunk / palm (perched on
 //     a tree's trunk), leaf (on a bush's leaves: the snail, the walking leaf), ground (crawling the soil), water (on the
@@ -17,9 +17,9 @@
 //   a sea creature in its place in the sea creatures' room (seaTanks.ts: the reef tank or the tide pool), all of them
 //   at once (they hardly move: no hour's pick).
 // A species' tank is its own, whatever else is found; which of a tank's are swimming is the hour's.
-import { BUGS, FISH, type BugId } from '../island/critters.ts';
-import { POND_FISH } from '../island/pondFish.ts';
-import { SEA } from '../island/sea.ts';
+import { BUGS, FISH, type BugId } from '../../world/critters.ts';
+import { POND_FISH } from '../../world/pondFish.ts';
+import { SEA } from '../../world/sea.ts';
 import { SEA_SPOTS, type SeaTankId } from './seaTanks.ts';
 import { PREDATORS } from './feeding.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';

@@ -3,8 +3,8 @@
 NH 2.0's vegetables: a field each, 40 plants. Buy starts at the shop, plant, water, harvest; the plant grows back.
 The produce sells for かいがら, never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, the pick), `island/farm.ts` (the scene),
-`island/farmTap.ts` (a plot's tap), `farmUi.svelte.ts`, `harvestPlate.ts`, `FarmButton`, `FarmPicker`, `FarmPop` (.svelte),
-`farm/FarmSheet.svelte`, `farm/FieldMap.svelte`, `farm/sheet.ts` (the sheet's batches), `shop/Counter.svelte` (苗),
+`world/farmTap.ts` (a plot's tap), `farmUi.svelte.ts`, `harvestPlate.ts`, `FarmButton`, `FarmPicker`, `FarmPop` (.svelte),
+`farm/FarmSheet.svelte`, `farm/FieldMap.svelte`, `world/farmSheet.ts` (the sheet's batches), `shop/Counter.svelte` (苗),
 `shop/pocket.ts` (うる's 野菜 and 苗), `shop/stock.ts`, `world3d/objects.ts` (drawn);
 tests beside them, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`, `e2e/farm-sheet.spec.ts`.
 
@@ -69,7 +69,7 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 
 - **The はたけ pill** (bottom left) opens the 畑 sheet; badges: the held crop (top left) and my
   ripe count (yuzu). Shown while I have a plot or any field has a plant; hidden with the say button.
-- **A plot's tap** acts in place (`island/farmTap.ts`); the tapped plot decides, its 3 × 3 is the reach:
+- **A plot's tap** acts in place (`world/farmTap.ts`); the tapped plot decides, its 3 × 3 is the reach:
   1. my ripe plant: all my ripe plants there are harvested, it first, then the nearest;
   2. any plant, or an empty plot not mine: the plants whose watering counts and isn't done are watered;
   3. else my ripe plants there are harvested (a miss forgiven);
@@ -98,7 +98,7 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 
 ## おねがい
 
-A visitor wants a vegetable (`island/vegRequest.ts`, `vegAsk.svelte.ts`, `Visitor.svelte`): the day's chat or cheer guest
+A visitor wants a vegetable (`world/vegRequest.ts`, `vegAsk.svelte.ts`, `Visitor.svelte`): the day's chat or cheer guest
 (about every other day), Franklin on Turkey Day instead. At most one ask a day per farmer, its crop seeded by the date
 and the person (any of the six: a reason to grow a mix); gone when the asker leaves, no timer. Now and then a caption
 over their head, 「ニンジンが たべたいなあ」. A tap with it in my pocket hands it over in place: a `sell` of the one at

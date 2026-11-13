@@ -9,14 +9,14 @@
   // saw it). Not ready, a tap says why not (done today, or when it plays), and its ♪ floats only when it's ready. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or test mode) brings the deck out now.
-  import { hookFlag } from './devHooks.ts';
-  import { holdLoop } from './clouds.ts';
+  import { hookFlag } from '../../world/devHooks.ts';
+  import { holdLoop } from '../../world/clouds.ts';
   import { su } from './scene.ts';
-  import { TAPE_DECK } from './world.ts';
+  import { TAPE_DECK } from '../../world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
+  import { MIN_HIT, SHOWN, grow, inside, type Seen } from '../../world/hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cutInSong, live, request } from '#lib/sound/stage.svelte.ts';
   import { onStageStart } from '#lib/sound/stageStart.svelte.ts';

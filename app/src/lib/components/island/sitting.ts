@@ -9,8 +9,8 @@ import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import { liesOn, seatsOf, yawOf } from '#lib/layout/nav.ts';
 import { objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
-import MODELS from './models.json' with { type: 'json' };
-import { DECOR_U } from './world.ts';
+import MODELS from '../../world/models.json' with { type: 'json' };
+import { DECOR_U } from '../../world/world.ts';
 import { outsat } from '../rooms/seating.ts';
 import type { Who } from '#lib/types.ts';
 

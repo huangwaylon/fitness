@@ -10,7 +10,7 @@
   // game's own review row; not while the round goes on with that one's piece: `peek`). The round sits at the top in every phase and game, so nothing moves when the tiles, choices
   // or reveal come in and 前の問題 is always in the same place. Any game's.
   import type { Snippet } from 'svelte';
-  import { hook, hookFlag } from '../../island/devHooks.ts';
+  import { hook, hookFlag } from '../../../world/devHooks.ts';
   import type { QuizGame } from '../game.svelte.ts';
   import LookBack from './LookBack.svelte';
   import type { Who } from '#lib/types.ts';

@@ -303,7 +303,7 @@ songs on request by day, dozing after midnight ([design](design.md#kk-on-his-sto
 
 ### The balloon flies in the world
 The balloon present is a 3D model over the island; popped, its landing spot is chosen first (open ground at the front of
-the view, `island/presentLanding.ts`) and sent with the `put`. Why: a present must land where it can be seen and tapped.
+the view, `world/presentLanding.ts`) and sent with the `put`. Why: a present must land where it can be seen and tapped.
 
 ### The island's look is shared
 設定's 季節 (`pref seasonLook`) and 天気 (`pref weatherMode`) are one each for the island, the last anyone set; the look
@@ -319,7 +319,7 @@ one fetch for every phone, hours locked once begun so phones agree.
 Rain and snow are instanced, one draw call each, moved in the vertex shader. Why: depth, at no CPU per particle.
 
 ### A player walks half as fast again
-A player's villager runs at 300 u/s and walks to an action at 360 (`island/speed.ts`); strolls, visitors and critters
+A player's villager runs at 300 u/s and walks to an action at 360 (`world/speed.ts`); strolls, visitors and critters
 keep their pace. Why: crossing the long island took too long.
 
 ## Rooms
@@ -386,7 +386,7 @@ November's mushrooms have no ずかん page; they go into the pocket to sell (`g
 materials with no catalogue page.
 
 ### NH's calendar and critters
-Each dated NH event is one rule in `island/events.ts`, its host in the visitor slot; NH's bugs, fish and sea creatures
+Each dated NH event is one rule in `world/events.ts`, its host in the visitor slot; NH's bugs, fish and sea creatures
 where NH keeps them, and balloon presents at NH's odds ([design](design.md#critters)). Why: NH's world with no new
 screens and nothing to sync.
 

@@ -85,7 +85,7 @@ const SPECS: Record<string, Spec> = {
   'deco/pumpkin': [96, 'Orange_Pumpkin_NH_Inv_Icon.png'],
   'deco/spooky-lantern': [128, 'Spooky_Lantern_(Orange)_NH_Icon.png'],
   'items/candy': [96, 'Candy_NH_Inv_Icon.png'],
-  // the wedding countdown (island/wedding.ts): NH's wedding arch for June Sundays
+  // the wedding countdown (world/wedding.ts): NH's wedding arch for June Sundays
   'deco/wedding-arch': [256, 'Wedding_Arch_(Cute)_NH_Icon.png'],
   // birthdays (island/Birthday.svelte): NH's birthday cake, the party hats our villagers wear, the party popper
   'deco/birthday-cake': [128, 'Birthday_Cake_(Strawberry_Buttercream)_NH_Icon.png'],
@@ -114,7 +114,7 @@ const SPECS: Record<string, Spec> = {
 // mushrooms, goods, the shovel and the watering can) are NH's own from the game files: scripts/nh-icons.ts (2026-11-10;
 // a new catch's icon too, from the catch names). Only the rock by the hedge is no item there: Nookipedia's.
 SPECS['finds/rock'] = [96, 'Rock_NH_Icon.png'];
-// The hybrid flowers a watered flower can grow the next day (NH's genetics, simplified: island/care.ts), trimmed alike.
+// The hybrid flowers a watered flower can grow the next day (NH's genetics, simplified: world/care.ts), trimmed alike.
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
   'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];

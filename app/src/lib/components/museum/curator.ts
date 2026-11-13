@@ -31,7 +31,7 @@ export const S = 1.5;
 const CURATOR_TOP = 13.6 * S;
 /** He watches my villager within this of him, in front of the desk. */
 const NEAR = 80;
-/** His line types out at this (island/pager.ts TYPE_MS): his beak moves meanwhile. */
+/** His line types out at this (world/pager.ts TYPE_MS): his beak moves meanwhile. */
 const TYPE_MS = 33;
 
 type Doing = 'idle' | 'look' | 'doze' | 'talk';

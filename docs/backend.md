@@ -283,7 +283,7 @@ never data of record: the record still catches an offline phone up.
 Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: *Weather from Tokyo, by the hour*).
 `relay/src/weather.ts` (its header and constants: the fetch's timing, the hours kept, the locks, the dead bands, the
 backoff), `weatherTick` (`relay/src/index.ts`, the cron at :15 and :45, and a hello when due; the test copy has no
-cron), the phones' `sync/wx.ts` and `island/weather.ts` `realWeatherAt`.
+cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 
 - **Source:** Open-Meteo's forecast, JMA's models (`models=jma_seamless`), for one point (`wrangler.toml` `WX_LAT` /
   `WX_LON`). No key, CC BY 4.0, credited in 設定; no phone calls a weather API. JMA gives no snow, fog or thunder codes

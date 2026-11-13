@@ -12,15 +12,15 @@
   // after 2.7 s; at most 4 bursts at once; between bursts nothing but one timer. Paused with the scene (data-paused), and
   // no new ones while covered or hidden. In its layer's px.
   //   The seasonal preview's fireworks (せってい's きせつ; `?fireworks`, dev or test mode: the e2e's hook): a show now.
-  import { timers } from './timers.ts';
+  import { timers } from '../../world/timers.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { untrack } from 'svelte';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
-  import { uiBoxes } from './placement.ts';
+  import { uiBoxes } from '../../world/placement.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { PAIR_ODDS, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape, type Spark } from './fireworks.ts';
+  import { PAIR_ODDS, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape, type Spark } from '../../world/fireworks.ts';
 
   interface Props {
     /** Live, not covered by a sheet, page visible. */

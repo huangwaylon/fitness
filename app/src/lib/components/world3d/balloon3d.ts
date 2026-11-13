@@ -1,5 +1,5 @@
 // The balloon present in 3D (docs/design.md "Balloon"): NH's balloon and the present on its string flying across the
-// island in world space (island/balloonFlight.ts: its lane, its bob and sway, the present's pendulum), the string a
+// island in world space (world/balloonFlight.ts: its lane, its bob and sway, the present's pendulum), the string a
 // thin line from the knot, and NH's soft blob shadow on the ground right under it (no shadow map: the map isn't
 // redrawn for a flier, a stale real shadow would stay behind). Bent with the island like everything else (engine.ts
 // add). Shot down, both models go at once: the present that falls is SceneTaps' (its own model on its arc).
@@ -11,7 +11,7 @@ import { keyModel, MODELS } from './models3d.ts';
 import { softDisc } from './cards.ts';
 import { bend } from './bend.ts';
 import { nhLambert, withMaps } from './blank.ts';
-import { RIG, flying, rigAt } from '../island/balloonFlight.ts';
+import { RIG, flying, rigAt } from '../../world/balloonFlight.ts';
 import { glbLoader } from './gltf.ts';
 
 export interface Balloon3 {

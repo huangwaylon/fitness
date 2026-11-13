@@ -184,7 +184,7 @@ their data). A feature that calls a Worker gets no in-app fixture: its spec pair
 the Worker (`page.route`: gymbot.spec, its.spec, food-kalori.spec).
 
 ## URL params
-Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev
+Read on each call by `world/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev
 builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 
 | Param | Effect |
@@ -195,7 +195,7 @@ builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 | `?seed=` | The island's seed (finds, weather, visitors) |
 | `?weather=clear\|cloudy\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
 | `?wx=real\|game` | The island's weather mode for this load |
-| `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline (`island/wxFixtures.ts`) |
+| `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline (`world/wxFixtures.ts`) |
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…) |
 | `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll[=<ms>]`, `?meet` | A visitor (`events`: an event's host only); its arrival; its departure; a stroll; the partner's hello |
 | `?kk=show\|day\|asleep` | K.K. on his stool, whatever the clock |

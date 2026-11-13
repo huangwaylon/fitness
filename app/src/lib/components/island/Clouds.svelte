@@ -7,7 +7,7 @@
   // the horizon, C2 high. Night: --cloud-op.
   // Moved by the island's frames (clouds.ts: no endless animation running at rest).
   import { onMount } from 'svelte';
-  import { holdClouds } from './clouds.ts';
+  import { holdClouds } from '../../world/clouds.ts';
   const uid = $props.id();
   const els: SVGSVGElement[] = [];
   onMount(() => holdClouds(els));

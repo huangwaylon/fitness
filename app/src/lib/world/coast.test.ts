@@ -8,8 +8,8 @@ import { layoutOpOf, mergeLayout, type LayoutEntry } from '#lib/contract/layout.
 import { worldOf } from './layoutWorld.ts';
 import { setWorld, layoutNav, SEA_BOX } from './world.ts';
 import { COAST_U, coasts } from './coast.ts';
-import { crittersAt, SLOTS_PER_DAY } from './ambient.ts';
-import { fishPath } from './critterPath.ts';
+import { crittersAt, SLOTS_PER_DAY } from '../components/island/ambient.ts';
+import { fishPath } from '../components/island/critterPath.ts';
 import { STAY_MS, swimmable, waterAt } from './critters.ts';
 
 function userLayout(): Layout {

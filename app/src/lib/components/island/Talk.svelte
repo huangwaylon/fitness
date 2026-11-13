@@ -18,12 +18,12 @@
   // not when a new line replaces it. `read`: the last page's time left alone (ms; a brief greeting's shorter), `avoid`:
   // boxes it keeps off besides (client px: the museum's plaques).
   import { tick } from 'svelte';
-  import { TAIL_IN, placeBy, type Side } from './placement.ts';
-  import type { Box } from './geom.ts';
-  import type { SaySpeaker } from './say.ts';
-  import { followOf } from './balloonFollow.ts';
+  import { TAIL_IN, placeBy, type Side } from '../../world/placement.ts';
+  import type { Box } from '../../world/geom.ts';
+  import type { SaySpeaker } from '../../world/say.ts';
+  import { followOf } from '../../world/balloonFollow.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
+  import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from '../../world/pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
   // (the island's: its speakers are in world nodes; a room has none, its speakers are boxes from its camera)

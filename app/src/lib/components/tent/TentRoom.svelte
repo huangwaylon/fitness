@@ -34,7 +34,7 @@
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
-  import { SAY_TAG, rememberSay, sayGate } from '../island/say.ts';
+  import { SAY_TAG, rememberSay, sayGate } from '../../world/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -286,7 +286,7 @@
     }, 500);
   }
 
-  // ---- the phrases (island/say.ts): the say button opens the picker; a pick hops my villager and shows the phrase
+  // ---- the phrases (world/say.ts): the say button opens the picker; a pick hops my villager and shows the phrase
   //      over it for a few seconds, here and on the phones in this room too (`say` with this room's `sc`) ----
   let says = $state<ReturnType<typeof Says>>();
   /** ハニワくん's letter open (its rating, worked out as it opened). */

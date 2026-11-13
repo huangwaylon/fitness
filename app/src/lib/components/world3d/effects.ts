@@ -5,7 +5,7 @@
 // falling leaves, petals or snow, a summer night's fireflies. Each a few particles of the fx/* models
 // (static/room/world3d/fx: the flat ones turned to the camera) or of the island's own (a ring, a glyph drawn on a
 // canvas, a bubble), unlit (they're light), fading. The DOM island spawns them where it spawned its own
-// (island/fx3d.ts), whose art then goes invisible.
+// (world/fx3d.ts), whose art then goes invisible.
 import {
   NormalBlending, Scene, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion,
   RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture

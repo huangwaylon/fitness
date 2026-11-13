@@ -1,4 +1,4 @@
-// Fishing, NH's (docs/design.md "Fishing"; island/fishing.ts): every tap on water answers. Any water, however far from
+// Fishing, NH's (docs/design.md "Fishing"; world/fishing.ts): every tap on water answers. Any water, however far from
 // my villager (the user: "I want to be able to fish from anywhere"), it casts there from where it stands. A shadow near the float swims up, nibbles and bites, and a tap on the bite catches it, in every water on the default
 // island and on the user's (the record of 2026-11-03), at 30 and 60 frames a second. The user: "Sometimes I can't
 // fish: tapping with no response". What this guards: a tap right after a scroll (gestures.ts kept its swallow window
@@ -66,7 +66,7 @@ for (const layout of ['default', 'user'] as const)
       expect(await cues(page)).toEqual(expect.arrayContaining(['scene-cast', 'scene-plop', 'scene-nibble', 'scene-bite', 'scene-reel', 'scene-catch']));
     });
 
-// The sea all round the island (island/coast.ts: a shadow off every stretch of coast, not just the front beach's): off a
+// The sea all round the island (world/coast.ts: a shadow off every stretch of coast, not just the front beach's): off a
 // side and the back beach, a cast by my villager there brings the shadow up and a tap catches it.
 for (const layout of ['default', 'user'] as const)
   for (const side of ['left', 'right', 'back'] as const)

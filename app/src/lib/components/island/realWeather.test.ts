@@ -11,10 +11,10 @@ import { eventSlot, prefTaken } from '#lib/contract/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { addDays } from '#lib/time/dates.ts';
-import { dayWeather, heldFine, weatherAt, isRain, musicWeather, realWeatherAt, snowSeason, WX_TTL_MS, yieldSkyAt, type Sky } from './weather.ts';
-import { BUGS, FISH, oddsAt, type Seasonal } from './critters.ts';
-import { showerNight } from './meteor.ts';
-import { WX_FIXTURES, wxFixture } from './wxFixtures.ts';
+import { dayWeather, heldFine, weatherAt, isRain, musicWeather, realWeatherAt, snowSeason, WX_TTL_MS, yieldSkyAt, type Sky } from '../../world/weather.ts';
+import { BUGS, FISH, oddsAt, type Seasonal } from '../../world/critters.ts';
+import { showerNight } from '../../world/meteor.ts';
+import { WX_FIXTURES, wxFixture } from '../../world/wxFixtures.ts';
 
 const H = 3600_000;
 /** Tokyo `date` at `hm` (ms). */

@@ -10,9 +10,9 @@
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { addFx, livePos, setEmote } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { firstConfetti } from './birthday.ts';
+  import { firstConfetti } from '../../world/birthday.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { timers } from './timers.ts';
+  import { timers } from '../../world/timers.ts';
   import { VILLAGER, u } from './scene.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
 

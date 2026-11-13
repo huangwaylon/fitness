@@ -9,7 +9,7 @@ import enCatalog from '#lib/i18n/catalog.en.json';
 import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import { ITEMS, RECIPES } from '../island/catalog.ts';
-import { FOSSILS } from '../island/beach.ts';
+import { FOSSILS } from '../../world/beach.ts';
 import { ZUKAN_KINDS, KIND_ART, entries, groups } from './zukan.ts';
 
 const names = [{ ...jaMain, ...jaCatch, ...jaCatalog }, { ...enMain, ...enCatch, ...enCatalog }] as Record<string, string>[];

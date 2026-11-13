@@ -1,10 +1,10 @@
-// The fossil rooms' exhibits (docs/design.md "The museum"), pure: NH's 73 fossils (island/fossilIds.ts) as NH's own
+// The fossil rooms' exhibits (docs/design.md "The museum"), pure: NH's 73 fossils (world/fossilIds.ts) as NH's own
 // models (FtrFossil*: scripts/world3d-models.ts --museum, one pack a skeleton and one for the standalone ones), each
 // shown once anyone has found it (the ずかん's first finds: NH's donation), in three rooms (below: PLACES).
 // A skeleton's pieces stand in a row along +x on its platform, NH's way: each piece is a 2 × 2 base with its bones, and
 // the pieces in their order join into the whole animal (the skull at −x; a pterosaur's wings either side of its body).
 // A piece not found yet leaves its place empty; once every piece is in, the skeleton is complete (its card says so).
-import { FOSSIL_SETS, STANDALONE } from '../island/fossilIds.ts';
+import { FOSSIL_SETS, STANDALONE } from '../../world/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { F1, F2, F3, type Rect, type RoomId } from './plan.ts';
 

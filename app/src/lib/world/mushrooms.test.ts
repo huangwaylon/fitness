@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MUSHROOMS, mushroomSpots, OFF_SEASON_ODDS, RARE_ODDS, mushroomsOn, rareMushroom } from './mushrooms.ts';
 import { DIG_SPOTS, LAWN } from './beach.ts';
-import { OAK_AR } from './scene.ts';
+import { OAK_AR } from '../components/island/scene.ts';
 import { FLOWERS, GOAL_TREES, HOMES, SCENERY, TAPE_DECK, onGrass, surfaceAt } from './world.ts';
 import { addDays } from '#lib/time/dates.ts';
 import ja from '#lib/i18n/catch.ja.json';

@@ -28,7 +28,7 @@ export type SoundId =
   | 'pluck' | 'sprinkle' | 'clonk'
   // the campfire poked: a soft crackle of sparks
   | 'crackle'
-  // the fixed decor (island/fixedDecor.ts): a bench's wooden creak, the shishi-odoshi's hollow "kon", the pull-up
+  // the fixed decor (world/fixedDecor.ts): a bench's wooden creak, the shishi-odoshi's hollow "kon", the pull-up
   // bar's soft ring, the pump's squeak and gush
   | 'creak' | 'kon' | 'clang' | 'pump'
   // a shaken tree's wasps: their angry buzz
@@ -66,7 +66,7 @@ export type SceneSfx =
   | 'shell' | 'fragment' | 'bottle' | 'dig' | 'wish' | 'weed' | 'water' | 'clonk' | 'glint' | 'visitor'
   // shaking a tree (island/treeShake.ts): a nest lands, its wasps buzz out, they sting; a branch picked up
   | 'nest' | 'buzz' | 'sting' | 'twig'
-  // mushroom season (island/mushrooms.ts): one picked up beside a tree
+  // mushroom season (world/mushrooms.ts): one picked up beside a tree
   | 'mushroom'
   // fireworks (island/Fireworks.svelte)
   | 'launch' | 'firework'

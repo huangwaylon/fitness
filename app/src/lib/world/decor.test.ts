@@ -6,11 +6,11 @@ import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 import { DECOR_ITEMS } from '#lib/contract/decor.ts';
 import PLACES from './models.json';
-import MODELS from '../world3d/assets.json';
-import { keyModel, modelBounds } from '../world3d/models3d.ts';
-import { LAMP } from '../world3d/things.ts';
+import MODELS from '../components/world3d/assets.json';
+import { keyModel, modelBounds } from '../components/world3d/models3d.ts';
+import { LAMP } from '../components/world3d/things.ts';
 
-describe('decorations: art and sizes (island/decor.ts)', () => {
+describe('decorations: art and sizes (world/decor.ts)', () => {
   it('every kind has its four facings rendered, at one scale (the crop height varies with the depth it shows)', () => {
     // the old もようがえ's ten (their ops the record still reads) and the gym's twelve
     expect(DECOR_ITEMS.every((i) => DECOR_KINDS.includes(i))).toBe(true);

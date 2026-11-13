@@ -45,7 +45,7 @@
     emoteSize?: string;
     /** Ground shadow under the feet (squashes with hops). */
     shadow?: boolean;
-    /** A hat on its head (island/birthday.ts: NH's birthday hat on a birthday), an art key. */
+    /** A hat on its head (world/birthday.ts: NH's birthday hat on a birthday), an art key. */
     hat?: string | null;
     /** Tricked by Jack on Halloween (island/Visitor.svelte): NH's trick changes your look; here, party nose glasses. */
     tricked?: boolean;

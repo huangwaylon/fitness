@@ -5,7 +5,7 @@ import {
   DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand,
   bugRivals, villagerBeats, type AmbientWorld, type Poi, type Spawn, type VillagerBeat
 } from './ambient.ts';
-import { FISH, pickBug, pickFish } from './critters.ts';
+import { FISH, pickBug, pickFish } from '../../world/critters.ts';
 import { pickAct } from './visitorLife.ts';
 import { SPOT_MIN, bugPath, critterId } from './critterPath.ts';
 

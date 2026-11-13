@@ -27,7 +27,7 @@ import { levelRank } from '#lib/kikimimi/bank.ts';
 import { PLACES, omakaseLv } from '#lib/kikimimi/catalog.ts';
 import { stageOf } from '#lib/kikimimi/games/listened.ts';
 import { lastPlacement } from '#lib/kikimimi/games/check/def.ts';
-import { hooksOn } from '../island/devHooks.ts';
+import { hooksOn } from '../../world/devHooks.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type Kept = { at: number; row: ListenRow };

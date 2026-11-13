@@ -2,8 +2,8 @@
 // from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
 // the static prefix of a dynamic key at whole dot segments (`panel.tab.${id}`). The host's lines (`host.<line>`) are
 // picked by name.
-import { DECOR_ART } from './components/island/decor.ts';
-import { FIXED_ART } from './components/island/fixedDecor.ts';
+import { DECOR_ART } from './world/decor.ts';
+import { FIXED_ART } from './world/fixedDecor.ts';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -36,12 +36,12 @@ import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { KIND_LIST } from '#lib/layout/catalog.ts';
 import MODELS from '#lib/components/world3d/assets.json';
-import { BUGS, FISH, JUNK, critterArt } from '#lib/components/island/critters.ts';
-import { POND_FISH } from '#lib/components/island/pondFish.ts';
-import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beach.ts';
-import { PEARL, SEA } from '#lib/components/island/sea.ts';
-import { MUSHROOMS } from '#lib/components/island/mushrooms.ts';
-import { EGGS } from '#lib/components/island/eggs.ts';
+import { BUGS, FISH, JUNK, critterArt } from '#lib/world/critters.ts';
+import { POND_FISH } from '#lib/world/pondFish.ts';
+import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/world/beach.ts';
+import { PEARL, SEA } from '#lib/world/sea.ts';
+import { MUSHROOMS } from '#lib/world/mushrooms.ts';
+import { EGGS } from '#lib/world/eggs.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
 import { pocketItem } from '#lib/components/shop/pocket.ts';
 
@@ -49,7 +49,7 @@ const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
 /** Code outside the UI that hands i18n keys to it (the model's host line, labels, …). */
 const EMITTER_DIRS = ['lib/model', 'lib/scoring', 'lib/config', 'lib/contract', 'lib/time'];
-const UI_DIRS = ['lib/components', 'lib/gym', 'lib/its', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts'];
+const UI_DIRS = ['lib/components', 'lib/world', 'lib/gym', 'lib/its', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts'];
 
 function files(p: string): string[] {
   try {
@@ -193,21 +193,21 @@ describe('official art (static/art/manifest.json)', () => {
     ...REACTIONS.map((r) => `reactions/${r}`),
     // ききみみ's scene backdrops (kikimimi/bank.ts SCENE_IDS, kikimimi/scene/stage.ts sceneArt)
     ...SCENE_IDS.map(sceneArt),
-    // the scene's catches (island/critters.ts critterArt)
+    // the scene's catches (world/critters.ts critterArt)
     ...[...Object.keys(FISH), ...Object.keys(POND_FISH), ...Object.keys(BUGS), ...JUNK, ...Object.keys(SEA)].map((id) => critterArt(id as keyof typeof FISH)),
-    // the beach finds (island/beach.ts findArt)
+    // the beach finds (world/beach.ts findArt)
     ...[...SHELLS.map(([id]) => id), PEARL, ...FOSSILS, ...FRAGMENTS, 'message-bottle', 'shovel', 'rock', 'watering-can'].map(findArt),
-    // mushroom season (island/mushrooms.ts)
+    // mushroom season (world/mushrooms.ts)
     ...[...MUSHROOMS.map(([id]) => id), 'rare-mushroom'].map(findArt),
-    // Bunny Day's eggs (island/eggs.ts)
+    // Bunny Day's eggs (world/eggs.ts)
     ...EGGS.map(findArt),
     // the pocket's goods in the shop's うる (shop/pocket.ts: wood, a weed, the fruit…)
     ...Object.keys(GOODS).flatMap((id) => pocketItem(`goods:${id}`)?.art ?? []),
     // a present's recipe card (island/Finds.svelte); its items' and recipes' icons are outside the manifest (catalog.test)
     'presents/diy-recipe',
-    // the decorations in their four facings (island/decor.ts decorArt)
+    // the decorations in their four facings (world/decor.ts decorArt)
     ...DECOR_ART,
-    // the fixed decor's built keys (island/fixedDecor.ts: the snowboy's melting stages, the shishi-odoshi tipped)
+    // the fixed decor's built keys (world/fixedDecor.ts: the snowboy's melting stages, the shishi-odoshi tipped)
     ...FIXED_ART,
     // the layout's tray and palette icons (layout/catalog.ts: IslandEdit, the editor)
     ...KIND_LIST.flatMap((d) => (d.icon ? [d.icon] : []))

@@ -293,7 +293,7 @@ export async function geo(page: Page): Promise<Geo> {
 
 /** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): watched for and tapped in the page (a
  *  MutationObserver, then a click on what's at (x, y), as a finger's goes), not by expect's polling and a round trip
- *  back, which under CI's load came after NH's short window (island/fishing.ts BITE_WINDOW_MS). Work out (x, y) before
+ *  back, which under CI's load came after NH's short window (world/fishing.ts BITE_WINDOW_MS). Work out (x, y) before
  *  the bite; at the bite, the nearest point to it (within 60 px) under none of the island's tap areas (a villager or a
  *  tree there then takes the tap, and the fish got away: dialogue's flake). */
 export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_000) {

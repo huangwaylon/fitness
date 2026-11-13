@@ -60,7 +60,7 @@ kind's budget and the whole to 15 MB.
 - **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
   (`static/room/world3d/decor/{camp,camp2,food,gym2}.glb`, each under 400 KB, one KTX2 pack each), each member a node
   named its id (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file,
-  its key made at load (assets.ts packKey); things.ts reads the node out (`member`). island/decor.ts knows them by
+  its key made at load (assets.ts packKey); things.ts reads the node out (`member`). world/decor.ts knows them by
   catalog.ts `packed`, never assets.json (that would pull it into the first load).
 - **The garden** (`GARDEN` in the map; docs/island-layout.md "Fences and the garden"): packs under
   `static/room/world3d/garden/` (the fences, the crops' stages and soil, the garden's flowers and vines, the cedar's
@@ -150,7 +150,7 @@ texels, else EMITTERS by eye (`room-surfaces-page.js`). items.test checks each i
 Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scripts/villagers3d-page.js`) into
 `app/static/room/villagers3d/<id>.glb` (458 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
 characters, by `VISITOR_ONLY` (not in the picker) the visitors and the shop's twins (`timmy`: one model for Timmy and
-Tommy), and the guests (island/visitorRoles.ts), loaded only on their day. One whose clothes aren't part of its body
+Tommy), and the guests (world/visitorRoles.ts), loaded only on their day. One whose clothes aren't part of its body
 names its top's mesh and texture there; the converter fails a villager with a material missing its base colour, and
 `villager3d.test` holds every material to its default top. Tulin, Mineru, Cece and Viché aren't in the 2.0.0 export:
 their cards stay.

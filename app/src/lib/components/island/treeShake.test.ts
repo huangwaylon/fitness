@@ -5,9 +5,9 @@ import {
   legacyDropIds, liesUnder, goalTree, lastNestOf, netsSwarm, shakeDrop, shakeTap, shakenBug, treeById, wireDrop, woodFall, woodId, woodOut, woodTree, type Ground
 } from './treeShake.ts';
 import type { Put } from '#lib/sync/world-day.ts';
-import { BUGS, pickBug } from './critters.ts';
-import { CATCH_LINES } from './catchLines.ts';
-import { SCENERY, surfaceAt } from './world.ts';
+import { BUGS, pickBug } from '../../world/critters.ts';
+import { CATCH_LINES } from '../../world/catchLines.ts';
+import { SCENERY, surfaceAt } from '../../world/world.ts';
 import { FRUIT_SPOTS, fruitLean } from './scene.ts';
 import { site } from './site.svelte.ts';
 import type { Shake } from '#lib/sync/world-day.ts';

@@ -21,7 +21,7 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
-  import { birthdaysShown } from '#lib/components/island/birthday.ts';
+  import { birthdaysShown } from '#lib/world/birthday.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { minuteNow } from '#lib/time/clock.ts';
@@ -57,7 +57,7 @@
   const news = $derived.by((): string | null => {
     const h = view?.harvest;
     if (!view) return null;
-    // one of our birthdays (island/birthday.ts): 「うめさん、おたんじょうび おめでとう！」 (the harvest still comes first)
+    // one of our birthdays (world/birthday.ts): 「うめさん、おたんじょうび おめでとう！」 (the harvest still comes first)
     const born = h ? [] : birthdaysShown(localDateAt(minuteNow().getTime()), scenePreview().event);
     if (born.length) return hostLine('birthday', { name: view.people[born[0]].villagerName });
     if (!h) return null;

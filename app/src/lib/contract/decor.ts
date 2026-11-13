@@ -7,14 +7,14 @@
 // record (relay/src/store.ts), the model, the relay protocol and the island; pure and dependency-free.
 import { isInt, isMs } from './ops.ts';
 
-/** The ten items (island/decor.ts has their art and footprints). */
+/** The ten items (world/decor.ts has their art and footprints). */
 export const DECOR_ITEMS = [
   'stone-lantern', 'birdbath', 'garden-wagon', 'iron-table', 'iron-chair', 'brick-well', 'tanuki', 'monstera', 'signpost', 'wheelbarrow'
 ] as const;
 type DecorItemId = (typeof DECOR_ITEMS)[number];
 /** At most this many on the island (the projector's budget; both of us share it). */
 export const DECOR_MAX = 30;
-/** Where an item may stand (world units: the island's lower tier, island/world.ts LAND and the cliff's foot). */
+/** Where an item may stand (world units: the island's lower tier, world/world.ts LAND and the cliff's foot). */
 const DECOR_X = [-40, 430] as const;
 const DECOR_Z = [-30, 1040] as const;
 /** Facings: 0 toward the camera, 1 to the right, 2 away, 3 to the left (a quarter turn each). */

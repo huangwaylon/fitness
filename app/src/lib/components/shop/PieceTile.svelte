@@ -12,7 +12,7 @@
   import type { Snippet } from 'svelte';
   import type { HTMLButtonAttributes } from 'svelte/elements';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { findArt } from '../island/beach.ts';
+  import { findArt } from '../../world/beach.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props extends Omit<HTMLButtonAttributes, 'onclick'> {

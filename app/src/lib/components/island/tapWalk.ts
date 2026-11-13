@@ -4,8 +4,8 @@
 //   my villager runs it at SPEED.run (walkGraph.ts: 300 u/s; idle strolls and visitors 90 u/s). The cream tap ring marks
 //   where it ends. The camera never moves for it (only the finger scrolls the island).
 import { findPath, pathLength, snapTap, type Extra, type LayoutNav, type Snap } from '#lib/layout/nav.ts';
-import type { Pt, Surface } from './world.ts';
-import { SPEED } from './speed.ts';
+import type { Pt, Surface } from '../../world/world.ts';
+import { SPEED } from '../../world/speed.ts';
 import type { Cue } from '#lib/sound/cues.ts';
 
 /** The tap ring's life (ms): a cream ring, 34u, flattened like a shadow, shrinking out (IslandScene's .tap-ring). */

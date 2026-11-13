@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { fruitDay, fruitFilter, fruitId, greyAt, markDropped, markPicked, stageOf } from './fruitDay.ts';
-import { TREE_FRUIT } from './scene.ts';
+import { TREE_FRUIT } from '../components/island/scene.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 
 function memKV(): KV {

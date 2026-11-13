@@ -5,9 +5,9 @@
 // the camera goes to where it lives (window.__world.go).
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
-import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { FISH } from '../src/lib/components/island/critters.ts';
-import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
+import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
+import { FISH } from '../src/lib/world/critters.ts';
+import { POND_FISH, freshPool } from '../src/lib/world/pondFish.ts';
 import { camTo, castIn, geo, reelOnBite, type Geo } from './island';
 import { fromMenu, hudBells } from './hud.ts';
 

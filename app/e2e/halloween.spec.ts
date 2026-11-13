@@ -1,4 +1,4 @@
-// Halloween (docs/design.md "Halloween"; island/events.ts): on Oct 31 a few orange pumpkins on the health lawn (まえ)
+// Halloween (docs/design.md "Halloween"; world/events.ts): on Oct 31 a few orange pumpkins on the health lawn (まえ)
 // and round the campsite's clearing (おく), lit as jack-o'-lanterns from 17:00 under a purple and orange wash; Jack visits at
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.

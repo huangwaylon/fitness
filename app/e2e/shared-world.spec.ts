@@ -5,7 +5,7 @@
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
 import { geo, islandUp, openNear, pauseNow, plateOnly, quiet } from './island.ts';
-import { SPEED } from '../src/lib/components/island/speed.ts';
+import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 

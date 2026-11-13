@@ -10,7 +10,7 @@ import type { LocalDate } from '#lib/types.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import { islandDay } from './ambientClock.ts';
 import { weather } from './weatherNow.svelte.ts';
-import { isRain } from './weather.ts';
+import { isRain } from '../../world/weather.ts';
 
 /** A ripe pumpkin's colour (visual only: the item is カボチャ), seeded by its plot and ripe day so both phones draw the
  *  same and each regrow cycle draws anew: orange, yellow, white or green, 8:5:4:3. */

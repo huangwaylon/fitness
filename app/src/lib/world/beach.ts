@@ -11,7 +11,7 @@ import type { Layout } from '#lib/layout/model.ts';
 
 // ---------- catalogs (official NH items; art in static/art/finds/, names under beach.name.<id>) ----------
 
-/** NH's eight beach seashells (the pearl comes from diving: island/sea.ts), with how often each washes up; the summer
+/** NH's eight beach seashells (the pearl comes from diving: world/sea.ts), with how often each washes up; the summer
  *  shell is NH's summer one (June–September): ×SHELL_SEASON then, rare otherwise, never a gate. */
 export const SHELLS = [
   ['sea-snail', 4], ['cowrie', 4], ['venus-comb', 3], ['sand-dollar', 3], ['coral', 2], ['conch', 1.5], ['giant-clam', 1],

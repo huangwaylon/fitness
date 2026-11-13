@@ -1,7 +1,7 @@
 // The critters and the weather (docs/design.md "Weather"), as NH: the coelacanth only in rain or snow, the snail only in
 // the rain, NH's "any except rain" bugs (butterflies, moths, dragonflies, grasshoppers, crickets…) never in it.
 import { describe, expect, it } from 'vitest';
-import { BUGS, FISH, bushBug, oddsAt, pickBug, pickFish, type BugId } from './critters.ts';
+import { BUGS, FISH, bushBug, oddsAt, pickBug, pickFish, type BugId } from '../../world/critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 
 const pickMany = <T>(f: (r: () => number) => T, n = 4000) => {

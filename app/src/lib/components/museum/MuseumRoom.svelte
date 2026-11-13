@@ -36,7 +36,7 @@
   import RoomChip from './RoomChip.svelte';
   import { DIP_FADE_MS, NEW_MS, cardDock, chipName, freshFinds, freshIn, freshWings, roomTally, tagsOf, unitOf } from './hud.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
+  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../../world/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
@@ -231,7 +231,7 @@
     replayWalk(eng, m, relayNow());
   }
 
-  // ---- the phrases (island/say.ts): as in the rooms, this place's `sc` ----
+  // ---- the phrases (world/say.ts): as in the rooms, this place's `sc` ----
   let says = $state<ReturnType<typeof Says>>();
   let scene = $state<HTMLElement>();
   let sayAt = $state<HTMLElement | null>(null);

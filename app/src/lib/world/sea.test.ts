@@ -1,4 +1,4 @@
-// The sea creatures (island/sea.ts): NH's 40 with their months, hours, shadows and speeds; seasons weight the odds
+// The sea creatures (world/sea.ts): NH's 40 with their months, hours, shadows and speeds; seasons weight the odds
 // (never a gate); the pearl now and then; the dive: slow ones caught, quick ones dart (a second tap), the quickest
 // sometimes get away.
 import { describe, expect, it } from 'vitest';

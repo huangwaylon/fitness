@@ -25,7 +25,7 @@
   // page's first paint they're simply there.
   // `?arrive` (dev or test mode): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
   // stroll now; `?meet`: the partner comes over now.
-  import { dayRecord } from './dayRecord.ts';
+  import { dayRecord } from '../../world/dayRecord.ts';
   import { untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { tall3d } from '../villager3d/manifest.ts';
@@ -34,24 +34,24 @@
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
   import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, removeFx, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
-  import type { Pt } from './walkGraph.ts';
+  import type { Pt } from '../../world/walkGraph.ts';
   import { t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow, now } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { eventJingle } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { EDGE, clearAt, guardsU, stageGeo } from './placement.ts';
-  import { zodiacOf } from './beach.ts';
-  import { hook, hookFlag, islandSeed } from './devHooks.ts';
+  import { EDGE, clearAt, guardsU, stageGeo } from '../../world/placement.ts';
+  import { zodiacOf } from '../../world/beach.ts';
+  import { hook, hookFlag, islandSeed } from '../../world/devHooks.ts';
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
-  import { BUILDINGS, CENTRE_STAGE } from './world.ts';
+  import { BUILDINGS, CENTRE_STAGE } from '../../world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from '../../world/visitors.ts';
   import { besideStage, guestSpot } from '#lib/layout/spots.ts';
-  import { ROLES, fortuneOf, giftOf, isGuest, type GuestId } from './visitorRoles.ts';
+  import { ROLES, fortuneOf, giftOf, isGuest, type GuestId } from '../../world/visitorRoles.ts';
   import { findKey, findsView } from '#lib/model/finds.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -59,15 +59,15 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { dateMs, ZONE_OFFSET_MS } from '#lib/time/dates.ts';
   import type { Component } from 'svelte';
-  import type { Choice } from './pager.ts';
+  import type { Choice } from '../../world/pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
-  import { critterArt, type FishId } from './critters.ts';
-  import { daysUntil } from './wedding.ts';
+  import { critterArt, type FishId } from '../../world/critters.ts';
+  import { daysUntil } from '../../world/wedding.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { handOver, holding, markVeg, myAsk, vegDay } from './vegAsk.svelte.ts';
-  import { vegGift, type VegRequest } from './vegRequest.ts';
+  import { vegGift, type VegRequest } from '../../world/vegRequest.ts';
   import { cropName } from './farmUi.svelte.ts';
   import { loadNames } from './catchLine.ts';
 

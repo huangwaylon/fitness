@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { daysLeft, emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, plotOf, stageOf, wateringCounts, yieldOf, type FarmData, type Plot } from './farm.ts';
 import { gameWet, wxWetDays } from './wet.ts';
-import { dayWeather } from '../components/island/weather.ts';
+import { dayWeather } from '../world/weather.ts';
 import { seeded } from '../random.ts';
 
 const D = '2026-11-04', D1 = '2026-11-05', D2 = '2026-11-06', D3 = '2026-11-07';

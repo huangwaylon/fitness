@@ -3,7 +3,7 @@
 // `catchphrase` field), Japanese from the game's own messages (SYS_Get_Fish / SYS_Get_Insect / the dive catches / Trash,
 // as datamined in jameskokoska/ACNH-Pocket-Guide).
 // The first of each critter's lines; a line break where the game has one. Loaded with the first critter of a session
-// (Critters.svelte), out of the first load. Keys: island/critters.ts and island/sea.ts ids.
+// (Critters.svelte), out of the first load. Keys: world/critters.ts and world/sea.ts ids.
 import type { BugId, FishId, JunkId } from './critters.ts';
 import type { SeaId } from './sea.ts';
 import type { PondFishId } from './critters.ts';

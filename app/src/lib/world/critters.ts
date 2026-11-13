@@ -20,7 +20,7 @@ export interface Seasonal {
   weight: number;
   /** A second span of hours (NH's evening cicada: dawn and dusk; the piranha: midday and midnight). */
   also?: readonly [number, number];
-  /** NH's weather (island/weather.ts): `dry` never in the rain (most butterflies, moths, dragonflies, grasshoppers…),
+  /** NH's weather (world/weather.ts): `dry` never in the rain (most butterflies, moths, dragonflies, grasshoppers…),
    *  `rain` only while it rains (the snail), `wet` only in rain or snow (the coelacanth). Snow isn't rain. */
   weather?: 'dry' | 'rain' | 'wet';
   /** Its months are a gate, not a flavour: the dung beetle rolls a snowball, so only in NH's snowy months. */
@@ -350,7 +350,7 @@ export function stalkTap(state: StalkState, swing: 'catch' | 'startle' | 'none')
 
 // ---------- timing ----------
 
-/** Per slot, the chance the front sea's bubbles (a spot to dive at: island/sea.ts) come when none are there: their own
+/** Per slot, the chance the front sea's bubbles (a spot to dive at: world/sea.ts) come when none are there: their own
  *  channel (island/ambient.ts), beside the front's shadow, about as many a day as when they took 1 sea turn in 4. */
 export const BUBBLE_ODDS = 0.07;
 
@@ -582,7 +582,7 @@ export function patches(place: BugPlace): Patch[] {
   }
 }
 
-// (fishing: island/fishing.ts)
+// (fishing: world/fishing.ts)
 
 // ---------- the net ----------
 

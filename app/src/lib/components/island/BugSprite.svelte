@@ -3,7 +3,7 @@
   // icon is the catch). Critters.svelte moves it (the mover, the hop, the flutter) and loads this with the first bug of
   // a session, so the sprites and their styles stay out of the island's first load. Decorative (Critters' layer is
   // aria-hidden).
-  import type { BugId, Flight, StalkState } from './critters.ts';
+  import type { BugId, Flight, StalkState } from '../../world/critters.ts';
 
   interface Props {
     id: BugId;

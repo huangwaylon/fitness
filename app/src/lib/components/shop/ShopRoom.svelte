@@ -35,7 +35,7 @@
   import Counter, { type Tab } from './Counter.svelte';
   import { nm } from './PieceTile.svelte';
   import { placeOf, samePlace, type Place } from './words.ts';
-  import { findArt } from '../island/beach.ts';
+  import { findArt } from '../../world/beach.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';

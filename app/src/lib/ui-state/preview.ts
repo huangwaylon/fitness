@@ -8,17 +8,17 @@ import { foliageFor, seasonFor, SEASONS, type Foliage, type Season, type TimeOfD
 import { ZONE_OFFSET_MS, localDateAt } from '#lib/time/dates.ts';
 import { testModeAsked } from './testMode.ts';
 
-/** The events the preview can bring on: NH's dated ones (island/events.ts EventId), ours and the sky's. */
+/** The events the preview can bring on: NH's dated ones (world/events.ts EventId), ours and the sky's. */
 export const PREVIEW_EVENTS = ['birthday-B', 'bunny-day', 'cherry', 'fireworks', 'birthday-A', 'wedding', 'halloween', 'maple', 'turkey-day', 'toy-day', 'shower'] as const;
 type PreviewEvent = (typeof PREVIEW_EVENTS)[number];
-/** The setting's weathers (the dev param has island/weather.ts FORCED's whole list). */
+/** The setting's weathers (the dev param has world/weather.ts FORCED's whole list). */
 export const PREVIEW_WEATHER = ['clear', 'rain', 'snow'] as const;
 export const TODS: readonly TimeOfDay[] = ['dawn', 'day', 'dusk', 'night'];
 
 export interface Choice {
   event: PreviewEvent | null;
   season: Season | null;
-  /** A sky (island/weather.ts Forced); the setting's are PREVIEW_WEATHER. */
+  /** A sky (world/weather.ts Forced); the setting's are PREVIEW_WEATHER. */
   weather: string | null;
   tod: TimeOfDay | null;
 }
@@ -98,7 +98,7 @@ export function shownAt(at: Date, s: Pick<Scene, 'event' | 'tod'>): Date {
   return new Date(`${day}T${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+09:00`);
 }
 
-/** Whether the dev hooks apply (island/devHooks.ts): a dev build, or test mode (ui-state/testMode.ts). */
+/** Whether the dev hooks apply (world/devHooks.ts): a dev build, or test mode (ui-state/testMode.ts). */
 export const hooksOn = (q: URLSearchParams): boolean => import.meta.env.DEV || testModeAsked(q);
 
 /** The dev params' part (the hooks on, for all but `?season=` and `?theme=`). */

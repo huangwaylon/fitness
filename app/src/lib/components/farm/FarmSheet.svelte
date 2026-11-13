@@ -27,7 +27,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { bare } from '../kiroku/zukan.ts';
-  import { fillPlan, harvestOps, harvestSummary, orphans, waterNext, waterTargets, wateredBy, yieldRange } from './sheet.ts';
+  import { fillPlan, harvestOps, harvestSummary, orphans, waterNext, waterTargets, wateredBy, yieldRange } from '../../world/farmSheet.ts';
   import type { Who } from '#lib/types.ts';
   import { askNow } from '../island/vegAsk.svelte.ts';
   import { cropName } from '../island/farmUi.svelte.ts';

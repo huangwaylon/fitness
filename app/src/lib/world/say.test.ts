@@ -4,7 +4,7 @@ import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 import { SAY_MAX } from '#lib/contract/live-protocol.ts';
-import { REACTIONS } from '../motion/reactions.ts';
+import { REACTIONS } from '../components/motion/reactions.ts';
 
 const kv = (): KV & { m: Map<string, string> } => {
   const m = new Map<string, string>();

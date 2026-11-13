@@ -6,9 +6,9 @@
 // the last one ended. A bug is kept to its enclosure shrunk by its own size (its wings' reach up included), so it
 // never meets a prop, the glass or the ground (bugLife.test.ts).
 import { mulberry32, smallHash } from '#lib/random.ts';
-import { BUGS, type BugId, type Flight, type Patch } from '../island/critters.ts';
+import { BUGS, type BugId, type Flight, type Patch } from '../../world/critters.ts';
 import { BOB, FLY_UPS, PACE, bugAt, bugLegs, type Flying, type Leg, type P3, type Ways } from '../island/critterPath.ts';
-import { turn } from '../island/glide.ts';
+import { turn } from '../../world/glide.ts';
 import { FLAPS, wingBeat, type Beat } from '../world3d/wings.ts';
 import W3D from '../world3d/models.json' with { type: 'json' };
 import M from './models.json' with { type: 'json' };

@@ -8,7 +8,7 @@
   // `lights`, the sun or moon and the stars over it, high in the band (above the time-of-day tint's reach); both behind
   // every world thing. (The balloon present flies over the island in 3D: Balloon.svelte.)
   import Clouds from './Clouds.svelte';
-  import { holdLoop } from './clouds.ts';
+  import { holdLoop } from '../../world/clouds.ts';
   import type { Tod } from './scene.ts';
 
   interface Props {

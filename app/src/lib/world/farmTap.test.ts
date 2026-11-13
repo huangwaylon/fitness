@@ -1,4 +1,4 @@
-// The order of a tap on a plot (island/farmTap.ts, docs/farming.md "Playing").
+// The order of a tap on a plot (world/farmTap.ts, docs/farming.md "Playing").
 import { describe, expect, it } from 'vitest';
 import { farmTap, waveSpots, type FarmTapIn, type PlotAt } from './farmTap.ts';
 import { FARM, type Plot } from '#lib/contract/farm.ts';

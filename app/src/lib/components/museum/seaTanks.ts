@@ -1,4 +1,4 @@
-// The sea creatures' room's tanks (docs/design.md "The museum"), pure: NH's 40 sea creatures (island/sea.ts), each
+// The sea creatures' room's tanks (docs/design.md "The museum"), pure: NH's 40 sea creatures (world/sea.ts), each
 // shown once anyone has caught it, in one of the aquarium's two tanks of theirs (plan.ts FISH_WING):
 //   the reef tank   along the right wall, tall: the drifters in its water (the jellyfish, the squid, the octopuses that
 //                   swim, the nautilus) and the big crawlers on its sand

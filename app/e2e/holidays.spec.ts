@@ -3,7 +3,7 @@
 // Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, castIn, controlsUnder, fossilOnScreen, islandUp, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
-import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
+import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

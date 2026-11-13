@@ -21,43 +21,43 @@
   //   ?shower (dev or test mode): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
-  import { guestNow, onBeach, visitorNow } from './visitors.ts';
-  import { timers } from './timers.ts';
-  import { hook, islandSeed } from './devHooks.ts';
+  import { guestNow, onBeach, visitorNow } from '../../world/visitors.ts';
+  import { timers } from '../../world/timers.ts';
+  import { hook, islandSeed } from '../../world/devHooks.ts';
   import { site } from './site.svelte.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { guardsU, stageGeo } from './placement.ts';
-  import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
+  import { guardsU, stageGeo } from '../../world/placement.ts';
+  import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from '../../world/stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
-  import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from './world.ts';
+  import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '../../world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { notBehind, type Seen } from './hitbox.ts';
-  import { footprint } from './nav.ts';
+  import { notBehind, type Seen } from '../../world/hitbox.ts';
+  import { footprint } from '../../world/nav.ts';
   import type Critters from './Critters.svelte';
   import type Finds from './Finds.svelte';
   import type Care from './Care.svelte';
-  import type { Choice } from './pager.ts';
-  import { water } from './sceneDay.ts';
+  import type { Choice } from '../../world/pager.ts';
+  import { water } from '../../world/sceneDay.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
-  import { findArt } from './beach.ts';
+  import { findArt } from '../../world/beach.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { nextStarMs, showerAt } from './meteor.ts';
+  import { nextStarMs, showerAt } from '../../world/meteor.ts';
   import { weather } from './weatherNow.svelte.ts';
-  import { eggTime, eventNow } from './events.ts';
-  import { eggInBalloon } from './eggs.ts';
-  import { RIG, fallAt } from './balloonFlight.ts';
+  import { eggTime, eventNow } from '../../world/events.ts';
+  import { eggInBalloon } from '../../world/eggs.ts';
+  import { RIG, fallAt } from '../../world/balloonFlight.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
-  import { fx3d } from './fx3d.ts';
-  import { echo3d } from './echo3d.ts';
+  import { fx3d } from '../../world/fx3d.ts';
+  import { echo3d } from '../../world/echo3d.ts';
   import { WAVE_MS, cropName, farmUi, openPicker, popAt } from './farmUi.svelte.ts';
-  import { farmTap, waveSpots } from './farmTap.ts';
+  import { farmTap, waveSpots } from '../../world/farmTap.ts';
   import { farmToday } from './farm.ts';
   import { islandDay } from './ambientClock.ts';
   import { loadNames } from './catchLine.ts';
@@ -452,7 +452,7 @@
   }
 
   /**
-   * A tap on a plot (docs/farming.md "Playing", island/farmTap.ts): it acts where it is (nobody walks; my villager turns
+   * A tap on a plot (docs/farming.md "Playing", world/farmTap.ts): it acts where it is (nobody walks; my villager turns
    * to it), the tapped plant deciding: my ripe plant harvests all my ripe ones in its 3 × 3 (a plate a crop), a growing
    * one waters the plants there whose watering counts (NH's golden can, on every phone: the shared day's `watered`), a
    * miss harvests my ripe ones near it, my empty plot is planted (nothing held or none left: the picker, whose pick

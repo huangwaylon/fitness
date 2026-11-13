@@ -2,7 +2,7 @@
   // The island's critters (docs/design.md "Critters", "Scene interactions": who comes, fishing, diving, the bugs; the
   // rules are critters.ts, fishing.ts, sea.ts, pondFish.ts and critterPath.ts, each header its numbers). This component
   // plays them: the slots (ambient life's, island/ambient.ts), a fish shadow off each stretch of the coast
-  // (island/coast.ts) and in each fresh water (pondFish.ts, its own chunk, with the first such shadow), the bubbles
+  // (world/coast.ts) and in each fresh water (pondFish.ts, its own chunk, with the first such shadow), the bubbles
   // (sea.ts, loaded with the first spot) and the bugs (where each: critters.ts bugPlace; a mole cricket under a mound,
   // dug up by a tap; a reared tarantula or scorpion charges off at a second tap); the partner's catches played here.
   // Each critter is a world node (camera.svelte.ts) at its spot: a fish shadow a flat ground mark, a bug, the bobber and
@@ -15,35 +15,35 @@
   //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> (dev or test mode): one now,
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
-  import { fx3d, has3d } from './fx3d.ts';
+  import { fx3d, has3d } from '../../world/fx3d.ts';
   import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
-  import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
+  import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from '../../world/fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { moveFast, pace } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
-  import { timers } from './timers.ts';
+  import { timers } from '../../world/timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
-  import { hook, hookFlag, hooksOn, islandSeed } from './devHooks.ts';
+  import { hook, hookFlag, hooksOn, islandSeed } from '../../world/devHooks.ts';
   import { skyAt, yieldSky } from './weatherNow.svelte.ts';
-  import type { Sky } from './weather.ts';
+  import type { Sky } from '../../world/weather.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from './hitbox.ts';
+  import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from '../../world/hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { bugRivals, crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
   import { relayOffset } from './ambientClock.ts';
-  import { coasts } from './coast.ts';
+  import { coasts } from '../../world/coast.ts';
   import { site } from './site.svelte.ts';
   import { su, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
-  import type { Box } from './geom.ts';
-  import { clearAt, guardsU, stageGeo } from './placement.ts';
+  import type { Box } from '../../world/geom.ts';
+  import { clearAt, guardsU, stageGeo } from '../../world/placement.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
-  import { digSpots, findArt } from './beach.ts';
-  import { eggTime, eventNow } from './events.ts';
-  import { eggOnLine } from './eggs.ts';
+  import { digSpots, findArt } from '../../world/beach.ts';
+  import { eggTime, eventNow } from '../../world/events.ts';
+  import { eggOnLine } from '../../world/eggs.ts';
   import { partnerTurnTo, sendTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught, lyingAt } from '#lib/sync/world-day.ts';
@@ -52,17 +52,17 @@
   import { tellPartner } from './partnerNews.ts';
   import { inMotion, livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import type { DiveItem } from './sea.ts';
+  import type { DiveItem } from '../../world/sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById, offBuildingsAt } from './world.ts';
+  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById, offBuildingsAt } from '../../world/world.ts';
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
     bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
     oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimPick, swimmable, type BugId, type Catch,
     type FishId, type JunkId, type Patch, type Swim, type Water
-  } from './critters.ts';
-  import type { PondFishId } from './pondFish.ts';
-  import type { FreshWhere } from './world.ts';
+  } from '../../world/critters.ts';
+  import type { PondFishId } from '../../world/pondFish.ts';
+  import type { FreshWhere } from '../../world/world.ts';
   import { bugLoc, fishLoc, loc, poolOf, seaPool, type Bug, type Fish, type Line, type Net, type P3, type Pool, type Shared } from './critterTypes.ts';
   import { critterMotion3d } from './critterMotion3d.ts';
   import { clamp } from '#lib/math.ts';
@@ -134,10 +134,10 @@
   let bubbles = $state<{ n: number; item: DiveItem; x: number; z: number; cid?: string } | null>(null);
   /** A dive: the splash, then (a quick one) its shadow darting off, catchable until `until`. */
   let diving = $state<{ n: number; item: DiveItem; x: number; z: number; ax: number; az: number; ms: number; size: number; chase: boolean; until: number; gone: boolean; cid?: string } | null>(null);
-  /** The sea creatures' module (island/sea.ts): loaded with the first bubble spot, out of the island's first load. */
-  let S: typeof import('./sea.ts') | null = null;
-  let seaChunk: Promise<typeof import('./sea.ts')> | null = null;
-  const loadSea = () => (seaChunk ??= import('./sea.ts').then((m) => (S = m)).catch((e) => ((seaChunk = null), Promise.reject(e))));
+  /** The sea creatures' module (world/sea.ts): loaded with the first bubble spot, out of the island's first load. */
+  let S: typeof import('../../world/sea.ts') | null = null;
+  let seaChunk: Promise<typeof import('../../world/sea.ts')> | null = null;
+  const loadSea = () => (seaChunk ??= import('../../world/sea.ts').then((m) => (S = m)).catch((e) => ((seaChunk = null), Promise.reject(e))));
   /** Earth flying up where a mole cricket was dug up. */
   let dig = $state<Net | null>(null);
   let seq = 0;
@@ -230,9 +230,9 @@
 
   // ---------- fish ----------
   /** The fresh-water fish table: its own chunk, fetched with the first fresh-water shadow. */
-  let pondChunk: Promise<typeof import('./pondFish.ts')> | null = null;
+  let pondChunk: Promise<typeof import('../../world/pondFish.ts')> | null = null;
   // (a failed fetch let go of: the next shadow asks again, as loadSea does)
-  const loadPond = () => (pondChunk ??= import('./pondFish.ts').catch((e) => ((pondChunk = null), Promise.reject(e))));
+  const loadPond = () => (pondChunk ??= import('../../world/pondFish.ts').catch((e) => ((pondChunk = null), Promise.reject(e))));
 
   /** A shadow in `water`, `want` being one of its fish: a shared one (`o.path`) where its seed puts it, wherever that is
    *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or

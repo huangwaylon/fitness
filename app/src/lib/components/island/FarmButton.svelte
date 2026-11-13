@@ -15,7 +15,7 @@
   import { react } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { farmSheet } from '../farm/open.svelte.ts';
-  import { harvestOps } from '../farm/sheet.ts';
+  import { harvestOps } from '../../world/farmSheet.ts';
   import { site } from './site.svelte.ts';
   import { farmToday } from './farm.ts';
   import { closePicker, farmUi, openPicker } from './farmUi.svelte.ts';

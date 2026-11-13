@@ -10,11 +10,11 @@
   import { kindDef } from '#lib/layout/catalog.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from './decor.ts';
+  import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from '../../world/decor.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { onMount } from 'svelte';
-  import { timers } from './timers.ts';
-  import { echo3d } from './echo3d.ts';
+  import { timers } from '../../world/timers.ts';
+  import { echo3d } from '../../world/echo3d.ts';
   import { site } from './site.svelte.ts';
   import { layout } from '#lib/store/layout.svelte.ts';
   import { objMid } from '#lib/layout/model.ts';

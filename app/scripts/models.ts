@@ -1,7 +1,7 @@
 // The island's 3D-rendered art (docs/design.md "Official art: the 3D renders"): NH's own models (Collada .dae with
 // PNG textures, one folder per model, named `<Model>.Nin_NX_NVN`) rendered to WebP sprites at the world's view angle,
 // under the art keys the scene already uses (static/art/<key>.webp and static/art/manifest.json, source "rendered"),
-// plus where each sprite stands (src/lib/components/island/models.json: its feet or door point as fractions of the
+// plus where each sprite stands (src/lib/world/models.json: its feet or door point as fractions of the
 // image, and its size in model units for NH's proportions).
 //
 // Usage (from app/): NH_MODELS=~/Downloads/Model npm run models [-- --only=trees/,deco/campsite --png=/tmp/x]
@@ -111,7 +111,7 @@ export const JOBS: Job[] = [
   prop('deco/garden-lantern', 'FtrLampGarden', 'FtrLampGardenReBody0', ['day'], 90, { halo: 1.4 }),
   prop('deco/garden-lantern-white', 'FtrLampGarden', 'FtrLampGardenReBody1', ['day'], 90, { halo: 1.4 }),
   // the campfire by the tent (its flames are the model's emissive: the lit look) and its log stools
-  // (at the decor's scale: island/world.ts DECOR_U)
+  // (at the decor's scale: world/world.ts DECOR_U)
   prop('deco/campfire', 'FtrCampfire', null, ['day'], 0, { halo: 1.2, ppu: 9 }),
   prop('deco/log-stool', 'FtrLogStoolS', 'FtrLogStoolSReBody0', ['day'], 0, { ppu: 9 }),
   // rocks
@@ -136,7 +136,7 @@ export const JOBS: Job[] = [
   }))
 ];
 
-// the decorations (island/decor.ts DECOR_ART; docs/design.md "Decorating"): NH's outdoor furniture, each in its four
+// the decorations (world/decor.ts DECOR_ART; docs/design.md "Decorating"): NH's outdoor furniture, each in its four
 // facings (f × 90° about the up axis: toward the camera, its right, away, its left), at one scale (px per model unit:
 // DECOR_U u per unit × 3 px per u) so the facings stand the same size, its body's first colour. Facing 0 is art (the
 // tray's icon); the others are only measured (models.json: the tap area's width over the 3D island's model)
@@ -155,7 +155,7 @@ JOBS.push(...DECOR.flatMap(([id, model]) => [0, 1, 2, 3].map((f): Job => ({
   looks: [{ key: `decor/${id}-${f}`, parts: [[model, model]], tex: [`${model}ReBody0`, `${model}ReFabric0`], outputs: ['day'], placeOnly: f !== 0 }]
 }))));
 
-// the fixed decor (island/world.ts DECOR, docs/design.md "Decor"): NH's outdoor furniture at the decorations' scale
+// the fixed decor (world/world.ts DECOR, docs/design.md "Decor"): NH's outdoor furniture at the decorations' scale
 // (one family: DECOR_U u per model unit, 3 px per u), each in its first colour unless a later one suits the spot
 const FIX: Partial<Job> = { ppu: DECOR_PPU };
 const fixed = (key: string, model: string, tex: string[], outputs: Out[] = ['day'], extra: Partial<Job> = {}): Job => ({

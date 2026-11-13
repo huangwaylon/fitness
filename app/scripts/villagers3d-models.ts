@@ -63,14 +63,14 @@ const SPECIAL: Record<string, [string, string?, string?]> = {
   brewster: ['Pge'], harvey: ['Spn'], 'daisy-mae': ['Boc'], redd: ['Fox', 'NpcSpTopsFoxOuterL'], flick: ['Chy'], cj: ['Bey'], saharah: ['Cml'],
   leif: ['Slo'], gulliver: ['Gul'], kappn: ['Kpp'], wisp: ['GstA'], pascal: ['Seo'], orville: ['Dod'], wilbur: ['Doc']
 };
-/** The characters that aren't in the picker's roster (island/visitors.ts: the holiday hosts, Jack, the wedding's pair;
+/** The characters that aren't in the picker's roster (world/visitors.ts: the holiday hosts, Jack, the wedding's pair;
  *  the shop's twins), their NH codes (and, for one whose clothes aren't part of its body, its top's mesh and texture):
  *  converted as the special characters are (face at rest), into the same folder and manifest. Tommy is Timmy's model
  *  (NH ships one for the two). */
 const VISITOR_ONLY: Record<string, string | [code: string, tops: string, tex: string]> = {
   franklin: 'Tuk', jack: 'Pkn', jingle: 'Rei', zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp',
   timmy: ['Rcm', 'NpcSpTopsRcmYshirtsapronH', 'TopsTexTopYshirtsapronHRcm00'],
-  // the guests (island/visitorRoles.ts)
+  // the guests (world/visitorRoles.ts)
   gracie: 'Grf', wardell: ['Man', 'NpcSpTopsManYshirtsH', 'TopsTexTopYshirtsHMan00'], katrina: 'Bpt', wendell: 'Wrl', gullivarrr: 'GulB', pete: 'Plo',
   leilani: 'Kpm', lottie: ['OtgA', 'NpcSpTopsOtgOnepieceAlineH', 'TopsTexOnepieceAlineHOtg00'], chip: 'Bev', nat: 'Chm',
   rover: ['Xct', 'NpcSpTopsXctTshirtsN', 'TopsTexTopTshirtsNXct00'], shrunk: 'Upa', tortimer: 'TtlA', phineas: 'Fsl', pave: 'Pck'

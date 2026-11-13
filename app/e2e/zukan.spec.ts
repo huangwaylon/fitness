@@ -1,11 +1,11 @@
 // The ずかん (docs/design.md "Zukan"): the HUD menu's ずかん sheet, every fish, bug, fossil and shell; the found ones with their icon, name
 // and first find (shared between us), silhouettes and ？？？ for the rest.
 import { expect, test } from './fixtures.ts';
-import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { BUGS, FISH } from '../src/lib/components/island/critters.ts';
-import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
-import { FOSSILS, FOSSIL_SETS, SHELLS, digSpots } from '../src/lib/components/island/beach.ts';
-import { SEA } from '../src/lib/components/island/sea.ts';
+import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
+import { BUGS, FISH } from '../src/lib/world/critters.ts';
+import { POND_FISH } from '../src/lib/world/pondFish.ts';
+import { FOSSILS, FOSSIL_SETS, SHELLS, digSpots } from '../src/lib/world/beach.ts';
+import { SEA } from '../src/lib/world/sea.ts';
 import { addDays } from '../src/lib/time/dates.ts';
 import { readFileSync } from 'node:fs';
 import { fossilOnScreen, islandUp } from './island.ts';

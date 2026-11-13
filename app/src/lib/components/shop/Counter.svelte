@@ -22,7 +22,7 @@
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
   import { MAX_STARTS, holdDelay, shortBy, startsFill, startsFirst } from './stock.ts';
-  import { fillPlan } from '../farm/sheet.ts';
+  import { fillPlan } from '../../world/farmSheet.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
@@ -106,7 +106,7 @@
     const cs = CROPS.filter((c) => starts[c]);
     return cs.length === 1 ? cs[0] : null;
   });
-  /** My plots a start could go in now (empty, under the field's cap: farm/sheet.ts fillPlan), and the starts I hold. */
+  /** My plots a start could go in now (empty, under the field's cap: world/farmSheet.ts fillPlan), and the starts I hold. */
   const free = $derived.by(() => {
     const m = week.model;
     return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;

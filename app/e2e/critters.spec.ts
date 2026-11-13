@@ -3,7 +3,7 @@
 // fished (caught on the bite, scared off by an early tap); a bug can be netted. None of it changes ベル, opens a sheet or
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
-import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
+import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { type Aim, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater } from './island.ts';
 import { hudBells } from './hud.ts';
 
@@ -219,7 +219,7 @@ async function castBy(page: Page) {
   await castIn(page, 'sea');
   await expect(page.locator('[data-bobber]')).toBeAttached();
 }
-/** The fish has noticed the float (it swims up to it: island/fishing.ts). */
+/** The fish has noticed the float (it swims up to it: world/fishing.ts). */
 const noticed = (page: Page) =>
   expect.poll(() => page.evaluate(() => (window as unknown as { __fish: { line(): { fish: string | null } | null } }).__fish.line()?.fish ?? null), { timeout: 8000 }).not.toBeNull();
 
@@ -285,7 +285,7 @@ test('fishing: a tap while the float is still in the air reels it back in (never
   await open(page, '&critter=fish');
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
   const [x, y] = await toTheWater(page, 'sea');
-  // the cast and the reel in one go, in the page: the second tap lands while the float flies (island/fishing.ts FLY_MS)
+  // the cast and the reel in one go, in the page: the second tap lands while the float flies (world/fishing.ts FLY_MS)
   const phase = await page.evaluate(([x, y]) => {
     const tap = () => document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
     const F = (window as unknown as { __fish: { line(): { phase: string } | null } }).__fish;

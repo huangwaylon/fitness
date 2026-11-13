@@ -23,13 +23,13 @@
   // villager's feet as it flies (its live position, frames only while it's out).
   import { showCatch } from './catchCard.ts';
   import { pickUp } from '../motion/transitions.ts';
-  import { timers } from './timers.ts';
-  import { hookOneOf, islandSeed } from './devHooks.ts';
+  import { timers } from '../../world/timers.ts';
+  import { hookOneOf, islandSeed } from '../../world/devHooks.ts';
   import { giftAt, giftId, holdsGift } from './treeGifts.ts';
-  import { digSpots } from './beach.ts';
-  import { mushroomsOn } from './mushrooms.ts';
+  import { digSpots } from '../../world/beach.ts';
+  import { mushroomsOn } from '../../world/mushrooms.ts';
   import { site } from './site.svelte.ts';
-  import { offBuildingsAt } from './world.ts';
+  import { offBuildingsAt } from '../../world/world.ts';
   import { onDestroy, onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -42,7 +42,7 @@
   import { OVER, useWorld } from './camera.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
-  import { critterArt, type BugId } from './critters.ts';
+  import { critterArt, type BugId } from '../../world/critters.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
   import { jst } from '#lib/time/clock.ts';
   import type { Who } from '#lib/types.ts';

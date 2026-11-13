@@ -6,7 +6,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { KIND_ART, ZUKAN_KINDS, entries, type ZukanKind } from './zukan.ts';
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
-  import { CAST } from '../island/visitorRoles.ts';
+  import { CAST } from '../../world/visitorRoles.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
 
   interface Props {

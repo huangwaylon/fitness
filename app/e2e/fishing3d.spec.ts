@@ -107,7 +107,7 @@ for (const [water, q, cam, sel, miss] of [
       await page.screenshot({ path: `${SHOTS}/fish3d-${water}${miss ? '-miss' : ''}-nibble.png` });
     }
     // the bite, read in the page the moment it comes (the float plunged under, a splash, the 「！」 popped over my
-    // villager's head, every nibble before it) and the reel at once, in the page (NH's short window: island/fishing.ts
+    // villager's head, every nibble before it) and the reel at once, in the page (NH's short window: world/fishing.ts
     // BITE_WINDOW_MS); a look at each in turn from here took past it on a loaded runner
     const bite = await page.evaluate(([miss, rx, ry]) => new Promise<{ text: string; nibbles: number; mark: Mark }>((ok, no) => {
       const W = window as unknown as { __fx3: Fx3; __world3d: { bite(slot: string): Mark | null } };
