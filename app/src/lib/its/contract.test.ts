@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import norm from '../../../../its/norm-cases.json';
 import example from '../../../../its/contract-example.json';
-import { MAX_NAME, MAX_SITE_NAME, daysUntil, isDate, isId, isName, normName, parseSettingsInput, tokyoToday } from './contract.ts';
+import { MAX_NAME, MAX_SEARCH, MAX_SITE_NAME, daysUntil, isDate, isId, isName, normName, parseSettingsInput, tokyoToday } from './contract.ts';
 
 // 2026-11-13 12:00 JST
 const NOW = Date.parse('2026-11-13T03:00:00Z');
@@ -48,6 +48,28 @@ describe('parseSettingsInput', () => {
     const r = parseSettingsInput({ ...base, skip: ['NAGU 勝浦', 'ＮＡＧＵ　勝浦'], priority: ['nagu勝浦', 'リソル'] }, NOW);
     expect(r.ok && r.value.skip).toEqual(['NAGU 勝浦']);
     expect(r.ok && r.value.priority).toEqual(['リソル']);
+  });
+
+  it('takes the allow-list as sent (trimmed, de-duplicated by normName, a skipped name kept: skip wins at match time)', () => {
+    const r = parseSettingsInput({ ...base, skip: ['NAGU 勝浦'], search: [' NAGU  勝浦 ', 'ＮＡＧＵ　勝浦', 'リソル'] }, NOW);
+    expect(r.ok && r.value.search).toEqual(['NAGU 勝浦', 'リソル']);
+    expect(parseSettingsInput({ ...base, search: [] }, NOW)).toMatchObject({ ok: true, value: { search: [] } });   // searches nothing
+  });
+
+  it('an older page’s body (no search) has none: the Worker keeps the saved list', () => {
+    const r = parseSettingsInput({ ...base, search: undefined }, NOW);
+    expect(r.ok && 'search' in r.value).toBe(false);
+  });
+
+  it('caps the allow-list at MAX_SEARCH site names', () => {
+    const many = (n: number) => Array.from({ length: n }, (_, i) => `施設${i}`);
+    expect(parseSettingsInput({ ...base, search: many(MAX_SEARCH) }, NOW).ok).toBe(true);
+    expect(parseSettingsInput({ ...base, search: many(MAX_SEARCH + 1) }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...base, search: ['あ'.repeat(MAX_SITE_NAME)] }, NOW).ok).toBe(true);
+    expect(parseSettingsInput({ ...base, search: ['あ'.repeat(MAX_SITE_NAME + 1)] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...base, search: ['a\u202eb'] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...base, search: 'NAGU' }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...base, search: null }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
   });
 
   it('refuses control and bidi characters, bad intervals, guests and shapes', () => {

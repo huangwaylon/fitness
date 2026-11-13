@@ -14,6 +14,8 @@ export const MAX_DATES = 20;
 export const MAX_DAYS_AHEAD = 400;  // a date further than this from today (Tokyo) is refused
 /** @public (its/worker) */
 export const MAX_HOTELS = 80;       // per list (skip, priority)
+/** The allow-list's cap (`search`): every facility the site may offer, the roster and the seen names. @public (its/worker) */
+export const MAX_SEARCH = 200;
 /** @public (its/worker) */
 export const MAX_NAME = 80;         // a priority substring, in characters
 /** A facility name as the site serves it (a booking's `hotel`, a seen name, a skipped name: matched whole, so never
@@ -33,8 +35,13 @@ export interface ItsSettings {
   /** Stays to look for (the night of arrival), YYYY-MM-DD, sorted, unique. Dates before today (Tokyo) are dropped. */
   dates: string[];
   guests: number;
-  /** Facilities never booked: exact match after normName on both sides. Skipping wins over priority. */
+  /** Facilities never booked: exact match after normName on both sides. Skipping wins over priority and `search`. */
   skip: string[];
+  /** The allow-list (the page's 探す): present, only these facilities are eligible (exact match after normName, as
+   *  `skip`; a name in both is skipped), so a facility the site starts offering is not searched until a member switches
+   *  it on. Absent (settings saved by an older page, or never): the skip-list rule, every facility not skipped. A PUT
+   *  without it keeps the saved list (an older page doesn't know it); `[]` searches nothing. */
+  search?: string[];
   /** Substrings tried first, in this order (the race, not a preference: one hotel is booked at a time). */
   priority: string[];
   /** Run the emailed leg (申込する → 確認) unattended, only for dates ≥ AUTO_CONFIRM_MIN_DAYS away. Off: a hold is taken
@@ -61,12 +68,17 @@ export interface RunInput { action: 'start' | 'stop' }
  *  config.AUTO_CONFIRM_MIN_DAYS. */
 export const AUTO_CONFIRM_MIN_DAYS = 11;
 
+/** The site's hold: a 仮押さえ lapses this long after it was taken (a booking `hold`'s `at`, the Worker's receive time,
+ *  is a few seconds late), free of charge. The runner's confirm leg and the page's deadline use it. @public (its/worker) */
+export const HOLD_SEC = 1800;
+
 // ---- Bookings (the record: the Worker's, append-only) ----
 
 /** One application step, never overwritten: `hold` (the 30-min hold taken and the mail sent: it also stops a second
  *  application at that facility for that date, forever), `confirming` (written *before* Chrome's 申込する: no ack, no
  *  commit), `confirmed` (予約確定, with the 申込受付番号: a real cancellation liability), `failed` (the leg ended without
- *  a number: a person must look). */
+ *  a number: a person must look). A stay with a `confirmed` entry is done: the runner looks for that night no more (it
+ *  is still in `dates` until a member removes it; the page says so on the date). */
 export type BookingKind = 'hold' | 'confirming' | 'confirmed' | 'failed';
 export const BOOKING_KINDS: readonly BookingKind[] = ['hold', 'confirming', 'confirmed', 'failed'];
 
@@ -131,16 +143,18 @@ export type EventKind =
   | 'human_needed'   // a hold that needs a person (`detail`: why: near_date, auto_off, no_mail, leg_failed, bookings_unsynced, …)
   | 'ban'            // a 503 セキュリティアラート: ~24 h IP ban on this runner's address
   | 'solve_failed'   // Turnstile not solved this time
-  | 'error';         // anything else worth a look (`detail`: short, no tokens, no personal data)
-export const EVENT_KINDS: readonly EventKind[] = ['run_start', 'run_end', 'available', 'filtered', 'hold', 'confirmed', 'human_needed', 'ban', 'solve_failed', 'error'];
+  | 'error'          // anything else worth a look (`detail`: short, no tokens, no personal data)
+  | 'prev_unclean';  // the Worker's own (seq 0, runId = the claiming run): a claim took over a lease its holder never
+                     // released (`detail`: that run's id): it died or was cancelled mid-run; look at its log
+export const EVENT_KINDS: readonly EventKind[] = ['run_start', 'run_end', 'available', 'filtered', 'hold', 'confirmed', 'human_needed', 'ban', 'solve_failed', 'error', 'prev_unclean'];
 /** Never evicted by the routine ones: the ring keeps the last EVENTS_KEPT of each class. @public (its/worker) */
-export const IMPORTANT_EVENTS: readonly EventKind[] = ['hold', 'confirmed', 'human_needed', 'ban'];
+export const IMPORTANT_EVENTS: readonly EventKind[] = ['hold', 'confirmed', 'human_needed', 'ban', 'prev_unclean'];
 /** @public (its/worker) */
 export const EVENTS_KEPT = 40;
 
 export interface ItsEvent {
   runId: string;
-  seq: number;       // per run, from 1; the Worker ignores a (runId, seq) it has
+  seq: number;       // per run, from 1; the Worker ignores a (runId, seq) it has; 0: the Worker's own (prev_unclean)
   t: number;         // the Worker's receive time (ms)
   kind: EventKind;
   date?: string;
@@ -182,11 +196,19 @@ export interface RunnerReport {
   failuresByStep: Record<string, number>;
   lastError: LastError | null;
   unsynced: number;            // bookings entries not yet acknowledged by the Worker
+  /** The `updatedAt` of the settings this run applies (null: the defaults, none received yet). Absent from an older
+   *  runner. Older than the saved ones for SETTINGS_STALE_SEC: `settings_stale`. */
+  settingsAt?: number | null;
+  /** The last IMAP check (the confirm leg's mailbox): true ok, false failed (with auto-confirm on: `mail_failing`),
+   *  null none yet. Absent from an older runner. */
+  mailOk?: boolean | null;
   events: EventInput[];        // new since the last acknowledged report
   seen: string[];              // facility names the site offered this run
 }
 /** @public (its/worker) */
 export const REPORT_EVERY_SEC = 30;
+/** Saved settings a running run still hasn't applied after this long (two reports): `settings_stale`. @public (its/worker) */
+export const SETTINGS_STALE_SEC = 2 * REPORT_EVERY_SEC;
 
 /** `GET /runner/config`, and the answer to claim/report: the latest settings (applied at the next cycle), the
  *  record, the lease, and whether to stop (paused, MODE off, no future date, or the lease is someone else's). @public (its/worker) */
@@ -218,8 +240,10 @@ export type Reason =
   | 'scan_failing'    // 3+ failed reads in a row
   | 'solve_failing'   // the last 3 solves failed
   | 'unsynced'        // the runner holds bookings the Worker hasn't got
-  | 'human_needed';   // a hold or a failed leg waits for a person
-export const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_dates', 'dispatch_failed', 'starting', 'never_ran', 'runner_silent', 'banned', 'scan_failing', 'solve_failing', 'unsynced', 'human_needed'];
+  | 'human_needed'    // a hold or a failed leg waits for a person
+  | 'mail_failing'    // auto-confirm is on and the runner's last IMAP check failed (holds wait for a person)
+  | 'settings_stale'; // the running run hasn't applied the saved settings for SETTINGS_STALE_SEC
+export const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_dates', 'dispatch_failed', 'starting', 'never_ran', 'runner_silent', 'banned', 'scan_failing', 'solve_failing', 'unsynced', 'human_needed', 'mail_failing', 'settings_stale'];
 /** Runs start every 30 min (schedule) and last ~5.5 h; silence past this while not stopped is `late`. */
 export const LATE_AFTER_SEC = 45 * 60;
 /** @public (its/worker) */
@@ -244,6 +268,22 @@ export interface ItsStatus {
   bookings: BookingEntry[];    // newest first
   events: ItsEvent[];          // newest first
   seen: string[];              // every facility name ever offered, sorted
+  /** The last preflight (GET /runner/config without runId: a run deciding whether to start), Worker clock. Absent
+   *  from an older Worker. */
+  lastPreflight?: number | null;
+}
+
+/** `GET /health/its` (Bearer ITS_HEALTH_TOKEN, for alerting from a public repo's workflow): codes and counts only, never
+ *  a date, a facility or a name. Ages in whole seconds (null: never). `unsyncedAgeSec`: how long the shown run has
+ *  reported unsynced entries without a break. @public (its/worker) */
+export interface ItsHealth {
+  verdict: Verdict;
+  reasons: Reason[];
+  lastSeenAgeSec: number | null;
+  phase: Phase | null;
+  unsynced: number;
+  unsyncedAgeSec: number | null;
+  lastPreflightAgeSec: number | null;
 }
 
 // ---- Validation, shared by the Worker and the page ----
@@ -282,8 +322,8 @@ export function normName(s: string): string {
   return s.normalize('NFKC').replace(/\s+/g, '').toLowerCase();
 }
 
-function names(x: unknown, max: number): string[] | null {
-  if (!Array.isArray(x) || x.length > MAX_HOTELS) return null;
+function names(x: unknown, max: number, cap: number = MAX_HOTELS): string[] | null {
+  if (!Array.isArray(x) || x.length > cap) return null;
   const out: string[] = [];
   const seen = new Set<string>();
   for (const n of x) {
@@ -300,7 +340,8 @@ export type SettingsError = 'bad_shape' | 'bad_interval' | 'bad_date' | 'past_da
 
 /** Checks a `PUT /its/settings` body against today in Tokyo: dates come back sorted and unique (past ones refused, so
  *  a stale draft can't resurrect one), names trimmed and de-duplicated by normName, a skipped name dropped from
- *  priority (skipping wins). */
+ *  priority (skipping wins). `search` is optional (an older page sends none: the value has none); kept as sent (a
+ *  skipped name in it stays: skip wins when the runner matches). */
 export function parseSettingsInput(x: unknown, nowMs: number): { ok: true; value: ItsSettingsInput } | { ok: false; error: SettingsError } {
   if (typeof x !== 'object' || x === null || Array.isArray(x)) return { ok: false, error: 'bad_shape' };
   const o = x as Record<string, unknown>;
@@ -315,8 +356,12 @@ export function parseSettingsInput(x: unknown, nowMs: number): { ok: true; value
   if (!Number.isInteger(o.guests) || (o.guests as number) < GUESTS_MIN || (o.guests as number) > GUESTS_MAX) return { ok: false, error: 'bad_guests' };
   const skip = names(o.skip, MAX_SITE_NAME);   // a site's name, matched whole
   const pri = names(o.priority, MAX_NAME);
-  if (!skip || !pri) return { ok: false, error: 'bad_hotels' };
+  const search = o.search === undefined ? undefined : names(o.search, MAX_SITE_NAME, MAX_SEARCH);
+  if (!skip || !pri || search === null) return { ok: false, error: 'bad_hotels' };
   const skipped = new Set(skip.map(normName));
   const priority = pri.filter((p) => !skipped.has(normName(p)));
-  return { ok: true, value: { intervalSec: o.intervalSec as IntervalSec, dates, guests: o.guests as number, skip, priority, autoConfirm: o.autoConfirm, baseUpdatedAt: o.baseUpdatedAt as number | null } };
+  return {
+    ok: true,
+    value: { intervalSec: o.intervalSec as IntervalSec, dates, guests: o.guests as number, skip, priority, ...(search && { search }), autoConfirm: o.autoConfirm, baseUpdatedAt: o.baseUpdatedAt as number | null },
+  };
 }

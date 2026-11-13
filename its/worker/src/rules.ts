@@ -203,6 +203,8 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
     solve_failing: [active && !!r && r.solves.failed >= SOLVE_FAILING && solveFails >= SOLVE_FAILING, 'degraded'],
     unsynced: [!!r && r.unsynced > 0, 'degraded'],
     human_needed: [humanNeeded(rec, now), 'degraded'],
+    mail_failing: [false, 'degraded'],     // not raised yet: the report's mailOk isn't kept
+    settings_stale: [false, 'degraded'],   // nor its settingsAt
   };
   const reasons = REASONS.filter((x) => rules[x][0]);
   return { verdict: reasons.length ? rules[reasons[0]][1] : 'healthy', reasons };
