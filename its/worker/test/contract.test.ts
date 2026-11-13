@@ -14,6 +14,9 @@ function shape(x: unknown): unknown {
   return x === null ? 'null' : typeof x;
 }
 
+/** The example's settings body less its allow-list: the settings its config and status show (none saved). */
+const { search: _search, ...olderInput } = example.settingsInput;
+
 describe('the example’s inputs', () => {
   it('pass the checks unchanged', () => {
     expect(parseSettingsInput(example.settingsInput, NOW)).toEqual({ ok: true, value: example.settingsInput });
@@ -39,7 +42,7 @@ describe('the Worker on the example', () => {
     // the settings as saved before the example's edit, then started (no token: the schedule's run)
     const bot = await start(fakeState(), { COMMIT: 'abc1234' });
     at(example.config.settings.updatedAt!);
-    await bot.putSettings({ ...example.settingsInput, baseUpdatedAt: null } as never, 'A', 'r-test');
+    await bot.putSettings({ ...olderInput, baseUpdatedAt: null } as never, 'A', 'r-test');
     await bot.run({ action: 'start' }, 'A', 'r-test');
     bot.rec.dispatch = null;   // the example's run came from the schedule
     at(example.report.startedAt);
@@ -85,7 +88,7 @@ describe('the Worker on the example', () => {
   it('the status’s shape matches the example’s (every key, every type)', async () => {
     vi.setSystemTime(NOW);
     const bot = await start(fakeState(), { COMMIT: 'abc1234' });
-    await bot.putSettings({ ...example.settingsInput, baseUpdatedAt: null } as never, 'A', 'r-test');
+    await bot.putSettings({ ...olderInput, baseUpdatedAt: null } as never, 'A', 'r-test');
     await bot.claim(example.claimInput as never);
     await bot.bookings([example.bookingInput as never], null);
     await bot.report(example.report as never);

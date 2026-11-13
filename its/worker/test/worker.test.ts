@@ -23,7 +23,9 @@ async function fresh(extra: Partial<Env> = {}) {
 const put = (body: unknown, key?: string) => page(env, '/its/settings', { method: 'PUT', body: JSON.stringify(body), key });
 const runAction = (action: string, key?: string) => page(env, '/its/run', { method: 'POST', body: JSON.stringify({ action }), key });
 const status = async (): Promise<ItsStatus> => (await page(env, '/its/status')).json();
-const input = (x: object = {}) => ({ ...example.settingsInput, baseUpdatedAt: null, ...x });
+// the example's body less its allow-list (an older page's: the example's config and status show no search)
+const { search: exampleSearch, ...olderInput } = example.settingsInput;
+const input = (x: object = {}) => ({ ...olderInput, baseUpdatedAt: null, ...x });
 
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -434,6 +436,14 @@ describe('the allow-list (search)', () => {
     expect(s.settings.search).toEqual([]);
     const c: RunnerConfig = await (await asRunner(env, '/runner/config')).json();
     expect(c.settings.search).toEqual([]);
+  });
+
+  it('the example’s body saves its list as sent (a name it also skips stays: skip wins when the runner matches)', async () => {
+    const s: ItsStatus = await (await put(input({ search: exampleSearch }))).json();
+    expect(s.settings.search).toEqual(exampleSearch);
+    expect(s.settings.skip).toContain(exampleSearch[1]);
+    const c: RunnerConfig = await (await asRunner(env, '/runner/config')).json();
+    expect(c.settings.search).toEqual(exampleSearch);
   });
 
   it('never set: absent from the settings (the runner’s skip-list rule)', async () => {
