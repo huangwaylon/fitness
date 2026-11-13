@@ -238,9 +238,9 @@
 <style>
   .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
   .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
-  .speaker.pop { animation: pop-in 420ms var(--ease-bounce) both; }
-  .speaker.talk { animation: bob 520ms ease-in-out infinite alternate; }
-  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
+  .speaker.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
+  .speaker.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
+  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: if-pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
     position: relative; min-height: 68px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
@@ -293,8 +293,6 @@
   .acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
   .acts .btn { flex: 0 1 auto; min-width: 6em; }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes shift { from { transform: translateX(-10px); opacity: .4; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react, .slot[data-shift] > span { animation: none; } }
 </style>

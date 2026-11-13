@@ -214,8 +214,8 @@
 <style>
   .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
   .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
-  .speaker.pop { animation: pop-in 420ms var(--ease-bounce) both; }
-  .speaker.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  .speaker.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
+  .speaker.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
   .bubble {
     position: relative; min-height: 60px; display: grid; align-content: center; gap: 4px; padding: 10px 16px;
     border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
@@ -263,7 +263,5 @@
   .w span { margin-left: 6px; font-size: var(--fs-s); color: var(--text-soft); }
   .mouth { font: 700 var(--fs-s)/1.5 var(--font-ui); }
   .ex { display: grid; font: 600 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .pic-card { animation: none; transition: none; } }
 </style>

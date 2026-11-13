@@ -92,7 +92,7 @@
   .at { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 2px; }
   .who { position: relative; line-height: 0; transform-origin: 50% 100%; }
   .who.pop { animation: step-up 420ms var(--ease-bounce) both; }
-  .who.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  .who.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
   .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: step-up 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
@@ -104,7 +104,6 @@
   .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes step-up { from { transform: translateX(-24px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .who.pop, .who.talk, .react { animation: none; } }
 </style>

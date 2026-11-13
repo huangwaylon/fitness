@@ -175,8 +175,8 @@
   .ladder li[data-step='now'] { background: var(--c-yuzu); box-shadow: inset 0 0 0 2px var(--c-edge); }
   .step { margin: 0; padding: 2px 12px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text-soft); font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .who { display: grid; justify-items: center; gap: 2px; line-height: 0; transform-origin: 50% 100%; }
-  .who.pop { animation: pop-in 420ms var(--ease-bounce) both; }
-  .who.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  .who.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
+  .who.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
   .nm { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text); }
   .ctx { margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .ask { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
@@ -200,8 +200,6 @@
   .missed .chip { padding: 4px 10px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
   .heard { margin: 0; display: grid; gap: 2px; text-align: center; font: 700 var(--fs-body)/1.45 var(--font-ui); color: var(--text); overflow-wrap: anywhere; }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .who.pop, .who.talk { animation: none; } }
 </style>

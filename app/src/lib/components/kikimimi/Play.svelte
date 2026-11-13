@@ -217,15 +217,15 @@
   /* the speaker and their NH bubble: the speaker's head left, the bubble's tail pointing at it */
   .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
   .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
-  .speaker.pop { animation: pop-in 420ms var(--ease-bounce) both; }
-  .speaker.talk, .duo .one.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  .speaker.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
+  .speaker.talk, .duo .one.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
   /* a dialogue's two speakers, side by side (the one not talking a little back) */
   .duo { display: flex; gap: 2px; }
   .duo .one { line-height: 0; transform-origin: 50% 100%; transition: opacity var(--dur-quick); }
   .duo:has(.talk) .one:not(.talk) { opacity: .6; }
   /* 「くわしく」: the full 44px to tap (padded round its one line; the marker kept) */
   .more summary { cursor: pointer; padding-block: calc((var(--hit) - 1.6em) / 2); font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
+  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: if-pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
     position: relative; min-height: 76px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
@@ -264,8 +264,6 @@
   .later, .height { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); position: relative; }
   .height { color: var(--c-ink); }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .speaker.pop, .speaker.talk, .duo .one.talk, .react { animation: none; }
   }

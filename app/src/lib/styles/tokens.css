@@ -187,6 +187,10 @@
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 /* a sheet's level pushed in from the right (the panel's day, 図鑑's kinds, ごはん's levels, りょこう's trip) */
 @keyframes if-lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
+/* ききみみ's speaker: popping in as a line starts (a reaction mark, a stamp too), and the small lift while it talks
+   (if-pop-in 420ms var(--ease-bounce); if-speak 520ms ease-in-out infinite alternate) */
+@keyframes if-pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes if-speak { from { transform: translateY(0); } to { transform: translateY(-5px); } }
 
 /* ======================================================================================
    Builder A: scene + fx + keyframes (design.md "Motion").

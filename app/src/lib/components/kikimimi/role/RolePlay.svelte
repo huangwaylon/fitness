@@ -185,8 +185,8 @@
   .step { margin: 0; padding: 2px 12px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text-soft); font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .pair { display: flex; justify-content: center; gap: 28px; }
   .one { display: grid; justify-items: center; gap: 2px; line-height: 0; opacity: .6; transform-origin: 50% 100%; transition: opacity var(--dur-quick); }
-  .one.talk { opacity: 1; animation: bob 520ms ease-in-out infinite alternate; }
-  .one.pop { animation: pop-in 420ms var(--ease-bounce) both; }
+  .one.talk { opacity: 1; animation: if-speak 520ms ease-in-out infinite alternate; }
+  .one.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
   .nm { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text); }
   .tag { padding: 1px 8px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .one[data-mine] .tag { background: var(--c-yuzu); color: var(--c-ink); }
@@ -218,7 +218,5 @@
   .acts .btn { min-height: var(--hit); }
   .cheer { margin: 0; text-align: center; font: 700 var(--fs-body)/1.45 var(--font-ui); color: var(--text); }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .one.talk, .one.pop { animation: none; } }
 </style>

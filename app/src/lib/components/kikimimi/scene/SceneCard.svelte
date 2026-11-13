@@ -90,7 +90,7 @@
   .vill.left { left: 7%; }
   .vill :global(.official) { position: relative; z-index: 1; filter: drop-shadow(0 2px 0 rgba(74, 58, 44, .12)); }
   .vill::after { content: ''; width: 70%; height: 12px; margin-top: -7px; border-radius: 50%; background: radial-gradient(closest-side, rgba(40, 60, 40, .32), transparent); }
-  .vill.talk :global(.official) { animation: bob 520ms ease-in-out infinite alternate; transform-origin: 50% 100%; }
+  .vill.talk :global(.official) { animation: if-speak 520ms ease-in-out infinite alternate; transform-origin: 50% 100%; }
   .vill.back { filter: saturate(.8) brightness(.97); opacity: .9; }
 
   /* the NH bubble floating over the scene, its tail toward the one talking */
@@ -105,7 +105,6 @@
   .say.left::before { left: 18px; }
   .notes { font: 700 var(--fs-talk)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes card-in { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .scene.pop, .vill.talk :global(.official) { animation: none; }

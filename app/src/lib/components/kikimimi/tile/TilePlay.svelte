@@ -262,9 +262,9 @@
 <style>
   .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
   .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
-  .speaker.pop { animation: pop-in 420ms var(--ease-bounce) both; }
-  .speaker.talk { animation: bob 520ms ease-in-out infinite alternate; }
-  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
+  .speaker.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
+  .speaker.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
+  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: if-pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
     position: relative; min-height: 68px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
@@ -322,8 +322,6 @@
   .words { font: 700 var(--fs-body)/1.2 var(--font-ui); color: var(--text); }
   .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
 
-  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes shift { from { transform: translateX(-10px); opacity: .4; } to { transform: none; opacity: 1; } }
   @keyframes flash { 0%, 100% { box-shadow: inset 0 0 0 2px var(--edge); } 40% { box-shadow: 0 0 0 3px var(--c-yuzu); } }
   @keyframes flash2 { 0%, 100% { box-shadow: inset 0 0 0 2px var(--edge); } 40% { box-shadow: 0 0 0 3px var(--c-yuzu); } }

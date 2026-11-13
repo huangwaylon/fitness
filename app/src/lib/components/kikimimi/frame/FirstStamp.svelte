@@ -15,7 +15,6 @@
     background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
   }
   .sm { padding: 2px 6px; }
-  .pop { rotate: -6deg; animation: pop-in 320ms var(--ease-bounce) 200ms both; }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+  .pop { rotate: -6deg; animation: if-pop-in 320ms var(--ease-bounce) 200ms both; }
   @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
 </style>
