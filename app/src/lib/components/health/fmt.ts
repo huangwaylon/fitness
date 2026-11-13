@@ -12,8 +12,9 @@ import { valueText } from './goals.ts';
 export const axisNum = (v: number, top = v): string =>
   top >= 10000 && v ? `${Math.round(v / 100) / 10}k` : Number.isInteger(v) ? formatNum(v) : String(Math.round(v * 10) / 10);
 
-/** A value over its bar: `620`, `1,033`, `12.4k` (4 digits whole: a kcal day read as 1.0k said nothing). */
-export const barNum = (v: number): string => (v >= 10000 ? `${(Math.floor(v / 100) / 10).toFixed(1)}k` : formatNum(Math.floor(v)));
+/** A value over its bar: `620`, `1,033`, `12.4k` (4 digits whole: a kcal day read as 1.0k said nothing); every bar of a
+ *  chart whose axis `top` reaches 10,000 in k, as its axis is (`9.7k` beside `10.5k`, not `9,797`). */
+export const barNum = (v: number, top = v): string => (top >= 10000 ? `${(Math.floor(v / 100) / 10).toFixed(1)}k` : formatNum(Math.floor(v)));
 
 /** A nice axis: 0 to a round top over `max`, about three steps. */
 export function niceTicks(max: number): number[] {

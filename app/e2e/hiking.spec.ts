@@ -35,7 +35,7 @@ test('the list: twelve trails, the difficulty chips, the sorts; a card opens its
   await expect(cards(page).first()).toHaveAttribute('data-trail', 'lake-22');
   await expect(cards(page).first().locator('.stats')).toContainText('9.8km');
   await expect(cards(page).first().locator('.stats')).toContainText('444m');
-  await expect(cards(page).first().locator('.stats')).toContainText('3時間17分');
+  await expect(cards(page).first().locator('.stats')).toContainText('約3時間15分');
   await sheet(page).locator('[data-filter="hard"]').click();
   await expect(cards(page)).toHaveCount(4);
   await expect(sheet(page).locator('[data-filter="hard"]')).toHaveAttribute('aria-pressed', 'true');
@@ -128,6 +128,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   const plan = view.locator('[data-plan]');
   await expect(plan.locator('.date')).toHaveText('2026年6月27日(土)');
   await expect(plan.locator('.head .lbl')).toHaveText('山行日'); // gone by on Nov 4: not 山行予定
+  await expect(plan.locator('[data-plan-actual]')).toHaveText('実際'); // its figures the hike's, not the trail's
   await expect(plan.locator('[data-stop]')).toHaveCount(11);
   await expect(plan.locator('[data-stop]').nth(5)).toContainText('金峰山（甲州御岳山）');
   await expect(plan.locator('.stay')).toHaveText('滞在 2時間');
@@ -145,7 +146,7 @@ test("a trail walked on YAMAP: its Commons photo on the card, the record's rows 
   const card = sheet(page).locator('[data-trail="akagi-kurobi"]');
   await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akagi-kurobi\.webp$/);
   await expect(card.locator('.stats')).toContainText('5.3km');
-  await expect(card.locator('.stats')).toContainText('5時間1分');
+  await expect(card.locator('.stats')).toContainText('約5時間');
   await card.locator('.hit').click();
   const view = sheet(page).locator('[data-trail-view="akagi-kurobi"]');
   await expect(view.locator('[data-walked] dd')).toHaveText('2026年11月7日(土)');

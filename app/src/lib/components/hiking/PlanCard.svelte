@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A trail's planned hike (Kinpu's YAMAP plan) on a dense card: the date, the party, the plan's own distance and gain,
+  // A trail's planned hike (Kinpu's YAMAP plan) on a dense card: the date, the party, the plan's own distance and gain (実際 once hiked),
   // the hour-by-hour timeline (a leg's minutes between stops, a stay's badge), and the pace, course rating and planner.
   // The plan's link, party and planner are the `hiking` trip note's (`{p:key}`), locked until it's in (docs/hiking.md).
   import Icon from '../ui/Icon.svelte';
@@ -38,6 +38,7 @@
   <div class="date">{fmtPlanDate(plan.dateISO, L)}</div>
   <div class="figs">
     <span class="tag"><Icon name="users" size={14} />{#if party}{fmtParty(party, L)}{:else}{@render lock()}{/if}</span>
+    {#if past}<span class="actual" data-plan-actual>{pick(S.planActual, L)}</span>{/if}
     <span class="tag"><Icon name="distance" size={14} />{fmtKm(plan.distKm)}</span>
     <span class="tag"><Icon name="mountain" size={14} />{fmtM(plan.gainM)}</span>
   </div>
@@ -72,7 +73,8 @@
   /* a 44px tap target on the small link */
   .yamap::after { content: ''; position: absolute; inset: -12px -8px; }
   .date { margin: 4px 0 8px; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
-  .figs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .figs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .actual { margin-left: 4px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
   .figs .tag { font: 600 var(--fs-s)/1.4 var(--font-num); color: var(--text); padding: 3px 8px; }
   .lock { display: inline-flex; align-items: center; gap: 2px; color: var(--text-soft); letter-spacing: .08em; }
   .foot { margin-top: 10px; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.5; }

@@ -66,10 +66,13 @@ describe('the trails', () => {
 
 describe('formats', () => {
   it("fmtTime: the source's times in each locale", () => {
-    expect(fmtTime('3 h 17 min', 'ja')).toBe('3時間17分');
+    // a single time: to 5 min, 約 (one precision on every card); a range as written
+    expect(fmtTime('3 h 17 min', 'ja')).toBe('約3時間15分');
     expect(fmtTime('~3 h 30 min', 'ja')).toBe('約3時間30分');
+    expect(fmtTime('6 h 1 min', 'ja')).toBe('約6時間');
+    expect(fmtTime('1 h 58 min', 'ja')).toBe('約2時間');
     expect(fmtTime('10 – 13 h', 'ja')).toBe('10～13時間');
-    expect(fmtTime('3 h 17 min', 'en')).toBe('3h 17m');
+    expect(fmtTime('3 h 17 min', 'en')).toBe('~3h 15m');
     expect(fmtTime('10 – 13 h', 'en')).toBe('10–13h');
   });
   it('fmtSeason, fmtDur, fmtPlanDate (its own weekday), span (past midnight), fmtParty', () => {

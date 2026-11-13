@@ -22,6 +22,8 @@ export const S = {
   secDetails: { ja: '詳細情報', en: 'Details' },
   secPlan: { ja: '山行予定', en: 'Planned hike' },
   secPlanPast: { ja: '山行日', en: 'Hiked on' },
+  /** A past hike's own distance and gain (not the trail's). */
+  planActual: { ja: '実際', en: 'Actual' },
   planBy: { ja: '計画者', en: 'Planned by' },
   planCourse: { ja: 'コース定数', en: 'Course rating' },
   planYamap: { ja: 'YAMAPで見る', en: 'View on YAMAP' },
@@ -75,8 +77,14 @@ export function fmtSeason(s: string, l: Locale): string {
   return s.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/g, (m) => `${MON.indexOf(m) + 1}月`).replace(/\s*[–-]\s*/g, '～');
 }
 
-/** '3 h 17 min' → '3時間17分' (ja), '3h 17m' (en); '~3 h 30 min' → '約3時間30分'; '10 – 13 h' → '10～13時間' / '10–13h'. */
+/** A trail's time, one precision on every card: a single time is an estimate to 5 min (約): '3 h 17 min' → '約3時間15分'
+ *  (ja), '~3h 15m' (en); '6 h 1 min' → '約6時間'; a range as written: '10 – 13 h' → '10～13時間' / '10–13h'. */
 export function fmtTime(s: string, l: Locale): string {
+  const one = s.match(/^~?\s*(?:(\d+)\s*h)?\s*(?:(\d+)\s*min)?$/);
+  if (one && (one[1] || one[2])) {
+    const all = Math.round(((+(one[1] ?? 0)) * 60 + +(one[2] ?? 0)) / 5) * 5, h = Math.floor(all / 60), m = all % 60;
+    return l === 'ja' ? `約${h ? `${h}時間` : ''}${m ? `${m}分` : ''}` : `~${[h ? `${h}h` : '', m ? `${m}m` : ''].filter(Boolean).join(' ')}`;
+  }
   if (l !== 'ja') return s.replace(/\s*–\s*/g, '–').replace(/\s*h\b/g, 'h').replace(/\s*min\b/g, 'm');
   return s.replace(/~/g, '約').replace(/(\d+)\s*min/g, '$1分').replace(/(\d+)\s*h/g, '$1時間').replace(/\s*[–-]\s*/g, '～').replace(/ /g, '');
 }

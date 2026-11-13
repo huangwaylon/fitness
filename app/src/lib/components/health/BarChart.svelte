@@ -39,7 +39,7 @@
     barFmt?: ((v: number) => string) | null;
   }
   let { id, range, p, vals, first, today, label, goalText, selected, onselect, onswipe, slide, avg = null, plain = false, fmt, barFmt = null }: Props = $props();
-  const barText = $derived(barFmt ?? barNum);
+  const barText = $derived(barFmt ?? ((v: number) => barNum(v, top)));
 
   const H = 168;
   const pad = { l: 38, r: 6, t: 14, b: 24 };

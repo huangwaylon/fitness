@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GOAL_IDS, GOALS } from '#lib/contract/goals.ts';
-import { deltaText } from './fmt.ts';
+import { axisNum, barNum, deltaText } from './fmt.ts';
 import { GOAL_SPECS as S, goalField, goalLabel, nudge, parseGoal, valueText } from './goals.ts';
 
 /** No-break spaces (a unit stays with its number) as plain ones. */
@@ -55,5 +55,13 @@ describe('nudge (GoalEdit −/＋)', () => {
     expect([nudge(S.steps, 8000, 1), nudge(S.steps, 8000, -1), nudge(S.move, 537, 1), nudge(S.move, 537, -1), nudge(S.steps, 30000, 1), nudge(S.steps, 1000, -1),
       nudge(S.weight, 65, -1), nudge(S.weight, 62.37, 1), nudge(S.body_fat_pct, 19.5, 1), nudge(S.k, 1200, -1), nudge(S.s, 7, 1)])
       .toEqual([8500, 7500, 540, 530, 30000, 1000, 64.5, 62.5, 20, 1200, 7.5]);
+  });
+});
+
+describe('a chart’s numbers, one format per chart', () => {
+  it('in k on every bar and tick once the axis reaches 10,000; whole numbers under it', () => {
+    expect([9797, 10504, 1831].map((v) => barNum(v, 15000))).toEqual(['9.7k', '10.5k', '1.8k']);
+    expect([0, 5000, 10000, 15000].map((v) => axisNum(v, 15000))).toEqual(['0', '5k', '10k', '15k']);
+    expect([652, 1033].map((v) => barNum(v, 1500))).toEqual(['652', '1,033']);
   });
 });
