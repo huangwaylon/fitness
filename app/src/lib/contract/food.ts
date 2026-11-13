@@ -10,7 +10,8 @@
 // of foods and servings, everyone's to log as a food of its own (`recipeSnap`); a custom food (マイ食品, `food_custom`) one
 // person's food typed in as one serving, everyone's to log alike (`customSnap`). Shared by the record (relay/src/store.ts), the model
 // and the food sheet; pure and dependency-free.
-import { isLocalDate, isRec } from './api.ts';
+import { isLocalDate } from './api.ts';
+import { isRec } from './guards.ts';
 import { cleanLine } from './text.ts';
 import { GOALS } from './goals.ts';
 import { isMs, newOpId } from './ops.ts';

@@ -122,6 +122,7 @@ export function isLocalDate(v: unknown): v is string {
 /** An event or spend id: a non-empty string of at most 128 characters. */
 export const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
+/** guards.ts's, for the relay's parse, audit, storeRoute and reqMeta (the app imports guards.ts). @public (relay/) */
 export { isRec };
 
 /** Whether `d` has exactly these keys (an event's data: nothing more, nothing missing). */

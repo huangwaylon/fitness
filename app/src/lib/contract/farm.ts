@@ -9,7 +9,8 @@
 // a harvest at the yield it reckons (farmStep); the phones fold the same rows by the same step (model/farm.ts), a kept
 // row as kept. The produce and the starts are pocket goods (`goods:<crop>`, `goods:<crop>-start`: contract/pocket.ts),
 // so the shop sells them as any other. Shared by the record and the model; pure.
-import { isLocalDate, isRec, keysAre } from './api.ts';
+import { isLocalDate, keysAre } from './api.ts';
+import { isRec } from './guards.ts';
 import { addDays, dayNum, dayOf } from './tokyo.ts';
 import type { LocalDate, Who } from '../types.ts';
 

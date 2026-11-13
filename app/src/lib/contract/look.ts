@@ -5,7 +5,7 @@
 // accepts (contract/record.ts validEventData: lookPrefOk, savedLooksOk) and how a phone reads it (resolveLook,
 // readSavedLooks: an unknown or broken part reads as the default look's, never a crash). Pure, relative imports only
 // (the relay imports it).
-import { isRec } from './api.ts';
+import { isRec } from './guards.ts';
 import type { Who } from '../types.ts';
 
 /** A part id: a dump folder name, e.g. `PlayerHair24`, `TopsTexTopOuterLAran3` (the part table's ids). */

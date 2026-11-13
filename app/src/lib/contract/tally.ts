@@ -3,7 +3,8 @@
 // one row per person and day (a new one replaces the day's older row) and the model sums the latest row of each day
 // (model/tally.ts). The first find of an entry (who and when) stays the `find` event's. Shared by the record
 // (relay/src/store.ts) and the model; pure.
-import { isFind, isFindId, isLocalDate, isRec } from './api.ts';
+import { isFind, isFindId, isLocalDate } from './api.ts';
+import { isRec } from './guards.ts';
 import type { LocalDate } from '../types.ts';
 import { nextDay } from './tokyo.ts';
 

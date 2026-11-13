@@ -12,7 +12,8 @@ import {
   recipeTotals, repeatCovers, round1, FOOD_GOAL_OF, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
   type RepeatOp
 } from '#lib/contract/food.ts';
-import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
+import { isPersonId, type EventRow } from '#lib/contract/api.ts';
+import { isRec } from '#lib/contract/guards.ts';
 import type { State } from './state.ts';
 import { rowAt } from './snapshot.ts';
 import { weighIns } from './weight.ts';

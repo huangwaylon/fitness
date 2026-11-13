@@ -5,7 +5,8 @@
 // wedding board, a trip's notes) and never sees their bodies (weight, body fat, BMI, lean mass and their goals). These
 // are the record's rules for that key, shared by the record (relay/src/store.ts: what it accepts from the guest and
 // what its snapshot leaves out) and the demo (`?demo&as=G` shows what the guest's phone would get). Pure.
-import { isActivityMetric, isPersonId, isRec, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
+import { isActivityMetric, isPersonId, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
+import { isRec } from './guards.ts';
 import type { Who } from '../types.ts';
 import { goalKeysOf } from './goals.ts';
 import { listenSeen, listenSummaryJson } from './listen.ts';
