@@ -114,7 +114,9 @@ One look for both: the verdict card (`VerdictCard`: dot, word, sentence, tinted 
 checks chained so the alarm's jitter leaves no false gap; green ok, yellow a room or slot open, red hatched a failure,
 outlined nothing checked; tap or ← → names a cell), the facts with くわしく (`FactList`), the skeleton, the foot. ジム:
 現在の設定 on top (the gym settings' place), 動作状況 (the compact verdict, the strip, the facts) at the foot. A dot
-while a bot needs a person. 保養所's draft asks before a tab switch or close. Its **通知** (`ItsNotify`): push per
+while a bot needs a person. 保養所's draft asks before a tab switch or close. 日付: a row a night, a thin bar of
+the searched by why (`its/view.ts`; seasons and 利用不可日 in `roster.ts`, explained only). 施設: a summary,
+presets, 探す · 日程に合わない (a reason a row) · 除外. Its **通知** (`ItsNotify`): push per
 phone, off by default, asked on the tap; テスト通知; a notification opens 保養所 (`?open=its` kept until the launch's
 hold is over, so a launch reload into a deploy opens it again).
 

@@ -3,7 +3,8 @@
   // /its/status) and its settings. Top to bottom: a notice (a failed read with its code; the allow-list's first save),
   // the verdict card (tinted by tone, 開始 / 停止 at once, outside the draft, and who pressed it), the bookings (a
   // hold's deadline and what to do), 状況 (くわしく folds the rest), the stays (日付: one at a time or まとめて追加, each
-  // with what can take it), the facilities (施設: 探す is the allow-list; groups, presets, a name filter, the new ones on
+  // a bar of its searched facilities by why, tapped open to the names and reasons: view.ts dateRows), the facilities
+  // (施設: 探す is the allow-list; a summary, presets, then 探す · 日程に合わない · 除外, the new ones' banners on
   // top), 詳細 (確認の間隔, 人数, 自動で確定), 通知 (this phone's push: ItsNotify), the recent events and the foot. The
   // settings are one draft saved with 保存
   // (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕, the backdrop
@@ -32,9 +33,9 @@
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
   import { fetchStatus, parseStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, eventLines, factRows, footLine,
-    hotelGroups, hotelHint, hotelNote, hotelRows, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
-    stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, verdictView, needsAttention, type Draft, type HotelRow
+    PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows, footLine,
+    hotelHint, hotelParts, hotelRows, hotelSummary, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
+    stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, verdictView, needsAttention, type DateRow, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { setBadge } from './open.svelte.ts';
   import ItsNotify from './ItsNotify.svelte';
@@ -68,9 +69,9 @@
   let askAuto = $state(false);
   let askOverwrite = $state(false);
   let openHotels = $state(false);
-  let filter = $state('');
-  /** The stay whose facilities are shown, or null. */
+  /** The stay whose facilities are shown (by why), or null; `allNames`: the one whose 探す names are all shown. */
   let openDate = $state<string | null>(null);
+  let allNames = $state<string | null>(null);
   let bulkOpen = $state(false);
   let bulkFrom = $state('');
   let bulkTo = $state('');
@@ -138,10 +139,12 @@
   const dates = $derived(shown ? dateRows(shown, nowMs, hotels, status?.bookings, stops) : []);
   const months = $derived(dateMonths(dates));
   const bounds = $derived(dateBounds(nowMs));
-  const groups = $derived(openHotels ? hotelGroups(hotels, filter) : []);
+  /** 施設's three parts (探す, 日程に合わない, 除外) from the draft's nights, as the bars count them. */
+  const parts = $derived(hotelParts(hotels, dates));
+  const summary = $derived(hotelSummary(parts));
   const fresh = $derived(hotels.filter((r) => r.undecided));
-  const searching = $derived(hotels.filter((r) => r.search).length);
-  const starred = $derived(hotels.filter((r) => r.star !== null).sort((a, b) => a.star! - b.star!).map((r) => r.name));
+  /** ★'s facilities, by name: the expanded night marks them. */
+  const stars = $derived(new Set(hotels.filter((r) => r.star !== null).map((r) => r.name)));
   const preset = $derived(presetOf(hotels));
   const paused = $derived(status?.settings.paused ?? true);
   /** 開始 needs a saved stay from tonight on. */
@@ -270,19 +273,31 @@
   const weekdays = [0, 1, 2, 3, 4, 5, 6].map((n) => ({ n, label: t(`weekday.${n || 7}`) }));
 </script>
 
-{#snippet hotel(r: HotelRow)}
+{#snippet hotel(r: ListRow)}
   <li class="hrow" class:starred={r.star !== null} data-its-hotel={r.name} data-search={r.search}>
-    <button type="button" class="hsw" role="switch" aria-checked={r.search} data-sfx="self"
-      onclick={() => (cue(r.search ? 'toggle-off' : 'toggle-on'), edit((d) => toggleSearch(d, r)))}>
-      <span class="txt"><b>{r.name}</b><small class:fresh={r.fresh}>{hotelNote(r)}</small></span>
-      <span class="sw s" aria-hidden="true"><i></i></span>
-    </button>
     <button type="button" class="star" aria-pressed={r.star !== null} data-its-star={r.name} data-sfx="tick"
       aria-label={r.star === null ? t('its.hotel.star', { name: r.name }) : t('its.hotel.starN', { name: r.name, n: r.star + 1 })}
       onclick={() => edit((d) => toggleStar(d, r.name))}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z" /></svg>{#if r.star !== null}<b aria-hidden="true">{r.star + 1}</b>{/if}
     </button>
+    <button type="button" class="hsw" role="switch" aria-checked={r.search} aria-label={r.label} data-sfx="self"
+      onclick={() => (cue(r.search ? 'toggle-off' : 'toggle-on'), edit((d) => toggleSearch(d, r)))}>
+      <span class="txt"><b>{r.name}</b>{#if r.meta}<small class:fresh={r.fresh && !r.reason} data-its-meta>{r.meta}</small>{/if}</span>
+      <span class="sw s" aria-hidden="true"><i></i></span>
+    </button>
   </li>
+{/snippet}
+
+{#snippet part(id: string, rows: ListRow[], label: string)}
+  <details class="part" data-its-part={id}>
+    <summary class="psum"><h4 id="its-p-{id}">{label}<small>{t('its.part.count', { n: rows.length })}</small></h4><span class="chev" aria-hidden="true"></span></summary>
+    <ul class="card rows hrows" aria-labelledby="its-p-{id}">{#each rows as r (r.key)}{@render hotel(r)}{/each}</ul>
+  </details>
+{/snippet}
+
+{#snippet bar(d: DateRow)}
+  <span class="bar" aria-hidden="true">{#each d.parts as p (p.why)}<i class="seg {p.why}" style:flex-grow={p.names.length}></i>{/each}</span>
+  <span class="legend" aria-hidden="true">{#each d.parts as p (p.why)}<span data-its-seg={p.why}><i class="seg {p.why}"></i>{t(`its.why.${p.why}`)} {p.names.length}</span>{/each}</span>
 {/snippet}
 
 <div class="its" data-its-page aria-busy={poll.loading}>
@@ -343,26 +358,54 @@
       <p class="hint">{t('its.date.one')}</p>
       {#if dates.length}
         <div class="card months">
+          <p class="dhead" data-its-dates-total>{t('its.night.total', { n: dates[0].total })}</p>
           {#each months as m (m.month)}
             <h4 class="month">{m.label}</h4>
             <ul class="rows dates">
               {#each m.rows as d (d.date)}
+                {@const open = openDate === d.date}
                 <li data-its-date={d.date}>
                   <div class="drow">
-                    <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'} class:booked={d.note === 'booked'}>{d.text}</small></span>
-                    {#if d.note !== 'booked'}
-                      <button type="button" class="able" aria-expanded={openDate === d.date} data-its-able={d.able.length} data-sfx="tick"
-                        onclick={() => (openDate = openDate === d.date ? null : d.date)}>{d.able.length ? t('its.date.able', { n: d.able.length }) : t('its.date.ableNone')}</button>
+                    {#if d.note === 'booked'}
+                      <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
+                    {:else}
+                      <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-its-able={d.able.length} data-sfx="tick"
+                        onclick={() => (openDate = open ? null : d.date)}>
+                        <span class="dtop">
+                          <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
+                          <span class="nn" aria-hidden="true">{d.able.length}/{d.total}</span>
+                          <span class="chev" aria-hidden="true"></span>
+                        </span>
+                        {#if d.total}{@render bar(d)}{:else}<small aria-hidden="true">{t('its.night.none')}</small>{/if}
+                      </button>
                     {/if}
                     <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
                       onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
                   </div>
-                  {#if openDate === d.date && d.able.length}<p class="ablelist" data-its-able-list>{d.able.join('、')}</p>{/if}
+                  {#if open && d.note !== 'booked'}
+                    <div class="nlist" data-its-night-list>
+                      {#each d.parts as p (p.why)}
+                        {@const names = p.names.map((n) => (stars.has(n) ? `★${n}` : n))}
+                        {@const cut = p.why === 'check' && allNames !== d.date && names.length > 8}
+                        <div class="np" data-its-why={p.why}>
+                          <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
+                          {#if p.why === 'check' || p.why === 'gone'}
+                            <p>{(cut ? names.slice(0, 8) : names).join('、')}</p>
+                            {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: names.length - 8 })} ›</button>{/if}
+                          {:else}
+                            {#each p.lines as l (l)}<p>{l}</p>{/each}
+                          {/if}
+                        </div>
+                      {/each}
+                      {#if d.noSeason}<p class="np-note" data-its-no-season>{t('its.night.noSeason')}</p>{/if}
+                    </div>
+                  {/if}
                 </li>
               {/each}
             </ul>
           {/each}
         </div>
+        {#if parts.off.length}<p class="hint" data-its-dates-foot>{t('its.night.foot', { n: parts.off.length })}</p>{/if}
       {:else}
         <p class="hint">{t('its.date.empty')}</p>
       {/if}
@@ -389,28 +432,22 @@
         </div>
       {/each}
       <details class="fold" bind:open={openHotels} data-its-search>
-        <summary class="prow"><span class="prl">{t('its.hotel.fold', { n: searching, total: hotels.length })}{#if starred.length}<small>★ {starred.join('、')}</small>{/if}</span><span class="chev" aria-hidden="true"></span></summary>
+        <summary class="prow"><span class="prl"><span data-its-sum>{summary.title}</span>{#if summary.line}<small data-its-sum-line>{summary.line}</small>{/if}{#if summary.more}<small data-its-sum-more>{summary.more}</small>{/if}</span><span class="chev" aria-hidden="true"></span></summary>
         {#if openHotels}
           <div class="hbody">
             <div class="presets" role="group" aria-label={t('its.preset.label')}>
               {#each PRESETS as p (p)}<Chip label={t(`its.preset.${p}`)} selected={preset === p} data-its-preset={p} onclick={() => edit((d) => applyPreset(d, hotels, p))} />{/each}
             </div>
-            <input type="search" class="filter" bind:value={filter} placeholder={t('its.hotel.filter')} aria-label={t('its.hotel.filter')} data-its-filter data-sfx="none"
-              enterkeyhint="search" autocomplete="off" spellcheck="false" />
-            {#each groups as g (g.id)}
-              <section class="group" aria-labelledby="its-g-{g.id}" data-its-group={g.id}>
-                <div class="ghead">
-                  <h4 id="its-g-{g.id}">{g.label}<small>{t('its.group.count', { on: g.on, n: hotels.filter((r) => r.group === g.id).length })}</small></h4>
-                  <button type="button" class="gbtn" data-its-group-on data-sfx="tick" aria-label={t('its.group.allOnLabel', { group: g.label })}
-                    onclick={() => edit((d) => setSearch(d, g.rows.filter((r) => !delisted(r)).map((r) => r.name), true))}>{t('its.group.allOn')}</button>
-                  <button type="button" class="gbtn" data-its-group-off data-sfx="tick" aria-label={t('its.group.allOffLabel', { group: g.label })}
-                    onclick={() => edit((d) => setSearch(d, g.rows.map((r) => r.name), false))}>{t('its.group.allOff')}</button>
-                </div>
-                <ul class="card rows hrows">{#each g.rows as r (r.key)}{@render hotel(r)}{/each}</ul>
-              </section>
-            {:else}
-              <p class="hint" data-its-filter-none>{t('its.hotel.filterNone')}</p>
-            {/each}
+            <section class="part" aria-labelledby="its-p-search" data-its-part="search">
+              <h4 id="its-p-search">{t('its.part.search')}<small>{t('its.part.count', { n: parts.search.length })}</small></h4>
+              {#if parts.starred.length}<ul class="card rows hrows" data-its-group="star">{#each parts.starred as r (r.key)}{@render hotel(r)}{/each}</ul>{/if}
+              {#each parts.regions as g (g.id)}
+                <h5 id="its-g-{g.id}">{g.label}<small>{g.rows.length}</small></h5>
+                <ul class="card rows hrows" aria-labelledby="its-g-{g.id}" data-its-group={g.id}>{#each g.rows as r (r.key)}{@render hotel(r)}{/each}</ul>
+              {/each}
+            </section>
+            {#if parts.unfit.length}{@render part('unfit', parts.unfit, t('its.part.unfit'))}{/if}
+            {#if parts.off.length}{@render part('off', parts.off, t('its.part.off'))}{/if}
           </div>
         {/if}
       </details>
@@ -535,51 +572,72 @@
   .month { margin: 4px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .dates { padding: 0; }
   .dates > li { display: block; min-height: 0; }
-  .drow { display: flex; align-items: center; gap: 4px; min-height: var(--hit); }
+  .drow { display: flex; align-items: flex-start; gap: 4px; min-height: var(--hit); }
+  .dtxt { padding: 6px 0; }
   .its .booked { color: var(--leaf-text); }
-  .able {
-    appearance: none; border: 0; background: none; cursor: pointer; flex: none; min-height: var(--hit); padding: 0 6px;
-    font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--sky-text); text-decoration: underline; text-underline-offset: 3px;
+  .dhead { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  /* a night: the whole row the tap (44px+), its bar under the date */
+  .night {
+    appearance: none; border: 0; background: none; cursor: pointer; flex: 1; min-width: 0; min-height: var(--hit); padding: 4px 0 6px; text-align: left;
+    color: var(--text); font: inherit; display: grid; gap: 6px;
   }
-  .ablelist { margin: 0 0 6px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
+  .dtop { display: flex; align-items: center; gap: 8px; }
+  .nn { flex: none; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .night[aria-expanded='true'] .chev { rotate: 225deg; margin-top: 4px; }
+  /* the bar (the dataviz thin segmented bar): 8px, round ends, 2px gaps; 探す leaf, 締切 hatched, 季節外 · 休館日 · 掲載なし
+     sunk and outlined; each part's word and count beside it (never colour alone) */
+  .bar { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
+  .bar .seg { flex: 1 1 0; min-width: 3px; border-radius: 1px; }
+  .seg { display: inline-block; background: var(--ctl-off); box-shadow: inset 0 0 0 1px var(--edge); }
+  .seg.check { background: var(--c-leaf); box-shadow: none; }
+  .seg.cutoff { background: repeating-linear-gradient(45deg, var(--text-soft) 0 1.5px, var(--ctl-off) 1.5px 4.5px); box-shadow: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 2px 12px; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  .legend > span { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+  .legend .seg, .np h5 .seg { width: 12px; height: 8px; border-radius: 2px; flex: none; }
+  .nlist { display: grid; gap: 10px; margin: 0 0 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--ctl-off) 45%, var(--card)); }
+  .np h5 { margin: 0; display: flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .np h5 small, .part h4 small, .part h5 small { display: inline; margin: 0 0 0 6px; }
+  .np p, .np-note { margin: 4px 0 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text); }
+  .np-note { margin: 0; color: var(--text-soft); }
+  .more {
+    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--sky-text);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
   /* the small ✕: drawn 28px, a 44px target */
   .x { appearance: none; border: 0; background: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); margin-right: -8px; }
   .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
-  .x:focus-visible, .able:focus-visible, .gbtn:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+  .x:focus-visible, .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 
   .add { display: flex; gap: 8px; align-items: center; }
   /* 16px so Safari doesn't zoom; the app's field look (ProfileSection's) */
-  input[type='date'], .filter {
+  input[type='date'] {
     flex: 1; min-width: 0; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); appearance: none;
     font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
   }
-  .filter { font-family: var(--font-ui); }
-  input[type='date']:focus-visible, .filter:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  input[type='date']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .add .btn { margin: 0; }
   .bulkopen { justify-self: start; margin: 0; }
 
   .fold { display: grid; gap: 8px; }
-  .fold > summary { list-style: none; }
-  .fold > summary::-webkit-details-marker { display: none; }
+  .fold > summary, .part > summary { list-style: none; }
+  .fold > summary::-webkit-details-marker, .part > summary::-webkit-details-marker { display: none; }
   .fold[open] > summary { margin-bottom: 8px; }
   .chev { flex: none; width: 10px; height: 10px; border-right: 2.6px solid var(--text-soft); border-bottom: 2.6px solid var(--text-soft); rotate: 45deg; margin: -4px 6px 0; transition: rotate var(--dur-quick); }
   details[open] > summary .chev { rotate: 225deg; margin-top: 4px; }
-  .hbody { display: grid; gap: 12px; }
+  .hbody { display: grid; gap: 14px; }
   .presets, .wdays { display: flex; flex-wrap: wrap; gap: 4px 6px; }
   .fresh-banner { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
   .fresh-banner .btn { flex: none; margin: 0; }
 
-  .group { display: grid; gap: 6px; }
-  .ghead { display: flex; align-items: center; gap: 4px; }
-  .ghead h4 { flex: 1; margin: 0 4px; font: 700 var(--fs-body)/1.2 var(--font-ui); display: flex; align-items: baseline; gap: 8px; }
-  .ghead h4 small { display: inline; margin: 0; }
-  .gbtn {
-    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0 8px;
-    font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--sky-text);
-  }
-  .hrows { gap: 6px; padding: 6px 10px 6px 14px; }
+  /* 施設's parts: 探す (h4, its regions h5), 日程に合わない and 除外 folded */
+  .part { display: grid; gap: 6px; }
+  .part h4 { margin: 0 4px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .part h5 { margin: 6px 4px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .psum { display: flex; align-items: center; min-height: var(--hit); cursor: pointer; }
+  .psum h4 { flex: 1; }
+  .hrows { gap: 6px; padding: 6px 14px 6px 10px; }
   .hrows > .hrow + .hrow { padding-top: 6px; }
-  .hrow { gap: 6px; }
+  .hrow { gap: 10px; }
   .hrow.starred .hsw b { color: var(--text); }
   .hsw {
     appearance: none; border: 0; background: none; cursor: pointer; flex: 1; min-width: 0; min-height: var(--hit); padding: 4px 0; text-align: left; color: var(--text);
