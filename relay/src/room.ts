@@ -416,7 +416,7 @@ export class RoomCore<S extends Sock> {
     this.io.hold?.(this.held);
   }
 
-  /** The record changed (its RPC after a write, or a signed /notify): every connected phone hears it, the writer's own
+  /** The record changed (its RPC after a write): every connected phone hears it, the writer's own
    *  too, but the guest only what it may see of (guestNotice; `guest`: the record's word on it). Returns how many. */
   notify(n: Notice, guest?: boolean): number {
     const forG = this.guestNotice(n, guest);
@@ -439,8 +439,8 @@ export class RoomCore<S extends Sock> {
   /** Whether the guest hears of this change: an event's, a member's ingest that brought activity rows (the record says
    *  so: `guest`; the guest's snapshot holds them, so it reaches the mark), or a new epoch (its cache refetched). Never
    *  an ingest of からだ rows alone: when one ran is the member's (docs/backend.md#the-guest), and the guest's
-   *  snapshot, which holds none of them, could never reach its mark. (A signed /notify's ingest, and an admin load at
-   *  the same epoch, told as an ingest: the guest has them at its next poll.) */
+   *  snapshot, which holds none of them, could never reach its mark. (An admin load at the same epoch, told as an
+   *  ingest: the guest has them at its next poll.) */
   private guestNotice(n: Notice, guest?: boolean): boolean {
     const was = this.recG ?? this.rec;
     return n.what !== 'ingest' || guest === true || (was !== null && n.rev !== was.rev);

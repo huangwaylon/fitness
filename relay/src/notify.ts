@@ -1,6 +1,6 @@
-// The server-to-server signature (docs/backend.md#push): a Notice POSTed to /notify and `/admin` are
-// signed with a server-to-server secret that both servers derive from the two person keys (each server holds both; a phone
-// holds only its own, so no phone can sign). Nothing to provision or store: rotating a key rotates the secret too.
+// The server-to-server signature (docs/backend.md "Admin"): `/admin` requests are signed with a secret that the relay
+// and the admin tools derive from the two person keys (each holds both; a phone holds only its own, so no phone can
+// sign). Nothing to provision or store: rotating a key rotates the secret too.
 // The signature covers the time and the body, so a logged request can't be replayed beyond the window or with another
 // body; the secret itself never travels.
 import type { Keys } from './auth.ts';

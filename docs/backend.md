@@ -107,8 +107,9 @@ a retry of a kept group is all duplicates.
 
 ## Auth and limits
 - **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
-  [The guest](#the-guest)), in constant time. `KEY_A` and `KEY_B` also derive the secret that signs `/notify` and
-  `/admin` (never `KEY_C`): a rotation updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)).
+  [The guest](#the-guest)), in constant time. `KEY_A` and `KEY_B` also derive the secret that signs
+  `/admin` (never `KEY_C`; `relay/src/notify.ts`: the derivation, the headers, the 5-minute window): a rotation
+  updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)).
 - **Rate limit:** `RATE_PER_MINUTE` (120) requests per key a minute, in the record's memory; over it, `busy`. A
   snapshot's later pages have their own `PAGES_PER_MINUTE`.
 
@@ -218,7 +219,7 @@ one tile").
   and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
   late rows too (`LATE_MARGIN_MS`).
-- **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"; a `restore`, `rev` or `logpurge` taken once
+- **Admin:** `POST /admin`, signed (the secret above; a `restore`, `rev` or `logpurge` taken once
   per signature, `admin_seen`). Its ops: [runbook §9](ops/runbook.md#9-the-record) (`load` by the same rules,
   idempotent: `test/restore.test.ts`).
 - **Push-driven:** after a write the object tells the room ([Push](#push)), which keeps the last `rec {at, rev}` for
@@ -237,7 +238,7 @@ never data of record: the record still catches an offline phone up.
 - **Where:** `relay/` (its own package): a Worker (`src/index.ts`) and `IslandRoom` (`idFromName('island')`,
   `src/room.ts`) at `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}`
-  (`sha`: the deployed commit); `POST /api`, `/admin`, `/notify` ([Push](#push)), `/log`
+  (`sha`: the deployed commit); `POST /api`, `/admin`, `/log`
   ([observability](ops/observability.md)), `/stt`, `GET /food/kalori` ([Kalori](#kalori)).
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key (`contract/ticket.ts`, `auth.ts admission`), else 403; a ticketed
@@ -397,11 +398,8 @@ While the app is on screen, a change to the record reaches the other phones in w
 through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) still catches up a phone that missed it.
 
 - **Record → room:** after a write that added rows (never a duplicate, a refusal or a read), the record calls the room
-  (an RPC, after its commit) with `{what: 'ingest'|'event', who, at, rev, sid?}`. `POST /notify` (signed, below) takes
-  the same notice from a server (`npm run smoke` uses it).
-- **Auth:** the notify secret is derived from `KEY_A` and `KEY_B` by both servers (`relay/src/notify.ts`: the
-  derivation, the headers, the 5-minute window); a phone holds only its own key, so it can't sign. Rotating a key
-  rotates it ([runbook §3](ops/runbook.md#3-rotate-a-key)); the same secret signs `/admin`.
+  (an RPC, after its commit) with `{what: 'ingest'|'event', who, at, rev, sid?}`. No server POSTs a notice (the
+  signed `POST /notify` went on 2026-11-13: nothing called it); `npm run smoke` times an ingest → `changed`.
 - **Relay → phones:** `changed {what, who, at, rev, sid?, calm?, t}` to every authenticated socket, the writer's too (a
   Shortcut upload reaches its own phone), the guest's only of what it may see; the last mark is the welcomes' `rec`.
 - **The nudge:** after an ack the phone sends `saved {}`, relayed like any intent, until a `changed` has reached it

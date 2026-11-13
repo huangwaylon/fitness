@@ -1,6 +1,5 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { parseNotice } from '../../app/src/lib/contract/live-protocol.ts';
 import { NOTIFY_LABEL, NOTIFY_WINDOW_MS, notifySecret, notifySig, twice, verifyNotify } from '../src/notify.ts';
 
 const KEY_A = 'a1'.repeat(16);
@@ -43,16 +42,6 @@ describe('a signed notify', () => {
     expect(await verifyNotify(keys, 'soon', sig, body, now)).toBe(false);
     expect(await verifyNotify(keys, String(now), sig.toUpperCase(), body, now)).toBe(false);
     expect(await verifyNotify({ KEY_A }, String(now), sig, body, now)).toBe(false);
-  });
-
-  it('carries a notice the parser checks field by field', () => {
-    expect(parseNotice(body)).toEqual(JSON.parse(body));
-    expect(parseNotice(JSON.stringify({ ...JSON.parse(body), extra: 1 }))).toEqual(JSON.parse(body));
-    for (const bad of [{ what: 'drop' }, { who: 'C' }, { at: '2026-11-01' }, { rev: 'Has Spaces' }, { rev: '' }]) {
-      expect(parseNotice(JSON.stringify({ ...JSON.parse(body), ...bad })), JSON.stringify(bad)).toBeNull();
-    }
-    expect(parseNotice('nope')).toBeNull();
-    expect(parseNotice(JSON.stringify({ ...JSON.parse(body), pad: 'x'.repeat(300) }))).toBeNull();
   });
 });
 

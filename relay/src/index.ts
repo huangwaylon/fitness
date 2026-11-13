@@ -2,9 +2,8 @@
 // Durable Object, the island room, which relays each person's intents to the other. The room uses the WebSocket
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
-import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
+import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } from './auth.ts';
-import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
@@ -214,7 +213,7 @@ export class IslandRoom extends DurableObject<Env> {
     relaySink(() => this.env.LOG.get(this.env.LOG.idFromName('log')), (p) => this.ctx.waitUntil(p), Date.now)(evs);
   }
 
-  /** RPC from the record (and the Worker's /notify): pass the change to the connected phones. */
+  /** RPC from the record: pass the change to the connected phones. */
   notify(n: Notice, guest?: boolean): number {
     return this.core.notify(n, guest);
   }
@@ -350,7 +349,6 @@ export default {
       const wx = wxSeen.wx;
       return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: env.COMMIT ?? null, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
     }
-    if (url.pathname === '/notify') return notify(req, env);
     if (url.pathname === '/api') {
       const log = sinkOf(env, ctx);
       return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')), (m, ms) => log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
@@ -386,23 +384,4 @@ function reqEvent(m: ReqMeta, ms: number): RelayEvent {
   const { role, rid, sid, ...d } = m;
   const l = m.st === 'unavailable' ? 3 : m.st === 'ok' && !m.rej ? 1 : 2;
   return { e: 'req', l, role, rid, sid, d: { ...d, ms } };
-}
-
-/**
- * POST /notify (docs/backend.md#push): a server says the record changed (the record itself tells the room by RPC). Signed (notify.ts), never from a browser
- * (no CORS), the body a Notice. 204 when accepted (whether or not a phone was there to hear it).
- */
-async function notify(req: Request, env: Env): Promise<Response> {
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { Allow: 'POST' } });
-  if (Number(req.headers.get('Content-Length') ?? 0) > MAX_BYTES) return new Response('too large', { status: 413 });
-  const body = await req.text();
-  if (body.length > MAX_BYTES) return new Response('too large', { status: 413 });
-  const keys = { KEY_A: env.KEY_A, KEY_B: env.KEY_B };
-  if (!(await verifyNotify(keys, req.headers.get(TIME_HEADER), req.headers.get(SIG_HEADER), body, Date.now()))) {
-    return new Response('unauthorized', { status: 401 });
-  }
-  const n = parseNotice(body);
-  if (!n) return new Response('bad request', { status: 400 });
-  const heard = await env.ROOM.get(env.ROOM.idFromName('island')).notify(n);
-  return new Response(null, { status: 204, headers: { 'X-Island-Heard': String(heard) } });
 }

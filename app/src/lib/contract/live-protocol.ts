@@ -313,8 +313,7 @@ const NOTICE_WHAT = ['ingest', 'event'] as const;
 type NoticeWhat = (typeof NOTICE_WHAT)[number];
 
 /**
- * The record changed: the record tells the room after a write (an RPC; a server's signed POST /notify too,
- * docs/backend.md#push), and the room passes it to every connected phone as `changed`. `at` is the newest row's server time (the snapshot's `since`
+ * The record changed: the record tells the room after a write (an RPC, docs/backend.md#push), and the room passes it to every connected phone as `changed`. `at` is the newest row's server time (the snapshot's `since`
  * domain), `rev` the data revision.
  */
 export interface Notice {
@@ -669,17 +668,6 @@ export function otherVersion(raw: unknown): number | null {
 function noticeOf(o: Obj): Notice | null {
   if (!oneOf(NOTICE_WHAT)(o.what) || !isWho(o.who) || typeof o.at !== 'string' || !AT.test(o.at) || typeof o.rev !== 'string' || !REV.test(o.rev)) return null;
   return { what: o.what, who: o.who, at: o.at, rev: o.rev, ...(typeof o.sid === 'string' && SID.test(o.sid) ? { sid: o.sid } : {}), ...(o.calm === true && o.what === 'event' ? { calm: true as const } : {}) };
-}
-
-/** The body of a /notify POST as the relay accepts it (`{what, who, at, rev}`, ≤ MAX_BYTES), or null. @public (relay/, sync/live.ts) */
-export function parseNotice(raw: unknown): Notice | null {
-  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
-  try {
-    const o: unknown = JSON.parse(raw);
-    return isObj(o) ? noticeOf(o) : null;
-  } catch {
-    return null;
-  }
 }
 
 /** A relayed intent from `o`, or null. */

@@ -15,20 +15,18 @@ vi.mock('cloudflare:workers', () => ({
 }));
 
 import worker, { type Env } from '../src/index.ts';
-import { notifySecret, notifySig, SIG_HEADER, TIME_HEADER } from '../src/notify.ts';
 import { TICKET_HEADER } from '../src/auth.ts';
 import { isCompactTick } from '../src/store.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import type { RelayEvent } from '../src/log.ts';
 import type { ReqMeta } from '../src/reqMeta.ts';
-import { LIVE_V, LIVE_VS, MAX_BYTES } from '../../app/src/lib/contract/live-protocol.ts';
+import { LIVE_V, LIVE_VS } from '../../app/src/lib/contract/live-protocol.ts';
 import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
 const ALLOWED = 'https://huangwaylon.github.io';
 const NOW = Date.parse('2026-11-02T03:00:00.000Z');
-const NOTICE = JSON.stringify({ what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'mhf0a1b2c3' });
 const WX = { hours: 48, age: 600_000 };
 
 type Calls = { [k: string]: unknown[][] };
@@ -114,29 +112,6 @@ describe('/health', () => {
     expect(calls['ROOM.id']).toHaveLength(1);
     vi.setSystemTime(NOW + 3_661_000);
     expect(await (await call('/health')).json()).toMatchObject({ ok: true, wx: null });
-  });
-});
-
-describe('/notify', () => {
-  const signed = async (body: string, t = String(NOW)) => ({
-    [TIME_HEADER]: t,
-    [SIG_HEADER]: await notifySig((await notifySecret({ KEY_A, KEY_B }))!, t, body)
-  });
-
-  it('takes only a POST, no larger than MAX_BYTES, signed with the servers’ secret', async () => {
-    expect((await call('/notify')).status).toBe(405);
-    expect((await call('/notify', { method: 'POST', body: 'x', headers: { 'Content-Length': String(MAX_BYTES + 1) } })).status).toBe(413);
-    expect((await call('/notify', { method: 'POST', body: 'x'.repeat(MAX_BYTES + 1) })).status).toBe(413);
-    expect((await call('/notify', { method: 'POST', body: NOTICE })).status).toBe(401);
-    expect((await call('/notify', { method: 'POST', body: NOTICE, headers: await signed(NOTICE, String(NOW - 600_000)) })).status).toBe(401);
-    expect(calls['ROOM.notify']).toBeUndefined();
-  });
-
-  it('passes a signed notice to the room and says how many phones heard it; a signed non-notice is 400', async () => {
-    const res = await call('/notify', { method: 'POST', body: NOTICE, headers: await signed(NOTICE) });
-    expect([res.status, res.headers.get('X-Island-Heard')]).toEqual([204, '2']);
-    expect(calls['ROOM.notify']).toEqual([[JSON.parse(NOTICE)]]);
-    expect((await call('/notify', { method: 'POST', body: '{}', headers: await signed('{}') })).status).toBe(400);
   });
 });
 

@@ -41,7 +41,7 @@ Lost phone, leak, any doubt:
 2. The relay first: from `relay/`, `npx wrangler secret put KEY_A` (or `KEY_B`); the old key is `unauthorized` at once.
 3. That person's app shows the pairing screen: paste the new key, and into their Shortcut's **Key** text.
 4. The keys file (`~/.config/island-fund/keys`, `KEY_A=…`/`KEY_B=…` lines, or `KEYS_FILE`): the secret that signs
-   `/admin` and `/notify` derives from `KEY_A:KEY_B` (`relay/src/notify.ts`), so without the new key there
+   `/admin` derives from `KEY_A:KEY_B` (`relay/src/notify.ts`), so without the new key there
    `record.ts` and `npm run logs` get `unauthorized`. The test relay's keys: `relay/.smoke-keys`
    (`npx wrangler secret bulk .smoke-keys --env test` after changing them).
 

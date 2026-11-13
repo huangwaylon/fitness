@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CLOSE, HB_PING, HB_PONG, parseNotice, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { WORLD_X, WORLD_Z } from '../../app/src/lib/contract/layout.ts';
 /** The 20 × 156 grid's last land row, its last column's middle (app/src/lib/layout/grid.ts tileMid(19, 154): the grid's
  *  last row is its ring of sea) and its last chunk row. */
@@ -337,7 +337,6 @@ describe('the island room', () => {
     expect(parseServer(JSON.stringify(a.raw.at(-1)))).toMatchObject({ kind: 'changed', who: 'B', calm: true });
     room.notify({ what: 'event', who: 'B', at: '2026-11-09T00:00:01.000Z', rev: 'e1' });
     expect(parseServer(JSON.stringify(a.raw.at(-1)))).not.toHaveProperty('calm');
-    expect(parseNotice(JSON.stringify({ what: 'ingest', who: 'B', at: '2026-11-09T00:00:02.000Z', rev: 'e1', calm: true }))).not.toHaveProperty('calm');
   });
 
   it('tells the partner when the last socket of a person closes', () => {

@@ -196,32 +196,18 @@ a2.send({ kind: 'hello', key: KEY_A });
 await a2.next((m) => m.kind === 'welcome');
 check((await a.closed) === 4002, 'a second A replaces the first (4002)');
 
-// The push (docs/backend.md#push): a signed /notify reaches both phones as `changed` (the record's own goes by RPC).
-const notifyUrl = new URL('/notify', http);
-const unsigned = await fetch(notifyUrl, { method: 'POST', body: '{}' });
-check(unsigned.status === 401, `an unsigned notify is refused (${unsigned.status})`);
-check((await fetch(notifyUrl)).status === 405, 'a GET /notify is refused');
+// The push (docs/backend.md#push): a write to the record (an ingest of A's) reaches both phones as `changed` (the
+// record tells the room by RPC after its commit).
 const pushes: number[] = [];
 for (let i = 0; i < Math.min(N, 10); i++) {
-  const at = new Date().toISOString();
-  const body = JSON.stringify({ what: 'ingest', who: 'A', at, rev: 'smoke1' });
-  const t = String(Date.now());
   const p0 = performance.now();
-  const r = await fetch(notifyUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...signedBy(t, body) },
-    body
-  });
-  if (i === 0) check(r.status === 204 && r.headers.get('X-Island-Heard') === '2', `a signed notify is accepted (${r.status}, heard by ${r.headers.get('X-Island-Heard')})`);
-  await Promise.all([a2, b2].map((c) => c.next((m) => m.kind === 'changed' && m.at === at)));
+  const r = await fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key: KEY_A, action: 'ingest', dates: 'Nov 1, 2026', steps: String(Date.now() % 100_000) }) }).then((x) => x.json() as Promise<{ ok?: boolean; metrics?: number }>);
+  if (i === 0) check(r.ok === true && r.metrics === 1, `an ingest is taken (${JSON.stringify(r)})`);
+  await Promise.all([a2, b2].map((c) => c.next((m) => m.kind === 'changed' && m.who === 'A')));
   pushes.push(performance.now() - p0);
   await pause(200);
 }
-console.log(`     notify POST → changed on both phones: ${stats(pushes)}`);
-const replay = JSON.stringify({ what: 'ingest', who: 'A', at: new Date().toISOString(), rev: 'smoke1' });
-const old = String(Date.now() - 6 * 60_000);
-const stale = await fetch(notifyUrl, { method: 'POST', headers: signedBy(old, replay), body: replay });
-check(stale.status === 401, `a notify signed 6 min ago is refused (${stale.status})`);
+console.log(`     ingest → changed on both phones: ${stats(pushes)}`);
 
 // The nudge after an acked write: B says `saved`, A hears it.
 const nudges: number[] = [];
