@@ -29,7 +29,7 @@ const settled = (page: Page) => dlg(page).evaluate(async (d) => {
   for (let last = -1; sc && sc.scrollTop !== last; await frame(), await frame()) last = sc.scrollTop;
 });
 
-/** A meal search's row → its amount level: the row opened in place, then its 栄養成分 ›. */
+/** A meal search's row → its amount level: the row opened in place, then its くわしく ›. */
 async function amountOf(page: Page, row: Locator) {
   await row.click({ timeout: 15_000 });
   await settled(page);
@@ -153,7 +153,7 @@ test('the day, the search and the amount all fit the sheet’s width', async ({ 
   await settled(page);
   await expect(sheet(page).locator('[data-food-open-add]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
-  await sheet(page).locator('[data-food-open-more]').click(); // 栄養成分 ›: the amount level
+  await sheet(page).locator('[data-food-open-more]').click(); // くわしく ›: the amount level
   await expect(sheet(page).locator('[data-done]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
 });
@@ -1615,9 +1615,9 @@ test('opened before the catalog is in: the recipe’s ingredients take their til
 // A row opened in place (the user, 2026-11-07: "see and configure settings right away instead of having to add first
 // and then edit"; docs/design.md "Gohan" Search): a food row's tap opens the amount's controls under it, kept on the
 // screen (its own ＋ hidden meanwhile); 焼き ×2 there and 追加 logs 180 g, 558 kcal on this trip, the field cleared and
-// focused; 栄養成分 › opens the amount level at what was set; one row at a time, closed by Esc (the sheet stays), its row again or a new query; ＋ still
+// focused; くわしく › opens the amount level at what was set (‹ back to the search as left); one row at a time, closed by Esc (the sheet stays), its row again or a new query; ＋ still
 // logs in one tap. 豚ロース 焼き ×2 + ごはん 大盛り in one trip: 10 taps (×1.5 on the way to ×2), no level.
-test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden; 栄養成分 carries it; one at a time; Esc; ＋ still one tap', async ({ page }) => {
+test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden; くわしく carries it, ‹ keeps it; one at a time; Esc; ＋ still one tap', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   await openFood(page);
   const s = sheet(page);
@@ -1643,12 +1643,15 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   const add = s.locator('[data-food-open-add]');
   await expect(add).toBeInViewport({ ratio: 1 }); // kept on the screen
   await expect(add).toContainText('558 kcal');
-  await expect(pork.locator('.kc')).toBeHidden(); // the row's own 生 298 kcal steps aside: nothing contradicts
+  await expect(pork.locator('.kc:not(.lk)')).toBeHidden(); // the row's own 生 298 kcal steps aside: nothing contradicts
+  await expect(pork.locator('[data-food-open-row-kcal]')).toHaveText('558 kcal'); // the live one in its place
   await expect(pork.locator('[data-states]')).toBeHidden();
   // one add for an open row: its own ＋ (the default portion) hidden, back once it's closed
   const porkPlus = s.locator('[data-food-results] li:has([data-item="mext:11123"]) [data-quick]');
   await expect(porkPlus).toBeHidden();
-  await expect(s.locator('[data-food-open-more]')).toHaveText('栄養成分›');
+  await expect(s.locator('[data-food-open-more]')).toHaveText('くわしく›');
+  await expect(s.locator('[data-food-open-more]')).toHaveAccessibleName('豚ロース 脂身つき 焼きをくわしく見る');
+  await expect(box.locator('[data-food-open-live] dt')).toHaveText(['たんぱく質', '脂質', '炭水化物', '塩分']); // (no fibre: 0)
   await tap(add);
   await expect(added).toHaveCount(1);
   await expect(added.first()).toContainText('豚ロース 脂身つき 焼き');
@@ -1670,7 +1673,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(dinner.filter({ hasText: '豚ロース 脂身つき 焼き' })).toContainText('558');
   await expect(dinner.filter({ hasText: 'ごはん（精白米）' })).toContainText('大盛り（250g）');
 
-  // 栄養成分 ›: the amount level at what was set (the state, ×2, the grams, the meal); its 追加 says the kcal too
+  // くわしく ›: the amount level at what was set (the state, ×2, the grams, the meal); its 追加 says the kcal too
   await s.locator('[data-add=d]').click();
   await q.fill('豚ロース');
   await pork.click({ timeout: 15_000 });
@@ -1686,12 +1689,15 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(s.locator('[data-pick-meal=d]')).toHaveAttribute('aria-pressed', 'true');
   await expect(s.locator('[data-done]')).toHaveText('追加 558 kcal');
   await s.getByRole('button', { name: '戻る' }).click();
+  // ‹: the search as it was left: the query, the row open at what was set, the focus on its くわしく
+  await expect(q).toHaveValue('豚ロース');
+  await expect(pork).toHaveAttribute('aria-expanded', 'true');
+  await expect(box.locator('[data-state=焼き]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(box.locator('[data-grams]')).toHaveValue('180');
+  await expect(s.locator('[data-food-open-more]')).toBeFocused();
 
   // one at a time; its row again, Esc (the sheet stays) and a new query close it
-  await q.fill('豚ロース');
   const lean = s.locator('[data-food-results] button.it').nth(1);
-  await pork.click({ timeout: 15_000 });
-  await settled(page);
   await lean.click();
   await settled(page);
   await expect(box).toHaveCount(1);
@@ -1715,6 +1721,56 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(added).toHaveCount(1);
   await expect(added.first()).toContainText('茶碗1杯（150g）');
   await expect(box).toHaveCount(0);
+});
+
+// ‹ from a level over the search finds it as it was left (the user, 2026-11-14: the search term was gone after a
+// food's details): the query, the scroll, the row open at what was set, the focus on what opened the level; the
+// recipe's ingredient search too. A food logged from it starts it afresh (its field cleared: the row-opened test).
+test('‹ from くわしく keeps the search: query, scroll, open row and focus; the ingredient search keeps its query', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 });
+  await openFood(page);
+  const s = sheet(page);
+  const q = s.locator('[data-food-q]');
+  const sc = dlg(page).locator('[data-food-sheet]');
+  await s.locator('[data-add=l]').click();
+  await q.fill('牛丼');
+  const rows = s.locator('[data-food-results] > li > button.it');
+  await expect(rows.nth(12)).toBeVisible({ timeout: 15_000 });
+  await rows.nth(12).scrollIntoViewIfNeeded();
+  await rows.nth(12).click();
+  await settled(page);
+  const open = s.locator('[data-food-open]');
+  await expect(open).toHaveCount(1);
+  const id = await open.getAttribute('data-food-open');
+  await expect.poll(() => sc.evaluate((e) => e.scrollTop)).toBeGreaterThan(400); // (its scroll under the field, smooth)
+  await settled(page);
+  const top = await sc.evaluate((e) => e.scrollTop);
+  await open.locator('[data-step="1"]').click(); // ×1.5
+  const at = (await open.boundingBox())!;
+  await s.locator('[data-food-open-more]').click();
+  await expect(s.locator('[data-food-q]')).toHaveCount(0); // the amount level
+  await expect(s.locator('.mult')).toHaveText('×1.5');
+  await s.getByRole('button', { name: '戻る' }).click();
+  await expect(q).toHaveValue('牛丼');
+  await expect(open).toHaveAttribute('data-food-open', id!);
+  await expect(open.locator('.mult')).toHaveText('×1.5');
+  await expect(s.locator('[data-food-open-more]')).toBeFocused();
+  await settled(page);
+  expect(Math.abs((await sc.evaluate((e) => e.scrollTop)) - top)).toBeLessThan(2);
+  expect(Math.abs((await open.boundingBox())!.y - at.y)).toBeLessThan(2); // the row where it was
+
+  // the recipe's ingredient search: a row's amount, ‹, the query still there and the focus on that row
+  await s.getByRole('button', { name: '戻る' }).click();
+  await s.locator('[data-add=l]').click();
+  await s.locator('[data-recipe-new]').click();
+  await s.locator('[data-recipe-add]').click();
+  await q.fill('ごはん');
+  const rice = s.locator('[data-food-results] [data-item="mext:01088"]');
+  await rice.click({ timeout: 15_000 });
+  await expect(s.locator('[data-grams]')).toBeVisible();
+  await s.getByRole('button', { name: '戻る' }).click();
+  await expect(q).toHaveValue('ごはん');
+  await expect(rice).toBeFocused();
 });
 
 // The balance views (docs/design.md "Gohan", the food review's approved features): each meal's protein chip (the leaf's at

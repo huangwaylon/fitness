@@ -16,9 +16,13 @@
   // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
   // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
   // In a meal's search (`inline`) a food row (さいきん's, マイ食品's, the catalog's) opens in place instead (FoodOpen: the
-  // amount's controls, 栄養成分 ›, 追加; the row's own state, amount and kcal hidden meanwhile): one at a time, kept in
+  // food's line, the amount's controls, its nutrients, くわしく › and 追加; the row's own states and amount hidden meanwhile, its kcal
+  // the live one): one at a time, kept in
   // view (scrolled under the field when it would run past the screen; a row closed above it never shifts it), closed by
   // its row again, Esc, or a new query; its 追加 logs it and clears and focuses the field, as the amount's does.
+  // Its くわしく › opens the amount level; ‹ from there (or from any level over the search) finds it as it was left: the
+  // query, the row open at what it was set to, every row drawn and the scroll (`keep`, on the search's level: Levels
+  // restores the scroll, so the rows are drawn in the first frame, from the catalog already held).
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -27,7 +31,7 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import { imgOf, kaloriImg } from '#lib/food/images.ts';
-  import { flushSync, type Snippet } from 'svelte';
+  import { flushSync, untrack, type Snippet } from 'svelte';
   import FoodThumb from './FoodThumb.svelte';
   import ShopMark from './ShopMark.svelte';
   import Phrases from '../ui/Phrases.svelte';
@@ -39,6 +43,7 @@
   import { amountText, defaultPortion } from './portions.ts';
   import { customItem, servingText, typedKcal } from './drafts.ts';
   import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
+  import type { Kept } from './levels.svelte.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -78,6 +83,8 @@
       add: (item: Item, f: FoodEntry['f'] | undefined, v: Set) => void;
       more: (item: Item, f: FoodEntry['f'] | undefined, v: Set) => void;
     };
+    /** The search's state on its level (levels.svelte.ts Kept): read as it mounts, written as it changes. */
+    keep?: Kept;
   }
   /** A food row (`row`): its key (`r:` さいきん's, `c:` マイ食品's, `f:` the catalog's, then its id), its data-
    *  attributes, the food it opens as (`item`, read when it opens) and as it was logged (`f`, `g0`, `u0`), its tap and ＋. */
@@ -87,16 +94,19 @@
   };
   let {
     recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
-    onfinish, onquicknew, onquicklog, inline
+    onfinish, onquicknew, onquicklog, inline, keep
   }: Props = $props();
 
-  let db = $state.raw<FoodDb | null>(null);
+  /** Come back to (‹ from a level over it): as it was left, no field focused for it. */
+  const back = untrack(() => !!keep && (!!keep.q || !!keep.open));
+  /** The catalog: the one held, at once (a search come back to draws its rows in its first frame). */
+  let db = $state.raw<FoodDb | null>(kept.db);
   let failed = $state(false);
   /** Bumped when a dataset comes in after the load (the products, one fetched again): search again. */
   let more = $state(0);
-  let text = $state('');
+  let text = $state(untrack(() => keep?.q ?? ''));
   /** The committed query (never mid-composition). */
-  let q = $state('');
+  let q = $state(untrack(() => keep?.q ?? ''));
   let input: HTMLInputElement | undefined = $state();
 
   /** Bumped by もういちど: load again. */
@@ -118,7 +128,7 @@
     };
   });
   $effect(() => {
-    if (matchMedia('(hover: hover)').matches) input?.focus();
+    if (!back && matchMedia('(hover: hover)').matches) input?.focus();
   });
   /** The pictures (a food without one: its category's tile). */
   const imgs = $derived(kept.images);
@@ -128,7 +138,9 @@
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
   /** A dataset coming in (the products, the chain menus) never reshuffles the rows already shown for this query: those
    *  still found keep their order, the new ones go under them (`shown`: this query's, as listed). */
-  let shown: { q: string; items: Item[] } = { q: '', items: [] };
+  let shown: { q: string; items: Item[] } = untrack(() => ({
+    q: keep?.ids ? keep.q.trim() : '', items: (keep?.ids ?? []).map((id) => itemById(db, id)).filter((it): it is Item => !!it)
+  }));
   /** A keystroke's one pass over the catalog: the foods and the shops they're on (findFoods: the chips, `shops`). */
   const found = $derived.by(() => {
     void more;
@@ -140,6 +152,11 @@
     if (!again) return (shown = { q: query, items }).items;
     const ids = new Set(items.map((it) => it.id)), had = new Set(shown.items.map((it) => it.id));
     return (shown.items = [...shown.items.filter((it) => ids.has(it.id)), ...items.filter((it) => !had.has(it.id))]);
+  });
+  // (as listed, on the level: come back to, the rows are where they were)
+  $effect(() => {
+    const ids = results.map((it) => it.id);
+    untrack(() => keep && (keep.ids = ids));
   });
   /** The lazy datasets still coming (db.pending): no 見つかりませんでした yet. */
   const pending = $derived.by(() => {
@@ -162,12 +179,14 @@
   const FIRST = 24;
   let drawn = $derived.by(() => {
     void results;
-    return FIRST;
+    return keep?.all ? Infinity : FIRST;
   });
   /** The list's end within 400 px of the screen: every row. */
   function rest(node: HTMLElement) {
     const io = new IntersectionObserver((es) => {
-      if (es.some((e) => e.isIntersecting)) drawn = Infinity;
+      if (!es.some((e) => e.isIntersecting)) return;
+      drawn = Infinity;
+      if (keep) keep.all = true;
     }, { root: node.closest('[data-food-sheet]'), rootMargin: '400px 0px' }); // the sheet scrolls (the margin is its)
     io.observe(node);
     return { destroy: () => io.disconnect() };
@@ -198,6 +217,7 @@
   function setQ(v: string) {
     if (v === q) return;
     q = v;
+    if (keep) Object.assign(keep, { q: v, all: false });
     open = null;
     closing = false;
     held = 0;
@@ -210,9 +230,16 @@
     input?.focus();
   }
   /** The row open in place (`r:` さいきん's, `c:` マイ食品's, `f:` the catalog's, then its id), and it closing. */
-  let open = $state<string | null>(null);
+  let open = $state<string | null>(untrack(() => keep?.open?.key ?? null));
   let closing = $state(false);
+  // (kept on the level as it opens and closes; what it was set to, once くわしく is tapped)
+  $effect(() => {
+    const key = open;
+    untrack(() => keep && keep.open?.key !== (key ?? undefined) && (keep.open = key ? { key } : null));
+  });
   let box: HTMLFormElement | undefined = $state();
+  /** The open row's kcal at what it is set to (FoodOpen's), on the row in its own kcal's place. */
+  let liveKcal = $state<number | null>(null);
   /** A row's tap: it opened in place (another closed at once), the field blurred (the keyboard down: room), kept in
    *  view: a row closed above it is made up for, and when it would run past the screen it goes under the field. */
   function toggle(e: MouseEvent, key: string) {
@@ -222,6 +249,7 @@
     const y0 = li.getBoundingClientRect().top;
     input?.blur();
     closing = false;
+    liveKcal = null;
     open = key;
     flushSync();
     if (!sc) return;
@@ -280,7 +308,7 @@
      row opened under it; `cells` what it shows -->
 {#snippet row(r: Row, cells: Snippet)}
   <li class:rw={!!r.quick}><button type="button" class="card it tt" data-sfx="page" {...r.data} aria-expanded={inline ? open === r.key : undefined}
-    aria-controls={inline && open === r.key ? `fo-${r.key}` : undefined} onclick={tap(r.key, r.pick)}>{@render cells()}</button>{#if r.quick}{@render qa(r.name, r.quick, r.key)}{/if}{@render opened(r)}</li>
+    aria-controls={inline && open === r.key ? `fo-${r.key}` : undefined} onclick={tap(r.key, r.pick)}>{@render cells()}{#if inline && open === r.key && liveKcal !== null}<b class="kc lk money" data-food-open-row-kcal>{kcalText(liveKcal)}</b>{/if}</button>{#if r.quick}{@render qa(r.name, r.quick, r.key)}{/if}{@render opened(r)}</li>
 {/snippet}
 
 <!-- a row opened in place, under it -->
@@ -288,8 +316,13 @@
   {#if inline && open === key}
     {@const item = of()}
     {@const p = inline.of(item, f)}
-    <FoodOpen id="fo-{key}" item={p.item} {g0} {u0} serving={p.serving} swap={p.swap} {closing}
-      onadd={(v) => quick(() => { inline.add(item, f, v); open = null; })} onmore={(v) => inline.more(item, f, v)}
+    <!-- (come back to from くわしく: at the state and amount it was set to, already open) -->
+    {@const was = keep?.open?.key === key && keep.open.g !== undefined ? keep.open : null}
+    {@const at = (was?.id && was.id !== p.item.id && itemById(db, was.id)) || p.item}
+    <FoodOpen id="fo-{key}" item={at} g0={was ? was.g : g0} u0={was ? (was.u ?? undefined) : u0} serving={p.serving} swap={p.swap} {closing} still={!!was}
+      bind:kcal={liveKcal}
+      onadd={(v) => quick(() => { inline.add(item, f, v); open = null; })}
+      onmore={(v) => { if (keep) keep.open = { key, id: v.item.id, g: v.g, u: v.u }; inline.more(item, f, v); }}
       onclosed={() => { open = null; closing = false; }} />
   {/if}
 {/snippet}
@@ -552,7 +585,8 @@
   .rw > :global(.ex) { margin-top: 0; }
   .it[aria-expanded='true'] { box-shadow: inset 0 0 0 2px var(--c-edge), var(--sh-lip); }
   /* open, the controls under it say the state, amount and kcal: the row's own (its default, as I had it) step aside */
-  .it[aria-expanded='true'] :is(.kc, .sts) { visibility: hidden; }
+  .it[aria-expanded='true'] .sts { visibility: hidden; }
+  .it[aria-expanded='true'] > .kc:not(.lk) { display: none; }
   .it[aria-expanded='true'] .as { display: none; }
   .qa {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;

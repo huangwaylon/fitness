@@ -11,15 +11,21 @@ import type { Recipe } from '#lib/model/food.ts';
 export type Picked = { item: Item; cid?: string; sv?: boolean; snap?: FoodSnap };
 /** Where the custom food editor goes on to once saved: a meal's amount, a recipe's ingredient, or back (to the search). */
 export type Then = { meal: Meal } | { ingredient: true } | null;
+/** A search's own state, kept on its level (the search unmounts under a level over it; ‹ brings it back as left): the
+ *  query, the row open in place (its key; once くわしく was tapped, the food and amount it had), the rows as listed (`ids`:
+ *  a dataset come in meanwhile never moves them) and every row drawn. A
+ *  food logged from it starts it afresh (newKept). */
+export type Kept = { q: string; open: { key: string; id?: string; g?: number; u?: string | null } | null; all: boolean; ids?: string[] };
+export const newKept = (): Kept => ({ q: '', open: null, all: false });
 /** The recipe and custom food levels: whose, from what opened them (deleted meanwhile, it stays theirs: read-only). */
 export type Level =
-  | { k: 'search'; meal: Meal; added: string[] }
+  | { k: 'search'; meal: Meal; added: string[]; s: Kept }
   | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
   | { k: 'custom'; id: string | null; then: Then; who?: Who }
   | { k: 'quick'; meal: Meal }
   | { k: 'repeat'; meal: Meal }
   | { k: 'recipe'; id: string | null; who?: Who }
-  | { k: 'rsearch'; from: number }
+  | { k: 'rsearch'; from: number; s: Kept }
   | ({ k: 'ritem'; g0?: number; u0?: string; i?: number } & Picked)
   | { k: 'rlog'; r: Recipe; meal: Meal };
 export type LevelOf<K extends Level['k']> = Extract<Level, { k: K }>;
@@ -44,15 +50,16 @@ export class Levels {
     this.stack = [...this.stack, l];
     void tick().then(() => this.#o.scroller()?.scrollTo({ top: 0 }));
   }
-  /** Back to the level `n` deep (0: the day), where it was scrolled, the focus on what opened the one left. */
-  backTo(n: number): void {
+  /** Back to the level `n` deep (0: the day), where it was scrolled, the focus on what opened the one left (`refocus`
+   *  false: the caller's own, e.g. a search's field for the next food). */
+  backTo(n: number, refocus = true): void {
     const was = this.#under[n];
     this.stack = this.stack.slice(0, n);
     this.#under = this.#under.slice(0, n);
     if (!was) return;
     void tick().then(() => {
       this.#o.scroller()?.scrollTo({ top: was.top });
-      if (was.focus) this.#o.root()?.querySelector<HTMLElement>(was.focus)?.focus({ preventScroll: true });
+      if (refocus && was.focus) this.#o.root()?.querySelector<HTMLElement>(was.focus)?.focus({ preventScroll: true });
     });
   }
   /** Swap the level on top for another (the editor for the amount it goes on to, a copy's editor). */

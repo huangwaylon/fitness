@@ -218,6 +218,10 @@ export function kaloriTrust(it: Pick<Item, 'id' | 'shop' | 'est' | 'ended'>): st
   return it.ended ? `${est} · ${t('food.kal.ended')}` : est;
 }
 
+/** Fibre in `g` grams of a food (or servings' worth, an `sv` one's), when it knows it and has some: else null (shown
+ *  only then: the amount's head, a row opened in place). */
+export const fibreAt = (it: Pick<Item, 'fib'>, g: number): number | null => (typeof it.fib === 'number' && it.fib > 0 ? round1((it.fib * g) / 100) : null);
+
 /** A chain menu's page on kalori.jp (its shop and number: `kal:<n>`), for the amount's link; null for any other food. */
 export function kaloriPage(it: Pick<Item, 'id' | 'shop'>): string | null {
   const n = /^kal:(\d+)$/.exec(it.id)?.[1];

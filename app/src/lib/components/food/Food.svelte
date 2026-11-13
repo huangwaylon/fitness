@@ -62,7 +62,7 @@
   import { portionLabel, servingOnly } from './portions.ts';
   import { customItem, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
-  import { Levels, type Level, type Picked } from './levels.svelte.ts';
+  import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
 
@@ -178,7 +178,7 @@
   }
   /** ＋: the search, its field focused in this same tap (iOS raises the keyboard only for a focus inside the gesture). */
   function openSearch(meal: Meal) {
-    go({ k: 'search', meal, added: [] }, `[data-add="${meal}"]`);
+    go({ k: 'search', meal, added: [], s: newKept() }, `[data-add="${meal}"]`);
     focusQ();
   }
   const focusQ = () => {
@@ -192,7 +192,8 @@
     const l = levels.stack[i];
     if (!l || l.k !== 'search') return home();
     if (id) l.added = [...l.added, id];
-    levels.backTo(i + 1);
+    l.s = newKept();
+    levels.backTo(i + 1, false);
     focusQ();
   }
   /** This trip's entries, in the order added (one taken back is gone). */
@@ -226,7 +227,7 @@
     },
     add: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) => tripLog({ ...pickOf(item, f), item: v.item }, meal, v.g, v.u),
     more: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) =>
-      go({ k: 'amount', meal, ...pickOf(item, f), item: v.item, g0: v.g, u0: v.u ?? undefined })
+      go({ k: 'amount', meal, ...pickOf(item, f), item: v.item, g0: v.g, u0: v.u ?? undefined }, '[data-food-open-more]')
   });
   /** A food as a row's ＋ takes it: its default portion (a serving's for one with no weight), or a recent one's amount. */
   function asItComes(item: Item, g?: number, u?: string, f?: FoodSnap) {
@@ -437,7 +438,7 @@
         onnewrecipe={() => rf.open(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
-        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} />
+        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} keep={top.s} />
     {:else if top?.k === 'quick'}
       {@const l = top}
       <FoodCustom bind:draft={qdraft} quick onsave={() => quickDone(l)} />
@@ -462,10 +463,10 @@
       {/key}
     {:else if top?.k === 'rsearch'}
       {@const room = rf.draft.it.length < RECIPE.items}
-      <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u })} {names} recipes={allRecipes} customs={allCustoms}
+      <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u }, `[data-item="${CSS.escape(item.id)}"]`)} {names} recipes={allRecipes} customs={allCustoms}
         oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => cf.open(null, { ingredient: true }, '[data-custom-new]', n)}
         onquick={room ? (item, g, u, f) => rf.itemNow(item, g, u, f) : undefined} oncustomquick={room ? (c) => rf.itemNow(customItem(c)) : undefined}
-        added={rf.tripOf(top.from)} onunadd={(id) => rf.untrip(id)} addedHead="food.rcp.addedHead" onfinish={() => rf.toRecipe()} />
+        added={rf.tripOf(top.from)} onunadd={(id) => rf.untrip(id)} addedHead="food.rcp.addedHead" onfinish={() => rf.toRecipe()} keep={top.s} />
     {:else if top?.k === 'custom'}
       {@const l = top}
       {@const theirs = !!l.who && l.who !== me}

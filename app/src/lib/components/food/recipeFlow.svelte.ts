@@ -9,7 +9,7 @@ import type { LocalDate, Who } from '#lib/types.ts';
 import { itemOf, recipeItem, type RecipeDraft } from './foodUi.ts';
 import { servingOnly } from './portions.ts';
 import { held } from './dbHold.svelte.ts';
-import type { LevelOf, Levels, Picked } from './levels.svelte.ts';
+import { newKept, type LevelOf, type Levels, type Picked } from './levels.svelte.ts';
 
 /** What the flows need of the meal log (Food.svelte). */
 export interface FoodFlowEnv {
@@ -66,7 +66,7 @@ export class RecipeFlow {
   }
   /** ＋ 材料を追加: the ingredient search, its field focused in the tap. */
   addItem(): void {
-    this.#e.levels.go({ k: 'rsearch', from: this.draft.it.length }, '[data-recipe-add]');
+    this.#e.levels.go({ k: 'rsearch', from: this.draft.it.length, s: newKept() }, '[data-recipe-add]');
     this.#e.focusQ();
   }
   /** A new ingredient from the ingredient search (its amount's 追加, a custom food made for it) comes back to that
@@ -77,7 +77,9 @@ export class RecipeFlow {
     else this.draft.it[l.i] = x;
     const i = this.#e.levels.stack.findIndex((s) => s.k === 'rsearch');
     if (l.i !== undefined || i < 0) return this.toRecipe();
-    this.#e.levels.backTo(i + 1);
+    const rs = this.#e.levels.stack[i];
+    if (rs.k === 'rsearch') rs.s = newKept();
+    this.#e.levels.backTo(i + 1, false);
     this.#e.focusQ();
   }
   /** A row's ＋ in the ingredient search: into the recipe as it comes, the search kept for the next. */

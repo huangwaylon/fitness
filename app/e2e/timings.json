@@ -258,7 +258,7 @@
  "food.spec.ts › a drink’s amount: its grams and its per-100 values in ml (「100mlあたりの栄養」)": 4639,
  "food.spec.ts › a fast second ＋ is held (after a row’s ＋ or its 追加), a typed one isn’t; the ingredient trip’s ✕ takes out that one": 5868,
  "food.spec.ts › a low kcal goal: a gentle note under the field (the resting energy), and it still saves; none for a usual one": 5473,
- "food.spec.ts › a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden; 栄養成分 carries it; one at a time; Esc; ＋ still one tap": 8956,
+ "food.spec.ts › a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden; くわしく carries it, ‹ keeps it; one at a time; Esc; ＋ still one tap": 8956,
  "food.spec.ts › a いつもの’s entry: opened and ‹ leaves the day the repeat’s; 保存 takes the day out of it; 削除 has とりけす": 6008,
  "food.spec.ts › another person’s day is read-only; the guest sees the members’ meals and logs its own": 7342,
  "food.spec.ts › category tiles: the night’s tint is darker than the day’s; a picture dimmed a little at night": 7933,
