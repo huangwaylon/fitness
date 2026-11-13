@@ -40,7 +40,7 @@ let holders = 0;
 let dropT: ReturnType<typeof setTimeout> | undefined;
 const drops = new Set<() => void>();
 /** How long the catalog outlives ごはん's close: a quick reopen stays instant. */
-export const FOOD_KEEP_MS = 60_000;
+export const FOOD_KEEP_MS = 5 * 60_000;
 /** ごはん open (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products, ~25 MB more with a member's
  *  chain menus) and the pictures' index kept while it is, and FOOD_KEEP_MS after its close (a reopen cancels that);
  *  the next opening reads them again from the service worker's cache, at idle (foodDbSoon). */
