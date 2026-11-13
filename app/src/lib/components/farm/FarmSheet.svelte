@@ -10,6 +10,7 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Chip from '../ui/Chip.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import FieldMap from './FieldMap.svelte';
   import { CROPS, FARM, cropKey, daysLeft, plantsOf, seedKey, stageOf, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
@@ -236,9 +237,9 @@
         </div>
       {/if}
       {#each view.others as o (o.who)}
-        <p class="note who" data-farm-others={o.who}>{t('farm.whose', { who: names[o.who], n: o.n })}</p>
+        <p class="note who" data-farm-others={o.who}><Phrases text={t('farm.whose', { who: names[o.who], n: o.n })} /></p>
       {/each}
-      <p class="note">{t('farm.rule')}</p>
+      <p class="note"><Phrases text={t('farm.rule')} /></p>
     {/if}
   </div>
 </Sheet>
