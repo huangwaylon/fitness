@@ -21,6 +21,7 @@
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { digSpots, findArt } from './beach.ts';
   import { ROCK, rockTap, weedsAt, type Weed } from './care.ts';
+  import { weedArt } from './dayModels.ts';
   import { take, takenOn } from './sceneDay.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
@@ -193,7 +194,7 @@
 <!-- (the day's weeds and where, wherever they are: the e2e's) -->
 <i hidden data-weeds={weeds.length} data-at={weeds.map((d) => `${d.x},${d.y}`).join(' ')}></i>
 {#each shown as d (d.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14, m3: { key: `finds/weed-${theme.season === 'autumn' ? 'fall' : theme.season}`, yaw: d.flip ? Math.PI : 0 } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14, m3: { key: weedArt(theme.season), yaw: d.flip ? Math.PI : 0 } })}>
     <span class="item weed" data-m3art class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed" data-uid={d.uid}><i class="shade"></i>{@render tuft()}</span>
   </div>
 {/each}

@@ -20,6 +20,9 @@
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../island/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepClouds } from '../island/clouds.ts';
+  import { dayFindKeys } from '../island/dayModels.ts';
+  import { islandSeed } from '../island/devHooks.ts';
+  import { jst, minuteNow } from '#lib/time/clock.ts';
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
   import type { Scenery } from '../island/world.ts';
   import { listen3d, listenPose3d } from '../island/echo3d.ts';
@@ -581,6 +584,18 @@
   let cw = 0, ch = 0, slowAmbient = true;
   /** The last pixel-ratio swaps (on, the set's ms, its first frame's ms): the e2e's. */
   const swaps: [boolean, number, number][] = [];
+  /** The models the DOM's nodes draw now (their `m3` keys') and the day's finds and weeds will (dayModels.ts: their
+   *  nodes come later). */
+  function nodeModels(): Set<string> {
+    const winter = season === 'winter', out = new Set<string>(), { hour, minute } = jst(minuteNow());
+    const keys = date ? dayFindKeys(date, (hour * 60 + minute) * 60_000, season, islandSeed()) : new Set<string>();
+    for (const node of world.models3()) if (node.m3?.key) keys.add(node.m3.key);
+    for (const k of keys) {
+      const a = keyModel(k, winter);
+      if (a) out.add(a.m);
+    }
+    return out;
+  }
   function mirror(e: Island3, t: number): boolean | 'ambient' {
     // (per frame for every model: nothing new made where nothing changed, its sets kept from frame to frame)
     const winter = season === 'winter', seen = seen3, add: Inst[] = [];
@@ -809,6 +824,9 @@
         }
         loaded = true;
       });
+      // the launch: the DOM's node models (the day's finds and weeds, the board: mirror() asks for them only from the
+      // first frame, and the finds' nodes come later still) asked for with this first wave (things.ts prefetch)
+      if (!loaded) e.things.prefetch(nodeModels());
       standins(st);
       e.glows((lamps3 = standinLamps(st)));
       lground?.look(lookNow());

@@ -173,6 +173,10 @@ export interface Things {
    *  with no such model built. */
   outlineEach(id: string, fn: (p: Vector3) => void): boolean;
   pending(): number;
+  /** Models asked for ahead of their instances (fetched and decoded with the first wave: Island3D's node models, a
+   *  find's or a weed's, which mirror() asks for only from the first frame; the phones' launches waited ~0.6 s past
+   *  `loaded` for them, perf.boot lastM, review 2026-11-13 perf #3). Kept as any asked-for model is. */
+  prefetch(names: Iterable<ModelName>): void;
   /** The models in so far, in order, and when (performance.now), the first ARRIVALS a mount. */
   arrivals(): readonly (readonly [string, number])[];
   /** A still model's instances, farthest first (by z, as built), drawn up to the last one `seen` (its box, three's
@@ -1005,6 +1009,9 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       return true;
     },
     pending: () => pending,
+    prefetch(names) {
+      for (const n of names) if (!disposed && (MODELS[n] || isRoomModel(n))) void model(n);
+    },
     arrivals: () => ins,
     dispose() {
       disposed = true;
