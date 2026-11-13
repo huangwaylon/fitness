@@ -116,7 +116,7 @@
   .two { font: 700 var(--fs-s)/1.2 var(--font-ui); padding: 2px 8px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); }
   .two.soft { background: transparent; color: var(--text-soft); }
   .dots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .dots li { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--c-coral); color: #fff; font: 700 13px/1 var(--font-ui); }
+  .dots li { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--c-coral); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); }
   .badges { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
   .badges li {
     flex: 1; display: inline-grid; place-items: center; height: 40px; border-radius: 12px; font: 700 var(--fs-s)/1 var(--font-num);

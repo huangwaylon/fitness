@@ -198,8 +198,8 @@
   .zc .stars { margin-top: auto; color: var(--c-yuzu-lip); font-size: 12px; letter-spacing: 1px; }
   .zc .stars .off { color: var(--ctl-off); }
   .zc .new {
-    position: absolute; top: -6px; right: -4px; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-coral); color: #fff;
-    font: 700 10px/1.2 var(--font-num); box-shadow: 0 2px 0 var(--c-coral-edge, #c8644f);
+    position: absolute; top: -6px; right: -4px; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-coral); color: var(--c-ink);
+    font: 700 var(--fs-xs)/1.2 var(--font-num); box-shadow: 0 2px 0 color-mix(in srgb, var(--c-coral) 65%, var(--c-ink));
   }
   .zc.seen, .zc.unseen { align-items: center; justify-content: center; text-align: center; box-shadow: none; background: color-mix(in srgb, var(--lip) 35%, transparent); }
   .zc .q { font: 700 24px/1 var(--font-ui); color: var(--text-soft); }
