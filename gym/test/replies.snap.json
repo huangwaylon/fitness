@@ -1,0 +1,3141 @@
+{
+ "menu": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "🏋️ ジムの空き枠お知らせ",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "🏋️ ジムの空き枠お知らせ",
+         "weight": "bold",
+         "wrap": true
+        },
+        {
+         "type": "text",
+         "text": "ELEMENT 戸越銀座店で予約の空きが出たら、ここでお知らせします。\n💪 パーソナルトレーニング・🧘 マシンピラティス（トレーナー指名なし）\n下のボタンで、日ごとに通知の設定を変えられます。",
+         "wrap": true,
+         "size": "sm",
+         "margin": "md"
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🗓️ 設定を変える",
+          "data": "a=days"
+         },
+         "height": "sm",
+         "style": "primary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "📋 設定を見る",
+          "data": "a=status"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔎 今すぐ確認",
+          "data": "a=check"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔧 チェック設定",
+          "data": "a=settings"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "❓ 使い方",
+          "data": "a=help"
+         },
+         "height": "sm",
+         "style": "secondary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "help": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "❓ 使い方\n予約に空きが出たら、このグループでお知らせします。\n今日から4日間は、特に設定しなくても12:00〜13:00の枠をチェックします。\n\n日ごとの設定\n🔔 終日　空きが出たらいつでも通知\n🔕 通知オフ　その日は通知しない\n⏰ 時間指定　その時間帯にまるごと入る枠だけ通知\n⏳ チェック開始　決めた日時になるまで、その日は通知しない（任意）\n🧹 リセット　その日の設定と通知済みの記録を消して、ふだんどおりに戻す\n\nほかのボタン\n📋 設定を見る　日ごとの設定とチェックの状況\n🔎 今すぐ確認　いま空いている枠を一覧で表示（ここで出た枠は、あとでお知らせしません）\n\n変え方\nメニューの「🗓️ 設定を変える」→ 日付を選ぶ → 設定を選ぶ\n「🔧 チェック設定」では、チェックの間隔（10〜60分）の変更と、停止・再開ができます。\n\nメニューは、お知らせの下の「⚙️ メニュー」か、このアカウントへのメンション、または「メニュー」と送ると出ます。\n同じ時間の空きは一度だけお知らせします。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "status": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "📋 日ごとの設定\n・10/12（月）　⏰ 12:00〜13:00（ふだん）\n・10/13（火）　⏰ 12:00〜13:00（ふだん）　⏳ 09:00から\n・10/14（水）　⏰ 12:00〜13:00（ふだん）\n・10/15（木）　⏰ 12:00〜13:00（ふだん）\n・10/16（金）　🔔 終日\n・10/18（日）　🔕 通知オフ\n15分ごとにチェック・前回 —・次回 —",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "settings": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "🔧 チェック設定",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "🔧 チェック設定",
+         "weight": "bold",
+         "wrap": true
+        },
+        {
+         "type": "text",
+         "text": "・間隔：15分ごと\n・状態：▶️ チェック中",
+         "wrap": true,
+         "size": "sm",
+         "margin": "md"
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "10分ごと",
+          "data": "a=interval&m=10"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "15分ごと（いま）",
+          "data": "a=interval&m=15"
+         },
+         "height": "sm",
+         "style": "primary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "30分ごと",
+          "data": "a=interval&m=30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "60分ごと",
+          "data": "a=interval&m=60"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "⏸️ チェックを止める",
+          "data": "a=pause"
+         },
+         "height": "sm",
+         "style": "secondary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "days": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "🗓️ 日付を選んでください",
+     "contents": {
+      "type": "carousel",
+      "contents": [
+       {
+        "type": "bubble",
+        "body": {
+         "type": "box",
+         "layout": "vertical",
+         "contents": [
+          {
+           "type": "text",
+           "text": "🗓️ 10/12（月）〜10/18（日）",
+           "weight": "bold",
+           "wrap": true
+          },
+          {
+           "type": "text",
+           "text": "日付を選んでください\n🔔 終日・🔕 通知オフ・⏰ 時間指定・💤 まだ・⏳ 開始時刻あり",
+           "wrap": true,
+           "size": "sm",
+           "margin": "md"
+          }
+         ]
+        },
+        "footer": {
+         "type": "box",
+         "layout": "vertical",
+         "spacing": "sm",
+         "contents": [
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/12（月） ⏰",
+            "data": "a=day&d=2026-10-12"
+           },
+           "height": "sm",
+           "style": "primary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/13（火） ⏰⏳",
+            "data": "a=day&d=2026-10-13"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/14（水） ⏰",
+            "data": "a=day&d=2026-10-14"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/15（木） ⏰",
+            "data": "a=day&d=2026-10-15"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/16（金） 🔔",
+            "data": "a=day&d=2026-10-16"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/17（土） 💤",
+            "data": "a=day&d=2026-10-17"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/18（日） 🔕",
+            "data": "a=day&d=2026-10-18"
+           },
+           "height": "sm",
+           "style": "secondary"
+          }
+         ]
+        }
+       },
+       {
+        "type": "bubble",
+        "body": {
+         "type": "box",
+         "layout": "vertical",
+         "contents": [
+          {
+           "type": "text",
+           "text": "🗓️ 10/19（月）〜10/25（日）",
+           "weight": "bold",
+           "wrap": true
+          },
+          {
+           "type": "text",
+           "text": "日付を選んでください\n🔔 終日・🔕 通知オフ・⏰ 時間指定・💤 まだ・⏳ 開始時刻あり",
+           "wrap": true,
+           "size": "sm",
+           "margin": "md"
+          }
+         ]
+        },
+        "footer": {
+         "type": "box",
+         "layout": "vertical",
+         "spacing": "sm",
+         "contents": [
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/19（月） 💤",
+            "data": "a=day&d=2026-10-19"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/20（火） 💤",
+            "data": "a=day&d=2026-10-20"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/21（水） 💤",
+            "data": "a=day&d=2026-10-21"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/22（木） 💤",
+            "data": "a=day&d=2026-10-22"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/23（金） 💤",
+            "data": "a=day&d=2026-10-23"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/24（土） 💤",
+            "data": "a=day&d=2026-10-24"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/25（日） 💤",
+            "data": "a=day&d=2026-10-25"
+           },
+           "height": "sm",
+           "style": "secondary"
+          }
+         ]
+        }
+       },
+       {
+        "type": "bubble",
+        "body": {
+         "type": "box",
+         "layout": "vertical",
+         "contents": [
+          {
+           "type": "text",
+           "text": "🗓️ 10/26（月）〜11/1（日）",
+           "weight": "bold",
+           "wrap": true
+          },
+          {
+           "type": "text",
+           "text": "日付を選んでください\n🔔 終日・🔕 通知オフ・⏰ 時間指定・💤 まだ・⏳ 開始時刻あり",
+           "wrap": true,
+           "size": "sm",
+           "margin": "md"
+          }
+         ]
+        },
+        "footer": {
+         "type": "box",
+         "layout": "vertical",
+         "spacing": "sm",
+         "contents": [
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/26（月） 💤",
+            "data": "a=day&d=2026-10-26"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/27（火） 💤",
+            "data": "a=day&d=2026-10-27"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/28（水） 💤",
+            "data": "a=day&d=2026-10-28"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/29（木） 💤",
+            "data": "a=day&d=2026-10-29"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/30（金） 💤",
+            "data": "a=day&d=2026-10-30"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "10/31（土） 💤",
+            "data": "a=day&d=2026-10-31"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "11/1（日） 💤",
+            "data": "a=day&d=2026-11-01"
+           },
+           "height": "sm",
+           "style": "secondary"
+          }
+         ]
+        }
+       },
+       {
+        "type": "bubble",
+        "body": {
+         "type": "box",
+         "layout": "vertical",
+         "contents": [
+          {
+           "type": "text",
+           "text": "🗓️ 11/2（月）〜11/5（木）",
+           "weight": "bold",
+           "wrap": true
+          },
+          {
+           "type": "text",
+           "text": "日付を選んでください\n🔔 終日・🔕 通知オフ・⏰ 時間指定・💤 まだ・⏳ 開始時刻あり",
+           "wrap": true,
+           "size": "sm",
+           "margin": "md"
+          }
+         ]
+        },
+        "footer": {
+         "type": "box",
+         "layout": "vertical",
+         "spacing": "sm",
+         "contents": [
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "11/2（月） 💤",
+            "data": "a=day&d=2026-11-02"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "11/3（火） 💤",
+            "data": "a=day&d=2026-11-03"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "11/4（水） 💤",
+            "data": "a=day&d=2026-11-04"
+           },
+           "height": "sm",
+           "style": "secondary"
+          },
+          {
+           "type": "button",
+           "action": {
+            "type": "postback",
+            "label": "11/5（木） 💤",
+            "data": "a=day&d=2026-11-05"
+           },
+           "height": "sm",
+           "style": "secondary"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "day today": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "10/12（月）　いまの設定：⏰ 12:00〜13:00（ふだん）",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "10/12（月）　いまの設定：⏰ 12:00〜13:00（ふだん）",
+         "weight": "bold",
+         "wrap": true
+        },
+        {
+         "type": "text",
+         "text": "どうしますか？",
+         "wrap": true,
+         "size": "sm",
+         "margin": "md"
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔔 終日",
+          "data": "a=any&d=2026-10-12"
+         },
+         "height": "sm",
+         "style": "primary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔕 通知オフ",
+          "data": "a=skip&d=2026-10-12"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏰ 時間指定",
+          "data": "a=start&d=2026-10-12",
+          "mode": "time",
+          "initial": "12:00",
+          "min": "10:00",
+          "max": "21:30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏳ チェック開始",
+          "data": "a=from&d=2026-10-12",
+          "mode": "datetime",
+          "initial": "2026-10-12T13:00",
+          "min": "2026-10-12T12:00",
+          "max": "2026-10-12T21:30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "day +2 (old date picker)": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "10/14（水）　いまの設定：⏰ 12:00〜13:00（ふだん）",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "10/14（水）　いまの設定：⏰ 12:00〜13:00（ふだん）",
+         "weight": "bold",
+         "wrap": true
+        },
+        {
+         "type": "text",
+         "text": "どうしますか？",
+         "wrap": true,
+         "size": "sm",
+         "margin": "md"
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔔 終日",
+          "data": "a=any&d=2026-10-14"
+         },
+         "height": "sm",
+         "style": "primary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔕 通知オフ",
+          "data": "a=skip&d=2026-10-14"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏰ 時間指定",
+          "data": "a=start&d=2026-10-14",
+          "mode": "time",
+          "initial": "12:00",
+          "min": "10:00",
+          "max": "21:30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏳ チェック開始",
+          "data": "a=from&d=2026-10-14",
+          "mode": "datetime",
+          "initial": "2026-10-12T13:00",
+          "min": "2026-10-12T12:00",
+          "max": "2026-10-14T21:30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "day with settings": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "10/13（火）　いまの設定：⏰ 12:00〜13:00（ふだん）　⏳ 09:00から",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "10/13（火）　いまの設定：⏰ 12:00〜13:00（ふだん）　⏳ 09:00から",
+         "weight": "bold",
+         "wrap": true
+        },
+        {
+         "type": "text",
+         "text": "どうしますか？",
+         "wrap": true,
+         "size": "sm",
+         "margin": "md"
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔔 終日",
+          "data": "a=any&d=2026-10-13"
+         },
+         "height": "sm",
+         "style": "primary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔕 通知オフ",
+          "data": "a=skip&d=2026-10-13"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏰ 時間指定",
+          "data": "a=start&d=2026-10-13",
+          "mode": "time",
+          "initial": "12:00",
+          "min": "10:00",
+          "max": "21:30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏳ チェック開始",
+          "data": "a=from&d=2026-10-13",
+          "mode": "datetime",
+          "initial": "2026-10-13T09:00",
+          "min": "2026-10-12T12:00",
+          "max": "2026-10-13T21:30"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🗑️ チェック開始を解除",
+          "data": "a=unfrom&d=2026-10-13"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🧹 リセット",
+          "data": "a=reset&d=2026-10-13"
+         },
+         "height": "sm",
+         "style": "secondary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "start 14:00": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "10/13（火）　14:00から何時まで通知しますか？",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "10/13（火）　14:00から何時まで通知しますか？",
+         "weight": "bold",
+         "wrap": true
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏰ 終わりの時刻を選ぶ",
+          "data": "a=range&d=2026-10-13&s=14%3A00",
+          "mode": "time",
+          "initial": "15:00",
+          "min": "14:30",
+          "max": "22:00"
+         },
+         "height": "sm",
+         "style": "primary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "start 21:30": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "10/13（火）　21:30から何時まで通知しますか？",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "10/13（火）　21:30から何時まで通知しますか？",
+         "weight": "bold",
+         "wrap": true
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "datetimepicker",
+          "label": "⏰ 終わりの時刻を選ぶ",
+          "data": "a=range&d=2026-10-13&s=21%3A30",
+          "mode": "time",
+          "initial": "22:00",
+          "min": "22:00",
+          "max": "22:00"
+         },
+         "height": "sm",
+         "style": "primary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "range 14–16": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/13（火）を ⏰ 14:00〜16:00　⏳ 09:00から にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "range again (unchanged)": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "10/13（火）はすでに ⏰ 14:00〜16:00　⏳ 09:00から になっています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "range odd minutes": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/17（土）を ⏰ 14:30〜15:30 にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "range backwards": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 「何時から」と、それより後の「何時まで」を選んでください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "range default (usual)": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "10/14（水）はすでに ⏰ 12:00〜13:00（ふだん） になっています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "any +10": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/22（木）を 🔔 終日 にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "any +10 again": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "10/22（木）はすでに 🔔 終日 になっています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": [
+     "14:00",
+     "16:00"
+    ],
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any"
+   },
+   "check_from": {
+    "2026-10-13": "2026-10-13T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "skip +1": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/13（火）を 🔕 通知オフ にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any"
+   },
+   "check_from": {},
+   "notified": []
+  }
+ },
+ "skip +11": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/23（金）を 🔕 通知オフ にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": "skip"
+   },
+   "check_from": {},
+   "notified": []
+  }
+ },
+ "from +10 ok": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/22（木）を 🔔 終日　⏳ 10/21（水）18:00から にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": "skip"
+   },
+   "check_from": {
+    "2026-10-22": "2026-10-21T18:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "from passed": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 その日時はもう過ぎています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": "skip"
+   },
+   "check_from": {
+    "2026-10-22": "2026-10-21T18:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "from after day": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 チェック開始は10/14（水）までの日時にしてください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": "skip"
+   },
+   "check_from": {
+    "2026-10-22": "2026-10-21T18:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "from after window (usual)": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 その時刻からだと、10/15（木）の ⏰ 12:00〜13:00 の枠は残りません。先に時間帯を変えてください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": "skip"
+   },
+   "check_from": {
+    "2026-10-22": "2026-10-21T18:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "from on 🔕 day": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/23（金）を ⏰ 12:00〜13:00　⏳ 09:00から にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-22": "2026-10-21T18:00:00+09:00",
+    "2026-10-23": "2026-10-23T09:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "from on 💤 day": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/24（土）を ⏰ 12:00〜13:00　⏳ 11:00から にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-22": "2026-10-21T18:00:00+09:00",
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "unfrom": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/22（木）を 🔔 終日 にしました。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "unfrom again": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "10/22（木）はすでに 🔔 終日 になっています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "reset with announced": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/14（水）の設定をリセットしました。いまは ⏰ 12:00〜13:00（ふだん） です。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "reset nothing": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "10/15（木）はすでに ⏰ 12:00〜13:00（ふだん） になっています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-22": "any",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "reset rule": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "👍 10/22（木）の設定をリセットしました。いまは 💤 まだチェックしない（3日前から自動で12:00〜13:00をチェック） です。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "past day": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 10/11（日）はもう過ぎています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "past day range": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 10/11（日）はもう過ぎています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "past day card": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 10/11（日）はもう過ぎています。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 15,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "interval 30": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🔧 チェックの間隔を30分ごとにしました\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "interval 30 again": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🔧 チェック設定\n・間隔：30分ごと\n・状態：▶️ チェック中",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "interval 7": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 このボタンは古くなっています。メニューから開き直してください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "pause": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "⏸️ チェックを停止しました。再開するまで、空きのお知らせは届きません。\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": true,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "pause again": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🔧 チェック設定\n・間隔：30分ごと\n・状態：⏸️ 停止中（通知しません）",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": true,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check while paused": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "⏸️ チェックは停止中です。「🔧 チェック設定」から再開できます。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": true,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "menu while paused": {
+  "reply": [
+   [
+    {
+     "type": "flex",
+     "altText": "🏋️ ジムの空き枠お知らせ",
+     "contents": {
+      "type": "bubble",
+      "body": {
+       "type": "box",
+       "layout": "vertical",
+       "contents": [
+        {
+         "type": "text",
+         "text": "🏋️ ジムの空き枠お知らせ",
+         "weight": "bold",
+         "wrap": true
+        },
+        {
+         "type": "text",
+         "text": "ELEMENT 戸越銀座店で予約の空きが出たら、ここでお知らせします。\n💪 パーソナルトレーニング・🧘 マシンピラティス（トレーナー指名なし）\n下のボタンで、日ごとに通知の設定を変えられます。\n⏸️ チェックは停止中です。「🔧 チェック設定」から再開できます。",
+         "wrap": true,
+         "size": "sm",
+         "margin": "md"
+        }
+       ]
+      },
+      "footer": {
+       "type": "box",
+       "layout": "vertical",
+       "spacing": "sm",
+       "contents": [
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🗓️ 設定を変える",
+          "data": "a=days"
+         },
+         "height": "sm",
+         "style": "primary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "📋 設定を見る",
+          "data": "a=status"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔎 今すぐ確認",
+          "data": "a=check"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "🔧 チェック設定",
+          "data": "a=settings"
+         },
+         "height": "sm",
+         "style": "secondary"
+        },
+        {
+         "type": "button",
+         "action": {
+          "type": "postback",
+          "label": "❓ 使い方",
+          "data": "a=help"
+         },
+         "height": "sm",
+         "style": "secondary"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": true,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "status while paused": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "📋 日ごとの設定\n・10/12（月）　⏰ 12:00〜13:00（ふだん）\n・10/13（火）　🔕 通知オフ\n・10/14（水）　⏰ 12:00〜13:00（ふだん）\n・10/15（木）　⏰ 12:00〜13:00（ふだん）\n・10/16（金）　🔔 終日\n・10/17（土）　⏰ 14:30〜15:30\n・10/18（日）　🔕 通知オフ\n・10/23（金）　⏰ 12:00〜13:00　⏳ 09:00から\n・10/24（土）　⏰ 12:00〜13:00　⏳ 11:00から\n⏸️ チェックは停止中です。「🔧 チェック設定」から再開できます。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": true,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "resume": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "▶️ チェックを再開しました\nBobさんが変更しました",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check: none open": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "いまは空きがありません。引き続きチェックします。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check: cooldown": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "⏱️ 40秒ほど待ってから、もう一度お試しください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check: open slots": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🟢 いま空いている枠\n10/13（火）\n・12:00〜12:30　💪 パーソナルトレーニング・🧘 マシンピラティス",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check: partial": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🟢 いま空いている枠\n10/14（水）\n・18:00〜18:30　💪 パーソナルトレーニング\n一部の情報を取得できませんでした。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check: site down": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "😕 ジムの予約サイトに接続できませんでした。少し時間をおいてお試しください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "check: running": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "⏱️ ちょうどチェック中です。少し待ってから、もう一度お試しください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "unknown": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "🤔 このボタンは古くなっています。メニューから開き直してください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "garbled day": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "😕 エラーが発生しました。もう一度お試しください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "garbled time": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "😕 エラーが発生しました。もう一度お試しください。",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ },
+ "status at the end": {
+  "reply": [
+   [
+    {
+     "type": "text",
+     "text": "📋 日ごとの設定\n・10/12（月）　⏰ 12:00〜13:00（ふだん）\n・10/13（火）　🔕 通知オフ\n・10/14（水）　⏰ 12:00〜13:00（ふだん）\n・10/15（木）　⏰ 12:00〜13:00（ふだん）\n・10/16（金）　🔔 終日\n・10/17（土）　⏰ 14:30〜15:30\n・10/18（日）　🔕 通知オフ\n・10/23（金）　⏰ 12:00〜13:00　⏳ 09:00から\n・10/24（土）　⏰ 12:00〜13:00　⏳ 11:00から\n⚠️ 現在、ジムの予約サイトに接続しにくい状態です。\n30分ごとにチェック・前回 11:50・次回 —",
+     "quickReply": {
+      "items": [
+       {
+        "type": "action",
+        "action": {
+         "type": "postback",
+         "label": "⚙️ メニュー",
+         "data": "a=menu"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  ],
+  "state": {
+   "version": 3,
+   "interval_minutes": 30,
+   "paused": false,
+   "days": {
+    "2026-10-13": "skip",
+    "2026-10-16": "any",
+    "2026-10-17": [
+     "14:30",
+     "15:30"
+    ],
+    "2026-10-18": "skip",
+    "2026-10-23": [
+     "12:00",
+     "13:00"
+    ],
+    "2026-10-24": [
+     "12:00",
+     "13:00"
+    ]
+   },
+   "check_from": {
+    "2026-10-23": "2026-10-23T09:00:00+09:00",
+    "2026-10-24": "2026-10-24T11:00:00+09:00"
+   },
+   "notified": []
+  }
+ }
+}

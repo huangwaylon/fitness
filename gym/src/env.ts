@@ -17,6 +17,10 @@ export interface Env {
    *  guest is refused like a stranger. */
   KEY_A?: string;
   KEY_B?: string;
+  /** The members' names in the app's changes (LINE's アプリで変更 line, 📋, the app's list); unset: メンバーA / B.
+   *  Secrets, so the names stay out of this public repo. */
+  NAME_A?: string;
+  NAME_B?: string;
   /** The app's page origins allowed to read /gym/config (exact, comma-separated; localhost always). */
   ALLOWED_ORIGINS?: string;
   /** The deployed commit (scripts/deploy.sh), shown by /health. */

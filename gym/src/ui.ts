@@ -3,26 +3,26 @@
 // format never changes, so cards already in the chat keep working. Days are picked from buttons (`daysCard`), not
 // LINE's date picker, so the weekday shows; menu cards from before still send `a=day` with the picked `params.date`.
 // Every answer is a reply (free), visible to the whole group; a tap for a day that has passed gets a short hint.
+// A change tap is a GymAction applied by actions.apply, the app's path too; app changes not said in the group yet
+// ride along on the next reply (`send`).
 import * as actions from './actions.ts';
 import type { Bot } from './actions.ts';
+import { DAYS_SHOWN, INTERVALS, LAST_START } from '../../app/src/lib/gym/contract.ts';
 import { CLOSES, DEFAULT_WINDOW, OPENS } from './config.ts';
-import { LineError, texts } from './line.ts';
+import { LineError, MAX_MESSAGES, texts } from './line.ts';
 import * as messages from './messages.ts';
-import { ANY, SKIP } from './store.ts';
 import { addDays, at, clockFrom, clockOf, dayOf, minutesOf, weekday, type Clock, type Day } from './time.ts';
+
+export { DAYS_SHOWN, LAST_START };
 
 // LINE's JSON, built and read loosely.
 type Json = Record<string, any>;
 
 const MENU_WORDS = new Set(['メニュー', 'めにゅー', 'menu']);
-/** The last slot: ⏰ starts by then. */
-export const LAST_START = '21:30';
 /** Taps about one day. */
 const DAY_ACTIONS = new Set(['day', 'start', 'range', 'any', 'skip', 'reset', 'unfrom', 'from']);
 /** Minutes between checks. */
-export const INTERVAL_CHOICES = [10, 15, 30, 60];
-/** How far ahead a day can be set, today included (the gym publishes about 4 weeks ahead). */
-export const DAYS_SHOWN = 25;
+export const INTERVAL_CHOICES: readonly number[] = INTERVALS;
 const HOUR_MS = 3_600_000;
 
 // --- building blocks ---
@@ -195,13 +195,27 @@ export async function handle(bot: Bot, e: unknown): Promise<void> {
   }
 }
 
-const show = (bot: Bot, token: string | undefined, message: Json): Promise<void> => bot.line.reply(token!, [message]);
+const show = (bot: Bot, token: string | undefined, message: Json): Promise<void> => send(bot, token, [message]);
 
-const say = (bot: Bot, token: string | undefined, text: string | string[]): Promise<void> =>
-  bot.line.reply(token!, texts(text));
+const say = (bot: Bot, token: string | undefined, text: string | string[], told = false): Promise<void> =>
+  send(bot, token, texts(text), told);
 
 /** Invalid input: say why; the card keeps working. */
 const hint = (bot: Bot, token: string | undefined, text: string): Promise<void> => say(bot, token, `🤔 ${text}`);
+
+/** Every reply. The app's changes not said in the group yet ride along as one line (on the last text, or a text of
+ *  their own after a card), then count as said; `told`: the reply names them itself (📋). */
+async function send(bot: Bot, token: string | undefined, out: Json[], told = false): Promise<void> {
+  const unsaid = bot.changes.filter((c) => !c.said);
+  if (unsaid.length && !told) {
+    const line = messages.appChanges([...unsaid].reverse().map((c) => actions.changeText(bot, c)));
+    const last = out.at(-1);
+    if (last?.type === 'text') out[out.length - 1] = { ...last, text: `${last.text}\n${line}` };
+    else if (out.length < MAX_MESSAGES) out.push({ type: 'text', text: line });
+  }
+  await bot.line.reply(token!, out);
+  for (const c of unsaid) c.said = true;
+}
 
 /** A value from a tap, checked against its shape (a bad one is an unexpected error: ERROR). */
 function parsed(value: unknown, shape: RegExp): string {
@@ -228,9 +242,10 @@ async function onPostback(bot: Bot, event: Json, token: string | undefined): Pro
   } else if (action === 'help') {
     await say(bot, token, messages.HELP_TEXT);
   } else if (action === 'status') {
-    await say(bot, token, await actions.status(bot));
+    await say(bot, token, await actions.status(bot), true);
   } else if (action === 'check') {
-    await say(bot, token, await actions.manualCheck(bot));
+    const r = await actions.apply(bot, { a: 'check' });
+    await say(bot, token, actions.refused(r) ? r.hint : r.lines!);
   } else if (action === 'settings') {
     await show(bot, token, settingsCard(bot));
   } else if (action === 'days') {
@@ -242,62 +257,39 @@ async function onPostback(bot: Bot, event: Json, token: string | undefined): Pro
   } else if (action === 'range') {
     const start = halfHour(parseClock(data.s), true);
     const end = halfHour(parseClock(params.time));
-    if (end <= start) await hint(bot, token, messages.BAD_RANGE);
-    else await change(bot, event, token, () => actions.setDay(bot, day!, [start, end]), day);
-  } else if (action === 'any' || action === 'skip') {
-    await change(bot, event, token, () => actions.setDay(bot, day!, action === 'any' ? ANY : SKIP), day);
-  } else if (action === 'reset') {
-    await change(bot, event, token, () => actions.resetDay(bot, day!), day);
-  } else if (action === 'unfrom') {
-    await change(bot, event, token, () => actions.setCheckFrom(bot, day!, null), day);
+    await change(bot, event, token, { a: 'range', d: day!, s: start, e: end });
+  } else if (action === 'any' || action === 'skip' || action === 'reset' || action === 'unfrom') {
+    await change(bot, event, token, { a: action, d: day! });
   } else if (action === 'from') {
     const picked = parsed(params.datetime, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-    const when = at(picked.slice(0, 10), picked.slice(11, 16));
-    await change(bot, event, token, () => actions.setCheckFrom(bot, day!, when), day);
+    await change(bot, event, token, { a: 'from', d: day!, at: at(picked.slice(0, 10), picked.slice(11, 16)) });
   } else if (action === 'interval' && INTERVAL_CHOICES.map(String).includes(data.m)) {
-    await change(bot, event, token, () => actions.setInterval(bot, Number(data.m)));
+    await change(bot, event, token, { a: 'interval', m: Number(data.m) });
   } else if (action === 'pause' || action === 'resume') {
-    await change(bot, event, token, () => actions.setPaused(bot, action === 'pause'));
+    await change(bot, event, token, { a: action });
   } else {
     console.warn(`unknown LINE postback: ${raw}`);
     await hint(bot, token, messages.OUTDATED);
   }
 }
 
-/** Apply a settings change, save it, and say so in the group with who made it. The setting before and after is
- *  logged, to answer "my setting wasn't saved" later. */
-async function change(bot: Bot, event: Json, token: string | undefined,
-  apply: () => [string, boolean] | Promise<[string, boolean]>, day?: Day): Promise<void> {
-  const before = loggedSetting(bot, day);
-  let reply: string;
-  let changed: boolean;
-  try {
-    [reply, changed] = await apply();
-  } catch (e) {
-    if (!(e instanceof actions.Refused)) throw e;
-    console.log(`refused (invalid time) for ${day}`);
-    return hint(bot, token, e.message);
+/** Apply a settings change (actions.apply: the app's path too), save it, and say so in the group with who made it.
+ *  The setting before and after is logged, to answer "my setting wasn't saved" later. */
+async function change(bot: Bot, event: Json, token: string | undefined, act: actions.GymAction): Promise<void> {
+  const day = 'd' in act ? act.d : undefined;
+  const before = actions.loggedSetting(bot, day);
+  const r = await actions.apply(bot, act);
+  if (actions.refused(r)) {
+    if (r.code.startsWith('from_')) console.log(`refused (invalid time) for ${day}`);
+    return hint(bot, token, r.hint);
   }
-  if (!changed) {
+  if (!r.changed) {
     console.log(`no change for ${day ?? 'check settings'}: ${before}`);
-    return say(bot, token, reply);
+    return say(bot, token, r.reply);
   }
   await bot.save();
   const user: string = event.source.userId ?? '';
   const name = await bot.line.memberName(bot.groupId, user);
-  console.log(`changed ${day ?? 'check settings'}: ${before} -> ${loggedSetting(bot, day)} (by ${user || '?'} ${name || '(no name)'})`);
-  await say(bot, token, messages.changedBy(reply, name));
-}
-
-/** A day's saved setting (or the check settings), in English for the log. */
-function loggedSetting(bot: Bot, day?: Day): string {
-  const store = bot.store;
-  if (day === undefined) return `every ${store.intervalMinutes} min, ${store.paused ? 'stopped' : 'running'}`;
-  const rule = store.rule(day);
-  let text = rule === undefined ? 'default' : typeof rule === 'string' ? rule : `${rule[0]}-${rule[1]}`;
-  const checkFrom = store.checkFrom(day);
-  if (checkFrom !== undefined) text += `, from ${dayOf(checkFrom).slice(5)} ${clockOf(checkFrom)}`;
-  const announced = store.notified().filter((t) => dayOf(t) === day).length;
-  if (announced) text += `, ${announced} announced`;
-  return text;
+  console.log(`changed ${day ?? 'check settings'}: ${before} -> ${actions.loggedSetting(bot, day)} (by ${user || '?'} ${name || '(no name)'})`);
+  await say(bot, token, messages.changedBy(r.reply, name));
 }

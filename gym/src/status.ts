@@ -13,6 +13,7 @@ export type Outcome = 'ok' | 'timeout' | 'rate_limited' | 'http_4xx' | 'http_5xx
 export interface Check {
   t: number;                 // start, ms since epoch
   by: 'alarm' | 'tap';       // the alarm, or a 🔎 tap
+  web?: true;                // the 🔎 was the app's (a peek: nothing marked announced)
   ms: number;                // duration
   idle?: true;               // an alarm with no day to check: nothing fetched
   r?: Record<'training' | 'pilates', Outcome>;   // absent when idle

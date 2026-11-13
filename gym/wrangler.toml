@@ -1,6 +1,7 @@
 # The gym bot (README.md): one Worker and a SQLite-backed Durable Object on the Workers Free plan, beside the island's
 # relay on the same account. Deploy: `npm run deploy`. Secrets (never in this public repo): `npx wrangler secret put`
-# LINE_CHANNEL_TOKEN, LINE_CHANNEL_SECRET, LINE_GROUP_ID, GYM_TOKEN, and KEY_A, KEY_B (the relay's, for /gym/config).
+# LINE_CHANNEL_TOKEN, LINE_CHANNEL_SECRET, LINE_GROUP_ID, GYM_TOKEN, KEY_A, KEY_B (the relay's, for /gym/config and
+# /gym/act), and optionally NAME_A, NAME_B (the members' names in the app's changes).
 name = "gym-bot"
 # The relay's account, pinned as it is there (relay/wrangler.toml).
 account_id = "984dde81c150a207305c312cde950046"

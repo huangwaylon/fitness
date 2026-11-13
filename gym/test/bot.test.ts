@@ -21,7 +21,7 @@ import * as messages from '../src/messages.ts';
 import { ANY, SKIP, type Rule } from '../src/store.ts';
 import { CHECKS_KEPT, CHECKS_MS, FAILURES_BEFORE_WARNING } from '../src/status.ts';
 import { at, isoJst, type Day } from '../src/time.ts';
-import { GROUP, NOON, NOW, inDays, today } from './fakeBot.ts';
+import { GROUP, NOON, NOW, fakeState, inDays, today } from './fakeBot.ts';
 import { DAYS_TO_CHECK } from '../src/config.ts';
 
 const MIN = 60_000;
@@ -45,24 +45,6 @@ const down = (error: unknown = new HacomonoError('HTTP 500')) => {
 const up = (s: { training?: object; pilates?: object } = {}) => {
   for (const p of PROGRAMS) responses[p.key] = s[p.key] ?? schedule();
 };
-
-/** A Durable Object's state: a key-value map and one alarm. */
-function fakeState(kv = new Map<string, unknown>()) {
-  let alarm: number | null = null;
-  let loading: Promise<unknown> = Promise.resolve();
-  const storage = {
-    get: async (k: string) => structuredClone(kv.get(k)),
-    put: async (k: string, v: unknown) => void kv.set(k, structuredClone(v)),
-    getAlarm: async () => alarm,
-    setAlarm: async (t: number) => void (alarm = t),
-    deleteAlarm: async () => void (alarm = null)
-  };
-  const ctx = {
-    storage,
-    blockConcurrencyWhile: (fn: () => Promise<unknown>) => (loading = fn())
-  };
-  return { ctx, kv, alarm: () => alarm, loaded: () => loading };
-}
 
 let state: ReturnType<typeof fakeState>;
 let gym: GymBot;
@@ -329,6 +311,26 @@ describe('when LINE fails', () => {
     expect(gym.store.isNotified(tomorrowAt('12:00'))).toBe(true);
     await gym.runCheck();
     expect(pushes()).toEqual([]);
+  });
+
+  it('the app’s 🔎 peeks: lists, marks nothing, and the next alarm still alerts the group', async () => {
+    up({ training: schedule(tomorrowAt('12:00')) });
+    const r = await gym.act({ a: 'check' }, 'A', 'r1');
+    expect(r.status).toBe(200);
+    expect((r.body as { slots: unknown[] }).slots).toHaveLength(1);
+    expect(gym.store.isNotified(tomorrowAt('12:00'))).toBe(false);
+    expect(gym.checks[0]).toMatchObject({ by: 'tap', web: true, open: 1, fresh: 0, push: 'none' }); // the app's strip reads it as 手動
+    expect(pushes()).toEqual([]);
+    vi.setSystemTime(NOW + 5 * MIN);
+    await gym.alarm();
+    expect(sentText()).toContain('12:00〜12:30');
+    expect(gym.store.isNotified(tomorrowAt('12:00'))).toBe(true);
+  });
+
+  it('the app’s 🔎 shares LINE’s once-a-minute cooldown', async () => {
+    await gym.handle({ type: 'postback', postback: { data: 'a=check' }, source: { groupId: GROUP, userId: 'U1' }, replyToken: 'r1' });
+    const r = await gym.act({ a: 'check' }, 'B', 'r2');
+    expect([r.status, r.retryAfter]).toEqual([429, 60]);
   });
 
   it('keeps the alert waiting without a group', async () => {
@@ -620,6 +622,22 @@ describe('state', () => {
     expect(reply).toHaveBeenCalledTimes(1);
     expect(reply.mock.calls[0][0]).toBe('r1');
     expect(state.alarm()).toBe(NOW);
+  });
+
+  it('keeps the app’s changes across an eviction until a LINE reply carries them, with NAME_A / NAME_B', async () => {
+    gym = await start({ NAME_A: 'ウェイ' });
+    expect((await gym.act({ a: 'skip', d: inDays(3) }, 'A', 'r1')).status).toBe(200);
+    expect((await gym.act({ a: 'pause' }, 'B', 'r2')).status).toBe(200);
+    expect(state.alarm()).toBeNull(); // stopped: no alarm
+    expect(saved()).toMatchObject({ paused: true, days: { [inDays(3)]: 'skip' } });
+    gym = await start({ NAME_A: 'ウェイ' }); // evicted
+    expect(gym.changes.map((c) => [c.a, c.said])).toEqual([['pause', false], ['skip', false]]);
+    expect((await gym.getConfig()).changes.map((c) => c.who)).toEqual(['メンバーB', 'ウェイ']); // B unset
+    await gym.handle({ type: 'postback', postback: { data: 'a=help' }, source: { groupId: GROUP, userId: 'U1' }, replyToken: 'r3' });
+    const text = (reply.mock.calls[0][1] as { text: string }[]).at(-1)!.text;
+    expect(text.split('\n').at(-1)).toBe(`アプリで変更：${messages.dayLabel(inDays(3))}🔕 通知オフ（ウェイ）、⏸️ チェック停止（メンバーB）`);
+    gym = await start();
+    expect(gym.changes.every((c) => c.said)).toBe(true); // saved after the reply
   });
 });
 

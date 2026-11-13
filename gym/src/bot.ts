@@ -2,7 +2,8 @@
 // sets the next), pushing alerts and notices to the group, and answering the taps (ui.ts). The Worker calls it by RPC
 // (index.ts).
 import { DurableObject } from 'cloudflare:workers';
-import { config, type Bot, type GymConfig } from './actions.ts';
+import type { ActAnswer, GymConfig, Member } from '../../app/src/lib/gym/contract.ts';
+import { config, webAct, type Bot, type StoredChange } from './actions.ts';
 import type { Env } from './env.ts';
 import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
@@ -33,6 +34,8 @@ interface Runtime {
   lastOk: number | null;
   lastError: GymStatus['lastError'];
   line: GymStatus['line'];
+  /** The app's changes (POST /gym/act), newest first; `said` once a LINE reply carried them. */
+  changes: StoredChange[];
 }
 
 export class GymBot extends DurableObject<Env> implements Bot {
@@ -52,6 +55,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
   lastOk: number | null = null;
   lastError: GymStatus['lastError'] = null;
   lineFacts = NO_LINE_FACTS;
+  changes: StoredChange[] = [];
   /** A push went out since LINE's facts were read (the quota changed). */
   private pushed = false;
   checking = false;
@@ -81,14 +85,14 @@ export class GymBot extends DurableObject<Env> implements Bot {
     const rt = await this.ctx.storage.get<Runtime>(RUNTIME);
     if (rt) ({ failures: this.failures, siteDownSent: this.siteDownSent, retry: this.retry, lastCheck: this.lastCheck,
       lastManualCheck: this.lastManualCheck, checks: this.checks = [], lastOk: this.lastOk = null,
-      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS } = rt); // the defaults: saved before /status
+      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [] } = rt); // the defaults: saved before /status, /gym/act
     this.savedRuntime = JSON.stringify(this.runtime());
     if (!this.groupId) console.warn("LINE_GROUP_ID isn't set: alerts can't be sent until it is");
   }
 
   private runtime(): Runtime {
-    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError } = this;
-    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts };
+    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, changes } = this;
+    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts, changes };
   }
 
   /** Write the state if it changed, and the runtime fields if they did. */
@@ -139,6 +143,20 @@ export class GymBot extends DurableObject<Env> implements Bot {
     return config(this);
   }
 
+  /** POST /gym/act (index.ts: a member's, its body read): the app's change or 🔎, on the taps' path (actions.ts
+   *  webAct). Then the alarm, as after a tap. */
+  async act(json: unknown, by: Member, rid: string): Promise<{ status: number; body: ActAnswer; retryAfter?: number }> {
+    const r = await webAct(this, json, by, rid);
+    await this.save();
+    await this.ensureAlarm();
+    return r;
+  }
+
+  /** NAME_A / NAME_B (secrets: not in the repo), else メンバーA / B. */
+  nameOf(who: Member): string {
+    return (who === 'A' ? this.env.NAME_A : this.env.NAME_B)?.trim() || `メンバー${who}`;
+  }
+
   /** Replace the state (a restore, or an edit by hand). Refused if it isn't a valid v3 state. */
   async putState(json: unknown): Promise<{ ok: true } | { ok: false; error: string }> {
     try {
@@ -183,16 +201,17 @@ export class GymBot extends DurableObject<Env> implements Bot {
   }
 
   /** Fetch both programs, alert on slot times not announced yet, and return the open slots that match. With
-   *  `alert` false (🔎, whose reply lists them anyway) new times are only marked as announced. Throws CheckFailed
-   *  (after alerting on whatever did succeed) if any program failed. */
-  async runCheck(alert = true): Promise<Slot[]> {
+   *  `alert` false (🔎, whose reply lists them anyway) new times are only marked as announced; with `peek` too (the
+   *  app's 🔎: the answer only in the app) nothing is, so the next alarm alerts the group. Throws CheckFailed (after
+   *  alerting on whatever did succeed) if any program failed. */
+  async runCheck(alert = true, peek = false): Promise<Slot[]> {
     const before = this.lock;
     let release!: () => void;
     this.lock = new Promise((r) => (release = r));
     await before;
     this.checking = true;
     try {
-      return await this.check(alert);
+      return await this.check(alert, peek);
     } finally {
       this.checking = false;
       try {
@@ -203,7 +222,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
     }
   }
 
-  private async check(alert: boolean): Promise<Slot[]> {
+  private async check(alert: boolean, peek: boolean): Promise<Slot[]> {
     const now = Date.now();
     const today = dayOf(now);
     this.store.purge(now);
@@ -237,7 +256,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
     });
 
     // Once per slot time: every program open at a new time is listed, later ones at that time aren't.
-    const fresh = open.filter((s) => !this.store.isNotified(s.start));
+    const fresh = peek ? [] : open.filter((s) => !this.store.isNotified(s.start));
     let push: Check['push'] = 'none';
     if (fresh.length) {
       try {
@@ -250,7 +269,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
       }
     }
     this.lastCheck = now;
-    this.record({ t: now, by: alert ? 'alarm' : 'tap', ms: Date.now() - now, ...(idle ? { idle: true } : { r }),
+    this.record({ t: now, by: alert ? 'alarm' : 'tap', ...(peek ? { web: true as const } : {}), ms: Date.now() - now, ...(idle ? { idle: true } : { r }),
       open: open.length, fresh: fresh.length, push });
     console.log(`check: ${open.length} open, ${fresh.length} new, ${errors.length} errors (through ${lastDay})`);
     if (errors.length) throw new CheckFailed(errors, open, errors.length === PROGRAMS.length);

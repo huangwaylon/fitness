@@ -8,23 +8,11 @@ import { getKey } from '#lib/sync/storage.ts';
 import { keyed } from '#lib/keyed.ts';
 import { isRec, isText } from '#lib/contract/guards.ts';
 import { GYM_URL } from './status.ts';
+import type { GymConfig as Contract, StatusDay } from './contract.ts';
 
-// ---- The payload: the parts of gym/src/actions.ts GymConfig the page shows (the Worker owns it, and also sends
-// now, intervalMin, lastCheck, nextCheck and LINE's text, unread here; change both together) ----
-interface ConfigDay {
-  day: string;            // YYYY-MM-DD, Tokyo
-  date: string;           // 10/5（月）
-  rule: string;           // 🔔 終日, ⏰ 12:00〜13:00（ふだん）, 🔕 通知オフ, 💤 まだチェックしない（…）
-  from: string | null;    // ⏳ 16:00から
-  soft: boolean;          // nothing announced that day (🔕, 💤): shown soft. An older Worker sends none: false
-}
-export interface GymConfig {
-  title: string;          // 📋 日ごとの設定
-  days: ConfigDay[];
-  notice: string | null;  // ⚠️ the site is hard to reach
-  check: string;          // 15分ごとにチェック・前回 12:00・次回 12:15, or that checks are stopped
-  paused: boolean;
-}
+// ---- The payload: the parts of the contract's GymConfig (contract.ts, the Worker's too) the page shows ----
+type ConfigDay = StatusDay;
+export type GymConfig = Pick<Contract, 'title' | 'days' | 'notice' | 'check' | 'paused'>;
 
 const str = (x: unknown): x is string => isText(x, 2000);
 const strOrNull = (x: unknown): string | null | undefined => (x === null ? null : str(x) ? x : undefined);

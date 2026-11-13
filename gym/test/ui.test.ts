@@ -367,7 +367,7 @@ describe('the rest of the menu', () => {
     await ui.handle(bot, tap('a=status'));
     expect(replyText().startsWith('📋 日ごとの設定')).toBe(true);
     await ui.handle(bot, tap('a=check'));
-    expect(bot.runCheck).toHaveBeenCalledWith(false);
+    expect(bot.runCheck).toHaveBeenCalledWith(false, false); // marks what it lists (LINE's 🔎), unlike the app's peek
     expect(replyText().startsWith('いまは空きがありません')).toBe(true);
     await ui.handle(bot, tap('a=help'));
     expect(replyText()).toBe(messages.HELP_TEXT);
@@ -413,6 +413,44 @@ describe('the rest of the menu', () => {
     await ui.handle(bot, tap('a=resume'));
     expect(bot.store.paused).toBe(false);
     expect(bot.save).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('the app’s changes in the group', () => {
+  const appChange = async (body: object, by: 'A' | 'B' = 'A') => actions.webAct(bot, body, by, 'r');
+
+  it('ride along on the next reply as one line, then are said', async () => {
+    await appChange({ a: 'any', d: inDays(2) });
+    await appChange({ a: 'interval', m: 30 }, 'B');
+    await ui.handle(bot, tap('a=help'));
+    const last = replied().at(-1)!;
+    expect(last.text).toBe(`${messages.HELP_TEXT}\nアプリで変更：${messages.dayLabel(inDays(2))}🔔 終日（ウェイ）、🔧 30分ごと（うめ）`);
+    expect(last.quickReply).toEqual(menuQuickReply()); // the chip stays
+    await ui.handle(bot, tap('a=help'));
+    expect(replyText()).toBe(messages.HELP_TEXT); // once
+    expect(bot.changes.every((c) => c.said)).toBe(true);
+    expect(bot.changes).toHaveLength(2); // kept for the app and 📋
+  });
+
+  it('after a card, as a text of their own', async () => {
+    await appChange({ a: 'skip', d: inDays(3) });
+    await ui.handle(bot, tap('a=menu'));
+    expect(replied().map((m) => m.type)).toEqual(['flex', 'text']);
+    expect(replied()[1].text).toBe(`アプリで変更：${messages.dayLabel(inDays(3))}🔕 通知オフ（ウェイ）`);
+  });
+
+  it('📋 names them itself, so no extra line', async () => {
+    await appChange({ a: 'skip', d: inDays(3) });
+    await ui.handle(bot, tap('a=status'));
+    expect(replyText().split('アプリで変更').length - 1).toBe(1);
+    expect(bot.changes[0].said).toBe(true);
+  });
+
+  it('a failed reply leaves them unsaid', async () => {
+    await appChange({ a: 'skip', d: inDays(3) });
+    bot.line.reply.mockRejectedValueOnce(new LineError('400 invalid reply token'));
+    await ui.handle(bot, tap('a=help'));
+    expect(bot.changes[0].said).toBe(false);
   });
 });
 

@@ -4,6 +4,7 @@ import { DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { PROGRAMS, slotEnd, type Slot } from './hacomono.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
 import { clockOf, dayOf, weekday, type Clock, type Day } from './time.ts';
+import { DAYS_SHOWN, type ChangeKind, type StatusDay } from '../../app/src/lib/gym/contract.ts';
 
 const WEEKDAYS = '月火水木金土日';
 
@@ -142,6 +143,32 @@ export function dayPassed(day: Day): string {
   return `${dayLabel(day)}はもう過ぎています。`;
 }
 
+/** The app only (LINE's buttons stop at the days shown). */
+export function dayTooFar(day: Day): string {
+  return `${dayLabel(day)}はまだ設定できません。${DAYS_SHOWN}日先までの日付にしてください。`;
+}
+
+/** The app's change, refused: that day changed since it was read. */
+export const STALE = 'ほかの人が先に変更しました。いまの設定を確かめてください。';
+
+/** An app change, as LINE says it: `11/14（金）🔔 終日（ウェイ）`, `🔧 30分ごと（うめ）`. */
+export function changeText(c: { a: ChangeKind; d: Day | null; s?: Clock; e?: Clock; at?: number; m?: number }, name: string): string {
+  const what = c.a === 'any' ? ANY_LABEL
+    : c.a === 'skip' ? SKIP_LABEL
+      : c.a === 'range' ? `⏰ ${timeRange(c.s!, c.e!)}`
+        : c.a === 'reset' ? RESET
+          : c.a === 'from' ? `⏳ ${c.d !== null && dayOf(c.at!) === c.d ? '' : dayLabel(dayOf(c.at!))}${clockOf(c.at!)}から`
+            : c.a === 'unfrom' ? CLEAR_CHECK_FROM
+              : c.a === 'interval' ? `🔧 ${intervalLabel(c.m!)}`
+                : c.a === 'pause' ? '⏸️ チェック停止' : '▶️ チェック再開';
+  return `${c.d === null ? '' : dayLabel(c.d)}${what}（${name}）`;
+}
+
+/** The line a LINE reply carries for app changes not said yet, and 📋's for the last day's. */
+export function appChanges(texts: string[]): string {
+  return `アプリで変更：${texts.join('、')}`;
+}
+
 // --- alerts and the check ---
 
 export function newSlots(slots: Slot[]): string[] {
@@ -176,9 +203,11 @@ export const SITE_BACK = '✅ ジムの予約サイトに再接続できまし�
 export interface StatusView {
   title: string;
   /** soft: nothing announced that day (🔕 通知オフ, or 💤 not checked yet), which the app shows soft. */
-  days: { day: Day; date: string; rule: string; from: string | null; soft: boolean }[];
+  days: StatusDay[];
   notice: string | null;
   check: string;
+  /** The app's changes of the last day (changeText), newest first: one line after the days. */
+  recent: string[];
 }
 
 export function statusView(
@@ -187,6 +216,7 @@ export function statusView(
   lastCheck: number | null,
   nextCheck: number | null,
   havingTrouble: boolean,
+  recent: string[] = [],
 ): StatusView {
   const days = [...new Set([...defaultDays(today), ...store.daysWithSettings()])].sort().map((day) => {
     const [rule, from] = daySettingParts(store, day, today);
@@ -199,13 +229,14 @@ export function statusView(
     check = `${intervalLabel(store.intervalMinutes)}にチェック・前回 ${last}・次回 ${next}`;
   }
   const notice = havingTrouble ? '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。' : null;
-  return { title: '📋 日ごとの設定', days, notice, check };
+  return { title: '📋 日ごとの設定', days, notice, check, recent };
 }
 
 /** The status as LINE shows it, a line each. */
 export function statusLines(v: StatusView): string[] {
   const days = v.days.map((d) => `・${d.date}　${joinSetting(d.rule, d.from)}`);
-  return [v.title, ...days, ...(v.notice === null ? [] : [v.notice]), v.check];
+  const recent = v.recent.length ? [appChanges(v.recent)] : [];
+  return [v.title, ...days, ...recent, ...(v.notice === null ? [] : [v.notice]), v.check];
 }
 
 // --- check settings ---
