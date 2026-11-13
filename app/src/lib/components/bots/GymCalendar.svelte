@@ -49,10 +49,12 @@
     grid?.querySelector<HTMLElement>(`[data-gym-day="${to}"]`)?.focus();
   }
 
-  // a long press (select mode): held 500 ms without moving far; its click is then swallowed
+  // a long press (select mode): held 500 ms without moving far; its click is then swallowed (a new press forgets a
+  // swallow whose click never came)
   let press: { day: Day; x: number; y: number; timer: ReturnType<typeof setTimeout> } | null = null;
   let swallow = false;
   function down(e: PointerEvent, day: Day) {
+    swallow = false;
     if (selecting) return;
     const timer = setTimeout(() => {
       press = null;
@@ -78,7 +80,7 @@
   }
 </script>
 
-<div class="cal" role="grid" aria-label={t('gym.cal.label')} aria-multiselectable={selecting || undefined} bind:this={grid} onkeydown={move} tabindex="-1" data-gym-calendar data-selecting={selecting || undefined}>
+<div class="cal" role="grid" aria-label={t('gym.cal.label')} bind:this={grid} onkeydown={move} tabindex="-1" data-gym-calendar data-selecting={selecting || undefined}>
   <div class="row head" role="row">
     {#each WEEKDAYS as wd, col (wd)}
       <div class="wd" role="columnheader" class:sun={wd === 7} class:sat={wd === 6}>
@@ -91,7 +93,7 @@
   {#each cells as week, w (w)}
     <div class="row" role="row">
       {#each week as c (c.day)}
-        <div role="gridcell" class="gc" aria-selected={selecting && c.row ? selected.has(c.day) : undefined}>
+        <div role="gridcell" class="gc">
           {#if c.row}
             <button type="button" class="cell {c.fill}" class:today={c.today} class:picked={selecting && selected.has(c.day)} class:flash={flash.has(c.day)}
               tabindex={c.day === stop ? 0 : -1} aria-label={c.label} aria-pressed={selecting ? selected.has(c.day) : undefined} aria-haspopup={selecting ? undefined : 'dialog'}

@@ -182,6 +182,14 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   await day(12).dispatchEvent('click');
   await expect(day(12)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('dialog[open] [data-gym-editor]')).toHaveCount(0);
+  await expect(sheet.locator('[role="gridcell"][aria-selected]')).toHaveCount(0); // a day's state is its aria-pressed
+  // a long press whose click never comes (the touch cancelled): the next tap still counts
+  await sheet.locator('[data-gym-bulk-done]').click();
+  await day(12).dispatchEvent('pointerdown', { pointerType: 'touch', isPrimary: true, clientX: 10, clientY: 10 });
+  await expect(sheet.locator('[data-gym-bulk]')).toContainText('1日を選択');
+  await day(12).dispatchEvent('pointercancel', { pointerType: 'touch', isPrimary: true });
+  await day(13).click();
+  await expect(day(13)).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('someone else changed the day: 409 stale shows it as it is now; a poll that sees a change flashes the cell', async ({ page, context }) => {

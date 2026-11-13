@@ -90,7 +90,7 @@ export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = get
   return { ok: false, why: isRec(json) && json.v === 1 && !('rows' in json) ? 'hide' : 'failed' };
 }
 
-/** What 現在の設定 shows after a fetch, given the last good answer: hidden until one comes (an unreached Worker is
+/** What ジム's settings show after a fetch, given the last good answer: hidden until one comes (an unreached Worker is
  *  most likely an older one, so no error), then a failure keeps it under the retry row; `hide` drops it. */
 export function settle(cfg: GymConfig | null, r: ConfigReply): { cfg: GymConfig | null; state: 'hidden' | 'ok' | 'failed' } {
   if (r.ok) return { cfg: r.config, state: 'ok' };
@@ -108,7 +108,7 @@ export type ActReply =
 
 const TIMEOUT_MS = 20_000;
 /** The codes the page words itself (the bot's refusals): logged at info, the rest at warn. */
-const EXPECTED = new Set(['stale', 'cooldown', 'running', 'paused', 'offline', 'day_passed', 'bad_range', 'from_passed', 'from_after_day', 'from_after_window']);
+const EXPECTED = new Set(['stale', 'cooldown', 'running', 'paused', 'mode_off', 'offline', 'day_passed', 'bad_range', 'from_passed', 'from_after_day', 'from_after_window']);
 const newRid = (): string => Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, '0')).join('');
 const code = (x: unknown): string => (typeof x === 'string' && /^[a-z_]{1,32}$/.test(x) ? x : 'http');
 
