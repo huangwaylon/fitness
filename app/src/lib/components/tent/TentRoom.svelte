@@ -812,7 +812,7 @@
   <h1 class="sr-only">{t('tent.title')}</h1>
   <canvas bind:this={canvas} class="room" data-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('tent.room')}></canvas>
-  <div class="top" bind:this={top}>
+  <div class="top obj-cream" bind:this={top}>
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
   {#if home !== 'A'}<p class="whose" data-guard data-home={home}>{t('tent.whose', { name: nameOf(home) })}</p>{/if}

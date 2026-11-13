@@ -747,7 +747,7 @@
   <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('museum.room')}></canvas>
   <div class="dip" class:on={!!dip} style:background={dipColor} style:--dip-in="{DIP_FADE_MS}ms" aria-hidden="true" data-museum-dip={dip ? 'on' : 'off'}></div>
-  <div class="top" bind:this={top}>
+  <div class="top obj-cream" bind:this={top}>
     <NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />
   </div>
   {#if eng && !fpv}<RoomChip name={chipName(roomId)} found={chipTally?.found} total={chipTally?.total} fresh={freshIn(roomId, fresh)} />{/if}

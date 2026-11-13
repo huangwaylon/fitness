@@ -480,7 +480,7 @@
   <h1 class="sr-only">{t('shop.title')}</h1>
   <canvas bind:this={canvas} class="room" data-shop-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('shop.room')}></canvas>
-  <div class="top" bind:this={top}>
+  <div class="top obj-cream" bind:this={top}>
     <NavButton kind="back" text={t('shop.out')} onclick={leave} sfx="self" />
     <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here); the list's own title bar says them while
          it's open (one wallet on screen) -->
