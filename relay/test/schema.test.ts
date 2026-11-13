@@ -73,3 +73,27 @@ describe('an ingest’s comparison (O8)', () => {
     expect(q<{ n: number }>('SELECT count(*) AS n FROM metrics')[0].n).toBeGreaterThan(20_000); // the history kept
   });
 });
+
+describe('the events indexes (migration 4)', () => {
+  /** A query's plan, its steps joined. */
+  const plan = (sql: string, ...b: string[]) => q<{ detail: string }>(`EXPLAIN QUERY PLAN ${sql}`, ...b).map((r) => r.detail).join(' | ');
+
+  it('drops events_type: the reads by type use events_type_person', () => {
+    expect(q<{ name: string }>("SELECT name FROM sqlite_master WHERE name = 'events_type'")).toEqual([]);
+    for (const [sql, ...b] of [
+      ["SELECT seq, person, data FROM events WHERE type = 'board'"],
+      ["SELECT count(*) AS n FROM events WHERE type = 'wtask'"],
+      ["SELECT type, data FROM events WHERE type IN ('tally', 'tally_back') AND person = ?", 'A'],
+      ["SELECT person, data FROM events WHERE type = 'farm' ORDER BY at, seq"],
+      ["SELECT type, data FROM events WHERE type IN ('spend', 'spend_void') AND instr(data, ?) > 0", 'x'],
+      ['SELECT data FROM events WHERE type = ?', 'pack']
+    ]) expect(plan(sql, ...b), sql).toContain('events_type_person');
+  });
+
+  it('a record from before it loses the index', () => {
+    db.db.exec("CREATE INDEX events_type ON events (type); UPDATE meta SET v = '3' WHERE k = 'schema_v'");
+    store = make();
+    expect(store.schemaV()).toBe(SCHEMA_V);
+    expect(q<{ name: string }>("SELECT name FROM sqlite_master WHERE name = 'events_type'")).toEqual([]);
+  });
+});

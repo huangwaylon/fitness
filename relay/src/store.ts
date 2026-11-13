@@ -113,7 +113,6 @@ const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS metrics_late ON metrics (late) WHERE late IS NOT NULL',
   'CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, id TEXT NOT NULL UNIQUE, at TEXT NOT NULL, person TEXT NOT NULL, type TEXT NOT NULL, data TEXT NOT NULL, slot TEXT UNIQUE, late INTEGER)',
   'CREATE INDEX IF NOT EXISTS events_at ON events (at)',
-  'CREATE INDEX IF NOT EXISTS events_type ON events (type)',
   'CREATE INDEX IF NOT EXISTS events_late ON events (late) WHERE late IS NOT NULL',
   // the signatures of the admin's one-shot ops (ADMIN_ONCE) of the last ADMIN_SEEN_MS: a replay is refused
   'CREATE TABLE IF NOT EXISTS admin_seen (sig TEXT PRIMARY KEY, t INTEGER NOT NULL) WITHOUT ROWID',
@@ -145,7 +144,10 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   },
   // 3 (2026-11-05): the values an ingest holds back rather than append (a past day's 0 over a value above it: a run
   // that read nothing, or a real correction), kept for good, never served; the admin lists and promotes them (R3)
-  (sql) => void sql.exec('CREATE TABLE IF NOT EXISTS metrics_held (person TEXT NOT NULL, date TEXT NOT NULL, metric TEXT NOT NULL, value REAL NOT NULL, at TEXT NOT NULL, last TEXT NOT NULL, n INTEGER NOT NULL, promoted TEXT, PRIMARY KEY (person, date, metric, value)) WITHOUT ROWID')
+  (sql) => void sql.exec('CREATE TABLE IF NOT EXISTS metrics_held (person TEXT NOT NULL, date TEXT NOT NULL, metric TEXT NOT NULL, value REAL NOT NULL, at TEXT NOT NULL, last TEXT NOT NULL, n INTEGER NOT NULL, promoted TEXT, PRIMARY KEY (person, date, metric, value)) WITHOUT ROWID'),
+  // 4 (2026-11-13): `events_type ON events (type)` dropped: events_type_person's leftmost column serves every read by
+  // type, and the index cost a row written per event (review 11-13 B3)
+  (sql) => void sql.exec('DROP INDEX IF EXISTS events_type')
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 
