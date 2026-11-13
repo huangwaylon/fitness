@@ -4,13 +4,14 @@
   // this card: a yuzu-on-cream card at any time of day (.obj-cream: the day ink), as the trophy's.
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
+  import Icon from '../../ui/Icon.svelte';
 
   let { note, children, ...rest }: { note?: string; children: Snippet } & HTMLAttributes<HTMLDivElement> = $props();
 </script>
 
 <div class="score card obj-cream" {...rest}>
   {@render children()}
-  {#if note}<small class="lock">🔒 {note}</small>{/if}
+  {#if note}<small class="lock"><Icon name="lock" size={14} stroke={2.4} /> {note}</small>{/if}
 </div>
 
 <style>

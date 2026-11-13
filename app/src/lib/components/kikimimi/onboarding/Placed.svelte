@@ -6,6 +6,7 @@
   import { PLACES } from '#lib/kikimimi/catalog.ts';
   import Host from '../../characters/Host.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import Icon from '../../ui/Icon.svelte';
 
   let { game, onhub }: { game: QuizGame; onhub: () => void } = $props();
   const placement = $derived(game.placement);
@@ -32,7 +33,7 @@
     {/if}
     <p class="hint">{t('kiki.placed.change')}</p>
   {/if}
-  <p class="mine">🔒 {t('kiki.placed.mine')}</p>
+  <p class="mine"><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.placed.mine')}</p>
 </div>
 
 <div class="level-acts">

@@ -20,6 +20,7 @@
   import { isStandalone } from '#lib/ui-state/standalone.ts';
   import { log } from '#lib/sync/log.ts';
   import MicButton from './MicButton.svelte';
+  import Icon from '../../ui/Icon.svelte';
 
   let { onprobe }: { onprobe: () => void } = $props();
 
@@ -113,7 +114,7 @@
   {#if refused === 'denied'}<button type="button" class="btn small" data-mic-retry data-sfx="confirm" onclick={retry}>↻ {t('kiki.mic.retry')}</button>{/if}
 
   {#if prefs.on}
-    <p class="hint">🔒 {t('kiki.mic.rule')}</p>
+    <p class="hint"><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.mic.rule')}</p>
     <div class="card box check">
       <h4>{t('kiki.mic.check')}</h4>
       <p class="soft">{t('kiki.mic.check.how')}</p>

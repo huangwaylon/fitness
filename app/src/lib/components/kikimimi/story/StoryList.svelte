@@ -10,6 +10,7 @@
   import { rosterName } from '../scene/stage.ts';
   import { SERIALS, storyProgress } from './serials.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import Icon from '../../ui/Icon.svelte';
 
   let { me, onplay }: { me: Who; onplay: (unit: string, ch: number, seg: number) => void } = $props();
   const progress = $derived(storyProgress(me));
@@ -34,7 +35,7 @@
           <li>
             <button type="button" class="row" class:next={isNext} aria-disabled={!open} data-kiki-chapter={c.part} data-kiki-locked={!open || undefined}
               data-kiki-done={done || undefined} data-sfx={open ? 'confirm' : 'tick'} onclick={() => open && onplay(s.unit, c.ch, isNext ? next.seg : 0)}>
-              <span class="n">{done ? '✓' : open ? c.ch : '🔒'}</span>
+              <span class="n">{#if done}✓{:else if open}{c.ch}{:else}<Icon name="lock" size={16} stroke={2.4} />{/if}</span>
               <span class="txt">
                 <small>{t('kiki.story.chapter', { n: c.ch })} · {t('kiki.chip.mins', { n: mins(c.secs) })}</small>
                 <b lang="en">{c.title}</b>

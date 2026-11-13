@@ -20,6 +20,7 @@
   import { trophiesOf } from '#lib/kikimimi/games/taikai/def.ts';
   import Host from '../characters/Host.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import Icon from '../ui/Icon.svelte';
 
   let { report, onplay }: { report: Report; onplay: () => void } = $props();
   const s = $derived(report.stats);
@@ -159,7 +160,7 @@
         {/each}
       </table>
     </details>
-    <p class="hint center">🔒 {t('kiki.prog.private')}</p>
+    <p class="hint center"><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.prog.private')}</p>
   {/if}
 </div>
 

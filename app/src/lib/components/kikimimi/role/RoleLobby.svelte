@@ -19,6 +19,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
+  import Icon from '../../ui/Icon.svelte';
 
   let { game }: { game: QuizGame } = $props();
   const v = $derived(game.view);
@@ -43,7 +44,7 @@
 </script>
 
 <div class="role" data-kiki-page="role" data-role-lobby={at}>
-  <p class="about card">{t('kiki.role.about')}<small>🔒 {t('kiki.role.private')}</small></p>
+  <p class="about card">{t('kiki.role.about')}<small><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.role.private')}</small></p>
 
   <section class="sec" aria-labelledby="kr-scene">
     <h3 id="kr-scene" class="sec-label">{t('kiki.role.scene')}</h3>

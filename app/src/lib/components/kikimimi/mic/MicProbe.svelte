@@ -28,6 +28,7 @@
   import { deniedKey, micReturn, retryMic } from '#lib/mic/retry.ts';
   import { reloadNow } from '#lib/ui-state/reload.ts';
   import { isStandalone } from '#lib/ui-state/standalone.ts';
+  import Icon from '../../ui/Icon.svelte';
 
   let { onback }: { onback: () => void } = $props();
 
@@ -323,7 +324,7 @@
     <div class="card box">
       <h3>{t('kiki.mic.probe')}</h3>
       <p>{t('kiki.mic.intro')}</p>
-      <p class="soft">🔒 {t('kiki.mic.privacy')}</p>
+      <p class="soft"><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.mic.privacy')}</p>
     </div>
     {#if before}
       <p class="soft">{t('kiki.mic.againIntro')}</p>
@@ -400,7 +401,7 @@
       <h3>{t('kiki.mic.whisper')}</h3>
       {#if wStep === 'check'}<p role="status">{t('kiki.mic.working')}</p>
       {:else if wStep === 'none'}<p>{t('kiki.mic.whisper.none')}</p>
-      {:else if wStep === 'ready'}<p>{t('kiki.mic.whisper.how', { mb: sttMB() })}</p><p class="soft">🔒 {t('kiki.mic.whisper.local')}</p>
+      {:else if wStep === 'ready'}<p>{t('kiki.mic.whisper.how', { mb: sttMB() })}</p><p class="soft"><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.mic.whisper.local')}</p>
       {:else if wStep === 'dl'}<p role="status">{t('kiki.mic.whisper.got', { got: mb(wGot), of: wOf ? mb(wOf) : sttMB() })}</p><progress max={wOf || 1} value={wGot}></progress>
       {:else if wStep === 'load'}<p role="status">{wClip ? t('kiki.mic.whisper.clips', { dev: devName(wDev), n: wClip }) : t('kiki.mic.whisper.load', { dev: devName(wDev) })}</p>
       {:else}<p data-mic-unusable>{t('kiki.mic.whisper.fail')}</p>{/if}
@@ -416,7 +417,7 @@
     {@const unusable = phase === 'webkit' ? !env?.wks : phase === 'relay' ? !relayReady() : false}
     <div class="card box">
       <h3>{t(`kiki.mic.${phase}`)}</h3>
-      {#if phase === 'relay'}<p class="soft" data-mic-disclose>🔒 {t('kiki.mic.relay.disclose')}</p>{/if}
+      {#if phase === 'relay'}<p class="soft" data-mic-disclose><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.mic.relay.disclose')}</p>{/if}
       {#if phase === 'whisper' && wClips}<p class="soft" data-mic-clips={wDev}>{t('kiki.mic.whisper.clipsDone', wClips)}</p>{/if}
       {#if unusable}<p data-mic-unusable>{phase === 'webkit' ? t('kiki.mic.webkit.none') : t('kiki.mic.relay.none')}</p>
       {:else if lines[said]}
@@ -458,7 +459,7 @@
         {#if env?.wks}<li data-mic-row="webkit">{t('kiki.mic.webkit')}<b>{sttLine(stt.webkit)}</b></li>{/if}
         <li data-mic-row="relay">{t('kiki.mic.relay')}<b>{sttLine(stt.relay)}</b></li>
       </ul>
-      <p class="soft">🔒 {t('kiki.mic.privacy')}</p>
+      <p class="soft"><Icon name="lock" size={14} stroke={2.4} /> {t('kiki.mic.privacy')}</p>
     </div>
     {#if sent === 'no'}
       <button type="button" class="btn" data-mic-send data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && send()}>{t('kiki.mic.result.send')}</button>
