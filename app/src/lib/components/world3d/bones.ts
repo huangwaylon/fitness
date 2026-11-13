@@ -3,6 +3,7 @@
 // anything changed: a resting island re-sent ~24 bone textures a frame (texSubImage2D, the villagers' and players'
 // skeletons standing still, review 2026-11-13 perf #6). Here the same matrices are written, and the texture marked only
 // when one of them changed (as a float32: what the texture holds). Installed once, for every renderer (stage.ts).
+// bones.test pins three's own (r170): a three bump fails it till this is read against the new Skeleton.update.
 import { Matrix4, Skeleton } from 'three';
 
 const off = new Matrix4(), I = new Matrix4();

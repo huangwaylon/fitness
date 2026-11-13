@@ -2,14 +2,22 @@
 // file (with `key`: the members' chain menus from the relay, kalori.ts), parses it, gives each item its search keys
 // when the file ships none (the products, the chain menus: search.ts keysOf, the barcodes from the ids first), answers its items a slice at a time (db.ts SLICE: each a short task for the page
 // to take in) and its header last; `{ id, error }` when the fetch or the parse fails (`refused`: kalori.ts Refused).
+// A chain-menu call's miss (keyed.ts: even one the kept copy covered) goes to the page as `{ keyed }`, for its log:
+// here keyed's sink would log nowhere.
 import { SLICE, withJan } from './db.ts';
 import { fetchKalori, Refused } from './kalori.ts';
 import { keysOf } from './search.ts';
+import { keyedSink, type KeyedMiss } from '#lib/keyed.ts';
 import type { Dataset } from './types.ts';
 
-export type Parsed = { id: number; items: Dataset['items'] } | { id: number; head: Omit<Dataset, 'items'> } | { id: number; error: string; refused?: true };
+export type Parsed =
+  | { id: number; items: Dataset['items'] }
+  | { id: number; head: Omit<Dataset, 'items'> }
+  | { id: number; error: string; refused?: true }
+  | { keyed: { url: string; why: KeyedMiss; http?: number } };
 
 const post = (m: Parsed) => (self as unknown as Worker).postMessage(m);
+keyedSink((url, why, http) => post({ keyed: { url, why, ...(http ? { http } : {}) } }));
 
 async function fetched(href: string, key?: string): Promise<Dataset> {
   if (key) return fetchKalori(href, key);

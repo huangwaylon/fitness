@@ -11,6 +11,7 @@ import type { Dataset, FoodIndex, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { fetchKalori, Refused } from './kalori.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
+import { reportKeyed } from '#lib/keyed.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 
 /** A failed dataset's retries (at its next chances) before it's left out for the session. */
@@ -49,7 +50,10 @@ function startParser(): Worker | null {
     return (parser = null);
   }
   parser.onmessage = (e: MessageEvent<Parsed>) => {
-    const m = e.data, p = parsing.get(m.id);
+    const m = e.data;
+    // (the worker's chain-menu miss: logged here, keyed.fail)
+    if ('keyed' in m) return reportKeyed(m.keyed.url, m.keyed.why, m.keyed.http);
+    const p = parsing.get(m.id);
     if (!p) return;
     if ('items' in m) {
       for (const it of m.items) p.items.push(it);

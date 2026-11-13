@@ -122,3 +122,33 @@ describe('loadFoodDb with the chain menus', () => {
     expect([chance.mock.calls.length, asked.length, db.entries.length]).toEqual([1, 2, 1]);
   });
 });
+
+describe('the chain menus in the worker (the phones: dataset.worker.ts)', () => {
+  it("a miss in the worker is the page's keyed.fail: posted, logged by the page's sink", async () => {
+    fakeCaches();
+    relay(['offline']);
+    // (the worker's modules and the page's apart, as on a phone: each its own keyed.ts sink)
+    vi.resetModules();
+    let page: { onmessage: ((e: { data: unknown }) => void) | null } | null = null;
+    const scope = { onmessage: null as ((e: { data: unknown }) => void) | null, postMessage: (m: unknown) => setTimeout(() => page?.onmessage?.({ data: structuredClone(m) })) };
+    vi.stubGlobal('self', scope);
+    vi.stubGlobal('location', { href: 'http://127.0.0.1/' });
+    await import('./dataset.worker.ts');
+    vi.resetModules();
+    vi.stubGlobal('Worker', class {
+      onmessage = null;
+      constructor() {
+        page = this;
+      }
+      postMessage(m: unknown) {
+        scope.onmessage?.({ data: m });
+      }
+      terminate() {}
+    });
+    const [{ keyedSink }, { loadFoodDb: load }] = await Promise.all([import('#lib/keyed.ts'), import('./load.ts')]);
+    const logged = vi.fn();
+    keyedSink(logged);
+    await (await load(undefined, () => ({ href: HREF, key: KEY }))).wantMore();
+    expect(logged.mock.calls).toEqual([[HREF, 'unreached', undefined]]);
+  });
+});

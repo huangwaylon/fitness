@@ -347,7 +347,9 @@ function cut(): void {
   // a capped day: only errors until it opens
   if (st.closedUntil > env.now()) st.ring = st.ring.filter((e) => e.l === 3);
   // PENDING_MAX unacked (offline, or replies lost): the newest takes more when it's this session's, a new id (the relay
-  // may have taken it); else the ring waits, persisted with the page (dropping the oldest lost ~10 batches a day)
+  // may have taken it); else the ring waits, persisted with the page (dropping the oldest lost ~10 batches a day). The
+  // trade: if the relay did take the old id (its ack lost), that batch's events land twice. Rare (3 unacked: offline)
+  // and accepted.
   const last = st.pending.length >= PENDING_MAX ? st.pending.at(-1)! : null;
   if (last && (last.s !== st.sid || last.build !== st.build || last.os !== st.os)) return;
   const es: LogEventIn[] = last ? [...last.es] : [];

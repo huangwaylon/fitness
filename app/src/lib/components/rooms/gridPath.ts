@@ -9,9 +9,9 @@ export type Cell = readonly [number, number];
 export interface Grid { cols: number; rows: number; free(i: number, j: number): boolean }
 
 /**
- * The cells after `start` on the shortest walk to `goal` (the start's own cell is never closed to it: one standing at
- * a piece's edge walks off), `reached` when it gets there; when it can't, the walk to the cell nearest the goal (as the
- * crow flies), [] when that's the start.
+ * The cells after `start` on the shortest walk to `goal` (only the start's neighbours are tested, never its own cell:
+ * one standing on a closed cell at a piece's edge still walks off), `reached` when it gets there; when it can't, the
+ * walk to the cell nearest the goal (as the crow flies), [] when that's the start.
  */
 export function gridPath(g: Grid, start: Cell, goal: Cell): { cells: [number, number][]; reached: boolean } {
   const { cols, rows } = g, n = cols * rows;

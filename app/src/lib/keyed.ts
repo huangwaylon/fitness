@@ -2,15 +2,18 @@
 // sorted into one vocabulary: `unpaired` (no key here, or no endpoint in this build), `refused` (401, 403, 404: not
 // this key's, the guest's, or a Worker without the route), `failed` (another status: the reply kept for the caller to
 // read), `unreached` (fetch threw: offline, a preflight refused), `timeout`, `aborted` (the caller's signal). Never
-// throws. Imports nothing, so a worker (food/dataset.worker.ts) may use it. Used by the chain menus (food/kalori.ts),
+// throws. Imports nothing, so a worker (food/dataset.worker.ts) may use it: its misses are posted to the page, which
+// logs them (reportKeyed). Used by the chain menus (food/kalori.ts),
 // the relay recogniser (mic/backends/relay.ts) and ジム's 現在の設定 (gym/config.ts).
 
-type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
+export type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
 
 /** The log's failure (sync/log.ts plugs it in; a worker's stays a no-op): one `keyed.fail` an incident by endpoint and
  *  kind. Not for `unpaired` or `aborted`: no call, or the caller's own. */
 let sink: (url: string, why: KeyedMiss, http?: number) => void = () => {};
 export const keyedSink = (fn: typeof sink): void => void (sink = fn);
+/** A miss to log: keyed()'s own, or one a worker posted (its sink posts, the page's logs). */
+export const reportKeyed = (url: string, why: KeyedMiss, http?: number): void => sink(url, why, http);
 /** The answer (2xx or a 304), or why not; a refused or failed one carries the reply. */
 export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; res?: Response };
 
@@ -18,7 +21,7 @@ export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; r
  *  for (`timeout`). */
 export async function keyed(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number): Promise<Keyed> {
   const r = await call(url, key, init, answerMs);
-  if (!r.ok && r.why !== 'unpaired' && r.why !== 'aborted') sink(url, r.why, r.res?.status);
+  if (!r.ok && r.why !== 'unpaired' && r.why !== 'aborted') reportKeyed(url, r.why, r.res?.status);
   return r;
 }
 
