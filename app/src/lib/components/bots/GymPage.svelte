@@ -454,8 +454,8 @@
   .status { margin-top: 10px; }
   .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
 
-  /* the control row: 3 pills, 44px */
-  .ctl { display: flex; gap: 6px; }
+  /* the control row: 3 pills, 44px; never wider than the page (min-width: 0), whatever the labels say */
+  .ctl { display: flex; gap: 6px; min-width: 0; }
   .pill {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); padding: 0 12px; border-radius: var(--r-pill); min-width: 0;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
@@ -463,7 +463,8 @@
   }
   .pill.run { flex: 1 1 auto; justify-content: flex-start; overflow: hidden; }
   .pill.run span:last-child { overflow: hidden; text-overflow: ellipsis; }
-  .pill[data-gym-check] { flex: 0 1 auto; }
+  /* 今すぐ確認, あと60秒 and 確認中… hold one width (no jump as it counts down) */
+  .pill[data-gym-check] { flex: none; min-width: 7.5em; font-variant-numeric: tabular-nums; }
   .pill.more { flex: none; width: var(--hit); padding: 0; }
   .pill .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c-leaf); box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--c-leaf-edge); }
   .pill.run.off .dot { background: var(--ctl-off); box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--edge); }

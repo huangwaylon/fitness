@@ -71,7 +71,7 @@
   "gym.ctl.off": "Stopped",
   "gym.ctl.every": "Every {n} min",
   "gym.ctl.check": "Check now",
-  "gym.ctl.wait": "Check now ({s}s)",
+  "gym.ctl.wait": "Wait {s}s",
   "gym.ctl.running": "Checking…",
   "gym.ctl.interval": "Interval",
   "gym.ctl.intervalNote": "How often the gym is checked; the same as LINE's チェック設定.",

@@ -289,7 +289,9 @@ test('the control row: stopping asks first, restarting doesn’t; 確認の間�
   const result = sheet.locator('[data-gym-result]');
   await expect(result).toContainText('🟢 いま空いている枠');
   await expect(result).toContainText('・12:00〜12:30　💪 パーソナルトレーニング');
-  await expect(check).toHaveText(/^今すぐ確認（(60|59|58)秒）$/);
+  await expect(check).toHaveText(/^あと(60|59|58)秒$/);
+  // the countdown never widens the row: nothing on the page runs past the screen's edge (it did on an iPhone 15)
+  expect(await page.evaluate(() => [...document.querySelectorAll('dialog[open] [data-bots] *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 0.5).length)).toBe(0);
   await expect(check).toHaveAttribute('aria-disabled', 'true');
   const first = Number((await check.textContent())!.match(/\d+/)![0]);
   await expect.poll(async () => Number((await check.textContent())!.match(/\d+/)![0])).toBeLessThan(first);
@@ -305,7 +307,7 @@ test('今すぐ確認 after a LINE 🔎: the cooldown counted from the Worker’
   gym.next({ status: 429, body: { ok: false, error: 'cooldown', hint: '⏱️ 45秒ほど待ってから、もう一度お試しください。' }, headers: { 'Retry-After': '45' } });
   await check.click();
   await expect(sheet.locator('[data-gym-result]')).toHaveText(/⏱️ 45秒ほど待ってから、もう一度お試しください。/);
-  await expect(check).toHaveText(/^今すぐ確認（4[3-5]秒）$/);
+  await expect(check).toHaveText(/^あと4[3-5]秒$/);
   void gymRef;
   void rec;
 });

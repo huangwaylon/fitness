@@ -71,7 +71,7 @@
   "gym.ctl.off": "停止中",
   "gym.ctl.every": "{n}分ごと",
   "gym.ctl.check": "今すぐ確認",
-  "gym.ctl.wait": "今すぐ確認（{s}秒）",
+  "gym.ctl.wait": "あと{s}秒",
   "gym.ctl.running": "確認中…",
   "gym.ctl.interval": "確認の間隔",
   "gym.ctl.intervalNote": "空きは間隔ごとに確認します。LINEのチェック設定と同じです。",
