@@ -60,8 +60,10 @@ describe('the Worker on the example', () => {
     at(example.status.now);
     const status = await bot.status();
     const { lease: _l, ...want } = example.status;
-    const { lease, ...got } = status;
+    const { lease, control, ...got } = status;
     expect(got).toEqual(want);
+    // C3, not in the example yet (the page's parser takes it from the app's next commit)
+    expect(control).toEqual({ action: 'start', by: 'A', at: example.config.settings.updatedAt });
     expect(lease).toEqual({ ...example.config.lease, until: example.status.runner.lastSeen + 300_000 });
     expect(status.settings).toEqual(example.config.settings as ItsSettings);
   });
@@ -75,8 +77,8 @@ describe('the Worker on the example', () => {
     await bot.report(example.report as never);
     const s = await bot.status();
     const { dispatch: _d, ...exampleRest } = example.status;
-    const { dispatch, ...rest } = s;
-    expect(dispatch).toBeNull();
+    const { dispatch, control, ...rest } = s;
+    expect([dispatch, control]).toEqual([null, null]);
     expect(shape(rest)).toEqual(shape(exampleRest));
   });
 });

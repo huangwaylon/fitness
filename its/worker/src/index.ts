@@ -42,11 +42,23 @@ function refuse(req: Request, path: string, status: number, why: string, headers
   return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
 }
 
-/** The body as JSON, at most LIMITS.body bytes. */
+/** The body as JSON, at most LIMITS.body bytes: refused by its Content-Length, or (without one, or a lying one) as soon
+ *  as the stream passes the bound, never read whole first. */
 async function body(req: Request): Promise<unknown> {
   if (Number(req.headers.get('Content-Length') ?? 0) > LIMITS.body) throw new Refused(413, 'too_large');
-  const buf = await req.arrayBuffer();
-  if (buf.byteLength > LIMITS.body) throw new Refused(413, 'too_large');
+  const chunks: Uint8Array[] = [];
+  let n = 0;
+  const reader = req.body?.getReader();
+  for (let r = await reader?.read(); r && !r.done; r = await reader!.read()) {
+    n += r.value.byteLength;
+    if (n > LIMITS.body) {
+      await reader!.cancel();
+      throw new Refused(413, 'too_large');
+    }
+    chunks.push(r.value);
+  }
+  const buf = new Uint8Array(n);
+  chunks.reduce((at, c) => (buf.set(c, at), at + c.byteLength), 0);
   try {
     return JSON.parse(new TextDecoder().decode(buf));
   } catch {
@@ -96,8 +108,10 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
   }
 }
 
-/** `Authorization: Bearer <ITS_RUNNER_TOKEN>`, compared in constant time (as SHA-256 digests, so of equal length). */
-async function runnerTokenOk(token: string, expected: string | undefined): Promise<boolean> {
+/** `Authorization: Bearer <ITS_RUNNER_TOKEN>`, compared in constant time (as SHA-256 digests, so of equal length); the
+ *  secret trimmed (a pasted newline), as the bearer is. */
+async function runnerTokenOk(token: string, secret: string | undefined): Promise<boolean> {
+  const expected = secret?.trim();
   if (!expected || !token) return false;
   const digest = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
   const [a, b] = await Promise.all([digest(token), digest(expected)]);
@@ -110,7 +124,7 @@ async function runnerTokenOk(token: string, expected: string | undefined): Promi
 async function runner(req: Request, env: Env, path: string): Promise<Response> {
   const method = RUNNER_ROUTES[path];
   if (req.method !== method) return refuse(req, path, 405, 'method', { Allow: method });
-  if (!(await runnerTokenOk(bearer(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN ? 'unauthorized' : 'no_runner_token');
+  if (!(await runnerTokenOk(bearer(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN?.trim() ? 'unauthorized' : 'no_runner_token');
   const qRun = new URL(req.url).searchParams.get('runId');
   if (qRun !== null && !isId(qRun)) return refuse(req, path, 400, 'bad_run_id');
   const headers = { 'Cache-Control': 'no-store' };
@@ -129,7 +143,8 @@ async function runner(req: Request, env: Env, path: string): Promise<Response> {
     }
     const p = parseBookings(json);
     if (!p.ok) return refuse(req, path, 400, p.error, {}, ` n=${Array.isArray(json) ? json.length : '-'}`);
-    return Response.json(await bot(env).bookings(p.value, qRun), { headers });
+    const r = await bot(env).bookings(p.value, qRun);
+    return r.ok ? Response.json(r.config, { headers }) : refuse(req, path, r.status, r.error, {}, ` run=${qRun ?? '-'} n=${p.value.length}`);
   } catch (e) {
     if (e instanceof Refused) return refuse(req, path, e.status, e.why);
     throw e;

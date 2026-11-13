@@ -252,6 +252,40 @@ describe('POST /its/run', () => {
     expect([c.stop, c.stopReason]).toEqual([true, 'paused']);
   });
 
+  it('a double 開始 while GitHub is asked dispatches once (logged skip_recent); a 停止 meanwhile stays', async () => {
+    let answer!: (r: Response) => void;
+    fetchMock.mockImplementationOnce(() => new Promise<Response>((r) => (answer = r)));
+    const first = runAction('start');
+    while (!fetchMock.mock.calls.length) await new Promise((r) => setImmediate(r));
+    vi.setSystemTime(NOW + 1000);
+    const second: ItsStatus = await (await runAction('start', KEY_B)).json();
+    expect(second.dispatch).toEqual({ at: NOW, ok: true, status: null });   // recorded before the answer
+    expect(logs.log.mock.calls.flat().join('\n')).toContain('its run start by=B dispatch=skip_recent last=1s');
+    const stopped: ItsStatus = await (await runAction('stop', KEY_B)).json();
+    expect(stopped.control).toEqual({ action: 'stop', by: 'B', at: NOW + 1000 });
+    answer(new Response(null, { status: 204 }));
+    const s: ItsStatus = await (await first).json();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect([s.settings.paused, s.dispatch, s.control?.action]).toEqual([true, { at: NOW, ok: true, status: 204 }, 'stop']);
+    expect((await status()).settings.paused).toBe(true);
+  });
+
+  it('start while the last run drains: a new run is dispatched (the draining one is ending)', async () => {
+    await asRunner(env, '/runner/claim', example.claimInput);
+    await asRunner(env, '/runner/report', report({ phase: 'draining' }));
+    await runAction('start');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('records who pressed 開始 / 停止 and when (control), in the status', async () => {
+    expect((await status()).control).toBeNull();
+    let s: ItsStatus = await (await runAction('start', KEY_B)).json();
+    expect(s.control).toEqual({ action: 'start', by: 'B', at: NOW });
+    vi.setSystemTime(NOW + MIN);
+    s = await (await runAction('stop')).json();
+    expect(s.control).toEqual({ action: 'stop', by: 'A', at: NOW + MIN });
+  });
+
   it('refuses another action', async () => {
     const r = await runAction('restart');
     expect([r.status, await r.json()]).toEqual([400, { ok: false, error: 'bad_action' }]);
@@ -268,6 +302,25 @@ describe('the runner’s routes', () => {
     await fresh({ ITS_RUNNER_TOKEN: undefined });
     expect((await asRunner(env, '/runner/config')).status).toBe(401);
     expect(warned()).toContain('its refused 401 no_runner_token GET /runner/config');
+    await fresh({ ITS_RUNNER_TOKEN: ' \n' });
+    expect((await asRunner(env, '/runner/config', undefined, '')).status).toBe(401);
+  });
+
+  it('take the token as set with a pasted newline (the secret is trimmed, as the bearer is)', async () => {
+    await fresh({ ITS_RUNNER_TOKEN: `${RUNNER}\n` });
+    expect((await asRunner(env, '/runner/config')).status).toBe(200);
+    expect((await asRunner(env, '/runner/config', undefined, `${RUNNER}x`)).status).toBe(401);
+  });
+
+  it('POST /runner/bookings: an id reused for other content is 409 id_conflict, a full record 507 record_full', async () => {
+    await asRunner(env, '/runner/bookings?runId=19283746', [example.bookingInput]);
+    const r = await asRunner(env, '/runner/bookings?runId=19283746', [{ ...example.bookingInput, kind: 'failed' }]);
+    expect([r.status, await r.json()]).toEqual([409, { ok: false, error: 'id_conflict' }]);
+    expect(warned()).toContain('its refused 409 id_conflict POST /runner/bookings run=19283746 n=1');
+    const bot = (env.BOT as unknown as { get: () => { rec: { bookings: unknown[] } } }).get();
+    bot.rec.bookings = Array.from({ length: 500 }, (_, i) => ({ ...example.bookingInput, id: `old:${i}`, at: NOW }));
+    const full = await asRunner(env, '/runner/bookings', [{ ...example.bookingInput, id: 'new:1' }]);
+    expect([full.status, await full.json()]).toEqual([507, { ok: false, error: 'record_full' }]);
   });
 
   it('GET /runner/config: the preflight; stop while paused, MODE off, or without a date', async () => {
@@ -301,6 +354,25 @@ describe('the runner’s routes', () => {
     }
     const big = await asRunner(env, '/runner/report', { ...report(), seen: Array(400).fill('x'.repeat(200)) });
     expect(big.status).toBe(413);
+  });
+
+  it('refuse a body past 64 KB sent without a Content-Length, reading no further', async () => {
+    let pulled = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(c) {
+        pulled++;
+        if (pulled > 100) return c.close();   // ~160 KB if read whole
+        c.enqueue(new Uint8Array(16 * 1024).fill(0x20));
+      },
+    });
+    const req = new Request('https://its.example/runner/report', { method: 'POST', headers: { Authorization: `Bearer ${RUNNER}` }, body: stream, duplex: 'half' } as RequestInit);
+    expect(req.headers.get('Content-Length')).toBeNull();
+    const r = await (await import('../src/index.ts')).default.fetch(req, env);
+    expect(r.status).toBe(413);
+    expect(pulled).toBeLessThan(10);
+    // a small streamed body is read whole
+    const ok = new Request('https://its.example/runner/claim', { method: 'POST', headers: { Authorization: `Bearer ${RUNNER}` }, body: new Blob([JSON.stringify(example.claimInput)]).stream(), duplex: 'half' } as RequestInit);
+    expect((await (await import('../src/index.ts')).default.fetch(ok, env)).status).toBe(200);
   });
 });
 

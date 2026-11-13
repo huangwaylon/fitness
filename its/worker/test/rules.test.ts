@@ -6,20 +6,20 @@ import {
   DEFAULT_SETTINGS, LATE_AFTER_SEC, START_GRACE_SEC,
   type BookingEntry, type ItsEvent, type ItsSettings,
 } from '../../../app/src/lib/its/contract.ts';
-import { verdictOf, type ItsRecord, type Mode, type RunnerRecord } from '../src/rules.ts';
+import { CONFIRM_GRACE_MS, verdictOf, type ItsRecord, type Mode, type RunnerRecord } from '../src/rules.ts';
 import { MIN, NOW } from './fakeBot.ts';
 
 const HOUR = 60 * MIN;
 const settings: ItsSettings = { ...(example.config.settings as ItsSettings) };
 const { v: _v, events: _e, seen: _s, ...reported } = example.report;
-const runner = (x: Partial<RunnerRecord> = {}): RunnerRecord => ({ ...(structuredClone(reported) as unknown as RunnerRecord), lastSeen: NOW - 10_000, lastOkAt: NOW - 20_000, ...x });
+const runner = (x: Partial<RunnerRecord> = {}): RunnerRecord => ({ ...(structuredClone(reported) as unknown as RunnerRecord), lastSeen: NOW - 10_000, lastOkAt: NOW - 20_000, okSeenAt: NOW - 10_000, solveOkSeenAt: NOW - 3 * 3600_000, ...x });
 const event = (kind: ItsEvent['kind'], t: number, x: Partial<ItsEvent> = {}): ItsEvent => ({ runId: '19283746', seq: 1, t, kind, ...x });
 const entry = (kind: BookingEntry['kind'], at: number, x: Partial<BookingEntry> = {}): BookingEntry =>
   ({ id: `r:${at}`, kind, date: '2026-11-22', hotel: 'NAGU 勝浦', at, runId: 'r', ...x });
 
 /** A healthy record: running, reported 10 s ago; with changes. */
 function rec(x: Partial<ItsRecord> = {}): ItsRecord {
-  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, events: { routine: [], important: [] }, seen: {}, acks: [], ...x };
+  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], ...x };
 }
 const verdict = (r: ItsRecord, mode: Mode = 'on', now = NOW) => verdictOf(r, mode, now);
 
@@ -59,12 +59,14 @@ describe('verdictOf', () => {
     expect(verdict(rec({ runner: null, dispatch: d, settings: { ...settings, paused: true } })).reasons).toEqual(['paused']);
   });
 
-  it('banned → failing, until a report’s lastOkAt is after the ban', () => {
+  it('banned → failing, until the Worker receives a report whose lastOkAt moved after the ban', () => {
     const ban = event('ban', NOW - HOUR);
-    const r = (lastOkAt: number | null) => rec({ runner: runner({ lastOkAt }), events: { routine: [], important: [ban] } });
+    const r = (okSeenAt: number | null, lastOkAt: number | null = okSeenAt) => rec({ runner: runner({ lastOkAt, okSeenAt }), events: { routine: [], important: [ban] } });
     expect(verdict(r(NOW - 2 * HOUR))).toEqual({ verdict: 'failing', reasons: ['banned'] });
     expect(verdict(r(null)).reasons).toEqual(['banned']);   // a new run, no good scan yet
     expect(verdict(r(NOW - MIN)).reasons).toEqual([]);
+    // the runner's clock an hour fast: its lastOkAt reads after the ban, but the Worker saw it move before
+    expect(verdict(r(NOW - 2 * HOUR, NOW)).reasons).toEqual(['banned']);
   });
 
   it('scan_failing → failing at 3 failed reads in a row', () => {
@@ -74,13 +76,15 @@ describe('verdictOf', () => {
 
   it('solve_failing → degraded: 3 solve_failed events since the last solve', () => {
     const fails = (n: number, since: number) => Array.from({ length: n }, (_, i) => event('solve_failed', since + i * 1000, { seq: i + 1 }));
-    const r = (n: number, lastOkAt: number | null) => rec({
-      runner: runner({ solves: { ok: lastOkAt ? 1 : 0, failed: n, lastOkAt, lastSecs: 19, lastSpot: 'centre' } }),
+    const r = (n: number, seenAt: number | null, lastOkAt = seenAt) => rec({
+      runner: runner({ solves: { ok: lastOkAt ? 1 : 0, failed: n, lastOkAt, lastSecs: 19, lastSpot: 'centre' }, solveOkSeenAt: seenAt }),
       events: { routine: fails(n, NOW - 10 * MIN), important: [] },
     });
     expect(verdict(r(3, null))).toEqual({ verdict: 'degraded', reasons: ['solve_failing'] });
     expect(verdict(r(2, null)).reasons).toEqual([]);
-    expect(verdict(r(3, NOW - MIN)).reasons).toEqual([]);   // solved after them
+    expect(verdict(r(3, NOW - MIN)).reasons).toEqual([]);   // solved after them (the Worker saw it)
+    // the runner's clock fast: its lastOkAt reads after them, the Worker's receive time doesn't
+    expect(verdict(r(3, NOW - HOUR, NOW)).reasons).toEqual(['solve_failing']);
   });
 
   it('unsynced → degraded while the runner holds entries the Worker hasn’t got', () => {
@@ -99,8 +103,30 @@ describe('verdictOf', () => {
     expect(verdict(rec({ bookings: [entry('failed', NOW - HOUR), entry('confirmed', NOW - MIN, { date: '2026-11-21' })] })).reasons).toEqual(['human_needed']);
     // an earlier one doesn't either
     expect(verdict(rec({ bookings: [entry('confirmed', NOW - 2 * HOUR), entry('failed', NOW - HOUR)] })).reasons).toEqual(['human_needed']);
-    // a hold alone is not
-    expect(verdict(rec({ bookings: [entry('hold', NOW - MIN)] })).reasons).toEqual([]);
+    // a hold the runner finishes itself (auto-confirm on, the stay ≥ 11 days away) is not
+    const auto = { ...settings, autoConfirm: true, dates: ['2026-11-24'] };
+    expect(verdict(rec({ settings: auto, bookings: [entry('hold', NOW - MIN, { date: '2026-11-24' })] })).reasons).toEqual([]);
+  });
+
+  it('human_needed: a hold within its 30 min that a person must finish (auto-confirm off, or a near stay)', () => {
+    const hold = (at: number, x: Partial<BookingEntry> = {}) => entry('hold', at, x);
+    expect(verdict(rec({ bookings: [hold(NOW - MIN)] })).reasons).toEqual(['human_needed']);   // auto-confirm off
+    expect(verdict(rec({ bookings: [hold(NOW - 30 * MIN)] })).reasons).toEqual([]);           // lapsed
+    const auto = { ...settings, autoConfirm: true, dates: ['2026-11-22', '2026-11-24'] };
+    expect(verdict(rec({ settings: auto, bookings: [hold(NOW - MIN)] })).reasons).toEqual(['human_needed']);   // 9 days: near
+    expect(verdict(rec({ settings: auto, bookings: [hold(NOW - MIN, { date: '2026-11-24' })] })).reasons).toEqual([]);
+    // a later step for that stay settles it
+    expect(verdict(rec({ bookings: [hold(NOW - 2 * MIN), entry('confirming', NOW - MIN)] })).reasons).toEqual([]);
+  });
+
+  it('human_needed: a confirming without its confirmed or failed past the grace (24 h window)', () => {
+    const c = entry('confirming', NOW - CONFIRM_GRACE_MS - MIN);
+    expect(verdict(rec({ bookings: [c] })).reasons).toEqual(['human_needed']);
+    expect(verdict(rec({ bookings: [entry('confirming', NOW - MIN)] })).reasons).toEqual([]);   // in flight
+    expect(verdict(rec({ bookings: [c, entry('confirmed', NOW - MIN, { number: '1' })] })).reasons).toEqual([]);
+    expect(verdict(rec({ bookings: [entry('confirming', NOW - 25 * HOUR)] })).reasons).toEqual([]);
+    // settled by a failed: that one's own rule then (till a 予約確定)
+    expect(verdict(rec({ bookings: [c, entry('failed', NOW - MIN)] })).reasons).toEqual(['human_needed']);
   });
 
   it('lists every reason in REASONS order, the verdict the first’s', () => {
@@ -109,7 +135,7 @@ describe('verdictOf', () => {
       events: { routine: [], important: [event('ban', NOW - HOUR), event('human_needed', NOW - HOUR)] },
       bookings: [],
     });
-    r.runner!.lastOkAt = NOW - 2 * HOUR;
+    r.runner!.okSeenAt = NOW - 2 * HOUR;
     expect(verdict(r)).toEqual({ verdict: 'failing', reasons: ['banned', 'scan_failing', 'unsynced', 'human_needed'] });
     expect(verdict(r, 'off').reasons).toEqual(['mode_off', 'banned', 'unsynced', 'human_needed']);
   });

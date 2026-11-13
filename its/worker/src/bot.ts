@@ -15,15 +15,16 @@ import {
   type ItsRecord,
 } from './rules.ts';
 
-const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'events', 'seen', 'acks'] as const satisfies readonly (keyof ItsRecord)[];
+const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks'] as const satisfies readonly (keyof ItsRecord)[];
 
-/** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way). */
+/** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way; the
+ *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too). */
 const DISPATCH_AGAIN_MS = 2 * 60_000;
 /** Phases of a run that will keep going: 開始 then needs no new run. */
 const RUNNING = new Set(['starting', 'solving', 'scanning']);
 
 const empty = (): ItsRecord => ({
-  settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null,
+  settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null, control: null,
   events: { routine: [], important: [] }, seen: {}, acks: [],
 });
 
@@ -45,11 +46,12 @@ export class ItsBot extends DurableObject<Env> {
     this.rec = rec as unknown as ItsRecord;
   }
 
-  /** Into memory at once (a request interleaving at the await sees it), then one put of these keys. */
+  /** One put of these keys, then into memory: a put that throws leaves the record as it was, so nothing it carried is
+   *  acknowledged (the request fails). The runtime's input gate holds other requests while the put runs. */
   private async save(patch: Partial<ItsRecord>): Promise<void> {
     if (!Object.keys(patch).length) return;
-    Object.assign(this.rec, patch);
     await this.ctx.storage.put(patch as Record<string, unknown>);
+    Object.assign(this.rec, patch);
   }
 
   private get mode(): 'on' | 'off' {
@@ -76,13 +78,16 @@ export class ItsBot extends DurableObject<Env> {
     return { ok: true, status: await this.status() };
   }
 
-  /** 開始 / 停止, at once and outside the draft (`updatedAt` doesn't move: no one's draft conflicts with it). 開始
-   *  dispatches a run unless one wouldn't run (MODE off, no date), one is running, or one was just dispatched. */
+  /** 開始 / 停止, at once and outside the draft (`updatedAt` doesn't move: no one's draft conflicts with it), recorded as
+   *  `control` (who, when). 開始 dispatches a run unless one wouldn't run (MODE off, no date), one is running, or one
+   *  was just dispatched: the dispatch is recorded (ok, no status yet) before GitHub is asked, so a 開始 meanwhile is
+   *  `recent`, and a 停止 meanwhile stays (only `dispatch` is written after). */
   async run(input: RunInput, by: Member): Promise<ItsStatus> {
     const now = Date.now();
     const settings = { ...this.rec.settings, paused: input.action === 'stop' };
+    const control = { action: input.action, by, at: now };
     if (input.action === 'stop') {
-      await this.save({ settings });
+      await this.save({ settings, control });
       console.log(`its run stop by=${by} runner=${this.rec.runner?.runId ?? '-'}`);
       return this.status();
     }
@@ -93,14 +98,13 @@ export class ItsBot extends DurableObject<Env> {
           : dispatch?.ok && now - dispatch.at < DISPATCH_AGAIN_MS && (runner?.lastSeen ?? 0) < dispatch.at ? 'recent'
             : null;
     if (skip) {
-      await this.save({ settings });
-      console.log(`its run start by=${by} dispatch=skip_${skip}`);
+      await this.save({ settings, control });
+      console.log(`its run start by=${by} dispatch=skip_${skip}${skip === 'recent' ? ` last=${Math.round((now - dispatch!.at) / 1000)}s` : ''}`);
       return this.status();
     }
-    this.rec.settings = settings;   // seen as started meanwhile
-    const sent = await dispatchRun(this.env.GH_DISPATCH_TOKEN, now);
-    await this.save({ settings: this.rec.settings, dispatch: sent });
-    console.log(`its run start by=${by} dispatch=${sent.status ?? 'no_token'}`);
+    await this.save({ settings, control, dispatch: { at: now, ok: true, status: null } });   // = no token: nothing sent
+    if (this.env.GH_DISPATCH_TOKEN) await this.save({ dispatch: await dispatchRun(this.env.GH_DISPATCH_TOKEN, now) });
+    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}`);
     return this.status();
   }
 
@@ -124,8 +128,9 @@ export class ItsBot extends DurableObject<Env> {
     return c;
   }
 
-  /** A heartbeat: the holder's renews the lease (a `run_end` releases it) and becomes the runner shown; events and seen
-   *  names are taken from any run (a stray run's hold is still a fact). */
+  /** A heartbeat: the holder's renews the lease (a `run_end` releases it) and becomes the runner shown; the holder whose
+   *  lease expired with nobody claiming it renews it too (`renewed_late`); a free lease (released) is not granted by a
+   *  report (claim first). Events and seen names are taken from any run (a stray run's hold is still a fact). */
   async report(r: RunnerReport): Promise<RunnerConfig> {
     const now = Date.now();
     const patch: Partial<ItsRecord> = {};
@@ -135,15 +140,17 @@ export class ItsBot extends DurableObject<Env> {
     if (seen) patch.seen = seen;
     const held = this.rec.lease;
     const ended = r.events.some((e) => e.kind === 'run_end');
+    const late = !ended && held?.holder === r.runId && held.until <= now;
     if (held?.holder === r.runId) {
-      patch.runner = runnerOf(r, now);
+      patch.runner = runnerOf(r, now, this.rec.runner);
       patch.lease = ended ? null : { ...held, until: now + LEASE_SEC * 1000 };
     } else if (!leaseTaken(held, r.runId, now)) {
-      patch.runner = runnerOf(r, now);   // nobody holds it: still the runner to show (a retried last report)
+      patch.runner = runnerOf(r, now, this.rec.runner);   // nobody holds it: still the runner to show (a retried last report)
     } else {
       console.warn(`its report from a run without the lease run=${r.runId} holder=${held!.holder}`);
     }
     await this.save(patch);
+    if (late) console.warn(`its lease renewed_late run=${r.runId} expired=${Math.round((now - held!.until) / 1000)}s ago`);
     const c = runnerConfig(this.rec, this.mode, r.runId, now, true);
     console.log(`its report run=${r.runId} host=${r.host} phase=${r.phase} scans=${r.scans} fail=${r.scanFailures} solves=${r.solves.ok}/${r.solves.failed} unsynced=${r.unsynced} ev=${ev?.added.length ?? 0}/${r.events.length} seen=${r.seen.length}${seen ? '+' : ''} lease=${patch.lease === undefined ? 'kept' : patch.lease ? 'renewed' : 'released'} stop=${c.stopReason ?? 0}`);
     for (const e of ev?.added ?? []) {
@@ -153,14 +160,29 @@ export class ItsBot extends DurableObject<Env> {
     return c;
   }
 
-  /** The runner's booking entries: appended (a known id ignored), never changed, pruned BOOKINGS_KEEP_DAYS after the stay. */
-  async bookings(list: BookingInput[], runId: string | null): Promise<RunnerConfig> {
+  /** The runner's booking entries: appended (a known id with the same content ignored), never changed, pruned
+   *  BOOKINGS_KEEP_DAYS after the stay. Refused (`ok: false`, the HTTP status for index.ts): an id reused for other
+   *  content (409 id_conflict, nothing kept), or entries past the record's bound (507 record_full, those that fit kept):
+   *  either way the runner keeps them unsynced. */
+  async bookings(list: BookingInput[], runId: string | null): Promise<BookingsReply> {
     const now = Date.now();
     const r = addBookings(this.rec.bookings, list, now);
+    if (r.conflict) {
+      const had = this.rec.bookings.find((b) => b.id === r.conflict) ?? list.find((b) => b.id === r.conflict)!;
+      const got = list.findLast((b) => b.id === r.conflict)!;
+      console.error(`its bookings refused id_conflict run=${runId ?? '-'} id=${r.conflict} had=${had.kind}/${had.date}/${q(had.hotel)} got=${got.kind}/${got.date}/${q(got.hotel)}`);
+      return { ok: false, status: 409, error: 'id_conflict' };
+    }
     if (r.bookings !== this.rec.bookings) await this.save({ bookings: r.bookings });
     console.log(`its bookings run=${runId ?? '-'} got=${list.length} new=${r.added.length} kept=${r.bookings.length}`);
     for (const b of r.added) console.log(`its booking ${b.kind} id=${b.id} date=${b.date} hotel=${q(b.hotel)}${b.number ? ' number=yes' : ''}`);
-    if (r.refused) console.error(`its bookings refused=${r.refused}: the record is full (${r.bookings.length}); back it up and look`);
-    return runnerConfig(this.rec, this.mode, runId, now);
+    if (r.refused) {
+      console.error(`its bookings refused=${r.refused} record_full: the record is full (${r.bookings.length}); back it up and look`);
+      return { ok: false, status: 507, error: 'record_full' };
+    }
+    return { ok: true, config: runnerConfig(this.rec, this.mode, runId, now) };
   }
 }
+
+/** POST /runner/bookings's outcome: the RunnerConfig, or a refusal for index.ts to answer. */
+export type BookingsReply = { ok: true; config: RunnerConfig } | { ok: false; status: 409 | 507; error: 'id_conflict' | 'record_full' };

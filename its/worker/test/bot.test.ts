@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import example from '../../contract-example.json';
 import { EVENTS_KEPT, LEASE_SEC, type BookingInput, type EventInput, type ItsSettingsInput } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
-import { MAX_BOOKINGS, SEEN_KEPT } from '../src/rules.ts';
+import { ACKS_KEPT, MAX_BOOKINGS, SEEN_KEPT, SEEN_REFRESH_MS } from '../src/rules.ts';
 import { MIN, NOW, fakeState, quiet, report, start, type State } from './fakeBot.ts';
 
 let state: State;
@@ -17,6 +17,14 @@ const settingsInput = (): ItsSettingsInput => ({ ...example.settingsInput, baseU
 const booking = (seq: number, x: Partial<BookingInput> = {}): BookingInput => ({ ...example.bookingInput, id: `${RUN}:${seq}`, ...x }) as BookingInput;
 const ev = (seq: number, kind: EventInput['kind'] = 'available', x: Partial<EventInput> = {}): EventInput => ({ seq, kind, ...x });
 const logged = () => logs.log.mock.calls.flat().join('\n');
+const warned = () => logs.warn.mock.calls.flat().join('\n');
+const errored = () => logs.error.mock.calls.flat().join('\n');
+/** POST /runner/bookings accepted: its RunnerConfig. */
+async function post(list: BookingInput[]) {
+  const r = await bot.bookings(list, RUN);
+  if (!r.ok) throw new Error(`refused ${r.status} ${r.error}`);
+  return r.config;
+}
 
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -67,11 +75,25 @@ describe('the lease', () => {
     expect(old.lease?.holder).toBe('19283999');
   });
 
-  it('an expired lease nobody took is still renewed by its holder’s report', async () => {
+  it('an expired lease nobody took is still renewed by its holder’s report (logged renewed_late)', async () => {
     await bot.claim({ runId: RUN, host: 'actions' });
     vi.setSystemTime(NOW + 10 * MIN);
     const r = await bot.report(report());
-    expect([r.stop, r.lease?.holder, r.lease?.until]).toEqual([false, RUN, NOW + 10 * MIN + LEASE_SEC * 1000]);
+    expect([r.stop, r.stopReason, r.lease?.holder, r.lease?.until]).toEqual([false, null, RUN, NOW + 10 * MIN + LEASE_SEC * 1000]);
+    expect(warned()).toContain('its lease renewed_late run=19283746 expired=300s ago');
+    expect(logged()).toContain('lease=renewed');
+    // in time: no such line
+    logs.warn.mockClear();
+    await bot.report(report());
+    expect(warned()).not.toContain('renewed_late');
+  });
+
+  it('a lease released by run_end is not granted again by a later report of that run', async () => {
+    await bot.claim({ runId: RUN, host: 'actions' });
+    await bot.report(report({ events: [ev(1, 'run_end', { detail: 'time_up' })] }));
+    const r = await bot.report(report());
+    expect([r.stop, r.stopReason, r.lease]).toEqual([true, 'lease_lost', null]);
+    expect(warned()).not.toContain('renewed_late');
   });
 
   it('is released by a run_end report, and a report without a claim is told to claim (lease_lost)', async () => {
@@ -131,6 +153,41 @@ describe('reports', () => {
     expect(seen).not.toContain('B');
   });
 
+  it('a ban clears when the Worker sees lastOkAt move after it, whatever the runner’s clock says', async () => {
+    const fast = NOW + 3600_000;   // the runner's clock an hour ahead
+    await bot.report(report({ lastOkAt: fast }));
+    vi.setSystemTime(NOW + MIN);
+    await bot.report(report({ lastOkAt: fast, events: [ev(1, 'ban')] }));
+    vi.setSystemTime(NOW + 2 * MIN);
+    await bot.report(report({ lastOkAt: fast }));   // no good scan since: still banned
+    expect((await bot.status()).reasons).toContain('banned');
+    vi.setSystemTime(NOW + 3 * MIN);
+    await bot.report(report({ lastOkAt: fast + 1 }));
+    expect((await bot.status()).reasons).not.toContain('banned');
+  });
+
+  it('keep the acks of the newest ACKS_KEPT runs: an older run’s seq is forgotten', async () => {
+    for (let i = 0; i <= ACKS_KEPT; i++) await bot.report(report({ runId: `run-${i}`, events: [ev(5)] }));
+    expect((await bot.config('run-0')).ackSeq).toBe(0);
+    expect((await bot.config('run-1')).ackSeq).toBe(5);
+    expect((await bot.config(`run-${ACKS_KEPT}`)).ackSeq).toBe(5);
+    expect(state.kv.get('acks')).toHaveLength(ACKS_KEPT);
+  });
+
+  it('write a seen name offered again only after SEEN_REFRESH_MS (its time then moves)', async () => {
+    await bot.report(report({ seen: ['A'] }));
+    const rows = () => (state.count.rows);
+    let before = rows();
+    vi.setSystemTime(NOW + SEEN_REFRESH_MS - 1);
+    await bot.report(report({ seen: ['A'] }));
+    expect(rows() - before).toBe(2);   // runner + lease
+    before = rows();
+    vi.setSystemTime(NOW + SEEN_REFRESH_MS);
+    await bot.report(report({ seen: ['A'] }));
+    expect(rows() - before).toBe(3);   // + seen
+    expect(state.kv.get('seen')).toEqual({ A: NOW + SEEN_REFRESH_MS });
+  });
+
   it('are shown as the runner, with the Worker’s receive time', async () => {
     vi.setSystemTime(NOW + 1000);
     await bot.report(report());
@@ -142,33 +199,49 @@ describe('reports', () => {
 
 describe('bookings', () => {
   it('are appended once per id (a retry adds nothing), stamped with the Worker’s time, never changed', async () => {
-    let c = await bot.bookings([booking(3)], RUN);
+    let c = await post([booking(3)]);
     expect(c.bookings).toEqual([{ ...booking(3), at: NOW }]);
     vi.setSystemTime(NOW + MIN);
-    c = await bot.bookings([booking(3, { kind: 'failed' }), booking(5, { kind: 'confirming' })], RUN);
+    c = await post([booking(3), booking(5, { kind: 'confirming' })]);
     expect(c.bookings.map((b) => [b.id, b.kind, b.at])).toEqual([['19283746:3', 'hold', NOW], ['19283746:5', 'confirming', NOW + MIN]]);
     const rows = state.count.rows;
-    await bot.bookings([booking(3)], RUN);
+    await post([booking(3)]);
     expect(state.count.rows).toBe(rows);   // nothing new: nothing written
     expect((await bot.status()).bookings.map((b) => b.id)).toEqual(['19283746:5', '19283746:3']);   // newest first
     expect(logged()).toContain('its booking confirming id=19283746:5 date=2026-11-22 hotel="NAGU 勝浦"');
   });
 
+  it('an id reused for other content is refused whole (409 id_conflict, logged), never taken as a retry', async () => {
+    await post([booking(3)]);
+    const rows = state.count.rows;
+    for (const other of [{ kind: 'confirmed', number: '1' }, { date: '2026-11-21' }, { hotel: 'リソル' }] as const) {
+      expect(await bot.bookings([booking(4), booking(3, other)], RUN)).toEqual({ ok: false, status: 409, error: 'id_conflict' });
+    }
+    expect(await bot.bookings([booking(6), booking(6, { kind: 'failed' })], RUN)).toMatchObject({ status: 409 });   // within one post
+    expect(state.count.rows).toBe(rows);
+    expect((await bot.config(RUN)).bookings.map((b) => b.id)).toEqual(['19283746:3']);
+    expect(errored()).toContain('its bookings refused id_conflict run=19283746 id=19283746:3 had=hold/2026-11-22/"NAGU 勝浦" got=confirmed/2026-11-22/"NAGU 勝浦"');
+  });
+
   it('are pruned only BOOKINGS_KEEP_DAYS after the stay: a reservation is kept till then', async () => {
-    await bot.bookings([booking(1, { date: '2026-09-13', kind: 'confirmed', number: '123' }), booking(2, { date: '2026-09-14', kind: 'confirmed', number: '124' }), booking(3)], RUN);
+    await post([booking(1, { date: '2026-09-13', kind: 'confirmed', number: '123' }), booking(2, { date: '2026-09-14', kind: 'confirmed', number: '124' }), booking(3)]);
     // 2026-11-13: 61 days after 09-13, 60 after 09-14 (kept, on the record)
     expect((await bot.status()).bookings.map((b) => b.id)).toEqual(['19283746:3', '19283746:2']);
-    await bot.bookings([booking(4)], RUN);
+    await post([booking(4)]);
     expect((state.kv.get('bookings') as { id: string }[]).map((b) => b.id)).toEqual(['19283746:2', '19283746:3', '19283746:4']);
     expect((await bot.config(RUN)).bookings.map((b) => b.id)).toEqual(['19283746:2', '19283746:3', '19283746:4']);
   });
 
-  it('past MAX_BOOKINGS new entries are refused and logged as an error, none dropped', async () => {
-    for (let i = 0; i < MAX_BOOKINGS; i += 50) await bot.bookings(Array.from({ length: 50 }, (_, j) => booking(i + j + 1)), RUN);
-    const c = await bot.bookings([booking(9999)], RUN);
+  it('past MAX_BOOKINGS new entries are refused (507 record_full, logged as an error: the runner stays unsynced), none dropped', async () => {
+    for (let i = 0; i < MAX_BOOKINGS - 1; i += 50) await post(Array.from({ length: Math.min(50, MAX_BOOKINGS - 1 - i) }, (_, j) => booking(i + j + 1)));
+    // the last place taken, the next refused
+    expect(await bot.bookings([booking(9998), booking(9999)], RUN)).toEqual({ ok: false, status: 507, error: 'record_full' });
+    const c = await bot.config(RUN);
     expect(c.bookings).toHaveLength(MAX_BOOKINGS);
-    expect(c.bookings[0].id).toBe('19283746:1');
-    expect(logs.error).toHaveBeenCalled();
+    expect([c.bookings[0].id, c.bookings.at(-1)!.id]).toEqual(['19283746:1', '19283746:9998']);
+    expect(errored()).toContain('its bookings refused=1 record_full');
+    // a retry of what was kept is still a retry; the refused one is refused again
+    expect(await bot.bookings([booking(9998), booking(9999)], RUN)).toMatchObject({ status: 507 });
   });
 });
 
@@ -193,9 +266,29 @@ describe('storage', () => {
   it('keeps everything across an eviction', async () => {
     await bot.claim({ runId: RUN, host: 'actions' });
     await bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'A' })], seen: ['A'] }));
-    await bot.bookings([booking(1)], RUN);
+    await post([booking(1)]);
+    await bot.run({ action: 'stop' }, 'B');
     const before = await bot.status();
+    expect(before.control).toEqual({ action: 'stop', by: 'B', at: NOW });
     const again = await start(fakeState(new Map(state.kv)));
     expect(await again.status()).toEqual(before);
+  });
+});
+
+describe('a put that throws', () => {
+  it('acknowledges nothing: the record in memory stays as it was, the call fails', async () => {
+    await bot.claim({ runId: RUN, host: 'actions' });
+    const put = state.ctx.storage.put;
+    state.ctx.storage.put = async () => { throw new Error('storage down'); };
+    await expect(bot.bookings([booking(1)], RUN)).rejects.toThrow('storage down');
+    await expect(bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'A' })], seen: ['A'] }))).rejects.toThrow();
+    await expect(bot.run({ action: 'stop' }, 'B')).rejects.toThrow();
+    state.ctx.storage.put = put;
+    const c = await bot.config(RUN);
+    expect([c.bookings, c.ackSeq, c.settings.paused]).toEqual([[], 0, false]);
+    const s = await bot.status();
+    expect([s.events, s.seen, s.control]).toEqual([[], [], { action: 'start', by: 'A', at: NOW }]);
+    // the retry is taken
+    expect((await post([booking(1)])).bookings).toHaveLength(1);
   });
 });

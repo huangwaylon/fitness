@@ -2,15 +2,18 @@
 // rings, the append-only bookings, the seen names, what a runner is told (RunnerConfig) and the page's verdict
 // (ItsStatus). Every time is the Worker's clock (`now`), except the runner's own fields in its report.
 import {
-  BOOKINGS_KEEP_DAYS, EVENTS_KEPT, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS, START_GRACE_SEC,
+  AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS, START_GRACE_SEC,
   daysUntil, normName, tokyoToday,
-  type BookingEntry, type BookingInput, type EventInput, type ItsEvent, type ItsSettings, type ItsStatus, type Lease,
-  type Reason, type RunnerConfig, type RunnerReport, type Verdict,
+  type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsSettings, type ItsStatus,
+  type Lease, type Reason, type RunnerConfig, type RunnerReport, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
 
 export type Mode = 'on' | 'off';
-export type RunnerRecord = NonNullable<ItsStatus['runner']>;
+/** The runner's last report as kept: the status's, plus the Worker's own receive times of its last good scan and solve
+ *  (when `lastOkAt` / `solves.lastOkAt` last moved), so the verdict compares Worker times only. Not shown. */
+export type RunnerRecord = NonNullable<ItsStatus['runner']> & { okSeenAt: number | null; solveOkSeenAt: number | null };
 export type Dispatch = NonNullable<ItsStatus['dispatch']>;
+type Control = NonNullable<ItsStatus['control']>;
 
 /** Everything the object keeps, one storage key per field (bot.ts KEYS). Lists are oldest first. */
 export interface ItsRecord {
@@ -19,6 +22,8 @@ export interface ItsRecord {
   runner: RunnerRecord | null;
   lease: Lease | null;
   dispatch: Dispatch | null;
+  /** The last 開始 / 停止. */
+  control: Control | null;
   events: { routine: ItsEvent[]; important: ItsEvent[] };
   /** Every facility name offered, with when it was last reported (the newest SEEN_KEPT kept). */
   seen: Record<string, number>;
@@ -27,11 +32,17 @@ export interface ItsRecord {
 }
 
 export const SEEN_KEPT = 300;
-const ACKS_KEPT = 20;
+/** A seen name offered again moves its time on the record at most this often (not a write per report for it). */
+export const SEEN_REFRESH_MS = 24 * 3600_000;
+export const ACKS_KEPT = 20;
 /** The record's bound: past it new entries are refused (and logged), never old ones dropped early. */
 export const MAX_BOOKINGS = 500;
 /** A failed leg or a human_needed event counts for this long (unless a later 予約確定 for that stay settles it). */
 const HUMAN_NEEDED_MS = 24 * 3600_000;
+/** The site's hold lapses after 30 min: a hold that needs a person (auto-confirm off, or a near stay) counts till then. */
+const HOLD_MS = 30 * 60_000;
+/** A 申込 leg in flight: a `confirming` without its `confirmed` / `failed` counts only after this. */
+export const CONFIRM_GRACE_MS = 10 * 60_000;
 const SCAN_FAILING = 3;
 const SOLVE_FAILING = 3;
 
@@ -86,8 +97,19 @@ export function addEvents(rec: Pick<ItsRecord, 'events' | 'acks'>, runId: string
 const pruneBookings = (list: BookingEntry[], now: number): BookingEntry[] =>
   list.filter((b) => daysUntil(b.date, now) >= -BOOKINGS_KEEP_DAYS);
 
-/** New entries appended (an id already there is a retry: ignored), stamped with `now`; past MAX_BOOKINGS refused. */
+/** Two entries say the same (all but the Worker's `at`). */
+const sameEntry = (a: BookingInput, b: BookingInput) =>
+  a.kind === b.kind && a.date === b.date && a.hotel === b.hotel && a.runId === b.runId && (a.number ?? null) === (b.number ?? null);
+
+/** New entries appended, stamped with `now`: an id already there with the same content is a retry (ignored); with other
+ *  content the whole post is refused (`conflict`: that id; nothing added). Past MAX_BOOKINGS refused (`refused`). */
 export function addBookings(list: BookingEntry[], inputs: BookingInput[], now: number) {
+  const byId = new Map<string, BookingInput>(list.map((b) => [b.id, b]));
+  for (const b of inputs) {
+    const had = byId.get(b.id);
+    if (had && !sameEntry(had, b)) return { bookings: list, added: [], refused: 0, conflict: b.id };
+    if (!had) byId.set(b.id, b);
+  }
   const ids = new Set(list.map((b) => b.id));
   const kept = pruneBookings(list, now);
   const added: BookingEntry[] = [];
@@ -98,40 +120,59 @@ export function addBookings(list: BookingEntry[], inputs: BookingInput[], now: n
     if (kept.length + added.length >= MAX_BOOKINGS) { refused++; continue; }
     added.push({ ...b, at: now });
   }
-  return { bookings: added.length || kept.length !== list.length ? [...kept, ...added] : list, added, refused };
+  return { bookings: added.length || kept.length !== list.length ? [...kept, ...added] : list, added, refused, conflict: null };
 }
 
-/** The names offered, stamped `now`; past SEEN_KEPT the least recently offered go. Null: nothing new. */
+/** The names offered, stamped `now`; past SEEN_KEPT the least recently offered go. Null: nothing to write (no new name,
+ *  and every one offered was stamped less than SEEN_REFRESH_MS ago: the order only matters at the cap). */
 export function addSeen(seen: Record<string, number>, names: string[], now: number): Record<string, number> | null {
-  if (!names.length) return null;
+  if (!names.some((n) => !(n in seen) || now - seen[n] >= SEEN_REFRESH_MS)) return null;
   const next: Record<string, number> = { ...seen };
-  let isNew = false;
-  for (const n of names) {
-    if (!(n in next)) isNew = true;
-    next[n] = now;
-  }
-  // a name seen again only moves its time: saved with the next new name (the order only matters at the cap)
-  if (!isNew) return null;
+  for (const n of names) next[n] = now;
   const entries = Object.entries(next);
   if (entries.length <= SEEN_KEPT) return next;
   return Object.fromEntries(entries.sort((a, b) => b[1] - a[1]).slice(0, SEEN_KEPT));
 }
 
-/** The runner's report as kept (no events or seen: they have their own keys), with the receive time. */
-export function runnerOf(r: RunnerReport, now: number): RunnerRecord {
+/** The runner's report as kept (no events or seen: they have their own keys), with the receive time; `okSeenAt` /
+ *  `solveOkSeenAt` become `now` when the run's lastOkAt / solves.lastOkAt moved since `prev` (the record's). */
+export function runnerOf(r: RunnerReport, now: number, prev: RunnerRecord | null): RunnerRecord {
   const { v: _v, events: _e, seen: _s, ...rest } = r;
-  return { ...rest, lastSeen: now };
+  const same = prev?.runId === r.runId ? prev : null;
+  const seenAt = (t: number | null, before: number | null | undefined, at: number | null | undefined) =>
+    t === null ? null : same && before === t && at != null ? at : now;
+  return {
+    ...rest, lastSeen: now,
+    okSeenAt: seenAt(r.lastOkAt, same?.lastOkAt, same?.okSeenAt),
+    solveOkSeenAt: seenAt(r.solves.lastOkAt, same?.solves.lastOkAt, same?.solveOkSeenAt),
+  };
 }
 
 const stay = (date: string | undefined, hotel: string | undefined) => `${date ?? ''}|${normName(hotel ?? '')}`;
 
-/** A failed leg (booking) or a human_needed event within HUMAN_NEEDED_MS that no later 予約確定 for that stay settled. */
+/** What waits for a person (the page's 要対応), each unless a later entry for that stay settled it: within
+ *  HUMAN_NEEDED_MS, a failed leg or a human_needed event (settled by 予約確定) or a `confirming` past CONFIRM_GRACE_MS
+ *  (by 予約確定 or failed); and a hold within the site's 30 min that the runner won't finish (auto-confirm off, or a stay
+ *  nearer than AUTO_CONFIRM_MIN_DAYS; settled by any later step). */
 function humanNeeded(rec: ItsRecord, now: number): boolean {
-  const confirmed = new Map<string, number>();
-  for (const b of rec.bookings) if (b.kind === 'confirmed') confirmed.set(stay(b.date, b.hotel), Math.max(b.at, confirmed.get(stay(b.date, b.hotel)) ?? 0));
-  const open = (key: string, t: number) => now - t <= HUMAN_NEEDED_MS && (confirmed.get(key) ?? -1) < t;
-  return rec.bookings.some((b) => b.kind === 'failed' && open(stay(b.date, b.hotel), b.at))
-    || rec.events.important.some((e) => e.kind === 'human_needed' && open(stay(e.date, e.hotel), e.t));
+  const last = new Map<string, Partial<Record<BookingKind, number>>>();
+  for (const b of rec.bookings) {
+    const m = last.get(stay(b.date, b.hotel)) ?? {};
+    m[b.kind] = Math.max(b.at, m[b.kind] ?? 0);
+    last.set(stay(b.date, b.hotel), m);
+  }
+  const settled = (key: string, t: number, by: BookingKind[]) => by.some((k) => (last.get(key)?.[k] ?? -1) >= t);
+  const recent = (t: number) => now - t <= HUMAN_NEEDED_MS;
+  const auto = rec.settings.autoConfirm;
+  return rec.bookings.some((b) => {
+    const key = stay(b.date, b.hotel);
+    switch (b.kind) {
+      case 'failed': return recent(b.at) && !settled(key, b.at, ['confirmed']);
+      case 'confirming': return recent(b.at) && now - b.at > CONFIRM_GRACE_MS && !settled(key, b.at, ['confirmed', 'failed']);
+      case 'hold': return now - b.at < HOLD_MS && (!auto || daysUntil(b.date, now) < AUTO_CONFIRM_MIN_DAYS) && !settled(key, b.at, ['confirming', 'confirmed', 'failed']);
+      default: return false;
+    }
+  }) || rec.events.important.some((e) => e.kind === 'human_needed' && recent(e.t) && !settled(stay(e.date, e.hotel), e.t, ['confirmed']));
 }
 
 /** Every reason that applies, in REASONS order, and the verdict (the first's). The runner-liveness ones apply only while
@@ -145,7 +186,7 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
   const sinceDispatch = d && lastSeen < d.at;   // no report since 開始
   const starting = active && !!sinceDispatch && now - d.at < START_GRACE_SEC * 1000;
   const ban = rec.events.important.findLast((e) => e.kind === 'ban');
-  const solveFails = r ? rec.events.routine.filter((e) => e.kind === 'solve_failed' && e.runId === r.runId && e.t > (r.solves.lastOkAt ?? 0)).length : 0;
+  const solveFails = r ? rec.events.routine.filter((e) => e.kind === 'solve_failed' && e.runId === r.runId && e.t > (r.solveOkSeenAt ?? 0)).length : 0;
   const rules: Record<Reason, [boolean, Verdict]> = {
     mode_off: [mode === 'off', 'off'],
     paused: [s.paused, 'stopped'],
@@ -154,7 +195,7 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
     starting: [starting, 'starting'],
     never_ran: [active && !starting && !r, 'late'],
     runner_silent: [active && !starting && !!r && now - r.lastSeen > LATE_AFTER_SEC * 1000, 'late'],
-    banned: [!!ban && (r?.lastOkAt ?? 0) <= ban.t, 'failing'],
+    banned: [!!ban && (r?.okSeenAt ?? 0) <= ban.t, 'failing'],
     scan_failing: [active && !!r && r.scanFailures >= SCAN_FAILING, 'failing'],
     solve_failing: [active && !!r && r.solves.failed >= SOLVE_FAILING && solveFails >= SOLVE_FAILING, 'degraded'],
     unsynced: [!!r && r.unsynced > 0, 'degraded'],
@@ -162,6 +203,13 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
   };
   const reasons = REASONS.filter((x) => rules[x][0]);
   return { verdict: reasons.length ? rules[reasons[0]][1] : 'healthy', reasons };
+}
+
+/** The runner as the page sees it (the Worker's own stamps left out). */
+function shownRunner(r: RunnerRecord | null): ItsStatus['runner'] {
+  if (!r) return null;
+  const { okSeenAt: _o, solveOkSeenAt: _s, ...shown } = r;
+  return shown;
 }
 
 /** The newest first: by receive time, then seq. */
@@ -172,9 +220,10 @@ export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: nu
     v: 1, now, mode, sha,
     ...verdictOf(rec, mode, now),
     settings: liveSettings(rec.settings, now),
-    runner: rec.runner,
+    runner: shownRunner(rec.runner),
     lease: rec.lease,
     dispatch: rec.dispatch,
+    control: rec.control,
     bookings: pruneBookings(rec.bookings, now).reverse(),
     events: [...rec.events.routine, ...rec.events.important].sort(newestFirst),
     seen: Object.keys(rec.seen).sort(),
