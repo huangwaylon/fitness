@@ -19,7 +19,7 @@ import { createRequire } from 'node:module';
 const APP = join(import.meta.dirname, '..');
 const ART = join(APP, 'static', 'art');
 const MANIFEST = join(ART, 'manifest.json');
-const PLACES = join(APP, 'src', 'lib', 'components', 'island', 'models.json');
+const PLACES = join(APP, 'src', 'lib', 'world', 'models.json');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
 const pngDir = arg('png');

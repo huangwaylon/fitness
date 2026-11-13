@@ -15,7 +15,7 @@ import {
 } from '../src/lib/world/world.ts';
 import { mushroomSpots } from '../src/lib/world/mushrooms.ts';
 
-const OUT = join(import.meta.dirname, '..', 'src', 'lib', 'components', 'island', 'scatter.json');
+const OUT = join(import.meta.dirname, '..', 'src', 'lib', 'world', 'scatter.json');
 const SEED = 0x15_1a_2d;
 /** The sections' lawn (z ranges) and how many clumps / weed spots each takes (the front lawn sparse: the villagers'
  *  stage and the sea view stay open). */
