@@ -364,6 +364,91 @@ describe('the chain menus (Kalori, invented items)', () => {
   });
 });
 
+// A catalog let go while the chain menus still parse (ごはん closed, the page hidden: dbHold's drop): its parse is
+// cancelled, else the items arrived so far (~35 MB of the chain menus') stay alive till the parse ends (e2e
+// leaks-sheets caught it).
+describe('a catalog let go mid-load', () => {
+  it('cancels its parse in the worker: the worker ended, a late slice dropped, nothing added or retried', async () => {
+    const posted: { id: number }[] = [];
+    let w: { onmessage: (e: { data: unknown }) => void } | undefined;
+    let ended = 0;
+    class FakeWorker {
+      onmessage = (_e: { data: unknown }) => {};
+      onerror = () => {};
+      onmessageerror = () => {};
+      constructor() {
+        w = this;
+      }
+      postMessage(m: { id: number }) {
+        posted.push(m);
+      }
+      terminate() {
+        ended++;
+      }
+    }
+    vi.stubGlobal('Worker', FakeWorker);
+    vi.stubGlobal('location', { href: 'https://x.test/' });
+    vi.stubGlobal('fetch', async (href: string) =>
+      new Response(href.includes('index.json') ? JSON.stringify({ version: 'v0', datasets: [{ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true }] }) : 'null'));
+    try {
+      const chances: number[] = [];
+      const db = await loadFoodDb(async (n) => void chances.push(n));
+      const more = db.wantMore();
+      expect(posted).toHaveLength(1);
+      const { id } = posted[0];
+      w!.onmessage({ data: { id, items: [{ id: 'kal:1', name: 'x', shop: 's', kcal: 1 }] } });
+      db.close();
+      expect(ended).toBe(1);
+      // (the worker's messages already on their way: dropped)
+      w!.onmessage({ data: { id, items: [{ id: 'kal:2', name: 'y', shop: 's', kcal: 1 }] } });
+      w!.onmessage({ data: { id, head: { source: 'kalori' } } });
+      await more;
+      expect([db.entries.length, db.pending, chances]).toEqual([0, false, []]);
+      // (and asked again once closed: nothing fetched)
+      await db.wantMore();
+      expect(posted).toHaveLength(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('stops its indexing at the next slice: the rest of a parsed dataset never added', async () => {
+    const posted: { id: number }[] = [];
+    let w: { onmessage: (e: { data: unknown }) => void } | undefined;
+    class FakeWorker {
+      onmessage = (_e: { data: unknown }) => {};
+      onerror = () => {};
+      onmessageerror = () => {};
+      constructor() {
+        w = this;
+      }
+      postMessage(m: { id: number }) {
+        posted.push(m);
+      }
+      terminate() {}
+    }
+    vi.stubGlobal('Worker', FakeWorker);
+    vi.stubGlobal('location', { href: 'https://x.test/' });
+    vi.stubGlobal('fetch', async (href: string) =>
+      new Response(href.includes('index.json') ? JSON.stringify({ version: 'v0', datasets: [{ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true }] }) : 'null'));
+    try {
+      const db = await loadFoodDb();
+      const more = db.wantMore();
+      const total = SLICE * 40;
+      const { id } = posted[0];
+      w!.onmessage({ data: { id, items: Array.from({ length: total }, (_, i) => ({ id: `kal:${i}`, name: `x${i}`, shop: 's', kcal: 1 })) } });
+      w!.onmessage({ data: { id, head: { source: 'kalori' } } });
+      await vi.waitFor(() => expect(db.entries.length).toBeGreaterThan(0));
+      db.close();
+      await more;
+      expect(db.entries.length).toBeLessThan(total);
+      expect(db.entries.length % SLICE).toBe(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe('a dataset that fails to load', () => {
   it('an index without per-file versions (an older build’s): every file under its `version`', async () => {
     const asked: string[] = [];

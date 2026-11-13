@@ -49,6 +49,9 @@ export function holdFoodDb(): () => void {
 export const letGoFoodDb = (): void => queueMicrotask(() => void (holders || dropFoodDb()));
 function dropFoodDb() {
   clearTimeout(dropT);
+  // (its loads still in flight dropped: the chain menus' parse would otherwise hold its items till it ended)
+  if (held.db) held.db.close();
+  else void dbP?.then((db) => db.close(), () => {});
   dbP = null;
   held.db = held.images = null;
   imagesP = null;

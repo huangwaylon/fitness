@@ -9,7 +9,8 @@ const pending: (() => void)[] = [];
 vi.mock('#lib/food/index.ts', async (orig) => ({
   ...(await orig<object>()),
   loadFoodDb: () => {
-    const db = { n: ++loads };
+    // (close: a real catalog's, not enumerable so the toEquals below read { n } alone)
+    const db = Object.defineProperty({ n: ++loads }, 'close', { value: () => {} });
     return slow ? new Promise((ok) => pending.push(() => ok(db))) : Promise.resolve(db);
   }
 }));

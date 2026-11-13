@@ -80,21 +80,45 @@ function startParser(): Worker | null {
   return parser;
 }
 
-/** A dataset file, fetched and parsed in the worker (its items' barcodes and search keys in), or here without one. */
-function fetchDataset(href: string): Promise<Dataset> {
+/** A dataset file, fetched and parsed in the worker (its items' barcodes and search keys in), or here without one;
+ *  `mine`: its catalog's parses in flight (by id), for its close. */
+function fetchDataset(href: string, mine: Set<number>): Promise<Dataset> {
   const w = startParser();
   if (!w) return json<Dataset>(href).then(withJan);
   const id = nextId++;
-  return new Promise((ok, no) => {
+  mine.add(id);
+  return new Promise<Dataset>((ok, no) => {
     parsing.set(id, { items: [], pool: new Map(), ok, no });
     w.postMessage({ id, href: new URL(href, location.href).href });
-  });
+  }).finally(() => mine.delete(id));
+}
+
+/** Parses let go (their catalog closed): out of `parsing` (a slice still coming finds nothing: dropped), failed, and the
+ *  worker let go once nothing is left to parse. */
+function cancelParses(ids: Iterable<number>): void {
+  for (const id of [...ids]) {
+    const p = parsing.get(id);
+    if (!p) continue;
+    parsing.delete(id);
+    p.no(new Error('food load let go'));
+  }
+  if (!parsing.size && parser) {
+    parser.terminate();
+    parser = undefined;
+  }
 }
 
 /** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. */
 export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise<FoodDb> {
   const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
   const db = emptyDb(index);
+  // (its close: what's still loading dropped, never retried or added)
+  const mine = new Set<number>();
+  let closed = false;
+  db.close = () => {
+    closed = true;
+    cancelParses(mine);
+  };
   // One dataset indexed at a time, in slices, in the order they arrive: a core one's keys come built
   // (scripts/food-data.ts), a lazy one's in the worker (or here, in its slices: db.ts entryOf), its barcodes first.
   let indexing = Promise.resolve();
@@ -102,18 +126,23 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   // never waits for it)
   const listeners = new Set<() => void>();
   db.onAdd = (f) => (listeners.add(f), () => void listeners.delete(f));
+  // (a close stops an indexing at its next slice: the chain of slices would otherwise keep the catalog alive till done)
+  const step = (): Promise<void> => (closed ? Promise.reject(new Error('food load let go')) : pause());
   const add = (meta: FoodIndex['datasets'][number], d: Dataset) =>
-    (indexing = indexing.then(() => addDataset(db, meta, d, pause)).then(() => listeners.forEach((f) => f()), () => swallowed('food.index')));
+    closed ? undefined : (indexing = indexing.then(() => (closed ? undefined : addDataset(db, meta, d, step))).then(() => listeners.forEach((f) => f()), () => void (closed || swallowed('food.index'))));
   // (the log: once an incident, its first failure and, the retries spent, its giving up: `swallow:food.load` /
   // `food.gaveup`)
-  const get = (meta: FoodIndex['datasets'][number]) => fetchDataset(url(meta.file, fileV(index, meta.file)));
+  const get = (meta: FoodIndex['datasets'][number]) =>
+    closed ? Promise.reject(new Error('food load let go')) : fetchDataset(url(meta.file, fileV(index, meta.file)), mine);
   const again = (meta: FoodIndex['datasets'][number], n: number): void =>
-    void chance?.(n).then(() => get(meta).then((d) => void add(meta, d), () => {
+    void chance?.(n).then(() => closed ? undefined : get(meta).then((d) => void add(meta, d), () => {
+      if (closed) return;
       if (n < RETRIES) again(meta, n + 1);
       else swallowed('food.gaveup');
     }));
   const load = (meta: FoodIndex['datasets'][number]) =>
     get(meta).then((d) => add(meta, d), () => {
+      if (closed) return;
       swallowed('food.load');
       again(meta, 0);
     });
