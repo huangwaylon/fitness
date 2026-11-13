@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The mic's tap-to-talk button (docs/kikimimi-mic.md "The modes", the rules): 72 px, round, a ring meter of the voice's level
-  // around it. A tap starts a take (lib/mic/session.ts; the audio context woken inside the tap), a tap stops it; it
+  // The mic's tap-to-talk button (docs/kikimimi-mic.md "The modes", the rules): MicRing's round button and its ring meter
+  // of the voice's level. A tap starts a take (lib/mic/session.ts; the audio context woken inside the tap), a tap stops it; it
   // also stops by itself on silence after speech, at the cap, with no speech in a while, or when the app hides. Never
   // starts on its own. The speech goes to `onheard` (null: none) and is kept nowhere here; leaving cancels the take.
   // The mic core is its own chunk, fetched when the button shows. `onstart`: the take is open (まねっこ plays its clip
@@ -11,6 +11,7 @@
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import type { Got, Take } from '#lib/mic/session.ts';
   import { level01 } from '#lib/mic/level.ts';
+  import MicRing from './MicRing.svelte';
 
   let { onheard, onstart, onretry, maxS }: { onheard: (g: Got | null) => void; onstart?: () => void; onretry?: () => void; maxS?: number } = $props();
 
@@ -57,35 +58,8 @@
   }
 </script>
 
-<div class="mic" data-mic-button data-mic-state={st} data-mic-speaking={speaking ? 1 : 0}>
-  <button type="button" class="talk" class:on={st === 'listening'} data-sfx="tick" aria-label={st === 'listening' ? t('kiki.mic.btn.stop') : t('kiki.mic.btn.talk')}
-    aria-pressed={st === 'listening'} onclick={tap}>
-    <svg viewBox="0 0 80 80" aria-hidden="true">
-      <circle class="track" cx="40" cy="40" r="37" />
-      <circle class="lv" cx="40" cy="40" r="37" pathLength="1" stroke-dasharray="1" stroke-dashoffset={1 - level} />
-    </svg>
-    <span class="ic" aria-hidden="true">{st === 'listening' ? '■' : '🎤'}</span>
-  </button>
-  <p class="cap" role="status">{st === 'denied' ? t('kiki.mic.btn.denied') : st === 'listening' ? t('kiki.mic.btn.listening') : t('kiki.mic.btn.talk')}</p>
+<MicRing on={st === 'listening'} {level} label={st === 'listening' ? t('kiki.mic.btn.stop') : t('kiki.mic.btn.talk')} icon={st === 'listening' ? '■' : '🎤'}
+  cap={st === 'denied' ? t('kiki.mic.btn.denied') : st === 'listening' ? t('kiki.mic.btn.listening') : t('kiki.mic.btn.talk')} onclick={tap}
+  data-mic-button data-mic-state={st} data-mic-speaking={speaking ? 1 : 0}>
   {#if st === 'denied' && onretry}<button type="button" class="btn small paper" data-mic-retry data-sfx="confirm" onclick={onretry}>↻ {t('kiki.mic.retry')}</button>{/if}
-</div>
-
-<style>
-  .mic { display: grid; justify-items: center; gap: 6px; }
-  .talk {
-    position: relative; display: grid; place-items: center; width: 80px; height: 80px; padding: 0; border: 0; border-radius: 50%;
-    background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 4px 0 var(--c-leaf-edge); cursor: pointer;
-    transition: transform var(--dur-tap) var(--ease-squash);
-  }
-  .talk:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
-  .talk.on { background: var(--c-coral); box-shadow: inset 0 0 0 2px var(--c-edge), 0 4px 0 var(--c-edge); }
-  svg { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); rotate: -90deg; pointer-events: none; }
-  circle { fill: none; stroke-width: 4; }
-  .track { stroke: transparent; }
-  .on .track { stroke: var(--edge); }
-  .on .lv { opacity: 1; }
-  .lv { opacity: 0; stroke: var(--coral-text); transition: stroke-dashoffset 80ms linear; }
-  .ic { font: 700 32px/1 var(--font-ui); color: var(--c-ink); }
-  .cap { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); text-align: center; }
-  @media (prefers-reduced-motion: reduce) { .talk, .lv { transition: none; } }
-</style>
+</MicRing>

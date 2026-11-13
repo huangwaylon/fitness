@@ -1,6 +1,6 @@
 <script lang="ts">
-  // くりかえし チャレンジ's and ロールプレイ's tap-to-talk (docs/kikimimi-mic.md "The modes", the rules): 80 px, round, a ring
-  // meter of the voice's level. A tap starts a take on the phone's recogniser (lib/mic/stt.ts, loaded by the round;
+  // くりかえし チャレンジ's and ロールプレイ's tap-to-talk (docs/kikimimi-mic.md "The modes", the rules): MicRing's round button
+  // and its ring meter of the voice's level. A tap starts a take on the phone's recogniser (lib/mic/stt.ts, loaded by the round;
   // inside the tap: the audio context woken), a tap ends it; it also ends by itself on silence after speech, at its cap,
   // with no speech in a while, or when the app hides. Never starts on its own. What was heard goes to `onheard` (a miss
   // to `onmiss`) and is kept nowhere here; leaving cancels the take. Its words are the game's (`kiki.<game>.talk` …).
@@ -9,6 +9,7 @@
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import { level01 } from '#lib/mic/level.ts';
   import type { Miss, Recogniser, Take } from '#lib/mic/stt.ts';
+  import MicRing from './MicRing.svelte';
 
   let { game, rec, maxS, idle, st = $bindable('idle'), onheard, onmiss }: {
     /** Whose words and look-up (`data-kuri-mic` / `data-role-mic`). */
@@ -52,31 +53,6 @@
   }
 </script>
 
-<div class="mic" {...{ [`data-${game}-mic`]: st }}>
-  <button type="button" class="talk" class:on={st === 'listening'} data-sfx="tick" aria-label={t(st === 'listening' ? `kiki.${game}.stop` : `kiki.${game}.talk`)}
-    aria-pressed={st === 'listening'} aria-disabled={st === 'checking'} onclick={tap}>
-    <svg viewBox="0 0 80 80" aria-hidden="true">
-      <circle class="lv" cx="40" cy="40" r="37" pathLength="1" stroke-dasharray="1" stroke-dashoffset={1 - level} />
-    </svg>
-    <span class="ic" aria-hidden="true">{st === 'listening' ? '■' : st === 'checking' ? '…' : '🎤'}</span>
-  </button>
-  <p class="cap" role="status">{st === 'listening' ? t(`kiki.${game}.listening`) : st === 'checking' ? t(`kiki.${game}.checking`) : idle}</p>
-</div>
-
-<style>
-  .mic { display: grid; justify-items: center; gap: 6px; }
-  .talk {
-    position: relative; display: grid; place-items: center; width: 80px; height: 80px; padding: 0; border: 0; border-radius: 50%;
-    background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 4px 0 var(--c-leaf-edge); cursor: pointer;
-    transition: transform var(--dur-tap) var(--ease-squash);
-  }
-  .talk:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
-  .talk.on { background: var(--c-coral); box-shadow: inset 0 0 0 2px var(--c-edge), 0 4px 0 var(--c-edge); }
-  .talk[aria-disabled='true'] { background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); }
-  svg { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); rotate: -90deg; pointer-events: none; }
-  .lv { fill: none; stroke-width: 4; stroke: var(--coral-text); opacity: 0; transition: stroke-dashoffset 80ms linear; }
-  .on .lv { opacity: 1; }
-  .ic { font: 700 32px/1 var(--font-ui); color: var(--c-ink); }
-  .cap { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); text-align: center; }
-  @media (prefers-reduced-motion: reduce) { .talk, .lv { transition: none; } }
-</style>
+<MicRing on={st === 'listening'} busy={st === 'checking'} {level} track={false} label={t(st === 'listening' ? `kiki.${game}.stop` : `kiki.${game}.talk`)}
+  icon={st === 'listening' ? '■' : st === 'checking' ? '…' : '🎤'} cap={st === 'listening' ? t(`kiki.${game}.listening`) : st === 'checking' ? t(`kiki.${game}.checking`) : idle}
+  onclick={tap} {...{ [`data-${game}-mic`]: st }} />
