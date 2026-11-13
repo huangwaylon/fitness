@@ -57,7 +57,12 @@
     </div>
     <div class="row">
       <label class="lbl" for="prof-birth">{t('profile.birth')}</label>
-      <input id="prof-birth" type="date" min={BIRTH.from} {max} value={prof.birth ?? ''} data-birth data-sfx="none" onchange={birth} />
+      <!-- empty: 未設定 over it (WebKit draws today's date in an empty field, read as a value) -->
+      <span class="date" class:empty={!prof.birth}>
+        <input id="prof-birth" type="date" min={BIRTH.from} {max} value={prof.birth ?? ''} data-birth data-sfx="none" onchange={birth}
+          aria-describedby={prof.birth ? undefined : 'prof-birth-none'} />
+        {#if !prof.birth}<span class="ph" id="prof-birth-none" data-birth-none>{t('profile.birthNone')}</span>{/if}
+      </span>
     </div>
     {#if !guest}
       <div class="row">
@@ -89,4 +94,8 @@
     font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
   }
   input[type='date']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .date { flex: 1; min-width: 0; position: relative; display: flex; }
+  .empty:not(:focus-within) input { color: transparent; }
+  .ph { position: absolute; left: 14px; top: 50%; translate: 0 -50%; pointer-events: none; font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); }
+  .date:focus-within .ph { display: none; }
 </style>

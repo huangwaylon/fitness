@@ -232,6 +232,7 @@
   "profile.sex.f": "Female",
   "profile.sex.none": "Private",
   "profile.birth": "Birthday",
+  "profile.birthNone": "Not set",
   "profile.age": "{n} y",
   "profile.bmiStd": "BMI scale",
   "profile.bmiStd.asia": "Asia",

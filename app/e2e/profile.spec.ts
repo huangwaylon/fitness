@@ -40,7 +40,9 @@ test('a member sets both profiles; the partner’s phone has them; the guest see
   await expect(checked(a.page, 'data-sex')).toHaveAttribute('data-sex', 'none'); // ひみつ until set
   await expect(checked(a.page, 'data-bmi-std')).toHaveAttribute('data-bmi-std', 'asia'); // the default
   await a.card.locator('[data-sex=m]').click();
+  await expect(a.card.locator('[data-birth-none]')).toBeVisible();
   await a.card.locator('[data-birth]').fill('1990-05-12');
+  await expect(a.card.locator('[data-birth-none]')).toHaveCount(0);
   await expect(a.card.locator('[data-profile-age]')).toHaveText(`${ageNow('1990-05-12')}歳`);
   // うめ's, from ウェイ's phone (either member sets either's)
   await a.card.locator('select[data-pick=who]').selectOption('B');
@@ -71,6 +73,8 @@ test('a member sets both profiles; the partner’s phone has them; the guest see
   await expect(g.card.locator('select, [data-bmi-std]')).toHaveCount(0);
   await expect(checked(g.page, 'data-sex')).toHaveAttribute('data-sex', 'none');
   await expect(g.card.locator('[data-birth]')).toHaveValue('');
+  // an empty date says 未設定 (not WebKit's grey today, as if set)
+  await expect(g.card.locator('[data-birth-none]')).toHaveText('未設定');
   await g.card.locator('[data-sex=f]').click();
   await expect.poll(() => rec.prefs('G').map(([who, d]) => [who, d.key, d.value])).toEqual([['G', 'sex', 'f']]); // never a member's
   expect(rec.prefs('A').filter(([who]) => who === 'G')).toEqual([]); // nor the guest's to a member

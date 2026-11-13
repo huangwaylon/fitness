@@ -232,6 +232,7 @@
   "profile.sex.f": "女性",
   "profile.sex.none": "未設定",
   "profile.birth": "生年月日",
+  "profile.birthNone": "未設定",
   "profile.age": "{n}歳",
   "profile.bmiStd": "BMIの基準",
   "profile.bmiStd.asia": "アジア",
