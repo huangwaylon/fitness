@@ -53,6 +53,7 @@
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
   import { askMs, launchHold } from '#lib/ui-state/launchUpdate.ts';
   import { hasFields } from '#lib/layout/fields.ts';
+  import { meshKeyOf } from '#lib/layout/mesh.ts';
   import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
   import { watchRest } from './rest.ts';
   import { NoWebGL } from './stage.ts';
@@ -211,7 +212,7 @@
   function precipSurface(p: Precip) {
     const lay = layoutNow();
     if (!lground || !p.wantsSurface() || p.has(lay)) return;
-    p.surface(lay, (x, z) => {
+    p.surface(lay, meshKeyOf(lay), (x, z) => {
       const g = heightOf(x, z), w = waterY(x, z);
       return w > g + 0.1 ? { h: w, water: true } : { h: g, water: false };
     }, extentOf(lay).land);
@@ -1039,7 +1040,7 @@
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
       at: (x, z, lift, out) => e.at(x, z, lift, out), outline: (id) => e.outline(id), ground: (sx, sy) => e.groundAt(sx, sy), feet: (x, z) => feetOf(x, z), horizon: () => e.horizon(),
-      rev: () => e.rev(), rushing: () => e.rushing(), camZ: () => e.view().camZ, kick: () => e.kick(), idle: () => e.idle(), paused: () => e.isPaused(),
+      rev: () => e.rev(), rushing: () => e.rushing(), camZ: () => e.view().camZ, kick: () => e.kick(false), idle: () => e.idle(), paused: () => e.isPaused(),
       focus: (f, ms) => ((focusAt = { x: f.x, z: f.z }), e.frame(f, ms)), unfocus: (ms) => ((focusAt = null), e.restore(ms)), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
     world.useThree(proj);

@@ -1,5 +1,6 @@
-// The island's ground kept CPU-side page-wide for one layout (terrain.ts `kept`): a second mount (back from a room)
-// takes every band's arrays again, building no chunk; another layout's build replaces the set.
+// The island's ground kept CPU-side page-wide for one layout (terrain.ts `kept`, `encoded`): a second mount (back from a
+// room) takes every band's arrays and the fields' encoded rasters again, building no chunk; another layout's build
+// replaces the set.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { codeOf, idx } from '#lib/layout/grid.ts';
 import { Layout, defaultLayout } from '#lib/layout/model.ts';
@@ -30,10 +31,15 @@ describe('the ground kept for a layout', () => {
     expect(first).toBeGreaterThan(0);
     const bytes = keptBytes();
     expect(bytes).toBeGreaterThan(0);
+    // (the fields' rasters as the textures take them, encoded once: the sea's sampler's bytes)
+    const sdf = (g: typeof a) => (g.group.children as unknown as { material: { uniforms?: { uSdfA?: { value: { image: { data: Uint8Array } } } } } }[]).find((m) => m.material.uniforms?.uSdfA)!.material.uniforms!.uSdfA!.value.image.data;
+    const bytesA = sdf(a);
+    expect(bytesA.some((v) => v !== 0)).toBe(true);
     a.dispose();
     // back from a room: the store's next layout object, the same tiles
     const b = buildGround(new Layout(l.codes.slice(), new Map(l.objects), l.homes), { renderer, stairs: false });
     expect(built.n).toBe(first);
+    expect(sdf(b)).toBe(bytesA);
     expect(positions(b)).toEqual(positions(buildGround(l, { renderer, stairs: false })));
     const top = (g: typeof b) => (g.group.children[0] as unknown as { geometry: { getAttribute(n: string): { array: Float32Array } } }).geometry;
     expect(top(b).getAttribute('normal').array.length).toBe(top(b).getAttribute('position').array.length);

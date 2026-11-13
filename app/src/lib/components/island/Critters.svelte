@@ -19,7 +19,7 @@
   import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
   import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from '../../world/fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
-  import { moveFast, pace } from '../world3d/pace.ts';
+  import { moveFast, pace, type CritKind } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from '../../world/timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
@@ -522,17 +522,19 @@
   // second: a slow move is ambience), a dart off or a bug's flight fast on screen at the full rate to its move's end (a
   // butterfly drifting slowly or off screen is ambience, as a slow model's move is: Island3D); their fades are the 3D
   // island's own (world3d/things.ts). The moves' state of the critters gone dropped.
-  let fullTill = 0, fullTimer: ReturnType<typeof setTimeout> | undefined;
+  // (by kind: perf.rest says which keeps the island at the full rate)
+  const fullTill: Record<CritKind, number> = { fish: 0, bug: 0, rear: 0 };
+  const fullTimer: Partial<Record<CritKind, ReturnType<typeof setTimeout>>> = {};
   const wake = () => w.moveStart()();
-  function full3(ms: number) {
+  function full3(kind: CritKind, ms: number) {
     const till = performance.now() + ms;
-    if (till <= fullTill) return;
-    if (!fullTill) pace.full++;
-    fullTill = till;
-    clearTimeout(fullTimer);
-    fullTimer = setTimeout(() => {
-      pace.full--;
-      fullTill = 0;
+    if (till <= fullTill[kind]) return;
+    if (!fullTill[kind]) pace.full[kind]++;
+    fullTill[kind] = till;
+    clearTimeout(fullTimer[kind]);
+    fullTimer[kind] = setTimeout(() => {
+      pace.full[kind]--;
+      fullTill[kind] = 0;
     }, ms);
     wake();
   }
@@ -551,9 +553,11 @@
     return moveFast(f.ms, false, m ? w.screenAt(m.xyz[0], m.xyz[1], m.xyz[2]) : null, w.screenAt(f.x, f.z), w.view);
   }
   onMount(() => () => {
-    clearTimeout(fullTimer);
-    if (fullTill) pace.full--;
-    fullTill = 0;
+    for (const k of ['fish', 'bug', 'rear'] as const) {
+      clearTimeout(fullTimer[k]);
+      if (fullTill[k]) pace.full[k]--;
+      fullTill[k] = 0;
+    }
   });
   $effect(() => {
     if (!w.rest.three) return;
@@ -561,12 +565,12 @@
     for (const f of allFish()) {
       ids.add(fishId(f));
       void f.x, void f.z, void f.ms;
-      if (f.dash && untrack(() => dashFast(f))) full3(f.ms + 200);
+      if (f.dash && untrack(() => dashFast(f))) full3('fish', f.ms + 200);
     }
     for (const b of bugs) {
       ids.add(bugId(b));
       void b.x, void b.z, void b.lift, void b.flip, void b.gone;
-      if (untrack(() => bugFast(b))) full3(b.ms + 200);
+      if (untrack(() => bugFast(b))) full3('bug', b.ms + 200);
     }
     for (const id of mos.keys()) if (!ids.has(id)) mos.delete(id);
     if (!ids.size) return;
@@ -1072,7 +1076,7 @@
         if (act !== 'none') offLegs(b); // (come at, it stays where it is till it charges off or is netted)
         if (act === 'rear') {
           b.stalk = 'rear';
-          full3(REAR_MS + 200); // (its front lifted, drawn at once: it may have been resting, its model still)
+          full3('rear', REAR_MS + 200); // (its front lifted, drawn at once: it may have been resting, its model still)
           // reared up, on the 3D island too: it lifts its front (bug3) under NH's 「！」 till it settles (the 3D model
           // had no rear: the first tap showed nothing, the second came while it was reared and it always charged off)
           fx3d('bang', b.x, b.z, b.lift + 12, { ms: REAR_MS, held: () => isBug(b) && b.stalk === 'rear' });

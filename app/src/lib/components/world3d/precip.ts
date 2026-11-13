@@ -339,8 +339,9 @@ export interface Precip {
   /** The time of day (its colours). */
   tod(t: Tod3): void;
   /** The surface the rings land on (the layout's): its height at (x, z) (world: z into the island), whether it's water
-   *  there; the land's box (world) and its margin. Built once a layout (`key`), when the rain first needs it. */
-  surface(key: object, at: (x: number, z: number) => { h: number; water: boolean }, land: { x0: number; x1: number; z0: number; z1: number }): void;
+   *  there; the land's box (world) and its margin. Built once a layout (`key`), when the rain first needs it; kept
+   *  page-wide by `id` (the layout's meshKeyOf: another precip's, back from a room, takes it again). */
+  surface(key: object, id: string, at: (x: number, z: number) => { h: number; water: boolean }, land: { x0: number; x1: number; z0: number; z1: number }): void;
   /** Whether the rings' surface is built for `key` (the layout). */
   has(key: object): boolean;
   /** One frame: the camera's pivot (world x, z), its zoom and its distance to the pivot (u), the canvas's height (CSS
@@ -359,6 +360,42 @@ export interface Precip {
 const CELL = 8, MARGIN = 48;
 /** Flat: the surface within this (u) across a cell. */
 const FLAT = 1.2;
+/** The rings' surface last built, page-wide, by its layout's `id` (mesh.ts meshKeyOf: two layouts alike have the same
+ *  ground): back from a room on a rain day the island's new precip takes it again, no grid sampled (~18 ms at 1x CPU,
+ *  ~33 ms of a return's long task at 4x, review 11/13 r2). */
+let kept: { id: string; grid: ReturnType<typeof surfaceGrid> } | null = null;
+/** The grid of the rings' surface (precip's `surface`): each cell's height, flat (rings land there) and water. */
+function surfaceGrid(at: (x: number, z: number) => { h: number; water: boolean }, land: { x0: number; x1: number; z0: number; z1: number }) {
+  const x0 = land.x0 - MARGIN, z0 = land.z0 - MARGIN, nx = Math.ceil((land.x1 + MARGIN - x0) / CELL), nz = Math.ceil((land.z1 + MARGIN - z0) / CELL);
+  const data = new Float32Array(nx * nz * 4);
+  // the cells' corners sampled once (each shared by four cells), then each cell's middle: flat when the five agree
+  const ch = new Float32Array((nx + 1) * (nz + 1)), cw = new Uint8Array((nx + 1) * (nz + 1));
+  for (let j = 0; j <= nz; j++)
+    for (let i = 0; i <= nx; i++) {
+      const c = at(x0 + i * CELL, z0 + (nz - j) * CELL), k = j * (nx + 1) + i;
+      ch[k] = c.h;
+      cw[k] = c.water ? 1 : 0;
+    }
+  // (the texture's rows run along three's z, which is −z: row 0 the far end)
+  for (let j = 0; j < nz; j++)
+    for (let i = 0; i < nx; i++) {
+      const c = at(x0 + (i + 0.5) * CELL, z0 + (nz - j - 0.5) * CELL);
+      let lo = c.h, hi = c.h, wet = c.water;
+      for (const k of [j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i, (j + 1) * (nx + 1) + i + 1]) {
+        lo = Math.min(lo, ch[k]);
+        hi = Math.max(hi, ch[k]);
+        wet &&= cw[k] === 1;
+      }
+      const o = (j * nx + i) * 4;
+      data[o] = c.h;
+      data[o + 1] = hi - lo <= FLAT ? 1 : 0;
+      data[o + 2] = wet ? 1 : 0;
+      data[o + 3] = 1;
+    }
+  let flat = 0, water = 0;
+  for (let i = 0; i < nx * nz; i++) if (data[i * 4 + 1]) (flat++, (water += data[i * 4 + 2]));
+  return { data, nx, nz, x0, z0, flat, water };
+}
 
 export function createPrecip(add: (o: Object3D) => () => void, kick: () => void): Precip {
   const quad = new PlaneGeometry(2, 2);
@@ -452,41 +489,17 @@ export function createPrecip(add: (o: Object3D) => () => void, kick: () => void)
       colour.value.fromArray(COLOURS[t]);
       apply();
     },
-    surface(key, at, land) {
-      const t0 = performance.now(), x0 = land.x0 - MARGIN, z0 = land.z0 - MARGIN, nx = Math.ceil((land.x1 + MARGIN - x0) / CELL), nz = Math.ceil((land.z1 + MARGIN - z0) / CELL);
-      const data = new Float32Array(nx * nz * 4);
-      // the cells' corners sampled once (each shared by four cells), then each cell's middle: flat when the five agree
-      const ch = new Float32Array((nx + 1) * (nz + 1)), cw = new Uint8Array((nx + 1) * (nz + 1));
-      for (let j = 0; j <= nz; j++)
-        for (let i = 0; i <= nx; i++) {
-          const c = at(x0 + i * CELL, z0 + (nz - j) * CELL), k = j * (nx + 1) + i;
-          ch[k] = c.h;
-          cw[k] = c.water ? 1 : 0;
-        }
-      // (the texture's rows run along three's z, which is −z: row 0 the far end)
-      for (let j = 0; j < nz; j++)
-        for (let i = 0; i < nx; i++) {
-          const c = at(x0 + (i + 0.5) * CELL, z0 + (nz - j - 0.5) * CELL);
-          let lo = c.h, hi = c.h, wet = c.water;
-          for (const k of [j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i, (j + 1) * (nx + 1) + i + 1]) {
-            lo = Math.min(lo, ch[k]);
-            hi = Math.max(hi, ch[k]);
-            wet &&= cw[k] === 1;
-          }
-          const o = (j * nx + i) * 4;
-          data[o] = c.h;
-          data[o + 1] = hi - lo <= FLAT ? 1 : 0;
-          data[o + 2] = wet ? 1 : 0;
-          data[o + 3] = 1;
-        }
+    surface(key, id, at, land) {
+      const t0 = performance.now();
+      if (kept?.id !== id) kept = { id, grid: surfaceGrid(at, land) };
+      const s = kept.grid, { data, nx, nz, x0, z0 } = s;
       // (a new texture: a size once uploaded is fixed)
       heights.dispose();
       heights = grid(data, nx, nz);
       u(rings).uHeights.value = heights;
       u(rings).uHBox.value = [x0, -(z0 + nz * CELL), x0 + nx * CELL, -z0];
       surfaceKey = key;
-      surfaceN = { cells: nx * nz, flat: 0, water: 0, ms: Math.round(performance.now() - t0) };
-      for (let i = 0; i < nx * nz; i++) if (data[i * 4 + 1]) (surfaceN.flat++, (surfaceN.water += data[i * 4 + 2]));
+      surfaceN = { cells: nx * nz, flat: s.flat, water: s.water, ms: Math.round(performance.now() - t0) };
       apply();
       kick();
     },

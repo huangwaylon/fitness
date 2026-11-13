@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOX, COUNTS, FADE_MS, GROUPS, drawnOf, groupAlpha, lookOf, particleAt, stepLevel, wrapIn } from './precip.ts';
+import { BOX, COUNTS, FADE_MS, GROUPS, createPrecip, drawnOf, groupAlpha, lookOf, particleAt, stepLevel, wrapIn } from './precip.ts';
 
 describe('precip.ts: the rain and the snow in 3D', () => {
   it('maps each sky to what falls: nothing fine or cloudy; a downpour denser, quicker, longer and stronger than rain; snow slow', () => {
@@ -58,5 +58,21 @@ describe('precip.ts: the rain and the snow in 3D', () => {
 
   it('fades in and out linearly over a minute', () => {
     expect([stepLevel(0, 1, FADE_MS / 2), stepLevel(0.5, 0, FADE_MS), stepLevel(0.9, 1, FADE_MS), stepLevel(1, 1, 16)]).toEqual([0.5, 0, 1, 1]);
+  });
+
+  it('builds the rings\' surface once a layout page-wide: a second precip (back from a room) samples none, another layout its own', () => {
+    let n = 0;
+    const at = (x: number, z: number) => (n++, { h: z > 100 ? 3 : 0, water: x < 0 });
+    const land = { x0: -40, x1: 40, z0: 0, z1: 200 };
+    const a = createPrecip(() => () => {}, () => {});
+    a.surface({}, 'tiles', at, land);
+    const built = n, rings = a.state().rings;
+    expect(built).toBeGreaterThan(0);
+    // (the store's next layout object, the same tiles)
+    const b = createPrecip(() => () => {}, () => {}), lay = {};
+    b.surface(lay, 'tiles', at, land);
+    expect([n, b.has(lay), b.state().rings?.flat, b.state().rings?.water]).toEqual([built, true, rings?.flat, rings?.water]);
+    b.surface({}, 'other tiles', at, land);
+    expect(n).toBe(built * 2);
   });
 });

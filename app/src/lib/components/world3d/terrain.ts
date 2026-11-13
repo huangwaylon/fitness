@@ -21,7 +21,7 @@ import { bandInView, DAY_SUN } from './islandCam.ts';
 import { NH_GROUND, nhImage, nhURL } from './groundTex.ts';
 import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf } from '#lib/layout/grid.ts';
 import { chunkMesh, meshKeyOf, openSeaRow, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
-import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
+import { FAR, STEP, fieldsOf, type Fields } from '#lib/layout/fields.ts';
 import { SWASH_GLSL } from '#lib/layout/swash.ts';
 import { DEEP_Y, EDGE_FADE, SEA_Y, fieldOf } from '#lib/layout/height.ts';
 import { extentOf, type Layout } from '#lib/layout/model.ts';
@@ -581,6 +581,23 @@ export const keptBytes = (): number =>
   (kept?.rows ?? []).reduce((n, b) => n + (b ? [b.top, b.walls, b.falls, b.water].reduce((m, p) => m + Object.values(p).reduce((k, a: ArrayLike<number> & { byteLength: number }) => k + a.byteLength, 0), 0) : 0), 0);
 /** Tests: forget the kept set. */
 export const forgetBands = (): void => void (kept = null);
+/** The fields' rasters as the ground's two textures take them (RGBA bytes: sdfA the first four channels, sdfB the next
+ *  three), once a set of fields page-wide, the textures' own data: back from a room the ground takes them again
+ *  (encoding them was ~9 of a kept layout's ~11 ms buildGround at 1x CPU, review 11/13 r2). */
+const encoded = new WeakMap<Fields, { a: Uint8Array<ArrayBuffer>; b: Uint8Array<ArrayBuffer> }>();
+function encodedOf(f: Fields): { a: Uint8Array<ArrayBuffer>; b: Uint8Array<ArrayBuffer> } {
+  let e = encoded.get(f);
+  if (e) return e;
+  const a = new Uint8Array(FW * f.h * 4), b = new Uint8Array(FW * f.h * 4);
+  const enc = (d: number) => Math.max(0, Math.min(255, Math.round((d / FAR) * 127.5 + 127.5)));
+  for (let i = 0; i < FW * f.h; i++) {
+    for (let k = 0; k < 4; k++) a[i * 4 + k] = enc(f.ch[k][i]);
+    for (let k = 0; k < 3; k++) b[i * 4 + k] = enc(f.ch[4 + k][i]);
+    b[i * 4 + 3] = 255;
+  }
+  encoded.set(f, (e = { a, b }));
+  return e;
+}
 
 /** A Lambert's colour facing up (three's, r170: (the hemisphere's sky + the sun × its height) × the colour / π, all
  *  linear), its point lights left out (the lamps' pools light the land, never the open sea's floor). @public (test) */
@@ -628,8 +645,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   if (!pendingTex) texDone();
   // the fields' rasters (fields.ts: as deep as the land and its sea, rasterRows), made again when that depth changes;
   // the materials share these uniforms, so a new pair reaches them all, and the box they're sampled on
-  const sdfTex = (h: number) => {
-    const t = new DataTexture(new Uint8Array(FW * h * 4), FW, h, RGBAFormat, UnsignedByteType);
+  const sdfTex = (h: number, data = new Uint8Array(FW * h * 4)) => {
+    const t = new DataTexture(data, FW, h, RGBAFormat, UnsignedByteType);
     t.magFilter = t.minFilter = LinearFilter;
     t.wrapS = t.wrapT = ClampToEdgeWrapping;
     return t;
@@ -639,17 +656,17 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const codes = new DataTexture(new Uint8Array(GRID.cols * GRID.rows * 4), GRID.cols, GRID.rows, RGBAFormat, UnsignedByteType);
   codes.magFilter = codes.minFilter = NearestFilter;
   function upload(l: Layout) {
-    const f = fieldsOf(l);
+    const f = fieldsOf(l), e = encodedOf(f);
+    // (the encoded bytes themselves, shared: never written to)
     if (sdfA.value.image.height !== f.h) {
-      for (const u of [sdfA, sdfB]) (u.value.dispose(), (u.value = sdfTex(f.h)));
+      sdfA.value.dispose();
+      sdfB.value.dispose();
+      sdfA.value = sdfTex(f.h, e.a);
+      sdfB.value = sdfTex(f.h, e.b);
       sdfBox[3] = f.h * STEP;
-    }
-    const a = sdfA.value.image.data as Uint8Array, b = sdfB.value.image.data as Uint8Array;
-    const enc = (d: number) => Math.max(0, Math.min(255, Math.round((d / FAR) * 127.5 + 127.5)));
-    for (let i = 0; i < FW * f.h; i++) {
-      for (let k = 0; k < 4; k++) a[i * 4 + k] = enc(f.ch[k][i]);
-      for (let k = 0; k < 3; k++) b[i * 4 + k] = enc(f.ch[4 + k][i]);
-      b[i * 4 + 3] = 255;
+    } else {
+      sdfA.value.image.data = e.a;
+      sdfB.value.image.data = e.b;
     }
     sdfA.value.needsUpdate = sdfB.value.needsUpdate = true;
     const cd = codes.image.data as Uint8Array;
@@ -916,8 +933,11 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   // grid's edge never shows, day or night. Flat and facing up, its light is the same all over: worked out here, not per
   // pixel by six point lights and the sun under most of the sea, review 11/10 r1 C3; `light`)
   const DEEP = new Color(0x2f74b8).multiply(new Color(0xf4f4f4));
-  const deepMat = bend(withMaps(new MeshBasicMaterial({ color: DEEP.clone() })));
+  // (whole, but drawn as the see-through Basics are, first of them: the cards' and the labels' program, not one of its
+  // own, review 11/13 r2)
+  const deepMat = bend(withMaps(new MeshBasicMaterial({ color: DEEP.clone(), transparent: true })));
   const deep = new Mesh(deepGeo, deepMat);
+  deep.renderOrder = -1;
   const lightDeep = (sky: Color, sun: Color, up: number) => void deepMat.color.copy(deepLit(DEEP, sky, sun, up));
   lightDeep(DAY_SKY, DAY_SUN_C, DAY_UP);
   deep.frustumCulled = false;

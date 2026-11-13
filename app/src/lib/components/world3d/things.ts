@@ -287,8 +287,10 @@ function load(url: string, name: string): Promise<GLTF | null> {
   return p;
 }
 
-/** `changed(shadows)`: draw again; `shadows` a caster's shadow changed (true), a slow caster's ('slow': a bug's), none. */
-export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean | 'slow') => void, o: { cull?: boolean } = {}): Things {
+/** `changed(shadows, added)`: draw again; `shadows` a caster's shadow changed (true), a slow caster's ('slow': a bug's),
+ *  none; `added` false: only moved, nothing new in the scene (no material for the engine to look for: over()'s, ~170 a
+ *  second on the demo, each a walk of the whole scene, review 11/13 r2). */
+export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean | 'slow', added?: boolean) => void, o: { cull?: boolean } = {}): Things {
   /** The still models' instances nearest the camera left undrawn while out of view (cull; the editor's preview orbits
    *  the whole island: all drawn). */
   const culling = o.cull ?? false;
@@ -398,8 +400,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   function one(src: Material, grey: boolean, soft: boolean, flap: Vector4 | null, side: Side): MeshLambertMaterial {
     const s = src as MeshStandardMaterial;
     const own = !!s.emissiveMap;
+    // (a fading critter's with no cut-out of its own: one that drops only what's all but clear, its program the cut-out
+    // ones' (the colour, blended, the same; the shadow's the same program too), 3 fewer programs, review 11/13 r2)
     const m = new MeshLambertMaterial({
-      map: s.map, color: s.color, transparent: s.transparent || soft, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest, side, depthWrite: s.depthWrite,
+      map: s.map, color: s.color, transparent: s.transparent || soft, opacity: s.opacity, alphaTest: grey ? 0 : s.alphaTest || (soft ? 0.01 : 0), side, depthWrite: s.depthWrite,
       emissive: own ? new Color(0xffe2a8) : s.map ? new Color(0xffffff) : s.color.clone(), emissiveMap: own ? s.emissiveMap : s.map
     });
     // foliage (cut out: NH's leaf cards) is lit through: more lift
@@ -864,8 +868,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       write(a.g, a.i);
       // its shadow: none to change (a flat one, the same spot, a grey), a move's at once, a bug's or a show or hide's
       // (a fruit's as it leaves the screen's edge in a scroll) slow
-      if (!cast || FLAT.has(a.g.name) || (m.equals(was) && seen === opacity(id) >= 0.5)) return changed(false);
-      changed(BUGS.has(a.g.name) || m.equals(ZERO) || was.equals(ZERO) ? 'slow' : true);
+      if (!cast || FLAT.has(a.g.name) || (m.equals(was) && seen === opacity(id) >= 0.5)) return changed(false, false);
+      changed(BUGS.has(a.g.name) || m.equals(ZERO) || was.equals(ZERO) ? 'slow' : true, false);
     },
     flap(id, angle) {
       flaps.set(id, angle);

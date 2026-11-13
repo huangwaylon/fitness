@@ -69,8 +69,9 @@ export function softDisc(rgb = '30,40,20', inner = 2, srgb = true): CanvasTextur
   return t;
 }
 
-/** `changed(shadows)`: draw again (and the shadow map, when a caster changed). */
-export function createCards(scene: Scene, changed: (shadows: boolean) => void): Cards {
+/** `changed(shadows, added)`: draw again (and the shadow map, when a caster changed); `added` false: nothing new in the
+ *  scene (a card's spec again or one gone: no material for the engine to look for, things.ts). */
+export function createCards(scene: Scene, changed: (shadows: boolean, added?: boolean) => void): Cards {
   const loader = new TextureLoader();
   const texs = new Map<string, { t: Promise<Texture | null>; got: Texture | null; n: number }>();
   let pending = 0, tintHex = 0xffffff, disposed = false;
@@ -121,13 +122,13 @@ export function createCards(scene: Scene, changed: (shadows: boolean) => void): 
       release(was.spec.url);
       cards.delete(id);
     }
-    if (!spec) return changed(!!was?.spec.cast);
+    if (!spec) return changed(!!was?.spec.cast, false);
     const have = cards.get(id);
     if (have) {
       const cast = !!have.spec.cast || !!spec.cast;
       have.spec = spec;
       have.mesh.castShadow = !!spec.cast;
-      return changed(cast);
+      return changed(cast, false);
     }
     const mat = bend(new MeshBasicMaterial({ alphaTest: 0.5, side: DoubleSide, color: spec.lit ? 0xffffff : tintHex, transparent: spec.opacity !== undefined }));
     mat.visible = false;

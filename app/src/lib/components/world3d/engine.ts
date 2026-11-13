@@ -288,7 +288,10 @@ export interface Island3 {
   groundAt(sx: number, sy: number): { x: number; z: number } | null;
   horizon(): number;
   rev(): number;
-  kick(): void;
+  /** A frame. `added` false: nothing new in the scene, only moved (the World's kicks: what it changes reaches the scene
+   *  through the things, the cards and the flourishes, which say when they add), so the frame looks for no new
+   *  material in all of it (hold). */
+  kick(added?: boolean): void;
   /** Nothing moving (the ambience may still run at its rate). */
   idle(): boolean;
   /** One frame `ms` from now (a still villager's next blink): the soonest asked for wins; nothing else is drawn for it. */
@@ -354,8 +357,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
-  const things = createThings(scene, src.height, (sh = true) => (sh && shadowed(sh === 'slow'), kick()), { cull: opts.cull !== false });
-  const cards = createCards(scene, (sh) => (sh && shadowed(), kick()));
+  const things = createThings(scene, src.height, (sh = true, added = true) => (sh && shadowed(sh === 'slow'), kick(added)), { cull: opts.cull !== false });
+  const cards = createCards(scene, (sh, added = true) => (sh && shadowed(), kick(added)));
   const lights = createLights(scene, opts.points);
   const effects = createEffects(scene, src.feet, () => kick());
   const marks = createBiteMarks(addObj);
@@ -794,7 +797,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     wakeTimer = setTimeout(() => {
       wakeTimer = 0;
       wakeDue = Infinity;
-      kick();
+      // (a timed redraw: nothing new in the scene for hold to look for)
+      kick(false);
     }, Math.max(0, ms));
   }
   // (world3d/pace.ts: The full rate is せってい's frame rate, a finger's too: at 30 a display frame in
@@ -880,7 +884,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // (three's first use: its uniforms), 108-129 ms long tasks as the island loaded, and the island's ~180 textures went
   // up in the frame it appeared (255-533 ms in the iOS Simulator) ----
   const parallel = !noDraw && renderer.extensions.has('KHR_parallel_shader_compile');
-  /** A kick since the last frame's look (a model in, a card, a flourish: maybe a new material). */
+  /** A kick since the last frame's look (a model in, a card, a flourish: maybe a new material). Not a move's, a timed
+   *  redraw's or the World's (kick(false)): those were ~210 a second on the demo, the whole scene walked every frame
+   *  drawn (13.4 a second at rest, 7 ms/s at 4x CPU; now ~2, review 11/13 r2). */
   let fresh = true;
   /** Compiled, not ready to draw yet (linking, its first use, its textures): what uses them is held back. */
   const warm = createWarmup(renderer);
@@ -893,7 +899,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   };
   const drawn = (o: Object3D) => (o as Mesh).isMesh || (o as unknown as { isPoints?: boolean }).isPoints || (o as unknown as { isLine?: boolean }).isLine;
   /** Whether one of `o`'s materials passes `test` (materialsOf without its array: hold looks at every object of the
-   *  scene on a fresh kick, ~35 a second, and the arrays were 0.9 MB/s). */
+   *  scene on a fresh kick, and the arrays were 0.9 MB/s). */
   const someMaterial = (o: Object3D, test: (m: Material) => boolean): boolean => {
     const m = (o as Mesh).material as Material | Material[] | undefined;
     if (!m || !drawn(o)) return false;
@@ -1102,8 +1108,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     framedRev = rev;
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
-    // (a critter's dart, fade or nibble on screen: Critters.svelte, pace.ts)
-    want(critters.full > 0, 'crit');
+    // (a critter's dart or move on screen, or the tarantula rearing: Critters.svelte, pace.ts; by kind for perf.rest)
+    want(critters.full.fish > 0, 'crit-fish');
+    want(critters.full.bug > 0, 'crit-bug');
+    want(critters.full.rear > 0, 'crit-rear');
     want(marks.frame(t, camera, focal, W, H), 'bite');
     if (ground.update) {
       // (its water's ambience: whether it's in view is asked once nothing else wants a frame: frame())
@@ -1288,8 +1296,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     biteState: (slot) => marks.state(slot),
     fx(kind, x, z, lift, o) {
       effects.spawn(kind, x, z, lift, o);
-      // (an ambient one, tagged: the fall, a sleeper's zzz, an emitter's, plays at the ambient rate)
-      if (o?.tag) kick();
+      // (an ambient one, tagged: the fall, a sleeper's zzz, an emitter's, plays at the ambient rate; a calm one, a
+      // villager's sparkles, hearts and notes, too: activity's 400 ms at 30 drew ~12 full frames for each, review 11/13 r2)
+      if (o?.tag || o?.calm) kick();
       else activity(400);
     },
     renderer: () => renderer,
@@ -1299,7 +1308,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     },
     at, outline, groundAt, horizon,
     rev: () => rev,
-    kick: () => kick(),
+    kick: (added = true) => kick(added),
     camStill: () => !touch && !vel && !velX && !zoomBack && !settling && !move && (framedRev === rev || paused || document.hidden),
     isPaused: () => paused,
     pause(on) {
