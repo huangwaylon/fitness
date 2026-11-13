@@ -469,7 +469,7 @@ test('the guest reads everything and has nothing to tick or edit', async ({ page
   await expect(sheet(page).locator('[data-wed-note-edit]')).toHaveCount(0);
 });
 
-test('the island paused under the board; offline before the first opening: the banner, もういちど opens it once back', async ({ page, context }) => {
+test('the island paused under the board; offline before the first opening: the banner, もう一度 opens it once back', async ({ page, context }) => {
   await page.goto(`?demo&${DAY}`);
   await islandUp(page);
   await context.setOffline(true);
@@ -479,10 +479,10 @@ test('the island paused under the board; offline before the first opening: the b
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await context.setOffline(false);
   // (offline, the chunk wasn't asked for: lazySheet's unreachable; WebKit would keep its failed preloads, and the
-  // retry reloaded the page) back online, もういちど opens it in place, no reload
+  // retry reloaded the page) back online, もう一度 opens it in place, no reload
   let reloads = 0;
   page.on('load', () => reloads++);
-  await page.getByRole('button', { name: 'もういちど' }).click();
+  await page.getByRole('button', { name: 'もう一度' }).click();
   await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
   expect(reloads).toBe(0);
   await expect(page.locator('[data-covered][data-sheet]')).toHaveCount(1);
