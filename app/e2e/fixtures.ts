@@ -19,7 +19,7 @@
 // - test mode: allowed (`localStorage['e2e.testMode'] = '1'`, src/lib/ui-state/testMode.ts), so `?demo` gives the
 //   made-up data and the hooks in this production build, as nowhere else but the dev server; `test.use({ testMode:
 //   false })` is a real visitor's phone (boot.spec);
-// - ambient life: off (`localStorage['e2e.ambient'] = 'off'`, read with the hooks on, `?demo`: island/devHooks.ts),
+// - ambient life: off (`localStorage['e2e.ambient'] = 'off'`, read with the hooks on, `?demo`: world/devHooks.ts),
 //   as if the URL said `?critter=none&visitor=events&balloon=none&idle=none&stars=none` (devHooks.ts AMBIENT): no
 //   critter visits, no day's visitor (an event's host still comes), no balloon, no idle beats of the villagers or しずえ
 //   (they stand where they are), no ordinary night's shooting stars. Nothing wanders into a tap. A URL's own param wins (`?critter=fish`, `?visitor=jack`);
@@ -74,7 +74,7 @@ type Options = {
   network: 'local' | 'any';
   /** ききみみ's first-run welcome shows (else it counts as seen: every other spec opens on the hub). */
   kikiFirstRun: boolean;
-  /** The island's ambient life ('off': none, island/devHooks.ts AMBIENT; 'on': as on a phone). */
+  /** The island's ambient life ('off': none, world/devHooks.ts AMBIENT; 'on': as on a phone). */
   ambient: 'off' | 'on';
   /** Test mode allowed (`?demo`: ui-state/testMode.ts); false: a real visitor's phone. */
   testMode: boolean;
