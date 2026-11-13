@@ -507,8 +507,6 @@
   .changes > summary { list-style: none; }
   .changes > summary::-webkit-details-marker { display: none; }
   .changes[open] > summary { margin-bottom: 8px; }
-  .chev { flex: none; width: 10px; height: 10px; border-right: 2.6px solid var(--text-soft); border-bottom: 2.6px solid var(--text-soft); rotate: 45deg; margin: -4px 6px 0; transition: rotate var(--dur-quick); }
-  details[open] > summary .chev { rotate: 225deg; margin-top: 4px; }
   .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
   .rows > li + li { padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
   .txt { font-size: var(--fs-body); }
@@ -518,5 +516,5 @@
   .isheet { display: grid; gap: 10px; padding-bottom: 12px; }
   .line { margin: 0 4px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .foot { margin: 0 4px; text-align: center; font-size: var(--fs-s); color: var(--text-soft); overflow-wrap: anywhere; line-height: var(--lh); }
-  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } .pill:active { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .pill:active { transform: none; } }
 </style>

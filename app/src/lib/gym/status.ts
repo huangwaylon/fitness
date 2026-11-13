@@ -7,6 +7,7 @@ import { isNum, isRec } from '#lib/contract/guards.ts';
 import { log } from '#lib/sync/log.ts';
 import { chain, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import '#lib/i18n/gym.ts';
+import type { Tone } from '#lib/strip.ts';
 
 // ---- The payload: mirrors gym/src/status.ts (the Worker owns it; change both together) ----
 type Verdict = 'healthy' | 'degraded' | 'failing' | 'late' | 'broken' | 'stopped' | 'off';
@@ -103,7 +104,6 @@ export async function fetchStatus(signal?: AbortSignal, url = GYM_URL): Promise<
 
 // ---- The page's view ----
 /** The verdict card's dot: leaf, yuzu, coral, or soft for a runner that was switched off. */
-export type Tone = 'good' | 'warn' | 'bad' | 'idle';
 const TONE: Record<Verdict, Tone> = { healthy: 'good', degraded: 'warn', late: 'warn', failing: 'bad', broken: 'bad', stopped: 'idle', off: 'idle' };
 
 /** The verdict card: its tone, its word, and one plain sentence from the first reason. */
