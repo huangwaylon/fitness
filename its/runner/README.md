@@ -138,9 +138,10 @@ The Actions log is public. `logs.setup()` points fd 1/2 at `$ITS_STATE_DIR/its_b
 1/2; pydoll's default pipes, never read, could fill and stall it). The only way to the real stdout is
 `logs.public(event, **fields)`: field names from an allowlist, values ints, seconds or lower-case codes, so no date,
 hotel, URL, token, number or name can pass (a reject is dropped and counted). Public lines: `start`, `claim`,
-`settings` (counts), `phase`, `solve ok secs spot`, `hold n`, `confirmed n`, `human_needed detail`, `error step n
-status cls` (a step at most once a minute), `summary` every 5 min (with `refused`: holds the gate refused), `drain`,
-`run_end`. Uncaught exceptions: the
+`claim_retry n status cls` (the Worker unreachable during the claim's wait, once a minute), `settings` (counts),
+`phase`, `solve ok secs spot`, `hold n`, `confirmed n`, `human_needed detail`, `error step n status cls` (a step at
+most once a minute), `summary` every 5 min (with `gate_closed`: the hold gate's no answers, once per scan cycle while
+closed, not holds lost), `drain`, `run_end`. Uncaught exceptions: the
 traceback private, `error step=uncaught exc=KeyError` public. Secrets are `::add-mask::`ed at start.
 
 At the job's end the state dir is tar'd (its warnings silenced: they name files) and age-encrypted to `ITS_LOG_RECIPIENT` (the relay's `ARCHIVE_RECIPIENT`);

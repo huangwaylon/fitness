@@ -532,6 +532,7 @@ class RemoteRun:
             if rem.banned:
                 self.begin_drain('ban', now + BAN_DRAIN_SEC)
             elif cfg is not None and cfg['stop'] and not self._reclaimed(cfg, now):
+                cfg = rem.config   # a re-claim's answer (when it got one) says why it stops now, not the lease_lost
                 cap = now + DRAIN_SEC if self.deadline is None else min(now, self.deadline) + DRAIN_SEC
                 self.begin_drain(cfg['stopReason'] or 'paused', cap)
             elif self.deadline is not None and now >= self.deadline:
@@ -576,7 +577,7 @@ class RemoteRun:
             cfg = rem.report()   # one retry: the run_end is what releases the lease
         self.summary(self.clock())
         logs.public('run_end', detail=self.end_detail, active=busy, human=young, ok=int(cfg is not None),
-                    unsynced=len(rem.unsynced), refused=rem.counts['refused'])
+                    unsynced=len(rem.unsynced), gate_closed=rem.counts['gate_closed'])
         return self.end_detail
 
     def _public_errors(self, now):
@@ -600,7 +601,7 @@ class RemoteRun:
                 scans=rem.scans, scan_fail=rem.scan_failures,
                 ok_age_s=None if rem.last_ok_at is None else round(now - rem.last_ok_at / 1000, 1),
                 avail=rem.available_now, holds=rem.counts['hold'], confirmed=rem.counts['confirmed'],
-                human=rem.counts['human_needed'], refused=rem.counts['refused'], solves_ok=rem.solves['ok'],
+                human=rem.counts['human_needed'], gate_closed=rem.counts['gate_closed'], solves_ok=rem.solves['ok'],
                 solves_failed=rem.solves['failed'], unsynced=len(rem.unsynced),
                 events=len(rem.events), worker=rem.last_status,
                 outage_s=round(rem.outage_sec(), 1), restarts=self.sup.restarts(), active=self.sup.busy(),

@@ -448,7 +448,7 @@ def test_hold_refused_by_the_gate_in_the_flow(port):
             'apply_service_select', 'check_apply_service_coma', 'empty_new', 'empty_create')), str(STATE.hits))
         check('gate-flow: one hotel list, no retry', STATE.count('service_group_select') == 1, str(STATE.hits))
         check('gate-flow: said why', log.saw('Not applying for') and log.saw('lease_stale'))
-        check('gate-flow: counted once', rem.counts['refused'] == 1, str(rem.counts))
+        check('gate-flow: counted once', rem.counts['gate_closed'] == 1, str(rem.counts))
 
     # Opened while steps 3-6 run, closed by step 7: still refused at the hold itself.
     with T.Env(port), T.CapturedLog() as log:
@@ -488,7 +488,7 @@ def test_closed_gate_sends_no_booking_requests(port):
         others = [h for h in STATE.hits if 'calendar_select' not in h]
         check('storm: cycles ran, the dates were seen available', navs >= 4 and rem.available_now == 2, str(navs))
         check('storm: no booking request at all while closed', others == [], str(others[:5]))
-        check('storm: the refusals counted per cycle', rem.counts['refused'] >= 3, str(rem.counts))
+        check('storm: the refusals counted per cycle', rem.counts['gate_closed'] >= 3, str(rem.counts))
 
 
 def test_worker_outage(port):
@@ -1116,8 +1116,11 @@ def test_summary_counts_refusals():
         run.finish()
     finally:
         logs.public = saved
-    check('refused: in the summary', any(ln.startswith('its summary') and ' refused=2' in ln for ln in lines), str(lines))
-    check('refused: in run_end', any(ln.startswith('its run_end') and ' refused=2' in ln for ln in lines), str(lines))
+    check('gate_closed: in the summary', any(ln.startswith('its summary') and ' gate_closed=2' in ln for ln in lines),
+          str(lines))
+    check('gate_closed: in run_end', any(ln.startswith('its run_end') and ' gate_closed=2' in ln for ln in lines),
+          str(lines))
+    check('gate_closed: the old name gone', not any(' refused=' in ln for ln in lines), str(lines))
 
 
 def test_month_labels_unique_across_years():
@@ -1390,6 +1393,125 @@ def test_redaction_subprocess(port, tmpdir):
 
 
 # ── runner ───────────────────────────────────────────────────────────
+
+def test_names_counted_in_utf16_units():
+    """The Worker and the contract count a name's length in UTF-16 units (JS `length`): an astral character is 2, so
+    150 𠮷 are 300 units, over SITE_NAME_MAX; the runner caps in units too, never splitting a character."""
+    big = '\U00020BB7'   # 𠮷
+    check('units: astral is 2', remote._units(big * 3) == 6 and remote._units('あa') == 2)
+    t = remote._text(big * 150, remote.SITE_NAME_MAX)
+    check('units: capped at 200 units', t == big * 100 and remote._units(t) == 200, str(remote._units(t or '')))
+    t = remote._text('a' + big * 150, remote.SITE_NAME_MAX)
+    check('units: no half character', t == 'a' + big * 99 and remote._units(t) == 199, str(remote._units(t or '')))
+    check('units: short names untouched', remote._text(f' {big}館 ', 10) == f'{big}館')
+    check('units: a lone surrogate counts 1', remote._units('\ud800x') == 2)
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    rem.on_event('hold', {'date': TARGET, 'hotel': big * 150 + '館'})
+    rem.on_event('scan', {'names': [big * 120]})
+    rem.post_bookings()
+    hotel = model.bookings[0]['hotel'] if model.bookings else ''
+    check('units: a booking\'s hotel within MAX_SITE_NAME units', 0 < remote._units(hotel) <= 200, str(len(hotel)))
+    check('units: seen names within MAX_SITE_NAME units', all(remote._units(n) <= 200 for n in rem.seen),
+          str([remote._units(n) for n in rem.seen]))
+
+
+def test_older_bookings_answer_does_not_undo_a_stop():
+    """開始 / 停止 don't move settings.updatedAt: a /runner/bookings answer that left before 停止 and lands after the
+    report that said paused must not clear the stop. Only claim and report answers set stop."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    run = M.RemoteRun(rem, sup, clock=clock)
+    try:
+        run.tick()
+        check('order-stop: running', not run.draining)
+        before = model.config(rem.run_id)      # the confirm worker's bookings answer, built before 停止
+        model.settings['paused'] = True        # 停止: updatedAt unchanged
+        rem.report()                           # the control loop's report: stop paused
+        check('order-stop: the report said paused', rem.config['stop'] and rem.config['stopReason'] == 'paused')
+        model.bookings.append({'id': 'x:1', 'kind': 'hold', 'date': TARGET, 'hotel': NAGU, 'runId': 'x'})
+        seeded = []
+        rem.seed_hold = lambda d, h: seeded.append((d, h))
+        rem.absorb(dict(before, bookings=[dict(b) for b in model.bookings]))   # the older answer lands now
+        check('order-stop: the older answer kept the stop', rem.config['stop'] and rem.config['stopReason'] == 'paused',
+              str((rem.config['stop'], rem.config['stopReason'])))
+        check('order-stop: its bookings still taken', seeded == [(TARGET, NAGU)], str(seeded))
+        clock.advance(1)                       # no report due: the tick decides on what it has
+        run.tick()
+        check('order-stop: drains as paused', run.draining and run.end_detail == 'paused', str(run.end_detail))
+        # and the other way: a bookings answer saying stop doesn't start a drain either (the next report does)
+        rem2 = make_remote(model, clock, run_id='run-2', seed_hold=lambda *a: None)
+        model.settings['paused'] = False
+        model.lease = None
+        rem2.claim(wait=0)
+        model.settings['paused'] = True
+        rem2.absorb(model.config(rem2.run_id))
+        check('order-stop: a bookings answer sets no stop', rem2.config['stop'] is False)
+        rem2.report()
+        check('order-stop: the next report does', rem2.config['stop'] is True)
+    finally:
+        _cleanup(sup)
+
+
+def test_reclaim_that_says_stop_drains_with_its_reason():
+    """A re-claim after lease_lost whose own answer says stop (停止 meanwhile): the drain is that reason, not
+    lease_lost."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    run = M.RemoteRun(rem, sup, clock=clock)
+    handle = model.handle
+
+    def paused_at_claim(method, path, body, auth):
+        if path == '/runner/claim':
+            model.settings['paused'] = True
+        return handle(method, path, body, auth)
+    try:
+        run.tick()
+        model.lease = None
+        model.handle = paused_at_claim
+        clock.advance(remote.REPORT_EVERY_SEC)
+        end = run.tick()   # nothing in flight: the drain ends in the same tick
+        check('reclaim-stop: claimed again', run.reclaims == 1 and model.calls.count(('POST', '/runner/claim', {})) == 2)
+        check('reclaim-stop: drains as paused', end == 'paused' and run.end_detail == 'paused', str(run.end_detail))
+        check('reclaim-stop: the run_end says so', [e.get('detail') for e in model.kinds('run_end')] == ['paused'],
+              str(model.kinds('run_end')))
+    finally:
+        _cleanup(sup)
+
+
+def test_claim_logs_an_unreachable_worker():
+    """The claim's wait (≤ CLAIM_WAIT_SEC) with the Worker down: each failed attempt counted, a line a minute to the
+    private log and a public code, not silence until it gives up."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    model.down = True
+    private, public = [], []
+    rem = make_remote(model, clock, seed_hold=lambda *a: None, log=private.append,
+                      public=lambda event, **f: public.append(logs.format_public(event, f)[0]))
+
+    def sleep(s):
+        clock.advance(s)
+    cfg, why = rem.claim(sleep=sleep)
+    attempts = sum(1 for c in model.calls if c[1] == '/runner/claim')
+    minutes = remote.CLAIM_WAIT_SEC // remote.CLAIM_LOG_EVERY_SEC
+    check('claim-log: gave up unreachable', cfg is None and why == 'unreachable', why)
+    check('claim-log: many attempts', attempts > minutes + 2, str(attempts))
+    check('claim-log: a private line a minute', minutes <= len(private) <= minutes + 1, str(private))
+    check('claim-log: the first attempt logged', private and 'attempt 1;' in private[0], str(private[:1]))
+    check('claim-log: public codes alongside', len(public) == len(private)
+          and all(ln.startswith('its claim_retry') and 'status=503' in ln and 'cls=http_503' in ln for ln in public),
+          str(public))
+    check('claim-log: nothing dropped, no token', all('dropped' not in ln and TOKEN not in ln for ln in public + private))
+    check('claim-log: each attempt counted', rem.failures_by_step.get('worker') == attempts, str(rem.failures_by_step))
+
 
 def main_(argv=()):
     verbose = '-v' in argv

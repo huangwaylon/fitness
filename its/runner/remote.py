@@ -47,6 +47,7 @@ FENCE_MARGIN_SEC = 60         # no hold or commit within this of the lease's end
 UNSYNCED_OUTAGE_SEC = 120
 CLAIM_WAIT_SEC = 6 * 60
 CLAIM_RETRY_SEC = 15
+CLAIM_LOG_EVERY_SEC = 60      # an unreachable Worker during the claim's wait: one line (private + public) a minute
 INTERVALS_SEC = (15, 30, 60, 120, 300)
 GUESTS_MIN, GUESTS_MAX = 1, 6
 # The contract's LIMITS (the Worker's bounds on a request; test_remote reads contract.ts to check this copy).
@@ -74,11 +75,25 @@ _BAD_CHARS = re.compile('[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2
 _ID_RE = re.compile(r'[A-Za-z0-9._:-]{1,64}\Z')
 
 
+def _units(s):
+    """A string's length as the Worker and the contract count it (JavaScript's `length`): UTF-16 code units, so an
+    astral character (𠮷, an emoji) is 2."""
+    return len(s.encode('utf-16-le', 'surrogatepass')) // 2
+
+
 def _text(s, limit):
-    """A name or detail as the Worker accepts it: no controls or bidi overrides, trimmed, capped; None if empty."""
+    """A name or detail as the Worker accepts it: no controls or bidi overrides, trimmed, capped at `limit` UTF-16
+    units (whole code points); None if empty."""
     if s is None:
         return None
-    s = _BAD_CHARS.sub('', str(s)).strip()[:limit]
+    s = _BAD_CHARS.sub('', str(s)).strip()
+    if _units(s) > limit:
+        n = 0
+        for i, c in enumerate(s):
+            n += 2 if ord(c) > 0xFFFF else 1
+            if n > limit:
+                s = s[:i].rstrip()
+                break
     return s or None
 
 
@@ -232,7 +247,7 @@ class Remote:
         self.offered = {}                 # date -> frozenset of names offered (change detection)
         self.holds = {}                   # (date, hotel) -> when held, this run
         self.resolved = set()             # (date, hotel) with a known outcome
-        self.counts = {'hold': 0, 'confirmed': 0, 'human_needed': 0, 'refused': 0}
+        self.counts = {'hold': 0, 'confirmed': 0, 'human_needed': 0, 'gate_closed': 0}
 
     def _ms(self, t=None):
         return int((self.clock() if t is None else t) * 1000)
@@ -328,7 +343,9 @@ class Remote:
                 self.event('human_needed', date, hotel, f.get('detail'), urgent=True)
                 self.public('human_needed', n=self.counts['human_needed'], detail=f.get('detail'))
             elif kind == 'hold_refused':
-                self.counts['refused'] += 1
+                # each time the hold gate said no: once per scan cycle while it stays closed, plus a booking thread's
+                # own asks (a count of closed-gate answers, not of holds lost)
+                self.counts['gate_closed'] += 1
             elif kind == 'ban':
                 if not self.banned:
                     self.banned = True
@@ -410,7 +427,8 @@ class Remote:
 
     def absorb(self, cfg, renew=False):
         """Take a RunnerConfig: contact, lease, acks, settings, the record. `renew`: a claim's or a report's answer,
-        whose lease may extend the fence; any other answer's can only close it."""
+        whose lease may extend the fence and whose `stop` is taken; any other answer's can only close the fence, and
+        leaves `stop` as the last claim or report said."""
         with self.lock:
             now = self.clock()
             self.contact_at, self.outage_since, self.last_status = now, None, 200
@@ -420,7 +438,12 @@ class Remote:
                 self.lease_until = None
             elif renew:
                 self.lease_until = max(self.lease_until or 0, lease['until'] / 1000)
-            self.config = cfg
+            # Only a claim's or a report's answer says whether to stop: 開始 / 停止 don't move settings.updatedAt, so an
+            # older /runner/bookings answer (the confirm worker's, sent before a 停止) could otherwise undo a newer stop.
+            if renew or self.config is None:
+                self.config = cfg
+            else:
+                self.config = dict(cfg, stop=self.config['stop'], stopReason=self.config['stopReason'])
             self.ack_seq = max(self.ack_seq, cfg['ackSeq'])
             self.events = [e for e in self.events if e['seq'] > self.ack_seq]
             have = {b['id']: b for b in cfg['bookings']}
@@ -467,6 +490,7 @@ class Remote:
         sleep = sleep or time.sleep
         until = self.clock() + (CLAIM_WAIT_SEC if wait is None else wait)
         why = 'unreachable'
+        failed, logged_at = 0, None
         while True:
             status, obj = self.client.call('POST', '/runner/claim', {'runId': self.run_id, 'host': self.host})
             reply = parse_claim(obj) if status == 200 else None
@@ -477,7 +501,15 @@ class Remote:
                 why = 'lease_lost'
                 self.log(f"claim refused: the lease is held until {reply['lease']['until']}")
             else:
-                self._failed(status, 'bad_answer' if status == 200 else None)
+                cls = 'bad_answer' if status == 200 else 'transport' if status == 0 else f'http_{status}'
+                self._failed(status, cls)
+                failed += 1
+                now = self.clock()
+                if logged_at is None or now - logged_at >= CLAIM_LOG_EVERY_SEC:
+                    logged_at = now
+                    self.log(f"claim: no answer from the Worker (status {status}, {cls}), attempt {failed}; "
+                             f"retrying for {max(0, round(until - now))} s more")
+                    self.public('claim_retry', n=failed, status=status, cls=cls)
             if self.clock() + CLAIM_RETRY_SEC > until:
                 return None, why
             sleep(CLAIM_RETRY_SEC)
