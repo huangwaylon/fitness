@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { CROPS } from '#lib/contract/farm.ts';
 import { addDays } from '#lib/time/dates.ts';
-import { GARDEN, GIFT_ONE_IN, askerHere, askerOn, asks, requestOn, vegGift } from './vegRequest.ts';
+import { GARDEN, GIFT_ONE_IN, askerOn, asks, requestOn, vegGift } from './vegRequest.ts';
 import { GUESTS, ROLES, guestOn } from './visitorRoles.ts';
 import { treeFurniture } from './catalog.ts';
 import ja from '#lib/i18n/ja.json';
@@ -47,16 +47,6 @@ describe('おねがい', () => {
     expect(requestOn('2026-11-12', 'A', undefined, 'rover')?.by).toBe('rover');
   });
 
-  it('gone once the asker’s hours end: a guest’s (beach till 18:00, Saturday till 18:00), Franklin from 09:00', () => {
-    expect(askerHere('rover', 5, 3)).toBe(false);
-    expect(askerHere('rover', 6, 3)).toBe(true);
-    expect(askerHere('rover', 21, 3)).toBe(true);
-    expect(askerHere('rover', 22, 3)).toBe(false);
-    expect(askerHere('rover', 18, 6)).toBe(false);
-    expect(askerHere('gullivarrr', 18, 3)).toBe(false);
-    expect(askerHere('franklin', 8, 4)).toBe(false);
-    expect(askerHere('franklin', 23, 4)).toBe(true);
-  });
 
   it('the gift: a garden piece the island hadn’t found (each one the tent places), then any piece, then none', () => {
     const pool = treeFurniture('2026-11-12').map((i) => i.id);

@@ -7,7 +7,7 @@ import { CROPS, type Crop } from '#lib/contract/farm.ts';
 import { HOLIDAYS } from '#lib/time/holidays.ts';
 import type { Who } from '#lib/types.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { ROLES, guestHere, guestOn, isGuest } from './visitorRoles.ts';
+import { ROLES, guestOn, isGuest } from './visitorRoles.ts';
 import type { VisitorId } from './visitors.ts';
 
 const turkeyDay = (date: string): boolean => HOLIDAYS['turkey-day'].on(date);
@@ -34,10 +34,6 @@ export function requestOn(date: string, who: Who, seed = ISLAND_SEED, by: Visito
   const crop = CROPS[Math.floor(r() * CROPS.length)];
   return { crop, by, gift: by === 'franklin' || r() < 1 / GIFT_ONE_IN };
 }
-
-/** Whether the asker is on the island at this Tokyo hour (Franklin from 09:00; a guest their hours). */
-export const askerHere = (by: VisitorId, hour: number, weekday: number): boolean =>
-  by === 'franklin' ? hour >= HOLIDAYS['turkey-day'].from : isGuest(by) && guestHere(by, hour, weekday);
 
 /** The garden pieces an ask's gift comes from (catalog.json ids the tent can place). */
 export const GARDEN: readonly string[] = ['garden-chair', 'garden-table', 'garden-lantern', 'garden-faucet', 'hose-reel', 'garden-gnome',

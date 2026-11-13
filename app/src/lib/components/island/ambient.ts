@@ -390,8 +390,5 @@ export function crittersAt(date: LocalDate, slot: number, coasts = 1): Spawn[] {
 export const bugRivals = (date: LocalDate, c: Spawn): Spawn[] =>
   c.lane === 2 ? chain(date, Math.floor(c.slot / BLOCK), 'bug').filter((o) => o.slot < c.slot + c.slots && c.slot < o.slot + o.slots) : [];
 
-/** The critters coming in `slot`. */
-export const spawnsIn = (date: LocalDate, slot: number, coasts = 1): Spawn[] => crittersAt(date, slot, coasts).filter((s) => s.slot === slot);
-
 /** A species picker's random source for a spawn (pickFish(month, hour, spawnRand(s), sky), …). */
 export const spawnRand = (s: Spawn): (() => number) => mulberry32(s.seed);

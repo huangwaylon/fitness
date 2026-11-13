@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { shuffle, seeded } from '#lib/random.ts';
 import type { PersonId as Who } from '#lib/types.ts';
 import {
-  DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand, spawnsIn,
+  DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand,
   bugRivals, villagerBeats, type AmbientWorld, type Poi, type Spawn, type VillagerBeat
 } from './ambient.ts';
 import { FISH, pickBug, pickFish } from './critters.ts';
 import { pickAct } from './visitorLife.ts';
 import { SPOT_MIN, bugPath, critterId } from './critterPath.ts';
+
+/** The critters coming in `slot`. */
+const spawnsIn = (date: string, slot: number, coasts = 1): Spawn[] => crittersAt(date, slot, coasts).filter((s) => s.slot === slot);
 
 const DATE = '2026-11-01';
 const T0 = Date.parse('2026-11-01T00:00:00+09:00');
