@@ -1698,6 +1698,91 @@ def test_second_facility_never_filed_for_a_confirmed_night(port):
               cb._gate(TARGET_LIMITED, NAGU, 'confirm') == (False, 'night_confirmed'))
 
 
+def test_an_unknown_outcome_blocks_the_night(port):
+    """A leg that may have filed (no_completion, submit_unknown: 確認 may have been pressed) leaves its `confirming` open
+    (no `failed`) and the night counts as booked: the next facility's leg for it never reaches Chrome. A definite
+    non-booking (room_taken) does not: the next one is filed. Another run's open `confirming` in the record blocks the
+    night from the claim on; one followed by `failed`, or this run's own leg in flight, doesn't."""
+    for first, blocked in (('no_completion', True), ('submit_unknown', True), ('room_taken', False)):
+        with T.Env(port, confirm=True, applicant=dict(T.APPLICANT_FIXTURE)):
+            clock = Clock()
+            model = WorkerModel(clock, autoConfirm=True)
+            rem = make_remote(model, clock, on_done=bh.set_done_dates)
+            rem.claim(wait=0)
+            links = [f'{bh.BASE}/apply/new?c=' + c * 36 for c in 'ab']
+            cb._mail_source = lambda _since: [f'ご案内 {u} ' for u in links]
+            answers = iter([('failed', first), ('confirmed', '777')])
+            STATE.browser_result = lambda: next(answers)
+            STATE.hotels = [(8, RESOL), (7, NAGU)]
+            with Hooks(rem):
+                bh.book_all_hotels_for_date(TARGET, 'TEST')
+                cb.drain_once()
+            rem.report()
+            kinds = [(b['kind'], b['hotel']) for b in model.bookings]
+            if blocked:
+                check(f'unknown-{first}: the second never handed to Chrome', len(STATE.browser_calls) == 1,
+                      str(len(STATE.browser_calls)))
+                check(f'unknown-{first}: confirming left open, no failed', kinds == [
+                    ('hold', NAGU), ('hold', RESOL), ('confirming', NAGU)], str(kinds))
+                check(f'unknown-{first}: the night is done', bh.night_done(TARGET) and TARGET in rem.done)
+                check(f'unknown-{first}: a human_needed with the code',
+                      [e['detail'] for e in model.kinds('human_needed')] == [first], str(model.kinds('human_needed')))
+            else:
+                check(f'definite-{first}: the next facility is filed', len(STATE.browser_calls) == 2
+                      and ('confirmed', RESOL) in kinds and ('failed', NAGU) in kinds, str(kinds))
+
+    def done_after_claim(bookings, run_id='run-x'):
+        saved = bh.DONE_DATES
+        try:
+            clock = Clock()
+            model = WorkerModel(clock)
+            model.bookings = bookings
+            rem = make_remote(model, clock, run_id=run_id, seed_hold=lambda *a: None, on_done=bh.set_done_dates)
+            rem.claim(wait=0)
+            return set(rem.done)
+        finally:
+            bh.DONE_DATES = saved
+    hold = {'id': 'old:1', 'kind': 'hold', 'date': TARGET, 'hotel': NAGU, 'at': 1, 'runId': 'old'}
+    conf = dict(hold, id='old:2', kind='confirming')
+    fail = dict(hold, id='old:3', kind='failed')
+    check('record: another run\'s open confirming blocks the night', done_after_claim([hold, conf]) == {TARGET})
+    check('record: one followed by failed doesn\'t', done_after_claim([hold, conf, fail]) == set())
+    check('record: this run\'s own in flight doesn\'t', done_after_claim(
+        [dict(hold, runId='run-x'), dict(conf, runId='run-x')]) == set())
+
+
+def test_imap_rechecked_while_failing():
+    """A failed mailbox check is tried again every IMAP_RECHECK_SEC while auto-confirm is on (cheap: the login only),
+    so one transient failure doesn't hold mailOk (the Worker's mail_failing) false until the next hold; once it
+    passes, no more checks."""
+    clock = Clock()
+    model = WorkerModel(clock, autoConfirm=True)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    run = M.RemoteRun(rem, sup, clock=clock)
+    answers = iter([(False, 'timeouterror'), (True, '')])
+    calls = []
+    saved = cb.imap_check
+    cb.imap_check = lambda: (calls.append(clock()), next(answers))[1]
+    try:
+        run.tick()
+        check('recheck: checked at start, failing', len(calls) == 1 and rem.mail_ok is False)
+        clock.advance(M.IMAP_RECHECK_SEC - 1)
+        run.tick()
+        check('recheck: not before IMAP_RECHECK_SEC', len(calls) == 1)
+        clock.advance(1)
+        run.tick()
+        check('recheck: again after it, and mailOk back', len(calls) == 2 and rem.mail_ok is True, str(calls))
+        clock.advance(M.IMAP_RECHECK_SEC * 3)
+        run.tick()
+        check('recheck: none while it passes', len(calls) == 2)
+        check('recheck: the report says so', model.reports[-1].get('mailOk') is True)
+    finally:
+        cb.imap_check = saved
+        _cleanup(sup)
+
+
 def test_a_refused_entry_is_set_aside(port):
     """A 400 on /runner/bookings is the entry's, not an outage: the batch is split, the bad one set aside (unsynced,
     retried alone, HUMAN NEEDED, one human_needed bad_booking), the rest land, the gate stays open."""
@@ -2134,6 +2219,76 @@ def test_workflow_timings():
           'test("^[a-z_]{1,40}$")' in h and 'rm -f h.json' in h and h.index('rm -f h.json') < h.index('echo "$s"'))
     check('health: one its-alert issue, closed when healthy', 'gh issue create --label its-alert' in h
           and 'gh issue close' in h)
+
+
+FAKE_CURL = """#!/bin/sh
+# the test's curl: -o FILE gets $FAKE_BODY (if set), stdout the code; logs that it ran
+echo curl >> "$FAKE_LOG"
+out=
+while [ $# -gt 0 ]; do [ "$1" = -o ] && out=$2; shift; done
+[ -n "$FAKE_BODY" ] && [ -n "$out" ] && printf '%s' "$FAKE_BODY" > "$out"
+printf '%s' "$FAKE_CODE"
+[ "$FAKE_CODE" = 000 ] && exit 7
+exit 0
+"""
+FAKE_GH = """#!/bin/sh
+# the test's gh: answers run list / issue list from the env, logs every write
+case "$1 $2" in
+  "run list") printf '%s\\n' "$FAKE_PREV" ;;
+  "issue list") printf '%s\\n' "$FAKE_OPEN" ;;
+  "issue view") printf '%s\\n' "$FAKE_LAST" ;;
+  *) printf '%s\\n' "$*" >> "$FAKE_LOG" ;;
+esac
+"""
+
+
+def test_health_alert_script(tmpdir):
+    """its-health.yml's step, run for real with bash and jq against a fake curl and gh: inert without its secret, red
+    on one failure, the alert (health_unreachable) on the second in a row, codes only in what it posts, closed when
+    healthy."""
+    import shutil
+    import stat
+    if not (shutil.which('bash') and shutil.which('jq')):
+        check('health-script: bash and jq present (skipped)', True)
+        return
+    y = open(os.path.join(os.path.dirname(ITS_DIR), '.github', 'workflows', 'its-health.yml'), encoding='utf-8').read()
+    block = y.split('        run: |\n', 1)[1]
+    script = '\n'.join(ln[10:] for ln in block.split('\n'))
+    d = os.path.join(tmpdir, 'health-bin')
+    os.makedirs(d, exist_ok=True)
+    for name, text in (('curl', FAKE_CURL), ('gh', FAKE_GH)):
+        p = os.path.join(d, name)
+        with open(p, 'w') as f:
+            f.write(text)
+        os.chmod(p, os.stat(p).st_mode | stat.S_IXUSR)
+
+    def run(token='t0ken', code='200', body='', prev='', open_=''):
+        log = os.path.join(tmpdir, 'health.log')
+        open(log, 'w').close()
+        env = {'PATH': d + os.pathsep + os.environ.get('PATH', ''), 'ITS_HEALTH_TOKEN': token, 'FAKE_CODE': code,
+               'FAKE_BODY': body, 'FAKE_PREV': prev, 'FAKE_OPEN': open_, 'FAKE_LAST': '', 'FAKE_LOG': log,
+               'GITHUB_RUN_ID': '555', 'GITHUB_SERVER_URL': 'https://github.com', 'GITHUB_REPOSITORY': 'o/r'}
+        r = subprocess.run(['bash', '-e', '-c', script], cwd=tmpdir, env=env, capture_output=True, text=True,
+                           timeout=60)
+        return r.returncode, r.stdout + r.stderr, open(log).read()
+    healthy = json.dumps({'verdict': 'healthy', 'reasons': [], 'lastSeenAgeSec': 5, 'phase': 'scanning',
+                          'unsynced': 0, 'unsyncedAgeSec': None, 'lastPreflightAgeSec': 60})
+    code, out, log = run(token='')
+    check('health-script: no secret: green, no request', code == 0 and 'curl' not in log, out + log)
+    code, out, log = run(code='000', prev='success')
+    check('health-script: one failure: red, no issue', code == 1 and 'issue create' not in log, out + log)
+    code, out, log = run(code='503', prev='failure')
+    check('health-script: the second in a row: the alert', code == 1
+          and 'issue create --label its-alert --title ITS alert: health_unreachable' in log, out + log)
+    code, out, log = run(code='503', prev='failure', open_='12')
+    check('health-script: an open alert gets a comment', code == 1 and 'issue comment 12' in log, out + log)
+    bad = json.dumps({'verdict': 'degraded', 'reasons': ['human_needed', TARGET], 'lastSeenAgeSec': 5,
+                      'phase': 'scanning', 'unsynced': 0, 'hotel': NAGU})
+    code, out, log = run(body=bad)
+    check('health-script: human_needed opens it, codes only', code == 0 and 'ITS alert: human_needed' in log
+          and TARGET not in out + log and NAGU not in out + log, out + log)
+    code, out, log = run(body=healthy, open_='12')
+    check('health-script: healthy closes it', code == 0 and 'issue close 12' in log, out + log)
 
 
 def main_(argv=()):

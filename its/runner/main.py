@@ -65,6 +65,9 @@ BAN_DRAIN_SEC = 120
 # Without a good answer from the Worker this long, the run ends (`run_end detail=worker_lost`, exit 1; the fence
 # already stopped holds a minute before the lease ran out).
 WORKER_LOST_SEC = 15 * 60
+# While auto-confirm is on and the last mailbox trip failed, the login is checked again this often (a transient failure
+# must not leave mailOk false, and the Worker's mail_failing on, until the next hold's leg).
+IMAP_RECHECK_SEC = 10 * 60
 # The public summary's cadence.
 SUMMARY_EVERY_SEC = 300
 # The same failing step is printed publicly at most this often.
@@ -297,6 +300,7 @@ class RemoteRun:
         self.printed = {}          # step -> (failures printed, when)
         self.phase_printed = None
         self.auto_seen = False     # autoConfirm was on at the last tick (the IMAP check runs when it turns on)
+        self.imap_at = None        # the last login check (again every IMAP_RECHECK_SEC while the mailbox fails)
         self.reclaims = 0
 
     def begin_drain(self, detail, until):
@@ -324,6 +328,7 @@ class RemoteRun:
         return got is not None and not got['stop']
 
     def check_imap(self):
+        self.imap_at = self.clock()
         ok, cls = confirm_booking.imap_check()
         url_log(f"{G if ok else R}IMAP login check: {'ok' if ok else cls}{X}")
         logs.public('imap', ok=int(ok), cls=cls or None)
@@ -359,7 +364,8 @@ class RemoteRun:
         else:
             rem.phase = 'solving' if rem.solving else 'scanning' if rem.scans else 'starting'
             auto = settings.get('autoConfirm') is True
-            if auto and not self.auto_seen:
+            if auto and (not self.auto_seen or (rem.mail_ok is False and self.imap_at is not None
+                                                and now - self.imap_at >= IMAP_RECHECK_SEC)):
                 self.check_imap()
             self.auto_seen = auto
         if rem.phase != self.phase_printed:

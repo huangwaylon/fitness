@@ -114,7 +114,11 @@ contract: app/src/lib/its/contract.ts, mirrored by hand in remote.py). The seams
   done: not scanned (a month with no other night has no scanner), no new hold, and no second facility filed for it. A
   hold queued for that night has its mail's link claimed (so no other hold can take it) and never followed: the hold
   lapses free at the site; private log, public `skip_confirmed_night n`, no human_needed. The night stays in the
-  settings' dates until a member removes it.
+  settings' dates until a member removes it. A leg that may have filed counts the same: `no_completion`,
+  `submit_unknown`, or Chrome failing after 申込する (確認 may have been pressed) writes no `failed`, so its `confirming`
+  stays open in the record, and the night is done at once (human_needed with the code: the mailbox decides). Any other
+  run's open `confirming` (no `failed`/`confirmed` after it: an unknown outcome, or a run that died mid-leg) makes its
+  night done from the claim on. Every other failure is a definite non-booking (`failed`), and the night goes on.
 - **The record.** Holds, `confirming`, `confirmed` (with the number) and `failed` entries are queued, sent at once and
   retried with every report until the Worker has them. The Worker's record seeds `holds.json` at start (a hotel held
   for a date is never applied for again, whichever run held it).
@@ -141,7 +145,7 @@ contract: app/src/lib/its/contract.ts, mirrored by hand in remote.py). The seams
 - **Reports** every 30 s (at once after a hold, confirmed, human_needed, ban): phase, scans, failures by step, the last
   error (step, status, class), solves (count, seconds, spot), `available`/`filtered` only when a date's offered set
   changes, the names seen, `settingsAt`, `mailOk` (the last mailbox trip: the run-start login check, which runs when
-  auto-confirm is on, and every confirm-worker poll; the Worker's `mail_failing`) and `scansLog` (one `{t, ok, ms, avail,
+  auto-confirm is on and again every 10 min while it fails, and every confirm-worker poll; the Worker's `mail_failing`) and `scansLog` (one `{t, ok, ms, avail,
   code?}` per scan cycle, counts and codes only, dropped once a report is answered, the newest 30 kept through an
   outage: the page's hour strip). An IMAP failure is an `error` event at start and `fail step=imap` mid-leg.
 - **Outcome codes** (lastError's `cls`, `solve_failed` and `human_needed` details): a solve `timeout`, `chrome_<exc>`,
@@ -183,7 +187,8 @@ next tick to cancel; the tick in a run's last 30 min queues the next run (it sta
 always queues. The `run` job holds the `its-runner` concurrency group: preflight, install, `main.py --remote --deadline
 START + ITS_RUN_MIN` (320 min), drain ≤ 15 min, inside the step's 345 and the job's 350 (test_remote's workflow test
 checks the nesting). its-health.yml reads the Worker's `/health/its` every 30 min with the repo secret
-`ITS_HEALTH_TOKEN` (inert without it) and keeps one `its-alert` issue: codes only.
+`ITS_HEALTH_TOKEN` (inert without it) and keeps one `its-alert` issue: codes only; /health/its not answering is red, and
+twice in a row (the previous run failed too) the alert `health_unreachable`.
 
 ## State
 

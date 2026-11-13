@@ -653,13 +653,42 @@ def _process(hold, links):
         return _skip_confirmed_night(tag, target_date, hotel_name)
     log(f"{tag}   {Y}{hotel_name} on {target_date} not confirmed "
         f"({status}: {detail}){X}")
-    # Every non-confirmed outcome leaves a held room and a sent mail a person can
+    if maybe_filed(status, detail):
+        # 確認 may have been pressed: the site may hold an application. No `failed` entry (the record's `confirming`
+        # stays open, which is what says so), and the night counts as booked: nothing else is filed for it.
+        log(f"{tag}   {B}{R}HUMAN NEEDED: {hotel_name} on {target_date}: outcome UNKNOWN, the site may have booked "
+            f"it. Check the mail to {bh.EMAIL} for a 申込完了メール; nothing else is filed for this night meanwhile.{X}")
+        bh.notify('human_needed', date=target_date, hotel=hotel_name, detail=outcome_code(status, detail),
+                  maybe_filed=True)
+        return True
+    # Every other non-confirmed outcome leaves a held room and a sent mail a person can
     # still finish. 'deferred' was assumed to announce itself, which was untrue of
     # the browser path.
     log(f"{tag}   {B}{Y}HUMAN NEEDED: {hotel_name} on {target_date} is held and the "
         f"mail to {bh.EMAIL} is sent. Open its link and finish now.{X}")
     bh.notify('human_needed', date=target_date, hotel=hotel_name, detail=outcome_code(status, detail), failed=True)
     return True
+
+
+# The leg's outcomes after which 確認 may have been pressed (the site may hold an application): `submit_unknown` (the
+# budget ran out after 申込する), `no_completion` (確認 pressed, no completion page), and Chrome failing after 申込する.
+# Every other outcome is a definite non-booking (nothing was committed).
+MAYBE_FILED = ('submit_unknown', 'no_completion')
+
+
+def maybe_filed(status, detail):
+    """True when a failed leg may have filed the application (MAYBE_FILED, or `chrome_<exc>` after 申込する)."""
+    if status != 'failed' or not isinstance(detail, str):
+        return False
+    if detail in MAYBE_FILED:
+        return True
+    if detail.startswith('chrome_'):
+        try:
+            import chrome
+            return bool(chrome.last_leg.get('applied'))
+        except Exception:
+            return True   # can't tell: as if it may have
+    return False
 
 
 _CODE = re.compile(r'[a-z][a-z0-9_]{0,39}\Z')
@@ -684,8 +713,8 @@ def outcome_code(status, detail):
 def _skip_confirmed_night(tag, target_date, hotel_name):
     """Decision 1 (its/README.md): one confirmed booking a night. This hold is left to lapse (the site cancels an
     unfiled hold free after 30 min); private log, a public count, no human_needed."""
-    log(f"{tag}   {Y}Not filing {hotel_name} for {target_date}: that night already has a confirmed booking; "
-        f"the hold is left to lapse (free){X}")
+    log(f"{tag}   {Y}Not filing {hotel_name} for {target_date}: that night already has a confirmed booking (or one "
+        f"whose outcome is unknown); the hold is left to lapse (free){X}")
     bh.notify('skipped', date=target_date, hotel=hotel_name, why=NIGHT_CONFIRMED)
     return True
 

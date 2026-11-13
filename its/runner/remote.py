@@ -255,6 +255,7 @@ class Remote:
         self.record_full = False          # the last bookings post was a 507: the Worker's record takes no more
         self.seeded = set()               # booking ids already written to holds.json
         self.confirmed_here = set()       # nights this run confirmed (before the record has them)
+        self.maybe_here = set()           # nights where this run's leg may have filed (outcome unknown)
         self.done = frozenset()           # nights with a confirmed booking: the record's and this run's
         self.config = None
         self.settings = None
@@ -388,6 +389,8 @@ class Remote:
                 self.resolved.add((date, hotel))
                 if f.get('failed'):
                     self.record('failed', date, hotel)
+                if f.get('maybe_filed'):
+                    self.maybe_here.add(date)   # its `confirming` stays open in the record: the night is done
                 self.event('human_needed', date, hotel, f.get('detail'), urgent=True)
                 self.public('human_needed', n=self.counts['human_needed'], detail=f.get('detail'))
             elif kind == 'hold_refused':
@@ -419,7 +422,7 @@ class Remote:
                     self.error('solve', None, cls)
                     self.event('solve_failed', detail=cls)
                     self.public('solve', ok=0, secs=f.get('secs'), cls=cls)
-        if kind == 'confirmed':
+        if kind == 'confirmed' or (kind == 'human_needed' and f.get('maybe_filed')):
             self._done_changed()   # at once: a second hold for this night queued behind it must not be filed
 
     def _log_scan(self, f):
@@ -518,7 +521,7 @@ class Remote:
                     clash.append(self.unsynced[bid])   # the record has this id with other content: not an ack
             fresh = [b for b in cfg['bookings'] if b['id'] not in self.seeded]
             self.seeded.update(b['id'] for b in fresh)
-            self.done |= {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirmed'}
+            self.done |= {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirmed'} | self._open_confirming(cfg)
         for b in clash:
             self._conflict(b, {'error': 'record_differs'})
         for b in fresh:
@@ -526,11 +529,19 @@ class Remote:
         self._take_settings(cfg['settings'])
         self._done_changed()
 
+    def _open_confirming(self, cfg):
+        """Nights with another run's `confirming` that no `failed` or `confirmed` followed: that leg may have filed
+        (it ended with the outcome unknown, or the run died mid-leg), so the night counts as booked until a person
+        removes it. This run's own open ones are its legs in flight; it adds its unknown outcomes itself (maybe_here)."""
+        ended = {(b['date'], b['hotel']) for b in cfg['bookings'] if b['kind'] in ('failed', 'confirmed')}
+        return {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirming' and b['runId'] != self.run_id
+                and (b['date'], b['hotel']) not in ended}
+
     def _done_changed(self):
         """Hand the nights with a confirmed booking (the record's, and this run's own before the record has them) to
         `on_done`. Only grows within a run: a confirmed entry stays in the record until its stay is long past."""
         with self.lock:
-            self.done |= self.confirmed_here
+            self.done |= self.confirmed_here | self.maybe_here
             done = self.done
         self.on_done(done)
 
