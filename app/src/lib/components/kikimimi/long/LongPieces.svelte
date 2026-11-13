@@ -58,6 +58,5 @@
   .name { flex: 1; min-width: 0; display: grid; gap: 1px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .name small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .tags { display: flex; gap: 4px; flex: none; }
-  .tag { padding: 2px 8px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui); background: var(--ctl-off); }
-  .tag.today { background: var(--c-yuzu, var(--ctl-sel)); }
+  .tag.today { background: var(--c-yuzu); color: var(--c-ink); }
 </style>

@@ -29,6 +29,7 @@
   --bar-floor: .34;                                      /* a chart's bar that met no goal: its fill's opacity (BarChart) */
   --c-sky:#4F9BE0;                                       /* the info sheets' sky: the airline strip, map water, the "now" marker (fills) */
   --c-rose:#E88FAE;                                      /* the wedding's rose: the ring, the letter's band and rules, the heart stamp */
+  --c-gold:#F2C14E;  --c-gold-lip:#B8862A;               /* NEW (.tag.new) and the gold medal / trophy fills (fills only) */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);

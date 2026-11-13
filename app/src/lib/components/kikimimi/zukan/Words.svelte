@@ -133,7 +133,7 @@
             <button type="button" class="zc" class:caught={p.caught} class:seen={!p.caught && p.heard} class:unseen={!p.heard} aria-expanded={open === p.id}
               data-kiki-phrase={p.id} data-caught={p.caught || undefined} data-stars={p.stars || undefined} data-sfx="tick" onclick={() => (open = open === p.id ? null : p.id)}>
               {#if p.caught}
-                {#if !seen.has(p.id)}<span class="new" data-kiki-new>{t('kiki.zukan.new')}</span>{/if}
+                {#if !seen.has(p.id)}<span class="tag new" data-kiki-new>{t('kiki.zukan.new')}</span>{/if}
                 <span class="en" lang="en">{p.en}</span>{#if p.ja}<span class="ja">{p.ja}</span>{/if}
                 {#if p.stars}<span class="stars" aria-label={t('kiki.zukan.stars', { n: p.stars })}>{'★'.repeat(p.stars)}<span class="off">{'★'.repeat(STAR_MAX - p.stars)}</span></span>
                 {:else}<span class="stars" aria-hidden="true">{s.icon}</span>{/if}
@@ -197,10 +197,7 @@
   .zc .ja { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .zc .stars { margin-top: auto; color: var(--c-yuzu-lip); font-size: 12px; letter-spacing: 1px; }
   .zc .stars .off { color: var(--ctl-off); }
-  .zc .new {
-    position: absolute; top: -6px; right: -4px; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-coral); color: var(--c-ink);
-    font: 700 var(--fs-xs)/1.2 var(--font-num); box-shadow: 0 2px 0 color-mix(in srgb, var(--c-coral) 65%, var(--c-ink));
-  }
+  .zc .new { position: absolute; top: -6px; right: -4px; }
   .zc.seen, .zc.unseen { align-items: center; justify-content: center; text-align: center; box-shadow: none; background: color-mix(in srgb, var(--lip) 35%, transparent); }
   .zc .q { font: 700 24px/1 var(--font-ui); color: var(--text-soft); }
   .zc.seen .q { filter: grayscale(1); opacity: .45; }

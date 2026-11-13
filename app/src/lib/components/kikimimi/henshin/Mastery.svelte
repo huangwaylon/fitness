@@ -52,8 +52,7 @@
   .name { display: grid; gap: 1px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .name small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .tags { display: flex; gap: 4px; justify-self: end; }
-  .tag { padding: 2px 8px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui); background: var(--ctl-off); }
-  .tag.today { background: var(--c-yuzu, var(--ctl-sel)); }
+  .tag.today { background: var(--c-yuzu); color: var(--c-ink); }
   .tag.done { background: color-mix(in srgb, var(--c-leaf) 45%, var(--card)); }
   .bar { height: 8px; border-radius: 4px; background: var(--ctl-off); overflow: hidden; }
   .bar.none { background: transparent; box-shadow: inset 0 0 0 1.5px var(--edge); }

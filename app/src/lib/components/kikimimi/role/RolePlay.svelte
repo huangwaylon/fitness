@@ -188,7 +188,6 @@
   .one.talk { opacity: 1; animation: if-speak 520ms ease-in-out infinite alternate; }
   .one.pop { animation: if-pop-in 420ms var(--ease-bounce) both; }
   .nm { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text); }
-  .tag { padding: 1px 8px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .one[data-mine] .tag { background: var(--c-yuzu); color: var(--c-ink); }
   .card-me { margin: 0; display: grid; gap: 2px; justify-items: center; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .card-me b { font-size: var(--fs-body); color: var(--text); }

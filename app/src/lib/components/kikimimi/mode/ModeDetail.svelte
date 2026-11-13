@@ -128,7 +128,6 @@
   .head b { font: 700 var(--fs-talk)/1.3 var(--font-ui); }
   .head p { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); color: var(--text-soft); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-  .tag { padding: 4px 10px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .ladder { display: grid; gap: 10px; padding: 12px 14px; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hint.warn { color: var(--coral-text); }

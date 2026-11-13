@@ -41,7 +41,7 @@
   .en { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); word-break: normal; line-break: strict; }
   .tags { margin: 0; display: flex; gap: 6px; }
-  .tag { padding: 1px 8px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui); }
+  .repair, .drop { color: var(--c-ink); }
   .repair { background: color-mix(in srgb, var(--c-yuzu) 60%, var(--c-card)); }
   .drop { background: color-mix(in srgb, var(--c-coral) 25%, var(--c-card)); }
 </style>

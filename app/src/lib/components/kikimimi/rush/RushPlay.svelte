@@ -108,7 +108,7 @@
 
   {#if !v.out}
     <section class="ticket obj-cream" aria-labelledby="kk-rush-ask" data-kiki-rush-ticket>
-      <h3 id="kk-rush-ask" class="ask"><span class="tag">🧾 {t('kiki.rush.ticket')}</span>{it.rush.ask}</h3>
+      <h3 id="kk-rush-ask" class="ask"><span class="ticket">🧾 {t('kiki.rush.ticket')}</span>{it.rush.ask}</h3>
       {#if !reveal}
         <p class="hint-line">{!turn ? t('kiki.rush.watch') : v.phase === 'answer' ? t('kiki.rush.pick') : t('kiki.rush.listen')}</p>
       {/if}
@@ -137,7 +137,7 @@
   /* the ticket: a cream slip with its question on top, the chips under it */
   .ticket { display: grid; gap: 8px; padding: 10px 12px 12px; border-radius: 18px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .ask { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font: 700 var(--fs-body)/1.4 var(--font-ui); }
-  .tag { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  .ticket { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   .hint-line { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
   .was { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
   .combo-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }

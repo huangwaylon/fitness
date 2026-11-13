@@ -12,7 +12,7 @@
 <div class="chip" role="status" aria-label={[name, count, fresh ? `あたらしい ${fresh}` : ''].filter(Boolean).join(' ')} data-museum-chip={name}>
   {#key name}<span class="name" aria-hidden="true">{name}</span>{/key}
   {#if count}<span class="n" aria-hidden="true" data-museum-chip-n>{count}</span>{/if}
-  {#if fresh}<span class="new" aria-hidden="true" data-museum-chip-new>あたらしい {fresh}</span>{/if}
+  {#if fresh}<span class="tag new" aria-hidden="true" data-museum-chip-new>あたらしい {fresh}</span>{/if}
 </div>
 
 <style>
@@ -28,11 +28,7 @@
   .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; animation: in 220ms ease-out both; }
   .n { flex: none; color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
   /* the gold NEW tag hangs under the pill (static: no pulse, no frames) */
-  .new {
-    position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
-    padding: 3px 9px; border-radius: var(--r-pill); background: #f2c14e; color: #4a3210; box-shadow: 0 2px 0 #b8862a;
-    font: 700 var(--fs-s)/1.1 var(--font-ui); font-variant-numeric: tabular-nums; pointer-events: none;
-  }
+  .new { position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%); pointer-events: none; }
   @keyframes in { from { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .name { animation: none; } }
 </style>

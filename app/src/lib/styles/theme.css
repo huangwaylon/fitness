@@ -243,11 +243,14 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .sec-label.coral { color: var(--coral-text); }
 .sec-label.leaf { color: var(--leaf-text); }
 .sec-label.sticky { position: sticky; top: var(--sticky-top, 0px); z-index: 2; margin: 0 -12px; padding: 10px 16px 6px; background: var(--surface); }
-/* a tag: a small label on a row (a category, ☑ 1/3); .kit scope (the full sheet and anything opened in it) */
-:where(.kit) .tag {
-  display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 6px; white-space: nowrap;
-  font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--text-soft); background: color-mix(in srgb, var(--lip) 40%, var(--card));
+/* a tag: a small label on a row (a category, ☑ 1/3, a game's level), a sunk pill at 13px; in the kit's scope (the full
+   sheet and anything opened in it) and ききみみ's. .new: the one NEW marker (gold, anywhere: a museum room's new finds,
+   ことば's first catch) */
+:where(.kit, [data-kikimimi]) .tag, .tag.new {
+  display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap;
+  font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); background: var(--ctl-off);
 }
+.tag.new { color: var(--c-ink); background: var(--c-gold); box-shadow: 0 2px 0 var(--c-gold-lip); font-variant-numeric: tabular-nums; }
 /* a sticker: the plate's tilted yuzu tag, small (今日, 中級); .coral a past trip's 「行ってきた」 stamp */
 .sticker {
   display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 9px; border-radius: var(--r-pill); white-space: nowrap;
