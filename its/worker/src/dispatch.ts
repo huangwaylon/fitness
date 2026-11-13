@@ -23,10 +23,10 @@ export async function dispatchRun(token: string | undefined, now: number): Promi
       body: JSON.stringify({ ref: 'main' }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) console.warn(`its dispatch refused status=${res.status} body=${(await res.text()).slice(0, 200).replace(/\s+/g, ' ')}`);
+    if (!res.ok) console.warn(`its dispatch refused status=${res.status} body=${JSON.stringify((await res.text()).slice(0, 200).replace(/\s+/g, ' '))}`);
     return { at: now, ok: res.ok, status: res.status };
   } catch (e) {
-    console.warn(`its dispatch failed: ${e instanceof Error ? e.name : 'error'}`);
+    console.warn(`its dispatch failed err=${e instanceof Error ? e.name : 'error'}`);
     return { at: now, ok: false, status: 0 };
   }
 }

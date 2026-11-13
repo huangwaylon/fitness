@@ -5,6 +5,7 @@
 // X-Request-Id (or one made up) in its lines and its answer.
 import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../../relay/src/auth.ts';
 import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
+import { isRec } from '../../../app/src/lib/contract/guards.ts';
 import type { PushAnswer } from './bot.ts';
 import type { Env } from './env.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
@@ -36,15 +37,18 @@ export default {
       if (pathname in RUNNER_ROUTES) return await runner(req, env, pathname);
       return new Response('not found', { status: 404 });
     } catch (e) {
-      console.error(`its ${req.method} ${pathname} failed`, e);
+      console.error(`its request failed method=${req.method} path=${pathname} err=${errName(e)}`, e);
       return Response.json({ ok: false, error: 'internal' }, { status: 500 });
     }
   }
 } satisfies ExportedHandler<Env>;
 
-/** One line per refusal: the status, the reason, the route; the origin when it was the cause. */
+/** An exception's name for a log line (`err=`): never its message (it may quote a body). */
+const errName = (e: unknown): string => (e instanceof Error ? e.name : 'error');
+
+/** One line per refusal: the status, the reason, the route; the origin when it was the cause, the run on the runner's. */
 function refuse(req: Request, path: string, status: number, why: string, headers: Record<string, string> = {}, extra = ''): Response {
-  console.warn(`its refused ${status} ${why} ${req.method} ${path}${extra}`);
+  console.warn(`its refused status=${status} why=${why} method=${req.method} path=${path}${extra}`);
   return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
 }
 
@@ -145,27 +149,31 @@ async function runner(req: Request, env: Env, path: string): Promise<Response> {
   if (req.method !== method) return refuse(req, path, 405, 'method', { Allow: method });
   if (!(await tokenOk(bearerOf(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN?.trim() ? 'unauthorized' : 'no_runner_token');
   const qRun = new URL(req.url).searchParams.get('runId');
-  if (qRun !== null && !isId(qRun)) return refuse(req, path, 400, 'bad_run_id');
+  if (qRun !== null && !isId(qRun)) return refuse(req, path, 400, 'bad_run_id', {}, ' run=-');
   const headers = { 'Cache-Control': 'no-store' };
+  // the asking run, for the refusal's line: ?runId=, else the body's runId (claim, report) when it is an id
+  let run = qRun ?? '-';
+  const no = (status: number, why: string, extra = '') => refuse(req, path, status, why, {}, ` run=${run}${extra}`);
   try {
     if (path === '/runner/config') return Response.json(await bot(env).config(qRun), { headers });
     const json = await body(req);
+    if (qRun === null && isRec(json) && isId(json.runId)) run = json.runId;
     if (path === '/runner/claim') {
       const p = parseClaim(json);
-      if (!p.ok) return refuse(req, path, 400, p.error);
+      if (!p.ok) return no(400, p.error);
       return Response.json(await bot(env).claim(p.value), { headers });
     }
     if (path === '/runner/report') {
       const p = parseReport(json);
-      if (!p.ok) return refuse(req, path, 400, p.error);
+      if (!p.ok) return no(400, p.error);
       return Response.json(await bot(env).report(p.value), { headers });
     }
     const p = parseBookings(json);
-    if (!p.ok) return refuse(req, path, 400, p.error, {}, ` n=${Array.isArray(json) ? json.length : '-'}`);
+    if (!p.ok) return no(400, p.error, ` n=${Array.isArray(json) ? json.length : '-'}`);
     const r = await bot(env).bookings(p.value, qRun);
-    return r.ok ? Response.json(r.config, { headers }) : refuse(req, path, r.status, r.error, {}, ` run=${qRun ?? '-'} n=${p.value.length}`);
+    return r.ok ? Response.json(r.config, { headers }) : no(r.status, r.error, ` n=${p.value.length}`);
   } catch (e) {
-    if (e instanceof Refused) return refuse(req, path, e.status, e.why);
+    if (e instanceof Refused) return no(e.status, e.why);
     throw e;
   }
 }

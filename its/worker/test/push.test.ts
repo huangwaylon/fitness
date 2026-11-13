@@ -318,7 +318,7 @@ describe('POST /its/push/subscribe, /unsubscribe', () => {
     await fresh({ VAPID_PUBLIC: 'REPLACE_AT_DEPLOY' });
     await refused(subBody(p), 503, 'push_off');
     expect((await status()).push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
-    expect(allLogs()).toContain('its refused 400 bad_push_endpoint POST /its/push/subscribe by=A');
+    expect(allLogs()).toContain('its refused status=400 why=bad_push_endpoint method=POST path=/its/push/subscribe by=A');
   });
 
   it('unsubscribe forgets the caller’s own (and its queued pushes) only', async () => {
@@ -434,12 +434,12 @@ describe('a report’s events, the outbox and the alarm', () => {
     const c = await bot.report(report({ events: [ev(1, 'hold')] }));
     expect(c.ackSeq).toBe(1);
     expect(jobs()).toHaveLength(2);
-    expect(allLogs()).toContain('its push alarm not set');
+    expect(allLogs()).toContain('its push alarm failed err=');
     bot.rec.subs = null as never;   // jobsFor throws
     const r = await asRunner(env, '/runner/report', report({ events: [ev(2, 'confirmed')] }), RUNNER);
     expect(r.status).toBe(200);
     expect(bot.rec.events.important.some((e) => e.kind === 'confirmed')).toBe(true);
-    expect(allLogs()).toContain('its push queue failed');
+    expect(allLogs()).toContain('its push queue failed err=');
   });
 
   it('without the VAPID key: nothing queued (logged)', async () => {

@@ -80,7 +80,7 @@ export class ItsBot extends DurableObject<Env> {
     const now = Date.now();
     const cur = this.rec.settings;
     if (input.baseUpdatedAt !== cur.updatedAt) {
-      console.log(`its settings conflict by=${by} base=${input.baseUpdatedAt} current=${cur.updatedAt} (${cur.updatedBy}) rid=${rid}`);
+      console.log(`its settings conflict by=${by} base=${input.baseUpdatedAt} current=${cur.updatedAt} current_by=${cur.updatedBy ?? '-'} rid=${rid}`);
       return { ok: false, status: await this.status() };
     }
     const { baseUpdatedAt: _, ...edit } = input;
@@ -88,7 +88,7 @@ export class ItsBot extends DurableObject<Env> {
     // strictly later than the last save, so a draft from before it always conflicts
     const settings = { ...edit, ...(search && { search }), v: 1 as const, paused: cur.paused, updatedAt: Math.max(now, (cur.updatedAt ?? 0) + 1), updatedBy: by };
     await this.save({ settings });
-    console.log(`its settings by=${by} dates=${settings.dates.length} skip=${settings.skip.length} pri=${settings.priority.length} int=${settings.intervalSec} guests=${settings.guests} auto=${settings.autoConfirm ? 1 : 0} search=${settings.search?.length ?? '-'}${edit.search ? '' : search ? '(kept)' : ''} [${settings.dates.join(' ')}] rid=${rid}`);
+    console.log(`its settings by=${by} dates=${settings.dates.length} skip=${settings.skip.length} pri=${settings.priority.length} int=${settings.intervalSec} guests=${settings.guests} auto=${settings.autoConfirm ? 1 : 0} search=${settings.search?.length ?? '-'}${!edit.search && search ? ' search_kept=1' : ''} list=${settings.dates.join(',') || '-'} rid=${rid}`);
     return { ok: true, status: await this.status() };
   }
 
@@ -128,7 +128,7 @@ export class ItsBot extends DurableObject<Env> {
     const lease = claimLease(this.rec.lease, input.runId, input.host, now);
     if (!lease) {
       const held = this.rec.lease!;
-      console.warn(`its claim run=${input.runId} host=${input.host} ok=0 holder=${held.holder} (${held.host}) for=${Math.round((held.until - now) / 1000)}s`);
+      console.warn(`its claim run=${input.runId} host=${input.host} ok=0 holder=${held.holder} holder_host=${held.host} for=${Math.round((held.until - now) / 1000)}s`);
       return { ok: false, lease: held };
     }
     // a lease still on the record and someone else's: its holder never released it (no run_end): it died or was cancelled
@@ -136,7 +136,7 @@ export class ItsBot extends DurableObject<Env> {
     if (takeover) {
       const events = addOwnEvent(this.rec.events, { runId: input.runId, t: now, kind: 'prev_unclean', detail: takeover });
       await this.save({ lease, events });
-      console.warn(`its claim run=${input.runId} host=${input.host} ok=1 took_over=${takeover} prev_unclean`);
+      console.warn(`its claim run=${input.runId} host=${input.host} ok=1 took_over=${takeover} event=prev_unclean`);
     } else {
       await this.save({ lease });
       console.log(`its claim run=${input.runId} host=${input.host} ok=1`);
@@ -176,13 +176,13 @@ export class ItsBot extends DurableObject<Env> {
     } else if (!leaseTaken(held, r.runId, now)) {
       patch.runner = runnerOf(r, now, this.rec.runner);   // nobody holds it: still the runner to show (a retried last report)
     } else {
-      console.warn(`its report from a run without the lease run=${r.runId} holder=${held!.holder}`);
+      console.warn(`its report no_lease run=${r.runId} holder=${held!.holder}`);
     }
     const queued = ev ? this.queuePushes(ev.added, ev.events.important, now) : null;
     if (queued) Object.assign(patch, { pushq: queued.pushq, pushlog: queued.pushlog });
     await this.save(patch);
     if (queued?.n) await this.wake(now);
-    if (late) console.warn(`its lease renewed_late run=${r.runId} expired=${Math.round((now - held!.until) / 1000)}s ago`);
+    if (late) console.warn(`its lease renewed_late run=${r.runId} late=${Math.round((now - held!.until) / 1000)}s`);
     const c = runnerConfig(this.rec, this.mode, r.runId, now, true);
     console.log(`its report run=${r.runId} host=${r.host} phase=${r.phase} scans=${r.scans} fail=${r.scanFailures} solves=${r.solves.ok}/${r.solves.failed} unsynced=${r.unsynced} ev=${ev?.added.length ?? 0}/${r.events.length} seen=${r.seen.length}${seen ? '+' : ''} lease=${patch.lease === undefined ? 'kept' : patch.lease ? 'renewed' : 'released'} stop=${c.stopReason ?? 0}`);
     for (const e of ev?.added ?? []) {
@@ -209,7 +209,7 @@ export class ItsBot extends DurableObject<Env> {
     console.log(`its bookings run=${runId ?? '-'} got=${list.length} new=${r.added.length} kept=${r.bookings.length}`);
     for (const b of r.added) console.log(`its booking ${b.kind} id=${b.id} date=${b.date} hotel=${q(b.hotel)}${b.number ? ' number=yes' : ''}`);
     if (r.refused) {
-      console.error(`its bookings refused=${r.refused} record_full: the record is full (${r.bookings.length}); back it up and look`);
+      console.error(`its bookings refused record_full run=${runId ?? '-'} n=${r.refused} kept=${r.bookings.length}`);   // back it up and look
       return { ok: false, status: 507, error: 'record_full' };
     }
     return { ok: true, config: runnerConfig(this.rec, this.mode, runId, now) };
@@ -289,7 +289,7 @@ export class ItsBot extends DurableObject<Env> {
       for (const n of r.notices) console.log(`its push queued kind=${n.kind} id=${n.id} urgency=${n.urgency} ttl=${Math.round((n.until - now) / 1000)}s subs=${jobs.filter((j) => j.id === n.id).length}`);
       return { pushq: [...this.rec.pushq, ...jobs].slice(-PUSHQ_KEPT), pushlog: { ...this.rec.pushlog, done: r.done }, n: jobs.length };
     } catch (e) {
-      console.error('its push queue failed', e);
+      console.error(`its push queue failed err=${e instanceof Error ? e.name : 'error'}`, e);
       return null;
     }
   }
@@ -299,7 +299,7 @@ export class ItsBot extends DurableObject<Env> {
     try {
       await this.ctx.storage.setAlarm(at);
     } catch (e) {
-      console.error('its push alarm not set', e);
+      console.error(`its push alarm failed err=${e instanceof Error ? e.name : 'error'}`, e);
     }
   }
 
@@ -371,7 +371,7 @@ export class ItsBot extends DurableObject<Env> {
     const msg = line(code, res.status, reason ? ` reason=${reason}` : '');
     if (code === 'ok' || code === 'gone') console.log(msg);
     else if (code === 'retry') console.warn(msg);
-    else console.error(code === 'config' ? `${msg} (VAPID refused: README "Push" → Diagnose)` : msg);
+    else console.error(code === 'config' ? `${msg} why=vapid_refused` : msg);   // config: README "Push"
     return { j, sub, code, status: res.status, ...(reason && { reason }), retryAfter: res.headers.has('Retry-After') && Number.isFinite(ra) ? ra : null };
   }
 

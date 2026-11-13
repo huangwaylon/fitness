@@ -50,11 +50,12 @@ describe('the lease', () => {
     expect([r.stop, r.stopReason]).toEqual([false, null]);
     const other = await bot.claim({ runId: 'mbp2-1', host: 'local' });
     expect(other).toEqual({ ok: false, lease: r.lease });
-    expect(logs.warn.mock.calls.flat().join('\n')).toContain('its claim run=mbp2-1 host=local ok=0 holder=19283746');
+    expect(logs.warn.mock.calls.flat().join('\n')).toContain('its claim run=mbp2-1 host=local ok=0 holder=19283746 holder_host=actions for=300s');
     // the other run's config and reports say lease_lost; its report doesn't become the runner shown
     expect((await bot.config('mbp2-1')).stopReason).toBe('lease_lost');
     const stray = await bot.report(report({ runId: 'mbp2-1', host: 'local', scans: 999 }));
     expect(stray.stopReason).toBe('lease_lost');
+    expect(logs.warn.mock.calls.flat().join('\n')).toContain('its report no_lease run=mbp2-1 holder=19283746');
     expect((await bot.status()).runner?.scans).toBe(120);
   });
 
@@ -80,7 +81,7 @@ describe('the lease', () => {
     vi.setSystemTime(NOW + 10 * MIN);
     const r = await bot.report(report());
     expect([r.stop, r.stopReason, r.lease?.holder, r.lease?.until]).toEqual([false, null, RUN, NOW + 10 * MIN + LEASE_SEC * 1000]);
-    expect(warned()).toContain('its lease renewed_late run=19283746 expired=300s ago');
+    expect(warned()).toContain('its lease renewed_late run=19283746 late=300s');
     expect(logged()).toContain('lease=renewed');
     // in time: no such line
     logs.warn.mockClear();
@@ -250,7 +251,7 @@ describe('the Worker’s own events and stamps', () => {
     const e = (await bot.status()).events.find((x) => x.kind === 'prev_unclean');
     expect(e).toEqual({ runId: '19283999', seq: 0, t: NOW + LEASE_SEC * 1000, kind: 'prev_unclean', detail: RUN });
     expect(bot.rec.events.important.map((x) => x.kind)).toContain('prev_unclean');
-    expect(warned()).toContain('its claim run=19283999 host=actions ok=1 took_over=19283746 prev_unclean');
+    expect(warned()).toContain('its claim run=19283999 host=actions ok=1 took_over=19283746 event=prev_unclean');
     // its seq 0 is no ack: the run's own events from seq 1 are taken
     expect((await bot.report(report({ runId: '19283999', events: [ev(1, 'run_start')] }))).ackSeq).toBe(1);
   });
@@ -436,7 +437,7 @@ describe('bookings', () => {
     const c = await bot.config(RUN);
     expect(c.bookings).toHaveLength(MAX_BOOKINGS);
     expect([c.bookings[0].id, c.bookings.at(-1)!.id]).toEqual(['19283746:1', '19283746:9998']);
-    expect(errored()).toContain('its bookings refused=1 record_full');
+    expect(errored()).toContain('its bookings refused record_full run=19283746 n=1 kept=');
     // a retry of what was kept is still a retry; the refused one is refused again
     expect(await bot.bookings([booking(9998), booking(9999)], RUN)).toMatchObject({ status: 507 });
   });

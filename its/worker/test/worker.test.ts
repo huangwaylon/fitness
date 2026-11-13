@@ -56,7 +56,7 @@ describe('routing', () => {
     const r = await page(env, '/its/status', { method: 'POST', body: '{}' });
     expect([r.status, r.headers.get('Allow')]).toEqual([405, 'GET']);
     expect((await asRunner(env, '/runner/report')).status).toBe(405);   // a GET
-    expect(warned()).toContain('its refused 405 method POST /its/status');
+    expect(warned()).toContain('its refused status=405 why=method method=POST path=/its/status');
   });
 });
 
@@ -69,7 +69,7 @@ describe('the page’s auth and CORS', () => {
     expect((await runAction('start', GUEST)).status).toBe(401);
     expect(state.count).toEqual(before);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(warned()).toContain('its refused 401 unauthorized GET /its/status');
+    expect(warned()).toContain('its refused status=401 why=unauthorized method=GET path=/its/status');
   });
 
   it('refuses unset member keys: nobody gets in', async () => {
@@ -166,7 +166,7 @@ describe('PUT /its/settings', () => {
     expect(big.status).toBe(413);
     expect(big.headers.get('Access-Control-Allow-Origin')).toBe(ORIGIN);   // the page can read why
     expect(state.count.rows).toBe(rows);
-    expect(warned()).toContain('its refused 400 past_date PUT /its/settings by=A');
+    expect(warned()).toContain('its refused status=400 why=past_date method=PUT path=/its/settings by=A');
   });
 
   it('keeps paused as it is (that’s 開始 / 停止’s)', async () => {
@@ -214,11 +214,12 @@ describe('POST /its/run', () => {
     fetchMock.mockResolvedValueOnce(new Response('{"message":"Bad credentials"}', { status: 401 }));
     let s: ItsStatus = await (await runAction('start')).json();
     expect([s.settings.paused, s.dispatch?.ok, s.dispatch?.status, s.verdict, s.reasons]).toEqual([false, false, 401, 'degraded', ['dispatch_failed', 'starting']]);
-    expect(warned()).toContain('its dispatch refused status=401');
+    expect(warned()).toContain(`its dispatch refused status=401 body=${JSON.stringify('{"message":"Bad credentials"}')}`);
     fetchMock.mockRejectedValueOnce(new TypeError('network'));
     vi.setSystemTime(NOW + 3 * MIN);
     s = await (await runAction('start')).json();
     expect(s.dispatch).toEqual({ at: NOW + 3 * MIN, ok: false, status: 0 });
+    expect(warned()).toContain('its dispatch failed err=TypeError');
   });
 
   it('sends nothing when MODE is off, there’s no date, or a run is on its way', async () => {
@@ -318,7 +319,7 @@ describe('the runner’s routes', () => {
     expect(state.count).toEqual(before);
     await fresh({ ITS_RUNNER_TOKEN: undefined });
     expect((await asRunner(env, '/runner/config')).status).toBe(401);
-    expect(warned()).toContain('its refused 401 no_runner_token GET /runner/config');
+    expect(warned()).toContain('its refused status=401 why=no_runner_token method=GET path=/runner/config');
     await fresh({ ITS_RUNNER_TOKEN: ' \n' });
     expect((await asRunner(env, '/runner/config', undefined, '')).status).toBe(401);
   });
@@ -333,11 +334,23 @@ describe('the runner’s routes', () => {
     await asRunner(env, '/runner/bookings?runId=19283746', [example.bookingInput]);
     const r = await asRunner(env, '/runner/bookings?runId=19283746', [{ ...example.bookingInput, kind: 'failed' }]);
     expect([r.status, await r.json()]).toEqual([409, { ok: false, error: 'id_conflict' }]);
-    expect(warned()).toContain('its refused 409 id_conflict POST /runner/bookings run=19283746 n=1');
+    expect(warned()).toContain('its refused status=409 why=id_conflict method=POST path=/runner/bookings run=19283746 n=1');
     const bot = (env.BOT as unknown as { get: () => { rec: { bookings: unknown[] } } }).get();
     bot.rec.bookings = Array.from({ length: 500 }, (_, i) => ({ ...example.bookingInput, id: `old:${i}`, at: NOW }));
     const full = await asRunner(env, '/runner/bookings', [{ ...example.bookingInput, id: 'new:1' }]);
     expect([full.status, await full.json()]).toEqual([507, { ok: false, error: 'record_full' }]);
+    expect(warned()).toContain('its refused status=507 why=record_full method=POST path=/runner/bookings run=- n=1');
+  });
+
+  it('a refusal’s line names the run: ?runId=, else the body’s runId when it is an id', async () => {
+    expect((await asRunner(env, '/runner/report', { ...report(), phase: 'napping' })).status).toBe(400);
+    expect(warned()).toContain('its refused status=400 why=bad_report_shape method=POST path=/runner/report run=19283746');
+    expect((await asRunner(env, '/runner/claim', { runId: 'mbp2-1', host: 'cloud' })).status).toBe(400);
+    expect(warned()).toContain('its refused status=400 why=bad_claim method=POST path=/runner/claim run=mbp2-1');
+    expect((await asRunner(env, '/runner/claim', { runId: 'a b', host: 'actions' })).status).toBe(400);
+    expect(warned()).toContain('why=bad_claim method=POST path=/runner/claim run=-');
+    expect((await asRunner(env, '/runner/bookings?runId=r-9', {})).status).toBe(400);
+    expect(warned()).toContain('why=bad_bookings method=POST path=/runner/bookings run=r-9 n=-');
   });
 
   it('GET /runner/config: the preflight; stop while paused, MODE off, or without a date', async () => {
@@ -423,7 +436,7 @@ describe('request ids', () => {
     expect(logs.log.mock.calls.flat().join('\n')).toMatch(/its settings by=A .*rid=p-7f3a/);
     const bad = await page(env, '/its/settings', { method: 'PUT', body: '[]', headers: { 'X-Request-Id': 'p-8' } });
     expect(rid(bad)).toBe('p-8');
-    expect(warned()).toContain('its refused 400 bad_shape PUT /its/settings by=A rid=p-8');
+    expect(warned()).toContain('its refused status=400 why=bad_shape method=PUT path=/its/settings by=A rid=p-8');
     const run = await page(env, '/its/run', { method: 'POST', body: '{"action":"stop"}', headers: { 'X-Request-Id': 'p-9' } });
     expect(rid(run)).toBe('p-9');
     expect(logs.log.mock.calls.flat().join('\n')).toMatch(/its run stop by=A .*rid=p-9/);
@@ -431,7 +444,7 @@ describe('request ids', () => {
     expect(logs.debug.mock.calls.flat().join('\n')).toContain('rid=p-10');
     const unauth = await page(env, '/its/status', { key: GUEST, headers: { 'X-Request-Id': 'p-11' } });
     expect(rid(unauth)).toBe('p-11');
-    expect(warned()).toContain('its refused 401 unauthorized GET /its/status rid=p-11');
+    expect(warned()).toContain('its refused status=401 why=unauthorized method=GET path=/its/status rid=p-11');
   });
 
   it('makes one up when the page sends none or one not shaped as an id (never logs what was sent)', async () => {
@@ -458,11 +471,11 @@ describe('GET /health/its (alerting)', () => {
   it('needs ITS_HEALTH_TOKEN: refused without it, with another key, and while it is unset', async () => {
     await fresh({ ITS_HEALTH_TOKEN: 'health-token' });
     for (const t of [undefined, 'nope', KEY_A, RUNNER]) expect((await health(t)).status).toBe(401);
-    expect(warned()).toContain('its refused 401 unauthorized GET /health/its');
+    expect(warned()).toContain('its refused status=401 why=unauthorized method=GET path=/health/its');
     expect((await health('health-token', { method: 'POST' })).status).toBe(405);
     await fresh();
     expect((await health('health-token')).status).toBe(401);
-    expect(warned()).toContain('its refused 401 no_health_token GET /health/its');
+    expect(warned()).toContain('its refused status=401 why=no_health_token method=GET path=/health/its');
     expect(allLogs()).not.toContain('health-token');
   });
 
