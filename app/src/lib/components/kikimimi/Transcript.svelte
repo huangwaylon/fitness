@@ -10,6 +10,7 @@
   import type { Item, Line } from '#lib/kikimimi/bank.ts';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import SoundLine from './scene/SoundLine.svelte';
   import MarkLegend from './scene/MarkLegend.svelte';
   import { villagerArt } from '#lib/art.ts';
@@ -45,7 +46,7 @@
       <span class="head"><OfficialArt key={villagerArt(l.who, true)} alt={name(l.who)} size={compact ? 28 : 36} /></span>
       <div class="b obj-cream">
         <p class="en"><SoundLine en={l.en} focus={it.focus} marks={l.marks} clip={l.clip ?? `${it.id}-${k + 1}`} from={at} {clock} /></p>
-        <p class="ja">{l.ja}</p>
+        <p class="ja"><Phrases text={l.ja} /></p>
       </div>
     </li>
   {/each}
@@ -55,7 +56,7 @@
       <div class="b obj-cream">
         <small>{t('kiki.nextLine')}</small>
         <p class="en" lang="en">{next.en}</p>
-        <p class="ja">{it.ja}</p>
+        <p class="ja"><Phrases text={it.ja} /></p>
       </div>
     </li>
   {/if}
