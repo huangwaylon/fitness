@@ -1,15 +1,16 @@
 <script lang="ts">
   // A bot's verdict (docs/design.md "Bots"), one card for both tabs: the dot, the word and one sentence, tinted by its
-  // tone (good leaf, warn yuzu, bad coral, idle plain); 更新中 while the status shown is the last known one and the read
-  // is on its way (the page's poll: a status kept from before shows at once); `children`: the bot's own row under a
-  // dashed rule (保養所's 開始 / 停止). `compact`: the smaller one (ジム's, at its page's foot). `attr`: its data-* (the
+  // tone (strip.ts Tone); 更新中 while the status shown is the last known one and the read is on its way (the page's
+  // poll: a status kept from before shows at once); `children`: the bot's own row under a dashed stitch (保養所's 開始 /
+  // 停止). `compact`: the smaller one (ジム's, at its page's foot). `attr`: its data-* (the
   // verdict's id: data-its-verdict="healthy").
   import type { Snippet } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import type { Tone } from '#lib/strip.ts';
 
   interface Props {
-    tone: 'good' | 'warn' | 'bad' | 'idle';
+    tone: Tone;
     word: string;
     sentence: string;
     attr: Record<string, string>;
@@ -22,7 +23,7 @@
   let { tone, word, sentence, attr, stale = false, compact = false, children, act = {} }: Props = $props();
 </script>
 
-<div class="card verdict {tone}" class:compact {...attr}>
+<div class="card pad verdict {tone}" class:compact {...attr}>
   <div class="vhead">
     <span class="dot {tone}" aria-hidden="true"></span>
     <div class="vtxt"><b>{word}</b><p><Phrases text={sentence} /></p></div>
@@ -32,7 +33,6 @@
 </div>
 
 <style>
-  .card { margin: 0; padding: 12px 14px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .verdict { display: grid; gap: 10px; }
   .verdict.good { background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
   .verdict.warn { background: color-mix(in srgb, var(--c-yuzu) 30%, var(--card)); }
@@ -54,5 +54,5 @@
     flex: none; display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap;
     font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); background: var(--ctl-off);
   }
-  .act { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
+  .act { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1.5px dashed var(--stitch); }
 </style>

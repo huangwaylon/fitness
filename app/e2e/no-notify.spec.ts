@@ -1,6 +1,6 @@
 // Notifications are ボット → 保養所's alone (docs/decisions.md; lib/its/push.ts): nothing in the app asks for the
 // notification permission, subscribes to push or calls a /push/ route, until a member taps 保養所's 通知 switch, and
-// then only the its-bot Worker's /its/push/subscribe is called. (The relay's old /push/* routes are gone: 2026-11-05.)
+// then only the its-bot Worker's /its/push/subscribe is called (the relay has no /push/* routes).
 // The guard that nothing else in src prompts or subscribes is push.test.ts (a grep); this proves it in the running app.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -29,6 +29,8 @@ async function fakePush(page: Page) {
     const sw = { ready: Promise.resolve(reg), register: async () => reg, getRegistration: async () => reg, getRegistrations: async () => [reg], addEventListener() {}, removeEventListener() {}, controller: null };
     Object.defineProperty(Navigator.prototype, 'serviceWorker', { get: () => sw, configurable: true });
     Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true, configurable: true });
+    // (the screen pinned to the window: a standalone page takes the screen's height, which put the tab bar below it)
+    for (const k of ['width', 'height'] as const) Object.defineProperty(screen, k, { get: () => (k === 'width' ? innerWidth : innerHeight), configurable: true });
   });
 }
 const probe = (page: Page) => page.evaluate(() => (window as unknown as { __push: { asked: number; subscribed: number; unsubscribed: number } }).__push);

@@ -143,8 +143,11 @@ test('ボット opens on 保養所 (its tab dotted: 要対応): the verdict, 状
   await expect(search.locator('[data-its-part="search"] h5')).toHaveText([`関東${region('kanto')}`, `近郊${region('near')}`, `遠方${region('far')}`]);
   await expect(search.locator('[data-its-part="search"] [data-its-hotel]')).toHaveCount(fit.length);
   const out = search.locator('[data-its-part="unfit"]');
-  await expect(out.locator('summary')).toHaveText(`日程に合わない${unfit.length}件`);
-  await expect(search.locator('[data-its-part="off"] summary')).toHaveText(`除外${SKIPPED.length}件`);
+  await expect(out.locator('h4')).toHaveText(`日程に合わない${unfit.length}件`);
+  // its heading outside the summary (VoiceOver's headings reach it), the summary a button named by it
+  await expect(out.getByRole('heading', { level: 4 })).toHaveAccessibleName(`日程に合わない ${unfit.length}件`);
+  await expect(out.locator('summary')).toHaveAccessibleName(`日程に合わない ${unfit.length}件`);
+  await expect(search.locator('[data-its-part="off"] h4')).toHaveText(`除外${SKIPPED.length}件`);
   await expect(out.locator('[data-its-hotel="NAGU 勝浦"]')).toBeHidden();
   await out.locator('summary').click();
   // a reason row: NAGU keeps its ★; its small line is why, and its switch says so
@@ -194,7 +197,7 @@ test('停止 goes out at once, outside the draft; the edits go in one PUT with �
   await its.locator('[data-its-hotel="リソルの森"] [role="switch"]').click();
   await expect(its.locator('[data-its-hotel="リソルの森"] [role="switch"]')).toHaveAttribute('aria-checked', 'false');
   await expect(its.locator('[data-its-part="off"] [data-its-hotel="リソルの森"]')).toHaveCount(1);   // (moved to 除外)
-  await expect(its.locator('[data-its-part="off"] summary')).toHaveText('除外3件');
+  await expect(its.locator('[data-its-part="off"] h4')).toHaveText('除外3件');
   await its.locator('[data-its-guests="4"]').click();
   await its.locator('[data-its-interval="60"]').click();
   const bar = its.locator('[data-its-save-bar]');
@@ -394,6 +397,7 @@ test('★ and off: ★ numbers the priority and puts the row first, off moves it
   await expect(star).toHaveAttribute('aria-label', 'リソルの森、優先2');
   await expect(first()).toHaveAttribute('data-its-hotel', 'リソルの森');
   await expect(search.locator('[data-its-group="star"] [data-its-hotel]')).toHaveCount(1);
+  await expect(search.locator('[data-its-group="star"]')).toHaveAccessibleName('★ 優先1');
   // the fold's ★: only those that can take the nights (NAGU, 季節外, isn't named)
   await expect(fold.locator('[data-its-sum-line]')).toContainText(' · ★ リソルの森');
   await expect(fold).not.toContainText('NAGU');
@@ -426,10 +430,10 @@ test('the allow-list: presets (関東だけ, 近郊まで, 全部), the parts fo
   const banner = its.locator('[data-its-new="新しいリゾート"]');
   await expect(banner).toContainText('新しい施設：新しいリゾート');
   await expect(banner.locator('[data-its-new-on]')).toHaveAttribute('aria-label', '新しいリゾートを探す');
-  await expect(its.locator('[data-its-dates-foot]')).toHaveText('ほかに『探さない』3件（施設の一覧で変更）');
+  await expect(its.locator('[data-its-dates-foot]')).toHaveText('ほかに除外3件（施設の一覧で変更）');
   await banner.locator('[data-its-new-on]').click();
   await expect(banner).toHaveCount(0);
-  await expect(its.locator('[data-its-dates-foot]')).toHaveText('ほかに『探さない』2件（施設の一覧で変更）');
+  await expect(its.locator('[data-its-dates-foot]')).toHaveText('ほかに除外2件（施設の一覧で変更）');
 
   const search = its.locator('[data-its-search]');
   const fold = its.locator('[data-its-search] > summary');
@@ -446,7 +450,7 @@ test('the allow-list: presets (関東だけ, 近郊まで, 全部), the parts fo
   await expect(fold.locator('[data-its-sum-line]')).toHaveText(`関東 ${kantoFit}`);
   await expect(fold.locator('[data-its-sum-more]')).toHaveText(`ほか${kanto.length - kantoFit}件は日程に合いません`);
   await expect(search.locator('[data-its-part="search"] h5')).toHaveText([`関東${kantoFit}`]);
-  await expect(search.locator('[data-its-part="off"] summary')).toHaveText(`除外${ROSTER.length + 1 - kanto.length}件`);
+  await expect(search.locator('[data-its-part="off"] h4')).toHaveText(`除外${ROSTER.length + 1 - kanto.length}件`);
   await expect(search.locator('[data-its-star="NAGU 勝浦"]')).toHaveAttribute('aria-pressed', 'true');
   // the bars read the draft at once: n/N
   await expect(its.locator('[data-its-date="2026-11-22"] .nn')).toHaveText(`${kantoFit}/${kanto.length}`);
@@ -454,7 +458,7 @@ test('the allow-list: presets (関東だけ, 近郊まで, 全部), the parts fo
   await search.locator('[data-its-preset="near"]').click();
   await expect(search.locator('[data-its-part="search"] h5')).toHaveText([/^関東\d+$/, /^近郊\d+$/]);
   await search.locator('[data-its-preset="all"]').click();
-  await expect(search.locator('[data-its-part="off"] summary')).toHaveText('除外1件');
+  await expect(search.locator('[data-its-part="off"] h4')).toHaveText('除外1件');
   await expect(search.locator('[data-its-part="off"] [data-its-hotel]')).toHaveAttribute('data-its-hotel', 'ホテルハーヴェスト　スキージャム勝山');
   await search.locator('[data-its-preset="kanto"]').click();
 
@@ -493,15 +497,15 @@ test('the stays: a bar a night (its parts named, VoiceOver’s line), tapped ope
   const fit = ROSTER.filter((h) => (h.kind === 'direct' || h.kind === 'year') && !SKIPPED.includes(h.name)).length;
   const seasonal = ROSTER.filter((h) => h.kind === 'summer' || h.kind === 'winter' || h.kind === 'both').length;
   await expect(its.locator('[data-its-dates-total]')).toHaveText(`探す施設 ${total}件`);
-  await expect(its.locator('[data-its-dates-foot]')).toHaveText('ほかに『探さない』2件（施設の一覧で変更）');
-  // 11/22: 18 days on, November: 直営 and 通年 searched, the seasonal ones 季節外, スキージャム勝山 掲載なし
+  await expect(its.locator('[data-its-dates-foot]')).toHaveText('ほかに除外2件（施設の一覧で変更）');
+  // 11/22: 18 days on, November: 直営 and 通年 searched, the seasonal ones 季節外, スキージャム勝山 掲載終了
   const row = its.locator('[data-its-date="2026-11-22"]');
   const night = row.locator('[data-its-night]');
   await expect(row.locator('.nn')).toHaveText(`${fit}/${total}`);
   await expect(row.locator('.bar .seg')).toHaveCount(3);
-  await expect(row.locator('.legend > span')).toHaveText([`探す ${fit}`, `季節外 ${seasonal}`, '掲載なし 1']);
+  await expect(row.locator('.legend > span')).toHaveText([`探す ${fit}`, `季節外 ${seasonal}`, '掲載終了 1']);
   await expect(row.locator('.bar')).toHaveAttribute('aria-hidden', 'true');
-  await expect(night).toHaveAccessibleName(`11月22日(日)、あと18日。${total}件中${fit}件を探しています。季節外で${seasonal}件、掲載なしで1件除外。`);
+  await expect(night).toHaveAccessibleName(`11月22日(日)、あと18日。${total}件中${fit}件を探しています。季節外で${seasonal}件、掲載終了で1件除外。`);
   await expect(night).toHaveAttribute('aria-expanded', 'false');
   await night.click();
   await expect(night).toHaveAttribute('aria-expanded', 'true');
@@ -539,7 +543,7 @@ test('the stays: a bar a night (its parts named, VoiceOver’s line), tapped ope
   await expect(its.locator('.month')).toHaveText(['2026年11月', '2026年12月']);
   await expect(its.locator('[data-its-save-bar]')).toBeVisible();
   // 12/19 is 冬季's first night: the winter facilities count in, and ★ NAGU takes only the winter Saturdays
-  await expect(its.locator('[data-its-date="2026-12-19"] .legend > span')).toHaveText([/^探す \d+$/, /^季節外 \d+$/, '掲載なし 1']);
+  await expect(its.locator('[data-its-date="2026-12-19"] .legend > span')).toHaveText([/^探す \d+$/, /^季節外 \d+$/, '掲載終了 1']);
   const fold = its.locator('[data-its-search] > summary');
   await expect(fold.locator('[data-its-sum-line]')).toContainText(' · ★ NAGU 勝浦');
   await fold.click();

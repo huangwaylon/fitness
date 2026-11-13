@@ -1,9 +1,10 @@
-// ボット → 保養所's 通知 (docs/design.md "Bots"; lib/its/push.ts): off by default; the permission asked only by the switch's
-// tap; the subscription (for the Worker's key from its status) POSTed to /its/push/subscribe; on only once the Worker
-// took it, kept across a reload; off unsubscribes at the Worker and in the browser; テスト通知 (a 5 s countdown on the button after each test; 429: 「5秒ほど待ってから
-// もう一度」); the lines where it can't work (an iPhone's Safari tab, refused notifications, a Worker without push yet);
-// and a notification's tap: `?open=its` and the service worker's message open ボット on 保養所. The browser's
-// Notification, PushManager and service worker are stubbed (Playwright has no push service), the Worker mocked (its.ts).
+// ボット → 保養所's 通知 (docs/design.md "Bots"; lib/its/push.ts): off by default; the permission asked only by the
+// switch's tap; the subscription (for the Worker's key from its status) POSTed to /its/push/subscribe; on only once the
+// Worker took it, kept across a reload; off unsubscribes at the Worker and in the browser; テスト通知 (a 5 s countdown
+// on the button after each test; 429: 「5秒ほど待ってからもう一度」); the lines where it can't work (an iPhone's Safari
+// tab, refused notifications, a Worker without push yet); and a notification's tap: `?open=its` and the service
+// worker's message open ボット on 保養所. The browser's Notification, PushManager and service worker are stubbed
+// (Playwright has no push service), the Worker mocked (its.ts).
 import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
 import { unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
@@ -51,7 +52,10 @@ async function stubPush(context: BrowserContext, o: Opts) {
       addEventListener: (t: string, f: (e: { data: unknown }) => void) => void (t === 'message' && listeners.push(f)), removeEventListener() {}
     };
     Object.defineProperty(Navigator.prototype, 'serviceWorker', { get: () => sw, configurable: true });
-    if (standalone) Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true, configurable: true });
+    if (!standalone) return;
+    Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true, configurable: true });
+    // (the screen pinned to the window: a standalone page takes the screen's height, which put the tab bar below it)
+    for (const k of ['width', 'height'] as const) Object.defineProperty(screen, k, { get: () => (k === 'width' ? innerWidth : innerHeight), configurable: true });
   }, { permission: o.permission ?? 'default', grant: o.grant ?? 'granted', standalone: o.standalone ?? true });
 }
 const probe = (page: Page) => page.evaluate(() => (window as unknown as { __push: { asked: number; subscribed: number; unsubscribed: number; key: string } }).__push);
@@ -111,7 +115,7 @@ test('off by default; only the tap asks; on once the Worker took the subscriptio
   await islandUp(page);
   await open();
   await expect(sw).toHaveAttribute('aria-checked', 'true');
-  await page.waitForTimeout(300); // (proving the refresh sends nothing)
+  await expect(notify).toHaveAttribute('data-its-push-fresh', '');   // the refresh done: it sent nothing
   expect(await probe(page)).toMatchObject({ asked: 0, subscribed: 0 });
   expect(pushes()).toHaveLength(1);
 

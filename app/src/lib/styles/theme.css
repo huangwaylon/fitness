@@ -250,6 +250,13 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 :where(.card.dense) .row.kv { justify-content: space-between; align-items: baseline; }
 :where(.card.dense) .row.kv > :first-child { flex: none; max-width: 45%; color: var(--text-soft); font-size: var(--fs-s); }
 :where(.card.dense) .row.kv > :last-child { min-width: 0; text-align: end; overflow-wrap: anywhere; }
+/* ボット's fold chevron (a <span class="chev">): pointing down, up once its <details> is open */
+:where([data-bots]) .chev {
+  flex: none; width: 10px; height: 10px; border-right: 2.6px solid var(--text-soft); border-bottom: 2.6px solid var(--text-soft);
+  rotate: 45deg; margin: -4px 6px 0; transition: rotate var(--dur-quick);
+}
+:where([data-bots]) details[open] > summary .chev { rotate: 225deg; margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) { :where([data-bots]) .chev { transition: none; } }
 /* a dashed stitch divider on its own */
 .stitch { border: 0; border-top: 1.5px dashed var(--stitch); margin: 0; }
 /* a section's head in a dense list (a month of tasks): tones coral (期限切れ) / leaf (今月), the count at the right
@@ -259,10 +266,10 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .sec-label.coral { color: var(--coral-text); }
 .sec-label.leaf { color: var(--leaf-text); }
 .sec-label.sticky { position: sticky; top: var(--sticky-top, 0px); z-index: 2; margin: 0 -12px; padding: 10px 16px 6px; background: var(--surface); }
-/* a tag: a small label on a row (a category, ☑ 1/3, a game's level), a sunk pill at 13px; in the kit's scope (the full
-   sheet and anything opened in it) and ききみみ's. .new: the one NEW marker (gold, anywhere: a museum room's new finds,
-   ことば's first catch) */
-:where(.kit, [data-kikimimi]) .tag, .tag.new {
+/* a tag: a small label on a row (a category, ☑ 1/3, a game's level, a booking's state), a sunk pill at 13px; in the
+   kit's scope (the full sheet and anything opened in it), ききみみ's and ボット's (a pop sheet). .new: the one NEW marker
+   (gold, anywhere: a museum room's new finds, ことば's first catch) */
+:where(.kit, [data-kikimimi], [data-bots]) .tag, .tag.new {
   display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap;
   font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); background: var(--ctl-off);
 }

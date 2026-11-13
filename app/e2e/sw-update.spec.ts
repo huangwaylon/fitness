@@ -237,17 +237,20 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
   await controlled(page);
   await warm();
   const chunk = await notCached(page);
-  const fail = (route: import('@playwright/test').Route) => route.fulfill({ status: 503, body: '' });
+  let failed = 0;
+  const fail = (route: import('@playwright/test').Route) => (failed++, route.fulfill({ status: 503, body: '' }));
   await context.route(`**${chunk}`, fail);
   const navs: string[] = [];
   page.on('framenavigated', (f) => f === page.mainFrame() && navs.push(f.url()));
   await deploy(page, context);
-  // (the new worker tried and failed: redundant, the page still the old one's, no reload)
+  // (the new worker tried and failed: its install asked for the chunk, it went redundant, the page still the old one's)
+  await expect.poll(() => failed, { timeout: 30_000 }).toBeGreaterThan(0);
   await page.waitForFunction(async () => {
     const reg = await navigator.serviceWorker.getRegistration();
     return !!reg && !reg.installing && !reg.waiting;
   }, null, { timeout: 30_000, polling: 200 });
-  await page.waitForTimeout(3000);
+  // a task after it: the app's own statechange listener (newWorker false) and its effects have run, reloading nothing
+  await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
   expect(navs, 'no reload into the old cached shell').toEqual([]);
   expect(await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')])).toEqual([null, null]);
   // the network back: the next time the app comes to the front it asks again, installs, and then reloads

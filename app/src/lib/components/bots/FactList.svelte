@@ -35,7 +35,5 @@
   .more > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: var(--hit); margin-top: 4px; font-weight: 700; color: var(--text-soft); cursor: pointer; }
   .more > summary::-webkit-details-marker { display: none; }
   .more[open] > summary { margin-bottom: 4px; }
-  .chev { flex: none; width: 10px; height: 10px; border-right: 2.6px solid var(--text-soft); border-bottom: 2.6px solid var(--text-soft); rotate: 45deg; margin: -4px 6px 0; transition: rotate var(--dur-quick); }
-  details[open] > summary .chev { rotate: 225deg; margin-top: 4px; }
-  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
+  /* (the chevron: theme.css, the bots' sheet) */
 </style>

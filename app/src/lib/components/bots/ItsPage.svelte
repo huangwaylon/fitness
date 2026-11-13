@@ -6,10 +6,10 @@
   // a bar of its searched facilities by why, tapped open to the names and reasons: view.ts dateRows), the facilities
   // (施設: 探す is the allow-list; a summary, presets, then 探す · 日程に合わない · 除外, the new ones' banners on
   // top), 詳細 (確認の間隔, 人数, 自動で確定), 通知 (this phone's push: ItsNotify), the recent events and the foot. The
-  // settings are one draft saved with 保存
-  // (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕, the backdrop
-  // and Esc ask first: guardForm, a tab switch too: `leave`). Fetched on open, then every 15 s while the runner is on its way or
-  // running and every minute otherwise, only while shown; leaving it (the other tab, the sheet closed) aborts, and 保存 / 開始 / 停止 abort a read in
+  // settings are one draft saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft
+  // note or the refusal; ✕, the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Fetched on open,
+  // then every 15 s while the runner is on its way or running and every minute otherwise, only while shown; leaving it
+  // (the other tab, the sheet closed) aborts, and 保存 / 開始 / 停止 abort a read in
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
   // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. Each status read
@@ -137,6 +137,8 @@
   /** The runner reporting stops at a booked night and keeps to the allow-list (an older one doesn't: said neither). */
   const stops = $derived(!!status && stopsAtBooked(status));
   const dates = $derived(shown ? dateRows(shown, nowMs, hotels, status?.bookings, stops) : []);
+  /** The facilities searched (探す on): every night's bar is of these. */
+  const searched = $derived(hotels.filter((r) => r.search).length);
   const months = $derived(dateMonths(dates));
   const bounds = $derived(dateBounds(nowMs));
   /** 施設's three parts (探す, 日程に合わない, 除外) from the draft's nights, as the bars count them. */
@@ -272,7 +274,7 @@
 </script>
 
 {#snippet hotel(r: ListRow)}
-  <li class="hrow" class:starred={r.star !== null} data-its-hotel={r.name} data-search={r.search}>
+  <li class="hrow" data-its-hotel={r.name} data-search={r.search}>
     <button type="button" class="star" aria-pressed={r.star !== null} data-its-star={r.name} data-sfx="tick"
       aria-label={r.star === null ? t('its.hotel.star', { name: r.name }) : t('its.hotel.starN', { name: r.name, n: r.star + 1 })}
       onclick={() => edit((d) => toggleStar(d, r.name))}>
@@ -280,17 +282,22 @@
     </button>
     <button type="button" class="hsw" role="switch" aria-checked={r.search} aria-label={r.label} data-sfx="self"
       onclick={() => (cue(r.search ? 'toggle-off' : 'toggle-on'), edit((d) => toggleSearch(d, r)))}>
-      <span class="txt"><b>{r.name}</b>{#if r.meta}<small class:fresh={r.fresh && !r.reason} data-its-meta>{r.meta}</small>{/if}</span>
+      <span class="txt"><b>{r.name}</b>{#if r.meta}<small class:fresh={r.fresh} data-its-meta>{r.meta}</small>{/if}</span>
       <span class="sw s" aria-hidden="true"><i></i></span>
     </button>
   </li>
 {/snippet}
 
+<!-- a folded part: its heading outside the <summary> (VoiceOver's headings reach it; the summary, a button, is named
+     by it), drawn over the summary's row -->
 {#snippet part(id: string, rows: ListRow[], label: string)}
-  <details class="part" data-its-part={id}>
-    <summary class="psum"><h4 id="its-p-{id}">{label}<small>{t('its.part.count', { n: rows.length })}</small></h4><span class="chev" aria-hidden="true"></span></summary>
-    <ul class="card rows hrows" aria-labelledby="its-p-{id}">{#each rows as r (r.key)}{@render hotel(r)}{/each}</ul>
-  </details>
+  <section class="part folded" aria-labelledby="its-p-{id}" data-its-part={id}>
+    <h4 id="its-p-{id}">{label}<small>{t('its.part.count', { n: rows.length })}</small></h4>
+    <details>
+      <summary class="psum" aria-labelledby="its-p-{id}"><span class="chev" aria-hidden="true"></span></summary>
+      <ul class="card pad rows hrows" aria-labelledby="its-p-{id}">{#each rows as r (r.key)}{@render hotel(r)}{/each}</ul>
+    </details>
+  </section>
 {/snippet}
 
 {#snippet bar(d: DateRow)}
@@ -318,7 +325,7 @@
     </VerdictCard>
 
     {#if migrating}
-      <div class="card note" data-its-migrate role="status">
+      <div class="card pad note" data-its-migrate role="status">
         <p><Phrases text={t('its.hotel.migrate')} /></p>
         <button type="button" class="btn small paper" data-its-migrate-save data-sfx="tick" aria-disabled={saving} onclick={saveDerived}>{t('its.hotel.migrateSave')}</button>
       </div>
@@ -327,7 +334,7 @@
     {#if bookings.length}
       <section class="sec" aria-labelledby="its-bookings">
         <h3 id="its-bookings" class="sec-label">{t('its.sec.bookings')}</h3>
-        <ul class="card rows">
+        <ul class="card pad rows">
           {#each bookings as b (b.key)}
             <li class="booking" data-its-booking={b.state}>
               <span class="tag {b.state}">{b.label}</span>
@@ -344,7 +351,7 @@
 
     <section class="sec" aria-labelledby="its-status">
       <h3 id="its-status" class="sec-label">{t('its.sec.status')}</h3>
-      <div class="card">
+      <div class="card pad">
         {#if cells.length}
           <StatusStrip cells={stripCells(cells)} ticks={scanTicks(cells)} title={t('its.scan.title')} {legend} summary={scanSummary(cells)} hint={t('its.scan.pick')} attr="its" />
         {/if}
@@ -355,8 +362,8 @@
       <h3 id="its-dates" class="sec-label">{t('its.sec.dates')}</h3>
       <p class="hint">{t('its.date.one')}</p>
       {#if dates.length}
-        <div class="card months">
-          <p class="dhead" data-its-dates-total>{t('its.night.total', { n: dates[0].total })}</p>
+        <div class="card pad months">
+          <p class="dhead" data-its-dates-total>{t('its.night.total', { n: searched })}</p>
           {#each months as m (m.month)}
             <h4 class="month">{m.label}</h4>
             <ul class="rows dates">
@@ -367,14 +374,14 @@
                     {#if d.note === 'booked'}
                       <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
                     {:else}
-                      <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-its-able={d.able.length} data-sfx="tick"
+                      <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick"
                         onclick={() => (openDate = open ? null : d.date)}>
                         <span class="dtop">
                           <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
-                          <span class="nn" aria-hidden="true">{d.able.length}/{d.total}</span>
+                          <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
                           <span class="chev" aria-hidden="true"></span>
                         </span>
-                        {#if d.total}{@render bar(d)}{:else}<small aria-hidden="true">{t('its.night.none')}</small>{/if}
+                        {#if searched}{@render bar(d)}{:else}<small aria-hidden="true">{t('its.night.none')}</small>{/if}
                       </button>
                     {/if}
                     <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
@@ -421,7 +428,7 @@
       <h3 id="its-hotels" class="sec-label">{t('its.sec.hotels')}</h3>
       <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
       {#each fresh as r (r.key)}
-        <div class="card fresh-banner" data-its-new={r.name}>
+        <div class="card pad fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
           <button type="button" class="btn small paper" data-its-new-off data-sfx="tick" aria-label={t('its.hotel.newOffLabel', { name: r.name })}
             onclick={() => edit((d) => setSearch(d, [r.name], false))}>{t('its.hotel.newOff')}</button>
@@ -438,10 +445,13 @@
             </div>
             <section class="part" aria-labelledby="its-p-search" data-its-part="search">
               <h4 id="its-p-search">{t('its.part.search')}<small>{t('its.part.count', { n: parts.search.length })}</small></h4>
-              {#if parts.starred.length}<ul class="card rows hrows" data-its-group="star">{#each parts.starred as r (r.key)}{@render hotel(r)}{/each}</ul>{/if}
+              {#if parts.starred.length}
+                <h5 id="its-g-star">{t('its.group.star')}<small>{parts.starred.length}</small></h5>
+                <ul class="card pad rows hrows" aria-labelledby="its-g-star" data-its-group="star">{#each parts.starred as r (r.key)}{@render hotel(r)}{/each}</ul>
+              {/if}
               {#each parts.regions as g (g.id)}
                 <h5 id="its-g-{g.id}">{g.label}<small>{g.rows.length}</small></h5>
-                <ul class="card rows hrows" aria-labelledby="its-g-{g.id}" data-its-group={g.id}>{#each g.rows as r (r.key)}{@render hotel(r)}{/each}</ul>
+                <ul class="card pad rows hrows" aria-labelledby="its-g-{g.id}" data-its-group={g.id}>{#each g.rows as r (r.key)}{@render hotel(r)}{/each}</ul>
               {/each}
             </section>
             {#if parts.unfit.length}{@render part('unfit', parts.unfit, t('its.part.unfit'))}{/if}
@@ -453,7 +463,7 @@
 
     <section class="sec" aria-labelledby="its-detail">
       <h3 id="its-detail" class="sec-label">{t('its.sec.detail')}</h3>
-      <div class="card opts">
+      <div class="card pad opts">
         <span class="lbl">{t('its.interval')}</span>
         <Segmented items={intervals} value={String(shown.intervalSec)} label={t('its.interval')} attr="its-interval"
           onpick={(id) => edit((d) => ({ ...d, intervalSec: Number(id) as IntervalSec }))} />
@@ -473,7 +483,7 @@
     {#if events.length}
       <section class="sec" aria-labelledby="its-recent" data-its-recent>
         <h3 id="its-recent" class="sec-label">{t('its.sec.recent')}</h3>
-        <ol class="card rows ev">
+        <ol class="card pad rows ev">
           {#each events as e (e.key)}
             <li data-its-event data-bad={e.bad ? '' : undefined}>
               <span class="time">{e.time}</span><span class="txt"><b class:bad={e.bad}>{e.what}</b>{#if e.info}<small>{e.info}</small>{/if}</span>
@@ -536,7 +546,6 @@
 
 <style>
   .its { display: flex; flex-direction: column; gap: 14px; }
-  .card { margin: 0; padding: 12px 14px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .sec { display: grid; gap: 8px; }
   .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .its .hint.bad, .its .late, .its b.bad { color: var(--coral-text); }
@@ -552,11 +561,12 @@
 
   .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
   .rows > li { display: flex; align-items: center; gap: 10px; min-height: var(--hit); }
-  .rows > li + li { padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
+  .rows > li + li { padding-top: 8px; border-top: 1.5px dashed var(--stitch); }
   .txt { flex: 1; min-width: 0; font-size: var(--fs-body); }
   .txt b { display: block; line-height: 1.3; }
   small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: 1.3; }
-  .tag { flex: none; min-width: 4.5em; text-align: center; padding: 4px 8px; border-radius: var(--r-chip); font: 700 var(--fs-s)/1 var(--font-ui); background: var(--ctl-off); color: var(--text); }
+  /* a booking's state: the kit's .tag (theme.css), tinted */
+  .tag { flex: none; min-width: 4.5em; justify-content: center; }
   .tag.action { background: var(--c-coral); color: var(--c-ink); }
   .tag.hold, .tag.applying { background: var(--c-yuzu); color: var(--c-ink); }
   .tag.confirmed { background: var(--c-leaf); color: var(--c-ink); }
@@ -566,7 +576,7 @@
   .ev .time { flex: none; align-self: flex-start; font-size: var(--fs-s); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-soft); padding-top: 2px; }
   .ev > li { align-items: flex-start; min-height: 0; }
 
-  .months { display: grid; gap: 4px; padding-top: 8px; }
+  div.months { display: grid; gap: 4px; padding-top: 8px; }
   .month { margin: 4px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .dates { padding: 0; }
   .dates > li { display: block; min-height: 0; }
@@ -582,8 +592,8 @@
   .dtop { display: flex; align-items: center; gap: 8px; }
   .nn { flex: none; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .night[aria-expanded='true'] .chev { rotate: 225deg; margin-top: 4px; }
-  /* the bar (the dataviz thin segmented bar): 8px, round ends, 2px gaps; 探す leaf, 締切 hatched, 季節外 · 休館日 · 掲載なし
-     sunk and outlined; each part's word and count beside it (never colour alone) */
+  /* the bar (the dataviz thin segmented bar): 8px, round ends, 2px gaps; 探す leaf, 受付終了 hatched, 季節外 · 休館日 ·
+     掲載終了 sunk and outlined; each part's word and count beside it (never colour alone) */
   .bar { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
   .bar .seg { flex: 1 1 0; min-width: 3px; border-radius: 1px; }
   .seg { display: inline-block; background: var(--ctl-off); box-shadow: inset 0 0 0 1px var(--edge); }
@@ -617,11 +627,10 @@
   .bulkopen { justify-self: start; margin: 0; }
 
   .fold { display: grid; gap: 8px; }
-  .fold > summary, .part > summary { list-style: none; }
-  .fold > summary::-webkit-details-marker, .part > summary::-webkit-details-marker { display: none; }
+  .fold > summary, .psum { list-style: none; }
+  .fold > summary::-webkit-details-marker, .psum::-webkit-details-marker { display: none; }
   .fold[open] > summary { margin-bottom: 8px; }
-  .chev { flex: none; width: 10px; height: 10px; border-right: 2.6px solid var(--text-soft); border-bottom: 2.6px solid var(--text-soft); rotate: 45deg; margin: -4px 6px 0; transition: rotate var(--dur-quick); }
-  details[open] > summary .chev { rotate: 225deg; margin-top: 4px; }
+  /* (the chevrons: theme.css, the bots' sheet) */
   .hbody { display: grid; gap: 14px; }
   .presets, .wdays { display: flex; flex-wrap: wrap; gap: 4px 6px; }
   .fresh-banner { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
@@ -631,12 +640,14 @@
   .part { display: grid; gap: 6px; }
   .part h4 { margin: 0 4px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .part h5 { margin: 6px 4px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .psum { display: flex; align-items: center; min-height: var(--hit); cursor: pointer; }
-  .psum h4 { flex: 1; }
-  .hrows { gap: 6px; padding: 6px 14px 6px 10px; }
+  /* a folded part: its heading over the summary's row (the tap goes through to the summary) */
+  .folded { position: relative; }
+  .folded > h4 { position: absolute; top: 0; left: 0; min-height: var(--hit); display: flex; align-items: center; pointer-events: none; }
+  .psum { display: flex; align-items: center; justify-content: flex-end; min-height: var(--hit); cursor: pointer; }
+  .folded details[open] > .psum { margin-bottom: 6px; }
+  ul.hrows { gap: 6px; padding: 6px 14px 6px 10px; }
   .hrows > .hrow + .hrow { padding-top: 6px; }
   .hrow { gap: 10px; }
-  .hrow.starred .hsw b { color: var(--text); }
   .hsw {
     appearance: none; border: 0; background: none; cursor: pointer; flex: 1; min-width: 0; min-height: var(--hit); padding: 4px 0; text-align: left; color: var(--text);
     display: flex; align-items: center; gap: 10px; font: inherit;
@@ -670,5 +681,4 @@
 
   .bulk { display: grid; gap: 8px; padding-bottom: 8px; }
   .period { display: flex; align-items: center; gap: 6px; }
-  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
 </style>

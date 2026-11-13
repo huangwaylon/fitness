@@ -1,6 +1,10 @@
-// The bots' status strip (components/bots/StatusStrip.svelte: 保養所's 直近1時間, ジム's 直近12時間): a row of slots, oldest first, each
-// ok (green), avail (yellow: a room or a slot open), fail (red, hatched) or none (outlined: nothing checked then), with
-// its line for a tap and VoiceOver. Pure: the pages make the cells (its/view.ts, gym/status.ts), these place them.
+// The bots' status strip (components/bots/StatusStrip.svelte: 保養所's 直近1時間, ジム's 直近12時間): a row of slots,
+// oldest first, each ok (green), avail (yellow: a room or a slot open), fail (red, hatched) or none (outlined: nothing
+// checked then), with its line for a tap and VoiceOver. Pure: the pages make the cells (its/view.ts, gym/status.ts),
+// these place them. With the bots' one verdict tone.
+
+/** A bot's verdict tone (VerdictCard's tint and dot): good leaf, warn yuzu, bad coral, idle plain. */
+export type Tone = 'good' | 'warn' | 'bad' | 'idle';
 
 export type CellState = 'ok' | 'avail' | 'fail' | 'none';
 /** One slot: [start, end) in ms, its state, and its line (a tap names it; its button's label). */

@@ -3,9 +3,10 @@
   // default. A tap asks the notification permission first (in the tap), then subscribes and hands it to the Worker;
   // on only once the Worker took it. Where it can't work, one line says why (an iPhone's Safari tab: add it to the Home
   // Screen; notifications refused: the Settings app; an unsupported browser; a Worker without push yet: 準備中). On:
-  // テスト通知 (waits PUSH_TEST_EVERY_SEC after each test, counting down on the button: the Worker's rate). A note: Focus and Sleep can hold a notification back, and
-  // the site's mail still comes. Opening the tab with the Worker's push read keeps the subscription fresh (refreshPush)
-  // and clears the app's badge. Members only (ボット has no 保養所 for the guest or in demo mode).
+  // テスト通知 (waits PUSH_TEST_EVERY_SEC after each test, counting down on the button: the Worker's rate). A note: Focus
+  // and Sleep can hold a notification back, and the site's mail still comes. Opening the tab with the Worker's push
+  // read keeps the subscription fresh (refreshPush) and clears the app's badge. Members only (ボット has no 保養所 for
+  // the guest or in demo mode).
   import { untrack } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { t, i18n } from '#lib/i18n/index.ts';
@@ -44,8 +45,10 @@
   );
   const usable = $derived(support === 'ok' && ready);
 
-  // once a mount, with the Worker's key read: the subscription kept fresh (a revoked permission turns it off)
+  // once a mount, with the Worker's key read: the subscription kept fresh (a revoked permission turns it off);
+  // `fresh` once that's done (data-its-push-fresh)
   let refreshed = false;
+  let fresh = $state(false);
   $effect(() => {
     const key = vapid;
     if (refreshed || !key) return;
@@ -53,6 +56,7 @@
     untrack(() => void refreshPush(key, lang()).then((v) => {
       on = v;
       support = pushSupport();
+      fresh = true;
     }));
   });
   // opening 保養所: the app icon's badge (a push set it) goes
@@ -93,7 +97,7 @@
   }
 </script>
 
-<section class="sec" aria-labelledby="its-notify" data-its-notify>
+<section class="sec" aria-labelledby="its-notify" data-its-notify data-its-push-fresh={fresh ? '' : undefined}>
   <h3 id="its-notify" class="sec-label">{t('its.sec.notify')}</h3>
   <button type="button" class="prow" role="switch" aria-checked={on} aria-disabled={busy || (!on && !usable && support !== 'denied')} aria-describedby={line ? 'its-notify-why' : undefined}
     data-its-push={on ? 'on' : 'off'} data-sfx="self" onclick={toggle}>
@@ -123,18 +127,5 @@
   .test { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .test .btn { margin: 0; }
   .test .hint { flex: 1; min-width: 10em; }
-
-  /* the switch (SoundSection's): a sunk tan track (off) or a leaf one (on) with a cream knob */
-  .sw {
-    position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
-    background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);
-  }
-  .sw i {
-    position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
-    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
-    transition: translate var(--dur-base) var(--ease-bounce);
-  }
-  [aria-checked='true'] > .sw { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
-  [aria-checked='true'] > .sw i { translate: 24px 0; }
-  @media (prefers-reduced-motion: reduce) { .sw, .sw i { transition: none; } }
+  /* (the switch: theme.css .sw) */
 </style>

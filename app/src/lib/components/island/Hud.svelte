@@ -45,7 +45,6 @@
   let settingsMounted = $state(false);
   /** ずかん (opened from 設定's row, its only door) going back by ‹: 設定 reopens where it was. */
   let settingsResume = $state(false);
-  // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所
   // every sheet's chunk ahead of its first tap, once the island is in and the worker serves them
   onMount(prefetchSheets);
   /** A one-time param read: it goes (a reload opens the island as ever), the rest of the query stays as it was written. */
@@ -55,6 +54,7 @@
     replaceState(location.pathname + q + location.hash, page.state);
     return true;
   }
+  // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所
   onMount(() => {
     if (take('panel', 'rewards')) opened = panelOpen = true;
     // a notification's tap opened the app (service-worker/notify.ts): ボット on 保養所; one while open: its message. The

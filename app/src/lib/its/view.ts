@@ -7,11 +7,11 @@ import {
   AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, HUMAN_NEEDED_DETAILS, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanMinute, type Verdict
 } from './contract.ts';
-import { D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from '#lib/its/roster.ts';
+import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
 import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
-import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
+import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick, type Tone } from '#lib/strip.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -114,10 +114,10 @@ export const addDates = (d: Draft, dates: readonly string[], now: number): Draft
 
 // ---- What can take a night ----
 /** A searched facility on a night: searched for it (`check`), or why not (the page explains; the runner searches every
- *  facility in the allow-list and the site offers only what it can take): 締切 (under its cutoff, D4 for one the roster
- *  doesn't know), 季節外 (a 夏季 / 冬季 / 夏季・冬季 one outside its FY's SEASONS row), 休館日 (its 利用不可日),
- *  掲載なし (on no roster any more). 締切 wins (under 4 days every facility is 締切), then 掲載なし, 季節外, 休館日. */
-export type Why = 'check' | 'cutoff' | 'season' | 'closed' | 'gone';
+ *  facility in the allow-list and the site offers only what it can take): 受付終了 (under its cutoff, D4 for one the
+ *  roster doesn't know), 季節外 (a 夏季 / 冬季 / 夏季・冬季 one outside its FY's seasons row), 休館日 (its 利用不可日),
+ *  掲載終了 (on no roster any more). 受付終了 wins (under D4 days every facility is), then 掲載終了, 季節外, 休館日. */
+type Why = 'check' | 'cutoff' | 'season' | 'closed' | 'gone';
 /** The order the bar draws them in, and the expanded night lists them. */
 const WHYS: readonly Why[] = ['check', 'cutoff', 'season', 'closed', 'gone'];
 
@@ -125,11 +125,12 @@ const monthDay = (date: string): string => t('its.night.md', { m: Number(date.sl
 const md = (date: string): string => `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`;
 const daysBefore = (date: string, n: number): string => new Date(Date.parse(date) - n * 86_400_000).toISOString().slice(0, 10);
 
+type Seasons = typeof SEASONS;
 /** The season a 夏季 / 冬季 / 夏季・冬季 facility misses a night by, in words (夏季は9/30まで, 冬季は12/19〜3/31), or null:
- *  it takes it, it has no season (直営, 通年, new), or its fiscal year has no SEASONS row (unknown: never 季節外). */
-export function seasonMiss(kind: RosterHotel['kind'] | undefined, date: string): string | null {
+ *  it takes it, it has no season (直営, 通年, new), or its fiscal year has no `seasons` row (unknown: never 季節外). */
+export function seasonMiss(kind: RosterHotel['kind'] | undefined, date: string, seasons: Seasons = SEASONS): string | null {
   if (kind !== 'summer' && kind !== 'winter' && kind !== 'both') return null;
-  const s = SEASONS[fiscalYear(date)];
+  const s = seasons[fiscalYear(date)];
   if (!s) return null;
   const [sa, sb] = s.summer, [wa, wb] = s.winter;
   const summer = date >= sa && date <= sb, winter = date >= wa && date <= wb;
@@ -148,13 +149,14 @@ export function closedOn(r: RosterHotel | null, date: string): string | null {
   return null;
 }
 
-/** A searched facility on a night `days` away: `check` or why not, and the why's line (締切's 「10日前までの施設：11月2日
- *  で受付終了」, 季節外's 「冬季は12/19〜3/31」, 休館日's). */
-export function nightOf(r: HotelRow, date: string, days: number): { why: Why; line: string | null } {
+/** A searched facility on a night `days` away: `check` or why not, and the why's line (受付終了's 「10日前までの施設：
+ *  11月2日で受付終了」, 季節外's 「冬季は12/19〜3/31」, 休館日's). */
+export interface Night { why: Why; line: string | null }
+export function nightOf(r: HotelRow, date: string, days: number, seasons: Seasons = SEASONS): Night {
   const cutoff = r.roster?.cutoff ?? D4;
   if (days < cutoff) return { why: 'cutoff', line: t('its.night.cutoff', { n: cutoff, date: monthDay(daysBefore(date, cutoff)) }) };
   if (r.roster && r.roster.kind === null) return { why: 'gone', line: null };
-  const miss = seasonMiss(r.roster?.kind, date);
+  const miss = seasonMiss(r.roster?.kind, date, seasons);
   if (miss) return { why: 'season', line: miss };
   const closed = closedOn(r.roster, date);
   return closed ? { why: 'closed', line: closed } : { why: 'check', line: null };
@@ -162,9 +164,12 @@ export function nightOf(r: HotelRow, date: string, days: number): { why: Why; li
 
 /** The list's order: ★ first in priority order, then 関東, 近郊, 遠方, 新しい施設, an area's rows together within each, the
  *  areas in the roster's order (its first row with it; an area it lacks after, as the rows have them), stable. */
+const AREAS = new Map<string, number>();
+for (const r of ROSTER) if (!AREAS.has(r.area)) AREAS.set(r.area, AREAS.size);
 export function listOrder<T extends HotelRow>(rows: readonly T[]): T[] {
-  const firsts = [...ROSTER, ...rows.flatMap((r) => r.roster ?? [])].map((r) => r.area);
-  const rank = (r: HotelRow) => (r.roster ? firsts.indexOf(r.roster.area) : Infinity);
+  const areas = new Map(AREAS);
+  for (const r of rows) if (r.roster && !areas.has(r.roster.area)) areas.set(r.roster.area, areas.size);
+  const rank = (r: HotelRow) => (r.roster ? areas.get(r.roster.area)! : Infinity);
   return [...rows].sort((a, b) => (a.star ?? Infinity) - (b.star ?? Infinity) || GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group)
     || (a.star === null ? rank(a) - rank(b) || 0 : 0));
 }
@@ -172,30 +177,35 @@ export function listOrder<T extends HotelRow>(rows: readonly T[]): T[] {
 /** A night's facilities by why: the names (in listOrder) and the distinct lines. */
 interface NightPart { why: Why; names: string[]; lines: string[] }
 
-/** A stay's note: 自動で確定 (on, and AUTO_CONFIRM_MIN_DAYS+ away), only the D−4 facilities (under 10 days), past
- *  every cutoff (under 4), or none; 予約済み once one is 予約確定 (「探していません」 only when `stops`: the runner
+/** A stay's note: 自動で確定 (on, and AUTO_CONFIRM_MIN_DAYS+ away), only the D4 facilities (under D10 days), past
+ *  every cutoff (under D4), or none; 予約済み once one is 予約確定 (「探していません」 only when `stops`: the runner
  *  reporting is one that stops looking for it, stopsAtBooked). A stay already past in Tokyo isn't listed (保存 drops it:
- *  toInput). `total`: the facilities searched (探す on); `parts`: those by why (nightOf), the empty ones left out, none
- *  for a booked night; `able`: the ones searched for it; `aria`: the row for VoiceOver (「11月12日(木)、あと8日。30件中10件
- *  を探しています。締切で20件除外。」); `noSeason`: a seasonal facility counted in, its fiscal year unknown. */
+ *  toInput). `parts`: the facilities searched (探す on) by why (nightOf), the empty ones left out, none for a booked
+ *  night; `nights`: each one's, by key (hotelParts reads them); `able`: the ones searched for it; `aria`: the row for
+ *  VoiceOver (「11月12日(木)、あと8日。30件中10件を探しています。受付終了で20件除外。」); `noSeason`: a seasonal facility
+ *  counted in, its fiscal year unknown. */
 type DateNote = 'auto' | 'd4' | 'late' | 'booked' | null;
 export interface DateRow {
-  date: string; label: string; days: number; note: DateNote; text: string; able: string[]; total: number; parts: NightPart[]; aria: string; noSeason: boolean;
+  date: string; label: string; days: number; note: DateNote; text: string; able: string[]; parts: NightPart[];
+  nights: ReadonlyMap<string, Night>; aria: string; noSeason: boolean;
 }
-export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = [], bookings: readonly BookingEntry[] = [], stops = true): DateRow[] {
+export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = [], bookings: readonly BookingEntry[] = [], stops = true, seasons: Seasons = SEASONS): DateRow[] {
   const booked = new Set(bookings.filter((b) => b.kind === 'confirmed').map((b) => b.date));
   const searched = listOrder(hotels.filter((h) => h.search));
   return [...new Set(d.dates)].sort().map((date) => ({ date, days: daysUntil(date, now) })).filter((r) => r.days >= 0).map(({ date, days }) => {
-    const note: DateNote = booked.has(date) ? 'booked' : days < 4 ? 'late' : days < 10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
+    const note: DateNote = booked.has(date) ? 'booked' : days < D4 ? 'late' : days < D10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
     const left = days === 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
     const said = note === 'booked' && !stops ? 'bookedOnly' : note;
     const label = formatDate(date);
     const head = [label, left, ...(said ? [t(`its.date.note.${said}`)] : [])].join('、');
-    const base = { date, label, days, note, text: said ? `${left} · ${t(`its.date.note.${said}`)}` : left, total: searched.length };
-    if (note === 'booked') return { ...base, able: [], parts: [], aria: `${head}。`, noSeason: false };
+    const base = { date, label, days, note, text: said ? `${left} · ${t(`its.date.note.${said}`)}` : left };
+    if (note === 'booked') return { ...base, able: [], parts: [], nights: new Map(), aria: `${head}。`, noSeason: false };
     const by = new Map<Why, NightPart>();
+    const nights = new Map<string, Night>();
     for (const h of searched) {
-      const { why, line } = nightOf(h, date, days);
+      const night = nightOf(h, date, days, seasons);
+      const { why, line } = night;
+      nights.set(h.key, night);
       let p = by.get(why);
       if (!p) by.set(why, (p = { why, names: [], lines: [] }));
       p.names.push(h.name);
@@ -205,8 +215,8 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
     const able = by.get('check')?.names ?? [];
     const out = parts.filter((p) => p.why !== 'check').map((p) => t('its.night.ariaItem', { why: t(`its.why.${p.why}`), n: p.names.length }));
     const aria = [`${head}。`, t('its.night.aria', { total: searched.length, n: able.length }), out.length ? t('its.night.ariaOut', { list: out.join(t('its.night.ariaSep')) }) : ''].join('');
-    const noSeason = !SEASONS[fiscalYear(date)] && searched.some((h) => ['summer', 'winter', 'both'].includes(h.roster?.kind ?? ''));
-    return { ...base, able, parts, aria, noSeason };
+    const noSeason = !seasons[fiscalYear(date)] && searched.some((h) => ['summer', 'winter', 'both'].includes(h.roster?.kind ?? ''));
+    return { ...base, able, parts, nights, aria, noSeason };
   });
 }
 
@@ -288,12 +298,14 @@ export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 
 }
 
 /** A row of the list: its small line (area · kind · cutoff, and 「11/21のみ」 when it takes only some of the nights), or
- *  for one that takes none its reason in its place (季節外（冬季は12/19から） · 締切（10日前まで） · 休館日 · 掲載終了). */
-export interface ListRow extends HotelRow { meta: string; reason: string | null; label: string }
+ *  for one that takes none its reason in its place (季節外（冬季は12/19から） · 申込は10日前まで（11/12で受付終了） ·
+ *  休館日 · 掲載終了; `fresh` false there: the line is the reason, not 新しい施設). */
+export interface ListRow extends HotelRow { meta: string; label: string }
 /** 施設's three parts: 探す (★ first, then 関東 / 近郊 / 遠方 / 新しい施設 by area), 日程に合わない (searched, but no night
- *  the stays list can take it: the bars' 締切 · 季節外 · 休館日 · 掲載なし on every one), 除外 (not searched). The nights
- *  are the dates' rows less the booked and those past every cutoff (none: every searched facility is in 探す). The counts agree with the bars: a
- *  facility the bars count as 探す on any night is in 探す, the rest searched in 日程に合わない. */
+ *  the stays list can take it: the bars' 受付終了 · 季節外 · 休館日 · 掲載終了 on every one), 除外 (not searched). The
+ *  nights are the dates' rows (dateRows over the same rows: their `nights`) less the booked and those past every cutoff
+ *  (none: every searched facility is in 探す). The counts agree with the bars: a facility the bars count as 探す on any
+ *  night is in 探す, the rest searched in 日程に合わない. */
 export interface HotelParts {
   search: ListRow[];
   starred: ListRow[];
@@ -308,32 +320,40 @@ function cutoffReason(n: number, nights: readonly string[]): string {
   return t('its.hotel.why.cutoff', { n, date: md(daysBefore(last, n)) });
 }
 
+/** 「…のみ」 names at most ONLY_SHOWN nights, then 「ほかn日」. */
+const ONLY_SHOWN = 3;
+function onlyText(dates: readonly string[]): string {
+  const shown = dates.slice(0, ONLY_SHOWN).map(md).join('・');
+  return dates.length > ONLY_SHOWN ? t('its.hotel.onlyMore', { date: shown, n: dates.length - ONLY_SHOWN }) : t('its.hotel.only', { date: shown });
+}
+
 export function hotelParts(rows: readonly HotelRow[], dates: readonly DateRow[]): HotelParts {
-  // a night past every cutoff (申込期限切れ) takes no facility: it would make every row 「…のみ」 and 締切, so it's left
-  // out unless it's all there is (the bars still say it)
+  // a night past every cutoff (申込期限切れ) takes no facility: it would make every row 「…のみ」 and 受付終了, so it's
+  // left out unless it's all there is (the bars still say it)
   const open = dates.filter((d) => d.note !== 'booked'), live = open.filter((d) => d.note !== 'late');
   const nights = live.length ? live : open;
   const search: ListRow[] = [], unfit: ListRow[] = [], off: ListRow[] = [];
   for (const r of listOrder(rows)) {
     const note = hotelNote(r);
     if (!r.search) {
-      off.push({ ...r, meta: note, reason: null, label: [r.name, t('its.hotel.offState')].join('、') });
+      off.push({ ...r, meta: note, label: [r.name, t('its.hotel.offState')].join('、') });
       continue;
     }
-    const each = nights.map((n) => ({ date: n.date, ...nightOf(r, n.date, n.days) }));
+    const each = nights.map((n) => ({ date: n.date, ...n.nights.get(r.key)! }));
     const takes = each.filter((x) => x.why === 'check');
     if (!nights.length || takes.length) {
-      const only = takes.length < nights.length ? t('its.hotel.only', { date: takes.map((x) => md(x.date)).join('・') }) : null;
-      search.push({ ...r, meta: [note, only].filter(Boolean).join(' · '), reason: null, label: [r.name, t('its.hotel.onState'), only].filter(Boolean).join('、') });
+      const only = takes.length < nights.length ? onlyText(takes.map((x) => x.date)) : null;
+      search.push({ ...r, meta: [note, only].filter(Boolean).join(' · '), label: [r.name, t('its.hotel.onState'), only].filter(Boolean).join('、') });
       continue;
     }
-    // 締切 named only when nothing else keeps it out (季節外 is why a 夏季 facility can't take November, not its deadline)
+    // 受付終了 named only when nothing else keeps it out (季節外 is why a 夏季 facility can't take November, not its
+    // deadline)
     const all = WHYS.filter((w) => each.some((x) => x.why === w));
     const why = all.length > 1 ? all.filter((w) => w !== 'cutoff') : all;
     const reason = why.map((w) => w === 'season' ? t('its.hotel.why.season', { line: each.find((x) => x.why === w)!.line })
       : w === 'cutoff' ? cutoffReason(r.roster?.cutoff ?? D4, each.filter((x) => x.why === 'cutoff').map((x) => x.date))
         : t(`its.hotel.why.${w}`)).join('・');
-    unfit.push({ ...r, meta: reason, reason, label: [r.name, t('its.hotel.onState'), reason].join('、') });
+    unfit.push({ ...r, meta: reason, fresh: false, label: [r.name, t('its.hotel.onState'), reason].join('、') });
   }
   const starred = search.filter((r) => r.star !== null);
   const regions = GROUPS.map((id) => ({ id, label: t(`its.group.${id}`), rows: search.filter((r) => r.star === null && r.group === id) })).filter((g) => g.rows.length);
@@ -404,7 +424,6 @@ export function hotelNote(r: HotelRow): string {
 }
 
 // ---- The verdict and the facts ----
-export type Tone = 'good' | 'warn' | 'bad' | 'idle';
 const TONE: Record<Verdict, Tone> = { healthy: 'good', starting: 'good', idle: 'idle', degraded: 'warn', late: 'warn', failing: 'bad', stopped: 'idle', off: 'idle' };
 
 /** The card: its tone, word and sentence (遅れ: how long nothing was heard). */
@@ -437,7 +456,8 @@ export const needsAttention = (s: ItsStatus): boolean => rowBadge(s).tone === 'b
 export const pollMs = (s: ItsStatus | null): number =>
   s && s.mode === 'on' && !s.settings.paused && ['healthy', 'starting', 'degraded', 'failing'].includes(s.verdict) ? 15_000 : 60_000;
 
-/** The Worker's refusals of a 保存 the page can word (the contract's SettingsError, a too large body, this phone's key). */
+/** The Worker's refusals of a 保存 the page can word (the contract's SettingsError, a too large body, this phone's
+ *  key). */
 const SAVE_ERRORS = ['bad_date', 'past_date', 'far_date', 'too_many_dates', 'bad_guests', 'bad_hotels', 'too_large', 'unauthorized'];
 /** Why 保存 failed, in words: a refusal the page can name, else 「もう一度保存してください」. */
 export const saveError = (err: string): string => t(`its.saveWhy.${SAVE_ERRORS.includes(err) ? err : 'other'}`);

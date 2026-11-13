@@ -1,10 +1,10 @@
-// The facilities the ITS booker can be offered (設定's 保養所ボット page, docs/design.md "Settings"): the four rosters
+// The facilities the ITS booker can be offered (ボット → 保養所, docs/design.md "Bots"): the four rosters
 // (直営 · 通年 · 夏季 · 冬季, its/SITE.md §1) as the runner's config.py SKIP_HOTELS comments record them, under the
 // site's own spelling where it was seen (`verified`: the exact string service_group_select returned; the rest are the
 // roster pages' and may not match what the site offers). The single source of the roster (the runner keeps a pointer).
-// `region` (the user, 2026-11-13), by location, retag here: 関東 = 東京・神奈川・千葉・埼玉・群馬・栃木・茨城 (箱根, 那須,
-// 日光 too); 近郊 = by train from Tokyo outside 関東 (熱海・伊東・伊豆・河口湖/富士・軽井沢・越後湯沢・浜名湖); 遠方 = the
-// rest (いわき, 蓼科 and 斑尾 too: the user's moves, 2026-11-13).
+// `region`, by location, retag here: 関東 = 東京・神奈川・千葉・埼玉・群馬・栃木・茨城 (箱根, 那須, 日光 too); 近郊 = by
+// train from Tokyo outside 関東 (熱海・伊東・伊豆・河口湖/富士・軽井沢・越後湯沢・浜名湖); 遠方 = the rest (いわき, 蓼科
+// and 斑尾 too).
 // `cutoff`: the last day an application is taken, days before the stay (D4 or D10). The page merges in the names the
 // runner has seen (view.ts hotelRows); what is searched is the settings', not this file's.
 

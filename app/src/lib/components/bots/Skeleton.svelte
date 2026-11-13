@@ -4,10 +4,10 @@
   let { attr }: { attr: string } = $props();
 </script>
 
-{#each [0, 1, 2] as i (i)}<div class="skel" {...{ [`data-${attr}-skeleton`]: '' }} aria-hidden="true"><span></span></div>{/each}
+{#each [0, 1, 2] as i (i)}<div class="skel card pad" {...{ [`data-${attr}-skeleton`]: '' }} aria-hidden="true"><span></span></div>{/each}
 
 <style>
-  .skel { height: 52px; display: flex; align-items: center; margin: 0; padding: 12px 14px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
+  .skel { height: 52px; display: flex; align-items: center; }
   .skel span { width: 60%; height: 12px; border-radius: 6px; background: var(--ctl-off); animation: pulse 1.2s ease-in-out infinite alternate; }
   @keyframes pulse { from { opacity: .45; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .skel span { animation: none; } }

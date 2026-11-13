@@ -1,5 +1,5 @@
-// 設定's 保養所ボット page's view (view.ts): the draft and its PUT body (Tokyo's day boundaries), the date notes, まとめて
-// 追加 and each stay's facilities by why (締切, the FY's seasons with their gap, 休館日, 掲載なし; an unknown FY never
+// ボット → 保養所's view (view.ts): the draft and its PUT body (Tokyo's day boundaries), the date notes, まとめて追加
+// and each stay's facilities by why (受付終了, the FY's seasons with their gap, 休館日, 掲載終了; an unknown FY never
 // 季節外), the facilities merged from the roster and the runner's names (normName, U+FA1A), 施設's three parts and their
 // summary agreeing with the bars, the allow-list (derived from a Worker without one), the presets, ★ and off never
 // both, the verdict's tones, the poll's pace, the facts, the bookings that need a person (a hold's deadline) and the
@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import example from '../../../../its/contract-example.json';
 import { parseSettingsInput, type ItsStatus, type ScanMinute } from './contract.ts';
 import { parseStatus } from './client.ts';
-import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from './roster.ts';
+import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, bulkDates, closedOn, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   footLine, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError,
@@ -19,6 +19,8 @@ const jst = (s: string) => Date.parse(`${s}+09:00`);
 /** 2026-11-13 12:00 JST. */
 const NOW = jst('2026-11-13T12:00:00');
 const TODAY = '2026-11-13';
+/** The seasons as FY2026's pages give them (the real table gains a row each fiscal year; 2027 stays unknown here). */
+const FY2026 = { 2026: { summer: ['2026-07-01', '2026-09-30'], winter: ['2026-12-19', '2027-03-31'] } } as const;
 const STATUS = parseStatus(example.status)!;
 const status = (over: Partial<ItsStatus> = {}): ItsStatus => ({ ...STATUS, ...over });
 const draft = (over: Partial<Draft> = {}): Draft => ({ ...draftOf(STATUS.settings), ...over });
@@ -130,18 +132,17 @@ describe('the stays: まとめて追加, months, what can take each', () => {
 
   it('the fiscal year’s seasons: 夏季 7/1–9/30, 冬季 12/19–3/31, 夏季・冬季 neither in 10/1–12/18; an unknown FY never 季節外', () => {
     expect([fiscalYear('2026-04-01'), fiscalYear('2027-03-31'), fiscalYear('2027-04-01')]).toEqual([2026, 2026, 2027]);
-    expect(SEASONS[2026]).toEqual({ summer: ['2026-07-01', '2026-09-30'], winter: ['2026-12-19', '2027-03-31'] });
-    expect(SEASONS[2027]).toBeUndefined();
-    const miss = (kind: RosterHotel['kind'] | undefined, dates: string[]) => dates.map((x) => seasonMiss(kind, x));
+    const miss = (kind: RosterHotel['kind'] | undefined, dates: string[]) => dates.map((x) => seasonMiss(kind, x, FY2026));
     expect(miss('summer', ['2026-06-30', '2026-07-01', '2026-09-30', '2026-10-01', '2027-03-31'])).toEqual(['夏季は7/1から', null, null, '夏季は9/30まで', '夏季は9/30まで']);
     expect(miss('winter', ['2026-08-01', '2026-12-18', '2026-12-19', '2027-03-31'])).toEqual(['冬季は12/19〜3/31', '冬季は12/19〜3/31', null, null]);
     expect(miss('both', ['2026-06-30', '2026-09-30', '2026-10-01', '2026-12-18', '2026-12-19', '2027-01-15'])).toEqual(['夏季は7/1から', null, '冬季は12/19から', '冬季は12/19から', null, null]);
     expect(miss('year', ['2026-11-01'])).toEqual([null]);
     expect(miss('direct', ['2026-11-01'])).toEqual([null]);
     expect(miss(undefined, ['2026-11-01'])).toEqual([null]);
-    // FY2027 has no row yet: nothing is out of season, and the night says the seasons aren't known
+    // a year without a row: nothing is out of season, and the night says the seasons aren't known
     expect(miss('summer', ['2027-04-01', '2027-10-01'])).toEqual([null, null]);
     expect(miss('both', ['2027-11-01'])).toEqual([null]);
+    expect(seasonMiss('summer', '2099-11-01')).toBeNull();   // the real table: a year it has no row for
   });
 
   it('利用不可日 by fiscal year: NAGU 勝浦’s Tuesdays and Wednesdays and its new year, the others’ dates', () => {
@@ -151,14 +152,14 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     expect(['2026-12-22', '2026-12-23', '2026-12-24', '2026-12-31', '2027-01-03', '2027-01-04'].map((x) => closedOn(nagu, x))).toEqual([
       'NAGU 勝浦は火・水曜休み', 'NAGU 勝浦は火・水曜休み', null, 'NAGU 勝浦は休館日', 'NAGU 勝浦は休館日', null
     ]);
-    expect(closedOn(nagu, '2027-04-06')).toBeNull();   // a Tuesday in FY2027: no row
+    expect(closedOn(nagu, '2099-04-07')).toBeNull();   // a Tuesday in a year without a row
     expect(['2027-02-14', '2027-02-15', '2027-02-18', '2027-02-19'].map((x) => closedOn(of('蓼科東急ホテル'), x) !== null)).toEqual([false, true, true, false]);
     expect(['2026-07-23', '2026-07-24', '2026-07-26', '2026-12-30', '2027-01-02', '2027-01-03'].map((x) => closedOn(of('NASPAニューオータニ'), x) !== null)).toEqual([false, true, true, true, true, false]);
     expect(['2026-12-31', '2027-02-24', '2027-02-26'].map((x) => closedOn(of('ラビスタ函館ベイANNEX'), x) !== null)).toEqual([true, true, false]);
     expect(['2026-12-29', '2026-12-30', '2027-01-03', '2027-01-04'].map((x) => closedOn(of('ホテル日航アリビラ'), x) !== null)).toEqual([false, true, true, false]);
     expect(closedOn(of('リソルの森'), '2026-12-22')).toBeNull();
     expect(closedOn(null, '2026-12-22')).toBeNull();
-    // on a night: 締切 first, then 季節外 (a Tuesday in the gap is 季節外), then 休館日
+    // on a night: 受付終了 first, then 季節外 (a Tuesday in the gap is 季節外), then 休館日
     const row = hotelRows(draft({ search: ['NAGU 勝浦'] }), []).find((r) => r.name === 'NAGU 勝浦')!;
     expect(nightOf(row, '2026-12-22', 39)).toEqual({ why: 'closed', line: 'NAGU 勝浦は火・水曜休み' });
     expect(nightOf(row, '2026-11-24', 11)).toEqual({ why: 'season', line: '冬季は12/19から' });
@@ -166,10 +167,10 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     expect(nightOf(row, '2026-12-24', 39)).toEqual({ why: 'check', line: null });
   });
 
-  it('a night’s searched facilities by why: 探す, 締切 (its last day), 季節外, 掲載なし; the new ones D−4; VoiceOver’s line', () => {
+  it('a night’s searched facilities by why: 探す, 受付終了 (its last day), 季節外, 掲載終了; the new ones D−4; VoiceOver’s line', () => {
     const d = every(['2026-11-15', '2026-11-20', '2026-11-30', '2026-12-18', '2026-12-19', '2027-03-31', '2027-04-01', '2027-10-01']);
     const rows = hotelRows(d, ['新顔'], null, roster);
-    const dr = dateRows(d, NOW, rows);
+    const dr = dateRows(d, NOW, rows, [], true, FY2026);
     expect(dr.map((r) => [r.date, r.able])).toEqual([
       ['2026-11-15', []],
       ['2026-11-20', ['四日', '新顔']],
@@ -180,8 +181,8 @@ describe('the stays: まとめて追加, months, what can take each', () => {
       ['2027-04-01', ['四日', '十日', '夏', '冬', '冬と夏', '新顔']],
       ['2027-10-01', ['四日', '十日', '夏', '冬', '冬と夏', '新顔']]
     ]);
-    expect(dr.every((r) => r.total === 7)).toBe(true);
-    // under 4 days: every facility 締切 (the bar fully hatched)
+    expect(dr.every((r) => r.nights.size === 7)).toBe(true);
+    // under D4 days: every facility 受付終了 (the bar fully hatched)
     expect(dr[0].parts.map((p) => [p.why, p.names.length])).toEqual([['cutoff', 7]]);
     expect(dr[1].parts).toEqual([
       { why: 'check', names: ['四日', '新顔'], lines: [] },
@@ -189,15 +190,15 @@ describe('the stays: まとめて追加, months, what can take each', () => {
       { why: 'season', names: ['夏', '冬', '冬と夏'], lines: ['夏季は9/30まで', '冬季は12/19〜3/31', '冬季は12/19から'] },
       { why: 'gone', names: ['契約なし'], lines: [] }
     ]);
-    expect(dr[1].aria).toBe('11月20日(金)、あと7日、4日前までの施設のみ。7件中2件を探しています。受付終了で1件、季節外で3件、掲載なしで1件除外。');
-    expect(dr[2].aria).toBe('11月30日(月)、あと17日。7件中3件を探しています。季節外で3件、掲載なしで1件除外。');
+    expect(dr[1].aria).toBe('11月20日(金)、あと7日、4日前までの施設のみ。7件中2件を探しています。受付終了で1件、季節外で3件、掲載終了で1件除外。');
+    expect(dr[2].aria).toBe('11月30日(月)、あと17日。7件中3件を探しています。季節外で3件、掲載終了で1件除外。');
     expect(dr.map((r) => r.noSeason)).toEqual([false, false, false, false, false, false, true, true]);
     // only the searched; ★ first in the order
     const off = setSearch(every(['2026-12-19'], { priority: ['冬と夏'] }), ['四日'], false);
-    expect(dateRows(off, NOW, hotelRows(off, ['新顔'], null, roster))[0]).toMatchObject({ able: ['冬と夏', '十日', '冬', '新顔'], total: 6 });
+    expect(dateRows(off, NOW, hotelRows(off, ['新顔'], null, roster))[0]).toMatchObject({ able: ['冬と夏', '十日', '冬', '新顔'] });
     // and none searched: an empty bar
     const none = every(['2026-12-19'], { search: [] });
-    expect(dateRows(none, NOW, hotelRows(none, [], null, roster))[0]).toMatchObject({ able: [], total: 0, parts: [], aria: '12月19日(土)、あと36日。0件中0件を探しています。' });
+    expect(dateRows(none, NOW, hotelRows(none, [], null, roster))[0]).toMatchObject({ able: [], parts: [], aria: '12月19日(土)、あと36日。0件中0件を探しています。' });
   });
 
   it('施設 in three parts: 探す (★ first, 「12/19のみ」), 日程に合わない (the reason across the nights), 除外; the summary agrees with the bars', () => {
@@ -210,16 +211,16 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     expect([names(p.search), names(p.starred), p.regions.map((g) => [g.id, g.label, names(g.rows)]), names(p.unfit), names(p.off)]).toEqual([
       ['冬と夏', '四日', '十日', '冬', '新顔'], ['冬と夏'], [['kanto', '関東', ['四日', '十日', '冬']], ['new', '新しい施設', ['新顔']]], ['夏', '契約なし'], ['外す']
     ]);
-    const meta = Object.fromEntries([...p.search, ...p.unfit, ...p.off].map((r) => [r.name, [r.meta, r.reason, r.label]]));
+    const meta = Object.fromEntries([...p.search, ...p.unfit, ...p.off].map((r) => [r.name, [r.meta, r.fresh, r.label]]));
     expect(meta).toEqual({
-      冬と夏: ['か · 夏季・冬季 · 4日前まで · 12/19のみ', null, '冬と夏、探す、12/19のみ'],
-      十日: ['あ · 通年 · 10日前まで · 12/19のみ', null, '十日、探す、12/19のみ'],
-      四日: ['い · 通年 · 4日前まで', null, '四日、探す'],
-      冬: ['か · 冬季 · 4日前まで · 12/19のみ', null, '冬、探す、12/19のみ'],
-      新顔: ['新しい施設', null, '新顔、探す'],
-      夏: ['季節外（夏季は9/30まで）', '季節外（夏季は9/30まで）', '夏、探す、季節外（夏季は9/30まで）'],
-      契約なし: ['掲載終了', '掲載終了', '契約なし、探す、掲載終了'],
-      外す: ['か · 通年 · 4日前まで', null, '外す、除外']
+      冬と夏: ['か · 夏季・冬季 · 4日前まで · 12/19のみ', false, '冬と夏、探す、12/19のみ'],
+      十日: ['あ · 通年 · 10日前まで · 12/19のみ', false, '十日、探す、12/19のみ'],
+      四日: ['い · 通年 · 4日前まで', false, '四日、探す'],
+      冬: ['か · 冬季 · 4日前まで · 12/19のみ', false, '冬、探す、12/19のみ'],
+      新顔: ['新しい施設', true, '新顔、探す'],
+      夏: ['季節外（夏季は9/30まで）', false, '夏、探す、季節外（夏季は9/30まで）'],
+      契約なし: ['掲載終了', false, '契約なし、探す、掲載終了'],
+      外す: ['か · 通年 · 4日前まで', false, '外す、除外']
     });
     // ★ keeps its star in 日程に合わない; the summary's ★ only those that can take the nights
     expect(p.unfit.find((r) => r.name === '夏')!.star).toBe(1);
@@ -227,16 +228,20 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     // the bars: every facility a night searches is in 探す, every one in 探す is searched on some night, the rest searched are 日程に合わない
     const checked = new Set(dr.flatMap((r) => r.able));
     expect([...checked].sort()).toEqual(names(p.search).sort());
-    expect(dr.every((r) => r.total === p.search.length + p.unfit.length)).toBe(true);
-    // a night past every cutoff is left out (else every row 「のみ」, every reason 締切), unless it's the only kind
+    expect(dr.every((r) => r.nights.size === p.search.length + p.unfit.length)).toBe(true);
+    // a night past every cutoff is left out (else every row 「のみ」, every reason 受付終了), unless it's the only kind
     const late = every(['2026-11-15', '2026-11-20']);
     const lr = hotelRows(late, [], null, roster);
     const lp = hotelParts(lr, dateRows(late, NOW, lr));
-    expect([lp.unfit.find((r) => r.name === '夏')!.reason, lp.unfit.find((r) => r.name === '十日')!.reason]).toEqual(['季節外（夏季は9/30まで）', '申込は10日前まで（11/10で受付終了）']);
+    expect([lp.unfit.find((r) => r.name === '夏')!.meta, lp.unfit.find((r) => r.name === '十日')!.meta]).toEqual(['季節外（夏季は9/30まで）', '申込は10日前まで（11/10で受付終了）']);
     expect(lp.search.find((r) => r.name === '四日')!.meta).toBe('い · 通年 · 4日前まで');
     const only = every(['2026-11-15']);
     const op = hotelParts(hotelRows(only, [], null, roster), dateRows(only, NOW, hotelRows(only, [], null, roster)));
     expect([op.search.length, op.unfit.length]).toEqual([0, 7]);
+    // 「…のみ」 names three nights, then how many more
+    const many = every(['2026-11-20', '2026-12-19', '2026-12-20', '2026-12-21', '2026-12-22']);
+    const mr = hotelRows(many, [], null, roster);
+    expect(hotelParts(mr, dateRows(many, NOW, mr)).search.find((r) => r.name === '冬')!.meta).toBe('か · 冬季 · 4日前まで · 12/19・12/20・12/21ほか1日のみ');
 
     // no nights (or only booked ones): every searched facility in 探す, none 「のみ」
     expect(hotelParts(rows, []).unfit).toEqual([]);
@@ -256,13 +261,13 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     const p = hotelParts(rows, dr);
     expect(p.search.find((r) => r.name === 'トスラブ箱根ビオーレ')!.meta).toBe('箱根 · 直営 · 4日前まで');
     expect(p.search.find((r) => r.name === 'ホテルハーヴェスト那須')!.meta).toBe('那須 · 通年 · 10日前まで · 11/24のみ');
-    expect(p.unfit.find((r) => r.name === 'NAGU 勝浦')).toMatchObject({ reason: '季節外（冬季は12/19から）', star: 0 });
+    expect(p.unfit.find((r) => r.name === 'NAGU 勝浦')).toMatchObject({ meta: '季節外（冬季は12/19から）', star: 0 });
     expect(new Set(dr.flatMap((r) => r.able))).toEqual(new Set(p.search.map((r) => r.name)));
     expect(hotelSummary(p).line).not.toContain('★');   // ★ NAGU can't take these nights
     // a Tuesday in the season gap and one in winter: both reasons, in the bar's order
     const nagu = draft({ dates: ['2026-11-24', '2026-12-22'] });
     const nr = hotelRows(nagu, []);
-    expect(hotelParts(nr, dateRows(nagu, NOW, nr)).unfit.find((r) => r.name === 'NAGU 勝浦')!.reason).toBe('季節外（冬季は12/19から）・休館日');
+    expect(hotelParts(nr, dateRows(nagu, NOW, nr)).unfit.find((r) => r.name === 'NAGU 勝浦')!.meta).toBe('季節外（冬季は12/19から）・休館日');
   });
 
   it('a stay with a 予約確定 says it is booked and no longer searched', () => {
