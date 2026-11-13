@@ -1,0 +1,41 @@
+{
+ "_": "normName (app/src/lib/its/contract.ts) and book_hotels._norm_hotel must agree on every case; `entities` cases are the runner's only.",
+ "cases": [
+  {
+   "in": "鳴子温泉　湯元　吉祥",
+   "out": "鳴子温泉湯元吉祥",
+   "entities": false,
+   "why": "compatibility ideograph 祥 U+FA1A and full-width spaces"
+  },
+  {
+   "in": "NAGU 勝浦",
+   "out": "nagu勝浦",
+   "entities": false,
+   "why": "ASCII case and a space"
+  },
+  {
+   "in": "ＮＡＧＵ　勝浦",
+   "out": "nagu勝浦",
+   "entities": false,
+   "why": "full-width ASCII"
+  },
+  {
+   "in": "ﾌﾞﾙｰﾍﾞﾘｰﾋﾙ勝浦",
+   "out": "ブルーベリーヒル勝浦",
+   "entities": false,
+   "why": "half-width katakana"
+  },
+  {
+   "in": "グランドメルキュール 伊勢志摩リゾート＆スパ",
+   "out": "グランドメルキュール伊勢志摩リゾート&スパ",
+   "entities": false,
+   "why": "full-width ampersand"
+  },
+  {
+   "in": "A&amp;B ホテル",
+   "out": "a&bホテル",
+   "entities": true,
+   "why": "an HTML entity: the runner unescapes (site markup); the app never sees one"
+  }
+ ]
+}

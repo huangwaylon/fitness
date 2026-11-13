@@ -1,0 +1,61 @@
+// The ITS contract's validation and its parity with the runner (its/norm-cases.json, its/contract-example.json:
+// the Python tests read the same files).
+import { describe, expect, it } from 'vitest';
+import norm from '../../../../its/norm-cases.json';
+import example from '../../../../its/contract-example.json';
+import { daysUntil, isDate, normName, parseSettingsInput, tokyoToday } from './contract.ts';
+
+// 2026-11-13 12:00 JST
+const NOW = Date.parse('2026-11-13T03:00:00Z');
+
+describe('normName', () => {
+  it('agrees with the runner on every case it can see (no HTML entities in typed names)', () => {
+    for (const c of norm.cases.filter((x) => !x.entities)) expect(normName(c.in), c.why).toBe(c.out);
+  });
+});
+
+describe('dates in Tokyo', () => {
+  it('counts from Tokyo’s day, not UTC’s', () => {
+    // 2026-11-13 23:30 UTC is already the 14th in Tokyo
+    const late = Date.parse('2026-11-13T23:30:00Z');
+    expect(tokyoToday(late)).toBe('2026-11-14');
+    expect(daysUntil('2026-11-24', late)).toBe(10);
+    expect(daysUntil('2026-11-24', NOW)).toBe(11);
+  });
+  it('accepts real calendar dates only', () => {
+    expect(isDate('2026-02-28')).toBe(true);
+    expect(isDate('2026-02-30')).toBe(false);
+    expect(isDate('2026-2-3')).toBe(false);
+  });
+});
+
+describe('parseSettingsInput', () => {
+  const base = example.settingsInput;
+
+  it('accepts the shared example', () => {
+    expect(parseSettingsInput(base, NOW)).toEqual({ ok: true, value: base });
+  });
+
+  it('sorts and de-duplicates dates, refuses past and far ones', () => {
+    const r = parseSettingsInput({ ...base, dates: ['2026-11-22', '2026-11-21', '2026-11-22'] }, NOW);
+    expect(r.ok && r.value.dates).toEqual(['2026-11-21', '2026-11-22']);
+    expect(parseSettingsInput({ ...base, dates: ['2026-11-12'] }, NOW)).toEqual({ ok: false, error: 'past_date' });
+    expect(parseSettingsInput({ ...base, dates: ['2028-01-01'] }, NOW)).toEqual({ ok: false, error: 'far_date' });
+    expect(parseSettingsInput({ ...base, dates: ['2026-11-13'] }, NOW).ok).toBe(true);   // tonight
+  });
+
+  it('de-duplicates names by normName and lets skipping win over priority', () => {
+    const r = parseSettingsInput({ ...base, skip: ['NAGU 勝浦', 'ＮＡＧＵ　勝浦'], priority: ['nagu勝浦', 'リソル'] }, NOW);
+    expect(r.ok && r.value.skip).toEqual(['NAGU 勝浦']);
+    expect(r.ok && r.value.priority).toEqual(['リソル']);
+  });
+
+  it('refuses control and bidi characters, bad intervals, guests and shapes', () => {
+    expect(parseSettingsInput({ ...base, skip: ['a\u202eb'] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...base, skip: ['a\nb'] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...base, intervalSec: 10 }, NOW)).toEqual({ ok: false, error: 'bad_interval' });
+    expect(parseSettingsInput({ ...base, guests: 0 }, NOW)).toEqual({ ok: false, error: 'bad_guests' });
+    expect(parseSettingsInput({ ...base, autoConfirm: 'yes' }, NOW)).toEqual({ ok: false, error: 'bad_shape' });
+    expect(parseSettingsInput([], NOW)).toEqual({ ok: false, error: 'bad_shape' });
+  });
+});

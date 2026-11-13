@@ -61,7 +61,9 @@ const ALLOW: Record<string, string[]> = {
   offline: ['travel', 'hiking', 'sync'],
   // 設定's ジムボット (docs/design.md "Settings"): the gym bot's /status, read and worded for its page
   gym: ['i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym']
+  // 設定's 保養所ボット (docs/design.md "Settings"): the its-bot Worker's client (the member key, the log) and the page's view
+  its: ['i18n', 'sync'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its']
 };
 
 function files(dir: string): string[] {
@@ -125,10 +127,11 @@ describe('src/lib folder boundaries', () => {
     // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib),
     // sound/kk.ts imports static/audio/kk.json (its own chunk), the mic's recogniser the service worker's STT cache's
     // name (service-worker/caches.ts STT_CACHE, the cache it fills), the saved map areas the worker's names and tile keys
-    // for them (SAVED_PREFIX, tileKey): the only allowed reaches outside.
+    // for them (SAVED_PREFIX, tileKey), and 保養所ボット's demo the ITS contract's example (its/contract-example.json): the only
+    // allowed reaches outside.
     const outside = (e: { from: string; to: string }) =>
       (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to)) ||
-      ((e.from === 'mic' || e.from === 'offline') && e.to.endsWith('service-worker/caches.ts'));
+      ((e.from === 'mic' || e.from === 'offline') && e.to.endsWith('service-worker/caches.ts')) || (e.from === 'its' && e.to.endsWith('its/contract-example.json'));
     const bad = edges
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !FREE.includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);

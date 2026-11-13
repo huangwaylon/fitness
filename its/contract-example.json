@@ -1,0 +1,224 @@
+{
+ "_": "One of each message (app/src/lib/its/contract.ts). The Worker's and the runner's tests parse these; keep them valid.",
+ "settingsInput": {
+  "intervalSec": 15,
+  "dates": [
+   "2026-11-21",
+   "2026-11-22"
+  ],
+  "guests": 2,
+  "skip": [
+   "ゆふいん山水館",
+   "ブルーベリーヒル勝浦"
+  ],
+  "priority": [
+   "NAGU"
+  ],
+  "autoConfirm": false,
+  "baseUpdatedAt": 1794540000000
+ },
+ "runInput": {
+  "action": "start"
+ },
+ "claimInput": {
+  "runId": "19283746",
+  "host": "actions"
+ },
+ "bookingInput": {
+  "id": "19283746:3",
+  "kind": "hold",
+  "date": "2026-11-22",
+  "hotel": "NAGU 勝浦",
+  "runId": "19283746"
+ },
+ "report": {
+  "v": 1,
+  "runId": "19283746",
+  "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/19283746",
+  "sha": "f9f980c8",
+  "host": "actions",
+  "startedAt": 1794541800000,
+  "deadline": 1794561000000,
+  "phase": "scanning",
+  "scans": 120,
+  "scanFailures": 0,
+  "lastScanAt": 1794543000000,
+  "lastOkAt": 1794543000000,
+  "solves": {
+   "ok": 2,
+   "failed": 0,
+   "lastOkAt": 1794542900000,
+   "lastSecs": 19,
+   "lastSpot": "centre"
+  },
+  "failuresByStep": {
+   "calendar_get": 1
+  },
+  "lastError": {
+   "at": 1794542500000,
+   "step": "calendar_get",
+   "status": 0,
+   "cls": "timeout"
+  },
+  "unsynced": 0,
+  "events": [
+   {
+    "seq": 3,
+    "kind": "hold",
+    "date": "2026-11-22",
+    "hotel": "NAGU 勝浦"
+   },
+   {
+    "seq": 4,
+    "kind": "human_needed",
+    "date": "2026-11-22",
+    "hotel": "NAGU 勝浦",
+    "detail": "near_date"
+   }
+  ],
+  "seen": [
+   "NAGU 勝浦",
+   "ゆふいん山水館"
+  ]
+ },
+ "config": {
+  "settings": {
+   "v": 1,
+   "paused": false,
+   "intervalSec": 15,
+   "dates": [
+    "2026-11-21",
+    "2026-11-22"
+   ],
+   "guests": 2,
+   "skip": [
+    "ゆふいん山水館",
+    "ブルーベリーヒル勝浦"
+   ],
+   "priority": [
+    "NAGU"
+   ],
+   "autoConfirm": false,
+   "updatedAt": 1794540000000,
+   "updatedBy": "A"
+  },
+  "bookings": [
+   {
+    "id": "19283746:3",
+    "kind": "hold",
+    "date": "2026-11-22",
+    "hotel": "NAGU 勝浦",
+    "at": 1794542100000,
+    "runId": "19283746"
+   }
+  ],
+  "lease": {
+   "holder": "19283746",
+   "host": "actions",
+   "until": 1794543300000
+  },
+  "stop": false,
+  "stopReason": null,
+  "ackSeq": 4
+ },
+ "status": {
+  "v": 1,
+  "now": 1794543020000,
+  "mode": "on",
+  "sha": "abc1234",
+  "verdict": "degraded",
+  "reasons": [
+   "human_needed"
+  ],
+  "settings": {
+   "v": 1,
+   "paused": false,
+   "intervalSec": 15,
+   "dates": [
+    "2026-11-21",
+    "2026-11-22"
+   ],
+   "guests": 2,
+   "skip": [
+    "ゆふいん山水館",
+    "ブルーベリーヒル勝浦"
+   ],
+   "priority": [
+    "NAGU"
+   ],
+   "autoConfirm": false,
+   "updatedAt": 1794540000000,
+   "updatedBy": "A"
+  },
+  "runner": {
+   "runId": "19283746",
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/19283746",
+   "sha": "f9f980c8",
+   "host": "actions",
+   "startedAt": 1794541800000,
+   "deadline": 1794561000000,
+   "phase": "scanning",
+   "scans": 120,
+   "scanFailures": 0,
+   "lastScanAt": 1794543000000,
+   "lastOkAt": 1794543000000,
+   "solves": {
+    "ok": 2,
+    "failed": 0,
+    "lastOkAt": 1794542900000,
+    "lastSecs": 19,
+    "lastSpot": "centre"
+   },
+   "failuresByStep": {
+    "calendar_get": 1
+   },
+   "lastError": {
+    "at": 1794542500000,
+    "step": "calendar_get",
+    "status": 0,
+    "cls": "timeout"
+   },
+   "unsynced": 0,
+   "lastSeen": 1794543010000
+  },
+  "lease": {
+   "holder": "19283746",
+   "host": "actions",
+   "until": 1794543300000
+  },
+  "dispatch": null,
+  "bookings": [
+   {
+    "id": "19283746:3",
+    "kind": "hold",
+    "date": "2026-11-22",
+    "hotel": "NAGU 勝浦",
+    "at": 1794542100000,
+    "runId": "19283746"
+   }
+  ],
+  "events": [
+   {
+    "runId": "19283746",
+    "seq": 4,
+    "t": 1794542101000,
+    "kind": "human_needed",
+    "date": "2026-11-22",
+    "hotel": "NAGU 勝浦",
+    "detail": "near_date"
+   },
+   {
+    "runId": "19283746",
+    "seq": 3,
+    "t": 1794542100000,
+    "kind": "hold",
+    "date": "2026-11-22",
+    "hotel": "NAGU 勝浦"
+   }
+  ],
+  "seen": [
+   "NAGU 勝浦",
+   "ゆふいん山水館"
+  ]
+ }
+}
