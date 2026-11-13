@@ -1,6 +1,5 @@
 // Tokyo time, as the bot reads and saves it. A day is 'YYYY-MM-DD' and a clock time 'HH:MM': both compare as text.
-// An instant is ms since the epoch, saved as ISO with +09:00 ('2026-11-12T11:30:00+09:00'), the format the Python
-// bot's state.json used, so a state moves between the two unchanged.
+// An instant is ms since the epoch, saved as ISO with +09:00 ('2026-11-12T11:30:00+09:00').
 
 export type Day = string;
 export type Clock = string;

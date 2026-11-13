@@ -1,6 +1,6 @@
-// The bot (MODE 'bot'; the Python gymbot.py): one Durable Object holding the state, checking the gym on its
-// alarm, pushing alerts and notices to the group, and answering the taps (ui.ts). The alarm replaces poll_forever:
-// each one runs a check and sets the next. The Worker calls it by RPC (index.ts).
+// The bot (MODE 'bot'): one Durable Object holding the state, checking the gym on its alarm (each one runs a check and
+// sets the next), pushing alerts and notices to the group, and answering the taps (ui.ts). The Worker calls it by RPC
+// (index.ts).
 import { DurableObject } from 'cloudflare:workers';
 import type { Bot } from './actions.ts';
 import type { Env } from './env.ts';
@@ -17,8 +17,8 @@ export const MAX_BACKOFF_MINUTES = 120;
 const LINE_FACTS_MS = 3600_000;
 const NO_LINE_FACTS: GymStatus['line'] = { used: null, limit: null, webhookOk: null, asOf: null };
 
-/** Storage keys: the state (the Python state.json, Store.toJSON), and what the Python bot kept in memory, saved too
- *  so an eviction loses nothing. A saved state that can't be read is kept aside under STATE_BAD. */
+/** Storage keys: the state (Store.toJSON), and the runtime fields, saved too so an
+ *  eviction loses nothing. A saved state that can't be read is kept aside under STATE_BAD. */
 const STATE = 'state';
 const STATE_BAD = 'state.bad';
 const RUNTIME = 'runtime';
@@ -55,7 +55,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
   /** A push went out since LINE's facts were read (the quota changed). */
   private pushed = false;
   checking = false;
-  /** The Python check_lock: one check at a time (an alarm and a 🔎 tap can interleave at each await). */
+  /** One check at a time (an alarm and a 🔎 tap can interleave at each await). */
   private lock: Promise<void> = Promise.resolve();
   /** The alarm's check is running; `woken` = the check settings changed meanwhile. */
   private polling = false;
@@ -113,7 +113,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
     await this.ensureAlarm();
   }
 
-  /** The state, in the Python bot's state.json format (the backup). */
+  /** The state as saved (the backup). */
   async getState(): Promise<StateJson> {
     await this.ensureAlarm();
     return this.store.toJSON();
@@ -162,7 +162,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
     return this.store.paused ? null : this.ctx.storage.getAlarm();
   }
 
-  /** The check settings changed (Python's `wake`). Stopped: no alarm. Restarted: check now. A new interval: counted
+  /** The check settings changed. Stopped: no alarm. Restarted: check now. A new interval: counted
    *  from the last check (now if that has passed). */
   async wake(): Promise<void> {
     if (this.store.paused) return this.ctx.storage.deleteAlarm();

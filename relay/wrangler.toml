@@ -3,7 +3,7 @@
 # secrets and room). Secrets: `npx wrangler secret put KEY_A` / `KEY_B` / `KEY_C` (add `--env test` for the
 # test copy).
 name = "island-fund-relay"
-# Umeway1122@gmail.com's account, pinned: this machine also holds the amimono account's login (another repo), so a
+# The island's account, pinned: this machine also holds the amimono account's login (another repo), so a
 # wrong credential fails here instead of deploying elsewhere. Covers [env.test] too.
 account_id = "984dde81c150a207305c312cde950046"
 main = "src/index.ts"

@@ -1,4 +1,4 @@
-// The bot's state, saved as JSON (the Python bot's version-3 state.json shape, so it moves between the two unchanged).
+// The bot's state, saved as JSON (version 3).
 //
 // Each date has at most one saved rule:
 //   - ANY          → alert for any open slot that day (🔔 終日)
@@ -43,7 +43,7 @@ const sameRule = (a: Rule | undefined, b: Rule | undefined): boolean =>
 
 const byKey = <T>(m: Map<Day, T>): [Day, T][] => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
-// Parsing a saved state: anything malformed throws, as the Python bot's fromisoformat calls did.
+// Parsing a saved state: anything malformed throws.
 
 function parseDay(value: unknown): Day {
   if (typeof value !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(value) || addDays(value, 0) !== value) {
@@ -59,7 +59,7 @@ function parseClock(value: unknown): Clock {
   return value;
 }
 
-/** An ISO instant with its offset (the Python bot only compared offset-aware times). */
+/** An ISO instant with its offset. */
 function parseInstant(value: unknown): number {
   const ms = typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?(Z|[+-]\d\d:\d\d)$/.test(value)
     ? Date.parse(value)
@@ -112,7 +112,7 @@ export class Store {
     this.paused = paused;
   }
 
-  /** The state as saved (Python's `to_dict`). */
+  /** The state as saved. */
   toJSON(): StateJson {
     return {
       version: VERSION,

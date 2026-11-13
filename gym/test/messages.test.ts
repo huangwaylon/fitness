@@ -1,4 +1,4 @@
-// Tests for message formatting (port of test_units.py's formatting tests; expected texts are the Python bot's output).
+// Tests for message formatting.
 import { describe, expect, it } from 'vitest';
 import { DAYS_TO_CHECK } from '../src/config.ts';
 import { PROGRAMS, type Slot } from '../src/hacomono.ts';

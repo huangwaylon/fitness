@@ -1,4 +1,4 @@
-// The bot (src/bot.ts GymBot; port of test_gymbot.py): a real Store and hacomono client over a fake Durable Object
+// The bot (src/bot.ts GymBot): a real Store and hacomono client over a fake Durable Object
 // state (key-value storage and one alarm), the gym API answered by a stubbed fetch, LINE's push a mock.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

@@ -1,6 +1,6 @@
 // LINE buttons: the menu, day settings and check settings as cards in the group.
 // Taps arrive as postback events (data like `a=any&d=2026-10-07`; LINE's date/time pickers add `params`). The data
-// format is the Python bot's, so cards already in the chat keep working. Days are picked from buttons (`daysCard`), not
+// format never changes, so cards already in the chat keep working. Days are picked from buttons (`daysCard`), not
 // LINE's date picker, so the weekday shows; menu cards from before still send `a=day` with the picked `params.date`.
 // Every answer is a reply (free), visible to the whole group; a tap for a day that has passed gets a short hint.
 import * as actions from './actions.ts';
@@ -11,7 +11,7 @@ import * as messages from './messages.ts';
 import { ANY, SKIP } from './store.ts';
 import { addDays, at, clockFrom, clockOf, dayOf, minutesOf, weekday, type Clock, type Day } from './time.ts';
 
-// LINE's JSON, built and read loosely (as the Python dicts).
+// LINE's JSON, built and read loosely.
 type Json = Record<string, any>;
 
 const MENU_WORDS = new Set(['メニュー', 'めにゅー', 'menu']);
@@ -203,7 +203,7 @@ const say = (bot: Bot, token: string | undefined, text: string | string[]): Prom
 /** Invalid input: say why; the card keeps working. */
 const hint = (bot: Bot, token: string | undefined, text: string): Promise<void> => say(bot, token, `🤔 ${text}`);
 
-/** A value from a tap, checked as Python's fromisoformat did (a bad one is an unexpected error: ERROR). */
+/** A value from a tap, checked against its shape (a bad one is an unexpected error: ERROR). */
 function parsed(value: unknown, shape: RegExp): string {
   if (typeof value !== 'string' || !shape.test(value)) throw new Error(`bad postback value: ${value}`);
   return value;

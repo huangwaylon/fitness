@@ -11,7 +11,7 @@ How it works: [backend.md](../backend.md). Code and workflows cite these section
 Push to `main`: any change under `app/**` runs *Deploy UI* (`.github/workflows/pages.yml`), jobs in
 [testing.md](testing.md#ci-githubworkflowspagesyml).
 
-**Cloudflare Pages:** project `island-fund` on the umeway1122@gmail.com account, direct upload (no Git integration:
+**Cloudflare Pages:** project `island-fund` on the island's account (`account_id` in relay/wrangler.toml), direct upload (no Git integration:
 the workflow is the gate). Repo secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (a **Custom token**,
 *Account → Cloudflare Pages → Edit*, that account only; `gh secret set …`). By hand, from `app/`: `npm run build`, then
 `npx wrangler pages deploy build-pages --project-name island-fund --branch main` (another `--branch` is a preview at
@@ -106,7 +106,7 @@ The 3D-rendered art ([design](../design.md#official-art)): edit `JOBS` in `app/s
 commit anything from the model folder itself.
 
 ## 8. Deploy the live relay
-The Worker in `relay/` ([backend.md](../backend.md#live-relay)), Workers Free plan, umeway1122@gmail.com account. Once
+The Worker in `relay/` ([backend.md](../backend.md#live-relay)), Workers Free plan, the account pinned in its wrangler.toml. Once
 per machine: `npx wrangler login`. Then, from `relay/`:
 
 1. `npm ci`, `npm run check`, `npm test`.

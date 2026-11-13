@@ -78,7 +78,7 @@ describe('cards', () => {
     }
   });
 
-  it('are shaped as the Python bot built them', () => {
+  it('keep their shape (old cards in the chat)', () => {
     expect(ui.card('Title\nmore\n', [ui.button(ui.postback('Go', { a: 'any', d: '2026-10-07' }), true)])).toEqual({
       type: 'flex',
       altText: 'Title',

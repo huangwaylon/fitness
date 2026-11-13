@@ -2,8 +2,7 @@
 
 A LINE bot that posts in a LINE group when a 💪 パーソナルトレーニング or 🧘 マシンピラティス slot opens at ELEMENT
 戸越銀座店 (the gym's hacomono booking site), for a few Japanese-speaking friends. Not part of the game: it only shares
-the Cloudflare account with the relay. A TypeScript port of a retired Python bot, whose state format and card data it
-keeps.
+the Cloudflare account with the relay.
 
 `https://gym-bot.island-fund-relay.workers.dev`: one Worker and one SQLite-backed Durable Object (`GymBot`), Workers
 Free. `MODE` (wrangler.toml) is `bot`; `off` is the stop switch (LINE's events answered 200 and ignored, the alarm
@@ -66,7 +65,7 @@ Each day has at most one rule (`src/store.ts`):
   answers. Stopped (⏸️) = no alarm; restarting checks at once, a new interval counts from the last check. If no alarm
   is set (and the checks aren't stopped), an hourly cron (:07), a tap or a `/gym/state` call sets one (log: `no next
   check was set: checking now`).
-- **State**: DO storage. `state` is the Python bot's `state.json` (version 3); `runtime` holds failures in a row, the
+- **State**: DO storage. `state` is the rules and settings (version 3); `runtime` holds failures in a row, the
   notice sent, a failed push's retry key, the last checks and what `/status` shows. A saved state that can't be read
   is kept as `state.bad` and the bot starts empty (log: `could not read the saved state`). `GET /gym/state` is the
   backup.

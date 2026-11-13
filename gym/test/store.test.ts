@@ -129,11 +129,11 @@ describe('Store', () => {
     expect(s2.dirty).toBe(false);
   });
 
-  it('loads a state the Python bot wrote and saves the same content', () => {
-    const python = '{"version": 3, "interval_minutes": 15.0, "paused": false, "days": {"2026-11-12": ["12:00", "13:00"]}, '
+  it('loads a saved state (float interval, spaced JSON) and saves the same content', () => {
+    const saved = '{"version": 3, "interval_minutes": 15.0, "paused": false, "days": {"2026-11-12": ["12:00", "13:00"]}, '
       + '"check_from": {}, "notified": ["2026-11-12T11:30:00+09:00"]}';
-    const s = new Store(JSON.parse(python));
-    expect(s.toJSON()).toEqual(JSON.parse(python));
+    const s = new Store(JSON.parse(saved));
+    expect(s.toJSON()).toEqual(JSON.parse(saved));
     expect(JSON.stringify(s)).toBe(
       '{"version":3,"interval_minutes":15,"paused":false,"days":{"2026-11-12":["12:00","13:00"]},'
         + '"check_from":{},"notified":["2026-11-12T11:30:00+09:00"]}',

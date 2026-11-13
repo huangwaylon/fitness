@@ -102,7 +102,7 @@ export async function fetchOpenSlots(program: Program, from: Day, to: Day): Prom
   }
   if (resp.status !== 200) throw new HacomonoError(`HTTP ${resp.status}`);
   const data = (await resp.json()) as ScheduleResponse;
-  // Python truthiness: an empty list or object means no errors.
+  // An empty list or object means no errors.
   if (data.errors && (typeof data.errors !== 'object' || Object.keys(data.errors).length)) {
     throw new HacomonoError(`API errors: ${JSON.stringify(data.errors)}`);
   }
