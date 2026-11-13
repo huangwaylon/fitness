@@ -3,14 +3,10 @@
   // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
   // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
-  // ジムボット (one row, members only, hidden while GYM_URL is empty: its 動作状況 level, gym/status.ts), 保養所ボット (one
-  // row, members only, hidden while ITS_URL is empty and in demo mode, its state on it (● 要対応: view.ts rowBadge, read as the
-  // list shows): its 予約設定・動作状況 level, ItsPage, lib/its) and
-  // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06) but for ジムボット and 保養所ボット, with a line saying it's visiting. The island is arranged in /editor, not here.
-  // 姿, ジムボット and 保養所ボット push a level with ‹ (姿's edits are sent as it's left, with a 取り消す banner here; 保養所ボット's
-  // ‹ asks before throwing an unsaved draft away);
-  // ✕, the backdrop and Esc close it (asking first while a draft holds changes: Sheet's guard), and the next opening starts
-  // at its top.
+  // and 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the
+  // same (2026-11-06), with a line saying it's visiting. The bots are the menu's ボット (components/bots), the island is
+  // arranged in /editor, not here. 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner
+  // here); ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -22,11 +18,6 @@
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
-  import GymPage from './GymPage.svelte';
-  import ItsPage from './ItsPage.svelte';
-  import { GYM_URL } from '#lib/gym/status.ts';
-  import { ITS_URL, fetchStatus } from '#lib/its/client.ts';
-  import { rowBadge, type Tone } from '#lib/its/view.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -43,19 +34,16 @@
   /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
   let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
 
-  /** The levels pushed: すがた, ジムボット, 保養所ボット. */
-  let stack = $state<('look' | 'gym' | 'its')[]>([]);
-  /** 保養所ボット's ‹ guard (its draft). */
-  let itsLeave = $state<((run: () => void) => void) | undefined>();
+  /** The levels pushed: すがた. */
+  let stack = $state<'look'[]>([]);
   const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
-  let sheet: ReturnType<typeof Sheet> | undefined = $state();
   let savedTop = 0;
   /** The list's scroll as 図鑑's row opened ずかん (its ‹ comes back to it). */
   let zukanTop = 0;
 
   const view = $derived(week.view);
-  const title = $derived(push === 'gym' ? t('gym.title') : push === 'its' ? t('its.title') : push ? t(`panel.${push}`) : t('title.settings'));
+  const title = $derived(push ? t(`panel.${push}`) : t('title.settings'));
   /** This phone's villager (the guest's own on the guest's phone). */
   const me = $derived(view ? mine(view) : null);
   const myVillager = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
@@ -76,19 +64,15 @@
   /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'look' | 'gym' | 'its') {
+  async function go(to: 'look') {
     if (!stack.length) savedTop = body?.scrollTop ?? 0;
     stack = [...stack, to];
     await tick();
     body?.scrollTo({ top: 0 });
   }
 
-  /** ‹: back to the list, where it was scrolled to, focus on the row it came from (保養所ボット's after its guard). */
-  function back() {
-    if (push === 'its' && itsLeave) itsLeave(() => void pop());
-    else void pop();
-  }
-  async function pop() {
+  /** ‹: back to the list, where it was scrolled to, focus on the row it came from. */
+  async function back() {
     cue('back');
     const from = push;
     stack = stack.slice(0, -1);
@@ -114,16 +98,6 @@
     }
   });
 
-  /** 保養所ボット's row: the verdict's dot and word (● 要対応), read as the list shows (opening, back from its level). */
-  let itsBadge = $state<{ tone: Tone; word: string } | null>(null);
-  const itsRow = $derived(open && !push && !!ITS_URL && !guest && !week.demo);
-  $effect(() => {
-    if (!itsRow) return;
-    const ctl = new AbortController();
-    void fetchStatus(ctl.signal).then((r) => ctl.signal.aborted || (itsBadge = r.ok ? rowBadge(r.status) : null));
-    return () => ctl.abort();
-  });
-
   function toZukan() {
     zukanTop = body?.scrollTop ?? 0;
     open = false;
@@ -131,15 +105,11 @@
   }
 </script>
 
-<Sheet bind:this={sheet} bind:open tunes label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
-  <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (sheet ? sheet.guard(() => (open = false)) : (open = false))} sfx="self" /></div>
+<Sheet bind:open tunes label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
+  <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="panel-body" class:fill={push === 'look'} data-settings bind:this={body}>
     {#if push === 'look' && view}
       <div class="page"><LookPage {view} /></div>
-    {:else if push === 'gym'}
-      <div class="page"><GymPage /></div>
-    {:else if push === 'its'}
-      <div class="page"><ItsPage bind:leave={itsLeave} /></div>
     {:else if !push && view && me && worn}
       {#if unsent}
         <div class="prow static" data-unsent={unsent}>
@@ -160,27 +130,6 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
-      {#if GYM_URL && !guest}
-        <section class="sec" aria-labelledby="sec-gym">
-          <h2 id="sec-gym" class="sec-label">{t('gym.title')}</h2>
-          <button type="button" class="prow go" data-push="gym" data-sfx="page" onclick={() => go('gym')}>
-            <span class="ic"><OfficialArt key="items/nook-yoga-mat" size={36} /></span>
-            <span class="prl">{t('gym.status')}</span>
-            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-          </button>
-        </section>
-      {/if}
-      {#if ITS_URL && !guest && !week.demo}
-        <section class="sec" aria-labelledby="sec-its">
-          <h2 id="sec-its" class="sec-label">{t('its.title')}</h2>
-          <button type="button" class="prow go" data-push="its" data-sfx="page" onclick={() => go('its')}>
-            <span class="ic"><OfficialArt key="items/oil-barrel-bathtub" size={36} /></span>
-            <span class="prl">{t('its.status')}</span>
-            {#if itsBadge}<span class="badge" data-its-badge={itsBadge.tone}><i class="dot {itsBadge.tone}" aria-hidden="true"></i>{itsBadge.word}</span>{/if}
-            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-          </button>
-        </section>
-      {/if}
       <section class="sec" aria-labelledby="sec-zukan">
         <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
         <button type="button" class="prow go" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
@@ -212,29 +161,8 @@
   .sec { display: grid; gap: 8px; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .me .btn { flex: none; }
-  /* a row that goes somewhere (ジムボット, 図鑑): an icon, the label, a chevron */
+  /* a row that goes somewhere (図鑑): an icon, the label, a chevron */
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
   .go .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
-  /* 保養所ボット's state on its row: a dot and the word */
-  .badge { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .badge .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--edge); }
-  .dot.good { background: var(--c-leaf); }
-  .dot.warn { background: var(--c-yuzu); }
-  .dot.bad { background: var(--c-coral); }
-  .dot.idle { background: var(--ctl-off); }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
-
-  /* Rows shared by the sections (サウンド). */
-  .panel-body :global(.prows) { display: grid; gap: 10px; }
-  .panel-body :global(.prow) {
-    appearance: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
-    border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text);
-    box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
-  }
-  .panel-body :global(.prow:not(.static):active) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  /* a static row is information, not a control: the soft card lip, no edge */
-  .panel-body :global(.prow.static) { box-shadow: var(--sh-lip); background: var(--card); cursor: default; }
-  /* the chosen row: NH's yellow highlight */
-  .panel-body :global(.prow[aria-checked='true']) { background: var(--ctl-sel); color: var(--c-ink); }
-  .panel-body :global(.prl) { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); text-wrap: balance; line-height: 1.3; }
 </style>

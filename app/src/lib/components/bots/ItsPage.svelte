@@ -1,17 +1,17 @@
 <script lang="ts">
-  // 設定's 保養所ボット level (docs/design.md "Settings"): the ITS booker as its Worker reports it (lib/its: GET
+  // ボット's 保養所 tab (docs/design.md "Bots"): the ITS booker as its Worker reports it (lib/its: GET
   // /its/status) and its settings. Top to bottom: a notice (a failed read with its code; the allow-list's first save),
   // the verdict card (tinted by tone, 開始 / 停止 at once, outside the draft, and who pressed it), the bookings (a
   // hold's deadline and what to do), 状況 (くわしく folds the rest), the stays (日付: one at a time or まとめて追加, each
   // with what can take it), the facilities (施設: 探す is the allow-list; groups, presets, a name filter, the new ones on
   // top), 詳細 (確認の間隔, 人数, 自動で確定), the recent events and the foot. The settings are one draft saved with 保存
   // (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕, the backdrop
-  // and Esc ask first: guardForm, ‹ too: `leave`). Fetched on open, then every 15 s while the runner is on its way or
-  // running and every minute otherwise, only while shown; leaving it aborts, and 保存 / 開始 / 停止 abort a read in
+  // and Esc ask first: guardForm, a tab switch too: `leave`). Fetched on open, then every 15 s while the runner is on its way or
+  // running and every minute otherwise, only while shown; leaving it (the other tab, the sheet closed) aborts, and 保存 / 開始 / 停止 abort a read in
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
-  // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. Not in demo mode
-  // (設定 hides the row: no fixture).
+  // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. Each status read
+  // sets the tab's and the menu's dot (open.svelte.ts). Not in demo mode (no tab: no fixture).
   import { tick, untrack } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
@@ -31,10 +31,11 @@
   import {
     PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows, footLine,
     hotelGroups, hotelNote, hotelRows, legacy, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
-    toInput, toggleSearch, toggleStar, verdictView, STRIP_MIN, type Draft, type HotelRow
+    toInput, toggleSearch, toggleStar, verdictView, needsAttention, STRIP_MIN, type Draft, type HotelRow
   } from '#lib/its/view.ts';
+  import { setBadge } from './open.svelte.ts';
 
-  /** ‹'s guard (SettingsSheet's back): asks first while the draft holds changes. */
+  /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
 
   let status = $state<ItsStatus | null>(null);
@@ -82,6 +83,7 @@
   function take(s: ItsStatus) {
     if (status && s.now < status.now) return;
     status = s;
+    setBadge('its', needsAttention(s));
     if (!dirty) {
       draft = start = null;
       conflict = false;

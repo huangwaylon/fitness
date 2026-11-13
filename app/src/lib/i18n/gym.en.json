@@ -1,6 +1,4 @@
 {
-  "gym.title": "Gym bot",
-  "gym.status": "Status",
   "gym.verdict.healthy": "All good",
   "gym.verdict.degraded": "Some trouble",
   "gym.verdict.failing": "Failing",

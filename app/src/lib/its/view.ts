@@ -1,4 +1,4 @@
-// 設定's 保養所ボット page's view (docs/design.md "Settings"), so ItsPage stays thin: the draft the page edits and how
+// ボット's 保養所 tab's view (docs/design.md "Bots"), so ItsPage stays thin: the draft the page edits and how
 // it becomes a PUT /its/settings body, the stays (one at a time or a period's weekdays; each with its note and the
 // facilities that can take it), the facilities (the roster, the names the runner has seen and the settings' lists,
 // merged by normName, in groups; 探す = the allow-list `search`, the presets), the verdict card, the facts, the bookings
@@ -286,11 +286,14 @@ export function verdictView(s: ItsStatus): { tone: Tone; word: string; sentence:
   return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`), sentence };
 }
 
-/** 設定's row: 要対応 (coral) while a booking waits for a person, else the verdict's word and tone. */
+/** The state in one word: 要対応 (coral) while a booking waits for a person, else the verdict's word and tone. */
 export function rowBadge(s: ItsStatus): { tone: Tone; word: string } {
   if (bookingRows(s, tokyoToday(s.now), s.now).some((b) => b.state === 'action')) return { tone: 'bad', word: t('its.booking.action') };
   return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`) };
 }
+
+/** ボット's dot (the menu's pill, the 保養所 tab): a hold waiting for a person (要対応), 不調 or 遅れ. */
+export const needsAttention = (s: ItsStatus): boolean => rowBadge(s).tone === 'bad' || s.verdict === 'late';
 
 /** Running, or about to: polled every 15 s while shown, else every minute. */
 export const pollMs = (s: ItsStatus | null): number =>

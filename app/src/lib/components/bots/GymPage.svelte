@@ -1,8 +1,9 @@
 <script lang="ts">
-  // 設定's ジムボット level (docs/design.md "Settings"): the gym bot's health as its Worker reports it (gym/: GET
+  // ボット's ジム tab (docs/design.md "Bots"): the gym bot's health as its Worker reports it (gym/: GET
   // /status, gym/status.ts): the verdict card, the facts, 現在の設定 (📋 設定を見る's answer in the LINE group, in the
   // bot's own words: GET /gym/config with this phone's key, gym/config.ts), the recent checks and a soft footer. Both
-  // fetched on open, then every minute while it's open and on screen; leaving it (‹ or ✕ unmounts it) stops that. A
+  // fetched on open, then every minute while it's open and on screen (each read sets the tab's dot: open.svelte.ts);
+  // leaving it (the other tab or ✕ unmounts it) stops that. A
   // failed fetch keeps the last answer shown (its footer says when it was) under a row with もう一度; 現在の設定 has
   // its own (the status stays), and stays out of sight while the Worker doesn't serve it (config.ts settle).
   import { untrack } from 'svelte';
@@ -10,8 +11,9 @@
   import { t } from '#lib/i18n/index.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
-  import { checkLine, factRows, fetchStatus, verdictView, type GymStatus } from '#lib/gym/status.ts';
+  import { checkLine, factRows, fetchStatus, needsAttention, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { fetchConfig, settle, type GymConfig } from '#lib/gym/config.ts';
+  import { setBadge } from './open.svelte.ts';
 
   const EVERY_MS = 60_000;
 
@@ -45,6 +47,7 @@
     try {
       data = await fetchStatus(c.signal);
       failed = false;
+      setBadge('gym', needsAttention(data));
     } catch {
       if (!c.signal.aborted) failed = true;
     } finally {

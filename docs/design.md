@@ -52,16 +52,17 @@ on empty ground walks my villager there.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top` (10px under the safe area), 6px
   apart; nothing else in the sky.
 - **Menu** (`island/HudMenu.svelte`), the single home of the menu's order: a 44px cream disc
-  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow, the leaf tipped −40°) into six cream pills,
-  right-aligned under the leaf, the same width, 44px tall, its name then its icon or number:
+  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow, the leaf tipped −40°) into seven cream pills
+  (the guest's six), right-aligned under the leaf, the same width, 44px tall, its name then its icon or number:
   1. **ベル 121** (my wallet's balance, both members' on the guest's phone; the number is the picture) →
      [the panel](#panel), ごほうび. Its label carries today's ベル for a screen reader.
   2. **旅行** (Orville's head) → [Trips](#trips)
   3. **結婚式** (Harvey's head) → [wedding.md](wedding.md)
-  4. **トレイル** (a mountain) → [hiking.md](hiking.md)
+  4. **登山** (a mountain) → [hiking.md](hiking.md)
   5. **英語** (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「誘われています！」 under its name, and a coral dot on
      the folded leaf, while someone's invite is live)
-  6. **設定** (a gear) → [設定](#settings)
+  6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](#bots)
+  7. **設定** (a gear) → [設定](#settings)
 
   Labels are kanji ([Copy](#copy)). No "+N" badge on the leaf (it reads as a notification). It folds back on a second
   tap of the leaf, a tap elsewhere (which still does what it would), Esc, any sheet opening, and a pick; folded, the
@@ -100,12 +101,14 @@ the menu's ベル row opens it at once, full height, no tabs, its own chunk, at 
 **設定** (`panel/SettingsSheet.svelte`): the menu's 設定 pill → its own full-height sheet: **姿** (the look's portrait,
 the よびな and what's worn → [the 姿 level](#sugata)), **プロフィール** ([Profile](#profile)), **サウンド**
 ([Sound settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
-[Weather](#weather)'s switch too), **ジムボット** (one row, 動作状況 → `panel/GymPage.svelte`: the bot's public
-`/status` (gym/README.md) as its verdict, facts, last checks; 現在の設定, 📋's LINE answer verbatim, from
-`/gym/config` (members: `gym/config.ts`); each minute while shown; hidden while `VITE_GYM_URL` is empty),
-**保養所ボット** (● its state; → `panel/ItsPage.svelte`: health, 開始 / 停止, holds, 探す; with `VITE_ITS_URL`, not in demo) and
-**図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's is the same but for the two bots, with a line
-saying it's visiting. Its own chunk.
+[Weather](#weather)'s switch too) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
+
+### Bots
+
+**ボット** (`bots/BotsSheet.svelte`, members only): a bottom tablist, **保養所** (`ItsPage`, not in demo) left, **ジム**
+(`GymPage`) right; one bot: no tabs. The last tab reopens; only the shown page is mounted (and polls). A dot on the
+pill and tab while a bot needs a person (`needsAttention`). 保養所's draft asks before a tab switch or close, 保存
+over the tabs.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),
@@ -264,15 +267,15 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける, ききみみ's やめる) a sheet
   with キャンセル + the verb (`.two-cta`, `.btn.danger` when it loses something). A delete that can be undone acts at
   once with 取り消す on its banner.
-- The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, ききみみ, 設定) open and close at once: no
-  zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
+- The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, ききみみ, ボット, 設定) open and close at once:
+  no zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
 
 ### Unified kit
 
 <a id="sizes"></a>**Sizes:** one scope, `:is(dialog, .sheet-copy)` in theme.css (every sheet, panel, level, pairing, the
 board, the trays, the shop's menu): the small edge and lip, cards `--r-row`, the title bar 48 (title 18) and its 32px
 discs, controls drawn 32–36px in a 44px hit (a `ChipRow` 44 high so its scroll never clips a hit), rows 44–52. The world
-(the HUD, the leaf menu, the rooms, the dialogue) keeps the game's sizes: the 2px edge and the 4px lip.
+(the HUD, the leaf menu, the rooms, dialogue) keeps the game's sizes: the 2px edge and the 4px lip.
 
 Every sheet uses one kit: the same paper, cards, leaf and yuzu, denser where the info is dense. Game feel from edges,
 small lips, stickers, stitches and the yuzu "selected"; dense text smaller, in the system font. Nothing feature-local:
@@ -284,7 +287,7 @@ shared tokens only (tokens.css, re-tinted by time of day; trip `dayColors` stay 
   island world keeps spaced kana ([Copy](#copy)).
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header. Grain only on the letter.
-- **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` · `Chip` in `ChipRow` ·
+- **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
   `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's small classes. A sample
   of all of it: `/dev/kit` (`vite dev`).
 - **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`; an unknown name draws
@@ -593,7 +596,7 @@ phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
   (`guest.jarNote` in place of the rewards), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
-  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours but ジムボット ([Settings](#settings)).
+  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours, no ボット ([Bots](#bots)).
   ききみみ: the members' games as their summaries. Its island opens at its own villager (far up the island; only the
   open position, `IslandScene` `GUEST_OPEN_BACK`).
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every

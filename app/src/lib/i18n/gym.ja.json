@@ -1,6 +1,4 @@
 {
-  "gym.title": "ジムボット",
-  "gym.status": "動作状況",
   "gym.verdict.healthy": "順調",
   "gym.verdict.degraded": "一部不調",
   "gym.verdict.failing": "不調",

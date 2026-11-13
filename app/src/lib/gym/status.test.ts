@@ -1,7 +1,7 @@
 // The gym bot's status as 設定's ジムボット page reads it (status.ts): the payload checked, the verdict's tone and
 // words, the fact rows and each check's line.
 import { describe, expect, it, vi } from 'vitest';
-import { checkLine, factRows, fetchStatus, parseStatus, verdictView, type Check, type GymStatus } from './status.ts';
+import { checkLine, factRows, fetchStatus, needsAttention, parseStatus, verdictView, type Check, type GymStatus } from './status.ts';
 
 const TODAY = '2026-11-04';
 const at = (hm: string, day = TODAY) => Date.parse(`${day}T${hm}:00+09:00`);
@@ -26,6 +26,14 @@ function sample(now: number): GymStatus {
   };
 }
 const status = (over: Partial<GymStatus> = {}): GymStatus => ({ ...sample(NOW), ...over });
+
+describe('needsAttention (ボット’s dot)', () => {
+  it('is on for 不調, 要対応 and 遅れ only', () => {
+    const on = (verdict: GymStatus['verdict']) => needsAttention(status({ verdict }));
+    expect([on('failing'), on('broken'), on('late')]).toEqual([true, true, true]);
+    expect([on('healthy'), on('degraded'), on('stopped'), on('off')]).toEqual([false, false, false, false]);
+  });
+});
 
 describe('verdictView', () => {
   it('gives each verdict its tone, and the first reason its sentence', () => {

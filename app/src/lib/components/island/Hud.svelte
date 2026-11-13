@@ -1,9 +1,9 @@
 <script lang="ts">
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
   // [the health button] [the menu]. The health button (NH's dumbbell) → けんこう and ごはん's sheet (HealthSheet: two
-  // tabs); the menu (NH's leaf, at the screen's side) drops six pills under it (HudMenu): the ベル row (my
+  // tabs); the menu (NH's leaf, at the screen's side) drops seven pills under it (HudMenu; the guest's six): the ベル row (my
   // wallet's balance, the guest's each member's; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the others (旅行,
-  // 結婚式, 登山, 英語, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
+  // 結婚式, 登山, 英語, ボット, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
   // Only when sync is not ok, the sync chip centred under the row; under it, while 設定's 季節 is on, its chip. The
   // panel, the popups and every sheet are their own chunks, loaded on first open.
   import { onMount } from 'svelte';
@@ -19,6 +19,7 @@
   import { farmSheet } from '../farm/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
+  import { botsSheet } from '../bots/open.svelte.ts';
   import { loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
 
   interface Props {
@@ -81,6 +82,8 @@
 {#if weddingSheet.Sheet}<weddingSheet.Sheet bind:open={weddingSheet.open} />{/if}
 <!-- トレイル's, opened by the menu's pill or a hike card (over りょこう's) -->
 {#if hiking.Sheet}<hiking.Sheet bind:open={hiking.open} />{/if}
+<!-- ボット's, opened by the menu's pill (members only) -->
+{#if botsSheet.Sheet}<botsSheet.Sheet bind:open={botsSheet.open} />{/if}
 <!-- 畑's, opened by the farm button (island/FarmButton.svelte) -->
 {#if farmSheet.Sheet}<farmSheet.Sheet bind:open={farmSheet.open} />{/if}
 <!-- けんこう and ごはん's, opened by the dumbbell or a tree's ごはん -->

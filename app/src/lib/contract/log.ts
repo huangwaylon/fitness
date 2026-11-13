@@ -18,7 +18,7 @@ export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'to
 /** The app's routes (their first segment). */
 const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
 /** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts). */
-const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'other'] as const;
+const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'bots', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `world` `mirror` its scene's:
@@ -101,7 +101,7 @@ export const LOG_EVENTS = {
   "mic.perm": { src: 'c', f: { st: ['granted', 'denied', 'prompt', 'unsupported'], ms: 'n', again: 'b', asked: 'b', ec: 'b', sr: 'n', inp: ['builtin', 'bluetooth', 'wired', 'other'], at: ['probe', 'optin', 'button'], retry: 'b', pwa: 'b' } },
   "mic.duplex": { src: 'c', f: { ear: ['none', 'wired', 'bluetooth'], aec: 'b', bleed: 'n', rtl: 'n', loud: ['none', 'quiet', 'ok'], pick: 'b', restored: 'b', err: 't' } },
   "mic.stt": { src: 'c', f: { be: ['whisper-gpu', 'whisper-wasm', 'webkit', 'relay'], model: ['tiny.en', 'base.en', 'tiny.en-f16', 'turbo', 'none'], step: ['dl', 'load', 'clip', 'spoken'], ms: 'n', mb: 'n', audS: 'n', wer: 'n', ok: 'b', err: ['not-allowed', 'service-not-allowed', 'network', 'no-speech', 'aborted', 'audio-capture', 'oom', 'timeout', 'other'] } },
-  // 設定's 保養所ボット (lib/its/client.ts): a call to the its-bot Worker that failed: which, its HTTP status (none:
+  // ボット's 保養所 (lib/its/client.ts): a call to the its-bot Worker that failed: which, its HTTP status (none:
   // no answer), the Worker's error code or the phone's (offline, timeout, json, no_key), ms
   "its.fail": { src: 'c', f: { op: ['status', 'settings', 'run'], err: 't', rid: 't', http: 'n', ms: 'n' } },
   // ---- the relay

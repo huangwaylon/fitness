@@ -1,13 +1,13 @@
-// 設定's ジムボット (docs/design.md "Settings"): a member's row right above 図鑑 pushes the 動作状況 level, which reads
-// the gym bot's GET /status (lib/gym/status.ts, mocked here) and shows its verdict, facts and recent checks; ‹ comes
-// back to the row; under the facts, 現在の設定 is 📋 設定を見る's answer from the members-only GET /gym/config (with the
+// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown), reads the gym bot's
+// GET /status (lib/gym/status.ts, mocked here) and shows its verdict, facts and recent checks; 保養所's tab leaves it
+// (no more reads); under the facts, 現在の設定 is 📋 設定を見る's answer from the members-only GET /gym/config (with the
 // phone's key: lib/gym/config.ts, mocked here), its rows in the bot's own words. A failed fetch shows もう一度, and a
 // retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its 404s carry no
 // CORS, so the preflight fails) hides the
-// section. The guest has no row. Phones paired with a record of their own (e2e/record.ts); the payloads' rules (tones,
+// section. The guest has no ボット. Phones paired with a record of their own (e2e/record.ts); the payloads' rules (tones,
 // lines, a garbled answer) are status.test.ts's and config.test.ts's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
@@ -50,7 +50,7 @@ function config(now: number) {
 
 /** A phone paired as `who`, /status answered by `answer` and /gym/config by `configAnswer` (each call counted, the
  *  config's Authorization kept; `old`: a Worker without the route, whose 404s, the preflight's too, carry no CORS),
- *  設定 open. */
+ *  ボット open on ジム (the guest's: the menu unfolded). */
 async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: (n: number) => number = () => 200, configAnswer: (n: number) => number | 'old' = () => 200) {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
@@ -79,25 +79,24 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
       body: status === 200 ? JSON.stringify(payload(rec.now())) : '{"error":"boom"}'
     });
   });
+  // (ジム the tab last shown on this phone)
+  await context.addInitScript(() => localStorage.setItem('island.botsTab', 'gym'));
   await page.goto('');
   await islandUp(page);
-  await fromMenu(page, 'settings');
-  return { calls, settings: page.locator('dialog[open] [data-settings]') };
+  if (who === 'A') await fromMenu(page, 'bots');
+  else await unfoldMenu(page);
+  return { calls, sheet: page.locator('dialog[open] [data-bots]') };
 }
 
-test('a member opens ジムボット above 図鑑: the verdict, the facts and the checks; ‹ comes back to the row', async ({ page, context }) => {
-  const { settings } = await phone(page, context, 'A');
-  const row = settings.locator('[data-push="gym"]');
-  await row.scrollIntoViewIfNeeded();
-  await expect(row).toContainText('動作状況');
-  const zukan = settings.locator('[data-settings-zukan]');
-  expect((await row.boundingBox())!.y).toBeLessThan((await zukan.boundingBox())!.y);
-
-  await row.click();
-  const gym = settings.locator('[data-gym-page]');
+test('a member’s ボット on ジム: the verdict, the facts and the checks; 保養所 leaves it, and it reads no more', async ({ page, context }) => {
+  const { sheet, calls } = await phone(page, context, 'A');
+  const tab = page.locator('dialog[open] [data-bots-tab="gym"]');
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  const gym = sheet.locator('[data-gym-page]');
   await expect(gym.locator('[data-gym-verdict="degraded"]')).toContainText('一部不調');
   await expect(gym.locator('[data-gym-verdict]')).toContainText('前回のチェックで一部が失敗しました。');
-  await expect(page.locator('dialog[open] .titlebar')).toContainText('ジムボット');
+  await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
+  await expect(tab.locator('[data-tab-dot]')).toHaveCount(0); // (一部不調: no person needed)
   await expect(gym.locator('[data-gym-fact="last"]')).toContainText('11:54');
   await expect(gym.locator('[data-gym-fact="next"]')).toContainText('12:09ごろ');
   await expect(gym.locator('[data-gym-fact="ok"]')).toContainText('11:39');
@@ -125,50 +124,50 @@ test('a member opens ジムボット above 図鑑: the verdict, the facts and th
   await expect(checks.nth(2)).toContainText('チェックなし');
   await expect(gym.locator('[data-gym-foot]')).toContainText('bot · abc1234 · 更新 12:00');
 
-  await page.locator('dialog[open] .titlebar .back').click();
+  const n = calls.n;
+  await page.locator('dialog[open] [data-bots-tab="its"]').click();
   await expect(gym).toHaveCount(0);
-  await expect(row).toBeFocused();
+  await expect(sheet).toHaveAttribute('data-tab', 'its');
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  expect(calls.n).toBe(n);
 });
 
 test('a failed fetch shows もう一度, and a retry recovers', async ({ page, context }) => {
-  const { calls, settings } = await phone(page, context, 'A', (n) => (n === 1 ? 500 : 200));
-  await settings.locator('[data-push="gym"]').click();
-  const error = settings.locator('[data-gym-error]');
+  const { calls, sheet } = await phone(page, context, 'A', (n) => (n === 1 ? 500 : 200));
+  const error = sheet.locator('[data-gym-error]');
   await expect(error).toContainText('読み込めませんでした');
-  await expect(settings.locator('[data-gym-verdict]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-verdict]')).toHaveCount(0);
   await error.getByRole('button', { name: 'もう一度' }).click();
-  await expect(settings.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect(error).toHaveCount(0);
   expect(calls.n).toBe(2);
 });
 
 test('the phone’s key reads 現在の設定; a failed read has its own もう一度 and keeps the status', async ({ page, context }) => {
-  const { calls, settings } = await phone(page, context, 'A', () => 200, (n) => (n === 1 ? 503 : 200));
-  await settings.locator('[data-push="gym"]').click();
-  const error = settings.locator('[data-gym-config-error]');
+  const { calls, sheet } = await phone(page, context, 'A', () => 200, (n) => (n === 1 ? 503 : 200));
+  const error = sheet.locator('[data-gym-config-error]');
   await expect(error).toContainText('現在の設定を読み込めませんでした');
-  await expect(settings.locator('[data-gym-verdict="degraded"]')).toBeVisible();
-  await expect(settings.locator('[data-gym-error]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  await expect(sheet.locator('[data-gym-error]')).toHaveCount(0);
   await error.getByRole('button', { name: 'もう一度' }).click();
-  await expect(settings.locator('[data-gym-day]')).toHaveCount(4);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(4);
   await expect(error).toHaveCount(0);
   expect(calls.config).toBe(2);
   expect(calls.auth.every((a) => /^Bearer [0-9a-f]{32,}$/i.test(a ?? ''))).toBe(true);
 });
 
 test('an older Worker without /gym/config (404s without CORS, so fetch throws): no 現在の設定, no error, the status as before', async ({ page, context }) => {
-  const { calls, settings } = await phone(page, context, 'A', () => 200, () => 'old');
-  await settings.locator('[data-push="gym"]').click();
-  await expect(settings.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  const { calls, sheet } = await phone(page, context, 'A', () => 200, () => 'old');
+  await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect.poll(() => calls.asked).toBeGreaterThan(0);
-  await expect(settings.locator('[data-gym-page]')).toHaveAttribute('data-config', 'hidden'); // asked and settled
-  await expect(settings.locator('[data-gym-config]')).toHaveCount(0);
-  await expect(settings.locator('[data-gym-config-error], [data-gym-error]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-page]')).toHaveAttribute('data-config', 'hidden'); // asked and settled
+  await expect(sheet.locator('[data-gym-config]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-config-error], [data-gym-error]')).toHaveCount(0);
 });
 
-test('the guest has no ジムボット row, and nothing asks the bot', async ({ page, context }) => {
-  const { calls, settings } = await phone(page, context, 'G');
-  await expect(settings.locator('[data-settings-zukan]')).toBeVisible();
-  await expect(settings.locator('[data-push="gym"]')).toHaveCount(0);
+test('the guest has no ボット, and nothing asks the bot', async ({ page, context }) => {
+  const { calls } = await phone(page, context, 'G');
+  await expect(page.locator('[data-hud-settings]')).toBeVisible();
+  await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   expect([calls.n, calls.config]).toEqual([0, 0]);
 });

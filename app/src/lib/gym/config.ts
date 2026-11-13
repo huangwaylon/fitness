@@ -1,4 +1,4 @@
-// The gym bot's current settings (docs/design.md "Settings": 設定's ジムボット page, its 現在の設定): the Worker's
+// The gym bot's current settings (docs/design.md "Bots": ボット's ジム tab, its 現在の設定): the Worker's
 // members-only GET /gym/config, which is 📋 設定を見る's answer in the LINE group in parts, worded by the bot's own
 // functions (gym/src/messages.ts statusView). The page shows those words as they are; nothing here rewords them.
 // Read with this phone's key; an older Worker without the route, or a key it doesn't take, hides the section (no

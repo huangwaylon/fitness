@@ -1,4 +1,4 @@
-// The gym bot's status (docs/design.md "Settings": 設定's ジムボット page): the Worker's public GET /status, read
+// The gym bot's status (docs/design.md "Bots": ボット's ジム tab): the Worker's public GET /status, read
 // as it is (the verdict is decided there), with the page's view helpers so GymPage stays thin.
 import { t } from '#lib/i18n/index.ts';
 import { formatSyncTime } from '#lib/i18n/format.ts';
@@ -40,7 +40,7 @@ export interface GymStatus {
   line: { used: number | null; limit: number | null; webhookOk: boolean | null; asOf: number | null };
 }
 
-/** The Worker's origin; VITE_GYM_URL overrides it (empty = 設定's section hidden). vite.config.ts's CSP allows it. */
+/** The Worker's origin; VITE_GYM_URL overrides it (empty = ボット's ジム tab hidden). vite.config.ts's CSP allows it. */
 export const GYM_URL: string = (import.meta.env?.VITE_GYM_URL as string | undefined) ?? 'https://gym-bot.island-fund-relay.workers.dev';
 
 const VERDICTS: readonly Verdict[] = ['healthy', 'degraded', 'failing', 'late', 'broken', 'stopped', 'off'];
@@ -96,6 +96,9 @@ export function verdictView(s: GymStatus): { tone: Tone; word: string; sentence:
   const r = s.reasons[0];
   return { tone: TONE[s.verdict], word: t(`gym.verdict.${s.verdict}`), sentence: t(`gym.reason.${r ?? 'none'}`, { n: s.failures }) };
 }
+
+/** ボット's dot (the menu's pill, the ジム tab): 不調, 要対応 or 遅れ. */
+export const needsAttention = (s: GymStatus): boolean => TONE[s.verdict] === 'bad' || s.verdict === 'late';
 
 const at = (ms: number | null, today: string): string => formatSyncTime(ms === null ? null : new Date(ms), today);
 

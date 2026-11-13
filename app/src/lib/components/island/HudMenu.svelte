@@ -1,12 +1,13 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops six pills down under it, right-aligned (the user's order, 2026-11-08; kanji on
+  // toggle; aria-expanded) that drops seven pills down under it (six for the guest: no ボット), right-aligned (the user's order, 2026-11-08; kanji on
   // them since then, easier to read than spaced kana):
   // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
   // hiking/open.svelte.ts), 英語 (しずえ's head: ききみみ's sheet opened here, the voice session begun in the tap itself;
-  // 「誘われています！」 on it, and a dot on the leaf, while someone's invite is live) and 設定 (a gear);
+  // 「誘われています！」 on it, and a dot on the leaf, while someone's invite is live), ボット (a robot's head: the bots'
+  // sheet, members only, a dot while the ITS bot needs a person, read as the menu unfolds: bots/open.svelte.ts) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet opens at once;
@@ -24,6 +25,7 @@
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
+  import { botTabs, botsBadge, botsSheet, readBadge } from '../bots/open.svelte.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { prefetchSheet, type SheetChunk } from './sheetChunks.ts';
@@ -54,6 +56,13 @@
   const invited = $derived(invitedNow());
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
+
+  /** The bots this phone has (none: the guest, no ボット pill). */
+  const bots = $derived(botTabs());
+  // unfolded: the ITS bot's dot read (at most once a minute)
+  $effect(() => {
+    if (open && bots.includes('its')) untrack(() => readBadge('its'));
+  });
 
   // a sheet opening (the panel, けんこう, a tree's …) or もようがえ folds it
   $effect(() => {
@@ -217,6 +226,17 @@
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
+    {#if bots.length}
+      <!-- ボット: the bots' sheet (members only); a dot while one needs a person -->
+      <button type="button" class="item" data-hud-bots aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('bots')} onclick={() => pick(() => botsSheet.show())}>
+        <span class="lbl">{t('panel.bots')}{#if botsBadge.its}<span class="sr-only">{` ${t('bots.attention')}`}</span>{/if}</span>
+        <span class="ic">
+          <!-- a robot's head in the gear's soft brown, its eyes and mouth cream -->
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M11.2 3.2h1.6v3.4h-1.6zM12 .6a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM8.4 6.2h7.2a4.4 4.4 0 0 1 4.4 4.4v5.8a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 16.4v-5.8a4.4 4.4 0 0 1 4.4-4.4ZM1.6 11.6a1 1 0 0 1 1-1H3.4v5.6H2.6a1 1 0 0 1-1-1ZM20.6 10.6h.8a1 1 0 0 1 1 1v3.6a1 1 0 0 1-1 1h-.8Z" /><circle cx="9" cy="12.4" r="1.8" /><circle cx="15" cy="12.4" r="1.8" /><path class="snow" d="M9.6 16.4h4.8a.8.8 0 0 1 0 1.6H9.6a.8.8 0 0 1 0-1.6Z" /></svg>
+          {#if botsBadge.its}<i class="dot pill-dot" data-hud-bots-dot aria-hidden="true"></i>{/if}
+        </span>
+      </button>
+    {/if}
     <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={() => pick(onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
@@ -283,7 +303,9 @@
     position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%; pointer-events: none;
     background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream);
   }
-  .ic { flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
+  .ic { position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
+  /* ボット's: a bot needs a person */
+  .pill-dot { top: 1px; right: 1px; }
   .ic svg { width: 26px; height: 26px; }
   .gear { fill: #A88B68; }
   .snow { fill: var(--c-cream); }

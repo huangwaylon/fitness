@@ -9,7 +9,7 @@ import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, duration, errorText, eventLines, factRows,
-  footLine, hotelGroups, hotelNote, hotelRows, legacy, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError, savedLine, setSearch, toInput,
+  footLine, hotelGroups, hotelNote, hotelRows, legacy, needsAttention, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError, savedLine, setSearch, toInput,
   toggleSearch, toggleStar, verdictView, weekday, scanCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
@@ -419,6 +419,12 @@ describe('the words', () => {
     expect(rowBadge(STATUS)).toEqual({ tone: 'bad', word: '要対応' });
     expect(rowBadge(status({ events: [], bookings: [], verdict: 'healthy', reasons: [] }))).toEqual({ tone: 'good', word: '順調' });
     expect(rowBadge(status({ events: [], bookings: [], verdict: 'stopped' }))).toEqual({ tone: 'idle', word: '停止中' });
+  });
+  it('ボット’s dot: a hold waiting, 不調 or 遅れ; not 要確認, 停止中 or 順調', () => {
+    const quiet = (verdict: ItsStatus['verdict']) => needsAttention(status({ events: [], bookings: [], verdict }));
+    expect(needsAttention(STATUS)).toBe(true);
+    expect([quiet('failing'), quiet('late')]).toEqual([true, true]);
+    expect([quiet('healthy'), quiet('degraded'), quiet('stopped'), quiet('off'), quiet('idle'), quiet('starting')]).toEqual([false, false, false, false, false, false]);
   });
   it('who saved the settings last', () => {
     const name = (m: string) => (m === 'B' ? 'うめ' : 'ウェイ');

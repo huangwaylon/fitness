@@ -182,6 +182,9 @@ export const DEVICE = {
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone',
+  /** localStorage: `its` | `gym`: the ボット tab last shown on this phone (the next opening's; 保養所 by default:
+   *  components/bots/BotsSheet.svelte). */
+  botsTab: 'island.botsTab',
   /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
   persistAsked: 'island.persistAsked',
   /** localStorage: the Tokyo day (days since the epoch) this phone last logged its storage's use (sync/persist.ts

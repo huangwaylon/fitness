@@ -147,6 +147,19 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
    ためた ベル, いえを かえる's), 4px in from the cards' edge ---------- */
 .sec-label { margin: 6px 4px 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
 
+/* ---------- a settings row (設定's sections, ボット's pages): a control row, 52px, the label (.prl) then its control;
+   .static: information, not a control (the soft card lip, no edge); chosen: NH's yellow highlight ---------- */
+.prows { display: grid; gap: 10px; }
+.prow {
+  appearance: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
+  border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text);
+  box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
+}
+.prow:not(.static):active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+.prow.static { box-shadow: var(--sh-lip); background: var(--card); cursor: default; }
+.prow[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
+.prl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); text-wrap: balance; line-height: 1.3; }
+
 /* ---------- a level's actions (ごはん's amount, マイ食品, マイレシピ, いつもの): its one action and what goes with it, held at the
    foot of the sheet's scroller while the level is longer than the screen, and over the keyboard while a field is being
    typed in (sticky keeps clear of the scroller's bottom padding, --body-pad, which holds the home indicator and the

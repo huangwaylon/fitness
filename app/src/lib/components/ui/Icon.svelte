@@ -73,7 +73,10 @@
     sunset: '<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
     'arrow-up-right': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
     sort: '<path d="M7 4v16"/><path d="m3.5 7.5 3.5-3.5 3.5 3.5"/><path d="M17 20V4"/><path d="m13.5 16.5 3.5 3.5 3.5-3.5"/>',
-    minus: '<path d="M5 12h14"/>'
+    minus: '<path d="M5 12h14"/>',
+    // ボット's tabs: 保養所 (a bed, its pillow), ジム (a barbell: the HUD's dumbbell is けんこう's)
+    bed: '<path d="M3 5v15M3 17h18M21 20v-5a3 3 0 0 0-3-3h-7v5"/><rect x="5.5" y="11.5" width="3.5" height="3" rx="1.5"/>',
+    barbell: '<path d="M2 12h3M9 12h6M19 12h3"/><rect x="5" y="5" width="4" height="14" rx="1.5"/><rect x="15" y="5" width="4" height="14" rx="1.5"/>'
   } as const;
   export type IconName = keyof typeof P;
   /** Whether the set draws `name` (a packing category's own emoji, say, is not a name). */

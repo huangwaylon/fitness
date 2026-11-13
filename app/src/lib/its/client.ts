@@ -1,11 +1,11 @@
-// The ITS booker's Worker (its/README.md) as 設定's 保養所ボット page talks to it: GET /its/status, PUT /its/settings,
+// The ITS booker's Worker (its/README.md) as ボット's 保養所 tab talks to it: GET /its/status, PUT /its/settings,
 // POST /its/run, each with this phone's member key (a guest's is refused there; the page never asks for the guest).
 // Answers are checked (parseStatus: another version, a proxy's page or garbage is null); a call never throws, and a
 // failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id; never the key).
 // Each call carries an `X-Request-Id` (the Worker logs it as `rid=`); a Worker from before it refuses the header in its
 // CORS preflight, so a call that can't get through with it is tried once without, and the session stops sending it once
 // that worked. No demo mode:
-// 設定 hides the row there (the e2e mocks the Worker).
+// ボット has no 保養所 tab there (the e2e mocks the Worker).
 import {
   BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, REASONS, VERDICTS, isDate, isId, isName,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member,
@@ -16,7 +16,7 @@ import { log } from '#lib/sync/log.ts';
 
 /** The Worker's origin (the CSP's connect-src names it: vite.config.ts). */
 const ITS_ORIGIN = 'https://its-bot.island-fund-relay.workers.dev';
-/** The Worker's origin; VITE_ITS_URL overrides it (empty = 設定's section hidden), as GYM_URL does. */
+/** The Worker's origin; VITE_ITS_URL overrides it (empty = ボット's 保養所 tab hidden), as GYM_URL does. */
 export const ITS_URL: string = (import.meta.env?.VITE_ITS_URL as string | undefined) ?? ITS_ORIGIN;
 
 const TIMEOUT_MS = 20_000;
