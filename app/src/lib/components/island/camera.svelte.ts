@@ -292,26 +292,53 @@ export class World {
   private rush = false;
   private quiet = new Set<Node>();
   private hushMo: MutationObserver | null = null;
+  /** The nodes found painting nothing, kept from rush to rush (paints() styled every node and its children at each
+   *  drag's start: 7.6 ms/s at 4x CPU while dragging, review 2026-11-13 perf #5): watched by the observer from then on,
+   *  a change in one (its class, a child, a mark) forgets it, and a change on the scene (its time of day, season, sky)
+   *  forgets them all. Only "nothing" is kept: a node that paints is styled again each rush (it stops at its first
+   *  paint, and a stale "paints" only places it, as before). */
+  private still = new WeakSet<Node>();
+  private sceneEl: Element | null = null;
   private hush(): void {
-    for (const n of this.nodes) if (n.shown && !n.bare && !n.followed && !paints(n.el)) this.quiet.add(n);
-    if (!this.quiet.size || typeof MutationObserver === 'undefined') return;
-    this.hushMo ??= new MutationObserver((rs) => {
-      for (const r of rs) {
-        // (its own visibility, written here)
-        if (r.attributeName === 'style' && this.byEl.get(r.target as Element)) continue;
-        for (let at: globalThis.Node | null = r.target; at; at = at.parentNode) {
-          const n = this.byEl.get(at as Element);
-          if (n) {
-            if (this.quiet.delete(n)) this.dirty.add(n);
-            break;
-          }
+    const watch = typeof MutationObserver !== 'undefined';
+    this.hushMo ??= watch ? new MutationObserver((rs) => this.changed(rs)) : null;
+    for (const n of this.nodes) {
+      if (!n.shown || n.bare || n.followed) continue;
+      if (!this.still.has(n)) {
+        if (paints(n.el)) continue;
+        // (no observer, in a test's DOM: styled again each rush)
+        if (this.hushMo) {
+          this.still.add(n);
+          this.hushMo.observe(n.el, { subtree: true, childList: true, characterData: true, attributes: true });
+          const scene = n.el.closest('[data-r3]');
+          if (scene && scene !== this.sceneEl) (this.sceneEl = scene), this.hushMo.observe(scene, { attributes: true });
         }
       }
-    });
-    for (const n of this.quiet) this.hushMo.observe(n.el, { subtree: true, childList: true, characterData: true, attributes: true });
+      this.quiet.add(n);
+    }
+  }
+  private changed(rs: MutationRecord[]): void {
+    for (const r of rs) {
+      if (r.target === this.sceneEl) {
+        this.still = new WeakSet();
+        for (const n of this.quiet) this.dirty.add(n);
+        this.quiet.clear();
+        continue;
+      }
+      // (its own visibility, written here)
+      if (r.attributeName === 'style' && this.byEl.get(r.target as Element)) continue;
+      for (let at: globalThis.Node | null = r.target; at; at = at.parentNode) {
+        const n = this.byEl.get(at as Element);
+        if (n) {
+          this.still.delete(n);
+          if (this.quiet.delete(n)) this.dirty.add(n);
+          break;
+        }
+      }
+    }
   }
   private unhush(): void {
-    this.hushMo?.disconnect();
+    // (the observer kept on: what it watches stays known as painting nothing till it changes)
     this.quiet.clear();
     // (every node placed again for where the camera is)
     this.lastCam = NaN;

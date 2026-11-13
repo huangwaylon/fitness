@@ -49,3 +49,69 @@ describe('an off-screen walker', () => {
     w.useThree(null);
   });
 });
+
+describe('a rush hushes the nodes that paint nothing', () => {
+  /** A node's element, painting (a fill) or not (a bare tap area), on a scene; getComputedStyle counted per element. */
+  const scene = { id: 'scene' };
+  const el = (fill: boolean) => ({
+    fill, style: { setProperty() {}, visibility: '', opacity: '', clipPath: '' } as unknown as CSSStyleDeclaration, classList: { toggle() {} },
+    toggleAttribute() {}, closest: () => scene, childNodes: [], children: [], localName: 'div', parentNode: null
+  });
+  it('styles a node once, from rush to rush, till something in it or on the scene changes', () => {
+    const styled = new Map<unknown, number>();
+    let cb: ((rs: { target: unknown; attributeName?: string }[]) => void) | null = null;
+    const observed: unknown[] = [];
+    vi.stubGlobal('getComputedStyle', (e: { fill: boolean }) => {
+      styled.set(e, (styled.get(e) ?? 0) + 1);
+      return { display: 'block', opacity: '1', visibility: 'visible', getPropertyValue: () => '', content: 'none', backgroundImage: 'none', backgroundColor: e.fill ? 'red' : 'transparent', boxShadow: 'none', borderTopWidth: '0', borderRightWidth: '0', borderBottomWidth: '0', borderLeftWidth: '0' };
+    });
+    vi.stubGlobal('MutationObserver', class {
+      constructor(f: typeof cb) {
+        cb = f;
+      }
+      observe(t: unknown) {
+        observed.push(t);
+      }
+      disconnect() {}
+    });
+    try {
+      let rushing = false;
+      const w = new World(), three = { ...flat(), rushing: () => rushing };
+      w.useThree(three);
+      const bare = el(false), art = el(true);
+      w.at({ x: 10, z: 10 })(bare as unknown as HTMLElement);
+      w.at({ x: 20, z: 10 })(art as unknown as HTMLElement);
+      // (placed: shown)
+      w.step(0);
+      const rush = () => {
+        rushing = true;
+        w.step(0);
+        rushing = false;
+        w.step(0);
+      };
+      rush();
+      // (the bare one: itself, its ::before and ::after)
+      expect([styled.get(bare), styled.get(art)]).toEqual([3, 1]);
+      // (the bare one watched, and the scene)
+      expect(observed).toEqual([bare, scene]);
+      rush();
+      rush();
+      expect([styled.get(bare), styled.get(art)]).toEqual([3, 3]);
+      // a mark put in it: styled again at the next rush
+      cb!([{ target: bare }]);
+      rush();
+      expect(styled.get(bare)).toBe(6);
+      // its own place written by the World: no change
+      cb!([{ target: bare, attributeName: 'style' }]);
+      rush();
+      expect(styled.get(bare)).toBe(6);
+      // night falls on the scene: all styled again
+      cb!([{ target: scene, attributeName: 'data-tod' }]);
+      rush();
+      expect(styled.get(bare)).toBe(9);
+      w.useThree(null);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
