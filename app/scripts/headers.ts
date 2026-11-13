@@ -9,9 +9,11 @@
 //   their names carry their content hash), the rooms' and the players' packs (`room/pack/*.pak`, `room/player/*.pak`:
 //   `<name>.<hash>.pak`, more.json and parts.json name them), the island's KTX2 packs (`room/tex/`: named by their
 //   images' hashes, fetched with the encoder's `?e=`), the Basis transcoder (`room/basis/`, fetched with its `?v=`) and
-//   ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or version); everything else keeps Pages'
-//   default (revalidated: `stt/manifest.json`, the models, room/homes' loose KTX2s). One rule a path: Pages joins two
-//   rules' same header with a comma.
+//   ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or version), and the models (`*.glb`, all
+//   under room/: every load carries its manifest's `?v=`, the converter's hash, and the room cache keeps them by URL
+//   for good anyway; world3d/hashed.test checks each file has its manifest's `v`); everything else keeps Pages'
+//   default (revalidated: `stt/manifest.json`, art/, terrain/, room/homes' loose KTX2s). One rule a path: Pages joins
+//   two rules' same header with a comma.
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its
@@ -134,6 +136,7 @@ ${base}/stt/:dir/*
   Cache-Control: public, max-age=31536000, immutable
 ${sttParts}
 ${base}/*.glb
+  Cache-Control: public, max-age=31536000, immutable
   Content-Type: application/x-protobuf
 `;
 writeFileSync(join(root, '_headers'), headers);

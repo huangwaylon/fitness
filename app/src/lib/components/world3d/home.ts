@@ -9,6 +9,7 @@ import { nhLambert, withMaps } from './blank.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { loadTexture } from './ktx2.ts';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
+import { MODELS } from './models3d.ts';
 import { splitSides } from './sides.ts';
 import { lean } from './release.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
@@ -98,7 +99,7 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
   const b = baseUrl(base);
   // the campsite's tent: the island's own model (world3d's), for a picker's preview
   if (style.m === 'campsite') {
-    const g = await quiet(loader.loadAsync(new URL('../world3d/tent.glb', b).href), 'tent.glb', null);
+    const g = await quiet(loader.loadAsync(new URL(`../world3d/tent.glb?v=${MODELS.tent?.v ?? 0}`, b).href), 'tent.glb', null);
     if (!g) return null;
     const root = g.scene.clone(true);
     lambertAll(root, () => null);
