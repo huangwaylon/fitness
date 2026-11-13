@@ -22,7 +22,7 @@
   // Holding nothing, the bar has 取り消す (the last change of mine in this room taken back, ⌘Z too: steps.ts), 全部片付ける
   // (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo) and 保存 (the room's
   // three saved arrangements: 保存, 呼び出す after a confirmation as one batch and one undo, 削除; contract/roomSave.ts).
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { isTap } from '../rooms/gesture.ts';
   import { whenOf } from '#lib/touch.ts';
   import Sheet from '#lib/components/ui/Sheet.svelte';
@@ -81,7 +81,10 @@
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', ...(ceiling.length ? ['ceiling' as const] : []), ...(catches.length ? ['critters' as const] : []), 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor', 'size']);
+  /** 最近 first when it was there as the editor opened; one that appears with this visit's first pick goes last, so no
+   *  tab moves under the finger (家具 stays where it was). */
+  const recentFirst = untrack(() => recent.length > 0);
+  const TABS = $derived<Tab[]>([...(recentFirst ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', ...(ceiling.length ? ['ceiling' as const] : []), ...(catches.length ? ['critters' as const] : []), 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor', 'size', ...(!recentFirst && recent.length ? ['recent' as const] : [])]);
   let tab = $state<Tab>('furniture');
   const list = $derived(
     tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? RUGS

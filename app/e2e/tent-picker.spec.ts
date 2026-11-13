@@ -46,6 +46,11 @@ for (const vp of [{ width: 393, height: 852, name: 'iPhone 15' }, { width: 402, 
     test('every icon in every tab is picked on the first tap, where it is, and the list never jumps', async ({ page }) => {
       await openTent(page);
       await page.locator('[data-tent-edit-open]').tap();
+      // no 最近 yet; once the first pick makes one, it comes last: no tab moves under the finger
+      await expect(page.locator('[data-tab="recent"]')).toHaveCount(0);
+      const tabsAt = () => page.locator('[data-tab]').evaluateAll((els) => els.filter((e) => e.getAttribute('data-tab') !== 'recent').map((e) => Math.round(e.getBoundingClientRect().left)));
+      await page.evaluate(() => document.fonts.ready); // (the tabs' font in first: its swap moves them, not 最近)
+      const tabs0 = await tabsAt();
       for (const tab of ['furniture', 'rugs', 'wall', 'floor']) {
         await page.locator(`[data-tab="${tab}"]`).tap();
         const items = page.locator('[data-tent-items] [data-tent-item]');
@@ -62,6 +67,10 @@ for (const vp of [{ width: 393, height: 852, name: 'iPhone 15' }, { width: 402, 
           await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
           await expect(it, `${tab} #${i}`).toHaveAttribute('aria-pressed', 'true');
           expect(await page.locator('[data-tent-items]').evaluate((g) => [g.scrollLeft, g.scrollTop]), `${tab} #${i} ${code}`).toEqual(before);
+          if (tab === 'furniture' && i === 0) {
+            await expect(page.locator('[data-tab="recent"]')).toHaveCount(1);
+            expect(await tabsAt()).toEqual(tabs0);
+          }
         }
         if (await page.locator('[data-act="cancel"]').count()) await page.locator('[data-act="cancel"]').tap();
       }
