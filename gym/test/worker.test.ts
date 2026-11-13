@@ -222,6 +222,14 @@ describe('/gym/state', () => {
     expect(calls).toEqual({});
   });
 
+  it('takes the token whatever the secret’s trailing newline (a pasted one), and only it', async () => {
+    const pasted = envOf({ GYM_TOKEN: `${TOKEN}\n` });
+    expect((await call('/gym/state', { headers: bearer() }, pasted)).status).toBe(200);
+    expect((await call('/gym/state', { headers: bearer(`${TOKEN} `) }, pasted)).status).toBe(200); // the header's trimmed too
+    expect((await call('/gym/state', { headers: bearer(`${TOKEN}x`) }, pasted)).status).toBe(401);
+    expect((await call('/gym/state', { headers: bearer('') }, envOf({ GYM_TOKEN: '\n' }))).status).toBe(401); // blank: unset
+  });
+
   it('exports and imports the state', async () => {
     expect(await (await call('/gym/state', { headers: bearer() })).json()).toEqual({ version: 3 });
     const put = (body: string) => call('/gym/state', { method: 'PUT', headers: bearer(), body });

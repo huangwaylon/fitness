@@ -2,7 +2,7 @@
 // runner's public status (status.ts) and, for members only, 📋 設定を見る's answer (/gym/config) and the app's changes
 // and 🔎 (POST /gym/act, the taps' code path: actions.ts). MODE (wrangler.toml) 'bot' hands each event to the bot;
 // 'off', the stop switch, answers LINE but ignores its events.
-import { corsOf, roleOfKey } from '../../relay/src/auth.ts';
+import { bearerOf, corsOf, roleOfKey, tokenOk } from '../../relay/src/auth.ts';
 import { ACT_MAX_BYTES, ACT_STATUS, type ActError } from '../../app/src/lib/gym/contract.ts';
 import type { Env } from './env.ts';
 import { signatureOk } from './line.ts';
@@ -27,7 +27,8 @@ export default {
     if (pathname === '/line/webhook' && req.method === 'POST') return webhook(req, env, ctx);
     if (pathname !== '/gym/state') return new Response('not found', { status: 404 });
 
-    if (!(await tokenOk(req.headers.get('Authorization'), env.GYM_TOKEN))) {
+    // `Authorization: Bearer <GYM_TOKEN>`, in constant time, both sides trimmed (a pasted secret's newline)
+    if (!(await tokenOk(bearerOf(req), env.GYM_TOKEN))) {
       return new Response('unauthorized', { status: 401 });
     }
     if (req.method === 'GET') return Response.json(await bot(env).getState());
@@ -71,8 +72,7 @@ async function config(req: Request, env: Env): Promise<Response> {
     return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization', 'Access-Control-Max-Age': '86400' } });
   }
   if (req.method !== 'GET') return refuse(405, 'method', { ...cors, Allow: 'GET' });
-  const auth = req.headers.get('Authorization') ?? '';
-  const who = roleOfKey(auth.startsWith('Bearer ') ? auth.slice(7).trim() : '', { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
   if (who !== 'A' && who !== 'B') return refuse(401, env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
   let answer;
   try {
@@ -112,8 +112,7 @@ async function act(req: Request, env: Env): Promise<Response> {
   }
   const base = { ...cors, 'Access-Control-Expose-Headers': 'X-Request-Id, Retry-After', 'X-Request-Id': rid };
   if (req.method !== 'POST') return refuse('method', { ...base, Allow: 'POST' });
-  const auth = req.headers.get('Authorization') ?? '';
-  const who = roleOfKey(auth.startsWith('Bearer ') ? auth.slice(7).trim() : '', { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
   if (who !== 'A' && who !== 'B') return refuse(env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', base);
   const json = await body(req);
   if (json === TOO_LARGE) return refuse('too_large', base, ` by=${who}`);
@@ -172,14 +171,4 @@ async function webhook(req: Request, env: Env, ctx: ExecutionContext): Promise<R
     for (const event of events) ctx.waitUntil(bot(env).handle(event).catch((e) => console.error('LINE event failed', e)));
   }
   return new Response('ok');
-}
-
-/** The `Authorization: Bearer <GYM_TOKEN>` header, compared in constant time (as SHA-256 digests, so of equal length). */
-async function tokenOk(header: string | null, token: string): Promise<boolean> {
-  if (!token || !header) return false;
-  const digest = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
-  const [a, b] = await Promise.all([digest(header), digest(`Bearer ${token}`)]);
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
-  return diff === 0;
 }
