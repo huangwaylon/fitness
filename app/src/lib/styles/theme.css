@@ -134,7 +134,11 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   --text: var(--c-ink); --text-soft: var(--c-ink-soft); --leaf-text: var(--c-leaf-text); --coral-text: var(--c-coral-text);
   --sky-text: var(--c-sky-text);
 }
-.obj-cream { --ctl: var(--c-card); --ctl-off: var(--c-sunk); --sh-ctl: var(--sh-obj); --sh-ctl-press: var(--sh-obj-press); }
+.obj-cream {
+  --ctl: var(--c-card); --ctl-off: var(--c-sunk); --edge: var(--c-edge); --sh-ctl: var(--sh-obj); --sh-ctl-press: var(--sh-obj-press);
+  /* (the small edge too: :root's resolved night's light edge, 2:1 on cream; the shop counter's かいがら chip and ✕) */
+  --sh-ctl-s: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); --sh-ctl-s-press: inset 0 0 0 1.5px var(--c-edge), 0 0 0 var(--c-edge);
+}
 
 .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
 /* a full-height sheet's NavBar (Sheet top / pop): rows scrolling up fade out under it, not cut at a hard edge */

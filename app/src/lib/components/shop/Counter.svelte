@@ -216,7 +216,7 @@
   }
 </script>
 
-<section class="menu sheet-copy" data-shop-panel={tab}>
+<section class="menu sheet-copy obj-cream" data-shop-panel={tab}>
   <!-- the title bar (タヌキ商店, my かいがら, ✕) and the tabs stay put; the list scrolls under them, the bar at the foot -->
   <header class="pin">
     <NavBar title={t('shop.title')} lead={wallet} {trailing} />
@@ -351,10 +351,8 @@
   .menu {
     position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 80%; display: flex; flex-direction: column;
     background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 -4px 0 var(--c-lip); overflow: hidden;
-    /* the panel's own controls keep the day's look (fixed cream, ink) at every time of day */
-    --text: var(--c-ink); --text-soft: var(--c-ink-soft); --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EADBB8;
-    --leaf-text: var(--c-leaf-text); --focus: var(--c-ink);
-    --sh-ctl: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); --sh-ctl-press: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
+    /* (.obj-cream: the panel's own controls keep the day's look, fixed cream and ink, at every time of day) */
+    --focus: var(--c-ink);
     animation: sheet-in .2s ease-out;
   }
   @keyframes sheet-in { from { translate: 0 24px; opacity: 0; } }

@@ -512,7 +512,7 @@
     </div>
     {#if pick}
       <!-- a piece picked in the room: its name and price, and 買う (or mine already) -->
-      <section class="card sheet-copy" data-shop-card={pick} aria-label={itemName(pick)}>
+      <section class="card sheet-copy obj-cream" data-shop-card={pick} aria-label={itemName(pick)}>
         <img class="ic" src={iconUrl(pick)} alt="" width="48" height="48" decoding="async" />
         <div class="what">
           {@render nm(itemName(pick))}
@@ -595,7 +595,7 @@
     position: absolute; z-index: 3; left: calc(var(--side) + var(--safe-left)); right: calc(var(--side) + var(--safe-right));
     bottom: calc(var(--safe-bottom, 0px) + 72px); display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 12px;
     border-radius: var(--r-card); background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
-    --text: var(--c-ink); --text-soft: var(--c-ink-soft); animation: card-in .16s ease-out;
+    animation: card-in .16s ease-out;
   }
   @keyframes card-in { from { opacity: 0; translate: 0 8px; } }
   .card .ic { width: 48px; height: 48px; object-fit: contain; flex: none; }
