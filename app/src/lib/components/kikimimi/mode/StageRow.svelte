@@ -23,7 +23,7 @@
 <section class="sec" aria-labelledby="kk-place">
   <div class="head">
     <h3 id="kk-place" class="sec-label">{t('kiki.level')}</h3>
-    {#if omakase?.on}<span class="pill" data-kiki-omakase>{t('kiki.omakase')}</span>
+    {#if omakase?.on}<span class="tag" data-kiki-omakase>{t('kiki.omakase')}</span>
     {:else if omakase}<button type="button" class="chip" data-kiki-omakase-reset data-sfx="tick" onclick={omakase.onreset}>{t('kiki.omakase.reset')}</button>{/if}
   </div>
   <div class="places" role="radiogroup" aria-labelledby="kk-place" data-kiki-places>
@@ -51,7 +51,6 @@
 <style>
   .sec { display: grid; gap: 8px; }
   .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
-  .pill { padding: 4px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .places { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
   .place {
