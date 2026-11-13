@@ -58,7 +58,7 @@ describe('fetchKalori', () => {
     await fetchKalori(HREF, KEY);
     await expect(fetchKalori(HREF, KEY)).rejects.toBeInstanceOf(Refused);
     expect(kept.size).toBe(0);
-    await expect(fetchKalori(HREF, KEY)).rejects.toThrow('Failed to fetch');
+    await expect(fetchKalori(HREF, KEY)).rejects.toThrow('unreached');
     await expect(fetchKalori(HREF, KEY)).rejects.not.toBeInstanceOf(Refused);
     await expect(fetchKalori(HREF, KEY)).rejects.toBeInstanceOf(Refused);
     await expect(fetchKalori(HREF, KEY)).rejects.toBeInstanceOf(Refused);
@@ -77,7 +77,7 @@ describe('fetchKalori', () => {
       await p;
       expect(got).toBe('kal:1');
       kept.clear();
-      const q = expect(fetchKalori(HREF, KEY)).rejects.toThrow('no answer');
+      const q = expect(fetchKalori(HREF, KEY)).rejects.toThrow('timeout');
       await vi.advanceTimersByTimeAsync(KALORI_ANSWER_MS);
       await q;
     } finally {

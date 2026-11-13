@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 const LIB = import.meta.dirname;
 const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 /** Leaves that import nothing (their own allow-list is empty): any folder may import them. */
-const FREE = ['math', 'quiet', 'staticUrl', 'packPlan', 'packStore', 'surface', 'touch'];
+const FREE = ['math', 'quiet', 'keyed', 'staticUrl', 'packPlan', 'packStore', 'surface', 'touch'];
 
 const ALLOW: Record<string, string[]> = {
   types: [],
@@ -18,6 +18,8 @@ const ALLOW: Record<string, string[]> = {
   // packStore.ts (files in packs: planned, read on the phone; ききみみ's audio and the players' parts)
   math: [],
   quiet: [],
+  // keyed.ts: a members-only call (the key's header, one failure vocabulary): the chain menus' worker, the mic, the bots
+  keyed: [],
   staticUrl: [],
   packPlan: [],
   packStore: [],

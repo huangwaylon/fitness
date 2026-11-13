@@ -15,14 +15,14 @@ import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
 import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { logUrl } from '#lib/sync/transport.ts';
+import { relayUrl } from '#lib/sync/transport.ts';
 import { week } from '#lib/store/week.svelte.ts';
 
-/** The members' chain menus (Kalori): the relay's `/food/kalori` (beside `/log`) with this phone's key; none in the
+/** The members' chain menus (Kalori): the relay's `/food/kalori` with this phone's key; none in the
  *  demo, for the guest, unpaired or with no relay. */
 function kaloriSource(): KaloriSource | null {
-  const key = getKey(), log = logUrl();
-  return week.demo || week.guest || !key || !log ? null : { href: log.replace(/\/log$/, '/food/kalori'), key };
+  const key = getKey(), href = relayUrl('/food/kalori');
+  return week.demo || week.guest || !key || !href ? null : { href, key };
 }
 
 let dbP: Promise<FoodDb> | null = null;

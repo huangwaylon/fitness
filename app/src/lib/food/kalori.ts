@@ -3,6 +3,7 @@
 // at each catalog load with its ETag (a 304: the kept copy). 401/403 (unpaired, the guest) and 404 (none uploaded):
 // the kept copy dropped, no retry (Refused); a network failure, no answer in KALORI_ANSWER_MS or another status: the
 // kept copy, else an error (the caller retries at its next chance). Run in dataset.worker.ts, or on the page without a worker.
+import { keyed } from '#lib/keyed.ts';
 import type { Dataset } from './types.ts';
 
 const CACHE = 'food-kalori';
@@ -28,17 +29,12 @@ async function fetched(href: string, key: string): Promise<Dataset> {
   const cache = typeof caches === 'undefined' ? null : await caches.open(CACHE).catch(() => null);
   const kept = await cache?.match(href).catch(() => undefined);
   const etag = kept?.headers.get('ETag');
-  let res: Response;
-  const ac = new AbortController();
-  const late = setTimeout(() => ac.abort(new DOMException('no answer', 'TimeoutError')), KALORI_ANSWER_MS);
-  try {
-    res = await fetch(href, { headers: { Authorization: `Bearer ${key}`, ...(etag ? { 'If-None-Match': etag } : {}) }, cache: 'no-store', signal: ac.signal });
-  } catch (e) {
+  const r = await keyed(href, key, { headers: etag ? { 'If-None-Match': etag } : {}, cache: 'no-store' }, KALORI_ANSWER_MS);
+  if (!r.ok && !r.res) {
     if (kept) return (await kept.json()) as Dataset;
-    throw e;
-  } finally {
-    clearTimeout(late);
+    throw new Error(`${href}: ${r.why}`);
   }
+  const res = r.res!;
   if (res.status === 304 && kept) return (await kept.json()) as Dataset;
   if (res.status === 200) {
     // (kept as it streams in, never as a string beside the parsed rows: ~10 MB of text; its ETag (weak, W/"…", once
@@ -50,7 +46,7 @@ async function fetched(href: string, key: string): Promise<Dataset> {
     }
     return d;
   }
-  if (res.status === 401 || res.status === 403 || res.status === 404) {
+  if (!r.ok && r.why === 'refused') {
     await cache?.delete(href).catch(() => false);
     throw new Refused(`${href}: ${res.status}`);
   }

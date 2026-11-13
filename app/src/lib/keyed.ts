@@ -1,0 +1,30 @@
+// A members-only call to the relay or a bot's Worker (docs/backend.md): the phone's key as a Bearer header, the answer
+// sorted into one vocabulary: `unpaired` (no key here, or no endpoint in this build), `refused` (401, 403, 404: not
+// this key's, the guest's, or a Worker without the route), `failed` (another status: the reply kept for the caller to
+// read), `unreached` (fetch threw: offline, a preflight refused), `timeout`, `aborted` (the caller's signal). Never
+// throws. Imports nothing, so a worker (food/dataset.worker.ts) may use it. Used by the chain menus (food/kalori.ts)
+// and the relay recogniser (mic/backends/relay.ts).
+
+type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
+/** The answer (2xx or a 304), or why not; a refused or failed one carries the reply. */
+export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; res?: Response };
+
+/** `init` sent to `url` with `key`; `answerMs`: how long its answer (the headers, never the body's download) is waited
+ *  for (`timeout`). */
+export async function keyed(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number): Promise<Keyed> {
+  if (!key || !url) return { ok: false, why: 'unpaired' };
+  const late = answerMs === undefined ? null : new AbortController();
+  const timer = late && setTimeout(() => late.abort(new DOMException('no answer', 'TimeoutError')), answerMs);
+  const signal = late && init.signal ? AbortSignal.any([init.signal, late.signal]) : (late?.signal ?? init.signal);
+  let res: Response;
+  try {
+    res = await fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${key}` }, ...(signal ? { signal } : {}) });
+  } catch (e) {
+    const name = e instanceof DOMException ? e.name : '';
+    return { ok: false, why: late?.signal.aborted || name === 'TimeoutError' ? 'timeout' : name === 'AbortError' ? 'aborted' : 'unreached' };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+  if (res.ok || res.status === 304) return { ok: true, res };
+  return { ok: false, why: res.status === 401 || res.status === 403 || res.status === 404 ? 'refused' : 'failed', res };
+}
