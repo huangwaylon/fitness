@@ -4,6 +4,18 @@ The platform under every ききみみ game. The player's side is [kikimimi.md](k
 [curriculum.md](curriculum.md); the mic modes, [kikimimi-mic.md](kikimimi-mic.md); the relay's side, docs/backend.md
 ("Live relay", "Events" `listen`, "Service worker"). What isn't built: kikimimi.md "Open items".
 
+## Start here
+
+- **Entry files:** components/kikimimi/KikimimiSheet.svelte (the sheet), kikimimi/round/registry.ts (every game's
+  GameDef), kikimimi/catalog.ts (the modes, groups and places).
+- **Hooks:** `?kikimimi=fast` (short answer windows), `?wire=quiz|guarded|play`, `?date=` (ops/testing.md "URL
+  params"); `KIKI_SHOTS=1` makes the e2e specs write screenshots under /tmp/kikimimi-shots/.
+- **Tests:** `npx vitest run src/lib/kikimimi`; `npm run e2e -- kikimimi --project=chromium` (the mic's:
+  `--project=chromium-mic`).
+- **Content:** edit the YAML (content/units, content/listen) or a TS bank, then `npm run kikimimi:levels`; levels.test
+  fails until the committed output matches. A new listening file: app/content/listen/README.md "Adding a listening
+  file".
+
 ## Files
 
 ```
@@ -53,8 +65,8 @@ and everything after it (chunkQueue.ts) until its lane and chunks are in, then h
 `games/quiz/def.ts`: `opts [lv, timer]` (timer: `TIMERS`' index); `deck(seed, lv)`, a round per item (games/quiz/kinds.ts),
 `grade = points(right)`. スピード はしご is `ladder` (same opts; a `ladder.rung` round per rung, lower reveals `auto`, the
 deck's `score` the climb). `lesson` (opts `[lv, timer, lesson, tier]`, its unit `u`) is a unit's lesson (curriculum.md
-"Lesson decks and stamps"). `games/quiz/session.ts` `QuizRounds` is the quiz sheet's lobby; にがて れんしゅう stays a local
-deck (srs.ts).
+"Lesson decks and stamps"). `games/quiz/session.ts` `QuizRounds` is the quiz sheet's lobby; おさらい stays a local deck
+(srs.ts).
 
 ### The registry
 
@@ -136,7 +148,7 @@ doesn't know. `stampsUnit`: curriculum.md "Playing together".
   `content/` (the sets), gathered in `source.ts` `BANK`: input to the compiler, the audio scripts and the tests, never
   the app ("Loading"). A dialogue's `lines` each have their own `cast`; staging (`scene`, `channel`, `marks`) defaults
   from the tags (bank.ts `channelOf`, staging.ts).
-- **Counts** are bank.test's (levels 1–7, the 30 ladders `sp-<name>`). A set written after its level was offered waits
+- **Counts** are bank.test's (levels 1–7, the ladders `sp-<name>`). A set written after its level was offered waits
   for its voices (content/index.ts `WAITING`): `BANK` takes its items only once all their clips exist.
 - **`deck.ts`**: `deck(seed, lv)` is deterministic over the level's loaded items (the mix, never one type more than twice
   in a row, choices shuffled by the seed), so every phone builds the same deck from `{seed, lv}` and no text goes on the
@@ -202,13 +214,10 @@ file stops the compiler; content.test runs the same checker.
 - **The gate:** whisper-cli hears every clip; a content word wrong or the voice drifting re-rolls with the next seed,
   the best take kept and the rest flagged; a person's re-rolls are pinned (`PINNED`). `app/scripts/tts/report.json` has
   every clip's numbers and flags (curriculum.md "Listening check").
-- **Tone** (a ことば タイル's `tone`, `src/lib/kikimimi/tone.ts`): every voice's one reference is a cheerful greeting, so
-  every line came out at its energy. A soft or firm tile is cloned from its voice's tone reference (cast.json `tones`,
-  `refs/<id>-soft.m4a`, made by `--tone-refs`: the cast reference cloned saying the tone's line); a toned clip's wh- and
-  either/or questions end in "." for the engine (Qwen rose on most "?"); its seed is the best of 4 by a silent score
-  (endings vs sentence type, pace, pitch range, whisper, ECAPA, UTMOS: `tts.py prosody`), kept in `tone-picks.json`
-  with every take's score. Untoned clips keep their hashes. (The 2026-11-12 pilot: wh/alt endings falling 2/11 → 11/11,
-  soft lines' energy −0.1 → −1.3 σ within the voice; excited and dry references moved nothing, VoxCPM2 drifted the voice.)
+- **Tone** (a ことば タイル's `tone`; tone.ts, the audio script's header): a soft or firm tile is cloned from its voice's
+  tone reference (cast.json `tones`, made by `--tone-refs`), its wh- and either/or questions end in "." for the engine,
+  and its seed is the best of 4 by a silent score (`tts.py prosody`), kept in scripts/tts/tone-picks.json. Untoned
+  clips keep their hashes.
 - **音の へんしん's takes:** careful (speech.ts `carefulText`, slowed by `CAREFUL_TEMPO`, through the gate) and fast (the
   natural take sped up, `FAST`; flagged, never re-rolled). `npm run kikimimi:reduce` checks each phrase is heard reduced
   into `reduce.json`.
@@ -286,7 +295,7 @@ A weekend quiz show from the week's misses (`games/taikai/`), Fri 18:00 – Mon 
 
 The placement (`games/check/`): solo, nothing on the wire, dealt a round at a time through `GameDef.next`. Starts at
 かわ (bands: はまべ 1, はまべ 2, かわ, もり, やま, ほし), up a band after 2 right, down after 1 wrong, stops after two
-reversals (≥ 8 items) or at 12. The skills take turns (すうじ, つながる おと, へんじ・ほんね, にた おと, one gist) over voiced
+reversals (≥ 8 items) or at 12. The skills take turns (数字, つながる音, 返事・本音, 似た音, one gist) over voiced
 items (`TAIKAI_IDS`). Placed: the reversals' mean, rounded down; each skill's band gives the chips. Row `{gm: 'check',
 lv: <placed>, u: <a digit a skill, x unsampled>}`. Other games' tiers come from `join.tr`.
 
@@ -355,8 +364,8 @@ basket with what you caught (`basketOf`).
 
 ### すうじ ラッシュ
 
-A café rush of numbers (`games/rush/`). `npm run kikimimi:rush` expands 60 frames by four US voices into s1-rush.yaml and
-s2-rush.yaml (240 customers, a third corrected mid-order); rush.test checks they're as generated.
+A café rush of numbers (`games/rush/`). `npm run kikimimi:rush` expands each place's frames into s0–s4-rush.yaml (about a
+third of the customers corrected mid-order, はまべ fewer); rush.test checks they're as generated.
 - **Deck:** 8 customers, never two of one frame; a card is a `num` Item with `rush: {ask, at, was, b}`.
 - **Tiers:** hard all 4 chips; as authored 3 (never dropping `was` or the twin); easy 3, `was` dropped. Answers open when
   the order ends; `WINDOW` 8 s whatever 答える時間, none with なし.
@@ -367,8 +376,9 @@ s2-rush.yaml (240 customers, a third corrected mid-order); rush.test checks they
 ### しずえの ニュース
 
 The morning bulletin (`games/news/`), on じっくり; きまぐれ picks it 05:00–11:00 (catalog `hours`).
-- **Content:** news-a.yaml and news-b.yaml, stage 4 (やま), 30 evergreen bulletins read by しずえ: two segments of 3–5
-  lines, a `gist` and a `detail` question. The kind `weather` (`news-wx`) holds the tail as whole-sentence clips.
+- **Content:** a file per place (s0, s1, s2, s4-news; やま's news-a and news-b): evergreen bulletins read by しずえ, two
+  segments each, a `gist` and a `detail` question. The kind `weather` (`news-wx`, news-a only, so the weather tail and
+  its umbrella question are やま's alone) holds the tail as whole-sentence clips.
 - **The weather:** from the relay's timeline (`hi`: relay/src/weather.ts `highOf`), read by `newsWxOf` and `tailKeys`
   (weather.ts's header). With no timeline the sign-off follows segment 2 and there's no umbrella question.
 - **Deck:** the seed is the Tokyo day (`Lane.seed`); `bulletinOf` takes the day's season or `any`, `day % n`. Options
@@ -398,8 +408,8 @@ any level but in no mix, so never a quiz level, a place or the tournament's), co
 
 ### まるごと 聞く
 
-The long piece (`games/long/`). Content: content/listen/s4-long-a…d.yaml (`game: long`, stage 5; a and b generated, c
-and d real), compiled as listen parts; their questions and dictation lines also go into the index's `long` (listen.ts
+The long piece (`games/long/`). Content: content/listen/s0–s3-long.yaml and s4-long-a…d.yaml (`game: long`; all generated
+but ほし's c and d, real), compiled as listen parts; their questions and dictation lines also go into the index's `long` (listen.ts
 `longEntries`), so 記録 and おさらい know them.
 - **Options** `[lv, timer, ear, piece]` (`longOpts`): the host's piece (a pick, else def.ts `pieceFor`).
 - **Tiers** (`longTier`, the listening games' `tierAt`): easy shows the answer and the first wrong choice; else all 3.
@@ -429,5 +439,6 @@ transcript with its marks, `cja` and `why`, the clip blind again, then 聞き取
 ## Tests
 
 Pure vitest for every fold, deck and GameDef (session.test with fake time: lost messages, the beacon, the host gone, a
-stale `open`); byte budgets per op at the worst case (live-protocol.test). e2e per game solo and co-op on the default
-wire and the dual stack (`?wire=quiz`), logic tier (kikimimi.md "Tests").
+stale `open`); byte budgets per op at the worst case (live-protocol.test). e2e (logic tier, Chromium): every game solo and co-op,
+two players over `?demo` and `?demo&as=B`, the welcome skipped (e2e/fixtures.ts `kikiFirstRun` keeps it), through the
+hub with e2e/kikimimi-nav.ts; the dual stack (`?wire=quiz`) in kikimimi-coop.spec.

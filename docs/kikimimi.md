@@ -10,8 +10,8 @@ the relay's side, docs/backend.md. The other ききみみ docs:
 - [kikimimi-mic.md](kikimimi-mic.md): the opt-in speaking modes and the microphone's privacy rule.
 - [curriculum.md](curriculum.md): what is taught (stages, scenarios, units) and the content.
 
-The sheet's strings are kanji Japanese; mode names, the HUD pill and the villagers' and しずえ's speech stay spaced
-kana (docs/decisions.md "Copy"). i18n/kikimimi.ja.json and the per-game `kiki-<gm>` catalogs are the wording's source;
+The sheet's strings are kanji Japanese; mode names and the villagers' and しずえ's speech stay spaced kana (the
+menu's pill reads 英語) (docs/decisions.md "Copy"). i18n/kikimimi.ja.json and the per-game `kiki-<gm>` catalogs are the wording's source;
 this doc names a string by its key.
 
 ## Open items
@@ -24,12 +24,11 @@ The one list for ききみみ (the engine, the mic and the curriculum point here
   then the relay recogniser is never 自動. Leftovers: こたえて！'s "is it this one?" band and its voice / tap
   preference; くりかえし's device-local speaking span (checked against a month of placements before it touches みみ
   チェック or the stats); the unit page's ロールプレイ row; the input latency off まねっこ's lag.
-- **Content:** the listening check of the gate's flagged clips (curriculum.md "Listening check"); backdrops, the tone
-  spike and wave 3 (curriculum.md "Backlog"); じっせん as a ladder, and card tiers below はまべ or above やま; placement on
+- **Content:** curriculum.md "Backlog"; じっせん as a ladder, and card tiers below はまべ or above やま; placement on
   accent and phone clips, and a stage-boundary re-check offer.
 - **Not built (UX):** the couple quest's 30 / 90 setting (needs the relay); the 図鑑 tile's new-entry count and a
   "both know it" line; 記録's skill pages and recent games; an hours-heard meter and K.K. songs; villager, week-stamp
-  and tent rewards; an asynchronous "heard it" and a synced shared review; lock-screen playback for stories; segmented
+  and tent rewards; an asynchronous "heard it" and a synced shared review; segmented
   talks with a comprehension map; a game for ふたりで ジグソー (`half` in the call schema is ready); intonation contours
   over the text; per-lever abilities.
 - **Questions:** keep the pill's sub-label? Gulliver and Blathers as hosts of ジョニーの たび / フータの おはなし, or island
@@ -77,7 +76,7 @@ The quiz, ひとこと クイズ, is the base every other game reuses (kikimimi-
 
 ## Japanese help
 
-Each optional, on every item and game (caps: curriculum.md "Audio and script rules"): `ctx`, the situation before the
+Each optional, on every item and game (caps: app/content/listen/README.md "Every item"): `ctx`, the situation before the
 clip; `cja`, each choice in Japanese; `why`, the 解説 box; `note`, the trap. A missing field is hidden (frame/Why.svelte,
 ChoiceGrid `ja`); bank.ts `helpProblems` checks them, and past draft they're required in the listening files
 (app/content/listen/README.md). 設定's 日本語訳 (いつも / 間違えたら / 見ない) hides the Japanese on right answers or always.
@@ -99,19 +98,12 @@ wire and the `listen` row keep plain `lv` (1–8). In the quiz a place this buil
 (`aria-disabled`). **A lane's game offers every place** (catalog.ts `PLACE_LVS`, news included): one with no content
 yet plays the nearest place's (a tie: the lower; `contentPlaceOf`), everyone a tier harder if that place is below,
 easier if above, and the row says so in one line (`nearOf`, `kiki.place.near.up|down`: 「ほしの問題は準備中です。やまの
-問題を難しめに出します。」; since 2026-11-13 every lane has content at all five places, so no place borrows today: the
-fallback stays for a new lane or a retired file). The wire keeps the picked `lv`. おまかせ stays on a place with content (registry.ts `levelFor`).
+問題を難しめに出します。」; every lane has content at all five places today, so the fallback is for a new lane or a
+retired file). The wire keeps the picked `lv`. おまかせ stays on a place with content (registry.ts `levelFor`).
 
-What a place changes on top of the content (authored per place: decoys, memo rows; the tier by my ear against the
-deck's place, ほし as やま's; kikimimi-engine.md "The listening games"):
+On top of the content, my ear against the deck's place sets each game's tier (easy below, hard above): each game's
+"Tiers" in kikimimi-engine.md "The games".
 
-| Game | easy (below the place, or a place with none above its content) | as authored | hard (above, or below its content) |
-|---|---|---|---|
-| ことば タイル | the first decoy, my first slot placed | the file's 1–4 decoys | decoys topped up to 3–4 |
-| ようじ でんわ | 2 memo rows | 3 | 4, plus a sound-trap chip |
-| すうじ ラッシュ | 3 chips, `was` dropped | 3 | all 4 |
-| たちぎき | the third claim placed | all three to place | as authored |
-| しずえの ニュース, まるごと 聞く | the answer and one wrong choice | all | all |
 **おまかせ**, the place row's default (catalog.ts `omakaseLv`): the latest みみ チェック's level, else the comfortable
 level (stages.ts `stageAt`), else はまべ 2. A tap overrides it per mode; おまかせに戻す clears it.
 
@@ -182,14 +174,14 @@ speech"; the deal and audio, kikimimi-engine.md "音の へんしん".
 ## まるごと 聞く
 
 C1 listening, everyday and travel (curriculum.md "Long listening"; the engine, kikimimi-engine.md "まるごと 聞く"). At
-ほし (the other places play ほし's easier till theirs are written), on じっくり (never きまぐれ); about 6 minutes, solo or co-op.
+every place (s0–s4-long), on じっくり (never きまぐれ); about 6 minutes, solo or co-op.
 - **A game:** one 2–5 minute piece played whole (its speakers on the stage, `ctx` under it; nothing to answer while it
   plays), then 4–5 questions with no clip (the point, the implied meaning, the feeling, the next step), 3 English choices
   each (easy: two). 通しでもう一度 replays it all.
 - **Reveal:** ○ / ×, each choice's Japanese, 解説, and the answering line with ▶︎. **Results:** the review, the transcript
   (every line tappable, each question's mark on its line), the credit of a real recording, then dictation of 1–2 lines
   near my misses.
-- **The pieces:** 5 real recordings and 5 generated scenes. Today's: the first not heard, then one I missed (under 75 %)
+- **The pieces:** generated scenes at every place, plus real recordings at ほし. Today's: the first not heard, then one I missed (under 75 %)
   a week ago or more, else the least recent; the mode page picks another.
 - Each question and dictation line is an item (`<piece>-q1`, `<piece>-k12`, outside every deck); a miss comes back in
   おさらい through a sibling. 設定's 音声の出典 lists each real recording's credit and licence.
@@ -245,7 +237,7 @@ theirs from round/registry.ts):
 |---|---|
 | さくっと（3分でできる） | ひとこと クイズ, スピード はしご, おさらい, ことば タイル, すうじ ラッシュ, 音の へんしん |
 | 街で・電話で（場面で聞く） | アナウンス, ようじ でんわ, たちぎき |
-| じっくり（長めに聞く） | しずえの ニュース, まるごと 聞く (ほし) |
+| じっくり（長めに聞く） | しずえの ニュース, まるごと 聞く |
 | 寝る前に（点数なし） | おやすみ ものがたり |
 | 声に出す（マイクを使う） | the mic modes, only while the mic is on (kikimimi-mic.md "Where they show") |
 | みんなで picker only | ふたりで ロールプレイ |
@@ -337,19 +329,15 @@ the trophies, the couple line (times played together and minutes, never a level)
 
 ### 図鑑
 
-`zukan/KikiZukan.svelte` (from the hub, the path and a unit page), four tabs (`kiki.zukan.tab.*`), each its own chunk,
-over `zukan/data.svelte.ts`; owner-only. Pure folds: `kikimimi/zukan.ts`, `friendship.ts`, week.ts `weekStamps`.
-- **言葉** (`Words`): every unit's and serial's key phrases. Caught (srs.ts `phrasesOf`): the phrase, its Japanese and ★
-  (`phraseBook`); heard: a silhouette with a count; never: ？. The entry: the trap, the scene, who said it, ▶︎ a clip.
-- **声** (`Voices`): the cast's voices, each with the items heard and a bar to caught; a tap plays a sample.
-- **仲間** (`Friends`): the villagers heard, closest first, five hearts ("なかよし"); a new level is announced once.
-- **スタンプ** (`Stamps`): unit stamps, letters, week stamps, 1回目で正解 badges, trophies, bedtime chapters finished.
+`zukan/KikiZukan.svelte` (its header: where it opens), four tabs (`kiki.zukan.tab.*`), owner-only; pure folds
+`kikimimi/zukan.ts`, `friendship.ts`, week.ts `weekStamps`. **言葉**: every unit's and serial's key phrases, caught
+(srs.ts `phrasesOf`) with its Japanese and ★, heard a silhouette, never ？. **声**: the cast's voices. **仲間**: the
+villagers heard, five hearts ("なかよし"). **スタンプ**: every stamp, letter, badge, trophy and chapter finished.
 
 ### 設定
 
-`settings/KikiSettings.svelte`: 聞こえる？ (the sound check); 音を1台にまとめる as a new lobby's default (`DEVICE.kikiSame`);
-日本語訳 (`DEVICE.kikiJa`); 今週の目標 3 / 5 / 7 days (`DEVICE.kikiWeekGoal`, default 3); みみ チェックをもう一度; 音声の出典
-(settings/LongCredits.svelte); the mic's switch and probe (kikimimi-mic.md "Where they show").
+`settings/KikiSettings.svelte` (its header has the rows, each kept on the phone: `DEVICE.kiki*`): the sound check, a
+lobby's default, 日本語訳, 今週の目標, みみ チェックをもう一度, 音声の出典, the mic (kikimimi-mic.md "Where they show").
 
 ### First run
 
@@ -485,7 +473,5 @@ Speaking is opt-in and private: [kikimimi-mic.md](kikimimi-mic.md) "The privacy 
 
 ## Tests
 
-The engine's vitest: kikimimi-engine.md "Tests"; the choice tells, curriculum.md "Choice tells". e2e (logic tier,
-Chromium; specs pass the welcome with `e2e/fixtures.ts` `kikiFirstRun` and go through the hub with `e2e/kikimimi-nav.ts`):
-two players over `?demo` and `?demo&as=B`, every game solo and co-op; `?kikimimi=fast` shortens the timed windows;
-`KIKI_SHOTS=1` writes screenshots under /tmp/kikimimi-shots/. Rendering is judged on the iOS Simulator and the phones.
+kikimimi-engine.md "Start here" and "Tests"; the choice tells, curriculum.md "Choice tells". Rendering is judged on
+the iOS Simulator and the phones.

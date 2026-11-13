@@ -22,7 +22,7 @@ unit: s2-call-a
 game: call                       # the GameDef that shows it: tile | call | tachi | rush | news | quiz | ladder | long | serial
 stage: 3                         # 1-5 = S0-S4
 track: life                      # life | people | work | broadcast
-seeds: [3, 10, 14, 25, 30]       # curriculum.md "The scenario bank" (1-66); every item's tags.seed is one of these
+seeds: [3, 10, 14, 25, 30]       # curriculum.md "The scenario bank" (1-70); every item's tags.seed is one of these
 features: { primary: self-repair, review: numbers }
 cando: "でんわで 番号や 日時の 訂正を ききとって メモできる"
 status: draft                    # draft | voiced | listened (the games show listened only)
@@ -30,7 +30,7 @@ cast: { me: us-m3 }              # optional: speaker -> cast voice for this unit
 items: [...]
 ```
 
-**Voices.** A villager speaks with their bank4.ts `CAST` voice unless the unit's `cast` says otherwise. The voice must
+**Voices.** A villager speaks with their cast.ts `CAST` voice unless the unit's `cast` says otherwise. The voice must
 be one of speech.ts `CAST_IDS` and match the villager's gender. Speakers in one item must have different voices, or
 the listener can't tell them apart. Every voice here is American (`us-*`), and so is the English: the US-only lint
 (listen.ts `notUs`) is an error over `en`, the lines and the plan choices (never `tts`).
@@ -39,7 +39,7 @@ the listener can't tell them apart. Every voice here is American (`us-*`), and s
 
 | field | |
 |---|---|
-| `kind` | `tile`, `call`, `tachi`, `rush`, `news` or `weather` (the quiz kinds stay in bank.ts) |
+| `kind` | `tile`, `call`, `tachi`, `rush`, `news`, `weather` or `long` (the quiz kinds stay in bank.ts) |
 | `id` | see above |
 | `note` | the trap, in Japanese, ≤ 40 字 (counted with `[...s].length`, spaces included). No grammar terms |
 | `tags` | `{seed, register, pragmatic, conditions?, features}`, from the vocabulary below |
@@ -59,8 +59,9 @@ The help (bank.ts `helpProblems`) is checked wherever it is, and required once a
 | `tachi` | each round's `ctx` and `why` (`cja` optional on the plan round) |
 | `rush` | `ctx`, `why`, `cja` |
 | `news` | `ctx`; the gist's and the detail's `cja` and `why`; each sky's umbrella `why` |
+| `long` | `ctx`; each question's `cja` and `why` |
 
-## Text rules (curriculum.md "Audio and script rules")
+## Text rules (curriculum.md "Audio and script rules": the rest)
 
 - `en` is what the reveal shows, in standard American spelling (neighbor, realize). Digits
   are fine in `en` (`¥3,000`, `090-2816-4473`, `the 14th`).
@@ -107,11 +108,8 @@ voice says the written words and that already sounds American.
 - **Caps:** at most 20 % of a stage's tiles say a reduction at かわ, 25 % at もり, 30 % at やま (the trio, or a derived
   clip's lemme, hafta, -cha…); chains never.
 - `tone` (optional, an own clip's only): how it's said, from `ctx`, register and pragmatic. `soft` (tired, sorry,
-  hesitant, a gentle no), `firm` (staff stating a rule, venting, a little annoyed), else `neutral`. A toned clip is
-  cloned from its voice's soft or firm reference (scripts/tts/cast.json `tones`; neutral is the voice's own), its wh- and
-  either/or questions end in "." for the engine only, and the best of 4 seeds by the silent score is kept
-  (scripts/tts/tone-picks.json; src/lib/kikimimi/tone.ts). Excited and dry have no reference: the pilot's moved nothing.
-  No tone: spoken as before (adding one re-voices the clip).
+  hesitant, a gentle no), `firm` (staff stating a rule, venting, a little annoyed), else `neutral`; how it's voiced:
+  docs/kikimimi-engine.md "Generation". Adding one re-voices the clip.
 - **`revoice: true`:** its words changed since its clip was spoken. The compiler leaves it out of the part (never dealt,
   a unit's おと falls back to its quiz) until it's re-voiced (`npm run audio:kikimimi -- --only '^tile-<id>$'`) and the
   line deleted; content.test fails while another tile's clip says other words than its `tts ?? en`.
@@ -172,7 +170,7 @@ for a tile: keep it or retire it.
 
 ## `rush` (すうじ ラッシュ)
 
-`s1-rush.yaml` and `s2-rush.yaml` are written by `scripts/kikimimi-rush.ts` (`npm run kikimimi:rush`). Edit the frames
+`s0-rush.yaml` … `s4-rush.yaml` are written by `scripts/kikimimi-rush.ts` (`npm run kikimimi:rush`). Edit the frames
 there, never the files. `--check` fails when a file is stale, and `--clips` lists the clips to voice.
 
 ```yaml
@@ -214,6 +212,39 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
   today's). `trap` is the easy tier's other choice.
 - `weather` (one item in all, news-a's): `sky` (8, each with the umbrella question's `why`), `high` (`en`, `one`, `ja`
   with `{n}`), `alerts` (6), `end`. The compiler makes its 56 sentences (games/news/weather.ts says which are read).
+
+## `long` (まるごと 聞く)
+
+```yaml
+- kind: long
+  id: lg-hama-hotel-morning        # ≤ 24 characters (its rows add -q5, -k12)
+  name: 朝の フロントで               # the title, ≤ 20 字
+  source: tts                      # tts (villagers speak it) | real (cut from a recording)
+  lines:
+    - { who: maple, at: 0, en: "...", ja: "..." }                # real: { who: a, t: [0, 6.2], en, ja }
+  questions:                       # 4-5, the gist first, 3 types at least
+    - { type: gist, ask: "どんな やり取り？", line: 12, choices: [3 English], answer: 0, cja: [...], why: "..." }
+  dict:                            # 2-4 dictation lines
+    - { line: 6, words: "Can I have your", feature: weak-form }
+```
+
+- `ctx`, `note`, `tags` as every item. The bounds (lines, words, seconds) and each field's rule: listen.ts
+  `checkLong`'s header. `type`: `gist`, `mean`, `attitude` or `next`; `line` the line that answers it.
+- **Generated** (`tts`): villagers with distinct US voices, `at` as たちぎき's. **Real**: `speakers`
+  (`a: { name, ja, g: f|m }`), each line's `t` cut end to end, and `credit` (`npm run kikimimi:real` cuts them).
+
+## Adding a listening file
+
+1. Write `<unit>.yaml` at `status: draft`; `npm run kikimimi:levels` until it compiles, and
+   `npm run kikimimi:tells -- <file>` for the choices. Then the reviews ("Checks"), before any voicing.
+2. On the Mac: `npm run audio:kikimimi -- --only '<its ids>'` (it writes the packs and compiles the levels at its end),
+   `npm run audio:kikimimi-words`, and for a `long` file `npm run kikimimi:real -- --align --only '<its ids>'`. Then
+   `status: voiced`.
+3. The listening check (curriculum.md "Listening check"), then `status: listened` and `npm run kikimimi:levels`: only
+   now do the games deal it (a game's e2e spec pins its place: re-check it).
+4. Commit together: the YAML, src/lib/kikimimi/levels/, clips.json, words.json, packs.json (and align.json),
+   static/audio/listen/'s new packs, scripts/kikimimi-clips.src.json, scripts/tts/report.json (and tone-picks.json).
+   bank.test caps the games' packs at 160 MiB: check the headroom before a big batch.
 
 ## Stories (`story/`, おやすみ ものがたり, curriculum.md "Modes")
 
@@ -264,11 +295,8 @@ A new value goes into listen.ts's lists and here, in the same commit.
 
 ## Checks
 
-listen.ts `checkListen` (the compiler and content.test) checks the header; each kind's required fields; speakers,
-voices and cast ids; `tts` without digits; notes ≤ 40 字; tiles that rebuild `en` and are all heard, plain tile `tts`,
-sound decoys, a tile's plain copy and the stage caps ("tile"); marks in `en`; `half` and `at`; ids unique across
-files, banks, units and rungs; a derived tile's `clip`; the Japanese help (above); the US-only lint; every answer in
-range.
+listen.ts `checkListen` (the compiler and content.test) checks every rule above that a machine can: the fields,
+voices, `tts`, the tile rules and caps, ids unique across files, banks, units and rungs, the help, the US-only lint.
 
 It doesn't check whether the English is natural, whether a decoy is fair, or whether a claim really belongs to one
 speaker. Those need an English reviewer and a Japanese reviewer, then the listening check once the items are voiced

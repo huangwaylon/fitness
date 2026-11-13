@@ -25,10 +25,10 @@ the relay's Workers AI whisper are the alternatives. The probe measures which wo
 device proves only the logic).
 
 設定's マイク診断（テスト） opens `mic/MicProbe.svelte` (lazy; re-run after an iOS update): one screen a step, about 6
-minutes. The steps (lib/mic/probe/steps.ts, each header says what it measures): 環境, マイクの許可, 再生と録音 (bleed and
-round trip per route: none, wired, AirPods), Whisper (download, load, latency, WER on 3 pinned sentences, then
-spoken), Safari の音声認識, サーバーで文字起こし (disclosed), 結果 (「結果を送信」). WER is computed on the phone; heard text
-stays on screen. The events `mic.env`, `mic.perm`, `mic.duplex`, `mic.stt` are numbers and closed sets
+minutes. The steps (lib/mic/probe/steps.ts, each header says what it measures): この端末でできること, マイクの許可,
+再生と録音 (bleed and round trip per route: none, wired, AirPods), このiPhoneで文字起こし（Whisper） (download, load,
+latency, WER on 3 pinned sentences, then spoken), Safariの音声認識, サーバーで文字起こし (disclosed), 結果
+(「結果を送信」). WER is computed on the phone; heard text stays on screen. The events `mic.env`, `mic.perm`, `mic.duplex`, `mic.stt` are numbers and closed sets
 (contract/log.ts): `npm run logs -- --event mic. --since 1d --json`.
 
 **The decision rule**, set from both phones' runs:
@@ -185,11 +185,8 @@ model and ok. 300 calls per role a UTC day (`STT_DAY_MAX`, then 429); `STT_OFF =
 
 ### A refused mic
 
-- **WebKit (main, `UserMediaPermissionRequestManagerProxy.cpp`):** a refused page's later getUserMedia made outside a
-  tap is refused at once, unasked, until the page's document changes (a reload); one inside a tap asks again.
-  `permissions.query` says `prompt` for a stored refusal unless this page was refused already. Safari's recogniser
-  needs its own speech permission too (`service-not-allowed`). Not documented by Apple: where a Home Screen app keeps
-  its decision (bug 327237 reports it apart from Safari's per-site setting) or what resets it besides a relaunch.
+- **WebKit** refuses a refused page's later asks outside a tap, unasked, until a reload (the evidence: lib/mic/retry.ts's
+  header).
 - So every ask is getUserMedia first thing in the tap (no await before it: MicOptIn, MicButton, the probe), and nothing
   keeps a refusal. Refused, 設定's switch, its check and the probe's step offer 「もう一度試す」: lib/mic/retry.ts notes
   the step in sessionStorage (`DEVICE.micRetry`, 2 min) and reloads; KikimimiHost opens the sheet back on 設定 (the

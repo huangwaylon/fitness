@@ -23,14 +23,14 @@ refusal, sarcasm, hedging, a joke), never an obscure noun.
    real ("The island frame").
 2. **Listen first, read after:** no text before or during the clip (`ctx` sets the situation); transcript, marks and
    Japanese at the reveal.
-3. **The first listen is the measure** (いっぱつ); replays are free but grade "hard" for spaced repetition.
+3. **The first listen is the measure** (「1回目で正解」); replays are free but grade "hard" for spaced repetition.
 4. **Conditions, not vocabulary:** tagged levers, one turned at a time, so a miss is diagnosable.
 5. **Many talkers:** a contrast or phrase counts as covered once heard from ≥ 4 voices; many American voices (ages,
    timbres, a light Southern and New York voice), not many accents.
-6. **Co-op over ranking**; ranking is opt-in (しょうぶ).
+6. **Co-op over ranking**; ranking is opt-in (勝負).
 7. **Results private, summaries shared** (kikimimi.md "Storage").
 8. **Teach the trap, not grammar:** one Japanese line on why it fooled you (`note`, ≤ 40 字), `why` for the full
-   かいせつ; no grammar terms.
+   解説; no grammar terms.
 9. **Short, never homework:** ≤ 3 min a game, tap only, no streaks; the one keyboard is 音の へんしん's dictation, tiles
    beside it.
 10. **Measure before scaling:** a stage grows only at 75–85 % first-listen success in real play.
@@ -108,7 +108,7 @@ and +10 dB (heavy) (kikimimi-engine.md "Conditions"); +5 dB waits for S3 content
 | Rate | careful (S0) | natural | brisk | fast casual |
 | Reduction | citation | contractions | weak forms + flaps | chains (whaddaya, dunno) |
 | Speakers | 1 | 2, turn by turn | 2 with overlap | 3 with interruptions |
-| Noise (SNR) | clean | +20 dB | +10 dB | +5 dB |
+| Noise (SNR) | clean | +15 dB | +10 dB | +5 dB |
 | Channel | studio | room | phone/voicemail | PA reverb, video dropouts |
 | Accent | General American, one voice | many US voices | light US regional | UK/AU exposure (S3–S4, tagged) |
 | Disfluency | none | fillers | false starts | self-correction that changes the answer |
@@ -197,6 +197,10 @@ appears; the levers re-cut it harder. R / C / P = register / conditions / pragma
 | 64 | フータ's lecture: why fossils form, with signposting | academic / hall / structure | S4 |
 | 65 | Debate: remote work, interruptions | broadcast / overlap / stance | S4 |
 | 66 | ジョニー's travel serial: a chapter with a cliffhanger | narrative / multi-voice / prediction | S2 |
+| 67 | Flea market: a chair → a haggle, a sales trick | casual / outdoor, 3 speakers / humour | S4 |
+| 68 | Park rangers answer visitors' questions (real) | colleagues / unscripted / humour | S4 |
+| 69 | A podcast's guests: a question game, an interview (real) | colleagues / unscripted, overlap / humour | S4 |
+| 70 | Life stories: a school memory, a road trip (real, regional US) | friend, broadcast / unscripted / attitude | S4 |
 
 
 ### Personality and register
@@ -216,13 +220,13 @@ long-form above.
 | アナウンス (level 5) | channel and noise tolerance: PA, voicemail, IVR menus | |
 | スピード はしご | rate tolerance, reductions | rungs climbed in order on the first listen; stops at the first miss |
 | 音の へんしん | decoding connected speech (reductions, flaps, linking, elision, weak forms) | daily, 8 phrases: the full form, then dictation ("Connected speech") |
-| ことば タイル | segmentation of natural-speed speech: weak forms, contractions, linking, numbers, stress | plain sentences, reductions capped (20/25/30 % by stage), gonna/wanna/gotta the only respelled tiles; decoys are sound traps; tiles only after the first listen |
+| ことば タイル | segmentation of natural-speed speech: weak forms, contractions, linking, numbers, stress | plain sentences, sound-trap decoys, tiles only after the first listen (content/listen/README.md "tile") |
 | たちぎき | tracking 3 speakers, attitude, mind change, inference through overlap | the only three-speaker training |
 | ようじ でんわ | multi-detail listening, self-repair, phone audio | chips, not typing; the units' チェック |
 | すうじ ラッシュ | numbers at speed, self-repair, teen/ty, yen and dollars | template-made; a miss never ends the run |
 | しずえの ニュース | news register, signposting, extended listening; the bridge to ほし | real weather as the hook; evergreen bulletins |
 | しゅうまつ たいかい | retrieval, spacing, interleaving, hypercorrection (the wager) | levelled per player so either can win |
-| まるごと 聞く | C1: 2–5 min conversations heard whole | ほし; "Long listening" |
+| まるごと 聞く | 2–5 min conversations heard whole | every place; "Long listening" |
 | おやすみ ものがたり | extensive listening at 95 %+ comprehension | no score; serials st-johnny, st-cafe, st-tokyo |
 | よみきき サンド | listen → read → listen (metacognition) | no new content; blind first play |
 | おさらい, みみ チェック | spaced review of misses; placement | |
@@ -244,18 +248,18 @@ character in generated backdrops (kikimimi.md "Visuals").
 - **🐢** is an atempo stretch at 0.75, L1–L2 only (it kept UTMOS); from L3 a stretch would undo the reductions, so
   support is replay and the transcript.
 
+The text rules (`en`, `tts`, numbers, punctuation, the Japanese fields) are app/content/listen/README.md's "Text
+rules" and "Every item"; the quiz's `tts` may also respell (gonna, lemme, 'cause, d'you), never so it voices the
+distractor.
+
 | Rule | Detail |
 |---|---|
-| `en` and `tts` | `en` is standard spelling (shown); `tts` as said where the clip needs it (the quiz: gonna, lemme, 'cause, d'you). ことば タイル's `tts` is `en` but for digits and engine fixes; gonna/wanna/gotta are spelled in `en` (content/listen/README.md "tile"). Never a respelling that voices the distractor. |
-| Numbers as spoken | "six forty", "fifteen hundred yen", "the thirteenth", "oh-nine-oh"; no digits in `tts` (checked). |
-| Punctuation is prosody | comma = tone-unit break; "—" a break or self-repair; "…" trailing off. |
 | Disfluency on purpose | fillers, false starts, self-corrections, written in. |
 | Rate by style | in the text, not stretching (except スピード はしご's rungs). |
 | Multi-speaker | one clip per line; overlap on the audio clock (a negative `at`), never baked. |
 | Conditions | mixed offline from the clean master (kikimimi-engine.md "Conditions"). |
 | Checks | the gate (kikimimi-engine.md "Generation"); reductions aren't machine-checked: the listening check covers them. |
 | Tags | `features[]`, `register`, `conditions[]`, `pragmatic`, `seed` on every item from level 4: they drive the levers, review and skills. |
-| Japanese | `ja`, `note` (≤ 40 字), `ctx` (≤ 30 字, never the answer), `cja` (one per choice), `why` (≤ 90 字, names the trap). |
 | Licence | all scripts original: no copyrighted lyrics, broadcasts or news audio. |
 
 ## Placement and spaced repetition
@@ -302,7 +306,7 @@ asking for clarification, ending a conversation) open each stage.
   **じっせん** (faster, noisier, other voices).
 - **Skipping:** 飛ばしてチェック goes straight to the check. A stamped unit returns once, ~30 days on, as a solo
   6-question recheck.
-- **Quick modes stay:** ひとこと クイズ, はしご and アナウンス draw from the whole stage; they count toward ずかん phrases and
+- **Quick modes stay:** ひとこと クイズ, はしご and アナウンス draw from the whole stage; they count toward 図鑑 phrases and
   the menu, never a unit's lesson dots.
 
 ### Playing together
@@ -413,36 +417,33 @@ lessons:
 
 ### What's written
 
-- **The level banks:** kikimimi-engine.md "Content" (the counts).
-- **21 units** (かわ 11, もり 10), all `voiced`; the plan (units.ts `PLANNED`): はまべ 3, かわ 10, もり 14, やま 14, ほし 10.
-- **29 listening files**, all `listened`: tiles (258, 131 to re-voice), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの
-  ニュース (30 bulletins), まるごと 聞く (10 pieces).
-- **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
-- **3 bedtime serials** (st-johnny, st-cafe, st-tokyo), recycling the units' phrases.
-- **Audio packs:** kikimimi-engine.md "Packs".
+Counts: the tests' (bank.test, content.test, units.test, henshin.test).
+- **The level banks** (kikimimi-engine.md "Content"), **the units** (かわ and もり, "The 21 units"; the plan: units.ts
+  `PLANNED`), **the listening files** (every lane at all five places), **音の へんしん** ("Connected speech") and **3
+  bedtime serials** (st-johnny, st-cafe, st-tokyo, recycling the units' phrases). Audio packs: kikimimi-engine.md
+  "Packs".
 - Every level and unit item has `ctx`, `cja` and `why` (音の へんしん's: `ctx`, `cja`, `note`).
 - **Outside units:** the はまべ island lines, the アナウンス pack, ほし's news, lectures and talks, the number templates.
 
 ### The 21 units
 
-Each unit's name, domain, host, scene, sound and recipe are in its file (`app/content/units/<id>.yaml`): かわ 11 (7 on
-recipe 2), もり 10 (7 on recipe 2); coverage かわ 7 of 9 domains, もり 9 of 9. A unit naming an unpainted backdrop
+Each unit's name, domain, host, scene, sound and recipe are in its file (`app/content/units/<id>.yaml`), at かわ and もり
+(coverage: "The spine"). A unit naming an unpainted backdrop
 ("Backlog") shows the domain's tint.
 
 ### Authoring pipeline
 
 1. **Seed sheet:** can-do, phrases, sound, host, scene, scenario seeds; for a game, the kind and tier sets.
 2. **Draft** (one author per file): `en`; `tts` only where the reduction matters; `ja`, `note`, `ctx`, `cja`, `why`;
-   tags. A tile's `why` names each decoy's trap; a call has `cja` per chip and `why` per memo round; たちぎき `ctx` and
-   `why` per round. Rush comes from its frames (`npm run kikimimi:rush`), derived tiles from `npm run kikimimi:tiles`,
-   then a person.
+   tags (each kind's required help: content/listen/README.md). Rush comes from its frames (`npm run kikimimi:rush`),
+   derived tiles from `npm run kikimimi:tiles`, then a person.
 3. **Machine gates** (CI; errors past draft): schema and ids; `helpProblems`; the US-only lint; digit-free `tts`; the
    choice tells; the phrase, recycling and coverage rules; near-duplicates; the chunk budgets.
 4. **Human review before voicing:** natural for an American friend or clerk; one clearly best answer; the second
    distractor the real trap; `ctx` without the answer; natural Japanese (kana in character speech, kanji in sheet
    copy). Findings go into the files or "Backlog", never a review report in docs/.
-5. **Voicing:** `npm run audio:kikimimi` (gate and re-rolls), conditions mixed after the gate, then
-   `npm run kikimimi:packs`.
+5. **Voicing:** `npm run audio:kikimimi` (the gate, re-rolls, conditions, then the packs and levels; a listening
+   file's steps: content/listen/README.md "Adding a listening file").
 6. **Listening check** ("Listening check"); `status` goes `draft` → `voiced` → `listened`, by hand.
 7. **Tuning:** a week of play; grow a stage only at 75–85 % first-listen success.
 
@@ -460,10 +461,12 @@ comes from the deck's seeded shuffle.
 
 The B2 → C1 step is following extended, unscripted talk and what's meant rather than said (CEFR CV 2020); まるごと 聞く
 (kikimimi.md) gives one piece a day, ~6 min with its questions and dictation. Everyday and travel, American first.
-- **Real recordings** (s4-long-c, -d): 5 unscripted American excerpts, 2.7–4.7 min, only PD, CC BY, CC BY-SA or CC
+- **At every place:** s0–s3-long are generated scenes graded to their place (2 min at はまべ, 3 at やま); ほし has the
+  generated s4-long-a, -b and the real recordings.
+- **Real recordings** (s4-long-c, -d): unscripted American excerpts, only PD, CC BY, CC BY-SA or CC
   BY-NC-SA (long.test), each with its `credit` (source, sha256, span, licence, credit line). Downloads are data (their
   own directory, never run). Lines cut at sentence ends (≤ 16 s).
-- **Generated scenes** (s4-long-a, -b): 5 of 2.4–3.3 min, 3 villagers each: polite refusals, sarcasm, a sales trick;
+- **ほし's generated scenes** (s4-long-a, -b): 3 villagers each: polite refusals, sarcasm, a sales trick;
   interruptions and overlap, reductions in `tts`.
 - **Questions:** 4–5 a piece (gist, implied meaning, attitude, next step), held to "Choice tells". **Dictation:** 2–4
   lines a piece on connected speech. **Alignment:** a piece's weighted WER ≤ 20 % (align.ts).
@@ -472,12 +475,12 @@ The B2 → C1 step is following extended, unscripted talk and what's meant rathe
 
 For a strong listener the biggest gain is decoding American connected speech, checked by dictation, from many voices
 (Field 2008; HVPT, Logan et al. 1991). 音の へんしん drills it daily (kikimimi.md "音の へんしん").
-- **The phenomena,** in teaching order (henshin.ts `PHENOMENA`, each a feature under つながる おと): gonna, wanna, gotta /
+- **The phenomena,** in teaching order (henshin.ts `PHENOMENA`, each a feature under つながる音): gonna, wanna, gotta /
   hafta, contractions (I'll, we've, should've), weak forms (fer, 'em, 'n), the flap (a lodda), linking (pi-ki-tup), t /
   d + you (didja, gotcha), lemme / gimme, kinda / outta, dunno, elided t / d (nex' week), the stopped t (tha' one), the
   dropped h (tell 'im), chains (whaddaya, gonna hafta).
-- **The phrases** (content/henshin.ts, level 8; fields in its header): 12 a phenomenon, 180 in all, everyday and
-  travel, each phenomenon in all 12 US voices. **Takes:** natural, careful (`<id>-c`, 0.8) and fast (`<id>-f`, 1.25×).
+- **The phrases** (content/henshin.ts, level 8; fields in its header): everyday and travel, each phenomenon in all
+  12 US voices. **Takes:** natural, careful (`<id>-c`, 0.8) and fast (`<id>-f`, 1.25×).
 - **Validators** (content/henshin.test.ts): order, coverage and voices; the chunks; tiles at every tier; the choice
   tells; every voiced phrase heard as said (`npm run kikimimi:reduce`). What whisper always spells as written (a flap,
   a dropped t or h) is voiced from a `tts` respelling ("Pud it on").
@@ -493,11 +496,11 @@ A clip fixed after the listen is re-spoken with `PINNED` or a `tts` respelling, 
 
 - **Backdrops:** paint the planned scenes (`party`, `restaurant`, `shop`, `clinic`, `park`, `konbini`, `lobby`) and add
   them to `SCENE_IDS`, by the existing pipeline (kikimimi.md "Visuals") on the second Mac, never during a TTS batch.
-- **The listening check:** the flagged clips (report.json), the real pieces' cut boundaries, the generated scenes'
-  flagged lines.
+- **The listening check** ("Listening check"): the flagged clips, the real pieces' cut boundaries.
 - **トーン あて** (one line sincere / sarcastic / resigned): a 30-take spike; a quiz kind only if the voice holds and the
   tones tell apart blind on the phone.
-- **Next content:** calls for the recipe-1 units (then recipe 2); やま units, opening with idioms and group talk on
+- **Next content:** a `weather` item in each place's news file (only やま's asks 「傘は いる？」 today); calls for the
+  recipe-1 units (then recipe 2); やま units, opening with idioms and group talk on
   たちぎき; more ジョニー chapters.
 - **Variety:** the overused clusters (corrected numbers, clinics, transit PA, service calls, landlords, the hotel desk,
   repeated openers, Tokyo-only settings) wait for a new-situations writer; content/variety.test keeps the variety set
