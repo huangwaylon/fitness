@@ -3,8 +3,9 @@
 // here (the contract's parseSettingsInput, validate.ts); the record and its rules are the object's (bot.ts), one RPC per
 // request. Every refusal logs one line with its reason (never a key or a token); a page's request carries its
 // X-Request-Id (or one made up) in its lines and its answer.
-import { corsOf, roleOfKey } from '../../../relay/src/auth.ts';
-import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member, type PushSubscribeInput } from '../../../app/src/lib/its/contract.ts';
+import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../../relay/src/auth.ts';
+import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
+import type { PushAnswer } from './bot.ts';
 import type { Env } from './env.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
 
@@ -71,11 +72,6 @@ async function body(req: Request): Promise<unknown> {
   }
 }
 
-const bearer = (req: Request): string => {
-  const h = req.headers.get('Authorization') ?? '';
-  return h.startsWith('Bearer ') ? h.slice(7).trim() : '';
-};
-
 /** The page's request id: its X-Request-Id when shaped as an id (the contract's isId), else one made up (`w-` and 8 hex),
  *  never the header as sent. */
 const requestId = (req: Request): string => {
@@ -91,11 +87,11 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
   if (!cors) return refuse(req, path, 403, 'origin', { 'X-Request-Id': rid }, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))} rid=${rid}`);
   const method = MEMBER_ROUTES[path];
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Request-Id', 'Access-Control-Max-Age': '86400' } });
+    return preflight(cors, method, 'Authorization, Content-Type, X-Request-Id');
   }
   const base = { ...cors, 'Access-Control-Expose-Headers': 'X-Request-Id', 'X-Request-Id': rid };
   if (req.method !== method) return refuse(req, path, 405, 'method', { ...base, Allow: method }, ` rid=${rid}`);
-  const who = roleOfKey(bearer(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
   if (who !== 'A' && who !== 'B') return refuse(req, path, 401, 'unauthorized', base, ` rid=${rid}`);
   const by: Member = who;
   const headers = { ...base, 'Cache-Control': 'private, no-store' };
@@ -115,13 +111,16 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
       return ok(r.status, r.ok ? 200 : 409);
     }
     if (path.startsWith('/its/push/')) {
-      const p = path === PUSH_ROUTES.subscribe ? parsePushSubscribe(json) : parsePushEndpoint(json);
+      const pushed = (r: PushAnswer) => (r.ok ? ok(r) : refuse(req, path, r.status, r.error, base, ` by=${by} rid=${rid}`));
+      if (path === PUSH_ROUTES.subscribe) {
+        const p = parsePushSubscribe(json);
+        if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
+        return pushed(await bot(env).subscribe(p.value, by, rid));
+      }
+      const p = parsePushEndpoint(json);
       if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
       const b = bot(env);
-      const r = path === PUSH_ROUTES.subscribe ? await b.subscribe(p.value as PushSubscribeInput, by, rid)
-        : path === PUSH_ROUTES.unsubscribe ? await b.unsubscribe(p.value, by, rid)
-          : await b.testPush(p.value, by, rid);
-      return r.ok ? ok(r) : refuse(req, path, r.status, r.error, base, ` by=${by} rid=${rid}`);
+      return pushed(path === PUSH_ROUTES.unsubscribe ? await b.unsubscribe(p.value, by, rid) : await b.testPush(p.value, by, rid));
     }
     const p = parseRunInput(json);
     if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
@@ -136,27 +135,15 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
  *  for the alerting workflow of a public repo: no date, facility or name. No CORS: no page calls it. */
 async function health(req: Request, env: Env, path: string): Promise<Response> {
   if (req.method !== 'GET') return refuse(req, path, 405, 'method', { Allow: 'GET' });
-  if (!(await tokenOk(bearer(req), env.ITS_HEALTH_TOKEN))) return refuse(req, path, 401, env.ITS_HEALTH_TOKEN?.trim() ? 'unauthorized' : 'no_health_token');
+  if (!(await tokenOk(bearerOf(req), env.ITS_HEALTH_TOKEN))) return refuse(req, path, 401, env.ITS_HEALTH_TOKEN?.trim() ? 'unauthorized' : 'no_health_token');
   return Response.json(await bot(env).health(), { headers: { 'Cache-Control': 'no-store' } });
-}
-
-/** `Authorization: Bearer <secret>`, compared in constant time (as SHA-256 digests, so of equal length); the secret
- *  trimmed (a pasted newline), as the bearer is. */
-async function tokenOk(token: string, secret: string | undefined): Promise<boolean> {
-  const expected = secret?.trim();
-  if (!expected || !token) return false;
-  const digest = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
-  const [a, b] = await Promise.all([digest(token), digest(expected)]);
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
-  return diff === 0;
 }
 
 /** The runner's routes; every answer is a RunnerConfig (claim's inside its ClaimReply). No CORS: no page calls them. */
 async function runner(req: Request, env: Env, path: string): Promise<Response> {
   const method = RUNNER_ROUTES[path];
   if (req.method !== method) return refuse(req, path, 405, 'method', { Allow: method });
-  if (!(await tokenOk(bearer(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN?.trim() ? 'unauthorized' : 'no_runner_token');
+  if (!(await tokenOk(bearerOf(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN?.trim() ? 'unauthorized' : 'no_runner_token');
   const qRun = new URL(req.url).searchParams.get('runId');
   if (qRun !== null && !isId(qRun)) return refuse(req, path, 400, 'bad_run_id');
   const headers = { 'Cache-Control': 'no-store' };

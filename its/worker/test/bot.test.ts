@@ -32,8 +32,8 @@ beforeEach(async () => {
   logs = quiet();
   state = fakeState();
   bot = await start(state);
-  await bot.putSettings(settingsInput(), 'A');
-  await bot.run({ action: 'start' }, 'A');   // no token: nothing sent
+  await bot.putSettings(settingsInput(), 'A', 'r-test');
+  await bot.run({ action: 'start' }, 'A', 'r-test');   // no token: nothing sent
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -464,7 +464,7 @@ describe('storage', () => {
     await bot.claim({ runId: RUN, host: 'actions' });
     await bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'A' })], seen: ['A'] }));
     await post([booking(1)]);
-    await bot.run({ action: 'stop' }, 'B');
+    await bot.run({ action: 'stop' }, 'B', 'r-test');
     const before = await bot.status();
     expect(before.control).toEqual({ action: 'stop', by: 'B', at: NOW });
     const again = await start(fakeState(new Map(state.kv)));
@@ -479,7 +479,7 @@ describe('a put that throws', () => {
     state.ctx.storage.put = async () => { throw new Error('storage down'); };
     await expect(bot.bookings([booking(1)], RUN)).rejects.toThrow('storage down');
     await expect(bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'A' })], seen: ['A'] }))).rejects.toThrow();
-    await expect(bot.run({ action: 'stop' }, 'B')).rejects.toThrow();
+    await expect(bot.run({ action: 'stop' }, 'B', 'r-test')).rejects.toThrow();
     state.ctx.storage.put = put;
     const c = await bot.config(RUN);
     expect([c.bookings, c.ackSeq, c.settings.paused]).toEqual([[], 0, false]);

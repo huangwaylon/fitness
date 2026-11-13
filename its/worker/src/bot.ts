@@ -4,7 +4,7 @@
 // of the keys it changed. The Worker calls it by RPC (index.ts) with bodies already checked; the rules are rules.ts.
 import { DurableObject } from 'cloudflare:workers';
 import {
-  DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC, tokyoToday,
+  DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC,
   type BookingInput, type ClaimInput, type ClaimReply, type ItsEvent, type ItsHealth, type ItsPushStatus, type ItsSettingsInput, type ItsStatus, type Member,
   type PushEndpointInput, type PushOutcome, type PushReply, type PushSubscribeInput, type RunInput, type RunnerConfig, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
@@ -33,9 +33,6 @@ const empty = (): ItsRecord => ({
   settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null, control: null,
   events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scans: [], minutes: [], subs: [], pushq: [], pushlog: emptyPushLog(),
 });
-
-/** A member request's id in a log line (index.ts: the page's X-Request-Id, or one made up). */
-const ridOf = (rid: string | undefined) => (rid ? ` rid=${rid}` : '');
 
 /** A name or detail in a log line: one line, short (they are checked already; this only keeps lines readable). */
 const q = (s: string | undefined) => JSON.stringify((s ?? '').slice(0, 120));
@@ -79,11 +76,11 @@ export class ItsBot extends DurableObject<Env> {
 
   /** The page's 保存: refused (ok false, the current status) when someone saved since the edit began (a 409: routine,
    *  logged at info). A body without `search` (an older page) keeps the saved allow-list. */
-  async putSettings(input: ItsSettingsInput, by: Member, rid?: string): Promise<{ ok: boolean; status: ItsStatus }> {
+  async putSettings(input: ItsSettingsInput, by: Member, rid: string): Promise<{ ok: boolean; status: ItsStatus }> {
     const now = Date.now();
     const cur = this.rec.settings;
     if (input.baseUpdatedAt !== cur.updatedAt) {
-      console.log(`its settings conflict by=${by} base=${input.baseUpdatedAt} current=${cur.updatedAt} (${cur.updatedBy})${ridOf(rid)}`);
+      console.log(`its settings conflict by=${by} base=${input.baseUpdatedAt} current=${cur.updatedAt} (${cur.updatedBy}) rid=${rid}`);
       return { ok: false, status: await this.status() };
     }
     const { baseUpdatedAt: _, ...edit } = input;
@@ -91,7 +88,7 @@ export class ItsBot extends DurableObject<Env> {
     // strictly later than the last save, so a draft from before it always conflicts
     const settings = { ...edit, ...(search && { search }), v: 1 as const, paused: cur.paused, updatedAt: Math.max(now, (cur.updatedAt ?? 0) + 1), updatedBy: by };
     await this.save({ settings });
-    console.log(`its settings by=${by} dates=${settings.dates.length} skip=${settings.skip.length} pri=${settings.priority.length} int=${settings.intervalSec} guests=${settings.guests} auto=${settings.autoConfirm ? 1 : 0} search=${settings.search?.length ?? '-'}${edit.search ? '' : search ? '(kept)' : ''} [${settings.dates.join(' ')}]${ridOf(rid)}`);
+    console.log(`its settings by=${by} dates=${settings.dates.length} skip=${settings.skip.length} pri=${settings.priority.length} int=${settings.intervalSec} guests=${settings.guests} auto=${settings.autoConfirm ? 1 : 0} search=${settings.search?.length ?? '-'}${edit.search ? '' : search ? '(kept)' : ''} [${settings.dates.join(' ')}] rid=${rid}`);
     return { ok: true, status: await this.status() };
   }
 
@@ -99,13 +96,13 @@ export class ItsBot extends DurableObject<Env> {
    *  `control` (who, when). 開始 dispatches a run unless one wouldn't run (MODE off, no date), one is running, or one
    *  was just dispatched: the dispatch is recorded (ok, no status yet) before GitHub is asked, so a 開始 meanwhile is
    *  `recent`, and a 停止 meanwhile stays (only `dispatch` is written after). */
-  async run(input: RunInput, by: Member, rid?: string): Promise<ItsStatus> {
+  async run(input: RunInput, by: Member, rid: string): Promise<ItsStatus> {
     const now = Date.now();
     const settings = { ...this.rec.settings, paused: input.action === 'stop' };
     const control = { action: input.action, by, at: now };
     if (input.action === 'stop') {
       await this.save({ settings, control });
-      console.log(`its run stop by=${by} runner=${this.rec.runner?.runId ?? '-'}${ridOf(rid)}`);
+      console.log(`its run stop by=${by} runner=${this.rec.runner?.runId ?? '-'} rid=${rid}`);
       return this.status();
     }
     const { lease, runner, dispatch, control: last } = this.rec;
@@ -117,12 +114,12 @@ export class ItsBot extends DurableObject<Env> {
             : null;
     if (skip) {
       await this.save({ settings, control });
-      console.log(`its run start by=${by} dispatch=skip_${skip}${skip === 'recent' ? ` last=${Math.round((now - dispatch!.at) / 1000)}s` : ''}${ridOf(rid)}`);
+      console.log(`its run start by=${by} dispatch=skip_${skip}${skip === 'recent' ? ` last=${Math.round((now - dispatch!.at) / 1000)}s` : ''} rid=${rid}`);
       return this.status();
     }
     await this.save({ settings, control, dispatch: { at: now, ok: true, status: null } });   // = no token: nothing sent
     if (this.env.GH_DISPATCH_TOKEN) await this.save({ dispatch: await dispatchRun(this.env.GH_DISPATCH_TOKEN, now) });
-    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}${ridOf(rid)}`);
+    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'} rid=${rid}`);
     return this.status();
   }
 
@@ -232,7 +229,7 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   /** POST /its/push/subscribe: stored (or refreshed) for `by`; its endpoint moved from whoever had it. */
-  async subscribe(input: PushSubscribeInput, by: Member, rid?: string): Promise<PushAnswer> {
+  async subscribe(input: PushSubscribeInput, by: Member, rid: string): Promise<PushAnswer> {
     const now = Date.now();
     if (!this.vapid) return { ok: false, status: 503, error: 'push_off' };
     if (!endpointOk(input.endpoint, this.pushDeps.hosts)) return { ok: false, status: 400, error: 'bad_push_endpoint' };
@@ -242,37 +239,35 @@ export class ItsBot extends DurableObject<Env> {
     const r = addSub(this.rec.subs, sub, now);
     await this.save({ subs: r.subs });
     const s = this.pushStatus(now);
-    console.log(`its push subscribe by=${by} ep=${ep.slice(0, 6)} lang=${input.lang} subs=A${s.A}/B${s.B} moved=${r.moved ? 1 : 0} replaced=${r.replaced}${ridOf(rid)}`);
+    console.log(`its push subscribe by=${by} ep=${ep.slice(0, 6)} lang=${input.lang} subs=A${s.A}/B${s.B} moved=${r.moved ? 1 : 0} replaced=${r.replaced} rid=${rid}`);
     return { ok: true, push: s };
   }
 
   /** POST /its/push/unsubscribe: forgotten if it is `by`'s (another member's stays: ok either way, nothing told). */
-  async unsubscribe(input: PushEndpointInput, by: Member, rid?: string): Promise<PushAnswer> {
+  async unsubscribe(input: PushEndpointInput, by: Member, rid: string): Promise<PushAnswer> {
     const now = Date.now();
     const ep = await epOf(input.endpoint);
     const subs = this.rec.subs.filter((s) => !(s.ep === ep && s.who === by));
     const removed = this.rec.subs.length - subs.length;
     if (removed) await this.save({ subs, pushq: this.rec.pushq.filter((j) => j.ep !== ep) });
-    console.log(`its push unsubscribe by=${by} ep=${ep.slice(0, 6)} removed=${removed}${ridOf(rid)}`);
+    console.log(`its push unsubscribe by=${by} ep=${ep.slice(0, 6)} removed=${removed} rid=${rid}`);
     return { ok: true, push: this.pushStatus(now) };
   }
 
   /** POST /its/push/test: one notification to the caller's own subscription, sent now (the outcome in the answer's
-   *  lastOutcome); PUSH_TEST_EVERY_SEC apart (no daily cap; `n` still counts a Tokyo day's tests, for the log). */
-  async testPush(input: PushEndpointInput, by: Member, rid?: string): Promise<PushAnswer> {
+   *  lastOutcome); PUSH_TEST_EVERY_SEC apart (no daily cap). */
+  async testPush(input: PushEndpointInput, by: Member, rid: string): Promise<PushAnswer> {
     const now = Date.now();
     const vapid = this.vapid;
     if (!vapid) return { ok: false, status: 503, error: 'push_off' };
     const ep = await epOf(input.endpoint);
     const sub = liveSubs(this.rec.subs, now).find((s) => s.ep === ep && s.who === by);
     if (!sub) return { ok: false, status: 404, error: 'not_subscribed' };
-    const day = tokyoToday(now);
-    const t = sub.tests?.day === day ? sub.tests : { day, n: 0, last: sub.tests?.last ?? 0 };
-    if (now - t.last < PUSH_TEST_EVERY_SEC * 1000) {
-      console.warn(`its push test refused rate_limited by=${by} ep=${ep.slice(0, 6)} today=${t.n}${ridOf(rid)}`);
+    if (now - (sub.lastTest ?? 0) < PUSH_TEST_EVERY_SEC * 1000) {
+      console.warn(`its push test refused rate_limited by=${by} ep=${ep.slice(0, 6)} rid=${rid}`);
       return { ok: false, status: 429, error: 'rate_limited' };
     }
-    await this.save({ subs: this.rec.subs.map((s) => (s.ep === ep ? { ...s, tests: { day, n: t.n + 1, last: now } } : s)) });
+    await this.save({ subs: this.rec.subs.map((s) => (s.ep === ep ? { ...s, lastTest: now } : s)) });
     const job: PushJob = { key: `test|${ep}`, ep, kind: 'test', id: 'test', urgency: 'high', until: now + 60_000, tries: 0, next: now };
     const sent = await this.deliver(job, sub, vapid, now);
     await this.save(this.recordSent([sent], now));

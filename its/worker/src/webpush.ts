@@ -1,8 +1,8 @@
 // Web Push with nothing but WebCrypto (runs on Workers and in Node's vitest alike): the message encryption of RFC 8291
 // (aes128gcm content coding, RFC 8188: one record) and the VAPID authorization of RFC 8292 (an ES256 JWT). No library:
 // the whole of it is a few HMACs, one ECDH, one AES-GCM and one ECDSA signature, checked against RFC 8291's test
-// vector (test/webpush.test.ts). The relay's of 18bf3196, with RFC 8030's Urgency and Topic, a plaintext bound, the
-// VAPID key imported once per isolate and each audience's JWT reused for an hour.
+// vector (test/webpush.test.ts). With RFC 8030's Urgency and Topic, a plaintext bound, the VAPID key imported once per
+// isolate and each audience's JWT reused for an hour.
 
 const enc = new TextEncoder();
 
@@ -103,7 +103,6 @@ export interface Vapid {
   /** `mailto:` or an https URL the push service can reach us at. */
   subject: string;
 }
-
 
 /** A VAPID JWT lives at most a day (RFC 8292 §2); ours 12 hours, reused for an hour per audience (a push service takes
  *  the same one again: one signature an hour, not one a message). */

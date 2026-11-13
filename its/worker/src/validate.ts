@@ -6,23 +6,23 @@ import {
   type BookingInput, type ClaimInput, type EventInput, type Host, type LastError, type Phase, type PushEndpointInput, type PushLang,
   type PushSubscribeInput, type RunInput, type RunnerReport, type ScanEntry,
 } from '../../../app/src/lib/its/contract.ts';
+import { isRec } from '../../../app/src/lib/contract/guards.ts';
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 
 const SPOTS = ['centre', 'left', null] as const;
 
-const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 const count = (x: unknown): x is number => Number.isInteger(x) && (x as number) >= 0;
 const time = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0;
 const timeOrNull = (x: unknown): x is number | null => x === null || time(x);
 
 export function parseRunInput(x: unknown): Parsed<RunInput> {
-  if (!isObj(x) || (x.action !== 'start' && x.action !== 'stop')) return { ok: false, error: 'bad_action' };
+  if (!isRec(x) || (x.action !== 'start' && x.action !== 'stop')) return { ok: false, error: 'bad_action' };
   return { ok: true, value: { action: x.action } };
 }
 
 export function parseClaim(x: unknown): Parsed<ClaimInput> {
-  if (!isObj(x) || !isId(x.runId) || !HOSTS.includes(x.host as Host)) return { ok: false, error: 'bad_claim' };
+  if (!isRec(x) || !isId(x.runId) || !HOSTS.includes(x.host as Host)) return { ok: false, error: 'bad_claim' };
   return { ok: true, value: { runId: x.runId, host: x.host as Host } };
 }
 
@@ -31,7 +31,7 @@ export function parseBookings(x: unknown): Parsed<BookingInput[]> {
   if (x.length > LIMITS.bookingsPerPost) return { ok: false, error: 'too_many_bookings' };
   const out: BookingInput[] = [];
   for (const b of x) {
-    if (!isObj(b) || !isId(b.id) || !isId(b.runId) || !BOOKING_KINDS.includes(b.kind as BookingInput['kind'])) return { ok: false, error: 'bad_booking' };
+    if (!isRec(b) || !isId(b.id) || !isId(b.runId) || !BOOKING_KINDS.includes(b.kind as BookingInput['kind'])) return { ok: false, error: 'bad_booking' };
     if (!isDate(b.date) || !isName(b.hotel, MAX_SITE_NAME)) return { ok: false, error: 'bad_booking' };
     if (b.number !== undefined && !isName(b.number, LIMITS.number)) return { ok: false, error: 'bad_booking' };
     const e: BookingInput = { id: b.id, kind: b.kind as BookingInput['kind'], date: b.date, hotel: b.hotel, runId: b.runId };
@@ -42,7 +42,7 @@ export function parseBookings(x: unknown): Parsed<BookingInput[]> {
 }
 
 function parseEvent(x: unknown): EventInput | null {
-  if (!isObj(x) || !Number.isInteger(x.seq) || (x.seq as number) < 1 || !EVENT_KINDS.includes(x.kind as EventInput['kind'])) return null;
+  if (!isRec(x) || !Number.isInteger(x.seq) || (x.seq as number) < 1 || !EVENT_KINDS.includes(x.kind as EventInput['kind'])) return null;
   if (x.date !== undefined && !isDate(x.date)) return null;
   if (x.hotel !== undefined && !isName(x.hotel, LIMITS.eventHotel)) return null;
   if (x.detail !== undefined && !isName(x.detail, LIMITS.detail)) return null;
@@ -55,14 +55,14 @@ function parseEvent(x: unknown): EventInput | null {
 
 function parseLastError(x: unknown): LastError | null | undefined {
   if (x === null) return null;
-  if (!isObj(x) || !time(x.at) || !isId(x.step) || !isId(x.cls)) return undefined;
+  if (!isRec(x) || !time(x.at) || !isId(x.step) || !isId(x.cls)) return undefined;
   if (x.status !== null && !(Number.isInteger(x.status) && (x.status as number) >= 0 && (x.status as number) < 1000)) return undefined;
   return { at: x.at, step: x.step, status: x.status as number | null, cls: x.cls };
 }
 
 /** One calendar read (the page's minute strip): a fractional duration rounded, unknown fields dropped. */
 function parseScan(x: unknown): ScanEntry | null {
-  if (!isObj(x) || !time(x.t) || typeof x.ok !== 'boolean' || !time(x.ms) || !count(x.avail)) return null;
+  if (!isRec(x) || !time(x.t) || typeof x.ok !== 'boolean' || !time(x.ms) || !count(x.avail)) return null;
   if (x.code !== undefined && !isId(x.code)) return null;
   return { t: x.t, ok: x.ok, ...(x.code !== undefined && { code: x.code as string }), ms: Math.round(x.ms), avail: x.avail };
 }
@@ -70,7 +70,7 @@ function parseScan(x: unknown): ScanEntry | null {
 /** A heartbeat. The runner's own strings (runUrl, sha) are held to their shapes: they reach the page as links/text. */
 export function parseReport(x: unknown): Parsed<RunnerReport> {
   const bad = (what: string): Parsed<RunnerReport> => ({ ok: false, error: `bad_report_${what}` });
-  if (!isObj(x) || x.v !== 1 || !isId(x.runId) || !HOSTS.includes(x.host as Host) || !PHASES.includes(x.phase as Phase)) return bad('shape');
+  if (!isRec(x) || x.v !== 1 || !isId(x.runId) || !HOSTS.includes(x.host as Host) || !PHASES.includes(x.phase as Phase)) return bad('shape');
   if (x.runUrl !== null && !(typeof x.runUrl === 'string' && x.runUrl.length <= 200 && /^https:\/\/github\.com\/[\w./-]+$/.test(x.runUrl))) return bad('url');
   if (x.sha !== null && !(typeof x.sha === 'string' && /^[0-9a-f]{4,40}$/.test(x.sha))) return bad('sha');
   if (!time(x.startedAt) || !timeOrNull(x.deadline) || !timeOrNull(x.lastScanAt) || !timeOrNull(x.lastOkAt)) return bad('times');
@@ -81,9 +81,9 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
   if (scans === null || scans?.some((e) => e === null)) return bad('scans');
   if (!count(x.scans) || !count(x.scanFailures) || !count(x.unsynced)) return bad('counts');
   const s = x.solves;
-  if (!isObj(s) || !count(s.ok) || !count(s.failed) || !timeOrNull(s.lastOkAt) || !(s.lastSecs === null || time(s.lastSecs)) || !SPOTS.includes(s.lastSpot as never)) return bad('solves');
+  if (!isRec(s) || !count(s.ok) || !count(s.failed) || !timeOrNull(s.lastOkAt) || !(s.lastSecs === null || time(s.lastSecs)) || !SPOTS.includes(s.lastSpot as never)) return bad('solves');
   const f = x.failuresByStep;
-  if (!isObj(f) || Object.keys(f).length > LIMITS.steps || !Object.entries(f).every(([k, n]) => ID_RE.test(k) && count(n))) return bad('steps');
+  if (!isRec(f) || Object.keys(f).length > LIMITS.steps || !Object.entries(f).every(([k, n]) => ID_RE.test(k) && count(n))) return bad('steps');
   const lastError = parseLastError(x.lastError);
   if (lastError === undefined) return bad('error');
   if (!Array.isArray(x.events) || x.events.length > LIMITS.eventsPerReport) return bad('events');
@@ -108,14 +108,14 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
 
 /** The page's push bodies: their shapes (the endpoint's allow-list and the key's curve are the object's: bot.ts). */
 export function parsePushSubscribe(x: unknown): Parsed<PushSubscribeInput> {
-  if (!isObj(x) || typeof x.endpoint !== 'string' || x.endpoint.length > PUSH_MAX_ENDPOINT) return { ok: false, error: 'bad_push_endpoint' };
+  if (!isRec(x) || typeof x.endpoint !== 'string' || x.endpoint.length > PUSH_MAX_ENDPOINT) return { ok: false, error: 'bad_push_endpoint' };
   const k = x.keys;
-  if (!isObj(k) || typeof k.p256dh !== 'string' || typeof k.auth !== 'string' || k.p256dh.length > 100 || k.auth.length > 100) return { ok: false, error: 'bad_push_keys' };
+  if (!isRec(k) || typeof k.p256dh !== 'string' || typeof k.auth !== 'string' || k.p256dh.length > 100 || k.auth.length > 100) return { ok: false, error: 'bad_push_keys' };
   if (!PUSH_LANGS.includes(x.lang as PushLang)) return { ok: false, error: 'bad_push_lang' };
   return { ok: true, value: { endpoint: x.endpoint, keys: { p256dh: k.p256dh, auth: k.auth }, lang: x.lang as PushLang } };
 }
 
 export function parsePushEndpoint(x: unknown): Parsed<PushEndpointInput> {
-  if (!isObj(x) || typeof x.endpoint !== 'string' || !x.endpoint || x.endpoint.length > PUSH_MAX_ENDPOINT) return { ok: false, error: 'bad_push_endpoint' };
+  if (!isRec(x) || typeof x.endpoint !== 'string' || !x.endpoint || x.endpoint.length > PUSH_MAX_ENDPOINT) return { ok: false, error: 'bad_push_endpoint' };
   return { ok: true, value: { endpoint: x.endpoint } };
 }

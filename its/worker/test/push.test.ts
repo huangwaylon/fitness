@@ -7,21 +7,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
 import {
-  HOLD_SEC, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TEST_EVERY_SEC,
+  DEFAULT_SETTINGS, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TEST_EVERY_SEC, tokyoTime,
   type BookingEntry, type BookingInput, type EventInput, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus,
 } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
 import {
-  CONFIRMED_TTL_MS, MIN_LEFT_MS, dayLabel, endpointOk, keysOk, noticesFor, outcomeOf, payloadOf, reasonOf, retryAt, tokyoTime, topicOf,
+  CONFIRMED_TTL_MS, MIN_LEFT_MS, dayLabel, endpointOk, keysOk, noticesFor, outcomeOf, payloadOf, reasonOf, retryAt, topicOf,
   vapidOf, type PushJob,
 } from '../src/push.ts';
-import { DEFAULT_SETTINGS } from '../../../app/src/lib/its/contract.ts';
+import { HOLD_MS } from '../src/rules.ts';
 import { KEY_A, KEY_B, MIN, NOW, ORIGIN, RUNNER, asRunner, envOf, fakeState, page, quiet, report, start, type State } from './fakeBot.ts';
 import { fakePushService, phoneKeys, vapidPair, type Phone } from './pushKit.ts';
 
 const HOST = 'push.example.test';
-const HOLD_MS = HOLD_SEC * 1000;
 const RUN = '19283746';
 /** The vector's subscription keys (RFC 8291 Appendix A): a valid point and auth. */
 const UA = { p256dh: 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4', auth: 'BTBZMqHH6r4Tts7J_aSIgg' };
@@ -337,7 +336,7 @@ describe('POST /its/push/subscribe, /unsubscribe', () => {
 
 describe('a report’s events, the outbox and the alarm', () => {
   beforeEach(async () => {
-    await bot.putSettings(settingsInput({ autoConfirm: true }), 'A');
+    await bot.putSettings(settingsInput({ autoConfirm: true }), 'A', 'r-test');
     await bot.claim({ runId: RUN, host: 'actions' });
     await subscribe(phones[0]);
     await subscribe(phones[1], KEY_B, 'en');
@@ -501,6 +500,11 @@ describe('POST /its/push/test', () => {
     vi.setSystemTime(NOW + gap - 1000);
     const r = await post('/its/push/test', { endpoint: phones[0].endpoint });
     expect([r.status, (await read(r)).error]).toEqual([429, 'rate_limited']);
+    // the subscription keeps the last test's time only; subscribing again keeps it
+    expect(bot.rec.subs.find((s) => s.who === 'A')).toMatchObject({ lastTest: NOW });
+    expect(bot.rec.subs.some((s) => 'tests' in s)).toBe(false);
+    await subscribe(phones[0]);
+    expect((await post('/its/push/test', { endpoint: phones[0].endpoint })).status).toBe(429);
     expect((await post('/its/push/test', { endpoint: phones[1].endpoint }, KEY_B)).status).toBe(200);   // another endpoint
     // 40 in a row, each a gap apart: all sent (no daily cap)
     for (let i = 1; i <= 40; i++) {

@@ -12,8 +12,8 @@ import type { PushJob, PushLog, PushSub } from './push.ts';
 export type Mode = 'on' | 'off';
 /** The runner's last report as kept: the status's, plus the Worker's own receive times of its last good scan and solve
  *  (when `lastOkAt` / `solves.lastOkAt` last moved), so the verdict compares Worker times only, and since when this run
- *  has reported unsynced entries without a break (/health/its; absent from a record kept by an older Worker). Not shown. */
-export type RunnerRecord = NonNullable<ItsStatus['runner']> & { okSeenAt: number | null; solveOkSeenAt: number | null; unsyncedSince?: number | null };
+ *  has reported unsynced entries without a break (/health/its). Not shown. */
+export type RunnerRecord = NonNullable<ItsStatus['runner']> & { okSeenAt: number | null; solveOkSeenAt: number | null; unsyncedSince: number | null };
 export type Dispatch = NonNullable<ItsStatus['dispatch']>;
 type Control = NonNullable<ItsStatus['control']>;
 
@@ -54,8 +54,9 @@ export const ACKS_KEPT = 20;
 export const MAX_BOOKINGS = 500;
 /** A failed leg or a human_needed event counts for this long (unless a later 予約確定 for that stay settles it). */
 const HUMAN_NEEDED_MS = 24 * 3600_000;
-/** The site's hold lapses after HOLD_SEC: a hold that needs a person (auto-confirm off, or a near stay) counts till then. */
-const HOLD_MS = HOLD_SEC * 1000;
+/** The site's hold lapses after HOLD_SEC: a hold that needs a person (auto-confirm off, or a near stay) counts till
+ *  then; a push for it is sent till then (push.ts). */
+export const HOLD_MS = HOLD_SEC * 1000;
 /** A 申込 leg in flight: a `confirming` without its `confirmed` / `failed` counts only after this. */
 export const CONFIRM_GRACE_MS = 10 * 60_000;
 const SCAN_FAILING = 3;
@@ -225,11 +226,12 @@ export function runnerOf(r: RunnerReport, now: number, prev: RunnerRecord | null
     ...rest, lastSeen: now,
     okSeenAt: r.lastOkAt === null || !same ? null : same.lastOkAt === r.lastOkAt ? same.okSeenAt : now,
     solveOkSeenAt: seenAt(r.solves.lastOkAt, same?.solves.lastOkAt, same?.solveOkSeenAt),
-    unsyncedSince: r.unsynced === 0 ? null : same && same.unsynced > 0 ? same.unsyncedSince ?? now : now,
+    unsyncedSince: r.unsynced === 0 ? null : same && same.unsynced > 0 ? same.unsyncedSince : now,
   };
 }
 
-const stay = (date: string | undefined, hotel: string | undefined) => `${date ?? ''}|${normName(hotel ?? '')}`;
+/** A stay's key (its date and normName'd facility): bookings and events of one stay match by it. */
+export const stayKey = (date: string | undefined, hotel: string | undefined) => `${date ?? ''}|${normName(hotel ?? '')}`;
 
 /** What waits for a person (the page's 要対応), each unless a later entry for that stay settled it: within
  *  HUMAN_NEEDED_MS, a failed leg or a human_needed event (settled by 予約確定) or a `confirming` past CONFIRM_GRACE_MS
@@ -238,22 +240,22 @@ const stay = (date: string | undefined, hotel: string | undefined) => `${date ??
 function humanNeeded(rec: ItsRecord, now: number): boolean {
   const last = new Map<string, Partial<Record<BookingKind, number>>>();
   for (const b of rec.bookings) {
-    const m = last.get(stay(b.date, b.hotel)) ?? {};
+    const m = last.get(stayKey(b.date, b.hotel)) ?? {};
     m[b.kind] = Math.max(b.at, m[b.kind] ?? 0);
-    last.set(stay(b.date, b.hotel), m);
+    last.set(stayKey(b.date, b.hotel), m);
   }
   const settled = (key: string, t: number, by: BookingKind[]) => by.some((k) => (last.get(key)?.[k] ?? -1) >= t);
   const recent = (t: number) => now - t <= HUMAN_NEEDED_MS;
   const auto = rec.settings.autoConfirm;
   return rec.bookings.some((b) => {
-    const key = stay(b.date, b.hotel);
+    const key = stayKey(b.date, b.hotel);
     switch (b.kind) {
       case 'failed': return recent(b.at) && !settled(key, b.at, ['confirmed']);
       case 'confirming': return recent(b.at) && now - b.at > CONFIRM_GRACE_MS && !settled(key, b.at, ['confirmed', 'failed']);
       case 'hold': return now - b.at < HOLD_MS && (!auto || daysUntil(b.date, now) < AUTO_CONFIRM_MIN_DAYS) && !settled(key, b.at, ['confirming', 'confirmed', 'failed']);
       default: return false;
     }
-  }) || rec.events.important.some((e) => e.kind === 'human_needed' && recent(e.t) && !settled(stay(e.date, e.hotel), e.t, ['confirmed']));
+  }) || rec.events.important.some((e) => e.kind === 'human_needed' && recent(e.t) && !settled(stayKey(e.date, e.hotel), e.t, ['confirmed']));
 }
 
 /** Every reason that applies, in REASONS order, and the verdict (the first's). The runner-liveness ones apply only while
@@ -331,7 +333,7 @@ export function healthOf(rec: ItsRecord, mode: Mode, now: number): ItsHealth {
     lastSeenAgeSec: ageSec(r?.lastSeen, now),
     phase: r?.phase ?? null,
     unsynced: r?.unsynced ?? 0,
-    unsyncedAgeSec: r && r.unsynced > 0 ? ageSec(r.unsyncedSince ?? r.lastSeen, now) : null,
+    unsyncedAgeSec: r && r.unsynced > 0 ? ageSec(r.unsyncedSince, now) : null,
     lastPreflightAgeSec: ageSec(rec.preflight, now),
   };
 }

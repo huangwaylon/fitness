@@ -12,8 +12,7 @@ export type IntervalSec = (typeof INTERVALS_SEC)[number];
 
 export const MAX_DATES = 20;
 export const MAX_DAYS_AHEAD = 400;  // a date further than this from today (Tokyo) is refused
-/** @public (its/worker) */
-export const MAX_HOTELS = 80;       // per list (skip, priority)
+const MAX_HOTELS = 80;       // per list (skip, priority)
 /** The allow-list's cap (`search`): every facility the site may offer, the roster and the seen names. @public (its/worker) */
 export const MAX_SEARCH = 200;
 /** @public (its/worker) */
@@ -262,7 +261,6 @@ export interface RunnerConfig {
 // as its body. Other refusals are `{ok: false, error}` (400 with a SettingsError or a shape code, 401, 403, 405, 413).
 
 export type Verdict = 'healthy' | 'starting' | 'idle' | 'degraded' | 'failing' | 'late' | 'stopped' | 'off';
-/** @public (its/worker) */
 export const VERDICTS: readonly Verdict[] = ['healthy', 'starting', 'idle', 'degraded', 'failing', 'late', 'stopped', 'off'];
 export type Reason =
   | 'mode_off'        // the Worker's MODE = off
@@ -452,6 +450,9 @@ export function isDate(s: unknown): s is string {
 export function tokyoToday(nowMs: number): string {
   return new Date(nowMs + 9 * 3600_000).toISOString().slice(0, 10);
 }
+
+/** A time in Tokyo, HH:MM (16:05). @public (its/worker) */
+export const tokyoTime = (nowMs: number): string => new Date(nowMs + 9 * 3600_000).toISOString().slice(11, 16);
 
 /** Whole days from Tokyo's today to `date` (0 = tonight). */
 export function daysUntil(date: string, nowMs: number): number {

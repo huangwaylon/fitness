@@ -3,14 +3,15 @@
 // for how long), the messages in each language (Tokyo times), what a push service's answer means, and the status's
 // counts. Never an endpoint in a log line or the status: a subscription is known by `ep`, its endpoint's SHA-256.
 import {
-  AUTO_CONFIRM_MIN_DAYS, HOLD_SEC, MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, normName,
+  AUTO_CONFIRM_MIN_DAYS, MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, tokyoTime,
   type BookingEntry, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type Member, type PushKind,
   type PushLang, type PushOutcome,
 } from '../../../app/src/lib/its/contract.ts';
+import { HOLD_MS, stayKey } from './rules.ts';
 import { b64url, unb64url, type PushOptions, type Vapid } from './webpush.ts';
 
-/** One phone's subscription. `at`: subscribed or refreshed (PUSH_KEEP_DAYS from it, dropped). `tests`: its test pushes
- *  this Tokyo day and the last one's time. */
+/** One phone's subscription. `at`: subscribed or refreshed (PUSH_KEEP_DAYS from it, dropped). `lastTest`: its last
+ *  test push (PUSH_TEST_EVERY_SEC apart). */
 export interface PushSub {
   ep: string;
   endpoint: string;
@@ -21,7 +22,7 @@ export interface PushSub {
   at: number;
   lastOk: number | null;
   fails: number;
-  tests?: { day: string; n: number; last: number };
+  lastTest?: number;
 }
 
 /** A push waiting in the outbox (`pushq`): one notice for one subscription, tried until `until` (its TTL's end). */
@@ -54,7 +55,6 @@ export const emptyPushLog = (): PushLog => ({ lastSentAt: null, lastOutcome: nul
 
 /** The VAPID subject: the app's page, where the push service could reach us. */
 const VAPID_SUBJECT = 'https://island-fund.pages.dev';
-const HOLD_MS = HOLD_SEC * 1000;
 /** A hold with this little left is not pushed (it would lapse before anyone acts): logged `push skip expired`. */
 export const MIN_LEFT_MS = 120_000;
 /** 予約確定's TTL. */
@@ -119,13 +119,13 @@ export const topicOf = async (date: string, hotel: string): Promise<string> => b
 export const liveSubs = (subs: PushSub[], now: number): PushSub[] => subs.filter((s) => now - s.at < KEEP_MS);
 
 /** `sub` stored (subscribe): its endpoint unique (another's moves to this member), the stale ones dropped, a fifth of
- *  the member's replacing the least recently refreshed. What was kept of an earlier one: lastOk, the test counts. */
+ *  the member's replacing the least recently refreshed. What was kept of an earlier one: lastOk, lastTest. */
 export function addSub(subs: PushSub[], sub: PushSub, now: number): { subs: PushSub[]; moved: boolean; replaced: number } {
   const had = subs.find((s) => s.ep === sub.ep);
   const others = liveSubs(subs, now).filter((s) => s.ep !== sub.ep);
   const mine = others.filter((s) => s.who === sub.who).sort((a, b) => a.at - b.at);
   const drop = new Set(mine.slice(0, Math.max(0, mine.length - (PUSH_SUBS_PER_MEMBER - 1))).map((s) => s.ep));
-  const next = { ...sub, lastOk: had?.lastOk ?? null, ...(had?.tests && { tests: had.tests }) };
+  const next = { ...sub, lastOk: had?.lastOk ?? null, ...(had?.lastTest !== undefined && { lastTest: had.lastTest }) };
   return { subs: [...others.filter((s) => !drop.has(s.ep)), next], moved: !!had && had.who !== sub.who, replaced: drop.size };
 }
 
@@ -143,9 +143,7 @@ export interface Notice {
 
 export interface Skip { kind: PushKind; id: string; why: 'expired' | 'no_hold' | 'manual' | 'not_booked' | 'done'; left?: number }
 
-const stayKey = (date: string, hotel: string) => `${date}|${normName(hotel)}`;
-
-/** When the stay's live hold was taken: the earliest hold (a booking or an event, the Worker's times) within HOLD_SEC. */
+/** When the stay's live hold was taken: the earliest hold (a booking or an event, the Worker's times) within HOLD_MS. */
 function holdAt(bookings: BookingEntry[], events: ItsEvent[], date: string, hotel: string, now: number): number | null {
   const k = stayKey(date, hotel);
   const ts = [
@@ -172,7 +170,7 @@ const maybeFiled = (detail: string): boolean => MAYBE_FILED_DETAILS.includes(det
  *    detail says so (MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES): `maybe_filed`, high, CONFIRMED_TTL_MS, live hold or
  *    not (the mailbox and the site decide). Never 「メールから申込」 for one that may be filed.
  *  - any other human_needed but NOT_BOOKED_DETAILS: the hold waits for a person, while it lasts: high, till it lapses
- *    (the deadline an estimate: the Worker's receive time + HOLD_SEC); skipped with MIN_LEFT_MS or less left.
+ *    (the deadline an estimate: the Worker's receive time + HOLD_MS); skipped with MIN_LEFT_MS or less left.
  *  - confirmed: normal, CONFIRMED_TTL_MS, the 申込受付番号.
  *  Each once (`done`). `events`: the record's important ones, the added included. */
 export function noticesFor(added: ItsEvent[], ctx: { settings: ItsSettings; bookings: BookingEntry[]; events: ItsEvent[]; done: string[] }, now: number): { notices: Notice[]; skipped: Skip[]; done: string[] } {
@@ -223,9 +221,6 @@ export function dayLabel(date: string, lang: PushLang): string {
   const wd = d.getUTCDay();
   return lang === 'ja' ? `${d.getUTCMonth() + 1}/${d.getUTCDate()}(${WEEKDAY_JA[wd]})` : `${WEEKDAY_EN[wd]} ${d.getUTCDate()} ${MONTH_EN[d.getUTCMonth()]}`;
 }
-
-/** A time in Tokyo: 16:05. */
-export const tokyoTime = (ms: number): string => new Date(ms + 9 * 3600_000).toISOString().slice(11, 16);
 
 const TEXT = {
   ja: {
