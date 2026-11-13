@@ -60,8 +60,8 @@ needs no taps, and a second source would conflict with Health.
 
 ### No notifications
 No notification of any kind (no Web Push, no service worker `push`); in-app banners and the relay's record-change notice
-stay. Why: unused, and the one piece of iOS-only, hard-to-test machinery. Except the bots: ITS holds and confirmations
-(2026-11-13, the user's exception): opt-in per phone in ボット → 保養所, members only, from the its-bot Worker
+stay. Why: unused, and the one piece of iOS-only, hard-to-test machinery. One exception, the bots: ITS holds and
+confirmations, opt-in per phone in ボット → 保養所, members only, from the its-bot Worker
 (its/README.md "Push"). Why: a hold lapses in 30 min and the site's mail was the only alert; the game, the island and
 health stay push-free.
 

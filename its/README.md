@@ -280,7 +280,7 @@ The verdict is the first reason that applies (`reasons`, in this order). `starti
 | `scan_failing` | failing | 3+ failed calendar reads in a row (`runner.lastError`: step, status, class) | Usually the site; `session_dead` for long = the Turnstile solve |
 | `solve_failing` | degraded | The last 3 Turnstile solves failed | The run's public log (`solve` lines, spot, secs); SITE.md §6 |
 | `unsynced` | degraded | The runner holds booking entries the Worker hasn't acknowledged (no new hold meanwhile) | `wrangler tail` for `its refused … /runner/bookings`; it retries each report |
-| `human_needed` | degraded | Within 24 h and no later 予約確定 for that stay: a failed 申込 leg, a `human_needed` event (`events` say why: `near_date`, `auto_off`, `no_mail`, `leg_failed`, …), or a `confirming` with no outcome after 10 min; or a hold under 30 min (`HOLD_SEC`) old the runner won't finish (auto-confirm off, or the stay < 11 days away) | Finish or cancel it from the site's mail before the 30-min hold lapses |
+| `human_needed` | degraded | A stay needs a person (within 24 h, no later 予約確定): a failed 申込 leg, a `human_needed` event (`events` say why), a `confirming` with no outcome after 10 min, or a hold < 30 min old the runner won't finish | Finish or cancel it from the site's mail before the hold lapses |
 | `mail_failing` | degraded | Auto-confirm is on and the runner's last IMAP check failed (`runner.lastError` step `imap`: `auth_failed`, `web_login_required`, …): holds wait for a person | The Gmail app password (`ITS_IMAP_APP_PASSWORD`), Gmail's security alerts; meanwhile finish holds by hand |
 | `settings_stale` | degraded | The run holding the lease still applies settings older than the saved ones two minutes (`SETTINGS_STALE_SEC`) after a save (`runner.settingsAt` < `settings.updatedAt`; an older runner sends no `settingsAt`) | `npm run its:logs` on the run (its reports, a parse refusal of the settings); 停止 → 開始 starts a fresh run |
 
@@ -292,7 +292,7 @@ cancelled or died mid-run. Look at that run (its:logs) for a hold or a 申込 it
 Workers Free, account-wide (relay, relay-test, gym-bot and this): 100,000 Worker requests a day; Durable Objects
 100,000 requests, 100,000 rows written, 5,000,000 rows read and 13,000 GB-s a day; Workers Logs 200,000 lines a day.
 
-Measured with Cloudflare's GraphQL analytics (2026-11-05 … 11-12, UTC days, every script on the account):
+Measured with Cloudflare's GraphQL analytics (one week of UTC days, every script on the account):
 
 | A day | Worker requests | DO requests | Rows written | Rows read | DO GB-s |
 |---|---|---|---|---|---|
