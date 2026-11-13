@@ -1,8 +1,8 @@
 // The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), the state's import/export, the
 // runner's public status (status.ts) and, for members only, 📋 設定を見る's answer (/gym/config) and the app's changes
 // and 🔎 (POST /gym/act, the taps' code path: actions.ts). MODE (wrangler.toml) 'bot' hands each event to the bot;
-// 'off', the stop switch, answers LINE but ignores its events.
-import { bearerOf, corsOf, roleOfKey, tokenOk } from '../../relay/src/auth.ts';
+// 'off', the stop switch, answers LINE but ignores its events, and refuses the app's acts (503 mode_off).
+import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../relay/src/auth.ts';
 import { ACT_MAX_BYTES, ACT_STATUS, type ActError } from '../../app/src/lib/gym/contract.ts';
 import type { Env } from './env.ts';
 import { signatureOk } from './line.ts';
@@ -56,24 +56,34 @@ async function status(env: Env): Promise<Response> {
   return Response.json(statusSeen.status, { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'max-age=30' } });
 }
 
+/** A members' route's refusal: `{ok: false, error}` with its status (the contract's ACT_STATUS), never cached, and one
+ *  log line, `<op> refused <status> <error>…`: at log level the expected ones (a stranger's 401 on /gym/config, the
+ *  page's own 400s on /gym/act), warn the rest. */
+function refusal(op: 'config' | 'act', error: ActError, headers: Record<string, string>, extra = ''): Response {
+  const status = ACT_STATUS[error];
+  const quiet = op === 'config' ? error === 'unauthorized' : status === 400;
+  (quiet ? console.log : console.warn)(`${op} refused ${status} ${error}${extra}`);
+  return Response.json({ ok: false, error }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
+}
+
+const originNote = (origin: string | null) => ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`;
+const memberOf = (req: Request, env: Env) => {
+  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+  return who === 'A' || who === 'B' ? who : null;
+};
+
 /** 📋 設定を見る's answer (actions.ts GymConfig), for the app: unlike /status it names the days' settings, so only a
  *  member's key (KEY_A, KEY_B: relay/src/auth.ts, as the relay checks them) from the app's origin (or no Origin: curl)
- *  reads it, never cached. One log line per request: who read it, why it was refused (a stranger's 401 at log level,
- *  the rest warn), or that the object failed (500, CORS kept so the page offers a retry). Never a key. */
+ *  reads it, never cached. One log line per request: who read it, why it was refused (refusal), or that the object
+ *  failed (500, CORS kept so the page offers a retry). Never a key. */
 async function config(req: Request, env: Env): Promise<Response> {
   const origin = req.headers.get('Origin');
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
-  const refuse = (status: number, why: string, headers: Record<string, string> = {}, extra = '') => {
-    (why === 'unauthorized' ? console.log : console.warn)(`config refused ${status} ${why}${extra}`);
-    return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
-  };
-  if (!cors) return refuse(403, 'origin', {}, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization', 'Access-Control-Max-Age': '86400' } });
-  }
-  if (req.method !== 'GET') return refuse(405, 'method', { ...cors, Allow: 'GET' });
-  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
-  if (who !== 'A' && who !== 'B') return refuse(401, env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
+  if (!cors) return refusal('config', 'origin', {}, originNote(origin));
+  if (req.method === 'OPTIONS') return preflight(cors, 'GET', 'Authorization');
+  if (req.method !== 'GET') return refusal('config', 'method', { ...cors, Allow: 'GET' });
+  const who = memberOf(req, env);
+  if (!who) return refusal('config', env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
   let answer;
   try {
     answer = await bot(env).getConfig();
@@ -93,27 +103,22 @@ const requestId = (req: Request): string => {
 };
 
 /** POST /gym/act (the contract's ActInput): a member's key from the app's origin, as /gym/config; a JSON body of at most
- *  ACT_MAX_BYTES, read as it streams. The bot answers (actions.ts webAct: the config after it, or the refusal with
- *  LINE's hint and its status: a 409 `stale` with the config, a 429 `cooldown` with Retry-After); CORS on every
- *  answer, the request id echoed. A refusal here logs one line: at log level the page's own (400), warn the rest
- *  (401, 403, 405, 413); the bot's refusals log in webAct. */
+ *  ACT_MAX_BYTES, read as it streams; refused 503 `mode_off` unless MODE is 'bot' (the stop switch stops the app's
+ *  changes too). The bot answers (actions.ts webAct: the config after it, or the refusal with LINE's hint and its
+ *  status: a 409 `stale` with the config, a 429 `cooldown` with Retry-After); CORS on every answer, the request id
+ *  echoed. A refusal here logs one line (refusal, with `rid=`); the bot's refusals log in webAct. */
 async function act(req: Request, env: Env): Promise<Response> {
   const origin = req.headers.get('Origin');
   const rid = requestId(req);
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
-  const refuse = (error: ActError, headers: Record<string, string>, extra = '') => {
-    const status = ACT_STATUS[error];
-    (status === 400 ? console.log : console.warn)(`act refused ${status} ${error}${extra} rid=${rid}`);
-    return Response.json({ ok: false, error }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
-  };
-  if (!cors) return refuse('origin', {}, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Request-Id', 'Access-Control-Max-Age': '86400' } });
-  }
+  const refuse = (error: ActError, headers: Record<string, string>, extra = '') => refusal('act', error, headers, `${extra} rid=${rid}`);
+  if (!cors) return refuse('origin', {}, originNote(origin));
+  if (req.method === 'OPTIONS') return preflight(cors, 'POST', 'Authorization, Content-Type, X-Request-Id');
   const base = { ...cors, 'Access-Control-Expose-Headers': 'X-Request-Id, Retry-After', 'X-Request-Id': rid };
   if (req.method !== 'POST') return refuse('method', { ...base, Allow: 'POST' });
-  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
-  if (who !== 'A' && who !== 'B') return refuse(env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', base);
+  const who = memberOf(req, env);
+  if (!who) return refuse(env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', base);
+  if (env.MODE !== 'bot') return refuse('mode_off', base, ` by=${who}`);
   const json = await body(req);
   if (json === TOO_LARGE) return refuse('too_large', base, ` by=${who}`);
   if (json === NOT_JSON) return refuse('not_json', base, ` by=${who}`);

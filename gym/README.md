@@ -6,14 +6,14 @@ the Cloudflare account with the relay.
 
 `https://gym-bot.island-fund-relay.workers.dev`: one Worker and one SQLite-backed Durable Object (`GymBot`), Workers
 Free. `MODE` (wrangler.toml) is `bot`; `off` is the stop switch (LINE's events answered 200 and ignored, the alarm
-checks nothing and sets no next alarm).
+checks nothing and sets no next alarm, the app's `/gym/act` refused 503 `mode_off`).
 
 ## Product rules
 
 - **Japanese, short, natural.** Every user-facing string is in `src/messages.ts`; logs, code and docs are English.
   LINE shows plain text: `・` for list items, a card's first line is its bold title, no walls of text, no link buttons.
-- **Buttons first.** Everything is done by tapping cards (or in the app's ボット → ジム, below). The only text read is メニュー (めにゅー, menu) or a mention of
-  the bot, which shows the menu; other chat in the group is ignored.
+- **Buttons first.** Everything is done by tapping cards (or in the app's ボット → ジム, below). The only text read is
+  メニュー (めにゅー, menu) or a mention of the bot, which shows the menu; other chat in the group is ignored.
 - **Never silent.** An invalid choice gets a short 🤔 hint and the card keeps working; an unexpected error gets 😕.
 - **Answers are replies**, seen by the whole group: a change says who made it. Replies are free; pushes (alerts,
   the site notices) count toward LINE's quota.
@@ -28,8 +28,11 @@ Each day has at most one rule (`src/store.ts`):
 |---|---|---|
 | any | 🔔 終日 | Any open slot |
 | skip | 🔕 通知オフ | None that day |
-| `[start, end]` | ⏰ 12:00〜14:00 | Slots that start and end inside it (picked on the half hour; the end suggested an hour after the start) |
-| none | ⏰ or 💤 | ⏰ 12:00〜13:00（ふだん） (`DEFAULT_WINDOW`: the 12:00 and 12:30 slots) for the next 4 days (`DAYS_TO_CHECK`, today included), else 💤 not checked yet |
+| `[start, end]` | ⏰ 12:00〜14:00 | Slots that start and end inside it (on the half hour; the end suggested an hour on) |
+| none | ⏰ or 💤 | ⏰ 12:00〜13:00（ふだん） (`DEFAULT_WINDOW`) for the next 4 days (`DAYS_TO_CHECK`), else 💤 not checked yet |
+
+Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near days at lunch are the usual;
+further days wait for a setting.
 
 - **⏳ check from** a time: the day is ignored until then. Kept between 🔔 and ⏰, cleared by 🔕; set on a 🔕 or 💤 day it
   gives the day ⏰ 12:00〜13:00. In the future, no later than the day, and before the ⏰ window's last slot (a hint
@@ -50,18 +53,18 @@ Each day has at most one rule (`src/store.ts`):
 | `src/index.ts` | The routes (below), MODE's dispatch, `/status`'s 60 s cache |
 | `src/bot.ts` | `GymBot`: the state, the checks on its alarm, pushes (with a retry key), what `/status` reads |
 | `src/status.ts` | `/status`'s payload and its verdict |
-| `src/ui.ts`, `actions.ts`, `line.ts` | The cards and taps, what the buttons and the app do (one path: `apply`), LINE's API and signature check |
+| `src/ui.ts`, `actions.ts`, `line.ts` | The cards and taps, what the buttons and the app do (one path: `apply`), LINE's API |
 | `src/store.ts`, `hacomono.ts`, `messages.ts` | The rules per day, the gym API, every user-facing string |
 | `src/time.ts`, `config.ts`, `env.ts` | Tokyo days and clock times, fixed settings, bindings and secrets |
-| `app/src/lib/gym/contract.ts` | Shared with the app: the fixed rules, `/gym/config`'s and `/gym/act`'s shapes, the days and times |
+| `app/src/lib/gym/contract.ts` | Shared with the app: the fixed rules, `/gym/config`'s and `/gym/act`'s shapes, Tokyo time |
 
 | Route | |
 |---|---|
 | `POST /line/webhook` | LINE's webhook: 403 without a valid `X-Line-Signature`; 200 at once, the events handled after |
 | `GET /status` | The runner's health (below), for the app's ボット → ジム; public, any origin |
-| `GET /gym/config` | 📋 設定を見る's answer (below), for the same page; a member's key (`Authorization: Bearer <KEY_A or KEY_B>`, else 401), the app's origin (`ALLOWED_ORIGINS`, localhost, or none; else 403), preflight answered, `private, no-store` |
-| `POST /gym/act` | The app's change or 🔎 (below): the same key, origin and preflight as `/gym/config` (`Authorization, Content-Type, X-Request-Id`), a JSON body of at most 2 KB (else 413) |
-| `GET`, `PUT /gym/state` | The state, exported or imported (`Authorization: Bearer <GYM_TOKEN>`); PUT refuses anything but a valid version-3 state (400) |
+| `GET /gym/config` | 📋 設定を見る's answer (below), members only: `Authorization: Bearer <KEY_A or KEY_B>` (else 401), the app's origin (`ALLOWED_ORIGINS`, localhost, or none; else 403), `private, no-store` |
+| `POST /gym/act` | The app's change or 🔎 (below): the same key and origin, a JSON body of at most 2 KB (else 413); 503 `mode_off` unless `MODE` is `bot` |
+| `GET`, `PUT /gym/state` | The state, exported or imported (`Authorization: Bearer <GYM_TOKEN>`); PUT takes only a valid version-3 state (else 400) |
 | `GET /health` | `{ok, mode, sha}` |
 
 - **Checks**: each alarm checks both programs (2–5 s apart, today to the last checked day; nothing when no day is
@@ -75,11 +78,11 @@ Each day has at most one rule (`src/store.ts`):
   is kept as `state.bad` and the bot starts empty (log: `could not read the saved state`). `GET /gym/state` is the
   backup.
 - **Status**: a verdict with every reason that applies (rules in `status.ts`), the last and next check, the last
-  success and error, failures in a row, LINE's quota and whether its webhook points here, and the last day's checks (at most 150: the app's 直近12時間 strip)
-  (alarm or 🔎, a code per program, open and new counts, the push). Public on purpose: totals and codes only, never
-  names, IDs, the group, the days' settings, slot times or error text. It reads the object's memory only; LINE's
-  facts are read by the alarm after a push, and hourly. The Worker keeps the answer 60 s, so a flood costs Worker
-  requests, not the object's.
+  success and error, failures in a row, LINE's quota and whether its webhook points here, and the last day's checks
+  (at most 150, the app's 直近12時間 strip: alarm or 🔎, a code per program, open and new counts, the push). Public
+  on purpose: totals and codes only, never names, IDs, the group, the days' settings, slot times or error text. It
+  reads the object's memory only; LINE's facts are read by the alarm after a push, and hourly. The Worker keeps the
+  answer 60 s, so a flood costs Worker requests, not the object's.
 - **Config**: `/gym/config` is what 📋 設定を見る answers in the group, for members only (it names the days'
   settings, which `/status` never does): its parts (`messages.ts` `StatusView`: the title, each day's date, rule, ⏳
   and `soft` (🔕 or 💤: nothing announced), the trouble notice, the closing line) as the same functions word them, the
@@ -90,20 +93,20 @@ Each day has at most one rule (`src/store.ts`):
   e, base?}`, `{a: from, d, at, base?}` (`at` a clock time on `d`), `{a: interval, m}`, `{a: pause|resume|check}`, and
   the calendar's bulk form `{a, days: [{d, base?}]}` (all or nothing). The bot reads it into the same actions as the
   taps (`actions.ts` `parseAction` → `apply`), so the rules and the words are LINE's. Answers `{ok: true, changed,
-  reply, config}` (🔎 also `lines`, `partial`, `slots`); refusals `{ok: false, error, hint?}` with LINE's hint:
-  `bad_action`, `not_json`, `day_too_far` 400; `day_passed`, `bad_range`, `from_passed`, `from_after_day`,
-  `from_after_window` 422; `stale` 409 (with `config`); `paused` 409; `running`, `cooldown` 429 (`Retry-After`);
-  `site_failed` 502; `failed` 500; with CORS. `base` is a day's setting (rule and ⏳, not the announced times) as a
-  short hash (each `/gym/config` row's): a 409 `stale` only when that day changed since; the interval and stop/restart
-  are absolute; LINE's taps stay last-writer-wins. App changes are silent in the group: kept in `runtime.changes`
-  (the last 12, newest first; 📋 names the last day's), and the next LINE reply carries one line
-  「アプリで変更：11/14（金）🔔 終日（ウェイ）」 once. Names: `NAME_A` / `NAME_B` (secrets), else メンバーA / B.
-  `/gym/config` adds the calendar's 25 `rows` (`{day, rule, usual, from, announced, resettable, base}`), `defaultDays`,
-  `intervals`, `checkReadyAt`, `checking` and `changes`; `/status` is unchanged. Logs: `act by=A a=any d=… changed=1
-  rid=…` a day, `changed … (by web A)`, `act by=A a=… refused <code>` (log level), `act refused 401|403|405|413 …`
-  (warn).
-- **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors (through …)`,
-  every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with `npx wrangler tail`.
+  reply, config}` (🔎 also `lines`, `partial`, `slots`); refusals `{ok: false, error, hint?}` with LINE's hint, each
+  code's status in the contract's `ACT_STATUS` (a 409 `stale` with `config`, a 429 `cooldown` with `Retry-After`),
+  with CORS. The page sends its acts one at a time. `base` is a day's setting (rule and ⏳, not the announced times)
+  as a short hash (each `/gym/config` row's): a 409 `stale` only when that day changed since; the interval and
+  stop/restart are absolute; LINE's taps stay last-writer-wins. App changes are silent in the group: kept in
+  `runtime.changes` (the last 12, newest first; 📋 names the last day's), and the next LINE reply carries one line
+  「アプリで変更：11/14（金）🔔 終日（ウェイ）」 once (a 📋 reply counts only the ones it names as said). Names:
+  `NAME_A` / `NAME_B` (secrets), else メンバーA / B. `/gym/config` adds the calendar's 25 `rows` (`{day, rule, usual,
+  from, announced, resettable, base}`), `defaultDays`, `intervals`, `checkReadyAt`, `checking` and `changes`. Logs:
+  `act by=A a=any d=… changed=1 rid=…` a day, `changed … (by web A)`, `act by=A a=… refused <code>` (log level),
+  `act refused 401|403|405|413|503 …` (warn).
+- **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors
+  (through …)`, every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with
+  `npx wrangler tail`.
 
 ## Secrets
 
@@ -115,7 +118,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 | `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings) |
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
-| `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's secrets, for `/gym/config` and `/gym/act` (never the guest's `KEY_C`) |
+| `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's, for `/gym/config` and `/gym/act` (never the guest's `KEY_C`) |
 | `NAME_A`, `NAME_B` | Optional: the members' names in the app's changes (LINE's アプリで変更 line, 📋, the app); unset: メンバーA / B |
 
 ## Develop and deploy
@@ -128,21 +131,26 @@ curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mod
 ```
 
 Tests run on Node with `cloudflare:workers` mocked, no network. The account is pinned in wrangler.toml (the relay's).
-A deploy keeps the state and the alarm.
+A deploy keeps the state and the alarm. A contract change (`app/src/lib/gym/contract.ts`): the Worker first, then the
+app (the page reads an older Worker's answers, not the other way round). `NAME_A` / `NAME_B` are put once
+(`npx wrangler secret put NAME_A`), before the deploy that should show them.
 
 ## Operations
 
 `$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
-- **Look**: the app's ボット → ジム (the calendar of the 25 days, the controls; under 動作状況 the verdict, the 直近12時間 strip of the
-  checks and the facts; up to a minute old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
+- **Look**: the app's ボット → ジム (the calendar of the 25 days, the controls; under 動作状況 the verdict, the
+  直近12時間 strip of the checks and the facts; up to a minute old), or `curl -s $URL/status`. Details:
+  `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
-  `MODE = "off"`. Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`
+  `MODE = "off"`: LINE's taps are ignored and the app's changes and 🔎 refused (503 `mode_off`; the page still shows
+  the settings). Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`
   to set the first alarm.
 - **Back up or edit the state**: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > state.json`;
   back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
 - **Point LINE here** (the webhook must be `$URL/line/webhook`): LINE Developers Console, or
-  `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json' -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint`.
+  `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json'
+  -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint` (one line).
 
 ## Diagnose
 

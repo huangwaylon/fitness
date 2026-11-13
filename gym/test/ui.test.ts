@@ -4,6 +4,7 @@ import * as actions from '../src/actions.ts';
 import { LineError, menuQuickReply } from '../src/line.ts';
 import * as messages from '../src/messages.ts';
 import { ANY, SKIP } from '../src/store.ts';
+import { DAYS_SHOWN, INTERVALS, LAST_START } from '../../app/src/lib/gym/contract.ts';
 import { addDays, at } from '../src/time.ts';
 import * as ui from '../src/ui.ts';
 import type { Store } from '../src/store.ts';
@@ -120,7 +121,7 @@ describe('cards', () => {
     const message = ui.daysCard(bot);
     const weeks = bubbles(message).map((b) => b.footer.contents.map((x: Json) => x.action));
     expect(weeks.map((w) => w.length)).toEqual([7, 7, 7, 4]); // 25 days, Mon–Sun
-    expect(weeks.flat()).toHaveLength(ui.DAYS_SHOWN);
+    expect(weeks.flat()).toHaveLength(DAYS_SHOWN);
     expect(weeks[0].slice(0, 5).map((a: Json) => a.label)).toEqual(['10/12（月） ⏰', '10/13（火） 🔕', '10/14（水） ⏰⏳',
       '10/15（木） ⏰', '10/16（金） 💤']);
     expect(weeks[0][0].data).toBe('a=day&d=2026-10-12');
@@ -167,7 +168,7 @@ describe('cards', () => {
     const buttons = cardButtons(ui.settingsCard(bot));
     expect(buttons['15分ごと（いま）']).toBeDefined();
     expect(buttons[messages.PAUSE]).toBeDefined();
-    expect(Object.keys(buttons)).toHaveLength(ui.INTERVAL_CHOICES.length + 1);
+    expect(Object.keys(buttons)).toHaveLength(INTERVALS.length + 1);
     bot.store.setPaused(true);
     expect(cardButtons(ui.settingsCard(bot))[messages.RESUME]).toBeDefined();
   });
@@ -179,7 +180,7 @@ describe('cards', () => {
   });
 
   it('check-from can be picked until the last slot', () => {
-    expect(cardButtons(ui.dayCard(bot, inDays(1)))[messages.CHECK_FROM].max).toBe(picked(inDays(1), ui.LAST_START));
+    expect(cardButtons(ui.dayCard(bot, inDays(1)))[messages.CHECK_FROM].max).toBe(picked(inDays(1), LAST_START));
   });
 });
 
@@ -444,6 +445,15 @@ describe('the app’s changes in the group', () => {
     await ui.handle(bot, tap('a=status'));
     expect(replyText().split('アプリで変更').length - 1).toBe(1);
     expect(bot.changes[0].said).toBe(true);
+  });
+
+  it('📋 marks said only the ones it names (the last day’s, at most 3); the next reply carries the rest', async () => {
+    for (let i = 0; i < 4; i++) await appChange({ a: i ? 'any' : 'skip', d: inDays(3 + i) });
+    await ui.handle(bot, tap('a=status'));
+    expect(bot.changes.map((c) => c.said)).toEqual([true, true, true, false]); // newest first
+    await ui.handle(bot, tap('a=help'));
+    expect(replyText()).toBe(`${messages.HELP_TEXT}\nアプリで変更：${messages.dayLabel(inDays(3))}🔕 通知オフ（ウェイ）`);
+    expect(bot.changes.every((c) => c.said)).toBe(true);
   });
 
   it('a failed reply leaves them unsaid', async () => {

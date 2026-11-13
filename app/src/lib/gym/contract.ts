@@ -1,6 +1,7 @@
 // The gym bot's contract (gym/README.md "The app"): what ボット → ジム reads (the members-only GET /gym/config) and
 // sends (POST /gym/act), the fixed rules both sides draw from, and Tokyo's days and clock times. The Worker (gym/src)
-// owns the rules and imports this file; the app reads it. Dependency-free (no DOM, no Worker types).
+// owns the rules and imports this file; the app reads it. No DOM, no Worker types: it imports only contract/guards.ts.
+import { isRec } from '../contract/guards.ts';
 
 // ---- Tokyo days and clock times: a day is 'YYYY-MM-DD', a clock time 'HH:MM' (both compare as text) ----
 
@@ -9,7 +10,8 @@ export type Clock = string;
 /** Who acts from the app: a member (the guest's key is refused). @public (gym/src) */
 export type Member = 'A' | 'B';
 
-const JST_MS = 9 * 3_600_000;
+/** Tokyo's offset from UTC. @public (gym/src) */
+export const JST_MS = 9 * 3_600_000;
 const DAY_MS = 86_400_000;
 
 /** The Tokyo day of an instant. */
@@ -155,14 +157,14 @@ export type ActError =
   | 'bad_action' | 'not_json' | 'too_large' | 'day_too_far'
   | 'day_passed' | 'bad_range' | 'from_passed' | 'from_after_day' | 'from_after_window'
   | 'stale' | 'paused' | 'running' | 'cooldown' | 'site_failed' | 'failed'
-  | 'unauthorized' | 'no_keys' | 'origin' | 'method';
+  | 'unauthorized' | 'no_keys' | 'origin' | 'method' | 'mode_off';
 
 /** Each refusal's HTTP status. */
 export const ACT_STATUS: Record<ActError, number> = {
   bad_action: 400, not_json: 400, too_large: 413, day_too_far: 400,
   day_passed: 422, bad_range: 422, from_passed: 422, from_after_day: 422, from_after_window: 422,
   stale: 409, paused: 409, running: 429, cooldown: 429, site_failed: 502, failed: 500,
-  unauthorized: 401, no_keys: 401, origin: 403, method: 405
+  unauthorized: 401, no_keys: 401, origin: 403, method: 405, mode_off: 503
 };
 
 /** 🔎's open slot. */
@@ -176,7 +178,6 @@ export type ActAnswer =
 
 const DAY_SHAPE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const HALF_HOUR = /^([01]\d|2[0-3]):(00|30)$/;
-const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 export const isDay = (v: unknown): v is Day => typeof v === 'string' && DAY_SHAPE.test(v) && addDays(v, 0) === v;
 /** A clock time on the half hour (or 24:00's stand-in, CLOSES, as an end). */
 export const isSlotClock = (v: unknown): v is Clock => typeof v === 'string' && (HALF_HOUR.test(v) || v === CLOSES);

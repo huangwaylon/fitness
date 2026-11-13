@@ -224,6 +224,18 @@ describe('webAct (the app’s act in the bot)', () => {
     expect(bot.store.rule(inDays(8))).toBeUndefined();
   });
 
+  it('bulk: its days applied at one instant, so none refuses midway (a midnight passing mid-apply)', async () => {
+    const days = [today(), inDays(1)];
+    const setRule = bot.store.setRule.bind(bot.store);
+    vi.spyOn(bot.store, 'setRule').mockImplementation((...args) => {
+      vi.setSystemTime(NOW + 2 * 86_400_000); // both days have passed by the clock now
+      return setRule(...args);
+    });
+    const r = await act({ a: 'any', days: days.map((d) => ({ d })) });
+    expect(r.status).toBe(200);
+    expect(days.map((d) => bot.store.rule(d))).toEqual(['any', 'any']);
+  });
+
   it('answers each refusal with its status, a cooldown with Retry-After', async () => {
     expect((await act({ a: 'nope' })).status).toBe(400);
     expect((await act({ a: 'any', d: inDays(30) })).status).toBe(400);

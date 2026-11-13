@@ -374,4 +374,17 @@ describe('POST /gym/act, end to end', () => {
     expect(warned).toContainEqual(expect.stringMatching(/^act refused 405 method rid=w-[0-9a-f]{8}$/)); // (no id sent: one made up)
     expect(warned.some((l) => l.startsWith('act refused 403 origin origin="https://other.example" rid='))).toBe(true);
   });
+
+  it('MODE off (the stop switch): a member’s act refused 503 mode_off, nothing changed; /gym/config still answers', async () => {
+    const off = env({ MODE: 'off' });
+    for (const body of [{ a: 'pause' }, { a: 'any', d: inDays(5) }, { a: 'check' }]) {
+      const res = await post(body, page(), off);
+      expect([res.status, res.headers.get('Access-Control-Allow-Origin'), await res.json()]).toEqual([503, PAGES, { ok: false, error: 'mode_off' }]);
+    }
+    expect(real.store.paused).toBe(false);
+    expect(real.store.rule(inDays(5))).toBeUndefined();
+    expect(vi.mocked(console.warn).mock.calls.map((c) => String(c[0]))).toContain('act refused 503 mode_off by=A rid=rid-1');
+    expect((await post({ a: 'pause' }, page('nope'), off)).status).toBe(401); // the key first
+    expect((await call('/gym/config', { headers: page() }, off)).status).toBe(200);
+  });
 });

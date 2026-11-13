@@ -6,6 +6,7 @@ import {
   ACT_STATUS, CHANGES_KEPT, CHECK_COOLDOWN_MS, CLOSES, DAYS_SHOWN, INTERVALS, OPENS, parseActInput,
   type ActAnswer, type ActError, type Change, type ChangeKind, type DayRow, type GymConfig, type Member, type OpenSlot
 } from '../../app/src/lib/gym/contract.ts';
+import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { DEFAULT_WINDOW } from './config.ts';
 import { CheckFailed, PROGRAMS, slotEnd, type Slot } from './hacomono.ts';
 import type { Line } from './line.ts';
@@ -108,23 +109,24 @@ export function parseAction(raw: unknown, now: number): { acts: { act: GymAction
 
 // --- applying ---
 
-/** Do one action (ui.ts's taps, and each of the app's). Never throws for a refusal. */
-export async function apply(bot: Bot, act: GymAction): Promise<Applied | Refusal> {
-  if (act.a === 'check') return check(bot, act.peek ?? false);
+/** Do one action (ui.ts's taps, and each of the app's), as at `now` (an app act's days all at its one instant). Never
+ *  throws for a refusal. */
+export async function apply(bot: Bot, act: GymAction, now = Date.now()): Promise<Applied | Refusal> {
+  if (act.a === 'check') return check(bot, act.peek ?? false, now);
   if (act.a === 'interval') return checkSetting(bot, bot.store.setInterval(act.m), messages.intervalNote(act.m));
   if (act.a === 'pause' || act.a === 'resume') {
     const paused = act.a === 'pause';
     return checkSetting(bot, bot.store.setPaused(paused), paused ? messages.PAUSED_NOTE : messages.RESUMED_NOTE);
   }
-  const refusal = dayRefusal(act, Date.now());
+  const refusal = dayRefusal(act, now);
   if (refusal) return refusal;
-  const today = dayOf(Date.now());
+  const today = dayOf(now);
   if (act.a === 'reset') {
     if (!bot.store.reset(act.d)) return dayReply(bot, act.d, today, false);
     return { changed: true, reply: messages.dayReset(bot.store, act.d, today) };
   }
   if (act.a === 'unfrom') return dayReply(bot, act.d, today, bot.store.setCheckFrom(act.d, null, today));
-  if (act.a === 'from') return setCheckFrom(bot, act.d, act.at);
+  if (act.a === 'from') return setCheckFrom(bot, act.d, act.at, now);
   const rule: Rule = act.a === 'range' ? [act.s, act.e] : act.a === 'any' ? ANY : SKIP;
   return dayReply(bot, act.d, today, bot.store.setRule(act.d, rule, today));
 }
@@ -138,8 +140,7 @@ function dayRefusal(act: DayAction, now: number): Refusal | null {
 
 /** Only check a day from `when` on. Refused for a time that has passed, is after the day, or leaves no slot in the
  *  day's ⏰ window (a 🔕 or 💤 day gets DEFAULT_WINDOW). */
-function setCheckFrom(bot: Bot, day: Day, when: number): Applied | Refusal {
-  const now = Date.now();
+function setCheckFrom(bot: Bot, day: Day, when: number, now: number): Applied | Refusal {
   if (when <= now) return { code: 'from_passed', hint: messages.FROM_PASSED };
   if (dayOf(when) > day) return { code: 'from_after_day', hint: messages.fromAfterDay(day) };
   const rule = bot.store.effectiveRule(day, dayOf(now));
@@ -164,8 +165,7 @@ async function checkSetting(bot: Bot, changed: boolean, note: string): Promise<A
 }
 
 /** 🔎: at most once a minute, shared by everyone (LINE and the app); refused while stopped or while a check runs. */
-async function check(bot: Bot, peek: boolean): Promise<Applied | Refusal> {
-  const now = Date.now();
+async function check(bot: Bot, peek: boolean, now: number): Promise<Applied | Refusal> {
   if (bot.store.paused) return { code: 'paused', hint: messages.CHECK_PAUSED };
   if (bot.checking) return { code: 'running', hint: messages.CHECK_RUNNING }; // waiting could outlast the reply token
   const wait = bot.lastManualCheck === null ? 0 : CHECK_COOLDOWN_MS - (now - bot.lastManualCheck);
@@ -209,7 +209,7 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
     return { status: ACT_STATUS[r.code], body, ...(r.retryAfter ? { retryAfter: r.retryAfter } : {}) };
   };
   const p = parseAction(raw, now);
-  const a = isRecord(raw) && typeof raw.a === 'string' && /^[a-z]{1,12}$/.test(raw.a) ? raw.a : '?';
+  const a = isRec(raw) && typeof raw.a === 'string' && /^[a-z]{1,12}$/.test(raw.a) ? raw.a : '?';
   if (refused(p)) return refuse(p, a);
   const first = p.acts[0].act;
   const stale = p.acts.find((x) => x.base !== undefined && 'd' in x.act && x.base !== baseOf(bot.store, x.act.d));
@@ -223,8 +223,13 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
   for (const { act } of p.acts) {
     const day = 'd' in act ? act.d : undefined;
     const before = loggedSetting(bot, day);
-    const r = await apply(bot, act);
-    if (refused(r)) return refuse(r, a, day, r.code === 'cooldown' || r.code === 'running');
+    const r = await apply(bot, act, now);
+    if (refused(r)) {
+      // only a single act refuses here (⏳'s rules and 🔎's need the state; the bulk form has neither, and its days
+      // passed the checks above at this same instant), so nothing was applied before it and the save after is harmless
+      if (done.length) throw new Error(`act refused mid-apply: ${r.code}`);
+      return refuse(r, a, day, r.code === 'cooldown' || r.code === 'running');
+    }
     done.push({ act, before, r });
   }
   const changed = done.filter((x) => x.r.changed);
@@ -248,8 +253,6 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
   }
   return { status: 200, body: answer };
 }
-
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** What an action did, for runtime.changes. */
 function changeOf(act: Exclude<GymAction, { a: 'check' }>): Omit<StoredChange, 't' | 'by' | 'said'> {
@@ -290,18 +293,17 @@ export function loggedSetting(bot: Bot, day?: Day): string {
 export const changeText = (bot: Bot, c: StoredChange): string => messages.changeText(c, bot.nameOf(c.by));
 
 /** The changes 📋 names: the last day's, at most 3. */
-function recentChanges(bot: Bot, now: number): string[] {
-  return bot.changes.filter((c) => c.t > now - 86_400_000).slice(0, 3).map((c) => changeText(bot, c));
-}
+export const recentChanges = (bot: Bot, now: number): StoredChange[] => bot.changes.filter((c) => c.t > now - 86_400_000).slice(0, 3);
 
 async function statusViewOf(bot: Bot, now: number): Promise<[messages.StatusView, number | null]> {
   const nextCheck = await bot.nextCheck();
-  return [messages.statusView(bot.store, dayOf(now), bot.lastCheck, nextCheck, bot.failures > 0, recentChanges(bot, now)), nextCheck];
+  const recent = recentChanges(bot, now).map((c) => changeText(bot, c));
+  return [messages.statusView(bot.store, dayOf(now), bot.lastCheck, nextCheck, bot.failures > 0, recent), nextCheck];
 }
 
 /** Every day that's checked or has a setting, and how checking goes (📋 設定を見る). */
-export async function status(bot: Bot): Promise<string[]> {
-  return messages.statusLines((await statusViewOf(bot, Date.now()))[0]);
+export async function status(bot: Bot, now = Date.now()): Promise<string[]> {
+  return messages.statusLines((await statusViewOf(bot, now))[0]);
 }
 
 /** The calendar's rows: today and the next DAYS_SHOWN - 1 days. */
