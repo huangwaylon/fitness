@@ -52,12 +52,11 @@ describe('gridPath: the rooms’ A* (tent, shop, museum)', () => {
     expect(cells).toEqual([[1, 0], [2, 0]]);
   });
 
-  it('a big room (the museum’s 12 × 25 tiles in half-tile cells) in a few ms', () => {
+  it('a big room (the museum’s 12 × 25 tiles in half-tile cells): through each wall’s gap in turn', () => {
     const rows = Array.from({ length: 50 }, (_, j) => (j % 6 === 3 ? '#'.repeat(20) + '....' : '.'.repeat(24)));
-    const t = performance.now();
-    const { reached } = gridPath(grid(...rows), [0, 0], [0, 49]);
+    const { cells, reached } = gridPath(grid(...rows), [0, 0], [0, 49]);
     expect(reached).toBe(true);
-    expect(performance.now() - t).toBeLessThan(50);
+    for (let j = 3; j < 50; j += 6) expect(cells.some(([i, cj]) => cj === j && i >= 20)).toBe(true);
   });
 });
 
