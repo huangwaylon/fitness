@@ -11,7 +11,7 @@
   import Fx from '#lib/components/characters/Fx.svelte';
   import { REACTIONS as ICONS, MARKS, COLOUR_GLYPHS, art, artKeys } from '#lib/art.ts';
   import { REACTIONS, REACTION_IDS } from '#lib/components/motion/reactions.ts';
-  import { emit } from '#lib/components/motion/bus.svelte.ts';
+  import { emit } from '#lib/ui-state/bus.svelte.ts';
   import { hostTap } from '#lib/components/motion/director.svelte.ts';
   import type { FxKind } from '#lib/components/characters/Fx.svelte';
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';

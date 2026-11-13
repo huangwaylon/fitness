@@ -13,7 +13,7 @@ import { goalMoves } from '../../world/wander.ts';
 import { relayOffset } from './ambientClock.ts';
 import { actorOf, awake, guestPhone, islandActors, online, setEveryoneAwake, setSpans, sleepIn, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
 import type { AmbientWorld } from './ambient.ts';
-import { on } from '../motion/bus.svelte.ts';
+import { on } from '#lib/ui-state/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
 import { SCENE, firstOn } from '#lib/sync/storage.ts';

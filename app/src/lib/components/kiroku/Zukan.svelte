@@ -16,7 +16,8 @@
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
   import { countOf, type Totals } from '#lib/model/tally.ts';
   import { GUEST } from '#lib/config/rules.ts';
-  import { bare, entries, groups, isPresentKind, type Entry, type ZukanKind } from './zukan.ts';
+  import { bare } from '#lib/world/critters.ts';
+  import { entries, groups, isPresentKind, type Entry, type ZukanKind } from './zukan.ts';
 
   interface Props {
     kind: ZukanKind;

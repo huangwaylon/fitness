@@ -66,9 +66,6 @@ export function groups(kind: ZukanKind): Group[] {
   ];
 }
 
-/** A name as a list shows it: the English catalog's names carry an article for the catch line ("a sea bass"). */
-export const bare = (name: string): string => name.replace(/^(an?|some) /, '');
-
 /** The icon that stands for a kind on the summary card. */
 export const KIND_ART: Record<ZukanKind, string> = {
   fish: critterArt('sea-bass'), bug: critterArt('common-butterfly'), sea: critterArt('octopus'), fossil: findArt('ammonite'),

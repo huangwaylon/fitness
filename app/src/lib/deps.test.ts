@@ -148,6 +148,41 @@ describe('src/lib folder boundaries', () => {
   });
 });
 
+// Inside components/: the 3D renderers and rooms draw, the sheets are the UI over them. A renderer never imports a
+// sheet (what both need is world/'s, or a kit's), and a sheet another sheet only by an edge named here.
+const RENDERERS = ['world3d', 'villager3d', 'player3d', 'person3d', 'rooms', 'homes', 'tent', 'museum', 'shop'];
+const SHEETS = ['panel', 'health', 'food', 'kikimimi', 'wallet', 'board', 'farm', 'kiroku', 'bots', 'travel', 'hiking', 'wedding', 'look', 'sheets', 'editor', 'layoutEdit'];
+/** The one renderer → sheet edge: the villagers' portraits (すがた's), the cards' faces on the island and in the rooms. */
+const RENDERER_READS = ['look/portraits.svelte.ts'];
+/** Sheet → sheet, on purpose: ごはん on けんこう's kit (its pager, range, cards, whose) and けんこう hosting ごはん, 登山
+ *  on 旅行's guide kit (and its packing) and 旅行's day opening a trail, the layout editor and the world editor's shared
+ *  pieces, the panel's own pages (すがた, けんこう, the wallet), the harvest overlay's fill (the wallet's), anyone's
+ *  きろく formatters. */
+const SHEET_EDGES: Record<string, string[]> = {
+  food: ['health'], health: ['food'], hiking: ['travel'], travel: ['hiking'], layoutEdit: ['editor'], editor: ['layoutEdit'],
+  panel: ['look', 'health', 'wallet', 'kiroku'], sheets: ['wallet']
+};
+const subOf = (f: string) => relative(join(LIB, 'components'), f).split('/');
+const componentEdges = [...graph].flatMap(([f, to]) => {
+  const [a, ...rest] = subOf(f);
+  return a.startsWith('..') || !rest.length ? [] : to.map((t) => ({ file: relative(LIB, f), a, b: subOf(t)[0], to: subOf(t).join('/') })).filter((e) => !e.b.startsWith('..') && e.b !== e.a);
+});
+
+describe('inside components/', () => {
+  it('a renderer never imports a sheet (but the portraits)', () => {
+    expect(componentEdges.length).toBeGreaterThan(100);
+    const bad = componentEdges.filter((e) => RENDERERS.includes(e.a) && SHEETS.includes(e.b) && !RENDERER_READS.includes(e.to));
+    expect(bad.map((e) => `${e.file} → ${e.to}`)).toEqual([]);
+  });
+
+  it('a sheet imports another sheet only by an edge on the list (anyone may read きろく’s formatters)', () => {
+    const bad = componentEdges.filter((e) => SHEETS.includes(e.a) && SHEETS.includes(e.b) && e.b !== 'kiroku' && !(SHEET_EDGES[e.a] ?? []).includes(e.b));
+    expect(bad.map((e) => `${e.file} → ${e.to}`)).toEqual([]);
+    // (each edge listed still there: a gone one leaves the list)
+    for (const [a, bs] of Object.entries(SHEET_EDGES)) for (const b of bs) expect(componentEdges.some((e) => e.a === a && e.b === b), `${a} → ${b}`).toBe(true);
+  });
+});
+
 describe('the relay boundary', () => {
   it('relay/ (its code, tests and scripts) imports from the app only contract/, and contract/ reaches only itself, types.ts and random.ts', () => {
     const RELAY = resolve(LIB, '../../../relay');
@@ -198,7 +233,7 @@ describe('scenery is never rewarded', () => {
     const finds = join(LIB, 'model/finds.ts');
     expect(existsSync(finds)).toBe(true);
     const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
-    const bad = (r: string) => [...reachable(r)].some((f) => f === finds || f.includes('/components/island/'));
+    const bad = (r: string) => [...reachable(r)].some((f) => f === finds || f.includes('/components/island/') || relative(LIB, f).startsWith('world/'));
     expect(roots.filter(bad).map((r) => relative(LIB, r))).toEqual([]);
   });
 });

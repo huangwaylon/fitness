@@ -22,7 +22,7 @@
   import { countOf, type Totals } from '#lib/model/tally.ts';
   import { GUEST } from '#lib/config/rules.ts';
   import type { WeekView, Who } from '#lib/types.ts';
-  import { bare } from '../kiroku/zukan.ts';
+  import { bare } from '#lib/world/critters.ts';
 
   let { shown, counts, view, onclose, dock = 'top' }: { shown: Shown; counts: Totals; view: WeekView; onclose: () => void; dock?: 'top' | 'bottom' } = $props();
 

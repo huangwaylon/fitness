@@ -16,7 +16,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import PieceTile from './PieceTile.svelte';
   import { iconUrl } from '../tent/items.ts';
-  import { bare } from '../kiroku/zukan.ts';
+  import { bare } from '#lib/world/critters.ts';
   import { SECTIONS, pocketItem } from './pocket.ts';
   import { allPicked, step, toggleSection, toggleStack, type Picks } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';

@@ -6,7 +6,7 @@ import { SELL } from '#lib/contract/shopPrices.ts';
 import tent from '#lib/i18n/tent.ja.json';
 import catchJa from '#lib/i18n/catch.ja.json';
 import main from '#lib/i18n/ja.json';
-import { bare } from '../kiroku/zukan.ts';
+import { bare } from '#lib/world/critters.ts';
 import { pocketItem } from './pocket.ts';
 import { LINE, LINE_XS, isLong, longest, placeOf, samePlace, words } from './words.ts';
 

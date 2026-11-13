@@ -619,3 +619,6 @@ export const findKind = (item: FishId | PondFishId | JunkId | BugId): 'fish' | '
 
 /** The official icon of a catch (static/art/critters/, fetched by scripts/fetch-assets.ts; the sea creatures too). */
 export const critterArt = (item: Catch): string => `critters/${item}`;
+
+/** A name as a list shows it: the English catalog's names carry an article for the catch line ("a sea bass"). */
+export const bare = (name: string): string => name.replace(/^(an?|some) /, '');

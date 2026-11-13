@@ -8,7 +8,7 @@
   // news (the harvest). Tap the dumbbell → けんこう (the health popup); a tree → its popup; the partner → a high-five; the say button (bottom right) → the phrase picker.
   import { onDestroy } from 'svelte';
   import IslandScene from '#lib/components/island/IslandScene.svelte';
-  import { emit } from '#lib/components/motion/bus.svelte.ts';
+  import { emit } from '#lib/ui-state/bus.svelte.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
   import HudCoins from '#lib/components/island/HudCoins.svelte';

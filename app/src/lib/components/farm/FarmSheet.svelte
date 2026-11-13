@@ -26,7 +26,7 @@
   import { formatNum, i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
-  import { bare } from '../kiroku/zukan.ts';
+  import { bare } from '#lib/world/critters.ts';
   import { fillPlan, harvestOps, harvestSummary, orphans, waterNext, waterTargets, wateredBy, yieldRange } from '../../world/farmSheet.ts';
   import type { Who } from '#lib/types.ts';
   import { askNow } from '../island/vegAsk.svelte.ts';
