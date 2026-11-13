@@ -163,3 +163,9 @@ there; a `https://island-fund.pages.dev/#key=<key>` link works only inside the i
 ## 11. The log
 The phones' and the relay's structured events in `IslandLog` for 30 days, numbers and enums only: what is logged,
 `npm run logs`, the checklist, the alert and `LOG_OFF`: [observability.md](observability.md).
+
+## 12. ITS investigating
+The 保養所ボット's Worker and runner: [its/README.md](../../its/README.md) (Operations, Diagnose, Secrets). A run in one
+timeline: `cd its/worker && npm run its:logs -- <run>[-<attempt>]`, then `rm -rf` the decrypted dir it names. The
+`its-alert` issue and what each reason means: [observability.md](observability.md#its-investigating). Gmail (the
+site's mails) is the ground truth for holds and 予約確定. Rotating a token both sides share: 停止 → change both → 開始.

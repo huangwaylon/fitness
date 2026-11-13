@@ -9,9 +9,12 @@ Two halves:
 
 - **`its-bot`** (`its/worker/`): `https://its-bot.island-fund-relay.workers.dev`, one Worker and one SQLite-backed
   Durable Object (`ItsBot`), Workers Free. It holds the settings and the record, tells the runner what to do, and
-  computes the page's verdict. `MODE` (wrangler.toml) is `on` or `off` (the stop switch; it starts `off`).
+  computes the page's verdict. `MODE` (wrangler.toml) is `on` or `off` (the stop switch); `on` since the cutover from
+  mbp2.
 - **The runner** (`its/runner/`): the Python booker (curl scans + headed Chrome for Turnstile), run on GitHub Actions
-  (`.github/workflows/its-runner.yml`, every 30 min and on 開始), bounded to ~5.5 h a run.
+  (`.github/workflows/its-runner.yml`, every 30 min and on 開始), bounded to ~5.5 h a run. Every run checks out main:
+  a runner change is live at the next run, so the three pieces stay compatible in any landing order (an older page,
+  runner or Worker leaves out the newer fields; each side treats a missing field as before).
 
 The contract between the three (page, Worker, runner) is `app/src/lib/its/contract.ts`; both languages test against
 `its/contract-example.json` and `its/norm-cases.json`. The site's own behaviour is `its/SITE.md`.
@@ -25,7 +28,16 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
   Worker; nothing is ever edited or deleted early). `confirming` is written before Chrome's 申込する: no ack, no commit.
 - **Auto-confirm** only for stays `AUTO_CONFIRM_MIN_DAYS` (11) or more away (free cancellation ends at D−10); off by
   default. Off: the hold is taken and the site's mail is finished by hand.
-- **Skipping wins over priority**; names compare after `normName` (NFKC, no spaces, lower case) on both sides.
+- **New facilities are not searched until a member switches them on**: `settings.search` is the allow-list (the
+  page's 探す); a facility is eligible when it's in `search` and not in `skip`. Settings saved before the allow-list
+  have no `search`: every facility not skipped (the old rule). A PUT without `search` (an older page) keeps the saved
+  list. Adding a facility the page lists before the site offers it: `app/src/lib/its/roster.ts` (its region, roster
+  kind and cutoff); a name the site offers joins `seen` by itself.
+- **Skipping wins over priority and `search`**; names compare after `normName` (NFKC, no spaces, lower case) on both
+  sides.
+- **A night with 予約確定 is done**: once the record has a `confirmed` entry for a date, the runner looks for that
+  night no more (the date stays in `dates` till a member removes it; the page says 予約済み). Every other eligible
+  facility with a room is still held (one 1-night stay per date).
 - **15 s is the floor** between scans: the site's ~24 h IP bans come from the request rate.
 - **Members only.** The page needs a member's key (KEY_A, KEY_B); the guest's never reaches this Worker. Dates and
   facility names are private: in the record and Workers Logs, never in the public Actions log.
@@ -52,27 +64,33 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 | Route | Who | |
 |---|---|---|
 | `GET /health` | anyone | `{ok, mode, sha}` |
-| `GET /its/status` | member | `ItsStatus`: verdict, reasons, settings, last report, lease, dispatch, bookings, events, seen |
+| `GET /health/its` | alerting | `Bearer <ITS_HEALTH_TOKEN>` → `ItsHealth` `{verdict, reasons, lastSeenAgeSec, phase, unsynced, unsyncedAgeSec, lastPreflightAgeSec}`: codes and counts, never a date, facility or name (its-health.yml, a public repo's workflow, reads it) |
+| `GET /its/status` | member | `ItsStatus`: verdict, reasons, settings, last report, lease, dispatch, control, bookings, events, seen, lastPreflight, recentScans (the last hour's reads, for the page's minute strip) |
 | `PUT /its/settings` | member | `ItsSettingsInput` (the contract's `parseSettingsInput`); 409 with the bare current `ItsStatus` as the body if `baseUpdatedAt` isn't the current `updatedAt` |
 | `POST /its/run` | member | `{action: 'start' \| 'stop'}`; start clears `paused` and dispatches a run (below); answers the status |
-| `GET /runner/config[?runId=]` | runner | `RunnerConfig`: the workflow's preflight (`stop` → the job ends in seconds) |
-| `POST /runner/claim` | runner | `{runId, host}` → `ClaimReply` (the lease when free, expired or already this run's) |
+| `GET /runner/config[?runId=]` | runner | `RunnerConfig`: without `runId`, the workflow's preflight (`stop` → the job ends in seconds; its time is the status's `lastPreflight`) |
+| `POST /runner/claim` | runner | `{runId, host}` → `ClaimReply` (the lease when free, expired or already this run's; taking over another run's unreleased lease records `prev_unclean`) |
 | `POST /runner/report` | runner | `RunnerReport` → `RunnerConfig`; the holder's renews the lease, a `run_end` event releases it |
 | `POST /runner/bookings[?runId=]` | runner | `BookingInput[]` (≤ 50) → `RunnerConfig`; a known id with the same content is a retry, ignored; with other content 409 `id_conflict` (nothing kept); the record full 507 `record_full` |
 
 Members: `Authorization: Bearer <KEY_A|KEY_B>` (relay/src/auth.ts's check), CORS for `ALLOWED_ORIGINS` (the Pages
 origin) and localhost, preflight answered, `Cache-Control: private, no-store`; another origin is 403, a wrong or the
-guest's key 401. Runner: `Bearer <ITS_RUNNER_TOKEN>`, compared in constant time. Errors are `{ok: false, error}`. Run
+guest's key 401. A page's `X-Request-Id` (an id: `ID_RE`; else the Worker makes one up, `w-` + 8 hex) is echoed and
+exposed, and every log line of that request says `rid=…`. Runner: `Bearer <ITS_RUNNER_TOKEN>`, alerting `Bearer
+<ITS_HEALTH_TOKEN>`, both compared in constant time. Errors are `{ok: false, error}`. Run
 ids are `${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}` (a re-run is a new run) or a local id; `?runId=` names the asking run.
 The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NAME`, `ID_RE`.
 
 - **Record** (DO storage, one key each): `settings`, `bookings` (append-only; pruned only `BOOKINGS_KEEP_DAYS` = 60
   days after the stay; at 500 entries new ones are refused, 507, with an error log; an id reused for other content is
-  409 `id_conflict`), `runner` (the holder's last report + the Worker's `lastSeen`, and when it saw `lastOkAt` /
-  `solves.lastOkAt` move), `lease`, `dispatch`, `control` (the last 開始 / 停止: who, when), `events` (two rings of
-  `EVENTS_KEPT` = 40: routine, and hold / confirmed / human_needed / ban, so routine ones never evict those), `seen`
-  (facility names, the newest 300; a known name's time is rewritten at most daily), `acks` (the highest event seq per
-  run, the newest 20 runs: a retried report adds nothing twice). Times are the Worker's receive time; the verdict
+  409 `id_conflict`), `runner` (the holder's last report + the Worker's `lastSeen`, when it saw `lastOkAt` /
+  `solves.lastOkAt` move, and since when the run has reported unsynced entries), `lease`, `dispatch`, `control` (the
+  last 開始 / 停止: who, when), `events` (two rings of `EVENTS_KEPT` = 40: routine, and hold / confirmed /
+  human_needed / ban / prev_unclean, so routine ones never evict those; `prev_unclean` is the Worker's own, seq 0, its
+  `detail` the run whose lease was taken over), `seen` (facility names, the newest 300; a known name's time is
+  rewritten at most daily), `acks` (the highest event seq per run, the newest 20 runs: a retried report adds nothing
+  twice), `preflight` (the last one's time), `scans` (the last hour's calendar reads from the reports' `scansLog`, one
+  batch per report, ≤ 300 entries, aged out by receive time). Times are the Worker's receive time; the verdict
   compares only those. A change is one put, then memory (a failed put acknowledges nothing).
 - **Lease**: a report from the holder renews it, also after it expired if nobody claimed it (`its lease
   renewed_late`); a released lease (`run_end`) is granted only by a claim.
@@ -84,11 +102,14 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
 - **Verdict**: computed on each status read from the Worker's clock (no cron, no alarm), every reason that applies in
   the contract's `REASONS` order, the verdict the first's (Diagnose below).
 - **Logs** (Workers Logs, 3 days: dashboard → Workers → its-bot → Logs, or `npx wrangler tail`): one line per request
-  class, `its status by=A verdict=…`, `its settings by=B dates=2 skip=12 pri=1 int=15 …`, `its run start by=A
-  dispatch=204`, `its claim run=… ok=1`, `its report run=… phase=scanning scans=… fail=0 ev=1/2 lease=renewed stop=0`,
-  `its event hold … date=… hotel=…`, `its booking confirmed id=…`; every refusal `its refused <status> <why> <route>`
-  (and `its bookings refused id_conflict … had=… got=…` / `refused=N record_full` as errors).
-  Never a key or token; dates and names are fine (the logs are private). Invocation logs off.
+  class, `its status by=A verdict=… rid=…` (the page's poll: **debug** level, filter it out), `its settings by=B
+  dates=2 skip=12 pri=1 int=15 guests=2 auto=0 search=40 […] rid=…` (`search=-`: no allow-list; `(kept)`: an older
+  page's save), `its settings conflict …` (a 409: info), `its run start by=A dispatch=204 rid=…`, `its claim run=…
+  ok=1` (`took_over=<run> prev_unclean` at warn), `its config run=- stop=…` (a preflight), `its report run=…
+  phase=scanning scans=… fail=0 ev=1/2 lease=renewed stop=0`, `its event hold … date=… hotel=…`, `its booking
+  confirmed id=…`; every refusal `its refused <status> <why> <route>` (a page's with `rid=`; and `its bookings refused
+  id_conflict … had=… got=…` / `refused=N record_full` as errors). Never a key or token; dates and names are fine
+  (the logs are private). Invocation logs off.
 
 ## Runner
 
@@ -96,13 +117,24 @@ See `its/runner/README.md`.
 
 ## Secrets
 
-`npx wrangler secret put <NAME>` from `its/worker/`; never in this public repo. The coordinator keeps a copy.
+Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wrangler secret put <NAME>` from
+`its/worker/`. Actions': `gh secret set <NAME> --env its` (the `its` environment, main only), except where noted.
 
-| Name | Value |
-|---|---|
-| `KEY_A`, `KEY_B` | The members' keys, **copied from the relay's** (`~/.config/island-fund/keys`). Rotating them: put the new ones on both the relay and here |
-| `ITS_RUNNER_TOKEN` | `openssl rand -hex 32`; the same value in the repo's `its` environment (Actions) |
-| `GH_DISPATCH_TOKEN` | Optional. A fine-grained PAT: repository `huangwaylon/fitness` only, permission Actions: read and write. Unset: 開始 sends nothing and the next scheduled run (≤ 30 min) starts |
+| Name | Where | Value |
+|---|---|---|
+| `KEY_A`, `KEY_B` | Worker | The members' keys, **copied from the relay's** (`~/.config/island-fund/keys`). Rotating them: put the new ones on both the relay and here |
+| `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, the same value on both |
+| `GH_DISPATCH_TOKEN` | Worker | Optional. A fine-grained PAT: repository `huangwaylon/fitness` only, permission Actions: read and write. Unset: 開始 sends nothing and the next scheduled run (≤ 30 min) starts |
+| `ITS_HEALTH_TOKEN` | Worker + **repo** secret | `openssl rand -hex 32`, the same value on both: `gh secret set ITS_HEALTH_TOKEN` (a repository secret, not the `its` environment's: its-health.yml has no environment). Unset on the Worker: `/health/its` is 401 `no_health_token` |
+| `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | The Gmail account the site mails and its app password (the confirm leg reads the 申込 mail) |
+| `ITS_EMAIL` | `its` env | The applicant's mail address on the form (default: the IMAP user) |
+| `ITS_KIGOU`, `ITS_BANGOU`, `ITS_KANA_*`, `ITS_NAME_*`, `ITS_BIRTH`, `ITS_SEX`, `ITS_ZOKUGARA`, `ITS_TEL`, … | `its` env | The applicant, every field the form asks (the full list: its-runner.yml's run step) |
+| `ITS_LOG_RECIPIENT` | `its` env **variable** | The age public key the private log is encrypted to (the relay's `ARCHIVE_RECIPIENT`; its secret half is `~/.config/island-fund/archive-age.key`, for fetch-logs.sh) |
+| `ITS_RUNNER_ENABLED` | repo variable | `1`: the workflow may run (`gh variable delete ITS_RUNNER_ENABLED`: no job starts) |
+
+Rotating a token shared by two places (`ITS_RUNNER_TOKEN`, `KEY_A`/`KEY_B`, `ITS_HEALTH_TOKEN`): **停止 → change both →
+開始** (a run between the two changes would be refused: 401s, `runner_silent`). The applicant's and the IMAP secrets
+apply at the next run.
 
 ## Develop and deploy
 
@@ -111,7 +143,8 @@ cd its/worker
 npm ci
 npm run check && npm run knip && npm test   # CI runs these (.github/workflows/its.yml)
 npm run deploy                              # a clean its/worker/ at a commit on origin/main
-curl -s https://its-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mode":"off","sha":<the commit>}
+curl -s https://its-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mode":"on","sha":<the commit>}
+curl -s -H "Authorization: Bearer $ITS_HEALTH_TOKEN" https://its-bot.island-fund-relay.workers.dev/health/its
 ```
 
 Tests run on Node with `cloudflare:workers` mocked (test/setup.ts), a fake storage that counts its calls, the clock
@@ -126,8 +159,10 @@ WRANGLER_SEND_METRICS=false npx wrangler dev --local --port 8799 --var MODE:on  
 # another shell: settings + 開始 with KEY_A (PUT /its/settings, POST /its/run), then the runner against it and FakeITS
 cd its/runner && ITS_WORKER_URL=http://127.0.0.1:8799 ITS_RUNNER_TOKEN=dev ITS_BASE_URL=http://127.0.0.1:<FakeITS port> \
   python3 main.py --remote --deadline $(( $(date +%s) + 600 ))
-``` The Worker imports `app/src/lib/its/contract.ts` and `relay/src/auth.ts`, so a
-checkout needs `its/`, `app/src/lib/its`, `app/src/lib/contract` and `relay/src/auth.ts`. A deploy keeps the record.
+```
+
+The Worker imports `app/src/lib/its/contract.ts` and `relay/src/auth.ts`, so a checkout needs `its/`,
+`app/src/lib/its`, `app/src/lib/contract` and `relay/src/auth.ts`. A deploy keeps the record.
 
 ## Operations
 
@@ -137,6 +172,9 @@ runner token.
 - **Look**: the app's 設定 → 保養所ボット, or `curl -s -H "Authorization: Bearer $KEY_A" $URL/its/status | jq
   '{verdict, reasons, runner: .runner | {phase, lastSeen, scans, scanFailures, lastError}}'`. Details: `npx wrangler
   tail`; the run's public log on Actions (counts and codes only; the private log is its encrypted artifact).
+- **Investigate a run**: `cd its/worker && npm run its:logs -- <run>[-<attempt>]`: the Worker's events and bookings of
+  that run and its decrypted private log in one Tokyo-time timeline; then `rm -rf /tmp/its-logs-<run>` (it holds
+  credentials). The checklist: docs/ops/observability.md "ITS investigating".
 - **Stop** (normal): 停止 on the page. The runner exits within ~30 s plus any booking in flight.
 - **Stop everything**: `npm run deploy -- --var MODE:off` from a clean main, then commit `MODE = "off"` (every
   runner is told `mode_off`, 開始 dispatches nothing); and `gh variable delete ITS_RUNNER_ENABLED` (no job starts at
@@ -151,7 +189,9 @@ runner token.
 ## Diagnose
 
 The verdict is the first reason that applies (`reasons`, in this order). `starting`, `never_ran`, `runner_silent`,
-`dispatch_failed`, `scan_failing` and `solve_failing` count only while it should run (MODE on, not stopped, a date).
+`dispatch_failed`, `scan_failing`, `solve_failing`, `mail_failing` and `settings_stale` count only while it should run
+(MODE on, not stopped, a date). its-health.yml opens one `its-alert` issue on `late` / `failing`, or `human_needed`,
+`unsynced` for 30+ min, `dispatch_failed`, `mail_failing`, `settings_stale`, and closes it when healthy.
 
 | Reason | Verdict | Means | Do |
 |---|---|---|---|
@@ -166,7 +206,12 @@ The verdict is the first reason that applies (`reasons`, in this order). `starti
 | `scan_failing` | failing | 3+ failed calendar reads in a row (`runner.lastError`: step, status, class) | Usually the site; `session_dead` for long = the Turnstile solve |
 | `solve_failing` | degraded | The last 3 Turnstile solves failed | The run's public log (`solve` lines, spot, secs); SITE.md §6 |
 | `unsynced` | degraded | The runner holds booking entries the Worker hasn't acknowledged (no new hold meanwhile) | `wrangler tail` for `its refused … /runner/bookings`; it retries each report |
-| `human_needed` | degraded | Within 24 h and no later 予約確定 for that stay: a failed 申込 leg, a `human_needed` event (`events` say why: `near_date`, `auto_off`, `no_mail`, `leg_failed`, …), or a `confirming` with no outcome after 10 min; or a hold under 30 min old the runner won't finish (auto-confirm off, or the stay < 11 days away) | Finish or cancel it from the site's mail before the 30-min hold lapses |
+| `human_needed` | degraded | Within 24 h and no later 予約確定 for that stay: a failed 申込 leg, a `human_needed` event (`events` say why: `near_date`, `auto_off`, `no_mail`, `leg_failed`, …), or a `confirming` with no outcome after 10 min; or a hold under 30 min (`HOLD_SEC`) old the runner won't finish (auto-confirm off, or the stay < 11 days away) | Finish or cancel it from the site's mail before the 30-min hold lapses |
+| `mail_failing` | degraded | Auto-confirm is on and the runner's last IMAP check failed (`runner.lastError` step `imap`: `auth_failed`, `web_login_required`, …): holds wait for a person | The Gmail app password (`ITS_IMAP_APP_PASSWORD`), Gmail's security alerts; meanwhile finish holds by hand |
+| `settings_stale` | degraded | The run holding the lease still applies settings older than the saved ones a minute (`SETTINGS_STALE_SEC`) after a save (`runner.settingsAt` < `settings.updatedAt`; an older runner sends no `settingsAt`) | `npm run its:logs` on the run (its reports, a parse refusal of the settings); 停止 → 開始 starts a fresh run |
+
+A `prev_unclean` event (not a reason) says a run's claim took over a lease the run in `detail` never released: it was
+cancelled or died mid-run. Look at that run (its:logs) for a hold or a 申込 it may have left, and the site's mail.
 
 ## Quotas
 

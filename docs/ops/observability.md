@@ -146,6 +146,38 @@ no record backup has been good in 48 h; a green run closes it. The issue holds c
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.
 
+## ITS investigating
+The 保養所ボット (its/README.md) has its own record and logs: the its-bot Worker's status (events, bookings, the last
+report; Workers Logs 3 days, `npx wrangler tail` in `its/worker/`), each run's public Actions log (counts and codes
+only) and its private log (an encrypted artifact, 3 days). **Gmail is the ground truth**: the site mails every hold
+(「申込手続きのご案内」) and every 予約確定; when the record and the mail disagree, the mail is what happened.
+
+One run, everything in one Tokyo-time timeline (the Worker's events by seq, the run's bookings, its decrypted private
+log), then delete the decrypted copy (it holds credentials):
+```sh
+cd its/worker && npm run its:logs -- <run>[-<attempt>]     # --no-log: the Worker's record only
+rm -rf /tmp/its-logs-<run>[-<attempt>]
+```
+Requests from the page carry `rid=` (its `X-Request-Id`, also in the phone's `its.fail`): `npx wrangler tail --search
+rid=<id>`, or the dashboard's search. The page's 15 s poll (`its status …`) is debug level: filter on info+.
+
+The alert: `its-health.yml` (every 30 min) reads `GET /health/its` with `ITS_HEALTH_TOKEN` (codes only) and keeps
+one issue labelled `its-alert` open while the verdict is late / failing or a reason needs a person (its/README.md
+"Diagnose"); healthy closes it.
+
+| Seen | Look at | Then |
+|---|---|---|
+| `its-alert`: `late` (`runner_silent` / `never_ran`) | Actions: the last its-runner runs (failed? cancelled? the preflight's `stop`?); `lastPreflightAgeSec` (is the schedule even asking?) | `wrangler tail` for `its refused 401` (a token rotated on one side only); `ITS_RUNNER_ENABLED` |
+| `failing`: `banned` | the run's `ban` event | Nothing: the next run has another IP. Recurring: a longer interval |
+| `failing`: `scan_failing`, `degraded`: `solve_failing` | `runner.lastError` (step, status, cls); its:logs for the failing step and the saved HTML/screenshot | The site changed (SITE.md), or Turnstile |
+| `human_needed` | the status's bookings and events (`near_date`, `auto_off`, `leg_failed`, …); Gmail | Finish or cancel the hold from the mail within 30 min (`HOLD_SEC`) |
+| `unsynced` 30+ min | `its refused … /runner/bookings` in Workers Logs (409 `id_conflict`, 507 `record_full`) | The runner keeps them and retries; a full record: back it up (its/README.md "Operations") |
+| `mail_failing` | `runner.lastError` step `imap` (`auth_failed`, `web_login_required`) | The Gmail app password, Gmail's security alerts |
+| `settings_stale` | its:logs on the run: its reports' `settingsAt`, a settings parse refusal | 停止 → 開始 |
+| A `prev_unclean` event (`took_over=<run>` in Workers Logs) | the run in `detail`: cancelled or died mid-run | its:logs on it; Gmail for a hold or 申込 it left |
+| A hold in Gmail the record doesn't have | its:logs on the run that was running then (`confirming` written? `unsynced`?) | Seed it into the record (its/README.md "Operations") so it's never applied for again |
+| Cancelled its-runner runs in Actions | a scheduled run queued behind a running one (`concurrency: its-runner`) and replaced by a newer one | Noise, not a failure, unless every run is cancelled |
+
 ## Costs
 ### The log (Free plan)
 | | Free limit | The log adds (typical / worst) |
