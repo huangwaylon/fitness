@@ -3,7 +3,7 @@
 // (index.ts).
 import { DurableObject } from 'cloudflare:workers';
 import type { ActAnswer, GymConfig, Member } from '../../app/src/lib/gym/contract.ts';
-import { config, webAct, type Bot, type StoredChange } from './actions.ts';
+import { config, latestChanges, webAct, type Bot, type StoredChange } from './actions.ts';
 import type { Env } from './env.ts';
 import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
@@ -34,7 +34,7 @@ interface Runtime {
   lastOk: number | null;
   lastError: GymStatus['lastError'];
   line: GymStatus['line'];
-  /** The app's changes (POST /gym/act), newest first; `said` once a LINE reply carried them. */
+  /** The app's changes (POST /gym/act), newest first, the latest per day or check setting. */
   changes: StoredChange[];
 }
 
@@ -86,6 +86,8 @@ export class GymBot extends DurableObject<Env> implements Bot {
     if (rt) ({ failures: this.failures, siteDownSent: this.siteDownSent, retry: this.retry, lastCheck: this.lastCheck,
       lastManualCheck: this.lastManualCheck, checks: this.checks = [], lastOk: this.lastOk = null,
       lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [] } = rt); // the defaults: saved before /status, /gym/act
+    // kept before 11/14 with a `said` flag and every change: one per day or check setting now
+    this.changes = latestChanges(this.changes.map(({ said: _, ...c }: StoredChange & { said?: boolean }) => c));
     this.savedRuntime = JSON.stringify(this.runtime());
     if (!this.groupId) console.warn("LINE_GROUP_ID isn't set: alerts can't be sent until it is");
   }

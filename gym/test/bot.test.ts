@@ -624,20 +624,26 @@ describe('state', () => {
     expect(state.alarm()).toBe(NOW);
   });
 
-  it('keeps the app’s changes across an eviction until a LINE reply carries them, with NAME_A / NAME_B', async () => {
+  it('keeps the app’s changes across an eviction, with NAME_A / NAME_B; LINE never names them', async () => {
     gym = await start({ NAME_A: 'ウェイ' });
     expect((await gym.act({ a: 'skip', d: inDays(3) }, 'A', 'r1')).status).toBe(200);
     expect((await gym.act({ a: 'pause' }, 'B', 'r2')).status).toBe(200);
     expect(state.alarm()).toBeNull(); // stopped: no alarm
     expect(saved()).toMatchObject({ paused: true, days: { [inDays(3)]: 'skip' } });
     gym = await start({ NAME_A: 'ウェイ' }); // evicted
-    expect(gym.changes.map((c) => [c.a, c.said])).toEqual([['pause', false], ['skip', false]]);
+    expect(gym.changes.map((c) => c.a)).toEqual(['pause', 'skip']);
     expect((await gym.getConfig()).changes.map((c) => c.who)).toEqual(['メンバーB', 'ウェイ']); // B unset
     await gym.handle({ type: 'postback', postback: { data: 'a=help' }, source: { groupId: GROUP, userId: 'U1' }, replyToken: 'r3' });
-    const text = (reply.mock.calls[0][1] as { text: string }[]).at(-1)!.text;
-    expect(text.split('\n').at(-1)).toBe(`アプリで変更：${messages.dayLabel(inDays(3))}🔕 通知オフ（ウェイ）、⏸️ チェック停止（メンバーB）`);
+    expect(reply.mock.calls[0][1]).toHaveLength(1);
+    expect((reply.mock.calls[0][1] as { text: string }[])[0].text).toBe(messages.HELP_TEXT);
+  });
+
+  it('reads the changes kept before 11/14 (a `said` flag, three for one day) as the latest per day', async () => {
+    const day = inDays(3);
+    const old = ([['skip', 1], ['reset', 2], ['skip', 3]] as const).map(([a, ago]) => ({ t: NOW - ago, by: 'A', a, d: day, said: true }));
+    state.kv.set('runtime', { changes: [...old, { t: NOW - 4, by: 'B', a: 'interval', d: null, m: 30, said: false }] });
     gym = await start();
-    expect(gym.changes.every((c) => c.said)).toBe(true); // saved after the reply
+    expect(gym.changes).toEqual([{ t: NOW - 1, by: 'A', a: 'skip', d: day }, { t: NOW - 4, by: 'B', a: 'interval', d: null, m: 30 }]);
   });
 });
 

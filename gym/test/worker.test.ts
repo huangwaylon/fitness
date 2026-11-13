@@ -18,7 +18,7 @@ import worker from '../src/index.ts';
 import { GymBot } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
 import type { Line } from '../src/line.ts';
-import { isoJst } from '../src/time.ts';
+import { addDays, dayOf, isoJst } from '../src/time.ts';
 import type { ActAnswer, GymConfig } from '../../app/src/lib/gym/contract.ts';
 import { GROUP, NOW, fakeState, inDays } from './fakeBot.ts';
 
@@ -264,6 +264,19 @@ describe('POST /gym/act, end to end', () => {
   const readConfig = async (): Promise<GymConfig> => (await call('/gym/config', { headers: page() }, env())).json();
   const row = (c: GymConfig, day: string) => c.rows.find((r) => r.day === day)!;
   const tap = (data: string) => ({ type: 'postback', replyToken: `r-${data}`, source: { type: 'group', groupId: GROUP, userId: 'U1' }, postback: { data } });
+  /** A fresh bot over its own storage, the one the Worker reaches. */
+  const newBot = async (): Promise<GymBot> => {
+    const st = fakeState();
+    const b = new GymBot(st.ctx as never, env());
+    await st.loaded();
+    b.line = {
+      reply: vi.fn(async (_t: string, m: unknown[]) => void replies.push(m)), memberName: vi.fn(async () => 'Bob'), push: vi.fn(async () => {}),
+      quota: vi.fn(async () => 200), quotaUsed: vi.fn(async () => 0), webhook: vi.fn(async () => ({ endpoint: '', active: true }))
+    } as unknown as Line;
+    vi.spyOn(b, 'sleep').mockResolvedValue();
+    bot = b as unknown as typeof bot;
+    return b;
+  };
   const logged = () => [...vi.mocked(console.log).mock.calls, ...vi.mocked(console.warn).mock.calls].map((c) => c.join(' '));
 
   beforeEach(async () => {
@@ -273,16 +286,8 @@ describe('POST /gym/act, end to end', () => {
     // the gym's API: nothing open (one booked slot, as an empty answer is an error)
     const times = [{ start_at: isoJst(NOW + 3_600_000), is_reservable: false }];
     vi.stubGlobal('fetch', vi.fn(async () => Response.json({ data: { reserve_schedule: { dates: [{ date: 'any', times }] } } })));
-    const st = fakeState();
-    real = new GymBot(st.ctx as never, env());
-    await st.loaded();
     replies = [];
-    real.line = {
-      reply: vi.fn(async (_t: string, m: unknown[]) => void replies.push(m)), memberName: vi.fn(async () => 'Bob'), push: vi.fn(async () => {}),
-      quota: vi.fn(async () => 200), quotaUsed: vi.fn(async () => 0), webhook: vi.fn(async () => ({ endpoint: '', active: true }))
-    } as unknown as Line;
-    vi.spyOn(real, 'sleep').mockResolvedValue();
-    bot = real as unknown as typeof bot;
+    real = await newBot();
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -302,7 +307,7 @@ describe('POST /gym/act, end to end', () => {
     expect(row(after, inDays(5))).toMatchObject({ rule: 'any', resettable: true });
     expect(after.rows).toEqual(body.config.rows);
     expect(after.changes).toMatchObject([{ by: 'A', who: 'ウェイ', a: 'any', d: inDays(5) }]);
-    expect(after.text).toContain('アプリで変更：'); // 📋 names it
+    expect(after.text).not.toContain('アプリで変更'); // 📋 as before the app could edit
     expect(logged()).toContain(`act by=A a=any d=${inDays(5)} changed=1 rid=rid-1`);
   });
 
@@ -317,11 +322,8 @@ describe('POST /gym/act, end to end', () => {
     expect(row(body.config, inDays(2)).rule).toBe('skip');
     expect(real.store.rule(inDays(2))).toBe('skip'); // LINE's stays
     expect((await post({ a: 'any', d: inDays(3), base: row(seen, inDays(3)).base })).status).toBe(200);
-    // the next LINE reply carries the app's change, once
     await webhook([tap('a=help')], env());
-    expect(JSON.stringify(replies.at(-1))).toContain('アプリで変更：');
-    await webhook([tap('a=help')], env());
-    expect(JSON.stringify(replies.at(-1))).not.toContain('アプリで変更：');
+    expect(JSON.stringify(replies.at(-1))).not.toContain('アプリで変更'); // the group never hears of the app's changes
   });
 
   it('🔎 shares LINE’s once-a-minute cooldown: 429 with Retry-After', async () => {
@@ -386,5 +388,55 @@ describe('POST /gym/act, end to end', () => {
     expect(vi.mocked(console.warn).mock.calls.map((c) => String(c[0]))).toContain('act refused 503 mode_off by=A rid=rid-1');
     expect((await post({ a: 'pause' }, page('nope'), off)).status).toBe(401); // the key first
     expect((await call('/gym/config', { headers: page() }, off)).status).toBe(200);
+  });
+
+  describe('the same change from the app or LINE: the same state and the same answers', () => {
+    const [d1, d2, d5, d6] = [1, 2, 5, 6].map((n) => addDays(dayOf(NOW), n)); // NOW: the tests' clock, set later
+    type Case = { name: string; seed?: () => Promise<void>; app: object; line: { data: string; params?: Record<string, string> } };
+    const cases: Case[] = [
+      { name: '🔔', app: { a: 'any', d: d5 }, line: { data: `a=any&d=${d5}` } },
+      { name: '🔕', app: { a: 'skip', d: d2 }, line: { data: `a=skip&d=${d2}` } },
+      { name: '⏰', app: { a: 'range', d: d6, s: '12:00', e: '14:00' }, line: { data: `a=range&d=${d6}&s=12:00`, params: { time: '14:00' } } },
+      { name: '⏳', app: { a: 'from', d: d1, at: '11:00' }, line: { data: `a=from&d=${d1}`, params: { datetime: `${d1}T11:00` } } },
+      { name: '⏳ cleared', seed: () => seed({ a: 'from', d: d1, at: '11:00' }), app: { a: 'unfrom', d: d1 }, line: { data: `a=unfrom&d=${d1}` } },
+      { name: '🧹', seed: async () => { await seed({ a: 'skip', d: d2 }); await seed({ a: 'from', d: d1, at: '11:00' }); }, app: { a: 'reset', d: d2 }, line: { data: `a=reset&d=${d2}` } },
+      { name: '🔕 🧹 🔕 on one day', seed: async () => { await seed({ a: 'skip', d: d2 }); await seed({ a: 'reset', d: d2 }); }, app: { a: 'skip', d: d2 }, line: { data: `a=skip&d=${d2}` } },
+      { name: '🔧 interval', app: { a: 'interval', m: 30 }, line: { data: 'a=interval&m=30' } },
+      { name: '⏸️', app: { a: 'pause' }, line: { data: 'a=pause' } },
+      { name: '▶️', seed: () => seed({ a: 'pause' }), app: { a: 'resume' }, line: { data: 'a=resume' } }
+    ];
+    /** A seed step, the same on both bots (the app's path; the case's own step is what differs). */
+    let seed: (body: object) => Promise<void>;
+    const tapWith = (data: string, params?: Record<string, string>) => ({ ...tap(data), postback: { data, ...(params ? { params } : {}) } });
+    /** Everything the bot shows and keeps after `step`: the state (in memory and saved), 📋's reply on LINE and
+     *  /gym/config (all but `changes`, the app's own list of its changes). */
+    async function after(step: (b: GymBot) => Promise<void>, c: Case) {
+      const b = await newBot();
+      seed = async (body) => void expect((await post(body, page(), env())).status).toBe(200);
+      await c.seed?.();
+      await step(b);
+      replies = [];
+      await webhook([tap('a=status')], env());
+      const status = (replies[0] as { text: string }[]).map((m) => m.text).join('\n');
+      const { changes: _, ...config } = await readConfig();
+      return { store: b.store.toJSON(), saved: await b.getState(), status, config };
+    }
+
+    it.each(cases)('$name', async (c) => {
+      const viaApp = await after(async () => void expect((await post(c.app)).status).toBe(200), c);
+      const viaLine = await after(async () => void await webhook([tapWith(c.line.data, c.line.params)], env()), c);
+      expect(viaLine).toEqual(viaApp);
+      expect((await after(async () => {}, c)).store).not.toEqual(viaApp.store); // the step did change something
+      expect(viaApp.status).toBe(viaApp.config.text); // 📋 is /gym/config's text
+      expect(viaApp.status).not.toContain('アプリで変更');
+    });
+
+    it('the app’s list keeps one entry per day: the user’s 11/27 🔕, 🧹, 🔕', async () => {
+      await newBot();
+      for (const a of ['skip', 'reset', 'skip']) expect((await post({ a, d: inDays(15) })).status).toBe(200);
+      const c = await readConfig();
+      expect(c.changes.filter((x) => x.d === inDays(15)).map((x) => x.a)).toEqual(['skip']);
+      expect(c.text.split('\n').filter((l) => l.includes(inDays(15).slice(5).replace('-', '/')))).toHaveLength(1);
+    });
   });
 });

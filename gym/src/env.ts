@@ -17,7 +17,7 @@ export interface Env {
    *  guest is refused like a stranger. */
   KEY_A?: string;
   KEY_B?: string;
-  /** The members' names in the app's changes (LINE's アプリで変更 line, 📋, the app's list); unset: メンバーA / B.
+  /** The members' names in the app's list of its changes (/gym/config); unset: メンバーA / B.
    *  Secrets, so the names stay out of this public repo. */
   NAME_A?: string;
   NAME_B?: string;

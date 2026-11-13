@@ -3,13 +3,13 @@
 // format never changes, so cards already in the chat keep working. Days are picked from buttons (`daysCard`), not
 // LINE's date picker, so the weekday shows; menu cards from before still send `a=day` with the picked `params.date`.
 // Every answer is a reply (free), visible to the whole group; a tap for a day that has passed gets a short hint.
-// A change tap is a GymAction applied by actions.apply, the app's path too; app changes not said in the group yet
-// ride along on the next reply (`send`).
+// A change tap is a GymAction applied by actions.apply, the app's path too, so the state and every answer are the same
+// whichever side made the change; the app's changes are never named in the group.
 import * as actions from './actions.ts';
-import type { Bot, StoredChange } from './actions.ts';
+import type { Bot } from './actions.ts';
 import { DAYS_SHOWN, INTERVALS, LAST_START } from '../../app/src/lib/gym/contract.ts';
 import { CLOSES, DEFAULT_WINDOW, OPENS } from './config.ts';
-import { LineError, MAX_MESSAGES, texts } from './line.ts';
+import { LineError, texts } from './line.ts';
 import * as messages from './messages.ts';
 import { addDays, at, clockFrom, clockOf, dayOf, minutesOf, weekday, type Clock, type Day } from './time.ts';
 
@@ -191,34 +191,12 @@ export async function handle(bot: Bot, e: unknown): Promise<void> {
   }
 }
 
-const show = (bot: Bot, token: string | undefined, message: Json): Promise<void> => send(bot, token, [message]);
+const show = (bot: Bot, token: string | undefined, message: Json): Promise<void> => bot.line.reply(token!, [message]);
 
-const say = (bot: Bot, token: string | undefined, text: string | string[], told?: readonly StoredChange[]): Promise<void> =>
-  send(bot, token, texts(text), told);
+const say = (bot: Bot, token: string | undefined, text: string | string[]): Promise<void> => bot.line.reply(token!, texts(text));
 
 /** Invalid input: say why; the card keeps working. */
 const hint = (bot: Bot, token: string | undefined, text: string): Promise<void> => say(bot, token, `🤔 ${text}`);
-
-/** Every reply. The app's changes not said in the group yet ride along as one line (on the last text, or a text of
- *  their own after a card while there's room), then count as said; `told`: the ones the reply names itself (📋's),
- *  the only ones said then. A reply that carried none (full, or failed) leaves them unsaid. */
-async function send(bot: Bot, token: string | undefined, out: Json[], told?: readonly StoredChange[]): Promise<void> {
-  let said = told ?? [];
-  const unsaid = bot.changes.filter((c) => !c.said);
-  if (unsaid.length && !told) {
-    const line = messages.appChanges([...unsaid].reverse().map((c) => actions.changeText(bot, c)));
-    const last = out.at(-1);
-    if (last?.type === 'text') {
-      out[out.length - 1] = { ...last, text: `${last.text}\n${line}` };
-      said = unsaid;
-    } else if (out.length < MAX_MESSAGES) {
-      out.push({ type: 'text', text: line });
-      said = unsaid;
-    }
-  }
-  await bot.line.reply(token!, out);
-  for (const c of said) c.said = true;
-}
 
 /** A value from a tap, checked against its shape (a bad one is an unexpected error: ERROR). */
 function parsed(value: unknown, shape: RegExp): string {
@@ -245,8 +223,7 @@ async function onPostback(bot: Bot, event: Json, token: string | undefined): Pro
   } else if (action === 'help') {
     await say(bot, token, messages.HELP_TEXT);
   } else if (action === 'status') {
-    const now = Date.now();
-    await say(bot, token, await actions.status(bot, now), actions.recentChanges(bot, now));
+    await say(bot, token, await actions.status(bot));
   } else if (action === 'check') {
     const r = await actions.apply(bot, { a: 'check' });
     await say(bot, token, actions.refused(r) ? r.hint : r.lines!);

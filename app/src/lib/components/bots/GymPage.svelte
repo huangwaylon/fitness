@@ -3,7 +3,7 @@
   // phone's key: lib/gym/config.ts) the control row — チェック中・15分ごと (a tap stops, asked first, or restarts),
   // 今すぐ確認 (a peek: its 60 s countdown, its answer under the row) and ⋯ (確認の間隔) — then the 4-week calendar
   // (GymCalendar: a tap opens the day's editor, GymDayEditor; 選択 or a long press the select mode, its sticky bar one
-  // bulk act), a one-line legend and the 3-reservation note; アプリで変更 (the last few app changes) folded near the
+  // bulk act), a one-line legend and the 3-reservation note; アプリで変更 (the last ones, one a day) folded near the
   // foot. Every change applies at once (no draft): the page shows it, POST /gym/act sends it after the ones before it
   // (one at a time, each with its days' bases as the last answer left them), and its banner offers 取り消す for 5 s
   // (one undo an act or bulk act: lib/gym/calendar.ts undoActs); a failure puts back only its own days, with a coral

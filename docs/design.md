@@ -106,16 +106,17 @@ the よびな and what's worn → [the 姿 level](#sugata)), **プロフィー�
 ### Bots
 
 **ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** (`GymPage`, left) and **保養所** (`ItsPage`, not in
-demo). The tab last shown this session reopens (a new launch opens ジム). Only the shown page is mounted; it reads
+demo). The tab last shown this session reopens (a launch: ジム). Only the shown page mounts; it reads
 its Worker on open and while shown (`poll.svelte.ts`: 保養所 every 15 s while running, else 60 s; ジム 60 s;
-none while hidden, aborted on leave). The last status read shows at once, marked 更新中 (`lastKnown.ts`, kept per tab
-in memory and on the phone). One look for both: the verdict card (`VerdictCard`: dot, word, sentence, tinted by tone),
+none while hidden, aborted on leave). The last status read shows at once, marked 更新中 (`lastKnown.ts`, per tab in
+memory and on the phone). One look for both: the verdict card (`VerdictCard`: dot, word, sentence, tinted by tone),
 the status strip (`StatusStrip`, `lib/strip.ts`: 保養所's 直近1時間, a cell a minute; ジム's 直近12時間, a cell a check
-interval, the checks chained so the alarm's jitter leaves no false gap; green ok, yellow a room or slot open, red
-hatched a failure, outlined nothing checked; tap or ← → names a cell), the facts with くわしく (`FactList`), the
+interval, chained so the alarm's jitter leaves no false gap; green ok, yellow a room or slot open, red
+hatched a failure, outlined nothing checked; tap or ← → names a cell), くわしく facts (`FactList`), the
 skeleton, the foot. A dot while a bot needs a person.
 ジム: controls (stop asks; 今すぐ確認 peeks; ⋯ 間隔), a 4-week grid (`GymCalendar`: ふだん the next 4 days; a day:
-`GymDayEditor`; 選択: bulk), the 3-booking note, アプリで変更, 動作状況 last; changes apply at once (取り消す).
+`GymDayEditor`; 選択: bulk), the 3-booking note, アプリで変更 (a day once; not in LINE), 動作状況 last; changes
+apply at once (取り消す), as a tap.
 保養所: its draft asks before a tab switch or close. 日付: a row a night, a thin bar of the searched by why
 (`its/view.ts`; seasons and 利用不可日 in `roster.ts`, explained only). 施設: a summary, presets, 探す · 日程に合わない
 (a reason a row) · 除外. **通知** (`ItsNotify`): push per phone, off by default, asked on the tap; テスト通知; a

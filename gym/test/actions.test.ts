@@ -182,7 +182,7 @@ describe('webAct (the app’s act in the bot)', () => {
     expect(r.status).toBe(200);
     expect(r.body).toMatchObject({ ok: true, changed: true, reply: messages.dayChanged(bot.store, inDays(3), today()) });
     expect(bot.save).toHaveBeenCalledOnce();
-    expect(bot.changes).toEqual([{ t: NOW, by: 'A', a: 'any', d: inDays(3), said: false }]);
+    expect(bot.changes).toEqual([{ t: NOW, by: 'A', a: 'any', d: inDays(3) }]);
     const config = (r.body as { config: { rows: { day: string; rule: unknown; base: string }[]; changes: unknown[] } }).config;
     expect(config.rows.find((x) => x.day === inDays(3))).toMatchObject({ rule: 'any', base: actions.baseOf(bot.store, inDays(3)) });
     expect(config.rows.find((x) => x.day === inDays(3))!.base).not.toBe(base);
@@ -260,10 +260,22 @@ describe('webAct (the app’s act in the bot)', () => {
     expect(logs).toContain('act by=A a=check open=3 rid=r1');
   });
 
+  it('keeps one change per day or check setting, its latest: 🔕, 🧹, 🔕 on a day is one 🔕', async () => {
+    for (const a of ['skip', 'reset', 'skip']) await act({ a, d: inDays(10) });
+    await act({ a: 'interval', m: 30 });
+    await act({ a: 'pause' });
+    await act({ a: 'interval', m: 60 }, 'B');
+    await act({ a: 'resume' });
+    expect(bot.changes.map((c) => [c.a, c.d, c.by])).toEqual([['resume', null, 'A'], ['interval', null, 'B'], ['skip', inDays(10), 'A']]);
+    expect((await actions.config(bot)).changes.map((c) => c.text)).toEqual([
+      '▶️ チェック再開（ウェイ）', '🔧 60分ごと（うめ）', `${label(inDays(10))}🔕 通知オフ（ウェイ）`
+    ]);
+  });
+
   it('keeps the newest CHANGES_KEPT', async () => {
-    for (let i = 0; i < CHANGES_KEPT + 3; i++) await act({ a: i % 2 ? 'any' : 'skip', d: inDays(10) });
+    for (let i = 0; i < CHANGES_KEPT + 3; i++) await act({ a: i % 2 ? 'any' : 'skip', d: inDays(i) });
     expect(bot.changes).toHaveLength(CHANGES_KEPT);
-    expect(bot.changes[0].a).toBe('skip'); // the last (i = 14)
+    expect(bot.changes[0]).toMatchObject({ a: 'skip', d: inDays(14) }); // the last (i = 14)
   });
 });
 
@@ -289,13 +301,11 @@ describe('status (📋) and /gym/config', () => {
     expect((await actions.status(bot)).at(-1)).toBe(messages.CHECK_PAUSED);
   });
 
-  it('names the last day’s app changes in one line after the days', async () => {
+  it('never names the app’s changes', async () => {
+    const before = await actions.status(bot);
     await actions.webAct(bot, { a: 'any', d: inDays(2) }, 'A', 'r');
-    await actions.webAct(bot, { a: 'interval', m: 30 }, 'B', 'r');
-    const lines = await actions.status(bot);
-    expect(lines).toContain(`アプリで変更：🔧 30分ごと（うめ）、${label(inDays(2))}🔔 終日（ウェイ）`);
-    vi.setSystemTime(NOW + 86_400_000 + 1);
-    expect((await actions.status(bot)).join('\n')).not.toContain('アプリで変更');
+    await actions.webAct(bot, { a: 'reset', d: inDays(2) }, 'A', 'r');
+    expect(await actions.status(bot)).toEqual(before);
   });
 
   it('gives the calendar 25 rows: the rule, ふだん, ⏳, the announced times, whether 🧹 has anything, the base', async () => {

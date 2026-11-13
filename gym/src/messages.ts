@@ -151,7 +151,7 @@ export function dayTooFar(day: Day): string {
 /** The app's change, refused: that day changed since it was read. */
 export const STALE = 'ほかの人が先に変更しました。いまの設定を確かめてください。';
 
-/** An app change, as LINE says it: `11/14（金）🔔 終日（ウェイ）`, `🔧 30分ごと（うめ）`. */
+/** An app change in the bot's words (the app's list): `11/14（金）🔔 終日（ウェイ）`, `🔧 30分ごと（うめ）`. */
 export function changeText(c: { a: ChangeKind; d: Day | null; s?: Clock; e?: Clock; at?: number; m?: number }, name: string): string {
   const what = c.a === 'any' ? ANY_LABEL
     : c.a === 'skip' ? SKIP_LABEL
@@ -162,11 +162,6 @@ export function changeText(c: { a: ChangeKind; d: Day | null; s?: Clock; e?: Clo
               : c.a === 'interval' ? `🔧 ${intervalLabel(c.m!)}`
                 : c.a === 'pause' ? '⏸️ チェック停止' : '▶️ チェック再開';
   return `${c.d === null ? '' : dayLabel(c.d)}${what}（${name}）`;
-}
-
-/** The line a LINE reply carries for app changes not said yet, and 📋's for the last day's. */
-export function appChanges(texts: string[]): string {
-  return `アプリで変更：${texts.join('、')}`;
 }
 
 // --- alerts and the check ---
@@ -206,8 +201,6 @@ export interface StatusView {
   days: StatusDay[];
   notice: string | null;
   check: string;
-  /** The app's changes of the last day (changeText), newest first: one line after the days. */
-  recent: string[];
 }
 
 export function statusView(
@@ -216,7 +209,6 @@ export function statusView(
   lastCheck: number | null,
   nextCheck: number | null,
   havingTrouble: boolean,
-  recent: string[] = [],
 ): StatusView {
   const days = [...new Set([...defaultDays(today), ...store.daysWithSettings()])].sort().map((day) => {
     const [rule, from] = daySettingParts(store, day, today);
@@ -229,14 +221,13 @@ export function statusView(
     check = `${intervalLabel(store.intervalMinutes)}にチェック・前回 ${last}・次回 ${next}`;
   }
   const notice = havingTrouble ? '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。' : null;
-  return { title: '📋 日ごとの設定', days, notice, check, recent };
+  return { title: '📋 日ごとの設定', days, notice, check };
 }
 
 /** The status as LINE shows it, a line each. */
 export function statusLines(v: StatusView): string[] {
   const days = v.days.map((d) => `・${d.date}　${joinSetting(d.rule, d.from)}`);
-  const recent = v.recent.length ? [appChanges(v.recent)] : [];
-  return [v.title, ...days, ...recent, ...(v.notice === null ? [] : [v.notice]), v.check];
+  return [v.title, ...days, ...(v.notice === null ? [] : [v.notice]), v.check];
 }
 
 // --- check settings ---

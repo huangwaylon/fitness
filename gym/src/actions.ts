@@ -14,7 +14,7 @@ import * as messages from './messages.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
 import { addDays, at, clockOf, dayOf, type Clock, type Day } from './time.ts';
 
-/** An app change as kept in runtime.changes (`said`: carried by a LINE reply since). */
+/** An app change as kept in runtime.changes (the app's list only; LINE never names them). */
 export interface StoredChange {
   t: number;
   by: Member;
@@ -24,7 +24,6 @@ export interface StoredChange {
   e?: Clock;
   at?: number;
   m?: number;
-  said: boolean;
 }
 
 /** What the buttons need from the bot (the Durable Object implements it). */
@@ -48,7 +47,7 @@ export interface Bot {
   save(): Promise<void>;
   /** The check settings changed: reschedule. */
   wake(): Promise<void>;
-  /** The app's last changes, newest first (runtime.changes). */
+  /** The app's last changes, newest first, one per day or check setting (runtime.changes). */
   changes: StoredChange[];
   /** A member's name: NAME_A / NAME_B, else メンバーA / B. */
   nameOf(who: Member): string;
@@ -240,8 +239,8 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
     if (c) console.log(`changed ${day ?? 'check settings'}: ${before} -> ${loggedSetting(bot, day)} (by web ${by})`);
   }
   if (changed.length) {
-    const fresh = changed.map(({ act }): StoredChange => ({ t: now, by, ...changeOf(act as Exclude<GymAction, { a: 'check' }>), said: false }));
-    bot.changes = [...fresh.reverse(), ...bot.changes].slice(0, CHANGES_KEPT);
+    const fresh = changed.map(({ act }): StoredChange => ({ t: now, by, ...changeOf(act as Exclude<GymAction, { a: 'check' }>) }));
+    bot.changes = latestChanges([...fresh.reverse(), ...bot.changes]);
     await bot.save();
   }
   const reply = done.map((x) => x.r.reply).join('\n');
@@ -255,12 +254,22 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
 }
 
 /** What an action did, for runtime.changes. */
-function changeOf(act: Exclude<GymAction, { a: 'check' }>): Omit<StoredChange, 't' | 'by' | 'said'> {
+function changeOf(act: Exclude<GymAction, { a: 'check' }>): Omit<StoredChange, 't' | 'by'> {
   if (act.a === 'interval') return { a: 'interval', d: null, m: act.m };
   if (act.a === 'pause' || act.a === 'resume') return { a: act.a, d: null };
   if (act.a === 'range') return { a: 'range', d: act.d, s: act.s, e: act.e };
   if (act.a === 'from') return { a: 'from', d: act.d, at: act.at };
   return { a: act.a, d: act.d };
+}
+
+/** The changes as kept (newest first): only the latest per day, the interval and stop/restart (a day set, reset and
+ *  set again is one entry, its last), at most CHANGES_KEPT. */
+export function latestChanges(changes: readonly StoredChange[]): StoredChange[] {
+  const seen = new Set<string>();
+  return changes.filter((c) => {
+    const key = c.d ?? (c.a === 'interval' ? 'interval' : 'run');
+    return !seen.has(key) && !!seen.add(key);
+  }).slice(0, CHANGES_KEPT);
 }
 
 /** 🔎's slots for the app: a row per time, every program open then. */
@@ -289,16 +298,9 @@ export function loggedSetting(bot: Bot, day?: Day): string {
 
 // --- 📋 and /gym/config ---
 
-/** The app's changes as LINE says them (`11/14（金）🔔 終日（ウェイ）`). */
-export const changeText = (bot: Bot, c: StoredChange): string => messages.changeText(c, bot.nameOf(c.by));
-
-/** The changes 📋 names: the last day's, at most 3. */
-export const recentChanges = (bot: Bot, now: number): StoredChange[] => bot.changes.filter((c) => c.t > now - 86_400_000).slice(0, 3);
-
 async function statusViewOf(bot: Bot, now: number): Promise<[messages.StatusView, number | null]> {
   const nextCheck = await bot.nextCheck();
-  const recent = recentChanges(bot, now).map((c) => changeText(bot, c));
-  return [messages.statusView(bot.store, dayOf(now), bot.lastCheck, nextCheck, bot.failures > 0, recent), nextCheck];
+  return [messages.statusView(bot.store, dayOf(now), bot.lastCheck, nextCheck, bot.failures > 0), nextCheck];
 }
 
 /** Every day that's checked or has a setting, and how checking goes (📋 設定を見る). */
@@ -334,10 +336,9 @@ export async function config(bot: Bot): Promise<GymConfig> {
   const [view, nextCheck] = await statusViewOf(bot, now);
   const { paused, intervalMinutes: intervalMin } = bot.store;
   const ready = bot.lastManualCheck === null ? null : bot.lastManualCheck + CHECK_COOLDOWN_MS;
-  const changes: Change[] = bot.changes.map(({ said: _, ...c }) => ({ ...c, who: bot.nameOf(c.by), text: changeText(bot, { ...c, said: false }) }));
-  const { recent: _, ...parts } = view;
+  const changes: Change[] = bot.changes.map((c) => ({ ...c, who: bot.nameOf(c.by), text: messages.changeText(c, bot.nameOf(c.by)) }));
   return {
-    v: 1, now, ...parts, text: messages.statusLines(view).join('\n'), paused, intervalMin, lastCheck: bot.lastCheck, nextCheck,
+    v: 1, now, ...view, text: messages.statusLines(view).join('\n'), paused, intervalMin, lastCheck: bot.lastCheck, nextCheck,
     rows: rowsOf(bot.store, now), defaultDays: defaultDays(dayOf(now)).length, intervals: INTERVALS,
     checkReadyAt: ready !== null && ready > now ? ready : null, checking: bot.checking, changes
   };

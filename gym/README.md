@@ -97,11 +97,12 @@ further days wait for a setting.
   code's status in the contract's `ACT_STATUS` (a 409 `stale` with `config`, a 429 `cooldown` with `Retry-After`),
   with CORS. The page sends its acts one at a time. `base` is a day's setting (rule and ⏳, not the announced times)
   as a short hash (each `/gym/config` row's): a 409 `stale` only when that day changed since; the interval and
-  stop/restart are absolute; LINE's taps stay last-writer-wins. App changes are silent in the group: kept in
-  `runtime.changes` (the last 12, newest first; 📋 names the last day's), and the next LINE reply carries one line
-  「アプリで変更：11/14（金）🔔 終日（ウェイ）」 once (a 📋 reply counts only the ones it names as said). Names:
-  `NAME_A` / `NAME_B` (secrets), else メンバーA / B. `/gym/config` adds the calendar's 25 `rows` (`{day, rule, usual,
-  from, announced, resettable, base}`), `defaultDays`, `intervals`, `checkReadyAt`, `checking` and `changes`. Logs:
+  stop/restart are absolute; LINE's taps stay last-writer-wins. A change made in the app leaves the same state, 📋
+  and `/gym/config` as the same tap on LINE (worker.test runs each kind both ways); the group is never told of it.
+  The app's own list of its changes is `runtime.changes`: the latest per day and per check setting (🔕, 🧹, 🔕 on a
+  day is one 🔕), at most 12, newest first. Names: `NAME_A` / `NAME_B` (secrets), else メンバーA / B. `/gym/config`
+  adds the calendar's 25 `rows` (`{day, rule, usual, from, announced, resettable, base}`), `defaultDays`,
+  `intervals`, `checkReadyAt`, `checking` and `changes`. Logs:
   `act by=A a=any d=… changed=1 rid=…` a day, `changed … (by web A)`, `act by=A a=… refused <code>` (log level),
   `act refused 401|403|405|413|503 …` (warn).
 - **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors
@@ -119,7 +120,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
 | `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's, for `/gym/config` and `/gym/act` (never the guest's `KEY_C`) |
-| `NAME_A`, `NAME_B` | Optional: the members' names in the app's changes (LINE's アプリで変更 line, 📋, the app); unset: メンバーA / B |
+| `NAME_A`, `NAME_B` | Optional: the members' names in the app's list of its changes; unset: メンバーA / B |
 
 ## Develop and deploy
 

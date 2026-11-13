@@ -87,7 +87,8 @@ export function fakeGym(now: () => number) {
       if (rules.get(d) === 'skip' || (!rules.has(d) && !usual(d))) setRule(d, ['12:00', '13:00']);
     }
     bump(d);
-    s.changes = [{ t: now(), by: 'A' as const, who: 'ウェイ', a: input.a, d, text: '' }, ...s.changes].slice(0, 12);
+    const kept = s.changes.filter((c) => c.d !== d); // one a day, as the bot keeps them
+    s.changes = [{ t: now(), by: 'A' as const, who: 'ウェイ', a: input.a, d, text: '' }, ...kept].slice(0, 12);
   }
 
   function act(input: ActInput): Answer {

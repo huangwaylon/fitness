@@ -131,7 +131,7 @@ export interface GymConfig {
   checkReadyAt: number | null;
   /** A check is running now. */
   checking: boolean;
-  /** The app's last changes, newest first. */
+  /** The app's last changes, newest first: the latest per day and check setting (LINE never names them). */
   changes: Change[];
 }
 
