@@ -6,7 +6,7 @@
 // head), alpha-tested and depth-tested, with a soft blob shadow. Textures are shared by URL.
 import {
   CanvasTexture, CircleGeometry, DoubleSide, Mesh, MeshBasicMaterial, MeshDepthMaterial, PlaneGeometry, RGBADepthPacking,
-  SRGBColorSpace, TextureLoader, type Scene, type Texture
+  SRGBColorSpace, Texture, type Scene
 } from 'three';
 import { bend } from './bend.ts';
 
@@ -49,6 +49,7 @@ export interface Cards {
   /** A tap's jiggle (a squash and a sway, as a model's wobble): true if there's such a card. */
   jiggle(id: string, strength?: number): boolean;
   tint(hex: number): void;
+  /** The cards waiting on their art (a card gone, or one whose art failed, waits on nothing). */
   pending(): number;
   dispose(): void;
 }
@@ -69,29 +70,67 @@ export function softDisc(rgb = '30,40,20', inner = 2, srgb = true): CanvasTextur
   return t;
 }
 
+/** An art's image, asked for at a high priority (an image's is low: the launch's ~50 model fetches went ahead of a
+ *  villager's card, perf.boot sCards). */
+const image = (url: string): Promise<HTMLImageElement> => new Promise((ok, fail) => {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.fetchPriority = 'high';
+  img.onload = () => ok(img);
+  img.onerror = fail;
+  img.src = url;
+});
+/** Arts asked for before the cards that will draw them (prefetchArt), till the next island's cards take them. */
+const early = new Map<string, Promise<HTMLImageElement>>();
+/** Ask for these arts now, ahead of the island's engine and its first wave of models (Island3D's mount: the people's
+ *  villager cards, which it asked for only from its first frame; the phones' launches then waited on them, perf.boot
+ *  sCards 207-606 ms). The next createCards takes them. */
+export function prefetchArt(urls: Iterable<string>): void {
+  for (const url of urls) {
+    if (early.has(url)) continue;
+    const p = image(url);
+    p.catch(() => {}); // (one never taken: no unhandled rejection; a card's own load sees its failure)
+    early.set(url, p);
+  }
+}
+
 /** `changed(shadows, added)`: draw again (and the shadow map, when a caster changed); `added` false: nothing new in the
  *  scene (a card's spec again or one gone: no material for the engine to look for, things.ts). */
 export function createCards(scene: Scene, changed: (shadows: boolean, added?: boolean) => void): Cards {
-  const loader = new TextureLoader();
-  const texs = new Map<string, { t: Promise<Texture | null>; got: Texture | null; n: number }>();
-  let pending = 0, tintHex = 0xffffff, disposed = false;
-  const tex = (url: string) => {
+  /** Each art by URL: its load, the texture once in, whether the load is over, the cards using it. */
+  interface Tex {
+    t: Promise<Texture | null>;
+    got: Texture | null;
+    done: boolean;
+    n: number;
+  }
+  const texs = new Map<string, Tex>();
+  let tintHex = 0xffffff, disposed = false;
+  const load = (url: string, img?: Promise<HTMLImageElement>): Tex => {
     let e = texs.get(url);
     if (!e) {
-      pending++;
-      const entry: { t: Promise<Texture | null>; got: Texture | null; n: number } = { t: Promise.resolve(null), got: null, n: 0 };
-      entry.t = loader.loadAsync(url).then((t) => {
-        pending--;
+      const entry: Tex = { t: Promise.resolve(null), got: null, done: false, n: 0 };
+      entry.t = (img ?? image(url)).then((im) => {
+        const t = new Texture(im);
+        t.needsUpdate = true;
         t.colorSpace = SRGBColorSpace;
         t.anisotropy = 4;
         entry.got = t;
+        entry.done = true;
         return t;
-      }, () => (pending--, null));
+      }, () => ((entry.done = true), null));
       texs.set(url, (e = entry));
     }
+    return e;
+  };
+  const tex = (url: string) => {
+    const e = load(url);
     e.n++;
     return e;
   };
+  // (the arts asked for ahead: kept for the cards that ask, let go of with the rest)
+  for (const [url, img] of early) load(url, img);
+  early.clear();
   const release = (url: string) => {
     const e = texs.get(url);
     if (!e || --e.n > 0) return;
@@ -108,6 +147,7 @@ export function createCards(scene: Scene, changed: (shadows: boolean, added?: bo
     mat: MeshBasicMaterial;
     depth: MeshDepthMaterial;
     shadow: Mesh;
+    art: Tex;
     own?: Texture;
   }
   const cards = new Map<string, Card>();
@@ -141,10 +181,10 @@ export function createCards(scene: Scene, changed: (shadows: boolean, added?: bo
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.frustumCulled = false;
     shadow.renderOrder = 4;
-    const c: Card = { spec, mesh, mat, depth, shadow };
+    const e = tex(spec.url);
+    const c: Card = { spec, mesh, mat, depth, shadow, art: e };
     cards.set(id, c);
     scene.add(mesh, shadow);
-    const e = tex(spec.url);
     // a cropped figure: its own copy of the texture (the image itself shared) shifted to the box
     const use = (t: Texture) => {
       const crop = spec.crop;
@@ -211,7 +251,11 @@ export function createCards(scene: Scene, changed: (shadows: boolean, added?: bo
       tintHex = hex;
       for (const c of cards.values()) if (!c.spec.lit) c.mat.color.set(hex);
     },
-    pending: () => pending,
+    pending() {
+      let n = 0;
+      for (const c of cards.values()) if (!c.art.done) n++;
+      return n;
+    },
     dispose() {
       disposed = true;
       for (const id of [...cards.keys()]) set(id, null);

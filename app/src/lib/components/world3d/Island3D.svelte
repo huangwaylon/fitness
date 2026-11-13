@@ -36,7 +36,7 @@
   import { attachGestures } from './gestures.ts';
   import { gymPose, idlePose, motionPose, pullLift } from './motion3d.ts';
   import type { GymUse } from '../villager3d/poses.ts';
-  import type { CardSpec } from './cards.ts';
+  import { prefetchArt, type CardSpec } from './cards.ts';
   import type { LampSpot } from './lights.ts';
   import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
   import { createBalloon3, type Balloon3 } from './balloon3d.ts';
@@ -347,6 +347,18 @@
   let guestLate = true, lateFrom = 0;
   /** Let go of the wait at most this long after the mount (a launch whose first whole frame never comes). */
   const GUEST_LATE_MAX_MS = 4000;
+  /** The people's villager renders (their cards while a model loads, or for good: villagerCards below): asked for as
+   *  the island mounts (cards.ts prefetchArt). */
+  function cardArts(): string[] {
+    const out: string[] = [];
+    for (const c of cast()) {
+      const p = person3(c.person, c.look, c.villager, dirs);
+      if (p.kind !== 'villager' || (p.has3d && dozing(c))) continue;
+      const url = artUrl(villagerArt(resolveLook({ villager: p.villager, person: c.person }).id));
+      if (url) out.push(url);
+    }
+    return out;
+  }
 
   /** The frame's specs, the people's models and spots, and each person's spec (kept from frame to frame). */
   const specs: VSpec[] = [], ps: Person3[] = [], at: (readonly [number, number])[] = [], personSpecs = new Map<string, VSpec>();
@@ -970,6 +982,7 @@
   onMount(() => {
     let stop: (() => void) | undefined, gone = false, again = 0;
     const t0 = performance.now();
+    prefetchArt(cardArts());
     // (a context refused: once more a second later, mount's catch)
     const go = (first: boolean) => {
       if (first) heldMs = Math.max(0, performance.now() - t0 - fieldsMs);
