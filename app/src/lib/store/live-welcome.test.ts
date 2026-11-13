@@ -45,6 +45,8 @@ class Mem implements KV {
 const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changed() {} });
 
 let snapshots = 0;
+/** The next snapshots that fail (the record `unavailable`). */
+let failing = 0;
 /** The record's newest row: what a snapshot brings (`since`). */
 let newest = '2026-11-05T03:00:00.000Z';
 beforeEach(() => {
@@ -55,6 +57,7 @@ beforeEach(() => {
   configureStorage({ local: new Mem() });
   setKey('ab'.repeat(32), 'A');
   snapshots = 0;
+  failing = 0;
   newest = '2026-11-05T03:00:00.000Z';
   relay.clear();
   relay.set({ connected: false, rec: undefined });
@@ -62,6 +65,7 @@ beforeEach(() => {
     url: 'https://relay.example/api',
     fetch: (async () => {
       snapshots++;
+      if (failing > 0 && failing--) return new Response('{"ok":false,"error":"unavailable"}');
       return new Response(JSON.stringify({ ok: true, me: 'A', now: newest, rev: 'r1', rows: { metrics: [], events: [[newest, 'B', `e${snapshots}`, 'pref', '{"key":"villagerName","value":"x"}']] } }));
     }) as typeof fetch
   });
@@ -133,5 +137,59 @@ describe('LiveBackend on each welcome', () => {
     await opening;
     await settle();
     expect(snapshots).toBe(2);
+  });
+
+  it('a failed catch-up is tried again while the socket is up: 10 s, then 30 s, until it works', async () => {
+    const b = new LiveBackend(host());
+    welcome(newest);
+    await b.refresh({});
+    expect(snapshots).toBe(1);
+    // the partner writes while the socket is down; the welcome's fetch fails twice
+    down();
+    newest = '2026-11-05T03:00:05.000Z';
+    failing = 2;
+    welcome(newest);
+    await settle();
+    expect(snapshots).toBe(2);
+    await vi.advanceTimersByTimeAsync(9_000);
+    expect(snapshots).toBe(2);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(snapshots).toBe(3); // 10 s on: failed again
+    await vi.advanceTimersByTimeAsync(29_000);
+    expect(snapshots).toBe(3);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(snapshots).toBe(4); // 30 s on: it works, and nothing more
+    expect(b.cache()?.since).toBe(newest);
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(snapshots).toBe(4);
+    // a later failure starts over at 10 s
+    down();
+    newest = '2026-11-05T03:00:09.000Z';
+    failing = 1;
+    welcome(newest);
+    await settle();
+    expect(snapshots).toBe(5);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(snapshots).toBe(6);
+  });
+
+  it('no retry with the socket down: the reconnect\'s welcome fetches', async () => {
+    const b = new LiveBackend(host());
+    welcome(newest);
+    await b.refresh({});
+    down();
+    newest = '2026-11-05T03:00:05.000Z';
+    failing = 1;
+    welcome(newest);
+    await settle();
+    expect(snapshots).toBe(2);
+    down();
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(snapshots).toBe(2);
+    // the same mark again: fetched, the failed one was never marked fetched
+    welcome(newest);
+    await settle();
+    expect(snapshots).toBe(3);
+    expect(b.cache()?.since).toBe(newest);
   });
 });

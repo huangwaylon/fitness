@@ -41,6 +41,10 @@ const MINE_MAX_MS = 120_000;
  *  first (a meal logged every ~5 s was 12 fetches in 80 s; r3 L9). The island's own (a catch, the farm) at once. */
 const CALM_WAIT_MS = 10_000;
 const CALM_MAX_MS = 30_000;
+/** A failed fetch while the socket is up (a push's or a welcome's: the change it would bring waits otherwise for the
+ *  next push, show or `online`; review 11-13 B1) is tried again after these, the last repeated while it keeps failing
+ *  and the socket stays up; a fetch that works starts over. */
+const FAIL_RETRY_MS = [10_000, 30_000, 60_000] as const;
 /** How long opening waits for the relay's welcome (its `rec`) before fetching anyway. */
 const WELCOME_WAIT_MS = 2000;
 /** A cache fetched longer ago than this is fetched again on opening, whatever the welcome says. */
@@ -58,6 +62,9 @@ export class LiveBackend implements Backend {
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
   #pushTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The retry of a failed fetch (FAIL_RETRY_MS), and the failures in a row. */
+  #failTimer: ReturnType<typeof setTimeout> | null = null;
+  #fails = 0;
   /** My other device's events waiting (MINE_WAIT_MS), and when the first of them came. */
   #mineTimer: ReturnType<typeof setTimeout> | null = null;
   #mineFirst = 0;
@@ -181,10 +188,11 @@ export class LiveBackend implements Backend {
     const rec = this.#live?.status().rec;
     this.#fetching = true;
     // a gathered push or welcome waiting: this fetch brings what it would (`fresh`: not one already in flight)
-    const gathered = !!this.#pushTimer || !!this.#mineTimer;
+    const gathered = !!this.#pushTimer || !!this.#mineTimer || !!this.#failTimer;
     if (this.#pushTimer) clearTimeout(this.#pushTimer);
     if (this.#mineTimer) clearTimeout(this.#mineTimer);
-    this.#pushTimer = this.#mineTimer = null;
+    if (this.#failTimer) clearTimeout(this.#failTimer);
+    this.#pushTimer = this.#mineTimer = this.#failTimer = null;
     try {
       await this.#flush(false);
       r = await refreshSnapshot(Date.now, opts.fresh || gathered);
@@ -203,6 +211,7 @@ export class LiveBackend implements Backend {
     }
     if (seq !== this.#refreshSeq) return; // a newer refresh owns the view
     if (r.ok) {
+      this.#fails = 0;
       this.#cache = r.cache;
       h.offline = false;
       h.current = true;
@@ -224,6 +233,18 @@ export class LiveBackend implements Backend {
     log('sync.fail', { err: r.error, cached: !!this.#cache }, r.error === 'offline' ? 1 : 2);
     if (this.#cache) h.offline = true;
     else h.status = 'error';
+    this.#retryLater();
+  }
+
+  /** After a failed fetch, while the socket is up: one more after the next FAIL_RETRY_MS step (a push, a welcome or any
+   *  refresh meanwhile takes its place). With the socket down the reconnect's welcome, `online` or the next show do. */
+  #retryLater(): void {
+    if (!this.#live?.status().connected || this.#failTimer) return;
+    const ms = FAIL_RETRY_MS[Math.min(this.#fails++, FAIL_RETRY_MS.length - 1)];
+    this.#failTimer = setTimeout(() => {
+      this.#failTimer = null;
+      if (this.#live?.status().connected) void this.refresh({ fresh: true });
+    }, ms);
   }
 
   reset(): void {
@@ -235,7 +256,9 @@ export class LiveBackend implements Backend {
     this.#pushWorks = false;
     this.#fetchedFor = '';
     if (this.#mineTimer) clearTimeout(this.#mineTimer);
-    this.#mineTimer = null;
+    if (this.#failTimer) clearTimeout(this.#failTimer);
+    this.#mineTimer = this.#failTimer = null;
+    this.#fails = 0;
     // paired as someone else: the socket speaks for the old key
     if (this.#live) {
       this.#live.stop();
@@ -283,8 +306,9 @@ export class LiveBackend implements Backend {
     return !!rec && !!c && !(c.rev === rec.rev && c.since !== null && rec.at <= c.since);
   }
 
-  /** A welcome: when its record mark is past the cache, fetch (gathered, as a push), once per mark. The opening's
-   *  refresh compares the first welcome itself (#current); a fetch under way looks again when it's done. */
+  /** A welcome: when its record mark is past the cache, fetch (gathered, as a push), once per mark fetched (refresh
+   *  marks it only when the fetch worked: a failed one is tried again, #retryLater, and by the next welcome). The
+   *  opening's refresh compares the first welcome itself (#current); a fetch under way looks again when it's done. */
   #welcomed(): void {
     const rec = this.#live?.status().rec;
     if (!this.#opened || !rec || !this.#behind(rec) || markOf(rec) === this.#fetchedFor) return;
@@ -293,7 +317,6 @@ export class LiveBackend implements Backend {
       this.#recheck = true;
       return;
     }
-    this.#fetchedFor = markOf(rec);
     if (this.#pushTimer) return;
     this.#pushTimer = setTimeout(() => {
       this.#pushTimer = null;
