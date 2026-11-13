@@ -437,6 +437,16 @@ describe('storage', () => {
     expect(s2.count).toMatchObject({ puts: 4, rows: 10 });
   });
 
+  it('deletes a retired key (scans, the raw reads) once, the first time an object that has it starts', async () => {
+    const old = fakeState(new Map(state.kv).set('scans', [{ t: NOW, ok: true }]));
+    await start(old);
+    expect(old.deleted).toEqual(['scans']);
+    expect(old.kv.has('scans')).toBe(false);
+    const again = fakeState(new Map(old.kv));
+    await start(again);
+    expect(again.deleted).toEqual([]);                           // nothing left: no delete call
+  });
+
   it('keeps everything across an eviction', async () => {
     await bot.claim({ runId: RUN, host: 'actions' });
     await bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'A' })], seen: ['A'] }));

@@ -21,6 +21,8 @@ import {
 import { pushRequest } from './webpush.ts';
 
 const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight', 'scanned', 'minutes', 'subs', 'pushq', 'pushlog'] as const satisfies readonly (keyof ItsRecord)[];
+/** Storage keys an older Worker kept and this one no longer reads: `scans` (the raw reads, replaced by `minutes`). */
+const RETIRED = ['scans'] as const;
 
 /** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way; the
  *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too), unless a 停止 came after
@@ -46,10 +48,16 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   private async load(): Promise<void> {
-    const saved = await this.ctx.storage.get<unknown>([...KEYS]);
+    const saved = await this.ctx.storage.get<unknown>([...KEYS, ...RETIRED]);
     const rec = empty() as unknown as Record<string, unknown>;
     for (const k of KEYS) if (saved.get(k) !== undefined) rec[k] = saved.get(k);
     this.rec = rec as unknown as ItsRecord;
+    // keys no longer kept (RETIRED): deleted once, the first time an object that still has them starts
+    const stale = RETIRED.filter((k) => saved.get(k) !== undefined);
+    if (stale.length) {
+      await this.ctx.storage.delete([...stale]);
+      console.log(`its storage retired keys=${stale.join(',')}`);
+    }
   }
 
   /** One put of these keys, then into memory: a put that throws leaves the record as it was, so nothing it carried is

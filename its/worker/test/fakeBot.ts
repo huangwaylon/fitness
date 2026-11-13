@@ -22,6 +22,7 @@ export const MIN = 60_000;
 export function fakeState(kv = new Map<string, unknown>()) {
   const count = { gets: 0, puts: 0, rows: 0 };
   const alarms: number[] = [];
+  const deleted: string[] = [];
   let loading: Promise<unknown> = Promise.resolve();
   const storage = {
     get: async (keys: string[]) => {
@@ -32,10 +33,11 @@ export function fakeState(kv = new Map<string, unknown>()) {
       count.puts++;
       for (const [k, v] of Object.entries(entries)) { count.rows++; kv.set(k, structuredClone(v)); }
     },
+    delete: async (keys: string[]) => { for (const k of keys) { deleted.push(k); kv.delete(k); } return keys.length; },
     setAlarm: async (t: number) => void alarms.push(t),
   };
   const ctx = { storage, blockConcurrencyWhile: (fn: () => Promise<unknown>) => (loading = fn()) };
-  return { ctx, kv, count, alarms, loaded: () => loading };
+  return { ctx, kv, count, alarms, deleted, loaded: () => loading };
 }
 
 export type State = ReturnType<typeof fakeState>;
