@@ -50,10 +50,20 @@ export interface UnitSource {
 
 const UNITS_DIR = new URL('../../../content/units/', import.meta.url);
 
+/** The content readers' results, once a process per path: each re-parsed its YAML on every call (readListen ~210 ms,
+ *  two thirds of a compile; units.test's U7 timed out under load, 2026-11-13). Frozen, so no caller edits the shared
+ *  copy (a test edits a clone). */
+const read = new Map<string, unknown>();
+const deepFreeze = <T>(x: T): T => {
+  if (x && typeof x === 'object' && !Object.isFrozen(x)) Object.values(Object.freeze(x)).forEach(deepFreeze);
+  return x;
+};
+const once = <T>(url: URL, load: () => T): T => (read.has(url.href) ? read.get(url.href) : read.set(url.href, deepFreeze(load())).get(url.href)) as T;
+
 /** app/content/units/*.yaml, parsed, by file name (no directory: an empty list). */
 export function readUnits(dir: URL = UNITS_DIR): UnitSource[] {
   if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
+  return once(dir, () => readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) })));
 }
 
 const STORIES_DIR = new URL('../../../content/listen/story/', import.meta.url);
@@ -61,7 +71,7 @@ const STORIES_DIR = new URL('../../../content/listen/story/', import.meta.url);
 /** app/content/listen/story/*.yaml (the bedtime serials), parsed, in file order. */
 export function readStories(dir: URL = STORIES_DIR): StorySource[] {
   if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((f) => parse(readFileSync(new URL(f, dir), 'utf8')) as StorySource);
+  return once(dir, () => readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((f) => parse(readFileSync(new URL(f, dir), 'utf8')) as StorySource));
 }
 
 const LISTEN_DIR = new URL('../../../content/listen/', import.meta.url);
@@ -69,13 +79,13 @@ const LISTEN_DIR = new URL('../../../content/listen/', import.meta.url);
 /** app/content/listen/*.yaml (the listening kinds' files; not story/), parsed, by file name. */
 export function readListen(dir: URL = LISTEN_DIR): ListenSource[] {
   if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
+  return once(dir, () => readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) })));
 }
 
 const PAIRS_FILE = new URL('../../../content/mic/pairs.yaml', import.meta.url);
 
 /** app/content/mic/pairs.yaml (はつおん's pairs), parsed; none: null. */
-export const readPairs = (file: URL = PAIRS_FILE): unknown => (existsSync(file) ? parse(readFileSync(file, 'utf8')) : null);
+export const readPairs = (file: URL = PAIRS_FILE): unknown => (existsSync(file) ? once(file, () => parse(readFileSync(file, 'utf8'))) : null);
 
 /** The units' own items (inline in their manifests, as authored), in file order: the audio scripts voice them beside
  *  the bank's (their ids are checked against the bank's and each other's: checkUnits). */

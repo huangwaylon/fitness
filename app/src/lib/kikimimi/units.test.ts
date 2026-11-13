@@ -277,6 +277,11 @@ describe('units: recycling and coverage', () => {
   });
 });
 
+// (the committed units checked, and the compiles with and without the hotel: once for the file, ~0.4 s each)
+let checked: ReturnType<typeof checkUnitSources> | undefined, compiled: { withUnits: Map<string, string>; without: Map<string, string> } | undefined;
+const committed = () => (checked ??= checkUnitSources(readUnits(), CLIPS));
+const both = () => (compiled ??= { withUnits: compile(CLIPS, WORDS, [src(hotel())]), without: compile(CLIPS, WORDS, []) });
+
 describe('units: the villager’s letter (U7)', () => {
   const EN = "I'm afraid I have a confession: I was the guest with the leaky sink. You followed every word at that front desk, even over all the lobby noise. Thank you, darling. Next time you travel, take me along. I'll do the complaining, and you do the listening.";
   it('optional; 40-60 words of English with one of its phrases, and a gloss', () => {
@@ -292,22 +297,21 @@ describe('units: the villager’s letter (U7)', () => {
   it('compiles into one letters chunk (none written: an empty one); the unit’s chunk doesn’t carry it', () => {
     const files = compile(CLIPS, WORDS, [src({ ...hotel(), letter: { en: ` ${EN} `, ja: 'あいにく…' } })]);
     expect(JSON.parse(files.get('parts/letters.json')!).letters).toEqual({ 'tr-hotel': { en: EN, ja: 'あいにく…' } });
-    expect(files.get('parts/u-tr-hotel.json')).toBe(compile(CLIPS, WORDS, [src(hotel())]).get('parts/u-tr-hotel.json'));
-    expect(JSON.parse(compile(CLIPS, WORDS, []).get('parts/letters.json')!).letters).toEqual({});
+    expect(files.get('parts/u-tr-hotel.json')).toBe(both().withUnits.get('parts/u-tr-hotel.json'));
+    expect(JSON.parse(both().without.get('parts/letters.json')!).letters).toEqual({});
   });
 
   it('every unit past draft in app/content/units has its letter', () => {
-    for (const u of checkUnitSources(readUnits(), CLIPS).units) if (u.status !== 'draft') expect(u.letter, u.unit).toBeDefined();
+    for (const u of committed().units) if (u.status !== 'draft') expect(u.letter, u.unit).toBeDefined();
   });
 });
 
 describe('units: compiled', () => {
   const sources = [src(hotel())];
-  const withUnits = compile(CLIPS, WORDS, sources);
-  const without = compile(CLIPS, WORDS, []);
+  const { withUnits, without } = both();
 
   it('app/content/units checks (the committed manifests: wave 1’s, as written)', () => {
-    expect(checkUnitSources(readUnits(), CLIPS).errors).toEqual([]);
+    expect(committed().errors).toEqual([]);
   });
 
   it('a unit is a chunk of its own and an index entry; the levels’ chunks are byte for byte as without it', () => {
