@@ -229,6 +229,23 @@ export const RECENT_SCANS_SEC = 3600;
 /** @public (its/worker) */
 export const RECENT_SCANS_KEPT = 300;
 
+/** One minute of calendar reads (the page's minute strip; a Tokyo minute is a UTC one), from every run that reported
+ *  reads in it, by the reads' own time: every read of the hour, however many runs scan (RECENT_SCANS_KEPT holds 20
+ *  minutes of two runs at 15 s). @public (its/worker) */
+export interface ScanMinute {
+  minute: number;    // the minute's start (ms, the runner's clock)
+  n: number;         // reads
+  ok: number;
+  fail: number;      // n − ok
+  avail: number;     // the most target dates showing a vacancy in one read
+  /** Failures by outcome code (an isId), at most SCAN_MINUTE_CODES codes (the rest counted in `fail` only). */
+  codes?: Record<string, number>;
+}
+/** The status's `recentMinutes`: the last RECENT_MINUTES minutes, the current one included. @public (its/worker) */
+export const RECENT_MINUTES = 60;
+/** @public (its/worker) */
+export const SCAN_MINUTE_CODES = 8;
+
 /** `GET /runner/config`, and the answer to claim/report: the latest settings (applied at the next cycle), the
  *  record, the lease, and whether to stop (paused, MODE off, no future date, or the lease is someone else's). @public (its/worker) */
 export interface RunnerConfig {
@@ -293,6 +310,9 @@ export interface ItsStatus {
   /** The calendar reads of the last RECENT_SCANS_SEC (by the Worker's receive time), oldest first, from every run that
    *  reported them. Absent from an older Worker. */
   recentScans?: ScanEntry[];
+  /** The last RECENT_MINUTES minutes of reads, aggregated per minute, oldest first (minutes without a read left out):
+   *  the strip's source once the page reads it (recentScans stays until then). Absent from an older Worker. */
+  recentMinutes?: ScanMinute[];
   /** Web Push (the Push section below): counts and codes only, never an endpoint or its hash. Absent from an older
    *  Worker. */
   push?: ItsPushStatus;

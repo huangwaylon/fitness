@@ -3,9 +3,9 @@
 // (ItsStatus). Every time is the Worker's clock (`now`), except the runner's own fields in its report.
 import {
   AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, HOLD_SEC, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS,
-  RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
+  RECENT_MINUTES, RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SCAN_MINUTE_CODES, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
   type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsHealth, type ItsSettings,
-  type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type ScanEntry, type Verdict,
+  type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type ScanEntry, type ScanMinute, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
 import type { PushJob, PushLog, PushSub } from './push.ts';
 
@@ -36,6 +36,8 @@ export interface ItsRecord {
   /** The calendar reads of the last RECENT_SCANS_SEC, one batch per report that brought new ones: when it arrived
    *  (what ages it out) and from which run (a retry repeats that run's `t`s). */
   scans: ScanBatch[];
+  /** The same reads per minute (the status's recentMinutes), the last RECENT_MINUTES. */
+  minutes: ScanMinute[];
   /** Web Push (push.ts): the phones subscribed, the outbox (the alarm sends it), the last outcome. */
   subs: PushSub[];
   pushq: PushJob[];
@@ -115,8 +117,7 @@ export function addOwnEvent(events: ItsRecord['events'], e: Omit<ItsEvent, 'seq'
  *  `now`; batches older than RECENT_SCANS_SEC dropped, then the oldest entries past RECENT_SCANS_KEPT. Null: nothing to
  *  write (nothing new, nothing aged out). */
 export function addScans(batches: ScanBatch[], runId: string, log: ScanEntry[] | undefined, now: number): ScanBatch[] | null {
-  const newest = Math.max(-1, ...batches.filter((b) => b.runId === runId).flatMap((b) => b.log.map((e) => e.t)));
-  const fresh = (log ?? []).filter((e) => e.t > newest).sort((a, b) => a.t - b.t);
+  const fresh = freshScans(batches, runId, log);
   const kept = batches.filter((b) => now - b.at < RECENT_SCANS_SEC * 1000);
   if (!fresh.length && kept.length === batches.length) return null;
   const next = fresh.length ? [...kept, { at: now, runId, log: fresh }] : kept;
@@ -127,6 +128,43 @@ export function addScans(batches: ScanBatch[], runId: string, log: ScanEntry[] |
   }
   return next;
 }
+
+/** A report's scans not yet kept: after the run's newest kept (a retried report repeats its `t`s), oldest first. */
+export function freshScans(batches: ScanBatch[], runId: string, log: ScanEntry[] | undefined): ScanEntry[] {
+  const newest = Math.max(-1, ...batches.filter((b) => b.runId === runId).flatMap((b) => b.log.map((e) => e.t)));
+  return (log ?? []).filter((e) => e.t > newest).sort((a, b) => a.t - b.t);
+}
+
+const MINUTE_MS = 60_000;
+/** The first minute of the window that ends with `now`'s minute. */
+const windowStart = (now: number) => Math.floor(now / MINUTE_MS) * MINUTE_MS - (RECENT_MINUTES - 1) * MINUTE_MS;
+
+/** `fresh` (freshScans) folded into their minutes; minutes before the window dropped. Null: nothing to write. */
+export function addMinutes(minutes: ScanMinute[], fresh: ScanEntry[], now: number): ScanMinute[] | null {
+  const from = windowStart(now);
+  const kept = minutes.filter((m) => m.minute >= from);
+  const add = fresh.filter((e) => e.t >= from);
+  if (!add.length && kept.length === minutes.length) return null;
+  const by = new Map(kept.map((m) => [m.minute, { ...m, ...(m.codes && { codes: { ...m.codes } }) }]));
+  for (const e of add) {
+    const minute = Math.floor(e.t / MINUTE_MS) * MINUTE_MS;
+    const m = by.get(minute) ?? { minute, n: 0, ok: 0, fail: 0, avail: 0 };
+    m.n++;
+    if (e.ok) m.ok++;
+    else {
+      m.fail++;
+      const code = e.code ?? 'error';
+      if (m.codes?.[code] !== undefined || Object.keys(m.codes ?? {}).length < SCAN_MINUTE_CODES) m.codes = { ...m.codes, [code]: (m.codes?.[code] ?? 0) + 1 };
+    }
+    m.avail = Math.max(m.avail, e.avail);
+    by.set(minute, m);
+  }
+  // a runner's clock far ahead can't grow it past the window either
+  return [...by.values()].sort((a, b) => a.minute - b.minute).slice(0, RECENT_MINUTES + 1);
+}
+
+/** The status's recentMinutes: the window's, oldest first. */
+const recentMinutes = (minutes: ScanMinute[], now: number): ScanMinute[] => minutes.filter((m) => m.minute >= windowStart(now));
 
 /** The status's recentScans: the batches received in the last RECENT_SCANS_SEC, flattened, oldest first. */
 const recentScans = (batches: ScanBatch[], now: number): ScanEntry[] =>
@@ -278,6 +316,7 @@ export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: nu
     seen: Object.keys(rec.seen).sort(),
     lastPreflight: rec.preflight,
     recentScans: recentScans(rec.scans, now),
+    recentMinutes: recentMinutes(rec.minutes, now),
   };
 }
 

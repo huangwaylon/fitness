@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
-import { EVENTS_KEPT, LEASE_SEC, RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SCANS_PER_REPORT, type BookingInput, type EventInput, type ItsSettingsInput, type ScanEntry } from '../../../app/src/lib/its/contract.ts';
+import { EVENTS_KEPT, LEASE_SEC, RECENT_MINUTES, RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SCANS_PER_REPORT, type BookingInput, type EventInput, type ItsSettingsInput, type ScanEntry } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
 import { ACKS_KEPT, MAX_BOOKINGS, SEEN_KEPT, SEEN_REFRESH_MS } from '../src/rules.ts';
 import { MIN, NOW, fakeState, quiet, report, start, type State } from './fakeBot.ts';
@@ -330,6 +330,55 @@ describe('recent scans (the page’s minute strip)', () => {
   it('never shows the scans in the runner’s last report', async () => {
     await bot.report(report({ scansLog: [scan(NOW)] }));
     expect('scansLog' in (await bot.status()).runner!).toBe(false);
+  });
+});
+
+describe('recent minutes (the strip, aggregated: every read of the hour, however many run)', () => {
+  const scan = (t: number, x: Partial<ScanEntry> = {}): ScanEntry => ({ t, ok: true, ms: 800, avail: 0, ...x });
+  const minutes = async () => (await bot.status()).recentMinutes;
+  const M0 = Math.floor(NOW / MIN) * MIN;   // a Tokyo minute is a UTC minute (+9 h)
+  beforeEach(async () => {
+    await bot.claim({ runId: RUN, host: 'actions' });
+  });
+
+  it('one entry per minute of the reads’ own time: counts, failures by code, the most vacancies; across runs', async () => {
+    expect(await minutes()).toEqual([]);
+    const puts = state.count.puts;
+    await bot.report(report({ scansLog: [scan(M0 + 1000), scan(M0 + 20_000, { ok: false, code: 'timeout' }), scan(M0 + 40_000, { avail: 2 }), scan(M0 + 61_000, { ok: false, code: 'http_503' })] }));
+    expect(state.count.puts).toBe(puts + 1);
+    await bot.report(report({ runId: 'other-1', scansLog: [scan(M0 + 5000, { ok: false, code: 'timeout' }), scan(M0 + 6000, { avail: 1 })] }));
+    expect(await minutes()).toEqual([
+      { minute: M0, n: 5, ok: 3, fail: 2, avail: 2, codes: { timeout: 2 } },
+      { minute: M0 + MIN, n: 1, ok: 0, fail: 1, avail: 0, codes: { http_503: 1 } },
+    ]);
+    // a retried report adds nothing
+    await bot.report(report({ scansLog: [scan(M0 + 40_000, { avail: 2 })] }));
+    expect((await minutes())![0].n).toBe(5);
+  });
+
+  it('keeps every read of the hour past RECENT_SCANS_KEPT (two runs at 15 s: 480 an hour), bounded at RECENT_MINUTES', async () => {
+    for (let i = 0; i < 120; i++) {   // 2 h of reports every 60 s, 8 reads each from two runs
+      vi.setSystemTime(M0 + i * MIN);
+      for (const run of [RUN, 'other-1']) await bot.report(report({ runId: run, scansLog: [0, 15, 30, 45].map((s) => scan(M0 + i * MIN + s * 1000)) }));
+    }
+    const all = (await minutes())!;
+    expect(all).toHaveLength(RECENT_MINUTES);
+    expect(all.every((m) => m.n === 8)).toBe(true);
+    expect(all.at(-1)!.minute).toBe(M0 + 119 * MIN);
+    expect(all.reduce((n, m) => n + m.n, 0)).toBe(480);
+    expect((await bot.status()).recentScans).toHaveLength(RECENT_SCANS_KEPT);   // the older field, as before
+    expect((state.kv.get('minutes') as unknown[]).length).toBeLessThanOrEqual(RECENT_MINUTES + 1);
+    expect(JSON.stringify(all).length).toBeLessThan(5000);
+    // read later: aged out on read, nothing written
+    vi.setSystemTime(M0 + 180 * MIN);
+    expect(await minutes()).toEqual([]);
+  });
+
+  it('caps the failure codes per minute', async () => {
+    await bot.report(report({ scansLog: Array.from({ length: 12 }, (_, i) => scan(M0 + i * 1000, { ok: false, code: `c${i}` })) }));
+    const [m] = (await minutes())!;
+    expect(Object.keys(m.codes!)).toHaveLength(8);
+    expect(m.fail).toBe(12);
   });
 });
 

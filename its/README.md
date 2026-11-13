@@ -66,7 +66,7 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 |---|---|---|
 | `GET /health` | anyone | `{ok, mode, sha}` |
 | `GET /health/its` | alerting | `Bearer <ITS_HEALTH_TOKEN>` → `ItsHealth` `{verdict, reasons, lastSeenAgeSec, phase, unsynced, unsyncedAgeSec, lastPreflightAgeSec}`: codes and counts, never a date, facility or name (its-health.yml, a public repo's workflow, reads it) |
-| `GET /its/status` | member | `ItsStatus`: verdict, reasons, settings, last report, lease, dispatch, control, bookings, events, seen, lastPreflight, recentScans (the last hour's reads, for the page's minute strip) |
+| `GET /its/status` | member | `ItsStatus`: verdict, reasons, settings, last report, lease, dispatch, control, bookings, events, seen, lastPreflight, recentScans (the last hour's reads, ≤ 300), recentMinutes (the same per minute, every read of the hour, ≤ 60 entries: the strip's source once the page reads it), push |
 | `PUT /its/settings` | member | `ItsSettingsInput` (the contract's `parseSettingsInput`); 409 with the bare current `ItsStatus` as the body if `baseUpdatedAt` isn't the current `updatedAt` |
 | `POST /its/run` | member | `{action: 'start' \| 'stop'}`; start clears `paused` and dispatches a run (below); answers the status |
 | `POST /its/push/subscribe`, `/unsubscribe`, `/test` | member | Web Push (Push below) → `{ok, push}` |
@@ -92,7 +92,7 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   `detail` the run whose lease was taken over), `seen` (facility names, the newest 300; a known name's time is
   rewritten at most daily), `acks` (the highest event seq per run, the newest 20 runs: a retried report adds nothing
   twice), `preflight` (the last one's time), `scans` (the last hour's calendar reads from the reports' `scansLog`, one
-  batch per report, ≤ 300 entries, aged out by receive time), `subs`, `pushq`, `pushlog` (Push below). Times are the Worker's receive time; the verdict
+  batch per report, ≤ 300 entries, aged out by receive time), `minutes` (those reads per minute of their own time, the last 60), `subs`, `pushq`, `pushlog` (Push below). Times are the Worker's receive time; the verdict
   compares only those. A change is one put, then memory (a failed put acknowledges nothing).
 - **Lease**: a report from the holder renews it, also after it expired if nobody claimed it (`its lease
   renewed_late`); a released lease (`run_end`) is granted only by a claim.
