@@ -18,7 +18,7 @@ MODE = "on"
 ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 # Web Push's VAPID public key (README "Push"; base64url, 65 bytes; the app subscribes with the same one): the pair from
 # `npm run vapid:keys`, its private part the secret VAPID_PRIVATE. Not a key: push is off (subscribe answers 503).
-VAPID_PUBLIC = "REPLACE_AT_DEPLOY"
+VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
 
 # The record: settings, bookings, the runner's last report, the lease, the events.
 [[durable_objects.bindings]]
