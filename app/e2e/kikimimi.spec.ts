@@ -44,6 +44,12 @@ async function answer(page: Page, wrong = false) {
   await expect(sheet(page).locator(`[data-choice="${k}"]`)).toHaveAttribute('aria-pressed', 'true');
 }
 
+/** The reveal's marked choices (○, ×) all above the sticky 次へ. */
+const clearOfNext = (page: Page) => sheet(page).evaluate((s) => {
+  const top = s.querySelector('[data-kiki-next]')!.getBoundingClientRect().top;
+  return [...s.querySelectorAll('[data-mark]')].every((m) => m.getBoundingClientRect().bottom <= top);
+});
+
 test('solo: the lobby, eight questions answered, the reveal, the results and the review list', async ({ page }) => {
   await open(page);
   await play(page);
@@ -80,6 +86,8 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
     await expect(sheet(page).locator('[data-kiki-en]')).toBeVisible();
     await expect(sheet(page).locator('[data-kiki-verdict]')).toHaveAttribute('data-kiki-verdict', i === 3 ? 'wrong' : 'right');
     await expect(sheet(page).locator('[data-mark="right"]')).toHaveCount(1);
+    // the marked choices never under the sticky 次へ
+    await expect.poll(() => clearOfNext(page)).toBe(true);
     // the first listen's いっぱつ stamp (a badge, no points; none on a miss)
     await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveCount(i === 3 ? 0 : 1);
     if (i !== 3) await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveText('1回目で正解！');

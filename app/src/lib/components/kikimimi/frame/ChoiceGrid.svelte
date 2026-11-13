@@ -1,7 +1,7 @@
 <script lang="ts">
   // A round's choices (docs/kikimimi.md "The game"; kikimimi-engine.md "Shared UI" ChoiceGrid): dimmed until the first play ends, then one
   // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
-  // two, a dialogue's, so the transcript under them is never under the sticky つぎへ). Text, or pictures (art keys) in a
+  // two, a dialogue's, so the transcript under them is never under the sticky つぎへ; the marked ones scrolled clear of it). Text, or pictures (art keys) in a
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
   // Japanese (`ja`, the item's cja) under it, smaller. A reply round (`voice`) with the mic on: こたえて！ under them
   // (mic/MicAnswer.svelte, its own chunk, loaded at the first such round and kept to the game's end).
@@ -41,6 +41,21 @@
     if (reveal) return k === right ? 'right' : picked === k ? 'wrong' : null;
     return picked === k ? 'mine' : null;
   }
+  /** At the reveal, the marked ones (○, and × on my pick) brought up clear of the sticky 次へ when they'd be under it
+   *  (a long 解説 or a picture grid pushes them down): the round's scroller moved by what's covered, once. */
+  let grid: HTMLDivElement | undefined = $state();
+  $effect(() => {
+    if (reveal && grid) clearOfNext(grid);
+  });
+  function clearOfNext(g: HTMLElement) {
+    const bar = g.closest('.kk-body')?.querySelector<HTMLElement>('.level-acts');
+    const marked = [...g.querySelectorAll<HTMLElement>('[data-mark]')];
+    if (!bar || !marked.length) return;
+    let scroller = bar.parentElement;
+    while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    const over = Math.max(...marked.map((m) => m.getBoundingClientRect().bottom)) + 8 - bar.getBoundingClientRect().top;
+    if (scroller && over > 0) scroller.scrollBy({ top: over, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
   const micOn = readMic(localKV()).on;
   /** こたえて！ mounted: a reply round has come with the mic on. */
   let answering = $state(false);
@@ -49,7 +64,7 @@
   });
 </script>
 
-<div class="choices" class:pics class:dim role="group" aria-label={t('kiki.pick')}>
+<div class="choices" class:pics class:dim bind:this={grid} role="group" aria-label={t('kiki.pick')}>
   {#each choices as c, k (k)}
     {@const m = mark(k)}
     {#if !onlyMarked || m}
