@@ -18,6 +18,7 @@
 // its doorways, its carpets, where one may walk (the floors less the walls and what stands on them) and the walk itself
 // (a grid of half-tile cells, A* with its corners pulled straight), read by the engine (engine.ts) and the screen
 // (MuseumRoom.svelte), tested on their own (plan.test.ts). Named spots and visitors' places: spots.ts.
+import { gridPath, pullStraight } from '../rooms/gridPath.ts';
 
 export type Pt = readonly [number, number];
 export interface Rect { x0: number; x1: number; z0: number; z1: number }
@@ -346,78 +347,14 @@ export function walkPath(g: Nav, from: Pt, to: Pt): Pt[] {
   if (!end || !start) return [];
   if (Math.hypot(end[0] - from[0], end[1] - from[1]) < 0.5) return [];
   if (clear(g, start, end)) return [...(start[0] !== from[0] || start[1] !== from[1] ? [start] : []), end];
-  const [si, sj] = cellOf(start[0], start[1]), [ei, ej] = cellOf(end[0], end[1]);
-  const N = g.cols * g.rows, s = sj * g.cols + si, e = ej * g.cols + ei;
-  const gs = new Float32Array(N).fill(Infinity), came = new Int32Array(N).fill(-1), done = new Uint8Array(N);
-  const heap: [number, number][] = [];
-  const push = (k: number, f: number) => {
-    heap.push([f, k]);
-    let c = heap.length - 1;
-    while (c > 0) {
-      const p = (c - 1) >> 1;
-      if (heap[p][0] <= heap[c][0]) break;
-      [heap[p], heap[c]] = [heap[c], heap[p]];
-      c = p;
-    }
-  };
-  const pop = (): number => {
-    const top = heap[0], last = heap.pop()!;
-    if (heap.length) {
-      heap[0] = last;
-      let c = 0;
-      for (;;) {
-        const l = c * 2 + 1, r = l + 1;
-        let m = c;
-        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
-        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
-        if (m === c) break;
-        [heap[m], heap[c]] = [heap[c], heap[m]];
-        c = m;
-      }
-    }
-    return top[1];
-  };
-  const h = (k: number) => Math.hypot((k % g.cols) - ei, Math.floor(k / g.cols) - ej);
-  gs[s] = 0;
-  push(s, h(s));
-  while (heap.length) {
-    const k = pop();
-    if (done[k]) continue;
-    done[k] = 1;
-    if (k === e) break;
-    const i = k % g.cols, j = Math.floor(k / g.cols);
-    for (let dj = -1; dj <= 1; dj++)
-      for (let di = -1; di <= 1; di++) {
-        if (!di && !dj) continue;
-        const ni = i + di, nj = j + dj;
-        if (ni < 0 || nj < 0 || ni >= g.cols || nj >= g.rows) continue;
-        const nk = nj * g.cols + ni;
-        // (no cutting a corner past a closed cell)
-        if (!g.open[nk] || (di && dj && (!g.open[j * g.cols + ni] || !g.open[nj * g.cols + i]))) continue;
-        const ng = gs[k] + (di && dj ? Math.SQRT2 : 1);
-        if (ng < gs[nk]) {
-          gs[nk] = ng;
-          came[nk] = k;
-          push(nk, ng + h(nk));
-        }
-      }
-  }
-  if (!done[e]) return [];
-  const cells: Pt[] = [];
-  for (let k = e; k !== -1 && k !== s; k = came[k]) cells.push(cellMid(k % g.cols, Math.floor(k / g.cols)));
-  cells.reverse();
-  cells[cells.length - 1] = end;
-  // the corners pulled straight: from each point, on to the farthest one in plain sight
-  const out: Pt[] = [];
-  let at: Pt = start;
-  let i = 0;
-  if (start[0] !== from[0] || start[1] !== from[1]) out.push(start);
-  while (i < cells.length) {
-    let far = i;
-    for (let k = cells.length - 1; k > i; k--) if (clear(g, at, cells[k])) { far = k; break; }
-    out.push(cells[far]);
-    at = cells[far];
-    i = far + 1;
-  }
-  return out;
+  const { cells, reached } = gridPath(
+    { cols: g.cols, rows: g.rows, free: (i, j) => g.open[j * g.cols + i] === 1 },
+    cellOf(start[0], start[1]),
+    cellOf(end[0], end[1])
+  );
+  if (!reached) return [];
+  const pts: Pt[] = cells.map(([i, j]) => cellMid(i, j));
+  pts[pts.length - 1] = end;
+  const head: Pt[] = start[0] !== from[0] || start[1] !== from[1] ? [start] : [];
+  return [...head, ...pullStraight(start, pts, (a, b) => clear(g, a, b))];
 }

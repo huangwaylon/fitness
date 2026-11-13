@@ -7,6 +7,7 @@
 // cutaway's: `side`). Measured off the converted model (its height map and a top view, 2026-11-10).
 import { footprint, ITEMS } from '../tent/items.ts';
 import { HALF, TILE, isWallItem, type Facing, type Pt } from '../tent/grid.ts';
+import { gridPath, pullStraight } from '../rooms/gridPath.ts';
 
 /** The floor's rect (model units: x0, x1, z0, z1): the shop part's left wall to the counter corner's right one, the
  *  back wall to the front one. */
@@ -209,56 +210,15 @@ function clear(b: Uint8Array, a: Pt, c: Pt): boolean {
 
 /**
  * The way from `from` to `to` round what stands: the points after `from` (the last is `to`, or the nearest reachable
- * point to it when `to` is blocked), [] when it's there already. As the rooms' (tent/grid.ts walkPath): A* over the
+ * point to it when `to` is blocked), [] when it's there already. The rooms' walker (rooms/gridPath.ts): A* over the
  * half-tile cells (8 ways, no corner cutting), the corners pulled straight.
  */
 export function walkPath(b: Uint8Array, from: Pt, to: Pt): Pt[] {
-  const s = cellOf(from), g0 = cellOf(to);
-  const idx = (i: number, j: number) => i * NZ + j;
-  const h = (k: number) => Math.hypot(Math.floor(k / NZ) - g0[0], (k % NZ) - g0[1]);
-  const cost = new Float64Array(NX * NZ).fill(Infinity), came = new Int32Array(NX * NZ).fill(-1), seen = new Uint8Array(NX * NZ);
-  const open = new Map<number, number>();
-  const si = idx(s[0], s[1]), gi = idx(g0[0], g0[1]);
-  cost[si] = 0;
-  open.set(si, h(si));
-  let best = si, bestH = h(si);
-  while (open.size) {
-    let cur = -1, cf = Infinity;
-    for (const [k, f] of open) if (f < cf) (cf = f), (cur = k);
-    open.delete(cur);
-    if (seen[cur]) continue;
-    seen[cur] = 1;
-    if (h(cur) < bestH) (bestH = h(cur)), (best = cur);
-    if (cur === gi) break;
-    const ci = Math.floor(cur / NZ), cj = cur % NZ;
-    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
-      if (!di && !dj) continue;
-      const ni = ci + di, nj = cj + dj;
-      if (ni < 0 || nj < 0 || ni >= NX || nj >= NZ || b[idx(ni, nj)]) continue;
-      if (di && dj && (b[idx(ci + di, cj)] || b[idx(ci, cj + dj)])) continue;
-      const nk = idx(ni, nj), c = cost[cur] + (di && dj ? Math.SQRT2 : 1);
-      if (c < cost[nk]) {
-        cost[nk] = c;
-        came[nk] = cur;
-        open.set(nk, c + h(nk));
-      }
-    }
-  }
-  const reached = seen[gi] === 1, end = reached ? gi : best;
-  const cells: number[] = [];
-  for (let k = end; k !== -1 && k !== si; k = came[k]) cells.push(k);
-  cells.reverse();
-  const last: Pt = reached && !b[gi] ? to : mid(Math.floor(end / NZ), end % NZ);
-  const pts: Pt[] = [...cells.slice(0, -1).map((k) => mid(Math.floor(k / NZ), k % NZ)), last];
+  const g = cellOf(to), gi = g[0] * NZ + g[1];
+  const { cells, reached } = gridPath({ cols: NX, rows: NZ, free: (i, j) => !b[i * NZ + j] }, cellOf(from), g);
+  const end = reached ? g : (cells.at(-1) ?? cellOf(from));
+  const last: Pt = reached && !b[gi] ? to : mid(end[0], end[1]);
+  const pts: Pt[] = [...cells.slice(0, -1).map(([i, j]) => mid(i, j)), last];
   if (!cells.length && Math.hypot(last[0] - from[0], last[1] - from[1]) < 0.5) return [];
-  const out: Pt[] = [];
-  let a: Pt = from;
-  for (let i = 0; i < pts.length; ) {
-    let j = pts.length - 1;
-    while (j > i && !clear(b, a, pts[j])) j--;
-    out.push(pts[j]);
-    a = pts[j];
-    i = j + 1;
-  }
-  return out;
+  return pullStraight(from, pts, (p, q) => clear(b, p, q));
 }

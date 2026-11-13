@@ -9,6 +9,7 @@
 import { footprint, ITEMS } from './items.ts';
 import { ROOM_DEFAULT, type RoomSize } from '#lib/contract/tent.ts';
 import { fitsOn as topFits, kidTiles as topTiles, onTop as topPoint, slotsOf as topSlots, type Top } from '#lib/surface.ts';
+import { gridPath, pullStraight } from '../rooms/gridPath.ts';
 
 /** Tiles across and deep. */
 export const ROOM = 8;
@@ -344,58 +345,11 @@ function clear(b: Uint8Array, a: Pt, c: Pt): boolean {
  */
 export function walkPath(spots: readonly Spot[], from: Pt, to: Pt, room: Bounds = FULL): Pt[] {
   const b = blocked(spots, room);
-  const goal = clampIn(to, room);
-  const s = cellOf(from);
-  let g = cellOf(goal);
-  const idx = (c: readonly [number, number]) => c[0] * N + c[1];
-  // A* from the start (its own cell is never a wall to it: a villager standing at a piece's edge walks off)
-  const open = new Map<number, number>(), cost = new Float64Array(N * N).fill(Infinity), came = new Int32Array(N * N).fill(-1);
-  const h = (i: number) => Math.hypot(Math.floor(i / N) - g[0], (i % N) - g[1]);
-  const si = idx(s);
-  cost[si] = 0;
-  open.set(si, h(si));
-  let bestI = si, bestH = h(si);
-  const seen = new Uint8Array(N * N);
-  while (open.size) {
-    let cur = -1, cf = Infinity;
-    for (const [i, f] of open) if (f < cf) (cf = f), (cur = i);
-    open.delete(cur);
-    if (seen[cur]) continue;
-    seen[cur] = 1;
-    const hc = h(cur);
-    if (hc < bestH) (bestH = hc), (bestI = cur);
-    if (cur === idx(g)) break;
-    const cx = Math.floor(cur / N), cz = cur % N;
-    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
-      if (!dx && !dz) continue;
-      const nx = cx + dx, nz = cz + dz;
-      if (nx < 0 || nz < 0 || nx >= N || nz >= N || b[nx * N + nz]) continue;
-      if (dx && dz && (b[(cx + dx) * N + cz] || b[cx * N + cz + dz])) continue;
-      const ni = nx * N + nz, c = cost[cur] + (dx && dz ? Math.SQRT2 : 1);
-      if (c < cost[ni]) {
-        cost[ni] = c;
-        came[ni] = cur;
-        open.set(ni, c + h(ni));
-      }
-    }
-  }
-  const reached = seen[idx(g)] === 1;
-  if (!reached) g = [Math.floor(bestI / N), bestI % N];
-  const cells: [number, number][] = [];
-  for (let i = reached ? idx(g) : bestI; i !== -1 && i !== si; i = came[i]) cells.push([Math.floor(i / N), i % N]);
-  cells.reverse();
-  const end: Pt = reached && !b[idx(g)] ? goal : mid(g);
+  const goal = clampIn(to, room), g = cellOf(goal);
+  const { cells, reached } = gridPath({ cols: N, rows: N, free: (i, j) => !b[i * N + j] }, cellOf(from), g);
+  const last = cells.at(-1) ?? cellOf(from);
+  const end: Pt = reached && !b[g[0] * N + g[1]] ? goal : mid(reached ? g : last);
   const pts: Pt[] = [...cells.slice(0, -1).map(mid), end];
   if (!cells.length && Math.hypot(end[0] - from[0], end[1] - from[1]) < 0.5) return [];
-  // pull the corners straight
-  const out: Pt[] = [];
-  let a: Pt = from;
-  for (let i = 0; i < pts.length; ) {
-    let j = pts.length - 1;
-    while (j > i && !clear(b, a, pts[j])) j--;
-    out.push(pts[j]);
-    a = pts[j];
-    i = j + 1;
-  }
-  return out;
+  return pullStraight(from, pts, (p, q) => clear(b, p, q));
 }
