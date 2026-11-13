@@ -75,7 +75,7 @@ export interface Day {
   board?: boolean;
   /** The day (Tokyo's `YYYY-MM-DD`): a crop's stage (layout/garden.ts cropStage), the cedars' festive lights. */
   date?: string;
-  /** The fields' plots (docs/farming.md, island/farm.svelte.ts): a plot id → its plant's model (fieldPlant) and whether
+  /** The fields' plots (docs/farming.md, island/farm.ts): a plot id → its plant's model (fieldPlant) and whether
    *  it was watered today (its soil dark); a plot not here is bare dry soil. */
   farm?: ReadonlyMap<string, { m?: string; wet?: boolean }>;
 }

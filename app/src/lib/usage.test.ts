@@ -106,6 +106,11 @@ describe('i18n catalogs', () => {
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => SHEETS.test(k))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('health.'))).toEqual([]);
   });
+  it('the lazy sheets’ strings: each module naming one imports i18n/sheets.ts (else it shows the raw key)', () => {
+    const names = sources.filter((s) => /\bt\(\s*['"`](goal|museum|pair|harvest|offline|homes)\./.test(s.text));
+    expect(names.length).toBeGreaterThan(10);
+    expect(names.filter((s) => !/from '(#lib\/i18n\/|(\.\.\/)*i18n\/|\.\/)sheets\.ts'|import '(#lib\/i18n\/|(\.\.\/)*i18n\/|\.\/)sheets\.ts'/.test(s.text)).map((s) => s.f)).toEqual([]);
+  });
   it('keep ごはん’s strings (food.*) in its own catalog, out of the first load', () => {
     for (const c of [jaFood, enFood]) expect(Object.keys(c).filter((k) => !k.startsWith('food.'))).toEqual([]);
     for (const c of [jaMain, enMain, jaTab, enTab]) expect(Object.keys(c).filter((k) => k.startsWith('food.'))).toEqual([]);

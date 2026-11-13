@@ -23,7 +23,7 @@ export const MOTION_MS: Record<Motion, number> = {
 
 export type FxKind = 'sparkles' | 'hearts' | 'notes' | 'sweat' | 'zzz' | 'confetti' | 'puff' | 'glint';
 
-/** The villagers (mine, the partner's, and a third: the guest's on a member's phone, B's on the guest's: island/cast.ts),
+/** The villagers (mine, the partner's, and a third: the guest's on a member's phone, B's on the guest's: ui-state/cast.ts),
  *  しずえ, the visitor of the day on centre stage (island/Visitor.svelte) and K.K. on his stool (island/KKSlider.svelte). */
 export type ActorId = 'mine' | 'partner' | 'third' | 'host' | 'visitor' | 'guest' | 'kk';
 

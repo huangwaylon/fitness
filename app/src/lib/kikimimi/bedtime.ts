@@ -3,7 +3,7 @@
 // chapter's end) and its fade over the last 20 s, each serial's chapters unlocked one by one as they're finished
 // (reached the end, or the timer ran out in the last third), where to pick up (つづき), and the morning-after
 // prediction (「きのうの つづき、どうなると おもう？」 the day after a chapter, revealed when the next one is finished).
-// Pure: the phone keeps the progress (components/kikimimi/story/progress.ts).
+// Pure: the phone keeps the progress (kikimimi/progress.ts).
 import type { LocalDate } from '../types.ts';
 
 /** The sleep timer: minutes of listening, or 0 (ぜんぶ: to the end of the chapter). */
