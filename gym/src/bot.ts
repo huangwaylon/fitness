@@ -2,7 +2,7 @@
 // sets the next), pushing alerts and notices to the group, and answering the taps (ui.ts). The Worker calls it by RPC
 // (index.ts).
 import { DurableObject } from 'cloudflare:workers';
-import type { Bot } from './actions.ts';
+import { config, type Bot, type GymConfig } from './actions.ts';
 import type { Env } from './env.ts';
 import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
@@ -132,6 +132,11 @@ export class GymBot extends DurableObject<Env> implements Bot {
       intervalMin: this.store.intervalMinutes, paused, nextCheck, lastCheck: this.lastCheck, lastOk: this.lastOk,
       lastError: this.lastError, failures, siteDownSent: this.siteDownSent, retryPending, checks, line,
     };
+  }
+
+  /** GET /gym/config: 📋 設定を見る's answer, for the app (actions.ts GymConfig); like getStatus, reads only. */
+  async getConfig(): Promise<GymConfig> {
+    return config(this);
   }
 
   /** Replace the state (a restore, or an edit by hand). Refused if it isn't a valid v3 state. */

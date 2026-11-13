@@ -97,6 +97,66 @@ describe('/status', () => {
   });
 });
 
+describe('/gym/config', () => {
+  const KEY_A = 'a'.repeat(64), KEY_B = 'b'.repeat(64), KEY_C = 'c'.repeat(64);
+  const PAGES = 'https://island-fund.pages.dev';
+  const keyed = (extra: Partial<Env> = {}) => envOf({ MODE: 'bot', KEY_A, KEY_B, ALLOWED_ORIGINS: PAGES, ...extra });
+  const get = (headers: Record<string, string>, env = keyed(), method = 'GET') => call('/gym/config', { method, headers }, env);
+  const logged = () => [...vi.mocked(console.log).mock.calls, ...vi.mocked(console.warn).mock.calls].map((c) => c.join(' '));
+
+  beforeEach(() => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    bot.getConfig = () => (rec('BOT.getConfig'), Promise.resolve({ v: 1, text: '📋 日ごとの設定' }));
+  });
+
+  it('answers a member, from the app’s page or without an Origin, never kept', async () => {
+    const res = await get({ ...bearer(KEY_A), Origin: PAGES });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ v: 1, text: '📋 日ごとの設定' });
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe(PAGES);
+    expect(res.headers.get('Vary')).toBe('Origin');
+    const curl = await get(bearer(KEY_B.toUpperCase())); // keys compare in either case
+    expect([curl.status, curl.headers.get('Access-Control-Allow-Origin')]).toEqual([200, null]);
+    expect(calls['BOT.getConfig']).toHaveLength(2);
+    expect(logged()).toEqual(['config read by=A', 'config read by=B']);
+  });
+
+  it('refuses the guest, a wrong key or none (401), and an unset pair of keys', async () => {
+    for (const h of [bearer(KEY_C), bearer('nope'), {}, { Authorization: KEY_A }]) {
+      const res = await get({ ...h, Origin: PAGES });
+      expect(res.status).toBe(401);
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe(PAGES); // the page can read why
+      expect(res.headers.get('Cache-Control')).toBe('no-store');
+    }
+    expect((await get(bearer(KEY_C), keyed({ KEY_C } as Partial<Env>))).status).toBe(401); // even if KEY_C were set
+    expect(await (await get(bearer(''), keyed({ KEY_A: undefined, KEY_B: undefined }))).json()).toEqual({ ok: false, error: 'no_keys' });
+    expect(calls['BOT.getConfig']).toBeUndefined();
+    expect(logged().every((l) => /^config refused 401 (unauthorized|no_keys)$/.test(l))).toBe(true);
+    expect(logged().join('\n')).not.toContain(KEY_A.slice(0, 8));
+  });
+
+  it('refuses another site’s page (403), even with a member’s key', async () => {
+    const res = await get({ ...bearer(KEY_A), Origin: 'https://evil.example' });
+    expect(res.status).toBe(403);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(calls['BOT.getConfig']).toBeUndefined();
+    expect(logged()).toEqual(['config refused 403 origin origin="https://evil.example"']);
+  });
+
+  it('answers the preflight (GET with Authorization), and only GET', async () => {
+    const pre = await get({ Origin: PAGES, 'Access-Control-Request-Method': 'GET', 'Access-Control-Request-Headers': 'authorization' }, keyed(), 'OPTIONS');
+    expect(pre.status).toBe(204);
+    expect(pre.headers.get('Access-Control-Allow-Origin')).toBe(PAGES);
+    expect(pre.headers.get('Access-Control-Allow-Methods')).toBe('GET');
+    expect(pre.headers.get('Access-Control-Allow-Headers')).toBe('Authorization');
+    expect((await get({ Origin: 'http://localhost:5173' }, keyed(), 'OPTIONS')).status).toBe(204);
+    const put = await get({ ...bearer(KEY_A), Origin: PAGES }, keyed(), 'PUT');
+    expect([put.status, put.headers.get('Allow')]).toEqual([405, 'GET']);
+    expect(calls['BOT.getConfig']).toBeUndefined();
+  });
+});
+
 describe('the LINE webhook', () => {
   it('refuses a missing or wrong signature (403), reaching no object', async () => {
     expect((await webhook([menuEvent()], envOf({ MODE: 'bot' }), null)).status).toBe(403);

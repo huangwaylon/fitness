@@ -13,6 +13,12 @@ export interface Env {
   LINE_GROUP_ID: string;
   /** The key for the state's import/export (/gym/state). */
   GYM_TOKEN: string;
+  /** The members' person keys (the relay's KEY_A and KEY_B), for /gym/config. The guest's is never set here, so a
+   *  guest is refused like a stranger. */
+  KEY_A?: string;
+  KEY_B?: string;
+  /** The app's page origins allowed to read /gym/config (exact, comma-separated; localhost always). */
+  ALLOWED_ORIGINS?: string;
   /** The deployed commit (scripts/deploy.sh), shown by /health. */
   COMMIT?: string;
 }

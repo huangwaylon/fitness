@@ -53,14 +53,21 @@ export function ruleLabel(rule: Rule | undefined): string {
 /** After the default days' rule (nothing saved): the usual, which 🧹 goes back to. */
 const USUAL = '（ふだん）';
 
-/** A day's full setting: its rule (marked when it's the default), plus when checking starts if that's set. */
-export function daySetting(store: Store, day: Day, today: Day): string {
+/** A day's setting in its two parts: the rule (marked when it's the default) and when checking starts, if set. */
+function daySettingParts(store: Store, day: Day, today: Day): [rule: string, from: string | null] {
   const rule = store.effectiveRule(day, today);
   const label = ruleLabel(rule) + (rule !== undefined && store.rule(day) === undefined ? USUAL : '');
   const checkFrom = store.checkFrom(day);
-  if (checkFrom === undefined) return label;
+  if (checkFrom === undefined) return [label, null];
   const when = dayOf(checkFrom) === day ? clockOf(checkFrom) : `${dayLabel(dayOf(checkFrom))}${clockOf(checkFrom)}`;
-  return `${label}　⏳ ${when}から`;
+  return [label, `⏳ ${when}から`];
+}
+
+const joinSetting = (rule: string, from: string | null): string => (from === null ? rule : `${rule}　${from}`);
+
+/** A day's full setting: its rule (marked when it's the default), plus when checking starts if that's set. */
+export function daySetting(store: Store, day: Day, today: Day): string {
+  return joinSetting(...daySettingParts(store, day, today));
 }
 
 /** Slots grouped under a date heading, one line per time listing every program open then. */
@@ -163,24 +170,40 @@ export const SITE_BACK = '✅ ジムの予約サイトに再接続できまし�
 
 // --- settings ---
 
-/** Every day that's checked or has a setting. */
-export function status(
+/** 📋's answer in parts (GET /gym/config's too, for the app): the title, a row per day that's checked or has a
+ *  setting (its date, rule and ⏳ as daySetting words them), the trouble notice, and the closing line (the interval
+ *  and the last and next check, or that checks are stopped). `statusLines` is LINE's text of it. */
+export interface StatusView {
+  title: string;
+  days: { day: Day; date: string; rule: string; from: string | null }[];
+  notice: string | null;
+  check: string;
+}
+
+export function statusView(
   store: Store,
   today: Day,
   lastCheck: number | null,
   nextCheck: number | null,
   havingTrouble: boolean,
-): string[] {
-  const days = [...new Set([...defaultDays(today), ...store.daysWithSettings()])].sort();
-  const lines = ['📋 日ごとの設定', ...days.map((d) => `・${dayLabel(d)}　${daySetting(store, d, today)}`)];
-  if (havingTrouble) lines.push('⚠️ 現在、ジムの予約サイトに接続しにくい状態です。');
-  if (store.paused) {
-    lines.push(CHECK_PAUSED);
-  } else {
+): StatusView {
+  const days = [...new Set([...defaultDays(today), ...store.daysWithSettings()])].sort().map((day) => {
+    const [rule, from] = daySettingParts(store, day, today);
+    return { day, date: dayLabel(day), rule, from };
+  });
+  let check = CHECK_PAUSED;
+  if (!store.paused) {
     const [last, next] = [lastCheck, nextCheck].map((t) => (t === null ? '—' : clockOf(t)));
-    lines.push(`${intervalLabel(store.intervalMinutes)}にチェック・前回 ${last}・次回 ${next}`);
+    check = `${intervalLabel(store.intervalMinutes)}にチェック・前回 ${last}・次回 ${next}`;
   }
-  return lines;
+  const notice = havingTrouble ? '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。' : null;
+  return { title: '📋 日ごとの設定', days, notice, check };
+}
+
+/** The status as LINE shows it, a line each. */
+export function statusLines(v: StatusView): string[] {
+  const days = v.days.map((d) => `・${d.date}　${joinSetting(d.rule, d.from)}`);
+  return [v.title, ...days, ...(v.notice === null ? [] : [v.notice]), v.check];
 }
 
 // --- check settings ---

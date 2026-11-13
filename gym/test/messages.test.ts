@@ -89,7 +89,8 @@ describe('messages', () => {
 
   it('shows the status of every checked or set day', () => {
     const s = setStore();
-    expect(m.status(s, TODAY, oct(3, '08:45'), null, true)).toEqual([
+    const view = m.statusView(s, TODAY, oct(3, '08:45'), null, true);
+    expect(m.statusLines(view)).toEqual([
       '📋 日ごとの設定',
       '・10/3（土）　⏰ 12:00〜13:00（ふだん）',
       '・10/4（日）　🔕 通知オフ',
@@ -99,8 +100,13 @@ describe('messages', () => {
       '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。',
       '15分ごとにチェック・前回 08:45・次回 —',
     ]);
+    // the parts: each day's rule and ⏳ apart, as daySetting words them
+    expect(view.days[2]).toEqual({ day: '2026-10-05', date: '10/5（月）', rule: '⏰ 12:00〜14:00', from: '⏳ 10/4（日）16:00から' });
+    expect(view.days[1]).toEqual({ day: '2026-10-04', date: '10/4（日）', rule: '🔕 通知オフ', from: null });
     s.setPaused(true);
-    expect(m.status(s, TODAY, null, null, false).at(-1)).toBe(m.CHECK_PAUSED);
+    const paused = m.statusView(s, TODAY, null, null, false);
+    expect([paused.notice, paused.check]).toEqual([null, m.CHECK_PAUSED]);
+    expect(m.statusLines(paused).at(-1)).toBe(m.CHECK_PAUSED);
   });
 
   it('formats the check settings', () => {

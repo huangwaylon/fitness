@@ -40,9 +40,35 @@ export class Refused extends Error {
 
 export const MANUAL_CHECK_COOLDOWN_MS = 60_000;
 
-/** Every day that's checked or has a setting, and how checking goes. */
+/** GET /gym/config (members only: index.ts), for the app's 設定 → ジムボット: 📋 設定を見る's answer as its parts
+ *  (messages.StatusView: the words LINE shows, made by the same functions) with the facts behind the closing line,
+ *  and `text`, exactly LINE's reply. The app's lib/gym/config.ts mirrors it (change both together). */
+export interface GymConfig extends messages.StatusView {
+  v: 1;
+  now: number;
+  paused: boolean;
+  intervalMin: number;
+  lastCheck: number | null;
+  nextCheck: number | null;
+  text: string;
+}
+
+async function statusViewOf(bot: Bot, now: number): Promise<[messages.StatusView, number | null]> {
+  const nextCheck = await bot.nextCheck();
+  return [messages.statusView(bot.store, dayOf(now), bot.lastCheck, nextCheck, bot.failures > 0), nextCheck];
+}
+
+/** Every day that's checked or has a setting, and how checking goes (📋 設定を見る). */
 export async function status(bot: Bot): Promise<string[]> {
-  return messages.status(bot.store, dayOf(Date.now()), bot.lastCheck, await bot.nextCheck(), bot.failures > 0);
+  return messages.statusLines((await statusViewOf(bot, Date.now()))[0]);
+}
+
+/** 📋's answer for the app (GymConfig). */
+export async function config(bot: Bot): Promise<GymConfig> {
+  const now = Date.now();
+  const [view, nextCheck] = await statusViewOf(bot, now);
+  const { paused, intervalMinutes: intervalMin } = bot.store;
+  return { v: 1, now, ...view, paused, intervalMin, lastCheck: bot.lastCheck, nextCheck, text: messages.statusLines(view).join('\n') };
 }
 
 /** Check now (at most once a minute, shared by everyone) and list everything open. */

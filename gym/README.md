@@ -57,6 +57,7 @@ Each day has at most one rule (`src/store.ts`):
 |---|---|
 | `POST /line/webhook` | LINE's webhook: 403 without a valid `X-Line-Signature`; 200 at once, the events handled after |
 | `GET /status` | The runner's health (below), for the app's 設定 → ジムボット; public, any origin |
+| `GET /gym/config` | 📋 設定を見る's answer (below), for the same page; a member's key (`Authorization: Bearer <KEY_A or KEY_B>`, else 401), the app's origin (`ALLOWED_ORIGINS`, localhost, or none; else 403), preflight answered, `private, no-store` |
 | `GET`, `PUT /gym/state` | The state, exported or imported (`Authorization: Bearer <GYM_TOKEN>`); PUT refuses anything but a valid version-3 state (400) |
 | `GET /health` | `{ok, mode, sha}` |
 
@@ -76,6 +77,11 @@ Each day has at most one rule (`src/store.ts`):
   names, IDs, the group, the days' settings, slot times or error text. It reads the object's memory only; LINE's
   facts are read by the alarm after a push, and hourly. The Worker keeps the answer 60 s, so a flood costs Worker
   requests, not the object's.
+- **Config**: `/gym/config` is what 📋 設定を見る answers in the group, for members only (it names the days'
+  settings, which `/status` never does): its parts (`messages.ts` `StatusView`: the title, each day's date, rule and
+  ⏳, the trouble notice, the closing line) as the same functions word them, the interval, stopped or not, the last
+  and next check, and `text`, LINE's reply verbatim (`actions.ts` `config`; one test drives both). Read from memory,
+  never kept. Logs `config read by=A`, or `config refused 401 unauthorized` (403 origin, 405 method, 401 `no_keys`).
 - **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors (through …)`,
   every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with `npx wrangler tail`.
 
@@ -89,6 +95,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 | `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings) |
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
+| `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's secrets, for `/gym/config` (never the guest's `KEY_C`) |
 
 ## Develop and deploy
 
@@ -106,8 +113,8 @@ A deploy keeps the state and the alarm.
 
 `$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
-- **Look**: the app's 設定 → ジムボット (the verdict, the facts, the last checks; up to a minute old), or
-  `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
+- **Look**: the app's 設定 → ジムボット (the verdict, the facts, 現在の設定 as 📋 shows it, the last checks; up to a
+  minute old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
   `MODE = "off"`. Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`
   to set the first alarm.

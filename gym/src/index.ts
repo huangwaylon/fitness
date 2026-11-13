@@ -1,6 +1,7 @@
-// The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), the state's import/export, and the
-// runner's public status (status.ts). MODE (wrangler.toml) 'bot' hands each event to the bot; 'off', the stop switch,
-// answers LINE but ignores its events.
+// The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), the state's import/export, the
+// runner's public status (status.ts) and, for members only, 📋 設定を見る's answer (/gym/config). MODE (wrangler.toml)
+// 'bot' hands each event to the bot; 'off', the stop switch, answers LINE but ignores its events.
+import { corsOf, roleOfKey } from '../../relay/src/auth.ts';
 import type { Env } from './env.ts';
 import { signatureOk } from './line.ts';
 import type { GymStatus } from './status.ts';
@@ -19,6 +20,7 @@ export default {
     const { pathname } = new URL(req.url);
     if (pathname === '/health') return Response.json({ ok: true, mode: env.MODE, sha: env.COMMIT ?? null });
     if (pathname === '/status') return status(env);
+    if (pathname === '/gym/config') return config(req, env);
     if (pathname === '/line/webhook' && req.method === 'POST') return webhook(req, env, ctx);
     if (pathname !== '/gym/state') return new Response('not found', { status: 404 });
 
@@ -48,6 +50,29 @@ async function status(env: Env): Promise<Response> {
   const now = Date.now();
   if (!statusSeen || now - statusSeen.at > STATUS_MS) statusSeen = { at: now, status: await bot(env).getStatus() };
   return Response.json(statusSeen.status, { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'max-age=30' } });
+}
+
+/** 📋 設定を見る's answer (actions.ts GymConfig), for the app: unlike /status it names the days' settings, so only a
+ *  member's key (KEY_A, KEY_B: relay/src/auth.ts, as the relay checks them) from the app's origin (or no Origin: curl)
+ *  reads it, never cached. One log line per request: who read it, or why it was refused (never a key). */
+async function config(req: Request, env: Env): Promise<Response> {
+  const origin = req.headers.get('Origin');
+  const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
+  const refuse = (status: number, why: string, headers: Record<string, string> = {}, extra = '') => {
+    console.warn(`config refused ${status} ${why}${extra}`);
+    return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
+  };
+  if (!cors) return refuse(403, 'origin', {}, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`);
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization', 'Access-Control-Max-Age': '86400' } });
+  }
+  if (req.method !== 'GET') return refuse(405, 'method', { ...cors, Allow: 'GET' });
+  const auth = req.headers.get('Authorization') ?? '';
+  const who = roleOfKey(auth.startsWith('Bearer ') ? auth.slice(7).trim() : '', { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+  if (who !== 'A' && who !== 'B') return refuse(401, env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
+  const answer = await bot(env).getConfig();
+  console.log(`config read by=${who}`);
+  return Response.json(answer, { headers: { ...cors, 'Cache-Control': 'private, no-store' } });
 }
 
 /** LINE's webhook: answered 200 at once (LINE retries or gives up on a slow one), the events handled after. */

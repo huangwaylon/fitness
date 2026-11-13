@@ -5,9 +5,19 @@ name: Gym bot checks
 on:
   push:
     branches: [main]
-    paths: ['gym/**', '.github/workflows/gym.yml']
+    paths:
+      - 'gym/**'
+      - 'app/src/lib/contract/**'
+      - 'app/src/lib/types.ts'
+      - 'relay/src/auth.ts'
+      - '.github/workflows/gym.yml'
   pull_request:
-    paths: ['gym/**', '.github/workflows/gym.yml']
+    paths:
+      - 'gym/**'
+      - 'app/src/lib/contract/**'
+      - 'app/src/lib/types.ts'
+      - 'relay/src/auth.ts'
+      - '.github/workflows/gym.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,10 +33,16 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          # (gym/ stands alone: the rest of the repo, app/static's 521 MB above all, never needed)
+          # /gym/config checks the members' keys with relay/src/auth.ts (which imports app/src/lib/contract, and that
+          # lib/types.ts); nothing else of the repo is needed (app/static's 521 MB above all). Files in the list, so
+          # not cone mode.
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
-            gym
-            .github/workflows
+            /gym/
+            /app/src/lib/contract/
+            /app/src/lib/types.ts
+            /relay/src/auth.ts
+            /.github/workflows/
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24

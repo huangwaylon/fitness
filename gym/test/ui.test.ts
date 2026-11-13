@@ -1,5 +1,6 @@
 // Tests for the LINE cards and tap handling (ui.ts), with a fake bot and LINE mocked.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as actions from '../src/actions.ts';
 import { LineError, menuQuickReply } from '../src/line.ts';
 import * as messages from '../src/messages.ts';
 import { ANY, SKIP } from '../src/store.ts';
@@ -371,6 +372,32 @@ describe('the rest of the menu', () => {
     await ui.handle(bot, tap('a=help'));
     expect(replyText()).toBe(messages.HELP_TEXT);
     expect(replied().at(-1)!.quickReply).toEqual(menuQuickReply());
+  });
+
+  it.each([
+    ['running, with trouble', () => {
+      bot.failures = 1;
+      bot.nextCheck.mockResolvedValue(at(today(), '12:15'));
+    }],
+    ['stopped', () => void bot.store.setPaused(true)],
+  ])('/gym/config answers what 📋 shows in the group, word for word (%s)', async (_, arrange) => {
+    bot.store.setRule(inDays(1), SKIP, today());
+    bot.store.setRule(inDays(2), ANY, today());
+    bot.store.setCheckFrom(inDays(2), at(inDays(1), '18:00'), today());
+    bot.store.setRule(inDays(9), NOON, today());
+    bot.lastCheck = at(today(), '11:50');
+    arrange();
+    await ui.handle(bot, tap('a=status'));
+    const config = await actions.config(bot);
+    expect(replied()).toHaveLength(1);
+    expect(config.text).toBe(replyText());
+    // the parts, rebuilt as LINE's lines, are the same text
+    const days = config.days.map((d) => `・${d.date}　${d.rule}${d.from ? `　${d.from}` : ''}`);
+    expect([config.title, ...days, ...(config.notice ? [config.notice] : []), config.check].join('\n')).toBe(replyText());
+    expect(config.days.map((d) => d.day)).toEqual([today(), inDays(1), inDays(2), inDays(3), inDays(9)]);
+    expect(config.days[2]).toMatchObject({ rule: messages.ANY_LABEL, from: `⏳ ${messages.dayLabel(inDays(1))}18:00から` });
+    expect(config).toMatchObject({ v: 1, now: NOW, intervalMin: 15, lastCheck: at(today(), '11:50'), paused: bot.store.paused });
+    expect(config.nextCheck).toBe(bot.store.paused ? null : at(today(), '12:15'));
   });
 
   it('changes the check settings', async () => {
