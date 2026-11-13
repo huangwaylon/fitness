@@ -280,11 +280,11 @@ stay trip data).
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header.
 - **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
-  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's small classes (`.prow` + `.sw`,
-  `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu`, `.tag`). A sample of all of it: `/dev/kit`.
-- **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`; an unknown name draws
-  a pin. No emoji in chrome; ききみみ keeps emoji as decoration only (medals, badges, a domain's mark), its controls and
-  locks drawn.
+  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` (every plain bar, a pill) · `ActionSheet`; theme.css's
+  small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu`, `.tag`). All of it:
+  `/dev/kit`.
+- **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome;
+  ききみみ keeps emoji as decoration only (medals, badges, a domain's mark), its controls and locks drawn.
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills; packing
   categories as NH items (`packView.ts`). No characters in the sheets.
 - Every tappable has its `data-sfx` (the shown tab / chip `none`); fields 16px+; no grabber.

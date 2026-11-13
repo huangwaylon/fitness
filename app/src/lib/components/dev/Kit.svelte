@@ -22,6 +22,7 @@
   let chip = $state('all');
   let unit = $state<'km' | 'mi'>('km');
   let ticks = $state([true, false, false]);
+  let sw = $state(true);
   const ICONS = ['calendar', 'map', 'backpack', 'list', 'checks', 'edit', 'heart', 'gear', 'plus', 'clock', 'pin', 'distance', 'mountain', 'users', 'sunrise', 'trash'] as const;
 </script>
 
@@ -37,7 +38,7 @@
       {#each ['all', 'late', 'soon', 'later'] as c (c)}<Chip label={c} count={3} dot={c === 'late' ? 'var(--c-coral)' : undefined} selected={chip === c} onclick={() => (chip = c)} />{/each}
       <Segmented items={[{ id: 'km', label: 'km' }, { id: 'mi', label: 'mi' }]} value={unit} label="units" attr="units" onpick={(u) => (unit = u)} />
     </ChipRow>
-    <div class="scroll">
+    <div class="scroll sheet-scroll">
       <h3 class="sec-label head sticky coral">期限切れ<span class="n">3件</span></h3>
       <div class="card dense">
         {#each ticks as on, i (i)}
@@ -51,6 +52,11 @@
       <div class="card dense"><StatStrip items={[{ icon: 'distance', value: '8.4', unit: 'km', label: '距離' }, { icon: 'mountain', value: 620, unit: 'm', label: '標高差' }, { icon: 'clock', value: '4:30', label: '時間' }]} /></div>
       <div class="row-x"><ProgressBar value={12} max={35} label="12 / 35" /><span class="sticker">今日</span><span class="sticker coral">行ってきた</span><NavButton kind="close" onclick={() => {}} /></div>
       <div class="icons">{#each ICONS as n (n)}<Icon name={n} size={22} /><Icon name={n} size={22} soft />{/each}</div>
+      <div class="card pad prows">
+        <button type="button" class="prow" role="switch" aria-checked={sw} data-sfx="self" onclick={() => (sw = !sw)}><span class="prl">.prow + .sw<small>.card.pad · .prows</small></span><span class="sw" aria-hidden="true"><i></i></span></button>
+        <div class="row-x"><span class="tag">.tag</span><span class="tag new">NEW</span></div>
+      </div>
+      <div class="card form"><label class="fld">.card.form<input type="text" /></label><label class="fld">メモ<input type="text" /></label></div>
       <hr class="stitch" />
       <p class="grain note">Body text in --font-body 15/1.45; a note in --fs-s.</p>
     </div>
