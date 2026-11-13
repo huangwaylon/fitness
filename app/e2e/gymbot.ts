@@ -1,11 +1,12 @@
 // The gym bot's Worker as ボット → ジム's specs see it (gymbot.spec.ts, gymbot-settings.spec.ts): /status and the members'
 // /gym/config and /gym/act answered by page.route from a small stand-in of the bot's state (gym/src: the 25 rows from
 // the record's pinned day, the check settings, the app's changes, 🔎's cooldown), so a change shows in the next read.
-// Each act's body is kept; `next` answers the next act with a refusal or a failure instead; `lineTap` changes a day
-// as a LINE tap would (its base moves, so the page's next act on it is 409 stale). No network.
+// Each act's body is kept; `next` answers the next act with a refusal or a failure instead; `hold` keeps the acts
+// unanswered until released; `lineTap` changes a day as a LINE tap would (its base moves, so the page's next act on it
+// is 409 stale). No network.
 import type { Page } from './fixtures.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
-import type { ActInput, Change, DayRow, GymConfig, Rule } from '../src/lib/gym/contract.ts';
+import { at, dayOf, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
 
 const ORIGIN = 'https://gym-bot.island-fund-relay.workers.dev';
 export const STATUS = `${ORIGIN}/status`;
@@ -14,9 +15,6 @@ const ACT = `${ORIGIN}/gym/act`;
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Request-Id' };
 const MIN = 60_000;
 const DAY_MS = 86_400_000;
-const JST = 9 * 3_600_000;
-const dayOf = (ms: number) => new Date(ms + JST).toISOString().slice(0, 10);
-const at = (day: string, clock: string) => Date.parse(`${day}T${clock}:00+09:00`);
 const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
 
 /** A runner whose last check's pilates timed out, at `now`. */
@@ -48,6 +46,7 @@ export function fakeGym(now: () => number) {
   const s = { paused: false, intervalMin: 15, checkAt: null as number | null, changes: [] as Change[] };
   const acts: ActInput[] = [];
   let next: Answer | null = null;
+  let gate: Promise<void> | null = null;
   const bump = (d: string) => versions.set(d, (versions.get(d) ?? 0) + 1);
   const usual = (d: string) => days.indexOf(d) < 4;
   const isDefault = (r: Rule) => Array.isArray(r) && r[0] === '12:00' && r[1] === '13:00';
@@ -124,6 +123,14 @@ export function fakeGym(now: () => number) {
     days, acts, config, act,
     /** The next act answered with this instead. */
     next: (a: Answer) => void (next = a),
+    /** Acts wait unanswered until the returned release is called. */
+    hold(): () => void {
+      let open = () => {};
+      gate = new Promise((r) => (open = r));
+      return () => ((gate = null), open());
+    },
+    /** What an act waits on before it's answered (none when not held). */
+    gate: () => gate,
     /** A LINE tap meanwhile: the day's rule set, its base moved. */
     lineTap(d: string, r: Rule) {
       setRule(d, r);
@@ -137,7 +144,7 @@ export type FakeGym = ReturnType<typeof fakeGym>;
 
 /** /status, /gym/config and /gym/act on `page`, answered by `gym` (the preflights answered with CORS). */
 export async function routeGym(page: Page, gym: FakeGym, now: () => number) {
-  const calls = { status: 0, config: 0 };
+  const calls = { status: 0, config: 0, act: 0 };
   await page.route(STATUS, (route) => {
     calls.status++;
     return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(statusPayload(now())) });
@@ -147,8 +154,10 @@ export async function routeGym(page: Page, gym: FakeGym, now: () => number) {
     calls.config++;
     return route.fulfill({ status: 200, contentType: 'application/json', headers: CORS, body: JSON.stringify(gym.config()) });
   });
-  await page.route(ACT, (route) => {
+  await page.route(ACT, async (route) => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
+    calls.act++;
+    await gym.gate();
     const a = gym.act(route.request().postDataJSON() as ActInput);
     return route.fulfill({ status: a.status, contentType: 'application/json', headers: { ...CORS, 'Access-Control-Expose-Headers': 'Retry-After', ...a.headers }, body: JSON.stringify(a.body) });
   });

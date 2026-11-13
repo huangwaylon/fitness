@@ -1,9 +1,9 @@
 // ボット → ジム's settings (docs/design.md "Bots"; the brief's app half): the control row (stop asks first, restart at
 // once, 確認の間隔, 今すぐ確認 and its countdown), the 4-week calendar (the 4-day default, VoiceOver's grid and its arrow
 // keys, 44px), the day editor (instant, 取り消す, the slot chips, 通知の開始's disabled times), select mode and one bulk
-// act, a 409 stale, the bot's refusals in its words, a failure with もう一度, and a poll's change flashed. The Worker is
-// e2e/gymbot.ts's stand-in (page.route; every act's body kept), at the record's pinned time (11/4（水） 12:00). With
-// GYM_UI_SHOTS=<dir>, the last test also writes the screenshots, day and night.
+// act, a 409 stale, quick edits sent in turn, the bot's refusals in its words, a failure with もう一度, and a poll's change
+// flashed. The Worker is e2e/gymbot.ts's stand-in (page.route; every act's body kept), at the record's pinned time
+// (11/4（水） 12:00). With GYM_UI_SHOTS=<dir>, the last test also writes the screenshots, day and night.
 import { mkdirSync } from 'node:fs';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
@@ -197,6 +197,40 @@ test('someone else changed the day: 409 stale shows it as it is now; a poll that
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); // the next read
   await expect(day(9)).toHaveAttribute('data-fill', 'any');
   await expect(day(9)).toHaveClass(/flash/);
+});
+
+test('quick edits wait their turn: two to one day both apply (no 409), a failed one puts back only its day', async ({ page, context }) => {
+  const { gym, calls, day, editor } = await phone(page, context);
+  const close = () => page.locator('dialog[open] .navbar button.nav.close').last().click();
+  let release = gym.hold();
+  await day(5).click();
+  await editor.locator('[data-gym-kind="any"]').click();
+  await expect.poll(() => calls.act).toBe(1);
+  await editor.locator('[data-gym-kind="off"]').click();
+  await expect(day(5)).toHaveAttribute('data-fill', 'off'); // shown at once
+  expect(calls.act).toBe(1); // sent once the first is answered
+  release();
+  await expect.poll(() => gym.acts.length).toBe(2);
+  expect(gym.acts).toEqual([{ a: 'any', d: gym.days[5], base: 'v0' }, { a: 'skip', d: gym.days[5], base: 'v1' }]);
+  await expect(day(5)).toHaveAttribute('data-fill', 'off');
+  await expect(editor.locator('[data-gym-note]')).toHaveCount(0);
+  await close();
+  // the first fails while the second waits: only the first's day goes back
+  release = gym.hold();
+  gym.next({ status: 500, body: { ok: false, error: 'failed' } });
+  await day(6).click();
+  await editor.locator('[data-gym-kind="any"]').click();
+  await expect.poll(() => calls.act).toBe(3);
+  await close();
+  await day(7).click();
+  await editor.locator('[data-gym-kind="any"]').click();
+  await expect(day(6)).toHaveAttribute('data-fill', 'any');
+  await expect(day(7)).toHaveAttribute('data-fill', 'any');
+  release();
+  await expect(day(6)).toHaveAttribute('data-fill', 'none');
+  await expect.poll(() => gym.acts.length).toBe(4);
+  await expect(day(7)).toHaveAttribute('data-fill', 'any');
+  expect(gym.acts.slice(2)).toEqual([{ a: 'any', d: gym.days[6], base: 'v0' }, { a: 'any', d: gym.days[7], base: 'v0' }]);
 });
 
 test('a refusal in the bot’s words; a failure rolls back with もう一度, which sends it again', async ({ page, context }) => {
