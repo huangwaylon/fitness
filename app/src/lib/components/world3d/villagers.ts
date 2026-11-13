@@ -113,6 +113,16 @@ const ACT: Partial<Record<Motion, Action>> = {
 };
 /** The small moments in place (a nod, a bow, a wave: K.K.'s beat, the visitors'), stepped at the ambient rate. */
 const SMALL: ReadonlySet<Action> = new Set(['wave']);
+/** A director's motion as a moment: the action it plays (the sting's fright for a stung surprise), how long it keeps
+ *  the villager busy (its own length: a flat 1.8 s held a 720 ms hop at the full rate a second past its pose, the
+ *  island's rest at ~15 fps, review 2026-11-13; the pose's crossfade after it is `going`'s) and whether it's a small
+ *  one in place; null for a motion with no moment. */
+export function momentOf(motion: Motion | null, stung: boolean): { a: Action; ms: number; small: boolean } | null {
+  const m = motion ? ACT[motion] : undefined;
+  if (!m) return null;
+  const a: Action = stung && motion === 'surprise' ? 'sting' : m;
+  return { a, ms: ACTION_MS[a], small: SMALL.has(m) && !stung };
+}
 /** How fast a villager standing turns to where it looks (per second: ~0.4 s for a look aside), and how close (rad, 2°)
  *  is there. */
 const FACE_K = 9, SNAP = 0.035;
@@ -447,12 +457,12 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       v.set(state);
       if (s.motionN !== w.motionN) {
         w.motionN = s.motionN;
-        const a = s.motion ? ACT[s.motion] : undefined;
-        if (a) {
-          // (the sting's fright: a dizzy wobble; its swollen eye stays on the face for the minute)
-          v.act(s.stung && s.motion === 'surprise' ? 'sting' : a);
-          w.busyUntil = t + 1800;
-          w.small = SMALL.has(a) && !s.stung;
+        // (the sting's fright: a dizzy wobble; its swollen eye stays on the face for the minute)
+        const m = momentOf(s.motion, s.stung);
+        if (m) {
+          v.act(m.a);
+          w.busyUntil = t + m.ms;
+          w.small = m.small;
         }
       }
       v.face(faceOf(s.emote, s.stung) ?? (s.seat !== null && s.asleep ? 'sleepy' : null));
