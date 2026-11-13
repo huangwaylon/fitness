@@ -18,6 +18,7 @@ import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { ktx2Default } from './ktx2.ts';
 import { log } from '#lib/sync/log.ts';
+import { lazyBones } from './bones.ts';
 
 /** The pixel ratio at most (an iPhone's 3 costs too much for what it adds), and while a gesture moves the camera. */
 const DPR_MAX = 2;
@@ -45,6 +46,8 @@ export class NoWebGL extends Error {
  *  logic mode (testMode.ts): its frames run, nothing is drawn. */
 export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): { renderer: WebGLRenderer; noDraw: boolean; dpr: number } {
   const noDraw = drawOff();
+  // (a still skeleton's bone texture not sent again each frame: bones.ts)
+  lazyBones();
   let renderer: WebGLRenderer;
   try {
     renderer = new WebGLRenderer({ canvas, antialias: !!o.antialias && !noDraw, alpha: !!o.alpha, premultipliedAlpha: true, powerPreference: o.power ?? 'high-performance', stencil: false });
