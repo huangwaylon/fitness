@@ -37,16 +37,33 @@ export function foodDb(): Promise<FoodDb> {
   return p;
 }
 let holders = 0;
-/** ごはん mounted (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products) and the pictures' index
- *  kept while it is, let go with it (its sheet closed and let go: keptSheets, a hidden page among them); the next
- *  opening reads them again from the service worker's cache, at idle (foodDbSoon). */
+let dropT: ReturnType<typeof setTimeout> | undefined;
+const drops = new Set<() => void>();
+/** How long the catalog outlives ごはん's close: a quick reopen stays instant. */
+export const FOOD_KEEP_MS = 60_000;
+/** ごはん open (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products, ~25 MB more with a member's
+ *  chain menus) and the pictures' index kept while it is, and FOOD_KEEP_MS after its close (a reopen cancels that);
+ *  the next opening reads them again from the service worker's cache, at idle (foodDbSoon). */
 export function holdFoodDb(): () => void {
   holders++;
+  clearTimeout(dropT);
   return () => {
-    if (--holders) return;
-    dbP = ready = null;
-    dropFoodImages();
+    if (!--holders) dropT = setTimeout(dropFoodDb, FOOD_KEEP_MS);
   };
+}
+/** ごはん unmounted (keptSheets let it go, a hidden page among them): the catalog let go at once if nobody holds it
+ *  (after this teardown's other cleanups, the hold's among them). */
+export const letGoFoodDb = (): void => queueMicrotask(() => void (holders || dropFoodDb()));
+function dropFoodDb() {
+  clearTimeout(dropT);
+  dbP = ready = null;
+  dropFoodImages();
+  for (const f of drops) f();
+}
+/** `f` when the catalog is let go: a component's own copies dropped with it (its $effect). */
+export function onFoodDbDrop(f: () => void): () => void {
+  drops.add(f);
+  return () => void drops.delete(f);
 }
 /** The catalog into `set` once it is in, whoever loads it (never loading it itself); a component's $effect. */
 export function whenFoodDb(set: (db: FoodDb) => void): () => void {

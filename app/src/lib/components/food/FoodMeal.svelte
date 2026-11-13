@@ -17,7 +17,7 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { daysText, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
-  import { foodDbNow, whenFoodDb, withImages } from './dbHold.ts';
+  import { foodDbNow, onFoodDbDrop, whenFoodDb, withImages } from './dbHold.ts';
   import type { Recipe } from '#lib/model/food.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import type { FoodDb } from '#lib/food/index.ts';
@@ -48,8 +48,10 @@
     /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
     recipes?: ReadonlyMap<string, Recipe>;
     onrecipe?: (r: Recipe, e: FoodEntry) => void;
+    /** ごはん open: the pictures asked for (closed, kept mounted: never, so a let-go index isn't loaded again). */
+    open?: boolean;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh, recipes, onrecipe }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh, recipes, onrecipe, open = true }: Props = $props();
   const recipeOf = (e: FoodEntry) => recipeOfEntry(recipes, e);
   const protein = $derived(mealProtein(entries));
   const kcalOf = entryKcal;
@@ -60,8 +62,9 @@
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   let imgs = $state.raw<FoodImageIndex | null>(null);
   let db = $state.raw<FoodDb | null>(foodDbNow());
-  $effect(() => (entries.length ? withImages((ix) => (imgs = ix)) : undefined));
+  $effect(() => (entries.length && open && !imgs ? withImages((ix) => (imgs = ix)) : undefined));
   $effect(() => (db ? undefined : whenFoodDb((d) => (db = d))));
+  $effect(() => onFoodDbDrop(() => (db = imgs = null)));
 </script>
 
 {#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}

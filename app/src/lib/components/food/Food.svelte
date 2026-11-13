@@ -61,7 +61,7 @@
   import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
   import { customItem, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
-  import { foodDb, foodDbNow, foodDbSoon, holdFoodDb, whenFoodDb } from './dbHold.ts';
+  import { foodDb, foodDbNow, foodDbSoon, holdFoodDb, letGoFoodDb, onFoodDbDrop, whenFoodDb } from './dbHold.ts';
   import { Levels, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
@@ -388,7 +388,9 @@
   // idle after the open (dbHold.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
   // tiles); the products when they come (only with a product logged that day, or a search). Never updated by itself.
   let catalog = $state.raw<FoodDb | null>(foodDbNow());
-  $effect(() => holdFoodDb());
+  $effect(() => (open ? holdFoodDb() : undefined));
+  $effect(() => letGoFoodDb);
+  $effect(() => onFoodDbDrop(() => (catalog = null)));
   let catalogRev = $state(0);
   $effect(() => (catalog ? undefined : whenFoodDb((db) => {
     catalog = db;
@@ -517,7 +519,7 @@
                none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
-          <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
+          <FoodMeal meal={k} entries={byMeal(k)} {mine} {open} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget}
             {fresh} onfresh={refresh} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
         {/each}
