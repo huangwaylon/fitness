@@ -99,7 +99,7 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `snapshot` | `since?` (the max `at` cached); `page?` (≤ `SNAPSHOT_PAGE_MAX` rows), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`, paged in (at, table, seq) order while `next` comes |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows |
 | `whoami` | | `{ok, me, build}` (pairing) |
-| `health` | no `key` | `{ok, build}` (`STORE_BUILD`) |
+| `health` | no `key` | `{ok, build}` (the deployed commit, as `/health`'s `sha`; `dev` unstamped) |
 
 <a id="groups"></a>**Groups:** the events of one `group` (the shop's 全部, a room's whole change) are all or none in one
 transaction: a piece already owned is refused `owned` alone, any other refusal rolls the lot back (`detail: 'group'`);

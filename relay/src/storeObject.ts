@@ -33,6 +33,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       sql: counted.sql,
       tx: (fn) => ctx.storage.transactionSync(fn),
       keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
+      build: env.COMMIT,
       now: () => Date.now(),
       notify: (n, guest) => this.tellRoom(n, guest),
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)

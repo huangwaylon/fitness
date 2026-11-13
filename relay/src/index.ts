@@ -68,11 +68,8 @@ const RING = 'ring';
 const DAY = 'day';
 /** The record's last change (welcome `rec`), the last the guest heard of (room.ts guestNotice: no member's ingest), and
  *  the room's rows written (`rw`: all since the object began; `sent`: those the log has heard of): one key, written on
- *  nearly every record write (Marks). Before 2026-11-10: REC and REC_G, two rows a write, and the count in memory only
- *  (a hibernation lost it). */
+ *  nearly every record write (Marks). */
 const MARKS = 'marks';
-const REC = 'rec';
-const REC_G = 'rec-g';
 type Marks = { rec: RecordMark | null; recG: RecordMark | null; rw: number; sent: number };
 /** What the room acked but doesn't keep (room.ts Acked): a resend after a wake is acked again. */
 const ACKED = 'acked';
@@ -115,8 +112,7 @@ export class IslandRoom extends DurableObject<Env> {
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(HB_PING, HB_PONG));
     void ctx.blockConcurrencyWhile(async () => {
       const ring = (await ctx.storage.get<Kept[]>(RING)) ?? [];
-      // (a room from before MARKS: its two marks; the old keys are left, unread)
-      this.marks = (await ctx.storage.get<Marks>(MARKS)) ?? { rec: (await ctx.storage.get<RecordMark>(REC)) ?? null, recG: (await ctx.storage.get<RecordMark>(REC_G)) ?? null, rw: 0, sent: 0 };
+      this.marks = (await ctx.storage.get<Marks>(MARKS)) ?? { rec: null, recG: null, rw: 0, sent: 0 };
       const held = (await ctx.storage.get<Held>(HELD)) ?? {};
       const gone = (await ctx.storage.get<Gone>(GONE)) ?? {};
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;

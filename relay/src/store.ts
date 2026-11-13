@@ -59,6 +59,8 @@ export interface StoreIO {
   /** Run `fn` as one transaction (`ctx.storage.transactionSync`). */
   tx<R>(fn: () => R): R;
   keys: Keys;
+  /** The deployed commit (index.ts Env COMMIT): `health`'s and `whoami`'s `build` (`dev` without one). */
+  build?: string;
   now(): number;
   /** Tell the open phones the record changed (the room's `changed`); best effort, after the commit. `guest`: whether
    *  the guest may hear of it (an ingest that brought activity rows; room.ts guestNotice). */
@@ -68,8 +70,6 @@ export interface StoreIO {
   corrupt?(where: string): void;
 }
 
-/** What the store answers to `health` and `whoami` (`build`): bumped with the store's code. */
-export const STORE_BUILD = 'relay-2';
 export const RATE_PER_MINUTE = 120;
 /** A snapshot's later pages (`after`) per key per minute: their own budget, so a cold fetch of a big record (a page
  *  each SNAPSHOT_PAGE rows) never spends the writes' (O9). */
@@ -388,7 +388,7 @@ export class StoreCore {
 
   private route(body: unknown, bytes: number): Reply {
     if (!isRec(body)) return fail('bad_request');
-    if (body.action === 'health' && body.key === undefined) return { ok: true, build: STORE_BUILD };
+    if (body.action === 'health' && body.key === undefined) return { ok: true, build: this.io.build ?? 'dev' };
     const me = roleOfKey(body.key, this.io.keys);
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me, body.action === 'snapshot' && body.page !== undefined && body.after !== undefined)) return fail('busy');
@@ -400,7 +400,7 @@ export class StoreCore {
       case 'events': return this.events(me, body);
       case 'snapshot': return this.snapshot(me, body);
       case 'uploads': return this.uploads(me);
-      case 'whoami': return { ok: true, me, build: STORE_BUILD };
+      case 'whoami': return { ok: true, me, build: this.io.build ?? 'dev' };
       default: return fail('bad_request');
     }
   }

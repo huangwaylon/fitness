@@ -123,8 +123,10 @@ describe('IslandStore', () => {
   };
 
   it('answers /api as its core does, with the meta for the log, and tells the room of a write', async () => {
-    const s = make();
-    expect(JSON.parse(s.apiMeta(JSON.stringify({ key: KEY_A, action: 'whoami' })).body)).toEqual({ ok: true, me: 'A', build: expect.any(String) });
+    const s = make({ COMMIT: 'abc1234' });
+    // `build`: the deployed commit
+    expect(JSON.parse(s.apiMeta(JSON.stringify({ key: KEY_A, action: 'whoami' })).body)).toEqual({ ok: true, me: 'A', build: 'abc1234' });
+    expect(JSON.parse(s.apiMeta(JSON.stringify({ action: 'health' })).body)).toEqual({ ok: true, build: 'abc1234' });
     const { body, meta } = s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     expect(JSON.parse(body)).toEqual({ ok: true, metrics: 1 });
     expect(meta).toMatchObject({ action: 'ingest', st: 'ok', role: 'B' });
@@ -354,16 +356,6 @@ describe('IslandRoom', () => {
     await settle();
     // since the hello: the weather's failure and the close's `gone`
     expect(added().find((e) => e.e === 'room.close')).toMatchObject({ d: { rw: 2 } });
-    // a room from before the marks: its two keys read (the welcome's `rec`)
-    let m2: unknown = { who: null, opened: NOW };
-    const sent: string[] = [];
-    const ws2 = { deserializeAttachment: () => m2, serializeAttachment: (m: unknown) => void (m2 = m), send: (d: string) => void sent.push(d), close() {} };
-    const old = fakeState({ sockets: () => [ws2] });
-    await old.storage.put('rec', { at: '2026-11-01T00:00:00.000Z', rev: 'e1' });
-    const was = new IslandRoom(old.state, envOf());
-    await settle();
-    was.webSocketMessage(ws2 as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
-    expect(JSON.parse(sent[0])).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T00:00:00.000Z', rev: 'e1' } });
   });
 
   it('a closing socket is logged as `room.close` and closed with a clean code', async () => {

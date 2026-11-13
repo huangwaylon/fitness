@@ -1,7 +1,7 @@
 // The record (src/store.ts) on node:sqlite: auth, ingest's latest-wins, events and their slots, `since` deltas, the
 // import of rows that already have their `at`, and the notices after writes.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LATE_MARGIN_MS, PAGES_PER_MINUTE, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
+import { LATE_MARGIN_MS, PAGES_PER_MINUTE, RATE_PER_MINUTE, StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { PRICE_HALVED_MS } from '../../app/src/lib/contract/rules.ts';
 import { memSql } from './sqlite.ts';
@@ -31,12 +31,12 @@ const events = () => (a('snapshot').rows.events as unknown[][]).map((r) => [r[1]
 
 describe('auth and limits', () => {
   it('keyless health answers the build; a wrong, short or missing key is unauthorized', () => {
-    expect(store.handle({ action: 'health' }, 0)).toEqual({ ok: true, build: STORE_BUILD });
+    expect(store.handle({ action: 'health' }, 0)).toEqual({ ok: true, build: 'dev' });
     for (const key of [undefined, '', 42, 'c'.repeat(64), KEY_A.slice(0, 31), `${KEY_A}x`]) {
       expect(store.handle({ key, action: 'whoami' }, 0), String(key)).toEqual({ ok: false, error: 'unauthorized' });
     }
-    expect(a('whoami')).toEqual({ ok: true, me: 'A', build: STORE_BUILD });
-    expect(b('whoami')).toEqual({ ok: true, me: 'B', build: STORE_BUILD });
+    expect(a('whoami')).toEqual({ ok: true, me: 'A', build: 'dev' });
+    expect(b('whoami')).toEqual({ ok: true, me: 'B', build: 'dev' });
     expect(a('drop')).toEqual({ ok: false, error: 'bad_request' });
     expect(store.handle(null, 0)).toEqual({ ok: false, error: 'bad_request' });
   });
