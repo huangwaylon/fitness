@@ -15,6 +15,7 @@ import { hasTex, readTex, writeTex } from './texCache.ts';
 import { texHash, texKey, type GlbImage } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
 import { quiet } from '#lib/quiet.ts';
+import { warmToo } from '#lib/ui-state/swLate.ts';
 
 /** Bumped when what's kept changes shape or meaning (the encoder's settings and the transcoder are in the key anyway). */
 const TEX_V = 1;
@@ -81,6 +82,7 @@ function post(buf?: ArrayBuffer, t?: Target, ok?: (t: Transcoded | null) => void
   }
   clearTimeout(idle);
   const wasm = site(`room/basis/basis_transcoder.wasm?v=${meta.wasm}`);
+  warmToo(wasm);
   if (!buf || !t || !ok) {
     if (!asks.size) idle = setTimeout(stop, IDLE_MS);
     return worker.postMessage({ id: 0, wasm } satisfies Ask);

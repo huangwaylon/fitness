@@ -20,6 +20,11 @@ export const IDLE_MS = 2000;
 let release: () => void = () => {};
 const released = new Promise<void>((r) => (release = r));
 
+/** What a first launch fetched outside the page's resource timings (a worker's fetches), warmed with them: the KTX2
+ *  transcoder's wasm (world3d/ktx2.ts; else the next launch fetched its ~230 KB again: review 11-13 N2). */
+const fetchedElsewhere = new Set<string>();
+export const warmToo = (url: string): void => void fetchedElsewhere.add(url);
+
 /** The island has its models in (or failed, or isn't coming): register now. */
 export const releaseWorker = (): void => release();
 
@@ -41,7 +46,7 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
   });
   void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then((reg) => {
     if (fresh) {
-      reg?.active?.postMessage({ k: 'warm', urls: performance.getEntriesByType('resource').map((e) => e.name) });
+      reg?.active?.postMessage({ k: 'warm', urls: [...performance.getEntriesByType('resource').map((e) => e.name), ...fetchedElsewhere] });
       // (used: the ~0.3 MB of entries not kept for the page's life, the buffer back to its default; after perf.boot's
       // look at them, by world3d/boot.ts's 30 s watch)
       setTimeout(() => {

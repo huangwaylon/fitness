@@ -380,7 +380,21 @@ async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Pr
 // A first launch's models and art (the page's, fetched before this worker was in: ui-state/swLate.ts): kept now, from
 // the browser's HTTP cache (force-cache: no network, no revalidation, for what it holds), as their first use through the
 // worker would have; else the next launch revalidated each (~77 requests) and kept them only then, or fetched them all
-// again (~1.5 MB) had the HTTP cache let them go.
+// again (~1.5 MB) had the HTTP cache let them go. Not through onUse: its answer is a tee'd clone (fetchShared), and
+// cancelling one branch of a tee settles only once the other is read or cancelled (the Streams spec, as WebKit does
+// it): the loop stalled at its first file and a WebKit first launch kept 27 of ~165 (review 11-13 N1). The index's
+// write (`used`, a moment after a burst) is waited for once, at the end, not a file at a time (~1 s each).
+async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
+  const req = new Request(u, { cache: 'force-cache' });
+  const room = isRoomAsset(new URL(u).pathname);
+  const cache = await caches.open(room ? ROOM_CACHE : VILLAGERS);
+  if (await cache.match(req)) return;
+  const res = await fetch(req);
+  if (!res.ok || res.status !== 200) return;
+  const sized = res.clone();
+  await cache.put(req, res);
+  kept.push((room ? roomUsed : artUsed)(u, await sizeOf(sized)));
+}
 self.addEventListener('message', (event) => {
   const d = event.data as { k?: string; urls?: unknown } | null;
   if (d?.k !== 'warm' || !Array.isArray(d.urls)) return;
@@ -388,7 +402,7 @@ self.addEventListener('message', (event) => {
     const kept: Promise<unknown>[] = [];
     for (const u of warmable(d.urls as unknown[], self.location.origin)) {
       try {
-        await (await onUse(new Request(u, { cache: 'force-cache' }), (p) => kept.push(p))).body?.cancel();
+        await warm(u, kept);
       } catch {
         /* offline, gone: kept on its next use */
       }

@@ -77,14 +77,15 @@ describe('the service worker registered late (swLate)', () => {
     expect(got2).toBe(false);
   });
 
-  it('a page it didn\'t control (a first launch) tells the active worker what it fetched; a controlled one doesn\'t', async () => {
+  it('a page it didn\'t control (a first launch) tells the active worker what it fetched (a worker\'s fetches too: warmToo); a controlled one doesn\'t', async () => {
     vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: (t: string) => (t === 'resource' ? [{ name: 'https://x/room/a.glb?v=1' }, { name: 'https://x/art/b.webp' }] : []) });
     for (const controller of [null, {}]) {
       const m = await fresh(), post = vi.fn();
+      m.warmToo('https://x/room/basis/t.wasm?v=2');
       m.releaseWorker();
       m.registerLate(true, { ...container(), ready: Promise.resolve({ active: { postMessage: post } }), controller } as unknown as ServiceWorkerContainer);
       await tick();
-      expect(post.mock.calls).toEqual(controller ? [] : [[{ k: 'warm', urls: ['https://x/room/a.glb?v=1', 'https://x/art/b.webp'] }]]);
+      expect(post.mock.calls).toEqual(controller ? [] : [[{ k: 'warm', urls: ['https://x/room/a.glb?v=1', 'https://x/art/b.webp', 'https://x/room/basis/t.wasm?v=2'] }]]);
     }
     expect(performance.clearResourceTimings).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(30_000);

@@ -120,8 +120,17 @@ test('a first visit registers the worker only once the island has its models in;
   await islandUp(page);
   await controlled(page);
   expect(await page.evaluate(() => (window as unknown as { __reg?: boolean[] }).__reg)).toEqual([true]);
-  // the models it fetched before the worker was in, kept by the worker now (swLate.ts's `warm`): no reload needed
-  await expect.poll(() => page.evaluate(async () => (await (await caches.open('island-room-v1')).keys()).filter((k) => k.url.includes('/room/world3d/')).length), { timeout: 30_000 }).toBeGreaterThan(5);
+  // the room files it fetched before the worker was in, kept by the worker now (swLate.ts's `warm`): no reload needed;
+  // every one, and the transcoder its worker fetched (not in the page's timings) with the first KTX2 pack (WebKit's
+  // warm-up stalled at its first file, review 11-13 N1: checked by hand there, a worker's fetches aren't routed in it)
+  const fetched = await page.evaluate(() => performance.getEntriesByType('resource').map((e) => e.name).filter((u) => new URL(u).pathname.includes('/room/')));
+  expect(fetched.length).toBeGreaterThan(20);
+  await expect.poll(async () => {
+    const kept = await page.evaluate(async () => (await (await caches.open('island-room-v1')).keys()).map((k) => k.url));
+    const missing = fetched.filter((u) => !kept.includes(u));
+    if (fetched.some((u) => u.includes('/room/tex/')) && !kept.some((u) => u.includes('/room/basis/'))) missing.push('room/basis/');
+    return missing;
+  }, { timeout: 30_000 }).toEqual([]);
   await context.setOffline(true);
   const again = await page.reload();
   expect(again?.fromServiceWorker()).toBe(true);
