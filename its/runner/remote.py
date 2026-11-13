@@ -70,9 +70,13 @@ STEPS_MAX = LIMITS['steps']
 OFFERED_MAX = 600                    # an `available` event's joined names (≤ LIMITS.eventHotel)
 NUMBER_MAX = LIMITS['number']
 EVENTS_QUEUED_MAX = 400
-IMPORTANT_EVENTS = ('hold', 'confirmed', 'human_needed', 'ban')
+SCANS_PER_REPORT = 30                # the contract's scansLog cap: one entry per scan cycle, the newest kept
+# The contract's arrays (test_remote checks each against contract.ts). `prev_unclean` is the Worker's own event (a claim
+# that took over an unreleased lease): known, never sent by a runner (SENT_EVENT_KINDS).
+IMPORTANT_EVENTS = ('hold', 'confirmed', 'human_needed', 'ban', 'prev_unclean')
 EVENT_KINDS = ('run_start', 'run_end', 'available', 'filtered', 'hold', 'confirmed', 'human_needed', 'ban',
-               'solve_failed', 'error')   # what this runner sends (the Worker may add kinds of its own to the status)
+               'solve_failed', 'error', 'prev_unclean')
+SENT_EVENT_KINDS = tuple(k for k in EVENT_KINDS if k != 'prev_unclean')
 PHASES = ('starting', 'solving', 'scanning', 'draining', 'stopping')
 HOSTS = ('actions', 'local')
 HOLD_UNRESOLVED_SEC = HOLD_SEC   # a hold younger than this at the end of a run, never confirmed: human_needed
@@ -266,6 +270,9 @@ class Remote:
         self.holds = {}                   # (date, hotel) -> when held, this run
         self.resolved = set()             # (date, hotel) with a known outcome
         self.counts = {'hold': 0, 'confirmed': 0, 'human_needed': 0, 'gate_closed': 0, 'skipped': 0}
+        self.mail_ok = None               # the last IMAP check: True, False, None (none yet): the reports' mailOk
+        self.scans_log = []               # ScanEntry per scan cycle, not yet acknowledged (SCANS_PER_REPORT newest)
+        self._scan_n = 0                  # their running number (which ones a report's answer acknowledges)
 
     def _ms(self, t=None):
         return int((self.clock() if t is None else t) * 1000)
@@ -284,6 +291,7 @@ class Remote:
             if detail:
                 e['detail'] = detail
             self.events.append(e)
+            self.log('event ' + ' '.join(f'{k}={v}' for k, v in e.items()))   # private: the record's seq, for the timeline
             if len(self.events) > EVENTS_QUEUED_MAX:
                 # A long outage: drop the oldest routine event, never an important one.
                 drop = next((x for x in self.events if x['kind'] not in IMPORTANT_EVENTS), None)
@@ -330,6 +338,9 @@ class Remote:
                     self.available_now = len(f.get('available') or [])
                 else:
                     self.scan_failures += 1
+                self._log_scan(f)
+            elif kind == 'imap':
+                self.mail_ok = bool(f.get('ok'))
             elif kind == 'fail':
                 self.error(f.get('step') or 'unknown', f.get('status'), f.get('cls') or 'error')
             elif kind == 'offered':
@@ -391,11 +402,23 @@ class Remote:
                     self.public('solve', ok=1, secs=f.get('secs'), spot=self.solves['lastSpot'])
                 else:
                     self.solves['failed'] += 1
-                    self.error('solve', None, f.get('cls') or 'no_token')
-                    self.event('solve_failed', detail=f.get('cls') or 'no_token')
-                    self.public('solve', ok=0, secs=f.get('secs'), cls=f.get('cls') or 'no_token')
+                    cls = _id(f.get('cls'), 'unsolved')
+                    self.error('solve', None, cls)
+                    self.event('solve_failed', detail=cls)
+                    self.public('solve', ok=0, secs=f.get('secs'), cls=cls)
         if kind == 'confirmed':
             self._done_changed()   # at once: a second hold for this night queued behind it must not be filed
+
+    def _log_scan(self, f):
+        """One ScanEntry for the page's hour strip (codes and counts only: the dates stay out of it). Under the lock."""
+        self._scan_n += 1
+        e = {'n': self._scan_n, 't': self.last_scan_at, 'ok': bool(f.get('ok')),
+             'ms': f['ms'] if _is_int(f.get('ms')) and f['ms'] >= 0 else 0,
+             'avail': len(f.get('available') or []) if f.get('ok') else 0}
+        if not e['ok']:
+            e['code'] = _id(f.get('code'), 'error')
+        self.scans_log.append(e)
+        del self.scans_log[:-SCANS_PER_REPORT]   # a long outage keeps the newest
 
     def unresolved_holds(self):
         """Holds this run took < 30 min ago with no outcome: each gets a human_needed (the run is ending)."""
@@ -631,6 +654,8 @@ class Remote:
                 'unsynced': len(self.unsynced),
                 # the applied settings' updatedAt (the Worker's settings_stale; an older Worker ignores it)
                 'settingsAt': (self.settings or {}).get('updatedAt'),
+                'mailOk': self.mail_ok,
+                'scansLog': [{k: v for k, v in e.items() if k != 'n'} for e in self.scans_log],
                 'events': [dict(e) for e in self.events[:EVENTS_PER_REPORT]],
                 'seen': sorted(self.seen)[:SEEN_MAX],
             }
@@ -647,10 +672,17 @@ class Remote:
         return rep
 
     def report(self):
-        """Bookings first (they gate holds), then the heartbeat. The RunnerConfig, or None."""
+        """Bookings first (they gate holds), then the heartbeat. The RunnerConfig, or None. A report answered drops the
+        scan entries it carried."""
         self.urgent.clear()
         self.post_bookings()
-        return self._call_config('POST', '/runner/report', self._fit(self.build_report()), renew=True)
+        with self.lock:
+            sent = self.scans_log[-1]['n'] if self.scans_log else 0
+        cfg = self._call_config('POST', '/runner/report', self._fit(self.build_report()), renew=True)
+        if cfg is not None:
+            with self.lock:
+                self.scans_log = [e for e in self.scans_log if e['n'] > sent]
+        return cfg
 
 
 # ── the workflow's preflight ─────────────────────────────────────────

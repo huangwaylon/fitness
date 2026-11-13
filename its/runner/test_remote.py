@@ -40,8 +40,6 @@ TOKEN = 'runner-token-Zq81xT'
 NEXT_MONTH_DAY = (T._TARGET_MONTH + timedelta(days=40)).replace(day=5).isoformat()
 LATER_MONTH_DAY = (T._TARGET_MONTH + timedelta(days=75)).replace(day=5).isoformat()
 FENCE_AT = remote.LEASE_SEC - remote.FENCE_MARGIN_SEC   # seconds after a renewal that the fence closes
-# Report fields the contract adds as optional (an older Worker ignores them; contract-example.json may lag).
-OPTIONAL_REPORT_KEYS = {'settingsAt', 'mail'}
 
 
 # ── a fake Worker ────────────────────────────────────────────────────
@@ -300,14 +298,17 @@ def test_contract_parity():
     rem.on_event('hold', {'date': '2026-11-22', 'hotel': 'NAGU 勝浦'})
     rem.on_event('offered', {'date': '2026-11-22', 'names': ['NAGU 勝浦'], 'eligible': []})
     rep = rem.build_report()
-    want = ex['report']
-    check('contract: RunnerReport keys', set(rep) ^ set(want) <= OPTIONAL_REPORT_KEYS, str(set(rep) ^ set(want)))
+    want = dict(ex['report'], **ex['reportNewer'])   # the runner sends the newer fields (an older Worker ignores them)
+    check('contract: RunnerReport keys', set(rep) == set(want), str(set(rep) ^ set(want)))
     for k, v in want.items():
         if v is not None and rep[k] is not None:
             check(f'contract: RunnerReport.{k} type', type(rep[k]) is type(v) or
                   (isinstance(v, (int, float)) and isinstance(rep[k], (int, float))), f'{rep[k]!r} vs {v!r}')
     check('contract: solves keys', set(rep['solves']) == set(want['solves']), str(rep['solves']))
     check('contract: lastError keys', set(rep['lastError']) == set(want['lastError']), str(rep['lastError']))
+    scan_keys = set().union(*(set(e) for e in want['scansLog']))
+    check('contract: scansLog entries are ScanEntry', rep['scansLog'] and all(
+        {'t', 'ok', 'ms', 'avail'} <= set(e) <= scan_keys for e in rep['scansLog']), str(rep['scansLog']))
     ev_keys = {'seq', 'kind', 'date', 'hotel', 'detail'}
     check('contract: events are EventInput', all(set(e) <= ev_keys and 'seq' in e for e in rep['events']),
           str(rep['events']))
@@ -359,8 +360,35 @@ def test_contract_limits_parity():
     for name, mine in (('MAX_NAME', remote.NAME_MAX), ('MAX_SITE_NAME', remote.SITE_NAME_MAX),
                        ('LEASE_SEC', remote.LEASE_SEC), ('REPORT_EVERY_SEC', remote.REPORT_EVERY_SEC),
                        ('GUESTS_MIN', remote.GUESTS_MIN), ('GUESTS_MAX', remote.GUESTS_MAX),
-                       ('AUTO_CONFIRM_MIN_DAYS', bh.AUTO_CONFIRM_MIN_DAYS)):
+                       ('AUTO_CONFIRM_MIN_DAYS', bh.AUTO_CONFIRM_MIN_DAYS), ('HOLD_SEC', remote.HOLD_SEC),
+                       ('SCANS_PER_REPORT', remote.SCANS_PER_REPORT)):
         check(f'limits parity: {name}', const(name) == mine, f'{const(name)} vs {mine}')
+
+    def strings(name):   # `export const X: readonly T[] = ['a', 'b'];` or `[...] as const;`
+        m = re.search(rf'export const {name}\b[^=]*= \[([^\]]*)\]', ts)
+        return tuple(re.findall(r"'([^']*)'", m.group(1))) if m else None
+    m = re.search(r'export const INTERVALS_SEC = \[([^\]]*)\]', ts)
+    check('arrays parity: INTERVALS_SEC', m and tuple(int(x) for x in m.group(1).split(',')) == remote.INTERVALS_SEC,
+          m and m.group(1))
+    check('arrays parity: the interval floor is the scan\'s', remote.INTERVAL_FLOOR_SEC == bh.MIN_RETRY_DELAY
+          == min(remote.INTERVALS_SEC))
+    for name, mine in (('BOOKING_KINDS', remote.BOOKING_KINDS), ('EVENT_KINDS', remote.EVENT_KINDS),
+                       ('IMPORTANT_EVENTS', remote.IMPORTANT_EVENTS), ('PHASES', remote.PHASES),
+                       ('HOSTS', remote.HOSTS)):
+        check(f'arrays parity: {name}', strings(name) == mine, f'{strings(name)} vs {mine}')
+    check('arrays parity: the runner sends only kinds the contract has, never the Worker\'s own',
+          set(remote.SENT_EVENT_KINDS) <= set(remote.EVENT_KINDS) and 'prev_unclean' not in remote.SENT_EVENT_KINDS)
+    m = re.search(r"stopReason: ((?:'[a-z_]+' \| )+)null;", ts)
+    check('arrays parity: stopReason', m and tuple(re.findall(r"'([a-z_]+)'", m.group(1))) == remote.STOP_REASONS,
+          m and m.group(1))
+    m = re.search(r'const ID_RE = /\^(.*)\$/;', ts)
+    check('arrays parity: ID_RE', m and m.group(1) + r'\Z' == remote._ID_RE.pattern, f'{m and m.group(1)} vs '
+          f'{remote._ID_RE.pattern}')
+    m = re.search(r'const BAD_CHARS = /(.*)/;', ts)
+    js = re.compile(re.sub(r'\\u([0-9a-fA-F]{4})', lambda u: re.escape(chr(int(u.group(1), 16))), m.group(1))) \
+        if m else None
+    differ = [hex(c) for c in range(0x10000) if js and bool(js.match(chr(c))) != bool(remote._BAD_CHARS.match(chr(c)))]
+    check('arrays parity: BAD_CHARS (every BMP code point)', js is not None and differ == [], str(differ[:5]))
     check('limits parity: what we send fits', remote.BODY_MAX < remote.LIMITS['body']
           and remote.EVENTS_PER_REPORT <= remote.LIMITS['eventsPerReport']
           and remote.OFFERED_MAX <= remote.LIMITS['eventHotel'])
@@ -665,7 +693,7 @@ def test_commit_needs_the_confirming_ack(port):
                 check('ack: Worker down: Chrome never handed the form', STATE.browser_calls == [])
                 check('ack: a failed entry and a human_needed for the hold',
                       [b['kind'] for b in model.bookings] == ['hold', 'confirming', 'failed']
-                      and [e['detail'] for e in model.kinds('human_needed')] == ['leg_deferred'],
+                      and [e['detail'] for e in model.kinds('human_needed')] == ['confirming_unacked'],
                       f'{[b["kind"] for b in model.bookings]} {model.kinds("human_needed")}')
             else:
                 check('ack: acknowledged: filed once', len(STATE.browser_calls) == 1)
@@ -1718,6 +1746,344 @@ def test_report_carries_the_applied_settings_stamp():
     model.settings['updatedAt'] = 5678
     rem.report()
     check('settingsAt: follows the newest applied', rem.build_report()['settingsAt'] == 5678)
+
+
+# ── round 2: outcome codes, private evidence, the mailbox, the scan history ──
+
+class FakeTab:
+    """A pydoll tab, scripted: `page` is the HTML now; the 申込する / 確認 clicks move it to `after_apply` /
+    `after_confirm`; `hang` names a step that never answers (the budget's timeout), `boom` one that raises."""
+
+    def __init__(self, page='<html>top</html>', after_apply='', after_confirm='', url='', hang=None, boom=None,
+                 fill_ok=True):
+        self.page, self.after_apply, self.after_confirm, self.url = page, after_apply, after_confirm, url
+        self.hang, self.boom, self.fill_ok = hang, boom, fill_ok
+        self.shots = []
+
+    async def _step(self, name):
+        import asyncio
+        if self.boom == name:
+            raise RuntimeError(f'cdp {name} failed')
+        if self.hang == name:
+            await asyncio.Event().wait()
+
+    async def go_to(self, url, timeout=30):
+        await self._step('go_to')
+
+    async def refresh(self):
+        pass
+
+    async def find(self, **_k):
+        return None   # no Turnstile widget: every attempt fails
+
+    @property
+    def current_url(self):
+        async def get():
+            return self.url
+        return get()
+
+    async def execute_script(self, script):
+        wrap = lambda v: {'result': {'result': {'value': v}}}
+        if 'outerHTML' in script:
+            return wrap(self.page)
+        if 'navigator.userAgent' in script:
+            return wrap('Mozilla/5.0 (X11; Linux x86_64) Chrome/140.0.0.0')
+        if 'Object.entries(V)' in script:
+            return wrap(json.dumps({'ok': 2 if self.fill_ok else 1, 'bad': [] if self.fill_ok else ['x:rejected']}))
+        if "includes('申込する')" in script:
+            await self._step('apply')
+            self.page = self.after_apply
+            return wrap('clicked')
+        if "['確認', '確定']" in script:
+            await self._step('confirm')
+            self.page = self.after_confirm
+            return wrap('clicked' if self.after_confirm is not None else 'missing')
+        return wrap('')
+
+    async def take_screenshot(self, path=None, **_k):
+        self.shots.append(path)
+        with open(path, 'wb') as f:
+            f.write(b'\x89PNG fake')
+
+
+class FakeBrowser:
+    def __init__(self, tab):
+        self.tab = tab
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+    async def start(self):
+        return self.tab
+
+    async def stop(self):
+        pass
+
+
+class FakeChrome:
+    """chrome.py with `launch` giving FakeBrowser(tab), no pauses, no minimise, no reaping (it would SIGKILL a real
+    Chrome on this machine), its caches in `tmpdir`, and bh.DEBUG_DIR there too."""
+
+    def __init__(self, tmpdir, tab, **timeouts):
+        import chrome
+        self.c, self.tab, self.tmpdir, self.timeouts = chrome, tab, tmpdir, timeouts
+
+    def __enter__(self):
+        c = self.c
+        names = ('launch', '_pause', 'minimise', '_kill_stray_chrome', 'USER_AGENT_CACHE', 'CALENDAR_URL_CACHE',
+                 'CAPTCHA_TIMEOUT', 'BROWSER_CONFIRM_TIMEOUT', 'solve_turnstile', '_click_turnstile_checkbox')
+        self.saved = {k: getattr(c, k) for k in names}
+        self.saved_debug = bh.DEBUG_DIR
+
+        async def nothing(*_a, **_k):
+            return None
+        c.launch = lambda: FakeBrowser(self.tab)
+        c._pause, c.minimise, c._kill_stray_chrome = nothing, nothing, lambda: None
+
+        async def no_token(_tab, _attempt=1):
+            return None, 'centre'   # the click needs pydoll's input commands; here it never yields a token
+        c._click_turnstile_checkbox = no_token
+        c.USER_AGENT_CACHE = os.path.join(self.tmpdir, 'ua.txt')
+        c.CALENDAR_URL_CACHE = os.path.join(self.tmpdir, 'url.txt')
+        for k, v in self.timeouts.items():
+            setattr(c, k, v)
+        bh.DEBUG_DIR = os.path.join(self.tmpdir, 'debug')
+        return self
+
+    def __exit__(self, *exc):
+        for k, v in self.saved.items():
+            setattr(self.c, k, v)
+        bh.DEBUG_DIR = self.saved_debug
+        return False
+
+    def evidence(self):
+        d = bh.DEBUG_DIR
+        return sorted(os.listdir(d)) if os.path.isdir(d) else []
+
+
+def test_solve_outcome_codes_and_evidence(tmpdir):
+    """A failed solve says which way it failed (`unsolved`, `no_calendar`, `chrome_<exc>`, `timeout`) and leaves the
+    page's HTML and a screenshot in the private debug dir, the timeout's too (taken as it is cancelled)."""
+    import asyncio
+    import chrome
+    cases = (('unsolved', FakeTab(url='https://x/calendar_apply'), {}, False),
+             ('no_calendar', FakeTab(url='https://x/elsewhere'), {}, True),
+             ('chrome_runtimeerror', FakeTab(boom='go_to'), {}, False),
+             ('timeout', FakeTab(hang='go_to'), {'CAPTCHA_TIMEOUT': 0.2}, False))
+    for i, (code, tab, timeouts, solved) in enumerate(cases):
+        with FakeChrome(os.path.join(tmpdir, f'solve-{i}'), tab, **timeouts) as fc:
+            os.makedirs(fc.tmpdir)
+            if solved:
+                async def token(_tab):
+                    return 'tok'
+                chrome.solve_turnstile = token
+            out = asyncio.run(chrome.get_calendar_url())
+            ev = fc.evidence()
+            check(f'solve-{code}: no URL, the code', out is None and chrome.last_solve['cls'] == code,
+                  f'{out!r} {chrome.last_solve}')
+            check(f'solve-{code}: HTML and a screenshot kept',
+                  any(f.endswith(f'_solve_{code}.html') for f in ev) and any(f.endswith(f'_solve_{code}.png') for f in ev),
+                  str(ev))
+    with FakeChrome(os.path.join(tmpdir, 'solve-ok'), FakeTab(url='https://x/calendar_apply/calendar_select?s=1')) as fc:
+        os.makedirs(fc.tmpdir)
+
+        async def token(_tab):
+            return 'tok'
+        chrome.solve_turnstile = token
+        out = asyncio.run(chrome.get_calendar_url())
+        check('solve-ok: the URL, no code, no evidence', out and chrome.last_solve['cls'] is None and fc.evidence() == [],
+              f'{out!r} {chrome.last_solve} {fc.evidence()}')
+    clock = Clock()
+    rem = make_remote(WorkerModel(clock), clock, seed_hold=lambda *a: None)
+    rem.on_event('solve', {'ok': False, 'secs': 3.0, 'cls': 'no_calendar'})
+    rem.on_event('solve', {'ok': False, 'secs': 3.0})
+    check('solve: the code reaches lastError and the event', rem.last_by_step['solve'] == (None, 'unsolved')
+          and [e['detail'] for e in rem.events] == ['no_calendar', 'unsolved'], str(rem.events))
+
+
+def test_leg_outcome_codes_and_evidence(tmpdir):
+    """The filing leg's codes, and evidence for every failure after 申込する (none before it: nothing was sent)."""
+    import chrome
+    form = '<html><form>apply</form></html>'
+    confirm = '<html>申込内容確認</html>'
+    done = '<html>申込完了 申込受付番号 ABCD1234</html>'
+    allow = lambda: (True, '')
+    cases = (
+        ('confirmed', FakeTab(form, confirm, done), {}, 'confirmed', 'ABCD1234', False),
+        ('expired', FakeTab('<html>ご利用のURLは無効となりました</html>'), {}, 'failed', 'hold_expired', False),
+        ('taken', FakeTab('<html>空き部屋がございません</html>'), {}, 'failed', 'room_taken', False),
+        ('fill', FakeTab(form, fill_ok=False), {}, 'deferred', 'fill_rejected', False),
+        ('screen', FakeTab(form, '<html>something else</html>'), {}, 'failed', 'no_confirm_screen', True),
+        ('taken-late', FakeTab(form, '<html>空き部屋がございません</html>'), {}, 'failed', 'room_taken', True),
+        ('no-button', FakeTab(form, confirm, None), {}, 'failed', 'no_confirm_button', True),
+        ('no-completion', FakeTab(form, confirm, '<html>?</html>'), {}, 'failed', 'no_completion', True),
+        ('unknown', FakeTab(form, confirm, done, hang='confirm'), {'BROWSER_CONFIRM_TIMEOUT': 0.3}, 'failed',
+         'submit_unknown', True),
+        ('early-timeout', FakeTab(form, hang='go_to'), {'BROWSER_CONFIRM_TIMEOUT': 0.3}, 'failed', 'leg_timeout', False),
+        ('raise', FakeTab(form, confirm, done, boom='confirm'), {}, 'failed', 'chrome_runtimeerror', True),
+    )
+    lines = []
+    for i, (name, tab, timeouts, status, detail, kept) in enumerate(cases):
+        with FakeChrome(os.path.join(tmpdir, f'leg-{i}'), tab, **timeouts) as fc:
+            os.makedirs(fc.tmpdir)
+            got = chrome.submit('https://x/apply/new?c=1', {'a': '1', 'b': '2'}, lines.append, '[MAIL 12-05]', allow)
+            ev = fc.evidence()
+            check(f'leg-{name}: {status} {detail}', got == (status, detail), str(got))
+            check(f'leg-{name}: evidence {"kept" if kept else "none"}',
+                  (any(f.endswith(f'_{detail}.html') for f in ev) and any(f.endswith(f'_{detail}.png') for f in ev))
+                  if kept else ev == [], str(ev))
+    check('leg: the unknown outcome says to check the mailbox', any('outcome UNKNOWN' in ln for ln in lines))
+    for status, detail, code in (('failed', 'hold_expired', 'hold_expired'), ('deferred', 'confirming_unacked',
+                                 'confirming_unacked'), ('deferred', 'AUTO_CONFIRM is off', 'auto_off'),
+                                 ('deferred', 'not_wanted: the date was removed', 'not_wanted'),
+                                 ('deferred', '2026-12-05 is 9 day(s) away, inside', 'near_date'),
+                                 ('failed', 'commit gate raised Boom()', 'leg_failed'), ('failed', None, 'leg_failed')):
+        check(f'leg: human_needed detail {code}', cb.outcome_code(status, detail) == code, cb.outcome_code(status, detail))
+
+
+def test_imap_codes_and_mail_ok(port):
+    """IMAP failures are named (`web_login_required`, `auth_failed`, a lower-cased class), a mid-leg one is a
+    `fail step=imap`, and every mailbox trip (the run-start check too) sets the reports' mailOk."""
+    import imaplib
+    import socket
+    check('imap: web login', cb.imap_cls(imaplib.IMAP4.error(
+        b'[ALERT] Please log in via your web browser: https://support.google.com/mail (Failure)')) == 'web_login_required')
+    check('imap: webalert', cb.imap_cls(imaplib.IMAP4.error('[WEBALERT https://x] Web login required')) ==
+          'web_login_required')
+    check('imap: auth', cb.imap_cls(imaplib.IMAP4.error(b'[AUTHENTICATIONFAILED] Invalid credentials')) == 'auth_failed')
+    check('imap: a class, lower-cased', cb.imap_cls(socket.timeout('t')) == 'timeouterror'
+          and cb.imap_cls(socket.gaierror(8, 'x')) == 'gaierror', cb.imap_cls(socket.timeout('t')))
+
+    class Box:
+        mode = 'ok'
+
+        def __init__(self, *a, **k):
+            if Box.mode == 'down':
+                raise ConnectionRefusedError(61, 'refused')
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def login(self, *a):
+            if Box.mode == 'bad':
+                raise imaplib.IMAP4.error(b'[AUTHENTICATIONFAILED] Invalid credentials (Failure)')
+
+        def select(self, *a, **k):
+            return 'OK', [b'1']
+
+        def search(self, *a):
+            return 'OK', [b'']
+
+    saved = (imaplib.IMAP4_SSL, cb.IMAP_USER, cb.IMAP_APP_PASSWORD)
+    with T.Env(port, confirm=True, applicant=dict(T.APPLICANT_FIXTURE)):
+        clock = Clock()
+        rem = make_remote(WorkerModel(clock), clock)
+        rem.claim(wait=0)
+        imaplib.IMAP4_SSL, cb.IMAP_USER, cb.IMAP_APP_PASSWORD = Box, 'u@example.com', 'p' * 16
+        cb._mail_source = None
+        try:
+            with Hooks(rem):
+                check('mailOk: none before any check', rem.build_report()['mailOk'] is None)
+                for mode, ok, cls in (('bad', False, 'auth_failed'), ('ok', True, None), ('down', False,
+                                                                                       'connectionrefusederror')):
+                    Box.mode = mode
+                    cb._imap_messages(0)
+                    check(f'mailOk: a {mode} trip', rem.build_report()['mailOk'] is ok, str(rem.mail_ok))
+                    if cls:
+                        check(f'mailOk: {mode}: fail step=imap {cls}', rem.last_by_step.get('imap') == (None, cls),
+                              str(rem.last_by_step))
+                Box.mode = 'bad'
+                check('imap_check: auth_failed', cb.imap_check() == (False, 'auth_failed'))
+        finally:
+            imaplib.IMAP4_SSL, cb.IMAP_USER, cb.IMAP_APP_PASSWORD = saved
+    clock = Clock()
+    model = WorkerModel(clock, autoConfirm=True)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    run = M.RemoteRun(rem, sup, clock=clock)
+    saved = cb.imap_check
+    cb.imap_check = lambda: (False, 'web_login_required')
+    try:
+        run.tick()
+        clock.advance(remote.REPORT_EVERY_SEC)
+        run.tick()
+        check('mailOk: the run-start check reaches the report', model.reports[-1].get('mailOk') is False,
+              str(model.reports[-1].get('mailOk')))
+    finally:
+        cb.imap_check = saved
+        _cleanup(sup)
+
+
+def test_private_log_lines():
+    """Private lines carry an ISO time with its offset; every event is logged privately with its seq."""
+    lines = []
+    saved = bh._log_handler
+    bh._log_handler = lines.append
+    try:
+        bh.log('hello')
+        clock = Clock()
+        rem = make_remote(WorkerModel(clock), clock, seed_hold=lambda *a: None, log=bh.log)
+        rem.event('error', detail='imap_auth_failed')
+        rem.on_event('hold', {'date': TARGET, 'hotel': NAGU})
+    finally:
+        bh._log_handler = saved
+    check('log: ISO time with offset', re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2} hello\Z',
+                                                lines[0]) is not None, lines[0])
+    check('log: an event with its seq', any(ln.endswith('event seq=1 kind=error detail=imap_auth_failed') for ln in lines),
+          str(lines))
+    check('log: the hold event names the stay (private)', any(f'kind=hold date={TARGET} hotel={NAGU}' in ln
+                                                              for ln in lines), str(lines))
+
+
+def test_scan_history(port):
+    """One ScanEntry per scan cycle (t, ok, ms, avail; a failure's code), codes and counts only; sent with each report
+    and dropped once a report is answered; the newest SCANS_PER_REPORT kept through an outage."""
+    with T.Env(port):
+        clock = Clock()
+        model = WorkerModel(clock)
+        rem = make_remote(model, clock)
+        rem.claim(wait=0)
+        bh.TARGET_DATES = [TARGET, IDLE_DAY]
+        STATE.fail_once['/calendar_apply/calendar_select'] = [503]
+        with Hooks(rem):
+            t, stop = T._run_scanner(T.MONTH, M._month_dates(T.MONTH), 'HIST')
+            try:
+                T._wait_for(lambda: len([e for e in rem.scans_log if e['ok']]) >= 2)
+            finally:
+                stop.set()
+                t.join(10)
+        log = list(rem.scans_log)
+        bad = [e for e in log if not e['ok']]
+        good = [e for e in log if e['ok']]
+        check('scans: a failed cycle has its code', bad and bad[0]['code'] == 'http_503' and bad[0]['avail'] == 0,
+              str(bad))
+        check('scans: a good cycle counts the dates showing vacancies', good and good[0]['avail'] == 1, str(good))
+        check('scans: ms are whole milliseconds', all(isinstance(e['ms'], int) and e['ms'] >= 0 for e in log), str(log))
+        check('scans: codes and counts only', all(set(e) <= {'n', 't', 'ok', 'ms', 'avail', 'code'} for e in log)
+              and TARGET not in json.dumps(log), str(log))
+        rem.report()
+        sent = model.reports[-1]['scansLog']
+        check('scans: sent with the report', len(sent) == len(log) and 'n' not in sent[0], str(sent[:2]))
+        check('scans: dropped once acknowledged', rem.scans_log == [], str(rem.scans_log))
+        model.down = True
+        for i in range(remote.SCANS_PER_REPORT + 12):
+            rem.on_event('scan', {'ok': True, 'available': [], 'ms': i})
+            rem.report()
+        check('scans: an outage keeps the newest 30', len(rem.scans_log) == remote.SCANS_PER_REPORT
+              and rem.scans_log[-1]['ms'] == remote.SCANS_PER_REPORT + 11, str(len(rem.scans_log)))
+        model.down = False
+        rem.on_event('scan', {'ok': False, 'code': 'Not A Code!', 'ms': -3})
+        rem.report()
+        check('scans: the backlog sent at once, capped', len(model.reports[-1]['scansLog']) == remote.SCANS_PER_REPORT
+              and model.reports[-1]['scansLog'][-1] == {'t': model.reports[-1]['lastScanAt'], 'ok': False, 'ms': 0,
+                                                         'avail': 0, 'code': 'error'}, str(model.reports[-1]['scansLog'][-1]))
 
 
 def main_(argv=()):

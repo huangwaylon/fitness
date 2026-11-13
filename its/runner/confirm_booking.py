@@ -72,19 +72,29 @@ def _gate(target_date, hotel_name, stage):
         return False, f'commit gate raised {e!r}'
 
 
+def imap_cls(e):
+    """A mailbox failure's code: `web_login_required` (Gmail wants a browser sign-in: [WEBALERT …] / "log in via your
+    web browser"), `auth_failed` (any other login refusal: a revoked or wrong app password), else the exception's class
+    lower-cased (`timeouterror`, `gaierror`, `sslerror`, …). Never the message: it may carry the address."""
+    if isinstance(e, imaplib.IMAP4.error):
+        msg = str(e).lower()
+        if 'webalert' in msg or 'web login' in msg or 'web browser' in msg:
+            return 'web_login_required'
+        return 'auth_failed'
+    return re.sub(r'[^a-z0-9_]', '', type(e).__name__.lower())[:40] or 'error'
+
+
 def imap_check():
     """`(ok, cls)`: can we log in to the mailbox the confirmation mail goes to? Run at start when auto-confirm is on,
-    so a revoked app password shows before a hold depends on it. Never logs the address or the password."""
+    so a revoked app password shows before a hold depends on it (`imap_cls`). Never logs the address or the password."""
     if not (IMAP_USER and IMAP_APP_PASSWORD):
         return False, 'no_credentials'
     try:
         with imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT, timeout=20) as m:
             m.login(IMAP_USER, IMAP_APP_PASSWORD)
         return True, ''
-    except imaplib.IMAP4.error:
-        return False, 'login_rejected'
-    except OSError as e:
-        return False, type(e).__name__
+    except (imaplib.IMAP4.error, OSError) as e:
+        return False, imap_cls(e)
 
 
 # ── the emailed link ─────────────────────────────────────────────────
@@ -147,10 +157,13 @@ def extract_apply_link(text):
 
 
 def _imap_messages(since_epoch):
-    """Raw bytes of candidate messages from the site, newest last."""
+    """Raw bytes of candidate messages from the site, newest last. Every trip reports how the mailbox answered
+    (`notify('imap', ok, cls)`: the reports' mailOk) and a failure as `fail step=imap`."""
     if not (IMAP_USER and IMAP_APP_PASSWORD):
         log(f"  {R}No IMAP credentials — cannot read the confirmation mail. "
-            f"See `python3 main.py --check`{X}")
+            f"See `python3 check_env.py`{X}")
+        bh.notify('imap', ok=False, cls='no_credentials')
+        bh.notify('fail', step='imap', status=None, cls='no_credentials')
         return []
     since = datetime.fromtimestamp(since_epoch, timezone.utc).strftime('%d-%b-%Y')
     out = []
@@ -159,6 +172,7 @@ def _imap_messages(since_epoch):
         # retime pydoll's CDP websocket too.
         with imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT, timeout=30) as m:
             m.login(IMAP_USER, IMAP_APP_PASSWORD)
+            bh.notify('imap', ok=True)
             # All Mail, not INBOX: Gmail's classifier or a stray filter can file it
             # elsewhere, and a mailbox detail is an absurd way to lose a room.
             for box in ('"[Gmail]/All Mail"', 'INBOX'):
@@ -176,6 +190,8 @@ def _imap_messages(since_epoch):
                         out.append(part[1])
     except (imaplib.IMAP4.error, OSError) as e:
         log(f"  {R}IMAP failed: {type(e).__name__}: {e}{X}")
+        bh.notify('imap', ok=False, cls=imap_cls(e))
+        bh.notify('fail', step='imap', status=None, cls=imap_cls(e))
     return out
 
 
@@ -501,7 +517,7 @@ def _commit(link, post, target_date, hotel_name, tag):
             # degraded outcome, not a crash.
             log(f"{tag}   {R}Cannot load browser ({e!r}); nothing can file this "
                 f"application{X}")
-            return 'failed', 'no browser available'
+            return 'failed', 'no_browser'
         submit = chrome.submit
 
     values = {k: v for k, v in post.items()
@@ -561,22 +577,22 @@ def _run_leg(c, link, target_date, hotel_name, tag, label):
     if _rejected(s, body, loc):
         log(f"{tag}   {R}The site refused the emailed link's session{X}")
         bh._dump_debug(label, 'step10_apply_page_rejected', s, body)
-        return 'failed', 'apply page session rejected'
+        return 'failed', 'session_rejected'
     if s != 200 or not body:
         log(f"{tag}   {R}Application page returned {s}{X}")
         bh._dump_debug(label, 'step10_apply_page', s, body)
-        return 'failed', f'apply page {s}'
+        return 'failed', f'apply_page_{s}'
     if _EXPIRED_TEXT in body:
         # Not a parser problem and not worth a dump: the 30 minutes ran out.
         log(f"{tag}   {Y}The 30-minute hold expired before the mail was "
             f"followed — the site has released {hotel_name}{X}")
-        return 'failed', 'hold expired'
+        return 'failed', 'hold_expired'
 
     action, fields = parse_form(body)
     if not action or not fields:
         log(f"{tag}   {R}No applicant form found on the page{X}")
         bh._dump_debug(label, 'step10_no_form', s, body)
-        return 'failed', 'no form'
+        return 'failed', 'no_form'
 
     post, unmapped = map_fields(fields, email_address=bh.EMAIL)
     log(f"{tag}   {C}Applicant form: {len(fields)} fields, "
@@ -587,7 +603,7 @@ def _run_leg(c, link, target_date, hotel_name, tag, label):
         log(f"{tag}   {B}{Y}HUMAN NEEDED: form dumped to {bh.DEBUG_DIR}. The room "
             f"is held — finish from the mail now.{X}")
         bh._dump_debug(label, 'step10_unmapped_form', s, body, throttle=False)
-        return 'deferred', f'unmapped: {", ".join(unmapped)}'
+        return 'deferred', 'unmapped'
 
     allowed, why = bh.confirm_allowed(target_date)
     if not allowed:
@@ -642,8 +658,27 @@ def _process(hold, links):
     # the browser path.
     log(f"{tag}   {B}{Y}HUMAN NEEDED: {hotel_name} on {target_date} is held and the "
         f"mail to {bh.EMAIL} is sent. Open its link and finish now.{X}")
-    bh.notify('human_needed', date=target_date, hotel=hotel_name, detail=f'leg_{status}', failed=True)
+    bh.notify('human_needed', date=target_date, hotel=hotel_name, detail=outcome_code(status, detail), failed=True)
     return True
+
+
+_CODE = re.compile(r'[a-z][a-z0-9_]{0,39}\Z')
+
+
+def outcome_code(status, detail):
+    """The human_needed detail for a leg that ended without a number: the leg's own code (`hold_expired`,
+    `submit_unknown`, `no_completion`, `room_taken`, `unmapped`, `lease_stale`, `confirming_unacked`, …), a gate's
+    reason as a code (`auto_off`, `near_date`, `not_wanted`), else `leg_<status>`."""
+    d = detail if isinstance(detail, str) else ''
+    if _CODE.match(d):
+        return d
+    if d.startswith('not_wanted'):
+        return 'not_wanted'
+    if d.startswith('AUTO_CONFIRM is off'):
+        return 'auto_off'
+    if 'day(s) away' in d:
+        return 'near_date'
+    return f'leg_{status}'
 
 
 def _skip_confirmed_night(tag, target_date, hotel_name):

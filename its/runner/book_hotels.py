@@ -177,8 +177,10 @@ def apply_settings(s):
 
 def log(msg):
     """Reserve red for what is actually wrong: 「空き部屋がございません」 is an ordinary lost
-    race, so it is yellow with no dump."""
-    ts = datetime.now().strftime('%H:%M:%S')
+    race, so it is yellow with no dump. Each line starts with its ISO time and UTC offset
+    (2026-11-13T17:32:19+09:00): the private log is read beside the Worker's records and the Actions log, in other
+    zones."""
+    ts = datetime.now().astimezone().isoformat(timespec='seconds')
     formatted = f'{ts} {msg}'
     if _log_handler:
         _log_handler(formatted)
@@ -1072,6 +1074,10 @@ def _book_date_once(target_date, label, tag, booked, attempted, guests=None):
         return 'done'
 
 
+def _ms_since(t0):
+    return int((time.monotonic() - t0) * 1000)
+
+
 def _future_dates(target_dates):
     """Drop dates that have already passed — the site marks those cells `over`,
     so polling them asks forever about something that cannot happen."""
@@ -1157,7 +1163,8 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
 
     `target_dates` is a list, or a callable returning the month's current dates, called every cycle (the remote
     runner's settings change under a running scanner). Each cycle that reads the calendar reports
-    `notify('scan', ok=…)`; a failed read also reports `fail` with its step.
+    `notify('scan', ok=…, ms=…)` (with `available`, or the failure's `code`); a failed read also reports `fail` with its
+    step.
 
     One `calendar_select` POST covers every target date in the month; the calendar GET
     that mints the csrf/s pair is skipped while a cached pair works, so the
@@ -1183,6 +1190,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
             the program: most dumps are a 503 here, and a 503 is how the 24-hour ban
             presents.
             """
+            t0 = time.monotonic()
             st, bd, lc = c('GET', url)
             if st != 200:
                 # Only after a failure: truncating every cycle asked for a brand-new
@@ -1190,14 +1198,21 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
                 if _is_session_dead(st, lc) or _is_retryable(st):
                     open(cookie_file, 'w').close()
                 log(f"{tag} {Y}[{attempt}] URL returned {st}, waiting...{X}")
-                notify('fail', step='calendar_get', status=st, cls=error_class(st, lc, bd))
-                notify('scan', ok=False)
+                cls = error_class(st, lc, bd)
+                notify('fail', step='calendar_get', status=st, cls=cls)
+                notify('scan', ok=False, code=cls, ms=_ms_since(t0))
                 return None
             return ex(bd, _CSRF_RE), ex(bd, _S_RE)
 
+        nav_ms = [0]   # the last calendar_select's duration (the scan's per-cycle history)
+
         def nav_month(tokens, url):
             csrf, s_param = tokens
-            return _calendar_select(c, csrf, s_param, month_ym, url)
+            t0 = time.monotonic()
+            try:
+                return _calendar_select(c, csrf, s_param, month_ym, url)
+            finally:
+                nav_ms[0] = _ms_since(t0)
 
         attempt = 0
         failures = 0          # consecutive failed cycles, drives the backoff
@@ -1270,7 +1285,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
                     open(cookie_file, 'w').close()
                     tokens = None
                     _dump_debug(label, 'calendar_select', s_nav, body_nav)
-                    notify('scan', ok=False)
+                    notify('scan', ok=False, code=error_class(s_nav, None, body_nav), ms=nav_ms[0])
                     failures += 1
                     continue
 
@@ -1281,7 +1296,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
 
                 available = [td for td in dates
                              if is_available(_date_css_class(body_nav, td))]
-                notify('scan', ok=True, available=available)
+                notify('scan', ok=True, available=available, ms=nav_ms[0])
 
                 if not available:
                     log(f"{tag} {Y}[{attempt}] no dates available "

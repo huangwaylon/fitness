@@ -42,36 +42,43 @@ import asyncio
 import contextlib
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
 import threading
 import time
+from datetime import datetime
 
 from config import (
     BROWSER_CONFIRM_TIMEOUT, CALENDAR_URL_CACHE, CAPTCHA_TIMEOUT, USER_AGENT_CACHE,
+    TURNSTILE_ATTEMPTS, TURNSTILE_POLL_SEC, TURNSTILE_TOKEN_SEC, TURNSTILE_RELOAD_PAUSE, SOLVE_PAUSES, LEG_PAUSES,
+    CHROME_WAIT_SEC, EVIDENCE_TIMEOUT,
 )
 import book_hotels as bh
 from book_hotels import log
-
-MAX_ATTEMPTS = 3          # Turnstile retries before giving up
-TOKEN_POLL_INTERVAL = 2   # seconds between token checks
-TOKEN_TIMEOUT = 30        # max seconds to wait for token after click
-                          # MAX_ATTEMPTS * TOKEN_TIMEOUT must fit in CAPTCHA_TIMEOUT
 
 _CONFIRM_TEXT = '申込内容確認'
 
 _LINUX = sys.platform.startswith('linux')
 
-# The latest solve's outcome: {'secs': float, 'spot': 'centre' | 'left' | None}. Written by
-# `get_calendar_url`, read by main.py's URL monitor for the reports.
-last_solve = {'secs': None, 'spot': None}
+# The latest solve's outcome: {'secs': float, 'spot': 'centre' | 'left' | None, 'cls': a failure's code or None}.
+# Written by `get_calendar_url`, read by main.py's URL monitor for the reports. `cls`: `timeout` (CAPTCHA_TIMEOUT),
+# `chrome_<exception>`, `unsolved` (no token after every attempt), `no_calendar` (solved, but 次へ led elsewhere).
+last_solve = {'secs': None, 'spot': None, 'cls': None}
+
+# The latest filing leg: whether 申込する was pressed (a timeout after it is `submit_unknown`, before it nothing was
+# sent: `leg_timeout`).
+last_leg = {'applied': False}
+
+# Every fixed wait on a page goes through this; the tests replace it (no real sleeps).
+_pause = asyncio.sleep
 
 
 # ── one Chrome at a time ─────────────────────────────────────────────
 # Long enough to sit through a solve plus teardown, short enough that a wedged holder
-# cannot cost a whole booking.
-DEFAULT_WAIT = 210
+# cannot cost a whole booking (config.CHROME_WAIT_SEC).
+DEFAULT_WAIT = CHROME_WAIT_SEC
 
 _lock = threading.Lock()
 
@@ -153,6 +160,37 @@ async def minimise(tab):
 
 async def html(tab):
     return value(await tab.execute_script('return document.documentElement.outerHTML'))
+
+
+async def evidence(tab, label, step):
+    """Save the page as it is now, HTML and a screenshot, to the private debug dir (book_hotels.DEBUG_DIR, in the
+    state dir: on the applicant's pages it shows 記号/番号/カナ氏名/生年月日, so it is as credential-bearing as a dump).
+    For a failed solve and for any failure after 申込する. Each half bounded by EVIDENCE_TIMEOUT (a hung Chrome must not
+    hold up the leg further); never raises."""
+    try:
+        os.makedirs(bh.DEBUG_DIR, exist_ok=True)
+        safe = re.sub(r'[^\w.\-]+', '_', label).strip('_') or 'page'
+        stem = os.path.join(bh.DEBUG_DIR, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{bh._dump_seq()}_{safe}_{step}")
+    except Exception as e:
+        log(f'Could not save evidence: {e!r}')
+        return None
+    saved = []
+    try:
+        page = await asyncio.wait_for(html(tab), EVIDENCE_TIMEOUT)
+        with open(stem + '.html', 'w', encoding='utf-8') as f:
+            f.write(page)
+        saved.append('html')
+    except Exception as e:
+        log(f'Evidence: no HTML ({type(e).__name__})')
+    try:
+        await asyncio.wait_for(tab.take_screenshot(path=stem + '.png'), EVIDENCE_TIMEOUT)
+        saved.append('png')
+    except Exception as e:
+        log(f'Evidence: no screenshot ({type(e).__name__})')
+    if saved:
+        log(f"Evidence saved: {os.path.basename(stem)} ({', '.join(saved)})")
+        bh._prune_debug_dir()
+    return stem
 
 
 async def _click(tab, predicate):
@@ -246,11 +284,11 @@ async def _click_turnstile_checkbox(tab, attempt=1):
         await tab._connection_handler.execute_command(
             InputCommands.dispatch_mouse_event(
                 type=event, x=x, y=y, button=MouseButton.LEFT, click_count=1))
-        await asyncio.sleep(0.1)
+        await _pause(0.1)
 
-    deadline = time.time() + TOKEN_TIMEOUT
+    deadline = time.time() + TURNSTILE_TOKEN_SEC
     while time.time() < deadline:
-        await asyncio.sleep(TOKEN_POLL_INTERVAL)
+        await _pause(TURNSTILE_POLL_SEC)
         token = value(await tab.execute_script(
             'return document.querySelector'
             '(\'input[name="cf-turnstile-response"]\')?.value || ""'))
@@ -258,7 +296,7 @@ async def _click_turnstile_checkbox(tab, attempt=1):
             # Length only: this is Cloudflare's single-use response token.
             log(f'Turnstile token obtained ({len(token)} chars)')
             return token, spot
-        log(f'  Waiting for token ({TOKEN_TIMEOUT - (deadline - time.time()):.0f}s)...')
+        log(f'  Waiting for token ({TURNSTILE_TOKEN_SEC - (deadline - time.time()):.0f}s)...')
 
     log('Turnstile token not generated within timeout')
     return None, spot
@@ -266,16 +304,16 @@ async def _click_turnstile_checkbox(tab, attempt=1):
 
 async def solve_turnstile(tab):
     """Solve Cloudflare Turnstile on the given pydoll tab. The token, or None."""
-    for attempt in range(1, MAX_ATTEMPTS + 1):
-        log(f'═══ Turnstile attempt {attempt}/{MAX_ATTEMPTS} ═══')
+    for attempt in range(1, TURNSTILE_ATTEMPTS + 1):
+        log(f'═══ Turnstile attempt {attempt}/{TURNSTILE_ATTEMPTS} ═══')
         token, spot = await _click_turnstile_checkbox(tab, attempt)
         if token:
             last_solve['spot'] = spot
             return token
-        if attempt < MAX_ATTEMPTS:
+        if attempt < TURNSTILE_ATTEMPTS:
             log('Reloading page for fresh Turnstile challenge...')
             await tab.refresh()
-            await asyncio.sleep(5)
+            await _pause(TURNSTILE_RELOAD_PAUSE)
 
     log('Failed to solve Turnstile after all attempts')
     return None
@@ -286,79 +324,106 @@ async def get_calendar_url():
 
     The solve occupies the one thread that can re-mint a session, so an untimed Chrome
     hang would stop all booking behind a healthy-looking process. Serialised against
-    the application-filing browser. None on failure or timeout.
+    the application-filing browser. None on failure or timeout, with `last_solve['cls']` saying which.
     """
-    last_solve['secs'], last_solve['spot'] = None, None
+    last_solve.update(secs=None, spot=None, cls=None)
     with hold() as owned:
         if not owned:
             log('Chrome is busy filing an application; deferring this solve')
             return None
         t0 = time.monotonic()
         try:
-            return await asyncio.wait_for(_solve_and_cache(), timeout=CAPTCHA_TIMEOUT)
+            url = await asyncio.wait_for(_solve_and_cache(), timeout=CAPTCHA_TIMEOUT)
+            if not url:
+                last_solve['cls'] = last_solve['cls'] or 'unsolved'
+            return url
         except asyncio.TimeoutError:
             log(f'TIMEOUT: solve exceeded {CAPTCHA_TIMEOUT}s, abandoning this attempt')
+            last_solve['cls'] = 'timeout'
             _kill_stray_chrome()
             return None
         except Exception as e:
             log(f'Solve failed: {e!r}')
+            last_solve['cls'] = chrome_cls(e)
             return None
         finally:
             last_solve['secs'] = round(time.monotonic() - t0, 1)
 
 
+def chrome_cls(e):
+    """A failure's code from Chrome's (or pydoll's) exception: `chrome_<class>`, lower-cased."""
+    return ('chrome_' + re.sub(r'[^a-z0-9_]', '', type(e).__name__.lower()))[:40]
+
+
 async def _solve_and_cache():
-    """Navigate ITS, solve Turnstile, click 次へ, and cache the calendar URL."""
+    """Navigate ITS, solve Turnstile, click 次へ, and cache the calendar URL. A failure (or the timeout cancelling it)
+    leaves the page's evidence in the debug dir."""
     log('Starting Chrome browser via pydoll...')
     async with launch() as browser:
         tab = await browser.start()
-        await minimise(tab)
+        try:
+            return await _solve_on(tab)
+        except asyncio.CancelledError:
+            await evidence(tab, 'solve', 'timeout')
+            raise
+        except Exception as e:
+            await evidence(tab, 'solve', chrome_cls(e))
+            raise
 
-        log('Navigating to ITS homepage...')
-        await tab.go_to(bh.BASE + '/', timeout=30)
-        await asyncio.sleep(3)
 
-        await _save_user_agent(tab)
+async def _solve_on(tab):
+    pause_home, pause_captcha, pause_next = SOLVE_PAUSES
+    await minimise(tab)
 
-        log('Looking for カレンダーから探す link...')
-        await tab.execute_script("""
-            for (const a of document.querySelectorAll('a')) {
-                if (a.textContent.includes('カレンダーから探す')) { a.click(); return true; }
-            }
-            return false;
-        """)
-        await asyncio.sleep(5)
+    log('Navigating to ITS homepage...')
+    await tab.go_to(bh.BASE + '/', timeout=30)
+    await _pause(pause_home)
 
-        url = await tab.current_url
-        log(f'On captcha page: {url}')
-        if 'calendar_apply' not in url:
-            log(f'WARNING: unexpected URL (expected calendar_apply): {url}')
+    await _save_user_agent(tab)
 
-        if not await solve_turnstile(tab):
-            log('FAILED to solve Turnstile')
-            return None
+    log('Looking for カレンダーから探す link...')
+    await tab.execute_script("""
+        for (const a of document.querySelectorAll('a')) {
+            if (a.textContent.includes('カレンダーから探す')) { a.click(); return true; }
+        }
+        return false;
+    """)
+    await _pause(pause_captcha)
 
-        log('Turnstile solved! Submitting form...')
-        await tab.execute_script("""
-            const btn = document.querySelector('input[value="次へ"]');
-            if (btn) { btn.disabled = false; btn.form.submit(); }
-        """)
-        await asyncio.sleep(5)
+    url = await tab.current_url
+    log(f'On captcha page: {url}')
+    if 'calendar_apply' not in url:
+        log(f'WARNING: unexpected URL (expected calendar_apply): {url}')
 
-        calendar_url = await tab.current_url
-        log(f'Calendar URL obtained — {calendar_url}')
+    if not await solve_turnstile(tab):
+        log('FAILED to solve Turnstile')
+        last_solve['cls'] = 'unsolved'
+        await evidence(tab, 'solve', 'unsolved')
+        return None
 
-        # A non-calendar URL still answers 200, so caching one makes the session
-        # look healthy forever and no re-solve ever fires.
-        if 'calendar_select' not in (calendar_url or ''):
-            log(f'FAILED: not a calendar URL, not caching: {calendar_url}')
-            return None
+    log('Turnstile solved! Submitting form...')
+    await tab.execute_script("""
+        const btn = document.querySelector('input[value="次へ"]');
+        if (btn) { btn.disabled = false; btn.form.submit(); }
+    """)
+    await _pause(pause_next)
 
-        with open(CALENDAR_URL_CACHE + '.tmp', 'w') as f:
-            f.write(calendar_url + '\n')
-        os.replace(CALENDAR_URL_CACHE + '.tmp', CALENDAR_URL_CACHE)
-        log(f'Saved to {CALENDAR_URL_CACHE}')
-        return calendar_url
+    calendar_url = await tab.current_url
+    log(f'Calendar URL obtained — {calendar_url}')
+
+    # A non-calendar URL still answers 200, so caching one makes the session
+    # look healthy forever and no re-solve ever fires.
+    if 'calendar_select' not in (calendar_url or ''):
+        log(f'FAILED: not a calendar URL, not caching: {calendar_url}')
+        last_solve['cls'] = 'no_calendar'
+        await evidence(tab, 'solve', 'no_calendar')
+        return None
+
+    with open(CALENDAR_URL_CACHE + '.tmp', 'w') as f:
+        f.write(calendar_url + '\n')
+    os.replace(CALENDAR_URL_CACHE + '.tmp', CALENDAR_URL_CACHE)
+    log(f'Saved to {CALENDAR_URL_CACHE}')
+    return calendar_url
 
 
 # ── the 申込する / 確認 leg ───────────────────────────────────────────
@@ -370,26 +435,36 @@ def submit(link, values, log, tag, allow_commit):
     `_method` and `authenticity_token`, and overwriting them with copies from a
     different page load is how a browser submit fails for a reason that looks like the
     bug it works around. Returns `(status, detail)` in `confirm_from_email`'s
-    vocabulary.
+    vocabulary, `detail` a code for every outcome but `confirmed` (the 申込受付番号) and a
+    gate's deferral (its reason): `hold_expired`, `room_taken`, `link_used`,
+    `fill_rejected`, `no_apply_button`, `no_confirm_screen`, `no_confirm_button`,
+    `no_completion`, `submit_unknown` (the budget ran out after 申込する: the mailbox is the
+    authority), `leg_timeout` (ran out before it: nothing sent), `browser_busy`,
+    `chrome_<exception>`. Any failure after 申込する leaves the page's evidence (HTML and a
+    screenshot) in the debug dir.
     """
     budget = BROWSER_CONFIRM_TIMEOUT
+    last_leg['applied'] = False
 
     with hold(timeout=max(1, budget)) as owned:
         if not owned:
             log(f'{tag}   Chrome is busy re-minting a session; '
                 f'not waiting any longer with a hold running')
-            return 'failed', 'browser busy'
+            return 'failed', 'browser_busy'
         try:
             return asyncio.run(
                 asyncio.wait_for(_run(link, values, log, tag, allow_commit),
                                  timeout=budget))
         except asyncio.TimeoutError:
+            if not last_leg['applied']:
+                log(f'{tag}   Browser submit exceeded {budget:.0f}s before 申込する: nothing was sent')
+                return 'failed', 'leg_timeout'
             log(f'{tag}   Browser submit exceeded {budget:.0f}s: outcome UNKNOWN. '
                 f'Check the mailbox for a 申込完了メール before retrying.')
-            return 'failed', 'browser submit outcome unknown'
+            return 'failed', 'submit_unknown'
         except Exception as e:
             log(f'{tag}   Browser submit failed: {e!r}')
-            return 'failed', f'browser submit error: {type(e).__name__}'
+            return 'failed', chrome_cls(e)
 
 
 async def _run(link, values, log, tag, allow_commit):
@@ -397,88 +472,109 @@ async def _run(link, values, log, tag, allow_commit):
 
     async with launch() as browser:
         tab = await browser.start()
+
+        async def after_apply(code, why):
+            """A failure past 申込する: say so, keep the page."""
+            log(f'{tag}   {why}')
+            await evidence(tab, f'leg_{tag}', code)
+            return 'failed', code
         try:
-            await minimise(tab)
-            await tab.go_to(link, timeout=30)
-            await asyncio.sleep(3)
-
-            page = await html(tab)
-            if confirm_booking._EXPIRED_TEXT in page:
-                log(f'{tag}   The hold expired before the browser reached the form')
-                return 'failed', 'hold expired'
-            if bh._NO_ROOMS_TEXT in page:
-                return 'failed', 'room taken'
-
-            # Write every value back and read it back out — see the module note.
-            report = value(await tab.execute_script("""
-                const V = %s;
-                const bad = [];
-                let ok = 0;
-                for (const [name, v] of Object.entries(V)) {
-                    const el = document.getElementsByName(name)[0];
-                    if (!el) { bad.push(name + ':missing'); continue; }
-                    el.value = v;
-                    el.dispatchEvent(new Event('input',  {bubbles: true}));
-                    el.dispatchEvent(new Event('change', {bubbles: true}));
-                    if (el.value === v) { ok++; } else { bad.push(name + ':rejected'); }
-                }
-                return JSON.stringify({ok: ok, bad: bad});
-            """ % json.dumps(values, ensure_ascii=False)))
-            try:
-                filled = json.loads(report or '{}')
-            except ValueError:
-                filled = {}
-            bad = filled.get('bad') or []
-            # Every field missing means this is not the applicant form at all — a
-            # consumed link renders something else, and calling that "could not fill"
-            # sends the operator hunting for a form-mapping bug that is not there.
-            if values and all(b.endswith(':missing') for b in bad) \
-                    and len(bad) == len(values):
-                log(f'{tag}   The emailed link no longer shows the applicant form '
-                    f'(no such fields on the page) — it was probably already used')
-                return 'failed', 'link no longer shows the applicant form'
-            # Field *names* only. The values are 資格認証のキー.
-            log(f'{tag}   Browser filled {filled.get("ok", 0)}/{len(values)} fields'
-                + (f', not accepted: {", ".join(bad)}' if bad else ''))
-            if bad or filled.get('ok') != len(values):
-                log(f'{tag}   Not submitting a form the page did not accept in full')
-                return 'deferred', f'browser could not fill: {", ".join(bad) or "?"}'
-
-            if await _click(tab, "(e.value || e.textContent || '').includes('申込する')") \
-                    != 'clicked':
-                return 'failed', 'no 申込する control on the page'
-            await asyncio.sleep(6)
-
-            page = await html(tab)
-            if _CONFIRM_TEXT not in page:
-                if bh._NO_ROOMS_TEXT in page:
-                    return 'failed', 'room taken'
-                log(f'{tag}   申込する did not reach 申込内容確認画面 even in Chrome')
-                return 'failed', 'browser apply did not reach the confirm screen'
-
-            # Re-checked here, on the screen before the commit, because filling the
-            # form took time and the free-cancellation gate can have closed.
-            allowed, why = allow_commit()
-            if not allowed:
-                log(f'{tag}   Gate closed before 確認 in the browser: {why}')
-                return 'deferred', why
-
-            log(f'{tag}   確認 (browser): filing the application')
-            if await _click(tab, "['確認', '確定'].includes("
-                                 "(e.value || e.textContent || '').trim())") != 'clicked':
-                return 'failed', 'no 確認 control on 申込内容確認画面'
-            await asyncio.sleep(8)
-
-            page = await html(tab)
-            receipt = confirm_booking.parse_receipt(page)
-            if receipt or '申込完了' in page:
-                return 'confirmed', receipt
-            return 'failed', 'browser 確認 did not produce a completion page'
+            return await _leg(tab, link, values, log, tag, allow_commit, after_apply, confirm_booking)
+        except asyncio.CancelledError:
+            if last_leg['applied']:
+                await evidence(tab, f'leg_{tag}', 'submit_unknown')
+            raise
+        except Exception as e:
+            if last_leg['applied']:
+                await evidence(tab, f'leg_{tag}', chrome_cls(e))
+            raise
         finally:
             try:
                 await browser.stop()
             except Exception:
                 pass
+
+
+async def _leg(tab, link, values, log, tag, allow_commit, after_apply, confirm_booking):
+    pause_load, pause_apply, pause_confirm = LEG_PAUSES
+    await minimise(tab)
+    await tab.go_to(link, timeout=30)
+    await _pause(pause_load)
+
+    page = await html(tab)
+    if confirm_booking._EXPIRED_TEXT in page:
+        log(f'{tag}   The hold expired before the browser reached the form')
+        return 'failed', 'hold_expired'
+    if bh._NO_ROOMS_TEXT in page:
+        return 'failed', 'room_taken'
+
+    # Write every value back and read it back out — see the module note.
+    report = value(await tab.execute_script("""
+        const V = %s;
+        const bad = [];
+        let ok = 0;
+        for (const [name, v] of Object.entries(V)) {
+            const el = document.getElementsByName(name)[0];
+            if (!el) { bad.push(name + ':missing'); continue; }
+            el.value = v;
+            el.dispatchEvent(new Event('input',  {bubbles: true}));
+            el.dispatchEvent(new Event('change', {bubbles: true}));
+            if (el.value === v) { ok++; } else { bad.push(name + ':rejected'); }
+        }
+        return JSON.stringify({ok: ok, bad: bad});
+    """ % json.dumps(values, ensure_ascii=False)))
+    try:
+        filled = json.loads(report or '{}')
+    except ValueError:
+        filled = {}
+    bad = filled.get('bad') or []
+    # Every field missing means this is not the applicant form at all — a
+    # consumed link renders something else, and calling that "could not fill"
+    # sends the operator hunting for a form-mapping bug that is not there.
+    if values and all(b.endswith(':missing') for b in bad) \
+            and len(bad) == len(values):
+        log(f'{tag}   The emailed link no longer shows the applicant form '
+            f'(no such fields on the page) — it was probably already used')
+        return 'failed', 'link_used'
+    # Field *names* only. The values are 資格認証のキー.
+    log(f'{tag}   Browser filled {filled.get("ok", 0)}/{len(values)} fields'
+        + (f', not accepted: {", ".join(bad)}' if bad else ''))
+    if bad or filled.get('ok') != len(values):
+        log(f'{tag}   Not submitting a form the page did not accept in full')
+        return 'deferred', 'fill_rejected'
+
+    if await _click(tab, "(e.value || e.textContent || '').includes('申込する')") \
+            != 'clicked':
+        log(f'{tag}   No 申込する control on the page')
+        return 'failed', 'no_apply_button'
+    last_leg['applied'] = True
+    await _pause(pause_apply)
+
+    page = await html(tab)
+    if _CONFIRM_TEXT not in page:
+        if bh._NO_ROOMS_TEXT in page:
+            return await after_apply('room_taken', '申込する: the room was taken meanwhile')
+        return await after_apply('no_confirm_screen', '申込する did not reach 申込内容確認画面 even in Chrome')
+
+    # Re-checked here, on the screen before the commit, because filling the
+    # form took time and the free-cancellation gate can have closed.
+    allowed, why = allow_commit()
+    if not allowed:
+        log(f'{tag}   Gate closed before 確認 in the browser: {why}')
+        return 'deferred', why
+
+    log(f'{tag}   確認 (browser): filing the application')
+    if await _click(tab, "['確認', '確定'].includes("
+                         "(e.value || e.textContent || '').trim())") != 'clicked':
+        return await after_apply('no_confirm_button', 'No 確認 control on 申込内容確認画面')
+    await _pause(pause_confirm)
+
+    page = await html(tab)
+    receipt = confirm_booking.parse_receipt(page)
+    if receipt or '申込完了' in page:
+        return 'confirmed', receipt
+    return await after_apply('no_completion', 'Browser 確認 did not produce a completion page: outcome '
+                                              'unknown, check the mailbox for a 申込完了メール')
 
 
 if __name__ == '__main__':

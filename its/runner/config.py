@@ -106,6 +106,21 @@ SCAN_JITTER = 1
 # so an untimed Chrome hang stops all booking behind a healthy-looking process.
 CAPTCHA_TIMEOUT = 180
 
+# The Turnstile solve (chrome.py): attempts, each waiting up to TURNSTILE_TOKEN_SEC for the token (polled every
+# TURNSTILE_POLL_SEC) then reloading; SOLVE_PAUSES are the fixed waits on the homepage, the captcha page and after 次へ.
+# All of it must fit inside CAPTCHA_TIMEOUT (checked below), or the timeout cuts the last attempt short every time.
+TURNSTILE_ATTEMPTS = 3
+TURNSTILE_TOKEN_SEC = 30
+TURNSTILE_POLL_SEC = 2
+TURNSTILE_RELOAD_PAUSE = 5
+SOLVE_PAUSES = (3, 5, 5)
+# The filing leg's fixed waits: the emailed link's page, after 申込する, after 確認 (inside BROWSER_CONFIRM_TIMEOUT).
+LEG_PAUSES = (3, 6, 8)
+# How long a solve or a leg waits for the one Chrome (chrome.hold): a whole solve plus its teardown.
+CHROME_WAIT_SEC = 210
+# Each half of a failure's evidence (the page's HTML, a screenshot): a hung Chrome must not hold the leg up further.
+EVIDENCE_TIMEOUT = 10
+
 # **No per-hotel retry cooldown, deliberately.** One existed against a claimed
 # ~2,000 requests / 30 min; the logs show the longest real run is three consecutive
 # cycles, under 20 requests. Repetition is bounded by SKIP_HOTELS, the holds.json
@@ -114,8 +129,8 @@ CAPTCHA_TIMEOUT = 180
 
 # ── Emailed confirmation ─────────────────────────────────────────────
 # Run the emailed leg. Its last POST is the first irreversible, money-bearing action
-# in this program.
-AUTO_CONFIRM = True
+# in this program. Off for a local run unless you mean it (the Worker's autoConfirm decides on Actions).
+AUTO_CONFIRM = False
 
 # Never complete an application for a stay nearer than this. Free web cancellation
 # ends at D−10; from D−9 it costs 50% and is phone-only. 11 rather than 10 leaves a
@@ -132,6 +147,25 @@ CONFIRM_POLL_INTERVAL = 10     # worker cycle; one IMAP trip serves the whole qu
 # that reproduces off an intercepting proxy). Needs `pydoll-python`; without it the hold
 # and mail still stand and the log asks for a human.
 BROWSER_CONFIRM_TIMEOUT = 240  # Chrome can hang, and a room is held meanwhile
+
+
+def _check_timings():
+    """The Chrome budgets nest: every solve attempt inside CAPTCHA_TIMEOUT, a solve inside the wait for Chrome, the
+    leg's fixed pauses well inside its budget. Raised at import, so a bad edit fails every test and every run at once."""
+    solve = TURNSTILE_ATTEMPTS * (TURNSTILE_TOKEN_SEC + TURNSTILE_RELOAD_PAUSE) + sum(SOLVE_PAUSES)
+    problems = [what for what, ok in (
+        (f'the solve ({solve} s) must fit in CAPTCHA_TIMEOUT ({CAPTCHA_TIMEOUT} s)', solve < CAPTCHA_TIMEOUT),
+        ('CHROME_WAIT_SEC must outlast CAPTCHA_TIMEOUT', CHROME_WAIT_SEC > CAPTCHA_TIMEOUT),
+        ('TURNSTILE_POLL_SEC must be under TURNSTILE_TOKEN_SEC', 0 < TURNSTILE_POLL_SEC < TURNSTILE_TOKEN_SEC),
+        ('TURNSTILE_ATTEMPTS must be at least 1', TURNSTILE_ATTEMPTS >= 1),
+        ('the leg\'s pauses must leave most of BROWSER_CONFIRM_TIMEOUT', 2 * sum(LEG_PAUSES) < BROWSER_CONFIRM_TIMEOUT),
+        ('EVIDENCE_TIMEOUT must be short', 0 < EVIDENCE_TIMEOUT <= 30),
+    ) if not ok]
+    if problems:
+        raise ValueError('config.py: ' + '; '.join(problems))
+
+
+_check_timings()
 
 # ── Secrets, from the environment only ───────────────────────────────
 # Never hard-coded, never in a tracked file: this history is on a public remote.
@@ -200,87 +234,22 @@ FALLBACK_USER_AGENT = (
     '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
 )
 
-# ── Hotel priority ───────────────────────────────────────────────────
-# Substrings attempted first, in this order; matched ignoring case and spacing, so
-# 'NAGU' catches "NAGU 勝浦". About the race, not preference: hotels are booked
-# sequentially at ~10 requests each, so anything named here jumps the queue.
+# ── Facilities (a local run only) ────────────────────────────────────
+# On Actions these are the Worker's settings (the app's 施設 list: 探す = settings.search, ★ = priority, the skip
+# list). The roster, every facility the site may offer with its group, kind, cutoff and the site's exact spelling, has
+# ONE home: app/src/lib/its/roster.ts. This is a short local list, not a copy of it.
+#
+# PRIORITY_HOTELS: substrings attempted first, in this order, matched ignoring case and spacing ('NAGU' catches
+# "NAGU 勝浦"). About the race, not preference: hotels are booked one after another at ~10 requests each.
 PRIORITY_HOTELS = [
     'NAGU',
 ]
 
-# ── Hotel skip list ──────────────────────────────────────────────────
-# Normalized for case, entities and full-width spaces, then compared for **exact
-# membership** — not a substring test. A facility the site spells differently from
-# the roster silently never matches, and an unmatched skip entry books a hotel meant
-# to be skipped: `service_group_select` says 「グランドメルキュール伊勢志摩」 where the
-# roster says 「グランドメルキュール 伊勢志摩リゾート＆スパ」.
-#
-# ✓ = the exact string observed in `service_group_select`, so safe. The rest come
-# from the roster pages (read 2026-08-19) and are unverified against live markup;
-# check one by reading a 「Found N hotels: …」 line in the log.
-#
-# 関東 = 東京/神奈川/千葉/埼玉/群馬/栃木/茨城, marked on every entry whether skipped or
-# not, so the reachable-by-train set is visible at a glance. Assigned by facility
-# location, not from anything ITS publishes — the site groups by 直営/通年/夏季/冬季 only.
-#
-# The whole roster is here for reference, commented where not skipped. Every comment
-# is four fixed columns — 関東 · roster · cutoff · ✓ — then any name gotcha.
-#
-# Those columns are padded for a CJK glyph **5/3** the width of a Latin one — VSCodium's
-# default pairing of Menlo with a Hiragino fallback — not the 2/1 of a terminal, so they
-# look right in the editor and ragged in `git diff` and on GitHub. Integer spaces cannot
-# hit both, or even hit 5/3 exactly: ⅔ of a cell of residual is the floor. Re-pad with a
-# script, not by hand.
-#
-# Roster and cutoff both come from its/SITE.md §1: 直営 and all 夏季/冬季 are D−4, 通年
-# is D−10 except ブルーベリーヒル勝浦, 日光千姫物語 and 熱海後楽園ホテル. 季節限定 matters as
-# much as the cutoff — a 夏季 facility is never offered for a stay past 9/30 (the
-# boundary itself is inferred, not published), the 冬季 window is unmeasured, and
-# 夏季・冬季 marks the four sitting on both rosters. スキージャム勝山 is on none of them.
+# SKIP_HOTELS: never applied for. Normalized (book_hotels._norm_hotel: entities, NFKC, whitespace, case) and compared
+# for **exact membership**, not a substring: a name spelled differently from the site's never matches, and an unmatched
+# skip entry books a hotel meant to be skipped (the site says 「グランドメルキュール伊勢志摩」 where its roster page says
+# 「グランドメルキュール 伊勢志摩リゾート＆スパ」; roster.ts `verified` marks the spellings read off the site). Skipping
+# wins over priority. Copy names from roster.ts or from a 「Found N hotels: …」 line in the log.
 SKIP_HOTELS = [
-    # "トスラブ箱根ビオーレ",                # 関東  直営       D−4   ✓
-    # "トスラブ箱根和奏林",                  # 関東  直営       D−4   ✓
-    # "ホテルハーヴェスト那須",              # 関東  通年       D−10  ✓
-    # "ホテルハーヴェスト旧軽井沢",           #      通年       D−10  ✓  roster writes it with a space
-    # "日光千姫物語",                       # 関東  通年       D−4
-    # "ラビスタ富士河口湖",                  #      通年       D−10  ✓
-    # "熱海後楽園ホテル",                   #       通年       D−4
-    # "ラビスタ横須賀観音崎テラス",           # 関東  通年       D−10  ✓
-    # "ラビスタ熱海テラス",                  #      通年       D−10
-    # "ホテルハーヴェスト鬼怒川",             # 関東  通年       D−10
-    # "NAGU 勝浦",                        # 関東  夏季・冬季  D−4   ✓  in PRIORITY_HOTELS — skipping WINS, so leave commented
-    # "鎌倉パークホテル",                   # 関東  夏季       D−4
-    # "プレジャーリゾート伊豆赤沢温泉",        #      夏季       D−4
-    # "軽井沢マリオットホテル",              #       夏季       D−4
-    # "フルーツパーク富士屋ホテル",           #      夏季       D−4   ✓
-    # "リソルの森",                        # 関東  通年       D−10  ✓
-
-    "トスラブ館山ルアーナ",                  # 関東  直営       D−4   ✓
-
-    "鳴子温泉　湯元　吉祥",                  #      通年       D−10  ✓  full-width spaces on the site
-    "草津温泉　ホテルヴィレッジ",             # 関東  通年       D−10  ✓  full-width space
-    "伊香保温泉 ホテル天坊",                 # 関東  通年       D−10
-    "ホテルオークラ東京ベイ",                # 関東  通年       D−10  ✓
-    "ブルーベリーヒル勝浦",                  # 関東  通年       D−4   ✓
-    "和倉温泉 あえの風",                    #       通年       D−10
-    "ホテルハーヴェスト斑尾",                #       通年       D−10  ✓
-    "ホテルハーヴェスト伊東",                #       通年       D−10  ✓
-    "ホテルハーヴェスト浜名湖",               #      通年       D−10
-    "ホテル琵琶レイクオーツカ",               #      通年       D−10
-    "ホテル日航プリンセス京都",               #      通年       D−10  ✓
-    "ホテルハーヴェスト京都鷹峯",             #      通年       D−10
-    "ホテルハーヴェスト有馬六彩",             #      通年       D−10
-    "ホテルハーヴェスト南紀田辺",             #      通年       D−10  ✓
-    "ゆふいん山水館",                       #      通年       D−10
-    "グランドメルキュール伊勢志摩",           #       夏季       D−4   ✓  NOT the roster's longer name
-    "スパリゾートハワイアンズ モノリスタワー",  #      夏季       D−4
-    "定山渓 ゆらく草庵",                    #       夏季       D−4   ✓  half-width space
-    "蓼科東急ホテル",                       #      夏季・冬季  D−4   ✓
-    "高山グリーンホテル",                    #      夏季       D−4
-    "NASPAニューオータニ",                  #      夏季・冬季  D−4   ✓
-    "アオアヲナルトリゾート",                #       夏季       D−4   ✓
-    "ホテル日航アリビラ",                    #      夏季・冬季  D−4   ✓
-    "ラビスタ函館ベイANNEX",                #       冬季       D−4
-
-    "ホテルハーヴェスト　スキージャム勝山",     #      —         —        on no roster since 2026-08-19; kept so a re-contract cannot book it
+    'ホテルハーヴェスト　スキージャム勝山',   # on no roster since 2026-08-19; kept so a re-contract cannot book it
 ]

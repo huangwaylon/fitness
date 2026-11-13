@@ -19,6 +19,7 @@ Pass a substring to select tests, `-v` to see the flow's own logging:
 """
 import json
 import os
+import re
 import tempfile
 import threading
 import time
@@ -1739,7 +1740,7 @@ def test_confirm_files_the_application(port):
 def test_confirm_expired_hold_is_not_a_parse_failure(port):
     """「30分が経過しましたので…」 is the hold lapsing, not a markup change."""
     status, detail, got, logged = _confirm(port, mode='expired')
-    check('expired: reported as an expired hold', detail == 'hold expired',
+    check('expired: reported as an expired hold', detail == 'hold_expired',
           f'{status}: {detail}')
     check('expired: says so in the log', logged.saw('30-minute hold expired'),
           str(logged.lines))
@@ -1788,9 +1789,9 @@ def test_confirm_never_submits_a_form_it_cannot_fill(port):
             status, detail = cb.confirm_from_email(link, TARGET, NAGU, '[TEST]')
         check('unmapped: deferred, not submitted', status == 'deferred',
               f'{status}: {detail}')
-        check('unmapped: names the fields it could not fill',
-              'apply[contact_phone]' in detail and 'apply[address]' in detail,
-              repr(detail))
+        check('unmapped: a code for the reports', detail == 'unmapped', repr(detail))
+        check('unmapped: the log names the fields it could not fill',
+              logged.saw('apply[contact_phone]') and logged.saw('apply[address]'), str(logged.lines))
         check('unmapped: nothing reached 申込する', STATE.filed == [], str(STATE.filed))
         check('unmapped: the form is dumped for a human',
               any('step10_unmapped_form' in f for f in env.dumps()), str(env.dumps()))
@@ -1928,7 +1929,7 @@ def test_browser_fallback_failure_still_asks_for_a_human(port):
     is the one the old code omitted for a browser 'deferred'/'failed'.
     """
     with Env(port, confirm=True, applicant=dict(APPLICANT_FIXTURE)):
-        STATE.browser_result = ('failed', 'browser submit outcome unknown')
+        STATE.browser_result = ('failed', 'submit_unknown')
         with CapturedLog() as booking_log:
             _d, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
         check('fallback-fail: the hold is still recorded', NAGU in booked, str(booked))
@@ -2260,6 +2261,74 @@ def test_curl_unreachable():
 
 
 # ── Runner ──────────────────────────────────────────────────────────
+
+def test_config_local_defaults_and_roster():
+    """config.py is a local run's: auto-confirm off unless meant, and a short facility list whose every name is on the
+    roster's one home (app/src/lib/its/roster.ts), matched as the flow matches."""
+    import config
+    check('config: AUTO_CONFIRM off for a local run', config.AUTO_CONFIRM is False)
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                        'app', 'src', 'lib', 'its', 'roster.ts')
+    with open(path, encoding='utf-8') as f:
+        roster = {bh._norm_hotel(n) for n in re.findall(r"^  \['([^']+)',", f.read(), re.M)}
+    check('config: the roster read', len(roster) > 30, str(len(roster)))
+    check('config: every skip name is on the roster', all(bh._norm_hotel(n) in roster for n in config.SKIP_HOTELS),
+          str(config.SKIP_HOTELS))
+    check('config: every priority names a roster facility',
+          all(any(bh._norm_hotel(p) in r for r in roster) for p in config.PRIORITY_HOTELS), str(config.PRIORITY_HOTELS))
+    check('config: a short local list, not a copy', len(config.SKIP_HOTELS) <= 10, str(len(config.SKIP_HOTELS)))
+
+
+def test_config_timings_are_checked():
+    """The Chrome budgets nest, checked at import: a solve's attempts inside CAPTCHA_TIMEOUT, the wait for Chrome
+    longer than a solve."""
+    import config
+    saved = (config.CAPTCHA_TIMEOUT, config.CHROME_WAIT_SEC)
+    try:
+        config._check_timings()
+        check('timings: the shipped values pass', True)
+        for cap, wait, why in ((90, 210, 'CAPTCHA_TIMEOUT'), (180, 100, 'CHROME_WAIT_SEC')):
+            config.CAPTCHA_TIMEOUT, config.CHROME_WAIT_SEC = cap, wait
+            try:
+                config._check_timings()
+                check(f'timings: {why} too small refused', False)
+            except ValueError as e:
+                check(f'timings: {why} too small refused', why in str(e), str(e))
+    finally:
+        config.CAPTCHA_TIMEOUT, config.CHROME_WAIT_SEC = saved
+    import chrome
+    check('timings: chrome reads them from config', chrome.DEFAULT_WAIT == config.CHROME_WAIT_SEC
+          and chrome.TURNSTILE_ATTEMPTS == config.TURNSTILE_ATTEMPTS)
+
+
+def test_check_env_is_its_own_module():
+    """`check_env.py` is the preflight; `main.py --check` runs it. An empty applicant fails it, with no secret
+    printed."""
+    import contextlib
+    import io
+    import check_env
+    import config
+    import main as M
+    saved = (dict(config.APPLICANT), config.IMAP_USER, config.IMAP_APP_PASSWORD, config.EMAIL)
+    out = io.StringIO()
+    try:
+        config.APPLICANT.update({k: '' for k in config.APPLICANT})
+        config.APPLICANT['kigou'] = 'SECRETKIGOU9'
+        config.IMAP_USER, config.IMAP_APP_PASSWORD, config.EMAIL = '', '', ''
+        check_env._problems.clear()
+        with contextlib.redirect_stdout(out):
+            code = M.main(['--check'])
+    finally:
+        (applicant, config.IMAP_USER, config.IMAP_APP_PASSWORD, config.EMAIL) = saved
+        config.APPLICANT.clear()
+        config.APPLICANT.update(applicant)
+        check_env._problems.clear()
+    text = out.getvalue()
+    check('check_env: main.py --check runs it and fails an empty applicant', code == 1 and 'problem(s) to fix' in text,
+          text[-300:])
+    check('check_env: no secret printed', 'SECRETKIGOU9' not in text and '12 chars' in text)
+    check('check_env: main.py has no copy of it', not hasattr(M, 'check_env') and not hasattr(M, '_check_applicant'))
+
 
 def main_(argv=()):
     """Run the suite. Args select tests by substring; -v shows the flow's logs.
