@@ -3,9 +3,9 @@
 // (ItsStatus). Every time is the Worker's clock (`now`), except the runner's own fields in its report.
 import {
   AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, HOLD_SEC, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS,
-  SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
+  RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
   type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsHealth, type ItsSettings,
-  type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type Verdict,
+  type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type ScanEntry, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
 
 export type Mode = 'on' | 'off';
@@ -32,7 +32,12 @@ export interface ItsRecord {
   acks: [string, number][];
   /** The last preflight (GET /runner/config without a runId). */
   preflight: number | null;
+  /** The calendar reads of the last RECENT_SCANS_SEC, one batch per report that brought new ones: when it arrived
+   *  (what ages it out) and from which run (a retry repeats that run's `t`s). */
+  scans: ScanBatch[];
 }
+
+export interface ScanBatch { at: number; runId: string; log: ScanEntry[] }
 
 export const SEEN_KEPT = 300;
 /** A seen name offered again moves its time on the record at most this often (not a write per report for it). */
@@ -101,6 +106,27 @@ export function addOwnEvent(events: ItsRecord['events'], e: Omit<ItsEvent, 'seq'
   return { ...events, important: [...events.important, { ...e, seq: 0 }].slice(-EVENTS_KEPT) };
 }
 
+/** A report's scans (those after the run's newest kept: a retried report adds nothing twice) as a batch received
+ *  `now`; batches older than RECENT_SCANS_SEC dropped, then the oldest entries past RECENT_SCANS_KEPT. Null: nothing to
+ *  write (nothing new, nothing aged out). */
+export function addScans(batches: ScanBatch[], runId: string, log: ScanEntry[] | undefined, now: number): ScanBatch[] | null {
+  const newest = Math.max(-1, ...batches.filter((b) => b.runId === runId).flatMap((b) => b.log.map((e) => e.t)));
+  const fresh = (log ?? []).filter((e) => e.t > newest).sort((a, b) => a.t - b.t);
+  const kept = batches.filter((b) => now - b.at < RECENT_SCANS_SEC * 1000);
+  if (!fresh.length && kept.length === batches.length) return null;
+  const next = fresh.length ? [...kept, { at: now, runId, log: fresh }] : kept;
+  let over = next.reduce((n, b) => n + b.log.length, 0) - RECENT_SCANS_KEPT;
+  while (over > 0) {
+    const [first] = next;
+    if (first.log.length <= over) { over -= first.log.length; next.shift(); } else { next[0] = { ...first, log: first.log.slice(over) }; over = 0; }
+  }
+  return next;
+}
+
+/** The status's recentScans: the batches received in the last RECENT_SCANS_SEC, flattened, oldest first. */
+const recentScans = (batches: ScanBatch[], now: number): ScanEntry[] =>
+  batches.filter((b) => now - b.at < RECENT_SCANS_SEC * 1000).flatMap((b) => b.log);
+
 /** Entries kept: until their stay is more than BOOKINGS_KEEP_DAYS past (a reservation is a liability till then). */
 const pruneBookings = (list: BookingEntry[], now: number): BookingEntry[] =>
   list.filter((b) => daysUntil(b.date, now) >= -BOOKINGS_KEEP_DAYS);
@@ -148,7 +174,7 @@ export function addSeen(seen: Record<string, number>, names: string[], now: numb
  *  whatever lastOkAt it carries, which may be from before the ban), so only a later move, from a run that reported
  *  since, counts; the shown runner switching runs never clears a ban. */
 export function runnerOf(r: RunnerReport, now: number, prev: RunnerRecord | null): RunnerRecord {
-  const { v: _v, events: _e, seen: _s, ...rest } = r;
+  const { v: _v, events: _e, seen: _s, scansLog: _l, ...rest } = r;
   const same = prev?.runId === r.runId ? prev : null;
   const seenAt = (t: number | null, before: number | null | undefined, at: number | null | undefined) =>
     t === null ? null : same && before === t && at != null ? at : now;
@@ -246,6 +272,7 @@ export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: nu
     events: [...rec.events.routine, ...rec.events.important].sort(newestFirst),
     seen: Object.keys(rec.seen).sort(),
     lastPreflight: rec.preflight,
+    recentScans: recentScans(rec.scans, now),
   };
 }
 

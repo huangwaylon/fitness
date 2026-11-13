@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
-import { EVENTS_KEPT, LEASE_SEC, type BookingInput, type EventInput, type ItsSettingsInput } from '../../../app/src/lib/its/contract.ts';
+import { EVENTS_KEPT, LEASE_SEC, RECENT_SCANS_KEPT, RECENT_SCANS_SEC, SCANS_PER_REPORT, type BookingInput, type EventInput, type ItsSettingsInput, type ScanEntry } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
 import { ACKS_KEPT, MAX_BOOKINGS, SEEN_KEPT, SEEN_REFRESH_MS } from '../src/rules.ts';
 import { MIN, NOW, fakeState, quiet, report, start, type State } from './fakeBot.ts';
@@ -272,6 +272,64 @@ describe('the Worker’s own events and stamps', () => {
     expect((await bot.status()).lastPreflight).toBe(NOW + MIN);
     expect(state.kv.get('preflight')).toBe(NOW + MIN);
     expect((await bot.health()).lastPreflightAgeSec).toBe(60);
+  });
+});
+
+describe('recent scans (the page’s minute strip)', () => {
+  const scan = (t: number, x: Partial<ScanEntry> = {}): ScanEntry => ({ t, ok: true, ms: 800, avail: 0, ...x });
+  const recent = async () => (await bot.status()).recentScans;
+  beforeEach(async () => {
+    await bot.claim({ runId: RUN, host: 'actions' });
+  });
+
+  it('appends a report’s scans, oldest first, in the report’s one put', async () => {
+    expect(await recent()).toEqual([]);
+    const puts = state.count.puts;
+    await bot.report(report({ scansLog: [scan(NOW - 20_000), scan(NOW - 5000, { ok: false, code: 'timeout', ms: 20_000 })] }));
+    expect(state.count.puts).toBe(puts + 1);
+    vi.setSystemTime(NOW + 30_000);
+    await bot.report(report({ scansLog: [scan(NOW + 10_000, { avail: 1 })] }));
+    expect(await recent()).toEqual([scan(NOW - 20_000), scan(NOW - 5000, { ok: false, code: 'timeout', ms: 20_000 }), scan(NOW + 10_000, { avail: 1 })]);
+  });
+
+  it('a retried report (the same run, the same t) adds nothing; another run’s scans at the same t are its own', async () => {
+    await bot.report(report({ scansLog: [scan(NOW - 1000)] }));
+    await bot.report(report({ scansLog: [scan(NOW - 1000), scan(NOW)] }));
+    await bot.report(report({ runId: 'stray-1', scansLog: [scan(NOW)] }));   // without the lease: its scans still count
+    expect((await recent())?.map((s) => s.t)).toEqual([NOW - 1000, NOW, NOW]);
+  });
+
+  it('ages out by the Worker’s receive time after RECENT_SCANS_SEC, across runs (nothing cleared at a run’s end)', async () => {
+    await bot.report(report({ scansLog: [scan(NOW)], events: [ev(1, 'run_end')] }));
+    vi.setSystemTime(NOW + 30 * MIN);
+    await bot.claim({ runId: 'next', host: 'actions' });
+    await bot.report(report({ runId: 'next', scansLog: [scan(NOW + 30 * MIN)] }));
+    expect((await recent())?.length).toBe(2);
+    vi.setSystemTime(NOW + RECENT_SCANS_SEC * 1000 + 1);
+    expect((await recent())?.map((s) => s.t)).toEqual([NOW + 30 * MIN]);   // on read, nothing written
+    await bot.report(report({ runId: 'next' }));
+    expect((state.kv.get('scans') as { log: unknown[] }[]).flatMap((b) => b.log)).toHaveLength(1);   // and dropped at the next write
+  });
+
+  it('keeps at most RECENT_SCANS_KEPT, the newest; an older runner’s report (no scansLog) changes nothing', async () => {
+    for (let i = 0; i < 11; i++) {
+      vi.setSystemTime(NOW + i * 30_000);
+      await bot.report(report({ scansLog: Array.from({ length: SCANS_PER_REPORT }, (_, j) => scan(NOW + i * 30_000 + j * 1000)) }));
+    }
+    const all = (await recent())!;
+    expect(all).toHaveLength(RECENT_SCANS_KEPT);
+    expect(all.at(-1)!.t).toBe(NOW + 10 * 30_000 + (SCANS_PER_REPORT - 1) * 1000);
+    const rows = state.count.rows;
+    await bot.report(report());
+    expect(state.count.rows - rows).toBe(2);   // runner + lease only
+    expect((await recent())!).toHaveLength(RECENT_SCANS_KEPT);
+    // what the page reads stays small: 240 entries ≈ 12 KB
+    expect(JSON.stringify(all.slice(-240)).length).toBeLessThan(13_000);
+  });
+
+  it('never shows the scans in the runner’s last report', async () => {
+    await bot.report(report({ scansLog: [scan(NOW)] }));
+    expect('scansLog' in (await bot.status()).runner!).toBe(false);
   });
 });
 

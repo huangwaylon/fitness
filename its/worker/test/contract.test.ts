@@ -3,7 +3,7 @@
 // shape; the same values where the example's own clock allows). And the checks' bounds on runner bodies.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import example from '../../contract-example.json';
-import { LIMITS, MAX_NAME, MAX_SITE_NAME, parseSettingsInput, type ItsSettings, type RunnerConfig } from '../../../app/src/lib/its/contract.ts';
+import { LIMITS, MAX_NAME, MAX_SITE_NAME, SCANS_PER_REPORT, parseSettingsInput, type ItsSettings, type RunnerConfig } from '../../../app/src/lib/its/contract.ts';
 import { parseBookings, parseClaim, parseReport, parseRunInput } from '../src/validate.ts';
 import { NOW, fakeState, quiet, start } from './fakeBot.ts';
 
@@ -60,12 +60,26 @@ describe('the Worker on the example', () => {
     at(example.status.now);
     const status = await bot.status();
     const { lease: _l, ...want } = example.status;
-    // lastPreflight: not in the example yet (the app's client.test reads it whole and doesn't keep it yet)
-    const { lease, lastPreflight, ...got } = status;
+    // the newer fields are the example's statusNewer (the app's client.test reads `status` whole and keeps none yet)
+    const { lease, lastPreflight, recentScans, ...got } = status;
     expect(got).toEqual(want);
-    expect(lastPreflight).toBeNull();
+    expect([lastPreflight, recentScans]).toEqual([null, []]);
     expect(lease).toEqual({ ...example.config.lease, until: example.status.runner.lastSeen + 300_000 });
     expect(status.settings).toEqual(example.config.settings as ItsSettings);
+  });
+
+  it('answers the example’s newer status fields from a newer runner’s report and a preflight', async () => {
+    const bot = await start(fakeState(), { COMMIT: 'abc1234' });
+    vi.setSystemTime(example.statusNewer.lastPreflight);
+    await bot.config(null);
+    vi.setSystemTime(example.report.startedAt);
+    await bot.claim(example.claimInput as never);
+    vi.setSystemTime(example.status.runner.lastSeen);
+    await bot.report({ ...example.report, ...example.reportNewer } as never);
+    vi.setSystemTime(example.status.now);
+    const s = await bot.status();
+    expect({ lastPreflight: s.lastPreflight, recentScans: s.recentScans }).toEqual(example.statusNewer);
+    expect(s.runner).toMatchObject({ settingsAt: example.reportNewer.settingsAt, mailOk: true });
   });
 
   it('the status’s shape matches the example’s (every key, every type)', async () => {
@@ -77,8 +91,8 @@ describe('the Worker on the example', () => {
     await bot.report(example.report as never);
     const s = await bot.status();
     const { dispatch: _d, control: _c, ...exampleRest } = example.status;
-    const { dispatch, control, lastPreflight, ...rest } = s;
-    expect([dispatch, control, lastPreflight]).toEqual([null, null, null]);
+    const { dispatch, control, lastPreflight, recentScans, ...rest } = s;
+    expect([dispatch, control, lastPreflight, recentScans]).toEqual([null, null, null, []]);
     expect(shape(rest)).toEqual(shape(exampleRest));
   });
 });
@@ -137,6 +151,23 @@ describe('the runner’s bodies’ bounds', () => {
     expect(old.ok && ['settingsAt' in old.value, 'mailOk' in old.value]).toEqual([false, false]);
     expect(parseReport({ ...report(), settingsAt: '1' })).toEqual({ ok: false, error: 'bad_report_times' });
     expect(parseReport({ ...report(), mailOk: 'no' })).toEqual({ ok: false, error: 'bad_report_mail' });
+  });
+
+  it('takes a newer runner’s scansLog (the example’s), capped at SCANS_PER_REPORT, each entry checked', () => {
+    const newer = { ...report(), ...example.reportNewer };
+    expect(parseReport(newer)).toEqual({ ok: true, value: newer });
+    const scan = { t: 1, ok: true, ms: 800, avail: 0 };
+    const log = (n: number) => Array.from({ length: n }, (_, i) => ({ ...scan, t: i + 1 }));
+    expect(parseReport({ ...report(), scansLog: log(SCANS_PER_REPORT) }).ok).toBe(true);
+    const bad = (scansLog: unknown) => parseReport({ ...report(), scansLog });
+    expect(bad(log(SCANS_PER_REPORT + 1))).toEqual({ ok: false, error: 'bad_report_scans' });
+    for (const x of [{ ...scan, ok: 1 }, { ...scan, t: -1 }, { ...scan, avail: 1.5 }, { ...scan, ms: 'x' }, { ...scan, code: 'a b' }, { ...scan, code: 5 }, null]) {
+      expect(bad([x]), JSON.stringify(x)).toEqual({ ok: false, error: 'bad_report_scans' });
+    }
+    expect(bad({})).toEqual({ ok: false, error: 'bad_report_scans' });
+    // a fractional duration is rounded; a field it doesn't know is dropped
+    const r = parseReport({ ...report(), scansLog: [{ ...scan, ms: 812.6, date: '2026-11-22' }] });
+    expect(r.ok && r.value.scansLog).toEqual([{ ...scan, ms: 813 }]);
   });
 
   it('drops fields it doesn’t know', () => {

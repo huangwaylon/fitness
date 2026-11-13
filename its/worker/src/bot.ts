@@ -11,11 +11,11 @@ import {
 import { dispatchRun } from './dispatch.ts';
 import type { Env } from './env.ts';
 import {
-  addBookings, addEvents, addOwnEvent, addSeen, claimLease, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
+  addBookings, addEvents, addOwnEvent, addScans, addSeen, claimLease, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
   type ItsRecord,
 } from './rules.ts';
 
-const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight'] as const satisfies readonly (keyof ItsRecord)[];
+const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight', 'scans'] as const satisfies readonly (keyof ItsRecord)[];
 
 /** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way; the
  *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too), unless a 停止 came after
@@ -26,7 +26,7 @@ const RUNNING = new Set(['starting', 'solving', 'scanning']);
 
 const empty = (): ItsRecord => ({
   settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null, control: null,
-  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null,
+  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scans: [],
 });
 
 /** A member request's id in a log line (index.ts: the page's X-Request-Id, or one made up). */
@@ -160,6 +160,8 @@ export class ItsBot extends DurableObject<Env> {
     if (ev) Object.assign(patch, { events: ev.events, acks: ev.acks });
     const seen = addSeen(this.rec.seen, r.seen, now);
     if (seen) patch.seen = seen;
+    const scans = addScans(this.rec.scans, r.runId, r.scansLog, now);
+    if (scans) patch.scans = scans;
     const held = this.rec.lease;
     const ended = r.events.some((e) => e.kind === 'run_end');
     const late = !ended && held?.holder === r.runId && held.until <= now;

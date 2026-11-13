@@ -1,5 +1,5 @@
 {
- "_": "One of each message (app/src/lib/its/contract.ts). The Worker's and the runner's tests parse these; keep them valid.",
+ "_": "One of each message (app/src/lib/its/contract.ts). The Worker's and the runner's tests parse these; keep them valid. reportNewer / statusNewer: the fields a newer runner adds to `report` and a newer Worker to `status` (absent from older ones); each side folds them in once it sends or keeps them.",
  "settingsInput": {
   "intervalSec": 15,
   "dates": [
@@ -224,6 +224,43 @@
   "seen": [
    "NAGU 勝浦",
    "ゆふいん山水館"
+  ]
+ },
+ "reportNewer": {
+  "settingsAt": 1794540000000,
+  "mailOk": true,
+  "scansLog": [
+   {
+    "t": 1794542985000,
+    "ok": false,
+    "code": "timeout",
+    "ms": 20000,
+    "avail": 0
+   },
+   {
+    "t": 1794543000000,
+    "ok": true,
+    "ms": 812,
+    "avail": 1
+   }
+  ]
+ },
+ "statusNewer": {
+  "lastPreflight": 1794541740000,
+  "recentScans": [
+   {
+    "t": 1794542985000,
+    "ok": false,
+    "code": "timeout",
+    "ms": 20000,
+    "avail": 0
+   },
+   {
+    "t": 1794543000000,
+    "ok": true,
+    "ms": 812,
+    "avail": 1
+   }
   ]
  }
 }

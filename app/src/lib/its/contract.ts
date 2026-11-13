@@ -202,6 +202,9 @@ export interface RunnerReport {
   /** The last IMAP check (the confirm leg's mailbox): true ok, false failed (with auto-confirm on: `mail_failing`),
    *  null none yet. Absent from an older runner. */
   mailOk?: boolean | null;
+  /** The calendar reads since the last acknowledged report, oldest first, at most SCANS_PER_REPORT (the newest kept).
+   *  Absent from an older runner. */
+  scansLog?: ScanEntry[];
   events: EventInput[];        // new since the last acknowledged report
   seen: string[];              // facility names the site offered this run
 }
@@ -209,6 +212,22 @@ export interface RunnerReport {
 export const REPORT_EVERY_SEC = 30;
 /** Saved settings a running run still hasn't applied after this long (two reports): `settings_stale`. @public (its/worker) */
 export const SETTINGS_STALE_SEC = 2 * REPORT_EVERY_SEC;
+
+/** One calendar read, for the page's minute strip (the last hour, across runs). No date or facility: counts and codes.
+ *  @public (its/worker) */
+export interface ScanEntry {
+  t: number;         // the runner's clock (ms), when the read ended; with the run's id, what a retried report repeats
+  ok: boolean;
+  code?: string;     // when !ok: the outcome code (timeout, http_503, session_dead, …), an isId
+  ms: number;        // how long the read took
+  avail: number;     // target dates showing a vacancy
+}
+/** @public (its/worker) */
+export const SCANS_PER_REPORT = 30;
+/** The status's `recentScans`: the last RECENT_SCANS_SEC by the Worker's clock, at most RECENT_SCANS_KEPT. @public (its/worker) */
+export const RECENT_SCANS_SEC = 3600;
+/** @public (its/worker) */
+export const RECENT_SCANS_KEPT = 300;
 
 /** `GET /runner/config`, and the answer to claim/report: the latest settings (applied at the next cycle), the
  *  record, the lease, and whether to stop (paused, MODE off, no future date, or the lease is someone else's). @public (its/worker) */
@@ -271,6 +290,9 @@ export interface ItsStatus {
   /** The last preflight (GET /runner/config without runId: a run deciding whether to start), Worker clock. Absent
    *  from an older Worker. */
   lastPreflight?: number | null;
+  /** The calendar reads of the last RECENT_SCANS_SEC (by the Worker's receive time), oldest first, from every run that
+   *  reported them. Absent from an older Worker. */
+  recentScans?: ScanEntry[];
 }
 
 /** `GET /health/its` (Bearer ITS_HEALTH_TOKEN, for alerting from a public repo's workflow): codes and counts only, never

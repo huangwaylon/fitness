@@ -2,8 +2,9 @@
 // hold. The page's settings go through the contract's own parseSettingsInput. Each answers the value or an error code
 // (logged by the Worker, answered as 400).
 import {
-  BOOKING_KINDS, EVENT_KINDS, HOSTS, ID_RE, LIMITS, MAX_SITE_NAME, PHASES, isDate, isId, isName,
+  BOOKING_KINDS, EVENT_KINDS, HOSTS, ID_RE, LIMITS, MAX_SITE_NAME, PHASES, SCANS_PER_REPORT, isDate, isId, isName,
   type BookingInput, type ClaimInput, type EventInput, type Host, type LastError, type Phase, type RunInput, type RunnerReport,
+  type ScanEntry,
 } from '../../../app/src/lib/its/contract.ts';
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
@@ -59,6 +60,13 @@ function parseLastError(x: unknown): LastError | null | undefined {
   return { at: x.at, step: x.step, status: x.status as number | null, cls: x.cls };
 }
 
+/** One calendar read (the page's minute strip): a fractional duration rounded, unknown fields dropped. */
+function parseScan(x: unknown): ScanEntry | null {
+  if (!isObj(x) || !time(x.t) || typeof x.ok !== 'boolean' || !time(x.ms) || !count(x.avail)) return null;
+  if (x.code !== undefined && !isId(x.code)) return null;
+  return { t: x.t, ok: x.ok, ...(x.code !== undefined && { code: x.code as string }), ms: Math.round(x.ms), avail: x.avail };
+}
+
 /** A heartbeat. The runner's own strings (runUrl, sha) are held to their shapes: they reach the page as links/text. */
 export function parseReport(x: unknown): Parsed<RunnerReport> {
   const bad = (what: string): Parsed<RunnerReport> => ({ ok: false, error: `bad_report_${what}` });
@@ -69,6 +77,8 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
   // a newer runner's (absent from an older one: left absent)
   if (x.settingsAt !== undefined && !timeOrNull(x.settingsAt)) return bad('times');
   if (x.mailOk !== undefined && x.mailOk !== null && typeof x.mailOk !== 'boolean') return bad('mail');
+  const scans = x.scansLog === undefined ? undefined : Array.isArray(x.scansLog) && x.scansLog.length <= SCANS_PER_REPORT ? x.scansLog.map(parseScan) : null;
+  if (scans === null || scans?.some((e) => e === null)) return bad('scans');
   if (!count(x.scans) || !count(x.scanFailures) || !count(x.unsynced)) return bad('counts');
   const s = x.solves;
   if (!isObj(s) || !count(s.ok) || !count(s.failed) || !timeOrNull(s.lastOkAt) || !(s.lastSecs === null || time(s.lastSecs)) || !SPOTS.includes(s.lastSpot as never)) return bad('solves');
@@ -90,6 +100,7 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
       failuresByStep: { ...(f as Record<string, number>) }, lastError, unsynced: x.unsynced,
       ...(x.settingsAt !== undefined && { settingsAt: x.settingsAt as number | null }),
       ...(x.mailOk !== undefined && { mailOk: x.mailOk as boolean | null }),
+      ...(scans && { scansLog: scans as ScanEntry[] }),
       events: events as EventInput[], seen: x.seen as string[],
     },
   };
