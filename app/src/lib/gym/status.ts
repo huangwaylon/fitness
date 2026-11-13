@@ -1,6 +1,5 @@
 // The gym bot's status (docs/design.md "Settings": 設定's ジムボット page): the Worker's public GET /status, read
-// as it is (the verdict is decided there), with the page's view helpers so GymPage stays thin. Demo mode reads a
-// fixture instead, with no network.
+// as it is (the verdict is decided there), with the page's view helpers so GymPage stays thin.
 import { t } from '#lib/i18n/index.ts';
 import { formatSyncTime } from '#lib/i18n/format.ts';
 import '#lib/i18n/gym.ts';
@@ -85,25 +84,6 @@ export async function fetchStatus(signal?: AbortSignal, url = GYM_URL): Promise<
   const s = parseStatus(await res.json());
   if (!s) throw new Error('gym status: not a status');
   return s;
-}
-
-/** Demo mode's answer (`week.demo`): a healthy runner on a 15-minute alarm, an older check's pilates timed out. */
-export function demoStatus(now: number): GymStatus {
-  const MIN = 60_000, last = now - 6 * MIN;
-  const ok = { training: 'ok', pilates: 'ok' } as const;
-  const checks: Check[] = [
-    { t: last, by: 'alarm', ms: 2900, r: ok, open: 1, fresh: 0, push: 'none' },
-    { t: last - 9 * MIN, by: 'tap', ms: 3100, r: ok, open: 1, fresh: 1, push: 'held' },
-    { t: last - 15 * MIN, by: 'alarm', ms: 15400, r: { training: 'ok', pilates: 'timeout' }, open: 0, fresh: 0, push: 'none' },
-    { t: last - 31 * MIN, by: 'alarm', ms: 2700, r: ok, open: 0, fresh: 0, push: 'none' },
-    { t: last - 46 * MIN, by: 'alarm', ms: 4, idle: true, open: 0, fresh: 0, push: 'none' }
-  ];
-  return {
-    v: 1, now, mode: 'bot', sha: 'demo', verdict: 'healthy', reasons: [], intervalMin: 15, paused: false,
-    nextCheck: last + 15 * MIN, lastCheck: last, lastOk: last, lastError: { t: last - 15 * MIN, code: 'timeout' },
-    failures: 0, siteDownSent: false, retryPending: false, checks,
-    line: { used: 23, limit: 200, webhookOk: true, asOf: now - 40 * MIN }
-  };
 }
 
 // ---- The page's view ----

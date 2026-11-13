@@ -4,15 +4,14 @@
   // bot's own words: GET /gym/config with this phone's key, gym/config.ts), the recent checks and a soft footer. Both
   // fetched on open, then every minute while it's open and on screen; leaving it (‹ or ✕ unmounts it) stops that. A
   // failed fetch keeps the last answer shown (its footer says when it was) under a row with もう一度; 現在の設定 has
-  // its own (the status stays), and stays out of sight while the Worker doesn't serve it. Demo mode: the status's
-  // fixture, no 現在の設定.
+  // its own (the status stays), and stays out of sight while the Worker doesn't serve it (config.ts settle).
   import { untrack } from 'svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
-  import { checkLine, demoStatus, factRows, fetchStatus, verdictView, type GymStatus } from '#lib/gym/status.ts';
-  import { configRows, fetchConfig, type GymConfig } from '#lib/gym/config.ts';
+  import { checkLine, factRows, fetchStatus, verdictView, type GymStatus } from '#lib/gym/status.ts';
+  import { fetchConfig, settle, type GymConfig } from '#lib/gym/config.ts';
 
   const EVERY_MS = 60_000;
 
@@ -20,31 +19,26 @@
   let failed = $state(false);
   let loading = $state(false);
   let ctl: AbortController | null = null;
-  /** 現在の設定: the last answer; `cfgState` 'hidden' until one comes (or while the Worker won't serve it). */
+  /** 現在の設定: the last good answer; `cfgState` 'hidden' until one comes (or while the Worker won't serve it). */
   let cfg = $state<GymConfig | null>(null);
   let cfgState = $state<'hidden' | 'ok' | 'failed'>('hidden');
   let cfgLoading = $state(false);
   let cfgCtl: AbortController | null = null;
 
   async function loadConfig() {
-    if (week.demo || week.guest) return; // demo mode: no section, nothing asked
+    if (week.guest) return; // members only: the guest asks nothing
     cfgCtl?.abort();
     const c = (cfgCtl = new AbortController());
     cfgLoading = true;
     const r = await fetchConfig(c.signal);
     if (cfgCtl === c) cfgLoading = false;
     if (c.signal.aborted) return;
-    if (r.ok) [cfg, cfgState] = [r.config, 'ok'];
-    else if (r.why === 'hide') [cfg, cfgState] = [null, 'hidden'];
-    else cfgState = 'failed';
+    const s = settle(cfg, r);
+    [cfg, cfgState] = [s.cfg, s.state];
   }
 
   async function load() {
     void loadConfig();
-    if (week.demo) {
-      data = demoStatus(Date.now());
-      return;
-    }
     ctl?.abort();
     const c = (ctl = new AbortController());
     loading = true;
@@ -75,7 +69,6 @@
   const verdict = $derived(data && verdictView(data));
   const facts = $derived(data ? factRows(data, today) : []);
   const checks = $derived(data ? data.checks.map((c) => checkLine(c, today)) : []);
-  const cfgRows = $derived(cfg ? configRows(cfg) : []);
 </script>
 
 {#snippet current()}
@@ -92,7 +85,7 @@
         <div class="card config">
           <b class="ctitle">{cfg.title}</b>
           <dl class="days">
-            {#each cfgRows as d (d.day)}
+            {#each cfg.days as d (d.day)}
               <div data-gym-day={d.day} class:soft={d.soft}><dt>{d.date}</dt><dd>{d.rule}{#if d.from}<small>{d.from}</small>{/if}</dd></div>
             {/each}
           </dl>
@@ -104,7 +97,7 @@
   {/if}
 {/snippet}
 
-<div class="gym" data-gym-page aria-busy={loading}>
+<div class="gym" data-gym-page aria-busy={loading} data-config={cfgLoading ? 'loading' : cfgState}>
   {#if failed}
     <div class="prow static" data-gym-error>
       <span class="prl">{t('common.loadFailed')}</span>

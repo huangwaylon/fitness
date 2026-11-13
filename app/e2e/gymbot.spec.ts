@@ -2,7 +2,8 @@
 // the gym bot's GET /status (lib/gym/status.ts, mocked here) and shows its verdict, facts and recent checks; ‹ comes
 // back to the row; under the facts, 現在の設定 is 📋 設定を見る's answer from the members-only GET /gym/config (with the
 // phone's key: lib/gym/config.ts, mocked here), its rows in the bot's own words. A failed fetch shows もう一度, and a
-// retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker's 404 hides the
+// retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its 404s carry no
+// CORS, so the preflight fails) hides the
 // section. The guest has no row. Phones paired with a record of their own (e2e/record.ts); the payloads' rules (tones,
 // lines, a garbled answer) are status.test.ts's and config.test.ts's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -34,29 +35,38 @@ function payload(now: number): GymStatus {
 }
 
 /** 📋's answer for a few days from the record's day (11/4（水）), as the bot words them (gym/src/messages.ts). */
-function config(now: number): GymConfig {
+function config(now: number) {
   const days = [
-    { day: '2026-11-04', date: '11/4（水）', rule: '⏰ 12:00〜13:00（ふだん）', from: null },
-    { day: '2026-11-05', date: '11/5（木）', rule: '🔔 終日', from: '⏳ 18:00から' },
-    { day: '2026-11-06', date: '11/6（金）', rule: '🔕 通知オフ', from: null },
-    { day: '2026-11-07', date: '11/7（土）', rule: '⏰ 12:00〜13:00（ふだん）', from: null }
+    { day: '2026-11-04', date: '11/4（水）', rule: '⏰ 12:00〜13:00（ふだん）', from: null, soft: false },
+    { day: '2026-11-05', date: '11/5（木）', rule: '🔔 終日', from: '⏳ 18:00から', soft: false },
+    { day: '2026-11-06', date: '11/6（金）', rule: '🔕 通知オフ', from: null, soft: true },
+    { day: '2026-11-07', date: '11/7（土）', rule: '⏰ 12:00〜13:00（ふだん）', from: null, soft: false }
   ];
   const check = '15分ごとにチェック・前回 11:54・次回 12:09';
   const text = ['📋 日ごとの設定', ...days.map((d) => `・${d.date}　${d.rule}${d.from ? `　${d.from}` : ''}`), check].join('\n');
-  return { v: 1, now, title: '📋 日ごとの設定', days, notice: null, check, paused: false, intervalMin: 15, lastCheck: now - 6 * MIN, nextCheck: now + 9 * MIN, text };
+  const shown: GymConfig = { title: '📋 日ごとの設定', days, notice: null, check, paused: false };
+  return { v: 1, now, ...shown, intervalMin: 15, lastCheck: now - 6 * MIN, nextCheck: now + 9 * MIN, text };
 }
 
 /** A phone paired as `who`, /status answered by `answer` and /gym/config by `configAnswer` (each call counted, the
- *  config's Authorization kept), 設定 open. */
-async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: (n: number) => number = () => 200, configAnswer: (n: number) => number = () => 200) {
+ *  config's Authorization kept; `old`: a Worker without the route, whose 404s, the preflight's too, carry no CORS),
+ *  設定 open. */
+async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: (n: number) => number = () => 200, configAnswer: (n: number) => number | 'old' = () => 200) {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
-  const calls = { n: 0, config: 0, auth: [] as (string | undefined)[] };
+  const calls = { n: 0, config: 0, asked: 0, auth: [] as (string | undefined)[] };
   await page.route(CONFIG, (route) => {
+    calls.asked++;
+    if (configAnswer(calls.config + 1) === 'old') {
+      // Playwright answers the preflight itself (neither browser routes it here) and skips CORS on a fulfilled
+      // response, so the GET fails as the browser fails it after the real Worker's CORS-less 404 to OPTIONS
+      const old = route.request().method() === 'OPTIONS';
+      return old ? route.fulfill({ status: 404, contentType: 'text/plain', body: 'not found' }) : route.abort('failed');
+    }
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
     calls.auth.push(route.request().headers().authorization);
-    const status = configAnswer(++calls.config);
+    const status = configAnswer(++calls.config) as number;
     return route.fulfill({
       status, contentType: 'application/json', headers: CORS,
       body: status === 200 ? JSON.stringify(config(rec.now())) : '{"ok":false,"error":"boom"}'
@@ -146,11 +156,12 @@ test('the phone’s key reads 現在の設定; a failed read has its own もう�
   expect(calls.auth.every((a) => /^Bearer [0-9a-f]{32,}$/i.test(a ?? ''))).toBe(true);
 });
 
-test('an older Worker without /gym/config (404): no 現在の設定, no error, the status as before', async ({ page, context }) => {
-  const { calls, settings } = await phone(page, context, 'A', () => 200, () => 404);
+test('an older Worker without /gym/config (404s without CORS, so fetch throws): no 現在の設定, no error, the status as before', async ({ page, context }) => {
+  const { calls, settings } = await phone(page, context, 'A', () => 200, () => 'old');
   await settings.locator('[data-push="gym"]').click();
   await expect(settings.locator('[data-gym-verdict="degraded"]')).toBeVisible();
-  await expect.poll(() => calls.config).toBe(1);
+  await expect.poll(() => calls.asked).toBeGreaterThan(0);
+  await expect(settings.locator('[data-gym-page]')).toHaveAttribute('data-config', 'hidden'); // asked and settled
   await expect(settings.locator('[data-gym-config]')).toHaveCount(0);
   await expect(settings.locator('[data-gym-config-error], [data-gym-error]')).toHaveCount(0);
 });

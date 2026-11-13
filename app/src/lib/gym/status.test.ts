@@ -1,13 +1,31 @@
 // The gym bot's status as 設定's ジムボット page reads it (status.ts): the payload checked, the verdict's tone and
 // words, the fact rows and each check's line.
 import { describe, expect, it, vi } from 'vitest';
-import { checkLine, demoStatus, factRows, fetchStatus, parseStatus, verdictView, type Check, type GymStatus } from './status.ts';
+import { checkLine, factRows, fetchStatus, parseStatus, verdictView, type Check, type GymStatus } from './status.ts';
 
 const TODAY = '2026-11-04';
 const at = (hm: string, day = TODAY) => Date.parse(`${day}T${hm}:00+09:00`);
 const NOW = at('12:00');
 const ok = { training: 'ok', pilates: 'ok' } as const;
-const status = (over: Partial<GymStatus> = {}): GymStatus => ({ ...demoStatus(NOW), ...over });
+
+/** A healthy runner on a 15-minute alarm, an older check's pilates timed out. */
+function sample(now: number): GymStatus {
+  const MIN = 60_000, last = now - 6 * MIN;
+  const checks: Check[] = [
+    { t: last, by: 'alarm', ms: 2900, r: ok, open: 1, fresh: 0, push: 'none' },
+    { t: last - 9 * MIN, by: 'tap', ms: 3100, r: ok, open: 1, fresh: 1, push: 'held' },
+    { t: last - 15 * MIN, by: 'alarm', ms: 15400, r: { training: 'ok', pilates: 'timeout' }, open: 0, fresh: 0, push: 'none' },
+    { t: last - 31 * MIN, by: 'alarm', ms: 2700, r: ok, open: 0, fresh: 0, push: 'none' },
+    { t: last - 46 * MIN, by: 'alarm', ms: 4, idle: true, open: 0, fresh: 0, push: 'none' }
+  ];
+  return {
+    v: 1, now, mode: 'bot', sha: 'abc1234', verdict: 'healthy', reasons: [], intervalMin: 15, paused: false,
+    nextCheck: last + 15 * MIN, lastCheck: last, lastOk: last, lastError: { t: last - 15 * MIN, code: 'timeout' },
+    failures: 0, siteDownSent: false, retryPending: false, checks,
+    line: { used: 23, limit: 200, webhookOk: true, asOf: now - 40 * MIN }
+  };
+}
+const status = (over: Partial<GymStatus> = {}): GymStatus => ({ ...sample(NOW), ...over });
 
 describe('verdictView', () => {
   it('gives each verdict its tone, and the first reason its sentence', () => {
@@ -60,9 +78,9 @@ describe('checkLine', () => {
 });
 
 describe('parseStatus', () => {
-  const wire = () => JSON.parse(JSON.stringify(demoStatus(NOW))) as Record<string, unknown>;
+  const wire = () => JSON.parse(JSON.stringify(sample(NOW))) as Record<string, unknown>;
   it('takes the Worker’s answer as it is', () => {
-    expect(parseStatus(wire())).toEqual(demoStatus(NOW));
+    expect(parseStatus(wire())).toEqual(sample(NOW));
   });
   it('refuses what isn’t one', () => {
     for (const x of [null, 'oops', [], {}, { ...wire(), v: 2 }, { ...wire(), verdict: 'great' }, { ...wire(), now: 'soon' }]) expect(parseStatus(x)).toBeNull();
@@ -78,8 +96,8 @@ describe('fetchStatus', () => {
   it('reads /status, and throws on a failed request or garbage', async () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     vi.stubGlobal('fetch', fetch);
-    fetch.mockResolvedValueOnce(new Response(JSON.stringify(demoStatus(NOW))));
-    expect(await fetchStatus(undefined, 'https://gym.test')).toEqual(demoStatus(NOW));
+    fetch.mockResolvedValueOnce(new Response(JSON.stringify(sample(NOW))));
+    expect(await fetchStatus(undefined, 'https://gym.test')).toEqual(sample(NOW));
     expect(fetch.mock.calls[0][0]).toBe('https://gym.test/status');
     fetch.mockResolvedValueOnce(new Response('boom', { status: 500 }));
     await expect(fetchStatus(undefined, 'https://gym.test')).rejects.toThrow('HTTP 500');
