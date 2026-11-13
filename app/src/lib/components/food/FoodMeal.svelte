@@ -17,10 +17,9 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { daysText, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
-  import { foodDbNow, onFoodDbDrop, whenFoodDb, withImages } from './dbHold.ts';
+  import { held, wantImages } from './dbHold.svelte.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
-  import type { FoodDb } from '#lib/food/index.ts';
+  import { imgOf } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import { entryKcal, itemsKcal } from '#lib/food/index.ts';
   import { mealProtein } from '#lib/model/food.ts';
@@ -60,11 +59,8 @@
   const label = $derived(t(`food.meal.${meal}`));
   /** The pictures (loaded once a meal holds an entry) and, for the tiles, the catalog once it is in (never loaded here:
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
-  let imgs = $state.raw<FoodImageIndex | null>(null);
-  let db = $state.raw<FoodDb | null>(foodDbNow());
-  $effect(() => (entries.length && open && !imgs ? withImages((ix) => (imgs = ix)) : undefined));
-  $effect(() => (db ? undefined : whenFoodDb((d) => (db = d))));
-  $effect(() => onFoodDbDrop(() => (db = imgs = null)));
+  const db = $derived(held.db), imgs = $derived(held.images);
+  $effect(() => void (entries.length && open && wantImages()));
 </script>
 
 {#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}

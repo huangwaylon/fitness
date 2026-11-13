@@ -47,7 +47,7 @@ export function loadFoodImages(): Promise<FoodImageIndex | null> {
   return loading;
 }
 
-/** The index let go of (~2 MB of JS heap: ごはん unmounted, components/food/dbHold.ts holdFoodDb); fetched again next. */
+/** The index let go of (~2 MB of JS heap: ごはん unmounted, components/food/dbHold.svelte.ts holdFoodDb); fetched again next. */
 export const dropFoodImages = (): void => void (loading = null);
 
 /** A food's picture for a box of `px` CSS px, or null (its tile). Every picture is generated: show the イメージ badge

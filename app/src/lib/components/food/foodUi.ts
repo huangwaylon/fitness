@@ -1,7 +1,7 @@
 // ごはん's foods as rows show them (docs/design.md "Gohan"): the food an entry was logged from (its catalog item when the
 // catalog has it, for its portions; else its own portion), a row's tile, picture box and everyday name, a food's
 // states, the さいきん list and the shops, the goal's chip, a repeat's weekdays in words, and a recipe as a food
-// (マイレシピ: its portions). The catalog itself: dbHold.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
+// (マイレシピ: its portions). The catalog itself: dbHold.svelte.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
 import { FOOD_GRAMS, recipePortion, recipeSnap, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';

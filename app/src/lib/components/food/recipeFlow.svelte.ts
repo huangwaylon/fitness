@@ -8,7 +8,7 @@ import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/meals.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import { itemOf, recipeItem, type RecipeDraft } from './foodUi.ts';
 import { servingOnly } from './portions.ts';
-import { foodDbNow } from './dbHold.ts';
+import { held } from './dbHold.svelte.ts';
 import type { LevelOf, Levels, Picked } from './levels.svelte.ts';
 
 /** What the flows need of the meal log (Food.svelte). */
@@ -106,7 +106,7 @@ export class RecipeFlow {
   editItem(i: number): void {
     const x = this.draft.it[i];
     const sv = servingOnly(x.f);
-    this.#e.openSnap({ k: 'ritem', item: itemOf(x.f, foodDbNow(), x.g), ...(sv ? { sv, snap: x.f } : {}), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
+    this.#e.openSnap({ k: 'ritem', item: itemOf(x.f, held.db, x.g), ...(sv ? { sv, snap: x.f } : {}), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
   }
   /** The meal a new recipe is being made from (its search under it), to log one serving into on 保存して追加. */
   madeFor(id: string | null): LevelOf<'search'>['meal'] | null {

@@ -8,7 +8,7 @@ import { t } from '#lib/i18n/index.ts';
 import { inState, stateGroups } from './foodUi.ts';
 import { gramsText, MULT, nextMult, portionLabel, startOf, stepOf } from './portions.ts';
 import { parseAmount } from './drafts.ts';
-import { foodDb, foodDbNow } from './dbHold.ts';
+import { foodDb, held } from './dbHold.svelte.ts';
 
 interface AmountProps {
   item: Item;
@@ -36,8 +36,10 @@ export class AmountPick {
   typed = $state('');
   /** Anything changed by hand (then a swapped item keeps the pick). */
   #touched = false;
-  /** The catalog (the food's states); in already, mostly. */
-  db = $state.raw<FoodDb | null>(foodDbNow());
+  /** The catalog (the food's states); in already, mostly: dbHold's, never a copy. */
+  get db(): FoodDb | null {
+    return held.db;
+  }
 
   constructor(p: () => AmountProps) {
     this.#p = p;
@@ -64,11 +66,7 @@ export class AmountPick {
       this.custom = s.custom;
       this.typed = s.custom ? s0.typed : '';
     });
-    $effect(() => {
-      let live = true;
-      if (!this.db) foodDb().then((d) => live && (this.db = d), () => {});
-      return () => void (live = false);
-    });
+    $effect(() => void (held.db || foodDb().catch(() => {})));
   }
 
   get item(): Item {

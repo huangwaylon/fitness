@@ -44,7 +44,7 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { itemsKcal, portionsOf, toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { itemsKcal, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
   import { latestSnap } from './fresh.ts';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
@@ -61,7 +61,7 @@
   import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
   import { customItem, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
-  import { foodDb, foodDbNow, foodDbSoon, holdFoodDb, letGoFoodDb, onFoodDbDrop, whenFoodDb } from './dbHold.ts';
+  import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
   import { Levels, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
@@ -280,7 +280,7 @@
     const c = item.id.startsWith('custom:') ? allCustoms.find((x) => `custom:${x.id}` === item.id) : undefined;
     if (c) return { item: customItem(c), cid: c.id, sv: c.g === undefined };
     if (f && servingOnly(f)) return { item, sv: true, snap: f };
-    const it = inState(foodDbNow(), item);
+    const it = inState(held.db, item);
     return { item: it, sv: !!it.sv };
   }
   /** A snapshot as logged, picked by another portion (`u`). */
@@ -298,12 +298,12 @@
   /** An entry of mine → its amount at once, from its snapshot (its own portion); the catalog's portions swapped in
    *  when it comes. A いつもの's entry stays the repeat's until ほぞん / けす (real()). */
   function edit(e: FoodEntry) {
-    openSnap({ k: 'amount', meal: e.m, item: itemOf(e.f, foodDbNow(), e.g), sv: servingOnly(e.f), g0: e.g, u0: e.f.u, entry: e }, e, `[data-entry="${e.id}"]`);
+    openSnap({ k: 'amount', meal: e.m, item: itemOf(e.f, held.db, e.g), sv: servingOnly(e.f), g0: e.g, u0: e.f.u, entry: e }, e, `[data-entry="${e.id}"]`);
   }
   /** An amount level for a logged snapshot, open at once; the catalog's item put in when it is in (if still open). */
   function openSnap(l: Extract<Level, { item: Item }>, x: { g: number; f: FoodSnap }, focus: string) {
     go(l, focus);
-    if (foodDbNow()) return;
+    if (held.db) return;
     const lv = levels.top;
     foodDb().then((db) => {
       if (lv && 'item' in lv && levels.stack.includes(lv)) lv.item = itemOf(x.f, db, x.g);
@@ -385,17 +385,16 @@
 
   // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
   // (the data fixed, the recipe or custom food edited). The catalogue comes once a day with an entry of it shows, at
-  // idle after the open (dbHold.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
+  // idle after the open (dbHold.svelte.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
   // tiles); the products when they come (only with a product logged that day, or a search). Never updated by itself.
-  let catalog = $state.raw<FoodDb | null>(foodDbNow());
+  const catalog = $derived(held.db);
   $effect(() => (open ? holdFoodDb() : undefined));
   $effect(() => letGoFoodDb);
-  $effect(() => onFoodDbDrop(() => (catalog = null)));
   let catalogRev = $state(0);
-  $effect(() => (catalog ? undefined : whenFoodDb((db) => {
-    catalog = db;
-    void db.more.then(() => catalogRev++);
-  })));
+  $effect(() => {
+    const db = catalog;
+    if (db) void db.more.then(() => db === held.db && catalogRev++);
+  });
   // (the products and chain menus only for a day with one of them logged: never for the open alone, 2.7 MB)
   $effect(() => {
     if (catalog && day?.entries.some((e) => /^(off|kal):/.test(e.f.id))) void catalog.wantMore();

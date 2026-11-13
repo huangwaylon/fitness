@@ -26,7 +26,7 @@
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
-  import { imgOf, kaloriImg, type FoodImageIndex } from '#lib/food/images.ts';
+  import { imgOf, kaloriImg } from '#lib/food/images.ts';
   import { flushSync, type Snippet } from 'svelte';
   import FoodThumb from './FoodThumb.svelte';
   import ShopMark from './ShopMark.svelte';
@@ -38,7 +38,7 @@
   import { catOf, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText, defaultPortion } from './portions.ts';
   import { customItem, servingText, typedKcal } from './drafts.ts';
-  import { foodDb, withImages } from './dbHold.ts';
+  import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -121,8 +121,8 @@
     if (matchMedia('(hover: hover)').matches) input?.focus();
   });
   /** The pictures (a food without one: its category's tile). */
-  let imgs = $state.raw<FoodImageIndex | null>(null);
-  $effect(() => withImages((ix) => (imgs = ix)));
+  const imgs = $derived(kept.images);
+  $effect(wantImages);
 
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);

@@ -12,12 +12,12 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
-  import { entryKcal, type FoodDb } from '#lib/food/index.ts';
+  import { imgOf } from '#lib/food/images.ts';
+  import { entryKcal } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
   import { catOf, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
   import { amountText, servingOnly } from './portions.ts';
-  import { foodDbNow, whenFoodDb, withImages } from './dbHold.ts';
+  import { held, wantImages } from './dbHold.svelte.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -46,11 +46,9 @@
   const kcalOf = entryKcal;
   const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
   let removing = $state(false);
-  let imgs = $state.raw<FoodImageIndex | null>(null);
-  /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's). */
-  let db = $state.raw<FoodDb | null>(foodDbNow());
-  $effect(() => (db ? undefined : whenFoodDb((d) => (db = d))));
-  $effect(() => withImages((ix) => (imgs = ix)));
+  /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's), and the pictures. */
+  const db = $derived(held.db), imgs = $derived(held.images);
+  $effect(wantImages);
   /** The collage: up to four of the ingredients' pictures, the most grams first (a food once: recipePlate). */
   const hero = $derived(recipePlate(draft.it, (id) => !!imgOf(imgs, id, 160)).flatMap(({ id }) => {
     const img = imgOf(imgs, id, 160);

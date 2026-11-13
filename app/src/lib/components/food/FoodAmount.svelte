@@ -22,14 +22,14 @@
   import { MEALS } from '#lib/contract/food.ts';
   import { itemById, verifyOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { imgOf, kaloriImg, type FoodImageIndex } from '#lib/food/images.ts';
+  import { imgOf, kaloriImg } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
   import { glossOf, kaloriPage } from './foodUi.ts';
-  import { withImages } from './dbHold.ts';
+  import { held, wantImages } from './dbHold.svelte.ts';
   import ShopMark from './ShopMark.svelte';
 
   interface Props {
@@ -60,8 +60,8 @@
   // (the level is keyed: a new food or entry mounts a new one, so the meal is read once)
   let m = $state<Meal>(untrack(() => meal));
   const n = $derived(a.n);
-  let imgs = $state.raw<FoodImageIndex | null>(null);
-  $effect(() => withImages((ix) => (imgs = ix)));
+  const imgs = $derived(held.images);
+  $effect(wantImages);
   /** The picture's box beside the name (its detail cell scaled down: sharp at 3×). */
   const PIC = 104;
   const pic = $derived(imgOf(imgs, item.id, 160));

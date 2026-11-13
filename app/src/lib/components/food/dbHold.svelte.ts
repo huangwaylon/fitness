@@ -1,6 +1,7 @@
 // ごはん's food catalog, held for the session (docs/design.md "Gohan"): loaded once when the search or an amount first
 // needs it (or at idle once a day is up), the members' chain menus (Kalori) with it, and the pictures' index; let go
-// with the sheet.
+// with the sheet. What the components render from is `held` (runes): never a copy of their own, so a let-go catalog
+// is let go everywhere at once.
 import { quiet } from '#lib/quiet.ts';
 import { loadFoodDb, type FoodDb, type KaloriSource } from '#lib/food/index.ts';
 import { dropFoodImages, loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
@@ -16,17 +17,20 @@ function kaloriSource(): KaloriSource | null {
   return week.demo || week.guest || !key || !href ? null : { href, key };
 }
 
+/** The catalog and the pictures' index while held (null: not in yet, or let go): what ごはん's components read. A load
+ *  let go before it came in never lands here (the next one does: one catalog at a time). */
+export const held = new (class {
+  db = $state.raw<FoodDb | null>(null);
+  images = $state.raw<FoodImageIndex | null>(null);
+})();
+
 let dbP: Promise<FoodDb> | null = null;
-let ready: FoodDb | null = null;
-const waiting = new Set<(db: FoodDb) => void>();
 /** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
  *  failure lets the next call try again. */
 export function foodDb(): Promise<FoodDb> {
   const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance, kaloriSource).then(
     (db) => {
-      if (dbP === p) ready = db;
-      for (const f of waiting) f(db);
-      waiting.clear();
+      if (dbP === p) held.db = db;
       return db;
     },
     (e: unknown) => {
@@ -38,7 +42,6 @@ export function foodDb(): Promise<FoodDb> {
 }
 let holders = 0;
 let dropT: ReturnType<typeof setTimeout> | undefined;
-const drops = new Set<() => void>();
 /** How long the catalog outlives ごはん's close: a quick reopen stays instant. */
 export const FOOD_KEEP_MS = 5 * 60_000;
 /** ごはん open (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products, ~25 MB more with a member's
@@ -56,29 +59,16 @@ export function holdFoodDb(): () => void {
 export const letGoFoodDb = (): void => queueMicrotask(() => void (holders || dropFoodDb()));
 function dropFoodDb() {
   clearTimeout(dropT);
-  dbP = ready = null;
+  dbP = null;
+  held.db = held.images = null;
+  imagesP = null;
   dropFoodImages();
-  for (const f of drops) f();
-}
-/** `f` when the catalog is let go: a component's own copies dropped with it (its $effect). */
-export function onFoodDbDrop(f: () => void): () => void {
-  drops.add(f);
-  return () => void drops.delete(f);
-}
-/** The catalog into `set` once it is in, whoever loads it (never loading it itself); a component's $effect. */
-export function whenFoodDb(set: (db: FoodDb) => void): () => void {
-  if (ready) {
-    set(ready);
-    return () => {};
-  }
-  waiting.add(set);
-  return () => void waiting.delete(set);
 }
 /** After the sheet's open (its 90 ms wait and 280 ms zoom) and once the page is idle (Safari: no requestIdleCallback),
  *  the catalog, never on the open's path: the rows' tiles and 最新の値にする come with it, and it is the search's. */
 const OPEN_MS = 600;
 export function foodDbSoon(): () => void {
-  if (ready || dbP) return () => {};
+  if (held.db || dbP) return () => {};
   let idle = 0;
   const go = () => void quiet(foodDb(), 'food.db');
   const wait = setTimeout(() => (typeof requestIdleCallback === 'function' ? (idle = requestIdleCallback(go, { timeout: 2000 })) : go()), OPEN_MS);
@@ -87,11 +77,9 @@ export function foodDbSoon(): () => void {
     if (idle) cancelIdleCallback(idle);
   };
 }
-/** The pictures' index into `set` once it is in (none: every food keeps its tile); a component's $effect. */
-export function withImages(set: (ix: FoodImageIndex) => void): () => void {
-  let live = true;
-  void loadFoodImages().then((ix) => live && ix && set(ix));
-  return () => void (live = false);
+let imagesP: Promise<unknown> | null = null;
+/** The pictures' index asked for, into `held.images` once in (none: every food keeps its tile); a component's $effect.
+ *  Like the catalog, one let go mid-load never lands. */
+export function wantImages(): void {
+  const p = (imagesP ??= loadFoodImages().then((ix) => void (imagesP === p && ix && (held.images = ix)), () => void (imagesP === p && (imagesP = null))));
 }
-/** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
-export const foodDbNow = (): FoodDb | null => ready;
