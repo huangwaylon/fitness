@@ -8,6 +8,7 @@
   import { onMount } from 'svelte';
   import type { L } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import { pick } from '../travel/text.ts';
   import Icon from '../ui/Icon.svelte';
   import { areas, type Refusal } from '#lib/offline/areas.svelte.ts';

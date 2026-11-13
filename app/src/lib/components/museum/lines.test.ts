@@ -1,8 +1,8 @@
 // The curator's lines (museum/lines.ts): his welcome first, then his lines, never the same twice running; each in
 // both languages.
 import { describe, expect, test } from 'vitest';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import ja from '#lib/i18n/sheets.ja.json';
+import en from '#lib/i18n/sheets.en.json';
 import { curatorLine } from './lines.ts';
 
 describe('the curator’s lines', () => {

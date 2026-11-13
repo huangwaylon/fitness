@@ -9,6 +9,7 @@
   import type { PersonId } from '#lib/types.ts';
   import { dotSeries, dotStats, type BodyId, type HealthSeries, type Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { bmiCategory, profileOf } from '#lib/model/profile.ts';
   import { monthLabel } from '#lib/i18n/format.ts';

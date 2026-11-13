@@ -8,6 +8,7 @@
   // `window.__travelMap` (hooks on) is the specs' view.
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { mapStub } from '#lib/ui-state/testMode.ts';

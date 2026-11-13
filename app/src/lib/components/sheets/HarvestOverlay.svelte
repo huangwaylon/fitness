@@ -17,6 +17,7 @@
   import { walletFill } from '../wallet/fill.ts';
   import { confirmHarvest } from '#lib/store/actions.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import { lockScroll } from '../ui/scrollLock.ts';
   import { cue } from '#lib/sound/cues.ts';
 

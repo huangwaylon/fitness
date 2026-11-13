@@ -9,6 +9,7 @@
   import { isStandalone } from '#lib/ui-state/standalone.ts';
   import { onMount } from 'svelte';
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';

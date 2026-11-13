@@ -32,6 +32,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import type { Who } from '#lib/types.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
 
   let { me, relay }: { me: 'A' | 'B' | 'G'; relay: Live | null } = $props();
 

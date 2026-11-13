@@ -11,6 +11,8 @@ import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaTab from '#lib/i18n/kenkou.ja.json';
 import enTab from '#lib/i18n/kenkou.en.json';
+import jaSheets from '#lib/i18n/sheets.ja.json';
+import enSheets from '#lib/i18n/sheets.en.json';
 import jaFood from '#lib/i18n/food.ja.json';
 import enFood from '#lib/i18n/food.en.json';
 import jaKiki from '#lib/i18n/kikimimi.ja.json';
@@ -88,8 +90,8 @@ const KIKI_GAMES = {
   ja: import.meta.glob<Record<string, string>>('./i18n/kiki-*.ja.json', { eager: true, import: 'default' }),
   en: import.meta.glob<Record<string, string>>('./i18n/kiki-*.en.json', { eager: true, import: 'default' })
 };
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed, ...jaGym, ...jaIts };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed, ...enGym, ...enIts };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed, ...jaGym, ...jaIts };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed, ...enGym, ...enIts };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
@@ -98,6 +100,10 @@ const CATALOG_KEY = /^(item|recipe)\.name\./;
 describe('i18n catalogs', () => {
   it('keep けんこう’s strings (health.*) in its own catalog, out of the first load', () => {
     for (const c of [jaTab, enTab]) expect(Object.keys(c).filter((k) => !k.startsWith('health.'))).toEqual([]);
+    // (the lazy sheets' own: i18n/sheets.ts, never in the first load's catalog)
+    const SHEETS = /^(goal|museum|pair|harvest|offline|homes)\./;
+    for (const c of [jaSheets, enSheets]) expect(Object.keys(c).filter((k) => !SHEETS.test(k))).toEqual([]);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => SHEETS.test(k))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('health.'))).toEqual([]);
   });
   it('keep ごはん’s strings (food.*) in its own catalog, out of the first load', () => {

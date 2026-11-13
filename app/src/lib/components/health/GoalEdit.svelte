@@ -20,6 +20,7 @@
   // Placed in a card's `header` (display: flex; flex-wrap: wrap): the chip and the tray are its items.
   import { tick } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import Glyph from '../kiroku/Glyph.svelte';
   import { goalField, nudge, type GoalSpec } from './goals.ts';
 

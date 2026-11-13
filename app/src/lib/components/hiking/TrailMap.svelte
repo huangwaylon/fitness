@@ -12,6 +12,7 @@
   import type { Region } from '#lib/hiking/types.ts';
   import { S } from '#lib/hiking/strings.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import { pick } from '../travel/text.ts';
   import { C } from './map/style.ts';
   import type { Fix } from './map/engine.ts';

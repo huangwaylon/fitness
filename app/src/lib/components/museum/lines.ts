@@ -1,6 +1,7 @@
 // What the curator says (docs/design.md "The museum"), pure: NH's Blathers (フータ) at the desk, a tap's line (i18n
 // museum.curator.*). His welcome the first time in a visit, then one of his lines, never the same twice running.
 import { pickOne } from '#lib/random.ts';
+import '#lib/i18n/sheets.ts';
 
 /** The id a tap on the curator picks (curator.ts). */
 export const CURATOR = 'curator';

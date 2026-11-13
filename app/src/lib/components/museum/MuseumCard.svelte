@@ -16,6 +16,7 @@
   import ja from '#lib/i18n/catch.ja.json';
   import en from '#lib/i18n/catch.en.json';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import NavButton from '../ui/NavButton.svelte';
   import { findKey } from '#lib/model/finds.ts';
   import '#lib/i18n/catch.ts'; // a skeleton's name, an artwork's real title (t: in the language on screen)

@@ -13,6 +13,7 @@ import { lowKcal } from '#lib/model/profile.ts';
 import type { State } from '#lib/model/state.ts';
 import { round1 } from '#lib/contract/food.ts';
 import { parseTyped } from '#lib/math.ts';
+import '#lib/i18n/sheets.ts';
 
 export interface GoalSpec {
   id: GoalId;

@@ -45,6 +45,7 @@ import { CARD, cardsMesh, floorBake, wallRamps, type Block, type Card, type Pool
 import { BENCHES, benchRect } from './seats.ts';
 import { FOV, PITCH, enter, follow, framingOf, plaqueOf, type CamTune, type Framing } from './camera.ts';
 import { DIP_MS, HALL_NAME, PLAQUE_FOOT_Y, fingerQuad, inPoly, segDist, type Px } from './hud.ts';
+import '#lib/i18n/sheets.ts';
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS: the battery and the phone's heat at rest. */
 const AMBIENT = 30, REST_MS = 2500, REST_FPS = 15;

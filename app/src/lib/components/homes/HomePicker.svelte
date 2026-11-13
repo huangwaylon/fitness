@@ -12,6 +12,7 @@
   import { validate } from '#lib/layout/validate.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
 
   let { open = $bindable(), who }: { open: boolean; who: Who } = $props();
 
