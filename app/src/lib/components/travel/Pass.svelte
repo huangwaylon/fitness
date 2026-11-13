@@ -23,7 +23,7 @@
   <span class="main" aria-hidden="true">
     <span class="cover">
       <img src={staticUrl(trip.cover.src)} alt="" width={trip.cover.w} height={trip.cover.h} loading="eager" decoding="async" {@attach photoFallback} />
-      <span class="band"><span class="air">✈ {t('travel.air')}</span><span class="route">TYO <i>✈</i> {trip.code}</span></span>
+      <span class="band"><span class="air">✈ {t('travel.air')}</span><span class="route">TYO <i aria-hidden="true">✈</i> {trip.code}</span></span>
     </span>
     <span class="txt">
       <span class="eyebrow">{pick(trip.eyebrow, i18n.locale)}</span>

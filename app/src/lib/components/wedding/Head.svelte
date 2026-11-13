@@ -90,7 +90,7 @@
   .fill { fill: none; stroke: var(--c-rose); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 600ms cubic-bezier(.25, .8, .25, 1); }
   .posy { position: relative; line-height: 0; margin-top: -4px; }
   .pct { position: relative; font: 600 20px/1 var(--font-num); font-variant-numeric: tabular-nums; }
-  .pct small { font-size: .6em; margin-left: 1px; }
+  .pct small { font-size: var(--fs-s); margin-left: 1px; }
   .tally {
     font: 600 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; padding: 3px 9px; border-radius: 999px;
     background: color-mix(in srgb, var(--bg) 94%, transparent); color: var(--text-soft);

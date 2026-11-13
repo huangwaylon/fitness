@@ -230,7 +230,7 @@
   .tile.on { background: var(--ctl-sel); color: var(--c-ink); }
   .tile .nm { font-size: .6875rem; font-weight: 700; line-height: 1.25; text-align: center; overflow-wrap: anywhere; word-break: keep-all; }
   /* the count, NH's 「×12」, in the tile's corner */
-  .tile .n { position: absolute; top: 4px; right: 6px; font-size: .625rem; line-height: 1; color: var(--text-soft); }
+  .tile .n { position: absolute; top: 4px; right: 6px; font-size: var(--fs-xs); line-height: 1; color: var(--text-soft); }
   .unknown { opacity: .9; }
   .unknown .nm { color: var(--text-soft); }
   /* a silhouette: the official icon, all one shade */

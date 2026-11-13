@@ -50,7 +50,7 @@
   .w.drop { color: color-mix(in srgb, currentColor 40%, transparent); text-decoration: line-through 2px color-mix(in srgb, var(--c-coral) 70%, transparent); }
   /* ● over a stressed word */
   .w.st { position: relative; display: inline-block; }
-  .w.st::before { content: '●'; position: absolute; left: 50%; translate: -50% 0; top: -.62em; font-size: 9px; line-height: 1; }
+  .w.st::before { content: '●' / ''; position: absolute; left: 50%; translate: -50% 0; top: -.62em; font-size: 9px; line-height: 1; }
   /* the shape it's said in, above the run (its pill a cream object: .obj-cream on the run); a dotted line under the run */
   /* a word under a say mark has its pill and dotted line already: no focus fill on top */
   .rd .w.focus { background: none; }

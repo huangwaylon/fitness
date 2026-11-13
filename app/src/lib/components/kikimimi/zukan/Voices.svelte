@@ -96,7 +96,7 @@
   .got .meter i { background: var(--c-yuzu-lip); }
   .got-mark {
     position: absolute; top: -6px; right: -2px; padding: 2px 7px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink);
-    font: 700 10px/1.3 var(--font-ui);
+    font: 700 var(--fs-xs)/1.3 var(--font-ui);
   }
   .play { position: absolute; right: 8px; bottom: 8px; font-size: 13px; color: var(--text-soft); }
   [data-sounding] .play { color: var(--leaf-text); }
