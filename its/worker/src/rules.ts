@@ -135,7 +135,10 @@ export function addSeen(seen: Record<string, number>, names: string[], now: numb
 }
 
 /** The runner's report as kept (no events or seen: they have their own keys), with the receive time; `okSeenAt` /
- *  `solveOkSeenAt` become `now` when the run's lastOkAt / solves.lastOkAt moved since `prev` (the record's). */
+ *  `solveOkSeenAt` become `now` when the run's lastOkAt / solves.lastOkAt moved since `prev` (the record's).
+ *  `okSeenAt` (what clears a ban) is per run: a run's first report kept is its baseline (null: no good scan seen yet,
+ *  whatever lastOkAt it carries, which may be from before the ban), so only a later move, from a run that reported
+ *  since, counts; the shown runner switching runs never clears a ban. */
 export function runnerOf(r: RunnerReport, now: number, prev: RunnerRecord | null): RunnerRecord {
   const { v: _v, events: _e, seen: _s, ...rest } = r;
   const same = prev?.runId === r.runId ? prev : null;
@@ -143,7 +146,7 @@ export function runnerOf(r: RunnerReport, now: number, prev: RunnerRecord | null
     t === null ? null : same && before === t && at != null ? at : now;
   return {
     ...rest, lastSeen: now,
-    okSeenAt: seenAt(r.lastOkAt, same?.lastOkAt, same?.okSeenAt),
+    okSeenAt: r.lastOkAt === null || !same ? null : same.lastOkAt === r.lastOkAt ? same.okSeenAt : now,
     solveOkSeenAt: seenAt(r.solves.lastOkAt, same?.solves.lastOkAt, same?.solveOkSeenAt),
   };
 }

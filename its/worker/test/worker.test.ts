@@ -270,6 +270,22 @@ describe('POST /its/run', () => {
     expect((await status()).settings.paused).toBe(true);
   });
 
+  it('開始 → 停止 → 開始 within the 2 min dispatches again (the first run may have skipped at a paused preflight)', async () => {
+    await runAction('start');
+    vi.setSystemTime(NOW + 20_000);
+    await runAction('stop');
+    vi.setSystemTime(NOW + 40_000);
+    const s: ItsStatus = await (await runAction('start', KEY_B)).json();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(s.dispatch).toEqual({ at: NOW + 40_000, ok: true, status: 204 });
+    expect([s.settings.paused, s.verdict]).toEqual([false, 'starting']);
+    // without a 停止 since the last dispatch, a 開始 is still one run on its way
+    vi.setSystemTime(NOW + 60_000);
+    await runAction('start');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(logs.log.mock.calls.flat().join('\n')).toContain('dispatch=skip_recent');
+  });
+
   it('start while the last run drains: a new run is dispatched (the draining one is ending)', async () => {
     await asRunner(env, '/runner/claim', example.claimInput);
     await asRunner(env, '/runner/report', report({ phase: 'draining' }));

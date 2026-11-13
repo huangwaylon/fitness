@@ -18,7 +18,8 @@ import {
 const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks'] as const satisfies readonly (keyof ItsRecord)[];
 
 /** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way; the
- *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too). */
+ *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too), unless a 停止 came after
+ *  that dispatch: its run may have seen paused at its preflight and skipped, so 開始 → 停止 → 開始 dispatches again. */
 const DISPATCH_AGAIN_MS = 2 * 60_000;
 /** Phases of a run that will keep going: 開始 then needs no new run. */
 const RUNNING = new Set(['starting', 'solving', 'scanning']);
@@ -91,11 +92,12 @@ export class ItsBot extends DurableObject<Env> {
       console.log(`its run stop by=${by} runner=${this.rec.runner?.runId ?? '-'}`);
       return this.status();
     }
-    const { lease, runner, dispatch } = this.rec;
+    const { lease, runner, dispatch, control: last } = this.rec;
+    const stoppedSince = last?.action === 'stop' && !!dispatch && last.at >= dispatch.at;
     const skip = this.mode === 'off' ? 'mode_off'
       : !liveSettings(settings, now).dates.length ? 'no_dates'
         : leaseTaken(lease, null, now) && runner?.runId === lease?.holder && RUNNING.has(runner?.phase ?? '') ? 'running'
-          : dispatch?.ok && now - dispatch.at < DISPATCH_AGAIN_MS && (runner?.lastSeen ?? 0) < dispatch.at ? 'recent'
+          : dispatch?.ok && now - dispatch.at < DISPATCH_AGAIN_MS && (runner?.lastSeen ?? 0) < dispatch.at && !stoppedSince ? 'recent'
             : null;
     if (skip) {
       await this.save({ settings, control });

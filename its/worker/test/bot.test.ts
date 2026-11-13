@@ -166,6 +166,29 @@ describe('reports', () => {
     expect((await bot.status()).reasons).not.toContain('banned');
   });
 
+  it('a ban clears only on a later good scan from a run that reported since: never by the shown runner switching runs', async () => {
+    const at = (min: number) => vi.setSystemTime(NOW + min * MIN);
+    await bot.report(report({ lastOkAt: NOW - MIN }));
+    at(1);
+    await bot.report(report({ lastOkAt: NOW - MIN, events: [ev(1, 'ban')] }));
+    await bot.report(report({ lastOkAt: NOW - MIN, events: [ev(2, 'run_end')] }));   // releases the lease
+    at(2);
+    await bot.claim({ runId: 'run-b', host: 'local' });
+    await bot.report(report({ runId: 'run-b', lastOkAt: NOW - 30_000 }));   // another run, its last good scan before the ban
+    expect((await bot.status()).reasons).toContain('banned');
+    at(3);
+    await bot.report(report({ runId: 'run-b', lastOkAt: NOW - 30_000 }));   // its baseline, unmoved
+    expect((await bot.status()).reasons).toContain('banned');
+    await bot.report(report({ runId: 'run-b', lastOkAt: NOW - 30_000, events: [ev(1, 'run_end')] }));
+    at(4);
+    await bot.claim({ runId: RUN, host: 'actions' });
+    await bot.report(report({ lastOkAt: NOW - MIN }));   // back to the banned run, unmoved
+    expect((await bot.status()).reasons).toContain('banned');
+    at(5);
+    await bot.report(report({ lastOkAt: NOW + 4 * MIN }));   // a good scan since: cleared
+    expect((await bot.status()).reasons).not.toContain('banned');
+  });
+
   it('keep the acks of the newest ACKS_KEPT runs: an older run’s seq is forgotten', async () => {
     for (let i = 0; i <= ACKS_KEPT; i++) await bot.report(report({ runId: `run-${i}`, events: [ev(5)] }));
     expect((await bot.config('run-0')).ackSeq).toBe(0);
