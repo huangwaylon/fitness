@@ -78,10 +78,11 @@ Each day has at most one rule (`src/store.ts`):
   facts are read by the alarm after a push, and hourly. The Worker keeps the answer 60 s, so a flood costs Worker
   requests, not the object's.
 - **Config**: `/gym/config` is what 📋 設定を見る answers in the group, for members only (it names the days'
-  settings, which `/status` never does): its parts (`messages.ts` `StatusView`: the title, each day's date, rule and
-  ⏳, the trouble notice, the closing line) as the same functions word them, the interval, stopped or not, the last
-  and next check, and `text`, LINE's reply verbatim (`actions.ts` `config`; one test drives both). Read from memory,
-  never kept. Logs `config read by=A`, or `config refused 401 unauthorized` (403 origin, 405 method, 401 `no_keys`).
+  settings, which `/status` never does): its parts (`messages.ts` `StatusView`: the title, each day's date, rule, ⏳
+  and `soft` (🔕 or 💤: nothing announced), the trouble notice, the closing line) as the same functions word them, the
+  interval, stopped or not, the last and next check, and `text`, LINE's reply verbatim (`actions.ts` `config`; one
+  test drives both). Read from memory, never kept. Logs `config read by=A`, `config refused 401 unauthorized` (log
+  level; warn: 403 origin, 405 method, 401 `no_keys`), or `config failed <ErrName>` (500, with CORS).
 - **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors (through …)`,
   every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with `npx wrangler tail`.
 

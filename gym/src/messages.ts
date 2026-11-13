@@ -175,7 +175,8 @@ export const SITE_BACK = '✅ ジムの予約サイトに再接続できまし�
  *  and the last and next check, or that checks are stopped). `statusLines` is LINE's text of it. */
 export interface StatusView {
   title: string;
-  days: { day: Day; date: string; rule: string; from: string | null }[];
+  /** soft: nothing announced that day (🔕 通知オフ, or 💤 not checked yet), which the app shows soft. */
+  days: { day: Day; date: string; rule: string; from: string | null; soft: boolean }[];
   notice: string | null;
   check: string;
 }
@@ -189,7 +190,8 @@ export function statusView(
 ): StatusView {
   const days = [...new Set([...defaultDays(today), ...store.daysWithSettings()])].sort().map((day) => {
     const [rule, from] = daySettingParts(store, day, today);
-    return { day, date: dayLabel(day), rule, from };
+    const effective = store.effectiveRule(day, today);
+    return { day, date: dayLabel(day), rule, from, soft: effective === SKIP || effective === undefined };
   });
   let check = CHECK_PAUSED;
   if (!store.paused) {

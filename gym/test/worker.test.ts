@@ -133,6 +133,8 @@ describe('/gym/config', () => {
     expect(await (await get(bearer(''), keyed({ KEY_A: undefined, KEY_B: undefined }))).json()).toEqual({ ok: false, error: 'no_keys' });
     expect(calls['BOT.getConfig']).toBeUndefined();
     expect(logged().every((l) => /^config refused 401 (unauthorized|no_keys)$/.test(l))).toBe(true);
+    // a stranger's 401 is routine (log level); unset keys are a setup slip (warn)
+    expect(vi.mocked(console.warn).mock.calls).toEqual([['config refused 401 no_keys']]);
     expect(logged().join('\n')).not.toContain(KEY_A.slice(0, 8));
   });
 
@@ -141,7 +143,17 @@ describe('/gym/config', () => {
     expect(res.status).toBe(403);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
     expect(calls['BOT.getConfig']).toBeUndefined();
-    expect(logged()).toEqual(['config refused 403 origin origin="https://evil.example"']);
+    expect(vi.mocked(console.warn).mock.calls).toEqual([['config refused 403 origin origin="https://evil.example"']]);
+  });
+
+  it('answers 500 with CORS when the object fails, and says so', async () => {
+    bot.getConfig = () => Promise.reject(new TypeError('object reset'));
+    const res = await get({ ...bearer(KEY_A), Origin: PAGES });
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ ok: false, error: 'failed' });
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe(PAGES); // the page can read it: a retry, not a CORS error
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(vi.mocked(console.error).mock.calls).toEqual([['config failed TypeError']]);
   });
 
   it('answers the preflight (GET with Authorization), and only GET', async () => {

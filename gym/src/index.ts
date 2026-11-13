@@ -54,12 +54,13 @@ async function status(env: Env): Promise<Response> {
 
 /** 📋 設定を見る's answer (actions.ts GymConfig), for the app: unlike /status it names the days' settings, so only a
  *  member's key (KEY_A, KEY_B: relay/src/auth.ts, as the relay checks them) from the app's origin (or no Origin: curl)
- *  reads it, never cached. One log line per request: who read it, or why it was refused (never a key). */
+ *  reads it, never cached. One log line per request: who read it, why it was refused (a stranger's 401 at log level,
+ *  the rest warn), or that the object failed (500, CORS kept so the page offers a retry). Never a key. */
 async function config(req: Request, env: Env): Promise<Response> {
   const origin = req.headers.get('Origin');
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
   const refuse = (status: number, why: string, headers: Record<string, string> = {}, extra = '') => {
-    console.warn(`config refused ${status} ${why}${extra}`);
+    (why === 'unauthorized' ? console.log : console.warn)(`config refused ${status} ${why}${extra}`);
     return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
   };
   if (!cors) return refuse(403, 'origin', {}, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`);
@@ -70,7 +71,13 @@ async function config(req: Request, env: Env): Promise<Response> {
   const auth = req.headers.get('Authorization') ?? '';
   const who = roleOfKey(auth.startsWith('Bearer ') ? auth.slice(7).trim() : '', { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
   if (who !== 'A' && who !== 'B') return refuse(401, env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
-  const answer = await bot(env).getConfig();
+  let answer;
+  try {
+    answer = await bot(env).getConfig();
+  } catch (e) {
+    console.error(`config failed ${e instanceof Error ? e.name : typeof e}`);
+    return Response.json({ ok: false, error: 'failed' }, { status: 500, headers: { ...cors, 'Cache-Control': 'no-store' } });
+  }
   console.log(`config read by=${who}`);
   return Response.json(answer, { headers: { ...cors, 'Cache-Control': 'private, no-store' } });
 }

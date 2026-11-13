@@ -101,8 +101,13 @@ describe('messages', () => {
       '15分ごとにチェック・前回 08:45・次回 —',
     ]);
     // the parts: each day's rule and ⏳ apart, as daySetting words them
-    expect(view.days[2]).toEqual({ day: '2026-10-05', date: '10/5（月）', rule: '⏰ 12:00〜14:00', from: '⏳ 10/4（日）16:00から' });
-    expect(view.days[1]).toEqual({ day: '2026-10-04', date: '10/4（日）', rule: '🔕 通知オフ', from: null });
+    expect(view.days[2]).toEqual({ day: '2026-10-05', date: '10/5（月）', rule: '⏰ 12:00〜14:00', from: '⏳ 10/4（日）16:00から', soft: false });
+    expect(view.days[1]).toEqual({ day: '2026-10-04', date: '10/4（日）', rule: '🔕 通知オフ', from: null, soft: true });
+    // soft: nothing announced that day (🔕, or 💤 not checked yet)
+    expect(view.days.map((d) => d.soft)).toEqual([false, true, false, false, false]);
+    const z = new Store(); // a default day's ⏳ alone, seen from a week before: 💤
+    z.setCheckFrom('2026-10-05', oct(5, '09:00'), TODAY);
+    expect(m.statusView(z, '2026-09-28', null, null, false).days.at(-1)).toMatchObject({ day: '2026-10-05', rule: expect.stringMatching(/^💤/), soft: true });
     s.setPaused(true);
     const paused = m.statusView(s, TODAY, null, null, false);
     expect([paused.notice, paused.check]).toEqual([null, m.CHECK_PAUSED]);
