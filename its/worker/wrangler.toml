@@ -1,0 +1,36 @@
+# The ITS booker's Worker (its/README.md): one Worker and a SQLite-backed Durable Object on the Workers Free plan, beside
+# the island's relay and the gym bot on the same account. Deploy: `npm run deploy`. Secrets (never in this public repo):
+# `npx wrangler secret put` KEY_A, KEY_B (the relay's), ITS_RUNNER_TOKEN, and GH_DISPATCH_TOKEN (optional).
+name = "its-bot"
+# The relay's account, pinned as it is there (relay/wrangler.toml).
+account_id = "984dde81c150a207305c312cde950046"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+# 'on': runners may run. 'off': the stop switch, every runner told to stop and no dispatch (settings stay editable;
+# README "Operations"). Starts off: mbp2 runs the booker until the cutover.
+MODE = "off"
+# The app's page origin (relay/wrangler.toml's): exact origins, comma-separated; localhost is always allowed.
+ALLOWED_ORIGINS = "https://island-fund.pages.dev"
+
+# The record: settings, bookings, the runner's last report, the lease, the events.
+[[durable_objects.bindings]]
+name = "BOT"
+class_name = "ItsBot"
+
+# The Free plan has only SQLite-backed Durable Objects: new_sqlite_classes, never new_classes.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ItsBot"]
+
+# Workers Logs: the console lines, 3 days. No invocation logs (each request's IP and headers).
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+invocation_logs = false
