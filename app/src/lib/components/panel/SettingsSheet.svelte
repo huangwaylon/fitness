@@ -4,7 +4,7 @@
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
   // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
   // ジムボット (one row, members only, hidden while GYM_URL is empty: its 動作状況 level, gym/status.ts), 保養所ボット (one
-  // row, members only, hidden while ITS_URL is empty: its 予約設定・動作状況 level, ItsPage, lib/its) and
+  // row, members only, hidden while ITS_URL is empty and in demo mode: its 予約設定・動作状況 level, ItsPage, lib/its) and
   // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06) but for ジムボット and 保養所ボット, with a line saying it's visiting. The island is arranged in /editor, not here.
   // 姿, ジムボット and 保養所ボット push a level with ‹ (姿's edits are sent as it's left, with a 取り消す banner here; 保養所ボット's
   // ‹ asks before throwing an unsaved draft away);
@@ -158,7 +158,7 @@
           </button>
         </section>
       {/if}
-      {#if ITS_URL && !guest}
+      {#if ITS_URL && !guest && !week.demo}
         <section class="sec" aria-labelledby="sec-its">
           <h2 id="sec-its" class="sec-label">{t('its.title')}</h2>
           <button type="button" class="prow go" data-push="its" data-sfx="page" onclick={() => go('its')}>

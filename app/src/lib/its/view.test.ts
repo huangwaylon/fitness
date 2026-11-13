@@ -7,8 +7,8 @@ import { parseSettingsInput, type ItsStatus } from './contract.ts';
 import { parseStatus } from './client.ts';
 import type { RosterHotel } from './roster.ts';
 import {
-  addDate, bookingRows, dateBounds, dateRows, draftOf, duration, eventLines, factRows, hotelNote, hotelRows, pollMs, removeDate,
-  sameDraft, toInput, toggleSkip, toggleStar, verdictView, type Draft
+  addDate, bookingRows, controlLine, dateBounds, dateRows, draftOf, duration, eventLines, factRows, footLine, hotelNote, hotelRows, pollMs, removeDate,
+  sameDraft, saveError, toInput, toggleSkip, toggleStar, verdictView, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -81,6 +81,11 @@ describe('dateRows', () => {
     // a minute past midnight in Tokyo the 23rd is 9 days away: D−4 only
     expect(dateRows(d, jst('2026-11-14T00:01:00')).find((r) => r.date === '2026-11-23')!.note).toBe('d4');
   });
+  it('tonight is day 0; a stay already past in Tokyo isn’t listed', () => {
+    const d = draft({ dates: ['2026-11-12', '2026-11-13', '2026-11-14'] });
+    expect(dateRows(d, NOW).map((r) => [r.date, r.text])).toEqual([['2026-11-13', '今夜 · 申込期限切れ'], ['2026-11-14', 'あと1日 · 申込期限切れ']]);
+    expect(dateRows(d, jst('2026-11-14T00:00:00')).map((r) => r.date)).toEqual(['2026-11-14']);
+  });
 });
 
 describe('hotelRows', () => {
@@ -89,7 +94,7 @@ describe('hotelRows', () => {
 
   it('merges the runner’s names into the roster by normName (U+FA1A, full-width spaces), the rest on top as new', () => {
     const d = draft({ skip: [], priority: [] });
-    const { search, skipped } = hotelRows(d, ['鳴子温泉 湯元 吉祥', 'ＮＡＧＵ　勝浦', '新しいホテル'], roster);
+    const { search, skipped } = hotelRows(d, ['鳴子温泉 湯元 吉祥', 'ＮＡＧＵ　勝浦', '新しいホテル'], null, roster);
     expect(skipped).toEqual([]);
     expect(search.map((r) => [r.name, r.fresh])).toEqual([
       ['新しいホテル', true], ['NAGU 勝浦', false], ['リソルの森', false], ['鳴子温泉　湯元　吉祥', false], ['ゆふいん山水館', false], ['ホテル日航アリビラ', false]
@@ -99,16 +104,38 @@ describe('hotelRows', () => {
 
   it('puts ★ first in priority order (a priority entry is a substring), and the skipped in 除外中', () => {
     const d = draft({ skip: ['ゆふいん 山水館', '消えた施設'], priority: ['アリビラ', 'nagu'] });
-    const { search, skipped } = hotelRows(d, [], roster);
+    const { search, skipped } = hotelRows(d, [], null, roster);
     expect(search.map((r) => [r.name, r.star])).toEqual([['ホテル日航アリビラ', 0], ['NAGU 勝浦', 1], ['リソルの森', null], ['鳴子温泉　湯元　吉祥', null]]);
     expect(skipped.map((r) => r.name)).toEqual(['ゆふいん山水館', '消えた施設']);
     // a priority entry naming nothing listed still shows (★, so it can be taken off)
-    expect(hotelRows(draft({ skip: [], priority: ['どこか'] }), [], roster).search[0]).toMatchObject({ name: 'どこか', star: 0, roster: null });
+    expect(hotelRows(draft({ skip: [], priority: ['どこか'] }), [], null, roster).search[0]).toMatchObject({ name: 'どこか', star: 0, roster: null });
   });
 
   it('notes the roster’s kind and cutoff, 名前未確認 and 新しい施設', () => {
-    const { search } = hotelRows(draft({ skip: [], priority: [] }), ['新しいホテル'], roster);
+    const { search } = hotelRows(draft({ skip: [], priority: [] }), ['新しいホテル'], null, roster);
     expect(search.map(hotelNote)).toEqual(['新しい施設', '通年 · 10日前まで', '通年 · 10日前まで · 名前未確認', '通年 · 10日前まで', '通年 · 10日前まで', '通年 · 10日前まで']);
+  });
+
+  it('keeps a saved skip or ★ listed after the draft lets it go (on no roster, never seen)', () => {
+    const saved = { skip: ['消えた施設'], priority: ['どこか'] };
+    const d = draft({ skip: [], priority: [] });
+    expect(hotelRows(d, [], null, roster).search.map((r) => r.name)).not.toContain('消えた施設');
+    const { search } = hotelRows(d, [], saved, roster);
+    expect(search.filter((r) => r.roster === null).map((r) => [r.name, r.search, r.star])).toEqual([['消えた施設', true, null], ['どこか', true, null]]);
+    // and 除外 again from there
+    expect(hotelRows(toggleSkip(d, '消えた施設'), [], saved, roster).skipped.map((r) => r.name)).toEqual(['消えた施設']);
+  });
+
+  it('links an unverified roster name and a site name, one inside the other: a 除外 on one doesn’t cover the other', () => {
+    const d = draft({ skip: ['リソルの森'], priority: [] });
+    const { search, skipped } = hotelRows(d, ['リソルの森 グランヴォー スパヴィレッジ'], null, roster);
+    const site = search.find((r) => r.fresh)!;
+    expect([site.name, site.search, site.similar]).toEqual(['リソルの森 グランヴォー スパヴィレッジ', true, 'リソルの森']);
+    expect(hotelNote(site)).toBe('新しい施設 · 似た名前「リソルの森」');
+    expect(skipped.map((r) => [r.name, r.similar])).toEqual([['リソルの森', 'リソルの森 グランヴォー スパヴィレッジ']]);
+    expect(hotelNote(skipped[0])).toBe('通年 · 10日前まで · 名前未確認 · 似た名前「リソルの森 グランヴォー スパヴィレッジ」');
+    // a verified roster name isn't linked (its spelling is the site's)
+    expect(hotelRows(d, ['NAGU 勝浦 別館'], null, roster).search.every((r) => r.similar === null)).toBe(true);
   });
 
   it('keeps ★ and 除外 apart: skipping drops the priority, ★ un-skips', () => {
@@ -140,6 +167,21 @@ describe('the verdict card and the poll', () => {
     expect(pollMs(status({ mode: 'off' }))).toBe(60_000);
     expect(pollMs(status({ verdict: 'late' }))).toBe(60_000);
     expect(pollMs(null)).toBe(60_000);
+  });
+  it('words a refused 保存 by its code, and the foot line’s mode in words', () => {
+    expect(saveError('past_date')).toBe('過ぎた日付が含まれています。日付を確認してください。');
+    expect(saveError('bad_hotels')).toBe('施設の名前が長すぎるか、多すぎます。');
+    expect(saveError('offline')).toBe('保存できませんでした。もう一度保存してください。');
+    expect(footLine(STATUS, TODAY)).toBe('稼働 · abc1234 · 更新 13:10');
+    expect(footLine(status({ mode: 'off', sha: null }), TODAY)).toBe('オフ · 更新 13:10');
+  });
+  it('says who pressed 開始 / 停止 last, and when', () => {
+    const name = (m: string) => (m === 'B' ? 'うめ' : 'ウェイ');
+    expect(controlLine(status({ control: { action: 'stop', by: 'B', at: jst('2026-11-13T12:03:00') } }), name, TODAY)).toBe('停止（うめ・12:03）');
+    expect(controlLine(status({ control: { action: 'start', by: 'A', at: jst('2026-11-12T08:00:00') } }), name, TODAY)).toMatch(/^開始（ウェイ・.+8:00）$/);
+    expect(controlLine(status({ control: null }), name, TODAY)).toBeNull();
+    expect(controlLine({ ...STATUS, control: undefined }, name, TODAY)).toBeNull();   // an older Worker
+    expect(controlLine(STATUS, name, TODAY)).toBe('開始（ウェイ・12:20）');
   });
 });
 

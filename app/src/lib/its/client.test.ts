@@ -1,15 +1,15 @@
 // The its-bot Worker's client (client.ts): an answer checked (garbled → null), the member key as a Bearer token, a 409's
-// current status, failures logged without the key, and demo mode's fixture moved to now.
+// current status, failures logged without the key.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import example from '../../../../its/contract-example.json';
-import { daysUntil, tokyoToday } from './contract.ts';
 
 const KEY = 'ab'.repeat(32);
 const key = vi.hoisted(() => ({ value: null as string | null }));
 const logged = vi.hoisted(() => [] as unknown[][]);
 vi.mock('#lib/sync/storage.ts', () => ({ getKey: () => key.value }));
 vi.mock('#lib/sync/log.ts', () => ({ log: (...a: unknown[]) => void logged.push(a) }));
-const { demoRun, demoSave, demoStatus, fetchStatus, parseStatus, postRun, putSettings } = await import('./client.ts');
+const client = await import('./client.ts');
+const { fetchStatus, parseStatus, postRun, putSettings } = client;
 
 const URL = 'https://its.test';
 const wire = () => JSON.parse(JSON.stringify(example.status)) as Record<string, unknown>;
@@ -28,6 +28,17 @@ describe('parseStatus', () => {
   it('leaves out a garbled booking, event, reason or runner', () => {
     const s = parseStatus({ ...wire(), reasons: ['human_needed', 'gremlins'], bookings: [{ kind: 'hold' }, 'x', ...example.status.bookings], events: [{ kind: 'party', t: 1 }], runner: { scans: 3 }, seen: ['a', 4] });
     expect(s).toMatchObject({ reasons: ['human_needed'], bookings: example.status.bookings, events: [], runner: null, seen: ['a'] });
+  });
+  it('takes the site’s long names whole (≤ MAX_SITE_NAME; a ★ entry ≤ MAX_NAME) and leaves out a bidi trick or an overlong one', () => {
+    const long = 'ホ'.repeat(150);
+    const s = parseStatus({ ...wire(), seen: [long, 'a\u202eb', 'x'.repeat(201)], settings: { ...example.status.settings, skip: [long, 'b\u0007'], priority: ['NAGU', 'p'.repeat(81)] },
+      bookings: [{ ...example.status.bookings[0], hotel: long }, { ...example.status.bookings[0], hotel: 'x'.repeat(201) }] })!;
+    expect([s.seen, s.settings.skip, s.settings.priority, s.bookings.map((b) => b.hotel)]).toEqual([[long], [long], ['NAGU'], [long]]);
+  });
+  it('reads who pressed 開始 / 停止 last (C3), and leaves a garbled one out', () => {
+    const control = { action: 'stop', by: 'B', at: example.status.now - 60_000 };
+    expect(parseStatus({ ...wire(), control })!.control).toEqual(control);
+    for (const c of [null, { ...control, by: 'G' }, { ...control, action: 'pause' }, { ...control, at: 'now' }]) expect(parseStatus({ ...wire(), control: c })).not.toHaveProperty('control');
   });
 });
 
@@ -93,22 +104,8 @@ describe('the calls', () => {
   });
 });
 
-describe('demo mode', () => {
-  const NOW = Date.parse('2026-12-01T03:00:00Z');
-  it('is the example moved to now: its stays the same days ahead in Tokyo', () => {
-    const s = demoStatus(NOW);
-    expect(s.now).toBe(NOW);
-    expect(s.settings.dates.map((d) => daysUntil(d, NOW))).toEqual(example.status.settings.dates.map((d) => daysUntil(d, example.status.now)));
-    expect(s.runner!.lastSeen - NOW).toBe(example.status.runner.lastSeen - example.status.now);
-    expect(tokyoToday(s.bookings[0].at)).toBe('2026-12-01');
-    expect(parseStatus(JSON.parse(JSON.stringify(s)))).toEqual(s);
-  });
-  it('saves and starts / stops on the page', () => {
-    const s = demoStatus(NOW);
-    const saved = demoSave(s, { ...example.settingsInput, guests: 4 } as never, 'B', NOW + 1);
-    expect(saved.settings).toMatchObject({ guests: 4, updatedAt: NOW + 1, updatedBy: 'B', paused: false });
-    const stopped = demoRun(saved, 'stop', NOW + 2);
-    expect([stopped.settings.paused, stopped.verdict, stopped.reasons]).toEqual([true, 'stopped', ['paused', 'human_needed']]);
-    expect(demoRun(stopped, 'start', NOW + 3)).toMatchObject({ verdict: 'degraded', reasons: ['human_needed'], settings: { paused: false } });
+describe('no demo mode', () => {
+  it('has no fixture: 設定 hides the row in demo mode, and the e2e mocks the Worker', () => {
+    expect(Object.keys(client).filter((k) => /demo/i.test(k))).toEqual([]);
   });
 });

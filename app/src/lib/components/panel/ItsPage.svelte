@@ -4,25 +4,26 @@
   // reservations; 開始 / 停止 (at once, outside the draft); the stays (日付), the facilities (施設: 探す or 除外, ★ for
   // 優先), 詳細 (間隔, 人数, 自動で確定) and the recent events, all edited as one draft saved with 保存 (the sticky bar
   // while it differs; ✕, the backdrop and Esc ask first: guardForm, ‹ too: `leave`). Fetched on open, then every 15 s
-  // while the runner is on its way or running and every minute otherwise, only while shown; leaving it aborts. A poll
-  // never touches a draft: when the saved settings moved under it (someone else saved, or a 409) it says so with
-  // 読み込み直す. Demo mode: the contract's example, saved on the page only.
+  // while the runner is on its way or running and every minute otherwise, only while shown; leaving it aborts, and 保存
+  // / 開始 / 停止 abort a read in flight (an answer older than the one shown is dropped). A poll never touches a draft:
+  // when the saved settings moved under it (someone else saved, or a 409) it says so, with 読み込み直す, and 保存
+  // becomes 上書き保存 (asks first). Not in demo mode (設定 hides the row: no fixture).
   import { untrack } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
-  import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { formatDate, formatSyncTime } from '#lib/i18n/format.ts';
+  import { formatDate } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow, now as sceneNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { mine } from '#lib/ui-state/viewer.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, type IntervalSec, type ItsStatus, type RunInput } from '#lib/its/contract.ts';
-  import { demoRun, demoSave, demoStatus, fetchStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
+  import { fetchStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    addDate, bookingRows, dateBounds, dateRows, draftOf, eventLines, factRows, hotelNote, hotelRows, pollMs, removeDate, sameDraft,
-    toInput, toggleSkip, toggleStar, verdictView, type Draft
+    addDate, bookingRows, controlLine, dateBounds, dateRows, draftOf, eventLines, factRows, footLine, hotelNote, hotelRows, pollMs, removeDate, sameDraft,
+    saveError, toInput, toggleSkip, toggleStar, verdictView, type Draft
   } from '#lib/its/view.ts';
 
   /** ‹'s guard (SettingsSheet's back): asks first while the draft holds changes. */
@@ -38,11 +39,13 @@
   /** The saved settings moved under the draft (a poll saw it, or 保存 got a 409). */
   let conflict = $state(false);
   let saving = $state(false);
-  let saveFailed = $state(false);
+  /** Why the last 保存 failed (the Worker's refusal in words), or null. */
+  let saveWhy = $state<string | null>(null);
   let running = $state(false);
   let adding = $state('');
   let addWhy = $state<string | null>(null);
   let askAuto = $state(false);
+  let askOverwrite = $state(false);
   let openSearch = $state(false);
   let openSkipped = $state(false);
 
@@ -55,13 +58,16 @@
   const life = new AbortController();
   let ctl: AbortController | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const me = (): 'A' | 'B' => (week.view && mine(week.view).who === 'B' ? 'B' : 'A');
 
-  /** A fresh status: the draft kept (a changed one notes the move), an unchanged one let go. */
+  /** Every answer's status (a read's, 保存's, a 409's, 開始 / 停止's): one older than the shown one is dropped; the
+   *  draft is kept (noting a move of the saved settings under it), an unchanged one let go. */
   function take(s: ItsStatus) {
+    if (status && s.now < status.now) return;
     status = s;
-    if (draft && !dirty) draft = start = null;
-    if (draft && s.settings.updatedAt !== base) conflict = true;
+    if (!dirty) {
+      draft = start = null;
+      conflict = false;
+    } else if (s.settings.updatedAt !== base) conflict = true;
   }
 
   function schedule() {
@@ -69,11 +75,16 @@
     if (!life.signal.aborted) timer = setTimeout(() => (document.hidden ? schedule() : void load()), pollMs(status));
   }
 
+  /** A read in flight let go and the poll held (保存 / 開始 / 停止 answer with the status themselves). */
+  function hold() {
+    ctl?.abort();
+    ctl = null;
+    loading = false;
+    clearTimeout(timer);
+  }
+
   async function load() {
-    if (week.demo) {
-      status ??= demoStatus(sceneNow().getTime());
-      return;
-    }
+    if (saving || running) return;
     ctl?.abort();
     const c = (ctl = new AbortController());
     const stop = () => c.abort();
@@ -81,8 +92,9 @@
     loading = true;
     const r = await fetchStatus(c.signal);
     life.signal.removeEventListener('abort', stop);
-    if (ctl === c) loading = false;
     if (c.signal.aborted) return;
+    ctl = null;
+    loading = false;
     if (r.ok) take(r.status);
     failed = !r.ok;
     schedule();
@@ -109,9 +121,10 @@
   const events = $derived(status ? eventLines(status, today) : []);
   const dates = $derived(shown ? dateRows(shown, nowMs) : []);
   const bounds = $derived(dateBounds(nowMs));
-  const hotels = $derived(shown && status ? hotelRows(shown, status.seen) : { search: [], skipped: [] });
+  const hotels = $derived(shown && status ? hotelRows(shown, status.seen, status.settings) : { search: [], skipped: [] });
   const starred = $derived(hotels.search.filter((r) => r.star !== null).map((r) => r.name));
   const paused = $derived(status?.settings.paused ?? true);
+  const control = $derived(status && controlLine(status, (m) => (week.view ? villagerNameOf(week.view, m) : m), today));
 
   function edit(f: (d: Draft) => Draft) {
     if (!status || !shown) return;
@@ -120,7 +133,7 @@
       base = status.settings.updatedAt;
     }
     draft = f(shown);
-    saveFailed = false;
+    saveWhy = null;
   }
 
   function add() {
@@ -145,7 +158,8 @@
   function discard() {
     cue('back');
     draft = start = null;
-    conflict = saveFailed = false;
+    conflict = false;
+    saveWhy = null;
   }
 
   /** 読み込み直す: the draft let go, the saved settings read again. */
@@ -154,48 +168,46 @@
     void load();
   }
 
+  /** 上書き保存 (after its question): the draft saved over the settings shown now. */
+  function overwrite() {
+    if (!status) return;
+    base = status.settings.updatedAt;
+    conflict = false;
+    void save();
+  }
+
   async function save() {
     if (!draft || !status || saving) return;
-    const input = toInput(draft, base, sceneNow().getTime());
-    if (week.demo) {
-      status = demoSave(status, input, me(), sceneNow().getTime());
-      draft = start = null;
-      toasts.show(t('its.saved'));
+    if (conflict) {
+      askOverwrite = true;
       return;
     }
+    hold();
     saving = true;
-    const r = await putSettings(input, life.signal);
+    saveWhy = null;
+    const r = await putSettings(toInput(draft, base, sceneNow().getTime()), life.signal);
     saving = false;
     if (life.signal.aborted) return;
     if (r.ok) {
-      status = r.status;
       draft = start = null;
-      conflict = saveFailed = false;
       cue('confirm');
       toasts.show(t('its.saved'));
-    } else if (r.err === 'conflict') {
-      if (r.status) status = r.status;
-      conflict = true;
-    } else saveFailed = true;
+    } else if (r.err !== 'conflict') saveWhy = saveError(r.err);
+    if (r.status) take(r.status);
+    if (!r.ok && r.err === 'conflict') conflict = true;
+    schedule();
   }
 
   async function run(action: RunInput['action']) {
     if (!status || running) return;
-    if (week.demo) {
-      status = demoRun(status, action, sceneNow().getTime());
-      return;
-    }
+    hold();
     running = true;
-    const was = status.settings.updatedAt;
     const r: ItsReply = await postRun(action, life.signal);
     running = false;
     if (life.signal.aborted) return;
-    if (r.ok) {
-      // (our own 停止 / 開始 moving the stamp is no one else's save: the draft follows it)
-      if (draft && base === was) base = r.status.settings.updatedAt;
-      take(r.status);
-      schedule();
-    } else toasts.show(t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed'), 4000);
+    if (r.ok) take(r.status);
+    else toasts.show(t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed'), 4000);
+    schedule();
   }
 
   const intervals = INTERVALS_SEC.map((s) => ({ id: String(s), label: s < 60 ? t('its.interval.s', { n: s }) : t('its.interval.m', { n: s / 60 }) }));
@@ -203,15 +215,16 @@
 </script>
 
 {#snippet hotel(r: (typeof hotels.search)[number])}
-  <div class="hrow" data-its-hotel={r.name} data-search={r.search}>
+  <div class="hrow" class:starred={r.star !== null} class:out={!r.search} data-its-hotel={r.name} data-search={r.search}>
     <button type="button" class="prow" role="switch" aria-checked={r.search} data-sfx="self"
       onclick={() => (cue(r.search ? 'toggle-off' : 'toggle-on'), edit((d) => toggleSkip(d, r.name)))}>
       <span class="prl">{r.name}<small class:fresh={r.fresh}>{hotelNote(r)}</small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
-    <button type="button" class="star" aria-pressed={r.star !== null} aria-label={t('its.hotel.star', { name: r.name })} data-its-star={r.name} data-sfx="tick"
+    <button type="button" class="star" aria-pressed={r.star !== null} data-its-star={r.name} data-sfx="tick"
+      aria-label={r.star === null ? t('its.hotel.star', { name: r.name }) : t('its.hotel.starN', { name: r.name, n: r.star + 1 })}
       onclick={() => edit((d) => toggleStar(d, r.name))}>
-      <span aria-hidden="true">★</span>{#if r.star !== null}<b aria-hidden="true">{r.star + 1}</b>{/if}
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z" /></svg>{#if r.star !== null}<b aria-hidden="true">{r.star + 1}</b>{/if}
     </button>
   </div>
 {/snippet}
@@ -255,7 +268,7 @@
     {/if}
 
     <div class="prow static run" data-its-run={paused ? 'stopped' : 'running'}>
-      <span class="prl">{t(paused ? 'its.ctl.off' : 'its.ctl.on')}</span>
+      <span class="prl">{t(paused ? 'its.ctl.off' : 'its.ctl.on')}{#if control}<small data-its-control>{control}</small>{/if}{#if dirty && paused}<small data-its-draft-note>{t('its.ctl.draftNote')}</small>{/if}</span>
       <button type="button" class="btn small" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick" aria-disabled={running}
         onclick={() => void run(paused ? 'start' : 'stop')}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
     </div>
@@ -328,13 +341,13 @@
       </details>
     {/if}
 
-    <p class="foot" data-its-foot>{[status.mode, status.sha?.slice(0, 7), t('its.updated', { time: formatSyncTime(new Date(status.now), today) })].filter(Boolean).join(' · ')}</p>
+    <p class="foot" data-its-foot>{footLine(status, today)}</p>
 
     {#if dirty}
       <div class="level-acts" data-its-save-bar>
-        {#if saveFailed}<p class="hint bad" role="alert" data-its-save-failed>{t('its.saveFailed')}</p>{/if}
-        <button type="button" class="btn paper small" data-sfx="self" onclick={discard}>{t('its.discard')}</button>
-        <button type="button" class="btn" data-its-save data-sfx="tick" aria-disabled={saving} onclick={() => void save()}>{t('its.save')}</button>
+        {#if saveWhy}<p class="hint bad" role="alert" data-its-save-failed>{saveWhy}</p>{/if}
+        <button type="button" class="btn paper small" data-its-discard data-sfx="self" onclick={discard}>{t('its.discard')}</button>
+        <button type="button" class="btn" data-its-save data-sfx="tick" aria-disabled={saving} onclick={() => void save()}>{t(conflict ? 'its.overwrite' : 'its.save')}</button>
       </div>
     {/if}
   {:else if !failed}
@@ -345,6 +358,10 @@
 <ActionSheet bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
   groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('its.auto.cancel') }]]}
   onpick={(id) => id === 'on' && setAuto(true)} />
+
+<ActionSheet bind:open={askOverwrite} title={t('its.overwrite.title')} note={t('its.overwrite.note')}
+  groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('its.overwrite.cancel') }]]}
+  onpick={(id) => id === 'yes' && overwrite()} />
 
 <style>
   .its { display: flex; flex-direction: column; gap: 14px; }
@@ -367,7 +384,8 @@
   .facts div { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-body); }
   .facts dt { flex: none; color: var(--text-soft); font-weight: 700; }
   .facts dd { margin: 0; min-width: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-  .facts a { color: var(--sky-text); display: inline-block; min-height: 24px; }
+  /* the run's link: a full 44px target, without pushing its row apart */
+  .facts a { color: var(--sky-text); display: inline-flex; align-items: center; min-height: var(--hit); margin: -10px 0; }
 
   .rows { list-style: none; display: grid; gap: 8px; }
   .rows li { display: flex; align-items: center; gap: 10px; min-height: var(--hit); }
@@ -404,15 +422,22 @@
 
   .hrow { display: flex; gap: 8px; align-items: stretch; }
   .hrow .prow { flex: 1; min-width: 0; }
+  /* quiet by default (探す: the plain control, over 設定's yellow chosen row: hence the weight); only ★ (yuzu) and 除外 (sunk) stand out */
+  .its .hrow > .prow[role='switch'][aria-checked='true'] { background: var(--ctl); color: var(--text); }
+  .its .hrow.starred > .prow[role='switch'][aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
+  .its .hrow.out > .prow[role='switch'] { background: var(--ctl-off); }
   .prl small { color: var(--text-soft); }
+  .hrow.starred .prl small { color: var(--c-ink-soft); }
   .prl small.fresh { color: var(--leaf-text); }
   .star {
     appearance: none; border: 0; cursor: pointer; flex: none; width: 52px; min-height: 52px; border-radius: var(--r-card); position: relative;
     display: flex; align-items: center; justify-content: center; gap: 1px; background: var(--ctl); color: var(--text-soft); box-shadow: var(--sh-ctl);
-    font: 700 22px/1 var(--font-ui);
   }
+  .star svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
   .star b { font: 700 var(--fs-s)/1 var(--font-num); }
-  .star[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); }
+  /* pressed: held down (the press's lip), filled, numbered */
+  .star[aria-pressed='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: var(--sh-ctl-press); transform: translateY(2px); }
+  .star[aria-pressed='true'] svg { fill: currentColor; }
   .star:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
 
   .opts { display: grid; gap: 8px; }

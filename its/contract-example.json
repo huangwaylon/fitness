@@ -187,6 +187,11 @@
    "until": 1794543300000
   },
   "dispatch": null,
+  "control": {
+   "action": "start",
+   "by": "A",
+   "at": 1794540000000
+  },
   "bookings": [
    {
     "id": "19283746:3",

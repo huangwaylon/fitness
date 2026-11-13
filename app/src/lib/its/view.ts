@@ -4,7 +4,7 @@
 // recent events. Pure but for t().
 import {
   AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, daysUntil, isDate, normName, tokyoToday,
-  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Verdict
+  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member, type Verdict
 } from './contract.ts';
 import { ROSTER, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -60,13 +60,12 @@ export function addDate(d: Draft, date: string, now: number): { ok: true; draft:
 export const removeDate = (d: Draft, date: string): Draft => ({ ...d, dates: d.dates.filter((x) => x !== date) });
 
 /** A stay's note: 自動で確定 (on, and AUTO_CONFIRM_MIN_DAYS+ away), only the D−4 facilities (under 10 days), past
- *  every cutoff (under 4), or none. */
+ *  every cutoff (under 4), or none. A stay already past in Tokyo isn't listed (保存 drops it: toInput). */
 export type DateNote = 'auto' | 'd4' | 'late' | null;
 export function dateRows(d: Draft, now: number): { date: string; label: string; days: number; note: DateNote; text: string }[] {
-  return [...d.dates].sort().map((date) => {
-    const days = daysUntil(date, now);
+  return [...d.dates].sort().map((date) => ({ date, days: daysUntil(date, now) })).filter((r) => r.days >= 0).map(({ date, days }) => {
     const note: DateNote = days < 4 ? 'late' : days < 10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
-    const left = days <= 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
+    const left = days === 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
     return { date, label: formatDate(date), days, note, text: note ? `${left} · ${t(`its.date.note.${note}`)}` : left };
   });
 }
@@ -83,6 +82,9 @@ export interface HotelRow {
   search: boolean;
   /** Its place in the priority (0 = tried first), or null. */
   star: number | null;
+  /** The other spelling of what may be the same facility (an unverified roster name and a site name, one inside the
+   *  other after normName): a 除外 on one doesn't cover the other (skips match exactly). */
+  similar: string | null;
 }
 
 /** A priority entry names a facility: a substring after normName, as the runner matches. */
@@ -99,20 +101,32 @@ function starOf(key: string, priority: string[]): number | null {
 const GROUP = (r: HotelRow): number => (r.star !== null ? 0 : r.fresh ? 1 : r.roster?.region === 'kanto' ? 2 : 3);
 
 /** Every facility the page lists: the roster, the seen names it doesn't have (新しい施設), and any skip or priority
- *  entry matching neither. 探す: ★ first (in priority order), the new ones, 関東, the rest; then 除外中. */
-export function hotelRows(d: Draft, seen: readonly string[], roster: readonly RosterHotel[] = ROSTER): { search: HotelRow[]; skipped: HotelRow[] } {
+ *  entry (the draft's, and the saved settings' so one un-skipped in the draft stays listed) matching neither. 探す: ★
+ *  first (in priority order), the new ones, 関東, the rest; then 除外中. An unverified roster name and a seen name, one
+ *  inside the other, note each other (`similar`). */
+export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 'skip' | 'priority'> | null = null, roster: readonly RosterHotel[] = ROSTER): { search: HotelRow[]; skipped: HotelRow[] } {
   const skipped = new Set(d.skip.map(normName));
   const rows = new Map<string, HotelRow>();
   const add = (name: string, r: RosterHotel | null, fresh: boolean) => {
     const key = normName(name);
     if (!key || rows.has(key)) return;
-    rows.set(key, { key, name, roster: r, fresh, search: !skipped.has(key), star: null });
+    rows.set(key, { key, name, roster: r, fresh, search: !skipped.has(key), star: null, similar: null });
   };
   for (const r of roster) add(r.name, r, false);
   for (const n of seen) add(n, null, true);
-  for (const n of d.skip) add(n, null, false);
-  for (const p of d.priority) if (![...rows.keys()].some((k) => names(k, p))) add(p, null, false);
-  const all = [...rows.values()].map((r) => ({ ...r, star: r.search ? starOf(r.key, d.priority) : null }));
+  for (const n of [...d.skip, ...(saved?.skip ?? [])]) add(n, null, false);
+  for (const p of [...d.priority, ...(saved?.priority ?? [])]) {
+    let named = false;
+    for (const k of rows.keys()) if ((named = names(k, p))) break;
+    if (!named) add(p, null, false);
+  }
+  const all = [...rows.values()];
+  const unverified = all.filter((r) => r.roster && !r.roster.verified);
+  for (const r of all) {
+    r.star = r.search ? starOf(r.key, d.priority) : null;
+    const u = r.fresh ? unverified.find((x) => !x.similar && (x.key.includes(r.key) || r.key.includes(x.key))) : undefined;
+    if (u) [r.similar, u.similar] = [u.name, r.name];
+  }
   const search = all.map((r, i) => ({ r, i })).filter(({ r }) => r.search)
     .sort((a, b) => GROUP(a.r) - GROUP(b.r) || (a.r.star ?? 0) - (b.r.star ?? 0) || a.i - b.i).map(({ r }) => r);
   return { search, skipped: all.filter((r) => !r.search) };
@@ -139,6 +153,7 @@ export function hotelNote(r: HotelRow): string {
   if (r.roster?.cutoff) parts.push(t('its.cutoff', { n: r.roster.cutoff }));
   if (r.fresh) parts.push(t('its.hotel.fresh'));
   else if (!r.roster || !r.roster.verified) parts.push(t('its.hotel.unverified'));
+  if (r.similar) parts.push(t('its.hotel.similar', { name: r.similar }));
   return parts.join(' · ');
 }
 
@@ -153,6 +168,19 @@ export function verdictView(s: ItsStatus): { tone: Tone; word: string; sentence:
 /** Running, or about to: polled every 15 s while shown, else every minute. */
 export const pollMs = (s: ItsStatus | null): number =>
   s && s.mode === 'on' && !s.settings.paused && ['healthy', 'starting', 'degraded', 'failing'].includes(s.verdict) ? 15_000 : 60_000;
+
+/** The Worker's refusals of a 保存 the page can word (the contract's SettingsError, a too large body, this phone's key). */
+const SAVE_ERRORS = ['bad_date', 'past_date', 'far_date', 'too_many_dates', 'bad_guests', 'bad_hotels', 'too_large', 'unauthorized'];
+/** Why 保存 failed, in words: a refusal the page can name, else 「もう一度保存してください」. */
+export const saveError = (err: string): string => t(`its.saveWhy.${SAVE_ERRORS.includes(err) ? err : 'other'}`);
+
+/** The page's last line: the mode (稼働 / オフ), the build, and when the status was read. */
+export const footLine = (s: ItsStatus, today: string): string =>
+  [t(`its.mode.${s.mode}`), s.sha?.slice(0, 7), t('its.updated', { time: at(s.now, today) })].filter(Boolean).join(' · ');
+
+/** Who pressed 開始 / 停止 last, and when: 「停止（うめ・12:03）」 (`name`: a member's name), or null (none recorded). */
+export const controlLine = (s: ItsStatus, name: (m: Member) => string, today: string): string | null =>
+  s.control ? t('its.ctl.by', { action: t(`its.ctl.${s.control.action}`), who: name(s.control.by), time: at(s.control.at, today) }) : null;
 
 /** `2時間10分`, `12分`, `40秒`. */
 export function duration(ms: number): string {
