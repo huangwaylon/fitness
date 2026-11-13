@@ -1,33 +1,10 @@
 <script lang="ts">
-  // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH
-  // (world.ts units: x across, z into the island): now and then (ambient life's slots, island/ambient.ts: the same on both phones) a fish
-  // shadow swims off each stretch of the coast (island/coast.ts), another in each fresh water, NH's fresh
-  // water by where it is (the pond, the river's reaches, the river mouth on the west beach, the falls' pool (clifftop) and the
-  // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
-  // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
-  // line, and the first of each a ずかん find (never ベル).
-  //   Fishing, NH's, the same in every water (fishing.ts: my line's state machine; critters.ts waterAt, landing: the
-  //   water as the island's tiles have it): a tap on any water, however far, casts there from where my villager
-  //   stands, turning to it, the line as long as it takes. A shadow near the float on
-  //   open water notices it, swims up, nibbles 1–4 times and bites: the float is yanked under with a splash, its own
-  //   sound and NH's 「！」. While the line is out any tap is the reel: on the bite it catches the fish; any earlier
-  //   with a fish at it scares it off; with none it just reels in. No tap in time and it gets away (the float stays
-  //   out). 1 in 14 the line brings up a boot, a tire or a can.
-  //   Diving (island/sea.ts, loaded with the first bubble spot): now and then a spot of bubbles rises off the front beach
-  //   (its own turns, beside the shadow there); a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
-  //   shadow and a second tap on it in time catches it, or it gets away. Now and then the spot holds NH's pearl.
-  //   Bugs (NH's by month and hour, where NH keeps them: critters.ts bugPlace): cicadas and beetles on the trunks of the
-  //   goal trees, the oaks and the cedars, NH's palm beetles on the palms, butterflies and the bee over the flowers
-  //   (now and then resting on a flower), a ladybug or a mantis on a flower's head, the moth round the lamps at night,
-  //   dragonflies and fireflies near the water, grasshoppers, crickets and the night's tarantula and scorpion in the
-  //   grass, the hermit crab and the wharf roach on the beach, the water bugs on the pond and the river's still reach.
-  //   Where each is, is the shared world's (critterPath.ts, docs/backend.md#shared-world): a slot's critter is placed in
-  //   the world and walked through its stay from its seed, the same on both phones, and each phone shows what its
-  //   camera sees of it; a catch or an escape is shared by the critter's id (first wins), and the partner's plays here:
-  //   their villager runs over and nets it, reels it in or dives for it, and its plate joins the bottom stack.
-  //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion rears up at
-  //   the first tap; a tap while it's reared and it charges off; once it settles, a tap nets it. A mole cricket chirps
-  //   under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea hopping off it.
+  // The island's critters (docs/design.md "Critters", "Scene interactions": who comes, fishing, diving, the bugs; the
+  // rules are critters.ts, fishing.ts, sea.ts, pondFish.ts and critterPath.ts, each header its numbers). This component
+  // plays them: the slots (ambient life's, island/ambient.ts), a fish shadow off each stretch of the coast
+  // (island/coast.ts) and in each fresh water (pondFish.ts, its own chunk, with the first such shadow), the bubbles
+  // (sea.ts, loaded with the first spot) and the bugs (where each: critters.ts bugPlace; a mole cricket under a mound,
+  // dug up by a tap; a reared tarantula or scorpion charges off at a second tap); the partner's catches played here.
   // Each critter is a world node (camera.svelte.ts) at its spot: a fish shadow a flat ground mark, a bug, the bobber and
   // the bubbles upright. They move inside their node by CSS transitions between waypoints a timer picks every second or
   // few, in the node's local units (a flat node's local y is −z; an upright one's −z·ground − lift), so nothing runs
