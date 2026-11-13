@@ -1,7 +1,7 @@
 <script lang="ts">
   // あそぶ (docs/kikimimi.md "遊ぶ"): しまの みち's card on top, then the playable modes grouped by situation (さくっと,
   // まちで・でんわで, じっくり, ねる まえに), a 2-column grid per group: each mode's name, its one-line subtitle, its
-  // minutes and 👥 when it can be shared (catalog.ts: each mode's shelf and icon; a lane's game once this build has its
+  // minutes and the people icon when it can be shared (catalog.ts: each mode's shelf and icon; a lane's game once this build has its
   // lane and content). Only what this build can play shows; an empty group is hidden. Its own chunk.
   import type { Path } from '#lib/kikimimi/path.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
@@ -9,6 +9,7 @@
   import { LANES } from '#lib/kikimimi/round/registry.ts';
   import { currentReport } from '../progress.svelte.ts';
   import PathCard from '../path/PathCard.svelte';
+  import Icon from '../../ui/Icon.svelte';
   import { STORY_OK } from '../story/serials.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -28,7 +29,7 @@
             <span class="ic" aria-hidden="true">{m.icon}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
-            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span role="img" aria-label={t('kiki.chip.coop')}> · 👥</span>{/if}{#if m.requires === 'mic'}<span role="img" aria-label={t('kiki.micGame')}> · 🎤</span>{/if}</span>
+            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span role="img" aria-label={t('kiki.chip.coop')}> · <Icon name="users" size={14} stroke={2.4} /></span>{/if}{#if m.requires === 'mic'}<span role="img" aria-label={t('kiki.micGame')}> · <Icon name="mic" size={14} stroke={2.4} /></span>{/if}</span>
           </button>
         {/each}
       </div>

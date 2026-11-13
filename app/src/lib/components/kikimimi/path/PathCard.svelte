@@ -22,7 +22,7 @@
   <span class="txt">
     <b>{t('kiki.path.title')}</b>
     {#if cur}
-      <small class="cur">{domainIcon(cur.domain)} {cur.name}
+      <small class="cur"><span aria-hidden="true">{domainIcon(cur.domain)}</span> {cur.name}
         <LessonDots lessons={cur.lessons} done={cur.state?.done ?? []} next={cur.next} /></small>
     {:else}<small>{t('kiki.path.stamps', { k: stamped, n: stops.length })}</small>{/if}
   </span>

@@ -20,6 +20,7 @@
   import { keepLv, keepStagePick, keepTimer, stagePick } from '../prefs.ts';
   import StageRow from './StageRow.svelte';
   import TimerRow from './TimerRow.svelte';
+  import Icon from '../../ui/Icon.svelte';
   import LadderSteps from '../LadderSteps.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import Lazy from '#lib/components/ui/Lazy.svelte';
@@ -85,8 +86,8 @@
       <!-- (no 問 count for a mic mode, nor for よるの おはなし) -->
       {#if meta.qs && !meta.requires}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
       <span class="tag">{t('kiki.chip.mins', { n: meta.mins })}</span>
-      {#if meta.coop}<span class="tag"><span aria-hidden="true">👥</span> {t('kiki.chip.coop')}</span>{/if}
-      {#if meta.requires === 'mic'}<span class="tag"><span aria-hidden="true">🎤</span> {t('kiki.micGame')}</span>{/if}
+      {#if meta.coop}<span class="tag"><Icon name="users" size={14} stroke={2.4} /> {t('kiki.chip.coop')}</span>{/if}
+      {#if meta.requires === 'mic'}<span class="tag"><Icon name="mic" size={14} stroke={2.4} /> {t('kiki.micGame')}</span>{/if}
     </div>
   </div>
 

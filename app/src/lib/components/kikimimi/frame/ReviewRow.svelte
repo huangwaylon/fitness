@@ -1,11 +1,12 @@
 <script lang="ts">
   // One row of a game's review list (frame/ReviewList.svelte): the whole head a button (○ / × for each round it holds,
-  // a face, the summary, 一発, ▾) and, opened, the detail under it (no `ontoggle`: always open, the head plain text with no ▾,
+  // a face, the summary, 一発, the chevron) and, opened, the detail under it (no `ontoggle`: always open, the head plain text with no chevron,
 // as in 前の問題's card): ▶︎ first (`hear`, under the line it plays), then the
   // game's text, the note and 解説 (`children`). Every game's review row is this one.
   import type { Snippet } from 'svelte';
   import type { HTMLLiAttributes } from 'svelte/elements';
   import FirstStamp from './FirstStamp.svelte';
+  import Icon from '../../ui/Icon.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { i, ok, open, ontoggle, marks, first = false, lead, summary, hear, children, ...rest }: {
@@ -39,7 +40,7 @@
   {#if ontoggle}
     <button type="button" class="head" aria-expanded={open} data-kiki-row={i} data-sfx="tick" onclick={ontoggle}>
       {@render head()}
-      <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
+      <span class="chev"><Icon name={open ? 'chevron-up' : 'chevron-down'} size={18} /></span>
     </button>
   {:else}
     <div class="head" data-kiki-row={i}>{@render head()}</div>
@@ -64,7 +65,7 @@
   .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
   .sym.ok { color: var(--leaf-text); }
   .sum { flex: 1; min-width: 0; display: grid; gap: 2px; align-self: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text); }
-  .chev { align-self: center; font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
+  .chev { align-self: center; display: grid; color: var(--text-soft); }
   .txt { min-width: 0; display: grid; gap: 8px; padding: 0 14px 12px; }
   .hear { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 </style>
