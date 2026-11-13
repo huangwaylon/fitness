@@ -641,7 +641,11 @@
     world.invalidate();
     const offMove = onMove(() => world.kick());
     let first = true;
-    const ro = new ResizeObserver(() => {
+    const ro = new ResizeObserver(([e]) => {
+      // (0 × 0: not laid out yet. WebKit holds layout while a lazy part's stylesheet loads and observes the box as 0 × 0;
+      // measuring then forced that layout inside the callback, the box changed under the observer, and Safari reported
+      // "ResizeObserver loop completed with undelivered notifications". The real size comes in the next call.)
+      if (!e.contentRect.width || !e.contentRect.height) return;
       // (the first call is the observe itself: the mount's guess made exact; after it a new screen, the same camera refitted)
       measure();
       if (first) first = false;
