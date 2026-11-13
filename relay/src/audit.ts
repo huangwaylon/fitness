@@ -1,6 +1,6 @@
 // The `uploads` audit row of an ingest (docs/backend.md#ingest): the body's shape, never the body or the key
 // (relay/test/ingest-golden.test.ts holds the record to it).
-import { isRec } from '../../app/src/lib/contract/api.ts';
+import { isRec } from '../../app/src/lib/contract/guards.ts';
 
 /**
  * The shape of an ingest body for the `uploads` audit: each field's type, list length and first item (40 chars), never

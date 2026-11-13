@@ -23,7 +23,8 @@
 //
 // Body fat: Shortcuts may write Health's percentage as a fraction (0.223) or as a percent (22.3, or "22.3%"). A
 // plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in the record (relay/src/store.ts).
-import { BODY_BOUNDS, isBodyMetric, isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../../app/src/lib/contract/api.ts';
+import { BODY_BOUNDS, isBodyMetric, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../../app/src/lib/contract/api.ts';
+import { isRec } from '../../app/src/lib/contract/guards.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedBody {

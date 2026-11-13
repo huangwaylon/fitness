@@ -4,7 +4,7 @@
 // added, skipped and warned of (counts only: an ingest's warnings name values). The ids the phone sent (`rid`, `sid`)
 // join it to the phone's own events. Only enums and numbers.
 import { isLogId, isToken, LOG_ACTIONS, LOG_STATUS } from '../../app/src/lib/contract/log.ts';
-import { isRec } from '../../app/src/lib/contract/api.ts';
+import { isRec } from '../../app/src/lib/contract/guards.ts';
 import type { StoreCore } from './store.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 

@@ -20,9 +20,10 @@ import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot } from '../../app/src/lib/contract/record.ts';
 import { validEvent } from '../../app/src/lib/contract/shopCheck.ts';
 import {
-  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
+import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
 import { localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';

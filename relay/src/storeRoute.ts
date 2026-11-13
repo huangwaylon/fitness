@@ -12,7 +12,8 @@
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { corsOf, keyOwner, preflight, type Keys } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, sigShaped, verifyAdmin } from './sign.ts';
-import { isRec, MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
+import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
+import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { isLogId, LOG_ACTIONS } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
