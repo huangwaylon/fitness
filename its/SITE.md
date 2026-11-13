@@ -37,6 +37,12 @@ Verified live end to end on 2026-08-19: ブルーベリーヒル勝浦, 2026-09-
   - *冬季 (5), D−4:* ラビスタ函館ベイANNEX, ホテル日航アリビラ, NAGU勝浦, NASPAニューオータニ,
     蓼科東急ホテル — so all but 函館ベイANNEX also sit on the 夏季 roster. Read from
     `/shisetsu/keiyaku/touki/index.html` 2026-08-19.
+  - **Season windows (FY2026, each facility's page: `/shisetsu/keiyaku/{kaki,touki}/<facility>/index.html`).**
+    夏季 2026-07-01 … 09-30; 冬季 2026-12-19 … 2027-03-31 (the rosters' index pages give no dates). So a
+    夏季・冬季 facility is closed 10-01 … 12-18. Each facility also lists 利用不可日, which "may change":
+    NAGU勝浦 every Tue and Wed + 12/31, 1/1–1/3; ラビスタ函館ベイANNEX 12/31, 1/1, 2/24, 2/25; NASPAニューオータニ
+    12/30–1/2 (and summer 7/24–26); 蓼科東急ホテル 1/25–29, 2/15–18, 3/8–12; ホテル日航アリビラ 12/30–1/3. Read the
+    pages again each fiscal year (the app's roster keeps them per FY, app/src/lib/its/roster.ts).
   - `ホテルハーヴェスト スキージャム勝山` is on **none** of the four rosters, nor 提携施設 —
     presumably delisted. `SKIP_HOTELS` keeps it anyway: skipping a facility that never
     appears is free, dropping it books the place if ITS re-contracts it.
