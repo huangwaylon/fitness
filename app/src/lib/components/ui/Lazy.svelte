@@ -4,7 +4,7 @@
   // running build is the deployed one) says so in its place with もう一度 instead of leaving the slot blank. もう一度
   // asks for it again; failing again online, it reloads the page (lazySheet's way: WebKit keeps a failed module import
   // for the page's life). Nothing while it loads. Use: <Lazy load={() => import('./X.svelte')}>{#snippet children(X)}<X />{/snippet}</Lazy>
-  // `floating`: a whole sheet's (the HUD's): its failure is lazySheet's, the island's toast with もういちど (it goes by
+  // `floating`: a whole sheet's (the HUD's): its failure is lazySheet's, the island's toast with もう一度 (it goes by
   // itself), nothing left over the island.
   import type { Snippet } from 'svelte';
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';

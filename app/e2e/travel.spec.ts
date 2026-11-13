@@ -245,7 +245,7 @@ test('reopening: the trip and its page as they were left', async ({ page }) => {
   await expect(rows(page)).toHaveCount(3);
 });
 
-test('offline before the first opening: the pill says so, もういちど opens it once back', async ({ page, context }) => {
+test('offline before the first opening: the pill says so, もう一度 opens it once back', async ({ page, context }) => {
   await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await context.setOffline(true);
@@ -257,10 +257,10 @@ test('offline before the first opening: the pill says so, もういちど opens 
   await shot(page, 'offline-pill');
   await context.setOffline(false);
   // (offline, the chunk wasn't asked for: lazySheet's unreachable; WebKit would keep its failed preloads, and the
-  // retry reloaded the page) back online, もういちど opens it in place, no reload
+  // retry reloaded the page) back online, もう一度 opens it in place, no reload
   let reloads = 0;
   page.on('load', () => reloads++);
-  await page.getByRole('button', { name: 'もういちど' }).click();
+  await page.getByRole('button', { name: 'もう一度' }).click();
   await expect(rows(page)).toHaveCount(3);
   expect(reloads).toBe(0);
 });
