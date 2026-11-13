@@ -434,7 +434,7 @@
     return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: fb ? Math.max(0, rc.bottom - fb.top) : 0 };
   }
 
-  /** The e2e's and the console's hooks (dev builds, ?demo, and the logic tier). */
+  /** The e2e's and the console's hooks (dev builds, test mode, and the logic tier). */
   function hooks() {
     if (!testHooks()) return;
     window.__shop = {

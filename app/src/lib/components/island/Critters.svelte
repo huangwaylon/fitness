@@ -35,7 +35,7 @@
   // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`, client px), a shaken bush
   // (`fromBush`), a tap on my villager (`fromVillager`) and the rock (`fromRock`). Covered or hidden: they all leave at
   // once and the countdown holds. Decorative, pointer-only.
-  //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> (dev or ?demo): one now,
+  //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> (dev or test mode): one now,
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d, has3d } from './fx3d.ts';
@@ -233,7 +233,7 @@
   const swimOk = (f: { water: Water; size: number; shape?: 'narrow' | 'fin' }, keep: Box[]) => (x: number, z: number) =>
     inWater(f.water, x, z) && seen(x, z, 0, keep, sizeU(f as Fish) / 2, 4);
   /** The swim patches of a water whose middle is on screen. */
-  /** (`?coast=front|back|left|right`, dev or ?demo: a hook's sea shadow off that side of the island) */
+  /** (`?coast=front|back|left|right`, dev or test mode: a hook's sea shadow off that side of the island) */
   const coastSide = hook('coast');
   const areasOf = (water: Water): Swim[] =>
     water === 'sea' ? coasts().filter((c) => !coastSide || c.side === coastSide).map((c) => c.area) : freshAreas(water);
@@ -1333,9 +1333,9 @@
   // the slot's seed, staying to the same boundary. This phone shows each where its camera sees that water or patch (none
   // in view, or the place taken: not here). While the island is live and visible; under a sheet or in a hidden tab the
   // critters leave, and coming back shows the ones still staying.
-  /** `?critter=` (dev or ?demo) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
+  /** `?critter=` (dev or test mode) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
   const pinned = hookFlag('critter') || hookFlag('sea');
-  /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
+  /** `?flea` (dev or test mode): every tap on my villager sends a flea hopping off it (the e2e's hook). */
   const forceFlea = hookFlag('flea');
   /** The first look at the slots after the island shows (ms): the scene measured and the camera placed by then. */
   const FIRST_LOOK_MS = 3000;
@@ -1403,7 +1403,7 @@
     };
   });
 
-  // the e2e's view of the fishing (dev builds and the demo): what the last tap on water did and why, and the shadows
+  // the e2e's view of the fishing (dev builds and test mode): what the last tap on water did and why, and the shadows
   // now (world: where each is seen now, and its water)
   onMount(() => {
     if (!hooksOn()) return;

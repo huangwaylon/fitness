@@ -300,7 +300,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   }
 
   let spawnTag: string | undefined, spawnCalm = false, shown = 0;
-  // the e2e's (dev builds and ?demo): the parts of a source drawn now, where (world x, y, z) and how big, and each
+  // the e2e's (dev builds and test mode): the parts of a source drawn now, where (world x, y, z) and how big, and each
   // spawn's kind and time (performance.now()): the fishing's rings come before its 「！」
   const log: { kind: FxKind; t: number; size?: number }[] | null =
     testHooks() ? [] : null;

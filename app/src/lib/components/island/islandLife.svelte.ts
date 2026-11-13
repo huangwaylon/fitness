@@ -93,7 +93,7 @@ export class IslandLife {
     // Balloon present (NH): one floats by in the daytime every 2–3 minutes of on-screen time, the first after 30–60 s.
     // A countdown of the time the island is in the day, on screen (not covered, the page visible) and without a
     // balloon already up: it holds otherwise and resumes where it was. No cap per session.
-    // `?balloon=none` (dev or ?demo only): none floats by (a spec tapping where one would drift over)
+    // `?balloon=none` (dev or test mode only): none floats by (a spec tapping where one would drift over)
     const noBalloons = hook('balloon') === 'none';
     let remaining = balloonMs(true);
     $effect(() => {
@@ -254,7 +254,7 @@ export class IslandLife {
       }
     });
 
-    // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
+    // `?balloon` (dev or test mode only): float one now, at any time of day, to look at it.
     if (hookFlag('balloon') && hook('balloon') !== 'none') this.later(() => (this.balloon = true), 400);
 
     const onVis = () => (this.hidden = document.hidden);

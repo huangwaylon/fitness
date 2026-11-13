@@ -5,9 +5,9 @@
 // real sky by the hour from the relay's timeline (sync/wx.ts, cached for opening offline) while it covers the hour,
 // else (and in `game`) the seeded day (weather.ts). A `?date=` preview moves the scene clock off the real hours: the
 // seeded day.
-// `?weather=clear|rain|heavy|snow|fog|aurora|rainbow` (dev or `?demo`) forces one for this load and 設定's 季節 shows
+// `?weather=clear|rain|heavy|snow|fog|aurora|rainbow` (dev or test mode) forces one for this load and 設定's 季節 shows
 // one on the whole island (ui-state/preview.svelte.ts); `?wx=real|game` forces the mode and `?wx=<fixture>` lays a canned timeline on the
-// scene clock (wxFixtures.ts); `?seed=` (dev or `?demo`) varies the island's seed like the rest of the island.
+// scene clock (wxFixtures.ts); `?seed=` (dev or test mode) varies the island's seed like the rest of the island.
 // What the island yields (the rain-only critters) follows `yieldSky`: the mode's weather (or the dev param), never the
 // preview's.
 import { untrack } from 'svelte';
@@ -41,7 +41,7 @@ export const raining = (): boolean => isRain(weather.sky);
 
 const forcedOf = (w: string | null): Forced | null => ((FORCED as readonly string[]).includes(w ?? '') ? (w as Forced) : null);
 
-/** The mode for this load: `?wx=real|game` (dev or `?demo`), else the island's (`pref weatherMode`), else `real`. */
+/** The mode for this load: `?wx=real|game` (dev or test mode), else the island's (`pref weatherMode`), else `real`. */
 function modeOf(set: unknown): WeatherMode {
   const forced = hook('wx');
   return isWeatherMode(forced) ? forced : isWeatherMode(set) ? set : 'real';

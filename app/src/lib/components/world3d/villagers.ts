@@ -514,7 +514,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return out;
   }
 
-  // the e2e's (dev builds, ?demo and the logic tier): a 3D villager's state, what it holds and its tip (three's space), and what its
+  // the e2e's (dev builds, test mode and the logic tier): a 3D villager's state, what it holds and its tip (three's space), and what its
   // last frame saw (its spec, the rod)
   const hook = debug && {
     last: (slot: string) => debug.get(slot) ?? null,

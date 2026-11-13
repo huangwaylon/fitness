@@ -150,7 +150,7 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 
 `/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts` the canvas, `edits.ts` the
 edits, `Preview3D.svelte`): unlinked, noindex, for anyone paired (A, B or the guest; a browser not paired gets the way
-to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the phone).
+to `/pair`). In test mode `?demo` runs it on the made-up island (`?demo&as=B` beside it as the phone).
 
 - **The plan:** the layout top-down in NH's map colours, the objects by their icons, the homes labelled, the named
   spots as pins, what's wrong tinted on its tiles; where the visitors stand without a usable mark, a dashed tile.

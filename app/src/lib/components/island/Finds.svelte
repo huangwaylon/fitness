@@ -17,7 +17,7 @@
   // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
   // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; the
   // clock is the scene's minute tick.
-  //   ?find=bottle | washed | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, a bottle washing in 1.5 s
+  //   ?find=bottle | washed | fragment | mushroom | rare-mushroom (dev or test mode): a bottle, a bottle washing in 1.5 s
   //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
   //   hooks); ?seed= varies the island's seed.
   import { fx3d } from './fx3d.ts';

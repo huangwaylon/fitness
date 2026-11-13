@@ -153,7 +153,7 @@ class IslandLayout extends Synced<LayoutEntry, LayoutOp, LayoutNews> {
       const news = this.#fold(parse(text));
       if (news) this.#changed(news.who, false);
     });
-    // the e2e's view of the layout this phone holds (dev builds and the demo)
+    // the e2e's view of the layout this phone holds (dev builds and test mode)
     if (typeof window !== 'undefined' && (import.meta.env.DEV || this.demo))
       window.__layout = {
         pos: (id: string) => this.pos(id), obj: (id: string) => this.obj(id), home: (w: Who) => this.home(w), count: (k: string) => this.ofKind(k).length,

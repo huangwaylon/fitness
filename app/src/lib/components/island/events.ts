@@ -3,7 +3,7 @@
 // Nookipedia: Halloween Oct 31 (Jack 17:00–24:00); Turkey Day the fourth Thursday of November (Franklin 09:00–24:00);
 // Toy Day Dec 24 (Jingle, all day in NH); Bunny Day on Easter Sunday, its celebrations the seven days before (Zipper on the first and the last day, eggs all week).
 // Another event is one more rule here, and whatever it shows reads `eventAt`. The seasonal preview (`?event=<id>`, dev
-// or ?demo, and せってい's きせつ: ui-state/preview.svelte.ts) shows one on, its main part included; what the island
+// or test mode, and せってい's きせつ: ui-state/preview.svelte.ts) shows one on, its main part included; what the island
 // yields on it (Bunny Day's eggs in place of a find) follows the real day's, or the dev param only.
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import { HOLIDAYS, fromEaster } from '#lib/time/holidays.ts';

@@ -651,7 +651,7 @@
     return { top: rc && tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: 72 };
   }
 
-  /** The e2e's and the console's hooks (dev builds, ?demo and the logic tier). */
+  /** The e2e's and the console's hooks (dev builds, test mode and the logic tier). */
   function hooks() {
     if (!testHooks()) return;
     window.__museum = {

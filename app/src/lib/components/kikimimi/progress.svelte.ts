@@ -149,7 +149,7 @@ let added = $state(0);
 export const unitAdded = (): void => void added++;
 
 /** The units on しまの みち: the build's (the index's path lines) and any put in at run time. A unit still a draft (not
- *  voiced: no clips) shows only with the dev hooks on (a dev build or `?demo`). Reactive. */
+ *  voiced: no clips) shows only with the dev hooks on (a dev build or test mode). Reactive. */
 export function pathUnits(): PathUnit[] {
   void added;
   const drafts = hooksOn();

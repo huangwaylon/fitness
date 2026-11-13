@@ -212,7 +212,7 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   the other words searched within it (nothing there: everything). One chip row under the field: while typing, the
   results' shops with their counts (≤ 6; only with 2 or more and none named); nothing typed, **よく行く店** (≤ 4, my
   last 30 days of chain menus; hidden with none). A chip only writes the shop's name into the query (the keyboard stays
-  up), so ✕ clears it; never in the demo or for the guest (no chain menus).
+  up), so ✕ clears it; never in test mode or for the guest (no chain menus).
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
   a chain menu's head adds 「<店> · <category>」, its values' trust (公式の値 · 公式の値（PFCは推定） · 推定の値（AI）) and
   「kalori.jpで見る ›」 (its product page, a new tab, at the end of the per-serving toggle's row); Kalori is credited in the sources, its pictures too;
@@ -589,7 +589,7 @@ closed**, at any hour (no night's sleep).
 
 `contract/guest.ts`, `ui-state/cast.ts` ([backend](backend.md#the-guest), [decisions](decisions.md#the-guest)). A third
 person, ゲスト: a visitor to our island, NH's way, with its own key (pairing: [runbook "Pair a
-phone"](ops/runbook.md#10-pair-a-phone)). `?demo&as=G` is its phone.
+phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
   (`guest.jarNote` in place of the rewards), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.

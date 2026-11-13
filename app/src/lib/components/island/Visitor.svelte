@@ -13,7 +13,7 @@
   // On Halloween night (events.ts) Jack comes instead and asks for candy: 「キャンディを あげる」 delights him (joy, the
   // candy pops up over a spooky sparkle), 「なにも あげない」 earns his trick (my villager's face goes goofy for a minute:
   // `ontrick`). No inventory, no ベル.
-  // SceneTaps mounts this inside the stage and asks it about each tap (`tap`). `?visitor=<id>` (dev or ?demo) brings
+  // SceneTaps mounts this inside the stage and asks it about each tap (`tap`). `?visitor=<id>` (dev or test mode) brings
   // one now.
   // Their life (visitorLife.ts; docs/design.md "Visitors: life"): the director's 'visitor' actor moves them (walks,
   // motions, emotes, fx, facing), as it does the villagers; its model breathes and looks about as theirs do (villager3d
@@ -23,7 +23,7 @@
   // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (walking from the
   // campsite along the paths, down from the sky, or appearing) and leave when it ends (back to the campsite); on a
   // page's first paint they're simply there.
-  // `?arrive` (dev or ?demo): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
+  // `?arrive` (dev or test mode): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
   // stroll now; `?meet`: the partner comes over now.
   import { dayRecord } from './dayRecord.ts';
   import { untrack } from 'svelte';
@@ -126,7 +126,7 @@
   const clock = $derived(minuteNow());
   const who = $derived(A === 'guest' ? guestNow(clock) : visitorNow(clock));
   const date = $derived(dayKey(clock));
-  /** `?leave=<ms>` (dev or ?demo): the visit ends after that long (the departure's hook). */
+  /** `?leave=<ms>` (dev or test mode): the visit ends after that long (the departure's hook). */
   let gone = $state(false);
   $effect(() => {
     const ms = Number(hook('leave'));

@@ -141,7 +141,7 @@ week as of its lock (Wednesday 04:00).
 
 ## Client sync
 `lib/sync/` (storage, transport, pairing, queue, cache, the live socket) and `lib/store/` (the week store, actions,
-`live.ts`, `view.ts`, `synced.svelte.ts`, the demo backend, loaded only with `?demo`).
+`live.ts`, `view.ts`, `synced.svelte.ts`, the demo backend, loaded only in test mode).
 
 ### Storage keys
 `sync/storage.ts` registers every key (the live `island.*`, the demo's `island-demo.*`). If storage fails the data
@@ -374,7 +374,7 @@ is a small intent over the relay, kept by the room for the day, folded by every 
 - **The room** (`relay/src/room.ts`): the last `RING_MAX` changes and each person's last `walk` in one storage value
   (`ring`); the day's claims and each tree's last nest apart (`day`), so neither a trimmed ring nor a hibernation lets
   a claim be made twice (`NEST_GAP_MS`).
-- **The demo** (`sync/live-local.ts`): the players are tabs of one browser (`?demo`, `&as=B`, `as=G`), a
+- **Test mode** (`sync/live-local.ts`, [testing](ops/testing.md#test-mode)): the players are tabs of one browser (`?demo`, `&as=B`, `as=G`), a
   BroadcastChannel the room, so the two-player e2e run without a network.
 - **The record's day row** (`island` event, `store/actions.ts sendIslandDay`): my part of the day, sent whole when it
   grows, held 2 minutes; the store folds in today's, yesterday's watering and the wishes for the mornings to come

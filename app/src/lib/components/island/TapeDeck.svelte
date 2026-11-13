@@ -8,7 +8,7 @@
   // motion/stretch.svelte.ts) on every phone as the song starts, ♪ rising from the deck; once a day (on each phone that
   // saw it). Not ready, a tap says why not (done today, or when it plays), and its ♪ floats only when it's ready. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
-  //   ?stretch (dev or ?demo) brings the deck out now.
+  //   ?stretch (dev or test mode) brings the deck out now.
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';

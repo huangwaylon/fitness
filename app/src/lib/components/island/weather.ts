@@ -93,7 +93,7 @@ export function skyOf(p: Pattern, hour: number): Sky {
   return 'clear';
 }
 
-/** Forced weathers (`?weather=`, dev or `?demo`). */
+/** Forced weathers (`?weather=`, dev or test mode). */
 export const FORCED = ['clear', 'cloudy', 'rain', 'heavy', 'snow', 'fog', 'aurora', 'rainbow'] as const;
 export type Forced = (typeof FORCED)[number];
 

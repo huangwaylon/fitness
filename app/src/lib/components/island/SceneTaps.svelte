@@ -18,7 +18,7 @@
   // landed (a mark flat on the ground, a puff upright), so it stays put while the camera scrolls; the sky's stay in the
   // fixed sky. Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4
   // flourishes at once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
-  //   ?shower (dev or ?demo): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
+  //   ?shower (dev or test mode): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { guestNow, onBeach, visitorNow } from './visitors.ts';
@@ -745,7 +745,7 @@
     return () => clearTimeout(id);
   });
   const starHours = $derived(inStarHours(jst(minuteNow()).hour));
-  /** `?stars=none` (dev or ?demo; the e2e's ambient life off): no ordinary night's showers (a meteor shower's still
+  /** `?stars=none` (dev or test mode; the e2e's ambient life off): no ordinary night's showers (a meteor shower's still
    *  comes). */
   const noStars = hook('stars') === 'none';
   let showerIn = nextShowerMs(Math.random, true);

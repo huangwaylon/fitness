@@ -1,4 +1,4 @@
-// The `?wx=` timelines (dev or `?demo`, docs/design.md "Dev params"): canned real-weather timelines (live-protocol.ts
+// The `?wx=` timelines (dev or test mode, docs/design.md "Dev params"): canned real-weather timelines (live-protocol.ts
 // Wx, as the relay sends) laid on the scene clock's hours (a `?date=` preview too), so the e2e and a look at the real
 // weather's states need no relay and no particular day. By Tokyo's hour of each: `rain-pm` rain 12:00–18:00,
 // `clears` rain until 14:00 then fine (a rainbow), `typhoon` a downpour all day, `snow`, `fog` foggy mornings

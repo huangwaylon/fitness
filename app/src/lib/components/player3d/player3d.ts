@@ -157,7 +157,7 @@ function drop(t: Texture) {
 }
 /** @public (tests) The textures some player holds (`refs`: the holds), and the files' textures cached. */
 export const texStats = () => ({ held: uses.size, refs: [...uses.values()].reduce((a, b) => a + b, 0), cached: texs.size });
-// (the leak probe's and the console's: dev builds and ?demo)
+// (the leak probe's and the console's: dev builds and test mode)
 if (typeof window !== 'undefined' && hooksOn(new URLSearchParams(location.search)))
   (window as unknown as { __player3d: unknown }).__player3d = { glbs: glbStats, texs: texStats };
 /** The textures a material draws: its maps, and those its shader takes from elsewhere (userData: the iris, the bare

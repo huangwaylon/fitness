@@ -269,7 +269,7 @@ The island path of units (curriculum.md "Units"), from 遊ぶ's first card and t
   keeps its shape; anchors stay under every filter.
 - **Couple view:** ✓ mine, ✓✓ both, an outlined ✓ the partner's alone; never their answers.
 - The 30-day recheck (`rechecksDue`) is a yuzu banner and takes menu card 1 when due. A `draft` unit shows only with the
-  dev hooks (a dev build or `?demo`).
+  dev hooks (a dev build or test mode).
 
 ### A unit's page
 

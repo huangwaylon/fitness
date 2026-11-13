@@ -3,7 +3,7 @@
   // day, on the layout's `kk-stool` piece (moved and turned in the editor), NH's own model sitting on it, facing its
   // way (world3d/villagers.ts, slot `kk`, the director's actor `kk`). The node here is his tap area, his balloon's
   // anchor, his emotes and fx. What he's up to goes by the clock (kkSlider.ts kkMode; `?kk=show|day|asleep` in dev or
-  // ?demo):
+  // test mode):
   //  - show (Saturday 18:00–24:00, NH's concert): a tap is his greeting and 「リクエストは あるかな？」 (リクエスト: a few
   //    of his songs to pick from; おまかせ: one at random); the song is the island's music stage's (sound/stage.svelte.ts
   //    request('isl'): every phone hears it from the same point, docs/sound-sync.md), the island's music stopping for it

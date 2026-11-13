@@ -16,7 +16,7 @@
   // Shared (docs/backend.md#shared-world): my shake's outcome goes to the partner (world.share), and theirs plays here:
   // their villager turns to the tree and it shakes, the same drop falls, their wasps charge them. What lies (branches,
   // coconuts) is the shared day's, so a reload or the partner's phone finds it there; a pick-up or a catch by either of
-  // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut|wood` (dev or ?demo) makes the
+  // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut|wood` (dev or test mode) makes the
   // next shake drop that (the e2e's hook; `wood`: a piece of wood and nothing else, while the tree has some today). Two oaks or cedars a day hold a present (treeGifts.ts): their first shake drops it,
   // put on the island for both (`put`, by the tree's id: first wins); it lies and opens as a balloon's present does
   // (Finds.svelte). Everything is a world node beside its tree; the swarm's node follows the

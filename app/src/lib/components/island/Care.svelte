@@ -118,7 +118,7 @@
     sceneSfx('weed');
     spawn({ kind: 'pull', x: weed.x, y: weed.y, flip: weed.flip }, 700);
   }
-  /** `?rock=clonk|sparkle|bug` (dev or ?demo): every rock tap has that outcome (the e2e's: no bug out from under it). */
+  /** `?rock=clonk|sparkle|bug` (dev or test mode): every rock tap has that outcome (the e2e's: no bug out from under it). */
   const forcedRock = hookOneOf('rock', ['clonk', 'sparkle', 'bug'] as const);
   function hitRock() {
     const what = forcedRock ?? rockTap(Math.random);

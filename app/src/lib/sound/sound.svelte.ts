@@ -462,7 +462,7 @@ export function prefetchPlace(id: PlaceId): void {
 
 /** Once, in the root layout. `muffled`: a sheet, the phone or the harvest is up (the music goes soft and dull under
  *  it, as under NH's menus). The weather's arrangement and rain follow the island's weather (`?weather=` forces one in
- *  dev or `?demo`: island/weatherNow.svelte.ts). Returns the cleanup. */
+ *  dev or test mode: island/weatherNow.svelte.ts). Returns the cleanup. */
 export function startSound(o: { muffled: () => boolean }): () => void {
   coveredBy = o.muffled;
   sound.settings = loadSound(localKV());

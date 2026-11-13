@@ -698,7 +698,7 @@
     return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: barTop !== undefined ? Math.max(0, rc.bottom - barTop) : 0 };
   }
 
-  /** The e2e's and the console's hooks (dev builds, ?demo, and the e2e's logic mode: a paired phone on a test record). */
+  /** The e2e's and the console's hooks (dev builds, test mode, and the e2e's logic mode: a paired phone on a test record). */
   function hooks() {
     if (!testHooks()) return;
     window.__tent = {
