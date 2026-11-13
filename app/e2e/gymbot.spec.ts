@@ -1,11 +1,12 @@
-// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown), reads the gym bot's
-// GET /status (lib/gym/status.ts, mocked here) and shows its verdict, facts and recent checks; 保養所's tab leaves it
-// (no more reads); under the facts, 現在の設定 is 📋 設定を見る's answer from the members-only GET /gym/config (with the
-// phone's key: lib/gym/config.ts, mocked here), its rows in the bot's own words. A failed fetch shows もう一度, and a
-// retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its 404s carry no
-// CORS, so the preflight fails) hides the
-// section. The guest has no ボット. Phones paired with a record of their own (e2e/record.ts); the payloads' rules (tones,
-// lines, a garbled answer) are status.test.ts's and config.test.ts's.
+// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown): on top 現在の設定,
+// 📋 設定を見る's answer from the members-only GET /gym/config (with the phone's key: lib/gym/config.ts, mocked here), its
+// rows in the bot's own words; at the foot 動作状況, the gym bot's GET /status (lib/gym/status.ts, mocked here): its
+// verdict, 直近12時間 (a cell a check interval: tap or ← → names one) and its facts (くわしく folds the rest); 保養所's tab
+// leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
+// もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
+// 404s carry no CORS, so the preflight fails) hides the section. The guest has no ボット. Phones paired with a record of
+// their own (e2e/record.ts); the payloads' rules (tones, cells, lines, a garbled answer) are status.test.ts's and
+// config.test.ts's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
@@ -99,9 +100,12 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(tab.locator('[data-tab-dot]')).toHaveCount(0); // (一部不調: no person needed)
   await expect(gym.locator('[data-gym-fact="last"]')).toContainText('11:54');
   await expect(gym.locator('[data-gym-fact="next"]')).toContainText('12:09ごろ');
+  await expect(gym.locator('[data-gym-fact="failures"]')).toHaveCount(0);
+  // くわしく: the last success and LINE's count
+  await expect(gym.locator('[data-gym-fact="line"]')).toHaveCount(0);
+  await gym.locator('[data-gym-more] summary').click();
   await expect(gym.locator('[data-gym-fact="ok"]')).toContainText('11:39');
   await expect(gym.locator('[data-gym-fact="line"]')).toContainText('12 / 200');
-  await expect(gym.locator('[data-gym-fact="failures"]')).toHaveCount(0);
   const current = gym.locator('[data-gym-config]');
   await expect(current).toContainText('現在の設定');
   await expect(current).toContainText('📋 日ごとの設定');
@@ -113,15 +117,25 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(days.nth(2)).toHaveClass(/soft/);
   await expect(current.locator('[data-gym-config-check]')).toHaveText('15分ごとにチェック・前回 11:54・次回 12:09');
   await expect(current.locator('[data-gym-notice]')).toHaveCount(0);
-  // under the facts, above the recent checks
-  expect((await current.boundingBox())!.y).toBeGreaterThan((await gym.locator('[data-gym-fact="line"]').boundingBox())!.y);
-  expect((await current.boundingBox())!.y).toBeLessThan((await gym.locator('[data-gym-check]').first().boundingBox())!.y);
-  const checks = gym.locator('[data-gym-check]');
-  await expect(checks).toHaveCount(3);
-  await expect(checks.nth(0)).toHaveAttribute('data-failed', '');
-  await expect(checks.nth(0)).toContainText('ピラティス：タイムアウト');
-  await expect(checks.nth(1)).toContainText('手動');
-  await expect(checks.nth(2)).toContainText('チェックなし');
+  // 現在の設定 on top, 動作状況 (the verdict, the strip, the facts) at the foot
+  const status = gym.locator('[data-gym-status]');
+  await expect(status).toContainText('動作状況');
+  expect((await current.boundingBox())!.y).toBeLessThan((await status.boundingBox())!.y);
+  expect((await status.boundingBox())!.y).toBeLessThan((await gym.locator('[data-gym-verdict]').boundingBox())!.y);
+  // 直近12時間: a cell each 15 minutes; the last check's timeout red, the 🔎 before it yellow (a slot open), the idle alarm outlined
+  const strip = gym.locator('[data-gym-strip]');
+  await expect(strip.locator('[data-gym-cell]')).toHaveCount(48);
+  await expect(strip).toHaveAttribute('aria-label', '直近12時間：確認2回、失敗1回、空きあり2回');
+  await expect(strip.locator('[data-gym-cell]').last()).toHaveAttribute('data-gym-cell', 'fail');
+  await expect(strip.locator('[data-gym-cell="avail"]')).toHaveCount(1);
+  await expect(strip.locator('[data-gym-cell="ok"]')).toHaveCount(0);
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('枠を選ぶと内容が出ます');
+  await strip.locator('[data-gym-cell]').last().click();
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:54 · トレーニング○ ピラティス✕（タイムアウト） · 空き1');
+  await page.keyboard.press('ArrowLeft');
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:39 手動 · トレーニング○ ピラティス○ · 空き1');
+  await page.keyboard.press('ArrowLeft');
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:24 · チェックする日なし');
   await expect(gym.locator('[data-gym-foot]')).toContainText('bot · abc1234 · 更新 12:00');
 
   const n = calls.n;
@@ -130,6 +144,32 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   expect(calls.n).toBe(n);
+});
+
+test('the next opening shows the last status at once, marked 更新中, and the read refreshes it in place (after a reload too)', async ({ page, context }) => {
+  const { sheet } = await phone(page, context, 'A');
+  await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  await expect(sheet.locator('[data-bots-stale]')).toHaveCount(0);
+  // the bot's answers held from now on (until let go), as a slow network's
+  let go = () => {};
+  const held = new Promise<void>((r) => (go = r));
+  await page.route(STATUS, async (route) => { await held; await route.fallback().catch(() => {}); });
+  for (const reload of [false, true]) {
+    await page.locator('dialog[open] .navbar button.nav.close').click();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    if (reload) {
+      await page.reload();
+      await islandUp(page);
+    }
+    await fromMenu(page, 'bots');
+    await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+    await expect(sheet.locator('[data-gym-skeleton]')).toHaveCount(0);
+    await expect(sheet.locator('[data-bots-stale]')).toHaveText('更新中');
+    await expect(sheet.locator('[data-gym-cell]')).toHaveCount(48);
+  }
+  go();
+  await expect(sheet.locator('[data-bots-stale]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
 });
 
 test('a failed fetch shows もう一度, and a retry recovers', async ({ page, context }) => {

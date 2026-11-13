@@ -59,6 +59,7 @@ const NONE: Record<string, string> = {
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
   'lib/components/panel/ProfileSection.svelte': 'the choice already made does nothing; the birthday field opens the system date picker',
   'lib/components/bots/ItsPage.svelte': 'the date field opens the system date picker',
+  'lib/components/bots/StatusStrip.svelte': 'a cell: the strip ticks as it is touched down (its pointerdown picks the cell under the finger)',
   'lib/components/travel/PackList.svelte': 'the add and rename fields: the system keyboard clicks',
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
   'lib/components/health/KenkouSwitch.svelte': 'the page already shown does nothing',

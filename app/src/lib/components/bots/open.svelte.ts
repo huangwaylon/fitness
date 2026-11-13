@@ -22,7 +22,7 @@ const GYM_ON = env.VITE_GYM_URL !== '';
 /** The tabs this phone has, left to right (none: the guest, or no bot configured). */
 export function botTabs(): BotTab[] {
   if (week.guest) return [];
-  return [...(ITS_ON && !week.demo ? ['its' as const] : []), ...(GYM_ON ? ['gym' as const] : [])];
+  return [...(GYM_ON ? ['gym' as const] : []), ...(ITS_ON && !week.demo ? ['its' as const] : [])];
 }
 
 /** The bots needing a person, as last read. */

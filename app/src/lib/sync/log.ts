@@ -217,6 +217,13 @@ function logChunk(err: unknown): void {
   st.chunk = last?.e === 'chunk.fail' ? last : null;
 }
 
+/** A sheet's chunk failed to load (components/island/sheetChunks.ts): the chunk.fail just logged for it, if it says
+ *  no sheet, names it (Safari's names no file, and no sheet is open yet then). */
+export function chunkSheet(sheet: LogSheet): void {
+  const ev = st.chunk;
+  if (ev && st.ring.includes(ev) && ev.d?.sheet === undefined && env.now() - st.chunkAt < CHUNK_ERR_MS) ev.d = { ...ev.d, sheet };
+}
+
 /** A usage counter (`sheet:<id>`, `route:<route>`, `act:<what>`, `swallow:<tag>`): summed, sent as one `use` a flush. */
 export function count(key: string): void {
   if (!st.on) return;
@@ -229,7 +236,7 @@ const keyedEvs = new Map<string, Ev>();
 keyedSink((url, why, http) => {
   if (!st.on) return;
   const path = url.split(/[?#]/)[0];
-  const ep = /\/food\/kalori$/.test(path) ? 'kalori' : /\/stt$/.test(path) ? 'stt' : 'other';
+  const ep = /\/food\/kalori$/.test(path) ? 'kalori' : /\/stt$/.test(path) ? 'stt' : /\/gym\/config$/.test(path) ? 'gym' : 'other';
   const had = keyedEvs.get(`${ep}|${why}`);
   if (had && st.ring.includes(had)) return void (had.d = { ...had.d, n: Number(had.d?.n ?? 1) + 1 });
   log('keyed.fail', { ep, why, n: 1, ...(http ? { http } : {}) }, why === 'unreached' ? 1 : 2);

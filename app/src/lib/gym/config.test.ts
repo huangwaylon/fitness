@@ -1,4 +1,4 @@
-// 現在の設定 as 設定's ジムボット page reads it (config.ts): the payload checked (garbled → null), the fetch's
+// 現在の設定 as ボット's ジム tab reads it (config.ts): the payload checked (garbled → null), the fetch's
 // outcomes (shown, hidden for an older Worker or a key it won't take, failed, unreached) and what the section shows
 // after each.
 import { afterEach, describe, expect, it, vi } from 'vitest';

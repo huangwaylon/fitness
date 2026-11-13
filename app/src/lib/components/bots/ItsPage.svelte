@@ -12,8 +12,10 @@
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
   // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. Each status read
-  // sets the tab's and the menu's dot (open.svelte.ts). Not in demo mode (no tab: no fixture).
-  import { tick, untrack } from 'svelte';
+  // sets the tab's and the menu's dot (open.svelte.ts). The last status read shows at once as the page opens, marked
+  // 更新中 (lastKnown.ts). The verdict, the strip, the facts, the skeleton and the poll are ジム's too (VerdictCard,
+  // StatusStrip, FactList, Skeleton, poll.svelte.ts). Not in demo mode (no tab: no fixture).
+  import { tick } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -28,22 +30,29 @@
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
-  import { fetchStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
+  import { fetchStatus, parseStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, eventLines, factRows, footLine,
     hotelGroups, hotelHint, hotelNote, hotelRows, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
-    stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, needsAttention, STRIP_MIN, type Draft, type HotelRow
+    stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, verdictView, needsAttention, type Draft, type HotelRow
   } from '#lib/its/view.ts';
   import { setBadge } from './open.svelte.ts';
   import ItsNotify from './ItsNotify.svelte';
+  import VerdictCard from './VerdictCard.svelte';
+  import StatusStrip from './StatusStrip.svelte';
+  import FactList from './FactList.svelte';
+  import Skeleton from './Skeleton.svelte';
+  import { statusPoll } from './poll.svelte.ts';
+  import { recall, remember } from './lastKnown.ts';
 
   /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
 
-  let status = $state<ItsStatus | null>(null);
+  /** The status shown: the last read (the one kept from before until this page's first answer: `live` false). */
+  let status = $state<ItsStatus | null>(recall('its', parseStatus));
+  let live = $state(false);
   /** The last read's failure code (offline, http 502, …), or null. */
   let failed = $state<string | null>(null);
-  let loading = $state(false);
   /** The draft (null: the saved settings shown as they are), what it began from and that `updatedAt`. */
   let draft = $state<Draft | null>(null);
   let start: Draft | null = null;
@@ -59,7 +68,6 @@
   let askAuto = $state(false);
   let askOverwrite = $state(false);
   let openHotels = $state(false);
-  let openMore = $state(false);
   let filter = $state('');
   /** The stay whose facilities are shown, or null. */
   let openDate = $state<string | null>(null);
@@ -75,16 +83,13 @@
   const ask = askDiscard();
   leave = (run) => (dirty ? ask(run) : run());
 
-  /** The page's life: every call aborts as it's left. */
-  const life = new AbortController();
-  let ctl: AbortController | null = null;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-
   /** Every answer's status (a read's, 保存's, a 409's, 開始 / 停止's): one older than the shown one is dropped; the
    *  draft is kept (noting a move of the saved settings under it), an unchanged one let go. */
   function take(s: ItsStatus) {
-    if (status && s.now < status.now) return;
+    if (live && status && s.now < status.now) return;
     status = s;
+    live = true;
+    remember('its', s);
     setBadge('its', needsAttention(s));
     if (!dirty) {
       draft = start = null;
@@ -95,46 +100,16 @@
     }
   }
 
-  function schedule() {
-    clearTimeout(timer);
-    if (!life.signal.aborted) timer = setTimeout(() => (document.hidden ? schedule() : void load()), pollMs(status));
-  }
-
-  /** A read in flight let go and the poll held (保存 / 開始 / 停止 answer with the status themselves). */
-  function hold() {
-    ctl?.abort();
-    ctl = null;
-    loading = false;
-    clearTimeout(timer);
-  }
-
-  async function load() {
-    if (saving || running) return;
-    ctl?.abort();
-    const c = (ctl = new AbortController());
-    const stop = () => c.abort();
-    life.signal.addEventListener('abort', stop);
-    loading = true;
-    const r = await fetchStatus(c.signal);
-    life.signal.removeEventListener('abort', stop);
-    if (c.signal.aborted) return;
-    ctl = null;
-    loading = false;
+  /** The reads (poll.svelte.ts): every 15 s while the runner is on its way or running, else every minute; none while
+   *  保存 / 開始 / 停止 answer with the status themselves (their `hold()`; `schedule()` after). */
+  const poll = statusPoll(async (signal) => {
+    const r = await fetchStatus(signal);
+    if (signal.aborted) return;
     if (r.ok) take(r.status);
     failed = r.ok ? null : [r.err, r.http].filter((x) => x !== null).join(' ');
-    schedule();
-  }
-
-  $effect(() => {
-    untrack(() => void load());
-    const onVisible = () => document.hidden || void load();
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisible);
-      clearTimeout(timer);
-      life.abort();
-    };
-  });
+  }, () => pollMs(status), () => saving || running);
+  const load = poll.refresh;
+  const life = poll.life;
 
   /** Focus back on what opened a sheet once it closes (VoiceOver and the keyboard stay where they were). */
   function refocus(open: () => boolean, el: () => HTMLElement | undefined) {
@@ -175,31 +150,11 @@
   const saved = $derived(status && savedLine(status, name, today));
   const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 (a Worker that keeps the reads; else hidden), by Tokyo minute (its per-minute aggregate when it sends one,
-   *  else the reads one by one); the minute picked (its line), or null. */
+   *  else the reads one by one), drawn by the shared strip. */
   const minutes = $derived(status?.recentMinutes);
   const scans = $derived(status?.recentScans);
   const cells = $derived(minutes ? minuteCells(minutes, status!.now) : scans ? scanCells(scans, status!.now) : []);
-  const ticks = $derived(scanTicks(cells));
-  let picked = $state<number | null>(null);
-  let strip = $state<HTMLElement>();
-  /** A tap anywhere on the strip picks the minute under it (60 cells are narrower than a finger). */
-  function pickAt(e: PointerEvent) {
-    if (!strip) return;
-    const r = strip.getBoundingClientRect();
-    const i = Math.min(STRIP_MIN - 1, Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * STRIP_MIN)));
-    picked = i;
-    cue('tick');
-    strip.querySelectorAll<HTMLElement>('[data-its-cell]')[i]?.focus({ preventScroll: true });
-    e.preventDefault();
-  }
-  /** ← → move along the minutes (one tab stop: the picked one, else the newest). */
-  function stripKey(e: KeyboardEvent) {
-    const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : e.key === 'Home' ? -STRIP_MIN : e.key === 'End' ? STRIP_MIN : 0;
-    if (!step) return;
-    e.preventDefault();
-    picked = Math.min(STRIP_MIN - 1, Math.max(0, (picked ?? STRIP_MIN - 1) + step));
-    strip?.querySelectorAll<HTMLElement>('[data-its-cell]')[picked]?.focus();
-  }
+  const legend = { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), fail: t('its.scan.legend.fail'), none: t('its.scan.legend.none') };
   const bulk = $derived(shown && bulkOpen ? bulkDates(shown, bulkFrom, bulkTo, bulkDays, nowMs) : { add: [], over: 0 });
 
   function edit(f: (d: Draft) => Draft) {
@@ -280,12 +235,12 @@
       askOverwrite = true;
       return;
     }
-    hold();
+    poll.hold();
     saving = true;
     saveWhy = null;
-    const r = await putSettings(toInput(draft, base, sceneNow().getTime()), life.signal);
+    const r = await putSettings(toInput(draft, base, sceneNow().getTime()), life);
     saving = false;
-    if (life.signal.aborted) return;
+    if (life.aborted) return;
     if (r.ok) {
       draft = start = null;
       cue('confirm');
@@ -293,20 +248,20 @@
     } else if (r.err !== 'conflict') saveWhy = saveError(r.err);
     if (r.status) take(r.status);
     if (!r.ok && r.err === 'conflict') conflict = true;
-    schedule();
+    poll.schedule();
   }
 
   async function run(action: RunInput['action']) {
     if (!status || running) return;
     if (action === 'start' && noDates) return void cue('boop');
-    hold();
+    poll.hold();
     running = true;
-    const r: ItsReply = await postRun(action, life.signal);
+    const r: ItsReply = await postRun(action, life);
     running = false;
-    if (life.signal.aborted) return;
+    if (life.aborted) return;
     if (r.ok) take(r.status);
     else toasts.show(t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed'), 4000);
-    schedule();
+    poll.schedule();
   }
 
   const intervals = INTERVALS_SEC.map((s) => ({ id: String(s), label: s < 60 ? t('its.interval.s', { n: s }) : t('its.interval.m', { n: s / 60 }) }));
@@ -330,36 +285,31 @@
   </li>
 {/snippet}
 
-<div class="its" data-its-page aria-busy={loading}>
+<div class="its" data-its-page aria-busy={poll.loading}>
   {#if failed}
     <div class="prow static note" data-its-error>
       <span class="prl">{t('its.loadFailed', { code: failed })}</span>
-      <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={loading} onclick={() => loading || void load()}>{t('state.retry')}</button>
+      <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={poll.loading} onclick={() => poll.loading || void load()}>{t('state.retry')}</button>
     </div>
   {/if}
   {#if status && verdict && shown}
+    <VerdictCard tone={verdict.tone} word={verdict.word} sentence={verdict.sentence} attr={{ 'data-its-verdict': status.verdict }} stale={!live && poll.loading}
+      act={{ 'data-its-run': paused ? 'stopped' : 'running' }}>
+      <span class="txt">
+        {#if !paused}<small>{t('its.ctl.on')}</small>{/if}
+        {#if control}<small data-its-control>{control}</small>{/if}
+        {#if paused && noDates}<small class="late" data-its-need-dates>{t('its.ctl.needDates')}</small>{/if}
+      </span>
+      <button type="button" class="btn small runbtn" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick"
+        aria-disabled={running || (paused && noDates)} onclick={() => void run(paused ? 'start' : 'stop')}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
+    </VerdictCard>
+
     {#if migrating}
       <div class="card note" data-its-migrate role="status">
         <p><Phrases text={t('its.hotel.migrate')} /></p>
         <button type="button" class="btn small paper" data-its-migrate-save data-sfx="tick" aria-disabled={saving} onclick={saveDerived}>{t('its.hotel.migrateSave')}</button>
       </div>
     {/if}
-
-    <div class="card verdict {verdict.tone}" data-its-verdict={status.verdict}>
-      <div class="vhead">
-        <span class="dot {verdict.tone}" aria-hidden="true"></span>
-        <div class="vtxt"><b>{verdict.word}</b><p><Phrases text={verdict.sentence} /></p></div>
-      </div>
-      <div class="run" data-its-run={paused ? 'stopped' : 'running'}>
-        <span class="txt">
-          {#if !paused}<small>{t('its.ctl.on')}</small>{/if}
-          {#if control}<small data-its-control>{control}</small>{/if}
-          {#if paused && noDates}<small class="late" data-its-need-dates>{t('its.ctl.needDates')}</small>{/if}
-        </span>
-        <button type="button" class="btn small" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick"
-          aria-disabled={running || (paused && noDates)} onclick={() => void run(paused ? 'start' : 'stop')}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
-      </div>
-    </div>
 
     {#if bookings.length}
       <section class="sec" aria-labelledby="its-bookings">
@@ -383,39 +333,11 @@
       <h3 id="its-status" class="sec-label">{t('its.sec.status')}</h3>
       <div class="card">
         {#if cells.length}
-          <div class="scans" data-its-scans>
-            <div class="shead"><b>{t('its.scan.title')}</b>
-              <span class="legend" aria-hidden="true">{#each ['ok', 'avail', 'fail', 'none'] as k (k)}<span><i class="cell {k}"></i>{t(`its.scan.legend.${k}`)}</span>{/each}</span>
-            </div>
-            <!-- one labelled group, a tab stop; a tap picks the minute under it, ← → walk them -->
-            <div class="strip" role="toolbar" tabindex="-1" aria-label={scanSummary(cells, !!minutes)} bind:this={strip} onpointerdown={pickAt} onkeydown={stripKey} data-its-strip>
-              {#each cells as c, i (c.t)}
-                <button type="button" class="cell {c.state}" class:on={picked === i} tabindex={i === (picked ?? STRIP_MIN - 1) ? 0 : -1} aria-label={c.text}
-                  aria-pressed={picked === i} data-its-cell={c.state} data-sfx="none" onclick={() => (picked = i)}></button>
-              {/each}
-            </div>
-            <div class="ticks" aria-hidden="true">{#each ticks as k (k.i)}<span style:left="{((k.i + 0.5) / STRIP_MIN) * 100}%" style:translate={k.i < 4 ? '0 0' : k.i > STRIP_MIN - 5 ? '-100% 0' : undefined}>{k.label}</span>{/each}</div>
-            <p class="sline" aria-live="polite" data-its-scan-line>{picked === null ? t('its.scan.pick') : cells[picked].text}</p>
-          </div>
+          <StatusStrip cells={stripCells(cells)} ticks={scanTicks(cells)} title={t('its.scan.title')} {legend} summary={scanSummary(cells, !!minutes)} hint={t('its.scan.pick')} attr="its" />
         {/if}
-        <dl class="facts">
-          {#each facts.filter((f) => !f.more) as f (f.id)}
-            <div data-its-fact={f.id}><dt>{f.label}</dt><dd>{#if f.href}<a href={f.href} target="_blank" rel="noopener noreferrer" data-sfx="open">{f.value}</a>{:else}{f.value}{/if}</dd></div>
-          {/each}
-        </dl>
-        {#if facts.some((f) => f.more)}
-          <details class="more" bind:open={openMore} data-its-more>
-            <summary><span>{t('its.fact.more')}</span><span class="chev" aria-hidden="true"></span></summary>
-            {#if openMore}
-              <dl class="facts">
-                {#each facts.filter((f) => f.more) as f (f.id)}<div data-its-fact={f.id}><dt>{f.label}</dt><dd>{f.value}</dd></div>{/each}
-              </dl>
-            {/if}
-          </details>
-        {/if}
+        <FactList {facts} more={t('its.fact.more')} attr="its" />
       </div>
     </section>
-
     <section class="sec" aria-labelledby="its-dates">
       <h3 id="its-dates" class="sec-label">{t('its.sec.dates')}</h3>
       <p class="hint">{t('its.date.one')}</p>
@@ -545,7 +467,7 @@
       </div>
     {/if}
   {:else if !failed}
-    {#each [0, 1, 2] as i (i)}<div class="card skel" data-its-skeleton aria-hidden="true"><span></span></div>{/each}
+    <Skeleton attr="its" />
   {/if}
 </div>
 
@@ -557,7 +479,7 @@
   groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('its.overwrite.cancel') }]]}
   onpick={(id) => id === 'yes' && overwrite()} />
 
-<Sheet bind:open={bulkOpen} title={t('its.bulk.title')}>
+<Sheet bind:open={bulkOpen} title={t('its.bulk.title')} name="its.bulk">
   <div class="bulk" data-its-bulk>
     <span class="lbl">{t('its.bulk.period')}</span>
     <div class="period">
@@ -590,52 +512,8 @@
   .card.note p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .card.note .btn { justify-self: start; margin: 0; }
 
-  /* the verdict, tinted by its tone */
-  .verdict { display: grid; gap: 10px; }
-  .verdict.good { background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
-  .verdict.warn { background: color-mix(in srgb, var(--c-yuzu) 30%, var(--card)); }
-  .verdict.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--card)); }
-  .vhead { display: flex; align-items: flex-start; gap: 12px; }
-  .vtxt b { font-size: var(--fs-title); line-height: 1.3; }
-  .vtxt p { margin: 2px 0 0; font-size: var(--fs-body); line-height: var(--lh); color: var(--text-soft); font-weight: 700; }
-  .dot { flex: none; width: 14px; height: 14px; margin-top: 5px; border-radius: 50%; box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--edge); }
-  .dot.good { background: var(--c-leaf); }
-  .dot.warn { background: var(--c-yuzu); }
-  .dot.bad { background: var(--c-coral); }
-  .dot.idle { background: var(--ctl-off); }
-  .run { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
-  .run .btn { flex: none; margin: 0; }
-
-  /* 直近1時間: 60 minutes, each a cell outlined in the edge (the pale fills need it to read, 3:1); a failure hatched, a
-     room full height, so neither is colour alone */
-  .scans { display: grid; gap: 4px; margin-bottom: 12px; }
-  .shead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; font-size: var(--fs-s); }
-  .legend { display: flex; flex-wrap: wrap; gap: 2px 10px; font-weight: 700; color: var(--text-soft); }
-  .legend span { display: inline-flex; align-items: center; gap: 4px; }
-  .legend .cell { display: inline-block; width: 10px; height: 12px; flex: none; }
-  .strip { display: flex; align-items: flex-end; gap: 1px; height: var(--hit); padding: 6px 0; touch-action: pan-y; cursor: pointer; }
-  .strip .cell { appearance: none; border: 0; padding: 0; flex: 1 1 0; min-width: 0; height: 70%; cursor: pointer; }
-  .cell { border-radius: 2px; box-shadow: inset 0 0 0 1px var(--edge); background: var(--ctl-off); }
-  .cell.ok { background: var(--c-leaf); }
-  .strip .cell.avail { height: 100%; }
-  .cell.avail { background: var(--c-yuzu); }
-  .strip .cell.fail { height: 100%; }
-  .cell.fail { background: repeating-linear-gradient(135deg, var(--c-coral) 0 3px, color-mix(in srgb, var(--c-coral) 45%, var(--card)) 3px 5px); }
-  .cell.none { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--edge) 55%, transparent); }
-  .strip .cell.on { outline: 2px solid var(--text); outline-offset: 1px; }
-  .strip .cell:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
-  .ticks { position: relative; height: 1.3em; font: 700 var(--fs-s)/1.3 var(--font-num); color: var(--text-soft); }
-  .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
-  .sline { margin: 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-  .facts { display: grid; gap: 8px; margin: 0; }
-  .facts div { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-body); }
-  .facts dt { flex: none; color: var(--text-soft); font-weight: 700; }
-  .facts dd { margin: 0; min-width: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-  /* the run's link: a full 44px target, without pushing its row apart */
-  .facts a { color: var(--sky-text); display: inline-flex; align-items: center; min-height: var(--hit); margin: -10px 0; }
-  .more > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: var(--hit); margin-top: 4px; font-weight: 700; color: var(--text-soft); cursor: pointer; }
-  .more > summary::-webkit-details-marker { display: none; }
-  .more[open] > summary { margin-bottom: 4px; }
+  /* the verdict's row (VerdictCard): 開始 / 停止 */
+  .runbtn { flex: none; margin: 0; }
 
   .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
   .rows > li { display: flex; align-items: center; gap: 10px; min-height: var(--hit); }
@@ -723,21 +601,7 @@
   .opts .lbl { margin: 0; }
   .opts .hint { margin: 0 0 6px; }
 
-  /* the switch (SoundSection's): a sunk tan track (off) or a leaf one (on) with a cream knob; `.s` the rows' smaller one */
-  .sw {
-    position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
-    background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);
-  }
-  .sw i {
-    position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
-    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
-    transition: translate var(--dur-base) var(--ease-bounce);
-  }
-  .sw.s { width: 44px; height: 26px; }
-  .sw.s i { top: 3px; left: 3px; width: 20px; height: 20px; }
-  [aria-checked='true'] > .sw { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
-  [aria-checked='true'] > .sw i { translate: 24px 0; }
-  [aria-checked='true'] > .sw.s i { translate: 18px 0; }
+  /* (the switches: theme.css .sw, .sw.s the rows' smaller one) */
   /* the ink rule: only on 自動で確定's chosen (yellow) row */
   .prow[data-its-auto][aria-checked='true'] .prl small { color: var(--c-ink-soft); }
 
@@ -750,9 +614,5 @@
 
   .bulk { display: grid; gap: 8px; padding-bottom: 8px; }
   .period { display: flex; align-items: center; gap: 6px; }
-
-  .skel { height: 52px; display: flex; align-items: center; }
-  .skel span { width: 60%; height: 12px; border-radius: 6px; background: var(--ctl-off); animation: pulse 1.2s ease-in-out infinite alternate; }
-  @keyframes pulse { from { opacity: .45; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .skel span { animation: none; } .chev, .sw, .sw i { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
 </style>

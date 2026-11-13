@@ -58,6 +58,10 @@ export const LIVE = {
   boardSeen: 'island.boardSeen',
   /** The relay's `wx` (live-protocol.ts Wx): Tokyo's real sky by the hour, for opening offline (sync/wx.ts). */
   wx: 'island.wx',
+  /** `{ me, s }`: ボット's last status read by each tab (components/bots/lastKnown.ts: shown at once, marked 更新中, as
+   *  the page opens; whose phone it was: `me`). */
+  botsIts: 'island.botsLast.its',
+  botsGym: 'island.botsLast.gym',
   /** `{ v, s, build, os, ring, pending, day }`: the phone's log (sync/log.ts): its events not yet sent, the batches the
    *  relay hasn't acked, today's count. Dropped first when storage is full. */
   log: 'island.log'
@@ -182,7 +186,7 @@ export const DEVICE = {
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone',
-  /** localStorage: `its` | `gym`: the ボット tab last shown on this phone (the next opening's; 保養所 by default:
+  /** localStorage: `its` | `gym`: the ボット tab last shown on this phone (the next opening's; ジム by default:
    *  components/bots/BotsSheet.svelte). */
   botsTab: 'island.botsTab',
   /** localStorage: `{ on, endpoint, key, lang, at }`: 保養所's 通知 on this phone (lib/its/push.ts; off by default): on

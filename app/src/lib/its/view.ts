@@ -11,6 +11,7 @@ import { D4, ROSTER, SUMMER_LAST, WINTER_FIRST, WINTER_LAST, type Region, type R
 import { t } from '#lib/i18n/index.ts';
 import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
+import { bucket, gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -476,12 +477,10 @@ export function bookingRows(s: ItsStatus, today: string, now: number = s.now): B
   return rows.sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state] || a.date.localeCompare(b.date) || a.hotel.localeCompare(b.hotel));
 }
 
-// ---- 直近1時間: the scans a minute at a time ----
-type CellState = 'ok' | 'avail' | 'fail' | 'none';
+// ---- 直近1時間: the scans a minute at a time (the shared strip: lib/strip.ts) ----
 export interface ScanCell { t: number; time: string; n: number; fails: number; avail: number; state: CellState; text: string }
 const MIN_MS = 60_000;
-export const STRIP_MIN = 60;
-const hhmm = (ms: number): string => new Date(ms + 9 * 3600_000).toISOString().slice(11, 16);
+const STRIP_MIN = 60;
 
 /** One cell: its state (red when any read failed, else yellow when any saw a room, else green; none read empty) and
  *  its line 「15:32 · 4回 · 失敗1（timeout） · 空きあり1」 (`dates`: a minute's aggregate says the most nights with a room
@@ -494,34 +493,22 @@ function cell(start: number, n: number, fails: number, avail: number, codes: rea
   return { t: start, time: hhmm(start), n, fails, avail, state, text: parts.join(' · ') };
 }
 
-/** The strip's first minute: STRIP_MIN Tokyo minutes up to `now`'s (Tokyo is whole hours off UTC: its minutes are UTC's). */
-const stripFirst = (now: number): number => Math.floor(now / MIN_MS) * MIN_MS - (STRIP_MIN - 1) * MIN_MS;
-
-/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first, from the reads one by one (`recentScans`). */
+/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first, from the reads one by one (`recentScans`). (Tokyo is
+ *  whole hours off UTC: its minutes are UTC's.) */
 export function scanCells(scans: readonly ScanEntry[], now: number): ScanCell[] {
-  const first = stripFirst(now);
-  const cells = Array.from({ length: STRIP_MIN }, (_, i) => ({ t: first + i * MIN_MS, n: 0, fails: 0, avail: 0, codes: [] as string[] }));
-  for (const s of scans) {
-    const i = Math.floor((s.t - first) / MIN_MS);
-    if (i < 0 || i >= STRIP_MIN) continue;
-    const c = cells[i];
-    c.n++;
-    if (s.avail > 0) c.avail++;
-    if (!s.ok) {
-      c.fails++;
-      if (s.code && !c.codes.includes(s.code)) c.codes.push(s.code);
-    }
-  }
-  return cells.map((c) => cell(c.t, c.n, c.fails, c.avail, c.codes));
+  const starts = gridStarts(now, MIN_MS, STRIP_MIN);
+  return bucket(scans, (s) => s.t, starts[0], MIN_MS, STRIP_MIN).map((reads, i) => {
+    const codes = [...new Set(reads.flatMap((s) => (!s.ok && s.code ? [s.code] : [])))];
+    return cell(starts[i], reads.length, reads.filter((s) => !s.ok).length, reads.filter((s) => s.avail > 0).length, codes);
+  });
 }
 
 /** The same strip from the Worker's per-minute aggregate (`recentMinutes`: every read of the hour, however many runs);
  *  a minute's `avail` counts as one minute with a room. */
 export function minuteCells(minutes: readonly ScanMinute[], now: number): ScanCell[] {
-  const first = stripFirst(now);
   const by = new Map(minutes.map((m) => [Math.floor(m.minute / MIN_MS) * MIN_MS, m]));
-  return Array.from({ length: STRIP_MIN }, (_, i) => {
-    const start = first + i * MIN_MS, m = by.get(start);
+  return gridStarts(now, MIN_MS, STRIP_MIN).map((start) => {
+    const m = by.get(start);
     return m ? cell(start, m.n, m.fail, m.avail > 0 ? 1 : 0, Object.keys(m.codes ?? {}), m.avail) : cell(start, 0, 0, 0, []);
   });
 }
@@ -532,9 +519,11 @@ export function scanSummary(cells: readonly ScanCell[], byMinute = false): strin
   return t(byMinute ? 'its.scan.summaryMin' : 'its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
 }
 
+/** The cells as the shared strip draws them. */
+export const stripCells = (cells: readonly ScanCell[]): StripCell[] => cells.map((c) => ({ start: c.t, end: c.t + MIN_MS, state: c.state, label: c.text }));
+
 /** The ticks under it: each quarter hour (15:00 · 15:15 …), at its cell's index. */
-export const scanTicks = (cells: readonly ScanCell[]): { i: number; label: string }[] =>
-  cells.flatMap((c, i) => (Number(c.time.slice(3)) % 15 === 0 ? [{ i, label: c.time }] : []));
+export const scanTicks = (cells: readonly ScanCell[]): StripTick[] => stripTicks(stripCells(cells), 15 * MIN_MS);
 
 // ---- Recent events ----
 const EVENTS_SHOWN = 10;

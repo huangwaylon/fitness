@@ -1,7 +1,9 @@
 // The ITS booker's Worker (its/README.md) as ボット's 保養所 tab talks to it: GET /its/status, PUT /its/settings,
 // POST /its/run and the push routes (POST /its/push/*: lib/its/push.ts), each with this phone's member key (a guest's is refused there; the page never asks for the guest).
-// Answers are checked (parseStatus: another version, a proxy's page or garbage is null); a call never throws, and a
-// failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id; never the key).
+// Answers are checked (parseStatus, on contract/guards.ts: another version, a proxy's page or garbage is null); a call
+// never throws, and a failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id;
+// never the key). Its own fetch, not lib/keyed.ts: the request id and its one retry without it, a 409's status in the
+// body, and its.fail's code and rid, which keyed.fail doesn't carry.
 // Each call carries an `X-Request-Id` (the Worker logs it as `rid=`); a Worker from before it refuses the header in its
 // CORS preflight, so the session's first read (a GET) that fails the way a refused preflight does (a TypeError, online)
 // is tried once without, and the session stops sending it once that worked; once a call got an answer with it, never
@@ -14,6 +16,7 @@ import {
   type Reason, type RunInput, type ScanEntry, type ScanMinute, type Verdict
 } from './contract.ts';
 import { getKey } from '#lib/sync/storage.ts';
+import { isNum, isRec } from '#lib/contract/guards.ts';
 import { log } from '#lib/sync/log.ts';
 
 /** The Worker's origin (the CSP's connect-src names it: vite.config.ts). */
@@ -23,8 +26,7 @@ export const ITS_URL: string = (import.meta.env?.VITE_ITS_URL as string | undefi
 
 const TIMEOUT_MS = 20_000;
 
-const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
-const num = (x: unknown): number | null => (typeof x === 'number' && Number.isFinite(x) ? x : null);
+const num = (x: unknown): number | null => (isNum(x) ? x : null);
 const str = (x: unknown): string | null => (typeof x === 'string' ? x : null);
 const strs = (x: unknown): string[] => (Array.isArray(x) ? x.filter((s): s is string => typeof s === 'string') : []);
 const member = (x: unknown): Member | null => (x === 'A' || x === 'B' ? x : null);
@@ -32,7 +34,7 @@ const member = (x: unknown): Member | null => (x === 'A' || x === 'B' ? x : null
 const names = (x: unknown, max: number): string[] => (Array.isArray(x) ? x.filter((s): s is string => isName(s, max)) : []);
 
 function parseSettings(x: unknown): ItsSettings | null {
-  if (!isObj(x) || typeof x.paused !== 'boolean' || typeof x.autoConfirm !== 'boolean' || !INTERVALS_SEC.includes(x.intervalSec as IntervalSec)) return null;
+  if (!isRec(x) || typeof x.paused !== 'boolean' || typeof x.autoConfirm !== 'boolean' || !INTERVALS_SEC.includes(x.intervalSec as IntervalSec)) return null;
   if (!Number.isInteger(x.guests) || !Array.isArray(x.dates) || !x.dates.every(isDate)) return null;
   return {
     v: 1, paused: x.paused, intervalSec: x.intervalSec as IntervalSec, dates: [...x.dates as string[]], guests: x.guests as number,
@@ -43,12 +45,12 @@ function parseSettings(x: unknown): ItsSettings | null {
 }
 
 function parseBooking(x: unknown): BookingEntry | null {
-  if (!isObj(x) || !BOOKING_KINDS.includes(x.kind as BookingEntry['kind']) || !isDate(x.date) || !isName(x.hotel, MAX_SITE_NAME) || num(x.at) === null) return null;
+  if (!isRec(x) || !BOOKING_KINDS.includes(x.kind as BookingEntry['kind']) || !isDate(x.date) || !isName(x.hotel, MAX_SITE_NAME) || num(x.at) === null) return null;
   return { id: str(x.id) ?? '', kind: x.kind as BookingEntry['kind'], date: x.date, hotel: x.hotel, ...(typeof x.number === 'string' ? { number: x.number } : {}), at: x.at as number, runId: str(x.runId) ?? '' };
 }
 
 function parseEvent(x: unknown): ItsEvent | null {
-  if (!isObj(x) || !EVENT_KINDS.includes(x.kind as ItsEvent['kind']) || num(x.t) === null) return null;
+  if (!isRec(x) || !EVENT_KINDS.includes(x.kind as ItsEvent['kind']) || num(x.t) === null) return null;
   return {
     runId: str(x.runId) ?? '', seq: num(x.seq) ?? 0, t: x.t as number, kind: x.kind as ItsEvent['kind'],
     ...(isDate(x.date) ? { date: x.date } : {}), ...(typeof x.hotel === 'string' ? { hotel: x.hotel } : {}), ...(typeof x.detail === 'string' ? { detail: x.detail } : {})
@@ -56,11 +58,11 @@ function parseEvent(x: unknown): ItsEvent | null {
 }
 
 function parseRunner(x: unknown): ItsStatus['runner'] {
-  if (!isObj(x) || num(x.lastSeen) === null || num(x.startedAt) === null) return null;
-  const sv = isObj(x.solves) ? x.solves : {};
-  const err = isObj(x.lastError) && num(x.lastError.at) !== null ? x.lastError : null;
+  if (!isRec(x) || num(x.lastSeen) === null || num(x.startedAt) === null) return null;
+  const sv = isRec(x.solves) ? x.solves : {};
+  const err = isRec(x.lastError) && num(x.lastError.at) !== null ? x.lastError : null;
   const fails: Record<string, number> = {};
-  if (isObj(x.failuresByStep)) for (const [k, v] of Object.entries(x.failuresByStep)) if (num(v) !== null) fails[k] = v as number;
+  if (isRec(x.failuresByStep)) for (const [k, v] of Object.entries(x.failuresByStep)) if (num(v) !== null) fails[k] = v as number;
   return {
     runId: str(x.runId) ?? '', runUrl: str(x.runUrl), sha: str(x.sha), host: x.host === 'local' ? 'local' : 'actions',
     startedAt: x.startedAt as number, deadline: num(x.deadline),
@@ -78,28 +80,28 @@ function parseRunner(x: unknown): ItsStatus['runner'] {
 
 /** One read of the last hour's (`recentScans`), or null when garbled. */
 function parseScan(x: unknown): ScanEntry | null {
-  if (!isObj(x) || num(x.t) === null || typeof x.ok !== 'boolean') return null;
+  if (!isRec(x) || num(x.t) === null || typeof x.ok !== 'boolean') return null;
   return { t: x.t as number, ok: x.ok, ...(isId(x.code) ? { code: x.code } : {}), ms: num(x.ms) ?? 0, avail: num(x.avail) ?? 0 };
 }
 
 /** One minute of the last hour's reads (`recentMinutes`), or null when garbled. */
 function parseMinute(x: unknown): ScanMinute | null {
-  if (!isObj(x) || num(x.minute) === null || num(x.n) === null) return null;
+  if (!isRec(x) || num(x.minute) === null || num(x.n) === null) return null;
   const codes: Record<string, number> = {};
-  if (isObj(x.codes)) for (const [k, v] of Object.entries(x.codes)) if (isId(k) && num(v) !== null) codes[k] = v as number;
+  if (isRec(x.codes)) for (const [k, v] of Object.entries(x.codes)) if (isId(k) && num(v) !== null) codes[k] = v as number;
   return { minute: x.minute as number, n: x.n as number, ok: num(x.ok) ?? 0, fail: num(x.fail) ?? 0, avail: num(x.avail) ?? 0, ...(Object.keys(codes).length ? { codes } : {}) };
 }
 
 /** A GET /its/status answer as the page reads it, or null when it isn't one. The verdict, the time and the settings
  *  must be there; a garbled booking, event or reason is left out. */
 export function parseStatus(x: unknown): ItsStatus | null {
-  if (!isObj(x) || x.v !== 1 || num(x.now) === null || !VERDICTS.includes(x.verdict as Verdict)) return null;
+  if (!isRec(x) || x.v !== 1 || num(x.now) === null || !VERDICTS.includes(x.verdict as Verdict)) return null;
   const settings = parseSettings(x.settings);
   if (!settings) return null;
-  const lease = isObj(x.lease) && num(x.lease.until) !== null ? { holder: str(x.lease.holder) ?? '', host: x.lease.host === 'local' ? 'local' as const : 'actions' as const, until: x.lease.until as number } : null;
-  const dispatch = isObj(x.dispatch) && num(x.dispatch.at) !== null ? { at: x.dispatch.at as number, ok: x.dispatch.ok === true, status: num(x.dispatch.status) } : null;
+  const lease = isRec(x.lease) && num(x.lease.until) !== null ? { holder: str(x.lease.holder) ?? '', host: x.lease.host === 'local' ? 'local' as const : 'actions' as const, until: x.lease.until as number } : null;
+  const dispatch = isRec(x.dispatch) && num(x.dispatch.at) !== null ? { at: x.dispatch.at as number, ok: x.dispatch.ok === true, status: num(x.dispatch.status) } : null;
   const c = x.control;
-  const control = isObj(c) && (c.action === 'start' || c.action === 'stop') && member(c.by) && num(c.at) !== null ? { action: c.action as RunInput['action'], by: member(c.by)!, at: c.at as number } : null;
+  const control = isRec(c) && (c.action === 'start' || c.action === 'stop') && member(c.by) && num(c.at) !== null ? { action: c.action as RunInput['action'], by: member(c.by)!, at: c.at as number } : null;
   const push = parsePush(x.push);
   return {
     v: 1, now: x.now as number, mode: x.mode === 'on' ? 'on' : 'off', sha: str(x.sha), verdict: x.verdict as Verdict,
@@ -120,8 +122,8 @@ export function parseStatus(x: unknown): ItsStatus | null {
 
 /** A push status (`ItsStatus.push`, a push route's `push`), or null when garbled. */
 function parsePush(x: unknown): ItsPushStatus | null {
-  if (!isObj(x) || num(x.A) === null || num(x.B) === null) return null;
-  const o = isObj(x.lastOutcome) && num(x.lastOutcome.at) !== null ? x.lastOutcome : null;
+  if (!isRec(x) || num(x.A) === null || num(x.B) === null) return null;
+  const o = isRec(x.lastOutcome) && num(x.lastOutcome.at) !== null ? x.lastOutcome : null;
   return {
     A: x.A as number, B: x.B as number, vapidPublic: typeof x.vapidPublic === 'string' && /^[A-Za-z0-9_-]{80,100}$/.test(x.vapidPublic) ? x.vapidPublic : null,
     lastSentAt: num(x.lastSentAt),
@@ -189,7 +191,7 @@ async function call<T>(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, bod
       const v = parse(json);
       r = v ? { ok: true, value: v } : { ok: false, err: 'json', http: res.status, status: null, rid: id };
     } else {
-      const o = isObj(json) ? json : {};
+      const o = isRec(json) ? json : {};
       r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json), rid: id };
     }
   } catch {
@@ -221,5 +223,5 @@ export const postRun = (action: RunInput['action'], signal?: AbortSignal, url = 
 /** POST /its/push/subscribe, /unsubscribe, /test (lib/its/push.ts): `{ok: true, push}`, or why not (a Worker without
  *  the routes: 404). Logged as the other calls (never the endpoint or the keys: they are in the body only). */
 export const pushCall = (route: keyof typeof PUSH_ROUTES, body: PushSubscribeInput | PushEndpointInput, signal?: AbortSignal, url = ITS_URL): Promise<PushReply> =>
-  call(`push_${route}`, 'POST', PUSH_ROUTES[route], body, signal, url, (x) => (isObj(x) && x.ok === true ? parsePush(x.push) : null))
+  call(`push_${route}`, 'POST', PUSH_ROUTES[route], body, signal, url, (x) => (isRec(x) && x.ok === true ? parsePush(x.push) : null))
     .then((r) => (r.ok ? { ok: true, push: r.value } : { ok: false, err: r.err, http: r.http }));

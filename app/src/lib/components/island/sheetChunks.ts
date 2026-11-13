@@ -3,7 +3,8 @@
 // serve them: never a second download, never a failed fetch Safari would keep for the page's life), and the one a
 // HUD button is touched down for. けんこう's chunk holds ごはん's code, never its food data (that loads on use). ききみみ's warm() also
 // brings in its hub and the remembered level's items.
-import { lazy } from '#lib/ui-state/reload.ts';
+import { isChunkError, lazy } from '#lib/ui-state/reload.ts';
+import { chunkSheet } from '#lib/sync/log.ts';
 import { workerControls } from '#lib/ui-state/swLate.ts';
 import { trips } from '../travel/open.svelte.ts';
 import { weddingSheet } from '../wedding/open.svelte.ts';
@@ -32,10 +33,11 @@ const CHUNKS = {
 } satisfies Record<string, () => Promise<unknown>>;
 export type SheetChunk = keyof typeof CHUNKS;
 
-/** That sheet's chunk on its way (a HUD button touched down): online only, a failure the tap's to report. */
+/** That sheet's chunk on its way (a HUD button touched down): online only, a failure the tap's to report (its
+ *  chunk.fail named by the sheet: Safari's names no file). */
 export function prefetchSheet(k: SheetChunk): Promise<unknown> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return Promise.resolve();
-  return CHUNKS[k]().catch(() => {});
+  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k)));
 }
 
 const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 200));

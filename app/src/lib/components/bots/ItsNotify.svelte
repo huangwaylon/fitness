@@ -3,7 +3,7 @@
   // default. A tap asks the notification permission first (in the tap), then subscribes and hands it to the Worker;
   // on only once the Worker took it. Where it can't work, one line says why (an iPhone's Safari tab: add it to the Home
   // Screen; notifications refused: the Settings app; an unsupported browser; a Worker without push yet: 準備中). On:
-  // テスト通知 (the Worker's rate: 「少し待ってからもう一度」). A note: Focus and Sleep can hold a notification back, and
+  // テスト通知 (the Worker's rate: 「30秒ほど待ってからもう一度」). A note: Focus and Sleep can hold a notification back, and
   // the site's mail still comes. Opening the tab with the Worker's push read keeps the subscription fresh (refreshPush)
   // and clears the app's badge. Members only (ボット has no 保養所 for the guest or in demo mode).
   import { untrack } from 'svelte';

@@ -1,9 +1,12 @@
 // The gym bot's current settings (docs/design.md "Bots": ボット's ジム tab, its 現在の設定): the Worker's
 // members-only GET /gym/config, which is 📋 設定を見る's answer in the LINE group in parts, worded by the bot's own
 // functions (gym/src/messages.ts statusView). The page shows those words as they are; nothing here rewords them.
-// Read with this phone's key; an older Worker without the route, or a key it doesn't take, hides the section (no
+// Read with this phone's key through lib/keyed.ts (a failure logged as keyed.fail `gym`), checked with
+// contract/guards.ts; an older Worker without the route, or a key it doesn't take, hides the section (no
 // error).
 import { getKey } from '#lib/sync/storage.ts';
+import { keyed } from '#lib/keyed.ts';
+import { isRec, isText } from '#lib/contract/guards.ts';
 import { GYM_URL } from './status.ts';
 
 // ---- The payload: the parts of gym/src/actions.ts GymConfig the page shows (the Worker owns it, and also sends
@@ -23,12 +26,11 @@ export interface GymConfig {
   paused: boolean;
 }
 
-const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
-const str = (x: unknown): x is string => typeof x === 'string' && x.length > 0 && x.length <= 2000;
+const str = (x: unknown): x is string => isText(x, 2000);
 const strOrNull = (x: unknown): string | null | undefined => (x === null ? null : str(x) ? x : undefined);
 
 function parseDay(x: unknown): ConfigDay | null {
-  if (!isObj(x) || typeof x.day !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(x.day) || !str(x.date) || !str(x.rule)) return null;
+  if (!isRec(x) || typeof x.day !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(x.day) || !str(x.date) || !str(x.rule)) return null;
   const from = strOrNull(x.from ?? null);
   const soft = x.soft ?? false;
   return from === undefined || typeof soft !== 'boolean' ? null : { day: x.day, date: x.date, rule: x.rule, from, soft };
@@ -37,7 +39,7 @@ function parseDay(x: unknown): ConfigDay | null {
 /** A /gym/config answer as the page reads it, or null when it isn't one (another version, a proxy's page, garbage).
  *  All or nothing: these are the bot's own words, shown whole or not at all. */
 export function parseConfig(x: unknown): GymConfig | null {
-  if (!isObj(x) || x.v !== 1 || !str(x.title) || !str(x.check) || !Array.isArray(x.days) || typeof x.paused !== 'boolean') return null;
+  if (!isRec(x) || x.v !== 1 || !str(x.title) || !str(x.check) || !Array.isArray(x.days) || typeof x.paused !== 'boolean') return null;
   const days = x.days.map(parseDay);
   const notice = strOrNull(x.notice ?? null);
   if (days.some((d) => d === null) || notice === undefined) return null;
@@ -45,22 +47,15 @@ export function parseConfig(x: unknown): GymConfig | null {
 }
 
 /** A fetch's outcome: the settings, or `hide` (no key, or a Worker without the route or that won't take the key),
- *  `failed` (a server error, garbage) or `unreached` (fetch threw: offline, or a preflight an older Worker refused
- *  without CORS, which the browser can't tell apart). */
+ *  `failed` (a server error, garbage) or `unreached` (no answer: offline, a timeout, or a preflight an older Worker
+ *  refused without CORS, which the browser can't tell apart; the caller's abort too, which the page ignores). */
 export type ConfigReply = { ok: true; config: GymConfig } | { ok: false; why: 'hide' | 'failed' | 'unreached' };
 
-/** GET /gym/config with this phone's key. Never throws (an abort is an `unreached` the page ignores). */
+/** GET /gym/config with this phone's key (lib/keyed.ts: its failure logged as keyed.fail `gym`). Never throws. */
 export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = getKey()): Promise<ConfigReply> {
-  if (!key || !url) return { ok: false, why: 'hide' };
-  let res: Response;
-  try {
-    res = await fetch(`${url}/gym/config`, { signal, cache: 'no-store', headers: { Authorization: `Bearer ${key}` } });
-  } catch {
-    return { ok: false, why: 'unreached' };
-  }
-  if (res.status === 401 || res.status === 403 || res.status === 404) return { ok: false, why: 'hide' };
-  if (!res.ok) return { ok: false, why: 'failed' };
-  const config = parseConfig(await res.json().catch(() => null));
+  const r = await keyed(url && `${url}/gym/config`, key, { signal, cache: 'no-store' });
+  if (!r.ok) return { ok: false, why: r.why === 'unpaired' || r.why === 'refused' ? 'hide' : r.why === 'failed' ? 'failed' : 'unreached' };
+  const config = parseConfig(await r.res.json().catch(() => null));
   return config ? { ok: true, config } : { ok: false, why: 'failed' };
 }
 

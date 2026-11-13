@@ -1,8 +1,8 @@
 <script lang="ts">
   // ボット (docs/design.md "Bots"): the menu's ボット opens it (members only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
-  // tabs (a tablist): 保養所 (ItsPage) on the left, ジム (GymPage); with one bot only (demo mode: ジム), no tabs. It opens
-  // on the tab last shown on this phone (DEVICE.botsTab; 保養所 by default), or the one asked (show(tab): a
+  // tabs (a tablist): ジム (GymPage) on the left, 保養所 (ItsPage); with one bot only (demo mode: ジム), no tabs. It opens
+  // on the tab last shown on this phone (DEVICE.botsTab; ジム by default), or the one asked (show(tab): a
   // notification's tap opens 保養所). Only the shown page is mounted: it reads
   // and polls while shown, and the other tab, ✕ or a close unmounts it (nothing polls while closed). A tab's dot: that
   // bot needs a person (open.svelte.ts: the tab not shown is read once as the sheet opens). 保養所's unsaved draft: a
@@ -23,9 +23,9 @@
 
   const kv = localKV();
   const tabs = $derived(botTabs());
-  let picked = $state<BotTab>(kv?.getItem(DEVICE.botsTab) === 'gym' ? 'gym' : 'its');
+  let picked = $state<BotTab>(kv?.getItem(DEVICE.botsTab) === 'its' ? 'its' : 'gym');
   /** The tab shown: the one picked, if this phone has it. */
-  const tab = $derived(tabs.includes(picked) ? picked : (tabs[0] ?? 'its'));
+  const tab = $derived(tabs.includes(picked) ? picked : (tabs[0] ?? 'gym'));
   /** 保養所's guard (its draft). */
   let itsLeave = $state<((run: () => void) => void) | undefined>();
   let sheet: ReturnType<typeof Sheet> | undefined = $state();

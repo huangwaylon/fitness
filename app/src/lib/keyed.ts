@@ -2,8 +2,8 @@
 // sorted into one vocabulary: `unpaired` (no key here, or no endpoint in this build), `refused` (401, 403, 404: not
 // this key's, the guest's, or a Worker without the route), `failed` (another status: the reply kept for the caller to
 // read), `unreached` (fetch threw: offline, a preflight refused), `timeout`, `aborted` (the caller's signal). Never
-// throws. Imports nothing, so a worker (food/dataset.worker.ts) may use it. Used by the chain menus (food/kalori.ts)
-// and the relay recogniser (mic/backends/relay.ts).
+// throws. Imports nothing, so a worker (food/dataset.worker.ts) may use it. Used by the chain menus (food/kalori.ts),
+// the relay recogniser (mic/backends/relay.ts) and ジム's 現在の設定 (gym/config.ts).
 
 type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
 

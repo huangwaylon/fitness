@@ -1,7 +1,11 @@
 // The gym bot's status (docs/design.md "Bots": ボット's ジム tab): the Worker's public GET /status, read
-// as it is (the verdict is decided there), with the page's view helpers so GymPage stays thin.
+// as it is (the verdict is decided there; checked with contract/guards.ts), a failed read logged as gym.fail (public:
+// no key, so not lib/keyed.ts), with the page's view helpers so GymPage stays thin (直近12時間: lib/strip.ts).
 import { t } from '#lib/i18n/index.ts';
 import { formatSyncTime } from '#lib/i18n/format.ts';
+import { isNum, isRec } from '#lib/contract/guards.ts';
+import { log } from '#lib/sync/log.ts';
+import { chain, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import '#lib/i18n/gym.ts';
 
 // ---- The payload: mirrors gym/src/status.ts (the Worker owns it; change both together) ----
@@ -36,7 +40,7 @@ export interface GymStatus {
   failures: number;          // fully failed checks in a row
   siteDownSent: boolean;
   retryPending: boolean;     // a failed push waiting for its retry
-  checks: Check[];           // newest first, at most CHECKS_KEPT = 12
+  checks: Check[];           // newest first: a day's (an older Worker: the last 12)
   line: { used: number | null; limit: number | null; webhookOk: boolean | null; asOf: number | null };
 }
 
@@ -48,12 +52,13 @@ const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_alarm', 'no_group'
 const OUTCOMES: readonly Outcome[] = ['ok', 'timeout', 'rate_limited', 'http_4xx', 'http_5xx', 'empty', 'error'];
 const PROGRAMS = ['training', 'pilates'] as const;
 
-const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
-const num = (x: unknown): number | null => (typeof x === 'number' && Number.isFinite(x) ? x : null);
+const num = (x: unknown): number | null => (isNum(x) ? x : null);
+/** At most this many checks read (the Worker keeps 150). */
+const CHECKS_MAX = 200;
 
 function parseCheck(x: unknown): Check | null {
-  if (!isObj(x) || num(x.t) === null || (x.by !== 'alarm' && x.by !== 'tap')) return null;
-  const r = isObj(x.r) && PROGRAMS.every((p) => OUTCOMES.includes((x.r as Record<string, Outcome>)[p])) ? (x.r as Check['r']) : undefined;
+  if (!isRec(x) || num(x.t) === null || (x.by !== 'alarm' && x.by !== 'tap')) return null;
+  const r = isRec(x.r) && PROGRAMS.every((p) => OUTCOMES.includes((x.r as Record<string, Outcome>)[p])) ? (x.r as Check['r']) : undefined;
   if (x.idle !== true && !r) return null;
   const push = (['none', 'ok', 'held', 'failed'] as const).find((p) => p === x.push) ?? 'none';
   return { t: x.t as number, by: x.by, ms: num(x.ms) ?? 0, ...(x.idle === true ? { idle: true } : { r }), open: num(x.open) ?? 0, fresh: num(x.fresh) ?? 0, push };
@@ -62,9 +67,9 @@ function parseCheck(x: unknown): Check | null {
 /** A /status answer as the page reads it, or null when it isn't one (another version, a proxy's page, garbage). The
  *  verdict and the times must be there; a malformed check or an unknown reason is left out. */
 export function parseStatus(x: unknown): GymStatus | null {
-  if (!isObj(x) || x.v !== 1 || num(x.now) === null || !VERDICTS.includes(x.verdict as Verdict)) return null;
-  const line = isObj(x.line) ? x.line : {};
-  const err = isObj(x.lastError) && num(x.lastError.t) !== null && typeof x.lastError.code === 'string' ? (x.lastError as GymStatus['lastError']) : null;
+  if (!isRec(x) || x.v !== 1 || num(x.now) === null || !VERDICTS.includes(x.verdict as Verdict)) return null;
+  const line = isRec(x.line) ? x.line : {};
+  const err = isRec(x.lastError) && num(x.lastError.t) !== null && typeof x.lastError.code === 'string' ? (x.lastError as GymStatus['lastError']) : null;
   return {
     v: 1, now: x.now as number, mode: x.mode === 'off' ? 'off' : 'bot', sha: typeof x.sha === 'string' ? x.sha : null,
     verdict: x.verdict as Verdict,
@@ -72,18 +77,28 @@ export function parseStatus(x: unknown): GymStatus | null {
     intervalMin: num(x.intervalMin) ?? 0, paused: x.paused === true,
     nextCheck: num(x.nextCheck), lastCheck: num(x.lastCheck), lastOk: num(x.lastOk), lastError: err,
     failures: num(x.failures) ?? 0, siteDownSent: x.siteDownSent === true, retryPending: x.retryPending === true,
-    checks: Array.isArray(x.checks) ? x.checks.map(parseCheck).filter((c): c is Check => c !== null) : [],
+    checks: Array.isArray(x.checks) ? x.checks.slice(0, CHECKS_MAX).map(parseCheck).filter((c): c is Check => c !== null) : [],
     line: { used: num(line.used), limit: num(line.limit), webhookOk: typeof line.webhookOk === 'boolean' ? line.webhookOk : null, asOf: num(line.asOf) }
   };
 }
 
-/** GET /status. Throws on a failed request or an answer that isn't one. */
-export async function fetchStatus(signal?: AbortSignal, url = GYM_URL): Promise<GymStatus> {
-  const res = await fetch(`${url}/status`, { signal });
-  if (!res.ok) throw new Error(`gym status: HTTP ${res.status}`);
-  const s = parseStatus(await res.json());
-  if (!s) throw new Error('gym status: not a status');
-  return s;
+/** A read's outcome: the status, or why not (`offline`: no answer; `http`: another status; `json`: not a status). */
+export type StatusReply = { ok: true; status: GymStatus } | { ok: false; err: 'offline' | 'http' | 'json'; http: number | null };
+
+/** GET /status: public (no key, no header of ours: a simple request, no preflight). Never throws; a failure is logged
+ *  (`gym.fail`: the HTTP status, the phone's code, ms), but not the caller's abort (the page left). */
+export async function fetchStatus(signal?: AbortSignal, url = GYM_URL): Promise<StatusReply> {
+  const t0 = performance.now();
+  let r: StatusReply;
+  try {
+    const res = await fetch(`${url}/status`, { signal });
+    const s = res.ok ? parseStatus(await res.json().catch(() => null)) : null;
+    r = s ? { ok: true, status: s } : { ok: false, err: res.ok ? 'json' : 'http', http: res.status };
+  } catch {
+    r = { ok: false, err: 'offline', http: null };
+  }
+  if (!r.ok && !signal?.aborted) log('gym.fail', { op: 'status', err: r.err, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
+  return r;
 }
 
 // ---- The page's view ----
@@ -102,26 +117,53 @@ export const needsAttention = (s: GymStatus): boolean => TONE[s.verdict] === 'ba
 
 const at = (ms: number | null, today: string): string => formatSyncTime(ms === null ? null : new Date(ms), today);
 
-/** The fact rows under the card: 最後の成功 only when it isn't the last check, 連続失敗 only when there are any. */
-export function factRows(s: GymStatus, today: string): { id: string; label: string; value: string }[] {
+/** The fact rows under the strip: 最後の成功 only when it isn't the last check, 連続失敗 only when there are any; 最後の成功
+ *  (while nothing fails) and LINE's count under くわしく (`more`). */
+export function factRows(s: GymStatus, today: string): { id: string; label: string; value: string; more?: boolean }[] {
   const { used, limit } = s.line;
   return [
     { id: 'last', label: t('gym.lastCheck'), value: at(s.lastCheck, today) },
     { id: 'next', label: t('gym.next'), value: s.nextCheck === null ? t('gym.none') : t('gym.nextAt', { time: at(s.nextCheck, today) }) },
-    ...(s.lastOk !== s.lastCheck ? [{ id: 'ok', label: t('gym.lastOk'), value: at(s.lastOk, today) }] : []),
+    ...(s.lastOk !== s.lastCheck ? [{ id: 'ok', label: t('gym.lastOk'), value: at(s.lastOk, today), more: s.failures === 0 }] : []),
     ...(s.failures > 0 ? [{ id: 'failures', label: t('gym.failures'), value: t('gym.failuresN', { n: s.failures }) }] : []),
-    { id: 'line', label: t('gym.line'), value: used === null ? t('gym.unknown') : limit === null ? t('gym.lineNoLimit', { used }) : t('gym.lineOf', { used, limit }) }
+    { id: 'line', label: t('gym.line'), value: used === null ? t('gym.unknown') : limit === null ? t('gym.lineNoLimit', { used }) : t('gym.lineOf', { used, limit }), more: true }
   ];
 }
 
-/** One check's line: its time (with the date when it wasn't `today`), 定時 or 手動, ○/✕ per program (none when idle),
- *  the open count, and for a failed one what failed, in words. */
-export function checkLine(c: Check, today: string): {
-  time: string; by: string; idle: boolean; marks: { id: string; name: string; ok: boolean }[]; open: string; problems: string[];
-} {
-  const r = c.r;
-  const marks = r ? PROGRAMS.map((p) => ({ id: p, name: t(`gym.prog.${p}`), ok: r[p] === 'ok' })) : [];
-  const problems = r ? PROGRAMS.filter((p) => r[p] !== 'ok').map((p) => t('gym.problem', { program: t(`gym.prog.${p}`), outcome: t(`gym.outcome.${r[p]}`) })) : [];
-  if (c.push === 'failed') problems.push(t('gym.pushFailed'));
-  return { time: at(c.t, today), by: t(`gym.by.${c.by}`), idle: !r, marks, open: t('gym.open', { n: c.open }), problems };
+// ---- 直近12時間: the checks, one cell an interval (the shared strip: lib/strip.ts) ----
+const MIN_MS = 60_000;
+const SPAN_MS = 12 * 3600_000;
+/** The strip's cells at most (10-minute checks: 72). */
+const STRIP_MAX = 72;
+
+const outcome = (c: Check, p: (typeof PROGRAMS)[number]): string =>
+  c.r![p] === 'ok' ? `${t(`gym.prog.${p}`)}○` : `${t(`gym.prog.${p}`)}✕（${t(`gym.outcome.${c.r![p]}`)}）`;
+
+/** A check's part of its cell's line: 「14:15 · トレーニング○ ピラティス○ · 空き2」, 手動 for a 🔎, what failed in words,
+ *  a failed push; an alarm with no day to check: 「14:15 · チェックする日なし」. */
+function checkText(c: Check): string {
+  const when = c.by === 'tap' ? `${hhmm(c.t)} ${t('gym.by.tap')}` : hhmm(c.t);
+  if (!c.r) return [when, t('gym.strip.idle')].join(' · ');
+  return [when, PROGRAMS.map((p) => outcome(c, p)).join(' '), ...(c.open > 0 ? [t('gym.strip.open', { n: c.open })] : []), ...(c.push === 'failed' ? [t('gym.pushFailed')] : [])].join(' · ');
+}
+
+const failed = (c: Check): boolean => !!c.r && PROGRAMS.some((p) => c.r![p] !== 'ok');
+
+/** The last 12 hours, oldest first: one cell an interval (`intervalMin`; 15 min: 48 cells, at most STRIP_MAX), the
+ *  checks in turn (lib/strip.ts chain: a check's jitter leaves no false gap); red when a program failed, else yellow
+ *  when a slot was open, else green; outlined when nothing was checked (stopped, backed off, an alarm with no day to
+ *  check, or before the kept checks). With its ticks (every 3 hours, Tokyo) and its line for VoiceOver:
+ *  「直近12時間：確認46回、失敗1回、空きあり3回」 (the checks that fetched). */
+export function checkStrip(s: GymStatus): { cells: StripCell[]; ticks: StripTick[]; summary: string } {
+  const width = (s.intervalMin > 0 ? s.intervalMin : 15) * MIN_MS;
+  const count = Math.min(STRIP_MAX, Math.ceil(SPAN_MS / width));
+  const slots = chain(s.checks, (c) => c.t, s.now, width, count);
+  const cells = slots.map(({ start, end, items }): StripCell => {
+    const done = items.filter((c) => c.r);
+    const state: CellState = !done.length ? 'none' : done.some(failed) ? 'fail' : done.some((c) => c.open > 0) ? 'avail' : 'ok';
+    return { start, end, state, label: items.length ? items.map(checkText).join(' / ') : `${hhmm(start)} · ${t('gym.strip.none')}` };
+  });
+  const done = slots.flatMap((x) => x.items).filter((c) => c.r);
+  const summary = t('gym.strip.summary', { n: done.length, fails: done.filter(failed).length, avail: done.filter((c) => c.open > 0).length });
+  return { cells, ticks: stripTicks(cells, 3 * 3600_000), summary };
 }

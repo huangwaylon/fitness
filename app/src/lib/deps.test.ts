@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 const LIB = import.meta.dirname;
 const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 /** Leaves that import nothing (their own allow-list is empty): any folder may import them. */
-const FREE = ['math', 'quiet', 'keyed', 'staticUrl', 'packPlan', 'packStore', 'surface', 'touch'];
+const FREE = ['math', 'quiet', 'keyed', 'staticUrl', 'packPlan', 'packStore', 'surface', 'touch', 'strip'];
 
 const ALLOW: Record<string, string[]> = {
   types: [],
@@ -20,6 +20,8 @@ const ALLOW: Record<string, string[]> = {
   quiet: [],
   // keyed.ts: a members-only call (the key's header, one failure vocabulary): the chain menus' worker, the mic, the bots
   keyed: [],
+  // strip.ts: the bots' status strip, its slots placed (保養所's minutes, ジム's checks)
+  strip: [],
   staticUrl: [],
   packPlan: [],
   packStore: [],
@@ -62,10 +64,10 @@ const ALLOW: Record<string, string[]> = {
   mic: ['sync', 'sound'],
   offline: ['travel', 'hiking', 'sync'],
   // ボット's ジム (docs/design.md "Bots"): the gym bot's /status, read and worded for its page, and its
-  // /gym/config with the member key
-  gym: ['i18n', 'sync'],
+  // /gym/config with the member key (the guards: contract/guards.ts)
+  gym: ['i18n', 'sync', 'contract'],
   // ボット's 保養所 (docs/design.md "Bots"): the its-bot Worker's client (the member key, the log) and the page's view
-  its: ['i18n', 'sync'],
+  its: ['i18n', 'sync', 'contract'],
   components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its']
 };
 
