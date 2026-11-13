@@ -13,10 +13,8 @@ import { log } from '#lib/sync/log.ts';
 
 /** The Worker's origin (the CSP's connect-src names it: vite.config.ts). */
 const ITS_ORIGIN = 'https://its-bot.island-fund-relay.workers.dev';
-/** `VITE_ITS_URL`, else none for now: 設定's section is hidden until the Worker is live (the e2e turns it on with
- *  `e2e.its`). */
-export const ITS_URL: string = (import.meta.env?.VITE_ITS_URL as string | undefined)
-  ?? (typeof localStorage !== 'undefined' && localStorage.getItem('e2e') === '1' && localStorage.getItem('e2e.its') === 'on' ? ITS_ORIGIN : '');
+/** The Worker's origin; VITE_ITS_URL overrides it (empty = 設定's section hidden), as GYM_URL does. */
+export const ITS_URL: string = (import.meta.env?.VITE_ITS_URL as string | undefined) ?? ITS_ORIGIN;
 
 const TIMEOUT_MS = 20_000;
 

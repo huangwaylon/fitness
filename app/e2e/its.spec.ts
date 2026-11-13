@@ -4,8 +4,7 @@
 // settings are one draft: 保存 sends one PUT (its body checked), ✕, Esc and ‹ ask before dropping it, and a 409 (the
 // bare status) or a poll seeing someone else's save says so, with 読み込み直す, 保存 turning 上書き保存 (asks first);
 // 開始 / 停止 never move the draft's base, and 保存 gives up a read in flight. ★ and 除外 exclude each other. A refusal
-// is worded, a failed read shows もう一度. The guest has no row, nor does demo mode. The section is off in builds until
-// the Worker is live (ITS_URL ''), so the phones turn it on with `e2e.its`. The rules (notes, the merge, ★/除外,
+// is worded, a failed read shows もう一度. The guest has no row, nor does demo mode. The rules (notes, the merge, ★/除外,
 // verdicts) are view.test.ts's.
 import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
@@ -41,7 +40,7 @@ type Answer = (c: Call, n: number, s: ItsStatus) => Reply | Promise<Reply> | und
  *  Worker's state behind the page's back (someone else's save). */
 async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: Answer = () => undefined) {
   const rec = newRecord();
-  await context.addInitScript(() => (localStorage.setItem('e2e.render', 'none'), localStorage.setItem('e2e.its', 'on')));
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const calls: Call[] = [];
   const first = payload(rec.now());
@@ -342,7 +341,7 @@ test('★ and 除外: ★ numbers the priority, 除外 takes ★ away, ★ on a 
 });
 
 test('in demo mode there is no 保養所ボット row (no fixture), and nothing asks the Worker', async ({ page, context }) => {
-  await context.addInitScript(() => (localStorage.setItem('e2e.render', 'none'), localStorage.setItem('e2e.its', 'on')));
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   const asked: string[] = [];
   await page.route(`${ORIGIN}/**`, (route) => (asked.push(route.request().url()), route.abort()));
   await page.goto('?demo');
