@@ -23,7 +23,7 @@ import { validate } from './validate.ts';
 import { anchorsOf, shapeOf } from '../components/villager3d/seats3d.ts';
 import { placeObjects } from '../components/world3d/objects.ts';
 import { roomLamp } from '../components/world3d/outdoorModels.ts';
-import { DECOR_U } from '../world/world.ts';
+import { DECOR_U } from '#lib/world/world.ts';
 
 const APP = join(import.meta.dirname, '..', '..', '..');
 const PIECES = O.pieces as unknown as Record<string, Omit<OutdoorPiece, 'code'>>;

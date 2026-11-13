@@ -7,7 +7,7 @@ import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, poseBuf, sit, walk, type Body } from './poses.ts';
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
-import { GUESTS } from '../../world/visitorRoles.ts';
+import { GUESTS } from '#lib/world/visitorRoles.ts';
 import { withWebps } from '../../../../scripts/glb-webp.ts';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', '..', 'static', 'room', 'villagers3d');

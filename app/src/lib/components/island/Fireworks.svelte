@@ -20,7 +20,7 @@
   import { uiBoxes } from './placement.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { PAIR_ODDS, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape, type Spark } from '../../world/fireworks.ts';
+  import { PAIR_ODDS, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape, type Spark } from '#lib/world/fireworks.ts';
 
   interface Props {
     /** Live, not covered by a sheet, page visible. */

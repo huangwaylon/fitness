@@ -12,7 +12,7 @@
 // (museum/artIds.ts), its first find a donation to the art gallery; once all 43 are in, none.
 import data from './catalog.json';
 import room from '../tent/items.json';
-import { dayRand } from '../../world/daySeed.ts';
+import { dayRand } from '#lib/world/daySeed.ts';
 import { isArt } from '../museum/artIds.ts';
 
 /** A dated window (MM-DD, inclusive; `from` > `to` wraps past New Year). */

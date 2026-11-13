@@ -10,10 +10,10 @@
   import { minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { su } from './scene.ts';
-  import { CAKE } from '../../world/world.ts';
+  import { CAKE } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { blowOut, candlesOut } from '../../world/birthday.ts';
+  import { blowOut, candlesOut } from '#lib/world/birthday.ts';
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
 
   let { enabled, on }: { enabled: () => boolean; on: boolean } = $props();

@@ -3,7 +3,7 @@
   // (static/room/npc/: scripts/npc-icons.ts), their official name and where we meet them: the visitors, the guests, the
   // shop's twins, the museum's curator, K.K. on his stool, Resetti at the island's reset, Booker and Copper at the
   // pairing gate, the ones to choose as a villager, and those with no role on our island (in here only).
-  import { CAST, type CastRole } from '../../world/visitorRoles.ts';
+  import { CAST, type CastRole } from '#lib/world/visitorRoles.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
   import { t } from '#lib/i18n/index.ts';
 

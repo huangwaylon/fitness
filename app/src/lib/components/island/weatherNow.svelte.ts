@@ -19,9 +19,9 @@ import { week } from '#lib/store/week.svelte.ts';
 import { heldWx, onWx } from '#lib/sync/wx.ts';
 import type { Wx } from '#lib/contract/live-protocol.ts';
 import { isWeatherMode, type WeatherMode } from '#lib/contract/api.ts';
-import { hook, hookOneOf, islandSeed } from '../../world/devHooks.ts';
-import { FORCED, isRain, musicWeather, realWeatherAt, weatherAt, yieldSkyAt, type Forced, type Sky, type WeatherNow } from '../../world/weather.ts';
-import { WX_FIXTURES, wxFixture } from '../../world/wxFixtures.ts';
+import { hook, hookOneOf, islandSeed } from '#lib/world/devHooks.ts';
+import { FORCED, isRain, musicWeather, realWeatherAt, weatherAt, yieldSkyAt, type Forced, type Sky, type WeatherNow } from '#lib/world/weather.ts';
+import { WX_FIXTURES, wxFixture } from '#lib/world/wxFixtures.ts';
 
 export const weather = $state<WeatherNow>({ sky: 'clear', fog: false, rainbow: 0, aurora: false });
 /** The sky the critters come by (the mode's weather, or `?weather=`). */

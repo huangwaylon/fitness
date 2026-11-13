@@ -8,7 +8,7 @@ import { PLAQUE, PLAQUE_H, wingOfRoom, type Opening, type RoomId, type Wing } fr
 import { BUG_IDS, FISH_IDS, onDisplay, type Specimen } from './species.ts';
 import { bugsOnDisplay } from './bugShow.ts';
 import { plaqueOf } from './camera.ts';
-import { SEA } from '../../world/sea.ts';
+import { SEA } from '#lib/world/sea.ts';
 import { SPOTS as FOSSIL_SPOTS, fossilsIn, setOf, type SetId } from './fossils.ts';
 import { ART_SPOTS, artIn } from './art.ts';
 

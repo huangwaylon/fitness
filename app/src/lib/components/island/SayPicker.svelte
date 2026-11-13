@@ -14,7 +14,7 @@
   import { cleanSay, SAY_MAX } from '#lib/contract/live-protocol.ts';
   import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { EDGE } from './placement.ts';
-  import { recentSays } from '../../world/say.ts';
+  import { recentSays } from '#lib/world/say.ts';
   import NavButton from '../ui/NavButton.svelte';
 
   let { scene, anchor, onpick, onclose }: { scene: HTMLElement; anchor: Element; onpick: (text: string) => void; onclose: (e?: Event) => void } = $props();

@@ -13,9 +13,9 @@
 import { layout } from '#lib/store/layout.svelte.ts';
 import { navOf, type LayoutNav } from '#lib/layout/nav.ts';
 import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
-import { setWorld } from '../../world/world.ts';
-import { worldOf } from '../../world/layoutWorld.ts';
-import { layoutSpots, useSpots } from '../../world/beach.ts';
+import { setWorld } from '#lib/world/world.ts';
+import { worldOf } from '#lib/world/layoutWorld.ts';
+import { layoutSpots, useSpots } from '#lib/world/beach.ts';
 
 class Site {
   rev = $state(0);

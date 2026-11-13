@@ -23,7 +23,7 @@
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
   import { MAX_STARTS, holdDelay, shortBy, startsFill, startsFirst } from './stock.ts';
-  import { fillPlan } from '../../world/farmSheet.ts';
+  import { fillPlan } from '#lib/world/farmSheet.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';

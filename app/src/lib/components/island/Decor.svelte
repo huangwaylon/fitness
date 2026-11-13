@@ -10,7 +10,7 @@
   import { kindDef } from '#lib/layout/catalog.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from '../../world/decor.ts';
+  import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from '#lib/world/decor.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { onMount } from 'svelte';
   import { timers } from './timers.ts';

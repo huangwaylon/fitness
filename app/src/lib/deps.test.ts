@@ -98,6 +98,8 @@ const edges: { from: string; to: string; file: string }[] = [];
 const graph = new Map<string, string[]>();
 /** Aliased specifiers this scan doesn't understand: each must be added here on purpose. */
 const unknown: string[] = [];
+/** lib/world read from outside by a relative path (the house style is the alias, as for layout/, store/, sync/). */
+const relativeWorld: string[] = [];
 for (const f of files(LIB)) {
   const out: string[] = [];
   for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?<![\w'".-])(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
@@ -111,6 +113,7 @@ for (const f of files(LIB)) {
     const from = folderOf(f);
     const to = folderOf(target);
     if (from !== to) edges.push({ from, to, file: relative(LIB, f) });
+    if (from !== to && to === 'world' && !spec.startsWith('#lib/world/')) relativeWorld.push(`${relative(LIB, f)}: ${spec}`);
   }
   graph.set(f, out);
 }
@@ -217,6 +220,10 @@ describe('import specifiers', () => {
 });
 
 describe('lib/world is the game model', () => {
+  it('is imported from outside as #lib/world/…, never by a relative path', () => {
+    expect(relativeWorld).toEqual([]);
+  });
+
   it('touches no element, style or animation: the DOM glue (placement, hit boxes, clouds, echoes) is components/island’s', () => {
     const DOM = /\b(?:document|window)\.|\bHTMLElement\b|\.getAnimations\(|\bmatchMedia\(|\.getBoundingClientRect\(|\.querySelector(?:All)?\(/g;
     // (sceneDay.ts tells the page a plot was watered: one event on document)

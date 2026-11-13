@@ -8,10 +8,10 @@
 import { untrack } from 'svelte';
 import { NIBBLE_MS, PLUNGE_MS, angling } from '../world3d/fishing3d.ts';
 import { wingBeat } from '../world3d/wings.ts';
-import { EASE, Glide, turn, yawOf } from '../../world/glide.ts';
+import { EASE, Glide, turn, yawOf } from '#lib/world/glide.ts';
 import { bugAt, type Flying, type Leg } from './critterPath.ts';
-import { shadowLen, type Flight } from '../../world/critters.ts';
-import type { Line as MyLine } from '../../world/fishing.ts';
+import { shadowLen, type Flight } from '#lib/world/critters.ts';
+import type { Line as MyLine } from '#lib/world/fishing.ts';
 import type { Bug, Fish, P3 } from './critterTypes.ts';
 
 /** The dung beetle's snowball: across (u: assets.json's `h`), and its middle ahead of the beetle's (its head's 8.6u, then

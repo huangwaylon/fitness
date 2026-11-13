@@ -9,12 +9,12 @@ import { defaultLayout, withChanges } from '#lib/layout/model.ts';
 import { navOf, walkable, levelAt } from '#lib/layout/nav.ts';
 import { offBuildings, onBuilding, tapCovered } from '#lib/layout/clear.ts';
 import { tileAt } from '#lib/layout/grid.ts';
-import { worldOf } from '../../world/layoutWorld.ts';
-import { setWorld, offBuildingsAt } from '../../world/world.ts';
+import { worldOf } from '#lib/world/layoutWorld.ts';
+import { setWorld, offBuildingsAt } from '#lib/world/world.ts';
 import { dropSpots, sceneryTrees } from './treeShake.ts';
 import { giftAt } from './treeGifts.ts';
-import { digSpots } from '../../world/beach.ts';
-import { weedsAt } from '../../world/care.ts';
+import { digSpots } from '#lib/world/beach.ts';
+import { weedsAt } from '#lib/world/care.ts';
 import { DAYS, movedBeside, noDropOn, treeTiles, userLayout } from './offBuildings.cases.ts';
 
 afterAll(() => setWorld(null));

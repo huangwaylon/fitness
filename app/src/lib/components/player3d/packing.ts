@@ -14,7 +14,7 @@
 // pack only. On Pages a part's Range comes back as its whole pack (lib/packStore.ts): the closet's packs are small (a
 // first wear of a garment and a hairstyle ~0.5 MB at most), the rest's large (fewer files). Pure: no files here (the
 // script and the tests read them).
-import { DEFAULT_LOOKS, isOnepiece, type PlayerLook } from '../../contract/look.ts';
+import { DEFAULT_LOOKS, isOnepiece, type PlayerLook } from '#lib/contract/look.ts';
 import type { At, PartTable, Placed } from './parts.ts';
 
 /** A pack's bound (bytes): the closet's (and the faces', the hairstyles'), and the rest's. */

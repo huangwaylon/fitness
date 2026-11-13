@@ -20,11 +20,11 @@
   //   ?find=bottle | washed | fragment | mushroom | rare-mushroom (dev or test mode): a bottle, a bottle washing in 1.5 s
   //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
   //   hooks); ?seed= varies the island's seed.
-  import { fx3d } from '../../world/fx3d.ts';
+  import { fx3d } from '#lib/world/fx3d.ts';
   import { holdLoop } from './clouds.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
-  import { hook, islandSeed } from '../../world/devHooks.ts';
+  import { hook, islandSeed } from '#lib/world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import { onMount, tick } from 'svelte';
@@ -38,13 +38,13 @@
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
   import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
-  import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '../../world/beach.ts';
-  import { take, takenOn, wish as addWish, wishes } from '../../world/sceneDay.ts';
-  import { fragmentsDue, wishDays } from '../../world/stars.ts';
-  import { showerNight } from '../../world/meteor.ts';
-  import { eggTime, eventNow } from '../../world/events.ts';
-  import { eggInDig } from '../../world/eggs.ts';
-  import { mushroomSpots, mushroomsOn, rareMushroom, type Mushroom } from '../../world/mushrooms.ts';
+  import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '#lib/world/beach.ts';
+  import { take, takenOn, wish as addWish, wishes } from '#lib/world/sceneDay.ts';
+  import { fragmentsDue, wishDays } from '#lib/world/stars.ts';
+  import { showerNight } from '#lib/world/meteor.ts';
+  import { eggTime, eventNow } from '#lib/world/events.ts';
+  import { eggInDig } from '#lib/world/eggs.ts';
+  import { mushroomSpots, mushroomsOn, rareMushroom, type Mushroom } from '#lib/world/mushrooms.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { lying, taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
@@ -57,7 +57,7 @@
   import { treeById } from './treeShake.ts';
   import { SvelteSet } from 'svelte/reactivity';
   import { site } from './site.svelte.ts';
-  import { offBuildingsAt } from '../../world/world.ts';
+  import { offBuildingsAt } from '#lib/world/world.ts';
   import { fieldsOf } from '#lib/layout/fields.ts';
   import { nextRunUp, washAt, washFrom, washMs, type WashIn } from '#lib/layout/swash.ts';
 

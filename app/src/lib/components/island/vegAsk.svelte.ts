@@ -3,7 +3,7 @@
 // said it and whether I handed it over today (this phone's day record, as Wendell's and Franklin's), and the hand-over:
 // the one vegetable sold to them at its price (store/actions.ts sell: the shop's own event, the record's checks), the
 // day's garden piece a find (recordFind). Read by the visitor (Visitor.svelte) and the 畑 sheet (askNow).
-import { dayRecord } from '../../world/dayRecord.ts';
+import { dayRecord } from '#lib/world/dayRecord.ts';
 import { SCENE } from '#lib/sync/storage.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { sell } from '#lib/store/actions.ts';
@@ -13,9 +13,9 @@ import { CROPS, cropKey, plantsOf } from '#lib/contract/farm.ts';
 import { layoutPlots } from '#lib/layout/field.ts';
 import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
 import { site } from './site.svelte.ts';
-import { islandSeed } from '../../world/devHooks.ts';
-import { asks, requestOn, type VegRequest } from '../../world/vegRequest.ts';
-import { guestNow, visitorNow, type VisitorId } from '../../world/visitors.ts';
+import { islandSeed } from '#lib/world/devHooks.ts';
+import { asks, requestOn, type VegRequest } from '#lib/world/vegRequest.ts';
+import { guestNow, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
 import { dayKey } from '#lib/time/clock.ts';
 
 const rec = dayRecord(SCENE.vegAsk, { asked: false, done: false });

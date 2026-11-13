@@ -1,7 +1,7 @@
 // The fossil wing's exhibits (museum/fossils.ts): what's on show (the donation: anyone's first find), the skeletons'
 // assembly, and where everything stands (inside the room, apart, a walk to each).
 import { describe, expect, test } from 'vitest';
-import { FOSSILS, FOSSIL_SETS } from '../../world/fossilIds.ts';
+import { FOSSILS, FOSSIL_SETS } from '#lib/world/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { FOSSIL_MODEL, ROW, SPOTS, pieceW, footOf, fossilsIn, fossilsOnShow, packOf, setOf, skeletons } from './fossils.ts';
 import { ENTRANCE, F2, F3, ISLAND_RUG, inRect, navOf, rectsOf, walkPath, walkable } from './plan.ts';

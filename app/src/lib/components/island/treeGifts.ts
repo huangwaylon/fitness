@@ -6,9 +6,9 @@
 // Shared (docs/backend.md#shared-world): the drop is a `put` of the present by its tree's id (`tf:<tree>`, first wins
 // at the relay), so it lies on both phones and in the sheet's day row, and opening it is the present's `pick`.
 import type { Put } from '#lib/sync/world-day.ts';
-import { ISLAND_SEED, dayRand } from '../../world/daySeed.ts';
+import { ISLAND_SEED, dayRand } from '#lib/world/daySeed.ts';
 import { sceneryTrees, type ShakeTree } from './treeShake.ts';
-import { offBuildingsAt } from '../../world/world.ts';
+import { offBuildingsAt } from '#lib/world/world.ts';
 
 /** How many trees hold a present each day (NH's two). */
 export const GIFTS_A_DAY = 2;

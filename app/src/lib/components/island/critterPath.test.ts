@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { crittersAt, slotStart, SLOTS_PER_DAY } from './ambient.ts';
-import { BUGS, FRESH, bugPlace, patches, perches, type BugId } from '../../world/critters.ts';
+import { BUGS, FRESH, bugPlace, patches, perches, type BugId } from '#lib/world/critters.ts';
 import { FLY_UPS, TAP_CLEAR, flowerHeads, bubblesAt, bugAt, bugPath, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
-import { worldOf } from '../../world/layoutWorld.ts';
-import { setWorld } from '../../world/world.ts';
+import { worldOf } from '#lib/world/layoutWorld.ts';
+import { setWorld } from '#lib/world/world.ts';
 import { defaultLayout } from '#lib/layout/model.ts';
 
 const DATE = '2026-11-04';

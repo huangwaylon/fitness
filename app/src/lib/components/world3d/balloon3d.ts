@@ -11,7 +11,7 @@ import { keyModel, MODELS } from './models3d.ts';
 import { softDisc } from './cards.ts';
 import { bend } from './bend.ts';
 import { nhLambert, withMaps } from './blank.ts';
-import { RIG, flying, rigAt } from '../../world/balloonFlight.ts';
+import { RIG, flying, rigAt } from '#lib/world/balloonFlight.ts';
 import { glbLoader } from './gltf.ts';
 
 export interface Balloon3 {

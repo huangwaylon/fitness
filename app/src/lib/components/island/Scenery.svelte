@@ -12,18 +12,18 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { ARCH, BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from '../../world/world.ts';
+  import { ARCH, BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from '#lib/world/world.ts';
   import { FIRE_AT, hedgePair, sceneryKey, type Tod } from './scene.ts';
-  import { piecesOn, swapsOn } from '../../world/fixedDecor.ts';
-  import { islandSeed } from '../../world/devHooks.ts';
+  import { piecesOn, swapsOn } from '#lib/world/fixedDecor.ts';
+  import { islandSeed } from '#lib/world/devHooks.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import PLACES from '../../world/models.json';
+  import PLACES from '#lib/world/models.json';
   import { pose3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
   import { sitLook } from './sitting.ts';
-  import { footprint } from '../../world/nav.ts';
-  import { HOME_OF } from '../../world/layoutWorld.ts';
+  import { footprint } from '#lib/world/nav.ts';
+  import { HOME_OF } from '#lib/world/layoutWorld.ts';
 
   interface Props {
     season: Season;

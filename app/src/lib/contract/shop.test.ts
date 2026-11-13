@@ -8,7 +8,7 @@ import { STOCK_N, UNITS_FROM, buyPrice, stockOf } from './stock.ts';
 import { SELL } from './shopPrices.ts';
 import { BUY } from './buyPrices.ts';
 import { ITEMS } from '../components/tent/items.ts';
-import { FOSSILS, FRAGMENTS, SHELLS } from '../world/beach.ts';
+import { FOSSILS, FRAGMENTS, SHELLS } from '#lib/world/beach.ts';
 import { GOODS } from './pocket.ts';
 
 describe('the price list (scripts/shop-prices.ts)', () => {

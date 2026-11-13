@@ -19,11 +19,11 @@
   // boxes it keeps off besides (client px: the museum's plaques).
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
-  import type { Box } from '../../world/geom.ts';
-  import type { SaySpeaker } from '../../world/say.ts';
+  import type { Box } from '#lib/world/geom.ts';
+  import type { SaySpeaker } from '#lib/world/say.ts';
   import { followOf } from './balloonFollow.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from '../../world/pager.ts';
+  import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from '#lib/world/pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
   // (the island's: its speakers are in world nodes; a room has none, its speakers are boxes from its camera)

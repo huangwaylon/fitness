@@ -5,7 +5,7 @@
 // No ベル. This phone's record of the day is in localStorage (sync/storage.ts SCENE.stretch): losing it only brings the
 // deck back.
 import { SCENE } from '#lib/sync/storage.ts';
-import { dayRecord } from '../../world/dayRecord.ts';
+import { dayRecord } from '#lib/world/dayRecord.ts';
 import type { Motion } from '../motion/reactions.ts';
 
 /** The three stretches, in order (NH's names: Posture Warm-Up, Side Bends, Jump), each POSE_MS long. */

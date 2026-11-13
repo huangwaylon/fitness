@@ -32,13 +32,13 @@
   import { tall3d } from '../villager3d/manifest.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { place } from './placement.ts';
-  import { hookOneOf } from '../../world/devHooks.ts';
+  import { hookOneOf } from '#lib/world/devHooks.ts';
   import { presence, turnTo } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { KK_MODES, KK_SEAT, kkAct, kkBye, kkEmote, kkGreeting, kkMode, kkSpot, type KKMode } from './kkSlider.ts';
-  import type { Choice } from '../../world/pager.ts';
+  import type { Choice } from '#lib/world/pager.ts';
 
   interface Props {
     scene?: HTMLElement;

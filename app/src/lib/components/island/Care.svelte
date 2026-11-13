@@ -11,7 +11,7 @@
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
   import { timers } from './timers.ts';
   import { recordGoods } from '#lib/store/actions.ts';
-  import { hookOneOf, islandSeed } from '../../world/devHooks.ts';
+  import { hookOneOf, islandSeed } from '#lib/world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -19,16 +19,16 @@
   import { islandDay } from './ambientClock.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { digSpots, findArt } from '../../world/beach.ts';
-  import { ROCK, rockTap, weedsAt, type Weed } from '../../world/care.ts';
-  import { weedArt } from '../../world/dayModels.ts';
-  import { take, takenOn } from '../../world/sceneDay.ts';
+  import { digSpots, findArt } from '#lib/world/beach.ts';
+  import { ROCK, rockTap, weedsAt, type Weed } from '#lib/world/care.ts';
+  import { weedArt } from '#lib/world/dayModels.ts';
+  import { take, takenOn } from '#lib/world/sceneDay.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
   import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
-  import { fx3d } from '../../world/fx3d.ts';
+  import { fx3d } from '#lib/world/fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { site } from './site.svelte.ts';

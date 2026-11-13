@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hitWorld } from './sceneTaps.ts';
-import { BRIDGE, LAND, POND, RIVER, SPRING } from '../../world/world.ts';
+import { BRIDGE, LAND, POND, RIVER, SPRING } from '#lib/world/world.ts';
 
 describe('hitWorld', () => {
   it('finds the sea in front of the shoreline and past the side beaches', () => {

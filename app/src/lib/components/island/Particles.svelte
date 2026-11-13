@@ -12,7 +12,7 @@
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { ambient3 } from './ambient3d.svelte.ts';
-  import { HOMES, onGrass, surfaceAt, type Pt } from '../../world/world.ts';
+  import { HOMES, onGrass, surfaceAt, type Pt } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
 
   interface Props {

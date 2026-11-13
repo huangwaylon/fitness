@@ -88,7 +88,7 @@
     line = '';
     long = more = false;
     if (kind !== 'fish' && kind !== 'bug' && kind !== 'sea') return;
-    const { CATCH_LINES } = await import('../../world/catchLines.ts');
+    const { CATCH_LINES } = await import('#lib/world/catchLines.ts');
     if (pick?.id !== e.id) return;
     const l = CATCH_LINES[e.id as keyof typeof CATCH_LINES]?.[i18n.locale === 'en' ? 1 : 0] ?? '';
     line = l.replace('<Player>', '');

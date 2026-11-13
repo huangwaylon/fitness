@@ -1,15 +1,15 @@
 // The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
 // beats, naps at night, the motion bus, idle life, the balloon present's schedule and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
-import { hook, hookFlag } from '../../world/devHooks.ts';
+import { hook, hookFlag } from '#lib/world/devHooks.ts';
 import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
-import { dayScore, todayPct } from '../../world/progress.ts';
+import { dayScore, todayPct } from '#lib/world/progress.ts';
 import { actors, react, resetAll, setAsleep, setSleepClock, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered } from './avatar.ts';
-import { goalMoves } from '../../world/wander.ts';
+import { goalMoves } from '#lib/world/wander.ts';
 import { relayOffset } from './ambientClock.ts';
 import { actorOf, awake, guestPhone, islandActors, online, setEveryoneAwake, setSpans, sleepIn, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
 import type { AmbientWorld } from './ambient.ts';

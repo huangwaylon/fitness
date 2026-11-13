@@ -11,7 +11,7 @@
   // or reveal come in and 前の問題 is always in the same place. Any game's.
   import type { Snippet } from 'svelte';
   import Icon from '../../ui/Icon.svelte';
-  import { hook, hookFlag } from '../../../world/devHooks.ts';
+  import { hook, hookFlag } from '#lib/world/devHooks.ts';
   import type { QuizGame } from '../game.svelte.ts';
   import LookBack from './LookBack.svelte';
   import type { Who } from '#lib/types.ts';

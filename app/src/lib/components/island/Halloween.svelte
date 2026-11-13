@@ -8,9 +8,9 @@
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { PUMPKIN_U, su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { CAMPSITE, onLayout, type Pt } from '../../world/world.ts';
+  import { CAMPSITE, onLayout, type Pt } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
-  import { nearestWalkable, walkGeo } from '../../world/walkGraph.ts';
+  import { nearestWalkable, walkGeo } from '#lib/world/walkGraph.ts';
 
   let { scene, night }: { scene?: HTMLElement; night: boolean } = $props();
   const w = useWorld();

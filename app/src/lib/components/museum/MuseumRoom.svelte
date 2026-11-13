@@ -36,7 +36,7 @@
   import RoomChip from './RoomChip.svelte';
   import { DIP_FADE_MS, NEW_MS, cardDock, chipName, freshFinds, freshIn, freshWings, roomTally, tagsOf, unitOf } from './hud.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../../world/say.ts';
+  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '#lib/world/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
   import { art, artUrl, villagerArt } from '#lib/art.ts';

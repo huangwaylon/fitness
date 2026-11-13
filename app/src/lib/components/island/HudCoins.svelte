@@ -18,7 +18,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { FRUIT_SPOTS, fruitLean } from './scene.ts';
   import { site } from './site.svelte.ts';
-  import { GOAL_TREES } from '../../world/world.ts';
+  import { GOAL_TREES } from '#lib/world/world.ts';
   import { live } from './camera.svelte.ts';
 
   interface Props {

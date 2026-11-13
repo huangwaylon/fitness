@@ -13,7 +13,7 @@ import { url3d } from '../villager3d/manifest.ts';
 import type { WebGLRenderer } from 'three';
 import type { Painter } from '../look/portraits.svelte.ts';
 import type { Shooter } from '../player3d/player3d.ts';
-import { drawOff } from '../../ui-state/testMode.ts';
+import { drawOff } from '#lib/ui-state/testMode.ts';
 
 /** Where the models are (the site's room/villagers3d/ and room/player/: $app/paths asset). */
 export interface Dirs { villagers: string; player: string }

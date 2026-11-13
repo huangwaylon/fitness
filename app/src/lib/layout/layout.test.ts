@@ -15,7 +15,7 @@ import { planTap } from '../components/island/tapWalk.ts';
 import type { LayoutEntry, LayoutOp } from '#lib/contract/layout.ts';
 import {
   BRIDGE, CAMPSITE, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, ROCK, SCENERY, TAPE_DECK
-} from '../world/world.ts';
+} from '#lib/world/world.ts';
 
 const T0 = 1_800_000_000_000;
 /** world.ts's z on the long island (migrate.ts: おく moved LONG_GROW back, past LONG_SPLIT). */

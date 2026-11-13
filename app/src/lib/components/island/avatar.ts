@@ -12,13 +12,13 @@
 // at a spot covers no control, and where an actor's feet are right now.
 import { actors, addFx, applyStep, awayFromHome, busy, faceToward, isRemote, later, place, setEmote, setMotion, setRouter, walkTo, type Facing } from '../motion/director.svelte.ts';
 import { cue } from '#lib/sound/cues.ts';
-import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from '../../world/wander.ts';
+import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from '#lib/world/wander.ts';
 import type { ActorId } from '../motion/reactions.ts';
-import { SPEED } from '../../world/speed.ts';
-import { REACH, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from '../../world/walkGraph.ts';
+import { SPEED } from '#lib/world/speed.ts';
+import { REACH, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from '#lib/world/walkGraph.ts';
 import type { EmoteIcon } from '#lib/art.ts';
-import { walkNav } from '../../world/nav.ts';
-import { worldGen } from '../../world/world.ts';
+import { walkNav } from '#lib/world/nav.ts';
+import { worldGen } from '#lib/world/world.ts';
 import { planTap, standAt, type TapPlan } from './tapWalk.ts';
 import { localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
 import { actorOf, castMe, guestPhone, islandActors, othersOf, whoOf } from '#lib/ui-state/cast.ts';

@@ -7,7 +7,7 @@
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { su } from './scene.ts';
-  import { ARCH } from '../../world/world.ts';
+  import { ARCH } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { SCENE, firstOn } from '#lib/sync/storage.ts';

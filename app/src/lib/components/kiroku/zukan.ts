@@ -3,10 +3,10 @@
 // recipes; island/catalog.ts), with each entry's icon and name key. Pure; the panel's ずかん reads it with the model's
 // finds (model/finds.ts) and counts (model/tally.ts).
 import type { FindKind } from '#lib/contract/api.ts';
-import { BUGS, FISH, critterArt, type Catch } from '../../world/critters.ts';
-import { POND_FISH } from '../../world/pondFish.ts';
-import { FOSSILS, FOSSIL_SETS, SHELLS, findArt } from '../../world/beach.ts';
-import { PEARL, SEA } from '../../world/sea.ts';
+import { BUGS, FISH, critterArt, type Catch } from '#lib/world/critters.ts';
+import { POND_FISH } from '#lib/world/pondFish.ts';
+import { FOSSILS, FOSSIL_SETS, SHELLS, findArt } from '#lib/world/beach.ts';
+import { PEARL, SEA } from '#lib/world/sea.ts';
 import { CLOTHING_CATEGORIES, FURNITURE_CATEGORIES, ITEMS, RECIPES, RECIPE_SEASONS, catalogArt, catalogName } from '../island/catalog.ts';
 
 export type ZukanKind = Exclude<FindKind, 'fragment'>;

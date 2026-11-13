@@ -10,10 +10,10 @@
   //   <Says bind:this={says} scene={el} />   says.say('mine', text, speakerEl, { name, colour })
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
-  import { tagInk } from '../../world/pager.ts';
-  import { SAY_MS } from '../../world/say.ts';
-  import type { Box } from '../../world/geom.ts';
-  import type { SaySpeaker } from '../../world/say.ts';
+  import { tagInk } from '#lib/world/pager.ts';
+  import { SAY_MS } from '#lib/world/say.ts';
+  import type { Box } from '#lib/world/geom.ts';
+  import type { SaySpeaker } from '#lib/world/say.ts';
   import { followOf } from './balloonFollow.ts';
   import { useWorld } from './camera.svelte.ts';
 

@@ -9,7 +9,7 @@
   import { onMount, tick, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { stageGeo } from './placement.ts';
-  import { TYPE_MS, arrow, paginate, split, tapBox, typeOne, typing, type PagerState } from '../../world/pager.ts';
+  import { TYPE_MS, arrow, paginate, split, tapBox, typeOne, typing, type PagerState } from '#lib/world/pager.ts';
 
   interface Props {
     scene?: HTMLElement;

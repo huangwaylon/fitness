@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, untrack } from 'svelte';
-  import { WET, type Sky } from '../../world/weather.ts';
+  import { WET, type Sky } from '#lib/world/weather.ts';
   // The weather on the island (design.md "Weather"; the day's weather: weatherNow.svelte.ts, weather.ts).
   // Two placements, each cheap: `sky` (after the sky, behind the island): the overcast over the sky (a cloudy day's at
   // about half), the rainbow after

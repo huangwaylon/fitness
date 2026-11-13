@@ -17,7 +17,7 @@ import type { EmoteIcon } from '#lib/art.ts';
 import { objMid, type Layout } from '#lib/layout/model.ts';
 import { yawOf } from '#lib/layout/nav.ts';
 import { anchorsOf, shapeOf } from '../villager3d/seats3d.ts';
-import MODELS from '../../world/models.json' with { type: 'json' };
+import MODELS from '#lib/world/models.json' with { type: 'json' };
 
 /** His piece's kind and its id on the default layout (one to an island). */
 const KK_KIND = 'kk-stool';

@@ -29,7 +29,7 @@ import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
-import { drawOff } from '../../ui-state/testMode.ts';
+import { drawOff } from '#lib/ui-state/testMode.ts';
 import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from './stage.ts';
 import { DECAY_MS, DECAY_OUT_MS, STOP_V, rubber } from '#lib/touch.ts';
 import { releaseAll, resourcesOf } from './release.ts';

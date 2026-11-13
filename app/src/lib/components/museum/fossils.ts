@@ -4,7 +4,7 @@
 // A skeleton's pieces stand in a row along +x on its platform, NH's way: each piece is a 2 × 2 base with its bones, and
 // the pieces in their order join into the whole animal (the skull at −x; a pterosaur's wings either side of its body).
 // A piece not found yet leaves its place empty; once every piece is in, the skeleton is complete (its card says so).
-import { FOSSIL_SETS, STANDALONE } from '../../world/fossilIds.ts';
+import { FOSSIL_SETS, STANDALONE } from '#lib/world/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { F1, F2, F3, type Rect, type RoomId } from './plan.ts';
 

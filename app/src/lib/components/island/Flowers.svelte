@@ -7,13 +7,13 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { FLOWER_U, flowerScale, wildFlower, u } from './scene.ts';
-  import { FLOWERS } from '../../world/world.ts';
+  import { FLOWERS } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { flowerArt } from '#lib/art.ts';
   import { islandDay } from './ambientClock.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { WATERED, wateredOn } from '../../world/sceneDay.ts';
+  import { WATERED, wateredOn } from '#lib/world/sceneDay.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
 
   interface Props {

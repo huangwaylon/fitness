@@ -5,7 +5,7 @@
 import { setEmote, setMotion } from '../motion/director.svelte.ts';
 import type { VillagerActor } from '#lib/ui-state/cast.ts';
 import { STUNG_SWEAT_MS, SWOLLEN_MS } from './treeShake.ts';
-import { TRICK_MS } from '../../world/visitors.ts';
+import { TRICK_MS } from '#lib/world/visitors.ts';
 
 const none = (): Record<VillagerActor, boolean> => ({ mine: false, partner: false, third: false });
 

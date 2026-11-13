@@ -2,8 +2,8 @@
 // from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
 // the static prefix of a dynamic key at whole dot segments (`panel.tab.${id}`). The host's lines (`host.<line>`) are
 // picked by name.
-import { DECOR_ART } from './world/decor.ts';
-import { FIXED_ART } from './world/fixedDecor.ts';
+import { DECOR_ART } from '#lib/world/decor.ts';
+import { FIXED_ART } from '#lib/world/fixedDecor.ts';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';

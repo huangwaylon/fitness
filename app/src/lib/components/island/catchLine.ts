@@ -3,12 +3,12 @@
 // netted from a shaken tree's nest (TreeShakes.svelte).
 import { i18n, t } from '#lib/i18n/index.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { caption, type Catch } from '../../world/critters.ts';
+import { caption, type Catch } from '#lib/world/critters.ts';
 
-let chunk: Promise<typeof import('../../world/catchLines.ts')['CATCH_LINES']> | null = null;
+let chunk: Promise<typeof import('#lib/world/catchLines.ts')['CATCH_LINES']> | null = null;
 /** Starts (or joins) loading the catch lines. */
 /** Starts (or joins) loading the catch lines, and the names with them (the fallback caption names the catch). */
-export const loadLines = () => (chunk ??= Promise.all([import('../../world/catchLines.ts'), loadNames()]).then(([m]) => m.CATCH_LINES));
+export const loadLines = () => (chunk ??= Promise.all([import('#lib/world/catchLines.ts'), loadNames()]).then(([m]) => m.CATCH_LINES));
 /** Starts (or joins) loading the catchables' names (i18n/catch.ts, its own chunk). */
 export const loadNames = (): Promise<unknown> => import('#lib/i18n/catch.ts');
 

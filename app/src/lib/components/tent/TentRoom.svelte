@@ -34,7 +34,7 @@
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
-  import { SAY_TAG, rememberSay, sayGate } from '../../world/say.ts';
+  import { SAY_TAG, rememberSay, sayGate } from '#lib/world/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';

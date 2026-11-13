@@ -7,8 +7,8 @@ import { BUY } from '#lib/contract/buyPrices.ts';
 import { stockOf } from '#lib/contract/stock.ts';
 import { packOf } from '../shop/stock.ts';
 import { shuffle } from '#lib/random.ts';
-import { ISLAND_SEED, dayRand } from '../../world/daySeed.ts';
-import type { GuestId } from '../../world/visitorRoles.ts';
+import { ISLAND_SEED, dayRand } from '#lib/world/daySeed.ts';
+import type { GuestId } from '#lib/world/visitorRoles.ts';
 
 /** How many pieces a guest brings, and the dear pool's least price (かいがら). */
 const OFFER_N = 6;

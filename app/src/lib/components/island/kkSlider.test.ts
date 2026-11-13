@@ -11,7 +11,7 @@ import { validate } from '#lib/layout/validate.ts';
 import { tileMid } from '#lib/layout/grid.ts';
 import { move, remove, removable, rotate } from '../editor/edits.ts';
 import { KK_MODES, KK_SEAT, KK_STOOL_H, kkAct, kkBye, kkEmote, kkGreeting, kkMode, kkSpot } from './kkSlider.ts';
-import { visitorAt } from '../../world/visitors.ts';
+import { visitorAt } from '#lib/world/visitors.ts';
 import { placeObjects } from '../world3d/objects.ts';
 import { modelBounds } from '../world3d/models3d.ts';
 import ja from '#lib/i18n/ja.json';

@@ -5,7 +5,7 @@
 import type { FlowerColour, FlowerId } from '#lib/art.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { SceneSfx } from '#lib/sound/ids.ts';
-import { SPRING, inOval, pondAt, surfaceAt } from '../../world/world.ts';
+import { SPRING, inOval, pondAt, surfaceAt } from '#lib/world/world.ts';
 
 export type SceneHit =
   /** A hedge bush or another bush (its node's data-bush id), found from the tapped element. */

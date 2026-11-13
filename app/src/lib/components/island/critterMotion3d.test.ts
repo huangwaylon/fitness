@@ -2,8 +2,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { bugLoc, fishLoc, loc, poolOf, seaPool, type Bug, type Fish } from './critterTypes.ts';
 import { critterMotion3d } from './critterMotion3d.ts';
-import { shadowLen } from '../../world/critters.ts';
-import type { Line as MyLine } from '../../world/fishing.ts';
+import { shadowLen } from '#lib/world/critters.ts';
+import type { Line as MyLine } from '#lib/world/fishing.ts';
 
 const fish = (o: Partial<Fish> = {}): Fish => ({
   n: 1, item: 'sea-bass', water: 'sea', pool: 'sea', size: 3, x: 100, z: 50, ms: 0, ax: 100, az: 50, flip: false, rot: 0,

@@ -9,8 +9,8 @@
 // what components need to know when the camera is still.
 import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
-import { hull, zIndexAt } from '../../world/geom.ts';
-import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from '../../world/world.ts';
+import { hull, zIndexAt } from '#lib/world/geom.ts';
+import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from '#lib/world/world.ts';
 import type { NodeFrame } from './balloonFollow.ts';
 import type { At } from '../world3d/engine.ts';
 

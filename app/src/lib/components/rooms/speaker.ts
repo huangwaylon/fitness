@@ -1,6 +1,6 @@
 // What the rooms' shells (TentRoom, MuseumRoom) share of their scene on the page: a villager as a balloon's speaker
 // (island/Says), and how dark the room is at the hour.
-import type { SaySpeaker } from '../../world/say.ts';
+import type { SaySpeaker } from '#lib/world/say.ts';
 
 /** What a room's engine says of a villager's place (tent/engine.ts, museum/engine.ts). */
 interface Room<W> {

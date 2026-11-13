@@ -11,12 +11,12 @@ import type { Spawn } from './ambient.ts';
 import {
   BUGS, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimPick, swimmable, waterAt,
   type BugId, type BugPlace, type Flight, type Patch, type Swim, type Water
-} from '../../world/critters.ts';
+} from '#lib/world/critters.ts';
 import { clamp } from '#lib/math.ts';
-import { FLOWERS, layoutNav, surfaceAt, type FreshWhere } from '../../world/world.ts';
+import { FLOWERS, layoutNav, surfaceAt, type FreshWhere } from '#lib/world/world.ts';
 import { walkable } from '#lib/layout/nav.ts';
 import { FLOWER_U } from './scene.ts';
-import { coastOf } from '../../world/coast.ts';
+import { coastOf } from '#lib/world/coast.ts';
 import { site } from './site.svelte.ts';
 
 /** A critter's shared id: its kind, its channel past the first (a water, a coast, the second bug's lane) and the slot

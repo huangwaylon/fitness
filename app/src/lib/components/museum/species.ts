@@ -17,9 +17,9 @@
 //   a sea creature in its place in the sea creatures' room (seaTanks.ts: the reef tank or the tide pool), all of them
 //   at once (they hardly move: no hour's pick).
 // A species' tank is its own, whatever else is found; which of a tank's are swimming is the hour's.
-import { BUGS, FISH, type BugId } from '../../world/critters.ts';
-import { POND_FISH } from '../../world/pondFish.ts';
-import { SEA } from '../../world/sea.ts';
+import { BUGS, FISH, type BugId } from '#lib/world/critters.ts';
+import { POND_FISH } from '#lib/world/pondFish.ts';
+import { SEA } from '#lib/world/sea.ts';
 import { SEA_SPOTS, type SeaTankId } from './seaTanks.ts';
 import { PREDATORS } from './feeding.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
