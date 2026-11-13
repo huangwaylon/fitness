@@ -52,7 +52,7 @@
   /* a paper memo card: ruled rows, each its question and its chips (44 px targets that wrap at 393 px) */
   .memo { list-style: none; margin: 0; padding: 4px 12px; display: grid; }
   .row { display: grid; gap: 6px; padding: 10px 0; }
-  .row + .row { border-top: 2px dashed color-mix(in srgb, var(--c-edge) 45%, transparent); }
+  .row + .row { border-top: 1.5px dashed var(--stitch); }
   .ask { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 700 var(--fs-body)/1.35 var(--font-ui); }
   .who { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .theirs:not([data-mark]) { opacity: .6; }

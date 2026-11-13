@@ -569,7 +569,7 @@
     display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'nm kc un' 'meta kc un'; align-items: center;
     column-gap: 10px; min-height: var(--row-obj); padding: 4px 0 4px 2px;
   }
-  .added li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  .added li + li { border-top: 1.5px dashed var(--stitch); }
   .added .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .un { grid-area: un; display: flex; margin-right: -6px; }
   .none { display: grid; gap: 8px; padding: 12px 14px; }

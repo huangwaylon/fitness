@@ -57,7 +57,7 @@
   }
   .title { margin: 0 32px 2px 6px; font-weight: 800; }
   .none { margin: 4px 6px; }
-  ul { list-style: none; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  ul { list-style: none; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; }
   .song {
     display: block; width: 100%; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 12px; background: none; color: inherit;
     font: inherit; text-align: left; -webkit-tap-highlight-color: transparent;

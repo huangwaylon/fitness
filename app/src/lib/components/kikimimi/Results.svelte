@@ -112,7 +112,7 @@
 {#snippet strip()}
   {@render extra?.()}
   {#if ls && recorded}
-    <section class="lesson card" class:won={stamped} data-kiki-lesson-result={ls.lesson} data-kiki-stamped={stamped ? '1' : '0'}>
+    <section class="lesson card pad" class:won={stamped} data-kiki-lesson-result={ls.lesson} data-kiki-stamped={stamped ? '1' : '0'}>
       <div class="lhead">
         <span class="lface" aria-hidden="true"><OfficialArt key={villagerArt(ls.unit.host, true)} alt="" size={40} /></span>
         <span class="lname"><b>{ls.unit.name}</b><LessonDots lessons={unitLessons} done={unitState?.done ?? []} next={nextLesson} /></span>
@@ -283,7 +283,7 @@
 
 <style>
   /* a lesson's strip (the UX review's sketch C): the unit, its dots, then 次は… or the stamp */
-  .lesson.card { display: grid; justify-items: center; gap: 8px; padding: 12px 14px; text-align: center; }
+  .lesson.card { display: grid; justify-items: center; gap: 8px; text-align: center; }
   .lesson.won { background: color-mix(in srgb, var(--c-yuzu) 28%, var(--card)); }
   .lesson p { margin: 0; }
   .lhead { display: flex; gap: 10px; align-items: center; justify-self: stretch; }

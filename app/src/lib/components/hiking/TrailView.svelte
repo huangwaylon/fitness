@@ -162,7 +162,7 @@
       <h2 class="pk-title">{pick(trail.name, L)}</h2>
       <StatStrip items={trailStats(trail, L, true)} />
     </div>
-    <div class="body" bind:this={body}>
+    <div class="body sheet-scroll" bind:this={body}>
       {#if track === 'ok' && prep}
         <ElevCard {prep} bind:held />
       {:else if track === 'failed'}
@@ -252,7 +252,7 @@
   .peek :global(.stats) { padding: 6px 0 8px; }
 
   .body {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none;
+    scrollbar-width: none;
     display: flex; flex-direction: column; gap: 8px; padding: 0 calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left));
   }
   .body::-webkit-scrollbar { display: none; }

@@ -324,7 +324,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .edit-tray .items {
   flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); grid-auto-rows: 60px; gap: 6px;
   max-height: calc(60px * 2.4 + 12px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y;
-  scrollbar-width: none; padding: 2px; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding: 2px;
 }
 .edit-tray :is(.it, .act, .done) {
   appearance: none; border: 0; margin: 0; font: inherit; color: var(--c-ink); cursor: pointer; -webkit-tap-highlight-color: transparent;

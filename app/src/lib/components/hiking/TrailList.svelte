@@ -45,7 +45,7 @@
       </button>
     {/each}
   </ChipRow>
-  <div class="list" role="list">
+  <div class="list sheet-scroll" role="list">
     {#each shown as t (t.slug)}
       <div class="card dense trail" role="listitem" data-trail={t.slug}>
         <PhotoBand src={photo(t.slug)} height={120}>
@@ -66,7 +66,7 @@
   .top { flex: none; background-color: var(--surface); }
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .list {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none;
+    scrollbar-width: none;
     display: flex; flex-direction: column; gap: 8px; padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left));
   }
   /* (a card clips its photo: never shrunk to the scroller) */

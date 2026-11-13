@@ -48,7 +48,7 @@
   .today .dot { outline: 2px solid var(--c-yuzu); outline-offset: 2px; }
   .dl { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .met { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--leaf-text); }
-  .quest { display: grid; gap: 6px; padding-top: 8px; border-top: 2px dashed var(--edge); }
+  .quest { display: grid; gap: 6px; padding-top: 8px; border-top: 1.5px dashed var(--stitch); }
   .ql { display: flex; justify-content: space-between; gap: 8px; font: 700 var(--fs-s)/1.3 var(--font-ui); }
   .ql span { color: var(--text-soft); }
   .bar { height: 12px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; box-shadow: inset 0 0 0 2px var(--edge); }

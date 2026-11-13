@@ -76,7 +76,7 @@
   </section>
 
   {#if now === 'ladder'}
-    <section class="sec ladder card" data-kiki-ladder-about>
+    <section class="sec ladder card pad" data-kiki-ladder-about>
       <p class="about">{t('kiki.ladderAbout')}</p>
       <LadderSteps size="big" step={(k) => (k === SPEEDS.length - 1 ? 'up' : 'soft')} />
       <p class="hint">{t('kiki.ladderRule')}</p>
@@ -131,7 +131,7 @@
   .sec { display: grid; gap: 8px; }
   .games { display: flex; flex-wrap: wrap; gap: 8px; }
   .games .chip[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
-  .ladder.card { padding: 12px 14px; gap: 10px; }
+  .ladder.card { gap: 10px; }
   .about { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .ladder .hint { margin: 0; }
   .flag { font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); }

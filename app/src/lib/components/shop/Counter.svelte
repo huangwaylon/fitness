@@ -362,7 +362,7 @@
   .wallet { cursor: default; font-variant-numeric: tabular-nums; margin-left: 6px; }
   .wallet:active { transform: none; }
   .list {
-    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch;
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
     display: flex; flex-direction: column; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 12px calc(var(--side) + var(--safe-left));
   }
   /* (no bar under it, an empty うる: the list keeps clear of the home indicator) */
