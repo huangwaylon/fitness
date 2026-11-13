@@ -15,6 +15,7 @@
   import Segmented from '../ui/Segmented.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import PieceTile from './PieceTile.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import { iconUrl } from '../tent/items.ts';
   import { bare } from '#lib/world/critters.ts';
   import { SECTIONS, pocketItem } from './pocket.ts';
@@ -249,12 +250,12 @@
           {/each}
         </div>
       {:else}
-        <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
+        <p class="empty" data-shop-empty><Phrases text={t('shop.emptyPocket')} /></p>
       {/if}
     </div>
     {#if pocket.length}
       <div class="bar">
-        <p class="sum" data-shop-offer={pickedV}>{pickedN ? t('shop.pickedN', { n: formatNum(pickedN) }) : t('shop.pickHint')}</p>
+        <p class="sum" data-shop-offer={pickedV}><Phrases text={pickedN ? t('shop.pickedN', { n: formatNum(pickedN) }) : t('shop.pickHint')} /></p>
         <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>
           {pickedN ? t('shop.sellFor', { v: formatNum(pickedV) }) : t('shop.sell')}</button>
       </div>
@@ -281,20 +282,18 @@
             {/each}
           </ul>
         {:else if week.model}
-          <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
+          <p class="empty" data-shop-sold-out><Phrases text={t('shop.soldOut')} /></p>
         {/if}
       </div>
       {#if !first}{@render startsSec()}{/if}
     </div>
     <div class="bar">
       <!-- what's picked, or how many かいがら short (its price is the button's) -->
-      <p class="sum" data-shop-pick={pick ?? ''} data-shop-starts-offer={startsN ? startsV : null}>
-        {startsN && startsV > shop.shells ? t('shop.short', { n: formatNum(shortBy(startsV, shop.shells)) })
+      <p class="sum" data-shop-pick={pick ?? ''} data-shop-starts-offer={startsN ? startsV : null}><Phrases text={startsN && startsV > shop.shells ? t('shop.short', { n: formatNum(shortBy(startsV, shop.shells)) })
           : startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN) }) : t('shop.startsMany', { n: String(startsN) }))
           : pick && why === 'wallet' ? t('shop.short', { n: formatNum(shortBy(pickPrice, shop.shells)) })
           : pick ? itemName(pick)
-          : t('shop.buyHint')}
-      </p>
+          : t('shop.buyHint')} /></p>
       <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={startsN ? startsV > shop.shells : !pick || !!why}
         onclick={buyPicked}>{startsN ? t('shop.buyFor', { v: formatNum(startsV) }) : pick && why !== 'owned' ? t('shop.buyFor', { v: formatNum(pickPrice) }) : t('shop.buy')}</button>
     </div>
@@ -345,11 +344,11 @@
 {#snippet trailing()}<NavButton kind="close" data-shop-close onclick={onclose} />{/snippet}
 
 <style>
-  /* the sheet: its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
+  /* the sheet: one height on both tabs and after a sale (no jump), its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
      scroller, so iOS Safari's rubber band never drags the head off); fixed cream at every time of day, ink text (a game
      object, as the HUD's) */
   .menu {
-    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 80%; display: flex; flex-direction: column;
+    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 80%; display: flex; flex-direction: column;
     background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 -4px 0 var(--c-lip); overflow: hidden;
     /* (.obj-cream: the panel's own controls keep the day's look, fixed cream and ink, at every time of day) */
     --focus: var(--c-ink);

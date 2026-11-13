@@ -1,6 +1,6 @@
 <script module lang="ts">
   // One tile of the shops' grids (タヌキ商店's かう and its 苗, a visitor's few pieces: island/VisitorShop.svelte): the
-  // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」); yuzu when picked. Its
+  // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」 under it); yuzu when picked. Its
   // colours are the sheet's controls (--ctl, --ctl-sel, --sh-ctl), so it fits the shop's cream sheet and a Sheet alike.
   // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
   import { isLong, words } from './words.ts';
@@ -38,8 +38,8 @@
     <span class="ic">{@render icon()}</span>
     {@render nm(name)}
     {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
-    {:else if short > 0}<span class="price" data-short={short}>{t('shop.shortBy', { n: formatNum(short) })}</span>
-    {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(price)}</span>{/if}
+    {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(price)}</span>
+      {#if short > 0}<small class="short-by" data-short={short}>{t('shop.shortBy', { n: formatNum(short) })}</small>{/if}{/if}
   </button>
 </li>
 
@@ -65,6 +65,7 @@
   .nm.xs { font-size: var(--fs-xs); }
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
+  .short-by { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .owned-tag { font-family: var(--font-ui); color: var(--leaf-text); }
   @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } }
 </style>

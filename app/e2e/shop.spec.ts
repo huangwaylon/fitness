@@ -172,6 +172,16 @@ test('overspending is refused: a piece past my かいがら is dimmed with how m
   const [dear, price] = await pieceOf(page, (p) => p > 4);
   const tile = page.locator(`[data-shop-item="${dear}"]`);
   await expect(tile.locator('[data-short]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}`);
+  // its price shown too, as on the others (not only once tapped, on the disabled button)
+  await expect(tile.locator('.price')).toHaveText(price.toLocaleString('ja-JP'));
+  // the panel one height on both tabs (its top never jumps: 売る's few rows, an empty pocket, かう's grid)
+  const top = () => page.locator('[data-shop-panel]').evaluate((e) => Math.round(e.getBoundingClientRect().top));
+  const buyTop = await top();
+  await page.locator('[data-shop-tab="sell"]').click();
+  await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', 'sell');
+  await expect.poll(top).toBe(buyTop);
+  await page.locator('[data-shop-tab="buy"]').click();
+  await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', 'buy');
   const dearN = await stock(page).evaluateAll((els) => els.filter((e) => Number(e.getAttribute('data-price')) > 4).length);
   await expect(page.locator('[data-shop-stock] .tile.short')).toHaveCount(dearN);
   // the stock first, then the starts
