@@ -70,6 +70,8 @@
   "food.st.more": "+{n} more",
   "food.recentEmpty": "What you eat shows up here",
   "food.loading": "Loading…",
+  "food.pending": "Loading products and shop menus…",
+  "food.pendingMore": "Loading more matches…",
   "food.loadFail": "Couldn’t load the data (offline?)",
   "food.retry": "Try again",
   "food.none": "Nothing found for “{q}”",

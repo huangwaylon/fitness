@@ -14,9 +14,9 @@ const DATA = readFileSync(new URL('./fixtures/kalori.json', import.meta.url), 'u
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 type Rec = ReturnType<typeof newRecord>;
 
-/** A fresh phone paired as `who` on `rec`, the relay's chain menus routed to the fixture (each request's key kept),
- *  its ごはん open on 昼ごはん's search. */
-async function search(browser: Browser, rec: Rec, who: 'A' | 'G') {
+/** A fresh phone paired as `who` on `rec`, the relay's chain menus routed to the fixture (each request's key kept;
+ *  answered once `held` settles), its ごはん open on 昼ごはん's search. */
+async function search(browser: Browser, rec: Rec, who: 'A' | 'G', held?: Promise<void>) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
@@ -27,10 +27,11 @@ async function search(browser: Browser, rec: Rec, who: 'A' | 'G') {
     imgs.push({ url, referer: route.request().headers()['referer'] });
     return url.endsWith('_200.webp') ? route.fulfill({ status: 200, contentType: 'image/png', body: PNG }) : route.abort();
   });
-  await context.route(`${RELAY}/food/kalori`, (route) => {
+  await context.route(`${RELAY}/food/kalori`, async (route) => {
     const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Expose-Headers': 'ETag' };
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
     auth.push(route.request().headers()['authorization'] ?? '');
+    await held;
     return route.fulfill({ status: 200, contentType: 'application/json', headers: { ...cors, ETag: '"e2e"', 'Cache-Control': 'private, no-cache' }, body: DATA });
   });
   const page = await context.newPage();
@@ -65,6 +66,27 @@ test('a member’s search has the chain menus: the shop on the row, logged by th
   await expect.poll(() => rec.sent.filter((e) => e.type === 'food').map((e) => [e.ok, e.data.g, e.data.f])).toEqual([
     [true, 100, { id: 'kal:900001', n: 'ためし丼 並盛', k: 1180, p: 31.5, fa: 28, c: 190.2, s: 3.4, u: '1食', sv: true }]
   ]);
+});
+
+test('the chain menus still coming: 読み込み中, never 見つかりませんでした; arriving, they go under the rows shown', async ({ browser }) => {
+  let answer = () => {};
+  const a = await search(browser, newRecord(), 'A', new Promise<void>((ok) => (answer = ok)));
+  const pending = a.sheet.locator('[data-food-pending]');
+  await expect(pending).toHaveText('商品・お店のメニューを読み込み中…', { timeout: 15_000 });
+  await expect(a.sheet.locator('[data-food-none]')).toHaveCount(0);
+  // a query the catalog has: its rows, the line under them; the menus' rows come in below, the first row unmoved
+  await a.sheet.locator('[data-food-q]').fill('ラテ');
+  const rows = a.sheet.locator('[data-food-results] [data-item]');
+  await expect(rows.first()).toBeVisible();
+  await expect(pending).toHaveText('ほかの候補を読み込み中…');
+  const ids = () => rows.evaluateAll((els) => els.map((e) => e.getAttribute('data-item')!));
+  const shown = await ids();
+  expect(shown.filter((id) => id.startsWith('kal:'))).toEqual([]);
+  answer();
+  await expect(pending).toHaveCount(0);
+  await rows.last().scrollIntoViewIfNeeded();
+  await expect(a.sheet.locator('[data-food-results] [data-item^="kal:"]').first()).toBeAttached();
+  expect((await ids()).slice(0, shown.length)).toEqual(shown);
 });
 
 test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (no referrer); its amount: the shop, the values’ trust, its kalori.jp page, the picture failing: its tile', async ({ browser }) => {

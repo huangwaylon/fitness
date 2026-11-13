@@ -110,7 +110,7 @@
       db = d;
       // (the products with it: a search's, never the sheet's open; search again as each comes in)
       stop = d.onAdd(() => more++);
-      void d.wantMore();
+      void d.wantMore().then(() => live && more++);
     }, () => live && (failed = true));
     return () => {
       live = false;
@@ -126,9 +126,21 @@
 
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
+  /** A dataset coming in (the products, the chain menus) never reshuffles the rows already shown for this query: those
+   *  still found keep their order, the new ones go under them (`shown`: this query's, as listed). */
+  let shown: { q: string; items: Item[] } = { q: '', items: [] };
   const results = $derived.by(() => {
     void more;
-    return db && q.trim() ? searchFoods(db, q, 40) : [];
+    const query = q.trim(), again = shown.q === query && shown.items.length > 0;
+    const found = db && query ? searchFoods(db, q, again ? 80 : 40) : [];
+    if (!again) return (shown = { q: query, items: found }).items;
+    const ids = new Set(found.map((it) => it.id)), had = new Set(shown.items.map((it) => it.id));
+    return (shown.items = [...shown.items.filter((it) => ids.has(it.id)), ...found.filter((it) => !had.has(it.id))]);
+  });
+  /** The lazy datasets still coming (db.pending): no 見つかりませんでした yet. */
+  const pending = $derived.by(() => {
+    void more;
+    return db?.pending ?? false;
   });
   /** 近いもの for a query nothing holds whole (food/search.ts nearby: a full pass, ~30 ms on a Mac), once typing
    *  pauses. */
@@ -439,7 +451,9 @@
   {:else if !db}
     <p class="note" role="status">{t('food.loading')}</p>
   {:else if !results.length}
-    {#if noneOfOurs}
+    {#if pending}
+      <p class="note" role="status" data-food-pending>{t('food.pending')}</p>
+    {:else if noneOfOurs}
       <section class="card none" data-food-none>
         <p class="note" role="status">{t('food.none', { q: q.trim() })}</p>
         {#if oncreate}
@@ -459,6 +473,7 @@
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
+    {#if pending}<p class="note" role="status" data-food-pending>{t('food.pendingMore')}</p>{/if}
   {/if}
 {/snippet}
 

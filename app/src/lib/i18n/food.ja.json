@@ -70,6 +70,8 @@
   "food.st.more": "ほか {n}",
   "food.recentEmpty": "食べたものがここに並びます",
   "food.loading": "読み込み中…",
+  "food.pending": "商品・お店のメニューを読み込み中…",
+  "food.pendingMore": "ほかの候補を読み込み中…",
   "food.loadFail": "データを読み込めませんでした（オフライン？）",
   "food.retry": "もう一度",
   "food.none": "「{q}」は見つかりませんでした",

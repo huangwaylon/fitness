@@ -93,12 +93,15 @@ describe('fetchKalori', () => {
 });
 
 describe('loadFoodDb with the chain menus', () => {
-  it('asked for at wantMore only, searchable per serving with their shop; none without a source', async () => {
+  it('asked for at wantMore only (pending till in), searchable per serving with their shop; none without a source', async () => {
     fakeCaches();
     const asked = relay([ok()]);
     const db = await loadFoodDb(undefined, () => ({ href: HREF, key: KEY }));
-    expect(asked).toEqual([]);
-    await db.wantMore();
+    expect([asked, db.pending]).toEqual([[], false]);
+    const more = db.wantMore();
+    expect(db.pending).toBe(true); // (a search says 読み込み中 meanwhile, never 見つかりませんでした)
+    await more;
+    expect(db.pending).toBe(false);
     const [hit] = searchFoods(db, 'ためし食堂 丼');
     expect([hit?.id, hit?.sv, hit?.brand, db.sets.map((s) => s.source)]).toEqual(['kal:1', true, 'ためし食堂', ['kalori']]);
     const none = await loadFoodDb(undefined, () => null);

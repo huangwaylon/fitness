@@ -118,7 +118,9 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, kalori?:
   let wanted: Promise<void> | null = null, settle = () => {};
   db.more = new Promise<void>((ok) => (settle = ok));
   db.wantMore = () => {
-    wanted ??= Promise.all([...lazy.map((d) => load(d)), chains()]).then(() => settle(), settle);
+    if (!wanted) db.pending = true;
+    const done = () => ((db.pending = false), settle());
+    wanted ??= Promise.all([...lazy.map((d) => load(d)), chains()]).then(done, done);
     return db.more;
   };
   return db;
