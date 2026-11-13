@@ -8,10 +8,15 @@ filing browser as readily as a solving one — a timed-out solve would otherwise
 a browser between 申込する and 確認, with no way to learn which side of the commit it
 died on. Under the lock, anything `pgrep` finds really is an orphan.
 
-**Turnstile** rejects headless Chrome and detects Playwright's bundled Chromium;
-pydoll driving real Chrome over CDP passes, and a minimised window still passes. The
-checkbox sits in a cross-origin iframe reachable only by CDP mouse events. See
-its/SITE.md §6.
+**Turnstile** detects Playwright's bundled Chromium and a HeadlessChrome UA; pydoll
+driving real Chrome over CDP passes, and a minimised window still passes. The checkbox
+sits in a cross-origin iframe reachable only by CDP mouse events, at the centre of the
+widget's 300 px box (`_checkbox_spot`; the left-edge spot is the second attempt). On
+Linux (Actions) Chrome runs headed under xvfb, not minimised (xvfb has no window
+manager to minimise to). See its/SITE.md §6.
+
+`last_solve` records how the latest solve went (seconds, which spot), for the runner's
+reports.
 
 **`submit()`** is reached only after curl's POST was refused (its/SITE.md §5). **It
 presses 確認**, past which a real reservation exists, so:
@@ -39,6 +44,7 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import threading
 import time
 
@@ -54,6 +60,12 @@ TOKEN_TIMEOUT = 30        # max seconds to wait for token after click
                           # MAX_ATTEMPTS * TOKEN_TIMEOUT must fit in CAPTCHA_TIMEOUT
 
 _CONFIRM_TEXT = '申込内容確認'
+
+_LINUX = sys.platform.startswith('linux')
+
+# The latest solve's outcome: {'secs': float, 'spot': 'centre' | 'left' | None}. Written by
+# `get_calendar_url`, read by main.py's URL monitor for the reports.
+last_solve = {'secs': None, 'spot': None}
 
 
 # ── one Chrome at a time ─────────────────────────────────────────────
@@ -91,7 +103,8 @@ def value(result):
 
 
 def launch():
-    """A real, non-headless Chrome — Turnstile rejects headless, and so may /apply."""
+    """A real, non-headless Chrome — Turnstile rejects headless, and so may /apply.
+    On Linux the display is xvfb's (the workflow runs us under `xvfb-run`)."""
     from pydoll.browser.chromium.chrome import Chrome
     from pydoll.browser.options import ChromiumOptions
 
@@ -104,7 +117,10 @@ def launch():
 
 
 async def minimise(tab):
-    """Hide the window without going headless — minimised still renders, and passes."""
+    """Hide the window without going headless — minimised still renders, and passes.
+    Not on Linux: under xvfb nobody sees it, and the measured passes were not minimised."""
+    if _LINUX:
+        return
     try:
         win = await tab._connection_handler.execute_command(
             {'method': 'Browser.getWindowForTarget', 'params': {}})
@@ -170,10 +186,28 @@ async def _save_user_agent(tab):
         log(f'Could not record user agent: {e}')
 
 
-async def _click_turnstile_checkbox(tab):
+# The widget draws a 300 px box centred in the `.cf-turnstile` container (960 px wide on
+# the page), its checkbox 22 px in from the box's left edge (its/SITE.md §6, 2026-11-13).
+_WIDGET_W = 300
+_CHECKBOX_IN = 22
+
+
+def _checkbox_spot(bounds, attempt):
+    """`(x, y, spot)` to click on this attempt: the drawn checkbox at the centred box
+    (`x + w/2 − 150 + 22`) first, the old left-edge spot (`x + 28`) second, then centred
+    again. A container narrower than the box clamps to its own left edge."""
+    y = int(bounds['y'] + bounds['height'] / 2)
+    if attempt % 2 == 0:
+        return int(bounds['x'] + 28), y, 'left'
+    left = bounds['x'] + max(0.0, bounds['width'] / 2 - _WIDGET_W / 2)
+    return int(left + _CHECKBOX_IN), y, 'centre'
+
+
+async def _click_turnstile_checkbox(tab, attempt=1):
     """Find the Turnstile widget and click its checkbox via CDP mouse events.
 
-    Returns the cf-turnstile-response token string, or None on failure.
+    Returns `(token, spot)`: the cf-turnstile-response token string (None on failure)
+    and which spot was clicked.
     """
     from pydoll.commands.input_commands import InputCommands
     from pydoll.protocol.input.types import MouseEventType, MouseButton
@@ -181,17 +215,16 @@ async def _click_turnstile_checkbox(tab):
     cf = await tab.find(class_name='cf-turnstile', timeout=10, raise_exc=False)
     if not cf:
         log('No Cloudflare Turnstile widget found on page')
-        return None
+        return None, None
 
     bounds = await cf.get_bounds_using_js()
     log(f'Turnstile widget bounds: x={bounds["x"]:.0f} y={bounds["y"]:.0f} '
         f'w={bounds["width"]:.0f} h={bounds["height"]:.0f}')
 
-    # The checkbox sits in a cross-origin iframe ~28px from the left edge,
-    # vertically centred. CDP mouse events cross iframe boundaries; clicks do not.
-    x = int(bounds['x'] + 28)
-    y = int(bounds['y'] + bounds['height'] / 2)
-    log(f'Clicking Turnstile checkbox at ({x}, {y})...')
+    # The checkbox sits in a cross-origin iframe: CDP mouse events cross iframe
+    # boundaries; DOM clicks do not.
+    x, y, spot = _checkbox_spot(bounds, attempt)
+    log(f'Clicking Turnstile checkbox at ({x}, {y}), the {spot} spot...')
 
     for event in (MouseEventType.MOUSE_PRESSED, MouseEventType.MOUSE_RELEASED):
         await tab._connection_handler.execute_command(
@@ -208,19 +241,20 @@ async def _click_turnstile_checkbox(tab):
         if token:
             # Length only: this is Cloudflare's single-use response token.
             log(f'Turnstile token obtained ({len(token)} chars)')
-            return token
+            return token, spot
         log(f'  Waiting for token ({TOKEN_TIMEOUT - (deadline - time.time()):.0f}s)...')
 
     log('Turnstile token not generated within timeout')
-    return None
+    return None, spot
 
 
 async def solve_turnstile(tab):
     """Solve Cloudflare Turnstile on the given pydoll tab. The token, or None."""
     for attempt in range(1, MAX_ATTEMPTS + 1):
         log(f'═══ Turnstile attempt {attempt}/{MAX_ATTEMPTS} ═══')
-        token = await _click_turnstile_checkbox(tab)
+        token, spot = await _click_turnstile_checkbox(tab, attempt)
         if token:
+            last_solve['spot'] = spot
             return token
         if attempt < MAX_ATTEMPTS:
             log('Reloading page for fresh Turnstile challenge...')
@@ -238,10 +272,12 @@ async def get_calendar_url():
     hang would stop all booking behind a healthy-looking process. Serialised against
     the application-filing browser. None on failure or timeout.
     """
+    last_solve['secs'], last_solve['spot'] = None, None
     with hold() as owned:
         if not owned:
             log('Chrome is busy filing an application; deferring this solve')
             return None
+        t0 = time.monotonic()
         try:
             return await asyncio.wait_for(_solve_and_cache(), timeout=CAPTCHA_TIMEOUT)
         except asyncio.TimeoutError:
@@ -251,6 +287,8 @@ async def get_calendar_url():
         except Exception as e:
             log(f'Solve failed: {e!r}')
             return None
+        finally:
+            last_solve['secs'] = round(time.monotonic() - t0, 1)
 
 
 async def _solve_and_cache():

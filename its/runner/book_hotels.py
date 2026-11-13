@@ -4,6 +4,19 @@
 Reads the calendar URL from calendar_url_cache.txt each cycle and never solves a
 CAPTCHA; main.py's URL monitor does that. Ends at the hold — confirm_booking's worker
 turns it into a reservation.
+
+Seams for the remote runner (main.py --remote, remote.py), each a no-op when unset so the local bot and the tests run
+as before:
+
+- `apply_settings(s)` installs the Worker's settings by reassigning the module globals the flow reads at call time
+  (TARGET_DATES, SKIP_HOTELS/_SKIP_NORM, PRIORITY_HOTELS/_PRIORITY_NORM, RETRY_DELAY, NUM_GUESTS, AUTO_CONFIRM) —
+  exactly what test_its's Env does. The confirm gate (`confirm_allowed`) reads the live AUTO_CONFIRM.
+- `_hold_gate()` → `(ok, why)` is asked immediately before step 7 (the hold): the lease, the run's deadline and an
+  unsynced record can refuse a new hold. Nothing else is gated: scanning and the read-only steps go on.
+- `notify(kind, **fields)` reports what happened (scan, fail, offered, hold, human_needed, ban, …) to `_event_sink`;
+  it never raises into the flow.
+- `scan_and_book_month` takes its dates as a list or a callable, read every cycle, so a date added or removed in the
+  app reaches a running scanner.
 """
 import subprocess, re, urllib.parse, os, json, tempfile, threading, time
 import contextlib
@@ -14,7 +27,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, date
 
 from config import (
-    CALENDAR_URL_CACHE, EMAIL, NUM_GUESTS,
+    CALENDAR_URL_CACHE, EMAIL, NUM_GUESTS, TARGET_DATES,
     HOLDS_FILE, RETRY_DELAY, CURL_MAX_ATTEMPTS, SKIP_HOTELS,
     DEBUG_DIR, USER_AGENT_CACHE, BROWSER_HEADERS, ACCEPT, ACCEPT_LANGUAGE,
     FALLBACK_USER_AGENT, PRIORITY_HOTELS,
@@ -38,6 +51,68 @@ X = '\033[0m'    # reset
 
 
 _log_handler = None  # main() routes this to stdout + LOG_FILE
+
+# The remote runner's seams (module docstring). Both replaceable, both None for the local bot and the tests.
+_event_sink = None   # (kind, fields) -> None
+_hold_gate = None    # () -> (ok, why)
+
+
+def notify(kind, **fields):
+    """Tell the runner something happened. Never raises: it sits inside booking threads and the scan loop, and a
+    report that could not be queued must not cost a hold."""
+    sink = _event_sink
+    if sink is None:
+        return
+    try:
+        sink(kind, fields)
+    except Exception as e:
+        log(f"{R}event sink failed on {kind}: {e!r}{X}")
+
+
+def hold_allowed():
+    """`(ok, why)` from `_hold_gate`, failing closed: an exception there refuses the hold."""
+    gate = _hold_gate
+    if gate is None:
+        return True, ''
+    try:
+        return gate()
+    except Exception as e:
+        return False, f'hold gate raised {e!r}'
+
+
+# The scan interval's floor, whatever the settings say: the ~24 h IP bans come from the poll rate (its/SITE.md §2).
+MIN_RETRY_DELAY = 15
+
+
+def apply_settings(s):
+    """Install the Worker's ItsSettings (app/src/lib/its/contract.ts) as this module's globals.
+
+    The flow reads them at call time, so the next scan cycle, booking and confirm gate see the change; a booking chain
+    already past its hotel list keeps the guest count it started with. Normalised sets are built before they are
+    assigned, so a reader sees the old or the new one, never half. Returns the names that changed (for the log)."""
+    global TARGET_DATES, SKIP_HOTELS, _SKIP_NORM, PRIORITY_HOTELS, _PRIORITY_NORM
+    global RETRY_DELAY, NUM_GUESTS, AUTO_CONFIRM
+    dates = sorted({d for d in s['dates'] if isinstance(d, str) and _ISO_DATE.match(d)})
+    skip = [n for n in s['skip'] if isinstance(n, str)]
+    pri = [p for p in s['priority'] if isinstance(p, str)]
+    new = {
+        'TARGET_DATES': dates,
+        'SKIP_HOTELS': skip,
+        'PRIORITY_HOTELS': pri,
+        'RETRY_DELAY': max(MIN_RETRY_DELAY, int(s['intervalSec'])),
+        'NUM_GUESTS': str(int(s['guests'])),
+        'AUTO_CONFIRM': s['autoConfirm'] is True,
+    }
+    changed = [k for k, v in new.items() if globals()[k] != v]
+    skip_norm = frozenset(_norm_hotel(n) for n in skip if _norm_hotel(n))
+    pri_norm = tuple(_norm_hotel(p) for p in pri if _norm_hotel(p))
+    SKIP_HOTELS, _SKIP_NORM = skip, skip_norm
+    PRIORITY_HOTELS, _PRIORITY_NORM = pri, pri_norm
+    TARGET_DATES = dates
+    RETRY_DELAY = new['RETRY_DELAY']
+    NUM_GUESTS = new['NUM_GUESTS']
+    AUTO_CONFIRM = new['AUTO_CONFIRM']
+    return changed
 
 def log(msg):
     """Reserve red for what is actually wrong: 「空き部屋がございません」 is an ordinary lost
@@ -306,7 +381,32 @@ def curl(cookie_file, method, url, data=None, headers=None, retry=True):
         time.sleep(delay)
     loc = re.search(r'location: (.+)', hdrs, re.IGNORECASE)
     location = loc.group(1).strip() if loc else None
+    if is_ban(status, body):
+        log(f"  {B}{R}503 セキュリティアラート: this IP is banned for ~24 h (its/SITE.md §2){X}")
+        notify('ban')
     return status, Response(body, hdrs, location, f'{method} {url}'), location
+
+
+# The ~24-hour IP ban's page (its/SITE.md §2): a 503 titled セキュリティアラート, not site load.
+_BAN_TEXT = 'セキュリティアラート'
+
+
+def is_ban(status, body):
+    return status == 503 and _BAN_TEXT in (body or '')
+
+
+def error_class(status, location=None, body=''):
+    """A short code for a failed response, for the reports: transport, session_dead, ban, http_<status>, or shape (a
+    200 that wasn't what the step needed)."""
+    if status == 0:
+        return 'transport'
+    if _is_session_dead(status, location):
+        return 'session_dead'
+    if is_ban(status, body):
+        return 'ban'
+    if status == 200:
+        return 'shape'
+    return f'http_{status}'
 
 
 def _retry_after(hdrs):
@@ -365,6 +465,8 @@ def _dump_debug(label, step, status, body, via=None, throttle=True):
     — on 申込内容確認画面 — the applicant's 記号/番号/カナ氏名/生年月日. `debug_responses/`
     is gitignored; treat it as credential-bearing and do not paste one anywhere.
     """
+    notify('fail', step=step, status=status,
+           cls=error_class(status, getattr(via if via is not None else body, 'location', None), str(body)))
     try:
         if throttle and not _dump_allowed(label, step):
             return
@@ -587,7 +689,13 @@ def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name):
 
     # STEP 7: the hold, and the point of no return — nothing here can release one.
     # The site then refuses a second application at the same facility, so no code
-    # has to track the hold itself.
+    # has to track the hold itself. The runner's gate is asked here, as late as it can
+    # be: a lease lost or a deadline passed while steps 3-6 ran still refuses.
+    ok, why = hold_allowed()
+    if not ok:
+        log(f"{tag}   {Y}Not taking a hold on {hotel_name}: {why}{X}")
+        notify('hold_refused', why=why)
+        return False
     room_id = rooms[0][0]
     s, body, loc = c('POST', BASE + form_action,
         {'utf8': '\u2713', 'authenticity_token': auth,
@@ -643,6 +751,7 @@ def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name):
         # records the *hold*.
         log(f"{tag}   {B}{G}HELD + MAIL SENT: {hotel_name}{X}")
         save_booking(target_date, hotel_name)
+        notify('hold', date=target_date, hotel=hotel_name)
         _queue_confirmation(target_date, hotel_name, tag)
         return True
 
@@ -665,6 +774,8 @@ def _queue_confirmation(target_date, hotel_name, tag):
         log(f"{tag}   {Y}Not completing {hotel_name} for {target_date}: {why}{X}")
         log(f"{tag}   {B}{Y}HUMAN NEEDED: the room is held and the mail to {EMAIL} "
             f"is sent. Open its link and finish it now.{X}")
+        notify('human_needed', date=target_date, hotel=hotel_name,
+               detail='auto_off' if not AUTO_CONFIRM else 'near_date')
         return
     try:
         import confirm_booking
@@ -672,6 +783,7 @@ def _queue_confirmation(target_date, hotel_name, tag):
     except Exception as e:
         log(f"{tag}   {R}Cannot queue the confirmation ({e!r}); {hotel_name} needs "
             f"a human to finish from the mail{X}")
+        notify('human_needed', date=target_date, hotel=hotel_name, detail='queue_failed')
         return
     log(f"{tag}   {C}Queued for confirmation ({depth} pending){X}")
 
@@ -833,6 +945,8 @@ def _book_date_once(target_date, label, tag, booked, attempted):
             else:
                 hotels.append((gid, name))
         hotels = order_hotels(hotels)
+        notify('offered', date=target_date, names=[n for _, n in all_hotels],
+               eligible=[n for _, n in hotels])
 
         if not hotels:
             log(f"{tag} {Y}All hotels filtered out ({'; '.join(filtered)}){X}")
@@ -928,6 +1042,10 @@ def confirm_allowed(target_date, today=None):
 def scan_and_book_month(month_str, target_dates, label, stop_event=None):
     """Scan a month's calendar forever, spawning a booking thread per available date.
 
+    `target_dates` is a list, or a callable returning the month's current dates, called every cycle (the remote
+    runner's settings change under a running scanner). Each cycle that reads the calendar reports
+    `notify('scan', ok=…)`; a failed read also reports `fail` with its step.
+
     One `calendar_select` POST covers every target date in the month; the calendar GET
     that mints the csrf/s pair is skipped while a cached pair works, so the
     steady-state cycle is one request.
@@ -959,6 +1077,8 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
                 if _is_session_dead(st, lc) or _is_retryable(st):
                     open(cookie_file, 'w').close()
                 log(f"{tag} {Y}[{attempt}] URL returned {st}, waiting...{X}")
+                notify('fail', step='calendar_get', status=st, cls=error_class(st, lc, bd))
+                notify('scan', ok=False)
                 return None
             return ex(bd, _CSRF_RE), ex(bd, _S_RE)
 
@@ -984,7 +1104,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
                     break
 
             try:
-                dates = _future_dates(target_dates)
+                dates = _future_dates(target_dates() if callable(target_dates) else target_dates)
                 if not dates:
                     log(f"{tag} {Y}all target dates are in the past, idle{X}")
                     stop_event.wait(SCAN_BACKOFF_MAX)
@@ -1037,6 +1157,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
                     open(cookie_file, 'w').close()
                     tokens = None
                     _dump_debug(label, 'calendar_select', s_nav, body_nav)
+                    notify('scan', ok=False)
                     failures += 1
                     continue
 
@@ -1047,6 +1168,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
 
                 available = [td for td in dates
                              if is_available(_date_css_class(body_nav, td))]
+                notify('scan', ok=True, available=available)
 
                 if not available:
                     log(f"{tag} {Y}[{attempt}] no dates available "

@@ -3,14 +3,29 @@
 
 Scanners only take holds; they never trigger a CAPTCHA. The URL monitor is the only
 thing that can re-mint a session and solves synchronously in its own thread, which is
-what prevents overlapping solves without a lock. A watchdog restarts any of them.
+what prevents overlapping solves without a lock. The supervisor restarts any of them and
+reconciles the scanners with the current dates: a month added starts one, a month gone
+stops its own (`stop_event`), and each scanner reads its month's dates every cycle.
+
+Two modes:
+
+- **local** (default): config.py's settings, runs until interrupted, logs to stdout and
+  LOG_FILE as it always did.
+- **`--remote`** (required on Actions): settings, the bookings record and the lease come
+  from the its-bot Worker (remote.py); stdout is the private log (logs.py) and only
+  `logs.public` lines reach the Actions log. `--deadline <epoch>` bounds the run: no new
+  hold after it, a drain of up to DRAIN_SEC, a final `run_end` report, exit 0. A stop from
+  the Worker (paused, MODE off, no dates, the lease lost) and a 503 ban end it the same
+  way.
 
 `--check` validates `.env` instead of booking anything — the site checks those values
 mid-hold with a contested slot on the line, so check them at your desk.
 
-    uv run main.py
-    uv run main.py --check
+    python3 main.py
+    python3 main.py --check
+    python3 main.py --remote --deadline 1794561000
 """
+import argparse
 import asyncio
 import os
 import re
@@ -21,14 +36,16 @@ import time
 import unicodedata
 from datetime import date, datetime
 
-from chrome import get_calendar_url
+import chrome
 import config
 from config import (
     URL_CHECK_INTERVAL, URL_REFRESH_INTERVAL, LOG_FILE,
-    LOG_MAX_BYTES, LOG_BACKUPS, TARGET_DATES, EMAIL, PRIORITY_HOTELS,
+    LOG_MAX_BYTES, LOG_BACKUPS, EMAIL,
 )
 import book_hotels
 import confirm_booking
+import logs
+import remote
 from book_hotels import R, G, Y, C, B, X
 from book_hotels import log as url_log
 
@@ -39,8 +56,19 @@ _ANSI_RE = re.compile(r'\033\[[0-9;]*m')
 MONTH_ABBR = ['', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
               'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
-# How often the watchdog checks that every worker thread is still alive.
+# How often the supervisor (a local run's watchdog) checks every worker thread and the scanners' months.
 WATCHDOG_INTERVAL = 30
+
+# A bounded run's drain after its deadline (holds stop at the deadline; FINAL: +320 → +335 min).
+DRAIN_SEC = 15 * 60
+# A ban ends the run quickly: every request from this IP fails for ~24 h, so only the in-flight work is waited for.
+BAN_DRAIN_SEC = 120
+# Without a good answer from the Worker this long, the run ends (the fence already stopped holds at FENCE_SEC).
+WORKER_LOST_SEC = 15 * 60
+# The public summary's cadence.
+SUMMARY_EVERY_SEC = 300
+# The same failing step is printed publicly at most this often.
+PUBLIC_ERROR_EVERY_SEC = 60
 
 
 def check_cached_url():
@@ -72,18 +100,21 @@ def check_cached_url():
     return None, False
 
 
-def url_monitor():
-    """Monitor the calendar URL cache and solve the CAPTCHA when needed. Runs forever,
-    re-solving proactively every URL_REFRESH_INTERVAL even when the URL still works;
-    the solve is synchronous, which is what blocks a second one without a lock."""
+def url_monitor(stop_event=None):
+    """Monitor the calendar URL cache and solve the CAPTCHA when needed. Runs until
+    `stop_event` (forever without one), re-solving proactively every URL_REFRESH_INTERVAL
+    even when the URL still works; the solve is synchronous, which is what blocks a second
+    one without a lock. Each solve is reported (`solving`, then `solve` with its seconds
+    and spot)."""
+    stop_event = stop_event or threading.Event()
     last_solve = time.time()
-    while True:
+    while not stop_event.is_set():
         try:
             url, confirmed = check_cached_url()
             due_for_refresh = time.time() - last_solve >= URL_REFRESH_INTERVAL
 
             if url and (not due_for_refresh or not confirmed):
-                time.sleep(URL_CHECK_INTERVAL)
+                stop_event.wait(URL_CHECK_INTERVAL)
                 continue
 
             if url:
@@ -93,22 +124,27 @@ def url_monitor():
                 if active:
                     url_log(f"{Y}Proactive refresh deferred "
                             f"({active} booking(s) in flight){X}")
-                    time.sleep(URL_CHECK_INTERVAL)
+                    stop_event.wait(URL_CHECK_INTERVAL)
                     continue
                 url_log(f"{Y}Proactive refresh "
                         f"({int(time.time() - last_solve)}s since last solve)...{X}")
             else:
                 url_log(f"{B}URL invalid or missing, solving CAPTCHA...{X}")
 
+            book_hotels.notify('solving')
             try:
-                new_url = asyncio.run(get_calendar_url())
+                new_url = asyncio.run(chrome.get_calendar_url())
+                info = chrome.last_solve
                 if new_url:
                     last_solve = time.time()
                     url_log(f"{G}New URL saved — {new_url}{X}")
+                    book_hotels.notify('solve', ok=True, secs=info.get('secs'), spot=info.get('spot'))
                     continue
                 url_log(f"{R}CAPTCHA solve failed, will retry next cycle{X}")
+                book_hotels.notify('solve', ok=False, secs=info.get('secs'), cls='no_token')
             except Exception as e:
                 url_log(f"{R}CAPTCHA solve error: {e!r}{X}")
+                book_hotels.notify('solve', ok=False, cls=type(e).__name__.lower()[:40])
             if url:  # Had a valid URL; reset the timer to avoid spamming retries
                 last_solve = time.time()
 
@@ -117,7 +153,7 @@ def url_monitor():
             # restart it, but not losing it is cheaper.
             url_log(f"{R}URL monitor error: {e!r}{X}")
 
-        time.sleep(URL_CHECK_INTERVAL)
+        stop_event.wait(URL_CHECK_INTERVAL)
 
 
 def _rotate_log():
@@ -140,13 +176,14 @@ class _Worker:
     that dies leaves the process short one scanner — or with nothing that can re-mint a
     session, or nothing that confirms a hold. All invisible without a watchdog."""
 
-    def __init__(self, name, target, args=()):
+    def __init__(self, name, target, args=(), kwargs=None):
         self.name, self.target, self.args = name, target, args
+        self.kwargs = kwargs or {}
         self.thread = None
         self.restarts = 0
 
     def start(self):
-        self.thread = threading.Thread(target=self.target, args=self.args,
+        self.thread = threading.Thread(target=self.target, args=self.args, kwargs=self.kwargs,
                                        name=self.name, daemon=True)
         self.thread.start()
 
@@ -158,10 +195,57 @@ class _Worker:
         return True
 
 
-def watchdog(workers):
-    """Restart any worker thread that has stopped. Runs forever."""
-    while True:
-        time.sleep(WATCHDOG_INTERVAL)
+def _month_dates(month):
+    """The scanner's dates callable: its month's dates in the current settings."""
+    return lambda: [d for d in book_hotels.TARGET_DATES if d[:7] == month]
+
+
+class Supervisor:
+    """The fixed workers (URL monitor, confirm worker) plus one scanner per month of the current future dates.
+
+    `reconcile()` is the watchdog: it starts a scanner for a new month, stops the scanner of a month no longer
+    wanted (its stop_event; a booking it spawned finishes), and restarts any thread that died. `scan_target` is
+    replaceable for the tests."""
+
+    def __init__(self, scan_target=None, url_target=None, confirm_target=None):
+        self.scan_target = scan_target or book_hotels.scan_and_book_month
+        self.url_stop = threading.Event()
+        self.confirm_stop = threading.Event()
+        self.fixed = [_Worker('url-monitor', url_target or url_monitor, kwargs={'stop_event': self.url_stop}),
+                      _Worker('confirm', confirm_target or confirm_booking.worker,
+                              kwargs={'stop_event': self.confirm_stop})]
+        self.scanners = {}     # month -> (_Worker, stop_event)
+        self.stopped = False
+
+    def wanted_months(self):
+        if self.stopped:
+            return set()
+        return {d[:7] for d in book_hotels._future_dates(book_hotels.TARGET_DATES)}
+
+    def start(self):
+        for w in self.fixed:
+            w.start()
+        self.reconcile()
+
+    def reconcile(self):
+        want = self.wanted_months()
+        for month in sorted(want - set(self.scanners)):
+            stop = threading.Event()
+            label = MONTH_ABBR[int(month[5:7])]
+            w = _Worker(f'scan-{label}', self.scan_target, (month, _month_dates(month), label),
+                        {'stop_event': stop})
+            self.scanners[month] = (w, stop)
+            w.start()
+            url_log(f"{B}Scanner started for {month}{X}")
+        for month in sorted(set(self.scanners) - want):
+            w, stop = self.scanners.pop(month)
+            stop.set()
+            url_log(f"{Y}Scanner for {month} stopped{X}")
+        workers = [w for w, _ in self.scanners.values()]
+        if not self.stopped:
+            workers = self.fixed + workers
+        else:
+            workers = self.fixed[1:] + workers   # the URL monitor stays stopped while draining
         for w in workers:
             try:
                 if w.ensure_alive():
@@ -169,6 +253,21 @@ def watchdog(workers):
                             f"(restart #{w.restarts}){X}")
             except Exception as e:
                 url_log(f"{R}Watchdog could not restart '{w.name}': {e!r}{X}")
+
+    def stop_scanning(self):
+        """Drain: no scanner, no solve; the confirm worker keeps going until the queue is empty."""
+        self.stopped = True
+        self.url_stop.set()
+        self.reconcile()
+
+    def busy(self):
+        """Work that must not be cut off: a booking chain, a hold waiting for its leg, Chrome in use."""
+        return (book_hotels.active_bookings() + confirm_booking.pending_count()
+                + (1 if chrome._lock.locked() else 0))
+
+    def restarts(self):
+        return sum(w.restarts for w in self.fixed) + sum(w.restarts for w, _ in self.scanners.values())
+
 
 
 # ── Environment check (`main.py --check`) ────────────────────────────
@@ -356,64 +455,273 @@ def check_env():
     return 0
 
 
-def main():
-    _rotate_log()
-    log_file = open(LOG_FILE, 'a', encoding='utf-8')
-    log_file.write(f'\n=== Session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===\n')
-    log_file.flush()
+
+class RemoteRun:
+    """The control loop of a `--remote` run, one `tick()` at a time (the tests drive it with an injected clock).
+
+    Each tick: report when due (REPORT_EVERY_SEC, or at once after an urgent event), then decide. Running: a ban,
+    the Worker's `stop`, the deadline or a lost Worker starts the drain (no new hold, scanners and the URL monitor
+    stopped, the confirm worker left to finish); else reconcile the scanners. Draining: when nothing is in flight or
+    the drain's time is up, `finish()`: human_needed for young unconfirmed holds, `run_end`, a last report."""
+
+    def __init__(self, rem, sup, deadline=None, clock=time.time):
+        self.rem, self.sup, self.deadline, self.clock = rem, sup, deadline, clock
+        self.draining = False
+        self.end_detail = None
+        self.drain_until = None
+        self.last_report = None
+        self.last_summary = clock()
+        self.printed = {}          # step -> (failures printed, when)
+        self.phase_printed = None
+        self.auto_seen = False     # autoConfirm was on at the last tick (the IMAP check runs when it turns on)
+
+    def begin_drain(self, detail, until):
+        if self.draining:
+            self.drain_until = min(self.drain_until, until)
+            return
+        self.draining, self.end_detail, self.drain_until = True, detail, until
+        with self.rem.lock:
+            self.rem.no_new_holds = self.rem.no_new_holds or detail
+        self.sup.stop_scanning()
+        url_log(f"{Y}Draining ({detail}): no new holds; {self.sup.busy()} in flight{X}")
+        logs.public('drain', reason=detail, active=self.sup.busy(),
+                    left_min=round(max(0.0, until - self.clock()) / 60, 1))
+
+    def check_imap(self):
+        ok, cls = confirm_booking.imap_check()
+        url_log(f"{G if ok else R}IMAP login check: {'ok' if ok else cls}{X}")
+        logs.public('imap', ok=int(ok), cls=cls or None)
+        if not ok:
+            self.rem.error('imap', None, cls)
+            self.rem.event('error', detail=f'imap_{cls}'[:40], urgent=True)
+
+    def tick(self):
+        rem, now = self.rem, self.clock()
+        if rem.urgent.is_set() or self.last_report is None or now - self.last_report >= remote.REPORT_EVERY_SEC:
+            self.last_report = now
+            rem.report()
+        cfg = rem.config
+        settings = rem.settings or {}
+
+        if not self.draining:
+            if rem.banned:
+                self.begin_drain('ban', now + BAN_DRAIN_SEC)
+            elif cfg is not None and cfg['stop']:
+                cap = now + DRAIN_SEC if self.deadline is None else min(now, self.deadline) + DRAIN_SEC
+                self.begin_drain(cfg['stopReason'] or 'paused', cap)
+            elif self.deadline is not None and now >= self.deadline:
+                self.begin_drain('time_up', self.deadline + DRAIN_SEC)
+            elif rem.contact_at is not None and now - rem.contact_at > WORKER_LOST_SEC:
+                self.begin_drain('error', now + BAN_DRAIN_SEC)
+        elif rem.banned and self.end_detail != 'ban':
+            self.drain_until = min(self.drain_until, now + BAN_DRAIN_SEC)
+
+        if self.draining:
+            rem.phase = 'draining' if self.end_detail == 'time_up' else 'stopping'
+        else:
+            rem.phase = 'solving' if rem.solving else 'scanning' if rem.scans else 'starting'
+            auto = settings.get('autoConfirm') is True
+            if auto and not self.auto_seen:
+                self.check_imap()
+            self.auto_seen = auto
+        if rem.phase != self.phase_printed:
+            self.phase_printed = rem.phase
+            logs.public('phase', name=rem.phase)
+
+        self.sup.reconcile()
+        self._public_errors(now)
+        if now - self.last_summary >= SUMMARY_EVERY_SEC:
+            self.last_summary = now
+            self.summary(now)
+
+        if self.draining and (self.sup.busy() == 0 or now >= self.drain_until):
+            return self.finish()
+        return None
+
+    def finish(self):
+        rem = self.rem
+        busy = self.sup.busy()
+        if busy:
+            url_log(f"{R}Drain time is up with {busy} still in flight{X}")
+        young = rem.unresolved_holds()
+        rem.event('run_end', detail=self.end_detail)
+        rem.phase = 'stopping'
+        cfg = rem.report()
+        if cfg is None or rem.events:
+            cfg = rem.report()   # one retry: the run_end is what releases the lease
+        self.summary(self.clock())
+        logs.public('run_end', detail=self.end_detail, active=busy, human=young, ok=int(cfg is not None),
+                    unsynced=len(rem.unsynced))
+        return self.end_detail
+
+    def _public_errors(self, now):
+        rem = self.rem
+        with rem.lock:
+            counts = dict(rem.failures_by_step)
+            last = dict(rem.last_by_step)
+        for step, n in counts.items():
+            shown, at = self.printed.get(step, (0, None))
+            if n > shown and (at is None or now - at >= PUBLIC_ERROR_EVERY_SEC):
+                status, cls = last.get(step, (None, None))
+                self.printed[step] = (n, now)
+                logs.public('error', step=step, n=n - shown, status=status, cls=cls)
+
+    def summary(self, now):
+        rem = self.rem
+        with rem.lock:
+            fails = {f'fail_{k}': v for k, v in rem.failures_by_step.items()}
+            logs.public(
+                'summary', phase=rem.phase, uptime_min=round((now - rem.started_at) / 60, 1),
+                scans=rem.scans, scan_fail=rem.scan_failures,
+                ok_age_s=None if rem.last_ok_at is None else round(now - rem.last_ok_at / 1000, 1),
+                avail=rem.available_now, holds=rem.counts['hold'], confirmed=rem.counts['confirmed'],
+                human=rem.counts['human_needed'], solves_ok=rem.solves['ok'], solves_failed=rem.solves['failed'],
+                unsynced=len(rem.unsynced), events=len(rem.events), worker=rem.last_status,
+                outage_s=round(rem.outage_sec(), 1), restarts=self.sup.restarts(), active=self.sup.busy(),
+                **fails)
+
+
+def _log_sink(to_file):
+    """book_hotels' log handler: plain text to stdout, and to LOG_FILE when stdout isn't already it."""
+    log_file = open(LOG_FILE, 'a', encoding='utf-8') if to_file else None
 
     def sink(msg):
         plain = _ANSI_RE.sub('', msg)
         print(plain, flush=True)
-        try:
-            log_file.write(plain + '\n')
-            log_file.flush()
-        except OSError:
-            pass  # a full disk must not take down a booking thread
+        if log_file is not None:
+            try:
+                log_file.write(plain + '\n')
+                log_file.flush()
+            except OSError:
+                pass  # a full disk must not take down a booking thread
+    return sink
 
-    book_hotels._log_handler = sink
+
+def _apply_settings(s):
+    changed = book_hotels.apply_settings(s)
+    if not changed:
+        return
+    dates = book_hotels.TARGET_DATES
+    url_log(f"{B}Settings applied ({', '.join(changed)}): dates {', '.join(dates) or '(none)'}; "
+            f"interval {book_hotels.RETRY_DELAY}s; guests {book_hotels.NUM_GUESTS}; "
+            f"auto-confirm {'on' if book_hotels.AUTO_CONFIRM else 'off'}; "
+            f"priority {', '.join(book_hotels.PRIORITY_HOTELS) or '(none)'}; "
+            f"{len(book_hotels.SKIP_HOTELS)} skipped{X}")
+    logs.public('settings', dates=len(dates), months=len({d[:7] for d in dates}),
+                skip=len(book_hotels.SKIP_HOTELS), pri=len(book_hotels.PRIORITY_HOTELS),
+                interval=book_hotels.RETRY_DELAY, guests=int(book_hotels.NUM_GUESTS),
+                auto=int(book_hotels.AUTO_CONFIRM))
+
+
+def _secrets():
+    return [os.environ.get('ITS_RUNNER_TOKEN', ''), config.IMAP_APP_PASSWORD, config.IMAP_USER, config.EMAIL,
+            *config.APPLICANT.values()]
+
+
+def run_remote(deadline=None, clock=time.time, wait=None):
+    """A `--remote` run (module docstring). Returns the exit code: 0 for every orderly end (time up, stopped,
+    banned, the lease someone else's), 1 for an error (the Worker unreachable or lost), 2 for a missing token."""
+    _rotate_log()
+    logs.setup(LOG_FILE)
+    logs.mask(_secrets())
+    book_hotels._log_handler = _log_sink(to_file=False)
+    env = os.environ
+    url_log(f'\n=== Remote session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
+    on_actions = env.get('GITHUB_ACTIONS') == 'true'
+    host = 'actions' if on_actions else 'local'
+    origin = ('dispatch' if env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' else 'schedule') \
+        if on_actions else 'local'
+    logs.public('start', host=host, origin=origin,
+                left_min=None if deadline is None else round((deadline - clock()) / 60, 1))
+    token = env.get('ITS_RUNNER_TOKEN', '')
+    if not token:
+        url_log(f"{R}ITS_RUNNER_TOKEN is not set{X}")
+        logs.public('run_end', detail='error', reason='no_token', exit=2)
+        return 2
+    run_id = env.get('GITHUB_RUN_ID') if on_actions and env.get('GITHUB_RUN_ID') else f'local-{int(clock())}'
+    run_url = (f"{env.get('GITHUB_SERVER_URL', 'https://github.com')}/{env['GITHUB_REPOSITORY']}"
+               f"/actions/runs/{run_id}") if on_actions and env.get('GITHUB_REPOSITORY') else None
+    sha = (env.get('GITHUB_SHA') or '')[:8] or None
+    rem = remote.Remote(remote.Client(env.get('ITS_WORKER_URL') or remote.DEFAULT_URL, token), run_id, host,
+                        sha, run_url, deadline=deadline, clock=clock, on_settings=_apply_settings,
+                        seed_hold=book_hotels.save_booking, log=url_log, public=logs.public)
+    book_hotels._event_sink = rem.on_event
+    book_hotels._hold_gate = rem.hold_gate
+    confirm_booking._commit_gate = rem.commit_gate
+
+    t0 = clock()
+    cfg, why = rem.claim(sleep=wait)
+    logs.public('claim', ok=int(cfg is not None), waited_s=round(clock() - t0, 1), why=why or None,
+                worker=rem.last_status)
+    if cfg is None:
+        url_log(f"{R}No lease ({why}); not running{X}")
+        logs.public('run_end', detail=why, exit=0 if why == 'lease_lost' else 1)
+        return 0 if why == 'lease_lost' else 1
+    url_log(f"{B}ITS BOOKING SYSTEM (remote, run {run_id}){X}  Email: {EMAIL or '(unset)'}")
+    rem.event('run_start', detail=origin)
+
+    sup = Supervisor()
+    run = RemoteRun(rem, sup, deadline, clock)
+    if not cfg['stop']:
+        sup.start()
+    sleep = wait or (lambda s: rem.urgent.wait(s))
+    while True:
+        try:
+            detail = run.tick()
+        except Exception as e:
+            url_log(f"{R}Control loop error: {e!r}{X}")
+            logs.public('error', step='control', exc=type(e).__name__)
+            detail = None
+        if detail is not None:
+            break
+        sleep(2)
+    return 1 if detail == 'error' else 0
+
+
+def run_local():
+    """The bot as it always ran on the Mac: config.py's settings, forever."""
+    _rotate_log()
+    book_hotels._log_handler = _log_sink(to_file=True)
+    url_log(f'\n=== Session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
     url_log("=" * 60)
     url_log(f"{B}ITS BOOKING SYSTEM{X}")
     url_log(f"Email: {EMAIL}")
-    url_log(f"Dates: {', '.join(TARGET_DATES)}")
-    url_log(f"Priority hotels: {', '.join(PRIORITY_HOTELS) or '(none)'}")
+    url_log(f"Dates: {', '.join(book_hotels.TARGET_DATES)}")
+    url_log(f"Priority hotels: {', '.join(book_hotels.PRIORITY_HOTELS) or '(none)'}")
     url_log("=" * 60)
-
-    months = {}
-    for d in TARGET_DATES:
-        months.setdefault(d[:7], []).append(d)
-    # The confirm worker owns every emailed leg, serially. Under the watchdog because
-    # it is the only thing that turns a hold into a reservation.
-    workers = [_Worker('url-monitor', url_monitor),
-               _Worker('confirm', confirm_booking.worker)]
-    for month_str, dates in months.items():
-        label = MONTH_ABBR[int(month_str[5:7])]
-        workers.append(_Worker(f'scan-{label}', book_hotels.scan_and_book_month,
-                               (month_str, dates, label)))
-
-    url_log(f"{B}Starting {len(months)} scanner threads "
-            f"({', '.join(MONTH_ABBR[int(m[5:7])] for m in months)}) "
-            f"for {len(TARGET_DATES)} dates{X}")
-    url_log("=" * 60)
-
-    for w in workers:
-        w.start()
-
-    threading.Thread(target=watchdog, args=(workers,),
-                     name='watchdog', daemon=True).start()
-    url_log(f"{C}Watchdog started ({len(workers)} workers, "
-            f"{WATCHDOG_INTERVAL}s interval){X}")
-
+    sup = Supervisor()
+    sup.start()
+    url_log(f"{C}Supervisor started ({len(sup.scanners)} scanners, {WATCHDOG_INTERVAL}s watchdog){X}")
     try:
-        threading.Event().wait()
+        while True:
+            time.sleep(WATCHDOG_INTERVAL)
+            sup.reconcile()
     except KeyboardInterrupt:
         pass
     print(f"{Y}Interrupted, exiting.{X}")
 
 
+def main(argv=None):
+    p = argparse.ArgumentParser(description='The ITS booker (README.md).')
+    p.add_argument('--check', action='store_true', help='validate .env and exit')
+    p.add_argument('--remote', action='store_true', help="the its-bot Worker's settings (required on Actions)")
+    p.add_argument('--deadline', type=float, default=None,
+                   help='epoch seconds: no new hold after it, then drain and exit')
+    args = p.parse_args(argv)
+    if args.check:
+        return check_env()
+    os.makedirs(config.STATE_DIR, exist_ok=True)
+    if os.environ.get('GITHUB_ACTIONS') == 'true' and not args.remote:
+        print('main.py: --remote is required on Actions (config.py settings are for a local run)', file=sys.stderr)
+        return 2
+    if args.remote:
+        return run_remote(args.deadline)
+    if args.deadline is not None:
+        print('main.py: --deadline needs --remote', file=sys.stderr)
+        return 2
+    run_local()
+    return 0
+
+
 if __name__ == '__main__':
-    if sys.argv[1:] == ['--check']:
-        sys.exit(check_env())
-    if sys.argv[1:]:
-        sys.exit(f'usage: {sys.argv[0]} [--check]')
-    main()
+    sys.exit(main())

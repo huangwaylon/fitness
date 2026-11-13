@@ -18,6 +18,12 @@ Three things guard the commit:
   `map_fields` cannot place is `unmapped`, and an unmapped form is dumped for a human
   rather than submitted half-filled against somebody's insurance number.
 - Each emailed link is claimed exactly once, so two holds cannot collide.
+
+The remote runner adds one more (`_commit_gate`, None for the local bot): asked with stage 'apply' before Chrome is
+handed the form (remote.py writes a `confirming` entry to the Worker and needs it acknowledged, and the lease must be
+fresh) and with stage 'confirm' on the 申込内容確認画面 beside `confirm_allowed`. Outcomes are reported through
+`bh.notify`: `confirmed` (with the 申込受付番号), and `human_needed` with `failed=True` for every leg that ended
+without one. `imap_check()` is the run-start login probe.
 """
 import email
 import email.utils
@@ -38,6 +44,35 @@ from book_hotels import log, R, G, Y, C, B, X, BASE
 # Replaceable so the tests can inject messages without an IMAP server, exactly as
 # `book_hotels._log_handler` is replaceable. Signature: (since_epoch) -> [str]
 _mail_source = None
+
+# The remote runner's extra commit gate (module docstring): (target_date, hotel_name, stage) -> (ok, why).
+_commit_gate = None
+
+
+def _gate(target_date, hotel_name, stage):
+    """`bh.confirm_allowed`, then `_commit_gate` when set. Fails closed if the gate raises."""
+    allowed, why = bh.confirm_allowed(target_date)
+    if not allowed or _commit_gate is None:
+        return allowed, why
+    try:
+        return _commit_gate(target_date, hotel_name, stage)
+    except Exception as e:
+        return False, f'commit gate raised {e!r}'
+
+
+def imap_check():
+    """`(ok, cls)`: can we log in to the mailbox the confirmation mail goes to? Run at start when auto-confirm is on,
+    so a revoked app password shows before a hold depends on it. Never logs the address or the password."""
+    if not (IMAP_USER and IMAP_APP_PASSWORD):
+        return False, 'no_credentials'
+    try:
+        with imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT, timeout=20) as m:
+            m.login(IMAP_USER, IMAP_APP_PASSWORD)
+        return True, ''
+    except imaplib.IMAP4.error:
+        return False, 'login_rejected'
+    except OSError as e:
+        return False, type(e).__name__
 
 
 # ── the emailed link ─────────────────────────────────────────────────
@@ -459,16 +494,21 @@ def _commit(link, post, target_date, hotel_name, tag):
 
     values = {k: v for k, v in post.items()
               if k not in ('_method', 'authenticity_token')}
+    allowed, why = _gate(target_date, hotel_name, 'apply')
+    if not allowed:
+        log(f"{tag}   {Y}Not handing the form to Chrome: {why}{X}")
+        return 'deferred', why
     log(f"{tag}   {C}Filing 申込する → 確認 in real Chrome{X}")
 
     status, detail = submit(
         link, values, log, tag,
         # Re-consulted on the 申込内容確認画面, immediately before the commit.
-        allow_commit=lambda: bh.confirm_allowed(target_date))
+        allow_commit=lambda: _gate(target_date, hotel_name, 'confirm'))
 
     if status == 'confirmed':
         log(f"{tag}   {B}{G}RESERVED: {hotel_name} on {target_date}"
             + (f' — 申込受付番号 {detail}' if detail else '') + X)
+        bh.notify('confirmed', date=target_date, hotel=hotel_name, number=detail or '')
         # reservations.json, not holds.json: an entry here means a real
         # cancellation liability exists.
         bh.save_booking(target_date, f'{hotel_name}\t{detail}'.strip(),
@@ -560,6 +600,7 @@ def _process(hold, links):
                 f"{target_date} within {CONFIRM_MAIL_TIMEOUT:.0f}s{X}")
             log(f"{tag}   {B}{Y}HUMAN NEEDED: the room is held and the mail was "
                 f"sent to {bh.EMAIL}. Open its link and finish now.{X}")
+            bh.notify('human_needed', date=target_date, hotel=hotel_name, detail='no_mail', failed=True)
             return True
         return False
 
@@ -570,6 +611,7 @@ def _process(hold, links):
         # worker.
         log(f"{tag}   {R}Confirmation raised {e!r}; the room is held and the mail "
             f"is sent — finish it by hand{X}")
+        bh.notify('human_needed', date=target_date, hotel=hotel_name, detail='leg_error', failed=True)
         return True
 
     if status == 'confirmed':
@@ -581,6 +623,7 @@ def _process(hold, links):
     # the browser path.
     log(f"{tag}   {B}{Y}HUMAN NEEDED: {hotel_name} on {target_date} is held and the "
         f"mail to {bh.EMAIL} is sent. Open its link and finish now.{X}")
+    bh.notify('human_needed', date=target_date, hotel=hotel_name, detail=f'leg_{status}', failed=True)
     return True
 
 
