@@ -19,7 +19,7 @@ import { CheckFailed, HacomonoError, PROGRAMS, RateLimited } from '../src/hacomo
 import { Line, LineError } from '../src/line.ts';
 import * as messages from '../src/messages.ts';
 import { ANY, SKIP, type Rule } from '../src/store.ts';
-import { CHECKS_KEPT, FAILURES_BEFORE_WARNING } from '../src/status.ts';
+import { CHECKS_KEPT, CHECKS_MS, FAILURES_BEFORE_WARNING } from '../src/status.ts';
 import { at, isoJst, type Day } from '../src/time.ts';
 import { GROUP, NOON, NOW, inDays, today } from './fakeBot.ts';
 import { DAYS_TO_CHECK } from '../src/config.ts';
@@ -660,6 +660,17 @@ describe('/status', () => {
     gym = await start();
     expect(gym.checks).toHaveLength(CHECKS_KEPT);
     expect(gym.checks[0].t).toBe(NOW + (CHECKS_KEPT + 2) * MIN);
+  });
+
+  it('keeps a day of checks: one older than CHECKS_MS goes with the next check', async () => {
+    for (let i = 0; i < DAYS_TO_CHECK; i++) setRule(inDays(i), SKIP);
+    await gym.alarm();
+    vi.setSystemTime(NOW + CHECKS_MS - MIN);
+    await gym.alarm();
+    expect(gym.checks).toHaveLength(2);
+    vi.setSystemTime(NOW + CHECKS_MS + MIN);
+    await gym.alarm();
+    expect(gym.checks.map((c) => c.t)).toEqual([NOW + CHECKS_MS + MIN, NOW + CHECKS_MS - MIN]);
   });
 
   it('keeps the last good check and the last error', async () => {

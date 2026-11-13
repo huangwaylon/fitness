@@ -1,4 +1,4 @@
-// GET /status (index.ts): the runner's health and its recent checks, for the app's Settings page (its
+// GET /status (index.ts): the runner's health and its recent checks, for the app's ボット → ジム (its
 // app/src/lib/gym/status.ts mirrors these types). Public, so it holds totals and codes only: no LINE IDs or names,
 // no group, no day settings or slot times, no error text. The verdict is decided here; the app only shows it.
 import { HacomonoError, RateLimited } from './hacomono.ts';
@@ -36,11 +36,14 @@ export interface GymStatus {
   failures: number;          // fully failed checks in a row
   siteDownSent: boolean;
   retryPending: boolean;     // a failed push waiting for its retry
-  checks: Check[];           // newest first, at most CHECKS_KEPT = 12
+  checks: Check[];           // newest first: the last CHECKS_MS (a day), at most CHECKS_KEPT
   line: { used: number | null; limit: number | null; webhookOk: boolean | null; asOf: number | null };
 }
 
-export const CHECKS_KEPT = 12;
+/** The checks kept for /status (the app's 直近12時間 strip): a day's, at most CHECKS_KEPT (a day at the shortest
+ *  interval, 10 min, is 144, and a few 🔎 taps). In the runtime record the check already writes: no storage op of its own. */
+export const CHECKS_KEPT = 150;
+export const CHECKS_MS = 24 * 3600_000;
 /** Past the alarm by more than this: the checks are late. */
 const OVERDUE_MS = 5 * 60_000;
 const QUOTA_HIGH = 0.8;

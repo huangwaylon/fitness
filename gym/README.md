@@ -56,7 +56,7 @@ Each day has at most one rule (`src/store.ts`):
 | Route | |
 |---|---|
 | `POST /line/webhook` | LINE's webhook: 403 without a valid `X-Line-Signature`; 200 at once, the events handled after |
-| `GET /status` | The runner's health (below), for the app's 設定 → ジムボット; public, any origin |
+| `GET /status` | The runner's health (below), for the app's ボット → ジム; public, any origin |
 | `GET /gym/config` | 📋 設定を見る's answer (below), for the same page; a member's key (`Authorization: Bearer <KEY_A or KEY_B>`, else 401), the app's origin (`ALLOWED_ORIGINS`, localhost, or none; else 403), preflight answered, `private, no-store` |
 | `GET`, `PUT /gym/state` | The state, exported or imported (`Authorization: Bearer <GYM_TOKEN>`); PUT refuses anything but a valid version-3 state (400) |
 | `GET /health` | `{ok, mode, sha}` |
@@ -72,7 +72,7 @@ Each day has at most one rule (`src/store.ts`):
   is kept as `state.bad` and the bot starts empty (log: `could not read the saved state`). `GET /gym/state` is the
   backup.
 - **Status**: a verdict with every reason that applies (rules in `status.ts`), the last and next check, the last
-  success and error, failures in a row, LINE's quota and whether its webhook points here, and the last 12 checks
+  success and error, failures in a row, LINE's quota and whether its webhook points here, and the last day's checks (at most 150: the app's 直近12時間 strip)
   (alarm or 🔎, a code per program, open and new counts, the push). Public on purpose: totals and codes only, never
   names, IDs, the group, the days' settings, slot times or error text. It reads the object's memory only; LINE's
   facts are read by the alarm after a push, and hourly. The Worker keeps the answer 60 s, so a flood costs Worker
@@ -114,8 +114,8 @@ A deploy keeps the state and the alarm.
 
 `$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
-- **Look**: the app's 設定 → ジムボット (the verdict, the facts, 現在の設定 as 📋 shows it, the last checks; up to a
-  minute old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
+- **Look**: the app's ボット → ジム (現在の設定 as 📋 shows it; under 動作状況 the verdict, the 直近12時間 strip of the
+  checks and the facts; up to a minute old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
   `MODE = "off"`. Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`
   to set the first alarm.

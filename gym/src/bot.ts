@@ -7,7 +7,7 @@ import type { Env } from './env.ts';
 import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
 import * as messages from './messages.ts';
-import { CHECKS_KEPT, FAILURES_BEFORE_WARNING, outcomeOf, statusOf, type Check, type GymStatus } from './status.ts';
+import { CHECKS_KEPT, CHECKS_MS, FAILURES_BEFORE_WARNING, outcomeOf, statusOf, type Check, type GymStatus } from './status.ts';
 import { Store, type StateJson } from './store.ts';
 import { dayOf } from './time.ts';
 import { handle } from './ui.ts';
@@ -257,9 +257,9 @@ export class GymBot extends DurableObject<Env> implements Bot {
     return open;
   }
 
-  /** Keep a check for /status (the newest CHECKS_KEPT). */
+  /** Keep a check for /status (the last CHECKS_MS's, the newest CHECKS_KEPT). */
   private record(check: Check): void {
-    this.checks = [check, ...this.checks].slice(0, CHECKS_KEPT);
+    this.checks = [check, ...this.checks.filter((c) => c.t > check.t - CHECKS_MS)].slice(0, CHECKS_KEPT);
   }
 
   /** Spaces out the gym requests (a method so the tests can skip the wait). */
