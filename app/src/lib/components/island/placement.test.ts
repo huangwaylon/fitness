@@ -1,4 +1,4 @@
-import type { Box } from './geom.ts';
+import type { Box } from '#lib/world/geom.ts';
 import { describe, expect, it } from 'vitest';
 import { GAP, NEAR, SNUG, TAIL_IN, spotBy } from './placement.ts';
 

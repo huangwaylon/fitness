@@ -3,7 +3,7 @@
 // every control (the HUD's dumbbell, bowl and leaf menu, the sync chip, the trees, the fruit rows, the villagers),
 // a tree's popup and しずえ's box, measured live with getBoundingClientRect. A speech balloon stands by its speaker
 // (placeBy: NH's rule, nearness first); a plate or a caption by the point it's about (place).
-import { hits, type Box } from './geom.ts';
+import { hits, type Box } from '#lib/world/geom.ts';
 
 
 

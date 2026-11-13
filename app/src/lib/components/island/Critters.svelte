@@ -21,14 +21,14 @@
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { moveFast, pace, type CritKind } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
-  import { timers } from '../../world/timers.ts';
+  import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
   import { hook, hookFlag, hooksOn, islandSeed } from '../../world/devHooks.ts';
   import { skyAt, yieldSky } from './weatherNow.svelte.ts';
   import type { Sky } from '../../world/weather.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from '../../world/hitbox.ts';
+  import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { bugRivals, crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -38,7 +38,7 @@
   import { su, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from '../../world/geom.ts';
-  import { clearAt, guardsU, stageGeo } from '../../world/placement.ts';
+  import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
   import { digSpots, findArt } from '../../world/beach.ts';

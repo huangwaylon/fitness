@@ -4,7 +4,7 @@
   // button in the world) and the boxes the modules hit-test themselves (cyan: a shell, a weed, the rock, a bug, …;
   // hitbox.ts hitSources). Debug only: pointer-events none, nothing else changes.
   import { onMount } from 'svelte';
-  import { grow, hitSources, MIN_HIT, type HitBox } from '../../world/hitbox.ts';
+  import { grow, hitSources, MIN_HIT, type HitBox } from './hitbox.ts';
 
   interface Props {
     scene?: HTMLElement;

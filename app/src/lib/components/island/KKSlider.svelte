@@ -31,7 +31,7 @@
   import { count } from '#lib/sync/log.ts';
   import { tall3d } from '../villager3d/manifest.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { place } from '../../world/placement.ts';
+  import { place } from './placement.ts';
   import { hookOneOf } from '../../world/devHooks.ts';
   import { presence, turnTo } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';

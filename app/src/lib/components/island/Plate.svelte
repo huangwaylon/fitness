@@ -8,7 +8,7 @@
   //   <Plate {scene} x={u} y={u} art="critters/sea-bass" parts={[line, note]} ondone={…} />   (x, y: the source, stage u)
   import { onMount, tick, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { stageGeo } from '../../world/placement.ts';
+  import { stageGeo } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tapBox, typeOne, typing, type PagerState } from '../../world/pager.ts';
 
   interface Props {

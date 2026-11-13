@@ -21,9 +21,9 @@
   //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
   //   hooks); ?seed= varies the island's seed.
   import { fx3d } from '../../world/fx3d.ts';
-  import { holdLoop } from '../../world/clouds.ts';
+  import { holdLoop } from './clouds.ts';
   import { showCatch } from './catchCard.ts';
-  import { timers } from '../../world/timers.ts';
+  import { timers } from './timers.ts';
   import { hook, islandSeed } from '../../world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
@@ -36,8 +36,8 @@
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
-  import { guardsU, clearAt, place, stageGeo } from '../../world/placement.ts';
-  import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from '../../world/hitbox.ts';
+  import { guardsU, clearAt, place, stageGeo } from './placement.ts';
+  import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '../../world/beach.ts';
   import { take, takenOn, wish as addWish, wishes } from '../../world/sceneDay.ts';
   import { fragmentsDue, wishDays } from '../../world/stars.ts';

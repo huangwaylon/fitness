@@ -107,14 +107,14 @@
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
-  import { clearAt, guardsU, stageGeo } from '../../world/placement.ts';
+  import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { piecesOn, swapsOn } from '../../world/fixedDecor.ts';
   import { islandSeed } from '../../world/devHooks.ts';
   import { ARCH, DECOR_SLOTS, SCENERY } from '../../world/world.ts';
-  import { echo3d } from '../../world/echo3d.ts';
+  import { echo3d } from './echo3d.ts';
   import { fx3d } from '../../world/fx3d.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
 

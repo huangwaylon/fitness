@@ -83,7 +83,7 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/src/lib/contract/` | The record's API and rules, shared with the relay |
 | `app/src/lib/sync/`, `store/` | The relay's client (record and live socket), write queue, cache, pairing; the stores |
 | `app/src/lib/layout/` | The island's editable layout: its grid, ops, default, nav and checks |
-| `app/src/lib/world/` | The island's game model, pure (never a component): the world and its walk, critters, sea, weather, day seeds, the farm's batch writes |
+| `app/src/lib/world/` | The island's game model, pure (no component, no DOM): the world and its walk, critters, sea, weather, day seeds, the farm's batch writes |
 | `app/src/lib/food/`, `sound/` | The food data's loading and search; the music and sounds |
 | `app/src/lib/kikimimi/`, `mic/` | ききみみ: decks, content, the round's rules; the mic (capture, VAD, recognisers, matching) |
 | `app/src/lib/travel/`, `hiking/`, `wedding/` | 旅行's trip guides (`trips/`); 登山's trails and tracks; 結婚式's board settings and progress |

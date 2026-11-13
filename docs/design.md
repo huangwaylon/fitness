@@ -370,10 +370,10 @@ and the cache keeps only their newest row per day once the week has locked, like
 
 ## Island scene
 
-`lib/components/island/*` and `lib/components/world3d/*`: NH's island in 3D on the editable layout, NH's own models in
+`lib/components/island/*` and `world3d/*` (rules: `lib/world/`): NH's island in 3D on the editable layout, NH's own models in
 three.js, with the DOM island over the canvas as its tap areas, marks, balloons and popups ([World](#world)). What
 comes only on its days (a visitor, the tape deck, the cake, the weather, the fireworks, an event's decorations) loads
-the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Only `transform`
+the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load has none of it. Only `transform`
 and `opacity` animate in the DOM; everything pauses while hidden (`data-paused`), a sheet pauses particles, critters and
 idle life (`data-covered`), and under a full-height sheet every animation holds (`data-sheet`) and the 3D island draws
 nothing. Nothing on the island pays ベル. **Dev params:** the island's URL params (`world/devHooks.ts`,
@@ -438,7 +438,7 @@ so nothing moves slower. **At rest** (no finger for a moment, only ambience on s
 touch is back at the full rate at once. A villager's small moves in place (a turn, a nod, a surprise: villagers.ts
 SMALL) are ambience too; a walk or a hop is the full rate. The endless CSS loops over the island (the sky's clouds,
 the night's twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
-(`world/clouds.ts`), never running at the display's 60 Hz; held still under reduced motion.
+(`island/clouds.ts`), never at the display's 60 Hz; held still under reduced motion.
 
 **One renderer lifecycle:** every WebGL surface makes and lets go of its renderer the same way (`world3d/stage.ts`: its
 header); the rooms keep their models page-wide (`world3d/modelCache.ts`); shadows redraw only when a caster changes
@@ -532,7 +532,7 @@ a flower is watered ([Island care](#island-care)); any water casts the line ther
 sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes; the sun glints; the moon bobs; the night sky
 twinkles (and grants a wish while a shooting star crosses: [Shooting stars](#shooting-stars)); the campfire is poked.
 
-**Tap targets** (`world/hitbox.ts`): everything tappable answers on its whole visible body, at least 44 × 44px; in
+**Tap targets** (`island/hitbox.ts`): everything tappable answers on its whole visible body, at least 44 × 44px; in
 front wins, exactly under the finger over a character's loose reach; a building is its model's silhouette.
 **Nothing lies on a building's ground** (`layout/clear.ts`): what's dropped or spawned takes a spot off its footprint,
 door step and the strip its model hides. On water only what's drawn takes a tap, so a tap on the sea beside a dig spot
@@ -831,9 +831,9 @@ while another page follows. Left alone a page turns after 6 s. The name tag is t
 NH colour. No voices. A visitor's first tap is their introduction, a first find adds 「ずかんに のったよ！」; a line may end on
 NH's answers (Jack, K.K.).
 
-Where it stands, one rule for every speaker (`world/placement.ts` `placeBy`): by the speaker, its tail pointing at
+Where it stands, one rule for every speaker (`island/placement.ts` `placeBy`): by the speaker, its tail pointing at
 them, nearness first; clear of every control if it can, never over the HUD, しずえ's box, a popup or the speaker. It
-follows a speaker who moves (`world/balloonFollow.ts`) and closes if they go.
+follows a speaker who moves (`island/balloonFollow.ts`) and closes if they go.
 
 ### Villager taps
 

@@ -23,7 +23,7 @@
   // villager's feet as it flies (its live position, frames only while it's out).
   import { showCatch } from './catchCard.ts';
   import { pickUp } from '../motion/transitions.ts';
-  import { timers } from '../../world/timers.ts';
+  import { timers } from './timers.ts';
   import { hookOneOf, islandSeed } from '../../world/devHooks.ts';
   import { giftAt, giftId, holdsGift } from './treeGifts.ts';
   import { digSpots } from '../../world/beach.ts';

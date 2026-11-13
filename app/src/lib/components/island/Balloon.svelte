@@ -13,7 +13,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { uiBoxes } from '../../world/placement.ts';
+  import { uiBoxes } from './placement.ts';
   import { surfaceAt } from '../../world/world.ts';
   import { site } from './site.svelte.ts';
   import { buildingZones } from '#lib/layout/clear.ts';

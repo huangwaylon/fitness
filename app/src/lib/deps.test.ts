@@ -69,7 +69,7 @@ const ALLOW: Record<string, string[]> = {
   // ボット's 保養所 (docs/design.md "Bots"): the its-bot Worker's client (the member key, the log) and the page's view
   its: ['i18n', 'sync', 'contract'],
   // the island's game model (world.ts, the walk, the critters, the sea, the day's weather and seeds, the farm's batch
-  // writes…): pure, never a component, so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
+  // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
   components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'world']
@@ -213,6 +213,19 @@ describe('the relay boundary', () => {
 describe('import specifiers', () => {
   it('are all understood by this scan (relative, #lib/, $lib/, a package or Kit)', () => {
     expect(unknown).toEqual([]);
+  });
+});
+
+describe('lib/world is the game model', () => {
+  it('touches no element, style or animation: the DOM glue (placement, hit boxes, clouds, echoes) is components/island’s', () => {
+    const DOM = /\b(?:document|window)\.|\bHTMLElement\b|\.getAnimations\(|\bmatchMedia\(|\.getBoundingClientRect\(|\.querySelector(?:All)?\(/g;
+    // (sceneDay.ts tells the page a plot was watered: one event on document)
+    const ALLOWED = ['sceneDay.ts: document.'];
+    const world = join(LIB, 'world');
+    const code = (f: string) => readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const found = new Set(files(world).flatMap((f) => [...code(f).matchAll(DOM)].map((m) => `${relative(world, f)}: ${m[0]}`)));
+    expect(found.size).toBeGreaterThan(0); // the scan sees sceneDay's
+    expect([...found].filter((h) => !ALLOWED.includes(h))).toEqual([]);
   });
 });
 

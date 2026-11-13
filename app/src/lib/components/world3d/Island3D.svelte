@@ -19,13 +19,13 @@
   import type { Proj3, V3, World } from '../island/camera.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../../world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
-  import { stepClouds } from '../../world/clouds.ts';
+  import { stepClouds } from '../island/clouds.ts';
   import { dayFindKeys } from '../../world/dayModels.ts';
   import { islandSeed } from '../../world/devHooks.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { LAMP_GLOW, type Piece } from '../../world/fixedDecor.ts';
   import type { Scenery } from '../../world/world.ts';
-  import { listen3d, listenPose3d } from '../../world/echo3d.ts';
+  import { listen3d, listenPose3d } from '../island/echo3d.ts';
   import { listenFx3 } from '../../world/fx3d.ts';
   import { ambient3 } from '../island/ambient3d.svelte.ts';
   import PLACES from '../../world/models.json' with { type: 'json' };
@@ -75,7 +75,7 @@
   import { TIER_H } from '#lib/layout/grid.ts';
   import { drawOff } from '../../ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
-  import { timers } from '../../world/timers.ts';
+  import { timers } from '../island/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { logError, setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
@@ -1068,7 +1068,7 @@
       }
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
-      // (the sky's clouds behind the canvas drift in its frames: world/clouds.ts)
+      // (the sky's clouds behind the canvas drift in its frames: island/clouds.ts)
       stepClouds(t);
       const more = world.step(t);
       const camMoved = e.rev() !== revWas;

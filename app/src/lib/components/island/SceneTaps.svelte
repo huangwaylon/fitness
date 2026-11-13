@@ -22,20 +22,20 @@
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { guestNow, onBeach, visitorNow } from '../../world/visitors.ts';
-  import { timers } from '../../world/timers.ts';
+  import { timers } from './timers.ts';
   import { hook, islandSeed } from '../../world/devHooks.ts';
   import { site } from './site.svelte.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { guardsU, stageGeo } from '../../world/placement.ts';
+  import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from '../../world/stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '../../world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { notBehind, type Seen } from '../../world/hitbox.ts';
+  import { notBehind, type Seen } from './hitbox.ts';
   import { footprint } from '../../world/nav.ts';
   import type Critters from './Critters.svelte';
   import type Finds from './Finds.svelte';
@@ -55,7 +55,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
   import { fx3d } from '../../world/fx3d.ts';
-  import { echo3d } from '../../world/echo3d.ts';
+  import { echo3d } from './echo3d.ts';
   import { WAVE_MS, cropName, farmUi, openPicker, popAt } from './farmUi.svelte.ts';
   import { farmTap, waveSpots } from '../../world/farmTap.ts';
   import { farmToday } from './farm.ts';

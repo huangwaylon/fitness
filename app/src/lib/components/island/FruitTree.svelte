@@ -20,8 +20,8 @@
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { pickUp } from '../motion/transitions.ts';
-  import { holdLoop } from '../../world/clouds.ts';
-  import { timers } from '../../world/timers.ts';
+  import { holdLoop } from './clouds.ts';
+  import { timers } from './timers.ts';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
@@ -45,7 +45,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy } from '#lib/sync/world-day.ts';
   import { fx3d } from '../../world/fx3d.ts';
-  import { echo3d } from '../../world/echo3d.ts';
+  import { echo3d } from './echo3d.ts';
   import { GOAL_TREES, offBuildingsAt } from '../../world/world.ts';
   import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';

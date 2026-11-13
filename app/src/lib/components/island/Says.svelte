@@ -9,12 +9,12 @@
   // with no island stage the balloons stand in the scene's own box.
   //   <Says bind:this={says} scene={el} />   says.say('mine', text, speakerEl, { name, colour })
   import { tick } from 'svelte';
-  import { TAIL_IN, placeBy, type Side } from '../../world/placement.ts';
+  import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import { tagInk } from '../../world/pager.ts';
   import { SAY_MS } from '../../world/say.ts';
   import type { Box } from '../../world/geom.ts';
   import type { SaySpeaker } from '../../world/say.ts';
-  import { followOf } from '../../world/balloonFollow.ts';
+  import { followOf } from './balloonFollow.ts';
   import { useWorld } from './camera.svelte.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();

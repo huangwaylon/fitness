@@ -13,7 +13,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { cleanSay, SAY_MAX } from '#lib/contract/live-protocol.ts';
   import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
-  import { EDGE } from '../../world/placement.ts';
+  import { EDGE } from './placement.ts';
   import { recentSays } from '../../world/say.ts';
   import NavButton from '../ui/NavButton.svelte';
 

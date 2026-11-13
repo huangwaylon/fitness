@@ -41,7 +41,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { eventJingle } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { EDGE, clearAt, guardsU, stageGeo } from '../../world/placement.ts';
+  import { EDGE, clearAt, guardsU, stageGeo } from './placement.ts';
   import { zodiacOf } from '../../world/beach.ts';
   import { hook, hookFlag, islandSeed } from '../../world/devHooks.ts';
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';

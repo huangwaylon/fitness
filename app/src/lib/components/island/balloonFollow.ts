@@ -6,7 +6,7 @@
 // carried by the node's map. A room's speaker (a SaySpeaker box, its villager's head projected) is asked again.
 // Plain TS.
 import type { Side } from './placement.ts';
-import type { SaySpeaker } from './say.ts';
+import type { SaySpeaker } from '#lib/world/say.ts';
 
 type Pt = [number, number];
 /** A world node's map on screen: its origin in client px and its scale across and up (translate(x, y) scale(kx, ky)). */

@@ -19,7 +19,7 @@
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import PLACES from '../../world/models.json';
-  import { pose3d } from '../../world/echo3d.ts';
+  import { pose3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
   import { sitLook } from './sitting.ts';
   import { footprint } from '../../world/nav.ts';
