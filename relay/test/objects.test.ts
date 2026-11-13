@@ -124,7 +124,7 @@ describe('IslandStore', () => {
 
   it('answers /api as its core does, with the meta for the log, and tells the room of a write', async () => {
     const s = make();
-    expect(JSON.parse(s.api(JSON.stringify({ key: KEY_A, action: 'whoami' })))).toEqual({ ok: true, me: 'A', build: expect.any(String) });
+    expect(JSON.parse(s.apiMeta(JSON.stringify({ key: KEY_A, action: 'whoami' })).body)).toEqual({ ok: true, me: 'A', build: expect.any(String) });
     const { body, meta } = s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     expect(JSON.parse(body)).toEqual({ ok: true, metrics: 1 });
     expect(meta).toMatchObject({ action: 'ingest', st: 'ok', role: 'B' });
@@ -135,7 +135,7 @@ describe('IslandStore', () => {
   it('a room that fails twice is only a warning', async () => {
     room.notify = () => Promise.reject(new Error('reset'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    make().api(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    make().apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     await settle();
     expect(warn).toHaveBeenCalledWith('notify the room', 'Error');
   });
@@ -207,7 +207,7 @@ describe('IslandStore', () => {
     expect((await admin(s, { op: 'restore' })).body).toEqual({ ok: false, error: 'bad_request' });
     expect((await admin(s, { op: 'restore', bookmark: 'bm-1' })).body).toMatchObject({ ok: true, restoring: 'bm-1', note: expect.stringContaining('by itself') });
     expect([calls.restoreBookmark, calls['ROOM.restoring']]).toEqual([[['bm-1']], [[]]]);
-    expect(JSON.parse(s.api(JSON.stringify({ key: KEY_A, action: 'whoami' })))).toMatchObject({ ok: false, error: 'unavailable' });
+    expect(JSON.parse(s.apiMeta(JSON.stringify({ key: KEY_A, action: 'whoami' })).body)).toMatchObject({ ok: false, error: 'unavailable' });
     expect(calls.abort).toBeUndefined();
     vi.advanceTimersByTime(200);
     expect(calls.abort).toEqual([['restoring a bookmark']]);
@@ -222,7 +222,7 @@ describe('IslandStore', () => {
     st.storage.onNextSessionRestoreBookmark = () => Promise.reject(new Error('no such bookmark'));
     const s = new IslandStore(st.state, envOf());
     expect((await admin(s, { op: 'restore', bookmark: 'bm-1' })).body).toEqual({ ok: false, error: 'unavailable', detail: 'Error: no such bookmark' });
-    expect(JSON.parse(s.api(JSON.stringify({ key: KEY_A, action: 'whoami' })))).toMatchObject({ ok: true, me: 'A' });
+    expect(JSON.parse(s.apiMeta(JSON.stringify({ key: KEY_A, action: 'whoami' })).body)).toMatchObject({ ok: true, me: 'A' });
     log.stats = () => Promise.reject(new TypeError('reset'));
     expect((await admin(s, { op: 'logstats' })).body).toMatchObject({ ok: false, error: 'unavailable' });
     await settle();

@@ -18,10 +18,8 @@ import type { ReqMeta } from './reqMeta.ts';
 
 /** What the routes need from the store (the Durable Object's RPC methods). */
 export interface StoreRoom {
-  /** An `/api` body → its JSON reply. */
-  api(text: string): Promise<string> | string;
-  /** The same, with the request's meta for the log (reqMeta.ts). */
-  apiMeta?(text: string): Promise<{ body: string; meta: ReqMeta }> | { body: string; meta: ReqMeta };
+  /** An `/api` body → its JSON reply, with the request's meta for the log (reqMeta.ts). */
+  apiMeta(text: string): Promise<{ body: string; meta: ReqMeta }> | { body: string; meta: ReqMeta };
   /** A signed `/admin` body → the status and the JSON reply. */
   adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
 }
@@ -57,9 +55,6 @@ async function keyHash(key: string): Promise<string> {
   return Array.from(d.slice(0, 2), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** An object still on the code before `apiMeta` (the seconds after a deploy): the RPC's own refusal, nothing else. */
-const noApiMeta = (e: unknown): boolean => e instanceof TypeError && /\bapiMeta\b|does not implement the method/.test(e.message);
-
 /** A request's `req` event, with its wall time (ms). */
 export type OnReq = (meta: ReqMeta, ms: number) => void;
 
@@ -93,23 +88,9 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
     return json('{"ok":false,"error":"unauthorized"}');
   }
   try {
-    const room = store();
-    if (onReq && room.apiMeta) {
-      let r: { body: string; meta: ReqMeta } | null = null;
-      try {
-        r = await room.apiMeta(text);
-      } catch (e) {
-        // an object still on the code before apiMeta (the seconds after a deploy, until it restarts) has no such
-        // method: the plain call, unlogged (2026-11-05: ~25 s of `unavailable` without this). Only that refusal: any
-        // other error may come after the request wrote, and is never run twice
-        if (!noApiMeta(e)) throw e;
-      }
-      if (r) {
-        onReq(r.meta, Date.now() - t0);
-        return json(r.body, r.meta.rid);
-      }
-    }
-    return json(await room.api(text));
+    const r = await store().apiMeta(text);
+    onReq?.(r.meta, Date.now() - t0);
+    return json(r.body, r.meta.rid);
   } catch (e) {
     // its class only: a message can quote the body
     console.error('api', errName(e));

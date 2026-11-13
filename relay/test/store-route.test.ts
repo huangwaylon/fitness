@@ -7,7 +7,8 @@ import { notifySecret, notifySig } from '../src/notify.ts';
 import { StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
-import type { ReqMeta } from '../src/reqMeta.ts';
+import { apiWithMeta, type ReqMeta } from '../src/reqMeta.ts';
+import { roleOfKey } from '../src/auth.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -22,7 +23,7 @@ beforeEach(() => {
   told = [];
   core = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => NOW, notify: (n) => told.push(n) });
   room = {
-    api: (text) => core.handleText(text),
+    apiMeta: (text) => apiWithMeta(core, text, (k) => roleOfKey(k, { KEY_A, KEY_B })),
     // the object's dispatch (storeObject.ts admin) for the one op the store does itself
     async adminSigned(text, t, sig) {
       const v = await core.signedOp(text, t, sig);
@@ -62,7 +63,7 @@ describe('/api before the record (the Worker)', () => {
   it('refuses a body without a known key in the Worker: the record never hears it', async () => {
     // 2026-11-05 review: every body went to the record object, a stranger's 1 MB of junk included
     let heard = 0;
-    const counting: StoreRoom = { ...room, api: (t) => (heard++, core.handleText(t)) };
+    const counting: StoreRoom = { ...room, apiMeta: (t) => (heard++, room.apiMeta(t)) };
     const refused = [
       JSON.stringify({ key: 'c3'.repeat(16), action: 'snapshot' }),
       JSON.stringify({ action: 'ingest', dates: 'x'.repeat(2000) }),
@@ -89,18 +90,6 @@ describe('/api before the record (the Worker)', () => {
     const want = createHash('sha256').update(fake).digest('hex').slice(0, 4);
     expect(metas.map((m) => [m.st, m.kh])).toEqual([['unauthorized', want], ['unauthorized', want], ['unauthorized', undefined]]);
     expect(JSON.stringify(metas)).not.toContain(fake);
-  });
-
-  it('falls back to the plain call only when the object has no apiMeta yet, never after another TypeError', async () => {
-    const body = JSON.stringify({ key: KEY_A, action: 'whoami' });
-    let plain = 0;
-    const old: StoreRoom = { ...room, api: (t) => (plain++, core.handleText(t)), apiMeta: () => { throw new TypeError('The RPC receiver does not implement the method "apiMeta".'); } };
-    expect(await (await apiRoute(req(body), ALLOWED, () => old, () => {}, keys)).json()).toMatchObject({ ok: true, me: 'A' });
-    expect(plain).toBe(1);
-    // a TypeError from the object's own work: the request may have written, so it is never run a second time
-    const broken: StoreRoom = { ...old, apiMeta: () => { throw new TypeError("Cannot read properties of undefined (reading 'x')"); } };
-    expect(await (await apiRoute(req(body), ALLOWED, () => broken, () => {}, keys)).json()).toEqual({ ok: false, error: 'unavailable' });
-    expect(plain).toBe(1);
   });
 });
 

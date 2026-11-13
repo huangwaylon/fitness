@@ -241,17 +241,10 @@ describe('/api’s req meta', () => {
   it('the Worker times it, echoes the request id and hands the meta on', async () => {
     const s = store();
     const got: unknown[] = [];
-    const room: StoreRoom = { api: (t) => s.handleText(t), apiMeta: (t) => apiWithMeta(s, t, roleOf), adminSigned: () => ({ status: 404, body: '' }) };
+    const room: StoreRoom = { apiMeta: (t) => apiWithMeta(s, t, roleOf), adminSigned: () => ({ status: 404, body: '' }) };
     const res = await apiRoute(new Request('https://r/api', { method: 'POST', body: JSON.stringify({ key: KEY_A, action: 'whoami', rid: 'rq12345678' }), headers: { Origin: 'https://island-fund.pages.dev' } }), 'https://island-fund.pages.dev', () => room, (m, ms) => got.push([m.action, m.st, m.rid, ms]));
     expect([res.headers.get('X-Request-Id'), res.headers.get('Access-Control-Expose-Headers'), ((await res.json()) as { me: string }).me]).toEqual(['rq12345678', 'X-Request-Id', 'A']);
     expect(got).toEqual([['whoami', 'ok', 'rq12345678', expect.any(Number)]]);
-  });
-
-  it('an object still on the old code (no apiMeta yet: the seconds after a deploy) is asked the plain way', async () => {
-    const s = store();
-    const room: StoreRoom = { api: (t) => s.handleText(t), apiMeta: () => { throw new TypeError('The RPC receiver does not implement the method "apiMeta".'); }, adminSigned: () => ({ status: 404, body: '' }) };
-    const res = await apiRoute(new Request('https://r/api', { method: 'POST', body: JSON.stringify({ key: KEY_A, action: 'whoami' }) }), '', () => room, () => {});
-    expect(((await res.json()) as { me: string }).me).toBe('A');
   });
 });
 

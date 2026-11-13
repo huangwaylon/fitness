@@ -80,7 +80,6 @@ beforeEach(() => {
       const meta: ReqMeta = { action: 'whoami', st: 'ok', role: 'A', rid: 'r1', sid: 's1', inB: 10, outB: 20 };
       return Promise.resolve({ body: '{"ok":true,"me":"A"}', meta });
     },
-    api: (t: never) => (rec('STORE.api', t), Promise.resolve('{"ok":true}')),
     adminSigned: (...a: never[]) => (rec('STORE.adminSigned', ...a), Promise.resolve({ status: 200, body: '{"ok":true}' })),
     compactTick: () => (rec('STORE.compactTick'), Promise.resolve({ ok: true, dates: 0, deleted: 0, more: false, metrics: 0 }))
   };
