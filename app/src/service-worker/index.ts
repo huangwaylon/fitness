@@ -4,7 +4,7 @@ import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -397,7 +397,18 @@ async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
 }
 self.addEventListener('message', (event) => {
   const d = event.data as { k?: string; urls?: unknown } | null;
-  if (d?.k !== 'warm' || !Array.isArray(d.urls)) return;
+  if (!Array.isArray(d?.urls)) return;
+  // The KTX2 files whose textures the page read back from its own cache (world3d/ktx2.ts usedFile: no fetch, so never
+  // seen here): used now, in the room's index, so the island's own aren't the least recently used past the cap.
+  if (d.k === 'used') {
+    event.waitUntil((async () => {
+      const cache = await caches.open(ROOM_CACHE), kept: Promise<unknown>[] = [];
+      for (const u of roomFiles(d.urls as unknown[], self.location.origin)) if (await cache.match(u)) kept.push(roomUsed(u));
+      await Promise.allSettled(kept);
+    })().catch(() => {}));
+    return;
+  }
+  if (d.k !== 'warm') return;
   event.waitUntil((async () => {
     const kept: Promise<unknown>[] = [];
     for (const u of warmable(d.urls as unknown[], self.location.origin)) {

@@ -350,18 +350,37 @@ test('the wedding board kept once opened and carried by a deploy (offline after)
   await context.setOffline(false);
 });
 
-test('the room cache: a file\'s older version goes, and a cache from before the index is counted whole', { tag: '@chromium' }, async ({ page, context }) => {
+test('the room cache: a file\'s older version goes, and a cache from before the index is counted whole; a warm launch\'s KTX2s count as used', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(90_000);
+  const warm = await warmed(page);
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
-  // the island's models through the worker into the room cache
-  await page.reload();
-  await islandUp(page);
+  await warm();
   const room = () => page.evaluate(async () => {
     const c = await caches.open('island-room-v1');
     return (await c.keys()).map((k) => new URL(k.url).pathname + new URL(k.url).search);
   });
+  const index = () => page.evaluate(async () => {
+    const c = await caches.open('island-room-v1');
+    const r = await c.match(new URL('__room-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
+    return r ? ((await r.json()) as Record<string, [number, number]>) : {};
+  });
+  const ktx2Since = async (t: number) => Object.entries(await index()).filter(([u, [, at]]) => u.includes('/room/tex/') && u.includes('.ktx2p') && at >= t).length;
+  // the island's models in the room cache (the first launch's, warmed); a warm launch reads its textures back from
+  // IndexedDB (world3d/ktx2.ts), never fetching their KTX2s, and tells the worker they were used (the room's index):
+  // else the island's own looked least recently used, the first let go past the cap
+  await expect.poll(() => ktx2Since(0), { timeout: 20_000 }).toBeGreaterThan(10);
+  const fetched: string[] = [];
+  const onReq = (r: import('@playwright/test').Request) => void (r.url().includes('.ktx2p') && fetched.push(r.url()));
+  page.on('request', onReq);
+  const since = await page.evaluate(() => Date.now());
+  await page.reload();
+  await islandUp(page);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { ktx2(): { kept: number } } }).__world3d.ktx2().kept)).toBeGreaterThan(20);
+  await expect.poll(() => ktx2Since(since), { timeout: 20_000 }).toBeGreaterThan(10);
+  page.off('request', onReq);
+  expect(fetched, 'the textures read back from IndexedDB').toEqual([]);
   await expect.poll(async () => (await room()).filter((u) => u.includes('/room/world3d/')).length, { timeout: 30_000 }).toBeGreaterThan(5);
   await expect.poll(async () => (await room()).includes('/__room-index'), { timeout: 10_000 }).toBe(true);
   // an older version of one of them put before it (a re-converted model's last ?v=), and no index (a cache from before it)
@@ -383,11 +402,6 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   await islandUp(page);
   await expect.poll(async () => (await room()).includes(real.old), { timeout: 20_000 }).toBe(false);
   expect(await room()).toContain(real.url);
-  const index = () => page.evaluate(async () => {
-    const c = await caches.open('island-room-v1');
-    const r = await c.match(new URL('__room-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
-    return r ? ((await r.json()) as Record<string, [number, number]>) : {};
-  });
   // (every file in it, with its bytes, once the island's loads settle: it's kept 2 s after a change)
   await expect.poll(async () => Object.keys(await index()).length - ((await room()).length - 1), { timeout: 30_000 }).toBe(0);
   expect(Object.entries(await index()).find(([u]) => u.endsWith(real.url))?.[1][0]).toBeGreaterThan(100);

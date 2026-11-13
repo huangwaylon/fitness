@@ -8,7 +8,7 @@
 // The send queue and the key live in storage, so a reload loses nothing but an open sheet.
 
 import { version } from '$app/env';
-import { log, markLeaving, persistLog } from '#lib/sync/log.ts';
+import { leavingNow, log, markLeaving, persistLog } from '#lib/sync/log.ts';
 import { quiet } from '#lib/quiet.ts';
 
 const KEY = 'island.reloadAt';
@@ -119,6 +119,8 @@ const CHUNK_KEY = 'island.chunkReloadFor';
  * (newWorker: else the reload is the old build's cached shell again), and once a deployed version a session.
  */
 export async function reloadUnlessLeaving(deployedNow: () => Promise<string | null> = deployed, running: string = version): Promise<boolean> {
+  // (leaving, the ask dies with the page: it only counted swallow:reload.version, ~4 a launch's reload)
+  if (leavingNow()) return false;
   const v = await quiet(deployedNow(), 'reload.version', null);
   if (!v || v === running) return false;
   try {

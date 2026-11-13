@@ -4,8 +4,9 @@
 // window's load where no island comes (another route, /pair; the error and not-set-up screens release it too), and at
 // most ISLAND_CAP_MS after the start on the island (its load stuck, a sheet's route opened instead). A phone
 // the worker controls already is unaffected: the browser checks for a new worker on each navigation itself.
-// A page it didn't control (a first launch) tells the worker, once it's in, what it fetched (the resource timings'
-// URLs: service-worker/index.ts `warm` keeps the models and art among them from the HTTP cache), then clears them.
+// A page it didn't control (a first launch) tells the worker what it fetched (the resource timings'
+// URLs: service-worker/index.ts `warm` keeps the models and art among them from the HTTP cache) once it claims the page,
+// then clears them.
 
 import { resolve } from '$app/paths';
 import { swallowed } from '#lib/quiet.ts';
@@ -44,19 +45,42 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
     if (document.readyState === 'complete') later();
     else addEventListener('load', later, { once: true });
   });
-  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then((reg) => {
+  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then(async (reg) => {
+    active(!!sw.controller);
     if (fresh) {
-      reg?.active?.postMessage({ k: 'warm', urls: [...performance.getEntriesByType('resource').map((e) => e.name), ...fetchedElsewhere] });
+      // Told once the worker controls the page (its clients.claim), not at `ready` (its activation's start): a file
+      // asked for between the two went past the worker and wasn't in the list either, fetched again on the next launch
+      // (1 cold WebKit launch in 3, ~13 files: fx/*.glb, a KTX2 pack; review 11-13 r2 N-C). One still on its way at the
+      // claim (asked before it, not in the timings yet) is told after, when the timings are cleared: the worker keeps
+      // what it hasn't (service-worker/index.ts warm).
+      await claimed(sw);
+      const told = new Set<string>();
+      const tell = () => {
+        const urls = [...performance.getEntriesByType('resource').map((e) => e.name), ...fetchedElsewhere].filter((u) => !told.has(u));
+        for (const u of urls) told.add(u);
+        if (urls.length) reg?.active?.postMessage({ k: 'warm', urls });
+      };
+      tell();
       // (used: the ~0.3 MB of entries not kept for the page's life, the buffer back to its default; after perf.boot's
       // look at them, by world3d/boot.ts's 30 s watch)
       setTimeout(() => {
+        tell();
         performance.clearResourceTimings?.();
         performance.setResourceTimingBufferSize?.(250);
       }, Math.max(0, TIMINGS_KEEP_MS - performance.now()));
     }
-    active(!!sw.controller);
-  }, () => swallowed('sw.register'));
+  }).catch(() => swallowed('sw.register'));
 }
+
+/** The worker claims the page (`controllerchange`), or CLAIM_WAIT_MS passed (a claim that never comes: told anyway). */
+const CLAIM_WAIT_MS = 10_000;
+const claimed = (sw: ServiceWorkerContainer): Promise<void> =>
+  sw.controller
+    ? Promise.resolve()
+    : new Promise((done) => {
+        sw.addEventListener?.('controllerchange', () => done(), { once: true });
+        setTimeout(done, CLAIM_WAIT_MS);
+      });
 
 let active: (on: boolean) => void = () => {};
 const controls = new Promise<boolean>((r) => (active = r));

@@ -653,6 +653,21 @@ export async function fetchKeep(req: Request, get: (r: Request) => Promise<Respo
 
 /** The most files a first launch's warm-up keeps (a cold launch to the island asks for ~370, ~250 of them these). */
 export const WARM_MAX = 800;
+/** The room's files of a page's `used` message (world3d/ktx2.ts usedFile: KTX2s read back from its own cache): ours,
+ *  under /room/, each once, at most WARM_MAX. */
+export function roomFiles(urls: readonly unknown[], origin: string): string[] {
+  const out = new Set<string>();
+  for (const u of urls) {
+    if (typeof u !== 'string' || out.size >= WARM_MAX) continue;
+    try {
+      const url = new URL(u);
+      if (url.origin === origin && isRoomAsset(url.pathname)) out.add(url.href);
+    } catch {
+      /* not a URL */
+    }
+  }
+  return [...out];
+}
 /** A first launch's files the worker keeps once it's in (the page's, fetched before it was: ui-state/swLate.ts, the
  *  `warm` message): the room's (models, KTX2 packs, the players' packs, the transcoder) and the art cached on first
  *  use, ours only, each once, at most WARM_MAX. Not the precached villager art (the install has it). */

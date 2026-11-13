@@ -120,15 +120,19 @@ export const ktx2On = (): boolean => target !== null && !broken;
 /** Where a texture's KTX2 is: a file under the site, or `entry` in that pack (ktx2Pack.ts). */
 type Where = { path: string; entry?: string };
 /** A texture's mip levels for `t` (`id`: its WebP's key, texHash.ts texKey, or a loose file's address), kept, or fetched (`get`, asked
- *  only then: its KTX2's bytes) and transcoded (then kept); null on any trouble. Asked twice at once, done once. */
+ *  only then: its KTX2's bytes) and transcoded (then kept); null on any trouble. Asked twice at once, done once. Read
+ *  back from the cache, its KTX2's file (`file`: its address) is told to the service worker as used (usedFile). */
 const pending = new Map<string, Promise<Transcoded | null>>();
-function levels(id: string, get: () => Promise<ArrayBuffer | null>, t: Target): Promise<Transcoded | null> {
+function levels(id: string, get: () => Promise<ArrayBuffer | null>, t: Target, file?: () => Promise<string>): Promise<Transcoded | null> {
   const key = PIPE + t + '.' + id;
   let p = pending.get(key);
   if (!p) {
     p = quiet((async () => {
       const kept = await readTex(key);
-      if (kept?.target === t) return ktx2Stats.kept++, kept;
+      if (kept?.target === t) {
+        if (file) void file().then(usedFile, () => {});
+        return ktx2Stats.kept++, kept;
+      }
       if (broken) return null;
       const buf = await get();
       const tex = buf && (await transcode(buf, t));
@@ -142,14 +146,35 @@ function levels(id: string, get: () => Promise<ArrayBuffer | null>, t: Target): 
   }
   return p;
 }
+/** A KTX2 file's address as fetched (the encoder's settings in it: a new encoding is never an old one from the service
+ *  worker's cache). */
+const ktx2Url = (path: string): string => site(`${path}${path.includes('?') ? '&' : '?'}e=${ENC}`);
+
+/** The KTX2 files whose textures were read back from the cache (texCache.ts), told to the service worker (its room
+ *  cache's index, service-worker/index.ts `used`) a moment after a burst, each once a page: a warm launch fetches none,
+ *  so else the island's own (~3.4 MB) looked least recently used and were the first let go past the room's cap, then
+ *  fetched again at the next pipeline's bump (review 11-13 r2 N-B). */
+const toTell = new Set<string>(), told = new Set<string>();
+let telling: ReturnType<typeof setTimeout> | 0 = 0;
+function usedFile(url: string): void {
+  if (told.has(url)) return;
+  told.add(url);
+  toTell.add(url);
+  telling ||= setTimeout(() => {
+    telling = 0;
+    const urls = [...toTell];
+    toTell.clear();
+    globalThis.navigator?.serviceWorker?.controller?.postMessage({ k: 'used', urls });
+  }, 2000);
+}
+
 /** The files fetched lately (a pack's entries are asked for one by one, about together: one fetch). */
 const files = new Map<string, Promise<ArrayBuffer | null>>();
 /** A KTX2's bytes (a copy: the worker takes them), a file's or a pack entry's; null on any trouble. */
 async function fetchKtx2(w: Where): Promise<ArrayBuffer | null> {
   let f = files.get(w.path);
   if (!f) {
-    // (the encoder's settings in the address: a new encoding is never an old one from the service worker's cache)
-    f = fetch(site(`${w.path}${w.path.includes('?') ? '&' : '?'}e=${ENC}`)).then((r) => (r.ok ? r.arrayBuffer() : null), () => null);
+    f = fetch(ktx2Url(w.path)).then((r) => (r.ok ? r.arrayBuffer() : null), () => null);
     files.set(w.path, f);
     void f.then(() => setTimeout(() => files.delete(w.path), 5000));
   }
@@ -171,7 +196,7 @@ export async function loadTexture(url: string, o: { flipY: boolean; ktx2: boolea
     if (room >= 0 && name.endsWith('.webp')) {
       const dir = u.pathname.slice(room + 1, -name.length), v = `?v=${u.searchParams.get('v') ?? ''}`;
       const [file, entry] = o.ktx2 === true ? [`${name.slice(0, -5)}.ktx2`] : o.ktx2.split('#');
-      const tex = await levels(`${dir}${file}${v}${entry ? `#${entry}` : ''}`, () => fetchKtx2({ path: dir + file + v, entry }), t);
+      const tex = await levels(`${dir}${file}${v}${entry ? `#${entry}` : ''}`, () => fetchKtx2({ path: dir + file + v, entry }), t, async () => ktx2Url(dir + file + v));
       if (tex) {
         const c = compressed(tex);
         c.name = name;
@@ -243,7 +268,8 @@ export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
         if (!t) return webpOf(parser, i, source) as Promise<Texture>;
         return hashOf(parser, src).then(async (h) => {
           const key = texKey(h, CAPS);
-          const tex = await levels(key, async () => fetchKtx2({ path: `room/tex/${(await packsOf(parser)).ktx2}.ktx2p`, entry: key }), t);
+          const pack = async () => `room/tex/${(await packsOf(parser)).ktx2}.ktx2p`;
+          const tex = await levels(key, async () => fetchKtx2({ path: await pack(), entry: key }), t, async () => ktx2Url(await pack()));
           if (!tex) return ktx2Stats.webp++, webpOf(parser, i, source);
           const c = compressed(tex);
           // (GLTFLoader's loadTextureImage's settings: glTF's UVs unflipped, its sampler's filters and wrapping)

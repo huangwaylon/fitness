@@ -110,6 +110,8 @@ const today = () => localDateAt(env.now());
  *  then, and an error is a warning `leaving`. */
 const isLeaving = { now: false };
 export const markLeaving = (): void => void (isLeaving.now = true);
+/** Whether the page is going (markLeaving, a pagehide): nothing more is asked of the network (ui-state/reload.ts). */
+export const leavingNow = (): boolean => isLeaving.now;
 
 export function configureLog(o: Partial<Env> & { reset?: boolean; on?: boolean }): void {
   const { reset, on, ...rest } = o;

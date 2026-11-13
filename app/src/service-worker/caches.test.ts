@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -565,6 +565,18 @@ describe('the room cache\'s bound (roomEvict)', () => {
     const idx: RoomIndex = { [`${R}world3d/tree.glb?v=1`]: [50, now - 1000], [`${R}player/mesh/x.glb?v=1`]: [50, now - ROOM_KEEP_MS - 1] };
     expect(roomEvict(idx, now, 10)).toEqual([`${R}player/mesh/x.glb?v=1`]);
     expect(roomEvict({ [`${R}world3d/tree.glb?v=1`]: [ROOM_CAP_BYTES * 2, now] }, now)).toEqual([]);
+  });
+  it('the island\'s KTX2s read back from the page\'s own cache (a `used` message) outlive packs used since; untold, they went first', () => {
+    // (fetched once at the first launch 20 days ago; every launch since read their textures from IndexedDB)
+    const tex = [`${R}tex/aaaa.ktx2p?e=1`, `${R}tex/bbbb.ktx2p?e=1`];
+    const idx: RoomIndex = { [tex[0]]: [2_000_000, now - 20 * day], [tex[1]]: [1_400_000, now - 20 * day], [`${R}villagers3d/judy.glb`]: [1_500_000, now - 5 * day], [`${R}shop/counter.glb?v=1`]: [1_000_000, now - 4 * day] };
+    expect(roomEvict(idx, now, 3_000_000).sort()).toEqual(tex);
+    for (const u of roomFiles([...tex, 'https://y/room/tex/cccc.ktx2p', `${R.replace('/room/', '/art/')}x.webp`, 7], 'https://x')) idx[u] = [idx[u][0], now - 60_000];
+    expect(roomEvict(idx, now, 3_000_000).sort()).toEqual([`${R}shop/counter.glb?v=1`, `${R}villagers3d/judy.glb`]);
+    expect(Object.keys(idx)).toHaveLength(4);
+  });
+  it('roomFiles: ours, under /room/, each once', () => {
+    expect(roomFiles([`${R}tex/a.ktx2p?e=1`, `${R}tex/a.ktx2p?e=1`, 'https://y/room/b.glb', 'https://x/art/c.webp', 'not a url', null], 'https://x')).toEqual([`${R}tex/a.ktx2p?e=1`]);
   });
   it('a player\'s pack is never precached; a part\'s old slice (?s=from-to, till 2026-11-10) goes at once', () => {
     expect(precachable('room/player/everyday.1a2b3c4d.pak')).toBe(false);

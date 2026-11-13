@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isChunkError, lazy, newWorker, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
+import { configureLog, markLeaving } from '#lib/sync/log.ts';
 
 const reload = vi.fn();
 beforeEach(() => {
+  // (a reload marks the page leaving: each test's page a fresh one)
+  configureLog({ reset: true });
   const store = new Map<string, string>();
   vi.stubGlobal('sessionStorage', {
     getItem: (k: string) => store.get(k) ?? null,
@@ -89,6 +92,13 @@ describe('isChunkError (only a chunk not fetched reloads)', () => {
 });
 
 describe('reloadUnlessLeaving (a chunk that failed)', () => {
+  it('a page that is leaving asks nothing (no version.json, no swallow:reload.version)', async () => {
+    markLeaving();
+    const deployedNow = vi.fn(async () => 'v2');
+    expect(await reloadUnlessLeaving(deployedNow, 'v1')).toBe(false);
+    expect(deployedNow).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
   it('reloads nothing when the deployed build is the running one (a reload into it cures nothing)', async () => {
     expect(await reloadUnlessLeaving(async () => 'v1', 'v1')).toBe(false);
     expect(reload).not.toHaveBeenCalled();
@@ -97,11 +107,13 @@ describe('reloadUnlessLeaving (a chunk that failed)', () => {
     vi.useFakeTimers();
     try {
       expect(await reloadUnlessLeaving(async () => 'v2', 'v1')).toBe(true);
-      // (the reload came back to the old build: the old shell still cached, the chunk still failing)
+      // (the reload came back to the old build: the old shell still cached, the chunk still failing; a page not leaving)
+      configureLog({ reset: true });
       vi.advanceTimersByTime(10 * RELOAD_WINDOW_MS);
       for (let i = 0; i < 5; i++) expect(await reloadUnlessLeaving(async () => 'v2', 'v1')).toBe(false);
       expect(reload).toHaveBeenCalledTimes(1);
       // a newer deploy still gets its one
+      configureLog({ reset: true });
       expect(await reloadUnlessLeaving(async () => 'v3', 'v1')).toBe(true);
       expect(reload).toHaveBeenCalledTimes(2);
     } finally {

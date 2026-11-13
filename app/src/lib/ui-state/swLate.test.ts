@@ -77,21 +77,47 @@ describe('the service worker registered late (swLate)', () => {
     expect(got2).toBe(false);
   });
 
-  it('a page it didn\'t control (a first launch) tells the active worker what it fetched (a worker\'s fetches too: warmToo); a controlled one doesn\'t', async () => {
-    vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: (t: string) => (t === 'resource' ? [{ name: 'https://x/room/a.glb?v=1' }, { name: 'https://x/art/b.webp' }] : []) });
-    for (const controller of [null, {}]) {
+  it('a page it didn\'t control (a first launch) tells the active worker what it fetched (a worker\'s fetches too: warmToo), once claimed; a controlled one doesn\'t', async () => {
+    const entries = [{ name: 'https://x/room/a.glb?v=1' }, { name: 'https://x/art/b.webp' }];
+    vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: (t: string) => (t === 'resource' ? [...entries] : []) });
+    const posts: ReturnType<typeof vi.fn>[] = [];
+    for (const controller of [{}, null]) {
       const m = await fresh(), post = vi.fn();
+      posts.push(post);
+      let claim = () => {};
       m.warmToo('https://x/room/basis/t.wasm?v=2');
       m.releaseWorker();
-      m.registerLate(true, { ...container(), ready: Promise.resolve({ active: { postMessage: post } }), controller } as unknown as ServiceWorkerContainer);
+      const on = (type: string, f: () => void) => type === 'controllerchange' && (claim = f);
+      m.registerLate(true, { ...container(), ready: Promise.resolve({ active: { postMessage: post } }), controller, addEventListener: on } as unknown as ServiceWorkerContainer);
       await tick();
-      expect(post.mock.calls).toEqual(controller ? [] : [[{ k: 'warm', urls: ['https://x/room/a.glb?v=1', 'https://x/art/b.webp', 'https://x/room/basis/t.wasm?v=2'] }]]);
+      expect(post).not.toHaveBeenCalled();
+      if (controller) continue;
+      // (ready: the worker active, the page not claimed yet; a file asked for in between, past the worker, is listed)
+      entries.push({ name: 'https://x/room/fx/dust.glb?v=3' });
+      claim();
+      await tick();
+      expect(post.mock.calls).toEqual([[{ k: 'warm', urls: ['https://x/room/a.glb?v=1', 'https://x/art/b.webp', 'https://x/room/fx/dust.glb?v=3', 'https://x/room/basis/t.wasm?v=2'] }]]);
     }
+    // one on its way at the claim (listed only after it): told, alone, when the timings are cleared
+    entries.push({ name: 'https://x/room/tex/p.ktx2p?e=1' });
     expect(performance.clearResourceTimings).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(30_000);
+    expect(posts[1].mock.calls.at(-1)).toEqual([{ k: 'warm', urls: ['https://x/room/tex/p.ktx2p?e=1'] }]);
+    expect(posts[0]).not.toHaveBeenCalled();
     // (raised for the first launch, then back to the default with the used entries cleared, past perf.boot's watch)
     expect(vi.mocked(performance.setResourceTimingBufferSize).mock.calls).toEqual([[1000], [250]]);
     expect(performance.clearResourceTimings).toHaveBeenCalledTimes(1);
+  });
+
+  it('a first launch whose claim never comes is told anyway, CLAIM_WAIT_MS on', async () => {
+    vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: () => [{ name: 'https://x/room/a.glb?v=1' }] });
+    const m = await fresh(), post = vi.fn();
+    m.releaseWorker();
+    m.registerLate(true, { ...container(), ready: Promise.resolve({ active: { postMessage: post } }), controller: null, addEventListener: () => {} } as unknown as ServiceWorkerContainer);
+    await vi.advanceTimersByTimeAsync(9_999);
+    expect(post).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(post.mock.calls).toEqual([[{ k: 'warm', urls: ['https://x/room/a.glb?v=1'] }]]);
   });
 
   it('no service workers (a private window, an old browser): nothing', async () => {
