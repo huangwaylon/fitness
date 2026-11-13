@@ -36,6 +36,8 @@ const probe = (page: Page) => page.evaluate(() => (window as unknown as { __push
 test('nothing asks, subscribes or calls /push/ but 保養所’s 通知 switch, and only on its tap', async ({ page, context }) => {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  // ボット opens on ジム in a new session; this phone was on 保養所 earlier in it (as its.spec seeds)
+  await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'its'));
   await rec.pair(context, 'A');
   const pushCalls: string[] = [];
   page.on('request', (r) => r.url().includes('/push/') && pushCalls.push(new URL(r.url()).origin + new URL(r.url()).pathname));
