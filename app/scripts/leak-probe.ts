@@ -11,10 +11,11 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる, as うめ), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
+// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (the 畑 sheet over a seeded field), walls (もようがえ's
+// catalogue tried in the room; TABS='[["wall",8],["floor",8],["rugs",4]]'), foodkeep (ごはん searched, closed: base, searched, closed, +65 s, hidden). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
-// FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
+// FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor, and the detached DOM nodes counted; --path=<name>: the retainer
 // paths of the first PATHS nodes so named (=<name>: exactly) new since the first snapshot. Read handles: the probe never keeps one (a JSHandle holds what it points at).
 import { chromium, webkit, devices, type CDPSession } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
@@ -141,6 +142,8 @@ async function snapshot(): Promise<Map<string, [number, number]>> {
   const idi = f.indexOf('id');
   if (!seenIds) { seenIds = new Set(); for (let i = 0; i < s.nodes.length; i += nf) seenIds.add(s.nodes[i + idi]); }
   const out = new Map<string, [number, number]>();
+  const di = f.indexOf('detachedness');
+  if (di >= 0) { let dn = 0; for (let i = 0; i < s.nodes.length; i += nf) if (s.nodes[i + di] === 2) dn++; console.log('detached nodes', dn); }
   for (let i = 0; i < s.nodes.length; i += nf) {
     const t = types[s.nodes[i + ti]];
     const tn = `[${t}]`, to = out.get(tn) ?? [0, 0];
@@ -298,7 +301,9 @@ if (flow in INFO || flow === 'info') {
 const SIM = flow === 'sim' || flow === 'days';
 if (SIM) await page.clock.install({ time: Date.now() });
 // the demo's events (as a catch writes them): sell's pocket; hours' and curator's museum full (every fish and bug found)
-const seeds: [string, object][] = flow === 'sell' ? [['tally', { date: '2026-11-04', counts: { 'fish:sea-bass': 999 } }]]
+const FIELD: [string, object] = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-10x4' }];
+const seeds: [string, object][] = flow === 'farm' ? [FIELD, ['tally', { date: '2026-11-04', counts: { 'fish:koi': 3 } }], ['sell', { species: 'fish:koi', n: 3, v: 600 }], ['buy_starts', { crop: 'tomato', n: 20, v: 280 }], ['farm', { d: '2026-11-01', ops: Array.from({ length: 20 }, (_, k) => ({ o: 'plant', p: `fd:field-A.${k % 10}.${Math.floor(k / 10)}`, c: 'tomato', src: 'start' })) }]]
+  : flow === 'sell' ? [['tally', { date: '2026-11-04', counts: { 'fish:sea-bass': 999 } }]]
   : flow === 'hours' || flow === 'curator' || flow === 'rebuild' ? [...FISH_IDS.map((id) => ['find', { kind: 'fish', id }] as [string, object]), ...BUG_IDS.map((id) => ['find', { kind: 'bug', id }] as [string, object])] : [];
 if (seeds.length) await page.addInitScript((list) => {
   if (localStorage.getItem('island-demo.events')) return;
@@ -328,6 +333,7 @@ const idleRafs: number[] = [];
 if (flow === 'dressrace') await page.route(/\/room\/player\/(mesh|tex)\//, async (r) => { await new Promise((ok) => setTimeout(ok, 600)); await r.continue(); });
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
 let aborts = 0;
+let wallTurn = 0;
 const cycle = async () => {
   if (flow === 'abort') {
     // the island's mount cut short: to the shop, back to the island and away again 30-250 ms into its mount, then back
@@ -541,12 +547,12 @@ const cycle = async () => {
     // (うる: the twins' choice box, then its list: e2e/shop.spec.ts openList)
     if (!(await page.evaluate(() => location.pathname.includes('shop')))) {
       await nav(`${PATH}/shop${Q}`); await sel('[data-shop]'); await until('!!window.__shop');
-      await page.evaluate('window.__shop.talk()'); await page.locator('[data-shop-choice="sell"]').click();
+      await page.evaluate('window.__shop.talk()'); await page.locator('[data-shop-tab="sell"]').click();
       await sel('[data-shop-pocket] [data-shop-catch]'); await page.waitForTimeout(1500);
     }
     for (let k = 0; k < 5; k++) {
       const n0 = await page.locator('[data-shop]').getAttribute('data-shells');
-      await page.locator('[data-shop-catch="fish:sea-bass"]').click();
+      await page.locator('[data-shop-more]').first().click();
       await page.locator('[data-shop-sell]').click();
       await until(`document.querySelector('[data-shop]').dataset.shells !== ${JSON.stringify(n0)}`);
       await page.waitForTimeout(400);
@@ -563,6 +569,55 @@ const cycle = async () => {
     await INFO[flow]();
   } else if (flow === 'info') {
     for (const f of Object.values(INFO)) await f();
+  } else if (flow === 'buy') {
+    if (!(await page.evaluate(() => location.pathname.includes('shop')))) { await nav(`${PATH}/shop${Q}`); await sel('[data-shop]'); await until('!!window.__shop'); await page.waitForTimeout(1500); }
+    await page.evaluate('window.__shop.talk()'); await page.locator('[data-shop-tab="buy"]').click(); await sel('[data-shop-panel="buy"]'); await page.waitForTimeout(600);
+    for (let k = 0; k < 12; k++) { await page.evaluate(() => document.querySelectorAll('[data-shop-panel] *').forEach((e) => { if (e.scrollHeight > e.clientHeight + 50 && getComputedStyle(e).overflowY !== 'visible') e.scrollTop += 600; })); await page.waitForTimeout(250); }
+    console.log('imgs', await page.evaluate(() => document.querySelectorAll('[data-shop-panel] img').length));
+    await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('[data-shop-panel]').count()) await page.keyboard.press('Escape');
+    await page.waitForTimeout(800);
+  } else if (flow === 'foodkeep') {
+    // (each search timed from the tab's tap to the first result, at CPU=n× slowdown, default 4: a mid phone's guess)
+    const search = async (label: string) => {
+      await cdp?.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.CPU ?? 4) });
+      const t0 = Date.now();
+      await kenkou('food'); await page.locator('dialog[open] [data-add=s]').click(); await page.locator('dialog[open] [data-food-q]').fill('サラダチキン');
+      await page.waitForFunction(() => document.querySelectorAll('dialog[open] [data-food-results] [data-brand]').length > 0, null, { timeout: 20_000, polling: 16 });
+      console.log(`${label}: tap → results ${Date.now() - t0} ms`);
+      await cdp?.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    };
+    await measure('base');
+    await search('first'); await measure('searched'); await closeAll(); await page.waitForTimeout(3000); await measure('closed (visible)');
+    await search('reopened at +3 s'); await closeAll();
+    await page.waitForTimeout(65_000); await measure('closed +65 s'); // dbHold.ts FOOD_KEEP_MS
+    await search('reopened after the release'); await closeAll();
+    await vis('hidden'); await page.waitForTimeout(500); await vis('visible'); await page.waitForTimeout(1500);
+  } else if (flow === 'farm') {
+    await page.locator('[data-farm-open]').click(); await page.waitForTimeout(400);
+    if (await page.locator('[data-farm-field]').isVisible().catch(() => false)) await page.locator('[data-farm-field]').click();
+    await sel('[data-farm-sheet]'); await page.waitForTimeout(1200);
+    await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+    if (await page.locator('dialog[open]').count()) await closeAll();
+    await page.waitForTimeout(800);
+  } else if (flow === 'walls') {
+    // the catalogue: 8 wallpapers, 8 floors, 4 rugs tried a cycle (new ones each cycle), measured in the room
+    if (!(await page.evaluate(() => location.pathname.includes('tent')))) {
+      await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
+      await nav(`${PATH}/tent${Q}`); await tentUp(); await page.locator('[data-tent-edit-open]').click(); await page.waitForTimeout(800);
+    }
+    for (const [tab, n] of (process.env.TABS ? JSON.parse(process.env.TABS) : [['wall', 8], ['floor', 8], ['rugs', 4]]) as [string, number][]) {
+      await page.locator(`[data-tab="${tab}"]`).click(); await page.waitForTimeout(300);
+      const items = page.locator('[data-tent-items] [data-tent-item]');
+      const tot = await items.count();
+      for (let k = 0; k < n; k++) {
+        const it = items.nth((wallTurn * n + k) % tot); await it.scrollIntoViewIfNeeded(); await it.click();
+        await until('window.__tent.loading() === 0', 20_000).catch(() => {});
+      }
+      if (await page.locator('[data-act="cancel"]').count()) await page.locator('[data-act="cancel"]').click();
+    }
+    wallTurn++;
+    await page.waitForTimeout(800);
+    console.log('blob URLs', await page.evaluate('__blobs()'));
   } else if (flow === 'all') {
     for (const k of ['shop', 'tent', 'home', 'museum']) {
       const [p, up] = ROOMS[k];
