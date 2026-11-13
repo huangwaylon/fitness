@@ -6,7 +6,7 @@
 // - KV: `kalori` the file (its metadata `{v}`), `kalori:v` its version (scripts/kalori-put.sh writes both). The ETag is
 //   the version: a revalidation reads the version key only, never the 9 MB value.
 // - `Cache-Control: private, no-cache`: a phone keeps it and asks again with If-None-Match; no shared cache keeps it.
-import { originAllowed } from './auth.ts';
+import { bearerOf, corsOf, preflight } from './auth.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 
 export const KALORI_KEY = 'kalori';
@@ -32,16 +32,12 @@ function matches(inm: string | null, etag: string): boolean {
 }
 
 export async function foodRoute(req: Request, env: FoodEnv): Promise<Response> {
-  const origin = req.headers.get('Origin');
-  if (origin && !originAllowed(origin, env.allowed)) return new Response('forbidden', { status: 403 });
-  const cors: Record<string, string> = origin ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : {};
+  const cors = corsOf(req.headers.get('Origin'), env.allowed);
+  if (!cors) return new Response('forbidden', { status: 403 });
   const err = (error: string, status: number) => Response.json({ ok: false, error }, { status, headers: { ...cors, 'Cache-Control': 'no-store' } });
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Max-Age': '86400' } });
-  }
+  if (req.method === 'OPTIONS') return preflight(cors, 'GET', 'Authorization, If-None-Match');
   if (req.method !== 'GET') return new Response('method not allowed', { status: 405, headers: { ...cors, Allow: 'GET' } });
-  const auth = req.headers.get('Authorization') ?? '';
-  const role = env.roleOf(auth.startsWith('Bearer ') ? auth.slice(7).trim() : '');
+  const role = env.roleOf(bearerOf(req));
   if (!role) return err('unauthorized', 401);
   if (role === 'G') return err('forbidden', 403);
   const v = env.kv ? await env.kv.get(KALORI_V, 'text') : null;

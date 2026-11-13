@@ -7,7 +7,7 @@
 // - **Nothing kept:** the audio and its text are never written anywhere (no Durable Object, R2, KV, log or console);
 //   they live for the request only. The log's `stt` event carries sizes, the time, the model and the outcome.
 // - The recogniser is never given the sentence the user was asked to say (no `initial_prompt`).
-import { originAllowed } from './auth.ts';
+import { bearerOf, corsOf, preflight } from './auth.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 
@@ -75,18 +75,14 @@ function heard(out: unknown): { text: string; words?: { w: string; t0: number; t
 }
 
 export async function sttRoute(req: Request, env: SttEnv): Promise<Response> {
-  const origin = req.headers.get('Origin');
-  if (origin && !originAllowed(origin, env.allowed)) return new Response('forbidden', { status: 403 });
-  const headers: Record<string, string> = { 'Cache-Control': 'no-store', ...(origin ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : {}) };
+  const cors = corsOf(req.headers.get('Origin'), env.allowed);
+  if (!cors) return new Response('forbidden', { status: 403 });
+  const headers: Record<string, string> = { 'Cache-Control': 'no-store', ...cors };
   const json = (o: object, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '86400' } });
-  }
+  if (req.method === 'OPTIONS') return preflight(headers, 'POST', 'Authorization, Content-Type');
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
   if (env.off || !env.ai) return json({ ok: false, error: 'off' }, 503);
-  const auth = req.headers.get('Authorization') ?? '';
-  const key = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-  const role = env.roleOf(key);
+  const role = env.roleOf(bearerOf(req));
   if (!role) return json({ ok: false, error: 'unauthorized' }, 401);
   const t0 = env.now();
   // only a person's calls are logged (a stranger's flood never spends the log's requests)

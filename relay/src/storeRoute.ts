@@ -10,7 +10,7 @@
 // Each `/api` request is timed here (the wall time of the record's answer: in a Worker the clock moves only across
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
-import { corsOf, keyOwner, type Keys } from './auth.ts';
+import { corsOf, keyOwner, preflight, type Keys } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, sigShaped, verifyNotify } from './notify.ts';
 import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
 import { errName } from './log.ts';
@@ -66,9 +66,7 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   const json = (body: string, rid?: string | null) => new Response(body, {
     headers: { ...headers, 'Content-Type': 'application/json', ...(rid ? { 'X-Request-Id': rid, ...(cors['Access-Control-Allow-Origin'] ? { 'Access-Control-Expose-Headers': 'X-Request-Id' } : {}) } : {}) }
   });
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' } });
-  }
+  if (req.method === 'OPTIONS') return preflight(headers, 'POST', 'Content-Type');
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
   const t0 = Date.now();
   const bare = (st: string, inB: number, exc?: string): ReqMeta => ({ action: 'other', st, role: null, rid: null, sid: null, inB, outB: 0, ...(exc ? { exc } : {}) });

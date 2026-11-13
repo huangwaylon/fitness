@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { keyOwner, originAllowed } from '../src/auth.ts';
+import { bearerOf, corsOf, keyOwner, originAllowed, preflight, tokenOk } from '../src/auth.ts';
 import { sameKey } from '../../app/src/lib/contract/ticket.ts';
 import { Bucket } from '../src/bucket.ts';
 
@@ -52,5 +52,28 @@ describe('rate limit', () => {
     let later = 0;
     for (let i = 0; i < 100; i++) if (b.take(10_000)) later++;
     expect(later).toBe(20); // refills to the burst, no more
+  });
+});
+
+describe('the HTTP helpers', () => {
+  const T = 'f0'.repeat(20);
+  it('preflight: 204 with the route\'s CORS, methods and headers, cached a day', () => {
+    const r = preflight(corsOf('https://example.test', 'https://example.test')!, 'GET', 'Authorization');
+    expect([r.status, ...['Access-Control-Allow-Origin', 'Vary', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers', 'Access-Control-Max-Age'].map((h) => r.headers.get(h))])
+      .toEqual([204, 'https://example.test', 'Origin', 'GET', 'Authorization', '86400']);
+  });
+
+  it('bearerOf: the token of a Bearer header, else empty', () => {
+    const req = (h?: string) => new Request('https://r/x', h ? { headers: { Authorization: h } } : {});
+    expect([req(`Bearer ${T} `), req(T), req('Basic x'), req()].map(bearerOf)).toEqual([T, '', '', '']);
+  });
+
+  it('tokenOk: the secret exactly (trimmed), never an unset or empty one', async () => {
+    expect(await tokenOk(T, ` ${T}\n`)).toBe(true);
+    expect(await tokenOk(T.slice(1), T)).toBe(false);
+    expect(await tokenOk(`${T}0`, T)).toBe(false);
+    expect(await tokenOk('', '')).toBe(false);
+    expect(await tokenOk(T, undefined)).toBe(false);
+    expect(await tokenOk(T, '  ')).toBe(false);
   });
 });

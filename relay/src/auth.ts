@@ -44,6 +44,30 @@ export function corsOf(origin: string | null, allowed: string): Record<string, s
   return originAllowed(origin, allowed) ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : null;
 }
 
+/** A CORS preflight's answer (204): `headers` (corsOf's, and any the route adds) with the methods and request
+ *  headers allowed, cached a day. */
+export function preflight(headers: Record<string, string>, methods: string, allow: string): Response {
+  return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Methods': methods, 'Access-Control-Allow-Headers': allow, 'Access-Control-Max-Age': '86400' } });
+}
+
+/** The token of a request's `Authorization: Bearer <token>` ('' without one). */
+export function bearerOf(req: Request): string {
+  const auth = req.headers.get('Authorization') ?? '';
+  return auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+}
+
+/** Whether `token` is the service token `secret` (a Worker secret: unset or empty matches nothing), in constant time:
+ *  their SHA-256 digests compared, so of equal length whatever the input. */
+export async function tokenOk(token: string, secret: string | undefined): Promise<boolean> {
+  const want = secret?.trim();
+  if (!want || !token) return false;
+  const digest = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
+  const [a, b] = await Promise.all([digest(token), digest(want)]);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
 /** The header the Worker tells the room whose ticket a socket came with (never a client's: always set or removed here). */
 export const TICKET_HEADER = 'X-Island-Ticket';
 
