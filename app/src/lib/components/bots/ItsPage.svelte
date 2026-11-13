@@ -29,9 +29,9 @@
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
   import { fetchStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows, footLine,
-    hotelGroups, hotelNote, hotelRows, legacy, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
-    toInput, toggleSearch, toggleStar, verdictView, needsAttention, STRIP_MIN, type Draft, type HotelRow
+    PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, eventLines, factRows, footLine,
+    hotelGroups, hotelHint, hotelNote, hotelRows, legacy, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
+    stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, needsAttention, STRIP_MIN, type Draft, type HotelRow
   } from '#lib/its/view.ts';
   import { setBadge } from './open.svelte.ts';
 
@@ -156,7 +156,9 @@
   const bookings = $derived(status ? bookingRows(status, today, nowMs) : []);
   const events = $derived(status ? eventLines(status, today) : []);
   const hotels = $derived<HotelRow[]>(shown && status ? hotelRows(shown, status.seen, status.settings) : []);
-  const dates = $derived(shown ? dateRows(shown, nowMs, hotels, status?.bookings) : []);
+  /** The runner reporting stops at a booked night and keeps to the allow-list (an older one doesn't: said neither). */
+  const stops = $derived(!!status && stopsAtBooked(status));
+  const dates = $derived(shown ? dateRows(shown, nowMs, hotels, status?.bookings, stops) : []);
   const months = $derived(dateMonths(dates));
   const bounds = $derived(dateBounds(nowMs));
   const groups = $derived(openHotels ? hotelGroups(hotels, filter) : []);
@@ -169,7 +171,7 @@
   const noDates = $derived(!!status && !status.settings.dates.some((d) => daysUntil(d, nowMs) >= 0));
   const control = $derived(status && controlLine(status, name, today));
   const saved = $derived(status && savedLine(status, name, today));
-  const migrating = $derived(!!status && legacy(status.settings));
+  const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 (a Worker that keeps the reads; else hidden), by Tokyo minute; the minute picked (its line), or null. */
   const scans = $derived(status?.recentScans);
   const cells = $derived(scans ? scanCells(scans, status!.now) : []);
@@ -450,7 +452,7 @@
 
     <section class="sec" aria-labelledby="its-hotels">
       <h3 id="its-hotels" class="sec-label">{t('its.sec.hotels')}</h3>
-      <p class="hint"><Phrases text={t('its.hotel.hint')} /></p>
+      <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
       {#each fresh as r (r.key)}
         <div class="card fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
@@ -474,7 +476,7 @@
                 <div class="ghead">
                   <h4 id="its-g-{g.id}">{g.label}<small>{t('its.group.count', { on: g.on, n: hotels.filter((r) => r.group === g.id).length })}</small></h4>
                   <button type="button" class="gbtn" data-its-group-on data-sfx="tick" aria-label={t('its.group.allOnLabel', { group: g.label })}
-                    onclick={() => edit((d) => setSearch(d, g.rows.map((r) => r.name), true))}>{t('its.group.allOn')}</button>
+                    onclick={() => edit((d) => setSearch(d, g.rows.filter((r) => !delisted(r)).map((r) => r.name), true))}>{t('its.group.allOn')}</button>
                   <button type="button" class="gbtn" data-its-group-off data-sfx="tick" aria-label={t('its.group.allOffLabel', { group: g.label })}
                     onclick={() => edit((d) => setSearch(d, g.rows.map((r) => r.name), false))}>{t('its.group.allOff')}</button>
                 </div>

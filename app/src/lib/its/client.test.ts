@@ -105,25 +105,46 @@ describe('the calls', () => {
 
     key.value = null;
     expect(await fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'no_key' });
-    expect(fetch).toHaveBeenCalledTimes(5);   // the offline one tried once without its id too
+    expect(fetch).toHaveBeenCalledTimes(4);   // the offline POST sent once: never twice (its reply may be what was lost)
   });
 
-  it('sends an X-Request-Id; a Worker whose preflight refuses it is asked again without, and not sent it again', async () => {
-    fetch.mockResolvedValueOnce(answer(200, example.status));
-    await fetchStatus(undefined, URL);
-    const rid = (fetch.mock.calls[0][1]?.headers as Record<string, string>)['X-Request-Id'];
-    expect(rid).toMatch(/^[0-9a-f]{8}$/);
-    // an older Worker: the CORS preflight fails the call carrying the header (a TypeError), the plain one goes through
-    fetch.mockImplementation(async (_, init) => {
-      if ((init?.headers as Record<string, string>)['X-Request-Id']) throw new TypeError('Load failed');
-      return answer(200, example.status);
-    });
-    expect((await fetchStatus(undefined, URL)).ok).toBe(true);
+  /** A session of its own (the header's state is the session's). */
+  const fresh = async () => {
+    vi.resetModules();
+    return import('./client.ts');
+  };
+  const sent = (i: number) => (fetch.mock.calls[i][1]?.headers as Record<string, string>)['X-Request-Id'];
+  /** An older Worker: the CORS preflight fails a call carrying the header (a TypeError), the plain one goes through. */
+  const older = () => fetch.mockImplementation(async (_, init) => {
+    if ((init?.headers as Record<string, string>)['X-Request-Id']) throw new TypeError('Load failed');
+    return answer(200, example.status);
+  });
+
+  it('sends an X-Request-Id; a Worker whose preflight refuses it gets the session’s first read again without, and not the header again', async () => {
+    const c = await fresh();
+    older();
+    expect((await c.fetchStatus(undefined, URL)).ok).toBe(true);
+    expect(sent(0)).toMatch(/^[0-9a-f]{8}$/);
+    expect(sent(1)).toBeUndefined();
+    expect((await c.postRun('stop', undefined, URL)).ok).toBe(true);
     expect(fetch).toHaveBeenCalledTimes(3);
-    expect((await postRun('stop', undefined, URL)).ok).toBe(true);
-    expect(fetch).toHaveBeenCalledTimes(4);
-    expect(fetch.mock.calls[3][1]?.headers).not.toHaveProperty('X-Request-Id');
+    expect(sent(2)).toBeUndefined();
     expect(logged).toEqual([]);
+  });
+
+  it('once an answer came with the header, a failure is never sent again without it; nor a session’s first PUT or POST', async () => {
+    const c = await fresh();
+    fetch.mockResolvedValueOnce(answer(200, example.status));
+    await c.fetchStatus(undefined, URL);
+    expect(sent(0)).toMatch(/^[0-9a-f]{8}$/);
+    fetch.mockRejectedValueOnce(new TypeError('Load failed'));
+    expect(await c.fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'offline' });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    // a new session whose first call is a PUT: a lost reply isn't sent twice
+    const d = await fresh();
+    older();
+    expect(await d.putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'offline' });
+    expect(fetch).toHaveBeenCalledTimes(3);
   });
 
   it('leaving (the abort) is not logged', async () => {

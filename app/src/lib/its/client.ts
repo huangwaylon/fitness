@@ -3,8 +3,9 @@
 // Answers are checked (parseStatus: another version, a proxy's page or garbage is null); a call never throws, and a
 // failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id; never the key).
 // Each call carries an `X-Request-Id` (the Worker logs it as `rid=`); a Worker from before it refuses the header in its
-// CORS preflight, so a call that can't get through with it is tried once without, and the session stops sending it once
-// that worked. No demo mode:
+// CORS preflight, so the session's first read (a GET) that fails the way a refused preflight does (a TypeError, online)
+// is tried once without, and the session stops sending it once that worked; once a call got an answer with it, never
+// (a lost PUT's or POST's reply is never sent twice). No demo mode:
 // ボット has no 保養所 tab there (the e2e mocks the Worker).
 import {
   BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, REASONS, VERDICTS, isDate, isId, isName,
@@ -67,7 +68,10 @@ function parseRunner(x: unknown): ItsStatus['runner'] {
     solves: { ok: num(sv.ok) ?? 0, failed: num(sv.failed) ?? 0, lastOkAt: num(sv.lastOkAt), lastSecs: num(sv.lastSecs), lastSpot: sv.lastSpot === 'centre' || sv.lastSpot === 'left' ? sv.lastSpot : null },
     failuresByStep: fails,
     lastError: err && { at: err.at as number, step: str(err.step) ?? '?', status: num(err.status), cls: str(err.cls) ?? '?' },
-    unsynced: num(x.unsynced) ?? 0, lastSeen: x.lastSeen as number
+    unsynced: num(x.unsynced) ?? 0, lastSeen: x.lastSeen as number,
+    // from a newer runner (absent from an older one: view.ts stopsAtBooked)
+    ...('settingsAt' in x ? { settingsAt: num(x.settingsAt) } : {}),
+    ...('mailOk' in x ? { mailOk: typeof x.mailOk === 'boolean' ? x.mailOk : null } : {})
   };
 }
 
@@ -111,13 +115,13 @@ const code = (x: unknown): string => (typeof x === 'string' && /^[a-z_]{1,32}$/.
 
 /** A request's id: 8 hex digits, the Worker's log and the phone's (`its.fail`) say the same. */
 const newRid = (): string => Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, '0')).join('');
-/** Sent until a Worker without it in its CORS allow-list showed it can't be (this session). */
-let sendRid = true;
+/** The header this session: `try` until an answer came with it (`yes`) or a read got through only without (`no`). */
+let rid: 'try' | 'yes' | 'no' = 'try';
 
 async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: unknown, signal: AbortSignal | undefined, url: string): Promise<ItsReply> {
   const key = getKey();
   if (!key || !url) return { ok: false, err: 'no_key', http: null, status: null };
-  const rid = newRid();
+  const id = newRid();
   const ctl = new AbortController();
   const stop = () => ctl.abort();
   signal?.addEventListener('abort', stop);
@@ -126,19 +130,20 @@ async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: 
   const t0 = performance.now();
   const send = (withRid: boolean) => fetch(`${url}${path}`, {
     method, signal: ctl.signal, cache: 'no-store',
-    headers: { Authorization: `Bearer ${key}`, ...(withRid ? { 'X-Request-Id': rid } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+    headers: { Authorization: `Bearer ${key}`, ...(withRid ? { 'X-Request-Id': id } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) })
   });
   let r: ItsReply;
   try {
     let res: Response;
     try {
-      res = await send(sendRid);
+      res = await send(rid !== 'no');
+      if (rid === 'try') rid = 'yes';
     } catch (e) {
-      if (!sendRid || ctl.signal.aborted) throw e;
-      // the preflight may have refused the header (a Worker from before it): once without
+      // the preflight may have refused the header (a Worker from before it): a read, once without
+      if (rid !== 'try' || method !== 'GET' || ctl.signal.aborted || !(e instanceof TypeError) || navigator.onLine === false) throw e;
       res = await send(false);
-      sendRid = false;
+      rid = 'no';
     }
     let json: unknown = null;
     try {
@@ -148,20 +153,20 @@ async function call(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: 
     }
     if (res.ok) {
       const s = parseStatus(json);
-      r = s ? { ok: true, status: s } : { ok: false, err: 'json', http: res.status, status: null, rid };
+      r = s ? { ok: true, status: s } : { ok: false, err: 'json', http: res.status, status: null, rid: id };
     } else {
       const o = isObj(json) ? json : {};
-      r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json), rid };
+      r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json), rid: id };
     }
   } catch {
-    r = { ok: false, err: timedOut ? 'timeout' : 'offline', http: null, status: null, rid };
+    r = { ok: false, err: timedOut ? 'timeout' : 'offline', http: null, status: null, rid: id };
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', stop);
   }
   // leaving the page (its abort) is no failure
   if (!r.ok && !signal?.aborted) {
-    log('its.fail', { op, err: r.err, rid, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
+    log('its.fail', { op, err: r.err, rid: id, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
   }
   return r;
 }

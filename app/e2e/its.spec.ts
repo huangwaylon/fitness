@@ -402,7 +402,9 @@ test('the allow-list: groups with 全部探す / 全部除外, presets, the name
   await far.locator('[data-its-group-off]').click();
   await expect(far.locator('[role="switch"][aria-checked="true"]')).toHaveCount(0);
   await far.locator('[data-its-group-on]').click();
-  await expect(far.locator('[role="switch"][aria-checked="false"]')).toHaveCount(0);
+  // (never the one on no roster: only its own switch turns it on)
+  await expect(far.locator('[role="switch"][aria-checked="false"]')).toHaveCount(1);
+  await expect(far.locator('[data-its-hotel="ホテルハーヴェスト　スキージャム勝山"] [role="switch"]')).toHaveAttribute('aria-checked', 'false');
   // 関東だけ: only 関東 on, the chip pressed; ★ NAGU (関東) stays
   await search.locator('[data-its-preset="kanto"]').click();
   await expect(search.locator('[data-its-preset="kanto"]')).toHaveAttribute('aria-pressed', 'true');
@@ -438,6 +440,19 @@ test('a Worker without the allow-list: the page derives it, says new facilities 
   expect(body.search).not.toContain('ゆふいん山水館');
 });
 
+test('an older runner (no settingsAt, no reads): the page claims neither the allow-list nor the stop at a booked night', async ({ page, context }) => {
+  const { sheet, its } = await phone(page, context, 'A', undefined, {
+    legacy: true,
+    edit: ({ recentScans: _, ...s }) => ({ ...s, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
+  });
+  await open(sheet);
+  await expect(its.locator('[data-its-verdict]')).toBeVisible();
+  await expect(its.locator('[data-its-migrate]')).toHaveCount(0);
+  await expect(its.locator('[data-its-date="2026-11-21"] small')).toHaveText(/^あと\d+日 · 予約済み$/);
+  // 自動で確定 off: nothing is applied for by the bot
+  await expect(its.locator('[data-its-hotel-hint]')).toHaveText('空きが出た施設は★の施設から順にすべて仮押さえします。申込はメールから行ってください。');
+});
+
 test('the stays: まとめて追加 (a period’s weekdays, the preview), by month, what can take each, 予約済み', async ({ page, context }) => {
   const { sheet: bots, its } = await phone(page, context, 'A', undefined, {
     edit: (s) => ({ ...s, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
@@ -450,7 +465,8 @@ test('the stays: まとめて追加 (a period’s weekdays, the preview), by mon
   await expect(able).toHaveText(/^探せる施設 \d+件$/);
   await able.click();
   await expect(able).toHaveAttribute('aria-expanded', 'true');
-  await expect(its.locator('[data-its-able-list]')).toContainText('NAGU 勝浦');
+  await expect(its.locator('[data-its-able-list]')).toContainText('日光千姫物語');
+  await expect(its.locator('[data-its-able-list]')).not.toContainText('NAGU 勝浦');   // 夏季・冬季: not in November
 
   const opener = its.locator('[data-its-bulk-open]');
   await opener.click();

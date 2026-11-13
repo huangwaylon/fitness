@@ -8,9 +8,9 @@ import { parseSettingsInput, type ItsStatus, type ScanEntry } from './contract.t
 import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, type Region, type RosterHotel } from './roster.ts';
 import {
-  addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, duration, errorText, eventLines, factRows,
-  footLine, hotelGroups, hotelNote, hotelRows, legacy, needsAttention, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError, savedLine, setSearch, toInput,
-  toggleSearch, toggleStar, verdictView, weekday, scanCells, scanSummary, scanTicks, type Draft
+  addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
+  footLine, hotelGroups, hotelHint, hotelNote, hotelRows, legacy, needOf, needsAttention, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError, savedLine, setSearch,
+  stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, scanCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -122,20 +122,23 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     ]);
   });
 
-  it('counts the searched facilities that can take a stay: its cutoff, 夏季 up to 9/30, the new ones D−4, none on no roster', () => {
+  it('counts the searched facilities that can take a stay: its cutoff, 夏季 up to 9/30, 冬季 12/1 to 3/31, 夏季・冬季 not between, the new ones D−4, none on no roster', () => {
     const R = (name: string, kind: RosterHotel['kind'], cutoff: 4 | 10 | null): RosterHotel => ({ name, region: 'kanto', kind, cutoff, verified: true });
-    const roster = [R('四日', 'year', 4), R('十日', 'year', 10), R('夏', 'summer', 4), R('冬と夏', 'both', 4), R('契約なし', null, null)];
-    const d = draft({ search: roster.map((r) => r.name).concat('新顔'), skip: [], priority: [], dates: ['2026-11-15', '2026-11-20', '2026-11-30', '2027-09-30', '2027-10-01'] });
+    const roster = [R('四日', 'year', 4), R('十日', 'year', 10), R('夏', 'summer', 4), R('冬', 'winter', 4), R('冬と夏', 'both', 4), R('契約なし', null, null)];
+    const d = draft({ search: roster.map((r) => r.name).concat('新顔'), skip: [], priority: [], dates: ['2026-11-15', '2026-11-20', '2026-11-30', '2026-12-01', '2027-03-31', '2027-04-01', '2027-09-30', '2027-10-01'] });
     const rows = hotelRows(d, ['新顔'], null, roster);
     expect(dateRows(d, NOW, rows).map((r) => [r.date, r.able])).toEqual([
       ['2026-11-15', []],
-      ['2026-11-20', ['四日', '冬と夏', '新顔']],
-      ['2026-11-30', ['四日', '十日', '冬と夏', '新顔']],
+      ['2026-11-20', ['四日', '新顔']],
+      ['2026-11-30', ['四日', '十日', '新顔']],
+      ['2026-12-01', ['四日', '十日', '冬', '冬と夏', '新顔']],
+      ['2027-03-31', ['四日', '十日', '夏', '冬', '冬と夏', '新顔']],
+      ['2027-04-01', ['四日', '十日', '夏', '冬と夏', '新顔']],
       ['2027-09-30', ['四日', '十日', '夏', '冬と夏', '新顔']],
-      ['2027-10-01', ['四日', '十日', '冬と夏', '新顔']]
+      ['2027-10-01', ['四日', '十日', '新顔']]
     ]);
     // only the searched
-    expect(dateRows(setSearch(d, ['四日'], false), NOW, hotelRows(setSearch(d, ['四日'], false), ['新顔'], null, roster))[1].able).toEqual(['冬と夏', '新顔']);
+    expect(dateRows(setSearch(d, ['四日'], false), NOW, hotelRows(setSearch(d, ['四日'], false), ['新顔'], null, roster))[3].able).toEqual(['十日', '冬', '冬と夏', '新顔']);
   });
 
   it('a stay with a 予約確定 says it is booked and no longer searched', () => {
@@ -144,6 +147,24 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     expect(rows.map((r) => [r.date, r.note, r.text, r.able.length > 0])).toEqual([
       ['2026-11-21', 'booked', 'あと8日 · 予約済み・探していません', false], ['2026-11-22', 'd4', 'あと9日 · 4日前までの施設のみ', true]
     ]);
+    // a runner from before (it keeps looking): only 予約済み
+    expect(dateRows(draft(), NOW, hotelRows(draft(), []), [b], false)[0].text).toBe('あと8日 · 予約済み');
+  });
+
+  it('claims what the runner does only for one that does it (its report has settingsAt, or it sent its reads)', () => {
+    const { settingsAt: _, ...older } = { ...STATUS.runner!, settingsAt: 1 };
+    expect(stopsAtBooked(status({ runner: older, recentScans: [] }))).toBe(false);
+    expect(stopsAtBooked(status({ runner: older, recentScans: undefined }))).toBe(false);
+    expect(stopsAtBooked(status({ runner: null, recentScans: undefined }))).toBe(false);
+    expect(stopsAtBooked(status({ runner: { ...older, settingsAt: null }, recentScans: [] }))).toBe(true);
+    expect(stopsAtBooked(status({ runner: older }))).toBe(STATUS.recentScans!.length > 0);
+    expect(parseStatus({ ...example.status, runner: { ...example.status.runner, settingsAt: 5 } })!.runner!.settingsAt).toBe(5);
+    expect(parseStatus(example.status)!.runner).not.toHaveProperty('settingsAt');
+    // 施設's line: 申込 only with 自動で確定, a booked night only from a runner that stops
+    expect(hotelHint(true, true)).toBe('空きが出た施設はすべて仮押さえします。★の施設から順に申込し、予約が確定した日はそれ以上探しません。');
+    expect(hotelHint(true, false)).toBe('空きが出た施設はすべて仮押さえします。★の施設から順に申込します。');
+    expect(hotelHint(false, true)).toBe('空きが出た施設は★の施設から順にすべて仮押さえします。申込はメールから行ってください。');
+    expect(hotelHint(false, false)).not.toContain('申込し');
   });
 });
 
@@ -246,8 +267,11 @@ describe('hotelRows', () => {
     expect(on(applyPreset(base, rows(base), 'near'))).toEqual(['NAGU 勝浦', 'リソルの森', 'トスラブ箱根ビオーレ', '熱海後楽園ホテル']);
     expect(on(applyPreset(base, rows(base), 'direct'))).toEqual(['トスラブ箱根ビオーレ']);
     const all = applyPreset(kanto, rows(kanto), 'all');
-    expect(rows(all).every((r) => r.search)).toBe(true);
+    // 全部: every row but the one on no roster (スキージャム勝山), which only its own switch turns on
+    expect(rows(all).filter((r) => !r.search).map((r) => r.name)).toEqual(['スキージャム勝山']);
+    expect(rows(all).filter(delisted).map((r) => r.name)).toEqual(['スキージャム勝山']);
     expect(presetOf(rows(all))).toBe('all');
+    expect(presetOf(rows(setSearch(all, ['スキージャム勝山'], true)))).toBeNull();
     expect(presetOf(rows(setSearch(all, ['リソルの森'], false)))).toBeNull();
     expect(parseSettingsInput(toInput(kanto, null, NOW), NOW).ok).toBe(true);
   });
@@ -292,6 +316,8 @@ describe('the roster', () => {
     expect([of('トスラブ箱根ビオーレ'), of('ホテルハーヴェスト那須'), of('日光千姫物語')]).toEqual(['kanto', 'kanto', 'kanto']);
     expect([of('熱海後楽園ホテル'), of('ラビスタ富士河口湖'), of('ホテルハーヴェスト旧軽井沢'), of('ホテルハーヴェスト伊東')]).toEqual(['near', 'near', 'near', 'near']);
     expect([of('ホテル日航アリビラ'), of('定山渓 ゆらく草庵'), of('ゆふいん山水館')]).toEqual(['far', 'far', 'far']);
+    // the user's moves (2026-11-13)
+    expect([of('スパリゾートハワイアンズ モノリスタワー'), of('蓼科東急ホテル'), of('ホテルハーヴェスト斑尾'), of('ホテルハーヴェスト浜名湖'), of('NASPAニューオータニ')]).toEqual(['far', 'far', 'far', 'near', 'near']);
   });
 });
 
@@ -374,6 +400,30 @@ describe('bookingRows', () => {
     expect(bookingRows(s, TODAY).map((r) => [r.state, r.detail])).toEqual([['action', '申込が完了しませんでした。サイトで確認してください'], ['applying', '13:10']]);
     expect(bookingRows(status({ ...s, now: t0 + 86_400_000 }), TODAY).map((r) => r.state)).toEqual(['applying', 'hold']);
   });
+  it('a second hold on a night 予約確定 elsewhere, once lapsed, is quiet: 期限切れ, nothing to do', () => {
+    const t0 = STATUS.now;
+    const s = status({ bookings: [b('confirmed', t0 - 1000, { hotel: 'リソルの森', number: 'A1' }), ...STATUS.bookings] });
+    // still live: the hold's own row, as loud as ever
+    expect(bookingRows(s, TODAY).map((r) => [r.hotel, r.state])).toEqual([['NAGU 勝浦', 'action'], ['リソルの森', 'confirmed']]);
+    const later = bookingRows(s, TODAY, t0 + 16 * 60_000);
+    expect(later.map((r) => [r.hotel, r.state, r.label, r.detail, r.left, r.steps])).toEqual([
+      ['リソルの森', 'confirmed', '予約確定', '申込受付番号 A1', null, []], ['NAGU 勝浦', 'lapsed', '期限切れ', '確定済みの日・期限切れ', null, []]
+    ]);
+    expect(rowBadge(status({ ...s, now: t0 + 16 * 60_000 })).word).not.toBe('要対応');
+    // a night with no 予約確定: still 期限切れ on its 要対応 row
+    expect(bookingRows(STATUS, TODAY, t0 + 16 * 60_000)[0]).toMatchObject({ state: 'action', left: '期限切れ' });
+  });
+  it('words every human_needed code (a newer runner’s, an older one’s 「leg_…」 or 「code: detail」), else サイトで確認', () => {
+    expect(['submit_unknown', 'leg_submit_unknown', 'unmapped: 事業所名', 'not_wanted: the date was removed', 'leg_timeout', 'confirming_unacked', 'leg_bogus', '', 'x'].map(needOf))
+      .toEqual(['submit_unknown', 'submit_unknown', 'unmapped', 'not_wanted', 'leg_timeout', 'confirming_unacked', 'other', 'other', 'other']);
+    const need = (detail: string) => bookingRows(status({ events: [{ ...STATUS.events[0], detail }] }), TODAY)[0];
+    expect(need('submit_unknown').detail).toBe('申込済みの可能性：メールとサイトで確認');
+    // one not applied for: finish it by mail before it lapses
+    expect(need('lease_stale')).toMatchObject({ detail: '実行が途切れたため申込していません。メールから申込してください', left: 'あと15分ごろで無効' });
+    expect(need('lease_stale').steps).toHaveLength(3);
+    // one that may have been filed: no mail steps
+    expect(need('no_completion').steps).toEqual([]);
+  });
 });
 
 describe('eventLines', () => {
@@ -385,6 +435,9 @@ describe('eventLines', () => {
     const many = status({ events: Array.from({ length: 15 }, (_, i) => ({ runId: 'r', seq: 15 - i, t: STATUS.now - i, kind: 'run_end' as const, detail: 'time_up' })) });
     expect(eventLines(many, TODAY)).toHaveLength(10);
     expect(eventLines(many, TODAY)[0].info).toBe('時間切れ');
+    // the mailbox's failures and the record's, worded
+    const err = (detail: string) => eventLines(status({ events: [{ runId: 'r', seq: 1, t: STATUS.now, kind: 'error', detail }] }), TODAY)[0].info;
+    expect([err('imap_auth_failed'), err('imap_timeouterror'), err('record_full'), err('something')]).toEqual(['メールの確認 · ログインできず', 'メールの確認 · 時間切れ', '記録がいっぱい', 'something']);
   });
 });
 
@@ -438,6 +491,8 @@ describe('the words', () => {
     expect(e('solve', 'chrome_TimeoutException')).toBe('認証 · ブラウザの不具合');
     expect(e('step9_final', 'no_completion')).toBe('仮押さえ · 完了画面が出ず');
     expect(e('imap', 'web_login_required')).toBe('メールの確認 · ウェブでのログインが必要');
+    expect([e('imap', 'no_credentials'), e('imap', 'login_rejected'), e('imap', 'gaierror'), e('imap', 'sslerror'), e('bookings', 'bad_booking')])
+      .toEqual(['メールの確認 · メールの設定なし', 'メールの確認 · ログインできず', 'メールの確認 · 接続できず', 'メールの確認 · 暗号化の失敗', '予約の記録 · 記録の形式違い']);
     expect(e('thread', 'KeyError')).toBe('thread · KeyError');
   });
 });

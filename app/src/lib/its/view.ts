@@ -7,7 +7,7 @@ import {
   AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanEntry, type Verdict
 } from './contract.ts';
-import { D4, ROSTER, SUMMER_LAST, type Region, type RosterHotel } from '#lib/its/roster.ts';
+import { D4, ROSTER, SUMMER_LAST, WINTER_FIRST, WINTER_LAST, type Region, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
 import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
@@ -112,26 +112,31 @@ export const addDates = (d: Draft, dates: readonly string[], now: number): Draft
   ({ ...d, dates: [...new Set([...d.dates.filter((x) => daysUntil(x, now) >= 0), ...dates])].sort() });
 
 /** A facility can take a stay: searched, on a roster (or new: the site offered it), the stay at least its cutoff away
- *  (D4 for one the roster doesn't know), a 夏季-only one up to SUMMER_LAST. */
+ *  (D4 for one the roster doesn't know), in its season: 夏季 up to SUMMER_LAST, 冬季 from WINTER_FIRST to WINTER_LAST,
+ *  夏季・冬季 either (not the gap between). */
 function canTake(r: HotelRow, date: string, days: number): boolean {
   if (!r.search) return false;
   if (r.roster && r.roster.kind === null) return false;
   if (days < (r.roster?.cutoff ?? D4)) return false;
-  return r.roster?.kind !== 'summer' || date.slice(5) <= SUMMER_LAST;
+  const md = date.slice(5), summer = md <= SUMMER_LAST, winter = md >= WINTER_FIRST || md <= WINTER_LAST;
+  const kind = r.roster?.kind;
+  return kind === 'summer' ? summer : kind === 'winter' ? winter : kind === 'both' ? summer || winter : true;
 }
 
 /** A stay's note: 自動で確定 (on, and AUTO_CONFIRM_MIN_DAYS+ away), only the D−4 facilities (under 10 days), past
- *  every cutoff (under 4), or none; 予約済み once one is 予約確定 (the runner stops looking for it). A stay already past
- *  in Tokyo isn't listed (保存 drops it: toInput). `able`: the searched facilities that can take it. */
+ *  every cutoff (under 4), or none; 予約済み once one is 予約確定 (「探していません」 only when `stops`: the runner
+ *  reporting is one that stops looking for it, stopsAtBooked). A stay already past in Tokyo isn't listed (保存 drops it:
+ *  toInput). `able`: the searched facilities that can take it. */
 type DateNote = 'auto' | 'd4' | 'late' | 'booked' | null;
 export interface DateRow { date: string; label: string; days: number; note: DateNote; text: string; able: string[] }
-export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = [], bookings: readonly BookingEntry[] = []): DateRow[] {
+export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = [], bookings: readonly BookingEntry[] = [], stops = true): DateRow[] {
   const booked = new Set(bookings.filter((b) => b.kind === 'confirmed').map((b) => b.date));
   return [...new Set(d.dates)].sort().map((date) => ({ date, days: daysUntil(date, now) })).filter((r) => r.days >= 0).map(({ date, days }) => {
     const note: DateNote = booked.has(date) ? 'booked' : days < 4 ? 'late' : days < 10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
     const left = days === 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
     const able = note === 'booked' ? [] : hotels.filter((h) => canTake(h, date, days)).map((h) => h.name);
-    return { date, label: formatDate(date), days, note, text: note ? `${left} · ${t(`its.date.note.${note}`)}` : left, able };
+    const said = note === 'booked' && !stops ? 'bookedOnly' : note;
+    return { date, label: formatDate(date), days, note, text: said ? `${left} · ${t(`its.date.note.${said}`)}` : left, able };
   });
 }
 
@@ -233,11 +238,14 @@ export function setSearch(d: Draft, names_: readonly string[], on: boolean): Dra
 }
 export const toggleSearch = (d: Draft, r: Pick<HotelRow, 'name' | 'search'>): Draft => setSearch(d, [r.name], !r.search);
 
-/** The presets: 関東だけ, 近郊まで (関東 and 近郊), 直営だけ, 全部 (every row, the new ones too). */
+/** The presets: 関東だけ, 近郊まで (関東 and 近郊), 直営だけ, 全部 (every row, the new ones too, never a delisted one). */
 export type Preset = 'kanto' | 'near' | 'direct' | 'all';
 export const PRESETS: readonly Preset[] = ['kanto', 'near', 'direct', 'all'];
+/** On no roster any more (スキージャム勝山: kept so a re-contract can't book it unseen): no preset or 全部探す turns it on,
+ *  only its own switch. */
+export const delisted = (r: HotelRow): boolean => !!r.roster && r.roster.kind === null;
 const inPreset = (p: Preset, r: HotelRow): boolean =>
-  p === 'all' || (!!r.roster?.kind && (p === 'direct' ? r.roster.kind === 'direct' : r.group === 'kanto' || (p === 'near' && r.group === 'near')));
+  !delisted(r) && (p === 'all' || (!!r.roster?.kind && (p === 'direct' ? r.roster.kind === 'direct' : r.group === 'kanto' || (p === 'near' && r.group === 'near'))));
 
 /** A preset applied: its facilities searched, every other listed one off. */
 export function applyPreset(d: Draft, rows: readonly HotelRow[], p: Preset): Draft {
@@ -292,6 +300,16 @@ export function rowBadge(s: ItsStatus): { tone: Tone; word: string } {
   return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`) };
 }
 
+/** The runner reporting is one that applies the allow-list and stops at a booked night (its report carries
+ *  settingsAt, or it sent its reads: the round-2 runner); an older one searched every facility not skipped and kept on
+ *  after a 予約確定, so the page claims neither for it. */
+export const stopsAtBooked = (s: ItsStatus): boolean => (!!s.runner && s.runner.settingsAt !== undefined) || (s.recentScans?.length ?? 0) > 0;
+
+/** 施設's line: what happens to a room (held; applied for, ★ first, with 自動で確定; else from the mail), and, from a
+ *  runner that does, that a booked night is searched no more. */
+export const hotelHint = (autoConfirm: boolean, stops: boolean): string =>
+  t(!autoConfirm ? 'its.hotel.hintMail' : stops ? 'its.hotel.hint' : 'its.hotel.hintAuto');
+
 /** ボット's dot (the menu's pill, the 保養所 tab): a hold waiting for a person (要対応), 不調 or 遅れ. */
 export const needsAttention = (s: ItsStatus): boolean => rowBadge(s).tone === 'bad' || s.verdict === 'late';
 
@@ -328,13 +346,23 @@ const at = (ms: number | null, today: string): string => formatSyncTime(ms === n
 
 const STEPS = ['calendar', 'scan', 'empty_create', 'solve', 'imap', 'worker', 'bookings', 'hold'];
 const CLASSES = ['timeout', 'transport', 'session_dead', 'ban', 'no_token', 'unsolved', 'no_calendar', 'record_full', 'id_conflict', 'auth_failed',
-  'web_login_required', 'submit_unknown', 'no_completion', 'hold_expired', 'room_taken'];
+  'web_login_required', 'submit_unknown', 'no_completion', 'hold_expired', 'room_taken', 'bad_booking', 'no_credentials', 'ssl'];
+/** The mailbox's failures as the runner names them (its exception's class lower-cased, an older runner's
+ *  login_rejected): the class they are. */
+const CLASS_OF: Record<string, string> = {
+  login_rejected: 'auth_failed', timeouterror: 'timeout', sockettimeout: 'timeout', gaierror: 'transport', oserror: 'transport',
+  connectionrefusederror: 'transport', connectionreseterror: 'transport', connectionabortederror: 'transport', sslerror: 'ssl', sslcertverificationerror: 'ssl'
+};
+/** An error class or outcome code in words (時間切れ, サイトの応答 503), else as it is. */
+function clsText(code: string): string {
+  const cls = CLASS_OF[code] ?? code;
+  const http = /^http_(\d{3})$/.exec(cls);
+  return http ? t('its.cls.http', { n: http[1] }) : CLASSES.includes(cls) ? t(`its.cls.${cls}`) : cls.startsWith('chrome_') ? t('its.cls.chrome') : code;
+}
 /** The last error in words: 「空室の確認 · 時間切れ」 (a code the page doesn't know stays as it is). */
 export function errorText(e: LastError): string {
   const step = e.step.startsWith('calendar_') ? 'calendar' : /^step\d/.test(e.step) ? 'hold' : e.step;
-  const http = /^http_(\d{3})$/.exec(e.cls);
-  const what = http ? t('its.cls.http', { n: http[1] }) : CLASSES.includes(e.cls) ? t(`its.cls.${e.cls}`) : e.cls.startsWith('chrome_') ? t('its.cls.chrome') : e.cls;
-  return [STEPS.includes(step) ? t(`its.step.${step}`) : e.step, what].join(' · ');
+  return [STEPS.includes(step) ? t(`its.step.${step}`) : e.step, clsText(e.cls)].join(' · ');
 }
 
 export interface Fact { id: string; label: string; value: string; href?: string; more?: boolean }
@@ -366,11 +394,19 @@ export function factRows(s: ItsStatus, today: string): Fact[] {
 }
 
 // ---- Bookings ----
-type BookingState = 'action' | 'applying' | 'hold' | 'confirmed';
-const STATE_ORDER: Record<BookingState, number> = { action: 0, applying: 1, hold: 2, confirmed: 3 };
-const NEEDS = ['near_date', 'auto_off', 'no_mail', 'leg_failed', 'bookings_unsynced'];
-/** Why a person must finish the mail's 申込 (the runner held it but won't apply). */
-const BY_MAIL = ['near_date', 'auto_off'];
+type BookingState = 'action' | 'applying' | 'hold' | 'confirmed' | 'lapsed';
+const STATE_ORDER: Record<BookingState, number> = { action: 0, applying: 1, hold: 2, confirmed: 3, lapsed: 4 };
+const NEEDS = ['near_date', 'auto_off', 'no_mail', 'leg_failed', 'bookings_unsynced', 'submit_unknown', 'no_completion', 'hold_expired', 'room_taken',
+  'leg_timeout', 'unmapped', 'id_conflict', 'bad_booking', 'not_wanted', 'lease_stale', 'confirming_unacked', 'leg_error', 'queue_failed', 'run_ended'];
+/** Why a person must finish the mail's 申込 (the runner held it but didn't apply). */
+const BY_MAIL = ['near_date', 'auto_off', 'not_wanted', 'lease_stale', 'confirming_unacked', 'unmapped', 'queue_failed', 'run_ended'];
+/** A human_needed detail as the page words it: the code (an older runner's 「unmapped: 事業所名」 or 「leg_room_taken」
+ *  read as its code), `other` when unknown. */
+export function needOf(detail: string): string {
+  const head = detail.split(':')[0].trim();
+  const code = NEEDS.includes(head) ? head : head.startsWith('leg_') && NEEDS.includes(head.slice(4)) ? head.slice(4) : head;
+  return NEEDS.includes(code) ? code : 'other';
+}
 const DAY_MS = 86_400_000;
 
 export interface BookingRow {
@@ -384,7 +420,9 @@ export interface BookingRow {
 
 /** 要対応 · 申込中 · 仮押さえ · 予約確定, one row a stay and facility still ahead: 要対応 for a failed leg or a
  *  human_needed event newer than any 予約確定 for it within the last 24 h (with why), else its furthest step. A hold
- *  not yet applied for shows its deadline (its `at` + HOLD_SEC), and a 要対応 one to finish by mail, the steps. */
+ *  not yet applied for shows its deadline (its `at` + HOLD_SEC), and a 要対応 one to finish by mail, the steps. A
+ *  second hold on a night already 予約確定 elsewhere, once lapsed, is quiet: 期限切れ (「確定済みの日・期限切れ」),
+ *  nothing to do. */
 export function bookingRows(s: ItsStatus, today: string, now: number = s.now): BookingRow[] {
   const pairs = new Map<string, { date: string; hotel: string; entries: BookingEntry[]; need: ItsEvent | null }>();
   const pair = (date: string, hotel: string) => {
@@ -399,6 +437,7 @@ export function bookingRows(s: ItsStatus, today: string, now: number = s.now): B
     const p = pair(e.date, e.hotel);
     if (!p.need || e.t > p.need.t) p.need = e;
   }
+  const confirmedNights = new Set(s.bookings.filter((b) => b.kind === 'confirmed').map((b) => b.date));
   const rows: BookingRow[] = [];
   for (const [key, p] of pairs) {
     const latest = (k: BookingEntry['kind']) => p.entries.filter((b) => b.kind === k).reduce<BookingEntry | null>((m, b) => (m && m.at >= b.at ? m : b), null);
@@ -408,8 +447,8 @@ export function bookingRows(s: ItsStatus, today: string, now: number = s.now): B
     let state: BookingState, detail: string, why = '';
     if (needAt > -Infinity) {
       state = 'action';
-      why = p.need && p.need.t === needAt ? p.need.detail ?? '' : 'leg_failed';
-      detail = t(`its.need.${NEEDS.includes(why) ? why : 'other'}`);
+      why = p.need && p.need.t === needAt ? needOf(p.need.detail ?? '') : 'leg_failed';
+      detail = t(`its.need.${why}`);
     } else if (done) {
       state = 'confirmed';
       detail = done.number ? t('its.booking.number', { number: done.number }) : at(done.at, today);
@@ -424,6 +463,10 @@ export function bookingRows(s: ItsStatus, today: string, now: number = s.now): B
     const open = hold && !done && !(applying && applying.at >= hold.at) && !(failed && failed.at >= hold.at) && (state === 'hold' || BY_MAIL.includes(why));
     const end = open ? hold.at + HOLD_SEC * 1000 : null;
     const expired = end !== null && now >= end;
+    if (expired && !done && confirmedNights.has(p.date)) {
+      rows.push({ key, state: 'lapsed', date: p.date, hotel: p.hotel, label: t('its.booking.lapsed'), detail: t('its.booking.lapsedNight'), left: null, expired: true, steps: [] });
+      continue;
+    }
     const left = end === null ? null : expired ? t('its.hold.expired') : t('its.hold.left', { n: Math.max(1, Math.ceil((end - now) / 60_000)) });
     const steps = state === 'action' && end !== null && !expired
       ? [t('its.hold.mail', { hotel: p.hotel }), t('its.hold.free'), ...(daysUntil(p.date, now) < 10 ? [t('its.hold.paid')] : [])]
@@ -485,7 +528,9 @@ export function eventLines(s: ItsStatus, today: string): { key: string; time: st
   return s.events.slice(0, EVENTS_SHOWN).map((e) => {
     const d = e.detail ?? '';
     const why = e.kind === 'run_start' || e.kind === 'run_end' ? (RUN_DETAILS.includes(d) ? t(`its.run.${d}`) : d)
-      : e.kind === 'human_needed' ? t(`its.need.${NEEDS.includes(d) ? d : 'other'}`)
+      : e.kind === 'human_needed' ? t(`its.need.${needOf(d)}`)
+      : e.kind === 'error' && d.startsWith('imap_') ? `${t('its.step.imap')} · ${clsText(d.slice(5))}`
+      : e.kind === 'error' && CLASSES.includes(d) ? clsText(d)
       : e.kind === 'confirmed' && d ? t('its.booking.number', { number: d }) : d;
     const info = [e.date ? formatDate(e.date) : '', e.hotel ?? '', why].filter(Boolean).join(' · ');
     return { key: `${e.runId}:${e.seq}`, time: at(e.t, today), what: t(`its.ev.${e.kind}`), info, bad: ['ban', 'error', 'human_needed', 'solve_failed', 'prev_unclean'].includes(e.kind) };
