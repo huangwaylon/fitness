@@ -35,7 +35,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   // (保養所 the tab last shown on this phone: ジム is the first opening's)
-  await context.addInitScript(() => localStorage.setItem('island.botsTab', 'its'));
+  await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'its'));
   await rec.pair(context, who);
   const calls: Call[] = [];
   const first = (opts.edit ?? ((s) => s))(payload(rec.now(), opts.legacy));

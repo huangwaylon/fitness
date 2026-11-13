@@ -143,7 +143,7 @@ newer kind. The decrypted message is the contract's `ItsPushPayload` (≤ 3000 b
 unique: re-subscribing refreshes it, another member's moves; 4 per member, a fifth replaces the least recently
 refreshed; not refreshed in 30 days: dropped; the page refreshes weekly), `/its/push/unsubscribe {endpoint}` (the
 caller's own only; ok either way), `/its/push/test {endpoint}` (the caller's own only, else 404 `not_subscribed`; sent
-at once, the outcome in `push.lastOutcome`; 1 per 30 s and 20 a Tokyo day per endpoint, else 429 `rate_limited`).
+at once, the outcome in `push.lastOutcome`; 1 per 5 s per endpoint (`PUSH_TEST_EVERY_SEC`), no daily cap, else 429 `rate_limited`; the page's button counts the 5 s down).
 Refusals: 400 `bad_push_endpoint` / `bad_push_keys` / `bad_push_lang`, 503 `push_off` (no VAPID key).
 `ItsStatus.push`: `{A, B, vapidPublic, lastSentAt, lastOutcome: {at, kind, code, status, reason?}}`: counts and codes,
 never an endpoint (a capability URL) or its hash; `vapidPublic` is the key the page subscribes with.

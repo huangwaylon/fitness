@@ -186,8 +186,8 @@ export const DEVICE = {
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone',
-  /** localStorage: `its` | `gym`: the ボット tab last shown on this phone (the next opening's; ジム by default:
-   *  components/bots/BotsSheet.svelte). */
+  /** sessionStorage: `its` | `gym`: the ボット tab last shown in this app session (the next opening's; ジム, the leftmost,
+   *  after the app was closed: components/bots/BotsSheet.svelte). */
   botsTab: 'island.botsTab',
   /** localStorage: `{ on, endpoint, key, lang, at }`: 保養所's 通知 on this phone (lib/its/push.ts; off by default): on
    *  once the its-bot Worker took the subscription, what it was given (the endpoint, the VAPID key, the language) and

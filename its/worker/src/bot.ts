@@ -4,7 +4,7 @@
 // of the keys it changed. The Worker calls it by RPC (index.ts) with bodies already checked; the rules are rules.ts.
 import { DurableObject } from 'cloudflare:workers';
 import {
-  DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC, PUSH_TESTS_PER_DAY, tokyoToday,
+  DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC, tokyoToday,
   type BookingInput, type ClaimInput, type ClaimReply, type ItsEvent, type ItsHealth, type ItsPushStatus, type ItsSettingsInput, type ItsStatus, type Member,
   type PushEndpointInput, type PushOutcome, type PushReply, type PushSubscribeInput, type RunInput, type RunnerConfig, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
@@ -258,7 +258,7 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   /** POST /its/push/test: one notification to the caller's own subscription, sent now (the outcome in the answer's
-   *  lastOutcome); PUSH_TEST_EVERY_SEC apart, PUSH_TESTS_PER_DAY a Tokyo day. */
+   *  lastOutcome); PUSH_TEST_EVERY_SEC apart (no daily cap; `n` still counts a Tokyo day's tests, for the log). */
   async testPush(input: PushEndpointInput, by: Member, rid?: string): Promise<PushAnswer> {
     const now = Date.now();
     const vapid = this.vapid;
@@ -268,7 +268,7 @@ export class ItsBot extends DurableObject<Env> {
     if (!sub) return { ok: false, status: 404, error: 'not_subscribed' };
     const day = tokyoToday(now);
     const t = sub.tests?.day === day ? sub.tests : { day, n: 0, last: sub.tests?.last ?? 0 };
-    if (now - t.last < PUSH_TEST_EVERY_SEC * 1000 || t.n >= PUSH_TESTS_PER_DAY) {
+    if (now - t.last < PUSH_TEST_EVERY_SEC * 1000) {
       console.warn(`its push test refused rate_limited by=${by} ep=${ep.slice(0, 6)} today=${t.n}${ridOf(rid)}`);
       return { ok: false, status: 429, error: 'rate_limited' };
     }

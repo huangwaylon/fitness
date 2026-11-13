@@ -48,7 +48,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
     });
   });
   // (ジム the tab last shown on this phone)
-  await context.addInitScript(() => localStorage.setItem('island.botsTab', 'gym'));
+  await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'gym'));
   await page.goto('');
   await islandUp(page);
   if (who === 'A') await fromMenu(page, 'bots');

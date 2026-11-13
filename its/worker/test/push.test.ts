@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
 import {
-  HOLD_SEC, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TESTS_PER_DAY, PUSH_TEST_EVERY_SEC,
+  HOLD_SEC, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TEST_EVERY_SEC,
   type BookingEntry, type BookingInput, type EventInput, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus,
 } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
@@ -495,20 +495,18 @@ describe('POST /its/push/test', () => {
     expect(service.delivered).toHaveLength(1);
   });
 
-  it(`one per ${PUSH_TEST_EVERY_SEC} s, ${PUSH_TESTS_PER_DAY} a Tokyo day, per endpoint (429)`, async () => {
+  it(`one per ${PUSH_TEST_EVERY_SEC} s per endpoint (429), no daily cap`, async () => {
+    const gap = PUSH_TEST_EVERY_SEC * 1000;
     expect((await post('/its/push/test', { endpoint: phones[0].endpoint })).status).toBe(200);
-    vi.setSystemTime(NOW + 29_000);
+    vi.setSystemTime(NOW + gap - 1000);
     const r = await post('/its/push/test', { endpoint: phones[0].endpoint });
     expect([r.status, (await read(r)).error]).toEqual([429, 'rate_limited']);
     expect((await post('/its/push/test', { endpoint: phones[1].endpoint }, KEY_B)).status).toBe(200);   // another endpoint
-    for (let i = 1; i < PUSH_TESTS_PER_DAY; i++) {
-      vi.setSystemTime(NOW + i * 30_000);
+    // 40 in a row, each a gap apart: all sent (no daily cap)
+    for (let i = 1; i <= 40; i++) {
+      vi.setSystemTime(NOW + i * gap);
       expect((await post('/its/push/test', { endpoint: phones[0].endpoint })).status, String(i)).toBe(200);
     }
-    vi.setSystemTime(NOW + PUSH_TESTS_PER_DAY * 30_000);
-    expect((await post('/its/push/test', { endpoint: phones[0].endpoint })).status).toBe(429);
-    vi.setSystemTime(Date.UTC(2026, 10, 13, 15, 0));   // 00:00 in Tokyo: a new day
-    expect((await post('/its/push/test', { endpoint: phones[0].endpoint })).status).toBe(200);
     expect(allLogs()).toContain('its push test refused rate_limited by=A');
   });
 });

@@ -3,14 +3,14 @@
   // default. A tap asks the notification permission first (in the tap), then subscribes and hands it to the Worker;
   // on only once the Worker took it. Where it can't work, one line says why (an iPhone's Safari tab: add it to the Home
   // Screen; notifications refused: the Settings app; an unsupported browser; a Worker without push yet: 準備中). On:
-  // テスト通知 (the Worker's rate: 「30秒ほど待ってからもう一度」). A note: Focus and Sleep can hold a notification back, and
+  // テスト通知 (waits PUSH_TEST_EVERY_SEC after each test, counting down on the button: the Worker's rate). A note: Focus and Sleep can hold a notification back, and
   // the site's mail still comes. Opening the tab with the Worker's push read keeps the subscription fresh (refreshPush)
   // and clears the app's badge. Members only (ボット has no 保養所 for the guest or in demo mode).
   import { untrack } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { t, i18n } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import type { ItsPushStatus } from '#lib/its/contract.ts';
+  import { PUSH_TEST_EVERY_SEC, type ItsPushStatus } from '#lib/its/contract.ts';
   import { disablePush, enablePush, pushOn, pushSupport, refreshPush, testPush, type EnableResult, type TestResult } from '#lib/its/push.ts';
 
   /** The Worker's push status (absent: a Worker without push; its key null: push off there). */
@@ -22,6 +22,15 @@
   let why = $state<EnableResult | null>(null);
   let tested = $state<TestResult | null>(null);
   let testing = $state(false);
+  /** テスト通知 waits PUSH_TEST_EVERY_SEC after each test (the Worker's rate), counting down on the button. */
+  let waitUntil = $state(0);
+  let nowMs = $state(Date.now());
+  const left = $derived(Math.max(0, Math.ceil((waitUntil - nowMs) / 1000)));
+  $effect(() => {
+    if (!left) return;
+    const id = setInterval(() => (nowMs = Date.now()), 250);
+    return () => clearInterval(id);
+  });
   let support = $state(pushSupport());
 
   const vapid = $derived(push?.vapidPublic ?? null);
@@ -73,11 +82,13 @@
   }
 
   async function test() {
-    if (testing) return;
+    if (testing || left) return;
     testing = true;
     tested = null;
     tested = await testPush(vapid, lang());
     testing = false;
+    nowMs = Date.now();
+    waitUntil = nowMs + PUSH_TEST_EVERY_SEC * 1000;
     if (tested !== 'sent') on = pushOn();
   }
 </script>
@@ -92,8 +103,8 @@
   {#if line}<p class="hint" class:bad={line === 'failed' || line === 'denied'} id="its-notify-why" data-its-push-why={line}><Phrases text={t(`its.push.why.${line}`)} /></p>{/if}
   {#if on}
     <div class="test">
-      <button type="button" class="btn small paper" data-its-push-test data-sfx="tick" aria-disabled={testing} onclick={() => void test()}>{t('its.push.test')}</button>
-      {#if tested}<p class="hint" class:bad={tested === 'failed'} role="status" data-its-push-tested={tested}>{t(`its.push.tested.${tested}`)}</p>{/if}
+      <button type="button" class="btn small paper" data-its-push-test data-sfx="tick" aria-disabled={testing || left > 0} data-its-push-wait={left || undefined} onclick={() => void test()}>{left ? t('its.push.testWait', { n: left }) : t('its.push.test')}</button>
+      {#if tested}<p class="hint" class:bad={tested === 'failed'} role="status" data-its-push-tested={tested}>{t(`its.push.tested.${tested}`, { n: PUSH_TEST_EVERY_SEC })}</p>{/if}
     </div>
   {/if}
   <p class="hint" data-its-push-note><Phrases text={t('its.push.note')} /></p>

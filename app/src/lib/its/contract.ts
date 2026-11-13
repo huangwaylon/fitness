@@ -335,10 +335,9 @@ export const PUSH_MAX_ENDPOINT = 512;
 export const PUSH_SUBS_PER_MEMBER = 4;
 /** A subscription not refreshed (subscribe again) for this long is dropped; the page refreshes weekly. @public (its/worker) */
 export const PUSH_KEEP_DAYS = 30;
-/** POST /its/push/test: per endpoint, at most one this often and PUSH_TESTS_PER_DAY a Tokyo day (429 rate_limited). @public (its/worker) */
-export const PUSH_TEST_EVERY_SEC = 30;
-/** @public (its/worker) */
-export const PUSH_TESTS_PER_DAY = 20;
+/** POST /its/push/test: per endpoint, at most one this often (429 rate_limited; no daily cap). The page's button waits
+ *  as long after each test. @public (its/worker) */
+export const PUSH_TEST_EVERY_SEC = 5;
 
 /** `POST /its/push/subscribe`: the browser's PushSubscription (`toJSON()`'s endpoint and keys) and the language its
  *  notifications are written in. The endpoint is unique: one another member subscribed moves to this one. Refused:

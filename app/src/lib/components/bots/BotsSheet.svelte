@@ -2,7 +2,8 @@
   // ボット (docs/design.md "Bots"): the menu's ボット opens it (members only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
   // tabs (a tablist): ジム (GymPage) on the left, 保養所 (ItsPage); with one bot only (demo mode: ジム), no tabs. It opens
-  // on the tab last shown on this phone (DEVICE.botsTab; ジム by default), or the one asked (show(tab): a
+  // on the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the
+  // leftmost; an update's reload keeps it), or the one asked (show(tab): a
   // notification's tap opens 保養所). Only the shown page is mounted: it reads
   // and polls while shown, and the other tab, ✕ or a close unmounts it (nothing polls while closed). A tab's dot: that
   // bot needs a person (open.svelte.ts: the tab not shown is read once as the sheet opens). 保養所's unsaved draft: a
@@ -15,13 +16,13 @@
   import ItsPage from './ItsPage.svelte';
   import GymPage from './GymPage.svelte';
   import { botTabs, botsBadge, botsSheet, readBadge, type BotTab } from './open.svelte.ts';
-  import { DEVICE, localKV } from '#lib/sync/storage.ts';
+  import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
-  const kv = localKV();
+  const kv = sessionKV();
   const tabs = $derived(botTabs());
   let picked = $state<BotTab>(kv?.getItem(DEVICE.botsTab) === 'its' ? 'its' : 'gym');
   /** The tab shown: the one picked, if this phone has it. */

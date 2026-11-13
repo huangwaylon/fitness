@@ -1,6 +1,6 @@
 // ボット (docs/design.md "Bots"): the menu's ボット, a member's only, right above 設定, with a dot while a bot needs a
 // person; its sheet: the bottom tabs (a tablist: ジム left, 保養所 right), each tab's dot, ← → to move between them,
-// the tab remembered on this phone (ジム the first time), only the shown page mounted (it reads while shown, nothing
+// the tab remembered for the app's session (ジム, the leftmost, the first time and after the app was closed), only the shown page mounted (it reads while shown, nothing
 // reads once its tab is left or the sheet is closed), and 保養所's sticky 保存 bar over the tabs. Both Workers mocked (its.ts, a gym
 // status here) at the record's pinned time; the pages' own content is its.spec's and gymbot.spec's, the guest's
 // menu hud-menu.spec's.
@@ -90,7 +90,7 @@ test('the menu’s ボット, right above 設定, dotted while 保養所 needs a
   await expect(tab('gym')).toBeFocused();
 });
 
-test('ジム the first time; the tab shown last opens the next time, after a reload too; the tab left, or the sheet closed, reads no more', async ({ page, context }) => {
+test('ジム the first time; the tab shown last opens the next time, after a reload too, but a new launch opens ジム; the tab left, or the sheet closed, reads no more', async ({ page, context }) => {
   const { calls, sheet, tab } = await phone(page, context, 'healthy');
   await fromMenu(page, 'bots');
   await expect(sheet).toHaveAttribute('data-tab', 'gym');
@@ -119,6 +119,13 @@ test('ジム the first time; the tab shown last opens the next time, after a rel
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await expect(tab('its')).toHaveAttribute('aria-selected', 'true');
   await expect(sheet.locator('[data-its-page]')).toBeVisible();
+  // a new launch (the app swipe-closed and opened again: a new page, its own sessionStorage): ジム, the leftmost
+  const fresh = await context.newPage();
+  await fresh.goto(page.url());
+  await islandUp(fresh);
+  await fromMenu(fresh, 'bots');
+  await expect(fresh.locator('dialog[open] [data-bots]')).toHaveAttribute('data-tab', 'gym');
+  await fresh.close();
 });
 
 test('保養所’s 保存 bar sits over the tabs, not under them; a tab switch with the draft asks first', async ({ page, context }) => {

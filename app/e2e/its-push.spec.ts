@@ -1,6 +1,6 @@
 // ボット → 保養所's 通知 (docs/design.md "Bots"; lib/its/push.ts): off by default; the permission asked only by the switch's
 // tap; the subscription (for the Worker's key from its status) POSTed to /its/push/subscribe; on only once the Worker
-// took it, kept across a reload; off unsubscribes at the Worker and in the browser; テスト通知 (429: 「30秒ほど待ってから
+// took it, kept across a reload; off unsubscribes at the Worker and in the browser; テスト通知 (a 5 s countdown on the button after each test; 429: 「5秒ほど待ってから
 // もう一度」); the lines where it can't work (an iPhone's Safari tab, refused notifications, a Worker without push yet);
 // and a notification's tap: `?open=its` and the service worker's message open ボット on 保養所. The browser's
 // Notification, PushManager and service worker are stubbed (Playwright has no push service), the Worker mocked (its.ts).
@@ -62,7 +62,7 @@ async function phone(page: Page, context: BrowserContext, o: Opts = {}) {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   // (保養所 the tab last shown on this phone: ジム is the first opening's)
-  await context.addInitScript(() => localStorage.setItem('island.botsTab', 'its'));
+  await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'its'));
   await rec.pair(context, 'A');
   await stubPush(context, o);
   const push = o.push === undefined ? (example.statusNewer.push as Status['push']) : o.push;
@@ -121,13 +121,19 @@ test('off by default; only the tap asks; on once the Worker took the subscriptio
   await expect.poll(async () => (await probe(page)).unsubscribed).toBe(1);
 });
 
-test('テスト通知 goes to this phone’s endpoint; the Worker’s rate says 「30秒ほど待ってからもう一度」', async ({ page, context }) => {
+test('テスト通知 goes to this phone’s endpoint, then waits 5 s on the button; the Worker’s rate says 「5秒ほど待ってからもう一度」', async ({ page, context }) => {
   const { calls, open, notify } = await phone(page, context, { test: 429 });
   await open();
   await notify.locator('[role="switch"]').click();
   const btn = notify.locator('[data-its-push-test]');
   await btn.click();
-  await expect(notify.locator('[data-its-push-tested]')).toHaveText('30秒ほど待ってからもう一度');
+  await expect(notify.locator('[data-its-push-tested]')).toHaveText('5秒ほど待ってからもう一度');
+  // the button counts down and can't be tapped meanwhile, then comes back by itself
+  await expect(btn).toHaveAttribute('aria-disabled', 'true');
+  await expect(btn).toHaveText(/テスト通知（あと[1-5]秒）/);
+  await btn.click({ force: true });
+  await expect(btn).toHaveAttribute('aria-disabled', 'false', { timeout: 8000 });
+  await expect(btn).toHaveText('テスト通知');
   expect(calls.filter((c) => c.path === '/its/push/test').map((c) => c.body)).toEqual([{ endpoint: 'https://web.push.apple.com/QE2E' }]);
   const box = (await btn.boundingBox())!;
   expect(box.height).toBeGreaterThanOrEqual(44);
@@ -160,7 +166,7 @@ test('where it can’t work, one line says why: an iPhone’s Safari tab, refuse
 test('a notification’s tap: ?open=its opens ボット on 保養所 (the param let go); the service worker’s message does too', async ({ page, context }) => {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
-  await context.addInitScript(() => localStorage.setItem('island.botsTab', 'gym'));
+  await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'gym'));
   await rec.pair(context, 'A');
   await stubPush(context, {});
   await page.route(`${ORIGIN}/**`, (route) => route.request().method() === 'OPTIONS'
