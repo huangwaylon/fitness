@@ -334,6 +334,7 @@ export default defineConfig({
   },
   // (worker threads, not forked processes: the same isolation per file, a third to almost half less wall time at
   // CI's 4 vCPU, 2026-11-08)
-  // (coverage: `npm run coverage`, scripts/coverage-floors.ts)
-  test: { include: ['src/**/*.test.ts'], pool: 'threads', coverage: { include: ['src/**/*.ts'], reporter: ['json-summary', 'text-summary'] } }
+  // (coverage: `npm run coverage`, scripts/coverage-floors.ts). A timeout catches a hang: 15 s, not vitest's 5, since the
+  // CPU-bound tests (1.5-2.5 s alone: fields, museum visitors, terrain, mic models) passed 5 s on a loaded Mac (2026-11-13).
+  test: { include: ['src/**/*.test.ts'], pool: 'threads', testTimeout: 15_000, coverage: { include: ['src/**/*.ts'], reporter: ['json-summary', 'text-summary'] } }
 });
