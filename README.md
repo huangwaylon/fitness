@@ -86,7 +86,7 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/src/lib/food/`, `sound/` | The food data's loading and search; the music and sounds |
 | `app/src/lib/kikimimi/`, `mic/` | ききみみ: decks, content, the round's rules; the mic (capture, VAD, recognisers, matching) |
 | `app/src/lib/travel/`, `hiking/`, `wedding/` | 旅行's trip guides (`trips/`); 登山's trails and tracks; 結婚式's board settings and progress |
-| `app/src/lib/gym/`, `its/` | ボット's clients: the gym bot's and the ITS booker's pages |
+| `app/src/lib/gym/`, `app/src/lib/its/` | ボット's clients: the gym bot's and the ITS booker's pages |
 | `app/src/lib/offline/` | Map areas saved ahead for offline: their tiles and size |
 | `app/src/lib/time/`, `ui-state/`, `villagers/`, `i18n/`, `styles/` | Clocks and holidays; UI state and test switches; the villager roster; ja/en strings; CSS tokens |
 | `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `farm/`, `wallet/`, `editor/` and `layoutEdit/`, … |
