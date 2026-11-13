@@ -4,13 +4,13 @@
 // tones, the poll's pace, the facts, the bookings that need a person (a hold's deadline) and the recent events.
 import { describe, expect, it } from 'vitest';
 import example from '../../../../its/contract-example.json';
-import { parseSettingsInput, type ItsStatus, type ScanEntry } from './contract.ts';
+import { parseSettingsInput, type ItsStatus, type ScanEntry, type ScanMinute } from './contract.ts';
 import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   footLine, hotelGroups, hotelHint, hotelNote, hotelRows, legacy, needOf, needsAttention, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError, savedLine, setSearch,
-  stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, scanCells, scanSummary, scanTicks, type Draft
+  stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, minuteCells, scanCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -524,5 +524,20 @@ describe('直近1時間', () => {
     expect(cells.at(-2)).toMatchObject({ time: '11:59', text: '11:59 · 1回 · 失敗1' });
     expect(cells.at(-1)).toMatchObject({ time: '12:00', state: 'none' });
     expect(scanCells([], STATUS.now).every((c) => c.state === 'none')).toBe(true);
+  });
+  it('from the Worker’s per-minute aggregate (recentMinutes): the same cells, a minute’s most nights with a room, its codes', () => {
+    const now = at('12:00:30');
+    const m = (time: string, over: Partial<ScanMinute> = {}): ScanMinute => ({ minute: at(time), n: 4, ok: 4, fail: 0, avail: 0, ...over });
+    const cells = minuteCells([m('11:00:00'), m('11:01:00', { avail: 2 }), m('11:30:00', { ok: 1, fail: 3, avail: 1, codes: { timeout: 2, http_503: 1 } }), m('12:00:00', { n: 2, ok: 2 })], now);
+    expect(cells).toHaveLength(60);
+    expect(cells[0]).toMatchObject({ time: '11:01', n: 4, avail: 1, state: 'avail', text: '11:01 · 4回 · 空き2日' });
+    expect(cells[29]).toMatchObject({ time: '11:30', state: 'fail', text: '11:30 · 4回 · 失敗3（timeout・http_503） · 空き1日' });
+    expect(cells[59]).toMatchObject({ time: '12:00', n: 2, state: 'ok' });
+    expect(cells.filter((c) => c.state === 'none')).toHaveLength(57);
+    expect(scanSummary(cells, true)).toBe('直近1時間：確認10回、失敗3回、空きあり2分');
+    // the client reads it, a garbled minute or code left out
+    const s = parseStatus({ ...example.status, recentMinutes: [...example.statusNewer.recentMinutes, { minute: 'x' }, { minute: 1, n: 1, codes: { 'bad code': 1, ok_code: 2 } }] })!;
+    expect(s.recentMinutes).toEqual([...example.statusNewer.recentMinutes, { minute: 1, n: 1, ok: 0, fail: 0, avail: 0, codes: { ok_code: 2 } }]);
+    expect(parseStatus(example.status)).not.toHaveProperty('recentMinutes');
   });
 });

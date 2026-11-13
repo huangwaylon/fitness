@@ -5,7 +5,7 @@
 // that need a person (the hold's deadline, what to do) and the recent events. Pure but for t().
 import {
   AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
-  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanEntry, type Verdict
+  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanEntry, type ScanMinute, type Verdict
 } from './contract.ts';
 import { D4, ROSTER, SUMMER_LAST, WINTER_FIRST, WINTER_LAST, type Region, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -483,11 +483,23 @@ const MIN_MS = 60_000;
 export const STRIP_MIN = 60;
 const hhmm = (ms: number): string => new Date(ms + 9 * 3600_000).toISOString().slice(11, 16);
 
-/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first: each minute's reads, red when any failed, else yellow
- *  when any saw a room, else green; none read (a gap: a solve, between runs) empty. `text`: 「15:32 · 4回 · 失敗1（timeout）」. */
+/** One cell: its state (red when any read failed, else yellow when any saw a room, else green; none read empty) and
+ *  its line 「15:32 · 4回 · 失敗1（timeout） · 空きあり1」 (`dates`: a minute's aggregate says the most nights with a room
+ *  in one read, 「空き2日」, instead of how many reads saw one). */
+function cell(start: number, n: number, fails: number, avail: number, codes: readonly string[], dates?: number): ScanCell {
+  const state: CellState = !n ? 'none' : fails ? 'fail' : avail ? 'avail' : 'ok';
+  const parts = [hhmm(start), n ? t('its.scan.n', { n }) : t('its.scan.none')];
+  if (fails) parts.push(codes.length ? t('its.scan.failsWhy', { n: fails, why: codes.join('・') }) : t('its.scan.fails', { n: fails }));
+  if (avail) parts.push(dates === undefined ? t('its.scan.avail', { n: avail }) : t('its.scan.availDates', { n: dates }));
+  return { t: start, time: hhmm(start), n, fails, avail, state, text: parts.join(' · ') };
+}
+
+/** The strip's first minute: STRIP_MIN Tokyo minutes up to `now`'s (Tokyo is whole hours off UTC: its minutes are UTC's). */
+const stripFirst = (now: number): number => Math.floor(now / MIN_MS) * MIN_MS - (STRIP_MIN - 1) * MIN_MS;
+
+/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first, from the reads one by one (`recentScans`). */
 export function scanCells(scans: readonly ScanEntry[], now: number): ScanCell[] {
-  const last = Math.floor(now / MIN_MS) * MIN_MS;   // Tokyo is whole hours off UTC: its minutes are UTC's
-  const first = last - (STRIP_MIN - 1) * MIN_MS;
+  const first = stripFirst(now);
   const cells = Array.from({ length: STRIP_MIN }, (_, i) => ({ t: first + i * MIN_MS, n: 0, fails: 0, avail: 0, codes: [] as string[] }));
   for (const s of scans) {
     const i = Math.floor((s.t - first) / MIN_MS);
@@ -500,19 +512,24 @@ export function scanCells(scans: readonly ScanEntry[], now: number): ScanCell[] 
       if (s.code && !c.codes.includes(s.code)) c.codes.push(s.code);
     }
   }
-  return cells.map(({ t: start, n, fails, avail, codes }) => {
-    const state: CellState = !n ? 'none' : fails ? 'fail' : avail ? 'avail' : 'ok';
-    const parts = [hhmm(start), n ? t('its.scan.n', { n }) : t('its.scan.none')];
-    if (fails) parts.push(codes.length ? t('its.scan.failsWhy', { n: fails, why: codes.join('・') }) : t('its.scan.fails', { n: fails }));
-    if (avail) parts.push(t('its.scan.avail', { n: avail }));
-    return { t: start, time: hhmm(start), n, fails, avail, state, text: parts.join(' · ') };
+  return cells.map((c) => cell(c.t, c.n, c.fails, c.avail, c.codes));
+}
+
+/** The same strip from the Worker's per-minute aggregate (`recentMinutes`: every read of the hour, however many runs);
+ *  a minute's `avail` counts as one minute with a room. */
+export function minuteCells(minutes: readonly ScanMinute[], now: number): ScanCell[] {
+  const first = stripFirst(now);
+  const by = new Map(minutes.map((m) => [Math.floor(m.minute / MIN_MS) * MIN_MS, m]));
+  return Array.from({ length: STRIP_MIN }, (_, i) => {
+    const start = first + i * MIN_MS, m = by.get(start);
+    return m ? cell(start, m.n, m.fail, m.avail > 0 ? 1 : 0, Object.keys(m.codes ?? {}), m.avail) : cell(start, 0, 0, 0, []);
   });
 }
 
-/** The strip's one line for VoiceOver: 「直近1時間：確認238回、失敗2回、空きあり3回」. */
-export function scanSummary(cells: readonly ScanCell[]): string {
+/** The strip's one line for VoiceOver: 「直近1時間：確認238回、失敗2回、空きあり3回」 (`byMinute`: 「空きあり3分」). */
+export function scanSummary(cells: readonly ScanCell[], byMinute = false): string {
   const sum = (k: 'n' | 'fails' | 'avail') => cells.reduce((a, c) => a + c[k], 0);
-  return t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
+  return t(byMinute ? 'its.scan.summaryMin' : 'its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
 }
 
 /** The ticks under it: each quarter hour (15:00 · 15:15 …), at its cell's index. */

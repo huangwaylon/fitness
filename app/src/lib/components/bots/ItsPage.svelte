@@ -30,7 +30,7 @@
   import { fetchStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, eventLines, factRows, footLine,
-    hotelGroups, hotelHint, hotelNote, hotelRows, legacy, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
+    hotelGroups, hotelHint, hotelNote, hotelRows, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
     stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, needsAttention, STRIP_MIN, type Draft, type HotelRow
   } from '#lib/its/view.ts';
   import { setBadge } from './open.svelte.ts';
@@ -172,9 +172,11 @@
   const control = $derived(status && controlLine(status, name, today));
   const saved = $derived(status && savedLine(status, name, today));
   const migrating = $derived(!!status && stops && legacy(status.settings));
-  /** 直近1時間 (a Worker that keeps the reads; else hidden), by Tokyo minute; the minute picked (its line), or null. */
+  /** 直近1時間 (a Worker that keeps the reads; else hidden), by Tokyo minute (its per-minute aggregate when it sends one,
+   *  else the reads one by one); the minute picked (its line), or null. */
+  const minutes = $derived(status?.recentMinutes);
   const scans = $derived(status?.recentScans);
-  const cells = $derived(scans ? scanCells(scans, status!.now) : []);
+  const cells = $derived(minutes ? minuteCells(minutes, status!.now) : scans ? scanCells(scans, status!.now) : []);
   const ticks = $derived(scanTicks(cells));
   let picked = $state<number | null>(null);
   let strip = $state<HTMLElement>();
@@ -384,7 +386,7 @@
               <span class="legend" aria-hidden="true">{#each ['ok', 'avail', 'fail', 'none'] as k (k)}<span><i class="cell {k}"></i>{t(`its.scan.legend.${k}`)}</span>{/each}</span>
             </div>
             <!-- one labelled group, a tab stop; a tap picks the minute under it, ← → walk them -->
-            <div class="strip" role="toolbar" tabindex="-1" aria-label={scanSummary(cells)} bind:this={strip} onpointerdown={pickAt} onkeydown={stripKey} data-its-strip>
+            <div class="strip" role="toolbar" tabindex="-1" aria-label={scanSummary(cells, !!minutes)} bind:this={strip} onpointerdown={pickAt} onkeydown={stripKey} data-its-strip>
               {#each cells as c, i (c.t)}
                 <button type="button" class="cell {c.state}" class:on={picked === i} tabindex={i === (picked ?? STRIP_MIN - 1) ? 0 : -1} aria-label={c.text}
                   aria-pressed={picked === i} data-its-cell={c.state} data-sfx="none" onclick={() => (picked = i)}></button>

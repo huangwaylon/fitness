@@ -10,7 +10,7 @@
 import {
   BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, REASONS, VERDICTS, isDate, isId, isName,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member,
-  type Reason, type RunInput, type ScanEntry, type Verdict
+  type Reason, type RunInput, type ScanEntry, type ScanMinute, type Verdict
 } from './contract.ts';
 import { getKey } from '#lib/sync/storage.ts';
 import { log } from '#lib/sync/log.ts';
@@ -81,6 +81,14 @@ function parseScan(x: unknown): ScanEntry | null {
   return { t: x.t as number, ok: x.ok, ...(isId(x.code) ? { code: x.code } : {}), ms: num(x.ms) ?? 0, avail: num(x.avail) ?? 0 };
 }
 
+/** One minute of the last hour's reads (`recentMinutes`), or null when garbled. */
+function parseMinute(x: unknown): ScanMinute | null {
+  if (!isObj(x) || num(x.minute) === null || num(x.n) === null) return null;
+  const codes: Record<string, number> = {};
+  if (isObj(x.codes)) for (const [k, v] of Object.entries(x.codes)) if (isId(k) && num(v) !== null) codes[k] = v as number;
+  return { minute: x.minute as number, n: x.n as number, ok: num(x.ok) ?? 0, fail: num(x.fail) ?? 0, avail: num(x.avail) ?? 0, ...(Object.keys(codes).length ? { codes } : {}) };
+}
+
 /** A GET /its/status answer as the page reads it, or null when it isn't one. The verdict, the time and the settings
  *  must be there; a garbled booking, event or reason is left out. */
 export function parseStatus(x: unknown): ItsStatus | null {
@@ -100,7 +108,9 @@ export function parseStatus(x: unknown): ItsStatus | null {
     seen: names(x.seen, MAX_SITE_NAME),
     // from a newer Worker (absent from an older one): the last preflight, the last hour's reads (absent: no strip)
     ...('lastPreflight' in x ? { lastPreflight: num(x.lastPreflight) } : {}),
-    ...(Array.isArray(x.recentScans) ? { recentScans: x.recentScans.map(parseScan).filter((e) => e !== null) } : {})
+    ...(Array.isArray(x.recentScans) ? { recentScans: x.recentScans.map(parseScan).filter((e) => e !== null) } : {}),
+    // the reads per minute (the strip's source when present: every read of the hour)
+    ...(Array.isArray(x.recentMinutes) ? { recentMinutes: x.recentMinutes.map(parseMinute).filter((e) => e !== null) } : {})
   };
 }
 

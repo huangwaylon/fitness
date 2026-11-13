@@ -513,6 +513,26 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour; h
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/ · 確認なし$/);
 });
 
+test('直近1時間 from the Worker’s per-minute aggregate when it sends one (every read of the hour, not the last 300)', async ({ page, context }) => {
+  const { sheet, its } = await phone(page, context, 'A', undefined, {
+    edit: (s) => {
+      const minute = (ago: number) => Math.floor(s.now / 60_000) * 60_000 - ago * 60_000;
+      return {
+        ...s, recentMinutes: [
+          ...Array.from({ length: 40 }, (_, i) => ({ minute: minute(39 - i), n: 8, ok: 8, fail: 0, avail: 0 })),
+          { minute: minute(45), n: 8, ok: 6, fail: 2, avail: 3, codes: { http_503: 2 } }
+        ]
+      };
+    }
+  });
+  await open(sheet);
+  const strip = its.locator('[data-its-strip]');
+  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認328回、失敗2回、空きあり1分');
+  await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(40);
+  await strip.locator('[data-its-cell="fail"]').click();
+  await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8回 · 失敗2（http_503） · 空き3日$/);
+});
+
 test('直近1時間 is hidden from a Worker without it; a Worker whose CORS doesn’t allow X-Request-Id still answers', async ({ page, context }) => {
   const { sheet, its, calls } = await phone(page, context, 'A', undefined, { allow: 'Authorization, Content-Type', edit: ({ recentScans: _, ...s }) => s });
   await open(sheet);
