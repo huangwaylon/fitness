@@ -11,8 +11,11 @@ as before:
 - `apply_settings(s)` installs the Worker's settings by reassigning the module globals the flow reads at call time
   (TARGET_DATES, SKIP_HOTELS/_SKIP_NORM, PRIORITY_HOTELS/_PRIORITY_NORM, RETRY_DELAY, NUM_GUESTS, AUTO_CONFIRM) —
   exactly what test_its's Env does. The confirm gate (`confirm_allowed`) reads the live AUTO_CONFIRM.
-- `_hold_gate()` → `(ok, why)` is asked immediately before step 7 (the hold): the lease, the run's deadline and an
-  unsynced record can refuse a new hold. Nothing else is gated: scanning and the read-only steps go on.
+- `_hold_gate()` → `(ok, why)` (via `hold_allowed()`) is asked before a scan spawns booking threads, before each
+  hotel's steps 3-6, and immediately before step 7 (the hold): the lease, the run's deadline and an unsynced record can
+  refuse a new hold. A closed gate costs no request beyond the scan's own (steps 3-6 every cycle per hotel and date
+  would be the request storm that gets an IP banned). Each check also re-asks `still_wanted(date, hotel)`: a date
+  removed or a hotel skipped in the app mid-chain stops that chain.
 - `notify(kind, **fields)` reports what happened (scan, fail, offered, hold, human_needed, ban, …) to `_event_sink`;
   it never raises into the flow.
 - `scan_and_book_month` takes its dates as a list or a callable, read every cycle, so a date added or removed in the
@@ -24,7 +27,7 @@ import html as _html
 import unicodedata
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, timezone
 
 from config import (
     CALENDAR_URL_CACHE, EMAIL, NUM_GUESTS, TARGET_DATES,
@@ -39,7 +42,29 @@ from config import (
     DEBUG_DUMP_INTERVAL, DEBUG_DUMP_KEEP, SKIP_PAST_DATES,
 )
 
-BASE = 'https://as.its-kenpo.or.jp'
+SITE = 'https://as.its-kenpo.or.jp'
+_LOOPBACK = ('127.0.0.1', 'localhost', '::1')
+
+
+def _base_url(value):
+    """`(base, refused)`: the site, or `ITS_BASE_URL` when it names a loopback server (an integration run against
+    FakeITS). Anything else is refused, never followed: an override pointing somewhere else is a mistake, and the
+    caller exits rather than fall back to the real site (main.py)."""
+    if not value:
+        return SITE, None
+    try:
+        u = urllib.parse.urlsplit(value.strip())
+        host = u.hostname
+    except ValueError:
+        return SITE, value
+    if u.scheme in ('http', 'https') and host in _LOOPBACK and u.path in ('', '/') and not u.query:
+        return value.strip().rstrip('/'), None
+    return SITE, value
+
+
+# The site, or a loopback fake (`ITS_BASE_URL`). BASE_REFUSED is an override that wasn't honoured (main.py logs it, in
+# the private log only, and exits).
+BASE, BASE_REFUSED = _base_url(os.environ.get('ITS_BASE_URL'))
 
 # ANSI colors
 R = '\033[91m'   # red
@@ -69,8 +94,11 @@ def notify(kind, **fields):
         log(f"{R}event sink failed on {kind}: {e!r}{X}")
 
 
-def hold_allowed():
-    """`(ok, why)` from `_hold_gate`, failing closed: an exception there refuses the hold."""
+def hold_allowed(target_date=None, hotel_name=None):
+    """`(ok, why)` from `_hold_gate`, failing closed: an exception there refuses the hold. With a date (and a hotel),
+    `still_wanted` first: the settings may have changed since the scan saw the date."""
+    if target_date is not None and not still_wanted(target_date, hotel_name):
+        return False, 'not_wanted'
     gate = _hold_gate
     if gate is None:
         return True, ''
@@ -78,6 +106,11 @@ def hold_allowed():
         return gate()
     except Exception as e:
         return False, f'hold gate raised {e!r}'
+
+
+def still_wanted(target_date, hotel_name=None):
+    """The date is still a target and the hotel (if given) not skipped, in the settings as they are now."""
+    return target_date in TARGET_DATES and (hotel_name is None or not is_skipped(hotel_name))
 
 
 # The scan interval's floor, whatever the settings say: the ~24 h IP bans come from the poll rate (its/SITE.md §2).
@@ -620,9 +653,13 @@ def _is_session_dead(status, location):
     return status == 302 and _SESSION_DEAD_PATH in (location or '')
 
 
-def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name):
-    """Book a single hotel for a date. Steps 3-9. Returns True on success."""
+def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name, guests=None):
+    """Book a single hotel for a date. Steps 3-9. Returns True on success.
+
+    `guests` is the chain's guest count, read once (`book_all_hotels_for_date`): steps 6 and 7 must send the same one
+    even if the settings change between them."""
     label = f"{target_date}_{hotel_name}"
+    guests = NUM_GUESTS if guests is None else guests
 
     def fail(msg, step, s, body, via=None):
         """Report a step that could not proceed, dump the response, give up."""
@@ -677,7 +714,7 @@ def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name):
         BASE + '/apply/empty_new?s=' + urllib.parse.quote(coma_s, safe=''),
         {'utf8': '\u2713', 'authenticity_token': auth,
          'apply[join_time]': target_date, 'apply[night_count]': '1',
-         'apply[stay_persons]': NUM_GUESTS, 'apply[hope_rooms]': '1'},
+         'apply[stay_persons]': guests, 'apply[hope_rooms]': '1'},
         _ajax(csrf, referer_url))
     if 'service_category' in body:
         return fail('Session expired at room search', 'step6_room_search', s, body)
@@ -691,7 +728,7 @@ def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name):
     # The site then refuses a second application at the same facility, so no code
     # has to track the hold itself. The runner's gate is asked here, as late as it can
     # be: a lease lost or a deadline passed while steps 3-6 ran still refuses.
-    ok, why = hold_allowed()
+    ok, why = hold_allowed(target_date, hotel_name)
     if not ok:
         log(f"{tag}   {Y}Not taking a hold on {hotel_name}: {why}{X}")
         notify('hold_refused', why=why)
@@ -700,7 +737,7 @@ def book_one_hotel(tag, c, target_date, s_param, auth, hotel_id, hotel_name):
     s, body, loc = c('POST', BASE + form_action,
         {'utf8': '\u2713', 'authenticity_token': auth,
          'apply[join_time]': target_date, 'apply[night_count]': '1',
-         'apply[stay_persons]': NUM_GUESTS, 'apply[hope_rooms]': '1',
+         'apply[stay_persons]': guests, 'apply[hope_rooms]': '1',
          'apply_session_guid': guid, f'apply[coma[{room_id}]]': room_id},
         {'Referer': referer_url})
     s, body, via = _follow(c, s, body, loc)
@@ -895,13 +932,14 @@ def book_all_hotels_for_date(target_date, label):
     tag = f"[{label}]"
     booked = []
     attempted = set()
+    guests = NUM_GUESTS   # once per chain (book_one_hotel)
 
     with _booking_in_flight():
         for attempt in range(1, max(1, BOOK_MAX_ATTEMPTS) + 1):
             if attempt > 1:
                 log(f"{tag} {C}retry {attempt}/{BOOK_MAX_ATTEMPTS} on a fresh session{X}")
                 time.sleep(BOOK_RETRY_DELAY)
-            outcome = _book_date_once(target_date, label, tag, booked, attempted)
+            outcome = _book_date_once(target_date, label, tag, booked, attempted, guests)
             if outcome != 'retry':
                 break
         else:
@@ -910,11 +948,13 @@ def book_all_hotels_for_date(target_date, label):
     return target_date, booked
 
 
-def _book_date_once(target_date, label, tag, booked, attempted):
+def _book_date_once(target_date, label, tag, booked, attempted, guests=None):
     """One full pass over a date's hotels. Returns an outcome string.
 
     `booked` is appended to in place and `attempted` records hotels already
     tried, so a retry resumes rather than re-applying for what it already sent.
+    The hold gate is asked before each hotel's requests: closed, the pass ends
+    ('done', no retry) without sending them; a hotel skipped meanwhile is passed over.
     """
     url = _read_cached_url()
     if not url:
@@ -956,6 +996,13 @@ def _book_date_once(target_date, label, tag, booked, attempted):
             f"{', '.join(n for _, n in hotels)}{X}")
 
         for i, (hotel_id, hotel_name) in enumerate(hotels):
+            ok, why = hold_allowed(target_date, hotel_name)
+            if not ok:
+                log(f"{tag} {Y}Not applying for {hotel_name}: {why}{X}")
+                notify('hold_refused', why=why)
+                if why == 'not_wanted' and still_wanted(target_date):
+                    continue   # this hotel was skipped meanwhile; the next may still be wanted
+                return 'done'
             if i > 0:
                 # Fresh session per hotel; report a failure up so the outer loop can
                 # retry the hotels not yet reached.
@@ -971,7 +1018,7 @@ def _book_date_once(target_date, label, tag, booked, attempted):
 
             attempted.add(hotel_name)
             if book_one_hotel(tag, c, target_date, s_param, auth,
-                              hotel_id, hotel_name):
+                              hotel_id, hotel_name, guests):
                 booked.append(hotel_name)
                 log(f"{tag} {B}{G}=== Total HELD for {target_date}: "
                     f"{len(booked)} ({', '.join(booked)}){X}")
@@ -984,15 +1031,35 @@ def _future_dates(target_dates):
     so polling them asks forever about something that cannot happen."""
     if not SKIP_PAST_DATES:
         return list(target_dates)
-    today = date.today().isoformat()
+    today = tokyo_today().isoformat()
     return [d for d in target_dates if d >= today]
 
 
 _ISO_DATE = re.compile(r'\A\d{4}-\d{2}-\d{2}\Z')
 
 
+def _tokyo_tz():
+    """Asia/Tokyo; a fixed UTC+9 if the tzdata isn't there (Japan has no DST, so they agree)."""
+    try:
+        from zoneinfo import ZoneInfo
+        return ZoneInfo('Asia/Tokyo')
+    except Exception:
+        return timezone(timedelta(hours=9), 'JST')
+
+
+TOKYO = _tokyo_tz()
+# The clock the dates are read from; replaceable for the tests.
+_now = time.time
+
+
+def tokyo_today():
+    """Today in Tokyo. Every date here is the site's (and the contract's `tokyoToday`): on Actions the runner's clock is
+    UTC, nine hours behind, so `date.today()` would call 00:30 JST on D−10 D−11 and pass the free-cancellation gate."""
+    return datetime.fromtimestamp(_now(), TOKYO).date()
+
+
 def days_until(target_date, today=None):
-    """Whole days from `today` to `target_date`, or None if it will not parse.
+    """Whole days from `today` (default: Tokyo's) to `target_date`, or None if it will not parse.
 
     Strictly `YYYY-MM-DD`: `date.fromisoformat` also takes `20260905` and week dates
     since 3.11, and a safety gate should not widen because the stdlib did. None rather
@@ -1005,7 +1072,7 @@ def days_until(target_date, today=None):
         target = date.fromisoformat(target_date)
     except ValueError:
         return None
-    return (target - (today or date.today())).days
+    return (target - (today or tokyo_today())).days
 
 
 def confirm_allowed(target_date, today=None):
@@ -1177,6 +1244,14 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
 
                 log(f"{tag} {C}[{attempt}] {len(available)}/{len(dates)} dates "
                     f"available: {', '.join(d[5:] for d in available)}{X}")
+
+                # A closed hold gate (the lease, the deadline, an unsynced record) spawns nothing: steps 3-6 per
+                # hotel every cycle would be requests for a hold that can't be taken.
+                ok, why = hold_allowed()
+                if not ok:
+                    log(f"{tag} {Y}[{attempt}] not booking: {why}{X}")
+                    notify('hold_refused', why=why)
+                    continue
 
                 # BOOK: Spawn parallel threads, one per available date
                 with ThreadPoolExecutor(max_workers=len(available)) as pool:

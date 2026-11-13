@@ -38,6 +38,7 @@ ITS_DIR = os.path.dirname(HERE)
 TOKEN = 'runner-token-Zq81xT'
 NEXT_MONTH_DAY = (T._TARGET_MONTH + timedelta(days=40)).replace(day=5).isoformat()
 LATER_MONTH_DAY = (T._TARGET_MONTH + timedelta(days=75)).replace(day=5).isoformat()
+FENCE_AT = remote.LEASE_SEC - remote.FENCE_MARGIN_SEC   # seconds after a renewal that the fence closes
 
 
 # ── a fake Worker ────────────────────────────────────────────────────
@@ -75,11 +76,15 @@ class WorkerModel:
         self.calls = []
         self.down = False        # answer 503
         self.garble = False      # answer 200 with a body that isn't a RunnerConfig
+        self.max_bookings = 500  # the record's cap: past it, 507
+        self.silent_ids = False  # an old Worker: a known id is ignored (200) whatever its content
 
     def ms(self):
         return int(self.clock() * 1000)
 
-    def config(self, run_id):
+    def config(self, run_id, must_hold=False):
+        """A RunnerConfig. `must_hold` (a report's answer, as the Worker's runnerConfig): a run without the lease is
+        told lease_lost even when nobody else holds it."""
         now = self.ms()
         reason = None
         if self.mode_off:
@@ -89,6 +94,8 @@ class WorkerModel:
         elif not self.settings['dates']:
             reason = 'no_dates'
         elif self.lease and self.lease['holder'] != run_id and self.lease['until'] > now:
+            reason = 'lease_lost'
+        elif must_hold and (not self.lease or self.lease['holder'] != run_id):
             reason = 'lease_lost'
         acks = [s for (r, s) in self.events if r == run_id]
         return {'settings': json.loads(json.dumps(self.settings)), 'bookings': [dict(b) for b in self.bookings],
@@ -126,12 +133,23 @@ class WorkerModel:
                     ended = ended or e['kind'] == 'run_end'
                 if self.lease and self.lease['holder'] == rid:
                     self.lease = None if ended else dict(self.lease, until=now + remote.LEASE_SEC * 1000)
-                return 200, self.config(rid)
+                return 200, self.config(rid, must_hold=True)
             if method == 'POST' and u.path == '/runner/bookings':
-                have = {b['id'] for b in self.bookings}
+                have = {b['id']: b for b in self.bookings}
+                same = lambda a, b: all(a.get(k) == b.get(k) for k in ('kind', 'date', 'hotel', 'runId', 'number'))
+                if not self.silent_ids and any(b['id'] in have and not same(have[b['id']], b) for b in body):
+                    return 409, {'ok': False, 'error': 'id_conflict'}
+                full = False
                 for b in body:
-                    if b['id'] not in have:
-                        self.bookings.append(dict(b, at=now))
+                    if b['id'] in have:
+                        continue
+                    if len(self.bookings) >= self.max_bookings:
+                        full = True
+                        continue
+                    self.bookings.append(dict(b, at=now))
+                    have[b['id']] = b
+                if full:   # what fit is kept; the answer is the bare refusal (the real Worker's)
+                    return 507, {'ok': False, 'error': 'record_full'}
                 return 200, self.config(q.get('runId', ''))
             if method == 'GET' and u.path == '/runner/config':
                 return 200, self.config(q.get('runId', ''))
@@ -313,6 +331,36 @@ def test_contract_parity():
         check(f'norm-cases: {c["why"]}', got == c['out'], f'{got!r} != {c["out"]!r}')
 
 
+def test_contract_limits_parity():
+    """remote.py's copy of the contract's LIMITS, MAX_NAME, MAX_SITE_NAME, LEASE_SEC and REPORT_EVERY_SEC, read out
+    of app/src/lib/its/contract.ts."""
+    import re
+    path = os.path.join(os.path.dirname(ITS_DIR), 'app', 'src', 'lib', 'its', 'contract.ts')
+    with open(path, encoding='utf-8') as f:
+        ts = f.read()
+
+    def num(expr):   # `64 * 1024`, `300`, `15_000`
+        out = 1
+        for part in expr.replace('_', '').split('*'):
+            out *= int(part)
+        return out
+
+    def const(name):
+        m = re.search(rf'export const {name} = ([0-9_ *]+);', ts)
+        return num(m.group(1)) if m else None
+    m = re.search(r'export const LIMITS = \{([^}]*)\}', ts)
+    limits = {k: num(v) for k, v in re.findall(r'(\w+): ([0-9_ *]+)', m.group(1))} if m else None
+    check('limits parity: LIMITS', limits == remote.LIMITS, f'{limits} vs {remote.LIMITS}')
+    for name, mine in (('MAX_NAME', remote.NAME_MAX), ('MAX_SITE_NAME', remote.SITE_NAME_MAX),
+                       ('LEASE_SEC', remote.LEASE_SEC), ('REPORT_EVERY_SEC', remote.REPORT_EVERY_SEC),
+                       ('GUESTS_MIN', remote.GUESTS_MIN), ('GUESTS_MAX', remote.GUESTS_MAX),
+                       ('AUTO_CONFIRM_MIN_DAYS', bh.AUTO_CONFIRM_MIN_DAYS)):
+        check(f'limits parity: {name}', const(name) == mine, f'{const(name)} vs {mine}')
+    check('limits parity: what we send fits', remote.BODY_MAX < remote.LIMITS['body']
+          and remote.EVENTS_PER_REPORT <= remote.LIMITS['eventsPerReport']
+          and remote.OFFERED_MAX <= remote.LIMITS['eventHotel'])
+
+
 def test_public_log_allowlist():
     line, dropped = logs.format_public('summary', {
         'scans': 12, 'secs': 19.04, 'phase': 'scanning', 'cls': 'http_503', 'exc': 'KeyError', 'ok': True,
@@ -368,7 +416,7 @@ def test_lease_fencing():
     rem.claim(wait=0)
     check('fence: open after the claim', rem.hold_gate() == (True, ''), str(rem.hold_gate()))
     check('fence: a commit allowed (confirm stage)', rem.commit_gate(TARGET, NAGU, 'confirm') == (True, ''))
-    clock.advance(remote.FENCE_SEC + 1)
+    clock.advance(FENCE_AT + 1)
     check('fence: no new hold once the lease is older than LEASE_SEC − 60 s',
           rem.hold_gate() == (False, 'lease_stale'), str(rem.hold_gate()))
     check('fence: no commit either', rem.commit_gate(TARGET, NAGU, 'apply') == (False, 'lease_stale'))
@@ -385,19 +433,62 @@ def test_lease_fencing():
 
 
 def test_hold_refused_by_the_gate_in_the_flow(port):
-    """book_one_hotel asks the gate right before step 7: refused, nothing is held, nothing reaches empty_create."""
+    """The gate is asked before a hotel's steps 3-6: closed, nothing is held and no step of the chain is sent (only the
+    date's session and hotel list, which the booking thread opened before it)."""
     with T.Env(port), T.CapturedLog() as log:
         clock = Clock()
         model = WorkerModel(clock)
         rem = make_remote(model, clock)
         rem.claim(wait=0)
-        clock.advance(remote.FENCE_SEC + 5)
+        clock.advance(FENCE_AT + 5)
         with Hooks(rem):
             _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
         check('gate-flow: nothing held', booked == [], str(booked))
-        check('gate-flow: step 7 never sent', STATE.count('empty_create') == 0, str(STATE.count('empty_create')))
-        check('gate-flow: said why', log.saw('Not taking a hold') and log.saw('lease_stale'))
-        check('gate-flow: counted', rem.counts['refused'] == 3, str(rem.counts))
+        check('gate-flow: no step 3-7 sent', all(STATE.count(p) == 0 for p in (
+            'apply_service_select', 'check_apply_service_coma', 'empty_new', 'empty_create')), str(STATE.hits))
+        check('gate-flow: one hotel list, no retry', STATE.count('service_group_select') == 1, str(STATE.hits))
+        check('gate-flow: said why', log.saw('Not applying for') and log.saw('lease_stale'))
+        check('gate-flow: counted once', rem.counts['refused'] == 1, str(rem.counts))
+
+    # Opened while steps 3-6 run, closed by step 7: still refused at the hold itself.
+    with T.Env(port), T.CapturedLog() as log:
+        clock = Clock()
+        model = WorkerModel(clock)
+        rem = make_remote(model, clock)
+        rem.claim(wait=0)
+        STATE.hotels = [(7, NAGU)]
+        STATE.hooks['POST /apply/empty_new'] = lambda: clock.advance(FENCE_AT + 5)
+        with Hooks(rem):
+            _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('gate-flow: a gate closing mid-chain refuses step 7', booked == [] and STATE.count('empty_create') == 0)
+        check('gate-flow: said so at the hold', log.saw('Not taking a hold'))
+
+
+def test_closed_gate_sends_no_booking_requests(port):
+    """R3: a closed gate in the scan loop spawns no booking thread: every cycle is the scan's own request, never
+    steps 1-6 per hotel and date (that rate is how the IP gets banned)."""
+    with T.Env(port):
+        clock = Clock()
+        model = WorkerModel(clock)
+        rem = make_remote(model, clock)
+        rem.claim(wait=0)
+        clock.advance(FENCE_AT + 5)   # the lease stale: the gate closed
+        bh.TARGET_DATES = [TARGET, TARGET_LIMITED]
+        stop = threading.Event()
+        with Hooks(rem):
+            t = threading.Thread(target=bh.scan_and_book_month, args=(T.MONTH, M._month_dates(T.MONTH), 'GATE'),
+                                 kwargs={'stop_event': stop}, daemon=True)
+            t.start()
+            try:
+                T._wait_for(lambda: STATE.count('POST /calendar_apply/calendar_select') >= 4)
+            finally:
+                stop.set()
+                t.join(10)
+        navs = STATE.count('POST /calendar_apply/calendar_select')
+        others = [h for h in STATE.hits if 'calendar_select' not in h]
+        check('storm: cycles ran, the dates were seen available', navs >= 4 and rem.available_now == 2, str(navs))
+        check('storm: no booking request at all while closed', others == [], str(others[:5]))
+        check('storm: the refusals counted per cycle', rem.counts['refused'] >= 3, str(rem.counts))
 
 
 def test_worker_outage(port):
@@ -722,9 +813,19 @@ def test_report_fits_the_workers_limits():
           and 'unknown' in rep['failuresByStep'] and 'other' in rep['failuresByStep'], str(len(rep['failuresByStep'])))
     check('limits: a bad status is null', rem.last_by_step['unknown'] == (None, 'error'), str(rem.last_by_step['unknown']))
     check('limits: the Worker took it', rem.report() is not None and len(model.reports) == 1)
-    bid = rem.record('hold', TARGET, 'X' * 200 + '\u202e', number='9' * 99)
+    long_name = 'ホテル' * 50   # 150 characters: over MAX_NAME, within a booking's 200
+    bid = rem.record('hold', TARGET, long_name + '\u202e', number='9' * 99)
     b = rem.unsynced[bid]
-    check('limits: a booking name and number capped', len(b['hotel']) == remote.NAME_MAX and len(b['number']) == 40)
+    check('limits: a booking hotel is never cut to MAX_NAME (C4)', b['hotel'] == long_name, str(len(b['hotel'])))
+    check('limits: a booking number capped', len(b['number']) == 40)
+    check('limits: only past the contract\'s 200', len(rem.unsynced[rem.record('hold', TARGET, 'X' * 300)]['hotel'])
+          == remote.SITE_NAME_MAX)
+    fresh = make_remote(model, clock, run_id='run-seen', seed_hold=lambda *a: None)
+    fresh.on_event('offered', {'date': TARGET_LIMITED, 'names': [long_name], 'eligible': []})
+    check('limits: a seen name is never cut either', fresh.seen == {long_name}, str(fresh.seen))
+    rem.on_event('hold', {'date': TARGET, 'hotel': long_name})
+    rem.post_bookings()
+    check('limits: the full name reaches the record', [x['hotel'] for x in model.booked('hold')][-1:] == [long_name])
 
 
 def test_turnstile_click_spot():
@@ -755,6 +856,396 @@ def test_client_over_http():
         srv.shutdown()
 
 
+def test_run_id_is_per_attempt():
+    """R1: a re-run (same GITHUB_RUN_ID, the next attempt) is a different run: its booking ids and event seqs can't be
+    taken for the first attempt's."""
+    env = {'GITHUB_ACTIONS': 'true', 'GITHUB_RUN_ID': '424242', 'GITHUB_RUN_ATTEMPT': '2',
+           'GITHUB_REPOSITORY': 'huangwaylon/fitness'}
+    rid, url, host = M.run_identity(env)
+    check('run id: id-attempt', rid == '424242-2' and host == 'actions', rid)
+    check('run id: the link is the attempt', url == 'https://github.com/huangwaylon/fitness/actions/runs/424242/attempts/2',
+          str(url))
+    check('run id: attempt 1 by default', M.run_identity(dict(env, GITHUB_RUN_ATTEMPT=''))[0] == '424242-1')
+    check('run id: a run id that is not a number is not used',
+          M.run_identity(dict(env, GITHUB_RUN_ID='x y'), clock=lambda: 7)[0] == 'local-7')
+    check('run id: local', M.run_identity({}, clock=lambda: 5) == ('local-5', None, 'local'))
+
+    clock = Clock()
+    model = WorkerModel(clock)
+    first = make_remote(model, clock, run_id='424242-1', seed_hold=lambda *a: None)
+    first.claim(wait=0)
+    first.on_event('hold', {'date': TARGET, 'hotel': NAGU})
+    first.event('run_end', detail='time_up')
+    first.report()
+    again = make_remote(model, clock, run_id=rid, seed_hold=lambda *a: None)
+    again.claim(wait=0)
+    again.on_event('hold', {'date': TARGET, 'hotel': RESOL})
+    again.report()
+    check('run id: the re-run\'s hold is recorded, not dropped as a duplicate',
+          [b['hotel'] for b in model.booked('hold')] == [NAGU, RESOL], str(model.bookings))
+    check('run id: and its events too', [e['hotel'] for e in model.kinds('hold')] == [NAGU, RESOL])
+
+
+def test_fence_reads_the_lease_itself():
+    """R2: the fence is `now < lease.until − 60`; only a claim or a report answer extends it, a /runner/bookings
+    answer never reopens it."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    clock.advance(FENCE_AT - 1)
+    check('fence2: open until 60 s before the lease ends', rem.lease_fresh())
+    clock.advance(2)
+    check('fence2: closed at until − 60', not rem.lease_fresh() and rem.hold_gate() == (False, 'lease_stale'))
+    # The Worker says the lease is ours and long (as if renewed): a bookings answer still doesn't reopen the fence.
+    model.lease = dict(model.lease, until=model.ms() + 3_600_000)
+    rem.on_event('hold', {'date': TARGET, 'hotel': NAGU})
+    check('fence2: the bookings answer arrived', rem.post_bookings() and rem.unsynced == {})
+    check('fence2: and the fence stays closed', rem.hold_gate() == (False, 'lease_stale'), str(rem.hold_gate()))
+    rem.report()
+    check('fence2: a report answer renews it', rem.hold_gate() == (True, ''), str(rem.hold_gate()))
+    check('fence2: to the lease\'s own end', abs(rem.lease_until - model.lease['until'] / 1000) < 1e-6)
+    model.lease = {'holder': 'other', 'host': 'actions', 'until': model.ms() + 600_000}
+    rem.on_event('hold', {'date': TARGET, 'hotel': RESOL})
+    rem.post_bookings()
+    check('fence2: a bookings answer naming another holder closes it', rem.hold_gate() == (False, 'lease_stale'))
+
+
+def test_hold_gate_checks_the_deadline():
+    """R14: past the deadline the gate refuses by itself, without waiting for the control loop's tick."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, deadline=clock() + 100, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    check('deadline: open before it', rem.hold_gate() == (True, ''))
+    clock.advance(100)
+    check('deadline: refused at it, no tick needed', rem.hold_gate() == (False, 'time_up'), str(rem.hold_gate()))
+
+
+def test_settings_are_applied_newest_first():
+    """R7: two threads' answers can cross; an older answer's settings never replace newer ones."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    applied = []
+    rem = make_remote(model, clock, on_settings=lambda s: applied.append(s['updatedAt']), seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    old = model.config(rem.run_id)
+    model.settings.update(dates=[TARGET, TARGET_LIMITED], updatedAt=2)
+    new = model.config(rem.run_id)
+    rem.absorb(new)
+    rem.absorb(old)
+    check('order: the older answer after the newer is ignored', applied == [1, 2] and rem.settings['updatedAt'] == 2,
+          str(applied))
+    model.settings.update(paused=True)
+    rem.absorb(model.config(rem.run_id))
+    check('order: same stamp (paused moved): no reapply needed but no harm', rem.settings['updatedAt'] == 2)
+
+    # Interleaved: the slow on_settings of an older answer can't land after a newer one.
+    gate = threading.Event()
+    seen = []
+
+    def slow(s):
+        if s['updatedAt'] == 3:
+            gate.wait(5)
+        seen.append(s['updatedAt'])
+    rem2 = make_remote(model, clock, run_id='run-x', on_settings=slow, seed_hold=lambda *a: None)
+    model.settings.update(updatedAt=3)
+    c3 = model.config('run-x')
+    model.settings.update(updatedAt=4)
+    c4 = model.config('run-x')
+    t = threading.Thread(target=rem2.absorb, args=(c3,))
+    t.start()
+    t2 = threading.Thread(target=rem2.absorb, args=(c4,))
+    t2.start()
+    gate.set()
+    t.join(5)
+    t2.join(5)
+    check('order: under the lock, the newest is applied last', seen[-1] == 4 and rem2.settings['updatedAt'] == 4,
+          str(seen))
+
+
+def test_id_conflict_is_a_bug_not_an_ack(port):
+    """W1: the Worker refuses a post whole when an id it has comes with other content (409 id_conflict). Never an ack:
+    kept queued and retried alone, HUMAN NEEDED and one human_needed event; the rest of the batch still lands; a
+    `confirming` refused that way never reaches Chrome."""
+    with T.Env(port, confirm=True, applicant=dict(T.APPLICANT_FIXTURE)), T.CapturedLog() as log:
+        clock = Clock()
+        model = WorkerModel(clock)
+        rem = make_remote(model, clock, run_id='run-c', log=bh.log)
+        rem.claim(wait=0)
+        # The record already has run-c:2 (a different stay): the next entries collide with it.
+        model.bookings.append({'id': 'run-c:2', 'kind': 'hold', 'date': TARGET_LIMITED, 'hotel': NIKKO,
+                               'runId': 'run-c', 'at': 1})
+        rem.seeded.add('run-c:2')
+        rem.record('hold', TARGET, NAGU)       # run-c:1
+        rem.seq = 1
+        rem.record('hold', TARGET, RESOL)      # run-c:2: the record has another stay under it
+        rem.record('hold', TARGET, NIKKO)      # run-c:3
+        rem.post_bookings()
+        ids = [b['id'] for b in model.bookings]
+        check('conflict: the batch was split: the good entries landed', ids == ['run-c:2', 'run-c:1', 'run-c:3'],
+              str(ids))
+        check('conflict: the conflicting one still queued, not acked', rem.conflicts == {'run-c:2'}
+              and list(rem.unsynced) == ['run-c:2'], f'{rem.conflicts} {rem.unsynced}')
+        check('conflict: HUMAN NEEDED in the log', log.saw('HUMAN NEEDED') and log.saw('id conflict'))
+        rem.report()
+        check('conflict: a human_needed event', [e.get('detail') for e in model.kinds('human_needed')] == ['id_conflict'],
+              str(model.kinds('human_needed')))
+        check('conflict: counted as unsynced in the report', model.reports[-1]['unsynced'] == 1)
+        posts = lambda: len([c for c in model.calls if c[1] == '/runner/bookings'])
+        check('conflict: the batch, then each alone; with the report, the conflict alone again', posts() == 5,
+              str(posts()))
+        rem.report()
+        check('conflict: told once', len(model.kinds('human_needed')) == 1 and rem.counts['human_needed'] == 1)
+        check('conflict: never in the record as ours', all(b['hotel'] != RESOL for b in model.bookings))
+        # A person fixes the record: the retry lands and is acknowledged.
+        model.bookings = [b for b in model.bookings if b['id'] != 'run-c:2']
+        rem.report()
+        check('conflict: the record fixed: acknowledged', rem.unsynced == {} and rem.conflicts == set()
+              and any(b['hotel'] == RESOL for b in model.bookings), f'{rem.unsynced} {rem.conflicts}')
+
+        # A `confirming` whose id collides: the commit gate must not take it for an ack.
+        rem.seq = 9
+        model.bookings.append({'id': 'run-c:10', 'kind': 'hold', 'date': TARGET_LIMITED, 'hotel': NIKKO,
+                               'runId': 'run-c', 'at': 1})
+        rem.seeded.add('run-c:10')
+        check('conflict: the commit gate refuses', rem.commit_gate(TARGET, NAGU, 'apply') == (False, 'confirming_unacked'))
+
+    # An old Worker answering 200 and ignoring the id: the record's entry differs, so still no ack.
+    clock = Clock()
+    model = WorkerModel(clock)
+    model.silent_ids = True
+    rem = make_remote(model, clock, run_id='run-d', seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    model.bookings.append({'id': 'run-d:1', 'kind': 'hold', 'date': TARGET_LIMITED, 'hotel': NIKKO, 'runId': 'run-d',
+                           'at': 1})
+    rem.record('hold', TARGET, NAGU)
+    rem.post_bookings()
+    check('conflict: a 200 whose record differs is not an ack either', 'run-d:1' in rem.conflicts, str(rem.conflicts))
+
+
+def test_full_record_closes_the_gate():
+    """W4: a 507 (the record full) keeps the entries unsynced and closes the hold gate at once, though the Worker is
+    reachable; taken again, it opens."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    model.max_bookings = 0
+    rem.on_event('hold', {'date': TARGET, 'hotel': NAGU})
+    rem.report()
+    check('full: still unsynced', len(rem.unsynced) == 1, str(rem.unsynced))
+    check('full: the gate closed at once', rem.hold_gate() == (False, 'record_full'), str(rem.hold_gate()))
+    check('full: the Worker is not counted as down', rem.outage_sec() == 0)
+    check('full: an error event', [e.get('detail') for e in model.kinds('error')] == ['record_full'],
+          str(model.kinds('error')))
+    check('full: lastError', rem.last_by_step.get('bookings') == (507, 'record_full'), str(rem.last_by_step))
+    rem.report()
+    check('full: told once', len(model.kinds('error')) == 1)
+    model.max_bookings = 500
+    rem.report()
+    check('full: taken: synced and open', rem.unsynced == {} and rem.hold_gate() == (True, ''), str(rem.hold_gate()))
+
+
+def test_lease_lost_while_free_is_claimed_again():
+    """R11: a Worker outage longer than the lease leaves it expired (or gone): the report answer says lease_lost, and
+    the run claims it again at once instead of ending. Someone else's live lease still ends it."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    run = M.RemoteRun(rem, sup, clock=clock)
+    try:
+        run.tick()
+        model.lease = None     # gone while we couldn't reach the Worker: the next report's answer says lease_lost
+        clock.advance(remote.REPORT_EVERY_SEC)
+        check('reclaim: not draining', run.tick() is None and not run.draining, str(run.end_detail))
+        check('reclaim: the answer did say lease_lost', model.reports and rem.config['stop'] is False)
+        check('reclaim: the lease is ours again', model.lease and model.lease['holder'] == rem.run_id, str(model.lease))
+        check('reclaim: the gate open', rem.hold_gate() == (True, ''), str(rem.hold_gate()))
+
+        model.lease = {'holder': 'other', 'host': 'local', 'until': model.ms() + 600_000}
+        clock.advance(remote.REPORT_EVERY_SEC)
+        run.tick()
+        check('reclaim: someone else\'s live lease: drain', run.draining and run.end_detail == 'lease_lost',
+              str(run.end_detail))
+        check('reclaim: claimed once only', run.reclaims == 1, str(run.reclaims))
+    finally:
+        _cleanup(sup)
+
+
+def test_worker_lost_ends_the_run():
+    """R15: no good answer for WORKER_LOST_SEC: run_end detail worker_lost, exit 1."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    run = M.RemoteRun(rem, sup, clock=clock)
+    try:
+        run.tick()
+        model.down = True
+        clock.advance(M.WORKER_LOST_SEC + 1)
+        with bh._booking_in_flight():
+            run.tick()
+            check('lost: draining as worker_lost', run.draining and run.end_detail == 'worker_lost',
+                  str(run.end_detail))
+        model.down = False
+        clock.advance(1)
+        check('lost: ends worker_lost', run.tick() == 'worker_lost')
+        check('lost: the run_end says so', [e.get('detail') for e in model.kinds('run_end')] == ['worker_lost'],
+              str(model.kinds('run_end')))
+    finally:
+        _cleanup(sup)
+
+
+def test_summary_counts_refusals():
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    run = M.RemoteRun(rem, idle_supervisor(), clock=clock)
+    lines = []
+    saved = logs.public
+    logs.public = lambda event, **f: lines.append(logs.format_public(event, f)[0])
+    try:
+        rem.on_event('hold_refused', {'why': 'lease_stale'})
+        rem.on_event('hold_refused', {'why': 'lease_stale'})
+        run.summary(clock())
+        run.finish()
+    finally:
+        logs.public = saved
+    check('refused: in the summary', any(ln.startswith('its summary') and ' refused=2' in ln for ln in lines), str(lines))
+    check('refused: in run_end', any(ln.startswith('its run_end') and ' refused=2' in ln for ln in lines), str(lines))
+
+
+def test_month_labels_unique_across_years():
+    sup = idle_supervisor()
+    saved = bh.TARGET_DATES
+    try:
+        a, b = (T._TARGET_MONTH.replace(day=5), T._TARGET_MONTH.replace(year=T._TARGET_MONTH.year + 1, day=5))
+        bh.TARGET_DATES = [a.isoformat(), b.isoformat()]
+        sup.start()
+        names = sorted(w.name for w, _ in sup.scanners.values())
+        check('labels: two scanners, two names', len(set(names)) == 2, str(names))
+        check('labels: MON + yy', M.month_label('2026-12') == 'DEC26' and M.month_label('2027-12') == 'DEC27')
+    finally:
+        _cleanup(sup)
+        bh.TARGET_DATES = saved
+
+
+def test_preflight_lets_a_lingering_lease_through(tmpdir):
+    """R5: the workflow's preflight skips the job only for paused, MODE off or no dates. Another run's lease (one
+    that is ending, say) goes on to main.py's claim, which waits for it."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    client = ModelClient(model)
+    check('preflight: running', remote.preflight(client) == (200, 'none', True), str(remote.preflight(client)))
+    model.lease = {'holder': 'old-run', 'host': 'actions', 'until': model.ms() + 200_000}
+    check('preflight: a lingering lease still runs', remote.preflight(client) == (200, 'lease_lost', True),
+          str(remote.preflight(client)))
+    model.settings['paused'] = True
+    check('preflight: paused skips', remote.preflight(client) == (200, 'paused', False))
+    model.settings['paused'] = False
+    model.settings['dates'] = []
+    check('preflight: no dates skips', remote.preflight(client)[1:] == ('no_dates', False))
+    model.mode_off = True
+    check('preflight: MODE off skips', remote.preflight(client)[1:] == ('mode_off', False))
+    model.garble = True
+    check('preflight: a garbled answer is an error', remote.preflight(client)[1:] == ('bad_answer', False))
+
+    # The CLI the workflow runs, over localhost: one line of codes, run= in $GITHUB_OUTPUT.
+    model = WorkerModel()
+    model.lease = {'holder': 'old-run', 'host': 'actions', 'until': model.ms() + 200_000}
+    srv = serve_model(model)
+    out = os.path.join(tmpdir, 'gh_output')
+    try:
+        env = {'PATH': os.environ.get('PATH', ''), 'NO_PROXY': '127.0.0.1', 'no_proxy': '127.0.0.1',
+               'ITS_WORKER_URL': f'http://127.0.0.1:{srv.server_port}', 'ITS_RUNNER_TOKEN': TOKEN,
+               'GITHUB_OUTPUT': out}
+        r = subprocess.run([sys.executable, 'remote.py', 'preflight'], cwd=HERE, env=env, capture_output=True,
+                           text=True, timeout=30)
+        check('preflight-cli: exit 0', r.returncode == 0, r.stdout + r.stderr)
+        check('preflight-cli: one line of codes', r.stdout.strip() == 'preflight: worker=200 reason=lease_lost run=1',
+              r.stdout)
+        with open(out) as f:
+            check('preflight-cli: run=1 for the next steps', f.read() == 'run=1\n')
+        r = subprocess.run([sys.executable, 'remote.py', 'preflight'], cwd=HERE, env=dict(env, ITS_RUNNER_TOKEN='x'),
+                           capture_output=True, text=True, timeout=30)
+        check('preflight-cli: a refused token fails the job', r.returncode == 1 and 'run=0' in r.stdout, r.stdout)
+        check('preflight-cli: never prints the settings', TARGET not in r.stdout and NAGU not in r.stdout)
+    finally:
+        srv.shutdown()
+
+
+def test_base_url_refused_ends_the_run(tmpdir):
+    """R12: an ITS_BASE_URL that isn't loopback: the run doesn't start (exit 2), the private log says why, and the
+    real site is never contacted instead."""
+    state = os.path.join(tmpdir, 'state-base')
+    env = {'PATH': os.environ.get('PATH', ''), 'HOME': tmpdir, 'ITS_STATE_DIR': state,
+           'ITS_BASE_URL': 'https://example.com', 'ITS_RUNNER_TOKEN': TOKEN, 'ITS_WORKER_URL': 'http://127.0.0.1:1',
+           'GITHUB_ACTIONS': 'true', 'PYTHONDONTWRITEBYTECODE': '1'}
+    r = subprocess.run([sys.executable, 'main.py', '--remote', '--deadline', str(time.time() + 60)], cwd=HERE,
+                       env=env, capture_output=True, text=True, timeout=60)
+    check('base-run: exit 2', r.returncode == 2, r.stdout[-300:])
+    check('base-run: public says why, as a code', 'its run_end' in r.stdout and 'reason=base_url' in r.stdout
+          and 'example.com' not in r.stdout, r.stdout)
+    with open(os.path.join(state, 'its_booking.log'), encoding='utf-8') as f:
+        check('base-run: the private log names it', 'ITS_BASE_URL' in f.read())
+
+
+def test_chrome_is_spawned_without_pipes():
+    """R8: pydoll's default process creator pipes Chrome's stdout/stderr and never reads them. chrome.launch installs
+    `spawn` as the process manager's process_creator (pydoll 2.22's hook), which inherits fd 1/2 (the private log once
+    logs.setup ran). Checked with stand-in pydoll modules: CI has no pydoll."""
+    import types
+    import chrome
+
+    class PM:
+        def __init__(self, process_creator=None):
+            self.process_creator = process_creator
+
+    class Opts:
+        def __init__(self):
+            self.arguments = []
+
+        def add_argument(self, a):
+            self.arguments.append(a)
+
+    class Chrome:
+        def __init__(self, options=None):
+            self.options = options
+            self._browser_process_manager = PM()
+
+    mods = {'pydoll': types.ModuleType('pydoll'), 'pydoll.browser': types.ModuleType('pydoll.browser'),
+            'pydoll.browser.chromium': types.ModuleType('pydoll.browser.chromium'),
+            'pydoll.browser.chromium.chrome': types.ModuleType('pydoll.browser.chromium.chrome'),
+            'pydoll.browser.options': types.ModuleType('pydoll.browser.options'),
+            'pydoll.browser.managers': types.ModuleType('pydoll.browser.managers')}
+    mods['pydoll.browser.chromium.chrome'].Chrome = Chrome
+    mods['pydoll.browser.options'].ChromiumOptions = Opts
+    mods['pydoll.browser.managers'].BrowserProcessManager = PM
+    saved = {k: sys.modules.get(k) for k in mods}
+    sys.modules.update(mods)
+    try:
+        b = chrome.launch()
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = v
+    check('spawn: the process creator is ours', b._browser_process_manager.process_creator is chrome.spawn)
+    check('spawn: the flags kept', '--no-sandbox' in b.options.arguments and '--lang=ja-JP' in b.options.arguments)
+
+    # Before logs.setup (a local run): no pipe either, nothing to fill.
+    p = chrome.spawn([sys.executable, '-c', 'import sys; sys.stdout.write("x" * 300000); '
+                      'sys.stderr.write("y" * 300000)'])
+    check('spawn: a chatty child never blocks on a pipe', p.wait(timeout=30) == 0 and p.stdout is None
+          and p.stderr is None)
+
+
 # ── the redaction test: the real main.py --remote in a subprocess ────
 
 CHILD_APPLICANT = {
@@ -773,7 +1264,7 @@ def child_main(its_port):
     import chrome
 
     base = f'http://127.0.0.1:{its_port}'
-    bh.BASE = cb.BASE = base
+    assert bh.BASE == cb.BASE == base, (bh.BASE, cb.BASE)   # from ITS_BASE_URL: loopback, so honoured
     bh.CURL_MAX_ATTEMPTS, bh.CURL_RETRY_BACKOFF, bh.SCAN_JITTER, bh.SCAN_BACKOFF_MAX = 1, 0.01, 0, 0.2
     bh.BOOK_RETRY_DELAY, bh.DEBUG_DUMP_INTERVAL = 0.01, 0
     cb.CONFIRM_POLL_INTERVAL, cb.CONFIRM_MAIL_TIMEOUT = 0.05, 1.0
@@ -800,6 +1291,10 @@ def child_main(its_port):
         # A thread dying with secrets in its message, once logs.setup() has run (the solve is after it). Named like
         # a scanner, with a date in the name.
         threading.Thread(target=boom, name=f'scan-{TARGET}', daemon=True).start()
+        # Chrome's own output, through the process creator chrome.launch installs: a lot of it, with secrets in it.
+        noisy = (f'import sys\nfor i in range(3000): print("CHROME-NOISE {TARGET} {NAGU} s={S_TOKEN}"); '
+                 f'print("[ERROR:gpu] {CHILD_MAILBOX}", file=sys.stderr)')
+        chrome.spawn([sys.executable, '-c', noisy]).wait(timeout=30)
         return url
     chrome.get_calendar_url = solve
     link = f'{base}/apply/new?c={T.FAKE_APPLY_C}'
@@ -821,7 +1316,7 @@ def test_redaction_subprocess(port, tmpdir):
     env = {
         'PATH': os.environ.get('PATH', ''), 'HOME': tmpdir, 'NO_PROXY': '127.0.0.1,localhost',
         'no_proxy': '127.0.0.1,localhost', 'PYTHONDONTWRITEBYTECODE': '1',
-        'ITS_STATE_DIR': state, 'ITS_WORKER_URL': f'http://127.0.0.1:{srv.server_port}', 'ITS_RUNNER_TOKEN': TOKEN,
+        'ITS_STATE_DIR': state, 'ITS_BASE_URL': f'http://127.0.0.1:{port}', 'GITHUB_RUN_ATTEMPT': '3', 'ITS_WORKER_URL': f'http://127.0.0.1:{srv.server_port}', 'ITS_RUNNER_TOKEN': TOKEN,
         'ITS_IMAP_USER': CHILD_MAILBOX, 'ITS_EMAIL': CHILD_MAILBOX, 'ITS_IMAP_APP_PASSWORD': CHILD_PASSWORD,
         'GITHUB_ACTIONS': 'true', 'GITHUB_RUN_ID': '424242', 'GITHUB_REPOSITORY': 'huangwaylon/fitness',
         'GITHUB_SHA': 'abcdef0123456789', 'GITHUB_EVENT_NAME': 'schedule', **CHILD_APPLICANT,
@@ -851,6 +1346,8 @@ def test_redaction_subprocess(port, tmpdir):
         srv.shutdown()
     public = out.decode('utf-8', 'replace')
     check('redaction: exit 0 after the ban', proc.returncode == 0, f'{proc.returncode} {public[-400:]}')
+    check('redaction: the run id is the attempt\'s', {b['runId'] for b in model.bookings} == {'424242-3'},
+          str({b['runId'] for b in model.bookings}))
     check('redaction: nothing on stderr (fd 2 is the private log)', err == b'', err[:300].decode('utf-8', 'replace'))
     masks = [ln for ln in public.splitlines() if ln.startswith('::add-mask::')]
     check('redaction: the runner token masked', f'::add-mask::{TOKEN}' in masks)
@@ -877,7 +1374,7 @@ def test_redaction_subprocess(port, tmpdir):
     # (Not a bare 's=' or 'c=': `secs=` and `exc=` contain them. The tokens themselves, and their query forms.)
     banned |= {NAGU, 'NAGU', 'nagu', RESOL, NIKKO, '勝浦', S_TOKEN, '?s=', '&s=', 'csrf', 'authenticity',
                '_src_session', 'Cookie', 'cookie', T.FAKE_APPLY_C, '?c=', 'http:', 'https', '://', '127.0.0.1',
-               CHILD_MAILBOX, '@', CHILD_PASSWORD, TOKEN, NUMBER, 'Bearer'}
+               CHILD_MAILBOX, '@', CHILD_PASSWORD, TOKEN, NUMBER, 'Bearer', 'CHROME-NOISE', 'ERROR:gpu'}
     banned |= {v for v in CHILD_APPLICANT.values() if len(v) >= 2}
     leaks = sorted(b for b in banned if b in text)
     check('redaction: no date, hotel, token, cookie, applicant field, mailbox or number in public', leaks == [],
@@ -885,7 +1382,8 @@ def test_redaction_subprocess(port, tmpdir):
 
     with open(os.path.join(state, 'its_booking.log'), encoding='utf-8', errors='replace') as f:
         private = f.read()
-    for want in (TARGET, NAGU, 'HELD + MAIL SENT', NUMBER, 'Traceback', 'RuntimeError: boom', S_TOKEN):
+    for want in (TARGET, NAGU, 'HELD + MAIL SENT', NUMBER, 'Traceback', 'RuntimeError: boom', S_TOKEN,
+                 'CHROME-NOISE', '[ERROR:gpu]'):
         check(f'redaction: the private log has {want!r} (the flow ran, nothing lost)', want in private)
     mode = os.stat(os.path.join(state, 'its_booking.log')).st_mode & 0o777
     check('redaction: the private log is 0600', mode == 0o600, oct(mode))

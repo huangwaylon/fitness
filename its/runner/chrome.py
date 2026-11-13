@@ -102,10 +102,24 @@ def value(result):
     return result if isinstance(result, str) else ''
 
 
+def spawn(command):
+    """pydoll's `process_creator`: Chrome with stdin closed and stdout/stderr **inherited**, i.e. our fd 1/2.
+
+    pydoll's default pipes both and never reads them, so a chatty Chrome fills the 64 KB pipe and blocks on its next
+    write: a wedged solve, or a wedged browser between 申込する and 確認. Inherited, its output lands where ours does:
+    the private log on a `--remote` run (logs.setup() pointed fd 1/2 there), never the public Actions log; a local run
+    has none of that and sends it to /dev/null as pydoll did."""
+    import logs
+    out = None if logs.private_fds() else subprocess.DEVNULL
+    return subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=out, stderr=out)
+
+
 def launch():
     """A real, non-headless Chrome — Turnstile rejects headless, and so may /apply.
-    On Linux the display is xvfb's (the workflow runs us under `xvfb-run`)."""
+    On Linux the display is xvfb's (the workflow runs us under `xvfb-run`). Its output goes through `spawn`, set as
+    the browser's process manager's `process_creator` (pydoll 2.22's hook: Chrome() doesn't take one itself)."""
     from pydoll.browser.chromium.chrome import Chrome
+    from pydoll.browser.managers import BrowserProcessManager
     from pydoll.browser.options import ChromiumOptions
 
     options = ChromiumOptions()
@@ -113,7 +127,9 @@ def launch():
     options.add_argument('--no-sandbox')
     options.add_argument('--lang=ja-JP')
     options.add_argument('--window-size=1280,1600')
-    return Chrome(options=options)
+    browser = Chrome(options=options)
+    browser._browser_process_manager = BrowserProcessManager(process_creator=spawn)
+    return browser
 
 
 async def minimise(tab):
@@ -299,7 +315,7 @@ async def _solve_and_cache():
         await minimise(tab)
 
         log('Navigating to ITS homepage...')
-        await tab.go_to('https://as.its-kenpo.or.jp/', timeout=30)
+        await tab.go_to(bh.BASE + '/', timeout=30)
         await asyncio.sleep(3)
 
         await _save_user_agent(tab)

@@ -27,32 +27,26 @@ jobs:
     environment: its
     env:
       ITS_WORKER_URL: https://its-bot.island-fund-relay.workers.dev
+      # The site's dates are Tokyo's (book_hotels reads them in Asia/Tokyo anyway; this makes the log's times agree).
+      TZ: Asia/Tokyo
     steps:
-      # First, before anything is installed: a stopped bot (paused, MODE off, no dates, another runner's lease) ends
-      # the job here in seconds. Reads the config only (the claim is main.py's); prints the stop flag and its code.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: its/runner
+
+      # Before anything is installed: a stopped bot (paused, MODE off, no dates) ends the job here in seconds. Another
+      # run's lease doesn't (it may be a run that is ending: main.py's claim waits for it). Reads the config only, with
+      # the image's python3 (remote.py is stdlib); prints codes, never the settings (remote.preflight_main).
       - name: Preflight
         id: pre
+        working-directory: its/runner
         env:
           ITS_RUNNER_TOKEN: ${{ secrets.ITS_RUNNER_TOKEN }}
         run: |
           echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
           echo "ITS_STATE_DIR=$RUNNER_TEMP/its-state" >> "$GITHUB_ENV"   # config.STATE_DIR: outside the checkout
-          f="$RUNNER_TEMP/preflight.json"
-          code=$(curl -sS -o "$f" -w '%{http_code}' --max-time 20 \
-            -H "Authorization: Bearer $ITS_RUNNER_TOKEN" "$ITS_WORKER_URL/runner/config") || code=000
-          stop=$(jq -r 'if .stop == false then "false" else "true" end' "$f" 2>/dev/null || echo true)
-          reason=$(jq -r '.stopReason // "none"' "$f" 2>/dev/null || echo none)
-          rm -f "$f"   # the settings: dates and hotel names, never printed
-          case "$reason" in paused|mode_off|no_dates|lease_lost|none) ;; *) reason=other ;; esac
-          echo "preflight: worker=$code stop=$stop reason=$reason"
-          if [ "$code" != 200 ]; then echo "::error::preflight: the Worker answered $code"; exit 1; fi
-          echo "run=$([ "$stop" = false ] && echo 1 || echo 0)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        if: steps.pre.outputs.run == '1'
-        with:
-          persist-credentials: false
-          sparse-checkout: its/runner
+          python3 remote.py preflight
 
       # No pip cache, no actions/cache at all: nothing of a run (s=, cookies, the Chrome profile) outlives it.
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -112,7 +106,8 @@ jobs:
           if [ -z "$RECIPIENT" ] || [ ! -d "$ITS_STATE_DIR" ]; then
             echo "::warning::no private log uploaded (no ITS_LOG_RECIPIENT or no state dir)"; exit 0
           fi
-          if tar -C "$ITS_STATE_DIR" -czf - . | age -r "$RECIPIENT" -o "$out"; then
+          # tar's warnings name files, and file names carry dates and hotels: silenced (this log is public).
+          if tar --warning=none -C "$ITS_STATE_DIR" -czf - . 2>/dev/null | age -r "$RECIPIENT" -o "$out"; then
             echo "encrypted: $(stat -c %s "$out") bytes"
           else
             rm -f "$out"; echo "::warning::encryption failed: nothing uploaded"

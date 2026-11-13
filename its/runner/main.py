@@ -16,7 +16,9 @@ Two modes:
   `logs.public` lines reach the Actions log. `--deadline <epoch>` bounds the run: no new
   hold after it, a drain of up to DRAIN_SEC, a final `run_end` report, exit 0. A stop from
   the Worker (paused, MODE off, no dates, the lease lost) and a 503 ban end it the same
-  way.
+  way; a lease lost while nobody else holds it is claimed again first (a Worker outage
+  longer than the lease must not end the run). The run id is `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT`
+  (a re-run is a new run: its events and entries must not collide with the first attempt's).
 
 `--check` validates `.env` instead of booking anything — the site checks those values
 mid-hold with a contested slot on the line, so check them at your desk.
@@ -63,7 +65,8 @@ WATCHDOG_INTERVAL = 30
 DRAIN_SEC = 15 * 60
 # A ban ends the run quickly: every request from this IP fails for ~24 h, so only the in-flight work is waited for.
 BAN_DRAIN_SEC = 120
-# Without a good answer from the Worker this long, the run ends (the fence already stopped holds at FENCE_SEC).
+# Without a good answer from the Worker this long, the run ends (`run_end detail=worker_lost`, exit 1; the fence
+# already stopped holds a minute before the lease ran out).
 WORKER_LOST_SEC = 15 * 60
 # The public summary's cadence.
 SUMMARY_EVERY_SEC = 300
@@ -199,6 +202,11 @@ class _Worker:
         return True
 
 
+def month_label(month):
+    """`DEC26` for 2026-12: unique across years (two Decembers are two scanners, two log tags)."""
+    return f'{MONTH_ABBR[int(month[5:7])]}{month[2:4]}'
+
+
 def _month_dates(month):
     """The scanner's dates callable: its month's dates in the current settings."""
     return lambda: [d for d in book_hotels.TARGET_DATES if d[:7] == month]
@@ -235,7 +243,7 @@ class Supervisor:
         want = self.wanted_months()
         for month in sorted(want - set(self.scanners)):
             stop = threading.Event()
-            label = MONTH_ABBR[int(month[5:7])]
+            label = month_label(month)
             w = _Worker(f'scan-{label}', self.scan_target, (month, _month_dates(month), label),
                         {'stop_event': stop})
             self.scanners[month] = (w, stop)
@@ -478,6 +486,7 @@ class RemoteRun:
         self.printed = {}          # step -> (failures printed, when)
         self.phase_printed = None
         self.auto_seen = False     # autoConfirm was on at the last tick (the IMAP check runs when it turns on)
+        self.reclaims = 0
 
     def begin_drain(self, detail, until):
         if self.draining:
@@ -490,6 +499,18 @@ class RemoteRun:
         url_log(f"{Y}Draining ({detail}): no new holds; {self.sup.busy()} in flight{X}")
         logs.public('drain', reason=detail, active=self.sup.busy(),
                     left_min=round(max(0.0, until - self.clock()) / 60, 1))
+
+    def _reclaimed(self, cfg, now):
+        """A `lease_lost` stop while nobody else holds the lease (it expired during a Worker outage, or was dropped):
+        claim it once, at once, before draining. True when that got it back."""
+        lease = cfg.get('lease')
+        if cfg.get('stopReason') != 'lease_lost' or (lease and lease['until'] > now * 1000):
+            return False
+        got, why = self.rem.claim(wait=0)
+        self.reclaims += 1
+        url_log(f"{G if got else Y}Lease lost while free: claimed again {'(ok)' if got else f'({why})'}{X}")
+        logs.public('claim', ok=int(got is not None), why=why or None, reclaim=self.reclaims)
+        return got is not None and not got['stop']
 
     def check_imap(self):
         ok, cls = confirm_booking.imap_check()
@@ -510,13 +531,13 @@ class RemoteRun:
         if not self.draining:
             if rem.banned:
                 self.begin_drain('ban', now + BAN_DRAIN_SEC)
-            elif cfg is not None and cfg['stop']:
+            elif cfg is not None and cfg['stop'] and not self._reclaimed(cfg, now):
                 cap = now + DRAIN_SEC if self.deadline is None else min(now, self.deadline) + DRAIN_SEC
                 self.begin_drain(cfg['stopReason'] or 'paused', cap)
             elif self.deadline is not None and now >= self.deadline:
                 self.begin_drain('time_up', self.deadline + DRAIN_SEC)
             elif rem.contact_at is not None and now - rem.contact_at > WORKER_LOST_SEC:
-                self.begin_drain('error', now + BAN_DRAIN_SEC)
+                self.begin_drain('worker_lost', now + BAN_DRAIN_SEC)
         elif rem.banned and self.end_detail != 'ban':
             self.drain_until = min(self.drain_until, now + BAN_DRAIN_SEC)
 
@@ -555,7 +576,7 @@ class RemoteRun:
             cfg = rem.report()   # one retry: the run_end is what releases the lease
         self.summary(self.clock())
         logs.public('run_end', detail=self.end_detail, active=busy, human=young, ok=int(cfg is not None),
-                    unsynced=len(rem.unsynced))
+                    unsynced=len(rem.unsynced), refused=rem.counts['refused'])
         return self.end_detail
 
     def _public_errors(self, now):
@@ -579,8 +600,9 @@ class RemoteRun:
                 scans=rem.scans, scan_fail=rem.scan_failures,
                 ok_age_s=None if rem.last_ok_at is None else round(now - rem.last_ok_at / 1000, 1),
                 avail=rem.available_now, holds=rem.counts['hold'], confirmed=rem.counts['confirmed'],
-                human=rem.counts['human_needed'], solves_ok=rem.solves['ok'], solves_failed=rem.solves['failed'],
-                unsynced=len(rem.unsynced), events=len(rem.events), worker=rem.last_status,
+                human=rem.counts['human_needed'], refused=rem.counts['refused'], solves_ok=rem.solves['ok'],
+                solves_failed=rem.solves['failed'], unsynced=len(rem.unsynced),
+                events=len(rem.events), worker=rem.last_status,
                 outage_s=round(rem.outage_sec(), 1), restarts=self.sup.restarts(), active=self.sup.busy(),
                 **fails)
 
@@ -622,9 +644,26 @@ def _secrets():
             *config.APPLICANT.values()]
 
 
+_RUN_NUM = re.compile(r'[0-9]{1,20}\Z')
+
+
+def run_identity(env, clock=time.time):
+    """`(run_id, run_url, host)`. On Actions `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT`: a re-run keeps the run id, and an
+    id reused would make its events and booking entries duplicates of the first attempt's. Elsewhere `local-<epoch>`."""
+    rid, attempt = env.get('GITHUB_RUN_ID') or '', env.get('GITHUB_RUN_ATTEMPT') or '1'
+    if env.get('GITHUB_ACTIONS') != 'true' or not _RUN_NUM.match(rid) or not _RUN_NUM.match(attempt):
+        return f'local-{int(clock())}', None, 'local' if env.get('GITHUB_ACTIONS') != 'true' else 'actions'
+    url = None
+    if env.get('GITHUB_REPOSITORY'):
+        url = (f"{env.get('GITHUB_SERVER_URL', 'https://github.com')}/{env['GITHUB_REPOSITORY']}"
+               f"/actions/runs/{rid}/attempts/{attempt}")
+    return f'{rid}-{attempt}', url, 'actions'
+
+
 def run_remote(deadline=None, clock=time.time, wait=None):
     """A `--remote` run (module docstring). Returns the exit code: 0 for every orderly end (time up, stopped,
-    banned, the lease someone else's), 1 for an error (the Worker unreachable or lost), 2 for a missing token."""
+    banned, the lease someone else's), 1 for an error (the Worker unreachable or lost), 2 for a missing token or an
+    ITS_BASE_URL that isn't loopback."""
     _rotate_log()
     logs.setup(LOG_FILE)
     logs.mask(_secrets())
@@ -632,19 +671,21 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     env = os.environ
     url_log(f'\n=== Remote session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
     on_actions = env.get('GITHUB_ACTIONS') == 'true'
-    host = 'actions' if on_actions else 'local'
+    run_id, run_url, host = run_identity(env, clock)
     origin = ('dispatch' if env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' else 'schedule') \
         if on_actions else 'local'
     logs.public('start', host=host, origin=origin,
                 left_min=None if deadline is None else round((deadline - clock()) / 60, 1))
+    if book_hotels.BASE_REFUSED:
+        url_log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: only a loopback server (127.0.0.1, "
+                f"localhost, ::1) may stand in for the site; not running{X}")
+        logs.public('run_end', detail='error', reason='base_url', exit=2)
+        return 2
     token = env.get('ITS_RUNNER_TOKEN', '')
     if not token:
         url_log(f"{R}ITS_RUNNER_TOKEN is not set{X}")
         logs.public('run_end', detail='error', reason='no_token', exit=2)
         return 2
-    run_id = env.get('GITHUB_RUN_ID') if on_actions and env.get('GITHUB_RUN_ID') else f'local-{int(clock())}'
-    run_url = (f"{env.get('GITHUB_SERVER_URL', 'https://github.com')}/{env['GITHUB_REPOSITORY']}"
-               f"/actions/runs/{run_id}") if on_actions and env.get('GITHUB_REPOSITORY') else None
     sha = (env.get('GITHUB_SHA') or '')[:8] or None
     rem = remote.Remote(remote.Client(env.get('ITS_WORKER_URL') or remote.DEFAULT_URL, token), run_id, host,
                         sha, run_url, deadline=deadline, clock=clock, on_settings=_apply_settings,
@@ -679,13 +720,16 @@ def run_remote(deadline=None, clock=time.time, wait=None):
         if detail is not None:
             break
         sleep(2)
-    return 1 if detail == 'error' else 0
+    return 1 if detail == 'worker_lost' else 0
 
 
 def run_local():
     """The bot as it always ran on the Mac: config.py's settings, forever."""
     _rotate_log()
     book_hotels._log_handler = _log_sink(to_file=True)
+    if book_hotels.BASE_REFUSED:
+        url_log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: loopback only; not running{X}")
+        return 2
     url_log(f'\n=== Session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
     url_log("=" * 60)
     url_log(f"{B}ITS BOOKING SYSTEM{X}")
@@ -723,8 +767,7 @@ def main(argv=None):
     if args.deadline is not None:
         print('main.py: --deadline needs --remote', file=sys.stderr)
         return 2
-    run_local()
-    return 0
+    return run_local() or 0
 
 
 if __name__ == '__main__':

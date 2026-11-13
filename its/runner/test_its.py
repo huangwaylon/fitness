@@ -101,6 +101,8 @@ class FakeITS:
         self.browser_calls = []       # calls into the Chrome fallback
         self.browser_result = ('confirmed', '12345678')
         self.received = []            # raw request headers, for the curl tests
+        self.hooks = {}               # 'METHOD /path-prefix' -> callable, run as that request arrives (mid-chain edits)
+        self.posts = []               # (path, form) of every POST
 
     def nav_was_cached(self):
         """True when the nav POST just recorded had no calendar GET before it."""
@@ -383,7 +385,14 @@ class Handler(BaseHTTPRequestHandler):
             return
         if injected:
             return self._send(injected, f'<html>error {injected}</html>')
-        return self.route(method, path, self._form() if method == 'POST' else {})
+        for key, hook in list(STATE.hooks.items()):
+            if f'{method} {path}'.startswith(key):
+                hook()
+        form = self._form() if method == 'POST' else {}
+        if method == 'POST':
+            with STATE.lock:
+                STATE.posts.append((path, form))
+        return self.route(method, path, form)
 
     def do_GET(self):
         self._dispatch('GET')
@@ -530,6 +539,8 @@ class Env:
         bh.DEBUG_DIR = os.path.join(d, 'debug')
         with open(bh.CALENDAR_URL_CACHE, 'w') as f:
             f.write(f'{bh.BASE}/calendar_apply/calendar_select?s={S_TOKEN}\n')
+        # The stays the fixtures serve are the targets (book_hotels.still_wanted gates every hold and commit on it).
+        bh.TARGET_DATES = [TARGET, TARGET_LIMITED, FULL_DAY, IDLE_DAY]
         bh.SKIP_HOTELS = self.skip
         bh._SKIP_NORM = frozenset(bh._norm_hotel(n) for n in self.skip if n)
         bh.PRIORITY_HOTELS = self.priority
@@ -558,6 +569,8 @@ class Env:
         STATE.applicant_mode = 'ok'
         STATE.filed.clear()
         STATE.confirmed.clear()
+        STATE.hooks.clear()
+        STATE.posts.clear()
         # Both are module-global and several tests share a link fixture, so a
         # leftover claim would make the next test's hold find no mail.
         cb._pending.clear()
@@ -600,6 +613,7 @@ class Env:
         return self
 
     def __exit__(self, *exc):
+        STATE.hooks.clear()
         for a, v in self.saved.items():
             setattr(bh, a, v)
         for a, v in self.saved_cb.items():
@@ -1357,14 +1371,127 @@ def test_future_dates():
         bh.SKIP_PAST_DATES = True
         out = bh._future_dates(['1999-01-01', '2999-12-31'])
         check('future: past date dropped', out == ['2999-12-31'], str(out))
-        today = __import__('datetime').date.today().isoformat()
-        check('future: today is kept', today in bh._future_dates([today]))
+        today = bh.tokyo_today().isoformat()
+        check('future: today (Tokyo) is kept', today in bh._future_dates([today]))
         check('future: all past -> empty', bh._future_dates(['1999-01-01']) == [])
         bh.SKIP_PAST_DATES = False
         check('future: flag off keeps everything',
               bh._future_dates(['1999-01-01']) == ['1999-01-01'])
     finally:
         bh.SKIP_PAST_DATES = saved
+
+
+def test_dates_are_tokyo_dates():
+    """R4: at 00:30 JST on D−10 the runner's UTC clock still says D−11. Every date decision is Tokyo's: D−10 is
+    inside the free-cancellation floor, and yesterday (Tokyo) is past."""
+    from datetime import datetime, timezone
+    saved = (bh._now, bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.SKIP_PAST_DATES)
+    stay = date(2027, 3, 20)
+    # 00:30 JST on D−10 is 15:30 UTC on D−11.
+    at = datetime(2027, 3, 9, 15, 30, tzinfo=timezone.utc).timestamp()
+    try:
+        bh._now = lambda: at
+        bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.SKIP_PAST_DATES = True, 11, True
+        check('tokyo: today is the 10th in Tokyo (the 9th in UTC)', bh.tokyo_today() == date(2027, 3, 10),
+              str(bh.tokyo_today()))
+        check('tokyo: D−10, not D−11', bh.days_until(stay.isoformat()) == 10, str(bh.days_until(stay.isoformat())))
+        ok, why = bh.confirm_allowed(stay.isoformat())
+        check('tokyo: so the 11-day floor refuses the commit', not ok and '10 day(s)' in why, why)
+        check('tokyo: the 9th is past in Tokyo', bh._future_dates(['2027-03-09', '2027-03-10']) == ['2027-03-10'])
+        bh._now = lambda: at - 3600   # 23:30 JST on the 9th: D−11 everywhere
+        check('tokyo: an hour earlier it is D−11', bh.confirm_allowed(stay.isoformat())[0] is True)
+    finally:
+        bh._now, bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.SKIP_PAST_DATES = saved
+
+    import builtins
+    real_import = builtins.__import__
+
+    def no_zoneinfo(name, *a, **k):
+        if name == 'zoneinfo':
+            raise ImportError('no tzdata')
+        return real_import(name, *a, **k)
+    builtins.__import__ = no_zoneinfo
+    try:
+        tz = bh._tokyo_tz()
+    finally:
+        builtins.__import__ = real_import
+    off = datetime(2027, 3, 9, 15, 30, tzinfo=timezone.utc).astimezone(tz)
+    check('tokyo: without tzdata, a fixed UTC+9', off.utcoffset().total_seconds() == 9 * 3600 and off.day == 10,
+          str(off))
+    check('tokyo: with it, Asia/Tokyo', 'Tokyo' in str(bh.TOKYO) or bh.TOKYO.utcoffset(None) is not None)
+
+
+def test_base_url_override_is_loopback_only():
+    """R12: ITS_BASE_URL stands in for the site only on loopback (an integration run against FakeITS)."""
+    for value, want in (('http://127.0.0.1:8123', 'http://127.0.0.1:8123'), ('http://localhost:9/', 'http://localhost:9'),
+                        ('http://[::1]:8123', 'http://[::1]:8123'), ('', bh.SITE), (None, bh.SITE)):
+        base, refused = bh._base_url(value)
+        check(f'base: {value!r} -> {want}', base == want and refused is None, f'{base} {refused}')
+    for value in ('https://as.its-kenpo.or.jp.evil.example', 'http://127.0.0.1.nip.io:80', 'http://10.0.0.5:80',
+                  'https://example.com', 'http://127.0.0.1:80/path', 'file:///etc/passwd', 'http://localhost?x=1',
+                  'http://[::1'):
+        base, refused = bh._base_url(value)
+        check(f'base: {value!r} refused, never followed', base == bh.SITE and refused == value, f'{base} {refused}')
+
+
+def test_settings_changed_mid_chain(port):
+    """R6: the hold and the commit re-check the live settings: a date removed or a hotel skipped while a chain is
+    running stops it before step 7, and before Chrome."""
+    with Env(port), CapturedLog() as log:
+        STATE.hotels = [(7, NAGU), (8, RESOL)]
+        STATE.hooks['POST /apply/empty_new'] = lambda: setattr(bh, 'TARGET_DATES', [IDLE_DAY])
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('mid-chain: the date removed during step 6: no hold', booked == [] and STATE.count('empty_create') == 0,
+              str(booked))
+        check('mid-chain: and the next hotel is not even started', STATE.count('apply_service_select') == 1,
+              str(STATE.count('apply_service_select')))
+        check('mid-chain: said why', log.saw('not_wanted'))
+
+    with Env(port):
+        STATE.hotels = [(7, NAGU), (8, RESOL)]
+
+        def skip_nagu():
+            bh.SKIP_HOTELS = [NAGU]
+            bh._SKIP_NORM = frozenset([bh._norm_hotel(NAGU)])
+        STATE.hooks['POST /apply/empty_new'] = skip_nagu
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('mid-chain: the hotel skipped during step 6: not held, the other still is', booked == [RESOL],
+              str(booked))
+
+    with Env(port, confirm=True, applicant=dict(APPLICANT_FIXTURE)), CapturedLog() as log:
+        STATE.hotels = [(7, NAGU)]
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('mid-chain: held and queued', booked == [NAGU] and cb.pending_count() == 1)
+        bh.SKIP_HOTELS, bh._SKIP_NORM = [NAGU], frozenset([bh._norm_hotel(NAGU)])
+        cb.drain_once()
+        check('mid-chain: skipped after the hold: Chrome never handed the form', STATE.browser_calls == [],
+              str(len(STATE.browser_calls)))
+        check('mid-chain: and a person is asked', log.saw('HUMAN NEEDED'))
+
+    with Env(port, confirm=True, applicant=dict(APPLICANT_FIXTURE)) as env, CapturedLog() as log:
+        STATE.hotels = [(7, NAGU)]
+
+        def remove_then_commit():
+            bh.TARGET_DATES = []   # the date removed while Chrome fills the form
+            ok, why = STATE.browser_calls[-1]['allow_commit']()
+            return ('confirmed', '1') if ok else ('deferred', why)
+        STATE.browser_result = remove_then_commit
+        bh.book_all_hotels_for_date(TARGET, 'TEST')
+        cb.drain_once()
+        check('mid-chain: removed before 確認: refused on the 申込内容確認画面',
+              len(STATE.browser_calls) == 1 and env.reservations() == {} and log.saw('not_wanted'),
+              str(env.reservations()))
+
+
+def test_guests_read_once_per_chain(port):
+    """R9: steps 6 and 7 send the same guest count, even if the settings change between them."""
+    with Env(port):
+        STATE.hotels = [(7, NAGU)]
+        STATE.hooks['POST /apply/empty_new'] = lambda: setattr(bh, 'NUM_GUESTS', '5')
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        sent = [f.get('apply[stay_persons]') for p, f in STATE.posts
+                if p.startswith('/apply/empty_new') or p.startswith('/apply/empty_create')]
+        check('guests: one count for the whole chain', booked == [NAGU] and sent == ['2', '2'], str(sent))
 
 
 def test_dump_throttle_and_prune():

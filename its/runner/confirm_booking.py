@@ -13,7 +13,8 @@ over curl and stay there.
 
 Three things guard the commit:
 
-- `bh.confirm_allowed()` runs before the commit and again on the 申込内容確認画面.
+- `bh.confirm_allowed()` and `bh.still_wanted()` (the date still a target, the hotel not
+  skipped) run before the commit and again on the 申込内容確認画面.
 - The form is filled from what the form declares, never hard-coded names; anything
   `map_fields` cannot place is `unmapped`, and an unmapped form is dumped for a human
   rather than submitted half-filled against somebody's insurance number.
@@ -50,8 +51,11 @@ _commit_gate = None
 
 
 def _gate(target_date, hotel_name, stage):
-    """`bh.confirm_allowed`, then `_commit_gate` when set. Fails closed if the gate raises."""
+    """`bh.confirm_allowed`, the stay still wanted (the date a target, the hotel not skipped: the settings may have
+    changed since the hold), then `_commit_gate` when set. Fails closed if the gate raises."""
     allowed, why = bh.confirm_allowed(target_date)
+    if allowed and not bh.still_wanted(target_date, hotel_name):
+        allowed, why = False, 'not_wanted: the date was removed or the hotel skipped since the hold'
     if not allowed or _commit_gate is None:
         return allowed, why
     try:

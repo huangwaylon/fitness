@@ -1,7 +1,8 @@
 """The runner's two log sinks: a private file that gets everything, and a public line format that can't carry much.
 
 The Actions log of this public repo is world-readable, so on Actions (`main.py --remote`) `setup()` points fd 1 and 2
-at the private log file: every `print`, traceback, curl and pydoll warning and Chrome's own output lands there, the
+at the private log file: every `print`, traceback, curl and pydoll warning and Chrome's own output (chrome.spawn: the
+browser inherits fd 1/2 instead of pydoll's unread pipes) lands there, the
 verbose log the bot always wrote (dates, hotels, steps, statuses, URLs). The workflow age-encrypts the state dir that
 holds it and uploads only the `.age`.
 
@@ -22,6 +23,7 @@ import threading
 import traceback
 
 _pub = None              # the public stream (a dup of the original stdout) once setup() ran
+_private = False         # fd 1/2 are the private log (setup() ran)
 _lock = threading.Lock()
 
 _CODE = re.compile(r'[a-z][a-z0-9_]{0,39}\Z')          # phase, step, cls, detail, spot, event names
@@ -34,7 +36,7 @@ FIELDS = {
     'scans': 'int', 'scan_fail': 'int', 'avail': 'int', 'holds': 'int', 'confirmed': 'int', 'human': 'int',
     'solves_ok': 'int', 'solves_failed': 'int', 'unsynced': 'int', 'pending': 'int', 'events': 'int',
     'dates': 'int', 'months': 'int', 'skip': 'int', 'pri': 'int', 'guests': 'int', 'auto': 'int', 'interval': 'num',
-    'restarts': 'int', 'active': 'int', 'worker': 'int',
+    'restarts': 'int', 'active': 'int', 'worker': 'int', 'refused': 'int', 'reclaim': 'int', 'run': 'int',
     'secs': 'num', 'waited_s': 'num', 'uptime_min': 'num', 'ok_age_s': 'num', 'left_min': 'num', 'outage_s': 'num',
     'phase': 'code', 'name': 'code', 'step': 'code', 'cls': 'code', 'detail': 'code', 'spot': 'code', 'why': 'code',
     'host': 'code', 'origin': 'code', 'thread': 'code', 'reason': 'code',
@@ -108,9 +110,14 @@ def mask(values):
         out.flush()
 
 
+def private_fds():
+    """True once setup() pointed fd 1/2 at the private log: a child process inheriting them writes there."""
+    return _private
+
+
 def setup(private_path):
     """fd 1/2 → `private_path` (appended, 0600); the original stdout kept only for `public()`. Idempotent."""
-    global _pub
+    global _pub, _private
     if _pub is not None:
         return
     os.makedirs(os.path.dirname(os.path.abspath(private_path)), exist_ok=True)
@@ -125,6 +132,7 @@ def setup(private_path):
     os.dup2(fd, 2)
     os.close(fd)
     _pub = os.fdopen(pub_fd, 'w', buffering=1, encoding='utf-8', errors='replace')
+    _private = True
     for f in (sys.stdout, sys.stderr):
         try:
             f.reconfigure(line_buffering=True)

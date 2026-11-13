@@ -28,9 +28,22 @@ govern the design, and are law:
 python3 main.py --remote --deadline <epoch>   # Actions (its-runner.yml): the Worker's settings, bounded, public-safe logs
 python3 main.py                               # local: config.py's settings, forever, the full log on stdout
 python3 main.py --check                       # preflight: .env, IMAP, the confirmation gate
+python3 remote.py preflight                   # the workflow's first step: GET /runner/config, run=0|1
 python3 chrome.py                             # solve only; writes the s= cache
-python3 test_its.py; python3 test_remote.py   # the suites (a substring selects, -v shows the flow's log)
 ```
+
+The tests, from the repo root (a substring selects, `-v` shows the flow's log):
+
+```bash
+cd its/runner && python3 test_its.py && python3 test_remote.py
+```
+
+Run them as scripts from this directory; not `python3 -I` (isolated mode drops the script's directory from the import
+path, so `import book_hotels` fails).
+
+`ITS_BASE_URL` points the flow at a stand-in for the site, **loopback only** (`http://127.0.0.1:<port>`, `localhost`,
+`[::1]`: an integration run against FakeITS and `wrangler dev --local`); any other value is refused and the run exits 2
+(logged privately), never falling back to the real site.
 
 Everything but `chrome.py` is stdlib + curl; `chrome.py` needs `pydoll-python` (requirements.txt, hashed), imported
 inside the functions that use it so the rest runs without it. Runtime needs the `curl` binary and `pgrep`; on Linux,
@@ -95,13 +108,24 @@ contract: app/src/lib/its/contract.ts, mirrored by hand in remote.py). The seams
 - **The record.** Holds, `confirming`, `confirmed` (with the number) and `failed` entries are queued, sent at once and
   retried with every report until the Worker has them. The Worker's record seeds `holds.json` at start (a hotel held
   for a date is never applied for again, whichever run held it).
-- **The fence.** No new hold and no Chrome commit unless the lease was renewed within `LEASE_SEC − 60` s; no new hold
-  while an entry is unsynced and the Worker has been unreachable > 2 min; a `confirming` entry must be acknowledged
-  before Chrome's 申込する.
+- **The fence.** No new hold and no Chrome commit unless `now < lease.until − 60 s`, read from the lease in the last
+  claim or report answer (a bookings answer can close it, never reopen it); no new hold while an entry is unsynced and
+  the Worker has been unreachable > 2 min, or at once while it answers 507 `record_full`; a `confirming` entry must be
+  acknowledged before Chrome's 申込する. A closed gate sends nothing: it is asked before a scan spawns booking threads,
+  before each hotel's steps 3-6 and at step 7, each time with the live settings (a date removed or a hotel skipped
+  mid-chain stops it, and the commit gate re-checks the same). An id conflict (409 `id_conflict`, or a record holding
+  other content under our id) is never an ack: the entry stays queued and is retried alone, `HUMAN NEEDED`, one
+  `human_needed` event.
+- **Identity and dates.** The run id is `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT` (a re-run is a new run; its link is the
+  attempt's). Every date decision (days left, the 11-day floor, past dates) is Tokyo's (`book_hotels.tokyo_today`,
+  zoneinfo with a fixed UTC+9 fallback), whatever the runner's clock; the workflow also sets `TZ`.
 - **Bounded.** `--deadline`: no new hold after it, drain (bookings in flight, the confirm queue, Chrome) up to 15 min,
   `human_needed` for a hold < 30 min old that never confirmed, `run_end`, exit 0. The Worker's `stop` (paused, MODE
-  off, no dates, the lease lost) drains the same way; a 503 ban drains for 2 min (`run_end detail=ban`: the next run has
-  a new IP); a Worker silent for 15 min ends the run with exit 1.
+  off, no dates, the lease lost) drains the same way, except a `lease_lost` while nobody holds the lease (released or
+  expired during an outage): the run claims it once, at once, and goes on if granted. A 503 ban drains for 2 min
+  (`run_end detail=ban`: the next run has a new IP); a Worker silent for 15 min ends the run (`run_end
+  detail=worker_lost`, exit 1). The workflow's preflight skips the job only for paused, MODE off or no dates; another
+  run's lease goes on to the claim, which waits for it.
 - **Reports** every 30 s (at once after a hold, confirmed, human_needed, ban): phase, scans, failures by step, the last
   error (step, status, class), solves (count, seconds, spot), `available`/`filtered` only when a date's offered set
   changes, the names seen. IMAP login is checked at start (and when auto-confirm turns on); a failure is an `error`
@@ -110,14 +134,16 @@ contract: app/src/lib/its/contract.ts, mirrored by hand in remote.py). The seams
 ## Logs
 
 The Actions log is public. `logs.setup()` points fd 1/2 at `$ITS_STATE_DIR/its_booking.log` (0600): the verbose log
-(dates, hotels, steps, statuses, URLs), tracebacks, curl's and Chrome's output. The only way to the real stdout is
+(dates, hotels, steps, statuses, URLs), tracebacks, curl's and Chrome's output (`chrome.spawn`, the process manager's `process_creator`: Chrome inherits fd
+1/2; pydoll's default pipes, never read, could fill and stall it). The only way to the real stdout is
 `logs.public(event, **fields)`: field names from an allowlist, values ints, seconds or lower-case codes, so no date,
 hotel, URL, token, number or name can pass (a reject is dropped and counted). Public lines: `start`, `claim`,
 `settings` (counts), `phase`, `solve ok secs spot`, `hold n`, `confirmed n`, `human_needed detail`, `error step n
-status cls` (a step at most once a minute), `summary` every 5 min, `drain`, `run_end`. Uncaught exceptions: the
+status cls` (a step at most once a minute), `summary` every 5 min (with `refused`: holds the gate refused), `drain`,
+`run_end`. Uncaught exceptions: the
 traceback private, `error step=uncaught exc=KeyError` public. Secrets are `::add-mask::`ed at start.
 
-At the job's end the state dir is tar'd and age-encrypted to `ITS_LOG_RECIPIENT` (the relay's `ARCHIVE_RECIPIENT`);
+At the job's end the state dir is tar'd (its warnings silenced: they name files) and age-encrypted to `ITS_LOG_RECIPIENT` (the relay's `ARCHIVE_RECIPIENT`);
 only the `.age` is uploaded (3 days); no recipient or a failed encryption uploads nothing. On the Mac:
 `scripts/fetch-logs.sh <run-id>` downloads and decrypts it into /tmp/its-logs-<run-id>.
 
@@ -139,8 +165,9 @@ every module setting by reflection; every date the flow sees is derived from tod
 Chrome is never launched: drive the worker with `drain_once()`.
 
 `test_remote.py` adds a fake Worker (the lease, the record, acks, stop) and an injected clock: contract parity with
-its/contract-example.json and its/norm-cases.json, the claim's wait, lease fencing, a Worker outage, hot reload, the
-confirming ack, the bounded run, stop, the ban, the IMAP check, the Worker's size limits, and **redaction**: the real
+its/contract-example.json, its/norm-cases.json and contract.ts's LIMITS, the claim's wait, lease fencing (from the
+lease itself), re-run ids, Tokyo dates, a closed gate sending nothing, settings changed mid-chain, answers out of order,
+id conflicts and a full record, the re-claim, the preflight, a Worker outage, hot reload, the confirming ack, the bounded run, stop, the ban, the IMAP check, the Worker's size limits, and **redaction**: the real
 `main.py --remote` in a subprocess through holds, a stubbed confirmation, two no-mail legs, a thread exception and a
 ban, its fd 1/2 grepped for every form of the dates, the hotel names, `s=`, csrf, cookies, the applicant's fields, the
 mailbox, the booking number and the token. The tests bind 127.0.0.1; they clear proxy settings for loopback.
