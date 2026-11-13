@@ -82,6 +82,16 @@ test('from the hub: ことば, こえ, なかま and スタンプ over the seede
   // こえ: 18 voices; maple's (us-f3) heard; a sample asked for (muted)
   await z.locator('[data-kiki-zukan-tab="voices"]').click();
   await expect(z.locator('[data-kiki-voice]')).toHaveCount(18);
+  // every card's lines inside it (「ニューヨークのなまり」 one unbreakable phrase), the count's line clear of ▶
+  const spill = await z.locator('[data-kiki-voice]').evaluateAll((cards) => cards.flatMap((c) => {
+    const box = c.getBoundingClientRect(), play = c.querySelector('.play')!.getBoundingClientRect();
+    const out = [...c.querySelectorAll('.acc, b, .n, .meter')].filter((e) => e.getBoundingClientRect().right > box.right - 8).map((e) => `${c.getAttribute('data-kiki-voice')}: ${e.textContent}`);
+    const n = c.querySelector('.n')!, r = document.createRange();
+    r.selectNodeContents(n);
+    const under = [...r.getClientRects()].some((l) => l.right > play.left && l.bottom > play.top && l.top < play.bottom);
+    return under ? [...out, `${c.getAttribute('data-kiki-voice')}: ${n.textContent} under ▶`] : out;
+  }));
+  expect(spill).toEqual([]);
   const f3 = z.locator('[data-kiki-voice="us-f3"]');
   expect(Number(await f3.getAttribute('data-heard'))).toBeGreaterThan(0);
   await f3.click();
