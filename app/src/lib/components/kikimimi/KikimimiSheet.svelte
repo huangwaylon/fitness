@@ -388,7 +388,7 @@
 
 <Sheet bind:open tunes label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss} timed="kikimimi">
   <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub && !welcome ? gear : null} /></div>
-  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
+  <div class="kk-body sheet-scroll" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>
     {#if game && v}
       {@const g = game}
@@ -521,7 +521,6 @@
   }
   /* the one scroller (as the other full-height sheets'): it bleeds 8px past the side padding so focus rings and lips show */
   .kk-body {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .kk-body > :global(*) { flex: none; }

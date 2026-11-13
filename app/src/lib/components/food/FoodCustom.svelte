@@ -56,19 +56,19 @@
 
 <form class="cus" data-custom-level={ro ? 'view' : quick ? 'quick' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
   {#if ro && shown}
-    <section class="card">
+    <section class="card form">
       <h3 class="title" data-custom-name>{shown.n}</h3>
       {#if owner}<p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>{/if}
       {#if gone}<p class="who" role="status" data-custom-gone>{t('food.gone')}</p>{/if}
     </section>
-    <section class="card">
+    <section class="card form">
       <header class="ih"><h4>{t('food.my.perOne', { u: servingText(shown) })}</h4><b class="big money" data-custom-kcal>{t('kiroku.kcal', { n: formatNum(shown.k) })}</b></header>
       <dl class="cells">
         {#each NUTS as k (k)}<div><dt>{t(`food.${k}`)}</dt><dd class="money">{g1(shown[k])}</dd></div>{/each}
       </dl>
     </section>
   {:else}
-    <section class="card">
+    <section class="card form">
       <label class="field">
         <span class="lbl">{t('food.my.name')}</span>
         <input type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
@@ -91,7 +91,7 @@
       {/if}
     </section>
 
-    <section class="card">
+    <section class="card form">
       <h4>{quick ? t('food.quick.head') : t('food.my.perOne', { u: draft.u.trim() || t('food.my.one') })}</h4>
       <label class="field kc">
         <span class="lbl">{t('food.my.kcal')}</span>
@@ -126,7 +126,6 @@
 <style>
   /* FoodRecipe's level: one minmax(0, 1fr) column (never wider than the sheet), its cards, fields and cells */
   .cus { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
-  .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .title { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   .who { margin: 0; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .who .av { display: flex; }

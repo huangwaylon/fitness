@@ -99,7 +99,7 @@
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
-          <div class="scroll" data-trip-view={sel}>
+          <div class="scroll sheet-scroll" data-trip-view={sel}>
             {#if failed === sel}
               <div class="center" data-travel-failed>
                 <p>{t('travel.loadFailed')}</p>
@@ -120,7 +120,6 @@
   .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   .top { flex: none; background-color: var(--surface); }
-  .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
   .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--text-soft); }
   .center p { margin: 0; }
   /* guide text: Japanese breaks only between its words (Txt's <wbr>s), a word too long for the line anywhere */

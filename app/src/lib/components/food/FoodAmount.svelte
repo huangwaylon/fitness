@@ -94,7 +94,7 @@
 </script>
 
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
-  <section class="card head" data-food-live>
+  <section class="card form head" data-food-live>
     <div class="id">
       {#if pic || src}
         <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
@@ -126,7 +126,7 @@
     {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
   </section>
 
-  <section class="card ctl"><FoodPortion {a} bind:typing /></section>
+  <section class="card form ctl"><FoodPortion {a} bind:typing /></section>
 
   {#if once}<p class="once" data-once><Phrases text={t('food.rep.once')} /></p>{/if}
   <div class="acts level-acts">
@@ -150,7 +150,6 @@
      追加) at the level's end, the foot of the screen when the food is short (Food.svelte stretches the level) */
   .amt { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
   .amt > .level-acts { margin-top: auto; }
-  .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .head { gap: 10px; }
   /* the picture beside the name; none: the name the whole width */
   .id { display: flex; gap: 12px; align-items: flex-start; }
@@ -186,7 +185,7 @@
   .per-t[aria-expanded='true'] .caret { transform: rotate(180deg); }
   .per { margin: -4px 0 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
   .nut { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0;
-    padding-top: 10px; border-top: 2px dashed color-mix(in srgb, var(--lip) 45%, transparent); }
+    padding-top: 10px; border-top: 1.5px dashed var(--stitch); }
   .nut div { min-width: 0; }
   .nut dt { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nut dd { margin: 2px 0 0; font-size: var(--fs-body); }

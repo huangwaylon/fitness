@@ -46,7 +46,7 @@
 </script>
 
 <div class="rep-lv" data-food-repeat={meal}>
-  <section class="card">
+  <section class="card form">
     <h4>{t('food.rep.days')}</h4>
     <div class="chips" role="group" aria-label={t('food.rep.days')}>
       {#each presets as [k, v] (k)}
@@ -61,7 +61,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card form">
     <header class="ih"><h4>{t('food.rep.items')}</h4><b class="money">{t('kiroku.kcal', { n: formatNum(total) })}</b></header>
     <ul>
       {#each items as it, i (i)}
@@ -89,7 +89,6 @@
 <style>
   /* FoodAmount's level: one minmax(0, 1fr) column (never wider than the sheet), its cards, chips and segments */
   .rep-lv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
-  .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* 毎日 · 平日 · 週末: theme.css .chip.big */
   .sb {
@@ -103,7 +102,7 @@
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih b { font-size: var(--fs-body); }
   ul { list-style: none; margin: 0; padding: 0; }
-  li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  li + li { border-top: 1.5px dashed var(--stitch); }
   /* FoodMeal's rows, not tappable */
   .row {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nm kc' 'amt kc'; align-items: center;

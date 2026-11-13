@@ -160,7 +160,7 @@
     color: var(--text-soft); background: color-mix(in srgb, var(--lip) 35%, transparent); font-variant-numeric: tabular-nums;
   }
   .pm.met { color: var(--leaf-text); background: color-mix(in srgb, var(--c-leaf) 24%, transparent); }
-  li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  li + li { border-top: 1.5px dashed var(--stitch); }
   .row {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;
     display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th amt kc'; align-items: center;

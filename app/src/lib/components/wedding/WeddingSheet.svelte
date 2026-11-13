@@ -111,7 +111,7 @@
 <Sheet bind:open tunes label={t('wed.title')} variant="full" onclose={closed} timed="wedding" keep>
   <div class="wd">
     <NavBar {title} onclose={() => (open = false)} />
-    <div class="wd-body" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>
+    <div class="wd-body sheet-scroll" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>
       {#if tab === 'settings' && canEdit}
         <Settings />
       {:else if tab === 'plan'}
@@ -141,7 +141,7 @@
   .wd { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; padding: var(--ui-top) var(--safe-right) 0 var(--safe-left); }
   .wd > :global(.navbar) { margin-inline: 6px; }
   /* the one scroller */
-  .wd-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding-bottom: 24px; }
+  .wd-body { display: flex; flex-direction: column; padding-bottom: 24px; }
   /* the plan's last row clear of ＋ */
   .wd-body.plan { padding-bottom: 80px; }
   .wd-body.writing { overflow: hidden; padding-bottom: 0; }

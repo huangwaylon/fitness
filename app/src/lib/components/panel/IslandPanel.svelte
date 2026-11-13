@@ -64,7 +64,7 @@
 <Sheet bind:open tunes label={t('wallet.title')} variant="top" onclose={closed} timed="panel">
   <div class="titlebar"><NavBar title={date ? dayTitle(date) : t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
-  <div class="panel-body" bind:this={body}>
+  <div class="panel-body sheet-scroll" bind:this={body}>
     {#if view && me}
       <div class="lvl" class:again hidden={!!date}><Wallet onday={openDay} /></div>
       {#if day}
@@ -77,7 +77,6 @@
 <style>
   /* The one scroller. It bleeds 8px past the side padding so focus rings and lips are not clipped by its overflow. */
   .panel-body {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .panel-body > :global(*) { flex: none; }

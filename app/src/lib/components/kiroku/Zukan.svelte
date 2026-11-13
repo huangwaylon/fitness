@@ -139,7 +139,7 @@
     </section>
   </div>
 
-  <div class="zscroll" data-zukan-grid>
+  <div class="zscroll sheet-scroll" data-zukan-grid>
     {#each runs as run, i (i)}
       {@const built = run.entries.slice(0, Math.max(0, limit - starts[i]))}
       {#if built.length}
@@ -189,7 +189,7 @@
   .top b { font-size: var(--fs-body); white-space: nowrap; }
   .all { color: var(--leaf-text, #2E8A3E); }
   .hint { margin: 0; color: var(--text-soft); font-weight: 700; font-size: var(--fs-s); line-height: 1.5; }
-  .zdetail { display: flex; gap: 10px; align-items: center; padding-top: 8px; border-top: 2px dashed color-mix(in srgb, var(--text) 14%, transparent); }
+  .zdetail { display: flex; gap: 10px; align-items: center; padding-top: 8px; border-top: 1.5px dashed var(--stitch); }
   .big { flex: none; line-height: 0; }
   .txt { flex: 1; display: grid; gap: 2px; min-width: 0; }
   .zdetail .nm { font-size: var(--fs-body); line-height: 1.3; }
@@ -215,7 +215,6 @@
   .more:active { background: color-mix(in srgb, var(--text) 8%, transparent); }
   /* The grid's own scroller. It bleeds 8px past the side padding (into the panel body's) so lips are not clipped. */
   .zscroll {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 10px 8px var(--body-pad); display: flex; flex-direction: column; gap: 12px;
   }
   .set { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 6px 4px -2px; font-size: var(--fs-body); }

@@ -17,7 +17,7 @@
   const sorted = $derived(sortTrips(trips, now));
 </script>
 
-<div class="list" data-trip-list>
+<div class="list sheet-scroll" data-trip-list>
   {#if sorted.coming.length}
     <h3 class="sec-label head">{t('travel.coming')}</h3>
     <div class="passes">{#each sorted.coming as m (m.id)}<Pass trip={m} phase={phaseOf(m, now)} onopen={() => onopen(m.id)} />{/each}</div>
@@ -29,7 +29,7 @@
 </div>
 
 <style>
-  .list { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding: 0 12px calc(var(--safe-bottom, 0px) + 24px); }
+  .list { padding: 0 12px calc(var(--safe-bottom, 0px) + 24px); }
   .list > .sec-label:first-child { margin-top: 4px; }
   .passes { display: grid; gap: 12px; }
 </style>

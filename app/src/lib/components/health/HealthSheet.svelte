@@ -89,13 +89,13 @@
       <NavBar title={tab === 'food' ? t('island.food') : t('title.health')} lead={tab === 'food' ? foodLead : healthLead} middle={pages} onclose={close} sfx="self" />
     {/if}
   </div>
-  <div class="body" data-health-sheet bind:this={healthBody} hidden={tab !== 'health'}>
+  <div class="body sheet-scroll" data-health-sheet bind:this={healthBody} hidden={tab !== 'health'}>
     {#if week.view}
       <Health bind:lead={healthLead} {opens} />
     {/if}
   </div>
   {#if foodSeen}
-    <div class="body" data-food-sheet bind:this={foodBody} hidden={tab !== 'food'}>
+    <div class="body sheet-scroll" data-food-sheet bind:this={foodBody} hidden={tab !== 'food'}>
       {#if week.view}
         <Food bind:title={foodTitle} bind:back bind:lead={foodLead} open={food} />
       {/if}
@@ -109,7 +109,6 @@
      its period, ごはん's 記録 · グラフ), so their range rows sit at one height. */
   .body {
     --kk-gap: 12px; --kk-row: var(--hit);
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 6px 8px var(--body-pad);
   }
   .body[hidden] { display: none; }

@@ -56,7 +56,7 @@
 
 <Sheet bind:open tunes label={t('title.zukan')} variant="pop" onclose={closed} timed="zukan">
   <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('title.zukan')} onback={kind ? back : onback ? toSettings : null} onclose={() => (open = false)} sfx="self" /></div>
-  <div class="zs-body" class:fill={kind !== null && kind !== 'cast'} data-zukan-sheet>
+  <div class="zs-body sheet-scroll" class:fill={kind !== null && kind !== 'cast'} data-zukan-sheet>
     {#if m && finds}
       {#key kind}
         <div class="lvl">
@@ -76,7 +76,6 @@
 <style>
   /* The one scroller (as the panel's): it bleeds 8px past the side padding so focus rings and lips are not clipped. */
   .zs-body {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column;
   }
   /* a kind's page pins its head and scrolls its own grid (to the bottom edge): the body holds still */

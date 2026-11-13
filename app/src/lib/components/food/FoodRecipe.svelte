@@ -75,7 +75,7 @@
 {/snippet}
 
 <form class="rcp" data-recipe-level={ro ? 'view' : 'edit'} onsubmit={(e) => { e.preventDefault(); if (ok) onsave?.(); }}>
-  <section class="card">
+  <section class="card form">
     {#if hero.length}
       <div class="hero" class:one={hero.length === 1} data-recipe-hero={hero.length} aria-hidden="true">
         {#each hero as h (h.id)}<FoodThumb size={hero.length === 1 ? 160 : 78} img={h.img} />{/each}
@@ -104,7 +104,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card form">
     <header class="ih"><h4>{t('food.rcp.items')}</h4><b class="money">{kcalText(Math.round(tot.k))}</b></header>
     {#if draft.it.length}
       <ul data-recipe-items>
@@ -125,7 +125,7 @@
     {/if}
   </section>
 
-  <section class="card">
+  <section class="card form">
     <header class="ih"><h4>{t('food.rcp.perOne')}</h4><b class="big money" data-recipe-live-per>{kcalText(Math.round(tot.k / draft.sv))}</b></header>
     <dl class="cells">
       {#each [['p', tot.p], ['fa', tot.fa], ['c', tot.c], ['s', tot.s]] as const as [k, v] (k)}
@@ -152,7 +152,6 @@
 <style>
   /* FoodAmount's level: one minmax(0, 1fr) column (never wider than the sheet), its cards, steppers and cells */
   .rcp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
-  .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .hero { justify-self: center; display: grid; grid-template-columns: repeat(2, 78px); grid-auto-rows: 78px; gap: 4px; margin-bottom: 4px; }
   .hero.one { grid-template-columns: 160px; grid-auto-rows: 160px; }
   .title { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
@@ -181,7 +180,7 @@
   ul { list-style: none; margin: 0; padding: 0; }
   /* why 保存 waits (a name or an ingredient missing), a line of its own over it */
   .why { flex: 1 1 100%; margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-align: center; }
-  li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  li + li { border-top: 1.5px dashed var(--stitch); }
   /* FoodMeal's rows */
   .row {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;

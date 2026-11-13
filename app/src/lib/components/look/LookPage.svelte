@@ -426,7 +426,7 @@
     {/each}
   </div>
 
-  <div class="panel" bind:this={panel} onscroll={scrolled}
+  <div class="panel sheet-scroll" bind:this={panel} onscroll={scrolled}
     onfocusin={(e) => (searching = (e.target as HTMLElement).matches('input[type=search]'))} onfocusout={() => (searching = false)}>
     {#if wornVillager && tab !== 'coord' && tab !== 'villager'}
       <p class="vnote" data-look-villager-note>
@@ -502,7 +502,6 @@
   .tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
 
   .panel {
-    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 4px 8px var(--body-pad);
   }
   .tp { display: flex; flex-direction: column; gap: 12px; }

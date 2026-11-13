@@ -107,7 +107,7 @@
     <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
-  <div class="scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
+  <div class="scroll sheet-scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
     {#if tab === 'days'}
       <div class="hero" bind:this={hero}>
         <PhotoBand src={staticUrl(trip.hero.src)} alt={pick(trip.hero.alt, i18n.locale)} height={150} edge>
@@ -157,7 +157,7 @@
   .hd { flex: none; position: relative; z-index: 6; background: var(--surface); }
   .hd.over { position: absolute; top: 0; left: 0; right: 0; background: none; transition: background-color var(--dur-quick); }
   .hd.solid { background: var(--surface); box-shadow: 0 var(--lip-s) 0 var(--lip); }
-  .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding-bottom: 24px; }
+  .scroll { padding-bottom: 24px; }
   .scroll.map { padding-bottom: 0; }
   /* the photo's foot: the place (white at every time of day), its dates and area */
   .ht { display: flex; align-items: center; gap: 8px; font: 700 var(--fs-title)/1.2 var(--font-ui); letter-spacing: .02em; }

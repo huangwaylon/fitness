@@ -74,6 +74,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   position: relative; background: var(--card); color: var(--text); border-radius: var(--r-card);
   box-shadow: var(--sh-lip); padding: 16px;
 }
+/* .pad: a sheet's denser card (12 / 14); .form: a form's card, its fields stacked 10px apart (ごはん's amount, recipe, いつもの) */
+.card.pad { padding: 12px 14px; }
+.card.form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
 
 /* ---------- a chart card (けんこう's metrics, weight and body cards; ごはん's グラフ): its icon, title and goal chip in the
    header, the figures, the chart, a one-line key; one padding and rhythm for all of them ---------- */
@@ -121,6 +124,8 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 /* a confirm's 削除 (the action that takes something away): coral */
 .btn.danger { --fill: var(--c-coral); --lip-c: var(--c-coral-text); }
+/* .yuzu: taking in what's ready (畑's 収穫: a gift to collect, not the leaf's "do"); sunk like any while it can't */
+.btn.yuzu:not(:disabled, [aria-disabled='true'], .off) { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
 /* a confirm's footer: キャンセル (paper) and the verb, wider (docs/design.md "Forms and confirms") */
 .two-cta { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 .two-cta .btn { margin: 0; }
@@ -140,6 +145,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   --sh-ctl-s: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); --sh-ctl-s-press: inset 0 0 0 1.5px var(--c-edge), 0 0 0 var(--c-edge);
 }
 
+/* a full-height sheet's one scroller (under its NavBar, over its foot): it takes the room left and scrolls, its
+   overscroll kept in */
+.sheet-scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
 .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
 /* a full-height sheet's NavBar (Sheet top / pop): rows scrolling up fade out under it, not cut at a hard edge */
 .titlebar::after {

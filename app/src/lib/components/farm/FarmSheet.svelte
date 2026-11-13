@@ -159,9 +159,9 @@
 
 <Sheet bind:open tunes label={t('farm.title')} variant="full" timed="farm">
   <div class="titlebar"><NavBar pad title={t('farm.title')} onclose={() => (open = false)} sfx="self" /></div>
-  <div class="fs-body" data-farm-sheet>
+  <div class="fs-body sheet-scroll" data-farm-sheet>
     {#if view}
-      <section class="card sum">
+      <section class="card pad sum">
         {#if view.ripe.length}
           <p data-farm-today>{t('farm.today', { n: view.ripe.length, max: view.max, shells: formatNum(view.shells) })}</p>
         {:else if view.next === 1}
@@ -193,7 +193,7 @@
         {/each}
       </section>
       {#if view.field}
-        <section class="card field">
+        <section class="card pad field">
           <FieldMap plots={view.mine} farm={view.farm} {date} watered={view.watered} label={(p) => cellOf(p).label} bind:selected />
           {#if cell}
             <div class="sel" data-farm-selected={cell.p}>
@@ -210,7 +210,7 @@
             </div>
           {/if}
         </section>
-        <section class="card plant" data-farm-plant>
+        <section class="card pad plant" data-farm-plant>
           {#if !view.empty}
             <p class="note" data-farm-empty>{t('farm.full')}</p>
           {:else}
@@ -230,7 +230,7 @@
         <p class="note" data-farm-empty>{t('farm.noField')}</p>
       {/if}
       {#if view.off.length}
-        <div class="card off" data-farm-orphans>
+        <div class="card pad off" data-farm-orphans>
           <span>{t('farm.orphans', { n: view.off.length })}</span>
           <button type="button" class="btn small paper" data-farm-orphans-dig data-sfx="tick" onclick={backToStarts}>{t('farm.orphansDig')}</button>
         </div>
@@ -244,13 +244,11 @@
 </Sheet>
 
 <style>
-  .fs-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding: 6px calc(var(--side) + var(--safe-right)) var(--body-pad) calc(var(--side) + var(--safe-left)); display: grid; gap: 10px; align-content: start; }
-  .card { padding: 12px 14px; border-radius: var(--r-card, 18px); background: var(--card); color: var(--text); }
+  .fs-body { padding: 6px calc(var(--side) + var(--safe-right)) var(--body-pad) calc(var(--side) + var(--safe-left)); display: grid; gap: 10px; align-content: start; }
   .sum p { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .sum .cap { font-weight: 600; color: var(--text-soft); }
   .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .acts .btn { margin: 0 0 var(--lip-h); }
-  .btn.yuzu:not([aria-disabled='true']) { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
   .acts .btn.yuzu { min-height: 52px; font-size: var(--fs-body); }
   .btn.water { min-height: 44px; font-size: var(--fs-body); }
   .field { display: grid; gap: 10px; padding: 12px 10px; }
