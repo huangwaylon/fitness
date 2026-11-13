@@ -1,0 +1,9 @@
+# Runtime state (config.STATE_DIR): the `s=` token, holds/reservations, the log and debug dumps are all
+# credential-bearing (README.md "State"). Never committed; on Actions it lives outside the checkout.
+state/
+# Applicant identity and the mail app password reach the program only through the environment.
+.env
+.env.*
+__pycache__/
+*.py[cod]
+.venv/
