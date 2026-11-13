@@ -646,9 +646,13 @@
   });
 
   let top = $state<HTMLElement>();
+  let foot = $state<HTMLElement>();
+  /** What covers the canvas at its top (the back button) and foot (the say and eye buttons' row over the safe area,
+   *  `foot` its line, there before the buttons are): the room fits between. */
   function insets() {
-    const rc = canvas?.getBoundingClientRect(), tb = top?.getBoundingClientRect();
-    return { top: rc && tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: 72 };
+    const rc = canvas?.getBoundingClientRect(), tb = top?.getBoundingClientRect(), fb = foot?.getBoundingClientRect();
+    if (!rc) return { top: 0, bottom: 0 };
+    return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: fb ? Math.max(0, rc.bottom - fb.top) : 0 };
   }
 
   /** The e2e's and the console's hooks (dev builds, test mode and the logic tier). */
@@ -764,6 +768,7 @@
       if (!e) sayBtn?.focus({ preventScroll: true });
     }} />
   {/if}
+  <div class="foot" bind:this={foot} aria-hidden="true"></div>
   {#if sayShown}
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
     <!-- my villager's eyes, the say button's mirror at the bottom left -->
@@ -779,6 +784,7 @@
   .dip { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 200ms ease-out; }
   .dip.on { opacity: 1; transition: opacity var(--dip-in) ease-in; }
   .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--ui-top) + 8px); z-index: 2; min-height: var(--hit); }
+  .foot { position: absolute; left: 0; right: 0; height: 0; bottom: calc(var(--safe-bottom, 0px) + 14px + var(--hit, 44px)); pointer-events: none; }
   .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
   .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
   .reset {

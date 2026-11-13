@@ -3,8 +3,8 @@
   // doorway plaque's name, word for word (museum/hud.ts chipName: 「さ か な」, 「か せ き 2」), and what's on show in this
   // room of how many it holds 「12/120」; the hall its name only. Under it, while any came in the last day, a gold
   // 「あたらしい n」 tag (this room's new finds; the hall's, the museum's). The world HUD's sizes (34 high in the back pill's 44
-  // row, the 4px lip), between ‹ しまへ and ⌂; static, the name crossfading as the room changes. Not a button: it keeps a
-  // finger off the floor under it.
+  // row), between ‹ しまへ and ⌂; static, the name crossfading as the room changes. Not a button, and not drawn as one: a
+  // translucent plate with no lip (the buttons beside it have theirs); it keeps a finger off the floor under it.
   let { name, found, total, fresh = 0 }: { name: string; found?: number; total?: number; fresh?: number } = $props();
   const count = $derived(found !== undefined && total !== undefined ? `${found}/${total}` : '');
 </script>
@@ -22,14 +22,14 @@
     position: absolute; z-index: 2; left: 50%; top: calc(var(--ui-top) + 13px); transform: translateX(-50%);
     height: 34px; min-width: 120px; max-width: calc(100% - 2 * (var(--side) + max(var(--safe-left), var(--safe-right)) + 92px));
     box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; justify-content: center; gap: 10px;
-    border-radius: var(--r-pill); background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-cream) 70%, transparent); color: var(--c-ink); box-shadow: none;
     font: 700 var(--fs-body)/1 var(--font-ui); white-space: nowrap; -webkit-tap-highlight-color: transparent; user-select: none;
   }
   .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; animation: in 220ms ease-out both; }
   .n { flex: none; color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
   /* the gold NEW tag hangs under the pill (static: no pulse, no frames) */
   .new {
-    position: absolute; top: calc(100% + var(--lip-h) + 4px); left: 50%; transform: translateX(-50%);
+    position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
     padding: 3px 9px; border-radius: var(--r-pill); background: #f2c14e; color: #4a3210; box-shadow: 0 2px 0 #b8862a;
     font: 700 var(--fs-s)/1.1 var(--font-ui); font-variant-numeric: tabular-nums; pointer-events: none;
   }

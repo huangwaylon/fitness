@@ -145,9 +145,20 @@ for (const room of ROOMS) {
     const hint = page.locator(`[data-pan-hint="${room.path}"]`);
     const { cx, cy } = await open(page);
     await expect.poll(hints).toEqual(['2ほんゆびで うごかせるよ']);
+    // under the top row, clear of the floor's door where my villager comes in
+    if (await hint.count()) expect((await hint.boundingBox())!.y).toBeLessThan((page.viewportSize()!.height) * 0.3);
     if (room.path === 'shop') {
-      // (the shop's stays: its counter starts off a phone's edge; the next visit says it again)
+      // (the shop's stays: its counter starts off a phone's edge; the next visit says it again; the list opened, gone
+      // for the visit)
       await expect(hint).toBeVisible();
+      await open(page);
+      await expect(hint).toBeVisible();
+      await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+      await expect(page.locator('[data-shop-panel]')).toBeVisible();
+      await expect(hint).toHaveCount(0);
+      await page.locator('[data-shop-close]').click();
+      await expect(page.locator('[data-shop-panel]')).toHaveCount(0);
+      await expect(hint).toHaveCount(0);
       await open(page);
       await expect(hint).toBeVisible();
     }
