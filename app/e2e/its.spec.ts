@@ -131,7 +131,7 @@ test('a member’s row says 要対応; the level: the verdict, 状況 (くわし
   await expect(hold).toContainText('NAGU 勝浦');
   await expect(hold).toContainText('日付が近いため');
   await expect(hold.locator('[data-its-hold-left]')).toHaveText(/^あと1[45]分ごろで無効$/);
-  await expect(hold.locator('[data-its-steps] li')).toHaveText(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます（料金なし）']);
+  await expect(hold.locator('[data-its-steps] li')).toHaveText(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます。料金はかかりません。']);
   expect(await y('[data-its-verdict]')).toBeLessThan(await y('[data-its-booking]'));
   expect(await y('[data-its-booking]')).toBeLessThan(await y('[data-its-fact="phase"]'));
   await expect(its.locator('[data-its-date]')).toHaveCount(2);

@@ -386,7 +386,7 @@
                   aria-pressed={picked === i} data-its-cell={c.state} data-sfx="none" onclick={() => (picked = i)}></button>
               {/each}
             </div>
-            <div class="ticks" aria-hidden="true">{#each ticks as k (k.i)}<span style:left="{((k.i + 0.5) / STRIP_MIN) * 100}%">{k.label}</span>{/each}</div>
+            <div class="ticks" aria-hidden="true">{#each ticks as k (k.i)}<span style:left="{((k.i + 0.5) / STRIP_MIN) * 100}%" style:translate={k.i < 4 ? '0 0' : k.i > STRIP_MIN - 5 ? '-100% 0' : undefined}>{k.label}</span>{/each}</div>
             <p class="sline" aria-live="polite" data-its-scan-line>{picked === null ? t('its.scan.pick') : cells[picked].text}</p>
           </div>
         {/if}
@@ -616,7 +616,6 @@
   .strip .cell:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
   .ticks { position: relative; height: 1.3em; font: 700 var(--fs-s)/1.3 var(--font-num); color: var(--text-soft); }
   .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
-  .ticks span:first-child { translate: 0 0; }
   .sline { margin: 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
   .facts { display: grid; gap: 8px; margin: 0; }
   .facts div { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-body); }
@@ -628,7 +627,7 @@
   .more > summary::-webkit-details-marker { display: none; }
   .more[open] > summary { margin-bottom: 4px; }
 
-  .rows { list-style: none; display: grid; gap: 8px; margin: 0; padding-left: 0; }
+  .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
   .rows > li { display: flex; align-items: center; gap: 10px; min-height: var(--hit); }
   .rows > li + li { padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
   .txt { flex: 1; min-width: 0; font-size: var(--fs-body); }
@@ -646,6 +645,7 @@
 
   .months { display: grid; gap: 4px; padding-top: 8px; }
   .month { margin: 4px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .dates { padding: 0; }
   .dates > li { display: block; min-height: 0; }
   .drow { display: flex; align-items: center; gap: 4px; min-height: var(--hit); }
   .its .booked { color: var(--leaf-text); }
@@ -733,6 +733,7 @@
 
   .why { flex-basis: 100%; margin: 0 4px; display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .why span { flex: 1; }
+  div.why { padding: 4px 4px 4px 12px; margin: 0; border-radius: var(--r-card); color: var(--text); background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
   .why .btn { flex: none; margin: 0; }
   p.why.bad { padding: 8px 12px; margin: 0; border-radius: var(--r-card); color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
   .foot { margin: 0 4px; text-align: center; font-size: var(--fs-s); color: var(--text-soft); overflow-wrap: anywhere; line-height: var(--lh); }

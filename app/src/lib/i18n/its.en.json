@@ -202,7 +202,7 @@
   "its.hold.left": "Lapses in about {n} min",
   "its.hold.expired": "Lapsed",
   "its.hold.mail": "The mail “{hotel}申込手続きのご案内” → 申込する → 確認",
-  "its.hold.free": "Doing nothing cancels it (no fee)",
+  "its.hold.free": "Doing nothing cancels it, free of charge.",
   "its.hold.paid": "Cancelling after confirming costs a fee",
   "its.step.calendar": "Room check",
   "its.step.scan": "Room check",

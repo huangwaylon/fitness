@@ -393,7 +393,7 @@ describe('a hold’s deadline and what to do', () => {
     // the example's hold: 12:55, the stay 9 days away, near_date
     const [row] = bookingRows(STATUS, TODAY);
     expect([row.state, row.left, row.expired]).toEqual(['action', 'あと15分ごろで無効', false]);
-    expect(row.steps).toEqual(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます（料金なし）', '確定後の取り消しは有料です']);
+    expect(row.steps).toEqual(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます。料金はかかりません。', '確定後の取り消しは有料です']);
     const later = bookingRows(STATUS, TODAY, STATUS.now + 15 * 60_000)[0];
     expect([later.left, later.expired, later.steps]).toEqual(['期限切れ', true, []]);
     expect(bookingRows(STATUS, TODAY, STATUS.now + 14.5 * 60_000)[0].left).toBe('あと1分ごろで無効');

@@ -202,7 +202,7 @@
   "its.hold.left": "あと{n}分ごろで無効",
   "its.hold.expired": "期限切れ",
   "its.hold.mail": "メール『{hotel}申込手続きのご案内』→ 申込する → 確認",
-  "its.hold.free": "何もしなければ自動で取り消されます（料金なし）",
+  "its.hold.free": "何もしなければ自動で取り消されます。料金はかかりません。",
   "its.hold.paid": "確定後の取り消しは有料です",
   "its.step.calendar": "空室の確認",
   "its.step.scan": "空室の確認",
