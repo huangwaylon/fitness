@@ -293,6 +293,86 @@ export interface ItsStatus {
   /** The calendar reads of the last RECENT_SCANS_SEC (by the Worker's receive time), oldest first, from every run that
    *  reported them. Absent from an older Worker. */
   recentScans?: ScanEntry[];
+  /** Web Push (the Push section below): counts and codes only, never an endpoint or its hash. Absent from an older
+   *  Worker. */
+  push?: ItsPushStatus;
+}
+
+// ---- Push (members; its/README.md "Push") ----
+// A phone opts in from ボット → 保養所 (POST /its/push/subscribe); the Worker sends one notification per subscription
+// for a hold the bot will confirm (normal), a hold that needs a person (high, while the hold lasts), and 予約確定.
+// Every push route answers `{ok: true, push}` or the usual `{ok: false, error}`.
+
+export type PushLang = 'ja' | 'en';
+/** @public (its/worker) */
+export const PUSH_LANGS: readonly PushLang[] = ['ja', 'en'];
+/** The push services an endpoint may point at (https, the default port, this exact host): Apple's (iPhone, macOS
+ *  Safari), and FCM for a desktop Chrome while developing. @public (its/worker) */
+export const PUSH_HOSTS: readonly string[] = ['web.push.apple.com', 'fcm.googleapis.com'];
+/** An endpoint's length bound (characters). @public (its/worker) */
+export const PUSH_MAX_ENDPOINT = 512;
+/** Subscriptions per member: a fifth replaces the member's least recently refreshed. @public (its/worker) */
+export const PUSH_SUBS_PER_MEMBER = 4;
+/** A subscription not refreshed (subscribe again) for this long is dropped; the page refreshes weekly. @public (its/worker) */
+export const PUSH_KEEP_DAYS = 30;
+/** POST /its/push/test: per endpoint, at most one this often and PUSH_TESTS_PER_DAY a Tokyo day (429 rate_limited). @public (its/worker) */
+export const PUSH_TEST_EVERY_SEC = 30;
+/** @public (its/worker) */
+export const PUSH_TESTS_PER_DAY = 20;
+
+/** `POST /its/push/subscribe`: the browser's PushSubscription (`toJSON()`'s endpoint and keys) and the language its
+ *  notifications are written in. The endpoint is unique: one another member subscribed moves to this one. Refused:
+ *  400 bad_push_endpoint (not https on PUSH_HOSTS, a port, userinfo, an IP, past PUSH_MAX_ENDPOINT), bad_push_keys
+ *  (p256dh not a P-256 point, auth not 16 bytes, base64url), bad_push_lang; 503 push_off (the Worker has no VAPID
+ *  key). @public (its/worker) */
+export interface PushSubscribeInput { endpoint: string; keys: { p256dh: string; auth: string }; lang: PushLang }
+/** `POST /its/push/unsubscribe` (forgets it if it is the caller's; ok either way) and `POST /its/push/test` (one
+ *  notification to it, if it is the caller's: else 404 not_subscribed; 429 rate_limited). @public (its/worker) */
+export interface PushEndpointInput { endpoint: string }
+
+/** A push's outcome: ok (201/202), gone (404/410: the subscription deleted), config (401/403: the VAPID key or JWT
+ *  refused, `reason` Apple's, e.g. BadJwtToken: kept, not retried), bug (400/413 or a message we couldn't build),
+ *  retry (429/5xx/network: tried again until its TTL), expired (its TTL ran out first). @public (its/worker) */
+export type PushOutcome = 'ok' | 'gone' | 'config' | 'bug' | 'retry' | 'expired';
+/** @public (its/worker) */
+export type PushKind = 'hold' | 'human_needed' | 'confirmed' | 'test';
+
+/** `ItsStatus.push`, and every push route's `push`: live subscriptions per member, the VAPID public key the Worker signs
+ *  with (`vapidPublic`: the page's applicationServerKey, read here at runtime, never built into the app: an
+ *  uncompressed P-256 point, 65 bytes, base64url; null: push is off; a different one than a phone subscribed with: the
+ *  pair was rotated, resubscribe), the last push answered ok, and the last attempt's outcome. @public (its/worker) */
+export interface ItsPushStatus {
+  A: number;
+  B: number;
+  vapidPublic: string | null;
+  lastSentAt: number | null;
+  lastOutcome: { at: number; kind: PushKind; code: PushOutcome; status: number; reason?: string } | null;
+}
+
+/** The push routes (POST, a member's key, CORS as the other member routes) and their bodies. @public (its/worker) */
+export const PUSH_ROUTES = { subscribe: '/its/push/subscribe', unsubscribe: '/its/push/unsubscribe', test: '/its/push/test' } as const;
+/** Every push route's 200: the push status after it (the test's outcome in `lastOutcome`); a refusal is
+ *  `{ok: false, error}` (400 a code above, 401, 403, 404 not_subscribed, 405, 413, 429 rate_limited, 503 push_off).
+ *  @public (its/worker) */
+export interface PushReply { ok: true; push: ItsPushStatus }
+
+/** The decrypted message the service worker receives (JSON, ≤ 3000 bytes). Title and body are written by the Worker in
+ *  the subscription's language (Tokyo times), so an older service worker shows a newer kind; `tag` collapses one
+ *  stay's notifications (the hold's replaced by its 予約確定); `open` names the page to open. @public (its/worker) */
+export interface ItsPushPayload {
+  v: 1;
+  kind: PushKind;
+  id: string;          // the event's `${runId}:${seq}`, or `test`
+  tag: string;
+  title: string;
+  body: string;
+  open: 'its';
+  date?: string;
+  hotel?: string;
+  /** The hold's lapse (ms): hold and human_needed. */
+  expiresAt?: number;
+  /** 申込受付番号: confirmed. */
+  number?: string;
 }
 
 /** `GET /health/its` (Bearer ITS_HEALTH_TOKEN, for alerting from a public repo's workflow): codes and counts only, never

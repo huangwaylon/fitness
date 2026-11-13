@@ -1,6 +1,7 @@
 # The ITS booker's Worker (its/README.md): one Worker and a SQLite-backed Durable Object on the Workers Free plan, beside
 # the island's relay and the gym bot on the same account. Deploy: `npm run deploy`. Secrets (never in this public repo):
-# `npx wrangler secret put` KEY_A, KEY_B (the relay's), ITS_RUNNER_TOKEN, and GH_DISPATCH_TOKEN (optional).
+# `npx wrangler secret put` KEY_A, KEY_B (the relay's), ITS_RUNNER_TOKEN, GH_DISPATCH_TOKEN (optional), ITS_HEALTH_TOKEN and
+# VAPID_PRIVATE (README "Push": `npm run vapid:keys`).
 name = "its-bot"
 # The relay's account, pinned as it is there (relay/wrangler.toml).
 account_id = "984dde81c150a207305c312cde950046"
@@ -15,6 +16,9 @@ preview_urls = false
 MODE = "on"
 # The app's page origin (relay/wrangler.toml's): exact origins, comma-separated; localhost is always allowed.
 ALLOWED_ORIGINS = "https://island-fund.pages.dev"
+# Web Push's VAPID public key (README "Push"; base64url, 65 bytes; the app subscribes with the same one): the pair from
+# `npm run vapid:keys`, its private part the secret VAPID_PRIVATE. Not a key: push is off (subscribe answers 503).
+VAPID_PUBLIC = "REPLACE_AT_DEPLOY"
 
 # The record: settings, bookings, the runner's last report, the lease, the events.
 [[durable_objects.bindings]]

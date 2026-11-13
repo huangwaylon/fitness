@@ -1,19 +1,22 @@
-// The ITS booker's Worker (README.md): the page's routes (a member's key, CORS for the app's origin), the runner's
+// The ITS booker's Worker (README.md): the page's routes (a member's key, CORS for the app's origin; /its/push/* too), the runner's
 // (ITS_RUNNER_TOKEN), /health and /health/its (ITS_HEALTH_TOKEN: codes only, for alerting). Bodies are capped and checked
 // here (the contract's parseSettingsInput, validate.ts); the record and its rules are the object's (bot.ts), one RPC per
 // request. Every refusal logs one line with its reason (never a key or a token); a page's request carries its
 // X-Request-Id (or one made up) in its lines and its answer.
 import { corsOf, roleOfKey } from '../../../relay/src/auth.ts';
-import { LIMITS, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
+import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member, type PushSubscribeInput } from '../../../app/src/lib/its/contract.ts';
 import type { Env } from './env.ts';
-import { parseBookings, parseClaim, parseReport, parseRunInput } from './validate.ts';
+import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
 
 export { ItsBot } from './bot.ts';
 
 const bot = (env: Env) => env.BOT.get(env.BOT.idFromName('its'));
 
 /** The page's routes and their one method each. */
-const MEMBER_ROUTES: Record<string, string> = { '/its/status': 'GET', '/its/settings': 'PUT', '/its/run': 'POST' };
+const MEMBER_ROUTES: Record<string, string> = {
+  '/its/status': 'GET', '/its/settings': 'PUT', '/its/run': 'POST',
+  [PUSH_ROUTES.subscribe]: 'POST', [PUSH_ROUTES.unsubscribe]: 'POST', [PUSH_ROUTES.test]: 'POST',
+};
 const RUNNER_ROUTES: Record<string, string> = { '/runner/config': 'GET', '/runner/claim': 'POST', '/runner/report': 'POST', '/runner/bookings': 'POST' };
 
 class Refused extends Error {
@@ -110,6 +113,15 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
       if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
       const r = await bot(env).putSettings(p.value, by, rid);
       return ok(r.status, r.ok ? 200 : 409);
+    }
+    if (path.startsWith('/its/push/')) {
+      const p = path === PUSH_ROUTES.subscribe ? parsePushSubscribe(json) : parsePushEndpoint(json);
+      if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
+      const b = bot(env);
+      const r = path === PUSH_ROUTES.subscribe ? await b.subscribe(p.value as PushSubscribeInput, by, rid)
+        : path === PUSH_ROUTES.unsubscribe ? await b.unsubscribe(p.value, by, rid)
+          : await b.testPush(p.value, by, rid);
+      return r.ok ? ok(r) : refuse(req, path, r.status, r.error, base, ` by=${by} rid=${rid}`);
     }
     const p = parseRunInput(json);
     if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);

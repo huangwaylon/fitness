@@ -17,6 +17,11 @@ export interface Env {
   /** A fine-grained PAT (this repo, Actions read/write) for 開始's workflow_dispatch. Unset: no dispatch (the
    *  schedule starts a run). */
   GH_DISPATCH_TOKEN?: string;
+  /** Web Push's VAPID public key (wrangler.toml var: an uncompressed P-256 point, base64url; the page subscribes with
+   *  it). Not a key (the placeholder): push is off. */
+  VAPID_PUBLIC?: string;
+  /** Its private scalar (base64url, 32 bytes; a secret: scripts/vapid-keys.ts). Unset: push is off. */
+  VAPID_PRIVATE?: string;
   /** The deployed commit (scripts/deploy.sh), shown by /health and the status. */
   COMMIT?: string;
 }

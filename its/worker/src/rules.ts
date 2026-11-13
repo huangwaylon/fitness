@@ -7,6 +7,7 @@ import {
   type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsHealth, type ItsSettings,
   type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type ScanEntry, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
+import type { PushJob, PushLog, PushSub } from './push.ts';
 
 export type Mode = 'on' | 'off';
 /** The runner's last report as kept: the status's, plus the Worker's own receive times of its last good scan and solve
@@ -35,6 +36,10 @@ export interface ItsRecord {
   /** The calendar reads of the last RECENT_SCANS_SEC, one batch per report that brought new ones: when it arrived
    *  (what ages it out) and from which run (a retry repeats that run's `t`s). */
   scans: ScanBatch[];
+  /** Web Push (push.ts): the phones subscribed, the outbox (the alarm sends it), the last outcome. */
+  subs: PushSub[];
+  pushq: PushJob[];
+  pushlog: PushLog;
 }
 
 export interface ScanBatch { at: number; runId: string; log: ScanEntry[] }

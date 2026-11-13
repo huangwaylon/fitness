@@ -2,9 +2,9 @@
 // hold. The page's settings go through the contract's own parseSettingsInput. Each answers the value or an error code
 // (logged by the Worker, answered as 400).
 import {
-  BOOKING_KINDS, EVENT_KINDS, HOSTS, ID_RE, LIMITS, MAX_SITE_NAME, PHASES, SCANS_PER_REPORT, isDate, isId, isName,
-  type BookingInput, type ClaimInput, type EventInput, type Host, type LastError, type Phase, type RunInput, type RunnerReport,
-  type ScanEntry,
+  BOOKING_KINDS, EVENT_KINDS, HOSTS, ID_RE, LIMITS, MAX_SITE_NAME, PHASES, PUSH_LANGS, PUSH_MAX_ENDPOINT, SCANS_PER_REPORT, isDate, isId, isName,
+  type BookingInput, type ClaimInput, type EventInput, type Host, type LastError, type Phase, type PushEndpointInput, type PushLang,
+  type PushSubscribeInput, type RunInput, type RunnerReport, type ScanEntry,
 } from '../../../app/src/lib/its/contract.ts';
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
@@ -104,4 +104,18 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
       events: events as EventInput[], seen: x.seen as string[],
     },
   };
+}
+
+/** The page's push bodies: their shapes (the endpoint's allow-list and the key's curve are the object's: bot.ts). */
+export function parsePushSubscribe(x: unknown): Parsed<PushSubscribeInput> {
+  if (!isObj(x) || typeof x.endpoint !== 'string' || x.endpoint.length > PUSH_MAX_ENDPOINT) return { ok: false, error: 'bad_push_endpoint' };
+  const k = x.keys;
+  if (!isObj(k) || typeof k.p256dh !== 'string' || typeof k.auth !== 'string' || k.p256dh.length > 100 || k.auth.length > 100) return { ok: false, error: 'bad_push_keys' };
+  if (!PUSH_LANGS.includes(x.lang as PushLang)) return { ok: false, error: 'bad_push_lang' };
+  return { ok: true, value: { endpoint: x.endpoint, keys: { p256dh: k.p256dh, auth: k.auth }, lang: x.lang as PushLang } };
+}
+
+export function parsePushEndpoint(x: unknown): Parsed<PushEndpointInput> {
+  if (!isObj(x) || typeof x.endpoint !== 'string' || !x.endpoint || x.endpoint.length > PUSH_MAX_ENDPOINT) return { ok: false, error: 'bad_push_endpoint' };
+  return { ok: true, value: { endpoint: x.endpoint } };
 }

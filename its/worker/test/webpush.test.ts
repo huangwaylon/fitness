@@ -2,7 +2,8 @@
 // decrypted back from the receiving side, RFC 8292's VAPID JWT verified with the public key, the request's headers
 // (TTL, Urgency, Topic), the plaintext bound, and the imported key and per-audience JWT kept for reuse.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MAX_PLAINTEXT, b64url, ecdhWith, encryptPush, pushRequest, senderKeys, unb64url, vapidAuth, type Vapid } from '../src/webpush.ts';
+import { MAX_PLAINTEXT, b64url, encryptPush, pushRequest, senderKeys, unb64url, vapidAuth } from '../src/webpush.ts';
+import { decrypt, vapidPair } from './pushKit.ts';
 
 // RFC 8291 Appendix A ("Intermediate Values for Encryption").
 const V = {
@@ -16,35 +17,6 @@ const V = {
   body:
     'DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN'
 };
-
-/** Decrypt as the browser would (exported for the push tests' fake push service) (RFC 8291 from the receiving side), to round-trip our own messages. */
-export async function decrypt(body: Uint8Array<ArrayBuffer>, uaPublic: Uint8Array<ArrayBuffer>, uaPrivate: Uint8Array, auth: Uint8Array<ArrayBuffer>): Promise<string> {
-  const salt = body.slice(0, 16);
-  const idlen = body[20];
-  const asPub = body.slice(21, 21 + idlen);
-  const sealed = body.slice(21 + idlen);
-  const jwk = (pub: Uint8Array, d?: Uint8Array): JsonWebKey => ({ kty: 'EC', crv: 'P-256', x: b64url(pub.slice(1, 33)), y: b64url(pub.slice(33)), ...(d ? { d: b64url(d) } : {}) });
-  const priv = await crypto.subtle.importKey('jwk', jwk(uaPublic, uaPrivate), { name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']);
-  const pub = await crypto.subtle.importKey('jwk', jwk(asPub), { name: 'ECDH', namedCurve: 'P-256' }, false, []);
-  const ecdh = new Uint8Array(await crypto.subtle.deriveBits(ecdhWith(pub), priv, 256));
-  const h = async (k: Uint8Array<ArrayBuffer>, d: Uint8Array<ArrayBuffer>) =>
-    new Uint8Array(await crypto.subtle.sign('HMAC', await crypto.subtle.importKey('raw', k, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']), d));
-  const cat = (...p: Uint8Array[]) => {
-    const o = new Uint8Array(p.reduce((n, x) => n + x.length, 0));
-    let i = 0;
-    for (const x of p) (o.set(x, i), (i += x.length));
-    return o;
-  };
-  const te = new TextEncoder();
-  const ikm = await h(await h(auth, ecdh), cat(te.encode('WebPush: info\0'), uaPublic, asPub, new Uint8Array([1])));
-  const prk = await h(salt, ikm);
-  const cek = (await h(prk, cat(te.encode('Content-Encoding: aes128gcm\0'), new Uint8Array([1])))).slice(0, 16);
-  const nonce = (await h(prk, cat(te.encode('Content-Encoding: nonce\0'), new Uint8Array([1])))).slice(0, 12);
-  const key = await crypto.subtle.importKey('raw', cek, 'AES-GCM', false, ['decrypt']);
-  const plain = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce }, key, sealed));
-  expect(plain.at(-1)).toBe(2); // the last record's delimiter
-  return new TextDecoder().decode(plain.slice(0, -1));
-}
 
 describe('RFC 8291 message encryption', () => {
   it('reproduces the RFC test vector byte for byte', async () => {
@@ -100,13 +72,6 @@ describe('VAPID (RFC 8292)', () => {
     expect(await decrypt(body, unb64url(V.uaPublic), unb64url(V.uaPrivate), unb64url(V.auth))).toBe('hi');
   });
 });
-
-/** A fresh VAPID pair, as scripts/vapid-keys.ts makes one. */
-export async function vapidPair(subject = 'https://island-fund.pages.dev'): Promise<Vapid & { key: CryptoKey }> {
-  const kp = (await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])) as CryptoKeyPair;
-  const publicKey = b64url(new Uint8Array((await crypto.subtle.exportKey('raw', kp.publicKey)) as ArrayBuffer));
-  return { publicKey, privateKey: ((await crypto.subtle.exportKey('jwk', kp.privateKey)) as JsonWebKey).d!, subject, key: kp.publicKey };
-}
 
 describe('the push request’s options and bounds', () => {
   afterEach(() => vi.restoreAllMocks());

@@ -3,7 +3,10 @@
 import { describe, expect, it } from 'vitest';
 import norm from '../../../../its/norm-cases.json';
 import example from '../../../../its/contract-example.json';
-import { MAX_NAME, MAX_SEARCH, MAX_SITE_NAME, daysUntil, isDate, isId, isName, normName, parseSettingsInput, tokyoToday } from './contract.ts';
+import {
+  MAX_NAME, MAX_SEARCH, MAX_SITE_NAME, PUSH_HOSTS, PUSH_LANGS, PUSH_MAX_ENDPOINT, PUSH_ROUTES, daysUntil, isDate, isId, isName, normName,
+  parseSettingsInput, tokyoToday, type ItsPushPayload, type ItsPushStatus, type PushSubscribeInput,
+} from './contract.ts';
 
 // 2026-11-13 12:00 JST
 const NOW = Date.parse('2026-11-13T03:00:00Z');
@@ -102,5 +105,22 @@ describe('isName and isId (the Worker’s checks, the runner mirrors them)', () 
     expect(parseSettingsInput({ ...example.settingsInput, skip: [long] }, NOW).ok).toBe(true);
     expect(parseSettingsInput({ ...example.settingsInput, skip: ['あ'.repeat(MAX_SITE_NAME + 1)] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
     expect(parseSettingsInput({ ...example.settingsInput, priority: [long] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+  });
+});
+
+describe('push (the page reads the Worker’s, the service worker its message)', () => {
+  it('the example’s status.push, inputs and message have the contract’s fields', () => {
+    const push: ItsPushStatus = example.statusNewer.push as ItsPushStatus;
+    expect(Object.keys(push).sort()).toEqual(['A', 'B', 'lastOutcome', 'lastSentAt', 'vapidPublic']);
+    expect(push.vapidPublic).toMatch(/^B[A-Za-z0-9_-]{86}$/);   // 65 bytes, uncompressed
+    const sub: PushSubscribeInput = example.pushSubscribeInput as PushSubscribeInput;
+    expect(PUSH_HOSTS).toContain(new URL(sub.endpoint).hostname);
+    expect(sub.endpoint.length).toBeLessThanOrEqual(PUSH_MAX_ENDPOINT);
+    expect(PUSH_LANGS).toContain(sub.lang);
+    expect(example.pushEndpointInput).toEqual({ endpoint: sub.endpoint });
+    const msg: ItsPushPayload = example.pushPayload as ItsPushPayload;
+    expect(msg).toMatchObject({ v: 1, kind: 'human_needed', open: 'its' });
+    expect(new TextEncoder().encode(JSON.stringify(msg)).length).toBeLessThan(3000);
+    expect(Object.values(PUSH_ROUTES)).toEqual(['/its/push/subscribe', '/its/push/unsubscribe', '/its/push/test']);
   });
 });

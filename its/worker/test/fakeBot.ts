@@ -17,9 +17,11 @@ export const ORIGIN = 'https://island-fund.pages.dev';
 export const NOW = example.status.now;
 export const MIN = 60_000;
 
-/** A Durable Object's storage: a map, with each call counted (`ops`) and each key written counted (`rows`). */
+/** A Durable Object's storage: a map, with each call counted (`ops`) and each key written counted (`rows`), and the
+ *  alarm's times as set (`alarms`; the tests call `alarm()` themselves). */
 export function fakeState(kv = new Map<string, unknown>()) {
   const count = { gets: 0, puts: 0, rows: 0 };
+  const alarms: number[] = [];
   let loading: Promise<unknown> = Promise.resolve();
   const storage = {
     get: async (keys: string[]) => {
@@ -30,9 +32,10 @@ export function fakeState(kv = new Map<string, unknown>()) {
       count.puts++;
       for (const [k, v] of Object.entries(entries)) { count.rows++; kv.set(k, structuredClone(v)); }
     },
+    setAlarm: async (t: number) => void alarms.push(t),
   };
   const ctx = { storage, blockConcurrencyWhile: (fn: () => Promise<unknown>) => (loading = fn()) };
-  return { ctx, kv, count, loaded: () => loading };
+  return { ctx, kv, count, alarms, loaded: () => loading };
 }
 
 export type State = ReturnType<typeof fakeState>;
