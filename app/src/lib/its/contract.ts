@@ -210,8 +210,8 @@ export interface RunnerReport {
 }
 /** @public (its/worker) */
 export const REPORT_EVERY_SEC = 30;
-/** Saved settings a running run still hasn't applied after this long (two reports): `settings_stale`. @public (its/worker) */
-export const SETTINGS_STALE_SEC = 2 * REPORT_EVERY_SEC;
+/** Saved settings a running run still hasn't applied after this long (four reports: two flickered): `settings_stale`. @public (its/worker) */
+export const SETTINGS_STALE_SEC = 4 * REPORT_EVERY_SEC;
 
 /** One calendar read, for the page's minute strip (the last hour, across runs). No date or facility: counts and codes.
  *  @public (its/worker) */

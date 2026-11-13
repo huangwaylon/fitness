@@ -138,14 +138,16 @@ describe('verdictOf', () => {
   });
 
   it('settings_stale → degraded: the run holding the lease still applies older settings SETTINGS_STALE_SEC after a save', () => {
-    const saved = { ...settings, updatedAt: NOW - 2 * MIN };
+    const saved = { ...settings, updatedAt: NOW - 3 * MIN };
     const lease = { holder: '19283746', host: 'actions' as const, until: NOW + 4 * MIN };
     const r = (settingsAt: number | null | undefined, x: Partial<ItsRecord> = {}) => rec({ settings: saved, lease, runner: runner({ settingsAt }), ...x });
     expect(verdict(r(NOW - 3 * HOUR))).toEqual({ verdict: 'degraded', reasons: ['settings_stale'] });
     expect(verdict(r(null)).reasons).toEqual(['settings_stale']);   // never got any
-    expect(verdict(r(NOW - 2 * MIN)).reasons).toEqual([]);          // applied
+    expect(verdict(r(NOW - 3 * MIN)).reasons).toEqual([]);          // applied
     expect(verdict(r(undefined)).reasons).toEqual([]);              // an older runner says nothing
-    // within the two reports after the save
+    // within four reports (two minutes) of the save: two cycles flickered
+    expect(SETTINGS_STALE_SEC).toBe(120);
+    expect(verdict(r(NOW - 3 * HOUR, { settings: { ...saved, updatedAt: NOW - 90_000 } })).reasons).toEqual([]);
     expect(verdict(r(NOW - 3 * HOUR, { settings: { ...saved, updatedAt: NOW - SETTINGS_STALE_SEC * 1000 } })).reasons).toEqual([]);
     // the run has ended (lease released) or someone else's holds it: nothing to apply them
     expect(verdict(r(NOW - 3 * HOUR, { lease: null })).reasons).toEqual([]);
