@@ -2,7 +2,7 @@
 // by ETag, dropped and never asked again on the relay's no, retried at the next chance after a network failure.
 // Invented items only (no Kalori data).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchKalori, Refused } from './kalori.ts';
+import { fetchKalori, KALORI_ANSWER_MS, Refused } from './kalori.ts';
 import { loadFoodDb } from './load.ts';
 import { searchFoods } from './db.ts';
 
@@ -21,7 +21,7 @@ function fakeCaches() {
   vi.stubGlobal('caches', { open: async () => cache });
   return kept;
 }
-type Reply = Response | 'offline';
+type Reply = Response | 'offline' | 'hang';
 /** fetch answering the relay with `replies` in turn (and the static index), recording each request's headers. */
 function relay(replies: Reply[]) {
   const asked: Record<string, string>[] = [];
@@ -31,6 +31,8 @@ function relay(replies: Reply[]) {
     asked.push({ ...(init?.headers as Record<string, string>) });
     const r = replies.shift() ?? 'offline';
     if (r === 'offline') throw new TypeError('Failed to fetch');
+    // lie-fi: no answer until the request is aborted
+    if (r === 'hang') return new Promise<Response>((_, rej) => init?.signal?.addEventListener('abort', () => rej(init.signal!.reason)));
     return r;
   });
   return asked;
@@ -60,6 +62,27 @@ describe('fetchKalori', () => {
     await expect(fetchKalori(HREF, KEY)).rejects.not.toBeInstanceOf(Refused);
     await expect(fetchKalori(HREF, KEY)).rejects.toBeInstanceOf(Refused);
     await expect(fetchKalori(HREF, KEY)).rejects.toBeInstanceOf(Refused);
+  });
+  it('no answer in KALORI_ANSWER_MS: the kept copy; nothing kept, an error', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const kept = fakeCaches();
+      relay([ok(), 'hang', 'hang']);
+      await fetchKalori(HREF, KEY);
+      let got: string | undefined;
+      const p = fetchKalori(HREF, KEY).then((d) => (got = d.items[0].id));
+      await vi.advanceTimersByTimeAsync(KALORI_ANSWER_MS - 1);
+      expect(got).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      await p;
+      expect(got).toBe('kal:1');
+      kept.clear();
+      const q = expect(fetchKalori(HREF, KEY)).rejects.toThrow('no answer');
+      await vi.advanceTimersByTimeAsync(KALORI_ANSWER_MS);
+      await q;
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('a 200 with no items is an error, never kept', async () => {
     const kept = fakeCaches();

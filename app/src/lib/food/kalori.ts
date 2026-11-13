@@ -1,11 +1,14 @@
 // The members' chain menus (Kalori, docs/food-data.md "Kalori"): the relay's `GET /food/kalori` with this phone's key
 // (relay/src/foodRoute.ts), never on Pages or in git. Kept in the Cache API (`food-kalori`) for offline and asked again
 // at each catalog load with its ETag (a 304: the kept copy). 401/403 (unpaired, the guest) and 404 (none uploaded):
-// the kept copy dropped, no retry (Refused); a network failure or another status: the kept copy, else an error (the
-// caller retries at its next chance). Run in dataset.worker.ts, or on the page without a worker.
+// the kept copy dropped, no retry (Refused); a network failure, no answer in KALORI_ANSWER_MS or another status: the
+// kept copy, else an error (the caller retries at its next chance). Run in dataset.worker.ts, or on the page without a worker.
 import type { Dataset } from './types.ts';
 
 const CACHE = 'food-kalori';
+/** How long the relay's answer (its headers, never the body's download) is waited for: on lie-fi the kept copy, not
+ *  WebKit's ~60 s (review 11-13 B7). */
+export const KALORI_ANSWER_MS = 15_000;
 
 /** The relay said no (401, 403, 404): not asked again till the catalog's next load. */
 export class Refused extends Error {}
@@ -26,11 +29,15 @@ async function fetched(href: string, key: string): Promise<Dataset> {
   const kept = await cache?.match(href).catch(() => undefined);
   const etag = kept?.headers.get('ETag');
   let res: Response;
+  const ac = new AbortController();
+  const late = setTimeout(() => ac.abort(new DOMException('no answer', 'TimeoutError')), KALORI_ANSWER_MS);
   try {
-    res = await fetch(href, { headers: { Authorization: `Bearer ${key}`, ...(etag ? { 'If-None-Match': etag } : {}) }, cache: 'no-store' });
+    res = await fetch(href, { headers: { Authorization: `Bearer ${key}`, ...(etag ? { 'If-None-Match': etag } : {}) }, cache: 'no-store', signal: ac.signal });
   } catch (e) {
     if (kept) return (await kept.json()) as Dataset;
     throw e;
+  } finally {
+    clearTimeout(late);
   }
   if (res.status === 304 && kept) return (await kept.json()) as Dataset;
   if (res.status === 200) {
