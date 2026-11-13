@@ -103,8 +103,8 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
 - **Logs** (Workers Logs, 3 days: dashboard → Workers → its-bot → Logs, or `npx wrangler tail`): one line per request,
   `its <op> key=value …` (`its status …`, the page's poll, at debug; `its settings by=B dates=2 … search=40 rid=…`,
   `its claim run=… ok=1`, `its report run=… phase=scanning …`, `its event hold … date=… hotel=…`); every refusal
-  `its refused <status> <why> <route>`, a refused booking at error. Never a key or token; dates and names are fine
-  (the logs are private). Invocation logs off.
+  `its refused status= why= method= path=` (`rid=` a page's, `run=` a runner's); `its bookings refused record_full`
+  at error. Never a key or token; dates and names are fine (the logs are private). Invocation logs off.
 
 ## Push
 
@@ -277,11 +277,11 @@ min (and `/health/its` failing twice in a row), and closes it when healthy.
 | `dispatch_failed` | degraded | 開始's dispatch was refused (`dispatch.status`: 401/403 = the PAT expired or lacks Actions write, 404 = the workflow file, 422 = not on main, 0 = no answer); the schedule still starts a run | Renew `GH_DISPATCH_TOKEN`; meanwhile wait ≤ 30 min |
 | `starting` | starting | Dispatched, no report yet (≤ 10 min) | Wait; Actions shows the queued job |
 | `never_ran` | late | No runner has ever reported | `ITS_RUNNER_ENABLED`, the `its` environment's secrets, the workflow's runs on Actions |
-| `runner_silent` | late | No report for 45 min | Actions: the last runs (failed? cancelled? the preflight's `stop`?), `lastPreflightAgeSec` (is the schedule asking?); `wrangler tail` for `its refused 401` (a token changed on one side only) |
+| `runner_silent` | late | No report for 45 min | Actions: the last runs (failed? cancelled? the preflight's `stop`?), `lastPreflightAgeSec` (is the schedule asking?); `wrangler tail` for `its refused status=401` (a token changed on one side only) |
 | `banned` | failing | The last run hit the 503 セキュリティアラート (~24 h on that IP); clears at the next good scan | Nothing: the next run has a new IP. Recurring: a longer interval |
 | `scan_failing` | failing | 3+ failed calendar reads in a row (`runner.lastError`: step, status, class) | its:logs for the failing step and its saved HTML / screenshot: the site changed (SITE.md); `session_dead` for long = the Turnstile solve |
 | `solve_failing` | degraded | The last 3 Turnstile solves failed | The run's public log (`solve` lines, spot, secs); SITE.md §6 |
-| `unsynced` | degraded | The runner holds booking entries the Worker hasn't acknowledged (no new hold meanwhile) | `wrangler tail` for `its refused … /runner/bookings` (409 `id_conflict`, 507 `record_full`: back up the record, Operations); it retries each report |
+| `unsynced` | degraded | The runner holds booking entries the Worker hasn't acknowledged (no new hold meanwhile) | `wrangler tail` for `its refused … path=/runner/bookings` (409 `id_conflict`, 507 `record_full`: back up the record, Operations); it retries each report |
 | `human_needed` | degraded | A stay needs a person (within 24 h, no later 予約確定): a failed 申込 leg, a `human_needed` event (`events` say why), a `confirming` with no outcome after 10 min, or a hold < 30 min old the runner won't finish | Finish or cancel it from the site's mail before the hold lapses (`HOLD_SEC`) |
 | `mail_failing` | degraded | Auto-confirm is on and the runner's last IMAP check failed (`runner.lastError` step `imap`: `auth_failed`, `web_login_required`, …): holds wait for a person | The Gmail app password (`ITS_IMAP_APP_PASSWORD`), Gmail's security alerts; meanwhile finish holds by hand |
 | `settings_stale` | degraded | The run holding the lease still applies settings older than the saved ones two minutes (`SETTINGS_STALE_SEC`) after a save (`runner.settingsAt` < `settings.updatedAt`) | its:logs on the run (its reports, a parse refusal of the settings); 停止 → 開始 starts a fresh run |
