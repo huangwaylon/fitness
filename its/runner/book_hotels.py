@@ -9,13 +9,17 @@ Seams for the remote runner (main.py --remote, remote.py), each a no-op when uns
 as before:
 
 - `apply_settings(s)` installs the Worker's settings by reassigning the module globals the flow reads at call time
-  (TARGET_DATES, SKIP_HOTELS/_SKIP_NORM, PRIORITY_HOTELS/_PRIORITY_NORM, RETRY_DELAY, NUM_GUESTS, AUTO_CONFIRM) —
-  exactly what test_its's Env does. The confirm gate (`confirm_allowed`) reads the live AUTO_CONFIRM.
+  (TARGET_DATES, SKIP_HOTELS/_SKIP_NORM, SEARCH_HOTELS/_SEARCH_NORM, PRIORITY_HOTELS/_PRIORITY_NORM, RETRY_DELAY,
+  NUM_GUESTS, AUTO_CONFIRM) — exactly what test_its's Env does. The confirm gate (`confirm_allowed`) reads the live
+  AUTO_CONFIRM. With `search` (the allow-list) only the facilities named there are eligible; without it, every one not
+  skipped (`is_eligible`).
+- `set_done_dates(dates)`: the nights with a `confirmed` booking in the Worker's record. They are not scanned, take no
+  new hold, and no second facility is confirmed for them (`still_wanted`, `night_done`).
 - `_hold_gate()` → `(ok, why)` (via `hold_allowed()`) is asked before a scan spawns booking threads, before each
   hotel's steps 3-6, and immediately before step 7 (the hold): the lease, the run's deadline and an unsynced record can
   refuse a new hold. A closed gate costs no request beyond the scan's own (steps 3-6 every cycle per hotel and date
   would be the request storm that gets an IP banned). Each check also re-asks `still_wanted(date, hotel)`: a date
-  removed or a hotel skipped in the app mid-chain stops that chain.
+  removed, a hotel skipped or switched off, or the night confirmed, mid-chain, stops that chain.
 - `notify(kind, **fields)` reports what happened (scan, fail, offered, hold, human_needed, ban, …) to `_event_sink`;
   it never raises into the flow.
 - `scan_and_book_month` takes its dates as a list or a callable, read every cycle, so a date added or removed in the
@@ -109,8 +113,26 @@ def hold_allowed(target_date=None, hotel_name=None):
 
 
 def still_wanted(target_date, hotel_name=None):
-    """The date is still a target and the hotel (if given) not skipped, in the settings as they are now."""
-    return target_date in TARGET_DATES and (hotel_name is None or not is_skipped(hotel_name))
+    """The date is still a target with no confirmed booking (DONE_DATES), and the hotel (if given) eligible
+    (`is_eligible`: searched and not skipped), in the settings as they are now."""
+    return (target_date in TARGET_DATES and target_date not in DONE_DATES
+            and (hotel_name is None or is_eligible(hotel_name)))
+
+
+def night_done(target_date):
+    """A night with a `confirmed` booking in the Worker's record (decision 1, its/README.md): not scanned, no new hold,
+    and no second facility confirmed for it (confirm_booking's gate)."""
+    return target_date in DONE_DATES
+
+
+def set_done_dates(dates):
+    """Install the nights that have a `confirmed` booking (remote.Remote's `on_done`). True when the set changed."""
+    global DONE_DATES
+    new = frozenset(d for d in dates if isinstance(d, str) and _ISO_DATE.match(d))
+    if new == DONE_DATES:
+        return False
+    DONE_DATES = new
+    return True
 
 
 # The scan interval's floor, whatever the settings say: the ~24 h IP bans come from the poll rate (its/SITE.md §2).
@@ -123,14 +145,18 @@ def apply_settings(s):
     The flow reads them at call time, so the next scan cycle, booking and confirm gate see the change; a booking chain
     already past its hotel list keeps the guest count it started with. Normalised sets are built before they are
     assigned, so a reader sees the old or the new one, never half. Returns the names that changed (for the log)."""
-    global TARGET_DATES, SKIP_HOTELS, _SKIP_NORM, PRIORITY_HOTELS, _PRIORITY_NORM
+    global TARGET_DATES, SKIP_HOTELS, _SKIP_NORM, PRIORITY_HOTELS, _PRIORITY_NORM, SEARCH_HOTELS, _SEARCH_NORM
     global RETRY_DELAY, NUM_GUESTS, AUTO_CONFIRM
     dates = sorted({d for d in s['dates'] if isinstance(d, str) and _ISO_DATE.match(d)})
     skip = [n for n in s['skip'] if isinstance(n, str)]
     pri = [p for p in s['priority'] if isinstance(p, str)]
+    # The allow-list: absent (an older Worker, or settings saved before it) keeps the skip-list rule.
+    search = s.get('search')
+    search = None if not isinstance(search, list) else [n for n in search if isinstance(n, str)]
     new = {
         'TARGET_DATES': dates,
         'SKIP_HOTELS': skip,
+        'SEARCH_HOTELS': search,
         'PRIORITY_HOTELS': pri,
         'RETRY_DELAY': max(MIN_RETRY_DELAY, int(s['intervalSec'])),
         'NUM_GUESTS': str(int(s['guests'])),
@@ -139,7 +165,9 @@ def apply_settings(s):
     changed = [k for k, v in new.items() if globals()[k] != v]
     skip_norm = frozenset(_norm_hotel(n) for n in skip if _norm_hotel(n))
     pri_norm = tuple(_norm_hotel(p) for p in pri if _norm_hotel(p))
+    search_norm = None if search is None else frozenset(_norm_hotel(n) for n in search if _norm_hotel(n))
     SKIP_HOTELS, _SKIP_NORM = skip, skip_norm
+    SEARCH_HOTELS, _SEARCH_NORM = search, search_norm
     PRIORITY_HOTELS, _PRIORITY_NORM = pri, pri_norm
     TARGET_DATES = dates
     RETRY_DELAY = new['RETRY_DELAY']
@@ -604,6 +632,11 @@ def _norm_hotel(name):
 
 _SKIP_NORM = frozenset(_norm_hotel(n) for n in SKIP_HOTELS if _norm_hotel(n))
 _PRIORITY_NORM = tuple(_norm_hotel(p) for p in PRIORITY_HOTELS if _norm_hotel(p))
+# The allow-list (the Worker's settings.search): None = none, every facility not skipped is eligible (a local run, an
+# older Worker). DONE_DATES: the nights with a confirmed booking in the record (set_done_dates).
+SEARCH_HOTELS = None
+_SEARCH_NORM = None
+DONE_DATES = frozenset()
 
 
 def order_hotels(hotels):
@@ -622,6 +655,17 @@ def order_hotels(hotels):
 
 def is_skipped(name):
     return _norm_hotel(name) in _SKIP_NORM
+
+
+def is_searched(name):
+    """On the allow-list (settings.search, exact after _norm_hotel), or no allow-list at all (the skip-list rule)."""
+    allow = _SEARCH_NORM
+    return allow is None or _norm_hotel(name) in allow
+
+
+def is_eligible(name):
+    """May be applied for: searched and not skipped (skipping wins when a name is on both)."""
+    return is_searched(name) and not is_skipped(name)
 
 
 def _date_css_class(body, date):
@@ -980,6 +1024,8 @@ def _book_date_once(target_date, label, tag, booked, attempted, guests=None):
         for gid, name in all_hotels:
             if is_skipped(name):
                 filtered.append(f'{name} (skip list)')
+            elif not is_searched(name):
+                filtered.append(f'{name} (not searched)')
             elif _norm_hotel(name) in seen:
                 filtered.append(f'{name} (already booked/attempted)')
             else:

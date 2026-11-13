@@ -19,17 +19,20 @@ set. `hold_gate` (book_hotels' `_hold_gate`) and `commit_gate` (confirm_booking'
   application may exist even if this runner dies mid-commit.
 - No new hold once `no_new_holds` is set (a stop, a ban) or the deadline has passed.
 
-An entry the Worker refuses as an id conflict (409 `id_conflict`: the id is in the record with other content; or an
-answer whose record holds other content under our id) is a bug, never an ack: it stays queued (unsynced, in the
-reports' count), is logged HUMAN NEEDED and reported as a human_needed event once, and is retried on its own with each
-report (`conflicts` keeps it out of the batch, which the Worker refuses whole: one at a time, the rest still land). A
-507 `record_full` keeps the entries queued too.
+An entry the Worker refuses (409 `id_conflict`: the id is in the record with other content, or an answer whose record
+holds other content under our id, number included; 400: not a valid entry) is a bug, never an ack: it stays queued
+(unsynced, in the reports' count), is logged HUMAN NEEDED and reported as a human_needed event once (`id_conflict`,
+`bad_booking`), and is retried on its own with each report (`conflicts` keeps it out of the batch, which the Worker
+refuses whole: one at a time, the rest still land). A 507 `record_full` keeps the entries queued too.
 
 Booking entries are queued and sent at once (the control loop is woken) and again with every report until the Worker
 answers with them in its record. Events carry a per-run `seq`; the Worker's `ackSeq` drops what it has. Every answer
 is a RunnerConfig: its settings are applied (`on_settings`) when they are newer (`updatedAt`: answers from two threads
 can arrive out of order), its bookings seed holds.json (a hotel held for a date is never applied for again, whichever
-run held it), its lease (from a claim or a report) renews the fence.
+run held it), its lease (from a claim or a report) renews the fence. The nights with a `confirmed` entry (the record's,
+and this run's own at once) go to `on_done` (book_hotels.set_done_dates): no longer scanned, held or confirmed again.
+The settings are taken tolerantly (`search`, the allow-list, optional; any whole interval from the floor) and the
+report says which it applied (`settingsAt`), so an older or a newer Worker both work.
 
 Never logs the token. Dates and hotel names go to the Worker (members only) and the private log, never `logs.public`.
 """
@@ -48,7 +51,9 @@ UNSYNCED_OUTAGE_SEC = 120
 CLAIM_WAIT_SEC = 6 * 60
 CLAIM_RETRY_SEC = 15
 CLAIM_LOG_EVERY_SEC = 60      # an unreachable Worker during the claim's wait: one line (private + public) a minute
-INTERVALS_SEC = (15, 30, 60, 120, 300)
+INTERVALS_SEC = (15, 30, 60, 120, 300)   # the contract's choices; any whole interval >= INTERVAL_FLOOR_SEC is taken
+INTERVAL_FLOOR_SEC = INTERVALS_SEC[0]    # the scan's floor (book_hotels.MIN_RETRY_DELAY): the Worker validates the rest
+HOLD_SEC = 30 * 60                       # the site's hold: a hold's mail must be followed within this
 GUESTS_MIN, GUESTS_MAX = 1, 6
 # The contract's LIMITS (the Worker's bounds on a request; test_remote reads contract.ts to check this copy).
 LIMITS = {'body': 64 * 1024, 'bookingsPerPost': 50, 'eventsPerReport': 100, 'seenPerReport': 300, 'eventHotel': 2000,
@@ -66,10 +71,17 @@ OFFERED_MAX = 600                    # an `available` event's joined names (≤ 
 NUMBER_MAX = LIMITS['number']
 EVENTS_QUEUED_MAX = 400
 IMPORTANT_EVENTS = ('hold', 'confirmed', 'human_needed', 'ban')
-HOLD_UNRESOLVED_SEC = 30 * 60    # a hold younger than this at the end of a run, never confirmed: human_needed
+EVENT_KINDS = ('run_start', 'run_end', 'available', 'filtered', 'hold', 'confirmed', 'human_needed', 'ban',
+               'solve_failed', 'error')   # what this runner sends (the Worker may add kinds of its own to the status)
+PHASES = ('starting', 'solving', 'scanning', 'draining', 'stopping')
+HOSTS = ('actions', 'local')
+HOLD_UNRESOLVED_SEC = HOLD_SEC   # a hold younger than this at the end of a run, never confirmed: human_needed
 BOOKING_KINDS = ('hold', 'confirming', 'confirmed', 'failed')
 STOP_REASONS = ('paused', 'mode_off', 'no_dates', 'lease_lost')
 DEFAULT_URL = 'https://its-bot.island-fund-relay.workers.dev'
+
+# A refusal of an entry, not of the call: 409 id_conflict, 400 (bad_booking and the like).
+REFUSED_ENTRY = (400, 409)
 
 _BAD_CHARS = re.compile('[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]')
 _ID_RE = re.compile(r'[A-Za-z0-9._:-]{1,64}\Z')
@@ -103,7 +115,7 @@ def _id(s, default):
 
 def _same_entry(have, sent):
     """The record's entry is the one we sent (an ack), not another under the same id."""
-    return all(have.get(k) == sent.get(k) for k in ('kind', 'date', 'hotel', 'runId'))
+    return all(have.get(k) == sent.get(k) for k in ('kind', 'date', 'hotel', 'runId', 'number'))
 
 
 class Client:
@@ -147,12 +159,15 @@ def _strs(x):
 
 
 def parse_settings(s):
-    """An ItsSettings, or None if it isn't one (a garbled answer must not become the settings)."""
+    """An ItsSettings, or None if it isn't one (a garbled answer must not become the settings). Tolerant of what the
+    Worker may add: any whole interval from the floor up (the Worker holds it to the contract's choices), and the
+    allow-list `search` optional (absent or null: the skip-list rule)."""
     if not isinstance(s, dict) or s.get('v') != 1:
         return None
-    ok = (isinstance(s.get('paused'), bool) and s.get('intervalSec') in INTERVALS_SEC
+    ok = (isinstance(s.get('paused'), bool) and _is_int(s.get('intervalSec')) and s['intervalSec'] >= INTERVAL_FLOOR_SEC
           and _strs(s.get('dates')) and _is_int(s.get('guests')) and GUESTS_MIN <= s['guests'] <= GUESTS_MAX
-          and _strs(s.get('skip')) and _strs(s.get('priority')) and isinstance(s.get('autoConfirm'), bool))
+          and _strs(s.get('skip')) and _strs(s.get('priority')) and isinstance(s.get('autoConfirm'), bool)
+          and (s.get('search') is None or _strs(s['search'])))
     return s if ok else None
 
 
@@ -201,12 +216,13 @@ class Remote:
     URL monitor call `on_event` and the gates while the control loop reports."""
 
     def __init__(self, client, run_id, host='actions', sha=None, run_url=None, deadline=None,
-                 clock=time.time, on_settings=None, seed_hold=None, log=None, public=None):
+                 clock=time.time, on_settings=None, seed_hold=None, on_done=None, log=None, public=None):
         self.client = client
         self.run_id, self.host, self.sha, self.run_url = run_id, host, sha, run_url
         self.clock = clock
         self.on_settings = on_settings or (lambda s: None)
         self.seed_hold = seed_hold or (lambda date, hotel: None)
+        self.on_done = on_done or (lambda dates: None)   # nights with a confirmed booking (book_hotels.set_done_dates)
         self.log = log or (lambda msg: None)
         self.public = public or (lambda event, **fields: None)   # logs.public: counts and codes only
         self.lock = threading.RLock()
@@ -221,6 +237,8 @@ class Remote:
         self.conflicts = set()            # unsynced ids the Worker refused as an id conflict: sent one at a time
         self.record_full = False          # the last bookings post was a 507: the Worker's record takes no more
         self.seeded = set()               # booking ids already written to holds.json
+        self.confirmed_here = set()       # nights this run confirmed (before the record has them)
+        self.done = frozenset()           # nights with a confirmed booking: the record's and this run's
         self.config = None
         self.settings = None
         self._settings_lock = threading.Lock()   # one answer's settings applied at a time, the newest only
@@ -247,7 +265,7 @@ class Remote:
         self.offered = {}                 # date -> frozenset of names offered (change detection)
         self.holds = {}                   # (date, hotel) -> when held, this run
         self.resolved = set()             # (date, hotel) with a known outcome
-        self.counts = {'hold': 0, 'confirmed': 0, 'human_needed': 0, 'gate_closed': 0}
+        self.counts = {'hold': 0, 'confirmed': 0, 'human_needed': 0, 'gate_closed': 0, 'skipped': 0}
 
     def _ms(self, t=None):
         return int((self.clock() if t is None else t) * 1000)
@@ -332,9 +350,15 @@ class Remote:
             elif kind == 'confirmed':
                 self.counts['confirmed'] += 1
                 self.resolved.add((date, hotel))
+                self.confirmed_here.add(date)
                 self.record('confirmed', date, hotel, number=f.get('number') or None)
                 self.event('confirmed', date, hotel, f.get('number') or None, urgent=True)
                 self.public('confirmed', n=self.counts['confirmed'])
+            elif kind == 'skipped':
+                # a hold whose night was confirmed meanwhile (at another facility): left to lapse, never filed
+                self.resolved.add((date, hotel))
+                self.counts['skipped'] += 1
+                self.public('skip_confirmed_night', n=self.counts['skipped'])
             elif kind == 'human_needed':
                 self.counts['human_needed'] += 1
                 self.resolved.add((date, hotel))
@@ -370,6 +394,8 @@ class Remote:
                     self.error('solve', None, f.get('cls') or 'no_token')
                     self.event('solve_failed', detail=f.get('cls') or 'no_token')
                     self.public('solve', ok=0, secs=f.get('secs'), cls=f.get('cls') or 'no_token')
+        if kind == 'confirmed':
+            self._done_changed()   # at once: a second hold for this night queued behind it must not be filed
 
     def unresolved_holds(self):
         """Holds this run took < 30 min ago with no outcome: each gets a human_needed (the run is ending)."""
@@ -456,11 +482,21 @@ class Remote:
                     clash.append(self.unsynced[bid])   # the record has this id with other content: not an ack
             fresh = [b for b in cfg['bookings'] if b['id'] not in self.seeded]
             self.seeded.update(b['id'] for b in fresh)
+            self.done |= {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirmed'}
         for b in clash:
             self._conflict(b, {'error': 'record_differs'})
         for b in fresh:
             self.seed_hold(b['date'], b['hotel'])
         self._take_settings(cfg['settings'])
+        self._done_changed()
+
+    def _done_changed(self):
+        """Hand the nights with a confirmed booking (the record's, and this run's own before the record has them) to
+        `on_done`. Only grows within a run: a confirmed entry stays in the record until its stay is long past."""
+        with self.lock:
+            self.done |= self.confirmed_here
+            done = self.done
+        self.on_done(done)
 
     def _take_settings(self, s):
         """Apply an answer's settings unless an answer with newer ones (a later `updatedAt`) was applied already:
@@ -515,24 +551,25 @@ class Remote:
             sleep(CLAIM_RETRY_SEC)
 
     def post_bookings(self):
-        """Send the unsynced entries; True when none is left. Known conflicts go one at a time (the Worker refuses a
-        batch whole), so they can't hold the others back."""
+        """Send the unsynced entries; True when none is left. Entries set aside (an id conflict, an entry the Worker
+        refuses as invalid) go one at a time (the Worker refuses a batch whole), so they can't hold the others back."""
         with self.lock:
             batch = [b for i, b in self.unsynced.items() if i not in self.conflicts][:BOOKINGS_PER_POST]
             alone = [b for i, b in self.unsynced.items() if i in self.conflicts]
         status = self._post(batch) if batch else 200
-        if status == 409:
-            # Which entry? One at a time: the conflicting one is found, the rest still reach the record.
+        if status in REFUSED_ENTRY:
+            # Which entry? One at a time: the refused one is found, the rest still reach the record.
             alone = batch + alone if len(batch) > 1 else alone
         for b in alone:
-            if self._post([b]) not in (200, 409):
+            if self._post([b]) not in (200,) + REFUSED_ENTRY:
                 break
         with self.lock:
             return not self.unsynced
 
     def _post(self, batch):
-        """POST one batch; the status. 200 absorbs the answer; 409 (one entry) sets it aside as a conflict; 507 marks
-        the record full (the hold gate closes while anything is unsynced); anything else is a failed call."""
+        """POST one batch; the status. 200 absorbs the answer; a 409 or a 400 for one entry sets it aside
+        (`_conflict`); 507 marks the record full (the hold gate closes while anything is unsynced); anything else is a
+        failed call."""
         # ?runId= so the answer carries this run's ackSeq and lease (the Worker's, not the body's).
         status, obj = self.client.call(
             'POST', '/runner/bookings?runId=' + urllib.parse.quote(self.run_id, safe=''), batch)
@@ -542,13 +579,14 @@ class Remote:
                 self.record_full = False
             self.absorb(cfg)
             return 200
-        if status == 409:
+        if status in REFUSED_ENTRY:
+            # A refusal, not an outage: the Worker answered. post_bookings splits a batch; one entry is set aside.
+            with self.lock:
+                self.contact_at, self.outage_since, self.last_status = self.clock(), None, status
             if len(batch) == 1:
-                self._conflict(batch[0], obj)
-            return 409
+                self._conflict(batch[0], obj, status)
+            return status
         if status == 507:
-            if cfg is not None:
-                self.absorb(cfg)   # what the record did take is acknowledged
             with self.lock:
                 first = not self.record_full
                 self.record_full = True
@@ -562,20 +600,23 @@ class Remote:
         self._failed(status, 'bad_answer' if status == 200 else None)
         return status
 
-    def _conflict(self, b, answer):
-        """The Worker has this id with other content: a bug (ids are `runId:seq`, the run id unique per attempt), never
-        an ack. Kept queued (one at a time from now on), told to a person once."""
+    def _conflict(self, b, answer, status=409):
+        """The Worker refuses this entry: 409 (it has the id with other content: a bug, ids are `runId:seq` and the run
+        id unique per attempt) or 400 (not a valid entry: a bug too). Never an ack. Kept queued (unsynced, sent alone from
+        now on, so the rest still land), told to a person once."""
         with self.lock:
             if b['id'] not in self.unsynced or b['id'] in self.conflicts:
                 return
             self.conflicts.add(b['id'])
             self.counts['human_needed'] += 1
         why = answer.get('error') if isinstance(answer, dict) and isinstance(answer.get('error'), str) else '?'
-        self.error('bookings', 409, 'id_conflict')
+        code = 'bad_booking' if status == 400 else 'id_conflict'
+        self.error('bookings', status, code)
         self.log(f"HUMAN NEEDED: the Worker refused booking {b['id']} ({b['kind']} {b['date']} {b['hotel']}) "
-                 f"as an id conflict ({why[:40]}): not in the record; check it against the site and the mailbox")
-        self.event('human_needed', b['date'], b['hotel'], 'id_conflict', urgent=True)
-        self.public('human_needed', n=self.counts['human_needed'], detail='id_conflict')
+                 f"as {'invalid' if status == 400 else 'an id conflict'} ({status} {why[:40]}): not in the record; "
+                 f"check it against the site and the mailbox")
+        self.event('human_needed', b['date'], b['hotel'], code, urgent=True)
+        self.public('human_needed', n=self.counts['human_needed'], detail=code)
 
     def build_report(self):
         with self.lock:
@@ -588,6 +629,8 @@ class Remote:
                 'solves': dict(self.solves), 'failuresByStep': dict(self.failures_by_step),
                 'lastError': dict(self.last_error) if self.last_error else None,
                 'unsynced': len(self.unsynced),
+                # the applied settings' updatedAt (the Worker's settings_stale; an older Worker ignores it)
+                'settingsAt': (self.settings or {}).get('updatedAt'),
                 'events': [dict(e) for e in self.events[:EVENTS_PER_REPORT]],
                 'seen': sorted(self.seen)[:SEEN_MAX],
             }

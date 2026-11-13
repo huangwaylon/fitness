@@ -208,8 +208,8 @@ def month_label(month):
 
 
 def _month_dates(month):
-    """The scanner's dates callable: its month's dates in the current settings."""
-    return lambda: [d for d in book_hotels.TARGET_DATES if d[:7] == month]
+    """The scanner's dates callable: its month's dates in the current settings, less the nights already confirmed."""
+    return lambda: [d for d in book_hotels.TARGET_DATES if d[:7] == month and not book_hotels.night_done(d)]
 
 
 class Supervisor:
@@ -232,7 +232,7 @@ class Supervisor:
     def wanted_months(self):
         if self.stopped:
             return set()
-        return {d[:7] for d in book_hotels._future_dates(book_hotels.TARGET_DATES)}
+        return {d[:7] for d in book_hotels._future_dates(book_hotels.TARGET_DATES) if not book_hotels.night_done(d)}
 
     def start(self):
         for w in self.fixed:
@@ -628,16 +628,27 @@ def _apply_settings(s):
     changed = book_hotels.apply_settings(s)
     if not changed:
         return
-    dates = book_hotels.TARGET_DATES
+    dates, search = book_hotels.TARGET_DATES, book_hotels.SEARCH_HOTELS
     url_log(f"{B}Settings applied ({', '.join(changed)}): dates {', '.join(dates) or '(none)'}; "
             f"interval {book_hotels.RETRY_DELAY}s; guests {book_hotels.NUM_GUESTS}; "
             f"auto-confirm {'on' if book_hotels.AUTO_CONFIRM else 'off'}; "
             f"priority {', '.join(book_hotels.PRIORITY_HOTELS) or '(none)'}; "
-            f"{len(book_hotels.SKIP_HOTELS)} skipped{X}")
+            f"{len(book_hotels.SKIP_HOTELS)} skipped; "
+            + (f"{len(search)} searched" if search is not None else "no allow-list (every one not skipped)")
+            + f"; saved at {s.get('updatedAt')}{X}")
     logs.public('settings', dates=len(dates), months=len({d[:7] for d in dates}),
                 skip=len(book_hotels.SKIP_HOTELS), pri=len(book_hotels.PRIORITY_HOTELS),
+                search=None if search is None else len(search),
                 interval=book_hotels.RETRY_DELAY, guests=int(book_hotels.NUM_GUESTS),
                 auto=int(book_hotels.AUTO_CONFIRM))
+
+
+def _apply_done(dates):
+    """remote.Remote's `on_done`: the nights with a confirmed booking are no longer looked for (decision 1)."""
+    if not book_hotels.set_done_dates(dates):
+        return
+    url_log(f"{B}Nights confirmed, no longer looked for: {', '.join(sorted(book_hotels.DONE_DATES)) or '(none)'}{X}")
+    logs.public('nights_done', n=len(book_hotels.DONE_DATES))
 
 
 def _secrets():
@@ -690,7 +701,7 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     sha = (env.get('GITHUB_SHA') or '')[:8] or None
     rem = remote.Remote(remote.Client(env.get('ITS_WORKER_URL') or remote.DEFAULT_URL, token), run_id, host,
                         sha, run_url, deadline=deadline, clock=clock, on_settings=_apply_settings,
-                        seed_hold=book_hotels.save_booking, log=url_log, public=logs.public)
+                        seed_hold=book_hotels.save_booking, on_done=_apply_done, log=url_log, public=logs.public)
     book_hotels._event_sink = rem.on_event
     book_hotels._hold_gate = rem.hold_gate
     confirm_booking._commit_gate = rem.commit_gate

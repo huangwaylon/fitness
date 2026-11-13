@@ -37,6 +37,7 @@ FIELDS = {
     'solves_ok': 'int', 'solves_failed': 'int', 'unsynced': 'int', 'pending': 'int', 'events': 'int',
     'dates': 'int', 'months': 'int', 'skip': 'int', 'pri': 'int', 'guests': 'int', 'auto': 'int', 'interval': 'num',
     'restarts': 'int', 'active': 'int', 'worker': 'int', 'gate_closed': 'int', 'reclaim': 'int', 'run': 'int',
+    'search': 'int',
     'secs': 'num', 'waited_s': 'num', 'uptime_min': 'num', 'ok_age_s': 'num', 'left_min': 'num', 'outage_s': 'num',
     'phase': 'code', 'name': 'code', 'step': 'code', 'cls': 'code', 'detail': 'code', 'spot': 'code', 'why': 'code',
     'host': 'code', 'origin': 'code', 'thread': 'code', 'reason': 'code',

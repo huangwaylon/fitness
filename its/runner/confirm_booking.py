@@ -50,9 +50,17 @@ _mail_source = None
 _commit_gate = None
 
 
+# A leg not filed because its night has a confirmed booking already (another facility's): not a failure, nobody needs
+# to act, the hold lapses free at the site.
+NIGHT_CONFIRMED = 'night_confirmed'
+
+
 def _gate(target_date, hotel_name, stage):
-    """`bh.confirm_allowed`, the stay still wanted (the date a target, the hotel not skipped: the settings may have
-    changed since the hold), then `_commit_gate` when set. Fails closed if the gate raises."""
+    """No second facility for a night already confirmed (`bh.night_done`), then `bh.confirm_allowed`, the stay still
+    wanted (the date a target, the hotel eligible: the settings may have changed since the hold), then `_commit_gate`
+    when set. Fails closed if the gate raises."""
+    if bh.night_done(target_date):
+        return False, NIGHT_CONFIRMED
     allowed, why = bh.confirm_allowed(target_date)
     if allowed and not bh.still_wanted(target_date, hotel_name):
         allowed, why = False, 'not_wanted: the date was removed or the hotel skipped since the hold'
@@ -598,8 +606,13 @@ def _process(hold, links):
     tag = f'[MAIL {target_date[5:]}]'
 
     link = _take_link(held_at, links)
+    if link is not None and bh.night_done(target_date):
+        # Its link claimed (so no other hold can take it), never followed.
+        return _skip_confirmed_night(tag, target_date, hotel_name)
     if link is None:
         if time.time() - held_at >= CONFIRM_MAIL_TIMEOUT:
+            if bh.night_done(target_date):
+                return _skip_confirmed_night(tag, target_date, hotel_name)
             log(f"{tag}   {R}No confirmation mail for {hotel_name} on "
                 f"{target_date} within {CONFIRM_MAIL_TIMEOUT:.0f}s{X}")
             log(f"{tag}   {B}{Y}HUMAN NEEDED: the room is held and the mail was "
@@ -620,6 +633,8 @@ def _process(hold, links):
 
     if status == 'confirmed':
         return True
+    if detail == NIGHT_CONFIRMED:
+        return _skip_confirmed_night(tag, target_date, hotel_name)
     log(f"{tag}   {Y}{hotel_name} on {target_date} not confirmed "
         f"({status}: {detail}){X}")
     # Every non-confirmed outcome leaves a held room and a sent mail a person can
@@ -628,6 +643,15 @@ def _process(hold, links):
     log(f"{tag}   {B}{Y}HUMAN NEEDED: {hotel_name} on {target_date} is held and the "
         f"mail to {bh.EMAIL} is sent. Open its link and finish now.{X}")
     bh.notify('human_needed', date=target_date, hotel=hotel_name, detail=f'leg_{status}', failed=True)
+    return True
+
+
+def _skip_confirmed_night(tag, target_date, hotel_name):
+    """Decision 1 (its/README.md): one confirmed booking a night. This hold is left to lapse (the site cancels an
+    unfiled hold free after 30 min); private log, a public count, no human_needed."""
+    log(f"{tag}   {Y}Not filing {hotel_name} for {target_date}: that night already has a confirmed booking; "
+        f"the hold is left to lapse (free){X}")
+    bh.notify('skipped', date=target_date, hotel=hotel_name, why=NIGHT_CONFIRMED)
     return True
 
 

@@ -15,6 +15,7 @@ number and the runner token. The private log must have them (the flow ran); the 
     python3 test_remote.py -v lease   # a subset, with the flow's logging
 """
 import json
+import re
 import os
 import subprocess
 import sys
@@ -39,6 +40,8 @@ TOKEN = 'runner-token-Zq81xT'
 NEXT_MONTH_DAY = (T._TARGET_MONTH + timedelta(days=40)).replace(day=5).isoformat()
 LATER_MONTH_DAY = (T._TARGET_MONTH + timedelta(days=75)).replace(day=5).isoformat()
 FENCE_AT = remote.LEASE_SEC - remote.FENCE_MARGIN_SEC   # seconds after a renewal that the fence closes
+# Report fields the contract adds as optional (an older Worker ignores them; contract-example.json may lag).
+OPTIONAL_REPORT_KEYS = {'settingsAt', 'mail'}
 
 
 # ── a fake Worker ────────────────────────────────────────────────────
@@ -117,6 +120,8 @@ class WorkerModel:
                 return 413, {'error': 'too_large'}
             if u.path == '/runner/report' and len(body['events']) > 100:
                 return 400, {'error': 'events'}
+            if u.path == '/runner/bookings' and any(not re.match(r'\d{4}-\d{2}-\d{2}\Z', str(b.get('date'))) for b in body):
+                return 400, {'ok': False, 'error': 'bad_booking'}   # the Worker's parseBookings: refused whole
             now = self.ms()
             if method == 'POST' and u.path == '/runner/claim':
                 rid = body['runId']
@@ -296,7 +301,7 @@ def test_contract_parity():
     rem.on_event('offered', {'date': '2026-11-22', 'names': ['NAGU 勝浦'], 'eligible': []})
     rep = rem.build_report()
     want = ex['report']
-    check('contract: RunnerReport keys', set(rep) == set(want), str(set(rep) ^ set(want)))
+    check('contract: RunnerReport keys', set(rep) ^ set(want) <= OPTIONAL_REPORT_KEYS, str(set(rep) ^ set(want)))
     for k, v in want.items():
         if v is not None and rep[k] is not None:
             check(f'contract: RunnerReport.{k} type', type(rep[k]) is type(v) or
@@ -1313,7 +1318,7 @@ def child_main(its_port):
 
 
 def test_redaction_subprocess(port, tmpdir):
-    model = WorkerModel(dates=[TARGET], autoConfirm=True)
+    model = WorkerModel(dates=[TARGET, TARGET_LIMITED], autoConfirm=True)
     srv = serve_model(model)
     state = os.path.join(tmpdir, 'state')
     env = {
@@ -1333,11 +1338,13 @@ def test_redaction_subprocess(port, tmpdir):
                             cwd=HERE, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out = err = b''
     try:
-        # One confirmed (the first hold took the only link) and two failed (no mail), then the ban.
-        settled = T._wait_for(lambda: len(model.booked('confirmed')) == 1 and len(model.booked('failed')) == 2,
-                              timeout=60)
-        check('redaction: the child held, confirmed one, gave up on two', settled,
-              str([b['kind'] for b in model.bookings]))
+        # Two nights: one confirmed (its first hold took the only link; the rest of that night is never filed) and the
+        # other night's holds failed (no mail), then the ban.
+        settled = T._wait_for(lambda: len(model.booked('confirmed')) == 1 and len(model.booked('failed')) >= 1
+                              and {b['date'] for b in model.booked('failed')}.isdisjoint(
+                                  b['date'] for b in model.booked('confirmed')), timeout=60)
+        check('redaction: the child held, confirmed one night, gave up on the other', settled,
+              str([(b['kind'], b['date'][-2:]) for b in model.bookings]))
         BAN['on'] = True
         out, err = proc.communicate(timeout=60)
     except subprocess.TimeoutExpired:
@@ -1362,7 +1369,7 @@ def test_redaction_subprocess(port, tmpdir):
     def has(event, *pairs):
         return any(ln.split(' ')[1:2] == [event] and all(p in ln.split(' ') for p in pairs) for ln in lines)
     for event, *pairs in (('claim', 'ok=1'), ('phase', 'name=scanning'), ('solve', 'ok=1', 'spot=centre'),
-                          ('hold', 'n=3'), ('confirmed', 'n=1'), ('human_needed', 'detail=no_mail'),
+                          ('hold',), ('confirmed', 'n=1'), ('human_needed', 'detail=no_mail'),
                           ('imap', 'ok=0', 'cls=login_rejected'), ('ban',), ('summary',),
                           ('error', 'step=thread', 'thread=scan', 'exc=RuntimeError'),
                           ('run_end', 'detail=ban')):
@@ -1511,6 +1518,206 @@ def test_claim_logs_an_unreachable_worker():
           str(public))
     check('claim-log: nothing dropped, no token', all('dropped' not in ln and TOKEN not in ln for ln in public + private))
     check('claim-log: each attempt counted', rem.failures_by_step.get('worker') == attempts, str(rem.failures_by_step))
+
+
+# ── round 2: the allow-list, a confirmed night, the record's refusals ──
+
+SETTINGS_KEYS = ('TARGET_DATES', 'SKIP_HOTELS', '_SKIP_NORM', 'SEARCH_HOTELS', '_SEARCH_NORM', 'PRIORITY_HOTELS',
+                 '_PRIORITY_NORM', 'RETRY_DELAY', 'NUM_GUESTS', 'AUTO_CONFIRM', 'DONE_DATES')
+
+
+def test_allow_list(port):
+    """Decision 2: with `search` only the facilities named there are applied for (normName exact; skip still wins);
+    without it, the skip-list rule; an older Worker's answer (no `search`) and a newer one both parse."""
+    check('allow: settings without search parse', remote.parse_settings(settings()) is not None)
+    check('allow: search null parses', remote.parse_settings(settings(search=None)) is not None)
+    check('allow: a list parses', remote.parse_settings(settings(search=[NAGU])) is not None)
+    check('allow: a garbled search is refused', remote.parse_settings(settings(search=NAGU)) is None
+          and remote.parse_settings(settings(search=[1])) is None)
+    with T.Env(port), T.CapturedLog() as log:
+        bh.apply_settings(settings(search=['NAGU　勝浦', RESOL], skip=[RESOL]))
+        bh.RETRY_DELAY = 0.05
+        check('allow: searched, by normName', bh.is_searched(NAGU) and not bh.is_searched(NIKKO))
+        check('allow: skip wins over search', not bh.is_eligible(RESOL) and bh.is_eligible(NAGU))
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('allow: only the searched, unskipped one is applied for', booked == [NAGU], str(booked))
+        check('allow: a step 3 only for NAGU', STATE.count('apply_service_select') == 1, str(STATE.hits))
+    with T.Env(port):
+        bh.apply_settings(settings(search=[], skip=[RESOL]))
+        bh.RETRY_DELAY = 0.05
+        with T.CapturedLog() as log:
+            _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('allow: an empty allow-list applies for nothing', booked == [] and STATE.count('empty_create') == 0)
+        check('allow: the log says why', log.saw(f'{NIKKO} (not searched)') and log.saw(f'{RESOL} (skip list)'))
+    with T.Env(port):
+        bh.apply_settings(settings(search=[NAGU]))
+        changed = bh.apply_settings(settings(skip=[NIKKO]))   # an older Worker: no search key
+        bh.RETRY_DELAY = 0.05
+        check('allow: no search: the allow-list is gone', bh.SEARCH_HOTELS is None and 'SEARCH_HOTELS' in changed)
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('allow: no search: every one not skipped', booked == [NAGU, RESOL], str(booked))
+    with T.Env(port):
+        # Switched off mid-chain: the next hotel's gate check stops it.
+        bh.apply_settings(settings(search=[NAGU, RESOL, NIKKO]))
+        bh.RETRY_DELAY = 0.05
+        STATE.hooks['POST /apply/empty_new'] = lambda: bh.apply_settings(settings(search=[NAGU]))
+        _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+        check('allow: switched off mid-chain is not applied for', booked == [NAGU], str(booked))
+
+
+def test_interval_any_whole_seconds_from_the_floor():
+    """The Worker validates the interval; the runner takes any whole one from the floor up (a choice added to the
+    contract must not make every answer garbled), never under it."""
+    check('interval: 45 s parses', remote.parse_settings(settings(intervalSec=45)) is not None)
+    check('interval: 600 s parses', remote.parse_settings(settings(intervalSec=600)) is not None)
+    for bad in (10, 14, 15.5, True, '30', None):
+        check(f'interval: {bad!r} refused', remote.parse_settings(settings(intervalSec=bad)) is None)
+
+
+def test_a_confirmed_night_is_not_scanned(port):
+    """Decision 1: a night with a `confirmed` entry in the Worker's record (any run's) is no longer scanned, held or
+    confirmed again; a month with no other night stops its scanner. The record's other kinds don't count."""
+    saved = {k: getattr(bh, k) for k in SETTINGS_KEYS}
+    try:
+        clock = Clock()
+        model = WorkerModel(clock, dates=[TARGET, TARGET_LIMITED, NEXT_MONTH_DAY])
+        model.bookings = [
+            {'id': 'old:1', 'kind': 'confirmed', 'date': TARGET, 'hotel': NAGU, 'number': '1', 'at': 1, 'runId': 'old'},
+            {'id': 'old:2', 'kind': 'hold', 'date': TARGET_LIMITED, 'hotel': NAGU, 'at': 1, 'runId': 'old'},
+            {'id': 'old:3', 'kind': 'confirmed', 'date': NEXT_MONTH_DAY, 'hotel': RESOL, 'number': '2', 'at': 1,
+             'runId': 'old'}]
+        done = []
+        rem = make_remote(model, clock, on_settings=bh.apply_settings, seed_hold=lambda *a: None,
+                          on_done=lambda d: (done.append(d), bh.set_done_dates(d)))
+        rem.claim(wait=0)
+        check('done: the confirmed nights, from the record', bh.DONE_DATES == {TARGET, NEXT_MONTH_DAY},
+              str(bh.DONE_DATES))
+        check('done: a scanner never reads them', M._month_dates(T.MONTH)() == [TARGET_LIMITED])
+        sup = idle_supervisor()
+        try:
+            sup.start()
+            check('done: a month with no night left has no scanner', sorted(sup.scanners) == [T.MONTH],
+                  str(sorted(sup.scanners)))
+        finally:
+            _cleanup(sup)
+        check('done: still_wanted says no', not bh.still_wanted(TARGET) and not bh.still_wanted(TARGET, RESOL)
+              and bh.still_wanted(TARGET_LIMITED, RESOL))
+        rem.report()
+        check('done: handed on once per change at most', all(d == done[0] for d in done), str(done))
+    finally:
+        for k, v in saved.items():
+            setattr(bh, k, v)
+
+    with T.Env(port):
+        clock = Clock()
+        model = WorkerModel(clock)
+        rem = make_remote(model, clock, on_done=bh.set_done_dates)
+        rem.claim(wait=0)
+        bh.TARGET_DATES = [TARGET, TARGET_LIMITED]
+        with Hooks(rem):
+            rem.on_event('confirmed', {'date': TARGET, 'hotel': NAGU, 'number': '9'})
+            check('done: this run\'s own confirmation counts at once', bh.night_done(TARGET), str(bh.DONE_DATES))
+            stop = threading.Event()
+            t = threading.Thread(target=bh.scan_and_book_month, args=(T.MONTH, M._month_dates(T.MONTH), 'DONE'),
+                                 kwargs={'stop_event': stop}, daemon=True)
+            t.start()
+            try:
+                held = T._wait_for(lambda: len(bh.get_booked_hotels(TARGET_LIMITED)) == 3)
+            finally:
+                stop.set()
+                t.join(10)
+        check('done: the other night still booked', held, str(bh.get_booked_hotels(TARGET_LIMITED)))
+        check('done: nothing for the confirmed night', bh.get_booked_hotels(TARGET) == []
+              and not any(TARGET in (f.get('join_time'), f.get('apply[join_time]')) for _p, f in STATE.posts),
+              str(bh.get_booked_hotels(TARGET)))
+
+
+def test_second_facility_never_filed_for_a_confirmed_night(port):
+    """Decision 1 + the coordinator: two holds for one night with auto-confirm on, the ★ one confirmed first; the
+    other's leg never reaches Chrome's 申込する (its link claimed, never followed), no human_needed for it, a public
+    skip_confirmed_night; and the commit gate refuses a night confirmed meanwhile."""
+    with T.Env(port, confirm=True, applicant=dict(T.APPLICANT_FIXTURE)), T.CapturedLog() as log:
+        clock = Clock()
+        model = WorkerModel(clock, autoConfirm=True)
+        printed = []
+        rem = make_remote(model, clock, on_done=bh.set_done_dates,
+                          public=lambda event, **f: printed.append((event, f)))
+        rem.claim(wait=0)
+        first = f'{bh.BASE}/apply/new?c=' + 'a' * 36
+        second = f'{bh.BASE}/apply/new?c=' + 'b' * 36
+        cb._mail_source = lambda _since: [f'ご案内 {first} ', f'ご案内 {second} ']
+        STATE.hotels = [(8, RESOL), (7, NAGU)]
+        with Hooks(rem):
+            _, booked = bh.book_all_hotels_for_date(TARGET, 'TEST')
+            check('one-a-night: both held, ★ first', booked == [NAGU, RESOL] and cb.pending_count() == 2, str(booked))
+            cb.drain_once()
+        check('one-a-night: Chrome handed one form only', len(STATE.browser_calls) == 1, str(len(STATE.browser_calls)))
+        check('one-a-night: the ★ one filed', STATE.browser_calls[0]['link'] == first)
+        check('one-a-night: the queue is empty', cb.pending_count() == 0)
+        check('one-a-night: both links claimed (the second can\'t go to another hold)', len(cb._claimed) == 2)
+        rem.report()
+        kinds = [(b['kind'], b['hotel']) for b in model.bookings]
+        check('one-a-night: no confirming for the second', kinds == [('hold', NAGU), ('hold', RESOL),
+                                                                     ('confirming', NAGU), ('confirmed', NAGU)], str(kinds))
+        check('one-a-night: nobody asked to act', model.kinds('human_needed') == [] and rem.unresolved_holds() == 0)
+        check('one-a-night: said so privately', log.saw('already has a confirmed booking'))
+        check('one-a-night: a public count', ('skip_confirmed_night', {'n': 1}) in printed, str(printed))
+        bh.set_done_dates([TARGET_LIMITED])
+        check('one-a-night: the commit gate refuses a night confirmed meanwhile',
+              cb._gate(TARGET_LIMITED, NAGU, 'confirm') == (False, 'night_confirmed'))
+
+
+def test_a_refused_entry_is_set_aside(port):
+    """A 400 on /runner/bookings is the entry's, not an outage: the batch is split, the bad one set aside (unsynced,
+    retried alone, HUMAN NEEDED, one human_needed bad_booking), the rest land, the gate stays open."""
+    with T.CapturedLog() as log:
+        clock = Clock()
+        model = WorkerModel(clock)
+        rem = make_remote(model, clock, run_id='run-e', seed_hold=lambda *a: None, log=bh.log)
+        rem.claim(wait=0)
+        rem.record('hold', TARGET, NAGU)        # run-e:1
+        rem.record('hold', 'not-a-date', RESOL)   # run-e:2: the Worker refuses it (isDate)
+        rem.record('hold', TARGET, NIKKO)       # run-e:3
+        rem.post_bookings()
+        ids = [b['id'] for b in model.bookings]
+        check('400: the good entries landed', ids == ['run-e:1', 'run-e:3'], str(ids))
+        check('400: the bad one set aside', list(rem.unsynced) == ['run-e:2'] and rem.conflicts == {'run-e:2'})
+        check('400: not an outage', rem.outage_sec() == 0 and rem.hold_gate() == (True, ''), str(rem.hold_gate()))
+        check('400: HUMAN NEEDED', log.saw('HUMAN NEEDED') and log.saw('as invalid'))
+        rem.report()
+        rem.report()
+        check('400: one human_needed', [e.get('detail') for e in model.kinds('human_needed')] == ['bad_booking'],
+              str(model.kinds('human_needed')))
+        check('400: lastError', rem.last_by_step.get('bookings') == (400, 'bad_booking'), str(rem.last_by_step))
+        check('400: in the reports\' unsynced', model.reports[-1]['unsynced'] == 1)
+
+
+def test_an_ack_must_carry_our_number():
+    """`_same_entry` compares the 申込受付番号: the record holding our id with another number is not our entry."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    model.silent_ids = True   # answers 200 whatever the content under a known id
+    rem = make_remote(model, clock, run_id='run-f', seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    model.bookings.append({'id': 'run-f:1', 'kind': 'confirmed', 'date': TARGET, 'hotel': NAGU, 'number': '111',
+                           'runId': 'run-f', 'at': 1})
+    rem.record('confirmed', TARGET, NAGU, number='222')
+    rem.post_bookings()
+    check('number: not an ack', 'run-f:1' in rem.unsynced and 'run-f:1' in rem.conflicts, str(rem.unsynced))
+
+
+def test_report_carries_the_applied_settings_stamp():
+    """`settingsAt`: the applied settings' updatedAt (the Worker's settings_stale); an older Worker ignores it."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    model.settings['updatedAt'] = 1234
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    check('settingsAt: null before any settings', rem.build_report()['settingsAt'] is None)
+    rem.claim(wait=0)
+    check('settingsAt: the applied stamp', rem.build_report()['settingsAt'] == 1234)
+    model.settings['updatedAt'] = 5678
+    rem.report()
+    check('settingsAt: follows the newest applied', rem.build_report()['settingsAt'] == 5678)
 
 
 def main_(argv=()):
