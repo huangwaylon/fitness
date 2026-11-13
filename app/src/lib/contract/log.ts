@@ -24,8 +24,9 @@ const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi',
 export type LogSheet = (typeof LOG_SHEETS)[number];
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `world` `mirror` its scene's:
- *  Island3D; `crit` a critter's move: Critters.svelte): perf.rest's top three. @public (world3d/engine.ts) */
-export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'mirror', 'cards', 'fx', 'crit', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
+ *  Island3D; `crit-fish` a fish's dart, `crit-bug` a bug's move, `crit-rear` the tarantula rearing: Critters.svelte,
+ *  `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
+export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'mirror', 'cards', 'fx', 'crit', 'crit-fish', 'crit-bug', 'crit-rear', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
  *  `msg` / `stack` scrubbed text. */
