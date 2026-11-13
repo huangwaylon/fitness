@@ -5,17 +5,17 @@
 import { DurableObject } from 'cloudflare:workers';
 import {
   DEFAULT_SETTINGS, LEASE_SEC,
-  type BookingInput, type ClaimInput, type ClaimReply, type ItsSettingsInput, type ItsStatus, type Member, type RunInput,
+  type BookingInput, type ClaimInput, type ClaimReply, type ItsHealth, type ItsSettingsInput, type ItsStatus, type Member, type RunInput,
   type RunnerConfig, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
 import { dispatchRun } from './dispatch.ts';
 import type { Env } from './env.ts';
 import {
-  addBookings, addEvents, addSeen, claimLease, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
+  addBookings, addEvents, addOwnEvent, addSeen, claimLease, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
   type ItsRecord,
 } from './rules.ts';
 
-const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks'] as const satisfies readonly (keyof ItsRecord)[];
+const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight'] as const satisfies readonly (keyof ItsRecord)[];
 
 /** A second 開始 this soon after a dispatch that no report has followed yet sends nothing (one run is on its way; the
  *  dispatch is recorded before GitHub is asked, so a double tap while it's asked is one too), unless a 停止 came after
@@ -26,8 +26,11 @@ const RUNNING = new Set(['starting', 'solving', 'scanning']);
 
 const empty = (): ItsRecord => ({
   settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null, control: null,
-  events: { routine: [], important: [] }, seen: {}, acks: [],
+  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null,
 });
+
+/** A member request's id in a log line (index.ts: the page's X-Request-Id, or one made up). */
+const ridOf = (rid: string | undefined) => (rid ? ` rid=${rid}` : '');
 
 /** A name or detail in a log line: one line, short (they are checked already; this only keeps lines readable). */
 const q = (s: string | undefined) => JSON.stringify((s ?? '').slice(0, 120));
@@ -63,19 +66,26 @@ export class ItsBot extends DurableObject<Env> {
     return statusOf(this.rec, this.mode, this.env.COMMIT ?? null, Date.now());
   }
 
-  /** The page's 保存: refused (ok false, the current status) when someone saved since the edit began. */
-  async putSettings(input: ItsSettingsInput, by: Member): Promise<{ ok: boolean; status: ItsStatus }> {
+  /** /health/its: codes and counts only. */
+  async health(): Promise<ItsHealth> {
+    return healthOf(this.rec, this.mode, Date.now());
+  }
+
+  /** The page's 保存: refused (ok false, the current status) when someone saved since the edit began (a 409: routine,
+   *  logged at info). A body without `search` (an older page) keeps the saved allow-list. */
+  async putSettings(input: ItsSettingsInput, by: Member, rid?: string): Promise<{ ok: boolean; status: ItsStatus }> {
     const now = Date.now();
     const cur = this.rec.settings;
     if (input.baseUpdatedAt !== cur.updatedAt) {
-      console.warn(`its settings conflict by=${by} base=${input.baseUpdatedAt} current=${cur.updatedAt} (${cur.updatedBy})`);
+      console.log(`its settings conflict by=${by} base=${input.baseUpdatedAt} current=${cur.updatedAt} (${cur.updatedBy})${ridOf(rid)}`);
       return { ok: false, status: await this.status() };
     }
     const { baseUpdatedAt: _, ...edit } = input;
+    const search = edit.search ?? cur.search;
     // strictly later than the last save, so a draft from before it always conflicts
-    const settings = { ...edit, v: 1 as const, paused: cur.paused, updatedAt: Math.max(now, (cur.updatedAt ?? 0) + 1), updatedBy: by };
+    const settings = { ...edit, ...(search && { search }), v: 1 as const, paused: cur.paused, updatedAt: Math.max(now, (cur.updatedAt ?? 0) + 1), updatedBy: by };
     await this.save({ settings });
-    console.log(`its settings by=${by} dates=${settings.dates.length} skip=${settings.skip.length} pri=${settings.priority.length} int=${settings.intervalSec} guests=${settings.guests} auto=${settings.autoConfirm ? 1 : 0} [${settings.dates.join(' ')}]`);
+    console.log(`its settings by=${by} dates=${settings.dates.length} skip=${settings.skip.length} pri=${settings.priority.length} int=${settings.intervalSec} guests=${settings.guests} auto=${settings.autoConfirm ? 1 : 0} search=${settings.search?.length ?? '-'}${edit.search ? '' : search ? '(kept)' : ''} [${settings.dates.join(' ')}]${ridOf(rid)}`);
     return { ok: true, status: await this.status() };
   }
 
@@ -83,13 +93,13 @@ export class ItsBot extends DurableObject<Env> {
    *  `control` (who, when). 開始 dispatches a run unless one wouldn't run (MODE off, no date), one is running, or one
    *  was just dispatched: the dispatch is recorded (ok, no status yet) before GitHub is asked, so a 開始 meanwhile is
    *  `recent`, and a 停止 meanwhile stays (only `dispatch` is written after). */
-  async run(input: RunInput, by: Member): Promise<ItsStatus> {
+  async run(input: RunInput, by: Member, rid?: string): Promise<ItsStatus> {
     const now = Date.now();
     const settings = { ...this.rec.settings, paused: input.action === 'stop' };
     const control = { action: input.action, by, at: now };
     if (input.action === 'stop') {
       await this.save({ settings, control });
-      console.log(`its run stop by=${by} runner=${this.rec.runner?.runId ?? '-'}`);
+      console.log(`its run stop by=${by} runner=${this.rec.runner?.runId ?? '-'}${ridOf(rid)}`);
       return this.status();
     }
     const { lease, runner, dispatch, control: last } = this.rec;
@@ -101,12 +111,12 @@ export class ItsBot extends DurableObject<Env> {
             : null;
     if (skip) {
       await this.save({ settings, control });
-      console.log(`its run start by=${by} dispatch=skip_${skip}${skip === 'recent' ? ` last=${Math.round((now - dispatch!.at) / 1000)}s` : ''}`);
+      console.log(`its run start by=${by} dispatch=skip_${skip}${skip === 'recent' ? ` last=${Math.round((now - dispatch!.at) / 1000)}s` : ''}${ridOf(rid)}`);
       return this.status();
     }
     await this.save({ settings, control, dispatch: { at: now, ok: true, status: null } });   // = no token: nothing sent
     if (this.env.GH_DISPATCH_TOKEN) await this.save({ dispatch: await dispatchRun(this.env.GH_DISPATCH_TOKEN, now) });
-    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}`);
+    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}${ridOf(rid)}`);
     return this.status();
   }
 
@@ -118,14 +128,24 @@ export class ItsBot extends DurableObject<Env> {
       console.warn(`its claim run=${input.runId} host=${input.host} ok=0 holder=${held.holder} (${held.host}) for=${Math.round((held.until - now) / 1000)}s`);
       return { ok: false, lease: held };
     }
+    // a lease still on the record and someone else's: its holder never released it (no run_end): it died or was cancelled
     const takeover = this.rec.lease && this.rec.lease.holder !== input.runId ? this.rec.lease.holder : null;
-    await this.save({ lease });
-    console.log(`its claim run=${input.runId} host=${input.host} ok=1${takeover ? ` took_over=${takeover}` : ''}`);
+    if (takeover) {
+      const events = addOwnEvent(this.rec.events, { runId: input.runId, t: now, kind: 'prev_unclean', detail: takeover });
+      await this.save({ lease, events });
+      console.warn(`its claim run=${input.runId} host=${input.host} ok=1 took_over=${takeover} prev_unclean`);
+    } else {
+      await this.save({ lease });
+      console.log(`its claim run=${input.runId} host=${input.host} ok=1`);
+    }
     return { ok: true, lease, config: runnerConfig(this.rec, this.mode, input.runId, now) };
   }
 
+  /** A run's config read; without a runId, a run's preflight (deciding whether to start): stamped `preflight`. */
   async config(runId: string | null): Promise<RunnerConfig> {
-    const c = runnerConfig(this.rec, this.mode, runId, Date.now());
+    const now = Date.now();
+    if (runId === null) await this.save({ preflight: now });
+    const c = runnerConfig(this.rec, this.mode, runId, now);
     console.log(`its config run=${runId ?? '-'} stop=${c.stopReason ?? 0}`);
     return c;
   }

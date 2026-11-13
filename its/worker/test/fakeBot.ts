@@ -69,5 +69,5 @@ export const report = (x: Partial<RunnerReport> = {}): RunnerReport => ({ ...str
 
 /** Logs silenced, kept for the tests that read them. */
 export function quiet() {
-  return { log: vi.spyOn(console, 'log').mockImplementation(() => {}), warn: vi.spyOn(console, 'warn').mockImplementation(() => {}), error: vi.spyOn(console, 'error').mockImplementation(() => {}) };
+  return { debug: vi.spyOn(console, 'debug').mockImplementation(() => {}), log: vi.spyOn(console, 'log').mockImplementation(() => {}), warn: vi.spyOn(console, 'warn').mockImplementation(() => {}), error: vi.spyOn(console, 'error').mockImplementation(() => {}) };
 }

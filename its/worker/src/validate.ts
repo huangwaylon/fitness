@@ -66,6 +66,9 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
   if (x.runUrl !== null && !(typeof x.runUrl === 'string' && x.runUrl.length <= 200 && /^https:\/\/github\.com\/[\w./-]+$/.test(x.runUrl))) return bad('url');
   if (x.sha !== null && !(typeof x.sha === 'string' && /^[0-9a-f]{4,40}$/.test(x.sha))) return bad('sha');
   if (!time(x.startedAt) || !timeOrNull(x.deadline) || !timeOrNull(x.lastScanAt) || !timeOrNull(x.lastOkAt)) return bad('times');
+  // a newer runner's (absent from an older one: left absent)
+  if (x.settingsAt !== undefined && !timeOrNull(x.settingsAt)) return bad('times');
+  if (x.mailOk !== undefined && x.mailOk !== null && typeof x.mailOk !== 'boolean') return bad('mail');
   if (!count(x.scans) || !count(x.scanFailures) || !count(x.unsynced)) return bad('counts');
   const s = x.solves;
   if (!isObj(s) || !count(s.ok) || !count(s.failed) || !timeOrNull(s.lastOkAt) || !(s.lastSecs === null || time(s.lastSecs)) || !SPOTS.includes(s.lastSpot as never)) return bad('solves');
@@ -85,6 +88,8 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
       scans: x.scans, scanFailures: x.scanFailures, lastScanAt: x.lastScanAt, lastOkAt: x.lastOkAt,
       solves: { ok: s.ok, failed: s.failed, lastOkAt: s.lastOkAt, lastSecs: s.lastSecs as number | null, lastSpot: s.lastSpot as RunnerReport['solves']['lastSpot'] },
       failuresByStep: { ...(f as Record<string, number>) }, lastError, unsynced: x.unsynced,
+      ...(x.settingsAt !== undefined && { settingsAt: x.settingsAt as number | null }),
+      ...(x.mailOk !== undefined && { mailOk: x.mailOk as boolean | null }),
       events: events as EventInput[], seen: x.seen as string[],
     },
   };

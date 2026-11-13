@@ -2,16 +2,17 @@
 // rings, the append-only bookings, the seen names, what a runner is told (RunnerConfig) and the page's verdict
 // (ItsStatus). Every time is the Worker's clock (`now`), except the runner's own fields in its report.
 import {
-  AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS, START_GRACE_SEC,
-  daysUntil, normName, tokyoToday,
-  type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsSettings, type ItsStatus,
-  type Lease, type Reason, type RunnerConfig, type RunnerReport, type Verdict,
+  AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, HOLD_SEC, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS,
+  SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
+  type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsHealth, type ItsSettings,
+  type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
 
 export type Mode = 'on' | 'off';
 /** The runner's last report as kept: the status's, plus the Worker's own receive times of its last good scan and solve
- *  (when `lastOkAt` / `solves.lastOkAt` last moved), so the verdict compares Worker times only. Not shown. */
-export type RunnerRecord = NonNullable<ItsStatus['runner']> & { okSeenAt: number | null; solveOkSeenAt: number | null };
+ *  (when `lastOkAt` / `solves.lastOkAt` last moved), so the verdict compares Worker times only, and since when this run
+ *  has reported unsynced entries without a break (/health/its; absent from a record kept by an older Worker). Not shown. */
+export type RunnerRecord = NonNullable<ItsStatus['runner']> & { okSeenAt: number | null; solveOkSeenAt: number | null; unsyncedSince?: number | null };
 export type Dispatch = NonNullable<ItsStatus['dispatch']>;
 type Control = NonNullable<ItsStatus['control']>;
 
@@ -29,6 +30,8 @@ export interface ItsRecord {
   seen: Record<string, number>;
   /** The highest event seq per run, the newest ACKS_KEPT runs: `[runId, seq]`. */
   acks: [string, number][];
+  /** The last preflight (GET /runner/config without a runId). */
+  preflight: number | null;
 }
 
 export const SEEN_KEPT = 300;
@@ -39,8 +42,8 @@ export const ACKS_KEPT = 20;
 export const MAX_BOOKINGS = 500;
 /** A failed leg or a human_needed event counts for this long (unless a later 予約確定 for that stay settles it). */
 const HUMAN_NEEDED_MS = 24 * 3600_000;
-/** The site's hold lapses after 30 min: a hold that needs a person (auto-confirm off, or a near stay) counts till then. */
-const HOLD_MS = 30 * 60_000;
+/** The site's hold lapses after HOLD_SEC: a hold that needs a person (auto-confirm off, or a near stay) counts till then. */
+const HOLD_MS = HOLD_SEC * 1000;
 /** A 申込 leg in flight: a `confirming` without its `confirmed` / `failed` counts only after this. */
 export const CONFIRM_GRACE_MS = 10 * 60_000;
 const SCAN_FAILING = 3;
@@ -91,6 +94,11 @@ export function addEvents(rec: Pick<ItsRecord, 'events' | 'acks'>, runId: string
     [...old, ...fresh.filter((e) => IMPORTANT_EVENTS.includes(e.kind) === important)].slice(-EVENTS_KEPT);
   const acks: ItsRecord['acks'] = [...rec.acks.filter(([r]) => r !== runId), [runId, ack]];
   return { events: { routine: ring(rec.events.routine, false), important: ring(rec.events.important, true) }, acks: acks.slice(-ACKS_KEPT), added: fresh };
+}
+
+/** One of the Worker's own events (seq 0: no run's ack moves), into the important ring. */
+export function addOwnEvent(events: ItsRecord['events'], e: Omit<ItsEvent, 'seq'>): ItsRecord['events'] {
+  return { ...events, important: [...events.important, { ...e, seq: 0 }].slice(-EVENTS_KEPT) };
 }
 
 /** Entries kept: until their stay is more than BOOKINGS_KEEP_DAYS past (a reservation is a liability till then). */
@@ -148,6 +156,7 @@ export function runnerOf(r: RunnerReport, now: number, prev: RunnerRecord | null
     ...rest, lastSeen: now,
     okSeenAt: r.lastOkAt === null || !same ? null : same.lastOkAt === r.lastOkAt ? same.okSeenAt : now,
     solveOkSeenAt: seenAt(r.solves.lastOkAt, same?.solves.lastOkAt, same?.solveOkSeenAt),
+    unsyncedSince: r.unsynced === 0 ? null : same && same.unsynced > 0 ? same.unsyncedSince ?? now : now,
   };
 }
 
@@ -189,6 +198,10 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
   const sinceDispatch = d && lastSeen < d.at;   // no report since 開始
   const starting = active && !!sinceDispatch && now - d.at < START_GRACE_SEC * 1000;
   const ban = rec.events.important.findLast((e) => e.kind === 'ban');
+  // the run that holds the lease still applies settings older than the saved ones (an older runner sends no settingsAt)
+  const saved = rec.settings.updatedAt;
+  const holds = !!r && rec.lease?.holder === r.runId && rec.lease.until > now;
+  const stale = holds && r.settingsAt !== undefined && saved !== null && (r.settingsAt ?? -1) < saved && now - saved > SETTINGS_STALE_SEC * 1000;
   const solveFails = r ? rec.events.routine.filter((e) => e.kind === 'solve_failed' && e.runId === r.runId && e.t > (r.solveOkSeenAt ?? 0)).length : 0;
   const rules: Record<Reason, [boolean, Verdict]> = {
     mode_off: [mode === 'off', 'off'],
@@ -203,8 +216,8 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
     solve_failing: [active && !!r && r.solves.failed >= SOLVE_FAILING && solveFails >= SOLVE_FAILING, 'degraded'],
     unsynced: [!!r && r.unsynced > 0, 'degraded'],
     human_needed: [humanNeeded(rec, now), 'degraded'],
-    mail_failing: [false, 'degraded'],     // not raised yet: the report's mailOk isn't kept
-    settings_stale: [false, 'degraded'],   // nor its settingsAt
+    mail_failing: [active && !!r && s.autoConfirm && r.mailOk === false, 'degraded'],
+    settings_stale: [active && stale, 'degraded'],
   };
   const reasons = REASONS.filter((x) => rules[x][0]);
   return { verdict: reasons.length ? rules[reasons[0]][1] : 'healthy', reasons };
@@ -213,7 +226,7 @@ export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStat
 /** The runner as the page sees it (the Worker's own stamps left out). */
 function shownRunner(r: RunnerRecord | null): ItsStatus['runner'] {
   if (!r) return null;
-  const { okSeenAt: _o, solveOkSeenAt: _s, ...shown } = r;
+  const { okSeenAt: _o, solveOkSeenAt: _s, unsyncedSince: _u, ...shown } = r;
   return shown;
 }
 
@@ -232,5 +245,22 @@ export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: nu
     bookings: pruneBookings(rec.bookings, now).reverse(),
     events: [...rec.events.routine, ...rec.events.important].sort(newestFirst),
     seen: Object.keys(rec.seen).sort(),
+    lastPreflight: rec.preflight,
+  };
+}
+
+const ageSec = (t: number | null | undefined, now: number): number | null => (t == null ? null : Math.max(0, Math.floor((now - t) / 1000)));
+
+/** /health/its: the verdict and a few ages and counts, never a date, a facility or a name (a public repo's workflow
+ *  reads it). */
+export function healthOf(rec: ItsRecord, mode: Mode, now: number): ItsHealth {
+  const r = rec.runner;
+  return {
+    ...verdictOf(rec, mode, now),
+    lastSeenAgeSec: ageSec(r?.lastSeen, now),
+    phase: r?.phase ?? null,
+    unsynced: r?.unsynced ?? 0,
+    unsyncedAgeSec: r && r.unsynced > 0 ? ageSec(r.unsyncedSince ?? r.lastSeen, now) : null,
+    lastPreflightAgeSec: ageSec(rec.preflight, now),
   };
 }

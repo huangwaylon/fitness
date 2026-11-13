@@ -12,6 +12,8 @@ export interface Env {
   KEY_B?: string;
   /** The runner's key (`Authorization: Bearer …` on /runner/*). */
   ITS_RUNNER_TOKEN?: string;
+  /** The alerting workflow's key (`Authorization: Bearer …` on GET /health/its; a repo secret there). Unset: refused. */
+  ITS_HEALTH_TOKEN?: string;
   /** A fine-grained PAT (this repo, Actions read/write) for 開始's workflow_dispatch. Unset: no dispatch (the
    *  schedule starts a run). */
   GH_DISPATCH_TOKEN?: string;

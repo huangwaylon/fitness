@@ -1,7 +1,8 @@
 // The ITS booker's Worker (README.md): the page's routes (a member's key, CORS for the app's origin), the runner's
-// (ITS_RUNNER_TOKEN) and /health. Bodies are capped and checked here (the contract's parseSettingsInput, validate.ts);
-// the record and its rules are the object's (bot.ts), one RPC per request. Every refusal logs one line with its reason
-// (never a key or a token).
+// (ITS_RUNNER_TOKEN), /health and /health/its (ITS_HEALTH_TOKEN: codes only, for alerting). Bodies are capped and checked
+// here (the contract's parseSettingsInput, validate.ts); the record and its rules are the object's (bot.ts), one RPC per
+// request. Every refusal logs one line with its reason (never a key or a token); a page's request carries its
+// X-Request-Id (or one made up) in its lines and its answer.
 import { corsOf, roleOfKey } from '../../../relay/src/auth.ts';
 import { LIMITS, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
 import type { Env } from './env.ts';
@@ -26,6 +27,7 @@ export default {
     const { pathname } = new URL(req.url);
     try {
       if (pathname === '/health') return Response.json({ ok: true, mode: env.MODE, sha: env.COMMIT ?? null });
+      if (pathname === '/health/its') return await health(req, env, pathname);
       if (pathname in MEMBER_ROUTES) return await member(req, env, pathname);
       if (pathname in RUNNER_ROUTES) return await runner(req, env, pathname);
       return new Response('not found', { status: 404 });
@@ -71,46 +73,64 @@ const bearer = (req: Request): string => {
   return h.startsWith('Bearer ') ? h.slice(7).trim() : '';
 };
 
+/** The page's request id: its X-Request-Id when shaped as an id (the contract's isId), else one made up (`w-` and 8 hex),
+ *  never the header as sent. */
+const requestId = (req: Request): string => {
+  const sent = req.headers.get('X-Request-Id');
+  return isId(sent) ? sent : `w-${crypto.randomUUID().slice(0, 8)}`;
+};
+
 /** The page's routes: a member's key (KEY_A, KEY_B: the guest's is never set here, so it's refused like any other). */
 async function member(req: Request, env: Env, path: string): Promise<Response> {
   const origin = req.headers.get('Origin');
+  const rid = requestId(req);
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
-  if (!cors) return refuse(req, path, 403, 'origin', {}, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`);
+  if (!cors) return refuse(req, path, 403, 'origin', { 'X-Request-Id': rid }, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))} rid=${rid}`);
   const method = MEMBER_ROUTES[path];
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '86400' } });
+    return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Request-Id', 'Access-Control-Max-Age': '86400' } });
   }
-  if (req.method !== method) return refuse(req, path, 405, 'method', { ...cors, Allow: method });
+  const base = { ...cors, 'Access-Control-Expose-Headers': 'X-Request-Id', 'X-Request-Id': rid };
+  if (req.method !== method) return refuse(req, path, 405, 'method', { ...base, Allow: method }, ` rid=${rid}`);
   const who = roleOfKey(bearer(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
-  if (who !== 'A' && who !== 'B') return refuse(req, path, 401, 'unauthorized', cors);
+  if (who !== 'A' && who !== 'B') return refuse(req, path, 401, 'unauthorized', base, ` rid=${rid}`);
   const by: Member = who;
-  const headers = { ...cors, 'Cache-Control': 'private, no-store' };
+  const headers = { ...base, 'Cache-Control': 'private, no-store' };
   const ok = (x: unknown, status = 200) => Response.json(x, { status, headers });
   try {
     if (path === '/its/status') {
       const s = await bot(env).status();
-      console.log(`its status by=${by} verdict=${s.verdict} reasons=${s.reasons.join(',') || '-'}`);
+      // the page polls: debug, not info (Workers Logs keeps it, filterable by level)
+      console.debug(`its status by=${by} verdict=${s.verdict} reasons=${s.reasons.join(',') || '-'} rid=${rid}`);
       return ok(s);
     }
     const json = await body(req);
     if (path === '/its/settings') {
       const p = parseSettingsInput(json, Date.now());
-      if (!p.ok) return refuse(req, path, 400, p.error, cors, ` by=${by}`);
-      const r = await bot(env).putSettings(p.value, by);
+      if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
+      const r = await bot(env).putSettings(p.value, by, rid);
       return ok(r.status, r.ok ? 200 : 409);
     }
     const p = parseRunInput(json);
-    if (!p.ok) return refuse(req, path, 400, p.error, cors, ` by=${by}`);
-    return ok(await bot(env).run(p.value, by));
+    if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
+    return ok(await bot(env).run(p.value, by, rid));
   } catch (e) {
-    if (e instanceof Refused) return refuse(req, path, e.status, e.why, cors, ` by=${by}`);
+    if (e instanceof Refused) return refuse(req, path, e.status, e.why, base, ` by=${by} rid=${rid}`);
     throw e;
   }
 }
 
-/** `Authorization: Bearer <ITS_RUNNER_TOKEN>`, compared in constant time (as SHA-256 digests, so of equal length); the
- *  secret trimmed (a pasted newline), as the bearer is. */
-async function runnerTokenOk(token: string, secret: string | undefined): Promise<boolean> {
+/** `GET /health/its` (`Authorization: Bearer <ITS_HEALTH_TOKEN>`): the verdict, reasons, ages and counts (ItsHealth),
+ *  for the alerting workflow of a public repo: no date, facility or name. No CORS: no page calls it. */
+async function health(req: Request, env: Env, path: string): Promise<Response> {
+  if (req.method !== 'GET') return refuse(req, path, 405, 'method', { Allow: 'GET' });
+  if (!(await tokenOk(bearer(req), env.ITS_HEALTH_TOKEN))) return refuse(req, path, 401, env.ITS_HEALTH_TOKEN?.trim() ? 'unauthorized' : 'no_health_token');
+  return Response.json(await bot(env).health(), { headers: { 'Cache-Control': 'no-store' } });
+}
+
+/** `Authorization: Bearer <secret>`, compared in constant time (as SHA-256 digests, so of equal length); the secret
+ *  trimmed (a pasted newline), as the bearer is. */
+async function tokenOk(token: string, secret: string | undefined): Promise<boolean> {
   const expected = secret?.trim();
   if (!expected || !token) return false;
   const digest = async (s: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
@@ -124,7 +144,7 @@ async function runnerTokenOk(token: string, secret: string | undefined): Promise
 async function runner(req: Request, env: Env, path: string): Promise<Response> {
   const method = RUNNER_ROUTES[path];
   if (req.method !== method) return refuse(req, path, 405, 'method', { Allow: method });
-  if (!(await runnerTokenOk(bearer(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN?.trim() ? 'unauthorized' : 'no_runner_token');
+  if (!(await tokenOk(bearer(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN?.trim() ? 'unauthorized' : 'no_runner_token');
   const qRun = new URL(req.url).searchParams.get('runId');
   if (qRun !== null && !isId(qRun)) return refuse(req, path, 400, 'bad_run_id');
   const headers = { 'Cache-Control': 'no-store' };

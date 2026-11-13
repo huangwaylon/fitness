@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import example from '../../contract-example.json';
 import {
-  DEFAULT_SETTINGS, LATE_AFTER_SEC, START_GRACE_SEC,
+  DEFAULT_SETTINGS, LATE_AFTER_SEC, SETTINGS_STALE_SEC, START_GRACE_SEC,
   type BookingEntry, type ItsEvent, type ItsSettings,
 } from '../../../app/src/lib/its/contract.ts';
 import { CONFIRM_GRACE_MS, verdictOf, type ItsRecord, type Mode, type RunnerRecord } from '../src/rules.ts';
@@ -19,7 +19,7 @@ const entry = (kind: BookingEntry['kind'], at: number, x: Partial<BookingEntry> 
 
 /** A healthy record: running, reported 10 s ago; with changes. */
 function rec(x: Partial<ItsRecord> = {}): ItsRecord {
-  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], ...x };
+  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, ...x };
 }
 const verdict = (r: ItsRecord, mode: Mode = 'on', now = NOW) => verdictOf(r, mode, now);
 
@@ -127,6 +127,30 @@ describe('verdictOf', () => {
     expect(verdict(rec({ bookings: [entry('confirming', NOW - 25 * HOUR)] })).reasons).toEqual([]);
     // settled by a failed: that one's own rule then (till a 予約確定)
     expect(verdict(rec({ bookings: [c, entry('failed', NOW - MIN)] })).reasons).toEqual(['human_needed']);
+  });
+
+  it('mail_failing → degraded: the last IMAP check failed while auto-confirm is on (a running runner only)', () => {
+    const auto = { ...settings, autoConfirm: true };
+    expect(verdict(rec({ settings: auto, runner: runner({ mailOk: false }) }))).toEqual({ verdict: 'degraded', reasons: ['mail_failing'] });
+    expect(verdict(rec({ runner: runner({ mailOk: false }) })).reasons).toEqual([]);   // auto-confirm off: holds wait for a person anyway
+    for (const mailOk of [true, null, undefined]) expect(verdict(rec({ settings: auto, runner: runner({ mailOk }) })).reasons, String(mailOk)).toEqual([]);
+    expect(verdict(rec({ settings: { ...auto, paused: true }, runner: runner({ mailOk: false }) })).reasons).toEqual(['paused']);
+  });
+
+  it('settings_stale → degraded: the run holding the lease still applies older settings SETTINGS_STALE_SEC after a save', () => {
+    const saved = { ...settings, updatedAt: NOW - 2 * MIN };
+    const lease = { holder: '19283746', host: 'actions' as const, until: NOW + 4 * MIN };
+    const r = (settingsAt: number | null | undefined, x: Partial<ItsRecord> = {}) => rec({ settings: saved, lease, runner: runner({ settingsAt }), ...x });
+    expect(verdict(r(NOW - 3 * HOUR))).toEqual({ verdict: 'degraded', reasons: ['settings_stale'] });
+    expect(verdict(r(null)).reasons).toEqual(['settings_stale']);   // never got any
+    expect(verdict(r(NOW - 2 * MIN)).reasons).toEqual([]);          // applied
+    expect(verdict(r(undefined)).reasons).toEqual([]);              // an older runner says nothing
+    // within the two reports after the save
+    expect(verdict(r(NOW - 3 * HOUR, { settings: { ...saved, updatedAt: NOW - SETTINGS_STALE_SEC * 1000 } })).reasons).toEqual([]);
+    // the run has ended (lease released) or someone else's holds it: nothing to apply them
+    expect(verdict(r(NOW - 3 * HOUR, { lease: null })).reasons).toEqual([]);
+    expect(verdict(r(NOW - 3 * HOUR, { lease: { ...lease, holder: 'other' } })).reasons).toEqual([]);
+    expect(verdict(r(NOW - 3 * HOUR, { lease: { ...lease, until: NOW - 1 } })).reasons).toEqual([]);
   });
 
   it('lists every reason in REASONS order, the verdict the first’s', () => {

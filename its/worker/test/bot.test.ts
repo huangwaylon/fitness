@@ -69,7 +69,7 @@ describe('the lease', () => {
     vi.setSystemTime(NOW + LEASE_SEC * 1000);
     const c = await bot.claim({ runId: '19283999', host: 'actions' });
     expect(c).toMatchObject({ ok: true, lease: { holder: '19283999' } });
-    expect(logged()).toContain('its claim run=19283999 host=actions ok=1 took_over=19283746');
+    expect(warned()).toContain('its claim run=19283999 host=actions ok=1 took_over=19283746');
     const old = await bot.report(report());
     expect([old.stop, old.stopReason]).toEqual([true, 'lease_lost']);
     expect(old.lease?.holder).toBe('19283999');
@@ -217,6 +217,73 @@ describe('reports', () => {
     const { runner } = await bot.status();
     const { v: _v, events: _e, seen: _s, ...rest } = report();
     expect(runner).toEqual({ ...rest, lastSeen: NOW + 1000 });
+    expect(runner && 'settingsAt' in runner).toBe(false);   // an older runner's report: no new field appears
+  });
+
+  it('keep the applied settings’ time and the last IMAP check when the runner sends them', async () => {
+    await bot.report(report({ settingsAt: NOW - MIN, mailOk: false }));
+    expect((await bot.status()).runner).toMatchObject({ settingsAt: NOW - MIN, mailOk: false });
+    await bot.report(report({ settingsAt: null, mailOk: null }));
+    expect((await bot.status()).runner).toMatchObject({ settingsAt: null, mailOk: null });
+  });
+
+  it('time how long the shown run has had unsynced entries (for /health/its), restarting after a clean report', async () => {
+    await bot.report(report({ unsynced: 1 }));
+    vi.setSystemTime(NOW + 20 * MIN);
+    await bot.report(report({ unsynced: 2 }));
+    expect(bot.rec.runner?.unsyncedSince).toBe(NOW);
+    expect(await bot.health()).toMatchObject({ unsynced: 2, unsyncedAgeSec: 20 * 60 });
+    await bot.report(report({ unsynced: 0 }));
+    expect(bot.rec.runner?.unsyncedSince).toBeNull();
+    vi.setSystemTime(NOW + 21 * MIN);
+    await bot.report(report({ unsynced: 1 }));
+    expect(bot.rec.runner?.unsyncedSince).toBe(NOW + 21 * MIN);
+    expect('unsyncedSince' in (await bot.status()).runner!).toBe(false);   // the Worker's own: never shown
+  });
+});
+
+describe('the Worker’s own events and stamps', () => {
+  it('a claim that takes over a lease its holder never released records prev_unclean (important, seq 0, the old run in detail)', async () => {
+    await bot.claim({ runId: RUN, host: 'actions' });
+    vi.setSystemTime(NOW + LEASE_SEC * 1000);
+    await bot.claim({ runId: '19283999', host: 'actions' });
+    const e = (await bot.status()).events.find((x) => x.kind === 'prev_unclean');
+    expect(e).toEqual({ runId: '19283999', seq: 0, t: NOW + LEASE_SEC * 1000, kind: 'prev_unclean', detail: RUN });
+    expect(bot.rec.events.important.map((x) => x.kind)).toContain('prev_unclean');
+    expect(warned()).toContain('its claim run=19283999 host=actions ok=1 took_over=19283746 prev_unclean');
+    // its seq 0 is no ack: the run's own events from seq 1 are taken
+    expect((await bot.report(report({ runId: '19283999', events: [ev(1, 'run_start')] }))).ackSeq).toBe(1);
+  });
+
+  it('a claim after a clean release (run_end), or a run claiming again, records nothing', async () => {
+    await bot.claim({ runId: RUN, host: 'actions' });
+    await bot.claim({ runId: RUN, host: 'actions' });
+    await bot.report(report({ events: [ev(1, 'run_end', { detail: 'time_up' })] }));
+    await bot.claim({ runId: 'next', host: 'actions' });
+    expect((await bot.status()).events.map((x) => x.kind)).not.toContain('prev_unclean');
+  });
+
+  it('a preflight (GET /runner/config without a runId) is stamped lastPreflight; a run’s own config read is not', async () => {
+    expect((await bot.status()).lastPreflight).toBeNull();
+    vi.setSystemTime(NOW + MIN);
+    await bot.config(null);
+    vi.setSystemTime(NOW + 2 * MIN);
+    await bot.config(RUN);
+    expect((await bot.status()).lastPreflight).toBe(NOW + MIN);
+    expect(state.kv.get('preflight')).toBe(NOW + MIN);
+    expect((await bot.health()).lastPreflightAgeSec).toBe(60);
+  });
+});
+
+describe('health (codes only)', () => {
+  it('says the verdict, the reasons, ages and counts, and never a date, a facility or a name', async () => {
+    expect(await bot.health()).toEqual({ verdict: 'starting', reasons: ['starting'], lastSeenAgeSec: null, phase: null, unsynced: 0, unsyncedAgeSec: null, lastPreflightAgeSec: null });
+    await bot.claim({ runId: RUN, host: 'actions' });
+    await bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'NAGU 勝浦' })], seen: ['NAGU 勝浦'] }));
+    vi.setSystemTime(NOW + 90_500);
+    const h = await bot.health();
+    expect(h).toEqual({ verdict: 'healthy', reasons: [], lastSeenAgeSec: 90, phase: 'scanning', unsynced: 0, unsyncedAgeSec: null, lastPreflightAgeSec: null });
+    expect(JSON.stringify(h)).not.toMatch(/2026|NAGU|勝浦|19283746/);
   });
 });
 

@@ -103,7 +103,7 @@ describe('the page’s auth and CORS', () => {
       expect(r.status).toBe(204);
       expect(r.headers.get('Access-Control-Allow-Origin')).toBe(ORIGIN);
       expect(r.headers.get('Access-Control-Allow-Methods')).toBe(method);
-      expect(r.headers.get('Access-Control-Allow-Headers')).toBe('Authorization, Content-Type');
+      expect(r.headers.get('Access-Control-Allow-Headers')).toBe('Authorization, Content-Type, X-Request-Id');
     }
     expect((await call(env, '/its/status', { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } })).status).toBe(403);
   });
@@ -135,7 +135,8 @@ describe('PUT /its/settings', () => {
     const stale = await put(input({ guests: 3 }), KEY_B);
     expect(stale.status).toBe(409);
     expect(((await stale.json()) as ItsStatus).settings).toMatchObject({ guests: 2, updatedBy: 'A', updatedAt: NOW });
-    expect(warned()).toContain('its settings conflict by=B');
+    expect(logs.log.mock.calls.flat().join('\n')).toContain('its settings conflict by=B');   // a 409 is routine: info, not a warning
+    expect(warned()).not.toContain('conflict');
     const ok = await put(input({ guests: 3, baseUpdatedAt: NOW }), KEY_B);
     expect(ok.status).toBe(200);
     expect(((await ok.json()) as ItsStatus).settings).toMatchObject({ guests: 3, updatedBy: 'B', updatedAt: NOW + MIN });
@@ -389,6 +390,95 @@ describe('the runner’s routes', () => {
     // a small streamed body is read whole
     const ok = new Request('https://its.example/runner/claim', { method: 'POST', headers: { Authorization: `Bearer ${RUNNER}` }, body: new Blob([JSON.stringify(example.claimInput)]).stream(), duplex: 'half' } as RequestInit);
     expect((await (await import('../src/index.ts')).default.fetch(ok, env)).status).toBe(200);
+  });
+});
+
+describe('the allow-list (search)', () => {
+  it('is saved when sent; an older page’s save (no search) keeps it; a new list replaces it', async () => {
+    let s: ItsStatus = await (await put(input({ search: ['NAGU 勝浦'] }))).json();
+    expect(s.settings.search).toEqual(['NAGU 勝浦']);
+    s = await (await put(input({ guests: 3, baseUpdatedAt: s.settings.updatedAt }))).json();
+    expect(s.settings).toMatchObject({ guests: 3, search: ['NAGU 勝浦'] });
+    expect(logs.log.mock.calls.flat().join('\n')).toContain('search=1');
+    s = await (await put(input({ search: [], baseUpdatedAt: s.settings.updatedAt }))).json();
+    expect(s.settings.search).toEqual([]);
+    const c: RunnerConfig = await (await asRunner(env, '/runner/config')).json();
+    expect(c.settings.search).toEqual([]);
+  });
+
+  it('never set: absent from the settings (the runner’s skip-list rule)', async () => {
+    const s: ItsStatus = await (await put(input())).json();
+    expect('search' in s.settings).toBe(false);
+    expect(logs.log.mock.calls.flat().join('\n')).toContain('search=-');
+  });
+});
+
+describe('request ids', () => {
+  const rid = (r: Response) => r.headers.get('X-Request-Id');
+
+  it('echoes the page’s X-Request-Id, exposes it to the page, and logs rid= on the request’s lines', async () => {
+    const r = await page(env, '/its/settings', { method: 'PUT', body: JSON.stringify(input()), headers: { 'X-Request-Id': 'p-7f3a' } });
+    expect([r.status, rid(r)]).toEqual([200, 'p-7f3a']);
+    expect(r.headers.get('Access-Control-Expose-Headers')).toBe('X-Request-Id');
+    expect(logs.log.mock.calls.flat().join('\n')).toMatch(/its settings by=A .*rid=p-7f3a/);
+    const bad = await page(env, '/its/settings', { method: 'PUT', body: '[]', headers: { 'X-Request-Id': 'p-8' } });
+    expect(rid(bad)).toBe('p-8');
+    expect(warned()).toContain('its refused 400 bad_shape PUT /its/settings by=A rid=p-8');
+    const run = await page(env, '/its/run', { method: 'POST', body: '{"action":"stop"}', headers: { 'X-Request-Id': 'p-9' } });
+    expect(rid(run)).toBe('p-9');
+    expect(logs.log.mock.calls.flat().join('\n')).toMatch(/its run stop by=A .*rid=p-9/);
+    await page(env, '/its/status', { headers: { 'X-Request-Id': 'p-10' } });
+    expect(logs.debug.mock.calls.flat().join('\n')).toContain('rid=p-10');
+    const unauth = await page(env, '/its/status', { key: GUEST, headers: { 'X-Request-Id': 'p-11' } });
+    expect(rid(unauth)).toBe('p-11');
+    expect(warned()).toContain('its refused 401 unauthorized GET /its/status rid=p-11');
+  });
+
+  it('makes one up when the page sends none or one not shaped as an id (never logs what was sent)', async () => {
+    for (const sent of [undefined, 'a b', 'x'.repeat(65), 'p/1']) {
+      const r = await page(env, '/its/status', sent === undefined ? {} : { headers: { 'X-Request-Id': sent } });
+      expect(rid(r)).toMatch(/^w-[0-9a-f]{8}$/);
+    }
+    expect(allLogs()).not.toContain('x'.repeat(65));
+  });
+});
+
+describe('log levels', () => {
+  it('the page’s poll (GET /its/status) logs at debug, not info', async () => {
+    await page(env, '/its/status');
+    expect(logs.log.mock.calls.flat().join('\n')).not.toContain('its status');
+    expect(logs.debug.mock.calls.flat().join('\n')).toMatch(/its status by=A verdict=\w+ reasons=\S+ rid=w-/);
+  });
+});
+
+describe('GET /health/its (alerting)', () => {
+  const health = (token?: string, init: RequestInit = {}) =>
+    call(env, '/health/its', { ...init, headers: token === undefined ? {} : { Authorization: `Bearer ${token}` } });
+
+  it('needs ITS_HEALTH_TOKEN: refused without it, with another key, and while it is unset', async () => {
+    await fresh({ ITS_HEALTH_TOKEN: 'health-token' });
+    for (const t of [undefined, 'nope', KEY_A, RUNNER]) expect((await health(t)).status).toBe(401);
+    expect(warned()).toContain('its refused 401 unauthorized GET /health/its');
+    expect((await health('health-token', { method: 'POST' })).status).toBe(405);
+    await fresh();
+    expect((await health('health-token')).status).toBe(401);
+    expect(warned()).toContain('its refused 401 no_health_token GET /health/its');
+    expect(allLogs()).not.toContain('health-token');
+  });
+
+  it('answers codes and counts only, never cached, no CORS', async () => {
+    await fresh({ ITS_HEALTH_TOKEN: 'health-token\n' });
+    await put(input());
+    await runAction('start');
+    await asRunner(env, '/runner/claim', example.claimInput);
+    await asRunner(env, '/runner/report', report({ unsynced: 1 }));
+    await asRunner(env, '/runner/config');
+    vi.setSystemTime(NOW + 61_000);
+    const r = await health('health-token');
+    expect(r.status).toBe(200);
+    expect(r.headers.get('Cache-Control')).toBe('no-store');
+    expect(r.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(await r.json()).toEqual({ verdict: 'degraded', reasons: ['unsynced'], lastSeenAgeSec: 61, phase: 'scanning', unsynced: 1, unsyncedAgeSec: 61, lastPreflightAgeSec: 61 });
   });
 });
 

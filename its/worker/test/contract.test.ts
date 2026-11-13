@@ -60,8 +60,10 @@ describe('the Worker on the example', () => {
     at(example.status.now);
     const status = await bot.status();
     const { lease: _l, ...want } = example.status;
-    const { lease, ...got } = status;
+    // lastPreflight: not in the example yet (the app's client.test reads it whole and doesn't keep it yet)
+    const { lease, lastPreflight, ...got } = status;
     expect(got).toEqual(want);
+    expect(lastPreflight).toBeNull();
     expect(lease).toEqual({ ...example.config.lease, until: example.status.runner.lastSeen + 300_000 });
     expect(status.settings).toEqual(example.config.settings as ItsSettings);
   });
@@ -75,8 +77,8 @@ describe('the Worker on the example', () => {
     await bot.report(example.report as never);
     const s = await bot.status();
     const { dispatch: _d, control: _c, ...exampleRest } = example.status;
-    const { dispatch, control, ...rest } = s;
-    expect([dispatch, control]).toEqual([null, null]);
+    const { dispatch, control, lastPreflight, ...rest } = s;
+    expect([dispatch, control, lastPreflight]).toEqual([null, null, null]);
     expect(shape(rest)).toEqual(shape(exampleRest));
   });
 });
@@ -124,6 +126,17 @@ describe('the runner’s bodies’ bounds', () => {
     expect(parseBookings([{ ...example.bookingInput, hotel: 'あ'.repeat(MAX_SITE_NAME + 1) }]).ok).toBe(false);
     expect(parseSettingsInput({ ...example.settingsInput, skip: [long] }, NOW).ok).toBe(true);   // matched whole
     expect(parseSettingsInput({ ...example.settingsInput, priority: [long] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+  });
+
+  it('takes a newer runner’s settingsAt and mailOk, an older runner’s report without them as it is', () => {
+    const r = parseReport({ ...report(), settingsAt: 1794540000000, mailOk: false });
+    expect(r.ok && [r.value.settingsAt, r.value.mailOk]).toEqual([1794540000000, false]);
+    const nulls = parseReport({ ...report(), settingsAt: null, mailOk: null });
+    expect(nulls.ok && [nulls.value.settingsAt, nulls.value.mailOk]).toEqual([null, null]);
+    const old = parseReport(report());
+    expect(old.ok && ['settingsAt' in old.value, 'mailOk' in old.value]).toEqual([false, false]);
+    expect(parseReport({ ...report(), settingsAt: '1' })).toEqual({ ok: false, error: 'bad_report_times' });
+    expect(parseReport({ ...report(), mailOk: 'no' })).toEqual({ ok: false, error: 'bad_report_mail' });
   });
 
   it('drops fields it doesn’t know', () => {
