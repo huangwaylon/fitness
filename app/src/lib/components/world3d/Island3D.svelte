@@ -19,7 +19,7 @@
   import type { Proj3, V3, World } from '../island/camera.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
-  import { stepClouds } from '../island/clouds.ts';
+  import { stepHeld } from '../island/clouds.ts';
   import { dayFindKeys } from '#lib/world/dayModels.ts';
   import { islandSeed } from '#lib/world/devHooks.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
@@ -1068,8 +1068,8 @@
       }
       const hz = e.horizon();
       if (!(Math.abs(hz - horizonWas) <= 0.5)) onhorizon((horizonWas = hz));
-      // (the sky's clouds behind the canvas drift in its frames: island/clouds.ts)
-      stepClouds(t);
+      // (the sky's clouds behind the canvas and the island's CSS loops step in its frames: island/clouds.ts)
+      stepHeld(t);
       const more = world.step(t);
       const camMoved = e.rev() !== revWas;
       revWas = e.rev();

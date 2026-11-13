@@ -1,84 +1,67 @@
-// The sky's two clouds move in the island's own frames (Island3D's onFrame), not as running CSS animations: an endless
-// one keeps the compositor at the display's rate (Safari's at 60 Hz) while the canvas draws at 12 at rest (review
-// 11/10 r1, C2). Their CSS `drift` stays (its keyframes, durations and phases): held, and its time set each STEP_MS.
+// The island's endless CSS loops, moved in its own frames (Island3D's onFrame, stepHeld), not as running animations:
+// an endless one keeps the compositor at the display's rate (Safari's at 60 Hz) while the canvas draws at 12 at rest
+// (review 11/10 r1, C2). Their CSS stays (keyframes, durations, phases): held, and their time set by the frame's.
+// - The sky's two clouds (holdCloud): their `drift` set each STEP_MS, drifting on under reduced motion.
+// - The little loops over the island (holdLoop: the night's twinkling stars, a money tree's glow and glints, the
+//   bottle's foam, the tape deck's ♪): set each frame, so they step at its rate (the user's call 2026-11-13, after a
+//   side-by-side); held where they were under reduced motion.
 // Their Animation objects are kept once the browser has made them: getAnimations() each frame flushed the style, the
-// island's largest own cost at rest (8.5-13.6 ms a second at 4x CPU; review 11/10 r2, P5).
-/** Each held cloud and its animations (empty till the browser makes them, or again once one's cancelled). */
-const clouds = new Map<Element, Animation[]>();
+// island's largest own cost at rest (8.5-13.6 ms a second at 4x CPU; review 11/10 r2, P5). No playState read either:
+// it flushes too, and its check every frame was 6-8 ms a second at 4x CPU, the most at night (r3 L5); each is paused
+// once, when it's taken up.
+interface Held {
+  /** Its animations: empty till the browser makes them (WebKit: at the first style after the mount), or again once
+   *  one's cancelled (its element out of the tree a while). */
+  anims: Animation[];
+  cloud: boolean;
+}
+const held = new Map<Element, Held>();
 /** A cloud's time is set again once the frame's has moved this far (ms): 3.7 px a second, 0.4 px. */
 const STEP_MS = 100;
-let setAt = -Infinity;
-
-/** Step these elements' animations by stepClouds from now on; the release lets them run again. */
-export function holdClouds(els: readonly Element[]): () => void {
-  for (const el of els) clouds.set(el, []);
-  setAt = -Infinity;
-  return () => {
-    for (const el of els) {
-      clouds.delete(el);
-      for (const a of el.getAnimations()) a.play();
-    }
-  };
-}
-
-/** Where the clouds are at `t` (performance.now's clock), as they'd have drifted from the page's start, set each
- *  STEP_MS. Their animations asked for, at a step, while there are none (WebKit makes them only at the first style
- *  after the mount) or since one was cancelled (its `cancel` event: its element out of the tree a while). No playState
- *  read: like getAnimations() it flushes pending style, and its check every frame was 6-8 ms a second at 4x CPU, the
- *  most at night, the twinkles keeping style dirty (r3 L5); each is paused once, when it's taken up. */
-export function stepClouds(t: number): void {
-  stepLoops(t);
-  if (Math.abs(t - setAt) < STEP_MS) return;
-  setAt = t;
-  for (const [el, anims] of clouds) {
-    if (anims.length) continue;
-    const now = el.getAnimations();
-    for (const a of now) {
-      a.pause();
-      a.addEventListener('cancel', () => clouds.has(el) && clouds.set(el, []), { once: true });
-    }
-    clouds.set(el, now);
-  }
-  for (const anims of clouds.values()) for (const a of anims) a.currentTime = t;
-}
-
-// The island's endless little loops over it (the night's twinkling stars, a money tree's glow and glints, the bottle's
-// foam, the tape deck's ♪): held the same way and set in each of the island's frames, so they step at its rate (12 a
-// second at rest) and the compositor isn't kept at 60 Hz for them (the user's call 2026-11-13, after a side-by-side).
-/** Each held loop and its animations (empty till the browser makes them, or again once one's cancelled). */
-const loops = new Map<Element, Animation[]>();
 /** A loop without its animations yet is looked for at most this often (ms): getAnimations() flushes the style. */
 const ASK_MS = 500;
-let askedAt = -Infinity;
+let setAt = -Infinity, askedAt = -Infinity;
 const reduce = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
 
-/** Hold `el`'s animations from now on (an attachment: `{@attach holdLoop}`); the release lets them run again. */
-export function holdLoop(el: Element): () => void {
-  loops.set(el, []);
-  askedAt = -Infinity;
+function hold(el: Element, cloud: boolean): () => void {
+  held.set(el, { anims: [], cloud });
+  if (cloud) setAt = -Infinity;
+  else askedAt = -Infinity;
   return () => {
-    loops.delete(el);
+    held.delete(el);
     for (const a of el.getAnimations()) a.play();
   };
 }
 
-/** The held loops at `t` (performance.now's clock): each set to it, or, under reduced motion (`still`), held where
- *  they were taken up. */
-export function stepLoops(t: number, still = !!reduce?.matches): void {
-  if (t - askedAt >= ASK_MS) {
-    let asked = false;
-    for (const [el, anims] of loops) {
-      if (anims.length) continue;
-      asked = true;
-      const now = el.getAnimations();
-      for (const a of now) {
-        a.pause();
-        a.addEventListener('cancel', () => loops.has(el) && loops.set(el, []), { once: true });
-      }
-      loops.set(el, now);
-    }
-    if (asked) askedAt = t;
+/** Hold a cloud (an attachment: `{@attach holdCloud}`), stepped by stepHeld; the release lets it run again. */
+export const holdCloud = (el: Element): (() => void) => hold(el, true);
+/** Hold one of the island's little loops (`{@attach holdLoop}`); the release lets it run again. */
+export const holdLoop = (el: Element): (() => void) => hold(el, false);
+
+/** Take up `el`'s animations, if the browser has made them. */
+function takeUp(el: Element, h: Held): void {
+  const now = el.getAnimations();
+  for (const a of now) {
+    a.pause();
+    a.addEventListener('cancel', () => void (held.get(el) === h && (h.anims = [])), { once: true });
   }
-  if (still) return;
-  for (const anims of loops.values()) for (const a of anims) a.currentTime = t;
+  h.anims = now;
+}
+
+/** Where everything held is at `t` (performance.now's clock), as it'd have run from the page's start: the clouds set
+ *  each STEP_MS (asked for at each step while they've no animations), the loops each frame (looked for at most each
+ *  ASK_MS) or, under reduced motion (`still`), held where they were taken up. */
+export function stepHeld(t: number, still = !!reduce?.matches): void {
+  const clouds = Math.abs(t - setAt) >= STEP_MS, ask = t - askedAt >= ASK_MS;
+  if (clouds) setAt = t;
+  let asked = false;
+  for (const [el, h] of held) {
+    if (h.cloud ? !clouds : still && !ask) continue;
+    if (!h.anims.length && (h.cloud || ask)) {
+      takeUp(el, h);
+      asked ||= !h.cloud;
+    }
+    if (h.cloud || !still) for (const a of h.anims) a.currentTime = t;
+  }
+  if (asked) askedAt = t;
 }
