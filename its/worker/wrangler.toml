@@ -12,7 +12,7 @@ preview_urls = false
 [vars]
 # 'on': runners may run. 'off': the stop switch, every runner told to stop and no dispatch (settings stay editable;
 # README "Operations"). Starts off: mbp2 runs the booker until the cutover.
-MODE = "off"
+MODE = "on"
 # The app's page origin (relay/wrangler.toml's): exact origins, comma-separated; localhost is always allowed.
 ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 
