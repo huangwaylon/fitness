@@ -9,6 +9,7 @@ import { CHANNELS, HENSHIN_LV, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpP
 import { CAST } from './cast.ts';
 import { PLACES } from './catalog.ts';
 import { isInt } from '../contract/ops.ts';
+import { isText } from '../contract/guards.ts';
 import { CAST_IDS } from './speech.ts';
 import { ALERTS, HI_MAX, HI_MIN, SKIES, hiKey, type Alert, type Sky } from './games/news/weather.ts';
 import { PHENOMENA, type Phenomenon } from './henshin.ts';
@@ -406,8 +407,7 @@ const FEATURES = ['contraction', 'weak-form', 'flap', 'yod', 'gonna', 'wanna', '
 const ME = 'me';
 
 type Obj = Record<string, unknown>;
-const isStr = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
-const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every(isStr);
+const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every((s) => isText(s));
 const chars = (s: string) => [...s].length;
 /** A sentence's words as its tiles spell them (punctuation dropped, the case kept). */
 const tileWords = (s: string) => s.replace(/[.,?!;:"“”—…]/g, ' ').split(/\s+/).filter(Boolean).join(' ');
@@ -428,7 +428,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
   if (!Array.isArray(u.seeds) || !u.seeds.length || !u.seeds.every((s) => isInt(s, 1, SEED_MAX))) at('header', `seeds: 1-${SEED_MAX}`);
   const f = u.features as Obj | undefined;
   if (!f || !FEATURES.includes(f.primary as string) || (f.review !== undefined && !FEATURES.includes(f.review as string))) at('header', 'features');
-  if (!isStr(u.cando)) at('header', 'cando');
+  if (!isText(u.cando)) at('header', 'cando');
   if (!STATUSES.includes(u.status as ListenStatus)) at('header', `status ${u.status}`);
   const helpNeeded = u.status !== 'draft';
   for (const [who, c] of Object.entries(u.cast ?? {})) {
@@ -440,7 +440,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
   const voice = (who: string): string | undefined => u.cast?.[who] ?? CAST[who as RosterId];
   /** A speaker: in the roster (or `me` where allowed), with a voice of their gender. */
   const speaker = (where: string, who: unknown, me = false) => {
-    if (!isStr(who)) return at(where, 'no speaker');
+    if (!isText(who)) return at(where, 'no speaker');
     if (who === ME) return me ? (voice(ME) ? undefined : at(where, 'a `me` line needs cast.me in the header')) : at(where, '`me` only speaks in calls');
     if (!(who in ROSTER)) return at(where, `${who} isn't in the roster`);
     const v = voice(who);
@@ -449,10 +449,10 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
     if (!v.startsWith('us-')) at(where, `${who}'s voice ${v} isn't American (US only, wave 2)`);
   };
   const spoken = (where: string, o: Obj) => {
-    if (!isStr(o.en)) at(where, 'en');
-    if (!isStr(o.ja)) at(where, 'ja');
-    if (o.tts !== undefined && (!isStr(o.tts) || /\d/.test(o.tts))) at(where, `tts must be a string without digits: ${o.tts}`);
-    if (isStr(o.en) && /\d/.test(o.en) && o.tts === undefined) at(where, 'en has digits, so it needs a tts spelled out');
+    if (!isText(o.en)) at(where, 'en');
+    if (!isText(o.ja)) at(where, 'ja');
+    if (o.tts !== undefined && (!isText(o.tts) || /\d/.test(o.tts))) at(where, `tts must be a string without digits: ${o.tts}`);
+    if (isText(o.en) && /\d/.test(o.en) && o.tts === undefined) at(where, 'en has digits, so it needs a tts spelled out');
   };
   /** Distinct voices for distinct speakers in one item (else nobody can tell them apart). */
   const distinct = (where: string, whos: string[]) => {
@@ -467,9 +467,9 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
 
   for (const [n, it] of (u.items ?? []).entries()) {
     const where = `item ${n} ${it.id ?? ''}`;
-    if (!isStr(it.id) || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(it.id)) at(where, 'id');
+    if (!isText(it.id) || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(it.id)) at(where, 'id');
     if (!ITEM_KINDS.includes(it.kind as string)) at(where, `kind ${it.kind}`);
-    if (!isStr(it.note)) at(where, 'note');
+    if (!isText(it.note)) at(where, 'note');
     else if (chars(it.note) > 40) at(where, `note is ${chars(it.note)} 字 (≤ 40)`);
     if (it.scene !== undefined && !(SCENE_IDS as readonly string[]).includes(it.scene as string)) at(where, `scene ${it.scene}`);
     if (it.channel !== undefined && !(CHANNELS as readonly string[]).includes(it.channel as string)) at(where, `channel ${it.channel}`);
@@ -485,28 +485,28 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
     for (const p of usProblems(it)) at(where, p);
 
     if (it.kind === 'tile') {
-      const b = it.clip !== undefined && isStr(it.clip) ? bank.get(it.clip) : undefined;
+      const b = it.clip !== undefined && isText(it.clip) ? bank.get(it.clip) : undefined;
       if (it.clip !== undefined) {
         if (!b) at(where, `clip ${it.clip} is no voiced bank item`);
         else if (it.en !== asSaid(b.en, b.tts)) at(where, `a derived tile's en is its bank item's, as said: "${asSaid(b.en, b.tts)}"`);
         if (it.speaker !== undefined || it.tts !== undefined) at(where, "a derived tile has its bank item's speaker and audio (no speaker, no tts)");
-        if (!isStr(it.ja)) at(where, 'ja');
+        if (!isText(it.ja)) at(where, 'ja');
       } else {
         speaker(where, it.speaker);
         spoken(where, it);
         if (it.tts === it.en) at(where, 'tts is en: drop it (it defaults to en)');
-        if (isStr(it.tts) && ttsDrops(it.tts).length) at(where, `tts respells ${ttsDrops(it.tts).join(', ')}: say the words (README "tile")`);
+        if (isText(it.tts) && ttsDrops(it.tts).length) at(where, `tts respells ${ttsDrops(it.tts).join(', ')}: say the words (README "tile")`);
       }
       if (it.revoice !== undefined && it.revoice !== true) at(where, 'revoice: true or nothing');
       if (it.tone !== undefined && !(TONES as readonly unknown[]).includes(it.tone)) at(where, `tone ${it.tone}: ${TONES.join(', ')} or nothing`);
       if (it.tone !== undefined && it.clip !== undefined) at(where, "a derived tile's tone is its bank item's clip (no tone)");
       help(where, it, ['ctx', 'why']);
-      for (const k of ['note', 'why'] as const) if (isStr(it[k]) && GRAMMAR.test(it[k])) at(where, `${k} uses a grammar term (${(it[k] as string).match(GRAMMAR)![0]}): say it in plain words`);
+      for (const k of ['note', 'why'] as const) if (isText(it[k]) && GRAMMAR.test(it[k])) at(where, `${k} uses a grammar term (${(it[k] as string).match(GRAMMAR)![0]}): say it in plain words`);
       if (!strs(it.tiles) || it.tiles.length < 3 || it.tiles.length > 12) at(where, 'tiles: 3-12');
       else {
-        if (isStr(it.en) && it.tiles.join(' ') !== tileWords(it.en)) at(where, `tiles don't rebuild en: "${it.tiles.join(' ')}" vs "${tileWords(it.en)}"`);
-        const voice = b ? (b.tts ?? b.en) : isStr(it.tts) ? it.tts : it.en;
-        if (isStr(voice) && !allHeard(voice, it.tiles)) at(where, `a tile isn't heard: the clip says "${voice}"`);
+        if (isText(it.en) && it.tiles.join(' ') !== tileWords(it.en)) at(where, `tiles don't rebuild en: "${it.tiles.join(' ')}" vs "${tileWords(it.en)}"`);
+        const voice = b ? (b.tts ?? b.en) : isText(it.tts) ? it.tts : it.en;
+        if (isText(voice) && !allHeard(voice, it.tiles)) at(where, `a tile isn't heard: the clip says "${voice}"`);
       }
       if (!strs(it.decoys) || it.decoys.length < 1 || it.decoys.length > 4) at(where, 'decoys: 1-4');
       else if (strs(it.tiles)) {
@@ -519,8 +519,8 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
         }
       }
       for (const m of (it.marks ?? []) as unknown[][]) {
-        const ok = Array.isArray(m) && ['say', 'link', 'drop', 'stress'].includes(m[0] as string) && isStr(m[1]) &&
-          (m[0] === 'link' || m[0] === 'stress' || isStr(m[2])) && isStr(it.en) &&
+        const ok = Array.isArray(m) && ['say', 'link', 'drop', 'stress'].includes(m[0] as string) && isText(m[1]) &&
+          (m[0] === 'link' || m[0] === 'stress' || isText(m[2])) && isText(it.en) &&
           (m[0] === 'stress' ? (m[1] as string).split(' ').every((w) => hasWords(it.en as string, w)) : hasWords(it.en, m[1] as string));
         if (!ok) at(where, `mark ${JSON.stringify(m)} (its words must be in en)`);
         else if (m[0] === 'say' && !TRIO.some(([w, full]) => (m[1] as string).toLowerCase() === w && (m[2] as string).toLowerCase() === full))
@@ -545,7 +545,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
         const slots = round.slots as Obj[];
         if (!Array.isArray(slots) || slots.length < 1 || slots.length > 12) { at(where, `memo ${r}: 1-12 slots`); continue; }
         for (const [s, slot] of slots.entries()) {
-          const ok = isStr(slot.ask) && strs(slot.options) && slot.options.length >= 2 && slot.options.length <= 6 &&
+          const ok = isText(slot.ask) && strs(slot.options) && slot.options.length >= 2 && slot.options.length <= 6 &&
             new Set(slot.options).size === slot.options.length && isInt(slot.answer, 0, slot.options.length - 1);
           if (!ok) at(where, `memo ${r} slot ${s}: ask, 2-6 distinct options, answer in range`);
           help(`${where} memo ${r} slot ${s}`, { choices: slot.options, cja: slot.cja }, ['cja']);
@@ -556,7 +556,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
     if (it.kind === 'rush') {
       speaker(where, it.speaker);
       spoken(where, it);
-      if (!isStr(it.ask)) at(where, 'ask');
+      if (!isText(it.ask)) at(where, 'ask');
       if (!(RUSH_AT as readonly unknown[]).includes(it.at)) at(where, `at ${it.at}`);
       const opts = it.options;
       if (!strs(opts) || opts.length !== 4 || new Set(opts).size !== 4 || !isInt(it.answer, 0, 3)) at(where, 'options: 4 distinct chips, answer in range');
@@ -583,8 +583,8 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
       const [op, ch, plan] = rounds;
       if (op && !(strs(op.claims) && op.claims.length === 3 && strs(op.answer) && op.answer.length === 3 && new Set(op.answer).size === 3 && op.answer.every((a) => who.includes(a))))
         at(where, 'opinions: 3 claims, the answer one speaker each');
-      if (ch && !(isStr(ch.answer) && who.includes(ch.answer))) at(where, 'changed: a speaker');
-      if (plan && !(isStr(plan.ask) && isStr(plan.ja) && strs(plan.choices) && plan.choices.length >= 3 && plan.choices.length <= 4 && isInt(plan.answer, 0, plan.choices.length - 1)))
+      if (ch && !(isText(ch.answer) && who.includes(ch.answer))) at(where, 'changed: a speaker');
+      if (plan && !(isText(plan.ask) && isText(plan.ja) && strs(plan.choices) && plan.choices.length >= 3 && plan.choices.length <= 4 && isInt(plan.answer, 0, plan.choices.length - 1)))
         at(where, 'plan: ask, ja, 3-4 choices, answer in range');
       rounds.forEach((r, i) => help(`${where} round ${i}`, r.type === 'plan' ? r : { ctx: r.ctx, why: r.why }, ['ctx', 'why']));
     }
@@ -627,9 +627,9 @@ function checkNews(where: string, it: Obj, c: Checks, stage: unknown) {
   const lines = segs.flatMap((s) => (Array.isArray(s.lines) ? (s.lines as Obj[]) : []));
   lines.forEach((l, k) => {
     c.spoken(`${where} line ${k}`, l);
-    if (isStr(l.en) && (wordCount(l.en) < 6 || wordCount(l.en) > 32)) at(`${where} line ${k}`, `${wordCount(l.en)} words (6-32)`);
+    if (isText(l.en) && (wordCount(l.en) < 6 || wordCount(l.en) > 32)) at(`${where} line ${k}`, `${wordCount(l.en)} words (6-32)`);
   });
-  const total = lines.reduce((n, l) => n + (isStr(l.en) ? wordCount(l.en) : 0), 0);
+  const total = lines.reduce((n, l) => n + (isText(l.en) ? wordCount(l.en) : 0), 0);
   const [lo, hi] = NEWS_WORDS(stage);
   if (total < lo || total > hi) at(where, `${total} words (${lo}-${hi} at this place: about 45 s before the weather)`);
   c.help(where, { ctx: it.ctx }, ['ctx']);
@@ -637,7 +637,7 @@ function checkNews(where: string, it: Obj, c: Checks, stage: unknown) {
     const q = (it[k] ?? {}) as Obj;
     if (!(strs(q.choices) && q.choices.length === 4 && new Set(q.choices).size === 4 && isInt(q.answer, 0, 3) && isInt(q.trap, 0, 3) && q.trap !== q.answer))
       at(`${where} ${k}`, '4 distinct choices, the answer and the trap 0-3 and apart');
-    if (k === 'detail' && !isStr(q.ask)) at(`${where} ${k}`, 'ask');
+    if (k === 'detail' && !isText(q.ask)) at(`${where} ${k}`, 'ask');
     c.help(`${where} ${k}`, { choices: q.choices, cja: q.cja, why: q.why }, ['cja', 'why']);
   }
   const choices = [...strsOf((it.gist as Obj)?.choices), ...strsOf((it.detail as Obj)?.choices)];
@@ -655,7 +655,7 @@ const LONG_WORDS = [280, 800] as const;
 const LONG_WORDS_HAMA = 200;
 const LONG_SECS = [90, 330] as const;
 const LONG_LINE_SECS = 16;
-const isUrl = (v: unknown): v is string => isStr(v) && /^https?:\/\/\S+$/.test(v);
+const isUrl = (v: unknown): v is string => isText(v) && /^https?:\/\/\S+$/.test(v);
 
 /** A long piece's problems: its id (≤ 24: its rows add -q5, -k12), title and source; its lines (20-90, 280-800 words,
  *  はまべ from 200): a generated piece's villagers with distinct US voices, `at` gaps with an overlap (はまべ: may have none); a real piece's speakers, its lines
@@ -666,10 +666,10 @@ const isUrl = (v: unknown): v is string => isStr(v) && /^https?:\/\/\S+$/.test(v
 function checkLong(where: string, it: Obj, c: Checks, stage: unknown) {
   const { at } = c;
   if (String(it.id).length > 24) at(where, 'a long piece’s id ≤ 24 characters (its rows add -q5, -k12)');
-  if (!isStr(it.name) || chars(it.name) > 20) at(where, 'name: its title, ≤ 20 字');
+  if (!isText(it.name) || chars(it.name) > 20) at(where, 'name: its title, ≤ 20 字');
   const lines = (Array.isArray(it.lines) ? it.lines : []) as Obj[];
   if (lines.length < LONG_LINES[0] || lines.length > LONG_LINES[1]) at(where, `${lines.length} lines (${LONG_LINES.join('-')})`);
-  const words = lines.reduce((n, l) => n + (isStr(l.en) ? wordCount(l.en) : 0), 0);
+  const words = lines.reduce((n, l) => n + (isText(l.en) ? wordCount(l.en) : 0), 0);
   const floor = stage === 1 ? LONG_WORDS_HAMA : LONG_WORDS[0];
   if (words < floor || words > LONG_WORDS[1]) at(where, `${words} words (${floor}-${LONG_WORDS[1]}: about 2-4 minutes)`);
   if (it.source === 'tts') {
@@ -687,12 +687,12 @@ function checkLong(where: string, it: Obj, c: Checks, stage: unknown) {
   } else if (it.source === 'real') {
     const sp = (it.speakers ?? {}) as Record<string, Obj>;
     if (!Object.keys(sp).length) at(where, 'a real piece names its speakers');
-    for (const [k, s] of Object.entries(sp)) if (!/^[a-z]$/.test(k) || !isStr(s?.name) || !isStr(s?.ja) || !['f', 'm'].includes(s?.g as string)) at(where, `speaker ${k}: a letter, name, ja, g f|m`);
+    for (const [k, s] of Object.entries(sp)) if (!/^[a-z]$/.test(k) || !isText(s?.name) || !isText(s?.ja) || !['f', 'm'].includes(s?.g as string)) at(where, `speaker ${k}: a letter, name, ja, g f|m`);
     let end = 0;
     lines.forEach((l, i) => {
       const w = `${where} line ${i}`;
-      if (!isStr(l.who) || !(l.who in sp)) at(w, `speaker ${l.who} isn't one of the piece's`);
-      if (!isStr(l.en) || !isStr(l.ja)) at(w, 'en and ja');
+      if (!isText(l.who) || !(l.who in sp)) at(w, `speaker ${l.who} isn't one of the piece's`);
+      if (!isText(l.en) || !isText(l.ja)) at(w, 'en and ja');
       if (l.tts !== undefined || l.at !== undefined) at(w, 'a real line has no tts or at (it’s cut, not spoken)');
       const t = l.t as unknown[];
       const ok = Array.isArray(t) && t.length === 2 && t.every((x) => typeof x === 'number') && (t[1] as number) > (t[0] as number);
@@ -704,9 +704,9 @@ function checkLong(where: string, it: Obj, c: Checks, stage: unknown) {
     });
     if (end < LONG_SECS[0] || end > LONG_SECS[1]) at(where, `${end.toFixed(0)} s (${LONG_SECS.join('-')})`);
     const cr = (it.credit ?? {}) as Obj;
-    if (!isStr(cr.title) || !isStr(cr.by) || !isUrl(cr.url) || !isUrl(cr.file) || !isStr(cr.licence) || !isUrl(cr.licenceUrl) || !isStr(cr.attribution))
+    if (!isText(cr.title) || !isText(cr.by) || !isUrl(cr.url) || !isUrl(cr.file) || !isText(cr.licence) || !isUrl(cr.licenceUrl) || !isText(cr.attribution))
       at(where, 'credit: title, by, url, file, licence, licenceUrl, attribution');
-    if (!isStr(cr.sha256) || !/^[0-9a-f]{64}$/.test(cr.sha256)) at(where, 'credit.sha256: the file’s');
+    if (!isText(cr.sha256) || !/^[0-9a-f]{64}$/.test(cr.sha256)) at(where, 'credit.sha256: the file’s');
     if (typeof cr.start !== 'number' || typeof cr.end !== 'number' || Math.abs(cr.end - cr.start - end) > 0.05) at(where, `credit start/end: the excerpt's span (its lines end at ${end})`);
   } else at(where, 'source: tts | real');
   c.help(where, { ctx: it.ctx }, ['ctx']);
@@ -717,7 +717,7 @@ function checkLong(where: string, it: Obj, c: Checks, stage: unknown) {
   qs.forEach((q, k) => {
     const w = `${where} question ${k}`;
     if (!(LONG_QS as readonly unknown[]).includes(q.type)) at(w, `type ${q.type}`);
-    if (!isStr(q.ask)) at(w, 'ask');
+    if (!isText(q.ask)) at(w, 'ask');
     if (!(strs(q.choices) && q.choices.length === 3 && new Set(q.choices).size === 3 && isInt(q.answer, 0, 2))) at(w, '3 distinct choices, the answer 0-2');
     if (!isInt(q.line, 0, lines.length - 1)) at(w, `line ${q.line}: the line that answers it`);
     c.help(w, { choices: q.choices, cja: q.cja, why: q.why }, ['cja', 'why']);
@@ -729,7 +729,7 @@ function checkLong(where: string, it: Obj, c: Checks, stage: unknown) {
   dict.forEach((d, k) => {
     const w = `${where} dict ${k}`, l = isInt(d.line, 0, lines.length - 1) ? lines[d.line] : undefined;
     if (!l) return at(w, `line ${d.line}`);
-    if (!isStr(d.words) || wordCount(d.words) > 6 || !isStr(l.en) || !hasWords(l.en, d.words)) at(w, `words "${d.words}": 1-6 of the line's own`);
+    if (!isText(d.words) || wordCount(d.words) > 6 || !isText(l.en) || !hasWords(l.en, d.words)) at(w, `words "${d.words}": 1-6 of the line's own`);
     if (!(PHENOMENA as readonly unknown[]).includes(d.feature)) at(w, `feature ${d.feature}: one of henshin.ts PHENOMENA`);
   });
 }
@@ -740,16 +740,16 @@ function checkWeather(where: string, it: Obj, at: At, inNews: boolean) {
   if (!inNews) at(where, 'weather sentences belong in a news file');
   const one = (k: string, x: unknown, why = false) => {
     const o = (x ?? {}) as Obj;
-    if (!isStr(o.en) || !isStr(o.ja) || /\d/.test(o.en)) at(`${where} ${k}`, 'en (no digits) and ja');
-    if (why && !isStr(o.why)) at(`${where} ${k}`, 'why: the umbrella question’s 解説');
+    if (!isText(o.en) || !isText(o.ja) || /\d/.test(o.en)) at(`${where} ${k}`, 'en (no digits) and ja');
+    if (why && !isText(o.why)) at(`${where} ${k}`, 'why: the umbrella question’s 解説');
     for (const p of helpProblems({ why: o.why })) at(`${where} ${k}`, p);
-    if (isStr(o.en)) for (const p of notUs(o.en)) at(`${where} ${k}`, `not US English (${p})`);
+    if (isText(o.en)) for (const p of notUs(o.en)) at(`${where} ${k}`, `not US English (${p})`);
   };
   for (const k of SKIES) one(`sky.${k}`, (it.sky as Obj)?.[k], true);
   for (const k of ALERTS) one(`alerts.${k}`, (it.alerts as Obj)?.[k]);
   one('end', it.end);
   const h = (it.high ?? {}) as Obj;
-  if (![h.en, h.one, h.ja].every((x) => isStr(x) && x.includes('{n}'))) at(`${where} high`, 'en, one and ja, each with {n}');
+  if (![h.en, h.one, h.ja].every((x) => isText(x) && x.includes('{n}'))) at(`${where} high`, 'en, one and ja, each with {n}');
 }
 
 /** Every file's problems, and ids unique across them and apart from `taken` (the bank's and the units' clip ids: the
@@ -762,9 +762,9 @@ export function checkListenAll(sources: readonly ListenSource[], bank: ReadonlyM
     const u = raw as { game?: string; stage?: number; items?: Obj[] };
     if (u.game !== 'tile' || !(Number(u.stage) in REDUCED_CAP)) continue;
     for (const it of u.items ?? []) {
-      const b = isStr(it.clip) ? bank.get(it.clip) : undefined, voice = b ? (b.tts ?? b.en) : (it.tts ?? it.en);
+      const b = isText(it.clip) ? bank.get(it.clip) : undefined, voice = b ? (b.tts ?? b.en) : (it.tts ?? it.en);
       const [n, r] = per.get(u.stage!) ?? [0, 0];
-      per.set(u.stage!, [n + 1, r + (isStr(voice) && reduces(voice) ? 1 : 0)]);
+      per.set(u.stage!, [n + 1, r + (isText(voice) && reduces(voice) ? 1 : 0)]);
     }
   }
   for (const [stage, [n, r]] of per) if (r > n * REDUCED_CAP[stage]) bad.push(`stage ${stage}'s tiles: ${r} of ${n} say a reduction (cap ${REDUCED_CAP[stage] * 100} %)`);

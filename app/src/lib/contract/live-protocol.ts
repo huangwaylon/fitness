@@ -4,6 +4,7 @@
 // sides. Its one import is contract/layout.ts (the layout's bounds, ids and scope rule: the record's).
 
 import type { EventType } from './api.ts';
+import { isRec } from './guards.ts';
 import { HOME_ID, OBJ_ID, PART, TILE_RE, TOKEN, WORLD_X, WORLD_Z, X_MAX, Z_MAX, isChunkId, isRoomScope, scopeMayWrite } from './layout.ts';
 
 export const LIVE_V = 3;
@@ -291,7 +292,7 @@ export interface Wx {
 const WX_S = /^[corhs]{1,48}$/;
 /** A timeline's fields from `o` (known fields only), or null. @public (relay/, sync/live.ts) */
 export function wxOf(o: unknown): Wx | null {
-  if (!isObj(o) || !Number.isInteger(o.h0) || (o.h0 as number) <= 0 || (o.h0 as number) >= 1e7) return null;
+  if (!isRec(o) || !Number.isInteger(o.h0) || (o.h0 as number) <= 0 || (o.h0 as number) >= 1e7) return null;
   if (typeof o.s !== 'string' || !WX_S.test(o.s) || !isTime(o.at) || !oneOf(WX_SRCS)(o.src) || !Number.isInteger(o.rev) || (o.rev as number) < 0 || (o.rev as number) >= 1e12) return null;
   const n = o.s.length;
   if (o.fx !== undefined && !(Array.isArray(o.fx) && o.fx.length <= n && o.fx.every((i) => Number.isInteger(i) && i >= 0 && i < n))) return null;
@@ -391,7 +392,6 @@ export function cleanSay(s: unknown): string | null {
 }
 
 type Obj = Record<string, unknown>;
-const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
 const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x < 1e14;
 const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
 const isWhat = (x: unknown): x is string => typeof x === 'string' && WHAT.test(x);
@@ -625,7 +625,7 @@ function parseObj(raw: unknown, versions: readonly number[] = [LIVE_V], max = MA
   if (typeof raw !== 'string' || raw.length > max) return null;
   try {
     const o: unknown = JSON.parse(raw);
-    return isObj(o) && versions.includes(o.v as number) ? o : null;
+    return isRec(o) && versions.includes(o.v as number) ? o : null;
   } catch {
     return null;
   }
@@ -657,7 +657,7 @@ export function otherVersion(raw: unknown): number | null {
   if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
   try {
     const o: unknown = JSON.parse(raw);
-    return isObj(o) && typeof o.v === 'number' && !(LIVE_VS as readonly number[]).includes(o.v) ? o.v : null;
+    return isRec(o) && typeof o.v === 'number' && !(LIVE_VS as readonly number[]).includes(o.v) ? o.v : null;
   } catch {
     return null;
   }
@@ -672,7 +672,7 @@ function noticeOf(o: Obj): Notice | null {
 
 /** A relayed intent from `o`, or null. */
 function relayedOf(o: unknown): Relayed | null {
-  if (!isObj(o) || !isWho(o.who) || !isTime(o.t)) return null;
+  if (!isRec(o) || !isWho(o.who) || !isTime(o.t)) return null;
   const i = intentOf(o);
   return i && { ...i, v: LIVE_V, who: o.who, t: o.t };
 }
@@ -694,9 +694,9 @@ export function parseServer(raw: unknown): ServerMsg | null {
       return Array.isArray(o.es) ? { v: LIVE_V, kind: 'replay', es: o.es.map(relayedOf).filter((e): e is Relayed => !!e), t } : null;
     case 'welcome': {
       if (!isWho(o.me) || typeof o.peer !== 'boolean') return null;
-      const rec = isObj(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
+      const rec = isRec(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
       const here = Array.isArray(o.here) ? o.here.filter(isWho).filter((w, i, l) => w !== o.me && l.indexOf(w) === i) : null;
-      const gone = isObj(o.gone) ? goneOf(o.gone) : null;
+      const gone = isRec(o.gone) ? goneOf(o.gone) : null;
       return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}), ...(gone ? { gone } : {}), ...(o.hb === true ? { hb: true as const } : {}), ...(o.mine === true ? { mine: true as const } : {}) };
     }
     case 'hb':

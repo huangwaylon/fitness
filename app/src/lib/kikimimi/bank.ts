@@ -9,6 +9,7 @@
 import { seeded, shuffle } from '#lib/random.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
+import { isText } from '../contract/guards.ts';
 import type { Tone } from './tone.ts';
 
 /** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
@@ -243,17 +244,16 @@ const JA = /[\u3040-\u30ff\u4e00-\u9fff]/;
  *  the units' items and tiers. */
 export function helpProblems(it: { choices?: unknown; cja?: unknown; why?: unknown; ctx?: unknown }): string[] {
   const bad: string[] = [];
-  const str = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
   const n = Array.isArray(it.choices) ? it.choices.length : -1;
   if (it.cja !== undefined) {
-    if (!Array.isArray(it.cja) || !it.cja.every(str)) bad.push('cja: a Japanese string per choice');
+    if (!Array.isArray(it.cja) || !it.cja.every((c) => isText(c))) bad.push('cja: a Japanese string per choice');
     else {
       if (it.cja.length !== n) bad.push(`cja: ${it.cja.length} for ${n} choices`);
       for (const c of it.cja) if (/[A-Za-z]/.test(c)) bad.push(`cja: English in 「${c}」`);
     }
   }
-  if (it.why !== undefined && (!str(it.why) || !JA.test(it.why) || [...it.why].length > WHY_MAX)) bad.push(`why: Japanese, ≤ ${WHY_MAX} 字`);
-  if (it.ctx !== undefined && (!str(it.ctx) || !JA.test(it.ctx) || [...it.ctx].length > CTX_MAX || /\n/.test(it.ctx))) bad.push(`ctx: Japanese, one line, ≤ ${CTX_MAX} 字`);
+  if (it.why !== undefined && (!isText(it.why) || !JA.test(it.why) || [...it.why].length > WHY_MAX)) bad.push(`why: Japanese, ≤ ${WHY_MAX} 字`);
+  if (it.ctx !== undefined && (!isText(it.ctx) || !JA.test(it.ctx) || [...it.ctx].length > CTX_MAX || /\n/.test(it.ctx))) bad.push(`ctx: Japanese, one line, ≤ ${CTX_MAX} 字`);
   return bad;
 }
 

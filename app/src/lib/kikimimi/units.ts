@@ -8,6 +8,7 @@ import { ROSTER } from '#lib/villagers/roster.ts';
 import { ITEM_ID_RE } from '../contract/listen.ts';
 import { QUIZ_LVS } from '../contract/live-protocol.ts';
 import { isInt } from '../contract/ops.ts';
+import { isRec, isText } from '../contract/guards.ts';
 import { CHANNELS, DIALOGUE_TYPES, HENSHIN_LV, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, helpProblems, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { letterWords, type LetterText } from './letters.ts';
@@ -107,10 +108,7 @@ interface Problems {
   warnings: string[];
 }
 
-type Obj = Record<string, unknown>;
-const isObj = (v: unknown): v is Obj => !!v && typeof v === 'object' && !Array.isArray(v);
-const isStr = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
-const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every(isStr);
+const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every((s) => isText(s));
 const chars = (s: string): number => [...s].length;
 const KEYS = new Set(['schema', 'unit', 'name', 'stage', 'domain', 'also', 'host', 'scene', 'sound', 'cando', 'status', 'ph', 'review', 'items', 'lessons', 'tiers', 'letter']);
 
@@ -119,19 +117,19 @@ export const candoText = (c: CanDo): string => `${c.who}が ${c.does}のを ${c.
 
 /** Problems with a can-do against the template (empty: fine). */
 export function candoProblems(c: unknown): string[] {
-  if (!isObj(c)) return ['cando: {who, does, cond, catch, en}'];
+  if (!isRec(c)) return ['cando: {who, does, cond, catch, en}'];
   const bad: string[] = [];
   for (const k of ['who', 'does', 'cond', 'catch'] as const) {
     const v = c[k];
-    if (!isStr(v)) bad.push(`cando.${k}: missing`);
+    if (!isText(v)) bad.push(`cando.${k}: missing`);
     else if (chars(v) > 30) bad.push(`cando.${k}: over 30 characters`);
   }
-  if (isStr(c.who) && /が$/.test(c.who)) bad.push('cando.who: the template adds が');
-  if (isStr(c.does) && /のを$/.test(c.does)) bad.push('cando.does: the template adds のを');
-  if (isStr(c.cond) && /きいて$/.test(c.cond)) bad.push('cando.cond: the template adds きいて');
-  if (isStr(c.catch) && /(が|わかる)$/.test(c.catch)) bad.push('cando.catch: the template adds が わかる');
-  if (!isStr(c.en) || !CANDO_EN_RE.test(c.en)) bad.push('cando.en: "I can follow [who] [doing what] [how heard], and catch [what]."');
-  if (c.short !== undefined && (!isStr(c.short) || chars(c.short.trim()) > SHORT_MAX || /[\n。、]/.test(c.short))) bad.push(`cando.short: one line, ≤ ${SHORT_MAX} characters, no 。 or 、`);
+  if (isText(c.who) && /が$/.test(c.who)) bad.push('cando.who: the template adds が');
+  if (isText(c.does) && /のを$/.test(c.does)) bad.push('cando.does: the template adds のを');
+  if (isText(c.cond) && /きいて$/.test(c.cond)) bad.push('cando.cond: the template adds きいて');
+  if (isText(c.catch) && /(が|わかる)$/.test(c.catch)) bad.push('cando.catch: the template adds が わかる');
+  if (!isText(c.en) || !CANDO_EN_RE.test(c.en)) bad.push('cando.en: "I can follow [who] [doing what] [how heard], and catch [what]."');
+  if (c.short !== undefined && (!isText(c.short) || chars(c.short.trim()) > SHORT_MAX || /[\n。、]/.test(c.short))) bad.push(`cando.short: one line, ≤ ${SHORT_MAX} characters, no 。 or 、`);
   for (const k of Object.keys(c)) if (!['who', 'does', 'cond', 'catch', 'short', 'en'].includes(k)) bad.push(`cando: unknown key ${k}`);
   return bad;
 }
@@ -139,24 +137,24 @@ export function candoProblems(c: unknown): string[] {
 /** Problems with an inline item, in the bank's shape (the checks bank.test makes of the TS banks that can be made
  *  without its clip). */
 function itemProblems(it: unknown): string[] {
-  if (!isObj(it)) return ['not an item'];
+  if (!isRec(it)) return ['not an item'];
   const bad: string[] = [];
-  const id = isStr(it.id) ? it.id : '?';
+  const id = isText(it.id) ? it.id : '?';
   const at = (msg: string) => bad.push(`item ${id}: ${msg}`);
-  if (!isStr(it.id) || !ITEM_ID_RE.test(it.id)) at('id: [a-z0-9][a-z0-9-]{0,31}');
+  if (!isText(it.id) || !ITEM_ID_RE.test(it.id)) at('id: [a-z0-9][a-z0-9-]{0,31}');
   if (!isInt(it.lv, 1, QUIZ_LVS.length)) at(`lv: 1-${QUIZ_LVS.length}`);
   if (!ITEM_TYPES.includes(it.type as ItemType)) at(`type ${String(it.type)}`);
-  if (!isStr(it.en) || !isStr(it.ja)) at('en and ja');
-  if (!isStr(it.speaker) || !(it.speaker in ROSTER)) at(`speaker ${String(it.speaker)} isn't in the roster`);
+  if (!isText(it.en) || !isText(it.ja)) at('en and ja');
+  if (!isText(it.speaker) || !(it.speaker in ROSTER)) at(`speaker ${String(it.speaker)} isn't in the roster`);
   if (!['us', 'uk', 'au'].includes(it.voice as string)) at('voice: us | uk | au');
   if (it.cast !== undefined && !(CAST_IDS as readonly unknown[]).includes(it.cast)) at(`cast ${String(it.cast)}`);
   if (!strs(it.choices) || it.choices.length < 2 || it.choices.length > 4 || new Set(it.choices).size !== it.choices.length) at('choices: 2-4, distinct');
   else if (!isInt(it.answer, 0, it.choices.length - 1)) at('answer out of range');
-  if (it.tts !== undefined && (!isStr(it.tts) || /\d/.test(it.tts))) at('tts: no digits');
-  if (isStr(it.en) && /\d/.test(it.en) && it.tts === undefined && !isDialogue(it as Pick<Item, 'lines'>)) at('a digit in en needs a tts');
-  if (it.note !== undefined && (!isStr(it.note) || chars(it.note) > NOTE_MAX)) at(`note ≤ ${NOTE_MAX} characters`);
+  if (it.tts !== undefined && (!isText(it.tts) || /\d/.test(it.tts))) at('tts: no digits');
+  if (isText(it.en) && /\d/.test(it.en) && it.tts === undefined && !isDialogue(it as Pick<Item, 'lines'>)) at('a digit in en needs a tts');
+  if (it.note !== undefined && (!isText(it.note) || chars(it.note) > NOTE_MAX)) at(`note ≤ ${NOTE_MAX} characters`);
   for (const p of helpProblems(it)) at(p);
-  if (it.type === 'word' && (!isStr(it.focus) || !isStr(it.en) || !it.en.includes(it.focus))) at('a word item’s focus is in en');
+  if (it.type === 'word' && (!isText(it.focus) || !isText(it.en) || !it.en.includes(it.focus))) at('a word item’s focus is in en');
   if (it.scene !== undefined && !(SCENE_IDS as readonly unknown[]).includes(it.scene)) at(`scene ${String(it.scene)}`);
   if (it.channel !== undefined && !(CHANNELS as readonly unknown[]).includes(it.channel)) at(`channel ${String(it.channel)}`);
   const dialogue = DIALOGUE_TYPES.includes(it.type as ItemType);
@@ -164,15 +162,15 @@ function itemProblems(it: unknown): string[] {
   if (Array.isArray(it.lines)) {
     if (it.lines.length < 2 || it.lines.length > 8) at('lines: 2-8');
     it.lines.forEach((l: unknown, n) => {
-      if (!isObj(l) || !isStr(l.who) || !(l.who in ROSTER) || !isStr(l.en) || !isStr(l.ja) || !(CAST_IDS as readonly unknown[]).includes(l.cast)) at(`line ${n + 1}: {who, cast, en, ja}`);
+      if (!isRec(l) || !isText(l.who) || !(l.who in ROSTER) || !isText(l.en) || !isText(l.ja) || !(CAST_IDS as readonly unknown[]).includes(l.cast)) at(`line ${n + 1}: {who, cast, en, ja}`);
       else if (/\d/.test(l.en) && l.tts === undefined) at(`line ${n + 1}: a digit in en needs a tts`);
-      else if (l.tts !== undefined && (!isStr(l.tts) || /\d/.test(l.tts))) at(`line ${n + 1}: tts: no digits`);
+      else if (l.tts !== undefined && (!isText(l.tts) || /\d/.test(l.tts))) at(`line ${n + 1}: tts: no digits`);
     });
   }
   return bad;
 }
 
-const choiceSetOk = (s: unknown): boolean => isObj(s) && strs(s.choices) && s.choices.length >= 2 && s.choices.length <= 4 &&
+const choiceSetOk = (s: unknown): boolean => isRec(s) && strs(s.choices) && s.choices.length >= 2 && s.choices.length <= 4 &&
   new Set(s.choices).size === s.choices.length && isInt(s.answer, 0, s.choices.length - 1) && Object.keys(s).every((k) => k === 'choices' || k === 'answer' || k === 'cja') &&
   !helpProblems(s).length;
 
@@ -181,35 +179,35 @@ const choiceSetOk = (s: unknown): boolean => isObj(s) && strs(s.choices) && s.ch
 export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | null; errors: string[] } {
   const errors: string[] = [];
   const at = (msg: string) => errors.push(`${file}: ${msg}`);
-  if (!isObj(raw)) return { unit: null, errors: [`${file}: not a unit`] };
+  if (!isRec(raw)) return { unit: null, errors: [`${file}: not a unit`] };
   for (const k of Object.keys(raw)) if (!KEYS.has(k)) at(`unknown key ${k}`);
   if (raw.schema !== 1) at('schema must be 1');
-  if (!isStr(raw.unit) || !UNIT_ID_RE.test(raw.unit) || `${raw.unit}.yaml` !== file) at(`unit "${String(raw.unit)}": <domain2>-<slug> (≤ 12), the file's name`);
-  if (!isStr(raw.name) || chars(raw.name) > NAME_MAX || /レッスン/.test(raw.name)) at(`name: a can-do verb, ≤ ${NAME_MAX} characters, never レッスン`);
-  if (!isStr(raw.stage) || !(raw.stage in STAGES)) at(`stage ${String(raw.stage)}: ${Object.keys(STAGES).join(' | ')}`);
+  if (!isText(raw.unit) || !UNIT_ID_RE.test(raw.unit) || `${raw.unit}.yaml` !== file) at(`unit "${String(raw.unit)}": <domain2>-<slug> (≤ 12), the file's name`);
+  if (!isText(raw.name) || chars(raw.name) > NAME_MAX || /レッスン/.test(raw.name)) at(`name: a can-do verb, ≤ ${NAME_MAX} characters, never レッスン`);
+  if (!isText(raw.stage) || !(raw.stage in STAGES)) at(`stage ${String(raw.stage)}: ${Object.keys(STAGES).join(' | ')}`);
   if (raw.domain !== 'glue' && !(DOMAINS as readonly unknown[]).includes(raw.domain)) at(`domain ${String(raw.domain)}: glue | ${DOMAINS.join(' | ')}`);
   if (raw.also !== undefined && (!Array.isArray(raw.also) || !raw.also.every((d) => (DOMAINS as readonly unknown[]).includes(d) && d !== raw.domain))) at('also: other domains');
-  if (!isStr(raw.host) || !(raw.host in ROSTER)) at(`host ${String(raw.host)} isn't in the roster`);
-  if (!isStr(raw.scene) || !SCENE_RE.test(raw.scene)) at('scene: [a-z][a-z0-9-]{0,15}');
+  if (!isText(raw.host) || !(raw.host in ROSTER)) at(`host ${String(raw.host)} isn't in the roster`);
+  if (!isText(raw.scene) || !SCENE_RE.test(raw.scene)) at('scene: [a-z][a-z0-9-]{0,15}');
   const stage = STAGES[raw.stage as Stage];
   if (stage && !(stage.sounds as readonly unknown[]).includes(raw.sound)) at(`sound ${String(raw.sound)}: one of ${raw.stage}'s (${stage.sounds.join(', ')})`);
   for (const p of candoProblems(raw.cando)) at(p);
   if (!(STATUSES as readonly unknown[]).includes(raw.status)) at(`status: ${STATUSES.join(' | ')}`);
-  if (raw.status !== 'draft' && isObj(raw.cando) && raw.cando.short === undefined) at(`cando.short: the one line, required once ${String(raw.status)}`);
+  if (raw.status !== 'draft' && isRec(raw.cando) && raw.cando.short === undefined) at(`cando.short: the one line, required once ${String(raw.status)}`);
   // phrases
   if (!Array.isArray(raw.ph) || raw.ph.length < 1 || raw.ph.length > 10) at('ph: 1-10 key phrases (6-10 once written)');
   const phIds = new Set<string>();
   for (const p of Array.isArray(raw.ph) ? raw.ph : []) {
-    const id = isObj(p) && isStr(p.id) ? p.id : '?';
-    if (!isObj(p) || !PHRASE_ID_RE.test(id)) at(`phrase ${id}: id ph-[a-z0-9-]`);
+    const id = isRec(p) && isText(p.id) ? p.id : '?';
+    if (!isRec(p) || !PHRASE_ID_RE.test(id)) at(`phrase ${id}: id ph-[a-z0-9-]`);
     else {
       if (phIds.has(id)) at(`phrase ${id}: twice`);
       phIds.add(id);
-      if (!isStr(p.en)) at(`phrase ${id}: en`);
+      if (!isText(p.en)) at(`phrase ${id}: en`);
       if (!REGISTERS.includes(p.register as Tags['register'])) at(`phrase ${id}: register ${String(p.register)}`);
-      if (!isStr(p.scene)) at(`phrase ${id}: scene`);
-      if (!isStr(p.trap) || chars(p.trap) > NOTE_MAX) at(`phrase ${id}: trap (≤ ${NOTE_MAX} characters)`);
-      if (p.ja !== undefined && !isStr(p.ja)) at(`phrase ${id}: ja`);
+      if (!isText(p.scene)) at(`phrase ${id}: scene`);
+      if (!isText(p.trap) || chars(p.trap) > NOTE_MAX) at(`phrase ${id}: trap (≤ ${NOTE_MAX} characters)`);
+      if (p.ja !== undefined && !isText(p.ja)) at(`phrase ${id}: ja`);
       if (p.match !== undefined) {
         try {
           new RegExp(String(p.match), 'i');
@@ -226,7 +224,7 @@ export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | n
   if (raw.review !== undefined && !strs(raw.review)) at('review: item ids');
   // lessons
   const ls = raw.lessons;
-  if (!isObj(ls)) at('lessons: {v, deai, bamen, check, oto?, jissen?}');
+  if (!isRec(ls)) at('lessons: {v, deai, bamen, check, oto?, jissen?}');
   else {
     if (!(RECIPES as readonly unknown[]).includes(ls.v)) at(`lessons.v ${String(ls.v)}: a recipe this build knows (${RECIPES.join(', ')})`);
     for (const k of Object.keys(ls)) if (k !== 'v' && !(LESSONS as readonly string[]).includes(k) && !(KIND_KEYS as readonly string[]).includes(k)) at(`lessons: unknown lesson ${k}`);
@@ -251,21 +249,21 @@ export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | n
     }
   }
   if (raw.tiers !== undefined) {
-    if (!isObj(raw.tiers)) at('tiers: {itemId: {easy?, hard?}}');
+    if (!isRec(raw.tiers)) at('tiers: {itemId: {easy?, hard?}}');
     else for (const [id, t] of Object.entries(raw.tiers)) {
-      if (!isObj(t) || Object.keys(t).some((k) => k !== 'easy' && k !== 'hard') || (!t.easy && !t.hard)) at(`tiers.${id}: {easy?, hard?}`);
+      if (!isRec(t) || Object.keys(t).some((k) => k !== 'easy' && k !== 'hard') || (!t.easy && !t.hard)) at(`tiers.${id}: {easy?, hard?}`);
       else for (const k of ['easy', 'hard'] as const) if (t[k] !== undefined && !choiceSetOk(t[k])) at(`tiers.${id}.${k}: {choices (2-4, distinct), answer, cja? (one per choice, no English)}`);
     }
   }
   if (raw.letter !== undefined) {
     const l = raw.letter;
-    if (!isObj(l) || !isStr(l.en) || !isStr(l.ja) || Object.keys(l).some((k) => k !== 'en' && k !== 'ja')) at('letter: {en, ja}');
+    if (!isRec(l) || !isText(l.en) || !isText(l.ja) || Object.keys(l).some((k) => k !== 'en' && k !== 'ja')) at('letter: {en, ja}');
     else {
       const n = letterWords(l.en);
       if (n < LETTER_WORDS[0] || n > LETTER_WORDS[1]) at(`letter: ${n} words of English, ${LETTER_WORDS[0]}-${LETTER_WORDS[1]}`);
       const heard = (p: unknown) => {
         try {
-          return isObj(p) && isStr(p.en) && hears(p as unknown as Phrase, l.en as string);
+          return isRec(p) && isText(p.en) && hears(p as unknown as Phrase, l.en as string);
         } catch {
           return false; // (a bad match is its phrase's error)
         }
@@ -327,10 +325,10 @@ interface ListenRef {
 export function listenRefs(sources: readonly { raw: unknown }[]): Map<string, ListenRef> {
   const out = new Map<string, ListenRef>();
   for (const { raw } of sources) {
-    if (!isObj(raw) || !isStr(raw.unit) || !Number.isInteger(raw.stage) || !Array.isArray(raw.items)) continue;
+    if (!isRec(raw) || !isText(raw.unit) || !Number.isInteger(raw.stage) || !Array.isArray(raw.items)) continue;
     for (const it of raw.items) {
-      if (!isObj(it) || !isStr(it.id) || !isStr(it.kind)) continue;
-      const rows = Array.isArray(it.memo) ? it.memo.reduce((n: number, m) => n + (isObj(m) && Array.isArray(m.slots) ? m.slots.length : 0), 0) : 0;
+      if (!isRec(it) || !isText(it.id) || !isText(it.kind)) continue;
+      const rows = Array.isArray(it.memo) ? it.memo.reduce((n: number, m) => n + (isRec(m) && Array.isArray(m.slots) ? m.slots.length : 0), 0) : 0;
       out.set(it.id, { kind: it.kind, file: raw.unit, stage: raw.stage as number, rows });
     }
   }

@@ -10,6 +10,7 @@ import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 import { EVENT_MUSIC_IDS, type EventMusicId } from './events.ts';
 import { PLACE_IDS, type PlaceId } from './places.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
+import { isNum, isText } from '#lib/contract/guards.ts';
 
 export interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
@@ -24,10 +25,7 @@ export interface AudioManifest {
 }
 
 const HOURS = new Set(Array.from({ length: 24 }, (_, h) => hourKey(h)));
-export const str = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 export const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
-
-const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 /** An entry's path with its content hash (`v`, scripts/music.ts --hashes) as `?v=`: a re-cut file under the same name
  *  is a new URL, so neither the service worker's cache nor the browser's (/audio/* is immutable) serves the old one.
@@ -36,21 +34,21 @@ const versioned = (file: string, v: unknown): string => (typeof v === 'string' &
 
 /** An effect's or a bed's entry: `{ file, v }` (or a plain path). */
 function path(v: unknown): string | null {
-  if (str(v)) return v;
+  if (isText(v)) return v;
   const t = obj(v);
-  return str(t.file) ? versioned(t.file, t.v) : null;
+  return isText(t.file) ? versioned(t.file, t.v) : null;
 }
 
 /** `{ file, start, end?, gain?, v?, d? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls
  *  back to `<audio loop>`; a bad `gain` to 0 dB. */
 export function track(v: unknown): MusicTrack | null {
   const t = obj(v);
-  if (!str(t.file)) return null;
-  const start = num(t.start) && t.start >= 0 ? t.start : 0;
+  if (!isText(t.file)) return null;
+  const start = isNum(t.start) && t.start >= 0 ? t.start : 0;
   const out: MusicTrack = { file: versioned(t.file, t.v), start };
-  if (num(t.end) && t.end > start) out.end = t.end;
-  if (num(t.gain)) out.gain = t.gain;
-  if (num(t.d) && t.d > 0) out.dur = t.d;
+  if (isNum(t.end) && t.end > start) out.end = t.end;
+  if (isNum(t.gain)) out.gain = t.gain;
+  if (isNum(t.d) && t.d > 0) out.dur = t.d;
   return out;
 }
 

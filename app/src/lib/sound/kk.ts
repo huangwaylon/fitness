@@ -7,7 +7,8 @@
 // aircheck): the music where it plays stops for it and comes back after, as in NH; live(src) is the song playing.
 import { pickOne } from '#lib/random.ts';
 import { i18n } from '#lib/i18n/index.ts';
-import { obj, str, track } from './manifest.ts';
+import { obj, track } from './manifest.ts';
+import { isText } from '#lib/contract/guards.ts';
 import type { MusicTrack } from './hourly.ts';
 
 /** One of K.K.'s songs (`kk[]`, in NH's song-list order): NH's official titles, a one-shot file under audio/kk/. */
@@ -34,7 +35,7 @@ export function parseKK(json: unknown): { list: KKList; problems: string[] } {
   const tracks: KKTrack[] = [];
   (Array.isArray(root.kk) ? root.kk : []).forEach((v: unknown, i) => {
     const o = obj(v), t = track(v);
-    if (t && str(o.id) && str(o.ja) && str(o.en) && !tracks.some((k) => k.id === o.id)) tracks.push({ id: o.id, ja: o.ja, en: o.en, ...t, start: 0 });
+    if (t && isText(o.id) && isText(o.ja) && isText(o.en) && !tracks.some((k) => k.id === o.id)) tracks.push({ id: o.id, ja: o.ja, en: o.en, ...t, start: 0 });
     else problems.push(`kk.${i}`);
   });
   const airchecks: KKList['airchecks'] = {};

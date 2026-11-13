@@ -6,6 +6,7 @@
 import type { RosterId } from '../../../villagers/roster.ts';
 import { clipItems, helpProblems, type Item, type Line } from '../../bank.ts';
 import { CAST } from '../../cast.ts';
+import { isText } from '../../../contract/guards.ts';
 
 /** The chunk's unit (pool.ts) and the pack's home. */
 export const PAIR_UNIT = 'mic-pairs';
@@ -47,7 +48,6 @@ const ID = /^pr-[a-z0-9-]{1,20}$/;
 const WORD = /^[a-z]+$/;
 const STATUSES = ['draft', 'voiced', 'listened'] as const;
 
-const str = (x: unknown): x is string => typeof x === 'string' && x.trim().length > 0;
 const cap = (w: string): string => w[0].toUpperCase() + w.slice(1);
 
 /** The file's problems (empty: fine): its header, each pair's id (unique), sound, villager (a US voice), help, and
@@ -61,14 +61,14 @@ export function pairProblems(raw: unknown): string[] {
   if (!Array.isArray(f?.pairs) || !f.pairs.length) return [...bad, 'pairs: a list'];
   const ids = new Set<string>(), words = new Set<string>();
   for (const [k, p] of (f.pairs as Record<string, unknown>[]).entries()) {
-    const at = `pairs[${k}]${str(p?.id) ? ` ${p.id}` : ''}`;
-    if (!str(p?.id) || !ID.test(p.id)) bad.push(`${at}: id pr-…`);
+    const at = `pairs[${k}]${isText(p?.id) ? ` ${p.id}` : ''}`;
+    if (!isText(p?.id) || !ID.test(p.id)) bad.push(`${at}: id pr-…`);
     else if (ids.has(p.id)) bad.push(`${at}: id twice`);
     else ids.add(p.id);
     if (!SOUNDS.includes(p?.sound as Sound)) bad.push(`${at}: sound ${SOUNDS.join(' | ')}`);
     const cast = CAST[p?.who as RosterId];
     if (!cast?.startsWith('us-')) bad.push(`${at}: who, a villager with a US voice`);
-    if (!str(p?.ctx) || !str(p?.why)) bad.push(`${at}: ctx and why`);
+    if (!isText(p?.ctx) || !isText(p?.why)) bad.push(`${at}: ctx and why`);
     else bad.push(...helpProblems({ ctx: p.ctx, why: p.why }).map((x) => `${at}: ${x}`));
     const ws = p?.words as Record<string, unknown>[] | undefined;
     if (!Array.isArray(ws) || ws.length !== 2) {
@@ -76,15 +76,15 @@ export function pairProblems(raw: unknown): string[] {
       continue;
     }
     for (const w of ws) {
-      for (const key of ['en', 'ja', 'kana', 'pic', 'ex', 'exJa', 'how'] as const) if (!str(w?.[key])) bad.push(`${at}: a word's ${key}`);
-      if (str(w?.en) && !WORD.test(w.en)) bad.push(`${at}: ${w.en}: one lower-case word`);
-      if (str(w?.en) && words.has(w.en)) bad.push(`${at}: ${w.en} in two pairs`);
-      if (str(w?.en)) words.add(w.en);
-      if (str(w?.how) && [...w.how].length > HOW_MAX) bad.push(`${at}: ${w.en}'s how ≤ ${HOW_MAX} 字`);
-      if (str(w?.ex) && str(w?.en) && !new RegExp(`\\b${w.en}`, 'i').test(w.ex)) bad.push(`${at}: ${w.en} (or a form of it) not in its ex`);
-      if (str(w?.kana) && /[一-鿿]/.test(w.kana)) bad.push(`${at}: ${w.en}'s kana in kana`);
+      for (const key of ['en', 'ja', 'kana', 'pic', 'ex', 'exJa', 'how'] as const) if (!isText(w?.[key])) bad.push(`${at}: a word's ${key}`);
+      if (isText(w?.en) && !WORD.test(w.en)) bad.push(`${at}: ${w.en}: one lower-case word`);
+      if (isText(w?.en) && words.has(w.en)) bad.push(`${at}: ${w.en} in two pairs`);
+      if (isText(w?.en)) words.add(w.en);
+      if (isText(w?.how) && [...w.how].length > HOW_MAX) bad.push(`${at}: ${w.en}'s how ≤ ${HOW_MAX} 字`);
+      if (isText(w?.ex) && isText(w?.en) && !new RegExp(`\\b${w.en}`, 'i').test(w.ex)) bad.push(`${at}: ${w.en} (or a form of it) not in its ex`);
+      if (isText(w?.kana) && /[一-鿿]/.test(w.kana)) bad.push(`${at}: ${w.en}'s kana in kana`);
     }
-    if (str(ws[0]?.en) && ws[0].en === ws[1]?.en) bad.push(`${at}: the same word twice`);
+    if (isText(ws[0]?.en) && ws[0].en === ws[1]?.en) bad.push(`${at}: the same word twice`);
   }
   return bad;
 }

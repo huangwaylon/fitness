@@ -4,6 +4,7 @@
 // of hex or of letters and digits long enough to be a key), and a JS error's scrubbed message and stack. The relay
 // keeps nothing else, whatever a phone sends: no key, no health value, no food name, no free text, no URL. Pure.
 import { EVENT_TYPES } from './api.ts';
+import { isNum } from './guards.ts';
 
 /** @public (relay/src/log.ts) */
 export const LOG_V = 1;
@@ -194,13 +195,14 @@ export function scrubStack(s: unknown, n = 4): string {
   return out.join('\n');
 }
 
-const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? Math.round(Math.max(-1e7, Math.min(1e7, v)) * 10) / 10 : null);
+/** A finite number held to ±1e7, to a tenth; else null. */
+const tenth = (v: unknown): number | null => (isNum(v) ? Math.round(Math.max(-1e7, Math.min(1e7, v)) * 10) / 10 : null);
 
 /** One field of an event as kept: its kind's value, or undefined (dropped). */
 function field(kind: Kind, v: unknown): number | boolean | string | undefined {
   if (Array.isArray(kind)) return typeof v === 'string' && kind.includes(v) ? v : undefined;
   switch (kind) {
-    case 'n': return num(v) ?? undefined;
+    case 'n': return tenth(v) ?? undefined;
     case 'b': return typeof v === 'boolean' ? v : undefined;
     case 't': return isToken(v) ? v : undefined;
     case 'msg': return typeof v === 'string' ? scrubMsg(v) || undefined : undefined;

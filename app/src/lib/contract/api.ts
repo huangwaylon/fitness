@@ -2,6 +2,7 @@
 // model and the client: row tuples, reply shapes and the validation regexes both sides apply. Dependency-free (type
 // imports only).
 import type { PersonId, Who } from '../types.ts';
+import { isRec } from './guards.ts';
 
 /** The people (types.ts), for the relay: it imports only contract/ (deps.test). @public (relay/) */
 export type { PersonId, Who };
@@ -121,7 +122,7 @@ export function isLocalDate(v: unknown): v is string {
 /** An event or spend id: a non-empty string of at most 128 characters. */
 export const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
-export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+export { isRec };
 
 /** Whether `d` has exactly these keys (an event's data: nothing more, nothing missing). */
 export const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean => {

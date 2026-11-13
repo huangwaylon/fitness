@@ -204,7 +204,8 @@ function normDate(v: unknown): LocalDate | null {
   }
 }
 
-const num = (v: unknown): number | null => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
+/** A cell's number (a numeric string's too), else null. */
+const toNum = (v: unknown): number | null => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
 
 function parseData(d: unknown): Record<string, unknown> | null {
   if (typeof d !== 'string' || !d) return d === '' ? {} : null;
@@ -350,7 +351,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     const [iso, person, d, metric, v] = row;
     if (!isPersonId(person)) continue; // health is the members' alone
     const date = normDate(d);
-    const value = num(v);
+    const value = toNum(v);
     if (!date || value === null) continue;
     if (metric === 'weight') {
       if (value < WEIGHT_KG.min || value > WEIGHT_KG.max) continue;
@@ -433,7 +434,7 @@ function foldRows(base: State, metrics: readonly MetricRow[], events: readonly E
     (s.ats[0] = mine(s.ats[0], (x) => [...x])).push(at);
     if (!isPersonId(person)) continue;
     const date = normDate(d);
-    const value = num(v);
+    const value = toNum(v);
     if (!date || value === null) continue;
     if (metric === 'weight') {
       if (value < WEIGHT_KG.min || value > WEIGHT_KG.max) continue;
