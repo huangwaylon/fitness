@@ -53,9 +53,10 @@
 
 <style>
   .map { display: grid; grid-template-columns: repeat(var(--w), minmax(0, 32px)); gap: 3px; justify-content: center; }
+  /* an empty plot: sunk soil (a sunk tan by day, navy at night) with the stitch's outline */
   .cell {
-    appearance: none; border: 0; padding: 0; aspect-ratio: 1; border-radius: 7px; cursor: pointer; display: grid; place-items: center; line-height: 0;
-    background: var(--c-lip); box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c-edge) 40%, transparent);
+    appearance: none; border: 0; padding: 0; aspect-ratio: 1; border-radius: var(--r-chip); cursor: pointer; display: grid; place-items: center; line-height: 0;
+    background: var(--ctl-off); box-shadow: inset 0 0 0 1.5px var(--stitch);
   }
   /* watered: dark soil, as on the island */
   .cell.wet { background: var(--c-edge); }
