@@ -1,5 +1,5 @@
 // scripts/its-logs.ts's pure parts: which ids are the run's, the Worker's rows for it, the private log's times (ISO with
-// offset, or an older HH:MM:SS in UTC rolled over at midnight), the merge and the Tokyo-time lines.
+// offset, or an older HH:MM:SS in Tokyo time rolled over at midnight), the merge and the Tokyo-time lines.
 import { describe, expect, it } from 'vitest';
 import example from '../../contract-example.json';
 import type { ItsStatus } from '../../../app/src/lib/its/contract.ts';
@@ -41,10 +41,12 @@ describe('the private log', () => {
       { t: Date.parse('2026-11-13T03:00:02Z'), src: 'log', order: 3, text: 'hold' },
     ]);
   });
-  it('reads an older runner’s HH:MM:SS as UTC on the run’s start day, rolled over at midnight', () => {
-    const start = Date.parse('2026-11-13T23:58:00Z');
+  it('reads an older runner’s HH:MM:SS in Tokyo time (the runner’s TZ) on the run’s start day there, rolled over at midnight', () => {
+    const start = Date.parse('2026-11-13T23:58:00+09:00');
     const rows = logRows('23:59:58 a\n00:00:03 b', start);
-    expect(rows.map((r) => r.t)).toEqual([Date.parse('2026-11-13T23:59:58Z'), Date.parse('2026-11-14T00:00:03Z')]);
+    expect(rows.map((r) => r.t)).toEqual([Date.parse('2026-11-13T23:59:58+09:00'), Date.parse('2026-11-14T00:00:03+09:00')]);
+    // a run started at 08:30 in Tokyo (23:30 UTC the day before): its 08:31 is that Tokyo morning
+    expect(logRows('08:31:00 c', Date.parse('2026-11-13T23:30:00Z'))[0].t).toBe(Date.parse('2026-11-14T08:31:00+09:00'));
     expect(logRows('12:00:00 a', null)[0]).toMatchObject({ t: null, text: '12:00:00 a' });   // no day to put it on
   });
 });

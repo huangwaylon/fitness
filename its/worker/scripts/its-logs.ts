@@ -47,12 +47,12 @@ const ISO = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2
 const CLOCK = /^(\d{2}):(\d{2}):(\d{2})\s(.*)$/;
 
 /** The private log's lines with their times: an ISO timestamp with offset (the runner's current lines), or an older
- *  `HH:MM:SS` in UTC (Actions' zone) dated from `startMs` and rolled over at midnight; a line without one (a
- *  traceback, Chrome's output) takes the line before's. */
+ *  `HH:MM:SS` in Tokyo time (the runner runs with TZ=Asia/Tokyo) dated from `startMs`'s Tokyo day and rolled over at
+ *  midnight; a line without one (a traceback, Chrome's output) takes the line before's. */
 export function logRows(text: string, startMs: number | null): Row[] {
   const rows: Row[] = [];
   let t: number | null = null;
-  let day = startMs === null ? null : Date.parse(`${new Date(startMs).toISOString().slice(0, 10)}T00:00:00Z`);
+  let day = startMs === null ? null : Date.parse(`${new Date(startMs + 9 * 3600_000).toISOString().slice(0, 10)}T00:00:00+09:00`);
   let lastClock = -1;
   text.split('\n').forEach((line, i) => {
     if (!line.trim()) return;
