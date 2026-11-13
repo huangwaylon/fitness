@@ -2,14 +2,15 @@
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
-   One system: 17 colours, 5 radii (+ pill for the plate / choices / HUD pills), 5 type sizes, weights 500/700,
+   One system: the palette below (one primitive a colour, the night's as --n-*), 7 radii (+ pill), 6 type sizes (+ input,
+   ききみみ's English), weights 500/700,
    outlines only on tappable things (--sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
    Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
    ignored. Game objects (the HUD, plate, dialogue box, choices) stay cream / yellow at every time of day.
    Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
 
 :root {
-  /* ---------- palette (17) ---------- */
+  /* ---------- palette ---------- */
   --c-ink:#4A3A2C;   --c-ink-soft:#6B5544;              /* text (never black) */
   --c-cream:#FFF9E3; --c-paper:#F5E4BC; --c-lip:#E0C48A; /* surfaces + the lip under them. Paper is
                                                            NH's tan list panel, a step darker than the cards */
@@ -165,7 +166,8 @@
   --sh-ctl-s-press: inset 0 0 0 1.5px var(--edge), 0 0 0 var(--edge);
   --fill-on-surface: var(--ctl);
 
-  /* ---------- the ground ellipse under villagers / props (the depth rule; also read outside .if-scene) ---------- */
+  /* ---------- the ground ellipse under anything standing on the ground: villagers, trees, props, the jar (the depth rule;
+     also read outside .if-scene) ---------- */
   --sh-ground: rgba(40, 60, 40, .18);
 
   color-scheme: light;
@@ -218,8 +220,6 @@
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
   --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
   --firefly:#F3FF9E; --firefly-glow:#E8F59A;
-  /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar) */
-  --sh-ground: rgba(40, 60, 40, .18);
 }
 /* docs/design.md "Environment", a "Pocket Camp diorama": the scene is painted like the official
    renders. Light from the upper left; every surface = one base + one gentle gradient + one soft lower shade +
