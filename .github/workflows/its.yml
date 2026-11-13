@@ -11,6 +11,7 @@ on:
       - 'app/src/lib/its/**'
       - 'app/src/lib/contract/**'
       - 'relay/src/auth.ts'
+      - 'app/src/lib/types.ts'
       - '.github/workflows/its.yml'
   pull_request:
     paths:
@@ -18,6 +19,7 @@ on:
       - 'app/src/lib/its/**'
       - 'app/src/lib/contract/**'
       - 'relay/src/auth.ts'
+      - 'app/src/lib/types.ts'
       - '.github/workflows/its.yml'
   workflow_dispatch:
 
@@ -42,6 +44,7 @@ jobs:
             /its/
             /app/src/lib/its/
             /app/src/lib/contract/
+            /app/src/lib/types.ts
             /relay/src/auth.ts
             /.github/workflows/
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
