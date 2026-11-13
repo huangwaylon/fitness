@@ -37,18 +37,6 @@
   .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .prow[aria-checked='true'] .prl small { color: var(--c-ink-soft); }
 
-  /* the switch: a sunk tan track (off) or a leaf one (on) with a cream knob, both edged */
-  .sw {
-    position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
-    background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);
-  }
-  .sw i {
-    position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
-    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
-    transition: translate var(--dur-base) var(--ease-bounce);
-  }
-  .prow[aria-checked='true'] .sw { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
-  .prow[aria-checked='true'] .sw i { translate: 24px 0; }
 
   /* 音量: a cream row with a track that fills leaf green up to the knob */
   .vol { cursor: default; }

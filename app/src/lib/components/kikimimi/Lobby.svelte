@@ -139,19 +139,8 @@
   .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .flag { font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); }
-  .sw {
-    position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
-    background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);
-  }
-  .sw i {
-    position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
-    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); transition: translate var(--dur-base) var(--ease-bounce);
-  }
-  .row[aria-checked='true'] .sw { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
-  .row[aria-checked='true'] .sw i { translate: 24px 0; }
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 14px 10px 12px; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hint.warn { color: var(--coral-text); }
   .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .sw i { transition: none; } }
 </style>

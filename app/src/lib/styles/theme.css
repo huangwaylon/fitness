@@ -163,6 +163,22 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .prow.static { box-shadow: var(--sh-lip); background: var(--card); cursor: default; }
 .prow[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
 .prl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); text-wrap: balance; line-height: 1.3; }
+/* the switch in a role="switch" row (`<span class="sw" aria-hidden="true"><i></i></span>`, the row holds aria-checked): a
+   sunk track (off) or a leaf one (on), its knob a cream object (the brown edge at every time of day); .s the small one */
+.sw {
+  position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
+  background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);
+}
+.sw i {
+  position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); transition: translate var(--dur-base) var(--ease-bounce);
+}
+.sw.s { width: 44px; height: 26px; }
+.sw.s i { top: 3px; left: 3px; width: 20px; height: 20px; }
+[role='switch'][aria-checked='true'] .sw { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
+[role='switch'][aria-checked='true'] .sw i { translate: 24px 0; }
+[role='switch'][aria-checked='true'] .sw.s i { translate: 18px 0; }
+@media (prefers-reduced-motion: reduce) { .sw, .sw i { transition: none; } }
 
 /* ---------- a level's actions (ごはん's amount, マイ食品, マイレシピ, いつもの): its one action and what goes with it, held at the
    foot of the sheet's scroller while the level is longer than the screen, and over the keyboard while a field is being
