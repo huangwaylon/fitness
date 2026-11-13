@@ -5,13 +5,13 @@
 // that need a person (the hold's deadline, what to do) and the recent events. Pure but for t().
 import {
   AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, HUMAN_NEEDED_DETAILS, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
-  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanEntry, type ScanMinute, type Verdict
+  type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanMinute, type Verdict
 } from './contract.ts';
 import { D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
 import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
-import { bucket, gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
+import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -422,9 +422,9 @@ export function rowBadge(s: ItsStatus): { tone: Tone; word: string } {
 }
 
 /** The runner reporting is one that applies the allow-list and stops at a booked night (its report carries
- *  settingsAt, or it sent its reads: the round-2 runner); an older one searched every facility not skipped and kept on
- *  after a 予約確定, so the page claims neither for it. */
-export const stopsAtBooked = (s: ItsStatus): boolean => (!!s.runner && s.runner.settingsAt !== undefined) || (s.recentScans?.length ?? 0) > 0;
+ *  settingsAt); an older one searched every facility not skipped and kept on after a 予約確定, so the page claims
+ *  neither for it. */
+export const stopsAtBooked = (s: ItsStatus): boolean => !!s.runner && s.runner.settingsAt !== undefined;
 
 /** 施設's line: what happens to a room (held; applied for, ★ first, with 自動で確定; else from the mail), and, from a
  *  runner that does, that a booked night is searched no more. */
@@ -602,41 +602,32 @@ export interface ScanCell { t: number; time: string; n: number; fails: number; a
 const MIN_MS = 60_000;
 const STRIP_MIN = 60;
 
-/** One cell: its state (red when any read failed, else yellow when any saw a room, else green; none read empty) and
- *  its line 「15:32 · 4回 · 失敗1（timeout） · 空きあり1」 (`dates`: a minute's aggregate says the most nights with a room
- *  in one read, 「空き2日」, instead of how many reads saw one). */
-function cell(start: number, n: number, fails: number, avail: number, codes: readonly string[], dates?: number): ScanCell {
+/** One cell: its state (red when any read failed, else yellow when a read saw a room, else green; none read empty)
+ *  and its line 「15:32 · 4回 · 失敗1（timeout） · 空き2日」 (`dates`: the most nights with a room in one read). */
+function cell(start: number, n: number, fails: number, dates: number, codes: readonly string[]): ScanCell {
+  const avail = dates > 0 ? 1 : 0;
   const state: CellState = !n ? 'none' : fails ? 'fail' : avail ? 'avail' : 'ok';
   const parts = [hhmm(start), n ? t('its.scan.n', { n }) : t('its.scan.none')];
   if (fails) parts.push(codes.length ? t('its.scan.failsWhy', { n: fails, why: codes.join('・') }) : t('its.scan.fails', { n: fails }));
-  if (avail) parts.push(dates === undefined ? t('its.scan.avail', { n: avail }) : t('its.scan.availDates', { n: dates }));
+  if (avail) parts.push(t('its.scan.availDates', { n: dates }));
   return { t: start, time: hhmm(start), n, fails, avail, state, text: parts.join(' · ') };
 }
 
-/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first, from the reads one by one (`recentScans`). (Tokyo is
- *  whole hours off UTC: its minutes are UTC's.) */
-export function scanCells(scans: readonly ScanEntry[], now: number): ScanCell[] {
-  const starts = gridStarts(now, MIN_MS, STRIP_MIN);
-  return bucket(scans, (s) => s.t, starts[0], MIN_MS, STRIP_MIN).map((reads, i) => {
-    const codes = [...new Set(reads.flatMap((s) => (!s.ok && s.code ? [s.code] : [])))];
-    return cell(starts[i], reads.length, reads.filter((s) => !s.ok).length, reads.filter((s) => s.avail > 0).length, codes);
-  });
-}
-
-/** The same strip from the Worker's per-minute aggregate (`recentMinutes`: every read of the hour, however many runs);
- *  a minute's `avail` counts as one minute with a room. */
+/** The last STRIP_MIN Tokyo minutes up to `now`'s, oldest first, from the Worker's per-minute aggregate
+ *  (`recentMinutes`: every read of the hour, however many runs); a minute with a room counts once. (Tokyo is whole
+ *  hours off UTC: its minutes are UTC's.) */
 export function minuteCells(minutes: readonly ScanMinute[], now: number): ScanCell[] {
   const by = new Map(minutes.map((m) => [Math.floor(m.minute / MIN_MS) * MIN_MS, m]));
   return gridStarts(now, MIN_MS, STRIP_MIN).map((start) => {
     const m = by.get(start);
-    return m ? cell(start, m.n, m.fail, m.avail > 0 ? 1 : 0, Object.keys(m.codes ?? {}), m.avail) : cell(start, 0, 0, 0, []);
+    return m ? cell(start, m.n, m.fail, m.avail, Object.keys(m.codes ?? {})) : cell(start, 0, 0, 0, []);
   });
 }
 
-/** The strip's one line for VoiceOver: 「直近1時間：確認238回、失敗2回、空きあり3回」 (`byMinute`: 「空きあり3分」). */
-export function scanSummary(cells: readonly ScanCell[], byMinute = false): string {
+/** The strip's one line for VoiceOver: 「直近1時間：確認238回、失敗2回、空きあり3分」. */
+export function scanSummary(cells: readonly ScanCell[]): string {
   const sum = (k: 'n' | 'fails' | 'avail') => cells.reduce((a, c) => a + c[k], 0);
-  return t(byMinute ? 'its.scan.summaryMin' : 'its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
+  return t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
 }
 
 /** The cells as the shared strip draws them. */

@@ -19,16 +19,6 @@ export function gridStarts(now: number, width: number, count: number): number[] 
   return Array.from({ length: count }, (_, i) => last - (count - 1 - i) * width);
 }
 
-/** `items` into the grid's slots (each slot's, in their order); one outside it is left out. */
-export function bucket<T>(items: readonly T[], at: (x: T) => number, first: number, width: number, count: number): T[][] {
-  const out = Array.from({ length: count }, () => [] as T[]);
-  for (const x of items) {
-    const i = Math.floor((at(x) - first) / width);
-    if (i >= 0 && i < count) out[i].push(x);
-  }
-  return out;
-}
-
 /**
  * Checks a fixed interval apart (each a little early or late: the gym bot's ±15 %) into `count` slots of `width` ms
  * ending at `now`, newest last: each check takes the slot after the one before it, and a gap of n intervals leaves

@@ -12,12 +12,14 @@ const client = await import('./client.ts');
 const { fetchStatus, parseStatus, postRun, putSettings } = client;
 
 const URL = 'https://its.test';
+/** The example's status as the page reads it (not the reads one by one). */
+const { recentScans: _, ...parsed } = example.status;
 const wire = () => JSON.parse(JSON.stringify(example.status)) as Record<string, unknown>;
 const answer = (status: number, body: unknown) => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 describe('parseStatus', () => {
   it('takes the Worker’s answer as it is', () => {
-    expect(parseStatus(wire())).toEqual(example.status);
+    expect(parseStatus(wire())).toEqual(parsed);
   });
   it('refuses what isn’t one', () => {
     for (const x of [null, 'oops', [], {}, { ...wire(), v: 2 }, { ...wire(), verdict: 'great' }, { ...wire(), now: 'soon' }, { ...wire(), settings: null },
@@ -40,11 +42,10 @@ describe('parseStatus', () => {
     expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: ['NAGU 勝浦', 'a\u202eb', 3] } })!.settings.search).toEqual(['NAGU 勝浦']);
     expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: [] } })!.settings.search).toEqual([]);
   });
-  it('reads a newer Worker’s last preflight and last hour of reads; an older one’s status has neither', () => {
-    const { lastPreflight: _p, recentScans: _r, ...older } = wire();
-    expect(parseStatus(older)).not.toHaveProperty('recentScans');
+  it('reads a newer Worker’s last preflight; an older one’s status has none', () => {
+    const { lastPreflight: _p, ...older } = wire();
     expect(parseStatus(older)).not.toHaveProperty('lastPreflight');
-    expect(parseStatus({ ...wire(), recentScans: [{ t: 1, ok: false, code: 'bad code!', ms: 3, avail: 0 }, { ok: true }, 'x'] })!.recentScans).toEqual([{ t: 1, ok: false, ms: 3, avail: 0 }]);
+    expect(parseStatus(wire())!.lastPreflight).toBe(example.status.lastPreflight);
   });
   it('reads a newer Worker’s push status (counts, its VAPID key, codes) and leaves a garbled one or key out', () => {
     const push = example.statusNewer.push;
@@ -73,7 +74,7 @@ describe('the calls', () => {
 
   it('sends the member key as a Bearer token, the body as JSON, and reads the status back', async () => {
     fetch.mockImplementation(async () => answer(200, example.status));
-    expect(await fetchStatus(undefined, URL)).toEqual({ ok: true, status: example.status });
+    expect(await fetchStatus(undefined, URL)).toEqual({ ok: true, status: parsed });
     expect(fetch.mock.calls[0][0]).toBe(`${URL}/its/status`);
     expect(fetch.mock.calls[0][1]).toMatchObject({ method: 'GET', headers: { Authorization: `Bearer ${KEY}` } });
 
@@ -89,9 +90,9 @@ describe('the calls', () => {
 
   it('a 409 is `conflict`, with the current status (bare or under `status`)', async () => {
     fetch.mockResolvedValueOnce(answer(409, { error: 'conflict', status: example.status }));
-    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'conflict', http: 409, status: example.status });
+    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'conflict', http: 409, status: parsed });
     fetch.mockResolvedValueOnce(answer(409, example.status));
-    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ err: 'conflict', status: example.status });
+    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ err: 'conflict', status: parsed });
   });
 
   it('a refusal keeps the Worker’s code; garbage, a dropped line and no key are the phone’s; each logged without the key', async () => {

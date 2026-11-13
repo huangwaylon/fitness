@@ -6,13 +6,13 @@
 // recent events.
 import { describe, expect, it } from 'vitest';
 import example from '../../../../its/contract-example.json';
-import { parseSettingsInput, type ItsStatus, type ScanEntry, type ScanMinute } from './contract.ts';
+import { parseSettingsInput, type ItsStatus, type ScanMinute } from './contract.ts';
 import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, bulkDates, closedOn, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   footLine, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError,
-  savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, minuteCells, scanCells, scanSummary, scanTicks, type Draft
+  savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -275,13 +275,11 @@ describe('the stays: まとめて追加, months, what can take each', () => {
     expect(dateRows(draft(), NOW, hotelRows(draft(), []), [b], false)[0].text).toBe('あと8日 · 予約済み');
   });
 
-  it('claims what the runner does only for one that does it (its report has settingsAt, or it sent its reads)', () => {
+  it('claims what the runner does only for one that does it (its report has settingsAt)', () => {
     const { settingsAt: _, ...older } = { ...STATUS.runner!, settingsAt: 1 };
-    expect(stopsAtBooked(status({ runner: older, recentScans: [] }))).toBe(false);
-    expect(stopsAtBooked(status({ runner: older, recentScans: undefined }))).toBe(false);
-    expect(stopsAtBooked(status({ runner: null, recentScans: undefined }))).toBe(false);
-    expect(stopsAtBooked(status({ runner: { ...older, settingsAt: null }, recentScans: [] }))).toBe(true);
-    expect(stopsAtBooked(status({ runner: older }))).toBe(STATUS.recentScans!.length > 0);
+    expect(stopsAtBooked(status({ runner: older }))).toBe(false);
+    expect(stopsAtBooked(status({ runner: null }))).toBe(false);
+    expect(stopsAtBooked(status({ runner: { ...older, settingsAt: null } }))).toBe(true);
     expect(parseStatus({ ...example.status, runner: { ...example.status.runner, settingsAt: 5 } })!.runner!.settingsAt).toBe(5);
     expect(parseStatus(example.status)!.runner).not.toHaveProperty('settingsAt');
     // 施設's line: 申込 only with 自動で確定, a booked night only from a runner that stops
@@ -624,45 +622,27 @@ describe('the words', () => {
 
 describe('直近1時間', () => {
   const at = (s: string) => jst(`2026-11-13T${s}`);
-  const scan = (time: string, over: Partial<ScanEntry> = {}): ScanEntry => ({ t: at(time), ok: true, ms: 800, avail: 0, ...over });
-  it('buckets the last 60 Tokyo minutes up to now’s, oldest first: a failure red, else a room yellow, else green; a gap empty', () => {
+  const m = (time: string, over: Partial<ScanMinute> = {}): ScanMinute => ({ minute: at(time), n: 4, ok: 4, fail: 0, avail: 0, ...over });
+  it('the last 60 Tokyo minutes up to now’s from the Worker’s per-minute aggregate (recentMinutes), oldest first: a failure red, else a room yellow (the most nights with one), else green; a gap empty', () => {
     const now = at('12:00:30');
-    const cells = scanCells([
-      scan('11:00:59'),                                   // older than the hour: left out
-      scan('11:01:00'), scan('11:01:59.999', { avail: 2 }),   // one minute, a room seen
-      scan('11:30:05'), scan('11:30:20', { ok: false, code: 'timeout' }), scan('11:30:40', { ok: false, code: 'timeout', avail: 1 }), scan('11:30:50', { ok: false }),
-      scan('11:59:00'), scan('12:00:00'), scan('12:00:59')    // the current minute is the last cell
-    ], now);
-    expect(cells).toHaveLength(60);
-    expect([cells[0].time, cells[59].time]).toEqual(['11:01', '12:00']);
-    expect(cells[0]).toMatchObject({ n: 2, avail: 1, fails: 0, state: 'avail', text: '11:01 · 2回 · 空きあり1' });
-    expect(cells[29]).toMatchObject({ time: '11:30', n: 4, fails: 3, state: 'fail', text: '11:30 · 4回 · 失敗3（timeout） · 空きあり1' });
-    expect(cells[58]).toMatchObject({ time: '11:59', state: 'ok', text: '11:59 · 1回' });
-    expect(cells[59]).toMatchObject({ n: 2, state: 'ok' });
-    expect(cells[1]).toMatchObject({ state: 'none', text: '11:02 · 確認なし' });
-    expect(cells.filter((c) => c.state === 'none')).toHaveLength(56);
-    expect(scanSummary(cells)).toBe('直近1時間：確認9回、失敗3回、空きあり2回');
-    expect(scanTicks(cells)).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
-  });
-  it('a failure without a code says only how many; the Tokyo minute holds whatever the phone’s zone (UTC minutes)', () => {
-    const cells = scanCells([{ t: Date.parse('2026-11-13T02:59:59Z'), ok: false, ms: 0, avail: 0 }], Date.parse('2026-11-13T03:00:00Z'));
-    expect(cells.at(-2)).toMatchObject({ time: '11:59', text: '11:59 · 1回 · 失敗1' });
-    expect(cells.at(-1)).toMatchObject({ time: '12:00', state: 'none' });
-    expect(scanCells([], STATUS.now).every((c) => c.state === 'none')).toBe(true);
-  });
-  it('from the Worker’s per-minute aggregate (recentMinutes): the same cells, a minute’s most nights with a room, its codes', () => {
-    const now = at('12:00:30');
-    const m = (time: string, over: Partial<ScanMinute> = {}): ScanMinute => ({ minute: at(time), n: 4, ok: 4, fail: 0, avail: 0, ...over });
     const cells = minuteCells([m('11:00:00'), m('11:01:00', { avail: 2 }), m('11:30:00', { ok: 1, fail: 3, avail: 1, codes: { timeout: 2, http_503: 1 } }), m('12:00:00', { n: 2, ok: 2 })], now);
     expect(cells).toHaveLength(60);
     expect(cells[0]).toMatchObject({ time: '11:01', n: 4, avail: 1, state: 'avail', text: '11:01 · 4回 · 空き2日' });
     expect(cells[29]).toMatchObject({ time: '11:30', state: 'fail', text: '11:30 · 4回 · 失敗3（timeout・http_503） · 空き1日' });
     expect(cells[59]).toMatchObject({ time: '12:00', n: 2, state: 'ok' });
     expect(cells.filter((c) => c.state === 'none')).toHaveLength(57);
-    expect(scanSummary(cells, true)).toBe('直近1時間：確認10回、失敗3回、空きあり2分');
+    expect(cells[1]).toMatchObject({ state: 'none', text: '11:02 · 確認なし' });
+    expect(scanSummary(cells)).toBe('直近1時間：確認10回、失敗3回、空きあり2分');
+    expect(scanTicks(cells)).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
     // the client reads it, a garbled minute or code left out
     const s = parseStatus({ ...example.status, recentMinutes: [...example.statusNewer.recentMinutes, { minute: 'x' }, { minute: 1, n: 1, codes: { 'bad code': 1, ok_code: 2 } }] })!;
     expect(s.recentMinutes).toEqual([...example.statusNewer.recentMinutes, { minute: 1, n: 1, ok: 0, fail: 0, avail: 0, codes: { ok_code: 2 } }]);
     expect(parseStatus(example.status)).not.toHaveProperty('recentMinutes');
+  });
+  it('a failure without a code says only how many; the Tokyo minute holds whatever the phone’s zone (UTC minutes)', () => {
+    const cells = minuteCells([{ minute: Date.parse('2026-11-13T02:59:00Z'), n: 1, ok: 0, fail: 1, avail: 0 }], Date.parse('2026-11-13T03:00:00Z'));
+    expect(cells.at(-2)).toMatchObject({ time: '11:59', text: '11:59 · 1回 · 失敗1' });
+    expect(cells.at(-1)).toMatchObject({ time: '12:00', state: 'none' });
+    expect(minuteCells([], STATUS.now).every((c) => c.state === 'none')).toBe(true);
   });
 });

@@ -34,7 +34,7 @@
   import { fetchStatus, parseStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows, footLine,
-    hotelHint, hotelParts, hotelRows, hotelSummary, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanCells, scanSummary, scanTicks, setSearch,
+    hotelHint, hotelParts, hotelRows, hotelSummary, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
     stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, verdictView, needsAttention, type DateRow, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { setBadge } from './open.svelte.ts';
@@ -152,11 +152,9 @@
   const control = $derived(status && controlLine(status, name, today));
   const saved = $derived(status && savedLine(status, name, today));
   const migrating = $derived(!!status && stops && legacy(status.settings));
-  /** 直近1時間 (a Worker that keeps the reads; else hidden), by Tokyo minute (its per-minute aggregate when it sends one,
-   *  else the reads one by one), drawn by the shared strip. */
-  const minutes = $derived(status?.recentMinutes);
-  const scans = $derived(status?.recentScans);
-  const cells = $derived(minutes ? minuteCells(minutes, status!.now) : scans ? scanCells(scans, status!.now) : []);
+  /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
+   *  shared strip. */
+  const cells = $derived(status?.recentMinutes ? minuteCells(status.recentMinutes, status.now) : []);
   const legend = { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), fail: t('its.scan.legend.fail'), none: t('its.scan.legend.none') };
   const bulk = $derived(shown && bulkOpen ? bulkDates(shown, bulkFrom, bulkTo, bulkDays, nowMs) : { add: [], over: 0 });
 
@@ -348,7 +346,7 @@
       <h3 id="its-status" class="sec-label">{t('its.sec.status')}</h3>
       <div class="card">
         {#if cells.length}
-          <StatusStrip cells={stripCells(cells)} ticks={scanTicks(cells)} title={t('its.scan.title')} {legend} summary={scanSummary(cells, !!minutes)} hint={t('its.scan.pick')} attr="its" />
+          <StatusStrip cells={stripCells(cells)} ticks={scanTicks(cells)} title={t('its.scan.title')} {legend} summary={scanSummary(cells)} hint={t('its.scan.pick')} attr="its" />
         {/if}
         <FactList {facts} more={t('its.fact.more')} attr="its" />
       </div>

@@ -479,10 +479,10 @@ test('a Worker without the allow-list: the page derives it, says new facilities 
   expect(body.search).not.toContain('ゆふいん山水館');
 });
 
-test('an older runner (no settingsAt, no reads): the page claims neither the allow-list nor the stop at a booked night', async ({ page, context }) => {
+test('an older runner (no settingsAt): the page claims neither the allow-list nor the stop at a booked night', async ({ page, context }) => {
   const { sheet, its } = await phone(page, context, 'A', undefined, {
     legacy: true,
-    edit: ({ recentScans: _, ...s }) => ({ ...s, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
+    edit: (s) => ({ ...s, runner: { ...s.runner!, settingsAt: undefined }, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
   });
   await open(sheet);
   await expect(its.locator('[data-its-verdict]')).toBeVisible();
@@ -561,20 +561,23 @@ test('the stays: a bar a night (its parts named, VoiceOver’s line), tapped ope
   await expect(its.locator('[data-its-hotel="NAGU 勝浦"] [role="switch"]')).toHaveAccessibleName('NAGU 勝浦、探す、12/19・12/26のみ');
 });
 
-test('直近1時間: a cell a minute, a tap names it, the group says the hour; hidden when the Worker sends none', async ({ page, context }) => {
+test('直近1時間: a cell a minute, a tap names it, the group says the hour', async ({ page, context }) => {
   const { sheet, its } = await phone(page, context, 'A', undefined, {
-    edit: (s) => ({
-      ...s, recentScans: [
-        ...Array.from({ length: 30 }, (_, i) => ({ t: s.now - (59 - i) * 60_000, ok: true, ms: 900, avail: 0 })),
-        { t: s.now - 20 * 60_000, ok: false, code: 'timeout', ms: 20000, avail: 0 },
-        { t: s.now - 10 * 60_000, ok: true, ms: 900, avail: 2 }
-      ]
-    })
+    edit: (s) => {
+      const minute = (ago: number) => Math.floor(s.now / 60_000) * 60_000 - ago * 60_000;
+      return {
+        ...s, recentMinutes: [
+          ...Array.from({ length: 30 }, (_, i) => ({ minute: minute(59 - i), n: 1, ok: 1, fail: 0, avail: 0 })),
+          { minute: minute(20), n: 1, ok: 0, fail: 1, avail: 0, codes: { timeout: 1 } },
+          { minute: minute(10), n: 1, ok: 1, fail: 0, avail: 2 }
+        ]
+      };
+    }
   });
   await open(sheet);
   const strip = its.locator('[data-its-strip]');
   await expect(strip.locator('[data-its-cell]')).toHaveCount(60);
-  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認32回、失敗1回、空きあり1回');
+  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認32回、失敗1回、空きあり1分');
   await expect(strip.locator('[data-its-cell="fail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(30);
@@ -588,7 +591,7 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour; h
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/ · 確認なし$/);
 });
 
-test('直近1時間 from the Worker’s per-minute aggregate when it sends one (every read of the hour, not the last 300)', async ({ page, context }) => {
+test('直近1時間 from the Worker’s per-minute aggregate: every read of the hour, however many runs', async ({ page, context }) => {
   const { sheet, its } = await phone(page, context, 'A', undefined, {
     edit: (s) => {
       const minute = (ago: number) => Math.floor(s.now / 60_000) * 60_000 - ago * 60_000;
@@ -609,7 +612,7 @@ test('直近1時間 from the Worker’s per-minute aggregate when it sends one (
 });
 
 test('直近1時間 is hidden from a Worker without it; a Worker whose CORS doesn’t allow X-Request-Id still answers', async ({ page, context }) => {
-  const { sheet, its, calls } = await phone(page, context, 'A', undefined, { allow: 'Authorization, Content-Type', edit: ({ recentScans: _, ...s }) => s });
+  const { sheet, its, calls } = await phone(page, context, 'A', undefined, { allow: 'Authorization, Content-Type' });
   await open(sheet);
   await expect(its.locator('[data-its-scans]')).toHaveCount(0);
   await expect(its.locator('[data-its-error]')).toHaveCount(0);

@@ -1,18 +1,16 @@
 // The bots' status strip's slots (strip.ts): the clock's grid (保養所's minutes), the checks in turn (ジム's: the
 // alarm's jitter leaves no false gap), the ticks on Tokyo's clock.
 import { describe, expect, it } from 'vitest';
-import { bucket, chain, gridStarts, hhmm, stripTicks, type StripCell } from './strip.ts';
+import { chain, gridStarts, hhmm, stripTicks, type StripCell } from './strip.ts';
 
 const MIN = 60_000;
 const at = (hm: string) => Date.parse(`2026-11-13T${hm}:00+09:00`);
 
-describe('gridStarts, bucket', () => {
-  it('the last slots on the clock up to now’s, oldest first; items into them, one outside left out', () => {
+describe('gridStarts', () => {
+  it('the last slots on the clock up to now’s, oldest first', () => {
     const now = at('12:00') + 30_000;
     const starts = gridStarts(now, MIN, 3);
     expect(starts.map(hhmm)).toEqual(['11:58', '11:59', '12:00']);
-    const got = bucket([at('11:57'), at('11:58') + 59_999, at('11:58'), at('12:00') + 59_999, at('12:01')], (t) => t, starts[0], MIN, 3);
-    expect(got.map((x) => x.length)).toEqual([2, 0, 1]);
   });
 });
 

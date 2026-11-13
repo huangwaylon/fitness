@@ -10,8 +10,9 @@ export const cors = (allow = HEADERS) => ({ 'Access-Control-Allow-Origin': '*', 
 
 export type Status = ItsStatus;
 
-/** The contract's example status with its times moved to `now` (its stays, the 21st and 22nd, still ahead); with an
- *  allow-list (every roster name but the skipped) unless `legacy` (a Worker from before it). */
+/** The contract's example status with its times moved to `now` (its stays, the 21st and 22nd, still ahead), from a
+ *  runner that reports settingsAt; with an allow-list (every roster name but the skipped) unless `legacy` (a Worker
+ *  from before it). */
 export function payload(now: number, legacy = false): Status {
   const s = structuredClone(example.status) as ItsStatus;
   const dt = now - s.now;
@@ -19,11 +20,11 @@ export function payload(now: number, legacy = false): Status {
   const search = ROSTER.map((h) => h.name).filter((n) => !s.settings.skip.includes(n));
   return {
     ...s, now, settings: { ...s.settings, updatedAt: s.settings.updatedAt! + dt, ...(legacy ? {} : { search }) },
-    runner: { ...r, startedAt: r.startedAt + dt, deadline: r.deadline! + dt, lastScanAt: r.lastScanAt! + dt, lastOkAt: r.lastOkAt! + dt, lastSeen: r.lastSeen + dt,
+    runner: { ...r, settingsAt: s.settings.updatedAt! + dt, startedAt: r.startedAt + dt, deadline: r.deadline! + dt, lastScanAt: r.lastScanAt! + dt, lastOkAt: r.lastOkAt! + dt, lastSeen: r.lastSeen + dt,
       solves: { ...r.solves, lastOkAt: r.solves.lastOkAt! + dt }, lastError: { ...r.lastError!, at: r.lastError!.at + dt } },
     bookings: s.bookings.map((b) => ({ ...b, at: b.at + dt })),
     events: s.events.map((e) => ({ ...e, t: e.t + dt })),
     control: s.control && { ...s.control, at: s.control.at + dt },
-    lastPreflight: s.lastPreflight! + dt, recentScans: s.recentScans!.map((e) => ({ ...e, t: e.t + dt }))
+    lastPreflight: s.lastPreflight! + dt
   };
 }

@@ -13,7 +13,7 @@ import {
   BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, PUSH_ROUTES, REASONS, VERDICTS, isDate, isId, isName,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus, type Member,
   type PushEndpointInput, type PushKind, type PushOutcome, type PushSubscribeInput,
-  type Reason, type RunInput, type ScanEntry, type ScanMinute, type Verdict
+  type Reason, type RunInput, type ScanMinute, type Verdict
 } from './contract.ts';
 import { getKey } from '#lib/sync/storage.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
@@ -78,12 +78,6 @@ function parseRunner(x: unknown): ItsStatus['runner'] {
   };
 }
 
-/** One read of the last hour's (`recentScans`), or null when garbled. */
-function parseScan(x: unknown): ScanEntry | null {
-  if (!isRec(x) || num(x.t) === null || typeof x.ok !== 'boolean') return null;
-  return { t: x.t as number, ok: x.ok, ...(isId(x.code) ? { code: x.code } : {}), ms: num(x.ms) ?? 0, avail: num(x.avail) ?? 0 };
-}
-
 /** One minute of the last hour's reads (`recentMinutes`), or null when garbled. */
 function parseMinute(x: unknown): ScanMinute | null {
   if (!isRec(x) || num(x.minute) === null || num(x.n) === null) return null;
@@ -110,10 +104,9 @@ export function parseStatus(x: unknown): ItsStatus | null {
     bookings: Array.isArray(x.bookings) ? x.bookings.map(parseBooking).filter((b): b is BookingEntry => b !== null) : [],
     events: Array.isArray(x.events) ? x.events.map(parseEvent).filter((e): e is ItsEvent => e !== null) : [],
     seen: names(x.seen, MAX_SITE_NAME),
-    // from a newer Worker (absent from an older one): the last preflight, the last hour's reads (absent: no strip)
+    // from a newer Worker (absent from an older one): the last preflight, the last hour's reads per minute (absent:
+    // no strip)
     ...('lastPreflight' in x ? { lastPreflight: num(x.lastPreflight) } : {}),
-    ...(Array.isArray(x.recentScans) ? { recentScans: x.recentScans.map(parseScan).filter((e) => e !== null) } : {}),
-    // the reads per minute (the strip's source when present: every read of the hour)
     ...(Array.isArray(x.recentMinutes) ? { recentMinutes: x.recentMinutes.map(parseMinute).filter((e) => e !== null) } : {}),
     // Web Push (absent: a Worker without it, 通知's 準備中)
     ...(push ? { push } : {})
