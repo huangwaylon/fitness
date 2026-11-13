@@ -118,6 +118,9 @@ class WorkerModel:
                 return 413, {'error': 'too_large'}
             if u.path == '/runner/report' and len(body['events']) > 100:
                 return 400, {'error': 'events'}
+            if u.path == '/runner/report' and any('date' in e and not re.match(r'\d{4}-\d{2}-\d{2}\Z', e['date'])
+                                                  for e in body['events']):
+                return 400, {'ok': False, 'error': 'bad_report_event'}   # the Worker refuses the whole report
             if u.path == '/runner/bookings' and any(not re.match(r'\d{4}-\d{2}-\d{2}\Z', str(b.get('date'))) for b in body):
                 return 400, {'ok': False, 'error': 'bad_booking'}   # the Worker's parseBookings: refused whole
             now = self.ms()
@@ -1712,10 +1715,10 @@ def test_a_refused_entry_is_set_aside(port):
         check('400: the bad one set aside', list(rem.unsynced) == ['run-e:2'] and rem.conflicts == {'run-e:2'})
         check('400: not an outage', rem.outage_sec() == 0 and rem.hold_gate() == (True, ''), str(rem.hold_gate()))
         check('400: HUMAN NEEDED', log.saw('HUMAN NEEDED') and log.saw('as invalid'))
-        rem.report()
-        rem.report()
-        check('400: one human_needed', [e.get('detail') for e in model.kinds('human_needed')] == ['bad_booking'],
-              str(model.kinds('human_needed')))
+        check('400: the report with its human_needed still lands (no bad date in the event)',
+              rem.report() is not None and rem.report() is not None, str(rem.last_by_step))
+        check('400: one human_needed', [e.get('detail') for e in model.kinds('human_needed')] == ['bad_booking']
+              and 'date' not in model.kinds('human_needed')[0], str(model.kinds('human_needed')))
         check('400: lastError', rem.last_by_step.get('bookings') == (400, 'bad_booking'), str(rem.last_by_step))
         check('400: in the reports\' unsynced', model.reports[-1]['unsynced'] == 1)
 

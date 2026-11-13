@@ -36,6 +36,7 @@ report says which it applied (`settingsAt`), so an older or a newer Worker both 
 
 Never logs the token. Dates and hotel names go to the Worker (members only) and the private log, never `logs.public`.
 """
+import datetime
 import json
 import re
 import threading
@@ -89,6 +90,7 @@ REFUSED_ENTRY = (400, 409)
 
 _BAD_CHARS = re.compile('[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]')
 _ID_RE = re.compile(r'[A-Za-z0-9._:-]{1,64}\Z')
+_DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}\Z')
 
 
 def _units(s):
@@ -111,6 +113,17 @@ def _text(s, limit):
                 s = s[:i].rstrip()
                 break
     return s or None
+
+
+def _is_date(s):
+    """A real calendar date, YYYY-MM-DD (the contract's isDate)."""
+    if not (isinstance(s, str) and _DATE_RE.match(s)):
+        return False
+    try:
+        datetime.date.fromisoformat(s)
+        return True
+    except ValueError:
+        return False
 
 
 def _id(s, default):
@@ -284,7 +297,7 @@ class Remote:
             self.seq += 1
             e = {'seq': self.seq, 'kind': kind}
             hotel, detail = _text(hotel, OFFERED_MAX), _text(detail, DETAIL_MAX)
-            if date:
+            if _is_date(date):   # anything else would make the Worker refuse the whole report (bad_report_event)
                 e['date'] = date
             if hotel:
                 e['hotel'] = hotel
