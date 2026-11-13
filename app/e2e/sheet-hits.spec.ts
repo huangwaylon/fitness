@@ -19,7 +19,11 @@ const hits = (l: Locator) =>
       const reach = (dx: number, dy: number) => { let d = 0; while (d < 22 && own(cx + dx * (d + 1), cy + dy * (d + 1))) d++; return d; };
       return [`${el.textContent?.trim()} ${reach(-1, 0) + reach(1, 0) + 1}×${reach(0, -1) + reach(0, 1) + 1}`];
     }));
+/** Measured at rest: a sheet's open and a level's push (its slide in from the right, 240 ms) over first; mid-slide, a
+ *  chip whole in its row can sit past the screen's edge, where nothing is hit. */
 const all44 = async (l: Locator) => {
+  await l.page().locator('dialog[open]').evaluate((d) =>
+    Promise.all(d.getAnimations({ subtree: true }).filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => {}))));
   const hs = await hits(l);
   expect(hs.length).toBeGreaterThan(0);
   for (const h of hs) expect(h, h).toMatch(/ (4[4-5])×(4[4-5])$/);
