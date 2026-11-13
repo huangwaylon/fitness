@@ -543,6 +543,13 @@
     if (!pace.slow) return true;
     return moveFast(b.ms, !!b.fled, m ? w.screenAt(m.xyz[0], m.xyz[1], m.xyz[2]) : null, w.screenAt(b.x, b.z, b.lift), w.view);
   }
+  /** A fish's dart off drawn at the full rate: as a bug's move, on screen and fast there (a startled shadow anywhere on
+   *  the island held all of it at 30 frames a second for ~0.85 s, review 2026-11-13). */
+  function dashFast(f: Fish): boolean {
+    const m = mos.get(fishId(f));
+    if (!pace.slow) return true;
+    return moveFast(f.ms, false, m ? w.screenAt(m.xyz[0], m.xyz[1], m.xyz[2]) : null, w.screenAt(f.x, f.z), w.view);
+  }
   onMount(() => () => {
     clearTimeout(fullTimer);
     if (fullTill) pace.full--;
@@ -554,7 +561,7 @@
     for (const f of allFish()) {
       ids.add(fishId(f));
       void f.x, void f.z, void f.ms;
-      if (f.dash) full3(f.ms + 200);
+      if (f.dash && untrack(() => dashFast(f))) full3(f.ms + 200);
     }
     for (const b of bugs) {
       ids.add(bugId(b));

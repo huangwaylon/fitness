@@ -138,9 +138,11 @@ describe('moveFast (a critter move at the full rate or the ambience)', () => {
     expect(moveFast(1000, false, at(100), at(140), view)).toBe(false);
     expect(moveFast(1000, false, at(100), at(100 + SLOW_PX), view)).toBe(true);
   });
-  it('a startled flight, one with no model yet or no time is at the full rate', () => {
+  it('a startled flight or one with no time is at the full rate; one with no model yet only if it ends on screen', () => {
     expect(moveFast(1000, true, at(100), at(101), view)).toBe(true);
     expect(moveFast(1000, false, null, at(101), view)).toBe(true);
+    expect(moveFast(1000, false, null, at(-300), view)).toBe(false);
+    expect(moveFast(1000, false, null, at(100, 300, false), view)).toBe(false);
     expect(moveFast(0, false, at(100), at(101), view)).toBe(true);
   });
   it('a fast move off screen (both ends past the margin, or behind the camera) is ambience', () => {

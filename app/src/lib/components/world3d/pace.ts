@@ -9,13 +9,16 @@ export const SLOW_PX = 60;
 
 /** A point on screen (px from the scene's top-left) and whether it's in front of the camera. */
 interface OnScreen { sx: number; sy: number; visible: boolean }
-/** Whether a move is drawn at the full rate: one with no model to start from, no time, or that fled (a startled bug),
- *  else one with an end on screen (an 80 px margin) going at least SLOW_PX a second there (`from`: where its model is
- *  now, `to`: where it goes, in `ms`). A dart or a hop is judged by its speed too: these never pause, and forced to the
- *  full rate they held the resting island at 30 frames a second, not 12-20, while most crossed under 60 px a second. */
+/** Whether a move is drawn at the full rate: one with no time, or that fled (a startled bug), else one with an end on
+ *  screen (an 80 px margin) going at least SLOW_PX a second there (`from`: where its model is now, `to`: where it goes,
+ *  in `ms`); with no model to start from yet, one that ends on screen (one spawned off screen held the whole island at
+ *  the full rate till its model was in, review 2026-11-13). A dart or a hop is judged by its speed too: these never
+ *  pause, and forced to the full rate they held the resting island at 30 frames a second, not 12-20, while most crossed
+ *  under 60 px a second. */
 export function moveFast(ms: number, fled: boolean, from: OnScreen | null, to: OnScreen, view: { vw: number; vh: number }): boolean {
-  if (!from || ms <= 0 || fled) return true;
+  if (ms <= 0 || fled) return true;
   const on = (s: OnScreen) => s.visible && s.sx > -80 && s.sx < view.vw + 80 && s.sy > -80 && s.sy < view.vh + 80;
+  if (!from) return on(to);
   return (on(from) || on(to)) && (Math.hypot(from.sx - to.sx, from.sy - to.sy) / ms) * 1000 >= SLOW_PX;
 }
 

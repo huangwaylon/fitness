@@ -34,7 +34,7 @@ import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from './stage.ts'
 import { DECAY_MS, DECAY_OUT_MS, STOP_V, rubber } from '#lib/touch.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
-import { pacer } from './pace.ts';
+import { pace as critters, pacer } from './pace.ts';
 import type { BootWait } from './boot.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
@@ -1102,6 +1102,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     framedRev = rev;
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
+    // (a critter's dart, fade or nibble on screen: Critters.svelte, pace.ts)
+    want(critters.full > 0, 'crit');
     want(marks.frame(t, camera, focal, W, H), 'bite');
     if (ground.update) {
       // (its water's ambience: whether it's in view is asked once nothing else wants a frame: frame())
