@@ -3,7 +3,7 @@
   // typed in as one serving. Mine or a new one: its name, 1食の めやす (the serving's label, 「1食」 unless typed) and
   // its weight in g (may stay blank: then it is logged by the serving, never by grams), カロリー (needed) and
   // たんぱく質 · 脂質 · 炭水化物 · 塩分 · 食物繊維 · アルコール in g (each may stay blank), all for one serving; full-width digits welcome
-  // (foodUi parseAmount). Then けす (a saved one; tapped twice: ほんとうに けす？) and ほぞん (waiting until something
+  // (drafts.ts parseAmount). Then けす (a saved one; tapped twice: ほんとうに けす？) and ほぞん (waiting until something
   // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」; deleted
   // while open, read-only too, 「削除されました」, its copy still offered. A new one
   // from a meal (`andLog`): 「ほぞんして ついか」, saved and one serving logged in the one tap. `quick` (クイック, eating
@@ -12,7 +12,7 @@
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { CUSTOM_NUTS, customErrors, customOf, quickErrors, servingText, type CustomDraft } from './foodUi.ts';
+  import { CUSTOM_NUTS, customErrors, customOf, quickErrors, servingText, type CustomDraft } from './drafts.ts';
 
   interface Props {
     draft: CustomDraft;

@@ -5,7 +5,10 @@ import { untrack } from 'svelte';
 import { FOOD_GRAMS, round1 } from '#lib/contract/food.ts';
 import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
-import { foodDb, foodDbNow, gramsText, inState, parseAmount, MULT, nextMult, portionLabel, startOf, stateGroups, stepOf } from './foodUi.ts';
+import { inState, stateGroups } from './foodUi.ts';
+import { gramsText, MULT, nextMult, portionLabel, startOf, stepOf } from './portions.ts';
+import { parseAmount } from './drafts.ts';
+import { foodDb, foodDbNow } from './dbHold.ts';
 
 interface AmountProps {
   item: Item;

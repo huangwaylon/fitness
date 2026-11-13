@@ -27,7 +27,7 @@ async function json<T>(href: string, init?: RequestInit): Promise<T> {
 /** Back to the event loop: a frame, a keystroke go first. */
 const pause = (): Promise<void> => new Promise((ok) => setTimeout(ok, 0));
 
-/** The chain menus' address and this phone's key (foodUi.ts kaloriSource: a member's, paired). */
+/** The chain menus' address and this phone's key (components/food/dbHold.ts kaloriSource: a member's, paired). */
 export interface KaloriSource {
   href: string;
   key: string;

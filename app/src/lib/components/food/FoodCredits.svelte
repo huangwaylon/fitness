@@ -4,7 +4,7 @@
   // does) and lists credits(db). `open`: Food's, closed again at each opening (the sheet kept mounted).
   import { credits, type Credit } from '#lib/food/index.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { foodDb } from './foodUi.ts';
+  import { foodDb } from './dbHold.ts';
 
   let { open = $bindable(false) }: { open?: boolean } = $props();
   let list = $state.raw<Credit[] | null>(null);

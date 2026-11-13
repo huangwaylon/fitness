@@ -35,7 +35,10 @@
   import NavButton from '../ui/NavButton.svelte';
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
-  import { amountText, catOf, recentShops, shopChips, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, snapGloss, typedKcal, withImages, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { catOf, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { amountText, defaultPortion } from './portions.ts';
+  import { customItem, servingText, typedKcal } from './drafts.ts';
+  import { foodDb, withImages } from './dbHold.ts';
 
   interface Props {
     /** My recent entries (recentOf). */

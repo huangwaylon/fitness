@@ -58,10 +58,10 @@
   import FoodCustom from './FoodCustom.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { pickWhose, whose } from '../health/whose.svelte.ts';
-  import {
-    customItem, DAYS, foodDb, foodDbNow, foodDbSoon, holdFoodDb, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem, recipeOfEntry,
-    quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft
-  } from './foodUi.ts';
+  import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, sameItems } from './foodUi.ts';
+  import { portionLabel, servingOnly } from './portions.ts';
+  import { customItem, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
+  import { foodDb, foodDbNow, foodDbSoon, holdFoodDb, whenFoodDb } from './dbHold.ts';
   import { Levels, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
@@ -234,7 +234,7 @@
     const d = g === undefined ? portionsOf(p.item)[0] : null;
     return { p, gg: d ? d.g : g!, uu: d ? portionLabel(d, 1) : (u ?? null) };
   }
-  // ---- クイック: one entry of kcal (and what else is known), no food saved (foodUi.ts quickSnap: an `sv` snapshot)
+  // ---- クイック: one entry of kcal (and what else is known), no food saved (drafts.ts quickSnap: an `sv` snapshot)
   let qdraft = $state<CustomDraft>(quickDraft());
   /** The quick form as it opened; each editor's draft changed, leaving it (its ‹, the sheet's ✕, backdrop or Esc) asks
    *  first. */
@@ -385,7 +385,7 @@
 
   // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
   // (the data fixed, the recipe or custom food edited). The catalogue comes once a day with an entry of it shows, at
-  // idle after the open (foodUi.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
+  // idle after the open (dbHold.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
   // tiles); the products when they come (only with a product logged that day, or a search). Never updated by itself.
   let catalog = $state.raw<FoodDb | null>(foodDbNow());
   $effect(() => holdFoodDb());

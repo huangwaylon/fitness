@@ -7,7 +7,7 @@
   import { nutrientsFor } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import type { AmountPick } from './amount.svelte.ts';
-  import { gramsText, hasWeight } from './foodUi.ts';
+  import { gramsText, hasWeight } from './portions.ts';
 
   interface Props {
     a: AmountPick;

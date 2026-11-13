@@ -7,7 +7,8 @@
   import { untrack } from 'svelte';
   import type { FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, DAYS, daysText } from './foodUi.ts';
+  import { DAYS, daysText } from './foodUi.ts';
+  import { amountText } from './portions.ts';
   import { entryKcal, itemsKcal } from '#lib/food/index.ts';
 
   interface Props {

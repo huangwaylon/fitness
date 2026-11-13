@@ -15,7 +15,9 @@
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import { entryKcal, type FoodDb } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catOf, foodDbNow, recipePlate, servingOnly, snapGloss, whenFoodDb, withImages, type RecipeDraft } from './foodUi.ts';
+  import { catOf, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
+  import { amountText, servingOnly } from './portions.ts';
+  import { foodDbNow, whenFoodDb, withImages } from './dbHold.ts';
 
   interface Props {
     draft: RecipeDraft;

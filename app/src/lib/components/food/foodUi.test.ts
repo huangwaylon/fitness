@@ -1,15 +1,13 @@
-// ごはん's helpers (foodUi.ts): a portion in words, the snapshot's own portion, the amount's start and step, the 最近
+// ごはん's helpers (foodUi.ts, portions.ts, drafts.ts): a portion in words, the snapshot's own portion, the amount's start and step, the 最近
 // list, a row's everyday name, the kcal goal field and its chip, the repeat's days and the same-items check, and a
 // recipe's picture box (which ingredients it shows).
 import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import {
-  amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
-  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, nextMult, typedKcal,
-  catOf, kaloriPage, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups
-} from './foodUi.ts';
+import { DAYS, daysText, glossOf, goalChip, itemOf, recentOf, sameItems, stateItem, catOf, kaloriPage, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups } from './foodUi.ts';
+import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
+import { customDraft, customErrors, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
 import { unitOf } from '#lib/food/index.ts';

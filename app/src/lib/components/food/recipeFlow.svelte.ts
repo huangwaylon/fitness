@@ -6,7 +6,9 @@ import { t } from '#lib/i18n/index.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/meals.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
-import { foodDbNow, itemOf, recipeItem, servingOnly, type RecipeDraft } from './foodUi.ts';
+import { itemOf, recipeItem, type RecipeDraft } from './foodUi.ts';
+import { servingOnly } from './portions.ts';
+import { foodDbNow } from './dbHold.ts';
 import type { LevelOf, Levels, Picked } from './levels.svelte.ts';
 
 /** What the flows need of the meal log (Food.svelte). */

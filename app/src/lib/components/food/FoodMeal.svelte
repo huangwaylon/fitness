@@ -15,7 +15,9 @@
   // takes a tap all the same: the recipe, read-only (`onrecipe`).
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, daysText, foodDbNow, loggedCat, plateOf, recipeOfEntry, whenFoodDb, withImages } from './foodUi.ts';
+  import { daysText, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { amountText } from './portions.ts';
+  import { foodDbNow, whenFoodDb, withImages } from './dbHold.ts';
   import type { Recipe } from '#lib/model/food.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import type { FoodDb } from '#lib/food/index.ts';

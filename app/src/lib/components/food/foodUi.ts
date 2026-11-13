@@ -1,126 +1,18 @@
-// ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
-// food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), a
-// row's everyday name, the さいきん list, a portion's start and step, a repeat's weekdays in words, and a recipe
-// as a food (マイレシピ: its portions), and a custom food as a food and its editor's fields (マイ食品).
-import {
-  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, round1, type FoodCustom,
-  type FoodEntry, type FoodSnap, type RepeatItem
-} from '#lib/contract/food.ts';
-import { quiet } from '#lib/quiet.ts';
-import { parseTyped } from '#lib/math.ts';
+// ごはん's foods as rows show them (docs/design.md "Gohan"): the food an entry was logged from (its catalog item when the
+// catalog has it, for its portions; else its own portion), a row's tile, picture box and everyday name, a food's
+// states, the さいきん list and the shops, the goal's chip, a repeat's weekdays in words, and a recipe as a food
+// (マイレシピ: its portions). The catalog itself: dbHold.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
+import { FOOD_GRAMS, recipePortion, recipeSnap, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
-import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type KaloriSource, type Portion } from '#lib/food/index.ts';
-import { dropFoodImages, imgOf, loadFoodImages, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
+import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { imgOf, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
-import { nextChance } from '#lib/ui-state/retry.ts';
-import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { relayUrl } from '#lib/sync/transport.ts';
-import { week } from '#lib/store/week.svelte.ts';
-
-/** The members' chain menus (Kalori): the relay's `/food/kalori` with this phone's key; none in the
- *  demo, for the guest, unpaired or with no relay. */
-function kaloriSource(): KaloriSource | null {
-  const key = getKey(), href = relayUrl('/food/kalori');
-  return week.demo || week.guest || !key || !href ? null : { href, key };
-}
-
-let dbP: Promise<FoodDb> | null = null;
-let ready: FoodDb | null = null;
-const waiting = new Set<(db: FoodDb) => void>();
-/** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
- *  failure lets the next call try again. */
-export function foodDb(): Promise<FoodDb> {
-  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance, kaloriSource).then(
-    (db) => {
-      if (dbP === p) ready = db;
-      for (const f of waiting) f(db);
-      waiting.clear();
-      return db;
-    },
-    (e: unknown) => {
-      if (dbP === p) dbP = null;
-      throw e;
-    }
-  ));
-  return p;
-}
-let holders = 0;
-/** ごはん mounted (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products) and the pictures' index
- *  kept while it is, let go with it (its sheet closed and let go: keptSheets, a hidden page among them); the next
- *  opening reads them again from the service worker's cache, at idle (foodDbSoon). */
-export function holdFoodDb(): () => void {
-  holders++;
-  return () => {
-    if (--holders) return;
-    dbP = ready = null;
-    dropFoodImages();
-  };
-}
-/** The catalog into `set` once it is in, whoever loads it (never loading it itself); a component's $effect. */
-export function whenFoodDb(set: (db: FoodDb) => void): () => void {
-  if (ready) {
-    set(ready);
-    return () => {};
-  }
-  waiting.add(set);
-  return () => void waiting.delete(set);
-}
-/** After the sheet's open (its 90 ms wait and 280 ms zoom) and once the page is idle (Safari: no requestIdleCallback),
- *  the catalog, never on the open's path: the rows' tiles and 最新の値にする come with it, and it is the search's. */
-const OPEN_MS = 600;
-export function foodDbSoon(): () => void {
-  if (ready || dbP) return () => {};
-  let idle = 0;
-  const go = () => void quiet(foodDb(), 'food.db');
-  const wait = setTimeout(() => (typeof requestIdleCallback === 'function' ? (idle = requestIdleCallback(go, { timeout: 2000 })) : go()), OPEN_MS);
-  return () => {
-    clearTimeout(wait);
-    if (idle) cancelIdleCallback(idle);
-  };
-}
-/** The pictures' index into `set` once it is in (none: every food keeps its tile); a component's $effect. */
-export function withImages(set: (ix: FoodImageIndex) => void): () => void {
-  let live = true;
-  void loadFoodImages().then((ix) => live && ix && set(ix));
-  return () => void (live = false);
-}
-/** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
-export const foodDbNow = (): FoodDb | null => ready;
+import { bareLabel } from './portions.ts';
+import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 
 /** The summary's くわしく open or not, kept for the session (whose day: health/whose.svelte.ts). */
 export const foodLast: { more: boolean } = { more: false };
-
-/** Grams as typed: one decimal at most, no trailing `.0`. */
-export const gramsText = (g: number): string => String(round1(g));
-
-/** Whether a portion label already says its weight (「1枚(60g)」, 「200ml」): no second （Ng） after it. */
-export const hasWeight = (label: string): boolean => /\d\s*(g|ml|グラム)/i.test(label.normalize('NFKC'));
-
-
-/** A label's own weight in brackets (「（110g）」, 「(350ml)」), dropped when a ×n makes it wrong. */
-const OWN_WEIGHT = /[（(][^（）()]*\d\s*(g|ml|グラム)[^（）()]*[）)]/gi;
-
-/** A portion in words, the one format everywhere: its label and its weight once (「茶碗1杯（150g）」, 「中ジョッキ（350ml）」,
- *  「1パック（110g）」), ×n with the total (「1パック×2（220g）」), never a weight twice; no label: the weight alone. */
-export function portionText(label: string | null | undefined, g: number, unit: 'g' | 'ml' = unitOf(label)): string {
-  const w = `${gramsText(g)}${unit}`;
-  if (!label) return w;
-  const [base, x] = label.split('×');
-  if (!x) return hasWeight(label) ? label : `${label}（${w}）`;
-  const bare = base.replace(OWN_WEIGHT, '').trim();
-  return !bare || /^\d+(\.\d+)?\s*(g|ml)$/i.test(bare.normalize('NFKC')) ? w : `${bare}×${x}（${w}）`;
-}
-
-/** A snapshot of a serving with no known weight (a custom food's, `sv`): its grams are a nominal 100 per serving,
- *  shown as servings, never as grams. */
-export const servingOnly = (f: Pick<FoodSnap, 'sv'>): boolean => f.sv === true;
-
-/** An entry's amount: the portion it was picked by and its weight (portionText), or the weight alone; a serving with
- *  no weight: its label alone (「1食」, 「1食×2」). */
-export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string =>
-  servingOnly(e.f) ? (e.f.u ?? `×${gramsText(e.g / 100)}`) : portionText(e.f.u, e.g);
-
 
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
@@ -231,8 +123,6 @@ export function stemName(it: Pick<Item, 'name' | 'st'>): string {
   return it.name;
 }
 
-/** A portion label without its notes in brackets (「1枚（とんかつ用）」 → 1枚). */
-const bareLabel = (label: string): string => label.replace(/[（(][^（）()]*[）)]/g, '').trim();
 const is100 = (p: Portion): boolean => /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC'));
 
 /** A food in one of its states as the amount shows it (`d` its group's default, the raw one mostly): the default's
@@ -294,7 +184,7 @@ export function inState(db: FoodDb | null, it: Item): Item {
 }
 
 /** A snapshot's values as an item's (fibre and alcohol only when known). */
-function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib' | 'alc'> {
+export function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib' | 'alc'> {
   return { kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, ...(typeof f.fi === 'number' ? { fib: f.fi } : {}), ...(typeof f.al === 'number' ? { alc: f.al } : {}) };
 }
 /** The portion an entry's label and grams name (「茶碗1杯×2」 of 300 g → 茶碗1杯 of 150 g); none for 100 g or typed grams. */
@@ -343,75 +233,6 @@ export function recentShops(mine: readonly FoodEntry[], db: FoodDb | null, since
   return [...by.values()].sort((a, b) => b.n - a.n || a.i - b.i).slice(0, max).map(({ shop, name }) => ({ shop, name }));
 }
 
-/** The portion and ×multiplier (a multiple of 0.5, ×0.5 to ×20) whose grams, saved to one decimal, are `g`, ×1 first;
- *  null when none does. */
-export function matchPortion(ps: readonly Portion[], g: number): { pi: number; mult: number } | null {
-  let best: { pi: number; mult: number } | null = null;
-  ps.forEach((p, pi) => {
-    const mult = Math.round((g / p.g) * 2) / 2;
-    if (mult < MULT.min || mult > MULT.max || round1(p.g * mult) !== g) return;
-    if (!best || (mult === 1 && best.mult !== 1)) best = { pi, mult };
-  });
-  return best;
-}
-
-/** Where the amount starts: the portion named by the label (「茶碗1杯×2」) when it makes the grams, else one that makes
- *  them, else typed grams; no grams: the default portion. */
-export function startOf(ps: readonly Portion[], g0?: number, u0?: string): { pi: number; mult: number; custom: boolean } {
-  if (g0 === undefined) return { pi: 0, mult: 1, custom: false };
-  const [label, x] = (u0 ?? '').split('×');
-  const pi = ps.findIndex((p) => p.label === label);
-  const n = Number(x) || 1;
-  if (pi >= 0 && round1(ps[pi].g * n) === g0) return { pi, mult: n, custom: false };
-  const m = matchPortion(ps, g0);
-  return m ? { ...m, custom: false } : { pi: 0, mult: 1, custom: true };
-}
-
-/** Foods eaten by the piece whose data gives a serving (「1人前」): おにぎり, 目玉焼き, ゆで卵 … counted too. */
-const PIECE = /おにぎり|むすび|天むす|ゆで卵|温泉卵|目玉焼き|ハンバーグ|ホットドッグ|コロッケ|メンチカツ|まんじゅう|大福|ドーナツ|バーガー|梅干し/;
-
-export type StepKind = 'count' | 'half';
-/** −/＋'s ladder for a portion: 'count' for the things you count (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック …, and a
- *  piece food's 1人前: `name` PIECE), 'half' for 茶碗 (rice), 人前 and the rest (a weight). */
-export function stepOf(label: string, name = ''): StepKind {
-  const l = label.normalize('NFKC');
-  if (/人前/.test(l) && PIECE.test(name)) return 'count';
-  if (/茶碗|人前|^\s*[\d.]+\s*(g|ml)\s*$/i.test(l)) return 'half';
-  return /本|個|杯|缶|枚|切れ|貫|パック|ジョッキ|袋|粒|尾|丁|玉|カップ|皿/.test(label) ? 'count' : 'half';
-}
-
-/** ×n's floor and cap. */
-export const MULT = { min: 0.5, max: 20 } as const;
-/** The rungs: halves all the way for 'half'; for 'count' halves up to 2 (½ an apple, 1½ toast), then whole ones. */
-const RUNGS: Record<StepKind, readonly number[]> = {
-  half: Array.from({ length: 40 }, (_, i) => (i + 1) / 2),
-  count: [0.5, 1, 1.5, ...Array.from({ length: 19 }, (_, i) => i + 2)]
-};
-
-/** −/＋ from ×m: the next rung down or up (from a value off the ladder, a saved ×2.5, the nearest one that way); held
- *  at the floor and the cap. */
-export function nextMult(m: number, d: -1 | 1, kind: StepKind): number {
-  const r = RUNGS[kind];
-  return (d > 0 ? r.find((x) => x > m) : r.findLast((x) => x < m)) ?? (d > 0 ? MULT.max : MULT.min);
-}
-
-/** The label an entry keeps for a picked portion (「茶碗1杯」, 「茶碗1杯×2」); none for 100 g or typed grams. */
-export function portionLabel(p: Portion | null, mult: number): string | null {
-  if (!p || /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC'))) return null;
-  return mult === 1 ? p.label : `${p.label}×${mult}`;
-}
-
-/** An item's default portion in a few words and its kcal (search rows: 「茶碗1杯 150g」 234 kcal): its label without
- *  its notes in brackets (「1枚（とんかつ用）」 → 1枚), then its weight; a serving with no weight (`sv`): its label. */
-export function defaultPortion(it: Item): { label: string; kcal: number } {
-  const ps = portionsOf(it);
-  const p = ps[0];
-  if (it.sv) return { label: p.label, kcal: Math.round((it.kcal * p.g) / 100) };
-  const w = `${gramsText(p.g)}${ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'}`;
-  const base = bareLabel(p.label);
-  return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base} ${w}`, kcal: Math.round((it.kcal * p.g) / 100) };
-}
-
 /** The day's kcal against the goal, in words and tone: today 「あと N kcal」 / 「N kcal オーバー」, a past day
  *  「目標より N kcal 少なめ / 多め」; coral only past 20 % over (the lifter eating to a surplus is not told off). */
 export function goalChip(kcal: number, goal: number, today: boolean): { text: string; over: boolean } {
@@ -455,90 +276,3 @@ export const recipeServing = (r: Recipe): boolean => recipeSnap(r).sv === true;
 
 /** A recipe as its editor changes it: the name, the servings, the ingredients. */
 export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }
-
-// ---- マイ食品: a food typed in by someone as one serving (contract/food.ts FoodCustom)
-
-/** A custom food as a food to log: its values per 100 g (customSnap) and its portions (its serving first; 100g after
- *  it when its weight is known). With no weight its one portion is a nominal 100 g: FoodAmount's `serving` mode. */
-export function customItem(c: FoodCustom): Item {
-  const f = customSnap(c);
-  return { id: f.id, name: f.n, ...snapValues(f), portions: customPortions(c) };
-}
-
-/** A custom food's serving in words: 「1食」, 「1パック（120g）」. */
-export const servingText = (c: Pick<FoodCustom, 'u' | 'g'>): string => (c.g === undefined ? c.u : portionText(c.u, c.g));
-
-/** The custom food editor's fields, as typed (numbers as text: full-width digits welcome). */
-export interface CustomDraft { n: string; u: string; g: string; k: string; p: string; fa: string; c: string; s: string; fi: string; al: string }
-/** The editor's nutrients: the four, then fibre and alcohol (each may stay blank: unknown). */
-export const CUSTOM_NUTS = ['p', 'fa', 'c', 's', 'fi', 'al'] as const;
-const NUTS = CUSTOM_NUTS;
-const num1 = (v: number | null | undefined): string => (v === null || v === undefined ? '' : gramsText(v));
-
-/** A new custom food's fields (the name: what was typed in the search; the serving's label blank: 「1食」 is its field's
- *  placeholder, never a value typed after), or a saved one's. */
-export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
-  if (!c) return { n: name.trim().slice(0, CUSTOM.nameChars), u: '', g: '', k: '', p: '', fa: '', c: '', s: '', fi: '', al: '' };
-  return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s), fi: num1(c.fi), al: num1(c.al) };
-}
-
-/** A typed amount (math.ts parseTyped: full-width digits, 1,200, a decimal comma, a trailing g, ml or kcal) → a number
- *  to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one. */
-export function parseAmount(text: string, min: number, max: number): number | null | undefined {
-  const n = parseTyped(text, 'g|ml|kcal|グラム');
-  if (n == null) return n;
-  const v = round1(n);
-  return v >= min && v <= max ? v : undefined;
-}
-
-/** Which of the editor's fields don't read (the name and kcal are needed; the rest may be blank). A serving whose
- *  weight is too light for what it holds (more than any food per 100 g: the record refuses it) marks the weight. */
-export function customErrors(d: CustomDraft): Set<keyof CustomDraft> {
-  const bad = new Set<keyof CustomDraft>();
-  if (!d.n.trim()) bad.add('n');
-  const k = parseAmount(d.k, 0, CUSTOM.kcalMax);
-  if (k === null || k === undefined) bad.add('k');
-  if (parseAmount(d.g, CUSTOM.grams.min, CUSTOM.grams.max) === undefined) bad.add('g');
-  for (const x of NUTS) if (parseAmount(d[x], 0, CUSTOM.nutrientMax) === undefined) bad.add(x);
-  if (!bad.size && !customDensityOk(customOf(d))) bad.add('g');
-  return bad;
-}
-
-/** The editor's fields as saveCustom takes them (customErrors empty first): kcal whole, a blank label 1食; fibre and
- *  alcohol only when typed. */
-export function customOf(d: CustomDraft): { n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; al?: number } {
-  const g = parseAmount(d.g, CUSTOM.grams.min, CUSTOM.grams.max) ?? undefined;
-  const nut = (x: (typeof NUTS)[number]) => parseAmount(d[x], 0, CUSTOM.nutrientMax) ?? null;
-  const fi = nut('fi'), al = nut('al');
-  return {
-    n: d.n.trim(), u: d.u.trim() || t('food.my.one'), ...(g === undefined ? {} : { g }), k: Math.round(parseAmount(d.k, 0, CUSTOM.kcalMax) ?? 0),
-    p: nut('p'), fa: nut('fa'), c: nut('c'), s: nut('s'), ...(fi === null ? {} : { fi }), ...(al === null ? {} : { al })
-  };
-}
-
-// ---- クイック (quick add: eating out): kcal, and whatever else is known, as one entry; no food saved
-
-/** A quick entry's fields: the custom food editor's (FoodCustom `quick`), its serving and weight unused; `k` the kcal
- *  to start from (typed in the search). */
-export const quickDraft = (k = ''): CustomDraft => ({ ...customDraft(null), k });
-
-/** Which of a quick entry's fields don't read: kcal is needed, the name may stay blank (then クイック). */
-export function quickErrors(d: CustomDraft): Set<keyof CustomDraft> {
-  return customErrors({ ...d, n: d.n.trim() || 'x', u: '', g: '' });
-}
-
-/** A quick entry's snapshot: one serving (`sv`: a nominal 100 g, shown as 「1食」) as typed, customSnap's form with no
- *  food saved, its id `quick:<id>` (its own), its name クイック unless typed. The record takes it as any custom food's
- *  (contract/food.ts snapOf: `sv`'s limits), so nothing new on the relay. */
-export function quickSnap(d: CustomDraft, id: string): FoodSnap {
-  const v = customOf({ ...d, n: d.n.trim() || t('food.quick.name'), u: '', g: '' });
-  return { ...customSnap({ ...v, id }, v.u), id: `quick:${id}` };
-}
-
-/** A kcal typed in the search (「650」, 「６５０kcal」, 「1,200」): offered as a quick entry; null for anything else. */
-export function typedKcal(q: string): number | null {
-  const s = q.trim();
-  if (!/^[\d０-９][\d０-９,，.．]*\s*(kcal)?$/i.test(s)) return null;
-  const v = parseAmount(s, 1, CUSTOM.kcalMax);
-  return v ? Math.round(v) : null;
-}

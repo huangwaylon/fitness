@@ -28,7 +28,8 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { glossOf, kaloriPage, withImages } from './foodUi.ts';
+  import { glossOf, kaloriPage } from './foodUi.ts';
+  import { withImages } from './dbHold.ts';
   import ShopMark from './ShopMark.svelte';
 
   interface Props {
