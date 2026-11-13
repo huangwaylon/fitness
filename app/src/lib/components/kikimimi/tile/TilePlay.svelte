@@ -77,6 +77,7 @@
   $effect(() => {
     if (!open) drag.cancel();
   });
+  $effect(() => () => drag.dispose());
   const shownA = $derived(drag.shown(placed));
   /** The slot a tap fills next (its dashed outline). */
   const nextSlot = $derived(open && !drag.lift ? slots.find((j) => shownA[j] === EMPTY) : undefined);

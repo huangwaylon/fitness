@@ -70,6 +70,11 @@ export class TileDrag {
     if (this.lift) this.#flyHome();
     this.#end();
   }
+  /** The board unmounted (mid-press too: the sheet closed under a finger): its window listeners, rAF and timer gone. */
+  dispose(): void {
+    clearTimeout(this.#home);
+    this.#end();
+  }
 
   readonly #move = (e: PointerEvent): void => {
     const p = this.#press;
