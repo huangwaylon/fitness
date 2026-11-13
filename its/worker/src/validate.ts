@@ -2,36 +2,18 @@
 // hold. The page's settings go through the contract's own parseSettingsInput. Each answers the value or an error code
 // (logged by the Worker, answered as 400).
 import {
-  BOOKING_KINDS, EVENT_KINDS, MAX_NAME, isDate,
+  BOOKING_KINDS, EVENT_KINDS, HOSTS, ID_RE, LIMITS, MAX_SITE_NAME, PHASES, isDate, isId, isName,
   type BookingInput, type ClaimInput, type EventInput, type Host, type LastError, type Phase, type RunInput, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 
-const HOSTS: readonly Host[] = ['actions', 'local'];
-const PHASES: readonly Phase[] = ['starting', 'solving', 'scanning', 'draining', 'stopping'];
 const SPOTS = ['centre', 'left', null] as const;
 
-/** A run's id (GITHUB_RUN_ID, or a local one), a step or an error class: short, plain. */
-const ID_RE = /^[A-Za-z0-9._:-]{1,64}$/;
-/** C0/C1 controls and the bidi overrides/isolates (the contract's rule for names): never logged or shown. */
-const BAD_CHARS = /[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
-
-export const MAX_EVENTS_PER_REPORT = 100;
-export const MAX_BOOKINGS_PER_POST = 50;
-export const MAX_SEEN_PER_REPORT = 300;
-/** An `available` event's hotel is the offered names, ' / '-joined. */
-const MAX_EVENT_HOTEL = 2000;
-const MAX_DETAIL = 200;
-const MAX_STEPS = 30;
-
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
-const isId = (x: unknown): x is string => typeof x === 'string' && ID_RE.test(x);
 const count = (x: unknown): x is number => Number.isInteger(x) && (x as number) >= 0;
 const time = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0;
 const timeOrNull = (x: unknown): x is number | null => x === null || time(x);
-/** A text field: a string without control or bidi characters, at most `max` characters. */
-export const isText = (x: unknown, max: number): x is string => typeof x === 'string' && x.length > 0 && x.length <= max && !BAD_CHARS.test(x);
 
 export function parseRunInput(x: unknown): Parsed<RunInput> {
   if (!isObj(x) || (x.action !== 'start' && x.action !== 'stop')) return { ok: false, error: 'bad_action' };
@@ -45,12 +27,12 @@ export function parseClaim(x: unknown): Parsed<ClaimInput> {
 
 export function parseBookings(x: unknown): Parsed<BookingInput[]> {
   if (!Array.isArray(x)) return { ok: false, error: 'bad_bookings' };
-  if (x.length > MAX_BOOKINGS_PER_POST) return { ok: false, error: 'too_many_bookings' };
+  if (x.length > LIMITS.bookingsPerPost) return { ok: false, error: 'too_many_bookings' };
   const out: BookingInput[] = [];
   for (const b of x) {
     if (!isObj(b) || !isId(b.id) || !isId(b.runId) || !BOOKING_KINDS.includes(b.kind as BookingInput['kind'])) return { ok: false, error: 'bad_booking' };
-    if (!isDate(b.date) || !isText(b.hotel, MAX_NAME)) return { ok: false, error: 'bad_booking' };
-    if (b.number !== undefined && !isText(b.number, 40)) return { ok: false, error: 'bad_booking' };
+    if (!isDate(b.date) || !isName(b.hotel, MAX_SITE_NAME)) return { ok: false, error: 'bad_booking' };
+    if (b.number !== undefined && !isName(b.number, LIMITS.number)) return { ok: false, error: 'bad_booking' };
     const e: BookingInput = { id: b.id, kind: b.kind as BookingInput['kind'], date: b.date, hotel: b.hotel, runId: b.runId };
     if (b.number !== undefined) e.number = b.number as string;
     out.push(e);
@@ -61,8 +43,8 @@ export function parseBookings(x: unknown): Parsed<BookingInput[]> {
 function parseEvent(x: unknown): EventInput | null {
   if (!isObj(x) || !Number.isInteger(x.seq) || (x.seq as number) < 1 || !EVENT_KINDS.includes(x.kind as EventInput['kind'])) return null;
   if (x.date !== undefined && !isDate(x.date)) return null;
-  if (x.hotel !== undefined && !isText(x.hotel, MAX_EVENT_HOTEL)) return null;
-  if (x.detail !== undefined && !isText(x.detail, MAX_DETAIL)) return null;
+  if (x.hotel !== undefined && !isName(x.hotel, LIMITS.eventHotel)) return null;
+  if (x.detail !== undefined && !isName(x.detail, LIMITS.detail)) return null;
   const e: EventInput = { seq: x.seq as number, kind: x.kind as EventInput['kind'] };
   if (x.date !== undefined) e.date = x.date as string;
   if (x.hotel !== undefined) e.hotel = x.hotel as string;
@@ -88,13 +70,13 @@ export function parseReport(x: unknown): Parsed<RunnerReport> {
   const s = x.solves;
   if (!isObj(s) || !count(s.ok) || !count(s.failed) || !timeOrNull(s.lastOkAt) || !(s.lastSecs === null || time(s.lastSecs)) || !SPOTS.includes(s.lastSpot as never)) return bad('solves');
   const f = x.failuresByStep;
-  if (!isObj(f) || Object.keys(f).length > MAX_STEPS || !Object.entries(f).every(([k, n]) => ID_RE.test(k) && count(n))) return bad('steps');
+  if (!isObj(f) || Object.keys(f).length > LIMITS.steps || !Object.entries(f).every(([k, n]) => ID_RE.test(k) && count(n))) return bad('steps');
   const lastError = parseLastError(x.lastError);
   if (lastError === undefined) return bad('error');
-  if (!Array.isArray(x.events) || x.events.length > MAX_EVENTS_PER_REPORT) return bad('events');
+  if (!Array.isArray(x.events) || x.events.length > LIMITS.eventsPerReport) return bad('events');
   const events = x.events.map(parseEvent);
   if (events.some((e) => e === null)) return bad('event');
-  if (!Array.isArray(x.seen) || x.seen.length > MAX_SEEN_PER_REPORT || !x.seen.every((n) => isText(n, MAX_NAME))) return bad('seen');
+  if (!Array.isArray(x.seen) || x.seen.length > LIMITS.seenPerReport || !x.seen.every((n) => isName(n, MAX_SITE_NAME))) return bad('seen');
   return {
     ok: true,
     value: {

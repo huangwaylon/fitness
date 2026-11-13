@@ -53,16 +53,18 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 |---|---|---|
 | `GET /health` | anyone | `{ok, mode, sha}` |
 | `GET /its/status` | member | `ItsStatus`: verdict, reasons, settings, last report, lease, dispatch, bookings, events, seen |
-| `PUT /its/settings` | member | `ItsSettingsInput` (the contract's `parseSettingsInput`); 409 + the status if `baseUpdatedAt` isn't the current `updatedAt` |
+| `PUT /its/settings` | member | `ItsSettingsInput` (the contract's `parseSettingsInput`); 409 with the bare current `ItsStatus` as the body if `baseUpdatedAt` isn't the current `updatedAt` |
 | `POST /its/run` | member | `{action: 'start' \| 'stop'}`; start clears `paused` and dispatches a run (below); answers the status |
 | `GET /runner/config[?runId=]` | runner | `RunnerConfig`: the workflow's preflight (`stop` → the job ends in seconds) |
 | `POST /runner/claim` | runner | `{runId, host}` → `ClaimReply` (the lease when free, expired or already this run's) |
 | `POST /runner/report` | runner | `RunnerReport` → `RunnerConfig`; the holder's renews the lease, a `run_end` event releases it |
-| `POST /runner/bookings[?runId=]` | runner | `BookingInput[]` (≤ 50) → `RunnerConfig`; a known id is a retry, ignored |
+| `POST /runner/bookings[?runId=]` | runner | `BookingInput[]` (≤ 50) → `RunnerConfig`; a known id with the same content is a retry, ignored; with other content 409 `id_conflict` (nothing kept); the record full 507 `record_full` |
 
 Members: `Authorization: Bearer <KEY_A|KEY_B>` (relay/src/auth.ts's check), CORS for `ALLOWED_ORIGINS` (the Pages
 origin) and localhost, preflight answered, `Cache-Control: private, no-store`; another origin is 403, a wrong or the
-guest's key 401. Runner: `Bearer <ITS_RUNNER_TOKEN>`, compared in constant time. Errors are `{ok: false, error}`.
+guest's key 401. Runner: `Bearer <ITS_RUNNER_TOKEN>`, compared in constant time. Errors are `{ok: false, error}`. Run
+ids are `${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}` (a re-run is a new run) or a local id; `?runId=` names the asking run.
+The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NAME`, `ID_RE`.
 
 - **Record** (DO storage, one key each): `settings`, `bookings` (append-only; pruned only `BOOKINGS_KEEP_DAYS` = 60
   days after the stay; at 500 entries new ones are refused with an error log), `runner` (the holder's last report +

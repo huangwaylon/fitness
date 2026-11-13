@@ -3,8 +3,8 @@
 // shape; the same values where the example's own clock allows). And the checks' bounds on runner bodies.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import example from '../../contract-example.json';
-import { parseSettingsInput, type ItsSettings, type RunnerConfig } from '../../../app/src/lib/its/contract.ts';
-import { MAX_BOOKINGS_PER_POST, MAX_EVENTS_PER_REPORT, MAX_SEEN_PER_REPORT, parseBookings, parseClaim, parseReport, parseRunInput } from '../src/validate.ts';
+import { LIMITS, MAX_NAME, MAX_SITE_NAME, parseSettingsInput, type ItsSettings, type RunnerConfig } from '../../../app/src/lib/its/contract.ts';
+import { parseBookings, parseClaim, parseReport, parseRunInput } from '../src/validate.ts';
 import { NOW, fakeState, quiet, start } from './fakeBot.ts';
 
 /** A value's shape: its keys and their types, arrays by their first element (null and absent told apart). */
@@ -86,12 +86,12 @@ describe('the runner’s bodies’ bounds', () => {
 
   it('caps a report’s events and seen names, a post’s bookings', () => {
     const ev = (n: number) => Array.from({ length: n }, (_, i) => ({ seq: i + 1, kind: 'available' }));
-    expect(parseReport({ ...report(), events: ev(MAX_EVENTS_PER_REPORT) }).ok).toBe(true);
-    expect(parseReport({ ...report(), events: ev(MAX_EVENTS_PER_REPORT + 1) })).toEqual({ ok: false, error: 'bad_report_events' });
-    expect(parseReport({ ...report(), seen: Array(MAX_SEEN_PER_REPORT + 1).fill('A') })).toEqual({ ok: false, error: 'bad_report_seen' });
+    expect(parseReport({ ...report(), events: ev(LIMITS.eventsPerReport) }).ok).toBe(true);
+    expect(parseReport({ ...report(), events: ev(LIMITS.eventsPerReport + 1) })).toEqual({ ok: false, error: 'bad_report_events' });
+    expect(parseReport({ ...report(), seen: Array(LIMITS.seenPerReport + 1).fill('A') })).toEqual({ ok: false, error: 'bad_report_seen' });
     const b = (n: number) => Array.from({ length: n }, (_, i) => ({ ...example.bookingInput, id: `r:${i}` }));
-    expect(parseBookings(b(MAX_BOOKINGS_PER_POST)).ok).toBe(true);
-    expect(parseBookings(b(MAX_BOOKINGS_PER_POST + 1))).toEqual({ ok: false, error: 'too_many_bookings' });
+    expect(parseBookings(b(LIMITS.bookingsPerPost)).ok).toBe(true);
+    expect(parseBookings(b(LIMITS.bookingsPerPost + 1))).toEqual({ ok: false, error: 'too_many_bookings' });
   });
 
   it('refuses control and bidi characters, bad dates, kinds and shapes', () => {
@@ -115,6 +115,15 @@ describe('the runner’s bodies’ bounds', () => {
     expect(parseBookings([{ ...example.bookingInput, number: 5 }]).ok).toBe(false);
     expect(parseBookings({}).ok).toBe(false);
     expect(parseClaim({ runId: '1', host: 'cloud' }).ok).toBe(false);
+  });
+
+  it('takes a site’s facility name longer than a typed one (never truncated), up to MAX_SITE_NAME', () => {
+    const long = 'あ'.repeat(MAX_NAME + 1);
+    expect(parseBookings([{ ...example.bookingInput, hotel: long }]).ok).toBe(true);
+    expect(parseReport({ ...report(), seen: [long] }).ok).toBe(true);
+    expect(parseBookings([{ ...example.bookingInput, hotel: 'あ'.repeat(MAX_SITE_NAME + 1) }]).ok).toBe(false);
+    expect(parseSettingsInput({ ...example.settingsInput, skip: [long] }, NOW).ok).toBe(true);   // matched whole
+    expect(parseSettingsInput({ ...example.settingsInput, priority: [long] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
   });
 
   it('drops fields it doesn’t know', () => {

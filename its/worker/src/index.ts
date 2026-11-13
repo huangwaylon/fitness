@@ -3,13 +3,12 @@
 // the record and its rules are the object's (bot.ts), one RPC per request. Every refusal logs one line with its reason
 // (never a key or a token).
 import { corsOf, roleOfKey } from '../../../relay/src/auth.ts';
-import { parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
+import { LIMITS, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
 import type { Env } from './env.ts';
-import { isText, parseBookings, parseClaim, parseReport, parseRunInput } from './validate.ts';
+import { parseBookings, parseClaim, parseReport, parseRunInput } from './validate.ts';
 
 export { ItsBot } from './bot.ts';
 
-const MAX_BODY = 64 * 1024;
 const bot = (env: Env) => env.BOT.get(env.BOT.idFromName('its'));
 
 /** The page's routes and their one method each. */
@@ -43,11 +42,11 @@ function refuse(req: Request, path: string, status: number, why: string, headers
   return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
 }
 
-/** The body as JSON, at most MAX_BODY bytes. */
+/** The body as JSON, at most LIMITS.body bytes. */
 async function body(req: Request): Promise<unknown> {
-  if (Number(req.headers.get('Content-Length') ?? 0) > MAX_BODY) throw new Refused(413, 'too_large');
+  if (Number(req.headers.get('Content-Length') ?? 0) > LIMITS.body) throw new Refused(413, 'too_large');
   const buf = await req.arrayBuffer();
-  if (buf.byteLength > MAX_BODY) throw new Refused(413, 'too_large');
+  if (buf.byteLength > LIMITS.body) throw new Refused(413, 'too_large');
   try {
     return JSON.parse(new TextDecoder().decode(buf));
   } catch {
@@ -113,7 +112,7 @@ async function runner(req: Request, env: Env, path: string): Promise<Response> {
   if (req.method !== method) return refuse(req, path, 405, 'method', { Allow: method });
   if (!(await runnerTokenOk(bearer(req), env.ITS_RUNNER_TOKEN))) return refuse(req, path, 401, env.ITS_RUNNER_TOKEN ? 'unauthorized' : 'no_runner_token');
   const qRun = new URL(req.url).searchParams.get('runId');
-  if (qRun !== null && !(isText(qRun, 64) && /^[A-Za-z0-9._:-]+$/.test(qRun))) return refuse(req, path, 400, 'bad_run_id');
+  if (qRun !== null && !isId(qRun)) return refuse(req, path, 400, 'bad_run_id');
   const headers = { 'Cache-Control': 'no-store' };
   try {
     if (path === '/runner/config') return Response.json(await bot(env).config(qRun), { headers });

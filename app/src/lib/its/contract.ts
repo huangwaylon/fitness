@@ -15,7 +15,10 @@ export const MAX_DAYS_AHEAD = 400;  // a date further than this from today (Toky
 /** @public (its/worker) */
 export const MAX_HOTELS = 80;       // per list (skip, priority)
 /** @public (its/worker) */
-export const MAX_NAME = 80;         // a hotel name or priority substring, in characters
+export const MAX_NAME = 80;         // a priority substring, in characters
+/** A facility name as the site serves it (a booking's `hotel`, a seen name, a skipped name: matched whole, so never
+ *  truncated), in characters. @public (its/worker) */
+export const MAX_SITE_NAME = 200;
 export const GUESTS_MIN = 1;
 export const GUESTS_MAX = 6;
 
@@ -50,7 +53,8 @@ export const DEFAULT_SETTINGS: ItsSettings = {
   v: 1, paused: true, intervalSec: 15, dates: [], guests: 2, skip: [], priority: [], autoConfirm: false, updatedAt: null, updatedBy: null,
 };
 
-/** `POST /its/run`: start (clear paused and dispatch a run now) or stop (set paused). Applies at once. */
+/** `POST /its/run`: start (clear paused and dispatch a run now) or stop (set paused). Applies at once; answers the
+ *  status. */
 export interface RunInput { action: 'start' | 'stop' }
 
 /** Never auto-confirm a stay nearer than this many days (free web cancellation ends at D−10). Mirrors the runner's
@@ -67,22 +71,40 @@ export type BookingKind = 'hold' | 'confirming' | 'confirmed' | 'failed';
 export const BOOKING_KINDS: readonly BookingKind[] = ['hold', 'confirming', 'confirmed', 'failed'];
 
 export interface BookingEntry {
-  id: string;          // `${runId}:${seq}`, the runner's; the Worker ignores a repeat (idempotent retries)
+  /** `${runId}:${seq}`, the runner's (isId). The same id with the same content is a retry (ignored); with another kind,
+   *  date, hotel, number or runId it is refused whole: 409 `{ok: false, error: 'id_conflict'}`. */
+  id: string;
   kind: BookingKind;
   date: string;        // the stay, YYYY-MM-DD
-  hotel: string;
+  hotel: string;       // as the site serves it, ≤ MAX_SITE_NAME (never truncated)
   number?: string;     // 申込受付番号, on `confirmed`
   at: number;          // the Worker's receive time (ms)
   runId: string;
 }
 
-/** `POST /runner/bookings`'s body: entries without the Worker's `at`. @public (its/worker) */
+/** `POST /runner/bookings[?runId=]`'s body: ≤ MAX_BOOKINGS_PER_POST entries without the Worker's `at`; answers a
+ *  RunnerConfig. Refused whole: 409 `id_conflict` (above); 507 `record_full` when the record is at its bound (entries
+ *  that fit are kept, the rest are not: the runner keeps them unsynced and retries). @public (its/worker) */
 export type BookingInput = Omit<BookingEntry, 'at'>;
 
 /** Entries are kept until their stay is more than BOOKINGS_KEEP_DAYS past (reservations are liabilities until then). @public (its/worker) */
 export const BOOKINGS_KEEP_DAYS = 60;
 
 // ---- Runner ↔ Worker (Bearer ITS_RUNNER_TOKEN) ----
+
+/** A run's id: `${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}` on Actions (a re-run is a new id), or a local one; also the shape
+ *  of a step or an error class. `?runId=` on GET /runner/config and POST /runner/bookings names the asking run (for its
+ *  ackSeq and lease_lost). @public (its/worker) */
+export const ID_RE = /^[A-Za-z0-9._:-]{1,64}$/;
+/** @public (its/worker) */
+export const isId = (x: unknown): x is string => typeof x === 'string' && ID_RE.test(x);
+
+/** The Worker's bounds on a request (the runner keeps under them): the body in bytes (413 past it), entries per post,
+ *  events and seen names per report, an event's `hotel` (the offered names joined) and `detail`, a 申込受付番号,
+ *  failuresByStep's keys. @public (its/worker) */
+export const LIMITS = {
+  body: 64 * 1024, bookingsPerPost: 50, eventsPerReport: 100, seenPerReport: 300, eventHotel: 2000, detail: 200, number: 40, steps: 30,
+} as const;
 
 /** `POST /runner/claim {runId, host}`: the lease, granted when it's free, expired, or already this runId's; renewed by
  *  every report; released by a `run_end` report. A runner that hasn't renewed within LEASE_SEC − 60 s takes no hold
@@ -92,6 +114,8 @@ export const LEASE_SEC = 300;
 export interface Lease { holder: string; host: Host; until: number }
 /** @public (its/worker) */
 export type Host = 'actions' | 'local';
+/** @public (its/worker) */
+export const HOSTS: readonly Host[] = ['actions', 'local'];
 /** @public (its/worker) */
 export interface ClaimInput { runId: string; host: Host }
 /** @public (its/worker) */
@@ -128,6 +152,8 @@ export type EventInput = Omit<ItsEvent, 't' | 'runId'>;
 
 /** @public (its/worker) */
 export type Phase = 'starting' | 'solving' | 'scanning' | 'draining' | 'stopping';
+/** @public (its/worker) */
+export const PHASES: readonly Phase[] = ['starting', 'solving', 'scanning', 'draining', 'stopping'];
 
 /** The last thing that went wrong, for diagnosis from the page without the private log. @public (its/worker) */
 export interface LastError {
@@ -141,7 +167,7 @@ export interface LastError {
  *  Counters are since the run started. @public (its/worker) */
 export interface RunnerReport {
   v: 1;
-  runId: string;               // GITHUB_RUN_ID, or a local id
+  runId: string;               // isId: `${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}`, or a local id
   runUrl: string | null;       // the Actions run's page
   sha: string | null;          // the code's commit
   host: Host;
@@ -174,8 +200,12 @@ export interface RunnerConfig {
 }
 
 // ---- Status (GET /its/status, members) ----
+// Every member route answers the status; a 409 (PUT /its/settings from a stale draft) answers the bare current ItsStatus
+// as its body. Other refusals are `{ok: false, error}` (400 with a SettingsError or a shape code, 401, 403, 405, 413).
 
 export type Verdict = 'healthy' | 'starting' | 'idle' | 'degraded' | 'failing' | 'late' | 'stopped' | 'off';
+/** @public (its/worker) */
+export const VERDICTS: readonly Verdict[] = ['healthy', 'starting', 'idle', 'degraded', 'failing', 'late', 'stopped', 'off'];
 export type Reason =
   | 'mode_off'        // the Worker's MODE = off
   | 'paused'          // stopped from the page
@@ -206,7 +236,11 @@ export interface ItsStatus {
   /** The last report (null before any), with the Worker's receive time. */
   runner: (Omit<RunnerReport, 'v' | 'events' | 'seen'> & { lastSeen: number }) | null;
   lease: Lease | null;
+  /** 開始's GitHub dispatch: `status` 204 = accepted, 0 = no answer; `{ok: true, status: null}` = no token set, nothing
+   *  sent (the schedule starts a run). */
   dispatch: { at: number; ok: boolean; status: number | null } | null;
+  /** The last 開始 / 停止: who pressed it and when (Worker clock). Absent from an older Worker. */
+  control?: { action: RunInput['action']; by: Member; at: number } | null;
   bookings: BookingEntry[];    // newest first
   events: ItsEvent[];          // newest first
   seen: string[];              // every facility name ever offered, sorted
@@ -217,6 +251,12 @@ export interface ItsStatus {
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 // C0/C1 controls and the bidi overrides/isolates: never in a name the Worker logs or the page shows
 const BAD_CHARS = /[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
+
+/** Text the Worker keeps and logs and the page shows (a name, a detail): a non-empty string of at most `max`
+ *  characters, no control or bidi character. @public (its/worker) */
+export function isName(x: unknown, max: number = MAX_NAME): x is string {
+  return typeof x === 'string' && x.length > 0 && x.length <= max && !BAD_CHARS.test(x);
+}
 
 /** A real calendar date (2026-02-30 is not). */
 export function isDate(s: unknown): s is string {
@@ -242,14 +282,14 @@ export function normName(s: string): string {
   return s.normalize('NFKC').replace(/\s+/g, '').toLowerCase();
 }
 
-function names(x: unknown): string[] | null {
+function names(x: unknown, max: number): string[] | null {
   if (!Array.isArray(x) || x.length > MAX_HOTELS) return null;
   const out: string[] = [];
   const seen = new Set<string>();
   for (const n of x) {
-    if (typeof n !== 'string' || BAD_CHARS.test(n)) return null;
+    if (typeof n !== 'string') return null;
     const t = n.replace(/\s+/g, ' ').trim();
-    if (!t || t.length > MAX_NAME) return null;
+    if (!isName(t, max) || BAD_CHARS.test(n)) return null;
     const k = normName(t);
     if (!seen.has(k)) { seen.add(k); out.push(t); }
   }
@@ -273,8 +313,8 @@ export function parseSettingsInput(x: unknown, nowMs: number): { ok: true; value
   if (dates.some((d) => daysUntil(d, nowMs) < 0)) return { ok: false, error: 'past_date' };
   if (dates.some((d) => daysUntil(d, nowMs) > MAX_DAYS_AHEAD)) return { ok: false, error: 'far_date' };
   if (!Number.isInteger(o.guests) || (o.guests as number) < GUESTS_MIN || (o.guests as number) > GUESTS_MAX) return { ok: false, error: 'bad_guests' };
-  const skip = names(o.skip);
-  const pri = names(o.priority);
+  const skip = names(o.skip, MAX_SITE_NAME);   // a site's name, matched whole
+  const pri = names(o.priority, MAX_NAME);
   if (!skip || !pri) return { ok: false, error: 'bad_hotels' };
   const skipped = new Set(skip.map(normName));
   const priority = pri.filter((p) => !skipped.has(normName(p)));

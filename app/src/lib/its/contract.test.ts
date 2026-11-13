@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import norm from '../../../../its/norm-cases.json';
 import example from '../../../../its/contract-example.json';
-import { daysUntil, isDate, normName, parseSettingsInput, tokyoToday } from './contract.ts';
+import { MAX_NAME, MAX_SITE_NAME, daysUntil, isDate, isId, isName, normName, parseSettingsInput, tokyoToday } from './contract.ts';
 
 // 2026-11-13 12:00 JST
 const NOW = Date.parse('2026-11-13T03:00:00Z');
@@ -57,5 +57,28 @@ describe('parseSettingsInput', () => {
     expect(parseSettingsInput({ ...base, guests: 0 }, NOW)).toEqual({ ok: false, error: 'bad_guests' });
     expect(parseSettingsInput({ ...base, autoConfirm: 'yes' }, NOW)).toEqual({ ok: false, error: 'bad_shape' });
     expect(parseSettingsInput([], NOW)).toEqual({ ok: false, error: 'bad_shape' });
+  });
+});
+
+describe('isName and isId (the Worker’s checks, the runner mirrors them)', () => {
+  it('names: non-empty, capped, no control or bidi character', () => {
+    expect(isName('NAGU 勝浦')).toBe(true);
+    expect(isName('')).toBe(false);
+    expect(isName('a\u202eb')).toBe(false);
+    expect(isName('a\tb')).toBe(false);
+    expect(isName('x'.repeat(MAX_NAME))).toBe(true);
+    expect(isName('x'.repeat(MAX_NAME + 1))).toBe(false);
+    expect(isName('x'.repeat(MAX_SITE_NAME), MAX_SITE_NAME)).toBe(true);
+    expect(isName(5)).toBe(false);
+  });
+  it('ids: a run id on Actions (run-attempt), a booking id, a local id', () => {
+    for (const ok of ['19283746-2', '19283746-2:3', 'mbp2.local_1']) expect(isId(ok), ok).toBe(true);
+    for (const bad of ['', 'a b', 'x'.repeat(65), 'a/b', 7]) expect(isId(bad), String(bad)).toBe(false);
+  });
+  it('a skipped name may be a site’s long one; a priority substring may not', () => {
+    const long = 'あ'.repeat(MAX_NAME + 1);
+    expect(parseSettingsInput({ ...example.settingsInput, skip: [long] }, NOW).ok).toBe(true);
+    expect(parseSettingsInput({ ...example.settingsInput, skip: ['あ'.repeat(MAX_SITE_NAME + 1)] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
+    expect(parseSettingsInput({ ...example.settingsInput, priority: [long] }, NOW)).toEqual({ ok: false, error: 'bad_hotels' });
   });
 });
