@@ -11,7 +11,7 @@ maps, with a scrubbable elevation chart and Kinpu's YAMAP plan. Drawn on the uni
 - The old map styles: USGS Topo for Washington, GSI 地理院タイル std for Japan, as MapLibre raster sources. The old
   IndexedDB tile store, save buttons and tile manifest are not ported ("Offline").
 - Live tracking and the free hike: later.
-- The entry: the HUD menu's トレイル pill ([design](design.md#island)).
+- The entry: the HUD menu's 登山 pill ([design](design.md#island)).
 
 ## Entry
 

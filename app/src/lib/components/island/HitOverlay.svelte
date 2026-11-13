@@ -1,5 +1,5 @@
 <script lang="ts">
-  // `?hit` (a dev param, docs/design.md "Dev params"): every tap target on the island drawn over it, refreshed each frame
+  // `?hit` (a dev param, docs/ops/testing.md "URL params"): every tap target on the island drawn over it, refreshed each frame
   // while it's on: the scene's DOM targets (magenta: a tree's leaves and trunk, a bush, a flower, a villager, a door, a
   // button in the world) and the boxes the modules hit-test themselves (cyan: a shell, a weed, the rock, a bug, …;
   // hitbox.ts hitSources). Debug only: pointer-events none, nothing else changes.

@@ -449,6 +449,12 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
 | `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
 | `island-offline-<id>` | a saved map area and its manifest | kept until deleted on the phone |
+| `island-map-meta-v1` | OpenFreeMap's TileJSON | network first past an hour, never evicted |
+| `island-fonts-v1` | the font slices | cache-first, outlives builds; slices no style sheet names dropped (`staleFonts`) |
+| `food-kalori` (the page's) | the members' chain menus ([food-data.md](food-data.md#kalori)) | ETag-revalidated at each catalog load |
+
+IndexedDB: `island` (the record cache, `sync/cache.ts`), `island-tex` (processed textures, `world3d/texCache.ts`) and
+`island-fields` (the ground's fields, `layout/fieldsCache.ts`).
 
 Fonts and art are cache-first; other GETs: this version's cache, the previous one, the network. The relay is
 cross-origin and always live.

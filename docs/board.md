@@ -33,13 +33,13 @@ board opens as a sheet over the island showing the same face (the very canvas th
   `board/spot.ts`, also used before the layout's applied).
 - **Walk up:** a tap walks my villager to the spot in front of it (as the tent door: the deliberate exception to
   "interactables act in place"), then the board opens.
-- **The board view:** 「もどる」 (top left under the HUD, never over it) returns the camera to exactly where it was.
+- **The board view:** ‹ 戻る (top left under the HUD, never over it) returns the camera to exactly where it was.
 - **Posts:** newest first, four to a page as NH's notes (author's villager name and icon, the date); 「‹」「›」 and a
   swipe page through older ones.
-- **Writing:** 「かきこむ」 opens a field over the board, which stays visible above the keyboard. At most **100
+- **Writing:** 「書き込む」 opens a field over the board, which stays visible above the keyboard. At most **100
   characters** (code points) and **4 lines** (`BOARD_CHARS`, `BOARD_LINES`); plain text, drawn with canvas `fillText`,
-  never HTML. The note shows on the face as it's typed (`face.ts` `DRAFT_ID`). While writing 「もどる」 steps aside
-  (やめる and Esc go back).
+  never HTML. The note shows on the face as it's typed (`face.ts` `DRAFT_ID`). While writing ‹ 戻る steps aside
+  (キャンセル and Esc go back).
 - **The keyboard (iOS):** the view is the visible part of the screen, not the layout viewport
   (`components/ui/keyboardInset.svelte.ts`, its header: why); `focus`'s `top` / `bottom` are measured from the canvas's
   rect to the controls', so iOS scrolling the page to the field hides nothing. Fields are ≥ 16 px (no zoom on focus);

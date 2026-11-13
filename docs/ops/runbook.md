@@ -26,8 +26,9 @@ After the upload, **Pages alias lag** needs nothing; **Deploy not served** (red)
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours, fails unless both are ok, warns when
-the weather is over 3 hours old, and opens an `alert` issue on a log spike (§11). `/health`'s `wx` is the real weather
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours with the site's checks (its
+`version.json`, CSP header and the relay's CORS for it), red (GitHub mails the owner) unless all pass; it warns when the
+weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s `wx` is the real weather
 ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over 30 is normal; older, or
 `fails` > 0, is Open-Meteo failing (`npx wrangler tail`: `wx-fail <why>`). A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`).
@@ -55,7 +56,7 @@ every row. Only a restore (§9) or `node scripts/record.ts rev` changes it.
 ## 5. When sync fails
 | Symptom | Check |
 |---|---|
-| Site says 「まだ 設定されていません」 | The build had no relay URL (`VITE_LIVE_URL`, `VITE_RECORD_URL`) |
+| Site says 「まだ設定されていません」 | The build had no relay URL (`VITE_LIVE_URL`, `VITE_RECORD_URL`) |
 | App can't reach the island | The relay (§2; `npx wrangler tail`) |
 | `unauthorized` | Wrong or rotated key: re-paste it (app) or fix the Shortcut's **Key** |
 | `busy` | Over 120 requests/minute for that key; the app paces and retries, the Shortcut sends again next run |
@@ -109,7 +110,7 @@ commit anything from the model folder itself.
 The Worker in `relay/` ([backend.md](../backend.md#live-relay)), Workers Free plan, the account pinned in its wrangler.toml. Once
 per machine: `npx wrangler login`. Then, from `relay/`:
 
-1. `npm ci`, `npm run check`, `npm test`.
+1. `npm ci`, `npm run check`, `npm run knip`, `npm test`.
 2. `npm run deploy:test`, then `npm run smoke` against the test copy (keys: gitignored `relay/.smoke-keys`; new ones:
    `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env test`). Every line should say `ok`.
 3. `npm run deploy` (production). `scripts/deploy.sh` refuses uncommitted changes in `relay/` or
@@ -123,7 +124,13 @@ per machine: `npx wrangler login`. Then, from `relay/`:
 behind` (`null`: an unstamped deploy).
 
 **Keys:** §3. **Logs:** §11; live: `npx wrangler tail`. No off switch: the relay is the record (never
-`npx wrangler delete`). A protocol change (`live-protocol.ts`) deploys the relay before the app.
+`npx wrangler delete`). A protocol or contract change is two pushes: the relay and `contract/` first (steps 1–3), then
+the app (a push under `app/**` deploys it at once).
+
+**Roll back.** The relay: `npx wrangler deployments list`, then `npx wrangler rollback <version-id>`; a Durable Object
+migration can't be rolled back. The app: `git revert` and push (the deploy's order guard, `scripts/deploy-order.ts`,
+refuses re-running an older run); in a hurry, the Pages dashboard's *Rollback* on an older deployment, and the next
+push deploys over it.
 
 ## 9. The record
 The relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)). From `relay/`, with the person keys
@@ -137,8 +144,8 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   run `rev` only when the reply's `note` says the room wasn't told. `dump > island-record-YYYY-MM-DD.json` (every
   row, held values too; keep it off the repo); `load <file>` into an empty record.
 - **`rev`**: a new epoch (§4).
-- **`shopcheck {fix?}`, `decorcheck {fix?}`** (admin ops, `scripts/admin.ts`): the running field, shop ledgers and decor
-  caps' counts against a full fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused.
+- **`shopcheck [fix]`, `decorcheck [fix]`**: the running field, shop ledgers and decor caps' counts against a full
+  fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused.
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.

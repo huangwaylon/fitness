@@ -1,4 +1,4 @@
-// The island's dev hooks (docs/design.md "Dev params"): URL params that force a visitor, the weather, a critter… for
+// The island's dev hooks (docs/ops/testing.md "URL params"): URL params that force a visitor, the weather, a critter… for
 // testing and the e2e. They work in dev builds or test mode only (ui-state/testMode.ts), so a live phone never sees them. Read on each call
 // (cheap), so a navigation that drops the query string drops the hooks with it. The seasonal ones (`?event=`,
 // `?weather=`, `?fireworks`, `?shower`, `?season=`, `?theme=`) are the preview's: ui-state/preview.svelte.ts.

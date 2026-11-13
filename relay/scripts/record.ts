@@ -22,6 +22,8 @@
 //                       (only counts printed: never a row, never the key)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
+//   shopcheck [fix]     the running field and shop ledgers against the full fold of the rows; `fix`: the fold's taken
+//   decorcheck [fix]    the decor caps' kept counts against the rows'; `fix`: the rows' taken
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -144,6 +146,10 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'promote', person, date, metric, ...(value !== undefined ? { value: Number(value) } : {}) })));
     break;
   }
+  case 'shopcheck':
+  case 'decorcheck':
+    console.log(JSON.stringify(await signed({ op: cmd, ...(arg === 'fix' ? { fix: true } : {}) })));
+    break;
   case 'verify-dump':
     await verifyDump(arg);
     break;
@@ -151,6 +157,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix]  [--test]');
     process.exit(1);
 }

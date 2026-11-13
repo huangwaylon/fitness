@@ -46,7 +46,7 @@ These gate the deploy:
 - `e2e-gate` ×4 (after `plan`): **the gate's e2e** (below) in Chromium, logic mode, without `@render` and `@quarantine`, on the build
   served as Pages serves it (`scripts/serve-build.ts`). Each shard builds (with its budgets); shard 1's `build-pages/`
   is the `site` artifact `deploy` ships.
-- `deploy` (after all of them): `site` to Cloudflare Pages once every job in `scripts/deploy-gate.ts`'s `GATE` is `success` (ききみみ's
+- `deploy` (after all of them): `site` to Cloudflare Pages once every job in its `GATE` env (pages.yml; checked by `scripts/deploy-gate.ts`) is `success` (ききみみ's
   `stt/` from an Actions cache, `scripts/stt-models.ts`). Then https://island-fund.pages.dev must answer this build
   (`_app/version.json`, 6 min at most) with its CSP header and the `stt/` manifest: only the deployment's own URL
   serving it is a **Pages alias lag** warning; neither is **Deploy not served**, red. No Cloudflare secret: a warning,
@@ -68,10 +68,10 @@ After a deploy, never holding one back:
 - **The gate** (`scripts/e2e-impact.ts`; `npm run e2e:impact` shows what it would run): (1) the **gate set**,
   `e2e/gate.json`, 18 fast, stable spec files over the core flows; (2) the specs the push **changed**, each test 3×,
   never retried (the `chromium-x3` projects, `E2E_X3`): one failure in three is a flake the push brought, red; (3) the
-  specs its files **reach**: a changed e2e helper's importers (not island.ts or hud.ts), a src or content file's by
+  specs its files **reach**: a changed e2e helper's importers (over `MAX_IMPORTERS`, 10, and fixtures.ts: the gate set instead), a src or content file's by
   `e2e/impact.json` (path globs to spec names; else the file's own name). Changes count from the commit live on the
   site (an unusable base: the gate set and more up to the budget, with a warning). Over the budget (`CAP_MS`, ~1300 s of
-  tests) the reached specs drop out first, then the changed run once each. Every directory under `src/` and `content/`
+  tests) the reached specs drop out first, then the changed run once each (so do over `MAX_CHANGED`, 8, changed specs: a sweep). Every directory under `src/` and `content/`
   maps to a spec or is in `impact.json`'s `unmapped` with why, and every spec opening `/editor/?view=phone` is in the
   editor/ and layoutEdit/ rules (src/lib/e2e-impact.test.ts).
 - **Flakes: one retry, and a ledger.** On CI `retries: 1`: failing twice is red; passing on the retry is **flaky**,
@@ -99,7 +99,7 @@ After a deploy, never holding one back:
   `e2e/trips.ts`), so a drawn map never reaches the network.
 
 ## CI cost
-Each job's minutes round up and macOS runners cost most, so: batch pushes (one per finished, verified group of fixes)
+Public-repo minutes are free; the cost is queue time (macOS runners queue longest), so: batch pushes (one per finished, verified group of fixes)
 and measure locally (`npm run e2e:ci-like`, the hunt on the Mac) rather than dispatching CI. Cuts available: the full
 logic tier on a schedule (in `e2e-logic-full.yml`, swap `workflow_run` for the commented `schedule`; its `throttle` job
 runs only when a deploy landed since) and a self-hosted runner for the e2e jobs.
@@ -123,7 +123,7 @@ Local WebKit on a Mac loses a page's WebGL context after a test with sound (csp.
 each test its own worker, or check them on the flake hunt.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
-1. `npm run verify` (~20 s): `checks` as CI runs it (scripts/verify.ts: the lockfile, `check`, `knip`, `vitest run`,
+1. `npm run verify` (~20 s): `checks` as CI runs it (scripts/verify.ts: the lockfile, `check`, `knip`, `knip-relay` (with relay's `node_modules`), `vitest run`,
    the quarantine's owners, `scripts/docs-check.ts`: rename a heading and repoint its citations in the same push).
    `-- --quick`: vitest on the changes only; `-- --build`: the build and its budgets too. No e2e. **The pre-push hook
    runs it** (`.githooks/pre-push`, set by app's `npm ci`: `verify -- --build` for a push changing `app/`, the docs
@@ -145,8 +145,8 @@ same island.
   its own clock (`page.clock.install({ time })` before it opens) owns it; `test.use({ ownClock: true })` lifts the pin
   for a file.
 - **The weather is pinned**: the pinned day's seeded sky, or a fixture (`?wx=…`, `?weather=`).
-- **Ambient life is off**: nothing spawns or wanders on its own (critters, the day's visitor, the balloon, idle beats,
-  an ordinary night's shooting stars); an event's host still comes. The villagers are asleep while their phone isn't
+- **Ambient life is off**: nothing spawns or wanders on its own (critters, the day's visitor and guest, the balloon,
+  idle beats, an ordinary night's shooting stars); an event's host still comes. The villagers are asleep while their phone isn't
   open (`?awake`, `?grace=`, `?wake=`). A URL's own param wins (`?critter=fish`, `?visitor=jack`). A test of ambient
   life opts back in: `test.use({ ambient: 'on' })`.
 - **The tests' own relay agrees with its phones**: liveRoom.ts and record.ts run on the pinned time; read it as they
@@ -207,7 +207,7 @@ builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 | `?fpv=1\|0` | The rooms' first-person view for the tab |
 | `?awake`, `?grace=<ms>`, `?wake=<ms>` | Everyone counts as online (no villager sleeps); the [Sleep](../design.md#sleep) grace and a tap's wake that long |
 | `?idle=none`, `?stars=none` | No idle beats; no ordinary night's shooting stars |
-| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
+| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `guest=none`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
 | `?relay=<wss url>&key=<key>` | Test mode over a real relay (`e2e/sync-harness.spec.ts`) |
 | `?quietafter=<ms>` | How long a phone gone quiet inside a room stays shown there |
 | `?render=none` | The 3D engines run but draw nothing (logic mode: `ui-state/testMode.ts`) |
