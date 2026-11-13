@@ -33,19 +33,17 @@ export const clockFrom = (minutes: number): Clock => {
 /** Days checked without a setting: today and the next 3. The gym allows 3 reservations at a time, so a few near
  *  days at lunch are the usual; the rest wait for a setting. @public (gym/src) */
 export const DAYS_TO_CHECK = 4;
-/** What those days are checked for: slots that start and end inside it (12:00 and 12:30). @public (gym/src) */
+/** What those days are checked for: slots that start and end inside it (12:00 and 12:30). */
 export const DEFAULT_WINDOW: readonly [Clock, Clock] = ['12:00', '13:00'];
-/** Slots are 30 minutes and start 10:00–21:30. @public (gym/src) */
+/** Slots are 30 minutes and start 10:00–21:30. */
 export const OPENS = '10:00';
-/** @public (gym/src) */
 export const CLOSES = '22:00';
-/** @public (gym/src) */
 export const SLOT_MINUTES = 30;
-/** The last slot's start: a ⏰ starts by then, and a ⏳ is before it. @public (gym/src) */
+/** The last slot's start: a ⏰ starts by then, and a ⏳ is before it. */
 export const LAST_START = '21:30';
 /** How far ahead a day can be set, today included (the gym publishes about 4 weeks ahead). */
 export const DAYS_SHOWN = 25;
-/** Minutes between checks; 15 at first. @public (gym/src) */
+/** Minutes between checks; 15 at first. */
 export const INTERVALS = [10, 15, 30, 60] as const;
 /** 🔎: once a minute for everyone (LINE and the app share it). @public (gym/src) */
 export const CHECK_COOLDOWN_MS = 60_000;
@@ -54,7 +52,7 @@ export const ACT_MAX_BYTES = 2048;
 /** The app's changes kept (runtime.changes). @public (gym/src) */
 export const CHANGES_KEPT = 12;
 
-/** A day's saved rule: any open slot, none, or the slots inside a time range. @public (gym/src) */
+/** A day's saved rule: any open slot, none, or the slots inside a time range. */
 export type Rule = 'any' | 'skip' | [Clock, Clock];
 
 // ---- GET /gym/config ----
@@ -72,7 +70,7 @@ export interface StatusDay {
   soft: boolean;
 }
 
-/** One of the 25 days the calendar shows (today first). @public (gym/src) */
+/** One of the 25 days the calendar shows (today first). */
 export interface DayRow {
   day: Day;
   /** The saved rule; null = none (ふだん within the default days, else 未チェック). */
@@ -90,9 +88,8 @@ export interface DayRow {
   base: string;
 }
 
-/** What an app change did (runtime.changes), worded by each side. @public (gym/src) */
+/** What an app change did (runtime.changes), worded by each side. */
 export type ChangeKind = 'any' | 'skip' | 'range' | 'reset' | 'from' | 'unfrom' | 'interval' | 'pause' | 'resume';
-/** @public (gym/src) */
 export interface Change {
   t: number;
   by: Member;
@@ -138,7 +135,6 @@ export interface GymConfig {
 
 // ---- POST /gym/act ----
 
-/** @public (gym/src) */
 export type DayAct = 'any' | 'skip' | 'reset' | 'unfrom';
 /** A day in a bulk act, with the `base` it was seen at. @public (gym/src) */
 export interface BulkDay { d: Day; base?: string }
@@ -169,7 +165,7 @@ export const ACT_STATUS: Record<ActError, number> = {
   unauthorized: 401, no_keys: 401, origin: 403, method: 405
 };
 
-/** 🔎's open slot. @public (gym/src) */
+/** 🔎's open slot. */
 export interface OpenSlot { day: Day; start: Clock; end: Clock; programs: ('training' | 'pilates')[] }
 
 /** @public (gym/src) */

@@ -114,9 +114,10 @@ export const LOG_EVENTS = {
   // ボット's 保養所 (lib/its/client.ts): a call to the its-bot Worker that failed: which, its HTTP status (none:
   // no answer), the Worker's error code or the phone's (offline, timeout, json, no_key), ms
   "its.fail": { src: 'c', f: { op: ['status', 'settings', 'run', 'push_subscribe', 'push_unsubscribe', 'push_test'], err: 't', rid: 't', http: 'n', ms: 'n' } },
-  // ボット's ジム (lib/gym/status.ts): a read of the gym bot's public /status that failed: its HTTP status (none: no
-  // answer), the phone's code (offline, http, json), ms. (/gym/config, members only, is keyed.fail's `gym`.)
-  "gym.fail": { src: 'c', f: { op: ['status'], err: ['offline', 'http', 'json'], http: 'n', ms: 'n' } },
+  // ボット's ジム: a read of the gym bot's public /status that failed (lib/gym/status.ts), or a POST /gym/act
+  // (lib/gym/config.ts): its HTTP status (none: no answer), the Worker's code (stale, cooldown, day_passed, …) or the
+  // phone's (offline, timeout, http, json), the act's request id, ms. (/gym/config, members only, is keyed.fail's `gym`.)
+  "gym.fail": { src: 'c', f: { op: ['status', 'act'], err: 't', rid: 't', http: 'n', ms: 'n' } },
   // 保養所's 通知 (lib/its/push.ts): the browser's part that failed (the permission's prompt, the service worker's
   // registration, subscribe, unsubscribe) and the error's name; never the endpoint or a key
   "its.push": { src: 'c', f: { step: ['permission', 'ready', 'subscribe', 'unsubscribe'], err: 't' } },

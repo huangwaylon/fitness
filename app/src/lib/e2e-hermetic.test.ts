@@ -22,6 +22,7 @@ const ROUTED: Record<string, string> = {
   'bots.spec.ts': "the its-bot and gym-bot Workers routed (page.route), never fetched",
   'food-kalori.spec.ts': "Kalori's pictures (assets.kalori.jp) answered or aborted by context.route, never fetched; a product link's href asserted, never opened",
   'gymbot.spec.ts': "the gym bot's /status routed (page.route), never fetched",
+  'gymbot.ts': "the gym bot's /status, /gym/config and /gym/act, which gymbot.spec and gymbot-settings.spec route (page.route), never fetched",
   'its.spec.ts': "the its-bot Worker routed (page.route), never fetched; the run link is only read",
   'its-push.spec.ts': "the its-bot Worker routed (page.route), never fetched; a push subscription's endpoint string, never fetched",
   'its.ts': 'the its-bot Worker\'s origin its.spec, its-push.spec, no-notify.spec and bots.spec route',

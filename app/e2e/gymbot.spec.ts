@@ -1,6 +1,6 @@
-// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown): on top 現在の設定,
-// 📋 設定を見る's answer from the members-only GET /gym/config (with the phone's key: lib/gym/config.ts, mocked here), its
-// rows in the bot's own words; at the foot 動作状況, the gym bot's GET /status (lib/gym/status.ts, mocked here): its
+// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown): on top the settings
+// from the members-only GET /gym/config (with the phone's key: lib/gym/config.ts, the stand-in e2e/gymbot.ts; the
+// controls and the calendar are gymbot-settings.spec.ts's); at the foot 動作状況, the gym bot's GET /status (lib/gym/status.ts, mocked here): its
 // verdict, 直近12時間 (a cell a check interval: tap or ← → names one) and its facts (くわしく folds the rest); 保養所's tab
 // leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
 // もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
@@ -11,43 +11,9 @@ import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
-import type { GymStatus } from '../src/lib/gym/status.ts';
-import type { GymConfig } from '../src/lib/gym/config.ts';
+import { CONFIG, STATUS, fakeGym, statusPayload as payload } from './gymbot.ts';
 
-const STATUS = 'https://gym-bot.island-fund-relay.workers.dev/status';
-const CONFIG = 'https://gym-bot.island-fund-relay.workers.dev/gym/config';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization' };
-const MIN = 60_000;
-
-/** A runner whose last check's pilates timed out, at the record's (pinned) time. */
-function payload(now: number): GymStatus {
-  const ok = { training: 'ok', pilates: 'ok' } as const;
-  return {
-    v: 1, now, mode: 'bot', sha: 'abc1234def', verdict: 'degraded', reasons: ['program_failing'], intervalMin: 15, paused: false,
-    nextCheck: now + 9 * MIN, lastCheck: now - 6 * MIN, lastOk: now - 21 * MIN, lastError: { t: now - 6 * MIN, code: 'timeout' },
-    failures: 0, siteDownSent: false, retryPending: false,
-    checks: [
-      { t: now - 6 * MIN, by: 'alarm', ms: 15200, r: { training: 'ok', pilates: 'timeout' }, open: 1, fresh: 0, push: 'none' },
-      { t: now - 21 * MIN, by: 'tap', ms: 3000, r: ok, open: 1, fresh: 1, push: 'held' },
-      { t: now - 36 * MIN, by: 'alarm', ms: 3, idle: true, open: 0, fresh: 0, push: 'none' }
-    ],
-    line: { used: 12, limit: 200, webhookOk: true, asOf: now - 30 * MIN }
-  };
-}
-
-/** 📋's answer for a few days from the record's day (11/4（水）), as the bot words them (gym/src/messages.ts). */
-function config(now: number) {
-  const days = [
-    { day: '2026-11-04', date: '11/4（水）', rule: '⏰ 12:00〜13:00（ふだん）', from: null, soft: false },
-    { day: '2026-11-05', date: '11/5（木）', rule: '🔔 終日', from: '⏳ 18:00から', soft: false },
-    { day: '2026-11-06', date: '11/6（金）', rule: '🔕 通知オフ', from: null, soft: true },
-    { day: '2026-11-07', date: '11/7（土）', rule: '⏰ 12:00〜13:00（ふだん）', from: null, soft: false }
-  ];
-  const check = '15分ごとにチェック・前回 11:54・次回 12:09';
-  const text = ['📋 日ごとの設定', ...days.map((d) => `・${d.date}　${d.rule}${d.from ? `　${d.from}` : ''}`), check].join('\n');
-  const shown: GymConfig = { title: '📋 日ごとの設定', days, notice: null, check, paused: false };
-  return { v: 1, now, ...shown, intervalMin: 15, lastCheck: now - 6 * MIN, nextCheck: now + 9 * MIN, text };
-}
 
 /** A phone paired as `who`, /status answered by `answer` and /gym/config by `configAnswer` (each call counted, the
  *  config's Authorization kept; `old`: a Worker without the route, whose 404s, the preflight's too, carry no CORS),
@@ -57,6 +23,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const calls = { n: 0, config: 0, asked: 0, auth: [] as (string | undefined)[] };
+  const gym = fakeGym(rec.now);
   await page.route(CONFIG, (route) => {
     calls.asked++;
     if (configAnswer(calls.config + 1) === 'old') {
@@ -70,7 +37,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
     const status = configAnswer(++calls.config) as number;
     return route.fulfill({
       status, contentType: 'application/json', headers: CORS,
-      body: status === 200 ? JSON.stringify(config(rec.now())) : '{"ok":false,"error":"boom"}'
+      body: status === 200 ? JSON.stringify(gym.config()) : '{"ok":false,"error":"boom"}'
     });
   });
   await page.route(STATUS, (route) => {
@@ -106,18 +73,11 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await gym.locator('[data-gym-more] summary').click();
   await expect(gym.locator('[data-gym-fact="ok"]')).toContainText('11:39');
   await expect(gym.locator('[data-gym-fact="line"]')).toContainText('12 / 200');
+  // the settings on top (the controls, the calendar: gymbot-settings.spec.ts), 動作状況 (the verdict, the strip, the
+  // facts) at the foot
   const current = gym.locator('[data-gym-config]');
-  await expect(current).toContainText('現在の設定');
-  await expect(current).toContainText('📋 日ごとの設定');
-  const days = current.locator('[data-gym-day]');
-  await expect(days).toHaveCount(4);
-  await expect(days.nth(0)).toHaveText('11/4（水）⏰ 12:00〜13:00（ふだん）');
-  await expect(days.nth(1)).toHaveText('11/5（木）🔔 終日⏳ 18:00から');
-  await expect(days.nth(2)).toHaveText('11/6（金）🔕 通知オフ');
-  await expect(days.nth(2)).toHaveClass(/soft/);
-  await expect(current.locator('[data-gym-config-check]')).toHaveText('15分ごとにチェック・前回 11:54・次回 12:09');
-  await expect(current.locator('[data-gym-notice]')).toHaveCount(0);
-  // 現在の設定 on top, 動作状況 (the verdict, the strip, the facts) at the foot
+  await expect(current.locator('[data-gym-controls]')).toContainText('チェック中・15分ごと');
+  await expect(current.locator('[data-gym-day]')).toHaveCount(25);
   const status = gym.locator('[data-gym-status]');
   await expect(status).toContainText('動作状況');
   expect((await current.boundingBox())!.y).toBeLessThan((await status.boundingBox())!.y);
@@ -186,17 +146,17 @@ test('a failed fetch shows もう一度, and a retry recovers', async ({ page, c
 test('the phone’s key reads 現在の設定; a failed read has its own もう一度 and keeps the status', async ({ page, context }) => {
   const { calls, sheet } = await phone(page, context, 'A', () => 200, (n) => (n === 1 ? 503 : 200));
   const error = sheet.locator('[data-gym-config-error]');
-  await expect(error).toContainText('現在の設定を読み込めませんでした');
+  await expect(error).toContainText('設定を読み込めませんでした');
   await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect(sheet.locator('[data-gym-error]')).toHaveCount(0);
   await error.getByRole('button', { name: 'もう一度' }).click();
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(4);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(25);
   await expect(error).toHaveCount(0);
   expect(calls.config).toBe(2);
   expect(calls.auth.every((a) => /^Bearer [0-9a-f]{32,}$/i.test(a ?? ''))).toBe(true);
 });
 
-test('an older Worker without /gym/config (404s without CORS, so fetch throws): no 現在の設定, no error, the status as before', async ({ page, context }) => {
+test('an older Worker without /gym/config (404s without CORS, so fetch throws): no settings, no error, the status as before', async ({ page, context }) => {
   const { calls, sheet } = await phone(page, context, 'A', () => 200, () => 'old');
   await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect.poll(() => calls.asked).toBeGreaterThan(0);

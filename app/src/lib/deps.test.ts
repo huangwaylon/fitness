@@ -100,7 +100,7 @@ const graph = new Map<string, string[]>();
 const unknown: string[] = [];
 for (const f of files(LIB)) {
   const out: string[] = [];
-  for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?<![\w'"-])(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
+  for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?<![\w'".-])(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
     let target: string;
     if (spec.startsWith('#lib/')) target = join(LIB, spec.slice(5));
     else if (spec.startsWith('$lib/')) target = join(LIB, spec.slice(5));
@@ -194,7 +194,7 @@ describe('the relay boundary', () => {
     const seen: string[] = [];
     const bad: string[] = [];
     for (const f of ['src', 'test', 'scripts'].flatMap((d) => walk(join(RELAY, d))))
-      for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?<![\w'"-])(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
+      for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?<![\w'".-])(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
         if (!spec.startsWith('.')) continue;
         const target = fileOf(resolve(dirname(f), spec));
         if (!target.startsWith(`${APP}/`)) continue;
