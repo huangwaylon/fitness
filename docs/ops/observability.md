@@ -153,8 +153,8 @@ npm run logs -- --test ...                                 # the test relay
 7. Close the alert's issue with the cause.
 
 ## The alert
-`health.yml` (every 6 hours and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
-labelled `alert` (or comments on the open one when the state changes) when, in the last 6 hours, errors > 20 (not
+`health.yml` (hourly and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
+labelled `alert` (or comments on the open one when its reasons change, not their counts) when, in the last 6 hours, errors > 20 (not
 counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
 day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead), or
 no record backup has been good in 48 h; a green run closes it. The issue holds counts, never a message. A failing

@@ -6,7 +6,9 @@ name: Backend health
 
 on:
   schedule:
-    - cron: '17 */6 * * *' # every 6 h (09:17, 15:17, 21:17, 03:17 JST)
+    # hourly: GitHub drops scheduled runs under load (at */6 about 2 of the 4 ran, half the day's 6 h windows unread);
+    # each run's 8 s are free (a public repo), and a spike mails once, not each hour (below)
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -75,7 +77,8 @@ jobs:
             if [ -z "$open" ]; then gh issue create --label alert --title "Relay alert: $why" --body "$body"
             else
               last=$(gh issue view "$open" --json comments,body --jq '(.comments | last | .body) // .body' | head -1)
-              [ "$last" = "$why" ] || gh issue comment "$open" --body "$body"
+              # a change of reasons, not of their counts: an hour's drift in the same spike comments nothing
+              [ "$(echo "$last" | tr -d '0-9')" = "$(echo "$why" | tr -d '0-9')" ] || gh issue comment "$open" --body "$body"
             fi
           elif [ -n "$open" ]; then
             gh issue close "$open" --comment "Back under the thresholds: $counts"

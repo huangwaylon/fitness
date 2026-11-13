@@ -26,7 +26,7 @@ After the upload, **Pages alias lag** needs nothing; **Deploy not served** (red)
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours with the site's checks (its
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
 `version.json`, CSP header and the relay's CORS for it), red (GitHub mails the owner) unless all pass; it warns when the
 weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s `wx` is the real weather
 ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over 30 is normal; older, or
