@@ -305,7 +305,7 @@
   }
   .none { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .tags { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .en.big { font-size: max(17px, var(--fs-talk)); }
+  .en.big { font-size: var(--fs-en); }
   .retry { width: 100%; }
   .opts { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 4px; }
   .opts li { display: grid; grid-template-columns: 1.2em 1fr; gap: 4px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }

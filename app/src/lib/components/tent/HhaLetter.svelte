@@ -54,7 +54,7 @@
 
 <style>
   .scrim {
-    position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: rgba(30, 20, 12, .45);
+    position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: var(--scrim-photo);
     animation: fade .2s ease-out both;
   }
   .letter {

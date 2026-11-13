@@ -239,7 +239,7 @@
   }
   dialog:focus { outline: none; }
   /* the one sheet motion (design.md "Navigation"): up in 240ms, ease-out, no overshoot */
-  dialog[open] { animation: up 240ms cubic-bezier(.2, .8, .2, 1); }
+  dialog[open] { animation: up var(--dur-sheet) var(--ease-out); }
   dialog::backdrop { background: var(--scrim); }
   /* The content can scroll above the keyboard too (the footer is lifted by --kb). */
   .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }

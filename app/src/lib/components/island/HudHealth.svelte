@@ -49,7 +49,7 @@
   .art {
     position: absolute; left: 50%; top: 50%; width: var(--art); height: var(--art); translate: -50% -50%; display: flex;
     align-items: center; justify-content: center; pointer-events: none; transform-origin: 50% 60%;
-    transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1);
+    transition: transform 220ms var(--ease-bounce);
     filter: drop-shadow(0 2px 0 rgb(0 0 0 / .12));
   }
   .hud-health.pressed .art { transform: scale(.9) rotate(-6deg); transition: transform 80ms var(--ease-squash); }

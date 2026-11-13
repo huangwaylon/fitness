@@ -32,6 +32,8 @@
   /* the night's navy chrome (data-tod night below; ききみみ's bedtime story and its tile take it by day too) */
   --n-bg:#3A4886; --n-lip:#2E3A72; --n-card:#4858A0; --n-off:#34417C; --n-edge:#B9C3F0; --n-text:#FFF6E0; --n-soft:#DDE3FA;
   --c-gold:#F2C14E;  --c-gold-lip:#B8862A;               /* NEW (.tag.new) and the gold medal / trophy fills (fills only) */
+  --c-silver:#C9CFD8; --c-silver-lip:#9AA3B1;            /* the silver medal (ききみみ's なかま) */
+  --c-bar:#3E9E4C;                                       /* a progress bar's fill on cream (passes 3:1 on the card) */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
@@ -58,6 +60,7 @@
   --fs-xs:.6875rem; --fs-s:.8125rem; --fs-body:.9375rem; --fs-talk:1.125rem;
   --fs-title: clamp(1.375rem, 6.4vw, 1.625rem); --fs-hero: clamp(2.25rem, 11vw, 2.75rem);
   --fs-input: max(16px, 1rem);
+  --fs-en: max(17px, var(--fs-talk)); /* ききみみ's English line (a prompt, a choice, a tile) */
   /* dense body text (13-15px) in the info sheets (りょこう, けっこんしき, トレイル): the system font; titles, labels and
      numbers stay --font-ui / --font-num */
   --font-body: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
@@ -66,6 +69,8 @@
   /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/panel ---------- */
   --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-pill:999px;
   --r-row:14px;     /* dense cards (the info sheets) */
+  --r-bar:4px;      /* bars, meters and their tracks */
+  --r-game:22px;    /* ききみみ's game cards (a speaker's stage, a ticket, a desk): the world's look inside the sheet */
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
   --lip-h:4px;      /* the one lip depth */
@@ -76,6 +81,12 @@
   /* an always-cream object's lip (ききみみ's game cards and bubbles): the card's, in the cream's own tan by night too */
   --sh-lip-cream:0 var(--lip-h) 0 var(--c-lip);
   --sh-float:0 12px 32px rgba(74, 58, 44, .18);
+  /* a lifted thing's small soft drop under its lip (a picked tile, the letter, a shop line, the board's ✎) */
+  --sh-drop:0 8px 18px rgb(74 58 44 / .16);
+  /* a ring on the chosen / lit one (leaf), and on the one opened (yuzu): fixed colours, so a token at :root is safe */
+  --sh-sel:inset 0 0 0 3px var(--c-leaf); --sh-open:inset 0 0 0 2.5px var(--c-yuzu-lip);
+  /* text over a photo: the dark band under it */
+  --scrim-photo:rgb(30 22 16 / .5);
 
   /* ---------- motion ---------- */
   --ease-bounce:cubic-bezier(.34,1.56,.64,1);
@@ -84,6 +95,7 @@
   --ease-idle:cubic-bezier(.45,0,.55,1);
   --ease-out:cubic-bezier(.2,.8,.2,1);   /* a sheet / level arriving (design.md "Motion"), a bar filling, a fold turning */
   --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms; --dur-emote:2200ms;
+  --dur-sheet:240ms;  /* a sheet up, a level pushed in (with --ease-out) */
 
   /* ---------- platform + layout ---------- */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -122,6 +134,7 @@
      < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
   --z-stage: 1; --z-hud: 7; --z-dock: 9; --z-harvest: 60; --z-toast: 90;
   --z-tint: 80; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-popup: 95;
+  --z-door: 2147483000; /* the door's iris (and ?hit's overlay): over everything */
 
   /* ---------- viewport heights ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, panel,

@@ -40,7 +40,7 @@
 </div>
 
 <style>
-  .hits { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; }
+  .hits { position: fixed; inset: 0; z-index: var(--z-door); pointer-events: none; }
   i { position: absolute; box-sizing: border-box; border: 1.5px solid rgba(255, 0, 200, .9); background: rgba(255, 0, 200, .12); border-radius: 4px; }
   i.own { border-color: rgba(0, 200, 255, .95); background: rgba(0, 200, 255, .14); }
 </style>

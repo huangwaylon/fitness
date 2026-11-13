@@ -87,7 +87,7 @@
   .choices.dim { opacity: .5; }
   .ch {
     position: relative; min-height: clamp(56px, 8vh, 72px); padding: 10px 16px; border-radius: var(--r-card);
-    display: grid; place-items: center; font: 700 max(17px, var(--fs-body))/1.3 var(--font-ui); text-align: center;
+    display: grid; place-items: center; font: 700 var(--fs-en)/1.3 var(--font-ui); text-align: center;
   }
   .pics .ch { aspect-ratio: 1.15; padding: 8px; }
   .ch[aria-disabled='true'] { cursor: default; }

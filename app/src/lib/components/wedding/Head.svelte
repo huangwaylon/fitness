@@ -67,7 +67,7 @@
   /* darker toward the foot and the left, under the type */
   .band::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(180deg, rgb(30 20 16 / 0) 25%, rgb(30 20 16 / .6) 100%), linear-gradient(90deg, rgb(30 20 16 / .45), rgb(30 20 16 / 0) 50%);
+    background: linear-gradient(180deg, transparent 25%, var(--scrim-photo) 100%), linear-gradient(90deg, var(--scrim-photo), transparent 50%);
   }
   .in { position: absolute; left: 16px; right: 14px; bottom: 12px; z-index: 1; display: flex; align-items: flex-end; gap: 12px; }
   .in p { margin: 0; }
@@ -87,7 +87,7 @@
   }
   .ring svg { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); }
   .track { fill: none; stroke: color-mix(in srgb, var(--c-rose) 24%, var(--bg)); stroke-width: 7; }
-  .fill { fill: none; stroke: var(--c-rose); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 600ms cubic-bezier(.25, .8, .25, 1); }
+  .fill { fill: none; stroke: var(--c-rose); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 600ms var(--ease-soft); }
   .posy { position: relative; line-height: 0; margin-top: -4px; }
   .pct { position: relative; font: 600 20px/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .pct small { font-size: var(--fs-s); margin-left: 1px; }

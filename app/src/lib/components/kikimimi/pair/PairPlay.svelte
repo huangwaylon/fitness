@@ -218,7 +218,7 @@
   .speaker.talk { animation: if-speak 520ms ease-in-out infinite alternate; }
   .bubble {
     position: relative; min-height: 60px; display: grid; align-content: center; gap: 4px; padding: 10px 16px;
-    border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
+    border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .bubble::before { content: ''; position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; rotate: 45deg; background: var(--c-card); border-radius: 4px; }
   .notes { font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
@@ -231,7 +231,7 @@
   .pics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .pic-card { position: relative; display: grid; transition: transform var(--dur-quick) var(--ease-bounce), opacity var(--dur-quick); }
   .face {
-    display: grid; justify-items: center; gap: 2px; padding: 14px 8px 12px; border: 0; border-radius: 22px; cursor: pointer;
+    display: grid; justify-items: center; gap: 2px; padding: 14px 8px 12px; border: 0; border-radius: var(--r-game); cursor: pointer;
     background: var(--card); color: var(--text); box-shadow: inset 0 0 0 2px var(--edge), 0 var(--lip-h) 0 var(--edge);
   }
   .emoji { font: 400 56px/1.1 var(--font-ui); }

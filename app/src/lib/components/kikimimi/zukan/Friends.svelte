@@ -122,11 +122,11 @@
   @keyframes pop { from { transform: scale(0); } 60% { transform: scale(1.35); } to { transform: none; } }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .row { appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--text); text-align: left; width: 100%; display: flex; gap: 12px; align-items: center; padding: 10px 12px; }
-  .row[aria-expanded='true'] { box-shadow: inset 0 0 0 2.5px var(--c-yuzu-lip), var(--sh-lip); }
+  .row[aria-expanded='true'] { box-shadow: var(--sh-open), var(--sh-lip); }
   .head { flex: none; display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--lip); overflow: hidden; }
   .up .head { width: 44px; height: 44px; }
-  .silver .head { box-shadow: 0 0 0 3px #C9CFD8, 0 0 0 5px #9AA3B1; }
-  .gold .head { box-shadow: 0 0 0 3px #F2CF63, 0 0 0 5px #C99B2E; }
+  .silver .head { box-shadow: 0 0 0 3px var(--c-silver), 0 0 0 5px var(--c-silver-lip); }
+  .gold .head { box-shadow: 0 0 0 3px var(--c-gold), 0 0 0 5px var(--c-gold-lip); }
   .txt { flex: 1; min-width: 0; display: grid; gap: 2px; }
   .txt b { font: 700 var(--fs-body)/1.2 var(--font-ui); display: flex; gap: 6px; align-items: center; }
   .badge { font-size: 14px; }
@@ -139,7 +139,7 @@
   .letter small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .letter p { margin: 6px 0 0; white-space: pre-line; font: 600 var(--fs-s)/1.55 var(--font-ui); }
   .pill { justify-self: start; padding: 6px 12px; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .photo { margin: 0; justify-self: center; display: grid; justify-items: center; gap: 6px; padding: 12px 18px 8px; border-radius: 6px; background: #FFFDF6; box-shadow: 0 0 0 5px #F2CF63, 0 0 0 8px #C99B2E, var(--sh-lip); }
+  .photo { margin: 0; justify-self: center; display: grid; justify-items: center; gap: 6px; padding: 12px 18px 8px; border-radius: 6px; background: var(--c-card); box-shadow: 0 0 0 5px var(--c-gold), 0 0 0 8px var(--c-gold-lip), var(--sh-lip); }
   .photo figcaption { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink); }
   .gifts .chip { justify-self: end; min-height: var(--hit); }
   .gifts .chip[aria-pressed='true'] { background: var(--ctl-sel); }

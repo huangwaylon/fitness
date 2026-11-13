@@ -85,7 +85,7 @@
     position: relative; appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--text); text-align: left; padding: 10px 10px 10px;
     display: grid; grid-template-columns: 56px 1fr; grid-template-rows: auto auto auto auto; column-gap: 8px; row-gap: 2px; align-items: center;
   }
-  .vc[aria-expanded='true'] { box-shadow: inset 0 0 0 2.5px var(--c-yuzu-lip), var(--sh-lip); }
+  .vc[aria-expanded='true'] { box-shadow: var(--sh-open), var(--sh-lip); }
   .face { grid-row: 1 / 5; display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--lip); overflow: hidden; }
   .unheard .face { filter: brightness(0); opacity: .22; }
   .acc { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }

@@ -111,7 +111,7 @@
   }
   .letter {
     position: relative; display: grid; padding: 22px 18px 18px; border-radius: 18px 22px 20px 24px; overflow: hidden;
-    box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(80 50 30 / .1);
+    box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-drop);
   }
   .letter::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px; background: var(--c-rose); }
   .letter :global(.doc) { background: repeating-linear-gradient(transparent 0 28.5px, var(--rose-soft) 28.5px 30px); }

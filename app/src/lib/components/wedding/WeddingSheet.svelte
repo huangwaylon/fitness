@@ -151,7 +151,7 @@
   .fab {
     appearance: none; border: 0; cursor: pointer; position: absolute; z-index: 6; right: calc(14px + var(--safe-right)); bottom: calc(60px + max(var(--safe-bottom), 6px) + 14px);
     width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--c-leaf); color: var(--c-ink);
-    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge), 0 8px 16px rgb(40 60 30 / .22);
+    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge), var(--sh-drop);
     transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce); -webkit-tap-highlight-color: transparent;
   }
   .fab::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }

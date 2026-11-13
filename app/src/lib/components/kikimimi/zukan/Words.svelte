@@ -192,7 +192,7 @@
     position: relative; appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--text); text-align: left; min-height: 92px; padding: 8px;
     border-radius: 16px; background: var(--card); box-shadow: var(--sh-lip); display: flex; flex-direction: column; gap: 3px;
   }
-  .zc[aria-expanded='true'] { box-shadow: inset 0 0 0 2.5px var(--c-yuzu-lip), var(--sh-lip); }
+  .zc[aria-expanded='true'] { box-shadow: var(--sh-open), var(--sh-lip); }
   .zc .en { font: 700 15px/1.2 var(--font-ui); overflow-wrap: anywhere; }
   .zc .ja { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .zc .stars { margin-top: auto; color: var(--c-yuzu-lip); font-size: 12px; letter-spacing: 1px; }

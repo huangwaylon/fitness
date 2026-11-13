@@ -49,7 +49,7 @@
 </div>
 
 <style>
-  .desk { display: grid; gap: 8px; justify-items: center; padding: 10px 12px 12px; border-radius: 22px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
+  .desk { display: grid; gap: 8px; justify-items: center; padding: 10px 12px 12px; border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .lamp { justify-self: start; margin: 0; display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text-soft); font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .lamp { background: color-mix(in srgb, var(--c-coral) 25%, var(--c-card)); color: var(--text); }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c-coral); animation: blink 1.2s ease-in-out infinite alternate; }
@@ -63,7 +63,7 @@
   .segs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
   .seg { min-height: var(--hit); padding: 4px 12px; border-radius: var(--r-pill); display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .seg[aria-disabled='true'] { cursor: default; }
-  .seg[data-on] { box-shadow: inset 0 0 0 3px var(--c-leaf); background: color-mix(in srgb, var(--c-leaf) 25%, var(--c-card)); }
+  .seg[data-on] { box-shadow: var(--sh-sel); background: color-mix(in srgb, var(--c-leaf) 25%, var(--c-card)); }
   .n { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .play { font-size: .8em; color: var(--text-soft); }
   @keyframes blink { from { opacity: 1; } to { opacity: .35; } }

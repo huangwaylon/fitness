@@ -95,7 +95,7 @@
   .tip {
     --tile: calc((100cqw - var(--shop-gap)) / 2);
     position: absolute; z-index: 3; top: 40px; left: 2px; width: calc(100cqw - 4px); margin: 0; padding: 10px 14px;
-    border-radius: 16px; background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
+    border-radius: 16px; background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip), var(--sh-drop);
     font: 700 var(--fs-s)/1.5 var(--font-ui); text-align: left; text-wrap: pretty;
     transform-origin: calc(var(--tile) - 22px) -8px; animation: tip 260ms var(--ease-bounce);
   }

@@ -33,6 +33,6 @@
   .edge .nav { padding-top: var(--ui-top); }
   .foot {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 12px 10px;
-    background: linear-gradient(transparent, rgb(30 24 18 / .55)); text-shadow: 0 1px 2px rgb(30 24 18 / .4);
+    background: linear-gradient(transparent, var(--scrim-photo)); text-shadow: 0 1px 2px rgb(30 24 18 / .4);
   }
 </style>

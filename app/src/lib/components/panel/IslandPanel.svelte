@@ -82,7 +82,7 @@
   .panel-body > :global(*) { flex: none; }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms); the wallet again on ‹ (an
      animation restarts when its element comes back from display: none) */
-  .day, .again { animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  .day, .again { animation: if-lvl var(--dur-sheet) var(--ease-out); }
   .lvl[hidden] { display: none; }
   .day { display: grid; gap: 12px; }
   @media (prefers-reduced-motion: reduce) { .day, .again { animation: none; } }

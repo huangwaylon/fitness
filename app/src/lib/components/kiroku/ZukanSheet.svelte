@@ -81,6 +81,6 @@
   /* a kind's page pins its head and scrolls its own grid (to the bottom edge): the body holds still */
   .zs-body.fill { overflow: hidden; padding-bottom: 0; }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
-  .lvl { display: grid; gap: 12px; animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  .lvl { display: grid; gap: 12px; animation: if-lvl var(--dur-sheet) var(--ease-out); }
   .fill .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 </style>

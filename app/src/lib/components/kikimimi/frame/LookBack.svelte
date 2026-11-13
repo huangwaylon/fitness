@@ -60,7 +60,7 @@
   .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }
   .plain { display: grid; gap: 8px; padding: 12px 14px; }
   .head { display: flex; align-items: center; gap: 10px; }
-  .en { margin: 0; font: 700 max(17px, var(--fs-body))/1.4 var(--font-ui); }
+  .en { margin: 0; font: 700 var(--fs-en)/1.4 var(--font-ui); }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 </style>

@@ -269,11 +269,11 @@
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
     position: relative; min-height: 68px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
-    border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
+    border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .bubble::before { content: ''; position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; rotate: 45deg; background: var(--c-card); border-radius: 4px; }
   .notes { margin: 0; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
-  .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
+  .en { margin: 0; font: 700 var(--fs-en)/1.4 var(--font-ui); position: relative; }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; position: relative; }
   .accent { padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); }
@@ -288,7 +288,7 @@
   .slot {
     box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     min-width: 52px; min-height: var(--hit); padding: 4px 10px; border-radius: 12px; display: inline-grid; place-items: center;
-    font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui);
+    font: 700 var(--fs-en)/1.2 var(--font-ui);
   }
   .slot:not([data-filled]) { background: transparent; box-shadow: inset 0 0 0 2px var(--edge); }
   .slot[data-filled] { background: var(--ctl-sel); color: var(--c-ink); }
@@ -312,7 +312,7 @@
 
   /* the board's tiles: big targets that wrap; a placed one stays where it was, faded */
   .pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-top: 4px; }
-  .tile { min-height: 48px; min-width: 48px; padding: 6px 14px; border-radius: 14px; font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui); }
+  .tile { min-height: 48px; min-width: 48px; padding: 6px 14px; border-radius: 14px; font: 700 var(--fs-en)/1.2 var(--font-ui); }
   .tile[data-used] { opacity: .3; }
   /* while the answer window is open, a press on a tile or my slot is the drag's, not the sheet's scroll (the gaps still scroll) */
   .tile, .slot { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }

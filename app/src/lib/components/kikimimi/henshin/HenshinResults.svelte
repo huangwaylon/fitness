@@ -70,7 +70,7 @@
 <style>
   .today { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
-  .en.big { font-size: max(17px, var(--fs-talk)); }
+  .en.big { font-size: var(--fs-en); }
   .form { margin: 0; justify-self: start; padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .takes { display: flex; flex-wrap: wrap; gap: 8px; }

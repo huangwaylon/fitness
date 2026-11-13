@@ -49,7 +49,7 @@
 
 <style>
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
-  .en.big { font-size: max(17px, var(--fs-talk)); }
+  .en.big { font-size: var(--fs-en); }
   .ja, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .picked { color: var(--coral-text); }
 </style>

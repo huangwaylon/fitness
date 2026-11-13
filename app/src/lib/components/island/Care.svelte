@@ -236,7 +236,7 @@
   /* its contact shadow on the lawn */
   .shade { display: block; width: calc(14 * var(--su)); height: calc(3 * var(--su)); translate: -50% -60%; border-radius: 50%; background: rgba(60, 70, 30, .25); }
   /* sprouting while the island is open: it pops up out of the lawn once */
-  .weed.sprout svg { transform-origin: 50% 100%; animation: sprout 420ms cubic-bezier(.34, 1.56, .64, 1) both; }
+  .weed.sprout svg { transform-origin: 50% 100%; animation: sprout 420ms var(--ease-bounce) both; }
   @keyframes sprout { from { transform: scale(0); } 70% { transform: scale(1.15); } to { transform: none; } }
   /* the rock: the shovel comes down on it */
   .strike { translate: -20% -95%; transform-origin: 30% 100%; animation: strike .3s cubic-bezier(.4, 0, .7, 1) both; }

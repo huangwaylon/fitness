@@ -229,14 +229,14 @@
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
     position: relative; min-height: 76px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
-    border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
+    border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .bubble::before {
     content: ''; position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; rotate: 45deg;
     background: var(--c-card); border-radius: 4px;
   }
   .notes { margin: 0; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
-  .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
+  .en { margin: 0; font: 700 var(--fs-en)/1.4 var(--font-ui); position: relative; }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
   .ja span { display: block; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; position: relative; }
@@ -246,7 +246,7 @@
   }
 
   .ask, .line { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
-  .line { font-size: max(17px, var(--fs-body)); }
+  .line { font-size: var(--fs-en); }
   .blank { display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--text); margin: 0 4px; }
 
   /* the scene card, 🔁 🐢 under it */

@@ -18,9 +18,9 @@
 <style>
   .lift {
     position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none; display: inline-grid; place-items: center; box-sizing: border-box;
-    padding-inline: 0; white-space: nowrap; border-radius: 14px; font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui);
+    padding-inline: 0; white-space: nowrap; border-radius: 14px; font: 700 var(--fs-en)/1.2 var(--font-ui);
     background: var(--ctl); color: var(--text); transform-origin: 50% 50%; will-change: transform;
-    box-shadow: inset 0 0 0 2px var(--edge), 0 8px 0 var(--lip), 0 14px 22px rgba(0, 0, 0, .18);
+    box-shadow: inset 0 0 0 2px var(--edge), 0 8px 0 var(--lip), var(--sh-drop);
   }
   .lift.back { transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft); box-shadow: inset 0 0 0 2px var(--edge), 0 4px 0 var(--lip); }
   .lift-origin { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }

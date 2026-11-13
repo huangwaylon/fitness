@@ -48,7 +48,7 @@
     width: 100%; min-height: var(--hit); padding: 8px 12px; border-radius: 14px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center;
     text-align: left;
   }
-  .row[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf); }
+  .row[aria-pressed='true'] { box-shadow: var(--sh-sel); }
   .name { display: grid; gap: 1px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .name small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .tags { display: flex; gap: 4px; justify-self: end; }
@@ -56,6 +56,6 @@
   .tag.done { background: color-mix(in srgb, var(--c-leaf) 45%, var(--card)); }
   .bar { height: 8px; border-radius: 4px; background: var(--ctl-off); overflow: hidden; }
   .bar.none { background: transparent; box-shadow: inset 0 0 0 1.5px var(--edge); }
-  .bar span { display: block; height: 100%; background: #3e9e4c; border-radius: 4px; }
+  .bar span { display: block; height: 100%; background: var(--c-bar); border-radius: 4px; }
   .val { justify-self: end; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }
 </style>

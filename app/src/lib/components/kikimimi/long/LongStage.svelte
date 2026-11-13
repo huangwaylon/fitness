@@ -40,7 +40,7 @@
 </div>
 
 <style>
-  .stage { display: grid; gap: 8px; justify-items: center; padding: 10px 12px 12px; border-radius: 22px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
+  .stage { display: grid; gap: 8px; justify-items: center; padding: 10px 12px 12px; border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .kind { justify-self: start; margin: 0; padding: 2px 10px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .who { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; }
   .sp { display: grid; justify-items: center; gap: 4px; transition: transform var(--dur-quick); }

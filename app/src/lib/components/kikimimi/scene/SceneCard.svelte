@@ -65,7 +65,7 @@
 <style>
   .scene {
     position: relative; aspect-ratio: 393 / 224; border-radius: var(--r-card); overflow: hidden; isolation: isolate;
-    background: #eed9ae; box-shadow: var(--sh-lip-cream);
+    background: var(--c-sunk); box-shadow: var(--sh-lip-cream);
   }
   .scene.pop { animation: card-in 360ms var(--ease-bounce) both; }
   /* the backdrop softer than the villagers (they must pop); a paper vignette ties it to the sheet */
@@ -95,7 +95,7 @@
 
   /* the NH bubble floating over the scene, its tail toward the one talking */
   .say {
-    position: absolute; top: 18%; z-index: 2; min-width: 96px; display: grid; gap: 6px; padding: 9px 14px 10px; border-radius: 22px;
+    position: absolute; top: 18%; z-index: 2; min-width: 96px; display: grid; gap: 6px; padding: 9px 14px 10px; border-radius: var(--r-game);
     background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .say::before { content: ''; position: absolute; bottom: -6px; width: 16px; height: 16px; background: var(--c-card); border-radius: 3px; rotate: 45deg; }

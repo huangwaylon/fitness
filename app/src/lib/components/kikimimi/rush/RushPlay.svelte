@@ -135,7 +135,7 @@
   .register { justify-self: center; margin: 0; padding: 4px 14px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 35%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.3 var(--font-ui); }
   .register.theirs { background: transparent; box-shadow: inset 0 0 0 2px var(--edge); color: var(--text-soft); }
   /* the ticket: a cream slip with its question on top, the chips under it */
-  .ticket { display: grid; gap: 8px; padding: 10px 12px 12px; border-radius: 18px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
+  .ticket { display: grid; gap: 8px; padding: 10px 12px 12px; border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .ask { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .ticket { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   .hint-line { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }

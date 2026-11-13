@@ -164,7 +164,7 @@
 </div>
 
 <style>
-  .prog { display: grid; gap: 14px; --bar: #3E9E4C; --bar-track: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
+  .prog { display: grid; gap: 14px; --bar: var(--c-bar); --bar-track: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
   /* night's navy card: the lighter leaf (≥ 3:1 there; the day's #3E9E4C passes the dataviz checks on cream) */
   :global(:root[data-tod='night']) .prog { --bar: var(--c-leaf); }
   .hello { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }

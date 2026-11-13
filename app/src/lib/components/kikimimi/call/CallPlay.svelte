@@ -161,7 +161,7 @@
 
 <style>
   .stage { display: grid; gap: 8px; }
-  .ended { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 22px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
+  .ended { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: var(--r-game); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .head { width: 48px; height: 48px; border-radius: 50%; background: var(--c-mint); display: grid; place-items: center; overflow: hidden; line-height: 0; }
   .nm { font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .st { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }

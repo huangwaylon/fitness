@@ -54,7 +54,7 @@
   .picked { margin: 0; }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .row { width: 100%; min-height: var(--hit); padding: 8px 12px; border-radius: 14px; display: flex; align-items: center; gap: 10px; text-align: left; }
-  .row[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf); }
+  .row[aria-pressed='true'] { box-shadow: var(--sh-sel); }
   .name { flex: 1; min-width: 0; display: grid; gap: 1px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .name small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .tags { display: flex; gap: 4px; flex: none; }

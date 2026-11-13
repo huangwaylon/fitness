@@ -344,7 +344,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
    everything; its radius is a registered property, so the cut-out animates on its own. */
 @property --door-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
 :root[data-door]::after {
-  content: ''; position: fixed; inset: 0; z-index: 2147483000; pointer-events: auto;
+  content: ''; position: fixed; inset: 0; z-index: var(--z-door); pointer-events: auto;
   background: radial-gradient(circle at var(--door-x, 50%) var(--door-y, 75%), transparent calc(var(--door-r) - 1px), #120c08 var(--door-r));
 }
 :root[data-door="close"]::after { animation: door-close 260ms cubic-bezier(.5, 0, .9, .6) both; }

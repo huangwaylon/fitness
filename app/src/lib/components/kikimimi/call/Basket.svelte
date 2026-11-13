@@ -23,7 +23,7 @@
 </div>
 
 <style>
-  .basket { display: grid; gap: 6px; padding: 10px 12px; border-radius: 18px; background: color-mix(in srgb, var(--c-yuzu) 22%, var(--card)); }
+  .basket { display: grid; gap: 6px; padding: 10px 12px; border-radius: var(--r-game); background: color-mix(in srgb, var(--c-yuzu) 22%, var(--card)); }
   .head { margin: 0; display: flex; align-items: center; gap: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
   .ic { font-size: 22px; line-height: 1; }
   .n { margin-left: auto; font: 700 var(--fs-body)/1 var(--font-num); }

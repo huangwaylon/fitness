@@ -208,7 +208,7 @@
   .faces { display: flex; gap: 4px; }
   .face { position: relative; width: var(--hit); height: var(--hit); padding: 0; border-radius: 50%; display: grid; place-items: center; line-height: 0; background: var(--ctl-off); }
   .face[aria-disabled='true']:not([data-on]):not([data-mark]) { opacity: .45; }
-  .face[data-on], .face[data-mark='on'] { background: var(--ctl-sel); box-shadow: inset 0 0 0 3px var(--c-leaf); }
+  .face[data-on], .face[data-mark='on'] { background: var(--ctl-sel); box-shadow: var(--sh-sel); }
   .face[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 50%, var(--c-card)); }
   .face[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 35%, var(--c-card)); }
   .sym { position: absolute; right: -4px; top: -6px; font: 700 18px/1 var(--font-ui); }
@@ -218,7 +218,7 @@
   /* changed: the three faces as big buttons */
   .pick3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .who { position: relative; display: grid; justify-items: center; gap: 4px; padding: 10px 4px; border-radius: var(--r-card); line-height: 0; min-height: 96px; }
-  .who[data-mark='on'] { box-shadow: inset 0 0 0 3px var(--c-leaf); }
+  .who[data-mark='on'] { box-shadow: var(--sh-sel); }
   .who[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 50%, var(--c-card)); }
   .who[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 30%, var(--c-card)); }
   .who .sym { right: 6px; top: 6px; }
@@ -227,7 +227,7 @@
   .lines { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; }
   .lab { width: 100%; text-align: center; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .ln { min-width: 52px; min-height: var(--hit); padding: 2px 8px; border-radius: var(--r-pill); display: inline-flex; align-items: center; gap: 4px; line-height: 0; }
-  .ln[data-on] { box-shadow: inset 0 0 0 3px var(--c-leaf); }
+  .ln[data-on] { box-shadow: var(--sh-sel); }
   .n { font: 700 var(--fs-s)/1 var(--font-num); }
 
   .script { margin: 4px 0 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }

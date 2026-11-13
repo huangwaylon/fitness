@@ -56,7 +56,7 @@
   .tr { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .tap { width: 100%; display: grid; gap: 2px; padding: 8px 10px; border-radius: 14px; text-align: left; min-height: var(--hit); }
   .tap[aria-disabled='true'] { cursor: default; }
-  .on .tap { box-shadow: inset 0 0 0 3px var(--c-leaf); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); }
+  .on .tap { box-shadow: var(--sh-sel); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); }
   .who { display: flex; align-items: center; gap: 6px; }
   .head { line-height: 0; }
   .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
