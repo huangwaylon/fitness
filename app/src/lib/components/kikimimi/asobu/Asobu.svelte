@@ -28,7 +28,7 @@
             <span class="ic" aria-hidden="true">{m.icon}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
-            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span aria-label={t('kiki.chip.coop')}> · 👥</span>{/if}{#if m.requires === 'mic'}<span aria-label={t('kiki.micGame')}> · 🎤</span>{/if}</span>
+            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span role="img" aria-label={t('kiki.chip.coop')}> · 👥</span>{/if}{#if m.requires === 'mic'}<span role="img" aria-label={t('kiki.micGame')}> · 🎤</span>{/if}</span>
           </button>
         {/each}
       </div>
@@ -39,7 +39,7 @@
 <style>
   .asobu { display: grid; gap: 14px; }
   .shelf { display: grid; gap: 8px; }
-  .sec-label small { margin-left: 8px; letter-spacing: 0; }
+  .sec-label small { margin-left: 8px; letter-spacing: 0; font-size: var(--fs-s); }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .mode { min-height: 112px; padding: 12px; border-radius: var(--r-card); display: grid; align-content: start; justify-items: start; gap: 4px; text-align: left; }
   .ic { font-size: 22px; line-height: 1.1; }

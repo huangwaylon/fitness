@@ -3,6 +3,7 @@
   // and three points (1にち 3ぷんから · ふたりで いっしょに · まず みみ チェック), あとで / はじめる; 2 the sound check (🔊
   // 「きこえる？」 through the game's voice, the volume-0 line), then みみ チェック (the game itself: step 3). あとで goes to
   // the hub, which keeps a card for the check. Its own chunk.
+  import Icon from '../../ui/Icon.svelte';
   import { untrack } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import Host from '../../characters/Host.svelte';
@@ -33,7 +34,7 @@
     </ul>
   {:else}
     <p class="say kana">{t('kiki.welcome.sound')}</p>
-    <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}>🔊 {t('kiki.test')}</button>
+    <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}><Icon name="volume" /> {t('kiki.test')}</button>
     {#if zero}<p class="hint warn" data-kiki-zero>{t('kiki.testZero')}</p>
     {:else}<p class="hint">{tested ? t('kiki.testHint') : t('kiki.set.earphones')}</p>{/if}
     <p class="about">{t('kiki.welcome.check')}</p>

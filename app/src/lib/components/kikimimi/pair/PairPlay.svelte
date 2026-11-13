@@ -7,6 +7,7 @@
   // the speaker of the round (role i % 2) sees the word and says it out loud (言えた); the other taps the picture they
   // heard. The reveal: 通じた！ or what it sounded like, 解説, and each word's mouth tip and line. 🔊 on a picture plays its
   // word again. What was heard lives in this page only, for the round.
+  import Icon from '../../ui/Icon.svelte';
   import { onDestroy, onMount, untrack } from 'svelte';
   import '#lib/i18n/kiki-pair.ts';
   import type { QuizGame } from '../game.svelte.ts';
@@ -130,7 +131,7 @@
     </button>
     {#if target && k === say && !reveal}<span class="tag">{t('kiki.pair.target')}</span>{/if}
     {#if picks}
-      <button type="button" class="ear" aria-label={t('kiki.pair.hear', { w: w.en })} aria-disabled={!v.speaks} data-pair-hear={k} data-sfx="tick" onclick={() => hearWord(k)}>🔊</button>
+      <button type="button" class="ear" aria-label={t('kiki.pair.hear', { w: w.en })} aria-disabled={!v.speaks} data-pair-hear={k} data-sfx="tick" onclick={() => hearWord(k)}><Icon name="volume" size={20} /></button>
     {/if}
   </div>
 {/snippet}
@@ -174,7 +175,7 @@
   {#if open && coop}
     <p class="hint">{speaker ? t('kiki.pair.coop.sayHint') : t('kiki.pair.coop.tap')}</p>
     {#if speaker}
-      <div class="acts"><button type="button" class="btn" data-pair-said data-sfx="confirm" onclick={() => game.answer(SAID)}>✓ {t('kiki.pair.coop.said')}</button></div>
+      <div class="acts"><button type="button" class="btn" data-pair-said data-sfx="confirm" onclick={() => game.answer(SAID)}><Icon name="check" /> {t('kiki.pair.coop.said')}</button></div>
     {/if}
   {:else if open}
     {#if hint}<p class="hint" role="status" data-pair-hint>{hint}</p>{/if}
@@ -196,7 +197,7 @@
     <section class="hows card" aria-label={t('kiki.pair.how')}>
       {#each words as w, k (w.en)}
         <div class="how" data-pair-how={k}>
-          <button type="button" class="ib" aria-label={t('kiki.pair.hear', { w: w.en })} aria-disabled={!v.speaks} data-sfx="tick" onclick={() => hearWord(k)}>▶︎</button>
+          <button type="button" class="ib" aria-label={t('kiki.pair.hear', { w: w.en })} aria-disabled={!v.speaks} data-sfx="tick" onclick={() => hearWord(k)}><Icon name="play" size={18} soft /></button>
           <div>
             <p class="w"><b lang="en">{w.en}</b> <span>{w.ja}</span></p>
             <p class="mouth">{w.how}</p>

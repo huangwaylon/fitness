@@ -10,6 +10,7 @@
   // The reveal: ○ / × and my words right, the spoken shape over the written (the bubble's sound marks: should've →
   // shoulda) with the karaoke as it replays, the Japanese, the trap's note, each slot's word (○, or × with what was put
   // there: co-op the team's), then 解説 (`why`).
+  import Icon from '../../ui/Icon.svelte';
   import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { TileCard } from '#lib/kikimimi/games/tile/def.ts';
@@ -178,7 +179,7 @@
     {#if it.ctx && !reveal}<p class="ctx" data-kiki-ctx>{it.ctx}</p>{/if}
     {#if (v.speaks || game.listenOnly) && !v.out}
       <div class="hear">
-        <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
+        <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}><Icon name="replay" /> {t('kiki.replay')}</button>
         {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
       </div>
     {/if}

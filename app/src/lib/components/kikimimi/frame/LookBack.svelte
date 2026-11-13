@@ -7,6 +7,7 @@
   import type { Snippet } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import Sheet from '../../ui/Sheet.svelte';
+  import Icon from '../../ui/Icon.svelte';
   import HearButton from './HearButton.svelte';
   import Note from './Note.svelte';
   import Why from './Why.svelte';
@@ -27,7 +28,7 @@
 </script>
 
 {#if i >= 0 && it}
-  <button type="button" class="chip prev" data-kiki-prev aria-label={t('kiki.prevQAsk')} data-sfx="open" onclick={() => (open = true)}><span aria-hidden="true">👀</span> {t('kiki.prevQ')}</button>
+  <button type="button" class="chip prev" data-kiki-prev aria-label={t('kiki.prevQAsk')} data-sfx="open" onclick={() => (open = true)}><Icon name="eye" size={18} /> {t('kiki.prevQ')}</button>
   <Sheet bind:open title={t('kiki.prevQ')} name="kiki.prev">
     <div class="card-body" data-kiki-prev-card={i}>
       {#if v.phase === 'answer' && Number.isFinite(v.limit)}

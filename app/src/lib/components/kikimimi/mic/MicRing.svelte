@@ -5,6 +5,7 @@
   // MicButton (the bare capture), TalkButton (a recogniser's take), pair/SayButton (はつおん's two words). `rest`: the
   // wrapper's data attributes; `children`: what follows the caption (MicButton's 「もう一度試す」).
   import type { Snippet } from 'svelte';
+  import Icon, { isIcon } from '../../ui/Icon.svelte';
 
   let { on, pressed, busy = false, level, label, icon, cap, track = true, onclick, children, ...rest }: {
     on: boolean;
@@ -12,6 +13,7 @@
     busy?: boolean;
     level: number;
     label: string;
+    /** An Icon name (mic, stop), else a glyph (… while checking). */
     icon: string;
     cap: string;
     /** The ring's track drawn while on. */
@@ -28,7 +30,7 @@
       {#if track}<circle class="track" cx="40" cy="40" r="37" />{/if}
       <circle class="lv" cx="40" cy="40" r="37" pathLength="1" stroke-dasharray="1" stroke-dashoffset={1 - level} />
     </svg>
-    <span class="ic" aria-hidden="true">{icon}</span>
+    <span class="ic" aria-hidden="true">{#if isIcon(icon)}<Icon name={icon} size={32} stroke={2.4} />{:else}{icon}{/if}</span>
   </button>
   <p class="cap" role="status">{cap}</p>
   {@render children?.()}
@@ -50,7 +52,7 @@
   .on .track { stroke: var(--edge); }
   .lv { opacity: 0; stroke: var(--coral-text); transition: stroke-dashoffset 80ms linear; }
   .on .lv { opacity: 1; }
-  .ic { font: 700 32px/1 var(--font-ui); color: var(--c-ink); }
+  .ic { display: grid; font: 700 32px/1 var(--font-ui); color: var(--c-ink); }
   .cap { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); text-align: center; }
   @media (prefers-reduced-motion: reduce) { .talk, .lv { transition: none; } }
 </style>

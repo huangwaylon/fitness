@@ -42,4 +42,4 @@
 </script>
 
 <MicRing on={st !== 'idle'} pressed={st === 'listening'} busy={st === 'hearing'} {level} label={st === 'listening' ? t('kiki.mic.btn.stop') : t('kiki.mic.btn.talk')}
-  icon={st === 'listening' ? '■' : st === 'hearing' ? '…' : '🎤'} {cap} onclick={tap} data-mic-button data-mic-state={st} />
+  icon={st === 'listening' ? 'stop' : st === 'hearing' ? '…' : 'mic'} {cap} onclick={tap} data-mic-button data-mic-state={st} />

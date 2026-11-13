@@ -15,6 +15,7 @@
   import { weekGoal } from '../prefs.ts';
   import { SERIALS, storyProgress } from '../story/serials.svelte.ts';
   import LetterShelf from '../path/LetterShelf.svelte';
+  import Phrases from '../../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { me }: { me: Who } = $props();
@@ -39,8 +40,8 @@
         {@const u = units.find((x) => x.id === s.id)!}
         <div class="st card" class:on={!!s.d} class:double={s.double} class:theirs={!s.d && s.partner} data-kiki-cando-stamp={s.id} data-stamped={s.d ? 1 : undefined} data-double={s.double || undefined}>
           <span class="seal" aria-hidden="true">{s.d ? domainIcon(u.domain) || '✓' : '？'}</span>
-          <b>{u.name}</b>
-          {#if u.short}<small>{u.short}</small>{/if}
+          <b><Phrases text={u.name} /></b>
+          {#if u.short}<small><Phrases text={u.short} /></small>{/if}
           {#if s.d}<span class="day">{t('kiki.zukan.stampDay', md(s.d))}</span>{/if}
           {#if s.double}<span class="two">{t('kiki.zukan.double')}</span>
           {:else if s.partner && partner}<span class="two soft">{t('kiki.zukan.partnerHas', { name: partner })}</span>{/if}
@@ -52,7 +53,7 @@
   <LetterShelf />
 
   <section class="sec card box" aria-labelledby="kk-st-week" data-kiki-week-stamps={weeks.length}>
-    <h3 id="kk-st-week">🗓️ {t('kiki.zukan.weeks')}</h3>
+    <h3 id="kk-st-week"><span aria-hidden="true">🗓️</span> {t('kiki.zukan.weeks')}</h3>
     {#if weeks.length}
       <p>{t('kiki.zukan.weeksN', { n: weeks.length })}</p>
       <ol class="dots" aria-hidden="true">{#each weeks.slice(-12) as m (m)}<li title={t('kiki.zukan.stampDay', md(m))}>✓</li>{/each}</ol>
@@ -60,7 +61,7 @@
   </section>
 
   <section class="sec card box" aria-labelledby="kk-st-ip" data-kiki-ippatsu={ippatsu.n}>
-    <h3 id="kk-st-ip">⚡ {t('kiki.zukan.ippatsu')}</h3>
+    <h3 id="kk-st-ip"><span aria-hidden="true">⚡</span> {t('kiki.zukan.ippatsu')}</h3>
     <p>{t('kiki.zukan.ippatsuN', { n: ippatsu.n })}</p>
     <ol class="badges">
       {#each IPPATSU_BADGES as b (b)}<li class:got={ippatsu.badges.includes(b)} data-kiki-badge={b} data-got={ippatsu.badges.includes(b) || undefined}>{b}</li>{/each}
@@ -69,7 +70,7 @@
   </section>
 
   <section class="sec card box" aria-labelledby="kk-st-cup" data-kiki-zukan-trophies={trophies.length}>
-    <h3 id="kk-st-cup">🏆 {t('kiki.zukan.trophies')}</h3>
+    <h3 id="kk-st-cup"><span aria-hidden="true">🏆</span> {t('kiki.zukan.trophies')}</h3>
     {#if trophies.length}
       <ul class="shelf">
         {#each trophies as [fri, cup] (fri)}
@@ -80,7 +81,7 @@
   </section>
 
   <section class="sec card box" aria-labelledby="kk-st-story" data-kiki-chapters={chapters.length}>
-    <h3 id="kk-st-story">🌙 {t('kiki.zukan.stories')}</h3>
+    <h3 id="kk-st-story"><span aria-hidden="true">🌙</span> {t('kiki.zukan.stories')}</h3>
     {#if chapters.length}
       <ul class="chs">
         {#each chapters as [u, ch, d] (`${u}-${ch}`)}

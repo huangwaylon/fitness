@@ -7,6 +7,7 @@
   // plays the call again for me alone). Co-op 「わけて メモ」: both hear the whole call, my rows every other one, the
   // partner's dashed. The reveal: ○ / × and my rows right, each row's right chip and its Japanese, the errand's basket
   // filling with what we caught (the rows still to come blank), then the trap's note, 解説 and the call's transcript.
+  import Icon from '../../ui/Icon.svelte';
   import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { CallCard } from '#lib/kikimimi/games/call/def.ts';
@@ -104,13 +105,13 @@
       <div class="ended obj-cream" data-kiki-call-ended={part}>
         <span class="head"><OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={44} eager /></span>
         <span class="nm">{name(it.speaker)}</span>
-        <span class="st">{part ? `📝 ${t('kiki.call.later')}` : `📞 ${t('kiki.call.ended')}`}</span>
+        <span class="st"><span aria-hidden="true">{part ? '📝' : '📞'}</span> {part ? t('kiki.call.later') : t('kiki.call.ended')}</span>
       </div>
     {/if}
     {#if it.ctx && !reveal}<p class="ctx" data-kiki-ctx>{it.ctx}</p>{/if}
     {#if (v.speaks || game.listenOnly) && !v.out && !calling}
       <div class="hear">
-        <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={again}>🔁 {t('kiki.replay')}</button>
+        <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={again}><Icon name="replay" /> {t('kiki.replay')}</button>
         {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
       </div>
     {/if}
@@ -152,7 +153,7 @@
 
 {#snippet action()}
   {#if v.phase === 'answer' && !v.out}
-    <button type="button" class="btn" data-kiki-call-done aria-disabled={!full || !!sent} data-sfx={full && !sent ? 'confirm' : 'none'} onclick={done}>✓ {t('kiki.call.done')}</button>
+    <button type="button" class="btn" data-kiki-call-done aria-disabled={!full || !!sent} data-sfx={full && !sent ? 'confirm' : 'none'} onclick={done}><Icon name="check" /> {t('kiki.call.done')}</button>
   {/if}
 {/snippet}
 

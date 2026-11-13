@@ -62,7 +62,7 @@
           data-sfx="tick" onclick={() => ((open = open === w ? null : w), (ja = false))}>
           <span class="head"><OfficialArt key={villagerArt(w, true)} alt="" size={46} /></span>
           <span class="txt">
-            <b>{rosterName(w)}{#if f.level >= 3}<span class="badge" title={t('kiki.reward.call')}>📞</span>{/if}</b>
+            <b>{rosterName(w)}{#if f.level >= 3}<span class="badge" role="img" aria-label={t('kiki.reward.call')}>📞</span>{/if}</b>
             <span class="hearts" aria-label={t('kiki.zukan.hearts', { n: f.level })}>{hearts(f.level)}</span>
             {#if f.level >= 1}<small class="greet" lang="en">“{greetingOf(ROSTER[w].personality, myName, rosterName(w)).en}”</small>{/if}
             <small class="next">{next ? t('kiki.zukan.next', { r: t(`kiki.reward.${next}`) }) : t('kiki.zukan.allRewards')}</small>
@@ -78,13 +78,13 @@
               {:else if r === 'letter'}
                 {@const l = letterOf(p, myName, rosterName(w))}
                 <div class="letter" data-kiki-letter={w}>
-                  <small>✉️ {t('kiki.zukan.letterFrom', { name: rosterName(w) })}</small>
+                  <small><span aria-hidden="true">✉️</span> {t('kiki.zukan.letterFrom', { name: rosterName(w) })}</small>
                   <p lang={ja ? 'ja' : 'en'}>{ja ? l.ja : l.en}</p>
                 </div>
               {:else if r === 'call'}
-                <span class="pill">📞 {t('kiki.reward.call')}</span>
+                <span class="pill"><span aria-hidden="true">📞</span> {t('kiki.reward.call')}</span>
               {:else if r === 'frame'}
-                <span class="pill">🖼️ {t('kiki.reward.frame')}</span>
+                <span class="pill"><span aria-hidden="true">🖼️</span> {t('kiki.reward.frame')}</span>
               {:else}
                 <figure class="photo" data-kiki-photo={w}>
                   <OfficialArt key={villagerArt(w)} alt={t('kiki.zukan.photoOf', { name: rosterName(w) })} size={150} />

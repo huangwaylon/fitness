@@ -171,7 +171,7 @@
         </div>
       {/if}
     {:else}
-      <p class="listen" data-role-listen>👂 {t('kiki.role.listen')}</p>
+      <p class="listen" data-role-listen><span aria-hidden="true">👂</span> {t('kiki.role.listen')}</p>
       {@render chips()}
     {/if}
   </div>

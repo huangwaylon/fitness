@@ -24,7 +24,7 @@
 </script>
 
 <div class="stage obj-cream" class:small data-kiki-frame="long" data-live={bar ? 'true' : undefined}>
-  <p class="kind" data-kiki-long-kind={real ? 'real' : 'drama'}>{real ? `🎙️ ${t('kiki.long.real')}` : `🎭 ${t('kiki.long.drama')}`}</p>
+  <p class="kind" data-kiki-long-kind={real ? 'real' : 'drama'}><span aria-hidden="true">{real ? '🎙️' : '🎭'}</span> {real ? t('kiki.long.real') : t('kiki.long.drama')}</p>
   <ul class="who" aria-label={t('kiki.long.who')}>
     {#each speakers as s, k (s.key)}
       <li class="sp" class:talk={talking.includes(k)} data-speaker={k}>

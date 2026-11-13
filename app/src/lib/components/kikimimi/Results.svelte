@@ -12,6 +12,7 @@
   // each speed.
   // A game's own over it (the tournament's: taikai/TaikaiResults.svelte): しずえ's line (`hostLine`) and a card on top
   // (`extra`: the trophy).
+  import Icon from '../ui/Icon.svelte';
   import type { Snippet } from 'svelte';
   import { canSlow, type QuizGame } from './game.svelte.ts';
   import { isCoop } from './listenView.ts';
@@ -87,6 +88,9 @@
     const head = fb.kind === 'up' ? t('kiki.fb.up', { skill: t(`kiki.skill.${fb.skill}`) }) : t(`kiki.fb.${fb.kind}`);
     return fb.next ? `${head} ${t('kiki.fb.next', { what: recWords(fb.next).title })}` : head;
   });
+  /** fbLine's parts, an opening quote kept on one line with the word after it (odd places): WebKit breaks after 「⁠ even
+   *  with the joiner (「つぎは 「 / おさらい 13問」です！」). */
+  const fbParts = $derived(fbLine.split(/([「“]\u2060?[^\s」”]+)/));
   const trips = $derived(recorded ? tripsOf({ r: recorded.r.map(([id, ok]) => ({ id, ok: ok === 1 })) }) : []);
   const tripLabel = (key: string) => (key.startsWith('f:') ? t(`kiki.f.${key.slice(2)}`) : t(`kiki.skill.${key.slice(2)}`));
   /** A unit's lesson (docs/curriculum.md "Lessons", "Playing together"): the strip with its unit's dots and the next core lesson; a
@@ -138,7 +142,7 @@
 {#snippet retry()}
   {#if misses && !ladders.length}
     <!-- under half right, the next step (しずえ says so): the leaf button -->
-    <button type="button" class="btn retry {fb?.kind === 'tough' ? 'green' : 'paper'}" data-kiki-retry data-sfx="confirm" onclick={onmissed}>🎯 {t('kiki.missedReplay')}</button>
+    <button type="button" class="btn retry {fb?.kind === 'tough' ? 'green' : 'paper'}" data-kiki-retry data-sfx="confirm" onclick={onmissed}><Icon name="target" /> {t('kiki.missedReplay')}</button>
   {/if}
 {/snippet}
 
@@ -160,7 +164,7 @@
     <section class="fb card" data-kiki-feedback={fb?.kind ?? ''}>
       {#if fbLine}
         <!-- しずえ's already speaking in the bubble above: her line here without a second head -->
-        <p class="fb-line kana">{fbLine}</p>
+        <p class="fb-line kana">{#each fbParts as p, i (i)}{#if i % 2}<span class="nw">{p}</span>{:else}{p}{/if}{/each}</p>
       {/if}
       <div class="trips" data-kiki-trips={trips.length}>
         <h3 class="sec-label in">{t('kiki.trips')}</h3>
@@ -198,7 +202,7 @@
               <p class="tags">{t('kiki.ladder.speeds')}</p>
               <div class="speeds">
                 {#each items.slice(l.from, l.from + l.n) as it, k (it.id)}
-                  <button type="button" class="chip" data-kiki-hear={l.from + k} data-sfx="tick" aria-label="{t('kiki.play')} {sx(SPEEDS[k])}×" onclick={() => game.hear(it)}>▶︎ {sx(SPEEDS[k])}×</button>
+                  <button type="button" class="chip" data-kiki-hear={l.from + k} data-sfx="tick" aria-label="{t('kiki.play')} {sx(SPEEDS[k])}×" onclick={() => game.hear(it)}><Icon name="play" size={16} soft /> {sx(SPEEDS[k])}×</button>
                 {/each}
               </div>
             </div>
@@ -296,6 +300,7 @@
   .soon, .mine { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .fb { display: grid; gap: 10px; padding: 12px 14px; }
   .fb-line { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
+  .fb-line .nw { white-space: nowrap; }
   .trips { display: grid; gap: 6px; }
   .trips .sec-label.in { margin: 0; }
   .trips ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }

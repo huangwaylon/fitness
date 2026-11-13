@@ -580,7 +580,7 @@
   "kiki.zukan.hear": "▶ 聞いてみる",
   "kiki.zukan.who": "聞いた相手",
   "kiki.zukan.lastDay": "最後に聞いた日 {m}/{d}",
-  "kiki.zukan.starHow": "★ 捕まえた ／ ＋★ 2つのアクセントで ／ ＋★ 電話・雑音でも",
+  "kiki.zukan.starHow": "★ 捕まえた\n＋★ 2つのアクセントで\n＋★ 電話・雑音でも",
   "kiki.zukan.voicesCaught": "声 捕まえた {k} / {n}",
   "kiki.zukan.voiceHow": "10問わかると捕まえた",
   "kiki.zukan.voiceHeard": "聞いた {n}問",

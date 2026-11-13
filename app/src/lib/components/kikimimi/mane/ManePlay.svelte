@@ -4,6 +4,7 @@
 </script>
 
 <script lang="ts">
+  import Icon from '../../ui/Icon.svelte';
   // A line of まねっこ シャドーイング (docs/kikimimi-mic.md "まねっこ シャドーイング"; games/mane/def.ts), its own chunk. The villager pops in
   // and says it once (the session's clip: listen only, the situation under them). Then, untimed: the line and its
   // Japanese, 重ねて言う (earphones: the mic's tap plays the line and I speak over it) or あとから言う (hear it with お手本,
@@ -181,7 +182,7 @@
         {#each tried.codes as c (c)}<li data-code={c}>{line(c, tried.o)}</li>{/each}
       </ul>
       <div class="row">
-        {#if take}<button type="button" class="btn small paper" data-mane-mine data-sfx="tick" onclick={hearMine}>🎧 {t('kiki.mane.mine')}</button>{/if}
+        {#if take}<button type="button" class="btn small paper" data-mane-mine data-sfx="tick" onclick={hearMine}><Icon name="headphones" /> {t('kiki.mane.mine')}</button>{/if}
         <span class="tries" data-mane-tries={tries}>{t('kiki.mane.try', { n: tries })}</span>
       </div>
       <div class="level-acts">
@@ -192,13 +193,13 @@
       <p class="ask">{t('kiki.mane.ask')}</p>
       <div class="way" role="radiogroup" aria-label={t('kiki.mane.way')}>
         {#each ['shadow', 'after'] as const as w (w)}
-          <button type="button" class="chip" role="radio" aria-checked={way === w} data-mane-pick={w} data-sfx="tick" onclick={() => pick(w)}>{w === 'shadow' ? '🎧 ' : ''}{t(`kiki.mane.way.${w}`)}</button>
+          <button type="button" class="chip" role="radio" aria-checked={way === w} data-mane-pick={w} data-sfx="tick" onclick={() => pick(w)}>{#if w === 'shadow'}<Icon name="headphones" size={18} />{/if}{t(`kiki.mane.way.${w}`)}</button>
         {/each}
       </div>
       <p class="hint">{t(`kiki.mane.hint.${way}`)}</p>
       {#if ref}<Contour ref={ref.track} {words} />{/if}
       <div class="talk" data-mane-ready={ref ? 1 : 0}>
-        {#if way === 'after'}<button type="button" class="btn small paper" data-mane-hear data-sfx="tick" aria-disabled={!ref} onclick={hear}>🔁 {t('kiki.mane.hear')}</button>{/if}
+        {#if way === 'after'}<button type="button" class="btn small paper" data-mane-hear data-sfx="tick" aria-disabled={!ref} onclick={hear}><Icon name="replay" /> {t('kiki.mane.hear')}</button>{/if}
         {#if ref}
           {#key way}<MicButton onheard={heard} onstart={way === 'shadow' ? hear : stopClip} {maxS} />{/key}
         {/if}

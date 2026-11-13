@@ -1,7 +1,7 @@
 <script lang="ts">
   // A round's choices (docs/kikimimi.md "The game"; kikimimi-engine.md "Shared UI" ChoiceGrid): dimmed until the first play ends, then one
   // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
-  // two, a dialogue's, so the transcript under them is never under the sticky つぎへ; the marked ones scrolled clear of it). Text, or pictures (art keys) in a
+  // two, a dialogue's and a picture round's, so the transcript under them is never under the sticky つぎへ; the marked ones scrolled clear of it). Text, or pictures (art keys) in a
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
   // Japanese (`ja`, the item's cja) under it, smaller. A reply round (`voice`) with the mic on: こたえて！ under them
   // (mic/MicAnswer.svelte, its own chunk, loaded at the first such round and kept to the game's end).
@@ -30,7 +30,7 @@
     dim: boolean;
     /** My pick, or null. */
     picked: number | null;
-    /** Only the marked ones (a dialogue's reveal). */
+    /** Only the marked ones (a dialogue's or a picture round's reveal). */
     onlyMarked?: boolean;
     /** A reply round: the answer may be said (こたえて！, docs/kikimimi-mic.md "こたえて！"). */
     voice?: boolean;
@@ -64,7 +64,7 @@
   });
 </script>
 
-<div class="choices" class:pics class:dim bind:this={grid} role="group" aria-label={t('kiki.pick')}>
+<div class="choices" class:pics class:only={onlyMarked} class:dim bind:this={grid} role="group" aria-label={t('kiki.pick')}>
   {#each choices as c, k (k)}
     {@const m = mark(k)}
     {#if !onlyMarked || m}
@@ -84,6 +84,8 @@
 <style>
   .choices { display: grid; gap: 10px; transition: opacity var(--dur-quick); }
   .choices.pics { grid-template-columns: 1fr 1fr; }
+  /* (the right picture alone, or with my pick: centred, as wide as in the 2×2) */
+  .choices.pics.only { grid-template-columns: repeat(auto-fit, calc(50% - 5px)); justify-content: center; }
   .choices.dim { opacity: .5; }
   .ch {
     position: relative; min-height: clamp(56px, 8vh, 72px); padding: 10px 16px; border-radius: var(--r-card);

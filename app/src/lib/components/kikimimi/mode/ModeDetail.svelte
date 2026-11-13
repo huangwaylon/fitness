@@ -85,8 +85,8 @@
       <!-- (no 問 count for a mic mode, nor for よるの おはなし) -->
       {#if meta.qs && !meta.requires}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
       <span class="tag">{t('kiki.chip.mins', { n: meta.mins })}</span>
-      {#if meta.coop}<span class="tag">👥 {t('kiki.chip.coop')}</span>{/if}
-      {#if meta.requires === 'mic'}<span class="tag">🎤 {t('kiki.micGame')}</span>{/if}
+      {#if meta.coop}<span class="tag"><span aria-hidden="true">👥</span> {t('kiki.chip.coop')}</span>{/if}
+      {#if meta.requires === 'mic'}<span class="tag"><span aria-hidden="true">🎤</span> {t('kiki.micGame')}</span>{/if}
     </div>
   </div>
 
@@ -113,7 +113,7 @@
   {#if m !== 'review' && !meta.requires}
     <TimerRow timer={v.timer} window={meta.window} onpick={(x) => (game.configure({ timer: x }), keepTimer(x))} />
   {/if}
-  {#if zero}<p class="hint warn" data-kiki-zero>🔊 {t('kiki.testZero')}</p>{/if}
+  {#if zero}<p class="hint warn" data-kiki-zero><span aria-hidden="true">🔊</span> {t('kiki.testZero')}</p>{/if}
 </div>
 
 <div class="level-acts">

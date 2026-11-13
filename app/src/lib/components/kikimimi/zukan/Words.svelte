@@ -116,7 +116,8 @@
   {/if}
 
   <Segmented label={t('kiki.zukan.filter')} attr="kiki-zukan-filter" value={filter} items={FILTERS} onpick={(f) => (filter = f)} />
-  <p class="how">{t('kiki.zukan.starHow')}</p>
+  <!-- the stars' legend, a way to earn one a row -->
+  <ul class="how">{#each t('kiki.zukan.starHow').split('\n') as l (l)}<li>{l}</li>{/each}</ul>
 
   {#each sections as s (s.key)}
     {@const k = s.cards.filter((p) => p.caught).length}
@@ -180,7 +181,7 @@
   .ttxt small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .top .chip { min-height: var(--hit); }
   .review { width: 100%; }
-  .how { margin: -4px 4px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
+  .how { list-style: none; margin: -4px 4px 0; padding: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .sec { display: grid; gap: 8px; }
   .shead { display: flex; align-items: center; gap: 10px; margin: 4px 4px 0; }
   .shead h3 { margin: 0; font: 700 var(--fs-body)/1.2 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }

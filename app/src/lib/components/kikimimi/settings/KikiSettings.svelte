@@ -6,6 +6,7 @@
   // (まるごと 聞く's real recordings' credits: LongCredits); last, マイク
   // (docs/kikimimi-mic.md "Where they show": MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
   // page's place, another). Its own chunk.
+  import Icon from '../../ui/Icon.svelte';
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
   import LongCredits from './LongCredits.svelte';
@@ -55,7 +56,7 @@
   <section class="sec" aria-labelledby="kk-sound">
     <h3 id="kk-sound" class="sec-label">{t('kiki.set.sound')}</h3>
     <div class="card box">
-      <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}>🔊 {t('kiki.test')}</button>
+      <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}><Icon name="volume" /> {t('kiki.test')}</button>
       {#if zero}<p class="hint warn" data-kiki-zero><Phrases text={t('kiki.testZero')} /></p>
       {:else if tested}<p class="hint"><Phrases text={t('kiki.testHint')} /></p>
       {:else}<p class="hint"><Phrases text={t('kiki.set.earphones')} /></p>{/if}

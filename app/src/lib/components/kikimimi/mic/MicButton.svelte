@@ -58,7 +58,7 @@
   }
 </script>
 
-<MicRing on={st === 'listening'} {level} label={st === 'listening' ? t('kiki.mic.btn.stop') : t('kiki.mic.btn.talk')} icon={st === 'listening' ? '■' : '🎤'}
+<MicRing on={st === 'listening'} {level} label={st === 'listening' ? t('kiki.mic.btn.stop') : t('kiki.mic.btn.talk')} icon={st === 'listening' ? 'stop' : 'mic'}
   cap={st === 'denied' ? t('kiki.mic.btn.denied') : st === 'listening' ? t('kiki.mic.btn.listening') : t('kiki.mic.btn.talk')} onclick={tap}
   data-mic-button data-mic-state={st} data-mic-speaking={speaking ? 1 : 0}>
   {#if st === 'denied' && onretry}<button type="button" class="btn small paper" data-mic-retry data-sfx="confirm" onclick={onretry}>↻ {t('kiki.mic.retry')}</button>{/if}

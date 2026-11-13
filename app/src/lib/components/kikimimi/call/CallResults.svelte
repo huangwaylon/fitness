@@ -55,7 +55,7 @@
   const again = () => playAgain(game, 'call', onagain);
 </script>
 
-{#snippet more()}<span class="sub" data-kiki-call-errands={errands}>📞 {t('kiki.call.errands', { k: errands, n: calls.length })}</span>{/snippet}
+{#snippet more()}<span class="sub" data-kiki-call-errands={errands}><span aria-hidden="true">📞</span> {t('kiki.call.errands', { k: errands, n: calls.length })}</span>{/snippet}
 
 <ResultsFrame v={frameV} {tally} of={cards.length} {firsts} {line} {more} {ondone} onagain={again}>
   <ReviewList {review} none={!shown.length}>

@@ -27,6 +27,7 @@
   import Host from '../../characters/Host.svelte';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import LessonDots from './LessonDots.svelte';
+  import ProgressBar from '../../ui/ProgressBar.svelte';
   import { villagerArt } from '#lib/art.ts';
   import { rosterName } from '../scene/stage.ts';
   import { keepLandmarkSeen, landmarksSeen } from '../prefs.ts';
@@ -67,7 +68,6 @@
   let toggled = $state<Partial<Record<Stage, boolean>>>(kept !== null ? keptToggles : {});
   const isOpen = (st: Path['stages'][number]) =>
     toggled[st.stage] ?? (st.stage === path.open || st.stage === path.here || party.includes(st.stage) || (filter !== 'all' && st.stops.some((s) => !s.hidden)));
-  const pct = (k: number, n: number) => `${Math.round((k / Math.max(1, n)) * 100)}%`;
 
   let root: HTMLDivElement;
   const scroller = (el: HTMLElement): HTMLElement | null => {
@@ -130,7 +130,7 @@
         {#if st.cleared}<span class="lm" role="img" aria-label={t(`kiki.landmark.${st.stage}`)} data-kiki-landmark={st.stage}>{LANDMARKS[st.stage]}</span>{/if}
         {#if units}
           <span class="count" data-kiki-stage-count={st.stamped}>
-            <span class="bar" aria-hidden="true"><i style:width={pct(st.stamped, st.stops.length)}></i></span>✓ {st.stamped} / {st.stops.length}
+            <span class="bar"><ProgressBar value={st.stamped} max={st.stops.length} h={6} fill="var(--c-leaf-edge)" decor /></span><span aria-hidden="true">✓</span> {st.stamped} / {st.stops.length}
           </span>
         {/if}
       {/snippet}
@@ -239,8 +239,7 @@
     background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); box-shadow: inset 0 0 0 2px var(--c-yuzu-lip);
   }
   .count { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1 var(--font-num); color: var(--leaf-text); white-space: nowrap; }
-  .bar { width: 44px; height: 6px; border-radius: 3px; background: var(--ctl-off); overflow: hidden; }
-  .bar i { display: block; height: 100%; border-radius: 3px; background: var(--c-leaf-edge); }
+  .bar { display: flex; width: 44px; }
   .fold { flex: none; width: 18px; text-align: center; font: 700 18px/1 var(--font-ui); color: var(--text-soft); rotate: 90deg; transition: rotate 160ms var(--ease-out, ease); }
   .fold.up { rotate: -90deg; }
   .sttog:not(:has(.count)) .fold { margin-left: auto; }

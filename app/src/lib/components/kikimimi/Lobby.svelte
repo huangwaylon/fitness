@@ -113,7 +113,7 @@
     <p class="prow static"><span class="prl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
       <span class="flag">{v.same ? '✓' : '—'}</span></p>
   {/if}
-  {#if zero}<p class="hint warn" data-kiki-zero>🔊 {t('kiki.testZero')}</p>{/if}
+  {#if zero}<p class="hint warn" data-kiki-zero><span aria-hidden="true">🔊</span> {t('kiki.testZero')}</p>{/if}
 </div>
 
 <div class="level-acts">

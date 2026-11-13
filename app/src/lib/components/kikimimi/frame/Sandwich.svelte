@@ -16,6 +16,7 @@
   // phone (srs.ts, "hard" on its day); 聞き取れた keeps nothing. Lazy: its own chunk (≤ 15 KB, kikimimi-budget.ts).
   import { onMount } from 'svelte';
   import Sheet from '../../ui/Sheet.svelte';
+  import Icon from '../../ui/Icon.svelte';
   import Transcript from '../Transcript.svelte';
   import SoundLine from '../scene/SoundLine.svelte';
   import MarkLegend from '../scene/MarkLegend.svelte';
@@ -108,7 +109,7 @@
           </ul>
         {:else if it.type === 'num'}<p class="ans">→ {it.choices[it.answer]}</p>{/if}
         {#if it.why}<Why text={it.why} />{/if}
-        <button type="button" class="btn small paper along" data-kiki-sand-along data-sfx="tick" onclick={() => player.hear(it)}>▶︎ {t('kiki.sand.along')}</button>
+        <button type="button" class="btn small paper along" data-kiki-sand-along data-sfx="tick" onclick={() => player.hear(it)}><Icon name="play" /> {t('kiki.sand.along')}</button>
       </div>
     {:else}
       <!-- blind: no words on screen, only the clip and its ▶︎ -->

@@ -6,6 +6,7 @@
   import { PHENOMENA } from '#lib/kikimimi/henshin.ts';
   import { currentHenshin, pickHenshin } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import ProgressBar from '../../ui/ProgressBar.svelte';
   import './round.ts';
 
   let { onpick }: { onpick: () => void } = $props();
@@ -29,9 +30,9 @@
           <span class="name"><b>{t(`kiki.henshin.ph.${s.id}`)}</b><small lang="en">{t(`kiki.henshin.eg.${s.id}`)}</small></span>
           <span class="tags">
             {#if k === h.today}<span class="tag today">{t('kiki.henshin.todayTag')}</span>{/if}
-            {#if s.mastered}<span class="tag done" data-kiki-henshin-mastered>✓ {t('kiki.henshin.mastered')}</span>{/if}
+            {#if s.mastered}<span class="tag done" data-kiki-henshin-mastered><span aria-hidden="true">✓</span> {t('kiki.henshin.mastered')}</span>{/if}
           </span>
-          <span class="bar" class:none={s.m === null} aria-hidden="true"><span style:width="{Math.round((s.m ?? 0) * 100)}%"></span></span>
+          <span class="bar"><ProgressBar value={s.m ?? 0} max={1} fill="var(--c-bar)" empty={s.m === null} decor /></span>
           <span class="val">{s.m === null ? t('kiki.henshin.unmeasured') : `${Math.round(s.m * 100)}%`}</span>
         </button>
       </li>
@@ -54,8 +55,6 @@
   .tags { display: flex; gap: 4px; justify-self: end; }
   .tag.today { background: var(--c-yuzu); color: var(--c-ink); }
   .tag.done { background: color-mix(in srgb, var(--c-leaf) 45%, var(--card)); }
-  .bar { height: 8px; border-radius: 4px; background: var(--ctl-off); overflow: hidden; }
-  .bar.none { background: transparent; box-shadow: inset 0 0 0 1.5px var(--edge); }
-  .bar span { display: block; height: 100%; background: var(--c-bar); border-radius: 4px; }
+  .bar { display: flex; }
   .val { justify-self: end; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }
 </style>

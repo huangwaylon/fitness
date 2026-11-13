@@ -580,7 +580,7 @@
   "kiki.zukan.hear": "▶ Hear it",
   "kiki.zukan.who": "Heard from",
   "kiki.zukan.lastDay": "Last heard {m}/{d}",
-  "kiki.zukan.starHow": "★ caught / +★ in 2 accents / +★ on a phone or in noise",
+  "kiki.zukan.starHow": "★ caught\n+★ in 2 accents\n+★ on a phone or in noise",
   "kiki.zukan.voicesCaught": "Voices caught {k} / {n}",
   "kiki.zukan.voiceHow": "Caught after 10 understood",
   "kiki.zukan.voiceHeard": "Heard {n}",

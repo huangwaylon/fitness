@@ -7,6 +7,7 @@
   // The reveal: ○ / × (+ the points against my ear), the combo, the right chip (○) and the pick (×), the one said before
   // a correction marked, what the customer said and its Japanese, the trap's note and 解説. A miss never ends the run:
   // the customer says it again.
+  import Icon from '../../ui/Icon.svelte';
   import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { PASS, type RushCard } from '#lib/kikimimi/games/rush/def.ts';
@@ -86,7 +87,7 @@
     {#if it.ctx && !reveal}<p class="ctx" data-kiki-ctx>{it.ctx}</p>{/if}
     {#if (v.speaks || game.listenOnly) && !v.out}
       <div class="hear">
-        <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
+        <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}><Icon name="replay" /> {t('kiki.replay')}</button>
         {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
       </div>
     {/if}
@@ -108,7 +109,7 @@
 
   {#if !v.out}
     <section class="ticket obj-cream" aria-labelledby="kk-rush-ask" data-kiki-rush-ticket>
-      <h3 id="kk-rush-ask" class="ask"><span class="ticket">🧾 {t('kiki.rush.ticket')}</span>{it.rush.ask}</h3>
+      <h3 id="kk-rush-ask" class="ask"><span class="ticket"><span aria-hidden="true">🧾</span> {t('kiki.rush.ticket')}</span>{it.rush.ask}</h3>
       {#if !reveal}
         <p class="hint-line">{!turn ? t('kiki.rush.watch') : v.phase === 'answer' ? t('kiki.rush.pick') : t('kiki.rush.listen')}</p>
       {/if}

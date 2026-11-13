@@ -54,5 +54,5 @@
 </script>
 
 <MicRing on={st === 'listening'} busy={st === 'checking'} {level} track={false} label={t(st === 'listening' ? `kiki.${game}.stop` : `kiki.${game}.talk`)}
-  icon={st === 'listening' ? '■' : st === 'checking' ? '…' : '🎤'} cap={st === 'listening' ? t(`kiki.${game}.listening`) : st === 'checking' ? t(`kiki.${game}.checking`) : idle}
+  icon={st === 'listening' ? 'stop' : st === 'checking' ? '…' : 'mic'} cap={st === 'listening' ? t(`kiki.${game}.listening`) : st === 'checking' ? t(`kiki.${game}.checking`) : idle}
   onclick={tap} {...{ [`data-${game}-mic`]: st }} />

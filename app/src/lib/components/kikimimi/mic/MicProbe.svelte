@@ -354,13 +354,13 @@
       <h3>{t('kiki.mic.perm')}</h3>
       {#if !perm}<p>{t('kiki.mic.perm.how')}</p>
       {#if retried}<p class="soft" data-mic-retried>{t('kiki.mic.retried')}</p>{/if}
-      {:else}<p class="res" data-mic-perm={perm.st}>{perm.st === 'granted' ? `✓ ${t('kiki.mic.perm.granted')}` : t(deniedKey(pwa, retried))}</p>{/if}
+      {:else}<p class="res" data-mic-perm={perm.st}>{#if perm.st === 'granted'}<span aria-hidden="true">✓</span> {t('kiki.mic.perm.granted')}{:else}{t(deniedKey(pwa, retried))}{/if}</p>{/if}
     </div>
     {#if perm && perm.st !== 'granted' && perm.st !== 'unsupported'}
       <button type="button" class="btn" data-mic-retry data-sfx="confirm" onclick={() => retryMic('probe', { reload: () => reloadNow('mic') })}>↻ {t('kiki.mic.retry')}</button>
     {/if}
     {#if !perm}
-      <button type="button" class="btn" data-mic-allow data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && allow()}>🎤 {t('kiki.mic.perm.ask')}</button>
+      <button type="button" class="btn" data-mic-allow data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && allow()}><Icon name="mic" /> {t('kiki.mic.perm.ask')}</button>
       <button type="button" data-sfx="tick" class="btn paper" data-mic-skip onclick={next}>{t('kiki.mic.skip')}</button>
     {:else}
       <button type="button" data-sfx="tick" class="btn" class:paper={perm.st !== 'granted'} data-mic-next onclick={() => go(perm?.st === 'granted' ? 'duplex' : 'result')}>{t('kiki.mic.next')}</button>
@@ -372,7 +372,7 @@
       <p>{againStep === 'open' ? t('kiki.mic.again.how') : t('kiki.mic.again.q')}</p>
     </div>
     {#if againStep === 'open'}
-      <button type="button" class="btn" data-mic-again-open data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && againOpen()}>🎤 {t('kiki.mic.again.open')}</button>
+      <button type="button" class="btn" data-mic-again-open data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && againOpen()}><Icon name="mic" /> {t('kiki.mic.again.open')}</button>
     {:else}
       <div class="row2">
         <button type="button" data-sfx="tick" class="btn paper" data-mic-asked="1" onclick={() => againAnswer(true)}>{t('kiki.mic.again.asked')}</button>
@@ -384,11 +384,11 @@
     <div class="card box" data-mic-ear={EARS[ear]}>
       <h3>{t('kiki.mic.duplex')}・{t(`kiki.mic.row.${EARS[ear] === 'none' ? 'speaker' : EARS[ear]}`)}</h3>
       {#if earStep === 'ready'}<p>{t(`kiki.mic.duplex.${EARS[ear]}`)}</p>
-      {:else if earStep === 'measuring'}<p role="status">🎧 {t('kiki.mic.working')}</p>
+      {:else if earStep === 'measuring'}<p role="status"><span aria-hidden="true">🎧</span> {t('kiki.mic.working')}</p>
       {:else}<p>{t('kiki.mic.duplex.q')}</p>{/if}
     </div>
     {#if earStep === 'ready'}
-      <button type="button" class="btn" data-mic-play data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && measure()}>▶ {t('kiki.mic.duplex.play')}</button>
+      <button type="button" class="btn" data-mic-play data-sfx="confirm" aria-disabled={busy} onclick={() => !busy && measure()}><Icon name="play" /> {t('kiki.mic.duplex.play')}</button>
       <button type="button" data-sfx="tick" class="btn paper" data-mic-noear onclick={noEar}>{EARS[ear] === 'none' ? t('kiki.mic.skip') : t('kiki.mic.duplex.noEar')}</button>
     {:else if earStep === 'rate'}
       <div class="row3">
@@ -424,7 +424,7 @@
         <p>{t('kiki.mic.say.how', { n: said + 1 })}</p>
         <p class="en" lang="en" data-mic-line={lines[said].clip}>{lines[said].en}</p>
         <p class="soft">{lines[said].ja}</p>
-        {#if sayStep === 'listening'}<p role="status" data-mic-listening data-mic-secs={Math.floor(recS)}>🎙️ {t('kiki.mic.say.listening')}{#if recS >= 1} {t('kiki.mic.say.secs', { s: Math.floor(recS) })}{/if}</p>
+        {#if sayStep === 'listening'}<p role="status" data-mic-listening data-mic-secs={Math.floor(recS)}><span aria-hidden="true">🎙️</span> {t('kiki.mic.say.listening')}{#if recS >= 1} {t('kiki.mic.say.secs', { s: Math.floor(recS) })}{/if}</p>
         {:else if sayStep === 'sending'}<p role="status">{phase === 'whisper' ? t('kiki.mic.working') : t('kiki.mic.say.sending')}</p>
         {:else if last}
           {#if last.err}<p class="res" data-mic-heard="err">{t('kiki.mic.say.fail', { err: last.err })}</p>
@@ -435,13 +435,13 @@
     {#if unusable}
       <button type="button" data-sfx="tick" class="btn" data-mic-next onclick={next}>{t('kiki.mic.next')}</button>
     {:else if sayStep === 'ready'}
-      <button type="button" data-sfx="tick" class="btn talk" data-mic-talk onclick={talk}>🎤 {t('kiki.mic.say.talk')}</button>
+      <button type="button" data-sfx="tick" class="btn talk" data-mic-talk onclick={talk}><Icon name="mic" /> {t('kiki.mic.say.talk')}</button>
       <div class="row2">
-        <button type="button" data-sfx="tick" class="btn paper" data-mic-hear onclick={hear}>🔊 {t('kiki.mic.say.hear')}</button>
+        <button type="button" data-sfx="tick" class="btn paper" data-mic-hear onclick={hear}><Icon name="volume" /> {t('kiki.mic.say.hear')}</button>
         <button type="button" data-sfx="tick" class="btn paper" data-mic-skip onclick={next}>{t('kiki.mic.skip')}</button>
       </div>
     {:else if sayStep === 'listening' && phase !== 'webkit'}
-      <button type="button" data-sfx="tick" class="btn talk" data-mic-stop onclick={() => stopTake?.()}>■ {t('kiki.mic.say.stop')}</button>
+      <button type="button" data-sfx="tick" class="btn talk" data-mic-stop onclick={() => stopTake?.()}><Icon name="stop" /> {t('kiki.mic.say.stop')}</button>
     {:else if sayStep === 'done'}
       <button type="button" data-sfx="tick" class="btn" data-mic-next onclick={nextLine}>{t('kiki.mic.next')}</button>
     {/if}

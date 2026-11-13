@@ -7,6 +7,7 @@
   // time up sends what's typed or placed. 🔁 as often as wanted (a replay: "hard" for review, never points). The reveal: ○ / ×, the line as said with
   // its sound mark over the changed words, the full form beside the spelling as said (「didja」＝ did you), the Japanese,
   // the trap's note, my words, and 聞きくらべ: the phrase はっきり (the careful take), ふつう and 速く.
+  import Icon from '../../ui/Icon.svelte';
   import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { splitFocus } from '#lib/kikimimi/bank.ts';
@@ -150,7 +151,7 @@
             <button type="button" class="btn small paper" data-kiki-take={take} data-sfx="tick" onclick={() => game.hear(takeOf(it, suffix))}>{t(`kiki.henshin.${take}`)}</button>
           {/each}
         {:else}
-          <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
+          <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}><Icon name="replay" /> {t('kiki.replay')}</button>
         {/if}
         {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
       </div>

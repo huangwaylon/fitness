@@ -146,7 +146,7 @@
     {/if}
 
     <details class="card more">
-      <summary data-sfx="tick">{t('kiki.prog.details')}</summary>
+      <summary data-sfx="tick">{t('kiki.prog.details')}<span class="chev"><Icon name="chevron-down" size={18} /></span></summary>
       <!-- one table: a single header row, each kind a sub-header row, so the columns line up -->
       <table data-kiki-details>
         <thead><tr><td></td><th scope="col">{t('kiki.prog.colRight')}</th><th scope="col">{t('kiki.prog.colFirst')}</th><th scope="col">{t('kiki.prog.colN')}</th></tr></thead>
@@ -210,7 +210,10 @@
   .days li.on { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); color: var(--c-ink); }
   .together p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .more { padding: 0 14px; }
-  .more summary { cursor: pointer; min-height: var(--hit); display: flex; align-items: center; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .more summary { cursor: pointer; min-height: var(--hit); display: flex; align-items: center; justify-content: space-between; font: 700 var(--fs-body)/1.2 var(--font-ui); list-style: none; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more .chev { display: grid; color: var(--text-soft); transition: rotate var(--dur-quick); }
+  .more[open] .chev { rotate: 180deg; }
   .more table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font: 700 var(--fs-s)/1.6 var(--font-ui); }
   .more th { text-align: left; font-weight: 700; }
   .more thead th { text-align: right; font-size: var(--fs-xs); color: var(--text-soft); white-space: nowrap; padding-left: 8px; }

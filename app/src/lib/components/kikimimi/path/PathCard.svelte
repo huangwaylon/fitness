@@ -17,7 +17,7 @@
 
 <button type="button" class="pathcard tile-btn" data-kiki-path-open data-sfx="open" onclick={onopen}>
   <span class="face" aria-hidden="true">
-    {#if cur}<OfficialArt key={villagerArt(cur.host, true)} alt="" size={52} eager />{:else}<span class="ico">🏝️</span>{/if}
+    {#if cur}<OfficialArt key={villagerArt(cur.host, true)} alt="" size={52} eager />{:else}<span class="ico" aria-hidden="true">🏝️</span>{/if}
   </span>
   <span class="txt">
     <b>{t('kiki.path.title')}</b>

@@ -59,7 +59,7 @@ test('サンド: from a solo reveal and a review row; まだ marks the item on t
   await sheet(page).locator(`[data-choice="${await kiki(page, (k) => k.right())}"]`).click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
   const open = sheet(page).locator(`[data-kiki-verdict] [data-kiki-sand-open="${first}"]`);
-  await expect(open).toHaveText('📖 読んでから もう一度');
+  await expect(open).toHaveText('読んでから もう一度');
   await shot(page, 'reveal');
   await open.click();
   await through(page, 'mada', 'reveal');

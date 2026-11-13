@@ -9,6 +9,7 @@
   import { VOICE_CAUGHT, sampleClip, voiceVillagers, voicesOf } from '#lib/kikimimi/zukan.ts';
   import { villagerArt } from '#lib/art.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
+  import Phrases from '../../ui/Phrases.svelte';
   import { rosterName } from '../scene/stage.ts';
   import { currentAnswers } from '../progress.svelte.ts';
   import { loadLevels, type ZukanData } from './data.svelte.ts';
@@ -54,8 +55,8 @@
         aria-busy={wait === c.id} data-sfx="tick" onclick={() => sample(c.id)}>
         <span class="face" aria-hidden="true"><OfficialArt key={villagerArt(c.face, true)} alt="" size={52} /></span>
         <span class="acc">{FLAG[c.accent]} {t(`kiki.accent.${c.accent}`)}</span>
-        <b>{t(`kiki.voice.${c.id}`)}</b>
-        <small class="n">{v ? t('kiki.zukan.voiceHeard', { n: v.heard }) : t('kiki.zukan.voiceNone')}</small>
+        <b><Phrases text={t(`kiki.voice.${c.id}`)} /></b>
+        <small class="n"><Phrases text={v ? t('kiki.zukan.voiceHeard', { n: v.heard }) : t('kiki.zukan.voiceNone')} /></small>
         {#if v}<span class="meter" aria-hidden="true"><i style:width="{Math.min(1, v.understood / VOICE_CAUGHT) * 100}%"></i></span>{/if}
         {#if v?.caught}<span class="got-mark">{t('kiki.zukan.voiceGot')}</span>{/if}
         <span class="play" aria-hidden="true">{data.sounding === `v:${c.id}` ? '🔊' : '▶︎'}</span>

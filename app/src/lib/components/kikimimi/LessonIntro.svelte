@@ -30,7 +30,7 @@
   </div>
   {#if mission}
     <p class="say kana" data-kiki-mission>{t('kiki.mission.call', { name: host })}<b>{t('kiki.mission.task')}</b></p>
-    <p class="rule">🏅 {t('kiki.mission.rule')}{#if shared}<small data-kiki-mission-team>{t('kiki.mission.team')}</small>{/if}<small>{t('kiki.mission.retry')}</small></p>
+    <p class="rule"><span aria-hidden="true">🏅</span> {t('kiki.mission.rule')}{#if shared}<small data-kiki-mission-team>{t('kiki.mission.team')}</small>{/if}<small>{t('kiki.mission.retry')}</small></p>
   {:else}
     <p class="goal" data-kiki-intro-goal><small>{t('kiki.lesson.goal')}</small>{unit.cando.short ?? unit.cando.ja}</p>
   {/if}

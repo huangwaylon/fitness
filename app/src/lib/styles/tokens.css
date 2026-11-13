@@ -67,10 +67,9 @@
   --font-body: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
   --lh:1.45;
 
-  /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/panel ---------- */
+  /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/panel · bars are pills ---------- */
   --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-pill:999px;
   --r-row:14px;     /* dense cards (the info sheets) */
-  --r-bar:4px;      /* bars, meters and their tracks */
   --r-game:22px;    /* ききみみ's game cards (a speaker's stage, a ticket, a desk): the world's look inside the sheet */
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */

@@ -27,6 +27,7 @@
   import { keepSerial, keepSleepTimer, lastSleepTimer, serialOf, storyProgress } from './serials.svelte.ts';
   import { StoryPlayer } from './player.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import ProgressBar from '../../ui/ProgressBar.svelte';
 
   interface Props {
     me: Who;
@@ -199,7 +200,7 @@
     {:else}
       <div class="bar" role="progressbar" aria-label={t('kiki.story.progress')} aria-valuemin={0} aria-valuemax={Math.round(total)} aria-valuenow={Math.round(pos)}
         aria-valuetext="{mmss(pos)} / {mmss(total)}">
-        <span class="track"><i style:width="{total ? (pos / total) * 100 : 0}%"></i></span>
+        <ProgressBar value={pos} max={total} h={6} track="color-mix(in srgb, var(--text-soft) 22%, transparent)" fill="color-mix(in srgb, var(--text-soft) 75%, transparent)" decor />
         <span class="time"><span data-kiki-story-pos>{mmss(pos)}</span> / {mmss(total)}</span>
       </div>
       <div class="controls">
@@ -271,8 +272,6 @@
   .titles p { margin: 0; font: 700 var(--fs-body)/1.45 var(--font-ui); color: var(--text-soft); }
   .between { margin: 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
   .bar { display: grid; gap: 4px; }
-  .track { display: block; height: 6px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--text-soft) 22%, transparent); overflow: hidden; }
-  .track i { display: block; height: 100%; border-radius: inherit; background: color-mix(in srgb, var(--text-soft) 75%, transparent); }
   .time { justify-self: end; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .controls { display: flex; justify-content: center; align-items: center; gap: 28px; }
   .ctl {

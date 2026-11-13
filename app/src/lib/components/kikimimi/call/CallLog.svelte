@@ -19,7 +19,7 @@
         {#if l.repair || l.drop}
           <p class="tags">
             {#if l.repair}<span class="tag repair" data-kiki-repair>{t('kiki.call.repair')}</span>{/if}
-            {#if l.drop}<span class="tag drop">📶 {t('kiki.call.drop')}</span>{/if}
+            {#if l.drop}<span class="tag drop"><span aria-hidden="true">📶</span> {t('kiki.call.drop')}</span>{/if}
           </p>
         {/if}
         <p class="en" lang="en">{l.en}</p>

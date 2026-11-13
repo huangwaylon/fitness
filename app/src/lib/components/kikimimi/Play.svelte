@@ -7,7 +7,7 @@
   // tap. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese (a reply's
   // on two lines) and the accent, the verdict (Verdict.svelte over frame/RevealFrame.svelte), the speaker's ✨ / 💦.
   // A dialogue (gist, next): both speakers' heads, the one talking bobbing; at the reveal the verdict and only the right
-  // choice and my pick (never under the sticky つぎへ), then its two-sided transcript
+  // choice and my pick (never under the sticky つぎへ; a picture round's too, its English kept in view), then its two-sided transcript
   // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent.
   // A game's own parts around the round (a lane's play view: the tournament's taikai/TaikaiPlay.svelte, みみ チェック's
   // check/CheckPlay.svelte): `show` above the frame (the show's bar), `gate` above the choices (the wager's bet, its
@@ -22,6 +22,7 @@
   // stopped), the question in Japanese (rung 4: the line with its chunk blanked); at a rung's reveal whether it climbed
   // (right on the first listen, every rung under it climbed: +100), and below the top no line and no replay (the next
   // rung's listen is the next, faster one); the top's reveal the line, its marks and how high the ladder went.
+  import Icon from '../ui/Icon.svelte';
   import Note from './frame/Note.svelte';
   import type { Snippet } from 'svelte';
   import { canSlow, hidesLine, type QuizGame } from './game.svelte.ts';
@@ -114,8 +115,8 @@
   {#if (v.speaks || game.listenOnly) && !v.out && !(reveal && hidesLine(it))}
     <!-- 🔁 / 🐢 under the bubble, the clip's own controls (おなじへや on another's phone: shown, never live; the host's phone plays them for the room) -->
     <div class="hear">
-      <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
-      {#if canSlow(it!)}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
+      <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}><Icon name="replay" /> {t('kiki.replay')}</button>
+      {#if canSlow(it!)}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}><Icon name="turtle" /> {t('kiki.slow')}</button>{/if}
       {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
     </div>
   {/if}
@@ -197,7 +198,7 @@
 
   <ChoiceGrid choices={it.choices} right={it.answer} pics={it.type === 'pic'} label={it.type === 'pic' ? (c) => PIC_JA[c] ?? '' : undefined}
     english={!(it.type === 'num' || (it.rung && it.type !== 'word'))} ja={it.type === 'pic' ? undefined : it.cja} {open} {reveal} dim={!open && !reveal && !mine} picked={mine?.k ?? null}
-    onlyMarked={reveal && !!dlg} voice={it.type === 'reply' && !show} onpick={(k) => game.answer(k)} />
+    onlyMarked={reveal && (!!dlg || it.type === 'pic')} voice={it.type === 'reply' && !show} onpick={(k) => game.answer(k)} />
 {/snippet}
 
 {#snippet after()}

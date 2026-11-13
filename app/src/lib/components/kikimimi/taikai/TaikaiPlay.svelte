@@ -42,7 +42,7 @@
     <span class="head" aria-hidden="true"><Host head size={34} animate={false} eager /></span>
     <span class="ttl"><small>{t('kiki.mode.taikai')}</small><b>{wager ? t('kiki.taikai.wagerRound') : t('kiki.taikai.round', { i: v.i + 1, n: v.n - 1 })}</b></span>
     {#if v.vs}
-      <span class="chips" data-kiki-chips={chips}>🪙 {t('kiki.taikai.chips', { n: chips })}</span>
+      <span class="chips" data-kiki-chips={chips}><span aria-hidden="true">🪙</span> {t('kiki.taikai.chips', { n: chips })}</span>
     {:else}
       <span class="score" data-kiki-team-right={v.team.right}>{t(solo ? 'kiki.taikai.meterSolo' : 'kiki.taikai.meter', { k: v.team.right })}</span>
     {/if}
@@ -62,10 +62,10 @@
 {#snippet gate()}
   {#if wager && !reveal}
     {#if mine?.bet}
-      <p class="bet done" data-kiki-bet-done={mine.bet}>🪙 {t('kiki.taikai.betDone', { n: mine.bet })}</p>
+      <p class="bet done" data-kiki-bet-done={mine.bet}><span aria-hidden="true">🪙</span> {t('kiki.taikai.betDone', { n: mine.bet })}</p>
     {:else if !v.out}
       <div class="wager card" data-kiki-wager>
-        <p class="q">🪙 {t('kiki.taikai.bet')}</p>
+        <p class="q"><span aria-hidden="true">🪙</span> {t('kiki.taikai.bet')}</p>
         <div class="bets" role="radiogroup" aria-label={t('kiki.taikai.bet')}>
           {#each BETS as b (b)}
             <button type="button" class="chip" role="radio" aria-checked={game.bet === b} data-kiki-bet={b} data-sfx="tick" onclick={() => game.setBet(b)}>{b}</button>
@@ -82,10 +82,10 @@
           <p class="big"><small>{t('kiki.taikai.answer')}</small><b lang="en">{choice(it.answer)}</b></p>
           <p class="mine"><small>{t('kiki.taikai.yours')}</small><s lang="en">{choice(mine.k)}</s></p>
         {/if}
-        <p class="delta" data-kiki-chips={chips}>🪙 {ok ? '+' : '−'}{mine!.bet} → {t('kiki.taikai.chips', { n: chips })}</p>
+        <p class="delta" data-kiki-chips={chips}><span aria-hidden="true">🪙</span> {ok ? '+' : '−'}{mine!.bet} → {t('kiki.taikai.chips', { n: chips })}</p>
       </div>
     {:else}
-      <p class="bet done" data-kiki-wager-reveal="none">🪙 {t('kiki.taikai.noBet')}</p>
+      <p class="bet done" data-kiki-wager-reveal="none"><span aria-hidden="true">🪙</span> {t('kiki.taikai.noBet')}</p>
     {/if}
   {/if}
 {/snippet}

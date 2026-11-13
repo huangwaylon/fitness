@@ -25,7 +25,7 @@
     <span class="medal" aria-hidden="true">{MEDAL[out.trophy]}</span>
     <b>{t(`kiki.trophy.${out.trophy}`)}</b>
     <p class="goal">{t('kiki.taikai.target', { k: out.target.silver })}・{t('kiki.taikai.gold', { k: out.target.gold })}</p>
-    {#if wager}<p class="wager" data-kiki-wager-result={wager.after}>🪙 {t('kiki.taikai.wagerLine', { bet: wager.bet, n: wager.after })}</p>{/if}
+    {#if wager}<p class="wager" data-kiki-wager-result={wager.after}><span aria-hidden="true">🪙</span> {t('kiki.taikai.wagerLine', { bet: wager.bet, n: wager.after })}</p>{/if}
     <small>{t('kiki.taikai.shelf')}</small>
   </section>
 {/snippet}

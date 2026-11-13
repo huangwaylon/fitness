@@ -29,7 +29,7 @@
 </script>
 
 {#if thanks}
-  <p class="mc card thanks" aria-live="polite" data-kiki-predict-thanks>🌙 {t('kiki.story.thanks')}</p>
+  <p class="mc card thanks" aria-live="polite" data-kiki-predict-thanks><span aria-hidden="true">🌙</span> {t('kiki.story.thanks')}</p>
 {:else if card && predict && chapter}
   <section class="mc card" aria-labelledby="kk-predict" data-kiki-predict={chapter.id}>
     <small class="slot">{t('kiki.story.morningSlot')} · {chapter.name}</small>

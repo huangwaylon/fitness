@@ -166,7 +166,7 @@
             <b>{w.title}</b>
             {#if w.line && !c.done}<small>{w.line}</small>{/if}
           </span>
-          {#if c.done}<span class="stamp" aria-label={t('kiki.menu.doneLabel')}>✓</span>
+          {#if c.done}<span class="stamp" role="img" aria-label={t('kiki.menu.doneLabel')}>✓</span>
           {:else if c.act}
             <button type="button" class="btn small" class:paper={c !== firstOpen} data-kiki-card-go={c.slot} data-sfx="confirm" onclick={() => onact(c.act!)}>{t('kiki.startSolo')}</button>
           {/if}

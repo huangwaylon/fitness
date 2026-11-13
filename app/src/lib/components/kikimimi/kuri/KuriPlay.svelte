@@ -7,6 +7,7 @@
   // content words' count; the reveal: the climb (or not), the sentence with the words you said lit and the others
   // grey, the missed ones named, what came through, the Japanese, then the note or 解説. What was heard lives in this
   // view's state only.
+  import Icon from '../../ui/Icon.svelte';
   import { onDestroy, onMount } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { BEAT, RUNGS, answerOf, climbOf, kuriAnswer, saidOk, skipAnswer, type Said } from '#lib/kikimimi/games/kuri/def.ts';
@@ -155,7 +156,7 @@
       {#if rec === 'none'}
         <button type="button" class="btn small paper" data-kuri-quit data-sfx="back" onclick={() => game.leave()}>{t('kiki.quitYes')}</button>
       {:else if mic === 'idle'}
-        <button type="button" class="btn small paper" data-kuri-again data-sfx="tick" onclick={() => game.replay()}>🔁 {t('kiki.kuri.again')}</button>
+        <button type="button" class="btn small paper" data-kuri-again data-sfx="tick" onclick={() => game.replay()}><Icon name="replay" /> {t('kiki.kuri.again')}</button>
         {#if mine?.miss}<button type="button" class="btn small paper" data-kuri-skip data-sfx="tick" onclick={skip}>{t('kiki.kuri.skip')}</button>{/if}
       {/if}
     </div>

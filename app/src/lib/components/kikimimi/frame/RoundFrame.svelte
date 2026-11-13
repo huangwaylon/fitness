@@ -10,6 +10,7 @@
   // game's own review row; not while the round goes on with that one's piece: `peek`). The round sits at the top in every phase and game, so nothing moves when the tiles, choices
   // or reveal come in and 前の問題 is always in the same place. Any game's.
   import type { Snippet } from 'svelte';
+  import Icon from '../../ui/Icon.svelte';
   import { hook, hookFlag } from '../../../world/devHooks.ts';
   import type { QuizGame } from '../game.svelte.ts';
   import LookBack from './LookBack.svelte';
@@ -128,7 +129,7 @@
   <div class="level-acts">
     <button type="button" class="btn" class:paper={done} class:armed={armed && !done} data-kiki-ready aria-pressed={done} aria-disabled={!armed} data-sfx={done ? 'none' : 'confirm'}
       onpointerdown={() => (pressed = armed)} onclick={(e) => tap(e, () => !done && onready())}>
-      {done ? t('kiki.readyWait') : `📖 ${t('kiki.readyTap')}`}
+      {#if done}{t('kiki.readyWait')}{:else}<Icon name="book-open" /> {t('kiki.readyTap')}{/if}
     </button>
   </div>
 {:else if action}

@@ -76,6 +76,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await sheet(page).locator('[data-kiki-start]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   // each question: the choices dimmed while the clip plays, one final tap in the answer window, the reveal
+  let pics = 0;
   for (let i = 0; i < 8; i++) {
     await runToQuestion(page, i);
     // levels 1-3: the plain stage, never a scene card
@@ -88,6 +89,12 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
     await expect(sheet(page).locator('[data-mark="right"]')).toHaveCount(1);
     // the marked choices never under the sticky 次へ
     await expect.poll(() => clearOfNext(page)).toBe(true);
+    // a picture round's reveal: only the right picture and my pick (as a dialogue's), its English still in view
+    if (await sheet(page).locator('.choices.pics').count()) {
+      pics++;
+      await expect(sheet(page).locator('[data-choice]')).toHaveCount(i === 3 ? 2 : 1);
+      await expect(sheet(page).locator('[data-kiki-en]')).toBeInViewport({ ratio: 1 });
+    }
     // the first listen's いっぱつ stamp (a badge, no points; none on a miss)
     await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveCount(i === 3 ? 0 : 1);
     if (i !== 3) await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveText('1回目で正解！');
@@ -98,6 +105,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
     }
     await sheet(page).locator('[data-kiki-next]').click();
   }
+  expect(pics, 'はまべ 1 deals a picture round').toBeGreaterThan(0);
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
   // 7 right: 7 × 100 (いっぱつ adds nothing)
   await expect.poll(() => kiki(page, (k) => k.view().players[0].score)).toBe(700);
