@@ -50,7 +50,11 @@ function lum(hex: string): number {
 }
 const contrast = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 const night = tokens.match(/:root\[data-tod="night"\]\s*\{([^}]*)\}/)![1];
-const tok = (block: string, name: string) => block.match(new RegExp(`${name}\\s*:\\s*(#[0-9A-Fa-f]{6})`))![1];
+/** A token's hex in a block: its own, or the primitive it names (`--text-soft: var(--n-soft)`: :root's --n-soft). */
+const tok = (block: string, name: string): string => {
+  const v = block.match(new RegExp(`${name}\\s*:\\s*(#[0-9A-Fa-f]{6}|var\\(--[\\w-]+\\))`))![1];
+  return v.startsWith('var(') ? tok(tokens, v.slice(4, -1)) : v;
+};
 
 describe('ききみみ readability', () => {
   it('uses the theme text colours, never the day-only --c-*-text ones (cream objects carry .obj-cream)', () => {

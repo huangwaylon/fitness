@@ -510,12 +510,12 @@
 
 <style>
   .ask-note { margin: 0 4px 8px; text-align: center; text-wrap: pretty; word-break: auto-phrase; }
-  /* おやすみ ものがたり: the night palette (tokens.css data-tod night) on the whole sheet, whatever the island's hour,
-     its paper a step deeper (the screen kept dim) */
+  /* おやすみ ものがたり: the night palette (tokens.css --n-*, data-tod night) on the whole sheet, whatever the island's
+     hour, a step deeper (the screen kept dim): the paper the night's lip, the cards its paper, under them deeper still */
   :global(dialog:has(> .inner > .kk-body[data-kiki-night])) {
-    --bg: #2E3A72; --surface: #2E3A72; --lip: #232D5E; --card: #3A4886;
-    --ctl: #3A4886; --ctl-off: #2A3468; --edge: #B9C3F0;
-    --text: #FFF6E0; --text-soft: #C9D0EE; --focus: #FFF6E0; --leaf-text: #9EE6A6; --coral-text: #FFD0C6;
+    --bg: var(--n-lip); --surface: var(--n-lip); --lip: #232D5E; --card: var(--n-bg);
+    --ctl: var(--n-bg); --ctl-off: #2A3468; --edge: var(--n-edge);
+    --text: var(--n-text); --text-soft: var(--n-soft); --focus: var(--n-text); --leaf-text: #9EE6A6; --coral-text: #FFD0C6;
     --scrim: rgba(20, 24, 56, .5); --hl: rgba(255, 246, 224, .12);
     color-scheme: dark;
   }

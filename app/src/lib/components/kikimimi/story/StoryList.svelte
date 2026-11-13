@@ -56,7 +56,7 @@
   header { display: flex; align-items: center; gap: 10px; }
   header h3 { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   header small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .host { flex: none; line-height: 0; border-radius: 50%; background: #3A4886; }
+  .host { flex: none; line-height: 0; border-radius: 50%; background: var(--n-bg); }
   ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .row {
     appearance: none; border: 0; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px;
