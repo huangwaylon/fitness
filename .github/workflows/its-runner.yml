@@ -1,15 +1,15 @@
 # The ITS booker's runner (its/runner/README.md): headed Chrome under xvfb solves Turnstile, curl scans every interval,
-# holds and outcomes go to the its-bot Worker's record. Live since the cutover (2026-11-13: mbp2's bot stopped, the repo
-# variable ITS_RUNNER_ENABLED = 1; unset it to stop every job before it starts). Every run checks out main, so what lands
-# there runs at the next run. Never two runners: this workflow's concurrency group, and the Worker's lease. Secrets live
-# only in the `its` environment (deployments from main only). The Actions log is public: the runner prints only
-# logs.public lines; its private log is age-encrypted to ITS_LOG_RECIPIENT and uploaded as the only artifact (14 days).
+# holds and outcomes go to the its-bot Worker's record (remote.DEFAULT_URL). The repo variable ITS_RUNNER_ENABLED = 1
+# turns it on; unset it to stop every job before it starts. Every run checks out main, so what lands there runs at the
+# next run. Never two runners: this workflow's concurrency group, and the Worker's lease. Secrets live only in the `its`
+# environment (deployments from main only). The Actions log is public: the runner prints only logs.public lines; its
+# private log is age-encrypted to ITS_LOG_RECIPIENT and uploaded as the only artifact (14 days).
 #
 # Timings (test_remote's workflow test parses this file): no new hold ITS_RUN_MIN after the job started, then main.py's
 # drain (≤ 15 min) and run_end, inside the Run step's timeout, inside the job's. A run lasts ~5.5 h and the schedule
-# ticks every 30 min, so most ticks find a run in progress: the gate job ends those at once (no pending run that the next
-# tick would cancel, the old "cancelled" noise), except the tick in the last 30 min of a run, which queues the next run
-# to start the moment this one ends. 開始's dispatch always queues.
+# ticks every 30 min, so most ticks find a run in progress: the gate job ends those at once (no pending run for the next
+# tick to cancel), except the tick in the last 30 min of a run, which queues the next run to start the moment this one
+# ends. 開始's dispatch always queues.
 name: ITS runner
 
 on:
@@ -44,7 +44,7 @@ jobs:
         run: |
           if [ "$GITHUB_EVENT_NAME" != schedule ]; then echo "go=1" >> "$GITHUB_OUTPUT"; echo "gate: $GITHUB_EVENT_NAME, go"; exit 0; fi
           # Another run of this workflow, not finished, started (or queued) under ITS_SKIP_YOUNGER_MIN ago. Any failure
-          # to ask: go (the concurrency group still queues it, as before the gate).
+          # to ask: go (the concurrency group still queues it).
           young=$(gh run list -R "$GITHUB_REPOSITORY" -w its-runner.yml -L 20 --json databaseId,status,startedAt,createdAt \
             --jq "[.[] | select(.databaseId != $GITHUB_RUN_ID and .status != \"completed\")
                    | select(((.startedAt // .createdAt) | sub(\"\\\\.[0-9]+Z$\"; \"Z\") | fromdateiso8601) > (now - $ITS_SKIP_YOUNGER_MIN * 60))]
@@ -65,7 +65,6 @@ jobs:
       cancel-in-progress: false
     environment: its
     env:
-      ITS_WORKER_URL: https://its-bot.island-fund-relay.workers.dev
       # The site's dates are Tokyo's (book_hotels reads them in Asia/Tokyo anyway; this makes the log's times agree).
       TZ: Asia/Tokyo
     steps:

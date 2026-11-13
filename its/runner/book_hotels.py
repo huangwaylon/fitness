@@ -5,8 +5,7 @@ Reads the calendar URL from calendar_url_cache.txt each cycle and never solves a
 CAPTCHA; main.py's URL monitor does that. Ends at the hold — confirm_booking's worker
 turns it into a reservation.
 
-Seams for the remote runner (main.py --remote, remote.py), each a no-op when unset so the local bot and the tests run
-as before:
+Seams for the remote runner (main.py --remote, remote.py), each a no-op when unset (the local bot, the tests):
 
 - `apply_settings(s)` installs the Worker's settings by reassigning the module globals the flow reads at call time
   (TARGET_DATES, SKIP_HOTELS/_SKIP_NORM, SEARCH_HOTELS/_SEARCH_NORM, PRIORITY_HOTELS/_PRIORITY_NORM, RETRY_DELAY,
@@ -43,7 +42,7 @@ from config import (
     SCAN_BACKOFF_MAX, SCAN_JITTER,
     SCAN_REUSE_SESSION, SCAN_REUSE_MAX_FAILURES,
     AUTO_CONFIRM, AUTO_CONFIRM_MIN_DAYS,
-    DEBUG_DUMP_INTERVAL, DEBUG_DUMP_KEEP, SKIP_PAST_DATES,
+    DEBUG_DUMP_INTERVAL, DEBUG_DUMP_KEEP,
 )
 
 SITE = 'https://as.its-kenpo.or.jp'
@@ -120,7 +119,7 @@ def still_wanted(target_date, hotel_name=None):
 
 
 def night_done(target_date):
-    """A night with a `confirmed` booking in the Worker's record (decision 1, its/README.md): not scanned, no new hold,
+    """A night with a `confirmed` booking in the Worker's record (one booking a night): not scanned, no new hold,
     and no second facility confirmed for it (confirm_booking's gate)."""
     return target_date in DONE_DATES
 
@@ -852,13 +851,12 @@ def _queue_confirmation(target_date, hotel_name, tag):
     be able to stop a booking thread — a hold plus a sent mail is worth keeping, so
     every failure here is logged and swallowed.
     """
-    allowed, why = confirm_allowed(target_date)
+    allowed, code, why = confirm_allowed(target_date)
     if not allowed:
         log(f"{tag}   {Y}Not completing {hotel_name} for {target_date}: {why}{X}")
         log(f"{tag}   {B}{Y}HUMAN NEEDED: the room is held and the mail to {EMAIL} "
             f"is sent. Open its link and finish it now.{X}")
-        notify('human_needed', date=target_date, hotel=hotel_name,
-               detail='auto_off' if not AUTO_CONFIRM else 'near_date')
+        notify('human_needed', date=target_date, hotel=hotel_name, detail=code)
         return
     try:
         import confirm_booking
@@ -1081,8 +1079,6 @@ def _ms_since(t0):
 def _future_dates(target_dates):
     """Drop dates that have already passed — the site marks those cells `over`,
     so polling them asks forever about something that cannot happen."""
-    if not SKIP_PAST_DATES:
-        return list(target_dates)
     today = tokyo_today().isoformat()
     return [d for d in target_dates if d >= today]
 
@@ -1128,34 +1124,35 @@ def days_until(target_date, today=None):
 
 
 def confirm_allowed(target_date, today=None):
-    """`(allowed, reason)` — may the application for this date be *completed*?
+    """`(allowed, code, why)` — may the application for this date be *completed*? `code` is the refusal as the
+    human_needed detail (`auto_off`, else `near_date`; '' when allowed), `why` the prose for the log.
 
     Completing means 予約確定, with a real cancellation liability. Free web cancellation
     ends at D−10, so anything nearer is left for a person. Gates the final POSTs only:
     the hold and the mail still happen, which is what lets a human finish by hand.
 
     Fails closed — wrongly committing costs a non-refundable booking, wrongly refusing
-    costs one slot.
+    costs one slot. An unreadable date or floor is refused as `near_date`: a person decides.
     """
     if not AUTO_CONFIRM:
-        return False, 'AUTO_CONFIRM is off'
+        return False, 'auto_off', 'AUTO_CONFIRM is off'
 
     left = days_until(target_date, today)
     if left is None:
-        return False, f'cannot read a date out of {target_date!r}'
+        return False, 'near_date', f'cannot read a date out of {target_date!r}'
 
     try:
         minimum = int(AUTO_CONFIRM_MIN_DAYS)
     except (TypeError, ValueError):
-        return False, f'AUTO_CONFIRM_MIN_DAYS is not a number: {AUTO_CONFIRM_MIN_DAYS!r}'
+        return False, 'near_date', f'AUTO_CONFIRM_MIN_DAYS is not a number: {AUTO_CONFIRM_MIN_DAYS!r}'
     if minimum < 0:
-        return False, f'AUTO_CONFIRM_MIN_DAYS is negative: {minimum}'
+        return False, 'near_date', f'AUTO_CONFIRM_MIN_DAYS is negative: {minimum}'
 
     if left < minimum:
-        return False, (f'{target_date} is {left} day(s) away, inside the '
+        return False, 'near_date', (f'{target_date} is {left} day(s) away, inside the '
                        f'{minimum}-day floor — free cancellation ends at D-10, '
                        f'so a person has to decide on this one')
-    return True, ''
+    return True, '', ''
 
 
 def scan_and_book_month(month_str, target_dates, label, stop_event=None):
@@ -1172,8 +1169,8 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
 
     The whole loop body is guarded — this is the only thing scanning this month, it is
     a daemon, and main() never joins it, so an escaping exception would stop the month
-    silently. `stop_event` is for the tests, so a finished test's scanner cannot book
-    into the next one's fixtures.
+    silently. `stop_event` stops it: the Supervisor's for a month gone from the dates, a test's so a finished
+    test's scanner cannot book into the next one's fixtures.
     """
     tag = f"[{label}]"
     month_ym = f"{month_str}-01"
@@ -1290,7 +1287,7 @@ def scan_and_book_month(month_str, target_dates, label, stop_event=None):
                     continue
 
                 if not reuse:
-                    tokens = None   # re-mint every cycle, as before
+                    tokens = None   # re-mint every cycle
 
                 failures = 0
 

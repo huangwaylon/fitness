@@ -5,11 +5,8 @@
 `worker()` drains that queue serially: read the applicant form, then 申込する → 確認 →
 申込受付番号. That commit is the first irreversible, money-bearing action in the program.
 
-**curl reads; only Chrome commits.** `POST /apply/confirm` answers 302 →
-/service_category/index for curl whatever it sends (0 for 3 in the logs, and refused
-across every variation in its/SITE.md §5) while Chrome is 2 for 2, so the curl attempt
-was deleted rather than kept as a dead first try. The GET and the form parse work fine
-over curl and stay there.
+**curl reads; only Chrome commits** (why: its/SITE.md §5). The GET and the form parse
+run over curl.
 
 Three things guard the commit:
 
@@ -41,6 +38,7 @@ from config import (
 )
 import book_hotels as bh
 from book_hotels import log, R, G, Y, C, B, X, BASE
+from logs import _CODE
 
 # Replaceable so the tests can inject messages without an IMAP server, exactly as
 # `book_hotels._log_handler` is replaceable. Signature: (since_epoch) -> [str]
@@ -56,16 +54,21 @@ NIGHT_CONFIRMED = 'night_confirmed'
 
 
 def _gate(target_date, hotel_name, stage):
-    """No second facility for a night already confirmed (`bh.night_done`), then `bh.confirm_allowed`, the stay still
-    wanted (the date a target, the hotel eligible: the settings may have changed since the hold), then `_commit_gate`
-    when set. Fails closed if the gate raises."""
+    """`(allowed, code)`. No second facility for a night already confirmed (`bh.night_done`), then
+    `bh.confirm_allowed` (its prose logged here), the stay still wanted (`not_wanted`: the date a target, the hotel
+    eligible: the settings may have changed since the hold), then `_commit_gate` when set. Fails closed if the gate
+    raises."""
     if bh.night_done(target_date):
         return False, NIGHT_CONFIRMED
-    allowed, why = bh.confirm_allowed(target_date)
-    if allowed and not bh.still_wanted(target_date, hotel_name):
-        allowed, why = False, 'not_wanted: the date was removed or the hotel skipped since the hold'
-    if not allowed or _commit_gate is None:
-        return allowed, why
+    allowed, code, why = bh.confirm_allowed(target_date)
+    if not allowed:
+        log(f"[MAIL {str(target_date)[5:]}]   {Y}{stage}: {why}{X}")
+        return False, code
+    if not bh.still_wanted(target_date, hotel_name):
+        log(f"[MAIL {str(target_date)[5:]}]   {Y}{stage}: the date was removed or the hotel skipped since the hold{X}")
+        return False, 'not_wanted'
+    if _commit_gate is None:
+        return True, ''
     try:
         return _commit_gate(target_date, hotel_name, stage)
     except Exception as e:
@@ -214,12 +217,11 @@ def _fetch_links(since_epoch):
 # ── the pending-hold queue ───────────────────────────────────────────
 # One worker drains this serially, which buys two things:
 #
-# - A booking thread no longer blocks for CONFIRM_MAIL_TIMEOUT plus a browser submit,
+# - A booking thread never blocks for CONFIRM_MAIL_TIMEOUT plus a browser submit,
 #   so several dates opening at once are all held at full speed.
-# - **Two holds can no longer consume the same emailed link.** They did: two dates
-#   held in the same second on 2026-08-19 both got the same `c=` UUID from the old
-#   newest-mail-wins matcher, filing one application against an unknown date and
-#   wasting the other hold.
+# - **Two holds never consume the same emailed link** (`_take_link`): two dates held
+#   in the same second would otherwise take the same `c=` UUID, filing one application
+#   against an unknown date and wasting the other hold.
 #
 # Safe to run off-thread because `/apply/new?c=<uuid>` establishes its own session —
 # which is also why the browser fallback works from a fresh Chrome.
@@ -500,10 +502,7 @@ _browser_submit = None
 def _commit(link, post, target_date, hotel_name, tag):
     """File the application in real Chrome. The only way that works.
 
-    curl is **not** tried. `POST /apply/confirm` answers 302 → /service_category/index
-    for curl whatever it sends — 0 for 3 in the logs, and refused across every variation
-    in the its/SITE.md §5 bisect matrix — while Chrome is 2 for 2. Reading the form over
-    curl still works fine, so only the two committing POSTs moved.
+    curl is **not** tried: the site refuses it (its/SITE.md §5).
 
     Hidden fields are dropped: the DOM already has `_method` and `authenticity_token`,
     and the scraped copies belong to a *different* page load.
@@ -605,10 +604,10 @@ def _run_leg(c, link, target_date, hotel_name, tag, label):
         bh._dump_debug(label, 'step10_unmapped_form', s, body, throttle=False)
         return 'deferred', 'unmapped'
 
-    allowed, why = bh.confirm_allowed(target_date)
+    allowed, code, why = bh.confirm_allowed(target_date)
     if not allowed:
         log(f"{tag}   {Y}Gate closed while reading the mail: {why}{X}")
-        return 'deferred', why
+        return 'deferred', code
 
     return _commit(link, post, target_date, hotel_name, tag)
 
@@ -691,27 +690,15 @@ def maybe_filed(status, detail):
     return False
 
 
-_CODE = re.compile(r'[a-z][a-z0-9_]{0,39}\Z')
-
-
 def outcome_code(status, detail):
     """The human_needed detail for a leg that ended without a number: the leg's own code (`hold_expired`,
-    `submit_unknown`, `no_completion`, `room_taken`, `unmapped`, `lease_stale`, `confirming_unacked`, …), a gate's
-    reason as a code (`auto_off`, `near_date`, `not_wanted`), else `leg_<status>`."""
-    d = detail if isinstance(detail, str) else ''
-    if _CODE.match(d):
-        return d
-    if d.startswith('not_wanted'):
-        return 'not_wanted'
-    if d.startswith('AUTO_CONFIRM is off'):
-        return 'auto_off'
-    if 'day(s) away' in d:
-        return 'near_date'
-    return f'leg_{status}'
+    `submit_unknown`, `no_completion`, `room_taken`, `unmapped`, …) or a gate's (`auto_off`, `near_date`,
+    `not_wanted`, `lease_stale`, `confirming_unacked`), else `leg_<status>`."""
+    return detail if isinstance(detail, str) and _CODE.match(detail) else f'leg_{status}'
 
 
 def _skip_confirmed_night(tag, target_date, hotel_name):
-    """Decision 1 (its/README.md): one confirmed booking a night. This hold is left to lapse (the site cancels an
+    """One confirmed booking a night: this hold is left to lapse (the site cancels an
     unfiled hold free after 30 min); private log, a public count, no human_needed."""
     log(f"{tag}   {Y}Not filing {hotel_name} for {target_date}: that night already has a confirmed booking (or one "
         f"whose outcome is unknown); the hold is left to lapse (free){X}")

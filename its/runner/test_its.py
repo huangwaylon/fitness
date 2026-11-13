@@ -556,7 +556,6 @@ class Env:
         bh.SCAN_JITTER = 0
         bh.SCAN_BACKOFF_MAX = 0.2
         bh.DEBUG_DUMP_INTERVAL = 0    # no throttling, so dumps are countable
-        bh.SKIP_PAST_DATES = True
         bh.SCAN_REUSE_SESSION = True
         bh.SCAN_REUSE_MAX_FAILURES = 3
         STATE.hits.clear()
@@ -1039,10 +1038,15 @@ def test_scanner_books_and_survives_errors(port):
 
 def test_scanner_skips_past_dates(port):
     """A month whose dates have all gone by must not keep hammering the site."""
+    cycles = []
+
+    def dates():   # read once a cycle: three reads are three idle cycles
+        cycles.append(1)
+        return ['1999-01-01']
     with Env(port) as env:
-        t, stop = _run_scanner('1999-01', ['1999-01-01'], 'OLD')
+        t, stop = _run_scanner('1999-01', dates, 'OLD')
         try:
-            time.sleep(1)
+            check('past-dates: the scanner cycles', _wait_for(lambda: len(cycles) >= 3), str(len(cycles)))
             check('past-dates: no requests made for a past month',
                   STATE.count('calendar_select') == 0, str(STATE.hits[:5]))
             check('past-dates: thread still alive', t.is_alive())
@@ -1320,40 +1324,40 @@ def test_confirm_gate():
         ]
         for target, expect_days, expect_ok in cases:
             got_days = bh.days_until(target, today)
-            ok, why = bh.confirm_allowed(target, today)
+            ok, code, why = bh.confirm_allowed(target, today)
             check(f'gate: {target} is {expect_days} days out',
                   got_days == expect_days, str(got_days))
             check(f'gate: {target} ({expect_days}d) '
                   f'{"allowed" if expect_ok else "blocked"}',
-                  ok is expect_ok, f'{ok} — {why}')
+                  ok is expect_ok and code == ('' if expect_ok else 'near_date'), f'{ok} {code} — {why}')
 
         # A blocked date must say why, so the operator knows to step in.
-        ok, why = bh.confirm_allowed('2026-09-05', today)
+        ok, code, why = bh.confirm_allowed('2026-09-05', today)
         check('gate: refusal explains itself', not ok and '4 day(s) away' in why, why)
 
         # Fails closed. Note `20260905` and `2026-W36-6` are accepted by
         # date.fromisoformat on 3.11+, so the gate pins the format itself.
         for bad in (None, '', 'tomorrow', '2026-13-45', '20260905', '2026-W36-6',
                     '2026-09-05 00:00', ' 2026-09-05', 12345, [], {}):
-            ok, why = bh.confirm_allowed(bad, today)
-            check(f'gate: unparseable date {bad!r} is refused', not ok, f'{ok} — {why}')
+            ok, code, why = bh.confirm_allowed(bad, today)
+            check(f'gate: unparseable date {bad!r} is refused', not ok and code == 'near_date', f'{ok} — {why}')
             check(f'gate: days_until({bad!r}) is None',
                   bh.days_until(bad, today) is None)
 
         for bad in (None, '', 'eleven', float('nan')):
             bh.AUTO_CONFIRM_MIN_DAYS = bad
-            ok, why = bh.confirm_allowed('2027-01-01', today)
-            check(f'gate: unusable floor {bad!r} is refused', not ok, f'{ok} — {why}')
+            ok, code, why = bh.confirm_allowed('2027-01-01', today)
+            check(f'gate: unusable floor {bad!r} is refused', not ok and code == 'near_date', f'{ok} — {why}')
         bh.AUTO_CONFIRM_MIN_DAYS = -5
-        ok, why = bh.confirm_allowed('2027-01-01', today)
-        check('gate: negative floor is refused', not ok, f'{ok} — {why}')
+        ok, code, why = bh.confirm_allowed('2027-01-01', today)
+        check('gate: negative floor is refused', not ok and code == 'near_date', f'{ok} — {why}')
 
         # ── the master switch wins over everything ──
         bh.AUTO_CONFIRM = False
         bh.AUTO_CONFIRM_MIN_DAYS = 11
-        ok, why = bh.confirm_allowed('2027-01-01', today)
+        ok, code, why = bh.confirm_allowed('2027-01-01', today)
         check('gate: AUTO_CONFIRM=False blocks even a distant date',
-              not ok and 'AUTO_CONFIRM is off' in why, f'{ok} — {why}')
+              not ok and code == 'auto_off' and 'AUTO_CONFIRM is off' in why, f'{ok} — {why}')
 
         # ── a date crossing the boundary while the process runs ──
         bh.AUTO_CONFIRM = True
@@ -1367,42 +1371,35 @@ def test_confirm_gate():
 
 
 def test_future_dates():
-    saved = bh.SKIP_PAST_DATES
-    try:
-        bh.SKIP_PAST_DATES = True
-        out = bh._future_dates(['1999-01-01', '2999-12-31'])
-        check('future: past date dropped', out == ['2999-12-31'], str(out))
-        today = bh.tokyo_today().isoformat()
-        check('future: today (Tokyo) is kept', today in bh._future_dates([today]))
-        check('future: all past -> empty', bh._future_dates(['1999-01-01']) == [])
-        bh.SKIP_PAST_DATES = False
-        check('future: flag off keeps everything',
-              bh._future_dates(['1999-01-01']) == ['1999-01-01'])
-    finally:
-        bh.SKIP_PAST_DATES = saved
+    out = bh._future_dates(['1999-01-01', '2999-12-31'])
+    check('future: past date dropped', out == ['2999-12-31'], str(out))
+    today = bh.tokyo_today().isoformat()
+    check('future: today (Tokyo) is kept', today in bh._future_dates([today]))
+    check('future: all past -> empty', bh._future_dates(['1999-01-01']) == [])
 
 
 def test_dates_are_tokyo_dates():
-    """R4: at 00:30 JST on D−10 the runner's UTC clock still says D−11. Every date decision is Tokyo's: D−10 is
+    """At 00:30 JST on D−10 the runner's UTC clock still says D−11. Every date decision is Tokyo's: D−10 is
     inside the free-cancellation floor, and yesterday (Tokyo) is past."""
     from datetime import datetime, timezone
-    saved = (bh._now, bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.SKIP_PAST_DATES)
+    saved = (bh._now, bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS)
     stay = date(2027, 3, 20)
     # 00:30 JST on D−10 is 15:30 UTC on D−11.
     at = datetime(2027, 3, 9, 15, 30, tzinfo=timezone.utc).timestamp()
     try:
         bh._now = lambda: at
-        bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.SKIP_PAST_DATES = True, 11, True
+        bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS = True, 11
         check('tokyo: today is the 10th in Tokyo (the 9th in UTC)', bh.tokyo_today() == date(2027, 3, 10),
               str(bh.tokyo_today()))
         check('tokyo: D−10, not D−11', bh.days_until(stay.isoformat()) == 10, str(bh.days_until(stay.isoformat())))
-        ok, why = bh.confirm_allowed(stay.isoformat())
-        check('tokyo: so the 11-day floor refuses the commit', not ok and '10 day(s)' in why, why)
+        ok, code, why = bh.confirm_allowed(stay.isoformat())
+        check('tokyo: so the 11-day floor refuses the commit', not ok and code == 'near_date' and '10 day(s)' in why,
+              why)
         check('tokyo: the 9th is past in Tokyo', bh._future_dates(['2027-03-09', '2027-03-10']) == ['2027-03-10'])
         bh._now = lambda: at - 3600   # 23:30 JST on the 9th: D−11 everywhere
         check('tokyo: an hour earlier it is D−11', bh.confirm_allowed(stay.isoformat())[0] is True)
     finally:
-        bh._now, bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.SKIP_PAST_DATES = saved
+        bh._now, bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS = saved
 
     import builtins
     real_import = builtins.__import__
@@ -1577,24 +1574,23 @@ def test_watchdog_restarts_a_dead_worker():
         started.append(1)
         raise RuntimeError('worker exploded')
 
-    w = main._Worker('doomed', dies)
-    w.start()
-    for _ in range(50):
-        if not w.thread.is_alive():
-            break
-        time.sleep(0.02)
-    check('watchdog: worker really died', not w.thread.is_alive())
-    check('watchdog: restart reported', w.ensure_alive() is True)
-    for _ in range(50):
-        if len(started) >= 2:
-            break
-        time.sleep(0.02)
-    check('watchdog: worker was restarted', len(started) >= 2, str(started))
-    check('watchdog: restart counted', w.restarts == 1, str(w.restarts))
+    hook, threading.excepthook = threading.excepthook, lambda _args: None   # the deaths are the point: no tracebacks
+    held = threading.Event()
+    try:
+        w = main._Worker('doomed', dies)
+        w.start()
+        check('watchdog: worker really died', _wait_for(lambda: not w.thread.is_alive(), 5))
+        check('watchdog: restart reported', w.ensure_alive() is True)
+        check('watchdog: worker was restarted', _wait_for(lambda: len(started) >= 2, 5), str(started))
+        check('watchdog: restart counted', w.restarts == 1, str(w.restarts))
 
-    alive = main._Worker('fine', lambda: time.sleep(5))
-    alive.start()
-    check('watchdog: living worker left alone', alive.ensure_alive() is False)
+        alive = main._Worker('fine', lambda: held.wait(5))
+        alive.start()
+        check('watchdog: living worker left alone', alive.ensure_alive() is False)
+    finally:
+        held.set()
+        _wait_for(lambda: not w.thread.is_alive(), 5)
+        threading.excepthook = hook
 
 
 def test_captcha_timeout_wrapper():
@@ -2302,8 +2298,8 @@ def test_config_timings_are_checked():
 
 
 def test_check_env_is_its_own_module():
-    """`check_env.py` is the preflight; `main.py --check` runs it. An empty applicant fails it, with no secret
-    printed."""
+    """`check_env.py` is the preflight, the one entry point (main.py has no --check). An empty applicant fails it, with
+    no secret printed."""
     import contextlib
     import io
     import check_env
@@ -2317,46 +2313,50 @@ def test_check_env_is_its_own_module():
         config.IMAP_USER, config.IMAP_APP_PASSWORD, config.EMAIL = '', '', ''
         check_env._problems.clear()
         with contextlib.redirect_stdout(out):
-            code = M.main(['--check'])
+            code = check_env.check_env()
     finally:
         (applicant, config.IMAP_USER, config.IMAP_APP_PASSWORD, config.EMAIL) = saved
         config.APPLICANT.clear()
         config.APPLICANT.update(applicant)
         check_env._problems.clear()
     text = out.getvalue()
-    check('check_env: main.py --check runs it and fails an empty applicant', code == 1 and 'problem(s) to fix' in text,
+    check('check_env: fails an empty applicant', code == 1 and 'problem(s) to fix' in text,
           text[-300:])
     check('check_env: no secret printed', 'SECRETKIGOU9' not in text and '12 chars' in text)
-    check('check_env: main.py has no copy of it', not hasattr(M, 'check_env') and not hasattr(M, '_check_applicant'))
+    check('check_env: main.py has no copy of it, nor a --check', not hasattr(M, 'check_env')
+          and not hasattr(M, '_check_applicant') and '--check' not in open(M.__file__, encoding='utf-8').read())
 
 
-def main_(argv=()):
-    """Run the suite. Args select tests by substring; -v shows the flow's logs.
+def main_(argv=(), handler=None, scope=None):
+    """Run a suite: test_its's, or another file's (`scope`: its globals, `handler`: its server's handler; test_remote
+    runs through here). Args select tests by substring; -v shows the flow's logs.
 
     Tests are **discovered**, not hand-listed, so a new `def test_*` cannot be
     silently never run and a deleted one cannot abort the suite with a KeyError.
-    A test that needs the fake server declares a `port` parameter; the rest take none.
+    Arguments are injected by name: `port` (the fake server's), `tmpdir`.
     """
     verbose = '-v' in argv
     names = [a for a in argv if not a.startswith('-')]
+    scope = globals() if scope is None else scope
 
-    srv = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    srv = ThreadingHTTPServer(('127.0.0.1', 0), handler or Handler)
     srv.daemon_threads = True
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    port = srv.server_port
 
     # Keep the flow's own logging out of the way unless it is being read.
     bh._log_handler = None if verbose else (lambda _m: None)
+    if not verbose:
+        import logs
+        logs._pub = open(os.devnull, 'w')   # in-process public lines (a child's are read for real)
 
-    tests = [(n, f) for n, f in sorted(globals().items())
+    tests = [(n, f) for n, f in sorted(scope.items())
              if n.startswith('test_') and callable(f)
              and (not names or any(k in n for k in names))]
     if not tests:
         raise SystemExit(f'no tests matched {names}')
     try:
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Injected by parameter name, so a test declares what it needs.
-            available = {'port': port, 'tmpdir': tmpdir}
+            available = {'port': srv.server_port, 'tmpdir': tmpdir}
             for name, fn in tests:
                 wanted = fn.__code__.co_varnames[:fn.__code__.co_argcount]
                 fn(**{k: v for k, v in available.items() if k in wanted})

@@ -10,7 +10,7 @@ stops its own (`stop_event`), and each scanner reads its month's dates every cyc
 Two modes:
 
 - **local** (default): config.py's settings, runs until interrupted, logs to stdout and
-  LOG_FILE as it always did.
+  LOG_FILE.
 - **`--remote`** (required on Actions): settings, the bookings record and the lease come
   from the its-bot Worker (remote.py); stdout is the private log (logs.py) and only
   `logs.public` lines reach the Actions log. `--deadline <epoch>` bounds the run: no new
@@ -20,10 +20,9 @@ Two modes:
   longer than the lease must not end the run). The run id is `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT`
   (a re-run is a new run: its events and entries must not collide with the first attempt's).
 
-`--check` runs check_env.py (validates `.env` instead of booking anything).
+The preflight is check_env.py.
 
     python3 main.py
-    python3 main.py --check
     python3 main.py --remote --deadline 1794561000
 """
 import argparse
@@ -47,7 +46,7 @@ import confirm_booking
 import logs
 import remote
 from book_hotels import R, G, Y, C, B, X
-from book_hotels import log as url_log
+from book_hotels import log
 
 
 _ANSI_RE = re.compile(r'\033\[[0-9;]*m')
@@ -58,7 +57,8 @@ MONTH_ABBR = ['', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
 # How often the supervisor (a local run's watchdog) checks every worker thread and the scanners' months.
 WATCHDOG_INTERVAL = 30
 
-# A bounded run's drain after its deadline (holds stop at the deadline; FINAL: +320 → +335 min).
+# A bounded run's drain after its deadline: no new hold after the deadline, in-flight work finishes within this
+# (its-runner.yml: the last hold at +320 min, the run over by +335).
 DRAIN_SEC = 15 * 60
 # A ban ends the run quickly: every request from this IP fails for ~24 h, so only the in-flight work is waited for.
 BAN_DRAIN_SEC = 120
@@ -91,15 +91,15 @@ def check_cached_url():
     except Exception as e:
         # A local failure to run curl says nothing about the token, and discarding a
         # working URL over it would force a needless solve.
-        url_log(f"{Y}URL check: could not run curl ({e!r}), will retry{X}")
+        log(f"{Y}URL check: could not run curl ({e!r}), will retry{X}")
         return url, False
     if status == '200':
-        url_log(f"{C}URL check: valid (200){X}")
+        log(f"{C}URL check: valid (200){X}")
         return url, True
     if not status or status == '000' or status.startswith('5'):
-        url_log(f"{Y}URL check: server error ({status}), will retry{X}")
+        log(f"{Y}URL check: server error ({status}), will retry{X}")
         return url, False
-    url_log(f"{Y}URL check: session invalid ({status}){X}")
+    log(f"{Y}URL check: session invalid ({status}){X}")
     return None, False
 
 
@@ -125,14 +125,14 @@ def url_monitor(stop_event=None):
                 # the old one across a ~10-request chain. A repair is never deferred.
                 active = book_hotels.active_bookings()
                 if active:
-                    url_log(f"{Y}Proactive refresh deferred "
+                    log(f"{Y}Proactive refresh deferred "
                             f"({active} booking(s) in flight){X}")
                     stop_event.wait(URL_CHECK_INTERVAL)
                     continue
-                url_log(f"{Y}Proactive refresh "
+                log(f"{Y}Proactive refresh "
                         f"({int(time.time() - last_solve)}s since last solve)...{X}")
             else:
-                url_log(f"{B}URL invalid or missing, solving CAPTCHA...{X}")
+                log(f"{B}URL invalid or missing, solving CAPTCHA...{X}")
 
             book_hotels.notify('solving')
             try:
@@ -140,17 +140,17 @@ def url_monitor(stop_event=None):
                 info = chrome.last_solve
                 if new_url:
                     last_solve = time.time()
-                    url_log(f"{G}New URL saved — {new_url}{X}")
+                    log(f"{G}New URL saved — {new_url}{X}")
                     book_hotels.notify('solve', ok=True, secs=info.get('secs'), spot=info.get('spot'))
                     continue
                 if info.get('secs') is None:
                     # Chrome was busy filing an application: deferred, not a failed solve.
                     book_hotels.notify('solve', ok=None)
                 else:
-                    url_log(f"{R}CAPTCHA solve failed ({info.get('cls') or 'unsolved'}), will retry next cycle{X}")
+                    log(f"{R}CAPTCHA solve failed ({info.get('cls') or 'unsolved'}), will retry next cycle{X}")
                     book_hotels.notify('solve', ok=False, secs=info.get('secs'), cls=info.get('cls') or 'unsolved')
             except Exception as e:
-                url_log(f"{R}CAPTCHA solve error: {e!r}{X}")
+                log(f"{R}CAPTCHA solve error: {e!r}{X}")
                 book_hotels.notify('solve', ok=False, cls=chrome.chrome_cls(e))
             if url:  # Had a valid URL; reset the timer to avoid spamming retries
                 last_solve = time.time()
@@ -158,7 +158,7 @@ def url_monitor(stop_event=None):
         except Exception as e:
             # The only thread that can re-solve the CAPTCHA; the watchdog would
             # restart it, but not losing it is cheaper.
-            url_log(f"{R}URL monitor error: {e!r}{X}")
+            log(f"{R}URL monitor error: {e!r}{X}")
 
         stop_event.wait(URL_CHECK_INTERVAL)
 
@@ -248,11 +248,11 @@ class Supervisor:
                         {'stop_event': stop})
             self.scanners[month] = (w, stop)
             w.start()
-            url_log(f"{B}Scanner started for {month}{X}")
+            log(f"{B}Scanner started for {month}{X}")
         for month in sorted(set(self.scanners) - want):
             w, stop = self.scanners.pop(month)
             stop.set()
-            url_log(f"{Y}Scanner for {month} stopped{X}")
+            log(f"{Y}Scanner for {month} stopped{X}")
         workers = [w for w, _ in self.scanners.values()]
         if not self.stopped:
             workers = self.fixed + workers
@@ -261,10 +261,10 @@ class Supervisor:
         for w in workers:
             try:
                 if w.ensure_alive():
-                    url_log(f"{R}Worker '{w.name}' died - restarted "
+                    log(f"{R}Worker '{w.name}' died - restarted "
                             f"(restart #{w.restarts}){X}")
             except Exception as e:
-                url_log(f"{R}Watchdog could not restart '{w.name}': {e!r}{X}")
+                log(f"{R}Watchdog could not restart '{w.name}': {e!r}{X}")
 
     def stop_scanning(self):
         """Drain: no scanner, no solve; the confirm worker keeps going until the queue is empty."""
@@ -311,7 +311,7 @@ class RemoteRun:
         with self.rem.lock:
             self.rem.no_new_holds = self.rem.no_new_holds or detail
         self.sup.stop_scanning()
-        url_log(f"{Y}Draining ({detail}): no new holds; {self.sup.busy()} in flight{X}")
+        log(f"{Y}Draining ({detail}): no new holds; {self.sup.busy()} in flight{X}")
         logs.public('drain', reason=detail, active=self.sup.busy(),
                     left_min=round(max(0.0, until - self.clock()) / 60, 1))
 
@@ -323,14 +323,14 @@ class RemoteRun:
             return False
         got, why = self.rem.claim(wait=0)
         self.reclaims += 1
-        url_log(f"{G if got else Y}Lease lost while free: claimed again {'(ok)' if got else f'({why})'}{X}")
+        log(f"{G if got else Y}Lease lost while free: claimed again {'(ok)' if got else f'({why})'}{X}")
         logs.public('claim', ok=int(got is not None), why=why or None, reclaim=self.reclaims)
         return got is not None and not got['stop']
 
     def check_imap(self):
         self.imap_at = self.clock()
         ok, cls = confirm_booking.imap_check()
-        url_log(f"{G if ok else R}IMAP login check: {'ok' if ok else cls}{X}")
+        log(f"{G if ok else R}IMAP login check: {'ok' if ok else cls}{X}")
         logs.public('imap', ok=int(ok), cls=cls or None)
         self.rem.on_event('imap', {'ok': ok, 'cls': cls})   # the reports' mailOk (the Worker's mail_failing)
         if not ok:
@@ -386,7 +386,7 @@ class RemoteRun:
         rem = self.rem
         busy = self.sup.busy()
         if busy:
-            url_log(f"{R}Drain time is up with {busy} still in flight{X}")
+            log(f"{R}Drain time is up with {busy} still in flight{X}")
         young = rem.unresolved_holds()
         rem.event('run_end', detail=self.end_detail)
         rem.phase = 'stopping'
@@ -447,7 +447,7 @@ def _apply_settings(s):
     if not changed:
         return
     dates, search = book_hotels.TARGET_DATES, book_hotels.SEARCH_HOTELS
-    url_log(f"{B}Settings applied ({', '.join(changed)}): dates {', '.join(dates) or '(none)'}; "
+    log(f"{B}Settings applied ({', '.join(changed)}): dates {', '.join(dates) or '(none)'}; "
             f"interval {book_hotels.RETRY_DELAY}s; guests {book_hotels.NUM_GUESTS}; "
             f"auto-confirm {'on' if book_hotels.AUTO_CONFIRM else 'off'}; "
             f"priority {', '.join(book_hotels.PRIORITY_HOTELS) or '(none)'}; "
@@ -462,10 +462,10 @@ def _apply_settings(s):
 
 
 def _apply_done(dates):
-    """remote.Remote's `on_done`: the nights with a confirmed booking are no longer looked for (decision 1)."""
+    """remote.Remote's `on_done`: the nights with a confirmed booking are no longer looked for (one booking a night)."""
     if not book_hotels.set_done_dates(dates):
         return
-    url_log(f"{B}Nights confirmed, no longer looked for: {', '.join(sorted(book_hotels.DONE_DATES)) or '(none)'}{X}")
+    log(f"{B}Nights confirmed, no longer looked for: {', '.join(sorted(book_hotels.DONE_DATES)) or '(none)'}{X}")
     logs.public('nights_done', n=len(book_hotels.DONE_DATES))
 
 
@@ -499,7 +499,7 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     logs.mask(_secrets())
     book_hotels._log_handler = _log_sink(to_file=False)
     env = os.environ
-    url_log(f'\n=== Remote session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
+    log(f'\n=== Remote session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
     on_actions = env.get('GITHUB_ACTIONS') == 'true'
     run_id, run_url, host = run_identity(env, clock)
     origin = ('dispatch' if env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' else 'schedule') \
@@ -507,19 +507,19 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     logs.public('start', host=host, origin=origin,
                 left_min=None if deadline is None else round((deadline - clock()) / 60, 1))
     if book_hotels.BASE_REFUSED:
-        url_log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: only a loopback server (127.0.0.1, "
+        log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: only a loopback server (127.0.0.1, "
                 f"localhost, ::1) may stand in for the site; not running{X}")
         logs.public('run_end', detail='error', reason='base_url', exit=2)
         return 2
     token = env.get('ITS_RUNNER_TOKEN', '')
     if not token:
-        url_log(f"{R}ITS_RUNNER_TOKEN is not set{X}")
+        log(f"{R}ITS_RUNNER_TOKEN is not set{X}")
         logs.public('run_end', detail='error', reason='no_token', exit=2)
         return 2
     sha = (env.get('GITHUB_SHA') or '')[:8] or None
     rem = remote.Remote(remote.Client(env.get('ITS_WORKER_URL') or remote.DEFAULT_URL, token), run_id, host,
                         sha, run_url, deadline=deadline, clock=clock, on_settings=_apply_settings,
-                        seed_hold=book_hotels.save_booking, on_done=_apply_done, log=url_log, public=logs.public)
+                        seed_hold=book_hotels.save_booking, on_done=_apply_done, log=log, public=logs.public)
     book_hotels._event_sink = rem.on_event
     book_hotels._hold_gate = rem.hold_gate
     confirm_booking._commit_gate = rem.commit_gate
@@ -529,10 +529,10 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     logs.public('claim', ok=int(cfg is not None), waited_s=round(clock() - t0, 1), why=why or None,
                 worker=rem.last_status)
     if cfg is None:
-        url_log(f"{R}No lease ({why}); not running{X}")
+        log(f"{R}No lease ({why}); not running{X}")
         logs.public('run_end', detail=why, exit=0 if why == 'lease_lost' else 1)
         return 0 if why == 'lease_lost' else 1
-    url_log(f"{B}ITS BOOKING SYSTEM (remote, run {run_id}){X}  Email: {EMAIL or '(unset)'}")
+    log(f"{B}ITS BOOKING SYSTEM (remote, run {run_id}){X}  Email: {EMAIL or '(unset)'}")
     rem.event('run_start', detail=origin)
 
     sup = Supervisor()
@@ -544,7 +544,7 @@ def run_remote(deadline=None, clock=time.time, wait=None):
         try:
             detail = run.tick()
         except Exception as e:
-            url_log(f"{R}Control loop error: {e!r}{X}")
+            log(f"{R}Control loop error: {e!r}{X}")
             logs.public('error', step='control', exc=type(e).__name__)
             detail = None
         if detail is not None:
@@ -554,22 +554,22 @@ def run_remote(deadline=None, clock=time.time, wait=None):
 
 
 def run_local():
-    """The bot as it always ran on the Mac: config.py's settings, forever."""
+    """The local bot: config.py's settings, forever."""
     _rotate_log()
     book_hotels._log_handler = _log_sink(to_file=True)
     if book_hotels.BASE_REFUSED:
-        url_log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: loopback only; not running{X}")
+        log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: loopback only; not running{X}")
         return 2
-    url_log(f'\n=== Session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
-    url_log("=" * 60)
-    url_log(f"{B}ITS BOOKING SYSTEM{X}")
-    url_log(f"Email: {EMAIL}")
-    url_log(f"Dates: {', '.join(book_hotels.TARGET_DATES)}")
-    url_log(f"Priority hotels: {', '.join(book_hotels.PRIORITY_HOTELS) or '(none)'}")
-    url_log("=" * 60)
+    log(f'\n=== Session started {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
+    log("=" * 60)
+    log(f"{B}ITS BOOKING SYSTEM{X}")
+    log(f"Email: {EMAIL}")
+    log(f"Dates: {', '.join(book_hotels.TARGET_DATES)}")
+    log(f"Priority hotels: {', '.join(book_hotels.PRIORITY_HOTELS) or '(none)'}")
+    log("=" * 60)
     sup = Supervisor()
     sup.start()
-    url_log(f"{C}Supervisor started ({len(sup.scanners)} scanners, {WATCHDOG_INTERVAL}s watchdog){X}")
+    log(f"{C}Supervisor started ({len(sup.scanners)} scanners, {WATCHDOG_INTERVAL}s watchdog){X}")
     try:
         while True:
             time.sleep(WATCHDOG_INTERVAL)
@@ -581,14 +581,10 @@ def run_local():
 
 def main(argv=None):
     p = argparse.ArgumentParser(description='The ITS booker (README.md).')
-    p.add_argument('--check', action='store_true', help='validate .env and exit')
     p.add_argument('--remote', action='store_true', help="the its-bot Worker's settings (required on Actions)")
     p.add_argument('--deadline', type=float, default=None,
                    help='epoch seconds: no new hold after it, then drain and exit')
     args = p.parse_args(argv)
-    if args.check:
-        import check_env
-        return check_env.check_env()
     os.makedirs(config.STATE_DIR, exist_ok=True)
     if os.environ.get('GITHUB_ACTIONS') == 'true' and not args.remote:
         print('main.py: --remote is required on Actions (config.py settings are for a local run)', file=sys.stderr)

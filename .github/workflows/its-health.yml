@@ -29,6 +29,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           if [ -z "$ITS_HEALTH_TOKEN" ]; then echo "::notice::no ITS_HEALTH_TOKEN secret: the ITS alert is off (its/README.md)"; exit 0; fi
+          # The Worker's URL is remote.DEFAULT_URL's (test_remote checks they agree).
           code=$(curl -sS --max-time 30 -o h.json -w '%{http_code}' -H "Authorization: Bearer $ITS_HEALTH_TOKEN" \
             https://its-bot.island-fund-relay.workers.dev/health/its) || code=000
           # codes and numbers only, whatever the body holds: anything else becomes "?"
@@ -64,7 +65,7 @@ jobs:
 
           $counts
 
-          Investigate: its/README.md \"Investigating\" (the app's 設定 → 保養所ボット, \`cd its/worker && npm run its:logs -- <run>\`). Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          Investigate: its/README.md \"Investigating\" (the app's ボット → 保養所, \`cd its/worker && npm run its:logs -- <run>\`). Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           if [ -n "$why" ]; then
             echo "::warning::$why"
             gh label create its-alert --color B60205 --description "the ITS booker's alert (its-health.yml)" 2>/dev/null || true

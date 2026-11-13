@@ -19,7 +19,6 @@ import re
 import os
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 import urllib.parse
@@ -341,9 +340,10 @@ def test_contract_parity():
 
 
 def test_contract_limits_parity():
-    """remote.py's copy of the contract's LIMITS, MAX_NAME, MAX_SITE_NAME, LEASE_SEC and REPORT_EVERY_SEC, read out
-    of app/src/lib/its/contract.ts."""
+    """remote.py's copy of the contract's LIMITS, MAX_SITE_NAME, LEASE_SEC, REPORT_EVERY_SEC, the arrays and lastSpot's
+    values, read out of app/src/lib/its/contract.ts."""
     import re
+    import chrome
     path = os.path.join(os.path.dirname(ITS_DIR), 'app', 'src', 'lib', 'its', 'contract.ts')
     with open(path, encoding='utf-8') as f:
         ts = f.read()
@@ -360,9 +360,9 @@ def test_contract_limits_parity():
     m = re.search(r'export const LIMITS = \{([^}]*)\}', ts)
     limits = {k: num(v) for k, v in re.findall(r'(\w+): ([0-9_ *]+)', m.group(1))} if m else None
     check('limits parity: LIMITS', limits == remote.LIMITS, f'{limits} vs {remote.LIMITS}')
-    for name, mine in (('MAX_NAME', remote.NAME_MAX), ('MAX_SITE_NAME', remote.SITE_NAME_MAX),
-                       ('LEASE_SEC', remote.LEASE_SEC), ('REPORT_EVERY_SEC', remote.REPORT_EVERY_SEC),
-                       ('GUESTS_MIN', remote.GUESTS_MIN), ('GUESTS_MAX', remote.GUESTS_MAX),
+    for name, mine in (('MAX_SITE_NAME', remote.SITE_NAME_MAX), ('LEASE_SEC', remote.LEASE_SEC),
+                       ('REPORT_EVERY_SEC', remote.REPORT_EVERY_SEC), ('GUESTS_MIN', remote.GUESTS_MIN),
+                       ('GUESTS_MAX', remote.GUESTS_MAX),
                        ('AUTO_CONFIRM_MIN_DAYS', bh.AUTO_CONFIRM_MIN_DAYS), ('HOLD_SEC', remote.HOLD_SEC),
                        ('SCANS_PER_REPORT', remote.SCANS_PER_REPORT)):
         check(f'limits parity: {name}', const(name) == mine, f'{const(name)} vs {mine}')
@@ -384,6 +384,11 @@ def test_contract_limits_parity():
     m = re.search(r"stopReason: ((?:'[a-z_]+' \| )+)null;", ts)
     check('arrays parity: stopReason', m and tuple(re.findall(r"'([a-z_]+)'", m.group(1))) == remote.STOP_REASONS,
           m and m.group(1))
+    m = re.search(r"lastSpot: ((?:'[a-z_]+' \| )+)null", ts)
+    spots = {chrome._checkbox_spot({'x': 0, 'y': 0, 'width': 960, 'height': 65}, a)[2] for a in (1, 2)}
+    check('arrays parity: lastSpot, and chrome clicks only those spots',
+          m and tuple(re.findall(r"'([a-z_]+)'", m.group(1))) == remote.SPOTS and spots == set(remote.SPOTS),
+          f'{m and m.group(1)} vs {remote.SPOTS}, {spots}')
     m = re.search(r'const ID_RE = /\^(.*)\$/;', ts)
     check('arrays parity: ID_RE', m and m.group(1) + r'\Z' == remote._ID_RE.pattern, f'{m and m.group(1)} vs '
           f'{remote._ID_RE.pattern}')
@@ -1558,7 +1563,7 @@ SETTINGS_KEYS = ('TARGET_DATES', 'SKIP_HOTELS', '_SKIP_NORM', 'SEARCH_HOTELS', '
 
 
 def test_allow_list(port):
-    """Decision 2: with `search` only the facilities named there are applied for (normName exact; skip still wins);
+    """The allow-list: with `search` only the facilities named there are applied for (normName exact; skip still wins);
     without it, the skip-list rule; an older Worker's answer (no `search`) and a newer one both parse."""
     check('allow: settings without search parse', remote.parse_settings(settings()) is not None)
     check('allow: search null parses', remote.parse_settings(settings(search=None)) is not None)
@@ -1606,7 +1611,7 @@ def test_interval_any_whole_seconds_from_the_floor():
 
 
 def test_a_confirmed_night_is_not_scanned(port):
-    """Decision 1: a night with a `confirmed` entry in the Worker's record (any run's) is no longer scanned, held or
+    """One booking a night: a night with a `confirmed` entry in the Worker's record (any run's) is no longer scanned, held or
     confirmed again; a month with no other night stops its scanner. The record's other kinds don't count."""
     saved = {k: getattr(bh, k) for k in SETTINGS_KEYS}
     try:
@@ -1664,7 +1669,7 @@ def test_a_confirmed_night_is_not_scanned(port):
 
 
 def test_second_facility_never_filed_for_a_confirmed_night(port):
-    """Decision 1 + the coordinator: two holds for one night with auto-confirm on, the ★ one confirmed first; the
+    """One booking a night: two holds for one night with auto-confirm on, the ★ one confirmed first; the
     other's leg never reaches Chrome's 申込する (its link claimed, never followed), no human_needed for it, a public
     skip_confirmed_night; and the commit gate refuses a night confirmed meanwhile."""
     with T.Env(port, confirm=True, applicant=dict(T.APPLICANT_FIXTURE)), T.CapturedLog() as log:
@@ -2024,12 +2029,22 @@ def test_leg_outcome_codes_and_evidence(tmpdir):
                   (any(f.endswith(f'_{detail}.html') for f in ev) and any(f.endswith(f'_{detail}.png') for f in ev))
                   if kept else ev == [], str(ev))
     check('leg: the unknown outcome says to check the mailbox', any('outcome UNKNOWN' in ln for ln in lines))
-    for status, detail, code in (('failed', 'hold_expired', 'hold_expired'), ('deferred', 'confirming_unacked',
-                                 'confirming_unacked'), ('deferred', 'AUTO_CONFIRM is off', 'auto_off'),
-                                 ('deferred', 'not_wanted: the date was removed', 'not_wanted'),
-                                 ('deferred', '2026-12-05 is 9 day(s) away, inside', 'near_date'),
-                                 ('failed', 'commit gate raised Boom()', 'leg_failed'), ('failed', None, 'leg_failed')):
+    for status, detail, code in (('failed', 'hold_expired', 'hold_expired'),
+                                 ('deferred', 'confirming_unacked', 'confirming_unacked'), ('deferred', 'auto_off', 'auto_off'),
+                                 ('deferred', 'commit gate raised Boom()', 'leg_deferred'), ('failed', None, 'leg_failed')):
         check(f'leg: human_needed detail {code}', cb.outcome_code(status, detail) == code, cb.outcome_code(status, detail))
+    # The gate hands back confirm_allowed's code itself, never prose to re-read.
+    saved = (bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.TARGET_DATES, cb._commit_gate)
+    far, near = ((bh.tokyo_today() + timedelta(days=n)).isoformat() for n in (40, 3))
+    try:
+        cb._commit_gate = None
+        for auto, day, targets, code in ((False, far, [far], 'auto_off'), (True, near, [near], 'near_date'),
+                                         (True, far, [], 'not_wanted'), (True, far, [far], '')):
+            bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.TARGET_DATES = auto, 11, targets
+            got = cb._gate(day, NAGU, 'apply')
+            check(f'leg: the gate says {code or "yes"}', got == (code == '', code), str(got))
+    finally:
+        bh.AUTO_CONFIRM, bh.AUTO_CONFIRM_MIN_DAYS, bh.TARGET_DATES, cb._commit_gate = saved
 
 
 def test_imap_codes_and_mail_ok(port):
@@ -2208,9 +2223,12 @@ def test_workflow_timings():
           'if [ "$GITHUB_EVENT_NAME" != schedule ]' in job['gate'] and "''|*[!0-9]*) echo \"go=1\"" in job['gate'])
     check('workflow: the private log kept 14 days', 'retention-days: 14' in y)
     its = wf('its.yml')
-    check('workflow: its.yml runs on a change to the runner\'s workflows',
-          its.count("- '.github/workflows/its-runner.yml'") == 2 and its.count("- '.github/workflows/its-health.yml'") == 2)
+    check('workflow: its.yml runs on a change to the runner\'s workflows, pushed or in a PR (one list)',
+          its.count("- '.github/workflows/its-runner.yml'") == 1
+          and its.count("- '.github/workflows/its-health.yml'") == 1 and 'paths: &paths\n' in its and its.count('paths: *paths\n') == 1)
+    check('workflow: the Worker URL is remote.DEFAULT_URL (no ITS_WORKER_URL set)', 'ITS_WORKER_URL' not in y)
     h = wf('its-health.yml')
+    check('health: asks remote.DEFAULT_URL', f'{remote.DEFAULT_URL}/health/its' in h)
     check('health: inert without its secret (before any request)',
           h.index('if [ -z "$ITS_HEALTH_TOKEN" ]') < h.index('curl ') and 'exit 0; fi' in h)
     check('health: no other secret, no environment', re.findall(r'secrets\.(\w+)', h) == ['ITS_HEALTH_TOKEN']
@@ -2291,38 +2309,7 @@ def test_health_alert_script(tmpdir):
     check('health-script: healthy closes it', code == 0 and 'issue close 12' in log, out + log)
 
 
-def main_(argv=()):
-    verbose = '-v' in argv
-    names = [a for a in argv if not a.startswith('-')]
-    srv = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
-    srv.daemon_threads = True
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    bh._log_handler = None if verbose else (lambda _m: None)
-    if not verbose:
-        logs._pub = open(os.devnull, 'w')   # the in-process runs' public lines (the child's are read for real)
-    tests = [(n, f) for n, f in sorted(globals().items())
-             if n.startswith('test_') and callable(f) and (not names or any(k in n for k in names))]
-    if not tests:
-        raise SystemExit(f'no tests matched {names}')
-    try:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            available = {'port': srv.server_port, 'tmpdir': tmpdir}
-            for name, fn in tests:
-                wanted = fn.__code__.co_varnames[:fn.__code__.co_argcount]
-                fn(**{k: v for k, v in available.items() if k in wanted})
-    finally:
-        bh._log_handler = None
-        srv.shutdown()
-    print()
-    if T.FAILURES:
-        print(f'{len(T.FAILURES)} FAILED:')
-        for f in T.FAILURES:
-            print(f'  - {f}')
-        raise SystemExit(1)
-    print(f'all checks passed ({len(tests)} tests)')
-
-
 if __name__ == '__main__':
     if sys.argv[1:2] == ['--child']:
         sys.exit(child_main(int(sys.argv[2])))
-    main_(sys.argv[1:])
+    T.main_(sys.argv[1:], Handler, globals())

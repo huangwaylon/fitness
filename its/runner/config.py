@@ -64,12 +64,10 @@ DEBUG_DIR = os.path.join(STATE_DIR, 'debug_responses')
 USER_AGENT_CACHE = os.path.join(STATE_DIR, 'chrome_user_agent.txt')
 
 # ── Booking settings ─────────────────────────────────────────────────
-# Stays to look for (the night of arrival), YYYY-MM-DD. Empty here: the Worker supplies them (the app's 保養所ボット
-# page); fill it only for a local run without --remote.
+# Stays to look for (the night of arrival), YYYY-MM-DD. Empty here: the Worker supplies them (the app's ボット → 保養所);
+# fill it only for a local run without --remote.
 TARGET_DATES = []
 NUM_GUESTS = '2'
-
-SKIP_PAST_DATES = True    # stop polling dates that have already passed
 
 # ── Network tuning ───────────────────────────────────────────────────
 RETRY_DELAY = 15          # seconds between scan retry attempts
@@ -141,10 +139,7 @@ AUTO_CONFIRM_MIN_DAYS = 11
 CONFIRM_MAIL_TIMEOUT = 180     # give up on a hold's mail this long after the hold
 CONFIRM_POLL_INTERVAL = 10     # worker cycle; one IMAP trip serves the whole queue
 
-# The emailed leg is filed in real Chrome, always: curl's 申込する POST is answered
-# 302 → /service_category/index whatever it sends, because the site refuses the
-# *client*, not the request (its/SITE.md §5 — including the open question of whether
-# that reproduces off an intercepting proxy). Needs `pydoll-python`; without it the hold
+# The emailed leg is filed in real Chrome, always (why: its/SITE.md §5). Needs `pydoll-python`; without it the hold
 # and mail still stand and the log asks for a human.
 BROWSER_CONFIRM_TIMEOUT = 240  # Chrome can hang, and a room is held meanwhile
 
@@ -251,5 +246,5 @@ PRIORITY_HOTELS = [
 # 「グランドメルキュール 伊勢志摩リゾート＆スパ」; roster.ts `verified` marks the spellings read off the site). Skipping
 # wins over priority. Copy names from roster.ts or from a 「Found N hotels: …」 line in the log.
 SKIP_HOTELS = [
-    'ホテルハーヴェスト　スキージャム勝山',   # on no roster since 2026-08-19; kept so a re-contract cannot book it
+    'ホテルハーヴェスト　スキージャム勝山',   # on no roster; kept so a re-contract cannot book it
 ]

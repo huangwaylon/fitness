@@ -10,7 +10,7 @@ The only way to the real stdout is `public(event, **fields)`, which writes to a 
 field only if its name is in FIELDS and its value has that field's type: counts, seconds, HTTP statuses, and
 phase/step/class codes (lower-case identifiers, so no date, hotel name, URL, token, number or name fits). A field that
 fails is dropped and counted (`dropped=n`); its name, never its value, goes to the private log. Event names are codes
-too. Tracebacks go private, their class name public (`error step=uncaught cls=KeyError`).
+too. Tracebacks go private, their class name public (`error step=uncaught exc=KeyError`).
 
 `mask()` sends GitHub's `::add-mask::` for each secret of 4+ characters, so a value that reached the public stream by
 some path this module doesn't know would print as `***`.
@@ -34,9 +34,9 @@ _FAIL_FIELD = re.compile(r'fail_[a-z][a-z0-9_]{0,39}\Z')
 FIELDS = {
     'n': 'int', 'ok': 'int', 'exit': 'int', 'status': 'int', 'dropped': 'int',
     'scans': 'int', 'scan_fail': 'int', 'avail': 'int', 'holds': 'int', 'confirmed': 'int', 'human': 'int',
-    'solves_ok': 'int', 'solves_failed': 'int', 'unsynced': 'int', 'pending': 'int', 'events': 'int',
+    'solves_ok': 'int', 'solves_failed': 'int', 'unsynced': 'int', 'events': 'int',
     'dates': 'int', 'months': 'int', 'skip': 'int', 'pri': 'int', 'guests': 'int', 'auto': 'int', 'interval': 'num',
-    'restarts': 'int', 'active': 'int', 'worker': 'int', 'gate_closed': 'int', 'reclaim': 'int', 'run': 'int',
+    'restarts': 'int', 'active': 'int', 'worker': 'int', 'gate_closed': 'int', 'reclaim': 'int',
     'search': 'int',
     'secs': 'num', 'waited_s': 'num', 'uptime_min': 'num', 'ok_age_s': 'num', 'left_min': 'num', 'outage_s': 'num',
     'phase': 'code', 'name': 'code', 'step': 'code', 'cls': 'code', 'detail': 'code', 'spot': 'code', 'why': 'code',

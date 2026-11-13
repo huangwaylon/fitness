@@ -18,8 +18,8 @@ manager to minimise to). See its/SITE.md §6.
 `last_solve` records how the latest solve went (seconds, which spot), for the runner's
 reports.
 
-**`submit()`** is reached only after curl's POST was refused (its/SITE.md §5). **It
-presses 確認**, past which a real reservation exists, so:
+**`submit()`** files the emailed leg: the site refuses curl's POST (its/SITE.md §5), so
+Chrome is the only committer. **It presses 確認**, past which a real reservation exists, so:
 
   - `allow_commit` is a **callable**, re-consulted immediately before the commit —
     filling a form takes tens of seconds and the gate can close inside that window;
@@ -241,18 +241,20 @@ async def _save_user_agent(tab):
 
 
 # The widget draws a 300 px box centred in the `.cf-turnstile` container (960 px wide on
-# the page), its checkbox 22 px in from the box's left edge (its/SITE.md §6, 2026-11-13).
+# the page), its checkbox 22 px in from the box's left edge (its/SITE.md §6). The second attempt clicks 28 px in from
+# the container's own left edge.
 _WIDGET_W = 300
 _CHECKBOX_IN = 22
+_LEFT_IN = 28
 
 
 def _checkbox_spot(bounds, attempt):
     """`(x, y, spot)` to click on this attempt: the drawn checkbox at the centred box
-    (`x + w/2 − 150 + 22`) first, the old left-edge spot (`x + 28`) second, then centred
+    (`x + w/2 − 150 + 22`) first, the container's left-edge spot (`x + 28`) second, then centred
     again. A container narrower than the box clamps to its own left edge."""
     y = int(bounds['y'] + bounds['height'] / 2)
     if attempt % 2 == 0:
-        return int(bounds['x'] + 28), y, 'left'
+        return int(bounds['x'] + _LEFT_IN), y, 'left'
     left = bounds['x'] + max(0.0, bounds['width'] / 2 - _WIDGET_W / 2)
     return int(left + _CHECKBOX_IN), y, 'centre'
 

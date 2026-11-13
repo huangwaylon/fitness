@@ -6,7 +6,7 @@ name: ITS booker checks
 on:
   push:
     branches: [main]
-    paths:
+    paths: &paths
       - 'its/**'
       - 'app/src/lib/its/**'
       - 'app/src/lib/contract/**'
@@ -16,15 +16,7 @@ on:
       - '.github/workflows/its-runner.yml'
       - '.github/workflows/its-health.yml'
   pull_request:
-    paths:
-      - 'its/**'
-      - 'app/src/lib/its/**'
-      - 'app/src/lib/contract/**'
-      - 'relay/src/auth.ts'
-      - 'app/src/lib/types.ts'
-      - '.github/workflows/its.yml'
-      - '.github/workflows/its-runner.yml'
-      - '.github/workflows/its-health.yml'
+    paths: *paths
   workflow_dispatch:
 
 permissions:

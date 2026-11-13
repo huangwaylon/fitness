@@ -5,7 +5,6 @@ The ITS site validates every value here at the moment it matters least: mid book
 contested slot on the line. Check them at your desk instead. Stdlib only (no pydoll, no Worker).
 
     python3 check_env.py
-    python3 main.py --check     # the same
 """
 import re
 import sys
@@ -167,7 +166,7 @@ def _check_gate():
         print(f'  {Y}TARGET_DATES is empty{X}')
     for d in sorted(config.TARGET_DATES):
         left = bh.days_until(d)
-        ok, _why = bh.confirm_allowed(d)
+        ok = bh.confirm_allowed(d)[0]
         if left is not None and left < 0:
             verdict = f'{DIM}past{X}'
         elif ok:

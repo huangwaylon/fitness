@@ -49,7 +49,8 @@ LEASE_SEC = 300
 REPORT_EVERY_SEC = 30
 FENCE_MARGIN_SEC = 60         # no hold or commit within this of the lease's end
 UNSYNCED_OUTAGE_SEC = 120
-CLAIM_WAIT_SEC = 6 * 60
+CLAIM_WAIT_SEC = 6 * 60       # longer than a lease: a dying run's lease runs out inside the wait
+assert CLAIM_WAIT_SEC > LEASE_SEC
 CLAIM_RETRY_SEC = 15
 CLAIM_LOG_EVERY_SEC = 60      # an unreachable Worker during the claim's wait: one line (private + public) a minute
 INTERVALS_SEC = (15, 30, 60, 120, 300)   # the contract's choices; any whole interval >= INTERVAL_FLOOR_SEC is taken
@@ -59,7 +60,6 @@ GUESTS_MIN, GUESTS_MAX = 1, 6
 # The contract's LIMITS (the Worker's bounds on a request; test_remote reads contract.ts to check this copy).
 LIMITS = {'body': 64 * 1024, 'bookingsPerPost': 50, 'eventsPerReport': 100, 'seenPerReport': 300, 'eventHotel': 2000,
           'detail': 200, 'number': 40, 'steps': 30}
-NAME_MAX = 80                # the contract's MAX_NAME: a priority substring
 SITE_NAME_MAX = 200          # MAX_SITE_NAME: a facility name as the site serves it (a booking's, a seen one), never cut
 # What the runner sends, inside those (a request over them is a 400, retried forever).
 BODY_MAX = LIMITS['body'] - 4096     # bytes, with room for the JSON around what _fit measures
@@ -80,7 +80,7 @@ EVENT_KINDS = ('run_start', 'run_end', 'available', 'filtered', 'hold', 'confirm
 SENT_EVENT_KINDS = tuple(k for k in EVENT_KINDS if k != 'prev_unclean')
 PHASES = ('starting', 'solving', 'scanning', 'draining', 'stopping')
 HOSTS = ('actions', 'local')
-HOLD_UNRESOLVED_SEC = HOLD_SEC   # a hold younger than this at the end of a run, never confirmed: human_needed
+SPOTS = ('centre', 'left')       # solves.lastSpot: where chrome clicked the Turnstile checkbox
 BOOKING_KINDS = ('hold', 'confirming', 'confirmed', 'failed')
 STOP_REASONS = ('paused', 'mode_off', 'no_dates', 'lease_lost')
 DEFAULT_URL = 'https://its-bot.island-fund-relay.workers.dev'
@@ -200,7 +200,7 @@ def parse_booking(b):
 def parse_lease(x):
     if x is None:
         return None
-    if isinstance(x, dict) and isinstance(x.get('holder'), str) and x.get('host') in ('actions', 'local') \
+    if isinstance(x, dict) and isinstance(x.get('holder'), str) and x.get('host') in HOSTS \
             and isinstance(x.get('until'), (int, float)):
         return x
     return False
@@ -414,7 +414,7 @@ class Remote:
                     self.solves['ok'] += 1
                     self.solves['lastOkAt'] = self._ms()
                     self.solves['lastSecs'] = f.get('secs')
-                    self.solves['lastSpot'] = f.get('spot') if f.get('spot') in ('centre', 'left') else None
+                    self.solves['lastSpot'] = f.get('spot') if f.get('spot') in SPOTS else None
                     self.public('solve', ok=1, secs=f.get('secs'), spot=self.solves['lastSpot'])
                 else:
                     self.solves['failed'] += 1
@@ -440,7 +440,7 @@ class Remote:
         """Holds this run took < 30 min ago with no outcome: each gets a human_needed (the run is ending)."""
         now = self.clock()
         with self.lock:
-            out = [k for k, t in self.holds.items() if k not in self.resolved and now - t < HOLD_UNRESOLVED_SEC]
+            out = [k for k, t in self.holds.items() if k not in self.resolved and now - t < HOLD_SEC]
         for date, hotel in out:
             self.on_event('human_needed', {'date': date, 'hotel': hotel, 'detail': 'run_ended'})
         return len(out)
