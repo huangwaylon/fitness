@@ -157,7 +157,7 @@
   .th {
     position: relative; flex: none; display: grid; place-content: center; justify-items: center; gap: 1px;
     box-sizing: border-box; width: var(--s); height: var(--s); border-radius: var(--r); background: var(--t);
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink);
+    box-shadow: 0 var(--lip-s) 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink);
   }
   :global(:root[data-tod='night']) .th { background: color-mix(in srgb, var(--t) 78%, #1F2A5E); }
   /* a picture on navy: dimmed a little (its cream paper glared beside the night's cards; the tiles tint darker too), a
