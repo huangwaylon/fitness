@@ -274,7 +274,7 @@
      (ことば タイル's) */
   .slot[data-next] { box-shadow: none; outline: 2px dashed var(--c-yuzu); outline-offset: -2px; }
   .slot[data-over] { box-shadow: 0 0 0 3px var(--c-yuzu); }
-  .slot[data-shift] > span { animation: shift 150ms var(--ease) both; }
+  .slot[data-shift] > span { animation: shift 150ms var(--ease-soft) both; }
   /* an empty slot's place: a small circled number, never read as a word */
   .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; font: 700 13px/1 var(--font-num); color: var(--text-soft); }
   .typed { margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }

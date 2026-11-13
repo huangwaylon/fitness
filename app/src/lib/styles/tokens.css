@@ -79,6 +79,7 @@
   --ease-soft:cubic-bezier(.25,.8,.25,1);
   --ease-squash:cubic-bezier(.3,0,.5,1);
   --ease-idle:cubic-bezier(.45,0,.55,1);
+  --ease-out:cubic-bezier(.2,.8,.2,1);   /* a sheet / level arriving (design.md "Motion"), a bar filling, a fold turning */
   --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms; --dur-emote:2200ms;
 
   /* ---------- platform + layout ---------- */

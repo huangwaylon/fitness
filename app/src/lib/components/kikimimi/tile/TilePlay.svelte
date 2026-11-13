@@ -294,8 +294,8 @@
   /* the next tap's slot: a dashed yuzu outline; a drag's target: the solid yuzu ring; a tile that would shift slides in */
   .slot[data-next] { box-shadow: none; outline: 2px dashed var(--c-yuzu); outline-offset: -2px; }
   .slot[data-over] { box-shadow: 0 0 0 3px var(--c-yuzu); }
-  .slot[data-shift] > span { animation: shift 150ms var(--ease) both; }
-  .sentence[data-flash] .mine { animation: flash 500ms var(--ease) both; }
+  .slot[data-shift] > span { animation: shift 150ms var(--ease-soft) both; }
+  .sentence[data-flash] .mine { animation: flash 500ms var(--ease-soft) both; }
   .sentence[data-flash='2'] .mine { animation-name: flash2; }
   /* easy's given word: a static card (its soft lip only), a pin, not a control */
   .slot.given { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 2px 0 var(--lip); position: relative; overflow: visible; }
