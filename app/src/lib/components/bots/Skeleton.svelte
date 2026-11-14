@@ -10,5 +10,4 @@
   .skel { height: 52px; display: flex; align-items: center; }
   .skel span { width: 60%; height: 12px; border-radius: 6px; background: var(--ctl-off); animation: pulse 1.2s ease-in-out infinite alternate; }
   @keyframes pulse { from { opacity: .45; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .skel span { animation: none; } }
 </style>

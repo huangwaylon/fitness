@@ -162,5 +162,4 @@
   .cell:not(.out):active { transform: translateY(1px); }
   .flash { animation: flash 1.6s var(--ease-out); }
   @keyframes flash { 0%, 40% { box-shadow: inset 0 0 0 3px var(--c-sky), 0 0 0 3px color-mix(in srgb, var(--c-sky) 50%, transparent); } }
-  @media (prefers-reduced-motion: reduce) { .flash { animation: none; box-shadow: inset 0 0 0 3px var(--c-sky); } .cell:active { transform: none; } }
 </style>

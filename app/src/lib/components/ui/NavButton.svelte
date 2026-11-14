@@ -46,5 +46,4 @@
   .pill { width: auto; display: inline-flex; gap: 2px; padding: 0 14px 0 8px; border-radius: var(--r-pill); font: 700 var(--fs-body)/1 var(--font-ui); }
   .pill::before { inset: 6px 0; border-radius: var(--r-pill); }
   .pill span { position: relative; }
-  @media (prefers-reduced-motion: reduce) { .nav:active::before { transform: none; } }
 </style>

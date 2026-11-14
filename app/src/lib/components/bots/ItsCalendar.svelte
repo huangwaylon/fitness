@@ -91,5 +91,4 @@
   :global(:root[data-tod='night']) .cell.on { color: var(--c-ink); }
   .cell:focus-visible, .wdbtn:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; z-index: 1; }
   .cell:active { transform: translateY(1px); }
-  @media (prefers-reduced-motion: reduce) { .cell:active { transform: none; } }
 </style>

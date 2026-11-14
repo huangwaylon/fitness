@@ -29,5 +29,4 @@
   .slot .ok { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; background: var(--c-gold); color: var(--c-ink); }
   .slot:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .slot:active { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
-  @media (prefers-reduced-motion: reduce) { .slot:active { transform: none; } }
 </style>
