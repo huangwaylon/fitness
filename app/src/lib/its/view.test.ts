@@ -537,8 +537,8 @@ describe('bookingRows', () => {
     const need = (detail: string) => bookingRows(status({ events: [{ ...STATUS.events[0], detail }] }), TODAY)[0];
     expect(need('submit_unknown').detail).toBe('申込済みの可能性：メールとサイトで確認');
     // one not applied for: finish it by mail before it lapses
-    expect(need('lease_stale')).toMatchObject({ detail: '実行が途切れたため申込していません。メールから申込してください', left: 'あと15分ごろで無効' });
-    expect(need('lease_stale').steps).toHaveLength(3);
+    expect(need('lease_stale')).toMatchObject({ detail: '実行が途切れたため申込していません。メールから申込してください', left: 'あと15分ほどで無効' });
+    expect([need('lease_stale').steps.length, need('lease_stale').notes.length]).toEqual([1, 2]);
     // one that may have been filed: no mail steps
     expect(need('no_completion').steps).toEqual([]);
   });
@@ -563,11 +563,12 @@ describe('a hold’s deadline and what to do', () => {
   it('a hold to finish by mail: the time left from its `at` + HOLD_SEC, the mail, that doing nothing costs nothing, inside D−10 the fee', () => {
     // the example's hold: 12:55, the stay 9 days away, near_date
     const [row] = bookingRows(STATUS, TODAY);
-    expect([row.state, row.left, row.expired]).toEqual(['action', 'あと15分ごろで無効', false]);
-    expect(row.steps).toEqual(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます。料金はかかりません。', '確定後の取り消しは有料です']);
+    expect([row.state, row.left, row.expired]).toEqual(['action', 'あと15分ほどで無効', false]);
+    expect(row.steps).toEqual(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認']); // the one act; what it costs under it
+    expect(row.notes).toEqual(['何もしなければ自動で取り消されます。料金はかかりません。', '確定後の取り消しは有料です']);
     const later = bookingRows(STATUS, TODAY, STATUS.now + 15 * 60_000)[0];
     expect([later.left, later.expired, later.steps]).toEqual(['期限切れ', true, []]);
-    expect(bookingRows(STATUS, TODAY, STATUS.now + 14.5 * 60_000)[0].left).toBe('あと1分ごろで無効');
+    expect(bookingRows(STATUS, TODAY, STATUS.now + 14.5 * 60_000)[0].left).toBe('あと1分ほどで無効');
   });
   it('no fee line for a stay 10+ days away; none of it for a failed leg, an application filed or a reservation', () => {
     const t0 = STATUS.now;
@@ -575,12 +576,12 @@ describe('a hold’s deadline and what to do', () => {
       bookings: [{ ...STATUS.bookings[0], date: '2026-12-05' }],
       events: [{ ...STATUS.events[0], date: '2026-12-05', detail: 'auto_off' }]
     });
-    expect(bookingRows(far, TODAY)[0].steps).toHaveLength(2);
+    expect(bookingRows(far, TODAY)[0].notes).toHaveLength(1);
     const b = (kind: 'hold' | 'confirming' | 'confirmed' | 'failed', at: number, over: object = {}) => ({ id: `r:${at}`, kind, date: '2026-12-05', hotel: 'NAGU 勝浦', at, runId: 'r', ...over });
     const rows = bookingRows(status({ events: [], bookings: [b('hold', t0 - 60_000), b('confirming', t0), b('hold', t0 - 60_000, { hotel: 'A' }), b('failed', t0, { hotel: 'A' }), b('hold', t0, { hotel: 'B' }), b('confirmed', t0, { hotel: 'B', number: '1' })] }), TODAY);
     expect(rows.map((r) => [r.hotel, r.state, r.left, r.steps.length])).toEqual([['A', 'action', null, 0], ['NAGU 勝浦', 'applying', null, 0], ['B', 'confirmed', null, 0]]);
     // a hold alone (auto-confirm on its way) shows its time left, no steps
-    expect(bookingRows(status({ events: [], bookings: [b('hold', t0)] }), TODAY)[0]).toMatchObject({ state: 'hold', left: 'あと30分ごろで無効', steps: [] });
+    expect(bookingRows(status({ events: [], bookings: [b('hold', t0)] }), TODAY)[0]).toMatchObject({ state: 'hold', left: 'あと30分ほどで無効', steps: [] });
   });
 });
 

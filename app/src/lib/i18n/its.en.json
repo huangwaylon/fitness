@@ -237,6 +237,7 @@
   "its.night.closedDay": "{name} is closed that day",
   "its.night.closedWeekly": "{name} is closed on {days}",
   "its.night.aria": "Searching {n} of {total}. ",
+  "its.night.count": "{n}/{total} places",
   "its.night.ariaItem": "{n} {why}",
   "its.night.ariaSep": ", ",
   "its.night.daySep": "/",

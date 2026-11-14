@@ -125,8 +125,9 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdic
   const hold = alert.locator('[data-its-booking="action"]');
   await expect(hold).toContainText('NAGU 勝浦');
   await expect(hold).toContainText('日付が近いため');
-  await expect(hold.locator('[data-its-hold-left]')).toHaveText(/^あと1[45]分ごろで無効$/);
-  await expect(hold.locator('[data-its-steps] li')).toHaveText(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認', '何もしなければ自動で取り消されます。料金はかかりません。']);
+  await expect(hold.locator('[data-its-hold-left]')).toHaveText(/^あと1[45]分ほどで無効$/);
+  await expect(hold.locator('[data-its-steps] li')).toHaveText(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認']); // the one act numbered
+  await expect(hold.locator('[data-its-hold-note]')).toHaveText(['何もしなければ自動で取り消されます。料金はかかりません。']);
   await expect(its.locator('[data-its-booking]')).toHaveCount(1);
   expect(await y('[data-its-verdict]')).toBeLessThan(await y('[data-its-alert]'));
   expect(await y('[data-its-alert]')).toBeLessThan(await y('[data-its-settings]'));
@@ -490,7 +491,7 @@ test('the allow-list: presets (関東だけ, 近郊まで, 全部), the parts fo
   await expect(search.locator('[data-its-part="search"] h5')).toHaveText([`関東${kantoFit}`]);
   await expect(search.locator('[data-its-part="off"] h4')).toHaveText(`除外${ROSTER.length + 1 - kanto.length}件`);
   // the bars read the draft at once: n/N
-  await expect(its.locator('[data-its-date="2026-11-22"] .nn')).toHaveText(`${kantoFit}/${kanto.length}`);
+  await expect(its.locator('[data-its-date="2026-11-22"] .nn')).toHaveText(`${kantoFit}/${kanto.length}施設`);
   // 近郊まで, then 全部 (never the one on no roster)
   await search.locator('[data-its-preset="near"]').click();
   await expect(search.locator('[data-its-part="search"] h5')).toHaveText([/^関東\d+$/, /^近郊\d+$/]);
@@ -553,7 +554,7 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   // 11/22: 18 days on, November: 直営 and 通年 searched, the seasonal ones 季節外, スキージャム勝山 掲載終了
   const row = its.locator('[data-its-date="2026-11-22"]');
   const night = row.locator('[data-its-night]');
-  await expect(row.locator('.nn')).toHaveText(`${fit}/${total}`);
+  await expect(row.locator('.nn')).toHaveText(`${fit}/${total}施設`);
   await expect(night).toHaveAccessibleName(`11/22（日）、あと18日。${total}件中${fit}件を探しています。季節外で${seasonal}件、掲載終了で1件除外。`);
   await night.click();
   await expect(night).toHaveAttribute('aria-expanded', 'true');

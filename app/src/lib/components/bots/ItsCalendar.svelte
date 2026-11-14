@@ -38,7 +38,7 @@
   .mk, .sw { border-radius: 50%; font: 700 9px/11px var(--font-ui); font-style: normal; text-align: center; }
   .sw { width: 11px; height: 11px; }
   .action { background: var(--c-yuzu); color: var(--c-ink); box-shadow: inset 0 0 0 1px rgb(74 58 44 / .55), 0 0 0 1.5px var(--card); }
-  .hold { box-shadow: inset 0 0 0 2px var(--c-yuzu); }
+  .hold { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
   .booked { color: var(--leaf-text); }
   .mk.booked { width: auto; height: auto; }
   :global(:root[data-tod='night']) .cell.on { color: var(--c-ink); }

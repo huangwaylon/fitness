@@ -560,8 +560,10 @@ export interface BookingRow {
   /** A live hold's time left (「あと18分ごろで無効」) or 「期限切れ」; null without one. */
   left: string | null;
   expired: boolean;
-  /** What to do, a line a step (the mail, that doing nothing costs nothing, a near stay's paid cancellation). */
+  /** What to do, a line a step (the mail). */
   steps: string[];
+  /** What it costs, a line each, under the steps (doing nothing is free; a near stay's paid cancellation). */
+  notes: string[];
 }
 
 /** 要対応 · 申込中 · 仮押さえ · 予約確定, one row a stay and facility still ahead: 要対応 for a failed leg or a
@@ -610,14 +612,14 @@ export function bookingRows(s: ItsStatus, today: string, now: number = s.now): B
     const end = open ? hold.at + HOLD_SEC * 1000 : null;
     const expired = end !== null && now >= end;
     if (expired && !done && confirmedNights.has(p.date)) {
-      rows.push({ key, state: 'lapsed', date: p.date, hotel: p.hotel, label: t('its.booking.lapsed'), detail: t('its.booking.lapsedNight'), left: null, expired: true, steps: [] });
+      rows.push({ key, state: 'lapsed', date: p.date, hotel: p.hotel, label: t('its.booking.lapsed'), detail: t('its.booking.lapsedNight'), left: null, expired: true, steps: [], notes: [] });
       continue;
     }
     const left = end === null ? null : expired ? t('its.hold.expired') : t('its.hold.left', { n: Math.max(1, Math.ceil((end - now) / 60_000)) });
-    const steps = state === 'action' && end !== null && !expired
-      ? [t('its.hold.mail', { hotel: p.hotel }), t('its.hold.free'), ...(daysUntil(p.date, now) < 10 ? [t('its.hold.paid')] : [])]
-      : [];
-    rows.push({ key, state, date: p.date, hotel: p.hotel, label: t(`its.booking.${state}`), detail, left, expired, steps });
+    const mail = state === 'action' && end !== null && !expired;
+    const steps = mail ? [t('its.hold.mail', { hotel: p.hotel })] : [];
+    const notes = mail ? [t('its.hold.free'), ...(daysUntil(p.date, now) < 10 ? [t('its.hold.paid')] : [])] : [];
+    rows.push({ key, state, date: p.date, hotel: p.hotel, label: t(`its.booking.${state}`), detail, left, expired, steps, notes });
   }
   return rows.sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state] || a.date.localeCompare(b.date) || a.hotel.localeCompare(b.hotel));
 }

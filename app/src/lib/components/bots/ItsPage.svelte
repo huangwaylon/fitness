@@ -321,6 +321,7 @@
             <b>{b.hotel}</b><small>{shortDay(b.date)} · <Phrases text={b.detail} /></small>
             {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
             {#if b.steps.length}<ol class="steps" data-its-steps>{#each b.steps as s (s)}<li><Phrases text={s} /></li>{/each}</ol>{/if}
+            {#each b.notes as n (n)}<small class="hnote" data-its-hold-note><Phrases text={n} /></small>{/each}
           </span>
         </li>
       {/each}
@@ -360,7 +361,7 @@
                 {:else}
                   <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick" onclick={() => (openDate = open ? null : d.date)}>
                     <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
-                    <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
+                    <span class="nn" aria-hidden="true">{t('its.night.count', { n: d.able.length, total: searched })}</span>
                     <span class="chev" aria-hidden="true"></span>
                   </button>
                 {/if}
@@ -477,7 +478,7 @@
         <summary class="prow static"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{t(notifyOn ? 'its.set.on' : 'its.set.off')}</small></span><span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody"><ItsNotify push={status.push} bind:on={notifyOn} /></div>
       </details>
-      {#if recentOps}<p class="hint" data-its-saved-by>{recentOps}</p>{/if}
+      {#if recentOps}<p class="hint" data-its-saved-by><Phrases text={recentOps} /></p>{/if}
     </section>
 
   {/if}
@@ -551,6 +552,7 @@
   .tag.confirmed { background: var(--c-leaf); color: var(--c-ink); }
   .booking { align-items: flex-start !important; }
   .booking .tag { margin-top: 2px; }
+  .hnote { margin-top: 4px; }
   .steps { margin: 6px 0 0; padding-left: 1.3em; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
   .ev .time { flex: none; align-self: flex-start; font-size: var(--fs-s); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-soft); padding-top: 2px; }
   .ev > li { align-items: flex-start; min-height: 0; }
@@ -573,7 +575,7 @@
     color: var(--text); font: inherit; display: flex; align-items: center; gap: 8px;
   }
   .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
-  .nn { flex: none; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .nn { flex: none; font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .night[aria-expanded='true'] .chev { rotate: 225deg; margin-top: 4px; }
   /* a part's swatch in the night's list */
   .seg { display: inline-block; background: var(--ctl-off); box-shadow: inset 0 0 0 1px var(--edge); }
