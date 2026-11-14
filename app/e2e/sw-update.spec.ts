@@ -265,6 +265,39 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
   expect(Number(reloadAt)).toBeGreaterThanOrEqual(Number(changed));
 });
 
+// (the phones, 2026-11-14: a launch's reload came ~3 s in, under the player. The new worker installed in 0.3 s, then
+// waited ~2 s to activate: the old one's fetches of art held their events open on the bounded caches' index write)
+test('a deploy\'s worker takes over at once though the old one just served art: no event waits on the index\'s write (service-worker/bounded.ts)', { tag: '@chromium' }, async ({ page, context }) => {
+  const warm = await warmed(page);
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  await warm();
+  await askSwapAgain(page, context);
+  await page.request.get('/__e2e/deploy');
+  const ms = await page.evaluate(async () => {
+    const reg = (await navigator.serviceWorker.getRegistration())!;
+    // art through the old worker (kept on first use, marked in its index): new URLs, so each is fetched and kept
+    await Promise.all(['ace', 'admiral'].map((n) => fetch(new URL(`art/villagers/${n}.webp?e2e=bounded`, reg.scope)).then((r) => r.blob())));
+    const at: Record<string, number> = {};
+    const took = new Promise<void>((done) => {
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing!;
+        // (each change's event time: no wall clock read)
+        w.addEventListener('statechange', (e) => {
+          at[w.state] ??= e.timeStamp;
+          if (w.state === 'activating' || w.state === 'redundant') done();
+        });
+      }, { once: true });
+    });
+    await reg.update();
+    await took;
+    return at.activating !== undefined && at.installed !== undefined ? at.activating - at.installed : -1;
+  });
+  expect(ms, 'installed → activating (ms)').toBeGreaterThanOrEqual(0);
+  expect(ms, 'installed → activating (ms): the old worker idle').toBeLessThan(800);
+});
+
 test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const warm = await warmed(page);

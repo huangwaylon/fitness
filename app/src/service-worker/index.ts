@@ -4,6 +4,7 @@ import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
+import { boundedCache as bounded } from './bounded.ts';
 import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
@@ -107,54 +108,10 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// A cache bounded by bytes (the room's, caches.ts roomEvict; ききみみ's packs', listenEvict): its index (each file's
-// bytes and last use) in memory while the worker runs, kept in the cache itself a moment after a change, with the files
-// it lets go deleted then. Read back (and matched to the cache's files: one put as the worker was stopped is counted
-// then) the first time the cache is asked for. A cache from before the index is counted whole once, every file used now
-// in the cache's order (the room's older versions go at once; the rest only after its keep time unused).
+// The bounded caches (bounded.ts): a use marked at once, the index written a moment later outside every event.
 const sizeOf = async (res: Response): Promise<number> => (await res.blob()).size;
-function boundedCache(name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]): (url: string, bytes?: number) => Promise<void> {
-  const indexUrl = new URL(indexPath, self.registration.scope).href;
-  let index: Promise<RoomIndex> | null = null;
-  const indexOf = (cache: Cache): Promise<RoomIndex> =>
-    (index ??= (async () => {
-      let idx: RoomIndex = {};
-      try {
-        const kept = await cache.match(indexUrl);
-        if (kept) idx = (await kept.json()) as RoomIndex;
-      } catch {
-        idx = {};
-      }
-      const urls = (await cache.keys()).map((k) => k.url).filter((u) => u !== indexUrl);
-      const have = new Set(urls), now = Date.now();
-      for (const u of Object.keys(idx)) if (!have.has(u)) delete idx[u];
-      for (let i = 0; i < urls.length; i++) {
-        if (idx[urls[i]]) continue;
-        const res = await cache.match(urls[i]);
-        idx[urls[i]] = [res ? await sizeOf(res).catch(() => 0) : 0, now - urls.length + i];
-      }
-      return idx;
-    })().catch((e: unknown) => {
-      index = null;
-      throw e;
-    }));
-  let tidy: Promise<void> | null = null;
-  /** A file used (and its bytes, when it was just stored); the index kept and the files over the bound let go a
-   *  moment later (one write for a burst of files). */
-  return async (url, bytes) => {
-    const cache = await caches.open(name);
-    const idx = await indexOf(cache);
-    idx[url] = [bytes ?? idx[url]?.[0] ?? 0, Date.now()];
-    return (tidy ??= new Promise((r) => setTimeout(r, 2000)).then(async () => {
-      tidy = null;
-      for (const u of evict(idx, Date.now())) {
-        await cache.delete(u);
-        delete idx[u];
-      }
-      await cache.put(indexUrl, new Response(JSON.stringify(idx), { headers: { 'content-type': 'application/json' } }));
-    }));
-  };
-}
+const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]) =>
+  bounded(() => caches.open(name), new URL(indexPath, self.registration.scope).href, evict);
 /** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */
 const flying = new Map<string, Promise<Response>>();
 const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
@@ -382,8 +339,8 @@ async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Pr
 // worker would have; else the next launch revalidated each (~77 requests) and kept them only then, or fetched them all
 // again (~1.5 MB) had the HTTP cache let them go. Not through onUse: its answer is a tee'd clone (fetchShared), and
 // cancelling one branch of a tee settles only once the other is read or cancelled (the Streams spec, as WebKit does
-// it): the loop stalled at its first file and a WebKit first launch kept 27 of ~165 (review 11-13 N1). The index's
-// write (`used`, a moment after a burst) is waited for once, at the end, not a file at a time (~1 s each).
+// it): the loop stalled at its first file and a WebKit first launch kept 27 of ~165 (review 11-13 N1). Each file's
+// use is marked in its index's memory (`used`; the write follows on its own: bounded.ts).
 async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
   const req = new Request(u, { cache: 'force-cache' });
   const room = isRoomAsset(new URL(u).pathname);

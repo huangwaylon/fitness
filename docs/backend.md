@@ -411,7 +411,8 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy refetches only the chunks that changed.
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
-  (`staleFonts`).
+  (`staleFonts`). It activates as soon as it's installed: the old worker is idle by then, as no event of its waits on a
+  bounded cache's index write (`bounded.ts`: a use is marked in memory, the write follows on its own).
 - **Navigations:** this version's cached shell at once (`isShellOf`); none yet: network first, an older shell offline
   or after 3 s.
 - **Updates:** Kit's `_app/version.json` check sets `updated`; the layout waits for the new build's worker
