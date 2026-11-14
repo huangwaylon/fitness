@@ -27,6 +27,7 @@ interface Stats {
   shadowSize: number;
   full: number;
   fullWhy: Readonly<Record<string, number>>;
+  fxWhy: Readonly<Record<string, number>>;
   slots: number;
   pointMask: boolean;
 }
@@ -60,7 +61,7 @@ const PAGE: RestClock = {
 /** Count the island's rest from now; the stop (the island going: what's counted is logged). */
 export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
   let timer: unknown = 0, prev: (Stats & { t: number; w: number }) | null = null;
-  let ms = 0, frames = 0, shadows = 0, wk = 0, full = 0, why: Record<string, number> = {};
+  let ms = 0, frames = 0, shadows = 0, wk = 0, full = 0, why: Record<string, number> = {}, fx: Record<string, number> = {};
   const tick = () => {
     const s = o.stats(), t = clock.now(), w = wakes.n;
     // the second just gone was at rest: untouched since REST_MS before it began, and up and in front throughout
@@ -70,9 +71,10 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
       shadows += s.shadows - prev.shadows;
       wk += w - prev.w;
       full += s.full - prev.full;
-      for (const [k, v] of Object.entries(s.fullWhy)) if (v > (prev.fullWhy[k] ?? 0)) why[k] = (why[k] ?? 0) + v - (prev.fullWhy[k] ?? 0);
+      add(why, s.fullWhy, prev.fullWhy);
+      add(fx, s.fxWhy, prev.fxWhy);
     }
-    prev = o.ok() ? { ...s, fullWhy: { ...s.fullWhy }, t, w } : null;
+    prev = o.ok() ? { ...s, fullWhy: { ...s.fullWhy }, fxWhy: { ...s.fxWhy }, t, w } : null;
     timer = clock.setTimeout(tick, TICK_MS);
   };
   const flush = () => {
@@ -80,10 +82,11 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
     if (s >= MIN_S) {
       const st = o.stats(), per = (n: number) => Math.round((n / s) * 10) / 10;
       const pct = (n: number) => Math.round((n / Math.max(1, frames)) * 100);
-      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), sm: st.shadowSize, full: pct(full), ...top(why, pct), pts: st.slots, pm: st.pointMask });
+      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), sm: st.shadowSize, full: pct(full), ...top(why, pct), ...topFx(fx, pct), pts: st.slots, pm: st.pointMask });
     }
     ms = frames = shadows = wk = full = 0;
     why = {};
+    fx = {};
   };
   const pause = () => {
     clock.clearTimeout(timer);
@@ -100,6 +103,17 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
     pause();
     flush();
   };
+}
+
+/** A count's growth over the second into its sum. */
+const add = (sum: Record<string, number>, now: Readonly<Record<string, number>>, was: Readonly<Record<string, number>>) => {
+  for (const [k, v] of Object.entries(now)) if (v > (was[k] ?? 0)) sum[k] = (sum[k] ?? 0) + v - (was[k] ?? 0);
+};
+
+/** The flourish's kind that asked for the most of `fx`'s full-rate frames (`fx1`) and its share of the frames (`fw1`). */
+function topFx(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
+  const [k, v] = Object.entries(counts).sort((x, y) => y[1] - x[1])[0] ?? [];
+  return k ? { fx1: k, fw1: pct(v) } : {};
 }
 
 const WHY: readonly string[] = LOG_FULL_WHY;

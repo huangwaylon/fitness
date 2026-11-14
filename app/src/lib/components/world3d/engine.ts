@@ -148,6 +148,8 @@ interface Stats {
    *  (`touch` a finger, `active` a change's while; perf.rest's top three). */
   full: number;
   fullWhy: Readonly<Record<string, number>>;
+  /** Of those `fx` asked for, the flourish's kind that did, each's count (perf.rest's `fx1`). */
+  fxWhy: Readonly<Record<string, number>>;
   paused: boolean;
   /** False in the e2e's logic mode (testMode.ts drawOff): the frames run, nothing is drawn. */
   drawn: boolean;
@@ -1014,7 +1016,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** What wanted the last frames (the e2e's and perf's: which part keeps the island drawing). */
   const why = new Set<string>();
   let full = 0, tagged = false;
-  const fullWhy: Record<string, number> = {};
+  const fullWhy: Record<string, number> = {}, fxWhy: Record<string, number> = {};
   const counted = (name: string) => void (fullWhy[name] = (fullWhy[name] ?? 0) + 1);
   const activity = (ms = 300) => {
     activeUntil = Math.max(activeUntil, now() + ms);
@@ -1064,6 +1066,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       else if (!busy) counted('active');
       // (the scene's own names in place of its `scene`)
       for (const w of why) if (w[0] !== '~' && !(tagged && w === 'scene')) counted(w);
+      const fxk = why.has('fx') ? effects.busyKind() : null;
+      if (fxk) fxWhy[fxk] = (fxWhy[fxk] ?? 0) + 1;
       pace.kick();
     } else {
       if (groundAmb && !ambience && waterSeen()) (ambience = true), why.add('~ground');
@@ -1350,7 +1354,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), shadowSize: sun.shadow.mapSize.x, frames, at: lastFrame, input: lastInput,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, slots: l.slots, pointMask: pointMask.on, fx: effects.count(),
-        fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, paused, drawn: !noDraw
+        fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, fxWhy: { ...fxWhy }, paused, drawn: !noDraw
       };
     },
     dispose() {

@@ -1106,7 +1106,7 @@
       if (posed || more === true || moving === true) {
         // (what of it, for perf.rest)
         if (posed) e.tag('vil');
-        if (more === true) e.tag('world');
+        if (more === true) e.tag(world.going ?? 'world');
         if (moving === true) e.tag('mirror');
         return true;
       }

@@ -273,6 +273,8 @@ export class World {
   /** The body nodes whose model isn't built yet (placeBody: their box meanwhile). */
   private unshaped = new Set<Node>();
   private moving = 0;
+  /** What kept the last step going (perf.rest): someone walking in view (the scene's hook), a node moving (moveStart). */
+  going: 'walk' | 'nodes' | null = null;
   private lastCam = NaN;
   private win: [number, number] = [-Infinity, Infinity];
   private hook: ((ts: number) => boolean | 'ambient') | null = null;
@@ -571,6 +573,7 @@ export class World {
     }
     this.perf.nodes = this.nodes.size;
     const going = more === true || this.moving > 0;
+    this.going = more === true ? 'walk' : this.moving > 0 ? 'nodes' : null;
     // (someone walking off screen: the ambience's frames, the game clock stepping it between them, its tap area and
     // its walking into view)
     this.simWants = going || more === 'ambient';

@@ -71,6 +71,8 @@ interface Part {
   blink: boolean;
   tag?: string;
   calm?: boolean;
+  /** Its spawn's kind (perf.rest's `fx1`: which flourish kept the island at the full rate). */
+  kind?: FxKind;
   /** Fades out over its last 40 % (else holds, then a quick end). */
   fade: boolean;
   /** NH's pop (a quick overshoot in, a little hop now and then) and, once `held` says no more, a quick pop out from
@@ -88,6 +90,8 @@ export interface Effects {
   /** How many parts of a flourish (not the ambient ones) have come on so far (the e2e's: one came, though a short one
    *  may be over already). */
   shown(): number;
+  /** The last frame's first flourish kept at the full rate (its kind), or null (perf.rest's `fx1`). */
+  busyKind(): FxKind | null;
   /** How many play (with this tag). */
   count(tag?: string): number;
   /** Load every flourish's model now and put its textures and shaders on the GPU (the island's start, once idle): the
@@ -267,6 +271,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     // (a spawn's tag on each of its parts: an ambient one's all ambient)
     if (!p.tag && spawnTag) p = { ...p, tag: spawnTag };
     if (spawnCalm) p = { ...p, calm: true };
+    if (spawnKind) p = { ...p, kind: spawnKind };
     if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 0) + 1);
     void load(name).then((src) => {
       if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 1) - 1);
@@ -292,14 +297,16 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       parts.push({
         name: p.name ?? name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
-        blink: p.blink ?? false, tag: p.tag, calm: p.calm, fade: p.fade ?? true, pop: p.pop, held: p.held, follow: p.follow
+        blink: p.blink ?? false, tag: p.tag, calm: p.calm, kind: p.kind, fade: p.fade ?? true, pop: p.pop, held: p.held, follow: p.follow
       });
       if (!p.tag) shown++;
       onLoad?.();
     });
   }
 
-  let spawnTag: string | undefined, spawnCalm = false, shown = 0;
+  let spawnTag: string | undefined, spawnKind: FxKind | undefined, spawnCalm = false, shown = 0;
+  /** The last frame's first flourish at the full rate (neither tagged nor calm): its kind. */
+  let busyKind: FxKind | null = null;
   // the e2e's (dev builds and test mode): the parts of a source drawn now, where (world x, y, z) and how big, and each
   // spawn's kind and time (performance.now()): the fishing's rings come before its 「！」
   const log: { kind: FxKind; t: number; size?: number }[] | null =
@@ -313,12 +320,13 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   if (log) window.__fx3 = hook;
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
     spawnTag = o.tag;
+    spawnKind = kind;
     spawnCalm = !!o.calm;
     if (log && log.push({ kind, t: performance.now(), size: o.size }) > 200) log.shift();
     try {
       spawnOf(kind, x, z, lift, o);
     } finally {
-      spawnTag = undefined;
+      spawnTag = spawnKind = undefined;
       spawnCalm = false;
     }
   }
@@ -481,11 +489,13 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     // water's 30 a second carries them)
     // (and the critters' moves drawn from their live spots, pace.ts and Critters.svelte: their ambience here, their
     // full rate the engine's own `crit-*`, so perf.rest tells a dart from a flourish)
-    return parts.some((p) => !p.tag && !p.calm) ? true : parts.length || pace.ambient > 0 ? 'ambient' : false;
+    const busy = parts.find((p) => !p.tag && !p.calm);
+    busyKind = busy ? (busy.kind ?? null) : null;
+    return busy ? true : parts.length || pace.ambient > 0 ? 'ambient' : false;
   }
 
   return {
-    spawn, frame, warm, warmed: () => warmed, shown: () => shown,
+    spawn, frame, warm, warmed: () => warmed, shown: () => shown, busyKind: () => busyKind,
     count: (tag) => (tag ? parts.filter((p) => p.tag === tag).length + (coming.get(tag) ?? 0) : parts.length),
     dispose() {
       disposed = true;
