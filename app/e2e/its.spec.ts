@@ -9,10 +9,10 @@
 // next; a tap a night, a weekday's header its column, a booking marked) and the nights under it (tapped open: the names
 // and reasons), 予約済み. The facilities: the allow-list (derived from a Worker without one, said until saved), the
 // summary, presets, 探す · 日程に合わない (a reason a row) · 除外, the new ones' banner; no ★ (no priority sent). A
-// refusal is worded, a failed read shows its code and もう一度. Each call carries an X-Request-Id. The guest has no ボット, demo mode no 保養所 tab. The rules
+// refusal is worded, a failed read shows its code and もう一度. Each call carries an X-Request-Id. The guest and demo mode have no ボット. The rules
 // are view.test.ts's.
 import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
-import { fromMenu, unfoldMenu } from './hud.ts';
+import { unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
 import { ORIGIN, cors, payload, type Status } from './its.ts';
@@ -651,17 +651,17 @@ test('直近1時間 from the Worker’s per-minute aggregate: every read of the 
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8回 · 失敗2（http_503） · 空き3日$/);
 });
 
-test('in demo mode ボット has no 保養所 tab (no fixture): ジム alone, no tabs, and nothing asks the Worker', async ({ page, context }) => {
+test('demo mode has no ボット (no fixtures): no pill, and nothing asks a bot\'s Worker or メニュー\'s status', async ({ page, context }) => {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   const asked: string[] = [];
-  await page.route(`${ORIGIN}/**`, (route) => (asked.push(route.request().url()), route.abort()));
+  const ask = (route: Route) => (asked.push(route.request().url()), route.abort());
+  await page.route(/^https:\/\/(its-bot|gym-bot)\.island-fund-relay\.workers\.dev\//, ask);
+  await page.route('https://raw.githubusercontent.com/**', ask);
   await page.goto('?demo');
   await islandUp(page);
-  await fromMenu(page, 'bots');
-  const sheet = page.locator('dialog[open] [data-bots]');
-  await expect(sheet).toHaveAttribute('data-tab', 'gym');
-  await expect(sheet.locator('[data-gym-page]')).toBeVisible();
-  await expect(page.locator('dialog[open] [role="tablist"]')).toHaveCount(0);
+  await unfoldMenu(page);
+  await expect(page.locator('[data-hud-settings]')).toBeVisible();
+  await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   expect(asked).toEqual([]);
 });
 

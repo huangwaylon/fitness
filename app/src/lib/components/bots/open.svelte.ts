@@ -8,11 +8,8 @@ import { BOTS, type BotId } from './registry.ts';
 /** `show(tab)`: open on that tab (a notification's tap: 保養所). */
 export const botsSheet = lazySheet<BotId>(() => import('./BotsSheet.svelte'));
 
-/** The tabs this phone has, left to right (none: the guest, or no bot configured). */
-export function botTabs(): BotId[] {
-  const o = { guest: week.guest, demo: !!week.demo };
-  return BOTS.filter((b) => b.visible(o)).map((b) => b.id);
-}
+/** The tabs this phone has, left to right (none: the guest, demo mode, or no bot configured). */
+export const botTabs = (): BotId[] => (week.guest || week.demo ? [] : BOTS.filter((b) => b.on).map((b) => b.id));
 
 /** ボット's chunk (its pages with it), fetched ahead (the menu pill's touch-down; the guest has none). */
 export const prefetchBots = (): Promise<unknown> => (botTabs().length ? botsSheet.prefetch() : Promise.resolve());
