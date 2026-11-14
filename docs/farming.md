@@ -94,7 +94,7 @@ income, 2026-11-14). The levers, if the live numbers drift (`npm run logs`, the 
 - **Watered soil** stays dark for the day; a ripe plant shows its yield's model. Their plant or harvest shows on their
   next sync. **Who watered:** the partner's or guest's watering plays on my island at once (their villager turns,
   drops, a heart over mine).
-- **The shop:** うる's 野菜 and 苗 (no 全部: held to plant); かう's 苗, the six starts, always in stock, first while my free
+- **The shop:** うる's 野菜 and 苗 (no 全部選ぶ: held to plant); かう's 苗, the six starts, always in stock, first while my free
   plots want more than I hold (else after the stock, a 苗へ chip away); 「畑の外の株 N株」 with 苗に戻す (取り消す).
 
 ## おねがい

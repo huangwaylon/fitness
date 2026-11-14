@@ -814,11 +814,11 @@ person has a pocket and かいがら, the guest too.
   tap on the twins, their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
 - **The list** (`shop/Counter.svelte`: its header has the rows and the bar): 売る · 買う, my かいがら in the bar. A world
-  object: cream at every hour (`.obj-cream`), its own rows (a sheet's follow the hour), as the rooms' top row.
-- **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部 a section,
+  object: cream at every hour (`.obj-cream`), its own rows (a sheet's follow the hour).
+- **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部選ぶ a section,
   全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: today's stock, 24 pieces a day, seeded by pack, less what the island had by midnight; past
-  my かいがら dimmed; 全部買う the most I can afford, cheapest first. The starts ([farming.md](farming.md)) in rows.
+  my かいがら dimmed; 全部買う, or short 買えるだけ買う, cheapest first. The starts ([farming.md](farming.md)) in rows.
 - A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷

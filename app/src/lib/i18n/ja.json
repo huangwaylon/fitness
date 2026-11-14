@@ -513,7 +513,7 @@
   "shop.emptyPocket": "ポケットは空です。魚や虫、貝や木材を集めると、ここで売れます",
   "shop.pickedN": "{n}個選択",
   "shop.pickHint": "売りたいものを選んでください",
-  "shop.all": "全部",
+  "shop.all": "全部選ぶ",
   "shop.sell": "売る",
   "shop.sellFor": "{v}かいがらで売る",
   "shop.today": "今日の品物",

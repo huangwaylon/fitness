@@ -370,7 +370,7 @@
 {#snippet allRow(which: Tab, line: string, off: boolean)}
   <div class="all" data-shop-all-row={which}>
     <p class="all-line" id="shop-all-{which}" data-shop-all-line>{line}</p>
-    <button type="button" class="chip all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
+    <button type="button" class="btn small paper all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
       onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : most(buyPlan) ? 'shop.buyMost' : 'shop.buyAll')}</button>
   </div>
 {/snippet}
@@ -490,7 +490,7 @@
   /* (no bar under it, an empty うる: the list keeps clear of the home indicator) */
   .list:last-child { padding-bottom: var(--pad-foot); }
   .pocket { display: flex; flex-direction: column; gap: 10px; }
-  /* a section's header, 32 high (the 全部 / 苗へ chip's hit 44: .chip.s), stuck at the list's top while its rows pass */
+  /* a section's header, 32 high (the 全部選ぶ / 苗へ chip's hit 44: .chip.s), stuck at the list's top while its rows pass */
   .sec {
     position: sticky; top: -12px; z-index: 2; display: flex; align-items: center; gap: 8px; min-height: 32px;
     margin: 0 -4px; padding: 2px 4px 8px; background: var(--c-cream);
@@ -540,7 +540,7 @@
   }
   .bar .btn { margin: 0; flex: none; }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  /* 全部売る / 全部買う's lead row: its line and its chip, a card's stitch under it */
+  /* 全部売る / 全部買う's lead row: its line and its raised button (.btn.small.paper: a deed, not the sections' 全部選ぶ chip) */
   .all { flex: none; display: flex; align-items: center; gap: 8px; min-height: var(--hit); }
   .group > .all { margin-bottom: 8px; }
   .all-line { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }

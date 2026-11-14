@@ -513,7 +513,7 @@
   "shop.emptyPocket": "Your pocket is empty: catch fish and bugs, collect seashells and wood, and sell them here",
   "shop.pickedN": "{n} picked",
   "shop.pickHint": "Pick what to sell",
-  "shop.all": "All",
+  "shop.all": "Select all",
   "shop.sell": "Sell",
   "shop.sellFor": "Sell for {v}",
   "shop.today": "Today's stock",
