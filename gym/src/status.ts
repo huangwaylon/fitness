@@ -3,43 +3,8 @@
 // no group, no day settings or slot times, no error text. The verdict is decided here; the app only shows it.
 import { HacomonoError, RateLimited } from './hacomono.ts';
 
-/** @public (part of the payload the app mirrors, though nothing here names it) */
-export type Verdict = 'healthy' | 'degraded' | 'failing' | 'late' | 'broken' | 'stopped' | 'off';
-/** @public */
-export type Reason =
-  | 'mode_off' | 'paused' | 'no_alarm' | 'no_group' | 'webhook_wrong' | 'overdue'
-  | 'site_failing' | 'program_failing' | 'push_retry' | 'quota_high';
-export type Outcome = 'ok' | 'timeout' | 'rate_limited' | 'http_4xx' | 'http_5xx' | 'empty' | 'error';
-export interface Check {
-  t: number;                 // start, ms since epoch
-  by: 'alarm' | 'tap';       // the alarm, or a 🔎 tap
-  web?: true;                // the 🔎 was the app's (a peek: nothing marked announced)
-  ms: number;                // duration
-  idle?: true;               // an alarm with no day to check: nothing fetched
-  r?: Record<'training' | 'pilates', Outcome>;   // absent when idle
-  open: number;              // matching open slots (total)
-  fresh: number;             // of which new (announced now)
-  push: 'none' | 'ok' | 'held' | 'failed';       // held = 🔎: marked announced, not pushed
-}
-export interface GymStatus {
-  v: 1;
-  now: number;
-  mode: 'bot' | 'off';
-  sha: string | null;
-  verdict: Verdict;
-  reasons: Reason[];         // every reason that applies, in rule order; verdict = the first's
-  intervalMin: number;
-  paused: boolean;
-  nextCheck: number | null;  // the alarm
-  lastCheck: number | null;
-  lastOk: number | null;     // the last check with every program ok
-  lastError: { t: number; code: Outcome | 'push_failed' } | null;
-  failures: number;          // fully failed checks in a row
-  siteDownSent: boolean;
-  retryPending: boolean;     // a failed push waiting for its retry
-  checks: Check[];           // newest first: the last CHECKS_MS (a day), at most CHECKS_KEPT
-  line: { used: number | null; limit: number | null; webhookOk: boolean | null; asOf: number | null };
-}
+export type { Check, GymStatus, Outcome } from '../../app/src/lib/gym/contract.ts';
+import type { GymStatus, Outcome, Reason, Verdict } from '../../app/src/lib/gym/contract.ts';
 
 /** The checks kept for /status (the app's 直近12時間 strip): a day's, at most CHECKS_KEPT (a day at the shortest
  *  interval, 10 min, is 144, and a few 🔎 taps). In the runtime record the check already writes: no storage op of its own. */

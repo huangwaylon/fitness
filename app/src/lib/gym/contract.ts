@@ -1,6 +1,7 @@
 // The gym bot's contract (gym/README.md "The app"): what ボット → ジム reads (the members-only GET /gym/config) and
-// sends (POST /gym/act), the fixed rules both sides draw from, and Tokyo's days and clock times. The Worker (gym/src)
-// owns the rules and imports this file; the app reads it. No DOM, no Worker types: it imports only contract/guards.ts.
+// sends (POST /gym/act), the public GET /status's payload, the fixed rules both sides draw from, and Tokyo's days and
+// clock times. The Worker (gym/src) owns the rules and imports this file; the app reads it. No DOM, no Worker types: it
+// imports only contract/guards.ts and contract/tokyo.ts.
 import { isRec } from '../contract/guards.ts';
 import { ZONE_OFFSET_MS, addDays as addDay, clockAt, localDateAt } from '../contract/tokyo.ts';
 
@@ -231,3 +232,45 @@ export function parseActInput(x: unknown): ActInput | null {
   }
   return { a: a as DayAct, d: x.d, ...base };
 }
+
+// ---- GET /status's payload (the Worker's gym/src/status.ts decides it; the app shows it: gym/status.ts) ----
+
+export type Verdict = 'healthy' | 'degraded' | 'failing' | 'late' | 'broken' | 'stopped' | 'off';
+export type Reason =
+  | 'mode_off' | 'paused' | 'no_alarm' | 'no_group' | 'webhook_wrong' | 'overdue'
+  | 'site_failing' | 'program_failing' | 'push_retry' | 'quota_high';
+/** @public (gym/src) */
+export type Outcome = 'ok' | 'timeout' | 'rate_limited' | 'http_4xx' | 'http_5xx' | 'empty' | 'error';
+export interface Check {
+  t: number;                 // start, ms since epoch
+  by: 'alarm' | 'tap';       // the alarm, or a 🔎 tap
+  web?: true;                // the 🔎 was the app's (a peek: nothing marked announced)
+  ms: number;                // duration
+  idle?: true;               // an alarm with no day to check: nothing fetched
+  r?: Record<'training' | 'pilates', Outcome>;   // absent when idle
+  open: number;              // matching open slots (total)
+  fresh: number;             // of which new (announced now)
+  push: 'none' | 'ok' | 'held' | 'failed';       // held = 🔎: marked announced, not pushed
+}
+export interface GymStatus {
+  v: 1;
+  now: number;
+  mode: 'bot' | 'off';
+  sha: string | null;
+  verdict: Verdict;
+  reasons: Reason[];         // every reason that applies, in rule order; verdict = the first's
+  intervalMin: number;
+  paused: boolean;
+  nextCheck: number | null;  // the alarm
+  lastCheck: number | null;
+  lastOk: number | null;     // the last check with every program ok
+  lastError: { t: number; code: Outcome | 'push_failed' } | null;
+  failures: number;          // fully failed checks in a row
+  siteDownSent: boolean;
+  retryPending: boolean;     // a failed push waiting for its retry
+  checks: Check[];           // newest first: the last CHECKS_MS (a day), at most CHECKS_KEPT
+  line: { used: number | null; limit: number | null; webhookOk: boolean | null; asOf: number | null };
+}
+export const VERDICTS: readonly Verdict[] = ['healthy', 'degraded', 'failing', 'late', 'broken', 'stopped', 'off'];
+export const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_alarm', 'no_group', 'webhook_wrong', 'overdue', 'site_failing', 'program_failing', 'push_retry', 'quota_high'];
+export const OUTCOMES: readonly Outcome[] = ['ok', 'timeout', 'rate_limited', 'http_4xx', 'http_5xx', 'empty', 'error'];

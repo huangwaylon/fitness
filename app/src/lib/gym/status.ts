@@ -7,51 +7,15 @@ import { chain, hhmm, stripTicks, type CellState, type StripCell, type StripTick
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import { timeOf } from '#lib/i18n/when.ts';
+import { OUTCOMES, REASONS, VERDICTS, type Check, type GymStatus, type Outcome, type Reason, type Verdict } from './contract.ts';
 import '#lib/i18n/gym.ts';
 import '#lib/i18n/bots.ts';
 
-// ---- The payload: mirrors gym/src/status.ts (the Worker owns it; change both together) ----
-type Verdict = 'healthy' | 'degraded' | 'failing' | 'late' | 'broken' | 'stopped' | 'off';
-type Reason =
-  | 'mode_off' | 'paused' | 'no_alarm' | 'no_group' | 'webhook_wrong' | 'overdue'
-  | 'site_failing' | 'program_failing' | 'push_retry' | 'quota_high';
-type Outcome = 'ok' | 'timeout' | 'rate_limited' | 'http_4xx' | 'http_5xx' | 'empty' | 'error';
-export interface Check {
-  t: number;                 // start, ms since epoch
-  by: 'alarm' | 'tap';       // the alarm, or a 🔎 tap
-  ms: number;                // duration
-  idle?: true;               // an alarm with no day to check: nothing fetched
-  r?: Record<'training' | 'pilates', Outcome>;   // absent when idle
-  open: number;              // matching open slots (total)
-  fresh: number;             // of which new (announced now)
-  push: 'none' | 'ok' | 'held' | 'failed';       // held = 🔎: marked announced, not pushed
-}
-export interface GymStatus {
-  v: 1;
-  now: number;
-  mode: 'bot' | 'off';
-  sha: string | null;
-  verdict: Verdict;
-  reasons: Reason[];         // every reason that applies, in rule order; verdict = the first's
-  intervalMin: number;
-  paused: boolean;
-  nextCheck: number | null;  // the alarm
-  lastCheck: number | null;
-  lastOk: number | null;     // the last check with every program ok
-  lastError: { t: number; code: Outcome | 'push_failed' } | null;
-  failures: number;          // fully failed checks in a row
-  siteDownSent: boolean;
-  retryPending: boolean;     // a failed push waiting for its retry
-  checks: Check[];           // newest first: a day's (an older Worker: the last 12)
-  line: { used: number | null; limit: number | null; webhookOk: boolean | null; asOf: number | null };
-}
+export type { Check, GymStatus };
 
 /** The Worker's origin; VITE_GYM_URL overrides it (empty = ボット's ジム tab hidden). vite.config.ts's CSP allows it. */
 export const GYM_URL: string = (import.meta.env?.VITE_GYM_URL as string | undefined) ?? 'https://gym-bot.island-fund-relay.workers.dev';
 
-const VERDICTS: readonly Verdict[] = ['healthy', 'degraded', 'failing', 'late', 'broken', 'stopped', 'off'];
-const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_alarm', 'no_group', 'webhook_wrong', 'overdue', 'site_failing', 'program_failing', 'push_retry', 'quota_high'];
-const OUTCOMES: readonly Outcome[] = ['ok', 'timeout', 'rate_limited', 'http_4xx', 'http_5xx', 'empty', 'error'];
 const PROGRAMS = ['training', 'pilates'] as const;
 
 const num = (x: unknown): number | null => (isNum(x) ? x : null);
