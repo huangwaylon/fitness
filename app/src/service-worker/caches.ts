@@ -555,23 +555,20 @@ export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolea
 
 /** The worker's own network fetches lately (perf.boot's `swNet`, `swRoom`, `swKB`: the page's resource timings read a
  *  transfer size of 0 for every answer the worker gives, one it fetched too): when each started, a room file or not,
- *  its bytes (its Content-Length, else its body's as read: Pages sends the models brotli'd, with none); the last
- *  `keep`. The navigation preload isn't one (the browser's). */
+ *  its bytes: its Content-Length, else the size its cache's index takes (`sized`: the room's, the art's, ききみみ's packs;
+ *  Pages sends the models brotli'd, with none), else 0 (never a copy of the body read for it); the last `keep`. The
+ *  navigation preload isn't one (the browser's). */
 export function netLog(keep = 600) {
-  const rows: [t: number, room: boolean, bytes: number][] = [];
+  const rows: [t: number, room: boolean, bytes: number, url: string][] = [];
   return {
     track(res: Promise<Response>, url: string, t = Date.now()): Promise<Response> {
-      const row: [number, boolean, number] = [t, isRoomAsset(url), 0];
+      const row: [number, boolean, number, string] = [t, isRoomAsset(url), 0, url];
       if (rows.push(row) > keep) rows.shift();
-      return res.then((r) => {
-        row[2] = Number(r.headers.get('content-length')) || 0;
-        // (a copy's chunks counted and dropped, to its end: a tee's branch read through never holds the other back)
-        const body = row[2] || !r.body || r.bodyUsed ? null : r.clone().body!.getReader();
-        if (body) void (async () => {
-          for (let c = await body.read(); !c.done; c = await body.read()) row[2] += c.value.byteLength;
-        })().catch(() => {});
-        return r;
-      });
+      return res.then((r) => ((row[2] = Number(r.headers.get('content-length')) || 0), r));
+    },
+    /** `url`'s newest fetch without a Content-Length is `bytes` long (the size its index was given). */
+    sized(url: string, bytes: number): void {
+      for (let i = rows.length - 1; i >= 0; i--) if (rows[i][3] === url) return void (rows[i][2] ||= bytes);
     },
     since(t0: number): { swNet: number; swRoom: number; swKB: number } {
       let n = 0, room = 0, b = 0;

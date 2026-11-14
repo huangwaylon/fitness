@@ -925,16 +925,19 @@ describe('a launch races the network for the shell (raceShell)', () => {
     const res = marked({ res: page('x'), from: 'skip', ms: 0 }, { t0: 1763150000123, cold: true });
     expect(res.headers.get('server-timing')).toBe('shell;desc=skip;dur=0, t0;desc=1;dur=1763150000123');
   });
-  it('netLog: the worker\'s network fetches since a time, its room files and KB (Content-Length, else the body read), the last `keep`', async () => {
+  it('netLog: the worker\'s network fetches since a time, its room files and KB (Content-Length, else the size its index took), the last `keep`', async () => {
     const log = netLog(3);
     await log.track(Promise.resolve(new Response('', { headers: { 'content-length': '2048' } })), 'https://x/room/world3d/a.glb', 100);
-    const chunked = await log.track(Promise.resolve(new Response('a'.repeat(3000))), 'https://x/_app/immutable/chunks/b.js', 200);
+    const chunked = await log.track(Promise.resolve(new Response('a'.repeat(3000))), 'https://x/room/b.glb', 200);
     expect((await chunked.text()).length, 'the page\'s answer whole').toBe(3000);
     await log.track(Promise.resolve(new Response('', { headers: { 'content-length': '1024' } })), 'https://x/room/c.ktx2', 300);
-    expect(log.since(150), 'no Content-Length: its body counted').toEqual({ swNet: 2, swRoom: 1, swKB: 4 });
-    expect(log.since(0)).toEqual({ swNet: 3, swRoom: 2, swKB: 6 });
+    expect(log.since(150), 'no Content-Length, no size yet: 0').toEqual({ swNet: 2, swRoom: 2, swKB: 1 });
+    log.sized('https://x/room/b.glb', 3072);
+    log.sized('https://x/room/c.ktx2', 9999);
+    expect(log.since(150), 'the index\'s size; a Content-Length kept').toEqual({ swNet: 2, swRoom: 2, swKB: 4 });
+    expect(log.since(0)).toEqual({ swNet: 3, swRoom: 3, swKB: 6 });
     await log.track(Promise.resolve(new Response('')), 'https://x/d', 400);
-    expect(log.since(0), 'the first gone past keep').toEqual({ swNet: 3, swRoom: 1, swKB: 4 });
+    expect(log.since(0), 'the first gone past keep').toEqual({ swNet: 3, swRoom: 2, swKB: 4 });
   });
   it('fromOlder: the older shells\' copy newest first (caches.match answers the oldest: review 11-14 #3)', async () => {
     const store = new Map<string, Map<string, string>>([['island-shell-A', new Map([['/', 'A']])], ['island-shell-B', new Map([['/', 'B']])], ['island-shell-C', new Map([['/x', 'C']])], ['island-shell-D', new Map()]]);

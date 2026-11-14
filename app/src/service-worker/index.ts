@@ -111,7 +111,12 @@ self.addEventListener('activate', (event) => {
 });
 
 // The bounded caches (bounded.ts): a use marked at once, the index written a moment later outside every event.
-const sizeOf = async (res: Response): Promise<number> => (await res.blob()).size;
+// (the size the netLog's row takes too, when its fetch had no Content-Length)
+const sizeOf = async (res: Response, url: string): Promise<number> => {
+  const n = (await res.blob()).size;
+  nets.sized(url, n);
+  return n;
+};
 const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]) =>
   bounded(() => caches.open(name), new URL(indexPath, self.registration.scope).href, evict);
 /** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */
@@ -259,7 +264,7 @@ self.addEventListener('fetch', (event) => {
             const copy = res.clone(), sized = res.clone();
             event.waitUntil((async () => {
               await cache.put(req, copy);
-              await listenUsed(req.url, await sizeOf(sized));
+              await listenUsed(req.url, await sizeOf(sized, req.url));
             })().catch(() => {}));
           }
           return res;
@@ -367,7 +372,7 @@ async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Pr
   return fetchShared(flying, req.url, () => fetchKeep(req, fetch, async (copy) => {
     const sized = used ? copy.clone() : null;
     await cache.put(req, copy);
-    if (sized) await used!(req.url, await sizeOf(sized));
+    if (sized) await used!(req.url, await sizeOf(sized, req.url));
   }, waitUntil));
 }
 
@@ -387,7 +392,7 @@ async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
   if (!res.ok || res.status !== 200) return;
   const sized = res.clone();
   await cache.put(req, res);
-  kept.push((room ? roomUsed : artUsed)(u, await sizeOf(sized)));
+  kept.push((room ? roomUsed : artUsed)(u, await sizeOf(sized, u)));
 }
 self.addEventListener('message', (event) => {
   const d = event.data as { k?: string; urls?: unknown; since?: unknown } | null;
