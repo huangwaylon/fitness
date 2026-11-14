@@ -319,3 +319,25 @@ export const recipeServing = (r: Recipe): boolean => recipeSnap(r).sv === true;
 
 /** A recipe as its editor changes it: the name, the servings, the ingredients. */
 export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }
+
+/** The rows a search shows at most once a dataset came in under them (findFoods' own top for the same query), and the
+ *  first ones, on screen, kept whatever comes. */
+export const KEPT_MAX = 80;
+const KEPT_HEAD = 24;
+
+/** A query's rows again after a dataset came in (the products, the chain menus): the rows shown keep their order while
+ *  still the catalog's (the query unchanged, they still match, if past findFoods' top now: 30k products hold ラテ), the
+ *  newly found (findFoods' top, never cut) go under them; the rows kept past the first KEPT_HEAD are cut to KEPT_MAX in
+ *  all, those that fell out of the top first. */
+export function keptRows(shown: readonly Item[], found: readonly Item[], db: FoodDb | null): Item[] {
+  const rank = new Map(found.map((it, i) => [it.id, i])), ids = { has: (id: string) => rank.has(id) }, had = new Set(shown.map((it) => it.id));
+  const fresh = found.filter((it) => !had.has(it.id));
+  const kept = shown.filter((it) => ids.has(it.id) || itemById(db, it.id) === it);
+  // past the head: the best ranked still in the top first, then the fallen ones, as room allows (their order kept)
+  const rest = kept.slice(KEPT_HEAD);
+  let room = Math.max(0, KEPT_MAX - fresh.length - Math.min(kept.length, KEPT_HEAD));
+  const inTop = new Set(rest.filter((it) => ids.has(it.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!).slice(0, room));
+  room -= inTop.size;
+  const stay = rest.filter((it) => inTop.has(it) || (!ids.has(it.id) && room-- > 0));
+  return [...kept.slice(0, KEPT_HEAD), ...stay, ...fresh];
+}

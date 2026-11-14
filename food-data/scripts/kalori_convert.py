@@ -770,13 +770,13 @@ def main(argv):
     ap.add_argument('--off', help="products.json whose names win (build.py uses its own)")
     ap.add_argument('--out', help='write the dataset here too (build.py writes out/kalori.json)')
     a = ap.parse_args(argv)
+    sys.path.insert(0, HERE)
+    import lib   # what build.py's kalori target adds: its tidy and validate, so --out writes the file it would
     off = []
     if a.off and os.path.exists(a.off):
         with open(a.off, encoding='utf-8') as fh:
-            off = json.load(fh)['items']
+            off = lib.dataset_items(json.load(fh))   # app/static/food/products.json ships by column
     doc, report = build(a.paths, off)
-    sys.path.insert(0, HERE)
-    import lib   # what build.py's kalori target adds: its tidy and validate, so --out writes the file it would
     for it in doc['items']:
         lib.tidy(it)
     errs = errors(doc) + lib.validate(doc)

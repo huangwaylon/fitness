@@ -171,10 +171,14 @@ const SECONDARY_NEAR = 0.8;
 /** A chain's menu (Kalori: an item with a `shop`) takes at most this share of 近いもの's rows: its ~54k long dish names
  *  hold a run of most queries, and would push the generic foods (ラーメン（醤油）) out of sight. */
 const CHAIN_NEAR_SHARE = 0.25;
+/** The packaged products (Open Food Facts, `off:`) likewise at most half: their ~30k names (豚骨醤油ラーメン in five
+ *  makers' spellings) would too. */
+const PRODUCT_NEAR_SHARE = 0.5;
 
 /** 近いもの, when search() finds nothing (「とんこつ醤油ラーメン味玉チャーシュー増し」): the items whose name or an alias
  *  holds the most of the query (covered: 豚骨醤油ラーメン first), then the earlier in it, a core, popular, shorter name
- *  first at a tie; one row per name + kcal and per food in its states, a chain's menu in a quarter of them at most. */
+ *  first at a tie; one row per name + kcal and per food in its states, a chain's menu in a quarter of them at most, a
+ *  product in half. */
 export function nearby(entries: readonly Entry[], query: string, limit = 8): Item[] {
   const q = SPELLINGS.reduce((k, [re, to]) => k.replace(re, to), searchKey(query));
   if (q.length < 2) return [];
@@ -188,11 +192,14 @@ export function nearby(entries: readonly Entry[], query: string, limit = 8): Ite
   const seen = new Set<string>();
   const out: Item[] = [];
   let chains = Math.max(1, Math.floor(limit * CHAIN_NEAR_SHARE));
+  let products = Math.max(1, Math.floor(limit * PRODUCT_NEAR_SHARE));
   for (const { e } of hits) {
     const k = e.it.vg ? `v:${e.it.vg}` : `${e.n}|${e.it.kcal}`;
-    if (seen.has(k) || (e.it.shop && !chains)) continue;
+    const product = e.it.id.startsWith('off:');
+    if (seen.has(k) || (e.it.shop && !chains) || (product && !products)) continue;
     seen.add(k);
     if (e.it.shop) chains--;
+    if (product) products--;
     if (out.push(e.it) >= limit) break;
   }
   return out;

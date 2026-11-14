@@ -2,7 +2,7 @@
 // cross-source verify groups, with the lookups the food sheet uses. Pure: load.ts fetches.
 import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
-import type { Credit, Dataset, FoodIndex, Item, Verify, VerifyGroup } from './types.ts';
+import type { Credit, Dataset, FoodIndex, Item, Shipped, Verify, VerifyGroup } from './types.ts';
 
 export interface FoodDb {
   /** index.json's content version: the data files' `?v=`. */
@@ -98,11 +98,44 @@ export interface ShopHit {
 /** The chain menus' shops holding every word of a query (no shop named in it: shopIn), the most foods first (a food
  *  in its states once), each with its name; the chips under the search's field (FoodSearch, from findFoods). */
 export const shopsFor = (db: FoodDb, query: string): ShopHit[] => findFoods(db, query, 1).shops;
-/** A product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys; a chain
- *  menu's (Kalori: kalori_convert.py ships neither) `sv` and its shop's name as its `brand` (the header's `shops`),
- *  before its keys are built; a serving's lone 1食 portion left out (portionsOf's default for an `sv` item; older
- *  files shipped one). */
-export function withJan(d: Dataset): Dataset {
+/** The values a column keeps when null (unknown, as the objects had them); another column's null is no field. */
+const NULLS: ReadonlySet<string> = new Set(['p', 'f', 'c', 'salt']);
+
+/** How many items a file holds, either way it's shipped. */
+export const countOf = (d: Shipped): number => ('cols' in d && d.cols ? (d.cols.id?.length ?? 0) : (d.items?.length ?? 0));
+
+/** A file's header: what's left without its items or columns. */
+export function headerOf(d: Shipped): Omit<Dataset, 'items'> {
+  const { items: _i, cols: _c, idPrefix: _p, ...head } = d as Shipped & { cols?: unknown; idPrefix?: unknown };
+  return head;
+}
+
+/** A columnar file's items `from` to `to` (types.ts Shipped), as the objects an older file had: a slice at a time in the
+ *  worker, so the whole file is never twice in memory. */
+export function decodeItems(d: Shipped, from = 0, to = countOf(d)): Item[] {
+  if (!('cols' in d) || !d.cols) return d.items!.slice(from, to);
+  const cols = Object.entries(d.cols) as [string, unknown[]][];
+  const prefix = d.idPrefix ?? '';
+  const out: Item[] = [];
+  for (let i = from; i < Math.min(to, countOf(d)); i++) {
+    const it: Record<string, unknown> = {};
+    for (const [k, col] of cols) {
+      const v = col[i];
+      if (v !== null && v !== undefined) it[k] = k === 'id' ? prefix + (v as string) : v;
+      else if (NULLS.has(k)) it[k] = null;
+    }
+    out.push(it as unknown as Item);
+  }
+  return out;
+}
+
+/** A file's items as objects (decodeItems; an older file's as they are), then a product's barcode back from its id
+ *  (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys; a chain menu's (Kalori: kalori_convert.py
+ *  ships neither) `sv` and its shop's name as its `brand` (the header's `shops`), before its keys are built; a
+ *  serving's lone 1食 portion left out (portionsOf's default for an `sv` item; older files shipped one). */
+export function withJan(f: Shipped): Dataset {
+  // (a file of neither shape, a later format: no items, never a throw that retries it)
+  const d: Dataset = 'cols' in f && f.cols ? { ...headerOf(f), items: decodeItems(f) } : { ...(f as Dataset), items: f.items ?? [] };
   const shops = d.source === 'kalori' ? (d.shops ?? {}) : null;
   for (const it of d.items) {
     if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);

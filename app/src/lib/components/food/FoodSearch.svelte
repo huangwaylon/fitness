@@ -39,7 +39,7 @@
   import NavButton from '../ui/NavButton.svelte';
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
-  import { catOf, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { catOf, keptRows, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText, defaultPortion } from './portions.ts';
   import { customItem, servingText, typedKcal } from './drafts.ts';
   import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
@@ -137,7 +137,8 @@
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
   /** A dataset coming in (the products, the chain menus) never reshuffles the rows already shown for this query: those
-   *  still found keep their order, the new ones go under them (`shown`: this query's, as listed). */
+   *  still in the catalog keep their order (the query unchanged, they still match, if past findFoods' 80 now: 30k
+   *  products hold ラテ), the new ones go under them (`shown`: this query's, as listed). */
   let shown: { q: string; items: Item[] } = untrack(() => ({
     q: keep?.ids ? keep.q.trim() : '', items: (keep?.ids ?? []).map((id) => itemById(db, id)).filter((it): it is Item => !!it)
   }));
@@ -150,8 +151,7 @@
   const results = $derived.by(() => {
     const { query, again, items } = found;
     if (!again) return (shown = { q: query, items }).items;
-    const ids = new Set(items.map((it) => it.id)), had = new Set(shown.items.map((it) => it.id));
-    return (shown.items = [...shown.items.filter((it) => ids.has(it.id)), ...items.filter((it) => !had.has(it.id))]);
+    return (shown.items = keptRows(shown.items, items, db));
   });
   // (as listed, on the level: come back to, the rows are where they were)
   $effect(() => {

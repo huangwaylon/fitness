@@ -6,9 +6,9 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { addDataset, credits, emptyDb, findFoods, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
+import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
-import type { Dataset, FoodIndex, Item } from './types.ts';
+import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
 import { tierOf, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
 
@@ -60,7 +60,7 @@ describe('static/food', () => {
     const bad: string[] = [];
     for (const d of index.datasets) {
       // (as the loader has them: a chain menu's sv and brand are its, db.ts withJan)
-      for (const it of withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset).items) {
+      for (const it of withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped).items) {
         const [first] = portionsOf(it);
         const op = foodOp({ id: 'f0000000', at: 1.8e12, d: '2026-11-03', m: 'l', g: first.g, f: toSnap(it, first.label) });
         if (!op || op.rm || op.f.n !== toSnap(it).n) bad.push(it.id);
@@ -71,7 +71,7 @@ describe('static/food', () => {
 
   it('carries MEXT’s fibre and alcohol (食物繊維総量, アルコール; food-data/ build), alcohol on drinks only', () => {
     const items = new Map<string, Item>();
-    for (const d of index.datasets) for (const it of (JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset).items) items.set(it.id, it);
+    for (const d of index.datasets) for (const it of withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped).items) items.set(it.id, it);
     const of = (id: string) => [items.get(id)?.fib, items.get(id)?.alc];
     // ごはん, 玄米, ブロッコリー, まこんぶ, 鶏むね: fibre; ビール, 純米酒, ウイスキー: alcohol; 本みりん (a seasoning): none
     const ids = ['mext:01088', 'mext:01080', 'mext:06263', 'mext:09017', 'mext:11220', 'mext:16006', 'mext:16002', 'mext:16016', 'mext:16025'];
@@ -81,6 +81,35 @@ describe('static/food', () => {
       [[1.5, undefined], [3, undefined], [5.1, undefined], [32.1, undefined], [0, undefined], [0, 3.7], [0, 12.3], [0, 33.4], [undefined, undefined]],
       [], 0, true, { id: 'mext:16006', n: 'ビール', k: 39, p: 0.3, fa: 0, c: 3.1, s: 0, fi: 0, al: 3.7 }
     ]);
+  });
+});
+
+describe('a file by column (the products: scripts/food-data.ts columnar, types.ts Shipped)', () => {
+  const objects: Item[] = [
+    { id: 'off:4901234567894', name: 'のり塩チップス', brand: 'カルビー', cat: '菓子・デザート', kcal: 554, p: 5.6, f: 35.2, c: 53.6, salt: null, portions: [{ label: '1袋', g: 60 }] },
+    { id: 'off:0012345678905', name: 'ほしいも', cat: 'いも', kcal: 303, p: null, f: null, c: null, salt: 0.1, aliases: ['干し芋'] }
+  ];
+  const cols: Shipped = { source: 'off', label: 'x', idPrefix: 'off:', cols: {
+    id: ['4901234567894', '0012345678905'], name: ['のり塩チップス', 'ほしいも'], brand: ['カルビー', null], cat: ['菓子・デザート', 'いも'], kcal: [554, 303],
+    p: [5.6, null], f: [35.2, null], c: [53.6, null], salt: [null, 0.1], portions: [[{ label: '1袋', g: 60 }], null], aliases: [null, ['干し芋']]
+  } };
+
+  it('decodes to the objects an older file had (a null P/F/C/salt kept unknown, another column’s null no field), a slice at a time', () => {
+    expect([countOf(cols), decodeItems(cols)]).toEqual([2, objects]);
+    expect(decodeItems(cols, 1, 5)).toEqual([objects[1]]);
+    expect(Object.keys(decodeItems(cols)[1])).not.toContain('brand');
+  });
+
+  it('loads either way, the barcodes from the ids (an index and its file of either age)', () => {
+    const want = objects.map((it) => ({ ...it, jan: it.id.slice(4) }));
+    expect(withJan(cols)).toEqual({ source: 'off', label: 'x', items: want });
+    expect(withJan({ source: 'off', label: 'x', items: structuredClone(objects) })).toEqual({ source: 'off', label: 'x', items: want });
+  });
+
+  it('is how the products ship: by column, ids without their prefix', () => {
+    const file = JSON.parse(readFileSync(join(DIR, 'products.json'), 'utf8')) as Shipped & { cols?: Record<string, unknown[]>; idPrefix?: string };
+    expect(['items' in file, file.idPrefix, Object.keys(file.cols ?? {}).slice(0, 5)]).toEqual([false, 'off:', ['id', 'name', 'brand', 'cat', 'kcal']]);
+    expect(Object.values(file.cols!).every((c) => c.length === countOf(file))).toBe(true);
   });
 });
 
@@ -106,7 +135,7 @@ describe('loadFoodDb', () => {
   it('searches exactly as with keys built on load (a core dataset’s shipped `keys`, none in a lazy one; a product’s barcode from its id)', async () => {
     const ref = emptyDb(index);
     for (const d of index.datasets) {
-      const data = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset;
+      const data = withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped);
       expect(data.items.every((it) => typeof it.keys === (d.lazy ? 'undefined' : 'string')), d.file).toBe(true);
       // the data as it was: no keys, every barcode (a chain menu's brand: its shop's, withJan)
       const items = data.items.map(({ keys: _k, ...it }) => it);
@@ -235,6 +264,10 @@ describe('a query nothing holds whole', () => {
     expect(near).toContain('ラーメン（醤油）');
     expect(hits.filter((x) => x.id.startsWith('kal:')).length).toBeLessThanOrEqual(2);
     expect(nearFoods(db, 'とんこつラーメン煮卵のせ')[0].name).toBe('豚骨ラーメン');
+    // the products at most half the rows (search.ts PRODUCT_NEAR_SHARE): 30k names hold a run of most queries
+    for (const query of [q, 'のりしおポテトチップスうすしおコンソメ', 'カフェラテ抹茶ラテほうじ茶ラテ']) {
+      expect(nearFoods(db, query).filter((x) => x.id.startsWith('off:')).length, query).toBeLessThanOrEqual(4);
+    }
     expect(nearFoods(db, 'zzzz')).toEqual([]);
   });
 });

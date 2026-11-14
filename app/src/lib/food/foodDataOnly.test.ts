@@ -7,6 +7,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { decodeItems } from './db.ts';
 
 const APP = join(import.meta.dirname, '../../..');
 const STATIC = join(APP, 'static/food');
@@ -115,14 +116,17 @@ describe('food:data --only products', () => {
     return { to, src };
   }
 
-  it('writes products.json alone (no keys, a barcode its id has dropped), its entry added before kalori, the rest untouched', () => {
+  it('writes products.json alone (by column, no keys, a barcode its id has dropped), its entry added before kalori, the rest untouched', () => {
     const { to, src } = fixture();
     const before = ['a.json', 'kalori.json'].map((f) => readFileSync(join(to, f)));
     const r = run('--only', 'products', src, '--to', to);
     expect([r.status, r.stderr]).toEqual([0, '']);
     const p = JSON.parse(readFileSync(join(to, 'products.json'), 'utf8'));
     expect(p.dumped).toBe('2026-11-02');
-    expect(p.items.map((it: { jan?: string; keys?: string }) => [it.jan, it.keys])).toEqual([[undefined, undefined], ['0012345678905', undefined]]);
+    // by column (types.ts Shipped), its ids without off:, decoding to build.py's items less a barcode the id has
+    expect([p.items, p.idPrefix, p.cols.id]).toEqual([undefined, 'off:', ['4901234567894', 'x']]);
+    const { jan: _j, ...first } = product('4901234567894');
+    expect(decodeItems(p)).toEqual([first, product('0012345678905', 'off:x')]);
     expect(['a.json', 'kalori.json'].map((f) => readFileSync(join(to, f)))).toEqual(before);
     const index = JSON.parse(readFileSync(join(to, 'index.json'), 'utf8'));
     expect(index.datasets).toEqual([expect.objectContaining({ file: 'a.json' }), PRODUCTS, KALORI]);

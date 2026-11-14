@@ -18,22 +18,25 @@ export function portionsOf(item: Pick<Item, 'portions' | 'sv'>): Portion[] {
   return ps;
 }
 
-/** What `g` grams hold: kcal an integer, the rest to 1 decimal; an unknown value counts as 0. */
+/** What `g` grams hold: kcal an integer, the rest to 1 decimal; null unknown (shown 「–」, never 0.0). */
 export interface Nutrients {
   kcal: number;
-  p: number;
-  fa: number;
-  c: number;
-  s: number;
+  p: number | null;
+  fa: number | null;
+  c: number | null;
+  s: number | null;
 }
 
 /** The nutrients in `g` grams of a logged snapshot or a catalog item. */
 export function nutrientsFor(food: FoodSnap | Item, g: number): Nutrients {
   const r = g / 100;
   const [k, p, fa, c, s] = 'k' in food ? [food.k, food.p, food.fa, food.c, food.s] : [food.kcal, food.p, food.f, food.c, food.salt];
-  const x = (v: number | null | undefined) => round1((v ?? 0) * r);
+  const x = (v: number | null | undefined) => (v === null || v === undefined ? null : round1(v * r));
   return { kcal: Math.round((k ?? 0) * r), p: x(p), fa: x(fa), c: x(c), s: x(s) };
 }
+
+/** A gram value as shown: 1 decimal, 「–」 unknown. */
+export const g1 = (v: number | null | undefined): string => (v === null || v === undefined ? '–' : v.toFixed(1));
 
 /** An entry's (or a recipe's, a いつもの's item's) kcal: `g` grams of its snapshot, whole (nutrientsFor's). */
 export const entryKcal = (e: { g: number; f: Pick<FoodSnap, 'k'> }): number => Math.round((e.f.k * e.g) / 100);

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, glossOf, goalChip, itemOf, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { DAYS, daysText, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { customDraft, customErrors, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -358,5 +358,26 @@ describe('stateGroups: a chain menu’s states as サイズ and ミルク chips'
     const don = [v(1, '並盛', 700), v(2, '大盛', 950), v(3, 'ミニ', 500)];
     expect(view(stateGroups(don, don[0]))).toEqual([['size', ['ミニ→kal:3', '並盛*→kal:1', '大盛→kal:2']]]);
     expect(stateGroups([v(1, 'Tall・ミルク', 1), v(2, '大盛', 2)], v(1, 'Tall・ミルク', 1))).toBeNull();
+  });
+});
+
+describe('keptRows: a dataset coming in never reshuffles the rows shown', () => {
+  it('keeps the rows shown, in order, even past findFoods’ top; the new ones under them; the kept cut to KEPT_MAX in all', async () => {
+    const it = (i: number, id = `x:${i}`): Item => ({ id, name: `ラテ${i}`, kcal: 1 });
+    const shown = [it(1), it(2), it(3)];
+    const db = emptyDb({ version: 'v', datasets: [] });
+    await addDataset(db, { file: 'x.json', source: 'x', badge: 'x', secondary: false, lazy: false }, { source: 'x', items: shown });
+    // the products came in: x:3 now past the top (not found), still the catalog's; x:9 a stale one, no longer in it
+    const found = [it(1), ...Array.from({ length: 77 }, (_, i) => it(i, `off:${i}`))];
+    const rows = keptRows([...shown, it(9)], found, db);
+    expect(rows.slice(0, 4).map((x) => x.id)).toEqual(['x:1', 'x:2', 'x:3', 'off:0']);
+    expect(rows.length).toBe(KEPT_MAX);
+    expect(keptRows(shown, [it(2)], null).map((x) => x.id)).toEqual(['x:2']);
+    // a full list, then the chain menus: the rows past the first 24 that fell out of the top make room for them
+    const full = keptRows(rows, [it(1), ...Array.from({ length: 70 }, (_, i) => it(i, `off:${i}`)), ...Array.from({ length: 9 }, (_, i) => it(i, `kal:${i}`))], db);
+    expect([full.length, full.filter((x) => x.id.startsWith('kal:')).length, full.slice(0, 24)]).toEqual([KEPT_MAX, 9, rows.slice(0, 24)]);
+    // and again (another dataset, two new products): a kept row ranked high in the top stays, a low one makes room
+    const again = keptRows(full, [...full.slice(0, 24), full[79], ...Array.from({ length: 2 }, (_, i) => it(i, `new:${i}`)), ...full.slice(24, 77)], db);
+    expect([again.length, again.includes(full[79]), again.slice(-2).map((x) => x.id)]).toEqual([KEPT_MAX, true, ['new:0', 'new:1']]);
   });
 });

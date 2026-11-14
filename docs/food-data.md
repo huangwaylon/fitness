@@ -33,7 +33,9 @@ snapshot, so a data refresh never rewrites one.
 
 **Dataset file** (`foods.json`, `dishes.json`, `extra_*.json`, ...):
 `{ "source", "label", "attribution", "license", "url", "items": [ITEM, ...] }` (OFF adds `dumped`: the dump's
-newest `last_modified_t`). The credits read the five header fields as written.
+newest `last_modified_t`). The credits read the five header fields as written. Shipped, `products.json` is by column:
+`"idPrefix": "off:", "cols": {field: [value per item]}`, null for none (`db.ts decodeItems`; old files load too; an
+older tab gets no products till a reload). A null value shows 「–」, a day's total missing one 「≥」.
 
 **ITEM** (`food-data/scripts/lib.py` `validate`; type `Item` in `app/src/lib/food/types.ts`):
 
@@ -84,7 +86,7 @@ JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13
 | `extra_kumagaya.json` | 熊谷市 学校給食献立情報 2023–2026 | 773 | PDL1.0 | as Toyonaka | As Toyonaka (city-local codes keeping the MEXT group prefix) | Adult default portion (below) |
 | `extra_tokyo_hokeniryo.json` | 東京都 島しょ保健所「一人でもできる簡単レシピ」 | 14 | CC BY | 「…を加工して作成」 | Official per-serving values ÷ serving weight estimated from the ingredient list (`data_src/tokyo_hokeniryo_recipes.json`) | Estimated weights |
 | `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item; spread-out or mixed-basis boxes skipped | The SD is in `note` |
-| `products.json`, `jan/` | Open Food Facts (Japan) | 13,917 (search) / 42,850 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; `products.json` deduplicated, ≤ 3 MB (most-scanned first) |
+| `products.json`, `jan/` | Open Food Facts (Japan) | 30,009 (search) / 42,750 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; searched: a Japanese name, P/F/C, deduplicated |
 | `kalori.json` | kalori.jp chain and konbini menus ([Kalori](#kalori)) | (per build) | kalori.jp 利用規約 | 「kalori.jp（各社の公表値と kalori.jp の AI 推定値）」 | Shops' published values and Kalori's AI estimates, per serving | `est` marks estimates; may-be-discontinued items kept, marked |
 
 **School-lunch adult portions** (Toyonaka, Kumagaya): the default portion is 「1人前（目安）」, the median adult portion
@@ -93,8 +95,9 @@ of the same dish elsewhere, else the school portion × the city's measured adult
 rows are dropped, and a blank cell is a zero only where the row needs none. The rules: `build.py` (`blank_null`).
 
 **Open Food Facts plausibility** (`scripts/off.py` `plausible`, per 100 g; its comments give each threshold): kJ
-entered as kcal fixed; kcal out of range, grossly off 4P+9F+4C, per-piece fried chicken or a 0-kcal alcoholic drink:
-the product dropped; a macro out of range or moderately off: P/F/C nulled; salt over its category's cap (a salty-food
+entered as kcal fixed; kcal out of range, grossly under 4P+9F+4C (not sweeteners, fibre), per-piece fried chicken, a dry
+snack (not sold by ml) or rice ball under its floor, all-0 values on a food, a serving in cups or kcal, a 0-kcal
+alcoholic drink: dropped; a macro out of range or off (kcal grossly over it: kcal kept): P/F/C nulled; a 1食分 only in g or ml; salt over its category's cap (a salty-food
 allow-list, protein supplements' own caps) nulled; the category from OFF tags, else name keywords (`NAME_FALSE_FRIENDS`
 first; a drink word ending the name beats a flavour); creatine's nitrogen not counted as protein.
 
@@ -141,7 +144,7 @@ line; a key matching no item fails the build).
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of generic foods and dishes in
 one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods, and
-8,944 of the 13,917 packaged products show a generic picture of the same food. Custom foods and the other products
+8,919 of the 30,009 packaged products show a generic picture of the same food. Custom foods and the other products
 keep their category's tile. The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
 sheet layout):
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`;

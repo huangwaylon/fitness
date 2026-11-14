@@ -22,7 +22,7 @@
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { MEALS } from '#lib/contract/food.ts';
-  import { itemById, verifyOf, type Item } from '#lib/food/index.ts';
+  import { g1, itemById, verifyOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, kaloriImg } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
@@ -88,7 +88,7 @@
   /** A chain menu's (Kalori): its page, and how far its values are the shop's own (販売終了かも too, if it may be gone). */
   const page = $derived(kaloriPage(item));
   const trust = $derived(kaloriTrust(item));
-  const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
+  const per = g1;
   /** The catalog's own item (an entry's is its snapshot), for how its values were got. */
   const note = $derived(trust ? null : (itemById(a.db, item.id) ?? item).note ?? null);
   const fib = $derived(fibreAt(item, a.ok ? a.g : 0));
@@ -118,10 +118,10 @@
       </div>
     </div>
     <dl class="nut">
-      <div><dt>{t('food.p')}</dt><dd class="money">{n.p.toFixed(1)}<small>g</small></dd></div>
-      <div><dt>{t('food.fa')}</dt><dd class="money">{n.fa.toFixed(1)}<small>g</small></dd></div>
-      <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<small>g</small></dd></div>
-      <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<small>g</small></dd></div>
+      <div><dt>{t('food.p')}</dt><dd class="money">{g1(n.p)}{#if n.p !== null}<small>g</small>{/if}</dd></div>
+      <div><dt>{t('food.fa')}</dt><dd class="money">{g1(n.fa)}{#if n.fa !== null}<small>g</small>{/if}</dd></div>
+      <div><dt>{t('food.c')}</dt><dd class="money">{g1(n.c)}{#if n.c !== null}<small>g</small>{/if}</dd></div>
+      <div><dt>{t('food.s')}</dt><dd class="money" data-salt>{g1(n.s)}{#if n.s !== null}<small>g</small>{/if}</dd></div>
       {#if fib !== null}<div data-food-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
     <div class="per-row">

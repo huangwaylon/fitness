@@ -9,7 +9,7 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   it loads (Island3D `guestLate`). After a deploy too: the fields come from IndexedDB unless the field code changed
   (`fieldsCache.ts`), the garden's manifest is asked for as the island is made (its crops in the first wave), and a
   cold open after a deploy is the new build's page when the network answers within the worker's race, no reload
-  ([backend](../backend.md) "Service worker"). ごはん: products.json (2.7 MB) only with a search, or a day with a product logged
+  ([backend](../backend.md) "Service worker"). ごはん: products.json (4 MB, 30k) only with a search, or a day with a product logged
   (`db.wantMore`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
 - **The model:** `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
 - **The island's length:** the ground costs the land's length, not the grid's (default 57 rows: fields ~105 ms on the

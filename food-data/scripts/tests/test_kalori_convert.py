@@ -593,5 +593,20 @@ class Read(unittest.TestCase):
         self.assertEqual((rep['items'], rep['read']['products']), (1, 2))
 
 
+    def test_main_reads_a_columnar_products_json(self):
+        # app/static/food/products.json ships by column (food-data.ts): its names still win (lib.dataset_items)
+        with tempfile.TemporaryDirectory() as d:
+            write_shards(d, [row(1, 'タコ丼', shop_category='convenience'), row(2, 'イカ丼', shop_category='convenience')])
+            off = os.path.join(d, 'products.json')
+            with open(off, 'w', encoding='utf-8') as fh:
+                json.dump({'source': 'off', 'idPrefix': 'off:', 'cols': {'id': ['4901234567894'], 'name': ['タコ丼'],
+                           'brand': ['たこ屋・本店'], 'kcal': [200], 'p': [8], 'f': [4], 'c': [24], 'salt': [None]}}, fh)
+            out = os.path.join(d, 'kalori.json')
+            with contextlib.redirect_stdout(io.StringIO()), mock.patch.dict(os.environ, {'KALORI_ALLOW_PARTIAL': '1'}):
+                K.main([os.path.join(d, 'shard-0.jsonl'), '--off', off, '--out', out])
+            with open(out, encoding='utf-8') as fh:
+                self.assertEqual([it['name'] for it in json.load(fh)['items']], ['イカ丼'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -9,7 +9,7 @@
   // 追加 with the kcal (logged in the search's meal), one 44 px row. Its height and fade come in over 150 ms (FoodSearch
   // closes it the same way); `still`: come back to from くわしく, already open.
   import type { Item } from '#lib/food/index.ts';
-  import { itemById } from '#lib/food/index.ts';
+  import { g1, itemById } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import FoodPortion from './FoodPortion.svelte';
   import { AmountPick } from './amount.svelte.ts';
@@ -59,10 +59,10 @@
     {/if}
     <FoodPortion {a} />
     <dl class="nut" data-food-open-live>
-      <div><dt>{t('food.p')}</dt><dd class="money">{a.n.p.toFixed(1)}<small>g</small></dd></div>
-      <div><dt>{t('food.fa')}</dt><dd class="money">{a.n.fa.toFixed(1)}<small>g</small></dd></div>
-      <div><dt>{t('food.c')}</dt><dd class="money">{a.n.c.toFixed(1)}<small>g</small></dd></div>
-      <div><dt>{t('food.s')}</dt><dd class="money">{a.n.s.toFixed(1)}<small>g</small></dd></div>
+      <div><dt>{t('food.p')}</dt><dd class="money">{g1(a.n.p)}{#if a.n.p !== null}<small>g</small>{/if}</dd></div>
+      <div><dt>{t('food.fa')}</dt><dd class="money">{g1(a.n.fa)}{#if a.n.fa !== null}<small>g</small>{/if}</dd></div>
+      <div><dt>{t('food.c')}</dt><dd class="money">{g1(a.n.c)}{#if a.n.c !== null}<small>g</small>{/if}</dd></div>
+      <div><dt>{t('food.s')}</dt><dd class="money" data-salt>{g1(a.n.s)}{#if a.n.s !== null}<small>g</small>{/if}</dd></div>
       {#if fib !== null}<div data-food-open-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
     <div class="foot">

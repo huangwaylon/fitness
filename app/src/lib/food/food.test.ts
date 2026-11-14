@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { searchKey } from './text.ts';
 import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
-import { nutrientsFor, portionsOf, toSnap } from './nutrition.ts';
+import { g1, nutrientsFor, portionsOf, toSnap } from './nutrition.ts';
 import { addDataset, credits, emptyDb, searchFoods, verifyOf } from './db.ts';
 import type { Item } from './types.ts';
 
@@ -87,9 +87,10 @@ describe('nutrition', () => {
     expect(portionsOf({ sv: true, portions: [{ label: '1食', g: 100 }, { label: '大盛', g: 150 }] })).toEqual([{ label: '1食', g: 100 }, { label: '大盛', g: 150 }]);
     expect(portionsOf({ sv: true })).toEqual([{ label: '1食', g: 100 }]);
   });
-  it('nutrients for g grams: kcal an integer, the rest 1 decimal, unknown = 0, from an item or its snapshot', () => {
-    expect(nutrientsFor(rice, 150)).toEqual({ kcal: 234, p: 3.8, fa: 0.5, c: 55.7, s: 0 });
+  it('nutrients for g grams: kcal an integer, the rest 1 decimal, unknown kept unknown (null, shown 「–」), from an item or its snapshot', () => {
+    expect(nutrientsFor(rice, 150)).toEqual({ kcal: 234, p: 3.8, fa: 0.5, c: 55.7, s: null });
     expect(nutrientsFor(toSnap(rice), 150)).toEqual(nutrientsFor(rice, 150));
+    expect([g1(null), g1(undefined), g1(0), g1(1.25)]).toEqual(['–', '–', '0.0', '1.3']);
   });
   it('a snapshot is per 100 g and unrounded: a 300 g / 650 kcal serving logs 650 kcal', () => {
     const bento = item('my:2', '弁当', { kcal: 216.6667, p: 8.3333, f: 6.8333, c: 31.6667, salt: 1.1667 });

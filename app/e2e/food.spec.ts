@@ -91,6 +91,21 @@ test('ごはん is けんこう’s second tab (no bowl in the HUD); search ご�
   await expect.poll(() => kcalOf(page)).toBe(before);
 });
 
+test('a value the label doesn’t say: 「–」 in the amount, never 0.0; the day’s total of it 「≥」 (一部不明)', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=b]').click();
+  await sheet(page).locator('[data-food-q]').fill('ほしいもスティック');
+  const row = sheet(page).locator('[data-food-results]').getByRole('button', { name: /ほしいもスティック/ }).first();
+  await expect(row).toBeVisible({ timeout: 20_000 }); // (the products: lazy)
+  await row.click();
+  await settled(page);
+  await expect(sheet(page).locator('[data-food-open-live] [data-salt]')).toHaveText('–');
+  await sheet(page).locator('[data-food-open-add]').click();
+  await sheet(page).locator('[data-food-finish]').click();
+  await expect(sheet(page).locator('[data-food-summary] [data-line=s] [data-partial]')).toHaveText('≥');
+  await expect(sheet(page).locator('[data-food-summary] [data-line=p] [data-partial]')).toHaveCount(0);
+});
+
 // On opening, an iPhone 15's whole screen (393 × 852) shows every meal's ＋: the summary is three short rows (the kcal and
 // the goal, the bar and あと N, one line of P · F · C · 塩分), the tiles and the PFC behind くわしく (kept for the session).
 test('the summary folds its details: every meal’s ＋ on screen at 393 × 852; くわしく opens the tiles and the PFC', async ({ page }) => {

@@ -396,7 +396,7 @@
     const db = catalog;
     if (db) void db.more.then(() => db === held.db && catalogRev++);
   });
-  // (the products and chain menus only for a day with one of them logged: never for the open alone, 2.7 MB)
+  // (the products and chain menus only for a day with one of them logged: never for the open alone, 4 MB)
   $effect(() => {
     if (catalog && day?.entries.some((e) => /^(off|kal):/.test(e.f.id))) void catalog.wantMore();
   });

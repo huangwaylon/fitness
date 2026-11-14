@@ -23,6 +23,7 @@
   "food.fi": "食物繊維",
   "food.al": "アルコール",
   "food.unknown": "–",
+  "food.partial": "一部不明",
   "food.fiNone": "データなし",
   "food.pfc.head": "PFCバランス",
   "food.pfc.basis": "エネルギー比率（食事摂取基準の目安）",

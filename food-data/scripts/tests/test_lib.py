@@ -468,6 +468,18 @@ class OffPlausibility(unittest.TestCase):
             self.assertIsNone(off.ROUX.search(name), name)
             self.assertNotEqual(off.pick_cat([], name, 200), '調味料', name)
 
+    def test_dataset_items(self):
+        # app/static/food/products.json by column (food-data.ts): the same items as build.py's, for kalori_convert --off
+        items = [{'id': 'off:4901234567894', 'name': 'ほしいも', 'brand': 'X', 'cat': 'いも', 'kcal': 303, 'p': None, 'f': None,
+                  'c': None, 'salt': 0.1}, {'id': 'off:x', 'name': 'のり塩', 'cat': '菓子・デザート', 'kcal': 554, 'p': 5.6,
+                  'f': 35.2, 'c': 53.6, 'salt': None, 'portions': [{'label': '1袋', 'g': 60}]}]
+        cols = {'source': 'off', 'idPrefix': 'off:', 'cols': {
+            'id': ['4901234567894', 'x'], 'name': ['ほしいも', 'のり塩'], 'brand': ['X', None], 'cat': ['いも', '菓子・デザート'],
+            'kcal': [303, 554], 'p': [None, 5.6], 'f': [None, 35.2], 'c': [None, 53.6], 'salt': [0.1, None],
+            'portions': [None, [{'label': '1袋', 'g': 60}]]}}
+        self.assertEqual(lib.dataset_items(cols), items)
+        self.assertEqual(lib.dataset_items({'items': items}), items)
+
     def test_dumped(self):
         d = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, d)
@@ -487,10 +499,73 @@ class OffPlausibility(unittest.TestCase):
         self.assertEqual(self.check(385, 85.2, 0.1, 12.5, 1.3, 'その他', 'クレアルカリン レモン味')[0][:2], (4 * 12.5 + 0.9, 0.0))
         self.assertEqual(self.check(386, 69.1, 5.4, 15.1, 0.8, 'その他', 'ホエイプロテイン HMB &クレアチン')[1], [])
 
+    def test_exemptions_and_floors(self):
+        # sweeteners and fibre: however far under 4P+9F+4C, kept (イージーファイバー, 寒天パウダー, Lakanto)
+        for name, vals in (('イージーファイバー', (144, 0, 0, 88.5)), ('寒天パウダー', (4, 0, 0, 78)), ('Lakanto Granules', (0, 0.2, 0, 99.8))):
+            self.assertEqual(self.check(*vals, 0, 'その他', name)[1], [], name)
+        self.assertIsNone(self.check(45, 10, 15, 20, 1, 'その他', 'クッキーサンド')[0])   # the rest: dropped
+        # the energy right, a macro wrong: kcal kept, P/F/C nulled (干しいも); over 600 kcal the energy is wrong too
+        self.assertEqual(self.check(328, 3.9, 0.7, 18.3, 0.1, 'いも', '干しいも'), ((328, None, None, None, 0.1), ['atwater_high']))
+        self.assertEqual(self.check(750, 1.9, 0.3, 15.4, None, 'その他', 'Сацебели'), (None, ['atwater_gross']))
+        # 「100%」 is no alcohol strength; every value 0 on a food is no label (a drink, salt or konjac at 0 is)
+        self.assertEqual(self.check(0, 0, 0, 0, None, '大豆・豆', '国産大豆100%きな粉パック'), (None, ['all_zero']))
+        self.assertEqual(self.check(0, 0, 0, 0, None, '酒', '白州ハイボール9%'), (None, ['alcohol_zero']))
+        for name, cat in (('緑茶', '飲料'), ('食卓塩', '調味料'), ('こんにゃく', 'いも'), ('財寶温泉', 'その他')):
+            self.assertEqual(self.check(0, 0, 0, 0, 0, cat, name)[1], [], name)
+        # dry snacks under 200 kcal and rice balls under 120: per-piece values as per 100 g
+        for name, kcal in (('おつまみチータラ', 89), ('ひよこ豆スナック しお味', 52), ('塩おむすび', 77), ('柿の種', 124)):
+            self.assertIsNone(self.check(kcal, 2, 3, 10, 0.5, '菓子・デザート', name)[0], name)
+        for name, kcal in (('クッキーバニラ氷', 117), ('スナックサンド', 120), ('おにぎりの具', 90), ('クッキー&クリーム', 150),
+                           ('ビスケットサンド バニラ', 190), ('チョコチップクッキー豆乳', 60)):
+            self.assertIsNotNone(self.check(kcal, 2, 3, 15, 0.5, 'その他', name)[0], name)
+        self.assertIsNotNone(self.check(90, 2, 3, 12, 0.1, '菓子・デザート', 'クッキーミルク', liquid=True)[0])   # by ml: no snack
+        self.assertTrue(off.liquid({'quantity': '200ml'}) and off.liquid({'product_quantity_unit': 'ml'}))
+        self.assertFalse(off.liquid({'quantity': '60 g', 'serving_size': '1袋 (30 g)'}))
+        self.assertEqual(self.check(380, 20, 25, 20, 3, '菓子・デザート', 'チータラ')[1], [])
+
+    def test_servings(self):
+        p = {'serving_size': '1 cup', 'serving_quantity': '240'}
+        self.assertTrue(off.bad_serving(p))   # the values per 240 g OFF made of a cup: dropped
+        self.assertTrue(off.bad_serving({'serving_size': '467 kcal', 'serving_quantity': '1954'}))
+        self.assertFalse(off.bad_serving({'serving_size': '1 cup (200 g)', 'serving_quantity': '200'}))
+        self.assertEqual(off.portions({'serving_size': '1 fl oz', 'serving_quantity': '29.57'}, 'その他', 300), [])
+        self.assertEqual(off.portions({'serving_size': '1個 (45 g)', 'serving_quantity': '45'}, 'その他', 300),
+                         [{'label': '1食分', 'g': 45}])
+        self.assertEqual(off.portions({'serving_size': '30 gr', 'serving_quantity': '30'}, 'その他', 300), [{'label': '1食分', 'g': 30}])
+
+    def test_categories(self):
+        for name, cat in (('豚ヒレステーキ用（スパイス味）', '肉'), ('14種のスパイス唐揚げ', '肉'), ('台湾スパイスソルト', '調味料'),
+                          ('ポテトチップス うすしお味', '菓子・デザート'), ('国産鶏の生だんご', '肉'), ('大粒 鶏だんご', '主菜'),
+                          ('みたらし団子', '菓子・デザート'), ('白身魚の野菜あんかけ', '魚介'), ('サラダチキンロール', '肉'),
+                          ('ロールキャベツ', '主菜'), ('バターロール', 'パン'), ('宇治抹茶わらび餅', '菓子・デザート'),
+                          ('抹茶ラテ', '飲料'), ('オリーブオイル', '油脂'), ('かどやの太白ごま油', '油脂'), ('MCTオイル', '油脂'),
+                          ('醤油', '調味料'), ('食べるラー油', '調味料'), ('油あげ', '大豆・豆'), ('オイルサーディン', '魚介'),
+                          ('ペンネ', '麺'), ('どん兵衛 きつねうどん', '麺'), ('予約でいっぱいの店のカルボナーラ', '麺'),
+                          ('パスタソース たらこ', '主菜'), ('ほしいも', 'いも'), ('干しいも', 'いも'), ('冷凍ピザ', 'パン'),
+                          ('ピザソース', '調味料'), ('コロッケパン', 'パン'), ('カツオのたたき', '魚介'), ('ステーキソース', '調味料'),
+                          ('マンゴー', '果物'), ('メロン味キャンディ', '菓子・デザート'), ('レーズンフランス', 'その他'),
+                          ('メロンスワール', 'その他'), ('北海道バター 食塩不使用', '油脂'), ('有塩バター', '油脂'),
+                          ('りんごバター', 'その他'), ('じゃがバター', 'いも'), ('ハニーバターポップコーン', '菓子・デザート'),
+                          ('ジャガバターポタージュ', '汁物'), ('鵝油先生 金蔥拌麵', 'その他'), ('台灣眷村蔥油餅', 'その他'),
+                          ('たかな油いため', 'その他'), ('かれい唐揚げ', '魚介'), ('たら唐揚げ', '魚介'), ('生姜入り黒酢あん', '調味料'),
+                          ('白身魚と野菜の甘酢あん', '魚介'), ('つぶあんぱん', '菓子・デザート'), ('ビーフジャーキー', '肉'),
+                          ('ポークビッツ', '肉'), ('あぶり焼きチキン', '肉'), ('どんぶりの素', 'その他')):
+            self.assertEqual(off.pick_cat([], name, 200), cat, name)
+        # a dish with cheese tagged as a cheese: its own word decides; a cheese stays one
+        self.assertEqual(off.pick_cat(['en:cheeses'], 'ひと口ささみチーズカツ', 257), '主菜')
+        self.assertEqual(off.pick_cat(['en:cheeses'], '3種のチーズピザ', 252), 'パン')
+        self.assertEqual(off.pick_cat(['en:cheeses'], 'カマンベール', 300), '乳製品')
+        self.assertEqual(off.pick_cat(['en:olive-oils'], 'エクストラバージン', 900), '油脂')
+        # a protein supplement named after nothing else: a bar a sweet, a powder dairy (soy: 大豆), a drink a drink
+        for name, kcal, cat in (('ホエイプロテイン メロン風味', 390, '乳製品'), ('ソイプロテイン ココア味', 380, '大豆・豆'),
+                                ('1本満足バー プロテインブラック', 479, '菓子・デザート'), ('in PROTEIN マスカット', 60, '飲料'),
+                                ('ハイブリッド腸ファイバープロテイン', 380, '乳製品'), ('be LEGEND WPC ミルキー風味', 403, '乳製品')):
+            self.assertEqual(off.pick_cat([], name, kcal), cat, name)
+
     def test_salt_allow_list(self):
         for name, salt in (('柚子こしょう', 18.0), ('かのや 濃ゆ口', 14.65), ('うすくち白', 18.4), ('こいくち醤油', 14.5)):
             self.assertEqual(self.check(100, 5, 1, 10, salt, 'その他', name)[1], [], name)
-        self.assertEqual(self.check(100, 5, 1, 10, 15, 'その他', 'クッキー')[1], ['salt_cap'])
+        self.assertEqual(self.check(100, 5, 1, 10, 15, 'その他', 'ケーキ')[1], ['salt_cap'])
 
     def test_salt(self):
         self.assertEqual(self.check(69, 3.4, 3.9, 5, 3.34, '乳製品', '牛乳'), ((69, 3.4, 3.9, 5, None), ['salt_cap']))

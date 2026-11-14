@@ -159,6 +159,25 @@ def read_csv(path, rows=False):
     return list(csv.reader(f)) if rows else list(csv.DictReader(f))
 
 
+def dataset_items(doc):
+    """A dataset file's items: build.py's (`items`), or a file the app ships by column (app/static/food/products.json:
+    `cols`, one list per field, null where an item has none but P/F/C/salt's unknown, ids without `idPrefix`)."""
+    if 'items' in doc or 'cols' not in doc:
+        return doc['items']
+    cols, prefix = doc['cols'], doc.get('idPrefix', '')
+    out = []
+    for i in range(len(cols.get('id', []))):
+        it = {}
+        for k, col in cols.items():
+            v = col[i]
+            if v is not None:
+                it[k] = prefix + v if k == 'id' else v
+            elif k in ('p', 'f', 'c', 'salt'):
+                it[k] = None
+        out.append(it)
+    return out
+
+
 def load_json(path):
     with open(path, encoding='utf-8') as f:
         return json.load(f)

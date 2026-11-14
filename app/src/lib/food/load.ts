@@ -1,13 +1,13 @@
 // The meal log's IO edge: the food data from static/food/ (scripts/food-data.ts), fetched when the food sheet first
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names each file's version, fileV), then the core datasets and verify.json
-// together; the lazy ones (products, 2.7 MB; the chain menus, Kalori) only once asked for
+// together; the lazy ones (the products, 30k by column, 4 MB; the chain menus, Kalori) only once asked for
 // (`db.wantMore`: the search's open), in `db.more`. A dataset that fails to load is left out (its items unsearchable)
 // till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry;
 // `db.onAdd` says when one comes in, the search searching again);
 // only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
-import type { Dataset, FoodIndex, Verify } from './types.ts';
+import type { Dataset, FoodIndex, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
@@ -84,7 +84,7 @@ function startParser(): Worker | null {
  *  `mine`: its catalog's parses in flight (by id), for its close. */
 function fetchDataset(href: string, mine: Set<number>): Promise<Dataset> {
   const w = startParser();
-  if (!w) return json<Dataset>(href).then(withJan);
+  if (!w) return json<Shipped>(href).then(withJan);
   const id = nextId++;
   mine.add(id);
   return new Promise<Dataset>((ok, no) => {

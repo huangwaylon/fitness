@@ -23,6 +23,7 @@
   "food.fi": "Fibre",
   "food.al": "Alcohol",
   "food.unknown": "–",
+  "food.partial": "some unknown",
   "food.fiNone": "No data",
   "food.pfc.head": "PFC balance",
   "food.pfc.basis": "share of energy (the Japanese DRI's ranges)",
