@@ -171,25 +171,41 @@ describe('where and how often', () => {
     ]);
   });
 
-  it('leaving sends every unacked batch at once (one at a time left an update reload\'s sessions behind); a restore past three counts the events it drops', async () => {
-    const batch = (s: string) => ({ b: `b${s}00000`, s: `s${s}00000`, build: 'b1', os: 'ios18.7', es: [{ t: T0, l: 1, e: 'app.show', q: 1 }, { t: T0, l: 1, e: 'app.show', q: 2 }] });
-    const saved = (p: string[]) => kv.setItem(LIVE.log, JSON.stringify({ v: 1, s: 'old0000001', build: 'b1', os: 'o', ring: [], pending: p.map(batch), day: { d: '2026-11-05', n: 10 } }));
-    saved(['a', 'b']);
+  it('leaving sends every unacked batch at once (one at a time left an update reload\'s sessions behind) and saves their acks; a restore sends every batch again within 60 KB, counting only what it drops', async () => {
+    const batch = (s: string, pad = 0) => ({ b: `b${s}00000`, s: `s${s}00000`, build: 'b1', os: 'ios18.7', es: [{ t: T0, l: 1, e: 'app.show', q: 1, d: pad ? { tag: 'x'.repeat(pad) } : undefined }, { t: T0, l: 1, e: 'app.show', q: 2 }] });
+    const saved = (p: ReturnType<typeof batch>[]) => kv.setItem(LIVE.log, JSON.stringify({ v: 1, s: 'old0000001', build: 'b1', os: 'o', ring: [], pending: p, day: { d: '2026-11-05', n: 10 } }));
+    saved(['a', 'b'].map((x) => batch(x)));
     restoreLog();
     reply = () => null; // the page dies before the replies
     log('app.show');
     leaving();
     await vi.advanceTimersByTimeAsync(0);
     expect(sent.map((x) => [x.body.s, x.keepalive])).toEqual([['sa00000', true], ['sb00000', true], [expect.any(String), true]]);
-    // five kept: the oldest two's events counted (were let go uncounted)
+    expect(JSON.parse(kv.getItem(LIVE.log)!).pending.length).toBe(3);
+    // the replies in before the page went: saved at once, so the next load sends none of them again
     configureLog({ reset: true, on: true });
-    saved(['a', 'b', 'c', 'd', 'e']);
+    saved(['a', 'b'].map((x) => batch(x)));
     restoreLog();
     reply = () => ({ ok: true });
+    leaving();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(JSON.parse(kv.getItem(LIVE.log)!).pending).toEqual([]);
+    // a quick reload chain's five unacked batches: all sent again, oldest first, no drop (a re-send is the relay's dup)
+    configureLog({ reset: true, on: true });
+    saved(['a', 'b', 'c', 'd', 'e'].map((x) => batch(x)));
+    restoreLog();
     sent = [];
     while (!(await flushLog())) now += 120_000;
-    expect(sent.map((x) => x.body.s).slice(0, 3)).toEqual(['sc00000', 'sd00000', 'se00000']);
-    expect(evs().find((e) => e.e === 'log.drop')?.d).toEqual({ n: 4, why: 'pending' });
+    expect(sent.map((x) => x.body.s).slice(0, 5)).toEqual(['sa00000', 'sb00000', 'sc00000', 'sd00000', 'se00000']);
+    expect(evs().some((e) => e.e === 'log.drop')).toBe(false);
+    // past 60 KB the oldest go, counted: a real loss
+    configureLog({ reset: true, on: true });
+    saved([batch('a', 25_000), batch('b', 25_000), batch('c', 25_000)]);
+    restoreLog();
+    sent = [];
+    while (!(await flushLog())) now += 120_000;
+    expect(sent.map((x) => x.body.s).slice(0, 2)).toEqual(['sb00000', 'sc00000']);
+    expect(evs().find((e) => e.e === 'log.drop')?.d).toEqual({ n: 2, why: 'pending' });
   });
 });
 
@@ -223,8 +239,11 @@ describe('sending', () => {
     now += 6_000;
     expect(await flushLog()).toBe(true);
     expect(sent.map((s) => s.body.b)).toEqual([b, b]);
+    // (the re-send counted: `use` swallow:log.dup)
     expect(await flushLog()).toBe(true);
-    expect(sent.length).toBe(2);
+    expect(sent.map((s) => s.body.es.find((e) => e.e === 'use')?.d)).toEqual([undefined, undefined, { 'swallow:log.dup': 1 }]);
+    expect(await flushLog()).toBe(true);
+    expect(sent.length).toBe(3);
   });
 
   it('offline, past three unacked batches the newest takes more (else the ring waits): none of their events dropped', async () => {

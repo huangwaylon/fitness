@@ -296,9 +296,13 @@ export function restoreLog(): void {
   for (let i = 0; i < saved.ring.length; i += LOG_BATCH_MAX) {
     all.push({ b: logId(), s: saved.s, build: saved.build, os: saved.os, es: saved.ring.slice(i, i + LOG_BATCH_MAX).map(({ pin: _p, ...e }) => e) });
   }
-  // (past PENDING_MAX the oldest go, their events counted: log.drop pending)
-  for (const x of all.slice(0, -PENDING_MAX)) st.dropped.pending += x.es.length;
-  st.pending = all.slice(-PENDING_MAX);
+  // all sent again, the newest kept within KEEPALIVE_MAX (what one leave sends): a batch a page sent as it left, its
+  // ack never saved, is a re-send the relay drops by id (`dup`), not a loss; past it the oldest go, their events
+  // counted (log.drop pending: lost)
+  let size = 0, keep = all.length;
+  while (keep > 0 && (size += JSON.stringify(all[keep - 1]).length) <= KEEPALIVE_MAX) keep--;
+  for (const x of all.slice(0, keep)) st.dropped.pending += x.es.length;
+  st.pending = all.slice(keep);
   if (saved.day?.d === today()) st.day = saved.day;
   st.dirty = true;
 }
@@ -389,6 +393,8 @@ export async function flushLog(o: { keepalive?: boolean } = {}): Promise<boolean
   if (o.keepalive) {
     return sendAll(key).finally(() => {
       st.sending = false;
+      // (the acks saved at once: the page may be gone before an idle write, and the next load would send them again)
+      persistLog();
       if (st.ring.length || st.pending.length) schedule(FLUSH_MS);
     });
   }
@@ -428,6 +434,7 @@ function acked(p: Pending, r: Reply | null): r is Reply {
   st.dirty = true;
   st.tries = 0;
   st.nextTry = 0;
+  if (r.dup) count('swallow:log.dup');
   if (typeof r.closed === 'number') st.closedUntil = r.closed;
   return true;
 }
