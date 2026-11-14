@@ -192,6 +192,9 @@ export class StoreCore {
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
     this.migrate();
+    // another relay's copy of the field (a rollback to other rules, or to before FARM_META) means rows this copy lacks:
+    // both go, and the first farm op folds them again (review 11/14 r3: a dig kept by the older relay, harvested again)
+    if (io.sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
     this.lastAt = Number(this.meta('last_at') ?? 0);
     if (this.meta('rev') === null) this.setMeta('rev', 'e1');
   }

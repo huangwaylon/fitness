@@ -22,10 +22,13 @@ const P1 = 'fd:field-A.0.0', P2 = 'fd:field-A.1.0';
 describe('the fields in the record', () => {
   let now: number;
   let store: StoreCore;
+  let db: ReturnType<typeof memSql>;
+  /** The object's start (a deploy, a rollback, a wake) over the same rows. */
+  const start = () => { store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {} }); };
   beforeEach(() => {
     now = T0;
-    const db = memSql();
-    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {} });
+    db = memSql();
+    start();
   });
   const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
   type W = 'A' | 'B' | 'G';
@@ -246,5 +249,21 @@ describe('the fields in the record', () => {
     expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
     expect(sql.exec("SELECT k FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'").toArray().map((r) => r.k)).toEqual([`farm|g${FARM.growDays}r${FARM.regrowDays}`]);
     expect(store.shopCheck()).toMatchObject({ farm: 'same', A: 'same' });
+  });
+
+  it('a rollback to an older relay, then forward: its rows (a dig of P1) are folded in at the start, so the dug plant is not harvested again', () => {
+    shells('A', FARM.startBuy);
+    starts('A', 'tomato', 1);
+    farm('A', D, [plant(P1)]);
+    // the older relay (before the rule-named key) keeps a dig of P1: its row, its own key; this one's copy untouched
+    db.sql.exec("INSERT INTO events (id, at, person, type, data) VALUES ('old1', ?, 'A', 'farm', ?)", new Date(now += 10).toISOString(), JSON.stringify({ d: D, ops: [{ o: 'dig', p: P1 }] }));
+    db.sql.exec("INSERT INTO meta (k, v) VALUES ('farm', '{}') ON CONFLICT (k) DO UPDATE SET v = excluded.v");
+    now += DAY;
+    start();
+    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toMatchObject({ ok: false });
+    expect(store.shopCheck()).toMatchObject({ farm: 'same' }); // (A's ledger: the older relay's to keep, not this row's)
+    // a plain wake keeps the copy (no fold)
+    start();
+    expect(db.sql.exec("SELECT k FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'").toArray().map((r) => (r as { k: string }).k)).toEqual([`farm|g${FARM.growDays}r${FARM.regrowDays}`]);
   });
 });
