@@ -47,8 +47,10 @@ const AT = { sheet: LOG_SHEETS } as const;
 export const LOG_EVENTS = {
   // ---- the phones
   // coldS: a fresh load's seconds since this phone last hid the app (none: it was shown last, or a reload
-  // of ours): a cold open soon after a hide is iOS's background kill (or, as the user does, a swipe closed)
-  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n' } },
+  // of ours): a cold open soon after a hide is iOS's background kill (or, as the user does, a swipe closed); vis: the
+  // page hidden or shown as it loaded; hr, hrS: the load is the app's own reload at a hide (a deploy taken out of sight,
+  // ui-state/update.ts), that long ago (vis hidden: it ran out of sight; shown, hrS long: only at the next show)
+  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n', vis: ['visible', 'hidden'], hr: 'b', hrS: 'n' } },
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'mic', 'other'] } },
@@ -62,8 +64,10 @@ export const LOG_EVENTS = {
   // the island's launch, once a load (world3d/boot.ts BootReport: ms since the navigation's start, frame lengths in ms;
   // the steps from loaded to shown by what held each back: programs linking, models loading, cards
   // loading; how many, and their wall ms from that step to the next; the steps' own frame ms all told; the models in
-  // after loaded, and the last of them by name)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', ask: 'n', held: 'n' } },
+  // after loaded, and the last of them by name; `shell` where the page came from (the network within the worker's
+  // race, or its cache: confirmed by the race, not raced, or the network late or offline) and `raceMs` the race's ms
+  // (`ask`, `held`: the launch's version ask and its hold, older builds)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
