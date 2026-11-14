@@ -39,8 +39,7 @@ Every event, its level, fields, kinds and when it is logged: the registry, `app/
 - error: the app lost something or a bug threw; warn: degraded but recovered, or a refusal; info: lifecycle and
   samples; debug: polls (ITS's 15 s status).
 - An ok path logs only sampled (`api.ok`) or as a daily summary (`cron.wx`); a routine failure is a `swallow:` counter,
-  one that needs fields an event. The registry (`contract/log.ts`) and this table are checked against each other
-  (`contract/log.test.ts`).
+  one that needs fields an event.
 
 **Never logged:** keys (or a piece of one), health values, food names, board text, names, e-mails, URLs' queries or
 fragments (`#key=`), IP addresses, user agents (only `os`), the record's `detail` / ingest `warnings` text. A
