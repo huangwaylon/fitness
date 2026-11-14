@@ -15,20 +15,15 @@
   // found; the sea creatures', the fossils' and the art's wings are built (their models fetched) only once my villager
   // comes near (plan.ts nearRooms). The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import { onMount, untrack } from 'svelte';
-  import NavButton from '../ui/NavButton.svelte';
   import Says from '../island/Says.svelte';
   import Talk from '../island/Talk.svelte';
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
-  import { madeGL } from '../rooms/madeGL.ts';
+  import RoomShell from '../rooms/RoomShell.svelte';
+  import { ROOM_DIRS, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
-  import { logError } from '#lib/sync/log.ts';
-  import PanHint from '../rooms/PanHint.svelte';
-  import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
@@ -38,13 +33,13 @@
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '#lib/world/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
-  import { person3, type Dirs } from '../person3d/person3d.ts';
+  import { person3 } from '../person3d/person3d.ts';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { WeekView } from '#lib/types.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
+  import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { prefetchPlace, setPlace } from '#lib/sound/sound.svelte.ts';
   import { MUSEUM_MUSIC, Settle, type PlaceId } from '#lib/sound/places.ts';
@@ -56,7 +51,7 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { findsView } from '#lib/model/finds.ts';
   import { tallyTotals } from '#lib/model/tally.ts';
-  import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
+  import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
   import { now } from '#lib/time/clock.ts';
   import { ENTRANCE, ROOM_IDS, boundsOf, nearRooms, wingOfRoom, type Pt, type RoomId, type Wing } from './plan.ts';
   import { hourOf, onShow, type Specimen } from './species.ts';
@@ -115,15 +110,12 @@
   }
 
   // ---- my villager, told to the others (the very walk) ----
-  let myWalk: { from: Pt; via: Pt[]; to: Pt; s: number; ms: number } | null = null;
-  const r = (p: Pt): WirePt => [Math.round(Math.max(-320, Math.min(320, p[0]))), Math.round(Math.max(-320, Math.min(320, p[1])))];
+  let myWalk: MyWalk | null = null;
   function sayWhere() {
     const at = eng?.at(me);
     if (!at) return;
     const mine = seats.mine();
-    if (mine) return void send({ kind: 'tent', in: true, to: r(mine.at), ...seats.wire()! });
-    const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
-    send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) } : { kind: 'tent', in: true, to: r(at) });
+    send(mine ? { ...walkIntent(null, mine.at, 0, 320), ...seats.wire()! } : walkIntent(myWalk, at, relayNow(), 320));
   }
   let arriving: ReturnType<typeof setTimeout> | undefined;
   function walkTo(to: Pt, then?: () => void) {
@@ -185,13 +177,11 @@
 
   // ---- the others: each here only while they're in the museum (store/where.svelte.ts) ----
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [ENTRANCE[0] + sideX(w), ENTRANCE[1] - 10] as Pt]));
-  /** The villagers' GLBs and the players' parts (person3d). */
-  const DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
   /** Who draws them (person3d: the look they wear, their villager or their human player; a villager with no model its
    *  render, as a card). */
   function lookOf(w: Who): Look {
     const villager = w === 'G' ? view.guest.villager : view.people[w].villager;
-    const p = person3(w, wornOf(w), villager, DIRS);
+    const p = person3(w, wornOf(w), villager, ROOM_DIRS);
     if (p.has3d) return p;
     const key = villagerArt(p.villager), a = art(key), url = artUrl(key);
     return a && url ? { ...p, card: { url, aspect: a.w / a.h } } : p;
@@ -205,14 +195,7 @@
       othersShown();
     });
   });
-  function othersShown() {
-    if (!eng) return;
-    for (const w of others) {
-      const shown = where.inTent[w] && where.home[w] === 'M', fresh = shown && !eng.at(w);
-      eng.villager(w, shown ? lookOf(w) : null);
-      if (fresh) eng.put(w, theirAt.get(w)!);
-    }
-  }
+  const othersShown = () => showOthers(eng, others, 'M', lookOf, theirAt);
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;
@@ -452,9 +435,6 @@
     canvas?.setPointerCapture(e.pointerId);
     fingers.down(e);
   }
-  const onMove = (e: PointerEvent) => fingers.move(e);
-  const onUp = (e: PointerEvent) => fingers.up(e);
-  const onCancel = (e: PointerEvent) => fingers.cancel(e);
   function resetView() {
     eng?.resetView();
     turned = false;
@@ -496,17 +476,7 @@
   }
 
   // ---- out of the door: on the island just out of the museum's door, on every phone (island/doorOut.ts) ----
-  let leaving = false;
-  function leave() {
-    if (leaving) return;
-    leaving = true;
-    cue('scene-bench');
-    // (out at the door first, then seen: the others' islands show it there, not where it went in: the shop's order)
-    leaveBy('museum', me);
-    send({ kind: 'tent', in: false });
-    const q = new URLSearchParams(location.search);
-    void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
-  }
+  const leave = roomExit(() => (leaveBy('museum', me), send({ kind: 'tent', in: false })));
 
   $effect(() => eng?.night(nightOf(theme.tod)));
   /** At my villager's eyes (docs/design.md "First person"): the phone's choice. Local only. */
@@ -551,29 +521,18 @@
         if (m.kind === 'tent') heardTent(m);
         else if (m.kind === 'say' && m.sc === 'm') showSay(m.who, m.text);
       }));
-      let hereNow: readonly Who[] = [];
-      offs.push(relay.onStatus((st) => {
-        const was = hereNow, here = st.connected ? st.here : [];
-        hereNow = here;
-        if (here.some((w) => !was.includes(w))) sayWhere();
-        for (const w of others) where.presence(w, here.includes(w));
+      offs.push(onPresence(relay, others, (_, came) => {
+        if (came) sayWhere();
         othersShown();
       }));
     }
-    const offDoor = provideDoor(() => (eng?.inView(ENTRANCE[0], 0, ENTRANCE[1] + 10) ? (([x, y]) => ({ x, y }))(eng.client(ENTRANCE[0], 0, ENTRANCE[1] + 10)) : null));
+    const offDoor = roomDoor(() => eng, ENTRANCE[0], ENTRANCE[1] + 10);
+    const fail = () => ((failed = true), doorReady());
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts'), import('./visitors.ts'), import('./crowd3d.ts'), import('./spots.ts'), import('./newTags.ts')]).then(
       async ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }, { buildNewTags }]) => {
         if (!alive || !canvas) return;
-        let e: ReturnType<typeof createMuseum>;
-        try {
-          // (no WebGL context to be had: the door opens on the room's stand-in, the tent's way)
-          e = await madeGL(() => createMuseum(canvas!, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') }), () => alive && !!canvas);
-        } catch {
-          failed = true;
-          doorReady();
-          return;
-        }
-        try {
+        // (no WebGL context to be had: the door opens on the room's stand-in, the tent's way)
+        const e = await startRoom(() => createMuseum(canvas!, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') }), () => alive && !!canvas, (e) => {
           walkPathOf = (from, to) => walkPath(e.nav(), from, to);
           e.resize(insets());
           e.night(nightOf(theme.tod));
@@ -603,14 +562,8 @@
             if (c) (dipColor = c), hushAll();
             dip = c;
           });
-        } catch (err) {
-          // (its renderer let go of: before eng, nothing else would)
-          logError('error', err);
-          e.dispose();
-          failed = true;
-          doorReady();
-          return;
-        }
+        }, fail);
+        if (!e) return;
         eng = e;
         othersShown();
         // (once the hall's first frame is drawn: it waits for my villager's model, engine.ts holding)
@@ -621,13 +574,8 @@
         });
         hooks();
       },
-      () => {
-        failed = true;
-        doorReady();
-      }
+      fail
     );
-    const ro = new ResizeObserver(() => eng?.resize(insets()));
-    if (canvas) ro.observe(canvas);
     return () => {
       alive = false;
       clearTimeout(wings);
@@ -637,7 +585,6 @@
       // (a walk to a bench still on its way: no sit or its sound once out)
       clearTimeout(arriving);
       for (const f of offs) f();
-      ro.disconnect();
       offDoor();
       own?.stop();
       eng?.dispose();
@@ -650,11 +597,7 @@
   let foot = $state<HTMLElement>();
   /** What covers the canvas at its top (the back button) and foot (the say and eye buttons' row over the safe area,
    *  `foot` its line, there before the buttons are): the room fits between. */
-  function insets() {
-    const rc = canvas?.getBoundingClientRect(), tb = top?.getBoundingClientRect(), fb = foot?.getBoundingClientRect();
-    if (!rc) return { top: 0, bottom: 0 };
-    return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: fb ? Math.max(0, rc.bottom - fb.top) : 0 };
-  }
+  const insets = () => insetsOf(canvas, top, foot);
 
   /** The e2e's and the console's hooks (dev builds, test mode and the logic tier). */
   function hooks() {
@@ -743,21 +686,15 @@
   const counts = $derived(week.model ? tallyTotals(week.model.state.tallies) : null);
 </script>
 
-<main class="museum" bind:this={scene} data-museum data-exact-taps>
-  <h1 class="sr-only">{t('museum.title')}</h1>
-  <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('museum.room')}></canvas>
+{#snippet under()}
   <div class="dip" class:on={!!dip} style:background={dipColor} style:--dip-in="{DIP_FADE_MS}ms" aria-hidden="true" data-museum-dip={dip ? 'on' : 'off'}></div>
-  <div class="top obj-cream" bind:this={top}>
-    <NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />
-  </div>
+{/snippet}
+
+<RoomShell room="museum" title={t('museum.title')} label={t('museum.room')} failText="はくぶつかんを ひらけませんでした" {failed} mark="data-museum-room" bind:canvas bind:top bind:el={scene}
+  finger={{ down: onDown, move: (e) => fingers.move(e), up: (e) => fingers.up(e), cancel: (e) => fingers.cancel(e) }} {camera} back={t('tent.back')} onback={leave}
+  reset={turned && !fpv} onreset={resetView} hint={!!eng && !fpv && !card} onresize={() => eng?.resize(insets())} {under}
+  style="background: #1d1712" data-museum>
   {#if eng && !fpv}<RoomChip name={chipName(roomId)} found={chipTally?.found} total={chipTally?.total} fresh={freshIn(roomId, fresh)} />{/if}
-  {#if turned && !fpv}
-    <button type="button" class="reset" data-museum-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
-      <RecentreIcon />
-    </button>
-  {/if}
-  <PanHint room="museum" on={!!eng && !fpv && !card} />
   {#if card && counts}
     <MuseumCard shown={card} {counts} {view} {dock} onclose={() => (card = null)} />
   {/if}
@@ -775,24 +712,13 @@
     <!-- my villager's eyes, the say button's mirror at the bottom left -->
     <div class="eye-dock"><EyeToggle /></div>
   {/if}
-  {#if failed}<p class="fail" role="alert">はくぶつかんを ひらけませんでした</p>{/if}
-</main>
+</RoomShell>
 
 <style>
-  .museum { position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; background: #1d1712; touch-action: none; }
-  .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
   /* (the doorway's dip: dark a little before the room changes inside it (hud.ts DIP_MS), lifting slower; never takes a finger) */
   .dip { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 200ms ease-out; }
   .dip.on { opacity: 1; transition: opacity var(--dip-in) ease-in; }
-  .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--ui-top) + 8px); z-index: 2; min-height: var(--hit); }
   .foot { position: absolute; left: 0; right: 0; height: 0; bottom: calc(var(--safe-bottom, 0px) + 14px + var(--hit, 44px)); pointer-events: none; }
   .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
   .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
-  .reset {
-    position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--ui-top) + 8px); z-index: 2;
-    width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
-    color: var(--c-ink); background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
-  }
-  .reset:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .fail { position: absolute; left: 16px; right: 16px; top: 40%; text-align: center; color: #F5E4BC; font-weight: 700; }
 </style>

@@ -17,17 +17,13 @@
   // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there. The others in here are drawn,
   // walking where they walk (the very walk, as the museum's: `tent` with `sc: 's'` and its points; a bare `in` first,
   // an older app's, which drops a shop walk); out of the door, or gone quiet past the presence's grace, they're not.
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
-  import { madeGL } from '../rooms/madeGL.ts';
+  import RoomShell from '../rooms/RoomShell.svelte';
+  import { ROOM_DIRS, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
-  import { logError } from '#lib/sync/log.ts';
-  import PanHint from '../rooms/PanHint.svelte';
-  import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { nightOf } from '../rooms/speaker.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
@@ -36,11 +32,8 @@
   import { nm } from './PieceTile.svelte';
   import { placeOf, samePlace, type Place } from './words.ts';
   import { findArt } from '#lib/world/beach.ts';
-  import { person3, type Dirs } from '../person3d/person3d.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
-  import { art, artUrl, villagerArt } from '#lib/art.ts';
-  import { resolveLook } from '#lib/villagers/look.ts';
   import type { WeekView, Who } from '#lib/types.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
   import { buyPiece, buyRefusal, stockAt } from './stock.ts';
@@ -52,7 +45,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
+  import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { setPlace } from '#lib/sound/sound.svelte.ts';
@@ -62,9 +55,9 @@
   import { staticUrl } from '#lib/staticUrl.ts';
   import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, SIGN, TWINS, TWINS_BOX, WALK_IN, WALL_H, atCounter, blocked, corners, display, inHull, side, standable, walkPath, type Shown } from './plan.ts';
   import M from './models.json' with { type: 'json' };
-  import type { Look, Tent } from '../tent/engine.ts';
+  import type { Tent } from '../tent/engine.ts';
   import type { Pt } from '../tent/grid.ts';
-  import type { Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
+  import type { Relayed } from '#lib/contract/live-protocol.ts';
 
   let { view }: { view: WeekView } = $props();
 
@@ -103,7 +96,6 @@
   const shop = $derived(week.model ? shopView(week.model.state, me) : { pocket: new Map<string, number>(), shells: 0, owned: [] as readonly string[] });
   // (as of the day's start: a find or a buy today leaves it as it was)
   const stock = $derived(week.model ? stockAt(week.model.state, week.model.now) : []);
-  const night = $derived(theme.tod === 'night' || theme.tod === 'dusk');
 
   // ---- my presence (the phone's one socket; the demo's two tabs share a channel; ?relay=&key= a test relay) ----
   const demo = !!week.demo;
@@ -163,15 +155,7 @@
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state<Tent | null>(null);
   let failed = $state(false);
-  const DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
-  /** Who draws my villager (person3d: the look I wear; its render the card till its model is in). */
-  function lookOf(w: Who): Look | null {
-    const villager = w === 'G' ? view.guest.villager : view.people[w].villager;
-    const person = person3(w, wornOf(w), villager, DIRS);
-    const l = resolveLook({ villager: person.villager, person: w });
-    const key = villagerArt(l.id), a = art(key), url = artUrl(key);
-    return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror, person: person.has3d ? person : undefined, cardless: person.kind === 'player' } : null;
-  }
+  const lookOf = (w: Who) => tentLook(w, view);
   $effect(() => {
     for (const w of ['A', 'B', 'G'] as const) void wornOf(w);
     untrack(() => {
@@ -181,14 +165,10 @@
   });
 
   // ---- my villager, told to the others (the very walk: where it set off, by way of, to, when, how long) ----
-  let myWalk: { from: Pt; via: Pt[]; to: Pt; s: number; ms: number } | null = null;
-  const r = (p: Pt): WirePt => [Math.round(Math.max(-80, Math.min(80, p[0]))), Math.round(Math.max(-80, Math.min(80, p[1])))];
+  let myWalk: MyWalk | null = null;
   function sayWhere() {
     const at = eng?.at(viewer);
-    if (!at || !relay) return;
-    const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
-    relay.send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms), sc: 's' }
-      : { kind: 'tent', in: true, to: r(at), sc: 's' });
+    if (at) relay?.send({ ...walkIntent(myWalk, at, relayNow(), 80), sc: 's' });
   }
 
   // ---- the others: each drawn only while they're in the shop (store/where.svelte.ts), walking as they walk ----
@@ -196,14 +176,7 @@
   /** Where each one comes in (a little apart: A left, B right, the guest in the middle), and last stood. */
   const sideX = (w: Who) => (w === 'A' ? -8 : w === 'B' ? 8 : 0);
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [DOOR_IN[0] + sideX(w), DOOR_IN[1] - 6] as Pt]));
-  function othersShown() {
-    if (!eng) return;
-    for (const w of others) {
-      const on = where.inTent[w] && where.home[w] === 'S', fresh = on && !eng.at(w);
-      eng.villager(w, on ? lookOf(w) : null);
-      if (fresh) eng.put(w, theirAt.get(w)!, 1);
-    }
-  }
+  const othersShown = () => showOthers(eng, others, 'S', lookOf, theirAt, () => 1);
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;
@@ -287,9 +260,6 @@
     canvas?.setPointerCapture(e.pointerId);
     fingers.down(e);
   }
-  const onMove = (e: PointerEvent) => fingers.move(e);
-  const onUp = (e: PointerEvent) => fingers.up(e);
-  const onCancel = (e: PointerEvent) => fingers.cancel(e);
   function resetView() {
     eng?.resetView();
     turned = false;
@@ -330,17 +300,7 @@
   }
 
   // ---- out of the door: on the island just out of the shop's door, on every phone (island/doorOut.ts)
-  let leaving = false;
-  function leave() {
-    if (leaving) return;
-    leaving = true;
-    cue('scene-bench');
-    // (out at the door first, then seen: the others' islands show it there, not where it went in)
-    leaveBy('shop', me);
-    inside(false);
-    const q = new URLSearchParams(location.search);
-    void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
-  }
+  const leave = roomExit(() => (leaveBy('shop', me), inside(false)));
 
   $effect(() => {
     const m = week.model;
@@ -360,44 +320,31 @@
     if (relay) {
       inside(true);
       // said again to whoever arrives; what the others say of themselves is kept for the island (one place at a time)
-      let hereNow: readonly Who[] = [];
       offs.push(
-        relay.onStatus((st) => {
-          const was = hereNow, here = st.connected ? st.here : [];
-          hereNow = here;
-          if (here.some((w) => !was.includes(w))) (inside(true), sayWhere());
-          for (const w of ['A', 'B', 'G'] as const) if (w !== me) where.presence(w, here.includes(w));
+        onPresence(relay, others, (_, came) => {
+          if (came) (inside(true), sayWhere());
           othersShown();
         }),
         relay.on((m) => m.who !== me && m.kind === 'tent' && heardTent(m))
       );
     }
-    const offDoor = provideDoor(() => (eng?.inView(DOOR[0], 0, FRONT - 2) ? (([x, y]) => ({ x, y }))(eng.client(DOOR[0], 0, FRONT - 2)) : null));
+    const offDoor = roomDoor(() => eng, DOOR[0], FRONT - 2);
     const fail = () => ((failed = true), doorReady());
     void import('../tent/engine.ts').then(async ({ createTent }) => {
       if (!alive || !canvas) return;
-      let e: Tent;
-      try {
-        e = await madeGL(() => createTent(canvas!, { shell: { url: `${staticUrl('room/shop/shell.glb')}?v=${M.models.shell.v}`, rect: RECT, h: WALL_H, front: FRONT, door: DOOR, side, follow: FOLLOW } }), () => alive && !!canvas);
-      } catch {
-        return fail();
-      }
-      try {
+      const e = await startRoom(() => createTent(canvas!, { shell: { url: `${staticUrl('room/shop/shell.glb')}?v=${M.models.shell.v}`, rect: RECT, h: WALL_H, front: FRONT, door: DOOR, side, follow: FOLLOW } }), () => alive && !!canvas, (e) => {
         e.resize(insets());
         e.night(nightOf(theme.tod));
         e.villager(viewer, lookOf(viewer));
         e.put(viewer, DOOR_IN, 1);
         e.follow(viewer);
-        const twin = url3d('timmy', DIRS.villagers);
+        const twin = url3d('timmy', ROOM_DIRS.villagers);
         if (twin) for (const id of ['timmy', 'tommy'] as const) e.npc(id, { id: 'timmy', url: twin }, TWINS[id]);
         e.pieces(shown.shown);
         e.firstPerson(fpv ? viewer : null, true);
         e.onDrawn(placeSay);
-      } catch (err) {
-        logError('error', err);
-        e.dispose();
-        return fail();
-      }
+      }, fail);
+      if (!e) return;
       eng = e;
       othersShown();
       void e.ready.then(() => {
@@ -407,16 +354,10 @@
       });
       hooks();
     }, fail);
-    const ro = new ResizeObserver(() => {
-      box = canvas?.getBoundingClientRect() ?? null;
-      eng?.resize(insets());
-    });
-    if (canvas) ro.observe(canvas);
     return () => {
       alive = false;
       inside(false);
       for (const f of offs) f();
-      ro.disconnect();
       offDoor();
       own?.stop();
       eng?.dispose();
@@ -428,10 +369,10 @@
   let top = $state<HTMLElement>();
   let foot = $state<HTMLElement>();
   /** What covers the canvas at its top (the back button and my かいがら) and foot (the buttons): the room fits between. */
-  function insets() {
-    const rc = canvas?.getBoundingClientRect(), tb = top?.getBoundingClientRect(), fb = foot?.getBoundingClientRect();
-    if (!rc) return { top: 0, bottom: 0 };
-    return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: fb ? Math.max(0, rc.bottom - fb.top) : 0 };
+  const insets = () => insetsOf(canvas, top, foot);
+  function resized() {
+    box = canvas?.getBoundingClientRect() ?? null;
+    eng?.resize(insets());
   }
 
   /** The e2e's and the console's hooks (dev builds, test mode, and the logic tier). */
@@ -476,27 +417,21 @@
   const cardOwned = $derived(!!pick && shop.owned.includes(pick));
 </script>
 
-<main class="shop" class:night data-shop data-shells={shop.shells} data-exact-taps data-panel={panel ?? undefined}>
-  <h1 class="sr-only">{t('shop.title')}</h1>
-  <canvas bind:this={canvas} class="room" data-shop-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('shop.room')}></canvas>
-  <div class="top obj-cream" bind:this={top}>
-    <NavButton kind="back" text={t('shop.out')} onclick={leave} sfx="self" />
-    <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here); the list's own title bar says them while
-         it's open (one wallet on screen) -->
-    {#if !panel}
-      <p class="wallet" data-shop-wallet>
-        <span class="shell" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={26} eager /></span>
-        <b class="num">{t('shop.wallet', { v: formatNum(shop.shells) })}</b>
-      </p>
-    {/if}
-  </div>
-  {#if turned && !fpv && !panel}
-    <button type="button" class="reset" data-shop-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
-      <RecentreIcon />
-    </button>
+{#snippet wallet()}
+  <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here); the list's own title bar says them while
+       it's open (one wallet on screen) -->
+  {#if !panel}
+    <p class="wallet" data-shop-wallet>
+      <span class="shell" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={26} eager /></span>
+      <b class="num">{t('shop.wallet', { v: formatNum(shop.shells) })}</b>
+    </p>
   {/if}
-  <PanHint room="shop" on={!!eng && !fpv && !panel} untilPan />
+{/snippet}
+
+<RoomShell room="shop" title={t('shop.title')} label={t('shop.room')} failText={t('shop.fail')} {failed} mark="data-shop-room" bind:canvas bind:top
+  finger={{ down: onDown, move: (e) => fingers.move(e), up: (e) => fingers.up(e), cancel: (e) => fingers.cancel(e) }} {camera} back={t('shop.out')} onback={leave} wide end={wallet}
+  reset={turned && !fpv && !panel} onreset={resetView} hint={!!eng && !fpv && !panel} untilPan onresize={resized}
+  style="color: var(--c-ink)" data-shop data-shells={shop.shells} data-panel={panel ?? undefined}>
 
   {#if !panel}
     {#if signAt}
@@ -529,33 +464,17 @@
   {:else}
     <Counter {shop} {stock} bind:tab bind:pick {why} buy={buyPicked} {itemName} onclose={closePanel} />
   {/if}
-  {#if failed}<p class="fail" role="alert">{t('shop.fail')}</p>{/if}
-</main>
+</RoomShell>
 
 <style>
   /* the room fills the screen; over it the back button and my かいがら, the twins' balloon, a picked piece's card and
      the foot's buttons; the counter's list a cream sheet from the bottom (Counter.svelte) */
-  .shop {
-    position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; color: var(--c-ink);
-    background: #2a1f17; touch-action: none;
-  }
-  .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
-  .top {
-    position: absolute; z-index: 3; left: calc(var(--side) + var(--safe-left)); right: calc(var(--side) + var(--safe-right));
-    top: calc(var(--ui-top) + 8px); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; pointer-events: none;
-  }
-  .top > :global(*) { pointer-events: auto; }
   .wallet {
     margin: 0; display: inline-flex; align-items: center; gap: 6px; height: var(--hit); padding: 0 14px 0 8px; border-radius: var(--r-pill);
     background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip); color: var(--c-ink);
   }
   .shell { display: inline-flex; width: 30px; justify-content: center; line-height: 0; }
   .num { font: 700 var(--fs-body)/1 var(--font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .reset {
-    position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--ui-top) + 64px); z-index: 2;
-    width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
-    color: var(--c-ink); background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
-  }
 
   /* the sign by the door: a little wooden board on a post, standing on the floor (its foot at its point), the world's
      spaced kana; at least a finger's size to tap */
@@ -610,6 +529,5 @@
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
   .owned-tag { font-family: var(--font-ui); color: var(--c-leaf-text); }
-  .fail { position: absolute; left: 16px; right: 16px; top: 40%; text-align: center; color: #F5E4BC; font-weight: 700; }
   @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
 </style>

@@ -8,12 +8,8 @@
   // very walk) or while they're away; what they drag moves here as they drag it (dragLink.ts). Nothing gives ベル.
   // The say button at the bottom right opens the island's phrase picker: a phrase shows over my villager in here, and
   // on the phones whose villager is in this room too (the relay's `say` with this room's `sc`; one place at a time).
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
-  import { person3, type Dirs } from '../person3d/person3d.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import { onMount, untrack } from 'svelte';
-  import NavButton from '../ui/NavButton.svelte';
   import TentEdit from './TentEdit.svelte';
   import HomePicker from '../homes/HomePicker.svelte';
   import HhaLetter from './HhaLetter.svelte';
@@ -26,11 +22,9 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
-  import { madeGL } from '../rooms/madeGL.ts';
+  import RoomShell from '../rooms/RoomShell.svelte';
+  import { insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
-  import { logError } from '#lib/sync/log.ts';
-  import PanHint from '../rooms/PanHint.svelte';
-  import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
@@ -40,11 +34,9 @@
   import type { WeekView } from '#lib/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
-  import { art, artUrl, villagerArt } from '#lib/art.ts';
-  import { resolveLook } from '#lib/villagers/look.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { shopView } from '#lib/model/shop.ts';
-  import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
+  import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { rooms } from '#lib/store/tent.svelte.ts';
@@ -55,16 +47,15 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
   import { SAVE_SLOTS, type RoomSaveOp } from '#lib/contract/roomSave.ts';
-  import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
+  import { tokyoDay, type Intent, type SayScope, type Relayed } from '#lib/contract/live-protocol.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
-  import type { Look, Pose, Tent, Who } from './engine.ts';
+  import type { Pose, Tent, Who } from './engine.ts';
   import { quiet } from '#lib/quiet.ts';
-  import { staticUrl } from '#lib/staticUrl.ts';
 
   // `home`: whose home this is (docs/island-layout.md "Homes"): ウェイ's the tent's room (as it always was), うめ's house's
   // (`sc: 'u'`), the guest's (`v`); anyone comes in and arranges it (2026-11-10: each of us any room, with what they
@@ -119,18 +110,7 @@
   /** The pieces where they stand in the room (a small thing on a table: on its top there). */
   const spots = (): Resolved[] => resolveRoom(inRoom());
 
-  /** The villagers' GLBs and the players' parts (person3d). */
-  const DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
-  function lookOf(who: Who): Look | null {
-    const villager = who === 'G' ? view.guest.villager : view.people[who].villager;
-    // who draws them (person3d: the look they wear, their villager or their human player); the villager's render the
-    // card while the model loads
-    const person = person3(who, wornOf(who), villager, DIRS);
-    const l = resolveLook({ villager: person.villager, person: who });
-    const key = villagerArt(l.id);
-    const a = art(key), url = artUrl(key);
-    return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror, person: person.has3d ? person : undefined, cardless: person.kind === 'player' } : null;
-  }
+  const lookOf = (who: Who) => tentLook(who, view);
   // a look changed (on leaving すがた, or the partner's phone): the model swapped where it is
   $effect(() => {
     for (const w of [me, ...others]) void wornOf(w);
@@ -179,15 +159,12 @@
 
   // ---- my villager in the tent, told to the partner (the very walk) ----
   /** My last walk (for a partner who joins while it's under way). */
-  let myWalk: { from: Pt; via: Pt[]; to: Pt; s: number; ms: number } | null = null;
-  const r = (p: Pt): WirePt => [Math.round(Math.max(-HALF, Math.min(HALF, p[0]))), Math.round(Math.max(-HALF, Math.min(HALF, p[1])))];
+  let myWalk: MyWalk | null = null;
   function sayWhere() {
     const at = eng?.at(me);
     if (!at) return;
     const mine = seats.mine();
-    if (mine) return void send({ kind: 'tent', in: true, to: r(mine.at), ...seats.wire()! });
-    const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
-    send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) } : { kind: 'tent', in: true, to: r(at) });
+    send(mine ? { ...walkIntent(null, mine.at, 0, HALF), ...seats.wire()! } : walkIntent(myWalk, at, relayNow(), HALF));
   }
   /** Walk my villager there (standing up first, a seat's step out in front); `then` on arrival. */
   function walkTo(to: Pt, then?: () => void) {
@@ -233,18 +210,9 @@
 
   // ---- the others' villagers: each here only while they're in the tent (store/where.svelte.ts), theirs to move ----
   let peer = $state(false);
-  /** Who else has the app open (the relay's presence). */
-  let hereNow: readonly Who[] = [];
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [sideX(w, 9) || 0, 16] as Pt]));
-  function partnerShown() {
-    if (!eng) return;
-    // (called on every presence news: a villager already shown stays as it is, walking, sitting or standing)
-    for (const w of others) {
-      const shown = where.inTent[w] && where.home[w] === home, fresh = shown && !eng.at(w);
-      eng.villager(w, shown ? lookOf(w) : null);
-      if (fresh) eng.put(w, theirAt.get(w)!, faceOf(w));
-    }
-  }
+  // svelte-ignore state_referenced_locally
+  const partnerShown = () => showOthers(eng, others, home, lookOf, theirAt, faceOf);
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;
@@ -489,21 +457,10 @@
     });
   });
 
-  function leave() {
-    if (leaving) return;
-    leaving = true;
-    cue('scene-bench');
-    // out of the door: on the island my villager stands just outside this home's door (the tent's, うめ's or the
-    // guest's), facing out, on every phone (island/doorOut.ts: the island's put, said here at once with the leaving);
-    // out at the door first, then seen: the others' islands show it there, not where it went in (the shop's order)
-    leaveBy(home === 'A' ? 'campsite' : home === 'B' ? 'home-B' : 'home-G', me);
-    send({ kind: 'tent', in: false });
-    // (back to the island without the room's `home`)
-    const q = new URLSearchParams(location.search);
-    q.delete('home');
-    void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
-  }
-  let leaving = false;
+  // out of the door: on the island my villager stands just outside this home's door (the tent's, うめ's or the guest's),
+  // facing out, on every phone (island/doorOut.ts: the island's put, said here at once with the leaving); back to the
+  // island without the room's `home`
+  const leave = roomExit(() => (leaveBy(home === 'A' ? 'campsite' : home === 'B' ? 'home-B' : 'home-G', me), send({ kind: 'tent', in: false })), 'home');
 
   // the room as the store has it: the pieces, the wallpaper and the floor
   $effect(() => {
@@ -598,13 +555,10 @@
         else if (m.kind === 'say' && m.sc === saySc) showSay(m.who, m.text);
         else if (m.kind === 'drag' && here(m)) heardDrag(m);
       }));
-      offs.push(relay.onStatus((st) => {
-        const was = hereNow, here = st.connected ? st.here : [];
-        hereNow = here;
+      offs.push(onPresence(relay, others, (here, came) => {
         peer = here.length > 0;
         // someone came: where I am in here, said to them
-        if (here.some((w) => !was.includes(w))) sayWhere();
-        for (const w of others) where.presence(w, here.includes(w));
+        if (came) sayWhere();
         if (!peer && link.gone()) heldChanged();
         partnerShown();
       }));
@@ -619,19 +573,13 @@
       eng.bump(e.id);
       if (e.who !== me) eng.face(e.who, centreOf(p));
     }));
-    const offDoor = provideDoor(() => (eng?.inView(0, 0, HALF - 2) ? (([x, y]) => ({ x, y }))(eng.client(0, 0, HALF - 2)) : null));
+    const offDoor = roomDoor(() => eng, 0, HALF - 2);
     const fail = () => ((failed = true), doorReady());
     void import('./engine.ts').then(
       async ({ createTent }) => {
         if (!alive || !canvas) return;
         // (a WebGL context lost as it's made throws here: the room's failure, not a white room for good)
-        let e: ReturnType<typeof createTent>;
-        try {
-          e = await madeGL(() => createTent(canvas!), () => alive && !!canvas);
-        } catch {
-          return fail();
-        }
-        try {
+        const e = await startRoom(() => createTent(canvas!), () => alive && !!canvas, (e) => {
           e.resize(insets());
           e.night(nightOf(theme.tod));
           e.villager(me, lookOf(me));
@@ -640,12 +588,8 @@
           e.firstPerson(fpv ? me : null, true);
           // (a balloon carried with its villager while the camera moves: Says.track)
           e.onDrawn(() => says?.track());
-        } catch (err) {
-          // (its renderer let go of: before eng, nothing else would)
-          logError('error', err);
-          e.dispose();
-          return fail();
-        }
+        }, fail);
+        if (!e) return;
         eng = e;
         partnerShown();
         // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)
@@ -660,8 +604,6 @@
       },
       fail
     );
-    const ro = new ResizeObserver(() => eng?.resize(insets()));
-    if (canvas) ro.observe(canvas);
     return () => {
       alive = false;
       send({ kind: 'tent', in: false });
@@ -672,7 +614,6 @@
       clearTimeout(arriving);
       clearTimeout(longTimer);
       for (const f of offs) f();
-      ro.disconnect();
       offDoor();
       leaveStage();
       room.sink = null;
@@ -689,13 +630,9 @@
   let foot = $state<HTMLElement>();
   /** What covers the canvas at its top (the back button) and foot (the controls): the room fits between. */
   function insets() {
-    const rc = canvas?.getBoundingClientRect();
-    if (!rc) return { top: 0, bottom: 0 };
     // the foot: the edit button, or the edit mode's tray and bar (the room glides to the middle of what's left)
     const tray = editing ? document.querySelector<HTMLElement>('[data-tent-edit]') : null;
-    const tb = top?.getBoundingClientRect(), fb = (tray ?? foot)?.getBoundingClientRect();
-    const barTop = tray ? Math.min(...[...tray.children].map((c) => c.getBoundingClientRect().top)) : fb?.top;
-    return { top: tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: barTop !== undefined ? Math.max(0, rc.bottom - barTop) : 0 };
+    return insetsOf(canvas, top, tray ? Math.min(...[...tray.children].map((c) => c.getBoundingClientRect().top)) : foot);
   }
 
   /** The e2e's and the console's hooks (dev builds, test mode, and the e2e's logic mode: a paired phone on a test record). */
@@ -808,13 +745,11 @@
   }
 </script>
 
-<main class="tent" bind:this={scene} data-tent data-exact-taps data-room-home={home} data-editing={editing || undefined}>
-  <h1 class="sr-only">{t('tent.title')}</h1>
-  <canvas bind:this={canvas} class="room" data-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('tent.room')}></canvas>
-  <div class="top obj-cream" bind:this={top}>
-    {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
-  </div>
+<!-- (the edit mode's plates: the island's cream at every hour, NH's game objects) -->
+<RoomShell room="tent" title={t('tent.title')} label={t('tent.room')} failText={t('tent.failed')} {failed} mark="data-room" bind:canvas bind:top bind:el={scene}
+  finger={{ down: onDown, move: onMove, up: onUp, cancel: onCancel }} {camera} back={t('tent.back')} backShown={!editing} onback={leave}
+  reset={turned && !fpv} onreset={resetView} hint={!!eng && !fpv && !editing && !picking} onresize={() => eng?.resize(insets())}
+  style="--plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink)" data-tent data-room-home={home} data-editing={editing || undefined}>
   {#if home !== 'A'}<p class="whose" data-guard data-home={home}>{t('tent.whose', { name: nameOf(home) })}</p>{/if}
   {#if !editing}
     <!-- NH's room light switch: the room's own light on or off (the lamps that are on light it then) -->
@@ -830,13 +765,6 @@
       <svg viewBox="0 0 64 80" aria-hidden="true"><path d="M14 70c0-12 2-20 4-28-6-2-10-7-10-11 4 0 8 3 11 6 1-10 6-27 13-27s12 17 13 27c3-3 7-6 11-6 0 4-4 9-10 11 2 8 4 16 4 28Z" /><ellipse cx="25" cy="24" rx="3.2" ry="4.2" /><ellipse cx="39" cy="24" rx="3.2" ry="4.2" /><ellipse cx="32" cy="37" rx="4" ry="5" /></svg>
     </button>
   {/if}
-  {#if turned && !fpv}
-    <!-- back to NH's view of the room -->
-    <button type="button" class="reset" data-tent-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
-      <RecentreIcon />
-    </button>
-  {/if}
-  <PanHint room="tent" on={!!eng && !fpv && !editing && !picking} />
   <div class="foot" bind:this={foot}>
     {#if !editing && mine}
       <button type="button" class="edit look" data-home-look data-sfx="open" onclick={() => (picking = true)}>
@@ -875,8 +803,7 @@
   {#if stereoPick && !editing}<StereoPicker last={stereoLast} onpick={playStereo} onclose={() => (stereoPick = null)} />{/if}
   {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
   {#if picking}<HomePicker bind:open={picking} who={home} />{/if}
-  {#if failed}<p class="fail" role="alert">{t('tent.failed')}</p>{/if}
-</main>
+</RoomShell>
 
 <style>
   .foot :global(.look) { margin-right: 8px; }
@@ -887,13 +814,6 @@
     position: absolute; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
     border-radius: 999px; background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s, 13px); pointer-events: none;
   }
-  .tent {
-    position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; background: #2a1f17; touch-action: none;
-    /* the edit mode's plates: the island's cream at every hour (NH's game objects) */
-    --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
-  }
-  .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
-  .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--ui-top) + 8px); z-index: 2; min-height: var(--hit); }
   .foot {
     position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; justify-content: center; gap: 10px;
     padding: 0 12px calc(var(--safe-bottom, 0px) + 14px); pointer-events: none; min-height: 72px;
@@ -925,14 +845,4 @@
   .hha svg ellipse { fill: #8C5326; }
   .hha:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .hha:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .reset {
-    position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--ui-top) + 8px); z-index: 2;
-    width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
-    color: var(--c-ink); background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
-    animation: pop .22s var(--ease-bounce) both;
-  }
-  .reset:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .reset:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  @keyframes pop { from { scale: .6; opacity: 0; } }
-  .fail { position: absolute; left: 16px; right: 16px; top: 40%; text-align: center; color: #F5E4BC; font-weight: 700; }
 </style>
