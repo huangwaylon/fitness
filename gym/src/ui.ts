@@ -12,7 +12,7 @@ import { CLOSES, DEFAULT_WINDOW, OPENS } from './config.ts';
 import { LineError, texts } from './line.ts';
 import * as messages from './messages.ts';
 import { ANY } from './store.ts';
-import { addDays, at, clockFrom, clockOf, dayOf, minutesOf, weekday, type Clock, type Day } from './time.ts';
+import { addDays, at, clockFrom, clockAt, localDateAt, minutesOf, weekday, type Clock, type Day } from './time.ts';
 
 // LINE's JSON, built and read loosely.
 type Json = Record<string, any>;
@@ -77,7 +77,7 @@ export function halfHour(clock: Clock, up = false): Clock {
 }
 
 /** An instant as LINE's datetime picker writes it. */
-const minute = (ms: number): string => `${dayOf(ms)}T${clockOf(ms)}`;
+const minute = (ms: number): string => `${localDateAt(ms)}T${clockAt(ms)}`;
 
 // --- screens ---
 
@@ -94,7 +94,7 @@ export function menuCard(bot: Bot): Json {
 /** The next DAYS_SHOWN days as buttons with their weekday and setting, one bubble per week (Mon–Sun). Used instead of
  *  LINE's date picker, which can't show weekdays. */
 export function daysCard(bot: Bot): Json {
-  const today = dayOf(Date.now());
+  const today = localDateAt(Date.now());
   const weeks: Day[][] = [];
   for (let n = 0; n < DAYS_SHOWN; n++) {
     const d = addDays(today, n);
@@ -129,7 +129,7 @@ export function dayCard(bot: Bot, day: Day): Json {
   }
   if (checkFrom !== undefined) buttons.push(button(postback(messages.CLEAR_CHECK_FROM, { a: 'unfrom', d: day })));
   if (store.hasAnything(day)) buttons.push(button(postback(messages.RESET, { a: 'reset', d: day })));
-  return card(messages.pickedDay(store, day, dayOf(now)), buttons);
+  return card(messages.pickedDay(store, day, localDateAt(now)), buttons);
 }
 
 /** After ⏰'s start time: pick the end, suggested an hour later. */
@@ -218,7 +218,7 @@ async function onPostback(bot: Bot, event: Json, token: string | undefined): Pro
   const shown = Object.keys(params).length ? ` {${Object.entries(params).map(([k, v]) => `'${k}': '${v}'`).join(', ')}}` : '';
   console.log(`tap from ${event.source.userId ?? '?'}: ${raw}${shown}`);
   const day = DAY_ACTIONS.has(action) ? parsed(params.date || data.d, DAY_SHAPE) : undefined;
-  if (day && day < dayOf(Date.now())) return hint(bot, token, messages.dayPassed(day)); // an old card
+  if (day && day < localDateAt(Date.now())) return hint(bot, token, messages.dayPassed(day)); // an old card
 
   if (action === 'menu') {
     await show(bot, token, menuCard(bot));

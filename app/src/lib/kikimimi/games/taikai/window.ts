@@ -1,7 +1,7 @@
 // しずえの しゅうまつ たいかい's window (docs/kikimimi.md "Navigation", "The daily menu": the hub's banner, Fri 18:00 – Mon 05:00 Tokyo):
 // when the weekend tournament is offered, which one an instant or a row's day belongs to (its Friday names it), and the
 // days its misses are drawn from (that week's Monday on). Tokyo is UTC+9 with no DST, so fixed offsets are exact. Pure.
-import { dayNum, dayOf, localDateAt, ZONE_OFFSET_MS } from '../../../contract/tokyo.ts';
+import { dayNum, dateOfDayNum, localDateAt, ZONE_OFFSET_MS } from '../../../contract/tokyo.ts';
 import type { LocalDate } from '../../../types.ts';
 
 const HOUR = 3_600_000;
@@ -43,12 +43,12 @@ export const taikaiOpen = (now: number): boolean => taikaiAt(now).open;
  *  not its hour, so a Friday row from before 18:00 counts too (rows of the game itself are only written inside it). */
 export function taikaiOfDay(d: LocalDate): LocalDate | null {
   const n = dayNum(d), dow = (((n + 3) % 7) + 7) % 7; // 0 Monday … 6 Sunday
-  if (dow >= 4) return dayOf(n - (dow - 4));
-  return dow === 0 ? dayOf(n - 3) : null;
+  if (dow >= 4) return dateOfDayNum(n - (dow - 4));
+  return dow === 0 ? dateOfDayNum(n - 3) : null;
 }
 
 /** The days a tournament's misses come from: its week's Monday through the Monday after (the window's last morning). */
 export function taikaiDays(fri: LocalDate): { from: LocalDate; to: LocalDate } {
   const n = dayNum(fri);
-  return { from: dayOf(n - 4), to: dayOf(n + 3) };
+  return { from: dateOfDayNum(n - 4), to: dateOfDayNum(n + 3) };
 }

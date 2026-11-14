@@ -24,7 +24,7 @@
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
   import { bulkAct, changeLine, fromWords, longRange, movedDays, pickSlot, slotCount, undoActs, weeks, type SlotPick } from '#lib/gym/calendar.ts';
   import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
-  import { dayOfDate, timeOf } from '#lib/i18n/when.ts';
+  import { shortDay, timeOf } from '#lib/i18n/when.ts';
   import Sheet from '../ui/Sheet.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import Segmented from '../ui/Segmented.svelte';
@@ -140,7 +140,7 @@
     if (input.a === 'pause' || input.a === 'resume' || input.a === 'check') return input.a === 'check' ? '' : t(`gym.ch.${input.a}`);
     const what = input.a === 'range' ? longRange([input.s, input.e])
       : input.a === 'from' ? t('gym.cell.from', { time: fromWords(input.d, typeof input.at === 'number' ? input.at : at(input.d, input.at)) }) : t(`gym.ch.${input.a}`);
-    return 'days' in input ? what : `${dayOfDate(input.d)} ${what}`;
+    return 'days' in input ? what : `${shortDay(input.d)} ${what}`;
   }
 
   /** The act undoing a check setting. */
@@ -206,7 +206,7 @@
     if (r.ok) {
       const n = r.slots?.length ?? 0;
       const what = [n ? t('gym.result.open', { n }) : t('gym.result.none'), ...(r.partial ? [t('gym.key.partial')] : [])].join(' · ');
-      result = { text: t('gym.result.line', { time: timeOf(Date.now(), Date.now()), what }), slots: (r.slots ?? []).map((x) => `${dayOfDate(x.day)} ${x.start}〜${x.end}`), bad: false };
+      result = { text: t('gym.result.line', { time: timeOf(Date.now(), Date.now()), what }), slots: (r.slots ?? []).map((x) => `${shortDay(x.day)} ${x.start}〜${x.end}`), bad: false };
     } else {
       if (r.err === 'cooldown' && r.retryAfter) readyAt = Date.now() + r.retryAfter * 1000;
       result = { text: r.hint ?? t('gym.err.failed'), slots: [], bad: true };

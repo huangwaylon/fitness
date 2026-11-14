@@ -12,8 +12,8 @@
   import GymSlots from './GymSlots.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { fromDates, fromText, fromTimes, fromWords, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
-  import { dayOfDate } from '#lib/i18n/when.ts';
-  import { DEFAULT_WINDOW, at, clockOf, dayOf, fromRefusal, type ActInput, type Clock, type Day, type DayRow } from '#lib/gym/contract.ts';
+  import { shortDay } from '#lib/i18n/when.ts';
+  import { DEFAULT_WINDOW, at, clockAt, localDateAt, fromRefusal, type ActInput, type Clock, type Day, type DayRow } from '#lib/gym/contract.ts';
 
   type Kind = 'any' | 'range' | 'off';
   interface Props {
@@ -48,12 +48,12 @@
   /** The start day shown: the one picked, else the saved ⏳'s, else the day itself (or the latest one left). */
   const fromDate = $derived.by(() => {
     if (!row) return '';
-    const shown = wantDate ?? (row.from !== null ? dayOf(row.from) : row.day);
+    const shown = wantDate ?? (row.from !== null ? localDateAt(row.from) : row.day);
     return dates.includes(shown) ? shown : (dates.at(-1) ?? '');
   });
   const times = $derived(row && fromDate ? fromTimes(row, fromDate, now) : []);
   /** The saved ⏳ isn't on the start day shown (its time can't move there): it stays until a time is picked. */
-  const kept = $derived(row && row.from !== null && fromDate !== dayOf(row.from) ? row.from : null);
+  const kept = $derived(row && row.from !== null && fromDate !== localDateAt(row.from) ? row.from : null);
   const watched = $derived(rule === 'any' || Array.isArray(rule));
   const resetLabel = $derived(row && row.rule !== null && usualDay ? t('gym.editor.back') : t('gym.editor.reset'));
 
@@ -72,7 +72,7 @@
     const f = row ? row.from : null;
     if (f !== lastFrom) {
       lastFrom = f;
-      if (f !== null && dayOf(f) !== wantDate) wantDate = null;
+      if (f !== null && localDateAt(f) !== wantDate) wantDate = null;
     }
   });
 
@@ -114,7 +114,7 @@
     const d = (e.currentTarget as HTMLSelectElement).value;
     wantDate = d;
     if (row.from === null) return;
-    const moved = at(d, clockOf(row.from));
+    const moved = at(d, clockAt(row.from));
     if (moved !== row.from && fromRefusal(row.day, moved, now, ruleOf(row)) === null) onact({ a: 'from', d: row.day, at: moved });
   }
 
@@ -125,10 +125,10 @@
 
   /** `11/10（火）`, with （今日） / （当日）. */
   const dateLabel = (d: Day, day: Day): string =>
-    dayOfDate(d) + (d === dayOf(now) ? t('gym.cell.today') : d === day ? t('gym.editor.fromTheDay') : '');
+    shortDay(d) + (d === localDateAt(now) ? t('gym.cell.today') : d === day ? t('gym.editor.fromTheDay') : '');
 </script>
 
-<Sheet bind:open title={row ? dayOfDate(row.day) : ''} name="gym.day">
+<Sheet bind:open title={row ? shortDay(row.day) : ''} name="gym.day">
   {#if row}
     <div class="ed" data-gym-editor={row.day}>
       <p class="now" data-gym-editor-now>{t('gym.editor.now', { rule: ruleText(row) })}{#if row.from !== null}<small>{t('gym.cell.from', { time: fromText(row) ?? '' })}</small>{/if}</p>
@@ -160,12 +160,12 @@
                 {#each dates as d (d)}<option value={d}>{dateLabel(d, row.day)}</option>{/each}
               </select>
               <select id="gym-from-time" class="pick" data-gym-from-time data-sfx="none"
-                value={row.from !== null && dayOf(row.from) === fromDate ? String(row.from) : ''} onchange={setFrom}>
+                value={row.from !== null && localDateAt(row.from) === fromDate ? String(row.from) : ''} onchange={setFrom}>
                 <option value="" disabled>{t('gym.editor.fromChoose')}</option>
                 {#each times as c (c.at)}<option value={String(c.at)} disabled={!c.ok}>{c.clock}</option>{/each}
               </select>
             </div>
-            {#if kept !== null}<p class="hint" data-gym-from-kept>{t('gym.editor.fromKept', { time: clockOf(kept), from: fromWords(null, kept) })}</p>{/if}
+            {#if kept !== null}<p class="hint" data-gym-from-kept>{t('gym.editor.fromKept', { time: clockAt(kept), from: fromWords(null, kept) })}</p>{/if}
           {:else}
             <p class="hint" data-gym-from-none>{t('gym.editor.fromNone')}</p>
           {/if}

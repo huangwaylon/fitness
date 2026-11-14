@@ -16,7 +16,7 @@
 // Also the bot-wide check settings: the interval between checks and whether checks are paused.
 // Mutations set `dirty`; the bot then saves the state.
 import { CHECK_INTERVAL_MINUTES, DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
-import { addDays, dayOf, isoJst, type Clock, type Day } from './time.ts';
+import { addDays, localDateAt, isoJst, type Clock, type Day } from './time.ts';
 import { fromLimit } from '../../app/src/lib/gym/contract.ts';
 
 export const VERSION = 3;
@@ -169,14 +169,14 @@ export class Store {
     if (!this.hasAnything(day)) return false;
     this.rulesByDay.delete(day);
     this.checkFromByDay.delete(day);
-    for (const t of this.notifiedStarts) if (dayOf(t) === day) this.notifiedStarts.delete(t);
+    for (const t of this.notifiedStarts) if (localDateAt(t) === day) this.notifiedStarts.delete(t);
     this.dirty = true;
     return true;
   }
 
   /** True if `reset` would clear something for the day. */
   hasAnything(day: Day): boolean {
-    return this.rulesByDay.has(day) || this.checkFromByDay.has(day) || [...this.notifiedStarts].some((t) => dayOf(t) === day);
+    return this.rulesByDay.has(day) || this.checkFromByDay.has(day) || [...this.notifiedStarts].some((t) => localDateAt(t) === day);
   }
 
   /** When checking the day starts, if set. */
@@ -214,7 +214,7 @@ export class Store {
 
   /** What to look for on each date that's checked right now, in date order. */
   windows(now: number): Map<Day, Window> {
-    const today = dayOf(now);
+    const today = localDateAt(now);
     const windows = new Map<Day, Window>();
     for (const d of [...new Set([...defaultDays(today), ...this.rulesByDay.keys()])].sort()) {
       const rule = this.effectiveRule(d, today);
@@ -226,7 +226,7 @@ export class Store {
   /** Forget rules for past days, "check from" times that have passed or leave no slot, and slot records that have
    *  passed. */
   purge(now: number): void {
-    const today = dayOf(now);
+    const today = localDateAt(now);
     let changed = false;
     for (const d of this.rulesByDay.keys()) {
       if (d < today) changed = this.rulesByDay.delete(d) || changed;

@@ -4,7 +4,7 @@
 // fake fetch and a fixed clock.
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { tokyoDay, wxOf, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { tokyoDayNum, wxOf, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { BACKOFF_MS, WX_EMPTY, changed, due, fetchTick, fixture, fold, highOf, mapHour, mapHours, omUrl, parseOpenMeteo, served, timeline, wxHealth, type FetchLike, type Hour, type WxState } from '../src/weather.ts';
 
 const DIR = `${import.meta.dirname}/fixtures/open-meteo`;
@@ -226,8 +226,8 @@ describe('the real weather (relay)', () => {
 
   it('carries the Tokyo day’s high (しずえの ニュース): rounded, of that day’s hours only; a new high is sent', () => {
     const hours = hoursOf('clear');
-    const t0 = nowOf(hours), day = tokyoDay(t0);
-    const today = hours.filter((h) => tokyoDay(h.h * H) === day).map((h) => h.temp!);
+    const t0 = nowOf(hours), day = tokyoDayNum(t0);
+    const today = hours.filter((h) => tokyoDayNum(h.h * H) === day).map((h) => h.temp!);
     const wx = timeline(hours, null, t0)!;
     expect(wx.hi).toEqual([day, Math.round(Math.max(...today))]);
     expect(highOf(hours.slice(0, 5), day)).toBeNull(); // (too few of the day's hours)

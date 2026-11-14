@@ -47,7 +47,7 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
   import { SAVE_SLOTS, type RoomSaveOp } from '#lib/contract/roomSave.ts';
-  import { tokyoDay, type Intent, type SayScope, type Relayed } from '#lib/contract/live-protocol.ts';
+  import { tokyoDayNum, type Intent, type SayScope, type Relayed } from '#lib/contract/live-protocol.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
@@ -521,8 +521,8 @@
    *  on each phone. The day on the ops' own clock (opClock: the relay's, never a `?date=` preview's). */
   function rateOnEntry(): void {
     if (!throughDoor) return;
-    const today = tokyoDay(shared.serverNow()), key = `${demo ? 'demo.' : ''}${me}`;
-    if (!room.changed || tokyoDay(room.changed) !== today) return;
+    const today = tokyoDayNum(shared.serverNow()), key = `${demo ? 'demo.' : ''}${me}`;
+    if (!room.changed || tokyoDayNum(room.changed) !== today) return;
     const rated = readJson<Record<string, number>>(localKV(), DEVICE.tentRated) ?? {};
     if (rated[key] === today) return;
     writeJson(localKV(), DEVICE.tentRated, { ...rated, [key]: today });

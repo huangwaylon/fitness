@@ -3,7 +3,7 @@
 // it's due), mapped to the game's skies with dead bands so the sky doesn't flicker, and kept as a 36-hour timeline
 // (live-protocol.ts Wx). An hour is locked once it starts (the next one from :45): every phone that has the timeline
 // shows the same sky at the same hour, whenever it got it. Pure but for `tick`'s fetch, which comes in.
-import { WX_MAX_HOURS, tokyoDay, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
+import { WX_MAX_HOURS, tokyoDayNum, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
 
 /** Hours the timeline holds from the current one, and before it. */
 const WX_HOURS = 36;
@@ -148,10 +148,10 @@ function hourOf(wx: Wx | null, h: number): { sky: WxSky; fog: boolean } | null {
   return { sky: wx.s[i] as WxSky, fog: wx.fx?.includes(i) ?? false };
 }
 
-/** The high (°C, rounded) of Tokyo's day `day` (tokyoDay) from the forecast's hours, when it has at least 12 of them
+/** The high (°C, rounded) of Tokyo's day `day` (tokyoDayNum) from the forecast's hours, when it has at least 12 of them
  *  with a temperature (しずえの ニュース reads it out); else null. */
 export function highOf(hours: readonly Hour[], day: number): number | null {
-  const temps = hours.flatMap((h) => (h.temp !== null && tokyoDay(h.h * HOUR_MS) === day ? [h.temp] : []));
+  const temps = hours.flatMap((h) => (h.temp !== null && tokyoDayNum(h.h * HOUR_MS) === day ? [h.temp] : []));
   return temps.length >= 12 ? Math.round(Math.max(...temps)) : null;
 }
 
@@ -187,7 +187,7 @@ export function timeline(hours: readonly Hour[], prev: Wx | null, now: number, s
   gapFill(out, before, locked);
   const n = Math.min(out.length, WX_MAX_HOURS);
   const fx = out.slice(0, n).flatMap((x, i) => (x.fog ? [i] : []));
-  const day = tokyoDay(now), hi = highOf(hours, day);
+  const day = tokyoDayNum(now), hi = highOf(hours, day);
   return { h0: first, s: out.slice(0, n).map((x) => x.sky).join(''), ...(fx.length ? { fx } : {}), ...(hi !== null ? { hi: [day, hi] as [number, number] } : {}), at: now, src };
 }
 

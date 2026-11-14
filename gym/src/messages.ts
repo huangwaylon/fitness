@@ -3,7 +3,7 @@
 import { DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { PROGRAMS, slotEnd, type Slot } from './hacomono.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
-import { clockOf, dayOf, weekday, type Clock, type Day } from './time.ts';
+import { clockAt, localDateAt, weekday, type Clock, type Day } from './time.ts';
 import { DAYS_SHOWN, type ChangeKind, type StatusDay } from '../../app/src/lib/gym/contract.ts';
 
 const WEEKDAYS = '月火水木金土日';
@@ -39,7 +39,7 @@ export function dayLabel(day: Day): string {
 
 /** `12:00〜13:00`, from clock times or instants. */
 export function timeRange(start: Clock | number, end: Clock | number): string {
-  const clock = (t: Clock | number): Clock => (typeof t === 'number' ? clockOf(t) : t);
+  const clock = (t: Clock | number): Clock => (typeof t === 'number' ? clockAt(t) : t);
   return `${clock(start)}〜${clock(end)}`;
 }
 
@@ -60,7 +60,7 @@ function daySettingParts(store: Store, day: Day, today: Day): [rule: string, fro
   const label = ruleLabel(rule) + (rule !== undefined && store.rule(day) === undefined ? USUAL : '');
   const checkFrom = store.checkFrom(day);
   if (checkFrom === undefined) return [label, null];
-  const when = dayOf(checkFrom) === day ? clockOf(checkFrom) : `${dayLabel(dayOf(checkFrom))}${clockOf(checkFrom)}`;
+  const when = localDateAt(checkFrom) === day ? clockAt(checkFrom) : `${dayLabel(localDateAt(checkFrom))}${clockAt(checkFrom)}`;
   return [label, `⏳ ${when}から`];
 }
 
@@ -82,8 +82,8 @@ export function slotLines(slots: Iterable<Slot>): string[] {
     const first = ordered[i]!;
     let j = i;
     while (j < ordered.length && ordered[j]!.start === first.start) j++;
-    if (dayOf(first.start) !== day) {
-      day = dayOf(first.start);
+    if (localDateAt(first.start) !== day) {
+      day = localDateAt(first.start);
       lines.push(dayLabel(day));
     }
     const programs = ordered.slice(i, j).map((s) => s.program.label).join('・');
@@ -160,7 +160,7 @@ export function changeText(c: { a: ChangeKind; d: Day | null; s?: Clock; e?: Clo
     : c.a === 'skip' ? SKIP_LABEL
       : c.a === 'range' ? `⏰ ${timeRange(c.s!, c.e!)}`
         : c.a === 'reset' ? RESET
-          : c.a === 'from' ? `⏳ ${c.d !== null && dayOf(c.at!) === c.d ? '' : dayLabel(dayOf(c.at!))}${clockOf(c.at!)}から`
+          : c.a === 'from' ? `⏳ ${c.d !== null && localDateAt(c.at!) === c.d ? '' : dayLabel(localDateAt(c.at!))}${clockAt(c.at!)}から`
             : c.a === 'unfrom' ? CLEAR_CHECK_FROM
               : c.a === 'interval' ? `🔧 ${intervalLabel(c.m!)}`
                 : c.a === 'pause' ? '⏸️ チェック停止' : '▶️ チェック再開';
@@ -220,7 +220,7 @@ export function statusView(
   });
   let check = CHECK_PAUSED;
   if (!store.paused) {
-    const [last, next] = [lastCheck, nextCheck].map((t) => (t === null ? '—' : clockOf(t)));
+    const [last, next] = [lastCheck, nextCheck].map((t) => (t === null ? '—' : clockAt(t)));
     check = `${intervalLabel(store.intervalMinutes)}にチェック・前回 ${last}・次回 ${next}`;
   }
   const notice = havingTrouble ? '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。' : null;

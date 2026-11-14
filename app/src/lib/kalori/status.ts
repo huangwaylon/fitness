@@ -9,7 +9,7 @@ import { isNum, isRec, isText } from '#lib/contract/guards.ts';
 import type { CellState, StripCell, StripTick } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
-import { dayOf, dayOfDate, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
+import { shortDayAt, shortDay, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/kalori.ts';
 import '#lib/i18n/bots.ts';
 
@@ -203,7 +203,7 @@ export function reasonText(s: KaloriStatus, r: string): string {
 /** The accepted data's day, in words (the dataset's date, else the tag's). */
 const dataDay = (s: KaloriStatus): string => {
   const d = s.dataset?.date ?? s.dataset?.tag.match(/\d{4}-\d{2}-\d{2}/)?.[0];
-  return d ? dayOfDate(d) : t('kalori.unknown');
+  return d ? shortDay(d) : t('kalori.unknown');
 };
 
 /** The verdict card: its tone, its word, and one plain sentence. */
@@ -323,7 +323,7 @@ const CELL: Record<WeekResult, CellState> = { merged: 'ok', held: 'warn', failed
 /** A run's part of its cell's line: 「11/14（土）· 公開 · 追加12 値38 終了3 · 4時間12分」. */
 function weekText(w: Week): string {
   const counts = w.result === 'none' ? [] : [t('kalori.strip.counts', { a: formatNum(w.added), v: formatNum(w.valuesChanged), e: formatNum(w.endedChanged) })];
-  return t('kalori.fmt.lead', { day: dayOf(w.t), rest: [t(`kalori.strip.${w.result}`), ...counts, ...(w.ms ? [duration(w.ms)] : [])].join(' · ') });
+  return t('kalori.fmt.lead', { day: shortDayAt(w.t), rest: [t(`kalori.strip.${w.result}`), ...counts, ...(w.ms ? [duration(w.ms)] : [])].join(' · ') });
 }
 
 /** The last 8 weeks, oldest first, a cell each, around the Wednesday run (`next`, stepped a week at a time until the
@@ -340,7 +340,7 @@ export function weekStrip(s: KaloriStatus, now: number): { cells: StripCell[]; t
     const last = runs.at(-1);
     return {
       start, end: stop, state: last ? CELL[last.result] : 'none',
-      label: runs.length ? runs.map(weekText).join(' / ') : t('kalori.fmt.lead', { day: dayOf(start + LEAD_MS), rest: t('kalori.strip.none') })
+      label: runs.length ? runs.map(weekText).join(' / ') : t('kalori.fmt.lead', { day: shortDayAt(start + LEAD_MS), rest: t('kalori.strip.none') })
     };
   });
   const count = (st: CellState) => cells.filter((c) => c.state === st).length;

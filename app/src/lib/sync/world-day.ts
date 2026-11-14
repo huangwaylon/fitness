@@ -3,7 +3,7 @@
 // the same intents (the relay's replay, the partner's live ones, my own as I send them, the sheet's day rows) into
 // the same day, so they show the same island: what is caught or picked up is gone on both, a tree's drops lie on both,
 // each villager stands where its person sent it. Pure: no clock, no storage (store/world.svelte.ts keeps it).
-import { claimOf, tokyoDay, type Drop, type How, type Intent, type Pt, type Target, type Who } from '../contract/live-protocol.ts';
+import { claimOf, tokyoDayNum, type Drop, type How, type Intent, type Pt, type Target, type Who } from '../contract/live-protocol.ts';
 import { ISLAND_MAX } from '#lib/contract/island.ts';
 import { fnv1a } from '#lib/random.ts';
 
@@ -41,7 +41,7 @@ export interface Shake {
 }
 
 export interface WorldDay {
-  /** The Tokyo day (days since the epoch: live-protocol tokyoDay). */
+  /** The Tokyo day (days since the epoch: live-protocol tokyoDayNum). */
   day: number;
   /** `catch:<id>` / `pick:<id>` (claimOf) → the first claim. */
   claims: Record<string, Claim>;
@@ -79,7 +79,7 @@ const SAME: Applied = { fresh: false, beat: null };
  * of what I have already) changes nothing. An event of another day is ignored.
  */
 export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Applied {
-  if (tokyoDay(e.t) !== d.day) return SAME;
+  if (tokyoDayNum(e.t) !== d.day) return SAME;
   const c = claimOf(e);
   if (e.kind === 'catch' || e.kind === 'pick') {
     if (!c) return SAME;

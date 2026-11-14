@@ -11,7 +11,7 @@ import { CheckFailed, slotEnd, type Slot } from './hacomono.ts';
 import type { Line } from './line.ts';
 import * as messages from './messages.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
-import { addDays, at, clockOf, dayOf, type Clock, type Day } from './time.ts';
+import { addDays, at, clockAt, localDateAt, type Clock, type Day } from './time.ts';
 
 /** An app change as kept in runtime.changes (the app's list only; LINE never names them). */
 export interface StoredChange {
@@ -93,7 +93,7 @@ export function parseAction(raw: unknown, now: number): { acts: { act: GymAction
   if (input.a === 'check') return { acts: [{ act: { a: 'check', peek: true } }], bulk: false };
   if (input.a === 'interval') return { acts: [{ act: { a: 'interval', m: input.m } }], bulk: false };
   if (input.a === 'range' && (input.s < OPENS || input.e > CLOSES)) return { code: 'bad_range', hint: messages.BAD_RANGE };
-  const last = addDays(dayOf(now), DAYS_SHOWN - 1);
+  const last = addDays(localDateAt(now), DAYS_SHOWN - 1);
   const days = 'days' in input ? input.days : [{ d: input.d, base: input.base }];
   const far = days.find((x) => x.d > last);
   if (far) return { code: 'day_too_far', hint: messages.dayTooFar(far.d) };
@@ -118,7 +118,7 @@ export async function apply(bot: Bot, act: GymAction, now = Date.now()): Promise
   }
   const refusal = dayRefusal(act, now);
   if (refusal) return refusal;
-  const today = dayOf(now);
+  const today = localDateAt(now);
   if (act.a === 'reset') {
     if (!bot.store.reset(act.d)) return dayReply(bot, act.d, today, false);
     return { changed: true, reply: messages.dayReset(bot.store, act.d, today) };
@@ -137,7 +137,7 @@ export async function apply(bot: Bot, act: GymAction, now = Date.now()): Promise
 
 /** A day action that can't be done whatever the state: a day that has passed, a range that ends before it starts. */
 function dayRefusal(act: DayAction, now: number): Refusal | null {
-  if (act.d < dayOf(now)) return { code: 'day_passed', hint: messages.dayPassed(act.d) };
+  if (act.d < localDateAt(now)) return { code: 'day_passed', hint: messages.dayPassed(act.d) };
   if (act.a === 'range' && act.e <= act.s) return { code: 'bad_range', hint: messages.BAD_RANGE };
   return null;
 }
@@ -145,7 +145,7 @@ function dayRefusal(act: DayAction, now: number): Refusal | null {
 /** Only check a day from `when` on: the contract's fromRefusal (LINE's picker and the app's editor offer only what it
  *  takes), with the hint in the bot's words. */
 function setCheckFrom(bot: Bot, day: Day, when: number, now: number): Applied | Refusal {
-  const today = dayOf(now);
+  const today = localDateAt(now);
   const rule = bot.store.effectiveRule(day, today);
   const code = fromRefusal(day, when, now, rule);
   if (code === 'from_passed') return { code, hint: messages.FROM_PASSED };
@@ -278,7 +278,7 @@ export function latestChanges(changes: readonly StoredChange[]): StoredChange[] 
 function openSlots(slots: Slot[]): OpenSlot[] {
   const byStart = new Map<number, OpenSlot>();
   for (const s of [...slots].sort((x, y) => x.start - y.start)) {
-    const row = byStart.get(s.start) ?? { day: dayOf(s.start), start: clockOf(s.start), end: clockOf(slotEnd(s)), programs: [] };
+    const row = byStart.get(s.start) ?? { day: localDateAt(s.start), start: clockAt(s.start), end: clockAt(slotEnd(s)), programs: [] };
     if (!row.programs.includes(s.program.key)) row.programs.push(s.program.key);
     byStart.set(s.start, row);
   }
@@ -292,8 +292,8 @@ export function loggedSetting(bot: Bot, day?: Day): string {
   const rule = store.rule(day);
   let text = rule === undefined ? 'default' : typeof rule === 'string' ? rule : `${rule[0]}-${rule[1]}`;
   const checkFrom = store.checkFrom(day);
-  if (checkFrom !== undefined) text += `, from ${dayOf(checkFrom).slice(5)} ${clockOf(checkFrom)}`;
-  const announced = store.notified().filter((t) => dayOf(t) === day).length;
+  if (checkFrom !== undefined) text += `, from ${localDateAt(checkFrom).slice(5)} ${clockAt(checkFrom)}`;
+  const announced = store.notified().filter((t) => localDateAt(t) === day).length;
   if (announced) text += `, ${announced} announced`;
   return text;
 }
@@ -302,7 +302,7 @@ export function loggedSetting(bot: Bot, day?: Day): string {
 
 async function statusViewOf(bot: Bot, now: number): Promise<[messages.StatusView, number | null]> {
   const nextCheck = await bot.nextCheck();
-  return [messages.statusView(bot.store, dayOf(now), bot.lastCheck, nextCheck, bot.failures > 0), nextCheck];
+  return [messages.statusView(bot.store, localDateAt(now), bot.lastCheck, nextCheck, bot.failures > 0), nextCheck];
 }
 
 /** Every day that's checked or has a setting, and how checking goes (📋 設定を見る). */
@@ -312,7 +312,7 @@ export async function status(bot: Bot, now = Date.now()): Promise<string[]> {
 
 /** The calendar's rows: today and the next DAYS_SHOWN - 1 days. */
 function rowsOf(store: Store, now: number): DayRow[] {
-  const today = dayOf(now);
+  const today = localDateAt(now);
   const usual = defaultDays(today);
   const announced = store.notified();
   return Array.from({ length: DAYS_SHOWN }, (_, i) => {
@@ -323,7 +323,7 @@ function rowsOf(store: Store, now: number): DayRow[] {
       rule: rule === undefined ? null : typeof rule === 'string' ? rule : [rule[0], rule[1]],
       usual: rule === undefined && usual.includes(day),
       from: store.checkFrom(day) ?? null,
-      announced: announced.filter((t) => dayOf(t) === day).map(clockOf),
+      announced: announced.filter((t) => localDateAt(t) === day).map(clockAt),
       resettable: store.hasAnything(day),
       base: baseOf(store, day)
     };
@@ -341,7 +341,7 @@ export async function config(bot: Bot): Promise<GymConfig> {
   const changes: Change[] = bot.changes.map((c) => ({ ...c, who: bot.nameOf(c.by), text: messages.changeText(c, bot.nameOf(c.by)) }));
   return {
     v: 1, now, ...view, text: messages.statusLines(view).join('\n'), paused, intervalMin, lastCheck: bot.lastCheck, nextCheck,
-    rows: rowsOf(bot.store, now), defaultDays: defaultDays(dayOf(now)).length, intervals: INTERVALS,
+    rows: rowsOf(bot.store, now), defaultDays: defaultDays(localDateAt(now)).length, intervals: INTERVALS,
     checkReadyAt: ready !== null && ready > now ? ready : null, checking: bot.checking, changes
   };
 }

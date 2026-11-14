@@ -8,7 +8,7 @@
   import type { PersonId } from '#lib/types.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
-  import { dayOfDate } from '#lib/i18n/when.ts';
+  import { shortDay } from '#lib/i18n/when.ts';
   import Wallet from '../wallet/Wallet.svelte';
   import DayDetail from '../kiroku/DayDetail.svelte';
   import { dayDetail } from '#lib/model/history.ts';
@@ -60,7 +60,7 @@
 </script>
 
 <Sheet bind:open tunes label={t('wallet.title')} variant="top" onclose={closed} timed="panel">
-  <div class="titlebar"><NavBar title={date ? dayOfDate(date) : t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+  <div class="titlebar"><NavBar title={date ? shortDay(date) : t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
   <div class="panel-body sheet-scroll" bind:this={body}>
     {#if view && me}

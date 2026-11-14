@@ -18,7 +18,7 @@ import worker from '../src/index.ts';
 import { GymBot } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
 import type { Line } from '../src/line.ts';
-import { addDays, at, dayOf, isoJst } from '../src/time.ts';
+import { addDays, at, localDateAt, isoJst } from '../src/time.ts';
 import { dayLabel } from '../src/messages.ts';
 import type { ActAnswer, GymConfig } from '../../app/src/lib/gym/contract.ts';
 import { GROUP, NOW, fakeState, inDays } from './fakeBot.ts';
@@ -392,7 +392,7 @@ describe('POST /gym/act, end to end', () => {
   });
 
   describe('the same change from the app or LINE: the same state and the same answers', () => {
-    const [d1, d2, d5, d6] = [1, 2, 5, 6].map((n) => addDays(dayOf(NOW), n)); // NOW: the tests' clock, set later
+    const [d1, d2, d5, d6] = [1, 2, 5, 6].map((n) => addDays(localDateAt(NOW), n)); // NOW: the tests' clock, set later
     type Case = { name: string; seed?: () => Promise<void>; app: object; line: { data: string; params?: Record<string, string> } };
     const cases: Case[] = [
       { name: '🔔', app: { a: 'any', d: d5 }, line: { data: `a=any&d=${d5}` } },

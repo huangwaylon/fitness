@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDayNum, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/world/world.ts';
 import { CHUNK, GRID, tileMid, tileX, tileZ } from '#lib/layout/grid.ts';
 import { WORLD_X, WORLD_Z, layoutOpOf } from './layout.ts';
@@ -163,9 +163,9 @@ describe('live protocol: the shared world', () => {
   });
 
   it('a Tokyo day runs midnight to midnight', () => {
-    const d = tokyoDay(Date.UTC(2026, 10, 1, 3));
+    const d = tokyoDayNum(Date.UTC(2026, 10, 1, 3));
     expect(dayStart(d)).toBe(Date.UTC(2026, 9, 31, 15));
-    expect(tokyoDay(Date.UTC(2026, 9, 31, 15) - 1)).toBe(d - 1);
+    expect(tokyoDayNum(Date.UTC(2026, 9, 31, 15) - 1)).toBe(d - 1);
   });
 });
 

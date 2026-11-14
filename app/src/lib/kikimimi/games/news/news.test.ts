@@ -14,7 +14,7 @@ import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
 import { filesOf, listenRecord, rawOf } from '../listened.ts';
 import { alertsOf, newsWxOf, skyOf, tailKeys, umbrella, wxBytes, wxOfBytes, type NewsWx } from './weather.ts';
-import { NEWS, bulletinOf, dayOf, newsDeal, newsGame, newsOpts, newsRounds, shownOf } from './def.ts';
+import { NEWS, bulletinOf, seasonAndWeekday, newsDeal, newsGame, newsOpts, newsRounds, shownOf } from './def.ts';
 
 const FILES = ['news-a', 'news-b'];
 const parts = (): ListenPart[] => FILES.map((u) => listenOf(u)!);
@@ -115,9 +115,9 @@ describe('しずえの ニュース: the deal', () => {
 
   it('one bulletin a day: of its season or any, a weekday’s only on that day', () => {
     const all = parts().flatMap((p) => p.items.flatMap((it) => (it.kind === 'news' ? [it] : [])));
-    expect([dayOf(day(2026, 4, 1)), dayOf(day(2026, 11, 7)), dayOf(day(2027, 1, 20))]).toEqual([{ season: 'spring', weekday: 'wed' }, { season: 'autumn', weekday: 'sat' }, { season: 'winter', weekday: 'wed' }]);
+    expect([seasonAndWeekday(day(2026, 4, 1)), seasonAndWeekday(day(2026, 11, 7)), seasonAndWeekday(day(2027, 1, 20))]).toEqual([{ season: 'spring', weekday: 'wed' }, { season: 'autumn', weekday: 'sat' }, { season: 'winter', weekday: 'wed' }]);
     for (let d = day(2026, 1, 1); d < day(2027, 1, 1); d++) {
-      const b = bulletinOf(d, all)!, { season, weekday } = dayOf(d);
+      const b = bulletinOf(d, all)!, { season, weekday } = seasonAndWeekday(d);
       expect([season, 'any']).toContain(b.season);
       if (b.weekday) expect(b.weekday).toBe(weekday);
     }

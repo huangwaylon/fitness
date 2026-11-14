@@ -5,7 +5,7 @@
 // play never moves a unit's dots (only rows with `u` and `l` do). Pure.
 import type { LocalDate } from '../types.ts';
 import { CHECK_LESSON } from '../contract/listen.ts';
-import { dayNum, dayOf } from '../contract/tokyo.ts';
+import { dayNum, dateOfDayNum } from '../contract/tokyo.ts';
 import type { Game, OtherGame } from './progress.ts';
 import { LESSONS, LESSON_QS, type Lesson } from './stages.ts';
 
@@ -59,7 +59,7 @@ export function unitsOf(mine: readonly Game[], others: readonly OtherGame[]): Ma
     s.double = !!s.stamped && s.partner;
     if (!s.stamped) continue;
     const due = dayNum(s.stamped) + RECHECK_DAYS;
-    s.recheck = { due: dayOf(due), done: (checks.get(u) ?? []).some((g) => g.n === 1 && dayNum(g.d) >= due) };
+    s.recheck = { due: dateOfDayNum(due), done: (checks.get(u) ?? []).some((g) => g.n === 1 && dayNum(g.d) >= due) };
   }
   return out;
 }

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { RoomCore, type Meta } from '../../../../relay/src/room.ts';
-import { dayStart, parseServer, tokyoDay, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { dayStart, parseServer, tokyoDayNum, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { apply, applyRow, canonical, emptyDay, hash, lying, lyingAt, rowOf, taken, takenIds, caught, type DayEvent, type WorldDay } from './world-day.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
 const T0 = Date.UTC(2026, 10, 1, 3); // 2026-11-01 12:00 Tokyo
-const DAY = tokyoDay(T0);
+const DAY = tokyoDayNum(T0);
 
 /** A socket of the simulated room: what the relay sends it lands in its phone's inbox. */
 class Sock {

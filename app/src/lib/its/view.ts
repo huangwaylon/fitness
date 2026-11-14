@@ -13,7 +13,7 @@ import '#lib/i18n/its.ts';
 import '#lib/i18n/bots.ts';
 import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
-import { dayOfDate, durationOf, timeOf } from '#lib/i18n/when.ts';
+import { shortDay, durationOf, timeOf } from '#lib/i18n/when.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -126,7 +126,7 @@ export function nightGrid(month: string, d: Draft, now: number, rows: readonly B
     const n = daysUntil(date, now);
     const out = !date.startsWith(month) || n < 0 || n > MAX_DAYS_AHEAD;
     const mark = marks.get(date) ?? null;
-    const label = [dayOfDate(date), ...(date === today ? [t('its.cal.today')] : []), ...(on.has(date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
+    const label = [shortDay(date), ...(date === today ? [t('its.cal.today')] : []), ...(on.has(date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
     return { date, d: Number(date.slice(8, 10)), today: date === today, out, on: on.has(date), mark, label };
   });
   // a week with no night to set before the first that has one (this month's passed weeks) is left out
@@ -230,7 +230,7 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
     const note: DateNote = booked.has(date) ? 'booked' : days < D4 ? 'late' : days < D10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
     const left = days === 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
     const said = note === 'booked' && !stops ? 'bookedOnly' : note;
-    const label = dayOfDate(date);
+    const label = shortDay(date);
     const head = [label, left, ...(said ? [t(`its.date.note.${said}`)] : [])].join('、');
     const base = { date, label, days, note, text: said ? `${left} · ${t(`its.date.note.${said}`)}` : left };
     if (note === 'booked') return { ...base, able: [], parts: [], nights: new Map(), aria: `${head}。`, noSeason: false };
@@ -696,7 +696,7 @@ export function eventLines(s: ItsStatus, today: string): { key: string; time: st
       : e.kind === 'error' && d.startsWith('imap_') ? `${t('its.step.imap')} · ${clsText(d.slice(5))}`
       : e.kind === 'error' && CLASSES.includes(d) ? clsText(d)
       : e.kind === 'confirmed' && d ? t('its.booking.number', { number: d }) : d;
-    const info = [e.date ? dayOfDate(e.date) : '', e.hotel ?? '', why].filter(Boolean).join(' · ');
+    const info = [e.date ? shortDay(e.date) : '', e.hotel ?? '', why].filter(Boolean).join(' · ');
     return { key: `${e.runId}:${e.seq}`, time: at(e.t, today), what: t(`its.ev.${e.kind}`), info, bad: ['ban', 'error', 'human_needed', 'solve_failed', 'prev_unclean'].includes(e.kind) };
   });
 }

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE_URL, backoff, bestOffset, createLive, deviceId, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
-import { dayStart, LIVE_V, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
+import { dayStart, LIVE_V, tokyoDayNum, type Relayed } from '../contract/live-protocol.ts';
 import { configureStorage, LIVE, type KV } from './storage.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../contract/ticket.ts';
 import { log } from './log.ts';
@@ -78,8 +78,8 @@ let live: Live;
 /** The `since` kept across reloads (the test's own store). */
 let kept: { day: number; t: number } | null;
 const since: SinceStore = {
-  get: (now) => (kept && kept.day === tokyoDay(now) ? kept.t : dayStart(tokyoDay(now))),
-  set: (t) => void (kept = { day: tokyoDay(t), t })
+  get: (now) => (kept && kept.day === tokyoDayNum(now) ? kept.t : dayStart(tokyoDayNum(now))),
+  set: (t) => void (kept = { day: tokyoDayNum(t), t })
 };
 
 function make(url = 'wss://relay.test/room'): Live {
@@ -110,7 +110,7 @@ describe('live: connecting', () => {
     expect(FakeWS.all).toHaveLength(1);
     last().open();
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), beat: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDayNum(Date.now())), beat: true });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {}, mine: false });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {}, mine: false });
@@ -416,11 +416,11 @@ describe('live: messages', () => {
     expect(last().sent[0]).toMatchObject({ kind: 'hello', since: 1_790_000_000_600 });
     // the next Tokyo day: from its midnight
     live.stop();
-    vi.setSystemTime(dayStart(tokyoDay(Date.now()) + 1) + 5000);
+    vi.setSystemTime(dayStart(tokyoDayNum(Date.now()) + 1) + 5000);
     live = make();
     live.start();
     last().open();
-    expect(last().sent[0]).toMatchObject({ kind: 'hello', since: dayStart(tokyoDay(Date.now())) });
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', since: dayStart(tokyoDayNum(Date.now())) });
   });
 
   it('reports sheet changes: the push (mine too) and the partner\'s nudge, never as intents', () => {
@@ -792,8 +792,8 @@ describe('live: the outbox kept across a kill', () => {
   });
 
   it('another key’s outbox (paired as someone else) and another day’s are dropped; at most 120 kept', async () => {
-    disk = { [KEY]: [{ c: 5, d: tokyoDay(Date.now()) - 1, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }] };
-    disk['cd'.repeat(32)] = [{ c: 6, d: tokyoDay(Date.now()), m: { v: 3, c: 6, kind: 'world', op: 'watered', id: 'fl:1:3' } }];
+    disk = { [KEY]: [{ c: 5, d: tokyoDayNum(Date.now()) - 1, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }] };
+    disk['cd'.repeat(32)] = [{ c: 6, d: tokyoDayNum(Date.now()), m: { v: 3, c: 6, kind: 'world', op: 'watered', id: 'fl:1:3' } }];
     const a = boot();
     expect(a.metrics!().pending).toBe(1);
     a.start();
@@ -909,7 +909,7 @@ describe('live: an intent never acked (a relay that drops it without a word)', (
   });
 
   it('its tries are kept across a reload: one tried 3 times before goes once more, then it is dropped', async () => {
-    let disk: KeptOut[] = [{ c: 5, d: tokyoDay(Date.now()), n: 3, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }];
+    let disk: KeptOut[] = [{ c: 5, d: tokyoDayNum(Date.now()), n: 3, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }];
     const outbox: OutboxStore = { get: () => structuredClone(disk), set: (_k, es) => void (disk = structuredClone([...es])) };
     const a = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since, outbox });
     a.start();

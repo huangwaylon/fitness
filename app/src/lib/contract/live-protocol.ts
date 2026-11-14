@@ -277,7 +277,7 @@ const WX_SRCS = ['om', 'fx'] as const;
  * Tokyo's sky by the hour, as the room keeps it and sends it (`wx`, ≤ ~150 bytes): `h0` the first hour (hours since the
  * epoch, UTC), `s` a letter an hour from it (WX_SKIES), `fx` the hours (offsets into `s`) with fog, `at` when it was
  * fetched (ms), `src` from where, `rev` its revision (bumped when the sky or the high changes), `hi` the Tokyo day
- * of the fetch (tokyoDay) and its high (°C, rounded: しずえの ニュース's weather). @public (relay/, sync/live.ts)
+ * of the fetch (tokyoDayNum) and its high (°C, rounded: しずえの ニュース's weather). @public (relay/, sync/live.ts)
  */
 export interface Wx {
   h0: number;
@@ -720,7 +720,7 @@ export function parseServer(raw: unknown): ServerMsg | null {
 const TOKYO_MS = 9 * 3600_000;
 const DAY_MS = 86_400_000;
 /** The Tokyo day (days since the epoch) a relay time falls in: the room keeps one day's world. */
-export const tokyoDay = (t: number): number => Math.floor((t + TOKYO_MS) / DAY_MS);
+export const tokyoDayNum = (t: number): number => Math.floor((t + TOKYO_MS) / DAY_MS);
 /** When Tokyo day `d` begins (ms since the epoch). */
 export const dayStart = (d: number): number => d * DAY_MS - TOKYO_MS;
 

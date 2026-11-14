@@ -15,10 +15,8 @@ export type Member = 'A' | 'B';
 /** Tokyo's offset from UTC. @public (gym/src) */
 export const JST_MS = ZONE_OFFSET_MS;
 
-/** The Tokyo day of an instant. */
-export const dayOf: (ms: number) => Day = localDateAt;
-/** The Tokyo clock time of an instant (seconds dropped). */
-export const clockOf: (ms: number) => Clock = clockAt;
+/** The Tokyo day of an instant; its clock time (seconds dropped): contract/tokyo.ts's. */
+export { clockAt, localDateAt };
 /** The instant of a Tokyo day and clock time. */
 export const at = (day: Day, clock: Clock): number => Date.parse(`${day}T${clock}:00+09:00`);
 export const addDays: (day: Day, n: number) => Day = addDay;
@@ -73,7 +71,7 @@ export const fromLimit = (day: Day, rule: Rule | null | undefined): number => at
  *  in the day's window. Any Tokyo date from today up to the day itself. */
 export function fromRefusal(day: Day, when: number, now: number, rule: Rule | null | undefined): 'from_passed' | 'from_after_day' | 'from_after_window' | null {
   if (when <= now) return 'from_passed';
-  if (dayOf(when) > day) return 'from_after_day';
+  if (localDateAt(when) > day) return 'from_after_day';
   return when >= fromLimit(day, rule) ? 'from_after_window' : null;
 }
 

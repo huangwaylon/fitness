@@ -124,7 +124,7 @@ interface Stint { who: number; room: string; t0: number; t1: number }
 interface Seg { t0: number; t1: number; walk: boolean; from: Pt; to: Pt; point: LingerPoint | null; enter?: true; leave?: true; act?: { at: number; a: Act }; emotes?: { at: number; e: Emote }[] }
 interface Plan { stints: Stint[]; segs: Map<Stint, Seg[]> }
 
-const dayOf = (ms: number) => Math.floor((ms + ZONE) / DAY);
+const dayNumAt = (ms: number) => Math.floor((ms + ZONE) / DAY);
 const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 const walkMs = (d: number) => Math.max(MIN_WALK, ((d * DETOUR) / STROLL) * 1000);
 const inBox = (r: Rect, x: number, z: number, pad: number) => x > r.x0 - pad && x < r.x1 + pad && z > r.z0 - pad && z < r.z1 + pad;
@@ -285,7 +285,7 @@ export function crowdOf(o: CrowdOptions): Crowd {
   const rand = o.rand ?? Math.random;
   let day = NaN, plan: Plan | null = null;
   const planAt = (t: number) => {
-    const d = dayOf(t);
+    const d = dayNumAt(t);
     if (d !== day || !plan) (day = d), (plan = dayPlan(d, o.rooms, points, o.seed)), walks.clear();
     return plan;
   };

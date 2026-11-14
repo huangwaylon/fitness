@@ -4,10 +4,10 @@
 // the end), the ⏳ dates and times allowed, the optimistic row after an act, the acts that undo one, and the select
 // mode's bulk act. The page (GymPage, GymCalendar, GymDayEditor) only draws them.
 import { t } from '#lib/i18n/index.ts';
-import { dayOfDate } from '#lib/i18n/when.ts';
+import { shortDay } from '#lib/i18n/when.ts';
 import '#lib/i18n/gym.ts';
 import {
-  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromLimit, fromRefusal, minutesOf,
+  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockAt, localDateAt, fromLimit, fromRefusal, minutesOf,
   type ActInput, type Change, type Clock, type Day, type DayAct, type DayRow, type Rule
 } from './contract.ts';
 
@@ -50,7 +50,7 @@ export const longRange = ([s, e]: readonly [Clock, Clock]): string => `${s}〜${
 
 /** A ⏳ as words, as 📋 words it: `18:00` on its own day, `11/10（火）18:00` on an earlier one. */
 export const fromWords = (day: Day | null, when: number): string =>
-  day !== null && dayOf(when) === day ? clockOf(when) : t('gym.fromDay', { day: dayOfDate(dayOf(when)), time: clockOf(when) });
+  day !== null && localDateAt(when) === day ? clockAt(when) : t('gym.fromDay', { day: shortDay(localDateAt(when)), time: clockAt(when) });
 
 /** A row's ⏳ as words (fromWords), if set. */
 export const fromText = (row: DayRow): string | null => (row.from === null ? null : fromWords(row.day, row.from));
@@ -65,7 +65,7 @@ export function ruleText(row: DayRow): string {
 
 /** VoiceOver's words for a cell. */
 function labelOf(row: DayRow, today: boolean): string {
-  const parts = [`${dayOfDate(row.day)}${today ? t('gym.cell.today') : ''}`, ruleText(row)];
+  const parts = [`${shortDay(row.day)}${today ? t('gym.cell.today') : ''}`, ruleText(row)];
   const from = fromText(row);
   if (from) parts.push(t('gym.cell.from', { time: from }));
   if (row.announced.length) parts.push(t('gym.cell.announced', { n: row.announced.length }));
@@ -83,7 +83,7 @@ export function weeks(rows: readonly DayRow[], n = 2): Cell[][] {
     const day = addDays(start, w * 7 + i);
     const row = byDay.get(day) ?? null;
     const base = { day, row, today: day === today, date: Number(day.slice(8, 10)) };
-    if (!row) return { ...base, fill: 'none' as const, time: null, from: false, announced: 0, label: dayOfDate(day) };
+    if (!row) return { ...base, fill: 'none' as const, time: null, from: false, announced: 0, label: shortDay(day) };
     const rule = ruleOf(row);
     return {
       ...base, fill: fillOf(row), time: Array.isArray(rule) ? shortRange(rule) : null, from: row.from !== null,
@@ -129,7 +129,7 @@ export interface FromChoice { clock: Clock; at: number; ok: boolean }
  *  minute; ok false when the bot would refuse it now), so the select shows what is set. */
 export function fromTimes(row: DayRow, date: Day, now: number): FromChoice[] {
   const rule = ruleOf(row);
-  const choice = (when: number): FromChoice => ({ clock: clockOf(when), at: when, ok: fromRefusal(row.day, when, now, rule) === null });
+  const choice = (when: number): FromChoice => ({ clock: clockAt(when), at: when, ok: fromRefusal(row.day, when, now, rule) === null });
   const last = date === row.day ? minutesOf(LAST_START) : 24 * 60 - SLOT_MINUTES;
   const out: FromChoice[] = [];
   for (let m = 0; m <= last; m += SLOT_MINUTES) {
@@ -137,7 +137,7 @@ export function fromTimes(row: DayRow, date: Day, now: number): FromChoice[] {
     if (c.ok) out.push(c);
   }
   const saved = row.from;
-  if (saved !== null && dayOf(saved) === date && !out.some((c) => c.at === saved)) out.push(choice(saved));
+  if (saved !== null && localDateAt(saved) === date && !out.some((c) => c.at === saved)) out.push(choice(saved));
   return out.sort((a, b) => a.at - b.at);
 }
 
@@ -145,8 +145,8 @@ export function fromTimes(row: DayRow, date: Day, now: number): FromChoice[] {
  *  ⏳'s date. */
 export function fromDates(row: DayRow, now: number): Day[] {
   const days: Day[] = [];
-  for (let d = dayOf(now); d <= row.day; d = addDays(d, 1)) {
-    if ((row.from !== null && dayOf(row.from) === d) || fromTimes(row, d, now).some((c) => c.ok)) days.push(d);
+  for (let d = localDateAt(now); d <= row.day; d = addDays(d, 1)) {
+    if ((row.from !== null && localDateAt(row.from) === d) || fromTimes(row, d, now).some((c) => c.ok)) days.push(d);
   }
   return days;
 }
@@ -254,4 +254,4 @@ function changeWhat(c: Pick<Change, 'a' | 's' | 'e' | 'at' | 'm' | 'd'>): string
 }
 
 /** A change list row: `11/14（金） 終日`, who and when. */
-export const changeLine = (c: Change): string => (c.d ? `${dayOfDate(c.d)} ${changeWhat(c)}` : changeWhat(c));
+export const changeLine = (c: Change): string => (c.d ? `${shortDay(c.d)} ${changeWhat(c)}` : changeWhat(c));

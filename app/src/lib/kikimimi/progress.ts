@@ -9,7 +9,7 @@ import { HENSHIN_LV, levelRank, type Accent, type Entry, type Feature, type Item
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 import { SPEEDS, climb } from './ladder.ts';
 import { entryOf, isRungId, itemOf as loadedItem, rungAt } from './pool.ts';
-import { dayNum, dayOf } from '../contract/tokyo.ts';
+import { dayNum, dateOfDayNum } from '../contract/tokyo.ts';
 
 /** One of my answers, with its game's context. */
 export interface Answer {
@@ -367,7 +367,7 @@ export function recentOf(games: readonly Game[]): { now: number | null; delta: n
 export function weekDays(today: LocalDate): LocalDate[] {
   const t = dayNum(today);
   const monday = t - ((t + 3) % 7); // 1970-01-01 was a Thursday
-  return Array.from({ length: 7 }, (_, i) => dayOf(monday + i));
+  return Array.from({ length: 7 }, (_, i) => dateOfDayNum(monday + i));
 }
 
 /** Which days of this week I played (7 flags, Monday first): consistency, never a streak. */

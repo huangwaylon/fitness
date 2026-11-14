@@ -28,9 +28,9 @@ export const clockAt = (ms: number): string => new Date(ms + ZONE_OFFSET_MS).toI
 /** A `YYYY-MM-DD`'s day number (days since 1970-01-01): calendar arithmetic without Date's zone. */
 export const dayNum = (d: string): number => Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / DAY_MS);
 /** dayNum's inverse. */
-export const dayOf = (n: number): LocalDate => new Date(n * DAY_MS).toISOString().slice(0, 10);
+export const dateOfDayNum = (n: number): LocalDate => new Date(n * DAY_MS).toISOString().slice(0, 10);
 /** The calendar day `n` days after `date` (n < 0: before). */
-export const addDays = (date: string, n: number): LocalDate => dayOf(dayNum(date) + n);
+export const addDays = (date: string, n: number): LocalDate => dateOfDayNum(dayNum(date) + n);
 /** The calendar day after `date`. */
 export const nextDay = (date: string): LocalDate => addDays(date, 1);
 /** The calendar day before `date`. */

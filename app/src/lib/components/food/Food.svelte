@@ -46,7 +46,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { itemsKcal, lazySources, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
   import { latestSnap } from './fresh.ts';
-  import { dayOfDate } from '#lib/i18n/when.ts';
+  import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
   import FoodMeal from './FoodMeal.svelte';
@@ -510,7 +510,7 @@
       {:else}
         <RangeNav earlier={t('food.earlier')} later={t('food.later')} today={t('food.today')} {canOn} atToday={picked_d === null}
           onback={() => shift(-1)} onon={() => shift(1)} ontoday={() => (picked_d = null)}>
-          <b class="rl money" aria-live="polite" data-food-date={date}>{dayOfDate(date)}</b>
+          <b class="rl money" aria-live="polite" data-food-date={date}>{shortDay(date)}</b>
         </RangeNav>
 
         <FoodSummary {day} {who} {goals} when={date < today ? 'past' : date > today ? 'next' : 'today'} onsavegoal={mine ? (v) => saveGoal('k', me, v) : null}

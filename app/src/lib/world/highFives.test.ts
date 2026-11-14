@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { heardHighFive } from './highFives.ts';
 import { SCENE, type KV } from '#lib/sync/storage.ts';
-import { dayStart, tokyoDay } from '#lib/contract/live-protocol.ts';
+import { dayStart, tokyoDayNum } from '#lib/contract/live-protocol.ts';
 
 const kv = (): KV & { m: Map<string, string> } => {
   const m = new Map<string, string>();
@@ -10,7 +10,7 @@ const kv = (): KV & { m: Map<string, string> } => {
 
 describe('the partner’s high-fives heard today', () => {
   it('once each (a resend, the held copy: no news), per person’s phone, a new Tokyo day starting empty', () => {
-    const s = kv(), d = tokyoDay(Date.UTC(2026, 10, 2, 3)), t = dayStart(d) + 3600_000;
+    const s = kv(), d = tokyoDayNum(Date.UTC(2026, 10, 2, 3)), t = dayStart(d) + 3600_000;
     expect(heardHighFive('A', t, s)).toBe(true);
     expect(heardHighFive('A', t, s)).toBe(false);
     expect(heardHighFive('A', t + 1, s)).toBe(true);

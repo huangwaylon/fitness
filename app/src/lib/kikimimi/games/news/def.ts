@@ -64,14 +64,14 @@ export interface NewsCard extends Item {
 }
 
 /** A Tokyo day's season and weekday (the seed: days since the epoch). */
-export function dayOf(day: number): { season: NewsYaml['season']; weekday: (typeof WEEKDAYS)[number] } {
+export function seasonAndWeekday(day: number): { season: NewsYaml['season']; weekday: (typeof WEEKDAYS)[number] } {
   const d = new Date(day * 86_400_000), m = d.getUTCMonth();
   return { season: m >= 2 && m <= 4 ? 'spring' : m >= 5 && m <= 7 ? 'summer' : m >= 8 && m <= 10 ? 'autumn' : 'winter', weekday: WEEKDAYS[d.getUTCDay()] };
 }
 
 /** The day's bulletin: those of its season (or any), a weekday's only on that day, in id order, the day's turn. */
 export function bulletinOf(day: number, all: readonly NewsYaml[]): NewsYaml | undefined {
-  const { season, weekday } = dayOf(day), byId = [...all].sort((a, b) => (a.id < b.id ? -1 : 1));
+  const { season, weekday } = seasonAndWeekday(day), byId = [...all].sort((a, b) => (a.id < b.id ? -1 : 1));
   const ok = byId.filter((b) => (b.season === season || b.season === 'any') && (!b.weekday || b.weekday === weekday));
   const pool = ok.length ? ok : byId;
   return pool[((day % pool.length) + pool.length) % pool.length];

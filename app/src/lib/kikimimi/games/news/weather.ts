@@ -3,7 +3,7 @@
 // Tokyo reports it, 6 alerts, the sign-off), joined only between sentences. From the relay's timeline (live-protocol.ts
 // Wx, sync/wx.ts): the sky over the day's waking hours, any fog, the day's high. The host packs it into the lobby's
 // options (lane.ts), so every phone plays and grades the same tail. Pure.
-import { tokyoDay, type Wx } from '../../../contract/live-protocol.ts';
+import { tokyoDayNum, type Wx } from '../../../contract/live-protocol.ts';
 
 /** The day's sky, one sentence each. */
 export const SKIES = ['sunny', 'partly', 'cloudy', 'later', 'clearing', 'rain', 'storm', 'snow'] as const;
@@ -44,7 +44,7 @@ export function skyOf(ls: readonly string[]): Sky {
  *  six; the high when the timeline's is today's and in range. Null without a timeline that serves, or 3 hours of it. */
 export function newsWxOf(wx: Wx | null, now: number): NewsWx | null {
   if (!wx || now - wx.at > STALE) return null;
-  const cur = Math.floor(now / H), midnight = (tokyoDay(now) * 24 - 9);
+  const cur = Math.floor(now / H), midnight = (tokyoDayNum(now) * 24 - 9);
   let from = Math.max(cur, midnight + 6), to = midnight + 21;
   if (to - from < 3) [from, to] = [cur, cur + 6];
   const ls: string[] = [];
@@ -56,7 +56,7 @@ export function newsWxOf(wx: Wx | null, now: number): NewsWx | null {
     fog ||= !!wx.fx?.includes(i);
   }
   if (ls.length < 3) return null;
-  const hi = wx.hi && wx.hi[0] === tokyoDay(now) && wx.hi[1] >= HI_MIN && wx.hi[1] <= HI_MAX ? wx.hi[1] : null;
+  const hi = wx.hi && wx.hi[0] === tokyoDayNum(now) && wx.hi[1] >= HI_MIN && wx.hi[1] <= HI_MAX ? wx.hi[1] : null;
   return { sky: skyOf(ls), fog, hi };
 }
 

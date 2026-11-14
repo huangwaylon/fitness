@@ -1,5 +1,5 @@
 // Client for the ELEMENT gym's hacomono reservation API (the JSON the booking page itself uses).
-import { at, clockOf, dayOf, type Day } from './time.ts';
+import { at, clockAt, localDateAt, type Day } from './time.ts';
 import type { Window } from './store.ts';
 
 export const BASE_URL = 'https://element-gym.hacomono.jp';
@@ -37,7 +37,7 @@ export const slotEnd = (s: Slot): number => s.start + s.program.minutes * 60_000
 export function matches(slot: Slot, window: Window): boolean {
   if (window === null) return true;
   const [start, end] = window;
-  return clockOf(slot.start) >= start && slotEnd(slot) <= at(dayOf(slot.start), end);
+  return clockAt(slot.start) >= start && slotEnd(slot) <= at(localDateAt(slot.start), end);
 }
 
 export class HacomonoError extends Error {

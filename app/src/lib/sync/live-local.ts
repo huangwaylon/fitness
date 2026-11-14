@@ -6,7 +6,7 @@
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { LIVE_V, NEST_GAP_MS, claimOf, isStored, musicAt, musicBeats, musicLive, scopeMaySend, tokyoDay, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, isStored, musicAt, musicBeats, musicLive, scopeMaySend, tokyoDayNum, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 
@@ -40,7 +40,7 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     for (const f of statusSubs) f(st);
   };
   const read = (): Log => {
-    const today = tokyoDay(now().getTime());
+    const today = tokyoDayNum(now().getTime());
     const l = readJson<Log>(localKV(), DEMO.relay);
     if (l && l.day === today && Array.isArray(l.log)) return l;
     // a new day starts empty but for each person's last walk, stamped into today (the room's rule: where their
@@ -113,7 +113,7 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
    *  tab puts what it hears from the other back in (the room's log holds every kept intent, as the relay's does). */
   const relog = (m: Relayed) => {
     const l = read();
-    if (l.day !== tokyoDay(m.t) || l.log.some((x) => x.who === m.who && x.t === m.t && x.kind === m.kind)) return;
+    if (l.day !== tokyoDayNum(m.t) || l.log.some((x) => x.who === m.who && x.t === m.t && x.kind === m.kind)) return;
     const log = m.kind === 'walk' ? l.log.filter((x) => !(x.kind === 'walk' && x.who === m.who && x.t < m.t)) : l.log;
     if (m.kind === 'walk' && log.some((x) => x.kind === 'walk' && x.who === m.who)) return; // a newer walk is there
     writeJson(localKV(), DEMO.relay, { day: l.day, log: [...log, m].sort((x, y) => x.t - y.t).slice(-MAX) });

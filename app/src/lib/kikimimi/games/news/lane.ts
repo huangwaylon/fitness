@@ -3,7 +3,7 @@
 // preview too), its options carrying the host's weather for today (the relay's timeline this phone holds: sync/wx.ts),
 // so every phone deals and grades the same tail; each player at their own ear, my row's choices as `pick`. Its pages:
 // components/kikimimi/news/views.ts.
-import { tokyoDay } from '../../../contract/live-protocol.ts';
+import { tokyoDayNum } from '../../../contract/live-protocol.ts';
 import { heldWx } from '../../../sync/wx.ts';
 import { now } from '../../../time/clock.ts';
 import { listenLane } from '../listenLane.ts';
@@ -14,5 +14,5 @@ export const lane = listenLane<NewsCard, NewsRound, NewsOpts>(NEWS, (seed, parts
   codec: newsOpts,
   game: newsGame,
   lobby: () => ({ wx: newsWxOf(heldWx(), now().getTime()) }),
-  seed: () => tokyoDay(now().getTime())
+  seed: () => tokyoDayNum(now().getTime())
 });

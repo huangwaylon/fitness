@@ -10,7 +10,7 @@ import { Line } from './line.ts';
 import * as messages from './messages.ts';
 import { CHECKS_KEPT, CHECKS_MS, FAILURES_BEFORE_WARNING, outcomeOf, statusOf, type Check, type GymStatus } from './status.ts';
 import { Store, type StateJson } from './store.ts';
-import { dayOf } from './time.ts';
+import { localDateAt } from './time.ts';
 import { handle } from './ui.ts';
 
 export const MAX_BACKOFF_MINUTES = 120;
@@ -227,7 +227,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
 
   private async check(alert: boolean, peek: boolean): Promise<Slot[]> {
     const now = Date.now();
-    const today = dayOf(now);
+    const today = localDateAt(now);
     this.store.purge(now);
     let windows = this.store.windows(now);
     const lastDay = [...windows.keys()].at(-1) ?? today; // windows are in date order
@@ -254,7 +254,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
 
     windows = this.store.windows(now); // again: a tap may have changed a setting while fetching
     const open = found.filter((s) => {
-      const day = dayOf(s.start);
+      const day = localDateAt(s.start);
       return s.start > now && windows.has(day) && matches(s, windows.get(day)!);
     });
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ISLAND_MAX, isIslandDay, mergeIslandDay, type IslandDayData } from './island.ts';
 import { WORLD_X, WORLD_Z } from './layout.ts';
 import { GRID, tileMid } from '#lib/layout/grid.ts';
-import { tokyoDay } from '#lib/contract/live-protocol.ts';
+import { tokyoDayNum } from '#lib/contract/live-protocol.ts';
 import { apply, emptyDay, rowOf, type DayEvent } from '#lib/sync/world-day.ts';
 
 const ok = { date: '2026-11-01', taken: ['s1000'], puts: [['pa1', 'present', 120, 300]], shakes: [['oak-p1', 'nest', 1_793_000_000_000]], watered: ['fl:130:344'], wishes: { '2026-11-02': 2 } };
@@ -33,7 +33,7 @@ describe('an island day (contract/island.ts)', () => {
   });
 
   it('a phone\'s row of a busy day is always one the server takes, and under the event size limit', () => {
-    const t0 = Date.UTC(2026, 10, 1, 3), d = emptyDay(tokyoDay(t0));
+    const t0 = Date.UTC(2026, 10, 1, 3), d = emptyDay(tokyoDayNum(t0));
     const ev = (i: number): DayEvent => {
       const t = t0 + i * 1000;
       switch (i % 6) {

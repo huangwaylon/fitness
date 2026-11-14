@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
@@ -521,12 +521,12 @@ export class RoomCore<S extends Sock> {
    *  long their phone is gone, stamped into today so a phone opening asks for it): the ring, its claims and nests
    *  rebuilt when the day turns. */
   private fresh(): Kept[] {
-    const today = tokyoDay(this.io.now());
+    const today = tokyoDayNum(this.io.now());
     if (today === this.day) return this.ring;
     this.day = today;
-    const ring = this.ring.filter((e) => tokyoDay(e.t) === today);
+    const ring = this.ring.filter((e) => tokyoDayNum(e.t) === today);
     const walked = new Set(ring.filter((e) => e.kind === 'walk').map((e) => e.who));
-    const carried = this.ring.filter((e) => e.kind === 'walk' && !walked.has(e.who) && tokyoDay(e.t) !== today).map((e) => ({ ...e, t: this.stamp() }));
+    const carried = this.ring.filter((e) => e.kind === 'walk' && !walked.has(e.who) && tokyoDayNum(e.t) !== today).map((e) => ({ ...e, t: this.stamp() }));
     this.ring = [...ring, ...carried];
     if (carried.length) this.io.save(this.ring);
     this.claims.clear();

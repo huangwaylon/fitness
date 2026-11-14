@@ -14,11 +14,11 @@ function clockOf(ms: number): string {
 /** `11/4`. */
 export const mdOf = (ms: number): string => `${tokyo(ms).getUTCMonth() + 1}/${tokyo(ms).getUTCDate()}`;
 /** `11/4（水）` / `Wed 11/4`. */
-export const dayOf = (ms: number): string => t('fmt.day', { md: mdOf(ms), wd: t(`weekday.${tokyo(ms).getUTCDay() || 7}`) });
-/** A `YYYY-MM-DD` as dayOf: `11/22（日）` (the bots' one date form, compact; a heading's month: format.ts monthLabel). */
-export const dayOfDate = (date: string): string => dayOf(Date.parse(`${date}T12:00:00+09:00`));
+export const shortDayAt = (ms: number): string => t('fmt.day', { md: mdOf(ms), wd: t(`weekday.${tokyo(ms).getUTCDay() || 7}`) });
+/** A `YYYY-MM-DD` as shortDayAt: `11/22（日）` (the bots' one date form, compact; a heading's month: format.ts monthLabel). */
+export const shortDay = (date: string): string => shortDayAt(Date.parse(`${date}T12:00:00+09:00`));
 /** `11/4（水）2:41`, always with the day. */
-export const whenOf = (ms: number): string => t('bots.fmt.when', { day: dayOf(ms), time: clockOf(ms) });
+export const whenOf = (ms: number): string => t('bots.fmt.when', { day: shortDayAt(ms), time: clockOf(ms) });
 /** `11:54` on `now`'s day (Tokyo), else whenOf. */
 export const timeOf = (ms: number, now: number): string => (localDateAt(ms) === localDateAt(now) ? clockOf(ms) : whenOf(ms));
 

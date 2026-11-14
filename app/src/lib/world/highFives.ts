@@ -3,7 +3,7 @@
 // no news. Kept per Tokyo day in localStorage (sync/storage.ts SCENE.highFivesGot), by the tap's time on the relay's
 // clock (its identity). Plain TS: the storage comes in.
 import { SCENE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
-import { tokyoDay, type Who } from '#lib/contract/live-protocol.ts';
+import { tokyoDayNum, type Who } from '#lib/contract/live-protocol.ts';
 
 /** A high-five heard within this long of its tap (ms) plays as the moment (the two face each other, the sparkle, the
  *  hearts); older (held while this phone was closed) it's the banner and the hearts only. */
@@ -15,7 +15,7 @@ const KEPT = 40;
  *  it was already. One per (sender, recipient) pair: the partner's are kept by their time (as before the guest), anyone
  *  else's as `<from>@<at>`. */
 export function heardHighFive(me: Who, at: number, kv: KV | null = localKV(), from?: Who): boolean {
-  const key = SCENE.highFivesGot(me), day = tokyoDay(at);
+  const key = SCENE.highFivesGot(me), day = tokyoDayNum(at);
   const kept = readJson<{ day?: unknown; ats?: unknown }>(kv, key);
   const id: number | string = from && from !== partnerOf(me) ? `${from}@${at}` : at;
   const ats = kept?.day === day && Array.isArray(kept.ats) ? kept.ats.filter((x): x is number | string => typeof x === 'number' || typeof x === 'string') : [];

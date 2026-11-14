@@ -15,7 +15,7 @@
   import GoalMarks from './GoalMarks.svelte';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { weekRange } from '#lib/i18n/format.ts';
-  import { dayOfDate } from '#lib/i18n/when.ts';
+  import { shortDay } from '#lib/i18n/when.ts';
 
   interface Props {
     ledger: BellsLedger;
@@ -70,7 +70,7 @@
       {#each w.days as d (d.date)}
         <li class="day" class:zero={d.bells === 0}>
           <button type="button" class="dbtn" data-sfx="page" onclick={() => onday(d.date)}>
-            <span class="dt">{dayOfDate(d.date)}</span>
+            <span class="dt">{shortDay(d.date)}</span>
             {#each order as p (p)}
               <span class="pv"><GoalMarks met={d.people[p].met} name={names[p]} size="var(--mk)" /><b class="money own" class:none={!d.own[p]} data-person={p} data-bells={d.own[p]}>{signed(d.own[p])}<span class="sr-only">{t('kiroku.ownBells')}</span></b></span>
             {/each}

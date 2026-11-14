@@ -12,7 +12,7 @@
 //   world.onHere(fn)             who else is here now, and each change
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
-import { claimOf, tokyoDay, type Intent, type Relayed, type Who } from '#lib/contract/live-protocol.ts';
+import { claimOf, tokyoDayNum, type Intent, type Relayed, type Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { dayKey, now } from '#lib/time/clock.ts';
@@ -102,7 +102,7 @@ class SharedWorld {
   }
 
   #today(): WorldDay {
-    const today = tokyoDay(this.now());
+    const today = tokyoDayNum(this.now());
     if (this.#day?.day === today) return this.#day;
     // first look today: what this phone kept of it (and of yesterday, its watered flowers)
     const kept = readJson<{ day?: number; events?: DayEvent[] }>(localKV(), this.#key());
@@ -462,7 +462,7 @@ class SharedWorld {
   #dripDay = 0;
   #dripping: ReturnType<typeof setTimeout> | null = null;
   #dripOn(): void {
-    if (tokyoDay(this.now()) !== this.#dripDay) this.#drip = [];
+    if (tokyoDayNum(this.now()) !== this.#dripDay) this.#drip = [];
     for (const i of this.#drip.splice(0, DRIP)) this.#relay?.send(i);
     this.#dripping = this.#drip.length ? setTimeout(() => this.#dripOn(), 1000) : null;
   }

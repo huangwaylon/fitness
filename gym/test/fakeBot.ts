@@ -4,14 +4,14 @@ import { vi } from 'vitest';
 import type { Bot, StoredChange } from '../src/actions.ts';
 import type { Line } from '../src/line.ts';
 import { Store } from '../src/store.ts';
-import { addDays, dayOf, type Clock, type Day } from '../src/time.ts';
+import { addDays, localDateAt, type Clock, type Day } from '../src/time.ts';
 
 export const GROUP = 'C123';
 export const NOON: [Clock, Clock] = ['12:00', '13:00'];
 /** The tests' clock: Monday 2026-10-12 12:00 in Tokyo (set with vi.setSystemTime). */
 export const NOW = Date.parse('2026-10-12T12:00:00+09:00');
 
-export const today = (): Day => dayOf(Date.now());
+export const today = (): Day => localDateAt(Date.now());
 export const inDays = (n: number): Day => addDays(today(), n);
 
 /** A stand-in for the bot, answering in GROUP; LINE's reply and name lookup (Bob) are mocks. */

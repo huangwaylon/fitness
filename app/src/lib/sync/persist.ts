@@ -4,7 +4,7 @@
 // the Home Screen app (a Safari tab's answer is no); the answer logged, no PII.
 import { DEVICE, localKV, readJson, writeJson, type KV } from './storage.ts';
 import { log } from './log.ts';
-import { tokyoDay } from '#lib/contract/live-protocol.ts';
+import { tokyoDayNum } from '#lib/contract/live-protocol.ts';
 import { quiet } from '#lib/quiet.ts';
 
 const standalone = (): boolean =>
@@ -31,7 +31,7 @@ let measuring = false;
  *  only once it's logged: the app hidden or closed meanwhile (the launch's first sync, mid-launch), the next sync tries
  *  again (marked first, storage.use stopped on 11-12). */
 export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now(), sizes: () => Promise<Record<string, number | boolean>> = () => import('./cacheSizes.ts').then((m) => m.cacheSizes()), wait = STORAGE_WAIT_MS): Promise<void> {
-  const day = tokyoDay(now);
+  const day = tokyoDayNum(now);
   if (measuring || !storage?.estimate || readJson(kv, DEVICE.storageDay) === day) return;
   measuring = true;
   try {

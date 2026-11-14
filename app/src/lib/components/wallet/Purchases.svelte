@@ -16,7 +16,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { itemArt } from './icons.ts';
-  import { dayOfDate } from '#lib/i18n/when.ts';
+  import { shortDay } from '#lib/i18n/when.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -48,7 +48,7 @@
 </script>
 
 {#snippet when(s: LedgerSpend)}
-  <span class="money">{dayOfDate(s.day)}</span>
+  <span class="money">{shortDay(s.day)}</span>
   <span class="who"><Avatar worn person={s.by} villager={villagers[s.by]} size={20} />{names[s.by]}</span>
 {/snippet}
 

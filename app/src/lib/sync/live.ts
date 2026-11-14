@@ -8,7 +8,7 @@ import { log, logError, logId } from './log.ts';
 import { isLogId } from '../contract/log.ts';
 import { takeWx } from './wx.ts';
 import { ROOM_PROTOCOL, TICKET_TTL_MS, makeTicket } from '../contract/ticket.ts';
-import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, isAcked, isLayoutIntent, isStored, parseClient, parseServer, scopeMaySend, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, isAcked, isLayoutIntent, isStored, parseClient, parseServer, scopeMaySend, tokyoDayNum, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -94,11 +94,11 @@ export interface SinceStore {
 /** `since` in localStorage (`island.liveSince` = `{day, t}`), a new Tokyo day starting from its midnight. */
 const storedSince: SinceStore = {
   get(now) {
-    const d = tokyoDay(now), s = readJson<{ day?: unknown; t?: unknown }>(localKV(), LIVE.since);
+    const d = tokyoDayNum(now), s = readJson<{ day?: unknown; t?: unknown }>(localKV(), LIVE.since);
     return s && s.day === d && typeof s.t === 'number' && Number.isFinite(s.t) ? s.t : dayStart(d);
   },
   set(t) {
-    writeJson(localKV(), LIVE.since, { day: tokyoDay(t), t });
+    writeJson(localKV(), LIVE.since, { day: tokyoDayNum(t), t });
   }
 };
 
@@ -672,7 +672,7 @@ export function createLive(o: LiveOptions): Live {
       const key = o.key();
       if (!key) return drop(1000, 'rekey');
       // a new Tokyo day since the page loaded: that day's whole world
-      lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
+      lastWorld = Math.max(lastWorld, dayStart(tokyoDayNum(Date.now() + offset)));
       // `beat`: this phone sends something at least every PING_EVERY_MS (quiet), so the room may take one it hears
       // nothing from for a minute for a ghost
       const dev = o.dev?.();
@@ -717,7 +717,7 @@ export function createLive(o: LiveOptions): Live {
           pingEvery = setTimeout(quiet, PING_EVERY_MS);
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
           // that day's, gone
-          const today = tokyoDay(m.t);
+          const today = tokyoDayNum(m.t);
           for (const [k, o] of outbox) if (o.d !== today) (forget(k), save());
           for (const o of outbox.values()) o.off = false;
           [...outbox].forEach(([c, o], i) => {
@@ -883,7 +883,7 @@ export function createLive(o: LiveOptions): Live {
       const now = Date.now();
       if (c === undefined) return st.connected && raw(m);
       if (i.kind === 'walk') for (const [k, o] of outbox) if ((o.m as Intent).kind === 'walk') forget(k);
-      const e: Out = { m, d: tokyoDay(now + offset), at: 0, due: Infinity, n: 0, tries: 0, off: false, busy: false };
+      const e: Out = { m, d: tokyoDayNum(now + offset), at: 0, due: Infinity, n: 0, tries: 0, off: false, busy: false };
       outbox.set(c, e);
       const went = st.connected && put(e, now, ACK_MS);
       while (outbox.size > OUTBOX_MAX) forget(oldest());

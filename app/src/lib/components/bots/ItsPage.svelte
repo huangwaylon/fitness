@@ -24,7 +24,7 @@
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { monthLabel } from '#lib/i18n/format.ts';
-  import { dayOfDate } from '#lib/i18n/when.ts';
+  import { shortDay } from '#lib/i18n/when.ts';
   import { dayKey, minuteNow, now as sceneNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -311,7 +311,7 @@
       {#each holds as b (b.key)}
         <li class="booking" data-its-booking={b.state}>
           <span class="txt">
-            <b>{b.hotel}</b><small>{dayOfDate(b.date)} · <Phrases text={b.detail} /></small>
+            <b>{b.hotel}</b><small>{shortDay(b.date)} · <Phrases text={b.detail} /></small>
             {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
             {#if b.steps.length}<ol class="steps" data-its-steps>{#each b.steps as s (s)}<li><Phrases text={s} /></li>{/each}</ol>{/if}
           </span>
@@ -344,7 +344,7 @@
             <li class="booking" data-its-booking={b.state}>
               <span class="tag {b.state}">{b.label}</span>
               <span class="txt">
-                <b>{b.hotel}</b><small>{dayOfDate(b.date)} · <Phrases text={b.detail} /></small>
+                <b>{b.hotel}</b><small>{shortDay(b.date)} · <Phrases text={b.detail} /></small>
                 {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
               </span>
             </li>

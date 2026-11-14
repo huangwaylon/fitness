@@ -6,7 +6,7 @@
 // is 409 stale). No network.
 import type { Page } from './fixtures.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
-import { at, dayOf, fromLimit, fromRefusal, fromWindow, weekday, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
+import { at, localDateAt, fromLimit, fromRefusal, fromWindow, weekday, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
 
 const ORIGIN = 'https://gym-bot.island-fund-relay.workers.dev';
 export const STATUS = `${ORIGIN}/status`;
@@ -39,8 +39,8 @@ type Answer = { status: number; body: unknown; headers?: Record<string, string> 
 
 /** The bot's state, from `now` (the record's pinned clock). */
 export function fakeGym(now: () => number) {
-  const today = dayOf(now());
-  const days = Array.from({ length: 25 }, (_, i) => dayOf(at(today, '12:00') + i * DAY_MS));
+  const today = localDateAt(now());
+  const days = Array.from({ length: 25 }, (_, i) => localDateAt(at(today, '12:00') + i * DAY_MS));
   const rules = new Map<string, Rule>();
   const froms = new Map<string, number>();
   const announced = new Map<string, string[]>();

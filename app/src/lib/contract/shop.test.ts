@@ -1,7 +1,7 @@
 // The shop's rules (contract/shop.ts): the price list's scale, a sell's and a buy's shape and price, the day's stock
 // (the same on every phone and the record, from the date alone) and the ledger (the pocket, かいがら, a piece once).
 import { describe, expect, it } from 'vitest';
-import { addDays, dayNum, dayOf } from './tokyo.ts';
+import { addDays, dayNum, dateOfDayNum } from './tokyo.ts';
 import { buyOf, isSellable, sellOf, sellPrice, shopLedger, shopRefusal, type ShopRow } from './shop.ts';
 import { shopPriced } from './shopCheck.ts';
 import { STOCK_N, UNITS_FROM, buyPrice, stockOf } from './stock.ts';
@@ -127,7 +127,7 @@ describe('the day’s stock', () => {
   it('the old いつもの are in the rotation, not always there', () => {
     const basics = ['f3672', 'f7047', 'f4123'];
     for (const c of basics) expect(buyPrice(c), c).toBeDefined();
-    const year = Array.from({ length: 365 }, (_, i) => stockOf(dayOf(dayNum('2027-01-01') + i)));
+    const year = Array.from({ length: 365 }, (_, i) => stockOf(dateOfDayNum(dayNum('2027-01-01') + i)));
     expect(year.some((day) => !basics.every((c) => day.includes(c)))).toBe(true);
     const seen = new Set(year.flat());
     for (const c of basics) expect(seen.has(c), c).toBe(true);
