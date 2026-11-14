@@ -28,6 +28,8 @@ describe('monthCells', () => {
     const dec = monthCells(rows(), '2026-12');
     expect(dec.flat().filter((c) => c.live).map((c) => c.date)).toEqual(['2026-12-01', '2026-12-02', '2026-12-03', '2026-12-04', '2026-12-05', '2026-12-06']);
     expect(dec[1][0]).toMatchObject({ date: '2026-12-07', live: false }); // past the 25
+    // rows ending on a month's last day (11/12–30): nothing past them that month, all of the next past them
+    expect([laterNote(rows().slice(0, 19), '2026-11'), laterNote(rows().slice(0, 19), '2026-12')]).toEqual([null, '12/1以降はまだ設定できません']);
     expect([laterNote(rows(), '2026-11'), laterNote(rows(), '2026-12'), laterNote(rows().slice(0, 10), '2026-12')]).toEqual([null, '12/7以降はまだ設定できません', '12/1以降はまだ設定できません']);
   });
 
