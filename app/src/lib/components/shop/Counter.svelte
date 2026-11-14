@@ -32,7 +32,7 @@
   import Sheet from '../ui/Sheet.svelte';
   import { askNow } from '../island/vegAsk.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
-  import { fillPlan, orphans } from '#lib/world/farmSheet.ts';
+  import { fillPlan, orphans } from '#lib/world/farmPlan.ts';
   import { islandDay } from '../island/ambientClock.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
@@ -117,13 +117,13 @@
     const cs = CROPS.filter((c) => starts[c]);
     return cs.length === 1 ? cs[0] : null;
   });
-  /** My plots a start could go in now (empty, under the field's cap: world/farmSheet.ts fillPlan), and the starts I hold. */
+  /** My plots a start could go in now (empty, under the field's cap: world/farmPlan.ts fillPlan), and the starts I hold. */
   const free = $derived.by(() => {
     const m = week.model;
     return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
   });
   const heldOf = (c: Crop) => shop.pocket.get(startKey(c)) ?? 0;
-  /** My plants on plots no field covers now (a field moved or shrunk in /editor: world/farmSheet.ts orphans): kept,
+  /** My plants on plots no field covers now (a field moved or shrunk in /editor: world/farmPlan.ts orphans): kept,
    *  not drawn, counted toward the cap; 苗に戻す digs them all up, their starts back (never on its own: both phones
    *  would race). */
   const off = $derived.by(() => {

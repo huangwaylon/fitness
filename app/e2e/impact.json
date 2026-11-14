@@ -40,7 +40,7 @@
     ["src/lib/components/rooms/**", ["first-person", "say-rooms", "tent"]],
     ["src/lib/components/museum/**", ["museum"]],
     ["src/routes/museum/**", ["museum"]],
-    ["src/lib/world/farmSheet*", ["farm", "shop"]],
+    ["src/lib/world/farmPlan*", ["farm", "shop"]],
     ["src/lib/world/farm*", ["farm"]],
     ["src/lib/world/critter*", ["critters", "critters3d", "bugs-nh2"]],
     ["src/lib/world/visitor*", ["visitors", "visitor-*"]],

@@ -4,7 +4,7 @@ NH 2.0's vegetables: a field each, 40 plants. Buy starts at the shop, plant, wat
 The produce sells for かいがら, never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, the pick), `island/farm.ts` (the scene),
 `world/farmTap.ts` (a plot's tap), `farmUi.svelte.ts`, `harvestPlate.ts`, `FarmPicker`, `FarmPop` (.svelte),
-`world/farmSheet.ts` (free plots, stranded plants), `shop/Counter.svelte` (苗), `shop/pocket.ts` (うる's 野菜 and 苗),
+`world/farmPlan.ts` (free plots, stranded plants), `shop/Counter.svelte` (苗), `shop/pocket.ts` (うる's 野菜 and 苗),
 `shop/stock.ts`, `world3d/objects.ts` (drawn); tests beside them, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`.
 
 ## Decisions

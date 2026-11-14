@@ -1,8 +1,8 @@
-// My fields read whole (world/farmSheet.ts), over a 10 × 4 field of mine and one of the partner's.
+// My fields read whole (world/farmPlan.ts), over a 10 × 4 field of mine and one of the partner's.
 import { describe, expect, it } from 'vitest';
 import { FARM, emptyFarm, farmStep, plotOf, type Farm } from '#lib/contract/farm.ts';
 import { fieldPlots } from '#lib/layout/field.ts';
-import { fillPlan, orphans } from './farmSheet.ts';
+import { fillPlan, orphans } from './farmPlan.ts';
 
 const D = '2026-11-04';
 const MINE = fieldPlots({ id: 'field-A', x: 10, z: 17, s: 'a-10x4' }), HERS = fieldPlots({ id: 'field-B', x: 10, z: 22, s: 'b-10x4' });
