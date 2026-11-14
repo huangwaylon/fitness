@@ -64,11 +64,12 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
   const pen = (meta.secondary ? SECONDARY_PENALTY : 0) + (PRODUCT_SOURCES.has(meta.source) ? PRODUCT_PENALTY : meta.source === 'kalori' ? KALORI_PENALTY : 0);
   if (data.shops) addShops(db, data.shops);
   const items = data.items;
+  const brands = new Map<string, readonly string[]>();
   for (let i = 0; i < items.length; i += SLICE) {
     if (i && pause) await pause();
     for (let j = i; j < Math.min(items.length, i + SLICE); j++) {
       const it = items[j];
-      db.entries.push(entryOf(it, pen));
+      db.entries.push(entryOf(it, pen, brands));
       if (!db.byId.has(it.id)) db.byId.set(it.id, it);
       if (it.vg) (db.variants.get(it.vg) ?? db.variants.set(it.vg, []).get(it.vg)!).push(it);
     }

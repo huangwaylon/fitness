@@ -13,6 +13,9 @@ export interface Entry {
   pen: number;
   /** The name's head as a key (headOf), built on its first prefix hit. */
   hd?: string;
+  /** Its brand's keys, whole then each word (brandKeys): a query word matches a brand only from the start of one, never
+   *  inside it (「ラテ」 is not 天ぷ「らて」んや's); `h` holds no brand. */
+  b?: readonly string[];
 }
 
 /** Each curated pop level (1–3) outweighs a little over half a match tier, so 食パン (substring, pop 3) beats パン粉
@@ -35,12 +38,30 @@ export function keysOf(it: Item): string[] {
   return [searchKey(it.name), searchKey(it.full), ...(it.aliases ?? []).map(searchKey), searchKey(it.en), searchKey(it.brand), it.jan ?? '', searchKey(it.cat)];
 }
 
-export function entryOf(it: Item, pen = 0): Entry {
+/** A brand's keys (Entry `b`): its key, then its words' (split on spaces and ・: 「明治 ザ・チョコレート」 is found by
+ *  ちょこ); once per brand in `pool` (a dataset's: a chain's 450 shops, the products' 11k makers, shared by their items). */
+function brandKeys(brand: string, pool?: Map<string, readonly string[]>): readonly string[] {
+  let b = pool?.get(brand);
+  if (b) return b;
+  b = [...new Set([brand, ...brand.split(/[\s　・･/／]+/)].map(searchKey).filter(Boolean))];
+  pool?.set(brand, b);
+  return b;
+}
+
+/** A query word (a key) in an entry: in its fields but the brand anywhere, or at the start of its brand or a word of it. */
+export const holds = (e: Entry, t: string): boolean => e.h.includes(t) || (e.b?.some((k) => k.startsWith(t)) ?? false);
+
+export function entryOf(it: Item, pen = 0, brands?: Map<string, readonly string[]>): Entry {
   const na = it.aliases?.length ?? 0;
   const shipped = typeof it.keys === 'string' ? it.keys.split(' ') : null;
   // the shipped keys, unless missing or not this item's (data cached before they were): built here then
   const keys = shipped?.length === na + 6 ? shipped : keysOf(it);
-  return { it, n: keys[0], al: na ? keys.slice(2, 2 + na) : [], h: keys === shipped ? it.keys! : keys.join(' '), pop: it.pop ?? 0, pen };
+  // (the brand's key out of `h`: matched by `b` alone)
+  const bi = na + 3;
+  const h = keys[bi] ? keys.filter((_, i) => i !== bi).join(' ') : keys === shipped ? it.keys! : keys.join(' ');
+  const e: Entry = { it, n: keys[0], al: na ? keys.slice(2, 2 + na) : [], h, pop: it.pop ?? 0, pen };
+  if (keys[bi] && it.brand) e.b = brandKeys(it.brand, brands);
+  return e;
 }
 
 /** A name up to its first bracket or space, as a key (「水（ミネラルウォーター）」 → 水, 「鮭（しろさけ） 生」 → 鮭). */
@@ -88,7 +109,7 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
   const hits: Hit[] = [];
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (tokens.every((t) => e.h.includes(t)) && !lookalike(e.it, q)) {
+    if (tokens.every((t) => holds(e, t)) && !lookalike(e.it, q)) {
       hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i });
       onHit?.(e);
     }

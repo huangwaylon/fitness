@@ -9,7 +9,7 @@ import { loadFoodDb } from './load.ts';
 import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
-import { tierOf, type Entry } from './search.ts';
+import { entryOf, holds, tierOf, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
 
 const DIR = join(import.meta.dirname, '../../../static/food');
@@ -212,7 +212,7 @@ describe('loadFoodDb', () => {
       const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
       const q = tokens.join('');
       const hits: { e: Entry; s: number }[] = [];
-      for (const e of db.entries) if (tokens.every((t) => e.h.includes(t)) && !/（中型種）|^親鶏|^交雑牛/.test(e.it.name)) hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -2.5 : e.pop * 0.6) + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0) });
+      for (const e of db.entries) if (tokens.every((t) => holds(e, t)) && !/（中型種）|^親鶏|^交雑牛/.test(e.it.name)) hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -2.5 : e.pop * 0.6) + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0) });
       hits.sort((a, b) => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
       const rep = new Map<number, Entry>();
       for (const { e } of hits) {
@@ -409,6 +409,20 @@ describe('the chain menus (Kalori, invented items)', () => {
     expect(ids('セブン').sort()).toEqual(['kal:3', 'kal:4', 'kal:5']);
     expect(ids('すき家')).toEqual(['kal:1']);
     expect(shopIn(k, 'スタバ  モカ')).toEqual({ shop: 'starbucks', rest: 'モカ' });
+  });
+
+  it('a query word matches a brand only from its start or a word’s: 「ラテ」 is not 天ぷ「らて」んや’s menu', () => {
+    const shops = (q: string) => shopsFor(db, q).map((s) => s.name);
+    expect(shops('ラテ')).not.toContain('天ぷらてんや');
+    expect(shops('ラテ').length).toBeGreaterThan(0);
+    // (the real chain menus: a word inside a brand finds none of its items, its start does)
+    const tenya = (q: string) => searchFoods(db, q, 2000).filter((it) => it.brand === '天ぷらてんや').length;
+    expect([tenya('ラテ'), tenya('らてん')]).toEqual([0, 0]);
+    expect(tenya('天ぷら')).toBeGreaterThan(0);
+    const e = entryOf({ id: 'off:1', name: 'ミルク', brand: '明治 ザ・チョコレート', kcal: 1 });
+    expect(['めいじ', '明治', 'チョコ', 'ザ', 'ちょこれーと'].map((t) => holds(e, searchKey(t)))).toEqual([false, true, true, true, true]);
+    expect(['ョコ', 'じざ', '治'].map((t) => holds(e, searchKey(t)))).toEqual([false, false, false]);
+    expect(holds(e, searchKey('ミル'))).toBe(true);
   });
 
   it('the shops holding a query, the most foods first (a food in its states once); none once a shop is named', () => {
