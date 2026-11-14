@@ -1,6 +1,6 @@
 // GitHub workflow_dispatch of the runner's workflow (README "How it works"), for 開始 and the watchdog: a run starts in
 // about a minute instead of at the next scheduled one; the watchdog's look at the workflow's unfinished runs, and its
-// cancel of a hung one. A
+// cancel of a hung one. And the health workflows on time (dispatchHealth: docs/ops/observability.md "The alert"). A
 // fine-grained PAT (GH_DISPATCH_TOKEN: this repo, Actions read/write); unset, nothing is sent and the schedule starts
 // the run.
 import type { Dispatch } from './rules.ts';
@@ -75,4 +75,34 @@ export async function cancelRun(token: string, id: number, force = false): Promi
     console.warn(`its watchdog cancel failed err=${e instanceof Error ? e.name : 'error'}`);
     return 0;
   }
+}
+
+/** The health workflows a cron tick dispatches (GitHub runs a schedule best effort: health.yml's hourly cron ran ~4
+ *  times a day; their own schedules stay the backstop): at :15 health.yml (hourly) and its-health.yml, at :45
+ *  its-health.yml (every 30 min); the cron's other ticks none. */
+export const dueHealth = (scheduledTime: number): ('health' | 'its-health')[] => {
+  const m = new Date(scheduledTime).getUTCMinutes();
+  return m === 15 ? ['health', 'its-health'] : m === 45 ? ['its-health'] : [];
+};
+export const healthDispatchUrl = (wf: string) => `${REPO_URL}/actions/workflows/${wf}.yml/dispatches`;
+
+/** Dispatch the tick's health workflows on main: each one's GitHub status (204 = accepted, 0 = no answer); a refusal
+ *  or no answer is one warn line (`its health-dispatch refused`). No token: nothing sent. Never throws. */
+export async function dispatchHealth(token: string | undefined, scheduledTime: number): Promise<{ wf: string; st: number }[]> {
+  const due = dueHealth(scheduledTime);
+  if (!due.length) return [];
+  if (!token) {
+    console.log('its health-dispatch no_token');
+    return [];
+  }
+  return Promise.all(due.map(async (wf) => {
+    let st = 0;
+    try {
+      st = (await gh(token, healthDispatchUrl(wf), { method: 'POST', body: JSON.stringify({ ref: 'main' }) })).status;
+    } catch {
+      st = 0;
+    }
+    if (st !== 204) console.warn(`its health-dispatch refused wf=${wf} status=${st}`);
+    return { wf, st };
+  }));
 }

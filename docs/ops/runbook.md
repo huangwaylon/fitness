@@ -28,8 +28,8 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health         
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
-`version.json`, CSP header and the relay's CORS for it; the relay's :15 cron dispatches it and its-health.yml, at
-:45 its-health.yml: `relay/src/ghDispatch.ts`, GitHub's own schedules the backstop), red (GitHub mails the owner) unless all pass; it warns when the
+`version.json`, CSP header and the relay's CORS for it; its-bot's cron dispatches it and its-health.yml at :15, its-health.yml at
+:45: `its/worker/src/dispatch.ts`, with its `GH_DISPATCH_TOKEN`; GitHub's own schedules the backstop), red (GitHub mails the owner) unless all pass; it warns when the
 weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
@@ -184,7 +184,7 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 - Rotating a token both sides share (§3's keys, the runner's): 停止 → change both → 開始.
 - **The ITS runner is silent** (the `runner_silent` push, verdict `late`): `cd its/worker && npx wrangler tail
   --search "its watchdog"`, then its/README.md "Watchdog"; start one by hand: `gh workflow run its-runner.yml --ref main`.
-- **`GH_DISPATCH_TOKEN`** (開始's and the watchdog's dispatch): a fine-grained PAT, `huangwaylon/fitness` only,
+- **`GH_DISPATCH_TOKEN`** (開始's, the watchdog's and the health workflows' dispatch): a fine-grained PAT, `huangwaylon/fitness` only,
   Actions read and write, ≤ 1 year (its/README.md "Secrets"). Set or rotate: `cd its/worker && npx wrangler secret
   put GH_DISPATCH_TOKEN` (live at once, no deploy, no 停止), then delete the old token on GitHub.
 
