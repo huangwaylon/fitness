@@ -226,7 +226,7 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   `deploy_failed`. **The watch** (`kalori-watch.yml`, 6-hourly): the same for a deploy pending 160 min;
   `late` (no scheduled refresh in 8 days), `stuck` (a run over 2 days, a stale `running`).
 - **The status:** `status.json` on the orphan branch `kalori-status` (one commit, force-pushed with a lease:
-  `kalori_status.py`, `.github/scripts/kalori-status.sh`): verdict, reasons, run, accepted dataset, diff, coverage,
+  `kalori_status.py`, `.github/scripts/kalori-status.sh`): verdict, reasons, run, accepted dataset, diff (`tripped`: the failed gates), coverage,
   merge, alert, the last 12 runs; a round writes `running` at setup. The bots page's メニュー tab reads it (an alert: a
   dot, no email). Each reason, pausing, undoing:
   [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).

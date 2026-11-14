@@ -1,20 +1,21 @@
 <script lang="ts">
-  // ボット's 保養所 tab (docs/design.md "Bots"): the ITS booker as its Worker reports it (lib/its: GET
-  // /its/status) and its settings. Top to bottom: a notice (a failed read with its code; the allow-list's first save),
-  // the verdict card (tinted by tone, 開始 / 停止 at once, outside the draft, and who pressed it), the bookings (a
-  // hold's deadline and what to do), 状況 (くわしく folds the rest), the stays (日付: one at a time or まとめて追加, each
-  // a bar of its searched facilities by why (ChangeBar, メニュー's too), tapped open to the names and reasons: view.ts dateRows), the facilities
-  // (施設: 探す is the allow-list; a summary, presets, then 探す · 日程に合わない · 除外, the new ones' banners on
-  // top), 詳細 (確認の間隔, 人数, 自動で確定), 通知 (this phone's push: ItsNotify), the recent events and the foot. The
-  // settings are one draft saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft
-  // note or the refusal; ✕, the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Fetched on open,
-  // then every 15 s while the runner is on its way or running and every minute otherwise, only while shown; leaving it
-  // (the other tab, the sheet closed) aborts, and 保存 / 開始 / 停止 abort a read in
+  // ボット's 保養所 tab (docs/design.md "Bots"): the ITS booker as its Worker reports it (lib/its: GET /its/status) and
+  // its settings, on BotPage: the verdict (who stopped it in its sentence while stopped) with its key row (前回 · 次回 ·
+  // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
+  // sentence; 確認が必要 (the holds to finish by mail: bookingRows' action rows, their deadline and steps; a failed
+  // dispatch); 直近1時間 (empty while running: a warning); the migration notice; 予約 (the other stays); 最近の動き
+  // (folded, the newest in its summary); 設定, its rows folded (plain <details>, each with its summary and 未保存 while
+  // the draft changed it): 日付 (ItsCalendar: this month or next, a tap a night, a weekday's header its column; the
+  // nights under it, tapped open to their facilities by why: view.ts dateRows), 施設 (探す is the allow-list; presets,
+  // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数,
+  // 自動で確定), 通知 (this phone's push, at once: ItsNotify) and 最近の操作; くわしく last. The settings are one draft
+  // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
+  // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
+  // way or running, every minute otherwise, only while shown (useBot.svelte.ts); 保存 / 開始 / 停止 abort a read in
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
-  // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. Each status read
-  // sets the tab's and the menu's dot (useBot.svelte.ts), the last read shown at once (更新中). BotPage's skeleton (the
-  // verdict, 確認が必要, 動作状況, the foot), as ジム's and メニュー's. Not in demo mode (no tab: no fixture).
+  // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. No priority: the
+  // app sends none (every facility alike). Not in demo mode (no tab: no fixture).
   import { tick } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
@@ -511,6 +512,7 @@
   .card.note p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .card.note .btn { justify-self: start; margin: 0; }
 
+  .holds { padding: 0; }
   .holds > li { min-height: 0; }
   .rline { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
   .rline.bad { color: var(--coral-text); }

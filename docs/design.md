@@ -104,25 +104,21 @@ the よびな and what's worn → [the 姿 level](#sugata)), **プロフィー�
 
 ### Bots
 
-**ボット** (`bots/BotsSheet.svelte`, members only): tabs from `bots/registry.ts`, **ジム** (`GymPage`), **保養所**,
-**メニュー** (not in demo); the session's last tab reopens. A driver per bot (`lib/bots/types.ts`,
-`lib/<bot>/bot.ts`, lazy) reads and words the status: tone is health, `needsLook` the 「!」.
-- **Dots** (`StatusDot`, `summary.svelte.ts`): leaf 順調 (起動中 · 取得中 too), yuzu 一部不調, yuzu 「!」 遅れ · 保留 ·
-  要対応, coral 「!」 不調 · 故障 (coral: failures only), sunk 待機中 · 停止中 · オフ · まだ, hollow 不明. A tab shows its
-  bot's (fine, needing a look: yuzu 「!」 要対応); the menu's ボット the worst, only with a 「!」. A failed read keeps
-  the tone, dimmed; kept per member over a reload (`lastKnown.ts`).
-- **Reads:** the shown page polls (`useBot`: 保養所 15 s while running, else 60 s); the others as the sheet opens or
-  the menu unfolds, then every 5 min while open; each at most once a minute; none closed or hidden.
-- **Page** (`BotPage`): LoadError · `VerdictCard` (the bot's controls in its row; 更新中) · `AttentionCard` (確認が必要)
-  · the bot's sections · 動作状況 (`StatusStrip`, `FactList`; empty: one hint) · `BotFoot`; a skeleton until the
-  first status. Links: inline `--sky-text` in facts; actions `.btn.small.paper`.
+**ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** · **保養所** · **メニュー** (`bots/registry.ts`; not in
+demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
+- **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中, yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応 (a fine bot needing a look),
+  coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだ, hollow 不明; the menu's ボット the worst, a failed read dimmed, kept.
+- **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
+- **Page** (`BotPage`): `VerdictCard` (a `.card.pad`: dot, word, 「12:00時点」, ⋯; sentence; result line; dense
+  `StatStrip` 前回 · 次回 · 成果, 不調: 最後の成功) · `AttentionCard` (only steps the sentence lacks) · `StatusStrip` (ok green,
+  空き full height, warn yellow capped, fail hatched, none a tick; empty: out) · sections · 設定 · くわしく (`FactList`).
+  ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.
 
-ジム: stop asks; 今すぐ確認 peeks; ⋯ 間隔; a 4-week grid (`GymCalendar`; 選択: bulk), アプリで変更;
+ジム: ⋯ 今すぐ確認 (cooldown in the label) · 停止/再開 · 間隔 ›; 2 weeks from today (`GymCalendar`, 4 in 選択), アプリで変更;
 changes apply at once (取り消す).
-保養所: its draft asks before a tab switch or close. 日付: a row a night, a `ChangeBar` of the searched by why.
-施設: presets, 探す · 日程に合わない · 除外. **通知** (`ItsNotify`): push per phone, off by default; a notification opens 保養所 (`?open=its` kept until the launch's hold is over).
-メニュー: `status.json` (branch `kalori-status`; `lib/kalori/status.ts`): 遅れ also a day past `next`; 確認が必要 on
-保留, 不調 or an alert; 最新の更新; 直近8週. No run button.
+保養所: ⋯ 開始 / 停止; holds in 確認が必要. 設定 = saved with 保存, rows folded (未保存): 日付 (`ItsCalendar`: this month or
+next, a tap a night, a weekday its column), 施設 (presets; no ★), 詳細 「15秒・2人」, 通知 (`ItsNotify`, per phone).
+メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next` too; 保留 names `diff.tripped`; ⋯ links only.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),
@@ -283,9 +279,11 @@ stay trip data).
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header.
 - **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
-  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` (every plain bar, a pill) · `ActionSheet`; theme.css's
+  `Segmented` · `Tick` · `StatStrip` (`dense`) · `PhotoBand` · `ProgressBar` (every plain bar, a pill) · `ActionSheet`; theme.css's
   small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu`, `.tag`). All of it:
   `/dev/kit`.
+- **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.prow` + `.sw` on/off · `.btn` a verb, never a
+  status; a card's acts behind one ⋯.
 - **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome;
   ききみみ keeps emoji as decoration only (medals, badges, a domain's mark), its controls and locks drawn.
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills; packing

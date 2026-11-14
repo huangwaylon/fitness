@@ -34,5 +34,5 @@
   .dense dd { white-space: normal; text-align: center; line-height: 1.25; text-wrap: balance; }
   .dense dd { word-break: keep-all; overflow-wrap: anywhere; }
   .dense b { font: 700 var(--fs-body)/1.25 var(--font-ui); font-variant-numeric: tabular-nums; }
-  .dense .sub { display: inline-block; white-space: nowrap; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); }
+  .dense .sub { display: inline-block; white-space: nowrap; margin: 0 0 0 4px; font: 700 var(--fs-s)/1.3 var(--font-ui); }
 </style>
