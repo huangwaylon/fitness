@@ -8,7 +8,7 @@
   import type { DotBucket, Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
   import ChartFrame from './ChartFrame.svelte';
-  import { axisNum } from './fmt.ts';
+  import { axisNum, weekdayRow } from './fmt.ts';
 
   interface Props {
     /** Unique per chart on the page (its SVG defs' ids). */
@@ -32,9 +32,9 @@
   }
   let { id, person, range, buckets, fmt, minSpan = 2, goal, goalText, today, label, selected, onselect, onswipe, slide }: Props = $props();
 
-  /** Day units: a row more under the axis (the weekdays: ChartFrame). */
-  const H = $derived(range.unit === 'day' ? 162 : 148);
-  const pad = $derived({ l: 38, r: 6, t: 10, b: range.unit === 'day' ? 36 : 22 });
+  /** 1週: a row more under the axis (the weekdays: ChartFrame). */
+  const H = $derived(weekdayRow(range) ? 162 : 148);
+  const pad = $derived({ l: 38, r: 6, t: 10, b: weekdayRow(range) ? 36 : 22 });
 
   const ext = $derived.by(() => {
     let lo = Infinity, hi = -Infinity;
@@ -56,8 +56,10 @@
       lo = mid - minSpan / 2;
       hi = mid + minSpan / 2;
     }
-    const m = (hi - lo) * 0.08;
-    return { lo: lo - m, hi: hi + m };
+    // (a goal off the axis has its words at that edge, over the plot: room for them there, so the period's lowest or
+    // highest dot isn't drawn under their halo)
+    const m = (hi - lo) * 0.08, words = (hi - lo) * 0.25;
+    return { lo: lo - (goalOff === 'below' ? words : m), hi: hi + (goalOff === 'above' ? words : m) };
   });
   const y = (v: number) => pad.t + (1 - (v - domain.lo) / (domain.hi - domain.lo)) * (H - pad.t - pad.b);
   /** Two to five lines at a round step (1, 2, 5, 10, 20 …), whatever the span. */

@@ -135,7 +135,7 @@ test('every day with data is its bar, as reported; only a day with no row is a s
   await chart.scrollIntoViewIfNeeded();
   const [sb, cb] = [(await stub.boundingBox())!, (await chart.boundingBox())!];
   expect(sb.height).toBeLessThanOrEqual(8);
-  expect(Math.abs(sb.y + sb.height - (cb.y + cb.height - 38))).toBeLessThanOrEqual(1.5); // on the baseline (day units: the weekdays' row under it)
+  expect(Math.abs(sb.y + sb.height - (cb.y + cb.height - 24))).toBeLessThanOrEqual(1.5); // on the baseline (1か月: the dates' row alone under it)
   // its tap callout says 記録なし
   await chart.click({ position: { x: sb.x - cb.x + sb.width / 2, y: cb.height - 40 } });
   await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
@@ -240,8 +240,8 @@ test('a drag across a chart turns the page (right = older); a short one doesn’
   await expect(sheet(page).locator('.chart .tip')).toHaveCount(0); // a drag never opens a callout
 });
 
-// The goal a solid line; day ranges with their weekdays under the dates (土 sky, 日 coral: the labels, never the bars).
-test('the goal solid; 1週 a weekday under every bar, 1か月 a label a week, all on today’s weekday; none for 3か月', async ({ page }) => {
+// The goal a solid line; 1週 with its weekdays under the dates (土 sky, 日 coral: the labels, never the bars).
+test('the goal solid; 1週 a weekday under every bar; 1か月 a date a week, no weekdays; none for 3か月', async ({ page }) => {
   await openHealth(page); // 10/31 土
   const card = sheet(page).locator('.mc[data-metric=steps]');
   const wd = card.locator('text.ax.wd');
@@ -256,7 +256,7 @@ test('the goal solid; 1週 a weekday under every bar, 1か月 a label a week, al
   const boxes = await wd.evaluateAll((ts) => ts.map((t) => { const b = (t as SVGTextElement).getBBox(); return { x: b.x, width: b.width }; }));
   for (let i = 1; i < boxes.length; i++) expect(boxes[i].x).toBeGreaterThan(boxes[i - 1].x + boxes[i - 1].width);
   await pickPeriod(page, 'month');
-  await expect(card.locator('text.ax.wd')).toHaveText(['土', '土', '土', '土', '土']);
+  await expect(card.locator('text.ax.wd')).toHaveCount(0);
   await expect(card.locator('text[data-x-date]')).toHaveText(['10/3', '10/10', '10/17', '10/24', '10/31']);
   await pickPeriod(page, 'quarter');
   await expect(card.locator('text.ax.wd')).toHaveCount(0);

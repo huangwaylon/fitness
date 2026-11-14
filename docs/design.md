@@ -160,8 +160,8 @@ person at a time, computed on read; its code and strings load with the first ope
   **Activity** (`BarCard`): the daily average and its change against the previous period, goal days n/N, the best and the
   days without a record, the chart.
 - **Chart** (`BarChart`, SVG; its header): a bar per day, week or month in the person's colour, solid when the goal
-  was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; day ranges show
-  weekdays (土 sky, 日 coral); a tap shows one value, a drag pages (right = older).
+  was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; 1週 shows
+  weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows one value, a drag pages (right = older).
 - **体重 · 体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`; their headers): each its own optional goal, the average
   (BMI with its category by the person's standard), the change, the dot chart and the goal month at that pace. No good / bad colours; no ベル.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a

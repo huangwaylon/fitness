@@ -11,7 +11,7 @@
   import type { BucketValue, Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
   import ChartFrame from './ChartFrame.svelte';
-  import { axisNum, barNum, niceTicks } from './fmt.ts';
+  import { axisNum, barNum, niceTicks, weekdayRow } from './fmt.ts';
 
   interface Props {
     /** Unique per chart on the page (its SVG defs' ids). */
@@ -41,9 +41,9 @@
   let { id, range, p, vals, first, today, label, goalText, selected, onselect, onswipe, slide, avg = null, plain = false, fmt, barFmt = null }: Props = $props();
   const barText = $derived(barFmt ?? ((v: number) => barNum(v, top)));
 
-  /** Day units: a row more under the axis (the weekdays: ChartFrame). */
-  const H = $derived(range.unit === 'day' ? 182 : 168);
-  const pad = $derived({ l: 38, r: 6, t: 14, b: range.unit === 'day' ? 38 : 24 });
+  /** 1週: a row more under the axis (the weekdays: ChartFrame). */
+  const H = $derived(weekdayRow(range) ? 182 : 168);
+  const pad = $derived({ l: 38, r: 6, t: 14, b: weekdayRow(range) ? 38 : 24 });
   /** Value labels over the bars when each has room for one (1週). */
   const labels = $derived(range.buckets.length <= 7);
 

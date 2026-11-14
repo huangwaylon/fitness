@@ -61,9 +61,12 @@ export interface XLabel {
   now?: boolean;
 }
 
-/** Which buckets get a date under the axis: about one per `px`, counted back from the newest. Days carry their
- *  weekday: 1週 one under every bar (the dates at their own cadence), 1か月 a step of whole weeks, so each label
- *  falls on the newest day's weekday. */
+/** 1週's days carry their weekday under the date (a row more under the axis: the charts' H and pad.b). */
+export const weekdayRow = (r: Range): boolean => r.unit === 'day' && r.buckets.length <= 7;
+
+/** Which buckets get a date under the axis: about one per `px`, counted back from the newest. 1週: a weekday under
+ *  every bar (the dates at their own cadence); 1か月: a step of whole weeks, each labelled by its date alone (every one
+ *  the newest day's weekday: 「土」 five times said nothing). */
 export function xLabels(r: Range, plotW: number, today?: LocalDate, px = 46): XLabel[] {
   const n = r.buckets.length;
   const day = r.unit === 'day';
@@ -75,12 +78,12 @@ export function xLabels(r: Range, plotW: number, today?: LocalDate, px = 46): XL
     const dated = (n - 1 - i) % step === 0;
     const text = !dated ? '' : r.unit !== 'month' ? md(d) : d.slice(5, 7) === '01' || i < step ? monthLabel(d) : monthLabel(d, { year: false });
     const l: XLabel = { i, text };
-    if (day) {
+    if (day && n <= 7) {
       const w = isoWeekday(d);
       l.wd = weekdayOf(d);
       if (w >= 6) l.dow = w as 6 | 7;
-      if (d === today) l.now = true;
     }
+    if (day && d === today) l.now = true;
     out.unshift(l);
   }
   return out;
