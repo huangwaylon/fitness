@@ -27,16 +27,17 @@ import { profileValueOk, type ProfileKey } from '#lib/contract/profile.ts';
 export const UNDO_MS = 5000;
 
 /**
- * The banner for an action held UNDO_MS: it names what was done and carries 取り消す; hovering, touching
- * or focusing it holds both the banner and the send. A refused action shows nothing here.
+ * The banner for an action held UNDO_MS: it names what was done and carries 取り消す (`world`: an act in the world, the
+ * world's 「とりけす」: docs/design.md "Copy"); hovering, touching or focusing it holds both the banner and the send. A
+ * refused action shows nothing here.
  */
-export function undoBanner(text: string, r: SendResult, opts: { reaction?: string } = {}): void {
+export function undoBanner(text: string, r: SendResult, opts: { reaction?: string; world?: boolean } = {}): void {
   if (!r.ok) return;
   const undo = r.undo;
   toasts.show(text, UNDO_MS, {
     reaction: opts.reaction ?? 'pleased',
     hold: r.hold,
-    ...(undo ? { action: { label: t('common.undo'), run: () => undo() } } : {})
+    ...(undo ? { action: { label: t(opts.world ? 'world.undo' : 'common.undo'), run: () => undo() } } : {})
   });
 }
 

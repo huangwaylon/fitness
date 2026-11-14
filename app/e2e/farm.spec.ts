@@ -78,8 +78,9 @@ test('starts bought at the shop’s かう; one kind held: a tap on my empty plo
   // one kind held: no picker; its 3 × 3's empty plots of mine, the tapped one, then the nearest, as many as I hold
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
-  // one word, the banner's (world kana, with 取り消す), no pop
+  // one word, the banner's (world kana, with the world's とりけす), no pop
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 3かぶ うえた（3/40）');
+  await expect(page.locator('.banner[role="status"]').getByRole('button')).toHaveText('とりけす');
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual(plants([plot(0).p, plot(1).p, plot(0, 1).p]));
   // one swing of the shovel a tap
   expect(await swings(page)).toBe(1);
@@ -150,7 +151,7 @@ test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a 
   await tapWorld(page, wide(1).x, wide(1).z);
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた（6/40）');
-  // the 取り消す banner high while the harvest's plate stands at the bottom
+  // the とりけす banner high while the harvest's plate stands at the bottom
   await expect.poll(async () => (await page.locator('.banner[role="status"]').boundingBox())!.y).toBeLessThan(300);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/plant-3x3-pop.png` });
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'harvest', p: wide(0).p, n: 1 }, ...plants([wide(1).p, wide(2).p, wide(1, 1).p, wide(0, 1).p])]);
@@ -314,7 +315,7 @@ test('the partner’s watering of my plants plays on my island: drops over each,
   await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/が みずを やってくれた$/)]);
 });
 
-test('my growing plant’s word offers ほる (44 pt, at the word’s right end, deaf for 300 ms, held while touched); it digs, 取り消す puts it back', async ({ page }) => {
+test('my growing plant’s word offers ほる (44 pt, at the word’s right end, deaf for 300 ms, held while touched); it digs, とりけす puts it back', async ({ page }) => {
   const D1 = '2026-11-05';
   await seed(page, D1, [
     FIELD, ...POCKET,
@@ -348,8 +349,8 @@ test('my growing plant’s word offers ほる (44 pt, at the word’s right end,
   await page.mouse.up();
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('カボチャを ほった');
   await expect(dig).toHaveCount(0);
-  // 取り消す puts it back (the one dig sent below is the second's)
-  await page.getByRole('button', { name: '取り消す' }).click();
+  // とりけす (the world's undo: a world act's banner) puts it back (the one dig sent below is the second's)
+  await page.getByRole('button', { name: 'とりけす' }).click();
   // left alone, it goes after 3 s
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect(dig).toBeVisible();

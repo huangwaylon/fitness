@@ -636,7 +636,7 @@
     recordFind('item', g.item);
     cue('emote-joy');
     say(name, t(`chat.sp.${id}.${key}`, { item: g.name }), target, { colour });
-    toasts.show(t('guestShop.got', { item: g.name }), 3600, { reaction: 'joy' });
+    toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy' });
   }
   /** A guest's tap after their introduction: their role's. */
   function guest(id: GuestId, name: string, target: Element, colour: string, first = false) {
@@ -756,7 +756,7 @@
     }
     // (the vegetable's pop over their head first, then their words)
     clearTimeout(thanksTimer);
-    thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('guestShop.got', { item: g.name }), 3600, { reaction: 'joy' }) : undefined }), THANKS_MS);
+    thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy' }) : undefined }), THANKS_MS);
   }
   const THANKS_MS = 1100;
   /** The ask's piece today (vegRequest.ts vegGift: the same on every phone), null: none left, or the island has it. */

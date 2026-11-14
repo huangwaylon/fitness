@@ -373,7 +373,7 @@ and the cache keeps only their newest row per day once the week has locked, like
 
 `lib/components/island/*` and `world3d/*` (rules: `lib/world/`): NH's island in 3D on the editable layout, NH's own models in
 three.js, with the DOM island over the canvas as its tap areas, marks, balloons and popups ([World](#world)). What
-comes only on its days (a visitor, the tape deck, the cake, the weather, the fireworks, an event's decorations) loads
+comes only on its days (a visitor, the cake, the fireworks, an event's decorations) loads
 the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load has none of it. Only `transform`
 and `opacity` animate in the DOM; everything pauses while hidden (`data-paused`), a sheet pauses particles, critters and
 idle life (`data-covered`), and under a full-height sheet every animation holds (`data-sheet`) and the 3D island draws
@@ -403,8 +403,8 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
   placed through the 3D camera. **One depth order** for the DOM: nearer in front, ties by x. World-anchored overlays (a
   tree's popup, a bite's 「！」) stand over everything at their true size. Only nodes near the camera are shown.
 - **The ground and the water** are the layout's, built on the phone: [island-layout.md](island-layout.md).
-  **The sea's wash** (`layout/swash.ts`): NH's waves on every sea shore every few seconds, the foam running up and the
-  wet sand drying after, out of step along a beach; the shore one eased colour ramp by depth, rivers fading into the sea.
+  **The sea's wash** (`layout/swash.ts`): NH's waves on every sea shore, the foam running up and the
+  wet sand drying, out of step along a beach; the shore one colour ramp by depth, rivers fading into the sea.
 - **Layout:** the default island (`layout/default.json`; what stands where: [island-layout.md](island-layout.md)):
   the homes A (ウェイ, left) and B (うめ, right) on every phone (never mirrored), the goal trees on their outer sides.
   The wild flowers (clumps of one kind, the season's in turn) and weed spots are scattered, seeded
@@ -416,7 +416,7 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
 - **Winter and night looks:** NH's snowy models and the models' own light, lit at dusk and night (`world3d/lights.ts`).
 - **Sizes** (`scene.ts`): NH's proportions against an 80u villager; taps: [Scene interactions](#scene-interactions).
 - **Fixed over the island:** the sky, the HUD, the weather, the fireworks and the shooting stars; DOM art over the
-  canvas takes the time of day's multiply, a light none. Nothing runs when still ([ops/perf.md](ops/perf.md)).
+  canvas takes the time of day's multiply, a light none.
 
 ### Startup
 
@@ -433,13 +433,12 @@ What a launch waits for, and what it doesn't (budgets and measurements: [ops/per
 ### Frame rate
 
 The game draws at most **30** frames a second (`store/frameRate.ts` FPS) while something moves, a gesture included; a
-still scene draws nothing. One pacer runs every surface's frames (`world3d/pace.ts`); the simulation runs on real time,
-nothing slower. **At rest** (no finger for a moment, only ambience on screen) the island draws its ambience at
+still scene draws nothing. One pacer runs every surface's frames (`world3d/pace.ts`); the simulation on real time. **At rest** (no finger for a moment, only ambience on screen) the island draws its ambience at
 **12** a second (engine.ts REST_MS, REST_FPS), the museum its tanks and bugs at 15, the tent only a blink; any move or
-touch is back at the full rate. A villager's small moves (a turn, a nod, a surprise: villagers.ts
-SMALL) are ambience too; a walk or a hop is the full rate. A critter's dart or move on screen is the full rate,
-and 12 a second once no finger has touched for 15 s, till the next touch (pace.ts CRIT_CALM_MS; the user, 2026-11-14). The endless CSS loops over the island (clouds,
-twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
+touch is back at the full rate. A villager's small moves (villagers.ts
+SMALL: a turn, a nod) are ambience too; a walk or a hop is the full rate. A critter's dart or move on screen is the full rate,
+and 12 a second once no finger has touched for 15 s, till a touch (pace.ts CRIT_CALM_MS; the user, 2026-11-14). The endless CSS loops over the island (clouds,
+twinkles, glints, foam, the ♪) are held and stepped in its frames
 (`island/clouds.ts`), never at the display's 60 Hz.
 
 **One renderer lifecycle:** every WebGL surface makes and lets go of its renderer the same way (`world3d/stage.ts`: its
@@ -807,7 +806,7 @@ a building as the museum ([Buildings](#buildings)), with its own money, かい�
 ([decisions](decisions.md#the-shops-かいがら)): the island's catches sell for them and buy furniture for the rooms. Each
 person has a pocket and かいがら, the guest too.
 
-- **Inside, in 3D** (`shop/plan.ts` on the rooms' engine): NH's Nook's Cranny, in by its door. まめきち and つぶきち
+- **Inside, in 3D** (`shop/plan.ts` on the rooms' engine), in by its door. まめきち and つぶきち
   behind the counter; today's stock in the room, the same on every phone (stage, table, back wall; the rest in the list
   only). The camera as the rooms'. **Others in the shop are drawn** (presence `sc: 's'`).
 - **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う); a
@@ -828,7 +827,7 @@ person has a pocket and かいがら, the guest too.
 
 `world/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`. The speech balloon and the catch plate read like NH's
 box: 33 ms a glyph, two lines a page. A tap finishes the page, the next turns it, the last closes it; an orange ▼ bobs
-while another page follows. Left alone a page turns after 6 s. The name tag is tilted on its top-left in the speaker's
+while another page follows. Left alone a page turns after 6 s. The name tag tilts top-left in the speaker's
 NH colour. No voices. A visitor's first tap is their introduction, a first find adds 「ずかんに のったよ！」; a line may end on
 NH's answers (Jack, K.K.).
 
@@ -1069,6 +1068,8 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   board, the shop's menu; an NPC's line inside one stays the world's) **and the leaf menu's pills** (kanji): natural adult Japanese with kanji and no spaces between words (a space only around a number or Latin: 「目標
   8,000歩 以上」). `dialog`, `[role=dialog]` and `.sheet-copy` are `word-break: normal` (`line-break: strict`); a bubble
   is keep-all wherever it is.
+- **A banner** takes its act's zone: a world act's spaced kana and 「とりけす」 (`undoBanner` `world`); a sheet's (even
+  once closed) and the app's own (offline, a failed save) kanji and 取り消す.
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
   キャンセル · 閉じる · 戻る · 元に戻す (restore; an undo is 取り消す) · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 ·
   ゲスト (the guest player; お客さん only for NH's visitors) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた ·

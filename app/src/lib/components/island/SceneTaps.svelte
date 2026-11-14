@@ -514,8 +514,8 @@
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         fx3d('swing', px, pz, 0, { v: 'shovel' });
         sceneSfx('dig');
-        // one word, the banner with its 取り消す (world kana), even if the names never load (then the start's own name)
-        const banner = (name: string) => undoBanner(t('world.farm.planted', { name, n, mine: mine + n, cap: FARM.cap }), res);
+        // one word, the banner with its とりけす (world kana), even if the names never load (then the start's own name)
+        const banner = (name: string) => undoBanner(t('world.farm.planted', { name, n, mine: mine + n, cap: FARM.cap }), res, { world: true });
         void loadNames().then(() => banner(cropName(crop)), () => banner(t(`farm.start.${crop}`)));
         return true;
       }
@@ -543,7 +543,7 @@
             spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
             fx3d('swing', px, pz, 0, { v: 'shovel' });
             sceneSfx('dig');
-            undoBanner(t('world.farm.dug', { name: cropName(c) }), res);
+            undoBanner(t('world.farm.dug', { name: cropName(c) }), res, { world: true });
           } : undefined;
           named(() => {
             const name = cropName(c);

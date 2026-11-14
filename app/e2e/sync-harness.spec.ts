@@ -448,7 +448,7 @@ test('a high-five over the relay: the partner plays the same moment, its banner 
     hearts: '[data-actor="mine"] .fx.hearts',
     sparklesMine: '[data-actor="mine"] .fx.sparkles',
     sparklesPartner: '[data-actor="partner"] .fx.sparkles',
-    banner: { sel: '.banner[role="status"] .txt', text: 'ウェイさんからハイタッチ！' }
+    banner: { sel: '.banner[role="status"] .txt', text: 'ウェイさんから ハイタッチ！' }
   });
   const t0 = await a.evaluate(() => Date.now());
   await a.locator('[data-actor="partner"] .vil').click();
@@ -459,7 +459,7 @@ test('a high-five over the relay: the partner plays the same moment, its banner 
   await expect(a.getByText('うめさんに ハイタッチ！')).toBeVisible();
   // once: B heard it once (its kept high-fives today: the one), and by the time the banner has gone and A has nothing
   // left unsent, it came once and so did the hearts (nothing comes from the sheet any more)
-  await expect(b.getByText('ウェイさんからハイタッチ！')).toHaveCount(0, { timeout: 10_000 });
+  await expect(b.getByText('ウェイさんから ハイタッチ！')).toHaveCount(0, { timeout: 10_000 });
   await expect.poll(() => a.evaluate(() => (window as unknown as { __world: W }).__world.metrics()?.pending ?? 0)).toBe(0);
   expect(await b.evaluate(() => (JSON.parse(localStorage.getItem('hf-got.B') ?? '{}') as { ats?: unknown[] }).ats?.length)).toBe(1);
   expect(await came('banner')).toBe(1);
@@ -471,12 +471,12 @@ test('a high-five over the relay: the partner plays the same moment, its banner 
     await a.locator('[data-actor="partner"] .vil').click();
     await a.waitForTimeout(800);
     const c = await open('B', ctxB);
-    await expect(c.getByText('ウェイさんからハイタッチ！')).toBeVisible({ timeout: 6000 });
+    await expect(c.getByText('ウェイさんから ハイタッチ！')).toBeVisible({ timeout: 6000 });
     await c.close();
     // heard and said got: not again
     const d = await open('B', ctxB);
     await d.waitForTimeout(3500);
-    await expect(d.getByText('ウェイさんからハイタッチ！')).toHaveCount(0);
+    await expect(d.getByText('ウェイさんから ハイタッチ！')).toHaveCount(0);
   }
   await close();
 });
