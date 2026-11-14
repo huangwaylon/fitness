@@ -85,7 +85,15 @@ jobs:
           python3 -I food-data/scripts/kalori_status.py watch --runs "$RUNNER_TEMP/runs.json" --prev "$RUNNER_TEMP/status.json" > "$RUNNER_TEMP/watch.json"
           cat "$RUNNER_TEMP/watch.json"
           reasons=$(jq -r '.reasons | join(",")' "$RUNNER_TEMP/watch.json")
-          [ -n "$reasons" ] || { echo "on time"; exit 0; }
+          if [ -z "$reasons" ]; then
+            echo "on time"
+            # (an earlier late/stuck, now gone: cleared, the verdict back to the last run's)
+            if jq -e '(.reasons // []) | any(. == "late" or . == "stuck")' "$RUNNER_TEMP/status.json" >/dev/null; then
+              gh auth setup-git
+              .github/scripts/kalori-status.sh clear
+            fi
+            exit 0
+          fi
           echo "::warning::$(jq -r .text "$RUNNER_TEMP/watch.json")"
           gh auth setup-git
           .github/scripts/kalori-status.sh alert --reasons "$reasons" --alert-text "$(jq -r .text "$RUNNER_TEMP/watch.json")" \

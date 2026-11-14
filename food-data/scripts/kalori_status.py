@@ -361,18 +361,24 @@ def deploy(prev, a, now):
 
 
 def watch(runs, now, prev=None, late_days=LATE_DAYS, stuck_days=STUCK_DAYS):
-    """late: the newest completed scheduled run started over 8 days ago (or none); stuck: a run not completed after 2
-    days, or a `running` status 8 h old with no run unfinished (a pending deploy: decide, the backstop)."""
+    """late: the newest finished refresh over 8 days old (or none): a completed scheduled run, or the status's own last
+    run and history (a dispatched refresh counts too; a smoke run never writes the status); stuck: a run not completed
+    after 2 days, or a `running` status 8 h old with no run unfinished (a pending deploy: decide, the backstop)."""
     reasons, why = [], []
+    prev = prev or {}
     sched = [r for r in runs if r.get('event') == 'schedule' and r.get('status') == 'completed']
-    last = max((ms(r.get('createdAt')) for r in sched), default=None)
+    seen = [ms(r.get('createdAt')) for r in sched]
+    run = prev.get('run') or {}
+    if run.get('result') in ('published', 'held', 'failed'):
+        seen.append(ms(run.get('endedAt')) or ms(run.get('startedAt')))
+    seen += [ms(h.get('t')) for h in prev.get('history') or [] if isinstance(h, dict)]
+    last = max((x for x in seen if x), default=None)
     if last is None or now - last > late_days * 86400000:
         reasons.append('late')
         why.append('the last scheduled refresh: %s' % (
             datetime.fromtimestamp(last / 1000, timezone.utc).strftime('%Y-%m-%d') if last else 'none'))
     open_runs = [r for r in runs if r.get('status') != 'completed']
     old = [r for r in open_runs if now - (ms(r.get('createdAt')) or now) > stuck_days * 86400000]
-    prev = prev or {}
     if old:
         reasons.append('stuck')
         why.append('running since %s: %s' % (min(r.get('createdAt') for r in old), old[0].get('url')))
@@ -446,6 +452,20 @@ def late(prev, a, now):
     return s
 
 
+def clear(prev, a, now):
+    """The watch found nothing late or stuck: an earlier late/stuck reason (and its alert) goes, the verdict back to
+    the last run's (a held or failing status keeps its own reasons)."""
+    s = carry(prev, now)
+    keep = [r for r in s['reasons'] if r not in LATE]
+    if keep == s['reasons']:
+        return s
+    s['reasons'] = keep
+    s['verdict'] = verdict_of((s.get('run') or {}).get('result'), keep)
+    if not keep:
+        s['alert'] = None
+    return s
+
+
 def undo(prev, a, now):
     """A merge undone by hand (docs/ops/runbook.md "Refresh Kalori"): its history entry no longer counts as accepted
     (the adaptive bands), the merge marked reverted, the dataset main's again."""
@@ -486,7 +506,7 @@ def main(argv=None):
     d.add_argument('--reran', default='')
     d.add_argument('--also', default='', help='later commits holding the sha, comma-separated')
     d.add_argument('--now', type=int)
-    for name in ('running', 'final', 'deploy', 'late', 'alert', 'undo'):
+    for name in ('running', 'final', 'deploy', 'late', 'alert', 'clear', 'undo'):
         p = sub.add_parser(name)
         p.add_argument('--prev')
         p.add_argument('--out', required=True)
@@ -543,7 +563,8 @@ def main(argv=None):
         print(json.dumps(res, ensure_ascii=False))
         return 0
     prev = load(a.prev, {}) or {}
-    s = {'running': running, 'final': final, 'deploy': deploy, 'late': late, 'alert': late, 'undo': undo}[a.cmd](prev, a, now)
+    s = {'running': running, 'final': final, 'deploy': deploy, 'late': late, 'alert': late, 'clear': clear,
+         'undo': undo}[a.cmd](prev, a, now)
     with open(a.out, 'w', encoding='utf-8') as fh:
         fh.write(json.dumps(s, ensure_ascii=False, indent=1) + '\n')
     return 0

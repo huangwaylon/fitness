@@ -597,3 +597,29 @@ class DeployScript(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class LateCountsAnyRefresh(unittest.TestCase):
+    """late counts the status's own last run and history, not only scheduled runs (the first week has none)."""
+    def test_dispatched_refresh_is_not_late(self):
+        now = NOW
+        prev = {'run': {'result': 'published', 'endedAt': now - 3600000}, 'history': [{'t': now - 3600000}]}
+        self.assertEqual(S.watch([], now, prev)['reasons'], [])
+
+    def test_nothing_for_8_days_is_late(self):
+        now = NOW
+        prev = {'run': {'result': 'published', 'endedAt': now - 9 * 86400000}, 'history': []}
+        self.assertEqual(S.watch([], now, prev)['reasons'], ['late'])
+
+    def test_clear_restores_the_verdict(self):
+        prev = {'v': 1, 'at': NOW, 'verdict': 'late', 'reasons': ['late'], 'alert': {'text': 'x', 'since': NOW},
+                'run': {'result': 'published'}, 'history': []}
+        s = S.clear(prev, None, NOW + 1)
+        self.assertEqual((s['verdict'], s['reasons'], s['alert']), ('healthy', [], None))
+
+    def test_clear_keeps_a_held_reason(self):
+        prev = {'v': 1, 'at': NOW, 'verdict': 'held', 'reasons': ['band_gone', 'late'], 'alert': {'text': 'x', 'since': NOW},
+                'run': {'result': 'held'}, 'history': []}
+        s = S.clear(prev, None, NOW + 1)
+        self.assertEqual((s['verdict'], s['reasons']), ('held', ['band_gone']))
+        self.assertIsNotNone(s['alert'])
