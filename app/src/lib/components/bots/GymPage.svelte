@@ -333,14 +333,14 @@
   {/if}
 {/snippet}
 
-<!-- under the verdict's sentence: 確認中…, 今すぐ確認's answer with the cooldown's tail (VoiceOver hears the answer, never the
-     tick), an act's failure (the editor's own while it's open) -->
+<!-- under the verdict's sentence: 確認中…, 今すぐ確認's answer with the cooldown's tail (gone when it ends), an act's
+     failure (the editor's own while it's open) -->
 {#snippet answer()}
   {#if checking || cfg?.checking}
     <p class="rline" role="status" data-gym-result>{t('gym.ctl.running')}</p>
   {:else if result}
     <div class="rline" class:bad={result.bad} data-gym-result>
-      <p><span role="status">{result.text}</span>{#if wait > 0 && !result.bad}<span aria-hidden="true" data-gym-wait> · {t('gym.result.next', { s: wait })}</span>{/if}</p>
+      <p role="status">{result.text}{#if wait > 0 && !result.bad}<span data-gym-wait> · {t('gym.result.next', { s: wait })}</span>{/if}</p>
       {#if result.slots.length}<ul>{#each result.slots as l (l)}<li>{l}</li>{/each}</ul>{/if}
     </div>
   {/if}

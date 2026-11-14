@@ -4,7 +4,7 @@
 // merged by normName, in groups; 探す = the allow-list `search`, the presets), the verdict card, the facts, the bookings
 // that need a person (the hold's deadline, what to do) and the recent events. Pure but for t().
 import {
-  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, HUMAN_NEEDED_DETAILS, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, MAX_NAME, daysUntil, isDate, normName, tokyoToday,
+  AUTO_CONFIRM_MIN_DAYS, GUESTS_MAX, GUESTS_MIN, HOLD_SEC, HUMAN_NEEDED_DETAILS, LATE_AFTER_SEC, MAX_DATES, MAX_DAYS_AHEAD, daysUntil, isDate, normName, tokyoToday,
   type BookingEntry, type IntervalSec, type ItsEvent, type ItsSettings, type ItsSettingsInput, type ItsStatus, type LastError, type Member, type ScanMinute, type Verdict
 } from './contract.ts';
 import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from '#lib/its/roster.ts';
@@ -25,7 +25,6 @@ export interface Draft {
   /** The allow-list: the facilities searched (a name in `skip` too is not). */
   search: string[];
   skip: string[];
-  priority: string[];
   autoConfirm: boolean;
 }
 
@@ -37,7 +36,7 @@ export const legacy = (s: ItsSettings): boolean => !Array.isArray(s.search);
 export function draftOf(s: ItsSettings, seen: readonly string[] = [], roster: readonly RosterHotel[] = ROSTER): Draft {
   const skipped = new Set(s.skip.map(normName));
   const search = legacy(s) ? uniq([...roster.map((r) => r.name), ...seen]).filter((n) => !skipped.has(normName(n))) : [...s.search!];
-  return { intervalSec: s.intervalSec, dates: [...s.dates], guests: s.guests, search, skip: [...s.skip], priority: [...s.priority], autoConfirm: s.autoConfirm };
+  return { intervalSec: s.intervalSec, dates: [...s.dates], guests: s.guests, search, skip: [...s.skip], autoConfirm: s.autoConfirm };
 }
 
 /** Names unique by normName, the first spelling kept. */
@@ -50,22 +49,22 @@ function uniq(xs: readonly string[]): string[] {
 }
 
 const sortedNorm = (xs: string[]) => [...new Set(xs.map(normName))].sort().join('\n');
-/** The same settings: dates, skips and the allow-list as sets (names by normName), priority in its order. */
+/** The same settings: dates, skips and the allow-list as sets (names by normName). */
 export function sameDraft(a: Draft, b: Draft): boolean {
   return a.intervalSec === b.intervalSec && a.guests === b.guests && a.autoConfirm === b.autoConfirm
     && [...new Set(a.dates)].sort().join() === [...new Set(b.dates)].sort().join()
-    && sortedNorm(a.skip) === sortedNorm(b.skip) && sortedNorm(a.search) === sortedNorm(b.search)
-    && a.priority.map(normName).join('\n') === b.priority.map(normName).join('\n');
+    && sortedNorm(a.skip) === sortedNorm(b.skip) && sortedNorm(a.search) === sortedNorm(b.search);
 }
 
 /** The PUT body: dates sorted, any that passed while the draft was open dropped (the Worker refuses those); the
- *  allow-list less the skipped (skipping wins). */
+ *  allow-list less the skipped (skipping wins); no priority (the app ranks no facility: every one searched alike; the
+ *  Worker still wants the list, empty). */
 export function toInput(d: Draft, baseUpdatedAt: number | null, now: number): ItsSettingsInput & { search: string[] } {
   const dates = [...new Set(d.dates)].filter((x) => daysUntil(x, now) >= 0).sort();
   const skipped = new Set(d.skip.map(normName));
   return {
     intervalSec: d.intervalSec, dates, guests: Math.min(GUESTS_MAX, Math.max(GUESTS_MIN, d.guests)), search: uniq(d.search).filter((n) => !skipped.has(normName(n))),
-    skip: [...d.skip], priority: [...d.priority], autoConfirm: d.autoConfirm, baseUpdatedAt
+    skip: [...d.skip], priority: [], autoConfirm: d.autoConfirm, baseUpdatedAt
   };
 }
 
@@ -95,25 +94,61 @@ export const removeDate = (d: Draft, date: string): Draft => ({ ...d, dates: d.d
 /** 0 = 日 … 6 = 土, of a YYYY-MM-DD. */
 export const weekday = (date: string): number => new Date(`${date}T00:00:00Z`).getUTCDay();
 
-/** まとめて追加: the nights from `from` to `to` (either order) on the chosen weekdays (0 = 日), from tonight to
- *  MAX_DAYS_AHEAD, less those already listed; `add` stops at MAX_DATES (`over`: how many didn't fit). */
-export function bulkDates(d: Draft, from: string, to: string, days: readonly number[], now: number): { add: string[]; over: number } {
-  if (!isDate(from) || !isDate(to)) return { add: [], over: 0 };
-  const [a, b] = from <= to ? [from, to] : [to, from];
+/** The draft with these dates added (past ones let go, as addDate), up to MAX_DATES (`over`: how many didn't fit). */
+export function addDates(d: Draft, dates: readonly string[], now: number): { draft: Draft; over: number } {
   const live = d.dates.filter((x) => daysUntil(x, now) >= 0);
-  const all: string[] = [];
-  for (let ms = Date.parse(a), end = Date.parse(b); ms <= end && all.length <= MAX_DAYS_AHEAD; ms += 86_400_000) {
-    const date = new Date(ms).toISOString().slice(0, 10);
-    const n = daysUntil(date, now);
-    if (n >= 0 && n <= MAX_DAYS_AHEAD && days.includes(weekday(date)) && !live.includes(date)) all.push(date);
-  }
+  const add = dates.filter((x) => !live.includes(x) && daysUntil(x, now) >= 0 && daysUntil(x, now) <= MAX_DAYS_AHEAD);
   const room = Math.max(0, MAX_DATES - live.length);
-  return { add: all.slice(0, room), over: Math.max(0, all.length - room) };
+  return { draft: { ...d, dates: [...live, ...add.slice(0, room)].sort() }, over: Math.max(0, add.length - room) };
 }
 
-/** The draft with these dates added (past ones let go, as addDate). */
-export const addDates = (d: Draft, dates: readonly string[], now: number): Draft =>
-  ({ ...d, dates: [...new Set([...d.dates.filter((x) => daysUntil(x, now) >= 0), ...dates])].sort() });
+// ---- 日付's calendar: this month or next, a cell a night (ジム's calendar's look) ----
+/** A night's cell: `on` in the draft; `out` not settable (another month, past, too far: inert); `mark` what a booking
+ *  says of it (要対応 action, 仮押さえ · 申込中 hold, 予約確定 booked); `label` for VoiceOver. */
+export interface NightCell { date: string; d: number; today: boolean; out: boolean; on: boolean; mark: 'action' | 'hold' | 'booked' | null; label: string }
+/** This month and next in Tokyo: `YYYY-MM` each. */
+export function nightMonths(now: number): string[] {
+  const today = tokyoToday(now);
+  const [y, m] = [Number(today.slice(0, 4)), Number(today.slice(5, 7))];
+  return [today.slice(0, 7), m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`];
+}
+const MARK: Record<BookingState, NightCell['mark']> = { action: 'action', applying: 'hold', hold: 'hold', confirmed: 'booked', lapsed: null };
+const MARK_RANK: NightCell['mark'][] = ['action', 'hold', 'booked'];
+/** A month's weeks, Monday first, a cell a day (the days of the months either side out). */
+export function nightGrid(month: string, d: Draft, now: number, rows: readonly BookingRow[] = []): NightCell[][] {
+  const first = `${month}-01`;
+  const lead = (weekday(first) + 6) % 7;
+  const start = Date.parse(first) - lead * 86_400_000;
+  const today = tokyoToday(now);
+  const on = new Set(d.dates);
+  const marks = new Map<string, NightCell['mark']>();
+  for (const b of rows) {
+    const m = MARK[b.state], was = marks.get(b.date);
+    if (m && (!was || MARK_RANK.indexOf(m) < MARK_RANK.indexOf(was))) marks.set(b.date, m);
+  }
+  const days = Math.ceil((lead + new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).getUTCDate()) / 7) * 7;
+  const cells = Array.from({ length: days }, (_, i): NightCell => {
+    const date = new Date(start + i * 86_400_000).toISOString().slice(0, 10);
+    const n = daysUntil(date, now);
+    const out = !date.startsWith(month) || n < 0 || n > MAX_DAYS_AHEAD;
+    const mark = marks.get(date) ?? null;
+    const label = [formatDate(date), ...(date === today ? [t('its.cal.today')] : []), ...(on.has(date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
+    return { date, d: Number(date.slice(8, 10)), today: date === today, out, on: on.has(date), mark, label };
+  });
+  return Array.from({ length: days / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
+}
+
+/** A night tapped: in the draft, out of it; else added (or why not: 20 at most). */
+export function toggleNight(d: Draft, date: string, now: number): { ok: true; draft: Draft } | { ok: false; why: AddWhy } {
+  return d.dates.includes(date) ? { ok: true, draft: removeDate(d, date) } : addDate(d, date, now);
+}
+
+/** A weekday's column (0 = 月) tapped: its settable nights all in the draft, out of it; else the rest added (up to 20). */
+export function toggleColumn(d: Draft, grid: readonly NightCell[][], col: number, now: number): { draft: Draft; over: number } {
+  const dates = grid.map((w) => w[col]).filter((c) => !c.out).map((c) => c.date);
+  if (dates.length && dates.every((x) => d.dates.includes(x))) return { draft: { ...d, dates: d.dates.filter((x) => !dates.includes(x)) }, over: 0 };
+  return addDates(d, dates, now);
+}
 
 // ---- What can take a night ----
 /** A searched facility on a night: searched for it (`check`), or why not (the page explains; the runner searches every
@@ -165,7 +200,7 @@ export function nightOf(r: HotelRow, date: string, days: number, seasons: Season
   return closed ? { why: 'closed', line: closed } : { why: 'check', line: null };
 }
 
-/** The list's order: ★ first in priority order, then 関東, 近郊, 遠方, 新しい施設, an area's rows together within each, the
+/** The list's order: 関東, 近郊, 遠方, 新しい施設, an area's rows together within each, the
  *  areas in the roster's order (its first row with it; an area it lacks after, as the rows have them), stable. */
 const AREAS = new Map<string, number>();
 for (const r of ROSTER) if (!AREAS.has(r.area)) AREAS.set(r.area, AREAS.size);
@@ -173,8 +208,7 @@ export function listOrder<T extends HotelRow>(rows: readonly T[]): T[] {
   const areas = new Map(AREAS);
   for (const r of rows) if (r.roster && !areas.has(r.roster.area)) areas.set(r.roster.area, areas.size);
   const rank = (r: HotelRow) => (r.roster ? areas.get(r.roster.area)! : Infinity);
-  return [...rows].sort((a, b) => (a.star ?? Infinity) - (b.star ?? Infinity) || GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group)
-    || (a.star === null ? rank(a) - rank(b) || 0 : 0));
+  return [...rows].sort((a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || rank(a) - rank(b) || 0);
 }
 
 /** A night's facilities by why: the names (in listOrder) and the distinct lines. */
@@ -224,15 +258,14 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
 }
 
 /** 設定's rows (docs/design.md "Bots"), each folded with its summary: 日付 「3泊・11/22〜 · 探せる日 2/3」 (a night
- *  searchable when a facility searched can take it, a booked one not), 施設 「探す12・除外4」, 詳細 「15秒・2人・自動で確定
- *  オン」. */
+ *  searchable when a facility searched can take it, a booked one not), 施設 「探す12・除外4」, 詳細 「15秒・2人」. */
 export function settingsSummary(d: Draft, rows: readonly DateRow[], p: Pick<HotelParts, 'search' | 'off'>): { dates: string; hotels: string; detail: string } {
   const able = rows.filter((r) => r.note !== 'booked' && r.able.length > 0).length;
   const every = d.intervalSec < 60 ? t('its.interval.s', { n: d.intervalSec }) : t('its.interval.m', { n: d.intervalSec / 60 });
   return {
     dates: rows.length ? [t('its.set.nights', { n: rows.length, from: md(rows[0].date) }), t('its.set.able', { n: able, m: rows.length })].join(' · ') : t('its.set.noDates'),
     hotels: t('its.set.hotels', { n: p.search.length, off: p.off.length }),
-    detail: [every, t('its.guestsN', { n: d.guests }), t(d.autoConfirm ? 'its.set.autoOn' : 'its.set.autoOff')].join('・')
+    detail: [every, t('its.guestsN', { n: d.guests })].join('・')
   };
 }
 
@@ -241,7 +274,7 @@ export function changedParts(a: Draft, b: Draft): { dates: boolean; hotels: bool
   const only = (x: Partial<Draft>) => sameDraft({ ...b, ...x }, b);
   return {
     dates: !only({ dates: a.dates }),
-    hotels: !only({ search: a.search, skip: a.skip, priority: a.priority }),
+    hotels: !only({ search: a.search, skip: a.skip }),
     detail: !only({ intervalSec: a.intervalSec, guests: a.guests, autoConfirm: a.autoConfirm })
   };
 }
@@ -273,29 +306,16 @@ export interface HotelRow {
   search: boolean;
   /** Neither searched nor skipped: offered since the allow-list was saved, nobody decided yet (新しい施設：○○). */
   undecided: boolean;
-  /** Its place in the priority (0 = tried first), or null. */
-  star: number | null;
   /** The other spelling of what may be the same facility (an unverified roster name and a site name, one inside the
    *  other after normName): 探す on one doesn't cover the other (the lists match exactly). */
   similar: string | null;
-}
-
-/** A priority entry names a facility: a substring after normName, as the runner matches. */
-const names = (key: string, p: string): boolean => {
-  const n = normName(p);
-  return n !== '' && key.includes(n);
-};
-/** The first priority entry's index that names a facility, or null. */
-function starOf(key: string, priority: string[]): number | null {
-  const i = priority.findIndex((p) => names(key, p));
-  return i < 0 ? null : i;
 }
 
 /** Every facility the page lists, in the roster's order: the roster by group (関東, 近郊, 遠方), then 新しい施設: the
  *  seen names it doesn't have and any listed entry (the draft's, and the saved settings' so one let go in the draft
  *  stays listed) matching neither. An unverified roster name and a seen name, one inside the other, note each other
  *  (`similar`). */
-export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 'skip' | 'priority'> & { search?: string[] } | null = null, roster: readonly RosterHotel[] = ROSTER): HotelRow[] {
+export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 'skip'> & { search?: string[] } | null = null, roster: readonly RosterHotel[] = ROSTER): HotelRow[] {
   const skipped = new Set(d.skip.map(normName));
   const searched = new Set(d.search.map(normName));
   const rows = new Map<string, HotelRow>();
@@ -303,20 +323,14 @@ export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 
     const key = normName(name);
     if (!key || rows.has(key)) return;
     const search = searched.has(key) && !skipped.has(key);
-    rows.set(key, { key, name, roster: r, group: r?.region ?? 'new', fresh, search, undecided: !search && !skipped.has(key), star: null, similar: null });
+    rows.set(key, { key, name, roster: r, group: r?.region ?? 'new', fresh, search, undecided: !search && !skipped.has(key), similar: null });
   };
   for (const r of roster) add(r.name, r, false);
   for (const n of seen) add(n, null, true);
   for (const n of [...d.search, ...d.skip, ...(saved?.search ?? []), ...(saved?.skip ?? [])]) add(n, null, false);
-  for (const p of [...d.priority, ...(saved?.priority ?? [])]) {
-    let named = false;
-    for (const k of rows.keys()) if ((named = names(k, p))) break;
-    if (!named) add(p, null, false);
-  }
   const all = [...rows.values()];
   const unverified = all.filter((r) => r.roster && !r.roster.verified);
   for (const r of all) {
-    r.star = r.search ? starOf(r.key, d.priority) : null;
     const u = r.fresh ? unverified.find((x) => !x.similar && (x.key.includes(r.key) || r.key.includes(x.key))) : undefined;
     if (u) [r.similar, u.similar] = [u.name, r.name];
   }
@@ -327,14 +341,13 @@ export function hotelRows(d: Draft, seen: readonly string[], saved: Pick<Draft, 
  *  for one that takes none its reason in its place (季節外（冬季は12/19から） · 申込は10日前まで（11/12で受付終了） ·
  *  休館日 · 掲載終了; `fresh` false there: the line is the reason, not 新しい施設). */
 export interface ListRow extends HotelRow { meta: string; label: string }
-/** 施設's three parts: 探す (★ first, then 関東 / 近郊 / 遠方 / 新しい施設 by area), 日程に合わない (searched, but no night
+/** 施設's three parts: 探す (関東 / 近郊 / 遠方 / 新しい施設 by area), 日程に合わない (searched, but no night
  *  the stays list can take it: the bars' 受付終了 · 季節外 · 休館日 · 掲載終了 on every one), 除外 (not searched). The
  *  nights are the dates' rows (dateRows over the same rows: their `nights`) less the booked and those past every cutoff
  *  (none: every searched facility is in 探す). The counts agree with the bars: a facility the bars count as 探す on any
  *  night is in 探す, the rest searched in 日程に合わない. */
 export interface HotelParts {
   search: ListRow[];
-  starred: ListRow[];
   regions: { id: Group; label: string; rows: ListRow[] }[];
   unfit: ListRow[];
   off: ListRow[];
@@ -381,32 +394,28 @@ export function hotelParts(rows: readonly HotelRow[], dates: readonly DateRow[])
         : t(`its.hotel.why.${w}`)).join('・');
     unfit.push({ ...r, meta: reason, fresh: false, label: [r.name, t('its.hotel.onState'), reason].join('、') });
   }
-  const starred = search.filter((r) => r.star !== null);
-  const regions = GROUPS.map((id) => ({ id, label: t(`its.group.${id}`), rows: search.filter((r) => r.star === null && r.group === id) })).filter((g) => g.rows.length);
-  return { search, starred, regions, unfit, off };
+  const regions = GROUPS.map((id) => ({ id, label: t(`its.group.${id}`), rows: search.filter((r) => r.group === id) })).filter((g) => g.rows.length);
+  return { search, regions, unfit, off };
 }
 
-/** 施設's fold: 「この日程で探す施設 30件」, 「関東 12・近郊 9・遠方 9 · ★ リソルの森」 (★ only those in 探す), and
- *  「ほか10件は日程に合いません」 (null when none). */
+/** 施設's fold: 「この日程で探す施設 30件」, 「関東 12・近郊 9・遠方 9」 and 「ほか10件は日程に合いません」 (null when none). */
 export function hotelSummary(p: HotelParts): { title: string; line: string; more: string | null } {
   const counts = GROUPS.map((g) => ({ g, n: p.search.filter((r) => r.group === g).length })).filter((x) => x.n).map((x) => `${t(`its.group.${x.g}`)} ${x.n}`);
-  const star = p.starred.length ? `★ ${p.starred.map((r) => r.name).join('、')}` : '';
   return {
     title: t('its.hotel.sumSearch', { n: p.search.length }),
-    line: [counts.join('・'), star].filter(Boolean).join(' · '),
+    line: counts.join('・'),
     more: p.unfit.length ? t('its.hotel.sumMore', { n: p.unfit.length }) : null
   };
 }
 
-/** Searched (on) or not (off), a facility at a time: off skips it and takes it out of the priority (★ and off never
- *  both); on lists it and un-skips it. */
+/** Searched (on) or not (off), a facility at a time: off skips it; on lists it and un-skips it. */
 export function setSearch(d: Draft, names_: readonly string[], on: boolean): Draft {
   const keys = new Set(names_.map(normName));
   const search = d.search.filter((s) => !keys.has(normName(s)));
   const skip = d.skip.filter((s) => !keys.has(normName(s)));
   return on
     ? { ...d, search: [...search, ...names_], skip }
-    : { ...d, search, skip: [...skip, ...names_], priority: d.priority.filter((p) => ![...keys].some((k) => names(k, p))) };
+    : { ...d, search, skip: [...skip, ...names_] };
 }
 export const toggleSearch = (d: Draft, r: Pick<HotelRow, 'name' | 'search'>): Draft => setSearch(d, [r.name], !r.search);
 
@@ -425,23 +434,6 @@ export function applyPreset(d: Draft, rows: readonly HotelRow[], p: Preset): Dra
 }
 /** The preset the draft is now (exactly its facilities searched), or null. */
 export const presetOf = (rows: readonly HotelRow[]): Preset | null => PRESETS.find((p) => rows.every((r) => r.search === inPreset(p, r))) ?? null;
-
-/** A priority entry for a facility: its name, or (a site's name may run to MAX_SITE_NAME) its first MAX_NAME UTF-16
- *  units, whole code points, still naming it (a substring, as the runner matches). */
-function priorityEntry(name: string, key: string): string {
-  if (name.length <= MAX_NAME) return name;
-  let cut = '';
-  for (const c of name) { if (cut.length + c.length > MAX_NAME) break; cut += c; }
-  while (cut && !names(key, cut)) cut = [...cut].slice(0, -1).join('');
-  return cut.trim();
-}
-
-/** ★ on (last in the priority; one not searched is searched) or off (every entry matching it). */
-export function toggleStar(d: Draft, name: string): Draft {
-  const key = normName(name);
-  if (starOf(key, d.priority) !== null) return { ...d, priority: d.priority.filter((p) => !names(key, p)) };
-  return { ...setSearch(d, [name], true), priority: [...d.priority, priorityEntry(name, key)] };
-}
 
 /** A facility's small line: 箱根 · 直営 · 4日前まで, or 新しい施設. */
 export function hotelNote(r: HotelRow): string {

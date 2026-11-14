@@ -91,6 +91,7 @@ async function phone(page: Page, context: BrowserContext, o: Opts = {}) {
     await unfoldMenu(page);
     await page.locator('[data-hud-bots]').click();
     await expect(page.locator('dialog[open] [data-its-verdict]')).toBeVisible();
+    await page.locator('dialog[open] [data-its-fold="notify"] > summary').click(); // (設定's 通知, folded)
   };
   return { calls, open, notify: page.locator('dialog[open] [data-its-notify]'), pushes: () => calls.filter((c) => c.path === '/its/push/subscribe') };
 }

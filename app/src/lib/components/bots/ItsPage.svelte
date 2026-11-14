@@ -18,12 +18,11 @@
   import { tick } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
-  import Sheet from '../ui/Sheet.svelte';
   import Chip from '../ui/Chip.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { formatDate } from '#lib/i18n/format.ts';
+  import { formatDate, monthLabel } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow, now as sceneNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -32,19 +31,17 @@
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, addDate, addDates, applyPreset, attentionLines, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows,
-    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, settingsSummary, minuteCells, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
-    stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, type DateRow, type Draft, type HotelRow, type ListRow
+    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, nightMonths, toggleColumn, toggleNight,
+    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
+    stopsAtBooked, stripCells, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { driver } from '#lib/its/bot.ts';
   import { pushOn } from '#lib/its/push.ts';
   import ItsNotify from './ItsNotify.svelte';
   import BotPage from './BotPage.svelte';
-  import ChangeBar, { type ChangeSeg } from './ChangeBar.svelte';
+  import ItsCalendar from './ItsCalendar.svelte';
   import { useBot } from './useBot.svelte.ts';
 
-  /** A night's bar (ChangeBar): 探す leaf, 受付終了 hatched, 季節外 · 休館日 · 掲載終了 sunk and outlined. */
-  const SEG_TONE: Partial<Record<string, ChangeSeg['tone']>> = { check: 'leaf', cutoff: 'hatch' };
 
   /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
@@ -59,7 +56,6 @@
   /** Why the last 保存 failed (the Worker's refusal in words), or null. */
   let saveWhy = $state<string | null>(null);
   let running = $state(false);
-  let adding = $state('');
   let addWhy = $state<string | null>(null);
   let askAuto = $state(false);
   let askOverwrite = $state(false);
@@ -73,12 +69,7 @@
   /** The stay whose facilities are shown (by why), or null; `allNames`: the one whose 探す names are all shown. */
   let openDate = $state<string | null>(null);
   let allNames = $state<string | null>(null);
-  let bulkOpen = $state(false);
-  let bulkFrom = $state('');
-  let bulkTo = $state('');
-  let bulkDays = $state<number[]>([5, 6]);
   let autoBtn = $state<HTMLButtonElement>();
-  let bulkBtn = $state<HTMLButtonElement>();
 
   const dirty = $derived(!!draft && !!start && !sameDraft(draft, start));
   guardForm(() => dirty);
@@ -118,7 +109,6 @@
     });
   }
   refocus(() => askAuto, () => autoBtn);
-  refocus(() => bulkOpen, () => bulkBtn);
 
   const nowMs = $derived(minuteNow().getTime());
   const today = $derived(dayKey(minuteNow()));
@@ -137,14 +127,17 @@
   const dates = $derived(shown ? dateRows(shown, nowMs, hotels, status?.bookings, stops) : []);
   /** The facilities searched (探す on): every night's bar is of these. */
   const searched = $derived(hotels.filter((r) => r.search).length);
-  const months = $derived(dateMonths(dates));
-  const bounds = $derived(dateBounds(nowMs));
+  /** 日付's calendar: this month or next (a Segmented), its nights. */
+  const monthKeys = $derived(nightMonths(nowMs));
+  let pickedMonth = $state<string | null>(null);
+  const calMonth = $derived(pickedMonth && monthKeys.includes(pickedMonth) ? pickedMonth : monthKeys[0]);
+  const monthItems = $derived(monthKeys.map((m) => ({ id: m, label: monthLabel(m) })));
+  const grid = $derived(shown ? nightGrid(calMonth, shown, nowMs, bookings) : []);
   /** 施設's three parts (探す, 日程に合わない, 除外) from the draft's nights, as the bars count them. */
   const parts = $derived(hotelParts(hotels, dates));
   const summary = $derived(hotelSummary(parts));
   const fresh = $derived(hotels.filter((r) => r.undecided));
   /** ★'s facilities, by name: the expanded night marks them. */
-  const stars = $derived(new Set(hotels.filter((r) => r.star !== null).map((r) => r.name)));
   const preset = $derived(presetOf(hotels));
   const paused = $derived(status?.settings.paused ?? true);
   /** 開始 needs a saved stay from tonight on. */
@@ -172,7 +165,6 @@
   /** Running (on, not stopped): a strip with no read in it is a warning, not left out. */
   const live = $derived(!!status && status.mode === 'on' && !paused);
   const legend = { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), warn: t('its.scan.legend.warn'), fail: t('its.scan.legend.fail'), none: t('its.scan.legend.none') };
-  const bulk = $derived(shown && bulkOpen ? bulkDates(shown, bulkFrom, bulkTo, bulkDays, nowMs) : { add: [], over: 0 });
 
   function edit(f: (d: Draft) => Draft) {
     if (!status || !shown) return;
@@ -184,35 +176,27 @@
     saveWhy = null;
   }
 
-  function add() {
+  /** A night tapped on the calendar: in the draft or out (20 at most: why not, said under it). */
+  function tapNight(date: string) {
     if (!shown) return;
-    const r = addDate(shown, adding, nowMs);
+    const r = toggleNight(shown, date, nowMs);
     if (!r.ok) {
       cue('boop');
       addWhy = t(`its.date.why.${r.why}`);
       return;
     }
     addWhy = null;
-    adding = '';
-    cue('confirm');
     edit(() => r.draft);
   }
 
-  function openBulk() {
-    bulkFrom = bulkFrom || bounds.min;
-    bulkTo = bulkTo || bounds.min;
-    bulkOpen = true;
+  /** A weekday's header: its column's nights, all in or all out. */
+  function tapColumn(col: number) {
+    if (!shown) return;
+    const r = toggleColumn(shown, grid, col, nowMs);
+    addWhy = r.over ? t('its.cal.over', { n: r.over }) : null;
+    if (r.over) cue('boop');
+    edit(() => r.draft);
   }
-
-  function addBulk() {
-    if (!bulk.add.length) return void cue('boop');
-    const add = bulk.add;
-    cue('confirm');
-    edit((d) => addDates(d, add, nowMs));
-    bulkOpen = false;
-  }
-
-  const toggleDay = (n: number) => (bulkDays = bulkDays.includes(n) ? bulkDays.filter((x) => x !== n) : [...bulkDays, n]);
 
   function setAuto(on: boolean) {
     cue(on ? 'toggle-on' : 'toggle-off');
@@ -284,17 +268,10 @@
 
   const intervals = INTERVALS_SEC.map((s) => ({ id: String(s), label: s < 60 ? t('its.interval.s', { n: s }) : t('its.interval.m', { n: s / 60 }) }));
   const guests = Array.from({ length: GUESTS_MAX - GUESTS_MIN + 1 }, (_, i) => ({ id: String(GUESTS_MIN + i), label: t('its.guestsN', { n: GUESTS_MIN + i }) }));
-  /** 日〜土 (0 = 日; the catalog's weekday.N is ISO, 7 = 日). */
-  const weekdays = [0, 1, 2, 3, 4, 5, 6].map((n) => ({ n, label: t(`weekday.${n || 7}`) }));
 </script>
 
 {#snippet hotel(r: ListRow)}
   <li class="hrow" data-its-hotel={r.name} data-search={r.search}>
-    <button type="button" class="star" aria-pressed={r.star !== null} data-its-star={r.name} data-sfx="tick"
-      aria-label={r.star === null ? t('its.hotel.star', { name: r.name }) : t('its.hotel.starN', { name: r.name, n: r.star + 1 })}
-      onclick={() => edit((d) => toggleStar(d, r.name))}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z" /></svg>{#if r.star !== null}<b aria-hidden="true">{r.star + 1}</b>{/if}
-    </button>
     <button type="button" class="hsw" role="switch" aria-checked={r.search} aria-label={r.label} data-sfx="self"
       onclick={() => (cue(r.search ? 'toggle-off' : 'toggle-on'), edit((d) => toggleSearch(d, r)))}>
       <span class="txt"><b>{r.name}</b>{#if r.meta}<small class:fresh={r.fresh} data-its-meta>{r.meta}</small>{/if}</span>
@@ -315,9 +292,6 @@
   </section>
 {/snippet}
 
-{#snippet bar(d: DateRow)}
-  <ChangeBar segs={d.parts.map((p) => ({ id: p.why, tone: SEG_TONE[p.why] ?? 'sunk', label: t(`its.why.${p.why}`), n: p.names.length }))} attr="its" />
-{/snippet}
 
 <!-- under the verdict's sentence: 開始 needs a stay; 開始 / 停止 failed -->
 {#snippet runNote()}
@@ -399,45 +373,33 @@
         </div>
       {/each}
       <details class="fold" data-its-fold="dates">
-        <summary class="prow"><span class="prl">{t('its.sec.dates')}<small data-its-sum-dates>{sums?.dates}</small></span>{#if changed.dates || adding}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+        <summary class="prow"><span class="prl">{t('its.sec.dates')}<small data-its-sum-dates>{sums?.dates}</small></span>{#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
-        <p class="hint">{t('its.date.one')}</p>
-        {#if dates.length}
-          <div class="card pad months">
-            <p class="dhead" data-its-dates-total>{t('its.night.total', { n: searched })}</p>
-            {#each months as m (m.month)}
-              <h4 class="month">{m.label}</h4>
-              <ul class="rows dates">
-                {#each m.rows as d (d.date)}
-                  {@const open = openDate === d.date}
-                  <li data-its-date={d.date}>
-                    <div class="drow">
-                      {#if d.note === 'booked'}
-                        <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
-                      {:else}
-                        <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick"
-                          onclick={() => (openDate = open ? null : d.date)}>
-                          <span class="dtop">
-                            <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
-                            <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
-                            <span class="chev" aria-hidden="true"></span>
-                          </span>
-                          {#if searched}{@render bar(d)}{:else}<small aria-hidden="true">{t('its.night.none')}</small>{/if}
-                        </button>
-                      {/if}
-                      <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
-                        onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
-                    </div>
-                    {#if open && d.note !== 'booked'}
+          <Segmented items={monthItems} value={calMonth} label={t('its.cal.month')} attr="its-month" onpick={(id) => (pickedMonth = id)} />
+          <ItsCalendar cells={grid} month={calMonth} label={t('its.cal.label', { month: monthLabel(calMonth) })} onpick={tapNight} onweekday={tapColumn} />
+          {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
+          {#if dates.length}
+            <ul class="card pad rows dates" data-its-dates-total={searched}>
+              {#each dates as d (d.date)}
+                {@const open = openDate === d.date}
+                <li data-its-date={d.date}>
+                  {#if d.note === 'booked'}
+                    <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
+                  {:else}
+                    <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick" onclick={() => (openDate = open ? null : d.date)}>
+                      <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
+                      <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
+                      <span class="chev" aria-hidden="true"></span>
+                    </button>
+                    {#if open}
                       <div class="nlist" data-its-night-list>
                         {#each d.parts as p (p.why)}
-                          {@const names = p.names.map((n) => (stars.has(n) ? `★${n}` : n))}
-                          {@const cut = p.why === 'check' && allNames !== d.date && names.length > 8}
+                          {@const cut = p.why === 'check' && allNames !== d.date && p.names.length > 8}
                           <div class="np" data-its-why={p.why}>
                             <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
                             {#if p.why === 'check' || p.why === 'gone'}
-                              <p>{(cut ? names.slice(0, 8) : names).join('、')}</p>
-                              {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: names.length - 8 })} ›</button>{/if}
+                              <p>{(cut ? p.names.slice(0, 8) : p.names).join('、')}</p>
+                              {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })} ›</button>{/if}
                             {:else}
                               {#each p.lines as l (l)}<p>{l}</p>{/each}
                             {/if}
@@ -446,30 +408,18 @@
                         {#if d.noSeason}<p class="np-note" data-its-no-season>{t('its.night.noSeason')}</p>{/if}
                       </div>
                     {/if}
-                  </li>
-                {/each}
-              </ul>
-            {/each}
-          </div>
-          {#if parts.off.length}<p class="hint" data-its-dates-foot>{t('its.night.foot', { n: parts.off.length })}</p>{/if}
-        {:else}
-          <p class="hint">{t('its.date.empty')}</p>
-        {/if}
-        <label class="lbl" for="its-date-field">{t('its.date.field')}</label>
-        <div class="add">
-          <input id="its-date-field" type="date" min={bounds.min} max={bounds.max} bind:value={adding} data-its-date-field data-sfx="none"
-            oninput={() => (addWhy = null)} />
-          <button type="button" class="btn small" data-its-date-add data-sfx="self" onclick={add}>{t('its.date.add')}</button>
-        </div>
-        {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
-        <button type="button" class="btn small paper bulkopen" bind:this={bulkBtn} aria-haspopup="dialog" data-its-bulk-open data-sfx="tick" onclick={openBulk}>{t('its.bulk.open')}</button>
+                  {/if}
+                </li>
+              {/each}
+            </ul>
+          {/if}
         </div>
       </details>
       <details class="fold" bind:open={openHotels} data-its-fold="hotels" data-its-search>
         <summary class="prow"><span class="prl">{t('its.sec.hotels')}<small data-its-sum-hotels>{sums?.hotels}</small></span>{#if changed.hotels}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
         <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
-        <p class="hint" data-its-sum-full><span data-its-sum>{summary.title}</span>{#if summary.line}<span data-its-sum-line> · {summary.line}</span>{/if}{#if summary.more}<span data-its-sum-more> · {summary.more}</span>{/if}</p>
+        <p class="hint" data-its-sum-full><span data-its-sum>{summary.title}</span>{#if summary.line} · <span data-its-sum-line>{summary.line}</span>{/if}{#if summary.more} · <span data-its-sum-more>{summary.more}</span>{/if}</p>
         {#if openHotels}
           <div class="hbody">
             <div class="presets" role="group" aria-label={t('its.preset.label')}>
@@ -477,10 +427,6 @@
             </div>
             <section class="part" aria-labelledby="its-p-search" data-its-part="search">
               <h4 id="its-p-search">{t('its.part.search')}<small>{t('its.part.count', { n: parts.search.length })}</small></h4>
-              {#if parts.starred.length}
-                <h5 id="its-g-star">{t('its.group.star')}<small>{parts.starred.length}</small></h5>
-                <ul class="card pad rows hrows" aria-labelledby="its-g-star" data-its-group="star">{#each parts.starred as r (r.key)}{@render hotel(r)}{/each}</ul>
-              {/if}
               {#each parts.regions as g (g.id)}
                 <h5 id="its-g-{g.id}">{g.label}<small>{g.rows.length}</small></h5>
                 <ul class="card pad rows hrows" aria-labelledby="its-g-{g.id}" data-its-group={g.id}>{#each g.rows as r (r.key)}{@render hotel(r)}{/each}</ul>
@@ -499,13 +445,12 @@
           <span class="lbl">{t('its.interval')}</span>
           <Segmented items={intervals} value={String(shown.intervalSec)} label={t('its.interval')} attr="its-interval"
             onpick={(id) => edit((d) => ({ ...d, intervalSec: Number(id) as IntervalSec }))} />
-          <p class="hint"><Phrases text={t('its.interval.note')} /></p>
-          <span class="lbl">{t('its.guests')}</span>
+            <span class="lbl">{t('its.guests')}</span>
           <Segmented items={guests} value={String(shown.guests)} label={t('its.guests')} attr="its-guests" onpick={(id) => edit((d) => ({ ...d, guests: Number(id) }))} />
         </div>
         <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self"
           onclick={() => (shown!.autoConfirm ? setAuto(false) : (askAuto = true))}>
-          <span class="prl">{t('its.auto')}<small><Phrases text={t('its.auto.hint')} /></small></span>
+          <span class="prl">{t('its.auto')}</span>
           <span class="sw" aria-hidden="true"><i></i></span>
         </button>
         </div>
@@ -555,29 +500,10 @@
   groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('its.overwrite.cancel') }]]}
   onpick={(id) => id === 'yes' && overwrite()} />
 
-<Sheet bind:open={bulkOpen} title={t('its.bulk.title')} name="its.bulk">
-  <div class="bulk" data-its-bulk>
-    <span class="lbl">{t('its.bulk.period')}</span>
-    <div class="period">
-      <input type="date" min={bounds.min} max={bounds.max} bind:value={bulkFrom} aria-label={t('its.bulk.since')} data-its-bulk-from data-sfx="none" />
-      <span aria-hidden="true">〜</span>
-      <input type="date" min={bounds.min} max={bounds.max} bind:value={bulkTo} aria-label={t('its.bulk.until')} data-its-bulk-to data-sfx="none" />
-    </div>
-    <span class="lbl">{t('its.bulk.days')}</span>
-    <div class="wdays" role="group" aria-label={t('its.bulk.days')}>
-      {#each weekdays as w (w.n)}<Chip label={w.label} selected={bulkDays.includes(w.n)} data-its-weekday={w.n} onclick={() => toggleDay(w.n)} />{/each}
-    </div>
-    {#if bulk.over}<p class="hint bad" data-its-bulk-over>{t('its.bulk.over', { n: bulk.over })}</p>{/if}
-  </div>
-  {#snippet footer()}
-    <button type="button" class="btn" data-its-bulk-add data-sfx="self" aria-disabled={!bulk.add.length} onclick={addBulk}>
-      {bulk.add.length ? t('its.bulk.add', { n: bulk.add.length }) : t('its.bulk.none')}</button>
-  {/snippet}
-</Sheet>
 
 <style>
   .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
-  :global(.bpage) .hint.bad, :global(.bpage) .late, :global(.bpage) b.bad, .bulk .hint.bad { color: var(--coral-text); }
+  :global(.bpage) .hint.bad, :global(.bpage) .late, :global(.bpage) b.bad { color: var(--coral-text); }
   .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); margin: 0 4px; }
   /* a notice: yuzu-tinted */
   .card.note { background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
@@ -614,23 +540,20 @@
   .recent > summary::-webkit-details-marker { display: none; }
   .recent .ev { padding: 0 14px 12px; }
 
-  div.months { display: grid; gap: 4px; padding-top: 8px; }
-  .month { margin: 4px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .dates { padding: 0; }
-  .dates > li { display: block; min-height: 0; }
-  .drow { display: flex; align-items: flex-start; gap: 4px; min-height: var(--hit); }
   .dtxt { padding: 6px 0; }
   :global(.bpage) .booked { color: var(--leaf-text); }
-  .dhead { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  /* a night: the whole row the tap (44px+), its bar under the date */
+  /* the nights under the calendar: a row each (44px), tapped open to its facilities by why */
+  .dates { gap: 4px; padding: 4px 12px; }
+  .dates > li { display: block; min-height: 0; }
+  .dtxt { display: block; padding: 6px 0; }
   .night {
-    appearance: none; border: 0; background: none; cursor: pointer; flex: 1; min-width: 0; min-height: var(--hit); padding: 4px 0 6px; text-align: left;
-    color: var(--text); font: inherit; display: grid; gap: 6px;
+    appearance: none; border: 0; background: none; cursor: pointer; width: 100%; min-height: var(--hit); padding: 4px 0; text-align: left;
+    color: var(--text); font: inherit; display: flex; align-items: center; gap: 8px;
   }
-  .dtop { display: flex; align-items: center; gap: 8px; }
+  .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
   .nn { flex: none; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .night[aria-expanded='true'] .chev { rotate: 225deg; margin-top: 4px; }
-  /* (a night's bar and legend: ChangeBar); a part's swatch in the night's list, the bar's look */
+  /* a part's swatch in the night's list */
   .seg { display: inline-block; background: var(--ctl-off); box-shadow: inset 0 0 0 1px var(--edge); }
   .seg.check { background: var(--c-leaf); box-shadow: none; }
   .seg.cutoff { background: repeating-linear-gradient(45deg, var(--text-soft) 0 1.5px, var(--ctl-off) 1.5px 4.5px); box-shadow: none; }
@@ -644,28 +567,15 @@
     appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--sky-text);
     text-decoration: underline; text-underline-offset: 3px;
   }
-  /* the small ✕: drawn 28px, a 44px target */
-  .x { appearance: none; border: 0; background: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); margin-right: -8px; }
-  .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
-  .x:focus-visible, .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 
-  .add { display: flex; gap: 8px; align-items: center; }
-  /* 16px so Safari doesn't zoom; the app's field look (ProfileSection's) */
-  input[type='date'] {
-    flex: 1; min-width: 0; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); appearance: none;
-    font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  input[type='date']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .add .btn { margin: 0; }
-  .bulkopen { justify-self: start; margin: 0; }
 
+  .presets { display: flex; flex-wrap: wrap; gap: 4px 6px; }
   .fold { display: grid; gap: 8px; }
   .fold > summary, .psum { list-style: none; }
   .fold > summary::-webkit-details-marker, .psum::-webkit-details-marker { display: none; }
   .fold[open] > summary { margin-bottom: 8px; }
   /* (the chevrons: theme.css, the bots' sheet) */
   .hbody { display: grid; gap: 14px; }
-  .presets, .wdays { display: flex; flex-wrap: wrap; gap: 4px 6px; }
   .fresh-banner { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
   .fresh-banner .btn { flex: none; margin: 0; }
 
@@ -686,24 +596,11 @@
     display: flex; align-items: center; gap: 10px; font: inherit;
   }
   :global(.bpage) .hsw small.fresh { color: var(--leaf-text); }
-  .star {
-    appearance: none; border: 0; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); border-radius: 12px; position: relative;
-    display: flex; align-items: center; justify-content: center; gap: 1px; background: var(--ctl); color: var(--text-soft); box-shadow: var(--sh-ctl);
-  }
-  .star svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
-  .star b { font: 700 var(--fs-s)/1 var(--font-num); }
-  /* pressed: held down (the press's lip), filled, numbered */
-  .star[aria-pressed='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: var(--sh-ctl-press); transform: translateY(2px); }
-  .star[aria-pressed='true'] svg { fill: currentColor; }
-  .star:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
 
   .opts { display: grid; gap: 8px; }
   .opts .lbl { margin: 0; }
-  .opts .hint { margin: 0 0 6px; }
 
   /* (the switches: theme.css .sw, .sw.s the rows' smaller one) */
-  /* the ink rule: only on 自動で確定's chosen (yellow) row */
-  .prow[data-its-auto][aria-checked='true'] .prl small { color: var(--c-ink-soft); }
 
   .why { flex-basis: 100%; margin: 0 4px; display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .why span { flex: 1; }
@@ -711,6 +608,4 @@
   .why .btn { flex: none; margin: 0; }
   p.why.bad { padding: 8px 12px; margin: 0; border-radius: var(--r-card); color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 
-  .bulk { display: grid; gap: 8px; padding-bottom: 8px; }
-  .period { display: flex; align-items: center; gap: 6px; }
 </style>

@@ -70,7 +70,8 @@ test('nothing asks, subscribes or calls /push/ but 保養所’s 通知 switch, 
   await expect(notify.locator('[role="switch"]')).toHaveAttribute('aria-disabled', 'false');
   expect(await probe(page)).toEqual({ asked: 0, subscribed: 0, unsubscribed: 0 });
   expect(pushCalls).toEqual([]);
-  // the tap: asked once, subscribed once, handed to the its-bot Worker only
+  // the tap (設定's 通知 row opened): asked once, subscribed once, handed to the its-bot Worker only
+  await page.locator('dialog[open] [data-its-fold="notify"] > summary').click();
   await notify.locator('[role="switch"]').click();
   await expect(notify.locator('[role="switch"]')).toHaveAttribute('aria-checked', 'true');
   expect(await probe(page)).toEqual({ asked: 1, subscribed: 1, unsubscribed: 0 });

@@ -1,8 +1,8 @@
-// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown): on top the settings
-// from the members-only GET /gym/config (with the phone's key: lib/gym/config.ts, the stand-in e2e/gymbot.ts; the
-// controls and the calendar are gymbot-settings.spec.ts's); at the foot 動作状況, the gym bot's GET /status (lib/gym/status.ts, mocked here): its
-// verdict, 直近12時間 (a cell a check interval: tap or ← → names one) and its facts (くわしく folds the rest); 保養所's tab
-// leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
+// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown): the gym bot's GET
+// /status (lib/gym/status.ts, mocked here): its verdict with the key row (前回 · 次回 · いま) and ⋯, 直近12時間 (a cell a
+// check interval: tap or ← → names one), the calendar from the members-only GET /gym/config (with the phone's key:
+// lib/gym/config.ts, the stand-in e2e/gymbot.ts; ⋯'s acts and the calendar are gymbot-settings.spec.ts's) and
+// くわしく last; 保養所's tab leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
 // もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
 // 404s carry no CORS, so the preflight fails) hides the section. The guest has no ボット. Phones paired with a record of
 // their own (e2e/record.ts); the payloads' rules (tones, cells, lines, a garbled answer) are status.test.ts's and
@@ -67,39 +67,51 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(tab).toHaveAttribute('data-tab-status', 'warn'); // 一部不調: yuzu, no 「!」 (no person needed)
   await expect(tab).not.toHaveAttribute('data-look');
   await expect(tab).toHaveAccessibleName('ジム、一部不調');
-  await expect(gym.locator('[data-gym-alert]')).toHaveCount(0);
-  await expect(gym.locator('[data-gym-fact="last"]')).toContainText('11:54');
-  await expect(gym.locator('[data-gym-fact="next"]')).toContainText('12:09ごろ');
-  await expect(gym.locator('[data-gym-fact="failures"]')).toHaveCount(0);
-  // くわしく: the last success and LINE's count
-  await expect(gym.locator('[data-gym-fact="line"]')).toHaveCount(0);
-  await gym.locator('[data-gym-more] summary').click();
-  await expect(gym.locator('[data-gym-fact="ok"]')).toContainText('11:39');
-  await expect(gym.locator('[data-gym-fact="line"]')).toContainText('12 / 200');
-  // the verdict on top, the controls in its row (gymbot-settings.spec.ts), the calendar, then 動作状況 (the strip, the
-  // facts) and the foot
+  await expect(gym.locator('[data-gym-alert]')).toHaveCount(0); // nothing to do the sentence doesn't say
+  // the key row: 前回 (and how it went) · 次回 (and the interval) · いま (the open slots the last check saw)
+  const key = (id: string) => gym.locator(`[data-gym-key="${id}"]`);
+  await expect(key('last')).toHaveText(/前回\s*11:54\s*一部失敗/);
+  await expect(key('next')).toHaveText(/次回\s*12:09ごろ\s*15分ごと/);
+  await expect(key('open')).toHaveText(/いま\s*空き1件/);
+  await expect(gym.locator('[data-bots-asof]')).toHaveText('12:00時点');
+  // ⋯ on the card: named, a dialog's; the card has no other button
+  const menu = gym.locator('[data-gym-verdict] [data-gym-menu]');
+  await expect(menu).toHaveAccessibleName('ジムの操作');
+  await expect(menu).toHaveAttribute('aria-haspopup', 'dialog');
+  await expect(gym.locator('[data-gym-verdict]').getByRole('button')).toHaveCount(1);
+  // the verdict, the strip, the calendar (2 weeks), くわしく last; no 動作状況 heading, no foot
   const current = gym.locator('[data-gym-config]');
-  await expect(gym.locator('[data-gym-verdict] [data-gym-controls]')).toContainText('チェック中・15分ごと');
-  await expect(current.locator('[data-gym-day]')).toHaveCount(25);
-  const status = gym.locator('[data-gym-status]');
-  await expect(status).toContainText('動作状況');
-  expect((await gym.locator('[data-gym-verdict]').boundingBox())!.y).toBeLessThan((await current.boundingBox())!.y);
-  expect((await current.boundingBox())!.y).toBeLessThan((await status.boundingBox())!.y);
-  // 直近12時間: a cell each 15 minutes; the last check's timeout red, the 🔎 before it yellow (a slot open), the idle alarm outlined
+  const scans = gym.locator('[data-gym-scans]');
+  await expect(current.locator('[data-gym-day]')).toHaveCount(14);
+  await expect(gym.getByRole('heading', { level: 3 })).toHaveText(['日ごとの設定']);
+  const y = async (l: ReturnType<Page['locator']>) => (await l.boundingBox())!.y;
+  expect(await y(gym.locator('[data-gym-verdict]'))).toBeLessThan(await y(scans));
+  expect(await y(scans)).toBeLessThan(await y(current));
+  expect(await y(current)).toBeLessThan(await y(gym.locator('[data-gym-more]')));
+  await expect(gym.locator('[data-gym-foot]')).toHaveCount(0);
+  // 直近12時間: a cell each 15 minutes; the last check's timeout warn (one program), the 🔎 before it avail, the idle alarm low
+  await expect(scans).toContainText('直近12時間（1枠15分）');
   const strip = gym.locator('[data-gym-strip]');
   await expect(strip.locator('[data-gym-cell]')).toHaveCount(48);
   await expect(strip).toHaveAttribute('aria-label', '直近12時間：確認2回、失敗1回、空きあり2回');
-  await expect(strip.locator('[data-gym-cell]').last()).toHaveAttribute('data-gym-cell', 'fail');
+  await expect(strip.locator('[data-gym-cell]').last()).toHaveAttribute('data-gym-cell', 'warn');
   await expect(strip.locator('[data-gym-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-gym-cell="ok"]')).toHaveCount(0);
-  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('枠を選ぶと内容が出ます');
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('確認2回 · 失敗1 · 空き2');
   await strip.locator('[data-gym-cell]').last().click();
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:54 · トレーニング○ ピラティス✕（タイムアウト） · 空き1');
   await page.keyboard.press('ArrowLeft');
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:39 手動 · トレーニング○ ピラティス○ · 空き1');
   await page.keyboard.press('ArrowLeft');
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:24 · チェックする日なし');
-  await expect(gym.locator('[data-gym-foot]')).toContainText('bot · abc1234 · 更新 12:00');
+  // くわしく: the last success, LINE's count, the mode in words, the version
+  await expect(gym.locator('[data-gym-fact="line"]')).toHaveCount(0);
+  await gym.locator('[data-gym-more] summary').click();
+  await expect(gym.locator('[data-gym-fact="ok"]')).toContainText('11:39');
+  await expect(gym.locator('[data-gym-fact="line"]')).toContainText('12 / 200');
+  await expect(gym.locator('[data-gym-fact="mode"] dd')).toHaveText('ボット');
+  await expect(gym.locator('[data-gym-fact="sha"] dd')).toHaveText('abc1234');
+  await expect(gym.locator('[data-gym-fact="failures"], [data-gym-fact="last"], [data-gym-fact="next"]')).toHaveCount(0);
 
   const n = calls.n;
   await page.locator('dialog[open] [data-bots-tab="its"]').click();
@@ -154,7 +166,7 @@ test('the phone’s key reads 現在の設定; a failed read has its own もう�
   await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect(sheet.locator('[data-gym-error]')).toHaveCount(0);
   await error.getByRole('button', { name: 'もう一度' }).click();
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(25);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(14);
   await expect(error).toHaveCount(0);
   expect(calls.config).toBe(2);
   expect(calls.auth.every((a) => /^Bearer [0-9a-f]{32,}$/i.test(a ?? ''))).toBe(true);
@@ -176,11 +188,11 @@ test('the guest has no ボット, and nothing asks the bot', async ({ page, cont
   expect([calls.n, calls.config]).toEqual([0, 0]);
 });
 
-test('/status failing, /gym/config answered: the controls in their own row and the calendar, under the error row', async ({ page, context }) => {
+test('/status failing, /gym/config answered: ⋯ in its own row and the calendar, under the error row', async ({ page, context }) => {
   const { sheet } = await phone(page, context, 'A', () => 500);
   const gym = sheet.locator('[data-gym-page]');
   await expect(gym.locator('[data-gym-error]')).toContainText('読み込めませんでした（http 500）');
-  await expect(gym.locator('[data-gym-controls]')).toContainText('チェック中・15分ごと');
-  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
-  await expect(gym.locator('[data-gym-verdict], [data-gym-skeleton], [data-gym-status]')).toHaveCount(0);
+  await expect(gym.locator('.actrow [data-gym-menu]')).toHaveAccessibleName('ジムの操作');
+  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(14);
+  await expect(gym.locator('[data-gym-verdict], [data-gym-skeleton], [data-gym-scans]')).toHaveCount(0);
 });
