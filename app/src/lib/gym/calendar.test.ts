@@ -77,49 +77,49 @@ describe('the slot picker', () => {
 });
 
 describe('⏳ dates and times', () => {
-  const ok = (r: DayRow, date = r.day, now = NOW) => fromTimes(r, date, now).filter((c) => c.ok).map((c) => c.clock);
-  const halves = (from: string, to: string) => fromTimes(row(20), day(19), at(TODAY, '00:00')).map((c) => c.clock).filter((c) => c >= from && c <= to);
+  const clocks = (r: DayRow, date = r.day, now = NOW) => fromTimes(r, date, now).map((c) => c.clock);
+  /** `a:00`, `a:30` … `b:00`, `b:30`, written out by hand (not by the code under test). */
+  const hours = (a: number, b: number) => {
+    const out: string[] = [];
+    for (let h = a; h <= b; h++) out.push(`${String(h).padStart(2, '0')}:00`, `${String(h).padStart(2, '0')}:30`);
+    return out;
+  };
 
-  it('the day itself: the half hours ahead, before the window’s last slot (ふだん: before 12:30); to 21:30, the rest disabled', () => {
-    expect(ok(row(1))).toEqual(halves('00:00', '12:00'));
-    expect(ok(row(0))).toEqual([]); // today past noon: nothing before 12:30 is ahead
-    expect(ok(row(0, { rule: ['18:00', '20:00'] }))).toEqual(halves('12:30', '19:00'));
-    const all = fromTimes(row(0, { rule: 'any' }), day(0), NOW);
-    expect(all[0]).toMatchObject({ clock: '12:30', ok: true }); // the past left out (12:00 is now)
-    expect(all.at(-2)).toMatchObject({ clock: '21:00', ok: true });
-    expect(all.at(-1)).toMatchObject({ clock: '21:30', ok: false }); // 🔔: the last slot starts then
-    expect(all.length).toBe(19);
+  it('the day itself: the half hours ahead, before the window’s last slot starts (ふだん: before 12:30)', () => {
+    expect(clocks(row(1))).toEqual([...hours(0, 11), '12:00']);
+    expect(clocks(row(0))).toEqual([]); // today past noon: nothing before 12:30 is ahead
+    expect(clocks(row(0, { rule: ['18:00', '20:00'] }))).toEqual(['12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00']);
+    // 🔔: up to 21:00; 21:30 (the last slot's start) is refused, so not offered
+    expect(clocks(row(0, { rule: 'any' }))).toEqual(['12:30', ...hours(13, 20), '21:00']);
+    expect(clocks(row(2, { rule: 'any' })).at(-1)).toBe('21:00');
+    expect(fromRefusal(day(2), at(day(2), '21:29'), NOW, 'any')).toBeNull();
+    expect(fromRefusal(day(2), at(day(2), '21:30'), NOW, 'any')).toBe('from_after_window');
+    expect(fromRefusal(day(2), at(day(2), '19:29'), NOW, ['18:00', '20:00'])).toBeNull();
+    expect(fromRefusal(day(2), at(day(2), '19:30'), NOW, ['18:00', '20:00'])).toBe('from_after_window');
+    expect(fromRefusal(day(2), at(day(3), '09:00'), NOW, 'any')).toBe('from_after_day');
+    expect(fromRefusal(day(2), NOW, NOW, 'any')).toBe('from_passed');
   });
 
-  it('an earlier day: every half hour still ahead, to 23:30, whatever the window (Fri from Tue 18:00)', () => {
+  it('an earlier day: every half hour still ahead, 00:00–23:30, whatever the window (Fri from Tue 18:00)', () => {
     const fri = row(8, { rule: ['12:00', '13:00'] });
-    expect(ok(fri, day(5))).toEqual(halves('00:00', '23:30'));
-    expect(ok(fri, day(0))).toEqual(halves('12:30', '23:30')); // today: from the next half hour
-    expect(fromTimes(fri, day(5), NOW).find((c) => c.clock === '18:00')!.at).toBe(at(day(5), '18:00'));
+    expect(clocks(fri, day(5))).toEqual(hours(0, 23));
+    expect(clocks(fri, day(0))).toEqual(['12:30', ...hours(13, 23)]); // today: from the next half hour
+    expect(fromTimes(fri, day(5), NOW).find((c) => c.clock === '18:00')).toEqual({ clock: '18:00', at: at(day(5), '18:00'), ok: true });
   });
 
   it('the dates: today to the day (none after it, none before today), a day with no time left out', () => {
-    expect(fromDates(row(4), NOW)).toEqual([0, 1, 2, 3, 4].map(day));
-    expect(fromDates(row(0, { rule: ['18:00', '20:00'] }), NOW)).toEqual([day(0)]);
+    expect(fromDates(row(4), NOW)).toEqual(['2026-11-12', '2026-11-13', '2026-11-14', '2026-11-15', '2026-11-16']);
+    expect(fromDates(row(0, { rule: ['18:00', '20:00'] }), NOW)).toEqual(['2026-11-12']);
     expect(fromDates(row(0), NOW)).toEqual([]); // today ふだん past noon: nothing to start
-    expect(fromDates(row(2), at(TODAY, '23:45'))).toEqual([day(1), day(2)]); // 23:45: today has no half hour left
+    expect(fromDates(row(2), at(TODAY, '23:45'))).toEqual(['2026-11-13', '2026-11-14']); // 23:45: no half hour left today
   });
 
-  it('a saved ⏳ off the half hours (LINE’s any minute) or no longer allowed is kept, so the select shows it', () => {
+  it('a saved ⏳ off the half hours (LINE’s any minute), or no longer allowed, is kept so the select shows it', () => {
     const r = row(3, { rule: 'any', from: at(day(1), '18:10') });
-    expect(fromTimes(r, day(1), NOW).filter((c) => c.clock >= '18:00' && c.clock <= '18:30').map((c) => c.clock)).toEqual(['18:00', '18:10', '18:30']);
-    const late = row(3, { rule: ['12:00', '13:00'], from: at(day(3), '20:00') }); // 🔔 then ⏰ 12–13
-    expect(fromTimes(late, day(3), NOW).find((c) => c.clock === '20:00')).toMatchObject({ ok: false });
-    const passed = row(0, { from: at(day(0), '11:00') }); // not yet dropped by the bot
-    expect(fromDates(passed, NOW)).toEqual([day(0)]);
-  });
-
-  it('every time offered is one the bot takes, on every date offered (the contract’s one rule)', () => {
-    for (const r of [row(6), row(6, { rule: 'any' }), row(6, { rule: ['18:00', '20:00'] }), row(0, { rule: 'any' })]) {
-      for (const d of fromDates(r, NOW)) {
-        for (const c of fromTimes(r, d, NOW)) expect(c.ok).toBe(fromRefusal(r.day, c.at, NOW, r.rule ?? null) === null);
-      }
-    }
+    expect(clocks(r, day(1)).filter((c) => c >= '18:00' && c <= '18:30')).toEqual(['18:00', '18:10', '18:30']);
+    const late = row(3, { rule: ['12:00', '13:00'], from: at(day(3), '20:00') }); // from LINE, refused now
+    expect(fromTimes(late, day(3), NOW).filter((c) => !c.ok)).toEqual([{ clock: '20:00', at: at(day(3), '20:00'), ok: false }]);
+    expect(clocks(late)).toEqual([...hours(0, 11), '12:00', '20:00']);
   });
 
   it('in words as 📋: the day’s own clock, an earlier day with its date', () => {
@@ -149,6 +149,15 @@ describe('predict (the row shown before the answer)', () => {
 
 describe('undo', () => {
   const after = (before: DayRow[], input: Parameters<typeof predictAll>[1]) => predictAll(before, input, 4);
+
+  it('a ⏰ that leaves the ⏳ no slot clears it, as the bot does; undone: the rule, then the ⏳', () => {
+    const was = rows({ 9: { rule: 'any', from: at(day(9), '20:00'), resettable: true }, 10: { rule: 'any', from: at(day(8), '20:00'), resettable: true } });
+    const now = after(was, { a: 'range', d: day(9), s: '12:00', e: '13:00' });
+    expect(now[9]).toMatchObject({ rule: ['12:00', '13:00'], from: null });
+    expect(after(was, { a: 'range', d: day(9), s: '18:00', e: '21:00' })[9].from).toBe(at(day(9), '20:00')); // 20:30 still after it
+    expect(after(was, { a: 'range', d: day(10), s: '12:00', e: '13:00' })[10].from).toBe(at(day(8), '20:00')); // an earlier day's
+    expect(undoActs(was, now, 4)).toEqual([{ a: 'any', d: day(9) }, { a: 'from', d: day(9), at: at(day(9), '20:00') }]);
+  });
 
   it('puts a rule back; a ⏳ after it', () => {
     const was = rows({ 9: { rule: 'any', from: at(day(9), '09:00'), resettable: true } });

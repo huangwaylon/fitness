@@ -7,7 +7,7 @@ import { t } from '#lib/i18n/index.ts';
 import { md, weekdayOf } from '#lib/i18n/format.ts';
 import '#lib/i18n/gym.ts';
 import {
-  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromRefusal, minutesOf, weekday,
+  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromLimit, fromRefusal, minutesOf, weekday,
   type ActInput, type Change, type Clock, type Day, type DayAct, type DayRow, type Rule
 } from './contract.ts';
 
@@ -127,17 +127,17 @@ export const slotState = (slot: Clock, range: readonly [Clock, Clock] | null, an
 /** A ⏳ time the editor offers: its instant, and whether the bot takes it. */
 export interface FromChoice { clock: Clock; at: number; ok: boolean }
 
-/** The ⏳ times on `date` for a row's day, by the bot's rule (contract fromRefusal): the half hours still ahead (the
- *  day itself: up to its last slot, 21:30, the ones that leave no slot in its window disabled: shown, never sent), and
- *  the saved ⏳ when it is on that date and off them (LINE's any minute), so the select shows what is set. */
+/** The ⏳ times on `date` for a row's day: the half hours the bot takes (contract fromRefusal: still ahead; on the
+ *  day itself before its window's last slot), and the saved ⏳ when it is on that date and not one of them (LINE's any
+ *  minute; ok false when the bot would refuse it now), so the select shows what is set. */
 export function fromTimes(row: DayRow, date: Day, now: number): FromChoice[] {
   const rule = ruleOf(row);
   const choice = (when: number): FromChoice => ({ clock: clockOf(when), at: when, ok: fromRefusal(row.day, when, now, rule) === null });
   const last = date === row.day ? minutesOf(LAST_START) : 24 * 60 - SLOT_MINUTES;
   const out: FromChoice[] = [];
   for (let m = 0; m <= last; m += SLOT_MINUTES) {
-    const when = at(date, clockFrom(m));
-    if (when > now) out.push(choice(when));
+    const c = choice(at(date, clockFrom(m)));
+    if (c.ok) out.push(c);
   }
   const saved = row.from;
   if (saved !== null && dayOf(saved) === date && !out.some((c) => c.at === saved)) out.push(choice(saved));
@@ -167,7 +167,11 @@ const isDefault = (r: Rule | null) => sameRule(r, [DEFAULT_WINDOW[0], DEFAULT_WI
 /** A row as the bot will have it after `act` (the page shows it at once; the answer replaces it). */
 export function predict(row: DayRow, act: DayInput, usual: boolean): DayRow {
   let { rule, from, announced } = row;
-  const setRule = (r: Rule | null) => (rule = usual && isDefault(r) ? null : r);
+  const setRule = (r: Rule | null) => {
+    rule = usual && isDefault(r) ? null : r;
+    // a ⏳ the new window leaves no slot after is cleared (the bot's store.setRule)
+    if (from !== null && from >= fromLimit(row.day, rule)) from = null; // (ふだん / none: DEFAULT_WINDOW)
+  };
   if (act.a === 'any' || act.a === 'skip') setRule(act.a);
   if (act.a === 'range') setRule([act.s, act.e]);
   if (act.a === 'skip' || act.a === 'unfrom') from = null;

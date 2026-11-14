@@ -401,6 +401,7 @@ describe('POST /gym/act, end to end', () => {
       { name: '⏳', app: { a: 'from', d: d1, at: '11:00' }, line: { data: `a=from&d=${d1}`, params: { datetime: `${d1}T11:00` } } },
       { name: '⏳ on an earlier day (Fri from Tue 18:00)', app: { a: 'from', d: d5, at: at(d2, '18:00') }, line: { data: `a=from&d=${d5}`, params: { datetime: `${d2}T18:00` } } },
       { name: '⏳ moved to another day', seed: () => seed({ a: 'from', d: d5, at: '11:00' }), app: { a: 'from', d: d5, at: at(d1, '09:30') }, line: { data: `a=from&d=${d5}`, params: { datetime: `${d1}T09:30` } } },
+      { name: '⏰ that leaves the ⏳ no slot clears it', seed: async () => { await seed({ a: 'any', d: d6 }); await seed({ a: 'from', d: d6, at: '20:00' }); }, app: { a: 'range', d: d6, s: '12:00', e: '13:00' }, line: { data: `a=range&d=${d6}&s=12:00`, params: { time: '13:00' } } },
       { name: '⏳ cleared', seed: () => seed({ a: 'from', d: d1, at: '11:00' }), app: { a: 'unfrom', d: d1 }, line: { data: `a=unfrom&d=${d1}` } },
       { name: '🧹', seed: async () => { await seed({ a: 'skip', d: d2 }); await seed({ a: 'from', d: d1, at: '11:00' }); }, app: { a: 'reset', d: d2 }, line: { data: `a=reset&d=${d2}` } },
       { name: '🔕 🧹 🔕 on one day', seed: async () => { await seed({ a: 'skip', d: d2 }); await seed({ a: 'reset', d: d2 }); }, app: { a: 'skip', d: d2 }, line: { data: `a=skip&d=${d2}` } },

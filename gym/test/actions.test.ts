@@ -84,6 +84,22 @@ describe('apply: day settings', () => {
     expect((await applied({ a: 'unfrom', d: inDays(11) })).changed).toBe(true);
     expect((await applied({ a: 'unfrom', d: inDays(11) })).changed).toBe(false);
   });
+
+  it('a 🔔 / ⏰ change that leaves the ⏳ no slot clears it, and says so; one that leaves a slot keeps it', async () => {
+    const d = inDays(12);
+    await applied({ a: 'any', d });
+    await applied({ a: 'from', d, at: at(d, '20:00') });
+    const r = await applied({ a: 'range', d, s: '18:00', e: '21:00' }); // 20:30 still starts after 20:00
+    expect([r.reply, bot.store.checkFrom(d)]).toEqual([messages.dayChanged(bot.store, d, today()), at(d, '20:00')]);
+    const cut = await applied({ a: 'range', d, s: '12:00', e: '13:00' });
+    expect(cut).toEqual({ changed: true, reply: `👍 ${label(d)}を ⏰ 12:00〜13:00 にしました。\n⏳ は時間帯の外になったので解除しました。` });
+    expect(bot.store.checkFrom(d)).toBeUndefined();
+    // a ⏳ on an earlier day is never late for the window
+    await applied({ a: 'any', d });
+    await applied({ a: 'from', d, at: at(inDays(10), '23:30') });
+    expect((await applied({ a: 'range', d, s: '12:00', e: '13:00' })).reply).not.toContain('⏳ は');
+    expect(bot.store.checkFrom(d)).toBe(at(inDays(10), '23:30'));
+  });
 });
 
 describe('apply: check settings', () => {

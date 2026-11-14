@@ -11,7 +11,7 @@
   import Segmented from '../ui/Segmented.svelte';
   import GymSlots from './GymSlots.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { dayTitle, fromDates, fromText, fromTimes, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
+  import { dayTitle, fromDates, fromText, fromTimes, fromWords, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
   import { DEFAULT_WINDOW, at, clockOf, dayOf, fromRefusal, type ActInput, type Clock, type Day, type DayRow } from '#lib/gym/contract.ts';
 
   type Kind = 'any' | 'range' | 'off';
@@ -20,11 +20,14 @@
     row: DayRow | null;
     /** One of the default days (unset: ふだん). */
     usualDay: boolean;
+    /** The Worker's clock (GymPage pickNow), the times offered are after it. */
     now: number;
     onact: (input: ActInput) => void;
     note: { text: string; retry?: () => void } | null;
   }
-  let { open = $bindable(), row, usualDay, now, onact, note }: Props = $props();
+  let { open = $bindable(), row: given, usualDay, now, onact, note }: Props = $props();
+  /** The day, a ⏳ that has passed (the bot drops it at its next check) shown as none: checks have started. */
+  const row = $derived(given && given.from !== null && given.from <= now ? { ...given, from: null } : given);
 
   /** 時間指定 chosen here before the rule is one (a ふだん or 未チェック day shows its grid at once). */
   let wantRange = $state(false);
@@ -48,6 +51,8 @@
     return dates.includes(shown) ? shown : (dates.at(-1) ?? '');
   });
   const times = $derived(row && fromDate ? fromTimes(row, fromDate, now) : []);
+  /** The saved ⏳ isn't on the start day shown (its time can't move there): it stays until a time is picked. */
+  const kept = $derived(row && row.from !== null && fromDate !== dayOf(row.from) ? row.from : null);
   const watched = $derived(rule === 'any' || Array.isArray(rule));
   const resetLabel = $derived(row && row.rule !== null && usualDay ? t('gym.editor.back') : t('gym.editor.reset'));
 
@@ -61,11 +66,12 @@
       wantDate = null;
       pick = { range: null, open: false };
     }
-    // a ⏳ saved or changed (here, from LINE, by the other member): its own day shows
+    // a ⏳ saved or changed on another day (from LINE, by the other member): its own day shows; one gone (cleared,
+    // or a first one refused) keeps the day picked
     const f = row ? row.from : null;
     if (f !== lastFrom) {
       lastFrom = f;
-      wantDate = null;
+      if (f !== null && dayOf(f) !== wantDate) wantDate = null;
     }
   });
 
@@ -158,6 +164,7 @@
                 {#each times as c (c.at)}<option value={String(c.at)} disabled={!c.ok}>{c.clock}</option>{/each}
               </select>
             </div>
+            {#if kept !== null}<p class="hint" data-gym-from-kept>{t('gym.editor.fromKept', { time: clockOf(kept), from: fromWords(null, kept) })}</p>{/if}
           {:else}
             <p class="hint" data-gym-from-none>{t('gym.editor.fromNone')}</p>
           {/if}

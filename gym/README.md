@@ -35,7 +35,8 @@ Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time
 further days wait for a setting.
 
 - **⏳ check from** a date and time: the day is ignored until then (e.g. Friday from Tuesday 18:00, when an earlier
-  booking is over: 3 at a time). Kept between 🔔 and ⏰, cleared by 🔕; set on a 🔕 or 💤 day it gives the day ⏰
+  booking is over: 3 at a time). Kept between 🔔 and ⏰ unless the new window leaves no slot after it (then cleared,
+  and the reply says so; one saved before the rule is dropped on load), cleared by 🔕; set on a 🔕 or 💤 day it gives the day ⏰
   12:00〜13:00. One rule (the contract's `fromRefusal`): in the future, from today up to the day itself, and on the day
   before its window's last slot starts (🔔: 21:30), else a hint (it would never find one). LINE's picker runs from the
   next minute to the day's 21:29; the app offers half hours on a start day and a time.

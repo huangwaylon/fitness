@@ -88,6 +88,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
       lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [] } = rt); // the defaults: saved before /status, /gym/act
     // kept before 11/14 with a `said` flag and every change: one per day or check setting now
     this.changes = latestChanges(this.changes.map(({ said: _, ...c }: StoredChange & { said?: boolean }) => c));
+    this.store.purge(Date.now()); // e.g. a 🔔 ⏳ at 21:30 or later, saved before the rule
     this.savedRuntime = JSON.stringify(this.runtime());
     if (!this.groupId) console.warn("LINE_GROUP_ID isn't set: alerts can't be sent until it is");
   }

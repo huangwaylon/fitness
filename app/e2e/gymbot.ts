@@ -6,7 +6,7 @@
 // is 409 stale). No network.
 import type { Page } from './fixtures.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
-import { at, dayOf, fromRefusal, fromWindow, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
+import { at, dayOf, fromLimit, fromRefusal, fromWindow, weekday, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
 
 const ORIGIN = 'https://gym-bot.island-fund-relay.workers.dev';
 export const STATUS = `${ORIGIN}/status`;
@@ -16,6 +16,8 @@ const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods
 const MIN = 60_000;
 const DAY_MS = 86_400_000;
 const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+/** The bot's day label (messages.ts dayLabel): `11/13（金）`. */
+const label = (d: string) => `${md(d)}（${'月火水木金土日'[weekday(d)]}）`;
 
 /** A runner whose last check's pilates timed out, at `now`. */
 export function statusPayload(now: number): GymStatus {
@@ -55,6 +57,8 @@ export function fakeGym(now: () => number) {
     if (usual(d) && isDefault(r)) rules.delete(d);
     else rules.set(d, r);
     if (r === 'skip') froms.delete(d);
+    // a ⏳ the new window leaves no slot after is dropped (store.setRule)
+    if ((froms.get(d) ?? 0) >= fromLimit(d, rules.get(d) ?? (usual(d) ? r : null))) froms.delete(d);
   }
 
   function row(d: string): DayRow {
@@ -120,9 +124,10 @@ export function fakeGym(now: () => number) {
         const rule: Rule | null = r.rule ?? (r.usual ? ['12:00', '13:00'] : null);
         const error = fromRefusal(input.d, typeof input.at === 'number' ? input.at : at(input.d, input.at), now(), rule);
         const w = fromWindow(rule);
-        const hint = error === 'from_passed' ? 'その日時はもう過ぎています。'
-          : error === 'from_after_day' ? `チェック開始は${md(input.d)}までの日時にしてください。`
-            : `その時刻からだと、${md(input.d)}の ⏰ ${w[0]}〜${w[1]} の枠は残りません。先に時間帯を変えてください。`;
+        const hint = error === 'from_passed' ? 'その日時はもう過ぎています。' // the bot's words (messages.ts)
+          : error === 'from_after_day' ? `チェック開始は${label(input.d)}までの日時にしてください。`
+            : rule === 'any' ? `その時刻からだと、${label(input.d)}の枠は残りません。`
+              : `その時刻からだと、${label(input.d)}の ⏰ ${w[0]}〜${w[1]} の枠は残りません。先に時間帯を変えてください。`;
         if (error) return { status: 422, body: { ok: false, error, hint, config: config() } };
       }
       for (const x of list) apply1(('days' in input ? { ...input, d: x.d, days: undefined } : input) as Extract<ActInput, { d: string }>);

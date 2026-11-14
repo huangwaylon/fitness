@@ -126,7 +126,13 @@ export async function apply(bot: Bot, act: GymAction, now = Date.now()): Promise
   if (act.a === 'unfrom') return dayReply(bot, act.d, today, bot.store.setCheckFrom(act.d, null, today));
   if (act.a === 'from') return setCheckFrom(bot, act.d, act.at, now);
   const rule: Rule = act.a === 'range' ? [act.s, act.e] : act.a === 'any' ? ANY : SKIP;
-  return dayReply(bot, act.d, today, bot.store.setRule(act.d, rule, today));
+  const from = bot.store.checkFrom(act.d);
+  const changed = bot.store.setRule(act.d, rule, today);
+  // a ⏳ the new window leaves no slot after is dropped (store.setRule), and said so
+  if (rule !== SKIP && from !== undefined && bot.store.checkFrom(act.d) === undefined) {
+    return { changed: true, reply: `${messages.dayChanged(bot.store, act.d, today)}\n${messages.FROM_DROPPED}` };
+  }
+  return dayReply(bot, act.d, today, changed);
 }
 
 /** A day action that can't be done whatever the state: a day that has passed, a range that ends before it starts. */

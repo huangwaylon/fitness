@@ -599,6 +599,14 @@ describe('state', () => {
     expect(gym.store.rule(inDays(20))).toBe(SKIP);
   });
 
+  it('drops a saved ⏳ that leaves no slot (a 🔔 21:30+, saved before the rule), keeps the rest', async () => {
+    const [d1, d2] = [inDays(5), inDays(6)];
+    const checkFrom = { [d1]: isoJst(at(d1, '21:45')), [d2]: isoJst(at(inDays(2), '18:00')) };
+    state = fakeState(new Map([['state', { version: 3, days: { [d1]: 'any', [d2]: 'any' }, check_from: checkFrom }]]));
+    gym = await start();
+    expect([gym.store.checkFrom(d1), gym.store.checkFrom(d2)]).toEqual([undefined, at(inDays(2), '18:00')]);
+  });
+
   it.each([['not JSON'], [{ version: 2 }], [{ version: 3, days: { x: 'any' } }]])(
     'starts empty from a broken saved state, kept aside (%j)', async (broken) => {
       state = fakeState(new Map([['state', broken]]));

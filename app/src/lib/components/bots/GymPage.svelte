@@ -65,6 +65,8 @@
   /** When 今すぐ確認 is ready again, on this phone's clock (the Worker's cooldown, shifted). */
   let readyAt = $state(0);
   let tickNow = $state(Date.now());
+  /** The Worker's clock less this phone's, at the last answer. */
+  let skew = $state(0);
   let flash = $state<ReadonlySet<Day>>(new Set());
   let editDay = $state<Day | null>(null);
   let editOpen = $state(false);
@@ -109,6 +111,7 @@
   /** A config's 🔎 cooldown on this phone's clock. */
   function take(c: GymConfig) {
     readyAt = c.checkReadyAt === null ? 0 : Date.now() + (c.checkReadyAt - c.now);
+    skew = c.now - Date.now();
   }
 
   /** Days a poll saw change: flashed a moment. */
@@ -137,7 +140,9 @@
   });
 
   const today = $derived(dayKey(minuteNow()));
-  const nowMs = $derived(minuteNow().getTime());
+  /** The editor's now: the Worker's clock, a minute ahead (the tick is up to a minute old), so a ⏳ time isn't
+   *  offered in its last minute, when the bot would refuse it as passed. */
+  const pickNow = $derived(minuteNow().getTime() + skew + 60_000);
   const verdict = $derived(data && verdictView(data));
   const facts = $derived(data ? factRows(data, today) : []);
   const strip = $derived(data && checkStrip(data));
@@ -216,7 +221,11 @@
 
   function offerUndo(input: ActInput, was: GymConfig, now: GymConfig) {
     const n = 'days' in input ? input.days.length : 1;
-    const text = n > 1 ? t('gym.toast.changedN', { n, what: whatOf(input) }) : t('gym.toast.changed', { what: whatOf(input) });
+    let text = n > 1 ? t('gym.toast.changedN', { n, what: whatOf(input) }) : t('gym.toast.changed', { what: whatOf(input) });
+    // a 🔔 / ⏰ that left a ⏳ no slot: the bot cleared it (store.setRule), and says so
+    if (input.a === 'any' || input.a === 'range') {
+      if (was.rows.some((b) => b.from !== null && now.rows.find((a) => a.day === b.day)?.from === null)) text += t('gym.toast.fromDropped');
+    }
     const setting = undoSetting(input, was);
     const plan = setting ? [setting] : undoActs(was.rows, now.rows, now.defaultDays);
     toasts.show(text, UNDO_MS, { action: { label: t('gym.toast.undo'), run: () => void undo(plan) } });
@@ -417,7 +426,7 @@
   </section>
 </div>
 
-<GymDayEditor bind:open={editOpen} row={editRow} {usualDay} now={nowMs} note={editOpen ? note : null} onact={(a) => void send(a)} />
+<GymDayEditor bind:open={editOpen} row={editRow} {usualDay} now={pickNow} note={editOpen ? note : null} onact={(a) => void send(a)} />
 
 <ActionSheet bind:open={askStop} title={t('gym.ctl.stopAsk')} note={t('gym.ctl.stopNote')}
   groups={[[{ id: 'stop', label: t('gym.ctl.stop'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}

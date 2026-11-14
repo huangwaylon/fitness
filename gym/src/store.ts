@@ -7,7 +7,8 @@
 //   - nothing      → DEFAULT_WINDOW within the next DAYS_TO_CHECK days, otherwise not checked yet (💤)
 //
 // A checked day can also have a "check from" time (⏳): the day is ignored until then. It's kept when the rule
-// changes between ANY and a range, cleared by SKIP, and dropped once it has passed.
+// changes between ANY and a range unless it then leaves no slot in the day's window (the contract's fromLimit),
+// cleared by SKIP, and dropped once it has passed.
 //
 // Each slot time (day + start, whichever program) is announced at most once, even if it's booked and freed again
 // later. Records are dropped once the time has passed.
@@ -16,6 +17,7 @@
 // Mutations set `dirty`; the bot then saves the state.
 import { CHECK_INTERVAL_MINUTES, DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { addDays, dayOf, isoJst, type Clock, type Day } from './time.ts';
+import { fromLimit } from '../../app/src/lib/gym/contract.ts';
 
 export const VERSION = 3;
 export const ANY = 'any';
@@ -150,7 +152,15 @@ export class Store {
       this.rulesByDay.set(day, typeof rule === 'string' ? rule : [rule[0], rule[1]]);
       this.dirty = true;
     }
+    this.dropLateFrom(day, today);
     return !sameRule(this.effectiveRule(day, today), before);
+  }
+
+  /** A ⏳ that leaves no slot in the day's window (its rule changed since, or saved before 🔔 stopped at 21:30) can
+   *  never let the day alert: dropped. Returns true if one was. */
+  private dropLateFrom(day: Day, today: Day): boolean {
+    const from = this.checkFromByDay.get(day);
+    return from !== undefined && from >= fromLimit(day, this.effectiveRule(day, today)) && this.changeCheckFrom(day, null);
   }
 
   /** Clear everything for a day, including which of its times were announced, so they can alert again once the day
@@ -213,7 +223,8 @@ export class Store {
     return windows;
   }
 
-  /** Forget rules for past days, and "check from" times and slot records that have passed. */
+  /** Forget rules for past days, "check from" times that have passed or leave no slot, and slot records that have
+   *  passed. */
   purge(now: number): void {
     const today = dayOf(now);
     let changed = false;
@@ -222,6 +233,7 @@ export class Store {
     }
     for (const [d, t] of this.checkFromByDay) {
       if (t <= now || d < today) changed = this.checkFromByDay.delete(d) || changed;
+      else changed = this.dropLateFrom(d, today) || changed;
     }
     for (const t of this.notifiedStarts) {
       if (t <= now) changed = this.notifiedStarts.delete(t) || changed;
