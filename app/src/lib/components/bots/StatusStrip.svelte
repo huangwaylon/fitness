@@ -71,7 +71,7 @@
     <p class="sline warn" role="status" {...data('empty')}>{empty}</p>
   {:else}
     <div class="strip" role="slider" tabindex="0" aria-label={summary} aria-valuemin={0} aria-valuemax={n - 1} aria-valuenow={picked ?? n - 1}
-      aria-valuetext={cells[picked ?? n - 1]?.label} bind:this={strip} onkeydown={onkey} onpointerdown={down}
+      aria-valuetext={cells[picked ?? n - 1]?.label} bind:this={strip} data-sfx="self" onkeydown={onkey} onpointerdown={down}
       onpointermove={(e) => dragging && pickAt(e)} onpointerup={() => (dragging = false)} onpointercancel={() => (dragging = false)} {...data('strip')}>
       {#each cells as c, i (c.start)}<i class="cell {c.state}" class:on={picked === i} data-on={picked === i || undefined} {...data('cell', c.state)}></i>{/each}
     </div>

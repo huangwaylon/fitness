@@ -14,6 +14,7 @@ const SKIP = [/\/dev\//, /\/editor\//];
 
 /** `self`: the handler (or what it sets off) plays the outcome's own cue. Where that sound comes from. */
 const SELF: Record<string, string> = {
+  'lib/components/bots/StatusStrip.svelte': 'the strip ticks as the finger lands on a cell or drags onto the next',
   'lib/components/island/Decor.svelte': 'a placed decoration jiggles with tick; in the decorate mode the mode plays its own',
   'lib/components/tent/TentEdit.svelte': 'tick to pick, turn or move a piece and for a tab, confirm to place and for a wallpaper, boop when it can\'t, undo to put away, to take back (取り消す) and to clear',
   'lib/components/tent/TentRoom.svelte': 'toggle-on / toggle-off for the room\'s light switch',
@@ -59,7 +60,6 @@ const NONE: Record<string, string> = {
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
   'lib/components/panel/ProfileSection.svelte': 'the choice already made does nothing; the birthday field opens the system date picker',
   'lib/components/bots/GymDayEditor.svelte': 'the start time opens the system picker',
-  'lib/components/bots/StatusStrip.svelte': 'a cell: the strip ticks as it is touched down (its pointerdown picks the cell under the finger)',
   'lib/components/travel/PackList.svelte': 'the add and rename fields: the system keyboard clicks',
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
   'lib/components/health/KenkouSwitch.svelte': 'the page already shown does nothing',
