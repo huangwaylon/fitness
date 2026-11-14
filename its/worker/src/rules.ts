@@ -3,10 +3,11 @@
 // (ItsStatus). Every time is the Worker's clock (`now`), except the runner's own fields in its report.
 import {
   AUTO_CONFIRM_MIN_DAYS, BOOKINGS_KEEP_DAYS, EVENTS_KEPT, HOLD_SEC, IMPORTANT_EVENTS, LATE_AFTER_SEC, LEASE_SEC, REASONS,
-  RECENT_MINUTES, SCAN_MINUTE_CODES, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName, tokyoToday,
+  RECENT_MINUTES, SCAN_MINUTE_CODES, SETTINGS_STALE_SEC, START_GRACE_SEC, daysUntil, normName,
   type BookingEntry, type BookingInput, type BookingKind, type EventInput, type ItsEvent, type ItsHealth, type ItsSettings,
   type ItsStatus, type Lease, type Reason, type RunnerConfig, type RunnerReport, type ScanEntry, type ScanMinute, type Verdict,
 } from '../../../app/src/lib/its/contract.ts';
+import { localDateAt } from '../../../app/src/lib/contract/tokyo.ts';
 import type { PushJob, PushLog, PushSub } from './push.ts';
 
 export type Mode = 'on' | 'off';
@@ -80,7 +81,7 @@ const SOLVE_FAILING = 3;
 
 /** The settings as they stand today: dates before today (Tokyo) dropped. */
 export function liveSettings(s: ItsSettings, now: number): ItsSettings {
-  const today = tokyoToday(now);
+  const today = localDateAt(now);
   return s.dates.every((d) => d >= today) ? s : { ...s, dates: s.dates.filter((d) => d >= today) };
 }
 
@@ -101,7 +102,7 @@ const ackOf = (acks: ItsRecord['acks'], runId: string | null): number => acks.fi
  *  the next restart counted spends it again). */
 export const RESTART_DAY_CAP = 20;
 export const restartsToday = (rec: Pick<ItsRecord, 'restarts'>, now: number): number =>
-  rec.restarts?.day === tokyoToday(now) ? rec.restarts.n : 0;
+  rec.restarts?.day === localDateAt(now) ? rec.restarts.n : 0;
 
 /** The day's restarts are spent and no 開始 came since. */
 const restartCapped = (rec: Pick<ItsRecord, 'restarts' | 'control'>, now: number): boolean =>
@@ -115,8 +116,8 @@ export function addRestarts(rec: Pick<ItsRecord, 'restarts'>, added: ItsEvent[],
   const n = added.filter((e) => e.kind === 'run_start' && e.detail === 'restart').length;
   if (!n) return null;
   const total = restartsToday(rec, now) + n;
-  const was = rec.restarts?.day === tokyoToday(now) ? rec.restarts.spentAt ?? null : null;
-  return { day: tokyoToday(now), n: total, spentAt: total >= RESTART_DAY_CAP ? now : was };
+  const was = rec.restarts?.day === localDateAt(now) ? rec.restarts.spentAt ?? null : null;
+  return { day: localDateAt(now), n: total, spentAt: total >= RESTART_DAY_CAP ? now : was };
 }
 
 /** What a runner is told: the settings, the record, the lease, and whether (and why) to stop. `mustHold` (a report's
@@ -392,7 +393,7 @@ export function watchAt(rec: ItsRecord, mode: Mode, now: number): number | null 
 }
 
 /** The watchdog's recoveries on `now`'s Tokyo day. */
-export const dayCount = (w: Watch, now: number): number => (w.day === tokyoToday(now) ? w.dayN : 0);
+export const dayCount = (w: Watch, now: number): number => (w.day === localDateAt(now) ? w.dayN : 0);
 
 /** The open incident's push is due: 'silent' (old enough, its recoveries refused, or the day's cap reached), 'loop'
  *  (WATCH_LOOP_INCIDENTS counted within WATCH_LOOP_MS, or the day's restarts spent: a crash loop), else null; never

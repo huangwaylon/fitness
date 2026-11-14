@@ -1,7 +1,8 @@
 // The bots' status strip's slots (strip.ts): the clock's grid (保養所's minutes), the checks in turn (ジム's: the
 // alarm's jitter leaves no false gap), the ticks on Tokyo's clock.
 import { describe, expect, it } from 'vitest';
-import { chain, gridStarts, hhmm, stripTicks, type StripCell } from './strip.ts';
+import { chain, gridStarts, stripTicks, type StripCell } from './strip.ts';
+import { clockAt } from './contract/tokyo.ts';
 
 const MIN = 60_000;
 const at = (hm: string) => Date.parse(`2026-11-13T${hm}:00+09:00`);
@@ -10,12 +11,12 @@ describe('gridStarts', () => {
   it('the last slots on the clock up to now’s, oldest first', () => {
     const now = at('12:00') + 30_000;
     const starts = gridStarts(now, MIN, 3);
-    expect(starts.map(hhmm)).toEqual(['11:58', '11:59', '12:00']);
+    expect(starts.map(clockAt)).toEqual(['11:58', '11:59', '12:00']);
   });
 });
 
 describe('chain', () => {
-  const slots = (ts: number[], now = at('12:00'), n = 6) => chain(ts, (t) => t, now, 15 * MIN, n).map((s) => s.items.map(hhmm));
+  const slots = (ts: number[], now = at('12:00'), n = 6) => chain(ts, (t) => t, now, 15 * MIN, n).map((s) => s.items.map(clockAt));
   it('each check the slot before the next one’s, whatever its jitter: no false gap, no double', () => {
     // 11:58, then 17 and 13 minutes apart (a grid on the clock would leave 11:30 empty and double 11:45)
     expect(slots([at('11:58'), at('11:41'), at('11:28'), at('11:14')])).toEqual([[], [], ['11:14'], ['11:28'], ['11:41'], ['11:58']]);
@@ -30,7 +31,7 @@ describe('chain', () => {
   });
   it('the slots’ times: now less whole widths', () => {
     const s = chain([], (t: number) => t, at('12:00'), 15 * MIN, 2);
-    expect(s.map((x) => [hhmm(x.start), hhmm(x.end)])).toEqual([['11:30', '11:45'], ['11:45', '12:00']]);
+    expect(s.map((x) => [clockAt(x.start), clockAt(x.end)])).toEqual([['11:30', '11:45'], ['11:45', '12:00']]);
   });
 });
 

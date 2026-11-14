@@ -3,7 +3,7 @@
 // a part failed, 保留), fail (coral, hatched: all failed) or none (a low tick: nothing checked then), with its line for a
 // tap and VoiceOver. Pure: the pages make the cells (its/view.ts, gym/status.ts),
 // these place them. (The verdict's tone: lib/bots/types.ts BotTone.)
-import { ZONE_OFFSET_MS as TOKYO_MS, clockAt } from './contract/tokyo.ts';
+import { ZONE_OFFSET_MS, clockAt } from './contract/tokyo.ts';
 
 export type CellState = 'ok' | 'avail' | 'warn' | 'fail' | 'none';
 /** One slot: [start, end) in ms, its state, and its line (a tap names it; its button's label). */
@@ -11,7 +11,7 @@ export interface StripCell { start: number; end: number; state: CellState; label
 /** A time under the strip, at its cell's index. */
 export interface StripTick { i: number; label: string }
 
-/** 15:32, Tokyo (UTC+9, whole hours: its quarter hours and its 3-hour marks are UTC's). */
+/** its/view.ts's name for contract/tokyo.ts clockAt (kept until that file's rewrite folds it). */
 export const hhmm = clockAt;
 
 /** `count` slots of `width` ms on the clock's grid, the last the one holding `now`: their starts, oldest first. */
@@ -46,6 +46,6 @@ export function chain<T>(items: readonly T[], at: (x: T) => number, now: number,
 /** A tick at each cell holding a multiple of `every` ms on Tokyo's clock (quarter hours, 3-hour marks), its time. */
 export const stripTicks = (cells: readonly StripCell[], every: number): StripTick[] =>
   cells.flatMap((c, i) => {
-    const mark = Math.ceil((c.start + TOKYO_MS) / every) * every - TOKYO_MS;
-    return mark < c.end ? [{ i, label: hhmm(mark) }] : [];
+    const mark = Math.ceil((c.start + ZONE_OFFSET_MS) / every) * every - ZONE_OFFSET_MS;
+    return mark < c.end ? [{ i, label: clockAt(mark) }] : [];
   });

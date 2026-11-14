@@ -3,7 +3,7 @@
 // clock times. The Worker (gym/src) owns the rules and imports this file; the app reads it. No DOM, no Worker types: it
 // imports only contract/guards.ts and contract/tokyo.ts.
 import { isRec } from '../contract/guards.ts';
-import { ZONE_OFFSET_MS, addDays as addDay, clockAt, localDateAt } from '../contract/tokyo.ts';
+import { addDays, clockAt, localDateAt } from '../contract/tokyo.ts';
 
 // ---- Tokyo days and clock times: a day is 'YYYY-MM-DD', a clock time 'HH:MM' (both compare as text) ----
 
@@ -12,14 +12,10 @@ export type Clock = string;
 /** Who acts from the app: a member (the guest's key is refused). @public (gym/src) */
 export type Member = 'A' | 'B';
 
-/** Tokyo's offset from UTC. @public (gym/src) */
-export const JST_MS = ZONE_OFFSET_MS;
-
-/** The Tokyo day of an instant; its clock time (seconds dropped): contract/tokyo.ts's. */
-export { clockAt, localDateAt };
+/** The Tokyo day of an instant; its clock time (seconds dropped); a day `n` days on: contract/tokyo.ts's. */
+export { addDays, clockAt, localDateAt };
 /** The instant of a Tokyo day and clock time. */
 export const at = (day: Day, clock: Clock): number => Date.parse(`${day}T${clock}:00+09:00`);
-export const addDays: (day: Day, n: number) => Day = addDay;
 /** 0 = Monday … 6 = Sunday. */
 export const weekday = (day: Day): number => (new Date(day).getUTCDay() + 6) % 7;
 export const minutesOf = (clock: Clock): number => Number(clock.slice(0, 2)) * 60 + Number(clock.slice(3, 5));

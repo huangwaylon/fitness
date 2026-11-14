@@ -3,11 +3,11 @@
 // no key, so not lib/keyed.ts), with the page's view helpers so GymPage stays thin (直近12時間: lib/strip.ts).
 import { t } from '#lib/i18n/index.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
-import { chain, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
+import { chain, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import { timeOf } from '#lib/i18n/when.ts';
-import { OUTCOMES, REASONS, VERDICTS, type Check, type GymStatus, type Outcome, type Reason, type Verdict } from './contract.ts';
+import { OUTCOMES, REASONS, VERDICTS, clockAt, type Check, type GymStatus, type Outcome, type Reason, type Verdict } from './contract.ts';
 import '#lib/i18n/gym.ts';
 import '#lib/i18n/bots.ts';
 
@@ -121,7 +121,7 @@ const outcome = (c: Check, p: (typeof PROGRAMS)[number]): string =>
 /** A check's part of its cell's line: 「14:15 · トレーニング○ ピラティス○ · 空き2」, 手動 for a 🔎, what failed in words,
  *  a failed push; an alarm with no day to check: 「14:15 · チェックする日なし」. */
 function checkText(c: Check): string {
-  const when = c.by === 'tap' ? `${hhmm(c.t)} ${t('gym.by.tap')}` : hhmm(c.t);
+  const when = c.by === 'tap' ? `${clockAt(c.t)} ${t('gym.by.tap')}` : clockAt(c.t);
   if (!c.r) return [when, t('gym.strip.idle')].join(' · ');
   return [when, PROGRAMS.map((p) => outcome(c, p)).join(' '), ...(c.open > 0 ? [t('gym.strip.open', { n: c.open })] : []), ...(c.push === 'failed' ? [t('gym.pushFailed')] : [])].join(' · ');
 }
@@ -141,7 +141,7 @@ export function checkStrip(s: GymStatus): { cells: StripCell[]; ticks: StripTick
   const cells = slots.map(({ start, end, items }): StripCell => {
     const done = items.filter((c) => c.r);
     const state: CellState = !done.length ? 'none' : done.some(allFailed) ? 'fail' : done.some(failed) ? 'warn' : done.some((c) => c.open > 0) ? 'avail' : 'ok';
-    return { start, end, state, label: items.length ? items.map(checkText).join(' / ') : `${hhmm(start)} · ${t('gym.strip.none')}` };
+    return { start, end, state, label: items.length ? items.map(checkText).join(' / ') : `${clockAt(start)} · ${t('gym.strip.none')}` };
   });
   const done = slots.flatMap((x) => x.items).filter((c) => c.r);
   const n = { n: done.length, fails: done.filter(failed).length, avail: done.filter((c) => c.open > 0).length };

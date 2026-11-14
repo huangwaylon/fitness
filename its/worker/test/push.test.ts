@@ -7,9 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import example from '../../contract-example.json';
 import {
-  DEFAULT_SETTINGS, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TEST_EVERY_SEC, tokyoTime,
+  DEFAULT_SETTINGS, HUMAN_NEEDED_DETAILS, MAYBE_FILED_DETAILS, NOT_BOOKED_DETAILS, PUSH_HOSTS, PUSH_SUBS_PER_MEMBER, PUSH_TEST_EVERY_SEC,
   type BookingEntry, type BookingInput, type EventInput, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type ItsSettingsInput, type ItsStatus,
 } from '../../../app/src/lib/its/contract.ts';
+import { clockAt } from '../../../app/src/lib/contract/tokyo.ts';
 import type { ItsBot } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
 import {
@@ -71,8 +72,8 @@ describe('push.ts: what may be stored', () => {
 describe('push.ts: the messages', () => {
   it('dates and times in Tokyo, both languages', () => {
     expect([dayLabel('2026-11-22', 'ja'), dayLabel('2026-11-22', 'en')]).toEqual(['11/22(日)', 'Sun 22 Nov']);
-    expect(tokyoTime(Date.UTC(2026, 10, 13, 7, 5))).toBe('16:05');
-    expect(tokyoTime(Date.UTC(2026, 10, 13, 15, 30))).toBe('00:30');
+    expect(clockAt(Date.UTC(2026, 10, 13, 7, 5))).toBe('16:05');
+    expect(clockAt(Date.UTC(2026, 10, 13, 15, 30))).toBe('00:30');
   });
 
   it('each kind’s title and body, a stay’s tag', () => {
@@ -551,7 +552,7 @@ describe('end to end: a phone, a runner’s hold that needs a person, the alarm,
     vi.setSystemTime(NOW + 2000);
     await bot.alarm();
     expect(service.refused).toEqual([]);
-    const deadline = tokyoTime(NOW + HOLD_MS);
+    const deadline = clockAt(NOW + HOLD_MS);
     const topic = await topicOf(NEAR, HOTEL);
     // both phones are sent to concurrently: their order at the push service is not fixed (it varied under load)
     const byPhone = [...service.delivered].sort((x, y) => phones.findIndex((p) => p.endpoint === x.endpoint) - phones.findIndex((p) => p.endpoint === y.endpoint));

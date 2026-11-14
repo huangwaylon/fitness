@@ -3,10 +3,11 @@
 // for how long), the messages in each language (Tokyo times), what a push service's answer means, and the status's
 // counts. Never an endpoint in a log line or the status: a subscription is known by `ep`, its endpoint's SHA-256.
 import {
-  AUTO_CONFIRM_MIN_DAYS, MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil, tokyoTime,
+  AUTO_CONFIRM_MIN_DAYS, MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil,
   type BookingEntry, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type Member, type PushKind,
   type PushLang, type PushOutcome,
 } from '../../../app/src/lib/its/contract.ts';
+import { clockAt } from '../../../app/src/lib/contract/tokyo.ts';
 import { HOLD_MS, stayKey } from './rules.ts';
 import { b64url, unb64url, type PushOptions, type Vapid } from './webpush.ts';
 
@@ -234,7 +235,7 @@ export function dayLabel(date: string, lang: PushLang): string {
 const TEXT = {
   ja: {
     hold: ['仮押さえしました', () => '自動で確定します'],
-    human_needed: ['仮押さえ・要対応', (j: Pick<PushJob, 'expiresAt'>) => `${tokyoTime(j.expiresAt!)}ごろまでにメールから申込`],
+    human_needed: ['仮押さえ・要対応', (j: Pick<PushJob, 'expiresAt'>) => `${clockAt(j.expiresAt!)}ごろまでにメールから申込`],
     maybe_filed: ['仮押さえ・要確認', () => '申込済みの可能性：メールとサイトで確認'],
     confirmed: ['予約が確定しました', (j: Pick<PushJob, 'number'>) => (j.number ? `申込受付番号 ${j.number}` : '')],
     runner_silent: ['保養所ボットが止まっています', () => 'ランナーを再起動できていません：Actionsを確認'],
@@ -243,7 +244,7 @@ const TEXT = {
   },
   en: {
     hold: ['Room held', () => 'confirming automatically'],
-    human_needed: ['Room held: action needed', (j: Pick<PushJob, 'expiresAt'>) => `apply from the email by about ${tokyoTime(j.expiresAt!)}`],
+    human_needed: ['Room held: action needed', (j: Pick<PushJob, 'expiresAt'>) => `apply from the email by about ${clockAt(j.expiresAt!)}`],
     maybe_filed: ['Room held: check', () => 'may already be booked: check the email and the site'],
     confirmed: ['Booking confirmed', (j: Pick<PushJob, 'number'>) => (j.number ? `ref. ${j.number}` : '')],
     runner_silent: ['ITS bot stopped', () => 'the runner can’t be kept running: check Actions'],

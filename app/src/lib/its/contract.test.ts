@@ -5,8 +5,9 @@ import norm from '../../../../its/norm-cases.json';
 import example from '../../../../its/contract-example.json';
 import {
   MAX_NAME, MAX_SEARCH, MAX_SITE_NAME, PUSH_HOSTS, PUSH_LANGS, PUSH_MAX_ENDPOINT, PUSH_ROUTES, daysUntil, isDate, isId, isName, normName,
-  parseSettingsInput, tokyoToday, type ItsPushPayload, type ItsPushStatus, type ItsStatus, type RunnerReport, type PushSubscribeInput,
+  parseSettingsInput, type ItsPushPayload, type ItsPushStatus, type ItsStatus, type RunnerReport, type PushSubscribeInput,
 } from './contract.ts';
+import { localDateAt } from '../contract/tokyo.ts';
 
 // 2026-11-13 12:00 JST
 const NOW = Date.parse('2026-11-13T03:00:00Z');
@@ -21,7 +22,7 @@ describe('dates in Tokyo', () => {
   it('counts from Tokyo’s day, not UTC’s', () => {
     // 2026-11-13 23:30 UTC is already the 14th in Tokyo
     const late = Date.parse('2026-11-13T23:30:00Z');
-    expect(tokyoToday(late)).toBe('2026-11-14');
+    expect(localDateAt(late)).toBe('2026-11-14');
     expect(daysUntil('2026-11-24', late)).toBe(10);
     expect(daysUntil('2026-11-24', NOW)).toBe(11);
   });

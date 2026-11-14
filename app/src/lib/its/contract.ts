@@ -2,7 +2,7 @@
 // the bookings record and the status the page reads. The Worker (its/worker) owns the rules and imports this file; the
 // app reads it; the Python runner (its/runner/remote.py) mirrors it by hand. Both languages test against
 // its/contract-example.json and its/norm-cases.json, so change all four together. Imports only contract/tokyo.ts (Tokyo's calendar).
-import { clockAt, dayNum, localDateAt } from '../contract/tokyo.ts';
+import { dayNum, localDateAt } from '../contract/tokyo.ts';
 
 // ---- Settings (the page edits; PUT /its/settings) ----
 
@@ -442,14 +442,12 @@ export function isDate(s: unknown): s is string {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
 }
 
-/** Today in Tokyo (the site's calendar), YYYY-MM-DD, whatever the phone's zone. */
+/** its/view.ts's name for contract/tokyo.ts localDateAt (kept until that file's rewrite folds it). */
 export const tokyoToday = localDateAt;
-/** A time in Tokyo, HH:MM (16:05). @public (its/worker) */
-export const tokyoTime = clockAt;
 
 /** Whole days from Tokyo's today to `date` (0 = tonight). */
 export function daysUntil(date: string, nowMs: number): number {
-  return dayNum(date) - dayNum(tokyoToday(nowMs));
+  return dayNum(date) - dayNum(localDateAt(nowMs));
 }
 
 /** A hotel name as the runner compares it (book_hotels._norm_hotel, less its HTML unescape: typed names carry no

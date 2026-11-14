@@ -14,6 +14,7 @@
 //   c.notice(exhibitId, t)  ·  c.nextChange(t, room)
 import type { Personality } from '#lib/villagers/species.ts';
 import { ISLAND_SEED } from '#lib/contract/wet.ts';
+import { ZONE_OFFSET_MS } from '#lib/contract/tokyo.ts';
 import { seeded, weighted } from '#lib/random.ts';
 import type { Pt, Rect, Wing } from './plan.ts';
 import { SEA_TANKS } from './seaTanks.ts';
@@ -95,7 +96,7 @@ export const WAVE_R = 20;
 const WAVE_MS = 2500;
 /** A point this near its room's sides or front (u) isn't used (the screen's edge, the HUD), nor this near its back. */
 const SIDE = 10, FRONT = 14, BACK = 4;
-const DAY = 86_400_000, Q = 900_000, MIN = 60_000, ZONE = 9 * 3_600_000;
+const DAY = 86_400_000, Q = 900_000, MIN = 60_000;
 /** How many come at each Tokyo hour (±1 a quarter): none in the small hours, a few at dusk, most in the afternoon and
  *  evening (after work, when we're in), still a few late (our evening visits: the museum never empty before 23:00). */
 const BY_HOUR = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 8, 8, 8, 7, 7, 5, 4, 0];
@@ -124,7 +125,7 @@ interface Stint { who: number; room: string; t0: number; t1: number }
 interface Seg { t0: number; t1: number; walk: boolean; from: Pt; to: Pt; point: LingerPoint | null; enter?: true; leave?: true; act?: { at: number; a: Act }; emotes?: { at: number; e: Emote }[] }
 interface Plan { stints: Stint[]; segs: Map<Stint, Seg[]> }
 
-const dayNumAt = (ms: number) => Math.floor((ms + ZONE) / DAY);
+const dayNumAt = (ms: number) => Math.floor((ms + ZONE_OFFSET_MS) / DAY);
 const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 const walkMs = (d: number) => Math.max(MIN_WALK, ((d * DETOUR) / STROLL) * 1000);
 const inBox = (r: Rect, x: number, z: number, pad: number) => x > r.x0 - pad && x < r.x1 + pad && z > r.z0 - pad && z < r.z1 + pad;
@@ -147,7 +148,7 @@ export function usablePoints(points: readonly LingerPoint[], rooms: readonly Vis
  *  stays there. The same inputs, the same plan: on every phone. */
 export function dayPlan(day: number, rooms: readonly VisitorRoom[], points: readonly LingerPoint[], seed = ISLAND_SEED): Plan {
   const r = seeded(`museum-visitors|${seed}|${day}`);
-  const start = day * DAY - ZONE, end = start + DAY;
+  const start = day * DAY - ZONE_OFFSET_MS, end = start + DAY;
   const byRoom = new Map(rooms.map((m) => [m.id, points.filter((p) => p.room === m.id)]));
   // (a room needs a point more than it can hold, so a visitor always has somewhere to go)
   const open = rooms.filter((m) => byRoom.get(m.id)!.length > MAX_ROOM);

@@ -4,10 +4,11 @@
 // of the keys it changed. The Worker calls it by RPC (index.ts) with bodies already checked; the rules are rules.ts.
 import { DurableObject } from 'cloudflare:workers';
 import {
-  DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC, tokyoToday,
+  DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC,
   type BookingInput, type ClaimInput, type ClaimReply, type ItsEvent, type ItsHealth, type ItsPushStatus, type ItsSettingsInput, type ItsStatus, type Member,
   type PushEndpointInput, type PushOutcome, type PushReply, type PushSubscribeInput, type RunInput, type RunnerConfig, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
+import { localDateAt } from '../../../app/src/lib/contract/tokyo.ts';
 import { cancelRun, dispatchRun, unfinishedRun } from './dispatch.ts';
 import type { Env } from './env.ts';
 import {
@@ -197,7 +198,7 @@ export class ItsBot extends DurableObject<Env> {
       // hung: the lease's holder, silent past WATCH_HUNG_MS, its run still in progress on GitHub (never one that reported)
       const force = w.cancelId === target;
       const dayN = dayCount(w, now) + 1;
-      w = counted({ ...w, lastAt: now, day: tokyoToday(now), dayN, n: w.n + 1, cancelId: target, cancelAt: now });
+      w = counted({ ...w, lastAt: now, day: localDateAt(now), dayN, n: w.n + 1, cancelId: target, cancelAt: now });
       await this.save({ watch: w });   // before GitHub is asked: a tick meanwhile waits out the backoff
       const status = await cancelRun(token!, target, force);
       w = { ...w, failed: status === 202 || status === 409 ? 0 : w.failed + 1 };   // 409: it finished meanwhile
@@ -209,7 +210,7 @@ export class ItsBot extends DurableObject<Env> {
     } else if (plan.dispatch && token) {
       // the dispatch after a cancel is that recovery's second half: no new count, no new wait
       const dayN = plan.afterCancel ? dayCount(w, now) : dayCount(w, now) + 1;
-      w = counted({ ...w, lastAt: now, day: tokyoToday(now), dayN, cancelAt: null });
+      w = counted({ ...w, lastAt: now, day: localDateAt(now), dayN, cancelAt: null });
       // recorded before GitHub is asked (as 開始's): a 開始 meanwhile is `recent`
       await this.save({ dispatch: { at: now, ok: true, status: null }, watch: w });
       patch.dispatch = await dispatchRun(token, now);

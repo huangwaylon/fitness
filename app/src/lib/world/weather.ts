@@ -14,6 +14,7 @@ import { showerAt } from './meteor.ts';
 import { gameWet, showerNight } from '#lib/contract/wet.ts';
 import { FIREWORKS_FROM, weddingDay } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { ZONE_OFFSET_MS } from '#lib/contract/tokyo.ts';
 
 /** The sky at an hour: fine, cloudy (NH's 曇り: fine for the game's rules, only its look differs; the real weather's),
  *  rain, a downpour, snow. */
@@ -118,7 +119,6 @@ export function weatherAt(date: string, hour: number, seed = ISLAND_SEED, force:
 // ---------- Tokyo's real sky (the relay's timeline: docs/design.md "Weather") ----------
 
 const HOUR_MS = 3600_000;
-const TOKYO_MS = 9 * HOUR_MS;
 /** A timeline serves while it was fetched at most this long ago (the relay's weather.ts STALE_MS) and covers the hour. */
 export const WX_TTL_MS = 36 * HOUR_MS;
 /** The timeline's letters as the game's skies. */
@@ -143,7 +143,7 @@ export function heldFine(date: string, hour: number, seed = ISLAND_SEED): boolea
 
 /** An absolute hour (hours since the epoch) as Tokyo's date and hour. */
 function tokyoHour(h: number): { date: string; hour: number } {
-  const d = new Date(h * HOUR_MS + TOKYO_MS);
+  const d = new Date(h * HOUR_MS + ZONE_OFFSET_MS);
   return { date: d.toISOString().slice(0, 10), hour: d.getUTCHours() };
 }
 
@@ -197,7 +197,7 @@ export const musicWeather = (sky: Sky): 'sunny' | 'rain' | 'snow' => (isRain(sky
  *  mode while the timeline serves, else the seeded day's. A shared critter's species is picked by the sky at its slot's
  *  start, so both phones pick the same one across a change of weather (each phone's live sky turned at its own minute). */
 export function yieldSkyAt(ms: number, seed: string, real: boolean, wx: Wx | null, dev: Forced | null = null): Sky {
-  const t = new Date(ms + TOKYO_MS), date = t.toISOString().slice(0, 10), hour = t.getUTCHours();
+  const t = new Date(ms + ZONE_OFFSET_MS), date = t.toISOString().slice(0, 10), hour = t.getUTCHours();
   if (dev) return weatherAt(date, hour, seed, dev).sky;
   return ((real ? realWeatherAt(wx, ms, seed) : null) ?? weatherAt(date, hour, seed)).sky;
 }
