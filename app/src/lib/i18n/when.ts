@@ -2,12 +2,9 @@
 // `11:54`, another day `11/4（水）2:41` (a key row's cell may break after the day), a future one with ごろ (the
 // caller's words); `4時間12分`, `12分`, `40秒`. Needs bots.* (bots.ts: each bot's lib loads it).
 import { t } from './index.ts';
+import { ZONE_OFFSET_MS, localDateAt } from '../time/dates.ts';
 
-const TOKYO_MS = 9 * 3600_000;
-const tokyo = (ms: number): Date => new Date(ms + TOKYO_MS);
-
-/** Tokyo's day of `ms`: 2026-11-04. */
-const tokyoDay = (ms: number): string => tokyo(ms).toISOString().slice(0, 10);
+const tokyo = (ms: number): Date => new Date(ms + ZONE_OFFSET_MS);
 /** `2:41`. */
 function clockOf(ms: number): string {
   const d = tokyo(ms);
@@ -22,7 +19,7 @@ export const dayOfDate = (date: string): string => dayOf(Date.parse(`${date}T12:
 /** `11/4（水）2:41`, always with the day. */
 export const whenOf = (ms: number): string => t('bots.fmt.when', { day: dayOf(ms), time: clockOf(ms) });
 /** `11:54` on `now`'s day (Tokyo), else whenOf. */
-export const timeOf = (ms: number, now: number): string => (tokyoDay(ms) === tokyoDay(now) ? clockOf(ms) : whenOf(ms));
+export const timeOf = (ms: number, now: number): string => (localDateAt(ms) === localDateAt(now) ? clockOf(ms) : whenOf(ms));
 
 /** `4時間12分`, `12分`, `40秒` (`seconds` false: under a minute is 0分). */
 export function durationOf(ms: number, seconds = true): string {

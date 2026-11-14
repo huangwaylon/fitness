@@ -22,6 +22,9 @@ export function localDateAt(ms: number): LocalDate {
   return d;
 }
 
+/** Epoch ms → the clock in Asia/Tokyo, `HH:MM`. */
+export const clockAt = (ms: number): string => new Date(ms + ZONE_OFFSET_MS).toISOString().slice(11, 16);
+
 /** A `YYYY-MM-DD`'s day number (days since 1970-01-01): calendar arithmetic without Date's zone. */
 export const dayNum = (d: string): number => Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / DAY_MS);
 /** dayNum's inverse. */

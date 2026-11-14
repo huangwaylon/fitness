@@ -3,6 +3,7 @@
 // a part failed, 保留), fail (coral, hatched: all failed) or none (a low tick: nothing checked then), with its line for a
 // tap and VoiceOver. Pure: the pages make the cells (its/view.ts, gym/status.ts),
 // these place them. (The verdict's tone: lib/bots/types.ts BotTone.)
+import { ZONE_OFFSET_MS as TOKYO_MS, clockAt } from './contract/tokyo.ts';
 
 export type CellState = 'ok' | 'avail' | 'warn' | 'fail' | 'none';
 /** One slot: [start, end) in ms, its state, and its line (a tap names it; its button's label). */
@@ -10,10 +11,8 @@ export interface StripCell { start: number; end: number; state: CellState; label
 /** A time under the strip, at its cell's index. */
 export interface StripTick { i: number; label: string }
 
-/** Tokyo is UTC+9, whole hours: its quarter hours and its 3-hour marks are UTC's. */
-const TOKYO_MS = 9 * 3600_000;
-/** 15:32, Tokyo. */
-export const hhmm = (ms: number): string => new Date(ms + TOKYO_MS).toISOString().slice(11, 16);
+/** 15:32, Tokyo (UTC+9, whole hours: its quarter hours and its 3-hour marks are UTC's). */
+export const hhmm = clockAt;
 
 /** `count` slots of `width` ms on the clock's grid, the last the one holding `now`: their starts, oldest first. */
 export function gridStarts(now: number, width: number, count: number): number[] {

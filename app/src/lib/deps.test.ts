@@ -20,8 +20,8 @@ const ALLOW: Record<string, string[]> = {
   quiet: [],
   // keyed.ts: a members-only call (the key's header, one failure vocabulary): the mic, the bots
   keyed: [],
-  // strip.ts: the bots' status strip, its slots placed (保養所's minutes, ジム's checks)
-  strip: [],
+  // strip.ts: the bots' status strip, its slots placed (保養所's minutes, ジム's checks), on Tokyo's clock (contract/tokyo.ts)
+  strip: ['contract'],
   staticUrl: [],
   packPlan: [],
   packStore: [],
