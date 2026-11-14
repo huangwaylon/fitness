@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, SHELLS_KEPT, marked, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { copyChunks, fetchKeep, SHELLS_KEPT, marked, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -159,6 +159,23 @@ describe('precache', () => {
       expect(precachable(p)).toBe(false);
     }
     expect(precachable('/fitness/audio/music/hour-07.m4a')).toBe(false);
+  });
+});
+
+describe("an install's hashed chunks (copyChunks: kept, copied from an older shell, else fetched)", () => {
+  const B = 'https://x/app/';
+  /** A cache of URLs (each body its URL) that counts its matches. */
+  const cacheOf = (urls: string[]) => {
+    const m = new Map(urls.map((u) => [u, u]));
+    const c = { matches: 0, keys: async () => [...m.keys()].map((u) => new Request(u)), match: async (u: string) => (c.matches++, m.has(u) ? new Response(m.get(u)) : undefined), put: async (u: string, r: Response) => void m.set(new URL(u, B).href, await r.text()), has: (u: string) => m.has(u) };
+    return c;
+  };
+  it('one held already kept, one an older shell holds copied (the newest first), the rest to fetch in order; a match only for a copy', async () => {
+    const own = cacheOf([`${B}_app/a.js`]), newer = cacheOf([`${B}_app/b.js`]), older = cacheOf([`${B}_app/b.js`, `${B}_app/c.js`]);
+    const fetch = await copyChunks(['_app/a.js', '_app/b.js', '_app/d.js', '_app/c.js', '_app/e.js'], own, [newer, older], B);
+    expect(fetch).toEqual(['_app/d.js', '_app/e.js']);
+    expect([own.has(`${B}_app/b.js`), own.has(`${B}_app/c.js`)]).toEqual([true, true]);
+    expect([newer.matches, older.matches]).toEqual([1, 1]);
   });
 });
 

@@ -371,6 +371,23 @@ export function carryPlan(files: readonly string[], held: readonly string[]): { 
   }
   return { copy, fetch };
 }
+/** An install's hashed chunks (`paths`, resolved against `base`): one this shell holds already kept (a worker
+ *  reinstalled under the same version), one an older shell holds copied (a hashed name: the very same file), the rest
+ *  returned, to fetch. Each cache's keys read once, the copies at once: it was a match against this shell, then each
+ *  older one, one after another for each of ~650 chunks (~2,800 lookups in a row at a launch after a deploy). */
+export async function copyChunks(paths: readonly string[], cache: Pick<Cache, 'keys' | 'put'>, olds: readonly Pick<Cache, 'keys' | 'match'>[], base: string): Promise<string[]> {
+  const [own, ...held] = await Promise.all([cache, ...olds].map(async (c) => new Set((await c.keys()).map((r) => r.url))));
+  const missing = new Set<string>();
+  await Promise.all(paths.map(async (p) => {
+    const u = new URL(p, base).href;
+    if (own.has(u)) return;
+    const i = held.findIndex((h) => h.has(u));
+    const hit = i < 0 ? undefined : await olds[i].match(u);
+    if (hit) await cache.put(p, hit);
+    else missing.add(p);
+  }));
+  return paths.filter((p) => missing.has(p));
+}
 /** The key, in a shell, of its static files' hashes (installStatics: what the next install compares). */
 export const STATIC_HASHES = '__static-hashes';
 /** A static file the worker precaches and its content hash (the build's: vite.config.ts swPrecacheOnly). */

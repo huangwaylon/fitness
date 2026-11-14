@@ -5,7 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, marked, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -42,14 +42,7 @@ self.addEventListener('install', (event) => {
       // fetched every chunk and font anew, ~3 MB; now only what changed); one this version's own cache holds already
       // (a worker reinstalled under the same version: the e2e's deploy) kept as it is (it fetched all ~650 again)
       const olds = await Promise.all(olderShells(await caches.keys(), CACHE).map((k) => caches.open(k)));
-      const chunks: string[] = [];
-      for (const p of CHUNKS) {
-        if (await cache.match(p)) continue;
-        let hit: Response | undefined;
-        for (const c of olds) if ((hit = await c.match(p))) break;
-        if (hit) await cache.put(p, hit);
-        else chunks.push(p);
-      }
+      const chunks = await copyChunks(CHUNKS, cache, olds, self.location.href);
       // the build's code all or nothing: a chunk not fetched fails the install (the page keeps its worker and asks
       // again later: ui-state/reload.ts newWorker); the static files (the art, the manifest: ~300) each on its own, so
       // one that fails costs that file (served from the previous shell's copy or the network: `cached`), not the
