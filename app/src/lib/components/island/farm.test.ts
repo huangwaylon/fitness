@@ -3,7 +3,8 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '#lib/contract/tokyo.ts';
 import type { Plot, Watered } from '#lib/contract/farm.ts';
-import { plantModel, pumpkinColour } from './farm.ts';
+import { farmScene, plantModel, pumpkinColour } from './farm.ts';
+import { layoutPlots } from '#lib/layout/field.ts';
 
 const P = 'fd:field-A.3.1', FROM = '2026-11-07';
 const none: Watered = () => false;
@@ -28,5 +29,19 @@ describe('pumpkinColour', () => {
     expect(plantModel(P, pumpkin, '2026-11-06', none)).toBe('garden/crop-pumpkin-0');
     expect(plantModel(P, { ...pumpkin, r: true }, '2026-11-06', none)).toBe('garden/crop-pumpkin-2');
     expect(plantModel(P, { ...pumpkin, c: 'tomato' }, FROM, none)).toBe('garden/crop-tomato-3');
+  });
+});
+
+describe('farmScene hint', () => {
+  it('my empty plots carry the faint sprout of the start I hold; a planted one or another’s plot, none', () => {
+    const objects = new Map([['field-A', { id: 'field-A', k: 'field', x: 0, z: 0, f: 0, s: 'a-2x1' }], ['field-B', { id: 'field-B', k: 'field', x: 0, z: 3, f: 0, s: 'b-1x1' }]]);
+    const layout = { objects } as unknown as Parameters<typeof layoutPlots>[0];
+    const [a0, a1] = layoutPlots(layout).filter((t) => t.who === 'A');
+    const farm = { plots: new Map([[a0.p, { who: 'A', c: 'tomato', from: FROM } satisfies Plot]]) };
+    const { plots } = farmScene(layout, farm as never, FROM, none, { who: 'A', crop: 'carrot' });
+    expect(plots.get(a0.p)?.hint).toBeUndefined();
+    expect(plots.get(a1.p)).toEqual({ hint: 'garden/crop-carrot-0' });
+    expect([...plots.keys()].filter((p) => p.startsWith('fd:field-B'))).toEqual([]);
+    expect(farmScene(layout, farm as never, FROM, none).plots.get(a1.p)).toBeUndefined();
   });
 });

@@ -26,6 +26,10 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import type { Who } from '#lib/types.ts';
+  import { emptyPlotOf, farmToday, plantHint } from '#lib/components/island/farm.ts';
+  import { islandDay } from '#lib/components/island/ambientClock.ts';
+  import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
+  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 
   let panelOpen = $state(false);
   let zukanOpen = $state(false);
@@ -52,7 +56,24 @@
     timers.clear();
   });
 
-  /** しずえ's news, or null (then she stays away and the island is HUD-light): only the harvest. Before my 受け取る！
+  /** しずえ's first-time farm line (once a phone, FARM_HINT_MS): the first time I hold starts and a plot of mine is empty. */
+  const FARM_HINT_MS = 12_000;
+  let farmHint = $state<'wait' | 'shown' | 'gone'>(readJson(localKV(), DEVICE.farmHint) ? 'gone' : 'wait');
+  const canPlant = $derived.by(() => {
+    const m = week.model;
+    if (farmHint === 'gone' || !m) return false;
+    const { farm } = farmToday(m.state, islandDay());
+    return !!plantHint(m.state, m.me, farm) && emptyPlotOf(layoutStore.current, farm, m.me);
+  });
+  $effect(() => {
+    if (farmHint !== 'wait' || !canPlant || ui.overlay) return;
+    farmHint = 'shown';
+    writeJson(localKV(), DEVICE.farmHint, 1);
+    later(() => (farmHint = 'gone'), FARM_HINT_MS);
+  });
+
+  /** しずえ's news, or null (then she stays away and the island is HUD-light): the harvest, a birthday, the farm's
+   *  first-time line. Before my 受け取る！
    *  「収穫の時間ですよ！」, after it 「あとは うめさんの ばんですよ！」 until they collect theirs. */
   const news = $derived.by((): string | null => {
     const h = view?.harvest;
@@ -60,7 +81,7 @@
     // one of our birthdays (world/birthday.ts): 「うめさん、おたんじょうび おめでとう！」 (the harvest still comes first)
     const born = h ? [] : birthdaysShown(localDateAt(minuteNow().getTime()), scenePreview().event);
     if (born.length) return hostLine('birthday', { name: view.people[born[0]].villagerName });
-    if (!h) return null;
+    if (!h) return farmHint === 'shown' && canPlant ? hostLine('farm_hint') : null;
     return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');
   });
 

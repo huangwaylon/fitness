@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A plot tap's word (docs/farming.md "Playing"): a small cream tag over the plot, 「みずやり・あした 3こ」
+  // A plot tap's word (docs/farming.md "Playing"): a small cream tag over the plot, 「2かぶに みずやり・あした 3こ」
   // 「ニンジン・あした 3こ」, never my villager's balloon (which stood over the field being tapped). Placed once
   // where the tap saw the plot (no following: the camera stays put under a tap), gone in 1.2 s, at once on the next pop,
   // and faded by a drag (the camera moving off it). Touch goes through the word. On my own growing plant it carries ほる,

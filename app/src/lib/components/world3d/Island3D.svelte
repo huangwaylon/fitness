@@ -59,7 +59,7 @@
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
-  import { farmScene, farmToday } from '../island/farm.ts';
+  import { farmScene, farmToday, plantHint } from '../island/farm.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { rooms } from '#lib/store/tent.svelte.ts';
   import { homeTod } from './home.ts';
@@ -800,12 +800,12 @@
   const askGarden = (lay: Layout) => void (!gardenIn && wantsGarden(lay, date) && loadGarden().then(() => (gardenIn = true), () => {}));
   askGarden(layoutNow());
   /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
-   *  watering and sky. */
+   *  watering and sky; while I hold starts (and have room under the cap), my empty plots' faint sprouts. */
   const farmNow = $derived.by(() => {
     const m = week.model, lay = layoutNow();
     if (!m || !date) return null;
     const { farm, watered } = farmToday(m.state, date);
-    return farmScene(lay, farm, date, watered);
+    return farmScene(lay, farm, date, watered, plantHint(m.state, m.me, farm));
   });
   /** (a string: the placement below reruns only when the fields' look changed, not on each fold's new farmNow) */
   const farmSig = $derived(farmNow?.sig ?? '');

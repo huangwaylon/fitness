@@ -40,6 +40,8 @@ export interface Inst {
   face?: boolean;
   /** A tint for the petals (a flower's colour, on a model without its own colour). */
   tint?: number;
+  /** Drawn see-through at this opacity (an empty plot's faint sprout: FAINT), its group soft (things.ts). */
+  fade?: number;
   /** Tappable: what it is (a tree jiggles). */
   tap?: 'tree' | 'rock' | 'tent' | 'thing';
   id: string;
@@ -76,9 +78,12 @@ export interface Day {
   /** The day (Tokyo's `YYYY-MM-DD`): a crop's stage (layout/garden.ts cropStage), the cedars' festive lights. */
   date?: string;
   /** The fields' plots (docs/farming.md, island/farm.ts): a plot id → its plant's model (fieldPlant) and whether
-   *  it was watered today (its soil dark); a plot not here is bare dry soil. */
-  farm?: ReadonlyMap<string, { m?: string; wet?: boolean }>;
+   *  it was watered today (its soil dark), or an empty one's faint sprout (`hint`); a plot not here is bare dry soil. */
+  farm?: ReadonlyMap<string, { m?: string; wet?: boolean; hint?: string }>;
 }
+
+/** An empty plot's sprout (island/farm.ts farmScene `hint`): a ghost of the start I hold, a place to plant. */
+const FAINT = 0.4;
 
 /** Watered soil: NH's darker tilled earth (the soil's colour multiplied). */
 const WET_SOIL = 0x3c2a20;
@@ -161,11 +166,12 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         out.push({ id: `${o.id}:soil`, model: 'garden/crop-soil', x, z, scale: DECOR_U, yaw });
         thing(id === 'pumpkin' && n >= 3 ? `garden/crop-pumpkin-${o.s ?? 'orange'}-${n}` : `garden/crop-${id}-${n}`, DECOR_U);
       } else if (o.k === 'field') {
-        // a field: NH's tilled soil a plot (dark once watered), its plant on it
+        // a field: NH's tilled soil a plot (dark once watered), its plant on it, or my empty one's faint sprout
         for (const t of fieldPlots(o)) {
           const [px, pz] = tileMid(t.c, t.r), at = day.farm?.get(t.p);
           out.push({ id: `${o.id}:${t.p}`, model: 'garden/crop-soil', x: px, z: pz, scale: DECOR_U, ...(at?.wet ? { tint: WET_SOIL } : {}) });
           if (at?.m) out.push({ id: t.p, model: at.m, x: px, z: pz, scale: DECOR_U });
+          else if (at?.hint) out.push({ id: `hint:${t.p}`, model: at.hint, x: px, z: pz, scale: DECOR_U, fade: FAINT });
         }
       } else if (o.k === 'vine') thing(`garden/vine-${o.s ?? 'a'}${winter ? '-snow' : ''}`, DECOR_U);
       else if (o.k === 'cedar') thing(`garden/cedar-deco${winter || /winter/.test(day.swaps?.[o.id]?.key ?? '') ? '-snow' : ''}`, scaleOf('trees/cedar', 'cedar', day.swaps?.[o.id]?.h ?? h), { tap: 'tree' });

@@ -512,11 +512,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     f.to = to;
     f.t = performance.now();
   }
-  /** An instance's opacity: a critter's fade, or the caller's own (Over `fade`), else whole. */
-  const opacity = (id: string) => fades.get(id)?.a ?? overs.get(id)?.fade ?? 1;
+  /** An instance's opacity: a critter's fade, or the caller's own (Over `fade`), or its own (Inst `fade`), else whole. */
+  const opacity = (id: string) => fades.get(id)?.a ?? overs.get(id)?.fade ?? byId.get(id)?.inst.fade ?? 1;
   const tmpC = new Color(), tmpM = new Matrix4(), tmpM2 = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
   const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), RIGHT = new Vector3(1, 0, 0), ZERO = new Matrix4().makeScale(0, 0, 0);
-  const formOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}`;
+  const formOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}:${o.fade ?? ''}`;
   const sigOf = (o: Inst) => `${formOf(o)}:${o.tint ?? ''}`;
   /** An instance's matrix (three's space): its spot on the ground, its yaw, its scale. */
   function matOf(o: Inst, out: Matrix4, wobble = 0, squash = 0): Matrix4 {
@@ -600,7 +600,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const old = groups.get(name);
     if (old) drop(old);
     gl.scene.updateMatrixWorld(true);
-    const grey = name.startsWith('fruit-'), soft = SOFT.has(name) || insts.some((o) => overs.get(o.id)?.fade !== undefined);
+    const grey = name.startsWith('fruit-'), soft = SOFT.has(name) || insts.some((o) => o.fade !== undefined || overs.get(o.id)?.fade !== undefined);
     // (a still model's farthest first: the nearest, out of view, are the ones left off the end: cull)
     const near = culling && !soft;
     if (near) insts = insts.slice().sort((a, b) => b.z - a.z);

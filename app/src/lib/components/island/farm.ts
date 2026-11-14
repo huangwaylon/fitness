@@ -1,12 +1,13 @@
 // The fields on the island today (docs/farming.md): each plot's plant and soil as the scene draws them, from the record's
 // rows (model/farm.ts) and today's live watering (the shared world's day: the partner's at once) and sky; the scene
 // and a plot's tap read them alike. Nothing here sends (store/farm.svelte.ts does).
-import { stageOf, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
+import { CROPS, FARM, plantsOf, seedKey, stageOf, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
+import { shopView } from '#lib/model/shop.ts';
 import { farmOfState, wateredOf } from '#lib/model/farm.ts';
 import { layoutPlots } from '#lib/layout/field.ts';
 import type { Layout } from '#lib/layout/model.ts';
 import { fnv1a } from '#lib/random.ts';
-import type { LocalDate } from '#lib/types.ts';
+import type { LocalDate, Who } from '#lib/types.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import { islandDay } from './ambientClock.ts';
 import { weather } from './weatherNow.svelte.ts';
@@ -29,18 +30,32 @@ export function plantModel(p: string, pl: Plot, date: LocalDate, watered: Watere
 }
 
 /** Each plot of the layout's fields: its plant's model and whether it was watered today; with a signature that changes
- *  only when one of them does (the scene places its models again then). */
-export function farmScene(layout: Layout, farm: Farm, date: LocalDate, watered: Watered): { plots: Map<string, { m?: string; wet?: boolean }>; sig: string } {
-  const plots = new Map<string, { m?: string; wet?: boolean }>();
+ *  only when one of them does (the scene places its models again then). `hint`: while I hold starts, my empty plots
+ *  carry a faint sprout of the first crop I hold (`hint`: its model), so an empty plot reads as a place to plant. */
+export function farmScene(layout: Layout, farm: Farm, date: LocalDate, watered: Watered, hint?: { who: Who; crop: string }): { plots: Map<string, FarmLook>; sig: string } {
+  const plots = new Map<string, FarmLook>();
   let sig = '';
   for (const t of layoutPlots(layout)) {
     const pl = farm.plots.get(t.p), m = pl ? plantModel(t.p, pl, date, watered) : undefined, wet = watered(t.p, date);
-    if (!m && !wet) continue;
-    plots.set(t.p, { ...(m ? { m } : {}), ...(wet ? { wet } : {}) });
-    sig += `${t.p}:${m ?? ''}:${wet ? 1 : 0};`;
+    const h = !pl && hint && t.who === hint.who ? `garden/crop-${hint.crop}-0` : undefined;
+    if (!m && !wet && !h) continue;
+    plots.set(t.p, { ...(m ? { m } : {}), ...(wet ? { wet } : {}), ...(h ? { hint: h } : {}) });
+    sig += `${t.p}:${m ?? ''}:${wet ? 1 : 0}:${h ?? ''};`;
   }
   return { plots, sig };
 }
+/** A plot as the scene draws it: its plant's model, its soil watered, the faint sprout of an empty plot of mine. */
+export type FarmLook = { m?: string; wet?: boolean; hint?: string };
+
+/** While `who` holds starts and has room under the cap: the first crop held (an empty plot's faint sprout, しずえ's
+ *  first-time line), else undefined. */
+export function plantHint(s: Parameters<typeof shopView>[0], who: Who, farm: Farm): { who: Who; crop: string } | undefined {
+  if (plantsOf(farm, who) >= FARM.cap) return undefined;
+  const pocket = shopView(s, who).pocket, crop = CROPS.find((c) => (pocket.get(seedKey(c, 'start')) ?? 0) > 0);
+  return crop ? { who, crop } : undefined;
+}
+/** Some plot of `who`'s is empty. */
+export const emptyPlotOf = (layout: Layout, farm: Farm, who: Who): boolean => layoutPlots(layout).some((t) => t.who === who && !farm.plots.has(t.p));
 
 /** What the fold reads of the model's State. */
 type FarmRows = Parameters<typeof farmOfState>[0];

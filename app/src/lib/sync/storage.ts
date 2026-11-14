@@ -125,6 +125,9 @@ export const DEVICE = {
   /** localStorage: `{tent?, shop?, museum?}` (each `1`): the rooms whose 「2ほんゆびで うごかせるよ」 this phone has
    *  shown (the shop's: once panned in; rooms/PanHint.svelte). */
   panHint: 'island.panHint',
+  /** localStorage: `1`: this phone showed しずえ's 「はたけを タップで うえられますよ！」 (starts held, an empty plot of mine:
+   *  once; routes/+page.svelte). */
+  farmHint: 'island.farmHint',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
   fpv: 'island.fpv',
   /** localStorage: `{[id]: at}`: the museum's new finds whose card was opened on this phone (their NEW cleared; `at`

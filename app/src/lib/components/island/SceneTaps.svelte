@@ -503,7 +503,7 @@
         waterAll(act.ids);
         spawn({ kind: 'flower', x: px, y: pz, lift: 8, color: '#8FD0F5', flip: px > site.midX });
         sceneSfx('water');
-        pop(t('world.farm.water', { k: FARM.maxYield }));
+        pop(t('world.farm.water', { n: act.ids.length, k: FARM.maxYield }));
         return true;
       case 'plant': {
         // one event held for its 取り消す (the shop's banner); the shovel and a puff over the tapped plot

@@ -156,7 +156,7 @@ test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a 
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'harvest', p: wide(0).p, n: 1 }, ...plants([wide(1).p, wide(2).p, wide(1, 1).p, wide(0, 1).p])]);
   // a plant: the can over its 3 × 3's dry ones (the new plants there and the growing one; the west one's out of reach)
   await tapWorld(page, wide(2, 1).x, wide(2, 1).z);
-  await expect.poll(() => pops(page)).toEqual(['みずやり・あした 3こ']);
+  await expect.poll(() => pops(page)).toEqual(['4かぶに みずやり・あした 3こ']);
   const watered = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
   expect(watered.sort()).toEqual([wide(1).p, wide(2).p, wide(1, 1).p, wide(2, 1).p].sort());
 });
@@ -200,7 +200,7 @@ test('a day on: ripe, watered on its plant day it gives three, harvested by a ta
   await tapWorld(b, plot(1).x, plot(1).z);
   // watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(b)).toEqual(['みずやり・あした 3こ', expect.stringMatching(/の トマト・あした 3こ$/)]);
+  await expect.poll(() => pops(b)).toEqual(['2かぶに みずやり・あした 3こ', expect.stringMatching(/の トマト・あした 3こ$/)]);
   // her tap watered both (the one growing back counts from its harvest day); never ほる on my plant
   await expect(b.locator('[data-farm-dig]')).toHaveCount(0);
   const watered = await b.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.B') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
