@@ -14,7 +14,8 @@ import '#lib/i18n/bots.ts';
 import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import { shortDay, durationOf, timeOf } from '#lib/i18n/when.ts';
-import { monthWeeks, type MonthDay } from '#lib/contract/tokyo.ts';
+import { addDays, dayNum, monthWeeks, type MonthDay } from '#lib/contract/tokyo.ts';
+import { md } from '#lib/i18n/format.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -86,7 +87,7 @@ export function addDate(d: Draft, date: string, now: number): { ok: true; draft:
 export const removeDate = (d: Draft, date: string): Draft => ({ ...d, dates: d.dates.filter((x) => x !== date) });
 
 /** 0 = 日 … 6 = 土, of a YYYY-MM-DD. */
-export const weekday = (date: string): number => new Date(`${date}T00:00:00Z`).getUTCDay();
+export const weekday = (date: string): number => (dayNum(date) + 4) % 7; // (1970-01-01 a Thursday)
 
 /** The draft with these dates added (past ones let go, as addDate), up to MAX_DATES (`over`: how many didn't fit). */
 export function addDates(d: Draft, dates: readonly string[], now: number): { draft: Draft; over: number } {
@@ -142,8 +143,6 @@ type Why = 'check' | 'cutoff' | 'season' | 'closed' | 'gone';
 /** The order the bar draws them in, and the expanded night lists them. */
 const WHYS: readonly Why[] = ['check', 'cutoff', 'season', 'closed', 'gone'];
 
-const md = (date: string): string => `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`;
-const daysBefore = (date: string, n: number): string => new Date(Date.parse(date) - n * 86_400_000).toISOString().slice(0, 10);
 
 type Seasons = typeof SEASONS;
 /** The season a 夏季 / 冬季 / 夏季・冬季 facility misses a night by, in words (夏季は9/30まで, 冬季は12/19〜3/31), or null:
@@ -174,7 +173,7 @@ export function closedOn(r: RosterHotel | null, date: string): string | null {
 export interface Night { why: Why; line: string | null }
 export function nightOf(r: HotelRow, date: string, days: number, seasons: Seasons = SEASONS): Night {
   const cutoff = r.roster?.cutoff ?? D4;
-  if (days < cutoff) return { why: 'cutoff', line: t('its.night.cutoff', { n: cutoff, date: md(daysBefore(date, cutoff)) }) };
+  if (days < cutoff) return { why: 'cutoff', line: t('its.night.cutoff', { n: cutoff, date: md(addDays(date, -cutoff)) }) };
   if (r.roster && r.roster.kind === null) return { why: 'gone', line: null };
   const miss = seasonMiss(r.roster?.kind, date, seasons);
   if (miss) return { why: 'season', line: miss };
@@ -321,7 +320,7 @@ export interface HotelParts {
  *  (the site's 「利用日のn日前まで」: the last day it takes an application for that night). */
 function cutoffReason(n: number, nights: readonly string[]): string {
   const last = [...nights].sort().at(-1)!;
-  return t('its.hotel.why.cutoff', { n, date: md(daysBefore(last, n)) });
+  return t('its.hotel.why.cutoff', { n, date: md(addDays(last, -n)) });
 }
 
 /** 「…のみ」 names at most ONLY_SHOWN nights, then 「ほかn日」. */
