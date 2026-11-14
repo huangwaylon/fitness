@@ -131,8 +131,11 @@ test('魚の全部 sells the fish only; 30 wood in one row tap; the starts in �
   await expect(page.locator('[data-shop-sec="start"] [data-shop-sec-all]')).toHaveCount(0);
   await expect(page.locator('[data-shop-sec="start"] + ul [data-shop-catch]')).toHaveAttribute('data-shop-catch', 'goods:tomato-start');
   const fishAll = page.locator('[data-shop-sec-all="fish"]');
+  await expect(fishAll).toHaveText('全部選ぶ（5）'); // how many it picks: 2 + 3
   await fishAll.click();
   await expect(fishAll).toHaveAttribute('aria-pressed', 'true');
+  await expect(fishAll).toHaveText('選択解除'); // pressed: what a tap does now
+  await expect(fishAll).toHaveAccessibleName('魚の選択を解除');
   await expect(page.locator('[data-shop-offer]')).toHaveAttribute('data-shop-offer', String(2 * 650 + 3 * 20));
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-sell-rows.png`, animations: 'disabled' });
   await page.locator('[data-shop-sell]').click();
@@ -296,14 +299,14 @@ test('全部買う: covered, every piece at once (one 取り消す), then 「す
   }
   expect(want.length).toBeLessThan(24);
   await expect(page.locator('[data-shop-all-row="buy"] [data-shop-all-line]')).toHaveText(`24点中${want.length}点・${total.toLocaleString('ja-JP')}かいがら（安い順）`);
-  await expect(page.locator('[data-shop-all="buy"]')).toHaveText('買えるだけ買う');
+  await expect(page.locator('[data-shop-all="buy"]')).toHaveText(`${want.length}点を買う`); // short: the count
   await page.locator('[data-shop-all="buy"]').click();
   await expect(page.locator('[data-shop-confirm-lead]')).toHaveText(`かいがらが足りないので、安い順に${want.length}点（全24点中）を${total.toLocaleString('ja-JP')}かいがらで買います`);
   await expect(page.locator('[data-shop-confirm-row]')).toHaveCount(want.length);
   expect(await page.locator('[data-shop-confirm-row]').evaluateAll((els) => els.map((e) => e.getAttribute('data-shop-confirm-row')))).toEqual(want);
   // the title and the go say what it does; the prices their unit
-  await expect(page.getByRole('dialog').getByRole('heading')).toHaveText('買えるだけ買う');
-  await expect(page.locator('[data-shop-confirm-go]')).toHaveText('買えるだけ買う');
+  await expect(page.getByRole('dialog').getByRole('heading')).toHaveText(`${want.length}点を買う`);
+  await expect(page.locator('[data-shop-confirm-go]')).toHaveText(`${want.length}点を買う`);
   await expect(page.locator('[data-shop-confirm-row] .cv').first()).toHaveText(/^\d[\d,]*かいがら$/);
   await expect(page.locator('[data-shop-confirm-after]')).toHaveAttribute('data-shop-confirm-after', String(1000 - total));
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-buy-all-part.png`, animations: 'disabled' });

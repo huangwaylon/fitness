@@ -220,6 +220,8 @@
   /** The confirm up, and the plan it shows (as it opened). */
   let confirm = $state<{ tab: 'sell'; plan: SellAll } | { tab: 'buy'; plan: BuyAll } | null>(null);
   let confirmOpen = $state(false);
+  /** The confirm's pieces to buy (its 「3点を買う」). */
+  const boughtN = (c: typeof confirm): number => (c?.tab === 'buy' ? c.plan.items.length : 0);
   function askAll(which: Tab) {
     if (which === 'sell' ? !sellPlan.n : !buyPlan.items.length) return void cue('boop');
     confirm = which === 'sell' ? { tab: 'sell', plan: sellPlan } : { tab: 'buy', plan: buyPlan };
@@ -298,8 +300,11 @@
             <div class="sec" data-shop-sec={s}>
               <h2 class="sec-label">{t(`shop.sec.${s}`)}</h2>
               {#if s !== 'start'}
-                <button type="button" class="chip s" data-shop-sec-all={s} data-sfx="self" aria-pressed={allPicked(picks, rows)}
-                  aria-label={t('shop.secAll', { sec: t(`shop.sec.${s}`) })} onclick={() => pickAs(toggleSection(picks, rows))}>{t('shop.all')}</button>
+                <!-- pressed (all of the section picked), it says what a tap does now: 選択解除; else how many it picks -->
+                {@const on = allPicked(picks, rows)}
+                <button type="button" class="chip s" data-shop-sec-all={s} data-sfx="self" aria-pressed={on}
+                  aria-label={t(on ? 'shop.secAllOff' : 'shop.secAll', { sec: t(`shop.sec.${s}`) })} onclick={() => pickAs(toggleSection(picks, rows))}>
+                  {on ? t('shop.allOff') : t('shop.all', { n: formatNum(rows.reduce((n, r) => n + r.n, 0)) })}</button>
               {/if}
             </div>
             <ul class="rows">
@@ -371,12 +376,12 @@
   <div class="all" data-shop-all-row={which}>
     <p class="all-line" id="shop-all-{which}" data-shop-all-line>{line}</p>
     <button type="button" class="btn small paper all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
-      onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : most(buyPlan) ? 'shop.buyMost' : 'shop.buyAll')}</button>
+      onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : most(buyPlan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(buyPlan.items.length) })}</button>
   </div>
 {/snippet}
 
 <!-- the confirm: the count, the total, my かいがら after, what's kept or left out, every row; キャンセル or do it -->
-<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll') : ''} name="shop.all">
+<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(boughtN(confirm)) }) : ''} name="shop.all">
   {#if confirm}
     <div class="confirm" data-shop-confirm={confirm.tab}>
       {#if confirm.tab === 'sell'}
@@ -409,7 +414,7 @@
     <div class="two">
       <button type="button" class="btn paper" data-shop-confirm-cancel data-sfx="back" onclick={() => (confirmOpen = false)}>{t('common.cancel')}</button>
       <!-- (its total is the lead's line, right above: 「1,946かいがらで売る」 wrapped in half the width) -->
-      <button type="button" class="btn" data-shop-confirm-go data-sfx="self" onclick={doAll}>{t(confirm?.tab === 'sell' ? 'shop.sell' : confirm && most(confirm.plan) ? 'shop.buyMost' : 'shop.buy')}</button>
+      <button type="button" class="btn" data-shop-confirm-go data-sfx="self" onclick={doAll}>{t(confirm?.tab === 'sell' ? 'shop.sell' : confirm && most(confirm.plan) ? 'shop.buyMost' : 'shop.buy', { n: formatNum(boughtN(confirm)) })}</button>
     </div>
   {/snippet}
 </Sheet>
