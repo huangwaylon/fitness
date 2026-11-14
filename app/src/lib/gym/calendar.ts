@@ -1,13 +1,13 @@
 // ボット → ジム's calendar and day editor, as pure functions (docs/design.md "Bots"; the rows are GET /gym/config's,
 // contract.ts): the 4 weeks from this week's Monday (the 25 days settable, the rest blank), each cell's look and its
 // accessible words, the half-hour slot picker (a tap starts an hour, the next picks the last slot, a tap inside trims
-// the end), the ⏳ times allowed, the optimistic row after an act, the acts that undo one, and the select mode's bulk
-// act. The page (GymPage, GymCalendar, GymDayEditor) only draws them.
+// the end), the ⏳ dates and times allowed, the optimistic row after an act, the acts that undo one, and the select
+// mode's bulk act. The page (GymPage, GymCalendar, GymDayEditor) only draws them.
 import { t } from '#lib/i18n/index.ts';
 import { md, weekdayOf } from '#lib/i18n/format.ts';
 import '#lib/i18n/gym.ts';
 import {
-  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, minutesOf, weekday,
+  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromRefusal, minutesOf, weekday,
   type ActInput, type Change, type Clock, type Day, type DayAct, type DayRow, type Rule
 } from './contract.ts';
 
@@ -49,11 +49,12 @@ export const longRange = ([s, e]: readonly [Clock, Clock]): string => `${s}〜${
 /** `11/14（金）` / `Fri 11/14`: the editor's title, a change's day. */
 export const dayTitle = (d: Day): string => t('gym.dayTitle', { md: md(d), wd: weekdayOf(d) });
 
-/** A ⏳ as words: `18:00` on its own day, `11/13（木）18:00` on another (set from LINE). */
-export function fromText(row: DayRow): string | null {
-  if (row.from === null) return null;
-  return dayOf(row.from) === row.day ? clockOf(row.from) : `${dayTitle(dayOf(row.from))} ${clockOf(row.from)}`;
-}
+/** A ⏳ as words, as 📋 words it: `18:00` on its own day, `11/10（火）18:00` on an earlier one. */
+export const fromWords = (day: Day | null, when: number): string =>
+  day !== null && dayOf(when) === day ? clockOf(when) : t('gym.fromDay', { day: dayTitle(dayOf(when)), time: clockOf(when) });
+
+/** A row's ⏳ as words (fromWords), if set. */
+export const fromText = (row: DayRow): string | null => (row.from === null ? null : fromWords(row.day, row.from));
 
 /** The rule in words: 終日, 12:00〜13:00, ふだん（12:00〜13:00）, 未チェック, オフ. */
 export function ruleText(row: DayRow): string {
@@ -123,19 +124,34 @@ export const slotState = (slot: Clock, range: readonly [Clock, Clock] | null, an
 
 // ---- ⏳ ----
 
-/** The ⏳ times the editor offers (the day's own, on the half hour, 06:00 to the last slot), each allowed or not, by
- *  the bot's rules: in the future, and before the window's last slot starts (🔔: before the day's last slot). A time
- *  not allowed is shown disabled, never sent to be refused. */
-export function fromChoices(row: DayRow, now: number): { clock: Clock; ok: boolean }[] {
+/** A ⏳ time the editor offers: its instant, and whether the bot takes it. */
+export interface FromChoice { clock: Clock; at: number; ok: boolean }
+
+/** The ⏳ times on `date` for a row's day, by the bot's rule (contract fromRefusal): the half hours still ahead (the
+ *  day itself: up to its last slot, 21:30, the ones that leave no slot in its window disabled: shown, never sent), and
+ *  the saved ⏳ when it is on that date and off them (LINE's any minute), so the select shows what is set. */
+export function fromTimes(row: DayRow, date: Day, now: number): FromChoice[] {
   const rule = ruleOf(row);
-  const end = Array.isArray(rule) ? rule[1] : CLOSES;
-  const last = minutesOf(end) - SLOT_MINUTES;
-  const out: { clock: Clock; ok: boolean }[] = [];
-  for (let m = 6 * 60; m <= minutesOf(LAST_START); m += SLOT_MINUTES) {
-    const clock = clockFrom(m);
-    out.push({ clock, ok: at(row.day, clock) > now && m < last });
+  const choice = (when: number): FromChoice => ({ clock: clockOf(when), at: when, ok: fromRefusal(row.day, when, now, rule) === null });
+  const last = date === row.day ? minutesOf(LAST_START) : 24 * 60 - SLOT_MINUTES;
+  const out: FromChoice[] = [];
+  for (let m = 0; m <= last; m += SLOT_MINUTES) {
+    const when = at(date, clockFrom(m));
+    if (when > now) out.push(choice(when));
   }
-  return out;
+  const saved = row.from;
+  if (saved !== null && dayOf(saved) === date && !out.some((c) => c.at === saved)) out.push(choice(saved));
+  return out.sort((a, b) => a.at - b.at);
+}
+
+/** The ⏳ dates for a row's day: from today (Tokyo) to the day itself, each with a time the bot takes, and the saved
+ *  ⏳'s date. */
+export function fromDates(row: DayRow, now: number): Day[] {
+  const days: Day[] = [];
+  for (let d = dayOf(now); d <= row.day; d = addDays(d, 1)) {
+    if ((row.from !== null && dayOf(row.from) === d) || fromTimes(row, d, now).some((c) => c.ok)) days.push(d);
+  }
+  return days;
 }
 
 // ---- acts, optimistic rows, undo ----
@@ -231,7 +247,7 @@ export const movedDays = (was: readonly DayRow[], now: readonly DayRow[]): Day[]
 /** What an act did, in a word (the 取り消す banner's line, the change list's). */
 function changeWhat(c: Pick<Change, 'a' | 's' | 'e' | 'at' | 'm' | 'd'>): string {
   if (c.a === 'range') return longRange([c.s!, c.e!]);
-  if (c.a === 'from') return t('gym.cell.from', { time: c.d && dayOf(c.at!) !== c.d ? `${dayTitle(dayOf(c.at!))} ${clockOf(c.at!)}` : clockOf(c.at!) });
+  if (c.a === 'from') return t('gym.cell.from', { time: fromWords(c.d, c.at!) });
   if (c.a === 'interval') return t('gym.ctl.every', { n: c.m! });
   return t(`gym.ch.${c.a}`);
 }

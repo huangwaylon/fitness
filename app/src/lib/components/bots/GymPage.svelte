@@ -23,8 +23,8 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { checkStrip, factRows, fetchStatus, needsAttention, parseStatus, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
-  import { bulkAct, changeLine, dayTitle, longRange, movedDays, pickSlot, predictAll, slotCount, undoActs, weeks, withBase, type SlotPick } from '#lib/gym/calendar.ts';
-  import { clockOf, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
+  import { bulkAct, changeLine, dayTitle, fromWords, longRange, movedDays, pickSlot, predictAll, slotCount, undoActs, weeks, withBase, type SlotPick } from '#lib/gym/calendar.ts';
+  import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
   import Sheet from '../ui/Sheet.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
@@ -144,6 +144,10 @@
   const legend = { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), fail: t('gym.strip.legend.fail'), none: t('gym.strip.legend.none') };
   const cells = $derived(cfg ? weeks(cfg.rows) : []);
   const editRow = $derived(cfg && editDay ? (cfg.rows.find((r) => r.day === editDay) ?? null) : null);
+  // the day passed while its editor was open (the rows start at the new today): nothing left to set
+  $effect(() => {
+    if (editOpen && cfg && editDay && !editRow) editOpen = false;
+  });
   const usualDay = $derived(!!cfg && !!editDay && cfg.rows.findIndex((r) => r.day === editDay) < cfg.defaultDays);
   const wait = $derived(Math.max(0, Math.ceil((readyAt - tickNow) / 1000)));
   const checkOff = $derived(!cfg || cfg.paused || cfg.checking || checking || wait > 0);
@@ -155,7 +159,7 @@
     if (input.a === 'interval') return t('gym.ctl.every', { n: input.m });
     if (input.a === 'pause' || input.a === 'resume' || input.a === 'check') return input.a === 'check' ? '' : t(`gym.ch.${input.a}`);
     const what = input.a === 'range' ? longRange([input.s, input.e])
-      : input.a === 'from' ? t('gym.cell.from', { time: typeof input.at === 'number' ? clockOf(input.at) : input.at }) : t(`gym.ch.${input.a}`);
+      : input.a === 'from' ? t('gym.cell.from', { time: fromWords(input.d, typeof input.at === 'number' ? input.at : at(input.d, input.at)) }) : t(`gym.ch.${input.a}`);
     return 'days' in input ? what : `${dayTitle(input.d)} ${what}`;
   }
 

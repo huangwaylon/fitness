@@ -7,10 +7,11 @@
 // whichever side made the change; the app's changes are never named in the group.
 import * as actions from './actions.ts';
 import type { Bot } from './actions.ts';
-import { DAYS_SHOWN, INTERVALS, LAST_START } from '../../app/src/lib/gym/contract.ts';
+import { DAYS_SHOWN, INTERVALS, LAST_START, fromLimit } from '../../app/src/lib/gym/contract.ts';
 import { CLOSES, DEFAULT_WINDOW, OPENS } from './config.ts';
 import { LineError, texts } from './line.ts';
 import * as messages from './messages.ts';
+import { ANY } from './store.ts';
 import { addDays, at, clockFrom, clockOf, dayOf, minutesOf, weekday, type Clock, type Day } from './time.ts';
 
 // LINE's JSON, built and read loosely.
@@ -116,14 +117,15 @@ export function dayCard(bot: Bot, day: Day): Json {
     button(postback(messages.SKIP_LABEL, { a: 'skip', d: day })),
     button(picker(messages.RANGE, 'time', { a: 'start', d: day }, start, OPENS, LAST_START)),
   ];
-  // ⏳ picker: from now until the day's last slot, starting at the saved time or the next whole hour
+  // ⏳ picker: any date and time from the next minute (now's own has passed) to the day's last slot (fromLimit for 🔔:
+  // a ⏰ window's later times get the bot's hint), starting at the saved time or the next whole hour, kept between them
   // (Tokyo is a whole number of hours from UTC, so whole hours are the same in both)
-  const low = now - (now % 60_000);
-  const high = at(day, LAST_START);
-  if (low < high) {
-    const initial = checkFrom ?? Math.min(now - (now % HOUR_MS) + HOUR_MS, high);
+  const low = now - (now % 60_000) + 60_000;
+  const high = fromLimit(day, ANY) - 60_000;
+  if (low <= high) {
+    const initial = checkFrom ?? now - (now % HOUR_MS) + HOUR_MS;
     buttons.push(button(picker(messages.CHECK_FROM, 'datetime', { a: 'from', d: day },
-      minute(Math.max(initial, low)), minute(low), minute(high))));
+      minute(Math.min(Math.max(initial, low), high)), minute(low), minute(high))));
   }
   if (checkFrom !== undefined) buttons.push(button(postback(messages.CLEAR_CHECK_FROM, { a: 'unfrom', d: day })));
   if (store.hasAnything(day)) buttons.push(button(postback(messages.RESET, { a: 'reset', d: day })));

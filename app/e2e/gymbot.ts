@@ -1,12 +1,12 @@
 // The gym bot's Worker as ボット → ジム's specs see it (gymbot.spec.ts, gymbot-settings.spec.ts): /status and the members'
 // /gym/config and /gym/act answered by page.route from a small stand-in of the bot's state (gym/src: the 25 rows from
 // the record's pinned day, the check settings, the app's changes, 🔎's cooldown), so a change shows in the next read.
-// Each act's body is kept; `next` answers the next act with a refusal or a failure instead; `hold` keeps the acts
+// A ⏳ is refused as the bot refuses it (the contract's fromRefusal, in its words). Each act's body is kept; `next` answers the next act with a refusal or a failure instead; `hold` keeps the acts
 // unanswered until released; `lineTap` changes a day as a LINE tap would (its base moves, so the page's next act on it
 // is 409 stale). No network.
 import type { Page } from './fixtures.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
-import { at, dayOf, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
+import { at, dayOf, fromRefusal, fromWindow, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
 
 const ORIGIN = 'https://gym-bot.island-fund-relay.workers.dev';
 export const STATUS = `${ORIGIN}/status`;
@@ -114,6 +114,16 @@ export function fakeGym(now: () => number) {
       const list = 'days' in input ? input.days : [{ d: input.d, base: input.base }];
       if (list.some((x) => x.base !== undefined && x.base !== row(x.d).base)) {
         return { status: 409, body: { ok: false, error: 'stale', hint: 'ほかの人が先に変更しました。', config: config() } };
+      }
+      if (input.a === 'from') {
+        const r = row(input.d);
+        const rule: Rule | null = r.rule ?? (r.usual ? ['12:00', '13:00'] : null);
+        const error = fromRefusal(input.d, typeof input.at === 'number' ? input.at : at(input.d, input.at), now(), rule);
+        const w = fromWindow(rule);
+        const hint = error === 'from_passed' ? 'その日時はもう過ぎています。'
+          : error === 'from_after_day' ? `チェック開始は${md(input.d)}までの日時にしてください。`
+            : `その時刻からだと、${md(input.d)}の ⏰ ${w[0]}〜${w[1]} の枠は残りません。先に時間帯を変えてください。`;
+        if (error) return { status: 422, body: { ok: false, error, hint, config: config() } };
       }
       for (const x of list) apply1(('days' in input ? { ...input, d: x.d, days: undefined } : input) as Extract<ActInput, { d: string }>);
     }

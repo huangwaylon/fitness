@@ -4,7 +4,7 @@ import * as actions from '../src/actions.ts';
 import { LineError, menuQuickReply } from '../src/line.ts';
 import * as messages from '../src/messages.ts';
 import { ANY, SKIP } from '../src/store.ts';
-import { DAYS_SHOWN, INTERVALS, LAST_START } from '../../app/src/lib/gym/contract.ts';
+import { DAYS_SHOWN, INTERVALS } from '../../app/src/lib/gym/contract.ts';
 import { addDays, at } from '../src/time.ts';
 import * as ui from '../src/ui.ts';
 import type { Store } from '../src/store.ts';
@@ -149,8 +149,17 @@ describe('cards', () => {
   it('day card suggests checking from the next whole hour', () => {
     vi.setSystemTime(Date.parse('2026-10-12T12:34:56+09:00'));
     const p = cardButtons(ui.dayCard(bot, inDays(1)))[messages.CHECK_FROM];
-    expect([p.initial, p.min, p.max]).toEqual([picked(today(), '13:00'), picked(today(), '12:34'),
-      picked(inDays(1), '21:30')]);
+    expect([p.initial, p.min, p.max]).toEqual([picked(today(), '13:00'), picked(today(), '12:35'),
+      picked(inDays(1), '21:29')]); // from the next minute (12:34 has passed) to before the last slot (21:30)
+  });
+
+  it('day card keeps a saved ⏳ the picker can’t show inside it: a passed one not yet dropped, an old 21:30', () => {
+    vi.setSystemTime(Date.parse('2026-10-12T12:34:56+09:00'));
+    bot.store.setCheckFrom(today(), at(today(), '12:00'), today());
+    expect(cardButtons(ui.dayCard(bot, today()))[messages.CHECK_FROM].initial).toBe(picked(today(), '12:35'));
+    bot.store.setRule(inDays(1), 'any', today());
+    bot.store.setCheckFrom(inDays(1), at(inDays(1), '21:30'), today());
+    expect(cardButtons(ui.dayCard(bot, inDays(1)))[messages.CHECK_FROM].initial).toBe(picked(inDays(1), '21:29'));
   });
 
   it("day card has no check-from picker once today's last slot has started", () => {
@@ -179,8 +188,8 @@ describe('cards', () => {
     expect(ui.halfHour(clock, up)).toBe(expected);
   });
 
-  it('check-from can be picked until the last slot', () => {
-    expect(cardButtons(ui.dayCard(bot, inDays(1)))[messages.CHECK_FROM].max).toBe(picked(inDays(1), LAST_START));
+  it('check-from can be picked until the last slot starts', () => {
+    expect(cardButtons(ui.dayCard(bot, inDays(1)))[messages.CHECK_FROM].max).toBe(picked(inDays(1), '21:29'));
   });
 });
 

@@ -67,7 +67,7 @@ describe('apply: day settings', () => {
     expect(bot.store.checkFrom('2026-10-14')).toBeUndefined();
   });
 
-  it('takes a ⏳ before the window’s last slot (🔕 and 💤 days get the usual window, 🔔 any time)', async () => {
+  it('takes a ⏳ before the window’s last slot (🔕 and 💤 days get the usual window, 🔔 the day’s last slot)', async () => {
     expect((await applied({ a: 'from', d: inDays(2), at: at(inDays(2), '12:29') })).changed).toBe(true);
     bot.store.setRule(inDays(10), SKIP, today());
     expect((await refusal({ a: 'from', d: inDays(10), at: at(inDays(10), '14:00') })).hint).toMatch(/12:00〜13:00 の枠は残りません/);
@@ -75,7 +75,12 @@ describe('apply: day settings', () => {
     expect((await applied({ a: 'from', d: inDays(10), at: at(inDays(10), '14:00') })).changed).toBe(true);
     expect((await refusal({ a: 'from', d: inDays(10), at: at(inDays(10), '19:30') })).code).toBe('from_after_window');
     bot.store.setRule(inDays(11), ANY, today());
-    expect((await applied({ a: 'from', d: inDays(11), at: at(inDays(11), '21:00') })).changed).toBe(true);
+    expect((await refusal({ a: 'from', d: inDays(11), at: at(inDays(11), '21:30') }))).toEqual({ code: 'from_after_window', hint: messages.fromAfterWindow(inDays(11), null) });
+    expect(messages.fromAfterWindow(inDays(11), null)).not.toContain('⏰');
+    expect((await applied({ a: 'from', d: inDays(11), at: at(inDays(11), '21:29') })).changed).toBe(true);
+    // another day: any time up to the day, the window doesn't apply (Tue 23:30 for Fri)
+    expect((await applied({ a: 'from', d: inDays(11), at: at(inDays(8), '23:30') })).changed).toBe(true);
+    expect(bot.store.checkFrom(inDays(11))).toBe(at(inDays(8), '23:30'));
     expect((await applied({ a: 'unfrom', d: inDays(11) })).changed).toBe(true);
     expect((await applied({ a: 'unfrom', d: inDays(11) })).changed).toBe(false);
   });

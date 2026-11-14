@@ -34,9 +34,11 @@ Each day has at most one rule (`src/store.ts`):
 Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near days at lunch are the usual;
 further days wait for a setting.
 
-- **⏳ check from** a time: the day is ignored until then. Kept between 🔔 and ⏰, cleared by 🔕; set on a 🔕 or 💤 day it
-  gives the day ⏰ 12:00〜13:00. In the future, no later than the day, and before the ⏰ window's last slot (a hint
-  otherwise: it would never find one); the picker ends at the last slot (21:30).
+- **⏳ check from** a date and time: the day is ignored until then (e.g. Friday from Tuesday 18:00, when an earlier
+  booking is over: 3 at a time). Kept between 🔔 and ⏰, cleared by 🔕; set on a 🔕 or 💤 day it gives the day ⏰
+  12:00〜13:00. One rule (the contract's `fromRefusal`): in the future, from today up to the day itself, and on the day
+  before its window's last slot starts (🔔: 21:30), else a hint (it would never find one). LINE's picker runs from the
+  next minute to the day's 21:29; the app offers half hours on a start day and a time.
 - **🧹 reset** clears a day's rule, ⏳ and announced times, so its open slots alert again (shown only when there's
   something to clear).
 - **🔎 check now**: once a minute for everyone (LINE and the app share it), refused while stopped or while a check
@@ -90,7 +92,7 @@ further days wait for a setting.
   test drives both). Read from memory, never kept. Logs `config read by=A`, `config refused 401 unauthorized` (log
   level; warn: 403 origin, 405 method, 401 `no_keys`), or `config failed <ErrName>` (500, with CORS).
 - **The app** (`POST /gym/act`, the contract's `ActInput`): `{a: any|skip|reset|unfrom, d, base?}`, `{a: range, d, s,
-  e, base?}`, `{a: from, d, at, base?}` (`at` a clock time on `d`), `{a: interval, m}`, `{a: pause|resume|check}`, and
+  e, base?}`, `{a: from, d, at, base?}` (`at` a clock time on `d`, or an instant: the app sends one), `{a: interval, m}`, `{a: pause|resume|check}`, and
   the calendar's bulk form `{a, days: [{d, base?}]}` (all or nothing). The bot reads it into the same actions as the
   taps (`actions.ts` `parseAction` → `apply`), so the rules and the words are LINE's. Answers `{ok: true, changed,
   reply, config}` (🔎 also `lines`, `partial`, `slots`); refusals `{ok: false, error, hint?}` with LINE's hint, each

@@ -129,8 +129,9 @@ ${CHECK_NOW}　いま空いている枠を一覧で表示（ここで出た枠�
 export const ERROR = '😕 エラーが発生しました。もう一度お試しください。';
 export const FROM_PASSED = 'その日時はもう過ぎています。';
 
-/** ⏳ at or after the day's window's last slot: nothing could ever be found. */
-export function fromAfterWindow(day: Day, window: [Clock, Clock]): string {
+/** ⏳ at or after the day's window's last slot (null: 🔔, the day's last slot): nothing could ever be found. */
+export function fromAfterWindow(day: Day, window: readonly [Clock, Clock] | null): string {
+  if (window === null) return `その時刻からだと、${dayLabel(day)}の枠は残りません。`;
   return `その時刻からだと、${dayLabel(day)}の ⏰ ${timeRange(...window)} の枠は残りません。先に時間帯を変えてください。`;
 }
 export const OUTDATED = 'このボタンは古くなっています。メニューから開き直してください。';

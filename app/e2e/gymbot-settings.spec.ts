@@ -1,6 +1,7 @@
 // ボット → ジム's settings (docs/design.md "Bots"; the brief's app half): the control row (stop asks first, restart at
 // once, 確認の間隔, 今すぐ確認 and its countdown), the 4-week calendar (the 4-day default, VoiceOver's grid and its arrow
-// keys, 44px), the day editor (instant, 取り消す, the slot chips, 通知の開始's disabled times), select mode and one bulk
+// keys, 44px), the day editor (instant, 取り消す, the slot chips, 通知の開始's start day and time: Fri from Tue 18:00,
+// moved, cleared, the bot's refusals), select mode and one bulk
 // act, a 409 stale, quick edits sent in turn, the bot's refusals in its words, a failure with もう一度, and a poll's change
 // flashed. The Worker is e2e/gymbot.ts's stand-in (page.route; every act's body kept), at the record's pinned time
 // (11/4（水） 12:00). With GYM_UI_SHOTS=<dir>, the last test also writes the screenshots, day and night.
@@ -10,6 +11,7 @@ import { fromMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
 import { fakeGym, routeGym } from './gymbot.ts';
+import { at } from '../src/lib/gym/contract.ts';
 
 async function phone(page: Page, context: BrowserContext, arrange: (gym: ReturnType<typeof fakeGym>) => void = () => {}) {
   const rec = newRecord();
@@ -123,14 +125,16 @@ test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 en
   await slot('21:30').click();
   await expect(editor.locator('[data-gym-slots-line]')).toHaveText('21:30〜22:00 の枠を通知（1枠）');
   expect(gym.acts.slice(1).map((a) => 'e' in a && `${a.s}-${a.e}`)).toEqual(['18:00-19:00', '18:00-20:00', '18:00-19:00', '21:30-22:00']);
-  // 通知の開始: 時刻, then a time before the window's last slot
+  // 通知の開始: 時刻, then a time before the window's last slot (on the day itself: its start day by default)
   await editor.locator('[data-gym-from="at"]').click();
+  await expect(editor.locator('[data-gym-from-date]')).toHaveValue(gym.days[6]);
   const pick = editor.locator('[data-gym-from-time]');
-  await expect(pick.locator('option[value="21:00"]')).toBeEnabled();
-  await expect(pick.locator('option[value="21:30"]')).toBeDisabled(); // the window's last slot starts then
-  await pick.selectOption('20:00');
+  const opt = (d: string, c: string) => pick.locator(`option[value="${at(d, c)}"]`);
+  await expect(opt(gym.days[6], '21:00')).toBeEnabled();
+  await expect(opt(gym.days[6], '21:30')).toBeDisabled(); // the window's last slot starts then
+  await pick.selectOption(String(at(gym.days[6], '20:00')));
   await expect(day(6).locator('[data-gym-from]')).toBeVisible();
-  expect(gym.acts.at(-1)).toMatchObject({ a: 'from', d: gym.days[6], at: '20:00' });
+  expect(gym.acts.at(-1)).toMatchObject({ a: 'from', d: gym.days[6], at: at(gym.days[6], '20:00') });
   await editor.locator('[data-gym-from="now"]').click();
   expect(gym.acts.at(-1)).toMatchObject({ a: 'unfrom', d: gym.days[6] });
   await expect(day(6).locator('[data-gym-from]')).toHaveCount(0);
@@ -138,9 +142,92 @@ test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 en
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
   await day(0).click();
   await editor.locator('[data-gym-from="at"]').click();
-  await expect(editor.locator('[data-gym-from-time] option:not([disabled])')).toHaveCount(0);
-  await expect(editor.locator('[data-gym-from-time] option[value="12:00"]')).toBeDisabled();
+  await expect(editor.locator('[data-gym-from-none]')).toHaveText('この日の枠に間に合う開始時刻は、もうありません');
+  await expect(editor.locator('[data-gym-from-date], [data-gym-from-time]')).toHaveCount(0);
 });
+
+test('⏳ on an earlier day: Fri from Tue 18:00 (the 3-booking limit), moved, edited, cleared; the bot’s refusals', async ({ page, context }) => {
+  const { gym, day, editor } = await phone(page, context);
+  const [tue, fri] = [gym.days[6], gym.days[9]]; // 11/10（火）, 11/13（金）; today 11/4（水） 12:00
+  await day(9).click();
+  await editor.locator('[data-gym-kind="range"]').click(); // 12:00〜13:00
+  await editor.locator('[data-gym-from="at"]').click();
+  await expect(editor.locator('[data-gym-from-why]')).toContainText('予約は同時に3件まで');
+  const date = editor.locator('[data-gym-from-date]');
+  const time = editor.locator('[data-gym-from-time]');
+  // the dates: today to the day, none before today or after the day; weekday and today / the day marked
+  const labels = await date.locator('option').allTextContents();
+  expect(labels).toHaveLength(10);
+  expect([labels[0], labels[6], labels[9]]).toEqual(['11/4（水）（今日）', '11/10（火）', '11/13（金）（当日）']);
+  await expect(date).toHaveAccessibleName('開始日');
+  await expect(time).toHaveAccessibleName('開始時刻');
+  for (const el of [date, time]) expect((await el.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  // today: the passed half hours aren't offered
+  await date.selectOption(gym.days[0]);
+  expect(await time.locator('option:not([disabled])').first().textContent()).toBe('12:30');
+  // Tue 18:00 for Fri: any half hour that day, the window doesn't apply before the day
+  await date.selectOption(tue);
+  expect(gym.acts.at(-1)!.a).toBe('range'); // a day alone sends nothing
+  await expect(time).toHaveValue('');
+  await expect(time.locator('option:not([disabled])')).toHaveCount(48);
+  await time.selectOption(String(at(tue, '18:00')));
+  expect(gym.acts.at(-1)).toMatchObject({ a: 'from', d: fri, at: at(tue, '18:00') });
+  await expect(editor.locator('[data-gym-editor-now] small')).toHaveText('11/10（火）18:00から');
+  await expect(day(9)).toHaveAttribute('aria-label', '11/13（金）、12:00〜13:00、11/10（火）18:00から');
+  await expect(page.locator('.banner')).toContainText('11/13（金） 11/10（火）18:00からにしました');
+  // reopened: prefilled with its day and time
+  await page.locator('dialog[open] .navbar button.nav.close').last().click();
+  await day(9).click();
+  await expect(editor.locator('[data-gym-from="at"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(date).toHaveValue(tue);
+  await expect(time).toHaveValue(String(at(tue, '18:00')));
+  // another day keeps its time; on the day itself 18:00 is after the window, so the time is asked for
+  await date.selectOption(gym.days[7]);
+  expect(gym.acts.at(-1)).toMatchObject({ a: 'from', d: fri, at: at(gym.days[7], '18:00') });
+  await expect(time).toHaveValue(String(at(gym.days[7], '18:00')));
+  const sent = gym.acts.length;
+  await date.selectOption(fri);
+  await expect(time).toHaveValue('');
+  await expect(time.locator(`option[value="${at(fri, '18:00')}"]`)).toBeDisabled(); // ⏰ 12:00〜13:00: none left
+  await expect(time.locator(`option[value="${at(fri, '12:00')}"]`)).toBeEnabled();
+  expect(gym.acts.length).toBe(sent);
+  // the bot refuses a time that passed meanwhile (its words), and the day is shown as it is
+  gym.next({ status: 422, body: { ok: false, error: 'from_passed', hint: 'その日時はもう過ぎています。' } });
+  await time.selectOption(String(at(fri, '09:00')));
+  await expect(editor.locator('[data-gym-note]')).toHaveText('その日時はもう過ぎています。');
+  await expect(editor.locator('[data-gym-editor-now] small')).toHaveText('11/11（水）18:00から');
+  // cleared: すぐ
+  await editor.locator('[data-gym-from="now"]').click();
+  expect(gym.acts.at(-1)).toMatchObject({ a: 'unfrom', d: fri });
+  await expect(day(9).locator('[data-gym-from]')).toHaveCount(0);
+  // 🔕 clears it, as LINE's
+  await editor.locator('[data-gym-from="at"]').click();
+  await date.selectOption(tue);
+  await time.selectOption(String(at(tue, '18:00')));
+  await editor.locator('[data-gym-kind="off"]').click();
+  await expect(day(9).locator('[data-gym-from]')).toHaveCount(0);
+  await expect(editor.locator('[data-gym-from-date]')).toHaveCount(0);
+});
+
+test('⏳ set by the other member meanwhile: 409 stale shows theirs, prefilled; their ⏰ then disables the late times', async ({ page, context }) => {
+  const { gym, day, editor } = await phone(page, context, (g) => g.lineTap(g.days[9], 'any'));
+  await day(9).click();
+  await editor.locator('[data-gym-from="at"]').click();
+  gym.setFrom(gym.days[9], at(gym.days[8], '20:00'));
+  gym.lineTap(gym.days[9], 'any'); // their change: the base moves
+  await editor.locator('[data-gym-from-date]').selectOption(gym.days[6]);
+  await editor.locator('[data-gym-from-time]').selectOption(String(at(gym.days[6], '18:00')));
+  await expect(editor.locator('[data-gym-note]')).toHaveText('ほかの人が変更しました。いまの設定を表示しています。');
+  await expect(editor.locator('[data-gym-from-date]')).toHaveValue(gym.days[8]); // theirs, prefilled
+  await expect(editor.locator('[data-gym-from-time]')).toHaveValue(String(at(gym.days[8], '20:00')));
+  // their ⏰ 12:00〜13:00 meanwhile: on the day itself, 12:30 and later can't be picked
+  gym.lineTap(gym.days[9], ['12:00', '13:00']);
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(day(9)).toContainText('12–13');
+  await editor.locator('[data-gym-from-date]').selectOption(gym.days[9]);
+  await expect(editor.locator(`[data-gym-from-time] option[value="${at(gym.days[9], '12:30')}"]`)).toBeDisabled();
+});
+
 
 test('select mode: weekday headers and days, one bulk act, one 取り消す; 時間指定 for them all; a long press starts it', async ({ page, context }) => {
   const { gym, day, sheet } = await phone(page, context);

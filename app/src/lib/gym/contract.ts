@@ -57,6 +57,25 @@ export const CHANGES_KEPT = 12;
 /** A day's saved rule: any open slot, none, or the slots inside a time range. */
 export type Rule = 'any' | 'skip' | [Clock, Clock];
 
+// ---- ⏳ (check from): one rule for LINE's picker, the Worker and the app's editor ----
+
+/** The window a ⏳ must leave a slot in, by the day's rule in force: 🔔 the opening hours, ⏰ its range, 🔕 and 💤
+ *  (undefined or null) DEFAULT_WINDOW, which a ⏳ gives them. */
+export const fromWindow = (rule: Rule | null | undefined): readonly [Clock, Clock] =>
+  rule === 'any' ? [OPENS, CLOSES] : Array.isArray(rule) ? rule : DEFAULT_WINDOW;
+
+/** The first instant a ⏳ on `day` is too late for: the window's last slot starts then (a slot counts only if it
+ *  starts after the ⏳). @public (gym/src) */
+export const fromLimit = (day: Day, rule: Rule | null | undefined): number => at(day, fromWindow(rule)[1]) - SLOT_MINUTES * 60_000;
+
+/** Why a ⏳ at `when` for `day` is refused at `now`, or null: it has passed, it is after the day, or it leaves no slot
+ *  in the day's window. Any Tokyo date from today up to the day itself. */
+export function fromRefusal(day: Day, when: number, now: number, rule: Rule | null | undefined): 'from_passed' | 'from_after_day' | 'from_after_window' | null {
+  if (when <= now) return 'from_passed';
+  if (dayOf(when) > day) return 'from_after_day';
+  return when >= fromLimit(day, rule) ? 'from_after_window' : null;
+}
+
 // ---- GET /gym/config ----
 
 /** 📋's day row, in the bot's words (messages.ts statusView). */

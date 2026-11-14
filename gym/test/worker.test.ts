@@ -18,7 +18,8 @@ import worker from '../src/index.ts';
 import { GymBot } from '../src/bot.ts';
 import type { Env } from '../src/env.ts';
 import type { Line } from '../src/line.ts';
-import { addDays, dayOf, isoJst } from '../src/time.ts';
+import { addDays, at, dayOf, isoJst } from '../src/time.ts';
+import { dayLabel } from '../src/messages.ts';
 import type { ActAnswer, GymConfig } from '../../app/src/lib/gym/contract.ts';
 import { GROUP, NOW, fakeState, inDays } from './fakeBot.ts';
 
@@ -398,6 +399,8 @@ describe('POST /gym/act, end to end', () => {
       { name: '🔕', app: { a: 'skip', d: d2 }, line: { data: `a=skip&d=${d2}` } },
       { name: '⏰', app: { a: 'range', d: d6, s: '12:00', e: '14:00' }, line: { data: `a=range&d=${d6}&s=12:00`, params: { time: '14:00' } } },
       { name: '⏳', app: { a: 'from', d: d1, at: '11:00' }, line: { data: `a=from&d=${d1}`, params: { datetime: `${d1}T11:00` } } },
+      { name: '⏳ on an earlier day (Fri from Tue 18:00)', app: { a: 'from', d: d5, at: at(d2, '18:00') }, line: { data: `a=from&d=${d5}`, params: { datetime: `${d2}T18:00` } } },
+      { name: '⏳ moved to another day', seed: () => seed({ a: 'from', d: d5, at: '11:00' }), app: { a: 'from', d: d5, at: at(d1, '09:30') }, line: { data: `a=from&d=${d5}`, params: { datetime: `${d1}T09:30` } } },
       { name: '⏳ cleared', seed: () => seed({ a: 'from', d: d1, at: '11:00' }), app: { a: 'unfrom', d: d1 }, line: { data: `a=unfrom&d=${d1}` } },
       { name: '🧹', seed: async () => { await seed({ a: 'skip', d: d2 }); await seed({ a: 'from', d: d1, at: '11:00' }); }, app: { a: 'reset', d: d2 }, line: { data: `a=reset&d=${d2}` } },
       { name: '🔕 🧹 🔕 on one day', seed: async () => { await seed({ a: 'skip', d: d2 }); await seed({ a: 'reset', d: d2 }); }, app: { a: 'skip', d: d2 }, line: { data: `a=skip&d=${d2}` } },
@@ -429,6 +432,17 @@ describe('POST /gym/act, end to end', () => {
       expect((await after(async () => {}, c)).store).not.toEqual(viaApp.store); // the step did change something
       expect(viaApp.status).toBe(viaApp.config.text); // 📋 is /gym/config's text
       expect(viaApp.status).not.toContain('アプリで変更');
+    });
+
+    it('⏳ on an earlier day reads in 📋 as LINE words it, and its refusals are LINE’s', async () => {
+      await newBot();
+      expect((await post({ a: 'from', d: d5, at: at(d2, '18:00') })).status).toBe(200);
+      const day = (await readConfig()).days.find((x) => x.day === d5)!;
+      expect(day.from).toBe(`⏳ ${dayLabel(d2)}18:00から`);
+      for (const [when, error] of [[NOW, 'from_passed'], [at(addDays(d5, 1), '09:00'), 'from_after_day'], [at(d5, '12:30'), 'from_after_window']] as const) {
+        const res = await post({ a: 'from', d: d5, at: when });
+        expect([res.status, ((await res.json()) as { error: string }).error]).toEqual([422, error]);
+      }
     });
 
     it('the app’s list keeps one entry per day: the user’s 11/27 🔕, 🧹, 🔕', async () => {

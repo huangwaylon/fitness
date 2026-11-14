@@ -3,12 +3,11 @@
 // the bot's words, or refuses with a code and LINE's hint. Also the bot interface they and the cards need, 📋's
 // answer (status) and the app's /gym/config (config).
 import {
-  ACT_STATUS, CHANGES_KEPT, CHECK_COOLDOWN_MS, CLOSES, DAYS_SHOWN, INTERVALS, OPENS, parseActInput,
+  ACT_STATUS, CHANGES_KEPT, CHECK_COOLDOWN_MS, CLOSES, DAYS_SHOWN, INTERVALS, OPENS, fromRefusal, fromWindow, parseActInput,
   type ActAnswer, type ActError, type Change, type ChangeKind, type DayRow, type GymConfig, type Member, type OpenSlot
 } from '../../app/src/lib/gym/contract.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
-import { DEFAULT_WINDOW } from './config.ts';
-import { CheckFailed, PROGRAMS, slotEnd, type Slot } from './hacomono.ts';
+import { CheckFailed, slotEnd, type Slot } from './hacomono.ts';
 import type { Line } from './line.ts';
 import * as messages from './messages.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
@@ -137,19 +136,16 @@ function dayRefusal(act: DayAction, now: number): Refusal | null {
   return null;
 }
 
-/** Only check a day from `when` on. Refused for a time that has passed, is after the day, or leaves no slot in the
- *  day's ⏰ window (a 🔕 or 💤 day gets DEFAULT_WINDOW). */
+/** Only check a day from `when` on: the contract's fromRefusal (LINE's picker and the app's editor offer only what it
+ *  takes), with the hint in the bot's words. */
 function setCheckFrom(bot: Bot, day: Day, when: number, now: number): Applied | Refusal {
-  if (when <= now) return { code: 'from_passed', hint: messages.FROM_PASSED };
-  if (dayOf(when) > day) return { code: 'from_after_day', hint: messages.fromAfterDay(day) };
-  const rule = bot.store.effectiveRule(day, dayOf(now));
-  const window: Rule = rule === SKIP || rule === undefined ? [DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]] : rule;
-  // the window's last slot starts a slot's length before its end, and only slots after the ⏳ time count
-  const slotMs = Math.min(...PROGRAMS.map((p) => p.minutes)) * 60_000;
-  if (Array.isArray(window) && when >= at(day, window[1]) - slotMs) {
-    return { code: 'from_after_window', hint: messages.fromAfterWindow(day, window) };
-  }
-  return dayReply(bot, day, dayOf(now), bot.store.setCheckFrom(day, when, dayOf(now)));
+  const today = dayOf(now);
+  const rule = bot.store.effectiveRule(day, today);
+  const code = fromRefusal(day, when, now, rule);
+  if (code === 'from_passed') return { code, hint: messages.FROM_PASSED };
+  if (code === 'from_after_day') return { code, hint: messages.fromAfterDay(day) };
+  if (code) return { code, hint: messages.fromAfterWindow(day, rule === ANY ? null : fromWindow(rule)) };
+  return dayReply(bot, day, today, bot.store.setCheckFrom(day, when, today));
 }
 
 function dayReply(bot: Bot, day: Day, today: Day, changed: boolean): Applied {

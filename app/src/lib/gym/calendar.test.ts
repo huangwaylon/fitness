@@ -1,8 +1,8 @@
 // ジム's calendar model (calendar.ts): the 4 weeks and each cell (the 4-day default, the fills, the marks, the
-// words), the slot picker's rules, the ⏳ times allowed, the optimistic rows, the undo of a change and a bulk act.
+// words), the slot picker's rules, the ⏳ dates and times allowed, the optimistic rows, the undo of a change and a bulk act.
 import { describe, expect, it } from 'vitest';
-import { bulkAct, fromChoices, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, weeks, withBase, type SlotPick } from './calendar.ts';
-import { addDays, at, type DayRow } from './contract.ts';
+import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, weeks, withBase, type SlotPick } from './calendar.ts';
+import { addDays, at, fromRefusal, type DayRow } from './contract.ts';
 
 /** Today: Thursday 2026-11-12, noon in Tokyo. */
 const TODAY = '2026-11-12';
@@ -43,7 +43,7 @@ describe('weeks', () => {
     expect([c[1].fill, c[1].time, c[1].from, c[1].label]).toEqual(['any', null, true, '11/13（金）、終日、18:00から']);
     expect([c[2].fill, c[2].time, c[2].announced, c[2].label]).toEqual(['range', '18:30–20', 2, '11/14（土）、18:30〜20:00、通知済み2件']);
     expect([c[6].fill, c[6].label]).toEqual(['off', '11/18（水）、オフ']);
-    expect(c[7].label).toBe('11/19（木）、12:00〜13:00、11/18（水） 21:00から'); // a ⏳ on another day (from LINE)
+    expect(c[7].label).toBe('11/19（木）、12:00〜13:00、11/18（水）21:00から'); // a ⏳ on an earlier day, as 📋 words it
   });
 });
 
@@ -76,21 +76,56 @@ describe('the slot picker', () => {
   });
 });
 
-describe('⏳ times', () => {
-  const ok = (r: DayRow, now = NOW) => fromChoices(r, now).filter((c) => c.ok).map((c) => c.clock);
+describe('⏳ dates and times', () => {
+  const ok = (r: DayRow, date = r.day, now = NOW) => fromTimes(r, date, now).filter((c) => c.ok).map((c) => c.clock);
+  const halves = (from: string, to: string) => fromTimes(row(20), day(19), at(TODAY, '00:00')).map((c) => c.clock).filter((c) => c >= from && c <= to);
 
-  it('in the future, before the window’s last slot (ふだん: before 12:30)', () => {
-    expect(ok(row(1))).toEqual(['06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00']);
+  it('the day itself: the half hours ahead, before the window’s last slot (ふだん: before 12:30); to 21:30, the rest disabled', () => {
+    expect(ok(row(1))).toEqual(halves('00:00', '12:00'));
     expect(ok(row(0))).toEqual([]); // today past noon: nothing before 12:30 is ahead
-    expect(ok(row(0, { rule: ['18:00', '20:00'] }))).toEqual(['12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00']);
+    expect(ok(row(0, { rule: ['18:00', '20:00'] }))).toEqual(halves('12:30', '19:00'));
+    const all = fromTimes(row(0, { rule: 'any' }), day(0), NOW);
+    expect(all[0]).toMatchObject({ clock: '12:30', ok: true }); // the past left out (12:00 is now)
+    expect(all.at(-2)).toMatchObject({ clock: '21:00', ok: true });
+    expect(all.at(-1)).toMatchObject({ clock: '21:30', ok: false }); // 🔔: the last slot starts then
+    expect(all.length).toBe(19);
   });
 
-  it('終日: up to the day’s last slot; the passed ones and the rest shown, disabled', () => {
-    const all = fromChoices(row(0, { rule: 'any' }), NOW);
-    expect(all.at(-1)).toEqual({ clock: '21:30', ok: false });
-    expect(all.find((c) => c.clock === '21:00')).toEqual({ clock: '21:00', ok: true });
-    expect(all.find((c) => c.clock === '12:00')).toEqual({ clock: '12:00', ok: false });
-    expect(all.length).toBe(32);
+  it('an earlier day: every half hour still ahead, to 23:30, whatever the window (Fri from Tue 18:00)', () => {
+    const fri = row(8, { rule: ['12:00', '13:00'] });
+    expect(ok(fri, day(5))).toEqual(halves('00:00', '23:30'));
+    expect(ok(fri, day(0))).toEqual(halves('12:30', '23:30')); // today: from the next half hour
+    expect(fromTimes(fri, day(5), NOW).find((c) => c.clock === '18:00')!.at).toBe(at(day(5), '18:00'));
+  });
+
+  it('the dates: today to the day (none after it, none before today), a day with no time left out', () => {
+    expect(fromDates(row(4), NOW)).toEqual([0, 1, 2, 3, 4].map(day));
+    expect(fromDates(row(0, { rule: ['18:00', '20:00'] }), NOW)).toEqual([day(0)]);
+    expect(fromDates(row(0), NOW)).toEqual([]); // today ふだん past noon: nothing to start
+    expect(fromDates(row(2), at(TODAY, '23:45'))).toEqual([day(1), day(2)]); // 23:45: today has no half hour left
+  });
+
+  it('a saved ⏳ off the half hours (LINE’s any minute) or no longer allowed is kept, so the select shows it', () => {
+    const r = row(3, { rule: 'any', from: at(day(1), '18:10') });
+    expect(fromTimes(r, day(1), NOW).filter((c) => c.clock >= '18:00' && c.clock <= '18:30').map((c) => c.clock)).toEqual(['18:00', '18:10', '18:30']);
+    const late = row(3, { rule: ['12:00', '13:00'], from: at(day(3), '20:00') }); // 🔔 then ⏰ 12–13
+    expect(fromTimes(late, day(3), NOW).find((c) => c.clock === '20:00')).toMatchObject({ ok: false });
+    const passed = row(0, { from: at(day(0), '11:00') }); // not yet dropped by the bot
+    expect(fromDates(passed, NOW)).toEqual([day(0)]);
+  });
+
+  it('every time offered is one the bot takes, on every date offered (the contract’s one rule)', () => {
+    for (const r of [row(6), row(6, { rule: 'any' }), row(6, { rule: ['18:00', '20:00'] }), row(0, { rule: 'any' })]) {
+      for (const d of fromDates(r, NOW)) {
+        for (const c of fromTimes(r, d, NOW)) expect(c.ok).toBe(fromRefusal(r.day, c.at, NOW, r.rule ?? null) === null);
+      }
+    }
+  });
+
+  it('in words as 📋: the day’s own clock, an earlier day with its date', () => {
+    expect(fromText(row(3, { from: at(day(3), '18:00') }))).toBe('18:00');
+    expect(fromText(row(8, { from: at(day(5), '18:00') }))).toBe('11/17（火）18:00');
+    expect(changeLine({ t: NOW, by: 'A', who: 'ウェイ', a: 'from', d: day(8), at: at(day(5), '18:00'), text: '' })).toBe('11/20（金） 11/17（火）18:00から');
   });
 });
 
