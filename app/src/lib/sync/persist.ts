@@ -20,16 +20,31 @@ export async function persistOnce(kv: KV | null = localKV(), storage: StorageMan
   log('storage.persist', { ok, was, useMb: mb(est?.usage), quotaMb: mb(est?.quota) });
 }
 
-/** The site's storage in use, once a Tokyo day (after a sync that worked, Safari tab or installed app): its growth over
- *  days, whether it's kept from eviction, and what each of the service worker's caches holds (cacheSizes.ts: MB a
- *  cache, the recogniser there or not) (the log's storage.use, MB only). */
-export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now(), sizes: () => Promise<Record<string, number | boolean>> = () => import('./cacheSizes.ts').then((m) => m.cacheSizes())): Promise<void> {
+/** How long after the sync that asks for it storage.use waits: past the launch (its cache reads off the launch's own). */
+const STORAGE_WAIT_MS = 15_000;
+/** A day's storage.use under way (the syncs that come meanwhile ask again: one only). */
+let measuring = false;
+
+/** The site's storage in use, once a Tokyo day (after a sync that worked, Safari tab or installed app, `wait` ms on):
+ *  its growth over days, whether it's kept from eviction, and what each of the service worker's caches holds
+ *  (cacheSizes.ts: MB a cache, the recogniser there or not) (the log's storage.use, MB only). The day is marked done
+ *  only once it's logged: the app hidden or closed meanwhile (the launch's first sync, mid-launch), the next sync tries
+ *  again (marked first, storage.use stopped on 11-12). */
+export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now(), sizes: () => Promise<Record<string, number | boolean>> = () => import('./cacheSizes.ts').then((m) => m.cacheSizes()), wait = STORAGE_WAIT_MS): Promise<void> {
   const day = tokyoDay(now);
-  if (!storage?.estimate || readJson(kv, DEVICE.storageDay) === day) return;
-  writeJson(kv, DEVICE.storageDay, day);
-  const est = await quiet(storage.estimate(), 'storage.estimate');
-  if (!est) return;
-  const persisted = await storage.persisted?.().catch(() => false) ?? false;
-  const by = await quiet(sizes(), 'storage.caches', {});
-  log('storage.use', { useMb: mb(est.usage), quotaMb: mb(est.quota), persisted, ...by });
+  if (measuring || !storage?.estimate || readJson(kv, DEVICE.storageDay) === day) return;
+  measuring = true;
+  try {
+    if (wait > 0) await new Promise((ok) => setTimeout(ok, wait));
+    // (hidden meanwhile: the timer ran late or the page is going; the next sync's)
+    if (typeof document !== 'undefined' && document.hidden) return;
+    const est = await quiet(storage.estimate(), 'storage.estimate');
+    if (!est) return;
+    const persisted = await storage.persisted?.().catch(() => false) ?? false;
+    const by = await quiet(sizes(), 'storage.caches', {});
+    log('storage.use', { useMb: mb(est.usage), quotaMb: mb(est.quota), persisted, ...by });
+    writeJson(kv, DEVICE.storageDay, day);
+  } finally {
+    measuring = false;
+  }
 }

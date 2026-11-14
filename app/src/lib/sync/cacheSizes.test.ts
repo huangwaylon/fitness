@@ -8,7 +8,9 @@ function storageOf(caches: Record<string, Record<string, string>>): CacheStorage
     const files = caches[name];
     return {
       keys: async () => Object.keys(files).map((u) => new Request(u)),
-      match: async (r: Request) => (files[r.url] === undefined ? undefined : new Response(files[r.url]))
+      match: async (r: Request) => (files[r.url] === undefined ? undefined : new Response(files[r.url])),
+      // (a `len:<n>` body: an answer whose Content-Length says n)
+      matchAll: async () => Object.values(files).map((b) => (b.startsWith('len:') ? new Response('', { headers: { 'content-length': b.slice(4) } }) : new Response(b)))
     } as unknown as Cache;
   };
   return { keys: async () => Object.keys(caches), open } as unknown as CacheStorage;
@@ -21,11 +23,11 @@ describe('cacheSizes', () => {
       .toEqual(['shell', 'room', 'art', 'foodImg', 'food', 'stt', 'other', 'other']);
   });
 
-  it('MB a cache by its index where it keeps one, else its files counted; the shells summed; the recogniser only there or not', async () => {
+  it('MB a cache by its index where it keeps one, else its files counted (a Content-Length, or the body); the shells summed; the recogniser only there or not', async () => {
     const s = 'https://x/';
     const sizes = await cacheSizes(storageOf({
       'island-shell-a': { [`${s}a.js`]: 'x'.repeat(MB) },
-      'island-shell-b': { [`${s}b.js`]: 'x'.repeat(MB / 2) },
+      'island-shell-b': { [`${s}b.js`]: 'x'.repeat(MB / 4), [`${s}c.js`]: `len:${MB / 4}` },
       // (the index says 30 MB; its files' bodies aren't read)
       'island-room-v1': { [`${s}__room-index`]: JSON.stringify({ [`${s}room/a.glb`]: [20 * MB, 1], [`${s}room/b.pak`]: [10 * MB, 2] }), [`${s}room/a.glb`]: 'tiny' },
       'island-stt-v1': { [`${s}stt/model.onnx`]: 'x' }

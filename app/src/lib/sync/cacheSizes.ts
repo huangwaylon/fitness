@@ -1,8 +1,8 @@
 // What each of the service worker's caches holds, for storage.use (once a Tokyo day, sync/persist.ts): MB a cache, by
 // its index where it keeps one (`__<name>-index`: each URL's bytes and last use; the room, ききみみ's packs, the art,
-// the photos, the tiles, the food images), else its files' bodies counted (the shells, the fonts, the audio, the food
-// data: a few MB); the recogniser's (~67 MB, the mic's) only whether it's there, its parts never read for this. Loaded
-// only then (not in the first load). Never rejects: a cache it can't read is left out.
+// the photos, the tiles, the food images), else its files counted (their Content-Length, else their bodies: the
+// shells, the fonts, the audio, the food data); the recogniser's (~67 MB, the mic's) only whether it's there, its parts
+// never read for this. Loaded only then (not in the first load). Never rejects: a cache it can't read is left out.
 
 /** A cache's log field: its name less the `island-` prefix and the `-v<n>` suffix (every `island-shell-<version>` is
  *  `shell`), camelCased; one it doesn't know is `other`. */
@@ -23,8 +23,10 @@ async function bytesOf(cache: Cache): Promise<number> {
     const idx = (await (await cache.match(index))?.json()) as Record<string, [number, number]> | undefined;
     if (idx) return Object.values(idx).reduce((a, [b]) => a + (Number(b) || 0), 0);
   }
+  // (every answer at once, its Content-Length where it says one, else its body read: one call, not a match and a read
+  // for each of a shell's ~700 files, one after another)
   let n = 0;
-  for (const k of keys) n += (await (await cache.match(k))?.blob())?.size ?? 0;
+  for (const res of await cache.matchAll()) n += Number(res.headers.get('content-length')) || ((await res.blob()).size);
   return n;
 }
 
