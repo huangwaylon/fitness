@@ -104,6 +104,12 @@ test('a value the label doesn’t say: 「–」 in the amount, never 0.0; the d
   await sheet(page).locator('[data-food-finish]').click();
   await expect(sheet(page).locator('[data-food-summary] [data-line=s] [data-partial]')).toHaveText('≥');
   await expect(sheet(page).locator('[data-food-summary] [data-line=p] [data-partial]')).toHaveCount(0);
+  // the tile says so in words (no hover on a phone), its ceiling bar hatched: the known part only
+  await sheet(page).locator('[data-food-more] summary').click();
+  const salt = sheet(page).locator('[data-food-summary] [data-nutrient=s]');
+  await expect(salt.locator('[data-partial]')).toHaveText('一部不明');
+  await expect(salt.locator('.bar')).toHaveClass(/partial/);
+  await expect(sheet(page).locator('[data-food-summary] [data-nutrient=p] [data-partial]')).toHaveCount(0);
 });
 
 // On opening, an iPhone 15's whole screen (393 × 852) shows every meal's ＋: the summary is three short rows (the kcal and

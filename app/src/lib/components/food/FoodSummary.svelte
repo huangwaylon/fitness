@@ -38,7 +38,8 @@
   const empty = $derived(day.entries.length === 0);
   const chip = $derived(goal === null || when === 'next' || (empty && when === 'past') ? null : goalChip(day.kcal, goal, when === 'today'));
   const gText = (n: number) => t('food.g', { n: n.toFixed(1) });
-  /** A total some entry doesn't know (a product's salt, unknown on its label): the known ones' sum, shown 「≥」 (一部不明). */
+  /** A total some entry doesn't know (a product's salt, unknown on its label): the known ones' sum, shown 「≥」, its tile
+   *  saying 一部不明 in words (no hover on a phone) and its bar hatched. */
   const partial = (k: string): boolean => (k === 'p' || k === 'fa' || k === 'c' || k === 's') && day.entries.some((e) => e.f[k] === null);
   /** The tiles: the four, fibre, and alcohol on a day with some. */
   const cells = $derived([
@@ -80,8 +81,8 @@
         {#if c.v === null}
           <dd class="money unknown" data-unknown>{t('food.unknown')}<small>{t('food.fiNone')}</small></dd>
         {:else}
-          <dd class="money">{#if partial(c.k)}<span data-partial title={t('food.partial')}>≥</span><span class="sr-only">{t('food.partial')}</span>{/if}{gText(c.v)}{#if c.goal !== null}<small>{goalLabel(c.k, c.goal)}</small>{/if}</dd>
-          {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
+          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k)}<small class="pt" data-partial>{t('food.partial')}</small>{/if}{#if c.goal !== null}<small>{goalLabel(c.k, c.goal)}</small>{/if}</dd>
+          {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} class:partial={partial(c.k)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
         {/if}
       </div>
     {/each}
@@ -105,6 +106,9 @@
   .bar i { display: block; height: 100%; border-radius: inherit; background: var(--pc); transition: width 240ms var(--ease-soft); }
   .bar.mini { height: 5px; margin-top: 4px; }
   .bar.over i { background: var(--c-coral); }
+  /* a total some entry doesn't know (一部不明): its bar hatched, the known part only */
+  .bar.partial i { background: repeating-linear-gradient(135deg, var(--pc) 0 3px, color-mix(in srgb, var(--pc) 35%, var(--card)) 3px 5px); }
+  .bar.partial.over i { background: repeating-linear-gradient(135deg, var(--c-coral) 0 3px, color-mix(in srgb, var(--c-coral) 35%, var(--card)) 3px 5px); }
   .more > :not(summary) { margin-top: 12px; }
   summary {
     list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px;
