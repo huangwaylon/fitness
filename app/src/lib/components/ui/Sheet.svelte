@@ -195,7 +195,7 @@
     }
     if (unsaved()) {
       e?.preventDefault();
-      asking = () => dlg?.close();
+      asking = () => (open = false);
       return false;
     }
     cue('back');
@@ -204,7 +204,7 @@
 
   /** A tap on the scrim (ui/scrim.ts). */
   function backdrop(e: MouseEvent) {
-    if (onScrim(e, dlg) && dismissed()) dlg?.close();
+    if (onScrim(e, dlg) && dismissed()) open = false;
   }
 </script>
 
@@ -213,7 +213,7 @@
   {#if open || kept}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => guard(() => dlg?.close())} /></div>{/if}
+      {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => guard(() => (open = false))} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}
