@@ -9,7 +9,8 @@
 //   3. my ripe plants in A (a miss on an empty, watered or another's plot): harvest them all, the nearest first;
 //   4. P is my empty plot: at the cap say so; else plant the crop (the picker's pick, or this run's) on my empty plots
 //      of A, P first, then the nearest, as many as I hold, the cap leaves and one event takes; no crop yet: the one kind
-//      I hold (a vegetable is a kind), the picker for two or more (whose pick runs this again with it), none: say so;
+//      I hold if it's a start, else the picker (a vegetable is a kind, never planted unasked; the run's crop gone: the
+//      picker, saying so), whose pick runs this again with it; nothing held: say so;
 //   5. else a word: whose plant and how long, or watered already (and by whom), or whose field; my own plant offers ほる.
 // So on a mixed 3 × 3 a tap on my empty plot harvests first, the next one plants; a tap on a plant waters.
 import { FARM, daysLeft, seedKey, stageOf, wateringCounts, yieldOf, type Crop, type FarmSrc, type Plot, type Watered } from '#lib/contract/farm.ts';
@@ -79,7 +80,7 @@ export function farmTap(i: FarmTapIn): FarmTap {
   if (ripe.length) return { a: 'harvest', ops: ripe };
   if (mineEmpty) {
     if (i.mine >= FARM.cap) return { a: 'cap' };
-    const s = i.seed && i.have(seedKey(i.seed.c, i.seed.src)) > 0 ? i.seed : i.kinds.length === 1 ? i.kinds[0] : null;
+    const s = i.seed ? (i.have(seedKey(i.seed.c, i.seed.src)) > 0 ? i.seed : null) : i.kinds.length === 1 && i.kinds[0].src === 'start' ? i.kinds[0] : null;
     if (!s) return i.kinds.length ? { a: 'pick', ...(i.seed ? { out: i.seed.c } : {}) } : { a: 'none' };
     const room = Math.min(i.have(seedKey(s.c, s.src)), FARM.cap - i.mine, FARM.batchMax);
     const ps = nearest(i.around.filter((n) => n.who === i.me && !n.plant), c, r).slice(0, room).map((n) => n.p);
@@ -89,5 +90,30 @@ export function farmTap(i: FarmTapIn): FarmTap {
   return {
     a: 'about', who: pl.who, c: pl.c, left: daysLeft(pl, i.date), watered: i.watered(i.plot.p, i.date),
     ...(i.by ? { by: i.by } : {}), ...(pl.who === i.me ? { dig: true as const } : {})
+  };
+}
+
+/** A planting run (docs/farming.md "Playing"): the crop last planted is planted again without asking while each plant
+ *  comes within PLANT_RUN_MS of the last (a field, one picker); a planting taken back (取り消す) ends it. */
+export const PLANT_RUN_MS = 60_000;
+export function plantingRun() {
+  let s: Seed | null = null, at = -Infinity;
+  return {
+    /** The run's crop at `now` (ms), if it still runs. */
+    crop: (now: number): Seed | null => (now - at <= PLANT_RUN_MS ? s : null),
+    /** `r`, a planting of `c` at `now`, starts or extends the run; its undo, done, ends it. */
+    planted<R extends { ok: boolean; undo?: () => boolean }>(c: Seed, now: number, r: R): R {
+      s = c;
+      at = now;
+      const undo = r.undo;
+      return undo ? { ...r, undo: () => {
+        const ok = undo();
+        if (ok) {
+          s = null;
+          at = -Infinity;
+        }
+        return ok;
+      } } : r;
+    }
   };
 }

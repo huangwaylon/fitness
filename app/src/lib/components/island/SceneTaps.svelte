@@ -57,7 +57,7 @@
   import { fx3d } from '#lib/world/fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { cropName, openPicker, popAt } from './farmUi.svelte.ts';
-  import { farmTap } from '#lib/world/farmTap.ts';
+  import { farmTap, plantingRun } from '#lib/world/farmTap.ts';
   import { farmToday } from './farm.ts';
   import { islandDay } from './ambientClock.ts';
   import { loadNames } from './catchLine.ts';
@@ -469,7 +469,7 @@
     const { farm, watered } = farmToday(m.state, date);
     const pocket = shopView(m.state, m.me).pocket, have = (k: string) => pocket.get(k) ?? 0;
     const kinds = (['start', 'crop'] as const).flatMap((src) => CROPS.flatMap((c) => (have(seedKey(c, src)) > 0 ? [{ c, src }] : [])));
-    const run = performance.now() - plantRun.at <= PLANT_RUN_MS ? plantRun.s : null;
+    const run = plantRun.crop(performance.now());
     const pl = farm.plots.get(plot.p), mine = plantsOf(farm, m.me);
     const around = plotsAround(layout, plot).map((n) => ({ ...n, plant: farm.plots.get(n.p) }));
     const by = date === islandDay() ? shared.day.watered[plot.p] : undefined;
@@ -507,17 +507,19 @@
         return true;
       case 'plant': {
         // one event held for its 取り消す (the shop's banner); the shovel and a puff over the tapped plot
-        const { ps, c: crop, src } = act, res = plantMany(date, ps, crop, src);
-        if (!res.ok) return true;
-        plantRun = { s: { c: crop, src }, at: performance.now() };
+        const { ps, c: crop, src } = act, sent = plantMany(date, ps, crop, src), n = ps.length;
+        if (!sent.ok) return true;
+        // (its 取り消す ends the run too)
+        const res = plantRun.planted({ c: crop, src }, performance.now(), sent);
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         fx3d('swing', px, pz, 0, { v: 'shovel' });
         sceneSfx('dig');
-        named(() => {
-          const name = cropName(crop), n = ps.length;
-          pop(t('world.farm.planted', { name, n, mine: mine + n, cap: FARM.cap }));
-          undoBanner(t('farm.planted', { name: src === 'start' ? t(`farm.start.${crop}`) : name, n }), res);
-        });
+        // the banner even if the names never load (a start's is the main catalog's; a vegetable's then its key)
+        const banner = (name: string) => undoBanner(t('farm.planted', { name: src === 'start' ? t(`farm.start.${crop}`) : name, n }), res);
+        void loadNames().then(() => {
+          pop(t('world.farm.planted', { name: cropName(crop), n, mine: mine + n, cap: FARM.cap }));
+          banner(cropName(crop));
+        }, () => banner(crop));
         return true;
       }
       case 'pick': {
@@ -561,10 +563,8 @@
   /** A run of harvest taps (each within HARVEST_RUN_MS of the last): its pop climbs a semitone a tap, at most 5. */
   const HARVEST_RUN_MS = 2500;
   let harvestRun = { k: 0, at: -Infinity };
-  /** A planting run: the crop last planted is planted again without asking while each plant comes within
-   *  PLANT_RUN_MS of the last (a field, one picker). */
-  const PLANT_RUN_MS = 60_000;
-  let plantRun: { s: Seed | null; at: number } = { s: null, at: -Infinity };
+  /** The planting run (world/farmTap.ts plantingRun): the crop planted again without asking for a minute. */
+  const plantRun = plantingRun();
   /** A player's villager name (the farm's words). */
   const whoName = (who: Who): string => (who === 'G' ? week.view?.guest.villagerName : week.view?.people[who].villagerName) ?? who;
 

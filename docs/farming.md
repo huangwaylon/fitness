@@ -77,8 +77,9 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 
   So on a mixed 3 × 3 a tap on my empty plot harvests first, the next plants. A harvest is one pop a tap (a semitone up
   a tap in a row), a sparkle a plant, one plate per crop counting up.
-- **The crop** (rule 4, decision 8): the picker's pick, kept for the planting run (each plant within 60 s of the last);
-  else the one kind I hold (a vegetable is a kind); two or more, the picker; none, 「なえが ない」. The picker (bottom
+- **The crop** (rule 4, decision 8): the picker's pick, kept for the planting run (each plant within 60 s of the last;
+  取り消す ends it); else the one kind I hold if it's a start; a vegetable, two kinds or the run's crop gone (「…が もう
+  ない」): the picker; nothing, 「なえが ない」. The picker (bottom
   left, the last pick first) shows starts (a seedling badge) and vegetables with counts; its pick runs the tap again
   with that crop. A tap on another plot while it's open re-targets it.
 - **The word** pops over the plot for 1.2 s (「みずやり ずみ」), never in my villager's balloon.
