@@ -184,7 +184,7 @@ def jbfd():
 
 # Kalori's data: a release of this repo (.github/workflows/kalori-scrape.yml), pinned so each shipped kalori.json has one
 # immutable input; bump it to refresh (docs/ops/runbook.md "Refresh Kalori").
-KALORI_TAG = 'kalori-2026-11-14'
+KALORI_TAG = 'kalori-2026-11-14-2'
 KALORI_URL = 'https://github.com/huangwaylon/fitness/releases/download/%s/%s'
 KALORI_TAR = 'kalori-data.tar.gz'
 KALORI_SHARD = re.compile(r'^shards/(shard-\d{1,2}\.jsonl)$')
