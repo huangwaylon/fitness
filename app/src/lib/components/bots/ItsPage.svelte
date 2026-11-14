@@ -3,7 +3,7 @@
   // /its/status) and its settings. Top to bottom: a notice (a failed read with its code; the allow-list's first save),
   // the verdict card (tinted by tone, 開始 / 停止 at once, outside the draft, and who pressed it), the bookings (a
   // hold's deadline and what to do), 状況 (くわしく folds the rest), the stays (日付: one at a time or まとめて追加, each
-  // a bar of its searched facilities by why, tapped open to the names and reasons: view.ts dateRows), the facilities
+  // a bar of its searched facilities by why (ChangeBar, メニュー's too), tapped open to the names and reasons: view.ts dateRows), the facilities
   // (施設: 探す is the allow-list; a summary, presets, then 探す · 日程に合わない · 除外, the new ones' banners on
   // top), 詳細 (確認の間隔, 人数, 自動で確定), 通知 (this phone's push: ItsNotify), the recent events and the foot. The
   // settings are one draft saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft
@@ -42,9 +42,13 @@
   import VerdictCard from './VerdictCard.svelte';
   import StatusStrip from './StatusStrip.svelte';
   import FactList from './FactList.svelte';
+  import ChangeBar, { type ChangeSeg } from './ChangeBar.svelte';
   import Skeleton from './Skeleton.svelte';
   import { statusPoll } from './poll.svelte.ts';
   import { recall, remember } from './lastKnown.ts';
+
+  /** A night's bar (ChangeBar): 探す leaf, 受付終了 hatched, 季節外 · 休館日 · 掲載終了 sunk and outlined. */
+  const SEG_TONE: Partial<Record<string, ChangeSeg['tone']>> = { check: 'leaf', cutoff: 'hatch' };
 
   /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
@@ -301,8 +305,7 @@
 {/snippet}
 
 {#snippet bar(d: DateRow)}
-  <span class="bar" aria-hidden="true">{#each d.parts as p (p.why)}<i class="seg {p.why}" style:flex-grow={p.names.length}></i>{/each}</span>
-  <span class="legend" aria-hidden="true">{#each d.parts as p (p.why)}<span data-its-seg={p.why}><i class="seg {p.why}"></i>{t(`its.why.${p.why}`)} {p.names.length}</span>{/each}</span>
+  <ChangeBar segs={d.parts.map((p) => ({ id: p.why, tone: SEG_TONE[p.why] ?? 'sunk', label: t(`its.why.${p.why}`), n: p.names.length }))} attr="its" />
 {/snippet}
 
 <div class="its" data-its-page aria-busy={poll.loading}>
@@ -592,16 +595,11 @@
   .dtop { display: flex; align-items: center; gap: 8px; }
   .nn { flex: none; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .night[aria-expanded='true'] .chev { rotate: 225deg; margin-top: 4px; }
-  /* the bar (the dataviz thin segmented bar): 8px, round ends, 2px gaps; 探す leaf, 受付終了 hatched, 季節外 · 休館日 ·
-     掲載終了 sunk and outlined; each part's word and count beside it (never colour alone) */
-  .bar { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
-  .bar .seg { flex: 1 1 0; min-width: 3px; border-radius: 1px; }
+  /* (a night's bar and legend: ChangeBar); a part's swatch in the night's list, the bar's look */
   .seg { display: inline-block; background: var(--ctl-off); box-shadow: inset 0 0 0 1px var(--edge); }
   .seg.check { background: var(--c-leaf); box-shadow: none; }
   .seg.cutoff { background: repeating-linear-gradient(45deg, var(--text-soft) 0 1.5px, var(--ctl-off) 1.5px 4.5px); box-shadow: none; }
-  .legend { display: flex; flex-wrap: wrap; gap: 2px 12px; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .legend > span { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
-  .legend .seg, .np h5 .seg { width: 12px; height: 8px; border-radius: 2px; flex: none; }
+  .np h5 .seg { width: 12px; height: 8px; border-radius: 2px; flex: none; }
   .nlist { display: grid; gap: 10px; margin: 0 0 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--ctl-off) 45%, var(--card)); }
   .np h5 { margin: 0; display: flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .np h5 small, .part h4 small, .part h5 small { display: inline; margin: 0 0 0 6px; }

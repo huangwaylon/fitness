@@ -57,10 +57,12 @@
 
   /** The bots this phone has (none: the guest, no ボット pill). */
   const bots = $derived(botTabs());
-  // unfolded: the ITS bot's dot read (at most once a minute)
+  // unfolded: the ITS bot's and Kalori's dots read (at most once a minute)
   $effect(() => {
-    if (open && bots.includes('its')) untrack(() => readBadge('its'));
+    if (open) for (const k of ['its', 'kalori'] as const) if (bots.includes(k)) untrack(() => readBadge(k));
   });
+  /** ボット's dot: a bot read (the menu unfolding, the sheet's tabs) needs a person. */
+  const botsDot = $derived(botsBadge.its || botsBadge.kalori);
 
   // a sheet opening (the panel, けんこう, a tree's …) or もようがえ folds it
   $effect(() => {
@@ -236,11 +238,11 @@
     {#if bots.length}
       <!-- ボット: the bots' sheet (members only); a dot while one needs a person -->
       <button type="button" class="item" data-hud-bots aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('bots')} onclick={() => pick(() => botsSheet.show())}>
-        <span class="lbl">{t('panel.bots')}{#if botsBadge.its}<span class="sr-only">{` ${t('bots.attention')}`}</span>{/if}</span>
+        <span class="lbl">{t('panel.bots')}{#if botsDot}<span class="sr-only">{` ${t('bots.attention')}`}</span>{/if}</span>
         <span class="ic">
           <!-- a robot's head in the gear's soft brown, its eyes and mouth cream -->
           <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M11.2 3.2h1.6v3.4h-1.6zM12 .6a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM8.4 6.2h7.2a4.4 4.4 0 0 1 4.4 4.4v5.8a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 16.4v-5.8a4.4 4.4 0 0 1 4.4-4.4ZM1.6 11.6a1 1 0 0 1 1-1H3.4v5.6H2.6a1 1 0 0 1-1-1ZM20.6 10.6h.8a1 1 0 0 1 1 1v3.6a1 1 0 0 1-1 1h-.8Z" /><circle cx="9" cy="12.4" r="1.8" /><circle cx="15" cy="12.4" r="1.8" /><path class="snow" d="M9.6 16.4h4.8a.8.8 0 0 1 0 1.6H9.6a.8.8 0 0 1 0-1.6Z" /></svg>
-          {#if botsBadge.its}<i class="dot pill-dot" data-hud-bots-dot aria-hidden="true"></i>{/if}
+          {#if botsDot}<i class="dot pill-dot" data-hud-bots-dot aria-hidden="true"></i>{/if}
         </span>
       </button>
     {/if}

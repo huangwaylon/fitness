@@ -192,41 +192,41 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 
 ## 13. Refresh Kalori
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
-JST): the crawl's rounds, a dated release, then a PR. Pause it: `gh workflow disable kalori-scrape.yml` (`enable` to
-resume). Cancelling a run (`gh run cancel <id>`) stops its own retry and never alerts, but a retry run it already
-queued runs: cancel that one too (`gh run list -w kalori-scrape.yml`). One run at a time: a new dispatch or the
-schedule replaces a pending retry run; the wip release keeps the progress, and the new run starts from it.
+JST): the crawl's rounds, a dated release, then the update: merged into main and deployed by itself within the
+bands, else held as a PR. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
+run (`gh run cancel <id>`) stops its own retry, but a retry run it already queued runs: cancel that one too (`gh run
+list -w kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
+release keeps the progress.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.
-1. **The PR** `kalori-update/<tag>`: `KALORI_TAG` bumped, `app/static/food/kalori.json` and `index.json` (`npm run
-   food:data -- --only kalori`, the other files untouched); its body: items before → after, the diff's added, gone,
-   values changed, ended, and the tests (Python, the food vitest subset). Opened by Actions, so no CI runs on it:
-   read the counts (items ~53.8k; a big drop is a bug), merge; the push to main runs the full CI and the deploy.
-   Merging accepts the release: the next refresh seeds and diffs from it. To reject one, leave the PR unmerged (close
-   it) or delete it with its release (`gh release delete <tag> --cleanup-tag`): the next refresh starts again from
-   the accepted one. With "Allow GitHub Actions to create pull requests" off, a `kalori-update` issue links the
-   branch's compare page: open the PR there.
-2. **By hand** (Actions → *Kalori scrape*, `gh workflow run kalori-scrape.yml`, on main: another branch never
-   publishes): the same with the defaults; `refetch_before` today for a full refetch (4-5 rounds). A shard at the
-   site's limit (exit 2, 3) or whose job was lost comes back in the retry's next run, up to `max_attempts`. A test:
-   `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`): never publishes or alerts; its wip release
-   is deleted when its shards end well, else by hand: `gh release delete kalori-wip-<name> --cleanup-tag`.
-3. **Locally**, instead of the PR: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
-   food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run food:data`;
-   compare the counts; the Python tests and `npm run verify`; commit `fetch.py` and `app/static/food/` together.
+1. **A held update** (the PR `kalori-update/<tag>`, its body the gate table, `HELD` on the band that failed; no CI
+   runs on it): read the counts (items ~53.8k), then merge it by hand: the push to main runs the full CI and the
+   deploy, and accepts the release. Reject it: close the PR (or `gh release delete <tag> --cleanup-tag`): the next
+   refresh starts again from the accepted one. `main_moved`: its branch sits on the old main, so redo it locally (3).
+   Actions may not open PRs here: the status links the branch's compare page.
+2. **Undo an automatic merge:** `git revert <the "Kalori: <tag> (auto)" commit>`, push, `gh workflow run pages.yml
+   --ref main`, then `GH_REPO=huangwaylon/fitness .github/scripts/kalori-status.sh undo --tag <tag>` (its run no
+   longer counts toward the bands). The next refresh seeds from the restored `KALORI_TAG`.
+3. **By hand** (`gh workflow run kalori-scrape.yml`, on main: another branch never publishes): `refetch_before` today
+   for a full refetch (4-5 rounds). A test: `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`):
+   never publishes or writes the status; its wip release goes when its shards end well, else `gh release delete
+   kalori-wip-<name> --cleanup-tag`. **Locally**: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
+   food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run
+   food:data`; the tests and `npm run verify`; commit `fetch.py` and `app/static/food/`.
 
-**Alerts:** a failure that needs a person opens (or comments) one issue labelled `kalori-alert`, with the reason and
-the run; the next run that publishes and updates closes it. A round whose retry re-dispatched is no failure.
-- *canary: layout drift (exit 4)*, *layout drift (exit 4) in shards …*: kalori.jp changed its pages. Update the
-  fixtures (`food-data/scripts/tests/fixtures/`) from live pages and the parsers until the scraper's tests pass, bump
-  `PARSER_VERSION` (every product fetched again: a full refetch's rounds), dispatch. Nothing was marked.
-- *the no-nutrition cap (exit 5)*: too many products newly without values in a run (marks undone): most likely a
-  parser miss on a new page kind; open a few of the run's logged pages, fix the parser as above.
-- *still at the site's limits or lost after N rounds*, *coverage incomplete, no round left*: dispatch again (the wip
-  keeps the progress); if it recurs, a lower `total_rate` or kalori.jp blocking runners (their 429 page).
-- *the diff gate (exit 6)*: the report's summary has the diff; a real menu change or a parser fix, checked by eye →
-  dispatch with `allow_big_diff`; a site redesign → as layout drift.
-- *a crash (exit 1)*, *setup failed* (a bad `wip_tag`, the seed release missing: 0.), *publishing failed* (its
-  draft is deleted): the job's log; dispatch again once fixed.
-- *the update failed*: the tests in the PR's body, or update-pr's checks (the job's log: update-build's files differ
-  from main's beyond the update, a dependency to suspect); fix on the branch, or redo it locally (3).
+**Alerts:** `status.json` on the `kalori-status` branch (`kalori-scrape.yml`, `kalori-watch.yml`); an alert is a dot on
+the bots page's メニュー tab with its run and PR, no email. A healthy run clears it. Each reason:
+- `drift`: kalori.jp changed its pages. Update the fixtures (`food-data/scripts/tests/fixtures/`) and the parsers until
+  the tests pass, bump `PARSER_VERSION` (a full refetch), dispatch. `nonut` (the no-nutrition cap, marks undone):
+  likely a parser miss on a new page kind; fix it the same way.
+- `limits`, `incomplete`: dispatch again (the wip keeps the progress); recurring: a lower `total_rate`, or kalori.jp
+  blocking runners.
+- `diff_gate` (over 15 % changed or 5 % gone: not published): a real change or a parser fix, checked by eye →
+  dispatch with `allow_big_diff` (published, then held: merge its PR, 1); a redesign → as `drift`.
+- `band_*` (the PR's table says which), `tests`, `main_moved`: held (1).
+- `crash`, `publish`, `update`: the job's log (update-merge refusing update-build's files: a dependency to suspect);
+  dispatch again once fixed, or do it locally (3).
+- `deploy_failed`: Deploy UI failed twice, its dispatch failed, or no outcome in 3 h: its log; re-run it (`gh run
+  rerun <id>`), or undo (2).
+- `reverted`: Food data checks failed on the merge, so main has its revert: the checks' log; fix, then dispatch.
+- `late` (no scheduled run in 8 days: GitHub dropped it), `stuck` (a run over 2 days: `gh run cancel <id>`): dispatch.

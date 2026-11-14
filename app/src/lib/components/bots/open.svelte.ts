@@ -1,14 +1,15 @@
-// ボット's always-loaded part (docs/design.md "Bots"): its sheet (a lazySheet: the two pages and their strings come
+// ボット's always-loaded part (docs/design.md "Bots"): its sheet (a lazySheet: the pages and their strings come
 // with its chunk), the tabs this phone has, and the attention dots. 保養所 (ItsPage) for a member with ITS_URL set, not in
-// demo mode (no fixture); ジム (GymPage) for a member with GYM_URL set; the guest has neither, so no ボット in the menu.
+// demo mode (no fixture); ジム (GymPage) for a member with GYM_URL set; メニュー (KaloriPage: the Kalori scraper's
+// status.json, public) for every member, not in demo mode (the owners' ops); the guest has none, so no ボット in the menu.
 // A dot (the menu's pill, a tab) while that bot needs a person: ITS 要対応 (a hold to finish by mail), 不調 or 遅れ
-// (its/view.ts needsAttention); the gym bot 不調, 要対応 or 遅れ (gym/status.ts needsAttention). Read once as the menu
-// unfolds (ITS) or the sheet opens (the tab not shown), at most once a minute, and from each page's own reads; never
-// polled: the pages poll while shown. A notification's tap opens it on 保養所 (openIts, listenOpen).
+// (its/view.ts needsAttention); the gym bot 不調, 要対応 or 遅れ (gym/status.ts needsAttention); Kalori 保留, 不調, 遅れ or
+// an alert (kalori/status.ts needsAttention). Read once as the menu unfolds (ITS, Kalori) or the sheet opens (the tab
+// not shown), at most once a minute, and from each page's own reads; never polled: the pages poll while shown. A notification's tap opens it on 保養所 (openIts, listenOpen).
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 import { week } from '#lib/store/week.svelte.ts';
 
-export type BotTab = 'its' | 'gym';
+export type BotTab = 'its' | 'gym' | 'kalori';
 
 /** `show(tab)`: open on that tab (a notification's tap: 保養所). */
 export const botsSheet = lazySheet<BotTab>(() => import('./BotsSheet.svelte'));
@@ -22,14 +23,14 @@ const GYM_ON = env.VITE_GYM_URL !== '';
 /** The tabs this phone has, left to right (none: the guest, or no bot configured). */
 export function botTabs(): BotTab[] {
   if (week.guest) return [];
-  return [...(GYM_ON ? ['gym' as const] : []), ...(ITS_ON && !week.demo ? ['its' as const] : [])];
+  return [...(GYM_ON ? ['gym' as const] : []), ...(ITS_ON && !week.demo ? ['its' as const] : []), ...(week.demo ? [] : ['kalori' as const])];
 }
 
 /** The bots needing a person, as last read. */
-export const botsBadge = $state({ its: false, gym: false });
+export const botsBadge = $state({ its: false, gym: false, kalori: false });
 
 const FRESH_MS = 60_000;
-const readAt: Record<BotTab, number> = { its: -Infinity, gym: -Infinity };
+const readAt: Record<BotTab, number> = { its: -Infinity, gym: -Infinity, kalori: -Infinity };
 
 /** That bot's dot, read again unless read in the last minute (members only: botTabs). */
 export function readBadge(k: BotTab): void {

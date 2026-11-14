@@ -49,6 +49,7 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `keyed.fail` | info unreached / warn | `ep` (stt, gym, other), `why` (refused, failed, unreached, timeout), `http`, `n` (its repeats folded), `sheet` | a members-only call failed (keyed.ts), once an incident |
 | `its.fail` | info offline, rate_limited, not_subscribed / warn | `op` (status, settings, run, push_subscribe, push_unsubscribe, push_test), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `rid`, `http`, `ms` | a ボット → 保養所 call failed (lib/its/client.ts) |
 | `gym.fail` | info offline or an expected refusal / warn | `op` (status, act), `err` (the gym bot's code: stale, cooldown, …; or offline, timeout, http, json, no_key), `rid` (`act` only: a public /status takes no header of ours), `http`, `ms` | a read of /status (lib/gym/status.ts) or a POST /gym/act (lib/gym/config.ts) failed; /gym/config is `keyed.fail` `gym` |
+| `kalori.fail` | info offline / warn | `op` (status), `err` (offline, http, json), `http`, `ms` | a read of ボット's メニュー status.json (raw.githubusercontent.com, lib/kalori/status.ts) failed |
 | `its.push` | warn | `step` (permission, ready, subscribe, unsubscribe), `err` (the error's name) | 保養所's 通知 failed in the browser (lib/its/push.ts; never the endpoint) |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
 | `sync.fail` | info offline / warn | `err`, `cached`, `sheet` | a refresh failed (what threw: a `js.error` from `snapshot`) |

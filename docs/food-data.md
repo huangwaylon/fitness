@@ -179,7 +179,7 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   45,000 items (the site lists ~54,000; a whole fetch ships ~53,800 after the drops); `KALORI_ALLOW_PARTIAL=1` writes
   it anyway, for a local or partial run. The steps: [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
 - **A refresh** (`kalori-scrape.yml`, weekly and by hand): incremental, seeded from the accepted release's data and
-  state (main's `KALORI_TAG`: a dated release whose PR was merged; never a draft, a prerelease or one left unmerged).
+  state (main's `KALORI_TAG`: a dated release whose update reached main; never a draft, a prerelease or one held).
   Every shop's listing is read (new products, a changed count, a product gone from it); a product is fetched again
   only when new, its sitemap `lastmod` changed, it failed before, an older `parser` wrote it (`PARSER_VERSION`) or it
   was fetched before `refetch_before`. One a site no longer has is written `gone`. The shard files are append-only
@@ -201,11 +201,34 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   `kalori-data.tar.gz` (folders `shards`, `state`: `shard-N.jsonl`, `state-N.json`; `coverage.json`, `diff.json`,
   `run.json`) and `SHA256SUMS`, made a draft, its assets checked, then published (a failure deletes the draft). Only a
   run on main publishes; another `wip_tag` (`kalori-wip-<name>`), `only_shops` or `max_requests` is a test.
-- **Into the app:** `update-build` (read-only, no token: it runs npm) bumps `KALORI_TAG`, converts
-  (`kalori_convert.py --out`, what `build.py kalori` writes), ships kalori.json alone (`npm run food:data -- --only
-  kalori`: the committed index kept, `files` and `version` recomputed; CI has no other `out/` files) and runs the
-  tests; `update-pr` (no npm) checks its three files against main, recomputing the hashes, and opens a PR (or a
-  `kalori-update` issue); failures open a `kalori-alert` issue. The flow, pausing it and each alert:
+- **Into the app, no person:** `update-build` (read-only, no token: it runs npm) bumps `KALORI_TAG`, converts,
+  ships kalori.json alone (`npm run food:data -- --only kalori`) and runs the tests. `update-merge` (no npm) takes
+  none of it unchecked: its three files against BASE (the main it built on), kalori.json against its own conversion
+  of the release, the gates from the report job's diff.json and coverage.json (digests checked) and the two
+  kalori.json. Within every band: the commit `Kalori: <tag> (auto)` onto main (re-applied while main's
+  food files are BASE's, else held: `main_moved`); the status written, then `pages.yml` and `food-data.yml`
+  dispatched (a workflow-token push runs no workflow; a dispatch does). Outside a band: held, the branch
+  `kalori-update/<tag>` and a PR with the gate table. It commits its own conversion's bytes (update-build's must match).
+
+  | gate (shares of the accepted release's products) | band |
+  |---|---|
+  | added · gone | ≤ 2.5 % · ≤ 1.5 % |
+  | values changed (renamed counts here, ≤ 1 %) · est changed · ended changed | ≤ 1 % · ≤ 0.5 % · ≤ 1 % |
+  | kalori.json's items, new − old | ≤ 2 % |
+  | shops lost · new | ≤ 2 · ≤ 10 |
+  | converter drops, each reason | ≤ the accepted release's + 0.5 % of the items (skipped until status.json has them) |
+  | tests, coverage complete, a default run (no `allow_big_diff`) | required |
+
+  The bands are update-merge's env (`kalori_status.py` mirrors them). With 4+ merged runs in the history, added,
+  gone, values and ended become max(band, 3× the median of the last 8 merged), at most 2× the band.
+- **The watch** (`kalori-watch.yml`): a dispatched Deploy UI that fails re-runs its failed jobs once, then is
+  `deploy_failed`; a failed Food data checks reverts the Kalori commit and redeploys (`reverted`); every 6 h, no
+  scheduled refresh in 8 days is `late`, a run over 2 days (or a stale `running`) `stuck`, a deploy pending 3 h
+  `deploy_failed`. It acts only on runs whose head is status.json's `merge.sha`; a failing job writes its own alert.
+- **The status:** `status.json` on the orphan branch `kalori-status` (one commit, force-pushed with a lease:
+  `kalori_status.py` and `.github/scripts/kalori-status.sh`): the verdict, the reasons, the run, the accepted dataset,
+  the diff, coverage, the merge, the alert and the last 12 runs; a round writes `running` at setup. The bots page's
+  メニュー tab reads it: an alert shows as a dot there, no email. Each reason, pausing, undoing:
   [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
 - **Lessons** (the first crawl: 12 runs, ~200 shard jobs, ~3.5 h, ~75-80k requests for 54k products): the site's cap
   is per IP a day, so rounds on fresh runners beat a slower rate; never change the record format mid-crawl (4.5k v1

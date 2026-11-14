@@ -146,7 +146,14 @@ dataset beats that route for one of them.
 (`kalori-data.tar.gz`), which `fetch.py`'s `KALORI_TAG` pins ([food-data](food-data.md#kalori)). Why: ~70 MB of shards
 rewritten each refresh would bloat every clone, in a branch or a repo of its own; a pinned, checksummed release is an
 immutable input for each shipped `kalori.json`, and the merged pin is the accepted baseline (a rejected release is
-never seeded or diffed from); and the weekly refresh lands as a PR the owner merges, so one repo beats two.
+never seeded or diffed from); and the weekly refresh lands in this repo's main, so one repo beats two.
+
+### Kalori's automatic merge
+A refresh within its bands merges itself and deploys; anything else is held as a PR ([food-data](food-data.md#kalori)).
+Why: the owner chose no review for a normal week; the trusted gates and the watch's revert make a bad week one held
+PR. It pushes with the workflow token and dispatches the deploy, not a PAT: no secret to rotate, and the dispatched
+runs are the ones the watch follows. Status is `status.json` on an orphan `kalori-status` branch: the app reads it
+from raw GitHub (no relay route), main's history untouched. Alerts are only that file's (a dot on メニュー): no email.
 
 ## Economy
 

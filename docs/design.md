@@ -38,10 +38,10 @@ and clamping `lib/math.ts`, a static file's URL `staticUrl()`, the synced last-w
 
 ### Island
 
-Top to bottom: the HUD row (one cluster in the sky's top-right corner: the health button and the menu's leaf); a sync
+Top to bottom: the HUD row (below); a sync
 chip only when sync isn't ok; the scene; しずえ's box only with news; at the bottom the farm button (left, while the
 island has a field: [farming.md "Playing"](farming.md#playing)) and the say button (right). The island is in 3D under
-them ([World](#world)): one finger scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoom, a tap
+them ([World](#world)): one finger scrolls it from まえ (home, the health lawn) to おく, two pinch the zoom, a tap
 on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup, one grid: per
@@ -64,18 +64,18 @@ on empty ground walks my villager there.
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](#bots)
   7. **設定** (a gear) → [設定](#settings)
 
-  Labels are kanji ([Copy](#copy)). No "+N" badge on the leaf (it reads as a notification). It folds back on a second
+  Labels are kanji ([Copy](#copy)). No "+N" badge on the leaf (it reads as a notice). It folds back on a second
   tap of the leaf, a tap elsewhere (which still does what it would), Esc, any sheet opening, and a pick; folded, the
   pills are `inert`. The icons are one drawn set: the gear's soft brown (#A88B68), details cream.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
   villagers glance up and the health popup opens at once on the tab shown last: [健康](#kenkou) or [ごはん](#gohan). One
   kept sheet; ごはん mounts the first time its tab shows.
 - **Coins** (`island/HudCoins.svelte`): each newly met goal flies a +1 coin from its fruit into the leaf (+2 with
-  がんばり); never for a refund, nor while something covers the scene.
+  がんばり); not for a refund, nor while something covers the scene.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
 - **Say button** (`island/SayButton.svelte`): a round cream button at the scene's bottom right, NH's chat glyph; it
   opens the phrase picker (a phrase shows over my villager on every phone). Hidden under a sheet, the panel, the
-  harvest and a tree's popup; every room has it too ([The tent](#the-tent) "Phrases").
+  harvest, a tree's popup; every room has it too ([The tent](#the-tent) "Phrases").
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
@@ -88,12 +88,12 @@ the menu's ベル row opens it at once, full height, no tabs, its own chunk, at 
   avatar and name, the balance, and under it today's ベル into it in a soft yuzu pill (their goals, がんばり and half of
   ふたりでぜんぶ; at 0 a faint one, so nothing jumps). The guest sees both, buys nothing.
 - **The rewards** ([Rewards](#rewards)): two tiles with NH item art, name and price, paid from my own wallet; one it
-  can't cover is sunk. A small ⓘ at each tile's corner shows what counts as that reward in a cream bubble. 買う！ asks
+  can't cover is sunk. Each tile's corner ⓘ shows what counts as it (a cream bubble). 買う！ asks
   first, naming my wallet (「ウェイのベル 53 → 33」), applies at once and waits 5 s with 取り消す before it is sent.
 - **貯めたベル:** the ベル ledger ([Kiroku](#kiroku)); a day pushes a level.
 - **買い物の記録** (`wallet/Purchases.svelte`), folded behind a disclosure: the buys newest first (art, name, day, who,
   price), ten at a time. 🗑 on any line (either of us, any buy) asks first, then sends a `spend_void`; the ベル go back to
-  the buyer's wallet, with 取り消す for 5 s. The old `/jar` page redirects to the island with the panel open
+  the buyer's wallet, with 取り消す for 5 s. `/jar` redirects to the island with the panel open
   (`?panel=rewards`).
 
 ### Settings
@@ -105,22 +105,24 @@ the よびな and what's worn → [the 姿 level](#sugata)), **プロフィー�
 
 ### Bots
 
-**ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** (`GymPage`, left) and **保養所** (`ItsPage`, not in
-demo). The tab last shown this session reopens (a launch: ジム). Only the shown page mounts; it reads
-its Worker on open and while shown (`poll.svelte.ts`: 保養所 every 15 s while running, else 60 s; ジム 60 s;
-none while hidden, aborted on leave). The last status read shows at once, marked 更新中 (`lastKnown.ts`, per tab in
-memory and on the phone). One look for both: the verdict card (`VerdictCard`: dot, word, sentence, tinted by tone),
-the status strip (`StatusStrip`, `lib/strip.ts`: 保養所's 直近1時間, a cell a minute; ジム's 直近12時間, a cell a check
-interval, chained so the alarm's jitter leaves no false gap; green ok, yellow a room or slot open, red
-hatched a failure, outlined nothing checked; tap or ← → names a cell), くわしく facts (`FactList`), the
-skeleton, the foot. A dot while a bot needs a person.
+**ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** (`GymPage`), **保養所** (`ItsPage`), **メニュー**
+(`KaloriPage`), the last two not in demo. The tab last shown this session reopens (a launch: ジム). Only the shown page
+mounts, reading on open and while shown (`poll.svelte.ts`: 保養所 15 s while running, else 60 s; the others 60 s; none
+hidden, aborted on leave). The last status read shows at once, marked 更新中 (`lastKnown.ts`, per tab, memory and
+phone). Shared: `VerdictCard` (dot, word, sentence, tinted), `StatusStrip` (`lib/strip.ts`: 保養所's 直近1時間, a cell
+a minute; ジム's 直近12時間, a cell a check interval, chained so the alarm's jitter leaves no false gap; green ok, yellow
+a room or slot open, red hatched failed, outlined none; tap or ← → names a cell), `FactList` (くわしく), `ChangeBar`,
+the skeleton, the foot. A dot while a bot needs a person.
 ジム: controls (stop asks; 今すぐ確認 peeks; ⋯ 間隔), a 4-week grid (`GymCalendar`: ふだん the next 4 days; a day:
-`GymDayEditor`; 選択: bulk), the 3-booking note, アプリで変更 (a day once; not in LINE), 動作状況 last; changes
-apply at once (取り消す), as a tap.
-保養所: its draft asks before a tab switch or close. 日付: a row a night, a thin bar of the searched by why
+`GymDayEditor`; 選択: bulk), the 3-booking note, アプリで変更 (a day once; not in LINE), 動作状況 last; changes apply
+at once (取り消す), as a tap.
+保養所: its draft asks before a tab switch or close. 日付: a row a night, a `ChangeBar` of the searched by why
 (`its/view.ts`; seasons and 利用不可日 in `roster.ts`, explained only). 施設: a summary, presets, 探す · 日程に合わない
 (a reason a row) · 除外. **通知** (`ItsNotify`): push per phone, off by default, asked on the tap; テスト通知; a
 notification opens 保養所 (`?open=its` kept until the launch's hold is over: a reload into a deploy opens it again).
+メニュー: `status.json` (raw, branch `kalori-status`; `lib/kalori/status.ts`): 順調 · 取得中 · 保留 · 遅れ (also a day
+past `next`, no run) · 不調 · まだ; 確認が必要 (保留, 不調, an alert: reasons, run and PR links; no mail or issue);
+最新の更新; 直近8週. No run button.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),
@@ -163,32 +165,32 @@ The ベル ledger (`model/bells.ts` bellsLedger, `components/kiroku/*`), read-on
 
 ### Kenkou
 
-健康 (`model/health.ts`, `components/health/*`): the health popup's first page (full height): Health data over time, one
+健康 (`model/health.ts`, `components/health/*`): the health popup's first page (full height): Health data over time, a
 person at a time, computed on read; its code and strings load with the first opening.
 
 - **The title bar** (both pages): whose · the page switch 健康 | ごはん · ✕; on ごはん's levels ‹, the title, ✕.
-- **Whose:** a native `<select>`, one pick for both pages, kept for the session; with the guest picked 健康 shows the
+- **Whose:** a native `<select>`, one pick for both pages, kept for the session; the guest picked, 健康 shows the
   last member picked, and says so.
 - **The selectors:** 活動 · 体 and the period (1週 · 1か月 · 3か月 · 1年; ごはん's グラフ's too), 1週 and 活動 on every
   opening, the guest 活動 only; a sticky ‹ the range › and 今日.
 - **Cards** (`model/health.ts` CARDS): 活動 歩数, ムーブ, エクササイズ, スタンド; 体 体重, 体脂肪率, BMI, 除脂肪体重. Each
-  card (`ChartCard`) has its goal chip ([Goals in place](#goals-in-place)), or a note while nothing is recorded.
+  card (`ChartCard`): its goal chip ([Goals in place](#goals-in-place)), or a note while nothing is recorded.
   **Activity** (`BarCard`): the daily average and its change against the previous period, goal days n/N, the best and the
   days without a record, the chart.
 - **Chart** (`BarChart`, SVG; its header): a bar per day, week or month in the person's colour, solid when the goal
   was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; day ranges show
   weekdays (土 sky, 日 coral); a tap shows one value, a drag pages (right = older).
 - **体重 · 体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`; their headers): each its own optional goal, the average
-  (BMI with its category by the person's standard), the change, the dot chart and the goal month at that pace. No good / bad colours; never earns.
+  (BMI with its category by the person's standard), the change, the dot chart and the goal month at that pace. No good / bad colours; no ベル.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's chip opens a tray under the header (−/＋ by the step, the range, clear where clearable, キャンセル, 決定), one
-  open at a time; either person sets either's; the same control sets ごはん's goals. 活動's goals hold from today on; the
+  open at a time; either person sets either's; the same control sets ごはん's. 活動's goals hold from today on; the
   ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
   least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分, アルコール; near a
   value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
 - **Rules:** a day's value is Health's latest; a day without a record has no row (from the first activity record);
-  today is drawn but not counted; the previous period is the same length just before.
+  today is drawn, not counted; the previous period is as long, just before.
 - **A day without the Watch** ([decisions](decisions.md#no-watch-days)): a day whose Move, Exercise and Stand are all 0
   or absent is no data for them (`activityOn`, the one reader); steps stay; read-time only.
 
@@ -270,8 +272,8 @@ board, the trays, the shop's menu): the small edge and lip, cards `--r-row`, the
 discs, controls drawn 32–36px in a 44px hit (a `ChipRow` 44 high so its scroll never clips a hit), rows 44–52. The world
 (the HUD, the leaf menu, the rooms, dialogue) keeps the game's sizes: the 2px edge and the 4px lip.
 
-Every sheet uses one kit, denser where the info is dense; game feel from edges, small lips, stickers, stitches and the
-yuzu "selected". Nothing feature-local: shared tokens only ([Chrome and tokens](#chrome-and-tokens); trip `dayColors`
+One kit for every sheet, denser where the info is; game feel from edges, small lips, stickers, stitches, the yuzu
+"selected". Nothing feature-local: shared tokens only ([Chrome and tokens](#chrome-and-tokens); trip `dayColors`
 stay trip data).
 
 - **Type:** titles, labels, numbers in `--font-ui` 700 (Zen Maru Gothic) / `--font-num` 600 (Fredoka, tabular); body
@@ -394,7 +396,7 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
   none is its render's card).
   - **The camera** (`world3d/islandCam.ts`): the default zoom (1) is the widest, x centred, one finger only scrolls
     along the island (free: no snap, no automatic move); zoomed in it pans sideways too, within the land. A pinch zooms
-    about its middle up to 3.2, rubber-banding past the default. A gesture is one kind from start to end; a touch on a
+    about its middle to 3.2, rubber-banding past the default. A gesture is one kind start to end; a touch on a
     fling only stops it.
   - **What comes and goes** is drawn from the DOM island's nodes: an `m3` art key stands as NH's model, `v3` a
     character's; their DOM art stays the invisible tap box, never downloaded unless there's no model
@@ -434,11 +436,11 @@ What a launch waits for, and what it doesn't (budgets and measurements: [ops/per
 
 The game draws at most **30** frames a second (`store/frameRate.ts` FPS) while something moves, a gesture included; a
 still scene draws nothing. One pacer runs every surface's frames (`world3d/pace.ts`); the simulation runs on real time,
-so nothing moves slower. **At rest** (no finger for a moment, only ambience on screen) the island draws its ambience at
+nothing slower. **At rest** (no finger for a moment, only ambience on screen) the island draws its ambience at
 **12** a second (engine.ts REST_MS, REST_FPS), the museum its tanks and bugs at 15, the tent only a blink; any move or
-touch is back at the full rate at once. A villager's small moves in place (a turn, a nod, a surprise: villagers.ts
-SMALL) are ambience too; a walk or a hop is the full rate. The endless CSS loops over the island (the sky's clouds,
-the night's twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
+touch is back at the full rate. A villager's small moves (a turn, a nod, a surprise: villagers.ts
+SMALL) are ambience too; a walk or a hop is the full rate. The endless CSS loops over the island (clouds,
+twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
 (`island/clouds.ts`), never at the display's 60 Hz; held still under reduced motion.
 
 **One renderer lifecycle:** every WebGL surface makes and lets go of its renderer the same way (`world3d/stage.ts`: its
@@ -449,7 +451,7 @@ header); the rooms keep their models page-wide (`world3d/modelCache.ts`); shadow
 
 `world/buildings.ts`, `island/doorOut.ts`. The campsite, the homes, the museum ([The museum](#the-museum)) and the
 shop ([The shop](#the-shop); each one to an island, moved and turned in the editor, never removed): a tap on one walks
-my villager up to its door and goes in. ‹ しまへ comes out of the door, NH's way: my villager stands just in front of it,
+my villager up to its door and goes in. ‹ しまへ comes out of the door, NH's way: my villager stands in front of it,
 facing out, on every phone at once (`layout/nav.ts` exitOf). Inside, my villager is nowhere on the others' islands.
 
 ### Environment
@@ -457,7 +459,7 @@ facing out, on every phone at once (`layout/nav.ts` exitOf). Inside, my villager
 - **Seasons** (`ui-state/season.ts`): winter (snow) Dec 11 – Feb 24, spring to May 31, summer to Sep 15, autumn to Dec
   10. Oaks: blossom Apr 1–10, fall leaves Oct 16 – Dec 10.
 - **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
-  Night is soft periwinkle, never black; the windows and lamps light up from dusk.
+  Night is soft periwinkle, never black; windows and lamps light from dusk.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
   Jan–Mar camellia). The wild flowers by season (`scene.ts` WILD).
 
@@ -524,7 +526,7 @@ oak, cedar and palm (bamboo doesn't).
 
 ### Scene interactions
 
-`island/sceneTaps.ts`. Every part of the island answers a tap softly and counts for nothing; ≤ 4 flourishes at once;
+`island/sceneTaps.ts`. Every part of the island answers a tap softly, counting for nothing; ≤ 4 flourishes at once;
 nothing while covered or hidden. What nothing else took is a walk ([Walking](#walking)); a seat is sat on
 ([World](#world), "Sitting on a tap").
 
@@ -533,17 +535,17 @@ a flower is watered ([Island care](#island-care)); any water casts the line ther
 sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes; the sun glints; the moon bobs; the night sky
 twinkles (and grants a wish while a shooting star crosses: [Shooting stars](#shooting-stars)); the campfire is poked.
 
-**Tap targets** (`island/hitbox.ts`): everything tappable answers on its whole visible body, at least 44 × 44px; in
+**Tap targets** (`island/hitbox.ts`): everything tappable answers on its whole visible body, ≥ 44 × 44px; in
 front wins, exactly under the finger over a character's loose reach; a building is its model's silhouette.
 **Nothing lies on a building's ground** (`layout/clear.ts`): what's dropped or spawned takes a spot off its footprint,
 door step and the strip its model hides. On water only what's drawn takes a tap, so a tap on the sea beside a dig spot
-casts. A touch goes where the finger was, never moved by WebKit's touch adjustment onto a door
+casts. A touch goes where the finger was, never moved by WebKit's adjustment onto a door
 (`ui-state/exactTaps.ts`).
 
 ### Balloon
 
 NH's balloon present (`world/balloonFlight.ts`: its header; `island/Balloon.svelte`): by day every 45–90 s of
-on-screen time it flies over the island in 3D, sea to sea. A tap pops it: the present falls to open ground clear of
+on-screen time it flies over the island, sea to sea. A tap pops it: the present falls to open ground clear of
 every control (`world/presentLanding.ts`) and lies there for every phone until tapped open. What's inside follows NH's
 drop rates without Bells or materials (`island/catalog.ts`: furniture, clothing, a season's DIY recipe), counted in the
 ずかん. On Bunny Day a sky egg instead. The catalogue: `npm run catalog:build`.
@@ -552,9 +554,9 @@ drop rates without Bells or materials (`island/catalog.ts`: furniture, clothing,
 
 `store/world.svelte.ts`, `sync/world-day.ts`, `island/PartnerNews.svelte`; the mechanism:
 [backend](backend.md#shared-world). Every phone shows the same island: what's caught or picked up is gone on all, what
-a shake drops lies on all, each villager stands where its person sent it.
+a shake drops lies on all, each villager where its person sent it.
 
-- **The villagers move as one:** each of us moves our own villager; the other phones play the very same walk,
+- **The villagers move as one:** each of us moves our own villager; the other phones play the same walk,
   catching up when a message is late (`island/villagerSync.ts`); asleep and awake alike ([Sleep](#sleep)).
 - **Fishing, seen by everyone**: each step of a line (the cast, the nibbles, the bite, the reel) plays on the others'
   phones as it happens. The shadow cast at is theirs while the line is out (a tap on it here

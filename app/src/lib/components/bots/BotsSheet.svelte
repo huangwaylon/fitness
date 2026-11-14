@@ -1,7 +1,8 @@
 <script lang="ts">
   // ボット (docs/design.md "Bots"): the menu's ボット opens it (members only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
-  // tabs (a tablist): ジム (GymPage) on the left, 保養所 (ItsPage); with one bot only (demo mode: ジム), no tabs. It opens
+  // tabs (a tablist): ジム (GymPage) on the left, 保養所 (ItsPage), メニュー (KaloriPage) on the right; with one bot only,
+  // no tabs. It opens
   // on the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the
   // leftmost; an update's reload keeps it), or the one asked (show(tab): a
   // notification's tap opens 保養所). Only the shown page is mounted: it reads
@@ -15,6 +16,7 @@
   import TabBar from '../ui/TabBar.svelte';
   import ItsPage from './ItsPage.svelte';
   import GymPage from './GymPage.svelte';
+  import KaloriPage from './KaloriPage.svelte';
   import { botTabs, botsBadge, botsSheet, readBadge, type BotTab } from './open.svelte.ts';
   import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -24,7 +26,8 @@
 
   const kv = sessionKV();
   const tabs = $derived(botTabs());
-  let picked = $state<BotTab>(kv?.getItem(DEVICE.botsTab) === 'its' ? 'its' : 'gym');
+  const kept = kv?.getItem(DEVICE.botsTab);
+  let picked = $state<BotTab>(kept === 'its' || kept === 'kalori' ? kept : 'gym');
   /** The tab shown: the one picked, if this phone has it. */
   const tab = $derived(tabs.includes(picked) ? picked : (tabs[0] ?? 'gym'));
   /** 保養所's guard (its draft). */
@@ -32,7 +35,7 @@
   let sheet: ReturnType<typeof Sheet> | undefined = $state();
   let body: HTMLElement | undefined = $state();
 
-  const ICONS = { its: 'bed', gym: 'barbell' } as const;
+  const ICONS = { its: 'bed', gym: 'barbell', kalori: 'utensils' } as const;
   const items = $derived(tabs.map((id) => ({ id, label: t(`bots.${id}`), icon: ICONS[id], dot: botsBadge[id], note: t('bots.attention') })));
 
   // asked for a tab (a notification's tap: 保養所), as a tab's tap would (保養所's draft asks first)
@@ -73,6 +76,8 @@
     role={tabs.length > 1 ? 'tabpanel' : undefined} aria-labelledby={tabs.length > 1 ? `bots-tab-${tab}` : undefined}>
     {#if tab === 'its'}
       <ItsPage bind:leave={itsLeave} />
+    {:else if tab === 'kalori'}
+      <KaloriPage />
     {:else}
       <GymPage />
     {/if}

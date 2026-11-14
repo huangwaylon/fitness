@@ -1,0 +1,165 @@
+# Kalori's watch (docs/food-data.md "Kalori": the watch; docs/ops/runbook.md "Refresh Kalori"): what follows an
+# automatic merge, and a refresh that never came. Each writes status.json on the `kalori-status` branch (the alert is
+# its `alert`: a dot on the bots tab's メニュー, no issue, no mail), through .github/scripts/kalori-status.sh and
+# food-data/scripts/kalori_status.py, as kalori-scrape.yml does.
+# - deploy: Deploy UI and Food data checks runs that kalori-scrape.yml dispatched after a merge: a dispatch on main
+#   by github-actions[bot], the head commit "Kalori: kalori-<date> (auto)" and status.json's merge.sha (else nothing). Deploy UI failed: its failed jobs re-run once; failed again: merge.deploy
+#   failed (deploy_failed). Food data checks failed: the Kalori commit reverted on main and pages.yml dispatched again
+#   (reverted). Deploy UI green: merge.deploy ok.
+# - late: every 6 hours, the newest completed scheduled kalori-scrape run over 8 days old (late), or a run not done
+#   after 2 days or a `running` status 8 h old with no run (stuck), a merge's deploy pending 3 h (deploy_failed).
+# A job that fails writes its own alert.
+name: Kalori watch
+
+on:
+  workflow_run:
+    workflows: ['Deploy UI', 'Food data checks']
+    types: [completed]
+  schedule:
+    # (an odd minute: GitHub drops scheduled runs under load)
+    - cron: '29 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# (no concurrency group: it keeps one pending run and would drop an outcome; two writes of status.json at once are
+# kalori-status.sh's lease, the later one redone on the newer status)
+
+env:
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_run' && github.event.workflow_run.event == 'workflow_dispatch' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.triggering_actor.login == 'github-actions[bot]' &&
+      startsWith(github.event.workflow_run.head_commit.message, 'Kalori: ')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # the revert, the kalori-status branch
+      actions: write    # the re-run, the dispatch
+    steps:
+      # (all history, no blobs until read: the revert reads the three files' blobs alone)
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          ref: main
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            food-data/scripts
+            app/static/food
+            .github/scripts
+      # Only the merge status.json names: the commit's first line exactly update-merge's, its sha merge.sha.
+      - name: The merge's run?
+        id: gate
+        env:
+          MSG: ${{ github.event.workflow_run.head_commit.message }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          first=$(printf '%s\n' "$MSG" | head -1)
+          [[ "$first" =~ ^Kalori:\ kalori-[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9]+)?\ \(auto\)$ ]] || { echo "not an automatic merge: $first"; exit 0; }
+          m=$(.github/scripts/kalori-status.sh get | jq -r '.merge.sha // empty')
+          [ "$m" = "$SHA" ] || { echo "status.json's merge is ${m:-none}, not $SHA: nothing to do"; exit 0; }
+          echo "ok=1" >> "$GITHUB_OUTPUT"
+      - name: The outcome
+        if: steps.gate.outputs.ok == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WF: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "$WF, run $RUN_ID attempt $RUN_ATTEMPT: $CONCLUSION ($SHA)"
+          set -- deploy --sha "$SHA" --run-url "$RUN_URL"
+          case "$WF/$CONCLUSION" in
+            "Deploy UI/success") set -- "$@" --deploy ok ;;
+            "Deploy UI/failure"|"Deploy UI/timed_out")
+              if [ "$RUN_ATTEMPT" = 1 ]; then
+                gh run rerun "$RUN_ID" --failed
+                echo "re-running its failed jobs once"; exit 0
+              fi
+              set -- "$@" --deploy failed --reason deploy_failed --alert-text "the deploy of the Kalori merge failed twice ($RUN_URL)" ;;
+            "Food data checks/failure"|"Food data checks/timed_out")
+              # The Kalori commit reverted on main's tip (a lost push race tries again); once only: a revert already
+              # on main is left as it is.
+              reverted=
+              for i in 1 2 3 4 5; do
+                git fetch -q origin main
+                git merge-base --is-ancestor "$SHA" FETCH_HEAD || { echo "::error::$SHA is not on main"; exit 1; }
+                if git log --format=%H --grep "This reverts commit $SHA" "$SHA..FETCH_HEAD" | grep -q .; then
+                  echo "already reverted on main"; reverted=1; break
+                fi
+                git checkout -q --detach FETCH_HEAD
+                git revert --no-edit "$SHA"
+                if git push -q origin HEAD:refs/heads/main; then reverted=1; break; fi
+                sleep $((i * 5))
+              done
+              [ -n "$reverted" ] || { echo "::error::the revert did not push"; exit 1; }
+              gh workflow run pages.yml --ref main
+              set -- "$@" --deploy reverted --reason reverted --fetch-py food-data/scripts/fetch.py \
+                --kalori app/static/food/kalori.json --alert-text "Food data checks failed on the Kalori merge: reverted ($RUN_URL)" ;;
+            *) echo "nothing to do"; exit 0 ;;
+          esac
+          .github/scripts/kalori-status.sh "$@"
+      - name: status.json, on a failure
+        if: failure() && steps.gate.outputs.ok == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WF: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          gh auth setup-git
+          .github/scripts/kalori-status.sh deploy --sha "$SHA" --deploy failed --reason deploy_failed \
+            --alert-text "the watch failed on $WF of the Kalori merge (re-run, revert or status): its log" \
+            --run-url "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+
+  late:
+    if: github.event_name != 'workflow_run' && github.repository == 'huangwaylon/fitness'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write   # the kalori-status branch
+      actions: read     # kalori-scrape's runs
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            food-data/scripts
+            .github/scripts
+      - name: A refresh late or stuck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          f='databaseId,event,status,conclusion,createdAt,url'
+          { gh run list -w kalori-scrape.yml -L 40 --json "$f"; gh run list -w kalori-scrape.yml -e schedule -s completed -L 3 --json "$f"; } \
+            | jq -s 'add' > "$RUNNER_TEMP/runs.json"
+          .github/scripts/kalori-status.sh get > "$RUNNER_TEMP/status.json"
+          python3 -I food-data/scripts/kalori_status.py watch --runs "$RUNNER_TEMP/runs.json" --prev "$RUNNER_TEMP/status.json" > "$RUNNER_TEMP/watch.json"
+          cat "$RUNNER_TEMP/watch.json"
+          reasons=$(jq -r '.reasons | join(",")' "$RUNNER_TEMP/watch.json")
+          [ -n "$reasons" ] || { echo "on time"; exit 0; }
+          echo "::warning::$(jq -r .text "$RUNNER_TEMP/watch.json")"
+          gh auth setup-git
+          .github/scripts/kalori-status.sh alert --reasons "$reasons" --alert-text "$(jq -r .text "$RUNNER_TEMP/watch.json")" \
+            --run-url "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+      - name: status.json, on a failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          .github/scripts/kalori-status.sh alert --reasons stuck --alert-text "the watch's 6-hourly check failed: its log" \
+            --run-url "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID"

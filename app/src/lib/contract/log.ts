@@ -122,6 +122,9 @@ export const LOG_EVENTS = {
   // (lib/gym/config.ts): its HTTP status (none: no answer), the Worker's code (stale, cooldown, day_passed, …) or the
   // phone's (offline, timeout, http, json), the act's request id, ms. (/gym/config, members only, is keyed.fail's `gym`.)
   "gym.fail": { src: 'c', f: { op: ['status', 'act'], err: 't', rid: 't', http: 'n', ms: 'n' } },
+  // ボット's メニュー: a read of the Kalori scraper's status.json (raw.githubusercontent.com) that failed
+  // (lib/kalori/status.ts): its HTTP status (none: no answer), the phone's code (offline, http, json), ms
+  "kalori.fail": { src: 'c', f: { op: ['status'], err: 't', http: 'n', ms: 'n' } },
   // 保養所's 通知 (lib/its/push.ts): the browser's part that failed (the permission's prompt, the service worker's
   // registration, subscribe, unsubscribe) and the error's name; never the endpoint or a key
   "its.push": { src: 'c', f: { step: ['permission', 'ready', 'subscribe', 'unsubscribe'], err: 't' } },

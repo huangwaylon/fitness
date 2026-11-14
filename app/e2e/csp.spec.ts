@@ -83,6 +83,18 @@ for (const [name, path, up] of rooms)
     await none(page, seen);
   });
 
+// ボット's メニュー (lib/kalori/status.ts): connect-src names status.json itself, so it's read and nothing else on
+// raw.githubusercontent.com is (both routed: only the policy can refuse).
+test('connect-src: the Kalori status.json only, no other raw.githubusercontent.com file', async ({ page }) => {
+  const seen = await island(page);
+  const RAW = 'https://raw.githubusercontent.com/huangwaylon/fitness';
+  await page.route(`${RAW}/**`, (r) => r.fulfill({ status: 200, contentType: 'text/plain', headers: { 'Access-Control-Allow-Origin': '*' }, body: '{}' }));
+  const get = (u: string) => page.evaluate((x) => fetch(x).then((r) => r.status, () => 'refused'), u);
+  expect(await get(`${RAW}/kalori-status/status.json`)).toBe(200);
+  expect(await get(`${RAW}/main/README.md`)).toBe('refused');
+  await expect.poll(() => seen.some((x) => x.includes('connect-src') || /refused to connect/i.test(x))).toBe(true);
+});
+
 // The trip map (docs/travel.md "Maps"): drawn (not the logic tier's stub), its worker (our own file), its fonts (the
 // app's woff2 slices, fetched and handed to the FontFace API), OpenFreeMap's TileJSON and tiles (the fixtures, at their
 // real URLs: the one third-party connect-src) and the locate button: no violation.

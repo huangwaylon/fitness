@@ -289,15 +289,16 @@ export default defineConfig({
       paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
       // SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its inline bootstrap script to
       // script-src; scripts/headers.ts copies it into build-pages/_headers too. Only the relay (its socket, lib/sync/live.ts LIVE_URL, and the record's /api,
-      // lib/sync/transport.ts), the gym bot's /status (lib/gym/status.ts GYM_URL), the ITS booker's Worker (lib/its/client.ts ITS_URL) and the trip map's tiles are reachable besides our own.
+      // lib/sync/transport.ts), the gym bot's /status (lib/gym/status.ts GYM_URL), the ITS booker's Worker (lib/its/client.ts ITS_URL), the Kalori scraper's status.json and the trip map's tiles are reachable besides our own.
       csp: {
         mode: 'hash',
         directives: {
           'default-src': ['self'],
           // + the trip map's basemap (components/travel/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
           // MapLibre's worker; its fonts are ours), and トレイル's raster topo (components/hiking/map/style.ts TOPO: USGS
-          // Topo, GSI 地理院タイル; fetched, then decoded from blob:)
-          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
+          // Topo, GSI 地理院タイル; fetched, then decoded from blob:); ボット's メニュー reads the Kalori scraper's status.json
+          // raw from GitHub (lib/kalori/status.ts KALORI_STATUS_URL: that one file, nothing else on the host)
+          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs); a member's chain
           // menus show Kalori's pictures hotlinked (lib/food/images.ts kaloriImg)
           'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp'],

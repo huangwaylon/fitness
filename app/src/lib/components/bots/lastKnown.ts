@@ -1,11 +1,11 @@
 // ボット's last known status, a tab's (docs/design.md "Bots"; fitness-5e perf: a ~2 s skeleton on each open): kept in
-// memory and on this phone (LIVE.botsIts, LIVE.botsGym) after each good read, so the page opens on it at once, marked
+// memory and on this phone (LIVE.botsIts, LIVE.botsGym, LIVE.botsKalori) after each good read, so the page opens on it at once, marked
 // 更新中, and the read refreshes it in place. Only for the member who read it (`me`); one that doesn't read back
 // (another version, garbage) is none. A copy too large (≥ 200 KB) or a full storage keeps the memory one only.
 import { LIVE, getStoredMe, localKV } from '#lib/sync/storage.ts';
 import type { BotTab } from './open.svelte.ts';
 
-const KEYS: Record<BotTab, string> = { its: LIVE.botsIts, gym: LIVE.botsGym };
+const KEYS: Record<BotTab, string> = { its: LIVE.botsIts, gym: LIVE.botsGym, kalori: LIVE.botsKalori };
 const MAX = 200_000;
 const mem = new Map<BotTab, { me: string | null; s: unknown }>();
 

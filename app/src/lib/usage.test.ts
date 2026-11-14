@@ -25,6 +25,8 @@ import jaGym from '#lib/i18n/gym.ja.json';
 import enGym from '#lib/i18n/gym.en.json';
 import jaIts from '#lib/i18n/its.ja.json';
 import enIts from '#lib/i18n/its.en.json';
+import jaKalori from '#lib/i18n/kalori.ja.json';
+import enKalori from '#lib/i18n/kalori.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
@@ -51,7 +53,7 @@ const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
 /** Code outside the UI that hands i18n keys to it (the model's host line, labels, …). */
 const EMITTER_DIRS = ['lib/model', 'lib/scoring', 'lib/config', 'lib/contract', 'lib/time'];
-const UI_DIRS = ['lib/components', 'lib/world', 'lib/gym', 'lib/its', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts'];
+const UI_DIRS = ['lib/components', 'lib/world', 'lib/gym', 'lib/its', 'lib/kalori', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts'];
 
 function files(p: string): string[] {
   try {
@@ -90,8 +92,8 @@ const KIKI_GAMES = {
   ja: import.meta.glob<Record<string, string>>('./i18n/kiki-*.ja.json', { eager: true, import: 'default' }),
   en: import.meta.glob<Record<string, string>>('./i18n/kiki-*.en.json', { eager: true, import: 'default' })
 };
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed, ...jaGym, ...jaIts };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed, ...enGym, ...enIts };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
@@ -140,6 +142,11 @@ describe('i18n catalogs', () => {
   it('keep ジムボット’s strings (gym.*) in its own catalog, out of the first load', () => {
     for (const c of [jaGym, enGym]) expect(Object.keys(c).filter((k) => !k.startsWith('gym.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('gym.'))).toEqual([]);
+  });
+  it('keep メニューボット’s strings (kalori.*) in its own catalog, out of the first load', () => {
+    for (const c of [jaKalori, enKalori]) expect(Object.keys(c).filter((k) => !k.startsWith('kalori.'))).toEqual([]);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kalori.'))).toEqual([]);
+    expect(Object.keys(jaKalori).sort()).toEqual(Object.keys(enKalori).sort());
   });
   it('keep 保養所ボット’s strings (its.*) in its own catalog, out of the first load', () => {
     for (const c of [jaIts, enIts]) expect(Object.keys(c).filter((k) => !k.startsWith('its.'))).toEqual([]);
