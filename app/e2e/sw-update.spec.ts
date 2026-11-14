@@ -209,23 +209,30 @@ const unfresh = (page: Page) => page.evaluate(async () => {
   const key = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
   await (await caches.open(key)).delete('__fresh');
 });
+/** Whether the worker has that record (a `same` race's, written after the page is answered). */
+const fresh = (page: Page) => page.evaluate(async () => {
+  const key = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
+  return !!(await (await caches.open(key)).match('__fresh'));
+});
 
 // (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
 // player; now the launch's page is the deploy's when it's in time, no reload into it)
 test('a launch after a deploy is the deploy\'s page, its lazy sheets loading under the older worker; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
+  // (the page's own version checks kept from the worker from the start: each one names this build the deployed one,
+  // which makes the next launch a `skip` before its time; the one as the worker claims the page, let through, wrote
+  // its record after unfresh() had deleted it: CI's `skip` for `same`)
+  const noChecks = (route: import('@playwright/test').Route) => route.abort();
+  await context.route('**/_app/version.json', noChecks);
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
   const own = await buildOf(page);
-  // (the page's own version checks kept from the worker meanwhile: each one names this build the deployed one, which
-  // would make the next launch a `skip` before its time)
-  const noChecks = (route: import('@playwright/test').Route) => route.abort();
-  await context.route('**/_app/version.json', noChecks);
   // no deploy: the network's page is this build's, so the cached shell (its chunks all cached); then no race at all
   await unfresh(page);
   await page.goto('?demo');
   await islandUp(page);
   expect(await shellOf(page)).toBe('same');
+  await expect.poll(() => fresh(page)).toBe(true);
   await page.goto('?demo');
   await islandUp(page);
   expect(await shellOf(page)).toBe('skip');
