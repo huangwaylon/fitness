@@ -74,11 +74,11 @@ describe('farmOfState', () => {
     expect(farmJson(first)).toEqual(before);
   });
 
-  it('a kept harvest stays at its kept n; a queued one is reckoned by the three-day rule (its plant day watered)', () => {
-    // planted 11-05 (watered that day: islandDays), ripe 11-08
+  it('a kept harvest stays at its kept n; a queued one is reckoned by the watering rule (its plant day watered)', () => {
+    // planted 11-05 (watered that day: islandDays), ripe 11-06
     const plant: FarmRow = { at: 1, person: 'A', data: { d: '2026-11-05', ops: [{ o: 'plant', p: 'fd:f.0.0', c: 'carrot', src: 'start' }] } };
-    const harvest = (queued?: true): FarmRow => ({ at: 2, person: 'A', data: { d: '2026-11-08', ops: [{ o: 'harvest', p: 'fd:f.0.0', n: 1 }] }, ...(queued && { queued }) });
+    const harvest = (queued?: true): FarmRow => ({ at: 2, person: 'A', data: { d: '2026-11-06', ops: [{ o: 'harvest', p: 'fd:f.0.0', n: 1 }] }, ...(queued && { queued }) });
     expect(farmOfState({ farm: [plant, harvest()], islandDays, wet }).net.A?.get('goods:carrot')).toBe(1);
-    expect(farmOfState({ farm: [plant, harvest(true)], islandDays, wet }).net.A?.get('goods:carrot')).toBe(2);
+    expect(farmOfState({ farm: [plant, harvest(true)], islandDays, wet }).net.A?.get('goods:carrot')).toBe(3);
   });
 });

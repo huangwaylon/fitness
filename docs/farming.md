@@ -17,12 +17,12 @@ The produce sells for かいがら, never ベル. Code: `contract/farm.ts` (the 
 3. **At most 40 plants each** (`FARM.cap`), whatever the field's size.
 4. **Prices: NH ÷ 20,** as every shop price: a start costs 14 (280 Bells) and sells back for 4, a vegetable sells for
    18 (350). Balance comes from cadence, never the price.
-5. **Cadence (NH):** ripe 3 days after planting through 4 stages (0, 1, 2, ripe); harvested, the plant grows back from
-   stage 2 and is ripe again 3 days on (`FARM.regrowDays`). It yields 1, plus 1 for each of the three days before it
-   ripens that it was watered, at most 3 (1, 2 or 3: NH's Lv1–3 models); the plant day and the harvest day count.
+5. **Cadence: a day** (2026-11-14; NH's was 3): planted today (stage 0), ripe from 00:00 Tokyo tomorrow; harvested, the
+   plant grows back from stage 2 and is ripe again the next day (`FARM.growDays`, `FARM.regrowDays`). It yields 3 if
+   watered (or rained on) the day before it ripens, the plant day or the harvest day, else 1 (NH's Lv3 and Lv1 models).
 6. **Rain waters everything:** any wet hour of the Tokyo day (our winter snow is real rain) waters every plant.
 7. **The can waters 3 × 3** the plants whose watering counts today (NH's golden can); planting and harvesting reach
-   3 × 3 too: about 8 taps a full field. Effort, not balance (the same cadence and cap; you still come daily).
+   3 × 3 too: about 8 taps a full field. Effort, not balance (the same cadence and cap; you come daily).
    No button or menu: every farm action is a plot's tap (2026-11-14).
 8. **Starts are sold at the shop's かう,** always in stock, all six crops at one price, any season. A vegetable can be
    planted too (buying a start, 14, beats replanting a vegetable worth 18, as in NH).
@@ -33,14 +33,14 @@ The produce sells for かいがら, never ベル. Code: `contract/farm.ts` (the 
 
 ## Balance
 
-Per person, a full field watered on 2 of its 3 days: 40 plants × 3 vegetables × 18 かいがら ÷ 3 days ≈ **720 かいがら a
-day**, for about 8 taps each of the can and the harvest. Unwatered it's 240 a day, on one day's watering 480, watered
-twice a week ≈ 390. Tokyo has ~110 wet days a year, which water for you. Setup: 40 starts cost 560, paid back by the
-first harvest.
+Per person, a full field watered daily: 40 plants × 3 vegetables × 18 かいがら = **2,160 かいがら a day**, for about 8
+taps each of the can and the harvest. Unwatered it's 720 a day, watered twice a week ≈ 1,130. Tokyo has ~110 wet days a
+year, which water for you. Setup: 40 starts cost 560, paid back by the first harvest.
 
 For scale: a sea catch is worth ~60–100 (~150–250 a minute, uncapped), a 15-minute session ~2,000–3,000, the median
-piece of furniture 190. Farming is a daily habit worth ~25 % of a full player's かいがら, never the main source. The
-levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays` and `FARM.cap`, never a price.
+piece of furniture 190. A full field daily is worth about one fishing session (the user accepted ~3× NH's cadence's
+income, 2026-11-14). The levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays` and
+`FARM.cap`, never a price.
 
 ## Rules (the record's)
 
@@ -57,8 +57,8 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 - **The plot** is `fd:<fieldId>.<col>.<row>`. The record keeps a plant its planter's; whose field a plot is, the phones
   decide (the layout is theirs). A plant on a tile a field no longer covers is kept, not drawn, and counts toward the cap
   until the shop's 苗に戻す digs it (never automatically: both phones would race).
-- **Watering** is the island day's `watered` list (the flowers' own), now up to 160 ids. It counts on the 3 days
-  before ripe (`wateringCounts`). A rule change deploys the relay first, then the app.
+- **Watering** is the island day's `watered` list (the flowers' own), now up to 160 ids. It counts on the day
+  before ripe (`wateringCounts`): the plant day, or the harvest day it grows back from. A rule change deploys the relay first, then the app.
 - **Rain:** the record writes one `wet` row a wet day itself, from the room's weather cron: in the `real` mode a Tokyo
   day the timeline had a wet hour of, in the `game` mode the seeded wet day (`contract/wet.ts gameWet`, the island's
   seeded weather's own draw). A phone never writes one.

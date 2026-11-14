@@ -174,7 +174,7 @@ describe('the fields in the pocket (contract/farm.ts)', () => {
     ev(at('09:01'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 80 }),
     ev(at('09:02'), 'A', 'buy_starts', { crop: 'tomato', n: 3, v: 42 }),
     ev(at('09:03'), 'A', 'farm', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }, { o: 'plant', p: Q, c: 'tomato', src: 'start' }] }),
-    ev(at('09:04'), 'B', 'island', { date: '2026-11-06', taken: [], puts: [], shakes: [], watered: [P], wishes: {} }),
+    ev(at('09:04'), 'B', 'island', { date: D, taken: [], puts: [], shakes: [], watered: [P], wishes: {} }), // P's plant day
     ev(at('09:05', D3), 'A', 'farm', { d: D3, ops: [{ o: 'harvest', p: P, n: 2 }] }),
     ev(at('09:06', D3), 'A', 'sell', { species: 'goods:tomato', n: 1, v: 18 })
   ];
@@ -192,7 +192,7 @@ describe('the fields in the pocket (contract/farm.ts)', () => {
       ev(at('09:05', D3), 'A', 'farm', { d: D3, ops: [{ o: 'harvest', p: P, n: 3 }, { o: 'harvest', p: Q, n: 3 }] }),
       ev(at('09:06', D3), 'B', 'farm', { d: D3, ops: [{ o: 'plant', p: P, c: 'carrot', src: 'start' }] })
     ], null)!;
-    expect(shopView(later, 'A').pocket.get('goods:tomato')).toBe(2 + 1);
+    expect(shopView(later, 'A').pocket.get('goods:tomato')).toBe(3 + 1);
     expect(shopView(later, 'B').pocket.size).toBe(0);
     expect(later.farm.at(-1)?.queued).toBe(true);
   });

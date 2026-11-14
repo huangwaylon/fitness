@@ -400,9 +400,10 @@ The third tap within 1.2 s shakes; a single tap opens a goal tree's popup and ru
 ([design](design.md#shaking-a-tree)). Why: how people shake trees in NH, never ベル.
 
 ### Farming: NH 2.0's vegetables on a field each
-Starts at the shop, a field each placed in the editor, NH's ÷ 20 prices, 40 plants each, ripe in 3 days and again 3 days
-after a harvest, 1–3 by the watering ([farming.md](farming.md)). Why: faithful to NH, worth a daily minute without
-outearning fishing; the cadence is the lever, never a price.
+Starts at the shop, a field each placed in the editor, NH's ÷ 20 prices, 40 plants each, ripe the next Tokyo day and
+again the day after a harvest, 3 if watered the day before, else 1 ([farming.md](farming.md)). Why: NH's farming with
+a daily harvest (the user, 2026-11-14: NH's 3 days felt slow; ~3× the income accepted); the cadence is the lever,
+never a price.
 
 ### Mushrooms are cosmetic
 November's mushrooms have no ずかん page; they go into the pocket to sell (`goods`). Why: NH's mushrooms are crafting

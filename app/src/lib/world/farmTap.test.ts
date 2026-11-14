@@ -14,8 +14,8 @@ const at = (plants: Record<string, Plot> = {}, who: (c: number, r: number) => 'A
 };
 const base: FarmTapIn = { me: 'A', plot: { p: P, who: 'A', c: 1, r: 1 }, ...at(), date: D, watered: () => false, seed: null, kinds: [], have: () => 0, mine: 0 };
 const ripe = { who: 'A' as const, c: 'tomato' as const, from: D };
-/** Two days to ripe: its watering counts today. */
-const young = { who: 'A' as const, c: 'carrot' as const, from: '2026-11-09' };
+/** Planted today, ripe tomorrow: its watering counts today. */
+const young = { who: 'A' as const, c: 'carrot' as const, from: '2026-11-08' };
 const wet = () => true;
 const theirs = (p: Plot): Plot => ({ ...p, who: 'B' });
 
@@ -40,13 +40,11 @@ describe('a tap on a plot', () => {
   });
 
   it('a run of harvest taps: my plant picked today, with ripe ones of mine around it, harvests them, never the can', () => {
-    const picked = { ...ripe, from: '2026-11-10', r: true as const };
+    const picked = { ...ripe, from: '2026-11-08', r: true as const };
     const plants = { [P]: picked, [id(0, 1)]: picked, [id(2, 1)]: ripe, [id(2, 2)]: { ...ripe, c: 'carrot' as const } };
     expect(farmTap({ ...base, ...at(plants) })).toEqual({ a: 'harvest', ops: [{ p: id(2, 1), c: 'tomato', n: 1 }, { p: id(2, 2), c: 'carrot', n: 1 }] });
     // none ripe left: the can waters the picked ones (the harvest day counts)
     expect(farmTap({ ...base, ...at({ [P]: picked, [id(0, 1)]: picked }) })).toEqual({ a: 'water', ids: [id(0, 1), P] });
-    // a regrowing plant picked another day is growing: the can first, as nh-04
-    expect(farmTap({ ...base, ...at({ [P]: { ...picked, from: '2026-11-09' }, [id(2, 1)]: ripe }) })).toEqual({ a: 'water', ids: [P] });
     // the partner's plant picked today is no run of mine: the can
     expect(farmTap({ ...base, ...at({ [P]: theirs(picked), [id(2, 1)]: ripe }) })).toEqual({ a: 'water', ids: [P] });
   });
@@ -76,8 +74,8 @@ describe('a tap on a plot', () => {
   });
 
   it('all watered and unripe: a word with the days left, and who watered it today; my own plant offers ほる', () => {
-    expect(farmTap({ ...base, ...at({ [P]: young }), watered: wet })).toEqual({ a: 'about', who: 'A', c: 'carrot', left: 2, watered: true, dig: true });
-    expect(farmTap({ ...base, ...at({ [P]: young }), watered: wet, by: 'B' })).toEqual({ a: 'about', who: 'A', c: 'carrot', left: 2, watered: true, by: 'B', dig: true });
+    expect(farmTap({ ...base, ...at({ [P]: young }), watered: wet })).toEqual({ a: 'about', who: 'A', c: 'carrot', left: 1, watered: true, dig: true });
+    expect(farmTap({ ...base, ...at({ [P]: young }), watered: wet, by: 'B' })).toEqual({ a: 'about', who: 'A', c: 'carrot', left: 1, watered: true, by: 'B', dig: true });
     expect(farmTap({ ...base, ...at({ [P]: theirs(ripe) }), watered: wet, by: 'G' })).toEqual({ a: 'about', who: 'B', c: 'tomato', left: 0, watered: true, by: 'G' });
     // never on the first tap while there's water or a harvest to do
     expect(farmTap({ ...base, ...at({ [P]: young }) }).a).toBe('water');
@@ -130,7 +128,7 @@ describe('a tap on a plot', () => {
     // the empty middle: my ripe one first (a miss forgiven)
     expect(farmTap({ ...base, ...at(plants), kinds, have })).toEqual({ a: 'harvest', ops: [{ p: id(0, 0), c: 'tomato', n: 1 }] });
     // harvested: it regrows (picked today); the empty middle plants its empty plots now, never waters
-    const after = { ...plants, [id(0, 0)]: { ...ripe, from: '2026-11-10', r: true as const } };
+    const after = { ...plants, [id(0, 0)]: { ...ripe, from: '2026-11-08', r: true as const } };
     expect(farmTap({ ...base, ...at(after), kinds, have })).toEqual({ a: 'plant', ps: [P, id(1, 0), id(0, 1), id(2, 1), id(1, 2), id(2, 0), id(0, 2)], c: 'wheat', src: 'start' });
     // a tap on a plant waters the 3 × 3's dry ones
     expect(farmTap({ ...base, plot: { p: id(2, 2), who: 'A', c: 2, r: 2 }, ...at(after), plant: young, kinds, have })).toEqual({ a: 'water', ids: [id(0, 0), id(2, 2)] });

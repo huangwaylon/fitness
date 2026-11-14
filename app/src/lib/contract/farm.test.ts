@@ -10,29 +10,26 @@ const none = () => false;
 const judge = (watered: (p: string, d: string) => boolean = none, pocket = () => 99) => ({ watered, pocket });
 
 describe('the fields (contract/farm.ts)', () => {
-  it('a plant grows a stage a day, ripe on the third; harvested it is 2 till ripe again regrowDays on', () => {
+  it('a plant is ripe the Tokyo day after planting; harvested it is 2 till ripe again regrowDays on', () => {
     const f = emptyFarm();
     farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] }, judge());
     const pl = f.plots.get(P)!;
-    expect([D, D1, D2, D3, '2026-11-20'].map((d) => stageOf(pl, d))).toEqual([0, 1, 2, 3, 3]);
-    expect([D, D1, D2, D3, '2026-11-20'].map((d) => daysLeft(pl, d))).toEqual([3, 2, 1, 0, 0]);
-    farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge());
+    expect(pl.from).toBe(D1);
+    expect([D, D1, D2, '2026-11-20'].map((d) => stageOf(pl, d))).toEqual([0, 3, 3, 3]);
+    expect([D, D1, D2].map((d) => daysLeft(pl, d))).toEqual([1, 0, 0]);
+    farmStep(f, 'A', { d: D2, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge());
     const again = f.plots.get(P)!;
-    expect(again.from).toBe('2026-11-10');
-    expect([D3, '2026-11-08', '2026-11-09', '2026-11-10'].map((d) => stageOf(again, d))).toEqual([2, 2, 2, 3]);
+    expect(again.from).toBe(D3);
+    expect([D2, D3].map((d) => stageOf(again, d))).toEqual([2, 3]);
   });
 
-  it('yields 1, and 1 more for each of the three days before ripe it was watered (rain counts), at most 3', () => {
-    const pl: Plot = { who: 'A', c: 'carrot', from: D3 };
+  it('yields 3 if watered the day before ripe (rain counts), else 1', () => {
+    const pl: Plot = { who: 'A', c: 'carrot', from: D1 };
     expect(yieldOf(P, pl, none)).toBe(1);
-    expect(yieldOf(P, pl, (p, d) => p === P && d === D2)).toBe(2);
-    expect(yieldOf(P, pl, (_p, d) => d === D1 || d === D2)).toBe(3);
-    // the plant day counts: any 2 of the 3 give 3, all 3 still 3
-    expect(yieldOf(P, pl, (_p, d) => d === D)).toBe(2);
-    expect(yieldOf(P, pl, (_p, d) => d === D || d === D2)).toBe(3);
-    expect(yieldOf(P, pl, (_p, d) => d >= D && d <= D2)).toBe(FARM.maxYield);
-    expect(yieldOf(P, pl, (_p, d) => d === D3 || d === '2026-11-03')).toBe(1); // the day it ripens and before the window: no
-    expect([D, D1, D2, D3].map((d) => wateringCounts(pl, d))).toEqual([true, true, true, false]);
+    expect(yieldOf(P, pl, (p, d) => p === P && d === D)).toBe(FARM.maxYield);
+    expect(yieldOf(P, pl, (p, d) => p !== P && d === D)).toBe(1); // another plot's watering: no
+    expect(yieldOf(P, pl, (_p, d) => d === D1 || d === '2026-11-03')).toBe(1); // the day it ripens or the day before planting: no
+    expect(['2026-11-03', D, D1].map((d) => wateringCounts(pl, d))).toEqual([false, true, false]);
   });
 
   it('a watering on the plant day and on the harvest day counts, the harvest before or after it', () => {
@@ -41,28 +38,26 @@ describe('the fields (contract/farm.ts)', () => {
     const watered = (_p: string, d: string) => w.has(d);
     farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] }, judge(watered));
     expect(wateringCounts(f.plots.get(P)!, D)).toBe(true);
-    w.add(D2);
-    // harvest day D3: ripe, its watering not its own (left 0) but the regrown plant's first (left 3)
-    expect(wateringCounts(f.plots.get(P)!, D3)).toBe(false);
-    w.add(D3); // watered before the harvest that day
-    expect(farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    // harvest day D2: ripe, its watering not its own (left 0) but the regrown plant's (left 1)
+    expect(wateringCounts(f.plots.get(P)!, D2)).toBe(false);
+    expect(farmStep(f, 'A', { d: D2, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    w.add(D2); // watered after the harvest that day
     const again = f.plots.get(P)!;
-    expect(wateringCounts(again, D3)).toBe(true);
-    w.add('2026-11-09');
-    expect(farmStep(f, 'A', { d: '2026-11-10', ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
-    // harvested first, then watered the same day: the same
-    const g = emptyFarm(), w2 = new Set<string>();
+    expect(wateringCounts(again, D2)).toBe(true);
+    expect(farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    // watered first, then harvested the same day: the same; a dry harvest day: 1
+    const g = emptyFarm(), w2 = new Set<string>([D1]);
     const watered2 = (_p: string, d: string) => w2.has(d);
     farmStep(g, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] }, judge(watered2));
-    farmStep(g, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered2));
-    w2.add(D3);
-    expect(farmStep(g, 'A', { d: '2026-11-10', ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered2))?.ops).toEqual([{ o: 'harvest', p: P, n: 2 }]);
+    expect(farmStep(g, 'A', { d: D1, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered2))?.ops).toEqual([{ o: 'harvest', p: P, n: 1 }]);
+    expect(farmStep(g, 'A', { d: D2, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered2))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    expect(farmStep(g, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 3 }] }, judge(watered2))?.ops).toEqual([{ o: 'harvest', p: P, n: 1 }]);
   });
 
   it('a kept harvest replays at its kept n, whatever the waterings now say (old rows stay valid)', () => {
     const f = emptyFarm();
     farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'pumpkin', src: 'start' }] });
-    // kept under the two-day rule: the plant day watered, not counted, n 1
+    // kept under an older rule at n 1, the plant day watered
     expect(farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] })?.ops).toEqual([{ o: 'harvest', p: P, n: 1 }]);
     expect(f.net.A?.get('goods:pumpkin')).toBe(1);
     expect(farmOf({ d: D3, ops: [{ o: 'harvest', p: P, n: 2 }] })).not.toBeNull();
@@ -77,11 +72,12 @@ describe('the fields (contract/farm.ts)', () => {
     // another's plant: never harvested or dug; not ripe: no harvest
     expect(farmRefusal(f, 'B', D3, { o: 'harvest', p: P, n: 1 }, () => 0)).toBe('owner');
     expect(farmRefusal(f, 'B', D, { o: 'plant', p: P, c: 'wheat', src: 'start' }, () => 9)).toBe('taken');
-    expect(farmRefusal(f, 'A', D2, { o: 'harvest', p: P, n: 1 }, () => 0)).toBe('unripe');
-    const h = farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 3 }] }, judge((_p, d) => d === D2));
-    expect(h?.ops).toEqual([{ o: 'harvest', p: P, n: 2 }]);
-    expect(f.net.A?.get('goods:wheat')).toBe(2);
-    farmStep(f, 'A', { d: D3, ops: [{ o: 'dig', p: P }] }, judge());
+    expect(farmRefusal(f, 'A', D, { o: 'harvest', p: P, n: 1 }, () => 0)).toBe('unripe');
+    const h = farmStep(f, 'A', { d: D1, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge((_p, d) => d === D));
+    expect(h?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    expect(f.net.A?.get('goods:wheat')).toBe(3);
+    expect(farmRefusal(f, 'A', D1, { o: 'harvest', p: P, n: 1 }, () => 0)).toBe('unripe'); // growing back
+    farmStep(f, 'A', { d: D1, ops: [{ o: 'dig', p: P }] }, judge());
     expect(f.plots.size).toBe(0);
     expect(f.net.A?.get('goods:wheat-start')).toBe(0);
   });

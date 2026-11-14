@@ -13,7 +13,8 @@ describe('pumpkinColour', () => {
   it('the same plot and ripe day give the same colour; the model carries it', () => {
     expect(pumpkinColour(P, FROM)).toBe(pumpkinColour(P, FROM));
     expect(plantModel(P, pumpkin, FROM, none)).toBe(`garden/crop-pumpkin-${pumpkinColour(P, FROM)}-3`);
-    expect(plantModel(P, pumpkin, FROM, (_p, d) => d === '2026-11-05' || d === '2026-11-06')).toBe(`garden/crop-pumpkin-${pumpkinColour(P, FROM)}-5`);
+    expect(plantModel(P, pumpkin, FROM, (_p, d) => d === '2026-11-06')).toBe(`garden/crop-pumpkin-${pumpkinColour(P, FROM)}-5`);
+    expect(plantModel(P, pumpkin, FROM, (_p, d) => d === '2026-11-05')).toBe(`garden/crop-pumpkin-${pumpkinColour(P, FROM)}-3`);
   });
 
   it('orange, yellow, white and green 8:5:4:3 over 2,000 plots and ripe days, each within 5 points', () => {
@@ -23,9 +24,9 @@ describe('pumpkinColour', () => {
     for (const c of Object.keys(want) as (keyof typeof want)[]) expect(Math.abs(n[c] / 2000 - want[c])).toBeLessThan(0.05);
   });
 
-  it('stages 0–2 and other crops unchanged', () => {
-    expect(['2026-11-04', '2026-11-05', '2026-11-06'].map((d) => plantModel(P, pumpkin, d, none))).toEqual(['garden/crop-pumpkin-0', 'garden/crop-pumpkin-1', 'garden/crop-pumpkin-2']);
-    expect(plantModel(P, { ...pumpkin, r: true }, '2026-11-05', none)).toBe('garden/crop-pumpkin-2');
+  it('stage 0 on the plant day, 2 growing back, other crops unchanged', () => {
+    expect(plantModel(P, pumpkin, '2026-11-06', none)).toBe('garden/crop-pumpkin-0');
+    expect(plantModel(P, { ...pumpkin, r: true }, '2026-11-06', none)).toBe('garden/crop-pumpkin-2');
     expect(plantModel(P, { ...pumpkin, c: 'tomato' }, FROM, none)).toBe('garden/crop-tomato-3');
   });
 });

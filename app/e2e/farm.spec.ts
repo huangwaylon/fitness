@@ -1,5 +1,5 @@
 // The fields (docs/farming.md): starts in my pocket, planted on my field by a tap on it (its 3 × 3; the picker with two
-// kinds or more); three days on the plant is ripe and a tap harvests it, three for one watered on the two days before;
+// kinds or more); the next day the plant is ripe and a tap harvests it, three for one watered on the plant day;
 // the vegetables sell at the shop; the partner sees my plants and waters them, never harvests them; ほる over my own
 // plant's word digs it up; the shop's 苗 sends plants off every field back to starts. On `?demo`: the
 // demo's events in localStorage (a field put down in the editor, a catch sold, the starts bought, as their writes have
@@ -132,9 +132,9 @@ test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a 
   const D3 = '2026-11-07';
   await seed(page, D3, [
     WIDE, ...POCKET, ['buy_starts', { crop: 'tomato', n: 3, v: 42 }, 'A'],
-    // ripe at the west corner; growing at the east back corner (ripe tomorrow: its watering counts)
+    // ripe at the west corner; growing at the east back corner (planted today, ripe tomorrow: its watering counts)
     ['farm', { d: D, ops: plants([wide(0).p]) }, 'A'],
-    ['farm', { d: '2026-11-05', ops: plants([wide(2, 1).p]) }, 'A']
+    ['farm', { d: D3, ops: plants([wide(2, 1).p]) }, 'A']
   ]);
   await catchPops(page);
   await page.goto(`?demo&date=${D3}T12:00&weather=clear`);
@@ -159,18 +159,17 @@ test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a 
   expect(watered.sort()).toEqual([wide(1).p, wide(2).p, wide(1, 1).p, wide(2, 1).p].sort());
 });
 
-test('three days on: ripe, watered on the two days before it gives three, harvested by a tap a row off; sold at the shop for 54 かいがら; the partner waters, never harvests', async ({ page, context }) => {
-  const D3 = '2026-11-07';
-  await seed(page, D3, [
+test('a day on: ripe, watered on its plant day it gives three, harvested by a tap a row off; sold at the shop for 54 かいがら; the partner waters, never harvests', async ({ page, context }) => {
+  const D1 = '2026-11-05';
+  await seed(page, D1, [
     FIELD, ...POCKET,
     ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }] }, 'A'],
-    // the second a day later: ripe tomorrow
-    ['farm', { d: '2026-11-05', ops: [{ o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A'],
-    // うめ watered the first on the 5th and the 6th
-    ['island', { date: '2026-11-05', taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'B'],
-    ['island', { date: '2026-11-06', taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'B']
+    // the second planted today: ripe tomorrow
+    ['farm', { d: D1, ops: [{ o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A'],
+    // うめ watered the first on its plant day
+    ['island', { date: D, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'B']
   ]);
-  await page.goto(`?demo&date=${D3}T12:00`);
+  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
   await islandUp(page);
   await quiet(page);
   // a row's miss: a tap on my empty plot behind it harvests my ripe plant there (the growing one on the diagonal stays)
@@ -178,7 +177,7 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3・54かいがら/);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 3 }]);
   // the shop buys them: 3 × 18
-  await page.goto(`shop?demo&date=${D3}T12:00`);
+  await page.goto(`shop?demo&date=${D1}T12:00`);
   await expect(page.locator('[data-shop]')).toBeVisible();
   const before = Number(await page.locator('[data-shop]').getAttribute('data-shells'));
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
@@ -190,11 +189,10 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await page.locator('[data-shop-sell]').click();
   await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(before + 54);
 
-  // うめ's phone (a clear sky: the seeded 11-07 rains): my plants are on her island; she waters the growing one, and
-  // can't harvest mine
+  // うめ's phone (a clear sky): my plants are on her island; she waters the growing one, and can't harvest mine
   const b = await context.newPage();
   await catchPops(b);
-  await b.goto(`?demo&as=B&date=${D3}T12:00&weather=clear`);
+  await b.goto(`?demo&as=B&date=${D1}T12:00&weather=clear`);
   await islandUp(b);
   await quiet(b);
   await tapWorld(b, plot(1).x, plot(1).z);
@@ -245,7 +243,7 @@ test('a first tap on a growing plant names its crop, never a raw key (the names 
   const D1 = '2026-11-05';
   await seed(page, D1, [
     FIELD, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'pumpkin', n: 1, v: 14 }, 'A'],
-    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'pumpkin', src: 'start' }] }, 'A'],
+    ['farm', { d: D1, ops: [{ o: 'plant', p: plot(0).p, c: 'pumpkin', src: 'start' }] }, 'A'],
     // watered today already: the tap's a word, not the can
     ['island', { date: D1, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'A']
   ]);
@@ -293,7 +291,7 @@ test('the partner’s watering of my plants plays on my island: drops over each,
   const D1 = '2026-11-05';
   await seed(page, D1, [
     FIELD, ...POCKET,
-    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }, { o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A']
+    ['farm', { d: D1, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }, { o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A']
   ]);
   await catchPops(page);
   await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
@@ -318,7 +316,7 @@ test('my growing plant’s word offers ほる (44 pt, over the word, held while 
   const D1 = '2026-11-05';
   await seed(page, D1, [
     FIELD, ...POCKET,
-    ['farm', { d: D, ops: plants([plot(0).p], 'pumpkin') }, 'A'],
+    ['farm', { d: D1, ops: plants([plot(0).p], 'pumpkin') }, 'A'],
     // watered today already: the tap's a word, not the can
     ['island', { date: D1, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'A']
   ]);

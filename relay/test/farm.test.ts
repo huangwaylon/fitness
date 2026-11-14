@@ -87,51 +87,44 @@ describe('the fields in the record', () => {
     expect(farm('A', D, [{ o: 'dig', p: 'fd:f.0.0' }, plant('fd:f.0.1', 'wheat')])).toEqual({ ok: true }); // room again
   });
 
-  it('a harvest only of my ripe plant, at the yield the record reckons: 1, 2 or 3 by the days watered', () => {
+  it('a harvest only of my ripe plant, at the yield the record reckons: 3 if watered the day before ripe, else 1', () => {
     shells('A', 3 * FARM.startBuy);
     starts('A', 'tomato', 3);
     farm('A', D, [plant(P1), plant(P2), plant('fd:field-A.2.0')]);
-    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual(refused('farm refused')); // not ripe till D3
+    expect(farm('A', D, [{ o: 'harvest', p: P1, n: 1 }])).toEqual(refused('farm refused')); // not ripe till D1
+    water('B', D, [P1]); // anyone waters anything
+    water('G', D, [P2]);
     now += DAY;
-    water('B', D1, [P1, P2]); // anyone waters anything
-    now += DAY;
-    water('G', D2, [P1]);
-    now += DAY;
-    expect(farm('B', D3, [{ o: 'harvest', p: P1, n: 3 }])).toEqual(refused('farm refused')); // not B's
-    expect(farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 3 }, { o: 'harvest', p: 'fd:field-A.2.0', n: 3 }])).toEqual({ ok: true });
-    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 2, 1]);
-    // 6 tomatoes: sold at NH's 350 ÷ 20
-    expect(sell('A', 'goods:tomato', 6)).toEqual({ ok: true });
+    expect(farm('B', D1, [{ o: 'harvest', p: P1, n: 3 }])).toEqual(refused('farm refused')); // not B's
+    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 3 }, { o: 'harvest', p: 'fd:field-A.2.0', n: 3 }])).toEqual({ ok: true });
+    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3, 1]);
+    // 7 tomatoes: sold at NH's 350 ÷ 20
+    expect(sell('A', 'goods:tomato', 7)).toEqual({ ok: true });
     expect(sell('A', 'goods:tomato', 1)).toEqual(refused('pocket short'));
     // harvested, it grows back: ripe again FARM.regrowDays on
-    expect(farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }])).toEqual(refused('farm refused'));
+    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual(refused('farm refused'));
     now += FARM.regrowDays * DAY;
-    expect(farm('A', '2026-11-10', [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
+    expect(farm('A', D2, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
   });
 
-  it('the plant day and the harvest day count: 1 + the days watered of the three before ripe, at most 3', () => {
+  it('the plant day and the harvest day count, before or after the planting or the harvest', () => {
     shells('A', 2 * FARM.startBuy);
     starts('A', 'tomato', 2);
-    water('B', D, [P1, P2]); // before the planting that day: it counts
+    water('B', D, [P1]); // before the planting that day: it counts
     farm('A', D, [plant(P1), plant(P2)]);
+    water('A', D, [P2]); // after it: the same
     now += DAY;
-    water('A', D1, [P2]);
-    now += 2 * DAY;
-    expect(farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
-    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([2, 3]);
-    // growing back: the harvest day's watering (after the harvest) and one more give 3; every day still 3
-    water('A', D3, [P1, P2]);
-    now += DAY;
-    water('B', '2026-11-08', [P1, P2]);
-    now += DAY;
-    water('G', '2026-11-09', [P2]);
-    now += DAY;
-    expect(farm('A', '2026-11-10', [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
+    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
     expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3]);
+    // growing back: the harvest day's watering (after the harvest) gives 3, none 1
+    water('A', D1, [P1]);
+    now += DAY;
+    expect(farm('A', D2, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
+    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 1]);
     expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
   });
 
-  it('a harvest kept under the two-day rule replays at its kept n (the fold reads it as kept, never reckons it anew)', () => {
+  it('a harvest kept under an older rule replays at its kept n (the fold reads it as kept, never reckons it anew)', () => {
     shells('A', FARM.startBuy);
     starts('A', 'tomato', 1);
     water('B', D, [P1]);
@@ -150,17 +143,14 @@ describe('the fields in the record', () => {
     shells('A', FARM.startBuy);
     starts('A', 'pumpkin', 1);
     farm('A', D, [plant(P1, 'pumpkin')]);
+    expect(store.wetTick([D, '2026-11-01'])).toEqual([D]); // (only yesterday's and today's)
+    expect(store.wetTick([D])).toEqual([]); // once
     now += DAY;
-    expect(store.wetTick([D1])).toEqual([D1]);
-    expect(store.wetTick([D1])).toEqual([]); // once
-    now += DAY;
-    store.wetTick([D2, '2026-11-01']); // (only yesterday's and today's)
-    now += DAY;
-    farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }]);
+    farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }]);
     expect(rows().at(-1).ops[0].n).toBe(3);
     // a phone never writes one
-    expect(send('A', 'wet', { date: D3 })).toEqual({ ok: false, error: 'bad_request' });
-    expect(send('G', 'wet', { date: D3 })).toEqual({ ok: false, error: 'forbidden' });
+    expect(send('A', 'wet', { date: D1 })).toEqual({ ok: false, error: 'bad_request' });
+    expect(send('G', 'wet', { date: D1 })).toEqual({ ok: false, error: 'forbidden' });
   });
 
   it('in the game mode the seeded wet days are the record’s', () => {
@@ -189,23 +179,18 @@ describe('the fields in the record', () => {
   });
 
   it('a phone’s queued harvest reckons the yield the record keeps, over the same rows', () => {
-    // six plants, watered every way the two days before they ripen (not the plant day): none, the first, the second, both (two people),
-    // and one growing back after a harvest over a wet day and a watering
+    // six plants: none watered, watered on the plant day (by one, by two), watered only on their ripe day (no help),
+    // and one growing back after a harvest over a wet day
     const ps = [0, 1, 2, 3, 4, 5].map((c) => `fd:field-A.${c}.0`);
     shells('A', 6 * FARM.startBuy);
     starts('A', 'wheat', 6);
     farm('A', D, ps.map((p) => plant(p, 'wheat')));
+    water('A', D, [ps[1], ps[3]]);
+    water('B', D, [ps[3]]);
     now += DAY;
-    water('A', D1, [ps[1], ps[3]]);
-    water('B', D1, [ps[3]]);
-    now += DAY;
-    water('G', D2, [ps[2], ps[3]]);
-    now += DAY;
-    farm('A', D3, [{ o: 'harvest', p: ps[5], n: 1 }]);
-    now += DAY;
-    store.wetTick(['2026-11-08']);
-    now += DAY;
-    water('B', '2026-11-09', [ps[5]]);
+    farm('A', D1, [{ o: 'harvest', p: ps[5], n: 1 }]);
+    store.wetTick([D1]);
+    water('G', D1, [ps[2], ps[4]]);
     now += DAY;
     // the phone: the field folded from the kept rows, the waterings from the island days and the wet days (as
     // model/farm.ts farmOfState and wateredOf: the relay never imports the model), its batch judged by farmStep
@@ -218,11 +203,11 @@ describe('the fields in the record', () => {
       if (type === 'wet') wet.add(x.date);
     }
     const watered: Watered = (p, date) => wet.has(date) || (days.get(date)?.has(p) ?? false);
-    const batch = { d: '2026-11-10', ops: ps.map((p) => ({ o: 'harvest' as const, p, n: 1 })) };
+    const batch = { d: D2, ops: ps.map((p) => ({ o: 'harvest' as const, p, n: 1 })) };
     const queued = farmStep(f, 'A', batch, { watered, pocket: () => Infinity })!;
     expect(farm('A', batch.d, batch.ops)).toEqual({ ok: true });
     expect(rows().at(-1)).toEqual(queued);
-    expect(queued.ops.map((o) => (o.o === 'harvest' ? o.n : 0))).toEqual([1, 2, 2, 3, 1, 3]);
+    expect(queued.ops.map((o) => (o.o === 'harvest' ? o.n : 0))).toEqual([1, 3, 1, 3, 1, 3]);
   });
 
   it('the running ledgers and the field match their fold from the rows', () => {

@@ -19,8 +19,9 @@ export function pumpkinColour(p: string, from: LocalDate): 'orange' | 'yellow' |
   return k < 8 ? 'orange' : k < 13 ? 'yellow' : k < 17 ? 'white' : 'green';
 }
 
-/** A plant's model on `date` (the garden's pack, world3d/garden.ts): its stage 0–2, else the ripe plant of its yield
- *  (NH's Lv1–3: the garden's stages 3, 4, 5); a pumpkin's ripe stages in its colour (pumpkinColour). */
+/** A plant's model on `date` (the garden's pack, world3d/garden.ts): its stage 0 (planted today) or 2 (growing back),
+ *  else the ripe plant of its yield (NH's Lv1 or Lv3: the garden's stages 3 and 5); a pumpkin's ripe stages in its
+ *  colour (pumpkinColour). */
 export function plantModel(p: string, pl: Plot, date: LocalDate, watered: Watered): string {
   const st = stageOf(pl, date);
   const n = st < 3 ? st : 2 + yieldOf(p, pl, watered);
