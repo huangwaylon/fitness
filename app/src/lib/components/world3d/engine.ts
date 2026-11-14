@@ -34,7 +34,7 @@ import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from './stage.ts'
 import { DECAY_MS, DECAY_OUT_MS, STOP_V, rubber } from '#lib/touch.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
-import { pace as critters, pacer } from './pace.ts';
+import { critWant, pace as critters, pacer } from './pace.ts';
 import type { BootWait } from './boot.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
@@ -1117,10 +1117,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     framedRev = rev;
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
-    // (a critter's dart or move on screen, or the tarantula rearing: Critters.svelte, pace.ts; by kind for perf.rest)
-    want(critters.full.fish > 0, 'crit-fish');
-    want(critters.full.bug > 0, 'crit-bug');
-    want(critters.full.rear > 0, 'crit-rear');
+    // (a critter's dart or move on screen, or the tarantula rearing: Critters.svelte, pace.ts; by kind for perf.rest;
+    // the ambient rate once untouched CRIT_CALM_MS)
+    const idle = t - lastInput;
+    want(critWant(critters.full.fish, idle), 'crit-fish');
+    want(critWant(critters.full.bug, idle), 'crit-bug');
+    want(critWant(critters.full.rear, idle), 'crit-rear');
     want(marks.frame(t, camera, focal, W, H), 'bite');
     if (ground.update) {
       // (its water's ambience: whether it's in view is asked once nothing else wants a frame: frame())

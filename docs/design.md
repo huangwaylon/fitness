@@ -437,7 +437,8 @@ still scene draws nothing. One pacer runs every surface's frames (`world3d/pace.
 nothing slower. **At rest** (no finger for a moment, only ambience on screen) the island draws its ambience at
 **12** a second (engine.ts REST_MS, REST_FPS), the museum its tanks and bugs at 15, the tent only a blink; any move or
 touch is back at the full rate. A villager's small moves (a turn, a nod, a surprise: villagers.ts
-SMALL) are ambience too; a walk or a hop is the full rate. The endless CSS loops over the island (clouds,
+SMALL) are ambience too; a walk or a hop is the full rate. A critter's dart or move on screen is the full rate,
+and 12 a second once no finger has touched for 15 s, till the next touch (pace.ts CRIT_CALM_MS; the user, 2026-11-14). The endless CSS loops over the island (clouds,
 twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
 (`island/clouds.ts`), never at the display's 60 Hz; held still under reduced motion.
 

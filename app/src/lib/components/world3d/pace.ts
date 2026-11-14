@@ -23,6 +23,14 @@ export function moveFast(ms: number, fled: boolean, from: OnScreen | null, to: O
   return (on(from) || on(to)) && (Math.hypot(from.sx - to.sx, from.sy - to.sy) / ms) * 1000 >= SLOW_PX;
 }
 
+/** No finger for this long (ms), a critter's dart or move asks for the ambient rate only (12 fps at rest), not the full
+ *  one; the next touch brings the full rate back (the user, 2026-11-14: perf.rest had the critters at ~24% of the
+ *  resting island's full-rate frames). */
+export const CRIT_CALM_MS = 15_000;
+/** What `n` critter moves of a kind (pace.full) ask of a frame, `idleMs` after the last touch: the full rate, the ambient
+ *  rate once untouched CRIT_CALM_MS, or nothing. */
+export const critWant = (n: number, idleMs: number): boolean | 'ambient' => (n <= 0 ? false : idleMs >= CRIT_CALM_MS ? 'ambient' : true);
+
 /** The display frames the pacers have asked for, all told (the log's perf.rest: wake-ups a second at rest). */
 export const wakes = { n: 0 };
 /** Half a 60 Hz vsync's slack (ms): a display frame this early is on time. */

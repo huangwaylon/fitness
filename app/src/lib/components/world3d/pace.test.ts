@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { moveFast, pacer, SLOW_PX, type PaceClock } from './pace.ts';
+import { CRIT_CALM_MS, critWant, moveFast, pacer, SLOW_PX, type PaceClock } from './pace.ts';
 
 /** A page's clock, simulated: timers fire on time (+ `late` ms), and a rAF asked for at `t` runs on the display's next
  *  vsync (60 Hz), or at once (`atOnce`: WebKit with nothing else drawing, its first rAF after an idle spell). */
@@ -149,5 +149,17 @@ describe('moveFast (a critter move at the full rate or the ambience)', () => {
     expect(moveFast(100, false, at(-200), at(-100), view)).toBe(false);
     expect(moveFast(100, false, at(100, 300, false), at(200, 300, false), view)).toBe(false);
     expect(moveFast(100, false, at(-200), at(100), view)).toBe(true);
+  });
+});
+
+describe('critWant (a critter move: the full rate, the ambient rate once untouched CRIT_CALM_MS)', () => {
+  it('a dart 1 s, 14.9 s after a touch: the full rate; at 15 s and on: the ambient rate (12 fps at rest); none moving: nothing; a touch: the full rate again', () => {
+    expect(CRIT_CALM_MS).toBe(15_000);
+    // (a clock: the touch at 1000 ms, the frames at these times)
+    let touch = 1000;
+    const at = (t: number, n = 1) => critWant(n, t - touch);
+    expect([at(2000), at(15_900), at(16_000), at(60_000), at(60_000, 0)]).toEqual([true, true, 'ambient', 'ambient', false]);
+    touch = 60_000;
+    expect([at(60_016), at(74_999), at(75_000)]).toEqual([true, true, 'ambient']);
   });
 });
