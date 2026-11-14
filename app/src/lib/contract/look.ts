@@ -44,8 +44,7 @@ export type Look = ({ kind: 'player' } & PlayerLook) | { kind: 'villager'; villa
 /** A saved look (コーデ): an 8-character id, a name of 1–12 characters (trimmed, plain text) and a player's look. */
 export interface SavedLook { id: string; name: string; look: PlayerLook }
 
-/** The garment and face slots, each id's required prefix (the dump's folder families). @public (the closet, the 3D
- *  player) */
+/** The garment and face slots, each id's required prefix (the dump's folder families). */
 export const PART_SLOTS = {
   hair: 'PlayerHair', eye: 'PlayerEye', mouth: 'PlayerMouth',
   top: 'TopsTex', bottom: 'BottomsTex', socks: 'SocksTex', shoes: 'Shoes',

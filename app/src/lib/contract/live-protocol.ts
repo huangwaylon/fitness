@@ -133,7 +133,7 @@ const MUSIC_SRCS = ['isl', 't', 'u', 'v'] as const;
 /** @public (relay/) */
 export type MusicSrc = (typeof MUSIC_SRCS)[number];
 /** A song's longest length (ms); a stage's `at` more than MUSIC_SKEW_MS from the relay's clock is taken as the relay's
- *  (a wrong clock can't pin the stage); a stop is kept this long (a phone that comes hears it). @public (relay/) */
+ *  (a wrong clock can't pin the stage); a stop is kept this long (a phone that comes hears it). */
 export const MUSIC_MS_MAX = 600_000;
 export const MUSIC_SKEW_MS = 5_000;
 export const MUSIC_STOP_KEEP_MS = 600_000;
