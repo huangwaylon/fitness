@@ -115,11 +115,7 @@
   /** Where the 3D float is this frame (one array, rewritten: read every frame). */
   const floatXYZ: [number, number, number] = [0, 0, 0];
   const floatAt = (l: MyLine) => ((floatXYZ[0] = l.x), (floatXYZ[1] = l.z), (floatXYZ[2] = floatLift(performance.now())), floatXYZ);
-  // the 3D float bobs, dips and plunges each frame (fishing3d.ts floatLift): frames at full rate while it's on the water
-  const floatOut = $derived(!!line && line.phase !== 'flying');
-  $effect(() => {
-    if (floatOut && w.rest.three) return w.moveStart('float');
-  });
+  // (the 3D float bobs, dips and plunges each frame, fishing3d.ts floatLift; its frames are the 3D island's: floatWants)
   /** The bugs about (ambient life's two roaming ones, one out of a bush, from under the rock, off a villager), at
    *  most MAX_BUGS. */
   let bugs = $state<Bug[]>([]);

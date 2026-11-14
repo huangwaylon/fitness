@@ -9,8 +9,8 @@
 // Around it: world3d/facing.ts turns a standing angler to the float (seated or lying, never), the rod a child of the
 // hand bone, bent with the island; floatLift bobs, dips at each nibble and plunges at the bite (splash, rings);
 // biteMark.ts draws NH's 「！」 over the head, square on at every pitch; fishLine.ts is the line (one quadratic from the
-// tip to the float, lifted only to clear what's under it, worked out when its ends move). Frames run at the full rate
-// while the float is out (`moveStart`).
+// tip to the float, lifted only to clear what's under it, worked out when its ends move). My float's frames: floatWants
+// (the ambience's while it bobs, the full rate for a nibble's dip and from the bite).
 import { hermite } from '#lib/math.ts';
 export type Phase = 'cast' | 'wait' | 'bite' | 'reel';
 
@@ -57,11 +57,12 @@ export function onAngle(fn: (() => void) | null): void {
   poke = fn;
 }
 
-/** A nibble (or the line's twitch at an early tap): the float dips. */
+/** A nibble (or the line's twitch at an early tap): the float dips (a frame for it: floatWants' full rate from it). */
 export function nibbled(slot = 'mine'): void {
   const a = anglerOf(slot);
   a.nibble = performance.now();
   a.nibbles++;
+  poke?.();
 }
 
 /** The 2D float's moves (Critters.svelte's CSS: bob, the nibble's twitch, plunge), in world units up. */
@@ -74,6 +75,17 @@ function dip(k: number): number {
   if (k < 0.25) return -0.9 * (k / 0.25);
   if (k < 0.55) return -0.9 + 0.7 * ((k - 0.25) / 0.3);
   return -0.2 * (1 - (k - 0.55) / 0.45);
+}
+
+/** The frames the float wants at `t` (ms, performance.now): the full rate through a nibble's dip and from the bite (its
+ *  plunge, the rod's tug, the 「！」) till the reel; while it waits, only the ambience's (12 a second at rest: its bob is
+ *  1.5 s, the user's idle rule; it held the island at 30 the whole wait: review 11/14 r2); none with no float out. */
+export function floatWants(t: number, slot = 'mine'): boolean | 'ambient' {
+  const a = anglerOf(slot);
+  if (a.phase === 'bite') return true;
+  if (a.phase !== 'wait') return false;
+  const n = t - a.nibble;
+  return n >= 0 && n < NIBBLE_MS ? true : 'ambient';
 }
 
 /** The float's height over the water at `t` (ms): bobbing gently while it waits, a quick dip at each nibble; at the bite

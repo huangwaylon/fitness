@@ -44,7 +44,7 @@
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
   import { pace, SLOW_PX } from './pace.ts';
-  import { anglerOf, onAngle } from './fishing3d.ts';
+  import { anglerOf, floatWants, onAngle } from './fishing3d.ts';
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
@@ -1103,8 +1103,11 @@
         precipSurface(p3);
         falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0, AT).depth, ch);
       }
-      if (posed || more === true || moving === true) {
+      // my float: bobbing the ambience's frames, a nibble's dip and the bite the full rate (fishing3d.ts)
+      const fl = floatWants(performance.now());
+      if (posed || more === true || moving === true || fl === true) {
         // (what of it, for perf.rest)
+        if (fl === true) e.tag('nodes:float');
         if (posed) e.tag('vil');
         if (more === true) e.tag(world.going ?? 'world');
         if (moving === true) e.tag('mirror');
@@ -1114,7 +1117,7 @@
       e.wake(vilWake);
       // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a gym
       // piece's loop or a card's breathing, the balloon drifting over, someone walking off screen
-      return more || moving || falling || ambient3.kind || floatsOn || emitting || vilAmbient || b3?.shown() ? 'ambient' : false;
+      return more || moving || fl || falling || ambient3.kind || floatsOn || emitting || vilAmbient || b3?.shown() ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
