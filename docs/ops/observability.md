@@ -160,7 +160,7 @@ by `shell` (`same` and `net` paid it, `skip` and `cache` didn't), and `first`/`s
 7. Close the alert's issue with the cause.
 
 ## The alert
-`health.yml` (hourly and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
+`health.yml` (an hourly cron, which GitHub runs best effort: often ~4 a day; and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
 labelled `alert` (or comments on the open one when its reasons change, not their counts) when, in the last 6 hours, errors > 20 (not
 counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
 day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead), or
@@ -170,32 +170,15 @@ Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (
 `gh secret set HEALTH_TOKEN`.
 
 ## ITS investigating
-The ITS booker's record and logs are its own ([its/README.md](../../its/README.md)): the its-bot Worker's status
-(events, bookings, the last report), Workers Logs (3 days; `npx wrangler tail` in `its/worker/`), each run's public
-Actions log (counts and codes) and its private log (an encrypted artifact, 14 days). **Gmail is the ground truth**: the
-site mails every hold (「申込手続きのご案内」) and every 予約確定; when the record and the mail disagree, the mail is
-what happened. One run in one Tokyo-time timeline (the Worker's events, the run's bookings, its decrypted log), then
-delete the decrypted copy (it holds credentials):
-```sh
-cd its/worker && npm run its:logs -- <run>[-<attempt>]     # --no-log: the Worker's record only
-rm -rf /tmp/its-logs-<run>[-<attempt>]
-```
-A page's request carries `rid=` (its `X-Request-Id`, also in the phone's `its.fail`): `npx wrangler tail --search
-rid=<id>`; the 15 s poll is debug level. The alert, each reason and what to do: its/README.md "Investigating".
+The ITS booker's record, logs, alert reasons and what to do are its own: [its/README.md](../../its/README.md)
+"Investigating" (one run's timeline: `npm run its:logs -- <run>` in `its/worker/`; Gmail is the ground truth).
 
 ## Costs
 ### The log (Free plan)
-| | Free limit | The log adds (typical / worst) |
-|---|---|---|
-| Worker requests | 100k/day | ~100 `/log` / ~1k |
-| DO requests | 100k/day | ~1,100 (a `req` RPC each `/api`, the `/log` batches, room closes) / ~9k |
-| Rows written (an index row counts; a delete counts) | 100k/day | ~4k (an insert, a cap row a write; the prune 30 days later) / ~20k |
-| Rows read | 5M/day | queries only: a day's report ~2k, 30 days ~60k |
-| Storage | 5 GB | ~250 B an event: ~0.5 MB a day, ~15 MB for 30 days |
-| Worker CPU | 10 ms/request | `/log`: one JSON.parse of ≤ 64 KB for the key; `/api`: one more RPC in the background |
-| Workers Logs | 200k/day, 3 days | a few hundred lines |
-| Workers AI (`/stt`) | 10k neurons/day | whisper-large-v3-turbo, ~47 neurons an audio minute: the probe a few; the cap (300 × ≤ 10 s a person) ~2.3k |
-| The phone | — | `log()` ~µs; a flush: one JSON.stringify of ≤ 32 KB and one fetch; a persist ≤ 24 KB, debounced |
+Its requests and rows are the Request budget's "The log" row. Besides: storage ~250 B an event (~15 MB for 30 days);
+Worker CPU one JSON.parse of ≤ 64 KB a `/log`; Workers Logs a few hundred lines of 200k a day; Workers AI (`/stt`)
+~47 neurons an audio minute of 10k a day (the cap ~2.3k); on the phone, `log()` ~µs and a flush one stringify of
+≤ 32 KB and one fetch.
 
 ### Request budget
 The whole relay against the Free plan's daily limits: Workers 100,000 requests; Durable Objects 100,000 requests (a
@@ -212,7 +195,7 @@ the guest:
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change) | 48 ticks, ~48 fetches | 0 | 48 | ~10 | | ~48 (one storage key) |
-| The log (above) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
+| The log (`/log` batches, a `req` RPC each `/api`, room closes) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
 | **Total** | | **~630 (0.6 %)** | **~1,650 (1.7 %)** | **~380 (2.9 %)** | **~22,000 (0.4 %)** | **~7,050 (7 %)** |
 
 Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per

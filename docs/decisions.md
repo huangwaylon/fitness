@@ -23,9 +23,8 @@ or tunnel to keep alive, its deploys never touch the relay's, and a status of to
 ### The ITS booker
 The 保養所 booker is the `its-bot` Worker (settings, record, verdict) plus a runner on GitHub Actions that checks out
 main each run ([its/README.md](../its/README.md)). Why: no Mac to keep awake, the site's Turnstile needs a real headed
-Chrome (a hosted runner has one, a Worker can't), and both fit the Free plans. Each run dispatches the next as it ends,
-a crash restarts in its job, and the Worker's alarm (90 s after a report; a 5-min cron backstops it) dispatches or
-cancels a hung run (its/README.md "Watchdog"). Why: GitHub drops most scheduled ticks, which left hours with no runner.
+Chrome (a hosted runner has one, a Worker can't), and both fit the Free plans. Each run dispatches the next, and the
+Worker's watchdog restarts a missing or hung one (its/README.md "Watchdog"). Why: GitHub drops most scheduled ticks.
 
 ### Per-person keys
 `KEY_A`, `KEY_B` (and the guest's `KEY_C`) are Worker secrets; a key identifies its person and travels in a `text/plain`
@@ -198,15 +197,14 @@ A static SvelteKit SPA on Pages, deployed from CI after the gate, with a strict 
 in localStorage, so the origin must be ours alone.
 
 ### Test mode, not a demo
-`?demo`'s made-up data and hooks are a test harness: on in the dev server and, in the shipped build, only in a test's
-browser (`localStorage['e2e.testMode']`, [testing](ops/testing.md#test-mode)); a visitor's `?demo` is the normal app.
-A feature's Worker is faked by its spec's route mock, never by an in-app fixture. The param keeps its name. Why: no one
-uses a demo, the e2e must test the very build that ships, and in-app fakes are code that only tests read.
+`?demo` is a test harness, on only in the dev server and a test's browser ([testing](ops/testing.md#test-mode)); a
+feature's Worker is faked by its spec's route mock, never in the app. Why: no one uses a demo, the e2e must test the
+very build that ships, and in-app fakes are code only tests read.
 
 ### Offline shell
-The service worker precaches the build (not audio, art beyond the defaults or the trip photos), opens this version's
-cached shell at once, and keeps one previous version for a stale page's chunks ([backend](backend.md#service-worker)).
-Why: the app opens instantly and offline.
+The service worker precaches the build (not audio or art beyond the defaults), races the network briefly for a newer
+build's page, else opens this version's cached shell, and keeps three older shells for stale pages' chunks
+([backend](backend.md#service-worker)). Why: the app opens fast and offline, on the deployed build.
 
 ### Japanese first
 Japanese by default, English per person (`pref locale`), each catalog loaded when first needed. Why: both live in Japan,

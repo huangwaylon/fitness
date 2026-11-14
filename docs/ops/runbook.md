@@ -19,7 +19,7 @@ upload (no Git integration: the workflow is the gate). Repo secrets `CLOUDFLARE_
 `<branch>.island-fund.pages.dev`). The build writes `build-pages/_headers` (`scripts/headers.ts`) and copies
 `index.html` to `404.html` on purpose: a missing chunk then gets a real 404, which the stale-chunk reload relies on.
 
-After the upload, **Pages alias lag** needs nothing; **Deploy not served** (red): re-run the job, then read
+**Deploy not served** (red; [testing "CI"](testing.md#ci-githubworkflowspagesyml)): re-run the job, then read
 `wrangler pages deployment list` in its log. Before a model change, `npm run bench` (year 3 compacted ≤ 15 ms).
 
 ## 2. Check the backend
@@ -27,7 +27,7 @@ After the upload, **Pages alias lag** needs nothing; **Deploy not served** (red)
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these (an hourly cron, best effort: often ~4 a day) with the site's checks (its
 `version.json`, CSP header and the relay's CORS for it), red (GitHub mails the owner) unless all pass; it warns when the
 weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
@@ -181,12 +181,8 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
   rotation, the hand check): [its/README.md](../../its/README.md); the `its-alert` issue and a run's timeline:
   its/README.md "Investigating" (Gmail is the ground truth for holds and 予約確定).
 - Rotating a token both sides share (§3's keys, the runner's): 停止 → change both → 開始.
-- **The ITS runner is silent** (the `runner_silent` push, verdict `late`): a crash restarts in its job (`its restart`
-  in the run's log), each run hands off, the Worker's watchdog dispatches a missing one or cancels a hung one, backing
-  off 10–60 min, ≤ 12 a day. `cd its/worker && npx wrangler tail --search "its watchdog"`: `no_token` → set the token
-  (below); `skip=github_run id=<id>` for long → stuck queued: `gh run cancel <id>`; `dispatch=401` → rotate it;
-  `alert=loop … restarts=20` → a crash loop, no run till Tokyo's midnight or 開始: its:logs on the run. Start one by hand: `gh workflow run
-  its-runner.yml --ref main`. Details: its/README.md "Watchdog" and "Investigating".
+- **The ITS runner is silent** (the `runner_silent` push, verdict `late`): `cd its/worker && npx wrangler tail
+  --search "its watchdog"`, then its/README.md "Watchdog"; start one by hand: `gh workflow run its-runner.yml --ref main`.
 - **`GH_DISPATCH_TOKEN`** (開始's and the watchdog's dispatch): a fine-grained PAT, `huangwaylon/fitness` only,
   Actions read and write, ≤ 1 year (its/README.md "Secrets"). Set or rotate: `cd its/worker && npx wrangler secret
   put GH_DISPATCH_TOKEN` (live at once, no deploy, no 停止), then delete the old token on GitHub.
@@ -230,4 +226,4 @@ the bots page's メニュー tab with its run and PR, no email. A healthy run cl
 - `deploy_failed`: Deploy UI failed twice, or its dispatch failed or was never seen: its log; re-run it (`gh run
   rerun <id>`), or undo (2).
 - `reverted`: Food data checks failed on the merge, so main has its revert: the checks' log; fix, then dispatch.
-- `late` (no scheduled run in 8 days: GitHub dropped it), `stuck` (a run over 2 days: `gh run cancel <id>`): dispatch.
+- `late` (no refresh, scheduled or dispatched, in 8 days), `stuck` (a run over 2 days: `gh run cancel <id>`): dispatch.

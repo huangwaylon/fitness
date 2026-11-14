@@ -100,10 +100,8 @@ After a deploy, never holding one back:
   `e2e/trips.ts`), so a drawn map never reaches the network.
 
 ## CI cost
-Public-repo minutes are free; the cost is queue time (macOS runners queue longest), so: batch pushes (one per finished, verified group of fixes)
-and measure locally (`npm run e2e:ci-like`, the hunt on the Mac) rather than dispatching CI. Cuts available: the full
-logic tier on a schedule (in `e2e-logic-full.yml`, swap `workflow_run` for the commented `schedule`; its `throttle` job
-runs only when a deploy landed since) and a self-hosted runner for the e2e jobs.
+Minutes are free; the cost is queue time: batch pushes and measure locally (`npm run e2e:ci-like`) rather than
+dispatching CI.
 
 ## Run it locally
 ```sh
@@ -141,26 +139,19 @@ Every e2e runs in a sealed world (e2e/fixtures.ts; its header has the mechanics)
 same island.
 
 - **Import Playwright from `./fixtures.ts`**, never `'@playwright/test'` (the lint: `src/lib/e2e-hermetic.test.ts`).
-- **The clock is pinned** at `PINNED_DATE` (2026-11-04 12:00 Tokyo: a Wednesday, clear all day, no event), every
-  context's. A `?date=` in the URL still wins: say the day and hour when the test is about them. A page that installs
-  its own clock (`page.clock.install({ time })` before it opens) owns it; `test.use({ ownClock: true })` lifts the pin
-  for a file.
-- **The weather is pinned**: the pinned day's seeded sky, or a fixture (`?wx=…`, `?weather=`).
-- **Ambient life is off**: nothing spawns or wanders on its own (critters, the day's visitor and guest, the balloon,
-  idle beats, an ordinary night's shooting stars); an event's host still comes. The villagers are asleep while their phone isn't
-  open (`?awake`, `?grace=`, `?wake=`). A URL's own param wins (`?critter=fish`, `?visitor=jack`). A test of ambient
-  life opts back in: `test.use({ ambient: 'on' })`.
+- **The clock is pinned** at `PINNED_DATE` (a Wednesday noon, clear, no event); a URL's `?date=` wins, and a page
+  that installs its own clock owns it (`test.use({ ownClock: true })` for a file). **The weather** is that day's sky
+  or a fixture (`?wx=`, `?weather=`).
+- **Ambient life is off**: nothing spawns or wanders on its own; an event's host still comes. The villagers sleep
+  while their phone isn't open (`?awake`). A URL's own param wins; `test.use({ ambient: 'on' })` opts back in.
 - **The tests' own relay agrees with its phones**: liveRoom.ts and record.ts run on the pinned time; read it as they
   do, `island.now()`, `rec.now()`, never `Date.now()`.
-- **No network**: a request off the local preview fails the test, naming it. Mock a relay with `page.route` /
-  `context.route` (board.spec, record.ts, liveRoom.ts); map tiles are answered already; the real relay's harness is the
-  one opt-out (`test.use({ network: 'any' })`). Unit tests too: a real fetch, WebSocket or socket off this machine
-  fails the test (src/no-network.setup.ts, vitest's `setupFiles`).
+- **No network**: a request off the local preview fails the test, naming it. Mock a Worker with `page.route` /
+  `context.route` (record.ts, liveRoom.ts); map tiles are answered already. Unit tests too
+  (src/no-network.setup.ts).
 - **No randomness**: no `Math.random` in a spec; pin the island with `?seed=`, `&rock=`, `&shake=`, `?critter=`,
   `?visitor=`.
-- **Storage**: each test its own context, service workers blocked; two phones in one context share `localStorage` and a
-  BroadcastChannel. `bringToFront()` the tab that acts, and wait for a second tab's island (`is3d`, `quiet`) before
-  timing across the two.
+- **Storage**: each test its own context, service workers blocked; two phones in one context share it.
 - **Taps on the 3D island are frame-locked** (e2e/island.ts `tapAt` and what's built on it): the point read in a held
   frame and tapped before the next, polled while a tap area lies over it; `castIn` and `reelOnBite` likewise.
 - **Read the hooks once they're there**: `__world` comes before `__world3d` (`camTo` and `settled` wait for both);
@@ -173,16 +164,9 @@ same island.
   odd after a big rebase: `npx vitest run --clearCache`.
 
 ## Test mode
-`?demo` is a test harness, not a feature: made-up rows (`store/demo/`) instead of the relay, the two players as two
-tabs (`sync/live-local.ts`), and the URL and window hooks. It switches on (`ui-state/testMode.ts`) only
-- in the dev server (`import.meta.env.DEV`; there without `VITE_RECORD_URL` even with no `?demo`), or
-- in a production build when the browser has `localStorage['e2e.testMode'] = '1'` before the app loads:
-  e2e/fixtures.ts sets it on every context (`test.use({ testMode: false })` is a real visitor's phone, boot.spec), and
-  the perf and Simulator scripts set it (perf-start, leak-probe, unused-probe, ios-sim-check, ios-sim-indoor).
-
-So the e2e tests the very build that ships, and a visitor's `?demo` on the live site is the normal app (pairing, or
-their data). A feature that calls a Worker gets no in-app fixture: its spec pairs a phone (e2e/record.ts) and routes
-the Worker (`page.route`: gymbot.spec, its.spec).
+`?demo`: made-up rows (`store/demo/`) instead of the relay, the two players as two tabs (`sync/live-local.ts`), and the
+hooks. On only in the dev server and in a browser with `localStorage['e2e.testMode'] = '1'` (`ui-state/testMode.ts`
+header; e2e/fixtures.ts sets it, `test.use({ testMode: false })` is a visitor's phone).
 
 ## URL params
 Read on each call by `world/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev
@@ -246,17 +230,13 @@ Most red runs are the spec, not the app. Run a new or changed spec with `--repea
    `__world.idle()`, `__tent.stats().frames`, `data-*` attributes, `__world3d.camStill()` (the tap areas placed for the
    camera's last move); never `waitForTimeout` to "let it settle" (the hooks are `unknown` on `Window`, `src/app.d.ts`:
    a spec types what it reads).
-3. **Fix the clock.** Pinned already; `?date=2026-11-04T12:00` when the hour matters; `page.clock.install({ time })`
-   when the app's timers matter, `page.clock.runFor(ms)` to skip a wait (it fakes `requestAnimationFrame` too).
-   ききみみ's schedule runs on it (a clip's window is its clips.json length, never the audio's): install the clock before
-   the goto and step to the state (e2e/kikimimi-nav.ts `runToQuestion`, `runToPhase`, `runToSee`); never step while a
-   mic take listens (its stand-in audio is real time).
+3. **Step the clock** when the app's timers matter: `page.clock.install({ time })`, `runFor(ms)` (rAF too). ききみみ:
+   install before the goto and step (e2e/kikimimi-nav.ts `runToQuestion`); never while a mic take listens.
 4. **Find things by role or test id**, not by position or `nth()`: `getByRole('button', { name })`, `[data-tab=…]`,
    `[data-critter]`. Add a `data-*` hook when there is none.
 5. **WebKit is the browser.** It scrolls by whole px (compare a camera z with a tolerance), has no mouse wheel on a
    phone (`scrollBy`), moves focus with ⌥Tab, and has no CDP. Reproduce CI's WebKit on a Mac, not in Docker.
-6. **Two phones in one context share storage**, and a hidden tab's timers are throttled: bring the acting tab to the
-   front, and poll the other for the result.
+6. **Two phones in one context**: `bringToFront()` the acting tab (a hidden one's timers are throttled), poll the other.
 7. **Banners and sheets cover things.** A toast drops over the panel's tabs for a few seconds (longer under a resting
    pointer): tap it away, or wait for it to go.
 8. **Each test starts clean** and short: don't lean on another test's leftovers or make one test do three's work.
@@ -306,5 +286,5 @@ art/, room/, terrain/), then `npm run unused -- --seen=/tmp/seen.txt`.
 `npm run ios:check` (scripts/ios-sim-check.ts: the island's load, idle and scrolling frames, けんこう and ごはん over it,
 the page's errors and screenshots into `test-results/ios-sim/<time>/`; `--url`, `--seed`, `--then`, `--boots`: its
 header) and `npm run ios:indoor` (scripts/ios-sim-indoor.ts: the tent, うめ's house, the museum and the shop, cold then
-warm, and what still runs after each: a leak). Exit 1 when the island didn't come up. On demand, and nightly by a
-launchd agent (its plist: scripts/ios-sim-check.ts's header).
+warm, and what still runs after each: a leak). Exit 1 when the island didn't come up. On demand (a nightly launchd
+plist is in scripts/ios-sim-check.ts's header; not installed).

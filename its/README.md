@@ -332,7 +332,7 @@ the decrypted copy. A page's request: `npx wrangler tail --search rid=<id>` (the
 
 The verdict is the first reason that applies (`reasons`, in this order). `starting`, `never_ran`, `runner_silent`,
 `dispatch_failed`, `scan_failing`, `solve_failing`, `mail_failing` and `settings_stale` count only while it should run
-(MODE on, not stopped, a date). its-health.yml (every 30 min, `GET /health/its`: codes only) keeps one `its-alert` issue
+(MODE on, not stopped, a date). its-health.yml (a 30-min cron, best effort: GitHub runs it a few times a day; `GET /health/its`: codes only) keeps one `its-alert` issue
 open on `late` / `failing`, `human_needed`, `dispatch_failed`, `mail_failing`, `settings_stale` or `unsynced` for 30+
 min (and `/health/its` failing twice in a row), and closes it when healthy.
 

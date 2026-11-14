@@ -19,12 +19,9 @@ the live room).
 | Deployable | Code | Deploy · roll back | Health · who alerts |
 |---|---|---|---|
 | The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | health.yml's site checks: red mails the owner |
-| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml hourly: red mails, the log's spikes open an `alert` issue |
+| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml (hourly cron, best effort: GitHub runs ~4 a day): red mails, the log's spikes open an `alert` issue |
 | The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `/health`, ボット → ジム; nothing watches it |
-| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml every 30 min: the `its-alert` issue |
-
-Other signals: a red *e2e logic full* after a deploy is the next push's to fix; *Pages alias lag* is a warning; the flake
-hunt gates nothing ([testing.md "CI"](docs/ops/testing.md#ci-githubworkflowspagesyml)).
+| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml (a 30-min cron, best effort), the Worker's watchdog: the `its-alert` issue |
 
 **Secrets** (names only; never in this public repo):
 - Relay (`npx wrangler secret put`; the test copy's keys: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`,
@@ -93,10 +90,10 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/src/lib/food/`, `sound/` | The food data's loading and search; the music and sounds |
 | `app/src/lib/kikimimi/`, `mic/` | ききみみ: decks, content, the round's rules; the mic (capture, VAD, recognisers, matching) |
 | `app/src/lib/travel/`, `hiking/`, `wedding/` | 旅行's trip guides (`trips/`); 登山's trails and tracks; 結婚式's board settings and progress |
-| `app/src/lib/gym/`, `app/src/lib/its/` | ボット's clients: the gym bot's and the ITS booker's pages |
+| `app/src/lib/bots/`, `gym/`, `its/`, `kalori/` | ボット: the bots' shared status types; the gym bot's, the ITS booker's and Kalori's clients |
 | `app/src/lib/offline/` | Map areas saved ahead for offline: their tiles and size |
 | `app/src/lib/time/`, `ui-state/`, `villagers/`, `i18n/`, `styles/` | Clocks and holidays; UI state and test switches; the villager roster; ja/en strings; CSS tokens |
-| `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `bots/` (ボット), `farm/`, `wallet/`, `editor/` and `layoutEdit/`, … |
+| `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `bots/` (ボット), `wallet/`, `editor/` and `layoutEdit/`, … |
 | `app/src/routes/` | The pages (the island, `/tent`, `/editor`, `/pair`, …) |
 | `app/static/` | Art, 3D models, audio, food data (`npm run unused` lists what nothing uses) |
 | `app/scripts/` | Asset and model pipelines, the e2e's CI helpers, the benchmark |
