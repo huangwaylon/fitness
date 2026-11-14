@@ -32,6 +32,7 @@
   --c-rose:#E88FAE;                                      /* the wedding's rose: the ring, the letter's band and rules, the heart stamp */
   /* the night's navy chrome (data-tod night below; ききみみ's bedtime story and its tile take it by day too) */
   --n-bg:#3A4886; --n-lip:#2E3A72; --n-card:#4858A0; --n-off:#34417C; --n-edge:#B9C3F0; --n-text:#FFF6E0; --n-soft:#DDE3FA;
+  --n-warn:#7A5E22;                                      /* the night's warn surface: amber on navy (cream text 5.6:1) */
   --c-gold:#F2C14E;  --c-gold-lip:#B8862A;               /* NEW (.tag.new) and the gold medal / trophy fills (fills only) */
   --c-silver:#C9CFD8; --c-silver-lip:#9AA3B1;            /* the silver medal (ききみみ's なかま) */
   --c-bar:#3E9E4C;                                       /* a progress bar's fill on cream (passes 3:1 on the card) */
@@ -47,6 +48,9 @@
   --scrim: rgba(74, 58, 44, .32);
   --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
   --c-sky-text:#24609A; --sky-text: var(--c-sky-text); /* sky TEXT on the panel / card (5.2:1 on paper, 5:1 at dusk; night: a light sky, 5:1 on navy) */
+  /* a warn / highlight surface on the themed card (a bot's 一部不調, 確認が必要, a load error; ききみみ's mission, a tip):
+     yuzu over cream by day; night: --n-warn (yuzu mixed into navy came out grey). Stronger: a local yuzu mix over it */
+  --warn-soft: color-mix(in srgb, var(--c-yuzu) 30%, var(--c-card));
   --rose-soft: color-mix(in srgb, var(--c-rose) 22%, var(--card)); /* the letter's rules, a rose tint */
   --stitch: color-mix(in srgb, var(--edge) 35%, transparent);     /* the 1.5px dashed stitch between dense rows, a ticket's perforation */
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
@@ -180,7 +184,7 @@
   --text: var(--n-text); --text-soft: var(--n-soft); --focus: var(--n-text); --leaf-text:#9EE6A6; --coral-text:#FFD0C6;
   --person-a:#7EC8F0; --person-b:#FFB066;             /* the same pair lightened for the navy card (>= 3:1) */
   --bar-floor: .5;                                    /* (and a pale bar's edge in full colour) */
-  --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
+  --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14); --warn-soft: var(--n-warn);
   --sky-text:#9CCBF5;
   color-scheme: dark;
 }

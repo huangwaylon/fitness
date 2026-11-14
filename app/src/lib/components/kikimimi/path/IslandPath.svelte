@@ -210,7 +210,7 @@
   .host { flex: none; line-height: 0; }
   .recheck {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 14px; border-radius: var(--r-card);
-    background: color-mix(in srgb, var(--c-yuzu) 30%, var(--card)); box-shadow: var(--sh-lip);
+    background: var(--warn-soft); box-shadow: var(--sh-lip);
   }
   .rtxt { flex: 1; min-width: 0; display: grid; gap: 2px; }
   .rtxt b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
@@ -236,7 +236,7 @@
   }
   .lm {
     width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; line-height: 1;
-    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); box-shadow: inset 0 0 0 2px var(--c-yuzu-lip);
+    background: color-mix(in srgb, var(--c-yuzu) 15%, var(--warn-soft)); box-shadow: inset 0 0 0 2px var(--c-yuzu-lip);
   }
   .count { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1 var(--font-num); color: var(--leaf-text); white-space: nowrap; }
   .bar { display: flex; width: 44px; }
@@ -248,7 +248,7 @@
   /* the landmark's celebration: once, in its stage */
   .party {
     position: relative; display: grid; justify-items: center; gap: 4px; padding: 16px 14px 14px; border-radius: var(--r-card); text-align: center;
-    background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c-yuzu) 55%, var(--card)), color-mix(in srgb, var(--c-yuzu) 18%, var(--card)) 70%);
+    background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c-yuzu) 15%, var(--warn-soft)), var(--warn-soft) 70%);
     box-shadow: var(--sh-lip), inset 0 0 0 2px var(--c-yuzu-lip);
   }
   .party::before, .party::after { content: '✦'; position: absolute; top: 14px; font-size: 18px; color: var(--c-coral); animation: twinkle 1.6s ease-in-out infinite; }

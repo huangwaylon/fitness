@@ -29,7 +29,7 @@
 </div>
 
 <style>
-  .alert { display: grid; gap: 6px; background: color-mix(in srgb, var(--c-yuzu) 18%, var(--card)); }
+  .alert { display: grid; gap: 6px; background: var(--warn-soft); }
   .alert.bad { background: color-mix(in srgb, var(--c-coral) 14%, var(--card)); }
   .alert h3 { margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .alert ul { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }

@@ -103,5 +103,5 @@
   .ticks { position: relative; height: 1.3em; font: 700 var(--fs-s)/1.3 var(--font-num); color: var(--text-soft); }
   .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
   .sline { margin: 2px 0 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }
-  .sline.warn { margin: 4px 0 0; padding: 6px 10px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--c-yuzu) 30%, var(--card)); }
+  .sline.warn { margin: 4px 0 0; padding: 6px 10px; border-radius: var(--r-chip); background: var(--warn-soft); }
 </style>

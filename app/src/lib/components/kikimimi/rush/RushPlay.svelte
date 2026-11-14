@@ -141,6 +141,6 @@
   .ticket { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   .hint-line { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
   .was { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
-  .combo-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
+  .combo-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 15%, var(--warn-soft)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .again { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
 </style>

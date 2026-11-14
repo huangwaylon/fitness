@@ -60,7 +60,7 @@
   .goal, .rule, .about { margin: 0; font: 700 var(--fs-body)/1.45 var(--font-ui); }
   .goal small, .rule small { display: block; font-size: var(--fs-s); color: var(--text-soft); }
   .about { font-size: var(--fs-s); color: var(--text-soft); }
-  .mission { background: color-mix(in srgb, var(--c-yuzu) 22%, var(--card)); }
+  .mission { background: var(--warn-soft); }
   .level-acts > .wide { flex: 1 1 100%; }
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; }
   .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }

@@ -135,7 +135,7 @@
   .next { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .gifts { display: grid; gap: 10px; padding: 12px 14px; margin-top: 6px; }
   .say { margin: 0; font: 700 var(--fs-body)/1.45 var(--font-ui); }
-  .letter { padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--c-yuzu) 22%, var(--card)); }
+  .letter { padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); }
   .letter small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .letter p { margin: 6px 0 0; white-space: pre-line; font: 600 var(--fs-s)/1.55 var(--font-ui); }
   .pill { justify-self: start; padding: 6px 12px; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.2 var(--font-ui); }

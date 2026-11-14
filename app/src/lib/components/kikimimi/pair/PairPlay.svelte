@@ -248,7 +248,7 @@
   .tag { position: absolute; top: -10px; left: 50%; translate: -50% 0; padding: 2px 10px; border-radius: var(--r-pill); background: var(--c-leaf-edge); color: var(--c-card); font: 700 var(--fs-s)/1.4 var(--font-ui); white-space: nowrap; }
   .ear { position: absolute; top: 6px; right: 6px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--ctl-off); font: 400 18px/1 var(--font-ui); cursor: pointer; }
   .hint { margin: 0 4px; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  .tip { margin: 0; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); font: 700 var(--fs-body)/1.5 var(--font-ui); }
+  .tip { margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--warn-soft); font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .tip b { margin-right: 6px; font-size: var(--fs-s); color: var(--text-soft); }
   .talk { position: relative; display: flex; justify-content: center; min-height: 112px; align-items: center; }
   .tries { position: absolute; right: 8px; bottom: 8px; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }

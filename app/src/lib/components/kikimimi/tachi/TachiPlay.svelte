@@ -193,7 +193,7 @@
   .seats:has(.talk) .seat:not(.talk) { opacity: .6; }
   .nm { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text); }
   .part { padding: 1px 8px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); background: var(--ctl-off); }
-  .part[data-part='mine'] { background: color-mix(in srgb, var(--c-yuzu) 55%, var(--card)); color: var(--text); }
+  .part[data-part='mine'] { background: color-mix(in srgb, var(--c-yuzu) 15%, var(--warn-soft)); color: var(--text); }
   .part[data-part='shared'] { background: color-mix(in srgb, var(--c-mint) 45%, var(--card)); color: var(--text); }
   .seat[data-part='theirs'] { opacity: .7; }
   .ctx { margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }

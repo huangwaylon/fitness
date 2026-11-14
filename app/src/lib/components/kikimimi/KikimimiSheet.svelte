@@ -512,7 +512,7 @@
     --bg: var(--n-lip); --surface: var(--n-lip); --lip: #232D5E; --card: var(--n-bg);
     --ctl: var(--n-bg); --ctl-off: #2A3468; --edge: var(--n-edge);
     --text: var(--n-text); --text-soft: var(--n-soft); --focus: var(--n-text); --leaf-text: #9EE6A6; --coral-text: #FFD0C6;
-    --scrim: rgba(20, 24, 56, .5); --hl: rgba(255, 246, 224, .12);
+    --scrim: rgba(20, 24, 56, .5); --hl: rgba(255, 246, 224, .12); --warn-soft: var(--n-warn);
     color-scheme: dark;
   }
   /* the one scroller (as the other full-height sheets'): it bleeds 8px past the side padding so focus rings and lips show */

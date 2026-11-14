@@ -517,7 +517,7 @@
   :global(.bpage) .hint.bad, :global(.bpage) .late, :global(.bpage) b.bad { color: var(--coral-text); }
   .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); margin: 0 4px; }
   /* a notice: yuzu-tinted */
-  .card.note { background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
+  .card.note { background: var(--warn-soft); }
   .card.note { display: grid; gap: 8px; }
   .card.note p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .card.note .btn { justify-self: start; margin: 0; }
@@ -627,7 +627,7 @@
 
   .why { flex-basis: 100%; margin: 0 4px; display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .why span { flex: 1; }
-  div.why { padding: 4px 4px 4px 12px; margin: 0; border-radius: var(--r-card); color: var(--text); background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
+  div.why { padding: 4px 4px 4px 12px; margin: 0; border-radius: var(--r-card); color: var(--text); background: var(--warn-soft); }
   .why .btn { flex: none; margin: 0; }
   p.why.bad { padding: 8px 12px; margin: 0; border-radius: var(--r-card); color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 

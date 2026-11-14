@@ -58,7 +58,7 @@
     display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px;
   }
   .verdict.good { background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
-  .verdict.warn { background: color-mix(in srgb, var(--c-yuzu) 30%, var(--card)); }
+  .verdict.warn { background: var(--warn-soft); }
   .verdict.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--card)); }
   .vdot { grid-area: 1 / 1; display: flex; }
   .word { grid-area: 1 / 2; font: 700 var(--fs-body)/1.3 var(--font-ui); white-space: nowrap; }

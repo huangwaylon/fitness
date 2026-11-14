@@ -14,5 +14,5 @@
 
 <style>
   /* (a class of its own, so the row's own background rule can't win) */
-  .prow.note { background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
+  .prow.note { background: var(--warn-soft); }
 </style>

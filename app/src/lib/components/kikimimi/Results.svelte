@@ -284,7 +284,7 @@
 <style>
   /* a lesson's strip (the UX review's sketch C): the unit, its dots, then 次は… or the stamp */
   .lesson.card { display: grid; justify-items: center; gap: 8px; text-align: center; }
-  .lesson.won { background: color-mix(in srgb, var(--c-yuzu) 28%, var(--card)); }
+  .lesson.won { background: var(--warn-soft); }
   .lesson p { margin: 0; }
   .lhead { display: flex; gap: 10px; align-items: center; justify-self: stretch; }
   .lface { flex: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; line-height: 0; background: color-mix(in srgb, var(--c-mint) 35%, var(--card)); }
