@@ -37,5 +37,6 @@
   "bots.fact.mode": "モード",
   "bots.fact.sha": "バージョン",
   "bots.sec.settings": "設定",
-  "bots.cal.month": "表示する月"
+  "bots.cal.month": "表示する月",
+  "bots.cal.weekday": "{wd}曜日をすべて選ぶ"
 }

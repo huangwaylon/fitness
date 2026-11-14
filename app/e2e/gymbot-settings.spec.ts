@@ -48,6 +48,9 @@ test('the calendar: the whole month from Monday, next month, the 4-day default a
   await expect(grid.getByRole('columnheader')).toHaveText(['月', '火', '水', '木', '金', '土', '日']);
   await expect(grid.getByRole('gridcell')).toHaveCount(42); // 11/4–28 a button each, the rest faint or blank
   await expect(sheet.locator('[data-gym-later]')).toHaveText('11/29以降はまだ設定できません');
+  // not settable yet (11/29, 11/30) dashed, apart from the days gone (11/1–3)
+  await expect(grid.locator('.cell.out.later')).toHaveCount(2);
+  await expect(grid.locator('.cell.out:not(.later):not(.blank)')).toHaveCount(3);
   await expect(day(0)).toHaveAttribute('aria-label', '11/4（水）（今日）、ふだん（12:00〜13:00）');
   for (const i of [0, 1, 2, 3]) await expect(day(i)).toHaveAttribute('data-fill', 'usual');
   await expect(day(4)).toHaveAttribute('data-fill', 'none');
@@ -61,7 +64,7 @@ test('the calendar: the whole month from Monday, next month, the 4-day default a
   await expect(day(8)).toHaveAttribute('data-fill', 'off');
   await expect(sheet.locator('[data-gym-cal-note]')).toHaveText('予約は同時に3件まで。設定のない日は近い4日だけ 12:00〜13:00 を見ます');
   // the legend inline under the grid
-  await expect(sheet.locator('[data-gym-legend] > span')).toHaveText(['終日', '時間指定', 'ふだん', 'オフ', '開始時刻', '通知済み']);
+  await expect(sheet.locator('[data-gym-legend] > span')).toHaveText(['見ない', '終日', '時間指定', 'ふだん', 'オフ', '開始時刻', '通知済み']);
   // 44px: the days, ⋯
   for (const el of [day(0), day(24), sheet.locator('[data-gym-menu]')]) { // (選択: the kit's small chip, 32px in a 44px hit)
     const b = (await el.boundingBox())!;

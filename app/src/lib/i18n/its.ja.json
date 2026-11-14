@@ -297,7 +297,6 @@
   "its.cal.mark.hold": "仮押さえ",
   "its.cal.mark.booked": "予約確定",
   "its.cal.label": "{month}の泊まる日",
-  "its.cal.weekday": "{wd}曜日をまとめて選ぶ",
   "its.cal.over": "日付は20件までです（{n}日は入りませんでした）",
   "its.date.removeLabel": "{date}を削除"
 }

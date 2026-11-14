@@ -539,7 +539,7 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   expect((await cal.locator('[data-its-night-day="2026-11-04"]').boundingBox())!.height).toBeGreaterThanOrEqual(44);
   expect((await cal.locator('[data-its-weekday="5"]').boundingBox())!.width).toBeGreaterThanOrEqual(44);
   await expect(cal.getByRole('row')).toHaveCount(7);   // the weekdays, then the whole month: 10/26–12/6
-  await expect(its.locator('[data-its-legend] > span')).toHaveText(['要対応', '仮押さえ', '✓予約確定']);
+  await expect(its.locator('[data-its-legend] > span')).toHaveText(['!要対応', '仮押さえ', '✓予約確定']); // 要対応 the tab's yuzu 「!」, 仮押さえ a ring
   // 日付 first, under the status cards: before 予約 and 設定
   const y = async (l: ReturnType<Page['locator']>) => (await l.boundingBox())!.y;
   expect(await y(its.locator('[data-its-dates-sec]'))).toBeLessThan(await y(its.locator('[data-its-settings]')));

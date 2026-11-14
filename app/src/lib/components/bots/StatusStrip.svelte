@@ -3,7 +3,8 @@
   // legend of the states it can show, the cells (lib/strip.ts: drawn 24 high in a 44 hit; ok green, avail green full
   // height, warn yellow capped in ink, fail coral hatched, none a low tick: never colour alone), the times under them,
   // and one line: the summary (確認46回 · 失敗1 · 空き3), the picked cell's once one is tapped. Nothing kept (every cell
-  // none): `empty` as a warning in the cells' place (保養所 running), else the page leaves the card out. The cells are
+  // none): `empty` as a quiet sunk line in the cells' place (保養所 running: an empty state, not a second warning;
+  // trouble is the verdict's to say), else the page leaves the card out. The cells are
   // drawn only: one hit layer the strip's full height (44), a slider and one tab stop: a tap or a drag picks the cell
   // nearest the finger's x (≤ 72 cells are narrower than a finger), ← → Home End walk them; VoiceOver reads `summary`,
   // then the picked cell's line. `attr`: the page's data-* prefix (data-its-strip, data-its-cell, …).
@@ -20,7 +21,7 @@
     summary: string;
     /** The line under it while no cell is picked. */
     line: string;
-    /** Shown instead of the cells when none holds anything (a warning). */
+    /** Shown instead of the cells when none holds anything (an empty state). */
     empty?: string;
     attr: string;
   }
@@ -68,7 +69,7 @@
     {/if}
   </div>
   {#if blank && empty}
-    <p class="sline warn" role="status" {...data('empty')}>{empty}</p>
+    <p class="sline empty" role="status" {...data('empty')}>{empty}</p>
   {:else}
     <div class="strip" role="slider" tabindex="0" aria-label={summary} aria-valuemin={0} aria-valuemax={n - 1} aria-valuenow={picked ?? n - 1}
       aria-valuetext={cells[picked ?? n - 1]?.label} bind:this={strip} data-sfx="self" onkeydown={onkey} onpointerdown={down}
@@ -104,5 +105,5 @@
   .ticks { position: relative; height: 1.3em; font: 700 var(--fs-s)/1.3 var(--font-num); color: var(--text-soft); }
   .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
   .sline { margin: 2px 0 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }
-  .sline.warn { margin: 4px 0 0; padding: 6px 10px; border-radius: var(--r-chip); background: var(--warn-soft); }
+  .sline.empty { margin: 4px 0 0; padding: 6px 10px; border-radius: var(--r-chip); background: var(--ctl-off); color: var(--text-soft); }
 </style>

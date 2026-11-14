@@ -4,7 +4,7 @@
   // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
   // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
   // reasons, what to do), 直近12時間, then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
-  // the heading; a tap opens the day's editor, GymDayEditor; 選択 or a long press the select mode, 完了 in 選択's place,
+  // the heading; a tap opens the day's editor, GymDayEditor; 選択 under the grid or a long press the select mode, 完了 in 選択's place,
   // its sticky bar one bulk act, the picks kept across months), the days not settable yet, the 3-reservation note and
   // アプリで変更 (the last ones, one a day, folded); くわしく last.
   // No 設定 section: every change applies at once (no draft): the page shows it, POST
@@ -334,10 +334,7 @@
   {facts}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
-      <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month">
-        {#if cfg && selecting}<button type="button" class="chip s" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
-        {:else if cfg}<button type="button" class="chip s" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
-      </MonthSwitch>
+      <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month" />
       {#if cfgState === 'failed'}
         <div class="prow static" data-gym-config-error>
           <span class="prl"><Phrases text={t('gym.configFailed')} /></span>
@@ -346,7 +343,12 @@
       {/if}
       {#if cfg}
         <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(cal.value) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
-        {#if later}<p class="hint" data-gym-later>{later}</p>{/if}
+        <!-- under the grid, not in the months' row (it isn't a third month): the days not settable yet, and 選択 (完了) -->
+        <div class="calfoot">
+          {#if later}<p class="hint" data-gym-later>{later}</p>{/if}
+          {#if selecting}<button type="button" class="btn small paper" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
+          {:else}<button type="button" class="btn small paper" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
+        </div>
         <p class="hint" data-gym-cal-note>{t('gym.cal.note')}</p>
 
         {#if selecting}
@@ -424,6 +426,10 @@
   .note .btn { margin: 0; flex: none; }
   .note.bad { color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 
+
+  .calfoot { display: flex; align-items: center; gap: 8px; }
+  .calfoot .hint { flex: 1; min-width: 0; margin-top: 0; margin-bottom: 0; }
+  .calfoot .btn { margin: 0 0 0 auto; flex: none; }
 
   /* the select mode's bar: stuck to the scroller's foot */
   .bulkbar {

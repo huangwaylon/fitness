@@ -1,7 +1,8 @@
 <script lang="ts">
   // ジム's calendar (docs/design.md "Bots"; the cells are lib/gym/calendar.ts monthCells), on MonthCalendar (保養所's grid
   // too): this month or next, Mon–Sun, the rows' days a button each (~46×54: the date and marks; 終日 a bell, オフ the
-  // bell struck, 時間指定 its hours stacked), the rest faint or blank and inert; the legend under it. Fills: 終日 leaf,
+  // bell struck, 時間指定 its hours stacked, 13px), the rest faint, dashed or blank and inert; the legend under it
+  // (見ない first: the plain paper day). Fills: 終日 leaf,
   // 時間指定 mint, ふだん mint dashed (the next 4 days), 未チェック paper, オフ sunk; ⏳ a bare hourglass beside the
   // announced count (gold); picked (select mode) a yuzu ring; a day a poll saw change flashes. Select mode: a tap
   // toggles a day, a weekday's header toggles its column (the month's settable days); a long press starts it.
@@ -58,7 +59,7 @@
   }
 </script>
 
-<MonthCalendar {cells} {label} attr="gym" tall onweekday={selecting ? onweekday : null} weekdayLabel={(wd) => t('gym.cal.weekday', { wd })}
+<MonthCalendar {cells} {label} attr="gym" tall onweekday={selecting ? onweekday : null}
   rootAttr={{ 'data-gym-calendar': true, 'data-selecting': selecting || undefined }}>
   {#snippet day(c, tabindex)}
     <button type="button" class="cell {c.fill}" class:today={c.today} class:picked={selecting && selected.has(c.date)} class:flash={flash.has(c.date)}
@@ -75,7 +76,7 @@
     </button>
   {/snippet}
   {#snippet legend()}
-    <span><i class="sw any"></i>{t('gym.legend.any')}</span><span><i class="sw range"></i>{t('gym.legend.range')}</span><span><i class="sw usual"></i>{t('gym.legend.usual')}</span>
+    <span><i class="sw none"></i>{t('gym.legend.none')}</span><span><i class="sw any"></i>{t('gym.legend.any')}</span><span><i class="sw range"></i>{t('gym.legend.range')}</span><span><i class="sw usual"></i>{t('gym.legend.usual')}</span>
     <span><i class="sw off"></i>{t('gym.legend.off')}</span><span><i class="sw hg"><Icon name="hourglass" size={10} stroke={2.4} /></i>{t('gym.legend.from')}</span><span><i class="sw an"></i>{t('gym.legend.announced')}</span>
   {/snippet}
 </MonthCalendar>
@@ -86,7 +87,7 @@
   .top { justify-self: stretch; display: flex; align-items: center; justify-content: space-between; padding: 0 1px 0 3px; min-width: 0; }
   .marks { display: flex; align-items: center; gap: 1px; }
   .ic { display: grid; place-items: center; }
-  .tm { font-size: 10.5px; line-height: 1.05; text-align: center; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .tm { font-size: var(--fs-s); line-height: 1.05; text-align: center; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   /* fills (coral is for errors only); the legend's swatches the same. 終日 and 時間指定 mixed over the cream card, by
      night too (a lit tile: ink 7.5:1 and 7.8:1; over the navy card 3.3 and 3.9) */
   .any { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); }
@@ -95,6 +96,7 @@
   .sw.usual { outline-width: 1.5px; outline-offset: -1.5px; }
   .off { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; }
   .cell.none { color: var(--text-soft); }
+  .sw.none { background: var(--card); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--edge) 55%, transparent); }
   :global(:root[data-tod='night']) .any, :global(:root[data-tod='night']) .range { color: var(--c-ink); }
   /* marks: ⏳ a bare glyph, announced a gold count */
   .hg { display: grid; place-items: center; }

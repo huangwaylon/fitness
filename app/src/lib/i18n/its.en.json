@@ -297,7 +297,6 @@
   "its.cal.mark.hold": "held",
   "its.cal.mark.booked": "booked",
   "its.cal.label": "Nights in {month}",
-  "its.cal.weekday": "Every {wd}",
   "its.cal.over": "20 dates at most ({n} didn't fit)",
   "its.date.removeLabel": "Remove {date}"
 }

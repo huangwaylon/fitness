@@ -2,7 +2,8 @@
   // ボット's month calendar (docs/design.md "Bots"), ジム's and 保養所's one grid (GymCalendar, ItsCalendar): the
   // weekday header 月…日 (土 sky, 日 coral; with `onweekday` a 28pt chip each in a 44pt hit, its column), a row a week
   // (contract/tokyo.ts monthWeeks), a settable day the caller's `day` snippet (its `.cell` button, the roving tab stop
-  // passed in), a passed or unsettable day of the month faint (its date only), another month's blank, both inert; the
+  // passed in), a passed day of the month faint (its date only), one not settable yet dashed (`later`: after the
+  // month's first settable day), another month's blank, all inert; the
   // caller's legend under it, inline. The cell's look is here (`.cell`, `.d`, today's date an ink pill) so both match;
   // its height only `--cal-h`: `tall` ジム's 54 (the date and marks 14, the content), else a finger's 44. A grid for
   // VoiceOver (role=grid, a row a week, the arrow keys, Home / End).
@@ -17,15 +18,13 @@
     attr: string;
     /** A weekday's header tapped (its column, 0 = 月); null: plain text. */
     onweekday?: ((col: number) => void) | null;
-    /** A weekday button's words (`{wd}曜日をすべて選ぶ`). */
-    weekdayLabel?: (wd: string) => string;
     tall?: boolean;
     rootAttr?: Record<string, string | boolean | undefined>;
     day: Snippet<[T, number]>;
     /** The legend's items (`<span>` each, a `.sw` swatch in it), in the footer (`data-{attr}-legend`). */
     legend?: Snippet;
   }
-  let { cells, label, attr, onweekday = null, weekdayLabel = (wd) => wd, tall = false, rootAttr = {}, day, legend }: Props = $props();
+  let { cells, label, attr, onweekday = null, tall = false, rootAttr = {}, day, legend }: Props = $props();
 
   const days = $derived(cells.flat().filter((c) => c.live).map((c) => c.date));
   /** The roving tab stop: the last focused day, else today (the first settable). */
@@ -57,7 +56,7 @@
     {#each [1, 2, 3, 4, 5, 6, 7] as wd, col (wd)}
       <div class="wd" role="columnheader" class:sun={wd === 7} class:sat={wd === 6}>
         {#if onweekday}
-          <button type="button" class="wdbtn" {...{ [`data-${attr}-weekday`]: col }} data-sfx="tick" aria-label={weekdayLabel(t(`weekday.${wd}`))} onclick={() => onweekday(col)}>{t(`weekday.${wd}`)}</button>
+          <button type="button" class="wdbtn" {...{ [`data-${attr}-weekday`]: col }} data-sfx="tick" aria-label={t('bots.cal.weekday', { wd: t(`weekday.${wd}`) })} onclick={() => onweekday(col)}>{t(`weekday.${wd}`)}</button>
         {:else}{t(`weekday.${wd}`)}{/if}
       </div>
     {/each}
@@ -66,7 +65,7 @@
     <div class="row" role="row">
       {#each week as c (c.date)}
         <div role="gridcell" class="gc" data-date={c.live ? c.date : undefined}>
-          {#if c.live}{@render day(c, c.date === stop ? 0 : -1)}{:else}<span class="cell out" class:blank={!c.inMonth} aria-hidden="true"><span class="d">{c.inMonth ? c.d : ''}</span></span>{/if}
+          {#if c.live}{@render day(c, c.date === stop ? 0 : -1)}{:else}<span class="cell out" class:blank={!c.inMonth} class:later={c.inMonth && !(days[0] && c.date < days[0])} aria-hidden="true"><span class="d">{c.inMonth ? c.d : ''}</span></span>{/if}
         </div>
       {/each}
     </div>
@@ -96,8 +95,10 @@
   :where(.monthcal) :global(.cell.today .d) { padding: 1px 4px; border-radius: var(--r-pill); background: var(--text); color: var(--card); }
   :where(.monthcal) :global(.cell:focus-visible), .wdbtn:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; z-index: 1; }
   :where(.monthcal) :global(.cell:not(.out):active) { transform: translateY(1px); }
-  /* passed or unsettable: faint (in ジム's, the date where a cell's is); another month's: nothing */
+  /* passed: faint (in ジム's, the date where a cell's is); not settable yet: no fill, a dashed edge ("not yet", not
+     "gone"); another month's: nothing */
   .cell.out { cursor: default; background: color-mix(in srgb, var(--ctl-off) 40%, transparent); box-shadow: none; color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
+  .cell.later { background: none; outline: 1.5px dashed color-mix(in srgb, var(--edge) 45%, transparent); outline-offset: -1.5px; color: var(--text-soft); }
   .tall .cell.out { place-items: start; padding: 5px 6px; }
   .cell.blank { background: none; }
   /* the legend: one or two lines under the grid, a swatch (the caller's fills) and its word each */
