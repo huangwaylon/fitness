@@ -103,7 +103,7 @@ test('the menu’s ボット, right above 設定, 「!」 while a bot needs a pe
   await expect(tab('gym')).toHaveAttribute('aria-controls', 'bots-panel');
   await expect(sheet).toHaveAttribute('role', 'tabpanel');
   await expect(sheet).toHaveAttribute('aria-labelledby', 'bots-tab-gym');
-  // the gym bot failing (coral 「!」), 保養所 一部不調 with a hold waiting (yuzu 「!」; read as the menu unfolded, its tab
+  // the gym bot failing (coral 「!」), 保養所 要対応 (a hold waiting) (yuzu 「!」; read as the menu unfolded, its tab
   // not shown, not read again as the sheet opened: the minute's floor); the menu read every bot, and the shown page,
   // read seconds ago, doesn't read ジム again
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
@@ -111,7 +111,7 @@ test('the menu’s ボット, right above 設定, 「!」 while a bot needs a pe
   await expect(tab('its')).toHaveAttribute('data-tab-status', 'warn');
   await expect(tab('its')).toHaveAttribute('data-look', '');
   await expect(tab('gym')).toHaveAccessibleName('ジム、不調、要対応');
-  await expect(tab('its')).toHaveAccessibleName('保養所、一部不調、要対応');
+  await expect(tab('its')).toHaveAccessibleName('保養所、要対応');
   expect([calls.its, calls.gym, calls.kalori]).toEqual([1, 1, 1]);
   for (const id of ['its', 'gym', 'kalori'] as const) {
     const box = (await tab(id).boundingBox())!;

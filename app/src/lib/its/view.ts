@@ -415,7 +415,10 @@ export function verdictView(s: ItsStatus): { tone: BotTone; w: BotWord; word: st
   const why = s.reasons[0] ?? 'none';
   const sentence = why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
     : t(`its.reason.${why}`, { n: s.runner?.scanFailures ?? 0 });
-  return { tone: TONE[s.verdict], w: WORD[s.verdict], word: t(`bots.w.${WORD[s.verdict]}`), sentence };
+  // 一部不調 for nothing but a hold waiting for a person: 要対応 (the key row's and the tab's word); a real partial
+  // failure keeps 一部不調
+  const w: BotWord = s.verdict === 'degraded' && s.reasons.length > 0 && s.reasons.every((r) => r === 'human_needed') ? 'needsYou' : WORD[s.verdict];
+  return { tone: TONE[s.verdict], w, word: t(`bots.w.${w}`), sentence };
 }
 
 /** The bookings waiting for a person (要対応: a hold to finish by mail, a failed leg). */

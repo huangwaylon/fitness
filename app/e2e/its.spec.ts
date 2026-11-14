@@ -108,9 +108,9 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdic
   await expect(tab).toHaveAttribute('aria-selected', 'true');
   await expect(tab).toHaveAttribute('data-tab-status', 'warn');
   await expect(tab).toHaveAttribute('data-look', '');
-  await expect(tab).toHaveAccessibleName('保養所、一部不調、要対応');
+  await expect(tab).toHaveAccessibleName('保養所、要対応');
   const verdict = its.locator('[data-its-verdict="degraded"]');
-  await expect(verdict.locator('.word')).toHaveText('一部不調'); // the verdict's own word
+  await expect(verdict.locator('.word')).toHaveText('要対応'); // a hold waiting is all: 要対応, not 一部不調
   await expect(verdict).toContainText('対応が必要な予約があります。');
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
   // the key row: 前回 (the last read) · 次回 (常時: a live runner) · 予約 (要対応 among them)

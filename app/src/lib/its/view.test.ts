@@ -435,7 +435,9 @@ describe('the roster', () => {
 describe('the verdict card and the poll', () => {
   it('gives each verdict its tone and the first reason its sentence', () => {
     // the verdict's own word (a hold waiting raises only a fine one's dot: bots/types.ts shown)
-    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'trouble', word: '一部不調', sentence: '対応が必要な予約があります。' });
+    // a hold waiting is all: 要対応 (the key row's word); a real partial failure beside it keeps 一部不調
+    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'needsYou', word: '要対応', sentence: '対応が必要な予約があります。' });
+    expect(verdictView(status({ reasons: ['scan_failing', 'human_needed'] }))).toMatchObject({ w: 'trouble', word: '一部不調' });
     expect(verdictView(status({ verdict: 'healthy', reasons: [], events: [], bookings: [] }))).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '空室を探しています。' });
     expect(verdictView(status({ verdict: 'starting', reasons: ['starting'], events: [], bookings: [] }))).toMatchObject({ tone: 'busy', word: '起動中' });
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'] })).tone).toBe('warn');
@@ -647,7 +649,7 @@ describe('直近1時間', () => {
 describe('the driver (lib/its/bot.ts)', () => {
   it('its verdict: needsAttention’s 「!」 (a hold waiting: 要対応), the one word table, the 15 s / 60 s poll', async () => {
     const { driver } = await import('./bot.ts');
-    const quiet = (verdict: ItsStatus['verdict']) => status({ events: [], bookings: [], verdict });
+    const quiet = (verdict: ItsStatus['verdict']) => status({ events: [], bookings: [], reasons: [], verdict });
     const all: ItsStatus['verdict'][] = ['healthy', 'starting', 'idle', 'degraded', 'late', 'failing', 'stopped', 'off'];
     for (const s of [STATUS, ...all.map(quiet)]) expect(driver.verdict(s, NOW).needsLook, s.verdict).toBe(needsAttention(s));
     expect(all.map((v) => driver.verdict(quiet(v), NOW).word)).toEqual(['順調', '起動中', '待機中', '一部不調', '遅れ', '不調', '停止中', 'オフ']);
