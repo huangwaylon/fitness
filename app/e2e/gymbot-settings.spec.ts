@@ -89,12 +89,12 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   await editor.locator('[data-gym-kind="any"]').click();
   await expect(day(5)).toHaveAttribute('data-fill', 'any');
   await expect(editor.locator('[data-gym-kind="any"]')).toHaveAttribute('aria-pressed', 'true');
-  expect(gym.acts).toEqual([{ a: 'any', d: gym.days[5], base: 'v0' }]);
+  await expect.poll(() => gym.acts).toEqual([{ a: 'any', d: gym.days[5], base: 'v0' }]);
   const toast = page.locator('.banner');
   await expect(toast).toContainText('11/9（月） 終日にしました');
   await toast.getByRole('button', { name: '取り消す' }).click();
   await expect(day(5)).toHaveAttribute('data-fill', 'none');
-  expect(gym.acts.at(-1)).toEqual({ a: 'reset', d: gym.days[5], base: 'v1' }); // a 未チェック day: back with a reset
+  await expect.poll(() => gym.acts.at(-1)).toEqual({ a: 'reset', d: gym.days[5], base: 'v1' }); // a 未チェック day: back with a reset
   // a ふだん day: back with its usual window, and ふだんに戻す once it has a rule
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
   await day(1).click();
@@ -103,14 +103,14 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   await expect(editor.locator('[data-gym-reset]')).toHaveText('ふだんに戻す');
   await editor.locator('[data-gym-reset]').click();
   await expect(day(1)).toHaveAttribute('data-fill', 'usual');
-  expect(gym.acts.slice(-2)).toEqual([{ a: 'skip', d: gym.days[1], base: 'v0' }, { a: 'reset', d: gym.days[1], base: 'v1' }]);
+  await expect.poll(() => gym.acts.slice(-2)).toEqual([{ a: 'skip', d: gym.days[1], base: 'v0' }, { a: 'reset', d: gym.days[1], base: 'v1' }]);
 });
 
 test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 ends at 22:00; 通知の開始’s times the bot would refuse are disabled', async ({ page, context }) => {
   const { gym, day, editor } = await phone(page, context, (g) => g.announce(g.days[6], ['18:30']));
   await day(6).click();
   await editor.locator('[data-gym-kind="range"]').click();
-  expect(gym.acts.at(-1)).toEqual({ a: 'range', d: gym.days[6], s: '12:00', e: '13:00', base: 'v0' });
+  await expect.poll(() => gym.acts.at(-1)).toEqual({ a: 'range', d: gym.days[6], s: '12:00', e: '13:00', base: 'v0' });
   const slot = (c: string) => editor.locator(`[data-gym-slot="${c}"]`);
   await expect(editor.locator('[data-gym-slot]')).toHaveCount(24);
   await expect(slot('12:00')).toHaveAttribute('aria-pressed', 'true');
@@ -124,7 +124,7 @@ test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 en
   await expect(editor.locator('[data-gym-slots-line]')).toHaveText('18:00〜19:00 の枠を通知（2枠）');
   await slot('21:30').click();
   await expect(editor.locator('[data-gym-slots-line]')).toHaveText('21:30〜22:00 の枠を通知（1枠）');
-  expect(gym.acts.slice(1).map((a) => 'e' in a && `${a.s}-${a.e}`)).toEqual(['18:00-19:00', '18:00-20:00', '18:00-19:00', '21:30-22:00']);
+  await expect.poll(() => gym.acts.slice(1).map((a) => 'e' in a && `${a.s}-${a.e}`)).toEqual(['18:00-19:00', '18:00-20:00', '18:00-19:00', '21:30-22:00']);
   // 通知の開始: 時刻, then a time before the window's last slot (on the day itself: its start day by default)
   await editor.locator('[data-gym-from="at"]').click();
   await expect(editor.locator('[data-gym-from-date]')).toHaveValue(gym.days[6]);
@@ -289,15 +289,15 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   await expect(day(5)).toHaveAttribute('aria-pressed', 'true');
   await bar.locator('[data-gym-bulk-act="skip"]').click();
   for (const i of [3, 5, 10, 17, 24]) await expect(day(i)).toHaveAttribute('data-fill', 'off');
-  expect(gym.acts).toHaveLength(1);
-  expect(gym.acts[0]).toEqual({ a: 'skip', days: [3, 5, 10, 17, 24].map((i) => ({ d: gym.days[i], base: 'v0' })) });
+  await expect.poll(() => gym.acts).toHaveLength(1);
+  await expect.poll(() => gym.acts[0]).toEqual({ a: 'skip', days: [3, 5, 10, 17, 24].map((i) => ({ d: gym.days[i], base: 'v0' })) });
   const toast = page.locator('.banner');
   await expect(toast).toContainText('5日をオフにしました');
   await toast.getByRole('button', { name: '取り消す' }).click();
   await expect(day(3)).toHaveAttribute('data-fill', 'usual');
   await expect(day(10)).toHaveAttribute('data-fill', 'none');
   // undone in two acts: 11/7 back to ふだん's window, the rest reset
-  expect(gym.acts.slice(1)).toEqual([
+  await expect.poll(() => gym.acts.slice(1)).toEqual([
     { a: 'range', s: '12:00', e: '13:00', d: gym.days[3], base: 'v1' },
     { a: 'reset', days: [5, 10, 17, 24].map((i) => ({ d: gym.days[i], base: 'v1' })) }
   ]);
@@ -307,7 +307,7 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   await pick.locator('[data-gym-slot="19:30"]').click();
   await page.locator('dialog[open] [data-gym-bulk-range-apply]').click();
   await expect(day(17)).toContainText('18–20');
-  expect(gym.acts.at(-1)).toMatchObject({ a: 'range', s: '18:00', e: '20:00' });
+  await expect.poll(() => gym.acts.at(-1)).toMatchObject({ a: 'range', s: '18:00', e: '20:00' });
   await bar.locator('[data-gym-bulk-done]').click();
   await expect(bar).toHaveCount(0);
   // a long press on a day (a touch held half a second; the click as it's let go starts nothing more)
@@ -354,7 +354,7 @@ test('quick edits wait their turn: two to one day both apply (no 409), a failed 
   expect(calls.act).toBe(1); // sent once the first is answered
   release();
   await expect.poll(() => gym.acts.length).toBe(2);
-  expect(gym.acts).toEqual([{ a: 'any', d: gym.days[5], base: 'v0' }, { a: 'skip', d: gym.days[5], base: 'v1' }]);
+  await expect.poll(() => gym.acts).toEqual([{ a: 'any', d: gym.days[5], base: 'v0' }, { a: 'skip', d: gym.days[5], base: 'v1' }]);
   await expect(day(5)).toHaveAttribute('data-fill', 'off');
   await expect(editor.locator('[data-gym-note]')).toHaveCount(0);
   await close();
@@ -373,7 +373,7 @@ test('quick edits wait their turn: two to one day both apply (no 409), a failed 
   await expect(day(6)).toHaveAttribute('data-fill', 'none');
   await expect.poll(() => gym.acts.length).toBe(4);
   await expect(day(7)).toHaveAttribute('data-fill', 'any');
-  expect(gym.acts.slice(2)).toEqual([{ a: 'any', d: gym.days[6], base: 'v0' }, { a: 'any', d: gym.days[7], base: 'v0' }]);
+  await expect.poll(() => gym.acts.slice(2)).toEqual([{ a: 'any', d: gym.days[6], base: 'v0' }, { a: 'any', d: gym.days[7], base: 'v0' }]);
 });
 
 test('a refusal in the bot’s words; a failure rolls back with もう一度, which sends it again', async ({ page, context }) => {
@@ -392,7 +392,7 @@ test('a refusal in the bot’s words; a failure rolls back with もう一度, wh
   await note.getByRole('button', { name: 'もう一度' }).click();
   await expect(day(2)).toHaveAttribute('data-fill', 'off');
   await expect(note).toHaveCount(0);
-  expect(gym.acts.slice(-2)).toEqual([{ a: 'skip', d: gym.days[2], base: 'v0' }, { a: 'skip', d: gym.days[2], base: 'v0' }]);
+  await expect.poll(() => gym.acts.slice(-2)).toEqual([{ a: 'skip', d: gym.days[2], base: 'v0' }, { a: 'skip', d: gym.days[2], base: 'v0' }]);
 });
 
 test('the control row: stopping asks first, restarting doesn’t; 確認の間隔; 今すぐ確認’s answer and countdown', async ({ page, context }) => {
@@ -414,11 +414,11 @@ test('the control row: stopping asks first, restarting doesn’t; 確認の間�
   await expect(sheet.locator('[data-gym-stopped]')).toBeVisible();
   await run.click(); // restarts at once
   await expect(run).toHaveText('チェック中・15分ごと');
-  expect(gym.acts).toEqual([{ a: 'pause' }, { a: 'resume' }]);
+  await expect.poll(() => gym.acts).toEqual([{ a: 'pause' }, { a: 'resume' }]);
   await sheet.locator('[data-gym-interval-open]').click();
   await page.locator('dialog[open] [data-gym-interval="30"]').click();
   await expect(run).toHaveText('チェック中・30分ごと');
-  expect(gym.acts.at(-1)).toEqual({ a: 'interval', m: 30 });
+  await expect.poll(() => gym.acts.at(-1)).toEqual({ a: 'interval', m: 30 });
   // 🔎: a peek, its answer under the row, then a minute's countdown
   await check.click();
   const result = sheet.locator('[data-gym-result]');
@@ -431,7 +431,7 @@ test('the control row: stopping asks first, restarting doesn’t; 確認の間�
   const first = Number((await check.textContent())!.match(/\d+/)![0]);
   await expect.poll(async () => Number((await check.textContent())!.match(/\d+/)![0])).toBeLessThan(first);
   await check.dispatchEvent('click'); // disabled (and ticking): nothing sent
-  expect(gym.acts.filter((a) => a.a === 'check')).toHaveLength(1);
+  await expect.poll(() => gym.acts.filter((a) => a.a === 'check')).toHaveLength(1);
 });
 
 test('今すぐ確認 after a LINE 🔎: the cooldown counted from the Worker’s; a 429 the page didn’t know about is worded', async ({ page, context }) => {
