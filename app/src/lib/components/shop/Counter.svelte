@@ -9,6 +9,12 @@
   // a 苗へ chip in its header to jump there (the order as the tab opened); the button says what it costs. Section headers stick while their rows scroll. A sell or a buy shows at once with 取り消す
   // (store/actions.ts undoBanner). The title bar is the kit's (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
   // (its card's: `pick`, `why`, `buy`).
+  // 全部売る / 全部買う (the user, 2026-11-14): a lead row atop うる and atop 今日の品物, its line what all of it comes to.
+  // 全部売る: the pocket whole but the starts and one of today's open おねがい vegetable (sell.ts sellAllOf); 全部買う: the
+  // pieces I don't have, all, or the most my かいがら cover, cheapest first (stock.ts buyAllOf). Off (a boop) with nothing
+  // to do. Its confirm (a paper Sheet) shows the count, the total, my かいがら after, what's kept, every row; its button
+  // does what it showed, as one group (all or none on the record; store/actions.ts sell `group`, stock.ts buyAll), one
+  // cue, one banner with 取り消す for the lot. The guest's the same, with its own pocket and かいがら.
   import { untrack } from 'svelte';
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
@@ -19,10 +25,13 @@
   import { iconUrl } from '../tent/items.ts';
   import { bare } from '#lib/world/critters.ts';
   import { SECTIONS, pocketItem } from './pocket.ts';
-  import { allPicked, step, toggleSection, toggleStack, type Picks } from './sell.ts';
+  import { allPicked, sellAllOf, step, toggleSection, toggleStack, type Picks, type SellAll } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { MAX_STARTS, holdDelay, shortBy, startsFill, startsFirst } from './stock.ts';
+  import { MAX_STARTS, buyAll, buyAllOf, holdDelay, shortBy, startsFill, startsFirst, type BuyAll } from './stock.ts';
+  import Sheet from '../ui/Sheet.svelte';
+  import { askNow } from '../island/vegAsk.svelte.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
   import { fillPlan } from '#lib/world/farmSheet.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
@@ -32,7 +41,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { sell, undoBanner } from '#lib/store/actions.ts';
   import { buyStarts } from '#lib/store/farm.svelte.ts';
-  import { CROPS, FARM, isFarmCrop, startKey, type Crop } from '#lib/contract/farm.ts';
+  import { CROPS, FARM, cropKey, isFarmCrop, startKey, type Crop } from '#lib/contract/farm.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
 
@@ -187,6 +196,48 @@
     buy();
   }
 
+  // ---- 全部売る / 全部買う (sell.ts sellAllOf, stock.ts buyAllOf): a lead row's button opens a confirm (the count, the
+  // total, my かいがら after, what's kept or left out, the list); its button does what it showed, never more (the
+  // pocket or the wallet changed meanwhile: a boop, nothing sent), as one group, one cue, one banner, one 取り消す
+  /** Today's open おねがい's vegetable (island/vegAsk.svelte.ts): 全部売る keeps one. */
+  const askKey = $derived.by(() => {
+    const a = askNow(minuteNow());
+    return a && !a.done ? cropKey(a.crop) : null;
+  });
+  const sellPlan = $derived(sellAllOf(shop.pocket, sellPrice, askKey));
+  const buyPlan = $derived(buyAllOf(stock, shop.owned, shop.shells));
+  /** The confirm up, and the plan it shows (as it opened). */
+  let confirm = $state<{ tab: 'sell'; plan: SellAll } | { tab: 'buy'; plan: BuyAll } | null>(null);
+  let confirmOpen = $state(false);
+  function askAll(which: Tab) {
+    if (which === 'sell' ? !sellPlan.n : !buyPlan.items.length) return void cue('boop');
+    confirm = which === 'sell' ? { tab: 'sell', plan: sellPlan } : { tab: 'buy', plan: buyPlan };
+    confirmOpen = true;
+  }
+  function doAll() {
+    const c = confirm;
+    confirmOpen = false;
+    if (!c) return;
+    if (c.tab === 'sell') {
+      const r = sell(c.plan.picks, { group: true });
+      if (!r.ok) return void cue('boop');
+      cue('buy');
+      undoBanner(t('shop.soldAll', { n: formatNum(c.plan.n), v: formatNum(c.plan.v) }), r);
+      picks = {};
+    } else {
+      const r = buyAll(c.plan.items, stock);
+      if (!r.ok) return void cue('boop');
+      cue('buy');
+      undoBanner(t('shop.boughtAll', { n: formatNum(c.plan.items.length), v: formatNum(c.plan.total) }), r);
+      pick = null;
+    }
+  }
+  /** The lead row's line: what 全部 comes to, or why there's none. */
+  const sellAllLine = $derived(sellPlan.n ? t('shop.sellAllSum', { n: formatNum(sellPlan.n), v: formatNum(sellPlan.v) }) : t('shop.sellAllNone'));
+  const buyAllLine = $derived(!buyPlan.of ? t('shop.buyAllNone')
+    : buyPlan.short ? t('shop.short', { n: formatNum(buyPlan.short) })
+    : t(buyPlan.items.length < buyPlan.of ? 'shop.buyAllPart' : 'shop.buyAllSum', { n: formatNum(buyPlan.items.length), v: formatNum(buyPlan.total) }));
+
   /** A row of うる or 苗 (the stepRow snippet). */
   interface StepRow {
     key: string;
@@ -226,6 +277,7 @@
 
   {#if tab === 'sell'}
     <div class="list" data-shop-list>
+      {@render allRow('sell', pocket.length ? sellAllLine : '', !sellPlan.n)}
       {#if pocket.length}
         <div class="pocket" data-shop-pocket>
           {#each sections as { s, rows } (s)}
@@ -269,6 +321,7 @@
           {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
           {#if !first}<button type="button" class="chip s" data-shop-to-starts data-sfx="self" onclick={toStarts}>{t('shop.toStarts')}</button>{/if}
         </div>
+        {@render allRow('buy', stock.length ? buyAllLine : '', !buyPlan.items.length)}
         {#if stock.length}
           <ul class="grid" data-shop-stock>
             {#each stock as code (code)}
@@ -299,6 +352,54 @@
     </div>
   {/if}
 </section>
+
+<!-- 全部売る / 全部買う's lead row: what all of it comes to (or why none), and its button (named by the line too) -->
+{#snippet allRow(which: Tab, line: string, off: boolean)}
+  <div class="all" data-shop-all-row={which}>
+    <p class="all-line" id="shop-all-{which}" data-shop-all-line>{line}</p>
+    <button type="button" class="chip all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
+      onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : 'shop.buyAll')}</button>
+  </div>
+{/snippet}
+
+<!-- the confirm: the count, the total, my かいがら after, what's kept or left out, every row; キャンセル or do it -->
+<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : 'shop.buyAll') : ''} name="shop.all">
+  {#if confirm}
+    <div class="confirm" data-shop-confirm={confirm.tab}>
+      {#if confirm.tab === 'sell'}
+        {@const p = confirm.plan}
+        <p class="lead" data-shop-confirm-lead>{t('shop.sellAllLead', { n: formatNum(p.n), v: formatNum(p.v) })}</p>
+        <p class="after" data-shop-confirm-after={shop.shells + p.v}>{t('shop.afterSell', { v: formatNum(shop.shells + p.v) })}</p>
+        {#each p.kept as k (k.k)}
+          <p class="kept" data-shop-confirm-kept={k.k}>{k.why === 'ask' ? t('shop.keptAsk', { name: speciesName(k.k) }) : t('shop.keptStart', { name: speciesName(k.k), n: String(k.n) })}</p>
+        {/each}
+        <ul class="clist" data-shop-confirm-list>
+          {#each pocket.filter((r) => p.picks.has(r.k)) as r (r.k)}
+            {@const n = p.picks.get(r.k) ?? 0}
+            <li data-shop-confirm-row={r.k}><span class="cn">{speciesName(r.k)} ×{n}</span><span class="cv">{formatNum(n * r.p)}</span></li>
+          {/each}
+        </ul>
+      {:else}
+        {@const p = confirm.plan}
+        <p class="lead" data-shop-confirm-lead>{p.items.length < p.of ? t('shop.buyAllLeadPart', { n: formatNum(p.items.length), m: formatNum(p.of), v: formatNum(p.total) })
+          : t('shop.buyAllLead', { n: formatNum(p.items.length), v: formatNum(p.total) })}</p>
+        <p class="after" data-shop-confirm-after={shop.shells - p.total}>{t('shop.afterBuy', { v: formatNum(shop.shells - p.total) })}</p>
+        <ul class="clist" data-shop-confirm-list>
+          {#each p.items as c (c)}
+            <li data-shop-confirm-row={c}><span class="cn">{itemName(c)}</span><span class="cv">{formatNum(buyPrice(c) ?? 0)}</span></li>
+          {/each}
+        </ul>
+      {/if}
+    </div>
+  {/if}
+  {#snippet footer()}
+    <div class="two">
+      <button type="button" class="btn paper" data-shop-confirm-cancel data-sfx="back" onclick={() => (confirmOpen = false)}>{t('common.cancel')}</button>
+      <!-- (its total is the lead's line, right above: 「1,946かいがらで売る」 wrapped in half the width) -->
+      <button type="button" class="btn" data-shop-confirm-go data-sfx="self" onclick={doAll}>{t(confirm?.tab === 'sell' ? 'shop.sell' : 'shop.buy')}</button>
+    </div>
+  {/snippet}
+</Sheet>
 
 <!-- the starts for the fields (docs/farming.md): always in stock, in rows as うる's, bought by the bar's 買う -->
 {#snippet startsSec()}
@@ -416,5 +517,23 @@
   }
   .bar .btn { margin: 0; flex: none; }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  /* 全部売る / 全部買う's lead row: its line and its chip, a card's stitch under it */
+  .all { flex: none; display: flex; align-items: center; gap: 8px; min-height: var(--hit); }
+  .group > .all { margin-bottom: 8px; }
+  .all-line { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
+  .all-btn { flex: none; }
+  .all-btn[aria-disabled='true'] { opacity: .45; }
+  /* the confirm: its lines, then the rows (a name, its かいがら), the two buttons at the foot */
+  .confirm { display: grid; gap: 6px; padding: 0 4px 4px; }
+  .confirm p { margin: 0; }
+  .lead { font: 700 var(--fs-talk)/1.4 var(--font-ui); }
+  .after, .kept { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .clist { list-style: none; margin: 6px 0 0; padding: 0; display: grid; }
+  .clist li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 2px; font-size: var(--fs-body); }
+  .clist li + li { box-shadow: inset 0 1px 0 var(--edge); }
+  .cn { min-width: 0; overflow-wrap: anywhere; }
+  .cv { flex: none; font: 700 var(--fs-body)/1.3 var(--font-num); font-variant-numeric: tabular-nums; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .two .btn { margin: 0; }
   @media (prefers-reduced-motion: reduce) { .menu { animation: none; } }
 </style>

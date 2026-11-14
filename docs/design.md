@@ -808,18 +808,17 @@ person has a pocket and かいがら, the guest too.
 
 - **Inside, in 3D** (`shop/plan.ts` on the rooms' engine): NH's Nook's Cranny, in by its door. まめきち and つぶきち
   behind the counter; today's stock in the room, the same on every phone (stage, table, back wall; the rest in the list
-  only). The camera as the rooms' (a drag, two fingers zoom and pan, ⌂). **Others in the shop are drawn** (presence
-  `sc: 's'`).
+  only). The camera as the rooms'. **Others in the shop are drawn** (presence `sc: 's'`).
 - **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う); a
-  tap on the twins (their bodies and the counter's top), their balloon or the sign (「タップで かう・うる」) opens the list
+  tap on the twins, their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
 - **The list** (`shop/Counter.svelte`: its header has the rows and the bar): 売る · 買う, my かいがら in the bar. A world
   object: cream at every hour (`.obj-cream`), its own rows (畑, a sheet, follows the hour), as the rooms' top row.
-- **うる**: my pocket (caught, found or picked up, less sold) by section; a row picks its stack, − / + one, 全部 all of
-  it. Selling leaves the ずかん and the museum; presents and bottles never sell.
-- **かう**: today's stock, 24 pieces a day, seeded (a pack's pieces side by side), less what the island had by midnight;
-  past my かいがら dimmed. The starts ([farming.md](farming.md)) in rows. Bought: in 模様替え.
-- A sell or a buy shows at once, a one-line toast, 取り消す for 5 s, then the record checks it
+- **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部 a section,
+  全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
+- **かう**: today's stock, 24 pieces a day, seeded by pack, less what the island had by midnight; past
+  my かいがら dimmed; 全部買う the most I can afford, cheapest first. The starts ([farming.md](farming.md)) in rows.
+- A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷
   20); at most 10,000.

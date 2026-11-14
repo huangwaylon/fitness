@@ -5,7 +5,7 @@ import { addDays } from '#lib/contract/tokyo.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { HOLD_MIN_MS, HOLD_MS, MAX_STARTS, foundBefore, holdDelay, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
+import { HOLD_MIN_MS, HOLD_MS, MAX_STARTS, buyAllOf, foundBefore, holdDelay, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
@@ -97,5 +97,31 @@ describe('苗’s + held down (holdDelay)', () => {
     const ms = Array.from({ length: MAX_STARTS }, (_, k) => holdDelay(k)).reduce((a, b) => a + b, 0);
     expect(ms).toBeGreaterThan(3000);
     expect(ms).toBeLessThan(4000);
+  });
+});
+
+describe('全部買う (buyAllOf)', () => {
+  const P: Record<string, number> = { a: 500, b: 40, c: 900, d: 40, e: 10 };
+  const price = (c: string) => P[c];
+  const stock = ['a', 'b', 'c', 'd', 'e'];
+  it('covered: every piece I don’t have', () => {
+    expect(buyAllOf(stock, ['c'], 10_000, price)).toEqual({ items: ['e', 'b', 'd', 'a'], total: 590, of: 4, short: 0 });
+  });
+  it('short: the most pieces my かいがら cover, cheapest first (ties in the stock’s order)', () => {
+    expect(buyAllOf(stock, [], 100, price)).toEqual({ items: ['e', 'b', 'd'], total: 90, of: 5, short: 0 });
+    expect(buyAllOf(stock, [], 89, price)).toMatchObject({ items: ['e', 'b'], total: 50 });
+  });
+  it('none affordable: how far the cheapest is; all owned or no stock: nothing, short 0', () => {
+    expect(buyAllOf(stock, [], 4, price)).toEqual({ items: [], total: 0, of: 5, short: 6 });
+    expect(buyAllOf(stock, stock, 9999, price)).toEqual({ items: [], total: 0, of: 0, short: 0 });
+    expect(buyAllOf([], [], 9999, price)).toEqual({ items: [], total: 0, of: 0, short: 0 });
+  });
+  it('on a real day’s stock and prices: within the wallet, cheapest first', () => {
+    const real = stockOf('2026-11-09');
+    const r = buyAllOf(real, [], 1000);
+    expect(r.total).toBeLessThanOrEqual(1000);
+    const ps = r.items.map((c) => buyPrice(c)!);
+    expect(ps).toEqual([...ps].sort((x, y) => x - y));
+    expect(r.of).toBe(real.length);
   });
 });

@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
-import { isWeatherMode, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
+import { GROUP_MAX, isWeatherMode, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
@@ -290,9 +290,11 @@ export function together(rs: SendResult[]): SendResult {
 
 /**
  * Sell catches from my pocket (`kind:id` → how many): one `sell` per species at its price. `{ok:false}` when one isn't
- * in the pocket that many times. `shells`: what they fetched.
+ * in the pocket that many times. `shells`: what they fetched. `group` (全部売る): sent as groups of up to GROUP_MAX,
+ * each kept all or none by the record (relay store.ts group), so a pocket sold meanwhile on my other phone leaves
+ * nothing half-sold.
  */
-export function sell(picks: ReadonlyMap<string, number>): SendResult & { shells?: number } {
+export function sell(picks: ReadonlyMap<string, number>, opts: { group?: boolean } = {}): SendResult & { shells?: number } {
   const m = week.model;
   if (!m || !picks.size) return { ok: false };
   const pocket = shopView(m.state, m.me).pocket;
@@ -303,7 +305,11 @@ export function sell(picks: ReadonlyMap<string, number>): SendResult & { shells?
     rows.push({ species, n, v: n * p });
   }
   releaseTally();
-  const r = together(rows.map((d) => week.send('sell', d, { holdMs: UNDO_MS })));
+  let group: string | undefined;
+  const r = together(rows.map((d, i) => {
+    if (opts.group && i % GROUP_MAX === 0) group = newId();
+    return week.send('sell', d, { holdMs: UNDO_MS, ...(group ? { group } : {}) });
+  }));
   return { ...r, shells: rows.reduce((a, d) => a + d.v, 0) };
 }
 

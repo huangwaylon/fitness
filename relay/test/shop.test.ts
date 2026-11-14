@@ -342,6 +342,23 @@ describe('a group of buys (ぜんぶ かう)', () => {
     expect(owned('A')).toHaveLength(4);
   });
 
+  it('a group of sells (全部売る): all kept, or none when one is past the pocket (my other phone sold it)', () => {
+    post('A', [{ id: 't', type: 'tally', data: { date: D, counts: { 'fish:koi': 3, 'fish:whale-shark': 2 } } }]);
+    const sells = (g: string, koi: number) => [
+      { id: `${g}-1`, type: 'sell', group: g, data: { species: 'fish:whale-shark', n: 2, v: 2 * W } },
+      { id: `${g}-2`, type: 'sell', group: g, data: { species: 'fish:koi', n: koi, v: koi * K } }
+    ];
+    // the other phone sold a koi: 3 no longer fit, so the shark isn't sold either
+    expect(post('A', [{ id: 'other', type: 'sell', data: { species: 'fish:koi', n: 1, v: K } }])[0].ok).toBe(true);
+    const r = post('A', sells('g1', 3));
+    expect(r.map((x) => x.detail)).toEqual(['group', 'pocket short']);
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(post('A', sells('g2', 2)).every((x) => x.ok)).toBe(true);
+    // all of it gone: the shark's かいがら and the koi's, nothing past the pocket
+    expect(post('A', [{ id: 'more', type: 'sell', data: { species: 'fish:whale-shark', n: 1, v: W } }])[0].ok).toBe(false);
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+  });
+
   it('a group beside other events: only the group is all or none', () => {
     fund('A', buyPrice(pieces[0])!);
     const r = post('A', [
