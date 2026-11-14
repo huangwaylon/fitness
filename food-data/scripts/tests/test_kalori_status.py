@@ -678,6 +678,16 @@ class VerdictKeepsTheRun(unittest.TestCase):
         ok = S.deploy(f, Args(sha='abc', deploy='ok'), NOW)
         self.assertEqual((ok['verdict'], ok['reasons'], ok['run']['result']), ('healthy', [], 'published'))
 
+    def test_deploy_over_a_held_or_failed_run(self):
+        # an earlier merge's deploy settles while the newest run is held or failed: the run's verdict stays
+        for result, reasons, verdict in (('held', ['band_gone'], 'held'), ('failed', ['crash'], 'failing')):
+            prev = {'verdict': verdict, 'reasons': reasons + ['deploy_failed'], 'run': {'result': result},
+                    'merge': {'sha': 'abc', 'deploy': 'failed', 'pr': None}, 'dataset': {'tag': 't'}, 'history': []}
+            ok = S.deploy(prev, Args(sha='abc', deploy='ok'), NOW)
+            self.assertEqual((ok['verdict'], ok['reasons'], ok['run']['result']), (verdict, reasons, result))
+            bad = S.deploy({**prev, 'reasons': reasons}, Args(sha='abc', deploy='failed', reason='deploy_failed'), NOW)
+            self.assertEqual((bad['verdict'], bad['run']['result']), ('failing', result))
+
     def test_late_then_clear(self):
         prev = {'verdict': 'healthy', 'reasons': [], 'run': {'result': 'published'}, 'history': []}
         s = S.late(prev, Args(reasons='late'), NOW)

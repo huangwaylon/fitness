@@ -9,7 +9,7 @@ import { parseSettingsInput, type ItsStatus, type ScanMinute } from './contract.
 import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
-  addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, dateBounds, dateMonths, nightGrid, nightMonths, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
+  addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, nightGrid, nightMonths, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   attentionLines, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
   keyRow, savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
@@ -54,7 +54,6 @@ describe('the draft', () => {
 
   it('adds a date from tonight (Tokyo) to MAX_DAYS_AHEAD, once, at most MAX_DATES', () => {
     const d = draft({ dates: [] });
-    expect(dateBounds(Date.parse('2026-11-13T15:30:00Z'))).toEqual({ min: '2026-11-14', max: '2027-12-19' });
     expect(addDate(d, '2026-11-13', NOW)).toMatchObject({ ok: true, draft: { dates: ['2026-11-13'] } });
     expect(addDate(d, '2026-11-13', Date.parse('2026-11-13T15:30:00Z'))).toEqual({ ok: false, why: 'past' });
     expect(addDate(d, '2027-12-18', NOW).ok).toBe(true);
@@ -86,7 +85,7 @@ describe('dateRows', () => {
       ['2026-11-24', 11, 'auto', 'あと11日 · 自動で確定'],
       ['2026-11-25', 12, 'auto', 'あと12日 · 自動で確定']
     ]);
-    expect(dateRows(d, NOW)[0].label).toBe('11月13日(金)');
+    expect(dateRows(d, NOW)[0].label).toBe('11/13（金）');
     expect(dateRows({ ...d, autoConfirm: false }, NOW).at(-1)!.note).toBeNull();
     // a minute past midnight in Tokyo the 23rd is 9 days away: D−4 only
     expect(dateRows(d, jst('2026-11-14T00:01:00')).find((r) => r.date === '2026-11-23')!.note).toBe('d4');
@@ -104,13 +103,14 @@ describe('the stays: the calendar, months, what can take each', () => {
     expect(nightMonths(jst('2026-12-31T23:00:00'))).toEqual(['2026-12', '2027-01']);
     const d = draft({ dates: ['2026-11-21'] });
     const g = nightGrid('2026-11', d, NOW, bookingRows(STATUS, TODAY));
-    expect(g.map((w) => w.length)).toEqual([7, 7, 7, 7, 7, 7]);   // 11/1 a Sunday: 6 weeks from 10/26
-    expect(g[0][0].date).toBe('2026-10-26');
-    expect(g[0].slice(0, 6).every((c) => c.out)).toBe(true);
+    expect(g.map((w) => w.length)).toEqual([7, 7, 7, 7]);   // the weeks all passed left out: from 11/9
+    expect(g[0][0].date).toBe('2026-11-09');
+    expect(g[0].slice(0, 4).every((c) => c.out)).toBe(true);   // 11/9–12 passed: faint, in the row
+    expect(nightGrid('2026-12', d, NOW)[0][0].date).toBe('2026-11-30');
     const c = Object.fromEntries(g.flat().map((x) => [x.date, x]));
     expect([c['2026-11-12'].out, c['2026-11-13'].out, c['2026-11-13'].today]).toEqual([true, false, true]);   // past nights inert
-    expect(c['2026-11-21']).toMatchObject({ on: true, label: '11月21日(土)、探す日' });
-    expect(c['2026-11-22']).toMatchObject({ on: false, mark: 'action', label: '11月22日(日)、要対応' });   // the hold waiting
+    expect(c['2026-11-21']).toMatchObject({ on: true, label: '11/21（土）、探す日' });
+    expect(c['2026-11-22']).toMatchObject({ on: false, mark: 'action', label: '11/22（日）、要対応' });   // the hold waiting
     expect(weekday('2026-11-15')).toBe(0);
     const on = toggleNight(d, '2026-11-20', NOW);
     expect(on.ok && on.draft.dates).toEqual(['2026-11-20', '2026-11-21']);
@@ -118,22 +118,18 @@ describe('the stays: the calendar, months, what can take each', () => {
     expect(off.ok && off.draft.dates).toEqual([]);
     const full = draft({ dates: Array.from({ length: 20 }, (_, i) => `2026-12-${String(i + 1).padStart(2, '0')}`) });
     expect(toggleNight(full, '2026-11-20', NOW)).toEqual({ ok: false, why: 'full' });
-    // a Saturday's column (col 5): 11/14, 21, 28 (the 7th passed); all in, so a second tap takes them out
-    const sat = toggleColumn(d, g, 5, NOW);
+    // a Saturday's column (col 5): 11/14, 21, 28 (the 7th passed); any in, so a second tap takes them all out
+    expect(toggleColumn(d, g, 5, NOW).draft.dates).toEqual([]);   // one in (11/21): the tap takes the column out
+    const sat = toggleColumn(draft({ dates: [] }), g, 5, NOW);
     expect([sat.draft.dates, sat.over]).toEqual([['2026-11-14', '2026-11-21', '2026-11-28'], 0]);
     expect(toggleColumn(sat.draft, nightGrid('2026-11', sat.draft, NOW), 5, NOW).draft.dates).toEqual([]);
     const near = toggleColumn(draft({ dates: full.dates.slice(0, 19) }), g, 5, NOW);
     expect([near.draft.dates.length, near.over]).toEqual([20, 2]);
+    // cut short by the cap: the next tap takes the one that fit out
+    expect(toggleColumn(near.draft, g, 5, NOW).draft.dates).toEqual(full.dates.slice(0, 19));
     expect(parseSettingsInput(toInput(near.draft, null, NOW), NOW).ok).toBe(true);
     const added = addDates(draft({ dates: ['2026-11-12', '2026-11-21'] }), ['2026-11-20', '2026-11-21'], NOW);
     expect(added.draft.dates).toEqual(['2026-11-20', '2026-11-21']);
-  });
-
-  it('heads the stays by month', () => {
-    const rows = dateRows(draft({ dates: ['2026-12-01', '2026-11-21', '2027-01-09', '2026-11-22'] }), NOW);
-    expect(dateMonths(rows).map((m) => [m.label, m.rows.map((r) => r.date)])).toEqual([
-      ['2026年11月', ['2026-11-21', '2026-11-22']], ['2026年12月', ['2026-12-01']], ['2027年1月', ['2027-01-09']]
-    ]);
   });
 
   const R = (name: string, kind: RosterHotel['kind'], cutoff: 4 | 10 | null, region: Region = 'kanto', area = 'か'): RosterHotel => ({ name, region, area, kind, cutoff, verified: true });
@@ -173,7 +169,7 @@ describe('the stays: the calendar, months, what can take each', () => {
     const row = hotelRows(draft({ search: ['NAGU 勝浦'] }), []).find((r) => r.name === 'NAGU 勝浦')!;
     expect(nightOf(row, '2026-12-22', 39)).toEqual({ why: 'closed', line: 'NAGU 勝浦は火・水曜休み' });
     expect(nightOf(row, '2026-11-24', 11)).toEqual({ why: 'season', line: '冬季は12/19から' });
-    expect(nightOf(row, '2026-12-22', 3)).toEqual({ why: 'cutoff', line: '4日前までの施設：12月18日で受付終了' });
+    expect(nightOf(row, '2026-12-22', 3)).toEqual({ why: 'cutoff', line: '4日前までの施設：12/18で受付終了' });
     expect(nightOf(row, '2026-12-24', 39)).toEqual({ why: 'check', line: null });
   });
 
@@ -196,19 +192,19 @@ describe('the stays: the calendar, months, what can take each', () => {
     expect(dr[0].parts.map((p) => [p.why, p.names.length])).toEqual([['cutoff', 7]]);
     expect(dr[1].parts).toEqual([
       { why: 'check', names: ['四日', '新顔'], lines: [] },
-      { why: 'cutoff', names: ['十日'], lines: ['10日前までの施設：11月10日で受付終了'] },
+      { why: 'cutoff', names: ['十日'], lines: ['10日前までの施設：11/10で受付終了'] },
       { why: 'season', names: ['夏', '冬', '冬と夏'], lines: ['夏季は9/30まで', '冬季は12/19〜3/31', '冬季は12/19から'] },
       { why: 'gone', names: ['契約なし'], lines: [] }
     ]);
-    expect(dr[1].aria).toBe('11月20日(金)、あと7日、4日前までの施設のみ。7件中2件を探しています。受付終了で1件、季節外で3件、掲載終了で1件除外。');
-    expect(dr[2].aria).toBe('11月30日(月)、あと17日。7件中3件を探しています。季節外で3件、掲載終了で1件除外。');
+    expect(dr[1].aria).toBe('11/20（金）、あと7日、4日前までの施設のみ。7件中2件を探しています。受付終了で1件、季節外で3件、掲載終了で1件除外。');
+    expect(dr[2].aria).toBe('11/30（月）、あと17日。7件中3件を探しています。季節外で3件、掲載終了で1件除外。');
     expect(dr.map((r) => r.noSeason)).toEqual([false, false, false, false, false, false, true, true]);
     // only the searched, in the list's order
     const off = setSearch(every(['2026-12-19']), ['四日'], false);
     expect(dateRows(off, NOW, hotelRows(off, ['新顔'], null, roster))[0]).toMatchObject({ able: ['十日', '冬', '冬と夏', '新顔'] });
     // and none searched: an empty bar
     const none = every(['2026-12-19'], { search: [] });
-    expect(dateRows(none, NOW, hotelRows(none, [], null, roster))[0]).toMatchObject({ able: [], parts: [], aria: '12月19日(土)、あと36日。0件中0件を探しています。' });
+    expect(dateRows(none, NOW, hotelRows(none, [], null, roster))[0]).toMatchObject({ able: [], parts: [], aria: '12/19（土）、あと36日。0件中0件を探しています。' });
   });
 
   it('施設 in three parts: 探す (by region, 「12/19のみ」), 日程に合わない (the reason across the nights), 除外; the summary agrees with the bars', () => {
@@ -550,8 +546,8 @@ describe('bookingRows', () => {
 describe('eventLines', () => {
   it('newest first: the time, what, and the stay, facility and why', () => {
     expect(eventLines(STATUS, TODAY)).toEqual([
-      { key: '19283746:4', time: '12:55', what: '要対応', info: '11月22日(日) · NAGU 勝浦 · 日付が近いため、メールから申込してください', bad: true },
-      { key: '19283746:3', time: '12:55', what: '仮押さえ', info: '11月22日(日) · NAGU 勝浦', bad: false }
+      { key: '19283746:4', time: '12:55', what: '要対応', info: '11/22（日） · NAGU 勝浦 · 日付が近いため、メールから申込してください', bad: true },
+      { key: '19283746:3', time: '12:55', what: '仮押さえ', info: '11/22（日） · NAGU 勝浦', bad: false }
     ]);
     const many = status({ events: Array.from({ length: 15 }, (_, i) => ({ runId: 'r', seq: 15 - i, t: STATUS.now - i, kind: 'run_end' as const, detail: 'time_up' })) });
     expect(eventLines(many, TODAY)).toHaveLength(10);

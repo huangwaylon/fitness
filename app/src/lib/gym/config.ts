@@ -118,9 +118,11 @@ function parseSlots(x: unknown): OpenSlot[] {
     .map((s) => ({ day: s.day, start: s.start, end: s.end, programs: s.programs.filter((p) => p === 'training' || p === 'pilates') }));
 }
 
-/** POST /gym/act with this phone's key. Never throws; the caller's abort (the page left) is no failure. */
+/** POST /gym/act with this phone's key. Never throws; the caller's abort is no failure (an act passes none:
+ *  components/bots/gymActs.svelte.ts; 今すぐ確認 the page's life). */
 export async function postAct(input: ActInput, signal?: AbortSignal, url = GYM_URL, key = getKey()): Promise<ActReply> {
   if (!key || !url) return { ok: false, err: 'no_key', http: null };
+  if (signal?.aborted) return { ok: false, err: 'aborted', http: null }; // (a dead signal sends nothing)
   const rid = newRid();
   const ctl = new AbortController();
   const stop = () => ctl.abort();

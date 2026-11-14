@@ -54,6 +54,7 @@
   // swallow whose click never came)
   let press: { day: Day; x: number; y: number; timer: ReturnType<typeof setTimeout> } | null = null;
   let swallow = false;
+  $effect(() => () => press && clearTimeout(press.timer));
   function down(e: PointerEvent, day: Day) {
     swallow = false;
     if (selecting) return;

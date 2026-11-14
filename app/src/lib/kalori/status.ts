@@ -9,7 +9,7 @@ import { isNum, isRec, isText } from '#lib/contract/guards.ts';
 import type { CellState, StripCell, StripTick } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
-import { dayOf, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
+import { dayOf, dayOfDate, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/kalori.ts';
 import '#lib/i18n/bots.ts';
 
@@ -156,8 +156,6 @@ const LATE_MS = DAY_MS;
 /** The dot on its own: the scheduled run this long overdue, whatever the file says. */
 const STALE_MS = 2 * DAY_MS;
 
-/** A `YYYY-MM-DD` as `11/4（水）` (lib/i18n/when.ts). */
-const dateText = (d: string): string => dayOf(Date.parse(`${d}T12:00:00+09:00`));
 /** `4時間12分`; under an hour `38分`. */
 const duration = (ms: number): string => durationOf(ms, false);
 const pct = (f: number): string => `${(Math.round(f * 1000) / 10).toFixed(1)}%`;
@@ -205,7 +203,7 @@ export function reasonText(s: KaloriStatus, r: string): string {
 /** The accepted data's day, in words (the dataset's date, else the tag's). */
 const dataDay = (s: KaloriStatus): string => {
   const d = s.dataset?.date ?? s.dataset?.tag.match(/\d{4}-\d{2}-\d{2}/)?.[0];
-  return d ? dateText(d) : t('kalori.unknown');
+  return d ? dayOfDate(d) : t('kalori.unknown');
 };
 
 /** The verdict card: its tone, its word, and one plain sentence. */
@@ -225,9 +223,9 @@ export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: B
   return { tone: TONE[v], w: WORD[v], word: t(`bots.w.${WORD[v]}`), sentence, verdict: v };
 }
 
-/** 確認が必要's lines, only what the verdict's sentence doesn't say: held with a PR, the step (open it from ⋯, merge by
- *  hand); the reasons the sentence leaves out (a band's line among them); an alert's own text when no reason words it.
- *  Empty when there's nothing more (遅れ, a plain 不調: the sentence says it). */
+/** 確認が必要's lines, only what the verdict's sentence doesn't say: held with a PR, the step (look, merge by hand;
+ *  the card has its link); the reasons the sentence leaves out (a band's line among them); an alert's own text when no
+ *  reason words it. Empty when there's nothing more (遅れ, a plain 不調: the sentence says it). */
 export function alertLines(s: KaloriStatus, now: number): string[] {
   const v = verdictOf(s, now);
   if (v !== 'held' && v !== 'failing' && !s.alert) return [];
@@ -251,12 +249,15 @@ export const menuLinks = (s: KaloriStatus, now: number): { id: 'run' | 'pr' | 'w
 ];
 
 /** The key row (docs/design.md "Bots"): 前回 (the newest run kept, with what came of it: the deploy's failure or
- *  revert, else its result; a run under way doesn't count yet) · 次回 · 品目 (the accepted data's; 不調: 最後の成功, the
+ *  revert when it's the merge's run, else its result; a run under way doesn't count yet) · 次回 · 品目 (the accepted data's; 不調: 最後の成功, the
  *  newest merged run). */
 export function keyRow(s: KaloriStatus, now: number): { id: string; label: string; value: string; sub?: string }[] {
   const h = s.history.at(-1);
   const d = s.merge?.deploy;
-  const out = h && (d === 'failed' || d === 'reverted') ? t(`kalori.key.${d}`) : h ? t(`kalori.strip.${h.result}`) : undefined;
+  // the merge's outcome only when that newest run is the merge's (merged, or a released one the revert marked failed);
+  // a later run (a nochange, a failure) says its own
+  const mine = !!h && (h.result === 'merged' || (h.result === 'failed' && d === 'reverted' && h.tag !== null));
+  const out = !h ? undefined : mine && (d === 'failed' || d === 'reverted') ? t(`kalori.key.${d}`) : t(h.result === 'none' ? 'kalori.key.none' : `kalori.strip.${h.result}`);
   const ok = s.history.findLast((w) => w.result === 'merged');
   const third = verdictOf(s, now) === 'failing'
     ? { id: 'ok', label: t('bots.key.lastOk'), value: ok ? timeOf(ok.t, now) : t('bots.key.never') }

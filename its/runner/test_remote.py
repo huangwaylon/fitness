@@ -1043,6 +1043,8 @@ def test_hot_reload(port):
         check('reload: apply_settings reports what changed',
               set(changed) == {'TARGET_DATES', 'RETRY_DELAY', 'NUM_GUESTS'}, str(changed))
         check('reload: the interval and guests', bh.RETRY_DELAY == 60 and bh.NUM_GUESTS == '3')
+        check("reload: the settings' stored priority is ignored (every facility alike)",
+              bh.PRIORITY_HOTELS == [] and bh._PRIORITY_NORM == (), str(bh.PRIORITY_HOTELS))
     finally:
         _cleanup(sup)
         for k, v in saved.items():

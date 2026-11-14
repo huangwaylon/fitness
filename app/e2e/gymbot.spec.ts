@@ -74,6 +74,9 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(key('next')).toHaveText(/次回\s*12:09ごろ\s*15分ごと/);
   await expect(key('open')).toHaveText(/いま\s*空き1件/);
   await expect(gym.locator('[data-bots-asof]')).toHaveText('12:00時点');
+  // the word: body type, as the other cards' titles (くわしく's row), never a display size
+  const size = (l: ReturnType<Page['locator']>) => l.evaluate((e) => getComputedStyle(e).fontSize);
+  expect(await size(gym.locator('[data-gym-verdict] .word'))).toBe(await size(gym.locator('[data-gym-more] .prl')));
   // ⋯ on the card: named, a dialog's; the card has no other button
   const menu = gym.locator('[data-gym-verdict] [data-gym-menu]');
   await expect(menu).toHaveAccessibleName('ジムの操作');

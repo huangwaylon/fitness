@@ -9,12 +9,11 @@ import {
 } from './contract.ts';
 import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } from '#lib/its/roster.ts';
 import { t } from '#lib/i18n/index.ts';
-import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
 import '#lib/i18n/bots.ts';
 import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
-import { durationOf, timeOf } from '#lib/i18n/when.ts';
+import { dayOfDate, durationOf, timeOf } from '#lib/i18n/when.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -69,12 +68,6 @@ export function toInput(d: Draft, baseUpdatedAt: number | null, now: number): It
 }
 
 // ---- The stays ----
-/** The date fields' bounds: tonight in Tokyo to MAX_DAYS_AHEAD days on. */
-export function dateBounds(now: number): { min: string; max: string } {
-  const min = tokyoToday(now);
-  return { min, max: new Date(Date.parse(min) + MAX_DAYS_AHEAD * 86_400_000).toISOString().slice(0, 10) };
-}
-
 type AddWhy = 'bad' | 'past' | 'far' | 'dup' | 'full';
 /** A date added, or why not. */
 export function addDate(d: Draft, date: string, now: number): { ok: true; draft: Draft } | { ok: false; why: AddWhy } {
@@ -114,7 +107,8 @@ export function nightMonths(now: number): string[] {
 }
 const MARK: Record<BookingState, NightCell['mark']> = { action: 'action', applying: 'hold', hold: 'hold', confirmed: 'booked', lapsed: null };
 const MARK_RANK: NightCell['mark'][] = ['action', 'hold', 'booked'];
-/** A month's weeks, Monday first, a cell a day (the days of the months either side out). */
+/** A month's weeks from the first with a night to set, Monday first, a cell a day (past nights and the months either
+ *  side out). */
 export function nightGrid(month: string, d: Draft, now: number, rows: readonly BookingRow[] = []): NightCell[][] {
   const first = `${month}-01`;
   const lead = (weekday(first) + 6) % 7;
@@ -132,10 +126,13 @@ export function nightGrid(month: string, d: Draft, now: number, rows: readonly B
     const n = daysUntil(date, now);
     const out = !date.startsWith(month) || n < 0 || n > MAX_DAYS_AHEAD;
     const mark = marks.get(date) ?? null;
-    const label = [formatDate(date), ...(date === today ? [t('its.cal.today')] : []), ...(on.has(date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
+    const label = [dayOfDate(date), ...(date === today ? [t('its.cal.today')] : []), ...(on.has(date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
     return { date, d: Number(date.slice(8, 10)), today: date === today, out, on: on.has(date), mark, label };
   });
-  return Array.from({ length: days / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
+  // a week with no night to set before the first that has one (this month's passed weeks) is left out
+  const weeks = Array.from({ length: days / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
+  const lead1 = weeks.findIndex((w) => w.some((c) => !c.out));
+  return lead1 < 0 ? weeks : weeks.slice(lead1);
 }
 
 /** A night tapped: in the draft, out of it; else added (or why not: 20 at most). */
@@ -143,10 +140,11 @@ export function toggleNight(d: Draft, date: string, now: number): { ok: true; dr
   return d.dates.includes(date) ? { ok: true, draft: removeDate(d, date) } : addDate(d, date, now);
 }
 
-/** A weekday's column (0 = 月) tapped: its settable nights all in the draft, out of it; else the rest added (up to 20). */
+/** A weekday's column (0 = 月) tapped: any of its settable nights in the draft, all of them out (so a column the
+ *  20-stay cap cut short still comes out at the next tap); else all added (up to 20). */
 export function toggleColumn(d: Draft, grid: readonly NightCell[][], col: number, now: number): { draft: Draft; over: number } {
   const dates = grid.map((w) => w[col]).filter((c) => !c.out).map((c) => c.date);
-  if (dates.length && dates.every((x) => d.dates.includes(x))) return { draft: { ...d, dates: d.dates.filter((x) => !dates.includes(x)) }, over: 0 };
+  if (dates.some((x) => d.dates.includes(x))) return { draft: { ...d, dates: d.dates.filter((x) => !dates.includes(x)) }, over: 0 };
   return addDates(d, dates, now);
 }
 
@@ -159,7 +157,6 @@ type Why = 'check' | 'cutoff' | 'season' | 'closed' | 'gone';
 /** The order the bar draws them in, and the expanded night lists them. */
 const WHYS: readonly Why[] = ['check', 'cutoff', 'season', 'closed', 'gone'];
 
-const monthDay = (date: string): string => t('its.night.md', { m: Number(date.slice(5, 7)), d: Number(date.slice(8, 10)) });
 const md = (date: string): string => `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`;
 const daysBefore = (date: string, n: number): string => new Date(Date.parse(date) - n * 86_400_000).toISOString().slice(0, 10);
 
@@ -192,7 +189,7 @@ export function closedOn(r: RosterHotel | null, date: string): string | null {
 export interface Night { why: Why; line: string | null }
 export function nightOf(r: HotelRow, date: string, days: number, seasons: Seasons = SEASONS): Night {
   const cutoff = r.roster?.cutoff ?? D4;
-  if (days < cutoff) return { why: 'cutoff', line: t('its.night.cutoff', { n: cutoff, date: monthDay(daysBefore(date, cutoff)) }) };
+  if (days < cutoff) return { why: 'cutoff', line: t('its.night.cutoff', { n: cutoff, date: md(daysBefore(date, cutoff)) }) };
   if (r.roster && r.roster.kind === null) return { why: 'gone', line: null };
   const miss = seasonMiss(r.roster?.kind, date, seasons);
   if (miss) return { why: 'season', line: miss };
@@ -233,7 +230,7 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
     const note: DateNote = booked.has(date) ? 'booked' : days < D4 ? 'late' : days < D10 ? 'd4' : d.autoConfirm && days >= AUTO_CONFIRM_MIN_DAYS ? 'auto' : null;
     const left = days === 0 ? t('its.date.tonight') : t('its.date.left', { n: days });
     const said = note === 'booked' && !stops ? 'bookedOnly' : note;
-    const label = formatDate(date);
+    const label = dayOfDate(date);
     const head = [label, left, ...(said ? [t(`its.date.note.${said}`)] : [])].join('、');
     const base = { date, label, days, note, text: said ? `${left} · ${t(`its.date.note.${said}`)}` : left };
     if (note === 'booked') return { ...base, able: [], parts: [], nights: new Map(), aria: `${head}。`, noSeason: false };
@@ -277,17 +274,6 @@ export function changedParts(a: Draft, b: Draft): { dates: boolean; hotels: bool
     hotels: !only({ search: a.search, skip: a.skip }),
     detail: !only({ intervalSec: a.intervalSec, guests: a.guests, autoConfirm: a.autoConfirm })
   };
-}
-
-/** The stays under month headings (2026年11月). */
-export function dateMonths(rows: readonly DateRow[]): { month: string; label: string; rows: DateRow[] }[] {
-  const out: { month: string; label: string; rows: DateRow[] }[] = [];
-  for (const r of rows) {
-    const month = r.date.slice(0, 7);
-    if (out.at(-1)?.month !== month) out.push({ month, label: monthLabel(r.date, { long: true }), rows: [] });
-    out.at(-1)!.rows.push(r);
-  }
-  return out;
 }
 
 // ---- The facilities ----
@@ -461,7 +447,7 @@ const waiting = (s: ItsStatus): BookingRow[] => bookingRows(s, tokyoToday(s.now)
  *  neither). */
 export const stopsAtBooked = (s: ItsStatus): boolean => !!s.runner;
 
-/** 施設's line: what happens to a room (held; applied for, ★ first, with 自動で確定; else from the mail), and, from a
+/** 施設's line: what happens to a room (held; applied for in turn, with 自動で確定; else from the mail), and, from a
  *  runner that does, that a booked night is searched no more. */
 export const hotelHint = (autoConfirm: boolean, stops: boolean): string =>
   t(!autoConfirm ? 'its.hotel.hintMail' : stops ? 'its.hotel.hint' : 'its.hotel.hintAuto');
@@ -519,7 +505,8 @@ export const savedLine = (s: ItsStatus, name: (m: Member) => string, today: stri
 /** `2時間10分`, `12分`, `40秒` (lib/i18n/when.ts). */
 export const duration = (ms: number): string => durationOf(ms);
 
-const at = (ms: number | null, today: string): string => formatSyncTime(ms === null ? null : new Date(ms), today);
+/** `13:10` on `today` (Tokyo), else `11/12（木）8:00` (i18n/when.ts); none: まだ. */
+const at = (ms: number | null, today: string): string => (ms === null ? t('bots.key.never') : timeOf(ms, Date.parse(`${today}T12:00:00+09:00`)));
 
 const STEPS = ['calendar', 'scan', 'empty_create', 'solve', 'imap', 'worker', 'bookings', 'hold'];
 const CLASSES = ['timeout', 'transport', 'session_dead', 'ban', 'no_token', 'unsolved', 'no_calendar', 'record_full', 'id_conflict', 'auth_failed',
@@ -709,7 +696,7 @@ export function eventLines(s: ItsStatus, today: string): { key: string; time: st
       : e.kind === 'error' && d.startsWith('imap_') ? `${t('its.step.imap')} · ${clsText(d.slice(5))}`
       : e.kind === 'error' && CLASSES.includes(d) ? clsText(d)
       : e.kind === 'confirmed' && d ? t('its.booking.number', { number: d }) : d;
-    const info = [e.date ? formatDate(e.date) : '', e.hotel ?? '', why].filter(Boolean).join(' · ');
+    const info = [e.date ? dayOfDate(e.date) : '', e.hotel ?? '', why].filter(Boolean).join(' · ');
     return { key: `${e.runId}:${e.seq}`, time: at(e.t, today), what: t(`its.ev.${e.kind}`), info, bad: ['ban', 'error', 'human_needed', 'solve_failed', 'prev_unclean'].includes(e.kind) };
   });
 }

@@ -148,7 +148,8 @@ def apply_settings(s):
     global RETRY_DELAY, NUM_GUESTS, AUTO_CONFIRM
     dates = sorted({d for d in s['dates'] if isinstance(d, str) and _ISO_DATE.match(d)})
     skip = [n for n in s['skip'] if isinstance(n, str)]
-    pri = [p for p in s['priority'] if isinstance(p, str)]
+    # The settings' priority (the app's old ★) is let be: every facility alike, in the site's order (the app sends [])
+    pri = []
     # The allow-list: absent (an older Worker, or settings saved before it) keeps the skip-list rule.
     search = s.get('search')
     search = None if not isinstance(search, list) else [n for n in search if isinstance(n, str)]

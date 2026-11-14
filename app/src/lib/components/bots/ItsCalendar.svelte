@@ -2,7 +2,7 @@
   // 保養所's 日付 calendar (docs/design.md "Bots"; the cells are lib/its/view.ts nightGrid): one month, Mon–Sun, ジム's
   // calendar's look and moves (GymCalendar: its grid, cells and select ring) for nights: a tap puts a night in the draft
   // or takes it out (filled leaf: searched), a weekday's header does its whole column (the month's settable nights
-  // only); past, too far and the other months' days blank and inert. A booking marks its night: 要対応 a coral dot, 仮押さえ
+  // only); past and too far nights faint and inert, the other months' days blank, a passed week left out. A booking marks its night: 要対応 a coral dot, 仮押さえ
   // · 申込中 a yuzu one, 予約確定 a ✓. A grid for VoiceOver (a row a week, the arrow keys): each night's full words.
   import { t } from '#lib/i18n/index.ts';
   import type { NightCell } from '#lib/its/view.ts';
@@ -68,13 +68,11 @@
   /* GymCalendar's grid, a night a cell (44 high: a finger's) */
   .cal { display: grid; gap: 3px; outline: none; }
   .row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+  /* the weekday header: text, as ジム's (a tap does its column) */
   .wd { display: grid; place-items: center; font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
   .wd.sun { color: var(--coral-text); }
   .wd.sat { color: var(--sky-text); }
-  .wdbtn {
-    appearance: none; border: 0; cursor: pointer; width: 100%; min-height: var(--hit); border-radius: var(--r-chip);
-    font: inherit; color: inherit; background: var(--ctl); box-shadow: var(--sh-ctl-s);
-  }
+  .wdbtn { appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 28px; padding: 0; border-radius: var(--r-chip); font: inherit; color: inherit; background: none; }
   .gc { min-width: 0; }
   .cell {
     appearance: none; border: 0; position: relative; width: 100%; height: var(--hit); padding: 0; border-radius: 10px; cursor: pointer;
@@ -83,7 +81,9 @@
   }
   .cell.on { background: color-mix(in srgb, var(--c-leaf) 55%, var(--card)); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
   .today .d { text-decoration: underline 3px var(--c-yuzu); text-underline-offset: 3px; }
-  .cell.out { cursor: default; background: transparent; box-shadow: none; color: color-mix(in srgb, var(--text-soft) 45%, transparent); }
+  /* a passed night: a faint cell in its row; another month's day: nothing */
+  .cell.out { cursor: default; background: color-mix(in srgb, var(--ctl-off) 40%, transparent); box-shadow: none; color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
+  .cell.out:empty { background: none; }
   .mk { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; border-radius: 50%; font: 700 9px/9px var(--font-ui); font-style: normal; text-align: center; }
   .mk.action { background: var(--c-coral); box-shadow: 0 0 0 1.5px var(--card); }
   .mk.hold { background: var(--c-yuzu); box-shadow: 0 0 0 1.5px var(--c-yuzu-lip); }

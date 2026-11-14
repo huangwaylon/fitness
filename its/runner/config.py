@@ -230,8 +230,8 @@ FALLBACK_USER_AGENT = (
 )
 
 # ── Facilities (a local run only) ────────────────────────────────────
-# On Actions these are the Worker's settings (the app's 施設 list: 探す = settings.search, ★ = priority, the skip
-# list). The roster, every facility the site may offer with its group, kind, cutoff and the site's exact spelling, has
+# On Actions these are the Worker's settings (the app's 施設 list: 探す = settings.search, the skip list; its
+# priority is ignored: no facility ranked). The roster, every facility the site may offer with its group, kind, cutoff and the site's exact spelling, has
 # ONE home: app/src/lib/its/roster.ts. This is a short local list, not a copy of it.
 #
 # PRIORITY_HOTELS: substrings attempted first, in this order, matched ignoring case and spacing ('NAGU' catches

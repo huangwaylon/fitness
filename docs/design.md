@@ -115,9 +115,9 @@ demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot
   ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.
 
 ジム: ⋯ 今すぐ確認 (cooldown in the label) · 停止/再開 · 間隔 ›; 2 weeks from today (`GymCalendar`, 4 in 選択), アプリで変更;
-changes apply at once (取り消す).
+changes apply at once, never cut off by a close (取り消す).
 保養所: ⋯ 開始 / 停止; holds in 確認が必要. 設定 = saved with 保存, rows folded (未保存): 日付 (`ItsCalendar`: this month or
-next, a tap a night, a weekday its column), 施設 (presets; no ★), 詳細 「15秒・2人」, 通知 (`ItsNotify`, per phone).
+next, a tap a night, a weekday its column; ✕ any stay), 施設 (presets; no ★), 詳細 「15秒・2人」, 通知 (`ItsNotify`, per phone).
 メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next` too; 保留 names `diff.tripped`; ⋯ links only.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's

@@ -22,10 +22,11 @@
   import { checkStrip, factRows, keyRow, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
-  import { bulkAct, changeLine, dayTitle, fromWords, longRange, movedDays, pickSlot, predictAll, slotCount, undoActs, weeks, withBase, type SlotPick } from '#lib/gym/calendar.ts';
+  import { bulkAct, changeLine, dayTitle, fromWords, longRange, movedDays, pickSlot, slotCount, undoActs, weeks, type SlotPick } from '#lib/gym/calendar.ts';
   import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
   import { timeOf } from '#lib/i18n/when.ts';
   import Sheet from '../ui/Sheet.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -34,18 +35,17 @@
   import GymDayEditor from './GymDayEditor.svelte';
   import GymSlots from './GymSlots.svelte';
   import { useBot } from './useBot.svelte.ts';
+  import { acts, attach, send as sendAct, shownConfig } from './gymActs.svelte.ts';
 
   const UNDO_MS = 5000;
-  /** The settings shown: the last answer (`confirmed`) with the acts still queued predicted on it. */
-  let cfg = $state<GymConfig | null>(null);
-  let confirmed: GymConfig | null = null;
-  let cfgState = $state<'hidden' | 'ok' | 'failed'>('hidden');
+  /** The settings shown: the last answer (gymActs.svelte.ts: it outlives the page) with the acts still queued predicted
+   *  on it. */
+  const cfg = $derived(shownConfig());
+  let cfgState = $state<'hidden' | 'ok' | 'failed'>(acts.confirmed ? 'ok' : 'hidden');
   let cfgLoading = $state(false);
   let cfgCtl: AbortController | null = null;
-  /** The acts not yet answered, the first on its way; how many have answered (a read that began before the last
-   *  answer is dropped). */
-  let queue: { input: ActInput; undoable: boolean; done: (ok: boolean) => void }[] = [];
-  let answered = 0;
+  let flashTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(flashTimer));
   /** The last act's refusal or failure (coral), with もう一度; `stale`: someone else changed the day. */
   let note = $state<{ text: string; retry?: () => void } | null>(null);
   /** 今すぐ確認's answer (one line, the open slots under it), or its refusal. */
@@ -74,28 +74,17 @@
     cfgCtl?.abort();
     const c = (cfgCtl = new AbortController());
     const signal = AbortSignal.any([c.signal, poll.life]);
-    const seen = answered;
+    const seen = acts.answered;
     cfgLoading = true;
     const r = await fetchConfig(signal);
     if (cfgCtl === c) cfgLoading = false;
     // an act answered (or is on its way) since: its config is newer than this read's
-    if (signal.aborted || queue.length || seen !== answered) return;
-    const was = confirmed;
-    const s = settle(confirmed, r);
-    [confirmed, cfgState] = [s.cfg, s.state];
-    show();
+    if (signal.aborted || acts.queue.length || seen !== acts.answered) return;
+    const was = acts.confirmed;
+    const s = settle(was, r);
+    [acts.confirmed, cfgState] = [s.cfg, s.state];
     if (was && s.cfg && was !== s.cfg) light(movedDays(was.rows, s.cfg.rows));
     if (s.cfg) take(s.cfg);
-  }
-
-  /** A config with an act predicted on it (the page shows it at once; the answer replaces it). */
-  const predicted = (c: GymConfig, input: ActInput): GymConfig => ({
-    ...c, rows: predictAll(c.rows, input, c.defaultDays),
-    ...(input.a === 'pause' || input.a === 'resume' ? { paused: input.a === 'pause' } : input.a === 'interval' ? { intervalMin: input.m } : {})
-  });
-
-  function show() {
-    cfg = confirmed && queue.reduce((c, q) => predicted(c, q.input), confirmed);
   }
 
   /** A config's 🔎 cooldown on this phone's clock. */
@@ -108,7 +97,8 @@
   function light(days: Day[]) {
     if (!days.length) return;
     flash = new Set(days);
-    setTimeout(() => (flash = new Set()), 1600);
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => (flash = new Set()), 1600);
   }
 
   const bot = useBot<GymStatus>('gym', driver, { onRead: () => void loadConfig() });
@@ -160,49 +150,30 @@
     return null;
   }
 
-  /** One change: shown at once, then sent after the ones before it (one act on its way at a time), the answer's config
-   *  taken; 取り消す on its banner. Resolves when it is answered: true when applied. */
+  /** One change: shown at once, then sent after the ones before it (gymActs.svelte.ts: never cut off by a close).
+   *  Resolves when it is answered: true when applied. */
   function send(input: ActInput, undoable = true): Promise<boolean> {
-    if (!confirmed) return Promise.resolve(false);
     note = null;
-    return new Promise((done) => {
-      queue.push({ input, undoable, done });
-      show();
-      if (queue.length === 1) void drain();
-    });
+    return sendAct(input, undoable);
   }
 
-  /** The queue's acts, in turn: each with the bases and the rows of the latest config when it goes out (so a second
-   *  edit to a day carries the base the first one's answer gave it). A refusal or failure puts back only its own days
-   *  (the bot's refusal in its words; a stale day as it is now); the acts after it go on. */
-  async function drain() {
-    while (queue.length && confirmed) {
-      const q = queue[0];
-      const was = confirmed;
-      const r = await postAct(withBase(q.input, was.rows), poll.life);
-      answered++;
-      if (poll.life.aborted) break;
-      queue.shift();
-      confirmed = r.config ?? was;
-      if (r.ok) take(r.config);
-      show();
-      if (r.ok) {
-        if (r.changed && q.undoable) offerUndo(q.input, was, r.config);
-        q.done(true);
-        continue;
-      }
-      cue('boop');
-      if (r.err === 'stale') {
-        note = { text: t('gym.err.stale') };
-        if (r.config) light(movedDays(was.rows, r.config.rows));
-      } else {
-        const own = r.hint && r.http !== null && r.http < 500 && r.http !== 401 && r.http !== 403;
-        note = own ? { text: r.hint! } : { text: t('gym.err.failed'), retry: () => void send(q.input, q.undoable) };
-      }
-      q.done(false);
+  // each answer while shown: 取り消す on its banner; a refusal or failure puts back only its own days (the bot's
+  // refusal in its words; a stale day as it is now), with もう一度 for a failure
+  $effect(() => attach((q, r, was) => {
+    if (r.ok) {
+      take(r.config);
+      if (r.changed && q.undoable) offerUndo(q.input, was, r.config);
+      return;
     }
-    for (const x of queue.splice(0)) x.done(false); // the page left
-  }
+    cue('boop');
+    if (r.err === 'stale') {
+      note = { text: t('gym.err.stale') };
+      if (r.config) light(movedDays(was.rows, r.config.rows));
+    } else {
+      const own = r.hint && r.http !== null && r.http < 500 && r.http !== 401 && r.http !== 403;
+      note = own ? { text: r.hint! } : { text: t('gym.err.failed'), retry: () => void send(q.input, q.undoable) };
+    }
+  }));
 
   function offerUndo(input: ActInput, was: GymConfig, now: GymConfig) {
     const n = 'days' in input ? input.days.length : 1;
@@ -229,8 +200,7 @@
     checking = false;
     if (poll.life.aborted) return;
     if (r.config) {
-      confirmed = r.config;
-      show();
+      acts.confirmed = r.config;
       take(r.config);
     }
     if (r.ok) {
@@ -362,7 +332,7 @@
       </div>
       {#if cfgState === 'failed'}
         <div class="prow static" data-gym-config-error>
-          <span class="prl">{t('gym.configFailed')}</span>
+          <span class="prl"><Phrases text={t('gym.configFailed')} /></span>
           <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={cfgLoading} onclick={() => cfgLoading || void loadConfig()}>{t('state.retry')}</button>
         </div>
       {/if}

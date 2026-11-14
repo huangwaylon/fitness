@@ -23,7 +23,8 @@
   import Phrases from '../ui/Phrases.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { formatDate, monthLabel } from '#lib/i18n/format.ts';
+  import { monthLabel } from '#lib/i18n/format.ts';
+  import { dayOfDate } from '#lib/i18n/when.ts';
   import { dayKey, minuteNow, now as sceneNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -32,7 +33,7 @@
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, nightMonths, toggleColumn, toggleNight,
+    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, nightMonths, removeDate, toggleColumn, toggleNight,
     changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
     stopsAtBooked, stripCells, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
@@ -42,6 +43,7 @@
   import BotPage from './BotPage.svelte';
   import ItsCalendar from './ItsCalendar.svelte';
   import { useBot } from './useBot.svelte.ts';
+  import { accept } from './summary.svelte.ts';
 
 
   /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
@@ -138,7 +140,6 @@
   const parts = $derived(hotelParts(hotels, dates));
   const summary = $derived(hotelSummary(parts));
   const fresh = $derived(hotels.filter((r) => r.undecided));
-  /** ★'s facilities, by name: the expanded night marks them. */
   const preset = $derived(presetOf(hotels));
   const paused = $derived(status?.settings.paused ?? true);
   /** 開始 needs a saved stay from tonight on. */
@@ -206,6 +207,7 @@
 
   function discard() {
     cue('back');
+    addWhy = null;
     draft = start = null;
     conflict = false;
     saveWhy = null;
@@ -240,11 +242,13 @@
     poll.hold();
     saving = true;
     saveWhy = null;
-    const r = await putSettings(toInput(draft, base, sceneNow().getTime()), life);
+    // a write gets the client's timeout only: a tab switch or a close never cuts it off (its answer still sets the dot)
+    const r = await putSettings(toInput(draft, base, sceneNow().getTime()));
     saving = false;
-    if (life.aborted) return;
+    if (life.aborted) return void (r.status && accept('its', r.status, driver));
     if (r.ok) {
       draft = start = null;
+      addWhy = null;
       cue('confirm');
       toasts.show(t('its.saved'));
     } else if (r.err !== 'conflict') saveWhy = saveError(r.err);
@@ -258,9 +262,9 @@
     if (action === 'start' && noDates) return void cue('boop');
     poll.hold();
     running = true;
-    const r: ItsReply = await postRun(action, life);
+    const r: ItsReply = await postRun(action);
     running = false;
-    if (life.aborted) return;
+    if (life.aborted) return void (r.ok && accept('its', r.status, driver));
     if (r.ok) take(r.status);
     runWhy = r.ok ? null : t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed');
     if (!r.ok) cue('boop');
@@ -307,7 +311,7 @@
       {#each holds as b (b.key)}
         <li class="booking" data-its-booking={b.state}>
           <span class="txt">
-            <b>{b.hotel}</b><small>{formatDate(b.date)} · <Phrases text={b.detail} /></small>
+            <b>{b.hotel}</b><small>{dayOfDate(b.date)} · <Phrases text={b.detail} /></small>
             {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
             {#if b.steps.length}<ol class="steps" data-its-steps>{#each b.steps as s (s)}<li><Phrases text={s} /></li>{/each}</ol>{/if}
           </span>
@@ -340,7 +344,7 @@
             <li class="booking" data-its-booking={b.state}>
               <span class="tag {b.state}">{b.label}</span>
               <span class="txt">
-                <b>{b.hotel}</b><small>{formatDate(b.date)} · <Phrases text={b.detail} /></small>
+                <b>{b.hotel}</b><small>{dayOfDate(b.date)} · <Phrases text={b.detail} /></small>
                 {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
               </span>
             </li>
@@ -362,8 +366,7 @@
       </details>
     {/if}
     <section class="sec" aria-labelledby="its-settings" data-its-settings>
-      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}</h3>
-      <p class="hint">{t('its.set.hint')}</p>
+      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}<span class="sethint"> · {t('its.set.hint')}</span></h3>
       {#each fresh as r (r.key)}
         <div class="card pad fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
@@ -373,10 +376,10 @@
             onclick={() => edit((d) => setSearch(d, [r.name], true))}>{t('its.hotel.newOn')}</button>
         </div>
       {/each}
-      <details class="fold" data-its-fold="dates">
-        <summary class="prow"><span class="prl">{t('its.sec.dates')}<small data-its-sum-dates>{sums?.dates}</small></span>{#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+      <details class="card fold" data-its-fold="dates">
+        <summary class="prow static"><span class="prl">{t('its.sec.dates')}<small data-its-sum-dates>{sums?.dates}</small></span>{#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
-          <Segmented items={monthItems} value={calMonth} label={t('its.cal.month')} attr="its-month" onpick={(id) => (pickedMonth = id)} />
+          <Segmented items={monthItems} value={calMonth} label={t('its.cal.month')} attr="its-month" onpick={(id) => ((pickedMonth = id), (addWhy = null))} />
           <ItsCalendar cells={grid} month={calMonth} label={t('its.cal.label', { month: monthLabel(calMonth) })} onpick={tapNight} onweekday={tapColumn} />
           {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
           {#if dates.length}
@@ -384,14 +387,21 @@
               {#each dates as d (d.date)}
                 {@const open = openDate === d.date}
                 <li data-its-date={d.date}>
-                  {#if d.note === 'booked'}
-                    <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
-                  {:else}
-                    <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick" onclick={() => (openDate = open ? null : d.date)}>
-                      <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
-                      <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
-                      <span class="chev" aria-hidden="true"></span>
-                    </button>
+                  <div class="drow">
+                    {#if d.note === 'booked'}
+                      <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
+                    {:else}
+                      <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick" onclick={() => (openDate = open ? null : d.date)}>
+                        <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
+                        <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
+                        <span class="chev" aria-hidden="true"></span>
+                      </button>
+                    {/if}
+                    <!-- any stay, a calendar month or not (up to 400 days ahead): out of the draft -->
+                    <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
+                      onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
+                  </div>
+                  {#if d.note !== 'booked'}
                     {#if open}
                       <div class="nlist" data-its-night-list>
                         {#each d.parts as p (p.why)}
@@ -416,8 +426,8 @@
           {/if}
         </div>
       </details>
-      <details class="fold" bind:open={openHotels} data-its-fold="hotels" data-its-search>
-        <summary class="prow"><span class="prl">{t('its.sec.hotels')}<small data-its-sum-hotels>{sums?.hotels}</small></span>{#if changed.hotels}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+      <details class="card fold" bind:open={openHotels} data-its-fold="hotels" data-its-search>
+        <summary class="prow static"><span class="prl">{t('its.sec.hotels')}<small data-its-sum-hotels>{sums?.hotels}</small></span>{#if changed.hotels}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
         <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
         <p class="hint" data-its-sum-full><span data-its-sum>{summary.title}</span>{#if summary.line} · <span data-its-sum-line>{summary.line}</span>{/if}{#if summary.more} · <span data-its-sum-more>{summary.more}</span>{/if}</p>
@@ -439,8 +449,8 @@
         {/if}
         </div>
       </details>
-      <details class="fold" data-its-fold="detail">
-        <summary class="prow"><span class="prl">{t('its.sec.detail')}<small data-its-sum-detail>{sums?.detail}</small></span>{#if changed.detail}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+      <details class="card fold" data-its-fold="detail">
+        <summary class="prow static"><span class="prl">{t('its.sec.detail')}<small data-its-sum-detail>{sums?.detail}</small></span>{#if changed.detail}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
         <div class="card pad opts">
           <span class="lbl">{t('its.interval')}</span>
@@ -456,8 +466,8 @@
         </button>
         </div>
       </details>
-      <details class="fold" data-its-fold="notify">
-        <summary class="prow"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{t(notifyOn ? 'its.set.on' : 'its.set.off')}</small></span><span class="chev" aria-hidden="true"></span></summary>
+      <details class="card fold" data-its-fold="notify">
+        <summary class="prow static"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{t(notifyOn ? 'its.set.on' : 'its.set.off')}</small></span><span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody"><ItsNotify push={status.push} bind:on={notifyOn} /></div>
       </details>
       {#if recentOps}<p class="hint" data-its-saved-by>{recentOps}</p>{/if}
@@ -528,7 +538,8 @@
   small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: 1.3; }
   /* a booking's state: the kit's .tag (theme.css), tinted */
   .tag { flex: none; min-width: 4.5em; justify-content: center; }
-  .tag.action { background: var(--c-coral); color: var(--c-ink); }
+  /* 要対応: yuzu, as its dot and card (coral is for failures) */
+  .tag.action { background: var(--c-yuzu); color: var(--c-ink); }
   .tag.hold, .tag.applying { background: var(--c-yuzu); color: var(--c-ink); }
   .tag.confirmed { background: var(--c-leaf); color: var(--c-ink); }
   .booking { align-items: flex-start !important; }
@@ -549,7 +560,7 @@
   .dates > li { display: block; min-height: 0; }
   .dtxt { display: block; padding: 6px 0; }
   .night {
-    appearance: none; border: 0; background: none; cursor: pointer; width: 100%; min-height: var(--hit); padding: 4px 0; text-align: left;
+    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 4px 0; text-align: left;
     color: var(--text); font: inherit; display: flex; align-items: center; gap: 8px;
   }
   .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
@@ -572,10 +583,20 @@
 
 
   .presets { display: flex; flex-wrap: wrap; gap: 4px 6px; }
-  .fold { display: grid; gap: 8px; }
+  /* 設定's rows: くわしく's card (a static row, no edge), the body inside it */
+  .fold { padding: 0; }
+  .fold > summary { box-shadow: none; background: none; cursor: pointer; }
   .fold > summary, .psum { list-style: none; }
   .fold > summary::-webkit-details-marker, .psum::-webkit-details-marker { display: none; }
-  .fold[open] > summary { margin-bottom: 8px; }
+  .fold > .fbody { padding: 0 12px 12px; margin: 0; }
+  /* a card inside the row's card: flat, sunk */
+  .fold .fbody :global(.card) { box-shadow: none; background: color-mix(in srgb, var(--ctl-off) 35%, var(--card)); }
+  .sethint { font-weight: 700; letter-spacing: 0; }
+  .drow { display: flex; align-items: center; gap: 4px; }
+  .drow > .night, .drow > .dtxt { flex: 1; min-width: 0; }
+  .x { appearance: none; border: 0; background: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); margin-right: -10px; }
+  .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+  .x:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
   /* (the chevrons: theme.css, the bots' sheet) */
   .hbody { display: grid; gap: 14px; }
   .fresh-banner { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }

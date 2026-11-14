@@ -145,6 +145,7 @@ async function call<T>(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, bod
   parse: (json: unknown) => T | null): Promise<{ ok: true; value: T } | ItsFail> {
   const key = getKey();
   if (!key || !url) return { ok: false, err: 'no_key', http: null, status: null };
+  if (signal?.aborted) return { ok: false, err: 'aborted', http: null, status: null }; // (a dead signal sends nothing)
   const id = newRid();
   const ctl = new AbortController();
   const stop = () => ctl.abort();

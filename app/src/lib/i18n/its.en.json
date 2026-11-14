@@ -233,7 +233,6 @@
   "its.push.tested.failed": "Couldn't send it",
   "its.push.tested.soon": "Notifications are coming soon",
   "its.push.note": "Focus and Sleep can hold a notification back. The site's emails still come as before.",
-  "its.night.md": "{m}/{d}",
   "its.night.cutoff": "Facilities taking applications until {n} days ahead: ended {date}",
   "its.night.closedDay": "{name} is closed that day",
   "its.night.closedWeekly": "{name} is closed on {days}",
@@ -289,7 +288,7 @@
   "its.set.able": "searchable {n}/{m}",
   "its.set.noDates": "No dates",
   "its.set.hotels": "Search {n} · Off {off}",
-  "its.set.hint": "Applies once saved.",
+  "its.set.hint": "applies on save",
   "its.set.unsaved": "Unsaved",
   "its.set.on": "On",
   "its.set.off": "Off",
@@ -303,5 +302,6 @@
   "its.cal.label": "Nights in {month}",
   "its.cal.month": "Month",
   "its.cal.weekday": "Every {wd}",
-  "its.cal.over": "20 dates at most ({n} didn't fit)"
+  "its.cal.over": "20 dates at most ({n} didn't fit)",
+  "its.date.removeLabel": "Remove {date}"
 }

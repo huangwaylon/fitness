@@ -33,7 +33,7 @@
 
 <BotPage attr="kalori" busy={bot.poll.loading} failed={bot.failed} onretry={() => void bot.poll.refresh()} {verdict} {vid}
   stale={bot.stale} readAt={bot.readAt} {now} keys={data ? keyRow(data, now) : []} menu={data ? { label: t('kalori.menu.label'), onopen: () => (menuOpen = true) } : null}
-  attention={{ lines }}
+  attention={{ lines, links: links.filter((l) => l.id === 'pr').map((l) => ({ id: 'pr', href: l.href, label: t('bots.attn.pr') })) }}
   strip={strip && { ...strip, title: t('kalori.strip.title'), legend }}
   facts={data ? factRows(data, now) : []}>
   {#if change && data}

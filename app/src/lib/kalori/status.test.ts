@@ -168,7 +168,11 @@ describe('keyRow and factRows', () => {
     expect(keys(status())).toEqual({ last: ['11/11（水）2:42', '公開'], next: ['11/18（水）2:41ごろ', null], items: ['54,269品', '448店'] });
     // a run under way doesn't count yet; the deploy's failure or revert is what came of the merge
     expect(keys(status({ verdict: 'running' })).last).toEqual(['11/11（水）2:42', '公開']);
-    expect(keys(status({ merge: { sha: 'a', deploy: 'reverted', pr: null } })).last[1]).toBe('元に戻しました');
+    const hr = sample().history as Record<string, unknown>[];
+    expect(keys(status({ merge: { sha: 'a', deploy: 'reverted', pr: null }, history: [...hr.slice(0, -1), { ...hr.at(-1), result: 'failed', tag: 'kalori-2026-11-11' }] })).last[1]).toBe('元に戻しました');
+    // a reverted merge, then a run with nothing to merge: that run's own outcome, not the old revert
+    expect(keys(status({ merge: { sha: 'a', deploy: 'reverted', pr: null }, history: [...hr.slice(0, -1), { ...hr.at(-2), result: 'failed', tag: 'kalori-x' }, { ...hr.at(-1), result: 'none', tag: null }] })).last[1]).toBe('変更なし');
+    expect(keys(status({ merge: { sha: 'a', deploy: 'failed', pr: null }, history: [...hr.slice(0, -1), { ...hr.at(-1), result: 'failed', tag: null }] })).last[1]).toBe('失敗');
     expect(keys(status({ merge: { sha: 'a', deploy: 'failed', pr: null } })).last[1]).toBe('デプロイ失敗');
     const h = sample().history as Record<string, unknown>[];
     expect(keys(status({ verdict: 'held', history: [...h.slice(0, -1), { ...h.at(-1), result: 'held' }] })).last[1]).toBe('保留');
@@ -203,7 +207,7 @@ describe('alertLines and menuLinks', () => {
     const pr = 'https://github.com/huangwaylon/fitness/pull/9';
     expect(alertLines(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr } }), NOW)).toEqual(['公開に失敗しました。']);
     expect(alertLines(status({ verdict: 'failing', reasons: ['crash'] }), NOW)).toEqual([]);
-    const merge = '⋯の「PRを開く」から確認して、問題なければ手動でマージしてください。';
+    const merge = 'PRを確認して、問題なければ手動でマージしてください。';
     expect(alertLines(status({ verdict: 'held', reasons: ['band_gone'], merge: { pr } }), NOW)).toEqual([merge]);
     expect(alertLines(status({ verdict: 'held', reasons: ['band_gone', 'tests'], merge: { pr } }), NOW)).toEqual([merge, 'テストが失敗しました。']);
     expect(alertLines(status({ verdict: 'held', reasons: ['band_gone'] }), NOW)).toEqual([]);

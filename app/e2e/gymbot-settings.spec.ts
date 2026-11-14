@@ -400,6 +400,23 @@ test('a refusal in the bot’s words; a failure rolls back with もう一度, wh
   await expect.poll(() => gym.acts.slice(-2)).toEqual([{ a: 'skip', d: gym.days[2], base: 'v0' }, { a: 'skip', d: gym.days[2], base: 'v0' }]);
 });
 
+test('acts outlive the page: closing ボット mid-send neither aborts nor drops them', async ({ page, context }) => {
+  const { gym, day, editor } = await phone(page, context);
+  const release = gym.hold();
+  await day(5).click();
+  await editor.locator('[data-gym-kind="any"]').click();
+  await editor.locator('[data-gym-kind="off"]').click();
+  await page.locator('dialog[open] .navbar button.nav.close').last().click();
+  await expect(editor).toHaveCount(0);
+  await page.locator('dialog[open] .navbar button.nav.close').click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  release();
+  await expect.poll(() => gym.acts.map((a) => a.a)).toEqual(['any', 'skip']);   // both sent, in turn, the page gone
+  await fromMenu(page, 'bots');
+  await expect(day(5)).toHaveAttribute('data-fill', 'off');
+  // (取り消す after a close, sent and said done: gymActs.svelte.test.ts)
+});
+
 /** ⋯ opened: its rows' ids and labels (ActionSheet's), each off or not. */
 async function menuRows(page: Page, sheet: ReturnType<Page['locator']>) {
   await sheet.locator('[data-gym-menu]').click();

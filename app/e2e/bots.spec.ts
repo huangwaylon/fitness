@@ -278,7 +278,7 @@ const held = (tripped: unknown[], reasons = ['band_gone']) => (now: number) => {
   });
 };
 
-test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the step, no link), ⋯ (the run, the PR, the workflow), the tab’s and the menu’s dots', async ({ page, context }) => {
+test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the step and PRを開く), ⋯ (the run, the PR, the workflow), the tab’s and the menu’s dots', async ({ page, context }) => {
   const { sheet, tab } = await phone(page, context, 'healthy', { kalori: held([{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }]), its: false });
   // the menu unfolding reads Kalori: ボット's dot (保養所 unanswered, ジム healthy: it's Kalori's)
   await unfoldMenu(page);
@@ -296,8 +296,10 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the s
   const alert = k.locator('[data-kalori-alert]');
   await expect(alert).toHaveAttribute('role', 'status');
   await expect(alert.getByRole('heading', { level: 3 })).toHaveText('確認が必要');
-  await expect(alert.locator('[data-kalori-reason]')).toHaveText(['⋯の「PRを開く」から確認して、問題なければ手動でマージしてください。']);
-  await expect(alert.getByRole('link')).toHaveCount(0); // (⋯ opens it: nothing twice)
+  await expect(alert.locator('[data-kalori-reason]')).toHaveText(['PRを確認して、問題なければ手動でマージしてください。']);
+  await expect(alert.getByRole('link')).toHaveText(['PRを開く']);
+  await expect(alert.locator('[data-kalori-link="pr"]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/pull/901');
+  expect((await alert.getByRole('link').boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await expect(k.locator('.legend > span[data-kalori-seg="gone"]')).toHaveText('削除 1,200');
   await expect(await kaloriMenu(page, k)).toHaveText(['実行を開く', 'PRを開く', 'ワークフローを開く']);
   for (const a of await page.locator('dialog[open] [data-action]').all()) expect((await a.boundingBox())!.height).toBeGreaterThanOrEqual(44);

@@ -73,8 +73,9 @@
   "kalori.fact.took": "Took",
   "kalori.key.failed": "Deploy failed",
   "kalori.key.reverted": "Reverted",
-  "kalori.attn.merge": "Open the PR from ⋯, check it, and merge it by hand if it looks right.",
+  "kalori.attn.merge": "Check the PR and merge it by hand if it looks right.",
   "kalori.strip.line": "Published {ok} · Held {held} · Failed {failed}",
   "kalori.menu.label": "Menus actions",
-  "kalori.menu.workflow": "Open the workflow"
+  "kalori.menu.workflow": "Open the workflow",
+  "kalori.key.none": "No change"
 }

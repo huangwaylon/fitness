@@ -25,7 +25,7 @@
   "its.auto.title": "自動で確定しますか？",
   "its.auto.note": "仮押さえのあと、メールからの申込まで自動で進めて予約確定します（11日以上先の日付のみ）。確定した予約は、10日前を過ぎると取り消しに料金がかかります。",
   "its.auto.on": "自動で確定する",
-  "its.auto.cancel": "やめる",
+  "its.auto.cancel": "キャンセル",
   "its.save": "保存",
   "its.discard": "変更を破棄",
   "its.saved": "保存しました",
@@ -136,7 +136,7 @@
   "its.overwrite.title": "ほかの人の変更を上書きしますか？",
   "its.overwrite.note": "ほかの人が保存した設定は、この内容に置き換わります。",
   "its.overwrite.yes": "上書きする",
-  "its.overwrite.cancel": "やめる",
+  "its.overwrite.cancel": "キャンセル",
   "its.saveWhy.bad_date": "日付が正しくありません。日付を確認してください。",
   "its.saveWhy.past_date": "過ぎた日付が含まれています。日付を確認してください。",
   "its.saveWhy.far_date": "先すぎる日付が含まれています。日付を確認してください。",
@@ -233,7 +233,6 @@
   "its.push.tested.failed": "送れませんでした",
   "its.push.tested.soon": "通知は準備中です",
   "its.push.note": "集中モードや睡眠中は、通知が遅れて届くことがあります。サイトからのメールもこれまでどおり届きます。",
-  "its.night.md": "{m}月{d}日",
   "its.night.cutoff": "{n}日前までの施設：{date}で受付終了",
   "its.night.closedDay": "{name}は休館日",
   "its.night.closedWeekly": "{name}は{days}曜休み",
@@ -289,7 +288,7 @@
   "its.set.able": "探せる日 {n}/{m}",
   "its.set.noDates": "日付なし",
   "its.set.hotels": "探す{n}・除外{off}",
-  "its.set.hint": "保存するまで反映されません。",
+  "its.set.hint": "保存で反映",
   "its.set.unsaved": "未保存",
   "its.set.on": "オン",
   "its.set.off": "オフ",
@@ -303,5 +302,6 @@
   "its.cal.label": "{month}の泊まる日",
   "its.cal.month": "表示する月",
   "its.cal.weekday": "{wd}曜日をまとめて選ぶ",
-  "its.cal.over": "日付は20件までです（{n}日は入りませんでした）"
+  "its.cal.over": "日付は20件までです（{n}日は入りませんでした）",
+  "its.date.removeLabel": "{date}を削除"
 }

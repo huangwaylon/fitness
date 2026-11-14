@@ -528,11 +528,11 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   await expect(cal.locator('[data-its-night-day][aria-pressed="true"]')).toHaveCount(2);
   await expect(cal.locator('[data-its-night-day="2026-11-21"]')).toHaveAttribute('data-mark', 'booked');
   await expect(cal.locator('[data-its-night-day="2026-11-22"]')).toHaveAttribute('data-mark', 'action');   // the hold waiting
-  await expect(cal.locator('[data-its-night-day="2026-11-22"]')).toHaveAccessibleName('11月22日(日)、探す日、要対応');
-  for (const sel of ['[data-its-night-day="2026-11-04"]', '[data-its-weekday="5"]']) {
-    const b = (await cal.locator(sel).boundingBox())!;
-    expect(Math.min(b.width, b.height), sel).toBeGreaterThanOrEqual(44);
-  }
+  await expect(cal.locator('[data-its-night-day="2026-11-22"]')).toHaveAccessibleName('11/22（日）、探す日、要対応');
+  // a night 44 high; the weekday header plain text (ジム's), its column's width
+  expect((await cal.locator('[data-its-night-day="2026-11-04"]').boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect((await cal.locator('[data-its-weekday="5"]').boundingBox())!.width).toBeGreaterThanOrEqual(44);
+  await expect(cal.getByRole('row')).toHaveCount(6);   // the weekdays, then 11/2–30: the week of 11/1 (all passed) left out
   // a booked night under it: nothing to open
   await expect(its.locator('[data-its-date="2026-11-21"]')).toContainText('予約済み・探していません');
   await expect(its.locator('[data-its-date="2026-11-21"] [data-its-night]')).toHaveCount(0);
@@ -544,7 +544,7 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   const row = its.locator('[data-its-date="2026-11-22"]');
   const night = row.locator('[data-its-night]');
   await expect(row.locator('.nn')).toHaveText(`${fit}/${total}`);
-  await expect(night).toHaveAccessibleName(`11月22日(日)、あと18日。${total}件中${fit}件を探しています。季節外で${seasonal}件、掲載終了で1件除外。`);
+  await expect(night).toHaveAccessibleName(`11/22（日）、あと18日。${total}件中${fit}件を探しています。季節外で${seasonal}件、掲載終了で1件除外。`);
   await night.click();
   await expect(night).toHaveAttribute('aria-expanded', 'true');
   const list = row.locator('[data-its-night-list]');
@@ -576,6 +576,33 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   // a tap on a night already in takes it out
   await dec.locator('[data-its-night-day="2026-12-05"]').click();
   await expect(its.locator('[data-its-date]')).toHaveCount(5);
+});
+
+test('日付: a saved stay past next month is listed and its ✕ takes it out; a weekday cut short by the 20-stay cap comes out at the next tap', async ({ page, context }) => {
+  const later = Array.from({ length: 18 }, (_, i) => `2027-0${1 + Math.floor(i / 9)}-${String(10 + (i % 9)).padStart(2, '0')}`);
+  const { sheet, its } = await phone(page, context, 'A', undefined, { edit: (s) => ({ ...s, settings: { ...s.settings, dates: ['2026-11-22', ...later, '2027-11-30'] } }) });
+  await open(sheet);
+  // 2027-11-30: a year on, on no calendar month shown; its row's ✕ takes it out (未保存)
+  const far = its.locator('[data-its-date="2027-11-30"]');
+  await expect(far).toBeVisible();
+  await expect(its.locator('[data-its-night-day="2027-11-30"]')).toHaveCount(0);
+  await far.locator('[data-its-date-remove]').click();
+  await expect(far).toHaveCount(0);
+  await expect(its.locator('[data-its-fold="dates"] [data-its-unsaved]')).toBeVisible();
+  // 19 stays: 土's column (11/7, 14, 21, 28) has room for one; said why; the next tap takes it out
+  const nov = its.getByRole('grid', { name: '2026年11月の泊まる日' });
+  await nov.locator('[data-its-weekday="5"]').click();
+  await expect(nov.locator('[data-its-night-day][aria-pressed="true"]')).toHaveCount(2);   // 11/22 (日) and one 土
+  await expect(its.locator('[data-its-date-why]')).toHaveText('日付は20件までです（3日は入りませんでした）');
+  await nov.locator('[data-its-weekday="5"]').click();
+  await expect(nov.locator('[data-its-night-day][aria-pressed="true"]')).toHaveCount(1);
+  // the why goes with a month switch (and on 破棄, after a save)
+  await nov.locator('[data-its-weekday="5"]').click();
+  await expect(its.locator('[data-its-date-why]')).toBeVisible();
+  await its.locator('[data-its-month="2026-12"]').click();
+  await expect(its.locator('[data-its-date-why]')).toHaveCount(0);
+  await its.locator('[data-its-discard]').click();
+  await expect(its.locator('[data-its-date="2027-11-30"]')).toBeVisible();
 });
 
 test('直近1時間: a cell a minute, a tap names it, the group says the hour', async ({ page, context }) => {
