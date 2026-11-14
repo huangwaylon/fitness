@@ -134,7 +134,8 @@ function report(rows: Row[], since: number): void {
   table('Live socket closes by code', ['code', 'phones', 'relay', 'median secs'], countBy(ws, (r) => String(r.d.code)).map(([c, xs]) => [c, xs.filter((x) => x.src === 'c').length, xs.filter((x) => x.src === 'r').length, ms(pct(xs.map((x) => Number(x.d.secs)).filter((x) => x >= 0), 0.5))]));
   // (the phones only: A's Mac sessions would mix into the p50/p95)
   const phone = (ev: string) => rows.filter((r) => r.ev === ev && !(r.os ?? '').startsWith('macos'));
-  const ready = phone('app.ready').map((r) => Number(r.d.ms));
+  // (a launch hidden before ready, `hid`, counts its time away: left out, its count in the label)
+  const readyAll = phone('app.ready'), ready = readyAll.filter((r) => r.d.hid !== true).map((r) => Number(r.d.ms));
   const frames = phone('perf.frames');
   // the island's launches (perf.boot: app/src/lib/components/world3d/boot.ts), warm (every model from a cache) and cold
   const boots = phone('perf.boot');
@@ -147,7 +148,7 @@ function report(rows: Row[], since: number): void {
     return [[`${k} launch: first frame (ms)`, ...p('first')], [`${k} launch: island whole (ms)`, ...p('shown')], [`${k} launch: appearing frame (ms)`, ...p('appear')], [`${k} launch: longest frame (ms)`, ...p('long')]];
   });
   table('Performance (phones)', ['metric', 'n', 'p50', 'p95'], [
-    ['cold load to the island (ms)', ready.length, ms(pct(ready, 0.5)), ms(pct(ready, 0.95))],
+    [`cold load to the island (ms; ${readyAll.length - ready.length} hidden left out)`, ready.length, ms(pct(ready, 0.5)), ms(pct(ready, 0.95))],
     ['frame p50 (ms)', frames.length, ms(pct(frames.map((r) => Number(r.d.p50)), 0.5)), ms(pct(frames.map((r) => Number(r.d.p50)), 0.95))],
     ['frame p95 (ms)', frames.length, ms(pct(frames.map((r) => Number(r.d.p95)), 0.5)), ms(pct(frames.map((r) => Number(r.d.p95)), 0.95))],
     ['fps', frames.length, ms(pct(frames.map((r) => Number(r.d.fps)), 0.5)), ms(pct(frames.map((r) => Number(r.d.fps)), 0.05))],

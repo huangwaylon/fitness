@@ -52,7 +52,8 @@ export const LOG_EVENTS = {
   // page hidden or shown as it loaded; hr, hrS: the load is the app's own reload at a hide (a deploy taken out of sight,
   // ui-state/update.ts), that long ago (vis hidden: it ran out of sight; shown, hrS long: only at the next show)
   "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n', vis: ['visible', 'hidden'], hr: 'b', hrS: 'n' } },
-  "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
+  // hid: the page was hidden before it got there (ms then counts time away: left out of the report's cold load)
+  "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES, hid: 'b' } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'mic', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
