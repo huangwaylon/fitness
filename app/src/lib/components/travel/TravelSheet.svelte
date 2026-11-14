@@ -3,7 +3,9 @@
   // (docs/design.md "Unified kit"). Two levels: the trips (TripList, from the small trips/meta.ts: no guide loads
   // for it), and a trip (TripView: its hero, its pages, its tab bar), its guide loaded when it is opened (each its own
   // chunk; offline before it is cached, 読み込めませんでした and もう一度).
-  // The list's title bar has this phone's km | mi switch at its left (units.ts; the one place it is).
+  // The list's own tabs (a tablist, as ボット's): これから, これまで (TripList) and 設定 (TravelSettings: km | mi). It
+  // opens on the tab last shown this app session (DEVICE.travelTab, sessionStorage), else これから if a trip is on or
+  // coming, else これまで; ‹ from a trip lands on its tab.
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`). Kept mounted between openings (Sheet's
   // `keep`: a reopening at once, where it was left, its scroll too), but for a trip on now (built again: today's day,
@@ -12,8 +14,9 @@
   import '#lib/i18n/travel.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
-  import Segmented from '../ui/Segmented.svelte';
+  import TabBar from '../ui/TabBar.svelte';
   import TripList from './TripList.svelte';
+  import TravelSettings from './TravelSettings.svelte';
   import TripView, { type Tab } from './TripView.svelte';
   import type { Trip, TripId } from '#lib/travel/types.ts';
   import { loadTrip } from '#lib/travel/trips/index.ts';
@@ -23,8 +26,8 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { pick } from './text.ts';
-  import { phaseOf } from './when.ts';
-  import { UNITS, setUnits, units } from './units.ts';
+  import { phaseOf, sortTrips } from './when.ts';
+  import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -38,6 +41,28 @@
   let failed = $state<TripId | null>(null);
   const trip = $derived(sel ? (guides[sel] ?? null) : null);
   const meta = $derived(sel ? TRIP_META.find((m) => m.id === sel) : undefined);
+
+  type ListTab = 'coming' | 'past' | 'settings';
+  const LIST_TABS: readonly ListTab[] = ['coming', 'past', 'settings'];
+  const ICONS = { coming: 'plane-takeoff', past: 'camera', settings: 'gear' } as const;
+  const kv = sessionKV();
+  const kept = kv?.getItem(DEVICE.travelTab);
+  /** The list's tab: the one kept this session, else これから while a trip is on or coming, else これまで. */
+  let ltab = $state<ListTab>(LIST_TABS.find((x) => x === kept) ?? tabOf(minuteNow().getTime()));
+  /** The panel holds nothing to focus (これから empty): it takes the focus itself. */
+  const bare = $derived(ltab === 'coming' && !sortTrips(TRIP_META, now).coming.length);
+  const items = $derived(LIST_TABS.map((id) => ({ id, label: t(`travel.tab.${id}`), icon: ICONS[id] })));
+  function tabOf(at: number): ListTab {
+    return TRIP_META.some((m) => phaseOf(m, at).k !== 'past') ? 'coming' : 'past';
+  }
+  function pickTab(id: ListTab) {
+    ltab = id;
+    try {
+      kv?.setItem(DEVICE.travelTab, id);
+    } catch {
+      /* this opening only */
+    }
+  }
 
   function load(id: TripId) {
     failed = null;
@@ -69,6 +94,8 @@
   function back() {
     cue('back');
     const from = sel;
+    const m = TRIP_META.find((x) => x.id === from);
+    if (m) pickTab(phaseOf(m, now).k === 'past' ? 'past' : 'coming');
     sel = null;
     failed = null;
     void Promise.resolve().then(() => document.querySelector<HTMLElement>(`[data-trip="${from}"]`)?.focus({ preventScroll: true }));
@@ -84,17 +111,20 @@
   });
 </script>
 
-{#snippet lead()}
-  <Segmented size="s" items={UNITS.map((u) => ({ id: u, label: u }))} value={units.current} label={t('travel.units')} attr="units" onpick={setUnits} />
-{/snippet}
-
 <Sheet bind:open tunes label={t('travel.title')} variant="full" onclose={closed} timed="travel" {keep}>
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
     {#key `${sel}|${fresh}`}
       <div class="lvl">
         {#if !sel}
-          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} {lead} /></div>
-          <TripList trips={TRIP_META} {now} onopen={show} />
+          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} /></div>
+          <div class="panel" id="travel-panel" role="tabpanel" aria-labelledby="travel-tab-{ltab}" tabindex={bare ? 0 : undefined} data-travel-panel={ltab}>
+            {#if ltab === 'settings'}
+              <div class="sheet-scroll"><TravelSettings /></div>
+            {:else}
+              <TripList trips={TRIP_META} which={ltab} {now} onopen={show} />
+            {/if}
+          </div>
+          <TabBar {items} value={ltab} label={t('travel.listTabs')} attr="travel-tab" panel="travel-panel" onpick={pickTab} />
         {:else if trip}
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
@@ -120,6 +150,7 @@
   .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   .top { flex: none; background-color: var(--surface); }
+  .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--text-soft); }
   .center p { margin: 0; }
   /* guide text: Japanese breaks only between its words (Txt's <wbr>s), a word too long for the line anywhere */

@@ -1,6 +1,6 @@
 // りょこう (docs/design.md §Trips) on the unified kit: the menu's pill opens the trips' sheet (the island paused under
-// it): the list's boarding passes (しまの そら便; on now and coming first, then これまで; the stub 「あと 99 日」 /
-// 「いま 2 日目」, a past trip's 「行ってきた」 stamp; km | mi at the title bar's left), a trip (NZ): its photo with ‹ ✕
+// it): the list's boarding passes under its tabs (これから · これまで · 設定; しまの そら便; the stub 「あと 99 日」 /
+// 「いま 2 日目」, a past trip's 「行ってきた」 stamp; km | mi in 設定), a trip (NZ): its photo with ‹ ✕
 // on it, the title bar once scrolled, the bottom tab bar (日程 · 地図 · 持ち物; no キャンプ場 without campsites), a day
 // chip each and 準備 (the day shown: the first outside the trip, the one on now inside it, with the row that is now:
 // the trip's clock), 準備's cards, reopening into the trip on now, ‹ back and ✕, the pill offline; the past trips on
@@ -20,28 +20,78 @@ const rows = (p: Page) => sheet(p).locator('[data-trip]');
 const tab = (p: Page, id: string) => sheet(p).locator(`[data-trip-tab="${id}"]`);
 const hdr = (p: Page) => p.locator('dialog[open] .navbar');
 const dayChip = (p: Page, d: number | 'prep') => sheet(p).locator(`[data-day-pick="${d}"]`);
+const listTab = (p: Page, id: string) => sheet(p).locator(`[data-travel-tab="${id}"]`);
+const tripIds = (p: Page) => rows(p).evaluateAll((els) => els.map((e) => [e.getAttribute('data-trip'), e.getAttribute('data-phase')]));
 
-test('the pill opens the list: coming first, then これまで; ✕ closes', async ({ page }) => {
+test('the pill opens the list: これから, then これまで on its tab; ✕ closes', async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
   // the island paused under it
   await expect(page.locator('[data-covered][data-sheet]')).toHaveCount(1);
-  // NZ (Feb 2027) coming, 99 days counted at home; then the past, newest first
-  const ids = await rows(page).evaluateAll((els) => els.map((e) => [e.getAttribute('data-trip'), e.getAttribute('data-phase')]));
-  expect(ids).toEqual([['nz', 'soon'], ['okinawa', 'past'], ['seattle', 'past']]);
+  // a trip coming: これから first (a tablist, its panel labelled by the tab)
+  await expect(listTab(page, 'coming')).toHaveAttribute('aria-selected', 'true');
+  await expect(sheet(page).locator('[data-travel-tab]')).toHaveText(['これから', 'これまで', '設定']);
+  await expect(sheet(page).locator('#travel-panel')).toHaveAttribute('aria-labelledby', 'travel-tab-coming');
+  // NZ (Feb 2027) coming, 99 days counted at home
+  expect(await tripIds(page)).toEqual([['nz', 'soon']]);
   await expect(sheet(page).locator('[data-trip="nz"] [data-days]')).toHaveText('99');
   await expect(sheet(page).locator('[data-trip="nz"]')).toHaveAttribute('aria-label', /あと99日$/);
   await expect(sheet(page).locator('[data-trip="nz"]')).toContainText('TYO ✈ AKL');
   await expect(sheet(page).locator('[data-trip="nz"]')).toContainText('しまの そら便');
-  await expect(sheet(page).locator('[data-trip="okinawa"] [data-stamp]')).toHaveText('行ってきた2026');
   await expect(sheet(page).locator('[data-trip="nz"] [data-stamp]')).toHaveCount(0);
-  await expect(sheet(page).locator('[data-memories]')).toHaveText('これまで');
-  await expect(sheet(page).locator('[data-units="km"]')).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'list-day');
+  // これまで: the past, newest first, each stamped
+  await listTab(page, 'past').click();
+  expect(await tripIds(page)).toEqual([['okinawa', 'past'], ['seattle', 'past']]);
+  await expect(sheet(page).locator('[data-trip="okinawa"] [data-stamp]')).toHaveText('行ってきた2026');
+  await listTab(page, 'coming').click();
   await hdr(page).locator('.close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(page.locator('[data-sheet]')).toHaveCount(0);
   await fromMenu(page, 'travel');
+  await expect(rows(page)).toHaveCount(1);
+});
+
+test('the list tab shown is kept from one opening to the next', async ({ page }) => {
+  await gotoTrips(page, '2026-11-04T12:00');
+  await listTab(page, 'past').click();
+  await hdr(page).locator('.close').click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await fromMenu(page, 'travel');
+  await expect(listTab(page, 'past')).toHaveAttribute('aria-selected', 'true');
+  await expect(rows(page)).toHaveCount(2);
+  expect(await page.evaluate(() => sessionStorage.getItem('island.travelTab'))).toBe('past');
+  await listTab(page, 'settings').click();
+  await hdr(page).locator('.close').click();
+  await fromMenu(page, 'travel');
+  await expect(sheet(page).locator('[data-travel-settings]')).toBeVisible();
+});
+
+test('a stale kept tab falls back to the default (これから, a trip coming)', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('island.travelTab', 'memories'));
+  await gotoTrips(page, '2026-11-04T12:00');
+  await expect(listTab(page, 'coming')).toHaveAttribute('aria-selected', 'true');
+  await expect(rows(page)).toHaveCount(1);
+});
+
+test('‹ from a past trip lands on これまで, on its pass', async ({ page }) => {
+  await gotoTrips(page, '2026-11-04T12:00');
+  await pickTrip(page, 'okinawa');
+  await expect(listTab(page, 'coming')).toHaveCount(0);
+  await hdr(page).locator('.back').click();
+  await expect(listTab(page, 'past')).toHaveAttribute('aria-selected', 'true');
+  await expect(sheet(page).locator('[data-trip="okinawa"]')).toBeFocused();
+});
+
+test('no trip coming: it opens on これまで; これから says 予定の旅はありません', async ({ page }) => {
+  await gotoTrips(page, '2027-04-01T12:00');
+  await expect(listTab(page, 'past')).toHaveAttribute('aria-selected', 'true');
   await expect(rows(page)).toHaveCount(3);
+  await listTab(page, 'coming').click();
+  await expect(rows(page)).toHaveCount(0);
+  await expect(sheet(page).locator('[data-travel-none]')).toHaveText('予定の旅はありません');
+  // nothing in it to focus: the panel takes the focus
+  await expect(sheet(page).locator('#travel-panel')).toHaveAttribute('tabindex', '0');
+  await shot(page, 'list-none');
 });
 
 // The days to go turn at Tokyo's midnight, where the travellers are till they leave (結婚式 counts the same), not at
@@ -53,16 +103,15 @@ test('the countdown counts at home: the same at 21:30 as at noon, one fewer afte
   }
 });
 
-test('km | mi at the left of the list’s title bar (only there): kept on this phone', async ({ page }) => {
+test('単位は設定タブに: km | mi kept on this phone, none in the title bar', async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
-  const mi = hdr(page).locator('[data-units="mi"]');
+  await listTab(page, 'settings').click();
+  const mi = sheet(page).locator('[data-units="mi"]');
   await expect(mi).toBeVisible();
-  // small to the eye (once the sheet has grown in), left of the title, ✕ at the right
-  await expect.poll(async () => Math.round((await mi.boundingBox())!.height)).toBe(32);
-  const [m, title, close] = await Promise.all([mi.boundingBox(), hdr(page).locator('h2').boundingBox(), hdr(page).locator('.close').boundingBox()]);
-  expect(m!.x + m!.width).toBeLessThan(title!.x);
-  expect(close!.x).toBeGreaterThan(title!.x + title!.width);
+  await expect(sheet(page).locator('[data-units="km"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(async () => Math.round((await mi.boundingBox())!.height)).toBe(36);
   await expect(sheet(page).locator('[data-units]')).toHaveCount(2);
+  await expect(page.locator('.navbar [data-units]')).toHaveCount(0);
   await mi.click();
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
   expect(await page.evaluate(() => localStorage.getItem('island.travel.units'))).toBe('mi');
@@ -70,7 +119,7 @@ test('km | mi at the left of the list’s title bar (only there): kept on this p
   await islandUp(page);
   await fromMenu(page, 'travel');
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
-  // a trip's pages have none (the list is the one place)
+  // a trip's pages have none (設定 is the one place)
   await pickTrip(page, 'nz');
   await expect(sheet(page).locator('[data-units]')).toHaveCount(0);
 });
@@ -183,7 +232,7 @@ test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the
   await sheet(page).locator('[data-map-day="2"]').click();
   await expect(sheet(page).locator('[data-stop]')).toHaveCount(nz.places.filter((p) => p.kind === 'stop' && p.day === 2).length);
   await hdr(page).locator('.back').click();
-  await expect(rows(page)).toHaveCount(3);
+  await expect(rows(page)).toHaveCount(1);
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
@@ -242,7 +291,7 @@ test('reopening: the trip and its page as they were left', async ({ page }) => {
   await hdr(page).locator('.back').click();
   await hdr(page).locator('.close').click();
   await fromMenu(page, 'travel');
-  await expect(rows(page)).toHaveCount(3);
+  await expect(rows(page)).toHaveCount(1);
 });
 
 test('offline before the first opening: the pill says so, もう一度 opens it once back', async ({ page, context }) => {
@@ -261,7 +310,7 @@ test('offline before the first opening: the pill says so, もう一度 opens it 
   let reloads = 0;
   page.on('load', () => reloads++);
   await page.getByRole('button', { name: 'もう一度' }).click();
-  await expect(rows(page)).toHaveCount(3);
+  await expect(rows(page)).toHaveCount(1);
   expect(reloads).toBe(0);
 });
 

@@ -49,7 +49,9 @@ test('けっこんしき’s filter chips and トレイル’s: a 44 × 44 hit e
 test('りょこう’s km | mi and a trip’s day chips: a 44 × 44 hit each', async ({ page }) => {
   await island(page);
   await fromMenu(page, 'travel');
+  await page.locator('dialog[open] [data-travel-tab="settings"]').click();
   await all44(page.locator('dialog[open] [data-units]'));
+  await page.locator('dialog[open] [data-travel-tab="coming"]').click();
   await page.locator('dialog[open] [data-trip="nz"]').click();
   const days = page.locator('dialog[open] .chip-row .chip');
   await expect(days.first()).toBeVisible();

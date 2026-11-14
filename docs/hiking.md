@@ -82,7 +82,7 @@ in the credits.
   the map's: the buttons never cover the sheet); Esc folds it. The body: the chart (press shows the readout and the
   map's dot, drag moves them, they stay on release, tap again clears; coral line over a leaf area, waypoints dashed
   yuzu), Kinpu's plan card, 概要, コース紹介, the tips, 詳細情報 (`.row.kv`), credits.
-- Units follow the km / mi switch (`travel/units.ts`, under 旅行's list); the language the reader's locale.
+- Units follow the km / mi switch (`travel/units.ts`, 旅行's 設定 tab); the language the reader's locale.
 
 ## Later / left out
 

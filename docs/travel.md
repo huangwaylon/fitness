@@ -14,7 +14,7 @@ UI is [design.md §Trips](design.md#trips); this file is the data, the relay's p
   decisions.md "The trip map"). No terrain shading.
 - A "you are here" dot; **the position never leaves the phone** (never logged, sent or kept).
 - Nothing downloads ahead unless asked (「オフライン用に保存」); what was seen is kept ("Offline").
-- A km / mi switch per device. No ベル / economy tie-in.
+- A km / mi switch per device, in the list's 設定 tab. No ベル / economy tie-in.
 
 ## Past trips
 

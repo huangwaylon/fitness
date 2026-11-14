@@ -33,9 +33,19 @@ async function openTrips(page: Page) {
   // the list, or (during a trip) that trip
   await expect(tripsSheet(page).locator('[data-trip], [data-trip-view]').first()).toBeVisible();
 }
-/** From the passes: `trip`'s, its page `tab` (the plan, にってい, first). */
+/** The list's tab holding `trip` (これから, else これまで). */
+async function listTabOf(page: Page, trip: string) {
+  const sheet = tripsSheet(page);
+  for (const w of ['coming', 'past']) {
+    await sheet.locator(`[data-travel-tab="${w}"]`).click();
+    await expect(sheet.locator(`[data-trip-list="${w}"]`)).toBeVisible();
+    if (await sheet.locator(`[data-trip="${trip}"]`).count()) return;
+  }
+}
+/** From the passes: `trip`'s (its list tab picked first), its page `tab` (the plan, にってい, first). */
 export async function pickTrip(page: Page, trip: string, tab: TripTab = 'days') {
   const sheet = tripsSheet(page);
+  await listTabOf(page, trip);
   await sheet.locator(`[data-trip="${trip}"]`).click();
   await expect(sheet.locator(`[data-trip-view="${trip}"]`)).toBeVisible();
   if (tab !== 'days') await sheet.locator(`[data-trip-tab="${tab}"]`).click();

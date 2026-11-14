@@ -1,4 +1,4 @@
-// りょこう's distances in km or miles (docs/design.md §Trips): a choice of this phone's (せってい → りょこう, DEVICE
+// りょこう's distances in km or miles (docs/design.md §Trips): a choice of this phone's (旅行's 設定 tab, DEVICE
 // travelUnits; km by default), never synced. Reactive without runes: a read of `units.current` in a template or an
 // effect is tracked (createSubscriber), so every `{km:}` the guide shows follows the switch at once.
 //   fmtKm(9.8)          '9.8 km' | '6.1 mi'

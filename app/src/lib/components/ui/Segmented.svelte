@@ -2,7 +2,7 @@
   // A segmented switch (けんこう's かつどう · からだ, ごはん's きろく · グラフ): pills side by side, each an optional NH
   // icon and its name, the picked one pressed; the panel's tab look, smaller. `attr` names each pill's data attribute
   // (`data-group="body"`, `data-tab="chart"`), what the specs and the sounds read (a tap on the picked one is silent).
-  // `size="s"`: the kit's small one (32 × 40px drawn in a 44px hit, as `.chip.s`: りょこう's km | mi in its title bar).
+  // `size="s"`: the kit's small one (32 × 40px drawn in a 44px hit, as `.chip.s`; unused for now).
   import OfficialArt from '../characters/OfficialArt.svelte';
 
   interface Props {

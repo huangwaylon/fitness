@@ -4,7 +4,7 @@
   // area; each tab its icon over its label, the shown one on a yuzu pill. `attr` names each tab's data attribute
   // (`data-trip-tab="map"`), what the specs read. A tap on the shown tab is silent. `mark`: drawn on each tab's icon's
   // corner (ボット's status dots), on a cream plate (`--plate`); a tab's `name`: its whole name to VoiceOver (「ジム、順調」),
-  // `attrs` its more data-*. `panel`: the id of the one panel the tabs switch (ボット): a tablist then
+  // `attrs` its more data-*. `panel`: the id of the one panel the tabs switch (ボット, 旅行's list): a tablist then
   // (role tab, aria-selected, aria-controls; ← → Home End move the focus, Enter or Space picks), else a nav whose
   // shown tab is aria-current.
   //   <TabBar items={[{ id: 'days', label: '日程', icon: 'calendar' }, …]} value={tab} label="ページ" attr="trip-tab" onpick={…} />

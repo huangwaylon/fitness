@@ -255,7 +255,7 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   over a photo or a map too (‹ grown into a pill: ‹ しまへ in a room, ‹ 戻る on the board). No other ✕ or ‹. Floating
   cards put the same ✕ at their top-right corner.
 - **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (ききみみ), whose data (健康,
-  ごはん), km | mi (旅行). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
+  ごはん). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
   place (`middle`), 健康 | ごはん's page switch.
 - **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存), no キャンセル.
   An edit mode inside a sheet or the world (a memo, a board note, a goal's tray) has キャンセル then its action. A confirm
@@ -977,8 +977,8 @@ opens its full-height sheet, the island paused under it; an invite shows as a to
 旅行, the trip guides (data, relay and maps: [travel.md](travel.md)), in the [unified kit](#unified-kit): the menu's
 旅行 pill opens a full-height sheet (`components/travel/TravelSheet.svelte`: its header has the opening and the levels),
 the island paused under it; a private value not in yet shows 🔒.
-- **The list:** upcoming (soonest first) and past, a boarding pass each (the days to go counted at home, Tokyo's day,
-  as 結婚式's).
+- **The list:** tabs これから, これまで, 設定 (単位: km/mi, m/ft, °C/°F, 登山 too); opens on the last
+  tab, else これから if any.
 - **A trip:** the photo band, then 日程 · 地図 · キャンプ場 · 持ち物 (each only where the trip has it). 日程: the timeline
   on the trip's own clock (the day on now first, its row lit). 地図: the day's stops; a row flies the map there, a pin
   scrolls to its rows.

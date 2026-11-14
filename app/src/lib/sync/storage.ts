@@ -190,6 +190,9 @@ export const DEVICE = {
   /** sessionStorage: `its` | `gym`: the ボット tab last shown in this app session (the next opening's; ジム, the leftmost,
    *  after the app was closed: components/bots/BotsSheet.svelte). */
   botsTab: 'island.botsTab',
+  /** sessionStorage: `coming` | `past` | `settings`: 旅行's list tab last shown in this app session (the next
+   *  opening's; components/travel/TravelSheet.svelte). */
+  travelTab: 'island.travelTab',
   /** localStorage: `{ on, endpoint, key, lang, at }`: 保養所's 通知 on this phone (lib/its/push.ts; off by default): on
    *  once the its-bot Worker took the subscription, what it was given (the endpoint, the VAPID key, the language) and
    *  when (refreshed weekly). Never synced. */
