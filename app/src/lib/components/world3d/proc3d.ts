@@ -1,10 +1,10 @@
 // The 3D island's own small models (docs/design.md "World: in 3D"), for what NH's files have no model of: the
 // pond's lily flower (and a pad, should fx/lily-pad be missing), a winter flower's snow cap, a decoration's footprint
-// marker.
+// marker, an empty plot's ＋ (a place to plant).
 // Built in code (a few hundred triangles each), in model units at the scale given in PROC (a tile is 10 units, as NH's
 // furniture), drawn by things.ts as any model (instanced, bent, NH's soft Lambert).
 import {
-  CircleGeometry, ConeGeometry, Group, Mesh, MeshStandardMaterial, RingGeometry, SphereGeometry,
+  CircleGeometry, ConeGeometry, Group, Mesh, MeshStandardMaterial, RingGeometry, Shape, ShapeGeometry, SphereGeometry, Vector2,
   type BufferGeometry
 } from 'three';
 import type { AssetKey } from './assets.ts';
@@ -15,7 +15,8 @@ export const PROC: Record<string, AssetKey> = {
   'proc/lily-flower': { m: 'proc/lily-flower', cat: 'scenery', s: 3, anchor: 'feet', hit: 12, shadow: false },
   'proc/snow-cap': { m: 'proc/snow-cap', cat: 'scenery', s: 1, anchor: 'feet', hit: 0, shadow: false },
   'proc/foot-ok': { m: 'proc/foot-ok', cat: 'decor', s: 3, anchor: 'feet', hit: 12, shadow: false },
-  'proc/foot-bad': { m: 'proc/foot-bad', cat: 'decor', s: 3, anchor: 'feet', hit: 12, shadow: false }
+  'proc/foot-bad': { m: 'proc/foot-bad', cat: 'decor', s: 3, anchor: 'feet', hit: 12, shadow: false },
+  'proc/plot-plus': { m: 'proc/plot-plus', cat: 'decor', s: 3, anchor: 'feet', hit: 0, shadow: false }
 };
 
 /** Their bounds (model units), as assets.json's models (the anchors, the stand-ins' sizes). */
@@ -24,7 +25,8 @@ export const PROC_BOUNDS: Record<string, { min: number[]; max: number[]; tris: n
   'proc/lily-flower': { min: [-1.2, 0, -1.2], max: [1.2, 1.4, 1.2], tris: 80, kb: 0, v: 'p1' },
   'proc/snow-cap': { min: [-1, 0, -1], max: [1, 0.45, 1], tris: 60, kb: 0, v: 'p1' },
   'proc/foot-ok': { min: [-5, 0, -5], max: [5, 0.1, 5], tris: 8, kb: 0, v: 'p1' },
-  'proc/foot-bad': { min: [-5, 0, -5], max: [5, 0.1, 5], tris: 8, kb: 0, v: 'p1' }
+  'proc/foot-bad': { min: [-5, 0, -5], max: [5, 0.1, 5], tris: 8, kb: 0, v: 'p1' },
+  'proc/plot-plus': { min: [-1.6, 1.1, -1.6], max: [1.6, 1.1, 1.6], tris: 10, kb: 0, v: 'p1' }
 };
 
 const mat = (color: number, o: Partial<{ opacity: number; side: 0 | 1 | 2 }> = {}) =>
@@ -65,6 +67,15 @@ export function procScene(name: string): Group | null {
     }
     case 'proc/foot-ok': case 'proc/foot-bad': {
       part(g, new RingGeometry(3.6, 4.6, 4, 1, Math.PI / 4), mat(name === 'proc/foot-ok' ? 0x7fd36a : 0xe8564a, { opacity: 0.85, side: 2 }), 0, 0.1, 0, -Math.PI / 2);
+      return g;
+    }
+    case 'proc/plot-plus': {
+      // an empty plot of mine while I hold starts (island/farm.ts farmScene): a flat cream ＋ on the soil's top, one
+      // mesh (one draw for every plot: instanced), facing up; never a plant's model, so it reads "plant here", not
+      // "planted". Its night glow: nightLift.ts
+      const a = 1.6, w = 0.45;
+      const plus = [[-w, -a], [w, -a], [w, -w], [a, -w], [a, w], [w, w], [w, a], [-w, a], [-w, w], [-a, w], [-a, -w], [-w, -w]];
+      part(g, new ShapeGeometry(new Shape(plus.map(([x, y]) => new Vector2(x, y)))), mat(0xfff4d6), 0, 1.1, 0, -Math.PI / 2);
       return g;
     }
     default:

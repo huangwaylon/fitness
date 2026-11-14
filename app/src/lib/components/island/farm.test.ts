@@ -40,7 +40,7 @@ describe('farmScene hint', () => {
     const farm = { plots: new Map([[a0.p, { who: 'A', c: 'tomato', from: FROM } satisfies Plot]]) };
     const { plots } = farmScene(layout, farm as never, FROM, none, { who: 'A', crop: 'carrot' });
     expect(plots.get(a0.p)?.hint).toBeUndefined();
-    expect(plots.get(a1.p)).toEqual({ hint: 'garden/crop-carrot-0' });
+    expect(plots.get(a1.p)).toEqual({ hint: 'proc/plot-plus' }); // a ＋, never a plant's model
     expect([...plots.keys()].filter((p) => p.startsWith('fd:field-B'))).toEqual([]);
     expect(farmScene(layout, farm as never, FROM, none).plots.get(a1.p)).toBeUndefined();
   });

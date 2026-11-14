@@ -9,7 +9,9 @@ import type { MeshLambertMaterial } from 'three';
 const LIFT: [RegExp, { glow?: number; shade?: number }][] = [
   [/^critters\/shadows\//, { shade: 0.2 }],
   [/^finds\//, { glow: 0.4 }],
-  [/^critters\//, { glow: 0.4 }]
+  [/^critters\//, { glow: 0.4 }],
+  // an empty plot's ＋ (proc3d.ts): kept readable on the night soil, under the lamps
+  [/^proc\/plot-plus$/, { glow: 0.6 }]
 ];
 
 /** A night lift for a model's material, if its model takes one; true the first time (its own material). */

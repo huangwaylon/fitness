@@ -88,8 +88,8 @@ income, 2026-11-14). The levers, if the live numbers drift (`npm run logs`, the 
 - **The word** pops over the plot for 1.2 s (「みずやり ずみ」), never in my villager's balloon.
 - **ほる** digs my own growing plant up (its start back, 取り消す): a 44 pt button at its word's right end, deaf for 300 ms,
   3 s, held while touched. Up to 3 taps reach it, each useful: harvest, water, then the word. A ripe plant is harvested first.
-- **An empty plot of mine**, while I hold starts (under the cap), shows a faint sprout of the first start held
-  (objects.ts FAINT: one instanced group, +2 draw calls); the first time, しずえ says 「はたけを タップで うえられますよ！」
+- **An empty plot of mine**, while I hold starts (under the cap), shows a faint cream ＋ on its soil, never a
+  plant's model (proc/plot-plus: one mesh, instanced, +1 draw call; lifted at night, nightLift.ts); the first time, しずえ says 「はたけを タップで うえられますよ！」
   once a phone (12 s, DEVICE.farmHint).
 - **Watered soil** stays dark for the day; a ripe plant shows its yield's model. Their plant or harvest shows on their
   next sync. **Who watered:** the partner's or guest's watering plays on my island at once (their villager turns,

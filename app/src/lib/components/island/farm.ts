@@ -29,22 +29,25 @@ export function plantModel(p: string, pl: Plot, date: LocalDate, watered: Watere
   return pl.c === 'pumpkin' && n >= 3 ? `garden/crop-pumpkin-${pumpkinColour(p, pl.from)}-${n}` : `garden/crop-${pl.c}-${n}`;
 }
 
+/** An empty plot's mark (world3d/proc3d.ts): a ＋, not a plant. */
+const PLOT_HINT = 'proc/plot-plus';
+
 /** Each plot of the layout's fields: its plant's model and whether it was watered today; with a signature that changes
  *  only when one of them does (the scene places its models again then). `hint`: while I hold starts, my empty plots
- *  carry a faint sprout of the first crop I hold (`hint`: its model), so an empty plot reads as a place to plant. */
+ *  carry a faint ＋ (`hint`: proc/plot-plus, never a plant's model), so an empty plot reads as a place to plant. */
 export function farmScene(layout: Layout, farm: Farm, date: LocalDate, watered: Watered, hint?: { who: Who; crop: string }): { plots: Map<string, FarmLook>; sig: string } {
   const plots = new Map<string, FarmLook>();
   let sig = '';
   for (const t of layoutPlots(layout)) {
     const pl = farm.plots.get(t.p), m = pl ? plantModel(t.p, pl, date, watered) : undefined, wet = watered(t.p, date);
-    const h = !pl && hint && t.who === hint.who ? `garden/crop-${hint.crop}-0` : undefined;
+    const h = !pl && hint && t.who === hint.who ? PLOT_HINT : undefined;
     if (!m && !wet && !h) continue;
     plots.set(t.p, { ...(m ? { m } : {}), ...(wet ? { wet } : {}), ...(h ? { hint: h } : {}) });
     sig += `${t.p}:${m ?? ''}:${wet ? 1 : 0}:${h ?? ''};`;
   }
   return { plots, sig };
 }
-/** A plot as the scene draws it: its plant's model, its soil watered, the faint sprout of an empty plot of mine. */
+/** A plot as the scene draws it: its plant's model, its soil watered, the faint ＋ of an empty plot of mine. */
 export type FarmLook = { m?: string; wet?: boolean; hint?: string };
 
 /** While `who` holds starts and has room under the cap: the first crop held (an empty plot's faint sprout, しずえ's
