@@ -423,9 +423,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release delete "$WIP" --yes --cleanup-tag
+      # (a smoke test or a partial run is incomplete by design: a notice, not a red run)
       - name: Fail on an incomplete round
-        if: steps.coverage.outcome != 'success'
+        if: >-
+          steps.coverage.outcome != 'success' &&
+          (inputs.wip_tag || 'kalori-wip') == 'kalori-wip' && !inputs.only_shops && !inputs.max_requests
         run: echo "::notice::coverage incomplete (see the summary); the retry's round, or another dispatch, continues"; exit 1
+      - name: Note a partial run's coverage
+        if: >-
+          steps.coverage.outcome != 'success' &&
+          ((inputs.wip_tag || 'kalori-wip') != 'kalori-wip' || inputs.only_shops || inputs.max_requests)
+        run: echo '::notice::a smoke or partial run, so coverage is incomplete by design; nothing published'
 
   # The published release into the app, in two jobs: update-build runs npm (dependency code) with a read-only token
   # and no GH_TOKEN: KALORI_TAG bumped, kalori.json alone (food:data --only kalori: CI has no other out/ files), the
