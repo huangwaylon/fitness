@@ -117,7 +117,8 @@ by `shell` (`same` and `net` paid it, `skip` and `cache` didn't), and `first`/`s
 7. Close the alert's issue with the cause.
 
 ## The alert
-`health.yml` (an hourly cron, which GitHub runs best effort: often ~4 a day; and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
+`health.yml` (hourly: dispatched at :15 by the relay's cron, `relay/src/ghDispatch.ts`, as GitHub drops most of a
+schedule's runs; its own cron the backstop; and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
 labelled `alert` (or comments on the open one when its reasons change, not their counts) when, in the last 6 hours, errors > 20 (not
 counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
 day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead), or

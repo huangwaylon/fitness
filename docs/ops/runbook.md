@@ -27,8 +27,9 @@ upload (no Git integration: the workflow is the gate). Repo secrets `CLOUDFLARE_
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these (an hourly cron, best effort: often ~4 a day) with the site's checks (its
-`version.json`, CSP header and the relay's CORS for it), red (GitHub mails the owner) unless all pass; it warns when the
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
+`version.json`, CSP header and the relay's CORS for it; the relay's :15 cron dispatches it and its-health.yml, at
+:45 its-health.yml: `relay/src/ghDispatch.ts`, GitHub's own schedules the backstop), red (GitHub mails the owner) unless all pass; it warns when the
 weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed

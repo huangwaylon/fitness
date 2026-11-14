@@ -6,8 +6,8 @@ name: Backend health
 
 on:
   schedule:
-    # hourly: GitHub drops scheduled runs under load (at */6 about 2 of the 4 ran, half the day's 6 h windows unread);
-    # each run's 8 s are free (a public repo), and a spike mails once, not each hour (below)
+    # the backstop: GitHub drops most scheduled runs (~4 of 24 a day ran), so the relay's :15 cron dispatches this
+    # hourly (relay/src/ghDispatch.ts); each run's 8 s are free (a public repo), a spike mails once (below)
     - cron: '17 * * * *'
   workflow_dispatch:
 

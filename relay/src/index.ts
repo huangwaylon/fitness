@@ -8,6 +8,7 @@ import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, ty
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { ARCHIVE_CRON } from './archive.ts';
+import { dispatchHealth } from './ghDispatch.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
@@ -52,6 +53,9 @@ export interface Env {
   ARCHIVE_RELEASE?: string;
   ARCHIVE_RECIPIENT?: string;
   ARCHIVE_TOKEN?: string;
+  /** The cron's dispatch of the health workflows (ghDispatch.ts; a secret: a fine-grained PAT, this repo's Actions read
+   *  and write). Unset: none dispatched (their own GitHub schedules only). */
+  GH_DISPATCH_TOKEN?: string;
   /** The deployed commit (scripts/deploy.sh `--var COMMIT:<short sha>`; `-dirty`: the test copy from a dirty tree). */
   COMMIT?: string;
 }
@@ -289,7 +293,7 @@ type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; he
 
 export default {
   /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup only. At :15 and :45: the real weather when it's due
-   *  (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
+   *  (IslandRoom weatherTick) and the health workflows' dispatch (ghDispatch.ts); once a day, at 04:15 Tokyo (just after a
    *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
@@ -305,6 +309,8 @@ export default {
       ));
       return;
     }
+    // the health workflows on time (GitHub's own schedule drops most runs)
+    ctx.waitUntil(dispatchHealth(env.GH_DISPATCH_TOKEN, ev.scheduledTime, log));
     if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) {
       ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).compactTick().then(
         () => {},

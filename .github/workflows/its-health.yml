@@ -8,6 +8,7 @@ name: ITS health
 
 on:
   schedule:
+    # the backstop: the relay's :15/:45 cron dispatches this (relay/src/ghDispatch.ts), GitHub drops most of a schedule
     - cron: '23,53 * * * *'
   workflow_dispatch:
 

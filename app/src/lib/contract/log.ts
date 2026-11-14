@@ -138,6 +138,8 @@ export const LOG_EVENTS = {
   "room.full": { src: 'r', f: { socks: 'n' } },
   // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
+  /** The relay's cron couldn't dispatch a health workflow (relay/src/ghDispatch.ts): its GitHub status (0: no answer). */
+  "cron.gh": { src: 'r', f: { wf: ['health', 'its-health'], st: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's

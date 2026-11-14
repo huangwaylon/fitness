@@ -19,13 +19,14 @@ the live room).
 | Deployable | Code | Deploy · roll back | Health · who alerts |
 |---|---|---|---|
 | The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | health.yml's site checks: red mails the owner |
-| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml (hourly cron, best effort: GitHub runs ~4 a day): red mails, the log's spikes open an `alert` issue |
+| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml hourly (dispatched by the relay's cron; GitHub's own schedule the backstop): red mails, the log's spikes open an `alert` issue |
 | The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `/health`, ボット → ジム; nothing watches it |
-| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml (a 30-min cron, best effort), the Worker's watchdog: the `its-alert` issue |
+| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml every 30 min (the same), the Worker's watchdog: the `its-alert` issue |
 
 **Secrets** (names only; never in this public repo):
 - Relay (`npx wrangler secret put`; the test copy's keys: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`,
-  `KEY_C` (the guest), `HEALTH_TOKEN`, `ARCHIVE_TOKEN` (a fine-grained GitHub token: rotate before it expires).
+  `KEY_C` (the guest), `HEALTH_TOKEN`, `ARCHIVE_TOKEN` and `GH_DISPATCH_TOKEN` (fine-grained GitHub tokens: rotate
+  before they expire; the second: this repo only, Actions read and write, for the health workflows' dispatch).
   Rotation: [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
 - Repo (`gh secret set`): `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Pages), `HEALTH_TOKEN` (health.yml), the
   `ITS_*` ([its/README.md](its/README.md) "Secrets"). The gym bot's: [gym/README.md](gym/README.md) "Secrets".
