@@ -32,8 +32,8 @@ snapshot, so a data refresh never rewrites one.
 ## Format
 
 **Dataset file** (`foods.json`, `dishes.json`, `extra_*.json`, ...):
-`{ "source", "label", "attribution", "license", "url", "items": [ITEM, ...] }`. The app's credits read the five
-header fields as they are written in the file.
+`{ "source", "label", "attribution", "license", "url", "items": [ITEM, ...] }` (OFF adds `dumped`: the dump's
+newest `last_modified_t`). The credits read the five header fields as written.
 
 **ITEM** (`food-data/scripts/lib.py` `validate`; type `Item` in `app/src/lib/food/types.ts`):
 
@@ -84,7 +84,7 @@ JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13
 | `extra_kumagaya.json` | 熊谷市 学校給食献立情報 2023–2026 | 773 | PDL1.0 | as Toyonaka | As Toyonaka (city-local codes keeping the MEXT group prefix) | Adult default portion (below) |
 | `extra_tokyo_hokeniryo.json` | 東京都 島しょ保健所「一人でもできる簡単レシピ」 | 14 | CC BY | 「…を加工して作成」 | Official per-serving values ÷ serving weight estimated from the ingredient list (`data_src/tokyo_hokeniryo_recipes.json`) | Estimated weights |
 | `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item; spread-out or mixed-basis boxes skipped | The SD is in `note` |
-| `products.json`, `jan/` | Open Food Facts (Japan) | 13,916 (search) / 42,850 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; `products.json` deduplicated, ≤ 3 MB (most-scanned first) |
+| `products.json`, `jan/` | Open Food Facts (Japan) | 13,917 (search) / 42,850 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; `products.json` deduplicated, ≤ 3 MB (most-scanned first) |
 | `kalori.json` | kalori.jp chain and konbini menus ([Kalori](#kalori)) | (per build) | kalori.jp 利用規約 | 「kalori.jp（各社の公表値と kalori.jp の AI 推定値）」 | Shops' published values and Kalori's AI estimates, per serving | `est` marks estimates; may-be-discontinued items kept, marked |
 
 **School-lunch adult portions** (Toyonaka, Kumagaya): the default portion is 「1人前（目安）」, the median adult portion
@@ -96,7 +96,7 @@ rows are dropped, and a blank cell is a zero only where the row needs none. The 
 entered as kcal fixed; kcal out of range, grossly off 4P+9F+4C, per-piece fried chicken or a 0-kcal alcoholic drink:
 the product dropped; a macro out of range or moderately off: P/F/C nulled; salt over its category's cap (a salty-food
 allow-list, protein supplements' own caps) nulled; the category from OFF tags, else name keywords (`NAME_FALSE_FRIENDS`
-first); creatine's nitrogen not counted as protein.
+first; a drink word ending the name beats a flavour); creatine's nitrogen not counted as protein.
 
 Our recipe sets name a dish once (`build.py` `qualify`): a name an earlier set (dishes, eatout, MAFF, Takatsuki) holds
 at another kcal says what differs (エビマヨ（お店）, 雑煮（三重県）). A name never carries its reading (it moves to the
@@ -141,7 +141,7 @@ line; a key matching no item fails the build).
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of generic foods and dishes in
 one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods, and
-8,944 of the 13,916 packaged products show a generic picture of the same food. Custom foods and the other products
+8,944 of the 13,917 packaged products show a generic picture of the same food. Custom foods and the other products
 keep their category's tile. The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
 sheet layout):
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`;
@@ -155,7 +155,8 @@ sheet layout):
   `FI_CHECKS=1` runs a vision model against vetted reference photos, then a by-eye contact sheet.
 - **Pack:** webp sprite sheets in `app/static/food-img/` (thumbnails per search neighbourhood, details per category),
   append-only and content-hashed (cached for a year); `index.json` maps each food id to its cells
-  (`lib/food/images.ts` `imgOf`). The service worker caches sheets on first use, never at install.
+  (`lib/food/images.ts` `imgOf`); a products.json rebuild re-matches only at the next pack (needs PIL). The service
+  worker caches sheets on first use, never at install.
 - **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/, ≤ 400 KB a sheet, a common search's
   top 20 ≤ 128 KB of thumbnails on average, and every generic food in a table row.
 
@@ -282,7 +283,7 @@ The app's credits (データの出典, `components/food/FoodCredits.svelte`) sho
 sources as built; keep both when a source is added or changed. The raw downloads are never committed.
 - **MEXT** (foods, and the values in dishes/eatout/MAFF/Takatsuki): cite 「日本食品標準成分表（八訂）増補2023年から引用」 and say what was modified (names, aliases and portions are ours; dish values are computed).
 - **PDL1.0 / CC BY** (MAFF, Kumagaya, Kurume, Toyonaka, Takatsuki, Tokyo): attribution plus a 「加工して作成」 notice. Each file's `attribution` carries it.
-- **ODbL** (Open Food Facts): attribution, and share-alike for the derived database. Shipping `products.json` (and `jan/`, were it shipped) means offering that extract under ODbL.
+- **ODbL** (Open Food Facts): attribution; share-alike: `products.json` (and `jan/`, were it shipped) is offered under ODbL 1.0.
 - **CC BY-SA** (Wikipedia-derived aliases): only short names and readings are kept.
 - **Kalori**: the header's `label`, `attribution`, `license` and `url` are its credit line; its pictures stay on `assets.kalori.jp` (hotlinked, never copied).
 - **CC0** (JBFD, MEXT↔USDA table, Wikidata) and USDA FoodData Central (public domain): no obligation; credit as a courtesy (`verify.json` `sources` carries the credit lines).

@@ -352,7 +352,7 @@ def drop_reading(name):
 
 # ---------------------------------------------------------------- schema validation
 def validate(doc, kind='dataset'):
-    """Errors (list of str) for a dataset doc ({source,label,attribution,license,url,items}) or a jan shard."""
+    """Errors (list of str) for a dataset doc ({source,label,attribution,license,url,[dumped],items}) or a jan shard."""
     errs = []
     if kind == 'shard':
         for code, it in doc.items():
@@ -363,6 +363,8 @@ def validate(doc, kind='dataset'):
     for k in META_KEYS:
         if not isinstance(doc.get(k), str) or not doc[k]:
             errs.append('missing ' + k)
+    if 'dumped' in doc and not (isinstance(doc['dumped'], str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', doc['dumped'])):
+        errs.append('dumped is not a YYYY-MM-DD date')   # optional: the source dump's date (OFF)
     ids = set()
     for it in doc.get('items', []):
         if it.get('id') in ids:

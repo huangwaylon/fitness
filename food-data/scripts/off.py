@@ -5,6 +5,7 @@ Inputs: raw/off/off_jp.jsonl (stream-filtered CSV dump, see fetch.py) and pages_
 """
 import glob, json, os, re, unicodedata
 from collections import Counter
+from datetime import datetime, timezone
 
 from lib import NUTS, drop_reading, fnum as to_num, norm_jan, nutrients, shard_key
 
@@ -12,12 +13,23 @@ META = {
     'source': 'off',
     'label': 'Open Food Facts',
     'attribution': '© Open Food Facts contributors (ODbL)',
-    'license': 'ODbL 1.0 / DbCL 1.0',
+    'license': 'ODbL 1.0 / DbCL 1.0（この抽出データも ODbL 1.0 で提供）',
     'url': 'https://world.openfoodfacts.org',
 }
 MAX_PRODUCTS_BYTES = 3_000_000
 JA_RE = re.compile(r'[぀-ヿ㐀-鿿ｦ-ﾟ]')
 DRINK_CATS = {'飲料', '酒'}
+# A name whose head (its last word, Japanese being head-final) is a drink, at a drink's energy, is a drink whatever
+# flavour or food word comes before it: はちみつ香るアールグレイティー, アイスコーヒー, タピオカミルクティー (not コーヒーゼリー,
+# ミルクティー味プロテイン, アイス 抹茶, 蒟蒻ゼリー 抹茶ラテ). A trailing size or bracket is skipped. NAME_RULES checks it after 酒.
+DRINK_HEAD = re.compile(r'(?:ティー|(?<!抹)茶|コーヒー|珈琲|ラテ|カフェオレ|ティー・オレ|ジュース|ドリンク|ソーダ|サイダー|エード|モネード|'
+                        r'スカッシュ|ウォーター|スムージー|スパークリング)'
+                        r'(?:\s*[(（][^()（）]*[)）])*(?:\s*\d+(?:\.\d+)?\s*(?:ml|l|本|缶))?\s*$', re.I)
+DRINK_HEAD_NOT = re.compile(r'(?:ゼリー|ソフト)(?!ドリンク)')
+# 調味料's roux: カレールー, シチュールー, ハヤシルー or ルー as a word of its own, never inside フルーツ, ブルーベリー, プルーン,
+# マッシュルーム, ビンダルー (katakana on either side; ・ and 。 are no letters)
+ROUX = re.compile(r'(?:カレー|シチュー|ハヤシ)ルー|(?<![ァ-ヺー])ルー(?![ァ-ヺー])')
+DRINK_HEAD_MAX_KCAL = 160   # a smoothie or a shake; a powder or a snack named so is far above
 
 # categories_tags -> app category (first matching rule wins; checked in tag order of specificity)
 TAG_RULES = [
@@ -54,6 +66,7 @@ NAME_RULES = [
     (('果汁', 'ジュース', '野菜生活', 'スムージー'), '飲料'),
     (('コーンフレーク', 'シリアル', 'グラノーラ', 'オートミール'), '主食'),
     (('ビール', '発泡酒', 'チューハイ', 'サワー', 'ハイボール', '日本酒', '焼酎', 'ワイン', '梅酒', 'ウイスキー'), '酒'),
+    (DRINK_HEAD, '飲料'),
     (('ラーメン', 'らーめん', 'うどん', 'そば', '焼そば', '焼きそば', 'パスタ', 'スパゲッティ', 'ヌードル', '麺', 'めん', 'メンマ', 'カップヌードル'), '麺'),
     (('おにぎり', '寿司', 'すし', '巻き寿司', '巻寿司', '太巻', '細巻', '中巻', '手巻', '恵方巻', '海苔巻', 'のり巻', '海鮮巻',
       '鉄火巻', 'かっぱ巻', '納豆巻'), '寿司'),
@@ -88,7 +101,7 @@ NAME_RULES = [
     (('bread', 'sandwich'), 'パン'),
     (('sauce', 'dressing', 'mayonnaise', 'ketchup', 'soy sauce', 'miso', 'seasoning', 'jam', 'honey'), '調味料'),
     (('醤油', 'しょうゆ', '味噌', 'みそ', 'ソース', 'ドレッシング', 'マヨネーズ', 'ケチャップ', 'たれ', 'タレ', 'だし',
-      '酢', 'ルウ', 'ルー', 'つゆ', '塩', '砂糖', 'ジャム', 'はちみつ', '調味', 'スパイス', 'にんにく', 'しょうが', 'わさび', 'からし'), '調味料'),
+      '酢', 'ルウ', ROUX, 'つゆ', '塩', '砂糖', 'ジャム', 'はちみつ', '調味', 'スパイス', 'にんにく', 'しょうが', 'わさび', 'からし'), '調味料'),
     (('ポテト', 'じゃがいも', 'さつまいも', '芋', 'こんにゃく', 'とろろ'), 'いも'),
     (('ごはん', 'ご飯', '米', 'シリアル', 'グラノーラ', 'オートミール', 'もち麦'), '主食'),
     (('巻',), '寿司'),   # last: トロたく巻, 鉄火花巻 (チーズ巻, 春巻 and 昆布巻 have matched before)
@@ -136,7 +149,11 @@ def pick_cat(tags, name, kcal=0):
     for keys, cat in NAME_RULES:
         if cat == '酒' and kcal > 300:   # サワークリーム chips, サワーグミ, ビール酵母: not a drink
             continue
-        if any((re.search(r'\b' + re.escape(k) + r's?\b', low) if k.isascii() else k in low) for k in keys):
+        if isinstance(keys, re.Pattern):
+            if kcal <= DRINK_HEAD_MAX_KCAL and keys.search(low) and not DRINK_HEAD_NOT.search(low):
+                return cat
+        elif any((k.search(low) if isinstance(k, re.Pattern) else re.search(r'\b' + re.escape(k) + r's?\b', low)
+                  if k.isascii() else k in low) for k in keys):
             return cat
     return 'その他'
 
@@ -326,6 +343,13 @@ def load(indir):
     return seen
 
 
+def dumped(indir):
+    """The CSV dump's date (UTC), its newest last_modified_t: fetch.py records no download date."""
+    with open(os.path.join(indir, 'off_jp.jsonl'), encoding='utf-8') as f:
+        t = max((int(m.group(1)) for m in map(re.compile(r'"last_modified_t": (\d+)').search, f) if m), default=0)
+    return datetime.fromtimestamp(t, timezone.utc).strftime('%Y-%m-%d')
+
+
 def dump_len(obj):
     return len(json.dumps(obj, ensure_ascii=False, separators=(',', ':')).encode('utf-8'))
 
@@ -334,6 +358,7 @@ def build(indir):
     """-> (products doc, {shard: {jan: item}}, stats). Shards hold every valid product; products.json (name
     search) collapses identical products (same name, brand and nutrients) and is capped at MAX_PRODUCTS_BYTES."""
     raw = load(indir)
+    meta = dict(META, dumped=dumped(indir))
     stats = Counter(total_jp=len(raw))
     best = {}
     for code in sorted(raw):           # several raw codes can normalise to one JAN (UPC-A vs EAN-13): newest wins
@@ -388,11 +413,11 @@ def build(indir):
     cand = sorted(uniq.values(), key=lambda x: x[0]['jan'])
     stats['duplicates_collapsed'] = len(items) - len(cand)
     sel = [it for it, _ in cand]
-    if dump_len(dict(META, items=sel)) > MAX_PRODUCTS_BYTES:
+    if dump_len(dict(meta, items=sel)) > MAX_PRODUCTS_BYTES:
         sel = [it for it, ja in cand if ja and None not in (it['p'], it['f'], it['c'])]
-    if dump_len(dict(META, items=sel)) > MAX_PRODUCTS_BYTES:
+    if dump_len(dict(meta, items=sel)) > MAX_PRODUCTS_BYTES:
         sel = [it for it in sel if it['salt'] is not None]
-    if dump_len(dict(META, items=sel)) > MAX_PRODUCTS_BYTES:
+    if dump_len(dict(meta, items=sel)) > MAX_PRODUCTS_BYTES:
         # keep the most-scanned items (OFF unique_scans_n), then the most complete, until under budget
         budget, keep = MAX_PRODUCTS_BYTES - 400, []
         for it in sorted(sel, key=lambda it: rank[it['jan']]):
@@ -405,4 +430,4 @@ def build(indir):
     for it, _ in items:
         shards.setdefault(shard_key(it['jan']), {})[it['jan']] = it
     stats.update({'valid': len(items), 'products_json_items': len(sel), 'shard_files': len(shards)})
-    return dict(META, items=sel), {k: shards[k] for k in sorted(shards)}, dict(sorted(stats.items()))
+    return dict(meta, items=sel), {k: shards[k] for k in sorted(shards)}, dict(sorted(stats.items()))

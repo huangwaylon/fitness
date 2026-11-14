@@ -447,6 +447,39 @@ class OffPlausibility(unittest.TestCase):
                           ('春巻き', '主菜'), ('トロたく巻', '寿司'), ('チーズ巻き', '乳製品'), ('緑茶', '飲料')):
             self.assertEqual(off.pick_cat([], name, 200), cat, name)   # a keyword inside another word is no keyword
 
+    def test_drink_head(self):
+        # a drink word ending the name, at a drink's energy, beats a flavour or food word before it
+        for name, kcal in (('はちみつ香るアールグレイティー', 14), ('アイスコーヒー', 10), ('タピオカミルクティー', 48), ('レモネード', 40),
+                           ('チョコミントドリンク', 78), ('カフェオレ 500ml', 40), ('ルイボスティー（ノンカフェイン）', 0)):
+            self.assertEqual(off.pick_cat([], name, kcal), '飲料', name)
+        for name, kcal, cat in (('コーヒーゼリー', 60, '菓子・デザート'), ('ミルクティー味プロテイン', 385, '乳製品'),
+                                ('プレミアムアイス 抹茶', 111, '菓子・デザート'), ('蒟蒻ゼリー 抹茶ラテ', 52, '菓子・デザート'),
+                                ('レモンサワー', 45, '酒'), ('ベーグル ミルクティー', 213, 'パン'), ('はちみつレモン', 300, '調味料')):
+            self.assertEqual(off.pick_cat([], name, kcal), cat, name)
+        self.assertEqual(off.pick_cat(['en:honeys'], 'はちみつ香るアールグレイティー', 14), '調味料')   # a tag still wins
+
+    def test_roux(self):
+        # ルー is 調味料's roux only as a word of its own (or カレー/シチュー/ハヤシルー), never inside another katakana word
+        for name in ('ビーフストロガノフのルー', 'ハヤシルー', 'ルー 中辛'):
+            self.assertEqual(off.pick_cat([], name, 450), '調味料', name)
+        self.assertTrue(off.ROUX.search('カレールー甘口') and off.ROUX.search('ハヤシルー') and off.ROUX.search('シチュー・ルー'))
+        for name in ('冷凍ブルーベリー', 'ドライフルーツミックス', 'プルーン', 'マッシュルームマタル', 'ポークビンダルー', 'ルーローファン',
+                     'グルテンフリー'):
+            self.assertIsNone(off.ROUX.search(name), name)
+            self.assertNotEqual(off.pick_cat([], name, 200), '調味料', name)
+
+    def test_dumped(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        with open(os.path.join(d, 'off_jp.jsonl'), 'w', encoding='utf-8') as f:
+            for t in (1728979910, 1793596048, 0):
+                f.write(json.dumps({'code': '1', 'last_modified_t': t}) + '\n')
+        self.assertEqual(off.dumped(d), '2026-11-02')
+        doc = {'source': 'off', 'label': 'x', 'attribution': 'x', 'license': 'x', 'url': 'x',
+               'items': [{'id': 'off:1', 'name': 'x', 'cat': '飲料', 'kcal': 1, 'p': 0, 'f': 0, 'c': 0, 'salt': 0}]}
+        self.assertEqual(lib.validate(dict(doc, dumped='2026-11-02')), [])
+        self.assertEqual(lib.validate(dict(doc, dumped='2026-11')), ['dumped is not a YYYY-MM-DD date'])
+
     def test_alcohol_and_creatine(self):
         self.assertEqual(self.check(0, 0, 0, 1, 0, 'その他', 'ストロングレモン'), (None, ['alcohol_zero']))
         self.assertEqual(self.check(0, 0, 0, 0, 0, '飲料', 'ノンアルコール ビールテイスト')[1], [])

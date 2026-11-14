@@ -3,10 +3,11 @@
 // scanning in v1. The app fetches them at runtime (lib/food/load.ts), never precached, each under its own `?v=`
 // (index.json's `files`).
 // Usage (from app/): npm run food:data   [-- <data dir>, default ../food-data/out]
-//   npm run food:data -- --only kalori [<data dir>]   ships the data dir's kalori.json alone into the committed
-//   static/food/ (CI's weekly refresh, kalori-scrape.yml, has no other out/ files): the other files untouched, the
-//   kalori entry kept (or added as build.py writes it), kalori.json written and `files` and `version` recomputed as
-//   below, so the result is what the full path gives. (`--to <dir>`: another static dir, for the tests.)
+//   npm run food:data -- --only kalori|products [<data dir>]   ships the data dir's kalori.json (or products.json) alone
+//   into the committed static/food/ (CI's weekly refresh, kalori-scrape.yml, has no other out/ files; `build.py off`
+//   neither): the other files untouched, its entry kept (or added as build.py writes it), the file written and `files`
+//   and `version` recomputed as below, so the result is what the full path gives. (`--to <dir>`: another static dir,
+//   for the tests.)
 // Checks: index.json lists only files that are there, and every dataset file there is listed (a stray or missing
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
 // Each core item gets its search keys (`keys`: lib/food/search.ts keysOf), so the first search builds none; a lazy
@@ -30,8 +31,11 @@ const SRC = resolve(APP, args[0] ?? '../food-data/out');
 const OUT = TO ? resolve(APP, TO) : join(APP, 'static', 'food');
 /** Beside the datasets: the index and the cross-source verify groups. */
 const SIDECARS = ['index.json', 'verify.json'];
-/** Kalori's index entry, as build.py's build_index writes it. */
+/** Kalori's and the products' index entries, as build.py's build_index writes them. */
 const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };
+const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', secondary: true, lazy: true };
+/** The datasets that ship alone (lazy, and in no verify.json group), in build_index's order. */
+const ALONE = { products: PRODUCTS, kalori: KALORI };
 
 function fail(msg: string): never {
   console.error(`food:data: ${msg}`);
@@ -82,20 +86,26 @@ function readDataset(path: string, f: string): Dataset {
 }
 
 if (ONLY !== undefined) {
-  if (ONLY !== 'kalori') fail('--only: only kalori ships alone (lazy, and in no verify.json group)');
+  if (!Object.hasOwn(ALONE, ONLY)) fail(`--only: only ${Object.keys(ALONE).join(' or ')} ships alone (lazy, and in no verify.json group)`);
+  const entry = ALONE[ONLY as keyof typeof ALONE];
   if (!existsSync(join(OUT, 'index.json'))) fail(`no index.json in ${OUT}`);
-  if (!existsSync(join(SRC, KALORI.file))) fail(`no ${KALORI.file} in ${SRC}`);
+  if (!existsSync(join(SRC, entry.file))) fail(`no ${entry.file} in ${SRC}`);
   const index = JSON.parse(readFileSync(join(OUT, 'index.json'), 'utf8')) as { version?: unknown; datasets?: { file?: unknown; lazy?: unknown }[] };
   const datasets = index.datasets ?? [];
-  const at = datasets.find((d) => d.file === KALORI.file);
-  if (at && at.lazy !== true) fail(`${OUT}/index.json lists ${KALORI.file} as not lazy`);
-  if (!at) datasets.push(KALORI);
+  const at = datasets.find((d) => d.file === entry.file);
+  if (at && at.lazy !== true) fail(`${OUT}/index.json lists ${entry.file} as not lazy`);
+  if (!at) {
+    // where build.py puts it: before an alone dataset that comes after it
+    const order: unknown[] = Object.values(ALONE).map((e) => e.file);
+    const i = datasets.findIndex((d) => order.indexOf(d.file) > order.indexOf(entry.file));
+    datasets.splice(i < 0 ? datasets.length : i, 0, entry);
+  }
   const files = datasets.map((d) => d.file as string);
-  const missing = ['verify.json', ...files].filter((f) => f !== KALORI.file && !existsSync(join(OUT, f)));
+  const missing = ['verify.json', ...files].filter((f) => f !== entry.file && !existsSync(join(OUT, f)));
   if (missing.length) fail(`missing in ${OUT}: ${missing.join(', ')}`);
-  writeFileSync(join(OUT, KALORI.file), JSON.stringify(ship(KALORI.file, readDataset(join(SRC, KALORI.file), KALORI.file), true)));
+  writeFileSync(join(OUT, entry.file), JSON.stringify(ship(entry.file, readDataset(join(SRC, entry.file), entry.file), true)));
   const version = writeIndex({ ...index, datasets }, files);
-  console.log(`food:data: ${KALORI.file} alone (${(statSync(join(OUT, KALORI.file)).size / 1e6).toFixed(1)} MB) from ${SRC}, version ${version}`);
+  console.log(`food:data: ${entry.file} alone (${(statSync(join(OUT, entry.file)).size / 1e6).toFixed(1)} MB) from ${SRC}, version ${version}`);
   process.exit(0);
 }
 

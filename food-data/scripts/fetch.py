@@ -22,7 +22,7 @@ import csv, gzip, hashlib, io, json, os, re, subprocess, sys, tarfile, time, url
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib  # noqa: E402
 
-UA = 'CalorieTrackerJP-data/0.2 (static Japanese calorie app; offline build)'
+UA = 'fitness-food-data/1.0 (+https://github.com/huangwaylon/fitness)'
 RAW, SRC = lib.RAW, lib.SRC
 
 
