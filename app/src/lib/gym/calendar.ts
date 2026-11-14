@@ -231,6 +231,10 @@ export function undoActs(before: readonly DayRow[], after: readonly DayRow[], de
   return [...bulk, ...froms];
 }
 
+/** The select mode's picks the rows still have, in order (a day that passed, or picked before a read moved the rows,
+ *  is never sent nor counted). */
+export const pickedDays = (rows: readonly DayRow[], picked: ReadonlySet<Day>): Day[] => rows.filter((r) => picked.has(r.day)).map((r) => r.day);
+
 /** The select mode's act: one for every day picked, each with the base it was seen at. */
 export function bulkAct(kind: DayAct | 'range', days: readonly Day[], rows: readonly DayRow[], range?: readonly [Clock, Clock]): ActInput {
   const list = days.map((d) => ({ d, base: rows.find((r) => r.day === d)?.base }));

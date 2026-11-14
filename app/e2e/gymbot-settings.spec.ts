@@ -13,21 +13,23 @@ import { newRecord } from './record.ts';
 import { fakeGym, routeGym } from './gymbot.ts';
 import { at } from '../src/lib/gym/contract.ts';
 
-async function phone(page: Page, context: BrowserContext, arrange: (gym: ReturnType<typeof fakeGym>) => void = () => {}) {
+/** `ahead`: the bot's clock that many days on (its rows reach next month). */
+async function phone(page: Page, context: BrowserContext, arrange: (gym: ReturnType<typeof fakeGym>) => void = () => {}, ahead = 0) {
   const rec = newRecord();
   await context.addInitScript(() => {
     localStorage.setItem('e2e.render', 'none');
     localStorage.setItem('island.botsTab', 'gym');
   });
   await rec.pair(context, 'A');
-  const gym = fakeGym(rec.now);
+  const now = () => rec.now() + ahead * 86_400_000;
+  const gym = fakeGym(now);
   arrange(gym);
-  const calls = await routeGym(page, gym, rec.now);
+  const calls = await routeGym(page, gym, now);
   await page.goto('');
   await islandUp(page);
   await fromMenu(page, 'bots');
   const sheet = page.locator('dialog[open] [data-bots]');
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(25);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(ahead ? 11 : 25);
   const day = (i: number) => sheet.locator(`[data-gym-day="${gym.days[i]}"]`);
   const editor = page.locator('dialog[open] [data-gym-editor]');
   return { gym, calls, sheet, day, editor, rec };
@@ -342,6 +344,21 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   await day(12).dispatchEvent('pointercancel', { pointerType: 'touch', isPrimary: true });
   await day(13).click();
   await expect(day(13)).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('select mode across months: picks in 11月 and 12月, one bulk act for them all', async ({ page, context }) => {
+  // the bot's today 11/20: its rows 11/20–12/14
+  const { gym, sheet } = await phone(page, context, undefined, 16);
+  await sheet.locator('[data-gym-select]').click();
+  const bar = sheet.locator('[data-gym-bulk]');
+  await sheet.locator('[data-gym-weekday="5"]').click(); // 土 in 11月: 11/21, 28
+  await sheet.locator('[data-gym-month="2026-12"]').click();
+  await expect(bar).toContainText('2日を選択');
+  await sheet.locator('[data-gym-weekday="5"]').click(); // 土 in 12月 the rows reach: 12/5, 12
+  await expect(bar).toContainText('4日を選択');
+  await bar.locator('[data-gym-bulk-act="skip"]').click();
+  await expect.poll(() => gym.acts).toEqual([{ a: 'skip', days: ['2026-11-21', '2026-11-28', '2026-12-05', '2026-12-12'].map((d) => ({ d, base: 'v0' })) }]);
+  await expect(sheet.locator('[data-gym-day="2026-12-12"]')).toHaveAttribute('data-fill', 'off');
 });
 
 test('someone else changed the day: 409 stale shows it as it is now; a poll that sees a change flashes the cell', async ({ page, context }) => {

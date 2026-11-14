@@ -23,7 +23,7 @@
   import { checkStrip, factRows, keyRow, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
-  import { bulkAct, changeLine, fromWords, longRange, laterNote, monthCells, movedDays, pickSlot, slotCount, undoActs, type SlotPick } from '#lib/gym/calendar.ts';
+  import { bulkAct, changeLine, fromWords, longRange, laterNote, monthCells, movedDays, pickSlot, slotCount, undoActs, pickedDays, type SlotPick } from '#lib/gym/calendar.ts';
   import { twoMonths } from '#lib/contract/tokyo.ts';
   import { monthLabel } from '#lib/i18n/format.ts';
   import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
@@ -139,6 +139,8 @@
   const usualDay = $derived(!!cfg && !!editDay && cfg.rows.findIndex((r) => r.day === editDay) < cfg.defaultDays);
   const wait = $derived(Math.max(0, Math.ceil((readyAt - tickNow) / 1000)));
   const checkOff = $derived(!cfg || cfg.paused || cfg.checking || checking || wait > 0);
+  /** The picks the rows still have (pickedDays): what a bulk act sends and the bar counts. */
+  const picked = $derived(cfg ? pickedDays(cfg.rows, selected) : []);
   const selAnnounced = $derived(cfg ? cfg.rows.filter((r) => selected.has(r.day)).reduce((n, r) => n + r.announced.length, 0) : 0);
   const intervals = $derived((cfg?.intervals ?? []).map((m) => ({ id: String(m), label: t('gym.ctl.every', { n: m }) })));
 
@@ -273,9 +275,8 @@
   }
 
   async function bulk(kind: DayAct | 'range', range?: readonly [Clock, Clock]) {
-    if (!cfg || !selected.size) return void cue('boop');
-    const days = [...selected].sort();
-    await send(bulkAct(kind, days, cfg.rows, range));
+    if (!cfg || !picked.length) return void cue('boop');
+    await send(bulkAct(kind, picked, cfg.rows, range));
   }
 
   function bulkReset() {
@@ -284,7 +285,7 @@
   }
 
   function openBulkRange() {
-    if (!selected.size) return void cue('boop');
+    if (!picked.length) return void cue('boop');
     bulkPick = { range: ['12:00', '13:00'], open: false };
     bulkRangeOpen = true;
   }
@@ -350,13 +351,13 @@
         <p class="hint" data-gym-cal-note>{t('gym.cal.note')}</p>
 
         {#if selecting}
-          <div class="bulkbar" data-gym-bulk role="toolbar" aria-label={t('gym.cal.selected', { n: selected.size })}>
-            <span class="count" aria-live="polite">{selected.size ? t('gym.cal.selected', { n: selected.size }) : t('gym.cal.pickDays')}</span>
+          <div class="bulkbar" data-gym-bulk role="toolbar" aria-label={t('gym.cal.selected', { n: picked.length })}>
+            <span class="count" aria-live="polite">{picked.length ? t('gym.cal.selected', { n: picked.length }) : t('gym.cal.pickDays')}</span>
             <div class="acts">
-              <button type="button" class="btn small paper" data-gym-bulk-act="any" data-sfx="tick" aria-disabled={!selected.size} onclick={() => void bulk('any')}>{t('gym.kind.any')}</button>
-              <button type="button" class="btn small paper" data-gym-bulk-act="range" data-sfx="tick" aria-disabled={!selected.size} aria-haspopup="dialog" onclick={openBulkRange}>{t('gym.kind.range')}</button>
-              <button type="button" class="btn small paper" data-gym-bulk-act="skip" data-sfx="tick" aria-disabled={!selected.size} onclick={() => void bulk('skip')}>{t('gym.kind.off')}</button>
-              <button type="button" class="btn small paper" data-gym-bulk-act="reset" data-sfx="tick" aria-disabled={!selected.size} onclick={bulkReset}>{t('gym.editor.reset')}</button>
+              <button type="button" class="btn small paper" data-gym-bulk-act="any" data-sfx="tick" aria-disabled={!picked.length} onclick={() => void bulk('any')}>{t('gym.kind.any')}</button>
+              <button type="button" class="btn small paper" data-gym-bulk-act="range" data-sfx="tick" aria-disabled={!picked.length} aria-haspopup="dialog" onclick={openBulkRange}>{t('gym.kind.range')}</button>
+              <button type="button" class="btn small paper" data-gym-bulk-act="skip" data-sfx="tick" aria-disabled={!picked.length} onclick={() => void bulk('skip')}>{t('gym.kind.off')}</button>
+              <button type="button" class="btn small paper" data-gym-bulk-act="reset" data-sfx="tick" aria-disabled={!picked.length} onclick={bulkReset}>{t('gym.editor.reset')}</button>
             </div>
           </div>
         {/if}
@@ -394,11 +395,11 @@
   groups={[[{ id: 'stop', label: t('gym.ctl.stop'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
   onpick={(id) => id === 'stop' && (cue('toggle-off'), void send({ a: 'pause' }))} />
 
-<ActionSheet bind:open={askBulkReset} title={t('gym.bulk.resetAsk', { n: selected.size })} note={t('gym.bulk.resetNote', { n: selAnnounced })}
+<ActionSheet bind:open={askBulkReset} title={t('gym.bulk.resetAsk', { n: picked.length })} note={t('gym.bulk.resetNote', { n: selAnnounced })}
   groups={[[{ id: 'reset', label: t('gym.bulk.resetYes'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
   onpick={(id) => id === 'reset' && void bulk('reset')} />
 
-<Sheet bind:open={bulkRangeOpen} title={t('gym.bulk.rangeTitle', { n: selected.size })} name="gym.bulk">
+<Sheet bind:open={bulkRangeOpen} title={t('gym.bulk.rangeTitle', { n: picked.length })} name="gym.bulk">
   <div class="isheet" data-gym-bulk-range>
     <GymSlots range={bulkPick.range} onpick={(s) => (bulkPick = pickSlot(bulkPick, s))} />
     {#if bulkPick.range}<p class="line">{t('gym.editor.slots', { range: longRange(bulkPick.range), n: slotCount(bulkPick.range) })}</p>{/if}
@@ -406,7 +407,7 @@
   </div>
   {#snippet footer()}
     <button type="button" class="btn" data-gym-bulk-range-apply data-sfx="tick" aria-disabled={!bulkPick.range}
-      onclick={() => { const r = bulkPick.range; bulkRangeOpen = false; if (r) void bulk('range', r); }}>{t('gym.bulk.apply', { n: selected.size })}</button>
+      onclick={() => { const r = bulkPick.range; bulkRangeOpen = false; if (r) void bulk('range', r); }}>{t('gym.bulk.apply', { n: picked.length })}</button>
   {/snippet}
 </Sheet>
 

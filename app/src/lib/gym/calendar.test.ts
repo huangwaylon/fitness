@@ -1,7 +1,7 @@
 // ジム's calendar model (calendar.ts): a month's weeks and each cell (the 4-day default, the fills, the marks, the
 // words), the slot picker's rules, the ⏳ dates and times allowed, the optimistic rows, the undo of a change and a bulk act.
 import { describe, expect, it } from 'vitest';
-import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, laterNote, monthCells, withBase, type SlotPick } from './calendar.ts';
+import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, laterNote, monthCells, pickedDays, withBase, type SlotPick } from './calendar.ts';
 import { addDays, at, fromRefusal, type DayRow } from './contract.ts';
 
 /** Today: Thursday 2026-11-12, noon in Tokyo. */
@@ -190,7 +190,10 @@ describe('undo', () => {
 
 describe('bases', () => {
   it('a bulk act carries each day’s base; withBase puts the current one on', () => {
-    expect(bulkAct('range', [day(3), day(4)], rows(), ['18:00', '19:00'])).toEqual({ a: 'range', s: '18:00', e: '19:00', days: [{ d: day(3), base: 'b3' }, { d: day(4), base: 'b4' }] });
+    // a pick the rows no longer have (passed overnight) is dropped before the act, and from the count
+    const picks = pickedDays(rows(), new Set([day(4), day(-1), day(3)]));
+    expect(picks).toEqual([day(3), day(4)]);
+    expect(bulkAct('range', picks, rows(), ['18:00', '19:00'])).toEqual({ a: 'range', s: '18:00', e: '19:00', days: [{ d: day(3), base: 'b3' }, { d: day(4), base: 'b4' }] });
     expect(withBase({ a: 'any', d: day(2) }, rows())).toEqual({ a: 'any', d: day(2), base: 'b2' });
     expect(withBase({ a: 'reset', days: [{ d: day(1) }] }, rows())).toEqual({ a: 'reset', days: [{ d: day(1), base: 'b1' }] });
     expect(withBase({ a: 'interval', m: 30 }, rows())).toEqual({ a: 'interval', m: 30 });
