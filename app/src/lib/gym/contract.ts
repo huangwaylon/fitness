@@ -156,8 +156,8 @@ export interface GymConfig {
 // ---- POST /gym/act ----
 
 export type DayAct = 'any' | 'skip' | 'reset' | 'unfrom';
-/** A day in a bulk act, with the `base` it was seen at. @public (gym/src) */
-export interface BulkDay { d: Day; base?: string }
+/** A day in a bulk act, with the `base` it was seen at. */
+interface BulkDay { d: Day; base?: string }
 export type ActInput =
   | { a: DayAct; d: Day; base?: string }
   | { a: 'range'; d: Day; s: Clock; e: Clock; base?: string }
