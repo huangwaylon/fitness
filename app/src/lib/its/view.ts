@@ -223,6 +223,29 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
   });
 }
 
+/** 設定's rows (docs/design.md "Bots"), each folded with its summary: 日付 「3泊・11/22〜 · 探せる日 2/3」 (a night
+ *  searchable when a facility searched can take it, a booked one not), 施設 「探す12・除外4」, 詳細 「15秒・2人・自動で確定
+ *  オン」. */
+export function settingsSummary(d: Draft, rows: readonly DateRow[], p: Pick<HotelParts, 'search' | 'off'>): { dates: string; hotels: string; detail: string } {
+  const able = rows.filter((r) => r.note !== 'booked' && r.able.length > 0).length;
+  const every = d.intervalSec < 60 ? t('its.interval.s', { n: d.intervalSec }) : t('its.interval.m', { n: d.intervalSec / 60 });
+  return {
+    dates: rows.length ? [t('its.set.nights', { n: rows.length, from: md(rows[0].date) }), t('its.set.able', { n: able, m: rows.length })].join(' · ') : t('its.set.noDates'),
+    hotels: t('its.set.hotels', { n: p.search.length, off: p.off.length }),
+    detail: [every, t('its.guestsN', { n: d.guests }), t(d.autoConfirm ? 'its.set.autoOn' : 'its.set.autoOff')].join('・')
+  };
+}
+
+/** Which of 設定's rows a draft changed from where it began (each folded row says 未保存). */
+export function changedParts(a: Draft, b: Draft): { dates: boolean; hotels: boolean; detail: boolean } {
+  const only = (x: Partial<Draft>) => sameDraft({ ...b, ...x }, b);
+  return {
+    dates: !only({ dates: a.dates }),
+    hotels: !only({ search: a.search, skip: a.skip, priority: a.priority }),
+    detail: !only({ intervalSec: a.intervalSec, guests: a.guests, autoConfirm: a.autoConfirm })
+  };
+}
+
 /** The stays under month headings (2026年11月). */
 export function dateMonths(rows: readonly DateRow[]): { month: string; label: string; rows: DateRow[] }[] {
   const out: { month: string; label: string; rows: DateRow[] }[] = [];

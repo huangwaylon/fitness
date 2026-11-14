@@ -7,7 +7,7 @@ import { t } from '#lib/i18n/index.ts';
 import { md, weekdayOf } from '#lib/i18n/format.ts';
 import '#lib/i18n/gym.ts';
 import {
-  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromLimit, fromRefusal, minutesOf, weekday,
+  CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromLimit, fromRefusal, minutesOf,
   type ActInput, type Change, type Clock, type Day, type DayAct, type DayRow, type Rule
 } from './contract.ts';
 
@@ -73,16 +73,14 @@ function labelOf(row: DayRow, today: boolean): string {
   return parts.join(t('gym.cell.sep'));
 }
 
-/** Monday of the week a day is in. */
-const mondayOf = (d: Day): Day => addDays(d, -weekday(d));
-
-/** The calendar: 4 weeks Mon–Sun from this week's (the rows' first day is today, the Worker's), a cell a day. */
-export function weeks(rows: readonly DayRow[]): Cell[][] {
+/** The calendar: `n` rows of 7 days from today (the rows' first day, the Worker's), a cell a day: 2 (today + 13 days,
+ *  no blank week start), 4 in the select mode (every settable day: a weekday's column never reaches a hidden one). */
+export function weeks(rows: readonly DayRow[], n = 2): Cell[][] {
   if (!rows.length) return [];
   const today = rows[0].day;
   const byDay = new Map(rows.map((r) => [r.day, r]));
-  const start = mondayOf(today);
-  return Array.from({ length: 4 }, (_, w) => Array.from({ length: 7 }, (_, i) => {
+  const start = today;
+  return Array.from({ length: n }, (_, w) => Array.from({ length: 7 }, (_, i) => {
     const day = addDays(start, w * 7 + i);
     const row = byDay.get(day) ?? null;
     const base = { day, row, today: day === today, date: Number(day.slice(8, 10)) };

@@ -76,7 +76,7 @@ describe('keyRow and factRows', () => {
     expect(reasonLines(status({ verdict: 'degraded', reasons: ['site_failing', 'quota_high'], failures: 2 }))).toEqual([
       '今月のLINE送信数が上限に近づいています。', '間隔をあけて自動で再試行します。長く続くときは予約サイトの変更を疑ってください。', '月初まで、通知する日を減らすか間隔を長くしてください。'
     ]);
-    expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] }), true).sentence).toBe('チェックは停止中です。再開すると、すぐに確認します。');
+    expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] }), true).sentence).toBe('停止中です。⋯から再開できます。');
     expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).sentence).toContain('LINE');
   });
 });

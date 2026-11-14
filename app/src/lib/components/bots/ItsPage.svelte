@@ -33,10 +33,11 @@
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, addDate, addDates, applyPreset, attentionLines, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows,
-    hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, minuteCells, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
+    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, settingsSummary, minuteCells, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
     stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, type DateRow, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { driver } from '#lib/its/bot.ts';
+  import { pushOn } from '#lib/its/push.ts';
   import ItsNotify from './ItsNotify.svelte';
   import BotPage from './BotPage.svelte';
   import ChangeBar, { type ChangeSeg } from './ChangeBar.svelte';
@@ -63,6 +64,11 @@
   let askAuto = $state(false);
   let askOverwrite = $state(false);
   let askStop = $state(false);
+  let menuOpen = $state(false);
+  /** 開始 / 停止 failed: said under the verdict's sentence. */
+  let runWhy = $state<string | null>(null);
+  /** This phone's notifications (ItsNotify's switch): 通知's row says it. */
+  let notifyOn = $state(pushOn());
   let openHotels = $state(false);
   /** The stay whose facilities are shown (by why), or null; `allNames`: the one whose 探す names are all shown. */
   let openDate = $state<string | null>(null);
@@ -150,6 +156,14 @@
     return v && paused && control ? { ...v, sentence: `${v.sentence}${control}` } : v;
   });
   const saved = $derived(status && savedLine(status, name, today));
+  /** 設定's last line: who pressed 開始 (停止 is in the verdict's sentence) and who saved, when. */
+  const recentOps = $derived.by(() => {
+    const list = [paused ? null : control, saved].filter(Boolean);
+    return list.length ? t('its.set.recent', { list: list.join(' · ') }) : null;
+  });
+  /** 設定's rows: each one's summary, and which a draft changed (未保存). */
+  const sums = $derived(shown ? settingsSummary(shown, dates, parts) : null);
+  const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false });
   const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
    *  shared strip. */
@@ -263,7 +277,8 @@
     running = false;
     if (life.aborted) return;
     if (r.ok) take(r.status);
-    else toasts.show(t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed'), 4000);
+    runWhy = r.ok ? null : t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed');
+    if (!r.ok) cue('boop');
     poll.schedule();
   }
 
@@ -304,13 +319,11 @@
   <ChangeBar segs={d.parts.map((p) => ({ id: p.why, tone: SEG_TONE[p.why] ?? 'sunk', label: t(`its.why.${p.why}`), n: p.names.length }))} attr="its" />
 {/snippet}
 
-<!-- the verdict's one action: 開始 (at once), 停止 (asks first) -->
-{#snippet action()}
-  <button type="button" class="btn small" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick" aria-haspopup={paused ? undefined : 'dialog'}
-    aria-disabled={running || (paused && noDates)} onclick={() => (paused ? void run('start') : (askStop = true))}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
+<!-- under the verdict's sentence: 開始 needs a stay; 開始 / 停止 failed -->
+{#snippet runNote()}
+  {#if runWhy}<p class="rline bad" role="alert" data-its-run-why>{runWhy}</p>{/if}
+  {#if paused && noDates}<p class="rline bad" data-its-need-dates>{t('its.ctl.needDates')}</p>{/if}
 {/snippet}
-
-{#snippet needDates()}<p class="hint bad" data-its-need-dates>{t('its.ctl.needDates')}</p>{/snippet}
 
 <!-- 確認が必要's rows: the holds to finish by mail (the deadline, the steps), a failed leg -->
 {#snippet holdRows()}
@@ -331,7 +344,8 @@
 
 <BotPage attr="its" busy={poll.loading} failed={bot.failed} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict} stale={bot.stale}
   readAt={bot.readAt} now={nowMs} keys={status ? keyRow(status, bookings, nowMs) : []}
-  act={status ? action : undefined} actAttr={{ 'data-its-run': paused ? 'stopped' : 'running' }} note={paused && noDates ? needDates : undefined}
+  rootAttr={status ? { 'data-its-run': paused ? 'stopped' : 'running' } : {}} menu={status ? { label: t('its.menu.label'), onopen: () => (menuOpen = true) } : null}
+  note={runWhy || (paused && noDates) ? runNote : undefined}
   attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
   strip={cells.length ? { cells: stripCells(cells), ticks: scanTicks(cells), title: t('its.scan.title'), legend, ...scans, ...(live ? { empty: t('its.scan.empty') } : {}) } : null}
   {facts} tail={dirty ? saveBar : undefined}>
@@ -360,75 +374,21 @@
       </section>
     {/if}
 
-    <section class="sec" aria-labelledby="its-dates">
-      <h3 id="its-dates" class="sec-label">{t('its.sec.dates')}</h3>
-      <p class="hint">{t('its.date.one')}</p>
-      {#if dates.length}
-        <div class="card pad months">
-          <p class="dhead" data-its-dates-total>{t('its.night.total', { n: searched })}</p>
-          {#each months as m (m.month)}
-            <h4 class="month">{m.label}</h4>
-            <ul class="rows dates">
-              {#each m.rows as d (d.date)}
-                {@const open = openDate === d.date}
-                <li data-its-date={d.date}>
-                  <div class="drow">
-                    {#if d.note === 'booked'}
-                      <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
-                    {:else}
-                      <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick"
-                        onclick={() => (openDate = open ? null : d.date)}>
-                        <span class="dtop">
-                          <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
-                          <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
-                          <span class="chev" aria-hidden="true"></span>
-                        </span>
-                        {#if searched}{@render bar(d)}{:else}<small aria-hidden="true">{t('its.night.none')}</small>{/if}
-                      </button>
-                    {/if}
-                    <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
-                      onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
-                  </div>
-                  {#if open && d.note !== 'booked'}
-                    <div class="nlist" data-its-night-list>
-                      {#each d.parts as p (p.why)}
-                        {@const names = p.names.map((n) => (stars.has(n) ? `★${n}` : n))}
-                        {@const cut = p.why === 'check' && allNames !== d.date && names.length > 8}
-                        <div class="np" data-its-why={p.why}>
-                          <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
-                          {#if p.why === 'check' || p.why === 'gone'}
-                            <p>{(cut ? names.slice(0, 8) : names).join('、')}</p>
-                            {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: names.length - 8 })} ›</button>{/if}
-                          {:else}
-                            {#each p.lines as l (l)}<p>{l}</p>{/each}
-                          {/if}
-                        </div>
-                      {/each}
-                      {#if d.noSeason}<p class="np-note" data-its-no-season>{t('its.night.noSeason')}</p>{/if}
-                    </div>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
+    {#if events.length}
+      <details class="card recent" data-its-recent>
+        <summary class="prow static"><span class="prl">{t('its.sec.recent')}<small data-its-recent-sum>{[events[0].time, events[0].what, ...(events.length > 1 ? [t('its.ev.n', { n: events.length })] : [])].join(' · ')}</small></span><span class="chev" aria-hidden="true"></span></summary>
+        <ol class="rows ev">
+          {#each events as e (e.key)}
+            <li data-its-event data-bad={e.bad ? '' : undefined}>
+              <span class="time">{e.time}</span><span class="txt"><b class:bad={e.bad}>{e.what}</b>{#if e.info}<small>{e.info}</small>{/if}</span>
+            </li>
           {/each}
-        </div>
-        {#if parts.off.length}<p class="hint" data-its-dates-foot>{t('its.night.foot', { n: parts.off.length })}</p>{/if}
-      {:else}
-        <p class="hint">{t('its.date.empty')}</p>
-      {/if}
-      <label class="lbl" for="its-date-field">{t('its.date.field')}</label>
-      <div class="add">
-        <input id="its-date-field" type="date" min={bounds.min} max={bounds.max} bind:value={adding} data-its-date-field data-sfx="none"
-          oninput={() => (addWhy = null)} />
-        <button type="button" class="btn small" data-its-date-add data-sfx="self" onclick={add}>{t('its.date.add')}</button>
-      </div>
-      {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
-      <button type="button" class="btn small paper bulkopen" bind:this={bulkBtn} aria-haspopup="dialog" data-its-bulk-open data-sfx="tick" onclick={openBulk}>{t('its.bulk.open')}</button>
-    </section>
-
-    <section class="sec" aria-labelledby="its-hotels">
-      <h3 id="its-hotels" class="sec-label">{t('its.sec.hotels')}</h3>
-      <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
+        </ol>
+      </details>
+    {/if}
+    <section class="sec" aria-labelledby="its-settings" data-its-settings>
+      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}</h3>
+      <p class="hint">{t('its.set.hint')}</p>
       {#each fresh as r (r.key)}
         <div class="card pad fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
@@ -438,8 +398,78 @@
             onclick={() => edit((d) => setSearch(d, [r.name], true))}>{t('its.hotel.newOn')}</button>
         </div>
       {/each}
-      <details class="fold" bind:open={openHotels} data-its-search>
-        <summary class="prow"><span class="prl"><span data-its-sum>{summary.title}</span>{#if summary.line}<small data-its-sum-line>{summary.line}</small>{/if}{#if summary.more}<small data-its-sum-more>{summary.more}</small>{/if}</span><span class="chev" aria-hidden="true"></span></summary>
+      <details class="fold" data-its-fold="dates">
+        <summary class="prow"><span class="prl">{t('its.sec.dates')}<small data-its-sum-dates>{sums?.dates}</small></span>{#if changed.dates || adding}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+        <div class="fbody">
+        <p class="hint">{t('its.date.one')}</p>
+        {#if dates.length}
+          <div class="card pad months">
+            <p class="dhead" data-its-dates-total>{t('its.night.total', { n: searched })}</p>
+            {#each months as m (m.month)}
+              <h4 class="month">{m.label}</h4>
+              <ul class="rows dates">
+                {#each m.rows as d (d.date)}
+                  {@const open = openDate === d.date}
+                  <li data-its-date={d.date}>
+                    <div class="drow">
+                      {#if d.note === 'booked'}
+                        <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
+                      {:else}
+                        <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick"
+                          onclick={() => (openDate = open ? null : d.date)}>
+                          <span class="dtop">
+                            <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
+                            <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
+                            <span class="chev" aria-hidden="true"></span>
+                          </span>
+                          {#if searched}{@render bar(d)}{:else}<small aria-hidden="true">{t('its.night.none')}</small>{/if}
+                        </button>
+                      {/if}
+                      <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
+                        onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
+                    </div>
+                    {#if open && d.note !== 'booked'}
+                      <div class="nlist" data-its-night-list>
+                        {#each d.parts as p (p.why)}
+                          {@const names = p.names.map((n) => (stars.has(n) ? `★${n}` : n))}
+                          {@const cut = p.why === 'check' && allNames !== d.date && names.length > 8}
+                          <div class="np" data-its-why={p.why}>
+                            <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
+                            {#if p.why === 'check' || p.why === 'gone'}
+                              <p>{(cut ? names.slice(0, 8) : names).join('、')}</p>
+                              {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: names.length - 8 })} ›</button>{/if}
+                            {:else}
+                              {#each p.lines as l (l)}<p>{l}</p>{/each}
+                            {/if}
+                          </div>
+                        {/each}
+                        {#if d.noSeason}<p class="np-note" data-its-no-season>{t('its.night.noSeason')}</p>{/if}
+                      </div>
+                    {/if}
+                  </li>
+                {/each}
+              </ul>
+            {/each}
+          </div>
+          {#if parts.off.length}<p class="hint" data-its-dates-foot>{t('its.night.foot', { n: parts.off.length })}</p>{/if}
+        {:else}
+          <p class="hint">{t('its.date.empty')}</p>
+        {/if}
+        <label class="lbl" for="its-date-field">{t('its.date.field')}</label>
+        <div class="add">
+          <input id="its-date-field" type="date" min={bounds.min} max={bounds.max} bind:value={adding} data-its-date-field data-sfx="none"
+            oninput={() => (addWhy = null)} />
+          <button type="button" class="btn small" data-its-date-add data-sfx="self" onclick={add}>{t('its.date.add')}</button>
+        </div>
+        {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
+        <button type="button" class="btn small paper bulkopen" bind:this={bulkBtn} aria-haspopup="dialog" data-its-bulk-open data-sfx="tick" onclick={openBulk}>{t('its.bulk.open')}</button>
+        </div>
+      </details>
+      <details class="fold" bind:open={openHotels} data-its-fold="hotels" data-its-search>
+        <summary class="prow"><span class="prl">{t('its.sec.hotels')}<small data-its-sum-hotels>{sums?.hotels}</small></span>{#if changed.hotels}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+        <div class="fbody">
+        <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
+        <p class="hint" data-its-sum-full><span data-its-sum>{summary.title}</span>{#if summary.line}<span data-its-sum-line> · {summary.line}</span>{/if}{#if summary.more}<span data-its-sum-more> · {summary.more}</span>{/if}</p>
         {#if openHotels}
           <div class="hbody">
             <div class="presets" role="group" aria-label={t('its.preset.label')}>
@@ -460,41 +490,32 @@
             {#if parts.off.length}{@render part('off', parts.off, t('its.part.off'))}{/if}
           </div>
         {/if}
+        </div>
       </details>
-    </section>
-
-    <section class="sec" aria-labelledby="its-detail">
-      <h3 id="its-detail" class="sec-label">{t('its.sec.detail')}</h3>
-      <div class="card pad opts">
-        <span class="lbl">{t('its.interval')}</span>
-        <Segmented items={intervals} value={String(shown.intervalSec)} label={t('its.interval')} attr="its-interval"
-          onpick={(id) => edit((d) => ({ ...d, intervalSec: Number(id) as IntervalSec }))} />
-        <p class="hint"><Phrases text={t('its.interval.note')} /></p>
-        <span class="lbl">{t('its.guests')}</span>
-        <Segmented items={guests} value={String(shown.guests)} label={t('its.guests')} attr="its-guests" onpick={(id) => edit((d) => ({ ...d, guests: Number(id) }))} />
-      </div>
-      <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self"
-        onclick={() => (shown!.autoConfirm ? setAuto(false) : (askAuto = true))}>
-        <span class="prl">{t('its.auto')}<small><Phrases text={t('its.auto.hint')} /></small></span>
-        <span class="sw" aria-hidden="true"><i></i></span>
-      </button>
-    </section>
-
-    <ItsNotify push={status.push} />
-    {#if saved}<p class="hint" data-its-saved-by>{saved}</p>{/if}
-
-    {#if events.length}
-      <details class="card recent" data-its-recent>
-        <summary class="prow static"><span class="prl">{t('its.sec.recent')}<small data-its-recent-sum>{[events[0].time, events[0].what, ...(events.length > 1 ? [t('its.ev.n', { n: events.length })] : [])].join(' · ')}</small></span><span class="chev" aria-hidden="true"></span></summary>
-        <ol class="rows ev">
-          {#each events as e (e.key)}
-            <li data-its-event data-bad={e.bad ? '' : undefined}>
-              <span class="time">{e.time}</span><span class="txt"><b class:bad={e.bad}>{e.what}</b>{#if e.info}<small>{e.info}</small>{/if}</span>
-            </li>
-          {/each}
-        </ol>
+      <details class="fold" data-its-fold="detail">
+        <summary class="prow"><span class="prl">{t('its.sec.detail')}<small data-its-sum-detail>{sums?.detail}</small></span>{#if changed.detail}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+        <div class="fbody">
+        <div class="card pad opts">
+          <span class="lbl">{t('its.interval')}</span>
+          <Segmented items={intervals} value={String(shown.intervalSec)} label={t('its.interval')} attr="its-interval"
+            onpick={(id) => edit((d) => ({ ...d, intervalSec: Number(id) as IntervalSec }))} />
+          <p class="hint"><Phrases text={t('its.interval.note')} /></p>
+          <span class="lbl">{t('its.guests')}</span>
+          <Segmented items={guests} value={String(shown.guests)} label={t('its.guests')} attr="its-guests" onpick={(id) => edit((d) => ({ ...d, guests: Number(id) }))} />
+        </div>
+        <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self"
+          onclick={() => (shown!.autoConfirm ? setAuto(false) : (askAuto = true))}>
+          <span class="prl">{t('its.auto')}<small><Phrases text={t('its.auto.hint')} /></small></span>
+          <span class="sw" aria-hidden="true"><i></i></span>
+        </button>
+        </div>
       </details>
-    {/if}
+      <details class="fold" data-its-fold="notify">
+        <summary class="prow"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{t(notifyOn ? 'its.set.on' : 'its.set.off')}</small></span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="fbody"><ItsNotify push={status.push} bind:on={notifyOn} /></div>
+      </details>
+      {#if recentOps}<p class="hint" data-its-saved-by>{recentOps}</p>{/if}
+    </section>
 
   {/if}
 </BotPage>
@@ -521,6 +542,10 @@
 <ActionSheet bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
   groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('its.auto.cancel') }]]}
   onpick={(id) => id === 'on' && setAuto(true)} />
+
+<!-- ⋯: 開始 (at once; off without a stay) or 停止 (asks first) -->
+<ActionSheet bind:open={menuOpen} title={t('its.menu.label')} groups={[[paused ? { id: 'start', label: t('its.ctl.start'), off: running || noDates } : { id: 'stop', label: t('its.ctl.stop'), off: running }]]}
+  onpick={(id) => (id === 'start' ? void run('start') : void tick().then(() => (askStop = true)))} />
 
 <ActionSheet bind:open={askStop} title={t('its.stop.ask')} note={t('its.stop.note')}
   groups={[[{ id: 'stop', label: t('its.stop.yes'), danger: true }], [{ id: 'cancel', label: t('its.stop.cancel') }]]}
@@ -561,6 +586,11 @@
   .card.note .btn { justify-self: start; margin: 0; }
 
   .holds > li { min-height: 0; }
+  .rline { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
+  .rline.bad { color: var(--coral-text); }
+  /* 設定's rows: a .prow each, folded (plain <details>), the body under it; 未保存 a yuzu tag */
+  .fbody { display: grid; gap: 8px; margin-top: 8px; }
+  .tag.unsaved { flex: none; background: var(--c-yuzu); color: var(--c-ink); }
 
   .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
   .rows > li { display: flex; align-items: center; gap: 10px; min-height: var(--hit); }

@@ -37,6 +37,5 @@
   "bots.key.about": "~{time}",
   "bots.fact.mode": "Mode",
   "bots.fact.sha": "Version",
-  "bots.fact.workflow": "Workflow",
   "bots.sec.settings": "Settings"
 }

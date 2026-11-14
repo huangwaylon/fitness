@@ -7,12 +7,13 @@ const snip = (html: string) => createRawSnippet(() => ({ render: () => html }));
 const base = { attr: 'gym', busy: false, onretry: () => {}, stale: false, facts: [] };
 
 describe('BotPage', () => {
-  it('ジム with /status failed and /gym/config answered: the error, the controls in their own row and the calendar; no skeleton, no status', () => {
+  const menu = { label: 'ジムの操作', onopen: () => {} };
+  it('ジム with /status failed and /gym/config answered: the error, ⋯ in its own row and the calendar; no skeleton, no status', () => {
     const { body } = render(BotPage, {
-      props: { ...base, failed: 'http 500', verdict: null, act: snip('<div data-gym-controls></div>'), children: snip('<section data-gym-config></section>') }
+      props: { ...base, failed: 'http 500', verdict: null, menu, children: snip('<section data-gym-config></section>') }
     });
     expect(body).toContain('data-gym-error');
-    expect(body).toMatch(/class="card pad actrow[^"]*"[^>]*>\s*<div data-gym-controls>/);
+    expect(body).toMatch(/class="card pad actrow[^"]*"[\s\S]*data-gym-menu/);
     expect(body).toContain('data-gym-config');
     expect(body).not.toContain('data-gym-skeleton');
     expect(body).not.toContain('data-gym-verdict');
@@ -28,12 +29,12 @@ describe('BotPage', () => {
   const verdict = { tone: 'good', w: 'healthy', word: '順調', sentence: 'x', needsLook: false } as const;
   const strip = (state: 'none' | 'ok', empty?: string) => ({ cells: [{ start: 0, end: 1, state, label: '' }], ticks: [], title: 't', legend: { ok: 'ok' }, summary: 's', line: 'l', empty });
 
-  it('with a verdict: the action in its row, after the key row (VoiceOver’s order); a strip with nothing in it left out; くわしく last', () => {
+  it('with a verdict: ⋯ in the card, after the key row (VoiceOver’s order), named, a dialog’s; a strip with nothing in it left out; くわしく last', () => {
     const { body } = render(BotPage, {
-      props: { ...base, failed: null, verdict, vid: 'healthy', act: snip('<div data-gym-controls></div>'), keys: [{ id: 'last', label: '前回', value: '11:54' }],
+      props: { ...base, failed: null, verdict, vid: 'healthy', menu, keys: [{ id: 'last', label: '前回', value: '11:54' }],
         strip: strip('none'), facts: [{ id: 'mode', label: 'モード', value: 'ボット' }], children: snip('<section data-gym-config></section>') }
     });
-    expect(body).toMatch(/data-gym-verdict="healthy"[\s\S]*data-gym-key="last"[\s\S]*data-gym-controls/);
+    expect(body).toMatch(/data-gym-verdict="healthy"[\s\S]*順調[\s\S]*data-gym-key="last"[\s\S]*aria-label="ジムの操作" aria-haspopup="dialog"[^>]*data-gym-menu/);
     expect(body).not.toContain('actrow');
     expect(body).not.toContain('data-gym-scans');
     expect(body.indexOf('data-gym-more')).toBeGreaterThan(body.indexOf('data-gym-config'));

@@ -6,7 +6,7 @@
   // テスト通知 (waits PUSH_TEST_EVERY_SEC after each test, counting down on the button: the Worker's rate). A note: Focus
   // and Sleep can hold a notification back, and the site's mail still comes. Opening the tab with the Worker's push
   // read keeps the subscription fresh (refreshPush) and clears the app's badge. Members only (ボット has no 保養所 for
-  // the guest or in demo mode).
+  // the guest or in demo mode). Folded in 設定 (ItsPage: its row's summary reads `on`); applies at once, not with 保存.
   import { untrack } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { t, i18n } from '#lib/i18n/index.ts';
@@ -15,9 +15,7 @@
   import { disablePush, enablePush, pushOn, pushSupport, refreshPush, testPush, type EnableResult, type TestResult } from '#lib/its/push.ts';
 
   /** The Worker's push status (absent: a Worker without push; its key null: push off there). */
-  let { push }: { push: ItsPushStatus | undefined } = $props();
-
-  let on = $state(pushOn());
+  let { push, on = $bindable(pushOn()) }: { push: ItsPushStatus | undefined; on?: boolean } = $props();
   let busy = $state(false);
   /** Why the last turn-on didn't take, or null. */
   let why = $state<EnableResult | null>(null);
@@ -97,8 +95,7 @@
   }
 </script>
 
-<section class="sec" aria-labelledby="its-notify" data-its-notify data-its-push-fresh={fresh ? '' : undefined}>
-  <h3 id="its-notify" class="sec-label">{t('its.sec.notify')}</h3>
+<div class="notify" data-its-notify data-its-push-fresh={fresh ? '' : undefined}>
   <button type="button" class="prow" role="switch" aria-checked={on} aria-disabled={busy || (!on && !usable && support !== 'denied')} aria-describedby={line ? 'its-notify-why' : undefined}
     data-its-push={on ? 'on' : 'off'} data-sfx="self" onclick={toggle}>
     <span class="prl">{t('its.push.switch')}<small>{t('its.push.hint')}</small></span>
@@ -112,10 +109,10 @@
     </div>
   {/if}
   <p class="hint" data-its-push-note><Phrases text={t('its.push.note')} /></p>
-</section>
+</div>
 
 <style>
-  .sec { display: grid; gap: 8px; }
+  .notify { display: grid; gap: 8px; }
   .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .hint.bad { color: var(--coral-text); }
   small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: 1.3; }

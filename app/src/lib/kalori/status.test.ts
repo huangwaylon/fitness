@@ -2,7 +2,7 @@
 // tolerated), every verdict's words in Japanese and English, 遅れ by the phone's clock, the dot, the facts, the alert
 // card, 直近8週's cells and the latest update's bar.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { REASONS, alertCard, changeParts, factRows, fetchStatus, keyRow, needsAttention, parseStatus, reasonText, runLink, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
+import { REASONS, alertLines, changeParts, factRows, fetchStatus, keyRow, menuLinks, needsAttention, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 
 const at = (s: string) => Date.parse(`${s}+09:00`);
@@ -76,8 +76,7 @@ describe('parseStatus: what the file can’t make the page do', () => {
       const s = status({ run: { ...(sample().run as object), url: u }, merge: { pr: u }, alert: { text: 'x', since: NOW, runUrl: u, prUrl: u }, dataset: { ...(sample().dataset as object), url: u }, history: [{ t: LAST, result: 'merged', runUrl: u }] });
       expect([s.run?.url, s.merge?.pr, s.alert?.runUrl, s.alert?.prUrl, s.dataset?.url, s.history[0].runUrl], u).toEqual([null, null, null, null, null, null]);
       expect(factRows(s, NOW).filter((f) => f.href)).toEqual([]);
-      expect(alertCard({ ...s, verdict: 'held' }, NOW)).toMatchObject({ pr: null });
-      expect(runLink({ ...s, verdict: 'failing' }, NOW)).toBeNull();
+      expect(menuLinks({ ...s, verdict: 'held' }, NOW).map((l) => l.id)).toEqual(['workflow']);
     }
     expect(status({ dataset: { tag: 'k'.repeat(81) } }).dataset).toBeNull();
     expect(status({ alert: { text: 'x'.repeat(301), since: NOW } }).alert).toBeNull();
@@ -176,7 +175,7 @@ describe('keyRow and factRows', () => {
     expect(keys(status({ verdict: 'failing', history: [...h.slice(0, -1), { ...h.at(-1), result: 'failed' }] })).ok).toEqual(['11/4（水）2:42', null]);
     expect(keys(status({ verdict: 'none', history: [], dataset: null }))).toEqual({ last: ['まだ', null], next: ['11/18（水）2:41ごろ', null] });
   });
-  it('くわしく: データ, 網羅, 実行 (unless the verdict opens it), 所要時間, ラウンド, 変更率 and PR (unless 保留 says them), デプロイ, the workflow', () => {
+  it('くわしく: データ, 網羅, 実行 (unless ⋯ opens it), 所要時間, ラウンド, 変更率 and PR (unless 保留 says them), デプロイ', () => {
     const f = factRows(status({ merge: { sha: null, deploy: 'pending', pr: 'https://github.com/huangwaylon/fitness/pull/812' } }), NOW);
     expect(f.map((r) => [r.id, r.value])).toEqual([
       ['data', 'kalori-2026-11-11'],
@@ -186,34 +185,41 @@ describe('keyRow and factRows', () => {
       ['rounds', '2回'],
       ['rate', '追加 0.0%・上限2.0%、削除 0.0%・上限1.5%、値の変更 0.1%・上限5.0%、推定値の変更 0.0%・上限5.0%'],
       ['pr', '#812'],
-      ['deploy', '待機中'],
-      ['workflow', 'kalori-scrape.yml']
+      ['deploy', '待機中']
     ]);
     expect(f.find((r) => r.id === 'data')?.href).toContain('/releases/tag/kalori-2026-11-11');
     expect(f.find((r) => r.id === 'run')?.href).toContain('/actions/runs/123456');
     const held = factRows(status({ verdict: 'held', merge: { sha: null, deploy: 'held', pr: 'https://github.com/huangwaylon/fitness/pull/812' } }), NOW).map((r) => r.id);
-    expect(held).toEqual(['data', 'coverage', 'took', 'rounds', 'deploy', 'workflow']);
+    expect(held).toEqual(['data', 'coverage', 'took', 'rounds', 'deploy']);
   });
   it('coverage in counts while incomplete; only what the file has', () => {
     const f = factRows(status({ coverage: { complete: false, fetched: 30000, discovered: 54000, failed: 12 }, run: null, dataset: null, diff: null, merge: null }), NOW);
-    expect(f.map((r) => [r.id, r.value])).toEqual([['coverage', '30,000 / 54,000品 · 失敗12'], ['workflow', 'kalori-scrape.yml']]);
+    expect(f.map((r) => [r.id, r.value])).toEqual([['coverage', '30,000 / 54,000品 · 失敗12']]);
   });
 });
 
-describe('alertCard and runLink', () => {
-  it('only what the sentence leaves out: 保留’s PR to merge by hand, the other reasons, an alert no reason words; the run: the verdict’s action', () => {
+describe('alertLines and menuLinks', () => {
+  it('確認が必要: only what the sentence leaves out (保留’s PR to merge by hand, the other reasons, an alert no reason words)', () => {
     const pr = 'https://github.com/huangwaylon/fitness/pull/9';
-    expect(alertCard(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr } }), NOW)).toEqual({ lines: ['公開に失敗しました。'], pr: null });
-    expect(alertCard(status({ verdict: 'failing', reasons: ['crash'] }), NOW)).toBeNull();
-    expect(alertCard(status({ verdict: 'held', reasons: ['band_gone'], merge: { pr } }), NOW)).toEqual({ lines: ['PRを確認して、問題なければ手動でマージしてください。'], pr });
-    expect(alertCard(status({ verdict: 'held', reasons: ['band_gone', 'tests'], merge: { pr } }), NOW)!.lines).toEqual(['PRを確認して、問題なければ手動でマージしてください。', 'テストが失敗しました。']);
-    const [r, p] = ['https://github.com/huangwaylon/fitness/actions/runs/7', 'https://github.com/huangwaylon/fitness/pull/8'];
-    expect(alertCard(status({ alert: { text: 'ひと言', since: NOW, runUrl: r, prUrl: p } }), NOW)).toEqual({ lines: ['ひと言'], pr: null });
-    expect(alertCard(status(), NOW)).toBeNull();
-    expect(alertCard(status({ verdict: 'running' }), NOW)).toBeNull();
-    expect(runLink(status({ verdict: 'failing' }), NOW)).toBe('https://github.com/huangwaylon/fitness/actions/runs/123456');
-    expect(runLink(status({ verdict: 'running' }), NOW)).toContain('/runs/123456');
-    expect(runLink(status(), NOW)).toBeNull();
+    expect(alertLines(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr } }), NOW)).toEqual(['公開に失敗しました。']);
+    expect(alertLines(status({ verdict: 'failing', reasons: ['crash'] }), NOW)).toEqual([]);
+    const merge = '⋯の「PRを開く」から確認して、問題なければ手動でマージしてください。';
+    expect(alertLines(status({ verdict: 'held', reasons: ['band_gone'], merge: { pr } }), NOW)).toEqual([merge]);
+    expect(alertLines(status({ verdict: 'held', reasons: ['band_gone', 'tests'], merge: { pr } }), NOW)).toEqual([merge, 'テストが失敗しました。']);
+    expect(alertLines(status({ verdict: 'held', reasons: ['band_gone'] }), NOW)).toEqual([]);
+    expect(alertLines(status({ alert: { text: 'ひと言', since: NOW } }), NOW)).toEqual(['ひと言']);
+    expect([alertLines(status(), NOW), alertLines(status({ verdict: 'running' }), NOW)]).toEqual([[], []]);
+  });
+  it('⋯: 実行を開く while a run is worth a look, PRを開く while 保留, ワークフローを開く always', () => {
+    const ids = (over: Record<string, unknown>) => menuLinks(status(over), NOW).map((l) => l.id);
+    const pr = 'https://github.com/huangwaylon/fitness/pull/9';
+    expect(ids({})).toEqual(['workflow']);
+    expect(ids({ verdict: 'running' })).toEqual(['run', 'workflow']);
+    expect(ids({ verdict: 'failing' })).toEqual(['run', 'workflow']);
+    expect(ids({ verdict: 'held', merge: { pr } })).toEqual(['run', 'pr', 'workflow']);
+    expect(menuLinks(status({ verdict: 'held', merge: { pr } }), NOW).map((l) => l.href)).toEqual([
+      'https://github.com/huangwaylon/fitness/actions/runs/123456', pr, 'https://github.com/huangwaylon/fitness/actions/workflows/kalori-scrape.yml'
+    ]);
   });
 });
 

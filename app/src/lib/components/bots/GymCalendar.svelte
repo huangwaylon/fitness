@@ -1,6 +1,6 @@
 <script lang="ts">
-  // ジム's 4-week calendar (docs/design.md "Bots"; the cells are lib/gym/calendar.ts weeks): Mon–Sun from this week, the
-  // 25 settable days a button each (~50×58: the date, today's underlined yuzu; the rule's icon; the hours under it),
+  // ジム's calendar (docs/design.md "Bots"; the cells are lib/gym/calendar.ts weeks): rows of 7 days from today (2
+  // weeks; 4 in the select mode), the weekday headers starting at today's, the settable days a button each (~50×58: the date, today's underlined yuzu; the rule's icon; the hours under it),
   // the rest blank and inert. Fills: 終日 leaf, 時間指定 mint, ふだん mint dashed (the next 4 days), 未チェック paper,
   // オフ sunk with the bell struck; ⏳ an hourglass top-right; announced a dot with the count; picked (select mode) a
   // yuzu ring; a day a poll saw change flashes. A grid for VoiceOver (role=grid, a row a week, the arrow keys, Home /
@@ -9,7 +9,7 @@
   import Icon from '../ui/Icon.svelte';
   import { t } from '#lib/i18n/index.ts';
   import type { Cell } from '#lib/gym/calendar.ts';
-  import type { Day } from '#lib/gym/contract.ts';
+  import { weekday, type Day } from '#lib/gym/contract.ts';
 
   interface Props {
     cells: Cell[][];
@@ -25,7 +25,8 @@
   let { cells, selecting, selected, flash, onpick, onweekday, onlongpress }: Props = $props();
 
   const ICON = { any: 'bell', range: 'clock', usual: 'clock', off: 'bell-off', none: '' } as const;
-  const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7];
+  /** The columns' weekdays (ISO, 7 = 日), today's first. */
+  const WEEKDAYS = $derived((cells[0] ?? []).map((c) => weekday(c.day) + 1));
   const days = $derived(cells.flat().filter((c) => c.row).map((c) => c.day));
   /** The roving tab stop: the last focused day, else today. */
   let focusDay = $state<Day | null>(null);
@@ -80,7 +81,7 @@
   }
 </script>
 
-<div class="cal" role="grid" aria-label={t('gym.cal.label')} bind:this={grid} onkeydown={move} tabindex="-1" data-gym-calendar data-selecting={selecting || undefined}>
+<div class="cal" role="grid" aria-label={t('gym.cal.label', { n: cells.length })} bind:this={grid} onkeydown={move} tabindex="-1" data-gym-calendar data-selecting={selecting || undefined}>
   <div class="row head" role="row">
     {#each WEEKDAYS as wd, col (wd)}
       <div class="wd" role="columnheader" class:sun={wd === 7} class:sat={wd === 6}>

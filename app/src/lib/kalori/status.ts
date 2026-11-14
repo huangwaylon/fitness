@@ -56,7 +56,7 @@ export interface KaloriStatus {
 
 /** The raw file (a fork or e2e passes its own). vite.config.ts's CSP allows the host. */
 const KALORI_STATUS_URL = 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json';
-/** The workflow くわしく names. */
+/** The workflow ⋯ opens. */
 const WORKFLOW = 'kalori-scrape.yml';
 
 const VERDICTS: readonly Verdict[] = ['healthy', 'running', 'held', 'failing', 'late', 'none'];
@@ -225,23 +225,30 @@ export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: B
   return { tone: TONE[v], w: WORD[v], word: t(`bots.w.${WORD[v]}`), sentence, verdict: v };
 }
 
-/** 確認が必要, only for what the verdict's sentence doesn't say: held with a PR, the step (look at it, merge by hand)
- *  and the PR's link; the reasons the sentence leaves out (a band's line among them); an alert's own text when no
- *  reason words it. Null when there's nothing more (遅れ, a plain 不調: the sentence says it). */
-export function alertCard(s: KaloriStatus, now: number): { lines: string[]; pr: string | null } | null {
+/** 確認が必要's lines, only what the verdict's sentence doesn't say: held with a PR, the step (open it from ⋯, merge by
+ *  hand); the reasons the sentence leaves out (a band's line among them); an alert's own text when no reason words it.
+ *  Empty when there's nothing more (遅れ, a plain 不調: the sentence says it). */
+export function alertLines(s: KaloriStatus, now: number): string[] {
   const v = verdictOf(s, now);
-  if (v !== 'held' && v !== 'failing' && !s.alert) return null;
+  if (v !== 'held' && v !== 'failing' && !s.alert) return [];
   const said = verdictView(s, now).sentence;
-  const pr = v === 'held' ? (s.alert?.prUrl ?? s.merge?.pr ?? null) : null;
   const rest = s.reasons.filter((r) => !(v === 'held' && isBand(r))).map((r) => reasonText(s, r)).filter((l) => !said.includes(l));
   if (!s.reasons.length && s.alert && !said.includes(s.alert.text)) rest.push(s.alert.text);
-  const lines = [...(pr ? [t('kalori.attn.merge')] : []), ...new Set(rest)];
-  return lines.length || pr ? { lines, pr } : null;
+  return [...(prLink(s, now) ? [t('kalori.attn.merge')] : []), ...new Set(rest)];
 }
 
-/** The verdict's one action: the run, while there's one worth a look (取得中, 保留, 不調), else null. */
-export const runLink = (s: KaloriStatus, now: number): string | null =>
+/** The run, while there's one worth a look (取得中, 保留, 不調), else null. */
+const runLink = (s: KaloriStatus, now: number): string | null =>
   ['running', 'held', 'failing'].includes(verdictOf(s, now)) ? (s.alert?.runUrl ?? s.run?.url ?? null) : null;
+/** 保留's PR, else null. */
+const prLink = (s: KaloriStatus, now: number): string | null => (verdictOf(s, now) === 'held' ? (s.alert?.prUrl ?? s.merge?.pr ?? null) : null);
+
+/** The verdict's ⋯ (docs/design.md "Bots"): 実行を開く (a run worth a look), PRを開く (保留), ワークフローを開く (always). */
+export const menuLinks = (s: KaloriStatus, now: number): { id: 'run' | 'pr' | 'workflow'; href: string }[] => [
+  ...(runLink(s, now) ? [{ id: 'run' as const, href: runLink(s, now)! }] : []),
+  ...(prLink(s, now) ? [{ id: 'pr' as const, href: prLink(s, now)! }] : []),
+  { id: 'workflow', href: `${REPO}actions/workflows/${WORKFLOW}` }
+];
 
 /** The key row (docs/design.md "Bots"): 前回 (the newest run kept, with what came of it: the deploy's failure or
  *  revert, else its result; a run under way doesn't count yet) · 次回 · 品目 (the accepted data's; 不調: 最後の成功, the
@@ -273,8 +280,8 @@ function coverageText(c: Coverage): string {
 
 export interface Fact { id: string; label: string; value: string; href?: string }
 
-/** くわしく: データ (the release), 網羅, 実行 (unless the verdict's action opens it), 所要時間, ラウンド, 変更率 (unless
- *  保留 names the gates), PR (unless 確認が必要 opens it), デプロイ, the workflow. Each only when the file has it. */
+/** くわしく: データ (the release), 網羅, 実行 (unless ⋯ opens it), 所要時間, ラウンド, 変更率 (unless 保留 names the
+ *  gates), PR (unless ⋯ opens it), デプロイ. Each only when the file has it. */
 export function factRows(s: KaloriStatus, now: number): Fact[] {
   const { run, dataset: d, diff, coverage: c, merge: m } = s;
   const held = verdictOf(s, now) === 'held';
@@ -290,8 +297,7 @@ export function factRows(s: KaloriStatus, now: number): Fact[] {
     run ? { id: 'rounds', label: t('kalori.fact.rounds'), value: t('kalori.roundsN', { n: run.round }) } : null,
     rates.length && !held ? { id: 'rate', label: t('kalori.fact.rate'), value: rates.join('、') } : null,
     m?.pr && !held ? { id: 'pr', label: t('kalori.fact.pr'), value: `#${m.pr.match(/\/pull\/(\d+)/)?.[1] ?? 'PR'}`, href: m.pr } : null,
-    m?.deploy ? { id: 'deploy', label: t('kalori.fact.deploy'), value: t(`kalori.deploy.${m.deploy}`) } : null,
-    { id: 'workflow', label: t('bots.fact.workflow'), value: WORKFLOW }
+    m?.deploy ? { id: 'deploy', label: t('kalori.fact.deploy'), value: t(`kalori.deploy.${m.deploy}`) } : null
   ];
   return rows.filter((r): r is Fact => r !== null);
 }

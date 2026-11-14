@@ -20,13 +20,15 @@
     sfx?: 'back' | 'self' | 'open' | 'tick' | 'undo';
     /** A tool's glyph. */
     icon?: IconName;
+    /** It opens a sheet (a tool's ⋯: aria-haspopup). */
+    popup?: boolean;
   }
-  let { kind, onclick, text, label, sfx = kind === 'tool' ? 'tick' : 'back', icon, ...rest }: Props & Record<`data-${string}`, unknown> = $props();
+  let { kind, onclick, text, label, sfx = kind === 'tool' ? 'tick' : 'back', icon, popup = false, ...rest }: Props & Record<`data-${string}`, unknown> = $props();
   const name = $derived(label ?? text ?? t(kind === 'back' ? 'common.back' : 'common.close'));
   const glyph = $derived<IconName>(kind === 'tool' ? (icon ?? 'gear') : kind);
 </script>
 
-<button type="button" class="nav {kind}" class:pill={!!text} aria-label={text ? undefined : name}
+<button type="button" class="nav {kind}" class:pill={!!text} aria-label={text ? undefined : name} aria-haspopup={popup ? 'dialog' : undefined}
   data-sfx={sfx === 'self' ? 'self' : sfx === 'open' ? 'open' : sfx === 'tick' ? 'tick' : sfx === 'undo' ? 'undo' : 'back'} {...rest} {onclick}><Icon name={glyph} size={kind === 'back' ? 20 : 18} stroke={2.4} />{#if text}<span>{text}</span>{/if}</button>
 
 <style>

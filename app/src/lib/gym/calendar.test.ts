@@ -1,4 +1,4 @@
-// ジム's calendar model (calendar.ts): the 4 weeks and each cell (the 4-day default, the fills, the marks, the
+// ジム's calendar model (calendar.ts): the 2 (or 4) weeks and each cell (the 4-day default, the fills, the marks, the
 // words), the slot picker's rules, the ⏳ dates and times allowed, the optimistic rows, the undo of a change and a bulk act.
 import { describe, expect, it } from 'vitest';
 import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, weeks, withBase, type SlotPick } from './calendar.ts';
@@ -13,16 +13,16 @@ const row = (i: number, patch: Partial<DayRow> = {}): DayRow =>
 const rows = (patch: Record<number, Partial<DayRow>> = {}): DayRow[] => Array.from({ length: 25 }, (_, i) => row(i, patch[i]));
 
 describe('weeks', () => {
-  it('4 weeks Mon–Sun from this week’s Monday; the 25 days a cell each, the rest blank', () => {
+  it('2 weeks from today (today + 13 days, no blank start); 4 in the select mode: the 25 days a cell each, the rest blank', () => {
     const w = weeks(rows());
-    expect(w.map((x) => x.length)).toEqual([7, 7, 7, 7]);
-    expect(w[0][0].day).toBe('2026-11-09'); // the Monday
-    expect(w[0].slice(0, 3).every((c) => c.row === null)).toBe(true); // Mon–Wed passed
-    expect(w[0][3]).toMatchObject({ day: TODAY, today: true, date: 12 });
-    expect(w.flat().filter((c) => c.row).length).toBe(25);
-    expect(w[3][6]).toMatchObject({ day: '2026-12-06', row: { day: day(24) } }); // a Thursday's 25 days end on the 4th Sunday
-    const monday = weeks(rows().map((r, i) => ({ ...r, day: addDays('2026-11-09', i) })));
-    expect(monday[3].slice(4).every((c) => c.row === null)).toBe(true); // from a Monday: 12/3–12/6 past the 25
+    expect(w.map((x) => x.length)).toEqual([7, 7]);
+    expect(w[0][0]).toMatchObject({ day: TODAY, today: true, date: 12 }); // a Thursday first: its column is Thursday
+    expect(w[1][6]).toMatchObject({ day: day(13) });
+    expect(w.flat().every((c) => c.row)).toBe(true);
+    const four = weeks(rows(), 4);
+    expect(four.map((x) => x.length)).toEqual([7, 7, 7, 7]);
+    expect(four.flat().filter((c) => c.row).length).toBe(25);
+    expect(four[3].slice(4).every((c) => c.row === null)).toBe(true); // 12/6–12/9 past the 25
   });
 
   it('the 4-day default: the next 4 days ふだん 12–13 (mint, dashed), the rest 未チェック', () => {

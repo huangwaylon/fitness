@@ -306,5 +306,17 @@
   "its.stop.note": "次の区切りで止まります。",
   "its.stop.yes": "停止する",
   "its.stop.cancel": "キャンセル",
-  "its.ev.n": "全{n}件"
+  "its.ev.n": "全{n}件",
+  "its.set.nights": "{n}泊・{from}〜",
+  "its.set.able": "探せる日 {n}/{m}",
+  "its.set.noDates": "日付なし",
+  "its.set.hotels": "探す{n}・除外{off}",
+  "its.set.autoOn": "自動で確定",
+  "its.set.autoOff": "手動で確定",
+  "its.set.hint": "日付・施設・詳細は、保存するまで反映されません。",
+  "its.set.unsaved": "未保存",
+  "its.set.on": "オン",
+  "its.set.off": "オフ",
+  "its.set.recent": "最近の操作：{list}",
+  "its.menu.label": "保養所の操作"
 }

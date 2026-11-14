@@ -306,5 +306,17 @@
   "its.stop.note": "It stops at the next safe point.",
   "its.stop.yes": "Stop",
   "its.stop.cancel": "Cancel",
-  "its.ev.n": "{n} in all"
+  "its.ev.n": "{n} in all",
+  "its.set.nights": "{n} nights from {from}",
+  "its.set.able": "searchable {n}/{m}",
+  "its.set.noDates": "No dates",
+  "its.set.hotels": "Search {n} · Off {off}",
+  "its.set.autoOn": "auto-confirm on",
+  "its.set.autoOff": "auto-confirm off",
+  "its.set.hint": "Dates, facilities and details apply once you save them.",
+  "its.set.unsaved": "Unsaved",
+  "its.set.on": "On",
+  "its.set.off": "Off",
+  "its.set.recent": "Recent: {list}",
+  "its.menu.label": "Resort actions"
 }

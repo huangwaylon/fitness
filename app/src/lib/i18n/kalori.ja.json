@@ -73,6 +73,8 @@
   "kalori.fact.took": "所要時間",
   "kalori.key.failed": "デプロイ失敗",
   "kalori.key.reverted": "元に戻しました",
-  "kalori.attn.merge": "PRを確認して、問題なければ手動でマージしてください。",
-  "kalori.strip.line": "公開{ok} · 保留{held} · 失敗{failed}"
+  "kalori.attn.merge": "⋯の「PRを開く」から確認して、問題なければ手動でマージしてください。",
+  "kalori.strip.line": "公開{ok} · 保留{held} · 失敗{failed}",
+  "kalori.menu.label": "メニューの操作",
+  "kalori.menu.workflow": "ワークフローを開く"
 }

@@ -1,11 +1,12 @@
 <script lang="ts">
-  // ボット's ジム tab (docs/design.md "Bots"), on BotPage: the verdict with its key row (前回 · 次回 · いま) and its one
-  // action (今すぐ確認: a peek, its 60 s countdown, its answer and an act's failure under the verdict; 再開 while
-  // stopped), 確認が必要 (the other reasons, what to do), 直近12時間, then (members, with this phone's key:
-  // lib/gym/config.ts) 日ごとの設定 — the calendar (GymCalendar: a tap opens the day's editor, GymDayEditor; 選択 or a
-  // long press the select mode, its sticky bar one bulk act), the 3-reservation note and the legend folded — and 設定:
-  // 空きをチェックする (a switch: off asks first, flipped once confirmed), 確認の間隔 and アプリで変更 (the last ones, one a
-  // day, folded); くわしく last. Every change applies at once (no draft, said in 設定's hint): the page shows it, POST
+  // ボット's ジム tab (docs/design.md "Bots"), on BotPage: the verdict with its key row (前回 · 次回 · いま) and its ⋯
+  // (members, with this phone's key: lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its
+  // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
+  // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
+  // reasons, what to do), 直近12時間, then 日ごとの設定 — the calendar (GymCalendar: 2 weeks from today, 4 in the select
+  // mode; a tap opens the day's editor, GymDayEditor; 選択 or a long press the select mode, its sticky bar one bulk
+  // act), the 3-reservation note, the legend folded and アプリで変更 (the last ones, one a day, folded); くわしく last.
+  // No 設定 section: every change applies at once (no draft): the page shows it, POST
   // /gym/act sends it after the ones before it (one at a time, each with its days' bases as the last answer left them),
   // and its banner offers 取り消す for 5 s (one undo an act or bulk act: lib/gym/calendar.ts undoActs); a failure puts
   // back only its own days, with a coral note and もう一度, the bot's refusals in its words, a 409 stale shows the day as
@@ -47,8 +48,8 @@
   let answered = 0;
   /** The last act's refusal or failure (coral), with もう一度; `stale`: someone else changed the day. */
   let note = $state<{ text: string; retry?: () => void } | null>(null);
-  /** 今すぐ確認's answer (the bot's lines), or its refusal. */
-  let result = $state<{ lines: string[]; bad: boolean } | null>(null);
+  /** 今すぐ確認's answer (one line, the open slots under it), or its refusal. */
+  let result = $state<{ text: string; slots: string[]; bad: boolean } | null>(null);
   let checking = $state(false);
   /** When 今すぐ確認 is ready again, on this phone's clock (the Worker's cooldown, shifted). */
   let readyAt = $state(0);
@@ -61,6 +62,8 @@
   let selecting = $state(false);
   let selected = $state<ReadonlySet<Day>>(new Set());
   let askStop = $state(false);
+  let menuOpen = $state(false);
+  let intervalOpen = $state(false);
   let askBulkReset = $state(false);
   let bulkRangeOpen = $state(false);
   let bulkPick = $state<SlotPick>({ range: ['12:00', '13:00'], open: false });
@@ -129,7 +132,7 @@
   const facts = $derived(data ? factRows(data, nowMs) : []);
   const strip = $derived(data && checkStrip(data));
   const legend = { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), warn: t('gym.strip.legend.warn'), fail: t('gym.strip.legend.fail'), none: t('gym.strip.legend.none') };
-  const cells = $derived(cfg ? weeks(cfg.rows) : []);
+  const cells = $derived(cfg ? weeks(cfg.rows, selecting ? 4 : 2) : []);
   const editRow = $derived(cfg && editDay ? (cfg.rows.find((r) => r.day === editDay) ?? null) : null);
   // the day passed while its editor was open (the rows start at the new today): nothing left to set
   $effect(() => {
@@ -230,21 +233,33 @@
       show();
       take(r.config);
     }
-    if (r.ok) result = { lines: r.lines ?? [], bad: false };
-    else {
+    if (r.ok) {
+      const n = r.slots?.length ?? 0;
+      const what = [n ? t('gym.result.open', { n }) : t('gym.result.none'), ...(r.partial ? [t('gym.key.partial')] : [])].join(' · ');
+      result = { text: t('gym.result.line', { time: timeOf(Date.now(), Date.now()), what }), slots: (r.slots ?? []).map((x) => `${dayTitle(x.day)} ${x.start}〜${x.end}`), bad: false };
+    } else {
       if (r.err === 'cooldown' && r.retryAfter) readyAt = Date.now() + r.retryAfter * 1000;
-      result = { lines: [r.hint ?? t('gym.err.failed')], bad: true };
+      result = { text: r.hint ?? t('gym.err.failed'), slots: [], bad: true };
     }
     tickNow = Date.now();
   }
 
-  /** 空きをチェックする: on at once; off asks first (the switch flips once it's confirmed). */
-  function toggleRun() {
-    if (!cfg) return;
-    if (cfg.paused) {
-      cue('toggle-on');
-      void send({ a: 'resume' });
-    } else askStop = true;
+  /** ⋯'s rows: 今すぐ確認 (its cooldown, 確認中… while it runs; off while stopped), 確認を停止 or 確認を再開 (first while
+   *  stopped), 確認の間隔 ›. */
+  const checkLabel = $derived(checking || cfg?.checking ? t('gym.ctl.running') : wait > 0 ? t('gym.menu.checkWait', { s: wait }) : t('gym.ctl.check'));
+  const menu = $derived.by(() => {
+    if (!cfg) return [];
+    const check = { id: 'check', label: checkLabel, off: checkOff };
+    const every = { id: 'interval', label: t('gym.menu.interval', { n: cfg.intervalMin }) };
+    return cfg.paused ? [[{ id: 'resume', label: t('gym.menu.resume') }, check, every]] : [[check, { id: 'stop', label: t('gym.menu.stop') }, every]];
+  });
+
+  /** A row of ⋯ picked (its sheet closed first; a question or the interval opens after it). */
+  function pickMenu(id: string) {
+    if (id === 'check') void check();
+    else if (id === 'resume') void send({ a: 'resume' });
+    else if (id === 'stop') void tick().then(() => (askStop = true));
+    else if (id === 'interval') void tick().then(() => (intervalOpen = true));
   }
 
   // ---- the calendar ----
@@ -318,24 +333,15 @@
   {/if}
 {/snippet}
 
-<!-- the verdict's one action: 今すぐ確認 (one width as it counts down), 再開 while stopped -->
-{#snippet action()}
-  {#if cfg?.paused}
-    <button type="button" class="btn small" data-gym-resume data-sfx="tick" onclick={() => void send({ a: 'resume' })}>{t('gym.ctl.resume')}</button>
-  {:else if cfg}
-    <button type="button" class="btn small paper check" data-gym-check data-sfx="tick" aria-disabled={checkOff} onclick={() => void check()}>
-      {checking || cfg.checking ? t('gym.ctl.running') : wait > 0 ? t('gym.ctl.wait', { s: wait }) : t('gym.ctl.check')}</button>
-  {/if}
-{/snippet}
-
-<!-- under the verdict: 今すぐ確認's answer, an act's failure (the editor's own while it's open) -->
+<!-- under the verdict's sentence: 確認中…, 今すぐ確認's answer with the cooldown's tail (VoiceOver hears the answer, never the
+     tick), an act's failure (the editor's own while it's open) -->
 {#snippet answer()}
-  {#if result}
-    <div class="result" class:bad={result.bad} data-gym-result role="status">
-      <div class="rhead"><b>{t('gym.result.title')}</b>
-        <button type="button" class="x" data-sfx="tick" aria-label={t('gym.result.close')} onclick={() => (result = null)}><Icon name="close" size={18} /></button>
-      </div>
-      {#each result.lines as l, i (i)}<p class:day={/^\d+\/\d+（/.test(l)}>{l}</p>{/each}
+  {#if checking || cfg?.checking}
+    <p class="rline" role="status" data-gym-result>{t('gym.ctl.running')}</p>
+  {:else if result}
+    <div class="rline" class:bad={result.bad} data-gym-result>
+      <p><span role="status">{result.text}</span>{#if wait > 0 && !result.bad}<span aria-hidden="true" data-gym-wait> · {t('gym.result.next', { s: wait })}</span>{/if}</p>
+      {#if result.slots.length}<ul>{#each result.slots as l (l)}<li>{l}</li>{/each}</ul>{/if}
     </div>
   {/if}
   {#if !editOpen}{@render noteRow()}{/if}
@@ -343,7 +349,8 @@
 
 <BotPage attr="gym" busy={poll.loading} failed={bot.failed} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict} stale={bot.stale}
   readAt={bot.readAt} now={nowMs} keys={data ? keyRow(data, nowMs) : []}
-  rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} act={cfg ? action : undefined} note={result || (note && !editOpen) ? answer : undefined}
+  rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} menu={cfg ? { label: t('gym.menu.label'), onopen: () => (menuOpen = true) } : null}
+  note={result || checking || cfg?.checking || (note && !editOpen) ? answer : undefined}
   attention={reasons.length ? { lines: reasons } : null}
   strip={strip && { ...strip, title: t('gym.strip.title', { n: strip.width }), legend }}
   {facts}>
@@ -382,22 +389,6 @@
             </div>
           </div>
         {/if}
-      {/if}
-    </section>
-
-    {#if cfg}
-      <section class="sec" aria-labelledby="gym-settings" data-gym-settings>
-        <h3 id="gym-settings" class="sec-label">{t('bots.sec.settings')}</h3>
-        <p class="hint">{t('gym.set.hint')}</p>
-        <button type="button" class="prow" role="switch" aria-checked={!cfg.paused} data-gym-run={cfg.paused ? 'stopped' : 'running'}
-          data-sfx="self" onclick={toggleRun}>
-          <span class="prl">{t('gym.set.run')}</span><span class="sw" aria-hidden="true"><i></i></span>
-        </button>
-        <div class="card pad opts" data-gym-interval>
-          <span class="lbl">{t('gym.ctl.interval')}</span>
-          <Segmented items={intervals} value={String(cfg.intervalMin)} label={t('gym.ctl.interval')} attr="gym-interval"
-            onpick={(id) => void send({ a: 'interval', m: Number(id) })} />
-        </div>
         {#if cfg.changes.length}
           <details class="changes" data-gym-changes>
             <summary class="prow"><span class="prl">{t('gym.changes.title')}<small>{t('gym.changes.n', { n: Math.min(6, cfg.changes.length) })}</small></span><span class="chev" aria-hidden="true"></span></summary>
@@ -408,16 +399,29 @@
             </ul>
           </details>
         {/if}
-      </section>
-    {/if}
+      {/if}
+    </section>
+
   {/if}
 </BotPage>
 
 <GymDayEditor bind:open={editOpen} row={editRow} {usualDay} now={pickNow} note={editOpen ? note : null} onact={(a) => void send(a)} />
 
+<ActionSheet bind:open={menuOpen} title={t('gym.menu.label')} groups={menu} onpick={pickMenu} />
+
+<Sheet bind:open={intervalOpen} title={t('gym.ctl.interval')} name="gym.interval">
+  <div class="isheet" data-gym-interval>
+    {#if cfg}
+      <Segmented items={intervals} value={String(cfg.intervalMin)} label={t('gym.ctl.interval')} attr="gym-interval"
+        onpick={(id) => { intervalOpen = false; void send({ a: 'interval', m: Number(id) }); }} />
+    {/if}
+    <p class="hint">{t('gym.ctl.intervalNote')}</p>
+  </div>
+</Sheet>
+
 <ActionSheet bind:open={askStop} title={t('gym.ctl.stopAsk')} note={t('gym.ctl.stopNote')}
   groups={[[{ id: 'stop', label: t('gym.ctl.stop'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
-  onpick={(id) => id === 'stop' && void send({ a: 'pause' })} />
+  onpick={(id) => id === 'stop' && (cue('toggle-off'), void send({ a: 'pause' }))} />
 
 <ActionSheet bind:open={askBulkReset} title={t('gym.bulk.resetAsk', { n: selected.size })} note={t('gym.bulk.resetNote', { n: selAnnounced })}
   groups={[[{ id: 'reset', label: t('gym.bulk.resetYes'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
@@ -438,16 +442,11 @@
 <style>
   .card { margin: 0; padding: 12px 14px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
 
-  /* 今すぐ確認, あと60秒 and 確認中… hold one width (no jump as it counts down) */
-  .check { min-width: 7.5em; padding: 0 12px; font-variant-numeric: tabular-nums; }
-  .x:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-
-  .result { display: grid; gap: 2px; padding: 8px 10px 10px 12px; border-radius: var(--r-chip); background: var(--card); font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
-  .result p { margin: 0; }
-  .result p.day { margin-top: 4px; color: var(--text-soft); }
-  .result.bad { background: color-mix(in srgb, var(--c-coral) 14%, var(--card)); }
-  .rhead { display: flex; align-items: center; justify-content: space-between; margin: -8px -10px 0 0; }
-  .x { appearance: none; border: 0; background: none; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); }
+  /* 今すぐ確認's line under the verdict's sentence */
+  .rline { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); font-variant-numeric: tabular-nums; }
+  .rline p { margin: 0; }
+  .rline ul { margin: 2px 0 0; padding-left: 1.2em; color: var(--text-soft); }
+  .rline.bad { color: var(--coral-text); }
 
   .note { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: var(--r-card); font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
   .note span { flex: 1; }
@@ -484,8 +483,6 @@
   .txt b { display: block; line-height: 1.3; }
   .txt small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
 
-  .opts { display: grid; gap: 8px; }
-  .opts .lbl { margin: 0; }
   .isheet { display: grid; gap: 10px; padding-bottom: 12px; }
   .isheet .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .line { margin: 0 4px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
