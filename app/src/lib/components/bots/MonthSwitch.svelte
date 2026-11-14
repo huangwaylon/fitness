@@ -11,20 +11,22 @@
     title: string;
     /** `YYYY-MM` each (contract/tokyo.ts twoMonths). */
     months: readonly string[];
+    /** The month shown (bindable: monthPick.svelte.ts's). */
     value: string;
     /** The pills' data attribute (`data-gym-month`). */
     attr: string;
-    onpick: (month: string) => void;
+    /** After a pick (the page's own: 保養所 lets its note go). */
+    onpick?: (month: string) => void;
     children?: Snippet;
   }
-  let { id, title, months, value, attr, onpick, children }: Props = $props();
+  let { id, title, months, value = $bindable(), attr, onpick, children }: Props = $props();
   const items = $derived(months.map((m) => ({ id: m, label: monthLabel(m, { year: false }) })));
 </script>
 
 <div class="mhead">
   <h3 {id} class="sec-label">{title}</h3>
   {@render children?.()}
-  {#if items.length}<Segmented size="s" {items} {value} label={t('bots.cal.month')} {attr} {onpick} />{/if}
+  {#if items.length}<Segmented size="s" {items} {value} label={t('bots.cal.month')} {attr} onpick={(m) => ((value = m), onpick?.(m))} />{/if}
 </div>
 
 <style>

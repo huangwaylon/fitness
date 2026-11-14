@@ -35,6 +35,7 @@
   import BotPage from './BotPage.svelte';
   import GymCalendar from './GymCalendar.svelte';
   import MonthSwitch from './MonthSwitch.svelte';
+  import { monthPick } from './monthPick.svelte.ts';
   import GymDayEditor from './GymDayEditor.svelte';
   import GymSlots from './GymSlots.svelte';
   import { useBot } from './useBot.svelte.ts';
@@ -126,11 +127,9 @@
   const strip = $derived(data && checkStrip(data));
   const legend = { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), warn: t('gym.strip.legend.warn'), fail: t('gym.strip.legend.fail'), none: t('gym.strip.legend.none') };
   /** The calendar: this month or next (the Worker's today's), its days. */
-  const monthKeys = $derived(twoMonths(cfg?.rows[0]?.day ?? dayKey(minuteNow())));
-  let pickedMonth = $state<string | null>(null);
-  const calMonth = $derived(pickedMonth && monthKeys.includes(pickedMonth) ? pickedMonth : monthKeys[0]);
-  const cells = $derived(cfg ? monthCells(cfg.rows, calMonth) : []);
-  const later = $derived(cfg && laterNote(cfg.rows, calMonth));
+  const cal = monthPick(() => twoMonths(cfg?.rows[0]?.day ?? dayKey(minuteNow())));
+  const cells = $derived(cfg ? monthCells(cfg.rows, cal.value) : []);
+  const later = $derived(cfg && laterNote(cfg.rows, cal.value));
   const editRow = $derived(cfg && editDay ? (cfg.rows.find((r) => r.day === editDay) ?? null) : null);
   // the day passed while its editor was open (the rows start at the new today): nothing left to set
   $effect(() => {
@@ -335,7 +334,7 @@
   {facts}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
-      <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? monthKeys : []} value={calMonth} attr="gym-month" onpick={(m) => (pickedMonth = m)}>
+      <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month">
         {#if cfg && selecting}<button type="button" class="chip s" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
         {:else if cfg}<button type="button" class="chip s" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
       </MonthSwitch>
@@ -346,7 +345,7 @@
         </div>
       {/if}
       {#if cfg}
-        <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(calMonth) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
+        <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(cal.value) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
         {#if later}<p class="hint" data-gym-later>{later}</p>{/if}
         <p class="hint" data-gym-cal-note>{t('gym.cal.note')}</p>
 

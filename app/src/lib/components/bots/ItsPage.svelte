@@ -45,6 +45,7 @@
   import BotPage from './BotPage.svelte';
   import ItsCalendar from './ItsCalendar.svelte';
   import MonthSwitch from './MonthSwitch.svelte';
+  import { monthPick } from './monthPick.svelte.ts';
   import { useBot } from './useBot.svelte.ts';
   import { accept } from './summary.svelte.ts';
 
@@ -134,10 +135,8 @@
   /** The facilities searched (探す on): every night's bar is of these. */
   const searched = $derived(hotels.filter((r) => r.search).length);
   /** The calendar: this month or next (a Segmented beside 日付), its nights. */
-  const monthKeys = $derived(twoMonths(today));
-  let pickedMonth = $state<string | null>(null);
-  const calMonth = $derived(pickedMonth && monthKeys.includes(pickedMonth) ? pickedMonth : monthKeys[0]);
-  const grid = $derived(shown ? nightGrid(calMonth, shown, nowMs, bookings) : []);
+  const cal = monthPick(() => twoMonths(today));
+  const grid = $derived(shown ? nightGrid(cal.value, shown, nowMs, bookings) : []);
   /** 施設's three parts (探す, 日程に合わない, 除外) from the draft's nights, as the bars count them. */
   const parts = $derived(hotelParts(hotels, dates));
   const summary = $derived(hotelSummary(parts));
@@ -339,10 +338,10 @@
     {/if}
 
     <section class="sec" aria-labelledby="its-dates" data-its-dates-sec>
-      <MonthSwitch id="its-dates" title={t('its.sec.dates')} months={monthKeys} value={calMonth} attr="its-month" onpick={(id) => ((pickedMonth = id), (addWhy = null))}>
+      <MonthSwitch id="its-dates" title={t('its.sec.dates')} months={cal.months} bind:value={cal.value} attr="its-month" onpick={() => (addWhy = null)}>
         {#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}
       </MonthSwitch>
-      <ItsCalendar cells={grid} label={t('its.cal.label', { month: monthLabel(calMonth) })} onpick={tapNight} onweekday={tapColumn} />
+      <ItsCalendar cells={grid} label={t('its.cal.label', { month: monthLabel(cal.value) })} onpick={tapNight} onweekday={tapColumn} />
       {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
       {#if dates.length}
         <ul class="card pad rows dates" data-its-dates-total={searched}>
