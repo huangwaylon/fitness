@@ -68,17 +68,22 @@ export const LOG_EVENTS = {
   // after loaded, and the last of them by name; `shell` where the page came from (the network within the worker's
   // race, or its cache: confirmed by the race, not raced, or the network late or offline) and `raceMs` the race's ms
   // from the navigation's fetch event; `garden` and `farm` what the first placing had (`ask`, `held`: the launch's
-  // version ask and its hold, older builds)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n' } },
+  // version ask and its hold, older builds); `pre` the ms from the worker's fetch event to the page's clock start (on
+  // WebKit that clock starts once the worker answers: the race's wait is before every mark), `swCold` the worker just
+  // started for it; the worker's own network fetches meanwhile (the page's transfer sizes read 0 for every answer it
+  // gives), its room files of them and their KB (`swNet`, `swRoom`, `swKB`); the KTX2s transcoded (`tx`); the last late
+  // model's fetch end and its arrival in the scene (`lateF`, `lateA`)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', lateF: 'n', lateA: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
   // second, and the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
   // map's size; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
-  // of `fx`'s, the flourish's kind that asked most (`fx1`, effects.ts FxKind) and its share (`fw1`); the point lights
+  // of `fx`'s, the flourish's kind that asked most (`fx1`, effects.ts FxKind) and its share (`fw1`); of `nodes`', the
+  // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`); the point lights
   // (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', pts: 'n', pm: 'b' } },
+  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: 't', nw1: 'n', pts: 'n', pm: 'b' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
