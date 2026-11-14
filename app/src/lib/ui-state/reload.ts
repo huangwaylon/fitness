@@ -1,7 +1,7 @@
 // Stale-build recovery: after a deploy, a PWA left resident still runs the old build. Its lazy chunks
 // (きろく, the harvest) can 404, and a remembered rejected import() would fail forever. A chunk that isn't fetched
 // forgets the import and, when the deployed build is a newer one, reloads once into it (Safari also keeps a failed
-// import for the page's life, so only a reload retries it); a detected new version reloads when nothing is open. Each
+// import for the page's life, so only a reload retries it); a detected new version is taken at a hide (ui-state/update.ts). Each
 // only once the new build's service worker controls the page, so the reload is its shell, not the old one again. Not
 // on a page that is leaving: Safari fails every load of a page navigating away, and the reload then took the
 // navigation over (back to this page); leaving, version.json isn't fetched either.
@@ -28,7 +28,7 @@ export function safeReload(now = Date.now(), why: Why = 'other'): boolean {
   return true;
 }
 
-type Why = 'update' | 'chunk' | 'mic' | 'other';
+type Why = 'update' | 'stale' | 'chunk' | 'mic' | 'other';
 /** The page reloaded now, no loop guard (a tap's: a refused mic's 「もう一度試す」, lib/mic/retry.ts), `why` logged first. */
 export function reloadNow(why: Why): void {
   log('app.reload', { why });
@@ -90,15 +90,20 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
   return w;
 }
 
-/** The deployed build's version (Kit's _app/version.json, past every cache), or null when the site can't be asked (a
- *  page that is leaving, offline). */
-async function deployed(): Promise<string | null> {
+/** The deployed build's _app/version.json (Kit's `version`, our `compat`: scripts/version-compat.ts), past every
+ *  cache, or null when the site can't be asked (a page that is leaving, offline). */
+async function deployedJson(): Promise<{ version?: unknown; compat?: unknown } | null> {
   const { resolve } = await import('$app/paths');
   const res = await fetch(`${resolve('/')}_app/version.json`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  const v = ((await res.json()) as { version?: unknown }).version;
+  return res.ok ? ((await res.json()) as { version?: unknown; compat?: unknown }) : null;
+}
+/** The deployed build's version, or null. */
+async function deployed(): Promise<string | null> {
+  const v = (await deployedJson())?.version;
   return typeof v === 'string' ? v : null;
 }
+/** The deployed build's compatibility epoch (ui-state/update.ts incompatible), or undefined: not asked, or none. */
+export const deployedCompat = async (): Promise<unknown> => (await quiet(deployedJson(), 'update.compat', null))?.compat;
 
 /** Whether a failed import is its file not fetched (a chunk a deploy removed, the network gone), not a module that
  *  threw as it ran (a reload doesn't cure that): the browsers' TypeErrors for a module script that didn't load

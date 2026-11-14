@@ -38,7 +38,7 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill, or a swipe closed, when short) | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
-| `app.reload` | info | `why` (update, launch: a cold open into a waiting deploy, older builds only; chunk, stale, mic, other) | the app reloads itself |
+| `app.reload` | info | `why` (update: a deploy taken as the app hid; launch: older builds only; chunk; stale: a build this one can't work with, version.json `compat`; mic; other) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
 | `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (300 ms quiet after opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
 | `perf.boot` | info | the launch's marks (`mount` → `shown`, `data`), its longest frames and steps by what held them, `fields`, `sw`, `warm`, `net`, `shell` (the page from the network or the worker's cache; `ask`/`held`: older builds) (world3d/boot.ts BootReport; the registry has them all) | once a load, 1 s after the island is whole (world3d/boot.ts) |

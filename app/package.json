@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && node scripts/kikimimi-budget.ts && node scripts/headers.ts && node scripts/load-budget.ts && cp build-pages/index.html build-pages/404.html",
+    "build": "vite build && node scripts/version-compat.ts && node scripts/kikimimi-budget.ts && node scripts/headers.ts && node scripts/load-budget.ts && cp build-pages/index.html build-pages/404.html",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",

@@ -22,7 +22,8 @@
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
+  import { deployedCompat, isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
+  import { incompatible, takeUpdate } from '#lib/ui-state/update.ts';
   import { registerLate, releaseWorker } from '#lib/ui-state/swLate.ts';
   import { opensIsland } from '#lib/ui-state/boot.ts';
   import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
@@ -66,17 +67,21 @@
     loadHarvest().then((m) => (Harvest = m.default), () => (laterFor = wk));
   });
 
-  // A new deploy (Kit checks _app/version.json when the app comes back to the front): reload into it once nothing
-  // is open, so a resident PWA never keeps running an old build against new chunks. Only once the new build's service
-  // worker controls the page (newWorker): it serves the reload its own shell, from its cache (before, the reload was
-  // the old build's cached shell again). Its install failed or can't be had now: asked again as the app comes back.
+  // A new deploy (Kit checks _app/version.json when the app comes back to the front): taken as the app is hidden, once
+  // the new build's service worker controls the page (newWorker: it serves the reload its own shell) and nothing is
+  // open; in front only for a build this one can't work with (ui-state/update.ts). Its install failed or can't be had
+  // now: asked again as the app comes back.
   let workerReady = $state(false);
+  let mustReload = $state(false);
   function askWorker() {
-    if (updated.current && !workerReady) void newWorker().then((ok) => (workerReady = ok));
+    if (!updated.current) return;
+    if (!workerReady) void newWorker().then((ok) => (workerReady = ok));
+    if (!mustReload) void deployedCompat().then((c) => (mustReload = incompatible(c)));
   }
   $effect(askWorker);
+  const update = (hidden: boolean) => ({ updated: updated.current, ready: workerReady, incompatible: mustReload, busy: onPair || showHarvest || ui.sheets.length > 0, hidden });
   $effect(() => {
-    if (workerReady && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
+    if (takeUpdate(update(false))) safeReload(Date.now(), 'stale');
   });
 
   // the service worker once the island is up (ui-state/swLate.ts); a screen with no island coming releases it
@@ -101,10 +106,15 @@
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
+      if (document.visibilityState === 'hidden' && takeUpdate(update(true))) safeReload(Date.now(), 'update');
       if (document.visibilityState === 'visible') askWorker();
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
+    // a newer worker took the page over (a deploy installed under it: a launch whose network was late, or a page left
+    // open): Kit asked now, not at the next show, so the next hide takes it
+    const onClaim = () => void updated.check();
+    navigator.serviceWorker?.addEventListener('controllerchange', onClaim);
     // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once (not as we leave).
     // Only a chunk not fetched: the helper reports every lazy import that rejects, a module that threw as it ran too
     // (the sound's renderer, the villagers' birthdays, K.K.'s songs), which a reload doesn't cure.
@@ -145,6 +155,7 @@
       stopTheme();
       stopWeather();
       document.removeEventListener('visibilitychange', onVisible);
+      navigator.serviceWorker?.removeEventListener('controllerchange', onClaim);
       window.removeEventListener('vite:preloadError', onStale);
     };
   });

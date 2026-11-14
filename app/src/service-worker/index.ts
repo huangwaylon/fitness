@@ -86,9 +86,9 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Keep one previous shell generation: a page still running the old build (claimed below) loads its lazy chunks
-// (きろく, the harvest) from it instead of a 404, until it reloads into the new build (ui-state/reload.ts).
-// caches.keys() lists caches in creation order, so the newest older shell is the last one before ours.
+// Keep SHELLS_KEPT older shell generations: a page still running an older build (claimed below) loads its lazy chunks
+// (きろく, the harvest) from its own instead of a 404, until it takes a newer build at a hide or its next launch
+// (ui-state/update.ts). caches.keys() lists caches in creation order, so the newest older shells are the last before ours.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {

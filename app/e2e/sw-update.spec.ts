@@ -21,6 +21,18 @@ const warmed = async (page: Page) => {
   return () => page.waitForFunction(() => (window as unknown as { __warmed?: boolean }).__warmed === true, null, { timeout: 60_000 });
 };
 
+/** The app hidden (as iOS hides it), again until the page is a new one: the deploy taken out of sight once its worker
+ *  controls the page and nothing is open (ui-state/update.ts; a hide before that reloads nothing). */
+async function hideIntoDeploy(page: Page) {
+  await page.evaluate(() => ((window as unknown as { __old?: boolean }).__old = true));
+  await expect.poll(() => page.evaluate(() => {
+    if (!(window as unknown as { __old?: boolean }).__old) return true;
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    return false;
+  }).catch(() => false), { timeout: 60_000, message: 'reloaded into the deploy as the app hid' }).toBe(true);
+}
+
 /**
  * Chromium's ask to swap the old worker out again, once it can act on it. A deploy's worker installed (it called
  * skipWaiting()), Chromium tells the old one to stop as soon as it's idle, but only if it's running then: one still
@@ -52,7 +64,7 @@ async function askSwapAgain(page: Page, context: import('@playwright/test').Brow
 }
 
 // (in Chromium: WebKit's Playwright build doesn't route a service worker's own fetches)
-test('a navigation is the cached shell at once; a deploy reloads once its worker is in', { tag: '@chromium' }, async ({ page, context }) => {
+test('a navigation is the cached shell at once; a deploy is taken as the app hides, never in front (設定 stays open)', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const first = await page.goto('?demo');
   expect(first?.fromServiceWorker()).toBe(false);
@@ -89,8 +101,25 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   });
   // (Kit checks version.json as the app comes back to the front)
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await fromMenu(page, 'settings');
+  // the new worker in control, the app still in front: no reload, 設定 open (the phones before: the whole island
+  // reloaded under it)
+  await page.waitForFunction(() => !!sessionStorage.getItem('e2e.swChanged'), null, { timeout: 60_000 });
+  await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
+  expect(await page.evaluate(() => [!!(window as unknown as { __before?: boolean }).__before, sessionStorage.getItem('island.reloadAt')])).toEqual([true, null]);
+  await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();
+  // hidden with 設定 open: kept for later; closed, the next hide takes it
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+  });
+  await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await hideIntoDeploy(page);
   // reloaded: a new page (not the one marked), by the app (its reloadAt), the HUD up
-  // (red now and then on CI, the reload never came in 60 s, never here: what the page was waiting on, said with it)
   await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 60_000, message: 'the app reloaded into the new worker' }).toBe(true).catch(async (e: Error) => {
     const why = await page.evaluate(async () => {
       const reg = await navigator.serviceWorker.getRegistration();
@@ -214,7 +243,31 @@ test('a cold open at ?open=its opens ボット on 保養所, and it stays', { ta
   expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(1);
 });
 
-test('a deploy whose install fails reloads nothing, and the next time the app comes back it installs and reloads', { tag: '@chromium' }, async ({ page, context }) => {
+test('a deploy this build can\'t work with (version.json compat past its own: contract/compat.ts) is taken in front, but only once nothing is open', { tag: '@chromium' }, async ({ page, context }) => {
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  await fromMenu(page, 'settings');
+  await askSwapAgain(page, context);
+  await page.request.get('/__e2e/deploy');
+  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next","compat":99}' }));
+  await page.evaluate(() => {
+    navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.getItem('e2e.swChanged') ?? sessionStorage.setItem('e2e.swChanged', String(Date.now())));
+    (window as unknown as { __before?: boolean }).__before = true;
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await page.waitForFunction(() => !!sessionStorage.getItem('e2e.swChanged'), null, { timeout: 60_000 });
+  await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
+  // 設定 open: kept
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
+  await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 30_000, message: 'reloaded in front once 設定 closed' }).toBe(true);
+  await context.unroute('**/_app/version.json');
+  await expect(hudMenu(page)).toBeVisible();
+});
+
+test('a deploy whose install fails reloads nothing; the next time the app comes back it installs, and the next hide reloads', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const warm = await warmed(page);
   await page.goto('?demo');
@@ -238,11 +291,11 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
   await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
   expect(navs, 'no reload into the old cached shell').toEqual([]);
   expect(await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')])).toEqual([null, null]);
-  // the network back: the next time the app comes to the front it asks again, installs, and then reloads
+  // the network back: the next time the app comes to the front it asks again and installs; the next hide reloads
   await context.unroute(`**${chunk}`, fail);
-  const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-  await reloaded;
+  await page.waitForFunction(() => !!sessionStorage.getItem('e2e.swChanged'), null, { timeout: 60_000 });
+  await hideIntoDeploy(page);
   await context.unroute('**/_app/version.json');
   await expect(hudMenu(page)).toBeVisible();
   const [changed, reloadAt] = await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')]);
@@ -311,9 +364,8 @@ test('a slow install is waited for (no reload before its worker is in); a static
   const gone = (route: import('@playwright/test').Route) => route.fulfill({ status: 404, body: '' });
   await context.route(`**${chunk}`, slow);
   await context.route('**/manifest.webmanifest', gone);
-  const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
   await deploy(page, context);
-  await reloaded;
+  await hideIntoDeploy(page);
   installing = false;
   await context.unroute('**/_app/version.json');
   await context.unroute(`**${chunk}`, slow);
@@ -356,9 +408,8 @@ test('the wedding board kept once opened and carried by a deploy (offline after)
     return file;
   });
   expect(await fonts()).toEqual(expect.arrayContaining([named, 'zen-maru-gothic-0-500-normal.0ld0ld00.woff2']));
-  const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
   await deploy(page, context);
-  await reloaded;
+  await hideIntoDeploy(page);
   await context.unroute('**/_app/version.json');
   await expect(hudMenu(page)).toBeVisible();
   expect(await page.evaluate(() => sessionStorage.getItem('e2e.swChanged')), 'the new worker claimed the page').not.toBeNull();

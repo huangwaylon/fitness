@@ -1,13 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, marked, raceShell, RACE_MS, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { fetchKeep, SHELLS_KEPT, marked, raceShell, RACE_MS, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
 
-  it('keeps the current and the newest previous shell, and the runtime caches', () => {
-    const keys = ['island-fonts-v1', 'island-shell-1', 'island-villagers-v1', 'island-shell-2', 'island-shell-3', 'island-shell-4'];
-    expect(staleCaches(keys, 'island-shell-4', keep)).toEqual(['island-shell-1', 'island-shell-2']);
+  it('keeps the current and the SHELLS_KEPT newest older shells (a page a few deploys behind loads its own chunks), and the runtime caches', () => {
+    const keys = ['island-fonts-v1', 'island-shell-1', 'island-villagers-v1', 'island-shell-2', 'island-shell-3', 'island-shell-4', 'island-shell-5', 'island-shell-6'];
+    expect(SHELLS_KEPT).toBe(3);
+    expect(staleCaches(keys, 'island-shell-6', keep)).toEqual(['island-shell-1', 'island-shell-2']);
+    expect(staleCaches(keys, 'island-shell-6', keep, 1)).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
   });
 
   it('first install: nothing to delete', () => {
@@ -21,7 +23,7 @@ describe('service worker cache generations', () => {
 
   it('never drops a saved map area (offline phase B), nor lets the seen tiles\' bound reach one', () => {
     const keys = ['island-offline-trip-nz', 'island-shell-1', 'island-offline-trail-lake-22', 'island-shell-2', 'island-shell-3'];
-    expect(staleCaches(keys, 'island-shell-3', keep)).toEqual(['island-shell-1']);
+    expect(staleCaches(keys, 'island-shell-3', keep, 1)).toEqual(['island-shell-1']);
     expect(isSavedArea('island-offline-trip-nz')).toBe(true);
     expect(isSavedArea(TILE_CACHE)).toBe(false);
     // the bound's index holds the seen tiles only: an area's tiles are never in it
@@ -305,7 +307,7 @@ describe('the maps offline: tiles and the TileJSON', () => {
     expect(bytesEvict(idx, 10, 0, 8)).toEqual(['a']);
   });
   it('the runtime caches outlive builds', () => {
-    expect(staleCaches(['island-shell-1', PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, 'island-shell-2', 'island-shell-3'], 'island-shell-3', [PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])).toEqual(['island-shell-1']);
+    expect(staleCaches(['island-shell-1', PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, 'island-shell-2', 'island-shell-3'], 'island-shell-3', [PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE], 1)).toEqual(['island-shell-1']);
   });
 });
 

@@ -14,12 +14,15 @@ export const SAVED_MANIFEST = 'https://island-fund.invalid/__manifest';
  *  cross-origin request with it would need a preflight the tile hosts refuse). */
 export const SAVE_HEADER = 'x-island-save';
 
-/** What `activate` deletes: every cache but the current shell, the previous shell (the newest older one: a page
- *  still running the old build loads its lazy chunks from it), the long-lived runtime caches and the saved areas.
- *  `keys` is in creation order (CacheStorage.keys()). */
-export function staleCaches(keys: readonly string[], current: string, keep: readonly string[]): string[] {
-  const previous = keys.filter((k) => k.startsWith(SHELL) && k !== current).at(-1);
-  return keys.filter((k) => k !== current && k !== previous && !keep.includes(k) && !isSavedArea(k));
+/** The older shells kept besides the current one: a page left running a build or a few behind (no reload while the
+ *  app is in front: ui-state/update.ts; ~15-30 deploys a day) loads its lazy chunks from its own. ~3 MB each. */
+export const SHELLS_KEPT = 3;
+
+/** What `activate` deletes: every cache but the current shell, the SHELLS_KEPT newest older ones, the long-lived
+ *  runtime caches and the saved areas. `keys` is in creation order (CacheStorage.keys()). */
+export function staleCaches(keys: readonly string[], current: string, keep: readonly string[], kept = SHELLS_KEPT): string[] {
+  const previous = new Set(keys.filter((k) => k.startsWith(SHELL) && k !== current).slice(-kept));
+  return keys.filter((k) => k !== current && !previous.has(k) && !keep.includes(k) && !isSavedArea(k));
 }
 
 /** The older shells a new install may copy its unchanged hashed chunks from, the newest first (`keys` in creation

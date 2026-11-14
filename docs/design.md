@@ -421,7 +421,7 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
 ### Startup
 
 What a launch waits for, and what it doesn't (budgets and measurements: [ops/perf.md](ops/perf.md)):
-- A second visit's page is the service worker's cached shell at once ([backend](backend.md) "Service worker").
+- A second visit's page is the network's within the worker's race, else its cached shell ([backend](backend.md) "Service worker").
 - The island page's chunks are preloaded from `index.html`; the 3D island's import starts while the page reads the
   week (`ui-state/boot.ts`); the ground's fields are built in a worker or read from the last launch's cache
   (`layout/fieldsPrime.ts`), and the 3D island mounts once they're in. The players draw from the bundled part table

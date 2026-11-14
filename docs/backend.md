@@ -409,8 +409,8 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Install:** precaches the built JS/CSS and `caches.ts precachable` (the rest on first use): the hashed chunks all
   or nothing, the static files by content hash (`installStatics`). Chunks import each other by a stable key
   (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy refetches only the chunks that changed.
-- **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
-  from it), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
+- **Activate:** keeps the current shell (`island-shell-<version>`), the `SHELLS_KEPT` (3) newest older ones (a page a few
+  deploys behind loads its lazy chunks from its own), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
   (`staleFonts`). It activates as soon as it's installed: the old worker is idle by then, as no event of its waits on a
   bounded cache's index write (`bounded.ts`: a use is marked in memory, the write follows on its own).
 - **Navigations:** with this version's shell cached, the network's page if it's in within `RACE_MS` (400 ms;
@@ -418,10 +418,15 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   rest from the cache), else the cached shell; offline, the cached shell at once. The network's answer is the
   navigation preload's (enabled at activation). Each answer says which (`Server-Timing: shell`, perf.boot `shell`).
   No shell of this version yet: network first, an older shell offline or after 3 s.
-- **Updates:** Kit's `_app/version.json` check sets `updated`; the layout waits for the new build's worker
-  (`ui-state/reload.ts newWorker`) and reloads once nothing is open. Never on a timer; a failed install reloads
-  nothing. A launch never waits on the version: its page is already the deploy's when the network was in time
-  (Navigations). `e2e/sw-update.spec.ts` (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
+- **Updates:** a launch online is the deploy's page already (Navigations). A page left running, or one whose network
+  was late, is never reloaded in front (`ui-state/update.ts`): Kit's `_app/version.json` check (on a show, and when a
+  newer worker claims the page) sets `updated`, the layout waits for the new build's worker (`ui-state/reload.ts
+  newWorker`), and the deploy is taken as the app is hidden with nothing open, else at the next launch. Only a build
+  this one can't work with reloads in front, once nothing is open: version.json's `compat` past the page's own
+  (`contract/compat.ts COMPAT`, written by `scripts/version-compat.ts`; bump it for a protocol or stored-shape change
+  older pages can't handle; `app.reload why=stale`). A lazy chunk that fails still reloads into a newer build
+  (`reloadUnlessLeaving`). Never on a timer; a failed install reloads nothing. `e2e/sw-update.spec.ts`
+  (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy, `?e2eSlow=<ms>` for a slow network).
 - **Packs** (the players' and ききみみ's): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`fetchShared`).
 
@@ -442,7 +447,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 IndexedDB: `island` (the record cache, `sync/cache.ts`), `island-tex` (processed textures, `world3d/texCache.ts`) and
 `island-fields` (the ground's fields, `layout/fieldsCache.ts`).
 
-Fonts and art are cache-first; other GETs: this version's cache, the previous one, the network. The relay is
+Fonts and art are cache-first; other GETs: this version's cache, the older shells, the network. The relay is
 cross-origin and always live.
 
 - **Offline:** what a phone has shown once reads offline; nothing is prefetched unasked (`e2e/offline.spec.ts`
