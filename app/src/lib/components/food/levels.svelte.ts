@@ -33,8 +33,9 @@ export type LevelOf<K extends Level['k']> = Extract<Level, { k: K }>;
 export class Levels {
   stack = $state<Level[]>([]);
   readonly top = $derived(this.stack.at(-1) ?? null);
-  /** Under each level: where the one below was scrolled and what opened it (`[data-add="b"]`), restored on ‹. */
-  #under: { top: number; focus: string | null }[] = [];
+  /** Under each level: where the one below was scrolled, what opened it (`[data-add="b"]`) and how far down the
+   *  scroller's view that was (`y`), restored on ‹. */
+  #under: { top: number; focus: string | null; y: number | null }[] = [];
   readonly #o: { scroller: () => Element | null; root: () => HTMLElement | undefined; leave: () => void };
 
   /** `scroller`: the sheet's; `leave`: a level left by hand (its banner goes with it). */
@@ -46,20 +47,25 @@ export class Levels {
    *  focuses a tapped button, so it is named, not read off document.activeElement). */
   go(l: Level, focus: string | null = null): void {
     this.#o.leave();
-    this.#under = [...this.#under.slice(0, this.stack.length), { top: this.#o.scroller()?.scrollTop ?? 0, focus }];
+    const sc = this.#o.scroller(), el = focus ? this.#o.root()?.querySelector(focus) : null;
+    const y = sc && el ? el.getBoundingClientRect().top - sc.getBoundingClientRect().top : null;
+    this.#under = [...this.#under.slice(0, this.stack.length), { top: sc?.scrollTop ?? 0, focus, y }];
     this.stack = [...this.stack, l];
     void tick().then(() => this.#o.scroller()?.scrollTo({ top: 0 }));
   }
-  /** Back to the level `n` deep (0: the day), where it was scrolled, the focus on what opened the one left (`refocus`
-   *  false: the caller's own, e.g. a search's field for the next food). */
+  /** Back to the level `n` deep (0: the day), the focus on what opened the one left and that where it was on the screen,
+   *  though what's over it changed meanwhile (a search's chain menus come in: their shop chips over the rows); else
+   *  where it was scrolled (`refocus` false: the caller's own focus, e.g. a search's field for the next food). */
   backTo(n: number, refocus = true): void {
     const was = this.#under[n];
     this.stack = this.stack.slice(0, n);
     this.#under = this.#under.slice(0, n);
     if (!was) return;
     void tick().then(() => {
-      this.#o.scroller()?.scrollTo({ top: was.top });
-      if (refocus && was.focus) this.#o.root()?.querySelector<HTMLElement>(was.focus)?.focus({ preventScroll: true });
+      const sc = this.#o.scroller(), el = refocus && was.focus ? this.#o.root()?.querySelector<HTMLElement>(was.focus) : null;
+      const at = sc && el && was.y !== null ? el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - was.y : null;
+      sc?.scrollTo({ top: at ?? was.top });
+      el?.focus({ preventScroll: true });
     });
   }
   /** Swap the level on top for another (the editor for the amount it goes on to, a copy's editor). */

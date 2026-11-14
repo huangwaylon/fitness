@@ -91,7 +91,8 @@ export const withKeyboardInset: Attachment<HTMLElement> = (node) => {
     const box = el.closest<HTMLElement>('[data-kb-scroll]');
     const t = setTimeout(() => {
       timers.delete(t);
-      (box ?? el).scrollIntoView({ block: box ? 'end' : 'center', behavior: 'smooth' });
+      // (only while it's still the one focused: a row tapped meanwhile, the field blurred, keeps its own scroll)
+      if (document.activeElement === el) (box ?? el).scrollIntoView({ block: box ? 'end' : 'center', behavior: 'smooth' });
     }, 300);
     timers.add(t);
   };

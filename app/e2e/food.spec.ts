@@ -1,6 +1,7 @@
 // ごはん (docs/design.md "Gohan"): the meal log, けんこう's sheet's second tab (the HUD's dumbbell). Open it, search ごはん, add
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
+import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
 
@@ -1736,6 +1737,7 @@ test('‹ from くわしく keeps the search: query, scroll, open row and focus;
   await q.fill('牛丼');
   const rows = s.locator('[data-food-results] > li > button.it');
   await expect(rows.nth(12)).toBeVisible({ timeout: 15_000 });
+  await expect(s.locator('[data-food-pending]')).toHaveCount(0, { timeout: 15_000 }); // (one come in later: the next test)
   await rows.nth(12).scrollIntoViewIfNeeded();
   await rows.nth(12).click();
   await settled(page);
@@ -1771,6 +1773,50 @@ test('‹ from くわしく keeps the search: query, scroll, open row and focus;
   await s.getByRole('button', { name: '戻る' }).click();
   await expect(q).toHaveValue('ごはん');
   await expect(rice).toBeFocused();
+});
+
+// The chain menus come in while くわしく is open (CI, 2026-11-14: the row 42 px lower after ‹): their shop chips go over
+// the rows, and ‹ still finds the row where it was on the screen, the chips above it; come in after ‹, it stays too. (The
+// chain menus a fixture of a few, so once the parser is let go they're in: e2e/fixtures/kalori.json.)
+for (const late of [false, true]) test(`‹ from くわしく: the chain menus come in ${late ? 'after ‹' : 'meanwhile'}, the row where it was`, async ({ page }) => {
+  let release = () => {};
+  const held = new Promise<void>((ok) => (release = ok));
+  const DATA = readFileSync(new URL('./fixtures/kalori.json', import.meta.url), 'utf8');
+  await page.route(/\/food\/kalori\.json(\?|$)/, async (r) => { await held; await r.fulfill({ status: 200, contentType: 'application/json', body: DATA }); });
+  await page.setViewportSize({ width: 393, height: 852 });
+  await openFood(page);
+  const s = sheet(page);
+  const q = s.locator('[data-food-q]');
+  await s.locator('[data-add=l]').click();
+  await q.fill('カレー');
+  const rows = s.locator('[data-food-results] > li > button.it');
+  await expect(rows.nth(12)).toBeVisible({ timeout: 15_000 });
+  await expect(s.locator('[data-food-shops]')).toHaveCount(0); // (no chain menus yet: no shop chips)
+  await rows.nth(12).scrollIntoViewIfNeeded();
+  await rows.nth(12).click();
+  const open = s.locator('[data-food-open]');
+  await expect(open).toBeInViewport({ ratio: 1 });
+  await settled(page);
+  const at = (await open.boundingBox())!.y;
+  const parser = page.workers().find((w) => w.url().includes('dataset.worker'))!;
+  const done = new Promise((ok) => parser.once('close', ok));
+  await s.locator('[data-food-open-more]').click();
+  await expect(s.locator('[data-food-q]')).toHaveCount(0);
+  const come = async () => {
+    release();
+    await done; // (the chain menus in: the parser let go with nothing left to parse)
+  };
+  if (!late) await come();
+  await s.getByRole('button', { name: '戻る' }).click();
+  if (late) {
+    await expect(s.locator('[data-food-shops]')).toHaveCount(0);
+    await settled(page);
+    await come();
+  }
+  await expect(s.locator('[data-food-shops]')).toBeVisible();
+  await expect(s.locator('[data-food-open-more]')).toBeFocused();
+  await settled(page);
+  expect(Math.abs((await open.boundingBox())!.y - at)).toBeLessThan(2);
 });
 
 // The balance views (docs/design.md "Gohan", the food review's approved features): each meal's protein chip (the leaf's at
