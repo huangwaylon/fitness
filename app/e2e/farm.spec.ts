@@ -58,6 +58,8 @@ test('starts bought at the shop’s かう; one kind held: a tap on my empty plo
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
+  // the rule, under the starts (the sheet's kanji)
+  await expect(page.locator('[data-shop-farm-rule]')).toHaveText('植えた日（収穫した日）に水をやると、翌日3つ収穫。雨の日やだれの水やりでもOK');
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-more="tomato"]').click();
   // one bar: the pinned one names the crop and buys them
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
@@ -76,14 +78,14 @@ test('starts bought at the shop’s かう; one kind held: a tap on my empty plo
   // one kind held: no picker; its 3 × 3's empty plots of mine, the tapped one, then the nearest, as many as I hold
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
-  await expect.poll(() => pops(page)).toEqual(['トマトを 3かぶ うえた（3/40）']);
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を3区画に植えました');
+  // one word, the banner's (world kana, with 取り消す), no pop
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 3かぶ うえた（3/40）');
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual(plants([plot(0).p, plot(1).p, plot(0, 1).p]));
   // one swing of the shovel a tap
   expect(await swings(page)).toBe(1);
   // none left: the fourth plot says so (the plants beside it aren't watered by a tap on my empty plot)
   await tapWorld(page, plot(1, 1).x, plot(1, 1).z);
-  await expect.poll(() => pops(page)).toEqual(['トマトを 3かぶ うえた（3/40）', 'なえが ない！ おみせで かえるよ']);
+  await expect.poll(() => pops(page)).toEqual(['なえが ない！ おみせで かえるよ']);
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
   await expect(page.locator('[data-fx="say"]')).toHaveCount(0);
   expect(await farmRows(page)).toHaveLength(3);
@@ -117,11 +119,11 @@ test('two kinds held: an empty plot opens the picker; a tap on another plot whil
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect(picker).toHaveCount(0);
   // the second plot's 3 × 3 (its column and the middle one)
-  await expect.poll(() => pops(page)).toEqual(['トマトを 4かぶ うえた（4/40）']);
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた（4/40）');
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual(plants([wide(2).p, wide(1).p, wide(2, 1).p, wide(1, 1).p]));
   // the run's crop: the first plot now plants tomatoes without asking
   await tapWorld(page, wide(0).x, wide(0).z);
-  await expect.poll(() => pops(page)).toEqual(['トマトを 4かぶ うえた（4/40）', 'トマトを 2かぶ うえた（6/40）']);
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 2かぶ うえた（6/40）');
   await expect(picker).toHaveCount(0);
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toHaveLength(6);
   // the picker lights the last pick, first
@@ -147,14 +149,14 @@ test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a 
   // plants my empty plots of its 3 × 3, the tapped one first, then the nearest
   await tapWorld(page, wide(1).x, wide(1).z);
   await page.locator('[data-farm-pick="start:tomato"]').click();
-  await expect.poll(() => pops(page)).toEqual(['トマトを 4かぶ うえた（6/40）']);
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた（6/40）');
   // the 取り消す banner high while the harvest's plate stands at the bottom
   await expect.poll(async () => (await page.locator('.banner[role="status"]').boundingBox())!.y).toBeLessThan(300);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/plant-3x3-pop.png` });
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'harvest', p: wide(0).p, n: 1 }, ...plants([wide(1).p, wide(2).p, wide(1, 1).p, wide(0, 1).p])]);
   // a plant: the can over its 3 × 3's dry ones (the new plants there and the growing one; the west one's out of reach)
   await tapWorld(page, wide(2, 1).x, wide(2, 1).z);
-  await expect.poll(() => pops(page)).toEqual(['トマトを 4かぶ うえた（6/40）', 'みずやり']);
+  await expect.poll(() => pops(page)).toEqual(['みずやり・あした 3こ']);
   const watered = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
   expect(watered.sort()).toEqual([wide(1).p, wide(2).p, wide(1, 1).p, wide(2, 1).p].sort());
 });
@@ -198,7 +200,7 @@ test('a day on: ripe, watered on its plant day it gives three, harvested by a ta
   await tapWorld(b, plot(1).x, plot(1).z);
   // watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(b)).toEqual(['みずやり', expect.stringMatching(/の トマト・あと 1にち$/)]);
+  await expect.poll(() => pops(b)).toEqual(['みずやり・あした 3こ', expect.stringMatching(/の トマト・あした 3こ$/)]);
   // her tap watered both (the one growing back counts from its harvest day); never ほる on my plant
   await expect(b.locator('[data-farm-dig]')).toHaveCount(0);
   const watered = await b.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.B') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
@@ -229,7 +231,7 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   await expect(page.locator('.canopy[aria-expanded="true"]')).toHaveCount(0);
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'plant', p: under[0].p, c: 'tomato', src: 'start' }]);
-  await expect.poll(() => pops(page)).toEqual(['トマトを 1かぶ うえた（1/40）']);
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 1かぶ うえた（1/40）');
   // the canopy's top, no field under it: the tree's popup
   const top = await tapAt(page, (w) => {
     const r = [...w.document.querySelectorAll('.canopy')].map((c: Element) => c.getBoundingClientRect()).find((r: DOMRect) => r.width > 0 && r.top > 0);
@@ -252,7 +254,7 @@ test('a first tap on a growing plant names its crop, never a raw key (the names 
   await islandUp(page);
   await quiet(page);
   await tapWorld(page, plot(0).x, plot(0).z);
-  await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/^カボチャ・あと \d+にち$/)]);
+  await expect.poll(() => pops(page)).toEqual(['カボチャ・あした 3こ']);
   expect((await pops(page)).join()).not.toMatch(/beach\.name\./);
 });
 
@@ -326,7 +328,7 @@ test('my growing plant’s word offers ほる (44 pt, over the word, held while 
   await tapWorld(page, plot(0).x, plot(0).z);
   const dig = page.locator('[data-farm-dig]');
   await expect(dig).toBeVisible();
-  await expect(page.locator('[data-farm-pop]')).toHaveText(/^カボチャ・あと \d+にち$/);
+  await expect(page.locator('[data-farm-pop]')).toHaveText('カボチャ・あした 3こ');
   const [d, w] = [await dig.boundingBox(), await page.locator('[data-farm-pop]').boundingBox()];
   expect(Math.min(d!.width, d!.height)).toBeGreaterThanOrEqual(44);
   // raised clear of the word (and the plot under it)
@@ -341,7 +343,7 @@ test('my growing plant’s word offers ほる (44 pt, over the word, held while 
   await page.mouse.down();
   await expect.poll(() => tag.evaluate((el) => el.getAnimations().map((a) => a.playState).join())).toBe('paused');
   await page.mouse.up();
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('カボチャを掘り起こしました');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('カボチャを ほった');
   await expect(dig).toHaveCount(0);
   // 取り消す puts it back (the one dig sent below is the second's)
   await page.getByRole('button', { name: '取り消す' }).click();

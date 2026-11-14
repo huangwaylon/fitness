@@ -1,6 +1,6 @@
 <script lang="ts">
-  // A plot tap's word (docs/farming.md "Playing"): a small cream tag over the plot, 「トマトを 9かぶ うえた（31/40）」
-  // 「みずやり」 「ニンジン・あと 2にち」, never my villager's balloon (which stood over the field being tapped). Placed once
+  // A plot tap's word (docs/farming.md "Playing"): a small cream tag over the plot, 「みずやり・あした 3こ」
+  // 「ニンジン・あした 3こ」, never my villager's balloon (which stood over the field being tapped). Placed once
   // where the tap saw the plot (no following: the camera stays put under a tap), gone in 1.2 s, at once on the next pop,
   // and faded by a drag (the camera moving off it). Touch goes through the word. On my own growing plant it carries ほる,
   // its own 44 pt button raised over the word (a miss lands on the word, never the field), kept 3 s, the clock held while
@@ -64,7 +64,7 @@
     <div class="farm-pop" class:gone class:long={!!pop.dig} class:held bind:this={el} style:left="{pop.x + shift}px" style:top="{pop.y}px"
       onanimationend={(e) => done(e, pop.n)}>
       {#if pop.dig}
-        <button type="button" class="dig" data-farm-dig data-sfx="self" bind:this={digEl} onclick={() => dig(pop.n)}>{t('world.farm.dig')}</button>
+        <button type="button" class="btn small paper dig" data-farm-dig data-sfx="self" bind:this={digEl} onclick={() => dig(pop.n)}>{t('world.farm.dig')}</button>
       {/if}
       <p class="word" data-farm-pop role="status">{pop.text}</p>
     </div>
@@ -86,14 +86,12 @@
     box-shadow: 0 2px 0 var(--c-lip), 0 4px 10px rgb(60 40 20 / .16);
     font: 700 var(--fs-s)/1.2 var(--font-ui); word-break: keep-all;
   }
-  /* ほる: 44 pt to the thumb, the say button's cream and lip, over the word */
+  /* ほる: the quiet secondary (.btn.small.paper: cream, its edge), 44 pt to the thumb, over the word; never the loud
+     yellow: it takes a plant away */
   .dig {
-    min-width: var(--hit, 44px); height: var(--hit, 44px); margin: 0; padding: 0 18px; pointer-events: auto;
-    appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
-    background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip), 0 4px 10px rgb(60 40 20 / .16);
-    font: 700 var(--fs-body)/1 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    min-width: var(--hit, 44px); height: var(--hit, 44px); margin: 0; border-radius: var(--r-pill); pointer-events: auto;
+    white-space: nowrap; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .dig:active { translate: 0 2px; box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .dig:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @keyframes farm-pop-out { to { opacity: 0; } }
   @keyframes farm-pop {

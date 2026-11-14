@@ -503,7 +503,7 @@
         waterAll(act.ids);
         spawn({ kind: 'flower', x: px, y: pz, lift: 8, color: '#8FD0F5', flip: px > site.midX });
         sceneSfx('water');
-        pop(t('world.farm.water'));
+        pop(t('world.farm.water', { k: FARM.maxYield }));
         return true;
       case 'plant': {
         // one event held for its 取り消す (the shop's banner); the shovel and a puff over the tapped plot
@@ -514,12 +514,9 @@
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         fx3d('swing', px, pz, 0, { v: 'shovel' });
         sceneSfx('dig');
-        // the banner even if the names never load (a start's is the main catalog's; a vegetable's then its key)
-        const banner = (name: string) => undoBanner(t('farm.planted', { name: src === 'start' ? t(`farm.start.${crop}`) : name, n }), res);
-        void loadNames().then(() => {
-          pop(t('world.farm.planted', { name: cropName(crop), n, mine: mine + n, cap: FARM.cap }));
-          banner(cropName(crop));
-        }, () => banner(crop));
+        // one word, the banner with its 取り消す (world kana), even if the names never load (then the start's own name)
+        const banner = (name: string) => undoBanner(t('world.farm.planted', { name, n, mine: mine + n, cap: FARM.cap }), res);
+        void loadNames().then(() => banner(cropName(crop)), () => banner(t(`farm.start.${crop}`)));
         return true;
       }
       case 'pick': {
@@ -546,13 +543,13 @@
             spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
             fx3d('swing', px, pz, 0, { v: 'shovel' });
             sceneSfx('dig');
-            undoBanner(t('farm.dug', { name: cropName(c) }), res);
+            undoBanner(t('world.farm.dug', { name: cropName(c) }), res);
           } : undefined;
           named(() => {
             const name = cropName(c);
             // (thanks only for help: its owner watering their own plant is no 「…が みずを やってくれた」 to the partner)
             pop(act.by && act.by !== m.me && act.by !== act.who ? t('world.farm.wateredBy', { who: whoName(act.by) })
-              : n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, n })
+              : n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, k: act.watered ? FARM.maxYield : 1 })
               : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name }), digUp);
           });
         }

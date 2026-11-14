@@ -73,7 +73,10 @@ income, 2026-11-14). The levers, if the live numbers drift (`npm run logs`, the 
   3. my ripe plants there harvested (a miss forgiven);
   4. P my empty plot (never the can): at the cap 「もう 40かぶ うえてる」; else my empty plots there planted, P first,
      then the nearest, up to what I hold and the cap, with 取り消す (「トマトを 9かぶ うえた（31/40）」);
-  5. a word (「うめが みずを やってくれた」), with ほる on my own plant.
+  5. a word (「ニンジン・あした 3こ」, 「うめが みずを やってくれた」), with ほる (the quiet cream button) on my own plant.
+
+  Planting says it once, on the 取り消す banner in world kana; a watering's word says what it earns
+  (「みずやり・あした 3こ」); the shop's 苗 has the rule in one line (rain and anyone's watering count).
 
   So on a mixed 3 × 3 a tap on my empty plot harvests first, the next plants. A harvest is one pop a tap (a semitone up
   a tap in a row), a sparkle a plant, one plate per crop counting up.

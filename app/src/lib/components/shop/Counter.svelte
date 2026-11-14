@@ -428,6 +428,7 @@
           body: () => fillStart(c), step: (by) => stepStart(c, by), hold: (e) => holdStart(e, c) })}
       {/each}
     </ul>
+    <p class="note rule" data-shop-farm-rule><Phrases text={t('shop.startsRule')} /></p>
     {#if off.length}
       <!-- my plants a moved field left behind (docs/farming.md "Playing"): back to starts, with 取り消す -->
       <div class="off" data-shop-orphans={off.length}>
@@ -495,6 +496,7 @@
   .sec .sec-label { margin: 0; flex: 1 1 auto; }
   .group { flex: none; }
   .note { font: 600 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  .rule { margin: 8px 4px 0; line-height: 1.4; }
   /* うる's rows: 56 high, an inset stitch between; picked: yuzu */
   .rows { flex: none; list-style: none; margin: 0; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
   .row { display: flex; align-items: center; min-height: 56px; padding-right: 6px; }
