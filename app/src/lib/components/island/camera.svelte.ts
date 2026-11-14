@@ -272,9 +272,11 @@ export class World {
   private dirty = new Set<Node>();
   /** The body nodes whose model isn't built yet (placeBody: their box meanwhile). */
   private unshaped = new Set<Node>();
-  private moving = 0;
-  /** What kept the last step going (perf.rest): someone walking in view (the scene's hook), a node moving (moveStart). */
-  going: 'walk' | 'nodes' | null = null;
+  /** The moves on (moveStart), each by its tag. */
+  private moving: string[] = [];
+  /** What kept the last step going (perf.rest): someone walking in view (the scene's hook), a node moving (moveStart:
+   *  `nodes:` the latest move's tag, perf.rest's nd1). */
+  going: 'walk' | `nodes:${string}` | null = null;
   private lastCam = NaN;
   private win: [number, number] = [-Infinity, Infinity];
   private hook: ((ts: number) => boolean | 'ambient') | null = null;
@@ -572,8 +574,8 @@ export class World {
       for (const n of this.unshaped) this.placeNode(n);
     }
     this.perf.nodes = this.nodes.size;
-    const going = more === true || this.moving > 0;
-    this.going = more === true ? 'walk' : this.moving > 0 ? 'nodes' : null;
+    const going = more === true || this.moving.length > 0;
+    this.going = more === true ? 'walk' : this.moving.length ? `nodes:${this.moving.at(-1)}` : null;
     // (someone walking off screen: the ambience's frames, the game clock stepping it between them, its tap area and
     // its walking into view)
     this.simWants = going || more === 'ambient';
@@ -615,15 +617,15 @@ export class World {
     this.hook = fn;
   }
 
-  /** Something started moving: frames run until the returned stop is called. */
-  moveStart(): () => void {
-    this.moving++;
+  /** Something started moving (`tag`: what, perf.rest's nd1): frames run until the returned stop is called. */
+  moveStart(tag = 'other'): () => void {
+    this.moving.push(tag);
     this.kick();
     let done = false;
     return () => {
       if (done) return;
       done = true;
-      this.moving = Math.max(0, this.moving - 1);
+      this.moving.splice(this.moving.indexOf(tag), 1);
     };
   }
 

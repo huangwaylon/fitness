@@ -354,7 +354,7 @@
   function zapStart(from: VillagerActor, ago = 0, to: VillagerActor = from === 'mine' ? 'partner' : 'mine') {
     const left = ZAP_MS - ago;
     if (left <= 60) return;
-    const t0 = performance.now() - ago, n = (zap?.n ?? 0) + 1, stop = world.moveStart();
+    const t0 = performance.now() - ago, n = (zap?.n ?? 0) + 1, stop = world.moveStart('zap');
     const [x, z, h] = zapPos(t0, from, to);
     zap = { n, t0, from, to, in3d: fx3d('zap', x, z, h, { ms: left, follow: () => zapPos(t0, from, to) }) };
     life.later(() => {

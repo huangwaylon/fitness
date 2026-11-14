@@ -77,7 +77,7 @@ describe('the service worker registered late (swLate)', () => {
     expect(got2).toBe(false);
   });
 
-  it('a page it didn\'t control (a first launch) tells the active worker what it fetched (a worker\'s fetches too: warmToo), once claimed; a controlled one doesn\'t', async () => {
+  it('a page it didn\'t control (a first launch) tells the active worker what it fetched (a worker\'s fetches too: warmToo), once claimed; a controlled one doesn\'t; both timings buffers raised', async () => {
     const entries = [{ name: 'https://x/room/a.glb?v=1' }, { name: 'https://x/art/b.webp' }];
     vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: (t: string) => (t === 'resource' ? [...entries] : []) });
     const posts: ReturnType<typeof vi.fn>[] = [];
@@ -104,9 +104,10 @@ describe('the service worker registered late (swLate)', () => {
     await vi.advanceTimersByTimeAsync(30_000);
     expect(posts[1].mock.calls.at(-1)).toEqual([{ k: 'warm', urls: ['https://x/room/tex/p.ktx2p?e=1'] }]);
     expect(posts[0]).not.toHaveBeenCalled();
-    // (raised for the first launch, then back to the default with the used entries cleared, past perf.boot's watch)
-    expect(vi.mocked(performance.setResourceTimingBufferSize).mock.calls).toEqual([[1000], [250]]);
-    expect(performance.clearResourceTimings).toHaveBeenCalledTimes(1);
+    // (raised for either launch, a warm one's ~380 files past the default 250 too, then back to the default with the
+    // used entries cleared, past perf.boot's watch)
+    expect(vi.mocked(performance.setResourceTimingBufferSize).mock.calls).toEqual([[1000], [1000], [250], [250]]);
+    expect(performance.clearResourceTimings).toHaveBeenCalledTimes(2);
   });
 
   it('a first launch whose claim never comes is told anyway, CLAIM_WAIT_MS on', async () => {

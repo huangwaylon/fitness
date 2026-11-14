@@ -252,7 +252,7 @@
     // the partner already netted these (their catch came in while the nest fell), or the room refused the shake
     if (caught(world.day, id) || (old && caught(world.day, old)) || unshaken(shake)) return fadeNest(nestN);
     swarm = { n, id, old, shake, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < site.midX ? -1 : 1 };
-    stopFrames = w.moveStart();
+    stopFrames = w.moveStart('shake');
     const at = side === 'mine' ? undefined : ([x, z] as const);
     sceneSfx('buzz', at);
     if (side === 'mine') waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music

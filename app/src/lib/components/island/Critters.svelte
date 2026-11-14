@@ -118,7 +118,7 @@
   // the 3D float bobs, dips and plunges each frame (fishing3d.ts floatLift): frames at full rate while it's on the water
   const floatOut = $derived(!!line && line.phase !== 'flying');
   $effect(() => {
-    if (floatOut && w.rest.three) return w.moveStart();
+    if (floatOut && w.rest.three) return w.moveStart('float');
   });
   /** The bugs about (ambient life's two roaming ones, one out of a bush, from under the rock, off a villager), at
    *  most MAX_BUGS. */
@@ -525,7 +525,7 @@
   // (by kind: perf.rest says which keeps the island at the full rate)
   const fullTill: Record<CritKind, number> = { fish: 0, bug: 0, rear: 0 };
   const fullTimer: Partial<Record<CritKind, ReturnType<typeof setTimeout>>> = {};
-  const wake = () => w.moveStart()();
+  const wake = () => w.moveStart('crit')();
   function full3(kind: CritKind, ms: number) {
     const till = performance.now() + ms;
     if (till <= fullTill[kind]) return;

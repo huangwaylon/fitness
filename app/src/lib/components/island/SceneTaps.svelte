@@ -651,7 +651,7 @@
     drops = [...drops.slice(-1), { id, from: d.from, to, t0: performance.now(), ms: d.ms, art, m3: { key: art, id: `drop-${id}`, pitch: 0, size: GIFT_K } }];
     sceneSfx('present');
     // (frames while it falls)
-    later(w.moveStart(), d.ms + 100);
+    later(w.moveStart('present'), d.ms + 100);
     // landed: it lies there among the day's finds until it's picked up
     later(() => finds?.present(to[0], to[2], art, PRESENT_U), d.ms);
     later(() => (drops = drops.filter((q) => q.id !== id)), d.ms + 400);

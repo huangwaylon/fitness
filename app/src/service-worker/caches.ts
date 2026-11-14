@@ -544,11 +544,41 @@ export async function raceShell(own: Response, net: Promise<Response | null | un
 export const freshNow = (at: number | null, now = Date.now()): boolean => at !== null && now - at >= 0 && now - at < FRESH_MS;
 
 /** A shell's answer saying where it came from and the race's ms (Server-Timing `shell`: perf.boot's, world3d/boot.ts
- *  shellFrom). */
-export function marked({ res, from, ms }: Raced): Response {
+ *  shellFrom); with `at`, its fetch event's clock (ms since the epoch: `t0`, `desc` 1 when the worker had just started
+ *  for it), the page's `pre`: on WebKit the page's clock starts only once this answer is in. */
+export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolean }): Response {
   const headers = new Headers(res.headers);
   headers.append('Server-Timing', `shell;desc=${from};dur=${ms}`);
+  if (at) headers.append('Server-Timing', `t0;desc=${at.cold ? 1 : 0};dur=${at.t0}`);
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+/** The worker's own network fetches lately (perf.boot's `swNet`, `swRoom`, `swKB`: the page's resource timings read a
+ *  transfer size of 0 for every answer the worker gives, one it fetched too): when each started, a room file or not,
+ *  its bytes (its Content-Length, else its body's as read: Pages sends the models brotli'd, with none); the last
+ *  `keep`. The navigation preload isn't one (the browser's). */
+export function netLog(keep = 600) {
+  const rows: [t: number, room: boolean, bytes: number][] = [];
+  return {
+    track(res: Promise<Response>, url: string, t = Date.now()): Promise<Response> {
+      const row: [number, boolean, number] = [t, isRoomAsset(url), 0];
+      if (rows.push(row) > keep) rows.shift();
+      return res.then((r) => {
+        row[2] = Number(r.headers.get('content-length')) || 0;
+        // (a copy's chunks counted and dropped, to its end: a tee's branch read through never holds the other back)
+        const body = row[2] || !r.body || r.bodyUsed ? null : r.clone().body!.getReader();
+        if (body) void (async () => {
+          for (let c = await body.read(); !c.done; c = await body.read()) row[2] += c.value.byteLength;
+        })().catch(() => {});
+        return r;
+      });
+    },
+    since(t0: number): { swNet: number; swRoom: number; swKB: number } {
+      let n = 0, room = 0, b = 0;
+      for (const [t, r, x] of rows) if (t >= t0) (n++, (room += +r), (b += x));
+      return { swNet: n, swRoom: room, swKB: Math.round(b / 1024) };
+    }
+  };
 }
 
 /** Older shells' copy of a request, newest first (`keys` in creation order: caches.match would answer the oldest). */

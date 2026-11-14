@@ -177,8 +177,8 @@ export interface Things {
    *  find's or a weed's, which mirror() asks for only from the first frame; the phones' launches waited ~0.6 s past
    *  `loaded` for them, perf.boot lastM, review 2026-11-13 perf #3). Kept as any asked-for model is. */
   prefetch(names: Iterable<ModelName>): void;
-  /** The models in so far, in order, and when (performance.now), the first ARRIVALS a mount. */
-  arrivals(): readonly (readonly [string, number])[];
+  /** The models in so far, in order, when (performance.now) and their file, the first ARRIVALS a mount. */
+  arrivals(): readonly (readonly [string, number, string])[];
   /** A still model's instances, farthest first (by z, as built), drawn up to the last one `seen` (its box, three's
    *  space, unbent: engine.ts thingSeen); the nearer ones past it, out of view (behind the camera, under the screen's
    *  bottom), and their shadows, not drawn. One draw a model still. True when a count grew (the shadow map's due). */
@@ -298,8 +298,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   let pending = 0, disposed = false;
   /** The models in, in order, and when (performance.now: the launch's perf.boot, its last before the island stood
    *  whole); the first ARRIVALS a mount. */
-  const ins: [ModelName, number][] = [];
-  const arrived = (name: ModelName) => void (ins.length < ARRIVALS && ins.push([name, performance.now()]));
+  const ins: [ModelName, number, string][] = [];
+  const arrived = (name: ModelName, url: string) => void (ins.length < ARRIVALS && ins.push([name, performance.now(), url]));
   /** This mount's models (its own scene's for proc/; the shared loads' for the rest), and those in (on its GPU, once
    *  built: what its dispose lets go of). */
   const gltfs = new Map<ModelName, Promise<GLTF | null>>(), got = new Set<GLTF>();
@@ -316,7 +316,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       pending++;
       const url = urlOf(name);
       use(url);
-      p = load(url, name).then((g) => (pending--, arrived(name), (g = g && member(g, name)), g && got.add(g), g));
+      p = load(url, name).then((g) => (pending--, arrived(name, url), (g = g && member(g, name)), g && got.add(g), g));
       gltfs.set(name, p);
     }
     return p;

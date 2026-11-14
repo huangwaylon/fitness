@@ -41,13 +41,20 @@ export interface BootReport {
   fields: 'cache' | 'worker' | 'main';
   /** The service worker at the launch: controlling the page, not (yet), or none in this browser. */
   sw: 'ctl' | 'none' | 'no';
-  /** Every model came without the network (a cache: the service worker's, the browser's); `net`: how many did not. */
+  /** No model's resource timing has a transfer size; `net`: how many have one. Only what went past the worker: one
+   *  it answers reads 0 even when it fetched it (swNet below). */
   warm: boolean;
   net: number;
   /** The models that came in after `loaded` up to `shown`, and the last of them (its name: what the island waited
    *  for). */
   late?: number;
   lastM?: string;
+  /** That last one's fetch end (its file's resource timing: none for a room piece's) and its arrival in the scene (ms
+   *  since the navigation's start): a gap is the parse, the textures, the queue, not the network. */
+  lateF?: number;
+  lateA?: number;
+  /** The KTX2 textures transcoded by the report (ktx2.ts ktx2Stats.made: not read back from the texture cache). */
+  tx?: number;
   /** ms since the navigation's start when the record's model was first composed (week.svelte.ts dataAt; 0: not by
    *  the report): the farm's plots, the finds and the garden's crops are placed only from it. */
   data?: number;
@@ -61,24 +68,53 @@ export interface BootReport {
    *  not the worker's (a first visit, no worker). */
   shell?: 'net' | 'same' | 'skip' | 'cache';
   raceMs?: number;
+  /** ms from the worker's fetch event to the page's clock start (its Server-Timing `t0`; on WebKit the clock starts
+   *  once the worker answers, so its race and lookups are before every mark here; negative: inside the page's clock,
+   *  as on Chromium); the worker started for this navigation (`swCold`: its own start is before even that). */
+  pre?: number;
+  swCold?: boolean;
+  /** The worker's own network fetches from its fetch event to the report, of them room files, and their KB
+   *  (service-worker/caches.ts netLog: the page's transfer sizes read 0 for everything the worker answers, `net` above
+   *  only counts what went past it). */
+  swNet?: number;
+  swRoom?: number;
+  swKB?: number;
 }
 
-/** Of the models in (things.ts arrivals: name, time), those after `loaded` up to `shown`, and the last's name (at
- *  most 40 characters, the log's token). */
-export function lateModels(ins: readonly (readonly [string, number])[], loaded: number, shown: number): Pick<BootReport, 'late' | 'lastM'> {
-  let late = 0, lastM: string | undefined;
-  for (const [name, t] of ins)
-    if (t > loaded && t <= shown) (late++, (lastM = name.slice(0, 40)));
-  return lastM ? { late, lastM } : { late };
+/** A file's fetch end (ms since the navigation's start: its first resource timing), or undefined. */
+const fetchEnd = (url: string): number | undefined => (globalThis.performance?.getEntriesByName?.(url, 'resource')[0] as PerformanceResourceTiming | undefined)?.responseEnd || undefined;
+
+/** Of the models in (things.ts arrivals: name, time, file), those after `loaded` up to `shown`, and the last's name (at
+ *  most 40 characters, the log's token), its arrival and its file's fetch end. */
+export function lateModels(ins: readonly (readonly [string, number, string?])[], loaded: number, shown: number, end = fetchEnd): Pick<BootReport, 'late' | 'lastM' | 'lateF' | 'lateA'> {
+  let late = 0, last: (typeof ins)[number] | undefined;
+  for (const m of ins) if (m[1] > loaded && m[1] <= shown) (late++, (last = m));
+  if (!last) return { late };
+  const f = last[2] ? end(last[2]) : undefined;
+  return { late, lastM: last[0].slice(0, 40), lateA: Math.round(last[1]), ...(f ? { lateF: Math.round(f) } : {}) };
 }
 
 const SHELLS = ['net', 'same', 'skip', 'cache'] as const;
-/** Where the launch's page came from and the race's ms (the worker's Server-Timing `shell`: service-worker/caches.ts
- *  marked); {} when the worker didn't say. */
-export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? []): Pick<BootReport, 'shell' | 'raceMs'> {
-  const t = (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming?.find((x) => x.name === 'shell');
+/** Where the launch's page came from and the race's ms, and the page's clock start (`origin`: ms since the epoch) less
+ *  the worker's fetch event (the worker's Server-Timing `shell` and `t0`: service-worker/caches.ts marked); {} when the
+ *  worker didn't say. */
+export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? [], origin = globalThis.performance?.timeOrigin ?? 0): Pick<BootReport, 'shell' | 'raceMs' | 'pre' | 'swCold'> {
+  const st = (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming;
+  const t = st?.find((x) => x.name === 'shell'), t0 = st?.find((x) => x.name === 't0');
   const d = SHELLS.find((s) => s === t?.description);
-  return d ? { shell: d, raceMs: Math.round(t?.duration ?? 0) } : {};
+  if (!d) return {};
+  return { shell: d, raceMs: Math.round(t?.duration ?? 0), ...(t0?.duration ? { pre: Math.round(origin - t0.duration), swCold: t0.description === '1' } : {}) };
+}
+
+/** The worker's network fetches since `since` (ms since the epoch), asked of it (service-worker/index.ts `net`); {}
+ *  with no worker or no answer within a second (an older worker's). */
+export function swFetches(since: number, sw: ServiceWorker | null | undefined = globalThis.navigator?.serviceWorker?.controller): Promise<Pick<BootReport, 'swNet' | 'swRoom' | 'swKB'>> {
+  if (!sw) return Promise.resolve({});
+  return new Promise((done) => {
+    const ch = new MessageChannel(), timer = setTimeout(() => (ch.port1.close(), done({})), 1000);
+    ch.port1.onmessage = (e: MessageEvent) => (clearTimeout(timer), ch.port1.close(), done(e.data ?? {}));
+    sw.postMessage({ k: 'net', since }, [ch.port2]);
+  });
 }
 
 /** The service worker as the page was launched. */
@@ -164,7 +200,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'tx' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;
@@ -193,8 +229,12 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
-    report = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shellFrom() };
-    log('perf.boot', { ...report });
+    const shell = shellFrom(), base = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shell };
+    // (since the worker's fetch event: on WebKit before the page's clock)
+    void swFetches(performance.timeOrigin - Math.max(0, shell.pre ?? 0)).then((swn) => {
+      report = { ...base, ...swn };
+      log('perf.boot', { ...report });
+    });
   };
   document.addEventListener('visibilitychange', onVis);
   raf = requestAnimationFrame(loop);

@@ -32,9 +32,12 @@ export const releaseWorker = (): void => release();
 /** Starts the wait (once, at the app's start): `island`, whether this launch opens the island (ui-state/boot.ts). */
 export function registerLate(island: boolean, sw: ServiceWorkerContainer | undefined = globalThis.navigator?.serviceWorker): void {
   if (!sw) return;
-  // (a first launch's ~370 files: past the timings' default 250, the rest weren't listed)
+  // (a launch's ~380 files, a first one's or a warm one's: past the timings' default 250, the rest weren't listed,
+  // perf.boot's lateF and net among them)
+  performance.setResourceTimingBufferSize?.(1000);
   const fresh = !sw.controller;
-  if (fresh) performance.setResourceTimingBufferSize?.(1000);
+  // (a warm launch's let go the same way, nothing told: the worker has them)
+  if (!fresh) setTimeout(trimTimings, Math.max(0, TIMINGS_KEEP_MS - performance.now()));
   const wait = new Promise<void>((done) => {
     if (island) {
       void released.then(done);
@@ -63,14 +66,15 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
       tell();
       // (used: the ~0.3 MB of entries not kept for the page's life, the buffer back to its default; after perf.boot's
       // look at them, by world3d/boot.ts's 30 s watch)
-      setTimeout(() => {
-        tell();
-        performance.clearResourceTimings?.();
-        performance.setResourceTimingBufferSize?.(250);
-      }, Math.max(0, TIMINGS_KEEP_MS - performance.now()));
+      setTimeout(() => (tell(), trimTimings()), Math.max(0, TIMINGS_KEEP_MS - performance.now()));
     }
   }).catch(() => swallowed('sw.register'));
 }
+
+const trimTimings = () => {
+  performance.clearResourceTimings?.();
+  performance.setResourceTimingBufferSize?.(250);
+};
 
 /** The worker claims the page (`controllerchange`), or CLAIM_WAIT_MS passed (a claim that never comes: told anyway). */
 const CLAIM_WAIT_MS = 10_000;

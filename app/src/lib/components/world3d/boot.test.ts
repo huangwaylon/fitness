@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { cleanData } from '#lib/contract/log.ts';
-import { bootReport, createBootClock, lateModels, modelFetches, shellFrom, swState, watchBoot } from './boot.ts';
+import { bootReport, createBootClock, lateModels, modelFetches, shellFrom, swFetches, swState, watchBoot } from './boot.ts';
 
 describe('the launch clock (perf.boot)', () => {
   it('times the first frame, the models in, the island whole and the frames meanwhile', () => {
@@ -91,9 +91,11 @@ describe('the launch clock (perf.boot)', () => {
     expect(swState({ serviceWorker: { controller: {} } } as unknown as Navigator)).toBe('ctl');
   });
 
-  it('the models in after loaded up to shown, and the last by name', () => {
-    const ins = [['oak-fall', 300], ['finds/clam', 520], ['room:outdoor-a-very-long-catalogue-piece-name-x', 610], ['critters/bugs/ant', 900]] as const;
-    expect(lateModels(ins, 500, 700)).toEqual({ late: 2, lastM: 'room:outdoor-a-very-long-catalogue-piece' });
+  it('the models in after loaded up to shown, the last by name, its arrival and its file\'s fetch end', () => {
+    const ins = [['oak-fall', 300, 'u/oak'], ['finds/clam', 520.4, 'u/clam'], ['room:outdoor-a-very-long-catalogue-piece-name-x', 610.6, 'room:x'], ['critters/bugs/ant', 900, 'u/ant']] as const;
+    const end = (u: string) => ({ 'u/clam': 480.2, 'u/ant': 610 })[u];
+    expect(lateModels(ins, 500, 700, end), 'a room piece: no file timing').toEqual({ late: 2, lastM: 'room:outdoor-a-very-long-catalogue-piece', lateA: 611 });
+    expect(lateModels(ins, 500, 600, end)).toEqual({ late: 1, lastM: 'finds/clam', lateA: 520, lateF: 480 });
     expect(lateModels(ins, 950, 1000)).toEqual({ late: 0 });
   });
 
@@ -114,5 +116,27 @@ describe('where the launch\'s page came from (perf.boot shell)', () => {
     expect(shellFrom([])).toEqual({});
     expect(shellFrom(nav([{ name: 'shell', description: 'other' }]))).toEqual({});
     expect(cleanData('perf.boot', { shell: 'same', raceMs: 12 })).toEqual({ shell: 'same', raceMs: 12 });
+  });
+  it('the worker\'s fetch event\'s clock (`t0`): the page\'s clock start less it (`pre`), and whether the worker had just started', () => {
+    expect(shellFrom(nav([{ name: 'shell', description: 'same', duration: 40 }, { name: 't0', description: '1', duration: 1_000_000 }]), 1_000_212.6)).toEqual({ shell: 'same', raceMs: 40, pre: 213, swCold: true });
+    expect(shellFrom(nav([{ name: 'shell', description: 'skip' }, { name: 't0', description: '0', duration: 1_000_000 }]), 999_990)).toEqual({ shell: 'skip', raceMs: 0, pre: -10, swCold: false });
+    expect(shellFrom(nav([{ name: 'shell', description: 'skip' }]), 5), 'an older worker: no t0').toEqual({ shell: 'skip', raceMs: 0 });
+    const r = { pre: 213, swCold: true, swNet: 2, swRoom: 1, swKB: 40, tx: 3, lateF: 480, lateA: 520 };
+    expect(cleanData('perf.boot', r)).toEqual(r);
+  });
+  it('the worker\'s own network fetches, asked of it; {} with none, or none answering within a second', async () => {
+    vi.useFakeTimers();
+    try {
+      const sw = (answer: boolean) => ({ postMessage: vi.fn((d: unknown, [port]: MessagePort[]) => answer && port.postMessage({ swNet: 3, swRoom: 2, swKB: 90, d })) }) as unknown as ServiceWorker;
+      expect(await swFetches(5, null)).toEqual({});
+      const said = swFetches(5, sw(true));
+      await vi.advanceTimersByTimeAsync(10);
+      expect(await said).toEqual({ swNet: 3, swRoom: 2, swKB: 90, d: { k: 'net', since: 5 } });
+      const mute = swFetches(5, sw(false));
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(await mute).toEqual({});
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

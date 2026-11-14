@@ -57,7 +57,7 @@
         addFx(s, 'confetti');
         sceneSfx('balloon');
         // its node follows the villager for the popper's moment
-        const stop = w.moveStart();
+        const stop = w.moveStart('popper');
         moving.add(stop);
         later(() => {
           stop();

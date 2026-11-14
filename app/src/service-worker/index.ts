@@ -5,7 +5,14 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+
+/** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
+const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
+/** The worker's network fetches, each in its log (perf.boot's swNet: the page asks at its launch's end, `net` below):
+ *  every `fetch` in this file is this one. */
+const nets = netLog();
+const fetch: typeof self.fetch = (input, init) => nets.track(self.fetch(input, init), input instanceof Request ? input.url : String(input));
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -208,11 +215,12 @@ self.addEventListener('fetch', (event) => {
         if (hit) {
           // offline, or the boot watchdog's reload (app.html: a network page that didn't start), this shell at once;
           // the network named this build the deployed one lately: no race
-          if (!online || url.searchParams.get('shell') === 'cache') return marked({ res: hit, from: 'cache', ms: 0 });
-          if (freshNow(await freshAt())) return marked({ res: hit, from: 'skip', ms: 0 });
+          const at = { t0, cold: t0 - UP_AT < WORKER_COLD_MS };
+          if (!online || url.searchParams.get('shell') === 'cache') return marked({ res: hit, from: 'cache', ms: 0 }, at);
+          if (freshNow(await freshAt())) return marked({ res: hit, from: 'skip', ms: 0 }, at);
           const raced = await raceShell(hit, ask(), version, undefined, undefined, t0);
           if (raced.from !== 'cache') event.waitUntil(markFresh(raced.from === 'same'));
-          return marked(raced);
+          return marked(raced, at);
         }
         let timer: ReturnType<typeof setTimeout> | undefined;
         const late = new Promise<null>((r) => (timer = setTimeout(r, NAV_TIMEOUT_MS, null)));
@@ -382,7 +390,9 @@ async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
   kept.push((room ? roomUsed : artUsed)(u, await sizeOf(sized)));
 }
 self.addEventListener('message', (event) => {
-  const d = event.data as { k?: string; urls?: unknown } | null;
+  const d = event.data as { k?: string; urls?: unknown; since?: unknown } | null;
+  // the launch's end (world3d/boot.ts swFetches): this worker's network fetches since the page's start
+  if (d?.k === 'net') return void event.ports[0]?.postMessage(nets.since(Number(d.since) || 0));
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
   // a moment after a use, outside every event, bounded.ts)
   if (d?.k === 'flush') {

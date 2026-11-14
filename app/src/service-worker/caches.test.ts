@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { copyChunks, fetchKeep, SHELLS_KEPT, marked, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -920,6 +920,21 @@ describe('a launch races the network for the shell (raceShell)', () => {
     expect(res.headers.get('server-timing')).toBe('shell;desc=net;dur=183');
     expect(res.headers.get('content-security-policy')).toBe("script-src 'sha256-a'");
     expect(await res.text()).toBe('x');
+  });
+  it('marked: with the fetch event\'s clock, a t0 entry (the page\'s pre) and whether the worker had just started', () => {
+    const res = marked({ res: page('x'), from: 'skip', ms: 0 }, { t0: 1763150000123, cold: true });
+    expect(res.headers.get('server-timing')).toBe('shell;desc=skip;dur=0, t0;desc=1;dur=1763150000123');
+  });
+  it('netLog: the worker\'s network fetches since a time, its room files and KB (Content-Length, else the body read), the last `keep`', async () => {
+    const log = netLog(3);
+    await log.track(Promise.resolve(new Response('', { headers: { 'content-length': '2048' } })), 'https://x/room/world3d/a.glb', 100);
+    const chunked = await log.track(Promise.resolve(new Response('a'.repeat(3000))), 'https://x/_app/immutable/chunks/b.js', 200);
+    expect((await chunked.text()).length, 'the page\'s answer whole').toBe(3000);
+    await log.track(Promise.resolve(new Response('', { headers: { 'content-length': '1024' } })), 'https://x/room/c.ktx2', 300);
+    expect(log.since(150), 'no Content-Length: its body counted').toEqual({ swNet: 2, swRoom: 1, swKB: 4 });
+    expect(log.since(0)).toEqual({ swNet: 3, swRoom: 2, swKB: 6 });
+    await log.track(Promise.resolve(new Response('')), 'https://x/d', 400);
+    expect(log.since(0), 'the first gone past keep').toEqual({ swNet: 3, swRoom: 1, swKB: 4 });
   });
   it('fromOlder: the older shells\' copy newest first (caches.match answers the oldest: review 11-14 #3)', async () => {
     const store = new Map<string, Map<string, string>>([['island-shell-A', new Map([['/', 'A']])], ['island-shell-B', new Map([['/', 'B']])], ['island-shell-C', new Map([['/x', 'C']])], ['island-shell-D', new Map()]]);

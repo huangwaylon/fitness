@@ -71,6 +71,19 @@ describe('perf.rest', () => {
     expect(logged[1][1].s).toBe(5);
   });
 
+  it('a moving node\'s frames (the engine\'s `nodes:<tag>`) count as `nodes`, the tag that asked most its nd1', () => {
+    const s = sim(), { stats } = island(s);
+    const tagged = () => {
+      const r = stats();
+      return { ...r, fullWhy: { 'nodes:float': Math.floor(r.frames / 4), 'nodes:shake': Math.floor(r.frames / 12) } };
+    };
+    watchRest({ stats: tagged, ok: () => true }, s.clock);
+    s.run(10_000);
+    s.hide(true);
+    expect(logged[0][1]).toMatchObject({ why1: 'nodes', w1: 33, nd1: 'float', nw1: 25 });
+    expect(logged[0][1]).not.toHaveProperty('why2');
+  });
+
   it('less than 3 s of rest, a second with a touch in it, or under a sheet: nothing', () => {
     const s = sim(), { st, stats } = island(s);
     let ok = true;

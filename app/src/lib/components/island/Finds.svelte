@@ -163,7 +163,7 @@
       // (the wave's clock is the water's: world3d/water.ts waterU.uTime, the frames' time in s)
       wi = way ? { from: way.from, to: [x, z], t0: t + nextRunUp((t / 1000) % 3600, ...way.coast) * 1000, ms: washMs(way.dist) } : { from: [x, z], to: [x, z], t0: t, ms: 1200 };
       const ms = wi.ms;
-      later(() => later(w.moveStart(), ms + 100), wi.t0 - t);
+      later(() => later(w.moveStart('wash'), ms + 100), wi.t0 - t);
     }
     // only what lies there now kept (a shell comes every 60–120 s all day and the tide takes the oldest: ~1000 a day)
     if (washes.size >= 16) {

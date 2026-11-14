@@ -82,7 +82,7 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
     if (s >= MIN_S) {
       const st = o.stats(), per = (n: number) => Math.round((n / s) * 10) / 10;
       const pct = (n: number) => Math.round((n / Math.max(1, frames)) * 100);
-      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), sm: st.shadowSize, full: pct(full), ...top(why, pct), ...topFx(fx, pct), pts: st.slots, pm: st.pointMask });
+      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), sm: st.shadowSize, full: pct(full), ...top(why, pct), ...topFx(fx, pct), ...topNode(why, pct), pts: st.slots, pm: st.pointMask });
     }
     ms = frames = shadows = wk = full = 0;
     why = {};
@@ -116,13 +116,20 @@ function topFx(counts: Readonly<Record<string, number>>, pct: (n: number) => num
   return k ? { fx1: k, fw1: pct(v) } : {};
 }
 
+/** The moving node's tag that asked for the most of `nodes`' full-rate frames (`nd1`: the engine's `nodes:<tag>`,
+ *  camera.svelte.ts moveStart) and its share of the frames (`nw1`). */
+function topNode(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
+  const [k, v] = Object.entries(counts).filter(([k]) => k.startsWith('nodes:')).sort((x, y) => y[1] - x[1])[0] ?? [];
+  return k ? { nd1: k.slice(6, 46), nw1: pct(v) } : {};
+}
+
 const WHY: readonly string[] = LOG_FULL_WHY;
 /** The three names that asked for the most full-rate frames (`why1`…, an unknown one `other`), and each's share
  *  (`w1`…). */
 function top(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
   const n = new Map<string, number>();
   for (const [k, d] of Object.entries(counts)) {
-    const name = WHY.includes(k) ? k : 'other';
+    const base = k.split(':')[0], name = WHY.includes(base) ? base : 'other';
     n.set(name, (n.get(name) ?? 0) + d);
   }
   const out: Record<string, string | number> = {};
