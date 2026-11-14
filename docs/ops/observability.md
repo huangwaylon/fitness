@@ -100,7 +100,8 @@ npm run logs -- --test ...                                 # the test relay
 **Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
 `hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came
 back (iOS froze it), the same as a reload under the player. **The launch race's cost:** `--event perf.boot`, `raceMs`
-by `shell` (`same` and `net` paid it, `skip` and `cache` didn't), and `first`/`shown` against the weeks before.
+(the network's page time) by `shell` (`same` and `net` raced, `skip` and `cache` didn't), and `first`/`shown` against the
+weeks before.
 
 
 ### Investigating (a checklist)

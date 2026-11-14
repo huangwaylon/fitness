@@ -23,10 +23,11 @@ const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor'
 const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'bots', 'farm', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
-/** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `world` `mirror` its scene's:
- *  Island3D; `crit-fish` a fish's dart, `crit-bug` a bug's move, `crit-rear` the tarantula rearing: Critters.svelte,
- *  `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
-export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'mirror', 'cards', 'fx', 'crit', 'crit-fish', 'crit-bug', 'crit-rear', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
+/** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `walk` (someone walking in view)
+ *  `nodes` (a node moving: camera.svelte.ts moveStart) `mirror` its scene's: Island3D, `world` the two as builds before
+ *  2026-11-14 sent them; `crit-fish` a fish's dart, `crit-bug` a bug's move, `crit-rear` the tarantula rearing:
+ *  Critters.svelte, `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
+export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'walk', 'nodes', 'mirror', 'cards', 'fx', 'crit', 'crit-fish', 'crit-bug', 'crit-rear', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
  *  `msg` / `stack` scrubbed text. */
@@ -66,16 +67,18 @@ export const LOG_EVENTS = {
   // loading; how many, and their wall ms from that step to the next; the steps' own frame ms all told; the models in
   // after loaded, and the last of them by name; `shell` where the page came from (the network within the worker's
   // race, or its cache: confirmed by the race, not raced, or the network late or offline) and `raceMs` the race's ms
-  // (`ask`, `held`: the launch's version ask and its hold, older builds)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n' } },
+  // from the navigation's fetch event; `garden` and `farm` what the first placing had (`ask`, `held`: the launch's
+  // version ask and its hold, older builds)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
   // second, and the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
   // map's size; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
-  // the point lights (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
+  // of `fx`'s, the flourish's kind that asked most (`fx1`, effects.ts FxKind) and its share (`fw1`); the point lights
+  // (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', pts: 'n', pm: 'b' } },
+  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', pts: 'n', pm: 'b' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
