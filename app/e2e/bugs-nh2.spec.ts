@@ -8,7 +8,7 @@ import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-type W3 = { modelAt(id: string, lift?: number): [number, number] | null; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
+type W3 = { modelAt(id: string, lift?: number): [number, number] | null; where(id: string): { x: number; y: number; z: number; hidden: boolean; scale: number } | null };
 type M = { stats(): { frames: number }; specimens(): { id: string; kind: string; tank: string; by: string }[] };
 
 async function open(page: Page, q: string) {
@@ -51,11 +51,12 @@ test('a dung beetle rolls its snowball before it over the winter lawn', async ({
     const w = (window as unknown as { __world3d: W3 }).__world3d;
     for (let n = 0; n < 60; n++) {
       const b = w.where(`bug-${n}`), s = w.where(`ball-${n}`);
-      if (b && s) return { gap: Math.hypot(s.x - b.x, s.z - b.z), hidden: s.hidden, up: s.y - b.y };
+      if (b && s) return { gap: Math.hypot(s.x - b.x, s.z - b.z), hidden: s.hidden, up: s.y - b.y, placed: b.scale > 0 && s.scale > 0 };
     }
     return null;
   });
-  await expect.poll(async () => (await pair())?.hidden, { timeout: 15_000 }).toBe(false);
+  // (placed: an instance not yet written by a frame reads as the origin, scale 0, both at once: the flake's gap 0)
+  await expect.poll(async () => ((p) => p && !p.hidden && p.placed)(await pair()), { timeout: 15_000 }).toBe(true);
   const p = (await pair())!;
   expect(p.gap).toBeGreaterThan(12);
   expect(p.gap).toBeLessThan(19);
