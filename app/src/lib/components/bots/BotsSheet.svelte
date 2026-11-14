@@ -21,7 +21,6 @@
   import { summaries, watch } from './summary.svelte.ts';
   import { shown } from '#lib/bots/types.ts';
   import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/bots.ts';
 
@@ -82,16 +81,11 @@
     if (tab === 'its' && itsLeave) itsLeave(go);
     else go();
   }
-
-  /** Closing ends its banner too. */
-  function closed() {
-    if (toasts.current) toasts.dismiss();
-  }
 </script>
 
 {#snippet mark(id: BotId)}<StatusDot tone={dots[id].tone} look={dots[id].look} stale={dots[id].stale} />{/snippet}
 
-<Sheet bind:this={sheet} bind:open tunes label={t('panel.bots')} variant="pop" onclose={closed} timed="bots">
+<Sheet bind:this={sheet} bind:open tunes label={t('panel.bots')} variant="pop" timed="bots">
   <div class="titlebar"><NavBar title={t('panel.bots')} onclose={() => (sheet ? sheet.guard(() => (open = false)) : (open = false))} sfx="self" /></div>
   <div class="bots-body" data-bots data-tab={tab} bind:this={body} id="bots-panel"
     role={tabs.length > 1 ? 'tabpanel' : undefined} aria-labelledby={tabs.length > 1 ? `bots-tab-${tab}` : undefined}>

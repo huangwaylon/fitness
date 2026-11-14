@@ -14,7 +14,7 @@ export type IntervalSec = (typeof INTERVALS_SEC)[number];
 export const MAX_DATES = 20;
 export const MAX_DAYS_AHEAD = 400;  // a date further than this from today (Tokyo) is refused
 const MAX_HOTELS = 80;       // per list (skip, priority)
-/** The allow-list's cap (`search`): every facility the site may offer, the roster and the seen names. @public (its/worker) */
+/** The allow-list's cap (`search`): every facility the site may offer, the roster and the seen names. */
 export const MAX_SEARCH = 200;
 /** @public (its/worker) */
 export const MAX_NAME = 80;         // a priority substring, in characters
