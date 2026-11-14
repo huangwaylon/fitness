@@ -41,11 +41,8 @@ function fillOf(row: DayRow): Fill {
 
 /** `12` · `18:30` (a clock time without its :00 and its leading zero). */
 const short = (c: Clock): string => (c.endsWith(':00') ? String(Number(c.slice(0, 2))) : `${Number(c.slice(0, 2))}:${c.slice(3)}`);
-/** `12–13`, `18:30–20`. */
 /** `12:00〜13:00`. */
 export const longRange = ([s, e]: readonly [Clock, Clock]): string => `${s}〜${e}`;
-
-/** `11/14（金）` / `Fri 11/14`: the editor's title, a change's day. */
 
 /** A ⏳ as words, as 📋 words it: `18:00` on its own day, `11/10（火）18:00` on an earlier one. */
 export const fromWords = (day: Day | null, when: number): string =>
@@ -71,7 +68,7 @@ function labelOf(row: DayRow, today: boolean): string {
   return parts.join(t('gym.cell.sep'));
 }
 
-/** A month's calendar (`YYYY-MM`: this month or next), Monday first (time/dates.ts monthWeeks, as 保養所's): a row's
+/** A month's calendar (`YYYY-MM`: this month or next), Monday first (contract/tokyo.ts monthWeeks, as 保養所's): a row's
  *  day a settable cell (a day the bot doesn't book yet too: its setting as any), the passed days and those past the
  *  rows faint, the other months' blank. */
 export function monthCells(rows: readonly DayRow[], month: string): Cell[][] {

@@ -97,7 +97,7 @@ export function addDates(d: Draft, dates: readonly string[], now: number): { dra
 }
 
 // ---- 日付's calendar: this month or next, a cell a night (ジム's calendar's look) ----
-/** A night's cell (time/dates.ts monthWeeks): `on` in the draft; `live` settable (this month's, from tonight, not too
+/** A night's cell (contract/tokyo.ts monthWeeks): `on` in the draft; `live` settable (this month's, from tonight, not too
  *  far; else faint or blank, inert); `mark` what a booking says of it (要対応 action, 仮押さえ · 申込中 hold, 予約確定
  *  booked); `label` for VoiceOver. */
 export interface NightCell extends MonthDay { today: boolean; live: boolean; on: boolean; mark: 'action' | 'hold' | 'booked' | null; label: string }

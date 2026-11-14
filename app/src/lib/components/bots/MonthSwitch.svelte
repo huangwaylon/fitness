@@ -9,7 +9,7 @@
   interface Props {
     id: string;
     title: string;
-    /** `YYYY-MM` each (time/dates.ts twoMonths). */
+    /** `YYYY-MM` each (contract/tokyo.ts twoMonths). */
     months: readonly string[];
     value: string;
     /** The pills' data attribute (`data-gym-month`). */
