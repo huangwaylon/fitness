@@ -7,6 +7,7 @@
 // - **Nothing kept:** the audio and its text are never written anywhere (no Durable Object, R2, KV, log or console);
 //   they live for the request only. The log's `stt` event carries sizes, the time, the model and the outcome.
 // - The recogniser is never given the sentence the user was asked to say (no `initial_prompt`).
+import { readCapped } from './body.ts';
 import { bearerOf, corsOf, preflight } from './auth.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -39,27 +40,6 @@ function base64(b: Uint8Array): string {
   let s = '';
   for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode(...b.subarray(i, i + 0x8000));
   return btoa(s);
-}
-
-/** The body's bytes, read no further than `max` (a body without Content-Length, chunked, is cut off there: null). */
-async function readCapped(req: Request, max: number): Promise<Uint8Array | null> {
-  if (!req.body) return new Uint8Array(0);
-  const reader = req.body.getReader(), parts: Uint8Array[] = [];
-  let n = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    n += value.length;
-    if (n > max) {
-      void reader.cancel().catch(() => {});
-      return null;
-    }
-    parts.push(value);
-  }
-  const out = new Uint8Array(n);
-  let at = 0;
-  for (const p of parts) out.set(p, (at += p.length) - p.length);
-  return out;
 }
 
 const isWav = (b: Uint8Array): boolean => b.length > 44 && String.fromCharCode(...b.subarray(0, 4)) === 'RIFF' && String.fromCharCode(...b.subarray(8, 12)) === 'WAVE';

@@ -299,8 +299,8 @@ cd its/runner && ITS_WORKER_URL=http://127.0.0.1:8799 ITS_RUNNER_TOKEN=dev \
   ITS_BASE_URL=http://127.0.0.1:<FakeITS port> python3 main.py --remote --deadline $(( $(date +%s) + 600 ))
 ```
 
-The Worker imports `app/src/lib/its/contract.ts` and `relay/src/auth.ts`, so a checkout needs `its/`,
-`app/src/lib/its`, `app/src/lib/contract` and `relay/src/auth.ts`. A deploy keeps the record.
+The Worker imports `app/src/lib/its/contract.ts` and `relay/src/{auth,body}.ts`, so a checkout needs `its/`,
+`app/src/lib/its`, `app/src/lib/contract`, `relay/src/auth.ts` and `relay/src/body.ts`. A deploy keeps the record.
 
 ## Operations
 

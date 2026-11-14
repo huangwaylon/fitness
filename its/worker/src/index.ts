@@ -7,6 +7,7 @@
 import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../../relay/src/auth.ts';
 import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
 import { isRec } from '../../../app/src/lib/contract/guards.ts';
+import { jsonCapped, requestId } from '../../../relay/src/body.ts';
 import type { PushAnswer } from './bot.ts';
 import type { Env } from './env.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
@@ -21,6 +22,13 @@ const MEMBER_ROUTES: Record<string, string> = {
   [PUSH_ROUTES.subscribe]: 'POST', [PUSH_ROUTES.unsubscribe]: 'POST', [PUSH_ROUTES.test]: 'POST',
 };
 const RUNNER_ROUTES: Record<string, string> = { '/runner/config': 'GET', '/runner/claim': 'POST', '/runner/report': 'POST', '/runner/bookings': 'POST' };
+
+/** The body as JSON, at most LIMITS.body bytes (relay/src/body.ts), else a refusal. */
+const body = async (req: Request): Promise<unknown> => {
+  const b = await jsonCapped(req, LIMITS.body);
+  if (!b.ok) throw new Refused(b.why === 'too_large' ? 413 : 400, b.why);
+  return b.json;
+};
 
 class Refused extends Error {
   constructor(readonly status: number, readonly why: string) {
@@ -63,41 +71,10 @@ function refuse(req: Request, path: string, status: number, why: string, headers
   return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
 }
 
-/** The body as JSON, at most LIMITS.body bytes: refused by its Content-Length, or (without one, or a lying one) as soon
- *  as the stream passes the bound, never read whole first. */
-async function body(req: Request): Promise<unknown> {
-  if (Number(req.headers.get('Content-Length') ?? 0) > LIMITS.body) throw new Refused(413, 'too_large');
-  const chunks: Uint8Array[] = [];
-  let n = 0;
-  const reader = req.body?.getReader();
-  for (let r = await reader?.read(); r && !r.done; r = await reader!.read()) {
-    n += r.value.byteLength;
-    if (n > LIMITS.body) {
-      await reader!.cancel();
-      throw new Refused(413, 'too_large');
-    }
-    chunks.push(r.value);
-  }
-  const buf = new Uint8Array(n);
-  chunks.reduce((at, c) => (buf.set(c, at), at + c.byteLength), 0);
-  try {
-    return JSON.parse(new TextDecoder().decode(buf));
-  } catch {
-    throw new Refused(400, 'not_json');
-  }
-}
-
-/** The page's request id: its X-Request-Id when shaped as an id (the contract's isId), else one made up (`w-` and 8 hex),
- *  never the header as sent. */
-const requestId = (req: Request): string => {
-  const sent = req.headers.get('X-Request-Id');
-  return isId(sent) ? sent : `w-${crypto.randomUUID().slice(0, 8)}`;
-};
-
 /** The page's routes: a member's key (KEY_A, KEY_B: the guest's is never set here, so it's refused like any other). */
 async function member(req: Request, env: Env, path: string): Promise<Response> {
   const origin = req.headers.get('Origin');
-  const rid = requestId(req);
+  const rid = requestId(req, isId);
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
   if (!cors) return refuse(req, path, 403, 'origin', { 'X-Request-Id': rid }, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))} rid=${rid}`);
   const method = MEMBER_ROUTES[path];

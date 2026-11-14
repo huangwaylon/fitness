@@ -4,6 +4,7 @@
 // 'off', the stop switch, answers LINE but ignores its events, and refuses the app's acts (503 mode_off).
 import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../relay/src/auth.ts';
 import { ACT_MAX_BYTES, ACT_STATUS, type ActError } from '../../app/src/lib/gym/contract.ts';
+import { jsonCapped, requestId } from '../../relay/src/body.ts';
 import type { Env } from './env.ts';
 import { signatureOk } from './line.ts';
 import type { GymStatus } from './status.ts';
@@ -95,13 +96,6 @@ async function config(req: Request, env: Env): Promise<Response> {
   return Response.json(answer, { headers: { ...cors, 'Cache-Control': 'private, no-store' } });
 }
 
-/** The app's request id: its X-Request-Id when it is a short token, else one made up (`w-` and 8 hex), never the
- *  header as sent (it goes in the log). */
-const requestId = (req: Request): string => {
-  const sent = req.headers.get('X-Request-Id');
-  return sent && /^[A-Za-z0-9_-]{1,40}$/.test(sent) ? sent : `w-${crypto.randomUUID().slice(0, 8)}`;
-};
-
 /** POST /gym/act (the contract's ActInput): a member's key from the app's origin, as /gym/config; a JSON body of at most
  *  ACT_MAX_BYTES, read as it streams; refused 503 `mode_off` unless MODE is 'bot' (the stop switch stops the app's
  *  changes too). The bot answers (actions.ts webAct: the config after it, or the refusal with LINE's hint and its
@@ -109,7 +103,7 @@ const requestId = (req: Request): string => {
  *  echoed. A refusal here logs one line (refusal, with `rid=`); the bot's refusals log in webAct. */
 async function act(req: Request, env: Env): Promise<Response> {
   const origin = req.headers.get('Origin');
-  const rid = requestId(req);
+  const rid = requestId(req, (x) => !!x && /^[A-Za-z0-9_-]{1,40}$/.test(x));
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
   const refuse = (error: ActError, headers: Record<string, string>, extra = '') => refusal('act', error, headers, `${extra} rid=${rid}`);
   if (!cors) return refuse('origin', {}, originNote(origin));
@@ -119,9 +113,9 @@ async function act(req: Request, env: Env): Promise<Response> {
   const who = memberOf(req, env);
   if (!who) return refuse(env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', base);
   if (env.MODE !== 'bot') return refuse('mode_off', base, ` by=${who}`);
-  const json = await body(req);
-  if (json === TOO_LARGE) return refuse('too_large', base, ` by=${who}`);
-  if (json === NOT_JSON) return refuse('not_json', base, ` by=${who}`);
+  const b = await jsonCapped(req, ACT_MAX_BYTES);
+  if (!b.ok) return refuse(b.why, base, ` by=${who}`);
+  const json = b.json;
   let r;
   try {
     r = await bot(env).act(json, who, rid);
@@ -132,33 +126,6 @@ async function act(req: Request, env: Env): Promise<Response> {
   const headers: Record<string, string> = { ...base, 'Cache-Control': 'private, no-store' };
   if (r.retryAfter) headers['Retry-After'] = String(r.retryAfter);
   return Response.json(r.body, { status: r.status, headers });
-}
-
-const TOO_LARGE = Symbol('too large');
-const NOT_JSON = Symbol('not JSON');
-
-/** The body as JSON, at most ACT_MAX_BYTES: refused by its Content-Length, or (without one, or a lying one) as soon as
- *  the stream passes the bound, never read whole first. */
-async function body(req: Request): Promise<unknown> {
-  if (Number(req.headers.get('Content-Length') ?? 0) > ACT_MAX_BYTES) return TOO_LARGE;
-  const chunks: Uint8Array[] = [];
-  let n = 0;
-  const reader = req.body?.getReader();
-  for (let r = await reader?.read(); r && !r.done; r = await reader!.read()) {
-    n += r.value.byteLength;
-    if (n > ACT_MAX_BYTES) {
-      await reader!.cancel();
-      return TOO_LARGE;
-    }
-    chunks.push(r.value);
-  }
-  const buf = new Uint8Array(n);
-  chunks.reduce((at, c) => (buf.set(c, at), at + c.byteLength), 0);
-  try {
-    return JSON.parse(new TextDecoder().decode(buf));
-  } catch {
-    return NOT_JSON;
-  }
 }
 
 /** LINE's webhook: answered 200 at once (LINE retries or gives up on a slow one), the events handled after. */

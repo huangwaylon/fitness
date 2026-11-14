@@ -11,6 +11,7 @@ on:
       - 'app/src/lib/gym/contract.ts'
       - 'app/src/lib/types.ts'
       - 'relay/src/auth.ts'
+      - 'relay/src/body.ts'
       - '.github/workflows/gym.yml'
   pull_request:
     paths:
@@ -19,6 +20,7 @@ on:
       - 'app/src/lib/gym/contract.ts'
       - 'app/src/lib/types.ts'
       - 'relay/src/auth.ts'
+      - 'relay/src/body.ts'
       - '.github/workflows/gym.yml'
   workflow_dispatch:
 
@@ -36,7 +38,7 @@ jobs:
         with:
           persist-credentials: false
           # /gym/config checks the members' keys with relay/src/auth.ts (which imports app/src/lib/contract, and that
-          # lib/types.ts), and shares lib/gym/contract.ts with the app; nothing else of the repo is needed (app/static's
+          # lib/types.ts), reads bodies with relay/src/body.ts, and shares lib/gym/contract.ts with the app; nothing else of the repo is needed (app/static's
           # 521 MB above all). Files in the list, so not cone mode.
           sparse-checkout-cone-mode: false
           sparse-checkout: |
@@ -45,6 +47,7 @@ jobs:
             /app/src/lib/types.ts
             /app/src/lib/gym/contract.ts
             /relay/src/auth.ts
+            /relay/src/body.ts
             /.github/workflows/
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
