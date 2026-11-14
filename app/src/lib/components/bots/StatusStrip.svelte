@@ -3,10 +3,10 @@
   // legend of the states it can show, the cells (lib/strip.ts: drawn 24 high in a 44 hit; ok green, avail green full
   // height, warn yellow capped in ink, fail coral hatched, none a low tick: never colour alone), the times under them,
   // and one line: the summary (確認46回 · 失敗1 · 空き3), the picked cell's once one is tapped. Nothing kept (every cell
-  // none): `empty` as a warning in the cells' place (保養所 running), else the page leaves the card out. One labelled
-  // group, a tab stop (the picked cell, else the newest): a tap anywhere picks the cell under it (≤ 72 cells are
-  // narrower than a finger), ← → Home End walk them; VoiceOver reads `summary`, each cell its line. `attr`: the page's
-  // data-* prefix (data-its-strip, data-its-cell, …).
+  // none): `empty` as a warning in the cells' place (保養所 running), else the page leaves the card out. The cells are
+  // drawn only: one hit layer the strip's full height (44), a slider and one tab stop: a tap or a drag picks the cell
+  // nearest the finger's x (≤ 72 cells are narrower than a finger), ← → Home End walk them; VoiceOver reads `summary`,
+  // then the picked cell's line. `attr`: the page's data-* prefix (data-its-strip, data-its-cell, …).
   import { cue } from '#lib/sound/cues.ts';
   import type { CellState, StripCell, StripTick } from '#lib/strip.ts';
 
@@ -33,17 +33,20 @@
   const blank = $derived(!cells.some((c) => c.state !== 'none'));
   const data = (k: string, v: string | number | boolean = '') => ({ [`data-${attr}-${k}`]: v });
 
-  function focusCell(i: number, preventScroll = false) {
-    strip?.querySelectorAll<HTMLElement>('.cell')[i]?.focus({ preventScroll });
-  }
-
-  /** A tap anywhere on the strip picks the cell under it. */
+  let dragging = false;
+  /** The cell nearest the pointer's x (a tick when it changes). */
   function pickAt(e: PointerEvent) {
     if (!strip || !n) return;
     const r = strip.getBoundingClientRect();
-    picked = Math.min(n - 1, Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * n)));
-    cue('tick');
-    focusCell(picked, true);
+    const i = Math.min(n - 1, Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * n)));
+    if (i !== picked) cue('tick');
+    picked = i;
+  }
+  function down(e: PointerEvent) {
+    dragging = true;
+    strip?.setPointerCapture?.(e.pointerId);
+    strip?.focus({ preventScroll: true });
+    pickAt(e);
     e.preventDefault();
   }
 
@@ -52,7 +55,6 @@
     if (!step) return;
     e.preventDefault();
     picked = Math.min(n - 1, Math.max(0, (picked ?? n - 1) + step));
-    focusCell(picked);
   }
 
   /** A time at the edge kept inside the strip (left- or right-aligned to its cell). */
@@ -68,11 +70,10 @@
   {#if blank && empty}
     <p class="sline warn" role="status" {...data('empty')}>{empty}</p>
   {:else}
-    <div class="strip" role="toolbar" tabindex="-1" aria-label={summary} bind:this={strip} onpointerdown={pickAt} onkeydown={onkey} {...data('strip')}>
-      {#each cells as c, i (c.start)}
-        <button type="button" class="cell {c.state}" class:on={picked === i} tabindex={i === (picked ?? n - 1) ? 0 : -1} aria-label={c.label}
-          aria-pressed={picked === i} {...data('cell', c.state)} data-sfx="none" onclick={() => (picked = i)}></button>
-      {/each}
+    <div class="strip" role="slider" tabindex="0" aria-label={summary} aria-valuemin={0} aria-valuemax={n - 1} aria-valuenow={picked ?? n - 1}
+      aria-valuetext={cells[picked ?? n - 1]?.label} bind:this={strip} onkeydown={onkey} onpointerdown={down}
+      onpointermove={(e) => dragging && pickAt(e)} onpointerup={() => (dragging = false)} onpointercancel={() => (dragging = false)} {...data('strip')}>
+      {#each cells as c, i (c.start)}<i class="cell {c.state}" class:on={picked === i} data-on={picked === i || undefined} {...data('cell', c.state)}></i>{/each}
     </div>
     <div class="ticks" aria-hidden="true">{#each ticks as k (k.i)}<span style:left="{((k.i + 0.5) / n) * 100}%" style:translate={edge(k.i)}>{k.label}</span>{/each}</div>
     <p class="sline" aria-live="polite" {...data('scan-line')}>{picked === null || !cells[picked] ? line : cells[picked].label}</p>
@@ -89,8 +90,9 @@
   .legend .cell { display: inline-block; width: 8px; height: 12px; flex: none; }
   .legend .cell.ok { height: 8px; }
   .legend .cell.none { height: 3px; align-self: flex-end; margin-bottom: 3px; }
-  .strip { display: flex; align-items: flex-end; gap: 1px; height: var(--hit); padding: 10px 0; touch-action: pan-y; cursor: pointer; }
-  .strip .cell { appearance: none; border: 0; padding: 0; flex: 1 1 0; min-width: 0; height: 60%; cursor: pointer; }
+  .strip { display: flex; align-items: flex-end; gap: 1px; height: var(--hit); padding: 10px 0; touch-action: pan-y; cursor: pointer; outline: none; border-radius: 4px; }
+  .strip:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .strip .cell { flex: 1 1 0; min-width: 0; height: 60%; }
   .cell { border-radius: 2px; box-shadow: inset 0 0 0 1px var(--edge); background: var(--ctl-off); }
   .cell.ok, .cell.avail { background: var(--c-leaf); }
   .strip .cell.avail, .strip .cell.warn, .strip .cell.fail { height: 100%; }
@@ -99,7 +101,6 @@
   .strip .cell.none { height: 4px; }
   .cell.none { box-shadow: none; background: color-mix(in srgb, var(--edge) 35%, var(--ctl-off)); }
   .strip .cell.on { outline: 2px solid var(--text); outline-offset: 1px; }
-  .strip .cell:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
   .ticks { position: relative; height: 1.3em; font: 700 var(--fs-s)/1.3 var(--font-num); color: var(--text-soft); }
   .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
   .sline { margin: 2px 0 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }

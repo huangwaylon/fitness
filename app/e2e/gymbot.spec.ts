@@ -107,6 +107,15 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:39 手動 · トレーニング○ ピラティス○ · 空き1');
   await page.keyboard.press('ArrowLeft');
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:24 · チェックする日なし');
+  // one hit layer the strip's height (no per-cell buttons): a drag picks the cell under the finger as it goes
+  const box = (await strip.boundingBox())!;
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await expect(strip.getByRole('button')).toHaveCount(0);
+  await page.mouse.move(box.x + 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width - 2, box.y + box.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:54 · トレーニング○ ピラティス✕（タイムアウト） · 空き1');
   // くわしく: the last success, LINE's count, the mode in words, the version
   await expect(gym.locator('[data-gym-fact="line"]')).toHaveCount(0);
   await gym.locator('[data-gym-more] summary').click();

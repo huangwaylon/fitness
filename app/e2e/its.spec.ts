@@ -639,7 +639,7 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour', 
   const cell = strip.locator('[data-its-cell="fail"]');
   await cell.click();
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 1回 · 失敗1（timeout）$/);
-  await expect(cell).toHaveAttribute('aria-pressed', 'true');
+  await expect(cell).toHaveAttribute('data-on', 'true');
   // ← walks to the minute before
   await page.keyboard.press('ArrowLeft');
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/ · 確認なし$/);
