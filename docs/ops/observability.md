@@ -31,50 +31,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `d` | the payload: **only the registry's fields for that event, each of its kind** (a number, a boolean, a closed set, a short token never 16+ letters and digits in a row; `js.error`'s scrubbed `msg` and `stack`), enforced by the relay |
 
 ### What we log
-Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`); in short:
-
-| Event | Level | Fields | When |
-|---|---|---|---|
-| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill, or a swipe closed, when short), `vis` (the page hidden or shown as it loaded), `hr`/`hrS` (the load is the app's own reload at a hide, a deploy taken out of sight, that many s after it) | each load |
-| `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
-| `app.show` | info | `awayS`, `route` | shown again |
-| `app.reload` | info | `why` (update: a deploy taken as the app hid; launch: older builds only; chunk; stale: a build this one can't work with, version.json `compat`; mic; other) | the app reloads itself |
-| `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
-| `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (300 ms quiet after opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | the launch's marks (`mount` → `shown`, `data`), its longest frames and steps by what held them, `fields`, `sw`, `warm`, `net`, `shell` (`net` a deploy's page from the network, `same` the cache confirmed by the race, `skip` the cache with no race, `cache` the network late or offline), `raceMs` (the race's ms: its cost; `ask`/`held`: older builds) (world3d/boot.ts BootReport; the registry has them all) | once a load, 1 s after the island is whole (world3d/boot.ts) |
-| `perf.back` | info | `perf.boot`'s marks (but `draw`) for the first return from a room | once a load (world3d/boot.ts) |
-| `perf.rest` | info | the rest since the last show (every second 2 s+ untouched): `s`, `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (point lights, their mask: on unless `?pointmask=0`) | at each hide, or the island going, with 3 s+ of rest (world3d/rest.ts) |
-| `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src` (`file:line`, or the catcher's tag: `live`, `world`, `synced.<store>`, `bus.<event>`, `snapshot`), `n` (folded repeats), `leaving`, `route`, `sheet` | `error`, `unhandledrejection`, a caught bug (quiet.ts); ≤ 5 a message a session; an import cut off by leaving or by a `chunk.fail`: `swallow:import.*` |
-| `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`, `sheet` (fail); `r` | a `/api` call |
-| `keyed.fail` | info unreached / warn | `ep` (stt, gym, other), `why` (refused, failed, unreached, timeout), `http`, `n` (its repeats folded), `sheet` | a members-only call failed (keyed.ts), once an incident |
-| `its.fail` | info offline, rate_limited, not_subscribed / warn | `op` (status, settings, run, push_subscribe, push_unsubscribe, push_test), `err` (the its-bot Worker's error code, or offline, timeout, json, no_key), `rid`, `http`, `ms` | a ボット → 保養所 call failed (lib/its/client.ts) |
-| `gym.fail` | info offline or an expected refusal / warn | `op` (status, act), `err` (the gym bot's code: stale, cooldown, …; or offline, timeout, http, json, no_key), `rid` (`act` only: a public /status takes no header of ours), `http`, `ms` | a read of /status (lib/gym/status.ts) or a POST /gym/act (lib/gym/config.ts) failed; /gym/config is `keyed.fail` `gym` |
-| `kalori.fail` | info offline / warn | `op` (status), `err` (offline, http, json), `http`, `ms` | a read of ボット's メニュー status.json (raw.githubusercontent.com, lib/kalori/status.ts) failed |
-| `its.push` | warn | `step` (permission, ready, subscribe, unsubscribe), `err` (the error's name) | 保養所's 通知 failed in the browser (lib/its/push.ts; never the endpoint) |
-| `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
-| `sync.fail` | info offline / warn | `err`, `cached`, `sheet` | a refresh failed (what threw: a `js.error` from `snapshot`) |
-| `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
-| `queue.poison` / `queue.split` | error / warn | `type`, `err`, `tries` / `n`, `err` | the write queue sets an event aside (kept: [backend](../backend.md#write-queue)) / halves a batch refused whole |
-| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why` (hidden, offline, stale, late/stuck, rekey, stop, closed), `quiet`, `rtt`, and once welcomed `v` (its hello's protocol: which phone speaks what), `openMs`, `retries`; `code` | a welcome after failed tries (a first try's says it on its close), every socket's end |
-| `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
-| `gl.lost` | warn | `where` (island, tent, shop, museum, map), `restored`, `sheet` | WebGL context lost / back |
-| `chunk.fail` | warn | `file` (the chunk's base name: Chrome's error names it, Safari's doesn't), `n` (its repeats folded), `sheet` | a chunk failed to load, once an incident (not while the page is leaving: pagehide, the app's own reload) |
-| `storage.fail` | warn | `store`, `kind` | storage refused a write |
-| `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
-| `storage.use` | info | `useMb`, `quotaMb`, `persisted`; each cache's MB (`shell`, `room`, `listen`, `art`, `photos`, `tiles`, `foodImg`, `food`, `fonts`, `audio`, `other`) and `stt` (the recogniser kept: sync/cacheSizes.ts) | once a Tokyo day, after a sync (sync/persist.ts) |
-| `use` | info | counters `sheet:<id>` (a stable id: the sheet's `timed` or `name`, never its title), `route:`, `act:`, `swallow:<tag>` (a failure the app went on without: quiet.ts; e.g. `model.load`, `map.error`, `kiki.chunk`, `food.load` / `food.gaveup`) | summed, one a flush |
-| `log.drop` | warn | `n` (events), `why` (cap, full, day, pending) | the phone's log dropped events |
-| `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets ([kikimimi-mic.md](../kikimimi-mic.md) "The probe"). **Never heard text, a device label or a sentence** | 設定's mic test, on its send |
-| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st`, `ms`, `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule), ingest's counts, `pg`, `rw`, `rr`, `exc`, `kh` (a refused key's first 4 hex of its SHA-256; its `action`, `rid`, `sid` read from the body: which caller) | every `/api` request |
-| `room.close` / `room.full` | info / warn | `code` (`CLOSE.replaced`: a hello replaced the device's old socket), `secs`, `socks`, `rw` (the room's storage rows written since it last said; kept with its `marks`) | the live room |
-| `do.error` (relay) | error | `where` (ws.message, backup, compact), `name` (the class), `msg` | a Durable Object call that threw, caught |
-| `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor, pack) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
-| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `fails` (since the last good one), `ms` | a failed weather fetch; the weather's health once a Tokyo day (00:15) |
-| `cron.backup` | info; warn `no_token`; error failed | `ok`, `st` (ok, no_token, empty, github, epoch, an error's class), `step`, `http`, `kB` (the file), `rawkB` (the dump before gzip), row counts, ms per step, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)) |
-| `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (off: COMPACT_CRON) |
-| `admin` | info; warn refused | `op`, `st` | each signed admin op that changes or exports (an audit); a read (`logs`, `logstats`, `counts`, `held`, a check without `fix`) only when it fails |
-| `log.cap` | warn | `bucket` | a day's cap reached (once) |
-| `stt` (relay) | info; warn refused or failed | `ms`, `inB` (the WAV's bytes), `model` (turbo), `ok`, `err` (off, too_large, bad_request, capped, ai) | each keyed `POST /stt` (sttRoute.ts): never the audio or its text |
+Every event, its level, fields, kinds and when it is logged: the registry, `app/src/lib/contract/log.ts` `LOG_EVENTS`.
 
 ### Naming and levels
 - Names are `area.verb` / `area.noun` (app, perf, api, sync, queue, ws, gl, chunk, storage, mic, log, cron, room, admin,
