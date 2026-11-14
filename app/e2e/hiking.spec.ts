@@ -126,7 +126,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   const view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
   await expect(view).toBeVisible();
   const plan = view.locator('[data-plan]');
-  await expect(plan.locator('.date')).toHaveText('2026年6月27日(土)');
+  await expect(plan.locator('.date')).toHaveText('2026年6月27日（土）');
   await expect(plan.locator('.head .lbl')).toHaveText('山行日'); // gone by on Nov 4: not 山行予定
   await expect(plan.locator('[data-plan-actual]')).toHaveText('実際'); // its figures the hike's, not the trail's
   await expect(plan.locator('[data-stop]')).toHaveCount(11);
@@ -149,7 +149,7 @@ test("a trail walked on YAMAP: its Commons photo on the card, the record's rows 
   await expect(card.locator('.stats')).toContainText('約5時間');
   await card.locator('.hit').click();
   const view = sheet(page).locator('[data-trail-view="akagi-kurobi"]');
-  await expect(view.locator('[data-walked] dd')).toHaveText('2026年11月7日(土)');
+  await expect(view.locator('[data-walked] dd')).toHaveText('2026年11月7日（土）');
   await expect(view.locator('.facts')).toContainText('568 m ／ 569 m');
   await expect(view.locator('.facts')).toContainText('3時間37分');
   await expect(view.locator('.attrib')).toHaveText(

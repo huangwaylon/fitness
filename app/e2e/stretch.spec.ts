@@ -99,7 +99,7 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
   await expect(sheet(page).locator('.panel-body')).toBeVisible();
   await sheet(page).locator('[data-ledger]').scrollIntoViewIfNeeded();
   const day = sheet(page).locator('li.day:not(.head)').first();
-  await expect(day.locator('.dt')).toHaveText('12/7(月)');
+  await expect(day.locator('.dt')).toHaveText('12/7（月）');
   await expect(day.locator('.gbk')).toHaveText('がんばり');
   await expect(day.locator('.gbv[data-person=B]')).toHaveText(/^\+2\sベル/);
   await expect(day.locator('.gbv[data-person=A]')).toHaveText('');
@@ -107,7 +107,7 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
   await expect(day.locator('.own[data-person=A]')).toHaveAttribute('data-bells', '5');
   await expect(day.locator('.own[data-person=B]')).toHaveAttribute('data-bells', '7');
   // a day without がんばり has no second line
-  const plain = sheet(page).locator('li.day:not(.head)').filter({ hasText: '12/5(土)' });
+  const plain = sheet(page).locator('li.day:not(.head)').filter({ hasText: '12/5（土）' });
   await expect(plain.locator('.gbk')).toHaveCount(0);
   if (process.env.SHOTS) await sheet(page).locator('.panel-body').screenshot({ path: `${process.env.SHOTS}/kiroku.png` });
   await day.locator('button.dbtn').click();

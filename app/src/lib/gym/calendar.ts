@@ -4,7 +4,7 @@
 // the end), the ⏳ dates and times allowed, the optimistic row after an act, the acts that undo one, and the select
 // mode's bulk act. The page (GymPage, GymCalendar, GymDayEditor) only draws them.
 import { t } from '#lib/i18n/index.ts';
-import { md, weekdayOf } from '#lib/i18n/format.ts';
+import { dayOfDate } from '#lib/i18n/when.ts';
 import '#lib/i18n/gym.ts';
 import {
   CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockOf, dayOf, fromLimit, fromRefusal, minutesOf,
@@ -25,7 +25,7 @@ export interface Cell {
   time: string | null;
   from: boolean;
   announced: number;
-  /** VoiceOver's words: `11月14日(金) 終日、⏳ 18:00から、通知済み2件`. */
+  /** VoiceOver's words: `11/14（金） 終日、⏳ 18:00から、通知済み2件`. */
   label: string;
 }
 
@@ -47,11 +47,10 @@ const shortRange = ([s, e]: readonly [Clock, Clock]): string => `${short(s)}–$
 export const longRange = ([s, e]: readonly [Clock, Clock]): string => `${s}〜${e}`;
 
 /** `11/14（金）` / `Fri 11/14`: the editor's title, a change's day. */
-export const dayTitle = (d: Day): string => t('gym.dayTitle', { md: md(d), wd: weekdayOf(d) });
 
 /** A ⏳ as words, as 📋 words it: `18:00` on its own day, `11/10（火）18:00` on an earlier one. */
 export const fromWords = (day: Day | null, when: number): string =>
-  day !== null && dayOf(when) === day ? clockOf(when) : t('gym.fromDay', { day: dayTitle(dayOf(when)), time: clockOf(when) });
+  day !== null && dayOf(when) === day ? clockOf(when) : t('gym.fromDay', { day: dayOfDate(dayOf(when)), time: clockOf(when) });
 
 /** A row's ⏳ as words (fromWords), if set. */
 export const fromText = (row: DayRow): string | null => (row.from === null ? null : fromWords(row.day, row.from));
@@ -66,7 +65,7 @@ export function ruleText(row: DayRow): string {
 
 /** VoiceOver's words for a cell. */
 function labelOf(row: DayRow, today: boolean): string {
-  const parts = [`${dayTitle(row.day)}${today ? t('gym.cell.today') : ''}`, ruleText(row)];
+  const parts = [`${dayOfDate(row.day)}${today ? t('gym.cell.today') : ''}`, ruleText(row)];
   const from = fromText(row);
   if (from) parts.push(t('gym.cell.from', { time: from }));
   if (row.announced.length) parts.push(t('gym.cell.announced', { n: row.announced.length }));
@@ -84,7 +83,7 @@ export function weeks(rows: readonly DayRow[], n = 2): Cell[][] {
     const day = addDays(start, w * 7 + i);
     const row = byDay.get(day) ?? null;
     const base = { day, row, today: day === today, date: Number(day.slice(8, 10)) };
-    if (!row) return { ...base, fill: 'none' as const, time: null, from: false, announced: 0, label: dayTitle(day) };
+    if (!row) return { ...base, fill: 'none' as const, time: null, from: false, announced: 0, label: dayOfDate(day) };
     const rule = ruleOf(row);
     return {
       ...base, fill: fillOf(row), time: Array.isArray(rule) ? shortRange(rule) : null, from: row.from !== null,
@@ -255,4 +254,4 @@ function changeWhat(c: Pick<Change, 'a' | 's' | 'e' | 'at' | 'm' | 'd'>): string
 }
 
 /** A change list row: `11/14（金） 終日`, who and when. */
-export const changeLine = (c: Change): string => (c.d ? `${dayTitle(c.d)} ${changeWhat(c)}` : changeWhat(c));
+export const changeLine = (c: Change): string => (c.d ? `${dayOfDate(c.d)} ${changeWhat(c)}` : changeWhat(c));

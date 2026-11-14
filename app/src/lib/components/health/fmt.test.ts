@@ -51,14 +51,14 @@ describe('xLabels: the dates and weekdays under the axis', () => {
 
 describe('spokenRange: the chart’s range in words', () => {
   it('days with their weekdays (ja, en); weeks and months as shown', async () => {
-    expect(spokenRange(rangeFor('week', '2026-11-13'), '2026-11-13')).toBe('11月7日(土)〜11月13日(金)');
+    expect(spokenRange(rangeFor('week', '2026-11-13'), '2026-11-13')).toBe('11月7日（土）〜11月13日（金）');
     expect(spokenRange(rangeFor('quarter', TODAY), TODAY)).toMatch(/^\d+\/\d+〜11\/\d+$/);
     expect(spokenRange(rangeFor('year', TODAY), TODAY)).toBe('2025年12月〜2026年11月');
     // the years as rangeLabel's: across a year, or not this year's
     const cross = { ...rangeFor('week', '2026-01-05'), from: '2025-12-30' };
-    expect(spokenRange(cross, TODAY)).toBe('2025年12月30日(火)〜2026年1月5日(月)');
+    expect(spokenRange(cross, TODAY)).toBe('2025年12月30日（火）〜2026年1月5日（月）');
     expect(rangeLabel(cross, TODAY)).toBe('2025/12/30〜2026/1/5');
-    expect(spokenRange(rangeFor('week', '2025-11-13'), TODAY)).toBe('2025年11月7日(金)〜11月13日(木)');
+    expect(spokenRange(rangeFor('week', '2025-11-13'), TODAY)).toBe('2025年11月7日（金）〜11月13日（木）');
     setLocale('en');
     await vi.waitUntil(() => i18n.locale === 'en');
     expect(spokenRange(rangeFor('week', '2026-11-13'), '2026-11-13')).toBe('Sat, Nov 7 to Fri, Nov 13');

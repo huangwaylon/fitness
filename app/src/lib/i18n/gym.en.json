@@ -38,7 +38,6 @@
   "gym.strip.idle": "no day to check",
   "gym.strip.open": "{n} open",
   "gym.strip.summary": "Last 12 hours: {n} checks, {fails} failed, {avail} with open slots",
-  "gym.dayTitle": "{wd} {md}",
   "gym.rule.any": "All day",
   "gym.rule.usual": "Usual ({range})",
   "gym.rule.none": "Not checked",

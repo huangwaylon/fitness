@@ -1066,14 +1066,13 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   plate): kids-style spaced kana (分かち書き), 「つうしん中…」, 「みずやり ずみ」. `word-break: keep-all`: a line breaks only at
   a space or after 、。！, so no run without one is over 12 characters.
 - **Everything opened from it** (every sheet, panel, level, dialog and form, pairing, the error page, the editor, the
-  board, the shop's menu; an NPC's line inside one stays the world's) **and the leaf menu's pills** (kanji: easier to
-  read): natural adult Japanese with kanji and no spaces between words (a space only around a number or Latin: 「目標
+  board, the shop's menu; an NPC's line inside one stays the world's) **and the leaf menu's pills** (kanji): natural adult Japanese with kanji and no spaces between words (a space only around a number or Latin: 「目標
   8,000歩 以上」). `dialog`, `[role=dialog]` and `.sheet-copy` are `word-break: normal` (`line-break: strict`); a bubble
   is keep-all wherever it is.
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
   キャンセル · 閉じる · 戻る · 元に戻す (restore; an undo is 取り消す) · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 ·
   ゲスト (the guest player; お客さん only for NH's visitors) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた ·
-  作る · 資料 · a range with 〜; the game's own words stay (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and official names as NH
+  作る · 資料 · a range with 〜; a day `11/4（水）` (when.ts), alone `11月4日（水）`; the game's own words stay (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and official names as NH
   writes them. A sheet's title may differ from its button (けんこう → 健康, 英語 → ききみみ). linebreaks.test checks the sheets'
   keys for spaces between Japanese characters and for the kana spellings of the list.
 

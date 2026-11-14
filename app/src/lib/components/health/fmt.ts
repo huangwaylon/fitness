@@ -43,8 +43,8 @@ export function rangeLabel(r: Range, today: LocalDate): string {
   return t('kiroku.range', { a, b });
 }
 
-/** The chart's range in words (its aria label): days with their weekdays (`11月8日(土)〜11月14日(金)`, the years as
- *  rangeLabel's: `2025年12月30日(火)〜2026年1月5日(月)`), else as shown. */
+/** The chart's range in words (its aria label): days with their weekdays (`11月8日（土）〜11月14日（金）`, the years as
+ *  rangeLabel's: `2025年12月30日（火）〜2026年1月5日（月）`), else as shown. */
 export function spokenRange(r: Range, today: LocalDate): string {
   if (r.unit !== 'day') return rangeLabel(r, today);
   const ys = years(r, today);
@@ -99,7 +99,7 @@ export function deltaText(id: GoalId, d: number | null): string {
   return (r < 0 ? '−' : r > 0 ? '+' : '±') + valueText(id, Math.abs(r), 1);
 }
 
-/** A bucket's title, for its callout: the day (formatDate: `11月4日(水)`), or a week's or month's days (`10/27–11/2`). */
+/** A bucket's title, for its callout: the day (formatDate: `11月4日（水）`), or a week's or month's days (`10/27–11/2`). */
 export function bucketTitle(r: Range, i: number, today: LocalDate): string {
   const b = r.buckets[i];
   return r.unit === 'day' ? formatDate(b.from) : rangeLabel({ ...r, from: b.from, to: b.to, unit: 'day' }, today);

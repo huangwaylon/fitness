@@ -251,7 +251,7 @@ test('the goal solid; 1週 a weekday under every bar, 1か月 a label a week, al
   await expect(card.locator('text.ax.wd.sat, text.ax.wd.sun')).toHaveCount(2);
   await expect(card.locator('text.ax.now')).toHaveText(['10/31', '土']); // today's date and weekday
   expect(await card.locator('path.goal').evaluate((e) => getComputedStyle(e).strokeDasharray)).toBe('none');
-  await expect(card.locator('svg[role=img]')).toHaveAttribute('aria-label', /10月25日\(日\)〜10月31日\(土\)/);
+  await expect(card.locator('svg[role=img]')).toHaveAttribute('aria-label', /10月25日（日）〜10月31日（土）/);
   // the weekdays, each under its own bar, never touching
   const boxes = await wd.evaluateAll((ts) => ts.map((t) => { const b = (t as SVGTextElement).getBBox(); return { x: b.x, width: b.width }; }));
   for (let i = 1; i < boxes.length; i++) expect(boxes[i].x).toBeGreaterThan(boxes[i - 1].x + boxes[i - 1].width);
@@ -273,7 +273,7 @@ test('a tap on a bar shows that day’s one value (and again closes it)', async 
   await chart.click({ position: at(5) }); // 10/30
   const tip = chart.locator('.tip');
   await expect(tip).toBeVisible();
-  await expect(tip.locator('b')).toHaveText('10月30日(金)');
+  await expect(tip.locator('b')).toHaveText('10月30日（金）');
   await expect(tip.locator('.trow')).toHaveCount(1);
   await expect(tip.locator('.trow')).toHaveText(/^\s*([\d,]+歩\s*(✓)?|記録なし)\s*$/);
   await expect(tip.locator('.trow .dot.pA')).toHaveCount(1);

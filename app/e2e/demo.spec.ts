@@ -225,7 +225,7 @@ test('the ベル ledger: per day each of us four goals and ふたりで ぜん�
   await expect(day.locator('.own')).toHaveCount(2);
   await expect(day.locator('.own').first()).toHaveText(/^(\+\d+|0)ベル$/);
   await expect(sheet(page).locator('[data-ledger] section.week').first().locator('h4 .wk')).toHaveCount(2);
-  await sheet(page).getByRole('button', { name: /\(月\)/ }).first().click();
+  await sheet(page).getByRole('button', { name: /（月）/ }).first().click();
   await expect(sheet(page).locator('.pc')).toHaveCount(2);
   for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row`)).toHaveCount(4);
   await expect(sheet(page).locator('.duo')).toContainText('ふたりで全部');

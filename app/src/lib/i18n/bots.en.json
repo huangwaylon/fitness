@@ -24,7 +24,6 @@
   "bots.attn.run": "Open the run",
   "bots.attn.pr": "Open the PR",
   "bots.stale": " (old)",
-  "bots.fmt.day": "{wd} {md}",
   "bots.fmt.when": "{day} {time}",
   "bots.dur.s": "{s} s",
   "bots.dur.m": "{m} min",

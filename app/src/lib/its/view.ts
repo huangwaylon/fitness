@@ -216,7 +216,7 @@ interface NightPart { why: Why; names: string[]; lines: string[] }
  *  reporting is one that stops looking for it, stopsAtBooked). A stay already past in Tokyo isn't listed (保存 drops it:
  *  toInput). `parts`: the facilities searched (探す on) by why (nightOf), the empty ones left out, none for a booked
  *  night; `nights`: each one's, by key (hotelParts reads them); `able`: the ones searched for it; `aria`: the row for
- *  VoiceOver (「11月12日(木)、あと8日。30件中10件を探しています。受付終了で20件除外。」); `noSeason`: a seasonal facility
+ *  VoiceOver (「11月12日（木）、あと8日。30件中10件を探しています。受付終了で20件除外。」); `noSeason`: a seasonal facility
  *  counted in, its fiscal year unknown. */
 type DateNote = 'auto' | 'd4' | 'late' | 'booked' | null;
 export interface DateRow {

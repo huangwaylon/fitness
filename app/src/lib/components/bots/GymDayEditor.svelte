@@ -11,7 +11,8 @@
   import Segmented from '../ui/Segmented.svelte';
   import GymSlots from './GymSlots.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { dayTitle, fromDates, fromText, fromTimes, fromWords, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
+  import { fromDates, fromText, fromTimes, fromWords, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
+  import { dayOfDate } from '#lib/i18n/when.ts';
   import { DEFAULT_WINDOW, at, clockOf, dayOf, fromRefusal, type ActInput, type Clock, type Day, type DayRow } from '#lib/gym/contract.ts';
 
   type Kind = 'any' | 'range' | 'off';
@@ -124,10 +125,10 @@
 
   /** `11/10（火）`, with （今日） / （当日）. */
   const dateLabel = (d: Day, day: Day): string =>
-    dayTitle(d) + (d === dayOf(now) ? t('gym.cell.today') : d === day ? t('gym.editor.fromTheDay') : '');
+    dayOfDate(d) + (d === dayOf(now) ? t('gym.cell.today') : d === day ? t('gym.editor.fromTheDay') : '');
 </script>
 
-<Sheet bind:open title={row ? dayTitle(row.day) : ''} name="gym.day">
+<Sheet bind:open title={row ? dayOfDate(row.day) : ''} name="gym.day">
   {#if row}
     <div class="ed" data-gym-editor={row.day}>
       <p class="now" data-gym-editor-now>{t('gym.editor.now', { rule: ruleText(row) })}{#if row.from !== null}<small>{t('gym.cell.from', { time: fromText(row) ?? '' })}</small>{/if}</p>

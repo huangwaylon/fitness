@@ -24,7 +24,6 @@
   "bots.attn.run": "実行を開く",
   "bots.attn.pr": "PRを開く",
   "bots.stale": "（古い）",
-  "bots.fmt.day": "{md}（{wd}）",
   "bots.fmt.when": "{day}{time}",
   "bots.dur.s": "{s}秒",
   "bots.dur.m": "{m}分",

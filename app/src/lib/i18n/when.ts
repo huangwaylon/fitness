@@ -1,6 +1,7 @@
-// The bots' times and durations (docs/design.md "Bots": one vocabulary on the three pages), Tokyo's clock: today
-// `11:54`, another day `11/4（水）2:41` (a key row's cell may break after the day), a future one with ごろ (the
-// caller's words); `4時間12分`, `12分`, `40秒`. Needs bots.* (bots.ts: each bot's lib loads it).
+// The app's short day, `11/4（水）` / `Wed 11/4` (a list's or a heading's day, every sheet's: the long one, `11月4日（水）`, is
+// format.ts formatDate), and the bots' times and durations (docs/design.md "Bots": one vocabulary on the three
+// pages), Tokyo's clock: today `11:54`, another day `11/4（水）2:41` (a key row's cell may break after the day), a future
+// one with ごろ (the caller's words); `4時間12分`, `12分`, `40秒`. The times need bots.* (bots.ts: each bot's lib loads it).
 import { t } from './index.ts';
 import { ZONE_OFFSET_MS, localDateAt } from '../time/dates.ts';
 
@@ -13,7 +14,7 @@ function clockOf(ms: number): string {
 /** `11/4`. */
 export const mdOf = (ms: number): string => `${tokyo(ms).getUTCMonth() + 1}/${tokyo(ms).getUTCDate()}`;
 /** `11/4（水）` / `Wed 11/4`. */
-export const dayOf = (ms: number): string => t('bots.fmt.day', { md: mdOf(ms), wd: t(`weekday.${tokyo(ms).getUTCDay() || 7}`) });
+export const dayOf = (ms: number): string => t('fmt.day', { md: mdOf(ms), wd: t(`weekday.${tokyo(ms).getUTCDay() || 7}`) });
 /** A `YYYY-MM-DD` as dayOf: `11/22（日）` (the bots' one date form, compact; a heading's month: format.ts monthLabel). */
 export const dayOfDate = (date: string): string => dayOf(Date.parse(`${date}T12:00:00+09:00`));
 /** `11/4（水）2:41`, always with the day. */

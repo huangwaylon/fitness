@@ -63,7 +63,7 @@
   "kiroku.min": "{n}分",
   "kiroku.ok": "決定",
   "kiroku.empty": "まだ記録がありません",
-  "kiroku.dayTitle": "{m}/{d}({w})",
+  "fmt.day": "{md}（{wd}）",
   "bells.amount": "{n} ベル",
   "wallet.today": "今日",
   "island.no3d": "この端末では しまを 表示できません",

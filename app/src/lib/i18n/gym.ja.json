@@ -38,7 +38,6 @@
   "gym.strip.idle": "チェックする日なし",
   "gym.strip.open": "空き{n}",
   "gym.strip.summary": "直近12時間：確認{n}回、失敗{fails}回、空きあり{avail}回",
-  "gym.dayTitle": "{md}（{wd}）",
   "gym.rule.any": "終日",
   "gym.rule.usual": "ふだん（{range}）",
   "gym.rule.none": "未チェック",

@@ -22,9 +22,9 @@ export function monthLabel(d: string, { year = true, long = false }: { year?: bo
 export const weekRange = (wk: string): string => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
 
 let enDate: Intl.DateTimeFormat | undefined, enDateY: Intl.DateTimeFormat | undefined;
-/** `10月28日(水)` / `Wed, Oct 28`; `year`: `2025年12月30日(火)` / `Tue, Dec 30, 2025`. */
+/** `10月28日（水）` / `Wed, Oct 28`; `year`: `2025年12月30日（火）` / `Tue, Dec 30, 2025`. */
 export function formatDate(d: string, { year = false }: { year?: boolean } = {}): string {
-  if (i18n.locale === 'ja') return `${year ? `${d.slice(0, 4)}年` : ''}${Number(d.slice(5, 7))}月${Number(d.slice(8, 10))}日(${weekdayOf(d)})`;
+  if (i18n.locale === 'ja') return `${year ? `${d.slice(0, 4)}年` : ''}${Number(d.slice(5, 7))}月${Number(d.slice(8, 10))}日（${weekdayOf(d)}）`;
   const f = year
     ? (enDateY ??= new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }))
     : (enDate ??= new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }));
