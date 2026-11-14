@@ -247,7 +247,9 @@
   const sellAllLine = $derived(sellPlan.n ? t('shop.sellAllSum', { n: formatNum(sellPlan.n), v: formatNum(sellPlan.v) }) : t('shop.sellAllNone'));
   const buyAllLine = $derived(!buyPlan.of ? t('shop.buyAllNone')
     : buyPlan.short ? t('shop.short', { n: formatNum(buyPlan.short) })
-    : t(buyPlan.items.length < buyPlan.of ? 'shop.buyAllPart' : 'shop.buyAllSum', { n: formatNum(buyPlan.items.length), v: formatNum(buyPlan.total) }));
+    : t(buyPlan.items.length < buyPlan.of ? 'shop.buyAllPart' : 'shop.buyAllSum', { n: formatNum(buyPlan.items.length), m: formatNum(buyPlan.of), v: formatNum(buyPlan.total) }));
+  /** 全部買う only when it covers them all; short, 「買えるだけ買う」 (the button, the confirm's title and its go). */
+  const most = (p: BuyAll) => p.items.length > 0 && p.items.length < p.of;
 
   /** A row of うる or 苗 (the stepRow snippet). */
   interface StepRow {
@@ -369,12 +371,12 @@
   <div class="all" data-shop-all-row={which}>
     <p class="all-line" id="shop-all-{which}" data-shop-all-line>{line}</p>
     <button type="button" class="chip all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
-      onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : 'shop.buyAll')}</button>
+      onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : most(buyPlan) ? 'shop.buyMost' : 'shop.buyAll')}</button>
   </div>
 {/snippet}
 
 <!-- the confirm: the count, the total, my かいがら after, what's kept or left out, every row; キャンセル or do it -->
-<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : 'shop.buyAll') : ''} name="shop.all">
+<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll') : ''} name="shop.all">
   {#if confirm}
     <div class="confirm" data-shop-confirm={confirm.tab}>
       {#if confirm.tab === 'sell'}
@@ -387,7 +389,7 @@
         <ul class="clist" data-shop-confirm-list>
           {#each pocket.filter((r) => p.picks.has(r.k)) as r (r.k)}
             {@const n = p.picks.get(r.k) ?? 0}
-            <li data-shop-confirm-row={r.k}><span class="cn">{speciesName(r.k)} ×{n}</span><span class="cv">{formatNum(n * r.p)}</span></li>
+            <li data-shop-confirm-row={r.k}><span class="cn">{speciesName(r.k)} ×{n}</span><span class="cv">{t('shop.wallet', { v: formatNum(n * r.p) })}</span></li>
           {/each}
         </ul>
       {:else}
@@ -397,7 +399,7 @@
         <p class="after" data-shop-confirm-after={shop.shells - p.total}>{t('shop.afterBuy', { v: formatNum(shop.shells - p.total) })}</p>
         <ul class="clist" data-shop-confirm-list>
           {#each p.items as c (c)}
-            <li data-shop-confirm-row={c}><span class="cn">{itemName(c)}</span><span class="cv">{formatNum(buyPrice(c) ?? 0)}</span></li>
+            <li data-shop-confirm-row={c}><span class="cn">{itemName(c)}</span><span class="cv">{t('shop.wallet', { v: formatNum(buyPrice(c) ?? 0) })}</span></li>
           {/each}
         </ul>
       {/if}
@@ -407,7 +409,7 @@
     <div class="two">
       <button type="button" class="btn paper" data-shop-confirm-cancel data-sfx="back" onclick={() => (confirmOpen = false)}>{t('common.cancel')}</button>
       <!-- (its total is the lead's line, right above: 「1,946かいがらで売る」 wrapped in half the width) -->
-      <button type="button" class="btn" data-shop-confirm-go data-sfx="self" onclick={doAll}>{t(confirm?.tab === 'sell' ? 'shop.sell' : 'shop.buy')}</button>
+      <button type="button" class="btn" data-shop-confirm-go data-sfx="self" onclick={doAll}>{t(confirm?.tab === 'sell' ? 'shop.sell' : confirm && most(confirm.plan) ? 'shop.buyMost' : 'shop.buy')}</button>
     </div>
   {/snippet}
 </Sheet>
