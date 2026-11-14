@@ -35,6 +35,7 @@ export function fakeState(kv = new Map<string, unknown>()) {
     },
     delete: async (keys: string[]) => { for (const k of keys) { deleted.push(k); kv.delete(k); } return keys.length; },
     setAlarm: async (t: number) => void alarms.push(t),
+    getAlarm: async () => alarms.at(-1) ?? null,
   };
   const ctx = { storage, blockConcurrencyWhile: (fn: () => Promise<unknown>) => (loading = fn()) };
   return { ctx, kv, count, alarms, deleted, loaded: () => loading };

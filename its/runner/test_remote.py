@@ -14,9 +14,13 @@ number and the runner token. The private log must have them (the flow ran); the 
     python3 test_remote.py            # all
     python3 test_remote.py -v lease   # a subset, with the flow's logging
 """
+import contextlib
+import io
 import json
+import tempfile
 import re
 import os
+import signal
 import subprocess
 import sys
 import threading
@@ -32,6 +36,7 @@ import confirm_booking as cb
 import logs
 import main as M
 import remote
+import restart
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ITS_DIR = os.path.dirname(HERE)
@@ -78,6 +83,8 @@ class WorkerModel:
         self.garble = False      # answer 200 with a body that isn't a RunnerConfig
         self.max_bookings = 500  # the record's cap: past it, 507
         self.silent_ids = False  # an old Worker: a known id is ignored (200) whatever its content
+        self.restarts_left = None  # a preflight's restartsLeft (None: an older Worker's, absent)
+        self.delay = 0             # seconds each HTTP answer waits (serve_model: a slow Worker)
 
     def ms(self):
         return int(self.clock() * 1000)
@@ -98,9 +105,12 @@ class WorkerModel:
         elif must_hold and (not self.lease or self.lease['holder'] != run_id):
             reason = 'lease_lost'
         acks = [s for (r, s) in self.events if r == run_id]
-        return {'settings': json.loads(json.dumps(self.settings)), 'bookings': [dict(b) for b in self.bookings],
-                'lease': dict(self.lease) if self.lease else None, 'stop': reason is not None,
-                'stopReason': reason, 'ackSeq': max(acks, default=0)}
+        c = {'settings': json.loads(json.dumps(self.settings)), 'bookings': [dict(b) for b in self.bookings],
+             'lease': dict(self.lease) if self.lease else None, 'stop': reason is not None,
+             'stopReason': reason, 'ackSeq': max(acks, default=0)}
+        if not run_id and self.restarts_left is not None:
+            c['restartsLeft'] = self.restarts_left
+        return c
 
     def handle(self, method, path, body, auth):
         with self.lock:
@@ -193,6 +203,8 @@ def serve_model(model):
                 body = json.loads(raw) if raw else None
             except ValueError:
                 body = None
+            if model.delay:
+                time.sleep(model.delay)
             status, obj = model.handle(method, self.path, body, self.headers.get('Authorization', ''))
             out = json.dumps(obj).encode()
             self.send_response(status)
@@ -217,6 +229,394 @@ def make_remote(model, clock, run_id='run-1', **kw):
     kw.setdefault('seed_hold', bh.save_booking)
     return remote.Remote(ModelClient(model), run_id, 'actions', 'abc12345', None, clock=clock, **kw)
 
+
+# ── the in-job restart (restart.py) ──────────────────────────────────
+
+class FakeChild:
+    def __init__(self, code, on_wait=None):
+        self.code, self.on_wait, self.signals = code, on_wait, []
+
+    def wait(self):
+        if self.on_wait:
+            self.on_wait(self)
+        return self.code
+
+    def send_signal(self, s):
+        self.signals.append(s)
+
+
+def _supervisor(codes, clock, deadline=None, runs=None, on_wait=None, reported=True):
+    """A restart.Supervisor over scripted exits (`codes`, in order), a scripted preflight (`runs`: True/False per ask,
+    or a reason code meaning no, then True), and the test's clock; each child answers a report first (`reported`: it
+    touches the marker) unless told not to; `spawned` the envs each start got, `lines` the public lines."""
+    spawned, lines, asks = [], [], list(runs or [])
+    marker = os.path.join(tempfile.mkdtemp(), 'reported')
+
+    def child_wait(c):
+        if reported:
+            open(marker, 'w').close()
+        if on_wait:
+            on_wait(c)
+
+    def spawn(cmd, env):
+        spawned.append((list(cmd), env.get('ITS_RESTART')))
+        return FakeChild(codes[len(spawned) - 1], child_wait)
+
+    def preflight():
+        go = asks.pop(0) if asks else True
+        return (200, 'none', True) if go is True else (200, go if isinstance(go, str) else 'paused', False)
+
+    cmd = ['xvfb-run', 'python', 'main.py', '--remote', '--deadline', '1']
+    sup = restart.Supervisor(cmd, deadline or clock() + 3600 * 5, spawn=spawn, preflight=preflight, clock=clock,
+                             sleep=clock.advance, public=lambda ev, **f: lines.append(logs.format_public(ev, f)[0]),
+                             env={'X': '1'}, reported_file=marker)
+    return sup, spawned, lines
+
+
+def test_restart_crashes_with_cap_and_backoff():
+    """A crash (any exit but 0 and 2) is restarted, the same command (so the same deadline), ITS_RESTART=n; at most
+    RESTARTS, each after its backoff, with a preflight before it and every minute of it; then the last code."""
+    clock = Clock()
+    t0 = clock()
+    starts = []
+    sup, spawned, lines = _supervisor([1] * 7, clock, on_wait=lambda c: starts.append(clock() - t0))
+    code = sup.run()
+    check('restart: the cap: 1 + RESTARTS processes, then the crash\'s code', code == 1 and len(spawned) == 6, str(spawned))
+    check('restart: the same command each time, ITS_RESTART counting',
+          all(c == spawned[0][0] for c, _ in spawned) and [n for _, n in spawned] == [None, '1', '2', '3', '4', '5'])
+    gaps = [b - a for a, b in zip(starts, starts[1:])]
+    check('restart: backoff 15, 30, 60, 120, 300 s', gaps == [15, 30, 60, 120, 300], str(gaps))
+    check('restart: public lines are codes and counts', lines[0] == 'its restart exit=1 n=1 secs=15'
+          and lines[-1] == 'its restart exit=1 n=5 ok=0 why=cap' and not any('dropped' in ln for ln in lines), str(lines))
+    for code in (-9, 137, 3):
+        sup, spawned, _ = _supervisor([code, 0], Clock())
+        check(f'restart: exit {code} (a kill, an OOM) restarted; then a clean end', sup.run() == 0 and len(spawned) == 2)
+
+
+def test_restart_only_a_process_that_got_going():
+    """A startup crash (no answered report, under MIN_RUN_SEC) is not restarted: it would crash again, a solve each
+    time; one that ran MIN_RUN_SEC is, report or not. The first wait is at least the site's 15-s floor."""
+    sup, spawned, lines = _supervisor([1, 0], Clock(), reported=False)
+    check('restart: a startup crash is not restarted', sup.run() == 1 and len(spawned) == 1
+          and lines[-1] == 'its restart exit=1 n=0 ok=0 why=startup', str(lines))
+    clock = Clock()
+    sup, spawned, _ = _supervisor([1, 0], clock, reported=False, on_wait=lambda c: clock.advance(restart.MIN_RUN_SEC))
+    check('restart: one that ran MIN_RUN_SEC is', sup.run() == 0 and len(spawned) == 2)
+    sup, spawned, _ = _supervisor([1, 1, 0], Clock())
+    seen, inner = [], sup.spawn
+    sup.spawn = lambda cmd, env: (seen.append(os.path.exists(sup.reported_file)), inner(cmd, env))[1]
+    check('restart: the marker is removed before each start (each process must report again)',
+          sup.run() == 0 and seen == [False, False, False], str(seen))
+    check('restart: the first wait is at least the scan floor', min(restart.BACKOFF_SEC) >= bh.MIN_RETRY_DELAY
+          and restart.SCAN_FLOOR_SEC == bh.MIN_RETRY_DELAY)
+    holder = {}
+    clock = Clock()
+    sup, spawned, lines = _supervisor([1], clock)
+    real_spawn = sup.spawn
+
+    def racing_spawn(cmd, env):
+        child = real_spawn(cmd, env)
+        sup.on_signal(15)   # the signal lands while the child starts, before run() has it as self.child
+        holder['child'] = child
+        return child
+    sup.spawn = racing_spawn
+    check('restart: a signal during the start reaches the child (once at least), no restart',
+          sup.run() == 1 and holder['child'].signals[:1] == [15] and len(spawned) == 1, str(holder['child'].signals))
+
+
+def test_restart_never_after_a_clean_end_a_stop_or_the_deadline():
+    for code in (0, 2):
+        sup, spawned, lines = _supervisor([code, 0], Clock())
+        check(f'restart: exit {code} is never restarted', sup.run() == code and len(spawned) == 1, str(lines))
+    sup, spawned, lines = _supervisor([1, 0], Clock(), runs=[False])
+    check('restart: a stop (the preflight says not to run) before the backoff: none', sup.run() == 1 and len(spawned) == 1
+          and lines[-1] == 'its restart exit=1 n=1 ok=0 status=200 why=paused', str(lines))
+    clock = Clock()
+    T_, F_ = True, False
+    sup, spawned, lines = _supervisor([1] * 5 + [0], clock, runs=[T_, T_, T_, T_, T_, T_, T_, T_, T_, T_, F_])
+    t0 = clock()
+    check('restart: a 停止 during a backoff ends it at that minute\'s preflight (60 s into the 300)', sup.run() == 1
+          and len(spawned) == 5 and clock() - t0 == 15 + 30 + 60 + 120 + 60, f'{len(spawned)} {clock() - t0}')
+    clock = Clock()
+    sup, spawned, lines = _supervisor([1, 1], clock, deadline=clock() + restart.MIN_LEFT_SEC + 20)
+    check('restart: none whose backoff ends within MIN_LEFT_SEC of the deadline', sup.run() == 1 and len(spawned) == 2
+          and lines[-1] == 'its restart exit=1 n=1 ok=0 why=deadline', str(lines))
+    clock = Clock()
+    holder = {}
+    sup, spawned, lines = _supervisor([1, 1], clock, on_wait=lambda c: holder['sup'].on_signal(15))
+    holder['sup'] = sup
+    check('restart: the step cancelled (SIGTERM passed on): no restart', sup.run() == 1 and len(spawned) == 1
+          and lines[-1] == 'its restart exit=1 n=0 ok=0 why=signal', str(lines))
+    sup, spawned, lines = _supervisor([1, 1, 0], Clock(), runs=[True, True, 'restart_cap'])
+    check('restart: the day\'s restarts spent (the Worker\'s restart_cap): none', sup.run() == 1 and len(spawned) == 2
+          and lines[-1] == 'its restart exit=1 n=2 ok=0 status=200 why=restart_cap', str(lines))
+    with contextlib.redirect_stderr(io.StringIO()):
+        refused = (restart.main(['100', 'python', 'main.py', '--remote', '--deadline', '200']),
+                   restart.main(['100', 'python', 'main.py', '--remote']))
+    check('restart: the CLI refuses a command whose deadline differs from its own (never extended)', refused == (2, 2))
+
+
+def test_restart_for_real(tmpdir):
+    """restart.Supervisor with its real spawn and preflight: a child that crashes once is started again with
+    ITS_RESTART=1 after the Worker (a fake, over HTTP) said run."""
+    model = WorkerModel()
+    srv = serve_model(model)
+    marks = os.path.join(tmpdir, 'starts')
+    marker = os.path.join(tmpdir, 'reported')
+    leftover = os.path.join(tmpdir, 'leftover')
+    child = ('import os, subprocess, sys\n'
+             f'open({marks!r}, "a").write((os.environ.get("ITS_RESTART") or "-") + "\\n")\n'
+             f'open({marker!r}, "w").close()\n'
+             f'first = len(open({marks!r}).read().split()) == 1\n'
+             f'if first: open({leftover!r}, "w").write(str(subprocess.Popen(["sleep", "60"]).pid))\n'
+             'sys.exit(1 if first else 0)\n')
+    saved_env, saved_backoff = dict(os.environ), restart.BACKOFF_SEC
+    try:
+        os.environ.update(ITS_WORKER_URL=f'http://127.0.0.1:{srv.server_port}', ITS_RUNNER_TOKEN=TOKEN)
+        for k in ('HTTP_PROXY', 'http_proxy', 'ALL_PROXY', 'all_proxy'):
+            os.environ.pop(k, None)
+        restart.BACKOFF_SEC = (0,) * restart.RESTARTS
+        lines = []
+        sup = restart.Supervisor([sys.executable, '-c', child, '--deadline', '1'], time.time() + 3600,
+                                 public=lambda ev, **f: lines.append(logs.format_public(ev, f)[0]), reported_file=marker)
+        code = sup.run()
+    finally:
+        os.environ.clear()
+        os.environ.update(saved_env)
+        restart.BACKOFF_SEC = saved_backoff
+        srv.shutdown()
+    check('restart (real): crashed once, restarted with ITS_RESTART=1, then a clean end',
+          code == 0 and open(marks).read().split() == ['-', '1'], open(marks).read())
+    pid = int(open(leftover).read())
+
+    def gone():
+        try:
+            os.kill(pid, 0)
+            return False
+        except ProcessLookupError:
+            return True
+    check('restart (real): the crashed child\'s group killed before the restart (no leftover of the run)',
+          T._wait_for(gone, timeout=5))
+    check('restart (real): the Worker was asked first (a preflight: no run id)',
+          ('GET', '/runner/config', {}) in model.calls, str(model.calls))
+    check('restart (real): its public lines', lines == ['its restart exit=1 n=1 secs=0', 'its restart exit=0 n=1 ok=0 why=clean'],
+          str(lines))
+
+
+def test_a_restarted_process_is_the_same_run():
+    """The process restarted in its job: the same run id re-claims its own lease (no takeover), its seq goes on past
+    the record's (so its events aren't dropped as acknowledged and its entry ids don't conflict), the dead process's
+    open confirming blocks the night, its holds with no outcome get a human_needed run_ended."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    first = make_remote(model, clock, run_id='55-1', seed_hold=lambda *a: None)
+    first.claim(wait=0)
+    first.event('run_start', detail='schedule')
+    first.on_event('hold', {'date': TARGET, 'hotel': NAGU})
+    first.on_event('hold', {'date': NEXT_MONTH_DAY, 'hotel': RESOL})
+    first.record('confirming', NEXT_MONTH_DAY, RESOL)
+    first.report()
+    acked = first.seq
+    first.event('error', detail='x')   # queued, never sent: the process dies
+    clock.advance(40)
+    second = make_remote(model, clock, run_id='55-1', seed_hold=lambda *a: None)
+    cfg, why = second.claim(wait=0)
+    check('restart: the same run re-claims its own live lease', cfg is not None and model.lease['holder'] == '55-1', why)
+    check('restart: seq goes on from the record\'s', second.seq == acked, f'{second.seq} vs {acked}')
+    second.event('run_start', detail='restart')
+    n = second.orphaned_holds(cfg)
+    second.on_event('hold', {'date': IDLE_DAY, 'hotel': NIKKO})
+    second.report()
+    check('restart: its events land (none dropped as acknowledged)',
+          [e['detail'] for e in model.kinds('run_start')] == ['schedule', 'restart'], str(model.kinds('run_start')))
+    check('restart: its entries land (no id conflict)', not second.unsynced and not second.conflicts
+          and len(model.booked('hold')) == 3, str(second.unsynced))
+    check('restart: the dead process\'s open confirming blocks its night', NEXT_MONTH_DAY in second.done)
+    check('restart: the dead process\'s holds with no outcome: human_needed run_ended, once each',
+          n == 2 and sorted((e['date'], e['detail']) for e in model.kinds('human_needed'))
+          == sorted([(TARGET, 'run_ended'), (NEXT_MONTH_DAY, 'run_ended')]), str(model.kinds('human_needed')))
+    clock.advance(remote.HOLD_SEC)
+    third = make_remote(model, clock, run_id='55-1', seed_hold=lambda *a: None)
+    cfg, _ = third.claim(wait=0)
+    check('restart: a hold older than HOLD_SEC has lapsed: nothing to tell', third.orphaned_holds(cfg) == 0)
+
+
+def test_signal_drains_as_a_stop(tmpdir):
+    """SIGTERM/SIGINT (a cancel, a timeout; restart.py passes it on): no new hold at once, run_end within
+    SIGNAL_DRAIN_SEC, the lease released, exit 0; twice (the group's and the forwarded one) is one stop. The first
+    answered report touches the restart marker."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, run_id='77-1', seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    sup = idle_supervisor()
+    marker = os.path.join(tmpdir, 'reported')
+    run = M.RemoteRun(rem, sup, deadline=clock() + 3600, clock=clock, reported_file=marker)
+    try:
+        sup.start()
+        check('signal: running before', run.tick() is None and not run.draining)
+        check('signal: the first answered report touches the marker', os.path.exists(marker))
+        run.on_signal(signal.SIGINT)
+        run.on_signal(signal.SIGTERM)
+        check('signal: idempotent (the first kept), the loop woken', run.signalled == signal.SIGINT and rem.urgent.is_set())
+        sup.busy = lambda: 1   # a leg in flight: waited for SIGNAL_DRAIN_SEC at most
+        check('signal: a stop\'s drain, no new hold at once', run.tick() is None and run.draining
+              and run.end_detail == 'signal' and rem.hold_gate() == (False, 'signal'), str(rem.hold_gate()))
+        clock.advance(M.SIGNAL_DRAIN_SEC)
+        out = run.tick()
+    finally:
+        _cleanup(sup)
+    check('signal: run_end within SIGNAL_DRAIN_SEC, the lease released', out == 'signal'
+          and [e.get('detail') for e in model.kinds('run_end')] == ['signal'] and model.lease is None,
+          f"{out} {model.kinds('run_end')} {model.lease}")
+
+
+def test_orphaned_holds_told_once_per_job(tmpdir):
+    """A second restart doesn't tell the same orphaned hold again (the ids told are kept in the state dir)."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    path = os.path.join(tmpdir, 'orphans.json')
+    first = make_remote(model, clock, run_id='56-1', seed_hold=lambda *a: None)
+    first.claim(wait=0)
+    first.on_event('hold', {'date': TARGET, 'hotel': NAGU})
+    first.report()
+    told = []
+    for _ in range(2):
+        clock.advance(60)
+        again = make_remote(model, clock, run_id='56-1', seed_hold=lambda *a: None, orphans_path=path)
+        cfg, _w = again.claim(wait=0)
+        told.append(again.orphaned_holds(cfg))
+        again.report()
+    check('orphans: told by the first restart only', told == [1, 0] and len(model.kinds('human_needed')) == 1, str(told))
+    # an event the Worker never acked isn't kept as told: the next restart tells it again
+    clock.advance(60)
+    path2 = os.path.join(tmpdir, 'orphans2.json')
+    lost = make_remote(model, clock, run_id='56-1', seed_hold=lambda *a: None, orphans_path=path2)
+    cfg, _w = lost.claim(wait=0)
+    model.down = True
+    n_lost = lost.orphaned_holds(cfg)
+    lost.report()
+    model.down = False
+    after = make_remote(model, clock, run_id='56-1', seed_hold=lambda *a: None, orphans_path=path2)
+    cfg, _w = after.claim(wait=0)
+    check('orphans: kept as told only once acked', n_lost == 1 and not os.path.exists(path2)
+          and after.orphaned_holds(cfg) == 1)
+
+
+def test_preflight_restart_cap():
+    """The Worker's restartsLeft 0 (the Tokyo day's in-job restarts spent): the preflight says run=0, restart_cap
+    (no restart, no new run, no handoff); absent (an older Worker) or left: as before."""
+    model = WorkerModel()
+    client = ModelClient(model)
+    check('preflight: no restartsLeft (an older Worker): run', remote.preflight(client) == (200, 'none', True))
+    model.restarts_left = 3
+    check('preflight: some left: run', remote.preflight(client) == (200, 'none', True))
+    model.restarts_left = 0
+    check('preflight: none left: restart_cap, run=0', remote.preflight(client) == (200, 'restart_cap', False))
+    model.settings['paused'] = True
+    check('preflight: a stop still says why', remote.preflight(client) == (200, 'paused', False))
+
+def test_signal_stop_is_bounded_on_a_slow_worker():
+    """The signal's stop takes SIGNAL_TOTAL_SEC at most when the Worker answers slowly (or not at all): every call cut
+    to what's left, run_end best effort (the lease lapses otherwise)."""
+    model = WorkerModel()
+    srv = serve_model(model)
+    try:
+        rem = remote.Remote(remote.Client(f'http://127.0.0.1:{srv.server_port}', TOKEN), '78-1', 'actions')
+        rem.claim(wait=0)
+        sup = idle_supervisor()
+        run = M.RemoteRun(rem, sup, deadline=time.time() + 3600)
+        run.raise_on_signal = True
+        model.delay = 30
+        raised = False
+        try:
+            run.on_signal(signal.SIGTERM)
+        except M.SignalStop:
+            raised = True
+        run.on_signal(signal.SIGINT)   # the second delivery: nothing (no raise)
+        check('signal: SignalStop at once, no new hold or 申込する', raised and rem.hold_gate() == (False, 'signal')
+              and rem.commit_gate(TARGET, NAGU, 'apply') == (False, 'run_ended'))
+        t0 = time.monotonic()
+        out = run.stop_on_signal()
+        took = time.monotonic() - t0
+    finally:
+        model.delay = 0
+        _cleanup(sup)
+        srv.shutdown()
+    check('signal: stopped within SIGNAL_TOTAL_SEC on a slow Worker', out == 'signal' and took <= M.SIGNAL_TOTAL_SEC + 0.5,
+          f'{out} {took:.1f}s')
+
+
+def test_commit_refused_once_stopping():
+    """Once a stop or a signal is set no new `confirming` (and so no Chrome 申込する) starts; the deadline's drain still
+    files what it holds; the 確認 stage of a leg already applying goes on."""
+    clock = Clock()
+    model = WorkerModel(clock)
+    rem = make_remote(model, clock, seed_hold=lambda *a: None)
+    rem.claim(wait=0)
+    rem.no_new_holds = 'time_up'
+    check('commit: the deadline\'s drain still applies', rem.commit_gate(TARGET, NAGU, 'apply') == (True, ''))
+    for why in ('paused', 'signal', 'lease_lost'):
+        rem.no_new_holds = why
+        n = len(model.booked('confirming'))
+        check(f'commit: {why}: no new 申込する, no confirming written',
+              rem.commit_gate(TARGET, RESOL, 'apply') == (False, 'run_ended') and len(model.booked('confirming')) == n)
+    check('commit: a leg past 申込する still confirms', rem.commit_gate(TARGET, NAGU, 'confirm') == (True, ''))
+
+
+FAKE_XVFB = """#!/bin/sh
+# like xvfb-run: a shell that runs the command in the foreground and passes no signal on
+"$@"
+"""
+
+
+def test_signal_reaches_main_through_bash_and_a_wrapper(tmpdir):
+    """The Run step for real: bash execs restart.py, which runs a shell wrapper (xvfb-run's stand-in) around the real
+    `main.py --remote`; GitHub's SIGINT to the step's process reaches main.py (restart.py signals the child's process
+    group), which drains and reports run_end (the lease released) before GitHub's kill (~10 s)."""
+    model = WorkerModel()
+    srv = serve_model(model)
+    fake = os.path.join(tmpdir, 'fake-xvfb')
+    with open(fake, 'w') as f:
+        f.write(FAKE_XVFB)
+    os.chmod(fake, 0o755)
+    deadline = str(int(time.time()) + 3600)
+    env = {'PATH': os.environ.get('PATH', ''), 'HOME': tmpdir, 'NO_PROXY': '127.0.0.1,localhost',
+           'no_proxy': '127.0.0.1,localhost', 'PYTHONDONTWRITEBYTECODE': '1',
+           'ITS_STATE_DIR': os.path.join(tmpdir, 'state'), 'ITS_BASE_URL': 'http://127.0.0.1:9',
+           'ITS_WORKER_URL': f'http://127.0.0.1:{srv.server_port}', 'ITS_RUNNER_TOKEN': TOKEN,
+           'GITHUB_ACTIONS': 'true', 'GITHUB_RUN_ID': '4343', 'GITHUB_RUN_ATTEMPT': '1'}
+    script = (f'exec {sys.executable} restart.py "{deadline}" {fake} {sys.executable} test_remote.py --signal-child '
+              f'--deadline "{deadline}"')
+    proc = subprocess.Popen(['bash', '-c', script], cwd=HERE, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        up = T._wait_for(lambda: any(r['runId'] == '4343-1' for r in model.reports), timeout=30)
+        log_path = os.path.join(tmpdir, 'state', 'its_booking.log')
+        check('signal (real): main.py up and reporting under restart.py', up,
+              open(log_path).read()[-1500:] if not up and os.path.exists(log_path) else '')
+        t0 = time.monotonic()
+        proc.send_signal(signal.SIGINT)
+        out, err = proc.communicate(timeout=20)
+        took = time.monotonic() - t0
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        out, err = proc.communicate()
+        took = 99
+    finally:
+        srv.shutdown()
+    ends = [e.get('detail') for e in model.kinds('run_end')]
+    check('signal (real): main.py drained: run_end signal, the lease released, within GitHub\'s 10 s',
+          ends == ['signal'] and model.lease is None and took < 10, f'{ends} {model.lease} {took:.1f}s')
+    public = out.decode('utf-8', 'replace')
+    check('signal (real): restarted nothing', public.count('its start ') == 1 and 'secs=' not in public, public[-500:])
+
+
+def signal_child_main(argv):
+    """The subprocess of test_signal_reaches_main_through_bash_and_a_wrapper: the real main.main, nothing scanned."""
+    real = M.Supervisor
+    M.Supervisor = lambda: real(scan_target=_idle, url_target=_idle, confirm_target=_idle)
+    remote.REPORT_EVERY_SEC = 0.3
+    return M.main(argv)
 
 # ── a FakeITS that can ban ───────────────────────────────────────────
 
@@ -1752,8 +2152,8 @@ def test_an_unknown_outcome_blocks_the_night(port):
     fail = dict(hold, id='old:3', kind='failed')
     check('record: another run\'s open confirming blocks the night', done_after_claim([hold, conf]) == {TARGET})
     check('record: one followed by failed doesn\'t', done_after_claim([hold, conf, fail]) == set())
-    check('record: this run\'s own in flight doesn\'t', done_after_claim(
-        [dict(hold, runId='run-x'), dict(conf, runId='run-x')]) == set())
+    check('record: this run\'s from before a restart blocks it too (that process\'s leg may have filed)', done_after_claim(
+        [dict(hold, id='run-x:1', runId='run-x'), dict(conf, id='run-x:2', runId='run-x')]) == {TARGET})
 
 
 def test_imap_rechecked_while_failing():
@@ -2210,6 +2610,13 @@ def test_workflow_timings():
     check('workflow: run + drain + 5 < the Run step\'s timeout < the job\'s',
           run_min + drain_min + 5 < step_timeout < job_timeout, f'{run_min} + {drain_min} + 5, {step_timeout}, {job_timeout}')
     check('workflow: the deadline is ITS_RUN_MIN from the start', 'deadline=$((START + ITS_RUN_MIN * 60))' in step)
+    run_line = next(ln.strip() for ln in step.splitlines() if 'main.py' in ln)
+    check('workflow: restart.py runs main.py, both with the one deadline (a restart never extends it)',
+          run_line.startswith('exec python restart.py "$deadline" xvfb-run ') and run_line.endswith(
+              'python main.py --remote --deadline "$deadline"') and step.count('main.py') == 1, run_line)
+    check('workflow: the restarts fit the step: their backoffs end MIN_LEFT before the deadline, then one drain',
+          restart.MIN_LEFT_SEC > 0 and sum(restart.BACKOFF_SEC) < run_min * 60 and restart.RESTARTS == 5
+          and restart.BACKOFF_SEC == (15, 30, 60, 120, 300))
     minutes = sorted(int(m) for m in re.search(r"cron: '([0-9,]+) \* \* \* \*'", y).group(1).split(','))
     period = min((b - a) % 60 or 60 for a, b in zip(minutes, minutes[1:] + minutes[:1]))
     ts = open(os.path.join(root, 'app', 'src', 'lib', 'its', 'contract.ts'), encoding='utf-8').read()
@@ -2327,4 +2734,6 @@ def test_health_alert_script(tmpdir):
 if __name__ == '__main__':
     if sys.argv[1:2] == ['--child']:
         sys.exit(child_main(int(sys.argv[2])))
+    if sys.argv[1:2] == ['--signal-child']:
+        sys.exit(signal_child_main(['--remote'] + sys.argv[2:]))
     T.main_(sys.argv[1:], Handler, globals())

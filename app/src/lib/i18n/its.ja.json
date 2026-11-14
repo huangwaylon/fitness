@@ -63,6 +63,7 @@
   "its.reason.mode_off": "ボットがオフになっています。探すことも申込もしません。",
   "its.reason.paused": "停止中です。開始すると探し始めます。",
   "its.reason.no_dates": "これから先の日付がありません。日付を追加してください。",
+  "its.reason.restart_cap": "自動の再起動は今日の上限に達しました（開始で再開できます）。",
   "its.reason.dispatch_failed": "すぐには起動できませんでした。30分ごとの定期起動を待っています。",
   "its.reason.starting": "起動しています。数分で最初の報告が届きます。",
   "its.reason.never_ran": "まだ一度も動いていません。",

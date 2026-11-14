@@ -20,9 +20,9 @@ ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 # `npm run vapid:keys`, its private part the secret VAPID_PRIVATE. Not a key: push is off (subscribe answers 503).
 VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
 
-# The watchdog (its/README.md "Watchdog"): restarts a missing runner and pushes once per incident. A cron, not the
-# object's alarm (the push outbox's): it needs nothing to arm it. The Free plan allows 5 cron triggers account-wide:
-# the relay's 2 and the gym bot's 1, so this makes 4.
+# The watchdog's backstop (its/README.md "Watchdog"; the object's alarm is the fast one, re-armed by every report):
+# needs nothing to arm it, and sets a lost alarm again. The Free plan allows 5 cron triggers account-wide: the relay's
+# 2 and the gym bot's 1, so this makes 4.
 [triggers]
 crons = ["*/5 * * * *"]
 

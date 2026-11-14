@@ -23,7 +23,8 @@ govern the design, and are law:
 ## Running
 
 ```bash
-python3 main.py --remote --deadline <epoch>   # Actions (its-runner.yml): the Worker's settings, bounded, public-safe logs
+python3 restart.py <epoch> … main.py --remote --deadline <epoch>   # Actions (its-runner.yml): restarted on a crash
+python3 main.py --remote --deadline <epoch>   # the Worker's settings, bounded, public-safe logs
 python3 main.py                               # local: config.py's settings, forever, the full log on stdout
 python3 check_env.py                          # preflight: .env, IMAP, the confirmation gate
 python3 remote.py preflight                   # the workflow's first step: GET /runner/config, run=0|1
@@ -58,6 +59,7 @@ Google Chrome under `xvfb-run` and `fonts-noto-cjk`. Python 3.10+ (CI and Action
 | `confirm_booking.py` | The hold queue and the emailed leg; `_commit_gate`, `imap_check` |
 | `chrome.py` | The one Chrome: the Turnstile solve and the filing leg |
 | `remote.py` | The Worker client and the run's state: claim, reports, the bookings queue, the lease fence |
+| `restart.py` | The Run step's wrapper: a crash restarted in the job, the same deadline and run id (its/README.md "Watchdog") |
 | `logs.py` | The private log (fd 1/2) and the allowlisted public line |
 | `test_its.py`, `test_remote.py` | The booking flow against FakeITS; the remote runner against FakeITS and a fake Worker |
 
@@ -110,7 +112,8 @@ remote.py, whose docstring has the detail. Each seam is a no-op for a local run 
   a refused entry is set aside, retried alone, `HUMAN NEEDED`.
 - **The fence**: no new hold or Chrome commit within 60 s of the lease's end, nor while an entry is unsynced and the
   Worker unreachable > 2 min; a `confirming` entry is acknowledged before Chrome's 申込する.
-- **Identity and dates**: the run id is `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT`; every date is Tokyo's
+- **Identity and dates**: the run id is `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT` (a restart's too: its claim goes on from the
+  record's seq); every date is Tokyo's
   (`book_hotels.tokyo_today`).
 - **Bounded**: `--deadline`, a drain ≤ 15 min, `run_end`; a stop, a ban and a silent Worker end it too (main.py's
   docstring). The workflow's preflight skips the job only for paused, MODE off or no dates.
@@ -148,7 +151,7 @@ waits in the concurrency group till this run job ends. Also on 開始's dispatch
 run younger than `ITS_SKIP_YOUNGER_MIN` (ITS_RUN_MIN − 30) is in progress, so a tick never leaves a pending run for the
 next tick to cancel; the tick in a run's last 30 min queues the next run (it starts as this one ends), and a dispatch
 always queues. The `run` job holds the `its-runner` concurrency group: preflight, install, `main.py --remote --deadline
-START + ITS_RUN_MIN` (320 min), drain ≤ 15 min, inside the step's 345 and the job's 350 (test_remote's workflow test
+START + ITS_RUN_MIN` (320 min) under `restart.py`, drain ≤ 15 min, inside the step's 345 and the job's 350 (test_remote's workflow test
 checks the nesting). its-health.yml reads the Worker's `/health/its` every 30 min with the repo secret
 `ITS_HEALTH_TOKEN` (inert without it) and keeps one `its-alert` issue: codes only; /health/its not answering is red, and
 twice in a row (the previous run failed too) the alert `health_unreachable`.

@@ -12,7 +12,7 @@ Two halves:
   computes the page's verdict. `MODE` (wrangler.toml) is `on` or `off` (the stop switch).
 - **The runner** (`its/runner/`, [its README](runner/README.md)): the Python booker (curl scans + headed Chrome for
   Turnstile), run on GitHub Actions (`.github/workflows/its-runner.yml`), bounded to ~5.5 h a run, each run
-  dispatching the next as it ends; 開始, the Worker's watchdog and a 30-min schedule start one too (Watchdog below). Every run checks out main: a runner change is live at the next run, so the three pieces stay compatible in
+  dispatching the next as it ends, a crash restarted in its job; 開始, the Worker's watchdog and a 30-min schedule start one too (Watchdog below). Every run checks out main: a runner change is live at the next run, so the three pieces stay compatible in
   any landing order (an older page, runner or Worker leaves out the newer fields; each side treats a missing field as
   before).
 
@@ -48,7 +48,7 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 ```
  app 保養所 ─ GET /its/status, PUT /its/settings, POST /its/run (member key) ─▶ its-bot ─▶ DO ItsBot
                                                                                        │  ▲
-          開始, the watchdog (cron */5): workflow_dispatch (GH_DISPATCH_TOKEN) ◀─┘  │
+   開始, the watchdog (alarm, cron */5): workflow_dispatch (GH_DISPATCH_TOKEN) ◀─┘  │
  Actions its-runner.yml ─ GET /runner/config (preflight), POST /runner/claim, /runner/report every 30 s,
                           POST /runner/bookings (ITS_RUNNER_TOKEN) ──────────────────────────┘
  its-runner.yml's handoff job: as a run ends, workflow_dispatch of the next (GITHUB_TOKEN)
@@ -56,10 +56,10 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 
 | File | Role |
 |---|---|
-| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog) |
+| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog's backstop) |
 | `worker/src/bot.ts` | `ItsBot`: the record in memory (one storage read at start), one batched put per change, the log lines |
 | `worker/src/rules.ts` | The lease, the events' rings, bookings, seen names, RunnerConfig, the verdict and the watchdog's decision |
-| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's bodies, GitHub's dispatch and unfinished runs, bindings and secrets |
+| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's bodies, GitHub's dispatch, unfinished runs and cancel, bindings and secrets |
 | `worker/src/push.ts`, `webpush.ts` | Web Push (Push below): what's sent when, the messages, the outcomes; RFC 8291/8292 with WebCrypto |
 
 | Route | Who | |
@@ -111,8 +111,22 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
 ## Watchdog
 
 GitHub drops most scheduled ticks (hours with no runner happened: no scans, no holds, no error), so a run starts
-its successor itself and the Worker restarts a missing one.
+its successor itself, a crash restarts in its job, and the Worker restarts a missing runner. Downtime: a process crash
+~seconds plus a solve; a job that ended, ~1.5 min to notice plus ~3–5 min for a new run; a hung or lost one ~18 min,
+the cancel, then a new run.
 
+- **In-job restart** (`runner/restart.py`, the Run step): `main.py` exiting non-zero (not 2) before the deadline, once
+  it had a report answered or ran 5 min (a startup crash isn't), is started again, the same run id and deadline: ≤ 5
+  times, after 15, 30, 60, 120, 300 s, none ending within 5 min of the deadline, never after an exit 0, a cancel or a
+  preflight saying stop (asked before and every minute of the backoff: each stamps `preflight`, so the watchdog sees
+  it on its way). At most 20 a Tokyo day (`restarts`, counted from `run_start restart` events): then the preflight's
+  `restartsLeft` is 0 and it says `restart_cap`, run=0 (no restart, new run or handoff), the watchdog dispatches
+  nothing and pushes (`alert=loop`), the verdict says `restart_cap`; 開始 (deliberate) allows one more run, its own
+  dispatch, till the next restart. The step `exec`s restart.py, which runs the child in its own session and signals
+  its whole group: SIGTERM/SIGINT (a cancel, a timeout) stop main.py at once (no new hold or 申込する), run_end within
+  6 s (each Worker call ≤ 3 s; else the lease lapses); a crashed child's group is killed before a restart. The claim takes the run's own lease (no
+  `prev_unclean`) and moves `seq` past the record's (no event dropped, no entry id reused); the dead process's open
+  `confirming` blocks its night, its holds with no outcome get `human_needed run_ended`. Public: `its restart …`.
 - **Handoff** (its-runner.yml): as the run job ends, its `Hand off?` step asks the preflight again; when the bot should
   still run and the run lasted `ITS_HANDOFF_AFTER_MIN` (60 min), the `handoff` job (`actions: write`, its only
   permission, no secret) runs `gh workflow run its-runner.yml --ref main` with GITHUB_TOKEN (a workflow_dispatch from
@@ -120,31 +134,35 @@ its successor itself and the Worker restarts a missing one.
   (asked per status: that one is the successor, e.g. the tick in the run's last 30 min). The successor queues in
   `concurrency: its-runner` and starts once the run job has ended. A cancel (`gh run cancel`) or a run that died
   sooner hands off nothing: no dispatch loop.
-- **The cron** (`*/5 * * * *`, wrangler.toml; `ItsBot.watch`, `rules.ts watchOf`): while the bot should run (MODE on,
-  not stopped, a date) and no runner is alive (no report for 6 min and no live lease), nor on its way (an accepted
-  dispatch or a preflight no report has followed, ≤ 10 min), it opens an incident (`watch`) and dispatches with
-  `GH_DISPATCH_TOKEN`, recorded as `dispatch` like 開始's (`starting`, `dispatch_failed` apply). Not when GitHub lists a
-  run of the workflow unfinished (queued, waiting, in progress: a dispatch would only queue behind it); a list it can't
-  read dispatches anyway; it decides again after GitHub's answer (a report, 開始 or 停止 may land meanwhile). Between
-  its dispatches it waits 10, 20, 40, then 60 min, and an incident opening within 60 min of the last one's close
-  continues that backoff (a run that reports and dies is not restarted every 15 min); at most 12 a Tokyo day, then
-  only the push (`capped`). No token: nothing sent, `its watchdog no_token` logged once per incident, no `dispatch`
-  written. A quiet tick writes nothing.
+- **The alarm and the cron** (`ItsBot.watch`, `rules.ts watchOf`): every report and claim re-arms the object's alarm to
+  90 s after it; the alarm also runs the push outbox, so it is set to the earlier of the two and does both when it
+  fires; while missing it looks again each minute. The cron (`*/5 * * * *`, wrangler.toml) is the backstop with a
+  6-min threshold, and sets a lost alarm again. While the bot should run (MODE on, not stopped, a date) and nothing was
+  heard (no report, no lease claimed or renewed) within the threshold, nor a run on its way (an accepted dispatch or a
+  preflight no report has followed, ≤ 10 min), it opens an incident (`watch`; only news after it closes it) and
+  dispatches with `GH_DISPATCH_TOKEN`, recorded as `dispatch` like 開始's (`starting`, `dispatch_failed` apply). Not
+  when GitHub lists a run unfinished (queued, waiting, in progress: e.g. a restart in a live job); a list it can't read
+  dispatches anyway; it decides again after GitHub's answer, one decision at a time. Between its recoveries it waits
+  10, 20, 40, then 60 min, and an incident opening within 60 min of the last one's close continues that backoff; at
+  most 12 a Tokyo day, then only the push (`capped`). No token: the alarm is the outbox's only, nothing sent, `its
+  watchdog no_token` logged once per incident. A quiet tick writes nothing.
+- **Hung or lost**: GitHub lists the lease holder's run in progress, its lease expired, nothing heard (report, claim,
+  preflight) for 18 min (longer than a runner rides out a Worker outage, 15 min, and any restart gap), and no hold or
+  `confirming` of its younger than 30 min without an outcome: the watchdog cancels that run (`POST …/runs/{id}/cancel`; a
+  second, after the backoff, `force-cancel`), and dispatches once GitHub shows it finished (the same recovery: no new
+  wait or count). Never a released lease's run, nor one heard within 18 min.
 - **The push**: one `runner_silent` push per phone (high, 1 h; 保養所ボットが止まっています ·
-  ランナーを再起動できていません：Actionsを確認) when an incident is 15 min old (≥ 21 min without a report), 2 dispatches
-  were refused in a row, the day's cap stops it (`alert=silent`), or it is the 3rd incident within 2 h (`alert=loop`: a
-  run that keeps dying). Once per incident, and once per run of incidents: one opening within 2 h of the last pushes
-  nothing. A report, the lease or a stop closes the incident (`its watchdog closed why=…`) and drops its push still
-  queued (one already shown stays; the next replaces it: one tag).
-- **Never two runners**: every dispatch (handoff, watchdog, 開始, a tick) lands in the one concurrency group: one
-  running, a newer pending one replacing an older; and the lease (a claim waits for another's). The watchdog skips
-  while GitHub shows a run unfinished, a preflight or dispatch is fresh, or the lease is live.
-- **A cron, not the object's alarm**: the alarm is the push outbox's (one per object), and an alarm chain needs a
-  request to arm it and re-arm it if lost (the gym bot keeps an hourly cron for that); a cron needs nothing. The Free
-  plan allows 5 cron triggers account-wide: the relay's 2, the gym bot's 1, this one: 4.
-- **Logs**: `its watchdog missing last_report=… lease=… n= incidents_2h=`, `dispatch=204 n= failed= today=
-  incident=…s`, `skip=github_run id= status=`, `rechecked why=…`, `runs unknown`, `no_token`, `alert=silent|loop …`,
-  `closed why=…`, `failed err=…` (a throw); each quiet tick `its watchdog alive|starting|inactive` at debug.
+  ランナーを再起動できていません：Actionsを確認) when an incident is 15 min old, 2 recoveries were refused in a row,
+  the day's cap stops it (`alert=silent`), or it is the 3rd counted incident within 2 h (`alert=loop`; counted once
+  5 min silent or a recovery tried); never under 5 min of silence. Once per incident, and once per run of incidents.
+  A report, the lease or a stop closes the incident (`its watchdog closed why=…`) and drops its push still queued.
+- **Never two runners**: every dispatch (handoff, watchdog, 開始, a tick) lands in the one concurrency group, and the
+  lease (a claim waits for another's). A restart is the same job, after its process exited; the watchdog dispatches
+  only when GitHub lists nothing unfinished (or can't say), and cancels only a run silent past its lease.
+- **Logs**: `its watchdog missing last_report=… lease=… n= incidents_2h= [fast=1]`, `dispatch=204 n= failed= today=
+  incident=…s [after_cancel=1]`, `cancel run= status= [force=1] holder= silent=`, `skip=github_run id= status=`,
+  `rechecked why=…`, `runs unknown`, `no_token`, `alert=silent|loop …`, `closed why=…`, `failed err=…`; quiet ones
+  `its watchdog alive|starting|inactive` at debug.
 
 ## Push
 
@@ -162,7 +180,7 @@ later one replaces the earlier; each is sent once per hold / stay whichever run 
 | `human_needed` that may be filed (`maybe_filed`) | the stay has an open `confirming` (no later `confirmed` / `failed` in the bookings: a leg may be filing it), whatever the detail; or the detail is `submit_unknown`, `no_completion`, `link_used` or `chrome_*`; with or without a live hold | 仮押さえ・要確認 · NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認 | high, 1 day |
 | `human_needed` `room_taken`, `hold_expired`, `not_wanted` | a definite non-booking, or a hold nobody wants (no open `confirming`) | not sent (`push skip not_booked`) | |
 | `confirmed` | 予約確定 | 予約が確定しました · NAGU 勝浦・11/22(日)・申込受付番号 A1234567 | normal, 1 day |
-| (the watchdog) `runner_silent` | an incident 15 min old, 2 refused dispatches, the day's cap, or the 3rd incident in 2 h (Watchdog above) | 保養所ボットが止まっています · ランナーを再起動できていません：Actionsを確認 | high, 1 h |
+| (the watchdog) `runner_silent` | an incident 15 min old, 2 refused recoveries, the day's cap, or the 3rd incident in 2 h (Watchdog above) | 保養所ボットが止まっています · ランナーを再起動できていません：Actionsを確認 | high, 1 h |
 
 A hold the bot won't finish pushes only its `human_needed` (one notification per hold). A notice never says
 「メールから申込」 when the application may already be filed: that one is `maybe_filed`. The 要対応 deadline is an estimate
@@ -184,7 +202,7 @@ Refusals: 400 `bad_push_endpoint` / `bad_push_keys` / `bad_push_lang`, 503 `push
 never an endpoint (a capability URL) or its hash; `vapidPublic` is the key the page subscribes with.
 
 **Sending**: a report's notices go into the outbox (`pushq`, one entry per notice × live subscription) in the report's
-one put, then `setAlarm(now)`; the alarm sends what's due concurrently (10 s timeout each) and sets itself again for
+one put, then the alarm set to now (it is the watchdog's too: Watchdog); it sends what's due concurrently (10 s timeout each) and sets itself again for
 the next retry. The runner's report never waits for or fails on a push.
 
 | Answer | Outcome | Then |
@@ -323,10 +341,11 @@ min (and `/health/its` failing twice in a row), and closes it when healthy.
 | `mode_off` | off | Deployed with `MODE = "off"` | Back on (Operations) |
 | `paused` | stopped | 停止 on the page | 開始 |
 | `no_dates` | idle | No date today or later | Add a date |
+| `restart_cap` | late | 20 automatic restarts today (a crash loop): nothing restarts till Tokyo's midnight | its:logs on the run (its crash); 開始 for one more run |
 | `dispatch_failed` | degraded | 開始's or the watchdog's dispatch was refused (`dispatch.status`: 401/403 = the PAT expired or lacks Actions write, 404 = the workflow file, 422 = not on main, 0 = no answer); the handoff and the schedule still start runs | Renew `GH_DISPATCH_TOKEN` (Secrets) |
 | `starting` | starting | Dispatched, no report yet (≤ 10 min) | Wait; Actions shows the queued job |
 | `never_ran` | late | No runner has ever reported | `ITS_RUNNER_ENABLED`, the `its` environment's secrets, the workflow's runs on Actions |
-| `runner_silent` | late | No report for 45 min (the watchdog dispatched and pushed long before) | `wrangler tail --search "its watchdog"`: `no_token` (set the token), `skip=github_run id=…` (stuck: `gh run cancel <id>`), `dispatch=401` (renew it); Actions' last runs; `its refused status=401` (a token changed on one side). By hand: `gh workflow run its-runner.yml --ref main` |
+| `runner_silent` | late | No report for 45 min (the watchdog dispatched and pushed long before) | `wrangler tail --search "its watchdog"`: `no_token` (set the token), `skip=github_run id=…` (queued for long: `gh run cancel <id>`), `dispatch=401` (renew it); Actions' last runs; `its refused status=401` (a token changed on one side). By hand: `gh workflow run its-runner.yml --ref main` |
 | `banned` | failing | The last run hit the 503 セキュリティアラート (~24 h on that IP); clears at the next good scan | Nothing: the next run has a new IP. Recurring: a longer interval |
 | `scan_failing` | failing | 3+ failed calendar reads in a row (`runner.lastError`: step, status, class) | its:logs for the failing step and its saved HTML / screenshot: the site changed (SITE.md); `session_dead` for long = the Turnstile solve |
 | `solve_failing` | degraded | The last 3 Turnstile solves failed | The run's public log (`solve` lines, spot, secs); SITE.md §6 |
@@ -344,4 +363,5 @@ min (and `/health/its` failing twice in a row), and closes it when healthy.
 Workers Free, account-wide (relay, relay-test, gym-bot and this): 100,000 Worker and 100,000 DO requests, 100,000 rows
 written a day, 5 cron triggers (4 used: Watchdog). This Worker with a runner all day (a report every 30 s, the
 preflights, the page's polls): ~3,200 requests and ~6,500 rows written; stopped, 48 preflights; the watchdog adds 288
-invocations and 288 DO requests a day, writing only when an incident opens, dispatches, pushes or closes. The busiest day measured, every script: ~7k, ~19k and ~35k.
+invocations and 288 DO requests a day, writing only when an incident opens, dispatches, pushes or closes; the alarm
+re-armed per report ~2,900 alarm writes (while missing, one look a minute). The busiest day measured, every script: ~7k, ~19k and ~35k.

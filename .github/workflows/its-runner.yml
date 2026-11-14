@@ -108,7 +108,8 @@ jobs:
           command -v xvfb-run
 
       # The secrets are this step's env only. --deadline: no new hold ITS_RUN_MIN after the job started; main.py drains
-      # for up to 15 more (DRAIN_SEC), sends run_end and exits 0 inside this step's timeout.
+      # for up to 15 more (DRAIN_SEC), sends run_end and exits 0 inside this step's timeout. restart.py restarts a crash
+      # (≤ 5, backed off, the same deadline and run id, while the preflight says run), never past the deadline.
       - name: Run
         if: steps.pre.outputs.run == '1'
         timeout-minutes: 345
@@ -136,11 +137,11 @@ jobs:
           ITS_ADDR: ${{ secrets.ITS_ADDR }}
         run: |
           deadline=$((START + ITS_RUN_MIN * 60))
-          xvfb-run -a --server-args='-screen 0 1280x1600x24' python main.py --remote --deadline "$deadline"
+          exec python restart.py "$deadline" xvfb-run -a --server-args='-screen 0 1280x1600x24' python main.py --remote --deadline "$deadline"
 
       # Whether the handoff job dispatches a successor: a run that lasted ITS_HANDOFF_AFTER_MIN, while the bot should
       # run (the preflight again: paused, MODE off, no dates or no answer write run=0). Not after a cancel: someone
-      # stopped it. A run that died sooner is left to the watchdog.
+      # stopped it (or the watchdog, which dispatches itself). A run that died sooner is left to the watchdog.
       - name: Hand off?
         id: next
         if: ${{ !cancelled() && steps.pre.outputs.run == '1' }}

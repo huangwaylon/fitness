@@ -24,8 +24,8 @@ or tunnel to keep alive, its deploys never touch the relay's, and a status of to
 The 保養所 booker is the `its-bot` Worker (settings, record, verdict) plus a runner on GitHub Actions that checks out
 main each run ([its/README.md](../its/README.md)). Why: no Mac to keep awake, the site's Turnstile needs a real headed
 Chrome (a hosted runner has one, a Worker can't), and both fit the Free plans. Each run dispatches the next as it ends,
-and the Worker's 5-min cron dispatches one when no runner reports (its/README.md "Watchdog"). Why: GitHub drops most
-scheduled ticks, which left hours with no runner and no error; a cron, not the object's alarm, needs nothing to arm it.
+a crash restarts in its job, and the Worker's alarm (90 s after a report; a 5-min cron backstops it) dispatches or
+cancels a hung run (its/README.md "Watchdog"). Why: GitHub drops most scheduled ticks, which left hours with no runner.
 
 ### Per-person keys
 `KEY_A`, `KEY_B` (and the guest's `KEY_C`) are Worker secrets; a key identifies its person and travels in a `text/plain`

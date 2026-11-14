@@ -454,7 +454,7 @@ describe('a report’s events, the outbox and the alarm', () => {
     const c = await bot.report(report({ events: [ev(1, 'hold')] }));
     expect(c.ackSeq).toBe(1);
     expect(jobs()).toHaveLength(2);
-    expect(allLogs()).toContain('its push alarm failed err=');
+    expect(allLogs()).toContain('its alarm failed err=');
     bot.rec.subs = null as never;   // jobsFor throws
     const r = await asRunner(env, '/runner/report', report({ events: [ev(2, 'confirmed')] }), RUNNER);
     expect(r.status).toBe(200);

@@ -63,6 +63,7 @@
   "its.reason.mode_off": "The bot is switched off. It neither looks nor applies.",
   "its.reason.paused": "Stopped. Start it to look again.",
   "its.reason.no_dates": "No dates ahead. Add one.",
+  "its.reason.restart_cap": "Automatic restarts reached today's limit. Start resumes it.",
   "its.reason.dispatch_failed": "It couldn't start right away; waiting for the half-hourly start.",
   "its.reason.starting": "Starting. The first report comes in a few minutes.",
   "its.reason.never_ran": "It hasn't run yet.",

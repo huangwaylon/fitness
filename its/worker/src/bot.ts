@@ -8,19 +8,19 @@ import {
   type BookingInput, type ClaimInput, type ClaimReply, type ItsEvent, type ItsHealth, type ItsPushStatus, type ItsSettingsInput, type ItsStatus, type Member,
   type PushEndpointInput, type PushOutcome, type PushReply, type PushSubscribeInput, type RunInput, type RunnerConfig, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
-import { dispatchRun, unfinishedRun } from './dispatch.ts';
+import { cancelRun, dispatchRun, unfinishedRun } from './dispatch.ts';
 import type { Env } from './env.ts';
 import {
   PUSHQ_KEPT, addSub, emptyPushLog, endpointOk, epOf, jobsFor, keysOk, liveSubs, noticesFor, outcomeOf, payloadOf, pushStatusOf, reasonOf,
   retryAt, SILENT_TTL_MS, silentJobs, topicOf, vapidOf, type PushJob, type PushLog, type PushSub,
 } from './push.ts';
 import {
-  addBookings, addEvents, addMinutes, addOwnEvent, addSeen, claimLease, freshScans, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
-  dayCount, watchAlert, watchOf, type ItsRecord,
+  addBookings, addEvents, addMinutes, addRestarts, restartsToday, RESTART_DAY_CAP, addOwnEvent, addSeen, claimLease, freshScans, healthOf, leaseTaken, liveSettings, runnerConfig, runnerOf, statusOf,
+  counted, dayCount, heardAt, watchAlert, watchAt, watchOf, WATCH_FAST_MS, WATCH_QUIET_MS, type ItsRecord,
 } from './rules.ts';
 import { pushRequest } from './webpush.ts';
 
-const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight', 'scanned', 'minutes', 'subs', 'pushq', 'pushlog', 'watch'] as const satisfies readonly (keyof ItsRecord)[];
+const KEYS = ['settings', 'bookings', 'runner', 'lease', 'dispatch', 'control', 'events', 'seen', 'acks', 'preflight', 'scanned', 'minutes', 'subs', 'pushq', 'pushlog', 'watch', 'restarts'] as const satisfies readonly (keyof ItsRecord)[];
 /** Storage keys an older Worker kept and this one no longer reads: `scans` (the raw reads, replaced by `minutes`). */
 const RETIRED = ['scans'] as const;
 
@@ -33,7 +33,7 @@ const RUNNING = new Set(['starting', 'solving', 'scanning']);
 
 const empty = (): ItsRecord => ({
   settings: { ...DEFAULT_SETTINGS }, bookings: [], runner: null, lease: null, dispatch: null, control: null,
-  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: emptyPushLog(), watch: null,
+  events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: emptyPushLog(), watch: null, restarts: null,
 });
 
 /** A name or detail in a log line: one line, short (they are checked already; this only keeps lines readable). */
@@ -127,28 +127,42 @@ export class ItsBot extends DurableObject<Env> {
     }
     await this.save({ settings, control, dispatch: { at: now, ok: true, status: null } });   // = no token: nothing sent
     if (this.env.GH_DISPATCH_TOKEN) await this.save({ dispatch: await dispatchRun(this.env.GH_DISPATCH_TOKEN, now) });
-    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'} rid=${rid}`);
+    console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}${restartsToday(this.rec, now) >= RESTART_DAY_CAP ? ' restart_cap=bypassed' : ''} rid=${rid}`);
+    await this.arm(now);
     return this.status();
   }
 
-  /** The cron's tick (index.ts scheduled; README "Watchdog"): while a runner should run and none is alive or on its
-   *  way (rules.ts watchOf), dispatch one with GH_DISPATCH_TOKEN, backing off (across incidents WATCH_COOLDOWN_MS
-   *  apart) and at most WATCH_DAY_CAP a Tokyo day, unless GitHub shows a run of the workflow unfinished (a dispatch
-   *  would only queue behind it); decided again after that look (a report, 開始 or 停止 may land meanwhile); recorded
+  /** The watchdog (README "Watchdog"): the cron's tick (index.ts scheduled: WATCH_QUIET_MS, and the alarm re-armed if
+   *  it was lost) or the alarm's (`fast`: WATCH_FAST_MS). One at a time: a second waits for the first, then decides on
+   *  the record as the first left it (no double dispatch). */
+  async watch(fast = false): Promise<string> {
+    const turn = this.watching.then(() => this.watchOnce(fast));
+    this.watching = turn.catch(() => '');
+    return turn;
+  }
+
+  private watching: Promise<unknown> = Promise.resolve();
+
+  /** While a runner should run and none is alive or on its way (rules.ts watchOf), dispatch one with
+   *  GH_DISPATCH_TOKEN, backing off (across incidents WATCH_COOLDOWN_MS apart) and at most WATCH_DAY_CAP a Tokyo day,
+   *  unless GitHub shows a run of the workflow unfinished (a dispatch would only queue behind it); a hung holder's run
+   *  that GitHub shows in progress is cancelled (force-cancelled the second time), and the next tick dispatches once
+   *  GitHub shows it finished; decided again after GitHub's answer (a report, 開始 or 停止 may land meanwhile); recorded
    *  as `dispatch`, as 開始's is. The push once per incident, and once per run of recurring ones (watchAlert); a
    *  report, the lease or a stop closes the incident and drops its queued push. Writes only on a change. Answers the
    *  tick's outcome code (the log's, the tests'). */
-  async watch(): Promise<string> {
+  private async watchOnce(fast: boolean): Promise<string> {
+    const quietMs = fast ? WATCH_FAST_MS : WATCH_QUIET_MS;
     let now = Date.now();
-    let plan = watchOf(this.rec, this.mode, now);
+    let plan = watchOf(this.rec, this.mode, now, quietMs);
     const token = this.env.GH_DISPATCH_TOKEN;
     let run: Awaited<ReturnType<typeof unfinishedRun>> | undefined;
-    if (plan.dispatch && token) {
+    if ((plan.dispatch || plan.cancel !== null) && token) {
       run = await unfinishedRun(token);
       const was = plan;
       now = Date.now();
-      plan = watchOf(this.rec, this.mode, now);
-      if (!plan.dispatch && was.dispatch) console.log(`its watchdog rechecked why=${plan.why} dispatch=0`);
+      plan = watchOf(this.rec, this.mode, now, quietMs);
+      if (!plan.dispatch && plan.cancel === null) console.log(`its watchdog rechecked why=${plan.why} dispatch=0${was.cancel !== null ? ' cancel=0' : ''}`);
     }
     const before = this.rec.watch;
     let w = plan.watch;
@@ -161,48 +175,61 @@ export class ItsBot extends DurableObject<Env> {
       if (w !== before) patch.watch = w;
       if (patch.pushq?.length === this.rec.pushq.length) delete patch.pushq;
       await this.save(patch);
-      console.debug(`its watchdog ${plan.why}`);
+      console.debug(`its watchdog ${plan.why}${fast ? ' fast=1' : ''}`);
+      await this.arm(now, !fast);
       return plan.why;
     }
+    const quietFor = now - heardAt(this.rec);
     if (before?.since == null) {
       const r = this.rec.runner;
-      console.warn(`its watchdog missing last_report=${r ? `${Math.round((now - r.lastSeen) / 1000)}s` : '-'} run=${r?.runId ?? '-'} lease=${this.rec.lease ? 'expired' : 'free'} n=${w.n} incidents_2h=${w.starts.length}`);
+      console.warn(`its watchdog missing last_report=${r ? `${Math.round((now - r.lastSeen) / 1000)}s` : '-'} run=${r?.runId ?? '-'} lease=${this.rec.lease ? 'expired' : 'free'} n=${w.n} incidents_2h=${w.starts.length}${fast ? ' fast=1' : ''}`);
     }
     let out = plan.capped ? 'capped' : 'waiting';
-    if (plan.dispatch && !token) {
+    const target = plan.cancel;
+    const listed = run && run !== 'unknown' ? run : null;
+    if ((plan.dispatch || target !== null) && !token) {
       out = 'no_token';
       if (!w.noToken) {
         w = { ...w, noToken: true };
         console.warn('its watchdog no_token: nothing dispatched (README "Secrets": GH_DISPATCH_TOKEN)');
       }
-    } else if (plan.dispatch && run && run !== 'unknown') {
-      out = 'github_run';
-      console.log(`its watchdog skip=github_run id=${run.id} status=${run.status}`);
-    } else if (plan.dispatch && token) {
+    } else if (target !== null && listed?.status === 'in_progress' && listed.ids.includes(target)) {
+      // hung: the lease's holder, silent past WATCH_HUNG_MS, its run still in progress on GitHub (never one that reported)
+      const force = w.cancelId === target;
       const dayN = dayCount(w, now) + 1;
-      w = { ...w, lastAt: now, day: tokyoToday(now), dayN };
+      w = counted({ ...w, lastAt: now, day: tokyoToday(now), dayN, n: w.n + 1, cancelId: target, cancelAt: now });
+      await this.save({ watch: w });   // before GitHub is asked: a tick meanwhile waits out the backoff
+      const status = await cancelRun(token!, target, force);
+      w = { ...w, failed: status === 202 || status === 409 ? 0 : w.failed + 1 };   // 409: it finished meanwhile
+      out = `cancel_${status}`;
+      console.warn(`its watchdog cancel run=${target} status=${status}${force ? ' force=1' : ''} holder=${this.rec.lease?.holder ?? '-'} silent=${Math.round(quietFor / 1000)}s n=${w.n} failed=${w.failed} today=${dayN}`);
+    } else if (plan.dispatch && listed) {
+      out = 'github_run';
+      console.log(`its watchdog skip=github_run id=${listed.id} status=${listed.status}`);
+    } else if (plan.dispatch && token) {
+      // the dispatch after a cancel is that recovery's second half: no new count, no new wait
+      const dayN = plan.afterCancel ? dayCount(w, now) : dayCount(w, now) + 1;
+      w = counted({ ...w, lastAt: now, day: tokyoToday(now), dayN, cancelAt: null });
       // recorded before GitHub is asked (as 開始's): a 開始 meanwhile is `recent`
       await this.save({ dispatch: { at: now, ok: true, status: null }, watch: w });
       patch.dispatch = await dispatchRun(token, now);
-      w = { ...w, n: w.n + 1, failed: patch.dispatch.ok ? 0 : w.failed + 1 };
+      w = { ...w, n: plan.afterCancel ? w.n : w.n + 1, failed: patch.dispatch.ok ? 0 : w.failed + 1 };
       out = `dispatch_${patch.dispatch.status}`;
-      console.log(`its watchdog dispatch=${patch.dispatch.status} n=${w.n} failed=${w.failed} today=${dayN} incident=${Math.round((now - w.since!) / 1000)}s runs=${run ?? 'none'}`);
+      console.log(`its watchdog dispatch=${patch.dispatch.status} n=${w.n} failed=${w.failed} today=${dayN} incident=${Math.round((now - w.since!) / 1000)}s runs=${run ?? 'none'}${plan.afterCancel ? ' after_cancel=1' : ''}`);
     }
-    let queued = 0;
-    const alert = watchAlert(w, now, plan.capped);
+    const alert = watchAlert(w, now, plan.capped, quietFor, plan.crashLoop);
     if (alert) {
       w = { ...w, alerted: true, loopAlerted: true };
       if (this.vapid) {
         const jobs = silentJobs(w.since!, this.rec.subs, now);
-        queued = jobs.length;
         patch.pushq = [...this.rec.pushq, ...jobs].slice(-PUSHQ_KEPT);
-        console.log(`its push queued kind=runner_silent id=watch:${w.since} urgency=high ttl=${SILENT_TTL_MS / 1000}s subs=${queued}`);
+        console.log(`its push queued kind=runner_silent id=watch:${w.since} urgency=high ttl=${SILENT_TTL_MS / 1000}s subs=${jobs.length}`);
       } else console.warn('its push skip no_vapid kind=runner_silent');
-      console.warn(`its watchdog alert=${alert} incident=${Math.round((now - w.since!) / 1000)}s dispatches=${w.n} failed=${w.failed} today=${dayCount(w, now)} incidents_2h=${w.starts.length} no_token=${w.noToken ? 1 : 0}`);
+      console.warn(`its watchdog alert=${alert} incident=${Math.round((now - w.since!) / 1000)}s dispatches=${w.n} failed=${w.failed} today=${dayCount(w, now)} incidents_2h=${w.starts.length} no_token=${w.noToken ? 1 : 0} restarts=${restartsToday(this.rec, now)}`);
     }
     if (w !== this.rec.watch) patch.watch = w;
     await this.save(patch);
-    if (queued) await this.wake(now);
+    await this.arm(now, !fast);
     return out;
   }
 
@@ -224,6 +251,7 @@ export class ItsBot extends DurableObject<Env> {
       await this.save({ lease });
       console.log(`its claim run=${input.runId} host=${input.host} ok=1`);
     }
+    await this.arm(now);
     return { ok: true, lease, config: runnerConfig(this.rec, this.mode, input.runId, now) };
   }
 
@@ -244,6 +272,11 @@ export class ItsBot extends DurableObject<Env> {
     const patch: Partial<ItsRecord> = {};
     const ev = addEvents(this.rec, r.runId, r.events, now);
     if (ev) Object.assign(patch, { events: ev.events, acks: ev.acks });
+    const restarts = ev ? addRestarts(this.rec, ev.added, now) : null;
+    if (restarts) {
+      patch.restarts = restarts;
+      console.warn(`its restart run=${r.runId} today=${restarts.n}`);
+    }
     const seen = addSeen(this.rec.seen, r.seen, now);
     if (seen) patch.seen = seen;
     const scans = freshScans(this.rec.scanned, r.runId, r.scansLog);
@@ -264,7 +297,7 @@ export class ItsBot extends DurableObject<Env> {
     const queued = ev ? this.queuePushes(ev.added, ev.events.important, now) : null;
     if (queued) Object.assign(patch, { pushq: queued.pushq, pushlog: queued.pushlog });
     await this.save(patch);
-    if (queued?.n) await this.wake(now);
+    await this.arm(now);
     if (late) console.warn(`its lease renewed_late run=${r.runId} late=${Math.round((now - held!.until) / 1000)}s`);
     const c = runnerConfig(this.rec, this.mode, r.runId, now, true);
     console.log(`its report run=${r.runId} host=${r.host} phase=${r.phase} scans=${r.scans} fail=${r.scanFailures} solves=${r.solves.ok}/${r.solves.failed} unsynced=${r.unsynced} ev=${ev?.added.length ?? 0}/${r.events.length} seen=${r.seen.length}${seen ? '+' : ''} lease=${patch.lease === undefined ? 'kept' : patch.lease ? 'renewed' : 'released'} stop=${c.stopReason ?? 0}`);
@@ -377,21 +410,54 @@ export class ItsBot extends DurableObject<Env> {
     }
   }
 
-  /** The alarm's wake-up for the outbox; a failure to set it is logged, never thrown (the next report sets it again). */
-  private async wake(at: number): Promise<void> {
+  /** The alarm's time as last set by this instance (null: unknown, or it fired). */
+  private armed: number | null = null;
+
+  /** The one alarm, at the earliest of its duties: the outbox's next send, the watchdog's next look (rules.ts watchAt:
+   *  WATCH_FAST_MS after the last report or claim; only with GH_DISPATCH_TOKEN, else the cron alone). `check` (the
+   *  cron's): asks storage for the alarm first, so a lost one is set again. A failure is logged, never thrown (the next
+   *  report or tick sets it again). */
+  private async arm(now: number, check = false): Promise<void> {
     try {
+      const watchdog = this.env.GH_DISPATCH_TOKEN ? watchAt(this.rec, this.mode, now) : null;
+      const times = [...this.rec.pushq.map((j) => j.next), ...(watchdog === null ? [] : [watchdog])];
+      if (!times.length) return;
+      const at = Math.max(now, Math.min(...times));
+      if (check) this.armed = await this.ctx.storage.getAlarm();
+      if (at === this.armed) return;
       await this.ctx.storage.setAlarm(at);
+      this.armed = at;
     } catch (e) {
-      console.error(`its push alarm failed err=${e instanceof Error ? e.name : 'error'}`, e);
+      console.error(`its alarm failed err=${e instanceof Error ? e.name : 'error'}`, e);
     }
   }
 
-  /** The outbox: every entry due is sent (concurrently), a success or a final answer removed, a retry kept with its
-   *  backoff until its TTL; the alarm set again for the next one. */
+  /** The alarm: the outbox (every entry due sent), then the watchdog's fast look (with GH_DISPATCH_TOKEN), then set
+   *  again for the earliest next duty. Neither duty's throw stops the other (logged; never thrown: no runtime retry). */
   async alarm(): Promise<void> {
+    this.armed = null;
+    try {
+      await this.sendDue();
+    } catch (e) {
+      console.error(`its push alarm failed err=${e instanceof Error ? e.name : 'error'}`, e);
+    }
+    if (this.env.GH_DISPATCH_TOKEN) {
+      try {
+        await this.watch(true);
+      } catch (e) {
+        console.error(`its watchdog failed fast=1 err=${e instanceof Error ? e.name : 'error'}`, e);
+      }
+    }
+    await this.arm(Date.now());
+  }
+
+  /** The outbox: every entry due is sent (concurrently), a success or a final answer removed, a retry kept with its
+   *  backoff until its TTL. */
+  private async sendDue(): Promise<void> {
     const now = Date.now();
     const vapid = this.vapid;
     const due = this.rec.pushq.filter((j) => j.next <= now);
+    if (!due.length && this.rec.pushq.every((j) => j.until > now)) return;
     const sent = await Promise.all(due.map((j) => {
       const sub = this.rec.subs.find((s) => s.ep === j.ep);
       return sub && vapid ? this.deliver(j, sub, vapid, now) : Promise.resolve(null);
@@ -414,9 +480,7 @@ export class ItsBot extends DurableObject<Env> {
     }
     const rs = this.recordSent(sent.filter((s) => s !== null), now);
     const live = new Set(rs.subs.map((s) => s.ep));
-    const kept = pushq.filter((j) => live.has(j.ep));
-    await this.save({ ...rs, pushq: kept });
-    if (kept.length) await this.wake(Math.max(Date.now(), Math.min(...kept.map((j) => j.next))));
+    await this.save({ ...rs, pushq: pushq.filter((j) => live.has(j.ep)) });
   }
 
   /** One push, sent: its outcome (push.ts outcomeOf) and the log line; never throws. */

@@ -595,6 +595,8 @@ describe('a hold’s deadline and what to do', () => {
 describe('the words', () => {
   it('遅れ says how long nothing was heard; 設定’s row says 要対応 while a booking waits', () => {
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'], now: STATUS.runner!.lastSeen + 52 * 60_000 })).sentence).toBe('52分報告がありません。');
+    // the day's automatic restarts spent: why, and that 開始 resumes it
+    expect(verdictView(status({ verdict: 'late', reasons: ['restart_cap', 'runner_silent'] }))).toMatchObject({ tone: 'warn', sentence: '自動の再起動は今日の上限に達しました（開始で再開できます）。' });
     expect(rowBadge(STATUS)).toEqual({ tone: 'bad', word: '要対応' });
     expect(rowBadge(status({ events: [], bookings: [], verdict: 'healthy', reasons: [] }))).toEqual({ tone: 'good', word: '順調' });
     expect(rowBadge(status({ events: [], bookings: [], verdict: 'stopped' }))).toEqual({ tone: 'idle', word: '停止中' });

@@ -248,6 +248,10 @@ export interface RunnerConfig {
   stop: boolean;
   stopReason: 'paused' | 'mode_off' | 'no_dates' | 'lease_lost' | null;
   ackSeq: number;              // the highest event seq the Worker has for this runId
+  /** A preflight's answer (no runId): the Tokyo day's in-job restarts left (its/README.md "Watchdog"); 0: the runner
+   *  starts nothing more today, till 開始 (one more run) (its preflight says run=0, restart_cap). Absent: an older
+   *  Worker (no budget). */
+  restartsLeft?: number;
 }
 
 // ---- Status (GET /its/status, members) ----
@@ -260,6 +264,7 @@ export type Reason =
   | 'mode_off'        // the Worker's MODE = off
   | 'paused'          // stopped from the page
   | 'no_dates'        // no future date to look for
+  | 'restart_cap'     // the Tokyo day's automatic restarts are spent: nothing restarts till midnight or 開始
   | 'dispatch_failed' // 開始's GitHub dispatch was refused (the schedule still starts one)
   | 'starting'        // dispatched or scheduled, no report yet (within START_GRACE_SEC)
   | 'never_ran'       // no runner has reported yet
@@ -271,7 +276,7 @@ export type Reason =
   | 'human_needed'    // a hold or a failed leg waits for a person
   | 'mail_failing'    // auto-confirm is on and the runner's last IMAP check failed (holds wait for a person)
   | 'settings_stale'; // the running run hasn't applied the saved settings for SETTINGS_STALE_SEC
-export const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_dates', 'dispatch_failed', 'starting', 'never_ran', 'runner_silent', 'banned', 'scan_failing', 'solve_failing', 'unsynced', 'human_needed', 'mail_failing', 'settings_stale'];
+export const REASONS: readonly Reason[] = ['mode_off', 'paused', 'no_dates', 'restart_cap', 'dispatch_failed', 'starting', 'never_ran', 'runner_silent', 'banned', 'scan_failing', 'solve_failing', 'unsynced', 'human_needed', 'mail_failing', 'settings_stale'];
 /** Runs start every 30 min (schedule) and last ~5.5 h; silence past this while not stopped is `late`. */
 export const LATE_AFTER_SEC = 45 * 60;
 /** @public (its/worker) */

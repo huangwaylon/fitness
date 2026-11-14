@@ -1,6 +1,6 @@
 // The ITS booker's Worker (README.md): the page's routes (a member's key, CORS for the app's origin; /its/push/* too), the runner's
 // (ITS_RUNNER_TOKEN), /health and /health/its (ITS_HEALTH_TOKEN: codes only, for alerting); the cron's watchdog
-// (wrangler.toml [triggers], the object's watch). Bodies are capped and checked
+// backstop (wrangler.toml [triggers], the object's watch; its alarm is the fast one). Bodies are capped and checked
 // here (the contract's parseSettingsInput, validate.ts); the record and its rules are the object's (bot.ts), one RPC per
 // request. Every refusal logs one line with its reason (never a key or a token); a page's request carries its
 // X-Request-Id (or one made up) in its lines and its answer.
@@ -43,7 +43,8 @@ export default {
     }
   },
 
-  /** Every 5 min: the watchdog (bot.ts watch). A throw is logged; the next tick tries again. */
+  /** Every 5 min: the watchdog's backstop (bot.ts watch; it sets the alarm again if it was lost). A throw is logged;
+   *  the next tick tries again. */
   async scheduled(_c: ScheduledController, env: Env): Promise<void> {
     try {
       await bot(env).watch();

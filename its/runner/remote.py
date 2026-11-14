@@ -26,7 +26,11 @@ holds other content under our id, number included; 400: not a valid entry) is a 
 refuses whole: one at a time, the rest still land). A 507 `record_full` keeps the entries queued too.
 
 Booking entries are queued and sent at once (the control loop is woken) and again with every report until the Worker
-answers with them in its record. Events carry a per-run `seq`; the Worker's `ackSeq` drops what it has. Every answer
+answers with them in its record. Events carry a per-run `seq`; the Worker's `ackSeq` drops what it has. A process
+restarted in its job (restart.py) is the same run: its claim's answer moves `seq` past the record's (the ack, this run's
+entry ids: never a seq reused, which would be dropped as acknowledged or refused as an id conflict), this run's open
+`confirming` it didn't write blocks the night like another run's, and this run's holds it didn't take with no outcome
+get a human_needed `run_ended` (`orphaned_holds`), as a dying run's would. Every answer
 is a RunnerConfig: its settings are applied (`on_settings`) when they are newer (`updatedAt`: answers from two threads
 can arrive out of order), its bookings seed holds.json (a hotel held for a date is never applied for again, whichever
 run held it), its lease (from a claim or a report) renews the fence. The nights with a `confirmed` entry (the record's,
@@ -38,6 +42,7 @@ Never logs the token. Dates and hotel names go to the Worker (members only) and 
 """
 import datetime
 import json
+import os
 import re
 import threading
 import time
@@ -137,12 +142,14 @@ def _same_entry(have, sent):
 
 class Client:
     """JSON over HTTPS with the runner's Bearer token. `call` never raises: `(status, obj)`, status 0 on a transport
-    failure, obj None when the body isn't JSON."""
+    failure, obj None when the body isn't JSON. `until` (time.monotonic(); main.py's signal drain): no call past it,
+    and none waits beyond it."""
 
     def __init__(self, base, token, timeout=20, opener=None):
         self.base = base.rstrip('/')
         self._token = token
         self.timeout = timeout
+        self.until = None
         self._open = opener or urllib.request.urlopen
 
     def call(self, method, path, body=None):
@@ -152,8 +159,13 @@ class Client:
             'Content-Type': 'application/json',
             'User-Agent': 'its-runner',
         })
+        timeout = self.timeout
+        if self.until is not None:
+            timeout = min(timeout, self.until - time.monotonic())
+            if timeout <= 0:
+                return 0, None
         try:
-            with self._open(req, timeout=self.timeout) as r:
+            with self._open(req, timeout=timeout) as r:
                 status, raw = r.status, r.read(1 << 20)
         except urllib.error.HTTPError as e:
             status, raw = e.code, (e.read(1 << 16) if e.fp else b'')
@@ -233,7 +245,8 @@ class Remote:
     URL monitor call `on_event` and the gates while the control loop reports."""
 
     def __init__(self, client, run_id, host='actions', sha=None, run_url=None, deadline=None,
-                 clock=time.time, on_settings=None, seed_hold=None, on_done=None, log=None, public=None):
+                 clock=time.time, on_settings=None, seed_hold=None, on_done=None, log=None, public=None,
+                 orphans_path=None):
         self.client = client
         self.run_id, self.host, self.sha, self.run_url = run_id, host, sha, run_url
         self.clock = clock
@@ -254,6 +267,9 @@ class Remote:
         self.conflicts = set()            # unsynced ids the Worker refused as an id conflict: sent one at a time
         self.record_full = False          # the last bookings post was a 507: the Worker's record takes no more
         self.seeded = set()               # booking ids already written to holds.json
+        self.recorded = set()             # booking ids this process wrote (a restarted run's earlier ones aren't)
+        self.orphans_path = orphans_path  # the hold ids orphaned_holds told already (the state dir: outlives a restart)
+        self._orphans_pending = []        # (event seq, hold ids): written to orphans_path once the Worker acks the seq
         self.confirmed_here = set()       # nights this run confirmed (before the record has them)
         self.maybe_here = set()           # nights where this run's leg may have filed (outcome unknown)
         self.done = frozenset()           # nights with a confirmed booking: the record's and this run's
@@ -325,6 +341,7 @@ class Remote:
             if number:
                 b['number'] = number
             self.unsynced[bid] = b
+            self.recorded.add(bid)
         self.urgent.set()
         return bid
 
@@ -475,6 +492,12 @@ class Remote:
             return False, 'lease_stale'
         if stage != 'apply':
             return True, ''
+        with self.lock:
+            stopping = self.no_new_holds not in (None, 'time_up')
+        if stopping:
+            # a stop or a signal: no new `confirming`, no Chrome 申込する during the drain (the deadline's drain still
+            # files what it holds); the hold is a person's (human_needed run_ended)
+            return False, 'run_ended'
         bid = self.record('confirming', date, hotel)
         self.post_bookings()
         with self.lock:
@@ -511,6 +534,8 @@ class Remote:
                 self.config = dict(cfg, stop=self.config['stop'], stopReason=self.config['stopReason'])
             self.ack_seq = max(self.ack_seq, cfg['ackSeq'])
             self.events = [e for e in self.events if e['seq'] > self.ack_seq]
+            told = [i for seq, ids in self._orphans_pending if seq <= self.ack_seq for i in ids]
+            self._orphans_pending = [p for p in self._orphans_pending if p[0] > self.ack_seq]
             have = {b['id']: b for b in cfg['bookings']}
             clash = []
             for bid in [i for i in self.unsynced if i in have]:
@@ -522,6 +547,8 @@ class Remote:
             fresh = [b for b in cfg['bookings'] if b['id'] not in self.seeded]
             self.seeded.update(b['id'] for b in fresh)
             self.done |= {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirmed'} | self._open_confirming(cfg)
+        if told:
+            self._keep_orphans_told(told)
         for b in clash:
             self._conflict(b, {'error': 'record_differs'})
         for b in fresh:
@@ -532,9 +559,10 @@ class Remote:
     def _open_confirming(self, cfg):
         """Nights with another run's `confirming` that no `failed` or `confirmed` followed: that leg may have filed
         (it ended with the outcome unknown, or the run died mid-leg), so the night counts as booked until a person
-        removes it. This run's own open ones are its legs in flight; it adds its unknown outcomes itself (maybe_here)."""
+        removes it. This process's own open ones are its legs in flight; it adds its unknown outcomes itself
+        (maybe_here). This run's from before a restart are another process's: they count."""
         ended = {(b['date'], b['hotel']) for b in cfg['bookings'] if b['kind'] in ('failed', 'confirmed')}
-        return {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirming' and b['runId'] != self.run_id
+        return {b['date'] for b in cfg['bookings'] if b['kind'] == 'confirming' and b['id'] not in self.recorded
                 and (b['date'], b['hotel']) not in ended}
 
     def _done_changed(self):
@@ -579,6 +607,7 @@ class Remote:
             reply = parse_claim(obj) if status == 200 else None
             if reply and reply['ok']:
                 self.absorb(reply['config'], renew=True)
+                self._resume(reply['config'])
                 return reply['config'], ''
             if reply:
                 why = 'lease_lost'
@@ -596,6 +625,56 @@ class Remote:
             if self.clock() + CLAIM_RETRY_SEC > until:
                 return None, why
             sleep(CLAIM_RETRY_SEC)
+
+    def _resume(self, cfg):
+        """After a granted claim: `seq` past everything the record has of this run (module docstring). A no-op for a
+        fresh run and for a re-claim mid-run (its seq is ahead already)."""
+        prefix = self.run_id + ':'
+        tails = [b['id'][len(prefix):] for b in cfg['bookings'] if b['id'].startswith(prefix)]
+        top = max([cfg['ackSeq']] + [int(t) for t in tails if t.isdigit()])
+        with self.lock:
+            if top <= self.seq:
+                return
+            self.seq = top
+        self.log(f'claim: this run has events and entries up to seq {top} (a restart): going on from there')
+
+    def orphaned_holds(self, cfg):
+        """This run's holds in the record that this process didn't take (a restart's: the process that took them is
+        gone, and its confirm queue with it), under HOLD_SEC old, with no outcome: each gets a human_needed
+        `run_ended`, as unresolved_holds gives a dying run's, once: the ids are kept in `orphans_path` once the Worker
+        acknowledged the event (absorb), so the next restart doesn't tell them again, and tells one never acked. The
+        count."""
+        now = self._ms()
+        told = self._orphans_told()
+        ended = {(b['date'], b['hotel']) for b in cfg['bookings'] if b['kind'] in ('failed', 'confirmed')}
+        out = {}
+        for b in cfg['bookings']:
+            if (b['kind'] == 'hold' and b['runId'] == self.run_id and b['id'] not in self.recorded and b['id'] not in told
+                    and _is_int(b.get('at')) and now - b['at'] < HOLD_SEC * 1000 and (b['date'], b['hotel']) not in ended):
+                out.setdefault((b['date'], b['hotel']), []).append(b['id'])
+        for (date, hotel), ids in out.items():
+            with self.lock:
+                self.on_event('human_needed', {'date': date, 'hotel': hotel, 'detail': 'run_ended'})
+                self._orphans_pending.append((self.seq, ids))
+        return len(out)
+
+    def _orphans_told(self):
+        if not (self.orphans_path and os.path.exists(self.orphans_path)):
+            return set()
+        try:
+            with open(self.orphans_path, encoding='utf-8') as f:
+                return set(json.load(f))
+        except (OSError, ValueError, TypeError):
+            return set()
+
+    def _keep_orphans_told(self, ids):
+        if not self.orphans_path:
+            return
+        try:
+            with open(self.orphans_path, 'w', encoding='utf-8') as f:
+                json.dump(sorted(self._orphans_told().union(ids)), f)
+        except OSError as e:
+            self.log(f'orphaned holds: could not keep the ids told ({e})')
 
     def post_bookings(self):
         """Send the unsynced entries; True when none is left. Entries set aside (an id conflict, an entry the Worker
@@ -723,10 +802,13 @@ def preflight(client):
     cfg = parse_config(obj) if status == 200 else None
     if cfg is None:
         return status, ('bad_answer' if status == 200 else 'unreachable'), False
-    if not cfg['stop']:
-        return status, 'none', True
-    reason = cfg['stopReason'] or 'other'
-    return status, reason, reason not in PREFLIGHT_SKIP + ('other',)
+    reason = (cfg['stopReason'] or 'other') if cfg['stop'] else 'none'
+    run = reason not in PREFLIGHT_SKIP + ('other',)
+    left = cfg.get('restartsLeft')
+    if run and _is_int(left) and left <= 0:
+        # the Tokyo day's in-job restarts are spent (a crash loop): no restart, no new run, no handoff till midnight
+        return status, 'restart_cap', False
+    return status, reason, run
 
 
 def preflight_main(env):

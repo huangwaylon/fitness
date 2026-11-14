@@ -19,7 +19,7 @@ const entry = (kind: BookingEntry['kind'], at: number, x: Partial<BookingEntry> 
 
 /** A healthy record: running, reported 10 s ago; with changes. */
 function rec(x: Partial<ItsRecord> = {}): ItsRecord {
-  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: { lastSentAt: null, lastOutcome: null, done: [] }, watch: null, ...x };
+  return { settings, bookings: [], runner: runner(), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: { lastSentAt: null, lastOutcome: null, done: [] }, watch: null, restarts: null, ...x };
 }
 const verdict = (r: ItsRecord, mode: Mode = 'on', now = NOW) => verdictOf(r, mode, now);
 

@@ -19,6 +19,8 @@ Two modes:
   way; a lease lost while nobody else holds it is claimed again first (a Worker outage
   longer than the lease must not end the run). The run id is `GITHUB_RUN_ID-GITHUB_RUN_ATTEMPT`
   (a re-run is a new run: its events and entries must not collide with the first attempt's).
+  restart.py runs it on Actions: a crash before the deadline is restarted in the job, the same run
+  (`ITS_RESTART` = n, its `run_start` detail `restart`; remote.py's claim goes on from the record's seq).
 
 The preflight is check_env.py.
 
@@ -29,6 +31,7 @@ import argparse
 import asyncio
 import os
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -68,6 +71,23 @@ WORKER_LOST_SEC = 15 * 60
 # While auto-confirm is on and the last mailbox trip failed, the login is checked again this often (a transient failure
 # must not leave mailOk false, and the Worker's mail_failing on, until the next hold's leg).
 IMAP_RECHECK_SEC = 10 * 60
+# SIGTERM/SIGINT (the step cancelled or timed out; restart.py passes it on; GitHub kills ~10 s after its first signal):
+# at once no new hold and no new 申込する; in-flight work waited for SIGNAL_DRAIN_SEC; the whole stop, run_end's report
+# included, within SIGNAL_TOTAL_SEC, each Worker call ≤ SIGNAL_HTTP_SEC (best effort: else the lease lapses).
+SIGNAL_DRAIN_SEC = 2
+SIGNAL_TOTAL_SEC = 6
+SIGNAL_HTTP_SEC = 3
+
+
+class SignalStop(BaseException):
+    """Raised by the signal handler in the main thread (RemoteRun.on_signal), out of whatever the control loop was
+    doing (a slow report included): run_remote then stops (RemoteRun.stop_on_signal). Not an Exception: no
+    `except Exception` swallows it."""
+# Written after this process's first answered report: restart.py restarts only a process that got that far (or ran
+# restart.MIN_RUN_SEC), never a startup crash.
+REPORTED_FILE = os.path.join(config.STATE_DIR, 'reported')
+# The hold ids a restarted process told as human_needed run_ended (remote.orphaned_holds): told once per job.
+ORPHANS_FILE = os.path.join(config.STATE_DIR, 'orphans_told.json')
 # The public summary's cadence.
 SUMMARY_EVERY_SEC = 300
 # The same failing step is printed publicly at most this often.
@@ -290,8 +310,12 @@ class RemoteRun:
     stopped, the confirm worker left to finish); else reconcile the scanners. Draining: when nothing is in flight or
     the drain's time is up, `finish()`: human_needed for young unconfirmed holds, `run_end`, a last report."""
 
-    def __init__(self, rem, sup, deadline=None, clock=time.time):
+    def __init__(self, rem, sup, deadline=None, clock=time.time, reported_file=None):
         self.rem, self.sup, self.deadline, self.clock = rem, sup, deadline, clock
+        self.reported_file = reported_file   # REPORTED_FILE on Actions; touched after the first answered report
+        self.signalled = None                # the first SIGTERM/SIGINT
+        self.raise_on_signal = False         # run_remote: the handler raises SignalStop (the main thread's)
+        self.finishing = False
         self.draining = False
         self.end_detail = None
         self.drain_until = None
@@ -314,6 +338,35 @@ class RemoteRun:
         log(f"{Y}Draining ({detail}): no new holds; {self.sup.busy()} in flight{X}")
         logs.public('drain', reason=detail, active=self.sup.busy(),
                     left_min=round(max(0.0, until - self.clock()) / 60, 1))
+
+    def on_signal(self, signum, _frame=None):
+        """SIGTERM/SIGINT: a stop at once (no new hold or 申込する), then SignalStop (run_remote: stop_on_signal; a
+        tick drains too). Idempotent: a process group's signal and restart.py's forwarded one are one stop."""
+        if self.signalled is not None:
+            return
+        self.signalled = signum
+        with self.rem.lock:
+            if self.rem.no_new_holds in (None, 'time_up'):
+                self.rem.no_new_holds = 'signal'
+        self.rem.urgent.set()
+        if self.raise_on_signal:
+            raise SignalStop(signum)
+
+    def stop_on_signal(self):
+        """After SignalStop: every Worker call bounded (SIGNAL_HTTP_SEC each, none past SIGNAL_TOTAL_SEC from now),
+        the drain (SIGNAL_DRAIN_SEC for in-flight work), run_end and its report, best effort. The end detail."""
+        t0 = time.monotonic()
+        client = self.rem.client
+        if hasattr(client, 'until'):
+            client.until = t0 + SIGNAL_TOTAL_SEC
+            client.timeout = min(client.timeout, SIGNAL_HTTP_SEC)
+        if self.finishing:   # the signal landed in finish(): its report once more, bounded
+            self.rem.report()
+            return self.end_detail
+        self.begin_drain('signal', self.clock() + SIGNAL_DRAIN_SEC)
+        while self.sup.busy() and time.monotonic() - t0 < SIGNAL_DRAIN_SEC:
+            time.sleep(0.1)
+        return self.finish()
 
     def _reclaimed(self, cfg, now):
         """A `lease_lost` stop while nobody else holds the lease (it expired during a Worker outage, or was dropped):
@@ -341,10 +394,17 @@ class RemoteRun:
         rem, now = self.rem, self.clock()
         if rem.urgent.is_set() or self.last_report is None or now - self.last_report >= remote.REPORT_EVERY_SEC:
             self.last_report = now
-            rem.report()
+            if rem.report() is not None and self.reported_file:
+                path, self.reported_file = self.reported_file, None
+                try:
+                    open(path, 'w').close()
+                except OSError:
+                    pass
         cfg = rem.config
         settings = rem.settings or {}
 
+        if self.signalled is not None:
+            self.begin_drain('signal', now + SIGNAL_DRAIN_SEC)
         if not self.draining:
             if rem.banned:
                 self.begin_drain('ban', now + BAN_DRAIN_SEC)
@@ -383,6 +443,7 @@ class RemoteRun:
         return None
 
     def finish(self):
+        self.finishing = True
         rem = self.rem
         busy = self.sup.busy()
         if busy:
@@ -504,7 +565,8 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     run_id, run_url, host = run_identity(env, clock)
     origin = ('dispatch' if env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' else 'schedule') \
         if on_actions else 'local'
-    logs.public('start', host=host, origin=origin,
+    restarts = int(env['ITS_RESTART']) if _RUN_NUM.match(env.get('ITS_RESTART') or '') else 0   # restart.py's count
+    logs.public('start', host=host, origin=origin, restarts=restarts or None,
                 left_min=None if deadline is None else round((deadline - clock()) / 60, 1))
     if book_hotels.BASE_REFUSED:
         log(f"{R}ITS_BASE_URL={book_hotels.BASE_REFUSED!r} refused: only a loopback server (127.0.0.1, "
@@ -519,7 +581,8 @@ def run_remote(deadline=None, clock=time.time, wait=None):
     sha = (env.get('GITHUB_SHA') or '')[:8] or None
     rem = remote.Remote(remote.Client(env.get('ITS_WORKER_URL') or remote.DEFAULT_URL, token), run_id, host,
                         sha, run_url, deadline=deadline, clock=clock, on_settings=_apply_settings,
-                        seed_hold=book_hotels.save_booking, on_done=_apply_done, log=log, public=logs.public)
+                        seed_hold=book_hotels.save_booking, on_done=_apply_done, log=log, public=logs.public,
+                        orphans_path=ORPHANS_FILE)
     book_hotels._event_sink = rem.on_event
     book_hotels._hold_gate = rem.hold_gate
     confirm_booking._commit_gate = rem.commit_gate
@@ -532,24 +595,36 @@ def run_remote(deadline=None, clock=time.time, wait=None):
         log(f"{R}No lease ({why}); not running{X}")
         logs.public('run_end', detail=why, exit=0 if why == 'lease_lost' else 1)
         return 0 if why == 'lease_lost' else 1
-    log(f"{B}ITS BOOKING SYSTEM (remote, run {run_id}){X}  Email: {EMAIL or '(unset)'}")
-    rem.event('run_start', detail=origin)
+    log(f"{B}ITS BOOKING SYSTEM (remote, run {run_id}{f', restart {restarts}' if restarts else ''}){X}  "
+        f"Email: {EMAIL or '(unset)'}")
+    rem.event('run_start', detail='restart' if restarts else origin)
+    orphans = rem.orphaned_holds(cfg)
+    if orphans:
+        log(f"{Y}HUMAN NEEDED: {orphans} hold(s) this run took before its restart, with no outcome{X}")
 
     sup = Supervisor()
-    run = RemoteRun(rem, sup, deadline, clock)
+    run = RemoteRun(rem, sup, deadline, clock, reported_file=REPORTED_FILE if on_actions else None)
+    if threading.current_thread() is threading.main_thread():
+        run.raise_on_signal = True
+        for s in (signal.SIGTERM, signal.SIGINT):
+            signal.signal(s, run.on_signal)
     if not cfg['stop']:
         sup.start()
     sleep = wait or (lambda s: rem.urgent.wait(s))
     while True:
         try:
-            detail = run.tick()
-        except Exception as e:
-            log(f"{R}Control loop error: {e!r}{X}")
-            logs.public('error', step='control', exc=type(e).__name__)
-            detail = None
-        if detail is not None:
+            try:
+                detail = run.tick()
+            except Exception as e:
+                log(f"{R}Control loop error: {e!r}{X}")
+                logs.public('error', step='control', exc=type(e).__name__)
+                detail = None
+            if detail is not None:
+                break
+            sleep(2)
+        except SignalStop:
+            detail = run.stop_on_signal()
             break
-        sleep(2)
     return 1 if detail == 'worker_lost' else 0
 
 

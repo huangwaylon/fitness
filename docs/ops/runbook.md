@@ -181,10 +181,11 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
   rotation, the hand check): [its/README.md](../../its/README.md); the `its-alert` issue and a run's timeline:
   its/README.md "Investigating" (Gmail is the ground truth for holds and 予約確定).
 - Rotating a token both sides share (§3's keys, the runner's): 停止 → change both → 開始.
-- **The ITS runner is silent** (the `runner_silent` push, verdict `late`): each run hands off to the next and the
-  Worker's watchdog dispatches a missing one, backing off 10–60 min, at most 12 a day (then it only pushes). `cd its/worker && npx wrangler tail --search "its
-  watchdog"`: `no_token` → set the token (below); `skip=github_run id=<id>` → a run stuck queued or in progress: `gh
-  run view <id>`, `gh run cancel <id>`; `dispatch=401` → rotate the token. Start one by hand: `gh workflow run
+- **The ITS runner is silent** (the `runner_silent` push, verdict `late`): a crash restarts in its job (`its restart`
+  in the run's log), each run hands off, the Worker's watchdog dispatches a missing one or cancels a hung one, backing
+  off 10–60 min, ≤ 12 a day. `cd its/worker && npx wrangler tail --search "its watchdog"`: `no_token` → set the token
+  (below); `skip=github_run id=<id>` for long → stuck queued: `gh run cancel <id>`; `dispatch=401` → rotate it;
+  `alert=loop … restarts=20` → a crash loop, no run till Tokyo's midnight or 開始: its:logs on the run. Start one by hand: `gh workflow run
   its-runner.yml --ref main`. Details: its/README.md "Watchdog" and "Investigating".
 - **`GH_DISPATCH_TOKEN`** (開始's and the watchdog's dispatch): a fine-grained PAT, `huangwaylon/fitness` only,
   Actions read and write, ≤ 1 year (its/README.md "Secrets"). Set or rotate: `cd its/worker && npx wrangler secret
