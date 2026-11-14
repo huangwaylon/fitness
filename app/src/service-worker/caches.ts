@@ -467,6 +467,39 @@ export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: stri
   await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
 }
 
+/** A launch online races the network for the shell this long (ms). A deploy's own page in time boots at once, with no
+ *  reload into it (the phones before: ~3 s of the old build's HUD, then a reload under the player, 35% of cold opens
+ *  11-11..11-14); late (one bar, a captive portal), this version's cached shell, and the deploy is taken at the next
+ *  safe moment (ui-state/reload.ts). Past the phones' version.json ask (median 191 ms, p90 300). */
+export const RACE_MS = 400;
+export type ShellFrom = 'net' | 'cache';
+
+/** Whether a navigation's network answer is a page of ours to boot: HTML, our origin, and either the page or the SPA
+ *  fallback (404.html is index.html: build script). */
+const bootable = (res: Response): boolean => (res.ok || res.status === 404) && res.type === 'basic' && (res.headers.get('content-type') ?? '').includes('text/html');
+
+/** A navigation's answer when this version has a cached shell (`own`): the network's page (`net`: null offline) if it
+ *  is in within `raceMs` and bootable, else `own`. A late or unusable answer's body is let go. */
+export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, raceMs = RACE_MS): Promise<[Response, ShellFrom]> {
+  if (!net) return [own, 'cache'];
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<null>((r) => (timer = setTimeout(r, raceMs, null)));
+  const caught = net.catch(() => null);
+  const first = await Promise.race([caught, late]);
+  clearTimeout(timer);
+  if (first && bootable(first)) return [first, 'net'];
+  if (first) void first.body?.cancel().catch(() => {});
+  else void caught.then((r) => r?.body?.cancel().catch(() => {}));
+  return [own, 'cache'];
+}
+
+/** A shell's answer saying where it came from (Server-Timing `shell`: perf.boot's, world3d/boot.ts shellFrom). */
+export function marked(res: Response, from: ShellFrom): Response {
+  const headers = new Headers(res.headers);
+  headers.append('Server-Timing', `shell;desc=${from}`);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
 // ---- offline guides and maps (docs/backend.md "Service worker" › Offline): kept as they are seen, never prefetched
 
 /** The guides' photos (isGuidePhoto) once seen: a cache that outlives builds, revalidated in the background. */

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { fetchKeep, marked, raceShell, RACE_MS, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -823,5 +823,54 @@ describe("a first launch's files kept once the worker is in (warmable)", () => {
   });
   it('at most WARM_MAX', () => {
     expect(warmable(Array.from({ length: WARM_MAX + 5 }, (_, i) => `${O}/room/m${i}.glb`), O)).toHaveLength(WARM_MAX);
+  });
+});
+
+describe('a launch races the network for the shell (raceShell)', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+  const page = (body = '<html>new</html>', init: ResponseInit = {}, type = 'basic') => {
+    const r = new Response(body, { headers: { 'content-type': 'text/html; charset=utf-8' }, ...init });
+    Object.defineProperty(r, 'type', { value: type });
+    return r;
+  };
+  const own = () => page('<html>cached</html>');
+  const later = <T,>(ms: number, v: T) => new Promise<T>((r) => setTimeout(r, ms, v));
+
+  it('the network\'s page in time: booted (a deploy\'s own page, no reload into it)', async () => {
+    const p = raceShell(own(), later(120, page()));
+    await vi.advanceTimersByTimeAsync(120);
+    const [res, from] = await p;
+    expect(from).toBe('net');
+    expect(await res.text()).toBe('<html>new</html>');
+  });
+  it('late (a weak network): the cached shell at RACE_MS, the late answer let go', async () => {
+    const late = page();
+    const cancel = vi.spyOn(late.body!, 'cancel');
+    const p = raceShell(own(), later(RACE_MS + 500, late));
+    await vi.advanceTimersByTimeAsync(RACE_MS);
+    const [res, from] = await p;
+    expect(from).toBe('cache');
+    expect(await res.text()).toBe('<html>cached</html>');
+    await vi.advanceTimersByTimeAsync(500);
+    expect(cancel).toHaveBeenCalled();
+  });
+  it('offline (no ask) or a failed one: the cached shell at once', async () => {
+    expect((await raceShell(own(), null))[1]).toBe('cache');
+    expect((await raceShell(own(), Promise.reject(new TypeError('offline'))))[1]).toBe('cache');
+  });
+  it('the SPA fallback (404.html is index.html) boots; an error, a redirect, or not HTML does not', async () => {
+    expect((await raceShell(own(), Promise.resolve(page('<html>new</html>', { status: 404 }))))[1]).toBe('net');
+    expect((await raceShell(own(), Promise.resolve(page('oops', { status: 503 }))))[1]).toBe('cache');
+    const json = new Response('{}', { headers: { 'content-type': 'application/json' } });
+    Object.defineProperty(json, 'type', { value: 'basic' });
+    expect((await raceShell(own(), Promise.resolve(json)))[1]).toBe('cache');
+    expect((await raceShell(own(), Promise.resolve(page('', {}, 'opaqueredirect'))))[1]).toBe('cache');
+  });
+  it('marked: the answer says where it came from (Server-Timing), its own headers (the CSP) kept', async () => {
+    const res = marked(page('x', { headers: { 'content-type': 'text/html', 'content-security-policy': "script-src 'sha256-a'" } }), 'net');
+    expect(res.headers.get('server-timing')).toBe('shell;desc=net');
+    expect(res.headers.get('content-security-policy')).toBe("script-src 'sha256-a'");
+    expect(await res.text()).toBe('x');
   });
 });

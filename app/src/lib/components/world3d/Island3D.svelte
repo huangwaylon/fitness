@@ -51,7 +51,6 @@
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
-  import { askMs, launchHold } from '#lib/ui-state/launchUpdate.ts';
   import { hasFields } from '#lib/layout/fields.ts';
   import { meshKeyOf } from '#lib/layout/mesh.ts';
   import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
@@ -978,14 +977,13 @@
 
   /** The launch's clock (boot.ts: the page's first mount only), the mount's timed (that, or the first return's), and
    *  how long the mount waited for the fields. */
-  let boot: BootClock | null = null, timed: BootClock | null = null, fieldsMs = 0, heldMs = 0;
+  let boot: BootClock | null = null, timed: BootClock | null = null, fieldsMs = 0;
   onMount(() => {
     let stop: (() => void) | undefined, gone = false, again = 0;
     const t0 = performance.now();
     prefetchArt(cardArts());
     // (a context refused: once more a second later, mount's catch)
     const go = (first: boolean) => {
-      if (first) heldMs = Math.max(0, performance.now() - t0 - fieldsMs);
       if (!gone) stop = mount(first ? () => (again = window.setTimeout(() => go(false), 1000)) : undefined);
     };
     // the ground's fields first (layout/fieldsPrime.ts: the cache's, or the worker's; the launch's prime if it has
@@ -993,8 +991,7 @@
     // room): the next display frame's, not in the page's own mount (WebKit: its ~55 ms and this ~35 ms were one frame)
     const l = layoutNow();
     const fieldsIn = hasFields(l) ? new Promise<void>((ok) => requestAnimationFrame(() => ok())) : primeFields(l);
-    // (and a launch's ask for a newer build: ui-state/launchUpdate.ts, a reload into it instead of this boot)
-    void Promise.all([fieldsIn.then(() => (fieldsMs = performance.now() - t0)), launchHold()]).then(() => go(true));
+    void fieldsIn.then(() => ((fieldsMs = performance.now() - t0), go(true)));
     return () => {
       gone = true;
       clearTimeout(again);
@@ -1034,7 +1031,7 @@
     eng = e;
     fittedLayout = -1;
     // (the launch timed: the page's first mount; the first return to it, perf.back)
-    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), data: week.dataAt, ask: askMs(), held: Math.round(heldMs) }), () => e.isPaused());
+    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), data: week.dataAt }), () => e.isPaused());
     timed = watch?.clock ?? null;
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);

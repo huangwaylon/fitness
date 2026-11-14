@@ -21,7 +21,6 @@
   import { kenkou } from '../health/open.svelte.ts';
   import { botsSheet, listenOpen, openIts } from '../bots/open.svelte.ts';
   import { loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
-  import { launchHold } from '#lib/ui-state/launchUpdate.ts';
 
   interface Props {
     /** Today's ベル so far, both people (the ベル row's label and the flash; shown in full in ごほうび). */
@@ -57,12 +56,10 @@
   // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所
   onMount(() => {
     if (take('panel', 'rewards')) opened = panelOpen = true;
-    // a notification's tap opened the app (service-worker/notify.ts): ボット on 保養所; one while open: its message. The
-    // param goes only once the launch's hold is over (ui-state/launchUpdate.ts): a cold open into a waiting deploy
-    // reloads the page about a second in, and the reloaded page must open 保養所 again (it went back to the island)
+    // a notification's tap opened the app (service-worker/notify.ts): ボット on 保養所; one while open: its message
     if (new URLSearchParams(location.search).get('open') === 'its') {
       openIts();
-      void launchHold().then(() => take('open', 'its'));
+      take('open', 'its');
     }
     return listenOpen();
   });

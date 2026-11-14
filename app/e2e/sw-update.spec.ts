@@ -161,45 +161,37 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 }
 
-test('a cold open into a waiting deploy reloads into it before the island is built (ui-state/launchUpdate.ts)', { tag: '@chromium' }, async ({ page, context }) => {
-  // each document: whether its island was made (window.__world3d set), by its time origin
-  await page.addInitScript(() => {
-    // (the launch's waits stretched: a slow runner's answer or install past 600 ms / 3 s boots the old build by design)
-    localStorage.setItem('e2e.launchWait', '15000');
-    const id = String(performance.timeOrigin);
-    sessionStorage.setItem('e2e.docs', JSON.stringify([...(JSON.parse(sessionStorage.getItem('e2e.docs') ?? '[]') as string[]), id]));
-    let w3d: unknown;
-    Object.defineProperty(window, '__world3d', { configurable: true, get: () => w3d, set: (v) => ((w3d = v), v && sessionStorage.setItem(`e2e.w3d.${id}`, '1')) });
-  });
+/** Where this page came from (the worker's Server-Timing `shell`: service-worker/caches.ts marked). */
+const shellOf = (page: Page) => page.evaluate(() => (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.serverTiming.find((t) => t.name === 'shell')?.description ?? null);
+
+// (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
+// player; now the launch's page is the network's when it's in time: a deploy's own, no reload into it)
+test('a launch is the network\'s page within the race, else the cached shell at once; the island waits on no version ask (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
-  // a deploy while the app is away (no focus, no visibility change: the next open is a new page)
-  await askSwapAgain(page, context);
-  await page.request.get('/__e2e/deploy');
-  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
-  await page.evaluate(() => sessionStorage.setItem('e2e.docs', '[]'));
+  // in time: the network's page, through the worker (its navigation preload)
   const open = await page.goto('?demo');
-  expect(open?.fromServiceWorker(), 'the open is the old build\'s cached shell').toBe(true);
-  // reloaded by the launch (its reloadAt), into a page whose island comes up
-  await expect.poll(() => page.evaluate(() => (JSON.parse(sessionStorage.getItem('e2e.docs') ?? '[]') as string[]).length).catch(() => 0), { timeout: 20_000, message: 'the launch reloaded' }).toBeGreaterThanOrEqual(2);
+  expect(open?.fromServiceWorker()).toBe(true);
   await islandUp(page);
-  await context.unroute('**/_app/version.json');
-  const { docs, made, reloadAt } = await page.evaluate(() => {
-    const docs = JSON.parse(sessionStorage.getItem('e2e.docs')!) as string[];
-    return { docs, made: docs.map((d) => !!sessionStorage.getItem(`e2e.w3d.${d}`)), reloadAt: sessionStorage.getItem('island.reloadAt') };
-  });
-  expect(made[0], 'the old build\'s island never made').toBe(false);
-  expect(made.at(-1), 'the new page\'s island').toBe(true);
-  expect(docs).toHaveLength(2);
-  expect(reloadAt).not.toBeNull();
+  expect(await shellOf(page)).toBe('net');
+  // the network's page past the race (one bar; the server answers it 3 s late): the cached shell, the island up before
+  await page.goto('?demo&e2eSlow=3000');
+  await islandUp(page);
+  expect(await shellOf(page)).toBe('cache');
+  // offline: the cached shell at once
+  await context.setOffline(true);
+  await page.goto('?demo');
+  await islandUp(page);
+  expect(await shellOf(page)).toBe('cache');
+  await context.setOffline(false);
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt')), 'no reload of the app\'s own').toBeNull();
 });
 
-// (a notification's tap on the closed app, the user's report 2026-11-13: ボット opened on 保養所, then about a second in
-// the launch's reload into a waiting deploy went back to the island: the param had gone with the first page)
-test('a cold open at ?open=its into a waiting deploy: the reloaded page opens ボット on 保養所 again, and it stays', { tag: '@chromium' }, async ({ page, context }) => {
+// (a notification's tap on the closed app, the user's report 2026-11-13: ボット opened on 保養所, then a launch's reload
+// went back to the island; no launch reloads now: the param goes at once)
+test('a cold open at ?open=its opens ボット on 保養所, and it stays', { tag: '@chromium' }, async ({ page, context }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('e2e.launchWait', '15000');
     localStorage.setItem('e2e.render', 'none');
     sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1));
   });
@@ -211,22 +203,15 @@ test('a cold open at ?open=its into a waiting deploy: the reloaded page opens �
   await page.goto('');
   await islandUp(page);
   await controlled(page);
-  // a deploy while the app is away; then the notification's tap opens it at ?open=its
-  await askSwapAgain(page, context);
-  await page.request.get('/__e2e/deploy');
-  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
   await page.evaluate(() => sessionStorage.setItem('e2e.docs', '0'));
   await page.goto('?open=its');
-  await expect.poll(() => page.evaluate(() => Number(sessionStorage.getItem('e2e.docs'))).catch(() => 0), { timeout: 20_000, message: 'the launch reloaded' }).toBeGreaterThanOrEqual(2);
   await islandUp(page);
-  await context.unroute('**/_app/version.json');
   const sheet = page.locator('dialog[open] [data-bots]');
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
-  // (the param let go once the reloaded page's launch is settled: no reload after it)
   await expect.poll(() => page.evaluate(() => location.search)).toBe('');
   await expect(sheet).toHaveAttribute('data-tab', 'its');
-  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(2);
+  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(1);
 });
 
 test('a deploy whose install fails reloads nothing, and the next time the app comes back it installs and reloads', { tag: '@chromium' }, async ({ page, context }) => {

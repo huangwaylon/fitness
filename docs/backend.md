@@ -413,13 +413,15 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   from it), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
   (`staleFonts`). It activates as soon as it's installed: the old worker is idle by then, as no event of its waits on a
   bounded cache's index write (`bounded.ts`: a use is marked in memory, the write follows on its own).
-- **Navigations:** this version's cached shell at once (`isShellOf`); none yet: network first, an older shell offline
-  or after 3 s.
+- **Navigations:** with this version's shell cached, the network's page if it's in within `RACE_MS` (400 ms;
+  `caches.ts raceShell`), so a launch after a deploy is the new build at once (its new chunks from the network, the
+  rest from the cache), else the cached shell; offline, the cached shell at once. The network's answer is the
+  navigation preload's (enabled at activation). Each answer says which (`Server-Timing: shell`, perf.boot `shell`).
+  No shell of this version yet: network first, an older shell offline or after 3 s.
 - **Updates:** Kit's `_app/version.json` check sets `updated`; the layout waits for the new build's worker
   (`ui-state/reload.ts newWorker`) and reloads once nothing is open. Never on a timer; a failed install reloads
-  nothing. A launch the worker served checks at once (`ui-state/launchUpdate.ts`): the island waits ≤600 ms for the
-  answer and, for a newer build, ≤3 s for its worker, then reloads into it before any of the island is built
-  (`app.reload why=launch`); offline or slow, the old build boots as before. `e2e/sw-update.spec.ts` (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
+  nothing. A launch never waits on the version: its page is already the deploy's when the network was in time
+  (Navigations). `e2e/sw-update.spec.ts` (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
 - **Packs** (the players' and ききみみ's): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`fetchShared`).
 

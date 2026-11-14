@@ -90,6 +90,10 @@ async function serve(req: IncomingMessage, res: ServerResponse) {
   const rel = inBase ? normalize(path.slice(base.length)).replace(/^(\.\.[/\\])+/, '') : '';
   const hit = inBase ? await file(join(root, rel)) : undefined;
   const served = hit ?? join(root, '404.html');
+  // a page asked at `?e2eSlow=<ms>` answered that late (sw-update.spec: a launch's network past the worker's race); by
+  // the URL, not the server's state, so the specs running alongside are untouched
+  const slow = served.endsWith('.html') ? Number(url.searchParams.get('e2eSlow') ?? 0) : 0;
+  if (slow > 0) await new Promise((r) => setTimeout(r, Math.min(slow, 10_000)));
   let body = await readFile(served);
   if (deploys && path.endsWith('/service-worker.js')) body = Buffer.concat([body, Buffer.from(`\n// e2e deploy ${deploys}\n`)]);
   // (a type of _headers' over the file's: the models')

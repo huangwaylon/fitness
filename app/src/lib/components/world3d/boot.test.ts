@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { cleanData } from '#lib/contract/log.ts';
-import { bootReport, createBootClock, lateModels, modelFetches, swState, watchBoot } from './boot.ts';
+import { bootReport, createBootClock, lateModels, modelFetches, shellFrom, swState, watchBoot } from './boot.ts';
 
 describe('the launch clock (perf.boot)', () => {
   it('times the first frame, the models in, the island whole and the frames meanwhile', () => {
@@ -101,5 +101,17 @@ describe('the launch clock (perf.boot)', () => {
     const r = { mount: 210, first: 300, loaded: 560, shown: 1100, long: 340, draw: 330, appear: 330, steps: 3, progs: 49, fieldsMs: 80, fields: 'worker', sw: 'ctl', warm: true, net: 0, sLink: 1, msLink: 40, sModels: 1, msModels: 300, sCards: 0, msCards: 0, stepMs: 25, late: 3, lastM: 'finds/message-bottle' };
     expect(cleanData('perf.boot', r)).toEqual(r);
     expect(cleanData('perf.boot', { fields: 'somewhere', sw: 'yes', shown: '1100' })).toEqual({});
+  });
+});
+
+describe('where the launch\'s page came from (perf.boot shell)', () => {
+  const nav = (st: { name: string; description: string }[]) => [{ serverTiming: st } as unknown as PerformanceEntry];
+  it('the worker\'s Server-Timing `shell`, net or cache; none without it (a first visit)', () => {
+    expect(shellFrom(nav([{ name: 'shell', description: 'net' }]))).toBe('net');
+    expect(shellFrom(nav([{ name: 'cdn', description: 'x' }, { name: 'shell', description: 'cache' }]))).toBe('cache');
+    expect(shellFrom(nav([]))).toBeUndefined();
+    expect(shellFrom([])).toBeUndefined();
+    expect(shellFrom(nav([{ name: 'shell', description: 'other' }]))).toBeUndefined();
+    expect(cleanData('perf.boot', { shell: 'net' })).toEqual({ shell: 'net' });
   });
 });

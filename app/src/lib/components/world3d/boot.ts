@@ -51,10 +51,9 @@ export interface BootReport {
   /** ms since the navigation's start when the record's model was first composed (week.svelte.ts dataAt; 0: not by
    *  the report): the farm's plots, the finds and the garden's crops are placed only from it. */
   data?: number;
-  /** The launch's ask for a newer build (ui-state/launchUpdate.ts): its answer, ms after the ask (none: not asked, or
-   *  not by the report), and how long the island waited for it past its fields (ms). */
-  ask?: number;
-  held?: number;
+  /** Where the launch's page came from: the network (in within the worker's race: service-worker/caches.ts raceShell)
+   *  or the worker's cached shell; none: not the worker's (a first visit, no worker). */
+  shell?: 'net' | 'cache';
 }
 
 /** Of the models in (things.ts arrivals: name, time), those after `loaded` up to `shown`, and the last's name (at
@@ -64,6 +63,12 @@ export function lateModels(ins: readonly (readonly [string, number])[], loaded: 
   for (const [name, t] of ins)
     if (t > loaded && t <= shown) (late++, (lastM = name.slice(0, 40)));
   return lastM ? { late, lastM } : { late };
+}
+
+/** Where the launch's page came from (the worker's Server-Timing `shell`: service-worker/caches.ts marked). */
+export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? []): BootReport['shell'] {
+  const d = (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming?.find((t) => t.name === 'shell')?.description;
+  return d === 'net' || d === 'cache' ? d : undefined;
 }
 
 /** The service worker as the page was launched. */
@@ -149,7 +154,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data' | 'ask' | 'held'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;
@@ -178,7 +183,8 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
-    report = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net };
+    const shell = shellFrom();
+    report = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...(shell ? { shell } : {}) };
     log('perf.boot', { ...report });
   };
   document.addEventListener('visibilitychange', onVis);

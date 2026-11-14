@@ -5,7 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, marked, raceShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -94,6 +94,8 @@ self.addEventListener('activate', (event) => {
     (async () => {
       for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, STT_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea)
       await self.clients.claim();
+      // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
+      await self.registration.navigationPreload?.enable().catch(() => {});
       // the font slices this build's style sheets no longer name (a re-subset's: caches.ts staleFonts); never a failed
       // activation over it
       try {
@@ -163,16 +165,20 @@ self.addEventListener('fetch', (event) => {
     return; // the relay (the record, the room): always live
   }
 
-  // Stale-while-revalidate: this version's cached shell at once (its chunks are in the same cache: installed together),
-  // never a wait on the network. The revalidation is the worker's own: the browser checks for a new service worker on
-  // each navigation (every deploy changes it: its version), the new one installs its build's shell and chunks, skips
-  // waiting and claims the page; the page sees the deploy (Kit's _app/version.json check on resume) and reloads once
-  // the new worker controls it (ui-state/reload.ts updateReload). No shell of this version yet (a first visit, or
-  // offline at install): network first, an older version's shell offline or after 3 s; the response becomes this
-  // version's shell if it is this build's (keepShell).
+  // A navigation (docs/backend.md "Service worker" › Navigations): with this version's shell cached, the network's page
+  // if it is in within RACE_MS (caches.ts raceShell: a deploy's page boots at once, its new chunks from the network
+  // below, the rest from the cache), else the cached shell; offline, the cached shell at once. The network's answer is
+  // the navigation preload's (asked as the navigation starts, not once this worker is up: activate). The browser checks
+  // for a new worker on each navigation (every deploy changes it): the new one installs its build's shell and chunks,
+  // skips waiting and claims the page. No shell of this version yet (a first visit, or offline at install): network
+  // first, an older version's shell offline or after 3 s; the response becomes this version's shell if it is this
+  // build's (keepShell).
   if (req.mode === 'navigate') {
     const own = caches.open(CACHE).then((c) => c.match(SCOPE)).catch(() => undefined);
-    const net = own.then((hit) => (hit ? null : fetch(req)));
+    const preload = (event.preloadResponse as Promise<Response | undefined> | undefined)?.catch(() => undefined) ?? Promise.resolve(undefined);
+    const online = self.navigator.onLine !== false;
+    const ask = () => preload.then((r) => r ?? fetch(req));
+    const net = own.then((hit) => (hit ? null : ask()));
     // cloned in the first callback on `net`, before respondWith below can hand the body to the page
     event.waitUntil(
       net.then((res) => {
@@ -184,7 +190,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         const hit = await own;
-        if (hit) return hit;
+        if (hit) return marked(...(await raceShell(hit, online ? ask() : null)));
         let timer: ReturnType<typeof setTimeout> | undefined;
         const late = new Promise<null>((r) => (timer = setTimeout(r, NAV_TIMEOUT_MS, null)));
         const first = await Promise.race([net.catch(() => null), late]);

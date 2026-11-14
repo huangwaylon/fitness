@@ -2,9 +2,7 @@
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 import { DEVICE, localKV, readJson } from '#lib/sync/storage.ts';
 import { resolve } from '$app/paths';
-import { updated } from '$app/state';
 import { opensIsland } from '#lib/ui-state/boot.ts';
-import { askAtLaunch } from '#lib/ui-state/launchUpdate.ts';
 import type { LayoutLoad } from './$types';
 import { quiet } from '#lib/quiet.ts';
 
@@ -18,9 +16,6 @@ export const prerender = false;
 export const load: LayoutLoad = async ({ url, untrack }) => {
   if (untrack(() => url.pathname) === resolve('/') && opensIsland()) {
     void import('#lib/components/world3d/Island3D.svelte').catch(() => {});
-    // a launch the service worker served may be a deploy behind: asked now, the island held for a newer build's worker
-    // (ui-state/launchUpdate.ts)
-    if (navigator.serviceWorker?.controller && navigator.onLine !== false) askAtLaunch({ check: () => updated.check() });
     // the layout's distance fields in a worker meanwhile (the layout is in localStorage: at hand now), so the 3D
     // island finds them built as it mounts (layout/fieldsPrime.ts: one job, the mount's own call shares it, or starts
     // it if it runs first)
