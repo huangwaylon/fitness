@@ -53,7 +53,7 @@
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
   import { hasFields } from '#lib/layout/fields.ts';
   import { meshKeyOf } from '#lib/layout/mesh.ts';
-  import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
+  import { bootReport, lateModels, watchBoot, type BootClock, type BootReport } from './boot.ts';
   import { watchRest } from './rest.ts';
   import { NoWebGL } from './stage.ts';
   import { ktx2Stats } from './ktx2.ts';
@@ -809,6 +809,7 @@
   });
   /** (a string: the placement below reruns only when the fields' look changed, not on each fold's new farmNow) */
   const farmSig = $derived(farmNow?.sig ?? '');
+  let firstPlace: Pick<BootReport, 'garden' | 'farm'> | null = null;
   $effect(() => {
     const e = eng;
     if (!e) return;
@@ -821,6 +822,8 @@
     placed = sig;
     untrack(() => {
       const farm = farmNow;
+      // (what the launch's first placing had, perf.boot: the garden's models known, the record's fields)
+      if (!loaded) firstPlace ??= { garden: gardenIn ? 'first' : wantsGarden(lay, date) ? 'late' : 'none', farm: farm ? 'first' : 'late' };
       const { insts, standins: st } = placeObjects(lay, { season, foliage, month, date, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true, ...(farm ? { farm: farm.plots } : {}) });
       placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
@@ -991,7 +994,11 @@
     // room): the next display frame's, not in the page's own mount (WebKit: its ~55 ms and this ~35 ms were one frame)
     const l = layoutNow();
     const fieldsIn = hasFields(l) ? new Promise<void>((ok) => requestAnimationFrame(() => ok())) : primeFields(l);
-    void fieldsIn.then(() => ((fieldsMs = performance.now() - t0), go(true)));
+    // and the garden's manifest, when the island has some of it (asked for above, as the island was made): its chunk is
+    // in early, but its import resolves in a task of its own, after the mount's long one, so the first placing went
+    // without it and its 13-37 models came after `loaded` (the phones' perf.boot: `shown` ~0.8 s past it, the last a crop)
+    const gardenIn0 = gardenIn || !wantsGarden(l, date) ? null : loadGarden().catch(() => {});
+    void Promise.all([fieldsIn.then(() => (fieldsMs = performance.now() - t0)), gardenIn0]).then(() => go(true));
     return () => {
       gone = true;
       clearTimeout(again);
@@ -1031,7 +1038,7 @@
     eng = e;
     fittedLayout = -1;
     // (the launch timed: the page's first mount; the first return to it, perf.back)
-    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), data: week.dataAt }), () => e.isPaused());
+    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), data: week.dataAt, ...firstPlace }), () => e.isPaused());
     timed = watch?.clock ?? null;
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);

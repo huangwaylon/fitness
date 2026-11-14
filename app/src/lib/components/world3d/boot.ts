@@ -51,9 +51,14 @@ export interface BootReport {
   /** ms since the navigation's start when the record's model was first composed (week.svelte.ts dataAt; 0: not by
    *  the report): the farm's plots, the finds and the garden's crops are placed only from it. */
   data?: number;
+  /** The launch's first placing: the garden's models known (`late`: placed only by a later pass, its models after
+   *  `loaded`; `none`: the island has none), the record's fields in (`late`: their plants a later pass's). */
+  garden?: 'first' | 'late' | 'none';
+  farm?: 'first' | 'late';
   /** Where the launch's page came from (service-worker/caches.ts ShellFrom: `net` a newer build's page from the
    *  network within the worker's race, `same` the cache confirmed by it, `skip` the cache with no race, `cache` the
-   *  cache, the network late or offline), and the race's ms; none: not the worker's (a first visit, no worker). */
+   *  cache, the network late or offline), and the race's ms from the navigation's fetch event (caches.ts Raced); none:
+   *  not the worker's (a first visit, no worker). */
   shell?: 'net' | 'same' | 'skip' | 'cache';
   raceMs?: number;
 }
@@ -93,7 +98,7 @@ export function modelFetches(entries: readonly { name: string; transferSize?: nu
   return { n, net };
 }
 
-type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM' | 'data' | 'ask' | 'held'>;
+type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM' | 'data' | 'garden' | 'farm'>;
 
 /** The launch's clock: the engine's frames (`frame`), the page's display frames (`tick`), the marks. `done` once
  *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden or the island paused meanwhile: its frames say
@@ -159,7 +164,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;
