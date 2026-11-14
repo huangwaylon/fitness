@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
+import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
 import { tierOf, type Entry } from './search.ts';
@@ -122,6 +122,35 @@ describe('loadFoodDb', () => {
     const lazy = index.datasets.filter((d) => d.lazy).map((d) => d.file);
     expect(fetched.slice(-lazy.length).map((h) => h.match(/\/food\/([\w-]+\.json)\?v=/)?.[1]).sort()).toEqual(lazy.sort());
     expect(db.sets.length).toBe(index.datasets.length);
+  });
+
+  it('fetches a lazy dataset once, when wanted: a logged entry’s alone (lazySources), the rest at a search’s want', async () => {
+    const asked: string[] = [];
+    const idx: FoodIndex = { version: 'v0', datasets: index.datasets.filter((d) => d.lazy) };
+    const empty = (source: string): Dataset => ({ source, label: source, items: [] });
+    vi.stubGlobal('fetch', async (href: string) => {
+      const file = href.match(/\/food\/([\w-]+\.json)/)![1];
+      asked.push(file);
+      if (file === 'index.json') return new Response(JSON.stringify(idx));
+      return file === 'verify.json' ? new Response(null, { status: 404 }) : new Response(JSON.stringify(empty(file)));
+    });
+    try {
+      const got = await loadFoodDb();
+      expect(asked).toEqual(['index.json', 'verify.json']);
+      expect(lazySources(['mext:01088', 'kal:1', 'kal:2', 'recipe:x'])).toEqual(['kalori']);
+      expect(lazySources(['off:4901', 'kal:1']).sort()).toEqual(['kalori', 'off']);
+      const kal = got.wantMore(lazySources(['kal:1']));
+      expect(got.pending).toBe(true);
+      await kal;
+      expect([asked.slice(2), got.pending]).toEqual([['kalori.json'], false]);
+      await got.wantMore(['kalori']);
+      await got.wantMore();
+      expect(asked.slice(2)).toEqual(['kalori.json', 'products.json']);
+      await got.wantMore();
+      expect(asked).toHaveLength(4);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('finds the PoC’s foods: the core item first, confirmed ones with their sources', () => {

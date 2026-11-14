@@ -44,7 +44,7 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { itemsKcal, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
+  import { itemsKcal, lazySources, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
   import { latestSnap } from './fresh.ts';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
@@ -394,11 +394,12 @@
   let catalogRev = $state(0);
   $effect(() => {
     const db = catalog;
-    if (db) void db.more.then(() => db === held.db && catalogRev++);
+    if (db) return db.onAdd(() => db === held.db && catalogRev++);
   });
-  // (the products and chain menus only for a day with one of them logged: never for the open alone, 4 MB)
+  // (the products or the chain menus only for a day with one of theirs logged, each alone: never for the open, 4–7 MB)
   $effect(() => {
-    if (catalog && day?.entries.some((e) => /^(off|kal):/.test(e.f.id))) void catalog.wantMore();
+    const want = lazySources(day?.entries.map((e) => e.f.id) ?? []);
+    if (catalog && want.length) void catalog.wantMore(want);
   });
   // (only while open: a quick close cancels it, as an unmount did; the next opening asks again until it is in)
   $effect(() => {

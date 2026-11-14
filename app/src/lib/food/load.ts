@@ -2,10 +2,10 @@
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names each file's version, fileV), then the core datasets and verify.json
 // together; the lazy ones (the products, 30k by column, 4 MB; the chain menus, Kalori) only once asked for
-// (`db.wantMore`: the search's open), in `db.more`. A dataset that fails to load is left out (its items unsearchable)
-// till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry;
-// `db.onAdd` says when one comes in, the search searching again);
-// only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
+// (`db.wantMore`: all at the search's open, a logged entry's own for its day). A dataset that fails to load is left
+// out (its items unsearchable) till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts
+// nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
+// index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
@@ -151,13 +151,19 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   // all at once, added in the order they arrive (search ranks by match, not by file)
   const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', fileV(index, 'verify.json'))), 'food.verify', null), ...core.map((d) => load(d))]);
   db.verify = verify;
-  let wanted: Promise<void> | null = null, settle = () => {};
-  db.more = new Promise<void>((ok) => (settle = ok));
-  db.wantMore = () => {
-    if (!wanted) db.pending = true;
-    const done = () => ((db.pending = false), settle());
-    wanted ??= Promise.all(lazy.map((d) => load(d))).then(done, done);
-    return db.more;
+  // (each lazy dataset fetched once, when first wanted: all of them for a search, an entry's alone for a day with it)
+  const asked = new Map<string, Promise<void>>();
+  let waiting = 0;
+  db.wantMore = (sources) => {
+    const sets = lazy.filter((d) => !sources || sources.includes(d.source));
+    for (const d of sets) {
+      if (asked.has(d.file)) continue;
+      waiting++;
+      db.pending = true;
+      const done = () => void (db.pending = --waiting > 0);
+      asked.set(d.file, load(d).then(done, done));
+    }
+    return Promise.all(sets.map((d) => asked.get(d.file))).then(() => {});
   };
   return db;
 }

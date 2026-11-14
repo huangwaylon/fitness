@@ -19,10 +19,10 @@ export interface FoodDb {
   /** The chain menus' shops (Kalori's header `shops`): each name's and alias's key → the shop's id (a query naming
    *  one: shopIn). */
   shopKeys: Map<string, string>;
-  /** Settles once the lazy datasets are in (or failed): search again then. Never before one asks for them (wantMore). */
-  more: Promise<void>;
-  /** The lazy datasets (products, the chain menus) fetched now, once: the search's open asks, never the sheet's (`more`). */
-  wantMore(): Promise<void>;
+  /** The lazy datasets (products, the chain menus) fetched now, each once: all for the search's open, only `sources`'
+   *  (index.json's `source`: lazySources) for a day with one logged; never the sheet's open. Settles once they're in
+   *  (or failed): search again then. */
+  wantMore(sources?: readonly string[]): Promise<void>;
   /** The lazy datasets asked for and not yet in (or failed): a search says 読み込み中, never 見つかりませんでした. */
   pending: boolean;
   /** `f` called each time a dataset is added after the load (a lazy one, one fetched again): search again; the stop. */
@@ -32,7 +32,19 @@ export interface FoodDb {
   close(): void;
 }
 
-export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), more: Promise.resolve(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+
+/** The lazy datasets' sources by their ids' prefix: a product's (`off:`) or a chain menu's (`kal:`). */
+const LAZY_PREFIX: Record<string, string> = { 'off:': 'off', 'kal:': 'kalori' };
+/** The lazy datasets (index.json `source`) foods with these ids come from: what a day's entries need (wantMore). */
+export const lazySources = (ids: Iterable<string>): string[] => {
+  const out = new Set<string>();
+  for (const id of ids) {
+    const s = LAZY_PREFIX[id.slice(0, 4)];
+    if (s) out.add(s);
+  }
+  return [...out];
+};
 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;
