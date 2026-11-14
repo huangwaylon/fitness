@@ -15,8 +15,12 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   (`db.wantMore(lazySources(ids))`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
 - **Warm launch, where it goes** (the phones, 154 launches 11-11..11-14, ms from navigation, p50/p90): mount 519/816
   (~165 modules from the SW cache, parse), first frame 727/1185, loaded 900/1494, shown 1663/2444 (the late garden
-  wave included). `net` = 0 in every one: a launch is bound by CPU and local IO, so caching more files would not
-  speed it up (only a first launch after a site-data wipe); C2 below is the next step.
+  wave included). `net` = 0 in every one proved less than it seemed: a file the service worker answers reads transfer
+  size 0 even when the worker fetched it from the network, so it counted only what went past the worker, not the room
+  cache's misses (review 11/14 r2: 6 models evicted, `net` 0). Since 0c10c3a20 perf.boot has `swNet`/`swRoom`/`swKB`
+  (the worker's own fetches), `pre` (the worker's fetch event to the page's clock: on WebKit the race and the cache
+  lookups are before every mark; ~105 ms on desktop WebKit's `skip` launches), `swCold`, `tx`, `lateF`/`lateA`, and a
+  warm launch's resource timings hold 1000 entries (they stopped at 250 of ~380). Read those before choosing L1 or C2.
 - **The model:** `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
 - **The island's length:** the ground costs the land's length, not the grid's (default 57 rows: fields ~105 ms on the
   Mac; the longest, 152: ~230 ms). A band (8 tile rows) is 4 draws and one ~2 MB bake target; at most 12 are baked
@@ -30,7 +34,9 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   and a character's sparkles, hearts and notes included (things.ts, effects.ts `calm`), the critters' moves once
   untouched 15 s (pace.ts `CRIT_CALM_MS`); the point lights' mask on (bend.ts). Measured on the phones 11-11..11-14:
   15.2 fps at rest time-weighted (a third of the frames at 30: walkers, flourishes, critters); `perf.rest`'s
-  `why1`-`why3` and `fx1` name them.
+  `why1`-`why3`, `fx1` and `nd1` (the moving node's tag) name them. A fishing float bobs at the ambience's rate, the
+  full rate only for a nibble's dip and from the bite (fishing3d.ts floatWants: a float out was 30 fps, 100 % full; now
+  ~13 fps, 10-14 %).
   Nothing in the log, the sync, the clouds or the sheets runs per frame (clouds.ts: no Animation read between steps).
   The phones' rest: `perf.rest` at each hide.
 
@@ -62,12 +68,15 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 | B2 | Bypass GLTFLoader's image path for the WebPs still loaded (`createImageBitmap` on the bufferView's Blob, no object URL or fetch) | ~50 ms of main thread at 4× CPU before the KTX2 textures and their cache (texCache.ts); now only the WebP fallback and the rooms' own models | world3d/things.ts, villager3d, home |
 | B3a | The back pass's flip as a uniform instead of `side` (one program for both passes of `twoPass`) | −7 programs; needs both passes double-sided with a discard by face, and the engine's warm-up already compiles them off the main thread (engine.ts, KHR_parallel_shader_compile): check a phone's `perf.boot` `progs` / `appear` first | world3d/sides.ts |
 | B5 | `content-visibility: auto` with `contain-intrinsic-size` on long sheet bodies (the meal log's days, ききみみ's lists, the travel guide, the trail list) | less layout and paint on open and scroll | food, kikimimi, travel, hiking components |
-| C2 | (next) A processed-model cache in IndexedDB: per model its decoded vertex and index buffers and material parameters, keyed by `MODELS[name].v` and a pipeline version, read in one `getAll` | ~30-50 ms of main thread at 4× (meshopt and JSON parse) and ~70 fewer service-worker round trips; beside the texture cache (texCache.ts) | world3d/things.ts, home.ts, structure.ts, villager3d.ts |
-| C3 | Instead of C2: one packed startup file per build (the default layout's models, meshopt and KTX2), a room-cache asset | one request instead of ~70 | scripts/world3d-models.ts, things.ts, the service worker's classes |
+| L1 | (open, the biggest) The phones' late wave: shown − loaded 812 ms p50 / 1209 p90 (602 of it waiting on models), which no Mac reproduces (desktop WebKit and the Simulator: late 0). Hypothesis, unverified: the worker's one thread queueing ~380 cache lookups on a phone. Check `pre`, `swNet` and `lateA − lateF` first; if it's the queue: C3, or the page reading the room cache itself (`caches.open`, ~80 fewer fetch events) | est. −300 to −600 ms of `shown` (unverified) | service-worker, world3d/things.ts |
+| C2 | (deferred, measured 11/14) A processed-model cache in IndexedDB: per model its decoded buffers and material parameters, read in one `getAll` | small: fetch + parse of the demo's 76 models is 14 ms on desktop WebKit (C2's path 2), 77 ms at Chromium 4× (7); est. 20-60 ms of `loaded` on a phone. The texture cache already took the transcode | world3d/things.ts, home.ts, structure.ts, villager3d.ts |
+| C3 | One packed startup file per build (the default layout's models, meshopt and KTX2), a room-cache asset | one request instead of ~70: L1's lever if the worker's queue is the cause | scripts/world3d-models.ts, things.ts, the service worker's classes |
 | R3 | Keep the GL renderer, its programs and textures across island ⇄ room | the tent's return is a 150-170 ms frame at 4× (upload 41, compile 45, Svelte 111) | world3d/engine.ts, rooms |
 | K1 | A ききみみ lesson's clips without their whole packs (a level-4 lesson: 3 packs, 3.5 MB; Pages answers no Range): smaller packs (a unit's review clips in its unit pack) | ~1.2 s on 4G before the first question; owned by the packs' work | kikimimi/packs.ts prefetchClips |
 | A1 | Check `perf.sheet` for ききみみ's first tap on a phone: headless Chromium spends 658 ms in `new AudioContext` | if real, create the context at the first tap anywhere | sound/engine.ts #ensure |
 | G1 | Reuse placeBody / at / mirror / roundedIn's scratch arrays | 7.9 MB/s of garbage while dragging | world3d |
 
 Not pursued: a launch snapshot and crossfade (declined); the View Transitions API (it snapshots the WebGL canvas and
-saves no mount work).
+saves no mount work); merging the ~50 small launch chunks (measured 11/14, a `codeSplitting` group: mount −16 ms on
+desktop WebKit, but the components' CSS split from 23 files to 49 and first-load CSS 60 → 109 KB gz, past the budget;
+worth retrying with CSS kept out only if L1 shows request count matters).
