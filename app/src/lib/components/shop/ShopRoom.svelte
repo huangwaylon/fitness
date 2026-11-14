@@ -127,7 +127,8 @@
     const r = buyPiece(pick, stock);
     if (!r.ok) return void cue('boop');
     cue('buy');
-    undoBanner(t('shop.bought', { name: itemName(pick) }), r);
+    // (the room's card: a world act, its banner kana with とりけす; the counter's list: a sheet's, kanji)
+    undoBanner(panel ? t('shop.bought', { name: itemName(pick) }) : t('world.shop.bought', { name: itemName(pick) }), r, { world: !panel });
     const bought = pick;
     // (a piece bought in the room: its card stays, saying it's mine now)
     if (panel) pick = null;
@@ -451,10 +452,10 @@
         <img class="ic" src={iconUrl(pick)} alt="" width="48" height="48" decoding="async" />
         <div class="what">
           {@render nm(itemName(pick))}
-          {#if cardOwned}<span class="price owned-tag">{t('shop.owned')}</span>
+          {#if cardOwned}<span class="price owned-tag">{t('world.shop.owned')}</span>
           {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={16} /></span>{formatNum(buyPrice(pick) ?? 0)}</span>{/if}
         </div>
-        <button type="button" class="btn small" data-shop-card-buy data-sfx="self" aria-disabled={!!why} onclick={buyPicked}>{t('shop.buy')}</button>
+        <button type="button" class="btn small" data-shop-card-buy data-sfx="self" aria-disabled={!!why} onclick={buyPicked}>{t('world.shop.buy')}</button>
         <NavButton kind="close" data-shop-card-close onclick={() => ((pick = null), hush())} />
       </section>
     {/if}

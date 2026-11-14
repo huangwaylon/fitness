@@ -535,9 +535,14 @@ test('the 3D shop: the twins at the counter, the day’s stock in the room; a ta
   expect(await hooks(page, (s) => s.walking())).toBe(false);
   expect(await hooks(page, (s) => s.mine())).toEqual(before);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop3d-card.png`, animations: 'disabled' });
+  await expect(page.locator('[data-shop-card-buy]')).toHaveText('かう'); // the room's: world kana
   await page.locator('[data-shop-card-buy]').click();
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'thanks');
-  await expect(page.locator('[data-shop-card] .owned-tag')).toBeVisible();
+  // a world act's banner: kana, with とりけす (the counter's list stays kanji: 買いました, 取り消す)
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText(/^.+を かった！$/);
+  await expect(page.locator('.banner[role="status"]').getByRole('button', { name: 'とりけす' })).toBeVisible();
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop3d-bought.png`, animations: 'disabled' });
+  await expect(page.locator('[data-shop-card] .owned-tag')).toHaveText('もっている'); // world kana, as the card's かう
   await expect(page.locator('[data-shop-card-buy]')).toHaveAttribute('aria-disabled', 'true');
   // in the list too, mine now, and the かいがら gone
   await openList(page, 'buy');
