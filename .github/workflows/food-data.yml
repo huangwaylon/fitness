@@ -5,9 +5,9 @@ name: Food data checks
 on:
   push:
     branches: [main]
-    paths: ['food-data/**', '.github/workflows/food-data.yml']
+    paths: ['food-data/**', '.github/scripts/kalori-*', '.github/workflows/food-data.yml']
   pull_request:
-    paths: ['food-data/**', '.github/workflows/food-data.yml']
+    paths: ['food-data/**', '.github/scripts/kalori-*', '.github/workflows/food-data.yml']
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,9 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          # (only its own folder: not the app's 521 MB of static files)
-          sparse-checkout: food-data
+          # (only its own folder and the Kalori scripts its tests run: not the app's 521 MB of static files)
+          sparse-checkout: |
+            food-data
+            .github/scripts
       - run: python3 --version
       - run: python3 -I -m unittest discover -s food-data/scripts/tests

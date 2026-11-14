@@ -488,6 +488,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /food-data/
+            /.github/scripts/
             /its/contract-example.json
             /app/*
             !/app/static/*
