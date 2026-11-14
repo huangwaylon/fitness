@@ -37,13 +37,13 @@ describe('needsAttention (ボット’s dot)', () => {
 
 describe('verdictView', () => {
   it('gives each verdict its tone, and the first reason its sentence', () => {
-    expect(verdictView(status())).toEqual({ tone: 'good', word: '順調', sentence: '予定どおりチェックしています。' });
+    expect(verdictView(status())).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '予定どおりチェックしています。' });
     expect(verdictView(status({ verdict: 'degraded', reasons: ['site_failing', 'quota_high'], failures: 2 }))).toEqual({
-      tone: 'warn', word: '一部不調', sentence: '予約サイトのチェックが2回続けて失敗しています。'
+      tone: 'warn', w: 'trouble', word: '一部不調', sentence: '予約サイトのチェックが2回続けて失敗しています。'
     });
     expect(verdictView(status({ verdict: 'late', reasons: ['overdue'] })).tone).toBe('warn');
     expect(verdictView(status({ verdict: 'failing', reasons: ['site_failing'], failures: 4 })).tone).toBe('bad');
-    expect(verdictView(status({ verdict: 'broken', reasons: ['webhook_wrong'] }))).toMatchObject({ tone: 'bad', word: '要対応' });
+    expect(verdictView(status({ verdict: 'broken', reasons: ['webhook_wrong'] }))).toMatchObject({ tone: 'bad', word: '故障' });
     expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).tone).toBe('idle');
     expect(verdictView(status({ verdict: 'off', reasons: ['mode_off', 'no_alarm'] }))).toMatchObject({ tone: 'idle', word: 'オフ', sentence: 'ボットがオフになっています。チェックも通知もしません。' });
   });
@@ -148,5 +148,18 @@ describe('fetchStatus', () => {
     fetch.mockRejectedValueOnce(new TypeError('Load failed'));
     expect(await fetchStatus(undefined, 'https://gym.test')).toEqual({ ok: false, err: 'offline', http: null });
     vi.unstubAllGlobals();
+  });
+});
+
+describe('the driver (lib/gym/bot.ts)', () => {
+  it('its verdict: needsAttention’s 「!」, the one word table (故障 for broken), polled every minute', async () => {
+    const { driver } = await import('./bot.ts');
+    const all: GymStatus['verdict'][] = ['healthy', 'degraded', 'failing', 'late', 'broken', 'stopped', 'off'];
+    for (const v of all) expect(driver.verdict(status({ verdict: v }), NOW).needsLook, v).toBe(needsAttention(status({ verdict: v })));
+    expect(all.map((v) => [driver.verdict(status({ verdict: v }), NOW).tone, driver.verdict(status({ verdict: v }), NOW).word])).toEqual([
+      ['good', '順調'], ['warn', '一部不調'], ['bad', '不調'], ['warn', '遅れ'], ['bad', '故障'], ['idle', '停止中'], ['idle', 'オフ']
+    ]);
+    expect(driver.parse(sample(NOW))).toEqual(sample(NOW));
+    expect(driver.pollMs(null)).toBe(60_000);
   });
 });

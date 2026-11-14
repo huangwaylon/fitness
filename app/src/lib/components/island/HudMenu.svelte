@@ -7,7 +7,8 @@
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
   // hiking/open.svelte.ts), 英語 (しずえ's head: ききみみ's sheet opened here, the voice session begun in the tap itself;
   // 「誘われています！」 on it, and a dot on the leaf, while someone's invite is live), ボット (a robot's head: the bots'
-  // sheet, members only, a dot while the ITS bot needs a person, read as the menu unfolds: bots/open.svelte.ts) and 設定 (a gear);
+  // sheet, members only; the worst of the bots' dots while one needs a person, a coral or yuzu 「!」, never a green
+  // one; every bot read as the menu unfolds: bots/summary.svelte.ts) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet opens at once;
@@ -23,7 +24,9 @@
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
-  import { botTabs, botsBadge, botsSheet, readBadge } from '../bots/open.svelte.ts';
+  import { botTabs, botsSheet } from '../bots/open.svelte.ts';
+  import { refresh, worstOf } from '../bots/summary.svelte.ts';
+  import StatusDot from '../bots/StatusDot.svelte';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { prefetchSheet, type SheetChunk } from './sheetChunks.ts';
@@ -57,12 +60,13 @@
 
   /** The bots this phone has (none: the guest, no ボット pill). */
   const bots = $derived(botTabs());
-  // unfolded: the ITS bot's and Kalori's dots read (at most once a minute)
+  // unfolded: every bot's dot read (each at most once a minute)
   $effect(() => {
-    if (open) for (const k of ['its', 'kalori'] as const) if (bots.includes(k)) untrack(() => readBadge(k));
+    if (open) for (const k of bots) untrack(() => void refresh(k, 'bg'));
   });
-  /** ボット's dot: a bot read (the menu unfolding, the sheet's tabs) needs a person. */
-  const botsDot = $derived(botsBadge.its || botsBadge.kalori);
+  /** ボット's dot: the worst bot's, only while one needs a person (coral if any is failing, else yuzu). */
+  const botsLook = $derived(worstOf(bots));
+  const botsDot = $derived(botsLook?.needsLook ? (botsLook.tone === 'bad' ? 'bad' : 'warn') : null);
 
   // a sheet opening (the panel, けんこう, a tree's …) or もようがえ folds it
   $effect(() => {
@@ -238,11 +242,11 @@
     {#if bots.length}
       <!-- ボット: the bots' sheet (members only); a dot while one needs a person -->
       <button type="button" class="item" data-hud-bots aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('bots')} onclick={() => pick(() => botsSheet.show())}>
-        <span class="lbl">{t('panel.bots')}{#if botsDot}<span class="sr-only">{` ${t('bots.attention')}`}</span>{/if}</span>
+        <span class="lbl">{#if botsDot}<span aria-hidden="true">{t('panel.bots')}</span><span class="sr-only">{t('bots.say', { bot: t('panel.bots'), word: t('bots.attention') })}</span>{:else}{t('panel.bots')}{/if}</span>
         <span class="ic">
           <!-- a robot's head in the gear's soft brown, its eyes and mouth cream -->
           <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M11.2 3.2h1.6v3.4h-1.6zM12 .6a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM8.4 6.2h7.2a4.4 4.4 0 0 1 4.4 4.4v5.8a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 16.4v-5.8a4.4 4.4 0 0 1 4.4-4.4ZM1.6 11.6a1 1 0 0 1 1-1H3.4v5.6H2.6a1 1 0 0 1-1-1ZM20.6 10.6h.8a1 1 0 0 1 1 1v3.6a1 1 0 0 1-1 1h-.8Z" /><circle cx="9" cy="12.4" r="1.8" /><circle cx="15" cy="12.4" r="1.8" /><path class="snow" d="M9.6 16.4h4.8a.8.8 0 0 1 0 1.6H9.6a.8.8 0 0 1 0-1.6Z" /></svg>
-          {#if botsDot}<i class="dot pill-dot" data-hud-bots-dot aria-hidden="true"></i>{/if}
+          {#if botsDot}<span class="pill-dot" data-hud-bots-dot data-tone={botsDot}><StatusDot tone={botsDot} look /></span>{/if}
         </span>
       </button>
     {/if}
@@ -313,8 +317,8 @@
     background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream);
   }
   .ic { position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
-  /* ボット's: a bot needs a person */
-  .pill-dot { top: 1px; right: 1px; }
+  /* ボット's: a bot needs a person (bots/StatusDot, ringed in the pill's cream) */
+  .pill-dot { position: absolute; top: 0; right: 0; display: flex; line-height: 0; pointer-events: none; --plate: var(--c-cream); }
   .ic svg { width: 26px; height: 26px; }
   .gear { fill: #A88B68; }
   .snow { fill: var(--c-cream); }

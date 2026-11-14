@@ -105,24 +105,25 @@ the よびな and what's worn → [the 姿 level](#sugata)), **プロフィー�
 
 ### Bots
 
-**ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** (`GymPage`), **保養所** (`ItsPage`), **メニュー**
-(`KaloriPage`), the last two not in demo. The tab last shown this session reopens (a launch: ジム). Only the shown page
-mounts, reading on open and while shown (`poll.svelte.ts`: 保養所 15 s while running, else 60 s; the others 60 s; none
-hidden, aborted on leave). The last status read shows at once, marked 更新中 (`lastKnown.ts`, per tab, memory and
-phone). Shared: `VerdictCard` (dot, word, sentence, tinted), `StatusStrip` (`lib/strip.ts`: 保養所's 直近1時間, a cell
-a minute; ジム's 直近12時間, a cell a check interval, chained so the alarm's jitter leaves no false gap; green ok, yellow
-a room or slot open, red hatched failed, outlined none; tap or ← → names a cell), `FactList` (くわしく), `ChangeBar`,
-the skeleton, the foot. A dot while a bot needs a person.
-ジム: controls (stop asks; 今すぐ確認 peeks; ⋯ 間隔), a 4-week grid (`GymCalendar`: ふだん the next 4 days; a day:
-`GymDayEditor`; 選択: bulk), the 3-booking note, アプリで変更 (a day once; not in LINE), 動作状況 last; changes apply
-at once (取り消す), as a tap.
-保養所: its draft asks before a tab switch or close. 日付: a row a night, a `ChangeBar` of the searched by why
-(`its/view.ts`; seasons and 利用不可日 in `roster.ts`, explained only). 施設: a summary, presets, 探す · 日程に合わない
-(a reason a row) · 除外. **通知** (`ItsNotify`): push per phone, off by default, asked on the tap; テスト通知; a
-notification opens 保養所 (`?open=its` kept until the launch's hold is over: a reload into a deploy opens it again).
-メニュー: `status.json` (raw, branch `kalori-status`; `lib/kalori/status.ts`): 順調 · 取得中 · 保留 · 遅れ (also a day
-past `next`, no run) · 不調 · まだ; 確認が必要 (保留, 不調, an alert: reasons, run and PR links; no mail or issue);
-最新の更新; 直近8週. No run button.
+**ボット** (`bots/BotsSheet.svelte`, members only): tabs from `bots/registry.ts`, **ジム** (`GymPage`), **保養所**,
+**メニュー** (not in demo); the session's last tab reopens. A driver per bot (`lib/bots/types.ts`,
+`lib/<bot>/bot.ts`, lazy) reads and words the status: tone is health, `needsLook` the 「!」.
+- **Dots** (`StatusDot`, `summary.svelte.ts`): leaf 順調 (起動中 · 取得中 too), yuzu 一部不調, yuzu 「!」 遅れ · 保留 ·
+  要対応, coral 「!」 不調 · 故障 (coral: failures only), sunk 待機中 · 停止中 · オフ · まだ, hollow 不明. A tab shows its
+  bot's (fine, needing a look: yuzu 「!」 要対応); the menu's ボット the worst, only with a 「!」. A failed read keeps
+  the tone, dimmed; kept per member over a reload (`lastKnown.ts`).
+- **Reads:** the shown page polls (`useBot`: 保養所 15 s while running, else 60 s); the others as the sheet opens or
+  the menu unfolds, then every 5 min while open; each at most once a minute; none closed or hidden.
+- **Page** (`BotPage`): LoadError · `VerdictCard` (the bot's controls in its row; 更新中) · `AttentionCard` (確認が必要)
+  · the bot's sections · 動作状況 (`StatusStrip`, `FactList`; empty: one hint) · `BotFoot`; a skeleton until the
+  first status. Links: inline `--sky-text` in facts; actions `.btn.small.paper`.
+
+ジム: stop asks; 今すぐ確認 peeks; ⋯ 間隔; a 4-week grid (`GymCalendar`; 選択: bulk), アプリで変更;
+changes apply at once (取り消す).
+保養所: its draft asks before a tab switch or close. 日付: a row a night, a `ChangeBar` of the searched by why.
+施設: presets, 探す · 日程に合わない · 除外. **通知** (`ItsNotify`): push per phone, off by default; a notification opens 保養所 (`?open=its` kept until the launch's hold is over).
+メニュー: `status.json` (branch `kalori-status`; `lib/kalori/status.ts`): 遅れ also a day past `next`; 確認が必要 on
+保留, 不調 or an alert; 最新の更新; 直近8週. No run button.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),

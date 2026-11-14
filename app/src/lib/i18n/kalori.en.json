@@ -1,10 +1,4 @@
 {
-  "kalori.verdict.healthy": "Healthy",
-  "kalori.verdict.running": "Fetching",
-  "kalori.verdict.held": "Held",
-  "kalori.verdict.late": "Late",
-  "kalori.verdict.failing": "Failing",
-  "kalori.verdict.none": "No data yet",
   "kalori.say.healthy": "Updated {date}.",
   "kalori.say.running": "Round {n} · {d} of {total} shards done",
   "kalori.say.held": "Too many changes, not applied ({what}). The app keeps {date}'s data.",
@@ -66,7 +60,6 @@
   "kalori.fact.rate": "Change rate",
   "kalori.fact.pr": "PR",
   "kalori.fact.deploy": "Deploy",
-  "kalori.fact.more": "More",
   "kalori.nextAt": "{day} around {time}",
   "kalori.items": "{n} items",
   "kalori.shops": "{n} shops",
@@ -76,9 +69,7 @@
   "kalori.cov.partial": "Partial",
   "kalori.cov.failed": "{n} failed",
   "kalori.unknown": "Unknown",
-  "kalori.updated": "Updated {time}",
   "kalori.sec.latest": "Latest update",
-  "kalori.sec.status": "Status",
   "kalori.strip.title": "Last 8 weeks",
   "kalori.strip.pick": "Tap a week for its run",
   "kalori.strip.legend.ok": "Published",
@@ -90,9 +81,5 @@
   "kalori.strip.failed": "failed",
   "kalori.strip.none": "no run",
   "kalori.strip.counts": "+{a} ~{v} ended {e}",
-  "kalori.strip.summary": "Last 8 weeks: {ok} published, {held} held, {failed} failed",
-  "kalori.alert.title": "Needs a look",
-  "kalori.alert.run": "Open the run",
-  "kalori.alert.pr": "Open the PR",
-  "kalori.loadFailed": "Couldn't load ({code})"
+  "kalori.strip.summary": "Last 8 weeks: {ok} published, {held} held, {failed} failed"
 }

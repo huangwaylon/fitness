@@ -11,7 +11,7 @@ import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, bulkDates, closedOn, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
-  footLine, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, rowBadge, sameDraft, saveError,
+  attentionLines, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
   savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
@@ -450,9 +450,9 @@ describe('the roster', () => {
 
 describe('the verdict card and the poll', () => {
   it('gives each verdict its tone and the first reason its sentence', () => {
-    expect(verdictView(STATUS)).toEqual({ tone: 'warn', word: '要確認', sentence: '対応が必要な予約があります。' });
-    expect(verdictView(status({ verdict: 'healthy', reasons: [] }))).toEqual({ tone: 'good', word: '順調', sentence: '空室を探しています。' });
-    expect(verdictView(status({ verdict: 'starting', reasons: ['starting'] })).tone).toBe('good');
+    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'needsYou', word: '要対応', sentence: '対応が必要な予約があります。' });
+    expect(verdictView(status({ verdict: 'healthy', reasons: [], events: [], bookings: [] }))).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '空室を探しています。' });
+    expect(verdictView(status({ verdict: 'starting', reasons: ['starting'], events: [], bookings: [] }))).toMatchObject({ tone: 'busy', word: '起動中' });
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'] })).tone).toBe('warn');
     expect(verdictView(status({ verdict: 'failing', reasons: ['scan_failing'], runner: { ...STATUS.runner!, scanFailures: 4 } }))).toMatchObject({ tone: 'bad', sentence: '空室の確認が4回続けて失敗しています。' });
     for (const v of ['stopped', 'idle', 'off'] as const) expect(verdictView(status({ verdict: v })).tone).toBe('idle');
@@ -465,12 +465,10 @@ describe('the verdict card and the poll', () => {
     expect(pollMs(status({ verdict: 'late' }))).toBe(60_000);
     expect(pollMs(null)).toBe(60_000);
   });
-  it('words a refused 保存 by its code, and the foot line’s mode in words', () => {
+  it('words a refused 保存 by its code', () => {
     expect(saveError('past_date')).toBe('過ぎた日付が含まれています。日付を確認してください。');
     expect(saveError('bad_hotels')).toBe('施設の名前が長すぎるか、多すぎます。');
     expect(saveError('offline')).toBe('保存できませんでした。もう一度保存してください。');
-    expect(footLine(STATUS, TODAY)).toBe('稼働 · abc1234 · 更新 13:10');
-    expect(footLine(status({ mode: 'off', sha: null }), TODAY)).toBe('オフ · 更新 13:10');
   });
   it('says who pressed 開始 / 停止 last, and when', () => {
     const name = (m: string) => (m === 'B' ? 'うめ' : 'ウェイ');
@@ -535,7 +533,7 @@ describe('bookingRows', () => {
     expect(later.map((r) => [r.hotel, r.state, r.label, r.detail, r.left, r.steps])).toEqual([
       ['リソルの森', 'confirmed', '予約確定', '申込受付番号 A1', null, []], ['NAGU 勝浦', 'lapsed', '期限切れ', '確定済みの日・期限切れ', null, []]
     ]);
-    expect(rowBadge(status({ ...s, now: t0 + 16 * 60_000 })).word).not.toBe('要対応');
+    expect(needsAttention(status({ ...s, verdict: 'healthy', now: t0 + 16 * 60_000 }))).toBe(false);
     // a night with no 予約確定: still 期限切れ on its 要対応 row
     expect(bookingRows(STATUS, TODAY, t0 + 16 * 60_000)[0]).toMatchObject({ state: 'action', left: '期限切れ' });
   });
@@ -593,13 +591,13 @@ describe('a hold’s deadline and what to do', () => {
 });
 
 describe('the words', () => {
-  it('遅れ says how long nothing was heard; 設定’s row says 要対応 while a booking waits', () => {
+  it('遅れ says how long nothing was heard; 確認が必要 names each booking waiting, then 不調’s or 遅れ’s sentence', () => {
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'], now: STATUS.runner!.lastSeen + 52 * 60_000 })).sentence).toBe('52分報告がありません。');
     // the day's automatic restarts spent: why, and that 開始 resumes it
     expect(verdictView(status({ verdict: 'late', reasons: ['restart_cap', 'runner_silent'] }))).toMatchObject({ tone: 'warn', sentence: '自動の再起動は今日の上限に達しました（開始で再開できます）。' });
-    expect(rowBadge(STATUS)).toEqual({ tone: 'bad', word: '要対応' });
-    expect(rowBadge(status({ events: [], bookings: [], verdict: 'healthy', reasons: [] }))).toEqual({ tone: 'good', word: '順調' });
-    expect(rowBadge(status({ events: [], bookings: [], verdict: 'stopped' }))).toEqual({ tone: 'idle', word: '停止中' });
+    expect(attentionLines(STATUS)).toEqual([expect.stringMatching(/^NAGU 勝浦（.+）：/)]);
+    expect(attentionLines(status({ events: [], bookings: [], verdict: 'healthy', reasons: [] }))).toEqual([]);
+    expect(attentionLines(status({ events: [], bookings: [], verdict: 'failing', reasons: ['scan_failing'] }))).toHaveLength(1);
   });
   it('ボット’s dot: a hold waiting, 不調 or 遅れ; not 要確認, 停止中 or 順調', () => {
     const quiet = (verdict: ItsStatus['verdict']) => needsAttention(status({ events: [], bookings: [], verdict }));
@@ -650,5 +648,18 @@ describe('直近1時間', () => {
     expect(cells.at(-2)).toMatchObject({ time: '11:59', text: '11:59 · 1回 · 失敗1' });
     expect(cells.at(-1)).toMatchObject({ time: '12:00', state: 'none' });
     expect(minuteCells([], STATUS.now).every((c) => c.state === 'none')).toBe(true);
+  });
+});
+
+describe('the driver (lib/its/bot.ts)', () => {
+  it('its verdict: needsAttention’s 「!」 (a hold waiting: 要対応), the one word table, the 15 s / 60 s poll', async () => {
+    const { driver } = await import('./bot.ts');
+    const quiet = (verdict: ItsStatus['verdict']) => status({ events: [], bookings: [], verdict });
+    const all: ItsStatus['verdict'][] = ['healthy', 'starting', 'idle', 'degraded', 'late', 'failing', 'stopped', 'off'];
+    for (const s of [STATUS, ...all.map(quiet)]) expect(driver.verdict(s, NOW).needsLook, s.verdict).toBe(needsAttention(s));
+    expect(all.map((v) => driver.verdict(quiet(v), NOW).word)).toEqual(['順調', '起動中', '待機中', '一部不調', '遅れ', '不調', '停止中', 'オフ']);
+    expect(driver.verdict(quiet('starting'), NOW).tone).toBe('busy');
+    expect(driver.verdict(status({ verdict: 'healthy', reasons: [] }), NOW)).toMatchObject({ tone: 'good', needsLook: true }); // the hold
+    expect(driver.pollMs).toBe(pollMs);
   });
 });

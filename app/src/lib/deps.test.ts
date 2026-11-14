@@ -65,16 +65,18 @@ const ALLOW: Record<string, string[]> = {
   offline: ['travel', 'hiking', 'sync'],
   // ボット's ジム (docs/design.md "Bots"): the gym bot's /status, read and worded for its page, and its
   // /gym/config with the member key (the guards: contract/guards.ts)
-  gym: ['i18n', 'sync', 'contract'],
+  gym: ['i18n', 'sync', 'contract', 'bots'],
   // ボット's 保養所 (docs/design.md "Bots"): the its-bot Worker's client (the member key, the log) and the page's view
-  its: ['i18n', 'sync', 'contract'],
+  its: ['i18n', 'sync', 'contract', 'bots'],
   // ボット's メニュー (docs/design.md "Bots"): the Kalori scraper's status.json, read and worded for its page
-  kalori: ['i18n', 'sync', 'contract'],
+  kalori: ['i18n', 'sync', 'contract', 'bots'],
+  // ボット's one shape (docs/design.md "Bots"): the driver's types, the tones' order, the public status read (the log)
+  bots: ['sync'],
   // the island's game model (world.ts, the walk, the critters, the sea, the day's weather and seeds, the farm's batch
   // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'world']
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
 };
 
 function files(dir: string): string[] {

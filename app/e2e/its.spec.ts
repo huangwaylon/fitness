@@ -90,13 +90,15 @@ async function open(sheet: ReturnType<Page['locator']>) {
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
 }
 
-test('ボット opens on 保養所 (its tab dotted: 要対応): the verdict, 状況 (くわしく), the hold to finish by mail with its deadline; ジム leaves it', async ({ page, context }) => {
+test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdict, 確認が必要, 動作状況 (くわしく), the hold to finish by mail with its deadline; ジム leaves it', async ({ page, context }) => {
   const { sheet, its, calls } = await phone(page, context, 'A');
   const tab = page.locator('dialog[open] [data-bots-tab="its"]');
   await expect(tab).toHaveAttribute('aria-selected', 'true');
-  await expect(tab.locator('[data-tab-dot]')).toBeVisible();
-  await expect(tab).toHaveAccessibleName(/^保養所\s*要対応$/);
-  await expect(its.locator('[data-its-verdict="degraded"]')).toContainText('要確認');
+  await expect(tab).toHaveAttribute('data-tab-status', 'warn');
+  await expect(tab).toHaveAttribute('data-look', '');
+  await expect(tab).toHaveAccessibleName('保養所、要対応');
+  await expect(its.locator('[data-its-verdict="degraded"]')).toContainText('要対応');
+  await expect(its.locator('[data-its-alert] [data-its-reason]')).toHaveText([/^NAGU 勝浦（.+）：/]);
   await expect(its.locator('[data-its-verdict]')).toContainText('対応が必要な予約があります。');
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
   const y = async (sel: string) => (await sheet.locator(sel).boundingBox())!.y;
@@ -120,8 +122,8 @@ test('ボット opens on 保養所 (its tab dotted: 要対応): the verdict, 状
   await expect(its.locator('[data-its-date="2026-11-21"]')).toContainText('あと17日');
   await expect(its.locator('[data-its-foot]')).toContainText('稼働 · abc1234 · 更新 12:00');
   await expect(its.locator('[data-its-saved-by]')).toHaveText(/^設定の変更：.+・11:/);
-  // the menu's read (its dot), then the page's; each with the key and a request id
-  expect(calls.slice(0, 2).map((c) => [c.method, c.path])).toEqual([['GET', '/its/status'], ['GET', '/its/status']]);
+  // the menu's read (its dot), with the key and a request id; the page, opened seconds after it, asks nothing more
+  expect(calls.map((c) => [c.method, c.path])).toEqual([['GET', '/its/status']]);
   expect(calls[0].auth).toMatch(/^Bearer [0-9a-f]{32,}$/);
   expect(calls.every((c) => /^[0-9a-f]{8}$/.test(c.rid ?? ''))).toBe(true);
 
@@ -259,7 +261,7 @@ test('a draft isn’t dropped by a stray ✕, Esc or the ジム tab: each asks f
 test('a 409 says who saved, in the save bar, and 読み込み直す reads theirs; a refusal is worded in coral; a failed read shows its code and もう一度', async ({ page, context }) => {
   let n = 0;
   const { its, calls } = await phone(page, context, 'A', (c, i, s) => {
-    if (i === 2) return { status: 500, body: { error: 'boom' } };   // the page's first read (the menu's dot was the first call)
+    if (i <= 2) return { status: 500, body: { error: 'boom' } };   // the menu's read (its dot), then the page's
     if (c.method === 'PUT' && ++n === 1) return { status: 400, body: { ok: false, error: 'past_date' } };
     if (c.method === 'PUT') return { status: 409, body: theirSave(s) };
     return undefined;
@@ -609,7 +611,7 @@ test('a Worker whose CORS doesn’t allow X-Request-Id still answers', async ({ 
   await expect(its.locator('[data-its-error]')).toHaveCount(0);
   await its.locator('[data-its-action="stop"]').click();
   await expect(its.locator('[data-its-run="stopped"]')).toBeVisible();
-  expect(calls.length).toBeGreaterThanOrEqual(3);
+  expect(calls.length).toBeGreaterThanOrEqual(2); // the menu's read (the page shows it), 停止
   expect(calls.every((c) => c.rid === null)).toBe(true);
 });
 

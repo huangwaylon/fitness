@@ -2,15 +2,19 @@
   // A sheet's bottom tabs (docs/design.md "Unified kit"): a cream dock plate (--card, a stitch along its top) at the
   // foot of a full sheet (the caller places it: the last child of the flex column), 56px + the home indicator's safe
   // area; each tab its icon over its label, the shown one on a yuzu pill. `attr` names each tab's data attribute
-  // (`data-trip-tab="map"`), what the specs read. A tap on the shown tab is silent. A tab's `dot`: a small coral dot on
-  // its icon, `note` saying it to VoiceOver. `panel`: the id of the one panel the tabs switch (ボット): a tablist then
+  // (`data-trip-tab="map"`), what the specs read. A tap on the shown tab is silent. `mark`: drawn on each tab's icon's
+  // corner (ボット's status dots), on a cream plate (`--plate`); a tab's `name`: its whole name to VoiceOver (「ジム、順調」),
+  // `attrs` its more data-*. `panel`: the id of the one panel the tabs switch (ボット): a tablist then
   // (role tab, aria-selected, aria-controls; ← → Home End move the focus, Enter or Space picks), else a nav whose
   // shown tab is aria-current.
   //   <TabBar items={[{ id: 'days', label: '日程', icon: 'calendar' }, …]} value={tab} label="ページ" attr="trip-tab" onpick={…} />
+  import type { Snippet } from 'svelte';
   import Icon, { type IconName } from './Icon.svelte';
 
   interface Props {
-    items: readonly { id: T; label: string; icon: IconName; dot?: boolean; note?: string }[];
+    items: readonly { id: T; label: string; icon: IconName; name?: string; attrs?: Record<string, string | undefined> }[];
+    /** A tab's corner mark, by its id. */
+    mark?: Snippet<[T]>;
     value: T;
     /** The bar's accessible name. */
     label: string;
@@ -19,7 +23,7 @@
     /** The panel's id: the bar is its tablist. */
     panel?: string;
   }
-  let { items, value, label, attr, onpick, panel }: Props = $props();
+  let { items, value, label, attr, onpick, panel, mark }: Props = $props();
   let bar: HTMLElement | undefined = $state();
 
   /** A tab's id (the panel's aria-labelledby: `${attr}-${id}`). */
@@ -39,8 +43,8 @@
 
 {#snippet face(it: Props['items'][number])}
   <span class="pill">
-    <span class="icon"><Icon name={it.icon} size={22} soft={value === it.id} />{#if it.dot}<i class="dot" data-tab-dot aria-hidden="true"></i>{/if}</span>
-    <span>{it.label}</span>{#if it.dot && it.note}<span class="sr-only">{` ${it.note}`}</span>{/if}
+    <span class="icon"><Icon name={it.icon} size={22} soft={value === it.id} />{#if mark}<span class="dot">{@render mark(it.id)}</span>{/if}</span>
+    <span>{it.label}</span>
   </span>
 {/snippet}
 
@@ -48,7 +52,7 @@
   <div class="tabbar" role="tablist" aria-label={label} bind:this={bar} tabindex="-1" onkeydown={key}>
     {#each items as it (it.id)}
       <button type="button" class="it" role="tab" id={tid(it.id)} aria-selected={value === it.id} aria-controls={panel} tabindex={value === it.id ? 0 : -1}
-        {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
+        aria-label={it.name} {...it.attrs} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
         {@render face(it)}
       </button>
     {/each}
@@ -57,7 +61,7 @@
   <nav class="tabbar" aria-label={label}>
     {#each items as it (it.id)}
       <button type="button" class="it" aria-current={value === it.id ? 'page' : undefined}
-        {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
+        aria-label={it.name} {...it.attrs} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
         {@render face(it)}
       </button>
     {/each}
@@ -82,11 +86,11 @@
     transition: background-color var(--dur-quick), transform var(--dur-base) var(--ease-bounce);
   }
   .icon { position: relative; display: flex; }
-  /* needs a person: a small coral dot on the icon's top right, ringed in the plate's cream */
-  .dot { position: absolute; top: -2px; right: -5px; width: 9px; height: 9px; border-radius: 50%; background: var(--c-coral); box-shadow: 0 0 0 2px var(--card); }
+  /* a mark: the icon's top right corner, ringed in the plate's cream (on the selected pill too: a yuzu mark reads) */
+  .dot { position: absolute; top: -4px; right: -7px; display: flex; line-height: 0; --plate: var(--card); }
   .it[aria-current='page'], .it[aria-selected='true'] { color: var(--c-ink); }
   .it[aria-current='page'] .pill, .it[aria-selected='true'] .pill { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
-  .it[aria-selected='true'] .dot { box-shadow: 0 0 0 2px var(--c-yuzu); }
+  .it[aria-current='page'] .dot, .it[aria-selected='true'] .dot { --plate: var(--c-cream); }
   .it:active .pill { transform: translateY(1px) scale(1.04, .96); }
   .it:focus-visible { outline-offset: -4px; }
   @media (prefers-reduced-motion: reduce) { .it:active .pill { transform: none; } }

@@ -97,6 +97,8 @@
     ["src/lib/components/bots/ChangeBar*", ["bots", "its"]],
     ["src/lib/kalori/**", ["bots"]],
     ["src/lib/i18n/kalori*", ["bots"]],
+    ["src/lib/bots/**", ["bots", "its", "gymbot*", "hud-menu"]],
+    ["src/lib/i18n/bots*", ["bots", "its", "gymbot*"]],
     ["src/lib/components/bots/**", ["bots", "its", "its-push", "gymbot*", "hud-menu"]],
     ["src/lib/components/panel/**", ["hud-menu", "profile", "picker"]],
     ["src/lib/*/profile*", ["profile"]],

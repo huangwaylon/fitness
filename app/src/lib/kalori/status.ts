@@ -5,11 +5,12 @@
 // scheduled run is a day overdue with no newer run (the workflows can't write a file when they never start).
 import { t } from '#lib/i18n/index.ts';
 import { formatNum } from '#lib/i18n/index.ts';
-import { formatSyncTime } from '#lib/i18n/format.ts';
 import { isNum, isRec, isText } from '#lib/contract/guards.ts';
-import { log } from '#lib/sync/log.ts';
-import type { CellState, StripCell, StripTick, Tone } from '#lib/strip.ts';
+import type { CellState, StripCell, StripTick } from '#lib/strip.ts';
+import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
+import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import '#lib/i18n/kalori.ts';
+import '#lib/i18n/bots.ts';
 
 // ---- The payload (the workflows own it: change both together) ----
 export type Verdict = 'healthy' | 'running' | 'held' | 'failing' | 'late' | 'none';
@@ -50,7 +51,7 @@ export interface KaloriStatus {
 /** The raw file (a fork or e2e passes its own). vite.config.ts's CSP allows the host. */
 const KALORI_STATUS_URL = 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json';
 /** The workflow the foot names. */
-const WORKFLOW = 'kalori-scrape.yml';
+export const WORKFLOW = 'kalori-scrape.yml';
 
 const VERDICTS: readonly Verdict[] = ['healthy', 'running', 'held', 'failing', 'late', 'none'];
 const RESULTS: readonly RunResult[] = ['published', 'held', 'failed', 'running', 'cancelled'];
@@ -126,24 +127,12 @@ export function parseStatus(x: unknown, now = Date.now()): KaloriStatus | null {
 }
 
 /** A read's outcome: the status, or why not (`offline`: no answer; `http`: another status; `json`: not a status). */
-export type StatusReply = { ok: true; status: KaloriStatus } | { ok: false; err: 'offline' | 'http' | 'json'; http: number | null };
+export type StatusReply = PublicReply<KaloriStatus>;
 
-/** GET status.json: public, a simple request (no preflight), past the HTTP cache (raw.githubusercontent.com keeps a
- *  copy ~5 min: the CDN's, not ours). Never throws; a failure is logged (`kalori.fail`: the HTTP status, the phone's
- *  code, ms), but not the caller's abort (the page left). */
-export async function fetchStatus(signal?: AbortSignal, url = KALORI_STATUS_URL): Promise<StatusReply> {
-  const t0 = performance.now();
-  let r: StatusReply;
-  try {
-    const res = await fetch(url, { signal, cache: 'no-cache' });
-    const s = res.ok ? parseStatus(await res.json().catch(() => null)) : null;
-    r = s ? { ok: true, status: s } : { ok: false, err: res.ok ? 'json' : 'http', http: res.status };
-  } catch {
-    r = { ok: false, err: 'offline', http: null };
-  }
-  if (!r.ok && !signal?.aborted) log('kalori.fail', { op: 'status', err: r.err, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
-  return r;
-}
+/** GET status.json (lib/bots/fetchPublic.ts: public, logged as `kalori.fail`), past the HTTP cache
+ *  (raw.githubusercontent.com keeps a copy ~5 min: the CDN's, not ours). */
+export const fetchStatus = (signal?: AbortSignal, url = KALORI_STATUS_URL): Promise<StatusReply> =>
+  fetchPublic(url, 'kalori.fail', (x) => parseStatus(x), { signal, cache: 'no-cache' });
 
 // ---- Time, Tokyo's ----
 const DAY_MS = 86_400_000;
@@ -154,7 +143,8 @@ const LATE_MS = DAY_MS;
 /** The dot on its own: the scheduled run this long overdue, whatever the file says. */
 const STALE_MS = 2 * DAY_MS;
 
-const tokyoDay = (ms: number): string => new Date(ms + TOKYO_MS).toISOString().slice(0, 10);
+/** Tokyo's day of `ms` (the foot's today). */
+export const tokyoDay = (ms: number): string => new Date(ms + TOKYO_MS).toISOString().slice(0, 10);
 /** `2:41`. */
 const clock = (ms: number): string => {
   const d = new Date(ms + TOKYO_MS);
@@ -189,7 +179,8 @@ export function verdictOf(s: KaloriStatus, now: number): Verdict {
 /** The scheduled run more than `by` behind `now`, and no run started since it. */
 const overdue = (s: KaloriStatus, now: number, by: number): boolean => s.next !== null && now > s.next + by && !(s.run && s.run.startedAt >= s.next);
 
-const TONE: Record<Verdict, Tone> = { healthy: 'good', running: 'good', held: 'warn', late: 'warn', failing: 'bad', none: 'idle' };
+const TONE: Record<Verdict, BotTone> = { healthy: 'good', running: 'busy', held: 'warn', late: 'warn', failing: 'bad', none: 'idle' };
+const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', running: 'fetching', held: 'held', late: 'late', failing: 'failing', none: 'none' };
 
 /** ボット's dot (the menu's pill, the メニュー tab): 保留, 不調 or 遅れ, an alert standing, or the run two days overdue. */
 export const needsAttention = (s: KaloriStatus, now: number): boolean =>
@@ -224,7 +215,7 @@ const dataDay = (s: KaloriStatus): string => {
 };
 
 /** The verdict card: its tone, its word, and one plain sentence. */
-export function verdictView(s: KaloriStatus, now: number): { tone: Tone; word: string; sentence: string; verdict: Verdict } {
+export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: BotWord; word: string; sentence: string; verdict: Verdict } {
   const v = verdictOf(s, now);
   const nextAt = s.next === null ? t('kalori.unknown') : when(s.next);
   const bands = s.reasons.filter(isBand);
@@ -237,7 +228,7 @@ export function verdictView(s: KaloriStatus, now: number): { tone: Tone; word: s
     : v === 'late' ? t('kalori.reason.late', { time: nextAt })
     : v === 'failing' ? (first ? reasonText(s, first) : t('kalori.reason.crash'))
     : t('kalori.say.none', { time: nextAt });
-  return { tone: TONE[v], word: t(`kalori.verdict.${v}`), sentence, verdict: v };
+  return { tone: TONE[v], w: WORD[v], word: t(`bots.w.${WORD[v]}`), sentence, verdict: v };
 }
 
 /** 確認が必要's lines: each reason in words (a band's line among them), else the alert's own text; 遅れ by the app's
@@ -294,9 +285,6 @@ export function factRows(s: KaloriStatus, now: number): Fact[] {
   ];
   return rows.filter((r): r is Fact => r !== null);
 }
-
-/** The foot: 「更新 12:03 · kalori-scrape.yml」 (the file's time; the date too when it isn't today). */
-export const footLine = (s: KaloriStatus, now: number): string => [t('kalori.updated', { time: formatSyncTime(new Date(s.at), tokyoDay(now)) }), WORKFLOW].join(' · ');
 
 /** 最新の更新's bar: added leaf, 値の変更 yuzu, 終了 hatched, 削除 sunk; its one line for VoiceOver. */
 export function changeParts(d: Diff): { parts: { id: string; tone: 'leaf' | 'yuzu' | 'hatch' | 'sunk'; label: string; n: number }[]; summary: string } {

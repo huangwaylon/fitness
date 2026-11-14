@@ -1,5 +1,6 @@
-// ボット (docs/design.md "Bots"): the menu's ボット, a member's only, right above 設定, with a dot while a bot needs a
-// person; its sheet: the bottom tabs (a tablist: ジム left, 保養所, メニュー right), each tab's dot, ← → to move between them,
+// ボット (docs/design.md "Bots"): the menu's ボット, a member's only, right above 設定, with the worst bot's 「!」 while one
+// needs a person; its sheet: the bottom tabs (a tablist: ジム left, 保養所, メニュー right), each tab's status dot
+// (data-tab-status, data-look; 「ジム、順調」), the dots kept across a reload, ← → to move between them,
 // the tab remembered for the app's session (ジム, the leftmost, the first time and after the app was closed), only the shown page mounted (it reads while shown, nothing
 // reads once its tab is left or the sheet is closed), and 保養所's sticky 保存 bar over the tabs. Both Workers mocked (its.ts, a gym
 // status here) at the record's pinned time; the pages' own content is its.spec's and gymbot.spec's, the guest's
@@ -38,7 +39,7 @@ type Kalori = ((now: number) => Record<string, unknown>) | 'offline';
 
 /** A member's phone; the ITS Worker answers its example (a hold waiting: 要対応; `its: false`: no answer), the gym bot
  *  `gymVerdict`, status.json `kalori()` (its current answer: `setKalori`). */
-async function phone(page: Page, context: BrowserContext, gymVerdict: 'failing' | 'healthy' = 'failing', o: { kalori?: Kalori; its?: boolean } = {}) {
+async function phone(page: Page, context: BrowserContext, gymVerdict: 'failing' | 'healthy' = 'failing', o: { kalori?: Kalori; its?: boolean; gym?: boolean } = {}) {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, 'A');
@@ -55,8 +56,10 @@ async function phone(page: Page, context: BrowserContext, gymVerdict: 'failing' 
     calls.its++;
     return route.fulfill({ status: 200, contentType: 'application/json', headers: cors(), body: JSON.stringify(payload(rec.now())) });
   });
+  let gymUp = o.gym !== false;
   await page.route(`${GYM}/**`, (route) => {
     const now = rec.now();
+    if (!gymUp) return route.abort('internetdisconnected');
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization' } });
     if (new URL(route.request().url()).pathname !== '/status') return route.fulfill({ status: 404, headers: { 'Access-Control-Allow-Origin': '*' }, body: '' });
     calls.gym++;
@@ -70,17 +73,18 @@ async function phone(page: Page, context: BrowserContext, gymVerdict: 'failing' 
   await islandUp(page);
   return {
     calls, now: rec.now, sheet: page.locator('dialog[open] [data-bots]'), tab: (id: 'its' | 'gym' | 'kalori') => page.locator(`dialog[open] [data-bots-tab="${id}"]`),
-    setKalori: (k: Kalori) => void (kalori = k)
+    setKalori: (k: Kalori) => void (kalori = k), setGym: (up: boolean) => void (gymUp = up)
   };
 }
 
-test('the menu’s ボット, right above 設定, dotted while 保養所 needs a person; the sheet’s tabs: a tablist, dots, 44px, ← →', async ({ page, context }) => {
+test('the menu’s ボット, right above 設定, 「!」 while a bot needs a person; the sheet’s tabs: a tablist, status dots, 44px, ← →', async ({ page, context }) => {
   const { calls, sheet, tab } = await phone(page, context);
   await unfoldMenu(page);
   const pill = page.locator('[data-hud-bots]');
   await expect(pill.locator('.lbl')).toHaveText(/^ボット/);
   await expect(pill.locator('[data-hud-bots-dot]')).toBeVisible();
-  await expect(pill).toHaveAccessibleName(/ボット.*要対応/);
+  await expect(pill.locator('[data-hud-bots-dot]')).toHaveAttribute('data-tone', 'bad'); // ジム failing: coral
+  await expect(pill).toHaveAccessibleName('ボット、要対応');
   await expect(pill.locator('img')).toHaveCount(0); // a drawn icon, no game sprite
   const [b, s] = [(await pill.boundingBox())!, (await page.locator('[data-hud-settings]').boundingBox())!];
   expect(b.y + b.height).toBeLessThan(s.y);
@@ -98,21 +102,27 @@ test('the menu’s ボット, right above 設定, dotted while 保養所 needs a
   await expect(tab('gym')).toHaveAttribute('aria-controls', 'bots-panel');
   await expect(sheet).toHaveAttribute('role', 'tabpanel');
   await expect(sheet).toHaveAttribute('aria-labelledby', 'bots-tab-gym');
-  // both dotted: the gym bot failing, the hold waiting (read as the menu unfolded, its tab not shown)
-  await expect(tab('its').locator('[data-tab-dot]')).toBeVisible();
-  await expect(tab('gym').locator('[data-tab-dot]')).toBeVisible();
-  await expect(tab('gym')).toHaveAccessibleName(/^ジム\s+要対応$/);
-  expect([calls.its, calls.gym]).toEqual([1, 1]);
+  // the gym bot failing (coral 「!」), 保養所 一部不調 with a hold waiting (yuzu 「!」; read as the menu unfolded, its tab
+  // not shown, not read again as the sheet opened: the minute's floor); the menu read every bot, and the shown page,
+  // read seconds ago, doesn't read ジム again
+  await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
+  await expect(tab('gym')).toHaveAttribute('data-look', '');
+  await expect(tab('its')).toHaveAttribute('data-tab-status', 'warn');
+  await expect(tab('its')).toHaveAttribute('data-look', '');
+  await expect(tab('gym')).toHaveAccessibleName('ジム、不調、要対応');
+  await expect(tab('its')).toHaveAccessibleName('保養所、要対応');
+  expect([calls.its, calls.gym, calls.kalori]).toEqual([1, 1, 1]);
   for (const id of ['its', 'gym', 'kalori'] as const) {
     const box = (await tab(id).boundingBox())!;
     expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
   }
-  // ジム · 保養所 · メニュー, left to right; メニュー healthy: no dot
+  // ジム · 保養所 · メニュー, left to right; メニュー healthy: a plain leaf dot
   const [l, m, r] = [(await tab('gym').boundingBox())!, (await tab('its').boundingBox())!, (await tab('kalori').boundingBox())!];
   expect(l.x).toBeLessThan(m.x);
   expect(m.x).toBeLessThan(r.x);
-  await expect(tab('kalori')).toHaveAccessibleName(/^メニュー$/);
-  await expect(tab('kalori').locator('[data-tab-dot]')).toHaveCount(0);
+  await expect(tab('kalori')).toHaveAccessibleName('メニュー、順調');
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
+  await expect(tab('kalori')).not.toHaveAttribute('data-look');
   // the keyboard: → moves the focus, Enter picks; the focus stays on the tab picked
   await tab('gym').focus();
   await page.keyboard.press('ArrowRight');
@@ -134,7 +144,7 @@ test('ジム the first time; the tab shown last opens the next time, after a rel
   await fromMenu(page, 'bots');
   await expect(sheet).toHaveAttribute('data-tab', 'gym');
   await expect(sheet.locator('[data-gym-verdict="healthy"]')).toBeVisible();
-  await expect(tab('gym').locator('[data-tab-dot]')).toHaveCount(0);
+  await expect(tab('gym')).toHaveAttribute('data-tab-status', 'good');
   await tab('its').click();
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
   // the tab left: ジム's page gone, the phone shown again (what makes a shown page read) asks only 保養所
@@ -207,7 +217,7 @@ test('メニュー 順調: the verdict, 最新の更新 (one label), 直近8週,
   await expect(verdict).toContainText('順調');
   await expect(verdict).toContainText('11/4（水）に更新しました。');
   await expect(k.locator('[data-kalori-alert]')).toHaveCount(0);
-  await expect(tab('kalori').locator('[data-tab-dot]')).toHaveCount(0);
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
   await expect(k.getByRole('heading', { level: 3 })).toHaveText(['最新の更新', '動作状況']);
   await expect(k.locator('[data-kalori-tag]')).toHaveText('kalori-2026-11-04');
   await expect(k.getByRole('img', { name: '最新の更新：追加12、値の変更38、終了3、削除0' })).toBeVisible();
@@ -231,7 +241,7 @@ test('メニュー 順調: the verdict, 最新の更新 (one label), 直近8週,
   await expect(fact('rounds')).toHaveText('1回');
   await expect(fact('deploy')).toHaveText('完了');
   await expect(fact('rate')).toContainText('値の変更 0.1%・上限5.0%');
-  await expect(k.locator('[data-kalori-foot]')).toHaveText('更新 11:57 · kalori-scrape.yml');
+  await expect(k.locator('[data-kalori-foot]')).toHaveText('kalori-scrape.yml · 更新 11:57');
   await expect(k.getByRole('button', { name: /今すぐ|実行する/ })).toHaveCount(0); // no run-now: GitHub's links only
   expect(calls.kalori).toBeGreaterThan(0);
 });
@@ -251,8 +261,8 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status, its l
   // the menu unfolding reads Kalori: ボット's dot (保養所 unanswered, ジム healthy: it's Kalori's)
   await unfoldMenu(page);
   const pill = page.locator('[data-hud-bots]');
-  await expect(pill.locator('[data-hud-bots-dot]')).toBeVisible();
-  await expect(pill).toHaveAccessibleName(/ボット.*要対応/);
+  await expect(pill.locator('[data-hud-bots-dot]')).toHaveAttribute('data-tone', 'warn');
+  await expect(pill).toHaveAccessibleName('ボット、要対応');
   await pill.click();
   await tab('kalori').click();
   const k = sheet.locator('[data-kalori-page]');
@@ -269,8 +279,9 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status, its l
   await expect(alert.locator('[data-kalori-link="pr"]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/pull/901');
   await expect(alert.locator('a[href*="/issues"]')).toHaveCount(0); // no issue is made
   for (const a of await alert.getByRole('link').all()) expect((await a.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await expect(tab('kalori').locator('[data-tab-dot]')).toBeVisible();
-  await expect(tab('kalori')).toHaveAccessibleName(/^メニュー\s+要対応$/);
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'warn'); // yuzu, as its card: coral is for failures
+  await expect(tab('kalori')).toHaveAttribute('data-look', '');
+  await expect(tab('kalori')).toHaveAccessibleName('メニュー、保留、要対応');
 });
 
 test('メニュー 不調: the coral verdict, the reason’s sentence and 確認が必要 with the run', async ({ page, context }) => {
@@ -284,7 +295,8 @@ test('メニュー 不調: the coral verdict, the reason’s sentence and 確認
   await expect(k.locator('[data-kalori-alert] [data-kalori-reason]')).toHaveText(['サイトの構成が変わり読み取れません。', '取得が途中で止まりました。']);
   await expect(k.locator('[data-kalori-alert]').getByRole('link')).toHaveText(['実行を開く']);
   await expect(k.locator('[data-kalori-fact="coverage"] dd')).toHaveText('30,000 / 54,269品 · 失敗12');
-  await expect(tab('kalori').locator('[data-tab-dot]')).toBeVisible();
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'bad');
+  await expect(tab('kalori')).toHaveAttribute('data-look', '');
 });
 
 test('メニュー 取得中: the round in the verdict, the previous update below; まだ: idle, no bar nor strip', async ({ page, context }) => {
@@ -305,10 +317,12 @@ test('メニュー 取得中: the round in the verdict, the previous update belo
   await expect(k.locator('[data-kalori-verdict="none"]')).toContainText('まだありません');
   await expect(k.locator('[data-kalori-verdict="none"]')).toContainText('最初の更新は11/11（水）2:41です。');
   await expect(k.locator('[data-kalori-latest], [data-kalori-strip], [data-kalori-alert]')).toHaveCount(0);
+  await expect(k.locator('[data-kalori-empty]')).toHaveText('まだ記録がありません'); // one hint, no empty strip
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'idle');
   await expect(k.locator('[data-kalori-fact="next"] dd')).toHaveText('11/11（水）2:41ごろ');
 });
 
-test('メニュー offline: 「読み込めませんでした（offline）」 with もう一度, the last known status kept, 更新中; a retry recovers', async ({ page, context }) => {
+test('メニュー offline: 「読み込めませんでした（オフライン）」 with もう一度, the last known status kept, 更新中; a retry recovers', async ({ page, context }) => {
   const { sheet, tab, setKalori } = await phone(page, context, 'healthy');
   const k = await openKalori(page, tab, sheet);
   await expect(k.locator('[data-kalori-verdict="healthy"]')).toBeVisible();
@@ -316,7 +330,7 @@ test('メニュー offline: 「読み込めませんでした（offline）」 wi
   setKalori('offline');
   await openKalori(page, tab, sheet);
   const err = k.locator('[data-kalori-error]');
-  await expect(err).toContainText('読み込めませんでした（offline）');
+  await expect(err).toContainText('読み込めませんでした（オフライン）');
   await expect(k.locator('[data-kalori-verdict="healthy"]')).toBeVisible();
   await expect(k.locator('[data-bots-stale]')).toHaveText('更新中');
   await expect(k.locator('[data-kalori-skeleton]')).toHaveCount(0);
@@ -329,7 +343,7 @@ test('メニュー offline: 「読み込めませんでした（offline）」 wi
 test('メニュー offline with nothing kept: the error row only, no skeleton left', async ({ page, context }) => {
   const { sheet, tab } = await phone(page, context, 'healthy', { kalori: 'offline' });
   const k = await openKalori(page, tab, sheet);
-  await expect(k.locator('[data-kalori-error]')).toContainText('読み込めませんでした（offline）');
+  await expect(k.locator('[data-kalori-error]')).toContainText('読み込めませんでした（オフライン）');
   await expect(k.locator('[data-kalori-skeleton], [data-kalori-verdict]')).toHaveCount(0);
 });
 
@@ -361,4 +375,55 @@ test('メニュー reads while shown only: the tab left, or the sheet closed, it
   await shown();
   await expect(page.locator('[data-kalori-page], [data-gym-page], [data-its-page]')).toHaveCount(0);
   expect(calls.kalori).toBe(n);
+});
+
+test('the menu’s 「!」 from ジム alone (保養所 unanswered, メニュー healthy); none, and no green one, while every bot is fine', async ({ page, context }) => {
+  await phone(page, context, 'failing', { its: false });
+  await unfoldMenu(page);
+  const dot = page.locator('[data-hud-bots] [data-hud-bots-dot]');
+  await expect(dot).toHaveAttribute('data-tone', 'bad');
+  await expect(dot.locator('[data-look]')).toHaveCount(1);
+});
+
+test('no 「!」 on the menu while every bot is fine', async ({ page, context }) => {
+  const { calls } = await phone(page, context, 'healthy', { its: false });
+  await unfoldMenu(page);
+  await expect.poll(() => calls.gym + calls.kalori).toBe(2);
+  await expect(page.locator('[data-hud-bots]')).toHaveAccessibleName('ボット');
+  await expect(page.locator('[data-hud-bots-dot]')).toHaveCount(0);
+});
+
+test('the dots survive a reload: kept with the status, shown before any read, kept when the read fails', async ({ page, context }) => {
+  const { sheet, tab, setGym, setKalori } = await phone(page, context, 'failing', { its: false });
+  await fromMenu(page, 'bots');
+  await expect(sheet.locator('[data-gym-verdict="failing"]')).toBeVisible();
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
+  await page.locator('dialog[open] .navbar button.nav.close').click();
+  setGym(false);
+  setKalori('offline');
+  await page.reload();
+  await islandUp(page);
+  await unfoldMenu(page);
+  await expect(page.locator('[data-hud-bots-dot]')).toHaveAttribute('data-tone', 'bad');
+  await page.locator('[data-hud-bots]').click();
+  await expect(sheet.locator('[data-gym-error]')).toContainText('読み込めませんでした（オフライン）');
+  await expect(sheet.locator('[data-gym-verdict="failing"]')).toBeVisible();
+  await expect(sheet.locator('[data-bots-stale]')).toHaveText('更新中');
+  await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
+  await expect(tab('gym')).toHaveAttribute('data-stale', ''); // dimmed: the read failed
+  await expect(tab('gym')).toHaveAccessibleName('ジム、不調、要対応（古い）');
+  await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
+  // 保養所 never answered: hollow, 不明
+  await expect(tab('its')).toHaveAttribute('data-tab-status', 'unknown');
+  await expect(tab('its')).toHaveAccessibleName('保養所、不明');
+});
+
+test('while the sheet is open the tabs not shown are read again every 5 min (here 1.5 s: e2e.botsBg)', async ({ page, context }) => {
+  await context.addInitScript(() => localStorage.setItem('e2e.botsBg', '1500'));
+  const { calls, sheet } = await phone(page, context, 'healthy');
+  await fromMenu(page, 'bots');
+  await expect(sheet).toHaveAttribute('data-tab', 'gym');
+  const k = calls.kalori, i = calls.its;
+  await expect.poll(() => calls.kalori, { timeout: 8000 }).toBeGreaterThan(k + 1);
+  expect(calls.its).toBeGreaterThan(i);
 });

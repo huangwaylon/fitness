@@ -13,9 +13,8 @@
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
   // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. Each status read
-  // sets the tab's and the menu's dot (open.svelte.ts). The last status read shows at once as the page opens, marked
-  // 更新中 (lastKnown.ts). The verdict, the strip, the facts, the skeleton and the poll are ジム's too (VerdictCard,
-  // StatusStrip, FactList, Skeleton, poll.svelte.ts). Not in demo mode (no tab: no fixture).
+  // sets the tab's and the menu's dot (useBot.svelte.ts), the last read shown at once (更新中). BotPage's skeleton (the
+  // verdict, 確認が必要, 動作状況, the foot), as ジム's and メニュー's. Not in demo mode (no tab: no fixture).
   import { tick } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
@@ -31,21 +30,17 @@
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
-  import { fetchStatus, parseStatus, postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
+  import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, addDate, addDates, applyPreset, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows, footLine,
-    hotelHint, hotelParts, hotelRows, hotelSummary, legacy, minuteCells, pollMs, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
-    stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, verdictView, needsAttention, type DateRow, type Draft, type HotelRow, type ListRow
+    PRESETS, addDate, addDates, applyPreset, attentionLines, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows,
+    hotelHint, hotelParts, hotelRows, hotelSummary, legacy, minuteCells, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
+    stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, type DateRow, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
-  import { setBadge } from './open.svelte.ts';
+  import { driver } from '#lib/its/bot.ts';
   import ItsNotify from './ItsNotify.svelte';
-  import VerdictCard from './VerdictCard.svelte';
-  import StatusStrip from './StatusStrip.svelte';
-  import FactList from './FactList.svelte';
+  import BotPage from './BotPage.svelte';
   import ChangeBar, { type ChangeSeg } from './ChangeBar.svelte';
-  import Skeleton from './Skeleton.svelte';
-  import { statusPoll } from './poll.svelte.ts';
-  import { recall, remember } from './lastKnown.ts';
+  import { useBot } from './useBot.svelte.ts';
 
   /** A night's bar (ChangeBar): 探す leaf, 受付終了 hatched, 季節外 · 休館日 · 掲載終了 sunk and outlined. */
   const SEG_TONE: Partial<Record<string, ChangeSeg['tone']>> = { check: 'leaf', cutoff: 'hatch' };
@@ -53,11 +48,6 @@
   /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
 
-  /** The status shown: the last read (the one kept from before until this page's first answer: `live` false). */
-  let status = $state<ItsStatus | null>(recall('its', parseStatus));
-  let live = $state(false);
-  /** The last read's failure code (offline, http 502, …), or null. */
-  let failed = $state<string | null>(null);
   /** The draft (null: the saved settings shown as they are), what it began from and that `updatedAt`. */
   let draft = $state<Draft | null>(null);
   let start: Draft | null = null;
@@ -91,11 +81,8 @@
   /** Every answer's status (a read's, 保存's, a 409's, 開始 / 停止's): one older than the shown one is dropped; the
    *  draft is kept (noting a move of the saved settings under it), an unchanged one let go. */
   function take(s: ItsStatus) {
-    if (live && status && s.now < status.now) return;
-    status = s;
-    live = true;
-    remember('its', s);
-    setBadge('its', needsAttention(s));
+    if (bot.fresh && status && s.now < status.now) return;
+    bot.take(s);
     if (!dirty) {
       draft = start = null;
       conflict = false;
@@ -105,14 +92,12 @@
     }
   }
 
-  /** The reads (poll.svelte.ts): every 15 s while the runner is on its way or running, else every minute; none while
+  /** The reads (useBot.svelte.ts): every 15 s while the runner is on its way or running, else every minute; none while
    *  保存 / 開始 / 停止 answer with the status themselves (their `hold()`; `schedule()` after). */
-  const poll = statusPoll(async (signal) => {
-    const r = await fetchStatus(signal);
-    if (signal.aborted) return;
-    if (r.ok) take(r.status);
-    failed = r.ok ? null : [r.err, r.http].filter((x) => x !== null).join(' ');
-  }, () => pollMs(status), () => saving || running);
+  const bot = useBot<ItsStatus>('its', driver, { skip: () => saving || running, onStatus: take });
+  /** The status shown: the last read (the one kept from before until this page's first answer: `bot.fresh` false). */
+  const status = $derived(bot.data);
+  const poll = bot.poll;
   const load = poll.refresh;
   const life = poll.life;
 
@@ -133,7 +118,7 @@
   const name = (m: Member) => (week.view ? villagerNameOf(week.view, m) : m);
   /** What the page shows: the draft, else the saved settings (an allow-list derived when they have none). */
   const shown = $derived(draft ?? (status ? draftOf(status.settings, status.seen) : null));
-  const verdict = $derived(status && verdictView(status));
+  const verdict = $derived(status && driver.verdict(status, nowMs));
   const facts = $derived(status ? factRows(status, today) : []);
   const bookings = $derived(status ? bookingRows(status, today, nowMs) : []);
   const events = $derived(status ? eventLines(status, today) : []);
@@ -308,25 +293,24 @@
   <ChangeBar segs={d.parts.map((p) => ({ id: p.why, tone: SEG_TONE[p.why] ?? 'sunk', label: t(`its.why.${p.why}`), n: p.names.length }))} attr="its" />
 {/snippet}
 
-<div class="its" data-its-page aria-busy={poll.loading}>
-  {#if failed}
-    <div class="prow static note" data-its-error>
-      <span class="prl">{t('its.loadFailed', { code: failed })}</span>
-      <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={poll.loading} onclick={() => poll.loading || void load()}>{t('state.retry')}</button>
-    </div>
-  {/if}
-  {#if status && verdict && shown}
-    <VerdictCard tone={verdict.tone} word={verdict.word} sentence={verdict.sentence} attr={{ 'data-its-verdict': status.verdict }} stale={!live && poll.loading}
-      act={{ 'data-its-run': paused ? 'stopped' : 'running' }}>
-      <span class="txt">
-        {#if !paused}<small>{t('its.ctl.on')}</small>{/if}
-        {#if control}<small data-its-control>{control}</small>{/if}
-        {#if paused && noDates}<small class="late" data-its-need-dates>{t('its.ctl.needDates')}</small>{/if}
-      </span>
-      <button type="button" class="btn small runbtn" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick"
-        aria-disabled={running || (paused && noDates)} onclick={() => void run(paused ? 'start' : 'stop')}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
-    </VerdictCard>
+{#snippet runRow()}
+  <span class="txt">
+    {#if !paused}<small>{t('its.ctl.on')}</small>{/if}
+    {#if control}<small data-its-control>{control}</small>{/if}
+    {#if paused && noDates}<small class="late" data-its-need-dates>{t('its.ctl.needDates')}</small>{/if}
+  </span>
+  <button type="button" class="btn small runbtn" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick"
+    aria-disabled={running || (paused && noDates)} onclick={() => void run(paused ? 'start' : 'stop')}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
+{/snippet}
 
+{#snippet savedBy()}{#if saved}<span data-its-saved-by>{saved}</span>{/if}{/snippet}
+
+<BotPage attr="its" busy={poll.loading} failed={bot.failed} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict} stale={bot.stale}
+  act={status ? runRow : undefined} actAttr={{ 'data-its-run': paused ? 'stopped' : 'running' }} attention={status && { lines: attentionLines(status) }}
+  strip={cells.length ? { cells: stripCells(cells), ticks: scanTicks(cells), title: t('its.scan.title'), legend, summary: scanSummary(cells), hint: t('its.scan.pick') } : null}
+  {facts} foot={status && { parts: [t(`its.mode.${status.mode}`), status.sha?.slice(0, 7)], at: status.now, today }}
+  saved={saved ? savedBy : undefined} tail={dirty ? saveBar : undefined}>
+  {#if status && shown}
     {#if migrating}
       <div class="card pad note" data-its-migrate role="status">
         <p><Phrases text={t('its.hotel.migrate')} /></p>
@@ -352,15 +336,6 @@
       </section>
     {/if}
 
-    <section class="sec" aria-labelledby="its-status">
-      <h3 id="its-status" class="sec-label">{t('its.sec.status')}</h3>
-      <div class="card pad">
-        {#if cells.length}
-          <StatusStrip cells={stripCells(cells)} ticks={scanTicks(cells)} title={t('its.scan.title')} {legend} summary={scanSummary(cells)} hint={t('its.scan.pick')} attr="its" />
-        {/if}
-        <FactList {facts} more={t('its.fact.more')} attr="its" />
-      </div>
-    </section>
     <section class="sec" aria-labelledby="its-dates">
       <h3 id="its-dates" class="sec-label">{t('its.sec.dates')}</h3>
       <p class="hint">{t('its.date.one')}</p>
@@ -496,28 +471,27 @@
       </section>
     {/if}
 
-    <p class="foot" data-its-foot>{#if saved}<span data-its-saved-by>{saved}</span><br />{/if}{footLine(status, today)}</p>
-
-    {#if dirty}
-      <div class="level-acts" data-its-save-bar>
-        {#if conflict}
-          <div class="why" data-its-conflict role="status">
-            <span>{status.settings.updatedBy ? t('its.conflictBy', { who: name(status.settings.updatedBy) }) : t('its.conflictAny')}</span>
-            <button type="button" class="btn small paper" data-sfx="tick" onclick={reload}>{t('its.reload')}</button>
-          </div>
-        {:else if saveWhy}
-          <p class="why bad" role="alert" data-its-save-failed>{saveWhy}</p>
-        {:else if paused}
-          <p class="why" data-its-draft-note>{t('its.ctl.draftNote')}</p>
-        {/if}
-        <button type="button" class="btn paper small" data-its-discard data-sfx="self" onclick={discard}>{t('its.discard')}</button>
-        <button type="button" class="btn" data-its-save data-sfx="tick" aria-disabled={saving} onclick={() => void save()}>{t(conflict ? 'its.overwrite' : 'its.save')}</button>
-      </div>
-    {/if}
-  {:else if !failed}
-    <Skeleton attr="its" />
   {/if}
-</div>
+</BotPage>
+
+{#snippet saveBar()}
+  {#if status}
+  <div class="level-acts" data-its-save-bar>
+    {#if conflict}
+      <div class="why" data-its-conflict role="status">
+        <span>{status.settings.updatedBy ? t('its.conflictBy', { who: name(status.settings.updatedBy) }) : t('its.conflictAny')}</span>
+        <button type="button" class="btn small paper" data-sfx="tick" onclick={reload}>{t('its.reload')}</button>
+      </div>
+    {:else if saveWhy}
+      <p class="why bad" role="alert" data-its-save-failed>{saveWhy}</p>
+    {:else if paused}
+      <p class="why" data-its-draft-note>{t('its.ctl.draftNote')}</p>
+    {/if}
+    <button type="button" class="btn paper small" data-its-discard data-sfx="self" onclick={discard}>{t('its.discard')}</button>
+    <button type="button" class="btn" data-its-save data-sfx="tick" aria-disabled={saving} onclick={() => void save()}>{t(conflict ? 'its.overwrite' : 'its.save')}</button>
+  </div>
+  {/if}
+{/snippet}
 
 <ActionSheet bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
   groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('its.auto.cancel') }]]}
@@ -548,18 +522,16 @@
 </Sheet>
 
 <style>
-  .its { display: flex; flex-direction: column; gap: 14px; }
-  .sec { display: grid; gap: 8px; }
   .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
-  .its .hint.bad, .its .late, .its b.bad { color: var(--coral-text); }
+  :global(.bpage) .hint.bad, :global(.bpage) .late, :global(.bpage) b.bad, .bulk .hint.bad { color: var(--coral-text); }
   .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); margin: 0 4px; }
-  /* a notice: yuzu-tinted (a class of its own, so the row's own background rule can't win) */
-  .its .note { background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
+  /* a notice: yuzu-tinted */
+  .card.note { background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
   .card.note { display: grid; gap: 8px; }
   .card.note p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .card.note .btn { justify-self: start; margin: 0; }
 
-  /* the verdict's row (VerdictCard): 開始 / 停止 */
+  /* the verdict's act row (VerdictCard): 開始 / 停止 */
   .runbtn { flex: none; margin: 0; }
 
   .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
@@ -585,7 +557,7 @@
   .dates > li { display: block; min-height: 0; }
   .drow { display: flex; align-items: flex-start; gap: 4px; min-height: var(--hit); }
   .dtxt { padding: 6px 0; }
-  .its .booked { color: var(--leaf-text); }
+  :global(.bpage) .booked { color: var(--leaf-text); }
   .dhead { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   /* a night: the whole row the tap (44px+), its bar under the date */
   .night {
@@ -650,7 +622,7 @@
     appearance: none; border: 0; background: none; cursor: pointer; flex: 1; min-width: 0; min-height: var(--hit); padding: 4px 0; text-align: left; color: var(--text);
     display: flex; align-items: center; gap: 10px; font: inherit;
   }
-  .its .hsw small.fresh { color: var(--leaf-text); }
+  :global(.bpage) .hsw small.fresh { color: var(--leaf-text); }
   .star {
     appearance: none; border: 0; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); border-radius: 12px; position: relative;
     display: flex; align-items: center; justify-content: center; gap: 1px; background: var(--ctl); color: var(--text-soft); box-shadow: var(--sh-ctl);
@@ -675,7 +647,6 @@
   div.why { padding: 4px 4px 4px 12px; margin: 0; border-radius: var(--r-card); color: var(--text); background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
   .why .btn { flex: none; margin: 0; }
   p.why.bad { padding: 8px 12px; margin: 0; border-radius: var(--r-card); color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
-  .foot { margin: 0 4px; text-align: center; font-size: var(--fs-s); color: var(--text-soft); overflow-wrap: anywhere; line-height: var(--lh); }
 
   .bulk { display: grid; gap: 8px; padding-bottom: 8px; }
   .period { display: flex; align-items: center; gap: 6px; }

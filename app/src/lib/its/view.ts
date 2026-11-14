@@ -11,7 +11,9 @@ import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } f
 import { t } from '#lib/i18n/index.ts';
 import { formatDate, formatSyncTime, monthLabel } from '#lib/i18n/format.ts';
 import '#lib/i18n/its.ts';
-import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick, type Tone } from '#lib/strip.ts';
+import '#lib/i18n/bots.ts';
+import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
+import type { BotTone, BotWord } from '#lib/bots/types.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -424,21 +426,21 @@ export function hotelNote(r: HotelRow): string {
 }
 
 // ---- The verdict and the facts ----
-const TONE: Record<Verdict, Tone> = { healthy: 'good', starting: 'good', idle: 'idle', degraded: 'warn', late: 'warn', failing: 'bad', stopped: 'idle', off: 'idle' };
+const TONE: Record<Verdict, BotTone> = { healthy: 'good', starting: 'busy', idle: 'idle', degraded: 'warn', late: 'warn', failing: 'bad', stopped: 'idle', off: 'idle' };
+const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', starting: 'starting', idle: 'waiting', degraded: 'trouble', late: 'late', failing: 'failing', stopped: 'stopped', off: 'off' };
 
-/** The card: its tone, word and sentence (遅れ: how long nothing was heard). */
-export function verdictView(s: ItsStatus): { tone: Tone; word: string; sentence: string } {
+/** The card: its tone, word (bots.w; 要対応 while a booking waits for a person) and sentence (遅れ: how long nothing was
+ *  heard). */
+export function verdictView(s: ItsStatus): { tone: BotTone; w: BotWord; word: string; sentence: string } {
   const why = s.reasons[0] ?? 'none';
   const sentence = why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
     : t(`its.reason.${why}`, { n: s.runner?.scanFailures ?? 0 });
-  return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`), sentence };
+  const w: BotWord = waiting(s).length ? 'needsYou' : WORD[s.verdict];
+  return { tone: TONE[s.verdict], w, word: t(`bots.w.${w}`), sentence };
 }
 
-/** The state in one word: 要対応 (coral) while a booking waits for a person, else the verdict's word and tone. */
-export function rowBadge(s: ItsStatus): { tone: Tone; word: string } {
-  if (bookingRows(s, tokyoToday(s.now), s.now).some((b) => b.state === 'action')) return { tone: 'bad', word: t('its.booking.action') };
-  return { tone: TONE[s.verdict], word: t(`its.verdict.${s.verdict}`) };
-}
+/** The bookings waiting for a person (要対応: a hold to finish by mail, a failed leg). */
+const waiting = (s: ItsStatus): BookingRow[] => bookingRows(s, tokyoToday(s.now), s.now).filter((b) => b.state === 'action');
 
 /** A runner has reported: it applies the allow-list and stops at a booked night (before any report the page claims
  *  neither). */
@@ -450,7 +452,14 @@ export const hotelHint = (autoConfirm: boolean, stops: boolean): string =>
   t(!autoConfirm ? 'its.hotel.hintMail' : stops ? 'its.hotel.hint' : 'its.hotel.hintAuto');
 
 /** ボット's dot (the menu's pill, the 保養所 tab): a hold waiting for a person (要対応), 不調 or 遅れ. */
-export const needsAttention = (s: ItsStatus): boolean => rowBadge(s).tone === 'bad' || s.verdict === 'late';
+export const needsAttention = (s: ItsStatus): boolean => s.verdict === 'failing' || s.verdict === 'late' || waiting(s).length > 0;
+
+/** 確認が必要's lines: each booking waiting (its facility, day and why), then the verdict's sentence when 不調 or 遅れ. */
+export function attentionLines(s: ItsStatus): string[] {
+  const lines = waiting(s).map((b) => `${b.hotel}（${formatDate(b.date)}）：${b.detail}`);
+  if (s.verdict === 'failing' || s.verdict === 'late') lines.push(verdictView(s).sentence);
+  return lines;
+}
 
 /** Running, or about to: polled every 15 s while shown, else every minute. */
 export const pollMs = (s: ItsStatus | null): number =>
@@ -461,10 +470,6 @@ export const pollMs = (s: ItsStatus | null): number =>
 const SAVE_ERRORS = ['bad_date', 'past_date', 'far_date', 'too_many_dates', 'bad_guests', 'bad_hotels', 'too_large', 'unauthorized'];
 /** Why 保存 failed, in words: a refusal the page can name, else 「もう一度保存してください」. */
 export const saveError = (err: string): string => t(`its.saveWhy.${SAVE_ERRORS.includes(err) ? err : 'other'}`);
-
-/** The page's last line: the mode (稼働 / オフ), the build, and when the status was read. */
-export const footLine = (s: ItsStatus, today: string): string =>
-  [t(`its.mode.${s.mode}`), s.sha?.slice(0, 7), t('its.updated', { time: at(s.now, today) })].filter(Boolean).join(' · ');
 
 /** Who pressed 開始 / 停止 last, and when: 「停止（うめ・12:03）」 (`name`: a member's name), or null (none recorded). */
 export const controlLine = (s: ItsStatus, name: (m: Member) => string, today: string): string | null =>

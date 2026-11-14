@@ -9,11 +9,10 @@
   // (one undo an act or bulk act: lib/gym/calendar.ts undoActs); a failure puts back only its own days, with a coral
   // note and もう一度, the bot's refusals in its words, a 409 stale shows the day as it is now
   // (「ほかの人が変更しました」). A poll that sees a day change under the page flashes its cell.
-  // At the foot, quiet, 動作状況: the verdict (compact), 直近12時間 (StatusStrip), the facts (FactList), the foot.
-  // Both read on open, then every minute while shown (poll.svelte.ts; each status read sets the tab's dot:
-  // open.svelte.ts); leaving it (the other tab or ✕ unmounts it) stops that, and nothing ticks while hidden. The last
-  // status read shows at once, marked 更新中 (lastKnown.ts). A failed read keeps the last answer shown under a row with
-  // もう一度; the settings have their own, and stay out of sight while the Worker doesn't serve them (config.ts settle).
+  // On BotPage's skeleton: the verdict on top, the control row in its act row; 動作状況 (直近12時間, the facts) and the
+  // foot last. Both read on open, then every minute while shown (useBot.svelte.ts; the config with each status read);
+  // the settings have their own failure row, and stay out of sight while the Worker doesn't serve them (config.ts
+  // settle).
   import { tick } from 'svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -21,7 +20,8 @@
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { checkStrip, factRows, fetchStatus, needsAttention, parseStatus, verdictView, type GymStatus } from '#lib/gym/status.ts';
+  import { checkStrip, factRows, reasonLines, type GymStatus } from '#lib/gym/status.ts';
+  import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
   import { bulkAct, changeLine, dayTitle, fromWords, longRange, movedDays, pickSlot, predictAll, slotCount, undoActs, weeks, withBase, type SlotPick } from '#lib/gym/calendar.ts';
   import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
@@ -29,24 +29,13 @@
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import Icon from '../ui/Icon.svelte';
-  import { setBadge } from './open.svelte.ts';
-  import VerdictCard from './VerdictCard.svelte';
-  import StatusStrip from './StatusStrip.svelte';
-  import FactList from './FactList.svelte';
-  import Skeleton from './Skeleton.svelte';
+  import BotPage from './BotPage.svelte';
   import GymCalendar from './GymCalendar.svelte';
   import GymDayEditor from './GymDayEditor.svelte';
   import GymSlots from './GymSlots.svelte';
-  import { statusPoll } from './poll.svelte.ts';
-  import { recall, remember } from './lastKnown.ts';
+  import { useBot } from './useBot.svelte.ts';
 
-  const EVERY_MS = 60_000;
   const UNDO_MS = 5000;
-
-  /** The status shown: the last read (the one kept from before until this page's first answer: `fresh` false). */
-  let data = $state<GymStatus | null>(recall('gym', parseStatus));
-  let fresh = $state(false);
-  let failed = $state(false);
   /** The settings shown: the last answer (`confirmed`) with the acts still queued predicted on it. */
   let cfg = $state<GymConfig | null>(null);
   let confirmed: GymConfig | null = null;
@@ -121,16 +110,9 @@
     setTimeout(() => (flash = new Set()), 1600);
   }
 
-  const poll = statusPoll(async (signal) => {
-    void loadConfig();
-    const r = await fetchStatus(signal);
-    if (signal.aborted) return;
-    failed = !r.ok;
-    if (!r.ok) return;
-    [data, fresh] = [r.status, true];
-    remember('gym', r.status);
-    setBadge('gym', needsAttention(r.status));
-  }, () => EVERY_MS);
+  const bot = useBot<GymStatus>('gym', driver, { onRead: () => void loadConfig() });
+  const poll = bot.poll;
+  const data = $derived(bot.data);
 
   // 今すぐ確認's countdown: a tick a second while it runs (none while the phone is put away: the clock catches up)
   $effect(() => {
@@ -143,7 +125,8 @@
   /** The editor's now: the Worker's clock, a minute ahead (the tick is up to a minute old), so a ⏳ time isn't
    *  offered in its last minute, when the bot would refuse it as passed. */
   const pickNow = $derived(minuteNow().getTime() + skew + 60_000);
-  const verdict = $derived(data && verdictView(data));
+  const verdict = $derived(data && driver.verdict(data, Date.now()));
+  const reasons = $derived(data && verdict?.needsLook ? reasonLines(data) : []);
   const facts = $derived(data ? factRows(data, today) : []);
   const strip = $derived(data && checkStrip(data));
   const legend = { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), fail: t('gym.strip.legend.fail'), none: t('gym.strip.legend.none') };
@@ -333,7 +316,28 @@
   {/if}
 {/snippet}
 
-<div class="gym" data-gym-page aria-busy={poll.loading} data-config={cfgLoading ? 'loading' : cfgState}>
+{#snippet controls()}
+  {#if cfg}
+    <div class="ctl" data-gym-controls>
+      <button type="button" class="pill run" class:off={cfg.paused} data-gym-run={cfg.paused ? 'stopped' : 'running'} data-sfx="tick"
+        aria-haspopup={cfg.paused ? undefined : 'dialog'} onclick={toggleRun}>
+        <span class="dot" aria-hidden="true"></span><span>{cfg.paused ? t('gym.ctl.off') : t('gym.ctl.on', { n: cfg.intervalMin })}</span>
+      </button>
+      <button type="button" class="pill" data-gym-check data-sfx="tick" aria-disabled={checkOff} onclick={() => void check()}>
+        <Icon name="search" size={18} /><span>{checking || cfg.checking ? t('gym.ctl.running') : wait > 0 ? t('gym.ctl.wait', { s: wait }) : t('gym.ctl.check')}</span>
+      </button>
+      <button type="button" class="pill more" data-gym-interval-open data-sfx="tick" aria-haspopup="dialog" aria-label={t('gym.ctl.interval')} onclick={() => (intervalOpen = true)}>
+        <Icon name="more" size={20} stroke={3} />
+      </button>
+    </div>
+  {/if}
+{/snippet}
+
+<BotPage attr="gym" busy={poll.loading} failed={bot.failed} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict} stale={bot.stale}
+  rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} act={cfg ? controls : undefined}
+  attention={reasons.length ? { lines: reasons } : null}
+  strip={strip && { ...strip, title: t('gym.strip.title'), legend, hint: t('gym.strip.pick') }}
+  {facts} foot={data && { parts: [data.mode, data.sha?.slice(0, 7)], at: data.now, today }}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
       <h3 id="gym-config" class="sr">{t('gym.config')}</h3>
@@ -344,18 +348,6 @@
         </div>
       {/if}
       {#if cfg}
-        <div class="ctl" data-gym-controls>
-          <button type="button" class="pill run" class:off={cfg.paused} data-gym-run={cfg.paused ? 'stopped' : 'running'} data-sfx="tick"
-            aria-haspopup={cfg.paused ? undefined : 'dialog'} onclick={toggleRun}>
-            <span class="dot" aria-hidden="true"></span><span>{cfg.paused ? t('gym.ctl.off') : t('gym.ctl.on', { n: cfg.intervalMin })}</span>
-          </button>
-          <button type="button" class="pill" data-gym-check data-sfx="tick" aria-disabled={checkOff} onclick={() => void check()}>
-            <Icon name="search" size={18} /><span>{checking || cfg.checking ? t('gym.ctl.running') : wait > 0 ? t('gym.ctl.wait', { s: wait }) : t('gym.ctl.check')}</span>
-          </button>
-          <button type="button" class="pill more" data-gym-interval-open data-sfx="tick" aria-haspopup="dialog" aria-label={t('gym.ctl.interval')} onclick={() => (intervalOpen = true)}>
-            <Icon name="more" size={20} stroke={3} />
-          </button>
-        </div>
         {#if cfg.paused}<p class="hint" data-gym-stopped>{t('gym.ctl.stoppedNote')}</p>{/if}
         {#if result}
           <div class="card result" class:bad={result.bad} data-gym-result role="status">
@@ -366,7 +358,6 @@
           </div>
         {/if}
         {#if !editOpen}{@render noteRow()}{/if}
-
         <div class="calhead">
           <span class="sec-label">{t('gym.config')}</span>
           {#if !selecting}<button type="button" class="chip s" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
@@ -404,27 +395,7 @@
       {/if}
     </section>
   {/if}
-
-  <section class="sec status" aria-labelledby="gym-status" data-gym-status>
-    <h3 id="gym-status" class="sec-label">{t('gym.status')}</h3>
-    {#if failed}
-      <div class="prow static" data-gym-error>
-        <span class="prl">{t('common.loadFailed')}</span>
-        <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={poll.loading} onclick={() => poll.loading || void poll.refresh()}>{t('state.retry')}</button>
-      </div>
-    {/if}
-    {#if data && verdict && strip}
-      <VerdictCard tone={verdict.tone} word={verdict.word} sentence={verdict.sentence} attr={{ 'data-gym-verdict': data.verdict }} stale={!fresh && poll.loading} compact />
-      <div class="card">
-        <StatusStrip cells={strip.cells} ticks={strip.ticks} title={t('gym.strip.title')} {legend} summary={strip.summary} hint={t('gym.strip.pick')} attr="gym" />
-        <FactList {facts} more={t('gym.more')} attr="gym" />
-      </div>
-      <p class="foot" data-gym-foot>{[data.mode, data.sha?.slice(0, 7), t('gym.updated', { time: formatSyncTime(new Date(data.now), today) })].filter(Boolean).join(' · ')}</p>
-    {:else if !failed}
-      <Skeleton attr="gym" />
-    {/if}
-  </section>
-</div>
+</BotPage>
 
 <GymDayEditor bind:open={editOpen} row={editRow} {usualDay} now={pickNow} note={editOpen ? note : null} onact={(a) => void send(a)} />
 
@@ -459,16 +430,11 @@
 </Sheet>
 
 <style>
-  .gym { display: flex; flex-direction: column; gap: 14px; }
   .card { margin: 0; padding: 12px 14px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
-  .sec { display: grid; gap: 8px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  /* 動作状況: the page's foot, set apart a little */
-  .status { margin-top: 10px; }
-  .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
 
-  /* the control row: 3 pills, 44px; never wider than the page (min-width: 0), whatever the labels say */
-  .ctl { display: flex; gap: 6px; min-width: 0; }
+  /* the control row (the verdict's act row): 3 pills, 44px; never wider than the page (min-width: 0) */
+  .ctl { flex: 1; display: flex; gap: 6px; min-width: 0; }
   .pill {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); padding: 0 12px; border-radius: var(--r-pill); min-width: 0;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
@@ -528,7 +494,7 @@
   .txt small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
 
   .isheet { display: grid; gap: 10px; padding-bottom: 12px; }
+  .isheet .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .line { margin: 0 4px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .foot { margin: 0 4px; text-align: center; font-size: var(--fs-s); color: var(--text-soft); overflow-wrap: anywhere; line-height: var(--lh); }
   @media (prefers-reduced-motion: reduce) { .pill:active { transform: none; } }
 </style>

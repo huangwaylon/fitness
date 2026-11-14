@@ -64,7 +64,10 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(gym.locator('[data-gym-verdict="degraded"]')).toContainText('一部不調');
   await expect(gym.locator('[data-gym-verdict]')).toContainText('前回のチェックで一部が失敗しました。');
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
-  await expect(tab.locator('[data-tab-dot]')).toHaveCount(0); // (一部不調: no person needed)
+  await expect(tab).toHaveAttribute('data-tab-status', 'warn'); // 一部不調: yuzu, no 「!」 (no person needed)
+  await expect(tab).not.toHaveAttribute('data-look');
+  await expect(tab).toHaveAccessibleName('ジム、一部不調');
+  await expect(gym.locator('[data-gym-alert]')).toHaveCount(0);
   await expect(gym.locator('[data-gym-fact="last"]')).toContainText('11:54');
   await expect(gym.locator('[data-gym-fact="next"]')).toContainText('12:09ごろ');
   await expect(gym.locator('[data-gym-fact="failures"]')).toHaveCount(0);
@@ -73,15 +76,15 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await gym.locator('[data-gym-more] summary').click();
   await expect(gym.locator('[data-gym-fact="ok"]')).toContainText('11:39');
   await expect(gym.locator('[data-gym-fact="line"]')).toContainText('12 / 200');
-  // the settings on top (the controls, the calendar: gymbot-settings.spec.ts), 動作状況 (the verdict, the strip, the
-  // facts) at the foot
+  // the verdict on top, the controls in its row (gymbot-settings.spec.ts), the calendar, then 動作状況 (the strip, the
+  // facts) and the foot
   const current = gym.locator('[data-gym-config]');
-  await expect(current.locator('[data-gym-controls]')).toContainText('チェック中・15分ごと');
+  await expect(gym.locator('[data-gym-verdict] [data-gym-controls]')).toContainText('チェック中・15分ごと');
   await expect(current.locator('[data-gym-day]')).toHaveCount(25);
   const status = gym.locator('[data-gym-status]');
   await expect(status).toContainText('動作状況');
+  expect((await gym.locator('[data-gym-verdict]').boundingBox())!.y).toBeLessThan((await current.boundingBox())!.y);
   expect((await current.boundingBox())!.y).toBeLessThan((await status.boundingBox())!.y);
-  expect((await status.boundingBox())!.y).toBeLessThan((await gym.locator('[data-gym-verdict]').boundingBox())!.y);
   // 直近12時間: a cell each 15 minutes; the last check's timeout red, the 🔎 before it yellow (a slot open), the idle alarm outlined
   const strip = gym.locator('[data-gym-strip]');
   await expect(strip.locator('[data-gym-cell]')).toHaveCount(48);
@@ -132,15 +135,16 @@ test('the next opening shows the last status at once, marked 更新中, and the 
   await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
 });
 
-test('a failed fetch shows もう一度, and a retry recovers', async ({ page, context }) => {
-  const { calls, sheet } = await phone(page, context, 'A', (n) => (n === 1 ? 500 : 200));
+test('a failed fetch shows もう一度 with its code, and a retry recovers', async ({ page, context }) => {
+  // (the menu unfolding reads ジム first: its dot)
+  const { calls, sheet } = await phone(page, context, 'A', (n) => (n <= 2 ? 500 : 200));
   const error = sheet.locator('[data-gym-error]');
-  await expect(error).toContainText('読み込めませんでした');
+  await expect(error).toContainText('読み込めませんでした（http 500）');
   await expect(sheet.locator('[data-gym-verdict]')).toHaveCount(0);
   await error.getByRole('button', { name: 'もう一度' }).click();
   await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect(error).toHaveCount(0);
-  expect(calls.n).toBe(2);
+  expect(calls.n).toBe(3);
 });
 
 test('the phone’s key reads 現在の設定; a failed read has its own もう一度 and keeps the status', async ({ page, context }) => {
@@ -170,4 +174,13 @@ test('the guest has no ボット, and nothing asks the bot', async ({ page, cont
   await expect(page.locator('[data-hud-settings]')).toBeVisible();
   await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   expect([calls.n, calls.config]).toEqual([0, 0]);
+});
+
+test('/status failing, /gym/config answered: the controls in their own row and the calendar, under the error row', async ({ page, context }) => {
+  const { sheet } = await phone(page, context, 'A', () => 500);
+  const gym = sheet.locator('[data-gym-page]');
+  await expect(gym.locator('[data-gym-error]')).toContainText('読み込めませんでした（http 500）');
+  await expect(gym.locator('[data-gym-controls]')).toContainText('チェック中・15分ごと');
+  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
+  await expect(gym.locator('[data-gym-verdict], [data-gym-skeleton], [data-gym-status]')).toHaveCount(0);
 });

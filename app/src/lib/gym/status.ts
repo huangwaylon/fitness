@@ -4,10 +4,11 @@
 import { t } from '#lib/i18n/index.ts';
 import { formatSyncTime } from '#lib/i18n/format.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
-import { log } from '#lib/sync/log.ts';
 import { chain, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
+import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
+import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import '#lib/i18n/gym.ts';
-import type { Tone } from '#lib/strip.ts';
+import '#lib/i18n/bots.ts';
 
 // ---- The payload: mirrors gym/src/status.ts (the Worker owns it; change both together) ----
 type Verdict = 'healthy' | 'degraded' | 'failing' | 'late' | 'broken' | 'stopped' | 'off';
@@ -84,33 +85,24 @@ export function parseStatus(x: unknown): GymStatus | null {
 }
 
 /** A read's outcome: the status, or why not (`offline`: no answer; `http`: another status; `json`: not a status). */
-export type StatusReply = { ok: true; status: GymStatus } | { ok: false; err: 'offline' | 'http' | 'json'; http: number | null };
+export type StatusReply = PublicReply<GymStatus>;
 
-/** GET /status: public (no key, no header of ours: a simple request, no preflight). Never throws; a failure is logged
- *  (`gym.fail`: the HTTP status, the phone's code, ms), but not the caller's abort (the page left). */
-export async function fetchStatus(signal?: AbortSignal, url = GYM_URL): Promise<StatusReply> {
-  const t0 = performance.now();
-  let r: StatusReply;
-  try {
-    const res = await fetch(`${url}/status`, { signal });
-    const s = res.ok ? parseStatus(await res.json().catch(() => null)) : null;
-    r = s ? { ok: true, status: s } : { ok: false, err: res.ok ? 'json' : 'http', http: res.status };
-  } catch {
-    r = { ok: false, err: 'offline', http: null };
-  }
-  if (!r.ok && !signal?.aborted) log('gym.fail', { op: 'status', err: r.err, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
-  return r;
-}
+/** GET /status (lib/bots/fetchPublic.ts: public, logged as `gym.fail`). */
+export const fetchStatus = (signal?: AbortSignal, url = GYM_URL): Promise<StatusReply> => fetchPublic(`${url}/status`, 'gym.fail', parseStatus, { signal });
 
 // ---- The page's view ----
-/** The verdict card's dot: leaf, yuzu, coral, or soft for a runner that was switched off. */
-const TONE: Record<Verdict, Tone> = { healthy: 'good', degraded: 'warn', late: 'warn', failing: 'bad', broken: 'bad', stopped: 'idle', off: 'idle' };
+/** The verdict card's dot: leaf, yuzu, coral, or soft for a runner that was switched off; its word (bots.w). */
+const TONE: Record<Verdict, BotTone> = { healthy: 'good', degraded: 'warn', late: 'warn', failing: 'bad', broken: 'bad', stopped: 'idle', off: 'idle' };
+const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', degraded: 'trouble', late: 'late', failing: 'failing', broken: 'broken', stopped: 'stopped', off: 'off' };
 
 /** The verdict card: its tone, its word, and one plain sentence from the first reason. */
-export function verdictView(s: GymStatus): { tone: Tone; word: string; sentence: string } {
+export function verdictView(s: GymStatus): { tone: BotTone; w: BotWord; word: string; sentence: string } {
   const r = s.reasons[0];
-  return { tone: TONE[s.verdict], word: t(`gym.verdict.${s.verdict}`), sentence: t(`gym.reason.${r ?? 'none'}`, { n: s.failures }) };
+  return { tone: TONE[s.verdict], w: WORD[s.verdict], word: t(`bots.w.${WORD[s.verdict]}`), sentence: t(`gym.reason.${r ?? 'none'}`, { n: s.failures }) };
 }
+
+/** 確認が必要's lines: every reason in words. */
+export const reasonLines = (s: GymStatus): string[] => [...new Set(s.reasons.map((r) => t(`gym.reason.${r}`, { n: s.failures })))];
 
 /** ボット's dot (the menu's pill, the ジム tab): 不調, 要対応 or 遅れ. */
 export const needsAttention = (s: GymStatus): boolean => TONE[s.verdict] === 'bad' || s.verdict === 'late';

@@ -11,7 +11,7 @@ import { weddingSheet } from '../wedding/open.svelte.ts';
 import { hiking } from '../hiking/open.svelte.ts';
 import { kenkou } from '../health/open.svelte.ts';
 import { farmSheet } from '../farm/open.svelte.ts';
-import { botTabs, botsSheet } from '../bots/open.svelte.ts';
+import { prefetchBots } from '../bots/open.svelte.ts';
 
 export const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
 export const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
@@ -26,7 +26,7 @@ const CHUNKS = {
   wedding: () => weddingSheet.prefetch(),
   farm: () => farmSheet.prefetch(),
   // (the guest has no ボット: never fetched)
-  bots: () => (botTabs().length ? botsSheet.prefetch() : Promise.resolve()),
+  bots: prefetchBots,
   panel: () => loadPanel(true),
   settings: () => loadSettings(true),
   zukan: () => loadZukan(true)

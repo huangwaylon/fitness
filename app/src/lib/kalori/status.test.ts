@@ -2,7 +2,7 @@
 // tolerated), every verdict's words in Japanese and English, 遅れ by the phone's clock, the dot, the facts, the alert
 // card, 直近8週's cells and the latest update's bar.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { REASONS, alertCard, changeParts, factRows, fetchStatus, footLine, needsAttention, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
+import { REASONS, alertCard, changeParts, factRows, fetchStatus, needsAttention, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 
 const at = (s: string) => Date.parse(`${s}+09:00`);
@@ -89,7 +89,7 @@ describe('verdictView', () => {
     const v = (over: Record<string, unknown>) => { const x = verdictView(status(over), NOW); return [x.tone, x.word, x.sentence]; };
     expect(v({})).toEqual(['good', '順調', '11/11（水）に更新しました。']);
     expect(v({ verdict: 'running', run: { ...(sample().run as object), result: 'running', round: 3, shardsDone: 7, endedAt: null, startedAt: NOW - 3600_000 } }))
-      .toEqual(['good', '取得中', '3回目 · 20区画中7完了']);
+      .toEqual(['busy', '取得中', '3回目 · 20区画中7完了']);
     expect(v({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), shares: { gone: 0.021 }, limits: { gone: 0.015 } } }))
       .toEqual(['warn', '保留', '変更が多すぎるため反映を止めました（削除 2.1%・上限1.5%）。アプリは11/11（水）のデータのままです。']);
     expect(v({ verdict: 'held', reasons: ['band_items'] })[2]).toBe('いつもと違う変化があったため反映を止めました（品目数）。アプリは11/11（水）のデータのままです。');
@@ -222,9 +222,6 @@ describe('the bar and the foot', () => {
     expect(parts.map((p) => [p.id, p.tone, p.n])).toEqual([['added', 'leaf', 12], ['valuesChanged', 'yuzu', 38], ['endedChanged', 'hatch', 3], ['gone', 'sunk', 0]]);
     expect(summary).toBe('最新の更新：追加12、値の変更38、終了3、削除0');
   });
-  it('the foot: 更新 12:03 · kalori-scrape.yml', () => {
-    expect(footLine(status(), NOW)).toBe('更新 12:03 · kalori-scrape.yml');
-  });
 });
 
 describe('fetchStatus', () => {
@@ -241,5 +238,20 @@ describe('fetchStatus', () => {
     expect(await fetchStatus()).toEqual({ ok: false, err: 'json', http: 200 });
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Load failed'); }));
     expect(await fetchStatus()).toEqual({ ok: false, err: 'offline', http: null });
+  });
+});
+
+describe('the driver (lib/kalori/bot.ts)', () => {
+  it('its verdict: needsAttention’s 「!」 (an alert, two days overdue), 遅れ by the clock, 取得中 busy', async () => {
+    const { driver } = await import('./bot.ts');
+    const cases: [Record<string, unknown>, number][] = [
+      [{}, NOW], [{ verdict: 'held' }, NOW], [{ verdict: 'failing' }, NOW], [{ verdict: 'late' }, NOW], [{ alert: { text: 'x', since: NOW } }, NOW],
+      [{ verdict: 'running' }, NOW], [{ verdict: 'none' }, NOW], [{}, NEXT + DAY + 1], [{}, NEXT + 2 * DAY + 1]
+    ];
+    for (const [over, now] of cases) expect(driver.verdict(status(over), now).needsLook, JSON.stringify(over)).toBe(needsAttention(status(over), now));
+    expect(driver.verdict(status(), NEXT + DAY + 1)).toMatchObject({ tone: 'warn', w: 'late', word: '遅れ', needsLook: true });
+    expect(driver.verdict(status({ verdict: 'running' }), NOW)).toMatchObject({ tone: 'busy', word: '取得中', needsLook: false });
+    expect(driver.verdict(status({ alert: { text: 'x', since: NOW } }), NOW)).toMatchObject({ tone: 'good', needsLook: true });
+    expect(driver.pollMs(null)).toBe(60_000);
   });
 });

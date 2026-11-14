@@ -1,10 +1,4 @@
 {
-  "kalori.verdict.healthy": "順調",
-  "kalori.verdict.running": "取得中",
-  "kalori.verdict.held": "保留",
-  "kalori.verdict.late": "遅れ",
-  "kalori.verdict.failing": "不調",
-  "kalori.verdict.none": "まだありません",
   "kalori.say.healthy": "{date}に更新しました。",
   "kalori.say.running": "{n}回目 · {total}区画中{d}完了",
   "kalori.say.held": "変更が多すぎるため反映を止めました（{what}）。アプリは{date}のデータのままです。",
@@ -66,7 +60,6 @@
   "kalori.fact.rate": "変更率",
   "kalori.fact.pr": "PR",
   "kalori.fact.deploy": "デプロイ",
-  "kalori.fact.more": "くわしく",
   "kalori.nextAt": "{day}{time}ごろ",
   "kalori.items": "{n}品",
   "kalori.shops": "{n}店",
@@ -76,9 +69,7 @@
   "kalori.cov.partial": "途中",
   "kalori.cov.failed": "失敗{n}",
   "kalori.unknown": "不明",
-  "kalori.updated": "更新 {time}",
   "kalori.sec.latest": "最新の更新",
-  "kalori.sec.status": "動作状況",
   "kalori.strip.title": "直近8週",
   "kalori.strip.pick": "週をタップすると内容が出ます",
   "kalori.strip.legend.ok": "公開",
@@ -90,9 +81,5 @@
   "kalori.strip.failed": "失敗",
   "kalori.strip.none": "実行なし",
   "kalori.strip.counts": "追加{a} 値{v} 終了{e}",
-  "kalori.strip.summary": "直近8週：公開{ok}回、保留{held}回、失敗{failed}回",
-  "kalori.alert.title": "確認が必要",
-  "kalori.alert.run": "実行を開く",
-  "kalori.alert.pr": "PRを開く",
-  "kalori.loadFailed": "読み込めませんでした（{code}）"
+  "kalori.strip.summary": "直近8週：公開{ok}回、保留{held}回、失敗{failed}回"
 }

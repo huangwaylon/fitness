@@ -3,7 +3,8 @@
 // away (the next one as it comes back), and leaving the page (the other tab, the sheet closed: it unmounts) aborts the
 // read in flight and stops the loop. `read` gets a signal aborted by a newer read, `hold()` or the page's end, and
 // applies its answer only while it isn't. `skip()`: no read now (保養所 while its 保存 or 開始 answers with the status
-// itself). Call from a component's script (it owns an $effect).
+// itself). `warm()` at mount: no read then, the timer started (a read that just happened elsewhere). Call from a
+// component's script (it owns an $effect).
 import { untrack } from 'svelte';
 
 export interface Poll {
@@ -13,12 +14,14 @@ export interface Poll {
   hold(): void;
   /** The next read `every()` ms from now. */
   schedule(): void;
+  /** The mount (the component's $effect runs it; a test may): its end. */
+  start(): () => void;
   readonly loading: boolean;
   /** Aborted as the page ends. */
   readonly life: AbortSignal;
 }
 
-export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: () => number, skip: () => boolean = () => false): Poll {
+export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: () => number, skip: () => boolean = () => false, warm: () => boolean = () => false): Poll {
   const life = new AbortController();
   let ctl: AbortController | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -49,8 +52,10 @@ export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: 
     schedule();
   }
 
-  $effect(() => {
-    untrack(() => void refresh());
+  /** The page's mount: the first read (or the timer, `warm`), the phone coming back reads; its end. */
+  function start(): () => void {
+    if (warm()) schedule();
+    else void refresh();
     const onVisible = () => document.hidden || void refresh();
     document.addEventListener('visibilitychange', onVisible);
     return () => {
@@ -58,7 +63,9 @@ export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: 
       clearTimeout(timer);
       life.abort();
     };
-  });
+  }
 
-  return { refresh, hold, schedule, get loading() { return st.loading; }, life: life.signal };
+  $effect(() => untrack(start));
+
+  return { refresh, hold, schedule, start, get loading() { return st.loading; }, life: life.signal };
 }
