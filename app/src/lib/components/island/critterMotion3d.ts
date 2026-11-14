@@ -152,8 +152,13 @@ export function critterMotion3d(d: Motion3Deps) {
     const b = srcBug(bp), m = mos.get(b.id);
     let o = balls.get(b.id);
     if (!o) balls.set(b.id, (o = { xyz: [bp.ax, bp.az, BALL_U / 2], roll: 0, x: NaN, z: NaN }));
-    if (!m) return o.xyz;
-    const x = m.xyz[0] + Math.sin(m.yaw) * BALL_AHEAD, z = m.xyz[1] - Math.cos(m.yaw) * BALL_AHEAD;
+    // (before its motion's first frame: ahead of where it stands, as bugYaw faces it; at its own spot it sat inside it)
+    const [bx, bz, yaw] = m ? [m.xyz[0], m.xyz[1], m.yaw] : [bp.ax, bp.az, bugYaw(bp)];
+    const x = bx + Math.sin(yaw) * BALL_AHEAD, z = bz - Math.cos(yaw) * BALL_AHEAD;
+    if (!m) {
+      [o.xyz[0], o.xyz[1]] = [x, z];
+      return o.xyz;
+    }
     if (!Number.isNaN(o.x)) o.roll += Math.hypot(x - o.x, z - o.z) / (BALL_U / 2);
     [o.x, o.z] = [x, z];
     o.xyz[0] = x;

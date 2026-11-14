@@ -45,7 +45,8 @@ test('a giraffe stag on a palm at night: netted, it is in the ずかん and on s
 
 test('a dung beetle rolls its snowball before it over the winter lawn', async ({ page }) => {
   await open(page, 'critter=dung-beetle&date=2027-01-15T12:00');
-  // its snowball drawn, a beetle's head-and-a-radius (15.6u) in front of it, on the ground, as it goes
+  // its snowball drawn, a beetle's head-and-a-radius (15.6u) in front of it, on the ground, as it goes (before its
+  // motion's first frame too: critterMotion3d.ts ball3 drew it inside the beetle then, gap 0)
   const pair = () => page.evaluate(() => {
     const w = (window as unknown as { __world3d: W3 }).__world3d;
     for (let n = 0; n < 60; n++) {
