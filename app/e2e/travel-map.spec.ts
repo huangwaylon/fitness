@@ -144,7 +144,9 @@ test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pi
   const net = await fixtureTiles(page);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  // (the bots' status reads as the menu unfolds to 旅行, refused by the fixtures: e2e/fixtures.ts, not this map's)
+  const bots = /^https:\/\/(gym|its)-bot\.island-fund-relay\.workers\.dev\//;
+  page.on('console', (m) => m.type() === 'error' && !bots.test(m.location().url) && errors.push(m.text()));
   page.on('response', (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.url()}`));
   await gotoTrip(page, 'nz');
   await mapReady(page);
