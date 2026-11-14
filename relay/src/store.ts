@@ -41,7 +41,7 @@ import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
 import { caughtOf, isShopEvent, reowe, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type Ledger, type ShopEvent, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
-import { emptyFarm, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
+import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
@@ -77,6 +77,9 @@ export const RATE_PER_MINUTE = 120;
 export const PAGES_PER_MINUTE = 600;
 const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
+/** The running field's meta key, named by the growth rules its plots' `from` were reckoned under (contract/farm.ts
+ *  FARM): a rule change finds no copy and folds the rows again, once (review 11/14: a 3-day copy refused 1-day harvests). */
+const FARM_META = `farm|g${FARM.growDays}r${FARM.regrowDays}`;
 /** The ingest audit keeps this long (ms): each ingest lets older rows go. */
 const UPLOADS_KEEP_MS = 60 * 86_400_000;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
@@ -1112,16 +1115,16 @@ export class StoreCore {
 
   /** The running ledgers let go (a load or an import brought rows past them): the next sale folds each again. */
   private shopForget(): void {
-    this.io.sql.exec("DELETE FROM meta WHERE k IN ('shop|A', 'shop|B', 'shop|G', 'farm')");
+    this.io.sql.exec("DELETE FROM meta WHERE k IN ('shop|A', 'shop|B', 'shop|G') OR k = 'farm' OR k LIKE 'farm|%'");
   }
 
   /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows; `fix`: the
    *  fold's taken (the running one dropped and made again). */
   shopCheck(o: Rec = {}): Record<string, unknown> {
     // the field first, folded anew: the ledgers' fold reads its goods (a wrong running field would make them differ)
-    const field = this.farmFold(), json = JSON.stringify(farmJson(field)), was = this.meta('farm');
+    const field = this.farmFold(), json = JSON.stringify(farmJson(field)), was = this.meta(FARM_META);
     const out: Record<string, unknown> = { farm: was === null ? 'none' : was === json ? 'same' : 'differs' };
-    if (o.fix === true && out.farm === 'differs') this.setMeta('farm', json);
+    if (o.fix === true && out.farm === 'differs') this.setMeta(FARM_META, json);
     for (const who of ['A', 'B', 'G'] as const) {
       const raw = this.meta(`shop|${who}`);
       const fold = shopStateJson(this.shopFold(who, field));
@@ -1156,10 +1159,10 @@ export class StoreCore {
 
   // ---------------------------------------------------------------- the field
 
-  /** The field (contract/farm.ts) as its rows leave it: meta `farm`, kept by each farm row (farmNote), folded from the
-   *  rows (each as kept) when it isn't there (after a deploy, a load). */
+  /** The field (contract/farm.ts) as its rows leave it: meta FARM_META, kept by each farm row (farmNote), folded from
+   *  the rows (each as kept) when it isn't there (a load, or new growth rules: the old rules' copy dropped). */
   private farmState(): Farm {
-    const raw = this.meta('farm');
+    const raw = this.meta(FARM_META);
     if (raw) {
       try {
         const f = farmFromJson(JSON.parse(raw));
@@ -1167,7 +1170,8 @@ export class StoreCore {
       } catch { /* folded again */ }
     }
     const f = this.farmFold();
-    this.setMeta('farm', JSON.stringify(farmJson(f)));
+    this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+    this.setMeta(FARM_META, JSON.stringify(farmJson(f)));
     return f;
   }
 
@@ -1212,9 +1216,9 @@ export class StoreCore {
 
   /** A farm row kept: the field after it into meta, and what it put in or took out of `me`'s pocket into their running
    *  shop ledger (when it has one: else its next fold reads the field). `before`: `me`'s field net before the row
-   *  (farmKept's: meta `farm` parsed once a row). */
+   *  (farmKept's: meta FARM_META parsed once a row). */
   private farmNote(me: Who, f: Farm, before: ReadonlyMap<string, number>): void {
-    this.setMeta('farm', JSON.stringify(farmJson(f)));
+    this.setMeta(FARM_META, JSON.stringify(farmJson(f)));
     const raw = this.meta(`shop|${me}`);
     const st = raw ? shopStateOf(raw) : null;
     if (!st) return;

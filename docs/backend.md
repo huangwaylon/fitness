@@ -215,7 +215,7 @@ one tile").
   forever; **slots**, a later event of a slot replacing it (`eventSlot`, and the per-id ops' `decorAccept`,
   `foodAccept`, …); a pref the model ignores takes no slot.
 - **Running checks:** the shop's against each person's ledger (meta `shop|<who>`, kept by `contract/shop.ts shopStep`;
-  `shopcheck {fix?}` compares it and the field, meta `farm`, with the full fold), a decor op's against its own slots
+  `shopcheck {fix?}` compares it and the field, meta `farm|g<growDays>r<regrowDays>`: a growth-rule change folds it again by itself, with the full fold), a decor op's against its own slots
   and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
   late rows too (`LATE_MARGIN_MS`).

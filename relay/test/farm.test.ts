@@ -226,11 +226,25 @@ describe('the fields in the record', () => {
     farm('A', D, [plant(P1), plant(P2)]);
     // (the field's meta gone wrong: P2's plant lost, its start not taken from the pocket)
     const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
-    sql.exec("UPDATE meta SET v = ? WHERE k = 'farm'", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
+    sql.exec("UPDATE meta SET v = ? WHERE k LIKE 'farm|%'", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
     // A's running ledger is right: judged by the field's fold, not the wrong field (its fix would write a wrong one)
     expect(store.shopCheck()).toEqual({ ok: true, farm: 'differs', A: 'same', B: 'none', G: 'none' });
     expect(store.shopCheck({ fix: true })).toMatchObject({ farm: 'differs' });
     expect(store.shopCheck()).toMatchObject({ farm: 'same', A: 'same' });
     expect(farm('A', D, [plant(P2)])).toEqual(refused('farm refused')); // taken
+  });
+
+  it('growth rules changed: the old rules\' running field (from = D+3, its own key) is dropped and folded anew, so a harvest ripe by the new rule is kept', () => {
+    shells('A', FARM.startBuy);
+    starts('A', 'tomato', 1);
+    farm('A', D, [plant(P1)]);
+    const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => { toArray(): { k: string }[] } } } }).io.sql;
+    // what the relay wrote under the 3-day rule (2a7da941e's deploy): the field under the unversioned key, from = D+3
+    sql.exec("DELETE FROM meta WHERE k LIKE 'farm|%'");
+    sql.exec("INSERT INTO meta (k, v) VALUES ('farm', ?)", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
+    now += DAY;
+    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
+    expect(sql.exec("SELECT k FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'").toArray().map((r) => r.k)).toEqual([`farm|g${FARM.growDays}r${FARM.regrowDays}`]);
+    expect(store.shopCheck()).toMatchObject({ farm: 'same', A: 'same' });
   });
 });
