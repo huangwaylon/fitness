@@ -13,7 +13,6 @@
   import DayDetail from '../kiroku/DayDetail.svelte';
   import { dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { mine } from '#lib/ui-state/viewer.ts';
@@ -52,9 +51,8 @@
     body?.scrollTo({ top: savedY });
   }
 
-  /** Closing ends its banner too, and the next open starts at the top of the wallet (the sheet unmounts its body). */
+  /** The next open starts at the top of the wallet (the sheet unmounts its body). */
   function closed() {
-    if (toasts.current) toasts.dismiss();
     date = null;
     again = false;
   }

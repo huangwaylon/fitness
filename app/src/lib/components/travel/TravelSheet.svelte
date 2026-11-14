@@ -22,7 +22,6 @@
   import { TRIP_META } from '#lib/travel/trips/meta.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { minuteNow } from '#lib/time/clock.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { pick } from './text.ts';
   import { phaseOf } from './when.ts';
@@ -93,9 +92,6 @@
     void Promise.resolve().then(() => document.querySelector<HTMLElement>(`[data-trip="${from}"]`)?.focus({ preventScroll: true }));
   }
   const close = () => (open = false);
-  function closed() {
-    if (toasts.current) toasts.dismiss();
-  }
 
   // Where it opens.
   $effect(() => {
@@ -103,7 +99,7 @@
   });
 </script>
 
-<Sheet bind:open tunes label={t('travel.title')} variant="full" onclose={closed} timed="travel" {keep}>
+<Sheet bind:open tunes label={t('travel.title')} variant="full" timed="travel" {keep}>
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
     {#key `${sel}|${fresh}`}
       <div class="lvl">

@@ -61,7 +61,6 @@
 
   /** Closed: the next opening is on its tab (設定: the plan), すべて, the plan's top (a note being written stays: back in its editor). */
   function closed() {
-    if (toasts.current) toasts.dismiss();
     flush();
     if (tab === 'settings') tab = 'plan';
     expanded = null;

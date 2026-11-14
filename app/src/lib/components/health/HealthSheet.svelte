@@ -15,7 +15,6 @@
   import KenkouSwitch from './KenkouSwitch.svelte';
   import Health from './Health.svelte';
   import Food from '../food/Food.svelte';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { last, resetHealth, type KenkouTab } from './healthLast.ts';
   import { closeGoalEdit } from './GoalEdit.svelte';
@@ -58,7 +57,6 @@
   });
 
   function closed() {
-    if (toasts.current) toasts.dismiss();
     resetHealth();
     closeGoalEdit();
   }

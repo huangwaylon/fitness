@@ -62,7 +62,6 @@
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
   import { hook, hooksOn } from '#lib/world/devHooks.ts';
@@ -294,9 +293,6 @@
     if (to === 'leave') leaveGame();
     else open = false;
   }
-  function closed() {
-    if (toasts.current) toasts.dismiss();
-  }
   const report = $derived(page?.k === 'record' && hosting ? currentReport() : null);
   /** What the buttons start (actions.ts), over this sheet's game and its stack. */
   const act = new KikiActions(() => game, {
@@ -386,7 +382,7 @@
   {/snippet}</Lazy>{/key}
 {/snippet}
 
-<Sheet bind:open tunes label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss} timed="kikimimi">
+<Sheet bind:open tunes label={t('kiki.title')} variant="pop" ondismiss={dismiss} timed="kikimimi">
   <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub && !welcome ? gear : null} /></div>
   <div class="kk-body sheet-scroll" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>

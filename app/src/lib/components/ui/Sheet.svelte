@@ -27,7 +27,8 @@
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts), and the `sheet` of an error while
   // it's the topmost; `name` (else `timed`): its usage counter's id (`sheet:<name>`, a stable token, never the title's
   // i18n key: a rename split the series).
-  // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then.
+  // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then; its
+  // close ends the banner (an undo held by it goes out).
   // A half-filled form in it (`dirty`, or one registered inside it: ui/discard.svelte.ts) makes every close ask first,
   // 「入力した内容を破棄しますか？」 [破棄する] [編集を続ける], in a paper sheet over it; a caller's own ✕ goes through `guard`.
   import { untrack, type Snippet } from 'svelte';
@@ -180,6 +181,8 @@
   function closed() {
     if (dlg?.open) return;
     open = false;
+    // a full-height sheet's close ends its banner too
+    if (variant !== 'paper' && toasts.current) toasts.dismiss();
     onclose?.();
   }
 

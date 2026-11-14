@@ -19,7 +19,6 @@
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
   import { week } from '#lib/store/week.svelte.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { lookOf, mySavedLooks } from '#lib/store/look.ts';
   import { DEFAULT_LOOKS, playerOf, sameLook } from '#lib/contract/look.ts';
@@ -81,9 +80,8 @@
     document.querySelector<HTMLElement>(`[data-push="${from}"]`)?.focus({ preventScroll: true });
   }
 
-  /** Closing ends its banner too, and the next open starts at the top. */
+  /** The next open starts at the top. */
   function closed() {
-    if (toasts.current) toasts.dismiss();
     stack = [];
   }
 
