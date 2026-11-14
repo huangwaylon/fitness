@@ -596,19 +596,21 @@ export function startLog(o: LogStart): () => void {
     log('perf.frames', { ...f, drawFps: drawn?.() ?? -1, mode: drawn ? '3d' : 'none', when });
   }, 10_000);
   // (given up after a minute: a launch with no island canvas, /shop or /museum opened directly or no WebGL, is never ready)
-  let readyDone = false, polls = 0;
+  // (hid: the page was out of sight at some point before ready, so `ms` counts time away, not a launch in front of the player)
+  let readyDone = false, polls = 0, hid = document.hidden;
   const poll = setInterval(() => {
     if (++polls > READY_POLLS) return clearInterval(poll);
     if (stop || readyDone || !o.ready()) return;
     readyDone = true;
     clearInterval(poll);
-    log('app.ready', { ms: Math.round(performance.now()), route: route() });
+    log('app.ready', { ms: Math.round(performance.now()), route: route(), ...(hid ? { hid } : {}) });
     sample('ready');
   }, 500);
   const vis = () => {
     markHidden(document.hidden);
     if (document.hidden) {
       hiddenAt = env.now();
+      hid ||= !readyDone;
       leaving();
       return;
     }

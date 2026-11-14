@@ -77,6 +77,29 @@ describe('the log started on a phone', () => {
     stop();
   });
 
+  it('a launch hidden before ready says hid (the report leaves it out of cold load); one in sight says nothing', async () => {
+    let stop = start();
+    doc.hidden = true;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    doc.hidden = false;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    ready = true;
+    await vi.advanceTimersByTimeAsync(500);
+    await flushLog();
+    expect(named('app.ready')[0].d).toMatchObject({ hid: true });
+    stop();
+    sent.length = 0;
+    ready = false;
+    stop = start();
+    ready = true;
+    await vi.advanceTimersByTimeAsync(500);
+    doc.hidden = true;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await flushLog();
+    expect(named('app.ready')[0].d).not.toHaveProperty('hid');
+    stop();
+  });
+
   it('a 120 Hz display reads 120: the median gap under 12 ms', async () => {
     gap = 1000 / 120;
     const stop = start();
