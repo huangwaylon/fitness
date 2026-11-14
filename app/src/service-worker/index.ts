@@ -195,6 +195,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (req.mode === 'navigate') {
+    const t0 = Date.now();
     const own = caches.open(CACHE).then((c) => c.match(SCOPE)).catch(() => undefined);
     const preload = (event.preloadResponse as Promise<Response | undefined> | undefined)?.catch(() => undefined) ?? Promise.resolve(undefined);
     const online = self.navigator.onLine !== false;
@@ -216,7 +217,7 @@ self.addEventListener('fetch', (event) => {
           // the network named this build the deployed one lately: no race
           if (!online || url.searchParams.get('shell') === 'cache') return marked({ res: hit, from: 'cache', ms: 0 });
           if (freshNow(await freshAt())) return marked({ res: hit, from: 'skip', ms: 0 });
-          const raced = await raceShell(hit, ask(), version);
+          const raced = await raceShell(hit, ask(), version, undefined, undefined, t0);
           if (raced.from !== 'cache') event.waitUntil(markFresh(raced.from === 'same'));
           return marked(raced);
         }

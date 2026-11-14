@@ -850,6 +850,12 @@ describe('a launch races the network for the shell (raceShell)', () => {
     expect([from, ms]).toEqual(['net', 120]);
     expect(await res.text()).toBe(html('next'));
   });
+  it('the race\'s ms from the navigation\'s event: a page in before the race began (the preload\'s) says how long it took, not 0', async () => {
+    const t0 = Date.now();
+    await vi.advanceTimersByTimeAsync(90);
+    const { from, ms } = await raceShell(own(), Promise.resolve(page()), V, RACE_MS, Date.now, t0);
+    expect([from, ms]).toEqual(['net', 90]);
+  });
   it('this build\'s own page from the network: the cached shell (its chunks all cached), `same`', async () => {
     const p = raceShell(own(), later(80, page(html(V))), V);
     await vi.advanceTimersByTimeAsync(80);

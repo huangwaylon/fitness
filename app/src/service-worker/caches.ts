@@ -495,16 +495,17 @@ const bootable = (res: Response): boolean => (res.ok || res.status === 404) && r
 export interface Raced {
   res: Response;
   from: ShellFrom;
-  /** The race's ms (0: no race). */
+  /** The race's ms from the navigation's fetch event (`t0`) to the network's whole page, or to the race lost (0: no
+   *  race). The network's page is the navigation preload's, asked as the navigation starts: it is often in before the
+   *  race begins (the cache's shell looked up first), and the race's own wait is then ~0. */
   ms: number;
 }
 
 /** A navigation's answer when this version has a cached shell (`own`): the network's page (`net`: null offline) if all
- *  of it is in within `raceMs`, bootable, and another build's (isShellOf: this build's own is the cached shell, its
- *  chunks all cached), else `own`. A late or unusable answer is let go. */
-export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, version: string, raceMs = RACE_MS, now: () => number = Date.now): Promise<Raced> {
+ *  of it is in within `raceMs` of the race's start, bootable, and another build's (isShellOf: this build's own is the
+ *  cached shell, its chunks all cached), else `own`. A late or unusable answer is let go. */
+export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, version: string, raceMs = RACE_MS, now: () => number = Date.now, t0 = now()): Promise<Raced> {
   if (!net) return { res: own, from: 'cache', ms: 0 };
-  const t0 = now();
   let timer: ReturnType<typeof setTimeout> | undefined;
   const late = new Promise<null>((r) => (timer = setTimeout(r, raceMs, null)));
   // (the whole body within the race: a page whose headers came in time but its body didn't waited on it, the cache's
