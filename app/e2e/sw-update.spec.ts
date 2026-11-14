@@ -217,6 +217,10 @@ test('a launch after a deploy is the deploy\'s page, its lazy sheets loading und
   await islandUp(page);
   await controlled(page);
   const own = await buildOf(page);
+  // (the page's own version checks kept from the worker meanwhile: each one names this build the deployed one, which
+  // would make the next launch a `skip` before its time)
+  const noChecks = (route: import('@playwright/test').Route) => route.abort();
+  await context.route('**/_app/version.json', noChecks);
   // no deploy: the network's page is this build's, so the cached shell (its chunks all cached); then no race at all
   await unfresh(page);
   await page.goto('?demo');
@@ -236,6 +240,7 @@ test('a launch after a deploy is the deploy\'s page, its lazy sheets loading und
   await islandUp(page);
   expect(await shellOf(page)).toBe('cache');
   await context.setOffline(false);
+  await context.unroute('**/_app/version.json', noChecks);
   // a deploy: its page from the network, run under the older worker (its new entry chunks through it), a lazy sheet too
   await deployAway(page, context);
   const open = await page.goto('?demo&e2eVersion=next');
