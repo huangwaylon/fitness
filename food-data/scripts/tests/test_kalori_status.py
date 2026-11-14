@@ -71,6 +71,14 @@ class Gates(unittest.TestCase):
         many = tuple('s%d' % i for i in range(11))
         self.assertEqual(gates(new=kal(10050, shops=('a', 'b', 'c') + many))['reasons'], ['band_shops'])
 
+    def test_summary_either_shape(self):
+        # the converter's file (items) and the shipped one (by column: food-data.ts / kalori-ship.mjs)
+        rows = {'shops': {'a': {}, 'b': {}}, 'items': [{'id': 'kal:1'}, {'id': 'kal:2', 'ended': True}, {'id': 'kal:3'}]}
+        cols = {'shops': {'a': {}, 'b': {}}, 'idPrefix': 'kal:', 'cols': {'id': ['1', '2', '3'], 'ended': [None, True, None]}}
+        want = {'items': 3, 'shops': {'a', 'b'}, 'ended': 1}
+        self.assertEqual((S.summary(rows), S.summary(cols)), (want, want))
+        self.assertEqual(S.summary({'cols': {'id': ['1']}})['ended'], 0)
+
     def test_drops_skipped_without_the_previous(self):
         g = gates(prev={}, convert={'dropped': {'no_kcal': 5000}})
         self.assertTrue(g['ok'])

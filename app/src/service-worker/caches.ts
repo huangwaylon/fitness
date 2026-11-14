@@ -143,7 +143,8 @@ export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTE
   return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
 }
 
-/** The meal log's food data (static/food/, lib/food/load.ts): ~5 MB, fetched when the food sheet first opens and kept in
+/** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
+ *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in
  *  a cache of its own that outlives builds. Each file carries its own version (`?v=`: index.json's `files`, an older
  *  index's `version` for all), so a refresh of one (Kalori's, weekly) refetches that one; index.json, which names them,
  *  doesn't. */

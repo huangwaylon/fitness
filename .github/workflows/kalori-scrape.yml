@@ -509,7 +509,7 @@ jobs:
           path: ${{ runner.temp }}/report
       - name: kalori.json from the release
         run: |
-          jq '.items | length' app/static/food/kalori.json > "$RUNNER_TEMP/before"
+          jq '(.items // .cols.id) | length' app/static/food/kalori.json > "$RUNNER_TEMP/before"
           sed -i "s/^KALORI_TAG = '[^']*'$/KALORI_TAG = '$TAG'/" food-data/scripts/fetch.py
           grep -qx "KALORI_TAG = '$TAG'" food-data/scripts/fetch.py
           python3 -I food-data/scripts/fetch.py kalori

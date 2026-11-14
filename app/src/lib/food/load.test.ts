@@ -84,7 +84,7 @@ describe('static/food', () => {
   });
 });
 
-describe('a file by column (the products: scripts/food-data.ts columnar, types.ts Shipped)', () => {
+describe('a file by column (the products, the chain menus: scripts/food-data.ts columnar, types.ts Shipped)', () => {
   const objects: Item[] = [
     { id: 'off:4901234567894', name: 'のり塩チップス', brand: 'カルビー', cat: '菓子・デザート', kcal: 554, p: 5.6, f: 35.2, c: 53.6, salt: null, portions: [{ label: '1袋', g: 60 }] },
     { id: 'off:0012345678905', name: 'ほしいも', cat: 'いも', kcal: 303, p: null, f: null, c: null, salt: 0.1, aliases: ['干し芋'] }
@@ -106,10 +106,21 @@ describe('a file by column (the products: scripts/food-data.ts columnar, types.t
     expect(withJan({ source: 'off', label: 'x', items: structuredClone(objects) })).toEqual({ source: 'off', label: 'x', items: want });
   });
 
-  it('is how the products ship: by column, ids without their prefix', () => {
-    const file = JSON.parse(readFileSync(join(DIR, 'products.json'), 'utf8')) as Shipped & { cols?: Record<string, unknown[]>; idPrefix?: string };
-    expect(['items' in file, file.idPrefix, Object.keys(file.cols ?? {}).slice(0, 5)]).toEqual([false, 'off:', ['id', 'name', 'brand', 'cat', 'kcal']]);
+  it.each([['products.json', 'off:', ['id', 'name', 'brand', 'cat', 'kcal']], ['kalori.json', 'kal:', ['id', 'name', 'cat', 'kcal', 'p']]])('is how %s ships: by column, ids without their prefix', (f, prefix, first) => {
+    const file = JSON.parse(readFileSync(join(DIR, f), 'utf8')) as Shipped & { cols?: Record<string, unknown[]>; idPrefix?: string };
+    expect(['items' in file, file.idPrefix, Object.keys(file.cols ?? {}).slice(0, 5)]).toEqual([false, prefix, first]);
     expect(Object.values(file.cols!).every((c) => c.length === countOf(file))).toBe(true);
+  });
+
+  it('a chain menu by column loads as one by item did: its sv, brand and portions the loader’s (withJan)', () => {
+    const shops = { sukiya: { name: 'すき家' } };
+    const rows: Item[] = [{ id: 'kal:1', name: '牛丼 並盛', shop: 'sukiya', cat: '丼・定食', kcal: 733, p: 22, f: 25, c: 104, salt: null, est: 'e' }, { id: 'kal:2', name: 'みそ汁', shop: 'sukiya', cat: '汁物', kcal: 30, p: null, f: null, c: null, salt: 1.2, fib: 0.5 }];
+    const byCol: Shipped = { source: 'kalori', label: 'k', shops, idPrefix: 'kal:', cols: {
+      id: ['1', '2'], name: ['牛丼 並盛', 'みそ汁'], cat: ['丼・定食', '汁物'], kcal: [733, 30], p: [22, null], f: [25, null], c: [104, null], salt: [null, 1.2], shop: ['sukiya', 'sukiya'], est: ['e', null], fib: [null, 0.5]
+    } };
+    const loaded = withJan(byCol);
+    expect(loaded).toStrictEqual(withJan({ source: 'kalori', label: 'k', shops, items: structuredClone(rows) }));
+    expect(loaded.items.map((it) => [it.sv, it.brand, portionsOf(it)])).toEqual([[true, 'すき家', [{ label: '1食', g: 100 }]], [true, 'すき家', [{ label: '1食', g: 100 }]]]);
   });
 });
 

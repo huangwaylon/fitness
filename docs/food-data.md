@@ -236,7 +236,8 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's
-  (`db.ts withJan`): 54k items, 10 MB (1.6 MB gzipped);
+  (`db.ts withJan`): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`, food-data.ts
+  and `.github/scripts/kalori-ship.mjs`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
   `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
   salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
   `vg`/`st` for trailing size, milk and temperature words (牛丼 並盛 · 大盛, ライス中, （ICED・Tall・豆乳）; default: current,

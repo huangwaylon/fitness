@@ -12,8 +12,9 @@
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
 // Each core item gets its search keys (`keys`: lib/food/search.ts keysOf), so the first search builds none; a lazy
 // dataset's (products: 239 KB gzipped of keys) are built on load, in db.ts's slices. A product's barcode is dropped
-// when the id has it (`off:<jan>`: load.ts puts it back). The products ship by column (`cols`, types.ts Shipped:
-// 30k items 4.1 MB, 0.8 MB gzipped, against 5.8 MB and 1.1 MB as objects; db.ts decodeItems).
+// when the id has it (`off:<jan>`: load.ts puts it back). The products and the chain menus ship by column (`cols`,
+// types.ts Shipped; db.ts decodeItems): 30k products 4.1 MB, 0.8 MB gzipped, against 5.8 MB and 1.1 MB as objects;
+// Kalori's 54k items 7.4 MB, 1.19 MB gzipped, against 10.0 MB and 1.62 MB.
 // index.json is written last: `files`, each shipped file's own version (a hash of its bytes, keys included), so a
 // Kalori refresh refetches kalori.json alone, while a change here (keys, a dropped field) is a new version of
 // every file it touches; and `version`, that of them all (an older app's or worker's `?v=`, the fallback for an index
@@ -36,8 +37,11 @@ const SIDECARS = ['index.json', 'verify.json'];
 /** Kalori's and the products' index entries, as build.py's build_index writes them. */
 const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };
 const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', secondary: true, lazy: true };
-/** The datasets shipped by column (types.ts Shipped), each with the id prefix its ids share. */
-const COLUMNAR: Record<string, string> = { 'products.json': 'off:' };
+/** The datasets shipped by column (types.ts Shipped), each with the id prefix its ids share. .github/scripts/
+ * kalori-ship.mjs ships kalori.json the same way (kalori-scrape.yml's update-merge: no npm). */
+const COLUMNAR: Record<string, string> = { 'products.json': 'off:', 'kalori.json': 'kal:' };
+/** The fields whose null a column keeps (unknown: db.ts decodeItems); another field's null would be lost. */
+const NULLS = new Set(['p', 'f', 'c', 'salt']);
 /** The columns' order: the rest after these, as the items first have them. */
 const COLS = ['id', 'name', 'brand', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'portions'];
 
@@ -77,6 +81,8 @@ function columnar(f: string, d: Dataset, prefix: string): Shipped {
   const cols: Partial<Record<keyof Item, unknown[]>> = {};
   for (const k of keys) cols[k] = items.map((it) => (k === 'id' ? it.id.slice(prefix.length) : (it[k] ?? null)));
   if (items.some((it) => !it.id.startsWith(prefix))) fail(`${f}: an id without ${prefix}`);
+  const lost = items.find((it) => Object.entries(it).some(([k, v]) => v === null && !NULLS.has(k)));
+  if (lost) fail(`${f}: ${lost.id} has a null its column can't keep`);
   return { ...head, idPrefix: prefix, cols };
 }
 
