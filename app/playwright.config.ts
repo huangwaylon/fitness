@@ -26,12 +26,18 @@ const SLOW = !!process.env.E2E_SLOW;
 /** The mic's specs: their own project (chromium-mic), no other's. */
 const MIC = /kikimimi-mic.*\.spec\.ts$/;
 // E2E_X3 (the gate: the specs a push changed, scripts/e2e-impact.ts): their tests run in projects of their own,
-// chromium-x3 and chromium-mic-x3, each 3× and never retried: one failure in three is a flake the push brought, red
+// chromium-x3 and chromium-mic-x3 (chromium-x3-solo: SHARED), each 3× and never retried: one failure in three is a flake the push brought, red
 const X3 = (process.env.E2E_X3 ?? '').split(/\s+/).filter(Boolean).map((f) => f.replace(/^e2e\//, ''));
 const file = (f: string) => new RegExp(`(^|/)${f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+/** The specs that change the server for everyone (serve-build.ts `/__e2e/deploy`: the worker's bytes): their three copies
+ *  one at a time (chromium-x3-solo), as each runs its own tests in order; at once, one's deploy aborted another's
+ *  navigation (sw-update's raceShell test, gate runs 43596052195). */
+const SHARED = /(^|\/)sw-update\.spec\.ts$/;
 const x3 = (p: Project, files: string[]): Project[] => {
   p.testIgnore = [...[p.testIgnore ?? []].flat(), ...X3.map(file)];
-  return files.length ? [{ ...p, name: `${p.name}-x3`, testMatch: files.map(file), testIgnore: [], repeatEach: 3, retries: 0 }] : [];
+  const of = (fs: string[], name: string, more: Partial<Project> = {}): Project[] =>
+    fs.length ? [{ ...p, name, testMatch: fs.map(file), testIgnore: [], repeatEach: 3, retries: 0, ...more }] : [];
+  return [...of(files.filter((f) => !SHARED.test(f)), `${p.name}-x3`), ...of(files.filter((f) => SHARED.test(f)), `${p.name}-x3-solo`, { workers: 1 })];
 };
 // Chromium: the whole suite, gating the deploy until WebKit is green across the board (pages.yml); and what WebKit
 // can't stage, tagged @chromium: stale.spec's deploy (its reload re-requests the very chunk URLs that just failed,

@@ -67,7 +67,7 @@ After a deploy, never holding one back:
   (`scripts/deploy-order.ts`) deploys nothing when the live commit is the same or newer, red when unsure.
 - **The gate** (`scripts/e2e-impact.ts`; `npm run e2e:impact` shows what it would run): (1) the **gate set**,
   `e2e/gate.json`, 18 fast, stable spec files over the core flows; (2) the specs the push **changed**, each test 3×,
-  never retried (the `chromium-x3` projects, `E2E_X3`): one failure in three is a flake the push brought, red; (3) the
+  never retried (the `chromium-x3` projects, `E2E_X3`; sw-update's copies one at a time): one failure in three is a flake the push brought, red; (3) the
   specs its files **reach**: a changed e2e helper's importers (over `MAX_IMPORTERS`, 10, and fixtures.ts: the gate set instead), a src or content file's by
   `e2e/impact.json` (path globs to spec names; else the file's own name), and a changed i18n catalog's every spec that
   spells one of its old strings (a value changed or dropped: copy a spec clicks by). Changes count from the commit live on the
