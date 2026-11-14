@@ -314,7 +314,7 @@ test('the partner’s watering of my plants plays on my island: drops over each,
   await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/が みずを やってくれた$/)]);
 });
 
-test('my growing plant’s word offers ほる (44 pt, over the word, held while touched); it digs, 取り消す puts it back', async ({ page }) => {
+test('my growing plant’s word offers ほる (44 pt, at the word’s right end, deaf for 300 ms, held while touched); it digs, 取り消す puts it back', async ({ page }) => {
   const D1 = '2026-11-05';
   await seed(page, D1, [
     FIELD, ...POCKET,
@@ -331,8 +331,11 @@ test('my growing plant’s word offers ほる (44 pt, over the word, held while 
   await expect(page.locator('[data-farm-pop]')).toHaveText('カボチャ・あした 3こ');
   const [d, w] = [await dig.boundingBox(), await page.locator('[data-farm-pop]').boundingBox()];
   expect(Math.min(d!.width, d!.height)).toBeGreaterThanOrEqual(44);
-  // raised clear of the word (and the plot under it)
-  expect(d!.y + d!.height).toBeLessThan(w!.y);
+  // inline at the word's right end, not over the plots behind it
+  expect(d!.x).toBeGreaterThanOrEqual(w!.x + w!.width);
+  expect(Math.abs(d!.y + d!.height / 2 - (w!.y + w!.height / 2))).toBeLessThan(2);
+  // it takes taps 300 ms on (a quick second tap meant for the field goes through)
+  await expect(dig).toHaveCSS('pointer-events', 'auto');
   const tag = page.locator('.farm-pop');
   if (SHOTS) {
     await expect.poll(() => tag.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');

@@ -3,11 +3,14 @@
   // 「ニンジン・あした 3こ」, never my villager's balloon (which stood over the field being tapped). Placed once
   // where the tap saw the plot (no following: the camera stays put under a tap), gone in 1.2 s, at once on the next pop,
   // and faded by a drag (the camera moving off it). Touch goes through the word. On my own growing plant it carries ほる,
-  // its own 44 pt button raised over the word (a miss lands on the word, never the field), kept 3 s, the clock held while
-  // a finger is on it; its tap digs the plant up (SceneTaps: its start back, with 取り消す).
+  // its own 44 pt button inline at the word's right end (never over the plots behind it), deaf for its first 300 ms (a
+  // quick second tap meant for the field never digs), kept 3 s, the clock held while a finger is on it; its tap digs the
+  // plant up (SceneTaps: its start back, with 取り消す).
   //   <FarmPop />   (in .if-scene, outside the scroller)
   import { farmUi } from './farmUi.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+
+  const ARM_MS = 300;
 
   /** The tag's half width, clamped into the screen (measured once a pop). */
   let el: HTMLElement | undefined = $state();
@@ -16,12 +19,16 @@
   let gone = $state(false);
   /** A finger on ほる: its clock waits. */
   let held = $state(false);
+  /** ほる takes taps: 300 ms after it shows. */
+  let armed = $state(false);
   const pop = $derived(farmUi.pop);
 
   $effect(() => {
     if (!pop || !el) return;
     gone = false;
     held = false;
+    armed = false;
+    const arm = setTimeout(() => (armed = true), ARM_MS);
     const w = el.offsetWidth, room = el.parentElement?.clientWidth ?? innerWidth, pad = 8;
     shift = Math.min(0, room - pad - (pop.x + w / 2)) + Math.max(0, pad - (pop.x - w / 2));
     // a drag (the camera moving) fades it: a touch that travels
@@ -42,6 +49,7 @@
     document.addEventListener('pointerup', up, true);
     document.addEventListener('pointercancel', up, true);
     return () => {
+      clearTimeout(arm);
       document.removeEventListener('pointerdown', down, true);
       document.removeEventListener('pointermove', move, true);
       document.removeEventListener('pointerup', up, true);
@@ -63,17 +71,17 @@
   {#key pop.n}
     <div class="farm-pop" class:gone class:long={!!pop.dig} class:held bind:this={el} style:left="{pop.x + shift}px" style:top="{pop.y}px"
       onanimationend={(e) => done(e, pop.n)}>
-      {#if pop.dig}
-        <button type="button" class="btn small paper dig" data-farm-dig data-sfx="self" bind:this={digEl} onclick={() => dig(pop.n)}>{t('world.farm.dig')}</button>
-      {/if}
       <p class="word" data-farm-pop role="status">{pop.text}</p>
+      {#if pop.dig}
+        <button type="button" class="btn small paper dig" class:armed data-farm-dig data-sfx="self" bind:this={digEl} onclick={() => dig(pop.n)}>{t('world.farm.dig')}</button>
+      {/if}
     </div>
   {/key}
 {/if}
 
 <style>
   .farm-pop {
-    position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    position: absolute; z-index: 2; display: flex; align-items: center; gap: 6px;
     translate: -50% calc(-100% - 6px); pointer-events: none;
     animation: farm-pop 1.2s ease both;
   }
@@ -86,12 +94,13 @@
     box-shadow: 0 2px 0 var(--c-lip), 0 4px 10px rgb(60 40 20 / .16);
     font: 700 var(--fs-s)/1.2 var(--font-ui); word-break: keep-all;
   }
-  /* ほる: the quiet secondary (.btn.small.paper: cream, its edge), 44 pt to the thumb, over the word; never the loud
-     yellow: it takes a plant away */
+  /* ほる: the quiet secondary (.btn.small.paper: cream, its edge), 44 pt to the thumb, at the word's right end; never the
+     loud yellow: it takes a plant away. Taps go through it until armed. */
   .dig {
-    min-width: var(--hit, 44px); height: var(--hit, 44px); margin: 0; border-radius: var(--r-pill); pointer-events: auto;
+    min-width: var(--hit, 44px); height: var(--hit, 44px); margin: 0; border-radius: var(--r-pill); pointer-events: none;
     white-space: nowrap; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
+  .dig.armed { pointer-events: auto; }
   .dig:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @keyframes farm-pop-out { to { opacity: 0; } }
   @keyframes farm-pop {

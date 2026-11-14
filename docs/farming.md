@@ -86,8 +86,8 @@ income, 2026-11-14). The levers, if the live numbers drift (`npm run logs`, the 
   left, the last pick first) shows starts (a seedling badge) and vegetables with counts; its pick runs the tap again
   with that crop. A tap on another plot while it's open re-targets it.
 - **The word** pops over the plot for 1.2 s (「みずやり ずみ」), never in my villager's balloon.
-- **ほる** digs my own growing plant up (its start back, 取り消す): a 44 pt button raised over its word, 3 s, held while
-  touched. Up to 3 taps reach it, each useful: harvest, water, then the word. A ripe plant is harvested first.
+- **ほる** digs my own growing plant up (its start back, 取り消す): a 44 pt button at its word's right end, deaf for 300 ms,
+  3 s, held while touched. Up to 3 taps reach it, each useful: harvest, water, then the word. A ripe plant is harvested first.
 - **Watered soil** stays dark for the day; a ripe plant shows its yield's model. Their plant or harvest shows on their
   next sync. **Who watered:** the partner's or guest's watering plays on my island at once (their villager turns,
   drops, a heart over mine).
