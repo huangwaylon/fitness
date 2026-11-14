@@ -15,12 +15,18 @@ let loading: Promise<void> | null = null;
 /** Whether the garden's models are known (MODELS has them). */
 export const gardenReady = (): boolean => ready;
 
-/** The garden's manifest into MODELS (once). */
+/** The garden's manifest into MODELS (once; a failed chunk fetch is tried again at the next call). */
 export function loadGarden(): Promise<void> {
-  return (loading ??= import('./garden.json').then((m) => {
-    Object.assign(MODELS, (m.default as unknown as { models: Record<string, AssetModel> }).models);
-    ready = true;
-  }));
+  return (loading ??= import('./garden.json').then(
+    (m) => {
+      Object.assign(MODELS, (m.default as unknown as { models: Record<string, AssetModel> }).models);
+      ready = true;
+    },
+    (e: unknown) => {
+      loading = null;
+      throw e;
+    }
+  ));
 }
 
 /** NH's cedars wear their lights (PltTreeCedarDeco) in the illuminated weeks, the island's own (fixedDecor.ts WINDOWS

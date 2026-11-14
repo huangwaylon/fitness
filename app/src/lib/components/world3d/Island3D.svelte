@@ -796,8 +796,8 @@
   let gardenIn = $state(gardenReady());
   /** The garden's manifest asked for when the layout (or the day: a cedar's lights) has some of it: as the island is
    *  made, so its crops and fences join the first placing and its models the first wave (asked only once the engine
-   *  was up, the phones' launches drew the island whole 27-30 garden models after `loaded`, perf.boot late). */
-  const askGarden = (lay: Layout) => void (!gardenIn && wantsGarden(lay, date) && loadGarden().then(() => (gardenIn = true)));
+   *  was up, the phones' launches drew the island whole 27-30 garden models after `loaded`, perf.boot late; a failed fetch: asked again at the next layout or mount). */
+  const askGarden = (lay: Layout) => void (!gardenIn && wantsGarden(lay, date) && loadGarden().then(() => (gardenIn = true), () => {}));
   askGarden(layoutNow());
   /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
    *  watering and sky. */
