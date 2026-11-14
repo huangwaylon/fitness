@@ -20,8 +20,6 @@ export type Cue =
   | 'panel-open' | 'panel-close' | 'back'
   // money and the harvest
   | 'buy' | 'badge-met' | 'harvest-receive'
-  // the 畑 sheet's 収穫 (components/farm/FarmSheet.svelte)
-  | 'farm-harvest'
   // both of us met all four goals today (our celebration's volley)
   | 'goals-complete'
   // scenery taps (island/sceneTaps.ts sceneSfx)
@@ -86,8 +84,6 @@ export const CUES: Record<Cue, CueDef> = {
   'badge-met': { sound: 'miles' },
   // NH's item-get fanfare (受け取る, a birthday's or the wedding's present)
   'harvest-receive': { sound: 'get-fanfare' },
-  // the 畑 sheet's 収穫: the world harvest's pop, a UI sound (heard over the sheet)
-  'farm-harvest': { sound: 'pop', step: 5 },
   // NH's set-complete fanfare as our celebration's fireworks go up (island/Fireworks.svelte; once a day per phone)
   'goals-complete': { sound: 'complete-fanfare', world: true },
   // scenery (docs/design.md#scene-interactions): quiet world sounds, muted under a sheet like the rest of the island
@@ -148,7 +144,7 @@ export const CUES: Record<Cue, CueDef> = {
   // visitors: a soft pop for a tap; K.K.'s tune (a jingle, only with the music on)
   'scene-visitor': { sound: 'pop', gain: 0.6, world: true },
   // a field's harvest: NH's pick-up pop, a fourth up, each quick tap after it a semitone higher (SceneTaps: the call's
-  // step); the 畑 sheet's close plays it once over its wave (farmUi.svelte.ts farmWave)
+  // step)
   'scene-harvest': { sound: 'pop', gain: 0.9, step: 5, world: true },
   // a walking villager's steps: the scenery's own step sounds, much quieter (at most one per 320 ms, the director's)
   'footstep-grass': { sound: 'step-grass', gain: 0.3, world: true },

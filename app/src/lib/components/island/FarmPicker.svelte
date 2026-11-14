@@ -1,9 +1,9 @@
 <script lang="ts">
-  // The picker (docs/farming.md "Playing"): what I hold to plant, a small cream card over the farm button. Each cell is
-  // its crop's own art and name, a start with NH's seedling on it (the six starts' art is one seedling), and how many.
-  // Opened by a tap on my empty plot with nothing held or none left (that pick plants the plot at once), or by the farm
-  // button's held-crop badge (the pick only changes what I hold). The pick is kept on this phone (the badge wears it).
-  // It shuts on a pick, a tap outside it (the badge's own tap toggles it), Esc or a sheet opening.
+  // The picker (docs/farming.md "Playing"): what I hold to plant, a small cream card at the island's bottom left. Each
+  // cell is its crop's own art and name, a start with NH's seedling on it (the six starts' art is one seedling), and how
+  // many; the last pick first and lit (kept on this phone). Opened by a tap on my empty plot with two or more kinds held
+  // and no crop chosen this planting run; its pick plants that plot's 3 × 3 (SceneTaps). It shuts on a pick, a tap
+  // outside it (a tap on another empty plot opens it again, for that plot), Esc or a sheet opening.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { CROPS, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { shopView } from '#lib/model/shop.ts';
@@ -16,10 +16,12 @@
 
   let root: HTMLElement | undefined = $state();
   const pocket = $derived(week.model ? shopView(week.model.state, week.model.me).pocket : new Map<string, number>());
-  /** What I can plant: each start, then each vegetable, that I hold. */
-  const seeds = $derived(
-    (['start', 'crop'] as const).flatMap((src) => CROPS.map((c) => ({ c, src, n: pocket.get(seedKey(c, src)) ?? 0 }))).filter((s) => s.n > 0)
-  );
+  /** What I can plant: the last pick, then each start, then each vegetable, that I hold. */
+  const seeds = $derived.by(() => {
+    const all = (['start', 'crop'] as const).flatMap((src) => CROPS.map((c) => ({ c, src, n: pocket.get(seedKey(c, src)) ?? 0 }))).filter((s) => s.n > 0);
+    const i = all.findIndex((s) => s.c === seed.pick?.c && s.src === seed.pick?.src);
+    return i > 0 ? [all[i], ...all.slice(0, i), ...all.slice(i + 1)] : all;
+  });
   /** The crops' names (out of the island's first load), read again once in (its merge isn't reactive). */
   let named = $state(false);
   const name = (c: Crop, src?: FarmSrc) => (void named, cropName(c, src));
@@ -29,11 +31,10 @@
   $effect(() => {
     if (ui.sheets.length) closePicker();
   });
-  // a tap outside shuts it (capture: the tap itself goes on; the badge's is its own toggle), Esc too
+  // a tap outside shuts it (capture: the tap itself goes on, so a plot's opens it again for that plot), Esc too
   $effect(() => {
     const down = (e: PointerEvent) => {
-      const at = e.target instanceof Element ? e.target : null;
-      if (!root?.contains(at) && !at?.closest('[data-farm-held]')) closePicker();
+      if (!root?.contains(e.target instanceof Element ? e.target : null)) closePicker();
     };
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closePicker();
@@ -45,7 +46,6 @@
       document.removeEventListener('keydown', key);
     };
   });
-
 </script>
 
 <div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker bind:this={root}>
@@ -69,7 +69,7 @@
 
 <style>
   .picker {
-    position: absolute; left: 0; bottom: calc(100% + 22px); z-index: 1; width: max-content; max-width: calc(100cqw - 24px);
+    position: absolute; left: 0; bottom: 0; z-index: 1; width: max-content; max-width: calc(100cqw - 24px);
     padding: 10px 12px 12px; border-radius: var(--r-card, 18px); background: var(--c-cream); color: var(--c-ink);
     box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
   }

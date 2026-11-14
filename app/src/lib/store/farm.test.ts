@@ -8,7 +8,7 @@ import { FARM, type FarmOp } from '#lib/contract/farm.ts';
 interface Held { type: string; data: { d: string; ops: FarmOp[] }; holdMs: number; at: number; undone: boolean; replaced: number }
 const fake = vi.hoisted(() => ({ week: { demo: false as false | 'plain', model: {} as object | null, send: (() => ({ ok: false })) as (...a: never[]) => unknown } }));
 vi.mock('./week.svelte.ts', () => fake);
-const { dig, digMany, harvestAll, harvestMany, pickSeed, plant, plantMany, seed, waterAll } = await import('./farm.svelte.ts');
+const { dig, digMany, harvestMany, pickSeed, plant, plantMany, seed, waterAll } = await import('./farm.svelte.ts');
 const { world } = await import('./world.svelte.ts');
 
 class Mem implements KV {
@@ -117,11 +117,11 @@ describe('the farm batch', () => {
   });
 });
 
-describe('the 畑 sheet’s batches', () => {
+describe('the batches held for 取り消す (a plot’s 3 × 3 planted, a dig, the shop’s 苗に戻す)', () => {
   const plants = (ks: number[]) => ks.map((k) => ({ o: 'plant', p: p(k), c: 'tomato', src: 'start' }));
   it('join a tap’s held batch; their 取り消す takes back only theirs, the tap’s goes', () => {
     plant(D, p(0), 'tomato', 'start');
-    const r = harvestAll(D, [{ p: p(1), n: 3 }, { p: p(2), n: 1 }]);
+    const r = plantMany(D, [p(1), p(2)], 'tomato', 'start');
     expect(sends.at(-1)!.data.ops).toHaveLength(3);
     expect(sends.at(-1)!.holdMs).toBe(5000);
     expect(r.undo!()).toBe(true);
@@ -144,7 +144,7 @@ describe('the 畑 sheet’s batches', () => {
     expect(sent().map((e) => e.ops.length)).toEqual([FARM.batchMax]);
   });
   it('its banner held (a finger on it) holds the batch, a tap meanwhile joining it held still; let go, it goes', () => {
-    const r = harvestAll(D, [{ p: p(1), n: 3 }]);
+    const r = plantMany(D, [p(1)], 'tomato', 'start');
     expect(r.hold!(null)).toBe(120_000);
     vi.advanceTimersByTime(10_000);
     plant(D, p(0), 'tomato', 'start');
@@ -152,7 +152,7 @@ describe('the 畑 sheet’s batches', () => {
     vi.advanceTimersByTime(10_000);
     expect(sent()).toEqual([]);
     expect(r.hold!(0)).toBe(0);
-    expect(sent()).toEqual([{ d: D, ops: [{ o: 'harvest', p: p(1), n: 3 }, ...plants([0])] }]);
+    expect(sent()).toEqual([{ d: D, ops: [...plants([1]), ...plants([0])] }]);
     expect(r.undo!()).toBe(false);
   });
   it('digMany: the plants off the field back to starts, one event', () => {

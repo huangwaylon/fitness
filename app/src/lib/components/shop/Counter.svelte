@@ -32,7 +32,8 @@
   import Sheet from '../ui/Sheet.svelte';
   import { askNow } from '../island/vegAsk.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
-  import { fillPlan } from '#lib/world/farmSheet.ts';
+  import { fillPlan, orphans } from '#lib/world/farmSheet.ts';
+  import { islandDay } from '../island/ambientClock.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
@@ -40,7 +41,7 @@
   import type { ShopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { sell, undoBanner } from '#lib/store/actions.ts';
-  import { buyStarts } from '#lib/store/farm.svelte.ts';
+  import { buyStarts, digMany } from '#lib/store/farm.svelte.ts';
   import { CROPS, FARM, cropKey, isFarmCrop, startKey, type Crop } from '#lib/contract/farm.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -122,6 +123,16 @@
     return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
   });
   const heldOf = (c: Crop) => shop.pocket.get(startKey(c)) ?? 0;
+  /** My plants on plots no field covers now (a field moved or shrunk in /editor: world/farmSheet.ts orphans): kept,
+   *  not drawn, counted toward the cap; 苗に戻す digs them all up, their starts back (never on its own: both phones
+   *  would race). */
+  const off = $derived.by(() => {
+    const m = week.model;
+    return m ? orphans(farmOfState(m.state), m.me, layoutPlots(site.layout ?? layoutStore.current)) : [];
+  });
+  function backToStarts() {
+    if (off.length) undoBanner(t('farm.dugBack', { n: String(off.length) }), digMany(week.view?.today ?? islandDay(), off));
+  }
   const held = $derived(CROPS.reduce((a, c) => a + heldOf(c), 0));
   /** 苗 first, as the tab opened: a buy (or its 取り消す) never moves the list under the finger. */
   const first = $derived((void tab, untrack(() => startsFirst(free, held))));
@@ -417,6 +428,13 @@
           body: () => fillStart(c), step: (by) => stepStart(c, by), hold: (e) => holdStart(e, c) })}
       {/each}
     </ul>
+    {#if off.length}
+      <!-- my plants a moved field left behind (docs/farming.md "Playing"): back to starts, with 取り消す -->
+      <div class="off" data-shop-orphans={off.length}>
+        <span>{t('farm.orphans', { n: String(off.length) })}</span>
+        <button type="button" class="chip s" data-shop-orphans-dig data-sfx="tick" onclick={backToStarts}>{t('farm.orphansDig')}</button>
+      </div>
+    {/if}
   </div>
 {/snippet}
 
@@ -510,6 +528,7 @@
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   /* a start's seedling (NH's one for all six) wears its crop */
   .tag { position: absolute; right: -6px; bottom: -4px; line-height: 0; }
+  .off { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 4px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .empty { margin: 18px 4px; text-align: center; color: var(--c-ink-soft); font-weight: 700; }
   .bar {
     flex: none; padding: 10px calc(var(--side) + var(--safe-right)) var(--pad-foot) calc(var(--side) + var(--safe-left));

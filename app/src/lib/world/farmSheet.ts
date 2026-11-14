@@ -1,41 +1,11 @@
-// The 畑 sheet's batch writes and readings (docs/farming.md "Playing"): what 収穫 / 水やり / 植える do over the fields,
-// a plant's yield while its watering days are still to come, and my plants no field covers. Pure: FarmSheet sends them
-// (store/farm.svelte.ts, the shared world's watering).
-import { CROPS, FARM, daysLeft, plantsOf, stageOf, wateringCounts, yieldOf, type Crop, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
-import { addDays } from '#lib/contract/tokyo.ts';
+// My fields read whole (docs/farming.md): the empty plots a start could go in (the shop's 苗, shop/Counter.svelte) and
+// my plants no field covers (its 苗に戻す). Pure.
+import { FARM, plantsOf, type Farm } from '#lib/contract/farm.ts';
 import type { PlotTile } from '#lib/layout/field.ts';
-import type { LocalDate, Who } from '#lib/types.ts';
+import type { Who } from '#lib/types.ts';
 
-/** My ripe plants' harvests, each at the yield the record will reckon (plants ≤ FARM.cap = FARM.batchMax: one event). */
-export function harvestOps(farm: Farm, me: Who, date: LocalDate, watered: Watered): { o: 'harvest'; p: string; n: number }[] {
-  const out: { o: 'harvest'; p: string; n: number }[] = [];
-  for (const [p, pl] of farm.plots) if (pl.who === me && stageOf(pl, date) === 3) out.push({ o: 'harvest', p, n: yieldOf(p, pl, watered) });
-  return out;
-}
-
-/** The plants on the fields (anyone's: anyone waters) whose watering on `date` counts (wateringCounts) and isn't done,
- *  in the layout's order: the sheet's 水やり (a plot tap's 3 × 3 waters any plant). */
-export function waterTargets(plots: readonly PlotTile[], farm: Farm, date: LocalDate, watered: Watered): string[] {
-  return plots.filter((t) => {
-    const pl = farm.plots.get(t.p);
-    return pl && wateringCounts(pl, date) && !watered(t.p, date);
-  }).map((t) => t.p);
-}
-
-/** Whether a watering on the fields counts today (waterTargets' rule: every growing plant's does, its plant day and
- *  harvest day too): 0 (done, if waterTargets is empty), or null when none does (every plant ripe, or none planted):
- *  the sheet's 水やり says which. */
-export function waterNext(plots: readonly PlotTile[], farm: Farm, date: LocalDate): 0 | null {
-  for (const t of plots) {
-    const pl = farm.plots.get(t.p);
-    if (pl && daysLeft(pl, date)) return 0;
-  }
-  return null;
-}
-
-/** My empty plots to plant as the map reads them (farm/FieldMap.svelte: each field's back row first, its top on the map
- *  and away from the camera, left to right; row 0, nearest the beach, last), as many as I `have` of the held crop and
- *  the cap leaves room for (one event: ≤ FARM.batchMax). */
+/** My empty plots to plant (each field's back row first, away from the camera, left to right; row 0, nearest the beach,
+ *  last), as many as I `have` and the cap leaves room for (one event: ≤ FARM.batchMax): the shop's 苗 counts them. */
 export function fillPlan(plots: readonly PlotTile[], farm: Farm, me: Who, have: number): string[] {
   const room = Math.min(have, FARM.cap - plantsOf(farm, me), FARM.batchMax);
   if (room <= 0) return [];
@@ -49,44 +19,6 @@ export function fillPlan(plots: readonly PlotTile[], farm: Farm, me: Who, have: 
     f.push(t);
   }
   return [...fields.values()].flatMap((f) => f.sort((a, b) => b.r - a.r || a.c - b.c)).slice(0, room).map((t) => t.p);
-}
-
-/** What a plant will yield: the waterings of its three days before ripe so far, and as many more as of those days are
- *  still to come (today unwatered included), at most FARM.maxYield; ripe, its yield. */
-export function yieldRange(p: string, pl: Plot, date: LocalDate, watered: Watered): { lo: number; hi: number } {
-  if (stageOf(pl, date) === 3) {
-    const n = yieldOf(p, pl, watered);
-    return { lo: n, hi: n };
-  }
-  let lo = 1, hi = 1;
-  for (const k of [3, 2, 1]) {
-    const d = addDays(pl.from, -k);
-    if (watered(p, d)) lo++, hi++;
-    else if (d >= date) hi++;
-  }
-  return { lo: Math.min(lo, FARM.maxYield), hi: Math.min(hi, FARM.maxYield) };
-}
-
-/** Who else watered my plants today, and how many: the shared day's `watered` (sync/world-day.ts, id → who) over the
- *  plots of mine (the sheet's thanks, 「今日は{who}が水やりしてくれました」). My own and a wet day's never count. */
-export function wateredBy(mine: Iterable<string>, shared: Readonly<Record<string, Who>>, me: Who): Partial<Record<Who, number>> {
-  const out: Partial<Record<Who, number>> = {};
-  for (const p of mine) {
-    const who = shared[p];
-    if (who && who !== me) out[who] = (out[who] ?? 0) + 1;
-  }
-  return out;
-}
-
-/** A harvest's vegetables per crop, in CROPS order (the sheet's named banner): each op's `n` under its plot's crop
- *  in `farm` (before or after the harvest: a harvested plant keeps its crop); a plot with no plant skipped. */
-export function harvestSummary(ops: readonly { p: string; n: number }[], farm: Farm): { c: Crop; n: number }[] {
-  const by = new Map<Crop, number>();
-  for (const op of ops) {
-    const c = farm.plots.get(op.p)?.c;
-    if (c) by.set(c, (by.get(c) ?? 0) + op.n);
-  }
-  return CROPS.filter((c) => by.has(c)).map((c) => ({ c, n: by.get(c)! }));
 }
 
 /** My plants on plots no field covers now (a field moved, shrunk or deleted in /editor): kept, not drawn, counted. */

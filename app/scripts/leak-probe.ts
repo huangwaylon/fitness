@@ -11,7 +11,7 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる, as うめ), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (the 畑 sheet over a seeded field), walls (もようがえ's
+// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (a seeded field's plots tapped: water, a 3 × 3 planted, ほる), walls (もようがえ's
 // catalogue tried in the room; TABS='[["wall",8],["floor",8],["rugs",4]]'), foodkeep (ごはん searched, closed: base, searched, closed, +65 s, hidden). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
@@ -593,12 +593,15 @@ const cycle = async () => {
     await search('reopened after the release'); await closeAll();
     await vis('hidden'); await page.waitForTimeout(500); await vis('visible'); await page.waitForTimeout(1500);
   } else if (flow === 'farm') {
-    await page.locator('[data-farm-open]').click(); await page.waitForTimeout(400);
-    if (await page.locator('[data-farm-field]').isVisible().catch(() => false)) await page.locator('[data-farm-field]').click();
-    await sel('[data-farm-sheet]'); await page.waitForTimeout(1200);
-    await page.keyboard.press('Escape'); await page.waitForTimeout(400);
-    if (await page.locator('dialog[open]').count()) await closeAll();
-    await page.waitForTimeout(800);
+    // a plot's taps (the front two rows planted, the back two empty): the can, a 3 × 3 planted, a word and its ほる
+    const at = (i: number, j: number) => [-90 + (10 + i) * 30 + 15, -90 + (17 + j) * 30 + 15];
+    await page.evaluate(([x, z]) => (window as any).__world3d.go(z, 1, x), at(5, 2)); await page.waitForTimeout(600);
+    for (const [i, j] of [[2, 0], [2, 3], [7, 3], [2, 0]]) {
+      const [cx, cy] = await page.evaluate(([x, z]) => (window as any).__world3d.client(x, z, 0) as [number, number], at(i, j));
+      await page.mouse.click(cx, cy); await page.waitForTimeout(600);
+    }
+    if (await page.locator('[data-farm-dig]').isVisible().catch(() => false)) await page.locator('[data-farm-dig]').click();
+    await page.waitForTimeout(1200);
   } else if (flow === 'walls') {
     // the catalogue: 8 wallpapers, 8 floors, 4 rugs tried a cycle (new ones each cycle), measured in the room
     if (!(await page.evaluate(() => location.pathname.includes('tent')))) {

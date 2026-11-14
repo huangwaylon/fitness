@@ -88,10 +88,8 @@ describe('another player’s sounds by where they are (docs/sound-sync.md)', () 
 });
 
 describe('the harvest (docs/farming.md "Playing")', () => {
-  it("a world harvest's pop is the island's, a fourth up; the 畑 sheet's the same pop as a UI sound (over the sheet)", () => {
+  it("a world harvest's pop is the island's, a fourth up", () => {
     expect(CUES['scene-harvest']).toEqual({ sound: 'pop', gain: 0.9, step: 5, world: true });
-    expect(CUES['farm-harvest']).toEqual({ sound: 'pop', step: 5 });
-    expect(CUES['farm-harvest'].world).toBeUndefined();
   });
   it("a call's step climbs on the cue's own: tap k plays k semitones above the first", () => {
     vi.mocked(play).mockClear();

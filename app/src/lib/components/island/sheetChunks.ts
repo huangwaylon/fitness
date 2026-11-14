@@ -10,7 +10,6 @@ import { trips } from '../travel/open.svelte.ts';
 import { weddingSheet } from '../wedding/open.svelte.ts';
 import { hiking } from '../hiking/open.svelte.ts';
 import { kenkou } from '../health/open.svelte.ts';
-import { farmSheet } from '../farm/open.svelte.ts';
 import { prefetchBots } from '../bots/open.svelte.ts';
 
 export const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
@@ -24,7 +23,6 @@ const CHUNKS = {
   travel: () => trips.prefetch(),
   hiking: () => hiking.prefetch(),
   wedding: () => weddingSheet.prefetch(),
-  farm: () => farmSheet.prefetch(),
   // (the guest has no ボット: never fetched)
   bots: prefetchBots,
   panel: () => loadPanel(true),

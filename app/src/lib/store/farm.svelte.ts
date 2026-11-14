@@ -1,8 +1,8 @@
 // The fields' writes on this phone (docs/farming.md): my plants, harvests and digs as `farm` ops, shown at once (the
 // model folds the queued row as the record will judge it: model/farm.ts) and sent as one event per Tokyo day held
-// FARM_HOLD_MS (the 畑 sheet's batches and digs UNDO_MS: their 取り消す), each added to the held one (its data replaced); the sheet's 水やり
-// (the shared day's); the starts bought at the shop's かう (`buy_starts`, with the shop's 5 s 取り消す); what I plant
-// next (the pick: kept on this phone).
+// FARM_HOLD_MS (a plot's 3 × 3 planted, a dig and the shop's 苗に戻す UNDO_MS: their 取り消す), each added to the held
+// one (its data replaced); a tap's 水やり (the shared day's); the starts bought at the shop's かう (`buy_starts`, with the
+// shop's 5 s 取り消す); the picker's last pick (kept on this phone).
 import { week } from './week.svelte.ts';
 import { world } from './world.svelte.ts';
 import type { SendResult } from './backend.ts';
@@ -61,17 +61,16 @@ function takeBack(b: Batch, ops: readonly FarmOp[]): boolean {
   return true;
 }
 
-/** A plot's tap (held 2 s for the next): a plant, or the ripe plants of its 3 × 3 (world/farmTap.ts), one replace of
+/** A plant, or a plot tap's ripe plants of its 3 × 3 (world/farmTap.ts), held 2 s for the next tap: one replace of
  *  the held batch a tap. */
 export const plant = (d: LocalDate, p: string, c: Crop, src: FarmSrc): SendResult => add(d, [{ o: 'plant', p, c, src }]);
 export const harvestMany = (d: LocalDate, ops: readonly { p: string; n: number }[]): SendResult => add(d, ops.map(({ p, n }) => ({ o: 'harvest', p, n })));
-/** The 畑 sheet's, held for their 取り消す (UNDO_MS). */
+/** Held for their 取り消す (UNDO_MS): ほる (a plot's word), the shop's 苗に戻す, a plot tap's 3 × 3 planted. */
 export const dig = (d: LocalDate, p: string): SendResult => add(d, [{ o: 'dig', p }], UNDO_MS);
 export const digMany = (d: LocalDate, ps: readonly string[]): SendResult => add(d, ps.map((p) => ({ o: 'dig', p })), UNDO_MS);
-export const harvestAll = (d: LocalDate, ops: readonly { p: string; n: number }[]): SendResult => add(d, ops.map(({ p, n }) => ({ o: 'harvest', p, n })), UNDO_MS);
 export const plantMany = (d: LocalDate, ps: readonly string[], c: Crop, src: FarmSrc): SendResult => add(d, ps.map((p) => ({ o: 'plant', p, c, src })), UNDO_MS);
 
-/** These plants watered today (a tap's 3 × 3, the 畑 sheet's 水やり): one change of the shared day, one day row
+/** These plants watered today (a tap's 3 × 3): one change of the shared day, one day row
  *  (store/world.svelte.ts shareMany). */
 export const waterAll = (ids: readonly string[]): number => world.shareMany(ids.map((id) => ({ kind: 'world', op: 'watered', id })));
 

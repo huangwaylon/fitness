@@ -74,7 +74,7 @@ export type SceneSfx =
   | 'campfire'
   // the fixed decor tapped (island/SceneTaps.svelte): a bench, the shishi-odoshi, the pull-up bar, the pump, the rest
   | 'bench' | 'kon' | 'bar' | 'pump' | 'decor'
-  // a field's harvest (island/SceneTaps.svelte farmAt, the 畑 sheet's wave on its close)
+  // a field's harvest (island/SceneTaps.svelte farmAt)
   | 'harvest';
 
 interface SoundDef {

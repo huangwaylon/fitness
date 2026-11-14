@@ -134,6 +134,8 @@
   :global(:root:has([data-shop])) .banner.undo { top: calc(var(--ui-top) + 56px); bottom: auto; animation-name: none; }
   /* …and on the island with no sheet up: over the say button at the bottom right (IslandScene .say-dock: 44px, 8px up), never on it */
   :global(:root:has(.island .say-dock):not(:has(dialog[open], [data-shop]))) .banner.undo { bottom: calc(var(--pad-bottom) + 8px + var(--hit) + 10px); }
+  /* …but high, as the shop's, while catch plates stand in that row (a plot's 3 × 3 planted after a harvest: never over its plate) */
+  :global(:root:has(.island [data-catch-stack] > .slot):not(:has(dialog[open], [data-shop]))) .banner.undo { top: calc(var(--ui-top) + 56px); bottom: auto; animation-name: none; }
   /* …and over a sheet's level with actions at its foot (theme.css .level-acts): above them, never on them (`over`, measured) */
   .undo .txt { font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }

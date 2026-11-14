@@ -436,7 +436,7 @@ class SharedWorld {
     return a;
   }
 
-  /** Several shared-world changes of mine at once (a plot tap's 3 × 3, the 畑 sheet's 水やり), each folded and kept as
+  /** Several shared-world changes of mine at once (a plot tap's 3 × 3), each folded and kept as
    *  `share`'s, with one `rev` and one row for them all; to the relay DRIP a second, while the day and I are the same.
    *  How many were new. */
   shareMany(list: readonly Extract<Shared, { kind: 'world' }>[]): number {

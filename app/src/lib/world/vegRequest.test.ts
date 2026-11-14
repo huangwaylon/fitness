@@ -60,7 +60,7 @@ describe('おねがい', () => {
   });
   it('its lines in both languages', () => {
     for (const k of ['visitor.veg.want', 'visitor.veg.ask', 'visitor.veg.none', 'visitor.veg.thanks', 'visitor.veg.gift', 'chat.sp.franklin.vegAsk',
-      'chat.sp.franklin.vegThanks', 'farm.request', 'farm.requestDone']) {
+      'chat.sp.franklin.vegThanks']) {
       expect((ja as Record<string, string>)[k], k).toBeTruthy();
       expect((en as Record<string, string>)[k], k).toBeTruthy();
     }

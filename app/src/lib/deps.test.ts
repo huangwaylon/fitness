@@ -158,7 +158,7 @@ describe('src/lib folder boundaries', () => {
 // Inside components/: the 3D renderers and rooms draw, the sheets are the UI over them. A renderer never imports a
 // sheet (what both need is world/'s, or a kit's), and a sheet another sheet only by an edge named here.
 const RENDERERS = ['world3d', 'villager3d', 'player3d', 'person3d', 'rooms', 'homes', 'tent', 'museum', 'shop'];
-const SHEETS = ['panel', 'health', 'food', 'kikimimi', 'wallet', 'board', 'farm', 'kiroku', 'bots', 'travel', 'hiking', 'wedding', 'look', 'sheets', 'editor', 'layoutEdit'];
+const SHEETS = ['panel', 'health', 'food', 'kikimimi', 'wallet', 'board', 'kiroku', 'bots', 'travel', 'hiking', 'wedding', 'look', 'sheets', 'editor', 'layoutEdit'];
 /** The one renderer → sheet edge: the villagers' portraits (すがた's), the cards' faces on the island and in the rooms. */
 const RENDERER_READS = ['look/portraits.svelte.ts'];
 /** Sheet → sheet, on purpose: ごはん on けんこう's kit (its pager, range, cards, whose) and けんこう hosting ごはん, 登山

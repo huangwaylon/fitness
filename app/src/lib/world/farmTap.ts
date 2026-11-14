@@ -1,37 +1,43 @@
 // A tap on a plot (docs/farming.md "Playing"): what it does, acting in place (never a walk), forgiving a row's miss
-// (a row is ~15 px on the phone) with NH's golden can's 3 × 3, the tapped plant deciding first. Pure: SceneTaps does it
-// (store/farm.svelte.ts, the shared world's watering, the plate). P the tapped plot, A its 3 × 3:
-//   1. my ripe plant at P: harvest every ripe plant of mine in A, P first, then the nearest (a harvest never misfires);
-//      so too my plant at P picked today, while A has ripe ones of mine (a run of harvest taps across the field: the
-//      plant just picked counts for watering today, and would turn the next tap into the can's);
-//   2. a plant at P (anyone's), or another's empty plot, and plants in A whose watering counts today not yet watered:
-//      water those (never a ripe one: it can't help);
+// (a row is ~15 px on the phone) with NH's golden can's 3 × 3, the tapped plot deciding first. Pure: SceneTaps does it
+// (store/farm.svelte.ts, the shared world's watering, the plate). P the tapped plot, A its 3 × 3, in this order:
+//   1. P is my ripe plant, or my plant picked today while A has ripe ones of mine (a run of harvest taps: the plant just
+//      picked counts for watering today, and would turn the next tap into the can's): harvest every ripe plant of mine
+//      in A, P first, then the nearest (a harvest never misfires);
+//   2. P holds a plant (anyone's), or is another's empty plot, and A has plants whose watering counts today, not yet
+//      watered: water those (never a ripe one: it can't help). My empty plot never waters;
 //   3. my ripe plants in A (a miss on an empty, watered or another's plot): harvest them all, the nearest first;
-//   4. my field's empty plot: at the cap say so; plant the held crop (nothing held, or none left: the picker, whose pick
-//      plants it);
-//   5. else a word: whose plant and how long, or watered already (and by whom), or whose field.
-// Digging is the 畑 sheet's (farm/FarmSheet.svelte), never a tap's.
+//   4. P is my empty plot: at the cap say so; else plant the crop (the picker's pick, or this run's) on my empty plots
+//      of A, P first, then the nearest, as many as I hold, the cap leaves and one event takes; no crop yet: the one kind
+//      I hold (a vegetable is a kind), the picker for two or more (whose pick runs this again with it), none: say so;
+//   5. else a word: whose plant and how long, or watered already (and by whom), or whose field; my own plant offers ほる.
+// So on a mixed 3 × 3 a tap on my empty plot harvests first, the next one plants; a tap on a plant waters.
 import { FARM, daysLeft, seedKey, stageOf, wateringCounts, yieldOf, type Crop, type FarmSrc, type Plot, type Watered } from '#lib/contract/farm.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
 /** A harvested plant: its plot, its crop and its yield. */
 interface HarvestOp { p: string; c: Crop; n: number }
+/** A crop to plant: a start, or a vegetable. */
+interface Seed { c: Crop; src: FarmSrc }
 
 type FarmTap =
   /** My ripe plants of the 3 × 3, the plate's first (P's, else the nearest). */
   | { a: 'harvest'; ops: HarvestOp[] }
   /** The plants to water: the 3 × 3's whose watering counts today, not watered yet. */
   | { a: 'water'; ids: string[] }
-  | { a: 'plant'; c: Crop; src: FarmSrc }
-  /** The picker, for this plot (`out`: the held crop, none left of it). */
+  /** My empty plots of the 3 × 3 to plant with crop `c` (P first, then the nearest). */
+  | { a: 'plant'; ps: string[]; c: Crop; src: FarmSrc }
+  /** The picker, for this plot (`out`: the crop of this run, none left of it). */
   | { a: 'pick'; out?: Crop }
+  /** Nothing to plant held at all. */
+  | { a: 'none' }
   | { a: 'cap' }
   /** A word about it: its plant (whose, which, days to ripe; 0 ripe, another's; who watered it today), or only whose
-   *  field it is. */
-  | { a: 'about'; who: Who; c?: Crop; left?: number; watered?: boolean; by?: Who };
+   *  field it is. `dig`: my own plant (ほる). */
+  | { a: 'about'; who: Who; c?: Crop; left?: number; watered?: boolean; by?: Who; dig?: true };
 
-/** A plot of a field (its tile's column and row) and its plant, if any. */
-export interface PlotAt { p: string; c: number; r: number; plant?: Plot }
+/** A plot of a field (whose field, its tile's column and row) and its plant, if any. */
+export interface PlotAt { p: string; who: Who; c: number; r: number; plant?: Plot }
 
 export interface FarmTapIn {
   me: Who;
@@ -39,26 +45,30 @@ export interface FarmTapIn {
   plot: { p: string; who: Who; c: number; r: number };
   /** Its plant, if any. */
   plant?: Plot;
-  /** The plots of its 3 × 3 (itself too: layout/field.ts plotsAround), with their plants. */
+  /** The plots of its 3 × 3 (itself too, any field's: layout/field.ts plotsAround), with their plants. */
   around: readonly PlotAt[];
   date: LocalDate;
   watered: Watered;
   /** Who watered the plot today, if anyone did (the shared day's `watered`). */
   by?: Who;
-  seed: { c: Crop; src: FarmSrc } | null;
+  /** The crop to plant: the picker's pick (forced), or this planting run's; null: none chosen. */
+  seed: Seed | null;
+  /** The kinds I hold to plant (starts and vegetables). */
+  kinds: readonly Seed[];
   /** How many of a pocket key I hold. */
   have: (key: string) => number;
   /** My plants on the fields. */
   mine: number;
 }
 
+/** P first, then the nearest (a stable sort: the 3 × 3's own order breaks a tie). */
+const nearest = <T extends { c: number; r: number }>(ns: readonly T[], c: number, r: number): T[] =>
+  ns.map((n) => ({ n, d: (n.c - c) ** 2 + (n.r - r) ** 2 })).sort((a, b) => a.d - b.d).map(({ n }) => n);
+
 export function farmTap(i: FarmTapIn): FarmTap {
   const pl = i.plant, { c, r } = i.plot, mineEmpty = !pl && i.plot.who === i.me;
-  const ripe = i.around
-    .filter((n): n is PlotAt & { plant: Plot } => n.plant?.who === i.me && stageOf(n.plant, i.date) === 3)
-    .map((n) => ({ n, d: (n.c - c) ** 2 + (n.r - r) ** 2 }))
-    .sort((a, b) => a.d - b.d)
-    .map(({ n }) => ({ p: n.p, c: n.plant.c, n: yieldOf(n.p, n.plant, i.watered) }));
+  const ripe = nearest(i.around.filter((n): n is PlotAt & { plant: Plot } => n.plant?.who === i.me && stageOf(n.plant, i.date) === 3), c, r)
+    .map((n) => ({ p: n.p, c: n.plant.c, n: yieldOf(n.p, n.plant, i.watered) }));
   if (pl && ripe[0]?.p === i.plot.p) return { a: 'harvest', ops: ripe };
   const picked = pl?.who === i.me && pl.r && daysLeft(pl, i.date) === FARM.regrowDays;
   if (picked && ripe.length) return { a: 'harvest', ops: ripe };
@@ -69,17 +79,15 @@ export function farmTap(i: FarmTapIn): FarmTap {
   if (ripe.length) return { a: 'harvest', ops: ripe };
   if (mineEmpty) {
     if (i.mine >= FARM.cap) return { a: 'cap' };
-    if (!i.seed) return { a: 'pick' };
-    if (i.have(seedKey(i.seed.c, i.seed.src)) < 1) return { a: 'pick', out: i.seed.c };
-    return { a: 'plant', c: i.seed.c, src: i.seed.src };
+    const s = i.seed && i.have(seedKey(i.seed.c, i.seed.src)) > 0 ? i.seed : i.kinds.length === 1 ? i.kinds[0] : null;
+    if (!s) return i.kinds.length ? { a: 'pick', ...(i.seed ? { out: i.seed.c } : {}) } : { a: 'none' };
+    const room = Math.min(i.have(seedKey(s.c, s.src)), FARM.cap - i.mine, FARM.batchMax);
+    const ps = nearest(i.around.filter((n) => n.who === i.me && !n.plant), c, r).slice(0, room).map((n) => n.p);
+    return { a: 'plant', ps, c: s.c, src: s.src };
   }
   if (!pl) return { a: 'about', who: i.plot.who };
-  return { a: 'about', who: pl.who, c: pl.c, left: daysLeft(pl, i.date), watered: i.watered(i.plot.p, i.date), ...(i.by ? { by: i.by } : {}) };
-}
-
-/** The 畑 sheet's wave on its close (farmUi.svelte.ts farmWave): at most `max` of its plots, spread evenly along x
- *  (left to right). */
-export function waveSpots<T extends { c: number; r: number }>(tiles: readonly T[], max = 8): T[] {
-  const s = [...tiles].sort((a, b) => a.c - b.c || a.r - b.r);
-  return s.length <= max ? s : Array.from({ length: max }, (_, i) => s[Math.round((i * (s.length - 1)) / (max - 1))]);
+  return {
+    a: 'about', who: pl.who, c: pl.c, left: daysLeft(pl, i.date), watered: i.watered(i.plot.p, i.date),
+    ...(i.by ? { by: i.by } : {}), ...(pl.who === i.me ? { dig: true as const } : {})
+  };
 }

@@ -39,8 +39,7 @@ and clamping `lib/math.ts`, a static file's URL `staticUrl()`, the synced last-w
 ### Island
 
 Top to bottom: the HUD row (below); a sync
-chip only when sync isn't ok; the scene; しずえ's box only with news; at the bottom the farm button (left, while the
-island has a field: [farming.md "Playing"](farming.md#playing)) and the say button (right). The island is in 3D under
+chip only when sync isn't ok; the scene; しずえ's box only with news; the say button at the bottom right. The island is in 3D under
 them ([World](#world)): one finger scrolls it from まえ (home, the health lawn) to おく, two pinch the zoom, a tap
 on empty ground walks my villager there.
 
@@ -816,7 +815,7 @@ person has a pocket and かいがら, the guest too.
   tap on the twins, their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
 - **The list** (`shop/Counter.svelte`: its header has the rows and the bar): 売る · 買う, my かいがら in the bar. A world
-  object: cream at every hour (`.obj-cream`), its own rows (畑, a sheet, follows the hour), as the rooms' top row.
+  object: cream at every hour (`.obj-cream`), its own rows (a sheet's follow the hour), as the rooms' top row.
 - **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部 a section,
   全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: today's stock, 24 pieces a day, seeded by pack, less what the island had by midnight; past

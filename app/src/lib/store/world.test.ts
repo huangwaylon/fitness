@@ -54,7 +54,7 @@ describe('the shared island on this phone', () => {
     expect(caught(world.day, 'fresh:99')?.who).toBe('B');
   });
 
-  it('a batch of mine (the 畑 sheet’s 水やり): one rev and one row for all, the relay 15 a second at most, what I had already left out', () => {
+  it('a batch of mine (a plot tap’s 3 × 3 watered): one rev and one row for all, the relay 15 a second at most, what I had already left out', () => {
     const r = fakeRelay();
     world.attach(r.live, 'A');
     const rows: { watered: string[] }[] = [];

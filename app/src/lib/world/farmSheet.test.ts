@@ -1,13 +1,12 @@
-// The 畑 sheet's batches and readings (world/farmSheet.ts), over a 10 × 4 field of mine and one of the partner's.
+// My fields read whole (world/farmSheet.ts), over a 10 × 4 field of mine and one of the partner's.
 import { describe, expect, it } from 'vitest';
-import { FARM, emptyFarm, farmStep, plotOf, type Farm, type Watered } from '#lib/contract/farm.ts';
+import { FARM, emptyFarm, farmStep, plotOf, type Farm } from '#lib/contract/farm.ts';
 import { fieldPlots } from '#lib/layout/field.ts';
-import { fillPlan, harvestOps, harvestSummary, orphans, wateredBy, waterNext, waterTargets, yieldRange } from './farmSheet.ts';
+import { fillPlan, orphans } from './farmSheet.ts';
 
-const D = '2026-11-04', D1 = '2026-11-05', D2 = '2026-11-06', D3 = '2026-11-07';
+const D = '2026-11-04';
 const MINE = fieldPlots({ id: 'field-A', x: 10, z: 17, s: 'a-10x4' }), HERS = fieldPlots({ id: 'field-B', x: 10, z: 22, s: 'b-10x4' });
 const PLOTS = [...MINE, ...HERS];
-const none: Watered = () => false;
 /** A farm with `n` of my plots planted on `d` (reading order) and `m` of hers. */
 function farmOf(n: number, m = 0, d = D): Farm {
   const f = emptyFarm();
@@ -16,52 +15,6 @@ function farmOf(n: number, m = 0, d = D): Farm {
   if (m) farmStep(f, 'B', { d, ops: plant(HERS, m) });
   return f;
 }
-
-describe('harvestOps', () => {
-  it('my ripe plants only, each at its yield; a full field is one event (cap = batchMax)', () => {
-    const f = farmOf(FARM.cap, 3);
-    const watered: Watered = (p, d) => p === MINE[0].p && (d === D1 || d === D2);
-    expect(harvestOps(f, 'A', D2, none)).toEqual([]);
-    const ops = harvestOps(f, 'A', D3, watered);
-    expect(ops).toHaveLength(FARM.cap);
-    expect(ops.length).toBeLessThanOrEqual(FARM.batchMax);
-    expect(ops[0]).toEqual({ o: 'harvest', p: MINE[0].p, n: 3 });
-    expect(ops.slice(1).every((o) => o.n === 1)).toBe(true);
-    expect(ops.some((o) => HERS.some((t) => t.p === o.p))).toBe(false);
-  });
-});
-
-describe('waterTargets', () => {
-  it('every field’s plants (anyone’s) whose watering today counts and isn’t done; never an empty plot', () => {
-    const f = farmOf(5, 2);
-    // ripe on D3: a watering on D1 or D2 counts
-    const watered: Watered = (p, d) => d === D1 && p === MINE[1].p;
-    expect(waterTargets(PLOTS, f, D1, watered)).toEqual([MINE[0].p, ...MINE.slice(2, 5).map((t) => t.p), HERS[0].p, HERS[1].p]);
-    expect(waterTargets(PLOTS, f, D2, none)).toHaveLength(7);
-    // a wet day: none
-    expect(waterTargets(PLOTS, f, D1, () => true)).toEqual([]);
-  });
-  it('none whose watering can’t change the yield: ripe; planted or harvested today (growing back) counts', () => {
-    const f = farmOf(5, 2);
-    expect(waterTargets(PLOTS, f, D, none)).toHaveLength(7);
-    expect(waterTargets(PLOTS, f, D3, none)).toEqual([]);
-    farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: MINE[0].p, n: 1 }] });
-    expect(waterTargets(PLOTS, f, D3, none)).toEqual([MINE[0].p]);
-    expect(waterTargets(PLOTS, f, '2026-11-08', none)).toEqual([MINE[0].p]);
-  });
-});
-
-describe('waterNext', () => {
-  it('0 while any plant grows (its plant day too), none once all are ripe or with no plants', () => {
-    const f = farmOf(5, 2);
-    expect([D, D1, D2].map((d) => waterNext(PLOTS, f, d))).toEqual([0, 0, 0]);
-    expect(waterNext(PLOTS, f, D3)).toBeNull();
-    expect(waterNext(PLOTS, emptyFarm(), D)).toBeNull();
-    // one growing back after its harvest: the harvest day counts
-    farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: MINE[0].p, n: 1 }] });
-    expect(waterNext(PLOTS, f, D3)).toBe(0);
-  });
-});
 
 describe('fillPlan', () => {
   const at = (c: number, r: number) => plotOf('field-A', c, r);
@@ -90,21 +43,6 @@ describe('fillPlan', () => {
   });
 });
 
-describe('yieldRange', () => {
-  const p = MINE[0].p;
-  const pl = farmOf(1).plots.get(p)!; // ripe on D3: its days D, D1 and D2
-  it('a range until the watering days have passed, at most 3; one number then', () => {
-    expect(yieldRange(p, pl, D, none)).toEqual({ lo: 1, hi: 3 });
-    expect(yieldRange(p, pl, D1, (_p, d) => d === D1)).toEqual({ lo: 2, hi: 3 });
-    expect(yieldRange(p, pl, D1, none)).toEqual({ lo: 1, hi: 3 }); // the plant day missed, two still to come
-    expect(yieldRange(p, pl, D2, none)).toEqual({ lo: 1, hi: 2 }); // D and D1 missed, today's still to come
-    expect(yieldRange(p, pl, D2, (_p, d) => d === D)).toEqual({ lo: 2, hi: 3 });
-    expect(yieldRange(p, pl, D2, (_p, d) => d === D1 || d === D2)).toEqual({ lo: 3, hi: 3 });
-    expect(yieldRange(p, pl, D1, (_p, d) => d === D || d === D1)).toEqual({ lo: 3, hi: 3 });
-    expect(yieldRange(p, pl, D3, (_p, d) => d === D2)).toEqual({ lo: 2, hi: 2 });
-  });
-});
-
 describe('orphans', () => {
   it('my plants no field covers; the partner’s and the covered ones aren’t', () => {
     const f = farmOf(2, 1);
@@ -112,28 +50,5 @@ describe('orphans', () => {
     farmStep(f, 'B', { d: D, ops: [{ o: 'plant', p: plotOf('gone', 1, 0), c: 'carrot', src: 'start' }] });
     expect(orphans(f, 'A', PLOTS)).toEqual([plotOf('gone', 0, 0)]);
     expect(orphans(f, 'A', [])).toHaveLength(3);
-  });
-});
-
-describe('wateredBy', () => {
-  it('who else watered my plants today, how many; my own, others’ plants and the unwatered not counted', () => {
-    const mine = MINE.slice(0, 5).map((t) => t.p);
-    const shared = { [mine[0]]: 'B', [mine[1]]: 'B', [mine[2]]: 'G', [mine[3]]: 'A', [HERS[0].p]: 'B', 'fl:3': 'B' } as const;
-    expect(wateredBy(mine, shared, 'A')).toEqual({ B: 2, G: 1 });
-    expect(wateredBy(mine, {}, 'A')).toEqual({});
-    expect(wateredBy([], shared, 'A')).toEqual({});
-  });
-});
-
-describe('harvestSummary', () => {
-  it('the vegetables per crop in CROPS order, before or after the harvest', () => {
-    const f = farmOf(2);
-    farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: MINE[2].p, c: 'pumpkin', src: 'start' }, { o: 'plant', p: MINE[3].p, c: 'wheat', src: 'start' }] });
-    const ops = [{ p: MINE[2].p, n: 3 }, { p: MINE[0].p, n: 2 }, { p: MINE[3].p, n: 1 }, { p: MINE[1].p, n: 3 }, { p: MINE[9].p, n: 3 }];
-    const want = [{ c: 'tomato', n: 5 }, { c: 'wheat', n: 1 }, { c: 'pumpkin', n: 3 }];
-    expect(harvestSummary(ops, f)).toEqual(want);
-    farmStep(f, 'A', { d: D3, ops: ops.slice(0, 4).map((o) => ({ o: 'harvest' as const, ...o })) });
-    expect(harvestSummary(ops, f)).toEqual(want);
-    expect(harvestSummary([], f)).toEqual([]);
   });
 });

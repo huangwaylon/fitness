@@ -16,7 +16,6 @@
   import HudMenu from './HudMenu.svelte';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
-  import { farmSheet } from '../farm/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
   import { botsSheet, listenOpen, openIts } from '../bots/open.svelte.ts';
@@ -93,8 +92,6 @@
 {#if hiking.Sheet}<hiking.Sheet bind:open={hiking.open} />{/if}
 <!-- ボット's, opened by the menu's pill (members only) -->
 {#if botsSheet.Sheet}<botsSheet.Sheet bind:open={botsSheet.open} />{/if}
-<!-- 畑's, opened by the farm button (island/FarmButton.svelte) -->
-{#if farmSheet.Sheet}<farmSheet.Sheet bind:open={farmSheet.open} />{/if}
 <!-- けんこう and ごはん's, opened by the dumbbell or a tree's ごはん -->
 {#if kenkou.Sheet}<kenkou.Sheet bind:open={kenkou.open} />{/if}
 

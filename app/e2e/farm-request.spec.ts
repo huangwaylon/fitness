@@ -17,7 +17,7 @@ const seed = (page: Page, day: string, events: Seed[]) =>
 /** This page's own events of a type (not the seeds'). */
 const sent = (page: Page, type: string) => page.evaluate((type) => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: Record<string, unknown> }[])
   .filter((e) => e.type === type && !e.id.startsWith('seed-')).map((e) => e.data), type);
-/** ウェイ's field (a farmer: the ask comes; the はたけ pill shows). */
+/** ウェイ's field (a farmer: the ask comes). */
 const FIELD: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'];
 const talk = (page: Page) => page.locator('[data-fx="talk"].placed');
 
@@ -41,10 +41,8 @@ test('Chip wants a carrot: his caption, and a tap with one in my pocket hands it
   await expect(chip.locator('[data-treat]')).toHaveCount(1);
   await expect.poll(() => sent(page, 'sell')).toEqual([{ species: 'goods:carrot', n: 1, v: 18 }]);
   await expect.poll(async () => (await sent(page, 'find')).filter((f) => f.kind === 'item').length).toBe(1);
-  // handed over: no more ask (a reload too), and the 畑 sheet says so
+  // handed over: no more ask (a reload too)
   await expect(chip).not.toHaveAttribute('data-veg-ask');
-  await page.locator('[data-farm-open]').click();
-  await expect(page.locator('[data-farm-ask="carrot"][data-done]')).toHaveText('今日のおねがい：ニンジン（うおまさ）・渡しました');
   await page.reload();
   await islandUp(page);
   await expect(page.locator('[data-visitor="chip"]')).toBeAttached();
@@ -62,10 +60,6 @@ test('without the vegetable: the ask, then a kind word, nothing sent', async ({ 
   await expect(talk(page)).toHaveAttribute('aria-label', /ニンジン、 まだ ないみたいだね/);
   expect(await sent(page, 'sell')).toEqual([]);
   await expect(page.locator('[data-visitor="chip"]')).toHaveAttribute('data-veg-ask', 'carrot');
-  // the 畑 sheet's line, kanji
-  await page.locator('[data-farm-open]').click();
-  await expect(page.locator('[data-farm-ask="carrot"]')).toHaveText('今日のおねがい：ニンジン（うおまさ）');
-  await expect(page.locator('[data-farm-ask][data-done]')).toHaveCount(0);
 });
 
 test('Franklin on Turkey Day asks for ウェイ’s pumpkin with his fish, and cooks it when handed over', async ({ page }) => {

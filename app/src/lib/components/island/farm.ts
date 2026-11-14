@@ -1,6 +1,6 @@
 // The fields on the island today (docs/farming.md): each plot's plant and soil as the scene draws them, from the record's
-// rows (model/farm.ts) and today's live watering (the shared world's day: the partner's at once) and sky; the scene,
-// a plot's tap and the 畑 sheet read them alike. Nothing here sends (store/farm.svelte.ts does).
+// rows (model/farm.ts) and today's live watering (the shared world's day: the partner's at once) and sky; the scene
+// and a plot's tap read them alike. Nothing here sends (store/farm.svelte.ts does).
 import { stageOf, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
 import { farmOfState, wateredOf } from '#lib/model/farm.ts';
 import { layoutPlots } from '#lib/layout/field.ts';
