@@ -29,6 +29,7 @@ export async function memberCall(url: string, method: 'GET' | 'PUT' | 'POST', bo
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
     const json: unknown = await res.json().catch(() => undefined);
+    if (late.aborted) return { ok: false, err: 'timeout', rid, ms: ms() };
     return { ok: true, res, json, rid, ms: ms() };
   } catch {
     return { ok: false, err: late.aborted ? 'timeout' : 'offline', rid, ms: ms() };
