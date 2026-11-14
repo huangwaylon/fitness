@@ -424,6 +424,13 @@ export function verdictView(s: ItsStatus): { tone: BotTone; w: BotWord; word: st
 /** The bookings waiting for a person (要対応: a hold to finish by mail, a failed leg). */
 const waiting = (s: ItsStatus): BookingRow[] => bookingRows(s, tokyoToday(s.now), s.now).filter((b) => b.state === 'action');
 
+/** The verdict's headline while a person must act: the first hold to finish by mail (「NAGU 勝浦をメールで申込」),
+ *  else 確認が必要's own (undefined: the card's 「確認してください」). */
+export function actOf(s: ItsStatus): string | undefined {
+  const mail = waiting(s).find((b) => b.steps.length);
+  return mail ? t('its.act.mail', { hotel: mail.hotel }) : undefined;
+}
+
 /** A runner has reported: it applies the allow-list and stops at a booked night (before any report the page claims
  *  neither). */
 export const stopsAtBooked = (s: ItsStatus): boolean => !!s.runner;

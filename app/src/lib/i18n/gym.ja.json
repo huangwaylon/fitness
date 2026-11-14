@@ -144,5 +144,6 @@
   "gym.result.open": "空き{n}枠",
   "gym.result.none": "空きなし",
   "gym.result.next": "次はあと{s}秒",
-  "gym.ctl.intervalNote": "空きは間隔ごとに確認します。LINEのチェック設定と同じです。"
+  "gym.ctl.intervalNote": "空きは間隔ごとに確認します。LINEのチェック設定と同じです。",
+  "gym.act.check": "⋯から今すぐ確認"
 }

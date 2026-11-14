@@ -77,5 +77,6 @@
   "kalori.strip.line": "公開{ok} · 保留{held} · 失敗{failed}",
   "kalori.menu.label": "メニューの操作",
   "kalori.menu.workflow": "ワークフローを開く",
-  "kalori.key.none": "変更なし"
+  "kalori.key.none": "変更なし",
+  "kalori.act.held": "差分を確認してマージ"
 }

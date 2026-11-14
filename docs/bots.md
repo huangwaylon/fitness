@@ -5,9 +5,11 @@ The ボット sheet's design (moved from [design.md](design.md#settings); the ki
 **ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** · **保養所** · **メニュー** (`bots/registry.ts`; not in
 demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 - **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中, yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応 (a fine bot needing a look),
-  coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだ, hollow 不明; the menu's ボット the worst, a failed read dimmed, kept.
+  coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだ, hollow 不明; drawn on a tab and the menu's ボット (the worst) only while a person must act (`dotShown`,
+  the user 2026-11-15: 一部不調 while it retries shows in its page only), a failed read dimmed, kept.
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
-- **Page** (`BotPage`): `VerdictCard` (a `.card.pad`: dot, word, 「12:00時点」, ⋯; sentence; result line; dense
+- **Page** (`BotPage`): `VerdictCard` (a `.card.pad`: dot, the headline: the act (`act`) or 「対応不要」, ⋯; the word a `.tag`,
+  「12:00時点」; sentence; result line; dense
   `StatStrip` 前回 · 次回 · 成果, 不調: 最後の成功) · `AttentionCard` (only steps the sentence lacks) · `StatusStrip` (ok green,
   空き full height, warn yellow capped, fail hatched, none a tick; empty: out, 保養所 running a sunk line, never a second warning) · sections · 設定 · くわしく (`FactList`).
   ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.

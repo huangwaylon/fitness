@@ -144,5 +144,6 @@
   "gym.result.open": "{n} open",
   "gym.result.none": "nothing open",
   "gym.result.next": "next in {s}s",
-  "gym.ctl.intervalNote": "How often the gym is checked; the same as LINE's チェック設定."
+  "gym.ctl.intervalNote": "How often the gym is checked; the same as LINE's チェック設定.",
+  "gym.act.check": "Check now from ⋯"
 }

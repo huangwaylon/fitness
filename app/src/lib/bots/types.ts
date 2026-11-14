@@ -15,6 +15,8 @@ export interface BotVerdict {
   word: string;
   sentence: string;
   needsLook: boolean;
+  /** What the person must do, while `needsLook` (the verdict card's headline; else 「確認してください」). */
+  act?: string;
 }
 
 /** A read: the status, or why not (`offline`, `http`, `json`, `no_key`, a Worker's code); a refusal may carry the status. */

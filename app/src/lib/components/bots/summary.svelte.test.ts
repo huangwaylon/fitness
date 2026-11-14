@@ -124,13 +124,13 @@ describe('the dots’ reads (summary.svelte.ts)', () => {
     expect([h.calls.its, h.calls.kalori]).toEqual([2, 2]);
   });
 
-  it('worstOf: the menu’s ボット over the bots asked', async () => {
+  it('worstOf: the menu’s ボット over the bots asked, only those a person must act on (一部不調 alone: no dot)', async () => {
     const m = await load();
     h.answers.gym = ok({ tone: 'bad', look: true });
     h.answers.kalori = ok({ tone: 'warn' });
     await Promise.all([m.refresh('gym', 'focus'), m.refresh('kalori', 'focus')]);
     expect(m.worstOf(['gym', 'kalori'])).toEqual({ tone: 'bad', needsLook: true });
-    expect(m.worstOf(['kalori'])).toEqual({ tone: 'warn', needsLook: false });
+    expect(m.worstOf(['kalori'])).toBeNull();
     expect(m.worstOf([])).toBeNull();
   });
 });

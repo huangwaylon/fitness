@@ -38,5 +38,7 @@
   "bots.fact.sha": "Version",
   "bots.sec.settings": "Settings",
   "bots.cal.month": "Month",
-  "bots.cal.weekday": "Select every {wd}"
+  "bots.cal.weekday": "Select every {wd}",
+  "bots.act.none": "Nothing to do",
+  "bots.act.look": "Take a look"
 }

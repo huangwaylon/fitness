@@ -83,7 +83,8 @@
   }
 </script>
 
-{#snippet mark(id: BotId)}<StatusDot tone={dots[id].tone} look={dots[id].look} stale={dots[id].stale} />{/snippet}
+<!-- (a dot only while a person must act: summary.svelte.ts dotShown; the tab's name still says the state) -->
+{#snippet mark(id: BotId)}{#if dots[id].look}<StatusDot tone={dots[id].tone} look stale={dots[id].stale} />{/if}{/snippet}
 
 <Sheet bind:this={sheet} bind:open tunes label={t('panel.bots')} variant="pop" timed="bots">
   <div class="titlebar"><NavBar title={t('panel.bots')} onclose={() => (sheet ? sheet.guard(() => (open = false)) : (open = false))} sfx="self" /></div>

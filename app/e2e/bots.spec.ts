@@ -117,13 +117,17 @@ test('the menu’s ボット, right above 設定, 「!」 while a bot needs a pe
     const box = (await tab(id).boundingBox())!;
     expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
   }
-  // ジム · 保養所 · メニュー, left to right; メニュー healthy: a plain leaf dot
+  // ジム · 保養所 · メニュー, left to right; メニュー healthy: no dot (one only while a person must act)
   const [l, m, r] = [(await tab('gym').boundingBox())!, (await tab('its').boundingBox())!, (await tab('kalori').boundingBox())!];
   expect(l.x).toBeLessThan(m.x);
   expect(m.x).toBeLessThan(r.x);
   await expect(tab('kalori')).toHaveAccessibleName('メニュー、順調');
   await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
   await expect(tab('kalori')).not.toHaveAttribute('data-look');
+  await expect(tab('kalori').locator('[data-dot]')).toHaveCount(0);
+  await expect(tab('gym').locator('[data-dot="bad"][data-look]')).toHaveCount(1);
+  // the card leads with the act, the word a tag
+  await expect(sheet.locator('[data-gym-verdict] [data-bots-head]')).toHaveText('⋯から今すぐ確認');
   // the keyboard: → moves the focus, Enter picks; the focus stays on the tab picked
   await tab('gym').focus();
   await page.keyboard.press('ArrowRight');
@@ -290,6 +294,7 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the s
   const k = sheet.locator('[data-kalori-page]');
   const verdict = k.locator('[data-kalori-verdict="held"]');
   await expect(verdict.locator('.word')).toHaveText('保留'); // the bot's own word, never raised to 要対応
+  await expect(verdict.locator('[data-bots-head]')).toHaveText('差分を確認してマージ');
   await expect(verdict).toContainText('変更が多すぎるため反映を止めました（削除 2.1%・上限1.5%）。アプリは11/4（水）のデータのままです。');
   await expect(verdict).toHaveClass(/warn/);
   await expect(k.locator('[data-kalori-key="last"]')).toHaveText(/前回\s*6:53\s*保留/); // the run held, not 公開

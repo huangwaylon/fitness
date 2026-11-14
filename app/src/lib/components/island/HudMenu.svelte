@@ -66,7 +66,7 @@
   });
   /** ボット's dot: the worst bot's, only while one needs a person (coral if any is failing, else yuzu). */
   const botsLook = $derived(worstOf(bots));
-  const botsDot = $derived(botsLook?.needsLook ? (botsLook.tone === 'bad' ? 'bad' : 'warn') : null);
+  const botsDot = $derived(botsLook ? (botsLook.tone === 'bad' ? 'bad' : 'warn') : null);
 
   // a sheet opening (the panel, けんこう, a tree's …) or もようがえ folds it
   $effect(() => {

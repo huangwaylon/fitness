@@ -299,5 +299,6 @@
   "its.cal.mark.booked": "booked",
   "its.cal.label": "Nights in {month}",
   "its.cal.over": "20 dates at most ({n} didn't fit)",
-  "its.date.removeLabel": "Remove {date}"
+  "its.date.removeLabel": "Remove {date}",
+  "its.act.mail": "Apply for {hotel} by mail"
 }

@@ -64,8 +64,12 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(gym.locator('[data-gym-verdict="degraded"]')).toContainText('一部不調');
   await expect(gym.locator('[data-gym-verdict]')).toContainText('前回のチェックで一部が失敗しました。');
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
-  await expect(tab).toHaveAttribute('data-tab-status', 'warn'); // 一部不調: yuzu, no 「!」 (no person needed)
+  await expect(tab).toHaveAttribute('data-tab-status', 'warn'); // 一部不調, no person needed: no dot on the tab, said inside
   await expect(tab).not.toHaveAttribute('data-look');
+  await expect(tab.locator('[data-dot]')).toHaveCount(0);
+  // the card leads with what to do (nothing), the word a tag
+  await expect(gym.locator('[data-gym-verdict] [data-bots-head]')).toHaveText('対応不要');
+  await expect(gym.locator('[data-gym-verdict] .tag.word')).toHaveText('一部不調');
   await expect(tab).toHaveAccessibleName('ジム、一部不調');
   await expect(gym.locator('[data-gym-alert]')).toHaveCount(0); // nothing to do the sentence doesn't say
   // the key row: 前回 (and how it went) · 次回 (and the interval) · いま (the open slots the last check saw)
@@ -74,9 +78,9 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(key('next')).toHaveText(/次回\s*12:09ごろ\s*15分ごと/);
   await expect(key('open')).toHaveText(/いま\s*空き1件/);
   await expect(gym.locator('[data-bots-asof]')).toHaveText('12:00時点');
-  // the word: body type, as the other cards' titles (くわしく's row), never a display size
+  // the headline: body type, as the other cards' titles (くわしく's row), never a display size
   const size = (l: ReturnType<Page['locator']>) => l.evaluate((e) => getComputedStyle(e).fontSize);
-  expect(await size(gym.locator('[data-gym-verdict] .word'))).toBe(await size(gym.locator('[data-gym-more] .prl')));
+  expect(await size(gym.locator('[data-gym-verdict] [data-bots-head]'))).toBe(await size(gym.locator('[data-gym-more] .prl')));
   // ⋯ on the card: named, a dialog's; the card has no other button
   const menu = gym.locator('[data-gym-verdict] [data-gym-menu]');
   await expect(menu).toHaveAccessibleName('ジムの操作');

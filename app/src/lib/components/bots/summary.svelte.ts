@@ -163,5 +163,9 @@ export function watch(others: readonly BotId[]): () => void {
   return () => clearInterval(timer);
 }
 
-/** The worst of these bots' dots (the menu's ボット), or null for none. */
-export const worstOf = (ids: readonly BotId[]): BotMark | null => worst(ids.map((id) => summaries[id]));
+/** A dot is drawn (a tab's, the menu's ボット) only while a person must act: a bot degraded on its own (ジム 一部不調
+ *  while it retries) says so inside its page only (the user, 2026-11-15). */
+export const dotShown = (m: BotMark): boolean => m.needsLook;
+
+/** The worst of these bots needing a person (the menu's ボット), or null for none. */
+export const worstOf = (ids: readonly BotId[]): BotMark | null => worst(ids.map((id) => summaries[id]).filter(dotShown));
