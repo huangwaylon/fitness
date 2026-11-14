@@ -14,8 +14,8 @@ export interface Env {
   ITS_RUNNER_TOKEN?: string;
   /** The alerting workflow's key (`Authorization: Bearer …` on GET /health/its; a repo secret there). Unset: refused. */
   ITS_HEALTH_TOKEN?: string;
-  /** A fine-grained PAT (this repo, Actions read/write) for 開始's workflow_dispatch. Unset: no dispatch (the
-   *  schedule starts a run). */
+  /** A fine-grained PAT (this repo, Actions read/write) for 開始's and the watchdog's workflow_dispatch and its list of
+   *  runs. Unset: no dispatch (the handoff and the schedule start runs; the watchdog logs no_token once and pushes). */
   GH_DISPATCH_TOKEN?: string;
   /** Web Push's VAPID public key (wrangler.toml var: an uncompressed P-256 point, base64url; the page subscribes with
    *  it). Not a key (the placeholder): push is off. */

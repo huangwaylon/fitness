@@ -140,7 +140,11 @@ encryption uploads nothing. On the Mac: `scripts/fetch-logs.sh <run-id>[-<attemp
 
 ## The workflow (its-runner.yml)
 
-Every 30 min (`7,37`) and on 開始's dispatch. The `gate` job (no concurrency) ends a scheduled tick at once while another
+Each run dispatches the next as it ends (the `handoff` job, GITHUB_TOKEN, `actions: write` its only permission): when
+it lasted `ITS_HANDOFF_AFTER_MIN` (60 min), wasn't cancelled, the preflight, asked again, says run, and no other run
+of the workflow is unfinished (that one is the successor); the successor
+waits in the concurrency group till this run job ends. Also on 開始's dispatch, the its-bot watchdog's (its/README.md
+"Watchdog") and every 30 min (`7,37`; GitHub drops most ticks: a backstop). The `gate` job (no concurrency) ends a scheduled tick at once while another
 run younger than `ITS_SKIP_YOUNGER_MIN` (ITS_RUN_MIN − 30) is in progress, so a tick never leaves a pending run for the
 next tick to cancel; the tick in a run's last 30 min queues the next run (it starts as this one ends), and a dispatch
 always queues. The `run` job holds the `its-runner` concurrency group: preflight, install, `main.py --remote --deadline

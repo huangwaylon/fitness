@@ -11,8 +11,8 @@ Two halves:
   Durable Object (`ItsBot`), Workers Free. It holds the settings and the record, tells the runner what to do, and
   computes the page's verdict. `MODE` (wrangler.toml) is `on` or `off` (the stop switch).
 - **The runner** (`its/runner/`, [its README](runner/README.md)): the Python booker (curl scans + headed Chrome for
-  Turnstile), run on GitHub Actions (`.github/workflows/its-runner.yml`, every 30 min and on 開始), bounded to ~5.5 h
-  a run. Every run checks out main: a runner change is live at the next run, so the three pieces stay compatible in
+  Turnstile), run on GitHub Actions (`.github/workflows/its-runner.yml`), bounded to ~5.5 h a run, each run
+  dispatching the next as it ends; 開始, the Worker's watchdog and a 30-min schedule start one too (Watchdog below). Every run checks out main: a runner change is live at the next run, so the three pieces stay compatible in
   any landing order (an older page, runner or Worker leaves out the newer fields; each side treats a missing field as
   before).
 
@@ -23,7 +23,8 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 
 - **Never two runners.** One lease (`LEASE_SEC` 300 s), renewed by every report; a runner that hasn't renewed within
   240 s takes no hold and files no application. The workflow runs only with the repo variable
-  `ITS_RUNNER_ENABLED = 1`, and `concurrency: its-runner` queues a second job.
+  `ITS_RUNNER_ENABLED = 1`, and `concurrency: its-runner` queues a second job (whoever dispatched it: one running,
+  one pending at most).
 - **A hold is forever.** A facility held for a date is never applied for again (the bookings record, append-only on the
   Worker; nothing is ever edited or deleted early). `confirming` is written before Chrome's 申込する: no ack, no commit.
 - **Auto-confirm** only for stays `AUTO_CONFIRM_MIN_DAYS` (11) or more away (free cancellation ends at D−10); off by
@@ -47,17 +48,18 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 ```
  app 保養所 ─ GET /its/status, PUT /its/settings, POST /its/run (member key) ─▶ its-bot ─▶ DO ItsBot
                                                                                        │  ▲
-                                         開始: workflow_dispatch (GH_DISPATCH_TOKEN) ◀─┘  │
+          開始, the watchdog (cron */5): workflow_dispatch (GH_DISPATCH_TOKEN) ◀─┘  │
  Actions its-runner.yml ─ GET /runner/config (preflight), POST /runner/claim, /runner/report every 30 s,
                           POST /runner/bookings (ITS_RUNNER_TOKEN) ──────────────────────────┘
+ its-runner.yml's handoff job: as a run ends, workflow_dispatch of the next (GITHUB_TOKEN)
 ```
 
 | File | Role |
 |---|---|
-| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs |
+| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog) |
 | `worker/src/bot.ts` | `ItsBot`: the record in memory (one storage read at start), one batched put per change, the log lines |
-| `worker/src/rules.ts` | The lease, the events' rings, bookings, seen names, RunnerConfig and the verdict |
-| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's bodies, GitHub's dispatch, bindings and secrets |
+| `worker/src/rules.ts` | The lease, the events' rings, bookings, seen names, RunnerConfig, the verdict and the watchdog's decision |
+| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's bodies, GitHub's dispatch and unfinished runs, bindings and secrets |
 | `worker/src/push.ts`, `webpush.ts` | Web Push (Push below): what's sent when, the messages, the outcomes; RFC 8291/8292 with WebCrypto |
 
 | Route | Who | |
@@ -89,16 +91,16 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   Worker's own, seq 0, its `detail` the run whose lease was taken over), `seen` (facility names, the newest 300; a
   known name's time is rewritten at most daily), `acks` (the highest event seq per run, the newest 20 runs: a retried
   report adds nothing twice), `preflight` (the last one's time), `minutes` (the reports' calendar reads per minute of
-  their own time, the last 60), `subs`, `pushq`, `pushlog` (Push below). Times are the Worker's receive time; the
+  their own time, the last 60), `subs`, `pushq`, `pushlog` (Push below), `watch` (the watchdog's incident, backoff, day's count). Times are the Worker's receive time; the
   verdict compares only those. A change is one put, then memory (a failed put acknowledges nothing).
 - **Lease**: a report from the holder renews it, also after it expired if nobody claimed it (`its lease
   renewed_late`); a released lease (`run_end`) is granted only by a claim.
-- **開始's dispatch**: `POST api.github.com/repos/huangwaylon/fitness/actions/workflows/its-runner.yml/dispatches`
+- **開始's dispatch** (and the watchdog's): `POST api.github.com/repos/huangwaylon/fitness/actions/workflows/its-runner.yml/dispatches`
   `{ref: 'main'}`, recorded as `dispatch: {at, ok, status}` (204 = accepted, 0 = no answer; `status: null, ok: true` =
   no token set, nothing sent: the schedule starts a run). Nothing is sent while MODE is off, without a date, while a run
   is scanning, or within 2 min of a dispatch no report has followed (`dispatch=skip_recent`); the dispatch is recorded
   before GitHub is asked, so a double tap sends one.
-- **Verdict**: computed on each status read from the Worker's clock (no cron, no alarm), every reason that applies in
+- **Verdict**: computed on each status read from the Worker's clock (the watchdog doesn't change it), every reason that applies in
   the contract's `REASONS` order, the verdict the first's (Investigating below).
 - **Logs** (Workers Logs, 3 days: dashboard → Workers → its-bot → Logs, or `npx wrangler tail`): one line per request,
   `its <op> key=value …` (`its status …`, the page's poll, at debug; `its settings by=B dates=2 … search=40 rid=…`,
@@ -106,13 +108,51 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   `its refused status= why= method= path=` (`rid=` a page's, `run=` a runner's); `its bookings refused record_full`
   at error. Never a key or token; dates and names are fine (the logs are private). Invocation logs off.
 
+## Watchdog
+
+GitHub drops most scheduled ticks (hours with no runner happened: no scans, no holds, no error), so a run starts
+its successor itself and the Worker restarts a missing one.
+
+- **Handoff** (its-runner.yml): as the run job ends, its `Hand off?` step asks the preflight again; when the bot should
+  still run and the run lasted `ITS_HANDOFF_AFTER_MIN` (60 min), the `handoff` job (`actions: write`, its only
+  permission, no secret) runs `gh workflow run its-runner.yml --ref main` with GITHUB_TOKEN (a workflow_dispatch from
+  it does start a run), unless another run of the workflow is queued, pending, waiting, requested or in progress
+  (asked per status: that one is the successor, e.g. the tick in the run's last 30 min). The successor queues in
+  `concurrency: its-runner` and starts once the run job has ended. A cancel (`gh run cancel`) or a run that died
+  sooner hands off nothing: no dispatch loop.
+- **The cron** (`*/5 * * * *`, wrangler.toml; `ItsBot.watch`, `rules.ts watchOf`): while the bot should run (MODE on,
+  not stopped, a date) and no runner is alive (no report for 6 min and no live lease), nor on its way (an accepted
+  dispatch or a preflight no report has followed, ≤ 10 min), it opens an incident (`watch`) and dispatches with
+  `GH_DISPATCH_TOKEN`, recorded as `dispatch` like 開始's (`starting`, `dispatch_failed` apply). Not when GitHub lists a
+  run of the workflow unfinished (queued, waiting, in progress: a dispatch would only queue behind it); a list it can't
+  read dispatches anyway; it decides again after GitHub's answer (a report, 開始 or 停止 may land meanwhile). Between
+  its dispatches it waits 10, 20, 40, then 60 min, and an incident opening within 60 min of the last one's close
+  continues that backoff (a run that reports and dies is not restarted every 15 min); at most 12 a Tokyo day, then
+  only the push (`capped`). No token: nothing sent, `its watchdog no_token` logged once per incident, no `dispatch`
+  written. A quiet tick writes nothing.
+- **The push**: one `runner_silent` push per phone (high, 1 h; 保養所ボットが止まっています ·
+  ランナーを再起動できていません：Actionsを確認) when an incident is 15 min old (≥ 21 min without a report), 2 dispatches
+  were refused in a row, the day's cap stops it (`alert=silent`), or it is the 3rd incident within 2 h (`alert=loop`: a
+  run that keeps dying). Once per incident, and once per run of incidents: one opening within 2 h of the last pushes
+  nothing. A report, the lease or a stop closes the incident (`its watchdog closed why=…`) and drops its push still
+  queued (one already shown stays; the next replaces it: one tag).
+- **Never two runners**: every dispatch (handoff, watchdog, 開始, a tick) lands in the one concurrency group: one
+  running, a newer pending one replacing an older; and the lease (a claim waits for another's). The watchdog skips
+  while GitHub shows a run unfinished, a preflight or dispatch is fresh, or the lease is live.
+- **A cron, not the object's alarm**: the alarm is the push outbox's (one per object), and an alarm chain needs a
+  request to arm it and re-arm it if lost (the gym bot keeps an hourly cron for that); a cron needs nothing. The Free
+  plan allows 5 cron triggers account-wide: the relay's 2, the gym bot's 1, this one: 4.
+- **Logs**: `its watchdog missing last_report=… lease=… n= incidents_2h=`, `dispatch=204 n= failed= today=
+  incident=…s`, `skip=github_run id= status=`, `rechecked why=…`, `runs unknown`, `no_token`, `alert=silent|loop …`,
+  `closed why=…`, `failed err=…` (a throw); each quiet tick `its watchdog alive|starting|inactive` at debug.
+
 ## Push
 
 Web Push to the members' phones, opt-in per phone from ボット → 保養所 (docs/decisions.md "No notifications": its
 one exception). The site's mail stays the backstop: Focus, Sleep or a dead battery can hold a push back.
 
 **What's sent when** (`worker/src/push.ts`, from the events a report adds; never raw bookings, never problems: those
-are its-health's issue). One stay's notifications share a Topic and tag (base64url(SHA-256(`date|hotel`))[:32]), so a
+are its-health's issue, but for the watchdog's missing runner). One stay's notifications share a Topic and tag (base64url(SHA-256(`date|hotel`))[:32]), so a
 later one replaces the earlier; each is sent once per hold / stay whichever run reports it.
 
 | Event | When | Title · body (ja; en from the subscription's `lang`) | Urgency, TTL |
@@ -122,6 +162,7 @@ later one replaces the earlier; each is sent once per hold / stay whichever run 
 | `human_needed` that may be filed (`maybe_filed`) | the stay has an open `confirming` (no later `confirmed` / `failed` in the bookings: a leg may be filing it), whatever the detail; or the detail is `submit_unknown`, `no_completion`, `link_used` or `chrome_*`; with or without a live hold | 仮押さえ・要確認 · NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認 | high, 1 day |
 | `human_needed` `room_taken`, `hold_expired`, `not_wanted` | a definite non-booking, or a hold nobody wants (no open `confirming`) | not sent (`push skip not_booked`) | |
 | `confirmed` | 予約確定 | 予約が確定しました · NAGU 勝浦・11/22(日)・申込受付番号 A1234567 | normal, 1 day |
+| (the watchdog) `runner_silent` | an incident 15 min old, 2 refused dispatches, the day's cap, or the 3rd incident in 2 h (Watchdog above) | 保養所ボットが止まっています · ランナーを再起動できていません：Actionsを確認 | high, 1 h |
 
 A hold the bot won't finish pushes only its `human_needed` (one notification per hold). A notice never says
 「メールから申込」 when the application may already be filed: that one is `maybe_filed`. The 要対応 deadline is an estimate
@@ -194,7 +235,7 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 |---|---|---|
 | `KEY_A`, `KEY_B` | Worker | The members' keys, **copied from the relay's** (`~/.config/island-fund/keys`) |
 | `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, the same value on both |
-| `GH_DISPATCH_TOKEN` | Worker | Optional. A fine-grained PAT: repository `huangwaylon/fitness` only, permission Actions: read and write. Unset: 開始 sends nothing and the next scheduled run (≤ 30 min) starts |
+| `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
 | `ITS_HEALTH_TOKEN` | Worker + **repo** secret | `openssl rand -hex 32`, the same value on both: `gh secret set ITS_HEALTH_TOKEN` (a repository secret, not the `its` environment's: its-health.yml has no environment). Unset on the Worker: `/health/its` is 401 `no_health_token` |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | The Gmail account the site mails and its app password (the confirm leg reads the 申込 mail) |
 | `ITS_EMAIL` | `its` env | The applicant's mail address on the form (default: the IMAP user) |
@@ -202,6 +243,14 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 | `ITS_LOG_RECIPIENT` | `its` env **variable** | The age public key the private log is encrypted to (the relay's `ARCHIVE_RECIPIENT`; its secret half is `~/.config/island-fund/archive-age.key`, for fetch-logs.sh) |
 | `ITS_RUNNER_ENABLED` | repo variable | `1`: the workflow may run (`gh variable delete ITS_RUNNER_ENABLED`: no job starts) |
 | `VAPID_PRIVATE` | Worker | Web Push's private key (Push below; `npm run vapid:keys`). Its public half is the `VAPID_PUBLIC` var in wrangler.toml, not a secret. Either unset or a placeholder: push is off |
+
+**`GH_DISPATCH_TOKEN`**: github.com → Settings → Developer settings → Fine-grained tokens → Generate: resource owner
+`huangwaylon`, Repository access "Only select repositories" → `huangwaylon/fitness`, Repository permissions → Actions:
+**Read and write** (Metadata: read is added by itself), nothing else; expiry 1 year at most (note the date). Then `cd
+its/worker && npx wrangler secret put GH_DISPATCH_TOKEN` (paste it; no deploy needed) and check: 開始 shows
+`dispatch.status` 204, or `npx wrangler tail --search "its watchdog"`. **Rotating** (before it expires; an expired one
+shows as `dispatch_failed` 401): generate the new one, `secret put` it, then delete the old token on GitHub. It
+lives in the Worker alone, so no 停止 is needed.
 
 Rotating a token shared by two places (`ITS_RUNNER_TOKEN`, `KEY_A`/`KEY_B`, `ITS_HEALTH_TOKEN`): **停止 → change both →
 開始** (a run between the two changes would be refused: 401s, `runner_silent`). The applicant's and the IMAP secrets
@@ -274,10 +323,10 @@ min (and `/health/its` failing twice in a row), and closes it when healthy.
 | `mode_off` | off | Deployed with `MODE = "off"` | Back on (Operations) |
 | `paused` | stopped | 停止 on the page | 開始 |
 | `no_dates` | idle | No date today or later | Add a date |
-| `dispatch_failed` | degraded | 開始's dispatch was refused (`dispatch.status`: 401/403 = the PAT expired or lacks Actions write, 404 = the workflow file, 422 = not on main, 0 = no answer); the schedule still starts a run | Renew `GH_DISPATCH_TOKEN`; meanwhile wait ≤ 30 min |
+| `dispatch_failed` | degraded | 開始's or the watchdog's dispatch was refused (`dispatch.status`: 401/403 = the PAT expired or lacks Actions write, 404 = the workflow file, 422 = not on main, 0 = no answer); the handoff and the schedule still start runs | Renew `GH_DISPATCH_TOKEN` (Secrets) |
 | `starting` | starting | Dispatched, no report yet (≤ 10 min) | Wait; Actions shows the queued job |
 | `never_ran` | late | No runner has ever reported | `ITS_RUNNER_ENABLED`, the `its` environment's secrets, the workflow's runs on Actions |
-| `runner_silent` | late | No report for 45 min | Actions: the last runs (failed? cancelled? the preflight's `stop`?), `lastPreflightAgeSec` (is the schedule asking?); `wrangler tail` for `its refused status=401` (a token changed on one side only) |
+| `runner_silent` | late | No report for 45 min (the watchdog dispatched and pushed long before) | `wrangler tail --search "its watchdog"`: `no_token` (set the token), `skip=github_run id=…` (stuck: `gh run cancel <id>`), `dispatch=401` (renew it); Actions' last runs; `its refused status=401` (a token changed on one side). By hand: `gh workflow run its-runner.yml --ref main` |
 | `banned` | failing | The last run hit the 503 セキュリティアラート (~24 h on that IP); clears at the next good scan | Nothing: the next run has a new IP. Recurring: a longer interval |
 | `scan_failing` | failing | 3+ failed calendar reads in a row (`runner.lastError`: step, status, class) | its:logs for the failing step and its saved HTML / screenshot: the site changed (SITE.md); `session_dead` for long = the Turnstile solve |
 | `solve_failing` | degraded | The last 3 Turnstile solves failed | The run's public log (`solve` lines, spot, secs); SITE.md §6 |
@@ -293,5 +342,6 @@ min (and `/health/its` failing twice in a row), and closes it when healthy.
 ## Quotas
 
 Workers Free, account-wide (relay, relay-test, gym-bot and this): 100,000 Worker and 100,000 DO requests, 100,000 rows
-written a day. This Worker with a runner all day (a report every 30 s, the preflights, the page's polls): ~3,200
-requests and ~6,500 rows written; stopped, 48 preflights. The busiest day measured, every script: ~7k, ~19k and ~35k.
+written a day, 5 cron triggers (4 used: Watchdog). This Worker with a runner all day (a report every 30 s, the
+preflights, the page's polls): ~3,200 requests and ~6,500 rows written; stopped, 48 preflights; the watchdog adds 288
+invocations and 288 DO requests a day, writing only when an incident opens, dispatches, pushes or closes. The busiest day measured, every script: ~7k, ~19k and ~35k.

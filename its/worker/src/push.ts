@@ -131,7 +131,7 @@ export function addSub(subs: PushSub[], sub: PushSub, now: number): { subs: Push
 
 /** What a report's new event pushes, before it's addressed to each subscription. */
 export interface Notice {
-  kind: Exclude<PushKind, 'test'>;
+  kind: Exclude<PushKind, 'test' | 'runner_silent'>;
   id: string;
   date: string;
   hotel: string;
@@ -209,6 +209,15 @@ export function noticesFor(added: ItsEvent[], ctx: { settings: ItsSettings; book
 export const jobsFor = (notices: Notice[], subs: PushSub[], now: number): PushJob[] =>
   notices.flatMap((n) => liveSubs(subs, now).map((s): PushJob => ({ key: `${n.id}|${s.ep}`, ep: s.ep, tries: 0, next: now, ...n })));
 
+/** The watchdog's push's TTL: an hour (later, the page's verdict and its-health's issue say it). An incident's close
+ *  drops its pushes still queued (bot.ts watch); one shown stays (its tag, `its-runner_silent`, the next replaces). */
+export const SILENT_TTL_MS = 3600_000;
+
+/** The watchdog's push for the incident that began at `since` (no stay: tag `its-runner_silent`), one per live
+ *  subscription. */
+export const silentJobs = (since: number, subs: PushSub[], now: number): PushJob[] =>
+  liveSubs(subs, now).map((s) => ({ key: `watch:${since}|${s.ep}`, ep: s.ep, kind: 'runner_silent', id: `watch:${since}`, urgency: 'high', until: now + SILENT_TTL_MS, tries: 0, next: now }));
+
 // ---- Messages ----
 
 const WEEKDAY_JA = ['日', '月', '火', '水', '木', '金', '土'];
@@ -228,6 +237,7 @@ const TEXT = {
     human_needed: ['仮押さえ・要対応', (j: Pick<PushJob, 'expiresAt'>) => `${tokyoTime(j.expiresAt!)}ごろまでにメールから申込`],
     maybe_filed: ['仮押さえ・要確認', () => '申込済みの可能性：メールとサイトで確認'],
     confirmed: ['予約が確定しました', (j: Pick<PushJob, 'number'>) => (j.number ? `申込受付番号 ${j.number}` : '')],
+    runner_silent: ['保養所ボットが止まっています', () => 'ランナーを再起動できていません：Actionsを確認'],
     test: ['テスト通知', () => '保養所ボットの通知はこの端末に届きます'],
     sep: '・',
   },
@@ -236,6 +246,7 @@ const TEXT = {
     human_needed: ['Room held: action needed', (j: Pick<PushJob, 'expiresAt'>) => `apply from the email by about ${tokyoTime(j.expiresAt!)}`],
     maybe_filed: ['Room held: check', () => 'may already be booked: check the email and the site'],
     confirmed: ['Booking confirmed', (j: Pick<PushJob, 'number'>) => (j.number ? `ref. ${j.number}` : '')],
+    runner_silent: ['ITS bot stopped', () => 'the runner can’t be kept running: check Actions'],
     test: ['Test notification', () => 'ITS bot notifications reach this device'],
     sep: ' · ',
   },
@@ -245,7 +256,7 @@ const TEXT = {
 export function payloadOf(j: Pick<PushJob, 'kind' | 'id' | 'date' | 'hotel' | 'expiresAt' | 'number'>, lang: PushLang, tag: string): ItsPushPayload {
   const t = TEXT[lang];
   const [title, tail] = t[j.kind] as readonly [string, (x: typeof j) => string];
-  const parts = j.kind === 'test' ? [tail(j)] : [j.hotel!, dayLabel(j.date!, lang), tail(j)].filter(Boolean);
+  const parts = j.date && j.hotel ? [j.hotel, dayLabel(j.date, lang), tail(j)].filter(Boolean) : [tail(j)];
   return {
     v: 1, kind: j.kind, id: j.id, tag, title, body: parts.join(t.sep), open: 'its',
     ...(j.date && { date: j.date }), ...(j.hotel && { hotel: j.hotel }),

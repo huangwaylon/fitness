@@ -2193,8 +2193,9 @@ def test_workflow_timings():
     """its-runner.yml's timings nest (parsed by hand: the stdlib has no YAML): the last hold ITS_RUN_MIN after the
     start, plus main.py's drain and a margin, inside the Run step's timeout, inside the job's; the Worker's LATE_AFTER
     longer than the schedule's period; the gate skips ticks while a run younger than ITS_RUN_MIN − one period is in
-    progress, the run job alone holds the concurrency group; its.yml runs on a change to it; its-health.yml is inert
-    without its secret and reads no other."""
+    progress, the run job alone holds the concurrency group; a run that lasted ITS_HANDOFF_AFTER_MIN hands off (the
+    handoff job alone may dispatch); its.yml runs on a change to it; its-health.yml is inert without its secret and
+    reads no other."""
     root = os.path.dirname(ITS_DIR)
     wf = lambda name: open(os.path.join(root, '.github', 'workflows', name), encoding='utf-8').read()
     y = wf('its-runner.yml')
@@ -2222,6 +2223,20 @@ def test_workflow_timings():
     check('workflow: the gate asks for a schedule only, and goes when it cannot ask',
           'if [ "$GITHUB_EVENT_NAME" != schedule ]' in job['gate'] and "''|*[!0-9]*) echo \"go=1\"" in job['gate'])
     check('workflow: the private log kept 14 days', 'retention-days: 14' in y)
+    hand, handoff_min = job['handoff'], num(r'^  ITS_HANDOFF_AFTER_MIN: (\d+)')
+    nxt = job['run'].split('- name: Hand off?\n', 1)[1].split('\n      - ', 1)[0]
+    check('workflow: only the handoff job may dispatch (actions: write), with no secret or environment',
+          'actions: write' in hand and 'secrets.' not in hand and 'environment:' not in hand
+          and 'actions: write' not in job['run'] and 'actions: write' not in job['gate'] and '\npermissions:\n  contents: read\n\n' in y)
+    check('workflow: the handoff dispatches main after the run job, unless cancelled, the run said no, or another run is unfinished',
+          'needs: run' in hand and "!cancelled() && needs.run.outputs.handoff == '1'" in hand
+          and 'gh workflow run its-runner.yml -R "$GITHUB_REPOSITORY" --ref main' in hand
+          and hand.index('gh run list') < hand.index('gh workflow run') and 'select(.databaseId != $GITHUB_RUN_ID)' in hand
+          and 'for s in queued pending waiting requested in_progress' in hand
+          and 'handoff: ${{ steps.next.outputs.run }}' in job['run'] and not re.search(r'^ +concurrency:', hand, re.M))
+    check('workflow: a run hands off only after ITS_HANDOFF_AFTER_MIN, never after a cancel, and when the preflight says run',
+          "if: ${{ !cancelled() && steps.pre.outputs.run == '1' }}" in nxt and '-lt "$ITS_HANDOFF_AFTER_MIN" ]' in nxt
+          and 'python3 remote.py preflight || true' in nxt and 'id: next' in nxt and 0 < handoff_min < run_min)
     its = wf('its.yml')
     check('workflow: its.yml runs on a change to the runner\'s workflows, pushed or in a PR (one list)',
           its.count("- '.github/workflows/its-runner.yml'") == 1

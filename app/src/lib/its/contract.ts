@@ -307,7 +307,8 @@ export interface ItsStatus {
 
 // ---- Push (members; its/README.md "Push") ----
 // A phone opts in from ボット → 保養所 (POST /its/push/subscribe); the Worker sends one notification per subscription
-// for a hold the bot will confirm (normal), a hold that needs a person (high, while the hold lasts), and 予約確定.
+// for a hold the bot will confirm (normal), a hold that needs a person (high, while the hold lasts), 予約確定, and a
+// runner missing while the bot should run (the watchdog's `runner_silent`, high, once per incident).
 // Every push route answers `{ok: true, push}` or the usual `{ok: false, error}`.
 
 export type PushLang = 'ja' | 'en';
@@ -341,7 +342,7 @@ export interface PushEndpointInput { endpoint: string }
  *  retry (429/5xx/network: tried again until its TTL), expired (its TTL ran out first). @public (its/worker) */
 export type PushOutcome = 'ok' | 'gone' | 'config' | 'bug' | 'retry' | 'expired';
 /** @public (its/worker) */
-export type PushKind = 'hold' | 'human_needed' | 'maybe_filed' | 'confirmed' | 'test';
+export type PushKind = 'hold' | 'human_needed' | 'maybe_filed' | 'confirmed' | 'runner_silent' | 'test';
 
 /** A `human_needed` event's detail (the runner's outcome codes: its/runner/README.md "Outcome codes"; a leg may send
  *  others, e.g. apply_page_<status>), as the push and the page read it:
@@ -390,7 +391,7 @@ export interface PushReply { ok: true; push: ItsPushStatus }
 export interface ItsPushPayload {
   v: 1;
   kind: PushKind;
-  id: string;          // the event's `${runId}:${seq}`, or `test`
+  id: string;          // the event's `${runId}:${seq}`, `watch:<incident start>` (runner_silent), or `test`
   tag: string;
   title: string;
   body: string;

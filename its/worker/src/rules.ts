@@ -42,6 +42,18 @@ export interface ItsRecord {
   subs: PushSub[];
   pushq: PushJob[];
   pushlog: PushLog;
+  /** The watchdog's state (watchOf): the open incident, or the last one's backoff and the day's count. */
+  watch: Watch | null;
+}
+
+/** The watchdog's state. `since`: when the open incident began (null: none open; `closedAt` when the last closed);
+ *  `n`, `lastAt`, `failed`: its dispatches, the last's time, refused in a row: carried into an incident that opens
+ *  within WATCH_COOLDOWN_MS of the last's close, so a runner that reports and dies keeps backing off; `noToken`,
+ *  `alerted`: this incident's no_token line, its push; `starts`: incidents opened within WATCH_LOOP_MS; `loopAlerted`:
+ *  that run of incidents pushed; `day`, `dayN`: the Tokyo day and the watchdog's dispatches on it. */
+export interface Watch {
+  since: number | null; closedAt: number | null; n: number; lastAt: number | null; failed: number; noToken: boolean; alerted: boolean;
+  starts: number[]; loopAlerted: boolean; day: string; dayN: number;
 }
 
 export const SEEN_KEPT = 300;
@@ -239,11 +251,74 @@ function humanNeeded(rec: ItsRecord, now: number): boolean {
   }) || rec.events.important.some((e) => e.kind === 'human_needed' && recent(e.t) && !settled(stayKey(e.date, e.hotel), e.t, ['confirmed']));
 }
 
+/** A runner should be running: MODE on, not stopped, a date to look for. */
+function activeOf(rec: Pick<ItsRecord, 'settings'>, mode: Mode, now: number): boolean {
+  const s = liveSettings(rec.settings, now);
+  return mode === 'on' && !s.paused && s.dates.length > 0;
+}
+
+/** No report this long and no live lease: the runner is missing (a live one reports every 30 s; the lease lasts 300). */
+export const WATCH_QUIET_MS = 6 * 60_000;
+/** The watchdog's first wait between its dispatches, doubling per dispatch up to WATCH_EVERY_MAX_MS: a run that dies
+ *  at once is dispatched again 10, 20, 40, then every 60 min, never in a tight loop. */
+export const WATCH_EVERY_MS = 10 * 60_000;
+export const WATCH_EVERY_MAX_MS = 60 * 60_000;
+/** The push: an incident this old (≥ 21 min after the last report), this many dispatches refused in a row, the day's
+ *  cap reached, or WATCH_LOOP_INCIDENTS incidents within WATCH_LOOP_MS (a run that keeps dying). */
+export const WATCH_ALERT_MS = 15 * 60_000;
+const WATCH_ALERT_FAILS = 2;
+export const WATCH_LOOP_MS = 2 * 3600_000;
+const WATCH_LOOP_INCIDENTS = 3;
+/** An incident opening this soon after the last closed continues its backoff (≥ WATCH_EVERY_MAX_MS). */
+export const WATCH_COOLDOWN_MS = 60 * 60_000;
+/** The watchdog's dispatches per Tokyo day; past it, only the push. */
+export const WATCH_DAY_CAP = 12;
+
+/** The watchdog's tick (bot.ts watch): its state after it, why (a log code), whether to dispatch now (a token and
+ *  GitHub permitting), whether the day's cap stopped it. Missing: active, no report for WATCH_QUIET_MS, no live lease.
+ *  A run is on its way after an accepted dispatch (開始's or the watchdog's) or a preflight that no report has
+ *  followed, for START_GRACE_SEC: no dispatch then, and no incident opened (an open one stays open). */
+export function watchOf(rec: ItsRecord, mode: Mode, now: number): { watch: Watch | null; why: 'inactive' | 'alive' | 'starting' | 'missing'; dispatch: boolean; capped: boolean } {
+  const w = rec.watch;
+  const close = (why: 'inactive' | 'alive') => ({ watch: w?.since != null ? { ...w, since: null, closedAt: now } : w, why, dispatch: false, capped: false });
+  if (!activeOf(rec, mode, now)) return close('inactive');
+  const lastSeen = rec.runner?.lastSeen ?? 0;
+  if (leaseTaken(rec.lease, null, now) || now - lastSeen < WATCH_QUIET_MS) return close('alive');
+  const fresh = (t: number | null | undefined) => t != null && t > lastSeen && now - t < START_GRACE_SEC * 1000;
+  const onItsWay = (!!rec.dispatch?.ok && fresh(rec.dispatch.at)) || fresh(rec.preflight);
+  if (w?.since == null && onItsWay) return { watch: w, why: 'starting', dispatch: false, capped: false };
+  let watch = w!;
+  if (w?.since == null) {
+    const warm = w?.closedAt != null && now - w.closedAt < WATCH_COOLDOWN_MS;
+    const starts = (w?.starts ?? []).filter((t) => now - t < WATCH_LOOP_MS);
+    watch = {
+      since: now, closedAt: null, n: warm ? w!.n : 0, lastAt: warm ? w!.lastAt : null, failed: warm ? w!.failed : 0, noToken: false, alerted: false,
+      starts: [...starts, now], loopAlerted: starts.length > 0 && !!w?.loopAlerted, day: w?.day ?? '', dayN: w?.dayN ?? 0,
+    };
+  }
+  const capped = dayCount(watch, now) >= WATCH_DAY_CAP;
+  const wait = Math.min(WATCH_EVERY_MS * 2 ** Math.max(0, watch.n - 1), WATCH_EVERY_MAX_MS);
+  return { watch, why: 'missing', dispatch: !onItsWay && !capped && (watch.lastAt === null || now - watch.lastAt >= wait), capped };
+}
+
+/** The watchdog's dispatches on `now`'s Tokyo day. */
+export const dayCount = (w: Watch, now: number): number => (w.day === tokyoToday(now) ? w.dayN : 0);
+
+/** The open incident's push is due: 'silent' (old enough, its dispatches refused, or the day's cap reached), 'loop'
+ *  (WATCH_LOOP_INCIDENTS within WATCH_LOOP_MS), else null. Once per incident, and once per run of incidents (an
+ *  incident within WATCH_LOOP_MS of a pushed one pushes nothing: `loopAlerted` carries). */
+export function watchAlert(w: Watch, now: number, capped: boolean): 'silent' | 'loop' | null {
+  if (w.since === null || w.loopAlerted) return null;
+  if (!w.alerted && (now - w.since >= WATCH_ALERT_MS || w.failed >= WATCH_ALERT_FAILS || capped)) return 'silent';
+  if (w.starts.filter((t) => now - t < WATCH_LOOP_MS).length >= WATCH_LOOP_INCIDENTS) return 'loop';
+  return null;
+}
+
 /** Every reason that applies, in REASONS order, and the verdict (the first's). The runner-liveness ones apply only while
  *  a runner should be running (MODE on, not stopped, a date to look for). */
 export function verdictOf(rec: ItsRecord, mode: Mode, now: number): Pick<ItsStatus, 'verdict' | 'reasons'> {
   const s = liveSettings(rec.settings, now);
-  const active = mode === 'on' && !s.paused && s.dates.length > 0;
+  const active = activeOf(rec, mode, now);
   const r = rec.runner;
   const d = rec.dispatch;
   const lastSeen = r?.lastSeen ?? 0;

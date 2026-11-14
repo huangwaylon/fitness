@@ -6,10 +6,12 @@
 # private log is age-encrypted to ITS_LOG_RECIPIENT and uploaded as the only artifact (14 days).
 #
 # Timings (test_remote's workflow test parses this file): no new hold ITS_RUN_MIN after the job started, then main.py's
-# drain (≤ 15 min) and run_end, inside the Run step's timeout, inside the job's. A run lasts ~5.5 h and the schedule
-# ticks every 30 min, so most ticks find a run in progress: the gate job ends those at once (no pending run for the next
-# tick to cancel), except the tick in the last 30 min of a run, which queues the next run to start the moment this one
-# ends. 開始's dispatch always queues.
+# drain (≤ 15 min) and run_end, inside the Run step's timeout, inside the job's. A run lasts ~5.5 h; as it ends it
+# dispatches its successor (the handoff job), unless another run of this workflow is already unfinished. GitHub drops most scheduled ticks, so the schedule is a backstop, and so
+# is the its-bot Worker's watchdog (its/README.md "Watchdog"): it dispatches when no runner reports. The schedule ticks
+# every 30 min, so most ticks find a run in progress: the gate job ends those at once (no pending run for the next tick
+# to cancel), except the tick in the last 30 min of a run, which queues the next run to start the moment this one ends.
+# A dispatch (開始's, the handoff's, the watchdog's) always queues: one pending run at most, never two running.
 name: ITS runner
 
 on:
@@ -23,6 +25,7 @@ permissions:
 env:
   ITS_RUN_MIN: 320          # minutes from the job's start to the last new hold
   ITS_SKIP_YOUNGER_MIN: 290 # a scheduled tick skips while another run started less than this ago (ITS_RUN_MIN − 30)
+  ITS_HANDOFF_AFTER_MIN: 60 # a run that ends younger hands off nothing: no dispatch loop (the watchdog backs off)
 
 jobs:
   # No concurrency here: it answers at once while a run holds the group.
@@ -64,6 +67,8 @@ jobs:
       group: its-runner
       cancel-in-progress: false
     environment: its
+    outputs:
+      handoff: ${{ steps.next.outputs.run }}
     env:
       # The site's dates are Tokyo's (book_hotels reads them in Asia/Tokyo anyway; this makes the log's times agree).
       TZ: Asia/Tokyo
@@ -133,6 +138,21 @@ jobs:
           deadline=$((START + ITS_RUN_MIN * 60))
           xvfb-run -a --server-args='-screen 0 1280x1600x24' python main.py --remote --deadline "$deadline"
 
+      # Whether the handoff job dispatches a successor: a run that lasted ITS_HANDOFF_AFTER_MIN, while the bot should
+      # run (the preflight again: paused, MODE off, no dates or no answer write run=0). Not after a cancel: someone
+      # stopped it. A run that died sooner is left to the watchdog.
+      - name: Hand off?
+        id: next
+        if: ${{ !cancelled() && steps.pre.outputs.run == '1' }}
+        working-directory: its/runner
+        env:
+          START: ${{ steps.pre.outputs.start }}
+          ITS_RUNNER_TOKEN: ${{ secrets.ITS_RUNNER_TOKEN }}
+        run: |
+          age=$(( ($(date +%s) - START) / 60 ))
+          if [ "$age" -lt "$ITS_HANDOFF_AFTER_MIN" ]; then echo "handoff: none, the run lasted $age min"; exit 0; fi
+          python3 remote.py preflight || true
+
       # Encryption failure (or no recipient) uploads nothing: the plaintext never leaves the runner.
       - name: Encrypt the private log
         if: always() && steps.pre.outputs.run == '1'
@@ -160,3 +180,29 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
           compression-level: 0
+
+  # The successor, dispatched as this run ends: its run job waits in the concurrency group until this one's has ended
+  # (never two runners), then starts. GITHUB_TOKEN's workflow_dispatch does start a run; the write permission on
+  # Actions is this job's alone, never beside the run job's secrets.
+  handoff:
+    needs: run
+    if: ${{ !cancelled() && needs.run.outputs.handoff == '1' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: write
+    steps:
+      # Not when another run of this workflow is unfinished (a tick's, the watchdog's, 開始's: it is the successor, or
+      # its gate is deciding); asked per status, never a page of finished runs. Any failure to ask: dispatch (the
+      # group still queues it).
+      - name: Dispatch the next run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for s in queued pending waiting requested in_progress; do
+            other=$(gh run list -R "$GITHUB_REPOSITORY" -w its-runner.yml -s "$s" -L 5 --json databaseId \
+              --jq "[.[] | select(.databaseId != $GITHUB_RUN_ID)] | length" 2>/dev/null) || other=
+            case "$other" in ''|*[!0-9]*|0) ;; *) echo "handoff: a run is $s already, none dispatched"; exit 0 ;; esac
+          done
+          gh workflow run its-runner.yml -R "$GITHUB_REPOSITORY" --ref main
+          echo "handoff: dispatched"
