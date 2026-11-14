@@ -36,5 +36,6 @@
   "bots.key.about": "{time}ごろ",
   "bots.fact.mode": "モード",
   "bots.fact.sha": "バージョン",
-  "bots.sec.settings": "設定"
+  "bots.sec.settings": "設定",
+  "bots.cal.month": "表示する月"
 }

@@ -83,16 +83,15 @@ const poll = (page: Page) => page.evaluate(() => document.dispatchEvent(new Even
 const puts = (calls: Call[]) => calls.filter((c) => c.method === 'PUT');
 
 /** 設定's row opened (a plain <details>: one open stays open). */
-async function unfold(its: ReturnType<Page['locator']>, id: 'dates' | 'hotels' | 'detail' | 'notify') {
+async function unfold(its: ReturnType<Page['locator']>, id: 'hotels' | 'detail' | 'notify') {
   const d = its.locator(`[data-its-fold="${id}"]`);
   if (!(await d.evaluate((e) => (e as HTMLDetailsElement).open))) await d.locator('> summary').click();
 }
 
-/** The page shown, 設定's 日付 and 詳細 opened. */
+/** The page shown, 設定's 詳細 opened. */
 async function open(sheet: ReturnType<Page['locator']>) {
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
   const its = sheet.locator('[data-its-page]');
-  await unfold(its, 'dates');
   await unfold(its, 'detail');
 }
 
@@ -141,13 +140,12 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdic
   await expect(its.locator('[data-its-fact="report"]')).toContainText('11:59');
   await expect(its.locator('[data-its-fact="mode"] dd')).toHaveText('稼働');
   await expect(its.locator('[data-its-foot]')).toHaveCount(0);
-  // 設定: folded rows with their summaries; who saved last
-  await expect(its.locator('[data-its-sum-dates]')).toHaveText('2泊・11/21〜 · 探せる日 2/2');
+  // 日付 never folded: the calendar and the nights under it; 設定: folded rows with their summaries; who saved last
+  await expect(its.locator('[data-its-fold]')).toHaveCount(3);
+  await expect(its.locator('[data-its-fold="dates"]')).toHaveCount(0);
   await expect(its.locator('[data-its-sum-detail]')).toHaveText('15秒・2人');
   await expect(its.locator('[data-its-sum-notify]')).toHaveText('オフ');
   await expect(its.locator('[data-its-date]')).toHaveCount(2);
-  await expect(its.locator('[data-its-date="2026-11-21"]')).toBeHidden();
-  await unfold(its, 'dates');
   await expect(its.locator('[data-its-date="2026-11-21"]')).toContainText('あと17日');
   await expect(its.locator('[data-its-saved-by]')).toHaveText(/^最近の操作：開始（.+・.+） · 設定の変更：.+・11:/);
   await expect(its.locator('[data-its-unsaved]')).toHaveCount(0);
@@ -238,8 +236,8 @@ test('停止 goes out at once, outside the draft; the edits go in one PUT with �
   await expect(its.locator('[data-its-part="off"] h4')).toHaveText('除外3件');
   await its.locator('[data-its-guests="4"]').click();
   await its.locator('[data-its-interval="60"]').click();
-  // each row the draft changed says 未保存 (open or folded)
-  await expect(its.locator('[data-its-fold] [data-its-unsaved]')).toHaveCount(3);
+  // each part the draft changed says 未保存 (日付's heading, 設定's rows open or folded)
+  await expect(its.locator('[data-its-unsaved]')).toHaveCount(3);
   const bar = its.locator('[data-its-save-bar]');
   await expect(bar.locator('[data-its-draft-note]')).toHaveText('開始は保存済みの設定で動きます。');
   await bar.locator('[data-its-save]').click();
@@ -516,19 +514,23 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   });
   await open(bots);
   const cal = its.getByRole('grid', { name: '2026年11月の泊まる日' });
-  await expect(its.locator('[data-its-month]')).toHaveText(['2026年11月', '2026年12月']);
+  await expect(its.locator('[data-its-month]')).toHaveText(['11月', '12月']);
   await expect(cal.getByRole('columnheader')).toHaveText(['月', '火', '水', '木', '金', '土', '日']);
-  // past nights inert (blank, no button), today on; the stays filled; a booking marked on its night
+  // past nights inert (faint, no button), today on; the stays filled; a booking marked on its night
   await expect(cal.locator('[data-its-night-day="2026-11-03"]')).toHaveCount(0);
   await expect(cal.locator('[data-its-night-day="2026-11-04"]')).toBeVisible();
   await expect(cal.locator('[data-its-night-day][aria-pressed="true"]')).toHaveCount(2);
   await expect(cal.locator('[data-its-night-day="2026-11-21"]')).toHaveAttribute('data-mark', 'booked');
   await expect(cal.locator('[data-its-night-day="2026-11-22"]')).toHaveAttribute('data-mark', 'action');   // the hold waiting
   await expect(cal.locator('[data-its-night-day="2026-11-22"]')).toHaveAccessibleName('11/22（日）、探す日、要対応');
-  // a night 44 high; the weekday header plain text (ジム's), its column's width
+  // a night 44 high; the weekday header a button its column's width; the legend under it
   expect((await cal.locator('[data-its-night-day="2026-11-04"]').boundingBox())!.height).toBeGreaterThanOrEqual(44);
   expect((await cal.locator('[data-its-weekday="5"]').boundingBox())!.width).toBeGreaterThanOrEqual(44);
-  await expect(cal.getByRole('row')).toHaveCount(6);   // the weekdays, then 11/2–30: the week of 11/1 (all passed) left out
+  await expect(cal.getByRole('row')).toHaveCount(7);   // the weekdays, then the whole month: 10/26–12/6
+  await expect(its.locator('[data-its-legend] > span')).toHaveText(['要対応', '仮押さえ', '✓予約確定']);
+  // 日付 first, under the status cards: before 予約 and 設定
+  const y = async (l: ReturnType<Page['locator']>) => (await l.boundingBox())!.y;
+  expect(await y(its.locator('[data-its-dates-sec]'))).toBeLessThan(await y(its.locator('[data-its-settings]')));
   // a booked night under it: nothing to open
   await expect(its.locator('[data-its-date="2026-11-21"]')).toContainText('予約済み・探していません');
   await expect(its.locator('[data-its-date="2026-11-21"] [data-its-night]')).toHaveCount(0);
@@ -557,13 +559,13 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   await night.click();
   await expect(list).toHaveCount(0);
 
-  // 12月: 土's header puts its 4 nights in (a second tap would take them out); 未保存 on 日付's row, the save bar up
+  // 12月: 土's header puts its 4 nights in (a second tap would take them out); 未保存 on 日付's heading, the save bar up
   await its.locator('[data-its-month="2026-12"]').click();
   const dec = its.getByRole('grid', { name: '2026年12月の泊まる日' });
   await dec.locator('[data-its-weekday="5"]').click();
   await expect(dec.locator('[data-its-night-day][aria-pressed="true"]')).toHaveCount(4);
   await expect(its.locator('[data-its-date]')).toHaveCount(6);
-  await expect(its.locator('[data-its-fold="dates"] [data-its-unsaved]')).toBeVisible();
+  await expect(its.locator('[data-its-dates-sec] [data-its-unsaved]')).toBeVisible();
   await expect(its.locator('[data-its-save-bar]')).toBeVisible();
   // 12/19 is 冬季's first night: the winter facilities count in, and NAGU takes only the winter Saturdays
   await its.locator('[data-its-search] > summary').click();
@@ -584,7 +586,7 @@ test('日付: a saved stay past next month is listed and its ✕ takes it out; a
   await expect(its.locator('[data-its-night-day="2027-11-30"]')).toHaveCount(0);
   await far.locator('[data-its-date-remove]').click();
   await expect(far).toHaveCount(0);
-  await expect(its.locator('[data-its-fold="dates"] [data-its-unsaved]')).toBeVisible();
+  await expect(its.locator('[data-its-dates-sec] [data-its-unsaved]')).toBeVisible();
   // 19 stays: 土's column (11/7, 14, 21, 28) has room for one; said why; the next tap takes it out
   const nov = its.getByRole('grid', { name: '2026年11月の泊まる日' });
   await nov.locator('[data-its-weekday="5"]').click();

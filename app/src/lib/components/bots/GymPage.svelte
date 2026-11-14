@@ -3,9 +3,10 @@
   // (members, with this phone's key: lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its
   // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
   // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
-  // reasons, what to do), 直近12時間, then 日ごとの設定 — the calendar (GymCalendar: 2 weeks from today, 4 in the select
-  // mode; a tap opens the day's editor, GymDayEditor; 選択 or a long press the select mode, its sticky bar one bulk
-  // act), the 3-reservation note, the legend folded and アプリで変更 (the last ones, one a day, folded); くわしく last.
+  // reasons, what to do), 直近12時間, then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
+  // the heading; a tap opens the day's editor, GymDayEditor; 選択 or a long press the select mode, 完了 in 選択's place,
+  // its sticky bar one bulk act, the picks kept across months), the days not settable yet, the 3-reservation note and
+  // アプリで変更 (the last ones, one a day, folded); くわしく last.
   // No 設定 section: every change applies at once (no draft): the page shows it, POST
   // /gym/act sends it after the ones before it (one at a time, each with its days' bases as the last answer left them),
   // and its banner offers 取り消す for 5 s (one undo an act or bulk act: lib/gym/calendar.ts undoActs); a failure puts
@@ -16,22 +17,24 @@
   import { tick } from 'svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { minuteNow } from '#lib/time/clock.ts';
+  import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { checkStrip, factRows, keyRow, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
-  import { bulkAct, changeLine, fromWords, longRange, movedDays, pickSlot, slotCount, undoActs, weeks, type SlotPick } from '#lib/gym/calendar.ts';
+  import { bulkAct, changeLine, fromWords, longRange, laterNote, monthCells, movedDays, pickSlot, slotCount, undoActs, type SlotPick } from '#lib/gym/calendar.ts';
+  import { twoMonths } from '#lib/contract/tokyo.ts';
+  import { monthLabel } from '#lib/i18n/format.ts';
   import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
   import { shortDay, timeOf } from '#lib/i18n/when.ts';
   import Sheet from '../ui/Sheet.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
-  import Icon from '../ui/Icon.svelte';
   import BotPage from './BotPage.svelte';
   import GymCalendar from './GymCalendar.svelte';
+  import MonthSwitch from './MonthSwitch.svelte';
   import GymDayEditor from './GymDayEditor.svelte';
   import GymSlots from './GymSlots.svelte';
   import { useBot } from './useBot.svelte.ts';
@@ -122,7 +125,12 @@
   const facts = $derived(data ? factRows(data, nowMs) : []);
   const strip = $derived(data && checkStrip(data));
   const legend = { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), warn: t('gym.strip.legend.warn'), fail: t('gym.strip.legend.fail'), none: t('gym.strip.legend.none') };
-  const cells = $derived(cfg ? weeks(cfg.rows, selecting ? 4 : 2) : []);
+  /** The calendar: this month or next (the Worker's today's), its days. */
+  const monthKeys = $derived(twoMonths(cfg?.rows[0]?.day ?? dayKey(minuteNow())));
+  let pickedMonth = $state<string | null>(null);
+  const calMonth = $derived(pickedMonth && monthKeys.includes(pickedMonth) ? pickedMonth : monthKeys[0]);
+  const cells = $derived(cfg ? monthCells(cfg.rows, calMonth) : []);
+  const later = $derived(cfg && laterNote(cfg.rows, calMonth));
   const editRow = $derived(cfg && editDay ? (cfg.rows.find((r) => r.day === editDay) ?? null) : null);
   // the day passed while its editor was open (the rows start at the new today): nothing left to set
   $effect(() => {
@@ -250,7 +258,7 @@
   }
 
   function weekday(col: number) {
-    toggle(cells.flatMap((w) => (w[col]?.row ? [w[col].day] : [])));
+    toggle(cells.flatMap((w) => (w[col]?.live ? [w[col].date] : [])));
   }
 
   function startSelect(day?: Day) {
@@ -326,10 +334,10 @@
   {facts}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
-      <div class="calhead">
-        <h3 id="gym-config" class="sec-label">{t('gym.config')}</h3>
-        {#if cfg && !selecting}<button type="button" class="chip s" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
-      </div>
+      <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? monthKeys : []} value={calMonth} attr="gym-month" onpick={(m) => (pickedMonth = m)}>
+        {#if cfg && selecting}<button type="button" class="chip s" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
+        {:else if cfg}<button type="button" class="chip s" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
+      </MonthSwitch>
       {#if cfgState === 'failed'}
         <div class="prow static" data-gym-config-error>
           <span class="prl"><Phrases text={t('gym.configFailed')} /></span>
@@ -337,15 +345,9 @@
         </div>
       {/if}
       {#if cfg}
-        <GymCalendar {cells} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
+        <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(calMonth) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
+        {#if later}<p class="hint" data-gym-later>{later}</p>{/if}
         <p class="hint" data-gym-cal-note>{t('gym.cal.note')}</p>
-        <details class="legend-fold" data-gym-legend-fold>
-          <summary data-sfx="tick">{t('gym.legend.title')}<span class="chev" aria-hidden="true"></span></summary>
-          <p class="legend" data-gym-legend>
-            <span><i class="sw-any"></i>{t('gym.legend.any')}</span><span><i class="sw-range"></i>{t('gym.legend.range')}</span><span><i class="sw-usual"></i>{t('gym.legend.usual')}</span>
-            <span><i class="sw-off"></i>{t('gym.legend.off')}</span><span><Icon name="hourglass" size={12} />{t('gym.legend.from')}</span><span><i class="sw-an"></i>{t('gym.legend.announced')}</span>
-          </p>
-        </details>
 
         {#if selecting}
           <div class="bulkbar" data-gym-bulk role="toolbar" aria-label={t('gym.cal.selected', { n: selected.size })}>
@@ -355,7 +357,6 @@
               <button type="button" class="btn small paper" data-gym-bulk-act="range" data-sfx="tick" aria-disabled={!selected.size} aria-haspopup="dialog" onclick={openBulkRange}>{t('gym.kind.range')}</button>
               <button type="button" class="btn small paper" data-gym-bulk-act="skip" data-sfx="tick" aria-disabled={!selected.size} onclick={() => void bulk('skip')}>{t('gym.kind.off')}</button>
               <button type="button" class="btn small paper" data-gym-bulk-act="reset" data-sfx="tick" aria-disabled={!selected.size} onclick={bulkReset}>{t('gym.editor.reset')}</button>
-              <button type="button" class="btn small" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
             </div>
           </div>
         {/if}
@@ -423,17 +424,6 @@
   .note .btn { margin: 0; flex: none; }
   .note.bad { color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 
-  .calhead { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
-  .legend-fold > summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; min-height: var(--hit); margin: -8px 0; padding: 0 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); cursor: pointer; }
-  .legend-fold > summary::-webkit-details-marker { display: none; }
-  .legend { margin: 4px 4px 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
-  .legend span { display: inline-flex; align-items: center; gap: 4px; }
-  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
-  .sw-any { background: color-mix(in srgb, var(--c-leaf) 55%, var(--card)); }
-  .sw-range { background: color-mix(in srgb, var(--c-mint) 60%, var(--card)); }
-  .sw-usual { outline: 1.5px dashed color-mix(in srgb, var(--c-mint) 75%, var(--text-soft)); outline-offset: -1.5px; background: color-mix(in srgb, var(--c-mint) 22%, var(--card)); }
-  .sw-off { background: var(--ctl-off); }
-  .legend i.sw-an { border-radius: 50%; background: var(--c-gold); }
 
   /* the select mode's bar: stuck to the scroller's foot */
   .bulkbar {
@@ -441,8 +431,8 @@
     background: var(--surface); box-shadow: var(--sh-float);
   }
   .bulkbar .count { font: 700 var(--fs-s)/1.2 var(--font-ui); margin: 0 4px; }
-  .bulkbar .acts { display: flex; flex-wrap: wrap; gap: 6px; }
-  .bulkbar .btn { margin: 0; padding: 0 12px; flex: 1 0 auto; }
+  .bulkbar .acts { display: flex; gap: 6px; }
+  .bulkbar .btn { margin: 0; padding: 0 6px; flex: 1 1 0; min-width: 0; }
 
   .changes > summary { list-style: none; }
   .changes > summary::-webkit-details-marker { display: none; }

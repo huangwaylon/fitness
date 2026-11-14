@@ -1,10 +1,12 @@
 // ボット → ジム's calendar and day editor, as pure functions (docs/design.md "Bots"; the rows are GET /gym/config's,
-// contract.ts): the 4 weeks from this week's Monday (the 25 days settable, the rest blank), each cell's look and its
+// contract.ts): a month's weeks from Monday (the 25 days settable, the rest faint or blank), each cell's look and its
 // accessible words, the half-hour slot picker (a tap starts an hour, the next picks the last slot, a tap inside trims
 // the end), the ⏳ dates and times allowed, the optimistic row after an act, the acts that undo one, and the select
 // mode's bulk act. The page (GymPage, GymCalendar, GymDayEditor) only draws them.
 import { t } from '#lib/i18n/index.ts';
 import { shortDay } from '#lib/i18n/when.ts';
+import { md } from '#lib/i18n/format.ts';
+import { monthWeeks, type MonthDay } from '#lib/contract/tokyo.ts';
 import '#lib/i18n/gym.ts';
 import {
   CLOSES, DEFAULT_WINDOW, LAST_START, OPENS, SLOT_MINUTES, addDays, at, clockFrom, clockAt, localDateAt, fromLimit, fromRefusal, minutesOf,
@@ -13,16 +15,14 @@ import {
 
 /** A cell's fill: 終日 leaf, 時間指定 mint, ふだん mint dashed (the next DAYS_TO_CHECK days), 未チェック paper, オフ sunk. */
 type Fill = 'any' | 'range' | 'usual' | 'none' | 'off';
-export interface Cell {
-  day: Day;
-  /** One of the 25 days (else blank and inert). */
+export interface Cell extends MonthDay {
+  /** One of the 25 days, in the month shown (else faint or blank, inert). */
   row: DayRow | null;
+  live: boolean;
   today: boolean;
-  /** The day of the month. */
-  date: number;
   fill: Fill;
-  /** `12–13`, `18:30–20` (a range or ふだん), else null. */
-  time: string | null;
+  /** A 時間指定's hours, stacked: `12` over `13`, `18:30` over `20` (ふだん's dashed fill says its own). */
+  time: readonly [string, string] | null;
   from: boolean;
   announced: number;
   /** VoiceOver's words: `11/14（金） 終日、⏳ 18:00から、通知済み2件`. */
@@ -42,7 +42,6 @@ function fillOf(row: DayRow): Fill {
 /** `12` · `18:30` (a clock time without its :00 and its leading zero). */
 const short = (c: Clock): string => (c.endsWith(':00') ? String(Number(c.slice(0, 2))) : `${Number(c.slice(0, 2))}:${c.slice(3)}`);
 /** `12–13`, `18:30–20`. */
-const shortRange = ([s, e]: readonly [Clock, Clock]): string => `${short(s)}–${short(e)}`;
 /** `12:00〜13:00`. */
 export const longRange = ([s, e]: readonly [Clock, Clock]): string => `${s}〜${e}`;
 
@@ -72,24 +71,29 @@ function labelOf(row: DayRow, today: boolean): string {
   return parts.join(t('gym.cell.sep'));
 }
 
-/** The calendar: `n` rows of 7 days from today (the rows' first day, the Worker's), a cell a day: 2 (today + 13 days,
- *  no blank week start), 4 in the select mode (every settable day: a weekday's column never reaches a hidden one). */
-export function weeks(rows: readonly DayRow[], n = 2): Cell[][] {
-  if (!rows.length) return [];
-  const today = rows[0].day;
+/** A month's calendar (`YYYY-MM`: this month or next), Monday first (time/dates.ts monthWeeks, as 保養所's): a row's
+ *  day a settable cell (a day the bot doesn't book yet too: its setting as any), the passed days and those past the
+ *  rows faint, the other months' blank. */
+export function monthCells(rows: readonly DayRow[], month: string): Cell[][] {
+  const today = rows[0]?.day;
   const byDay = new Map(rows.map((r) => [r.day, r]));
-  const start = today;
-  return Array.from({ length: n }, (_, w) => Array.from({ length: 7 }, (_, i) => {
-    const day = addDays(start, w * 7 + i);
-    const row = byDay.get(day) ?? null;
-    const base = { day, row, today: day === today, date: Number(day.slice(8, 10)) };
-    if (!row) return { ...base, fill: 'none' as const, time: null, from: false, announced: 0, label: shortDay(day) };
-    const rule = ruleOf(row);
+  return monthWeeks(month).map((w) => w.map((m): Cell => {
+    const row = (m.inMonth && byDay.get(m.date)) || null;
+    const base = { ...m, row, live: !!row, today: m.date === today };
+    if (!row) return { ...base, fill: 'none', time: null, from: false, announced: 0, label: shortDay(m.date) };
     return {
-      ...base, fill: fillOf(row), time: Array.isArray(rule) ? shortRange(rule) : null, from: row.from !== null,
-      announced: row.announced.length, label: labelOf(row, day === today)
+      ...base, fill: fillOf(row), time: Array.isArray(row.rule) ? [short(row.rule[0]), short(row.rule[1])] : null, from: row.from !== null,
+      announced: row.announced.length, label: labelOf(row, base.today)
     };
   }));
+}
+
+/** Under a month with days past the rows (the bot sets 25): 「12/9以降はまだ設定できません」, else null. */
+export function laterNote(rows: readonly DayRow[], month: string): string | null {
+  const next = rows.length ? addDays(rows[rows.length - 1].day, 1) : null;
+  if (!next || next.slice(0, 7) > month) return null;
+  const from = next.slice(0, 7) < month ? `${month}-01` : next;
+  return t('gym.cal.later', { day: md(from) });
 }
 
 // ---- the slot picker ----

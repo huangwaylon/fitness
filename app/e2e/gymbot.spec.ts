@@ -82,10 +82,10 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(menu).toHaveAccessibleName('ジムの操作');
   await expect(menu).toHaveAttribute('aria-haspopup', 'dialog');
   await expect(gym.locator('[data-gym-verdict]').getByRole('button')).toHaveCount(1);
-  // the verdict, the strip, the calendar (2 weeks), くわしく last; no 動作状況 heading, no foot
+  // the verdict, the strip, the calendar (this month), くわしく last; no 動作状況 heading, no foot
   const current = gym.locator('[data-gym-config]');
   const scans = gym.locator('[data-gym-scans]');
-  await expect(current.locator('[data-gym-day]')).toHaveCount(14);
+  await expect(current.locator('[data-gym-day]')).toHaveCount(25);
   await expect(gym.getByRole('heading', { level: 3 })).toHaveText(['日ごとの設定']);
   const y = async (l: ReturnType<Page['locator']>) => (await l.boundingBox())!.y;
   expect(await y(gym.locator('[data-gym-verdict]'))).toBeLessThan(await y(scans));
@@ -169,7 +169,7 @@ test('the phone’s key reads 現在の設定; a failed read has its own もう�
   await expect(sheet.locator('[data-gym-verdict="degraded"]')).toBeVisible();
   await expect(sheet.locator('[data-gym-error]')).toHaveCount(0);
   await error.getByRole('button', { name: 'もう一度' }).click();
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(14);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(25);
   await expect(error).toHaveCount(0);
   expect(calls.config).toBe(2);
   expect(calls.auth.every((a) => /^Bearer [0-9a-f]{32,}$/i.test(a ?? ''))).toBe(true);
@@ -196,6 +196,6 @@ test('/status failing, /gym/config answered: ⋯ in its own row and the calendar
   const gym = sheet.locator('[data-gym-page]');
   await expect(gym.locator('[data-gym-error]')).toContainText('読み込めませんでした（http 500）');
   await expect(gym.locator('.actrow [data-gym-menu]')).toHaveAccessibleName('ジムの操作');
-  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(14);
+  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
   await expect(gym.locator('[data-gym-verdict], [data-gym-skeleton], [data-gym-scans]')).toHaveCount(0);
 });

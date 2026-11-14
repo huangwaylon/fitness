@@ -14,6 +14,7 @@ import '#lib/i18n/bots.ts';
 import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import { shortDay, durationOf, timeOf } from '#lib/i18n/when.ts';
+import { monthWeeks, type MonthDay } from '#lib/contract/tokyo.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -96,23 +97,14 @@ export function addDates(d: Draft, dates: readonly string[], now: number): { dra
 }
 
 // ---- 日付's calendar: this month or next, a cell a night (ジム's calendar's look) ----
-/** A night's cell: `on` in the draft; `out` not settable (another month, past, too far: inert); `mark` what a booking
- *  says of it (要対応 action, 仮押さえ · 申込中 hold, 予約確定 booked); `label` for VoiceOver. */
-export interface NightCell { date: string; d: number; today: boolean; out: boolean; on: boolean; mark: 'action' | 'hold' | 'booked' | null; label: string }
-/** This month and next in Tokyo: `YYYY-MM` each. */
-export function nightMonths(now: number): string[] {
-  const today = tokyoToday(now);
-  const [y, m] = [Number(today.slice(0, 4)), Number(today.slice(5, 7))];
-  return [today.slice(0, 7), m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`];
-}
+/** A night's cell (time/dates.ts monthWeeks): `on` in the draft; `live` settable (this month's, from tonight, not too
+ *  far; else faint or blank, inert); `mark` what a booking says of it (要対応 action, 仮押さえ · 申込中 hold, 予約確定
+ *  booked); `label` for VoiceOver. */
+export interface NightCell extends MonthDay { today: boolean; live: boolean; on: boolean; mark: 'action' | 'hold' | 'booked' | null; label: string }
 const MARK: Record<BookingState, NightCell['mark']> = { action: 'action', applying: 'hold', hold: 'hold', confirmed: 'booked', lapsed: null };
 const MARK_RANK: NightCell['mark'][] = ['action', 'hold', 'booked'];
-/** A month's weeks from the first with a night to set, Monday first, a cell a day (past nights and the months either
- *  side out). */
+/** A month's whole weeks, Monday first, a cell a day (past nights faint, the months either side blank). */
 export function nightGrid(month: string, d: Draft, now: number, rows: readonly BookingRow[] = []): NightCell[][] {
-  const first = `${month}-01`;
-  const lead = (weekday(first) + 6) % 7;
-  const start = Date.parse(first) - lead * 86_400_000;
   const today = tokyoToday(now);
   const on = new Set(d.dates);
   const marks = new Map<string, NightCell['mark']>();
@@ -120,19 +112,12 @@ export function nightGrid(month: string, d: Draft, now: number, rows: readonly B
     const m = MARK[b.state], was = marks.get(b.date);
     if (m && (!was || MARK_RANK.indexOf(m) < MARK_RANK.indexOf(was))) marks.set(b.date, m);
   }
-  const days = Math.ceil((lead + new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).getUTCDate()) / 7) * 7;
-  const cells = Array.from({ length: days }, (_, i): NightCell => {
-    const date = new Date(start + i * 86_400_000).toISOString().slice(0, 10);
-    const n = daysUntil(date, now);
-    const out = !date.startsWith(month) || n < 0 || n > MAX_DAYS_AHEAD;
-    const mark = marks.get(date) ?? null;
-    const label = [shortDay(date), ...(date === today ? [t('its.cal.today')] : []), ...(on.has(date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
-    return { date, d: Number(date.slice(8, 10)), today: date === today, out, on: on.has(date), mark, label };
-  });
-  // a week with no night to set before the first that has one (this month's passed weeks) is left out
-  const weeks = Array.from({ length: days / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
-  const lead1 = weeks.findIndex((w) => w.some((c) => !c.out));
-  return lead1 < 0 ? weeks : weeks.slice(lead1);
+  return monthWeeks(month).map((w) => w.map((c): NightCell => {
+    const n = daysUntil(c.date, now);
+    const mark = marks.get(c.date) ?? null;
+    const label = [shortDay(c.date), ...(c.date === today ? [t('its.cal.today')] : []), ...(on.has(c.date) ? [t('its.cal.on')] : []), ...(mark ? [t(`its.cal.mark.${mark}`)] : [])].join('、');
+    return { ...c, today: c.date === today, live: c.inMonth && n >= 0 && n <= MAX_DAYS_AHEAD, on: on.has(c.date), mark, label };
+  }));
 }
 
 /** A night tapped: in the draft, out of it; else added (or why not: 20 at most). */
@@ -143,7 +128,7 @@ export function toggleNight(d: Draft, date: string, now: number): { ok: true; dr
 /** A weekday's column (0 = 月) tapped: any of its settable nights in the draft, all of them out (so a column the
  *  20-stay cap cut short still comes out at the next tap); else all added (up to 20). */
 export function toggleColumn(d: Draft, grid: readonly NightCell[][], col: number, now: number): { draft: Draft; over: number } {
-  const dates = grid.map((w) => w[col]).filter((c) => !c.out).map((c) => c.date);
+  const dates = grid.map((w) => w[col]).filter((c) => c.live).map((c) => c.date);
   if (dates.some((x) => d.dates.includes(x))) return { draft: { ...d, dates: d.dates.filter((x) => !dates.includes(x)) }, over: 0 };
   return addDates(d, dates, now);
 }
@@ -254,16 +239,10 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
   });
 }
 
-/** 設定's rows (docs/design.md "Bots"), each folded with its summary: 日付 「3泊・11/22〜 · 探せる日 2/3」 (a night
- *  searchable when a facility searched can take it, a booked one not), 施設 「探す12・除外4」, 詳細 「15秒・2人」. */
-export function settingsSummary(d: Draft, rows: readonly DateRow[], p: Pick<HotelParts, 'search' | 'off'>): { dates: string; hotels: string; detail: string } {
-  const able = rows.filter((r) => r.note !== 'booked' && r.able.length > 0).length;
+/** 設定's folded rows' summaries (docs/design.md "Bots"): 施設 「探す12・除外4」, 詳細 「15秒・2人」. */
+export function settingsSummary(d: Draft, p: Pick<HotelParts, 'search' | 'off'>): { hotels: string; detail: string } {
   const every = d.intervalSec < 60 ? t('its.interval.s', { n: d.intervalSec }) : t('its.interval.m', { n: d.intervalSec / 60 });
-  return {
-    dates: rows.length ? [t('its.set.nights', { n: rows.length, from: md(rows[0].date) }), t('its.set.able', { n: able, m: rows.length })].join(' · ') : t('its.set.noDates'),
-    hotels: t('its.set.hotels', { n: p.search.length, off: p.off.length }),
-    detail: [every, t('its.guestsN', { n: d.guests })].join('・')
-  };
+  return { hotels: t('its.set.hotels', { n: p.search.length, off: p.off.length }), detail: [every, t('its.guestsN', { n: d.guests })].join('・') };
 }
 
 /** Which of 設定's rows a draft changed from where it began (each folded row says 未保存). */

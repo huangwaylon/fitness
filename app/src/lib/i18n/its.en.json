@@ -284,9 +284,6 @@
   "its.stop.yes": "Stop",
   "its.stop.cancel": "Cancel",
   "its.ev.n": "{n} in all",
-  "its.set.nights": "{n} nights from {from}",
-  "its.set.able": "searchable {n}/{m}",
-  "its.set.noDates": "No dates",
   "its.set.hotels": "Search {n} · Off {off}",
   "its.set.hint": "applies on save",
   "its.set.unsaved": "Unsaved",
@@ -300,7 +297,6 @@
   "its.cal.mark.hold": "held",
   "its.cal.mark.booked": "booked",
   "its.cal.label": "Nights in {month}",
-  "its.cal.month": "Month",
   "its.cal.weekday": "Every {wd}",
   "its.cal.over": "20 dates at most ({n} didn't fit)",
   "its.date.removeLabel": "Remove {date}"

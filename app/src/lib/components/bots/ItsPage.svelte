@@ -3,10 +3,11 @@
   // its settings, on BotPage: the verdict (who stopped it in its sentence while stopped) with its key row (前回 · 次回 ·
   // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
   // sentence; 確認が必要 (the holds to finish by mail: bookingRows' action rows, their deadline and steps; a failed
-  // dispatch); 直近1時間 (empty while running: a warning); the migration notice; 予約 (the other stays); 最近の動き
-  // (folded, the newest in its summary); 設定, its rows folded (plain <details>, each with its summary and 未保存 while
-  // the draft changed it): 日付 (ItsCalendar: this month or next, a tap a night, a weekday's header its column; the
-  // nights under it, tapped open to their facilities by why: view.ts dateRows), 施設 (探す is the allow-list; presets,
+  // dispatch); 直近1時間 (empty while running: a warning); the migration notice; 日付, never folded: the calendar
+  // (ItsCalendar: this month or next, a switch beside the heading, 未保存 while the draft changed it; a tap a night, a
+  // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
+  // facilities by why: view.ts dateRows); 予約 (the other stays); 最近の動き (folded, the newest in its summary); 設定, its rows folded
+  // (plain <details>, each with its summary and 未保存 while the draft changed it): 施設 (探す is the allow-list; presets,
   // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数,
   // 自動で確定), 通知 (this phone's push, at once: ItsNotify) and 最近の操作; くわしく last. The settings are one draft
   // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
@@ -26,6 +27,7 @@
   import { monthLabel } from '#lib/i18n/format.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import { dayKey, minuteNow, now as sceneNow } from '#lib/time/clock.ts';
+  import { twoMonths } from '#lib/contract/tokyo.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -33,7 +35,7 @@
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, nightMonths, removeDate, toggleColumn, toggleNight,
+    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, removeDate, toggleColumn, toggleNight,
     changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
     stopsAtBooked, stripCells, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
@@ -42,6 +44,7 @@
   import ItsNotify from './ItsNotify.svelte';
   import BotPage from './BotPage.svelte';
   import ItsCalendar from './ItsCalendar.svelte';
+  import MonthSwitch from './MonthSwitch.svelte';
   import { useBot } from './useBot.svelte.ts';
   import { accept } from './summary.svelte.ts';
 
@@ -130,11 +133,10 @@
   const dates = $derived(shown ? dateRows(shown, nowMs, hotels, status?.bookings, stops) : []);
   /** The facilities searched (探す on): every night's bar is of these. */
   const searched = $derived(hotels.filter((r) => r.search).length);
-  /** 日付's calendar: this month or next (a Segmented), its nights. */
-  const monthKeys = $derived(nightMonths(nowMs));
+  /** The calendar: this month or next (a Segmented beside 日付), its nights. */
+  const monthKeys = $derived(twoMonths(today));
   let pickedMonth = $state<string | null>(null);
   const calMonth = $derived(pickedMonth && monthKeys.includes(pickedMonth) ? pickedMonth : monthKeys[0]);
-  const monthItems = $derived(monthKeys.map((m) => ({ id: m, label: monthLabel(m) })));
   const grid = $derived(shown ? nightGrid(calMonth, shown, nowMs, bookings) : []);
   /** 施設's three parts (探す, 日程に合わない, 除外) from the draft's nights, as the bars count them. */
   const parts = $derived(hotelParts(hotels, dates));
@@ -157,7 +159,7 @@
     return list.length ? t('its.set.recent', { list: list.join(' · ') }) : null;
   });
   /** 設定's rows: each one's summary, and which a draft changed (未保存). */
-  const sums = $derived(shown ? settingsSummary(shown, dates, parts) : null);
+  const sums = $derived(shown ? settingsSummary(shown, parts) : null);
   const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false });
   const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
@@ -336,6 +338,56 @@
       </div>
     {/if}
 
+    <section class="sec" aria-labelledby="its-dates" data-its-dates-sec>
+      <MonthSwitch id="its-dates" title={t('its.sec.dates')} months={monthKeys} value={calMonth} attr="its-month" onpick={(id) => ((pickedMonth = id), (addWhy = null))}>
+        {#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}
+      </MonthSwitch>
+      <ItsCalendar cells={grid} label={t('its.cal.label', { month: monthLabel(calMonth) })} onpick={tapNight} onweekday={tapColumn} />
+      {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
+      {#if dates.length}
+        <ul class="card pad rows dates" data-its-dates-total={searched}>
+          {#each dates as d (d.date)}
+            {@const open = openDate === d.date}
+            <li data-its-date={d.date}>
+              <div class="drow">
+                {#if d.note === 'booked'}
+                  <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
+                {:else}
+                  <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick" onclick={() => (openDate = open ? null : d.date)}>
+                    <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
+                    <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
+                    <span class="chev" aria-hidden="true"></span>
+                  </button>
+                {/if}
+                <!-- any stay, a calendar month or not (up to 400 days ahead): out of the draft -->
+                <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
+                  onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
+              </div>
+              {#if d.note !== 'booked'}
+                {#if open}
+                  <div class="nlist" data-its-night-list>
+                    {#each d.parts as p (p.why)}
+                      {@const cut = p.why === 'check' && allNames !== d.date && p.names.length > 8}
+                      <div class="np" data-its-why={p.why}>
+                        <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
+                        {#if p.why === 'check' || p.why === 'gone'}
+                          <p>{(cut ? p.names.slice(0, 8) : p.names).join('、')}</p>
+                          {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })} ›</button>{/if}
+                        {:else}
+                          {#each p.lines as l (l)}<p>{l}</p>{/each}
+                        {/if}
+                      </div>
+                    {/each}
+                    {#if d.noSeason}<p class="np-note" data-its-no-season>{t('its.night.noSeason')}</p>{/if}
+                  </div>
+                {/if}
+              {/if}
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </section>
+
     {#if others.length}
       <section class="sec" aria-labelledby="its-bookings">
         <h3 id="its-bookings" class="sec-label">{t('its.sec.bookings')}</h3>
@@ -376,56 +428,6 @@
             onclick={() => edit((d) => setSearch(d, [r.name], true))}>{t('its.hotel.newOn')}</button>
         </div>
       {/each}
-      <details class="card fold" data-its-fold="dates">
-        <summary class="prow static"><span class="prl">{t('its.sec.dates')}<small data-its-sum-dates>{sums?.dates}</small></span>{#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
-        <div class="fbody">
-          <Segmented items={monthItems} value={calMonth} label={t('its.cal.month')} attr="its-month" onpick={(id) => ((pickedMonth = id), (addWhy = null))} />
-          <ItsCalendar cells={grid} month={calMonth} label={t('its.cal.label', { month: monthLabel(calMonth) })} onpick={tapNight} onweekday={tapColumn} />
-          {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
-          {#if dates.length}
-            <ul class="card pad rows dates" data-its-dates-total={searched}>
-              {#each dates as d (d.date)}
-                {@const open = openDate === d.date}
-                <li data-its-date={d.date}>
-                  <div class="drow">
-                    {#if d.note === 'booked'}
-                      <span class="txt dtxt"><b>{d.label}</b><small class="booked">{d.text}</small></span>
-                    {:else}
-                      <button type="button" class="night" aria-expanded={open} aria-label={d.aria} data-its-night data-sfx="tick" onclick={() => (openDate = open ? null : d.date)}>
-                        <span class="txt"><b>{d.label}</b><small class:late={d.note === 'late'}>{d.text}</small></span>
-                        <span class="nn" aria-hidden="true">{d.able.length}/{searched}</span>
-                        <span class="chev" aria-hidden="true"></span>
-                      </button>
-                    {/if}
-                    <!-- any stay, a calendar month or not (up to 400 days ahead): out of the draft -->
-                    <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
-                      onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
-                  </div>
-                  {#if d.note !== 'booked'}
-                    {#if open}
-                      <div class="nlist" data-its-night-list>
-                        {#each d.parts as p (p.why)}
-                          {@const cut = p.why === 'check' && allNames !== d.date && p.names.length > 8}
-                          <div class="np" data-its-why={p.why}>
-                            <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
-                            {#if p.why === 'check' || p.why === 'gone'}
-                              <p>{(cut ? p.names.slice(0, 8) : p.names).join('、')}</p>
-                              {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })} ›</button>{/if}
-                            {:else}
-                              {#each p.lines as l (l)}<p>{l}</p>{/each}
-                            {/if}
-                          </div>
-                        {/each}
-                        {#if d.noSeason}<p class="np-note" data-its-no-season>{t('its.night.noSeason')}</p>{/if}
-                      </div>
-                    {/if}
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        </div>
-      </details>
       <details class="card fold" bind:open={openHotels} data-its-fold="hotels" data-its-search>
         <summary class="prow static"><span class="prl">{t('its.sec.hotels')}<small data-its-sum-hotels>{sums?.hotels}</small></span>{#if changed.hotels}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
@@ -559,6 +561,8 @@
   .dates { gap: 4px; padding: 4px 12px; }
   .dates > li { display: block; min-height: 0; }
   .dtxt { display: block; padding: 6px 0; }
+  /* compact: the night and its words on one line */
+  .dates .txt b, .dates .txt small { display: inline; margin: 0 8px 0 0; }
   .night {
     appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 4px 0; text-align: left;
     color: var(--text); font: inherit; display: flex; align-items: center; gap: 8px;

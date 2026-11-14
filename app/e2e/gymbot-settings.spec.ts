@@ -1,6 +1,6 @@
 // ボット → ジム's settings (docs/design.md "Bots"; the brief's app half): the verdict's ⋯ (its rows per state; stop asks
 // first, restart at once, 確認の間隔, 今すぐ確認 with its cooldown in the label and its answer on the result line), the
-// calendar (2 weeks from today, 4 in the select mode; the 4-day default, VoiceOver's grid and its arrow keys, 44px), the day editor (instant, 取り消す, the slot chips, 通知の開始's start day and time: Fri from Tue 18:00,
+// calendar (the whole month, Monday first, 今月 · 来月; the 4-day default, VoiceOver's grid and its arrow keys, 44px), the day editor (instant, 取り消す, the slot chips, 通知の開始's start day and time: Fri from Tue 18:00,
 // moved, cleared, the bot's refusals), select mode and one bulk
 // act, a 409 stale, quick edits sent in turn, the bot's refusals in its words, a failure with もう一度, and a poll's change
 // flashed. The Worker is e2e/gymbot.ts's stand-in (page.route; every act's body kept), at the record's pinned time
@@ -27,13 +27,13 @@ async function phone(page: Page, context: BrowserContext, arrange: (gym: ReturnT
   await islandUp(page);
   await fromMenu(page, 'bots');
   const sheet = page.locator('dialog[open] [data-bots]');
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(14);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(25);
   const day = (i: number) => sheet.locator(`[data-gym-day="${gym.days[i]}"]`);
   const editor = page.locator('dialog[open] [data-gym-editor]');
   return { gym, calls, sheet, day, editor, rec };
 }
 
-test('the calendar: 2 weeks from today, the 4-day default and why, a grid VoiceOver reads, 44px', async ({ page, context }) => {
+test('the calendar: the whole month from Monday, next month, the 4-day default and why, a grid VoiceOver reads, 44px', async ({ page, context }) => {
   const { sheet, day, gym } = await phone(page, context, (g) => {
     g.lineTap(g.days[5], 'any');
     g.setFrom(g.days[5], Date.parse('2026-11-09T18:00:00+09:00'));
@@ -41,28 +41,27 @@ test('the calendar: 2 weeks from today, the 4-day default and why, a grid VoiceO
     g.announce(g.days[6], ['18:30', '19:00']);
     g.lineTap(g.days[8], 'skip');
   });
-  const grid = sheet.getByRole('grid', { name: '日ごとの通知（2週間）' });
-  await expect(grid.getByRole('row')).toHaveCount(3); // the weekdays and 2 weeks
-  await expect(grid.getByRole('columnheader')).toHaveText(['水', '木', '金', '土', '日', '月', '火']); // today's first
-  await expect(grid.locator('.cell.out')).toHaveCount(0); // today + 13 days: no blank start
+  const grid = sheet.getByRole('grid', { name: '2026年11月の日ごとの通知' });
+  await expect(grid.getByRole('row')).toHaveCount(7); // the weekdays and 10/26–12/6
+  await expect(grid.getByRole('columnheader')).toHaveText(['月', '火', '水', '木', '金', '土', '日']);
+  await expect(grid.getByRole('gridcell')).toHaveCount(42); // 11/4–28 a button each, the rest faint or blank
+  await expect(sheet.locator('[data-gym-later]')).toHaveText('11/29以降はまだ設定できません');
   await expect(day(0)).toHaveAttribute('aria-label', '11/4（水）（今日）、ふだん（12:00〜13:00）');
   for (const i of [0, 1, 2, 3]) await expect(day(i)).toHaveAttribute('data-fill', 'usual');
   await expect(day(4)).toHaveAttribute('data-fill', 'none');
   await expect(day(4)).toHaveAttribute('aria-label', '11/8（日）、未チェック');
-  await expect(day(0)).toContainText('12–13');
+  await expect(day(0).locator('[data-gym-time]')).toHaveCount(0); // ふだん: its dashed fill, no hours
   await expect(day(5)).toHaveAttribute('aria-label', '11/9（月）、終日、18:00から');
   await expect(day(5).locator('[data-gym-from]')).toBeVisible();
   await expect(day(6)).toHaveAttribute('aria-label', '11/10（火）、18:30〜20:00、通知済み2件');
   await expect(day(6).locator('[data-gym-announced="2"]')).toHaveText('2');
-  await expect(day(6)).toContainText('18:30–20');
+  await expect(day(6).locator('[data-gym-time]')).toHaveText(/18:30\s*20/, { useInnerText: true }); // stacked
   await expect(day(8)).toHaveAttribute('data-fill', 'off');
   await expect(sheet.locator('[data-gym-cal-note]')).toHaveText('予約は同時に3件まで。設定のない日は近い4日だけ 12:00〜13:00 を見ます');
-  // the legend folded, the note always shown
-  await expect(sheet.locator('[data-gym-legend]')).toBeHidden();
-  await sheet.locator('[data-gym-legend-fold] summary').click();
+  // the legend inline under the grid
   await expect(sheet.locator('[data-gym-legend] > span')).toHaveText(['終日', '時間指定', 'ふだん', 'オフ', '開始時刻', '通知済み']);
   // 44px: the days, ⋯
-  for (const el of [day(0), day(13), sheet.locator('[data-gym-menu]')]) { // (選択: the kit's small chip, 32px in a 44px hit)
+  for (const el of [day(0), day(24), sheet.locator('[data-gym-menu]')]) { // (選択: the kit's small chip, 32px in a 44px hit)
     const b = (await el.boundingBox())!;
     expect(Math.min(b.width, b.height), await el.evaluate((e) => e.outerHTML.slice(0, 60))).toBeGreaterThanOrEqual(44);
   }
@@ -75,11 +74,19 @@ test('the calendar: 2 weeks from today, the 4-day default and why, a grid VoiceO
   await page.keyboard.press('ArrowDown');
   await expect(day(8)).toBeFocused();
   await page.keyboard.press('End');
-  await expect(day(13)).toBeFocused(); // that row's last day
+  await expect(day(11)).toBeFocused(); // that row's last day (11/15)
   await page.keyboard.press('ArrowUp');
-  await expect(day(6)).toBeFocused();
-  await page.keyboard.press('ArrowUp'); // above: the weekdays
-  await expect(day(6)).toBeFocused();
+  await expect(day(4)).toBeFocused();
+  await page.keyboard.press('ArrowUp'); // above: 11/1, passed
+  await expect(day(4)).toBeFocused();
+  await page.keyboard.press('Home'); // the row's first settable day: today
+  await expect(day(0)).toBeFocused();
+  // next month: past the 25 days, nothing settable yet
+  await sheet.locator('[data-gym-month="2026-12"]').click();
+  await expect(sheet.getByRole('grid', { name: '2026年12月の日ごとの通知' }).getByRole('row')).toHaveCount(6);
+  await expect(sheet.locator('[data-gym-day]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-later]')).toHaveText('12/1以降はまだ設定できません');
+  await expect(sheet.locator('[data-gym-month]')).toHaveText(['11月', '12月']);
   expect(gym.acts).toEqual([]);
 });
 
@@ -122,7 +129,7 @@ test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 en
   await expect(editor.locator('[data-gym-slots-line]')).toHaveText('18:00〜19:00 の枠を通知（2枠）');
   await slot('19:30').click();
   await expect(editor.locator('[data-gym-slots-line]')).toHaveText('18:00〜20:00 の枠を通知（4枠）');
-  await expect(day(6)).toContainText('18–20');
+  await expect(day(6).locator('[data-gym-time]')).toHaveText(/18\s*20/, { useInnerText: true });
   await slot('18:30').click(); // inside: trims the end
   await expect(editor.locator('[data-gym-slots-line]')).toHaveText('18:00〜19:00 の枠を通知（2枠）');
   await slot('21:30').click();
@@ -243,7 +250,7 @@ test('⏳ set by the other member meanwhile: 409 stale shows theirs, prefilled; 
   // their ⏰ 12:00〜13:00 meanwhile: on the day itself, 12:30 and later aren't offered
   gym.lineTap(gym.days[9], ['12:00', '13:00']);
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-  await expect(day(9)).toContainText('12–13');
+  await expect(day(9).locator('[data-gym-time]')).toHaveText(/12\s*13/, { useInnerText: true });
   await editor.locator('[data-gym-from-date]').selectOption(gym.days[9]);
   expect((await editor.locator('[data-gym-from-time] option:not([disabled])').allTextContents()).at(-1)).toBe('12:00');
 });
@@ -285,8 +292,8 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   await sheet.locator('[data-gym-select]').click();
   const bar = sheet.locator('[data-gym-bulk]');
   await expect(bar).toContainText('日付か曜日を選んでください');
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(25); // 4 weeks while selecting: a column reaches no hidden day
-  await sheet.locator('[data-gym-weekday="3"]').click(); // 土 (today's Wednesday first): 11/7, 14, 21, 28
+  await expect(sheet.locator('[data-gym-select]')).toHaveCount(0); // 完了 in its place
+  await sheet.locator('[data-gym-weekday="5"]').click(); // 土: 11/7, 14, 21, 28
   await expect(bar).toContainText('4日を選択');
   await day(5).click();
   await expect(bar).toContainText('5日を選択');
@@ -310,11 +317,16 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   await pick.locator('[data-gym-slot="18:00"]').click();
   await pick.locator('[data-gym-slot="19:30"]').click();
   await page.locator('dialog[open] [data-gym-bulk-range-apply]').click();
-  await expect(day(17)).toContainText('18–20');
+  await expect(day(17).locator('[data-gym-time]')).toHaveText(/18\s*20/, { useInnerText: true });
   await expect.poll(() => gym.acts.at(-1)).toMatchObject({ a: 'range', s: '18:00', e: '20:00' });
-  await bar.locator('[data-gym-bulk-done]').click();
+  // the picks stay across months (the count their total; 12月 has none to pick yet)
+  await sheet.locator('[data-gym-month="2026-12"]').click();
+  await expect(bar).toContainText('5日を選択');
+  await expect(sheet.locator('[data-gym-weekday="5"]')).toBeVisible();
+  await sheet.locator('[data-gym-month="2026-11"]').click();
+  await sheet.locator('[data-gym-bulk-done]').click();
   await expect(bar).toHaveCount(0);
-  await expect(sheet.locator('[data-gym-day]')).toHaveCount(14);
+  await expect(sheet.locator('[data-gym-weekday="5"]')).toHaveCount(0); // plain text out of the select mode
   // a long press on a day (a touch held half a second; the click as it's let go starts nothing more)
   await day(12).dispatchEvent('pointerdown', { pointerType: 'touch', isPrimary: true, clientX: 10, clientY: 10 });
   await expect(sheet.locator('[data-gym-bulk]')).toContainText('1日を選択');
@@ -516,7 +528,7 @@ test('screenshots, day and night (GYM_UI_SHOTS)', async ({ page, context }) => {
     await page.screenshot({ path: `${dir}/${tod}-refusal.png` });
     await page.locator('dialog[open] .navbar button.nav.close').last().click();
     await sheet.locator('[data-gym-select]').click();
-    await sheet.locator('[data-gym-weekday="3"]').click();
+    await sheet.locator('[data-gym-weekday="5"]').click();
     await day(4).click();
     await sheet.locator('[data-gym-bulk]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: `${dir}/${tod}-select.png` });

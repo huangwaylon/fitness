@@ -9,7 +9,7 @@ import { parseSettingsInput, type ItsStatus, type ScanMinute } from './contract.
 import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
-  addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, nightGrid, nightMonths, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
+  addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, nightGrid, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   attentionLines, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
   keyRow, savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
@@ -99,16 +99,15 @@ describe('dateRows', () => {
 
 describe('the stays: the calendar, months, what can take each', () => {
   it('日付’s calendar: this month or next, Monday first; a tap puts a night in or out, a column does the month’s settable nights, 20 at most', () => {
-    expect(nightMonths(NOW)).toEqual(['2026-11', '2026-12']);
-    expect(nightMonths(jst('2026-12-31T23:00:00'))).toEqual(['2026-12', '2027-01']);
     const d = draft({ dates: ['2026-11-21'] });
     const g = nightGrid('2026-11', d, NOW, bookingRows(STATUS, TODAY));
-    expect(g.map((w) => w.length)).toEqual([7, 7, 7, 7]);   // the weeks all passed left out: from 11/9
-    expect(g[0][0].date).toBe('2026-11-09');
-    expect(g[0].slice(0, 4).every((c) => c.out)).toBe(true);   // 11/9–12 passed: faint, in the row
+    expect(g.map((w) => w.length)).toEqual([7, 7, 7, 7, 7, 7]);   // the whole month: 10/26–12/6
+    expect([g[0][0].date, g[0][0].inMonth, g[0][6].date]).toEqual(['2026-10-26', false, '2026-11-01']);
+    expect(g[2].slice(0, 4).every((c) => !c.live && c.inMonth)).toBe(true);   // 11/9–12 passed: faint
+    expect(g[5][1]).toMatchObject({ date: '2026-12-01', inMonth: false, live: false });   // next month's: blank
     expect(nightGrid('2026-12', d, NOW)[0][0].date).toBe('2026-11-30');
     const c = Object.fromEntries(g.flat().map((x) => [x.date, x]));
-    expect([c['2026-11-12'].out, c['2026-11-13'].out, c['2026-11-13'].today]).toEqual([true, false, true]);   // past nights inert
+    expect([c['2026-11-12'].live, c['2026-11-13'].live, c['2026-11-13'].today]).toEqual([false, true, true]);   // past nights inert
     expect(c['2026-11-21']).toMatchObject({ on: true, label: '11/21（土）、探す日' });
     expect(c['2026-11-22']).toMatchObject({ on: false, mark: 'action', label: '11/22（日）、要対応' });   // the hold waiting
     expect(weekday('2026-11-15')).toBe(0);

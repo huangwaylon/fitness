@@ -284,9 +284,6 @@
   "its.stop.yes": "停止する",
   "its.stop.cancel": "キャンセル",
   "its.ev.n": "全{n}件",
-  "its.set.nights": "{n}泊・{from}〜",
-  "its.set.able": "探せる日 {n}/{m}",
-  "its.set.noDates": "日付なし",
   "its.set.hotels": "探す{n}・除外{off}",
   "its.set.hint": "保存で反映",
   "its.set.unsaved": "未保存",
@@ -300,7 +297,6 @@
   "its.cal.mark.hold": "仮押さえ",
   "its.cal.mark.booked": "予約確定",
   "its.cal.label": "{month}の泊まる日",
-  "its.cal.month": "表示する月",
   "its.cal.weekday": "{wd}曜日をまとめて選ぶ",
   "its.cal.over": "日付は20件までです（{n}日は入りませんでした）",
   "its.date.removeLabel": "{date}を削除"

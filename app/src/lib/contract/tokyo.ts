@@ -35,3 +35,23 @@ export const addDays = (date: string, n: number): LocalDate => dateOfDayNum(dayN
 export const nextDay = (date: string): LocalDate => addDays(date, 1);
 /** The calendar day before `date`. */
 export const prevDay = (date: string): LocalDate => addDays(date, -1);
+
+/** A day of a month's calendar: its date, day of the month, and whether it is that month's (else a lead or tail). */
+export interface MonthDay { date: LocalDate; d: number; inMonth: boolean }
+/** A month's calendar (`YYYY-MM`; ボット's two, docs/design.md "Bots"): its whole weeks, Monday first. */
+export function monthWeeks(month: string): MonthDay[][] {
+  const first = dayNum(`${month}-01`);
+  const weeks: MonthDay[][] = [];
+  for (let n = first - ((first + 3) % 7); dateOfDayNum(n).slice(0, 7) <= month; n += 7) {
+    weeks.push(Array.from({ length: 7 }, (_, i) => {
+      const date = dateOfDayNum(n + i);
+      return { date, d: Number(date.slice(8, 10)), inMonth: date.startsWith(month) };
+    }));
+  }
+  return weeks;
+}
+/** A date's month and the next (`YYYY-MM` each): the calendars' 11月 · 12月. */
+export function twoMonths(today: LocalDate): [string, string] {
+  const [y, m] = [Number(today.slice(0, 4)), Number(today.slice(5, 7))];
+  return [today.slice(0, 7), m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`];
+}

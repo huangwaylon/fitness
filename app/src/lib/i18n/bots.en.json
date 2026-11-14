@@ -36,5 +36,6 @@
   "bots.key.about": "~{time}",
   "bots.fact.mode": "Mode",
   "bots.fact.sha": "Version",
-  "bots.sec.settings": "Settings"
+  "bots.sec.settings": "Settings",
+  "bots.cal.month": "Month"
 }

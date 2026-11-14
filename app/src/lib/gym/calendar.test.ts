@@ -1,7 +1,7 @@
-// ジム's calendar model (calendar.ts): the 2 (or 4) weeks and each cell (the 4-day default, the fills, the marks, the
+// ジム's calendar model (calendar.ts): a month's weeks and each cell (the 4-day default, the fills, the marks, the
 // words), the slot picker's rules, the ⏳ dates and times allowed, the optimistic rows, the undo of a change and a bulk act.
 import { describe, expect, it } from 'vitest';
-import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, weeks, withBase, type SlotPick } from './calendar.ts';
+import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, laterNote, monthCells, withBase, type SlotPick } from './calendar.ts';
 import { addDays, at, fromRefusal, type DayRow } from './contract.ts';
 
 /** Today: Thursday 2026-11-12, noon in Tokyo. */
@@ -12,22 +12,28 @@ const row = (i: number, patch: Partial<DayRow> = {}): DayRow =>
   ({ day: day(i), rule: null, usual: i < 4, from: null, announced: [], resettable: false, base: `b${i}`, ...patch });
 const rows = (patch: Record<number, Partial<DayRow>> = {}): DayRow[] => Array.from({ length: 25 }, (_, i) => row(i, patch[i]));
 
-describe('weeks', () => {
-  it('2 weeks from today (today + 13 days, no blank start); 4 in the select mode: the 25 days a cell each, the rest blank', () => {
-    const w = weeks(rows());
-    expect(w.map((x) => x.length)).toEqual([7, 7]);
-    expect(w[0][0]).toMatchObject({ day: TODAY, today: true, date: 12 }); // a Thursday first: its column is Thursday
-    expect(w[1][6]).toMatchObject({ day: day(13) });
-    expect(w.flat().every((c) => c.row)).toBe(true);
-    const four = weeks(rows(), 4);
-    expect(four.map((x) => x.length)).toEqual([7, 7, 7, 7]);
-    expect(four.flat().filter((c) => c.row).length).toBe(25);
-    expect(four[3].slice(4).every((c) => c.row === null)).toBe(true); // 12/6–12/9 past the 25
+/** This month's cells with a row, in order. */
+const live = (r: DayRow[], month = '2026-11') => monthCells(r, month).flat().filter((c) => c.live);
+
+describe('monthCells', () => {
+  it('a month’s whole weeks, Monday first: the rows’ days settable, passed days and those past the 25 faint, other months’ blank', () => {
+    const nov = monthCells(rows(), '2026-11');
+    expect(nov.map((x) => x.length)).toEqual([7, 7, 7, 7, 7, 7]); // 10/26–12/6
+    expect(nov[0][0]).toMatchObject({ date: '2026-10-26', inMonth: false, live: false });
+    expect(nov[2][3]).toMatchObject({ date: TODAY, d: 12, today: true, live: true }); // a Thursday: its column is Thursday
+    expect(nov[2][2]).toMatchObject({ date: '2026-11-11', live: false, row: null }); // passed
+    expect(nov[5][0]).toMatchObject({ date: '2026-11-30', live: true });
+    expect(nov[5][1]).toMatchObject({ date: '2026-12-01', inMonth: false, live: false, row: null }); // next month's: blank here
+    expect(live(rows()).length).toBe(19); // 11/12–30
+    const dec = monthCells(rows(), '2026-12');
+    expect(dec.flat().filter((c) => c.live).map((c) => c.date)).toEqual(['2026-12-01', '2026-12-02', '2026-12-03', '2026-12-04', '2026-12-05', '2026-12-06']);
+    expect(dec[1][0]).toMatchObject({ date: '2026-12-07', live: false }); // past the 25
+    expect([laterNote(rows(), '2026-11'), laterNote(rows(), '2026-12'), laterNote(rows().slice(0, 10), '2026-12')]).toEqual([null, '12/7以降はまだ設定できません', '12/1以降はまだ設定できません']);
   });
 
   it('the 4-day default: the next 4 days ふだん 12–13 (mint, dashed), the rest 未チェック', () => {
-    const cells = weeks(rows()).flat().filter((c) => c.row);
-    expect(cells.slice(0, 5).map((c) => [c.fill, c.time])).toEqual([['usual', '12–13'], ['usual', '12–13'], ['usual', '12–13'], ['usual', '12–13'], ['none', null]]);
+    const cells = live(rows());
+    expect(cells.slice(0, 5).map((c) => [c.fill, c.time])).toEqual([['usual', null], ['usual', null], ['usual', null], ['usual', null], ['none', null]]); // ふだん: its dashed fill, no hours
     expect(cells[0].label).toBe('11/12（木）（今日）、ふだん（12:00〜13:00）');
     expect(cells[4].label).toBe('11/16（月）、未チェック');
   });
@@ -39,9 +45,9 @@ describe('weeks', () => {
       6: { rule: 'skip', resettable: true },
       7: { rule: ['12:00', '13:00'], from: at(day(6), '21:00'), resettable: true }
     });
-    const c = weeks(r).flat().filter((x) => x.row);
+    const c = live(r);
     expect([c[1].fill, c[1].time, c[1].from, c[1].label]).toEqual(['any', null, true, '11/13（金）、終日、18:00から']);
-    expect([c[2].fill, c[2].time, c[2].announced, c[2].label]).toEqual(['range', '18:30–20', 2, '11/14（土）、18:30〜20:00、通知済み2件']);
+    expect([c[2].fill, c[2].time, c[2].announced, c[2].label]).toEqual(['range', ['18:30', '20'], 2, '11/14（土）、18:30〜20:00、通知済み2件']);
     expect([c[6].fill, c[6].label]).toEqual(['off', '11/18（水）、オフ']);
     expect(c[7].label).toBe('11/19（木）、12:00〜13:00、11/18（水）21:00から'); // a ⏳ on an earlier day, as 📋 words it
   });
