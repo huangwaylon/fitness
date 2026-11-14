@@ -51,7 +51,7 @@ test('りょこう’s km | mi and a trip’s day chips: a 44 × 44 hit each', a
   await fromMenu(page, 'travel');
   await page.locator('dialog[open] [data-travel-tab="settings"]').click();
   await all44(page.locator('dialog[open] [data-units]'));
-  await page.locator('dialog[open] [data-travel-tab="coming"]').click();
+  await page.locator('dialog[open] [data-travel-tab="trips"]').click();
   await page.locator('dialog[open] [data-trip="nz"]').click();
   const days = page.locator('dialog[open] .chip-row .chip');
   await expect(days.first()).toBeVisible();

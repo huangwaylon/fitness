@@ -3,9 +3,8 @@
   // (docs/design.md "Unified kit"). Two levels: the trips (TripList, from the small trips/meta.ts: no guide loads
   // for it), and a trip (TripView: its hero, its pages, its tab bar), its guide loaded when it is opened (each its own
   // chunk; offline before it is cached, 読み込めませんでした and もう一度).
-  // The list's own tabs (a tablist, as ボット's): これから, これまで (TripList) and 設定 (TravelSettings: km | mi). It
-  // opens on the tab last shown this app session (DEVICE.travelTab, sessionStorage), else これから if a trip is on or
-  // coming, else これまで; ‹ from a trip lands on its tab.
+  // The list's own tabs (a tablist, as ボット's): 旅 (TripList: これから and これまで) and 設定 (TravelSettings: km | mi).
+  // It opens on the tab last shown this app session (DEVICE.travelTab, sessionStorage), else 旅.
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`). Kept mounted between openings (Sheet's
   // `keep`: a reopening at once, where it was left, its scroll too), but for a trip on now (built again: today's day,
@@ -26,7 +25,7 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { pick } from './text.ts';
-  import { phaseOf, sortTrips } from './when.ts';
+  import { phaseOf } from './when.ts';
   import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -42,19 +41,14 @@
   const trip = $derived(sel ? (guides[sel] ?? null) : null);
   const meta = $derived(sel ? TRIP_META.find((m) => m.id === sel) : undefined);
 
-  type ListTab = 'coming' | 'past' | 'settings';
-  const LIST_TABS: readonly ListTab[] = ['coming', 'past', 'settings'];
-  const ICONS = { coming: 'plane-takeoff', past: 'camera', settings: 'gear' } as const;
+  type ListTab = 'trips' | 'settings';
+  const LIST_TABS: readonly ListTab[] = ['trips', 'settings'];
+  const ICONS = { trips: 'plane-takeoff', settings: 'gear' } as const;
   const kv = sessionKV();
   const kept = kv?.getItem(DEVICE.travelTab);
-  /** The list's tab: the one kept this session, else これから while a trip is on or coming, else これまで. */
-  let ltab = $state<ListTab>(LIST_TABS.find((x) => x === kept) ?? tabOf(minuteNow().getTime()));
-  /** The panel holds nothing to focus (これから empty): it takes the focus itself. */
-  const bare = $derived(ltab === 'coming' && !sortTrips(TRIP_META, now).coming.length);
+  /** The list's tab: the one kept this session, else 旅. */
+  let ltab = $state<ListTab>(LIST_TABS.find((x) => x === kept) ?? 'trips');
   const items = $derived(LIST_TABS.map((id) => ({ id, label: t(`travel.tab.${id}`), icon: ICONS[id] })));
-  function tabOf(at: number): ListTab {
-    return TRIP_META.some((m) => phaseOf(m, at).k !== 'past') ? 'coming' : 'past';
-  }
   function pickTab(id: ListTab) {
     ltab = id;
     try {
@@ -94,8 +88,6 @@
   function back() {
     cue('back');
     const from = sel;
-    const m = TRIP_META.find((x) => x.id === from);
-    if (m) pickTab(phaseOf(m, now).k === 'past' ? 'past' : 'coming');
     sel = null;
     failed = null;
     void Promise.resolve().then(() => document.querySelector<HTMLElement>(`[data-trip="${from}"]`)?.focus({ preventScroll: true }));
@@ -117,11 +109,11 @@
       <div class="lvl">
         {#if !sel}
           <div class="top"><NavBar pad title={t('travel.title')} onclose={close} /></div>
-          <div class="panel" id="travel-panel" role="tabpanel" aria-labelledby="travel-tab-{ltab}" tabindex={bare ? 0 : undefined} data-travel-panel={ltab}>
+          <div class="panel" id="travel-panel" role="tabpanel" aria-labelledby="travel-tab-{ltab}" data-travel-panel={ltab}>
             {#if ltab === 'settings'}
               <div class="sheet-scroll"><TravelSettings /></div>
             {:else}
-              <TripList trips={TRIP_META} which={ltab} {now} onopen={show} />
+              <TripList trips={TRIP_META} {now} onopen={show} />
             {/if}
           </div>
           <TabBar {items} value={ltab} label={t('travel.listTabs')} attr="travel-tab" panel="travel-panel" onpick={pickTab} />
