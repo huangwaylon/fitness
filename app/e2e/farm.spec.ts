@@ -59,7 +59,7 @@ test('starts bought at the shop’s かう; one kind held: a tap on my empty plo
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
   // the rule, under the starts (the sheet's kanji)
-  await expect(page.locator('[data-shop-farm-rule]')).toHaveText('水をやった翌日に3つ収穫（水なしは1つ）。雨の日も、だれの水やりでもOK');
+  await expect(page.locator('[data-shop-farm-rule]')).toHaveText('水をやった翌日に3つ収穫（水なしは1つ）。雨も、だれの水やりでもOK');
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-more="tomato"]').click();
   // one bar: the pinned one names the crop and buys them
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');

@@ -523,7 +523,7 @@
   "shop.starts": "苗",
   "shop.toStarts": "苗へ",
   "shop.startsFree": "空き{n}区画・タップでその分",
-  "shop.startsRule": "水をやった翌日に3つ収穫（水なしは1つ）。雨の日も、だれの水やりでもOK",
+  "shop.startsRule": "水をやった翌日に3つ収穫（水なしは1つ）。雨も、だれの水やりでもOK",
   "shop.startLabel": "{name}、{v}かいがら、{c}個選択",
   "shop.boughtStart": "{name}×{n}を買いました",
   "shop.boughtStarts": "苗{n}個を買いました",
