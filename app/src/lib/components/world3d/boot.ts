@@ -41,8 +41,9 @@ export interface BootReport {
   fields: 'cache' | 'worker' | 'main';
   /** The service worker at the launch: controlling the page, not (yet), or none in this browser. */
   sw: 'ctl' | 'none' | 'no';
-  /** No model's resource timing has a transfer size; `net`: how many have one. Only what went past the worker: one
-   *  it answers reads 0 even when it fetched it (swNet below). */
+  /** Every model from a cache: no model's resource timing has a transfer size (`net`: how many have one; only what
+   *  went past the worker, one it answers reads 0 even when it fetched it) and the worker fetched no room file
+   *  (`swRoom`, when it answered). */
   warm: boolean;
   net: number;
   /** The models that came in after `loaded` up to `shown`, and the last of them (its name: what the island waited
@@ -232,7 +233,7 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
     const shell = shellFrom(), base = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shell };
     // (since the worker's fetch event: on WebKit before the page's clock)
     void swFetches(performance.timeOrigin - Math.max(0, shell.pre ?? 0)).then((swn) => {
-      report = { ...base, ...swn };
+      report = { ...base, ...swn, warm: base.warm && !swn.swRoom };
       log('perf.boot', { ...report });
     });
   };

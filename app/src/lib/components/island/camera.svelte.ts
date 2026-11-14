@@ -7,6 +7,7 @@
 // own clock while something moves (a node with a `live` position) and once after a change; never when still. Until
 // the 3D camera is up nothing is placed (every node hidden). Nothing in the hot path is reactive: `rest` only carries
 // what components need to know when the camera is still.
+import type { LogMoveTag } from '#lib/contract/log.ts';
 import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
 import { hull, zIndexAt } from '#lib/world/geom.ts';
@@ -618,7 +619,7 @@ export class World {
   }
 
   /** Something started moving (`tag`: what, perf.rest's nd1): frames run until the returned stop is called. */
-  moveStart(tag = 'other'): () => void {
+  moveStart(tag: LogMoveTag = 'other'): () => void {
     this.moving.push(tag);
     this.kick();
     let done = false;

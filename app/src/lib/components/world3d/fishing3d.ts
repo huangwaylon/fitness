@@ -80,8 +80,8 @@ function dip(k: number): number {
 /** The frames the float wants at `t` (ms, performance.now): the full rate through a nibble's dip and from the bite (its
  *  plunge, the rod's tug, the 「！」) till the reel; while it waits, only the ambience's (12 a second at rest: its bob is
  *  1.5 s, the user's idle rule; it held the island at 30 the whole wait: review 11/14 r2); none with no float out. */
-export function floatWants(t: number, slot = 'mine'): boolean | 'ambient' {
-  const a = anglerOf(slot);
+export function floatWants(t: number): boolean | 'ambient' {
+  const a = anglerOf('mine');
   if (a.phase === 'bite') return true;
   if (a.phase !== 'wait') return false;
   const n = t - a.nibble;

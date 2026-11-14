@@ -27,6 +27,10 @@ const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
  *  `nodes` (a node moving: camera.svelte.ts moveStart) `mirror` its scene's: Island3D, `world` the two as builds before
  *  2026-11-14 sent them; `crit-fish` a fish's dart, `crit-bug` a bug's move, `crit-rear` the tarantula rearing:
  *  Critters.svelte, `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
+/** What a node moving says it is (camera.svelte.ts moveStart's tag, perf.rest's `nd1`; `float` as builds before
+ *  2026-11-15 sent it: fishing3d.ts floatWants since). */
+export const LOG_MOVE_TAGS = ['wash', 'shake', 'zap', 'crit', 'popper', 'present', 'float', 'other'] as const;
+export type LogMoveTag = (typeof LOG_MOVE_TAGS)[number];
 export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'walk', 'nodes', 'mirror', 'cards', 'fx', 'crit', 'crit-fish', 'crit-bug', 'crit-rear', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
@@ -84,7 +88,7 @@ export const LOG_EVENTS = {
   // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`); the point lights
   // (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: 't', nw1: 'n', pts: 'n', pm: 'b' } },
+  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', pts: 'n', pm: 'b' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },

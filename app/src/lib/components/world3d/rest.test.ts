@@ -75,12 +75,12 @@ describe('perf.rest', () => {
     const s = sim(), { stats } = island(s);
     const tagged = () => {
       const r = stats();
-      return { ...r, fullWhy: { 'nodes:float': Math.floor(r.frames / 4), 'nodes:shake': Math.floor(r.frames / 12) } };
+      return { ...r, fullWhy: { 'nodes:crit': Math.floor(r.frames / 4), 'nodes:shake': Math.floor(r.frames / 12) } };
     };
     watchRest({ stats: tagged, ok: () => true }, s.clock);
     s.run(10_000);
     s.hide(true);
-    expect(logged[0][1]).toMatchObject({ why1: 'nodes', w1: 33, nd1: 'float', nw1: 25 });
+    expect(logged[0][1]).toMatchObject({ why1: 'nodes', w1: 33, nd1: 'crit', nw1: 25 });
     expect(logged[0][1]).not.toHaveProperty('why2');
   });
 

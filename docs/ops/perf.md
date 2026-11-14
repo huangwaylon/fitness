@@ -20,7 +20,8 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   cache's misses (review 11/14 r2: 6 models evicted, `net` 0). Since 0c10c3a20 perf.boot has `swNet`/`swRoom`/`swKB`
   (the worker's own fetches), `pre` (the worker's fetch event to the page's clock: on WebKit the race and the cache
   lookups are before every mark; ~105 ms on desktop WebKit's `skip` launches), `swCold`, `tx`, `lateF`/`lateA`, and a
-  warm launch's resource timings hold 1000 entries (they stopped at 250 of ~380). Read those before choosing L1 or C2.
+  warm launch's resource timings hold 1000 entries (they stopped at 250 of ~380); since r3 `warm` also needs `swRoom`
+  0 (the report's warm/cold split). Read those before choosing L1 or C2.
 - **The model:** `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
 - **The island's length:** the ground costs the land's length, not the grid's (default 57 rows: fields ~105 ms on the
   Mac; the longest, 152: ~230 ms). A band (8 tile rows) is 4 draws and one ~2 MB bake target; at most 12 are baked
