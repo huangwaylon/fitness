@@ -87,9 +87,10 @@
   .marks { display: flex; align-items: center; gap: 1px; }
   .ic { display: grid; place-items: center; }
   .tm { font-size: 10.5px; line-height: 1.05; text-align: center; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-  /* fills (coral is for errors only); the legend's swatches the same */
-  .any { background: color-mix(in srgb, var(--c-leaf) 55%, var(--card)); color: var(--c-ink); }
-  .range { background: color-mix(in srgb, var(--c-mint) 60%, var(--card)); color: var(--c-ink); }
+  /* fills (coral is for errors only); the legend's swatches the same. 終日 and 時間指定 mixed over the cream card, by
+     night too (a lit tile: ink 7.5:1 and 7.8:1; over the navy card 3.3 and 3.9) */
+  .any { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); }
+  .range { background: color-mix(in srgb, var(--c-mint) 60%, var(--c-card)); color: var(--c-ink); }
   .usual { background: color-mix(in srgb, var(--c-mint) 22%, var(--card)); box-shadow: none; outline: 2px dashed color-mix(in srgb, var(--c-mint) 75%, var(--text-soft)); outline-offset: -2px; }
   .sw.usual { outline-width: 1.5px; outline-offset: -1.5px; }
   .off { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; }

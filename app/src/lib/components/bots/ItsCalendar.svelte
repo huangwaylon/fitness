@@ -31,7 +31,8 @@
 </MonthCalendar>
 
 <style>
-  .cell.on { background: color-mix(in srgb, var(--c-leaf) 55%, var(--card)); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
+  /* searched: leaf over the cream card, by night too (a lit tile: ink 7.5:1; over the navy card 3.3) */
+  .cell.on { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
   /* a booking's mark top-right; the legend's swatches the same */
   .mk { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; }
   .mk, .sw { border-radius: 50%; font: 700 9px/9px var(--font-ui); font-style: normal; text-align: center; }
