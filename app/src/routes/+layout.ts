@@ -5,6 +5,13 @@ import { resolve } from '$app/paths';
 import { opensIsland } from '#lib/ui-state/boot.ts';
 import type { LayoutLoad } from './$types';
 import { quiet } from '#lib/quiet.ts';
+import { updated } from '$app/state';
+import { watchClaims } from '#lib/ui-state/update.ts';
+
+// the app has started: the boot watchdog stands down (ui-state/bootWatch.ts, inline in index.html)
+(globalThis as { __islandStarted?: () => void }).__islandStarted?.();
+// a newer worker's claim asks Kit for the deployed version from now on, not from the layout's mount (ui-state/update.ts)
+watchClaims(() => updated.check());
 
 export const ssr = false;
 export const prerender = false;

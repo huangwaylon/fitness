@@ -192,34 +192,90 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
 
 /** Where this page came from (the worker's Server-Timing `shell`: service-worker/caches.ts marked). */
 const shellOf = (page: Page) => page.evaluate(() => (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.serverTiming.find((t) => t.name === 'shell')?.description ?? null);
+/** The build this page runs (Kit's bootstrap's version). */
+const buildOf = (page: Page) => page.evaluate(() => /version: "([^"]+)"/.exec([...document.scripts].map((s) => s.textContent).join())?.[1] ?? null);
+/** A deploy while the app is away: the worker's script changed, and version.json names `next` (its check tells the
+ *  worker, which then races the next launch). The deploy's page itself: `?e2eVersion=next` (scripts/serve-build.ts:
+ *  build next's page, its entry chunks at new URLs, in no cache). */
+async function deployAway(page: Page, context: import('@playwright/test').BrowserContext) {
+  await askSwapAgain(page, context);
+  await page.request.get('/__e2e/deploy');
+  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next","compat":1}' }));
+  await page.evaluate(() => fetch('_app/version.json', { cache: 'no-store' }).then((r) => r.json()));
+}
+/** The worker's record that the network named this build the deployed one (caches.ts FRESH_KEY) dropped: the next
+ *  launch races. */
+const unfresh = (page: Page) => page.evaluate(async () => {
+  const key = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
+  await (await caches.open(key)).delete('__fresh');
+});
 
 // (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
-// player; now the launch's page is the network's when it's in time: a deploy's own, no reload into it)
-test('a launch is the network\'s page within the race, else the cached shell at once; the island waits on no version ask (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
+// player; now the launch's page is the deploy's when it's in time, no reload into it)
+test('a launch after a deploy is the deploy\'s page, its lazy sheets loading under the older worker; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
-  // in time: the network's page, through the worker (its navigation preload)
-  const open = await page.goto('?demo');
-  expect(open?.fromServiceWorker()).toBe(true);
+  const own = await buildOf(page);
+  // no deploy: the network's page is this build's, so the cached shell (its chunks all cached); then no race at all
+  await unfresh(page);
+  await page.goto('?demo');
   await islandUp(page);
-  expect(await shellOf(page)).toBe('net');
-  // the network's page past the race (one bar; the server answers it 3 s late): the cached shell, the island up before
-  await page.goto('?demo&e2eSlow=3000');
+  expect(await shellOf(page)).toBe('same');
+  await page.goto('?demo');
   await islandUp(page);
-  expect(await shellOf(page)).toBe('cache');
+  expect(await shellOf(page)).toBe('skip');
+  // the network's page's headers in time but its body 3 s late (one bar): the cached shell at the race's end
+  await unfresh(page);
+  await page.goto('?demo&e2eSlowBody=3000');
+  await islandUp(page);
+  expect([await shellOf(page), await buildOf(page)]).toEqual(['cache', own]);
   // offline: the cached shell at once
   await context.setOffline(true);
   await page.goto('?demo');
   await islandUp(page);
   expect(await shellOf(page)).toBe('cache');
   await context.setOffline(false);
+  // a deploy: its page from the network, run under the older worker (its new entry chunks through it), a lazy sheet too
+  await deployAway(page, context);
+  const open = await page.goto('?demo&e2eVersion=next');
+  expect(open?.fromServiceWorker()).toBe(true);
+  await islandUp(page);
+  expect([await shellOf(page), await buildOf(page)]).toEqual(['net', 'next']);
+  // (設定, then ずかん from it: two lazy sheets)
+  await fromMenu(page, 'zukan');
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt')), 'no reload of the app\'s own').toBeNull();
+  await context.unroute('**/_app/version.json');
 });
 
-// (a notification's tap on the closed app, the user's report 2026-11-13: ボット opened on 保養所, then a launch's reload
-// went back to the island; no launch reloads now: the param goes at once)
-test('a cold open at ?open=its opens ボット on 保養所, and it stays', { tag: '@chromium' }, async ({ page, context }) => {
+// (the review 11-14 #2: a deploy's page booted from the network, then its new entry chunks never came: a blank app)
+test('a deploy\'s page whose new entry chunks don\'t load (the network cut mid-launch): the boot watchdog reloads once onto the cached shell, which starts (ui-state/bootWatch.ts)', { tag: '@chromium' }, async ({ page, context }) => {
+  await page.addInitScript(() => sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1)));
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  const own = await buildOf(page);
+  await deployAway(page, context);
+  // the page in, then the network gone for its entry chunks
+  await context.route('**/_app/immutable/entry/**', (route) => (new URL(route.request().url()).searchParams.has('e2e') ? route.abort('internetdisconnected') : route.fallback()));
+  await page.evaluate(() => sessionStorage.setItem('e2e.docs', '0'));
+  await page.goto('?demo&e2eVersion=next');
+  await islandUp(page);
+  expect([await shellOf(page), await buildOf(page)]).toEqual(['cache', own]);
+  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs'))), 'the failed page, then the cached shell').toBe(2);
+  await expect.poll(() => page.evaluate(() => new URLSearchParams(location.search).has('shell'))).toBe(false);
+  // once a session: the same failure again stays put (no loop)
+  await page.evaluate(() => sessionStorage.setItem('island.bootWatch', '1'));
+  await page.goto('?demo&e2eVersion=next');
+  await expect(page.locator('[data-hud-menu]')).toHaveCount(0);
+  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(3);
+  await context.unroute('**/_app/immutable/entry/**');
+  await context.unroute('**/_app/version.json');
+});
+
+// (a notification's tap on the closed app into a waiting deploy, the user's report 2026-11-13: ボット opened on 保養所,
+// then the launch's reload went back to the island; now the deploy's page opens it, no reload)
+test('a cold open at ?open=its into a waiting deploy opens ボット on 保養所 on the deploy\'s page, and it stays', { tag: '@chromium' }, async ({ page, context }) => {
   await page.addInitScript(() => {
     localStorage.setItem('e2e.render', 'none');
     sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1));
@@ -232,15 +288,18 @@ test('a cold open at ?open=its opens ボット on 保養所, and it stays', { ta
   await page.goto('');
   await islandUp(page);
   await controlled(page);
+  await deployAway(page, context);
   await page.evaluate(() => sessionStorage.setItem('e2e.docs', '0'));
-  await page.goto('?open=its');
+  await page.goto('?open=its&e2eVersion=next');
   await islandUp(page);
+  expect([await shellOf(page), await buildOf(page)]).toEqual(['net', 'next']);
   const sheet = page.locator('dialog[open] [data-bots]');
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => location.search)).toBe('');
+  await expect.poll(() => page.evaluate(() => new URLSearchParams(location.search).has('open'))).toBe(false);
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(1);
+  await context.unroute('**/_app/version.json');
 });
 
 test('a deploy this build can\'t work with (version.json compat past its own: contract/compat.ts) is taken in front, but only once nothing is open', { tag: '@chromium' }, async ({ page, context }) => {
@@ -433,7 +492,16 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
     const c = await caches.open('island-room-v1');
     return (await c.keys()).map((k) => new URL(k.url).pathname + new URL(k.url).search);
   });
+  // (read once the worker's index writes in flight are done: a write follows a use outside every event, bounded.ts;
+  // the worker says when, `flush`)
   const index = () => page.evaluate(async () => {
+    const sw = navigator.serviceWorker;
+    await new Promise<void>((ok) => {
+      const on = (e: MessageEvent) => (e.data as { k?: string } | null)?.k === 'flushed' && (sw.removeEventListener('message', on), ok());
+      sw.addEventListener('message', on);
+      sw.controller ? sw.controller.postMessage({ k: 'flush' }) : ok();
+      setTimeout(ok, 5000);
+    });
     const c = await caches.open('island-room-v1');
     const r = await c.match(new URL('__room-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
     return r ? ((await r.json()) as Record<string, [number, number]>) : {};
@@ -443,6 +511,21 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   // IndexedDB (world3d/ktx2.ts), never fetching their KTX2s, and tells the worker they were used (the room's index):
   // else the island's own looked least recently used, the first let go past the cap
   await expect.poll(() => ktx2Since(0), { timeout: 20_000 }).toBeGreaterThan(10);
+  // (and every texture this launch transcoded written to IndexedDB, before the reload reads them back: texCache.ts
+  // writes them a moment later, a chunk at a time; the index's flush above no longer waits ~2 s for it by chance)
+  await expect.poll(() => page.evaluate(async () => {
+    const made = (window as unknown as { __world3d: { ktx2(): { made: number } } }).__world3d.ktx2().made;
+    const kept = await new Promise<number>((ok) => {
+      const r = indexedDB.open('island-tex');
+      r.onerror = () => ok(-1);
+      r.onsuccess = () => {
+        const c = r.result.transaction('meta').objectStore('meta').count();
+        c.onsuccess = () => (r.result.close(), ok(c.result));
+        c.onerror = () => (r.result.close(), ok(-1));
+      };
+    });
+    return made > 0 && kept >= made;
+  }), { timeout: 30_000 }).toBe(true);
   const fetched: string[] = [];
   const onReq = (r: import('@playwright/test').Request) => void (r.url().includes('.ktx2p') && fetched.push(r.url()));
   page.on('request', onReq);
@@ -474,8 +557,8 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   await islandUp(page);
   await expect.poll(async () => (await room()).includes(real.old), { timeout: 20_000 }).toBe(false);
   expect(await room()).toContain(real.url);
-  // (every file in it, with its bytes, once the island's loads settle: it's kept 2 s after a change)
-  await expect.poll(async () => Object.keys(await index()).length - ((await room()).length - 1), { timeout: 30_000 }).toBe(0);
+  // (every file in it, with its bytes, once the island's loads settle and the worker's write is done)
+  await expect.poll(async () => Object.keys(await index()).length - ((await room()).length - 1), { timeout: 60_000 }).toBe(0);
   expect(Object.entries(await index()).find(([u]) => u.endsWith(real.url))?.[1][0]).toBeGreaterThan(100);
 });
 

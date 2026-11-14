@@ -105,13 +105,14 @@ describe('the launch clock (perf.boot)', () => {
 });
 
 describe('where the launch\'s page came from (perf.boot shell)', () => {
-  const nav = (st: { name: string; description: string }[]) => [{ serverTiming: st } as unknown as PerformanceEntry];
-  it('the worker\'s Server-Timing `shell`, net or cache; none without it (a first visit)', () => {
-    expect(shellFrom(nav([{ name: 'shell', description: 'net' }]))).toBe('net');
-    expect(shellFrom(nav([{ name: 'cdn', description: 'x' }, { name: 'shell', description: 'cache' }]))).toBe('cache');
-    expect(shellFrom(nav([]))).toBeUndefined();
-    expect(shellFrom([])).toBeUndefined();
-    expect(shellFrom(nav([{ name: 'shell', description: 'other' }]))).toBeUndefined();
-    expect(cleanData('perf.boot', { shell: 'net' })).toEqual({ shell: 'net' });
+  const nav = (st: { name: string; description: string; duration?: number }[]) => [{ serverTiming: st.map((t) => ({ duration: 0, ...t })) } as unknown as PerformanceEntry];
+  it('the worker\'s Server-Timing `shell` and its race\'s ms; none without it (a first visit)', () => {
+    expect(shellFrom(nav([{ name: 'shell', description: 'net', duration: 183.4 }]))).toEqual({ shell: 'net', raceMs: 183 });
+    expect(shellFrom(nav([{ name: 'cdn', description: 'x' }, { name: 'shell', description: 'same', duration: 90 }]))).toEqual({ shell: 'same', raceMs: 90 });
+    expect(shellFrom(nav([{ name: 'shell', description: 'skip' }]))).toEqual({ shell: 'skip', raceMs: 0 });
+    expect(shellFrom(nav([]))).toEqual({});
+    expect(shellFrom([])).toEqual({});
+    expect(shellFrom(nav([{ name: 'shell', description: 'other' }]))).toEqual({});
+    expect(cleanData('perf.boot', { shell: 'same', raceMs: 12 })).toEqual({ shell: 'same', raceMs: 12 });
   });
 });

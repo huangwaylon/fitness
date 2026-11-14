@@ -102,8 +102,8 @@ async function deployed(): Promise<string | null> {
   const v = (await deployedJson())?.version;
   return typeof v === 'string' ? v : null;
 }
-/** The deployed build's compatibility epoch (ui-state/update.ts incompatible), or undefined: not asked, or none. */
-export const deployedCompat = async (): Promise<unknown> => (await quiet(deployedJson(), 'update.compat', null))?.compat;
+/** The deployed build's version.json (its `version` and `compat`: ui-state/update.ts), or null: not asked, offline. */
+export const deployedInfo = (): Promise<{ version?: unknown; compat?: unknown } | null> => quiet(deployedJson(), 'update.compat', null);
 
 /** Whether a failed import is its file not fetched (a chunk a deploy removed, the network gone), not a module that
  *  threw as it ran (a reload doesn't cure that): the browsers' TypeErrors for a module script that didn't load

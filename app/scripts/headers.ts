@@ -30,6 +30,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { STT_SETS } from '../src/lib/mic/models.ts';
+import { BOOT_WATCH_JS } from '../src/lib/ui-state/bootWatch.ts';
 
 const root = join(import.meta.dirname, '..', 'build-pages');
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
@@ -82,6 +83,17 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
     rmSync(file);
     console.log(`build-pages/index.html: the import map, ${Object.keys(imports).length} chunks`);
   } else if (!html.includes('<script type="importmap">')) throw new Error('headers: no build-pages/importmap.json (vite.config.ts chunkImportMap)');
+}
+{
+  // the boot watchdog (ui-state/bootWatch.ts) inline after the import map, before any module, its hash in the CSP
+  if (!html.includes('data-boot-watch')) {
+    const sha = `'sha256-${createHash('sha256').update(BOOT_WATCH_JS).digest('base64')}'`;
+    const meta = /(<meta http-equiv="content-security-policy" content="[^"]*script-src [^;"]*)([^>]*>)/.exec(html);
+    if (!meta) throw new Error('headers: no script-src in index.html\'s CSP <meta>, for the boot watchdog\'s hash');
+    html = html.replace(meta[0], `${meta[1]} ${sha}${meta[2]}`).replace(/<script type="importmap">.*?<\/script>/s, (m) => `${m}\n\t\t<script data-boot-watch>${BOOT_WATCH_JS}</script>`);
+    writeFileSync(join(root, 'index.html'), html);
+    console.log('build-pages/index.html: the boot watchdog');
+  }
 }
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');

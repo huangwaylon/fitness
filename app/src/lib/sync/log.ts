@@ -506,6 +506,18 @@ function markHidden(hidden: boolean) {
     /* no local storage */
   }
 }
+/** localStorage: when the app reloaded itself as it was hidden, to take a deploy (ui-state/update.ts; ms): the next
+ *  load's app.open says so (`hr`, `hrS`), and its `vis` whether it loaded still hidden (the reload ran out of sight) or
+ *  only once the player was back (iOS froze it first). */
+const HIDDEN_RELOAD = 'island.hiddenReload';
+/** The app reloads now as it is hidden (+layout.svelte's deploy at a hide). */
+export function noteHiddenReload(): void {
+  try {
+    localStorage.setItem(HIDDEN_RELOAD, String(env.now()));
+  } catch {
+    /* no local storage */
+  }
+}
 /** The island's `ready` polled every 500 ms for a minute at most. */
 const READY_POLLS = 120;
 
@@ -544,13 +556,22 @@ export function startLog(o: LogStart): () => void {
   } catch {
     /* no local storage */
   }
+  let hrS: number | undefined;
+  try {
+    const at = Number(localStorage.getItem(HIDDEN_RELOAD) ?? 0);
+    if (at > 0) hrS = Math.max(0, Math.round((env.now() - at) / 1000));
+    localStorage.removeItem(HIDDEN_RELOAD);
+  } catch {
+    /* no local storage */
+  }
+  const shownAs = document.hidden ? 'hidden' : 'visible';
   markHidden(document.hidden);
   const types = (globalThis.PerformanceObserver as { supportedEntryTypes?: readonly string[] } | undefined)?.supportedEntryTypes ?? [];
   const q = o.queue();
   log('app.open', {
     nav, route: route(), pwa: matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true,
     w: innerWidth, h: innerHeight, dpr: devicePixelRatio, lt: types.includes('long-animation-frame') || types.includes('longtask'),
-    q: q.n, qAgeS: Math.round(q.ageMs / 1000), ...(coldS !== undefined ? { coldS } : {})
+    q: q.n, qAgeS: Math.round(q.ageMs / 1000), ...(coldS !== undefined ? { coldS } : {}), vis: shownAs, ...(hrS !== undefined ? { hr: true, hrS } : {})
   });
   const err = (e: ErrorEvent) => logError('error', e.error ?? e.message, { file: e.filename, line: e.lineno, route: o.route(), leaving: isLeaving.now || document.hidden });
   const rej = (e: PromiseRejectionEvent) => logError('rejection', e.reason, { route: o.route(), leaving: isLeaving.now || document.hidden });

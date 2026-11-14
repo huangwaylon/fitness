@@ -413,11 +413,26 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   deploys behind loads its lazy chunks from its own), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
   (`staleFonts`). It activates as soon as it's installed: the old worker is idle by then, as no event of its waits on a
   bounded cache's index write (`bounded.ts`: a use is marked in memory, the write follows on its own).
-- **Navigations:** with this version's shell cached, the network's page if it's in within `RACE_MS` (400 ms;
-  `caches.ts raceShell`), so a launch after a deploy is the new build at once (its new chunks from the network, the
-  rest from the cache), else the cached shell; offline, the cached shell at once. The network's answer is the
-  navigation preload's (enabled at activation). Each answer says which (`Server-Timing: shell`, perf.boot `shell`).
-  No shell of this version yet: network first, an older shell offline or after 3 s.
+- **Navigations:** with this version's shell cached, the network's page if all of it is in within `RACE_MS` (400 ms;
+  `caches.ts raceShell`) and it's another build's (`net`): a launch after a deploy is the new build at once, its new
+  chunks from the network, the rest from the cache. This build's own page from the network: the cached shell
+  (`same`); late or failed: the cached shell (`cache`); offline: the cached shell at once. No race at all (`skip`)
+  when the network named this build the deployed one within `FRESH_MS` (5 min: `__fresh` in the shell cache, set by
+  a `same` race and by Kit's `_app/version.json` checks, which the worker passes to the network and reads). The
+  network's answer is the navigation preload's (enabled at activation; a rollback to a worker from before the race
+  should `navigationPreload.disable()` in its activate, else every navigation asks the network for nothing). Each
+  answer says which and the race's ms (`Server-Timing: shell`, perf.boot `shell`, `raceMs`). No shell of this version
+  yet: network first, the newest older shell offline or after 3 s (any request: this version's cache, then the older
+  shells newest first, `fromOlder`; never `caches.match`, which answers the oldest).
+- **Boot watchdog** (`ui-state/bootWatch.ts`, inline in index.html, its hash in the CSP: `scripts/headers.ts`): on a
+  page the worker answered from the network (`shell` net), entry chunks that don't load (the network cut just after
+  it) or no start in 8 s reload it once a session at `?shell=cache`, which the worker answers with this version's
+  cached shell, no race; a cached shell's slow start (a busy phone) is left alone.
+- **Older worker, newer page:** a deploy's page runs under the previous build's worker until the new one claims it (for
+  the session if its install fails). A worker change must serve the previous build's page and the next one (the
+  `warm`/`used`/`flush` messages, the cache names, the fetch rules: a new data path goes to the network under the old
+  worker); when it can't, ship the worker change a deploy ahead, or bump `COMPAT`. `sw-update.spec` runs a deploy's
+  page (`serve-build ?e2eVersion=`) under the older worker.
 - **Updates:** a launch online is the deploy's page already (Navigations). A page left running, or one whose network
   was late, is never reloaded in front (`ui-state/update.ts`): Kit's `_app/version.json` check (on a show, and when a
   newer worker claims the page) sets `updated`, the layout waits for the new build's worker (`ui-state/reload.ts
@@ -426,7 +441,9 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   (`contract/compat.ts COMPAT`, written by `scripts/version-compat.ts`; bump it for a protocol or stored-shape change
   older pages can't handle; `app.reload why=stale`). A lazy chunk that fails still reloads into a newer build
   (`reloadUnlessLeaving`). Never on a timer; a failed install reloads nothing. `e2e/sw-update.spec.ts`
-  (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy, `?e2eSlow=<ms>` for a slow network).
+  (`scripts/serve-build.ts`: `/__e2e/deploy` stands in for a deploy's worker, `?e2eVersion=<v>` for its page,
+  `?e2eSlow=<ms>` / `?e2eSlowBody=<ms>` for a slow network). Each reload is once a deployed version a session
+  (`island.updateFor`, `island.staleFor`): one served an older shell again waits for the next launch, no loop.
 - **Packs** (the players' and ききみみ's): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`fetchShared`).
 

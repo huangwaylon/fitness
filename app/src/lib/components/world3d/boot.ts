@@ -51,9 +51,11 @@ export interface BootReport {
   /** ms since the navigation's start when the record's model was first composed (week.svelte.ts dataAt; 0: not by
    *  the report): the farm's plots, the finds and the garden's crops are placed only from it. */
   data?: number;
-  /** Where the launch's page came from: the network (in within the worker's race: service-worker/caches.ts raceShell)
-   *  or the worker's cached shell; none: not the worker's (a first visit, no worker). */
-  shell?: 'net' | 'cache';
+  /** Where the launch's page came from (service-worker/caches.ts ShellFrom: `net` a newer build's page from the
+   *  network within the worker's race, `same` the cache confirmed by it, `skip` the cache with no race, `cache` the
+   *  cache, the network late or offline), and the race's ms; none: not the worker's (a first visit, no worker). */
+  shell?: 'net' | 'same' | 'skip' | 'cache';
+  raceMs?: number;
 }
 
 /** Of the models in (things.ts arrivals: name, time), those after `loaded` up to `shown`, and the last's name (at
@@ -65,10 +67,13 @@ export function lateModels(ins: readonly (readonly [string, number])[], loaded: 
   return lastM ? { late, lastM } : { late };
 }
 
-/** Where the launch's page came from (the worker's Server-Timing `shell`: service-worker/caches.ts marked). */
-export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? []): BootReport['shell'] {
-  const d = (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming?.find((t) => t.name === 'shell')?.description;
-  return d === 'net' || d === 'cache' ? d : undefined;
+const SHELLS = ['net', 'same', 'skip', 'cache'] as const;
+/** Where the launch's page came from and the race's ms (the worker's Server-Timing `shell`: service-worker/caches.ts
+ *  marked); {} when the worker didn't say. */
+export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? []): Pick<BootReport, 'shell' | 'raceMs'> {
+  const t = (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming?.find((x) => x.name === 'shell');
+  const d = SHELLS.find((s) => s === t?.description);
+  return d ? { shell: d, raceMs: Math.round(t?.duration ?? 0) } : {};
 }
 
 /** The service worker as the page was launched. */
@@ -183,8 +188,7 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
-    const shell = shellFrom();
-    report = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...(shell ? { shell } : {}) };
+    report = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shellFrom() };
     log('perf.boot', { ...report });
   };
   document.addEventListener('visibilitychange', onVis);

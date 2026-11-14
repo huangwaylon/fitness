@@ -5,7 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, marked, raceShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, marked, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -143,10 +143,20 @@ async function serveTile(event: FetchEvent, key: string): Promise<Response> {
   return swrFetch(event.request, seen, (r) => (self.navigator.onLine === false ? Promise.reject(new TypeError('offline')) : fetch(r)), (p) => event.waitUntil(p), { key, freshMs: TILE_FRESH_MS, used: (k, n) => event.waitUntil(tileUsed(k, n).catch(() => {})) });
 }
 
-/** Ours first (a static file may change under the same path), then the previous generation's. */
+/** Ours first (a static file may change under the same path), then the older shells', newest first (caches.match
+ *  answers the oldest: a version with no shell of its own opened a build three deploys back, review 11-14 #3). */
 async function cached(req: Request | string): Promise<Response | undefined> {
-  return (await (await caches.open(CACHE)).match(req)) ?? (await caches.match(req));
+  return (await (await caches.open(CACHE)).match(req)) ?? (await fromOlder(caches, CACHE, req));
 }
+
+/** When the network last named this build the deployed one (caches.ts FRESH_KEY), or null. */
+async function freshAt(): Promise<number | null> {
+  const r = await (await caches.open(CACHE)).match(FRESH_KEY).catch(() => undefined);
+  const at = r ? Number(await r.text()) : NaN;
+  return Number.isFinite(at) ? at : null;
+}
+const markFresh = (fresh: boolean): Promise<unknown> =>
+  caches.open(CACHE).then((c) => (fresh ? c.put(FRESH_KEY, new Response(String(Date.now()))) : c.delete(FRESH_KEY))).catch(() => {});
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
@@ -173,6 +183,17 @@ self.addEventListener('fetch', (event) => {
   // skips waiting and claims the page. No shell of this version yet (a first visit, or offline at install): network
   // first, an older version's shell offline or after 3 s; the response becomes this version's shell if it is this
   // build's (keepShell).
+  // Kit's version check (the page's, on a show and when a newer worker claims it): the network's, as ever, and what it
+  // says kept for the launches' race (this build the deployed one: none needed for FRESH_MS)
+  if (url.pathname === `${SCOPE}_app/version.json`) {
+    event.respondWith(fetch(req).then(async (res) => {
+      const v = res.ok ? ((await res.clone().json().catch(() => null)) as { version?: unknown } | null)?.version : undefined;
+      if (typeof v === 'string') event.waitUntil(markFresh(v === version));
+      return res;
+    }));
+    return;
+  }
+
   if (req.mode === 'navigate') {
     const own = caches.open(CACHE).then((c) => c.match(SCOPE)).catch(() => undefined);
     const preload = (event.preloadResponse as Promise<Response | undefined> | undefined)?.catch(() => undefined) ?? Promise.resolve(undefined);
@@ -190,7 +211,15 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         const hit = await own;
-        if (hit) return marked(...(await raceShell(hit, online ? ask() : null)));
+        if (hit) {
+          // offline, or the boot watchdog's reload (app.html: a network page that didn't start), this shell at once;
+          // the network named this build the deployed one lately: no race
+          if (!online || url.searchParams.get('shell') === 'cache') return marked({ res: hit, from: 'cache', ms: 0 });
+          if (freshNow(await freshAt())) return marked({ res: hit, from: 'skip', ms: 0 });
+          const raced = await raceShell(hit, ask(), version);
+          if (raced.from !== 'cache') event.waitUntil(markFresh(raced.from === 'same'));
+          return marked(raced);
+        }
         let timer: ReturnType<typeof setTimeout> | undefined;
         const late = new Promise<null>((r) => (timer = setTimeout(r, NAV_TIMEOUT_MS, null)));
         const first = await Promise.race([net.catch(() => null), late]);
@@ -360,6 +389,12 @@ async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
 }
 self.addEventListener('message', (event) => {
   const d = event.data as { k?: string; urls?: unknown } | null;
+  // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
+  // a moment after a use, outside every event, bounded.ts)
+  if (d?.k === 'flush') {
+    event.waitUntil(Promise.all([roomUsed, listenUsed, photoUsed, tileUsed, artUsed, foodImgUsed].map((u) => u.pending())).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
+    return;
+  }
   if (!Array.isArray(d?.urls)) return;
   // The KTX2 files whose textures the page read back from its own cache (world3d/ktx2.ts usedFile: no fetch, so never
   // seen here): used now, in the room's index, so the island's own aren't the least recently used past the cap.

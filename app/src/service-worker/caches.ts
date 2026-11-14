@@ -470,37 +470,75 @@ export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: stri
   await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
 }
 
-/** A launch online races the network for the shell this long (ms). A deploy's own page in time boots at once, with no
- *  reload into it (the phones before: ~3 s of the old build's HUD, then a reload under the player, 35% of cold opens
- *  11-11..11-14); late (one bar, a captive portal), this version's cached shell, and the deploy is taken at the next
- *  safe moment (ui-state/reload.ts). Past the phones' version.json ask (median 191 ms, p90 300). */
+/** A launch online races the network for the shell this long (ms), the page's whole HTML. A deploy's own page in time
+ *  boots at once, with no reload into it (the phones before: ~3 s of the old build's HUD, then a reload under the
+ *  player, 35% of cold opens 11-11..11-14); this build's own page (no deploy) or a late one (one bar, a captive
+ *  portal): this version's cached shell, and a deploy is taken at the next safe moment (ui-state/update.ts). Past the
+ *  phones' version.json ask (median 191 ms, p90 300). */
 export const RACE_MS = 400;
-export type ShellFrom = 'net' | 'cache';
+/** No race at all when the network said this build was the deployed one this recently (ms; FRESH_KEY): the network's
+ *  round trip saved on a quick relaunch (a third of cold opens come within minutes of a hide), a deploy in between taken
+ *  at the next hide. */
+export const FRESH_MS = 5 * 60_000;
+/** The shell cache's entry saying when the network last named this build the deployed one (ms since the epoch). */
+export const FRESH_KEY = '__fresh';
+/** Where a navigation's page came from: `net` a newer build's page from the network; `same` the cache, the network's
+ *  page being this build's (confirmed); `skip` the cache, confirmed within FRESH_MS (no race); `cache` the cache, the
+ *  network late, failed or offline (or the boot watchdog's `?shell=cache`). */
+type ShellFrom = 'net' | 'same' | 'skip' | 'cache';
 
 /** Whether a navigation's network answer is a page of ours to boot: HTML, our origin, and either the page or the SPA
  *  fallback (404.html is index.html: build script). */
 const bootable = (res: Response): boolean => (res.ok || res.status === 404) && res.type === 'basic' && (res.headers.get('content-type') ?? '').includes('text/html');
 
-/** A navigation's answer when this version has a cached shell (`own`): the network's page (`net`: null offline) if it
- *  is in within `raceMs` and bootable, else `own`. A late or unusable answer's body is let go. */
-export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, raceMs = RACE_MS): Promise<[Response, ShellFrom]> {
-  if (!net) return [own, 'cache'];
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const late = new Promise<null>((r) => (timer = setTimeout(r, raceMs, null)));
-  const caught = net.catch(() => null);
-  const first = await Promise.race([caught, late]);
-  clearTimeout(timer);
-  if (first && bootable(first)) return [first, 'net'];
-  if (first) void first.body?.cancel().catch(() => {});
-  else void caught.then((r) => r?.body?.cancel().catch(() => {}));
-  return [own, 'cache'];
+export interface Raced {
+  res: Response;
+  from: ShellFrom;
+  /** The race's ms (0: no race). */
+  ms: number;
 }
 
-/** A shell's answer saying where it came from (Server-Timing `shell`: perf.boot's, world3d/boot.ts shellFrom). */
-export function marked(res: Response, from: ShellFrom): Response {
+/** A navigation's answer when this version has a cached shell (`own`): the network's page (`net`: null offline) if all
+ *  of it is in within `raceMs`, bootable, and another build's (isShellOf: this build's own is the cached shell, its
+ *  chunks all cached), else `own`. A late or unusable answer is let go. */
+export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, version: string, raceMs = RACE_MS, now: () => number = Date.now): Promise<Raced> {
+  if (!net) return { res: own, from: 'cache', ms: 0 };
+  const t0 = now();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<null>((r) => (timer = setTimeout(r, raceMs, null)));
+  // (the whole body within the race: a page whose headers came in time but its body didn't waited on it, the cache's
+  // copy at hand: review 11-14 #1)
+  const read = net.then(async (r) => {
+    if (!r) return null;
+    if (!bootable(r)) return void r.body?.cancel().catch(() => {}), null;
+    return { r, html: await r.text() };
+  }).catch(() => null);
+  const first = await Promise.race([read, late]);
+  clearTimeout(timer);
+  const ms = Math.round(now() - t0);
+  if (!first) return { res: own, from: 'cache', ms };
+  if (isShellOf(first.html, version)) return { res: own, from: 'same', ms };
+  return { res: new Response(first.html, { status: first.r.status, statusText: first.r.statusText, headers: first.r.headers }), from: 'net', ms };
+}
+
+/** Whether the network named this build the deployed one within FRESH_MS (FRESH_KEY's time, `at`). */
+export const freshNow = (at: number | null, now = Date.now()): boolean => at !== null && now - at >= 0 && now - at < FRESH_MS;
+
+/** A shell's answer saying where it came from and the race's ms (Server-Timing `shell`: perf.boot's, world3d/boot.ts
+ *  shellFrom). */
+export function marked({ res, from, ms }: Raced): Response {
   const headers = new Headers(res.headers);
-  headers.append('Server-Timing', `shell;desc=${from}`);
+  headers.append('Server-Timing', `shell;desc=${from};dur=${ms}`);
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+/** Older shells' copy of a request, newest first (`keys` in creation order: caches.match would answer the oldest). */
+export async function fromOlder(store: Pick<CacheStorage, 'keys' | 'open'>, current: string, req: Request | string): Promise<Response | undefined> {
+  for (const k of olderShells(await store.keys(), current)) {
+    const hit = await (await store.open(k)).match(req);
+    if (hit) return hit;
+  }
+  return undefined;
 }
 
 // ---- offline guides and maps (docs/backend.md "Service worker" › Offline): kept as they are seen, never prefetched

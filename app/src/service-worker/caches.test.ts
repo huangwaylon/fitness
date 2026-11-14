@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, SHELLS_KEPT, marked, raceShell, RACE_MS, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { fetchKeep, SHELLS_KEPT, marked, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -831,48 +831,77 @@ describe("a first launch's files kept once the worker is in (warmable)", () => {
 describe('a launch races the network for the shell (raceShell)', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
-  const page = (body = '<html>new</html>', init: ResponseInit = {}, type = 'basic') => {
+  const V = '2026-11-14.aaaaaaa';
+  const html = (v: string) => `<html><script>__sveltekit = { version: ${JSON.stringify(v)} }</script></html>`;
+  const page = (body = html('next'), init: ResponseInit = {}, type = 'basic') => {
     const r = new Response(body, { headers: { 'content-type': 'text/html; charset=utf-8' }, ...init });
     Object.defineProperty(r, 'type', { value: type });
     return r;
   };
-  const own = () => page('<html>cached</html>');
+  const own = () => page(html(V));
   const later = <T,>(ms: number, v: T) => new Promise<T>((r) => setTimeout(r, ms, v));
+  /** A page whose headers come at `head` ms and its body at `body` ms. */
+  const slowBody = (head: number, body: number) => later(head, page(new ReadableStream({ start: (c) => void setTimeout(() => (c.enqueue(new TextEncoder().encode(html('next'))), c.close()), body - head) }) as unknown as BodyInit));
 
-  it('the network\'s page in time: booted (a deploy\'s own page, no reload into it)', async () => {
-    const p = raceShell(own(), later(120, page()));
+  it('another build\'s whole page in time: booted (a deploy\'s own, no reload into it), the race\'s ms said', async () => {
+    const p = raceShell(own(), later(120, page()), V);
     await vi.advanceTimersByTimeAsync(120);
-    const [res, from] = await p;
-    expect(from).toBe('net');
-    expect(await res.text()).toBe('<html>new</html>');
+    const { res, from, ms } = await p;
+    expect([from, ms]).toEqual(['net', 120]);
+    expect(await res.text()).toBe(html('next'));
   });
-  it('late (a weak network): the cached shell at RACE_MS, the late answer let go', async () => {
+  it('this build\'s own page from the network: the cached shell (its chunks all cached), `same`', async () => {
+    const p = raceShell(own(), later(80, page(html(V))), V);
+    await vi.advanceTimersByTimeAsync(80);
+    const { res, from } = await p;
+    expect(from).toBe('same');
+    expect(await res.text()).toBe(html(V));
+  });
+  it('headers in time but the body late (one bar): the cached shell at RACE_MS, not a wait on the body (review 11-14 #1)', async () => {
+    const p = raceShell(own(), slowBody(50, 5000), V);
+    await vi.advanceTimersByTimeAsync(RACE_MS);
+    const { res, from, ms } = await p;
+    expect([from, ms]).toEqual(['cache', RACE_MS]);
+    expect(await res.text()).toBe(html(V));
+    await vi.advanceTimersByTimeAsync(5000);
+  });
+  it('late altogether: the cached shell at RACE_MS, the late answer let go', async () => {
     const late = page();
     const cancel = vi.spyOn(late.body!, 'cancel');
-    const p = raceShell(own(), later(RACE_MS + 500, late));
+    const p = raceShell(own(), later(RACE_MS + 500, late), V);
     await vi.advanceTimersByTimeAsync(RACE_MS);
-    const [res, from] = await p;
-    expect(from).toBe('cache');
-    expect(await res.text()).toBe('<html>cached</html>');
+    expect((await p).from).toBe('cache');
     await vi.advanceTimersByTimeAsync(500);
-    expect(cancel).toHaveBeenCalled();
+    expect(cancel).not.toHaveBeenCalled(); // (read, not cancelled: its text, dropped)
   });
   it('offline (no ask) or a failed one: the cached shell at once', async () => {
-    expect((await raceShell(own(), null))[1]).toBe('cache');
-    expect((await raceShell(own(), Promise.reject(new TypeError('offline'))))[1]).toBe('cache');
+    expect((await raceShell(own(), null, V)).from).toBe('cache');
+    expect((await raceShell(own(), Promise.reject(new TypeError('offline')), V)).from).toBe('cache');
   });
   it('the SPA fallback (404.html is index.html) boots; an error, a redirect, or not HTML does not', async () => {
-    expect((await raceShell(own(), Promise.resolve(page('<html>new</html>', { status: 404 }))))[1]).toBe('net');
-    expect((await raceShell(own(), Promise.resolve(page('oops', { status: 503 }))))[1]).toBe('cache');
+    expect((await raceShell(own(), Promise.resolve(page(html('next'), { status: 404 })), V)).from).toBe('net');
+    expect((await raceShell(own(), Promise.resolve(page('oops', { status: 503 })), V)).from).toBe('cache');
     const json = new Response('{}', { headers: { 'content-type': 'application/json' } });
     Object.defineProperty(json, 'type', { value: 'basic' });
-    expect((await raceShell(own(), Promise.resolve(json)))[1]).toBe('cache');
-    expect((await raceShell(own(), Promise.resolve(page('', {}, 'opaqueredirect'))))[1]).toBe('cache');
+    expect((await raceShell(own(), Promise.resolve(json), V)).from).toBe('cache');
+    expect((await raceShell(own(), Promise.resolve(page('', {}, 'opaqueredirect')), V)).from).toBe('cache');
   });
-  it('marked: the answer says where it came from (Server-Timing), its own headers (the CSP) kept', async () => {
-    const res = marked(page('x', { headers: { 'content-type': 'text/html', 'content-security-policy': "script-src 'sha256-a'" } }), 'net');
-    expect(res.headers.get('server-timing')).toBe('shell;desc=net');
+  it('freshNow: the network named this build the deployed one within FRESH_MS', () => {
+    expect(freshNow(1000, 1000 + FRESH_MS - 1)).toBe(true);
+    expect(freshNow(1000, 1000 + FRESH_MS)).toBe(false);
+    expect(freshNow(null, 5)).toBe(false);
+    expect(freshNow(5000, 1000), 'a clock moved back: race').toBe(false);
+  });
+  it('marked: the answer says where it came from and the race\'s ms (Server-Timing), its own headers (the CSP) kept', async () => {
+    const res = marked({ res: page('x', { headers: { 'content-type': 'text/html', 'content-security-policy': "script-src 'sha256-a'" } }), from: 'net', ms: 183 });
+    expect(res.headers.get('server-timing')).toBe('shell;desc=net;dur=183');
     expect(res.headers.get('content-security-policy')).toBe("script-src 'sha256-a'");
     expect(await res.text()).toBe('x');
+  });
+  it('fromOlder: the older shells\' copy newest first (caches.match answers the oldest: review 11-14 #3)', async () => {
+    const store = new Map<string, Map<string, string>>([['island-shell-A', new Map([['/', 'A']])], ['island-shell-B', new Map([['/', 'B']])], ['island-shell-C', new Map([['/x', 'C']])], ['island-shell-D', new Map()]]);
+    const cs = { keys: async () => [...store.keys()], open: async (k: string) => ({ match: async (r: string) => (store.get(k)!.has(r) ? new Response(store.get(k)!.get(r)) : undefined) }) } as unknown as CacheStorage;
+    expect(await (await fromOlder(cs, 'island-shell-D', '/'))!.text()).toBe('B');
+    expect(await fromOlder(cs, 'island-shell-D', '/none')).toBeUndefined();
   });
 });

@@ -35,13 +35,13 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 
 | Event | Level | Fields | When |
 |---|---|---|---|
-| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill, or a swipe closed, when short) | each load |
+| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill, or a swipe closed, when short), `vis` (the page hidden or shown as it loaded), `hr`/`hrS` (the load is the app's own reload at a hide, a deploy taken out of sight, that many s after it) | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
 | `app.reload` | info | `why` (update: a deploy taken as the app hid; launch: older builds only; chunk; stale: a build this one can't work with, version.json `compat`; mic; other) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
 | `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (300 ms quiet after opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | the launch's marks (`mount` → `shown`, `data`), its longest frames and steps by what held them, `fields`, `sw`, `warm`, `net`, `shell` (the page from the network or the worker's cache; `ask`/`held`: older builds) (world3d/boot.ts BootReport; the registry has them all) | once a load, 1 s after the island is whole (world3d/boot.ts) |
+| `perf.boot` | info | the launch's marks (`mount` → `shown`, `data`), its longest frames and steps by what held them, `fields`, `sw`, `warm`, `net`, `shell` (`net` a deploy's page from the network, `same` the cache confirmed by the race, `skip` the cache with no race, `cache` the network late or offline), `raceMs` (the race's ms: its cost; `ask`/`held`: older builds) (world3d/boot.ts BootReport; the registry has them all) | once a load, 1 s after the island is whole (world3d/boot.ts) |
 | `perf.back` | info | `perf.boot`'s marks (but `draw`) for the first return from a room | once a load (world3d/boot.ts) |
 | `perf.rest` | info | the rest since the last show (every second 2 s+ untouched): `s`, `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (point lights, their mask: on unless `?pointmask=0`) | at each hide, or the island going, with 3 s+ of rest (world3d/rest.ts) |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src` (`file:line`, or the catcher's tag: `live`, `world`, `synced.<store>`, `bus.<event>`, `snapshot`), `n` (folded repeats), `leaving`, `route`, `sheet` | `error`, `unhandledrejection`, a caught bug (quiet.ts); ≤ 5 a message a session; an import cut off by leaving or by a `chunk.fail`: `swallow:import.*` |
@@ -138,6 +138,12 @@ npm run logs -- report --os ios                            # the phones only (--
 npm run logs -- stats                                      # the alert's numbers
 npm run logs -- --test ...                                 # the test relay
 ```
+
+**Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
+`hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came
+back (iOS froze it), the same as a reload under the player. **The launch race's cost:** `--event perf.boot`, `raceMs`
+by `shell` (`same` and `net` paid it, `skip` and `cache` didn't), and `first`/`shown` against the weeks before.
+
 
 ### Investigating (a checklist)
 1. `npm run logs -- stats`: errors in 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC) rows

@@ -24,3 +24,38 @@ export const takeUpdate = (s: UpdateState): boolean => s.updated && s.ready && !
 
 /** Whether the deployed build's compatibility epoch (version.json `compat`) is past this build's. */
 export const incompatible = (deployed: unknown, own = COMPAT): boolean => typeof deployed === 'number' && deployed > own;
+
+let claims = 0;
+/** A newer worker claimed the page (a deploy installed under it: a launch whose network was late, a page left open):
+ *  Kit's version check asked at once, from the app's start (+layout.ts: a claim ~0.3 s in came before the layout's
+ *  mount, and the deploy waited for the second hide: review 11-14 #4). `claimed()`: how many so far (the layout asks
+ *  again at its mount if any came before Kit could). */
+export function watchClaims(check: () => Promise<unknown>, sw: ServiceWorkerContainer | undefined = globalThis.navigator?.serviceWorker): void {
+  sw?.addEventListener('controllerchange', () => {
+    claims++;
+    try {
+      void check().catch(() => {});
+    } catch {
+      /* Kit not started yet: the layout's mount asks */
+    }
+  });
+}
+export const claimed = (): number => claims;
+
+/** sessionStorage: the deployed version a reload of this kind was last made for (`island.updateFor` at a hide,
+ *  `island.staleFor` in front): one reload a deployed version a session, so a reload served an older shell again (slow,
+ *  offline, an install that failed) waits for the next launch rather than looping (review 11-14 #3). */
+export function doneFor(key: string, version: string): boolean {
+  try {
+    return sessionStorage.getItem(key) === version;
+  } catch {
+    return true; // no storage: no loop guard, so no automatic reload
+  }
+}
+export function markDone(key: string, version: string): void {
+  try {
+    sessionStorage.setItem(key, version);
+  } catch {
+    /* (doneFor says done) */
+  }
+}

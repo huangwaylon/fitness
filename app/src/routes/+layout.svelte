@@ -22,8 +22,9 @@
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { deployedCompat, isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
-  import { incompatible, takeUpdate } from '#lib/ui-state/update.ts';
+  import { deployedInfo, isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
+  import { claimed, doneFor, incompatible, markDone, takeUpdate } from '#lib/ui-state/update.ts';
+  import { replaceState } from '$app/navigation';
   import { registerLate, releaseWorker } from '#lib/ui-state/swLate.ts';
   import { opensIsland } from '#lib/ui-state/boot.ts';
   import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
@@ -35,7 +36,7 @@
   import { startTaps } from '#lib/sound/taps.ts';
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
-  import { count, startLog } from '#lib/sync/log.ts';
+  import { count, noteHiddenReload, startLog } from '#lib/sync/log.ts';
   import { logUrl } from '#lib/sync/transport.ts';
   import { queued } from '#lib/sync/queue.ts';
   import { version } from '$app/env';
@@ -73,15 +74,26 @@
   // now: asked again as the app comes back.
   let workerReady = $state(false);
   let mustReload = $state(false);
+  /** The deployed version (version.json's, as askWorker last read it): each reload's once-a-version guard. */
+  let deployedV = '?';
   function askWorker() {
     if (!updated.current) return;
     if (!workerReady) void newWorker().then((ok) => (workerReady = ok));
-    if (!mustReload) void deployedCompat().then((c) => (mustReload = incompatible(c)));
+    if (!mustReload) void deployedInfo().then((d) => {
+      if (typeof d?.version === 'string') deployedV = d.version;
+      mustReload = incompatible(d?.compat);
+    });
   }
   $effect(askWorker);
   const update = (hidden: boolean) => ({ updated: updated.current, ready: workerReady, incompatible: mustReload, busy: onPair || showHarvest || ui.sheets.length > 0, hidden });
+  /** Reloads into the deployed build for `why`, once a deployed version a session (update.ts doneFor). */
+  function take(key: string, why: 'update' | 'stale', before?: () => void) {
+    if (doneFor(key, deployedV)) return;
+    before?.();
+    if (safeReload(Date.now(), why)) markDone(key, deployedV);
+  }
   $effect(() => {
-    if (takeUpdate(update(false))) safeReload(Date.now(), 'stale');
+    if (takeUpdate(update(false))) take('island.staleFor', 'stale');
   });
 
   // the service worker once the island is up (ui-state/swLate.ts); a screen with no island coming releases it
@@ -106,15 +118,18 @@
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
-      if (document.visibilityState === 'hidden' && takeUpdate(update(true))) safeReload(Date.now(), 'update');
+      if (document.visibilityState === 'hidden' && takeUpdate(update(true))) take('island.updateFor', 'update', noteHiddenReload);
       if (document.visibilityState === 'visible') askWorker();
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
-    // a newer worker took the page over (a deploy installed under it: a launch whose network was late, or a page left
-    // open): Kit asked now, not at the next show, so the next hide takes it
-    const onClaim = () => void updated.check();
-    navigator.serviceWorker?.addEventListener('controllerchange', onClaim);
+    // a newer worker's claim before this mount (+layout.ts watchClaims): Kit asked again now it surely can
+    if (claimed()) void updated.check().catch(() => {});
+    // the boot watchdog's reload (ui-state/bootWatch.ts) came at `?shell=cache`: the param goes
+    if (new URLSearchParams(location.search).get('shell') === 'cache') {
+      const q = location.search.replace(/([?&])shell=cache(&|$)/, (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
+      replaceState(location.pathname + q + location.hash, page.state);
+    }
     // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once (not as we leave).
     // Only a chunk not fetched: the helper reports every lazy import that rejects, a module that threw as it ran too
     // (the sound's renderer, the villagers' birthdays, K.K.'s songs), which a reload doesn't cure.
@@ -155,7 +170,6 @@
       stopTheme();
       stopWeather();
       document.removeEventListener('visibilitychange', onVisible);
-      navigator.serviceWorker?.removeEventListener('controllerchange', onClaim);
       window.removeEventListener('vite:preloadError', onStale);
     };
   });

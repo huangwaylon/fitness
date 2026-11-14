@@ -4,6 +4,7 @@
 // No dependencies, starts at once.
 // `node scripts/serve-build.ts <port> [base]`.
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
@@ -95,11 +96,36 @@ async function serve(req: IncomingMessage, res: ServerResponse) {
   const slow = served.endsWith('.html') ? Number(url.searchParams.get('e2eSlow') ?? 0) : 0;
   if (slow > 0) await new Promise((r) => setTimeout(r, Math.min(slow, 10_000)));
   let body = await readFile(served);
+  // the e2e's stand-in for a deploy's page (sw-update.spec): `?e2eVersion=<v>` serves the page as build <v>'s, its entry
+  // chunks at new URLs (`?e2e=<v>`: in no cache, as a deploy's are), the bootstrap's CSP hash recomputed in the page and
+  // the header
+  const asVersion = served.endsWith('.html') ? url.searchParams.get('e2eVersion') : null;
+  let csp: [string, string] | null = null;
+  if (asVersion && /^[\w.-]{1,40}$/.test(asVersion)) {
+    const html = body.toString('utf8');
+    const boot = /<script>([\s\S]*?version: ")[^"]*("[\s\S]*?)<\/script>/.exec(html);
+    if (boot) {
+      const old = boot[0].slice('<script>'.length, -'</script>'.length);
+      const next = `${boot[1]}${asVersion}${boot[2]}`.replace(/\/_app\/immutable\/entry\/[\w.-]+\.js/g, (u) => `${u}?e2e=${asVersion}`);
+      const sha = (t: string) => `'sha256-${createHash('sha256').update(t).digest('base64')}'`;
+      csp = [sha(old), sha(next)];
+      body = Buffer.from(html.replace(old, () => next).replaceAll(csp[0], csp[1]));
+    }
+  }
+  // `?e2eSlowBody=<ms>`: the page's headers at once, its body that late (a weak network's first bytes in time)
+  const slowBody = served.endsWith('.html') ? Number(url.searchParams.get('e2eSlowBody') ?? 0) : 0;
   if (deploys && path.endsWith('/service-worker.js')) body = Buffer.concat([body, Buffer.from(`\n// e2e deploy ${deploys}\n`)]);
   // (a type of _headers' over the file's: the models')
   const ruled = Object.fromEntries(Object.entries(headersFor(path)).map(([k, v]) => [k.toLowerCase(), v]));
   // (a Range is answered whole, 200, as Pages answers it: curl, 2026-11-09, for .pak and .m4a alike)
+  if (csp && ruled['content-security-policy']) ruled['content-security-policy'] = ruled['content-security-policy'].replaceAll(csp[0], csp[1]);
   const headers = { 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', ...ruled, 'cache-control': 'no-store' };
   res.writeHead(hit ? 200 : 404, headers);
+  if (slowBody > 0 && req.method !== 'HEAD') {
+    res.write(body.subarray(0, 64));
+    await new Promise((r) => setTimeout(r, Math.min(slowBody, 10_000)));
+    res.end(body.subarray(64));
+    return;
+  }
   res.end(req.method === 'HEAD' ? undefined : body);
 }

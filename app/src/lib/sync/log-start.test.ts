@@ -2,7 +2,7 @@
 // rate from the median gap, a page error, hidden (the keepalive flush) and shown again, and the stop. A browser's
 // globals stubbed; the timers, Date and performance faked.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureLog, flushLog, log, markLeaving, setDrawnFps, startLog } from './log.ts';
+import { configureLog, flushLog, log, markLeaving, noteHiddenReload, setDrawnFps, startLog } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
 
 const KEY = '3f9a'.repeat(16);
@@ -179,6 +179,35 @@ describe('the log started on a phone', () => {
       // (each batch once: a resent one is the same batch id, which the relay takes once)
       const opens = [...new Map(sent.map((x) => [x.body.b, x.body])).values()].flatMap((b) => b.es).filter((e) => e.e === 'app.open');
       expect(opens.map((e) => e.d?.coldS ?? null)).toEqual([null, 40, null, null, null]);
+    } finally {
+      delete perf.getEntriesByType;
+    }
+  });
+
+  it('a load that is the app\'s own reload at a hide says so (hr, hrS) and whether it loaded hidden (vis): did iOS run it out of sight', async () => {
+    const perf = performance as unknown as { getEntriesByType?: unknown };
+    perf.getEntriesByType = () => [{ type: 'reload' }];
+    try {
+      // the deploy taken at a hide, the reload loading out of sight
+      noteHiddenReload();
+      doc.hidden = true;
+      let stop = start();
+      stop();
+      // iOS froze it: the reload only ran 90 s on, as the player came back
+      noteHiddenReload();
+      await vi.advanceTimersByTimeAsync(90_000);
+      doc.hidden = false;
+      stop = start();
+      stop();
+      // an ordinary load: neither
+      stop = start();
+      await vi.advanceTimersByTimeAsync(60_000);
+      await flushLog();
+      stop();
+      const opens = [...new Map(sent.map((x) => [x.body.b, x.body])).values()].flatMap((b) => b.es).filter((e) => e.e === 'app.open');
+      // (a page's ring kept and sent again with the next page's: each event once, by its sequence and time)
+      const once = [...new Map(opens.map((e) => [`${e.q}:${e.t}`, e])).values()];
+      expect(once.map((e) => [e.d?.vis, e.d?.hr ?? null, e.d?.hrS ?? null])).toEqual([['hidden', true, 0], ['visible', true, 90], ['visible', null, null]]);
     } finally {
       delete perf.getEntriesByType;
     }

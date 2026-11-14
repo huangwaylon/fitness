@@ -104,6 +104,8 @@
     ["src/service-worker/**", ["sw-update", "offline"]],
     ["src/lib/ui-state/swLate*", ["sw-update"]],
     ["src/lib/ui-state/reload*", ["stale", "sw-update"]],
+    ["src/lib/ui-state/update*", ["sw-update"]],
+    ["src/lib/ui-state/bootWatch*", ["sw-update", "boot"]],
     ["src/lib/ui-state/boot*", ["boot"]],
     ["src/lib/ui-state/testMode*", ["logic-mode", "boot"]],
     ["src/lib/ui-state/exactTaps*", ["exact-taps"]],
