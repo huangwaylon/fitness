@@ -521,7 +521,7 @@
   "shop.starts": "Starts",
   "shop.toStarts": "Starts",
   "shop.startsFree": "{n} free plots · tap for that many",
-  "shop.startsRule": "Water on the planting (or harvest) day for 3 the next day. Rain or anyone's watering counts",
+  "shop.startsRule": "Watered, 3 the next day (unwatered, 1). Rain or anyone's watering counts",
   "shop.startLabel": "{name}, {v} shells, {c} picked",
   "shop.boughtStart": "Bought {name} ×{n}",
   "shop.boughtStarts": "Bought {n} starts",
