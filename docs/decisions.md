@@ -150,9 +150,9 @@ never seeded or diffed from); and the weekly refresh lands in this repo's main, 
 
 ### Kalori's automatic merge
 A refresh within its bands merges itself and deploys; anything else is held as a PR ([food-data](food-data.md#kalori)).
-Why: the owner chose no review for a normal week; the trusted gates and the watch's revert make a bad week one held
-PR. It pushes with the workflow token and dispatches the deploy, not a PAT: no secret to rotate, and the dispatched
-runs are the ones the watch follows. Status is `status.json` on an orphan `kalori-status` branch: the app reads it
+Why: the owner chose no review for a normal week; the trusted gates and the revert make a bad week one held PR. It
+pushes with the workflow token and dispatches the deploy, not a PAT: no secret to rotate (its runs fire no
+`workflow_run`: the deploy check polls). Status is `status.json` on an orphan `kalori-status` branch: the app reads it
 from raw GitHub (no relay route), main's history untouched. Alerts are only that file's (a dot on メニュー): no email.
 
 ## Economy

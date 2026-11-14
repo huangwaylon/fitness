@@ -6,7 +6,7 @@
 # was lost), the report (coverage, the diff against the accepted release; complete and within the diff's limits:
 # publish), the update (kalori.json built without write access; then, within the bands, a commit on main and the
 # deploy dispatched, else a branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
-# app's bots tab reads: the only alert, no issue, no mail). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
+# app's bots tab reads: the only alert, no issue, no mail), the deploy check (the dispatched deploy's outcome). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
 # every input has its default as a fallback (`inputs.x || 'default'`) and behaves as a default dispatch. Only a run on
 # main publishes. The token is given only to the steps that call `gh`: never to npm's.
 name: Kalori scrape
@@ -800,6 +800,8 @@ jobs:
     permissions:
       contents: write   # the kalori-status branch
       actions: write    # the run's start; the deploy's dispatch after a merge
+    outputs:
+      dispatched: ${{ steps.status.outputs.dispatched }}
     # (every step `always()`: a cancelled run's steps would be skipped otherwise)
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -836,6 +838,7 @@ jobs:
         if: cancelled()
         run: echo "yes=true" >> "$GITHUB_OUTPUT"
       - name: status.json
+        id: status
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -915,10 +918,12 @@ jobs:
           gh auth setup-git
           KALORI_STATUS_COPY="$RUNNER_TEMP/status.json" .github/scripts/kalori-status.sh "$@"
           { echo '```json'; cat "$RUNNER_TEMP/status.json"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-          # The deploy, only now: status.json says merge.deploy pending before kalori-watch.yml can hear an outcome (a
+          # The deploy, only now: status.json says merge.deploy pending before the deploy-check job hears an outcome (a
           # push with the workflow token runs no workflow; a dispatch does).
           if [ -n "$MERGE_SHA" ] && [ "$CANCELLED" != true ]; then
-            if gh workflow run pages.yml --ref main && gh workflow run food-data.yml --ref main; then echo "dispatched the deploy of $MERGE_SHA"
+            at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            if gh workflow run pages.yml --ref main && gh workflow run food-data.yml --ref main; then
+              echo "dispatched the deploy of $MERGE_SHA"; echo "dispatched=$at" >> "$GITHUB_OUTPUT"
             else
               echo "::error::the dispatch of pages.yml / food-data.yml failed: run them by hand"
               .github/scripts/kalori-status.sh deploy --sha "$MERGE_SHA" --deploy failed --reason deploy_failed \
@@ -926,3 +931,47 @@ jobs:
               exit 1
             fi
           fi
+
+  # The dispatched deploy's outcome (docs/food-data.md "Kalori": the deploy check): a run the workflow token started
+  # fires no workflow_run, so this job polls for them (.github/scripts/kalori-deploy.sh check): Food data checks failed:
+  # the commit reverted; Deploy UI failed: re-run once, then deploy_failed; both green: ok. Still pending after 160 min
+  # (this job lost): kalori-watch.yml's backstop.
+  deploy-check:
+    needs: [update-merge, status]
+    if: always() && needs.update-merge.outputs.sha != '' && needs.status.outputs.dispatched != ''
+    runs-on: ubuntu-latest
+    # 70 min for the runs (Deploy UI ~5 min, at most ~55: its jobs' limits), 70 more after a re-run
+    timeout-minutes: 150
+    permissions:
+      contents: write   # the revert, the kalori-status branch
+      actions: write    # the re-run, the dispatch
+    steps:
+      # (all history, no blobs until read: the revert reads the three files' blobs alone)
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          ref: main
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            food-data/scripts
+            app/static/food
+            .github/scripts
+      - name: The deploy's outcome
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.update-merge.outputs.sha }}
+          SINCE: ${{ needs.status.outputs.dispatched }}
+        run: |
+          gh auth setup-git
+          .github/scripts/kalori-deploy.sh check "$SHA" "$SINCE"
+      - name: status.json, on a failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.update-merge.outputs.sha }}
+        run: |
+          gh auth setup-git
+          .github/scripts/kalori-status.sh deploy --sha "$SHA" --deploy failed --reason deploy_failed \
+            --alert-text "the deploy check of the Kalori merge failed (re-run, revert or status): its log" \
+            --run-url "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID"

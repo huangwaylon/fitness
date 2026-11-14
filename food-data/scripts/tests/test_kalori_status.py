@@ -223,8 +223,7 @@ class Status(unittest.TestCase):
     def test_watch_the_status(self):
         runs = [{'event': 'schedule', 'status': 'completed', 'createdAt': '2026-11-17T17:41:00Z'}]
         pending = {'merge': {'sha': 'abc', 'deploy': 'pending'}, 'run': {'endedAt': NOW - 4 * 3600000}}
-        self.assertEqual(S.watch(runs, NOW, pending)['reasons'], ['deploy_failed'])
-        self.assertEqual(S.watch(runs, NOW, dict(pending, run={'endedAt': NOW - 3600000}))['reasons'], [])
+        self.assertEqual(S.watch(runs, NOW, pending)['reasons'], [])   # a pending deploy: the backstop's (decide)
         running = {'verdict': 'running', 'at': NOW - 9 * 3600000}
         self.assertEqual(S.watch(runs, NOW, running)['reasons'], ['stuck'])
         busy = runs + [{'event': 'workflow_dispatch', 'status': 'in_progress', 'createdAt': '2026-11-18T01:00:00Z'}]
@@ -267,6 +266,114 @@ class Status(unittest.TestCase):
                                   'alert', 'history'})
         self.assertEqual(set(s['run']), {'id', 'url', 'event', 'round', 'result', 'startedAt', 'endedAt', 'shardsDone', 'shardsTotal'})
         self.assertEqual(s['verdict'], 'healthy')
+
+
+# 2026-11-14: the auto merge 9e0becb55's status.json stuck at pending (no workflow_run for the token's dispatches) and
+# its two dispatched runs, both green (the API's workflow_runs, trimmed)
+SHA = '9e0becb55886b0b8b19a4bfea5789b2698ced2f1'
+ENDED = 1794641575024   # 07:32:55Z, the status job's write just before the dispatch
+TODAY = {'v': 1, 'at': ENDED, 'verdict': 'healthy', 'reasons': [], 'alert': None, 'history': [],
+         'run': {'id': 43571075376, 'event': 'workflow_dispatch', 'result': 'published', 'endedAt': ENDED},
+         'merge': {'sha': SHA, 'deploy': 'pending', 'pr': None}}
+
+
+def wf_run(name, conclusion='success', status='completed', attempt=1, created='2026-11-14T07:32:57Z', sha=SHA,
+           event='workflow_dispatch', id=1):
+    path = {'Deploy UI': '.github/workflows/pages.yml', 'Food data checks': '.github/workflows/food-data.yml'}[name]
+    return {'id': id, 'name': name, 'path': path, 'event': event, 'head_sha': sha, 'status': status,
+            'conclusion': conclusion if status == 'completed' else None, 'run_attempt': attempt, 'created_at': created,
+            'html_url': 'https://github.com/o/r/actions/runs/%d' % id}
+
+
+TODAY_RUNS = [wf_run('Food data checks', created='2026-11-14T07:32:59Z', id=43571616841),
+              wf_run('Deploy UI', id=43571614893)]
+MIN = 60000
+
+
+class Decide(unittest.TestCase):
+    """The deploy's next step (kalori-deploy.sh: kalori-scrape.yml's deploy-check, kalori-watch.yml's backstop)."""
+    def d(self, runs, after=5, **kw):
+        return S.decide(runs, SHA, ENDED, ENDED + after * MIN, **kw)
+
+    def test_both_green(self):
+        r = self.d(TODAY_RUNS)
+        self.assertEqual((r['action'], r['id'], r['sha']), ('ok', 43571614893, SHA))
+
+    def test_food_data_failed_reverts_first(self):
+        runs = [wf_run('Food data checks', 'failure', id=2), wf_run('Deploy UI', status='in_progress', id=3)]
+        self.assertEqual((self.d(runs)['action'], self.d(runs)['id']), ('revert', 2))
+        runs = [wf_run('Food data checks', 'timed_out', id=2), wf_run('Deploy UI', 'failure', id=3)]
+        self.assertEqual(self.d(runs)['action'], 'revert')
+        self.assertEqual(self.d([wf_run('Food data checks', 'cancelled', id=2)])['action'], 'failed')
+
+    def test_deploy_failed_reruns_once(self):
+        food = wf_run('Food data checks', id=2)
+        r = self.d([food, wf_run('Deploy UI', 'failure', id=3)])
+        self.assertEqual((r['action'], r['id']), ('rerun', 3))
+        self.assertEqual(self.d([food, wf_run('Deploy UI', 'failure', id=3)], reran=3)['action'], 'wait')  # not begun
+        self.assertEqual(self.d([food, wf_run('Deploy UI', 'failure', id=3)], reran='3')['action'], 'wait')
+        self.assertEqual(self.d([food, wf_run('Deploy UI', status='in_progress', attempt=2, id=3)], reran=3)['action'], 'wait')
+        self.assertEqual(self.d([food, wf_run('Deploy UI', 'failure', attempt=2, id=3)], reran=3)['action'], 'failed')
+        self.assertEqual(self.d([food, wf_run('Deploy UI', attempt=2, id=3)], reran=3)['action'], 'ok')
+
+    def test_waits_then_dispatch_not_seen(self):
+        self.assertEqual(self.d([], after=10)['action'], 'wait')
+        self.assertEqual(self.d([wf_run('Deploy UI', status='queued')])['action'], 'wait')
+        r = self.d([wf_run('Deploy UI', status='in_progress')], after=71)
+        self.assertEqual(r['action'], 'failed')
+        self.assertIn('dispatch not seen: no Food data checks run', r['why'])
+        self.assertEqual(self.d([wf_run('Deploy UI', status='in_progress'), wf_run('Food data checks')], after=200)['action'], 'wait')
+        self.assertEqual(self.d([], after=71, limit_min=80)['action'], 'wait')
+
+    def test_only_the_dispatched_runs_of_the_sha(self):
+        food = wf_run('Food data checks', id=2)
+        for other in (wf_run('Deploy UI', 'failure', sha='0' * 40), wf_run('Deploy UI', 'failure', event='push'),
+                      wf_run('Deploy UI', 'failure', created='2026-11-14T07:20:00Z')):   # before the dispatch
+            self.assertEqual(self.d([food, other, wf_run('Deploy UI', id=3)])['action'], 'ok')
+        # the newest run counts (a later dispatch by hand, green)
+        runs = [food, wf_run('Deploy UI', 'failure', attempt=2, id=3), wf_run('Deploy UI', created='2026-11-14T08:30:00Z', id=4)]
+        self.assertEqual(self.d(runs)['id'], 4)
+        # (within the clock's slack: a run a minute before `since` counts)
+        self.assertEqual(self.d([food, wf_run('Deploy UI', created='2026-11-14T07:32:00Z')])['action'], 'ok')
+
+    def test_a_later_head_holding_the_sha(self):   # `--ref main` dispatches main's tip: a push between gives a later head
+        later = 'f' * 40
+        runs = [wf_run('Food data checks', id=2, sha=later), wf_run('Deploy UI', id=3, sha=later)]
+        self.assertEqual(self.d(runs)['action'], 'wait')
+        self.assertEqual(self.d(runs, after=71)['action'], 'failed')
+        self.assertEqual(self.d(runs, also=[later, ''])['action'], 'ok')
+        self.assertEqual(S.decide_pending(TODAY, runs, ENDED + 161 * MIN, also=[later])['action'], 'ok')
+
+    def test_revert_cancels_the_unfinished_deploys(self):
+        later = 'f' * 40
+        runs = [wf_run('Food data checks', 'failure', id=2), wf_run('Deploy UI', status='in_progress', id=3),
+                wf_run('Deploy UI', status='queued', attempt=2, id=4, sha=later), wf_run('Deploy UI', id=5),
+                wf_run('Deploy UI', status='queued', id=6, sha='0' * 40)]
+        r = self.d(runs, also=[later])
+        self.assertEqual((r['action'], r['cancel']), ('revert', [3, 4]))
+        self.assertNotIn('cancel', self.d(TODAY_RUNS))
+
+    def test_backstop_resolves_todays_pending(self):
+        self.assertEqual(S.decide_pending(TODAY, TODAY_RUNS, ENDED + 150 * MIN)['action'], 'none')   # deploy-check's yet
+        r = S.decide_pending(TODAY, TODAY_RUNS, ENDED + 161 * MIN)
+        self.assertEqual((r['action'], r['sha']), ('ok', SHA))
+        s = S.deploy(TODAY, Args(sha=SHA, deploy='ok', run_url=r['url']), ENDED + 161 * MIN)
+        self.assertEqual((s['merge'], s['verdict'], s['alert']), ({'sha': SHA, 'deploy': 'ok', 'pr': None}, 'healthy', None))
+        self.assertEqual(S.decide_pending(s, TODAY_RUNS, ENDED + 161 * MIN)['action'], 'none')   # resolved: left alone
+        self.assertEqual(S.decide_pending(TODAY, [], ENDED + 161 * MIN)['action'], 'failed')      # nothing dispatched
+        self.assertEqual(S.decide_pending({}, TODAY_RUNS, ENDED + 161 * MIN)['action'], 'none')
+
+    def test_cli(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        runs, st = os.path.join(d, 'runs.json'), os.path.join(d, 'status.json')
+        for p, doc in ((runs, TODAY_RUNS), (st, TODAY)):
+            with open(p, 'w') as fh:
+                json.dump(doc, fh)
+        cli = lambda *a: json.loads(subprocess.run([sys.executable, '-I', S.__file__, 'decide', '--runs', runs, *a], check=True,
+                                                   capture_output=True, text=True).stdout)
+        self.assertEqual(cli('--prev', st, '--now', str(ENDED + 161 * MIN))['action'], 'ok')
+        self.assertEqual(cli('--sha', SHA, '--since', '2026-11-14T07:32:55Z', '--now', str(ENDED + MIN))['action'], 'ok')
 
 
 FOOD = os.path.join(ROOT, 'app', 'static', 'food')
@@ -336,6 +443,156 @@ class StatusBranch(unittest.TestCase):
         files = subprocess.run(['git', '--git-dir', remote, 'ls-tree', '--name-only', 'kalori-status'], check=True,
                                capture_output=True, text=True).stdout.split()
         self.assertEqual(files, ['status.json'])
+
+
+@unittest.skipUnless(shutil.which('git') and shutil.which('bash') and shutil.which('jq'), 'git, bash and jq')
+class DeployScript(unittest.TestCase):
+    """kalori-deploy.sh backstop in a scratch repo (its scripts copied; origin and the status branch a local bare repo;
+    gh a stub that answers the runs and logs the rest)."""
+    def setUp(self):
+        self.d = d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        self.origin, self.work, self.log = os.path.join(d, 'o.git'), os.path.join(d, 'w'), os.path.join(d, 'gh.log')
+        self.runs, binp = os.path.join(d, 'runs.json'), os.path.join(d, 'bin')
+        os.makedirs(binp)
+        with open(os.path.join(binp, 'gh'), 'w') as fh:
+            fh.write('#!/usr/bin/env bash\necho "$*" >> "$GH_LOG"\ncase "$1 $2" in\n'
+                     '  "api "*/runs/[0-9]*) echo "${GH_ATTEMPT:-1}" ;;\n  "api "*) cat "$GH_RUNS" ;;\n'
+                     '  "run rerun") exit "${GH_RERUN_RC:-0}" ;;\nesac\n')
+        os.chmod(os.path.join(binp, 'gh'), 0o755)
+        self.env = dict(os.environ, PATH=binp + os.pathsep + os.environ['PATH'], GH_REPO='o/r', GH_LOG=self.log,
+                        GH_RUNS=self.runs, KALORI_STATUS_REMOTE=self.origin, KALORI_DEPLOY_POLL='0', KALORI_NOW=str(ENDED + 161 * MIN),
+                        GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1')
+        for k in ('GITHUB_RUN_ID', 'GH_TOKEN'):
+            self.env.pop(k, None)
+        self.git('init', '-q', '--bare', '-b', 'main', self.origin, cwd=d)
+        shutil.copytree(os.path.join(ROOT, '.github', 'scripts'), os.path.join(self.work, '.github', 'scripts'))
+        os.makedirs(os.path.join(self.work, 'food-data', 'scripts'))
+        os.makedirs(os.path.join(self.work, 'app', 'static', 'food'))
+        shutil.copy(S.__file__, os.path.join(self.work, 'food-data', 'scripts'))
+        self.git('init', '-q', '-b', 'main')
+        self.git('remote', 'add', 'origin', self.origin)
+        self.commit('kalori-2026-11-07', 1, 'base', 'Me')
+
+    def git(self, *a, cwd=None):
+        return subprocess.run(['git', *a], cwd=cwd or self.work, env=self.env, check=True, capture_output=True,
+                              text=True).stdout.strip()
+
+    def commit(self, tag, n, msg, who):
+        with open(os.path.join(self.work, 'food-data', 'scripts', 'fetch.py'), 'w') as fh:
+            fh.write("KALORI_TAG = '%s'\n" % tag)
+        with open(os.path.join(self.work, 'app', 'static', 'food', 'kalori.json'), 'w') as fh:
+            json.dump({'items': [{'id': i} for i in range(n)], 'shops': {'a': {}}}, fh)
+        self.git('add', '-A')
+        mail = '41898282+github-actions[bot]@users.noreply.github.com' if who == 'github-actions[bot]' else 'me@x'
+        self.git('-c', 'user.name=' + who, '-c', 'user.email=' + mail, 'commit', '-q', '-m', msg)
+        self.git('push', '-q', 'origin', 'HEAD:refs/heads/main')
+        return self.git('rev-parse', 'HEAD')
+
+    def setup(self, runs_of, who='github-actions[bot]'):
+        sha = self.commit('kalori-2026-11-14-2', 3, 'Kalori: kalori-2026-11-14-2 (auto)', who)
+        self.pending(sha)
+        with open(self.runs, 'w') as fh:
+            json.dump([dict(r, head_sha=sha) for r in runs_of], fh)
+        return sha
+
+    def pending(self, sha):
+        st = os.path.join(self.d, 'status.json')
+        with open(st, 'w') as fh:
+            json.dump(dict(TODAY, merge={'sha': sha, 'deploy': 'pending', 'pr': None}), fh)
+        blob = self.git('hash-object', '-w', st)
+        tree = subprocess.run(['git', 'mktree'], cwd=self.work, input='100644 blob %s\tstatus.json\n' % blob, check=True,
+                              capture_output=True, text=True).stdout.strip()
+        c = self.git('-c', 'user.name=t', '-c', 'user.email=t@x', 'commit-tree', tree, '-m', 'seed')
+        self.git('push', '-q', '-f', 'origin', c + ':refs/heads/kalori-status')
+
+    def backstop(self, *cmd):
+        p = subprocess.run(['bash', os.path.join(self.work, '.github', 'scripts', 'kalori-deploy.sh'), *(cmd or ['backstop'])],
+                           env=self.env, capture_output=True, text=True)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        return json.loads(self.git('show', 'origin/kalori-status:status.json') if not self.git('fetch', '-q', 'origin')
+                          else '{}')
+
+    def gh_log(self):
+        with open(self.log) as fh:
+            return fh.read()
+
+    def test_todays_pending_resolves_ok(self):
+        sha = self.setup(TODAY_RUNS)
+        s = self.backstop()
+        self.assertEqual((s['merge']['deploy'], s['merge']['sha'], s['verdict']), ('ok', sha, 'healthy'))
+        self.assertNotIn('workflow run', self.gh_log())
+
+    def test_check(self):   # kalori-scrape.yml's deploy-check: the same outcome, at once when the runs are done
+        sha = self.setup(TODAY_RUNS)
+        self.assertEqual(self.backstop('check', sha, '2026-11-14T07:32:55Z')['merge']['deploy'], 'ok')
+
+    def test_food_data_failed_reverts_once(self):
+        sha = self.setup([wf_run('Food data checks', 'failure', id=2), wf_run('Deploy UI', id=3)])
+        s = self.backstop()
+        self.assertEqual((s['merge']['deploy'], s['reasons'], s['dataset']['tag'], s['dataset']['items']),
+                         ('reverted', ['reverted'], 'kalori-2026-11-07', 1))
+        self.assertEqual(self.git('log', '-1', '--format=%s', 'origin/main'), 'Revert "Kalori: kalori-2026-11-14-2 (auto)"')
+        self.assertIn('workflow run pages.yml --ref main', self.gh_log())
+        self.pending(sha)   # again (a second pass, the other job): no second revert
+        self.assertEqual(self.backstop()['merge']['deploy'], 'reverted')
+        self.assertEqual(self.git('rev-list', '--count', sha + '..origin/main'), '1')
+
+    def test_a_revert_that_conflicts_fails(self):   # the job fails (its failure step writes deploy_failed)
+        sha = self.setup([wf_run('Food data checks', 'failure', id=2)])
+        self.commit('kalori-2026-11-14-3', 5, 'later', 'Me')
+        p = subprocess.run(['bash', os.path.join(self.work, '.github', 'scripts', 'kalori-deploy.sh'), 'backstop'],
+                           env=self.env, capture_output=True, text=True)
+        self.assertNotEqual(p.returncode, 0)
+        self.assertNotIn('workflow run', self.gh_log())
+        self.git('fetch', '-q', 'origin')
+        self.assertEqual(json.loads(self.git('show', 'origin/kalori-status:status.json'))['merge']['deploy'], 'pending')
+        self.assertEqual(self.git('rev-list', '--count', sha + '..origin/main'), '1')
+
+    def test_a_later_head_counts(self):   # a push between the merge and the dispatch: the runs on main's newer tip
+        sha = self.setup([])
+        later = self.commit('kalori-2026-11-14-2', 4, 'a later push', 'Me')
+        with open(self.runs, 'w') as fh:
+            json.dump([wf_run('Food data checks', sha=later, id=2), wf_run('Deploy UI', sha=later, id=3),
+                       wf_run('Deploy UI', 'failure', sha='0' * 40, id=4)], fh)
+        self.git('reset', '-q', '--hard', sha)   # (the checkout: older than main, the later head fetched)
+        s = self.backstop()
+        self.assertEqual((s['merge']['deploy'], s['merge']['sha']), ('ok', sha))
+
+    def test_revert_cancels_the_deploys_first(self):
+        self.setup([wf_run('Food data checks', 'failure', id=2), wf_run('Deploy UI', status='in_progress', attempt=2, id=3)])
+        self.assertEqual(self.backstop()['merge']['deploy'], 'reverted')
+        log = self.gh_log()
+        self.assertIn('run cancel 3', log)
+        self.assertLess(log.rindex('run cancel 3'), log.index('workflow run pages.yml'))   # again before the dispatch
+        self.assertEqual(log.count('run cancel 3'), 2)
+
+    def test_a_refused_rerun_fails_at_once(self):
+        self.setup([wf_run('Food data checks', id=2), wf_run('Deploy UI', 'failure', id=3)])
+        self.env.update(GH_RERUN_RC='1')
+        s = self.backstop()
+        self.assertEqual((s['merge']['deploy'], s['reasons']), ('failed', ['deploy_failed']))
+        self.assertIn('refused', s['alert']['text'])
+        with open(self.runs) as fh:
+            self.pending(json.load(fh)[0]['head_sha'])
+        self.env.update(GH_ATTEMPT='2')   # refused as begun elsewhere: left pending
+        self.assertEqual(self.backstop()['merge']['deploy'], 'pending')
+
+    def test_check_refused_rerun_returns(self):
+        sha = self.setup([wf_run('Food data checks', id=2), wf_run('Deploy UI', 'failure', id=3)])
+        self.env.update(GH_RERUN_RC='1')
+        self.assertEqual(self.backstop('check', sha, '2026-11-14T07:32:55Z')['merge']['deploy'], 'failed')
+
+    def test_not_the_bots_commit_is_left(self):
+        sha = self.setup([wf_run('Food data checks', 'failure', id=2)], who='Me')
+        s = self.backstop()
+        self.assertEqual((s['merge']['deploy'], s['reasons']), ('failed', ['deploy_failed']))
+        self.assertEqual(self.git('rev-parse', 'origin/main'), sha)
+
+    def test_deploy_failed_reruns(self):
+        self.setup([wf_run('Food data checks', id=2), wf_run('Deploy UI', 'failure', id=3)])
+        self.assertEqual(self.backstop()['merge']['deploy'], 'pending')
+        self.assertIn('run rerun 3 --failed', self.gh_log())
 
 
 if __name__ == '__main__':

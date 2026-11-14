@@ -194,8 +194,8 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
 JST): the crawl's rounds, a dated release, then the update: merged into main and deployed by itself within the
 bands, else held as a PR. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
-run (`gh run cancel <id>`) stops its own retry, but a retry run it already queued runs: cancel that one too (`gh run
-list -w kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
+run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
+kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
 release keeps the progress.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.
@@ -226,7 +226,7 @@ the bots page's メニュー tab with its run and PR, no email. A healthy run cl
 - `band_*` (the PR's table says which), `tests`, `main_moved`: held (1).
 - `crash`, `publish`, `update`: the job's log (update-merge refusing update-build's files: a dependency to suspect);
   dispatch again once fixed, or do it locally (3).
-- `deploy_failed`: Deploy UI failed twice, its dispatch failed, or no outcome in 3 h: its log; re-run it (`gh run
+- `deploy_failed`: Deploy UI failed twice, or its dispatch failed or was never seen: its log; re-run it (`gh run
   rerun <id>`), or undo (2).
 - `reverted`: Food data checks failed on the merge, so main has its revert: the checks' log; fix, then dispatch.
 - `late` (no scheduled run in 8 days: GitHub dropped it), `stuck` (a run over 2 days: `gh run cancel <id>`): dispatch.

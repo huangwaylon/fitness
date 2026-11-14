@@ -208,8 +208,8 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   of the release, the gates from the report job's diff.json and coverage.json (digests checked) and the two
   kalori.json. Within every band: the commit `Kalori: <tag> (auto)` onto main (re-applied while main's
   food files are BASE's, else held: `main_moved`); the status written, then `pages.yml` and `food-data.yml`
-  dispatched (a workflow-token push runs no workflow; a dispatch does). Outside a band: held, the branch
-  `kalori-update/<tag>` and a PR with the gate table. It commits its own conversion's bytes (update-build's must match).
+  dispatched (a workflow-token push runs no workflow). Outside a band: held, the branch `kalori-update/<tag>` and
+  a PR with the gate table. It commits its own conversion's bytes (update-build's must match).
 
   | gate (shares of the accepted release's products) | band |
   |---|---|
@@ -222,16 +222,17 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
 
   The bands are update-merge's env (`kalori_status.py` mirrors them). With 4+ merged runs in the history, added,
   gone, values and ended become max(band, 3× the median of the last 8 merged), at most 2× the band.
-- **The watch** (`kalori-watch.yml`): a dispatched Deploy UI that fails re-runs its failed jobs once, then is
-  `deploy_failed`; a failed Food data checks reverts the Kalori commit and redeploys (`reverted`); every 6 h, no
-  scheduled refresh in 8 days is `late`, a run over 2 days (or a stale `running`) `stuck`, a deploy pending 3 h
-  `deploy_failed`. It acts only on runs whose head is status.json's `merge.sha`; a failing job writes its own alert.
+- **The deploy check** (`.github/scripts/kalori-deploy.sh`; a token's dispatch fires no `workflow_run`): polls
+  70 min for the dispatched runs on `merge.sha`. Food data checks failed: the `(auto)` commit reverted, redeployed
+  (`reverted`); Deploy UI failed: re-run once, then `deploy_failed`; both green: `ok`; a run unseen:
+  `deploy_failed`. **The watch** (`kalori-watch.yml`, 6-hourly): the same for a deploy pending 160 min;
+  `late` (no scheduled refresh in 8 days), `stuck` (a run over 2 days, a stale `running`).
 - **The status:** `status.json` on the orphan branch `kalori-status` (one commit, force-pushed with a lease:
   `kalori_status.py` and `.github/scripts/kalori-status.sh`): the verdict, the reasons, the run, the accepted dataset,
   the diff, coverage, the merge, the alert and the last 12 runs; a round writes `running` at setup. The bots page's
   メニュー tab reads it: an alert shows as a dot there, no email. Each reason, pausing, undoing:
   [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
-- **Lessons** (the first crawl: 12 runs, ~200 shard jobs, ~3.5 h, ~75-80k requests for 54k products): the site's cap
+- **Lessons** (the first crawl: ~3.5 h, ~75-80k requests for 54k products): the site's cap
   is per IP a day, so rounds on fresh runners beat a slower rate; never change the record format mid-crawl (4.5k v1
   lines were fetched twice); anchor parsers on the data itself, not the page around it;
   a canary before each round turns a redesign into one red job, not 20 poisoned states; for the next full crawl, ask

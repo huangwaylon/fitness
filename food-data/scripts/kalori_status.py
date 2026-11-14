@@ -14,10 +14,12 @@ Usage (from the repo root): python3 -I food-data/scripts/kalori_status.py <comma
           [--diff F] [--coverage F] [--gates F] [--fetch-py F --kalori F] [--merge-sha S] [--merge-pr U]
           [--deploy D] [--alert-text T] [--pr-url U]
   deploy  --prev P --out S --sha S --deploy ok|failed|reverted [--reason R --alert-text T --run-url U]
-          [--fetch-py F --kalori F]   a dispatched deploy's outcome (kalori-watch.yml)
-  watch   --runs runs.json [--prev P]   late / stuck from kalori-scrape's runs (gh run list's JSON) -> {reasons, text}
+          [--fetch-py F --kalori F]   a dispatched deploy's outcome (.github/scripts/kalori-deploy.sh)
+  decide  --runs runs.json (--sha S --since T | --prev P) [--limit-min N] [--reran ID] [--also S,S]   the deploy's
+          next step from the dispatched runs (the REST API's workflow_runs) -> {action: none|wait|ok|revert|rerun|failed}
+  watch   --runs runs.json [--prev P]   late / stuck from kalori-scrape's runs (gh run list's JSON) -> {reasons, text};
+          with --prev also a `running` status 8 h old with no run (stuck)
   late|alert --prev P --out S --reasons a,b --alert-text T --run-url U   an alert (kalori-watch.yml, a job failing)
-  watch   ... --prev P: also a deploy pending 3 h (deploy_failed), a `running` status 8 h old with no run (stuck)
   undo    --prev P --out S --tag T [--fetch-py F --kalori F]   a merge reverted by hand: not accepted
 Every write takes --now ms (the tests) and --repo owner/name (the release URL).
 """
@@ -34,7 +36,15 @@ DROPS_SLACK = 0.005          # a converter drop reason may grow by this share of
 ADAPT_MIN, ADAPT_LAST, ADAPT_X = 4, 8, 3   # with 4+ merged runs: a band is max(fixed, 3 x the median of the last 8)
 ADAPT_CAP = 2                # ... and at most 2 x the fixed band (a drifting history never opens the gate wide)
 LATE_DAYS, STUCK_DAYS = 8, 2
-PENDING_H, RUNNING_H = 3, 8  # the watch: a deploy pending 3 h (no outcome heard), a `running` status 8 h old, no run
+RUNNING_H = 8                # the watch: a `running` status 8 h old, no run
+# The deploy's check (kalori-deploy.sh): the runs of pages.yml and food-data.yml that kalori-scrape.yml's status job
+# dispatched (main's tip then: merge.sha or a later commit holding it, `also`); it waits 70 min for them, 70 more after
+# a re-run (kalori-scrape.yml's deploy-check, 150 min at most), the watch's backstop takes a merge still pending after
+# 160 min (its age: run.endedAt, the status job's write just before the dispatch). Both are idempotent: the same runs
+# give the same outcome, a revert already on main is not redone, status.json's write is the same.
+DEPLOY_WF = {'pages': ('.github/workflows/pages.yml', 'Deploy UI'), 'food': ('.github/workflows/food-data.yml', 'Food data checks')}
+CHECK_MIN, BACKSTOP_MIN = 70, 160
+SKEW_MS = 120000             # a run created up to 2 min before `since` still counts (the runner's clock vs GitHub's)
 WATCHED = ('deploy_failed', 'reverted')   # the watch's reasons: a later write about the same merge keeps them
 # band -> (diff.json's totals key, history's key: the adaptive bands; None: fixed only)
 KEYS = {'added': ('added', 'added'), 'gone': ('gone', 'gone'), 'values': ('values_changed', 'valuesChanged'),
@@ -352,7 +362,7 @@ def deploy(prev, a, now):
 
 def watch(runs, now, prev=None, late_days=LATE_DAYS, stuck_days=STUCK_DAYS):
     """late: the newest completed scheduled run started over 8 days ago (or none); stuck: a run not completed after 2
-    days, or a `running` status 8 h old with no run unfinished; deploy_failed: a merge's deploy pending 3 h."""
+    days, or a `running` status 8 h old with no run unfinished (a pending deploy: decide, the backstop)."""
     reasons, why = [], []
     sched = [r for r in runs if r.get('event') == 'schedule' and r.get('status') == 'completed']
     last = max((ms(r.get('createdAt')) for r in sched), default=None)
@@ -369,11 +379,60 @@ def watch(runs, now, prev=None, late_days=LATE_DAYS, stuck_days=STUCK_DAYS):
     elif prev.get('verdict') == 'running' and not open_runs and now - (prev.get('at') or now) > RUNNING_H * 3600000:
         reasons.append('stuck')
         why.append('the status says running, but no run is (its status job never wrote)')
-    m, run = prev.get('merge') or {}, prev.get('run') or {}
-    if m.get('sha') and m.get('deploy') == 'pending' and now - (run.get('endedAt') or now) > PENDING_H * 3600000:
-        reasons.append('deploy_failed')
-        why.append('the deploy of %s pending for %d h+: no outcome heard' % (m['sha'][:9], PENDING_H))
     return {'reasons': reasons, 'text': '; '.join(alert_text([r]) + ' (%s)' % w for r, w in zip(reasons, why))}
+
+
+def matching(runs, path, heads, since):
+    """The workflow_dispatch runs of the workflow at `path` on one of `heads` created since `since` (ms)."""
+    return [r for r in runs if isinstance(r, dict) and r.get('path') == path and r.get('head_sha') in heads
+            and r.get('event') == 'workflow_dispatch' and (ms(r.get('created_at')) or 0) >= since - SKEW_MS]
+
+
+def dispatched(runs, path, heads, since):
+    """The newest of them, else None."""
+    return max(matching(runs, path, heads, since), key=lambda r: ms(r['created_at']), default=None)
+
+
+def decide(runs, sha, since, now, limit_min=CHECK_MIN, reran=None, also=()):
+    """The deploy's next step, in order: Food data checks failed -> revert, first cancelling Deploy UI's unfinished
+    runs of it (`cancel`; another end: failed); Deploy UI not green -> rerun its failed jobs once (`reran`: that run's
+    id, the re-run asked and not begun yet: wait), then failed; both green -> ok; a run not seen `limit_min` after
+    `since` -> failed; else wait. A run counts on sha or on `also` (later commits holding it: `gh workflow run --ref
+    main` dispatches main's tip)."""
+    heads = {sha, *[h for h in also if h]}
+    got = {k: dispatched(runs, path, heads, since) for k, (path, _) in DEPLOY_WF.items()}
+    p, f = got['pages'], got['food']
+    done = lambda r: bool(r) and r.get('status') == 'completed'
+    out = lambda action, why='', run=None: {'action': action, 'why': why, 'url': (run or {}).get('html_url'),
+                                            'id': (run or {}).get('id'), 'sha': sha}
+    if done(f) and f.get('conclusion') != 'success':
+        if f.get('conclusion') in ('failure', 'timed_out'):
+            return dict(out('revert', 'Food data checks failed on the Kalori merge', f), cancel=sorted(
+                r['id'] for r in matching(runs, DEPLOY_WF['pages'][0], heads, since) if r.get('status') != 'completed'))
+        return out('failed', 'Food data checks ended %s on the Kalori merge' % f.get('conclusion'), f)
+    if done(p) and p.get('conclusion') != 'success':
+        if (p.get('run_attempt') or 1) <= 1:
+            return out('wait', 'the re-run of Deploy UI starting', p) if reran and str(reran) == str(p.get('id')) else \
+                out('rerun', 'Deploy UI ended %s: its failed jobs re-run once' % p.get('conclusion'), p)
+        return out('failed', 'the deploy of the Kalori merge failed twice', p)
+    if done(p) and done(f):
+        return out('ok', 'Deploy UI and Food data checks green', p)
+    missing = [DEPLOY_WF[k][1] for k, r in got.items() if not r]
+    if missing and now - since > limit_min * 60000:
+        return out('failed', 'dispatch not seen: no %s run on %s after %d min' % (' or '.join(missing), sha[:9], limit_min))
+    return out('wait', 'waiting for %s' % ', '.join(DEPLOY_WF[k][1] for k, r in got.items() if not done(r)))
+
+
+def decide_pending(prev, runs, now, limit_min=BACKSTOP_MIN, also=()):
+    """The watch's backstop: status.json's merge still pending `limit_min` after its write -> decide on it."""
+    m, run = (prev or {}).get('merge') or {}, (prev or {}).get('run') or {}
+    since = run.get('endedAt')
+    if not (m.get('sha') and m.get('deploy') == 'pending' and since):
+        return {'action': 'none', 'why': 'no merge pending', 'url': None, 'id': None, 'sha': m.get('sha')}
+    if now - since <= limit_min * 60000:
+        return {'action': 'none', 'why': 'pending under %d min: the deploy-check job has it' % limit_min, 'url': None,
+                'id': None, 'sha': m['sha']}
+    return decide(runs, m['sha'], since, now, limit_min, also=also)
 
 
 def late(prev, a, now):
@@ -418,6 +477,15 @@ def main(argv=None):
     w.add_argument('--runs', required=True)
     w.add_argument('--now', type=int)
     w.add_argument('--prev')
+    d = sub.add_parser('decide')
+    d.add_argument('--runs', required=True)
+    d.add_argument('--sha')
+    d.add_argument('--since')
+    d.add_argument('--prev')
+    d.add_argument('--limit-min', type=int)
+    d.add_argument('--reran', default='')
+    d.add_argument('--also', default='', help='later commits holding the sha, comma-separated')
+    d.add_argument('--now', type=int)
     for name in ('running', 'final', 'deploy', 'late', 'alert', 'undo'):
         p = sub.add_parser(name)
         p.add_argument('--prev')
@@ -463,6 +531,16 @@ def main(argv=None):
         return 0
     if a.cmd == 'watch':
         print(json.dumps(watch(load(a.runs, []), now, load(a.prev, {}) or {}), ensure_ascii=False))
+        return 0
+    if a.cmd == 'decide':
+        runs = load(a.runs, [])
+        if a.prev:
+            res = decide_pending(load(a.prev, {}) or {}, runs, now, a.limit_min or BACKSTOP_MIN, a.also.split(','))
+        elif a.sha and a.since:
+            res = decide(runs, a.sha, ms(a.since), now, a.limit_min or CHECK_MIN, a.reran or None, a.also.split(','))
+        else:
+            ap.error('decide: --prev, or --sha and --since')
+        print(json.dumps(res, ensure_ascii=False))
         return 0
     prev = load(a.prev, {}) or {}
     s = {'running': running, 'final': final, 'deploy': deploy, 'late': late, 'alert': late, 'undo': undo}[a.cmd](prev, a, now)
