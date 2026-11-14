@@ -1,6 +1,6 @@
 // The cut-ins' rules in sound.svelte.ts (docs/design.md#sound) against a fake engine: what plays, what's pinned, and
 // how a cut-in ends (its end, its file failing, the volume at 0, the wasps' phases). The shared stages in what plays.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 class FakeEngine {
   static last: FakeEngine;
@@ -141,6 +141,8 @@ describe('cut-ins', () => {
 describe('the shared stages (stage.svelte.ts) in what plays', () => {
   beforeEach(() => vi.stubGlobal('window', { addEventListener() {}, removeEventListener() {} }));
   it('the stage where I am plays over the island’s from where its song is; 音量 0 keeps it; ended here: the island’s', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: Date.parse('2026-11-14T12:00:00Z') }); // one clock: `at` and the stage's reckoning agree to the ms
+    onTestFinished(() => { vi.useRealTimers(); });
     const { m, e } = await musicOn();
     const stop = m.startSound({ muffled: () => false });
     m.setSound({ music: true, volume: 0.8 }); // (startSound read the settings: off)
