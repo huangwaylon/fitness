@@ -1,7 +1,7 @@
 <script lang="ts">
   // The video channel (docs/kikimimi.md "Visuals"): a 2×2 call grid over the (blurred) room, the speakers and two
-  // others, each tile a head on a pastel ground with a name tag; whoever's talking ringed in yuzu (bobbing; still under
-  // reduced motion), one of the others muted. The clip's bar along the foot. Pure CSS.
+  // others, each tile a head on a pastel ground with a name tag; whoever's talking ringed in yuzu (bobbing), one of the
+  // others muted. The clip's bar along the foot. Pure CSS.
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import ClipBar from './ClipBar.svelte';
   import { villagerArt } from '#lib/art.ts';
@@ -40,5 +40,4 @@
   }
   .lbl svg { width: 11px; height: 11px; }
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-3px); } }
-  @media (prefers-reduced-motion: reduce) { .tile.talk .head { animation: none; } }
 </style>

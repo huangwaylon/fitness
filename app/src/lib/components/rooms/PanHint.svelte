@@ -52,5 +52,4 @@
     animation: in 260ms ease-out both;
   }
   @keyframes in { from { opacity: 0; transform: translate(-50%, -6px); } }
-  @media (prefers-reduced-motion: reduce) { .hint { animation: none; } }
 </style>

@@ -544,5 +544,4 @@
   .resume { cursor: pointer; }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .num { animation: none; } }
 </style>

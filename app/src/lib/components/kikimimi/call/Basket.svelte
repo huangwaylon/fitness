@@ -37,5 +37,4 @@
   .chit[data-state='missed'] { background: transparent; color: var(--text-soft); border: 2px dashed var(--edge); }
   .chit[data-state='soon'] { min-width: 44px; justify-content: center; background: transparent; color: var(--text-soft); border: 2px dashed var(--edge); }
   @keyframes drop { from { transform: translateY(-14px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .chit[data-state='caught'] { animation: none; } }
 </style>

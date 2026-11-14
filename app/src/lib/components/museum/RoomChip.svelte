@@ -30,5 +30,4 @@
   /* the gold NEW tag hangs under the pill (static: no pulse, no frames) */
   .new { position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%); pointer-events: none; }
   @keyframes in { from { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .name { animation: none; } }
 </style>

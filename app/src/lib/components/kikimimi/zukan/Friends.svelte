@@ -149,5 +149,4 @@
   .shadows { display: flex; flex-wrap: wrap; gap: 6px; }
   .shadow { width: 40px; height: 40px; }
   .shadow :global(img) { filter: brightness(0); opacity: .22; }
-  @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
 </style>

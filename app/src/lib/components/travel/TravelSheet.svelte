@@ -143,5 +143,4 @@
   .center p { margin: 0; }
   /* guide text: Japanese breaks only between its words (Txt's <wbr>s), a word too long for the line anywhere */
   .tv :global(.guide) { word-break: keep-all; line-break: strict; overflow-wrap: anywhere; text-wrap: pretty; }
-  @media (prefers-reduced-motion: reduce) { .lvl { animation: none; } }
 </style>

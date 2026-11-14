@@ -296,7 +296,6 @@
   .seal { font-size: 40px; line-height: 1; display: inline-block; animation: seal 520ms var(--ease-bounce) both; }
   .seal.two { margin-left: -18px; animation-delay: 180ms; }
   @keyframes seal { from { transform: scale(2.2) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } to { transform: rotate(-8deg); } }
-  @media (prefers-reduced-motion: reduce) { .seal { animation: none; transform: rotate(-8deg); } }
   .soon, .mine { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .fb { display: grid; gap: 10px; padding: 12px 14px; }
   .fb-line { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }

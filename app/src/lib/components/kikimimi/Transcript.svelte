@@ -90,5 +90,4 @@
   .compact .b { padding: 6px 10px; }
   /* on a review card (the bubbles' own cream): the first speaker's a step darker, so it still reads as a bubble */
   .compact .ln.left:not(.next) .b { background: color-mix(in srgb, var(--c-edge) 14%, var(--c-card)); }
-  @media (prefers-reduced-motion: reduce) { .b { transition: none; } }
 </style>

@@ -327,5 +327,4 @@
   @keyframes shift { from { transform: translateX(-10px); opacity: .4; } to { transform: none; opacity: 1; } }
   @keyframes flash { 0%, 100% { box-shadow: inset 0 0 0 2px var(--edge); } 40% { box-shadow: 0 0 0 3px var(--c-yuzu); } }
   @keyframes flash2 { 0%, 100% { box-shadow: inset 0 0 0 2px var(--edge); } 40% { box-shadow: 0 0 0 3px var(--c-yuzu); } }
-  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react, .slot[data-shift] > span, .sentence[data-flash] .mine { animation: none; } }
 </style>

@@ -83,5 +83,4 @@
   p.save { cursor: default; }
   .done :global(svg) { color: var(--leaf-text); }
   .why { color: var(--coral-text); }
-  @media (prefers-reduced-motion: reduce) { button.save:active::before { transform: none; } }
 </style>

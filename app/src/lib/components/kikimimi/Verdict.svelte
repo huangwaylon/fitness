@@ -63,5 +63,4 @@
   .answer-is { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
   .climb { padding: 4px 12px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text); font: 700 var(--fs-s)/1.3 var(--font-ui); text-align: center; }
   .climb.up { background: var(--c-yuzu); color: var(--c-ink); animation: if-pop-in 320ms var(--ease-bounce) 200ms both; }
-  @media (prefers-reduced-motion: reduce) { .climb.up { animation: none; } }
 </style>

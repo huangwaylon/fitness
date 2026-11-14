@@ -244,5 +244,4 @@
   .fb li:first-child { background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); box-shadow: none; }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .tries { margin-left: auto; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk { animation: none; } }
 </style>

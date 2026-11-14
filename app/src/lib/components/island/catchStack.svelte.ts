@@ -13,9 +13,8 @@ export interface CatchCard {
 
 /** How many plates show at once. */
 export const STACK_MAX = 3;
-/** A plate's fade out (ms; reduced motion: a quick one). */
+/** A plate's fade out (ms). */
 export const FADE_MS = 320;
-const fadeMs = () => (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 120 : FADE_MS);
 
 export const stack = $state<{ cards: CatchCard[] }>({ cards: [] });
 let seq = 0;
@@ -45,7 +44,7 @@ function leave(out: readonly CatchCard[]) {
   const id = setTimeout(() => {
     gone.delete(id);
     stack.cards = stack.cards.filter((c) => !ns.has(c.n));
-  }, fadeMs());
+  }, FADE_MS);
   gone.add(id);
 }
 

@@ -50,5 +50,4 @@
   }
   .who::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--who); }
   @keyframes pop { 0% { transform: scale(.8); } 60% { transform: scale(1.12); } 100% { transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .on .ring { animation: none; } }
 </style>

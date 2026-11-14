@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The PA channel (docs/kikimimi.md "Visuals"): a horn speaker on its bracket with reverb ripples while it plays (still
-  // under reduced motion), and the empty 「♪…」 echoed three times fading, the clip's bar under it. Pure CSS/SVG.
+  // The PA channel (docs/kikimimi.md "Visuals"): a horn speaker on its bracket with reverb ripples while it plays, and
+  // the empty 「♪…」 echoed three times fading, the clip's bar under it. Pure CSS/SVG.
   import ClipBar from './ClipBar.svelte';
 
   let { bar, now }: { bar: { from: number; until: number; key: string } | null; now: number } = $props();
@@ -37,5 +37,4 @@
   .echo span:nth-child(2) { opacity: .6; translate: 12px 0; }
   .echo span:nth-child(3) { opacity: .3; translate: 24px 0; }
   @keyframes ripple { from { transform: scale(.9); } to { transform: scale(1.06); } }
-  @media (prefers-reduced-motion: reduce) { .live .ring { animation: none; } }
 </style>

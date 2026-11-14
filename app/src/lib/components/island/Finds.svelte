@@ -150,8 +150,8 @@
   // What the waves bring in while you watch (a shell, the bottle, a star fragment) washes up the beach (layout/swash.ts):
   // it waits for the next wave at its stretch of the coast, then rides it in from just past the waterline, straight up
   // the beach to where it lies (~1–1.5 s, easing out), fading in; its model and its tap area move together (the node's
-  // `live`, the model's `wash`: Island3D fades it). Reduced motion: it fades in where it lies. The ones already there
-  // when the island opens just lie.
+  // `live`, the model's `wash`: Island3D fades it). The ones already there when the island
+  // opens just lie.
   let first = true;
   const washes = new Map<string, WashIn | null>();
   function washOf(uid: string, x: number, z: number): WashIn | null {
@@ -159,7 +159,7 @@
     let wi: WashIn | null = null;
     if (!first) {
       const t = performance.now(), l = site.layout;
-      const way = l && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? washFrom(fieldsOf(l), x, z) : null;
+      const way = l ? washFrom(fieldsOf(l), x, z) : null;
       // (the wave's clock is the water's: world3d/water.ts waterU.uTime, the frames' time in s)
       wi = way ? { from: way.from, to: [x, z], t0: t + nextRunUp((t / 1000) % 3600, ...way.coast) * 1000, ms: washMs(way.dist) } : { from: [x, z], to: [x, z], t0: t, ms: 1200 };
       const ms = wi.ms;

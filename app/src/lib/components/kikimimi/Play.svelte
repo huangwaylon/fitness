@@ -266,7 +266,4 @@
   .later, .height { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); position: relative; }
   .height { color: var(--c-ink); }
 
-  @media (prefers-reduced-motion: reduce) {
-    .speaker.pop, .speaker.talk, .duo .one.talk, .react { animation: none; }
-  }
 </style>

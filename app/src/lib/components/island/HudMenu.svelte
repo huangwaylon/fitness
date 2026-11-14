@@ -347,10 +347,4 @@
     100% { opacity: 0; transform: translateY(-8px) scale(1); }
   }
 
-  /* reduced motion: no drop, no tip: the pills fade in and out where they stand, the flash only fades */
-  @media (prefers-reduced-motion: reduce) {
-    .leaf, .open .leaf { transform: none; transition: none; }
-    .flash { animation-name: flash-still; }
-    @keyframes flash-still { 0% { opacity: 0; } 10%, 70% { opacity: 1; } 100% { opacity: 0; } }
-  }
 </style>

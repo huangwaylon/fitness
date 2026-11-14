@@ -105,5 +105,4 @@
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
 
   @keyframes step-up { from { transform: translateX(-24px) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .who.pop, .who.talk, .react { animation: none; } }
 </style>

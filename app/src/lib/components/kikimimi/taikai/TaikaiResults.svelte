@@ -44,5 +44,4 @@
   .trophy.bronze { background: color-mix(in srgb, var(--c-coral) 16%, var(--c-card)); }
   .medal { font-size: 64px; line-height: 1; animation: award 640ms var(--ease-bounce) both; }
   @keyframes award { from { transform: translateY(-30px) scale(1.6) rotate(-20deg); opacity: 0; } 60% { opacity: 1; } to { transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .medal { animation: none; } }
 </style>

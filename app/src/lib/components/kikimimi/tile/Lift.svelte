@@ -24,5 +24,4 @@
   }
   .lift.back { transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft); box-shadow: inset 0 0 0 2px var(--edge), 0 4px 0 var(--lip); }
   .lift-origin { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
-  @media (prefers-reduced-motion: reduce) { .lift.back { transition: none; } }
 </style>

@@ -83,7 +83,6 @@
   .ex.shut { animation: shut 150ms ease-in forwards; }
   @keyframes shut { from { grid-template-rows: 1fr; opacity: 1; } to { grid-template-rows: 0fr; opacity: 0; } }
   .ex.still { animation: none; }
-  @media (prefers-reduced-motion: reduce) { .ex, .ex.shut { animation: none; } }
   /* what it is: the 「これは…」 line, then how its values were got (soft), each two lines at most */
   .ab { display: grid; gap: 4px; padding-bottom: 10px; border-bottom: 1.5px dashed var(--stitch); }
   .ab p { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }

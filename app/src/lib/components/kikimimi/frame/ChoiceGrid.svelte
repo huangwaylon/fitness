@@ -55,7 +55,7 @@
     let scroller = bar.parentElement;
     while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
     const over = Math.max(...marked.map((m) => m.getBoundingClientRect().bottom)) + 8 - bar.getBoundingClientRect().top;
-    if (scroller && over > 0) scroller.scrollBy({ top: over, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (scroller && over > 0) scroller.scrollBy({ top: over, behavior: 'smooth' });
   }
   const micOn = readMic(localKV()).on;
   /** こたえて！ mounted: a reply round has come with the mic on. */
@@ -109,5 +109,4 @@
   /* the Japanese under it: smaller, in the choice's own full colour (any tile, any time of day: >= 4.5:1 even on a
      set-aside choice) */
   .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); overflow-wrap: anywhere; }
-  @media (prefers-reduced-motion: reduce) { .choices { transition: none; } }
 </style>

@@ -24,7 +24,6 @@ export interface Engine {
   destroy(): void;
 }
 
-const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
 const pt = (lon: number, lat: number, props: Record<string, unknown> = {}) => ({ type: 'Feature', properties: props, geometry: { type: 'Point', coordinates: [lon, lat] } });
 
@@ -85,7 +84,7 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
   const drawFix = (fly: boolean) => {
     if (!loaded) return;
     src(SRC.loc)?.setData(fc(fix ? [pt(fix.lon, fix.lat)] : []));
-    if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: reduced() ? 0 : 600 });
+    if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
   };
 
   let flyOnLoad = false;
@@ -118,8 +117,8 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
       if (loaded) fit();
     },
     zoom(by) {
-      if (by > 0) map.zoomIn({ duration: reduced() ? 0 : 250 });
-      else map.zoomOut({ duration: reduced() ? 0 : 250 });
+      if (by > 0) map.zoomIn({ duration: 250 });
+      else map.zoomOut({ duration: 250 });
     },
     state: () => {
       const ys = track?.pts.map(([lon, lat]) => map.project([lon, lat]).y);

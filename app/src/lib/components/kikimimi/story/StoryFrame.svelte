@@ -321,5 +321,4 @@
   .ph { word-break: normal; list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 4px; font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .ph small { color: var(--text-soft); font-weight: 500; }
   .note { margin: 0 6px; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .story, .head { transition: none; } }
 </style>

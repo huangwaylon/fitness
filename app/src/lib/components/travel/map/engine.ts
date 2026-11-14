@@ -37,7 +37,6 @@ export interface Engine {
 const HIT = 22;
 /** Pins whose heads come closer than this (px) are set side by side (one spot's stops are one pin already). */
 const GAP = 4;
-const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function createEngine(el: HTMLElement, input: EngineInput, on: { select(id: string): void; mode(m: EngineMode): void }): Engine {
   setWorkerUrl(workerUrl);
@@ -132,16 +131,16 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
   }
   function fit(i: EngineInput, animate: boolean): void {
     const b = boundsOf(i.places, i.legs, i.day);
-    if (b) map.fitBounds(b, { padding: { top: 64, bottom: 64, left: 48, right: 48 }, maxZoom: 15, duration: animate && !reduced() ? 700 : 0 });
+    if (b) map.fitBounds(b, { padding: { top: 64, bottom: 64, left: 48, right: 48 }, maxZoom: 15, duration: animate ? 700 : 0 });
   }
   function bringTo(id: string): void {
     const p = cur.places.find((x) => x.id === id);
-    if (p) map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 13.5), duration: reduced() ? 0 : 600 });
+    if (p) map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 13.5), duration: 600 });
   }
   function showFix(fly: boolean): void {
     if (fix) map.setPaintProperty('loc-halo', 'circle-radius', haloRadius(fix.lat));
     src(SRC.loc)?.setData(locData(fix) as never);
-    if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: reduced() ? 0 : 600 });
+    if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
   }
 
   pins(input);

@@ -19,7 +19,7 @@ earns **ベル** (play money, a stamp card: +1 per daily goal) into each person'
 - **Data out:** the PWA (SvelteKit, static on Cloudflare Pages) fetches the raw rows from the relay and computes every
   number on the phone (`lib/model/`, pure functions).
 - **Principles:** zero required taps a day; both people see all data; no notifications but 保養所's opt-in;
-  everything always animates (no reduced-motion variants, but where noted).
+  everything always animates (no reduced-motion variants).
 
 The code map is README's Layout; `deps.test.ts` enforces the modules' import direction. Shared helpers: lazy chunks
 load through `ui-state/reload.ts` `lazy`, failures a caller goes on without through `quiet()` (`lib/quiet.ts`), easing
@@ -440,7 +440,7 @@ touch is back at the full rate. A villager's small moves (a turn, a nod, a surpr
 SMALL) are ambience too; a walk or a hop is the full rate. A critter's dart or move on screen is the full rate,
 and 12 a second once no finger has touched for 15 s, till the next touch (pace.ts CRIT_CALM_MS; the user, 2026-11-14). The endless CSS loops over the island (clouds,
 twinkles, a money tree's glints, the bottle's foam, the ♪) are held and stepped in its frames
-(`island/clouds.ts`), never at the display's 60 Hz; held still under reduced motion.
+(`island/clouds.ts`), never at the display's 60 Hz.
 
 **One renderer lifecycle:** every WebGL surface makes and lets go of its renderer the same way (`world3d/stage.ts`: its
 header); the rooms keep their models page-wide (`world3d/modelCache.ts`); shadows redraw only when a caster changes

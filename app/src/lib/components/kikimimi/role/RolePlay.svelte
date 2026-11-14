@@ -217,5 +217,4 @@
   .acts .btn { min-height: var(--hit); }
   .cheer { margin: 0; text-align: center; font: 700 var(--fs-body)/1.45 var(--font-ui); color: var(--text); }
 
-  @media (prefers-reduced-motion: reduce) { .one.talk, .one.pop { animation: none; } }
 </style>

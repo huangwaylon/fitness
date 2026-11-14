@@ -4,7 +4,7 @@
   // swallowed letters greyed, ● over a stressed word), and the karaoke while its clip replays: the words said so far in
   // ink, the one being said underlined, the rest softer (65%) but the focus (clips.ts wordTimes: whisper's alignment, else the clip spread over
   // the words; karaoke.svelte.ts). `from`: when the clip started on the relay's clock (null: not playing, every word in ink). A frame loop
-  // runs only while it plays and only re-renders when the word changes; under reduced motion the word doesn't hop.
+  // runs only while it plays and only re-renders when the word changes.
   import type { SoundMark } from '#lib/kikimimi/bank.ts';
   import { soundLine } from '#lib/kikimimi/marks.ts';
   import { wordTimes } from '#lib/kikimimi/clips.ts';
@@ -62,5 +62,4 @@
   /* ‿ where two words join (the space kept for copy and VoiceOver, unseen) */
   .arc { display: inline-block; width: .5em; height: .3em; margin: 0 .04em; vertical-align: -.16em; border: 2.5px solid var(--c-leaf-edge); border-top: 0; border-radius: 0 0 .5em .5em; }
   @keyframes hop { from { transform: translateY(3px); } to { transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .playing .w.now { animation: none; } .w { transition: none; } }
 </style>

@@ -53,5 +53,5 @@
   .ql span { color: var(--text-soft); }
   .bar { height: 12px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; box-shadow: inset 0 0 0 2px var(--edge); }
   .bar i { display: block; height: 100%; border-radius: inherit; background: var(--c-leaf); }
-  @media (prefers-reduced-motion: no-preference) { .bar i { transition: width var(--dur-base) var(--ease-bounce); } }
+  .bar i { transition: width var(--dur-base) var(--ease-bounce); }
 </style>

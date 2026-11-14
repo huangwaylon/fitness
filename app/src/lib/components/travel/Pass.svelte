@@ -99,5 +99,4 @@
   /* gone by: the coral sticker stamp, tilted, over the tear */
   .stamp { flex-direction: column; height: auto; gap: 2px; padding: 6px 8px; border-radius: var(--r-chip); transform: rotate(-8deg); text-align: center; }
   .stamp .num { font-size: var(--fs-body); line-height: 1; }
-  @media (prefers-reduced-motion: reduce) { .pass { transition: none; } .pass:active { transform: none; } }
 </style>

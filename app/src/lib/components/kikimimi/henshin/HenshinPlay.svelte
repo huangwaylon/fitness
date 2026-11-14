@@ -296,5 +296,4 @@
   .acts .btn { flex: 0 1 auto; min-width: 6em; }
 
   @keyframes shift { from { transform: translateX(-10px); opacity: .4; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react, .slot[data-shift] > span { animation: none; } }
 </style>

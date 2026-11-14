@@ -127,7 +127,6 @@
   .expanded .fold-in { visibility: visible; transition: visibility 0s; }
   /* (inside the clip: the lips and focus rings room to show) */
   .pad { display: grid; gap: 8px; padding: 6px 8px 8px; }
-  @media (prefers-reduced-motion: reduce) { .fold, .chev { transition: none; } .fold-in { transition: none; } }
   .empty { margin: 0; padding: 14px 16px; text-align: center; font-weight: 700; color: var(--text-soft); }
   .rows { list-style: none; margin: 0; padding: 2px 6px 2px 12px; display: grid; }
   .rows li { display: flex; align-items: center; gap: 10px; min-height: 56px; font-weight: 700; }

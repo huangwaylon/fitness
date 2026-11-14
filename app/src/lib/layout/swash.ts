@@ -106,8 +106,8 @@ export function washFrom(f: Fields, x: number, z: number, out = 2): { from: [num
   return null;
 }
 
-/** A thing washing in: from `from` to `to` (world x, z), starting at `t0` (ms), over `ms`; reduced motion: it fades in
- *  where it lies. */
+/** A thing washing in: from `from` to `to` (world x, z), starting at `t0` (ms), over `ms` (`from` = `to`: it fades in
+ *  where it lies). */
 export interface WashIn {
   from: [number, number];
   to: [number, number];

@@ -19,5 +19,4 @@
   .pbar { display: block; flex: 1; min-width: 0; border-radius: var(--r-pill); background: var(--ctl-off); box-shadow: inset 0 1.5px 0 color-mix(in srgb, var(--lip) 70%, transparent); overflow: hidden; }
   .pbar.empty { background: transparent; box-shadow: inset 0 0 0 1.5px var(--edge); }
   i { display: block; height: 100%; border-radius: inherit; background: var(--c-leaf); box-shadow: inset 0 -2px 0 var(--c-leaf-lip); transition: width var(--dur-base) var(--ease-soft); }
-  @media (prefers-reduced-motion: reduce) { i { transition: none; } }
 </style>

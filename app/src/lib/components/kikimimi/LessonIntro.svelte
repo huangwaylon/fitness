@@ -65,5 +65,4 @@
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; }
   .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
   @keyframes ring { from { rotate: -12deg; } to { rotate: 12deg; } }
-  @media (prefers-reduced-motion: reduce) { .phone { animation: none; } }
 </style>

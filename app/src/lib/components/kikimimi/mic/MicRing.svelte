@@ -54,5 +54,4 @@
   .on .lv { opacity: 1; }
   .ic { display: grid; font: 700 32px/1 var(--font-ui); color: var(--c-ink); }
   .cap { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); text-align: center; }
-  @media (prefers-reduced-motion: reduce) { .talk, .lv { transition: none; } }
 </style>

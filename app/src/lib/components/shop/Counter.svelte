@@ -139,7 +139,7 @@
   let startsHead = $state<HTMLElement>();
   /** The 苗 chip: the list to the starts (a tap's own scroll, the list's only). */
   function toStarts() {
-    startsHead?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    startsHead?.scrollIntoView({ block: 'start', behavior: 'smooth' });
     cue('tick');
   }
   // (the starts and a piece are one bar's: picking one lets go of the other)
@@ -556,5 +556,4 @@
   .cv { flex: none; font: 700 var(--fs-body)/1.3 var(--font-num); font-variant-numeric: tabular-nums; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two .btn { margin: 0; }
-  @media (prefers-reduced-motion: reduce) { .menu { animation: none; } }
 </style>

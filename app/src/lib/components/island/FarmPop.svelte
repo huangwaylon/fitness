@@ -104,8 +104,4 @@
     5%, 92% { opacity: 1; transform: none; }
     100% { opacity: 0; transform: translateY(-4px); }
   }
-  @media (prefers-reduced-motion: reduce) {
-    @keyframes farm-pop { 0%, 100% { opacity: 0; } 8%, 85% { opacity: 1; } }
-    @keyframes farm-pop-long { 0%, 100% { opacity: 0; } 4%, 94% { opacity: 1; } }
-  }
 </style>

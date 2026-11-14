@@ -53,5 +53,4 @@
   .talk .head { box-shadow: 0 0 0 3px var(--c-leaf); animation: bob 0.6s ease-in-out infinite alternate; }
   .talk .nm { color: var(--text); }
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-3px); } }
-  @media (prefers-reduced-motion: reduce) { .talk .head { animation: none; } .sp { transition: none; } }
 </style>

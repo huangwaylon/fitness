@@ -178,14 +178,3 @@ test('English after a sheet’s strings came in Japanese: its strings English to
   await fromMenu(page, 'kikimimi');
   await expect(dlg.locator('.navbar')).toContainText('Kikimimi');
 });
-
-test.describe('reduced motion', () => {
-  test.use({ reducedMotion: 'reduce' });
-  test('the pills fade in where they stand (no drop, no tipped leaf)', async ({ page }) => {
-    await open(page);
-    await hudMenu(page).click();
-    await expect(settings(page)).toBeVisible();
-    expect(await settings(page).evaluate((el) => getComputedStyle(el).transform)).toBe('none');
-    expect(await page.locator('[data-hud-menu] .leaf').evaluate((el) => getComputedStyle(el).transform)).toBe('none');
-  });
-});

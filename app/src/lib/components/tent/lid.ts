@@ -52,11 +52,11 @@ export function lidK(l: Lid, t: number): number {
 }
 
 /** Toward shut (someone lies in it) or open, from wherever it is at `t`: shutting waits `settle` ms first; a lid
- *  already on its way there is left as it is. `reduced` (prefers-reduced-motion): no motion, at once. */
-export function lidWant(l: Lid, shut: boolean, t: number, reduced = false): Lid {
+ *  already on its way there is left as it is. */
+export function lidWant(l: Lid, shut: boolean, t: number): Lid {
   const to = shut ? 1 : 0;
   if (l.to === to) return l;
-  return { k0: lidK(l, t), to, t0: shut ? t + SETTLE_MS : t, ms: reduced ? 0 : LID_MS };
+  return { k0: lidK(l, t), to, t0: shut ? t + SETTLE_MS : t, ms: LID_MS };
 }
 
 /** Whether it's still to move (waiting to shut, or on its way). */

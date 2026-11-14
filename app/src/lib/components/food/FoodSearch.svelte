@@ -262,8 +262,7 @@
   }
   function shut() {
     if (!open) return;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) open = null;
-    else closing = true;
+    closing = true;
   }
   function onEsc(e: KeyboardEvent) {
     if (e.key !== 'Escape' || !open) return;

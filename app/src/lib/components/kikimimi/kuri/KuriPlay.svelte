@@ -202,5 +202,4 @@
   .heard { margin: 0; display: grid; gap: 2px; text-align: center; font: 700 var(--fs-body)/1.45 var(--font-ui); color: var(--text); overflow-wrap: anywhere; }
 
   @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .who.pop, .who.talk { animation: none; } }
 </style>

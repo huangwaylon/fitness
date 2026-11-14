@@ -39,15 +39,6 @@ describe('a lid over who lies in it: shuts once they have lain down, opens befor
     expect(lidMoving(early, SETTLE_MS / 2)).toBe(false);
   });
 
-  it('reduced motion: no motion, open or shut at once (the shut still after the lie-down)', () => {
-    const s = lidWant(lidOpen(), true, 0, true);
-    expect(lidK(s, SETTLE_MS - 1)).toBe(0);
-    expect(lidK(s, SETTLE_MS)).toBe(1);
-    const o = lidWant(s, false, 2000, true);
-    expect(lidK(o, 2000)).toBe(0);
-    expect(lidOpenIn(o, 2000)).toBe(0);
-  });
-
   it('splitLid cuts the high loose part out of the body, and puts it and the glass under the hinge', () => {
     // two loose triangles in one body mesh: the trough (low) and the hood (high), and a glass mesh
     const g = new BufferGeometry();

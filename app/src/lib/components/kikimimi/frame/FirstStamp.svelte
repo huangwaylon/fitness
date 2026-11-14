@@ -16,5 +16,4 @@
   }
   .sm { padding: 2px 6px; }
   .pop { rotate: -6deg; animation: if-pop-in 320ms var(--ease-bounce) 200ms both; }
-  @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
 </style>

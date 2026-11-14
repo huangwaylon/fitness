@@ -93,5 +93,4 @@
   .it[aria-current='page'] .dot, .it[aria-selected='true'] .dot { --plate: var(--c-cream); }
   .it:active .pill { transform: translateY(1px) scale(1.04, .96); }
   .it:focus-visible { outline-offset: -4px; }
-  @media (prefers-reduced-motion: reduce) { .it:active .pill { transform: none; } }
 </style>

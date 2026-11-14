@@ -221,5 +221,4 @@
   svg { position: relative; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
   .in { fill: currentColor; stroke: none; }
   @keyframes tm-spin { to { rotate: 360deg; } }
-  @media (prefers-reduced-motion: reduce) { .locate[data-locate='asking'] svg { animation: none; } }
 </style>

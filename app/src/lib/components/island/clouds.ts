@@ -1,10 +1,10 @@
 // The island's endless CSS loops, moved in its own frames (Island3D's onFrame, stepHeld), not as running animations:
 // an endless one keeps the compositor at the display's rate (Safari's at 60 Hz) while the canvas draws at 12 at rest
 // (review 11/10 r1, C2). Their CSS stays (keyframes, durations, phases): held, and their time set by the frame's.
-// - The sky's two clouds (holdCloud): their `drift` set each STEP_MS, drifting on under reduced motion.
+// - The sky's two clouds (holdCloud): their `drift` set each STEP_MS.
 // - The little loops over the island (holdLoop: the night's twinkling stars, a money tree's glow and glints, the
 //   bottle's foam, the tape deck's ♪): set each frame, so they step at its rate (the user's call 2026-11-13, after a
-//   side-by-side); held where they were under reduced motion.
+//   side-by-side).
 // Their Animation objects are kept once the browser has made them: getAnimations() each frame flushed the style, the
 // island's largest own cost at rest (8.5-13.6 ms a second at 4x CPU; review 11/10 r2, P5). No playState read either:
 // it flushes too, and its check every frame was 6-8 ms a second at 4x CPU, the most at night (r3 L5); each is paused
@@ -21,7 +21,6 @@ const STEP_MS = 100;
 /** A loop without its animations yet is looked for at most this often (ms): getAnimations() flushes the style. */
 const ASK_MS = 500;
 let setAt = -Infinity, askedAt = -Infinity;
-const reduce = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
 
 function hold(el: Element, cloud: boolean): () => void {
   held.set(el, { anims: [], cloud });
@@ -50,18 +49,18 @@ function takeUp(el: Element, h: Held): void {
 
 /** Where everything held is at `t` (performance.now's clock), as it'd have run from the page's start: the clouds set
  *  each STEP_MS (asked for at each step while they've no animations), the loops each frame (looked for at most each
- *  ASK_MS) or, under reduced motion (`still`), held where they were taken up. */
-export function stepHeld(t: number, still = !!reduce?.matches): void {
+ *  ASK_MS). */
+export function stepHeld(t: number): void {
   const clouds = Math.abs(t - setAt) >= STEP_MS, ask = t - askedAt >= ASK_MS;
   if (clouds) setAt = t;
   let asked = false;
   for (const [el, h] of held) {
-    if (h.cloud ? !clouds : still && !ask) continue;
+    if (h.cloud && !clouds) continue;
     if (!h.anims.length && (h.cloud || ask)) {
       takeUp(el, h);
       asked ||= !h.cloud;
     }
-    if (h.cloud || !still) for (const a of h.anims) a.currentTime = t;
+    for (const a of h.anims) a.currentTime = t;
   }
   if (asked) askedAt = t;
 }

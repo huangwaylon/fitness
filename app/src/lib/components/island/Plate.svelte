@@ -73,8 +73,7 @@
       if (!at.placed || leaving) return;
       clearInterval(typer);
       rest();
-      if (!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
-        el?.querySelector('.catch-icon')?.animate([{ transform: 'none' }, { transform: 'translateY(-7px) scale(1.1)' }, { transform: 'none' }], { duration: 160, easing: 'ease-out' });
+      el?.querySelector('.catch-icon')?.animate([{ transform: 'none' }, { transform: 'translateY(-7px) scale(1.1)' }, { transform: 'none' }], { duration: 160, easing: 'ease-out' });
     });
   });
 
@@ -130,9 +129,4 @@
     animation: bob .6s ease-in-out infinite alternate;
   }
   @keyframes bob { from { transform: translateY(-1.5px); } to { transform: translateY(1.5px); } }
-  @media (prefers-reduced-motion: reduce) {
-    .catch-plate { animation: fade .2s ease-out both; }
-    .catch-icon, .next { animation: none; }
-    @keyframes fade { from { opacity: 0; } }
-  }
 </style>

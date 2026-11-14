@@ -152,6 +152,5 @@
   /* armed: up from sunk with a pop */
   .level-acts .armed { animation: arm 150ms var(--ease-bounce); }
   @keyframes arm { from { transform: translateY(4px) scale(.96); } to { transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .level-acts .armed { animation: none; } }
   @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 </style>

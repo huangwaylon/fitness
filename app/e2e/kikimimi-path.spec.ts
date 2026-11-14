@@ -144,14 +144,13 @@ test('the placement and a landmark: 「ここから」 at かわ, もり above i
   await page.evaluate(() => document.querySelector('[data-kiki-stage="kawa"]')?.scrollIntoView());
   await snap(page, 'placed');
 
-  // again (reduced motion: the scroll at once, nothing to wait for): the badge, no second celebration
-  await page.emulateMedia({ reducedMotion: 'reduce' });
+  // again: the badge, no second celebration
   await page.locator('dialog[open] .titlebar .nav.back').click();
   await sheet(page).locator('[data-kiki-path-open]').click();
   await expect(kawa.locator('[data-kiki-landmark="kawa"]')).toBeVisible();
   await expect(sheet(page).locator('[data-kiki-landmark-party]')).toHaveCount(0);
   // opened afresh: the current stop scrolled to, about a third down
   await expect(sheet(page).locator('[data-current] [data-kiki-continue]')).toBeInViewport({ ratio: 1 });
-  expect(await page.evaluate(() => document.querySelector('[data-kiki-page="path"]')!.parentElement!.closest('.kk-body')?.scrollTop ?? 0)).toBeGreaterThan(200);
+  await expect.poll(() => page.evaluate(() => document.querySelector('[data-kiki-page="path"]')!.parentElement!.closest('.kk-body')?.scrollTop ?? 0)).toBeGreaterThan(200);
   await snap(page, 'path-open');
 });

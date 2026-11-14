@@ -81,5 +81,4 @@
   @keyframes fade { from { opacity: 0; } }
   @keyframes rise { from { transform: translateY(24px) scale(.96); opacity: 0; } }
   @keyframes hop { 40% { transform: translateY(-8px); } }
-  @media (prefers-reduced-motion: reduce) { .scrim, .letter, .badge svg { animation: none; } }
 </style>

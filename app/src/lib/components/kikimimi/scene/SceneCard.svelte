@@ -106,8 +106,4 @@
   .notes { font: 700 var(--fs-talk)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
 
   @keyframes card-in { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) {
-    .scene.pop, .vill.talk :global(.official) { animation: none; }
-    .vill { transition: none; }
-  }
 </style>

@@ -68,5 +68,4 @@
   .mini { display: inline-flex; line-height: 0; }
   .short-by { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .owned-tag { font-family: var(--font-ui); color: var(--leaf-text); }
-  @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } }
 </style>

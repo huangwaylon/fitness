@@ -145,7 +145,6 @@
   }
   .ear.on { animation: breathe 1.2s ease-in-out infinite; }
   @keyframes breathe { 50% { transform: scale(1.06); } }
-  @media (prefers-reduced-motion: reduce) { .ear.on { animation: none; } }
   .say, .note { text-wrap: balance; }
   .say { margin: 0; font: 700 var(--fs-body)/1.45 var(--font-ui); color: var(--text); }
   .note { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }

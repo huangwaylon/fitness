@@ -3,23 +3,21 @@
   // しずえ's box (--news-lift), clear of the say button at the bottom right (the same room kept at the left, so it stays
   // centred) and over the partner's edge face when that's at the bottom. The newest enters at the bottom; the older
   // slide up (a flip), and each fades out when it goes (its own timer, a tap, or pushed out by a fourth), then the
-  // ones above it slide down into its room. Reduced motion: no slide, a quick fade.
+  // ones above it slide down into its room.
   //   <CatchStack {scene} />   (in .if-scene, outside the scroller)
   import Plate from './Plate.svelte';
   import { flip } from 'svelte/animate';
-  import { prefersReducedMotion } from 'svelte/motion';
   import { onDestroy } from 'svelte';
   import { FADE_MS, clearCards, dropCard, stack, stackShown } from './catchStack.svelte.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
-  const still = $derived(prefersReducedMotion.current);
   const unshown = stackShown();
   onDestroy(() => (unshown(), clearCards()));
 </script>
 
 <div class="catch-stack" data-catch-stack>
   {#each stack.cards as c (c.n)}
-    <div class="slot" class:leaving={c.leaving} inert={c.leaving} animate:flip={{ duration: still ? 0 : 260 }} style:--fade="{still ? 120 : FADE_MS}ms">
+    <div class="slot" class:leaving={c.leaving} inert={c.leaving} animate:flip={{ duration: 260 }} style:--fade="{FADE_MS}ms">
       <Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} hop={c.hop} leaving={c.leaving} ondone={() => dropCard(c.n)} />
     </div>
   {/each}
@@ -37,5 +35,4 @@
   :global(.if-scene:has([data-partner-edge='bottom'])) .catch-stack { bottom: calc(var(--safe-bottom) + 64px + var(--news-lift, 0px)); }
   .slot { max-width: min(340px, 100%); display: flex; justify-content: center; transition: opacity var(--fade) ease, translate var(--fade) ease; }
   .slot.leaving { opacity: 0; translate: 0 -6px; pointer-events: none; }
-  @media (prefers-reduced-motion: reduce) { .slot.leaving { translate: none; } }
 </style>

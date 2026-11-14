@@ -177,5 +177,4 @@
   }
   .pot svg { width: 70%; height: 70%; stroke-width: 2.6; }
   .cell.in { opacity: 1; transition: opacity 150ms; }
-  @media (prefers-reduced-motion: reduce) { .cell.in { transition: none; } }
 </style>

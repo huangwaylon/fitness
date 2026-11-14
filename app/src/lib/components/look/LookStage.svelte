@@ -122,7 +122,4 @@
     overflow: auto hidden; scrollbar-width: none;
   }
   .dots::-webkit-scrollbar { display: none; }
-  @media (prefers-reduced-motion: reduce) {
-    .stage, .figure { transition: none; }
-  }
 </style>

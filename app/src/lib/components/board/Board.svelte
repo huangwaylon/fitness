@@ -198,5 +198,4 @@
     animation: news 1.4s ease-in-out infinite;
   }
   @keyframes news { 50% { transform: translateY(calc(-3 * var(--su))); } }
-  @media (prefers-reduced-motion: reduce) { .news { animation: none; } }
 </style>

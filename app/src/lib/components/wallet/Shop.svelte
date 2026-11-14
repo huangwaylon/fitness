@@ -107,5 +107,4 @@
   .tile + .tile .tip { left: auto; right: 2px; transform-origin: calc(100% - 18px) -8px; }
   .tile + .tile .tip::before { left: auto; right: 13px; }
   @keyframes tip { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .tip { animation: tip-fade 120ms linear; } @keyframes tip-fade { from { opacity: 0; } } }
 </style>

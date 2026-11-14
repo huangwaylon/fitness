@@ -61,7 +61,7 @@
     selected = id;
     const c = trip.camps?.find((x) => x.id === id);
     if (c) return void ((camp = c), (campOpen = true));
-    list?.querySelector<HTMLElement>(`[data-stop="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    list?.querySelector<HTMLElement>(`[data-stop="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   function pickDay(d: number) {
     if (d === day) map?.fit();

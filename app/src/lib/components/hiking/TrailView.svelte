@@ -224,7 +224,6 @@
   .disc :global(svg) { position: relative; }
   .disc:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
   .disc:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
-  @media (prefers-reduced-motion: reduce) { .disc:active::before { transform: none; } }
   /* the discs' drawn edge on the bar's (NavBar pulls its 6px out) */
   .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); display: flex; flex-direction: column; gap: 0; }
   .offline { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); left: calc(12px + var(--safe-left)); }

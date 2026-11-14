@@ -81,7 +81,7 @@
     f(...a);
   };
   // On opening: back where it was (a celebration waiting goes first), else the current stop (or 「ここから」) brought
-  // into view, smoothly (at once under reduced motion); one near the top already isn't moved.
+  // into view, smoothly; one near the top already isn't moved.
   onMount(() => {
     const sc = scroller(root), back = kept;
     kept = null;
@@ -91,7 +91,7 @@
     const to = party ?? root.querySelector<HTMLElement>('[data-current]') ?? root.querySelector<HTMLElement>('[data-kiki-here]');
     if (!to) return;
     const top = to.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - sc.clientHeight * 0.28;
-    if (top > 0) sc.scrollTo({ top, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (top > 0) sc.scrollTo({ top, behavior: 'smooth' });
   });
 </script>
 
@@ -304,9 +304,4 @@
   .zk { margin-top: 6px; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px; border-radius: var(--r-card); font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .zk b { flex: 1; text-align: left; }
   /* a stop's press: the whole stop sinks (its button is the stop's face and words), as a .tile-btn does */
-  @media (prefers-reduced-motion: reduce) {
-    .node:has(.hit:active) { transform: none; }
-    .lmbig, .party::before, .party::after { animation: none; }
-    .fold { transition: none; }
-  }
 </style>

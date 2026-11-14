@@ -83,5 +83,4 @@
   .day, .again { animation: if-lvl var(--dur-sheet) var(--ease-out); }
   .lvl[hidden] { display: none; }
   .day { display: grid; gap: 12px; }
-  @media (prefers-reduced-motion: reduce) { .day, .again { animation: none; } }
 </style>

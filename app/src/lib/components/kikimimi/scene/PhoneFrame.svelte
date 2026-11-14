@@ -1,7 +1,7 @@
 <script lang="ts">
   // The phone channel (docs/kikimimi.md "Visuals"): a paper phone standing in the scene's (blurred) room, the caller's
   // head and name, 「つうわちゅう」 or 「るすでん」 (a voicemail), its signal bars (full; `bars` fewer while a line breaks up:
-  // ようじ でんわ's `signal` lines), and a voice wave that moves while the line plays (still under reduced motion), the
+  // ようじ でんわ's `signal` lines), and a voice wave that moves while the line plays, the
   // clip's bar under it. Pure CSS.
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import ClipBar from './ClipBar.svelte';
@@ -47,5 +47,4 @@
   .live .wave i { background: var(--c-leaf); transform: none; animation: wv 640ms ease-in-out infinite alternate; }
   .bar { width: 100%; }
   @keyframes wv { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
-  @media (prefers-reduced-motion: reduce) { .live .wave i { animation: none; } .wave i, .sig i { transition: none; } }
 </style>

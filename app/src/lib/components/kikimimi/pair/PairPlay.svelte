@@ -264,5 +264,4 @@
   .w span { margin-left: 6px; font-size: var(--fs-s); color: var(--text-soft); }
   .mouth { font: 700 var(--fs-s)/1.5 var(--font-ui); }
   .ex { display: grid; font: 600 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .pic-card { animation: none; transition: none; } }
 </style>

@@ -232,5 +232,4 @@
 
   .script { margin: 4px 0 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
 
-  @media (prefers-reduced-motion: reduce) { .seat.pop, .seat.talk { animation: none; } }
 </style>

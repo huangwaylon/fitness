@@ -67,5 +67,4 @@
   .n { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .play { font-size: .8em; color: var(--text-soft); }
   @keyframes blink { from { opacity: 1; } to { opacity: .35; } }
-  @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
 </style>

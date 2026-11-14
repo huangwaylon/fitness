@@ -529,5 +529,4 @@
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
   .owned-tag { font-family: var(--font-ui); color: var(--c-leaf-text); }
-  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
 </style>

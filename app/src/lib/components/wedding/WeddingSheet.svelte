@@ -156,5 +156,4 @@
   .fab::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
   .fab:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); transition-duration: var(--dur-tap); }
   .fab:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
-  @media (prefers-reduced-motion: reduce) { .fab:active { transform: none; } }
 </style>

@@ -105,7 +105,6 @@
   }
 
   onMount(() => {
-    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return end();
     // the 3D camera up (it may still be coming as the island opens): the flight across the view now
     const start = () => {
       if (flight || ended) return;

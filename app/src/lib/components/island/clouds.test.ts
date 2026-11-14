@@ -60,40 +60,31 @@ describe('the island\'s endless little loops (a twinkle, a glint, the foam, the 
   it('held once there, set to each island frame\'s time, looked for at most each 500 ms till then, let go on release', () => {
     const c = cloud();
     const release = holdLoop(c.el);
-    stepHeld(1000, false);
-    stepHeld(1083, false);
+    stepHeld(1000);
+    stepHeld(1083);
     // (not there yet: looked for once in 500 ms, no style flush a frame)
     expect(c.asked.n).toBe(1);
     c.make();
-    stepHeld(1166, false);
+    stepHeld(1166);
     expect(c.a.currentTime).toBe(0);
-    stepHeld(1500, false);
+    stepHeld(1500);
     expect([c.state(), c.a.currentTime]).toEqual(['paused', 1500]);
     // (every frame: the island's 12 a second at rest, its 30 while it moves)
-    stepHeld(1583, false);
+    stepHeld(1583);
     expect(c.a.currentTime).toBe(1583);
-    stepHeld(1616, false);
+    stepHeld(1616);
     expect([c.a.currentTime, c.asked.n, c.asked.state]).toEqual([1616, 2, 0]);
     // cancelled (out of the tree a while) and made again: taken up again
     c.cancel();
     c.make();
-    stepHeld(2200, false);
+    stepHeld(2200);
     expect([c.asked.n, c.a.currentTime]).toEqual([3, 2200]);
     release();
     expect(c.state()).toBe('running');
-    stepHeld(3000, false);
+    stepHeld(3000);
     expect(c.a.currentTime).toBe(2200);
   });
-  it('under reduced motion: held where it was taken up, never stepped', () => {
-    const c = cloud();
-    c.make();
-    const release = holdLoop(c.el);
-    stepHeld(10_000, true);
-    stepHeld(10_083, true);
-    expect([c.state(), c.a.currentTime]).toEqual(['paused', 0]);
-    release();
-  });
-  it('a cloud and a loop in one step: the cloud each 100 ms and on under reduced motion, the loop each frame', () => {
+  it('a cloud and a loop in one step: the cloud each 100 ms, the loop each frame', () => {
     const cl = cloud(), lp = cloud();
     cl.make();
     lp.make();
@@ -101,8 +92,8 @@ describe('the island\'s endless little loops (a twinkle, a glint, the foam, the 
     stepHeld(20_000);
     stepHeld(20_040);
     expect([cl.a.currentTime, lp.a.currentTime]).toEqual([20_000, 20_040]);
-    stepHeld(20_200, true);
-    expect([cl.a.currentTime, lp.a.currentTime]).toEqual([20_200, 20_040]);
+    stepHeld(20_200);
+    expect([cl.a.currentTime, lp.a.currentTime]).toEqual([20_200, 20_200]);
     for (const r of releases) r();
   });
 });

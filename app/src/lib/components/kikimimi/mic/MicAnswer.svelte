@@ -125,5 +125,4 @@
   .note .k { margin-right: 6px; }
   .heard { display: block; color: var(--text); font-weight: 600; overflow-wrap: anywhere; }
   .note .k + .heard { display: inline; }
-  @media (prefers-reduced-motion: reduce) { .talk { transition: none; } }
 </style>

@@ -134,5 +134,4 @@
   .big small, .mine small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .delta { font: 700 var(--fs-body)/1.3 var(--font-num); }
   @keyframes drop { from { transform: translateY(-14px) scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .outcome { animation: none; } }
 </style>

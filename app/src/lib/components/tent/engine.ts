@@ -218,7 +218,6 @@ export interface Tent {
 const now = () => performance.now();
 /** A clear pixel: the card of one with no render (its model only). */
 const BLANK_PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=';
-const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** The ceiling from below (the first person's): warm plaster crossed by two wooden beams, tiled. */
 function beams(): CanvasTexture {
@@ -1274,7 +1273,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (!l) return 0;
     const t = now();
     if (w.upAt) return Math.max(0, w.upAt - t);
-    l.run = lidWant(l.run, false, t, reduced());
+    l.run = lidWant(l.run, false, t);
     const wait = lidOpenIn(l.run, t);
     if (wait > 0) w.upAt = t + wait;
     invalidate();
@@ -1813,7 +1812,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     for (const l of live.values()) {
       if (!l.lid) continue;
       const id = l.spot.id, spec = LIDS[l.spot.item], inIt = [...villagers.values()].filter((w) => w.pose?.lie && w.pose.id === id);
-      l.lid.run = lidWant(l.lid.run, inIt.some((w) => !w.upAt), t, reduced());
+      l.lid.run = lidWant(l.lid.run, inIt.some((w) => !w.upAt), t);
       const k = lidK(l.lid.run, t), z = spec.shut * k;
       if (lidMoving(l.lid.run, t)) more = true;
       if (z === l.lid.pivot.rotation.z) continue;

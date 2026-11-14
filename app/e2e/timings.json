@@ -357,7 +357,6 @@
  "hud-menu.spec.ts › by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and the focus is back on the leaf": 5464,
  "hud-menu.spec.ts › English after a sheet’s strings came in Japanese: its strings English too": 5789,
  "hud-menu.spec.ts › folded by default; the leaf unfolds it and folds it again; a tap elsewhere and Esc fold it too": 4108,
- "hud-menu.spec.ts › reduced motion › the pills fade in where they stand (no drop, no tipped leaf)": 2573,
  "hud-menu.spec.ts › the guest has the ベル row too (the pair's wallet, to look at): it opens ごほうび, view-only; no ボット": 4253,
  "hud-menu.spec.ts › ずかん opens the ずかん (its kinds, a kind's page with ‹), せってい opens せってい; each folds the menu": 5986,
  "island-edit.spec.ts › a new piece from the tray: down near the middle, ✓ puts it there; the other phone has it": 2751,

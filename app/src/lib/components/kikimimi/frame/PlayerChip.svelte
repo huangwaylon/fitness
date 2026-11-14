@@ -55,5 +55,4 @@
   .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .note { font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }
   @keyframes pop { from { transform: scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .ok, .mk, .read { animation: none; } }
 </style>

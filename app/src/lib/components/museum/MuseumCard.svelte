@@ -89,5 +89,4 @@
   /* the app's ✕ (NavButton) */
   .x { flex: none; align-self: flex-start; display: flex; }
   @keyframes pop { from { scale: .7; opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
