@@ -164,7 +164,7 @@ The ベル ledger (`model/bells.ts` bellsLedger, `components/kiroku/*`), read-on
 ### Kenkou
 
 健康 (`model/health.ts`, `components/health/*`): the health popup's first page (full height): Health data over time, one
-person at a time, computed on read, each card with its goal; its code and strings load with the first opening.
+person at a time, computed on read; its code and strings load with the first opening.
 
 - **The title bar** (both pages): whose · the page switch 健康 | ごはん · ✕; on ごはん's levels ‹, the title, ✕.
 - **Whose:** a native `<select>`, one pick for both pages, kept for the session; with the guest picked 健康 shows the
@@ -176,10 +176,10 @@ person at a time, computed on read, each card with its goal; its code and string
   **Activity** (`BarCard`): the daily average and its change against the previous period, goal days n/N, the best and the
   days without a record, the chart.
 - **Chart** (`BarChart`, SVG; its header): a bar per day, week or month in the person's colour, solid when the goal
-  was met its way ([Goal directions](#goal-directions)); a tap shows one value, a drag pages (right = older).
+  was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; day ranges show
+  weekdays (土 sky, 日 coral); a tap shows one value, a drag pages (right = older).
 - **体重 · 体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`; their headers): each its own optional goal, the average
-  (BMI with its category by the person's standard: under 18.5, Asian 23 / 25 or WHO 25 / 30), the change, the dot chart
-  and the goal month at that pace. No good / bad colours; never earns.
+  (BMI with its category by the person's standard), the change, the dot chart and the goal month at that pace. No good / bad colours; never earns.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's chip opens a tray under the header (−/＋ by the step, the range, clear where clearable, キャンセル, 決定), one
   open at a time; either person sets either's; the same control sets ごはん's goals. 活動's goals hold from today on; the

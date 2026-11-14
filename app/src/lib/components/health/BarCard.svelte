@@ -13,7 +13,7 @@
   import BarChart from './BarChart.svelte';
   import ChartCard from './ChartCard.svelte';
   import { goalLabel, valueText } from './goals.ts';
-  import { pctText, rangeLabel } from './fmt.ts';
+  import { pctText, spokenRange } from './fmt.ts';
 
   interface Props {
     id: GoalId;
@@ -49,7 +49,7 @@
   /** The goal at the period's end (a past period's own: the goals a day keeps change). */
   const goal = $derived(vals.at(-1)?.goal ?? null);
   const gl = $derived(goalLabel(id, goal));
-  const label = $derived(t('health.chartLabel', { name, what: title, range: rangeLabel(range, today), avg: s.avg === null ? t('health.noData') : fmt(s.avg), goal: gl }));
+  const label = $derived(t('health.chartLabel', { name, what: title, range: spokenRange(range, today), avg: s.avg === null ? t('health.noData') : fmt(s.avg), goal: gl }));
 </script>
 
 <ChartCard {id} {title} {p} {goal} {now} {start} {onsave} {warn} tone="soft" {empty} kind={food ? 'food' : 'metric'}>
@@ -109,9 +109,9 @@
   .k-miss { opacity: var(--bar-floor); }
   .k-mid { opacity: .67; margin-left: -3px; }
   .k-mid + .k-met { margin-left: -3px; }
-  /* the goal: dashed (ChartFrame's .goal.soft), the average: solid (BarChart's .avg) */
-  .k-goal { width: 14px; border-top: 2px dashed var(--text-soft); }
-  .k-avg { width: 14px; border-top: 2px solid var(--text); }
+  /* the goal: solid (ChartFrame's .goal.soft), the average: dashed (BarChart's .avg, its 5 4 dash) */
+  .k-goal { width: 14px; border-top: 2px solid var(--text-soft); }
+  .k-avg { width: 14px; height: 2px; border: 0; background: repeating-linear-gradient(90deg, var(--text) 0 5px, transparent 5px 9px); }
   /* the chart's no-record stub: short, faint and hatched, on a baseline */
   .k-none { width: 9px; height: 5px; align-self: center; margin-top: 4px; border: 1px dashed color-mix(in srgb, var(--text-soft) 50%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text-soft) 45%, transparent); border-radius: 1.5px 1.5px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--text-soft) 45%, transparent) 0 1px, transparent 1px 2.2px); }
 </style>

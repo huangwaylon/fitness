@@ -1,7 +1,7 @@
 <script lang="ts">
   // One person's sparse series (からだ: weight, body fat %, BMI or lean body mass). A dot per day with a measurement (or
   // per week / month: the average of its measurements), the dots joined by a thin line across the gaps between them,
-  // the goal dashed (ChartFrame; its words the chip's), on an axis fitted to the values: the goal too when it is near, else
+  // the goal solid (ChartFrame; its words the chip's), on an axis fitted to the values: the goal too when it is near, else
   // its words at that edge with ↑ / ↓ (to scale it would flatten the dots). A tap shows that bucket's numbers; a
   // horizontal drag turns the page. No good / bad colours on the dots.
   import type { LocalDate, PersonId } from '#lib/types.ts';
@@ -32,8 +32,9 @@
   }
   let { id, person, range, buckets, fmt, minSpan = 2, goal, goalText, today, label, selected, onselect, onswipe, slide }: Props = $props();
 
-  const H = 148;
-  const pad = { l: 38, r: 6, t: 10, b: 22 };
+  /** Day units: a row more under the axis (the weekdays: ChartFrame). */
+  const H = $derived(range.unit === 'day' ? 162 : 148);
+  const pad = $derived({ l: 38, r: 6, t: 10, b: range.unit === 'day' ? 36 : 22 });
 
   const ext = $derived.by(() => {
     let lo = Infinity, hi = -Infinity;

@@ -1,6 +1,6 @@
 <script lang="ts">
   // One chart's card, the same for every chart in けんこう and ごはん's グラフ (docs/design.md "Goals in place"): its
-  // icon and name, its goal at the upper right (GoalEdit: 「- - 目標 8,000歩 以上 ✎」, set there when it's ours to set,
+  // icon and name, its goal at the upper right (GoalEdit: 「— 目標 8,000歩 以上 ✎」, set there when it's ours to set,
   // else shown read-only), then the caller's numbers, chart and key; with nothing recorded yet, one line instead (the
   // goal can still be set before the first record).
   import type { Snippet } from 'svelte';

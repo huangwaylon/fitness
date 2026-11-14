@@ -25,6 +25,7 @@
   "health.tipDays": "goal {n}/{d} days",
   "health.recDays": "{n} days logged",
   "health.chartLabel": "{name}'s {what}, {range}. Average {avg}. {goal}",
+  "health.rangeSpoken": "{a} to {b}",
   "health.key.met": "Goal met",
   "health.key.missed": "Not met",
   "health.key.share": "Darker = more days at the goal",

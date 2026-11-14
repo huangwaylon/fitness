@@ -11,7 +11,8 @@
 
 <script lang="ts">
   // The frame every chart in けんこう and ごはん's グラフ is drawn in (BarChart, DotChart): the measured SVG, the
-  // horizontal grid with its numbers, the dates under it, the goal (its dashed line, stepped where it changed; its words
+  // horizontal grid with its numbers, the dates under it (days: their weekdays under those, 土 sky and 日 coral, today's in
+  // the text colour), the goal (its solid line on a card underlay, stepped where it changed; its words
   // are the card's chip and legend, never over the bars, but when it is far off the axis: 「目標 66.0 kg 前後 ↑」 at the
   // top or bottom edge), the page's
   // slide and drag, the picked bucket's band and its callout (inside the plot's top, on the half away from it, so the
@@ -70,7 +71,9 @@
   const plotW = $derived(Math.max(1, w - pad.l - pad.r));
   const bw = $derived(plotW / n);
   const geo = $derived<Geo>({ w, plotW, bw, cx: (i) => pad.l + i * bw + bw / 2, x0: (i) => pad.l + i * bw });
-  const xl = $derived(xLabels(range, plotW));
+  const xl = $derived(xLabels(range, plotW, today));
+  /** The weekdays' row under the dates (day units: the caller's pad.b has room for it). */
+  const wdRow = $derived(xl.some((l) => l.wd));
   const base = $derived(H - pad.b);
   /** The goal's line: flat across each bucket, a step where it changed. */
   const goalD = $derived.by(() => {
@@ -112,7 +115,7 @@
           <g class="plot" class:turned class:dragging={dx !== 0} style:--slide="{slide * 28}px" style:transform="translateX({dx * 0.5}px)">
             {#if sel !== null}<rect class="hl" x={geo.x0(sel)} y={pad.t - 4} width={bw} height={base - pad.t + 4} rx="4" />{/if}
             {@render plot(geo)}
-            {#if goal && goalD}<path class="goal {goal.tone}" d={goalD} />{/if}
+            {#if goal && goalD}<path class="goal-u" d={goalD} /><path class="goal {goal.tone}" d={goalD} />{/if}
             {@render over?.(geo)}
           </g>
         {/key}
@@ -121,7 +124,9 @@
         <text class="gtext" data-goal-line x={w - pad.r - 2} y={goalY} text-anchor="end">{goal.text}{goal.off === 'below' ? ' ↓' : ' ↑'}</text>
       {/if}
       {#each xl as l (l.i)}
-        <text class="ax" x={Math.min(Math.max(geo.cx(l.i), pad.l + 14), w - pad.r - 14)} y={H - 6} text-anchor="middle">{l.text}</text>
+        {@const lx = Math.min(Math.max(geo.cx(l.i), pad.l + 14), w - pad.r - 14)}
+        {#if l.text}<text class="ax" data-x-date class:now={l.now} x={lx} y={wdRow ? H - 21 : H - 6} text-anchor="middle">{l.text}</text>{/if}
+        {#if l.wd}<text class="ax wd" class:now={l.now} class:sat={l.dow === 6} class:sun={l.dow === 7} x={lx} y={H - 6} text-anchor="middle">{l.wd}</text>{/if}
       {/each}
     </svg>
     {#if sel !== null}
@@ -140,13 +145,19 @@
   .grid { stroke: color-mix(in srgb, var(--text-soft) 16%, transparent); stroke-width: 1; }
   .grid.zero { stroke: color-mix(in srgb, var(--text-soft) 45%, transparent); }
   .ax { fill: var(--text-soft); font: 700 var(--fs-s)/1 var(--font-num); }
+  .ax.wd { font-family: var(--font-ui); font-size: var(--fs-s); font-weight: 700; }
+  .ax.now { fill: var(--text); }
+  /* the weekend as GymCalendar's, on the labels only (never the bars); over today's text colour */
+  .wd.sat { fill: var(--sky-text); }
+  .wd.sun { fill: var(--coral-text); }
   .gtext { fill: var(--text-soft); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
   .plot.turned { animation: slide 220ms cubic-bezier(.2, .8, .2, 1); }
   .plot:not(.dragging) { transition: transform 200ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: .2; translate: var(--slide) 0; } to { opacity: 1; translate: 0 0; } }
   .hl { fill: var(--hl); }
-  /* the goal: dashed, the chip's swatch (GoalEdit .gl) */
-  .goal { fill: none; stroke-width: 1.5; stroke-dasharray: 5 4; }
+  /* the goal: solid on a card-coloured underlay (as BarChart's .avg-u), the chip's swatch (GoalEdit .gl); the average dashed */
+  .goal { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: butt; }
+  .goal-u { fill: none; stroke: var(--card); stroke-width: 3; opacity: .85; stroke-linejoin: round; }
   .goal.soft { stroke: var(--text-soft); }
   .goal.yuzu { stroke: var(--c-yuzu-lip); }
   .tip {

@@ -4,8 +4,8 @@
   // goal's way (at least, at most, near: model/health.ts seriesBuckets' `met`) and paler the fewer of its days did (today's too: solid once met):
   // Apple Health's values as is, so a 66-step day is its short bar and a 0 a 1px sliver on the axis; today's bar is
   // outlined (still running); a day with no record gets a short faint hatched stub on the axis (plainly missing: not a
-  // gap that reads as zero, and not a column that reads as a value). The goal dashed (stepped where it changed; its
-  // words are the card's chip and legend, not in the plot: ChartFrame); `avg`, the period's daily average, a flat solid line; with room (1週) each bar carries
+  // gap that reads as zero, and not a column that reads as a value). The goal solid (stepped where it changed; its
+  // words are the card's chip and legend, not in the plot: ChartFrame); `avg`, the period's daily average, a flat dashed line; with room (1週) each bar carries
   // its value. `plain` (no goal): every bar solid. Hand-drawn SVG at the measured width, in ChartFrame.
   import type { LocalDate, Who } from '#lib/types.ts';
   import type { BucketValue, Range } from '#lib/model/health.ts';
@@ -30,7 +30,7 @@
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
-    /** A flat solid line at this value (the period's daily average), or none. */
+    /** A flat dashed line at this value (the period's daily average), or none. */
     avg?: number | null;
     /** No goal-met shading: every bar solid, the callout without ✓ and goal days. */
     plain?: boolean;
@@ -41,8 +41,9 @@
   let { id, range, p, vals, first, today, label, goalText, selected, onselect, onswipe, slide, avg = null, plain = false, fmt, barFmt = null }: Props = $props();
   const barText = $derived(barFmt ?? ((v: number) => barNum(v, top)));
 
-  const H = 168;
-  const pad = { l: 38, r: 6, t: 14, b: 24 };
+  /** Day units: a row more under the axis (the weekdays: ChartFrame). */
+  const H = $derived(range.unit === 'day' ? 182 : 168);
+  const pad = $derived({ l: 38, r: 6, t: 14, b: range.unit === 'day' ? 38 : 24 });
   /** Value labels over the bars when each has room for one (1週). */
   const labels = $derived(range.buckets.length <= 7);
 
@@ -121,9 +122,9 @@
   /* no row: a short faint hatched stub on the axis, plainly missing (neither a zero nor a value) */
   .none { stroke: color-mix(in srgb, var(--text-soft) 50%, transparent); stroke-width: 1; stroke-dasharray: 2 1.5; }
   .hatch { fill: color-mix(in srgb, var(--text-soft) 45%, transparent); }
-  /* the average: a thin solid line in the text colour over a card-coloured underlay, so it reads across the bars and
-     apart from the dashed goal */
-  .avg { stroke: var(--text); stroke-width: 1.5; stroke-linecap: round; }
+  /* the average: a thin dashed line in the text colour over a solid card-coloured underlay, so it reads across the bars
+     and apart from the solid goal (BarCard's .k-avg the same dash) */
+  .avg { stroke: var(--text); stroke-width: 1.5; stroke-dasharray: 5 4; stroke-linecap: butt; }
   .avg-u { stroke: var(--card); stroke-width: 4; opacity: .85; }
   .val { fill: var(--text); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
   .trow { display: flex; align-items: center; gap: 6px; }

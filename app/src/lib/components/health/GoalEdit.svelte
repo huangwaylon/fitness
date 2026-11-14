@@ -33,7 +33,7 @@
     value: number | null;
     /** Sets it (null: cleared); the caller says so (its toast). Absent: read-only. */
     onsave?: ((v: number | null) => void) | null;
-    /** The dashed swatch's colour: the bar charts' soft line, or the dot charts' yuzu. */
+    /** The solid swatch's colour: the bar charts' soft line, or the dot charts' yuzu. */
     tone?: 'soft' | 'yuzu';
     /** Where −/＋ start when none is set (the latest weigh-in, say); else the spec's. */
     start?: number | null;
@@ -157,7 +157,7 @@
   button.gchip.open .pill { background: var(--ctl-sel); color: var(--c-ink); }
   button.gchip :global(svg) { color: var(--text-soft); }
   button.gchip.open :global(svg) { color: inherit; }
-  .gl { width: 14px; border-top: 2px dashed var(--text-soft); }
+  .gl { width: 14px; border-top: 2px solid var(--text-soft); }
   .gl.yuzu { border-top-color: var(--c-yuzu-lip); }
 
   /* the tray: the panel's tan under the card's header, its notch under the chip */

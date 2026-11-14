@@ -135,7 +135,7 @@ test('every day with data is its bar, as reported; only a day with no row is a s
   await chart.scrollIntoViewIfNeeded();
   const [sb, cb] = [(await stub.boundingBox())!, (await chart.boundingBox())!];
   expect(sb.height).toBeLessThanOrEqual(8);
-  expect(Math.abs(sb.y + sb.height - (cb.y + cb.height - 24))).toBeLessThanOrEqual(1.5); // on the baseline
+  expect(Math.abs(sb.y + sb.height - (cb.y + cb.height - 38))).toBeLessThanOrEqual(1.5); // on the baseline (day units: the weekdays' row under it)
   // its tap callout says 記録なし
   await chart.click({ position: { x: sb.x - cb.x + sb.width / 2, y: cb.height - 40 } });
   await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
@@ -238,6 +238,28 @@ test('a drag across a chart turns the page (right = older); a short one doesn’
   await drag(-120);
   await expect(range(page)).toHaveText('10/25〜10/31');
   await expect(sheet(page).locator('.chart .tip')).toHaveCount(0); // a drag never opens a callout
+});
+
+// The goal a solid line; day ranges with their weekdays under the dates (土 sky, 日 coral: the labels, never the bars).
+test('the goal solid; 1週 a weekday under every bar, 1か月 a label a week, all on today’s weekday; none for 3か月', async ({ page }) => {
+  await openHealth(page); // 10/31 土
+  const card = sheet(page).locator('.mc[data-metric=steps]');
+  const wd = card.locator('text.ax.wd');
+  await expect(wd).toHaveText(['日', '月', '火', '水', '木', '金', '土']);
+  await expect(wd.nth(0)).toHaveClass(/\bsun\b/);
+  await expect(wd.nth(6)).toHaveClass(/\bsat\b/);
+  await expect(card.locator('text.ax.wd.sat, text.ax.wd.sun')).toHaveCount(2);
+  await expect(card.locator('text.ax.now')).toHaveText(['10/31', '土']); // today's date and weekday
+  expect(await card.locator('path.goal').evaluate((e) => getComputedStyle(e).strokeDasharray)).toBe('none');
+  await expect(card.locator('svg[role=img]')).toHaveAttribute('aria-label', /10月25日\(日\)〜10月31日\(土\)/);
+  // the weekdays, each under its own bar, never touching
+  const boxes = await wd.evaluateAll((ts) => ts.map((t) => { const b = (t as SVGTextElement).getBBox(); return { x: b.x, width: b.width }; }));
+  for (let i = 1; i < boxes.length; i++) expect(boxes[i].x).toBeGreaterThan(boxes[i - 1].x + boxes[i - 1].width);
+  await pickPeriod(page, 'month');
+  await expect(card.locator('text.ax.wd')).toHaveText(['土', '土', '土', '土', '土']);
+  await expect(card.locator('text[data-x-date]')).toHaveText(['10/3', '10/10', '10/17', '10/24', '10/31']);
+  await pickPeriod(page, 'quarter');
+  await expect(card.locator('text.ax.wd')).toHaveCount(0);
 });
 
 test('a tap on a bar shows that day’s one value (and again closes it)', async ({ page }) => {

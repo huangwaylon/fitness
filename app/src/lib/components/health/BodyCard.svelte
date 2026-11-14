@@ -2,7 +2,7 @@
   // A からだ card (けんこう): 体重, 体脂肪率, BMI or 除脂肪体重, for the chosen person, in ChartCard (its goal at the upper
   // right: GoalEdit, each optional, per person). The period's average and how many measurements, its plain change (the
   // first week's average → the last week's, else the first measurement → the last; saying which) and per week, the dot
-  // chart (the goal dashed on it) and, in the current period with a goal, the month it may be reached at that pace (the
+  // chart (the goal solid on it) and, in the current period with a goal, the month it may be reached at that pace (the
   // goal's way: under a ceiling, over a floor, near a value). BMI's average carries its category by the person's
   // standard (model/profile.ts bmiCategory: アジア, the default, or WHO; せってい → プロフィール), said plainly. Never
   // earns, no good / bad colours.
@@ -16,7 +16,7 @@
   import ChartCard from './ChartCard.svelte';
   import DotChart from './DotChart.svelte';
   import { goalLabel, goalName, valueText } from './goals.ts';
-  import { deltaText, rangeLabel } from './fmt.ts';
+  import { deltaText, spokenRange } from './fmt.ts';
 
   interface Props {
     id: BodyId;
@@ -61,7 +61,7 @@
     <p class="none">{t('health.noData')}</p>
   {/if}
   <DotChart {id} person={p} {range} buckets={b} {fmt} {minSpan} {goal} goalText={gl} today={hs.to}
-    label={t('health.chartLabel', { name, what: title, range: rangeLabel(range, hs.to), avg: s.avg === null ? t('health.noData') : fmt(s.avg), goal: gl })}
+    label={t('health.chartLabel', { name, what: title, range: spokenRange(range, hs.to), avg: s.avg === null ? t('health.noData') : fmt(s.avg), goal: gl })}
     {selected} {onselect} {onswipe} {slide} />
   {#if s.projection && range.to === hs.to}
     <p class="proj" data-proj={s.projection.kind}>
@@ -85,6 +85,6 @@
   .chips .n { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .proj { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
   .k-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-soft); opacity: .7; }
-  /* the goal: dashed yuzu (ChartFrame's .goal.yuzu) */
-  .k-goal { width: 14px; border-top: 2px dashed var(--c-yuzu-lip); }
+  /* the goal: solid yuzu (ChartFrame's .goal.yuzu) */
+  .k-goal { width: 14px; border-top: 2px solid var(--c-yuzu-lip); }
 </style>

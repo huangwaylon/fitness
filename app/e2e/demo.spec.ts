@@ -312,7 +312,7 @@ test('けんこう: a goal\'s editor: one open at a time; Esc or a tap elsewhere
   await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal 以上');
 });
 
-test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
+test('けんこう: the body fat goal, set on its card (3–60 %), a solid line on the body fat chart; cleared, no line', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
@@ -339,7 +339,7 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await expect(saved).toContainText('体脂肪率の目標を変更しました');
   await saved.getByRole('button', { name: '閉じる' }).click();
   await expect(saved).toHaveCount(0);
-  // drawn on the body fat chart as the weight goal is: the dashed line, the key and the chart's words (its own words
+  // drawn on the body fat chart as the weight goal is: the solid line, the key and the chart's words (its own words
   // are the chip's, never in the plot: health plan C3)
   await expect(fat.locator('path.goal')).toHaveCount(1);
   await expect(fat.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 19\.5/);

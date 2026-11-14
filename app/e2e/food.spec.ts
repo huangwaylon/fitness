@@ -324,7 +324,10 @@ test('グラフ: the kcal eaten per day with the average line; the period, ‹ a
   const avg = Number((await card.locator('[data-intake-avg]').textContent())!.replace(/[^\d]/g, ''));
   expect(avg).toBeGreaterThan(0);
   await expect(card.locator('line.avg')).toHaveAttribute('data-avg', String(avg)); // the flat line at the average
-  await expect(card.locator('path.goal')).toHaveCount(1); // ウェイ's kcal goal, dashed
+  await expect(card.locator('path.goal')).toHaveCount(1); // ウェイ's kcal goal, solid
+  // the goal solid, the average dashed (apart at a glance)
+  expect(await card.locator('path.goal').evaluate((e) => getComputedStyle(e).strokeDasharray)).toBe('none');
+  expect(await card.locator('line.avg').evaluate((e) => getComputedStyle(e).strokeDasharray)).not.toBe('none');
   await expect(card.locator('.key')).toContainText('平均');
   await expect(card.locator('[data-intake-basis]')).toHaveText('1日の平均（3日分）'); // the finished days with a meal (today out)
   await expect(card.locator('.sub')).toContainText('記録 3日');
@@ -429,7 +432,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   const protein = sheet(page).locator('[data-food-chart=p]');
   await expect(protein.locator('[data-intake-avg]')).toHaveText(/^\d+\.\d g$/);
   await expect(protein.locator('path.bar')).toHaveCount(4);
-  await expect(protein.locator('path.goal')).toHaveCount(1); // the default, dashed
+  await expect(protein.locator('path.goal')).toHaveCount(1); // the default, solid
   const salt = sheet(page).locator('[data-food-chart=s]');
   await expect(salt.locator('button[data-goal]')).toHaveText('目標 7.5 g 以下'); // the profile's default
   await expect(salt.locator('path.goal')).toHaveCount(1);

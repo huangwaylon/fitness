@@ -4,7 +4,7 @@ import { i18n, t, type Locale } from './index.ts';
 import { addDays, dateMs } from '#lib/time/dates.ts';
 
 /** ISO weekday of a `YYYY-MM-DD`: 1 = Monday … 7 = Sunday. */
-const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
+export const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
 /** `水` / `Wed`. */
 export const weekdayOf = (d: string, locale: Locale = i18n.locale): string => t(`weekday.${isoWeekday(d)}`, undefined, locale);
 /** `10/28` (both locales). */
@@ -21,11 +21,14 @@ export function monthLabel(d: string, { year = true, long = false }: { year?: bo
 /** A week from its Monday: `10/26–11/1`. */
 export const weekRange = (wk: string): string => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
 
-let enDate: Intl.DateTimeFormat | undefined;
-/** `10月28日(水)` / `Wed, Oct 28`. */
-export function formatDate(d: string): string {
-  if (i18n.locale === 'ja') return `${Number(d.slice(5, 7))}月${Number(d.slice(8, 10))}日(${weekdayOf(d)})`;
-  return (enDate ??= new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })).format(new Date(dateMs(d)));
+let enDate: Intl.DateTimeFormat | undefined, enDateY: Intl.DateTimeFormat | undefined;
+/** `10月28日(水)` / `Wed, Oct 28`; `year`: `2025年12月30日(火)` / `Tue, Dec 30, 2025`. */
+export function formatDate(d: string, { year = false }: { year?: boolean } = {}): string {
+  if (i18n.locale === 'ja') return `${year ? `${d.slice(0, 4)}年` : ''}${Number(d.slice(5, 7))}月${Number(d.slice(8, 10))}日(${weekdayOf(d)})`;
+  const f = year
+    ? (enDateY ??= new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }))
+    : (enDate ??= new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }));
+  return f.format(new Date(dateMs(d)));
 }
 
 

@@ -25,6 +25,7 @@
   "health.tipDays": "目標 {n}/{d}日",
   "health.recDays": "記録 {n}日",
   "health.chartLabel": "{name}の{what} {range}。平均 {avg}。{goal}",
+  "health.rangeSpoken": "{a}〜{b}",
   "health.key.met": "目標達成",
   "health.key.missed": "未達成",
   "health.key.share": "濃いほど目標達成の日が多い",
