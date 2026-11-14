@@ -1,5 +1,7 @@
 {
   "gym.reason.none": "Checking on schedule.",
+  "gym.reason.degraded": "Part of it isn’t working.",
+  "gym.reason.failing": "The checks are failing.",
   "gym.reason.mode_off": "The bot is switched off: no checks, no alerts.",
   "gym.reason.paused": "Checks are stopped. Restart them from the check settings in LINE.",
   "gym.reason.no_alarm": "No next check is scheduled.",

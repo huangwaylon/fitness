@@ -47,6 +47,15 @@ describe('verdictView', () => {
     expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).tone).toBe('idle');
     expect(verdictView(status({ verdict: 'off', reasons: ['mode_off', 'no_alarm'] }))).toMatchObject({ tone: 'idle', word: 'オフ', sentence: 'ボットがオフになっています。チェックも通知もしません。' });
   });
+
+  it('without a reason, the sentence follows the verdict (never 予定どおり under 不調)', () => {
+    expect(verdictView(status({ verdict: 'failing', reasons: [], failures: 0 })).sentence).toBe('チェックに失敗しています。');
+    expect(verdictView(status({ verdict: 'failing', reasons: [], failures: 3 })).sentence).toBe('予約サイトのチェックが3回続けて失敗しています。');
+    expect(verdictView(status({ verdict: 'broken', reasons: [] })).sentence).toBe('チェックに失敗しています。');
+    expect(verdictView(status({ verdict: 'degraded', reasons: [] })).sentence).toBe('一部がうまく動いていません。');
+    expect(verdictView(status({ verdict: 'late', reasons: [] })).sentence).toBe('チェックが予定より遅れています。');
+    expect(verdictView(status({ verdict: 'stopped', reasons: [] }), true).sentence).toBe('停止中です。⋯から再開できます。');
+  });
 });
 
 describe('keyRow and factRows', () => {

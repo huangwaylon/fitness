@@ -61,9 +61,15 @@ const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', degraded: 'trouble'
 
 /** The verdict card: its tone, its word, and one plain sentence from the first reason (`app`: the page can restart
  *  the checks itself, so 停止中 points to 設定's switch rather than LINE's). */
+/** Without a reason, the verdict's own sentence (never the calm one under a coral word). */
+const NO_REASON: Record<Verdict, string> = {
+  healthy: 'none', degraded: 'degraded', late: 'overdue', failing: 'failing', broken: 'failing', stopped: 'paused', off: 'mode_off'
+};
+
 export function verdictView(s: GymStatus, app = false): { tone: BotTone; w: BotWord; word: string; sentence: string } {
-  const r = s.reasons[0];
-  const key = r === 'paused' && app ? 'pausedApp' : (r ?? 'none');
+  let key: string = s.reasons[0] ?? NO_REASON[s.verdict];
+  if (key === 'failing' && s.failures > 0) key = 'site_failing';
+  if (key === 'paused' && app) key = 'pausedApp';
   return { tone: TONE[s.verdict], w: WORD[s.verdict], word: t(`bots.w.${WORD[s.verdict]}`), sentence: t(`gym.reason.${key}`, { n: s.failures }) };
 }
 

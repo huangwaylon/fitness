@@ -1,5 +1,7 @@
 {
   "gym.reason.none": "予定どおりチェックしています。",
+  "gym.reason.degraded": "一部がうまく動いていません。",
+  "gym.reason.failing": "チェックに失敗しています。",
   "gym.reason.mode_off": "ボットがオフになっています。チェックも通知もしません。",
   "gym.reason.paused": "チェックは停止中です。LINEのチェック設定から再開できます。",
   "gym.reason.no_alarm": "次のチェックが予定されていません。",
