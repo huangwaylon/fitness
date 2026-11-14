@@ -9,7 +9,9 @@ import { defineConfig, devices, type Project } from '@playwright/test';
 
 // Locally the preview is reused (reuseExistingServer), so each checkout gets its own port from its path: two worktrees on
 // one port tested each other's build. E2E_PORT overrides; CI keeps 4173.
-const ownPort = () => 4700 + [...import.meta.dirname].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 800;
+// (a checkout's own port, from its path; never 5060/5061, SIP's, which browsers refuse: ERR_UNSAFE_PORT failed every test)
+const hashedPort = 4700 + [...import.meta.dirname].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 800;
+const ownPort = () => (hashedPort === 5060 || hashedPort === 5061 ? hashedPort + 2 : hashedPort);
 const PORT = Number(process.env.E2E_PORT ?? (process.env.CI ? 4173 : ownPort()));
 const BASE = process.env.BASE_PATH ?? '';
 // Each test's phone starts with these in localStorage:
