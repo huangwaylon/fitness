@@ -139,6 +139,13 @@ the commit) to publish kalori.jp's data in this public repo, knowingly supersedi
 it out, behind a members-only relay route (Workers KV, a key, its own cache and upload script); one way in for every
 dataset beats that route for one of them.
 
+### Kalori's raw data in releases, the scraper in food-data
+`kalori_scrape.py` lives in `food-data/scripts/` and runs in `kalori-scrape.yml`; its output is a dated release
+(`kalori-data.tar.gz`), which `fetch.py`'s `KALORI_TAG` pins ([food-data](food-data.md#kalori)). Why: ~70 MB of shards
+rewritten each refresh would bloat every clone, in a branch or a repo of its own; a pinned, checksummed release is an
+immutable input for each shipped `kalori.json`, and the merged pin is the accepted baseline (a rejected release is
+never seeded or diffed from); and the weekly refresh lands as a PR the owner merges, so one repo beats two.
+
 ## Economy
 
 ### Bells are play money

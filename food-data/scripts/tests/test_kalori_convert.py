@@ -175,6 +175,23 @@ class Convert(unittest.TestCase):
         pfc = {'kcal': {'v': 500, 'est': False}, 'p': {'v': 20, 'est': True}}
         self.assertEqual(self.conv([row(4, 'd', ended=True, nutrients=pfc)])[0]['items'][0]['est'], 'p')
 
+    def test_gone_is_unlisted(self):
+        pfc = {'kcal': {'v': 500, 'est': False}, 'p': {'v': 20, 'est': True}}
+        doc, rep = self.conv([row(1, 'a', gone=True), row(2, 'b', gone=True, nutrients=pfc), row(3, 'c', gone=False),
+                              row(4, 'd', listed=False)])
+        self.assertEqual([(it.get('ended'), it.get('pop'), it.get('est')) for it in doc['items']],
+                         [(True, -1, 'e'), (True, -1, 'p'), (None, None, None), (True, -1, 'e')])
+        self.assertEqual(rep['ended'], 3)
+        # a near-duplicate: the current one stays over a gone one
+        doc, _ = self.conv([row(7, 'タコ丼', lastmod='2026-12-01T00:00:00Z', gone=True), row(8, 'タコ丼')])
+        self.assertEqual([it['id'] for it in doc['items']], ['kal:8'])
+
+    def test_no_table_keeps_its_flags_parser_ignored(self):
+        # table: false, the site's estimates only: the scraper sets every est, so 'e'
+        doc, _ = self.conv([row(1, 'a', est=True, table=False, parser=3), row(2, 'b', table=False, parser=3)])
+        self.assertEqual([it.get('est') for it in doc['items']], ['e', None])
+        self.assertEqual(self.conv([row(5, 'x', parser=3, table=True)])[0], self.conv([row(5, 'x')])[0])
+
     def test_variants(self):
         rows = [row(1, 'タコ丼 並盛', kcal=600), row(2, 'タコ丼 大盛', kcal=610), row(3, 'タコ丼 ミニ', kcal=400),
                 row(4, 'イカ丼 (並)'), row(5, 'イカ丼 (大)'), row(6, 'イカ丼'),
@@ -374,7 +391,20 @@ class Read(unittest.TestCase):
                           row(2, 'b-old', at='2026-11-13T04:00:00+00:00'), row(3, 'c'), row(3, 'c-same-time')])
             rows, rep = K.read_rows([d])
         self.assertEqual({(r['id'], r['name']) for r in rows}, {('1', '新しい'), ('2', 'b'), ('3', 'c-same-time')})
-        self.assertEqual(rep, {'lines': 9, 'v1': 2, 'bad': 1, 'products': 3})
+        self.assertEqual(rep, {'lines': 9, 'v1': 2, 'bad': 1, 'gone': 0, 'products': 3})
+
+    def test_gone_line_without_values_marks_the_last_values(self):
+        def gone(i, at):
+            return {'shop': 'tako-ya', 'id': str(i), 'gone': True, 'fetched_at': at}
+        with tempfile.TemporaryDirectory() as d:
+            write_shards(d, [row(1, 'a', at='2026-11-13T01:00:00+00:00'), gone(1, '2026-11-14T00:00:00+00:00'),
+                             gone(2, '2026-11-12T00:00:00+00:00'), row(2, 'b', at='2026-11-13T01:00:00+00:00'),
+                             gone(3, '2026-11-14T00:00:00+00:00')])
+            rows, rep = K.read_rows([d])
+        self.assertEqual({r['id']: r.get('gone') for r in rows}, {'1': True, '2': None})   # 2: back since; 3: no values
+        self.assertEqual((rep['gone'], rep['v1'], rep['products']), (1, 0, 2))
+        doc, _ = K.convert(rows)
+        self.assertEqual([(it['id'], it.get('ended'), it.get('est')) for it in doc['items']], [('kal:1', True, 'e'), ('kal:2', None, None)])
 
     def test_main(self):
         with tempfile.TemporaryDirectory() as d:

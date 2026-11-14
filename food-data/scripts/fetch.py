@@ -10,14 +10,14 @@ Steps (raw files go to food-data/raw/<dir>/ or $FOOD_RAW/<dir>/, gitignored and 
   bodik                  BODIK CKAN CSVs: Toyonaka, Takatsuki, Kurume -> muni_*/
   tokyo                  東京都 簡単レシピ CSVs listed in data_src/tokyo_hokeniryo_recipes.json -> tokyo_hokeniryo/
   jbfd                   jbfd + jbfd-correspondence-table CSVs (GitHub, CC0) -> reliab_github/
-  kalori                 kalori.jp menus, the 20 shard-N.jsonl of github.com/huangwaylon/test (data/products/) -> kalori/
+  kalori [tag]           kalori.jp menus: the release KALORI_TAG's kalori-data.tar.gz, checked -> kalori/shard-N.jsonl
   aliases                Wikidata + ja.wikipedia readings of the dish names in out/ -> data_src/aliases_*.json
   weight-change          MEXT 表12 重量変化率 from the ebook PDF (needs `pdftotext`) -> data_src/mext_weight_change.json
 Manual downloads (no stable URL): MEXT 八訂増補2023 Excel + ebook PDF (mext/main_2023_ch2.xlsx, main_2023_ebook.pdf;
 https://www.mext.go.jp/a_menu/syokuhinseibun/mext_00001.html) and 熊谷市 学校給食献立 CSVs (muni2_kumagaya/;
 https://opendata.pref.saitama.lg.jp/datasets/3144 and the earlier-year datasets linked there).
 """
-import csv, gzip, hashlib, io, json, os, re, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
+import csv, gzip, hashlib, io, json, os, re, subprocess, sys, tarfile, time, urllib.error, urllib.parse, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib  # noqa: E402
@@ -182,16 +182,56 @@ def jbfd():
         save(os.path.join(RAW, 'reliab_github', sub, f), get(gh + repo + '/main/data/' + f))
 
 
-KALORI = 'https://raw.githubusercontent.com/huangwaylon/test/main/data/products/shard-%d.jsonl'
-KALORI_SHARDS = 20
+# Kalori's data: a release of this repo (.github/workflows/kalori-scrape.yml), pinned so each shipped kalori.json has one
+# immutable input; bump it to refresh (docs/ops/runbook.md "Refresh Kalori").
+KALORI_TAG = 'kalori-2026-11-13'
+KALORI_URL = 'https://github.com/huangwaylon/fitness/releases/download/%s/%s'
+KALORI_TAR = 'kalori-data.tar.gz'
+KALORI_SHARD = re.compile(r'^shards/(shard-\d{1,2}\.jsonl)$')
 
 
-def kalori():
-    """The scraper's shards, whole each time (append-only files: a kept copy would go stale)."""
-    for i in range(KALORI_SHARDS):
-        data = get(KALORI % i, timeout=300)
-        save(os.path.join(RAW, 'kalori', 'shard-%d.jsonl' % i), data)
-        print('shard-%d.jsonl' % i, data.count(b'\n'), 'lines')
+def kalori_unpack(tar_bytes, sums, dest):
+    """The release's tarball, checked against its SHA256SUMS and its coverage.json (complete), its
+    shards/shard-N.jsonl written to dest (the old ones removed first). Returns {shard file: lines}."""
+    want = next((ln.split()[0] for ln in sums.decode('utf-8').splitlines()
+                 if ln.split()[1:] and ln.split()[-1].lstrip('*') == KALORI_TAR), None)
+    if not want:
+        raise SystemExit('kalori: %s not in SHA256SUMS' % KALORI_TAR)
+    if hashlib.sha256(tar_bytes).hexdigest() != want.lower():
+        raise SystemExit('kalori: %s does not match SHA256SUMS' % KALORI_TAR)
+    shards, cov = {}, None
+    with tarfile.open(fileobj=io.BytesIO(tar_bytes), mode='r:gz') as tf:
+        for m in tf.getmembers():   # by name, never extractall: an archive is untrusted data
+            name = m.name[2:] if m.name.startswith('./') else m.name
+            hit = KALORI_SHARD.match(name)
+            if m.isfile() and (hit or name == 'coverage.json'):
+                data = tf.extractfile(m).read()
+                if hit:
+                    shards[hit.group(1)] = data
+                else:
+                    cov = json.loads(data)
+    summary = (cov or {}).get('summary', cov or {})
+    if summary.get('complete') is not True:
+        raise SystemExit('kalori: the release\'s coverage.json is not complete; refusing it')
+    if not shards:
+        raise SystemExit('kalori: no shards/shard-N.jsonl in %s' % KALORI_TAR)
+    os.makedirs(dest, exist_ok=True)
+    for f in os.listdir(dest):
+        if re.match(r'^shard-\d+\.jsonl(\.tmp)?$', f):
+            os.remove(os.path.join(dest, f))
+    for f, data in shards.items():
+        save(os.path.join(dest, f), data)
+    return {f: shards[f].count(b'\n') for f in sorted(shards)}
+
+
+def kalori(tag=KALORI_TAG):
+    """The pinned release's shards, whole each time (a newer release replaces them all)."""
+    sums = get(KALORI_URL % (tag, 'SHA256SUMS'))
+    tar_bytes = get(KALORI_URL % (tag, KALORI_TAR), timeout=300)
+    dest = os.path.join(RAW, 'kalori')
+    for f, n in kalori_unpack(tar_bytes, sums, dest).items():
+        print(f, n, 'lines')
+    print(tag, '->', dest)
 
 
 # ---------------------------------------------------------------- aliases (frozen in data_src/)

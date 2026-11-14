@@ -26,7 +26,7 @@ dump is needed only to refresh its Japan subset, `raw/off/off_jp.jsonl`, which t
 
 `npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole; `jan/`
 is built but not shipped (no barcode scanning). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
-(index.json's `files`), so a refresh of one file (Kalori's, weekly) refetches that file alone. A meal keeps a per-100 g
+(index.json's `files`), so a refresh of one file (Kalori's) refetches that file alone. A meal keeps a per-100 g
 snapshot, so a data refresh never rewrites one.
 
 ## Format
@@ -164,15 +164,54 @@ Chain and konbini menus (すき家, セブン, スタバ ...) from kalori.jp, sh
 like the products ([decisions](decisions.md#kalori-as-a-lazy-dataset)); public in git and on Pages by the owner's call,
 knowingly over kalori.jp's terms (第8条), which had kept it out.
 
-- **Source:** the public scraper repo [huangwaylon/test](https://github.com/huangwaylon/test) writes
-  `data/products/shard-0.jsonl` … `shard-19.jsonl`, append-only, one product page fetch a line. Format v2 lines carry
-  `nutrients` (only the rows the page shows, each `{v, est}`), `name`, `shop_name`, `shop_category`, `genre`, `ended`,
-  `listed`, `image_id`; v1 lines (no `nutrients`) are skipped. Per product (shop, id) the latest `fetched_at` wins.
-- **Build:** `fetch.py kalori` (all 20 shards, whole, into `raw/kalori/`), then `build.py kalori` (or `all`) →
-  `out/kalori.json` (`kalori_convert.py`, its counts printed; alone: `python3 -I food-data/scripts/kalori_convert.py
-  food-data/raw/kalori`), then `npm run food:data` (lazy: no search keys added). A partial input fails the build and
-  writes nothing: one of `data_src/kalori_shops.json`'s shops with no items, or under 45,000 items (the site lists
-  ~54,000; a whole fetch ships ~53,800 after the drops); `KALORI_ALLOW_PARTIAL=1` writes it anyway, for a local or partial run.
+- **Source:** a release of this repo, `kalori-YYYY-MM-DD`, written by `food-data/scripts/kalori_scrape.py` in
+  `kalori-scrape.yml` and pinned by `fetch.py`'s `KALORI_TAG`
+  ([decisions](decisions.md#kaloris-raw-data-in-releases-the-scraper-in-food-data)). Its `shards/shard-0.jsonl` … `shard-19.jsonl` hold one line a product (compacted). Format v2 lines carry `nutrients`
+  (only the rows the page shows, each `{v, est}`), `name`, `shop_name`, `shop_category`, `genre`, `ended`, `listed`,
+  `image_id`, and from the scraper's move here `parser` (ignored), `table: false` (no nutrition table: every value the
+  site's estimate, so `est` all true) and `gone: true` (the product left the site: as `listed: false`); v1 lines (no
+  `nutrients`) are skipped. Per product (shop, id) the latest `fetched_at` wins.
+- **Build:** `fetch.py kalori` (the pinned release's `kalori-data.tar.gz`, checked against its `SHA256SUMS`, refused
+  unless its `coverage.json` is complete; the shards into `raw/kalori/`, the old ones removed), then `build.py kalori`
+  (or `all`) → `out/kalori.json` (`kalori_convert.py`, its counts printed; alone: `python3 -I
+  food-data/scripts/kalori_convert.py food-data/raw/kalori`), then `npm run food:data` (lazy: no search keys added). A
+  partial input fails the build and writes nothing: one of `data_src/kalori_shops.json`'s shops with no items, or under
+  45,000 items (the site lists ~54,000; a whole fetch ships ~53,800 after the drops); `KALORI_ALLOW_PARTIAL=1` writes
+  it anyway, for a local or partial run. The steps: [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
+- **A refresh** (`kalori-scrape.yml`, weekly and by hand): incremental, seeded from the accepted release's data and
+  state (main's `KALORI_TAG`: a dated release whose PR was merged; never a draft, a prerelease or one left unmerged).
+  Every shop's listing is read (new products, a changed count, a product gone from it); a product is fetched again
+  only when new, its sitemap `lastmod` changed, it failed before, an older `parser` wrote it (`PARSER_VERSION`) or it
+  was fetched before `refetch_before`. One a site no longer has is written `gone`. The shard files are append-only
+  during the run; `compact` keeps one line a product, and an unchanged site appends nothing. The diff against the
+  accepted release gates publishing: over 15 % of products with changed values or 5 % missing refuses it (exit 6)
+  unless `allow_big_diff`.
+- **Cost:** ~2.5k listing requests a week plus the changed products, about 9k a month. kalori.jp allows ~1,000 requests
+  an IP a day, so a refresh runs in rounds of 20 shards, each on a fresh runner (a new IP): the retry re-dispatches a
+  shard that hit the limit, no cool-down. A full refetch (`refetch_before` today, or a `PARSER_VERSION` bump) is ~56k
+  requests, 4-5 rounds.
+- **Exit codes** (`kalori_scrape.py`): 0 done or out of budget, 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
+  a shard job lost, timed out or cancelled alone are retried), 4 the pages no longer parse (never retried; no product
+  marked as publishing no nutrition), 5 more new no-nutrition marks than max(25, 2 % of the fetches) (undone; never
+  retried), 6 the diff over its limits. The **canary** runs first each round: the parsers on a few live pages; its exit 4 stops the round before
+  a shard starts.
+- **Releases:** `kalori-wip`, a prerelease while a refresh runs (`run.json` with its `since`, and per shard
+  `state-N.json`, `shard-N.jsonl.gz`, each replaced by a newly named upload renamed after, never clobbered; deleted
+  on publishing); `kalori-YYYY-MM-DD` (never "latest"):
+  `kalori-data.tar.gz` (folders `shards`, `state`: `shard-N.jsonl`, `state-N.json`; `coverage.json`, `diff.json`,
+  `run.json`) and `SHA256SUMS`, made a draft, its assets checked, then published (a failure deletes the draft). Only a
+  run on main publishes; another `wip_tag` (`kalori-wip-<name>`), `only_shops` or `max_requests` is a test.
+- **Into the app:** `update-build` (read-only, no token: it runs npm) bumps `KALORI_TAG`, converts
+  (`kalori_convert.py --out`, what `build.py kalori` writes), ships kalori.json alone (`npm run food:data -- --only
+  kalori`: the committed index kept, `files` and `version` recomputed; CI has no other `out/` files) and runs the
+  tests; `update-pr` (no npm) checks its three files against main, recomputing the hashes, and opens a PR (or a
+  `kalori-update` issue); failures open a `kalori-alert` issue. The flow, pausing it and each alert:
+  [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
+- **Lessons** (the first crawl: 12 runs, ~200 shard jobs, ~3.5 h, ~75-80k requests for 54k products): the site's cap
+  is per IP a day, so rounds on fresh runners beat a slower rate; never change the record format mid-crawl (4.5k v1
+  lines were fetched twice); anchor parsers on the data itself, not the page around it;
+  a canary before each round turns a redesign into one red job, not 20 poisoned states; for the next full crawl, ask
+  kalori.jp for a bulk export (their 429 page invites it).
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; what every item would carry is the loader's (`db.ts withJan`): `sv: true` (one `1食` portion of a
@@ -203,7 +242,8 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   cut, meets another. Never in `verify.json`: estimates get no ✓n.
 - **On the phone:** ranked under the other secondary sets (`db.ts` KALORI_PENALTY), over the products; a shop's name
   or alias in the query scopes to its menu (`db.ts shopIn`); logged as an `sv` snapshot (whole servings, no grams).
-- **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows.
+- **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows; `test_fetch.py`, the release's
+  checks on a local tarball; the scraper's own, on fixtures and a fake site (no network).
 
 ## Sources evaluated and not used
 - Commercial recipe sites (Cookpad, Kikkoman, Ajinomoto) and 女子栄養大学 calorie guides: no reuse license.

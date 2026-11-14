@@ -1,13 +1,16 @@
 """Kalori's chain menus (kalori.jp) -> kalori.json (docs/food-data.md "Kalori"): build.py's `kalori` target, a lazy
 secondary dataset shipped like products.json. Never in verify.json (its values are estimates or per serving).
 
-Input: the shard-*.jsonl files of https://github.com/huangwaylon/test (data/products/, fetched into raw/kalori/ by
-`fetch.py kalori`), append-only, one product fetch a line. Only format v2 lines (with `nutrients`) count; per product
-(shop, id) the latest `fetched_at` wins.
+Input: the shard-*.jsonl files of the release fetch.py's KALORI_TAG pins (kalori_scrape.py's, compacted: one line a
+product; fetched into raw/kalori/ by `fetch.py kalori`); an uncompacted, append-only shard reads the same. Only format
+v2 lines (with `nutrients`) count; per product (shop, id) the latest `fetched_at` wins. `parser` is ignored; `table:
+false` (no nutrition table: every value the site's estimate) keeps its est flags; a `gone` line (the product left the
+site) marks the product's latest values, its own or the line before's when it carries none.
 
 Run alone to see the counts (from the repo root; stdlib only):
   python3 -I food-data/scripts/kalori_convert.py <dir or shard files> [--off products.json] [--out file]
---out (and build.py) refuse a partial input (`partial`) unless KALORI_ALLOW_PARTIAL=1.
+--out (and build.py) refuse a partial input (`partial`) unless KALORI_ALLOW_PARTIAL=1; --out writes what `build.py kalori`
+would (lib.tidy, lib.validate), for CI with no other out/ files (then `npm run food:data -- --only kalori`).
 
 Values are per serving (one 1食 portion of a nominal 100 g); a nutrient the page doesn't show is unknown (null;
 fibre absent), never 0. Names are cleaned (tidy, uncoded, unsuffixed, short). A row is dropped with no name or kcal,
@@ -15,12 +18,12 @@ values over the custom-food limits (kcal 5000, nutrients 500 g, fibre 100 g: lib
 (implausible), the same product as an Open Food Facts one (the same name and the shop as its brand: its label per
 100 g wins; the same name by another maker is another food), a near-duplicate (the shop's same name but for width or
 spaces: the current, latest, higher-id one stays) or a name over 60 characters that, cut short, meets another.
-A product the page says may be discontinued (`ended`) or the shop's listing no longer shows (`listed: false`) stays,
-marked `ended: true` and `pop: -1` (ranked under the current menu).
+A product the page says may be discontinued (`ended`), the shop's listing no longer shows (`listed: false`) or the site
+no longer has (`gone`) stays, marked `ended: true` and `pop: -1` (ranked under the current menu).
 
 What every item would carry is left to the app's loader (db.ts withJan, for `source: kalori`): `sv: true`, the one
 1食 portion and `brand` (its shop's name, the header's `shops`); 53.8k items are 9.9 MB, not 14 (parsed in the phone's
-worker, and each weekly refresh a blob in git).
+worker, and each refresh a blob in git).
 """
 import argparse, glob, json, math, os, re, sys, unicodedata
 from collections import Counter
@@ -239,10 +242,15 @@ def shard_files(paths):
     return out
 
 
+def newer(r, than):
+    return str(r.get('fetched_at') or '') >= str(than.get('fetched_at') or '')
+
+
 def read_rows(paths):
     """(rows, report): each product's latest v2 line (one with `nutrients`), in file order of first sight. v1 lines
-    and lines that don't parse (a half-written last line) are counted and skipped."""
-    latest, rep = {}, {'lines': 0, 'v1': 0, 'bad': 0}
+    and lines that don't parse (a half-written last line) are counted and skipped; a `gone` line without `nutrients`
+    marks the product's latest v2 line gone (when it isn't older)."""
+    latest, gone, rep = {}, {}, {'lines': 0, 'v1': 0, 'bad': 0, 'gone': 0}
     for path in shard_files(paths):
         with open(path, encoding='utf-8') as fh:
             for line in fh:
@@ -254,12 +262,21 @@ def read_rows(paths):
                 except ValueError:
                     rep['bad'] += 1
                     continue
+                if isinstance(r, dict) and r.get('gone') is True and not isinstance(r.get('nutrients'), dict):
+                    key = (r.get('shop'), r.get('id'))
+                    if key not in gone or newer(r, gone[key]):
+                        gone[key] = r
+                    continue
                 if not isinstance(r, dict) or not isinstance(r.get('nutrients'), dict):
                     rep['v1'] += 1
                     continue
                 key = (r.get('shop'), r.get('id'))
-                if key not in latest or str(r.get('fetched_at') or '') >= str(latest[key].get('fetched_at') or ''):
+                if key not in latest or newer(r, latest[key]):
                     latest[key] = r
+    for key, g in gone.items():
+        if key in latest and newer(g, latest[key]):
+            latest[key] = {**latest[key], 'gone': True}
+            rep['gone'] += 1
     rep['products'] = len(latest)
     return list(latest.values()), rep
 
@@ -282,6 +299,11 @@ def same_maker(brands, words):
     return any(len(b) >= 3 and len(w) >= 3 and (b in w or w in b) for b in brands for w in words)
 
 
+def ended_of(r):
+    """The page says 販売終了かも (`ended`), the listing no longer shows it (`listed: false`) or the site lost it (`gone`)."""
+    return r.get('ended') is True or r.get('listed') is False or r.get('gone') is True
+
+
 def item_of(r, name, cat):
     it = {'id': 'kal:%s' % r['id'], 'name': name, 'shop': r['shop'], 'cat': cat,
           'kcal': int(math.floor(val(r, 'kcal') + 0.5))}
@@ -290,7 +312,7 @@ def item_of(r, name, cat):
     if val(r, 'fiber') is not None:
         it['fib'] = r1(val(r, 'fiber'))
     est = est_of(r)
-    if est is None and (r.get('ended') or r.get('listed') is False):
+    if est is None and (r.get('ended') or ended_of(r)):
         est = 'e'  # a 販売終了かも page shows no 推定 badges at all: its values' status is unknown, so never 'official'
     if est:
         it['est'] = est
@@ -299,7 +321,7 @@ def item_of(r, name, cat):
         it['img'] = img
     if KANA_RE.search(it['name']):
         it['aliases'] = [KANA_RE.sub(lambda m: KANA[m.group(1)], it['name'])]
-    if r.get('ended') is True or r.get('listed') is False:
+    if ended_of(r):
         it['ended'], it['pop'] = True, -1
     return it
 
@@ -307,7 +329,7 @@ def item_of(r, name, cat):
 def better(r):
     """The key of the near-duplicate kept: a current one, then the latest lastmod, then the higher id."""
     i = str(r.get('id'))
-    return (r.get('ended') is not True and r.get('listed') is not False, str(r.get('lastmod') or ''),
+    return (not ended_of(r), str(r.get('lastmod') or ''),
             (int(i), '') if i.isdigit() else (-1, i))
 
 
@@ -449,7 +471,11 @@ def main(argv):
         with open(a.off, encoding='utf-8') as fh:
             off = json.load(fh)['items']
     doc, report = build(a.paths, off)
-    errs = errors(doc)
+    sys.path.insert(0, HERE)
+    import lib   # what build.py's kalori target adds: its tidy and validate, so --out writes the file it would
+    for it in doc['items']:
+        lib.tidy(it)
+    errs = errors(doc) + lib.validate(doc)
     if errs:
         sys.exit('kalori: %d problems, e.g. %s' % (len(errs), errs[:5]))
     why = a.out and partial(report)
