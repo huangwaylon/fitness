@@ -25,6 +25,11 @@ def row(i, name, kcal=500, shop='tako-ya', est=False, at='2026-11-13T00:00:00+00
     return r
 
 
+def kc(i, name, kcal=500, est=False, **kw):
+    """A row showing kcal alone (no Atwater check)."""
+    return row(i, name, nutrients={'kcal': {'v': kcal, 'est': est}}, **kw)
+
+
 def v1(i, name, shop='tako-ya'):
     return {'shop': shop, 'id': str(i), 'fetched_at': '2026-11-14T00:00:00+00:00', 'item': {'name': name}}
 
@@ -84,16 +89,26 @@ class Convert(unittest.TestCase):
         doc, rep = self.conv(rows)
         self.assertEqual([it['id'] for it in doc['items']], ['kal:7'])
         self.assertEqual(rep['dropped'], {'no_values': 3, 'long_name': 0, 'range': 4, 'implausible': 0,
-                                          'off_product': 0, 'duplicate': 1, 'near_duplicate': 0})
+                                          'off_product': 0, 'duplicate': 1, 'near_duplicate': 0, 'takeout_twin': 0,
+                                          'retired': 0})
 
     def test_off_same_product_only(self):
-        off = K.off_names([{'name': 'タコ丼', 'brand': 'たこ屋・本店'}, {'name': 'まめラテ', 'brand': 'よその会社'}])
-        doc, rep = self.conv([row(1, 'タコ丼'), row(2, 'まめラテ', shop='mame-cafe')], off=off)
-        self.assertEqual([it['id'] for it in doc['items']], ['kal:2'])
-        self.assertEqual(rep['dropped']['off_product'], 1)
+        # row: 500 kcal, P 20, F 10, C 60 a serving; the label per 100 g at 250 g a serving agrees, at 1.5x apart not
+        label = {'kcal': 200, 'p': 8, 'f': 4, 'c': 24}
+        off = K.off_names([{'name': 'タコ丼', 'brand': 'たこ屋・本店', **label}, {'name': 'まめラテ', 'brand': 'よその会社'},
+                           {'name': 'イカ丼', 'brand': 'たこ屋', 'kcal': 200, 'p': 12, 'f': 4, 'c': 24},
+                           {'name': 'カニ丼', 'brand': 'たこ屋'}])
+        konbini = {'shop_category': 'convenience'}
+        doc, rep = self.conv([row(1, 'タコ丼', **konbini), row(2, 'まめラテ', shop='mame-cafe', **konbini),
+                              row(3, 'イカ丼', **konbini), row(4, 'カニ丼', **konbini),
+                              row(5, 'タコ丼', shop='tako-ya', shop_category='gyudon')], off=off)
+        # the label's serving: dropped; another maker, other values (P at 1.5x): kept; no values to compare: dropped;
+        # a restaurant's dish of the product's name: kept
+        self.assertEqual(sorted(it['id'] for it in doc['items']), ['kal:2', 'kal:3', 'kal:5'])
+        self.assertEqual(rep['dropped']['off_product'], 2)
         # through an alias: マメ珈琲 is ours for mame-cafe
-        doc, _ = self.conv([row(2, 'まめラテ', shop='mame-cafe')], aliases={'mame-cafe': ['マメ珈琲']},
-                           off={'まめラテ': {K.norm('マメ珈琲')}})
+        doc, _ = self.conv([row(2, 'まめラテ', shop='mame-cafe', **konbini)], aliases={'mame-cafe': ['マメ珈琲']},
+                           off={'まめラテ': [(K.norm('マメ珈琲'), {})]})
         self.assertEqual(doc['items'], [])
         self.assertFalse(K.same_maker({'co'}, {'cocoya'}))
 
@@ -329,7 +344,8 @@ class Convert(unittest.TestCase):
         # a takeout TO item beside its eat-in twin, two courses by price, two notes: each keeps what tells it apart
         rows = [row(1, 'TO エビフライ', shop='bigboy'), row(2, 'エビフライ', kcal=480, shop='bigboy'),
                 row(3, '牡丹コース 12,000円'), row(4, '牡丹コース 8,000円', kcal=450), row(5, 'うな重（中）※川崎店のみ'),
-                row(6, 'うな重（中）※川崎店は別途'), row(7, 'TO コーンスープ', shop='bigboy'), row(8, 'コーンスープ', shop='bigboy')]
+                row(6, 'うな重（中）※川崎店は別途'), row(7, 'TO コーンスープ', shop='bigboy'),
+                row(8, 'コーンスープ', kcal=480, shop='bigboy')]
         doc, rep = self.conv(rows)
         self.assertEqual([it['name'] for it in doc['items']], [
             'TO エビフライ', 'エビフライ', 'TO コーンスープ', 'コーンスープ', '牡丹コース 12,000円', '牡丹コース 8,000円',
@@ -339,16 +355,174 @@ class Convert(unittest.TestCase):
     def test_long_names_trimmed(self):
         tail = '（シャキシャキにんじんサラダ＆ちいさなマルゲリータ＆ちいさなパスタボロネーゼ＆コーヒーゼリーのミニサンデー）'
         ikea = 'BELÖNING ベローニング, ミルクチョコレート, オーツ＆キャラメル レインフォレスト・アライアンス認証, %s g'
+        self.assertEqual(K.tidy('FLÖJT フルート, 緑茶, レインフォレスト・アライアンス認証, 37.5 g'), 'FLÖJT フルート, 緑茶, 37.5 g')
+        long = 'オンラインストア限定 オールハーツ・カンパニー にゃんともおいしいダックワーズ（メイプル） %s 1p 12個入り詰め合わせ'
         rows = [row(1, '昼プチセットPlus' + tail), row(2, 'GOKU BURGER限定KOBE BEEF BURGER神戸牛バーガーGOD CHEESE '
                                                        'BURGERゴッドチーズバーガー'),
                 row(3, 'あ' * 70), row(4, ikea % 240), row(5, ikea % 40), row(6, 'い' * 60),
-                row(7, 'う' * 5 + '（' + 'え' * 70 + '）')]
+                row(7, 'う' * 5 + '（' + 'え' * 70 + '）'), row(8, long % 'ミルク'), row(9, long % 'ビター'),
+                # Kaldi's best-before tail: a note, not the name (the same product twice: a near-duplicate)
+                row(10, 'ダックワーズ 1p【賞味期限：2027/2/11】'), row(11, 'ダックワーズ 1p【アウトレット】【賞味期限：2027/3/21】')]
         doc, rep = self.conv(rows)
-        self.assertEqual([it['name'] for it in doc['items']], [
-            '昼プチセットPlus', 'GOKU BURGER限定KOBE BEEF BURGER神戸牛バーガーGOD CHEESE', 'あ' * 60, 'い' * 60,
-            ('う' * 5 + '（' + 'え' * 70)[:60]])
-        self.assertEqual(rep['dropped']['long_name'], 2)      # the two IKEA ones meet once cut
+        self.assertEqual([it['name'] for it in sorted(doc['items'], key=lambda it: int(it['id'][4:]))], [
+            '昼プチセットPlus', 'GOKU BURGER限定KOBE BEEF BURGER神戸牛バーガーGOD CHEESE', 'あ' * 60,
+            # IKEA's certification dropped: whole, under 60
+            'BELÖNING ベローニング, ミルクチョコレート, オーツ＆キャラメル, 240 g',
+            'BELÖNING ベローニング, ミルクチョコレート, オーツ＆キャラメル, 40 g', 'い' * 60,
+            ('う' * 5 + '（' + 'え' * 70)[:60], 'ダックワーズ 1p'])
+        self.assertEqual(rep['dropped']['long_name'], 2)      # the two ダックワーズ meet once cut
+        self.assertEqual(rep['dropped']['near_duplicate'], 1)
         self.assertEqual(K.errors(doc), [])
+
+    def test_name_decorations(self):
+        rows = [row(1, '\x08特製炙りチャーシュー'), row(2, '★蕎麦2倍★かつ丼＆もり蕎麦セット'), row(3, 'NEW！チーズオムレツ'),
+                row(4, '日替）月 チキングリル'), row(5, '秋限定）グレープゼリー'), row(6, '1枚巻き‼️（中身少なめ）'),
+                row(7, 'フラペチーノ® ※カカオ分0.5%未満（Tall・豆乳）', shop='mame-cafe'),
+                row(8, 'フラペチーノ® ※カカオ分0.5%未満（Grande・豆乳）', shop='mame-cafe', kcal=600),
+                row(9, '旧：お子様ドリア'), row(10, '★ハンバーグ', kcal=600), row(11, 'ハンバーグ')]
+        doc, _ = self.conv(rows)
+        by = {it['id']: it for it in doc['items']}
+        self.assertEqual([by['kal:%d' % i]['name'] for i in range(1, 12)], [
+            '特製炙りチャーシュー', '蕎麦2倍 かつ丼＆もり蕎麦セット', 'チーズオムレツ', '月 チキングリル（日替）',
+            'グレープゼリー（秋限定）', '1枚巻き（中身少なめ）', 'フラペチーノ®（Tall・豆乳）', 'フラペチーノ®（Grande・豆乳）',
+            # 旧： ended; a decoration that would meet another name stays
+            'お子様ドリア', '★ハンバーグ', 'ハンバーグ'])
+        self.assertEqual((by['kal:9'].get('ended'), by['kal:9'].get('est')), (True, 'e'))
+        self.assertEqual((by['kal:8']['vg'], by['kal:8']['st']), ('kal:7', 'Grande・豆乳'))
+
+    def test_category_snack(self):
+        names = [('フライドポテト', 'family', 'いも'), ('枝豆', 'izakaya', '大豆・豆'), ('さきいか', 'izakaya', '魚介'),
+                 ('6Pチーズ', 'convenience', '乳製品'), ('チーズスティック揚げ', 'family', '副菜'),
+                 ('メンマ', 'ramen', '副菜'), ('ミックスナッツ', 'izakaya', 'ナッツ・種'), ('韓国のり', 'yakiniku', '海藻'),
+                 ('ドライマンゴー 80g', 'supermarket', '果物'), ('ビーフジャーキー', 'convenience', '肉'),
+                 ('チョコポテト', 'yakiniku', '菓子・デザート'), ('ポテトチップス うすしお', 'convenience', '菓子・デザート'),
+                 ('ひねり揚げ', 'convenience', '菓子・デザート'), ('ひねり揚げ 塩', 'izakaya', '副菜'),
+                  ('ごぼう唐揚げ', 'family', '副菜'), ('塩けんぴ', 'sweets', '菓子・デザート'),
+                 ('タコさんウインナー', 'izakaya', '肉'), ('タコウインナー', 'family', '肉'), ('たこわさ', 'izakaya', '魚介'),
+                 ('チュロドック', 'family', '菓子・デザート'), ('ごまあんまん', 'convenience', '菓子・デザート'),
+                 ('おさつスティック', 'family', '菓子・デザート'), ('とんでん甘栗', 'family', '菓子・デザート')]
+        doc, _ = self.conv([row(i, n, genre='snack', shop_category=k) for i, (n, k, _) in enumerate(names)])
+        self.assertEqual([(it['name'], it['cat']) for it in sorted(doc['items'], key=lambda it: int(it['id'][4:]))],
+                         [(n, c) for n, _, c in names])
+
+    def test_category_side_genres_and_rice(self):
+        names = [('ココアラテ（HOT・Tall）', 'soup', 'cafe', '飲料'), ('クリームソーダ', 'dessert', 'family', '飲料'),
+                 ('アイスコーヒー', 'ice-cream', 'yakiniku', '飲料'), ('ジャモカコーヒー', 'ice-cream', 'sweets', '菓子・デザート'),
+                 ('パピコ チョココーヒー', 'ice-cream', 'convenience', '菓子・デザート'),
+                 ('アフタヌーンティー（秋）', 'dessert', 'italian', '菓子・デザート'), ('鶏玉子雑炊', 'soup', 'yakiniku', '主食'),
+                 ('海老グラタン', 'soup', 'family', '主菜'), ('ご飯（一合）', None, 'teishoku', '丼・定食'), ('オニオングラタンスープ', 'soup', 'family', '汁物'),
+                 ('いちごゼリー', 'soup', 'hamburg', '菓子・デザート'), ('HOTトマトアヒージョ', 'soup', 'family', '汁物'),
+                 ('ライス（中）', 'rice-bowl', 'ramen', '主食'), ('半ライス', 'rice-bowl', 'ramen', '主食'),
+                 ('ごはん 200g', 'rice-bowl', 'ramen', '主食'), ('ごはん大盛！チキンカツ弁当', 'rice-bowl', 'ramen', '丼・定食'),
+                 ('ウイスキー', None, 'teishoku', '酒'), ('焼酎用ウーロン茶', 'tea', 'izakaya', '飲料'),
+                 ('バージンモヒート', 'soft-drink', 'cafe', '飲料')]
+        doc, _ = self.conv([row(i, n, genre=g, shop_category=k) for i, (n, g, k, _) in enumerate(names)])
+        self.assertEqual([(it['name'], it['cat']) for it in sorted(doc['items'], key=lambda it: int(it['id'][4:]))],
+                         [(n, c) for n, _, _, c in names])
+
+    def test_variants_temperature_glued_takeout(self):
+        rows = [kc(1, 'ラテ（ICED・Tall）'), kc(2, 'ラテ（HOT・Tall）'), kc(3, 'ラテ（HOT・Short）', kcal=400),
+                kc(4, 'ココア（アイス）（Tall・豆乳）'), kc(5, 'ココア（ホット）（Tall・豆乳）'),
+                kc(6, 'ライス中', kcal=400), kc(7, 'ライス大', kcal=560), kc(8, 'ライス小', kcal=240),
+                kc(9, 'ポテトＳ', kcal=200), kc(10, 'ポテトＭ', kcal=300), kc(11, 'ハンバーグ特大'), kc(12, 'ハンバーグ大'),
+                kc(13, 'チョコレート ミルク（ICED）'), kc(14, 'チョコレート ミルク（HOT）'),
+                kc(20, 'エビフライ', kcal=480), kc(21, 'TO エビフライ'), kc(22, 'えびマヨ', kcal=160),
+                kc(23, 'えびマヨ（お持ち帰り）', kcal=70), kc(24, '［お持ち帰り］抹茶ラテ'), kc(25, '抹茶ラテ'),
+                kc(26, 'カルボナーラ', ended=True), kc(27, 'カルボナーラ（食べ放題）', kcal=450)]
+        doc, rep = self.conv(rows)
+        by = {it['id']: it for it in doc['items']}
+        vs = lambda *ids: [(by['kal:%d' % i].get('vg'), by['kal:%d' % i].get('st')) for i in ids]
+        self.assertEqual(vs(1, 2, 3), [('kal:1', 'ICED・Tall'), ('kal:1', 'HOT・Tall'), ('kal:1', 'HOT・Short')])
+        self.assertEqual(vs(4, 5), [('kal:4', 'アイス・Tall・豆乳'), ('kal:4', 'ホット・Tall・豆乳')])
+        self.assertEqual(vs(6, 7, 8, 9, 10), [('kal:6', '中'), ('kal:6', '大'), ('kal:6', '小'), ('kal:10', 'Ｓ'),
+                                              ('kal:10', 'Ｍ')])
+        self.assertEqual(vs(11, 12, 13), [(None, None), (None, None), ('kal:13', 'ICED')])
+        self.assertEqual(vs(20, 21, 22, 23), [('kal:20', '店内'), ('kal:20', '持ち帰り'), ('kal:22', '店内'),
+                                              ('kal:22', '持ち帰り')])
+        # the same values: the takeout copy dropped; an ended eat-in item is never the default
+        self.assertNotIn('kal:24', by)
+        self.assertEqual(vs(25, 26, 27), [(None, None), ('kal:27', '単品'), ('kal:27', '食べ放題')])
+        self.assertEqual(rep['dropped']['takeout_twin'], 1)
+        self.assertEqual(K.errors(doc), [])
+
+    def test_reversed_sizes(self):
+        rows = [kc(1, '明太もつ鍋（小）', kcal=690, est=False), kc(2, '明太もつ鍋（中）', kcal=350),
+                kc(3, 'ポテト S', kcal=200), kc(4, 'ポテト M', kcal=205), kc(5, 'ポテト L', kcal=180, est=True)]
+        doc, rep = self.conv(rows)
+        by = {it['id']: it for it in doc['items']}
+        self.assertEqual([by['kal:%d' % i].get('est') for i in range(1, 6)], ['e', None, 'e', 'e', 'e'])
+        self.assertEqual(rep['reversed'], ['tako-ya kal:1 明太もつ鍋（小）', 'tako-ya kal:3 ポテト S', 'tako-ya kal:4 ポテト M'])
+
+    def test_exclusions_relaxed(self):
+        def n(kcal, p, f, c, est=True, kcal_est=False):
+            return {'kcal': {'v': kcal, 'est': kcal_est}, **{k: {'v': v, 'est': est} for k, v in zip('pfc', (p, f, c))},
+                    'salt': {'v': 1, 'est': True}}
+        rows = [row(1, '松茸五目釜飯', nutrients=n(960, 25, 14, 90)),                     # official kcal: P, F, C unknown
+                row(2, 'メガたんめん', nutrients=n(47, 60, 80, 300, kcal_est=True)),        # all estimated: dropped
+                row(3, 'チキンサラダ', nutrients=n(0, 3.5, 2, 1.2)),                         # 0 kcal: dropped
+                row(4, '上助六５人前', nutrients=n(3030, 61.5, 57, 561)),                    # per person
+                row(5, '特上（5人前／55貫）', nutrients=n(3750, 175, 75, 550)),
+                row(6, '松阪牛 福袋 5人前', nutrients=n(6636, 306, 563, 68)),                # a 福袋: dropped
+                row(7, '須弥山級（3kg） ポークステーキ', nutrients=n(8700, 608, 615, 125)),
+                row(8, 'ヤンニョムチキン (40個)', nutrients=n(7200, 400, 400, 480)),
+                row(9, 'アップルスパークリング 250ml', genre='soft-drink', nutrients=n(166, 0, 0, 18.9, kcal_est=True)),
+                row(10, 'チューハイレモン', genre='soft-drink', nutrients=n(110, 0, 0, 2, kcal_est=True))]
+        doc, rep = self.conv(rows)
+        by = {it['id']: it for it in doc['items']}
+        self.assertEqual(sorted(by), ['kal:1', 'kal:10', 'kal:4', 'kal:5', 'kal:9'])
+        self.assertEqual([by['kal:1'][k] for k in ('kcal', 'p', 'f', 'c', 'salt', 'est')], [960, None, None, None, 1, 's'])
+        self.assertEqual([by['kal:4'][k] for k in ('name', 'kcal', 'p', 'c')], ['上助六５人前（1人前）', 606, 12.3, 112.2])
+        self.assertEqual(by['kal:5']['name'], '特上（5人前／55貫）（1人前）')
+        # a スパークリング whose kcal is mostly beyond its carbs: wine
+        self.assertEqual([by['kal:%d' % i]['cat'] for i in (9, 10)], ['酒', '酒'])
+        self.assertEqual((rep['dropped']['implausible'], rep['dropped']['range']), (2, 3))
+        self.assertEqual((rep['pfc_unknown'], rep['per_person']), (1, 2))
+
+    def test_platter_always_per_person_and_labels_normalised(self):
+        rows = [kc(1, '匠 4人前', kcal=2600), kc(2, '握り 2人前', kcal=900), kc(3, '松阪牛 福袋 2人前', kcal=900),
+                kc(4, 'ライス 特盛', kcal=900), kc(5, 'ライス 特盛り', kcal=950), kc(6, 'ライス 並', kcal=500),
+                kc(7, 'ポテト M', kcal=300), kc(8, 'ポテトＭ', kcal=310, shop='mame-cafe'), kc(9, 'ポテト L', kcal=400)]
+        doc, rep = self.conv(rows)
+        by = {it['id']: it for it in doc['items']}
+        self.assertEqual([(by['kal:%d' % i]['name'], by['kal:%d' % i]['kcal']) for i in (1, 2, 3)],
+                         [('匠 4人前（1人前）', 650), ('握り 2人前（1人前）', 450), ('松阪牛 福袋 2人前', 900)])
+        self.assertEqual(rep['per_person'], 2)
+        # 特盛 and 特盛り are one state: no group
+        self.assertEqual([by['kal:%d' % i].get('vg') for i in (4, 5, 6)], [None, None, None])
+
+    def test_near_duplicates_apart(self):
+        # both listed with official kcal over 10 % apart: two foods under their own names; else one. A third compares
+        # with each sibling: a near-duplicate of one (the better stays), or apart from all, a third food
+        rows = [kc(10, 'ハマチ 2貫', kcal=100), kc(11, 'ハマチ　2貫', kcal=150), kc(12, 'ハマチ2貫', kcal=152),
+                kc(13, 'ハマチ２貫', kcal=200), kc(1, '刺身6点盛り', kcal=150), kc(2, '刺身６点盛り', kcal=241), kc(3, 'とん汁(大)', kcal=150),
+                kc(4, 'とん汁（大）', kcal=250, est=True), kc(5, '牡蠣フライ 2個', kcal=173),
+                kc(6, '牡蠣フライ2個', kcal=180), kc(7, 'うどん', kcal=300), kc(8, 'う ど ん', kcal=400, listed=False)]
+        doc, rep = self.conv(rows)
+        self.assertEqual(sorted(it['name'] for it in doc['items']),
+                         sorted(['刺身6点盛り', '刺身６点盛り', 'とん汁（大）', '牡蠣フライ2個', 'うどん', 'ハマチ 2貫', 'ハマチ2貫',
+                                 'ハマチ２貫']))
+        self.assertEqual((rep['apart_kept'], rep['dropped']['near_duplicate']), (3, 4))
+        self.assertEqual(K.errors(doc), [])
+
+    def test_retention(self):
+        at = '2026-11-14T00:00:00+00:00'
+        est = {'kcal': {'v': 500, 'est': True}}
+        rows = [row(1, 'a', at=at),
+                row(2, 'b', gone=True, listed=False, gone_since='2026-08-01T00:00:00+00:00', nutrients=est),  # 105 d
+                row(3, 'c', gone=True, listed=False, gone_since='2026-09-01T00:00:00+00:00', nutrients=est),  # 74 d
+                row(4, 'd', gone=True, listed=False, gone_since='2026-08-01T00:00:00+00:00'),   # official: 180 d
+                row(5, 'e', ended=True, ended_since='2026-05-01T00:00:00+00:00', nutrients=est),            # 197 d
+                row(6, 'f', listed=False, ended_since='2026-06-01T00:00:00Z', nutrients=est),               # 166 d
+                row(7, 'g', listed=False, ended_since='2025-11-01T00:00:00+00:00'),                         # 378 d
+                row(8, 'h', listed=False, ended_since='2026-01-01T00:00:00+00:00'),     # official, 317 d
+                row(9, 'i', gone=True, listed=False, nutrients=est),                    # no date: its line's fetch, kept
+                row(10, 'j', gone=True, listed=False, nutrients=est, at='2026-08-01T00:00:00+00:00'),       # ... 105 d
+                row(11, 'k', ended=True, nutrients=est, at='2026-04-01T00:00:00+00:00')]                    # ... 227 d
+        doc, rep = self.conv(rows)
+        self.assertEqual(sorted(it['name'] for it in doc['items']), ['a', 'c', 'd', 'f', 'h', 'i'])
+        self.assertEqual(rep['dropped']['retired'], 5)
+        # (the data's date is its latest fetch, not the clock's: the same bytes whenever converted)
+        self.assertEqual(K.as_of(rows), K.parse_ts(at))
 
 
 class Partial(unittest.TestCase):

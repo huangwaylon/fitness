@@ -120,7 +120,37 @@ export function stemName(it: Pick<Item, 'name' | 'st'>): string {
   if (!it.st) return it.name;
   const w = STATE_WORD[it.st] ?? it.st;
   for (const end of [` ${w}`, `（${w}）`]) if (it.name.endsWith(end) && it.name.length > end.length) return it.name.slice(0, -end.length);
-  return it.name;
+  return chainStem(it.name, it.st);
+}
+
+/** A chain menu's takeout / all-you-can-eat marks (kalori_convert.py TAKEOUT_MARKS) and the eat-in states beside them. */
+const MARKS = new Set(['持ち帰り', '食べ放題', '店内', '単品']);
+const MARKED = [/^(?:T[Oo](?:[ 　]+|(?=[【\u3040-\u30ff\u4e00-\u9fff]))|[［[【](?:お持ち帰り|持ち帰り|テイクアウト|持帰り?)[］\]】][ 　]*|(?:お持ち帰り|テイクアウト)用?(?:[ 　]+|[）)][ 　]*))/, /[ 　]*[（(](?:お持ち帰り|持ち帰り|テイクアウト用?|持帰り?|TO|(?:よりどり)?食べ放題)[)）]$/];
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** A chain menu's name without the words its `st` shows (kalori_convert.py variant_of): each part bracketed (ココア
+ *  （アイス）（Tall・豆乳）, ライス「中」), spaced (牛丼 並盛) or glued to a Japanese stem (ライス中), and a takeout mark (TO,
+ *  （お持ち帰り）); the name as it is when they aren't all there. */
+function chainStem(name: string, st: string): string {
+  let s = name;
+  let words = st.split('・');
+  if (MARKS.has(words[words.length - 1])) {
+    for (const re of MARKED) s = s.replace(re, '').trim() || s;
+    words = words.slice(0, -1);
+  }
+  while (words.length) {
+    let k = words.length;
+    for (; k >= 1; k--) {
+      const p = esc(words.slice(-k).join('・'));
+      const m = s.match(new RegExp(`^(.+?)(?:\\s*[（(「【]${p}[)）」】]|[ 　]+${p}|(?<=[^\\x00-\\x7f])${p})$`));
+      if (m) {
+        s = m[1].trimEnd();
+        break;
+      }
+    }
+    if (!k) return name;
+    words = words.slice(0, -k);
+  }
+  return s || name;
 }
 
 const is100 = (p: Portion): boolean => /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC'));

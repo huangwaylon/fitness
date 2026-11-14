@@ -25,7 +25,8 @@ keeps its last one and isn't asked again at that lastmod.
 
 --data is gzip JSONL (plain without .gz), append-only, one line a fetch (record v2): {shop, id, url, lastmod,
 fetched_at, parser, listed, name, shop_name, shop_category, genre, ended, image_id, table, nutrients:
-{kcal|p|f|c|sugar|fiber|salt: {v, est}} (only the rows shown), gone?}. Each save rewrites it (temp + rename); one
+{kcal|p|f|c|sugar|fiber|salt: {v, est}} (only the rows shown), gone?, gone_since?, ended_since? (the first fetch that saw
+it gone / ended or unlisted: the converter's retention)}. Each save rewrites it (temp + rename); one
 cut off by a kill is rewritten from its whole lines on load. Per product
 the latest fetched_at wins (the later line on a tie), as in kalori_convert.read_rows. --state: {"shops": {slug:
 discovery}, "products": {"slug/id": a failure or a final no-nutrition}, "meta": {index, owned, since}}.
@@ -586,16 +587,22 @@ class Shard:
         return not (f.get('attempts', 0) >= MAX_ATTEMPTS and f.get('lastmod') == lastmod)
 
     def record(self, slug, pid, lastmod, listed, fields):
-        return {'shop': slug, 'id': pid, 'url': CANONICAL + product_path(slug, pid), 'lastmod': lastmod,
-                'fetched_at': now(), 'parser': PARSER_VERSION, 'listed': listed, 'name': fields['name'],
-                'shop_name': fields['shop_name'], 'shop_category': self.shops.get(slug, {}).get('category'),
-                'genre': fields['genre'], 'ended': fields['ended'], 'image_id': fields['image_id'],
-                'table': fields['table'], 'nutrients': fields['nutrients']}
+        """A record; one ended or unlisted carries `ended_since`, the first fetch that saw it so (its last record's)."""
+        rec = {'shop': slug, 'id': pid, 'url': CANONICAL + product_path(slug, pid), 'lastmod': lastmod,
+               'fetched_at': now(), 'parser': PARSER_VERSION, 'listed': listed, 'name': fields['name'],
+               'shop_name': fields['shop_name'], 'shop_category': self.shops.get(slug, {}).get('category'),
+               'genre': fields['genre'], 'ended': fields['ended'], 'image_id': fields['image_id'],
+               'table': fields['table'], 'nutrients': fields['nutrients']}
+        if fields['ended'] is True or listed is False:
+            rec['ended_since'] = (self.have.get(key_of(slug, pid)) or {}).get('ended_since') or rec['fetched_at']
+        return rec
 
     def mark_gone(self, key, lastmod=None):
-        """A gone line: the last record, listed false, gone true, now; at the lastmod its 404 was seen at."""
+        """A gone line: the last record, listed false, gone true, now (`gone_since`: kept from an earlier gone line); at
+        the lastmod its 404 was seen at."""
         rec = {k: v for k, v in self.have[key].items() if k != 'item'}
         rec.update(listed=False, gone=True, fetched_at=now())
+        rec['gone_since'] = self.have[key].get('gone_since') or rec['fetched_at']
         if lastmod:
             rec['lastmod'] = lastmod
         self.append(rec)

@@ -39,6 +39,13 @@ describe('static/food', () => {
     expect(index.datasets.find((d) => d.file === 'kalori.json')).toMatchObject({ source: 'kalori', secondary: true, lazy: true });
   });
 
+  it('names every shop by each of our aliases (data_src/kalori_shops.json): none is a food word, refused (addShops)', () => {
+    const shops = (JSON.parse(readFileSync(join(DIR, 'kalori.json'), 'utf8')) as Dataset).shops ?? {};
+    const refused = Object.entries(shops).flatMap(([id, s]) => (s.aliases ?? []).filter((a) => db.shopKeys.get(searchKey(a)) !== id));
+    expect(refused).toEqual([]);
+    expect(shopIn(db, 'カルディ ナッツ')).toEqual({ shop: 'kaldi', rest: 'ナッツ' });
+  });
+
   it('versions each file as shipped (scripts/food-data.ts): a refresh of one (Kalori’s, weekly) is a new ?v= for that one alone', () => {
     const shipped = ['verify.json', ...index.datasets.map((d) => d.file)];
     const own = Object.fromEntries(shipped.map((f) => [f, createHash('sha256').update(readFileSync(join(DIR, f))).digest('hex').slice(0, 12)]));

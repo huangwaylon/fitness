@@ -167,38 +167,33 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
 
 - **Source:** a release of this repo, `kalori-YYYY-MM-DD`, written by `food-data/scripts/kalori_scrape.py` in
   `kalori-scrape.yml` and pinned by `fetch.py`'s `KALORI_TAG`
-  ([decisions](decisions.md#kaloris-raw-data-in-releases-the-scraper-in-food-data)). Its `shards/shard-0.jsonl` … `shard-19.jsonl` hold one line a product (compacted). Format v2 lines carry `nutrients`
+  ([decisions](decisions.md#kaloris-raw-data-in-releases-the-scraper-in-food-data)). Its `shards/shard-N.jsonl` (0-19) hold one line a product. Format v2 lines carry `nutrients`
   (only the rows the page shows, each `{v, est}`), `name`, `shop_name`, `shop_category`, `genre`, `ended`, `listed`,
-  `image_id`, and from the scraper's move here `parser` (ignored), `table: false` (no nutrition table: every value the
-  site's estimate, so `est` all true) and `gone: true` (the product left the site: as `listed: false`); v1 lines (no
-  `nutrients`) are skipped. Per product (shop, id) the latest `fetched_at` wins.
-- **Build:** `fetch.py kalori` (the pinned release's `kalori-data.tar.gz`, checked against its `SHA256SUMS`, refused
-  unless its `coverage.json` is complete; the shards into `raw/kalori/`, the old ones removed), then `build.py kalori`
+  `image_id`, `parser` (ignored), `table: false` (no nutrition table: `est` all true), `gone: true` (left the site: as
+  `listed: false`), `gone_since` / `ended_since` (the first fetch that saw it so); v1 lines are skipped. Per product (shop, id) the latest `fetched_at` wins.
+- **Build:** `fetch.py kalori` (the pinned release's tarball, checked against `SHA256SUMS`, refused unless
+  `coverage.json` is complete, into `raw/kalori/`), then `build.py kalori`
   (or `all`) → `out/kalori.json` (`kalori_convert.py`, its counts printed; alone: `python3 -I
   food-data/scripts/kalori_convert.py food-data/raw/kalori`), then `npm run food:data` (lazy: no search keys added). A
   partial input fails the build and writes nothing: one of `data_src/kalori_shops.json`'s shops with no items, or under
-  45,000 items (the site lists ~54,000; a whole fetch ships ~53,800 after the drops); `KALORI_ALLOW_PARTIAL=1` writes
-  it anyway, for a local or partial run. The steps: [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
+  45,000 items (a whole fetch ships ~54,000); `KALORI_ALLOW_PARTIAL=1` writes it anyway. The steps: [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
 - **A refresh** (`kalori-scrape.yml`, weekly and by hand): incremental, seeded from the accepted release's data and
-  state (main's `KALORI_TAG`: a dated release whose update reached main; never a draft, a prerelease or one held).
+  state (main's `KALORI_TAG`; never a draft, prerelease or held one).
   Every shop's listing is read (new products, a changed count, a product gone from it); a product is fetched again
   only when new, its sitemap `lastmod` changed, it failed before, an older `parser` wrote it (`PARSER_VERSION`) or it
-  was fetched before `refetch_before`. One a site no longer has is written `gone`. The shard files are append-only
-  during the run; `compact` keeps one line a product, and an unchanged site appends nothing. The diff against the
+  was fetched before `refetch_before`. One a site no longer has is written `gone`. Shards are append-only; `compact`
+  keeps one line a product. The diff against the
   accepted release gates publishing: over 15 % of products with changed values or 5 % missing refuses it (exit 6)
   unless `allow_big_diff`.
 - **Cost:** ~2.5k listing requests a week plus the changed products, about 9k a month. kalori.jp allows ~1,000 requests
-  an IP a day, so a refresh runs in rounds of 20 shards, each on a fresh runner (a new IP): the retry re-dispatches a
-  shard that hit the limit, no cool-down. A full refetch (`refetch_before` today, or a `PARSER_VERSION` bump) is ~56k
+  an IP a day: rounds of 20 shards, each on a fresh runner (a new IP); one that hit the limit re-dispatched. A full refetch (`refetch_before` today, a `PARSER_VERSION` bump): ~56k
   requests, 4-5 rounds.
 - **Exit codes** (`kalori_scrape.py`): 0 done or out of budget, 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
-  a shard job lost, timed out or cancelled alone are retried), 4 the pages no longer parse (never retried; no product
-  marked as publishing no nutrition), 5 more new no-nutrition marks than max(25, 2 % of the fetches) (undone; never
-  retried), 6 the diff over its limits. The **canary** runs first each round: the parsers on a few live pages; its exit 4 stops the round before
-  a shard starts.
+  a lost, timed-out or cancelled shard job are retried), 4 the pages no longer parse (never retried; no product marked
+  no-nutrition), 5 more new no-nutrition marks than max(25, 2 % of the fetches) (undone; never retried), 6 the diff
+  over its limits. The **canary** runs first each round (the parsers on a few live pages); its exit 4 stops the round.
 - **Releases:** `kalori-wip`, a prerelease while a refresh runs (`run.json` with its `since`, and per shard
-  `state-N.json`, `shard-N.jsonl.gz`, each replaced by a newly named upload renamed after, never clobbered; deleted
-  on publishing); `kalori-YYYY-MM-DD` (never "latest"):
+  `state-N.json`, `shard-N.jsonl.gz`, replaced by a new upload renamed after, never clobbered; deleted on publishing); `kalori-YYYY-MM-DD` (never "latest"):
   `kalori-data.tar.gz` (folders `shards`, `state`: `shard-N.jsonl`, `state-N.json`; `coverage.json`, `diff.json`,
   `run.json`) and `SHA256SUMS`, made a draft, its assets checked, then published (a failure deletes the draft). Only a
   run on main publishes; another `wip_tag` (`kalori-wip-<name>`), `only_shops` or `max_requests` is a test.
@@ -228,47 +223,49 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   `deploy_failed`. **The watch** (`kalori-watch.yml`, 6-hourly): the same for a deploy pending 160 min;
   `late` (no scheduled refresh in 8 days), `stuck` (a run over 2 days, a stale `running`).
 - **The status:** `status.json` on the orphan branch `kalori-status` (one commit, force-pushed with a lease:
-  `kalori_status.py` and `.github/scripts/kalori-status.sh`): the verdict, the reasons, the run, the accepted dataset,
-  the diff, coverage, the merge, the alert and the last 12 runs; a round writes `running` at setup. The bots page's
-  メニュー tab reads it: an alert shows as a dot there, no email. Each reason, pausing, undoing:
+  `kalori_status.py`, `.github/scripts/kalori-status.sh`): verdict, reasons, run, accepted dataset, diff, coverage,
+  merge, alert, the last 12 runs; a round writes `running` at setup. The bots page's メニュー tab reads it (an alert: a
+  dot, no email). Each reason, pausing, undoing:
   [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
-- **Lessons** (the first crawl: ~3.5 h, ~75-80k requests for 54k products): the site's cap
-  is per IP a day, so rounds on fresh runners beat a slower rate; never change the record format mid-crawl (4.5k v1
-  lines were fetched twice); anchor parsers on the data itself, not the page around it;
-  a canary before each round turns a redesign into one red job, not 20 poisoned states; for the next full crawl, ask
-  kalori.jp for a bulk export (their 429 page invites it).
+- **Lessons** (the first crawl: ~3.5 h, ~75-80k requests): fresh-runner rounds beat a slower rate (the cap is per IP a
+  day); never change the record format mid-crawl; anchor parsers on the data; a canary before each round; next full
+  crawl: ask kalori.jp for a bulk export.
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
-  absent), never 0; what every item would carry is the loader's (`db.ts withJan`): `sv: true` (one `1食` portion of a
-  nominal 100 g, portionsOf's) and `brand` (its shop's name), so 53.8k items are 9.9 MB, not 14 (1.67 MB gzipped);
+  absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's
+  (`db.ts withJan`): 54k items, 10 MB (1.6 MB gzipped);
   `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
   salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
-  `vg`/`st` for a trailing size or milk (牛丼 並盛 · 大盛, LL, ジャンボ, （Tall・豆乳）) and katakana aliases for
-  Short/Tall/Grande/Venti. Our shop aliases (セブン, サイゼ ...) and display names (`{name}`, chawan) are
-  `data_src/kalori_shops.json`.
-- **Names:** half-width kana made full, newlines and doubled spaces folded, a trailing ` /` cut; then, each only where
-  no two of the shop's names would meet, the shop's leading order code (`LEAD_CODES`: いかり's 【38】 and Ｓ/Ｏ/M,
-  ビッグボーイ's and フライングガーデン's TO, コージーコーナー's 【1】; a letter code only before a space, TO also
-  before 【 or Japanese), a ※ note (a bracketed (※2) anywhere,
-  a trailing ※… with no space after it) or a trailing price (（税込…円）, 12,000円), and a name over 60 characters cut
+  `vg`/`st` for trailing size, milk and temperature words (牛丼 並盛 · 大盛, ライス中, （ICED・Tall・豆乳）; default: current,
+  regular, plain, ICED) or a takeout / 食べ放題 copy (店内 · 持ち帰り; with the same values dropped,
+  `takeout_twin`), katakana aliases for Short/Tall/Grande/Venti; a smaller size with 5 % more kcal than a larger one:
+  `est: e` (`reversed`). Our shop aliases (セブン, カルディ; never a food word: `db.ts addShops` refuses it) and
+  display names are `data_src/kalori_shops.json`.
+- **Names:** half-width kana made full, control characters, line breaks and doubled spaces, a trailing ` /`, Kaldi's
+  【賞味期限…】/【アウトレット】 and IKEA's certification cut; then, each only where no two of the shop's names would meet,
+  the shop's leading order code (`LEAD_CODES`: いかり's 【38】 and Ｓ/Ｏ/M, ビッグボーイ's and フライングガーデン's TO,
+  コージーコーナー's 【1】), decorations (★…★, ♡, NEW！, 旧：; a half-bracket label 日替） moved to the end), a ※ note
+  (bracketed anywhere, trailing, or before a last size bracket) or a trailing price, and a name over 60 characters cut
   before its last bracket, comma or space.
-- **Discontinued:** a page titled 販売終了かも？ (`ended`) or a product gone from the shop's listing (`listed: false`)
-  stays, marked `ended: true` and `pop: -1` (ranked under the current menu; a current size is its variant group's default);
-  its page shows no 推定 badges, so its values count as estimated (`est: e`), never official.
-- **Categories:** the item's `genre` (`GENRE_CAT`; a pastry in a sweets shop, or a cake/tart one in a cafe, is
-  菓子・デザート; an alcohol name (`ALCOHOL`: サワー, 酒, 緑茶ハイ ...) in a drink or soup genre is 酒); with no genre (or
-  `other`), the name's (alcohol, sweets, drinks), else the shop's kind where it says (ramen/udon/soba, sushi,
-  gyudon/teishoku, bread, sweets: `SHOP_CAT`), else その他.
-- **Dropped:** no name or kcal; over the custom-food limits (5,000 kcal, 500 g, fibre 100 g); kcal off Atwater
-  (4P+9F+4C) by over half and 50 kcal, alcohol aside, or 0 kcal with 10 kcal of protein and fat (`implausible`: 幸楽苑's
-  47 kcal メガたんめん; a 0 kcal jelly or zero drink stays); an OFF product of
-  the same name whose brand is the shop (the label wins; the same name by another maker stays); a near-duplicate (the
-  shop's same name but for width or spaces: the current, then latest `lastmod`, then higher id stays); a long name that,
-  cut, meets another. Never in `verify.json`: estimates get no ✓n.
+- **Discontinued:** 販売終了かも？ (`ended`), off the listing (`listed: false`) or 旧： stays, `ended: true`, `pop: -1`,
+  `est: e` (no 推定 badges). **Retention** (`retired`): gone over 90 days, ended over 180 (official kcal: 180,
+  365), to the data's latest fetch (undated: the line's).
+- **Categories:** the `genre`'s (`GENRE_CAT`; a sweets shop's or a cafe's cake/tart pastry 菓子・デザート; alcohol
+  (`ALCOHOL`) in a drink or soup genre 酒; `snack` a sweet only in a sweets shop or by name, else the name's いも, 大豆・豆,
+  魚介, 肉, 乳製品, ナッツ・種, 果物, 海藻, else 副菜 (a konbini's or supermarket's: 菓子); in soup, ice and dessert genres a
+  drink name 飲料 (not an ice shop's flavour), 雑炊/粥... 主食, グラタン 主菜, ゼリー 菓子; a rice-bowl's plain ライス 主食); with
+  no genre, the name's (alcohol, sweets, drinks), else the shop's kind (`SHOP_CAT`), else その他.
+- **Dropped:** no name or kcal; over the custom-food limits (5,000 kcal, 500 g, fibre 100 g); a platter for N (５人前,
+  3名様; not a 福袋, gift or kilo item, nor a share under 150 kcal) ships per person, …（1人前）; kcal off Atwater
+  (4P+9F+4C) by over half and 50 kcal (alcohol aside: a スパークリング far over it is 酒), or 0 kcal with 10 kcal of P
+  and F (`implausible`; an official kcal ships, P, F, C null); an OFF product of the same name by the shop, in a
+  retail kind (`OFF_RETAIL`), its label's serving agreeing (kcal, P, F, C within 1.35×); a near-duplicate (the same
+  name but for width or spaces: the current, latest, higher id stays; both listed, official, over 10 % apart: both);
+  a long name that, cut, meets another. Never in `verify.json`.
 - **On the phone:** ranked under the other secondary sets (`db.ts` KALORI_PENALTY), over the products; a shop's name
   or alias in the query scopes to its menu (`db.ts shopIn`); logged as an `sv` snapshot (whole servings, no grams).
-- **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows; `test_fetch.py`, the release's
-  checks on a local tarball; the scraper's own, on fixtures and a fake site (no network).
+- **Tests:** `food-data/scripts/tests/test_kalori_convert.py` (invented rows), `test_fetch.py` (a local tarball), the
+  scraper's (fixtures, a fake site); `load.test.ts` (every alias names its shop).
 
 ## Sources evaluated and not used
 - Commercial recipe sites (Cookpad, Kikkoman, Ajinomoto) and 女子栄養大学 calorie guides: no reuse license.

@@ -182,6 +182,24 @@ class Wanted(unittest.TestCase):
         sh.failures['a/1'] = {'status': K.NO_NUTRITION, 'attempts': 3, 'lastmod': 'L2', 'parser': K.PARSER_VERSION}
         self.assertTrue(sh.wanted('a/1', 'L2', True))
 
+    def test_retention_stamps(self):
+        # ended_since / gone_since: the first fetch that saw it so, kept by later lines; a current record has neither
+        sh = self.shard()
+        f = {'name': 'n', 'shop_name': 's', 'genre': None, 'ended': False, 'image_id': None, 'table': True,
+             'nutrients': {}}
+        with mock.patch.object(K, 'now', return_value='2026-12-01T00:00:00+00:00'):
+            self.assertNotIn('ended_since', sh.record('a', '1', 'L1', True, f))
+            first = sh.record('a', '1', 'L1', True, dict(f, ended=True))
+            self.assertEqual(first['ended_since'], '2026-12-01T00:00:00+00:00')
+            sh.have['a/1'] = dict(first, ended_since='2026-10-01T00:00:00+00:00')
+            self.assertEqual(sh.record('a', '1', 'L2', False, f)['ended_since'], '2026-10-01T00:00:00+00:00')
+            sh.have['a/2'] = rec('a', 2)
+            sh.mark_gone('a/2')
+            self.assertEqual(sh.have['a/2']['gone_since'], '2026-12-01T00:00:00+00:00')
+            sh.have['a/3'] = rec('a', 3, gone_since='2026-09-01T00:00:00+00:00')
+            sh.mark_gone('a/3')
+            self.assertEqual(sh.have['a/3']['gone_since'], '2026-09-01T00:00:00+00:00')
+
     def test_switches(self):
         sh = self.shard(recheck=True, refetch_before='2026-11-10')
         sh.failures['a/6'] = {'status': K.NO_NUTRITION, 'attempts': 3, 'lastmod': 'L1', 'parser': K.PARSER_VERSION,

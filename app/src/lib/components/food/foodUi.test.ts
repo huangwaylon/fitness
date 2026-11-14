@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, glossOf, goalChip, itemOf, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups } from './foodUi.ts';
+import { DAYS, daysText, glossOf, goalChip, itemOf, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { customDraft, customErrors, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -64,6 +64,24 @@ describe('stateItem: a state keeps the food’s name and portions', () => {
     expect(stateItem(raw, raw)).toBe(raw);
     const imo: Item = { id: 'x:2', vg: 'x:1', st: '焼き', name: '焼きいも', kcal: 151 };
     expect(stateItem({ id: 'x:1', vg: 'x:1', st: '生', name: 'さつまいも 生', kcal: 126 }, imo).name).toBe('焼きいも');
+  });
+});
+
+describe('stemName: a name without the states its chips show', () => {
+  it('strips a MEXT state and a chain menu’s bracketed, spaced, glued or marked ones; else keeps the name', () => {
+    const stem = (name: string, st: string) => stemName({ name, st });
+    expect(stem('うどん（ゆで）', 'ゆで')).toBe('うどん');
+    expect(stem('牛丼 並盛', '並盛')).toBe('牛丼');
+    expect(stem('ココア（アイス）（Tall・豆乳）', 'アイス・Tall・豆乳')).toBe('ココア');
+    expect(stem('ライス「中」', '中')).toBe('ライス');
+    expect(stem('ライス中', '中')).toBe('ライス');
+    expect(stem('ポテトＳ', 'Ｓ')).toBe('ポテト');
+    expect(stem('TO アンチョビポテトM', 'M・持ち帰り')).toBe('アンチョビポテト');
+    expect(stem('えびマヨ（お持ち帰り）', '持ち帰り')).toBe('えびマヨ');
+    expect(stem('えびマヨ', '店内')).toBe('えびマヨ');
+    expect(stem('カルボナーラ（食べ放題）', '食べ放題')).toBe('カルボナーラ');
+    expect(stem('ICE BOX M', 'Tall')).toBe('ICE BOX M');
+    expect(stem('焼きいも', '焼き')).toBe('焼きいも');
   });
 });
 
