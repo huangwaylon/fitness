@@ -33,7 +33,7 @@
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, addDate, addDates, applyPreset, attentionLines, bookingRows, bulkDates, controlLine, dateBounds, dateMonths, dateRows, draftOf, eventLines, factRows,
-    hotelHint, hotelParts, hotelRows, hotelSummary, legacy, minuteCells, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
+    hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, minuteCells, presetOf, removeDate, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
     stopsAtBooked, stripCells, toInput, toggleSearch, toggleStar, type DateRow, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { driver } from '#lib/its/bot.ts';
@@ -62,6 +62,7 @@
   let addWhy = $state<string | null>(null);
   let askAuto = $state(false);
   let askOverwrite = $state(false);
+  let askStop = $state(false);
   let openHotels = $state(false);
   /** The stay whose facilities are shown (by why), or null; `allNames`: the one whose 探す names are all shown. */
   let openDate = $state<string | null>(null);
@@ -118,9 +119,11 @@
   const name = (m: Member) => (week.view ? villagerNameOf(week.view, m) : m);
   /** What the page shows: the draft, else the saved settings (an allow-list derived when they have none). */
   const shown = $derived(draft ?? (status ? draftOf(status.settings, status.seen) : null));
-  const verdict = $derived(status && driver.verdict(status, nowMs));
   const facts = $derived(status ? factRows(status, today) : []);
   const bookings = $derived(status ? bookingRows(status, today, nowMs) : []);
+  /** The holds waiting for a person (確認が必要's rows; expired ones too); the other stays under 予約. */
+  const holds = $derived(bookings.filter((b) => b.state === 'action'));
+  const others = $derived(bookings.filter((b) => b.state !== 'action'));
   const events = $derived(status ? eventLines(status, today) : []);
   const hotels = $derived<HotelRow[]>(shown && status ? hotelRows(shown, status.seen, status.settings) : []);
   /** The runner reporting stops at a booked night and keeps to the allow-list (an older one doesn't: said neither). */
@@ -141,12 +144,20 @@
   /** 開始 needs a saved stay from tonight on. */
   const noDates = $derived(!!status && !status.settings.dates.some((d) => daysUntil(d, nowMs) >= 0));
   const control = $derived(status && controlLine(status, name, today));
+  /** The verdict; while stopped, who stopped it and when in its sentence. */
+  const verdict = $derived.by(() => {
+    const v = status && driver.verdict(status, nowMs);
+    return v && paused && control ? { ...v, sentence: `${v.sentence}${control}` } : v;
+  });
   const saved = $derived(status && savedLine(status, name, today));
   const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
    *  shared strip. */
   const cells = $derived(status?.recentMinutes ? minuteCells(status.recentMinutes, status.now) : []);
-  const legend = { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), fail: t('its.scan.legend.fail'), none: t('its.scan.legend.none') };
+  const scans = $derived(scanSummary(cells));
+  /** Running (on, not stopped): a strip with no read in it is a warning, not left out. */
+  const live = $derived(!!status && status.mode === 'on' && !paused);
+  const legend = { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), warn: t('its.scan.legend.warn'), fail: t('its.scan.legend.fail'), none: t('its.scan.legend.none') };
   const bulk = $derived(shown && bulkOpen ? bulkDates(shown, bulkFrom, bulkTo, bulkDays, nowMs) : { add: [], over: 0 });
 
   function edit(f: (d: Draft) => Draft) {
@@ -293,23 +304,37 @@
   <ChangeBar segs={d.parts.map((p) => ({ id: p.why, tone: SEG_TONE[p.why] ?? 'sunk', label: t(`its.why.${p.why}`), n: p.names.length }))} attr="its" />
 {/snippet}
 
-{#snippet runRow()}
-  <span class="txt">
-    {#if !paused}<small>{t('its.ctl.on')}</small>{/if}
-    {#if control}<small data-its-control>{control}</small>{/if}
-    {#if paused && noDates}<small class="late" data-its-need-dates>{t('its.ctl.needDates')}</small>{/if}
-  </span>
-  <button type="button" class="btn small runbtn" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick"
-    aria-disabled={running || (paused && noDates)} onclick={() => void run(paused ? 'start' : 'stop')}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
+<!-- the verdict's one action: 開始 (at once), 停止 (asks first) -->
+{#snippet action()}
+  <button type="button" class="btn small" class:paper={!paused} data-its-action={paused ? 'start' : 'stop'} data-sfx="tick" aria-haspopup={paused ? undefined : 'dialog'}
+    aria-disabled={running || (paused && noDates)} onclick={() => (paused ? void run('start') : (askStop = true))}>{t(paused ? 'its.ctl.start' : 'its.ctl.stop')}</button>
 {/snippet}
 
-{#snippet savedBy()}{#if saved}<span data-its-saved-by>{saved}</span>{/if}{/snippet}
+{#snippet needDates()}<p class="hint bad" data-its-need-dates>{t('its.ctl.needDates')}</p>{/snippet}
+
+<!-- 確認が必要's rows: the holds to finish by mail (the deadline, the steps), a failed leg -->
+{#snippet holdRows()}
+  {#if holds.length}
+    <ul class="rows holds">
+      {#each holds as b (b.key)}
+        <li class="booking" data-its-booking={b.state}>
+          <span class="txt">
+            <b>{b.hotel}</b><small>{formatDate(b.date)} · <Phrases text={b.detail} /></small>
+            {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
+            {#if b.steps.length}<ol class="steps" data-its-steps>{#each b.steps as s (s)}<li><Phrases text={s} /></li>{/each}</ol>{/if}
+          </span>
+        </li>
+      {/each}
+    </ul>
+  {/if}
+{/snippet}
 
 <BotPage attr="its" busy={poll.loading} failed={bot.failed} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict} stale={bot.stale}
-  act={status ? runRow : undefined} actAttr={{ 'data-its-run': paused ? 'stopped' : 'running' }} attention={status && { lines: attentionLines(status) }}
-  strip={cells.length ? { cells: stripCells(cells), ticks: scanTicks(cells), title: t('its.scan.title'), legend, summary: scanSummary(cells), hint: t('its.scan.pick') } : null}
-  {facts} foot={status && { parts: [t(`its.mode.${status.mode}`), status.sha?.slice(0, 7)], at: status.now, today }}
-  saved={saved ? savedBy : undefined} tail={dirty ? saveBar : undefined}>
+  readAt={bot.readAt} now={nowMs} keys={status ? keyRow(status, bookings, nowMs) : []}
+  act={status ? action : undefined} actAttr={{ 'data-its-run': paused ? 'stopped' : 'running' }} note={paused && noDates ? needDates : undefined}
+  attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
+  strip={cells.length ? { cells: stripCells(cells), ticks: scanTicks(cells), title: t('its.scan.title'), legend, ...scans, ...(live ? { empty: t('its.scan.empty') } : {}) } : null}
+  {facts} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
     {#if migrating}
       <div class="card pad note" data-its-migrate role="status">
@@ -318,17 +343,16 @@
       </div>
     {/if}
 
-    {#if bookings.length}
+    {#if others.length}
       <section class="sec" aria-labelledby="its-bookings">
         <h3 id="its-bookings" class="sec-label">{t('its.sec.bookings')}</h3>
         <ul class="card pad rows">
-          {#each bookings as b (b.key)}
+          {#each others as b (b.key)}
             <li class="booking" data-its-booking={b.state}>
               <span class="tag {b.state}">{b.label}</span>
               <span class="txt">
                 <b>{b.hotel}</b><small>{formatDate(b.date)} · <Phrases text={b.detail} /></small>
                 {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
-                {#if b.steps.length}<ol class="steps" data-its-steps>{#each b.steps as s (s)}<li><Phrases text={s} /></li>{/each}</ol>{/if}
               </span>
             </li>
           {/each}
@@ -457,18 +481,19 @@
     </section>
 
     <ItsNotify push={status.push} />
+    {#if saved}<p class="hint" data-its-saved-by>{saved}</p>{/if}
 
     {#if events.length}
-      <section class="sec" aria-labelledby="its-recent" data-its-recent>
-        <h3 id="its-recent" class="sec-label">{t('its.sec.recent')}</h3>
-        <ol class="card pad rows ev">
+      <details class="card recent" data-its-recent>
+        <summary class="prow static"><span class="prl">{t('its.sec.recent')}<small data-its-recent-sum>{[events[0].time, events[0].what, ...(events.length > 1 ? [t('its.ev.n', { n: events.length })] : [])].join(' · ')}</small></span><span class="chev" aria-hidden="true"></span></summary>
+        <ol class="rows ev">
           {#each events as e (e.key)}
             <li data-its-event data-bad={e.bad ? '' : undefined}>
               <span class="time">{e.time}</span><span class="txt"><b class:bad={e.bad}>{e.what}</b>{#if e.info}<small>{e.info}</small>{/if}</span>
             </li>
           {/each}
         </ol>
-      </section>
+      </details>
     {/if}
 
   {/if}
@@ -496,6 +521,10 @@
 <ActionSheet bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
   groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('its.auto.cancel') }]]}
   onpick={(id) => id === 'on' && setAuto(true)} />
+
+<ActionSheet bind:open={askStop} title={t('its.stop.ask')} note={t('its.stop.note')}
+  groups={[[{ id: 'stop', label: t('its.stop.yes'), danger: true }], [{ id: 'cancel', label: t('its.stop.cancel') }]]}
+  onpick={(id) => id === 'stop' && void run('stop')} />
 
 <ActionSheet bind:open={askOverwrite} title={t('its.overwrite.title')} note={t('its.overwrite.note')}
   groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('its.overwrite.cancel') }]]}
@@ -531,8 +560,7 @@
   .card.note p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .card.note .btn { justify-self: start; margin: 0; }
 
-  /* the verdict's act row (VerdictCard): 開始 / 停止 */
-  .runbtn { flex: none; margin: 0; }
+  .holds > li { min-height: 0; }
 
   .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
   .rows > li { display: flex; align-items: center; gap: 10px; min-height: var(--hit); }
@@ -550,6 +578,11 @@
   .steps { margin: 6px 0 0; padding-left: 1.3em; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
   .ev .time { flex: none; align-self: flex-start; font-size: var(--fs-s); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-soft); padding-top: 2px; }
   .ev > li { align-items: flex-start; min-height: 0; }
+  /* 最近の動き: folded (くわしく's look), the newest in its summary */
+  .recent { padding: 0; }
+  .recent > summary { list-style: none; box-shadow: none; background: none; cursor: pointer; }
+  .recent > summary::-webkit-details-marker { display: none; }
+  .recent .ev { padding: 0 14px 12px; }
 
   div.months { display: grid; gap: 4px; padding-top: 8px; }
   .month { margin: 4px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }

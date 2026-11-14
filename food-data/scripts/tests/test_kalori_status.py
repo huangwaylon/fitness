@@ -166,7 +166,9 @@ class Status(unittest.TestCase):
     def test_held(self):
         s = self.final({'alert': {'text': 'x', 'since': 9}}, result='held', reasons='band_added,tests', merge_pr='https://pr/1',
                        deploy='held', tag='kalori-2026-11-18', diff=self.files['diff'])
-        self.assertEqual((s['verdict'], s['reasons']), ('failing', ['band_added', 'tests']))   # tests: failing, not held
+        self.assertEqual((s['verdict'], s['reasons']), ('held', ['band_added', 'tests']))   # tests: held, as the run says
+        s = self.final({}, result='held', reasons='tests', deploy='held')   # b9a479f28: tests alone held the merge
+        self.assertEqual((s['verdict'], s['run']['result'], s['history'][-1]['result']), ('held', 'held', 'held'))
         s = self.final({}, result='held', reasons='band_added', merge_pr='https://pr/1', deploy='held', diff=self.files['diff'])
         self.assertEqual(s['verdict'], 'held')
         self.assertEqual(s['alert'], {'text': 'too many added', 'since': NOW, 'runUrl': 'https://x/runs/7',
@@ -623,3 +625,65 @@ class LateCountsAnyRefresh(unittest.TestCase):
         s = S.clear(prev, None, NOW + 1)
         self.assertEqual((s['verdict'], s['reasons']), ('held', ['band_gone']))
         self.assertIsNotNone(s['alert'])
+
+
+class Tripped(unittest.TestCase):
+    """diff.tripped: the bands the gates failed (the app names only these), from the gate rows."""
+    def block(self, **kw):
+        d = diff(**kw.pop('totals', {}))
+        return S.diff_block(d, gates(diff=d, **kw))
+
+    def test_only_the_failed_rows(self):
+        b = self.block(totals={'gone': 151})   # gone over, values within
+        self.assertEqual(b['tripped'], [{'code': 'band_gone', 'key': 'gone', 'share': 0.0151, 'limit': 0.015}])
+        self.assertEqual(self.block()['tripped'], [])   # merged: none
+        self.assertNotIn('tripped', S.diff_block(diff(), None))   # no gates: not written
+
+    def test_renamed_is_band_values_and_counts_are_shareless(self):
+        b = self.block(totals={'renamed': 101}, new=kal(10050, shops=()), tests_ok=False)
+        self.assertEqual(b['tripped'], [{'code': 'band_values', 'key': 'renamed', 'share': 0.0101, 'limit': 0.01},
+                                        {'code': 'band_shops', 'key': 'shops', 'share': None, 'limit': None}])
+        b = self.block(new=kal(9700))   # items: |delta| / base
+        self.assertEqual(b['tripped'], [{'code': 'band_items', 'key': 'items', 'share': 0.03, 'limit': 0.02}])
+
+    def test_no_base_no_shares(self):
+        b = self.block(totals={'products_old': 0})
+        self.assertEqual(b['shares'], {})
+        self.assertTrue(b['tripped'])
+        self.assertTrue(all(t['share'] is None for t in b['tripped']))
+        self.assertEqual(b['limits']['gone'], 0.015)
+
+    def test_final_writes_it(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        files = {}
+        for name, doc in {'diff': diff(gone=151), 'gates': gates(diff=diff(gone=151))}.items():
+            files[name] = os.path.join(d, name + '.json')
+            with open(files[name], 'w') as fh:
+                json.dump(doc, fh, default=sorted)
+        s = S.final({}, Args(result='held', reasons='band_gone', **files), NOW)
+        self.assertEqual((s['verdict'], [t['code'] for t in s['diff']['tripped']]), ('held', ['band_gone']))
+        self.assertEqual(S.carry(s, NOW)['diff']['tripped'], s['diff']['tripped'])
+
+
+class VerdictKeepsTheRun(unittest.TestCase):
+    """deploy() and late() recompute the verdict with the run's own result: emptied reasons go back to its verdict."""
+    def test_deploy_reverted_then_ok(self):
+        prev = {'verdict': 'healthy', 'reasons': [], 'run': {'result': 'published'},
+                'merge': {'sha': 'abc', 'deploy': 'pending', 'pr': None}, 'dataset': {'tag': 't'},
+                'history': [{'result': 'merged', 'tag': 't'}]}
+        r = S.deploy(prev, Args(sha='abc', deploy='reverted', reason='reverted'), NOW)
+        self.assertEqual((r['verdict'], r['run']['result'], r['history'][-1]['result']), ('failing', 'published', 'failed'))
+        f = S.deploy(prev, Args(sha='abc', deploy='failed', reason='deploy_failed'), NOW)
+        ok = S.deploy(f, Args(sha='abc', deploy='ok'), NOW)
+        self.assertEqual((ok['verdict'], ok['reasons'], ok['run']['result']), ('healthy', [], 'published'))
+
+    def test_late_then_clear(self):
+        prev = {'verdict': 'healthy', 'reasons': [], 'run': {'result': 'published'}, 'history': []}
+        s = S.late(prev, Args(reasons='late'), NOW)
+        self.assertEqual((s['verdict'], s['run']['result']), ('late', 'published'))
+        self.assertEqual(S.clear(s, None, NOW)['verdict'], 'healthy')
+        held = {'verdict': 'held', 'reasons': ['tests'], 'run': {'result': 'held'}, 'history': []}
+        s = S.late(held, Args(reasons='late'), NOW)
+        self.assertEqual((s['verdict'], s['reasons']), ('held', ['tests', 'late']))
+        self.assertEqual(S.clear(s, None, NOW)['verdict'], 'held')

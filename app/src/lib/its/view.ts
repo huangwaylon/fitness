@@ -14,6 +14,7 @@ import '#lib/i18n/its.ts';
 import '#lib/i18n/bots.ts';
 import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
+import { durationOf, timeOf } from '#lib/i18n/when.ts';
 
 // ---- The draft ----
 /** What the page edits (paused is 開始 / 停止's, at once). */
@@ -429,14 +430,13 @@ export function hotelNote(r: HotelRow): string {
 const TONE: Record<Verdict, BotTone> = { healthy: 'good', starting: 'busy', idle: 'idle', degraded: 'warn', late: 'warn', failing: 'bad', stopped: 'idle', off: 'idle' };
 const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', starting: 'starting', idle: 'waiting', degraded: 'trouble', late: 'late', failing: 'failing', stopped: 'stopped', off: 'off' };
 
-/** The card: its tone, word (bots.w; 要対応 while a booking waits for a person) and sentence (遅れ: how long nothing was
- *  heard). */
+/** The card: its tone, word (bots.w: the verdict's own; a fine one with a hold waiting is drawn 要対応, types.ts shown)
+ *  and sentence (遅れ: how long nothing was heard). */
 export function verdictView(s: ItsStatus): { tone: BotTone; w: BotWord; word: string; sentence: string } {
   const why = s.reasons[0] ?? 'none';
   const sentence = why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
     : t(`its.reason.${why}`, { n: s.runner?.scanFailures ?? 0 });
-  const w: BotWord = waiting(s).length ? 'needsYou' : WORD[s.verdict];
-  return { tone: TONE[s.verdict], w, word: t(`bots.w.${w}`), sentence };
+  return { tone: TONE[s.verdict], w: WORD[s.verdict], word: t(`bots.w.${WORD[s.verdict]}`), sentence };
 }
 
 /** The bookings waiting for a person (要対応: a hold to finish by mail, a failed leg). */
@@ -454,11 +454,33 @@ export const hotelHint = (autoConfirm: boolean, stops: boolean): string =>
 /** ボット's dot (the menu's pill, the 保養所 tab): a hold waiting for a person (要対応), 不調 or 遅れ. */
 export const needsAttention = (s: ItsStatus): boolean => s.verdict === 'failing' || s.verdict === 'late' || waiting(s).length > 0;
 
-/** 確認が必要's lines: each booking waiting (its facility, day and why), then the verdict's sentence when 不調 or 遅れ. */
+/** 確認が必要's own lines (its holds are bookingRows' action rows): 開始's dispatch failed, unless the sentence says it. */
 export function attentionLines(s: ItsStatus): string[] {
-  const lines = waiting(s).map((b) => `${b.hotel}（${formatDate(b.date)}）：${b.detail}`);
-  if (s.verdict === 'failing' || s.verdict === 'late') lines.push(verdictView(s).sentence);
-  return lines;
+  return s.dispatch && !s.dispatch.ok && s.reasons[0] !== 'dispatch_failed' ? [t('its.attn.dispatch', { status: s.dispatch.status ?? '—' })] : [];
+}
+
+/** A runner reporting now (not past LATE_AFTER_SEC, not stopping). */
+const liveOf = (s: ItsStatus): boolean => !!s.runner && s.now - s.runner.lastSeen < LATE_AFTER_SEC * 1000 && s.runner.phase !== 'stopping';
+
+/** The key row (docs/design.md "Bots"): 前回 (the last read, 正常 or 失敗) · 次回 (常時 with a live runner, its
+ *  interval; スケジュール待ち without; なし while stopped or off: there's no next-run time) · 予約 (the stays ahead, 要対応
+ *  among them; 不調: 最後の成功). */
+export function keyRow(s: ItsStatus, rows: readonly BookingRow[], now: number): { id: string; label: string; value: string; sub?: string }[] {
+  const r = s.runner;
+  const off = s.mode === 'off' || s.settings.paused;
+  const every = s.settings.intervalSec < 60 ? t('its.interval.s', { n: s.settings.intervalSec }) : t('its.interval.m', { n: s.settings.intervalSec / 60 });
+  const ahead = rows.filter((b) => b.state !== 'lapsed');
+  const acts = ahead.filter((b) => b.state === 'action').length;
+  return [
+    { id: 'last', label: t('bots.key.last'), value: r?.lastScanAt == null ? t('bots.key.never') : timeOf(r.lastScanAt, now),
+      ...(r?.lastScanAt == null ? {} : { sub: t(r.scanFailures > 0 ? 'its.key.failed' : 'its.key.ok') }) },
+    off ? { id: 'next', label: t('bots.key.next'), value: t('its.key.none'), sub: t(s.mode === 'off' ? 'bots.w.off' : 'bots.w.stopped') }
+      : liveOf(s) ? { id: 'next', label: t('bots.key.next'), value: t('its.key.live'), sub: t('its.key.every', { every }) }
+      : { id: 'next', label: t('bots.key.next'), value: t('its.key.wait') },
+    TONE[s.verdict] === 'bad'
+      ? { id: 'ok', label: t('bots.key.lastOk'), value: r?.lastOkAt == null ? t('bots.key.never') : timeOf(r.lastOkAt, now) }
+      : { id: 'bookings', label: t('its.key.bookings'), value: t('its.key.n', { n: ahead.length }), ...(acts ? { sub: t('its.key.acts', { n: acts }) } : {}) }
+  ];
 }
 
 /** Running, or about to: polled every 15 s while shown, else every minute. */
@@ -479,13 +501,8 @@ export const controlLine = (s: ItsStatus, name: (m: Member) => string, today: st
 export const savedLine = (s: ItsStatus, name: (m: Member) => string, today: string): string | null =>
   s.settings.updatedBy && s.settings.updatedAt !== null ? t('its.savedBy', { who: name(s.settings.updatedBy), time: at(s.settings.updatedAt, today) }) : null;
 
-/** `2時間10分`, `12分`, `40秒`. */
-export function duration(ms: number): string {
-  const s = Math.max(0, Math.round(ms / 1000));
-  if (s < 60) return t('its.dur.s', { s });
-  const m = Math.floor(s / 60);
-  return m < 60 ? t('its.dur.m', { m }) : t('its.dur.hm', { h: Math.floor(m / 60), m: m % 60 });
-}
+/** `2時間10分`, `12分`, `40秒` (lib/i18n/when.ts). */
+export const duration = (ms: number): string => durationOf(ms);
 
 const at = (ms: number | null, today: string): string => formatSyncTime(ms === null ? null : new Date(ms), today);
 
@@ -510,16 +527,17 @@ export function errorText(e: LastError): string {
   return [STEPS.includes(step) ? t(`its.step.${step}`) : e.step, clsText(e.cls)].join(' · ');
 }
 
-export interface Fact { id: string; label: string; value: string; href?: string; more?: boolean }
-/** The rows under the card: 状態, 最終確認 and 実行 shown, the rest (`more`) folded under くわしく. Without a report yet
- *  only 最終報告 (まだ); 最後の成功 only when it isn't the last scan, 連続失敗 only when there are any, 起動 only when the
- *  dispatch failed. */
+export interface Fact { id: string; label: string; value: string; href?: string }
+/** くわしく: 状態, 確認 (the count), 実行, 稼働, 最終報告, 最後の成功 (unless it's the last scan), 連続失敗 (when any), 認証,
+ *  直近のエラー, 未記録, 起動 (when the dispatch failed), the mode and the version. Without a report yet only 最終報告
+ *  (まだ). */
 export function factRows(s: ItsStatus, today: string): Fact[] {
   const r = s.runner;
   const out: Fact[] = [];
-  if (s.dispatch && !s.dispatch.ok) out.push({ id: 'dispatch', label: t('its.fact.dispatch'), value: t('its.fact.dispatchFailed', { status: s.dispatch.status ?? '—' }) });
-  if (!r) return [...out, { id: 'report', label: t('its.fact.report'), value: at(null, today) }];
-  const live = s.now - r.lastSeen < LATE_AFTER_SEC * 1000 && r.phase !== 'stopping';
+  const tail: Fact[] = [{ id: 'mode', label: t('bots.fact.mode'), value: t(`its.mode.${s.mode}`) }, ...(s.sha ? [{ id: 'sha', label: t('bots.fact.sha'), value: s.sha.slice(0, 7) }] : [])];
+  if (s.dispatch && !s.dispatch.ok) tail.unshift({ id: 'dispatch', label: t('its.fact.dispatch'), value: t('its.fact.dispatchFailed', { status: s.dispatch.status ?? '—' }) });
+  if (!r) return [...out, { id: 'report', label: t('its.fact.report'), value: at(null, today) }, ...tail];
+  const live = liveOf(s);
   out.push(
     { id: 'phase', label: t('its.fact.phase'), value: live ? t(`its.phase.${r.phase}`) : t('its.phase.ended') },
     { id: 'scan', label: t('its.fact.scan'), value: r.lastScanAt === null ? at(null, today) : t('its.fact.scans', { time: at(r.lastScanAt, today), n: r.scans }) }
@@ -535,7 +553,7 @@ export function factRows(s: ItsStatus, today: string): Fact[] {
   more.push({ id: 'solves', label: t('its.fact.solves'), value: sv.lastSecs === null ? t('its.fact.solvesN', sv) : t('its.fact.solvesLast', { ...sv, secs: sv.lastSecs }) });
   if (r.lastError) more.push({ id: 'error', label: t('its.fact.error'), value: `${errorText(r.lastError)}（${at(r.lastError.at, today)}）` });
   if (r.unsynced > 0) more.push({ id: 'unsynced', label: t('its.fact.unsynced'), value: t('its.fact.unsyncedN', { n: r.unsynced }) });
-  return [...out, ...more.map((f) => ({ ...f, more: true }))];
+  return [...out, ...more, ...tail];
 }
 
 // ---- Bookings ----
@@ -626,11 +644,12 @@ export interface ScanCell { t: number; time: string; n: number; fails: number; a
 const MIN_MS = 60_000;
 const STRIP_MIN = 60;
 
-/** One cell: its state (red when any read failed, else yellow when a read saw a room, else green; none read empty)
+/** One cell: its state (fail when every read failed, warn when some did, else avail when a read saw a room, else ok;
+ *  none read: none)
  *  and its line 「15:32 · 4回 · 失敗1（timeout） · 空き2日」 (`dates`: the most nights with a room in one read). */
 function cell(start: number, n: number, fails: number, dates: number, codes: readonly string[]): ScanCell {
   const avail = dates > 0 ? 1 : 0;
-  const state: CellState = !n ? 'none' : fails ? 'fail' : avail ? 'avail' : 'ok';
+  const state: CellState = !n ? 'none' : fails >= n ? 'fail' : fails ? 'warn' : avail ? 'avail' : 'ok';
   const parts = [hhmm(start), n ? t('its.scan.n', { n }) : t('its.scan.none')];
   if (fails) parts.push(codes.length ? t('its.scan.failsWhy', { n: fails, why: codes.join('・') }) : t('its.scan.fails', { n: fails }));
   if (avail) parts.push(t('its.scan.availDates', { n: dates }));
@@ -648,10 +667,12 @@ export function minuteCells(minutes: readonly ScanMinute[], now: number): ScanCe
   });
 }
 
-/** The strip's one line for VoiceOver: 「直近1時間：確認238回、失敗2回、空きあり3分」. */
-export function scanSummary(cells: readonly ScanCell[]): string {
+/** The strip's line for VoiceOver 「直近1時間：確認238回、失敗2回、空きあり3分」 and the one under it 「確認238回 · 失敗2 ·
+ *  空き3分」. */
+export function scanSummary(cells: readonly ScanCell[]): { summary: string; line: string } {
   const sum = (k: 'n' | 'fails' | 'avail') => cells.reduce((a, c) => a + c[k], 0);
-  return t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') });
+  const n = { n: sum('n'), fails: sum('fails'), avail: sum('avail') };
+  return { summary: t('its.scan.summary', n), line: t('its.scan.line', n) };
 }
 
 /** The cells as the shared strip draws them. */

@@ -50,7 +50,8 @@ WATCHED = ('deploy_failed', 'reverted')   # the watch's reasons: a later write a
 KEYS = {'added': ('added', 'added'), 'gone': ('gone', 'gone'), 'values': ('values_changed', 'valuesChanged'),
         'est': ('est_changed', None), 'ended': ('ended_changed', 'endedChanged'), 'renamed': ('renamed', None)}
 REASON = {'renamed': 'band_values'}   # (the shared reason codes have no band_renamed: a rename is a changed value)
-HELD = {'diff_gate', 'main_moved'}   # with band_*: a person's look, nothing broken
+HELD = {'diff_gate', 'main_moved', 'tests'}   # with band_*: a person's look, nothing broken (a failed update-build
+# test holds the merge, as its run and history say: held)
 LATE = {'late', 'stuck'}
 TEXT = {'drift': 'kalori.jp changed its pages (layout drift)', 'nonut': 'the no-nutrition cap', 'crash': 'a crash',
         'limits': "shards still at the site's limits or lost", 'incomplete': 'coverage incomplete, no round left',
@@ -231,17 +232,38 @@ def diff_block(diff, g, limits=None):
     if not t:
         return None
     base = t.get('products_old') or 0
-    sh = lambda k: round(t.get(k, 0) / base, 5) if base else 0.0
+    sh = lambda k: round(t.get(k, 0) / base, 5)
     lim = (g or {}).get('limits') or limits or {}
     lk = lambda k: lim.get(k, BANDS[k])
-    return {'added': t.get('added', 0), 'gone': t.get('gone', 0), 'renamed': t.get('renamed', 0),
+    out = {'added': t.get('added', 0), 'gone': t.get('gone', 0), 'renamed': t.get('renamed', 0),
             'valuesChanged': t.get('values_changed', 0), 'estChanged': t.get('est_changed', 0),
             'endedChanged': t.get('ended_changed', 0),
             'itemsDelta': g['itemsDelta'] if g else t.get('products_new', 0) - base,
+            # no base (products_old 0 or missing): no shares at all, never a fake 0.0
             'shares': {'added': sh('added'), 'gone': sh('gone'), 'valuesChanged': sh('values_changed'),
-                       'estChanged': sh('est_changed')},
+                       'estChanged': sh('est_changed')} if base else {},
             'limits': {'added': lk('added'), 'gone': lk('gone'), 'valuesChanged': lk('values'),
                        'estChanged': lk('est')}}
+    if g:
+        out['tripped'] = tripped(g, base)
+    return out
+
+
+def tripped(g, base):
+    """The band rows the gates failed, in row order: {code, key, share, limit} (share and limit null for shops and
+    drops; share null without a base). The app names only these (not every band within its limit)."""
+    out = []
+    for r in g.get('rows') or []:
+        key = r.get('key')
+        if r.get('ok') or not (key in KEYS or key in ('items', 'shops', 'drops')):
+            continue
+        share = limit = None
+        if key in KEYS or key == 'items':
+            v = r.get('value')
+            share = round(abs(v) / base, 5) if isinstance(v, (int, float)) and not isinstance(v, bool) and base else None
+            limit = r.get('limit')
+        out.append({'code': REASON.get(key, 'band_' + key), 'key': key, 'share': share, 'limit': limit})
+    return out
 
 
 def coverage_block(cov):
@@ -342,12 +364,12 @@ def deploy(prev, a, now):
         s['merge'] = {'sha': a.sha, 'deploy': a.deploy, 'pr': m.get('pr')}
     if a.deploy == 'ok' and 'deploy_failed' in s['reasons'] and m.get('sha') == a.sha and s['merge']['deploy'] == 'ok':
         s['reasons'] = [r for r in s['reasons'] if r != 'deploy_failed']   # a later green deploy of the same merge
-        s['verdict'] = verdict_of('published', s['reasons'])
+        s['verdict'] = verdict_of((s['run'] or {}).get('result') or 'published', s['reasons'])
         if not s['reasons']:
             s['alert'] = None
     if a.reason:
         s['reasons'] = [r for r in s['reasons'] if r not in ('deploy_failed', 'reverted')] + [a.reason]
-        s['verdict'] = verdict_of(None, s['reasons'])
+        s['verdict'] = verdict_of((s['run'] or {}).get('result'), s['reasons'])
         s['alert'] = alert_of(s['alert'], a.alert_text or alert_text([a.reason]), a.run_url, m.get('pr'), now)
     if a.deploy == 'reverted':
         tag = (s['dataset'] or {}).get('tag')
@@ -447,7 +469,7 @@ def late(prev, a, now):
     reasons = [r for r in (a.reasons or '').split(',') if r]
     keep = [r for r in s['reasons'] if r not in reasons] if s['verdict'] not in ('healthy', 'running', 'none') else []
     s['reasons'] = keep + reasons
-    s['verdict'] = verdict_of(None, s['reasons'])
+    s['verdict'] = verdict_of((s['run'] or {}).get('result'), s['reasons'])
     s['alert'] = alert_of(s['alert'], a.alert_text or alert_text(reasons), a.run_url, None, now)
     return s
 

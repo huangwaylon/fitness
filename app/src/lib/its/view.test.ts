@@ -12,7 +12,7 @@ import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './ro
 import {
   addDate, addDates, applyPreset, bookingRows, bulkDates, closedOn, controlLine, dateBounds, dateMonths, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   attentionLines, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
-  savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
+  keyRow, savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, toggleStar, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -450,12 +450,22 @@ describe('the roster', () => {
 
 describe('the verdict card and the poll', () => {
   it('gives each verdict its tone and the first reason its sentence', () => {
-    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'needsYou', word: '要対応', sentence: '対応が必要な予約があります。' });
+    // the verdict's own word (a hold waiting raises only a fine one's dot: bots/types.ts shown)
+    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'trouble', word: '一部不調', sentence: '対応が必要な予約があります。' });
     expect(verdictView(status({ verdict: 'healthy', reasons: [], events: [], bookings: [] }))).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '空室を探しています。' });
     expect(verdictView(status({ verdict: 'starting', reasons: ['starting'], events: [], bookings: [] }))).toMatchObject({ tone: 'busy', word: '起動中' });
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'] })).tone).toBe('warn');
     expect(verdictView(status({ verdict: 'failing', reasons: ['scan_failing'], runner: { ...STATUS.runner!, scanFailures: 4 } }))).toMatchObject({ tone: 'bad', sentence: '空室の確認が4回続けて失敗しています。' });
     for (const v of ['stopped', 'idle', 'off'] as const) expect(verdictView(status({ verdict: v })).tone).toBe('idle');
+  });
+  it('the key row: 前回 (the last read, 正常 or 失敗) · 次回 (常時 only with a live runner; スケジュール待ち; なし while stopped) · 予約 (不調: 最後の成功)', () => {
+    const keys = (x: ItsStatus) => Object.fromEntries(keyRow(x, bookingRows(x, TODAY), x.now).map((k) => [k.id, [k.value, k.sub ?? null]]));
+    expect(keys(STATUS)).toEqual({ last: ['13:10', '正常'], next: ['常時', '15秒ごと'], bookings: ['1件', '要対応1'] });
+    expect(keys(status({ now: STATUS.now + 50 * 60_000 })).next).toEqual(['スケジュール待ち', null]);
+    expect(keys(status({ settings: { ...STATUS.settings, paused: true } })).next).toEqual(['なし', '停止中']);
+    expect(keys(status({ runner: { ...STATUS.runner!, scanFailures: 2 } })).last).toEqual(['13:10', '失敗']);
+    expect(keys(status({ runner: null, events: [], bookings: [] }))).toEqual({ last: ['まだ', null], next: ['スケジュール待ち', null], bookings: ['0件', null] });
+    expect(keys(status({ verdict: 'failing', runner: { ...STATUS.runner!, lastOkAt: STATUS.runner!.lastScanAt! - 3600_000 } })).ok).toEqual(['12:10', null]);
   });
   it('polls every 15 s while the runner is on its way or running, else every minute', () => {
     expect(pollMs(STATUS)).toBe(15_000);
@@ -484,17 +494,15 @@ describe('factRows', () => {
   it('reads the last report', () => {
     expect(Object.fromEntries(factRows(STATUS, today).map((f) => [f.id, f.value]))).toEqual({
       phase: '空室を確認中', uptime: '12:50から（20分）', report: '13:10', scan: '13:10（120回）', solves: '成功 2 · 失敗 0（前回 19秒）',
-      error: '空室の確認 · 時間切れ（13:01）', run: '#19283746'
+      error: '空室の確認 · 時間切れ（13:01）', run: '#19283746', mode: '稼働', sha: STATUS.sha!.slice(0, 7)
     });
-    // 状態, 最終確認 and 実行 shown; the rest under くわしく
-    expect(factRows(STATUS, today).filter((f) => !f.more).map((f) => f.id)).toEqual(['phase', 'scan', 'run']);
     expect(factRows(STATUS, today).find((f) => f.id === 'run')!.href).toBe('https://github.com/huangwaylon/fitness/actions/runs/19283746');
   });
   it('without a report, only 最終報告; a failed dispatch, failures and the unsynced are shown when there are any', () => {
-    expect(factRows(status({ runner: null }), today)).toEqual([{ id: 'report', label: '最終報告', value: 'まだ' }]);
+    expect(factRows(status({ runner: null, sha: null }), today)).toEqual([{ id: 'report', label: '最終報告', value: 'まだ' }, { id: 'mode', label: 'モード', value: '稼働' }]);
     const r = { ...STATUS.runner!, scanFailures: 3, lastOkAt: STATUS.runner!.lastScanAt! - 60_000, unsynced: 1, runUrl: 'https://evil.example/x' };
     const ids = factRows(status({ runner: r, dispatch: { at: STATUS.now, ok: false, status: 403 } }), today).map((f) => f.id);
-    expect(ids).toEqual(['dispatch', 'phase', 'scan', 'uptime', 'report', 'ok', 'failures', 'solves', 'error', 'unsynced']);
+    expect(ids).toEqual(['phase', 'scan', 'uptime', 'report', 'ok', 'failures', 'solves', 'error', 'unsynced', 'dispatch', 'mode', 'sha']);
   });
   it('a runner silent past LATE_AFTER_SEC has ended', () => {
     const later = status({ now: STATUS.now + 50 * 60_000 });
@@ -591,13 +599,13 @@ describe('a hold’s deadline and what to do', () => {
 });
 
 describe('the words', () => {
-  it('遅れ says how long nothing was heard; 確認が必要 names each booking waiting, then 不調’s or 遅れ’s sentence', () => {
+  it('遅れ says how long nothing was heard; 確認が必要’s own line: a failed dispatch the sentence doesn’t say (its holds are bookingRows’)', () => {
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'], now: STATUS.runner!.lastSeen + 52 * 60_000 })).sentence).toBe('52分報告がありません。');
     // the day's automatic restarts spent: why, and that 開始 resumes it
     expect(verdictView(status({ verdict: 'late', reasons: ['restart_cap', 'runner_silent'] }))).toMatchObject({ tone: 'warn', sentence: '自動の再起動は今日の上限に達しました（開始で再開できます）。' });
-    expect(attentionLines(STATUS)).toEqual([expect.stringMatching(/^NAGU 勝浦（.+）：/)]);
-    expect(attentionLines(status({ events: [], bookings: [], verdict: 'healthy', reasons: [] }))).toEqual([]);
-    expect(attentionLines(status({ events: [], bookings: [], verdict: 'failing', reasons: ['scan_failing'] }))).toHaveLength(1);
+    expect(attentionLines(STATUS)).toEqual([]);
+    expect(attentionLines(status({ dispatch: { at: STATUS.now, ok: false, status: 403 } }))).toEqual(['開始の起動に失敗しました（403）。30分ごとの定期起動を待っています。']);
+    expect(attentionLines(status({ dispatch: { at: STATUS.now, ok: false, status: 403 }, reasons: ['dispatch_failed'] }))).toEqual([]);
   });
   it('ボット’s dot: a hold waiting, 不調 or 遅れ; not 要確認, 停止中 or 順調', () => {
     const quiet = (verdict: ItsStatus['verdict']) => needsAttention(status({ events: [], bookings: [], verdict }));
@@ -626,16 +634,17 @@ describe('the words', () => {
 describe('直近1時間', () => {
   const at = (s: string) => jst(`2026-11-13T${s}`);
   const m = (time: string, over: Partial<ScanMinute> = {}): ScanMinute => ({ minute: at(time), n: 4, ok: 4, fail: 0, avail: 0, ...over });
-  it('the last 60 Tokyo minutes up to now’s from the Worker’s per-minute aggregate (recentMinutes), oldest first: a failure red, else a room yellow (the most nights with one), else green; a gap empty', () => {
+  it('the last 60 Tokyo minutes up to now’s from the Worker’s per-minute aggregate (recentMinutes), oldest first: all failed fail, some warn, else a room avail (the most nights with one), else ok; a gap none', () => {
     const now = at('12:00:30');
-    const cells = minuteCells([m('11:00:00'), m('11:01:00', { avail: 2 }), m('11:30:00', { ok: 1, fail: 3, avail: 1, codes: { timeout: 2, http_503: 1 } }), m('12:00:00', { n: 2, ok: 2 })], now);
+    const cells = minuteCells([m('11:00:00'), m('11:01:00', { avail: 2 }), m('11:30:00', { ok: 1, fail: 3, avail: 1, codes: { timeout: 2, http_503: 1 } }), m('11:31:00', { ok: 0, fail: 4 }), m('12:00:00', { n: 2, ok: 2 })], now);
     expect(cells).toHaveLength(60);
     expect(cells[0]).toMatchObject({ time: '11:01', n: 4, avail: 1, state: 'avail', text: '11:01 · 4回 · 空き2日' });
-    expect(cells[29]).toMatchObject({ time: '11:30', state: 'fail', text: '11:30 · 4回 · 失敗3（timeout・http_503） · 空き1日' });
+    expect(cells[29]).toMatchObject({ time: '11:30', state: 'warn', text: '11:30 · 4回 · 失敗3（timeout・http_503） · 空き1日' });
+    expect(cells[30]).toMatchObject({ time: '11:31', state: 'fail' });
     expect(cells[59]).toMatchObject({ time: '12:00', n: 2, state: 'ok' });
-    expect(cells.filter((c) => c.state === 'none')).toHaveLength(57);
+    expect(cells.filter((c) => c.state === 'none')).toHaveLength(56);
     expect(cells[1]).toMatchObject({ state: 'none', text: '11:02 · 確認なし' });
-    expect(scanSummary(cells)).toBe('直近1時間：確認10回、失敗3回、空きあり2分');
+    expect(scanSummary(cells)).toEqual({ summary: '直近1時間：確認14回、失敗7回、空きあり2分', line: '確認14回 · 失敗7 · 空き2分' });
     expect(scanTicks(cells)).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
     // the client reads it, a garbled minute or code left out
     const s = parseStatus({ ...example.status, recentMinutes: [...example.status.recentMinutes, { minute: 'x' }, { minute: 1, n: 1, codes: { 'bad code': 1, ok_code: 2 } }] })!;

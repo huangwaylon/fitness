@@ -2,7 +2,7 @@
 // tolerated), every verdict's words in Japanese and English, 遅れ by the phone's clock, the dot, the facts, the alert
 // card, 直近8週's cells and the latest update's bar.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { REASONS, alertCard, changeParts, factRows, fetchStatus, needsAttention, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
+import { REASONS, alertCard, changeParts, factRows, fetchStatus, keyRow, needsAttention, parseStatus, reasonText, runLink, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 
 const at = (s: string) => Date.parse(`${s}+09:00`);
@@ -76,7 +76,8 @@ describe('parseStatus: what the file can’t make the page do', () => {
       const s = status({ run: { ...(sample().run as object), url: u }, merge: { pr: u }, alert: { text: 'x', since: NOW, runUrl: u, prUrl: u }, dataset: { ...(sample().dataset as object), url: u }, history: [{ t: LAST, result: 'merged', runUrl: u }] });
       expect([s.run?.url, s.merge?.pr, s.alert?.runUrl, s.alert?.prUrl, s.dataset?.url, s.history[0].runUrl], u).toEqual([null, null, null, null, null, null]);
       expect(factRows(s, NOW).filter((f) => f.href)).toEqual([]);
-      expect(alertCard({ ...s, verdict: 'failing' }, NOW)).toMatchObject({ run: null, pr: null });
+      expect(alertCard({ ...s, verdict: 'held' }, NOW)).toMatchObject({ pr: null });
+      expect(runLink({ ...s, verdict: 'failing' }, NOW)).toBeNull();
     }
     expect(status({ dataset: { tag: 'k'.repeat(81) } }).dataset).toBeNull();
     expect(status({ alert: { text: 'x'.repeat(301), since: NOW } }).alert).toBeNull();
@@ -90,8 +91,15 @@ describe('verdictView', () => {
     expect(v({})).toEqual(['good', '順調', '11/11（水）に更新しました。']);
     expect(v({ verdict: 'running', run: { ...(sample().run as object), result: 'running', round: 3, shardsDone: 7, endedAt: null, startedAt: NOW - 3600_000 } }))
       .toEqual(['busy', '取得中', '3回目 · 20区画中7完了']);
-    expect(v({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), shares: { gone: 0.021 }, limits: { gone: 0.015 } } }))
+    expect(v({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] } }))
       .toEqual(['warn', '保留', '変更が多すぎるため反映を止めました（削除 2.1%・上限1.5%）。アプリは11/11（水）のデータのままです。']);
+    // only the gates that tripped, never a band within its limit; a file from before `tripped`: the words alone
+    expect(v({ verdict: 'held', reasons: ['band_values'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_values', key: 'renamed', share: 0.012, limit: 0.01 }] } })[2])
+      .toBe('変更が多すぎるため反映を止めました（名前の変更 1.2%・上限1.0%）。アプリは11/11（水）のデータのままです。');
+    expect(v({ verdict: 'held', reasons: ['band_gone'] })[2]).toBe('変更が多すぎるため反映を止めました（削除）。アプリは11/11（水）のデータのままです。');
+    expect(v({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_gone', key: 'gone', share: null, limit: 0.015 }] } })[2])
+      .toBe('変更が多すぎるため反映を止めました（削除）。アプリは11/11（水）のデータのままです。');
+    expect(v({ verdict: 'held', reasons: ['tests'] })[2]).toBe('テストが失敗しました。');
     expect(v({ verdict: 'held', reasons: ['band_items'] })[2]).toBe('いつもと違う変化があったため反映を止めました（品目数）。アプリは11/11（水）のデータのままです。');
     expect(v({ verdict: 'held', reasons: ['main_moved'] })).toEqual(['warn', '保留', '同時に他の変更があったため保留しました。']);
     expect(v({ verdict: 'late' })).toEqual(['warn', '遅れ', '11/18（水）2:41の実行がまだ始まっていません。']);
@@ -104,7 +112,7 @@ describe('verdictView', () => {
     const say = (over: Record<string, unknown>) => verdictView(status(over), NOW);
     expect(say({})).toMatchObject({ word: 'Healthy', sentence: 'Updated Wed 11/11.' });
     expect(say({ verdict: 'running', run: { ...(sample().run as object), round: 1, shardsDone: 4, startedAt: NOW } })).toMatchObject({ word: 'Fetching', sentence: 'Round 1 · 4 of 20 shards done' });
-    expect(say({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), shares: { gone: 0.021 }, limits: { gone: 0.015 } } }))
+    expect(say({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] } }))
       .toMatchObject({ word: 'Held', sentence: "Too many changes, not applied (Removed 2.1%, limit 1.5%). The app keeps Wed 11/11's data." });
     expect(say({ verdict: 'late' })).toMatchObject({ word: 'Late', sentence: "The Wed 11/18 2:41 run hasn't started yet." });
     expect(say({ verdict: 'failing', reasons: ['drift'] })).toMatchObject({ word: 'Failing', sentence: "The site changed; pages don't parse." });
@@ -119,7 +127,8 @@ describe('every reason in words', () => {
     expect(ja.filter((x) => x.startsWith('kalori.'))).toEqual([]);
     expect(reasonText(s, 'drift')).toBe('サイトの構成が変わり読み取れません。');
     expect(reasonText(s, 'reverted')).toBe('テストが失敗したため元に戻しました。');
-    expect(reasonText(s, 'band_values')).toBe('値の変更 0.1%・上限5.0%');
+    expect(reasonText(s, 'band_values')).toBe('値の変更');
+    expect(reasonText(status({ diff: { ...(sample().diff as object), tripped: [{ code: 'band_values', key: 'values', share: 0.02, limit: 0.01 }] } }), 'band_values')).toBe('値の変更 2.0%・上限1.0%');
     expect(reasonText(s, 'band_shops')).toBe('店舗数');
     setLocale('en');
     await loadEnglish();
@@ -154,38 +163,57 @@ describe('needsAttention (ボット’s dot)', () => {
   });
 });
 
-describe('factRows', () => {
-  it('前回, 次回, データ, 品目, 網羅, 実行; くわしく: ラウンド, 変更率, PR, デプロイ', () => {
+describe('keyRow and factRows', () => {
+  const keys = (s: KaloriStatus, now = NOW) => Object.fromEntries(keyRow(s, now).map((k) => [k.id, [k.value, k.sub ?? null]]));
+  it('前回 (the newest run kept and what came of it) · 次回 · 品目; 不調: 最後の成功', () => {
+    expect(keys(status())).toEqual({ last: ['11/11（水）2:42', '公開'], next: ['11/18（水）2:41ごろ', null], items: ['54,269品', '448店'] });
+    // a run under way doesn't count yet; the deploy's failure or revert is what came of the merge
+    expect(keys(status({ verdict: 'running' })).last).toEqual(['11/11（水）2:42', '公開']);
+    expect(keys(status({ merge: { sha: 'a', deploy: 'reverted', pr: null } })).last[1]).toBe('元に戻しました');
+    expect(keys(status({ merge: { sha: 'a', deploy: 'failed', pr: null } })).last[1]).toBe('デプロイ失敗');
+    const h = sample().history as Record<string, unknown>[];
+    expect(keys(status({ verdict: 'held', history: [...h.slice(0, -1), { ...h.at(-1), result: 'held' }] })).last[1]).toBe('保留');
+    expect(keys(status({ verdict: 'failing', history: [...h.slice(0, -1), { ...h.at(-1), result: 'failed' }] })).ok).toEqual(['11/4（水）2:42', null]);
+    expect(keys(status({ verdict: 'none', history: [], dataset: null }))).toEqual({ last: ['まだ', null], next: ['11/18（水）2:41ごろ', null] });
+  });
+  it('くわしく: データ, 網羅, 実行 (unless the verdict opens it), 所要時間, ラウンド, 変更率 and PR (unless 保留 says them), デプロイ, the workflow', () => {
     const f = factRows(status({ merge: { sha: null, deploy: 'pending', pr: 'https://github.com/huangwaylon/fitness/pull/812' } }), NOW);
-    expect(f.map((r) => [r.id, r.value, !!r.more])).toEqual([
-      ['last', '11/11（水）2:41 · 4時間12分 · 公開', false],
-      ['next', '11/18（水）2:41ごろ', false],
-      ['data', 'kalori-2026-11-11', false],
-      ['items', '54,269品 · 448店', false],
-      ['coverage', '完了', false],
-      ['run', '#123456', false],
-      ['rounds', '2回', true],
-      ['rate', '追加 0.0%・上限2.0%、削除 0.0%・上限1.5%、値の変更 0.1%・上限5.0%、推定値の変更 0.0%・上限5.0%', true],
-      ['pr', '#812', true],
-      ['deploy', '待機中', true]
+    expect(f.map((r) => [r.id, r.value])).toEqual([
+      ['data', 'kalori-2026-11-11'],
+      ['coverage', '完了'],
+      ['run', '#123456'],
+      ['took', '4時間12分'],
+      ['rounds', '2回'],
+      ['rate', '追加 0.0%・上限2.0%、削除 0.0%・上限1.5%、値の変更 0.1%・上限5.0%、推定値の変更 0.0%・上限5.0%'],
+      ['pr', '#812'],
+      ['deploy', '待機中'],
+      ['workflow', 'kalori-scrape.yml']
     ]);
     expect(f.find((r) => r.id === 'data')?.href).toContain('/releases/tag/kalori-2026-11-11');
     expect(f.find((r) => r.id === 'run')?.href).toContain('/actions/runs/123456');
+    const held = factRows(status({ verdict: 'held', merge: { sha: null, deploy: 'held', pr: 'https://github.com/huangwaylon/fitness/pull/812' } }), NOW).map((r) => r.id);
+    expect(held).toEqual(['data', 'coverage', 'took', 'rounds', 'deploy', 'workflow']);
   });
   it('coverage in counts while incomplete; only what the file has', () => {
     const f = factRows(status({ coverage: { complete: false, fetched: 30000, discovered: 54000, failed: 12 }, run: null, dataset: null, diff: null, merge: null }), NOW);
-    expect(f.map((r) => [r.id, r.value])).toEqual([['next', '11/18（水）2:41ごろ'], ['coverage', '30,000 / 54,000品 · 失敗12']]);
+    expect(f.map((r) => [r.id, r.value])).toEqual([['coverage', '30,000 / 54,000品 · 失敗12'], ['workflow', 'kalori-scrape.yml']]);
   });
 });
 
-describe('alertCard', () => {
-  it('for 保留 and 不調, or an alert: the reasons, the run and the PR (no issue)', () => {
-    const c = alertCard(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr: 'https://github.com/huangwaylon/fitness/pull/9' } }), NOW)!;
-    expect(c).toEqual({ lines: ['異常終了しました。', '公開に失敗しました。'], run: 'https://github.com/huangwaylon/fitness/actions/runs/123456', pr: 'https://github.com/huangwaylon/fitness/pull/9' });
+describe('alertCard and runLink', () => {
+  it('only what the sentence leaves out: 保留’s PR to merge by hand, the other reasons, an alert no reason words; the run: the verdict’s action', () => {
+    const pr = 'https://github.com/huangwaylon/fitness/pull/9';
+    expect(alertCard(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr } }), NOW)).toEqual({ lines: ['公開に失敗しました。'], pr: null });
+    expect(alertCard(status({ verdict: 'failing', reasons: ['crash'] }), NOW)).toBeNull();
+    expect(alertCard(status({ verdict: 'held', reasons: ['band_gone'], merge: { pr } }), NOW)).toEqual({ lines: ['PRを確認して、問題なければ手動でマージしてください。'], pr });
+    expect(alertCard(status({ verdict: 'held', reasons: ['band_gone', 'tests'], merge: { pr } }), NOW)!.lines).toEqual(['PRを確認して、問題なければ手動でマージしてください。', 'テストが失敗しました。']);
     const [r, p] = ['https://github.com/huangwaylon/fitness/actions/runs/7', 'https://github.com/huangwaylon/fitness/pull/8'];
-    expect(alertCard(status({ alert: { text: 'ひと言', since: NOW, runUrl: r, prUrl: p } }), NOW)).toEqual({ lines: ['ひと言'], run: r, pr: p });
+    expect(alertCard(status({ alert: { text: 'ひと言', since: NOW, runUrl: r, prUrl: p } }), NOW)).toEqual({ lines: ['ひと言'], pr: null });
     expect(alertCard(status(), NOW)).toBeNull();
     expect(alertCard(status({ verdict: 'running' }), NOW)).toBeNull();
+    expect(runLink(status({ verdict: 'failing' }), NOW)).toBe('https://github.com/huangwaylon/fitness/actions/runs/123456');
+    expect(runLink(status({ verdict: 'running' }), NOW)).toContain('/runs/123456');
+    expect(runLink(status(), NOW)).toBeNull();
   });
 });
 
@@ -195,8 +223,8 @@ describe('weekStrip (直近8週)', () => {
     h[5] = { ...h[5], result: 'held' };
     h[6] = { ...h[6], result: 'failed' };
     h.splice(2, 1);
-    const { cells, ticks, summary } = weekStrip(status({ history: h }), NOW);
-    expect(cells.map((c) => c.state)).toEqual(['ok', 'ok', 'none', 'ok', 'ok', 'avail', 'fail', 'ok']);
+    const { cells, ticks, summary, line } = weekStrip(status({ history: h }), NOW);
+    expect(cells.map((c) => c.state)).toEqual(['ok', 'ok', 'none', 'ok', 'ok', 'warn', 'fail', 'ok']);
     expect(cells.at(-1)!.start).toBeLessThanOrEqual(NOW);
     expect(cells.at(-1)!.end).toBeGreaterThan(NOW);
     expect(cells.at(-1)!.label).toBe('11/11（水）· 公開 · 追加12 値38 終了3 · 4時間12分');
@@ -204,6 +232,7 @@ describe('weekStrip (直近8週)', () => {
     expect(ticks.map((t) => t.i)).toEqual([1, 3, 5, 7]);
     expect(ticks.at(-1)!.label).toBe('11/11');
     expect(summary).toBe('直近8週：公開5回、保留1回、失敗1回');
+    expect(line).toBe('公開5 · 保留1 · 失敗1');
   });
   it('the newest run of a week decides it (a failure then a retry merged)', () => {
     const h = [{ t: LAST, result: 'failed' }, { t: LAST + 3 * 3600_000, result: 'merged' }];
@@ -216,11 +245,11 @@ describe('weekStrip (直近8週)', () => {
   });
 });
 
-describe('the bar and the foot', () => {
+describe('the bar', () => {
   it('追加 · 値の変更 · 終了 · 削除, one line for VoiceOver', () => {
     const { parts, summary } = changeParts(status().diff!);
     expect(parts.map((p) => [p.id, p.tone, p.n])).toEqual([['added', 'leaf', 12], ['valuesChanged', 'yuzu', 38], ['endedChanged', 'hatch', 3], ['gone', 'sunk', 0]]);
-    expect(summary).toBe('最新の更新：追加12、値の変更38、終了3、削除0');
+    expect(summary).toBe('前回の変更：追加12、値の変更38、終了3、削除0');
   });
 });
 

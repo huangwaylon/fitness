@@ -1,7 +1,7 @@
 // The gym bot's status as ボット's ジム tab reads it (status.ts): the payload checked, the verdict's tone and
 // words, the fact rows and 直近12時間's cells.
 import { describe, expect, it, vi } from 'vitest';
-import { checkStrip, factRows, fetchStatus, needsAttention, parseStatus, verdictView, type Check, type GymStatus } from './status.ts';
+import { checkStrip, factRows, fetchStatus, keyRow, needsAttention, parseStatus, reasonLines, verdictView, type Check, type GymStatus } from './status.ts';
 
 const TODAY = '2026-11-04';
 const at = (hm: string, day = TODAY) => Date.parse(`${day}T${hm}:00+09:00`);
@@ -49,20 +49,35 @@ describe('verdictView', () => {
   });
 });
 
-describe('factRows', () => {
-  const ids = (s: GymStatus) => factRows(s, TODAY).map((r) => r.id);
-  it('shows 最後の成功 only when it isn’t the last check, 連続失敗 only when there are any; くわしく: 最後の成功 while nothing fails, LINE', () => {
-    expect(ids(status())).toEqual(['last', 'next', 'line']);
-    expect(ids(status({ lastOk: at('10:00'), failures: 2 }))).toEqual(['last', 'next', 'ok', 'failures', 'line']);
-    const more = (s: GymStatus) => factRows(s, TODAY).filter((r) => r.more).map((r) => r.id);
-    expect([more(status({ lastOk: at('10:00') })), more(status({ lastOk: at('10:00'), failures: 2 }))]).toEqual([['ok', 'line'], ['line']]);
+describe('keyRow and factRows', () => {
+  const keys = (s: GymStatus) => Object.fromEntries(keyRow(s, NOW).map((k) => [k.id, [k.value, k.sub ?? null]]));
+  it('前回 with the last check’s outcome · 次回 with the interval · いま the open slots; 不調: 最後の成功', () => {
+    expect(keys(status())).toEqual({ last: ['11:54', '正常'], next: ['12:09ごろ', '15分ごと'], open: ['空き1件', null] });
+    const c = sample(NOW).checks;
+    expect(keys(status({ checks: [{ ...c[0], r: { training: 'ok', pilates: 'timeout' } }] })).last).toEqual(['11:54', '一部失敗']);
+    expect(keys(status({ checks: [{ ...c[0], r: { training: 'timeout', pilates: 'error' } }] })).last).toEqual(['11:54', '失敗']);
+    expect(keys(status({ checks: [c[4]] })).last).toEqual(['11:54', 'チェック日なし']);
+    expect(keys(status({ paused: true, nextCheck: null })).next).toEqual(['なし', '停止中']);
+    expect(keys(status({ lastCheck: at('23:10', '2026-11-03') })).last[0]).toBe('11/3（火）23:10');
+    expect(keys(status({ verdict: 'failing', reasons: ['site_failing'], lastOk: at('10:00') })).ok).toEqual(['10:00', null]);
   });
-  it('words the times and LINE’s count', () => {
-    const rows = Object.fromEntries(factRows(status({ lastCheck: at('11:54'), nextCheck: at('12:09'), lastOk: null, failures: 3 }), TODAY).map((r) => [r.id, r.value]));
-    expect(rows).toEqual({ last: '11:54', next: '12:09ごろ', ok: 'まだ', failures: '3回', line: '23 / 200' });
-    const line = (l: Partial<GymStatus['line']>) => factRows(status({ line: { ...status().line, ...l } }), TODAY).at(-1)!.value;
+  it('くわしく: 最後の成功 unless it’s the last check (or the key row has it), 連続失敗 when any, LINE, the mode in words, the version', () => {
+    const ids = (s: GymStatus) => factRows(s, NOW).map((r) => r.id);
+    expect(ids(status())).toEqual(['line', 'mode', 'sha']);
+    expect(ids(status({ lastOk: at('10:00'), failures: 2 }))).toEqual(['ok', 'failures', 'line', 'mode', 'sha']);
+    expect(ids(status({ verdict: 'failing', lastOk: at('10:00'), failures: 2, sha: null }))).toEqual(['failures', 'line', 'mode']);
+    const rows = Object.fromEntries(factRows(status({ lastOk: null, failures: 3 }), NOW).map((r) => [r.id, r.value]));
+    expect(rows).toEqual({ ok: 'まだ', failures: '3回', line: '23 / 200', mode: 'ボット', sha: 'abc1234' });
+    const line = (l: Partial<GymStatus['line']>) => factRows(status({ line: { ...status().line, ...l } }), NOW).find((r) => r.id === 'line')!.value;
     expect([line({ limit: null }), line({ used: null })]).toEqual(['23（上限なし）', '不明']);
-    expect(factRows(status({ nextCheck: null }), TODAY)[1].value).toBe('なし');
+  });
+  it('確認が必要: the reasons after the first, then what to do', () => {
+    expect(reasonLines(status({ verdict: 'degraded', reasons: ['program_failing'] }))).toEqual([]);
+    expect(reasonLines(status({ verdict: 'degraded', reasons: ['site_failing', 'quota_high'], failures: 2 }))).toEqual([
+      '今月のLINE送信数が上限に近づいています。', '間隔をあけて自動で再試行します。長く続くときは予約サイトの変更を疑ってください。', '月初まで、通知する日を減らすか間隔を長くしてください。'
+    ]);
+    expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] }), true).sentence).toBe('チェックは停止中です。再開すると、すぐに確認します。');
+    expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).sentence).toContain('LINE');
   });
 });
 
@@ -85,20 +100,22 @@ describe('checkStrip (直近12時間)', () => {
     expect(s.summary).toBe('直近12時間：確認48回、失敗0回、空きあり0回');
   });
 
-  it('red when a program failed, yellow when a slot was open, outlined when nothing was checked; each names its check', () => {
+  it('fail when both programs failed, warn when one did, avail when a slot was open, none when nothing was checked; each names its check', () => {
     const checks = every(12);
     checks[0] = check(checks[0].t, { open: 2 });
     checks[1] = check(checks[1].t, { r: { training: 'ok', pilates: 'timeout' }, push: 'failed' });
     checks[2] = check(checks[2].t, { idle: true, r: undefined });
-    const { cells, summary } = checkStrip(status({ checks }));
-    expect(cells.slice(-4).map((c) => c.state)).toEqual(['ok', 'none', 'fail', 'avail']);
+    checks[3] = check(checks[3].t, { r: { training: 'http_5xx', pilates: 'timeout' } });
+    const { cells, summary, line } = checkStrip(status({ checks }));
+    expect(cells.slice(-5).map((c) => c.state)).toEqual(['ok', 'fail', 'none', 'warn', 'avail']);
     expect(cells.at(-1)!.label).toBe('11:58 · トレーニング○ ピラティス○ · 空き2');
     expect(cells.at(-2)!.label).toBe('11:45 · トレーニング○ ピラティス✕（タイムアウト） · LINEへの通知に失敗');
     expect(cells.at(-3)!.label).toBe('11:26 · チェックする日なし');
     // before the 12 kept: nothing checked, said with the cell's own time
     expect(cells.slice(0, 36).every((c) => c.state === 'none')).toBe(true);
     expect(cells[0].label).toBe('00:00 · チェックなし');
-    expect(summary).toBe('直近12時間：確認11回、失敗1回、空きあり1回');
+    expect(summary).toBe('直近12時間：確認11回、失敗2回、空きあり1回');
+    expect(line).toBe('確認11回 · 失敗2 · 空き1');
   });
 
   it('a 🔎 tap beside an alarm shares its cell; a gap of n intervals (stopped, backing off) leaves n − 1 empty', () => {

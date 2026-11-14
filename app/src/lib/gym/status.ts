@@ -2,11 +2,11 @@
 // as it is (the verdict is decided there; checked with contract/guards.ts), a failed read logged as gym.fail (public:
 // no key, so not lib/keyed.ts), with the page's view helpers so GymPage stays thin (直近12時間: lib/strip.ts).
 import { t } from '#lib/i18n/index.ts';
-import { formatSyncTime } from '#lib/i18n/format.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
 import { chain, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
+import { timeOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/gym.ts';
 import '#lib/i18n/bots.ts';
 
@@ -95,30 +95,53 @@ export const fetchStatus = (signal?: AbortSignal, url = GYM_URL): Promise<Status
 const TONE: Record<Verdict, BotTone> = { healthy: 'good', degraded: 'warn', late: 'warn', failing: 'bad', broken: 'bad', stopped: 'idle', off: 'idle' };
 const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', degraded: 'trouble', late: 'late', failing: 'failing', broken: 'broken', stopped: 'stopped', off: 'off' };
 
-/** The verdict card: its tone, its word, and one plain sentence from the first reason. */
-export function verdictView(s: GymStatus): { tone: BotTone; w: BotWord; word: string; sentence: string } {
+/** The verdict card: its tone, its word, and one plain sentence from the first reason (`app`: the page can restart
+ *  the checks itself, so 停止中 points to 設定's switch rather than LINE's). */
+export function verdictView(s: GymStatus, app = false): { tone: BotTone; w: BotWord; word: string; sentence: string } {
   const r = s.reasons[0];
-  return { tone: TONE[s.verdict], w: WORD[s.verdict], word: t(`bots.w.${WORD[s.verdict]}`), sentence: t(`gym.reason.${r ?? 'none'}`, { n: s.failures }) };
+  const key = r === 'paused' && app ? 'pausedApp' : (r ?? 'none');
+  return { tone: TONE[s.verdict], w: WORD[s.verdict], word: t(`bots.w.${WORD[s.verdict]}`), sentence: t(`gym.reason.${key}`, { n: s.failures }) };
 }
 
-/** 確認が必要's lines: every reason in words. */
-export const reasonLines = (s: GymStatus): string[] => [...new Set(s.reasons.map((r) => t(`gym.reason.${r}`, { n: s.failures })))];
+/** What a person can do about a reason (gym/README.md's 「Do」), when there's something. */
+const DO: readonly Reason[] = ['mode_off', 'no_alarm', 'no_group', 'webhook_wrong', 'site_failing', 'push_retry', 'quota_high'];
+
+/** 確認が必要's lines: the reasons after the first (the sentence says that one), then what to do. */
+export const reasonLines = (s: GymStatus): string[] =>
+  [...new Set([...s.reasons.slice(1).map((r) => t(`gym.reason.${r}`, { n: s.failures })), ...s.reasons.filter((r) => DO.includes(r)).map((r) => t(`gym.do.${r}`))])];
 
 /** ボット's dot (the menu's pill, the ジム tab): 不調, 要対応 or 遅れ. */
 export const needsAttention = (s: GymStatus): boolean => TONE[s.verdict] === 'bad' || s.verdict === 'late';
 
-const at = (ms: number | null, today: string): string => formatSyncTime(ms === null ? null : new Date(ms), today);
+const at = (ms: number | null, now: number): string => (ms === null ? t('bots.key.never') : timeOf(ms, now));
 
-/** The fact rows under the strip: 最後の成功 only when it isn't the last check, 連続失敗 only when there are any; 最後の成功
- *  (while nothing fails) and LINE's count under くわしく (`more`). */
-export function factRows(s: GymStatus, today: string): { id: string; label: string; value: string; more?: boolean }[] {
+/** A check's outcome in a word: 正常, 一部失敗 (one program), 失敗 (both), チェック日なし (an alarm with no day). */
+const outcomeOf = (c: Check): string => (!c.r ? t('gym.key.idle') : !failed(c) ? t('gym.key.ok') : allFailed(c) ? t('gym.key.failed') : t('gym.key.partial'));
+
+/** The key row (docs/design.md "Bots"): 前回 (the last check, what came of it) · 次回 (the alarm, the interval; なし
+ *  while stopped) · いま (the open slots the last check saw; 不調: 最後の成功). */
+export function keyRow(s: GymStatus, now: number): { id: string; label: string; value: string; sub?: string }[] {
+  const c = s.checks[0];
+  const bad = TONE[s.verdict] === 'bad';
+  return [
+    { id: 'last', label: t('bots.key.last'), value: at(s.lastCheck, now), ...(c && s.lastCheck !== null ? { sub: outcomeOf(c) } : {}) },
+    s.nextCheck === null || s.paused
+      ? { id: 'next', label: t('bots.key.next'), value: t('gym.none'), ...(s.paused ? { sub: t('gym.ctl.off') } : {}) }
+      : { id: 'next', label: t('bots.key.next'), value: t('bots.key.about', { time: timeOf(s.nextCheck, now) }), sub: t('gym.ctl.every', { n: s.intervalMin }) },
+    bad ? { id: 'ok', label: t('bots.key.lastOk'), value: at(s.lastOk, now) } : { id: 'open', label: t('gym.key.now'), value: t('gym.key.open', { n: c?.r ? c.open : 0 }) }
+  ];
+}
+
+/** くわしく: 最後の成功 (unless it's the last check, or the key row has it), 連続失敗 (when any), LINE's count, the mode
+ *  and the version. */
+export function factRows(s: GymStatus, now: number): { id: string; label: string; value: string }[] {
   const { used, limit } = s.line;
   return [
-    { id: 'last', label: t('gym.lastCheck'), value: at(s.lastCheck, today) },
-    { id: 'next', label: t('gym.next'), value: s.nextCheck === null ? t('gym.none') : t('gym.nextAt', { time: at(s.nextCheck, today) }) },
-    ...(s.lastOk !== s.lastCheck ? [{ id: 'ok', label: t('gym.lastOk'), value: at(s.lastOk, today), more: s.failures === 0 }] : []),
+    ...(s.lastOk !== s.lastCheck && TONE[s.verdict] !== 'bad' ? [{ id: 'ok', label: t('bots.key.lastOk'), value: at(s.lastOk, now) }] : []),
     ...(s.failures > 0 ? [{ id: 'failures', label: t('gym.failures'), value: t('gym.failuresN', { n: s.failures }) }] : []),
-    { id: 'line', label: t('gym.line'), value: used === null ? t('gym.unknown') : limit === null ? t('gym.lineNoLimit', { used }) : t('gym.lineOf', { used, limit }), more: true }
+    { id: 'line', label: t('gym.line'), value: used === null ? t('gym.unknown') : limit === null ? t('gym.lineNoLimit', { used }) : t('gym.lineOf', { used, limit }) },
+    { id: 'mode', label: t('bots.fact.mode'), value: t(`gym.mode.${s.mode}`) },
+    ...(s.sha ? [{ id: 'sha', label: t('bots.fact.sha'), value: s.sha.slice(0, 7) }] : [])
   ];
 }
 
@@ -140,22 +163,23 @@ function checkText(c: Check): string {
 }
 
 const failed = (c: Check): boolean => !!c.r && PROGRAMS.some((p) => c.r![p] !== 'ok');
+const allFailed = (c: Check): boolean => !!c.r && PROGRAMS.every((p) => c.r![p] !== 'ok');
 
 /** The last 12 hours, oldest first: one cell an interval (`intervalMin`; 15 min: 48 cells, at most STRIP_MAX), the
- *  checks in turn (lib/strip.ts chain: a check's jitter leaves no false gap); red when a program failed, else yellow
- *  when a slot was open, else green; outlined when nothing was checked (stopped, backed off, an alarm with no day to
- *  check, or before the kept checks). With its ticks (every 3 hours, Tokyo) and its line for VoiceOver:
- *  「直近12時間：確認46回、失敗1回、空きあり3回」 (the checks that fetched). */
-export function checkStrip(s: GymStatus): { cells: StripCell[]; ticks: StripTick[]; summary: string } {
+ *  checks in turn (lib/strip.ts chain: a check's jitter leaves no false gap); fail when both programs failed, warn when
+ *  one did, else avail when a slot was open, else ok; none when nothing was checked (stopped, backed off, an alarm
+ *  with no day to check, or before the kept checks). With its ticks (every 3 hours, Tokyo), its line for VoiceOver
+ *  「直近12時間：確認46回、失敗1回、空きあり3回」 (the checks that fetched) and the one under it 「確認46回 · 失敗1 · 空き3」. */
+export function checkStrip(s: GymStatus): { cells: StripCell[]; ticks: StripTick[]; summary: string; line: string; width: number } {
   const width = (s.intervalMin > 0 ? s.intervalMin : 15) * MIN_MS;
   const count = Math.min(STRIP_MAX, Math.ceil(SPAN_MS / width));
   const slots = chain(s.checks, (c) => c.t, s.now, width, count);
   const cells = slots.map(({ start, end, items }): StripCell => {
     const done = items.filter((c) => c.r);
-    const state: CellState = !done.length ? 'none' : done.some(failed) ? 'fail' : done.some((c) => c.open > 0) ? 'avail' : 'ok';
+    const state: CellState = !done.length ? 'none' : done.some(allFailed) ? 'fail' : done.some(failed) ? 'warn' : done.some((c) => c.open > 0) ? 'avail' : 'ok';
     return { start, end, state, label: items.length ? items.map(checkText).join(' / ') : `${hhmm(start)} · ${t('gym.strip.none')}` };
   });
   const done = slots.flatMap((x) => x.items).filter((c) => c.r);
-  const summary = t('gym.strip.summary', { n: done.length, fails: done.filter(failed).length, avail: done.filter((c) => c.open > 0).length });
-  return { cells, ticks: stripTicks(cells, 3 * 3600_000), summary };
+  const n = { n: done.length, fails: done.filter(failed).length, avail: done.filter((c) => c.open > 0).length };
+  return { cells, ticks: stripTicks(cells, 3 * 3600_000), summary: t('gym.strip.summary', n), line: t('gym.strip.line', n), width: width / MIN_MS };
 }

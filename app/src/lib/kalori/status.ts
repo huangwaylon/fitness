@@ -9,6 +9,7 @@ import { isNum, isRec, isText } from '#lib/contract/guards.ts';
 import type { CellState, StripCell, StripTick } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
+import { dayOf, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/kalori.ts';
 import '#lib/i18n/bots.ts';
 
@@ -24,9 +25,14 @@ interface Run {
   startedAt: number; endedAt: number | null; shardsDone: number; shardsTotal: number;
 }
 interface DatasetInfo { tag: string; date: string | null; url: string | null; items: number | null; shops: number | null; ended: number | null }
+/** A gate the merge failed (kalori_status.py writes the failed band rows): its reason code, the gate's key (gone,
+ *  renamed, items, shops, …), its share and limit (null for the shop and drop counts, or without a base). */
+interface Tripped { code: string; key: string; share: number | null; limit: number | null }
 export interface Diff {
   added: number; gone: number; renamed: number; valuesChanged: number; estChanged: number; endedChanged: number; itemsDelta: number;
   shares: Partial<Record<ShareKey, number>>; limits: Partial<Record<ShareKey, number>>;
+  /** null: a file from before the gates wrote it. */
+  tripped: Tripped[] | null;
 }
 interface Coverage { complete: boolean; fetched: number | null; discovered: number | null; shopsTracked: number | null; noNutrition: number | null; failed: number | null }
 interface Merge { sha: string | null; deploy: Deploy | null; pr: string | null }
@@ -50,8 +56,8 @@ export interface KaloriStatus {
 
 /** The raw file (a fork or e2e passes its own). vite.config.ts's CSP allows the host. */
 const KALORI_STATUS_URL = 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json';
-/** The workflow the foot names. */
-export const WORKFLOW = 'kalori-scrape.yml';
+/** The workflow くわしく names. */
+const WORKFLOW = 'kalori-scrape.yml';
 
 const VERDICTS: readonly Verdict[] = ['healthy', 'running', 'held', 'failing', 'late', 'none'];
 const RESULTS: readonly RunResult[] = ['published', 'held', 'failed', 'running', 'cancelled'];
@@ -85,6 +91,13 @@ function parseRun(x: unknown, now: number): Run | null {
   };
 }
 
+const BAND_KEYS = ['added', 'gone', 'values', 'est', 'ended', 'renamed', 'items', 'shops', 'drops'];
+function parseTripped(x: unknown): Tripped[] | null {
+  if (!Array.isArray(x)) return null;
+  return x.flatMap((r): Tripped[] => isRec(r) && typeof r.code === 'string' && (REASONS as readonly string[]).includes(r.code) && BAND_KEYS.includes(r.key as string)
+    ? [{ code: r.code, key: r.key as string, share: num(r.share), limit: num(r.limit) }] : []);
+}
+
 function parseShares(x: unknown): Partial<Record<ShareKey, number>> {
   const o: Partial<Record<ShareKey, number>> = {};
   if (isRec(x)) for (const k of SHARE_KEYS) if (isNum(x[k])) o[k] = x[k];
@@ -114,7 +127,8 @@ export function parseStatus(x: unknown, now = Date.now()): KaloriStatus | null {
     diff: isRec(f)
       ? {
           added: num(f.added) ?? 0, gone: num(f.gone) ?? 0, renamed: num(f.renamed) ?? 0, valuesChanged: num(f.valuesChanged) ?? 0, estChanged: num(f.estChanged) ?? 0,
-          endedChanged: num(f.endedChanged) ?? 0, itemsDelta: num(f.itemsDelta) ?? 0, shares: parseShares(f.shares), limits: parseShares(f.limits)
+          endedChanged: num(f.endedChanged) ?? 0, itemsDelta: num(f.itemsDelta) ?? 0, shares: parseShares(f.shares), limits: parseShares(f.limits),
+          tripped: parseTripped(f.tripped)
         }
       : null,
     coverage: isRec(c)
@@ -137,35 +151,15 @@ export const fetchStatus = (signal?: AbortSignal, url = KALORI_STATUS_URL): Prom
 // ---- Time, Tokyo's ----
 const DAY_MS = 86_400_000;
 const WEEK_MS = 7 * DAY_MS;
-const TOKYO_MS = 9 * 3600_000;
 /** 遅れ: the scheduled run this long overdue with no newer one. */
 const LATE_MS = DAY_MS;
 /** The dot on its own: the scheduled run this long overdue, whatever the file says. */
 const STALE_MS = 2 * DAY_MS;
 
-/** Tokyo's day of `ms` (the foot's today). */
-export const tokyoDay = (ms: number): string => new Date(ms + TOKYO_MS).toISOString().slice(0, 10);
-/** `2:41`. */
-const clock = (ms: number): string => {
-  const d = new Date(ms + TOKYO_MS);
-  return `${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
-};
-/** `11/14`. */
-const md = (ms: number): string => {
-  const d = new Date(ms + TOKYO_MS);
-  return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
-};
-/** `11/14（土）` / `Sat 11/14`. */
-const mdw = (ms: number): string => t('kalori.fmt.day', { md: md(ms), wd: t(`weekday.${new Date(ms + TOKYO_MS).getUTCDay() || 7}`) });
-/** A `YYYY-MM-DD` as mdw. */
-const dayOf = (d: string): string => mdw(Date.parse(`${d}T12:00:00+09:00`));
-/** `11/18（水）2:41` / `Wed 11/18 2:41`. */
-const when = (ms: number): string => t('kalori.fmt.when', { day: mdw(ms), time: clock(ms) });
-/** `4時間12分` / `4 h 12 min`; under an hour `38分`. */
-function duration(ms: number): string {
-  const m = Math.max(0, Math.round(ms / 60_000));
-  return m >= 60 ? t('kalori.fmt.hm', { h: Math.floor(m / 60), m: m % 60 }) : t('kalori.fmt.m', { m });
-}
+/** A `YYYY-MM-DD` as `11/4（水）` (lib/i18n/when.ts). */
+const dateText = (d: string): string => dayOf(Date.parse(`${d}T12:00:00+09:00`));
+/** `4時間12分`; under an hour `38分`. */
+const duration = (ms: number): string => durationOf(ms, false);
 const pct = (f: number): string => `${(Math.round(f * 1000) / 10).toFixed(1)}%`;
 
 // ---- The page's view ----
@@ -186,44 +180,44 @@ const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', running: 'fetching'
 export const needsAttention = (s: KaloriStatus, now: number): boolean =>
   ['held', 'failing', 'late'].includes(verdictOf(s, now)) || s.alert !== null || overdue(s, now, STALE_MS);
 
-const BAND_KEY: Record<string, ShareKey | null> = {
-  band_added: 'added', band_gone: 'gone', band_values: 'valuesChanged', band_est: 'estChanged',
-  band_ended: null, band_items: null, band_shops: null, band_drops: null
-};
 const isBand = (r: string): boolean => r.startsWith('band_');
 /** The bands of the changes themselves (保留's 変更が多すぎる); the others (item and shop counts, drops): いつもと違う. */
 const CHANGE_BANDS = new Set(['band_added', 'band_gone', 'band_values', 'band_est', 'band_ended']);
 
-/** A band's line: 「削除 2.1%・上限1.5%」 (its share against its limit, when the diff has both), else its word. */
-function bandText(s: KaloriStatus, r: string): string {
-  const word = t(`kalori.band.${r.slice(5)}`);
-  const k = BAND_KEY[r];
-  const share = k ? s.diff?.shares[k] : undefined, limit = k ? s.diff?.limits[k] : undefined;
-  return share === undefined || limit === undefined ? word : t('kalori.band.line', { word, share: pct(share), limit: pct(limit) });
+/** The gates that tripped: the file's (`diff.tripped`, the failed rows), else the band reasons without figures (a
+ *  file from before it: never a share that isn't the one that tripped). */
+const trippedOf = (s: KaloriStatus): Tripped[] =>
+  s.diff?.tripped ?? s.reasons.filter(isBand).map((code) => ({ code, key: code.slice(5), share: null, limit: null }));
+
+/** A tripped gate's line: 「削除 2.1%・上限1.5%」 (its share against its limit), else its word. */
+function bandText(b: Tripped): string {
+  const word = t(`kalori.band.${b.key}`);
+  return b.share === null || b.limit === null ? word : t('kalori.band.line', { word, share: pct(b.share), limit: pct(b.limit) });
 }
 
-/** A reason in words: a band's line, else its sentence (`limits` with the rounds run, `late` with the run's time). */
+/** A reason in words: its sentence (`limits` with the rounds run, `late` with the run's time); a band's, its tripped
+ *  gates' lines. */
 export function reasonText(s: KaloriStatus, r: string): string {
-  if (isBand(r)) return bandText(s, r);
-  return t(`kalori.reason.${r}`, { n: s.run?.round ?? 1, time: s.next === null ? t('kalori.unknown') : when(s.next) });
+  if (isBand(r)) return trippedOf(s).filter((b) => b.code === r).map(bandText).join('、') || t(`kalori.band.${r.slice(5)}`);
+  return t(`kalori.reason.${r}`, { n: s.run?.round ?? 1, time: s.next === null ? t('kalori.unknown') : whenOf(s.next) });
 }
 
 /** The accepted data's day, in words (the dataset's date, else the tag's). */
 const dataDay = (s: KaloriStatus): string => {
   const d = s.dataset?.date ?? s.dataset?.tag.match(/\d{4}-\d{2}-\d{2}/)?.[0];
-  return d ? dayOf(d) : t('kalori.unknown');
+  return d ? dateText(d) : t('kalori.unknown');
 };
 
 /** The verdict card: its tone, its word, and one plain sentence. */
 export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: BotWord; word: string; sentence: string; verdict: Verdict } {
   const v = verdictOf(s, now);
-  const nextAt = s.next === null ? t('kalori.unknown') : when(s.next);
-  const bands = s.reasons.filter(isBand);
+  const nextAt = s.next === null ? t('kalori.unknown') : whenOf(s.next);
+  const bands = trippedOf(s);
   const first = s.reasons.find((r) => !isBand(r));
   const sentence =
     v === 'healthy' ? t('kalori.say.healthy', { date: dataDay(s) })
     : v === 'running' ? t('kalori.say.running', { n: s.run?.round ?? 1, d: s.run?.shardsDone ?? 0, total: s.run?.shardsTotal ?? 20 })
-    : v === 'held' ? (bands.length ? t(bands.every((b) => CHANGE_BANDS.has(b)) ? 'kalori.say.held' : 'kalori.say.heldOdd', { what: bands.map((b) => bandText(s, b)).join('、'), date: dataDay(s) })
+    : v === 'held' ? (bands.length ? t(bands.every((b) => CHANGE_BANDS.has(b.code)) ? 'kalori.say.held' : 'kalori.say.heldOdd', { what: bands.map(bandText).join('、'), date: dataDay(s) })
       : first ? reasonText(s, first) : t('kalori.say.heldPlain', { date: dataDay(s) }))
     : v === 'late' ? t('kalori.reason.late', { time: nextAt })
     : v === 'failing' ? (first ? reasonText(s, first) : t('kalori.reason.crash'))
@@ -231,26 +225,42 @@ export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: B
   return { tone: TONE[v], w: WORD[v], word: t(`bots.w.${WORD[v]}`), sentence, verdict: v };
 }
 
-/** 確認が必要's lines: each reason in words (a band's line among them), else the alert's own text; 遅れ by the app's
- *  clock alone has its sentence. */
-function alertLines(s: KaloriStatus, now: number): string[] {
-  const lines = s.reasons.map((r) => reasonText(s, r));
-  if (!lines.length && s.alert) lines.push(s.alert.text);
-  if (!lines.length && verdictOf(s, now) === 'late') lines.push(verdictView(s, now).sentence);
-  return [...new Set(lines)];
-}
-
-/** The card shows while it's 保留 or 不調, or an alert stands. Its links: the run, the PR (each when there's one). */
-export function alertCard(s: KaloriStatus, now: number): { lines: string[]; run: string | null; pr: string | null } | null {
+/** 確認が必要, only for what the verdict's sentence doesn't say: held with a PR, the step (look at it, merge by hand)
+ *  and the PR's link; the reasons the sentence leaves out (a band's line among them); an alert's own text when no
+ *  reason words it. Null when there's nothing more (遅れ, a plain 不調: the sentence says it). */
+export function alertCard(s: KaloriStatus, now: number): { lines: string[]; pr: string | null } | null {
   const v = verdictOf(s, now);
   if (v !== 'held' && v !== 'failing' && !s.alert) return null;
-  return { lines: alertLines(s, now), run: s.alert?.runUrl ?? s.run?.url ?? null, pr: s.alert?.prUrl ?? s.merge?.pr ?? null };
+  const said = verdictView(s, now).sentence;
+  const pr = v === 'held' ? (s.alert?.prUrl ?? s.merge?.pr ?? null) : null;
+  const rest = s.reasons.filter((r) => !(v === 'held' && isBand(r))).map((r) => reasonText(s, r)).filter((l) => !said.includes(l));
+  if (!s.reasons.length && s.alert && !said.includes(s.alert.text)) rest.push(s.alert.text);
+  const lines = [...(pr ? [t('kalori.attn.merge')] : []), ...new Set(rest)];
+  return lines.length || pr ? { lines, pr } : null;
 }
 
-/** 前回's run: 「11/14（土）2:41 · 4時間12分 · 公開」 (a run under way: its time so far). */
-function lastRun(r: Run, now: number): string {
-  const ms = (r.endedAt ?? now) - r.startedAt;
-  return [when(r.startedAt), duration(ms), t(`kalori.result.${r.result}`)].join(' · ');
+/** The verdict's one action: the run, while there's one worth a look (取得中, 保留, 不調), else null. */
+export const runLink = (s: KaloriStatus, now: number): string | null =>
+  ['running', 'held', 'failing'].includes(verdictOf(s, now)) ? (s.alert?.runUrl ?? s.run?.url ?? null) : null;
+
+/** The key row (docs/design.md "Bots"): 前回 (the newest run kept, with what came of it: the deploy's failure or
+ *  revert, else its result; a run under way doesn't count yet) · 次回 · 品目 (the accepted data's; 不調: 最後の成功, the
+ *  newest merged run). */
+export function keyRow(s: KaloriStatus, now: number): { id: string; label: string; value: string; sub?: string }[] {
+  const h = s.history.at(-1);
+  const d = s.merge?.deploy;
+  const out = h && (d === 'failed' || d === 'reverted') ? t(`kalori.key.${d}`) : h ? t(`kalori.strip.${h.result}`) : undefined;
+  const ok = s.history.findLast((w) => w.result === 'merged');
+  const third = verdictOf(s, now) === 'failing'
+    ? { id: 'ok', label: t('bots.key.lastOk'), value: ok ? timeOf(ok.t, now) : t('bots.key.never') }
+    : s.dataset?.items != null
+      ? { id: 'items', label: t('kalori.fact.items'), value: t('kalori.items', { n: formatNum(s.dataset.items) }), ...(s.dataset.shops === null ? {} : { sub: t('kalori.shops', { n: formatNum(s.dataset.shops) }) }) }
+      : null;
+  return [
+    { id: 'last', label: t('bots.key.last'), value: h ? timeOf(h.t, now) : t('bots.key.never'), ...(out ? { sub: out } : {}) },
+    { id: 'next', label: t('bots.key.next'), value: s.next === null ? t('kalori.unknown') : t('bots.key.about', { time: timeOf(s.next, now) }) },
+    ...(third ? [third] : [])
+  ];
 }
 
 /** 網羅: 完了, else what was fetched of what was found, and the failures. */
@@ -261,27 +271,27 @@ function coverageText(c: Coverage): string {
   return parts.join(' · ');
 }
 
-export interface Fact { id: string; label: string; value: string; href?: string; more?: boolean }
+export interface Fact { id: string; label: string; value: string; href?: string }
 
-/** The fact rows: 前回, 次回, データ (the release), 品目, 網羅, 実行; under くわしく ラウンド, 変更率, PR, デプロイ. Each only
- *  when the file has it. */
+/** くわしく: データ (the release), 網羅, 実行 (unless the verdict's action opens it), 所要時間, ラウンド, 変更率 (unless
+ *  保留 names the gates), PR (unless 確認が必要 opens it), デプロイ, the workflow. Each only when the file has it. */
 export function factRows(s: KaloriStatus, now: number): Fact[] {
   const { run, dataset: d, diff, coverage: c, merge: m } = s;
+  const held = verdictOf(s, now) === 'held';
   const rates = diff ? SHARE_KEYS.filter((k) => diff.shares[k] !== undefined).map((k) => {
     const lim = diff.limits[k];
     return lim === undefined ? `${t(`kalori.change.${k}`)} ${pct(diff.shares[k]!)}` : t('kalori.band.line', { word: t(`kalori.change.${k}`), share: pct(diff.shares[k]!), limit: pct(lim) });
   }) : [];
   const rows: (Fact | null)[] = [
-    run ? { id: 'last', label: t('kalori.fact.last'), value: lastRun(run, now) } : null,
-    { id: 'next', label: t('kalori.fact.next'), value: s.next === null ? t('kalori.unknown') : t('kalori.nextAt', { day: mdw(s.next), time: clock(s.next) }) },
     d ? { id: 'data', label: t('kalori.fact.data'), value: d.tag, ...(d.url ? { href: d.url } : {}) } : null,
-    d && d.items !== null ? { id: 'items', label: t('kalori.fact.items'), value: [t('kalori.items', { n: formatNum(d.items) }), ...(d.shops === null ? [] : [t('kalori.shops', { n: formatNum(d.shops) })])].join(' · ') } : null,
     c ? { id: 'coverage', label: t('kalori.fact.coverage'), value: coverageText(c) } : null,
-    run ? { id: 'run', label: t('kalori.fact.run'), value: `#${run.id}`, ...(run.url ? { href: run.url } : {}) } : null,
-    run ? { id: 'rounds', label: t('kalori.fact.rounds'), value: t('kalori.roundsN', { n: run.round }), more: true } : null,
-    rates.length ? { id: 'rate', label: t('kalori.fact.rate'), value: rates.join('、'), more: true } : null,
-    m?.pr ? { id: 'pr', label: t('kalori.fact.pr'), value: `#${m.pr.match(/\/pull\/(\d+)/)?.[1] ?? 'PR'}`, href: m.pr, more: true } : null,
-    m?.deploy ? { id: 'deploy', label: t('kalori.fact.deploy'), value: t(`kalori.deploy.${m.deploy}`), more: true } : null
+    run && !runLink(s, now) ? { id: 'run', label: t('kalori.fact.run'), value: `#${run.id}`, ...(run.url ? { href: run.url } : {}) } : null,
+    run ? { id: 'took', label: t('kalori.fact.took'), value: duration((run.endedAt ?? now) - run.startedAt) } : null,
+    run ? { id: 'rounds', label: t('kalori.fact.rounds'), value: t('kalori.roundsN', { n: run.round }) } : null,
+    rates.length && !held ? { id: 'rate', label: t('kalori.fact.rate'), value: rates.join('、') } : null,
+    m?.pr && !held ? { id: 'pr', label: t('kalori.fact.pr'), value: `#${m.pr.match(/\/pull\/(\d+)/)?.[1] ?? 'PR'}`, href: m.pr } : null,
+    m?.deploy ? { id: 'deploy', label: t('kalori.fact.deploy'), value: t(`kalori.deploy.${m.deploy}`) } : null,
+    { id: 'workflow', label: t('bots.fact.workflow'), value: WORKFLOW }
   ];
   return rows.filter((r): r is Fact => r !== null);
 }
@@ -301,19 +311,19 @@ export function changeParts(d: Diff): { parts: { id: string; tone: 'leaf' | 'yuz
 const WEEKS = 8;
 /** A week's cell begins this long before its scheduled run (a dispatch a little early stays in its week). */
 const LEAD_MS = DAY_MS / 2;
-const CELL: Record<WeekResult, CellState> = { merged: 'ok', held: 'avail', failed: 'fail', none: 'none' };
+const CELL: Record<WeekResult, CellState> = { merged: 'ok', held: 'warn', failed: 'fail', none: 'none' };
 
 /** A run's part of its cell's line: 「11/14（土）· 公開 · 追加12 値38 終了3 · 4時間12分」. */
 function weekText(w: Week): string {
   const counts = w.result === 'none' ? [] : [t('kalori.strip.counts', { a: formatNum(w.added), v: formatNum(w.valuesChanged), e: formatNum(w.endedChanged) })];
-  return t('kalori.fmt.lead', { day: mdw(w.t), rest: [t(`kalori.strip.${w.result}`), ...counts, ...(w.ms ? [duration(w.ms)] : [])].join(' · ') });
+  return t('kalori.fmt.lead', { day: dayOf(w.t), rest: [t(`kalori.strip.${w.result}`), ...counts, ...(w.ms ? [duration(w.ms)] : [])].join(' · ') });
 }
 
 /** The last 8 weeks, oldest first, a cell each, around the Wednesday run (`next`, stepped a week at a time until the
- *  newest cell holds `now`): green 公開, yellow full height 保留, red hatched 失敗, outlined no run (each week's newest
+ *  newest cell holds `now`): green 公開, yellow capped 保留, coral hatched 失敗, a low tick no run (each week's newest
  *  run decides it; all of them are named in its line). Ticks every other week (the run's day); VoiceOver's line
- *  「直近8週：公開7回、保留1回、失敗0回」. */
-export function weekStrip(s: KaloriStatus, now: number): { cells: StripCell[]; ticks: StripTick[]; summary: string } {
+ *  「直近8週：公開7回、保留1回、失敗0回」, the one under it 「公開7 · 保留1 · 失敗0」. */
+export function weekStrip(s: KaloriStatus, now: number): { cells: StripCell[]; ticks: StripTick[]; summary: string; line: string } {
   // the first week's end past now, on the run's weekly grid (arithmetic: never a loop over the file's numbers)
   const base = (s.next ?? now) - LEAD_MS;
   const end = base + (Math.floor((now - base) / WEEK_MS) + 1) * WEEK_MS;
@@ -323,10 +333,11 @@ export function weekStrip(s: KaloriStatus, now: number): { cells: StripCell[]; t
     const last = runs.at(-1);
     return {
       start, end: stop, state: last ? CELL[last.result] : 'none',
-      label: runs.length ? runs.map(weekText).join(' / ') : t('kalori.fmt.lead', { day: mdw(start + LEAD_MS), rest: t('kalori.strip.none') })
+      label: runs.length ? runs.map(weekText).join(' / ') : t('kalori.fmt.lead', { day: dayOf(start + LEAD_MS), rest: t('kalori.strip.none') })
     };
   });
   const count = (st: CellState) => cells.filter((c) => c.state === st).length;
-  const ticks = cells.flatMap((c, i) => ((WEEKS - 1 - i) % 2 === 0 ? [{ i, label: md(c.start + LEAD_MS) }] : []));
-  return { cells, ticks, summary: t('kalori.strip.summary', { ok: count('ok'), held: count('avail'), failed: count('fail') }) };
+  const ticks = cells.flatMap((c, i) => ((WEEKS - 1 - i) % 2 === 0 ? [{ i, label: mdOf(c.start + LEAD_MS) }] : []));
+  const n = { ok: count('ok'), held: count('warn'), failed: count('fail') };
+  return { cells, ticks, summary: t('kalori.strip.summary', n), line: t('kalori.strip.line', n) };
 }

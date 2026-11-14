@@ -1,9 +1,10 @@
-// The bots' status strip (components/bots/StatusStrip.svelte: 保養所's 直近1時間, ジム's 直近12時間): a row of slots,
-// oldest first, each ok (green), avail (yellow: a room or a slot open), fail (red, hatched) or none (outlined: nothing
-// checked then), with its line for a tap and VoiceOver. Pure: the pages make the cells (its/view.ts, gym/status.ts),
+// The bots' history strip (components/bots/StatusStrip.svelte: 保養所's 直近1時間, ジム's 直近12時間, メニュー's 直近8週): a
+// row of slots, oldest first, each ok (green), avail (green, full height: a room or a slot open), warn (yellow, capped:
+// a part failed, 保留), fail (coral, hatched: all failed) or none (a low tick: nothing checked then), with its line for a
+// tap and VoiceOver. Pure: the pages make the cells (its/view.ts, gym/status.ts),
 // these place them. (The verdict's tone: lib/bots/types.ts BotTone.)
 
-export type CellState = 'ok' | 'avail' | 'fail' | 'none';
+export type CellState = 'ok' | 'avail' | 'warn' | 'fail' | 'none';
 /** One slot: [start, end) in ms, its state, and its line (a tap names it; its button's label). */
 export interface StripCell { start: number; end: number; state: CellState; label: string }
 /** A time under the strip, at its cell's index. */
