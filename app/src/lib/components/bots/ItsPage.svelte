@@ -246,7 +246,12 @@
     // a write gets the client's timeout only: a tab switch or a close never cuts it off (its answer still sets the dot)
     const r = await putSettings(toInput(draft, base, sceneNow().getTime()));
     saving = false;
-    if (life.aborted) return void (r.status && accept('its', r.status, driver));
+    // the sheet closed meanwhile: its answer still sets the dot; a failure is said in a toast (as ジム's acts)
+    if (life.aborted) {
+      if (r.status) accept('its', r.status, driver);
+      if (!r.ok) toasts.show(saveError(r.err));
+      return;
+    }
     if (r.ok) {
       draft = start = null;
       addWhy = null;
@@ -265,9 +270,10 @@
     running = true;
     const r: ItsReply = await postRun(action);
     running = false;
-    if (life.aborted) return void (r.ok && accept('its', r.status, driver));
+    const why = t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed');
+    if (life.aborted) return void (r.ok ? accept('its', r.status, driver) : toasts.show(why));
     if (r.ok) take(r.status);
-    runWhy = r.ok ? null : t(action === 'start' ? 'its.ctl.startFailed' : 'its.ctl.stopFailed');
+    runWhy = r.ok ? null : why;
     if (!r.ok) cue('boop');
     poll.schedule();
   }

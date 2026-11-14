@@ -396,6 +396,18 @@ test('開始 needs a stay: without one it is disabled and says so', async ({ pag
   await expect(its.locator('[data-its-date]')).toHaveCount(0);
 });
 
+test('停止 failing after the sheet closed: said in a toast (the page is gone)', async ({ page, context }) => {
+  let release: (() => void) | null = null;
+  const held = new Promise<void>((r) => (release = r));
+  const { sheet, its } = await phone(page, context, 'A', (c) => (c.path === '/its/run' ? held.then(() => ({ status: 500, body: { ok: false } })) : undefined));
+  await open(sheet);
+  await runAct(page, its, 'stop');
+  await page.locator('dialog[open] .navbar button.nav.close').click();
+  await expect(sheet).toHaveCount(0);
+  release!();
+  await expect(page.locator('.banner')).toContainText('停止できませんでした');
+});
+
 test('a read in flight as 保存 goes is let go: its older answer never replaces the saved settings', async ({ page, context }) => {
   let release: (() => void) | null = null;
   let held = false;
