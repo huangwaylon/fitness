@@ -117,6 +117,7 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [world3d-assets.md](docs/world3d-assets.md) | The 3D model and texture pipeline (NH models → GLB/KTX2) |
 | [players.md](docs/players.md) | The players' looks: the look's fields and defaults, the closet, portraits, the すがた dresser |
 | [farming.md](docs/farming.md) | The fields: rules, balance, the record's ops, how it plays |
+| [bots.md](docs/bots.md) | The ボット sheet: tabs, dots, reads, the bot page, the calendars |
 | [food-data.md](docs/food-data.md) | ごはん's food catalog and pictures: sources, build, shipping |
 | [sound-sync.md](docs/sound-sync.md) | How music and sounds stay in step across phones |
 | [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, 旅行, 結婚式, 登山 |
