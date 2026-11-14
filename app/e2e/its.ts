@@ -6,7 +6,7 @@ import { ROSTER } from '../src/lib/its/roster.ts';
 
 export const ORIGIN = 'https://its-bot.island-fund-relay.workers.dev';
 const HEADERS = 'Authorization, Content-Type, X-Request-Id';
-export const cors = (allow = HEADERS) => ({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, PUT, POST', 'Access-Control-Allow-Headers': allow });
+export const cors = () => ({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, PUT, POST', 'Access-Control-Allow-Headers': HEADERS });
 
 export type Status = ItsStatus;
 

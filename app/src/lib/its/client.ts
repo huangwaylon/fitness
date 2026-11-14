@@ -2,12 +2,8 @@
 // POST /its/run and the push routes (POST /its/push/*: lib/its/push.ts), each with this phone's member key (a guest's is refused there; the page never asks for the guest).
 // Answers are checked (parseStatus, on contract/guards.ts: another version, a proxy's page or garbage is null); a call
 // never throws, and a failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id;
-// never the key). Its own fetch, not lib/keyed.ts: the request id and its one retry without it, a 409's status in the
-// body, and its.fail's code and rid, which keyed.fail doesn't carry.
-// Each call carries an `X-Request-Id` (the Worker logs it as `rid=`); a Worker from before it refuses the header in its
-// CORS preflight, so the session's first read (a GET) that fails the way a refused preflight does (a TypeError, online)
-// is tried once without, and the session stops sending it once that worked; once a call got an answer with it, never
-// (a lost PUT's or POST's reply is never sent twice). No demo mode:
+// never the key). lib/bots/memberCall.ts, not lib/keyed.ts: the request id (the Worker logs it as `rid=`), a 409's
+// status in the body, and its.fail's code and rid, which keyed.fail doesn't carry. No demo mode:
 // ボット has no 保養所 tab there (the e2e mocks the Worker).
 import {
   BOOKING_KINDS, EVENT_KINDS, INTERVALS_SEC, MAX_NAME, MAX_SITE_NAME, PHASES, PUSH_ROUTES, REASONS, VERDICTS, isDate, isId, isName,
@@ -15,7 +11,7 @@ import {
   type PushEndpointInput, type PushKind, type PushOutcome, type PushSubscribeInput,
   type Reason, type RunInput, type ScanMinute, type Verdict
 } from './contract.ts';
-import { getKey } from '#lib/sync/storage.ts';
+import { errCode, memberCall } from '#lib/bots/memberCall.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
 import { log } from '#lib/sync/log.ts';
 
@@ -23,8 +19,6 @@ import { log } from '#lib/sync/log.ts';
 const ITS_ORIGIN = 'https://its-bot.island-fund-relay.workers.dev';
 /** The Worker's origin; VITE_ITS_URL overrides it (empty = ボット's 保養所 tab hidden), as GYM_URL does. */
 export const ITS_URL: string = (import.meta.env?.VITE_ITS_URL as string | undefined) ?? ITS_ORIGIN;
-
-const TIMEOUT_MS = 20_000;
 
 const num = (x: unknown): number | null => (isNum(x) ? x : null);
 const str = (x: unknown): string | null => (typeof x === 'string' ? x : null);
@@ -132,68 +126,23 @@ type ItsFail = { ok: false; err: string; http: number | null; status: ItsStatus 
 export type PushReply = { ok: true; push: ItsPushStatus } | { ok: false; err: string; http: number | null };
 type Op = 'status' | 'settings' | 'run' | 'push_subscribe' | 'push_unsubscribe' | 'push_test';
 
-/** A Worker's error code as the log may keep it (a short token), else `http`. */
-const code = (x: unknown): string => (typeof x === 'string' && /^[a-z_]{1,32}$/.test(x) ? x : 'http');
-
-/** A request's id: 8 hex digits, the Worker's log and the phone's (`its.fail`) say the same. */
-const newRid = (): string => Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, '0')).join('');
-/** The header this session: `try` until an answer came with it (`yes`) or a read got through only without (`no`). */
-let rid: 'try' | 'yes' | 'no' = 'try';
-
 /** One call: the answer read by `parse` (null: not one), or why not. */
 async function call<T>(op: Op, method: 'GET' | 'PUT' | 'POST', path: string, body: unknown, signal: AbortSignal | undefined, url: string,
   parse: (json: unknown) => T | null): Promise<{ ok: true; value: T } | ItsFail> {
-  const key = getKey();
-  if (!key || !url) return { ok: false, err: 'no_key', http: null, status: null };
-  if (signal?.aborted) return { ok: false, err: 'aborted', http: null, status: null }; // (a dead signal sends nothing)
-  const id = newRid();
-  const ctl = new AbortController();
-  const stop = () => ctl.abort();
-  signal?.addEventListener('abort', stop);
-  let timedOut = false;
-  const timer = setTimeout(() => ((timedOut = true), ctl.abort()), TIMEOUT_MS);
-  const t0 = performance.now();
-  const send = (withRid: boolean) => fetch(`${url}${path}`, {
-    method, signal: ctl.signal, cache: 'no-store',
-    headers: { Authorization: `Bearer ${key}`, ...(withRid ? { 'X-Request-Id': id } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) })
-  });
+  const c = await memberCall(`${url}${path}`, method, body, signal); // (a dead signal sends nothing: aborted)
   let r: { ok: true; value: T } | ItsFail;
-  try {
-    let res: Response;
-    try {
-      res = await send(rid !== 'no');
-      if (rid === 'try') rid = 'yes';
-    } catch (e) {
-      // the preflight may have refused the header (a Worker from before it): a read, once without
-      if (rid !== 'try' || method !== 'GET' || ctl.signal.aborted || !(e instanceof TypeError) || navigator.onLine === false) throw e;
-      res = await send(false);
-      rid = 'no';
-    }
-    let json: unknown = null;
-    try {
-      json = await res.json();
-    } catch {
-      json = undefined;
-    }
-    if (res.ok) {
-      const v = parse(json);
-      r = v ? { ok: true, value: v } : { ok: false, err: 'json', http: res.status, status: null, rid: id };
-    } else {
-      const o = isRec(json) ? json : {};
-      r = { ok: false, err: res.status === 409 ? 'conflict' : code(o.error), http: res.status, status: parseStatus(o.status) ?? parseStatus(json), rid: id };
-    }
-  } catch {
-    r = { ok: false, err: timedOut ? 'timeout' : 'offline', http: null, status: null, rid: id };
-  } finally {
-    clearTimeout(timer);
-    signal?.removeEventListener('abort', stop);
+  if (!c.ok) r = { ok: false, err: c.err, http: null, status: null, ...(c.err === 'no_key' || c.err === 'aborted' ? {} : { rid: c.rid }) };
+  else if (c.res.ok) {
+    const v = parse(c.json);
+    r = v ? { ok: true, value: v } : { ok: false, err: 'json', http: c.res.status, status: null, rid: c.rid };
+  } else {
+    const o = isRec(c.json) ? c.json : {};
+    r = { ok: false, err: c.res.status === 409 ? 'conflict' : errCode(o.error), http: c.res.status, status: parseStatus(o.status) ?? parseStatus(c.json), rid: c.rid };
   }
-  // leaving the page (its abort) is no failure
-  if (!r.ok && !signal?.aborted) {
-    // (a refusal the page words and expects: info)
+  // leaving the page (its abort) is no failure; a refusal the page words and expects: info
+  if (!r.ok && r.err !== 'no_key' && !signal?.aborted) {
     const level = r.err === 'offline' || r.err === 'rate_limited' || r.err === 'not_subscribed' ? 1 : 2;
-    log('its.fail', { op, err: r.err, rid: id, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, level);
+    log('its.fail', { op, err: r.err, rid: c.rid, ms: c.ms, ...(r.http === null ? {} : { http: r.http }) }, level);
   }
   return r;
 }

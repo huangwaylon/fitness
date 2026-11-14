@@ -8,6 +8,7 @@
 // failure, never shown.
 import { getKey } from '#lib/sync/storage.ts';
 import { keyed } from '#lib/keyed.ts';
+import { errCode, memberCall } from '#lib/bots/memberCall.ts';
 import { isNum, isRec, isText } from '#lib/contract/guards.ts';
 import { log } from '#lib/sync/log.ts';
 import { GYM_URL } from './status.ts';
@@ -106,11 +107,8 @@ export type ActReply =
   | { ok: true; changed: boolean; config: GymConfig; lines?: string[]; partial?: boolean; slots?: OpenSlot[] }
   | { ok: false; err: string; http: number | null; hint?: string; config?: GymConfig; retryAfter?: number };
 
-const TIMEOUT_MS = 20_000;
 /** The codes the page words itself (the bot's refusals): logged at info, the rest at warn. */
 const EXPECTED = new Set(['stale', 'cooldown', 'running', 'paused', 'mode_off', 'offline', 'day_passed', 'bad_range', 'from_passed', 'from_after_day', 'from_after_window']);
-const newRid = (): string => Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, '0')).join('');
-const code = (x: unknown): string => (typeof x === 'string' && /^[a-z_]{1,32}$/.test(x) ? x : 'http');
 
 function parseSlots(x: unknown): OpenSlot[] {
   if (!Array.isArray(x)) return [];
@@ -121,44 +119,27 @@ function parseSlots(x: unknown): OpenSlot[] {
 /** POST /gym/act with this phone's key. Never throws; the caller's abort is no failure (an act passes none:
  *  components/bots/gymActs.svelte.ts; 今すぐ確認 the page's life). */
 export async function postAct(input: ActInput, signal?: AbortSignal, url = GYM_URL, key = getKey()): Promise<ActReply> {
-  if (!key || !url) return { ok: false, err: 'no_key', http: null };
-  if (signal?.aborted) return { ok: false, err: 'aborted', http: null }; // (a dead signal sends nothing)
-  const rid = newRid();
-  const ctl = new AbortController();
-  const stop = () => ctl.abort();
-  signal?.addEventListener('abort', stop);
-  let timedOut = false;
-  const timer = setTimeout(() => ((timedOut = true), ctl.abort()), TIMEOUT_MS);
-  const t0 = performance.now();
+  const c = await memberCall(`${url}/gym/act`, 'POST', input, signal, key); // (a dead signal sends nothing: aborted)
   let r: ActReply;
-  try {
-    const res = await fetch(`${url}/gym/act`, {
-      method: 'POST', signal: ctl.signal, cache: 'no-store', body: JSON.stringify(input),
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Request-Id': rid }
-    });
-    const json: unknown = await res.json().catch(() => undefined);
-    const o = isRec(json) ? json : {};
+  if (!c.ok) r = { ok: false, err: c.err, http: null };
+  else {
+    const o = isRec(c.json) ? c.json : {};
     const config = parseConfig(o.config) ?? undefined;
-    if (res.ok && o.ok === true && config) {
+    if (c.res.ok && o.ok === true && config) {
       r = {
         ok: true, changed: o.changed === true, config,
         ...(Array.isArray(o.lines) ? { lines: o.lines.filter((l): l is string => typeof l === 'string').slice(0, 200), partial: o.partial === true, slots: parseSlots(o.slots) } : {})
       };
     } else {
-      const retry = Number(res.headers.get('Retry-After'));
+      const retry = Number(c.res.headers.get('Retry-After'));
       r = {
-        ok: false, err: res.ok ? 'json' : code(o.error), http: res.status, ...(str(o.hint) ? { hint: o.hint } : {}), ...(config ? { config } : {}),
+        ok: false, err: c.res.ok ? 'json' : errCode(o.error), http: c.res.status, ...(str(o.hint) ? { hint: o.hint } : {}), ...(config ? { config } : {}),
         ...(retry > 0 ? { retryAfter: retry } : {})
       };
     }
-  } catch {
-    r = { ok: false, err: timedOut ? 'timeout' : 'offline', http: null };
-  } finally {
-    clearTimeout(timer);
-    signal?.removeEventListener('abort', stop);
   }
-  if (!r.ok && !signal?.aborted) {
-    log('gym.fail', { op: 'act', err: r.err, rid, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, EXPECTED.has(r.err) ? 1 : 2);
+  if (!r.ok && r.err !== 'no_key' && !signal?.aborted) {
+    log('gym.fail', { op: 'act', err: r.err, rid: c.rid, ms: c.ms, ...(r.http === null ? {} : { http: r.http }) }, EXPECTED.has(r.err) ? 1 : 2);
   }
   return r;
 }

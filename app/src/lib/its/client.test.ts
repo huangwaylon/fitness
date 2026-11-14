@@ -104,7 +104,7 @@ describe('the calls', () => {
     expect(await fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'http', http: 502 });
     fetch.mockResolvedValueOnce(answer(200, { v: 1 }));
     expect(await fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'json', http: 200 });
-    fetch.mockRejectedValueOnce(new TypeError('Load failed')).mockRejectedValueOnce(new TypeError('Load failed'));
+    fetch.mockRejectedValueOnce(new TypeError('Load failed'));
     expect(await postRun('start', undefined, URL)).toMatchObject({ ok: false, err: 'offline', http: null, status: null });
     expect(logged.map(([e, d, l]) => [e, (d as { op: string }).op, (d as { err: string }).err, (d as { http?: number }).http, l])).toEqual([
       ['its.fail', 'settings', 'bad_hotels', 400, 2], ['its.fail', 'status', 'http', 502, 2], ['its.fail', 'status', 'json', 200, 2], ['its.fail', 'run', 'offline', undefined, 1]
@@ -119,47 +119,17 @@ describe('the calls', () => {
     expect(fetch).toHaveBeenCalledTimes(4);   // the offline POST sent once: never twice (its reply may be what was lost)
   });
 
-  /** A session of its own (the header's state is the session's). */
-  const fresh = async () => {
-    vi.resetModules();
-    return import('./client.ts');
-  };
-  const sent = (i: number) => (fetch.mock.calls[i][1]?.headers as Record<string, string>)['X-Request-Id'];
-  /** An older Worker: the CORS preflight fails a call carrying the header (a TypeError), the plain one goes through. */
-  const older = () => fetch.mockImplementation(async (_, init) => {
-    if ((init?.headers as Record<string, string>)['X-Request-Id']) throw new TypeError('Load failed');
-    return answer(200, example.status);
-  });
-
-  it('sends an X-Request-Id; a Worker whose preflight refuses it gets the session’s first read again without, and not the header again', async () => {
-    const c = await fresh();
-    older();
-    expect((await c.fetchStatus(undefined, URL)).ok).toBe(true);
-    expect(sent(0)).toMatch(/^[0-9a-f]{8}$/);
-    expect(sent(1)).toBeUndefined();
-    expect((await c.postRun('stop', undefined, URL)).ok).toBe(true);
-    expect(fetch).toHaveBeenCalledTimes(3);
-    expect(sent(2)).toBeUndefined();
-    expect(logged).toEqual([]);
-  });
-
-  it('once an answer came with the header, a failure is never sent again without it; nor a session’s first PUT or POST', async () => {
-    const c = await fresh();
-    fetch.mockResolvedValueOnce(answer(200, example.status));
-    await c.fetchStatus(undefined, URL);
-    expect(sent(0)).toMatch(/^[0-9a-f]{8}$/);
-    fetch.mockRejectedValueOnce(new TypeError('Load failed'));
-    expect(await c.fetchStatus(undefined, URL)).toMatchObject({ ok: false, err: 'offline' });
-    expect(fetch).toHaveBeenCalledTimes(2);
-    // a new session whose first call is a PUT: a lost reply isn't sent twice
-    const d = await fresh();
-    older();
-    expect(await d.putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'offline' });
-    expect(fetch).toHaveBeenCalledTimes(3);
+  it('sends a fresh X-Request-Id each call; a failure is never sent again (its reply may be what was lost)', async () => {
+    fetch.mockResolvedValueOnce(answer(200, example.status)).mockRejectedValueOnce(new TypeError('Load failed'));
+    await fetchStatus(undefined, URL);
+    expect(await putSettings(example.settingsInput as never, undefined, URL)).toMatchObject({ ok: false, err: 'offline' });
+    const sent = fetch.mock.calls.map(([, init]) => (init?.headers as Record<string, string>)['X-Request-Id']);
+    expect(sent).toHaveLength(2);
+    expect(sent.every((id) => /^[0-9a-f]{8}$/.test(id)) && sent[0] !== sent[1]).toBe(true);
   });
 
   it('the push routes: POST with the key, `{ok: true, push}` read back, a refusal’s code; never the endpoint in the log', async () => {
-    const c = await fresh();
+    const c = client;
     fetch.mockResolvedValueOnce(answer(200, { ok: true, push: example.status.push }));
     expect(await c.pushCall('subscribe', example.pushSubscribeInput as never, undefined, URL)).toEqual({ ok: true, push: example.status.push });
     expect([fetch.mock.calls[0][0], fetch.mock.calls[0][1]?.method, JSON.parse(String(fetch.mock.calls[0][1]?.body))]).toEqual([`${URL}/its/push/subscribe`, 'POST', example.pushSubscribeInput]);

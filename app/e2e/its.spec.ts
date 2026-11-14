@@ -9,8 +9,7 @@
 // next; a tap a night, a weekday's header its column, a booking marked) and the nights under it (tapped open: the names
 // and reasons), 予約済み. The facilities: the allow-list (derived from a Worker without one, said until saved), the
 // summary, presets, 探す · 日程に合わない (a reason a row) · 除外, the new ones' banner; no ★ (no priority sent). A
-// refusal is worded, a failed read shows its code and もう一度. Each call carries an X-Request-Id, and a Worker whose
-// CORS doesn't allow it still answers. The guest has no ボット, demo mode no 保養所 tab. The rules
+// refusal is worded, a failed read shows its code and もう一度. Each call carries an X-Request-Id. The guest has no ボット, demo mode no 保養所 tab. The rules
 // are view.test.ts's.
 import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
@@ -25,12 +24,12 @@ const SKIPPED = ['ゆふいん山水館', 'ブルーベリーヒル勝浦'];
 type Call = { method: string; path: string; auth: string | null; rid: string | null; body: unknown };
 type Reply = { status: number; body: unknown };
 type Answer = (c: Call, n: number, s: Status) => Reply | Promise<Reply> | undefined;
-type Opts = { legacy?: boolean; allow?: string; edit?: (s: Status) => Status };
+type Opts = { legacy?: boolean; edit?: (s: Status) => Status };
 
 /** A phone paired as `who`, the Worker answered by `answer` (else: the status, a PUT or POST applied to it as the
  *  Worker does: a PUT moves updatedAt, 開始 / 停止 doesn't and records `control`), ボット open on 保養所 (a member's: the
  *  menu's dot read first) or, the guest's, the menu unfolded. `set` changes the
- *  Worker's state behind the page's back (someone else's save). `allow`: the preflight's allowed headers. */
+ *  Worker's state behind the page's back (someone else's save). */
 async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: Answer = () => undefined, opts: Opts = {}) {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
@@ -42,12 +41,9 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
   let state = first;
   await page.route(`${ORIGIN}/**`, async (route: Route) => {
     const req = route.request();
-    const headers = cors(opts.allow);
+    const headers = cors();
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     const h = req.headers();
-    // a header the Worker's CORS doesn't allow: the browser's preflight fails the call (a TypeError to the page)
-    const allowed = headers['Access-Control-Allow-Headers'].toLowerCase().split(/,\s*/);
-    if (h['x-request-id'] && !allowed.includes('x-request-id')) return route.abort('failed');
     const c: Call = { method: req.method(), path: new URL(req.url()).pathname, auth: h.authorization ?? null, rid: h['x-request-id'] ?? null, body: req.postData() ? JSON.parse(req.postData()!) : null };
     calls.push(c);
     const a = answer(c, calls.length, state);
@@ -653,17 +649,6 @@ test('直近1時間 from the Worker’s per-minute aggregate: every read of the 
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(40);
   await strip.locator('[data-its-cell="warn"]').click(); // 2 of 8 failed: warn, not fail
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8回 · 失敗2（http_503） · 空き3日$/);
-});
-
-test('a Worker whose CORS doesn’t allow X-Request-Id still answers', async ({ page, context }) => {
-  const { sheet, its, calls } = await phone(page, context, 'A', undefined, { allow: 'Authorization, Content-Type' });
-  await open(sheet);
-  await expect(its.locator('[data-its-verdict]')).toBeVisible();
-  await expect(its.locator('[data-its-error]')).toHaveCount(0);
-  await runAct(page, its, 'stop');
-  await expect(its).toHaveAttribute('data-its-run', 'stopped');
-  expect(calls.length).toBeGreaterThanOrEqual(2); // the menu's read (the page shows it), 停止
-  expect(calls.every((c) => c.rid === null)).toBe(true);
 });
 
 test('in demo mode ボット has no 保養所 tab (no fixture): ジム alone, no tabs, and nothing asks the Worker', async ({ page, context }) => {
