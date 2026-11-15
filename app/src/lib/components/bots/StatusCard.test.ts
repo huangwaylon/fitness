@@ -28,6 +28,10 @@ describe('StatusCard', () => {
     const blank = card(strip('none'));
     expect(blank).not.toContain('data-gym-strip');
     expect(blank).not.toContain('data-gym-empty');
+    // idle checks only (ジム's alarms with no day to check): the strip, its cells low, no count
+    const idle = card(strip('idle', { empty: null }));
+    expect(idle).toContain('data-gym-cell="idle"');
+    expect(idle).not.toContain('data-gym-count');
     const kept = card(strip('ok', { empty: { text: 'x' } }));
     expect(kept).toContain('data-gym-strip');
     expect(kept).not.toContain('data-gym-empty');

@@ -4,8 +4,8 @@
   // last known one and a read is on its way or failed) and the bot's ⋯ (`menu`: the page's ActionSheet holds its
   // actions). Row 2: what a person must do (the driver's `act`, in ink), else the sentence (never the word again), else
   // nothing. `note` (an action's answer: ジム's 今すぐ確認 line). Then the strip: the cells drawn 32 high in a 44 hit (ok
-  // green, avail green full height, warn yellow capped, fail coral hatched, none a low tick: never colour alone) the
-  // card's width, 前回 ringed; the ticks (前回's time the right-hand
+  // green, avail green full height, warn yellow capped, fail coral hatched, idle a low sunk bar (ran, nothing to
+  // check), none a low tick: never colour alone) the card's width, 前回 ringed; the ticks (前回's time the right-hand
   // one, in ink); one line: each state's swatch and count (only those > 0) and the 成果 term, the picked cell's line
   // once one is tapped, and 次回 at its end (「次回 12:09ごろ」: never read as a range with 前回's time). The cells are drawn only: one hit layer the strip's full height, a slider and one tab stop (a tap or a drag picks the
   // cell nearest the finger's x; ← → Home End walk them); VoiceOver reads `summary`, then the picked cell's line.
@@ -162,6 +162,8 @@
   .cell.warn { background: var(--c-yuzu); box-shadow: inset 0 3px 0 var(--text-soft), inset 0 0 0 1px var(--edge); }
   .cell.fail { background: repeating-linear-gradient(135deg, var(--c-coral) 0 3px, color-mix(in srgb, var(--c-coral) 45%, var(--card)) 3px 5px); }
   .strip .cell.none { height: 4px; }
+  /* idle: ran with nothing to check, a low sunk bar (neither none's tick nor ok's green) */
+  .strip .cell.idle { height: 30%; box-shadow: inset 0 2px 0 var(--edge), inset 0 0 0 1px var(--edge); }
   .cell.none { box-shadow: none; background: color-mix(in srgb, var(--edge) 35%, var(--ctl-off)); }
   /* 前回 ringed; a picked cell outlined */
   .strip .cell.last, .strip .cell.on { outline: 2px solid var(--text); outline-offset: 1px; }

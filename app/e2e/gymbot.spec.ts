@@ -1,6 +1,6 @@
 // ボット's ジム tab (docs/bots.md): a member's ボット sheet, on ジム (the tab last shown): the gym bot's GET
 // /status (lib/gym/status.ts, mocked here): its status card (the word, the sentence, ⋯; the strip, 24 cells a check
-// interval the card's width: tap or ← → names one, 前回 ringed; the counts, いま空き and 次回 on one row), the calendar from the members-only GET /gym/config (with the phone's key:
+// interval the card's width: tap or ← → names one, 前回 ringed, idle alarms low; the counts, いま空き and 次回 on one row), the calendar from the members-only GET /gym/config (with the phone's key:
 // lib/gym/config.ts, the stand-in e2e/gymbot.ts; ⋯'s acts and the calendar are gymbot-settings.spec.ts's) and
 // くわしく last; 保養所's tab leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
 // もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
@@ -11,14 +11,16 @@ import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
-import { CONFIG, STATUS, fakeGym, statusPayload as payload } from './gymbot.ts';
+import { CONFIG, STATUS, fakeGym, statusPayload } from './gymbot.ts';
+import type { GymStatus } from '../src/lib/gym/status.ts';
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization' };
 
 /** A phone paired as `who`, /status answered by `answer` and /gym/config by `configAnswer` (each call counted, the
  *  config's Authorization kept; `old`: a Worker without the route, whose 404s, the preflight's too, carry no CORS),
- *  ボット open on ジム (the guest's: the menu unfolded). */
-async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: (n: number) => number = () => 200, configAnswer: (n: number) => number | 'old' = () => 200) {
+ *  ボット open on ジム (the guest's: the menu unfolded); `edit` changes /status's answer. */
+async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: (n: number) => number = () => 200, configAnswer: (n: number) => number | 'old' = () => 200, edit: (s: GymStatus) => GymStatus = (s) => s) {
+  const payload = (now: number) => edit(statusPayload(now));
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
@@ -136,6 +138,29 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   expect(calls.n).toBe(n);
+});
+
+test('idle alarms only (no day to check, as since 11/14): the strip shows them, low and neutral, 前回 ringed; no counts, 次回 on the row', async ({ page, context }) => {
+  const MIN = 60_000;
+  const { sheet } = await phone(page, context, 'A', undefined, undefined, (s) => ({
+    ...s, verdict: 'healthy', reasons: [], lastError: null,
+    checks: Array.from({ length: 30 }, (_, i) => ({ t: s.now - 4 * MIN - i * 15 * MIN, by: 'alarm' as const, ms: 3, idle: true as const, open: 0, fresh: 0, push: 'none' as const }))
+  }));
+  const gym = sheet.locator('[data-gym-page]');
+  const strip = gym.locator('[data-gym-strip]');
+  await expect(strip.locator('[data-gym-cell="idle"]')).toHaveCount(24);
+  await expect(gym.locator('[data-gym-empty]')).toHaveCount(0);
+  await expect(strip.locator('[data-gym-cell]').last()).toHaveAttribute('data-last', 'true');
+  await expect(gym.locator('[data-gym-tick][data-last]')).toHaveText('11:56');
+  await expect(gym.locator('[data-gym-count]')).toHaveCount(0);
+  await expect(gym.locator('[data-gym-next]')).toHaveText('次回 12:09ごろ');
+  // a low bar: taller than none's tick, lower than a check's; its line names it
+  const h = (await strip.locator('[data-gym-cell]').last().boundingBox())!.height;
+  expect(h).toBeGreaterThan(6);
+  expect(h).toBeLessThan(16);
+  expect((await strip.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await strip.locator('[data-gym-cell]').last().click();
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:56 · 確認する日なし');
 });
 
 test('the next opening shows the last status at once, marked 更新中, and the read refreshes it in place (after a reload too)', async ({ page, context }) => {

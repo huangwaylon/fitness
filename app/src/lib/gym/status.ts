@@ -146,16 +146,16 @@ const allFailed = (c: Check): boolean => !!c.r && PROGRAMS.every((p) => c.r![p] 
 
 /** The last 24 intervals (`intervalMin`; 15 min: 6 hours), oldest first, a cell each, the checks in turn (lib/strip.ts
  *  chain: a check's jitter leaves no false gap); fail when both programs failed, warn when one did, else avail when a
- *  slot was open, else ok; none when nothing was checked (stopped, backed off, an alarm with no day to check, or before
- *  the kept checks). With its ticks (every 2 hours, Tokyo), 前回 (the newest check's cell, its time), the states'
- *  words, its line for VoiceOver 「直近6時間：確認24回、失敗1回、空き検出3回」 (the checks that fetched), and, never
- *  checked, 「まだ確認していません」 in its place. */
+ *  slot was open, else ok; idle when its checks were alarms with no day to check; none when nothing was checked
+ *  (stopped, backed off, or before the kept checks). With its ticks (every 2 hours, Tokyo), 前回 (the newest check's
+ *  cell, its time, idle or not), the states' words (idle's none: its cells' lines name it), its line for VoiceOver
+ *  「直近6時間：確認24回、失敗1回、空き検出3回」 (the checks that fetched), and, never checked, 「まだ確認していません」 in its place. */
 export function checkStrip(s: GymStatus): Omit<CardStrip, 'next' | 'outcome'> {
   const width = (s.intervalMin > 0 ? s.intervalMin : 15) * MIN_MS;
   const slots = chain(s.checks, (c) => c.t, s.now, width, CELLS);
   const cells = slots.map(({ start, end, items }): StripCell => {
     const done = items.filter((c) => c.r);
-    const state: CellState = !done.length ? 'none' : done.some(allFailed) ? 'fail' : done.some(failed) ? 'warn' : done.some((c) => c.open > 0) ? 'avail' : 'ok';
+    const state: CellState = !items.length ? 'none' : !done.length ? 'idle' : done.some(allFailed) ? 'fail' : done.some(failed) ? 'warn' : done.some((c) => c.open > 0) ? 'avail' : 'ok';
     return { start, end, state, label: items.length ? items.map(checkText).join(' / ') : `${clockAt(start)} · ${t('gym.strip.none')}` };
   });
   const i = slots.findLastIndex((x) => x.items.length > 0);

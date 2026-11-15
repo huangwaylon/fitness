@@ -129,14 +129,14 @@ describe('checkStrip (24 intervals)', () => {
     expect(checkStrip(status({ checks: [] }))).toMatchObject({ last: null, empty: { text: 'まだ確認していません' } });
   });
 
-  it('fail when both programs failed, warn when one did, avail when a slot was open, none when nothing was checked; each names its check', () => {
+  it('fail when both programs failed, warn when one did, avail when a slot was open, idle when no day to check, none when nothing was checked; each names its check', () => {
     const checks = every(12);
     checks[0] = check(checks[0].t, { open: 2 });
     checks[1] = check(checks[1].t, { r: { training: 'ok', pilates: 'timeout' }, push: 'failed' });
     checks[2] = check(checks[2].t, { idle: true, r: undefined });
     checks[3] = check(checks[3].t, { r: { training: 'http_5xx', pilates: 'timeout' } });
     const { cells, summary, last } = checkStrip(status({ checks }));
-    expect(cells.slice(-5).map((c) => c.state)).toEqual(['ok', 'fail', 'none', 'warn', 'avail']);
+    expect(cells.slice(-5).map((c) => c.state)).toEqual(['ok', 'fail', 'idle', 'warn', 'avail']);
     expect(cells.at(-1)!.label).toBe('11:58 · トレーニング○ ピラティス○ · 空き2');
     expect(cells.at(-2)!.label).toBe('11:45 · トレーニング○ ピラティス✕（タイムアウト） · LINEへの通知に失敗');
     expect(cells.at(-3)!.label).toBe('11:26 · 確認する日なし');
@@ -145,6 +145,19 @@ describe('checkStrip (24 intervals)', () => {
     expect(cells[0].label).toBe('06:00 · 確認なし');
     expect(summary).toBe('直近6時間：確認11回、失敗2回、空き検出1回');
     expect(last).toEqual({ i: 23, label: '11:58' });
+  });
+
+  it('idle alarms only (the live state: no day to check): idle cells, 前回 ringed on the newest, out of the counts', () => {
+    const idle = every(30).map((c) => check(c.t, { idle: true, r: undefined, ms: 3 }));
+    const s = checkStrip(status({ checks: idle }));
+    expect(s.cells.every((c) => c.state === 'idle')).toBe(true);
+    expect(s.last).toEqual({ i: 23, label: '11:58' });
+    expect(s.summary).toBe('直近6時間：確認0回、失敗0回、空き検出0回');
+    expect(s.words.idle).toBeUndefined(); // (out of the counts: the cell's line names it)
+    expect(s.empty).toBeNull();
+    // a 🔎 tap beside an idle alarm: the cell is the tap's
+    const mixed = checkStrip(status({ checks: [check(NOW - 2 * MIN, { by: 'tap' }), ...idle.slice(1)] }));
+    expect(mixed.cells.slice(-2).map((c) => c.state)).toEqual(['idle', 'ok']);
   });
 
   it('a 🔎 tap beside an alarm shares its cell; a gap of n intervals (stopped, backing off) leaves n − 1 empty', () => {
