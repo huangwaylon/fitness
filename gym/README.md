@@ -33,10 +33,7 @@ Each day has at most one rule (`src/store.ts`):
 
 Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near weekdays at lunch are the
 usual; further days wait for a setting. A weekend day is off unless set (⏰ 12:00〜13:00 on it is saved like any
-range); 🔕 on it saves nothing, and 🧹 puts it back to off. A one-time move at load (`mig:weekendOff` in its storage)
-saved ⏰ 12:00〜13:00 on the near weekends then unset. A rollback to a deployment before 32b2e0dfe (the first with
-weekends off) checks unset near weekends again, and a re-deploy won't redo the move: clear `mig:weekendOff`, or set
-those weekends.
+range); 🔕 on it saves nothing, and 🧹 puts it back to off.
 
 - **⏳ check from** a date and time: the day is ignored until then (e.g. Friday from Tuesday 18:00, when an earlier
   booking is over: 3 at a time). Kept between 🔔 and ⏰ unless the new window leaves no slot after it (then cleared,
@@ -120,7 +117,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 
 | Name | Value |
 |---|---|
-| `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings) |
+| `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings). Rotating: reissue there (the old one stops at once), `secret put` at once (live, no deploy; between them pushes are retried or taps refused 403), then the secrets copy |
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
 | `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's, for `/gym/config` and `/gym/act` (never the guest's `KEY_C`) |
@@ -136,8 +133,11 @@ curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mod
 ```
 
 Tests run on Node with `cloudflare:workers` mocked, no network. The account is pinned in wrangler.toml (the relay's).
-The Worker imports `app/src/lib/gym/contract.ts`, `app/src/lib/contract/` and `relay/src/{auth,body}.ts` (gym.yml's paths).
-A deploy keeps the state and the alarm. A contract change (`app/src/lib/gym/contract.ts`): the Worker first, then the
+The Worker imports `app/src/lib/gym/contract.ts`, `app/src/lib/contract/` (and its `app/src/lib/types.ts`) and
+`relay/src/{auth,body}.ts` (gym.yml's paths). A deploy keeps the state and the alarm. **Roll back**: `npx wrangler
+deployments list` (each message starts with its commit), then `npx wrangler rollback <version-id>`; `/health`'s `sha`
+says what runs. A Worker without 268977e8b (the deployment `32b2e0dfe` was the first with it) checks unset near
+weekends again, and the one-time move (`mig:weekendOff`) won't rerun: set those weekends. A contract change (`app/src/lib/gym/contract.ts`): the Worker first, then the
 app (the page reads an older Worker's answers, not the other way round). `NAME_A` / `NAME_B` are put once
 (`npx wrangler secret put NAME_A`), before the deploy that should show them.
 
@@ -145,16 +145,17 @@ app (the page reads an older Worker's answers, not the other way round). `NAME_A
 
 `$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
-- **Look**: the app's ボット → ジム (the verdict, the strip of the checks, the facts, the calendar; up to a minute
+- **Look**: the app's ボット → ジム (the verdict, the strip of the checks, the facts, the calendar; up to ~2 min
   old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next
-  check. **Alerts**: none outside the app: ボット's dot ([bots.md](../docs/bots.md)) on 故障, 遅れ 90 min past the next
-  check, or the site failing 6 h without a success; the group gets `SITE_DOWN` after 3 failed checks.
+  check. **Alerts**: none outside the app: ボット's dot ([bots.md](../docs/bots.md)) on 故障, or 遅れ / 不調 that outlast
+  their grace; the group gets `SITE_DOWN` after 3 failed checks.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
   `MODE = "off"`: LINE's taps are ignored and the app's changes and 🔎 refused (503 `mode_off`; the page still shows
   the settings). Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`
   to set the first alarm.
 - **Back up or edit the state**: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > state.json`;
   back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
+  By hand only (the user's decision, 2026-11-13): a lost state means setting the days and the interval again.
 - **Point LINE here** (the webhook must be `$URL/line/webhook`): LINE Developers Console, or
   `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json'
   -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint` (one line).
@@ -180,7 +181,7 @@ The verdict is the first reason that applies (`/status`'s `reasons`, in this ord
 
 - LINE free plan: 200 pushed messages a month, each counted once per group member. Alerts and notices are pushes;
   answers to taps are free.
-- Workers Free: 100,000 requests a day; Durable Objects 100,000 requests, 13,000 GB-s and 100,000 rows written a day,
-  account-wide, shared with the relay; 5 cron triggers an account (the relay 2, this 1). A check every 15 minutes is
+- Workers Free, account-wide: [observability "Account-wide"](../docs/ops/observability.md#account-wide) (this uses 1
+  cron trigger). A check every 15 minutes is
   ~100 alarms and ~100 rows a day, the cron 24 requests.
 - The gym site: 2 requests a check, browser User-Agent and Referer, backoff on failures.

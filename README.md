@@ -19,7 +19,7 @@ the live room).
 | Deployable | Code | Deploy · roll back | Health · who alerts |
 |---|---|---|---|
 | The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | health.yml's site checks: red mails the owner |
-| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml hourly (dispatched by its-bot's cron; GitHub's own schedule the backstop): red mails, the log's spikes open an `alert` issue |
+| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml hourly ([runbook §2](docs/ops/runbook.md#2-check-the-backend)): red mails, the log's spikes open an `alert` issue |
 | The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `/health`, ボット → ジム: the app's dot only ([bots.md](docs/bots.md)) |
 | The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml every 30 min (the same), the Worker's watchdog: the `its-alert` issue |
 | Kalori, the chain menus (Actions `kalori-scrape.yml`) | `food-data/` | weekly; merges and deploys itself within its bands, else a held PR: [runbook §13](docs/ops/runbook.md#13-refresh-kalori) | `status.json` → ボット → メニュー's dot; no email |

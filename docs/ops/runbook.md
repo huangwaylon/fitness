@@ -47,7 +47,7 @@ The Free plan's tightest limit is likely 100k rows written a day: `npm run logs 
 Lost phone, leak, any doubt:
 1. `openssl rand -hex 32`, into the password manager.
 2. The relay first: from `relay/`, `npx wrangler secret put KEY_A` (or `KEY_B`); the old key is `unauthorized` at once.
-   Then the same `secret put` from `gym/` and `its/worker/` (the bots hold copies); for ITS, 停止 → both → 開始.
+   Then the same `secret put` from `gym/` and `its/worker/` (the bots hold copies).
 3. That person's app shows the pairing screen: paste the new key, and into their Shortcut's **Key** text.
 4. The keys file (`~/.config/island-fund/keys`, `KEY_A=…`/`KEY_B=…` lines, or `KEYS_FILE`): the secret that signs
    `/admin` derives from `KEY_A:KEY_B` (`relay/src/sign.ts`), so without the new key there
@@ -181,11 +181,10 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 `npm run logs`, the checklist, the alert and `LOG_OFF`: [observability.md](observability.md).
 
 ## 12. The bots
-Each bot's doc has its deploy, secrets, stop switch, health checks, alerts and what to do when it breaks:
+Each bot's doc has its deploy and rollback, secrets, stop switch, health checks, alerts and what to do when it breaks:
 - ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose". No alert outside the app.
 - 保養所 (`its-bot` + the Actions runner): [its/README.md](../../its/README.md) "Operations", "Investigating" (the
-  `its-alert` issue, `runner_silent`; Gmail is the ground truth), "Secrets" (`GH_DISPATCH_TOKEN`, also §2's dispatch;
-  a token both sides share: 停止 → change both → 開始).
+  `its-alert` issue, `runner_silent`; Gmail is the ground truth), "Secrets" (its tokens and their rotation).
 - メニュー (Kalori): §13.
 
 ## 13. Refresh Kalori
@@ -210,7 +209,7 @@ release keeps the progress.
    food-data/scripts/fetch.py --kalori app/static/food/kalori.json` from the reverted main (its run no longer counts
    toward the bands; the two files put the restored dataset in status.json). The next refresh seeds from the restored `KALORI_TAG`.
 3. **By hand** (`gh workflow run kalori-scrape.yml`, on main: another branch never publishes): `refetch_before` today
-   for a full refetch (4-5 rounds). A test: `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`):
+   for a full refetch. A test: `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`):
    never publishes or writes the status; its wip release goes when its shards end well, else `gh release delete
    kalori-wip-<name> --cleanup-tag`. **Locally**: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
    food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run

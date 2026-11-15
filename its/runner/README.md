@@ -116,7 +116,7 @@ remote.py, whose docstring has the detail. Each seam is a no-op for a local run 
   record's seq); every date is Tokyo's
   (`book_hotels.tokyo_today`).
 - **Bounded**: `--deadline`, a drain ≤ 15 min, `run_end`; a stop, a ban and a silent Worker end it too (main.py's
-  docstring). The workflow's preflight skips the job for paused, MODE off, no dates or `restart_cap`; no answer fails it.
+  docstring). The workflow's preflight skips the job for paused, MODE off, no dates, `restart_cap` or another stop; no answer fails it.
 - **Reports** every 30 s, and at once after a hold or an outcome: counts and codes only (`remote.Remote.build_report`).
 - **Outcome codes** (lastError's `cls`, `solve_failed` and `human_needed` details) are lower-case codes:
   `confirm_booking.outcome_code`, chrome.py's leg; the app's list is contract.ts's `HUMAN_NEEDED_DETAILS`.

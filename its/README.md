@@ -99,7 +99,7 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
 - **開始's dispatch** (and the watchdog's): `POST api.github.com/repos/huangwaylon/fitness/actions/workflows/its-runner.yml/dispatches`
   `{ref: 'main'}`, recorded as `dispatch: {at, ok, status}` (204 = accepted, 0 = no answer; `status: null, ok: true` =
   no token set, nothing sent: the schedule starts a run). Nothing is sent while MODE is off, without a date, while a live
-  lease's run is starting, solving or scanning, or within 2 min of a dispatch no report has followed (`dispatch=skip_recent`); the dispatch is recorded
+  lease's run is starting, solving or scanning, or within 2 min of a dispatch no report or 停止 has followed (`dispatch=skip_recent`); the dispatch is recorded
   before GitHub is asked, so a double tap sends one.
 - **Verdict**: computed on each status read from the Worker's clock (the watchdog doesn't change it), every reason that applies in
   the contract's `REASONS` order, the verdict the first's (Investigating below).
@@ -176,7 +176,7 @@ later one replaces the earlier; each is sent once per hold / stay whichever run 
 | `human_needed` that may be filed (`maybe_filed`) | the stay has an open `confirming` (no later `confirmed` / `failed` in the bookings: a leg may be filing it), whatever the detail; or the detail is `submit_unknown`, `no_completion`, `link_used` or `chrome_*`; with or without a live hold | 仮押さえ・要確認 · NAGU 勝浦・11/22(日)・申込済みの可能性：メールとサイトで確認 | high, 1 day |
 | `human_needed` `room_taken`, `hold_expired`, `not_wanted` | a definite non-booking, or a hold nobody wants (no open `confirming`) | not sent (`push skip not_booked`) | |
 | `confirmed` | 予約確定 | 予約が確定しました · NAGU 勝浦・11/22(日)・申込受付番号 A1234567 | normal, 1 day |
-| (the watchdog) `runner_silent` | an incident 15 min old, 2 refused recoveries, the day's cap, or the 3rd incident in 2 h (Watchdog above) | 保養所ボットが止まっています · ランナーを再起動できていません：Actionsを確認 | high, 1 h |
+| (the watchdog) `runner_silent` | Watchdog "The push" | 保養所ボットが止まっています · ランナーを再起動できていません：Actionsを確認 | high, 1 h |
 
 A hold the bot won't finish pushes only its `human_needed` (one notification per hold). A notice never says
 「メールから申込」 when the application may already be filed: that one is `maybe_filed`. The 要対応 deadline is an estimate
@@ -266,8 +266,9 @@ its/worker && npx wrangler secret put GH_DISPATCH_TOKEN` (paste it; no deploy ne
 shows as `dispatch_failed` 401): generate the new one, `secret put` it, then delete the old token on GitHub. It
 lives in the Worker alone, so no 停止 is needed.
 
-Rotating a token shared by two places (`ITS_RUNNER_TOKEN`, `KEY_A`/`KEY_B`, `ITS_HEALTH_TOKEN`): **停止 → change both →
-開始** (a run between the two changes would be refused: 401s, `runner_silent`). The applicant's and the IMAP secrets
+Rotating a token kept in two places: `ITS_RUNNER_TOKEN` **停止 → change both → 開始** (a run between the two
+changes is refused: 401s, `runner_silent`); `KEY_A`/`KEY_B` (the page 401s until both match) and `ITS_HEALTH_TOKEN`
+(`health_unreachable` once two of its-health's runs fail) back to back, no 停止. The applicant's and the IMAP secrets
 apply at the next run.
 
 ## Develop and deploy
@@ -297,7 +298,8 @@ cd its/runner && ITS_WORKER_URL=http://127.0.0.1:8799 ITS_RUNNER_TOKEN=dev \
 
 The Worker imports `app/src/lib/its/contract.ts` and `relay/src/{auth,body}.ts`, so a checkout needs `its/`,
 `app/src/lib/its`, `app/src/lib/contract`, `app/src/lib/types.ts` and `relay/src/{auth,body}.ts` (its.yml's paths). A
-deploy keeps the record.
+deploy keeps the record. **Roll back**: `npx wrangler deployments list` (each one's message starts with its commit),
+then `npx wrangler rollback <version-id>`; the record stays, `/health`'s `sha` says what runs.
 
 ## Operations
 
@@ -319,7 +321,8 @@ runner token.
   bookings, events, seen). Restore or seed: the settings with `PUT /its/settings` (`baseUpdatedAt` = the
   current status's `settings.updatedAt`), then the bookings in chunks of ≤ 50 with `curl -fsS -X POST -H
   "Authorization: Bearer $RT" --data-binary @chunk.json $URL/runner/bookings` (ids kept, so a re-run adds nothing;
-  `at` becomes the restore time).
+  `at` becomes the restore time). Nothing backs it up on a schedule (the user's decision, 2026-11-13): a lost
+  record is rebuilt from Gmail's holds and 予約確定 (seeded as above); a stay missed there could be applied for again.
 
 ## Investigating
 
@@ -332,7 +335,7 @@ The verdict is the first reason that applies (`reasons`, in this order). `restar
 while it should run (MODE on, not stopped, a date). **The alert**: its-health.yml (every 30 min, how it's started:
 docs/ops/runbook.md §2; `GET /health/its`, codes only; inert without the `ITS_HEALTH_TOKEN` repo secret) keeps one
 `its-alert` issue open on `late` / `failing`, `human_needed`, `dispatch_failed`, `mail_failing`, `settings_stale` or
-`unsynced` for 30+ min (and `health_unreachable`: `/health/its` failing twice in a row), and closes it when healthy.
+`unsynced` for 30+ min (and `health_unreachable`: `/health/its` failing twice in a row), and closes it when healthy (GitHub notifies the repo's watchers: the owner, by mail).
 The watchdog's `runner_silent` push (Watchdog) is the faster alert.
 
 | Reason · seen | Verdict | Means | Do |
@@ -359,8 +362,8 @@ The watchdog's `runner_silent` push (Watchdog) is the faster alert.
 
 ## Quotas
 
-Workers Free, account-wide (relay, relay-test, gym-bot and this): 100,000 Worker and 100,000 DO requests, 100,000 rows
-written a day, 5 cron triggers (4 used: Watchdog). This Worker with a runner all day (a report every 30 s, the
-preflights, the page's polls): ~3,200 requests and ~6,500 rows written; stopped, 48 preflights; the watchdog adds 288
+Workers Free, account-wide: [observability "Account-wide"](../docs/ops/observability.md#account-wide). This Worker
+with a runner all day (a report every 30 s, the preflights, the page's polls): ~3,200 Worker requests, ~6,000 DO
+requests (with the alarms below) and ~6,500 rows written; stopped, 48 preflights; the watchdog adds 288
 invocations and 288 DO requests a day, writing only when an incident opens, dispatches, pushes or closes; the alarm
-re-armed per report ~2,900 alarm writes (while missing, one look a minute). The busiest day measured, every script: ~7k, ~19k and ~35k.
+re-armed per report ~2,900 alarm writes (while missing, one look a minute).

@@ -9,7 +9,7 @@ demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot
   coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだありません, hollow 不明; drawn on a tab and the menu's ボット (the
   worst) only while a person must act (`dotShown`, each driver's `needsAttention`); a failed read dimmed, kept. What heals
   on its own shows in its page only: 一部不調; ジム's 遅れ till 90 min past the next check and 不調 from the site failing
-  till 6 h without a success (`LATE_GRACE_MS`, `SITE_GRACE_MS`); メニュー dots 保留, 不調, 遅れ, an alert, or 2 days overdue.
+  till 6 h without a success (`LATE_GRACE_MS`, `SITE_GRACE_MS`); 保養所 dots 不調, 遅れ or a hold waiting (要対応); メニュー 保留, 不調, 遅れ or an alert.
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
 - **Page** (`BotPage`): one `StatusCard` (~132px): dot · word (15 bold) · 「12:00時点」 (13 soft) · ⋯; the act in ink (`act`,
   保養所's mail, メニュー 保留's merge) else the sentence, never restating the word (none when it says it); result line; the strip, 32 drawn in

@@ -189,9 +189,9 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   keeps one line a product. The diff against the
   accepted release gates publishing: over 15 % of products with changed values or 5 % missing refuses it (exit 6)
   unless `allow_big_diff`.
-- **Cost:** ~2.5k listing requests a week plus the changed products, about 9k a month. kalori.jp allows ~1,000 requests
-  an IP a day: rounds of 20 shards, each on a fresh runner (a new IP); one that hit the limit re-dispatched. A full refetch (`refetch_before` today, or
-  `RECORDS_FROM` raised with `PARSER_VERSION`): ~56k requests, 4-5 rounds.
+- **Cost:** ~3k listing requests a week (2026-11-14: 2,954 over 20 shards, ≤ 214 a shard) plus the changed products,
+  ~13k a month. kalori.jp blocked at ~1,000 requests an IP a day (the first crawl): rounds of 20 shards, each on a fresh runner (a new IP); one that hit the limit re-dispatched. A full refetch (`refetch_before` today, or
+  `RECORDS_FROM` raised with `PARSER_VERSION`): ~56k requests, 4-5 rounds. Before the next one: ask kalori.jp for a bulk export.
 - **Exit codes** (`kalori_scrape.py`): 0 done or out of budget, 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
   a lost, timed-out or cancelled shard job are retried), 4 the pages no longer parse (never retried; no product marked
   no-nutrition), 5 more new no-nutrition marks than max(25, 2 % of the fetches) (undone; never retried), 6 the diff
@@ -231,9 +231,6 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   `kalori_status.py`, `.github/scripts/kalori-status.sh`): verdict, reasons, `at`, `next` (the next scheduled run),
   run, accepted dataset, diff (`tripped`: the failed gates), coverage, merge, alert, the last 12 runs; a round writes
   `running` at setup. ボット → メニュー reads it ([bots.md](bots.md)); its reasons: the runbook.
-- **Lessons** (the first crawl: ~3.5 h, ~75-80k requests): fresh-runner rounds beat a slower rate (the cap is per IP a
-  day); never change the record format mid-crawl; anchor parsers on the data; a canary before each round; next full
-  crawl: ask kalori.jp for a bulk export.
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's

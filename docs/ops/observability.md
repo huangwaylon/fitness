@@ -153,3 +153,17 @@ the guest:
 
 Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per
 frame. Compaction, were it on, adds ~8,000 rows written on a Wednesday.
+
+### Account-wide
+The Free plan's limits are the account's, shared by every Worker (relay, relay-test, gym-bot, its-bot); 5 cron
+triggers, 4 used (relay 2, gym-bot 1, its-bot 1). A day:
+
+| Worker | Worker req | DO req | Rows written |
+|---|---|---|---|
+| relay (the table above) | ~630 | ~1,650 | ~7,050 |
+| gym-bot (a check every 15 min: [gym/README](../../gym/README.md#quotas)) | ~110 | ~120 | ~100 |
+| its-bot, a runner all day ([its/README](../../its/README.md#quotas)) | ~3,500 | ~6,000 | ~6,500 (+ ~2,900 alarm writes) |
+
+The busiest day measured (Cloudflare GraphQL, every script, 2026-11-10, before its-bot ran all day with its watchdog
+and alarm): 3,618 Worker requests, 15,487 DO requests, 28,900 rows written; with a full day of today's its-bot added,
+~7k, ~21k and ~38k of 100k.
