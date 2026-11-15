@@ -86,18 +86,29 @@ export const reasonLines = (s: GymStatus): string[] =>
 export const LATE_GRACE_MS = 90 * 60_000;
 export const SITE_GRACE_MS = 6 * 3_600_000;
 
-/** Since when the checks have failed in a row (the oldest of the `failures` kept), null if unknown. */
-const failingSince = (s: GymStatus): number | null => s.checks[Math.max(0, s.failures - 1)]?.t ?? s.checks.at(-1)?.t ?? null;
+/** Since when the site has failed in a row: the oldest of the newest `failures` alarm checks that failed, never
+ *  past an idle one (an idle stretch checks nothing, so it ends the streak the dot measures: the Worker's `failures`
+ *  survives it, and `lastOk` stays days old); null while idle or unknown. Taps are left out (they never count). */
+function failingSince(s: GymStatus): number | null {
+  let since: number | null = null, n = 0;
+  for (const c of s.checks) {
+    if (c.by !== 'alarm') continue;
+    if (c.idle || n >= s.failures || !allFailed(c)) break;
+    since = c.t;
+    n++;
+  }
+  return since;
+}
 
 /** ボット's dot (the menu's pill, the ジム tab): only while a person must act, so 故障, or 不調 for more than the site
  *  failing. 遅れ and the site failing heal on their own (the hourly cron re-arms the alarm, the bot retries), till
- *  they last too long: 遅れ LATE_GRACE_MS past the next check, the site SITE_GRACE_MS without a success. */
+ *  they last too long: 遅れ LATE_GRACE_MS past the next check, the site SITE_GRACE_MS of failing checks in a row. */
 export function needsAttention(s: GymStatus, now: number = s.now): boolean {
   if (s.verdict === 'broken') return true;
   if (s.verdict === 'late') return s.nextCheck !== null && now > s.nextCheck + LATE_GRACE_MS;
   if (s.verdict !== 'failing') return false;
   if (!s.reasons.every((r) => r === 'site_failing')) return true;
-  const since = s.lastOk ?? failingSince(s);
+  const since = failingSince(s);
   return since !== null && now - since >= SITE_GRACE_MS;
 }
 

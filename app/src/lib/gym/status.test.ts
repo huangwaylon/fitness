@@ -44,12 +44,21 @@ describe('needsAttention (ボット’s dot)', () => {
     // the page's clock moves on between polls: the dot comes without a new status
     expect(needsAttention(status({ verdict: 'late', reasons: ['overdue'], nextCheck: NOW }), NOW + 91 * MIN)).toBe(true);
     const site = (over: Partial<GymStatus>) => needsAttention(status({ verdict: 'failing', reasons: ['site_failing'], ...over }));
-    expect([site({ lastOk: NOW - SITE_GRACE_MS + 1 }), site({ lastOk: NOW - SITE_GRACE_MS })]).toEqual([false, true]);
     expect(SITE_GRACE_MS).toBe(6 * H);
-    // never a success kept: since the oldest of the failed checks in a row
+    // since the oldest of the failed checks in a row, not the last success (kept or not)
     const failed = (ago: number): Check => ({ t: NOW - ago, by: 'alarm', ms: 30_000, r: { training: 'error', pilates: 'error' }, open: 0, fresh: 0, push: 'none' });
-    const run = (agos: number[]) => site({ lastOk: null, failures: agos.length, checks: agos.map(failed) });
-    expect([run([10 * MIN, 5 * H]), run([10 * MIN, 6 * H]), site({ lastOk: null, failures: 0, checks: [] })]).toEqual([false, true, false]);
+    const idle = (ago: number): Check => ({ t: NOW - ago, by: 'alarm', ms: 0, idle: true, open: 0, fresh: 0, push: 'none' });
+    const run = (agos: number[], lastOk: number | null = null) => site({ lastOk, failures: agos.length, checks: agos.map(failed) });
+    expect([run([10 * MIN, SITE_GRACE_MS - 1]), run([10 * MIN, SITE_GRACE_MS]), site({ lastOk: null, failures: 0, checks: [] })]).toEqual([false, true, false]);
+    expect([run([10 * MIN, SITE_GRACE_MS - 1], NOW - 72 * H), run([10 * MIN, SITE_GRACE_MS], NOW - 72 * H)]).toEqual([false, true]);
+    // idle days (no day to check) leave lastOk old: three failures after them are 30 min of failing, not 72 h
+    expect(site({ failures: 3, lastOk: NOW - 72 * H, checks: [failed(MIN), failed(15 * MIN), failed(30 * MIN), idle(45 * MIN), idle(60 * MIN)] })).toBe(false);
+    // an idle stretch ends the streak: `failures` survives it, the dot doesn't; while idle, none
+    const before = [idle(10 * MIN), idle(3 * H), failed(7 * H), failed(8 * H), failed(9 * H)];
+    expect([site({ failures: 3, checks: before }), site({ failures: 4, checks: [failed(MIN), ...before] })]).toEqual([false, false]);
+    // only the newest `failures` count, and a tap neither counts nor breaks the run
+    const tap: Check = { ...failed(2 * H), by: 'tap', r: ok };
+    expect([site({ failures: 1, checks: [failed(MIN), failed(7 * H)] }), site({ failures: 2, checks: [failed(MIN), tap, failed(7 * H)] })]).toEqual([false, true]);
   });
 });
 
