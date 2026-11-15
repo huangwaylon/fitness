@@ -613,6 +613,23 @@ describe('state', () => {
     expect(gym.store.rule('2026-10-11')).toBeUndefined();
   });
 
+  it('a brand-new bot (no saved state) keeps no weekend on 12-13, and marks the move done', async () => {
+    vi.setSystemTime(at('2026-10-10', '09:00')); // a Saturday
+    state = fakeState(new Map());
+    gym = await start();
+    expect(gym.store.rule('2026-10-10')).toBeUndefined();
+    expect(state.kv.has('state')).toBe(false);
+    expect(state.kv.get('mig:weekendOff')).toBe(true);
+  });
+
+  it('an unreadable saved state keeps no weekend on 12-13 either', async () => {
+    vi.setSystemTime(at('2026-10-10', '09:00'));
+    state = fakeState(new Map([['state', { version: 999 }]]));
+    gym = await start();
+    expect(gym.store.rule('2026-10-10')).toBeUndefined();
+    expect(state.kv.get('mig:weekendOff')).toBe(true);
+  });
+
   it('drops a saved ⏳ that leaves no slot (a 🔔 21:30+, saved before the rule), keeps the rest', async () => {
     const [d1, d2] = [inDays(5), inDays(6)];
     const checkFrom = { [d1]: isoJst(at(d1, '21:45')), [d2]: isoJst(at(inDays(2), '18:00')) };
