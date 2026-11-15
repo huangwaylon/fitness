@@ -30,7 +30,10 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"a
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
 `version.json`, CSP header and the relay's CORS for it). GitHub drops most scheduled runs, so its-bot's cron dispatches
 health.yml at :15 and its-health.yml at :15 and :45 (`its/worker/src/dispatch.ts` `dueHealth`, its `GH_DISPATCH_TOKEN`;
-`its health-dispatch refused` warns); each workflow's own schedule is the backstop. Red (GitHub mails the owner)
+`its health-dispatch refused` warns); each workflow's own schedule is the backstop. `GH_DISPATCH_TOKEN`'s expiry is
+unknown (no date noted): once it lapses, every its-bot dispatch is refused (開始's, the watchdog's, the health
+workflows', Kalori's weekly run: `status=401`) and only GitHub's schedules start them; rotate a new fine-grained PAT
+(this repo, Actions read/write) with `npx wrangler secret put GH_DISPATCH_TOKEN` in `its/worker`. Red (GitHub mails the owner)
 unless all pass; it warns when the weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
