@@ -196,7 +196,8 @@ the schedule and none is unfinished (`its/worker/src/dispatch.ts` `dispatchKalor
 kalori-dispatch`); the schedule stays the backstop. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
 run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
-release keeps the progress.
+release keeps the progress. Its 20 shards run at most 10 at a time (Actions' 20 jobs are account-wide: the ITS runner 1,
+suumo 8), the rest queued: a round can take up to two shard budgets.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.
 1. **A held update** (the PR `kalori-update/<tag>`, its body the gate table, `HELD` on the band that failed; no CI
@@ -211,7 +212,8 @@ release keeps the progress.
 3. **By hand** (`gh workflow run kalori-scrape.yml`, on main: another branch never publishes): `refetch_before` today
    for a full refetch. A test: `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`):
    never publishes or writes the status; its wip release goes when its shards end well, else `gh release delete
-   kalori-wip-<name> --cleanup-tag`. **Locally**: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
+   kalori-wip-<name> --cleanup-tag` (with `only_shops`, every shard owning none of them stops with exit 1: always by hand;
+   an all-green smoke: `max_requests` alone, e.g. 5). **Locally**: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
    food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run
    food:data`; the tests and `npm run verify`; commit `fetch.py` and `app/static/food/`.
 
