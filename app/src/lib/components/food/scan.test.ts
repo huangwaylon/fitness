@@ -52,7 +52,7 @@ describe('lookupCode: ours, then Open Food Facts, then nothing', () => {
 
 describe('lookupCode: the barcode shards between ours and Open Food Facts', () => {
   const kvass: Item = { id: 'off:4607001771883', name: 'Kvass', kcal: 27, p: 0, f: 0, c: 6.5, salt: 0 };
-  const withJan = { ...db, jan: 'j1' } as unknown as FoodDb;
+  const shardDb = { ...db, jan: 'j1' } as unknown as FoodDb;
   const shard = JSON.stringify(toColumns({ source: 'off', items: [kvass, { ...chips, name: 'not this one' }] }));
   const serve = (res: () => Promise<Response>) => {
     const asked: string[] = [];
@@ -64,23 +64,23 @@ describe('lookupCode: the barcode shards between ours and Open Food Facts', () =
   it('a code beyond the products: its shard (jan/<last 3>.json under the index’s jan), fetched once, OFF never asked', async () => {
     const asked = serve(async () => new Response(shard));
     const ask = vi.fn();
-    expect(await lookupCode('4607001771883', withJan, '?', 'EAN-13', ask)).toEqual({ k: 'ours', item: { ...kvass, jan: '4607001771883' } });
-    expect(await lookupCode('4607001771883', withJan, '?', 'EAN-13', ask)).toMatchObject({ k: 'ours' });
+    expect(await lookupCode('4607001771883', shardDb, '?', 'EAN-13', ask)).toEqual({ k: 'ours', item: { ...kvass, jan: '4607001771883' } });
+    expect(await lookupCode('4607001771883', shardDb, '?', 'EAN-13', ask)).toMatchObject({ k: 'ours' });
     expect(asked.map((h) => h.replace(/^.*\/food\//, ''))).toEqual(['jan/883.json?v=j1']);
     expect(ask).not.toHaveBeenCalled();
     expect(counted).toEqual(['act:scan.found.jan', 'act:scan.found.jan']);
   });
   it('products.json first: a code in both is the products’, no shard fetched', async () => {
     const asked = serve(async () => new Response(shard));
-    expect(await lookupCode('4901330502881', withJan, '?', 'EAN-13', vi.fn())).toEqual({ k: 'ours', item: chips });
+    expect(await lookupCode('4901330502881', shardDb, '?', 'EAN-13', vi.fn())).toEqual({ k: 'ours', item: chips });
     expect([asked, counted]).toEqual([[], ['act:scan.found']]);
   });
   it('not in its shard (or no shard, 404), or the shard unreachable: OFF asked', async () => {
     serve(async () => new Response(null, { status: 404 }));
     const ask = vi.fn(async () => ({ k: 'none' as const }));
-    expect(await lookupCode('4902102072618', withJan, '?', undefined, ask)).toEqual({ k: 'miss' });
+    expect(await lookupCode('4902102072618', shardDb, '?', undefined, ask)).toEqual({ k: 'miss' });
     serve(async () => { throw new TypeError('offline'); });
-    expect(await lookupCode('4607001771883', withJan, '?', undefined, async () => ({ k: 'off' }))).toEqual({ k: 'offline' });
+    expect(await lookupCode('4607001771883', shardDb, '?', undefined, async () => ({ k: 'off' }))).toEqual({ k: 'offline' });
     expect(counted).toEqual(['act:scan.miss', 'act:scan.offline']);
   });
 });

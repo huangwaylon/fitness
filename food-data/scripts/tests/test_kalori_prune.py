@@ -46,6 +46,11 @@ class Prune(unittest.TestCase):
         with mock.patch('sys.stdin', stdin), redirect_stdout(out):
             self.assertEqual(P.main(['--pinned', 'kalori-2026-11-15']), 0)
         self.assertEqual(out.getvalue(), 'kalori-2026-11-12\n')
+        stdin.seek(0)
+        out = io.StringIO()
+        with mock.patch('sys.stdin', stdin), redirect_stdout(out):   # main's tag now too (a merge since the run began)
+            self.assertEqual(P.main(['--pinned', 'kalori-2026-11-15', '--pinned', 'kalori-2026-11-12']), 0)
+        self.assertEqual(out.getvalue(), '')
         with mock.patch('sys.stderr', io.StringIO()):
             self.assertEqual(P.main(['--pinned', 'kalori-wip']), 1)
 

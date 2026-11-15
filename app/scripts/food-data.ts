@@ -20,8 +20,7 @@
 // index.json is written last, with `schema` (db.ts FOOD_SCHEMA: the layout; an app that reads an older one refuses
 // the index): `files`, each shipped file's own version (a hash of its bytes, keys included), so a
 // Kalori refresh refetches kalori.json alone, while a change here (keys, a dropped field) is a new version of
-// every file it touches; and `version`, that of them all (an older app's or worker's `?v=`, the fallback for an index
-// without `files`). out/'s index keeps the pipeline's own hash.
+// every file it touches; and `version`, that of them all. out/'s index keeps the pipeline's own hash.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -155,6 +154,9 @@ if (ONLY !== undefined) {
   const files = datasets.map((d) => d.file as string);
   const missing = ['verify.json', ...files].filter((f) => f !== entry.file && !existsSync(join(OUT, f)));
   if (missing.length) fail(`missing in ${OUT}: ${missing.join(', ')}`);
+  // (the files it keeps by column, before anything is written: writeIndex's check, early)
+  const rows = files.filter((f) => f !== entry.file && !(JSON.parse(readFileSync(join(OUT, f), 'utf8')) as { cols?: unknown }).cols);
+  if (rows.length) fail(`not by column in ${OUT} (schema ${FOOD_SCHEMA}): ${rows.join(', ')}`);
   const data = readDataset(join(SRC, entry.file), entry.file);
   writeFileSync(join(OUT, entry.file), shipped(entry.file, data, true));
   // (the products' shards with them, when the data dir has them: which codes ship depends on products.json)

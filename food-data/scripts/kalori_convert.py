@@ -23,7 +23,7 @@ gone or discontinued past RETAIN (retired) or a name over 60 characters that, cu
 A product the page says may be discontinued (`ended`), the shop's listing no longer shows (`listed: false`) or the site
 no longer has (`gone`) stays, marked `ended: true` and `pop: -1` (ranked under the current menu).
 
-What every item would carry is left to the app's loader (db.ts withJan, for `source: kalori`): `sv: true`, the one
+What every item would carry is left to the app's loader (db.ts fillIn, for `source: kalori`; portionsOf its 1食): `sv: true`, the one
 1食 portion and `brand` (its shop's name, the header's `shops`); 54k items are 10 MB, not 14 (parsed in the phone's
 worker, and each refresh a blob in git); app/scripts/food-data.ts ships them by column (7.4 MB, 1.19 MB gzipped).
 """
@@ -43,7 +43,7 @@ FIB_MAX = 100        # lib.validate's fib limit
 # our shops empty) the shards are partial, and the file isn't written unless PARTIAL_ENV=1 (a local or partial run)
 ITEMS_MIN = 45000
 PARTIAL_ENV = 'KALORI_ALLOW_PARTIAL'
-# what every item would carry, left to the app's loader (db.ts withJan): never in the file
+# what every item would carry, left to the app's loader (db.ts fillIn, nutrition.ts portionsOf): never in the file
 LOADER_KEYS = ('brand', 'sv', 'portions')
 # off_product: only a shop selling packaged food, and the label's values for a serving within this spread
 OFF_RETAIL = ('convenience', 'supermarket', 'bread', 'sweets', 'confectionery', 'bento', 'cafe')
@@ -627,10 +627,6 @@ def read_shops(path=ALIASES):
     doc = {k: v for k, v in doc.items() if not k.startswith('_')}
     aliases = {k: v if isinstance(v, list) else v.get('aliases', []) for k, v in doc.items()}
     return {k: v for k, v in aliases.items() if v}, {k: v['name'] for k, v in doc.items() if isinstance(v, dict)}
-
-
-def read_aliases(path=ALIASES):
-    return read_shops(path)[0]
 
 
 def convert(rows, aliases=None, off=None, names=None):

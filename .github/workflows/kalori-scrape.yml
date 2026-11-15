@@ -438,7 +438,8 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           gh release delete "$WIP" --yes --cleanup-tag
           echo "published $tag" | tee -a "$GITHUB_STEP_SUMMARY"
-      # The dated releases past the newest 3 (this one and two to roll back to), never the one main's KALORI_TAG pins
+      # The dated releases past the newest 3 (this one and two to roll back to), never the one main's KALORI_TAG pins (as
+      # the diff read it, and again now)
       # (kalori_prune.py: by the tag's date and suffix; never a wip, draft, prerelease or other release). A failure
       # here is a warning: the update goes on.
       - name: Delete the older Kalori releases
@@ -448,7 +449,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           OLD: ${{ steps.diff.outputs.old }}
         run: |
-          gone=$(gh release list --limit 200 --json tagName,isDraft,isPrerelease | python3 -I food-data/scripts/kalori_prune.py --pinned "$OLD")
+          now=$(gh api "repos/$GH_REPO/contents/food-data/scripts/fetch.py?ref=main" --jq .content | base64 -d \
+            | sed -n "s/^KALORI_TAG = '\(kalori-[0-9a-z-]*\)'$/\1/p")
+          gone=$(gh release list --limit 200 --json tagName,isDraft,isPrerelease | python3 -I food-data/scripts/kalori_prune.py --pinned "$OLD" --pinned "${now:-$OLD}")
           for t in $gone; do gh release delete "$t" --yes --cleanup-tag && echo "deleted $t" | tee -a "$GITHUB_STEP_SUMMARY"; done
       # For update-merge's gates and the status (whatever the diff said). Any job of the run can upload an artifact by
       # this name: update-merge takes it only when its digests match these outputs, which no other job can set.

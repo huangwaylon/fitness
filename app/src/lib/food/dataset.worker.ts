@@ -24,6 +24,8 @@ self.onmessage = async (e: MessageEvent<{ id: number; href: string }>) => {
   const { id, href } = e.data;
   try {
     const file = await fetched(href);
+    // (a file not by column, another layout: an error, the dataset left out and logged, never empty in silence)
+    if (!Array.isArray(file?.cols?.id)) throw new Error(`${href}: not by column`);
     const head = headerOf(file);
     const n = countOf(file);
     for (let i = 0; i < n; i += SLICE) {

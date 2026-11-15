@@ -1,5 +1,5 @@
 // ごはん's chain menus (Kalori, docs/food-data.md "Kalori"): a lazy secondary dataset like the products, its file
-// (static/food/kalori.json, here a route to a fixture of invented items, index.json listing it should this build's not)
+// (static/food/kalori.json, here a route to a fixture of invented items)
 // fetched at the search's open, with no key; its rows show their shop, and one logs by the serving (`sv`, kept by the
 // record, e2e/record.ts). The guest's phone and the demo have them too.
 import { readFileSync } from 'node:fs';
@@ -14,7 +14,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 type Rec = ReturnType<typeof newRecord>;
 
 /** The chain menus' file routed to the fixture (answered once `held` settles; each request's Authorization kept: none),
- *  index.json listing it as a lazy secondary set should the build's not, and Kalori's pictures answered here. */
+ *  and Kalori's pictures answered here. */
 async function serveChains(context: BrowserContext, held?: Promise<void>) {
   const auth: (string | undefined)[] = [];
   const imgs: { url: string; referer?: string }[] = [];
@@ -22,11 +22,6 @@ async function serveChains(context: BrowserContext, held?: Promise<void>) {
     const url = route.request().url();
     imgs.push({ url, referer: route.request().headers()['referer'] });
     return url.endsWith('_200.webp') ? route.fulfill({ status: 200, contentType: 'image/png', body: PNG }) : route.abort();
-  });
-  await context.route(/\/food\/index\.json(\?|$)/, async (route) => {
-    const index = (await (await route.fetch()).json()) as { datasets: Record<string, unknown>[] };
-    if (!index.datasets.some((d) => d.file === 'kalori.json')) index.datasets.push({ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true });
-    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(index) });
   });
   await context.route(/\/food\/kalori\.json(\?|$)/, async (route) => {
     auth.push(route.request().headers()['authorization']);

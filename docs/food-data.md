@@ -61,7 +61,7 @@ the old layout, is deleted at its activate). A null value shows 「–」, a day
 MEXT markers: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark dropped. kcal is MEXT's
 energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their ingredient lists.
 
-**`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }], "files", "schema" }`.
+**`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }], "files", "jan", "schema" }`.
 `schema`: the layout (2: by column; `db.ts FOOD_SCHEMA`), and an app that reads an older one refuses the index (no
 fetch; it asks for the deployed build). `files` (required):
 each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its bytes; `version`: the same over all of

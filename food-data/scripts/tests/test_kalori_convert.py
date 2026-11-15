@@ -117,7 +117,7 @@ class Convert(unittest.TestCase):
         self.assertEqual(doc['shops'], {'nami': {'name': 'nami'}})
 
     def test_loader_keys_never_shipped(self):
-        # sv, the 1食 portion and brand (the header's shop name) are the app's loader's (db.ts withJan)
+        # sv, the 1食 portion and brand (the header's shop name) are the app's loader's (db.ts fillIn, portionsOf)
         doc, _ = self.conv([row(1, 'a'), row(2, 'b', shop='mame-cafe', shop_name='まめカフェ')])
         self.assertFalse([it['id'] for it in doc['items'] if set(it) & set(K.LOADER_KEYS)])
         self.assertEqual(doc['shops'], {'mame-cafe': {'name': 'まめカフェ'}, 'tako-ya': {'name': 'たこ屋'}})

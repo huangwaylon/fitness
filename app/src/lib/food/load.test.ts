@@ -71,7 +71,7 @@ describe('static/food', () => {
     const shipped = ['verify.json', ...index.datasets.map((d) => d.file)];
     const own = Object.fromEntries(shipped.map((f) => [f, createHash('sha256').update(readFileSync(join(DIR, f))).digest('hex').slice(0, 12)]));
     expect(index.files).toEqual(own);
-    // `version`, of them all: an older app's or worker's ?v=, and an index without `files`' for every file
+    // `version`, of them all
     const hash = createHash('sha256');
     for (const f of shipped) hash.update(`${f}\0`).update(readFileSync(join(DIR, f))).update('\0');
     expect(index.version).toBe(hash.digest('hex').slice(0, 12));
@@ -578,6 +578,19 @@ describe('a catalog let go mid-load', () => {
 });
 
 describe('a dataset that fails to load', () => {
+  it('an index without files: refused; a dataset not by column: left out (logged), never an empty dataset', async () => {
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({ version: 'v0', datasets: [] })));
+    try {
+      await expect(loadFoodDb()).rejects.toThrow('without files');
+      const idx: FoodIndex = { version: 'v0', files: {}, datasets: [{ ...index.datasets[0], file: 'a.json', lazy: false }] };
+      vi.stubGlobal('fetch', async (href: string) => new Response(href.includes('index.json') ? JSON.stringify(idx) : href.includes('a.json') ? '{"source":"mext","items":[]}' : 'null', { status: href.includes('verify') ? 404 : 200 }));
+      const db = await loadFoodDb();
+      expect([db.sets, db.entries]).toEqual([[], []]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('an index of a later schema than FOOD_SCHEMA: refused (NewerFoodData), no data file fetched', async () => {
     const asked: string[] = [];
     vi.stubGlobal('fetch', async (href: string) => {

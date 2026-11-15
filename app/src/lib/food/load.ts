@@ -84,13 +84,20 @@ function startParser(): Worker | null {
  *  `mine`: its catalog's parses in flight (by id), for its close. */
 function fetchDataset(href: string, mine: Set<number>): Promise<Dataset> {
   const w = startParser();
-  if (!w) return json<Shipped>(href).then(fromFile);
+  if (!w) return json<Shipped>(href).then((f) => fromFile(byColumn(f, href)));
   const id = nextId++;
   mine.add(id);
   return new Promise<Dataset>((ok, no) => {
     parsing.set(id, { items: [], pool: new Map(), ok, no });
     w.postMessage({ id, href: new URL(href, location.href).href });
   }).finally(() => mine.delete(id));
+}
+
+/** A dataset file by column, else an error (a file of another layout: left out like a failed fetch, logged
+ *  `swallow:food.load`, never an empty dataset in silence). The worker's own check is the same. */
+function byColumn(f: Shipped, href: string): Shipped {
+  if (!Array.isArray(f?.cols?.id)) throw new Error(`${href}: not by column`);
+  return f;
 }
 
 /** Parses let go (their catalog closed): out of `parsing` (a slice still coming finds nothing: dropped), failed, and the
@@ -143,6 +150,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
     swallowed('food.schema');
     throw new NewerFoodData(`food data schema ${index.schema}, this app reads ${FOOD_SCHEMA}`);
   }
+  if (!index.files || typeof index.files !== 'object') throw new Error('food index.json without files');
   const db = emptyDb(index);
   // (its close: what's still loading dropped, never retried or added)
   const mine = new Set<number>();

@@ -75,7 +75,7 @@ export interface Dataset extends Partial<Credit> {
   shops?: Record<string, { name: string; aliases?: string[] }>;
 }
 
-/** A dataset file as shipped (schema 2): by column (`cols`: scripts/food-data.ts columnar; db.ts decodeItems makes the
+/** A dataset file as shipped (schema 2): by column (`cols`: db.ts toColumns makes it, decodeItems the
  *  items of it). A column is one value per item, `null` where the item has none (`p`,
  *  `f`, `c`, `salt`: null, unknown); `idPrefix` is each id's without it (`off:`, `kal:`). */
 export type Shipped = Omit<Dataset, 'items'> & { cols: Partial<Record<keyof Item, unknown[]>>; idPrefix: string };

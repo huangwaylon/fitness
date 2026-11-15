@@ -6,7 +6,7 @@ tag's date then its suffix, never by creation time. Never the one fetch.py's KAL
 network: the workflow lists and deletes.
 
 Usage: gh release list --limit 200 --json tagName,isDraft,isPrerelease \\
-         | python3 -I food-data/scripts/kalori_prune.py --pinned <KALORI_TAG> [--keep 3]
+         | python3 -I food-data/scripts/kalori_prune.py --pinned <KALORI_TAG> [--pinned <another>] [--keep 3]
   -> the tags to delete, one a line
 """
 import argparse
@@ -25,19 +25,22 @@ def order(tag):
 
 
 def to_delete(releases, pinned, keep=KEEP):
+    """`pinned`: a tag or tags never deleted."""
+    pinned = {pinned} if isinstance(pinned, str) else set(pinned)
     dated = [r['tagName'] for r in releases
              if isinstance(r, dict) and DATED.match(str(r.get('tagName', ''))) and not r.get('isDraft') and not r.get('isPrerelease')]
     newest = sorted(set(dated), key=order, reverse=True)
-    return [t for t in newest[keep:] if t != pinned]
+    return [t for t in newest[keep:] if t not in pinned]
 
 
 def main(argv):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--pinned', required=True, help="fetch.py's KALORI_TAG on main: never deleted")
+    ap.add_argument('--pinned', required=True, action='append', help="fetch.py's KALORI_TAG on main (as the run began, and now): never deleted")
     ap.add_argument('--keep', type=int, default=KEEP)
     a = ap.parse_args(argv)
-    if a.keep < 1 or not DATED.match(a.pinned):
-        print('kalori_prune: --keep under 1, or --pinned %r is no dated Kalori tag' % a.pinned, file=sys.stderr)
+    bad = [p for p in a.pinned if not DATED.match(p)]
+    if a.keep < 1 or bad:
+        print('kalori_prune: --keep under 1, or --pinned %r is no dated Kalori tag' % bad, file=sys.stderr)
         return 1
     for t in to_delete(json.load(sys.stdin), a.pinned, a.keep):
         print(t)

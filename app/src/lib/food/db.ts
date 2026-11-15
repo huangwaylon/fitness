@@ -5,8 +5,6 @@ import { searchKey } from './text.ts';
 import type { Credit, Dataset, FoodIndex, Item, Shipped, Verify, VerifyGroup } from './types.ts';
 
 export interface FoodDb {
-  /** index.json's content version: the data files' `?v=`. */
-  version: string;
   /** index.json's `jan`: the barcode shards' `?v=` (none: no shards). */
   jan?: string;
   /** The datasets loaded so far, each with its badge (「MEXT」, 「給食」) and credit line. */
@@ -34,7 +32,7 @@ export interface FoodDb {
   close(): void;
 }
 
-export const emptyDb = (index: Partial<FoodIndex> & Pick<FoodIndex, 'version'>): FoodDb => ({ version: index.version, jan: index.jan, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 
 /** The lazy datasets' sources by their ids' prefix: a product's (`off:`) or a chain menu's (`kal:`). */
 const LAZY_PREFIX: Record<string, string> = { 'off:': 'off', 'kal:': 'kalori' };
@@ -168,8 +166,8 @@ export function decodeItems(d: Shipped, from = 0, to = countOf(d)): Item[] {
   return out;
 }
 
-/** A file's items as objects (decodeItems), filled in (fillIn). A file not by column (a later layout): no items, never
- *  a throw that retries it. */
+/** A file's items as objects (decodeItems), filled in (fillIn). A file not by column: no items (load.ts and the worker
+ *  refuse one first). */
 export const fromFile = (f: Shipped): Dataset => fillIn({ ...headerOf(f), items: decodeItems(f) });
 
 /** Schema 2's fill-ins on decoded items: a product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops
