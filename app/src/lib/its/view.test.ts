@@ -10,8 +10,8 @@ import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, nightGrid, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
-  attentionLines, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
-  edges, savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanStrip, type Draft
+  attentionLines, changedParts, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
+  edges, savedLine, seasonMiss, settingsSummary, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanStrip, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -32,6 +32,14 @@ describe('the draft', () => {
     expect(sameDraft(d, draft({ guests: 3 }))).toBe(false);
     expect(sameDraft(d, draft({ autoConfirm: true }))).toBe(false);
     expect(sameDraft(d, removeDate(d, '2026-11-21'))).toBe(false);
+  });
+
+  it('設定’s rows: 自動で確定 is 通知’s (its summary and 未保存), 詳細 only 確認の間隔 and 人数', () => {
+    const d = draft(), on = draft({ autoConfirm: true }), p = { search: [], off: [] };
+    expect(settingsSummary(d, p, false)).toMatchObject({ detail: '15秒・2人', notify: 'オフ' });
+    expect(settingsSummary(on, p, true)).toMatchObject({ detail: '15秒・2人', notify: 'オン・自動確定' });
+    expect(changedParts(on, d)).toEqual({ dates: false, hotels: false, detail: false, notify: true });
+    expect(changedParts(draft({ guests: 3 }), d)).toEqual({ dates: false, hotels: false, detail: true, notify: false });
   });
 
   it('becomes a body the Worker takes, from the updatedAt it began at', () => {

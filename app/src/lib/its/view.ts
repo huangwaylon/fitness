@@ -238,19 +238,24 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
   });
 }
 
-/** 設定's folded rows' summaries (docs/design.md "Bots"): 施設 「探す12・除外4」, 詳細 「15秒・2人」. */
-export function settingsSummary(d: Draft, p: Pick<HotelParts, 'search' | 'off'>): { hotels: string; detail: string } {
+/** 設定's folded rows' summaries (docs/design.md "Bots"): 施設 「探す12・除外4」, 詳細 「15秒・2人」, 通知 「オフ・自動確定」
+ *  (this phone's push, `push`, then 自動で確定 while on). */
+export function settingsSummary(d: Draft, p: Pick<HotelParts, 'search' | 'off'>, push: boolean): { hotels: string; detail: string; notify: string } {
   const every = d.intervalSec < 60 ? t('its.interval.s', { n: d.intervalSec }) : t('its.interval.m', { n: d.intervalSec / 60 });
-  return { hotels: t('its.set.hotels', { n: p.search.length, off: p.off.length }), detail: [every, t('its.guestsN', { n: d.guests })].join('・') };
+  return {
+    hotels: t('its.set.hotels', { n: p.search.length, off: p.off.length }), detail: [every, t('its.guestsN', { n: d.guests })].join('・'),
+    notify: [t(push ? 'its.set.on' : 'its.set.off'), ...(d.autoConfirm ? [t('its.set.auto')] : [])].join('・')
+  };
 }
 
 /** Which of 設定's rows a draft changed from where it began (each folded row says 未保存). */
-export function changedParts(a: Draft, b: Draft): { dates: boolean; hotels: boolean; detail: boolean } {
+export function changedParts(a: Draft, b: Draft): { dates: boolean; hotels: boolean; detail: boolean; notify: boolean } {
   const only = (x: Partial<Draft>) => sameDraft({ ...b, ...x }, b);
   return {
     dates: !only({ dates: a.dates }),
     hotels: !only({ search: a.search, skip: a.skip }),
-    detail: !only({ intervalSec: a.intervalSec, guests: a.guests, autoConfirm: a.autoConfirm })
+    detail: !only({ intervalSec: a.intervalSec, guests: a.guests }),
+    notify: a.autoConfirm !== b.autoConfirm
   };
 }
 

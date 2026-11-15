@@ -277,6 +277,7 @@
   "its.set.unsaved": "Unsaved",
   "its.set.on": "On",
   "its.set.off": "Off",
+  "its.set.auto": "auto-confirm",
   "its.set.recent": "Recent: {list}",
   "its.menu.label": "Resort actions",
   "its.cal.today": "today",

@@ -8,8 +8,8 @@
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
   // (plain <details>, each with its summary and 未保存 while the draft changed it): 施設 (探す is the allow-list; presets,
-  // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数,
-  // 自動で確定), 通知 (this phone's push, at once: ItsNotify) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
+  // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数),
+  // 通知 (this phone's push, at once: ItsNotify; 自動で確定, in the draft) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
   // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
   // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
   // way or running, every minute otherwise, only while shown (useBot.svelte.ts); 保存 / 開始 / 停止 abort a read in
@@ -158,8 +158,8 @@
     return list.length ? t('its.set.recent', { list: list.join(' · ') }) : null;
   });
   /** 設定's rows: each one's summary, and which a draft changed (未保存). */
-  const sums = $derived(shown ? settingsSummary(shown, parts) : null);
-  const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false });
+  const sums = $derived(shown ? settingsSummary(shown, parts, notifyOn) : null);
+  const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false, notify: false });
   const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
    *  shared strip. */
@@ -465,16 +465,18 @@
             <span class="lbl">{t('its.guests')}</span>
           <Segmented items={guests} value={String(shown.guests)} label={t('its.guests')} attr="its-guests" onpick={(id) => edit((d) => ({ ...d, guests: Number(id) }))} />
         </div>
+        </div>
+      </details>
+      <details class="card fold" data-its-fold="notify">
+        <summary class="prow static"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{sums?.notify}</small></span>{#if changed.notify}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
+        <div class="fbody">
+        <ItsNotify push={status.push} bind:on={notifyOn} />
         <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self"
           onclick={() => (shown!.autoConfirm ? setAuto(false) : (askAuto = true))}>
           <span class="prl">{t('its.auto')}</span>
           <span class="sw" aria-hidden="true"><i></i></span>
         </button>
         </div>
-      </details>
-      <details class="card fold" data-its-fold="notify">
-        <summary class="prow static"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{t(notifyOn ? 'its.set.on' : 'its.set.off')}</small></span><span class="chev" aria-hidden="true"></span></summary>
-        <div class="fbody"><ItsNotify push={status.push} bind:on={notifyOn} /></div>
       </details>
       {#if recentOps}<p class="hint" data-its-saved-by><Phrases text={recentOps} /></p>{/if}
     </section>
