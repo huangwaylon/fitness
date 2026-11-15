@@ -1,5 +1,5 @@
 // The profile prefs (docs/backend.md "Events" `pref`, contract/profile.ts): locked since 2026-11-15, so the record
-// refuses every `sex`, `birth` and old `bmiStd` from anyone (`forbidden`, `profile locked`); the rows it already keeps
+// refuses every `sex` and `birth` from anyone (`forbidden`, `profile locked`); the rows it already keeps
 // stay, a member's seen by the two members alone and the guest's by the guest alone (contract/guest.ts rowsFor), in
 // every snapshot and delta. Made-up values only.
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -42,7 +42,7 @@ describe('the profile prefs', () => {
     const got: string[] = [];
     for (const key of [KEY_A, KEY_B, KEY_C])
       for (const data of [{ key: 'sex', value: 'm' }, { key: 'sex', value: null }, { key: 'birth', value: '1985-07-15' }, { key: 'birth', value: null },
-        { key: 'bmiStd', value: 'asia' }, { key: 'sex', value: 'f', person: 'B' }, { key: 'birth', value: '1988-03-09', person: 'A' }]) {
+        { key: 'sex', value: 'f', person: 'B' }, { key: 'birth', value: '1988-03-09', person: 'A' }]) {
         const r = send(key, data);
         if (r.ok !== false || r.error !== 'forbidden' || r.detail !== 'profile locked') got.push(JSON.stringify([key[0], data, r]));
       }
@@ -54,11 +54,10 @@ describe('the profile prefs', () => {
     expect(r.meta).toMatchObject({ st: 'forbidden', why: 'pref.profile_locked' });
   });
 
-  it('keeps the rows from before: a member’s to the members alone, the guest’s to the guest alone, an old BMI standard’s too', () => {
+  it('keeps the rows from before: a member’s to the members alone, the guest’s to the guest alone', () => {
     call(KEY_A, 'health');
     kept('A', { key: 'sex', value: 'm' });
     kept('A', { key: 'birth', value: '1990-05-12' });
-    kept('B', { key: 'bmiStd', value: 'who', person: 'A' });
     kept('B', { key: 'birth', value: '1994-08-20' });
     send(KEY_A, { key: 'villagerName', value: 'テスト' });
     const since = new Date(now).toISOString();
@@ -72,23 +71,8 @@ describe('the profile prefs', () => {
     for (const key of [KEY_A, KEY_B]) {
       const got = prefs(key);
       expect(got.filter(([who]) => who === 'G')).toEqual([]);
-      expect(got.map(([, d]) => d.key)).toEqual(['sex', 'birth', 'bmiStd', 'birth', 'villagerName', 'sex']);
+      expect(got.map(([, d]) => d.key)).toEqual(['sex', 'birth', 'birth', 'villagerName', 'sex']);
       expect(prefs(key, since)).toEqual([['B', { key: 'sex', value: 'f' }]]);
     }
-  });
-
-  it('one-off: the BMI standard’s old rows counted, then deleted with the confirm; every other row stays', () => {
-    call(KEY_A, 'health');
-    kept('A', { key: 'sex', value: 'm' });
-    kept('B', { key: 'bmiStd', value: 'who' });
-    kept('A', { key: 'bmiStd', value: 'asia' });
-    send(KEY_A, { key: 'villagerName', value: 'テスト' });
-    const all = () => prefs(KEY_A).map(([, d]) => d.key);
-    expect(store.dropBmiStd({})).toEqual({ ok: true, rows: 2, by: { 'B:who': 1, 'A:asia': 1 }, deleted: 0 });
-    expect(all()).toEqual(['sex', 'bmiStd', 'bmiStd', 'villagerName']);
-    expect(store.dropBmiStd({ confirm: 'drop-bmistd' })).toMatchObject({ ok: true, rows: 2, deleted: 2, left: 0 });
-    expect(all()).toEqual(['sex', 'villagerName']);
-    // an old app's bmiStd: refused as the lock
-    expect(send(KEY_A, { key: 'bmiStd', value: 'who' })).toMatchObject({ ok: false, error: 'forbidden', detail: 'profile locked' });
   });
 });

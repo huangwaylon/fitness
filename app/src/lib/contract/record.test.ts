@@ -117,11 +117,10 @@ describe('validEventData: each type\'s shape', () => {
   });
 
 
-  it('a pref: a known key with a value (the old BMI standard no more), a day only on a goal a day keeps, a season look', () => {
+  it('a pref: a known key with a value, a day only on a goal a day keeps, a season look', () => {
     expect(ok('pref', { key: 'locale', value: 'ja' })).toBe(true);
     expect(ok('pref', { key: 'nope', value: 1 })).toBe(false);
     expect(ok('pref', { key: 'locale' })).toBe(false);
-    expect(ok('pref', { key: 'bmiStd', value: 'asia' })).toBe(false);
     expect(ok('pref', { key: 'stepsGoal', value: 9000, day: '2026-11-05' })).toBe(true);
     expect(ok('pref', { key: 'stepsGoal', value: 9000, day: 'today' })).toBe(false);
     expect(ok('pref', { key: 'goalWeight', value: 60, day: '2026-11-05' })).toBe(false); // a latest-only goal has no day
@@ -226,7 +225,7 @@ describe('goalDay', () => {
 });
 
 describe('prefTaken: the island\'s and the profile\'s prefs', () => {
-  it('takes a weather mode, a season look, and a kept profile row’s value or null (never an old BMI standard’s: no slot)', () => {
+  it('takes a weather mode, a season look, and a kept profile row’s value or null', () => {
     expect(prefTaken('weatherMode', 'real')).toBe(true);
     expect(prefTaken('weatherMode', 'sunny')).toBe(false);
     expect(prefTaken('seasonLook', null)).toBe(true);
@@ -236,7 +235,6 @@ describe('prefTaken: the island\'s and the profile\'s prefs', () => {
     expect(prefTaken('sex', 'x')).toBe(false);
     expect(prefTaken('birth', '1990-03-04')).toBe(true);
     expect(prefTaken('birth', '1990-13-04')).toBe(false);
-    for (const v of ['asia', 'who', null]) expect(prefTaken('bmiStd', v)).toBe(false);
   });
 });
 

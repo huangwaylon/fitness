@@ -659,7 +659,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     } else if (d.key === 'savedLooks' && Array.isArray(d.value)) p.savedLooks = readSavedLooks(d.value, person);
     else if (isProfileKey(d.key)) {
       // The profile (the rows kept: locked since 2026-11-15): a value, or an old row's null clearing it; anything else
-      // is ignored (as the record's slot: prefTaken), an old `bmiStd` row too.
+      // is ignored (as the record's slot: prefTaken).
       if (d.value === null) delete p[d.key];
       else if (d.key === 'sex' ? isSex(d.value) : isBirth(d.value)) (p as Record<ProfileKey, unknown>)[d.key] = d.value;
     } else if (id !== null) {

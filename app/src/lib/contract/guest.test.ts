@@ -22,7 +22,7 @@ describe('guestMayWrite', () => {
   it('its own prefs: cosmetic, the meal log’s goals and the island’s weather; never its profile (locked), a person’s, an activity or a からだ goal', () => {
     for (const key of ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'weatherMode', 'kcalGoal', 'proteinGoal'])
       expect(guestMayWrite('pref', { key }), key).toBe(true);
-    for (const key of ['sex', 'birth', 'bmiStd', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean'])
+    for (const key of ['sex', 'birth', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean'])
       expect(guestMayWrite('pref', { key }), key).toBe(false);
     expect(guestMayWrite('pref', { key: 'villagerName', person: 'A' })).toBe(false);
     expect(guestMayWrite('pref', { key: 'weatherMode', person: 'G' })).toBe(false);

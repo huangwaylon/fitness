@@ -71,10 +71,10 @@ export const PREF_KEYS: readonly string[] = [
   'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'look', 'savedLooks', 'seasonLook'
 ];
 
-/** The profile's `pref` rows (contract/profile.ts PROFILE_KEYS, and `bmiStd`: the BMI standard's old rows, never read since
- *  2026-11-15): locked, the record refuses them from anyone (`forbidden`, `profile locked`); the rows kept keep their
- *  subject (`data.person`: eventSubject) and stay private (contract/guest.ts rowsFor). */
-export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth', 'bmiStd'];
+/** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): locked, the
+ *  record refuses them from anyone (`forbidden`, `profile locked`); the rows kept keep their subject (`data.person`:
+ *  eventSubject) and stay private (contract/guest.ts rowsFor). */
+export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth'];
 
 /** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the
  *  default) or the game's seeded one. One for the whole island (no `person`; the last one set wins), so both phones

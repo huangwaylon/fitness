@@ -30,11 +30,11 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     expect({ got, tokyo }).toEqual({ got: [29, 30, 30, 30, 20, 21, 24, 0], tokyo: [35, 36, null] });
   });
 
-  it('the contract’s literal key lists agree (the record’s profile rows: the model’s keys and the old BMI standard); the registry names the computed defaults', () => {
+  it('the contract’s literal key lists agree; the registry names the computed defaults', () => {
     expect({
       keys: [...PROFILE_PREF_KEYS], inPrefs: PROFILE_KEYS.every((k) => PREF_KEYS.includes(k)),
       derived: (['k', 'p', 'fa', 'c', 's'] as const).map((n) => GOALS[n].derived ?? null)
-    }).toEqual({ keys: [...PROFILE_KEYS, 'bmiStd'], inPrefs: true, derived: ['energy', 'protein', null, null, 'salt'] });
+    }).toEqual({ keys: [...PROFILE_KEYS], inPrefs: true, derived: ['energy', 'protein', null, null, 'salt'] });
   });
 
   it('a birth date: a real date from 1900', () => {
@@ -55,7 +55,7 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     expect([18.4, 18.5, 22.9, 23, 24.9, 25, 29.9, 30].map((b) => bmiCategory(b))).toEqual(['under', 'normal', 'normal', 'over', 'over', 'obese', 'obese', 'obese']);
   });
 
-  it('reads the profile rows kept (either member’s by either, cleared by null, a bad value and an old BMI standard ignored; the guest’s own)', () => {
+  it('reads the profile rows kept (either member’s by either, cleared by null, a bad value ignored; the guest’s own)', () => {
     const s = reduce({
       metrics: [],
       events: [
@@ -63,7 +63,6 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
         pref('B', T + 1, { key: 'birth', value: '1990-05-12', person: 'A' }),
         pref('A', T + 2, { key: 'sex', value: 'x' }), // ignored: the previous stays
         pref('B', T + 3, { key: 'sex', value: 'f' }),
-        pref('B', T + 4, { key: 'bmiStd', value: 'who' }), // ignored
         pref('B', T + 5, { key: 'birth', value: '1994-08-20' }),
         pref('B', T + 6, { key: 'birth', value: null }), // cleared
         pref('G', T + 6, { key: 'sex', value: 'f' })

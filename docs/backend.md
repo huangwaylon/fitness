@@ -69,8 +69,8 @@ The wedding types and `trip_note` are the members' only (the guest's are `forbid
 - Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)).
 - Goals, one key per charted metric (`goals.ts` GOALS). **Per day:** `stepsGoal`, `moveGoal`, `exerciseGoal`,
   `standGoal`, each with an optional `day` (`goalDay`). **Latest only** (or null): the からだ goals and the meal log's.
-- The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth` (old `bmiStd` rows kept, ignored). **Private**
-  (`rowsFor`): a member's reaches the two members only, the guest's the guest only.
+- The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Private** (`rowsFor`): a member's reaches
+  the two members only, the guest's the guest only.
   **Locked:** the record refuses any profile pref from anyone (`forbidden`, `profile locked`); a change takes a code change.
 - Island-wide: `weatherMode` and `seasonLook` ([The real weather](#the-real-weather)).
 

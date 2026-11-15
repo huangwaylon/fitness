@@ -40,7 +40,6 @@ test('the profile: first in settings, read-only, the members’ to the members a
   rec.kept('A', 'pref', { key: 'birth', value: '1990-05-12' });
   rec.kept('A', 'pref', { key: 'sex', value: 'f', person: 'B' });
   rec.kept('B', 'pref', { key: 'birth', value: '1994-08-20' });
-  rec.kept('B', 'pref', { key: 'bmiStd', value: 'who' }); // the old BMI standard's: ignored
   rec.kept('G', 'pref', { key: 'sex', value: 'f' });
   const lineA = `男性・1990/5/12（${ageNow('1990-05-12')}歳）`, lineB = `女性・1994/8/20（${ageNow('1994-08-20')}歳）`;
 

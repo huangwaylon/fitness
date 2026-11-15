@@ -76,7 +76,7 @@ function prefData(r: EventRow): Rec | null | false {
 }
 
 /**
- * Whether a profile `pref` row (sex, birth date, an old BMI standard: contract/api.ts PROFILE_PREF_KEYS) reaches `viewer`: a member's
+ * Whether a profile `pref` row (sex, birth date: contract/profile.ts) reaches `viewer`: a member's
  * (its subject `person`, else its sender, A or B) only the two members, the guest's only the guest. Any other row: yes.
  */
 function profileSeen(viewer: Who, r: EventRow, d: Rec): boolean {
