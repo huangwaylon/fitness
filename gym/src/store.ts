@@ -171,6 +171,16 @@ export class Store {
     return from !== undefined && from >= fromLimit(day, this.effectiveRule(day, today)) && this.changeCheckFrom(day, null);
   }
 
+  /** The one-off move to weekends off (bot.ts, once): a Saturday or Sunday among today's default days with no saved
+   *  rule was checked for DEFAULT_WINDOW, which is now saved as its rule, so it still is (its ⏳ kept); later weekends
+   *  are off. Returns the days saved. */
+  keepNearWeekends(today: Day): Day[] {
+    const days = defaultDays(today).filter((d) => isWeekend(d) && !this.rulesByDay.has(d));
+    for (const d of days) this.rulesByDay.set(d, defaultRule());
+    if (days.length) this.dirty = true;
+    return days;
+  }
+
   /** Clear everything for a day, including which of its times were announced, so they can alert again once the day
    *  is checked. Returns false if there was nothing to clear. */
   reset(day: Day): boolean {

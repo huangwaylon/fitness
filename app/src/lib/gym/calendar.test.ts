@@ -163,6 +163,8 @@ describe('a weekend (オフ unless set)', () => {
     expect([c[2].fill, c[2].label]).toEqual(['off', '11/14（土）、ふだん（オフ）']);
     expect([c[3].fill, c[3].label]).toEqual(['range', '11/15（日）、12:00〜13:00']);
     expect([isUnset(weekend(2)), isUnset(weekend(3, { rule: 'any' })), isUnset(row(1)), isUnset(row(1, { rule: 'skip' }))]).toEqual([true, false, true, false]);
+    // a weekend saved オフ (before weekends went off): set, as the Worker's resettable says; an unset one with a ⏳ isn't
+    expect([isUnset(weekend(2, { resettable: true })), isUnset(weekend(2, { resettable: true, from: 1 })), isUnset(weekend(2, { resettable: true, announced: ['12:00'] }))]).toEqual([false, true, true]);
   });
 
   it('predicts as the bot: DEFAULT_WINDOW is a setting, オフ and 🧹 save nothing', () => {

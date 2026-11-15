@@ -22,6 +22,8 @@ const NO_LINE_FACTS: GymStatus['line'] = { used: null, limit: null, webhookOk: n
  *  eviction loses nothing. A saved state that can't be read is kept aside under STATE_BAD. */
 const STATE = 'state';
 const STATE_BAD = 'state.bad';
+/** Set once the near weekends were kept on DEFAULT_WINDOW (Store.keepNearWeekends): the move runs once. */
+const MIG_WEEKEND_OFF = 'mig:weekendOff';
 const RUNTIME = 'runtime';
 
 interface Runtime {
@@ -90,6 +92,12 @@ export class GymBot extends DurableObject<Env> implements Bot {
     this.changes = latestChanges(this.changes.map(({ said: _, ...c }: StoredChange & { said?: boolean }) => c));
     this.store.purge(Date.now()); // e.g. a 🔔 ⏳ at 21:30 or later, saved before the rule
     this.savedRuntime = JSON.stringify(this.runtime());
+    if (!(await this.ctx.storage.get(MIG_WEEKEND_OFF))) {
+      const kept = this.store.keepNearWeekends(localDateAt(Date.now()));
+      if (kept.length) console.log(`weekends off: kept ${kept.join(', ')} on the default window`);
+      if (this.store.dirty) await this.save();
+      await this.ctx.storage.put(MIG_WEEKEND_OFF, true);
+    }
     if (!this.groupId) console.warn("LINE_GROUP_ID isn't set: alerts can't be sent until it is");
   }
 

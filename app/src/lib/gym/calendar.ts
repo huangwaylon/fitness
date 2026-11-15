@@ -35,8 +35,11 @@ export const ruleOf = (row: DayRow): Rule | null => row.rule ?? (row.usual ? [DE
 
 /** A day with nothing saved reads as this rule: オフ on a weekend, else none. */
 const unsetRule = (row: DayRow): Rule | null => (row.weekend ? 'skip' : null);
-/** Nothing saved for the day (its rule is the usual: ふだん, オフ on a weekend, or 未チェック). */
-export const isUnset = (row: DayRow): boolean => row.rule === unsetRule(row);
+/** Nothing saved for the day (its rule is the usual: ふだん, オフ on a weekend, or 未チェック). A weekend's 'skip' with
+ *  🧹 something to clear and no ⏳ nor announced time is a saved オフ (from before weekends went off): set, as the
+ *  Worker's `resettable` says. */
+export const isUnset = (row: DayRow): boolean =>
+  row.rule === unsetRule(row) && !(row.weekend && row.resettable && row.from === null && !row.announced.length);
 
 function fillOf(row: DayRow): Fill {
   if (row.rule === 'any') return 'any';

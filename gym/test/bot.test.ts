@@ -599,6 +599,20 @@ describe('state', () => {
     expect(gym.store.rule(inDays(20))).toBe(SKIP);
   });
 
+  it('keeps the near weekend on 12-13 once, at the first load after weekends went off (mig:weekendOff)', async () => {
+    vi.setSystemTime(at('2026-10-10', '09:00')); // a Saturday
+    state = fakeState(new Map([['state', { version: 3 }]]));
+    gym = await start();
+    expect([gym.store.rule('2026-10-10'), gym.store.rule('2026-10-11'), gym.store.rule('2026-10-17')]).toEqual([NOON, NOON, undefined]);
+    expect(state.kv.get('state')).toMatchObject({ days: { '2026-10-10': NOON, '2026-10-11': NOON } });
+    expect(state.kv.get('mig:weekendOff')).toBe(true);
+    // once: a weekend set back to off since stays off after an eviction
+    gym.store.setRule('2026-10-11', SKIP, '2026-10-10');
+    await gym.save();
+    gym = await start();
+    expect(gym.store.rule('2026-10-11')).toBeUndefined();
+  });
+
   it('drops a saved ⏳ that leaves no slot (a 🔔 21:30+, saved before the rule), keeps the rest', async () => {
     const [d1, d2] = [inDays(5), inDays(6)];
     const checkFrom = { [d1]: isoJst(at(d1, '21:45')), [d2]: isoJst(at(inDays(2), '18:00')) };

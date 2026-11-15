@@ -207,6 +207,23 @@ describe('Store', () => {
     expect(s.setPaused(true)).toBe(false);
   });
 
+  it('moving to weekends off keeps a near weekend with no rule on 12-13 (its ⏳ too); a later one is off', () => {
+    const [sat, sun, far] = [TODAY, addDays(TODAY, 1), addDays(TODAY, 7)];
+    // saved before weekends went off: the near weekend unset (the default then), Sunday with a ⏳
+    const s = new Store({ version: VERSION, check_from: { [sun]: '2026-10-04T10:00:00+09:00' } });
+    expect(s.keepNearWeekends(TODAY)).toEqual([sat, sun]);
+    expect(s.dirty).toBe(true);
+    expect([s.rule(sat), s.rule(sun), s.checkFrom(sun)]).toEqual([NOON, NOON, oct(4, '10:00')]);
+    expect(s.windows(NOW).get(sat)).toEqual(NOON);
+    expect(s.windows(oct(4, '10:00')).get(sun)).toEqual(NOON);
+    expect(s.effectiveRule(far, TODAY)).toBe(SKIP); // outside the old window: off
+    expect(s.windows(NOW).has(far)).toBe(false);
+    // a weekend already set keeps its rule
+    const t = new Store({ version: VERSION, days: { [sat]: 'any' } });
+    expect(t.keepNearWeekends(TODAY)).toEqual([sun]);
+    expect(t.rule(sat)).toBe(ANY);
+  });
+
   it('tracks whether it changed', () => {
     const s = new Store();
     const monday = addDays(TODAY, 2);

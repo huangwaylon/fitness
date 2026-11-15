@@ -33,7 +33,9 @@ Each day has at most one rule (`src/store.ts`):
 
 Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near weekdays at lunch are the
 usual; further days wait for a setting. A weekend day is off unless set (⏰ 12:00〜13:00 on it is saved like any
-range); 🔕 on it saves nothing, and 🧹 puts it back to off.
+range); 🔕 on it saves nothing, and 🧹 puts it back to off. At the first load after this change the bot ran once
+(`mig:weekendOff` in its storage): a Saturday or Sunday then among the next 4 days with no rule got ⏰ 12:00〜13:00
+saved (its ⏳ kept), so it went on being checked.
 
 - **⏳ check from** a date and time: the day is ignored until then (e.g. Friday from Tuesday 18:00, when an earlier
   booking is over: 3 at a time). Kept between 🔔 and ⏰ unless the new window leaves no slot after it (then cleared,
