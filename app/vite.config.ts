@@ -193,7 +193,8 @@ const kikiPartNames: Plugin = {
 };
 
 /** What a phone may never open, under stable names (`_app/immutable/chunks/<name>.<hash>.js`): the English catalogs
- *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on) and the wedding board's sheet (`wedding`), so
+ *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on), the wedding board's sheet (`wedding`) and
+ *  ごはん's barcode decoder (`scan`), so
  *  the service worker leaves them out of its precache (caches.ts carried: kept once used, an install carrying a changed
  *  one by its name, as ききみみ's parts). Not トレイル's: a trail never opened works offline on the mountain
  *  (offline.spec). A chunk is named only if all of it is the feature's; nothing outside the feature imports one
@@ -201,7 +202,9 @@ const kikiPartNames: Plugin = {
 const FEATURE_CHUNK: [RegExp, (m: RegExpExecArray) => string][] = [
   // (not catch.en.json: the museum's plates show both names, imported with it)
   [/\/src\/lib\/i18n\/(?:((?!catch\.)[\w-]+)\.)?en\.json$/, (m) => (m[1] ? `en-${m[1]}` : 'en')],
-  [/\/src\/lib\/(?:components\/)?wedding\/|\/src\/lib\/i18n\/wedding\.(?:ts|ja\.json)$|\/src\/lib\/contract\/wedCats\.ts$/, () => 'wedding']
+  [/\/src\/lib\/(?:components\/)?wedding\/|\/src\/lib\/i18n\/wedding\.(?:ts|ja\.json)$|\/src\/lib\/contract\/wedCats\.ts$/, () => 'wedding'],
+  // ごはん's barcode decoder (zxing-wasm, its wasm beside it as assets/zxing_reader.<hash>.wasm: lib/scan/decode.ts)
+  [/\/src\/lib\/scan\/decode\.ts$/, () => 'scan']
 ];
 /** A chunk's feature: all its modules one feature's (or a package's only it uses: svelte/transition with the board). */
 const featureOf = (ids: readonly string[]): string | null => {
@@ -230,9 +233,9 @@ const featureNames: Plugin = {
   },
   generateBundle(_, bundle) {
     // (a feature's own: its chunks, the English ones each other's)
-    const groupOf = (f: string) => /(?:^|\/)(en|wedding)(?:-[\w-]+)?\.[\w-]+\.js$/.exec(f)?.[1] ?? null;
+    const groupOf = (f: string) => /(?:^|\/)(en|wedding|scan)(?:-[\w-]+)?\.[\w-]+\.js$/.exec(f)?.[1] ?? null;
     const chunks = Object.values(bundle).filter((c) => c.type === 'chunk');
-    for (const want of ['en', 'wedding']) if (!chunks.some((c) => groupOf(c.fileName) === want)) throw new Error(`vite.config.ts feature-names: no ${want} chunk named; recheck FEATURE_CHUNK`);
+    for (const want of ['en', 'wedding', 'scan']) if (!chunks.some((c) => groupOf(c.fileName) === want)) throw new Error(`vite.config.ts feature-names: no ${want} chunk named; recheck FEATURE_CHUNK`);
     for (const c of chunks) {
       const bad = c.imports.find((f) => groupOf(f) && groupOf(f) !== groupOf(c.fileName));
       if (bad) throw new Error(`vite.config.ts feature-names: ${c.fileName} imports ${bad} statically (offline before it's used, it wouldn't load); load the feature lazily`);
@@ -297,8 +300,9 @@ export default defineConfig({
           // + the trip map's basemap (components/travel/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
           // MapLibre's worker; its fonts are ours), and トレイル's raster topo (components/hiking/map/style.ts TOPO: USGS
           // Topo, GSI 地理院タイル; fetched, then decoded from blob:); ボット's メニュー reads the Kalori scraper's status.json
-          // raw from GitHub (lib/kalori/status.ts KALORI_STATUS_URL: that one file, nothing else on the host)
-          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
+          // raw from GitHub (lib/kalori/status.ts KALORI_STATUS_URL: that one file, nothing else on the host); ごはん's barcode
+          // scan asks Open Food Facts' product API for a code our data lacks (lib/scan/off.ts OFF_API: that path only)
+          'connect-src': ['self', 'https://world.openfoodfacts.org/api/v2/product/', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs); a member's chain
           // menus show Kalori's pictures hotlinked (lib/food/images.ts kaloriImg)
           'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp'],

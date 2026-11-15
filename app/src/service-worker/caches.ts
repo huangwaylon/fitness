@@ -338,13 +338,15 @@ const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/mapli
  *  the first time a game loads it, and carried by each install after that (a changed part fetched by its name). */
 export const isKikiPart = (path: string): boolean => /\/_app\/immutable\/chunks\/kiki-[\w-]+\.[\w-]+\.js$/.test(path);
 /** What a phone may never open (vite.config.ts feature-names): the English catalogs' chunks (`en`, `en-<part>`: only
- *  with English on) and the wedding board's (`wedding`). Not precached (~0.1 MB on the wire, and the English ones
+ *  with English on), the wedding board's (`wedding`) and ごはん's barcode decoder (`scan`, its wasm beside it, ~400 KB
+ *  on the wire). Not precached (~0.1 MB on the wire, and the English ones
  *  change with every string): kept once used, and carried by each install after that, as ききみみ's parts. */
-const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/chunks\/(en(-[\w-]+)?|wedding)\.[\w-]+\.js$/.test(path);
-/** A carried chunk's name (`kiki-<part>`, `en-<part>`, `wedding`: one name for all the board's chunks) in its path or
- *  URL, else null. */
+const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/(chunks\/(en(-[\w-]+)?|wedding|scan)\.[\w-]+\.js|assets\/zxing_reader\.[\w-]+\.wasm)$/.test(path);
+/** A carried chunk's name (`kiki-<part>`, `en-<part>`, `wedding`: one name for all the board's chunks; `scan`, its
+ *  wasm's too) in its path or URL, else null. */
 export const carriedNameOf = (path: string): string | null =>
-  /(?:^|\/)_app\/immutable\/chunks\/(kiki-[\w-]+|en(?:-[\w-]+)?|wedding)\.[\w-]+\.js$/.exec(path)?.[1] ?? null;
+  /(?:^|\/)_app\/immutable\/assets\/zxing_reader\.[\w-]+\.wasm$/.test(path) ? 'scan'
+  : (/(?:^|\/)_app\/immutable\/chunks\/(kiki-[\w-]+|en(?:-[\w-]+)?|wedding|scan)\.[\w-]+\.js$/.exec(path)?.[1] ?? null);
 /** The build files kept in the shell on first use and carried by each install (MapLibre, ききみみ's parts, the
  *  features above): listed in the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
 export const carried = (path: string): boolean => {

@@ -38,6 +38,8 @@ const ALLOW: Record<string, string[]> = {
   layout: ['types', 'contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
+  // ごはん's barcode scan (lib/scan: the code's keys, the camera, the decoder, Open Food Facts' answer as a food item)
+  scan: ['food'],
   // けっこんしき (docs/wedding.md): the board's pure rules (lib/wedding: progress, its settings' defaults, the note's
   // markdown and its links; the board's zone and the days between two days: time/zone.ts, time/dates.ts)
   wedding: ['types', 'contract', 'time'],
@@ -76,7 +78,7 @@ const ALLOW: Record<string, string[]> = {
   // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
 };
 
 function files(dir: string): string[] {

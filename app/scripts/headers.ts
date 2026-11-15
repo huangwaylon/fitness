@@ -2,8 +2,8 @@
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
-// - The Permissions-Policy turns every powerful feature off but geolocation, which only our origin may ask for (the
-//   trip map's locate button).
+// - The Permissions-Policy turns every powerful feature off but geolocation, the microphone and the camera, which only
+//   our origin may ask for (the trip map's locate button, ききみみ's mic, ごはん's barcode scanner).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts), and so are ごはん's picture sheets (`food-img/*.webp`:
 //   their names carry their content hash), the rooms' and the players' packs (`room/pack/*.pak`, `room/player/*.pak`:
@@ -98,12 +98,14 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');
 
-const permissions = ['camera', 'payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
+const permissions = ['payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
   .map((f) => `${f}=()`)
   // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
   .concat('geolocation=(self)')
   // ききみみ's mic (docs/kikimimi-mic.md "Hosting and the service worker"): our own origin only, opened only from a tap
   .concat('microphone=(self)')
+  // ごはん's barcode scanner (docs/food-data.md "Barcodes"): our own origin only, opened only from its button's tap
+  .concat('camera=(self)')
   .join(', ');
 
 /** The recogniser's parts (`<path>.<sha8>.p<i>`, lib/mic/models.ts partNames), one rule an index. */

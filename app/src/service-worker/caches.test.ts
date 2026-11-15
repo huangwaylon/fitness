@@ -105,6 +105,13 @@ describe('precache', () => {
     // their CSS, the menu's openers and a chunk merely named like one stay
     for (const p of ['_app/immutable/assets/WeddingSheet.x1.css', '_app/immutable/chunks/Co_ed_l8.js', '_app/immutable/chunks/weddings.Ab1.js', '_app/immutable/chunks/enx.Ab1.js', '_app/immutable/chunks/hiking.Ab1.js']) expect([precachable(p), carried(p)]).toEqual([true, false]);
   });
+  it("ごはん's barcode decoder (its chunk and its wasm) left out, kept once used, carried by the name scan", () => {
+    const scan = ['_app/immutable/chunks/scan.B1x2.js', '/fitness/_app/immutable/assets/zxing_reader.Dq9-z.wasm'];
+    for (const p of scan) expect([precachable(p), carried(p)]).toEqual([false, true]);
+    expect(scan.map(carriedNameOf)).toEqual(['scan', 'scan']);
+    expect(carryPlan(['_app/immutable/chunks/scan.N1.js', '_app/immutable/assets/zxing_reader.N2.wasm'], ['https://x.test/_app/immutable/chunks/scan.O1.js']).fetch).toEqual(['_app/immutable/chunks/scan.N1.js', '_app/immutable/assets/zxing_reader.N2.wasm']);
+    for (const p of ['_app/immutable/chunks/scanner.Ab1.js', '_app/immutable/assets/other.Ab1.wasm']) expect(carried(p)).toBe(false);
+  });
   it('an install fetches a changed feature chunk by its name (the board: all of its chunks), the rest at first use', () => {
     const files = ['_app/immutable/chunks/en.N1.js', '_app/immutable/chunks/en-food.N2.js', '_app/immutable/chunks/en-tent.N5.js', '_app/immutable/chunks/wedding.N3.js', '_app/immutable/chunks/wedding.N4.js'];
     const old = (p: string) => `https://x.test/_app/immutable/chunks/${p}`;
