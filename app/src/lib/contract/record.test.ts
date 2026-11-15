@@ -233,7 +233,7 @@ describe('prefTaken: the island\'s and the profile\'s prefs', () => {
     for (const k of ['sex', 'birth']) expect(prefTaken(k, null), k).toBe(true);
     expect(prefTaken('sex', 'm')).toBe(true);
     expect(prefTaken('sex', 'x')).toBe(false);
-    expect(prefTaken('birth', '1990-03-04')).toBe(true);
+    expect(prefTaken('birth', '1990-03-15')).toBe(true);
     expect(prefTaken('birth', '1990-13-04')).toBe(false);
   });
 });
