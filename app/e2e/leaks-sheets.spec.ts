@@ -169,6 +169,12 @@ test('the barcode scanner opened and left, three times: the camera stopped, the 
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
   await page.locator('dialog[open] [data-kenkou-tab=food]').click();
   await page.locator('dialog[open] [data-add=s]').click();
+  // (the search's lazy datasets in first, the products and the chain menus, ~50 MB: else their arrival is the growth)
+  await page.locator('dialog[open] [data-food-q]').fill('サラダチキン');
+  await expect.poll(() => page.locator('dialog[open] [data-food-results] [data-brand]').count(), { timeout: 20_000 }).toBeGreaterThan(0);
+  await page.locator('dialog[open] [data-food-q]').fill('チキン');
+  await expect(page.locator('dialog[open] [data-shop-chip]').first()).toBeVisible({ timeout: 20_000 });
+  await page.locator('dialog[open] [data-food-q]').fill('');
   const round = async () => {
     await page.locator('dialog[open] [data-food-scan]').click();
     await expect(page.locator('dialog[open] [data-food-scan-level]')).toHaveAttribute('data-phase', 'reading');
