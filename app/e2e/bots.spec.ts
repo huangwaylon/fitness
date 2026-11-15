@@ -232,11 +232,14 @@ test('メニュー 順調: the card (no sentence: the word says it), 直近8週 
   await expect(verdict.locator('[data-bots-say], [data-bots-act]')).toHaveCount(0);
   await expect(k.locator('[data-kalori-alert]')).toHaveCount(0);
   await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
-  // 前回 the newest run's week, ringed, its day the right-hand tick; 次回 the ghost's day; the 成果 term 品目
+  // 前回 the newest run's week, ringed, its day the right-hand tick; the 成果 term 品目, and 次回's day at its row's end
   await expect(k.locator('[data-kalori-cell][data-last]')).toHaveCount(1);
   await expect(k.locator('[data-kalori-tick][data-last]')).toHaveText('11/4');
   await expect(k.locator('[data-kalori-next]')).toHaveText('次回 11/11');
   await expect(k.locator('[data-kalori-outcome]')).toHaveText('54,269品目・448店');
+  const [sb, nb, ob] = await Promise.all(['strip', 'next', 'outcome'].map(async (x) => (await k.locator(`[data-kalori-${x}]`).boundingBox())!));
+  expect(Math.abs(nb.x + nb.width - (sb.x + sb.width))).toBeLessThan(1); // the cells the card's width, 次回 under their end
+  expect(Math.abs(nb.y - ob.y)).toBeLessThan(4);
   await expect(k.getByRole('heading', { level: 3 })).toHaveCount(0); // 前回の変更: in くわしく
   await expect(k.locator('[data-kalori-tag]')).toHaveCount(0);
   // 直近8週: 8 cells, one held (warn: yellow, capped), the summary for VoiceOver and under it, the newest cell's line

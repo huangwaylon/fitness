@@ -42,9 +42,9 @@ describe('BotPage', () => {
     expect(body.indexOf('data-gym-more')).toBeGreaterThan(body.indexOf('data-gym-config'));
   });
 
-  it('the strip in the card: 次回’s ghost, the counts with their swatches, the 成果 term; nothing kept: the empty line', () => {
+  it('the strip in the card: the counts with their swatches, the 成果 term, 次回 at the row’s end; nothing kept: the empty line', () => {
     const { body } = render(BotPage, { props: { ...base, failed: null, verdict, strip: strip('ok') } });
-    expect(body).toMatch(/data-gym-verdict[\s\S]*data-gym-strip[\s\S]*data-gym-next[^>]*>[\s\S]*12:10ごろ[\s\S]*data-gym-count="ok"[\s\S]*正常1[\s\S]*data-gym-outcome[^>]*>いま空き2枠/);
+    expect(body).toMatch(/data-gym-verdict[\s\S]*data-gym-strip[\s\S]*data-gym-count="ok"[\s\S]*正常1[\s\S]*data-gym-outcome[^>]*>いま空き2枠[\s\S]*data-gym-next[^>]*>[\s\S]*12:10ごろ/);
     const empty = render(BotPage, { props: { ...base, failed: null, verdict, strip: strip('none', 'まだ確認していません') } }).body;
     expect(empty).toContain('data-gym-empty');
     expect(empty).not.toContain('data-gym-strip');

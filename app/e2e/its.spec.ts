@@ -652,7 +652,7 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour', 
   await expect(strip.locator('[data-its-cell="fail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(30);
-  // 前回 the newest minute read, its time in ink; 次回 the runner's interval; the counts and 予約
+  // 前回 the newest minute read, its time in ink; the counts and 予約, and on their row 次回 the runner's interval
   await expect(strip.locator('[data-its-cell][data-last]')).toHaveCount(1);
   await expect(its.locator('[data-its-next]')).toHaveText('次回 15秒ごと');
   await expect(its.locator('[data-its-count]')).toHaveText(['正常30', '空き検出1', '失敗1']);

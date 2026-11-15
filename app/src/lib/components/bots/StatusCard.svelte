@@ -4,10 +4,10 @@
   // last known one and a read is on its way or failed) and the bot's ⋯ (`menu`: the page's ActionSheet holds its
   // actions). Row 2: what a person must do (the driver's `act`, in ink), else the sentence (never the word again), else
   // nothing. `note` (an action's answer: ジム's 今すぐ確認 line). Then the strip: the cells drawn 32 high in a 44 hit (ok
-  // green, avail green full height, warn yellow capped, fail coral hatched, none a low tick: never colour alone), 前回
-  // ringed, 次回 a dashed ghost after them with its label (「次回 12:09ごろ」: never read as a range with 前回's time);
-  // the ticks (前回's time the right-hand one, in ink); one line: each state's swatch and count (only those > 0) and
-  // the 成果 term, the picked cell's line once one is tapped. The cells are drawn only: one hit layer the strip's full height, a slider and one tab stop (a tap or a drag picks the
+  // green, avail green full height, warn yellow capped, fail coral hatched, none a low tick: never colour alone) the
+  // card's width, 前回 ringed; the ticks (前回's time the right-hand
+  // one, in ink); one line: each state's swatch and count (only those > 0) and the 成果 term, the picked cell's line
+  // once one is tapped, and 次回 at its end (「次回 12:09ごろ」: never read as a range with 前回's time). The cells are drawn only: one hit layer the strip's full height, a slider and one tab stop (a tap or a drag picks the
   // cell nearest the finger's x; ← → Home End walk them); VoiceOver reads `summary`, then the picked cell's line.
   // Nothing kept: `empty` in the strip's place, else no strip. Filled by its tone (busy as good; at night only warn
   // and bad). `attr`: its data-* (data-its-verdict="healthy"); `page`: the page's data-* prefix (data-its-strip, …).
@@ -106,24 +106,25 @@
   {#if strip && blank && strip.empty}
     <p class="empty" class:plain={strip.empty.plain} role="status" {...data('empty')}>{strip.empty.text}</p>
   {:else if strip && !blank}
-    <div class="scans" class:ghosted={!!strip.next} {...data('scans')}>
+    <div class="scans" {...data('scans')}>
       <div class="strip" role="slider" tabindex="0" aria-label={strip.summary} aria-valuemin={0} aria-valuemax={n - 1} aria-valuenow={picked ?? n - 1}
         aria-valuetext={cells[picked ?? n - 1]?.label} bind:this={el} data-sfx="self" onkeydown={onkey} onpointerdown={down}
         onpointermove={(e) => dragging && pickAt(e)} onpointerup={() => (dragging = false)} onpointercancel={() => (dragging = false)} {...data('strip')}>
         {#each cells as c, i (c.start)}<i class="cell {c.state}" class:on={picked === i} class:last={strip.last?.i === i} data-on={picked === i || undefined}
           data-last={strip.last?.i === i || undefined} {...data('cell', c.state)}></i>{/each}
       </div>
-      {#if strip.next}<span class="ghost" aria-hidden="true"><i class="cell"></i></span>{/if}
       <div class="ticks" aria-hidden="true">{#each ticks as k (`${k.i}-${k.last}`)}<span class:last={k.last} style:left={left(k.i)} style:translate={edge(k.i)} data-last={k.last || undefined} {...data('tick')}>{k.label}</span>{/each}</div>
-      {#if strip.next}<span class="nlabel" {...data('next')}>{t('bots.key.next')} {strip.next}</span>{/if}
     </div>
-    <p class="sline" aria-live="polite" {...data('scan-line')}>
-      {#if picked !== null && cells[picked]}{cells[picked].label}
-      {:else}
-        {#each counts as c (c.s)}<span class="count" {...data('count', c.s)}><i class="cell {c.s}" aria-hidden="true"></i>{c.label}{formatNum(c.n)}</span>{/each}
-        {#if strip.outcome}<span class="outcome" {...data('outcome')}>{strip.outcome}</span>{/if}
-      {/if}
-    </p>
+    <div class="sline">
+      <p class="line" aria-live="polite" {...data('scan-line')}>
+        {#if picked !== null && cells[picked]}{cells[picked].label}
+        {:else}
+          {#each counts as c (c.s)}<span class="count" {...data('count', c.s)}><i class="cell {c.s}" aria-hidden="true"></i>{c.label}{formatNum(c.n)}</span>{/each}
+          {#if strip.outcome}<span class="outcome" {...data('outcome')}>{strip.outcome}</span>{/if}
+        {/if}
+      </p>
+      {#if strip.next}<span class="next" {...data('next')}>{t('bots.key.next')} {strip.next}</span>{/if}
+    </div>
   {/if}
 </div>
 
@@ -136,8 +137,8 @@
   :global(:root[data-tod='night']) .status.good { background: var(--card); }
   /* bad over the night's background, not its lighter card: the soft text 4.9:1 (4.06 over the card) */
   :global(:root[data-tod='night']) .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--bg)); }
-  /* (the strip's cells only, never the none ticks, the ghost or the swatches; warn keeps its cap, ink on yuzu: its shape
-     tells it from avail) */
+  /* (the strip's cells only, never the none ticks or the swatches; warn keeps its cap, ink on yuzu: its shape tells it
+     from avail) */
   :global(:root[data-tod='night']) .status.warn .strip .cell:not(.none) { box-shadow: inset 0 0 0 1px var(--text); }
   :global(:root[data-tod='night']) .status.warn .strip .cell.warn { box-shadow: inset 0 3px 0 var(--c-ink), inset 0 0 0 1px var(--text); }
   .top { display: flex; align-items: center; gap: 8px; min-height: 24px; }
@@ -150,9 +151,8 @@
   .say { margin: 0; font-size: var(--fs-s); line-height: var(--lh); font-weight: 700; color: var(--text-soft); text-wrap: pretty; }
   .note { margin-top: 2px; }
 
-  /* the strip: the cells, then 次回's ghost in a column of its own (its label under it), the ticks under the cells */
-  .scans { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 4px; margin-top: 4px; }
-  .scans.ghosted { grid-template-columns: minmax(0, 1fr) auto; }
+  /* the strip: the cells the card's width, the ticks under them */
+  .scans { margin-top: 4px; }
   .strip { display: flex; align-items: flex-end; gap: 1px; height: var(--hit); padding: 6px 0; touch-action: pan-y; cursor: pointer; outline: none; border-radius: 4px; }
   .strip:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .strip .cell { flex: 1 1 0; min-width: 0; height: 60%; }
@@ -165,17 +165,17 @@
   .cell.none { box-shadow: none; background: color-mix(in srgb, var(--edge) 35%, var(--ctl-off)); }
   /* 前回 ringed; a picked cell outlined */
   .strip .cell.last, .strip .cell.on { outline: 2px solid var(--text); outline-offset: 1px; }
-  .ghost { display: flex; align-items: flex-end; height: var(--hit); padding: 6px 0; }
-  .ghost .cell { width: 12px; height: 60%; background: none; box-shadow: none; border: 1.5px dashed var(--text-soft); }
   .ticks { position: relative; height: 1.3em; font: 700 11px/1.3 var(--font-num); color: var(--text-soft); }
   .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
   .ticks span.last { color: var(--text); }
-  .nlabel { font: 700 11px/1.3 var(--font-num); color: var(--text-soft); white-space: nowrap; }
-  .sline { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin: 2px 0 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }
+  /* one row: the line (the counts and 成果, or the picked cell's), 次回 at its end as メニュー's info sits on its row */
+  .sline { display: flex; align-items: baseline; gap: 10px; margin-top: 2px; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }
+  .line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin: 0; min-width: 0; }
   .count { display: inline-flex; align-items: center; gap: 4px; color: var(--text-soft); }
   .count .cell { display: inline-block; width: 8px; height: 12px; flex: none; }
   .count .cell.ok { height: 8px; }
   .outcome { color: var(--text); }
+  .next { margin-left: auto; color: var(--text-soft); white-space: nowrap; }
   /* nothing kept: a line the strip's height in its place (sunk; plain: neutral, uncoloured) */
   .empty { display: flex; align-items: center; min-height: 32px; margin: 6px 0 0; padding: 0 10px; border-radius: var(--r-chip); background: var(--ctl-off); color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
   .empty.plain { background: none; padding: 0; }

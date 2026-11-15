@@ -1,4 +1,4 @@
-// The status card (StatusCard): 次回's ghost only while there is a next, and nothing kept (`blank`) drawn as `empty`
+// The status card (StatusCard): 次回 at the end of the counts' row only while there is a next, and nothing kept (`blank`) drawn as `empty`
 // or left out.
 import { describe, expect, it } from 'vitest';
 import { render } from 'svelte/server';
@@ -11,8 +11,10 @@ const strip = (state: CellState, over: Partial<CardStrip> = {}): CardStrip =>
 const card = (s: CardStrip) => render(StatusCard, { props: { verdict, attr: {}, page: 'gym', now: 0, strip: s } }).body;
 
 describe('StatusCard', () => {
-  it('次回: the ghost and its label with a next; none while stopped', () => {
-    expect(card(strip('ok', { next: '12:10ごろ' }))).toMatch(/class="ghost[\s\S]*data-gym-next/);
+  it('次回: at the end of the counts\' row (no ghost cell) with a next; none while stopped', () => {
+    const next = card(strip('ok', { next: '12:10ごろ' }));
+    expect(next).toMatch(/class="sline[\s\S]*data-gym-count="ok"[\s\S]*<\/p>[\s\S]*<span class="next[^>]*data-gym-next[^>]*>[^<]*12:10ごろ/);
+    expect(next).not.toContain('ghost');
     const stopped = card(strip('ok', { next: null }));
     expect(stopped).toContain('data-gym-strip');
     expect(stopped).not.toContain('ghost');

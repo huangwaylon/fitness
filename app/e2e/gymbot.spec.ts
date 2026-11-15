@@ -1,6 +1,6 @@
 // ボット's ジム tab (docs/bots.md): a member's ボット sheet, on ジム (the tab last shown): the gym bot's GET
 // /status (lib/gym/status.ts, mocked here): its status card (the word, the sentence, ⋯; the strip, 24 cells a check
-// interval: tap or ← → names one, 前回 ringed, 次回's ghost, the counts and いま空き), the calendar from the members-only GET /gym/config (with the phone's key:
+// interval the card's width: tap or ← → names one, 前回 ringed; the counts, いま空き and 次回 on one row), the calendar from the members-only GET /gym/config (with the phone's key:
 // lib/gym/config.ts, the stand-in e2e/gymbot.ts; ⋯'s acts and the calendar are gymbot-settings.spec.ts's) and
 // くわしく last; 保養所's tab leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
 // もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
@@ -71,7 +71,7 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(gym.locator('[data-gym-verdict] [data-bots-act]')).toHaveCount(0);
   await expect(tab).toHaveAccessibleName('ジム、一部不調');
   await expect(gym.locator('[data-gym-alert]')).toHaveCount(0); // nothing to do the sentence doesn't say
-  // 前回 the newest check's cell, ringed, its time the right-hand tick; 次回 the ghost; the 成果 term いま空き (no key row)
+  // 前回 the newest check's cell, ringed, its time the right-hand tick; the 成果 term いま空き and 次回 (no key row)
   await expect(gym.locator('[data-gym-key]')).toHaveCount(0);
   await expect(gym.locator('[data-gym-tick][data-last]')).toHaveText('11:54');
   await expect(gym.locator('[data-gym-next]')).toHaveText('次回 12:09ごろ');
@@ -100,8 +100,14 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(strip.locator('[data-gym-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-gym-cell="ok"]')).toHaveCount(0);
   await expect(gym.locator('[data-gym-count]')).toHaveText(['空き検出1', '一部失敗1']); // each with its swatch, only those > 0
+  // the cells the card's width (no column beside them); 次回 at the end of the counts' row, right-aligned
+  const [sb, cb, nb, kb] = await Promise.all([strip, scans, gym.locator('[data-gym-next]'), gym.locator('[data-gym-count]').first()].map(async (l) => (await l.boundingBox())!));
+  expect(Math.abs(sb.width - cb.width)).toBeLessThan(1);
+  expect(Math.abs(nb.x + nb.width - (sb.x + sb.width))).toBeLessThan(1);
+  expect(Math.abs(nb.y + nb.height / 2 - (kb.y + kb.height / 2))).toBeLessThan(4);
   await strip.locator('[data-gym-cell]').last().click();
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:54 · トレーニング○ ピラティス✕（タイムアウト） · 空き1');
+  await expect(gym.locator('[data-gym-next]')).toHaveText('次回 12:09ごろ'); // kept on the picked cell's row
   await page.keyboard.press('ArrowLeft');
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:39 手動 · トレーニング○ ピラティス○ · 空き1');
   await page.keyboard.press('ArrowLeft');
