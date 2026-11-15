@@ -193,11 +193,17 @@ function bandText(b: Tripped): string {
   return b.share === null || b.limit === null ? word : t('kalori.band.line', { word, share: pct(b.share), limit: pct(b.limit) });
 }
 
-/** A reason in words: its sentence (`limits` with the rounds run, `late` with the run's time); a band's, its tripped
- *  gates' lines. */
-export function reasonText(s: KaloriStatus, r: string): string {
+/** The scheduled run 遅れ names: the last one due by `now` (`next` steps back a week at a time: the workflows write
+ *  the coming one, so a file that says 遅れ has already moved past the missed run). */
+const missedAt = (s: KaloriStatus, now: number): number | null =>
+  s.next === null || s.next <= now ? s.next : s.next - Math.ceil((s.next - now) / WEEK_MS) * WEEK_MS;
+
+/** A reason in words: its sentence (`limits` with the rounds run, `late` with the missed run's time); a band's, its
+ *  tripped gates' lines. */
+export function reasonText(s: KaloriStatus, r: string, now: number): string {
   if (isBand(r)) return trippedOf(s).filter((b) => b.code === r).map(bandText).join('、') || t(`kalori.band.${r.slice(5)}`);
-  return t(`kalori.reason.${r}`, { n: s.run?.round ?? 1, time: s.next === null ? t('kalori.unknown') : whenOf(s.next) });
+  const missed = missedAt(s, now);
+  return t(`kalori.reason.${r}`, { n: s.run?.round ?? 1, time: missed === null ? t('kalori.unknown') : whenOf(missed) });
 }
 
 /** The accepted data's day, in words (the dataset's date, else the tag's). */
@@ -210,16 +216,15 @@ const dataDay = (s: KaloriStatus): string => {
  *  更新 line say it). */
 export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: BotWord; word: string; sentence: string; verdict: Verdict } {
   const v = verdictOf(s, now);
-  const nextAt = s.next === null ? t('kalori.unknown') : whenOf(s.next);
   const bands = trippedOf(s);
   const first = s.reasons.find((r) => !isBand(r));
   const sentence =
     v === 'healthy' || v === 'none' ? ''
     : v === 'running' ? t('kalori.say.running', { n: s.run?.round ?? 1, d: s.run?.shardsDone ?? 0, total: s.run?.shardsTotal ?? 20 })
     : v === 'held' ? (bands.length ? t(bands.every((b) => CHANGE_BANDS.has(b.code)) ? 'kalori.say.held' : 'kalori.say.heldOdd', { what: bands.map(bandText).join('、'), date: dataDay(s) })
-      : first ? reasonText(s, first) : t('kalori.say.heldPlain', { date: dataDay(s) }))
-    : v === 'late' ? t('kalori.reason.late', { time: nextAt })
-    : first ? reasonText(s, first) : t('kalori.reason.crash');
+      : first ? reasonText(s, first, now) : t('kalori.say.heldPlain', { date: dataDay(s) }))
+    : v === 'late' ? reasonText(s, 'late', now)
+    : first ? reasonText(s, first, now) : t('kalori.reason.crash');
   return { tone: TONE[v], w: WORD[v], word: t(`bots.w.${WORD[v]}`), sentence, verdict: v };
 }
 
@@ -230,7 +235,7 @@ export function alertLines(s: KaloriStatus, now: number): string[] {
   const v = verdictOf(s, now);
   if (v !== 'held' && v !== 'failing' && !s.alert) return [];
   const said = verdictView(s, now).sentence;
-  const rest = s.reasons.filter((r) => !(v === 'held' && isBand(r))).map((r) => reasonText(s, r)).filter((l) => !said.includes(l));
+  const rest = s.reasons.filter((r) => !(v === 'held' && isBand(r))).map((r) => reasonText(s, r, now)).filter((l) => !said.includes(l));
   if (!s.reasons.length && s.alert && !said.includes(s.alert.text)) rest.push(s.alert.text);
   return [...(prLink(s, now) ? [t('kalori.attn.merge')] : []), ...new Set(rest)];
 }

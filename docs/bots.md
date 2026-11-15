@@ -26,4 +26,4 @@ row (`MonthSwitch`'s slot) or long press; at once (取り消す).
 保養所: ⋯ 開始 / 停止; holds in 確認が必要. 日付 unfolded, 44 cells (`ItsCalendar`: a tap a night, a weekday its column;
 要対応 a yuzu 「!」 as the tab's, 仮押さえ a yuzu ring;
 ✕ any stay) in the 保存 draft (未保存); 設定 folded: 施設 (presets; no ★), 詳細, 通知 (per phone; 自動で確定 in the draft).
-メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next` too; 保留 names `diff.tripped`; ⋯ links only.
+メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next` too, naming the missed run (the last one due, not the file's coming `next`); 保留 names `diff.tripped`; ⋯ links only.
