@@ -194,7 +194,7 @@ const kikiPartNames: Plugin = {
 
 /** What a phone may never open, under stable names (`_app/immutable/chunks/<name>.<hash>.js`): the English catalogs
  *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on), the wedding board's sheet (`wedding`) and
- *  ごはん's barcode decoder (`scan`), so
+ *  ごはん's barcode scanner and its decoder (`scan`), so
  *  the service worker leaves them out of its precache (caches.ts carried: kept once used, an install carrying a changed
  *  one by its name, as ききみみ's parts). Not トレイル's: a trail never opened works offline on the mountain
  *  (offline.spec). A chunk is named only if all of it is the feature's; nothing outside the feature imports one
@@ -203,8 +203,9 @@ const FEATURE_CHUNK: [RegExp, (m: RegExpExecArray) => string][] = [
   // (not catch.en.json: the museum's plates show both names, imported with it)
   [/\/src\/lib\/i18n\/(?:((?!catch\.)[\w-]+)\.)?en\.json$/, (m) => (m[1] ? `en-${m[1]}` : 'en')],
   [/\/src\/lib\/(?:components\/)?wedding\/|\/src\/lib\/i18n\/wedding\.(?:ts|ja\.json)$|\/src\/lib\/contract\/wedCats\.ts$/, () => 'wedding'],
-  // ごはん's barcode decoder (zxing-wasm, its wasm beside it as assets/zxing_reader.<hash>.wasm: lib/scan/decode.ts)
-  [/\/src\/lib\/scan\/decode\.ts$/, () => 'scan']
+  // ごはん's barcode scanner: its level (FoodScan, its lookup scan.ts, lib/scan/) and its decoder (zxing-wasm, its wasm
+  // beside it as assets/zxing_reader.<hash>.wasm: lib/scan/decode.ts)
+  [/\/src\/lib\/scan\/|\/src\/lib\/components\/food\/(?:FoodScan\.svelte|scan\.ts)$/, () => 'scan']
 ];
 /** A chunk's feature: all its modules one feature's (or a package's only it uses: svelte/transition with the board). */
 const featureOf = (ids: readonly string[]): string | null => {

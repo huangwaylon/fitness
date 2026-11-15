@@ -38,8 +38,9 @@ const ALLOW: Record<string, string[]> = {
   layout: ['types', 'contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
-  // ごはん's barcode scan (lib/scan: the code's keys, the camera, the decoder, Open Food Facts' answer as a food item)
-  scan: ['food'],
+  // ごはん's barcode scan (lib/scan: the code's keys, the camera, the decoder, Open Food Facts' answer as a food item,
+  // its name cleaned as the record's: contract/text.ts)
+  scan: ['food', 'contract'],
   // けっこんしき (docs/wedding.md): the board's pure rules (lib/wedding: progress, its settings' defaults, the note's
   // markdown and its links; the board's zone and the days between two days: time/zone.ts, time/dates.ts)
   wedding: ['types', 'contract', 'time'],

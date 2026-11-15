@@ -8,7 +8,8 @@
   // nothing); the kcal goal at the summary's upper right (GoalEdit, in place); a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
   // level (HealthSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
   // An editor's draft changed (マイレシピ, マイ食品, クイック): its ‹ and the sheet's ✕, backdrop and Esc ask first (ui/discard).
-  // A meal's search's バーコードで探す → the scanner (FoodScan, a level; a code's food → the amount in its place).
+  // A meal's search's バーコードで探す → the scanner (FoodScan, a level in its own chunk, fetched on the press; a code's
+  // food → the amount in its place).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, HealthSheet's
   // NavBar; one pick with 健康's, kept for the session: whose.svelte.ts); under it the tabs (TABS, けんこう's group switch): きろく (the day,
   // on each opening) and グラフ (FoodChart: the kcal over a period, its range row with けんこう's period dropdown beside
@@ -52,7 +53,8 @@
   import { kcalWarn, saveGoal } from '../health/goals.ts';
   import FoodMeal from './FoodMeal.svelte';
   import FoodSearch from './FoodSearch.svelte';
-  import FoodScan from './FoodScan.svelte';
+  import Lazy from '../ui/Lazy.svelte';
+  import { scanner } from './scanner.ts';
   import FoodAmount from './FoodAmount.svelte';
   import FoodCredits from './FoodCredits.svelte';
   import FoodRepeat from './FoodRepeat.svelte';
@@ -452,7 +454,9 @@
     {:else if top?.k === 'scan'}
       {@const meal = top.meal}
       <!-- (a code's food: the amount in this level's place, so its ‹ goes back to the search) -->
-      <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} />
+      <Lazy load={scanner}>{#snippet children(FoodScan)}
+        <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} />
+      {/snippet}</Lazy>
     {:else if top?.k === 'quick'}
       {@const l = top}
       <FoodCustom bind:draft={qdraft} quick onsave={() => quickDone(l)} />

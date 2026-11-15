@@ -118,14 +118,18 @@ function cancelParses(ids: Iterable<number>): void {
 /** The barcode shards fetched this session, by name (each ~1 KB; the service worker keeps them across sessions). */
 const shards = new Map<string, Promise<Map<string, Item>>>();
 
+/** A shard's fetch waited for at most (a slow network: on to Open Food Facts, which says offline, never a hang). */
+export const JAN_TIMEOUT_MS = 6000;
+
 /** A code's food in the barcode shards (static/food/jan/: the codes beyond products.json), `db`'s version of them;
- *  null when its shard hasn't it (or there are none). A fetch that fails (offline) throws, and is asked again next time. */
+ *  null when its shard hasn't it (or there are none). A fetch that fails (offline, or past JAN_TIMEOUT_MS) throws, and
+ *  is asked again next time. */
 export async function janItem(db: FoodDb, code: string): Promise<Item | null> {
   if (!db.jan || !/^\d{8,13}$/.test(code)) return null;
   const href = url(`jan/${janShard(code)}.json`, db.jan);
   let p = shards.get(href);
   if (!p) {
-    p = fetch(href).then(async (res) => {
+    p = fetch(href, { signal: AbortSignal.timeout(JAN_TIMEOUT_MS) }).then(async (res) => {
       if (res.status === 404) return new Map<string, Item>();
       if (!res.ok) throw new Error(`${href}: ${res.status}`);
       return new Map(fromFile((await res.json()) as Shipped).items.map((it) => [it.jan ?? it.id.slice(4), it]));

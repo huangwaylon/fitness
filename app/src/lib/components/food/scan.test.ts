@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FoodDb, Item } from '#lib/food/index.ts';
 import { toColumns } from '#lib/food/db.ts';
-import { forgetShards } from '#lib/food/load.ts';
+import { forgetShards, JAN_TIMEOUT_MS } from '#lib/food/load.ts';
 import { forgetAsked, lookupCode, LOADING_MS, PRODUCTS_WAIT_MS } from './scan.ts';
 
 const counted: string[] = [];
@@ -82,6 +82,33 @@ describe('lookupCode: the barcode shards between ours and Open Food Facts', () =
     serve(async () => { throw new TypeError('offline'); });
     expect(await lookupCode('4607001771883', shardDb, '?', undefined, async () => ({ k: 'off' }))).toEqual({ k: 'offline' });
     expect(counted).toEqual(['act:scan.miss', 'act:scan.offline']);
+  });
+  it('a shard that never answers: given up past JAN_TIMEOUT_MS, OFF asked; asked again next time', async () => {
+    vi.useFakeTimers();
+    try {
+      // (AbortSignal.timeout on the faked clock; a fetch that settles only on its signal's abort, as a stalled network's)
+      vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms) => {
+        const ac = new AbortController();
+        setTimeout(() => ac.abort(new DOMException('late', 'TimeoutError')), ms);
+        return ac.signal;
+      });
+      const asked: string[] = [];
+      vi.stubGlobal('fetch', (href: string, o: RequestInit) => (asked.push(href), new Promise((_, no) => o.signal!.addEventListener('abort', () => no(o.signal!.reason)))));
+      const ask = vi.fn(async () => ({ k: 'off' as const }));
+      let hit: unknown;
+      void lookupCode('4607001771883', shardDb, '?', undefined, ask).then((h) => (hit = h));
+      await vi.advanceTimersByTimeAsync(JAN_TIMEOUT_MS - 1);
+      expect([hit, ask.mock.calls.length]).toEqual([undefined, 0]);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(hit).toEqual({ k: 'offline' });
+      expect(ask).toHaveBeenCalledTimes(1);
+      void lookupCode('4607001771883', shardDb, '?', undefined, ask);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(asked).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    }
   });
 });
 

@@ -212,18 +212,19 @@
   "food.scan.title": "バーコード",
   "food.scan.aim": "バーコードを枠に入れてください",
   "food.scan.far": "読めないときは少し離してください",
-  "food.scan.online": "Open Food Factsで検索中…",
+  "food.scan.online": "Open Food Factsで探しています…",
   "food.scan.none": "この商品はデータにありません",
   "food.scan.offline": "オフラインのため確認できません",
   "food.scan.late": "データの読み込み中のため確認できません",
   "food.scan.denied": "カメラが許可されていません",
   "food.scan.deniedHow": "設定 › アプリ › Safari › カメラ",
+  "food.scan.resume": "タップして再開",
   "food.scan.noCam": "カメラが使えません",
   "food.scan.typeInstead": "番号を入力しても探せます",
   "food.scan.num": "番号を入力",
   "food.scan.numLabel": "バーコードの番号",
-  "food.scan.find": "検索",
+  "food.scan.find": "探す",
   "food.scan.bad": "番号が正しくありません",
   "food.scan.byName": "名前で探す",
-  "food.scan.offTrust": "Open Food Facts の値（オンライン）"
+  "food.scan.offTrust": "Open Food Factsの値（オンライン）"
 }

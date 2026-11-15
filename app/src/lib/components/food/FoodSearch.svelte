@@ -45,7 +45,7 @@
   import { customItem, servingText, typedKcal } from './drafts.ts';
   import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
   import type { Kept } from './levels.svelte.ts';
-  import { warmDecoder } from '#lib/scan/load.ts';
+  import { warmScanner } from './scanner.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -363,9 +363,9 @@
     <input bind:this={input} bind:value={text} type="search" data-sfx="none" data-food-q enterkeyhint="search" autocomplete="off"
       autocapitalize="off" spellcheck="false" aria-label={t('food.search')} placeholder={t('food.searchHint')}
       oninput={onInput} oncompositionend={() => setQ(text)} />
-    {#if text}<span class="x"><NavButton kind="close" label={t('food.clear')} sfx="tick" onclick={clear} /></span>{/if}
-    <!-- (the decoder fetched on the press, before the tap opens the scanner) -->
-    {#if onscan}<span class="x" onpointerdown={warmDecoder} role="presentation"><NavButton kind="tool" icon="barcode" label={t('food.scan.open')} sfx="open" data-food-scan onclick={onscan} /></span>{/if}
+    <!-- one slot: ✕ once typed, else the barcode (the scanner and its decoder fetched on the press, before the tap opens it) -->
+    {#if text}<span class="x"><NavButton kind="close" label={t('food.clear')} sfx="tick" onclick={clear} /></span>
+    {:else if onscan}<span class="x" onpointerdown={warmScanner} role="presentation"><NavButton kind="tool" icon="barcode" label={t('food.scan.open')} sfx="open" data-food-scan onclick={onscan} /></span>{/if}
   </form>
 
   {#if shops.length}
@@ -535,8 +535,9 @@
   }
   input::-webkit-search-cancel-button { display: none; }
   input::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font-weight: 500; }
-  /* ✕: the app's NavButton inside the pill's right end */
-  .x { display: flex; margin-right: -6px; }
+  /* ✕ or the barcode: the app's NavButton inside the pill's right end, its disc 4px clear of the field's outline (and
+     its focus ring) */
+  .x { display: flex; margin-right: -2px; }
   /* the shop chips: ChipRow's line, its sides at the field's */
   .shops { margin: -6px -12px; min-width: 0; }
   .sl { flex: none; margin-right: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

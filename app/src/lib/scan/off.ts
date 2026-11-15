@@ -1,6 +1,8 @@
 // ごはん's barcode scan, the online fallback (docs/food-data.md "Barcodes"): a code our products don't hold, asked of
 // Open Food Facts' API (its barcode only, nothing else), its answer as one of our items (types.ts Item: per 100 g, its
 // serving a 1食分 portion) (ODbL, as products.json's header). Pure but for `offLookup`'s fetch.
+import { FOOD_NAME_CHARS } from '#lib/contract/food.ts';
+import { cleanLine } from '#lib/contract/text.ts';
 import type { Item, Portion } from '#lib/food/types.ts';
 
 /** The API's product page for a code, with only the fields mapped (`OFF_FIELDS`). CSP connect-src names this path. */
@@ -38,12 +40,13 @@ export function gramsOf(s: string | undefined): number | null {
   const g = m ? Number(m[1]) : NaN;
   return Number.isFinite(g) && g > 0 && g <= GRAMS_MAX ? r1(g) : null;
 }
-/** A first, non-empty text of these. */
-const firstText = (...xs: (string | undefined)[]): string | undefined => xs.map((x) => x?.trim()).find((x) => !!x);
+/** The first of these non-empty once cleaned as the record cleans a food's name (contract/text.ts cleanLine: controls,
+ *  zero-width and bidi characters gone, one line, FOOD_NAME_CHARS at most). */
+const firstText = (...xs: unknown[]): string | undefined => xs.map((x) => cleanLine(x, FOOD_NAME_CHARS)).find((x) => !!x);
 
 /**
  * An OFF product as an item (id `off:<code>`, as a product of ours: a later products.json holding it matches it), `note`
- * its trust line; null when it has no name or no usable energy (the sheet: not found). Per 100 g when OFF has it (kcal
+ * its trust line; null when it has no name (none left once cleaned: firstText) or no usable energy (the sheet: not found). Per 100 g when OFF has it (kcal
  * from kJ if only that, ÷ 4.184); else per serving: by its weight when known, else as a serving (`sv`, values per
  * serving, as a chain menu's). A nutrient out of a snapshot's range: unknown (null), never clamped. The name: its
  * Japanese one, else its own, else its generic one; the brand its first. Its serving's weight a 1食分 portion (none:

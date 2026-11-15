@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { gramsOf, offItem, offLookup, offUrl, type OffProduct } from './off.ts';
 
-const NO = 'Open Food Facts の値（オンライン）';
+const NO = 'Open Food Factsの値（オンライン）';
 const cola: OffProduct = {
   product_name: 'Coca-Cola', product_name_ja: '', brands: 'Coca-Cola, The Coca-Cola Company', serving_size: '500 ml',
   nutriments: { 'energy-kcal_100g': 45, 'energy-kcal_serving': 225, proteins_100g: 0, fat_100g: 0, carbohydrates_100g: 11.3, salt_100g: 0 }
@@ -17,6 +17,12 @@ describe('offItem: an Open Food Facts product as our item', () => {
   });
   it('no serving weight: no portions (100 g only); the generic name when it has no other', () => {
     expect(offItem('1', { generic_name: '緑茶', nutriments: { 'energy-kcal_100g': 0 } }, NO)).toEqual({ id: 'off:1', name: '緑茶', kcal: 0, p: null, f: null, c: null, salt: null, note: NO });
+  });
+  it('names and brands cleaned as the record cleans them; a name of only zero-width or bidi characters is none', () => {
+    const n = { 'energy-kcal_100g': 100 };
+    expect(offItem('1', { product_name_ja: '\u200b\u202e', product_name: ' お\u200bちゃ\n ', brands: '\u2066伊藤園\u2069, X', nutriments: n }, NO)).toMatchObject({ name: 'おちゃ', brand: '伊藤園' });
+    expect(offItem('1', { product_name: 'あ'.repeat(80), nutriments: n }, NO)!.name).toHaveLength(60);
+    expect(offItem('1', { product_name: '\u200b\u200f', generic_name: '\u202a\u202c', nutriments: n }, NO)).toBeNull();
   });
   it('kcal from kJ when only that; salt from sodium when only that; a missing nutrient unknown (null)', () => {
     const it = offItem('1', { product_name: 'X', nutriments: { energy_100g: 1000, sodium_100g: 0.4, proteins_100g: 5 } }, NO)!;

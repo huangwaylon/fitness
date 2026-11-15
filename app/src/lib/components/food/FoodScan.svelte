@@ -3,14 +3,16 @@
   // camera live in a 4:3 black box, a guide band (four white corners, the rest dimmed), one status line, and the number
   // field with 検索 always under it (every camera failure's way on). The camera opens with the level (the tap that
   // pushed it: no screen before iOS's own prompt); a frame's band is read every TICK_MS (lib/scan: camera.ts, the
-  // decoder decode.ts in its own chunk), never per frame. A read: the frame frozen, the corners leaf for FLASH_MS, the
-  // camera off at once, then what the code is (scan.ts lookupCode: our products, waited for, else Open Food Facts
-  // online): found, `onfound` (Food swaps this level for the amount); not found or unreached, a line and もう一度 ·
-  // 名前で探す. The products (lazy) are asked for with the decoder, so a read soon after the open waits less. A
-  // code whose check digit fails never reads (scanning goes on); a typed one says so. 13 digits search at once.
+  // decoder decode.ts in its own chunk; this level is a chunk of its own too: Food's Lazy), never per frame. A read: the
+  // frame frozen, the corners leaf for FLASH_MS, the camera off at once, then what the code is (scan.ts lookupCode: our
+  // products, waited for, else Open Food Facts online; the code and the wait on one line): found, `onfound` (Food swaps
+  // this level for the amount); not found or unreached, a line and もう一度 · 名前で探す. The products (lazy) are asked
+  // for with the decoder, so a read soon after the open waits less. A code whose check digit fails never reads
+  // (scanning goes on); a typed one says so under its field. 13 digits search at once.
   // The camera stops on every way out: the level left (‹, ✕, Esc, the sheet closed), the page hidden (and starts
-  // again on the show, still reading), a code read; the decoder's memory is let go with the level. Timings as
-  // performance marks (scan:open → scan:frame → scan:live → scan:read, scan:decode), for the e2e and Web Inspector.
+  // again on the show, still reading), a code read, IDLE_MS without one (タップして再開 in the box); the decoder's
+  // memory is let go with the level. Timings as performance marks (scan:open → scan:frame → scan:live → scan:read,
+  // scan:decode), for the e2e and Web Inspector, and once a session as the log's perf.scan (lib/scan/timing.ts).
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import type { Item } from '#lib/food/index.ts';
@@ -18,6 +20,8 @@
   import { camFailOf, grabBand, openCamera, stopStream } from '#lib/scan/camera.ts';
   import { offLookup } from '#lib/scan/off.ts';
   import { decoder } from '#lib/scan/load.ts';
+  import { ScanTiming } from '#lib/scan/timing.ts';
+  import { log } from '#lib/sync/log.ts';
   import { foodDb, held } from './dbHold.svelte.ts';
   import { lookupCode } from './scan.ts';
 
@@ -35,10 +39,13 @@
   /** The read's flash (the corners leaf), and how long before the hint changes to 少し離して. */
   const FLASH_MS = 150;
   const SLOW_MS = 8000;
+  /** The camera stopped after this long live without a read (the battery: a phone left on the counter). */
+  const IDLE_MS = 60_000;
 
-  /** `start` the camera opening, `reading` live, `look` a code read or typed (what it is being found: `wait`, the
-   *  catalog's products `loading`, Open Food Facts asked `online`), `none` / `offline` / `late` nothing found. */
-  let phase = $state<'start' | 'reading' | 'look' | 'none' | 'offline' | 'late'>('start');
+  /** `start` the camera opening, `reading` live, `idle` stopped for IDLE_MS without a read (a tap starts it again),
+   *  `look` a code read or typed (what it is being found: `wait`, the catalog's products `loading`, Open Food Facts
+   *  asked `online`), `none` / `offline` / `late` nothing found. */
+  let phase = $state<'start' | 'reading' | 'idle' | 'look' | 'none' | 'offline' | 'late'>('start');
   let look = $state<'wait' | 'loading' | 'online'>('wait');
   /** Why there's no camera (none: it's fine, or still opening). */
   let cam = $state<'denied' | 'nocam' | null>(null);
@@ -57,18 +64,21 @@
   let gen = 0;
   let tick: ReturnType<typeof setTimeout> | undefined;
   let slowT: ReturnType<typeof setTimeout> | undefined;
+  let idleT: ReturnType<typeof setTimeout> | undefined;
+  let flashT: ReturnType<typeof setTimeout> | undefined;
+  const times = new ScanTiming();
   let alive = true;
   let decodes = 0;
   let released = false;
 
   const okLen = $derived(typed.length === 8 || typed.length === 12 || typed.length === 13);
+  /** The status line: the camera's hint, or the code and what's being done with it (the result's own line). */
   const status = $derived(
-    bad ? t('food.scan.bad')
-    : phase === 'look' ? (look === 'loading' ? t('food.loading') : look === 'online' ? t('food.scan.online') : code)
+    phase === 'look' ? (look === 'wait' ? code : `${code} · ${t(look === 'loading' ? 'food.loading' : 'food.scan.online')}`)
     : phase === 'none' ? t('food.scan.none')
     : phase === 'offline' ? t('food.scan.offline')
     : phase === 'late' ? t('food.scan.late')
-    : cam ? t('food.scan.typeInstead')
+    : cam || phase === 'idle' ? t('food.scan.typeInstead')
     : t(slow ? 'food.scan.far' : 'food.scan.aim')
   );
 
@@ -78,6 +88,7 @@
     cam = null;
     frozen = false;
     performance.mark('scan:open');
+    times.open();
     const dec = decoder();
     dec.then((m) => m.warm()).catch(() => {});
     // (our products, lazy: in by the read, mostly; the search has usually asked already, and this is no second fetch)
@@ -90,9 +101,16 @@
       await video.play().catch(() => {});
       if (my !== gen) return;
       performance.mark('scan:frame');
+      times.frame();
       phase = 'reading';
       clearTimeout(slowT);
       slowT = setTimeout(() => (slow = true), SLOW_MS);
+      clearTimeout(idleT);
+      idleT = setTimeout(() => {
+        stop();
+        phase = 'idle';
+        times.end = 'idle';
+      }, IDLE_MS);
       await dec;
       performance.mark('scan:live');
       loop(my);
@@ -109,6 +127,7 @@
     gen++;
     clearTimeout(tick);
     clearTimeout(slowT);
+    clearTimeout(idleT);
     stopStream(stream);
     stream = null;
     if (video) video.srcObject = null;
@@ -116,11 +135,14 @@
   async function loop(my: number) {
     if (my !== gen || phase !== 'reading') return;
     if (video && work && document.visibilityState !== 'hidden') {
+      const g0 = performance.now();
       const img = grabBand(video, work);
+      const grab = performance.now() - g0;
       const m = img ? await decoder() : null;
       const t0 = performance.now();
       const r = m && img ? await m.decode(img).catch(() => null) : null;
-      // (the first few frames' decode times: the perf marks e2e reads, never logged)
+      if (m && img) times.frameRead(grab, performance.now() - t0);
+      // (the first few frames' decode times: the perf marks e2e reads)
       if (m && img && decodes++ < 3) performance.measure('scan:decode', { start: t0 });
       if (my !== gen) return;
       // (a misread, its check digit wrong: never a read)
@@ -139,21 +161,26 @@
   async function read(raw: string, format: Format | undefined, seen: boolean) {
     const t0 = performance.now();
     if (seen) performance.mark('scan:read');
+    if (seen) times.read();
+    else times.end = 'typed';
     if (stream) freeze();
     stop();
     code = barcodeKeys(raw, format)[0] ?? raw;
     phase = 'look';
     look = 'wait';
     bad = false;
+    // (the flash for its FLASH_MS, whatever the lookup is doing)
     flash = seen;
+    clearTimeout(flashT);
+    if (seen) flashT = setTimeout(() => (flash = false), FLASH_MS);
     const db = held.db ?? (await foodDb().catch(() => null));
     const hit = await lookupCode(raw, db, t('food.scan.offTrust'), format, (c) => {
       look = 'online';
       return offLookup(c, t('food.scan.offTrust'));
     }, () => (look = 'loading'));
     if (!alive || phase !== 'look') return;
+    // (a quick answer waits out the flash: it's seen before the amount takes the scanner's place)
     await new Promise((r) => setTimeout(r, Math.max(0, FLASH_MS - (performance.now() - t0))));
-    flash = false;
     if (!alive) return;
     if (hit?.k === 'ours' || hit?.k === 'off') return onfound(hit.item);
     phase = hit?.k === 'offline' || hit?.k === 'late' ? hit.k : 'none';
@@ -187,6 +214,8 @@
     return () => {
       alive = false;
       stop();
+      clearTimeout(flashT);
+      log('perf.scan', times.fields());
       document.removeEventListener('visibilitychange', vis);
       if (!released) {
         released = true;
@@ -200,26 +229,32 @@
   <div class="box">
     <video bind:this={video} playsinline muted autoplay aria-hidden="true"></video>
     <canvas bind:this={still} class="still" class:on={frozen} aria-hidden="true"></canvas>
-    {#if cam}
+    {#if phase === 'idle'}
+      <button type="button" class="msg resume" data-sfx="tick" data-scan-idle onclick={retry}><b>{t('food.scan.resume')}</b></button>
+    {:else if cam}
       <p class="msg" data-scan-cam={cam}><b>{t(cam === 'denied' ? 'food.scan.denied' : 'food.scan.noCam')}</b>{#if cam === 'denied'}<small>{t('food.scan.deniedHow')}</small>{/if}</p>
     {:else}
       <div class="band" class:hit={flash} aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     {/if}
   </div>
 
-  <p class="st" class:bad class:code={phase === 'look' && look === 'wait'} aria-live="polite" data-scan-status>{status}</p>
+  <p class="st" class:code={phase === 'look'} aria-live="polite" data-scan-status>{status}</p>
   {#if phase === 'none' || phase === 'offline' || phase === 'late'}
-    {#if !bad}<p class="num-line" data-scan-code>{code}</p>{/if}
+    <p class="num-line" data-scan-code>{code}</p>
     <div class="acts">
       <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('food.retry')}</button>
       <button type="button" class="btn small" data-sfx="page" data-scan-byname onclick={onbyname}>{t('food.scan.byName')}</button>
     </div>
   {/if}
 
-  <form class="row" onsubmit={(e) => { e.preventDefault(); submit(); }}>
-    <input class="field money" value={typed} inputmode="numeric" pattern="[0-9]*" enterkeyhint="search" autocomplete="off" maxlength="13" data-sfx="none"
-      placeholder={t('food.scan.num')} aria-label={t('food.scan.numLabel')} aria-invalid={bad} data-scan-num oninput={onType} />
-    <button type="submit" class="btn small" data-sfx="confirm" data-scan-find aria-disabled={!okLen || phase === 'look'}>{t('food.scan.find')}</button>
+  <form class="num" onsubmit={(e) => { e.preventDefault(); submit(); }}>
+    <div class="row">
+      <input class="field money" value={typed} inputmode="numeric" pattern="[0-9]*" enterkeyhint="search" autocomplete="off" maxlength="13" data-sfx="none"
+        placeholder={t('food.scan.num')} aria-label={t('food.scan.numLabel')} aria-invalid={bad} aria-describedby={bad ? 'scan-bad' : undefined} data-scan-num oninput={onType} />
+      <button type="submit" class="btn small" data-sfx="confirm" data-scan-find aria-disabled={!okLen || phase === 'look'}>{t('food.scan.find')}</button>
+    </div>
+    <!-- (a typed number's own error: the status line keeps the camera's and the lookup's) -->
+    {#if bad}<p class="bad" id="scan-bad" role="alert" data-scan-bad>{t('food.scan.bad')}</p>{/if}
   </form>
 </div>
 
@@ -245,17 +280,22 @@
     color: #fff; font: 700 var(--fs-body)/1.4 var(--font-ui);
   }
   .msg b { font-weight: inherit; }
+  /* the idle stop: the whole box the tap that starts the camera again */
+  .resume { appearance: none; width: 100%; border: 0; background: rgba(0, 0, 0, .55); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .resume:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
   .msg small { font-size: var(--fs-s); font-weight: 500; }
   /* ごはん's note: 13, 700, soft (the search's 読み込み中, the amount's trust line) */
   .st { margin: 0; min-height: 1.4em; text-align: center; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; color: var(--text-soft); }
-  .st.bad { color: var(--coral-text); }
-  .st.code { font: 600 var(--fs-body)/1.4 var(--font-num); color: var(--text); }
-  .num-line { margin: -8px 0 0; text-align: center; font: 600 var(--fs-s)/1.4 var(--font-num); color: var(--text-soft); }
+  /* the code (and what's being done with it): the num-line's type */
+  .st.code, .num-line { font: 600 var(--fs-s)/1.4 var(--font-num); }
+  .num-line { margin: -8px 0 0; text-align: center; color: var(--text-soft); }
   /* ごはん's pair (the editors' and the amount's foot): the paper hugs its word, the action takes the rest */
   .acts { display: flex; gap: 8px; }
   .acts .btn { margin: 0; }
   .acts .btn:not(.paper) { flex: 1; }
-  .row { display: flex; gap: 8px; align-items: center; margin: 0; }
+  .num { display: grid; gap: 6px; margin: 0; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .bad { margin: 0 12px; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; color: var(--coral-text); }
   .field {
     flex: 1; min-width: 0; height: var(--hit); padding: 0 12px; border: 0; border-radius: var(--r-pill); background: var(--ctl);
     box-shadow: var(--sh-ctl); color: var(--text); font: 600 var(--fs-input)/1 var(--font-num); outline: none; appearance: none;
@@ -263,4 +303,6 @@
   .field::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font: 500 var(--fs-input)/1 var(--font-ui); }
   .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .row .btn { margin: 0; flex: none; }
+  /* (disabled, level with the field: not the kit's sunk 4px) */
+  .row .btn[aria-disabled='true'] { transform: none; }
 </style>

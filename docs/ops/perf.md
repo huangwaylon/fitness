@@ -13,6 +13,10 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   race, no reload ([backend](../backend.md) "Service worker"). ごはん: products.json (4 MB, 30k) and kalori.json (the
   chain menus) only with a search, or one alone for a day with one of its foods logged
   (`db.wantMore(lazySources(ids))`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
+- **ごはん's scanner** ([food-data](../food-data.md#barcodes)): ~400 KB on the wire on the first press (the decoder's
+  wasm, its chunk and the level's; carried, never precached), cached after. A frame's band read every 180 ms, the
+  decode ~1-3 ms of it; the camera off on every way out (‹, ✕, a hide, a read) and after 60 s without a read
+  (タップして再開). The phones' numbers: `perf.scan`, once a session.
 - **Warm launch, where it goes** (the phones, 154 launches 11-11..11-14, ms from navigation, p50/p90): mount 519/816
   (~165 modules from the SW cache, parse), first frame 727/1185, loaded 900/1494, shown 1663/2444 (the late garden
   wave included). `net` = 0 in every one proved less than it seemed: a file the service worker answers reads transfer

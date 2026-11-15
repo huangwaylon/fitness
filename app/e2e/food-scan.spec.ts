@@ -3,7 +3,8 @@
 // read by the real decoder (zxing-wasm, from the build), so the wasm's own path is tested in WebKit too. Our product →
 // its amount; in a barcode shard (static/food/jan/, routed) → its amount; else Open Food Facts (its API routed: never
 // the network) → its amount, marked as OFF's; nowhere →
-// 名前で探す; the camera refused → typed numbers. The camera's tracks stop on a read, on ‹ and on a hide.
+// 名前で探す; the camera refused → typed numbers. The camera's tracks stop on a read, on ‹, on ✕, on a hide and after a
+// minute without a read (タップして再開).
 import { expect, test, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
 import { hideAndShow } from './memory.ts';
@@ -114,7 +115,8 @@ test('our product: read live, the camera off, its amount (1食分) in the scanne
     searched = Date.now();
   });
   expect(await overflow(page)).toEqual([]);
-  await expect(status(page)).toHaveText('読み込み中…', { timeout: 20_000 });
+  await expect(status(page), 'the code and the wait on one line').toHaveText(`${OURS} · 読み込み中…`, { timeout: 20_000 });
+  await expect(scanLv(page).locator('.band'), 'the flash over, the lookup still going').not.toHaveClass(/\bhit\b/);
   expect(await live(page), 'the camera stopped on the read').toBe(0);
   expect(products.length, 'products.json asked for once').toBe(1);
   expect(products[0], 'products.json asked for by the search, not ごはん’s open').toBeGreaterThanOrEqual(searched);
@@ -182,7 +184,7 @@ test("not ours: Open Food Facts asked for the code only, its item's amount marke
   await openScanner(page);
   const amount = sheet(page).locator('.amt');
   await expect(amount.locator('h3')).toHaveText('コカ・コーラ', { timeout: 20_000 });
-  await expect(amount.locator('[data-food-note]')).toHaveText('Open Food Facts の値（オンライン）');
+  await expect(amount.locator('[data-food-note]')).toHaveText('Open Food Factsの値（オンライン）');
   await expect(amount.locator('[data-done]')).toContainText('225');
   expect(asked).toEqual([`https://world.openfoodfacts.org/api/v2/product/${OFFS}.json?fields=product_name,product_name_ja,generic_name,brands,nutriments,serving_size,serving_quantity`]);
   await amount.locator('[data-done]').click();
@@ -204,8 +206,12 @@ test('nowhere: この商品はデータにありません, もう一度 reads ag
   await scanLv(page).locator('[data-scan-retry]').click();
   await expect(status(page)).toHaveText('オフラインのため確認できません', { timeout: 20_000 });
   await scanLv(page).locator('[data-scan-num]').fill('4900000010658');
-  await expect(status(page)).toHaveText('番号が正しくありません');
-  await expect(scanLv(page).locator('[data-scan-code]'), 'the read code never shown under a wrong typed one').toHaveCount(0);
+  await expect(scanLv(page).locator('form [data-scan-bad]'), 'a wrong typed number: said under its field').toHaveText('番号が正しくありません');
+  await expect(status(page), 'the status line keeps the lookup’s').toHaveText('オフラインのため確認できません');
+  await expect(scanLv(page).locator('[data-scan-code]')).toHaveText(OFFS);
+  await expect(scanLv(page).locator('[data-scan-find]'), '探す, level with the field (no sunk disabled)').toHaveText('探す');
+  await scanLv(page).locator('[data-scan-num]').fill('');
+  await expect(scanLv(page).locator('[data-scan-bad]'), 'typing clears it').toHaveCount(0);
   await scanLv(page).locator('[data-scan-byname]').click();
   await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
   await expect(sheet(page).locator('[data-food-q]')).toBeFocused();
@@ -217,11 +223,17 @@ test('the camera refused: said in the box, a typed number still finds it (13 dig
   await expect(scanLv(page).locator('[data-scan-cam=denied]')).toContainText('カメラが許可されていません');
   await expect(status(page)).toHaveText('番号を入力しても探せます');
   const num = scanLv(page).locator('[data-scan-num]');
+  const bad = scanLv(page).locator('[data-scan-bad]');
+  // (disabled 探す level with the field: not the kit's sunk translate)
+  const tops = await scanLv(page).locator('.row').evaluate((r) => [...r.children].map((e) => Math.round(e.getBoundingClientRect().top)));
+  expect(tops[1], 'disabled 探す level with the field').toBe(tops[0]);
   await num.fill('4900000010658');
-  await expect(status(page), '13 digits: said at once').toHaveText('番号が正しくありません');
+  await expect(bad, '13 digits: said at once').toHaveText('番号が正しくありません');
+  await expect(status(page)).toHaveText('番号を入力しても探せます');
   await num.fill('49000000');
+  await expect(bad).toHaveCount(0);
   await scanLv(page).locator('[data-scan-find]').click();
-  await expect(status(page)).toHaveText('番号が正しくありません');
+  await expect(bad).toHaveText('番号が正しくありません');
   expect(await overflow(page)).toEqual([]);
   await num.fill('');
   await num.pressSequentially(OURS);
@@ -243,4 +255,30 @@ test('the camera stops on ‹ and while the page is hidden, and starts again on 
   await sheet(page).locator('.navbar').getByRole('button', { name: '戻る' }).click();
   await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
   expect(await live(page), '‹: stopped').toBe(0);
+});
+
+test('the camera stops on ✕ (the sheet closed)', async ({ page }) => {
+  await camera(page, { code: '' });
+  await openScanner(page);
+  await expect.poll(() => live(page)).toBe(1);
+  await sheet(page).locator('.navbar').getByRole('button', { name: '閉じる' }).click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  expect(await live(page), '✕: stopped').toBe(0);
+});
+
+test('a minute without a read: the camera stops, タップして再開 in the box starts it again', async ({ page }) => {
+  await page.clock.install({ time: new Date(`${DATE}:00+09:00`) });
+  await camera(page, { code: '' });
+  await openScanner(page);
+  await expect(scanLv(page)).toHaveAttribute('data-phase', 'reading');
+  await expect.poll(() => live(page)).toBe(1);
+  await page.clock.fastForward(59_000);
+  expect(await live(page), 'still reading at 59 s').toBe(1);
+  await page.clock.fastForward(2_000);
+  const resume = scanLv(page).locator('[data-scan-idle]');
+  await expect(resume).toHaveText('タップして再開');
+  expect(await live(page), 'idle: stopped').toBe(0);
+  await resume.click();
+  await expect(scanLv(page)).toHaveAttribute('data-phase', 'reading');
+  await expect.poll(() => live(page), { message: 'resumed: live again' }).toBe(1);
 });

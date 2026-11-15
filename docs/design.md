@@ -201,10 +201,12 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   近いもの, two rows of eight at most) unless a word names a shop (セブン, スタバ…), which narrows to its menu; one
   Kalori marks 販売終了かも lower still. Chips and marks: `FoodSearch.svelte`'s header.
 - **Barcode** (`FoodScan`'s header; the data: [food-data.md](food-data.md#barcodes)): the search field's barcode
-  button opens a level with the camera live in a 4:3 black box (a dimmed band, white corners), one status line and an
-  always-there number field with 検索. A read freezes the frame, flashes the corners leaf, stops the camera, and the
-  amount takes the level's place (‹ is the search); our products still loading: 読み込み中 till they're in. Not found,
-  offline or the products still loading past 20 s: もう一度 · 名前で探す. Camera refused or
+  button (in ✕'s slot while the field is empty) opens a level with the camera live in a 4:3 black box (a dimmed band,
+  white corners), one status line and an always-there number field with 探す. A read freezes the frame, flashes the
+  corners leaf (0.15 s), stops the camera, and the amount takes the level's place (‹ is the search); a lookup that
+  takes longer shows the code and the wait on the status line (「4902102072618 · 読み込み中…」). Not found, offline or
+  the products still loading past 20 s: もう一度 · 名前で探す. A wrong typed number is said under its field (coral),
+  the status line kept. A minute without a read stops the camera: タップして再開 in the box. Camera refused or
   missing: said in the box, the number field the way on. No torch, no pre-permission screen.
 - **Amount** (`FoodAmount`, `FoodPortion`; their headers): one screen on an iPhone 15: the picture (marked as an AI
   image), kcal, P · F · C · 塩分, the state and amount controls; the foot (the meal and add, or 保存 / 削除) over the
