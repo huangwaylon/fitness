@@ -124,7 +124,7 @@
       <p class="line" aria-live="polite" {...data('scan-line')}>
         {#if picked !== null && cells[picked]}{cells[picked].label}
         {:else}
-          {#each counts as c (c.s)}<span class="count" {...data('count', c.s)}><i class="cell {c.s}" aria-hidden="true"></i>{c.label}{#if c.s !== 'idle'}{formatNum(c.n)}{/if}</span>{/each}
+          {#each counts as c (c.s)}<span class="count" {...data('count', c.s)}><i class="cell {c.s}" aria-hidden="true"></i>{c.label}{c.s === 'idle' ? '' : formatNum(c.n)}</span>{/each}
           {#if strip.outcome}<span class="outcome" {...data('outcome')}>{strip.outcome}</span>{/if}
         {/if}
       </p>
