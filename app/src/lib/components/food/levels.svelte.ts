@@ -23,6 +23,7 @@ export type Level =
   | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
   | { k: 'custom'; id: string | null; then: Then; who?: Who }
   | { k: 'quick'; meal: Meal }
+  | { k: 'scan'; meal: Meal }
   | { k: 'repeat'; meal: Meal }
   | { k: 'recipe'; id: string | null; who?: Who }
   | { k: 'rsearch'; from: number; s: Kept }

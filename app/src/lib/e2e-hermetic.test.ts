@@ -21,6 +21,7 @@ const ROUTED: Record<string, string> = {
   'board.spec.ts': 'the record routed (pairedWithPost)',
   'bots.spec.ts': "the its-bot and gym-bot Workers and the Kalori status.json routed (page.route), never fetched; its links' hrefs only read",
   'csp.spec.ts': 'raw.githubusercontent.com answered by page.route (the Kalori connect-src check), never fetched',
+  'food-scan.spec.ts': "Open Food Facts' product API routed (page.route: answered, 404 or aborted), never fetched",
   'food-kalori.spec.ts': "Kalori's pictures (assets.kalori.jp) answered or aborted by context.route, never fetched; a product link's href asserted, never opened",
   'gymbot.spec.ts': "the gym bot's /status routed (page.route), never fetched",
   'gymbot.ts': "the gym bot's /status, /gym/config and /gym/act, which gymbot.spec and gymbot-settings.spec route (page.route), never fetched",

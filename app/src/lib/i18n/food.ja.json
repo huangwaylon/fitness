@@ -207,5 +207,22 @@
   "food.quick.head": "食べた分",
   "food.quick.row": "カロリーだけ追加",
   "food.quick.of": "クイック {k} kcal",
-  "food.my.saveLog": "保存して追加"
+  "food.my.saveLog": "保存して追加",
+  "food.scan.open": "バーコードで探す",
+  "food.scan.title": "バーコード",
+  "food.scan.aim": "バーコードを枠に入れてください",
+  "food.scan.far": "読めないときは少し離してください",
+  "food.scan.online": "Open Food Factsで検索中…",
+  "food.scan.none": "この商品はデータにありません",
+  "food.scan.offline": "データにありません（オフライン？）",
+  "food.scan.denied": "カメラが許可されていません",
+  "food.scan.deniedHow": "設定 › アプリ › Safari › カメラ",
+  "food.scan.noCam": "カメラが使えません",
+  "food.scan.typeInstead": "番号を入力しても探せます",
+  "food.scan.num": "番号を入力",
+  "food.scan.numLabel": "バーコードの番号",
+  "food.scan.find": "検索",
+  "food.scan.bad": "番号が正しくありません",
+  "food.scan.byName": "名前で探す",
+  "food.scan.offTrust": "Open Food Facts の値（オンライン）"
 }

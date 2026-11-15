@@ -8,6 +8,7 @@
   // nothing); the kcal goal at the summary's upper right (GoalEdit, in place); a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
   // level (HealthSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
   // An editor's draft changed (マイレシピ, マイ食品, クイック): its ‹ and the sheet's ✕, backdrop and Esc ask first (ui/discard).
+  // A meal's search's バーコードで探す → the scanner (FoodScan, a level; a code's food → the amount in its place).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, HealthSheet's
   // NavBar; one pick with 健康's, kept for the session: whose.svelte.ts); under it the tabs (TABS, けんこう's group switch): きろく (the day,
   // on each opening) and グラフ (FoodChart: the kcal over a period, its range row with けんこう's period dropdown beside
@@ -51,6 +52,7 @@
   import { kcalWarn, saveGoal } from '../health/goals.ts';
   import FoodMeal from './FoodMeal.svelte';
   import FoodSearch from './FoodSearch.svelte';
+  import FoodScan from './FoodScan.svelte';
   import FoodAmount from './FoodAmount.svelte';
   import FoodCredits from './FoodCredits.svelte';
   import FoodRepeat from './FoodRepeat.svelte';
@@ -128,7 +130,8 @@
     title = !top ? '' : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
       : top.k === 'ritem' ? t('food.rcp.item')
-      : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : top.k === 'quick' ? t('food.quick.title') : t(`food.meal.${top.meal}`);
+      : top.k === 'custom' ? t(top.id ? 'food.my.head' : 'food.my.newTitle') : top.k === 'quick' ? t('food.quick.title')
+      : top.k === 'scan' ? t('food.scan.title') : t(`food.meal.${top.meal}`);
     back = top ? up : null;
     lead = !top ? whoPill : null;
   });
@@ -194,6 +197,11 @@
     if (id) l.added = [...l.added, id];
     l.s = newKept();
     levels.backTo(i + 1, false);
+    focusQ();
+  }
+  /** The scanner's 名前で探す: back to its search, the field focused in the tap (the keyboard up). */
+  function byName() {
+    levels.backTo(levels.stack.findIndex((l) => l.k === 'search') + 1, false);
     focusQ();
   }
   /** This trip's entries, in the order added (one taken back is gone). */
@@ -439,7 +447,12 @@
         onnewrecipe={() => rf.open(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
-        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} keep={top.s} />
+        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} keep={top.s}
+        onscan={() => go({ k: 'scan', meal }, '[data-food-scan]')} />
+    {:else if top?.k === 'scan'}
+      {@const meal = top.meal}
+      <!-- (a code's food: the amount in this level's place, so its ‹ goes back to the search) -->
+      <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} />
     {:else if top?.k === 'quick'}
       {@const l = top}
       <FoodCustom bind:draft={qdraft} quick onsave={() => quickDone(l)} />

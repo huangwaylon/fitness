@@ -148,3 +148,41 @@ test('the wallet opened, its ledger and history shown, closed, three times: noth
   note('the wallet', first, after);
   flat(first, after);
 });
+
+// ごはん's barcode scanner (components/food/FoodScan.svelte): opened over a meal's search (the camera a blank canvas's
+// stream, the decoder reading it), ‹ back, three times: every camera track stopped, the decoder's wasm memory let go
+// (purged with the level), no listener left.
+test('the barcode scanner opened and left, three times: the camera stopped, the decoder let go', { tag: '@chromium' }, async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __scanTracks: MediaStreamTrack[] };
+    w.__scanTracks = [];
+    MediaDevices.prototype.getUserMedia = async () => {
+      const cv = Object.assign(document.createElement('canvas'), { width: 640, height: 480 });
+      cv.getContext('2d')!.fillRect(0, 0, 640, 480);
+      const s = cv.captureStream(5);
+      w.__scanTracks.push(...s.getTracks());
+      return s;
+    };
+  });
+  await page.goto(Q);
+  await loaded3d(page);
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+  await page.locator('dialog[open] [data-kenkou-tab=food]').click();
+  await page.locator('dialog[open] [data-add=s]').click();
+  const round = async () => {
+    await page.locator('dialog[open] [data-food-scan]').click();
+    await expect(page.locator('dialog[open] [data-food-scan-level]')).toHaveAttribute('data-phase', 'reading');
+    // (a few frames read)
+    await page.waitForFunction(() => performance.getEntriesByName('scan:decode').length > 0);
+    await page.locator('dialog[open] .navbar').getByRole('button', { name: '戻る' }).click();
+    await expect(page.locator('dialog[open] [data-food-scan-level]')).toHaveCount(0);
+    await page.evaluate(() => performance.clearMeasures('scan:decode'));
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 2; i++) await round();
+  const after = await measure(page);
+  expect(await page.evaluate(() => (window as unknown as { __scanTracks: MediaStreamTrack[] }).__scanTracks.filter((t) => t.readyState === 'live').length)).toBe(0);
+  note('the barcode scanner', first, after);
+  flat(first, after);
+});

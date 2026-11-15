@@ -25,7 +25,7 @@ MEXT Excel and the 熊谷市 CSVs are downloaded by hand (`fetch.py`'s docstring
 dump is needed only to refresh its Japan subset, `raw/off/off_jp.jsonl`, which the build reads.
 
 `npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole; `jan/`
-is built but not shipped (no barcode scanning). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
+is built but not shipped (the scanner reads `products.json`'s ids: [Barcodes](#barcodes)). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
 (index.json's `files`), so a refresh of one file (Kalori's) refetches that file alone. A meal keeps a per-100 g
 snapshot, so a data refresh never rewrites one.
 
@@ -285,6 +285,25 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - NIBN 重量目安表: the PDF forbids reproduction. スマートミール: no open license.
 - Other municipal datasets (横須賀, 堺, 豊田, 中野区, 直方, 福岡, 生駒, 東京都 糖尿病対策レシピ ...): only per-meal or per-day totals, missing nutrients, or names only.
 - MAFF 食事バランスガイド: SV counts in an image PDF, no kcal.
+
+## Barcodes
+ごはん's scanner (`components/food/FoodScan.svelte`, `lib/scan/`; [design](design.md#gohan)) reads EAN-13, EAN-8, UPC-A
+and UPC-E live from the camera with zxing-wasm's reader (MIT; zxing-cpp Apache-2.0): a 37 KB chunk (13 KB gzipped)
+and a 947 KB wasm (408 KB gzipped, 321 KB brotli). Both are the build's own files (never the package's CDN), fetched
+only when the scanner opens, and kept by the service worker once used (`caches.ts` carried, the name `scan`).
+- **Lookup** (`components/food/scan.ts`): the code normalised (`lib/scan/barcode.ts`: the check digit, UPC-A
+  zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`.
+- **Online fallback** (`lib/scan/off.ts`): a code we lack goes to Open Food Facts' API v2
+  (`/api/v2/product/<code>.json`, a few fields; CORS open; CSP `connect-src` names that path only). Only the
+  number is sent: no cookies, no referrer, no image. Its answer becomes an item per 100 g (kcal from kJ if needed; a
+  value out of a snapshot's range is null), with 1食分 from `serving_quantity`. A product with no name or energy
+  counts as not found. Its id is `off:<code>`, as one of ours would be (a later `products.json` holding it matches
+  it), and its `note` 「Open Food Facts の値（オンライン）」 is the amount's trust line. The products' ODbL credit in
+  データの出典 covers it.
+- **Stored** as any food: the `food` op's snapshot carries the name and the values inline (`contract/food.ts`
+  FoodSnap), so the entry shows the same on every phone and offline. There was no contract change.
+- **Logged** as one usage counter per outcome: `act:scan.found` · `fallback` · `miss` · `offline`, never the code or the
+  name.
 
 ## Licensing obligations
 The app's credits (データの出典, `components/food/FoodCredits.svelte`) show each dataset's header and the `verify.json`

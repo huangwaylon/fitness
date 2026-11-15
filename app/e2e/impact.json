@@ -18,6 +18,7 @@
 
     ["src/lib/components/food/**", ["food*"]],
     ["src/lib/food/**", ["food*"]],
+    ["src/lib/scan/**", ["food-scan", "leaks-sheets"]],
     ["src/lib/*/food*", ["food*"]],
     ["src/lib/components/health/*Chart*", ["demo", "health"]],
     ["src/lib/components/health/**", ["health", "gym", "food-open"]],

@@ -22,7 +22,8 @@
   // its row again, Esc, or a new query; its 追加 logs it and clears and focuses the field, as the amount's does.
   // Its くわしく › opens the amount level; ‹ from there (or from any level over the search) finds it as it was left: the
   // query, the row open at what it was set to, every row drawn and the scroll (`keep`, on the search's level: Levels
-  // restores the scroll, so the rows are drawn in the first frame, from the catalog already held).
+  // restores the scroll, so the rows are drawn in the first frame, from the catalog already held). A meal's search has
+  // バーコードで探す at the field's right end (`onscan`: the scanner level, FoodScan).
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -44,6 +45,7 @@
   import { customItem, servingText, typedKcal } from './drafts.ts';
   import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
   import type { Kept } from './levels.svelte.ts';
+  import { warmDecoder } from '#lib/scan/load.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -85,6 +87,8 @@
     };
     /** The search's state on its level (levels.svelte.ts Kept): read as it mounts, written as it changes. */
     keep?: Kept;
+    /** バーコードで探す (a meal's search: the scanner level, FoodScan); none: no button. */
+    onscan?: () => void;
   }
   /** A food row (`row`): its key (`r:` さいきん's, `c:` マイ食品's, `f:` the catalog's, then its id), its data-
    *  attributes, the food it opens as (`item`, read when it opens) and as it was logged (`f`, `g0`, `u0`), its tap and ＋. */
@@ -94,7 +98,7 @@
   };
   let {
     recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
-    onfinish, onquicknew, onquicklog, inline, keep
+    onfinish, onquicknew, onquicklog, inline, keep, onscan
   }: Props = $props();
 
   /** Come back to (‹ from a level over it): as it was left, no field focused for it. */
@@ -360,6 +364,8 @@
       autocapitalize="off" spellcheck="false" aria-label={t('food.search')} placeholder={t('food.searchHint')}
       oninput={onInput} oncompositionend={() => setQ(text)} />
     {#if text}<span class="x"><NavButton kind="close" label={t('food.clear')} sfx="tick" onclick={clear} /></span>{/if}
+    <!-- (the decoder fetched on the press, before the tap opens the scanner) -->
+    {#if onscan}<span class="x" onpointerdown={warmDecoder} role="presentation"><NavButton kind="tool" icon="barcode" label={t('food.scan.open')} sfx="open" data-food-scan onclick={onscan} /></span>{/if}
   </form>
 
   {#if shops.length}
