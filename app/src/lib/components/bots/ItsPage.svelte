@@ -345,7 +345,7 @@
   note={runWhy || (paused && noDates) ? runNote : undefined}
   attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
   {strip}
-  {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
+  {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), n: events.length, body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
     {#if migrating}
       <div class="card pad note" data-its-migrate role="status">

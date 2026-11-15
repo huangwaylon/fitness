@@ -1,16 +1,16 @@
 <script lang="ts" module>
   import type { Snippet } from 'svelte';
-  /** A page's row at the bottom of くわしく: its id (the data-* key), heading and body. */
-  export interface MoreRow { id: string; label: string; body: Snippet }
+  /** A page's row at the bottom of くわしく: its id (the data-* key), heading, how many it lists, and body. */
+  export interface MoreRow { id: string; label: string; n: number; body: Snippet }
 </script>
 
 <script lang="ts">
   // A bot's くわしく (docs/design.md "Bots"), the page's last row, folded: the secondary facts in two columns, a label
   // over its value (a link a full 44px target), the bot's mode, version and workflow among them (no foot); then the
   // page's `more` rows under them, each its heading over its body (ジム's アプリで変更, 保養所's 最近の動き, メニュー's
-  // 前回の変更). Mounted only while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more, a
+  // 前回の変更), each named with its count under くわしく while folded (最近の動き 5件). Mounted only while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more, a
   // row's data-its-recent).
-  import { t } from '#lib/i18n/index.ts';
+  import { t, formatNum } from '#lib/i18n/index.ts';
 
   interface Fact { id: string; label: string; value: string; href?: string }
   let { facts, attr, more = [] }: { facts: readonly Fact[]; attr: string; more?: readonly MoreRow[] } = $props();
@@ -21,7 +21,7 @@
 
 {#if facts.length || more.length}
   <details class="card more" bind:open {...data('more')}>
-    <summary class="prow static"><span class="prl">{t('bots.more')}</span><span class="chev" aria-hidden="true"></span></summary>
+    <summary class="prow static"><span class="prl">{t('bots.more')}{#if more.length}<small {...data('more-sum')}>{more.map((m) => t('bots.moreN', { label: m.label, n: formatNum(m.n) })).join(' · ')}</small>{/if}</span><span class="chev" aria-hidden="true"></span></summary>
     {#if open}
       <dl class="facts">
         {#each facts as f (f.id)}

@@ -252,6 +252,7 @@ test('メニュー 順調: the card (no sentence: the word says it), 直近8週 
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
   // くわしく
   const fact = (id: string) => k.locator(`[data-kalori-fact="${id}"] dd`);
+  await expect(k.locator('[data-kalori-more-sum]')).toHaveText('前回の変更 53件');
   await k.locator('[data-kalori-more] summary').click();
   await expect(fact('data').locator('a')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/releases/tag/kalori-2026-11-04');
   await expect(fact('coverage')).toHaveText('完了');

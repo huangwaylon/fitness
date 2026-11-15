@@ -135,6 +135,7 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   await expect(editor.locator('[data-gym-reset]')).toHaveCount(0);
   // アプリで変更: the last ones, one a day, the last row of くわしく
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
+  await expect(page.locator('dialog[open] [data-gym-more-sum]')).toHaveText('アプリで変更 3件');
   await page.locator('dialog[open] [data-gym-more] summary').click();
   const changes = page.locator('dialog[open] [data-gym-more] > :last-child');
   await expect(changes).toHaveAttribute('data-gym-changes', '');

@@ -134,6 +134,7 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (
   expect(await y('[data-its-alert]')).toBeLessThan(await y('[data-its-settings]'));
   // くわしく: everything else, folded (not drawn until opened); the mode and the version, no foot
   await expect(its.locator('[data-its-fact="phase"]')).toHaveCount(0);
+  await expect(its.locator('[data-its-more] summary')).toHaveText('くわしく最近の動き 2件'); // its rows named while folded
   await its.locator('[data-its-more] summary').click();
   await expect(its.locator('[data-its-fact="phase"]')).toContainText('空室を確認中');
   await expect(its.locator('[data-its-fact="scan"]')).toContainText('11:59（120回）');

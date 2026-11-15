@@ -39,7 +39,7 @@
   stale={bot.stale} readAt={bot.readAt} {now} menu={data ? { label: t('kalori.menu.label'), onopen: () => (menuOpen = true) } : null}
   attention={{ lines, links: links.filter((l) => l.id === 'pr').map((l) => ({ id: 'pr', href: l.href, label: t('bots.attn.pr') })) }}
   {strip}
-  facts={data ? factRows(data, now) : []} more={change ? [{ id: 'latest', label: t('kalori.sec.latest'), body: latestRow }] : []} />
+  facts={data ? factRows(data, now) : []} more={change ? [{ id: 'latest', label: t('kalori.sec.latest'), n: change.parts.reduce((a, p) => a + p.n, 0), body: latestRow }] : []} />
 
 <!-- ⋯: links only, each opening GitHub in a new tab -->
 <ActionSheet bind:open={menuOpen} title={t('kalori.menu.label')} groups={[links.map((l) => ({ id: l.id, label: t(LABEL[l.id]) }))]}

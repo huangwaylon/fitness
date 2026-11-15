@@ -18,6 +18,7 @@
   "bots.w.none": "まだありません",
   "bots.w.unknown": "不明",
   "bots.more": "くわしく",
+  "bots.moreN": "{label} {n}件",
   "bots.loadFailed": "読み込めませんでした（{code}）",
   "bots.offline": "オフライン",
   "bots.attn.title": "確認が必要",

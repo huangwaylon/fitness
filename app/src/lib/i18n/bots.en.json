@@ -18,6 +18,7 @@
   "bots.w.none": "No data yet",
   "bots.w.unknown": "Unknown",
   "bots.more": "More",
+  "bots.moreN": "{label} ({n})",
   "bots.loadFailed": "Couldn't load ({code})",
   "bots.offline": "offline",
   "bots.attn.title": "Needs a look",

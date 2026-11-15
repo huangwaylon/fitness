@@ -42,6 +42,8 @@
   import { acts, attach, send as sendAct, shownConfig } from './gymActs.svelte.ts';
 
   const UNDO_MS = 5000;
+  /** アプリで変更: the newest this many. */
+  const CHANGES_SHOWN = 6;
   /** The settings shown: the last answer (gymActs.svelte.ts: it outlives the page) with the acts still queued predicted
    *  on it. */
   const cfg = $derived(shownConfig());
@@ -327,7 +329,7 @@
 <!-- アプリで変更: the last ones, one a day, at the bottom of くわしく -->
 {#snippet changesRow()}
   <ul class="rows">
-    {#each (cfg?.changes ?? []).slice(0, 6) as c (`${c.t}-${c.d}-${c.a}`)}
+    {#each (cfg?.changes ?? []).slice(0, CHANGES_SHOWN) as c (`${c.t}-${c.d}-${c.a}`)}
       <li data-gym-change><span class="txt"><b>{changeLine(c)}</b><small>{t('gym.changes.by', { who: c.who, time: timeOf(c.t, nowMs) })}</small></span></li>
     {/each}
   </ul>
@@ -339,7 +341,7 @@
   note={result || checking || cfg?.checking || (note && !editOpen) ? answer : undefined}
   attention={reasons.length ? { lines: reasons } : null}
   {strip}
-  {facts} more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), body: changesRow }] : []}>
+  {facts} more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), n: Math.min(cfg.changes.length, CHANGES_SHOWN), body: changesRow }] : []}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
       <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month" />
