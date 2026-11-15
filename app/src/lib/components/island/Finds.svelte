@@ -460,36 +460,61 @@
   }
 
 
-  /** The items lying on this screen that a control covers (measured when the camera settles, once the projector has
-   *  placed everything): a dig spot or a mushroom shows only where it's clear of every control, as on the old stage (a
-   *  tap there would go to the control). One off screen stays (the projector hides it; it's checked once it's in
-   *  view). The villagers walk about: they don't count. `hw`, `up`, `hh`: its box around its middle, u. */
-  function uncovered<T extends { x: number; y: number }>(list: T[], hw: number, up: number, hh: number): T[] {
+  /** What comes and goes over the island, which a dig spot or a mushroom never gives way to: an open sheet (the island
+   *  stays mounted under it), a tree's popup, a said line, a plate, the partner's news, the villagers walking about.
+   *  Measured against these once, a spot under them hid, and stayed hidden once they'd gone (2026-11-16). */
+  const passing = (el: Element) => !!el.closest('dialog, [data-fx], .detail, .news, [data-actor]');
+  /** Where each item lying on this screen that a control covers stands (`x,y`): one shows only where it's clear of the
+   *  controls a tap over the island would go to (the HUD's, the stage's: the trees, the board), as on the old stage.
+   *  One off screen stays (the projector hides it; it's checked once it's in view). `hw`, `up`, `hh`: its box around
+   *  its middle, u. No stage yet: none covered. */
+  function covered(list: { x: number; y: number }[], hw: number, up: number, hh: number, into: Set<string>): void {
     const g = stageGeo(scene);
-    if (!g) return [];
+    if (!g) return;
     // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over the crack)
-    const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
-    return list.filter((s) => {
-      if (!w.inView(s.x, s.y)) return true;
+    const keep = guardsU(g, -5 * g.k, (el) => passing(el) || !shownNow(el));
+    for (const s of list) {
+      if (!w.inView(s.x, s.y)) continue;
       const k = w.scaleAt(s.x, s.y), [sx, sy] = w.screenU(s.x, s.y, up);
-      return clearAt(keep, sx, sy, hw * k, hh * k);
-    });
+      if (!clearAt(keep, sx, sy, hw * k, hh * k)) into.add(`${s.x},${s.y}`);
+    }
   }
   /** Run `fn` once the projector has placed this frame's nodes (two frames on). */
   function placed(fn: () => void): () => void {
     let id = requestAnimationFrame(() => (id = requestAnimationFrame(fn)));
     return () => cancelAnimationFrame(id);
   }
-  let visibleSpots = $state<DigSpot[]>([]);
-  let visibleMushrooms = $state<Mushroom[]>([]);
+  let under = $state<ReadonlySet<string>>(new Set());
+  const uncovered = <T extends { x: number; y: number }>(list: T[]) => (under.size ? list.filter((s) => !under.has(`${s.x},${s.y}`)) : list);
+  const visibleSpots = $derived(uncovered(spots));
+  const visibleMushrooms = $derived(uncovered(mushrooms));
+  /** Where they lie (a world event re-derives the lists: the same places, no new measure). */
+  const lyingAt = $derived([...spots, ...mushrooms].map((s) => `${s.x},${s.y}`).join(' '));
+  /** Bumped when a control over the island comes or goes (not what's `passing`). */
+  let controls = $state(0);
   $effect(() => {
-    const list = spots, mush = mushrooms;
-    void w.rest.z;
+    if (!scene) return;
+    const SEL = 'button, [data-guard]';
+    const control = (n: Node) => n instanceof Element && !passing(n) && (n.matches(SEL) || !!n.querySelector(SEL));
+    const mo = new MutationObserver((rs) => {
+      if (rs.some((r) => [...r.addedNodes].some(control) || [...r.removedNodes].some(control))) controls++;
+    });
+    mo.observe(scene, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  });
+  // measured once the camera settles (a scroll, a pinch), a control comes or goes, or the items move; never under a
+  // sheet (the last measure kept: the island's hidden), again once it's gone
+  $effect(() => {
+    void lyingAt;
+    void controls;
+    void w.rest.settles;
     void w.rest.vw;
-    if (!w.rest.ready) return;
+    if (!w.rest.ready || !enabled()) return;
     return placed(() => {
-      visibleSpots = uncovered(list, 10, 0, 6);
-      visibleMushrooms = uncovered(mush, 7, 7, 7);
+      const out = new Set<string>();
+      covered(spots, 10, 0, 6, out);
+      covered(mushrooms, 7, 7, 7, out);
+      under = out;
     });
   });
 

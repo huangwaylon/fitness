@@ -258,8 +258,9 @@ export class World {
   /** The hot state (read every frame). `s` = CSS px per unit (vw / 390); camZ: the 3D camera's z (Island3D writes it in
    *  each frame); left / top: the scene's client offset. */
   readonly view = { camZ: CAMS.mae as number, s: 1, vw: 390, vh: 844, horizon: 0, left: 0, top: 0 };
-  /** What components may read reactively: the camera when it settles, the screen's size, the 3D camera up. */
-  readonly rest = $state({ z: CAMS.mae as number, s: 1, vw: 390, vh: 844, horizon: 0, ready: false, three: false });
+  /** What components may read reactively: the camera when it settles (`settles`: each time, a pinch that leaves z
+   *  where it was too), the screen's size, the 3D camera up. */
+  readonly rest = $state({ z: CAMS.mae as number, settles: 0, s: 1, vw: 390, vh: 844, horizon: 0, ready: false, three: false });
   /** Writes in the last frame and the nodes registered (perf). */
   readonly perf = { writes: 0, nodes: 0, frames: 0 };
 

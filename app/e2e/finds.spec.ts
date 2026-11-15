@@ -4,7 +4,8 @@
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from './fixtures.ts';
 import { fossilOnScreen, is3d, islandUp, quiet, settled, step } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { fromMenu, hudBells, hudMenu } from './hud.ts';
+import { LIVE_V } from '../src/lib/contract/live-protocol.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -102,6 +103,35 @@ test('a dig spot never flickers behind the bulletin board: none drawn as the cam
     const still = await page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => (el as HTMLElement).dataset.uid));
     for (const uid of moving) expect(still, `zoom ${k}: ${uid} drawn as the camera came in, gone once it settled`).toContain(uid);
   }
+});
+
+test('the dig spots stay drawn after a sheet that was up when the partner’s world news came closes (the user’s spots gone, 2026-11-16)', async ({ page }) => {
+  // (each world event re-derived the spots, and they were re-measured against every control on the page, the open
+  // sheet's included: every spot under the sheet hid, and stayed hidden once it closed)
+  const D = '2026-11-04';
+  await open(page, `&date=${D}T12:00&weather=clear`);
+  await quiet(page);
+  await settled(page);
+  const spots = page.locator('.item.spot');
+  const drawn = await spots.evaluateAll((els) => els.map((el) => (el as HTMLElement).dataset.uid).sort());
+  expect(drawn.length).toBeGreaterThan(0);
+  await fromMenu(page, 'bells');
+  // うめ's phone waters a flower, as the demo's relay brings it (sync/live-local.ts: another tab's BroadcastChannel)
+  const id = 'fl:e2e-news';
+  await page.evaluate(([id, v, t0]) => {
+    const bc = new BroadcastChannel('island-demo-relay'), t = t0 + Date.now() - performance.timeOrigin;
+    bc.postMessage({ k: 'm', m: { v, kind: 'world', op: 'watered', id, who: 'B', t } });
+    setTimeout(() => bc.close(), 1000);
+  }, [id, LIVE_V, Date.parse(`${D}T12:00:00+09:00`)] as const);
+  await expect.poll(() => page.evaluate((id) => Object.keys(localStorage).some((k) => localStorage.getItem(k)?.includes(id)), id)).toBe(true);
+  // three frames on under the sheet (Finds measured two frames on, once the projector had placed the frame)
+  await page.evaluate(() => ((window as { __f?: number }).__f = 0));
+  await page.waitForFunction(() => ++(window as { __f?: number }).__f! > 3, null, { polling: 'raf' });
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  if ((await hudMenu(page).getAttribute('aria-expanded')) === 'true') await hudMenu(page).click();
+  await settled(page);
+  await expect.poll(() => spots.evaluateAll((els) => els.map((el) => (el as HTMLElement).dataset.uid).sort())).toEqual(drawn);
 });
 
 test('a message bottle at the water’s edge: a tap reads its note', async ({ page }) => {

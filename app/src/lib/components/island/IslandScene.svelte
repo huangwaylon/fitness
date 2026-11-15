@@ -604,6 +604,7 @@
     if (left > 1) return void (settle = setTimeout(settled, left));
     settle = undefined;
     world.rest.z = Math.round(world.view.camZ);
+    world.rest.settles++;
     talk?.hold(false);
     says?.hold(false);
   }
