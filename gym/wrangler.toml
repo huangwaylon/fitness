@@ -20,7 +20,7 @@ URL = "https://gym-bot.island-fund-relay.workers.dev"
 ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 
 # Hourly: sets the checks' alarm again if none is set (src/index.ts `scheduled`). The Free plan allows 5 cron triggers
-# an account; the relay uses 2.
+# an account: the relay's 2, this one and its-bot's 1, so 4 of 5.
 [triggers]
 crons = ["7 * * * *"]
 
