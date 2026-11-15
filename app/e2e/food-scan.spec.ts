@@ -75,10 +75,12 @@ async function camera(page: Page, cam: { code: string } | 'deny') {
 /** Every camera track handed out stopped (none still live). */
 const live = (page: Page) => page.evaluate(() => (window as unknown as { __scanTracks: MediaStreamTrack[] }).__scanTracks.filter((t) => t.readyState === 'live').length);
 
-async function openScanner(page: Page) {
+/** ‹the meal's search› → バーコードで探す; `opened` runs on ごはん's open, before the search. */
+async function openScanner(page: Page, opened?: () => Promise<void>) {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
   await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
   await openKenkou(page, 'food');
+  await opened?.();
   await sheet(page).locator('[data-add=b]').click();
   const btn = sheet(page).getByRole('button', { name: 'バーコードで探す' });
   await expect(btn).toBeVisible();
@@ -95,9 +97,28 @@ const overflow = (page: Page) => page.locator('dialog[open]').evaluate(async (d)
 test('our product: read live, the camera off, its amount (1食分) in the scanner’s place; 追加 → the search, ‹ never the camera', async ({ page }) => {
   await camera(page, { code: OURS });
   const asked: string[] = [];
+  const got: string[] = [];
   await page.route(OFF, (r) => (asked.push(r.request().url()), r.abort()));
-  await openScanner(page);
+  await page.route(SHARDS, (r) => (got.push(r.request().url()), r.fulfill({ status: 404, body: '' })));
+  // products.json (lazy) held till the code is read: the read waits for it (読み込み中), never 'offline' (a read before
+  // the products were indexed fell through to Open Food Facts)
+  let release = () => {};
+  const held = new Promise<void>((ok) => (release = ok));
+  const products: number[] = [];
+  await page.route('**/food/products.json*', async (r) => (products.push(Date.now()), await held, r.continue()));
+  // (ごはん open, its core catalog fetched at idle: the products not asked for till the search)
+  const core = Promise.all(['dishes', 'jbfd'].map((f) => page.waitForResponse(`**/food/${f}.json*`, { timeout: 15_000 })));
+  let searched = 0;
+  await openScanner(page, async () => {
+    await core;
+    searched = Date.now();
+  });
   expect(await overflow(page)).toEqual([]);
+  await expect(status(page)).toHaveText('読み込み中…', { timeout: 20_000 });
+  expect(await live(page), 'the camera stopped on the read').toBe(0);
+  expect(products.length, 'products.json asked for once').toBe(1);
+  expect(products[0], 'products.json asked for by the search, not ごはん’s open').toBeGreaterThanOrEqual(searched);
+  release();
   const amount = sheet(page).locator('.amt');
   await expect(amount.locator('h3')).toHaveText('きなこ豆', { timeout: 20_000 });
   await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
@@ -112,6 +133,25 @@ test('our product: read live, the camera off, its amount (1食分) in the scanne
   await amount.locator('[data-done]').click();
   await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/きなこ豆/]);
   expect(asked, 'ours: Open Food Facts never asked').toEqual([]);
+  expect(got, 'ours: no barcode shard asked').toEqual([]);
+});
+
+test('a read while the products are arriving (fetched, parsing, indexing): ours found, never offline', async ({ page }) => {
+  await camera(page, { code: '' });
+  await page.route(OFF, (r) => r.abort());
+  await shards(page);
+  let release = () => {};
+  const held = new Promise<void>((ok) => (release = ok));
+  await page.route('**/food/products.json*', async (r) => (await held, r.continue()));
+  await openScanner(page);
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByName('scan:live').length), { timeout: 20_000 }).toBe(1);
+  // (the code shown as the products' bytes land: the read comes while they're parsed and indexed, listed in the
+  // catalog before their items are in)
+  const got = page.waitForResponse('**/food/products.json*');
+  release();
+  await got;
+  await page.evaluate((c) => ((window as unknown as { __scanCode: string }).__scanCode = c), OURS);
+  await expect(sheet(page).locator('.amt h3')).toHaveText('きなこ豆', { timeout: 20_000 });
 });
 
 test('in a barcode shard (beyond products.json): its jan/<last 3>.json fetched, its amount; OFF never asked', async ({ page }) => {

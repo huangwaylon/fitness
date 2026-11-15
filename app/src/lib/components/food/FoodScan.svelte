@@ -4,15 +4,16 @@
   // field with 検索 always under it (every camera failure's way on). The camera opens with the level (the tap that
   // pushed it: no screen before iOS's own prompt); a frame's band is read every TICK_MS (lib/scan: camera.ts, the
   // decoder decode.ts in its own chunk), never per frame. A read: the frame frozen, the corners leaf for FLASH_MS, the
-  // camera off at once, then what the code is (scan.ts lookupCode: our products, else Open Food Facts online):
-  // found, `onfound` (Food swaps this level for the amount); not found or unreached, a line and もう一度 · 名前で探す. A
+  // camera off at once, then what the code is (scan.ts lookupCode: our products, waited for, else Open Food Facts
+  // online): found, `onfound` (Food swaps this level for the amount); not found or unreached, a line and もう一度 ·
+  // 名前で探す. The products (lazy) are asked for with the decoder, so a read soon after the open waits less. A
   // code whose check digit fails never reads (scanning goes on); a typed one says so. 13 digits search at once.
   // The camera stops on every way out: the level left (‹, ✕, Esc, the sheet closed), the page hidden (and starts
   // again on the show, still reading), a code read; the decoder's memory is let go with the level. Timings as
   // performance marks (scan:open → scan:frame → scan:live → scan:read, scan:decode), for the e2e and Web Inspector.
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
-  import type { FoodDb, Item } from '#lib/food/index.ts';
+  import type { Item } from '#lib/food/index.ts';
   import { barcodeKeys, type Format } from '#lib/scan/barcode.ts';
   import { camFailOf, grabBand, openCamera, stopStream } from '#lib/scan/camera.ts';
   import { offLookup } from '#lib/scan/off.ts';
@@ -36,8 +37,8 @@
   const SLOW_MS = 8000;
 
   /** `start` the camera opening, `reading` live, `look` a code read or typed (what it is being found: `wait`, the
-   *  catalog's products `loading`, Open Food Facts asked `online`), `none` / `offline` nothing found. */
-  let phase = $state<'start' | 'reading' | 'look' | 'none' | 'offline'>('start');
+   *  catalog's products `loading`, Open Food Facts asked `online`), `none` / `offline` / `late` nothing found. */
+  let phase = $state<'start' | 'reading' | 'look' | 'none' | 'offline' | 'late'>('start');
   let look = $state<'wait' | 'loading' | 'online'>('wait');
   /** Why there's no camera (none: it's fine, or still opening). */
   let cam = $state<'denied' | 'nocam' | null>(null);
@@ -66,6 +67,7 @@
     : phase === 'look' ? (look === 'loading' ? t('food.loading') : look === 'online' ? t('food.scan.online') : code)
     : phase === 'none' ? t('food.scan.none')
     : phase === 'offline' ? t('food.scan.offline')
+    : phase === 'late' ? t('food.scan.late')
     : cam ? t('food.scan.typeInstead')
     : t(slow ? 'food.scan.far' : 'food.scan.aim')
   );
@@ -78,6 +80,8 @@
     performance.mark('scan:open');
     const dec = decoder();
     dec.then((m) => m.warm()).catch(() => {});
+    // (our products, lazy: in by the read, mostly; the search has usually asked already, and this is no second fetch)
+    void foodDb().then((db) => db.wantMore(['off'])).catch(() => {});
     try {
       const s = await openCamera();
       if (my !== gen || !alive || !video) return stopStream(s);
@@ -142,27 +146,18 @@
     look = 'wait';
     bad = false;
     flash = seen;
-    const hit = await lookupCode(raw, await catalog(), t('food.scan.offTrust'), format, (c) => {
+    const db = held.db ?? (await foodDb().catch(() => null));
+    const hit = await lookupCode(raw, db, t('food.scan.offTrust'), format, (c) => {
       look = 'online';
       return offLookup(c, t('food.scan.offTrust'));
-    });
+    }, () => (look = 'loading'));
     if (!alive || phase !== 'look') return;
     await new Promise((r) => setTimeout(r, Math.max(0, FLASH_MS - (performance.now() - t0))));
     flash = false;
     if (!alive) return;
     if (hit?.k === 'ours' || hit?.k === 'off') return onfound(hit.item);
-    phase = hit?.k === 'offline' ? 'offline' : 'none';
+    phase = hit?.k === 'offline' || hit?.k === 'late' ? hit.k : 'none';
   }
-  /** The catalog with our products in (they load lazily: 読み込み中 meanwhile); null when it can't load (offline). */
-  async function catalog(): Promise<FoodDb | null> {
-    const db = held.db ?? (await foodDb().catch(() => null));
-    if (db && !db.sets.some((s) => s.source === 'off')) {
-      look = 'loading';
-      await db.wantMore(['off']).catch(() => {});
-    }
-    return db;
-  }
-
   function retry() {
     bad = false;
     slow = false;
@@ -213,7 +208,7 @@
   </div>
 
   <p class="st" class:bad class:code={phase === 'look' && look === 'wait'} aria-live="polite" data-scan-status>{status}</p>
-  {#if phase === 'none' || phase === 'offline'}
+  {#if phase === 'none' || phase === 'offline' || phase === 'late'}
     {#if !bad}<p class="num-line" data-scan-code>{code}</p>{/if}
     <div class="acts">
       <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('food.retry')}</button>

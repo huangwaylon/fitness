@@ -215,6 +215,7 @@
   "food.scan.online": "Open Food Factsで検索中…",
   "food.scan.none": "この商品はデータにありません",
   "food.scan.offline": "オフラインのため確認できません",
+  "food.scan.late": "データの読み込み中のため確認できません",
   "food.scan.denied": "カメラが許可されていません",
   "food.scan.deniedHow": "設定 › アプリ › Safari › カメラ",
   "food.scan.noCam": "カメラが使えません",

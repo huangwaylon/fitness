@@ -294,7 +294,9 @@ and UPC-E live from the camera with zxing-wasm's reader (MIT; zxing-cpp Apache-2
 and a 947 KB wasm (408 KB gzipped, 321 KB brotli). Both are the build's own files (never the package's CDN), fetched
 only when the scanner opens, and kept by the service worker once used (`caches.ts` carried, the name `scan`).
 - **Lookup** (`components/food/scan.ts`): the code normalised (`lib/scan/barcode.ts`: the check digit, UPC-A
-  zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`,
+  zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`
+  (lazy: asked for when the scanner opens, and waited for till indexed, 読み込み中 past 0.3 s; past 20 s the lookup
+  goes on without it, and an answer OFF can't give is `late`: 「データの読み込み中のため確認できません」, never offline),
   then its barcode shard (`load.ts janItem`: `jan/<last 3>.json`, ~0.8 KB gzipped, cached on use: 12,272 codes in
   1,000 files, 1.5 MB, 0.8 MB gzipped; counter `found.jan`).
 - **Online fallback** (`lib/scan/off.ts`): a code we lack goes to Open Food Facts' API v2
@@ -306,7 +308,7 @@ only when the scanner opens, and kept by the service worker once used (`caches.t
   データの出典 covers it.
 - **Stored** as any food: the `food` op's snapshot carries the name and the values inline (`contract/food.ts`
   FoodSnap), so the entry shows the same on every phone and offline. There was no contract change.
-- **Logged** as one usage counter per outcome: `act:scan.found` · `found.jan` · `fallback` · `miss` · `offline`, never the code or the
+- **Logged** as one usage counter per outcome: `act:scan.found` · `found.jan` · `fallback` · `miss` · `offline` · `late`, never the code or the
   name.
 
 ## Licensing obligations
