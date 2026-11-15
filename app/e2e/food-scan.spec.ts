@@ -1,7 +1,8 @@
 // ごはん's barcode scanner (docs/design.md "Gohan" Barcode; docs/food-data.md "Barcodes"): a meal search's バーコードで探す
 // opens the scanner level; the camera is a getUserMedia shim whose stream is a canvas with a real EAN-13 drawn on it,
 // read by the real decoder (zxing-wasm, from the build), so the wasm's own path is tested in WebKit too. Our product →
-// its amount; not ours → Open Food Facts (its API routed: never the network) → its amount, marked as OFF's; nowhere →
+// its amount; in a barcode shard (static/food/jan/, routed) → its amount; else Open Food Facts (its API routed: never
+// the network) → its amount, marked as OFF's; nowhere →
 // 名前で探す; the camera refused → typed numbers. The camera's tracks stop on a read, on ‹ and on a hide.
 import { expect, test, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
@@ -14,6 +15,11 @@ const DATE = '2026-11-04T12:30';
 const OURS = '4900000010657';
 const OFFS = '4902102072618';
 const OFF = 'https://world.openfoodfacts.org/api/v2/product/**';
+const SHARDS = '**/food/jan/*.json*';
+/** The barcode shards routed: none (404: the code beyond them, on to OFF), or `items` in every one asked for. */
+const shards = (page: Page, items: object[] = []) => page.route(SHARDS, (r) => (items.length
+  ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ source: 'off', idPrefix: 'off:', cols: Object.fromEntries(Object.keys(items[0]).map((k) => [k, items.map((it) => (it as Record<string, unknown>)[k])])) }) })
+  : r.fulfill({ status: 404, body: '' })));
 const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
 const scanLv = (page: Page) => sheet(page).locator('[data-food-scan-level]');
 const status = (page: Page) => scanLv(page).locator('[data-scan-status]');
@@ -108,8 +114,26 @@ test('our product: read live, the camera off, its amount (1食分) in the scanne
   expect(asked, 'ours: Open Food Facts never asked').toEqual([]);
 });
 
+test('in a barcode shard (beyond products.json): its jan/<last 3>.json fetched, its amount; OFF never asked', async ({ page }) => {
+  await camera(page, { code: OFFS });
+  const asked: string[] = [];
+  const got: string[] = [];
+  await page.route(OFF, (r) => (asked.push(r.request().url()), r.abort()));
+  await shards(page, [{ id: OFFS, name: 'ためしのコーラ', cat: '飲料', kcal: 45, p: 0, f: 0, c: 11.3, salt: 0 }]);
+  await page.route(SHARDS, (r) => (got.push(new URL(r.request().url()).pathname), r.fallback()));
+  await openScanner(page);
+  const amount = sheet(page).locator('.amt');
+  await expect(amount.locator('h3')).toHaveText('ためしのコーラ', { timeout: 20_000 });
+  await expect(amount.locator('[data-food-note]')).toHaveCount(0);
+  expect(got.map((p) => p.replace(/^.*\/food\//, ''))).toEqual(['jan/618.json']);
+  await amount.locator('[data-done]').click();
+  await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/ためしのコーラ/]);
+  expect(asked, 'a shard’s: Open Food Facts never asked').toEqual([]);
+});
+
 test("not ours: Open Food Facts asked for the code only, its item's amount marked as OFF's; logged, the day shows it", async ({ page }) => {
   await camera(page, { code: OFFS });
+  await shards(page);
   const asked: string[] = [];
   await page.route(OFF, (r) => {
     asked.push(r.request().url());
@@ -128,6 +152,7 @@ test("not ours: Open Food Facts asked for the code only, its item's amount marke
 
 test('nowhere: この商品はデータにありません, もう一度 reads again, 名前で探す → the search, its field focused; offline says so', async ({ page }) => {
   await camera(page, { code: OFFS });
+  await shards(page);
   let mode: 'none' | 'off' = 'none';
   await page.route(OFF, (r) => (mode === 'none' ? r.fulfill({ status: 404, contentType: 'application/json', body: '{"status":0}' }) : r.abort()));
   await openScanner(page);

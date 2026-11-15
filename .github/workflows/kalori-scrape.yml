@@ -637,7 +637,7 @@ jobs:
             app/scripts
             app/src/lib/food
             .github/scripts
-      # (node alone, no npm: app/scripts/food-data.ts imports only node: and lib/food, deps.test.ts)
+      # (node alone, no npm: app/scripts/food-data.ts imports only node: and lib/food, lib/food/nodeAlone.test.ts)
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24

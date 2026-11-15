@@ -1,10 +1,10 @@
 // Copy the meal log's food data (food-data/out/, built by `python3 -I food-data/scripts/build.py all` from the repo
-// root; docs/food-data.md) into static/food/: index.json, verify.json and every dataset index.json lists. Not the barcode shards (jan/): no barcode
-// scanning in v1. The app fetches them at runtime (lib/food/load.ts), never precached, each under its own `?v=`
-// (index.json's `files`).
+// root; docs/food-data.md) into static/food/: index.json, verify.json, every dataset index.json lists and the barcode
+// shards beyond the products (jan/: shipJan). The app fetches them at runtime (lib/food/load.ts), never precached, each
+// under its own `?v=` (index.json's `files`; a shard's, `jan`).
 // Usage (from app/): npm run food:data   [-- <data dir>, default ../food-data/out]. Runs on node alone, no npm
 // (kalori-scrape.yml's update-merge: `node app/scripts/food-data.ts --only kalori`): only node: and relative imports
-// (deps.test.ts).
+// (lib/food/nodeAlone.test.ts).
 //   npm run food:data -- --only kalori|products [<data dir>]   ships the data dir's kalori.json (or products.json) alone
 //   into the committed static/food/ (CI's weekly refresh, kalori-scrape.yml, has no other out/ files; `build.py off`
 //   neither): the other files untouched, its entry kept (or added as build.py writes it), the file written and `files`
@@ -23,11 +23,13 @@
 // every file it touches; and `version`, that of them all (an older app's or worker's `?v=`, the fallback for an index
 // without `files`). out/'s index keeps the pipeline's own hash.
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { FOOD_SCHEMA, toColumns } from '../src/lib/food/db.ts';
 import { keysOf } from '../src/lib/food/search.ts';
-import type { Dataset } from '../src/lib/food/types.ts';
+import { janShard, janShips } from '../src/lib/food/jan.ts';
+import type { Dataset, Item } from '../src/lib/food/types.ts';
 
 const APP = join(import.meta.dirname, '..');
 const args = process.argv.slice(2);
@@ -79,9 +81,38 @@ function shipped(f: string, d: Dataset, lazy: boolean): string {
   }
 }
 
+/** The barcode shards (`<src>/jan/<k>.json`, build.py's `{code: ITEM}`) into OUT/jan/ by column, each of the codes
+ * lib/food/jan.ts janShips (beyond `products`, no store code or weak name), sorted, its barcode in its id, no aliases;
+ * none written for a shard left empty. OUT/jan/ replaced whole. Returns how many codes. */
+function shipJan(src: string, products: Dataset): number {
+  const have = new Set(products.items.map((it) => it.jan ?? it.id.slice(4)));
+  rmSync(join(OUT, 'jan'), { recursive: true, force: true });
+  mkdirSync(join(OUT, 'jan'));
+  let n = 0;
+  for (const f of readdirSync(join(src, 'jan')).filter((f) => /^\d{3}\.json$/.test(f)).sort()) {
+    const shard = JSON.parse(readFileSync(join(src, 'jan', f), 'utf8')) as Record<string, Item>;
+    const items = Object.keys(shard).sort().map((k) => shard[k]).filter((it) => janShips(it, have) && janShard(it.jan!) === f.slice(0, 3));
+    if (!items.length) continue;
+    n += items.length;
+    writeFileSync(join(OUT, 'jan', f), shipped(`jan/${f}`, { source: 'off', items: items.map(({ aliases: _a, ...it }) => it) }, true));
+  }
+  return n;
+}
+
+/** OUT/jan/'s version (index.json `jan`, every shard's `?v=`): the first 12 hex digits of a sha256 over each shard's
+ * name and bytes, in name order; none without shards. */
+function janVersion(): string | undefined {
+  const dir = join(OUT, 'jan');
+  const fs = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')).sort() : [];
+  if (!fs.length) return undefined;
+  const h = createHash('sha256');
+  for (const f of fs) h.update(`jan/${f}\0`).update(readFileSync(join(dir, f))).update('\0');
+  return h.digest('hex').slice(0, 12);
+}
+
 /** The first 12 hex digits of a sha256: each shipped file's of its bytes (`files`), and `version`'s of each one's name
- * and bytes, verify.json then the datasets in index order (load.test.ts recomputes both). Writes index.json, once every
- * dataset there is by column (`--only`'s untouched files too). */
+ * and bytes, verify.json then the datasets in index order (load.test.ts recomputes both); `jan`, the shards'
+ * (janVersion). Writes index.json, once every dataset there is by column (`--only`'s untouched files too). */
 function writeIndex(index: object, files: string[]): string {
   const hex = (h: ReturnType<typeof createHash>) => h.digest('hex').slice(0, 12);
   const hash = createHash('sha256');
@@ -93,7 +124,9 @@ function writeIndex(index: object, files: string[]): string {
     versions[f] = hex(createHash('sha256').update(b));
   }
   const version = hex(hash);
-  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...index, version, files: versions, schema: FOOD_SCHEMA }));
+  const { jan: _j, schema: _s, ...head } = index as { jan?: unknown; schema?: unknown };
+  const jan = janVersion();
+  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...head, version, files: versions, ...(jan ? { jan } : {}), schema: FOOD_SCHEMA }));
   return version;
 }
 
@@ -122,7 +155,10 @@ if (ONLY !== undefined) {
   const files = datasets.map((d) => d.file as string);
   const missing = ['verify.json', ...files].filter((f) => f !== entry.file && !existsSync(join(OUT, f)));
   if (missing.length) fail(`missing in ${OUT}: ${missing.join(', ')}`);
-  writeFileSync(join(OUT, entry.file), shipped(entry.file, readDataset(join(SRC, entry.file), entry.file), true));
+  const data = readDataset(join(SRC, entry.file), entry.file);
+  writeFileSync(join(OUT, entry.file), shipped(entry.file, data, true));
+  // (the products' shards with them, when the data dir has them: which codes ship depends on products.json)
+  if (ONLY === 'products' && existsSync(join(SRC, 'jan'))) console.log(`food:data: ${shipJan(SRC, data)} barcodes beyond the products into jan/`);
   const version = writeIndex({ ...index, datasets }, files);
   console.log(`food:data: ${entry.file} alone (${(statSync(join(OUT, entry.file)).size / 1e6).toFixed(1)} MB) from ${SRC}, version ${version}`);
   process.exit(0);
@@ -143,12 +179,18 @@ if (stray.length) fail(`not in index.json: ${stray.join(', ')}`);
 const data = new Map<string, Dataset>();
 for (const f of files) data.set(f, readDataset(join(SRC, f), f));
 
+// (a data dir without shards keeps the shipped ones: built by `build.py off` only, from the raw OFF dump)
+const keptJan = !existsSync(join(SRC, 'jan')) && existsSync(join(OUT, 'jan')) ? mkdtempSync(join(tmpdir(), 'food-jan-')) : null;
+if (keptJan) renameSync(join(OUT, 'jan'), join(keptJan, 'jan'));
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
+if (keptJan) renameSync(join(keptJan, 'jan'), join(OUT, 'jan')), rmSync(keptJan, { recursive: true });
 let bytes = 0;
 copyFileSync(join(SRC, 'verify.json'), join(OUT, 'verify.json'));
 const lazy = new Set((index.datasets ?? []).filter((d) => (d as { lazy?: unknown }).lazy === true).map((d) => d.file));
 for (const [f, d] of data) writeFileSync(join(OUT, f), shipped(f, d, lazy.has(f)));
+const products = data.get(PRODUCTS.file);
+if (products && existsSync(join(SRC, 'jan'))) console.log(`food:data: ${shipJan(SRC, products)} barcodes beyond the products into jan/`);
 const version = writeIndex(index, files);
 for (const f of [...SIDECARS, ...files]) bytes += statSync(join(OUT, f)).size;
 console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${version} (out/: ${index.version}), from ${SRC}`);

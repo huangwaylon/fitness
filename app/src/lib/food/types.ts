@@ -86,6 +86,8 @@ export type Shipped = Omit<Dataset, 'items'> & { cols: Partial<Record<keyof Item
  *  chain menus) load after the rest. */
 export interface FoodIndex {
   version: string;
+  /** The barcode shards' version (jan/<last 3 digits>.json?v=…: lib/food/jan.ts); none: no shards shipped. */
+  jan?: string;
   /** The layout (db.ts FOOD_SCHEMA). */
   schema?: number;
   files: Record<string, string>;

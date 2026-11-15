@@ -3,7 +3,7 @@
 // check, here on a copy).
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -169,5 +169,27 @@ describe('food:data --only products', () => {
     const index = JSON.parse(readFileSync(join(to, 'index.json'), 'utf8'));
     expect(index.datasets).toEqual([expect.objectContaining({ file: 'a.json' }), PRODUCTS, KALORI]);
     expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'products.json', 'kalori.json']));
+  });
+});
+
+describe('food:data, the full path, and the barcode shards', () => {
+  const src = () => {
+    const d = tmp();
+    writeFileSync(join(d, 'index.json'), JSON.stringify({ version: 'abcdefabcdef', datasets: [{ file: 'a.json', source: 'a', badge: 'A', secondary: false, lazy: false }] }));
+    writeFileSync(join(d, 'verify.json'), '{"groups":[]}');
+    writeFileSync(join(d, 'a.json'), JSON.stringify({ source: 'a', label: 'a', items: [{ id: 'a:1', name: 'たこ', kcal: 1 }] }));
+    return d;
+  };
+  it('a data dir without jan/ keeps the shipped shards (and their `jan`); one with them ships its own', () => {
+    const from = src(), to = join(tmp(), 'food');
+    mkdirSync(join(to, 'jan'), { recursive: true });
+    writeFileSync(join(to, 'jan', '883.json'), 'kept');
+    expect(run(from, '--to', to).status).toBe(0);
+    expect(readFileSync(join(to, 'jan', '883.json'), 'utf8')).toBe('kept');
+    expect(JSON.parse(readFileSync(join(to, 'index.json'), 'utf8')).jan).toMatch(/^[0-9a-f]{12}$/);
+    // (a data dir with jan/ is build.py's: the shipped shards replaced by its, here none)
+    mkdirSync(join(from, 'jan'));
+    expect(run(from, '--to', to).status).toBe(0);
+    expect(existsSync(join(to, 'jan', '883.json'))).toBe(false);
   });
 });

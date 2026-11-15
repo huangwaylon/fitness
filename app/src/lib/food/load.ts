@@ -7,7 +7,8 @@
 // nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
 // index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { addDataset, emptyDb, FOOD_SCHEMA, fromFile, type FoodDb } from './db.ts';
-import type { Dataset, FoodIndex, Shipped, Verify } from './types.ts';
+import { janShard } from './jan.ts';
+import type { Dataset, FoodIndex, Item, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
@@ -106,6 +107,30 @@ function cancelParses(ids: Iterable<number>): void {
     parser = undefined;
   }
 }
+
+/** The barcode shards fetched this session, by name (each ~1 KB; the service worker keeps them across sessions). */
+const shards = new Map<string, Promise<Map<string, Item>>>();
+
+/** A code's food in the barcode shards (static/food/jan/: the codes beyond products.json), `db`'s version of them;
+ *  null when its shard hasn't it (or there are none). A fetch that fails (offline) throws, and is asked again next time. */
+export async function janItem(db: FoodDb, code: string): Promise<Item | null> {
+  if (!db.jan || !/^\d{8,13}$/.test(code)) return null;
+  const href = url(`jan/${janShard(code)}.json`, db.jan);
+  let p = shards.get(href);
+  if (!p) {
+    p = fetch(href).then(async (res) => {
+      if (res.status === 404) return new Map<string, Item>();
+      if (!res.ok) throw new Error(`${href}: ${res.status}`);
+      return new Map(fromFile((await res.json()) as Shipped).items.map((it) => [it.jan ?? it.id.slice(4), it]));
+    });
+    shards.set(href, p);
+    p.catch(() => shards.delete(href));
+  }
+  return (await p).get(code) ?? null;
+}
+
+/** Forget the shards fetched (tests). */
+export const forgetShards = (): void => shards.clear();
 
 /** The food data is a later layout than this app reads (index.json `schema` past FOOD_SCHEMA): nothing fetched; the
  *  deployed build reads it (dbHold asks Kit for it). */

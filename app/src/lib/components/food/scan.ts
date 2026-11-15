@@ -1,7 +1,8 @@
 // ごはん's barcode scan, what a code is (docs/food-data.md "Barcodes"): our products first (products.json, its ids
-// the codes: barcode.ts barcodeKeys), else Open Food Facts online (off.ts), else nothing. Each outcome is one usage
-// counter (`act:scan.<outcome>`), never the code or the food (docs/ops/observability.md).
-import { itemById, type FoodDb, type Item } from '#lib/food/index.ts';
+// the codes: barcode.ts barcodeKeys), then the barcode shards (static/food/jan/: load.ts janItem), else Open Food Facts
+// online (off.ts), else nothing. Each outcome is one usage counter (`act:scan.<outcome>`: found, found.jan, fallback,
+// miss, offline), never the code or the food (docs/ops/observability.md).
+import { itemById, janItem, type FoodDb, type Item } from '#lib/food/index.ts';
 import { barcodeKeys, type Format } from '#lib/scan/barcode.ts';
 import { offLookup, type OffAnswer } from '#lib/scan/off.ts';
 import { count } from '#lib/sync/log.ts';
@@ -24,6 +25,11 @@ export async function lookupCode(raw: string, db: FoodDb | null, note: string, f
     const it = itemById(db, `off:${k}`);
     if (it) return counted({ k: 'ours', item: it });
   }
+  // (a shard that won't load, offline: on to OFF, which says offline)
+  for (const k of db ? keys : []) {
+    const it = await janItem(db!, k).catch(() => null);
+    if (it) return counted({ k: 'ours', item: it }, 'found.jan');
+  }
   const code = keys[0];
   const had = asked.get(code);
   if (had) return counted({ k: 'off', item: had });
@@ -35,7 +41,7 @@ export async function lookupCode(raw: string, db: FoodDb | null, note: string, f
   return counted({ k: a.k === 'none' ? 'miss' : 'offline' });
 }
 
-const counted = (h: ScanHit): ScanHit => (count(`act:scan.${h.k === 'ours' ? 'found' : h.k === 'off' ? 'fallback' : h.k}`), h);
+const counted = (h: ScanHit, as?: string): ScanHit => (count(`act:scan.${as ?? (h.k === 'ours' ? 'found' : h.k === 'off' ? 'fallback' : h.k)}`), h);
 
 /** Forget OFF's answers (tests). */
 export const forgetAsked = (): void => asked.clear();

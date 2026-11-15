@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb, NewerFoodData } from './load.ts';
+import { janShard, janShips } from './jan.ts';
 import { addDataset, countOf, credits, decodeItems, emptyDb, fillIn, findFoods, FOOD_SCHEMA, toColumns, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
@@ -31,12 +32,32 @@ afterAll(() => {
 });
 
 describe('static/food', () => {
-  it('holds index.json, verify.json and exactly the datasets index.json lists (no barcode shards)', () => {
-    expect(readdirSync(DIR).sort()).toEqual(['index.json', 'verify.json', ...index.datasets.map((d) => d.file)].sort());
+  it('holds index.json, verify.json, exactly the datasets index.json lists and jan/ (the barcode shards)', () => {
+    expect(readdirSync(DIR).sort()).toEqual(['index.json', 'jan', 'verify.json', ...index.datasets.map((d) => d.file)].sort());
     expect(index.version).toMatch(/^[0-9a-f]{12}$/);
     // the lazy ones: the products and the chain menus (Kalori), both secondary
     expect(index.datasets.filter((d) => d.lazy).map((d) => d.file).sort()).toEqual(['kalori.json', 'products.json']);
     expect(index.datasets.find((d) => d.file === 'kalori.json')).toMatchObject({ source: 'kalori', secondary: true, lazy: true });
+  });
+
+  it('ships the barcode shards beyond the products by column (jan/<last 3>.json), no store code or weak name, under index.json’s jan', () => {
+    const products = new Set(fromFile(JSON.parse(readFileSync(join(DIR, 'products.json'), 'utf8')) as Shipped).items.map((it) => it.jan ?? it.id.slice(4)));
+    const shards = readdirSync(join(DIR, 'jan')).sort();
+    const hash = createHash('sha256');
+    const bad: string[] = [];
+    let n = 0;
+    for (const f of shards) {
+      const b = readFileSync(join(DIR, 'jan', f));
+      hash.update(`jan/${f}\0`).update(b).update('\0');
+      const file = JSON.parse(b.toString('utf8')) as Shipped;
+      for (const it of fromFile(file).items) {
+        n++;
+        if (file.idPrefix !== 'off:' || !janShips(it, products) || `${janShard(it.jan!)}.json` !== f || it.aliases) bad.push(`${f}: ${it.id}`);
+      }
+    }
+    expect(bad).toEqual([]);
+    expect(n).toBeGreaterThan(10_000);
+    expect(index.jan).toBe(hash.digest('hex').slice(0, 12));
   });
 
   it('names every shop by each of our aliases (data_src/kalori_shops.json): none is a food word, refused (addShops)', () => {

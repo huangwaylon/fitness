@@ -594,6 +594,33 @@ describe('food data fetches (foodFetch)', () => {
     expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...urls('p2')].sort());
   });
 
+  it('a barcode shard (jan/): cached on use, kept while the index’s jan names it, dropped when it changes; never at the install', async () => {
+    const withJan = (v: string, jan: string) => JSON.stringify({ ...JSON.parse(index(v)), jan });
+    served[`${BASE}index.json`] = withJan('aaa', 'j1');
+    const shard = (j: string) => `${BASE}jan/881.json?v=${j}`;
+    served[shard('j1')] = 'shard-1';
+    expect(await get(`${BASE}index.json`)).toBe(withJan('aaa', 'j1'));
+    for (const f of files('aaa')) await get(f);
+    expect(await get(shard('j1'))).toBe('shard-1');
+    await settled();
+    expect(cache.m.has(shard('j1'))).toBe(true);
+    expect(cache.m.has(`${BASE}jan/index.json`)).toBe(false);
+    // a new deploy, the same shards: kept
+    serve('bbb');
+    served[`${BASE}index.json`] = withJan('bbb', 'j1');
+    expect(await get(`${BASE}index.json`)).toBe(withJan('bbb', 'j1'));
+    for (const f of files('bbb')) await get(f);
+    await settled();
+    expect(cache.m.has(shard('j1'))).toBe(true);
+    // the shards changed: the old one goes once the new index is whole
+    served[`${BASE}index.json`] = withJan('bbb', 'j2');
+    await get(`${BASE}index.json`);
+    await settled();
+    expect(cache.m.has(shard('j1'))).toBe(false);
+    expect(isFoodData('/fitness/food/jan/881.json')).toBe(true);
+    expect(precachable('food/jan/881.json')).toBe(false);
+  });
+
   it('never stores a failed answer', async () => {
     served = {};
     expect(await get(`${BASE}foods.json?v=aaa`)).toBe('');

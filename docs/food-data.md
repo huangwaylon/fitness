@@ -6,7 +6,7 @@ by `food-data/` and shipped in `app/static/food/`. All values are estimates.
 ## Rebuild
 ```sh
 python3 -I food-data/scripts/build.py all       # rebuild every file into food-data/out/, validate, install
-cd app && npm run food:data                     # copy out/ into static/food/ (adds core search keys; not jan/)
+cd app && npm run food:data                     # copy out/ into static/food/ (adds core search keys; the barcode shards)
 python3 -I food-data/scripts/build.py check     # rebuild into a temp dir and byte-compare with out/
 python3 -I food-data/scripts/build.py toyonaka  # one or more targets (see the docstring in build.py)
 python3 -I food-data/scripts/fetch.py <step>    # download raw inputs into food-data/raw/ (no argument: the steps)
@@ -24,8 +24,8 @@ The scripts are stdlib-only (Python ≥ 3.9); `build.py` is offline and determin
 MEXT Excel and the 熊谷市 CSVs are downloaded by hand (`fetch.py`'s docstring has the URLs); the ~1 GB Open Food Facts
 dump is needed only to refresh its Japan subset, `raw/off/off_jp.jsonl`, which the build reads.
 
-`npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole; `jan/`
-is built but not shipped (the scanner reads `products.json`'s ids: [Barcodes](#barcodes)). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
+`npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole, `jan/`
+too (the codes beyond the products: [Barcodes](#barcodes); `--only products` ships them with the products). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
 (index.json's `files`), so a refresh of one file (Kalori's) refetches that file alone. A meal keeps a per-100 g
 snapshot, so a data refresh never rewrites one.
 
@@ -74,7 +74,9 @@ for (`db.wantMore`: the search open, or a day with a product logged), parsed in 
 kcal per 100 g} }], "byId": {item id: group index} }`. `src` is a dataset `source` (the item id prefix) or `usda`; every
 src used in a group is in `sources`. See [Verification](#verification).
 
-**`jan/<k>.json`** (built, not shipped): `{ "<jan>": ITEM }`, `k` the code's last 3 digits. Keys are JAN/EAN-13 or
+**`jan/<k>.json`**, in `out/`: `{ "<jan>": ITEM }`, `k` the code's last 3 digits; shipped by column (as a dataset,
+`source: off`, no aliases) with only the codes beyond `products.json`, no store code (GS1 02, 20–29) or name under 2
+letters (`lib/food/jan.ts`), under index.json's `jan` (one `?v=` for every shard; ODbL 1.0 as the products). Keys are JAN/EAN-13 or
 JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13, UPC-E and GTIN-14 dropped.
 
 ## Sources
@@ -213,7 +215,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **Into the app, no person:** `update-build` (read-only, no token: it runs npm) bumps `KALORI_TAG`, converts,
   ships kalori.json alone (`npm run food:data -- --only kalori`) and runs the tests. `update-merge` (no npm) takes
   none of it unchecked: its three files against BASE (the main it built on), kalori.json against its own conversion
-  of the release (shipped by BASE's `food-data.ts --only kalori` on node alone: `deps.test.ts` keeps its imports `node:`
+  of the release (shipped by BASE's `food-data.ts --only kalori` on node alone: `lib/food/nodeAlone.test.ts` keeps its imports `node:`
   and relative), the gates from the report job's diff.json and coverage.json (digests checked) and the two
   kalori.json. Within every band: the commit `Kalori: <tag> (auto)` onto main (re-applied while main's
   food files are BASE's, else held: `main_moved`); the status written, then `pages.yml` and `food-data.yml`
@@ -292,7 +294,9 @@ and UPC-E live from the camera with zxing-wasm's reader (MIT; zxing-cpp Apache-2
 and a 947 KB wasm (408 KB gzipped, 321 KB brotli). Both are the build's own files (never the package's CDN), fetched
 only when the scanner opens, and kept by the service worker once used (`caches.ts` carried, the name `scan`).
 - **Lookup** (`components/food/scan.ts`): the code normalised (`lib/scan/barcode.ts`: the check digit, UPC-A
-  zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`.
+  zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`,
+  then its barcode shard (`load.ts janItem`: `jan/<last 3>.json`, ~0.8 KB gzipped, cached on use: 12,272 codes in
+  1,000 files, 1.5 MB, 0.8 MB gzipped; counter `found.jan`).
 - **Online fallback** (`lib/scan/off.ts`): a code we lack goes to Open Food Facts' API v2
   (`/api/v2/product/<code>.json`, a few fields; CORS open; CSP `connect-src` names that path only). Only the
   number is sent: no cookies, no referrer, no image. Its answer becomes an item per 100 g (kcal from kJ if needed; a
@@ -302,7 +306,7 @@ only when the scanner opens, and kept by the service worker once used (`caches.t
   データの出典 covers it.
 - **Stored** as any food: the `food` op's snapshot carries the name and the values inline (`contract/food.ts`
   FoodSnap), so the entry shows the same on every phone and offline. There was no contract change.
-- **Logged** as one usage counter per outcome: `act:scan.found` · `fallback` · `miss` · `offline`, never the code or the
+- **Logged** as one usage counter per outcome: `act:scan.found` · `found.jan` · `fallback` · `miss` · `offline`, never the code or the
   name.
 
 ## Licensing obligations
@@ -310,7 +314,7 @@ The app's credits (データの出典, `components/food/FoodCredits.svelte`) sho
 sources as built; keep both when a source is added or changed. The raw downloads are never committed.
 - **MEXT** (foods, and the values in dishes/eatout/MAFF/Takatsuki): cite 「日本食品標準成分表（八訂）増補2023年から引用」 and say what was modified (names, aliases and portions are ours; dish values are computed).
 - **PDL1.0 / CC BY** (MAFF, Kumagaya, Kurume, Toyonaka, Takatsuki, Tokyo): attribution plus a 「加工して作成」 notice. Each file's `attribution` carries it.
-- **ODbL** (Open Food Facts): attribution; share-alike: `products.json` (and `jan/`, were it shipped) is offered under ODbL 1.0.
+- **ODbL** (Open Food Facts): attribution; share-alike: `products.json` and `jan/` are offered under ODbL 1.0.
 - **CC BY-SA** (Wikipedia-derived aliases): only short names and readings are kept.
 - **Kalori**: the header's `label`, `attribution`, `license` and `url` are its credit line; its pictures stay on `assets.kalori.jp` (hotlinked, never copied).
 - **CC0** (JBFD, MEXT↔USDA table, Wikidata) and USDA FoodData Central (public domain): no obligation; credit as a courtesy (`verify.json` `sources` carries the credit lines).

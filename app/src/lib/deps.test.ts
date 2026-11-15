@@ -295,25 +295,3 @@ describe('meals are never rewarded', () => {
     expect(roots.filter((r) => [...reachable(r)].some(food)).map((r) => relative(LIB, r))).toEqual([]);
   });
 });
-
-describe('scripts/food-data.ts runs with node alone', () => {
-  it('imports only node: modules and relative files, within app/scripts and lib/food (kalori-scrape.yml update-merge: no npm, those folders checked out)', () => {
-    const APP = resolve(LIB, '../..');
-    const seen = new Set<string>();
-    const bad: string[] = [];
-    const todo = [join(APP, 'scripts/food-data.ts')];
-    while (todo.length) {
-      const f = todo.pop()!;
-      if (seen.has(f)) continue;
-      seen.add(f);
-      for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?<![\w'".-])(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
-        if (spec.startsWith('node:')) continue;
-        const target = spec.startsWith('.') ? fileOf(resolve(dirname(f), spec)) : '';
-        if (!target || !(target.startsWith(join(APP, 'scripts/')) || target.startsWith(join(LIB, 'food/')))) bad.push(`${relative(APP, f)}: ${spec}`);
-        else todo.push(target);
-      }
-    }
-    expect(seen.size).toBeGreaterThan(3); // the scan followed db.ts and search.ts
-    expect(bad).toEqual([]);
-  });
-});
