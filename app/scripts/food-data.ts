@@ -2,7 +2,9 @@
 // root; docs/food-data.md) into static/food/: index.json, verify.json and every dataset index.json lists. Not the barcode shards (jan/): no barcode
 // scanning in v1. The app fetches them at runtime (lib/food/load.ts), never precached, each under its own `?v=`
 // (index.json's `files`).
-// Usage (from app/): npm run food:data   [-- <data dir>, default ../food-data/out]
+// Usage (from app/): npm run food:data   [-- <data dir>, default ../food-data/out]. Runs on node alone, no npm
+// (kalori-scrape.yml's update-merge: `node app/scripts/food-data.ts --only kalori`): only node: and relative imports
+// (deps.test.ts).
 //   npm run food:data -- --only kalori|products [<data dir>]   ships the data dir's kalori.json (or products.json) alone
 //   into the committed static/food/ (CI's weekly refresh, kalori-scrape.yml, has no other out/ files; `build.py off`
 //   neither): the other files untouched, its entry kept (or added as build.py writes it), the file written and `files`
@@ -37,8 +39,7 @@ const SIDECARS = ['index.json', 'verify.json'];
 /** Kalori's and the products' index entries, as build.py's build_index writes them. */
 const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };
 const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', secondary: true, lazy: true };
-/** The datasets shipped by column (types.ts Shipped), each with the id prefix its ids share. .github/scripts/
- * kalori-ship.mjs ships kalori.json the same way (kalori-scrape.yml's update-merge: no npm). */
+/** The datasets shipped by column (types.ts Shipped), each with the id prefix its ids share. */
 const COLUMNAR: Record<string, string> = { 'products.json': 'off:', 'kalori.json': 'kal:' };
 /** The fields whose null a column keeps (unknown: db.ts decodeItems); another field's null would be lost. */
 const NULLS = new Set(['p', 'f', 'c', 'salt']);

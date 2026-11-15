@@ -208,7 +208,8 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **Into the app, no person:** `update-build` (read-only, no token: it runs npm) bumps `KALORI_TAG`, converts,
   ships kalori.json alone (`npm run food:data -- --only kalori`) and runs the tests. `update-merge` (no npm) takes
   none of it unchecked: its three files against BASE (the main it built on), kalori.json against its own conversion
-  of the release, the gates from the report job's diff.json and coverage.json (digests checked) and the two
+  of the release (shipped by BASE's `food-data.ts --only kalori` on node alone: `deps.test.ts` keeps its imports `node:`
+  and relative), the gates from the report job's diff.json and coverage.json (digests checked) and the two
   kalori.json. Within every band: the commit `Kalori: <tag> (auto)` onto main (re-applied while main's
   food files are BASE's, else held: `main_moved`); the status written, then `pages.yml` and `food-data.yml`
   dispatched (a workflow-token push runs no workflow). Outside a band: held, the branch `kalori-update/<tag>` and
@@ -237,8 +238,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's
-  (`db.ts withJan`): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`, food-data.ts
-  and `.github/scripts/kalori-ship.mjs`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
+  (`db.ts withJan`): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
   `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
   salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
   `vg`/`st` for trailing size, milk and temperature words (牛丼 並盛 · 大盛, ライス中, （ICED・Tall・豆乳）; default: current,

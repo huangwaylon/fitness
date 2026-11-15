@@ -75,7 +75,7 @@ describe('food:data --only kalori', () => {
     expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'kalori.json']));
   });
 
-  it('is what update-merge ships with no npm (.github/scripts/kalori-ship.mjs), byte for byte, from the converter’s or a shipped file', () => {
+  it('ships every kind of field by column and back, from the converter’s or a shipped file (update-merge runs it with node alone)', () => {
     const { to, src } = fixture(true);
     // (every kind of field: unknown P/F/C/salt, absent fibre, flags, groups, aliases, the first item without some)
     const rows = [
@@ -84,22 +84,16 @@ describe('food:data --only kalori', () => {
       { ...item(5, 'みそ汁'), p: null, f: null, est: 'p', vg: 'kal:4', st: '並盛' }
     ];
     writeFileSync(join(src, 'kalori.json'), JSON.stringify(dataset(rows)));
-    const ship = join(tmp(), 'food');
-    cpSync(to, ship, { recursive: true });
     expect(run('--only', 'kalori', src, '--to', to).status).toBe(0);
-    const node = (input: string) => spawnSync(process.execPath, [join(APP, '../.github/scripts/kalori-ship.mjs'), input, ship], { encoding: 'utf8' });
-    expect(node(join(src, 'kalori.json')).stderr).toBe('');
-    for (const f of ['kalori.json', 'index.json']) expect(readFileSync(join(ship, f), 'utf8'), f).toBe(readFileSync(join(to, f), 'utf8'));
-    expect(decodeItems(JSON.parse(readFileSync(join(to, 'kalori.json'), 'utf8')))).toStrictEqual(rows);
-    // (the shipped file in again, as test_kalori_status.py's test_ship gives it: the same bytes out)
-    const again = join(tmp(), 'shipped.json');
-    cpSync(join(to, 'kalori.json'), again);
-    expect(node(again).status).toBe(0);
-    expect(readFileSync(join(ship, 'kalori.json'), 'utf8')).toBe(readFileSync(join(to, 'kalori.json'), 'utf8'));
-    // and a null its column couldn't keep: refused by both
+    const shipped = readFileSync(join(to, 'kalori.json'), 'utf8');
+    expect(decodeItems(JSON.parse(shipped))).toStrictEqual(rows);
+    // (the shipped file in again: the same bytes out)
+    cpSync(join(to, 'kalori.json'), join(src, 'kalori.json'));
+    expect(run('--only', 'kalori', src, '--to', to).status).toBe(0);
+    expect(readFileSync(join(to, 'kalori.json'), 'utf8')).toBe(shipped);
+    // and a null its column couldn't keep: refused
     writeFileSync(join(src, 'kalori.json'), JSON.stringify(dataset([{ ...item(6, 'x'), img: null }])));
     expect(run('--only', 'kalori', src, '--to', to).stderr).toContain("kal:6 has a null its column can't keep");
-    expect(node(join(src, 'kalori.json')).status).not.toBe(0);
   });
 
   it('adds the kalori entry, as build.py writes it, to an index without one', () => {

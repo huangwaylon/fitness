@@ -622,8 +622,10 @@ jobs:
           sparse-checkout: |
             food-data
             app/static/food
+            app/scripts
+            app/src/lib/food
             .github/scripts
-      # (node alone, no npm: kalori-ship.mjs)
+      # (node alone, no npm: app/scripts/food-data.ts imports only node: and lib/food, deps.test.ts)
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
@@ -647,7 +649,7 @@ jobs:
             || { echo "::error::the kalori-report artifact is not the report job's (digests differ)"; exit 1; }
       # Exactly these files, no links; fetch.py is BASE's with KALORI_TAG bumped, nothing else. kalori.json and
       # index.json are made here: this job's own conversion of the release (fetch.py kalori checks its SHA256SUMS and
-      # coverage), shipped as food-data.ts does (kalori-ship.mjs), the index checked by kalori-index.sh; update-build's
+      # coverage), shipped by BASE's food-data.ts --only kalori (as update-build), the index checked by kalori-index.sh; update-build's
       # must be the same bytes, and these are the ones committed.
       - name: Check the update against BASE, and make kalori.json here
         run: |
@@ -662,9 +664,10 @@ jobs:
           cmp food-data/scripts/fetch.py "$u/files/food-data/scripts/fetch.py" || { echo "::error::fetch.py is not BASE's with the tag"; exit 1; }
           cp app/static/food/kalori.json "$RUNNER_TEMP/old-kalori.json"
           python3 -I food-data/scripts/fetch.py kalori
+          mkdir -p "$RUNNER_TEMP/mine"
           python3 -I food-data/scripts/kalori_convert.py food-data/raw/kalori --off app/static/food/products.json \
-            --out "$RUNNER_TEMP/kalori.mine.json" | tail -1 > "$RUNNER_TEMP/convert.json"
-          node .github/scripts/kalori-ship.mjs "$RUNNER_TEMP/kalori.mine.json" app/static/food
+            --out "$RUNNER_TEMP/mine/kalori.json" | tail -1 > "$RUNNER_TEMP/convert.json"
+          node app/scripts/food-data.ts --only kalori "$RUNNER_TEMP/mine"
           # (kalori-index.sh reads BASE's index.json in the folder: a second computation of the one shipped)
           cp app/static/food/index.json "$RUNNER_TEMP/mine-index.json"
           git show HEAD:app/static/food/index.json > app/static/food/index.json

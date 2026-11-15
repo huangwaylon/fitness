@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import kalori_status as S  # noqa: E402
+import lib  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 NOW = int(datetime(2026, 11, 18, 3, 0, tzinfo=timezone.utc).timestamp() * 1000)   # a Wednesday
@@ -72,7 +73,7 @@ class Gates(unittest.TestCase):
         self.assertEqual(gates(new=kal(10050, shops=('a', 'b', 'c') + many))['reasons'], ['band_shops'])
 
     def test_summary_either_shape(self):
-        # the converter's file (items) and the shipped one (by column: food-data.ts / kalori-ship.mjs)
+        # the converter's file (items) and the shipped one (by column: food-data.ts)
         rows = {'shops': {'a': {}, 'b': {}}, 'items': [{'id': 'kal:1'}, {'id': 'kal:2', 'ended': True}, {'id': 'kal:3'}]}
         cols = {'shops': {'a': {}, 'b': {}}, 'idPrefix': 'kal:', 'cols': {'id': ['1', '2', '3'], 'ended': [None, True, None]}}
         want = {'items': 3, 'shops': {'a', 'b'}, 'ended': 1}
@@ -392,8 +393,8 @@ FOOD = os.path.join(ROOT, 'app', 'static', 'food')
 @unittest.skipUnless(os.path.isfile(os.path.join(FOOD, 'index.json')) and shutil.which('jq') and shutil.which('bash'),
                      "the app's food files (not in food-data.yml's checkout), jq, bash")
 class IndexAsFoodDataTs(unittest.TestCase):
-    """update-merge's index.json check (.github/scripts/kalori-index.sh) and its own shipping (kalori-ship.mjs) agree
-    with app/scripts/food-data.ts: on the committed files, which food-data.ts wrote, byte for byte."""
+    """update-merge's index.json check (.github/scripts/kalori-index.sh) agrees with app/scripts/food-data.ts, and
+    food-data.ts --only kalori (update-merge's, node alone) remakes the committed files from their items, byte for byte."""
     def setUp(self):
         self.d = os.path.join(tempfile.mkdtemp(), 'food')
         self.addCleanup(shutil.rmtree, os.path.dirname(self.d))
@@ -409,22 +410,17 @@ class IndexAsFoodDataTs(unittest.TestCase):
             fh.write(b' ')
         self.assertEqual(self.check(os.path.join(FOOD, 'index.json')), 1)
 
-    def test_kalori_entry_is_food_data_ts(self):
-        ts = os.path.join(ROOT, 'app', 'scripts', 'food-data.ts')
-        if not os.path.isfile(ts):
-            self.skipTest('no app/scripts/food-data.ts')
-        with open(ts, encoding='utf-8') as fh:
-            want = "const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };"
-            self.assertIn(want, fh.read())
-        with open(os.path.join(ROOT, '.github', 'scripts', 'kalori-ship.mjs'), encoding='utf-8') as fh:
-            self.assertIn(want, fh.read())
-
     @unittest.skipUnless(shutil.which('node'), 'node')
     def test_ship(self):
-        src = os.path.join(os.path.dirname(self.d), 'converted.json')
-        with open(os.path.join(FOOD, 'kalori.json'), encoding='utf-8') as fh, open(src, 'w', encoding='utf-8') as out:
-            json.dump(json.load(fh), out, ensure_ascii=False, separators=(',', ':'))   # Python's bytes, as the converter's
-        subprocess.run(['node', os.path.join(ROOT, '.github', 'scripts', 'kalori-ship.mjs'), src, self.d], check=True)
+        src = os.path.join(os.path.dirname(self.d), 'converted')
+        os.mkdir(src)
+        with open(os.path.join(FOOD, 'kalori.json'), encoding='utf-8') as fh:
+            doc = json.load(fh)
+        head = {k: v for k, v in doc.items() if k not in ('cols', 'idPrefix')}
+        with open(os.path.join(src, 'kalori.json'), 'w', encoding='utf-8') as out:   # rows, Python's bytes, as the converter's
+            json.dump({**head, 'items': lib.dataset_items(doc)}, out, ensure_ascii=False, separators=(',', ':'))
+        subprocess.run(['node', os.path.join(ROOT, 'app', 'scripts', 'food-data.ts'), '--only', 'kalori', src, '--to', self.d],
+                       check=True, capture_output=True)
         for f in ('kalori.json', 'index.json'):
             with open(os.path.join(self.d, f), 'rb') as a, open(os.path.join(FOOD, f), 'rb') as b:
                 self.assertTrue(a.read() == b.read(), f)
