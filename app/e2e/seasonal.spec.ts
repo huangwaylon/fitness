@@ -30,6 +30,10 @@ for (const [date, floating] of [['2027-04-05T10:00', 'petal'], ['2026-11-20T10:0
     const model = `fx/${floating === 'petal' ? 'petal' : 'maple-leaf'}`;
     await expect.poll(() => w3(page, (w) => w.where('float-0')?.model)).toBe(model);
     await expect.poll(() => w3(page, (w) => w.where('float-pond-0')?.model)).toBe(model);
+    // a dozen or so down the river, never one a tile (floats3d.test's spacing; 40 when it was)
+    const n = await w3(page, (w) => Array.from({ length: 48 }, (_, i) => w.where(`float-${i}`)).filter(Boolean).length);
+    expect(n).toBeGreaterThanOrEqual(10);
+    expect(n).toBeLessThanOrEqual(15);
     // on the pond's water, inside its banks (world.ts POND as the page has it)
     const p = await w3(page, (w) => w.where('float-pond-0')), { POND } = await geo(page);
     expect(((p!.x - POND.x) / POND.rx) ** 2 + ((-p!.z - POND.z) / POND.rz) ** 2).toBeLessThan(1);

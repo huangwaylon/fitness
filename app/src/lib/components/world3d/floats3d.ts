@@ -1,7 +1,7 @@
-// Petals or maple leaves riding the stream in their weeks (NH's season/* models on the water): one every ~50u below the
-// falls down to the mouth, each drifting 36u downstream over 15 s, turning slowly, then the next lap from its spot (out
+// Petals or maple leaves riding the stream in their weeks (NH's season/* models on the water): one every 90u along it
+// from below the falls' pool down to the mouth (13 on the layout's river), each drifting 36u downstream over 15 s, turning slowly, then the next lap from its spot (out
 // of step); and a few afloat on the pond (docs/design.md "Pond"), circling it slowly. Pure positions; Island3D draws them as instances (quiet: no shadow map).
-import { CLIFF, POND, RIVER, onBridge, worldGen } from '#lib/world/world.ts';
+import { CLIFF, FALLS_POOL, POND, RIVER, onBridge, onLand, worldGen } from '#lib/world/world.ts';
 
 export interface Float {
   id: string;
@@ -17,22 +17,28 @@ export interface Float {
 }
 
 const LAP_S = 15, DRIFT_U = 36, POND_N = 5;
+/** The stream's floats' spacing along it (u): a dozen or so down the layout's river (the old island's 12), never a chain. */
+const SPACING_U = 90;
 /** A pond float's lap round its ring (s). */
 const POND_LAP_S = 90;
 
 function build(): Float[] {
   const out: Float[] = [];
-  let k = 0;
-  for (let i = 0; i < RIVER.length - 1; i++) {
-    const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1];
-    if (az > CLIFF.z0 - 10 || ax < -30) continue;
-    const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / 50));
-    for (let j = 0; j < n; j++, k++) {
-      const t = (j + 0.3) / n, side = (((k * 7) % 5) - 2) * 2.4;
-      const nx = -(bz - az) / len, nz = (bx - ax) / len;
-      const x = ax + (bx - ax) * t + nx * side, z = az + (bz - az) * t + nz * side;
-      if (!onBridge(x, z, -20)) out.push({ id: `float-${k}`, x, z, dx: (bx - ax) / len, dz: (bz - az) / len, d: (k * 3.7) % 15, spin: k % 2 ? 1 : -1 });
+  // the stream's: one every SPACING_U along the whole centreline, carried over its points (the layout's has one a
+  // tile), from below the falls' pool (freshWhere's clifftop: the upper reach and the falls' foam) to the sea
+  let k = 0, at = SPACING_U * 0.3, sea = false;
+  for (let i = 0, run = 0; i < RIVER.length - 1 && !sea; i++) {
+    const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1], len = Math.hypot(bx - ax, bz - az);
+    const ux = (bx - ax) / (len || 1), uz = (bz - az) / (len || 1);
+    for (; at < run + len; at += SPACING_U) {
+      const cx = ax + ux * (at - run), cz = az + uz * (at - run);
+      if (cz > CLIFF.z0 - FALLS_POOL) continue;
+      if ((sea = !onLand(cx, cz))) break;
+      const side = (((k * 7) % 5) - 2) * 2.4, x = cx - uz * side, z = cz + ux * side;
+      if (!onBridge(x, z, -20)) out.push({ id: `float-${k}`, x, z, dx: ux, dz: uz, d: (k * 3.7) % 15, spin: k % 2 ? 1 : -1 });
+      k++;
     }
+    run += len;
   }
   // the pond's: five, out of step on rings inside its banks
   for (let i = 0; i < POND_N; i++) {

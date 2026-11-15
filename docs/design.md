@@ -458,8 +458,9 @@ facing out, on every phone at once (`layout/nav.ts` exitOf). Inside, my villager
 
 ≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Snow lies on every
 roof and on the cedars while it lies on the ground; petals float on the pond and down the river in cherry-blossom week
-and maple leaves in maple week. Events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, Toy Day Dec 24,
-the balloon present.
+and maple leaves in maple week (`floats3d.ts`: one every 90 u from below the falls' pool to the mouth, 13 on the river;
+five on the pond). Events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, Toy Day Dec 24, the balloon
+present.
 
 ### Weather
 
