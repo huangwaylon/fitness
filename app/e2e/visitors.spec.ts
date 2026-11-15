@@ -235,6 +235,22 @@ test('a guest every day with no hook: Sunday afternoon Nov 8 2026 (after Daisy M
   }
 });
 
+test('Chip’s node is a bare anchor: his id is no class (theme.css’s .chip once drew a cream pill by him all day)', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-16T12:00&guest=chip&critter=none');
+  await islandUp(page);
+  const { CAMS } = await geo(page);
+  await camTo(page, CAMS.mae, false);
+  const chip = page.locator('[data-visitor="chip"]');
+  await expect(chip.locator('.art')).toBeVisible();
+  await expect(chip).toHaveAttribute('class', /^visitor(\s|$)/);
+  await expect(chip).not.toHaveClass(/\bchip\b/);
+  const look = await chip.evaluate((e) => {
+    const s = getComputedStyle(e), r = e.getBoundingClientRect();
+    return { w: r.width, h: r.height, bg: s.backgroundColor, img: s.backgroundImage, shadow: s.boxShadow, pad: s.padding, border: s.borderTopWidth };
+  });
+  expect(look).toEqual({ w: 0, h: 0, bg: 'rgba(0, 0, 0, 0)', img: 'none', shadow: 'none', pad: '0px', border: '0px' });
+});
+
 test('Gracie’s shop: her offer’s choice box opens her sheet, and a piece bought there is mine (the shop’s かいがら)', async ({ page }) => {
   await page.addInitScript(() => {
     if (localStorage.getItem('island-demo.events')) return;
