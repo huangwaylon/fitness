@@ -6,6 +6,6 @@ import { fetchStatus, needsAttention, parseStatus, verdictView, type GymStatus }
 export const driver: BotDriver<GymStatus> = {
   fetch: (signal) => fetchStatus(signal),
   parse: parseStatus,
-  verdict: (s) => ({ ...verdictView(s), needsLook: needsAttention(s) }),
+  verdict: (s, now) => ({ ...verdictView(s), needsLook: needsAttention(s, now) }),
   pollMs: () => 60_000
 };

@@ -81,10 +81,25 @@ const DO: readonly Reason[] = ['mode_off', 'no_alarm', 'no_group', 'webhook_wron
 export const reasonLines = (s: GymStatus): string[] =>
   [...new Set([...s.reasons.slice(1).map((r) => t(`gym.reason.${r}`, { n: s.failures })), ...s.reasons.filter((r) => DO.includes(r)).map((r) => t(`gym.do.${r}`))])];
 
+/** How long a self-healing state stays dot-free (the bot's own retry, the hourly cron's re-arm) before it is an
+ *  outage a person must look at: 遅れ past the next check by LATE_GRACE_MS, the site failing for SITE_GRACE_MS. */
+export const LATE_GRACE_MS = 90 * 60_000;
+export const SITE_GRACE_MS = 6 * 3_600_000;
+
+/** Since when the checks have failed in a row (the oldest of the `failures` kept), null if unknown. */
+const failingSince = (s: GymStatus): number | null => s.checks[Math.max(0, s.failures - 1)]?.t ?? s.checks.at(-1)?.t ?? null;
+
 /** ボット's dot (the menu's pill, the ジム tab): only while a person must act, so 故障, or 不調 for more than the site
- *  failing (that and 遅れ heal on their own: the bot retries, the hourly cron re-arms the alarm). */
-export const needsAttention = (s: GymStatus): boolean =>
-  s.verdict === 'broken' || (s.verdict === 'failing' && !s.reasons.every((r) => r === 'site_failing'));
+ *  failing. 遅れ and the site failing heal on their own (the hourly cron re-arms the alarm, the bot retries), till
+ *  they last too long: 遅れ LATE_GRACE_MS past the next check, the site SITE_GRACE_MS without a success. */
+export function needsAttention(s: GymStatus, now: number = s.now): boolean {
+  if (s.verdict === 'broken') return true;
+  if (s.verdict === 'late') return s.nextCheck !== null && now > s.nextCheck + LATE_GRACE_MS;
+  if (s.verdict !== 'failing') return false;
+  if (!s.reasons.every((r) => r === 'site_failing')) return true;
+  const since = s.lastOk ?? failingSince(s);
+  return since !== null && now - since >= SITE_GRACE_MS;
+}
 
 const at = (ms: number | null, now: number): string => (ms === null ? t('bots.key.never') : timeOf(ms, now));
 

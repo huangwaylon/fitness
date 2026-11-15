@@ -1,7 +1,7 @@
 // The gym bot's status as ボット's ジム tab reads it (status.ts): the payload checked, the verdict's tone and
 // words, the card's edges, the fact rows and the strip's cells.
 import { describe, expect, it, vi } from 'vitest';
-import { checkStrip, edges, factRows, fetchStatus, needsAttention, parseStatus, reasonLines, verdictView, type Check, type GymStatus } from './status.ts';
+import { checkStrip, edges, factRows, fetchStatus, LATE_GRACE_MS, needsAttention, parseStatus, SITE_GRACE_MS, reasonLines, verdictView, type Check, type GymStatus } from './status.ts';
 
 const TODAY = '2026-11-04';
 const at = (hm: string, day = TODAY) => Date.parse(`${day}T${hm}:00+09:00`);
@@ -34,6 +34,22 @@ describe('needsAttention (ボット’s dot)', () => {
     // the site failing (the bot retries) and 遅れ (the hourly cron re-arms it) heal on their own
     expect([on('failing'), on('failing', ['site_failing']), on('late', ['overdue'])]).toEqual([false, false, false]);
     expect([on('healthy'), on('degraded'), on('stopped'), on('off')]).toEqual([false, false, false, false]);
+  });
+
+  it('the self-healing ones get a dot once they last too long: 遅れ 90 min past the next check, the site 6 h without a success', () => {
+    const MIN = 60_000, H = 60 * MIN;
+    const late = (nextCheck: number | null) => needsAttention(status({ verdict: 'late', reasons: ['overdue'], nextCheck }));
+    expect([late(NOW - LATE_GRACE_MS), late(NOW - LATE_GRACE_MS - 1), late(null)]).toEqual([false, true, false]);
+    expect(LATE_GRACE_MS).toBe(90 * MIN);
+    // the page's clock moves on between polls: the dot comes without a new status
+    expect(needsAttention(status({ verdict: 'late', reasons: ['overdue'], nextCheck: NOW }), NOW + 91 * MIN)).toBe(true);
+    const site = (over: Partial<GymStatus>) => needsAttention(status({ verdict: 'failing', reasons: ['site_failing'], ...over }));
+    expect([site({ lastOk: NOW - SITE_GRACE_MS + 1 }), site({ lastOk: NOW - SITE_GRACE_MS })]).toEqual([false, true]);
+    expect(SITE_GRACE_MS).toBe(6 * H);
+    // never a success kept: since the oldest of the failed checks in a row
+    const failed = (ago: number): Check => ({ t: NOW - ago, by: 'alarm', ms: 30_000, r: { training: 'error', pilates: 'error' }, open: 0, fresh: 0, push: 'none' });
+    const run = (agos: number[]) => site({ lastOk: null, failures: agos.length, checks: agos.map(failed) });
+    expect([run([10 * MIN, 5 * H]), run([10 * MIN, 6 * H]), site({ lastOk: null, failures: 0, checks: [] })]).toEqual([false, true, false]);
   });
 });
 

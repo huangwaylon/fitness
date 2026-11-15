@@ -6,7 +6,7 @@ The ボット sheet's design (moved from [design.md](design.md#settings); the ki
 demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 - **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中, yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応 (a fine bot needing a look),
   coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだ, hollow 不明; drawn on a tab and the menu's ボット (the worst) only while a person must act (`dotShown`,
-  the user 2026-11-15: what heals on its own shows in its page only: 一部不調, ジム's 遅れ and 不調 from the site failing), a failed read dimmed, kept.
+  the user 2026-11-15: what heals on its own shows in its page only: 一部不調, ジム's 遅れ and 不調 from the site failing, till 遅れ is 90 min past the next check or the site 6 h without a success), a failed read dimmed, kept.
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
 - **Page** (`BotPage`): one `StatusCard` (~132px): dot · word (15 bold) · 「12:00時点」 (13 soft) · ⋯; the act in ink (`act`,
   保養所's mail, メニュー 保留's merge) else the sentence, never restating the word (none when it says it); result line; the strip, 32 drawn in
