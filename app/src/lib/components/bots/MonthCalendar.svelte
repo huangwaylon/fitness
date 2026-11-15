@@ -1,5 +1,5 @@
 <script lang="ts" generics="T extends MonthDay & { live: boolean; today: boolean }">
-  // ボット's month calendar (docs/design.md "Bots"), ジム's and 保養所's one grid (GymCalendar, ItsCalendar): the
+  // ボット's month calendar (docs/bots.md), ジム's and 保養所's one grid (GymCalendar, ItsCalendar): the
   // weekday header 月…日 (土 sky, 日 coral; with `onweekday` a 28pt chip each in a 44pt hit, its column), a row a week
   // (contract/tokyo.ts monthWeeks), a settable day the caller's `day` snippet (its `.cell` button, the roving tab stop
   // passed in), a passed day of the month faint (its date only), one not settable yet dashed (`later`: after the

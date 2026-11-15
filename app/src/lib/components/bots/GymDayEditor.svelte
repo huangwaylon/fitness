@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ジム's day editor (docs/design.md "Bots"): a day's sheet from the calendar, applied at once (the page sends each
+  // ジム's day editor (docs/bots.md): a day's sheet from the calendar, applied at once (the page sends each
   // choice: GymPage `send`, with 取り消す on its banner). The title 11/14（金）; what it is now; 終日 / 時間指定 / オフ;
   // for 時間指定 the half-hour slot chips 10:00…21:30, 6 × 4 (■ watched, ✓ announced: lib/gym/calendar.ts pickSlot —
   // a tap starts an hour, the next picks the last slot, a tap inside trims the end) and the line naming the slots; 通知の

@@ -38,7 +38,7 @@ export const prevDay = (date: string): LocalDate => addDays(date, -1);
 
 /** A day of a month's calendar: its date, day of the month, and whether it is that month's (else a lead or tail). */
 export interface MonthDay { date: LocalDate; d: number; inMonth: boolean }
-/** A month's calendar (`YYYY-MM`; ボット's two, docs/design.md "Bots"): its whole weeks, Monday first. */
+/** A month's calendar (`YYYY-MM`; ボット's two, docs/bots.md): its whole weeks, Monday first. */
 export function monthWeeks(month: string): MonthDay[][] {
   const first = dayNum(`${month}-01`);
   const weeks: MonthDay[][] = [];

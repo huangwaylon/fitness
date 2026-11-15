@@ -1,4 +1,4 @@
-// ボット's ジム tab (docs/design.md "Bots"): a member's ボット sheet, on ジム (the tab last shown): the gym bot's GET
+// ボット's ジム tab (docs/bots.md): a member's ボット sheet, on ジム (the tab last shown): the gym bot's GET
 // /status (lib/gym/status.ts, mocked here): its status card (the word, the sentence, ⋯; the strip, 24 cells a check
 // interval: tap or ← → names one, 前回 ringed, 次回's ghost, the counts and いま空き), the calendar from the members-only GET /gym/config (with the phone's key:
 // lib/gym/config.ts, the stand-in e2e/gymbot.ts; ⋯'s acts and the calendar are gymbot-settings.spec.ts's) and

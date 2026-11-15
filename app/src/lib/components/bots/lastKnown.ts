@@ -1,4 +1,4 @@
-// ボット's last known status, a tab's (docs/design.md "Bots"; fitness-5e perf: a ~2 s skeleton on each open): kept in
+// ボット's last known status, a tab's (docs/bots.md; fitness-5e perf: a ~2 s skeleton on each open): kept in
 // memory and on this phone (registry.ts storageKey: island.botsLast.*) after each good read, `{me, s, at, sum}`, so the
 // page opens on it at once, marked 更新中, and the tab's and the menu's dots survive a reload (`sum`, summary.svelte.ts).
 // Only for the member who read it (`me`); one that doesn't read back (another version, garbage) is none; an entry from

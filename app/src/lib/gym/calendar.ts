@@ -1,4 +1,4 @@
-// ボット → ジム's calendar and day editor, as pure functions (docs/design.md "Bots"; the rows are GET /gym/config's,
+// ボット → ジム's calendar and day editor, as pure functions (docs/bots.md; the rows are GET /gym/config's,
 // contract.ts): a month's weeks from Monday (the 25 days settable, the rest faint or blank), each cell's look and its
 // accessible words, the half-hour slot picker (a tap starts an hour, the next picks the last slot, a tap inside trims
 // the end), the ⏳ dates and times allowed, the optimistic row after an act, the acts that undo one, and the select

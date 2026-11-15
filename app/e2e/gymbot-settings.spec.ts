@@ -1,4 +1,4 @@
-// ボット → ジム's settings (docs/design.md "Bots"; the brief's app half): the verdict's ⋯ (its rows per state; stop asks
+// ボット → ジム's settings (docs/bots.md; the brief's app half): the verdict's ⋯ (its rows per state; stop asks
 // first, restart at once, 確認の間隔, 今すぐ確認 with its cooldown in the label and its answer on the result line), the
 // calendar (the whole month, Monday first, 今月 · 来月; the 4-day default, VoiceOver's grid and its arrow keys, 44px), the day editor (instant, 取り消す, the slot chips, 通知の開始's start day and time: Fri from Tue 18:00,
 // moved, cleared, the bot's refusals), select mode and one bulk

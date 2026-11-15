@@ -1,4 +1,4 @@
-// ボット's always-loaded part (docs/design.md "Bots"): its sheet (a lazySheet: the pages and their strings come
+// ボット's always-loaded part (docs/bots.md): its sheet (a lazySheet: the pages and their strings come
 // with its chunk) and the tabs this phone has (registry.ts: who has which bot). The dots are summary.svelte.ts's. A
 // notification's tap opens it on 保養所 (openIts, listenOpen).
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';

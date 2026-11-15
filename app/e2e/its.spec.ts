@@ -1,4 +1,4 @@
-// ボット's 保養所 tab (docs/design.md "Bots"): a member's menu shows ボット with a dot while the bot needs a person
+// ボット's 保養所 tab (docs/bots.md): a member's menu shows ボット with a dot while the bot needs a person
 // (要対応), and its sheet opens on 保養所, which reads the its-bot Worker's GET /its/status (lib/its/client.ts, mocked
 // here: the contract's example moved to the pinned time) and shows the status card with its strip and ⋯, the hold that
 // needs a person in 確認が必要 (its deadline, the mail), 直近1時間 in the card, 最近の動き in くわしく, 設定's folded rows and くわしく;

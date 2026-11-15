@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 保養所's calendar (docs/design.md "Bots"; the cells are lib/its/view.ts nightGrid), on MonthCalendar (ジム's grid too):
+  // 保養所's calendar (docs/bots.md; the cells are lib/its/view.ts nightGrid), on MonthCalendar (ジム's grid too):
   // this month or next, Mon–Sun, a night a cell (44 high): a tap puts it in the draft or takes it out (filled leaf:
   // searched), a weekday's header does its whole column (the month's settable nights only); past and too far nights
   // faint, the other months' days blank, both inert. A booking marks its night: 要対応 a yuzu 「!」 (the tab's and the

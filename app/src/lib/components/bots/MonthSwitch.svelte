@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ボット's calendar heading (docs/design.md "Bots"), ジム's and 保養所's: the section's label, the page's own bits
+  // ボット's calendar heading (docs/bots.md), ジム's and 保養所's: the section's label, the page's own bits
   // (`children`: 未保存, 選択), and 今月 · 来月 (the kit's small Segmented, `11月` · `12月`; none without `months`).
   import type { Snippet } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';

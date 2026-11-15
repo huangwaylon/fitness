@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A bot's page (docs/design.md "Bots"), one order for the three: LoadError (a failed read), the status (StatusCard:
+  // A bot's page (docs/bots.md), one order for the three: LoadError (a failed read), the status (StatusCard:
   // the word, the as-of, the act or the sentence, an answer `note`, the bot's ⋯ `menu`, the history `strip`), 要対応
   // (AttentionCard, only for what the card doesn't say: steps and links, the sentence an act took the place of, `attn`
   // more of the bot's own), the bot's own sections and 設定

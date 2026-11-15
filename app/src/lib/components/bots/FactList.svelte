@@ -5,7 +5,7 @@
 </script>
 
 <script lang="ts">
-  // A bot's くわしく (docs/design.md "Bots"), the page's last row, folded: the secondary facts in two columns, a label
+  // A bot's くわしく (docs/bots.md), the page's last row, folded: the secondary facts in two columns, a label
   // over its value (a link a full 44px target), the bot's mode, version and workflow among them (no foot); then the
   // page's `more` rows under them, each its heading over its body (ジム's アプリで変更, 保養所's 最近の動き, メニュー's
   // 前回の変更), each named with its count under くわしく while folded (最近の動き 5件). Mounted only while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more, a

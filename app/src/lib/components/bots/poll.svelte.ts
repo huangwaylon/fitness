@@ -1,4 +1,4 @@
-// ボット's status reads (docs/design.md "Bots"), one loop for both tabs: a read as the page mounts, then the next
+// ボット's status reads (docs/bots.md), one loop for both tabs: a read as the page mounts, then the next
 // `every()` ms after each (保養所 15 s or 60 s, ジム 60 s), only while the page is shown: none while the phone is put
 // away (the next one as it comes back), and leaving the page (the other tab, the sheet closed: it unmounts) aborts the
 // read in flight and stops the loop. `read` gets a signal aborted by a newer read, `hold()` or the page's end, and

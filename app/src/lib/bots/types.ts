@@ -1,4 +1,4 @@
-// ボット's one shape for every bot (docs/design.md "Bots"): a driver reads a bot's status and words it; the tone is
+// ボット's one shape for every bot (docs/bots.md): a driver reads a bot's status and words it; the tone is
 // health (colour), `needsLook` whether a person must act (the dot's 「!」). Pure: no client, no i18n, so the island's
 // chunk (the HUD's dot, components/bots/summary.svelte.ts) can rank the bots without loading one.
 

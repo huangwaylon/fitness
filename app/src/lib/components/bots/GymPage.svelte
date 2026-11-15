@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ボット's ジム tab (docs/design.md "Bots"), on BotPage: the status card with its strip (前回 · 次回 · いま空き) and its ⋯
+  // ボット's ジム tab (docs/bots.md), on BotPage: the status card with its strip (前回 · 次回 · いま空き) and its ⋯
   // (members, with this phone's key: lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its
   // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
   // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other

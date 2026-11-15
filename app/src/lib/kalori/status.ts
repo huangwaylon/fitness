@@ -1,4 +1,4 @@
-// The Kalori scraper's status (docs/design.md "Bots": ボット's メニュー tab): status.json on the `kalori-status` branch,
+// The Kalori scraper's status (docs/bots.md: ボット's メニュー tab): status.json on the `kalori-status` branch,
 // written by the scrape and merge workflows (the shape: their contract, `v: 1`; unknown fields and reason codes
 // tolerated), read raw from GitHub (public: no key), a failed read logged as kalori.fail; with the page's view helpers
 // so KaloriPage stays thin. The verdict is the file's, but for 遅れ: the app's own clock says so too once the
@@ -241,7 +241,7 @@ const runLink = (s: KaloriStatus, now: number): string | null =>
 /** 保留's PR, else null. */
 const prLink = (s: KaloriStatus, now: number): string | null => (verdictOf(s, now) === 'held' ? (s.alert?.prUrl ?? s.merge?.pr ?? null) : null);
 
-/** The verdict's ⋯ (docs/design.md "Bots"): 実行を開く (a run worth a look), PRを開く (保留), ワークフローを開く (always). */
+/** The verdict's ⋯ (docs/bots.md): 実行を開く (a run worth a look), PRを開く (保留), ワークフローを開く (always). */
 export const menuLinks = (s: KaloriStatus, now: number): { id: 'run' | 'pr' | 'workflow'; href: string }[] => [
   ...(runLink(s, now) ? [{ id: 'run' as const, href: runLink(s, now)! }] : []),
   ...(prLink(s, now) ? [{ id: 'pr' as const, href: prLink(s, now)! }] : []),

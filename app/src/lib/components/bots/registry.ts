@@ -1,4 +1,4 @@
-// ボット's bots, left to right (docs/design.md "Bots"): each one's tab (icon, label), its lastKnown key, who has it, and
+// ボット's bots, left to right (docs/bots.md): each one's tab (icon, label), its lastKnown key, who has it, and
 // its driver, loaded lazily (the pages: BotsSheet's chunk). Always loaded (the HUD's dot ranks the bots: summary.svelte.ts), so it
 // imports no client: the drivers (lib/<bot>/bot.ts) and the pages come with ボット's chunk. A member has ジム with
 // GYM_URL set, 保養所 with ITS_URL set and メニュー (the Kalori scraper's public status.json); the guest and demo mode

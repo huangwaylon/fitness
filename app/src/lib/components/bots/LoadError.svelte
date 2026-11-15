@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A bot page's failed read (docs/design.md "Bots"): a yuzu-tinted row on top, 「読み込めませんでした（オフライン）」 with
+  // A bot page's failed read (docs/bots.md): a yuzu-tinted row on top, 「読み込めませんでした（オフライン）」 with
   // the code (offline in words), and もう一度 (held while a read is on its way). The status shown stays under it.
   import Phrases from '../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';

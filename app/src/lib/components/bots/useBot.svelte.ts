@@ -1,4 +1,4 @@
-// A bot page's status (docs/design.md "Bots"), one hook for the three: the last known status at once (lastKnown.ts,
+// A bot page's status (docs/bots.md), one hook for the three: the last known status at once (lastKnown.ts,
 // `fresh` false: 更新中), then the poll (poll.svelte.ts: a read as the page mounts, then the driver's pollMs while
 // shown); each good read sets the bot's dot (summary.svelte.ts accept), a failed one keeps the status shown under the
 // page's LoadError (`failed`: its code, `offline`, `http 500`, a Worker's). `take(s)`: an answer that came otherwise

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ジム's calendar (docs/design.md "Bots"; the cells are lib/gym/calendar.ts monthCells), on MonthCalendar (保養所's grid
+  // ジム's calendar (docs/bots.md; the cells are lib/gym/calendar.ts monthCells), on MonthCalendar (保養所's grid
   // too): this month or next, Mon–Sun, the rows' days a button each (~46×54: the date and marks; 終日 a bell, オフ the
   // bell struck, 時間指定 its hours stacked, 13px), the rest faint, dashed or blank and inert; the legend under it
   // (見ない first: the plain paper day). Fills: 終日 leaf,

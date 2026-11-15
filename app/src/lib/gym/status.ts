@@ -1,4 +1,4 @@
-// The gym bot's status (docs/design.md "Bots": ボット's ジム tab): the Worker's public GET /status, read
+// The gym bot's status (docs/bots.md: ボット's ジム tab): the Worker's public GET /status, read
 // as it is (the verdict is decided there; checked with contract/guards.ts), a failed read logged as gym.fail (public:
 // no key, so not lib/keyed.ts), with the page's view helpers so GymPage stays thin (the strip: lib/strip.ts).
 import { t } from '#lib/i18n/index.ts';

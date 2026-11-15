@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-  // The bots' thin segmented bar (docs/design.md "Bots"; the dataviz one): 8px, round ends, 2px gaps, each part as wide
+  // The bots' thin segmented bar (docs/bots.md; the dataviz one): 8px, round ends, 2px gaps, each part as wide
   // as its count (an empty one left out of the bar), then the legend: each part's swatch, word and count (1,200;
   // never colour alone). 保養所's night (its searched facilities by why, inside the night's button: hidden from VoiceOver, the
   // button says it) and メニュー's 最新の更新 (one image with `label`: 「最新の更新：追加12、値の変更38、終了3、削除0」).

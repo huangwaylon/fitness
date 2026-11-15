@@ -1,4 +1,4 @@
-// ボット's dots (docs/design.md "Bots"): each bot's last tone, 「!」 and word, for the tabs and the menu's ボット, kept
+// ボット's dots (docs/bots.md): each bot's last tone, 「!」 and word, for the tabs and the menu's ボット, kept
 // across a reload (lastKnown.ts `sum`). Always loaded (the HUD reads it), so the drivers come lazily (registry.ts).
 // Reads: the shown page polls its own (useBot.svelte.ts: `pageRead`, `accept`); the other tabs are read here, once as
 // the sheet opens or the menu unfolds, then every 5 min while the sheet is open (`watch`), each at most once a minute

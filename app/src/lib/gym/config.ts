@@ -1,4 +1,4 @@
-// The gym bot's settings as ボット's ジム tab talks to them (docs/design.md "Bots"; the shapes are the shared
+// The gym bot's settings as ボット's ジム tab talks to them (docs/bots.md; the shapes are the shared
 // contract.ts, the Worker's too): the members-only GET /gym/config (the calendar's 25 rows, the check settings, 🔎's
 // cooldown, the app's last changes, and 📋's words) and POST /gym/act (a change, the select mode's bulk form, or 🔎).
 // Both with this phone's key. The config through lib/keyed.ts (a failure logged as keyed.fail `gym`); an older Worker

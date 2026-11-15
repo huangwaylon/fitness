@@ -1,4 +1,4 @@
-// ボット → 保養所's 通知 (docs/design.md "Bots"; its/README.md "Push"), the phone's side: this phone's switch (off by
+// ボット → 保養所's 通知 (docs/bots.md; its/README.md "Push"), the phone's side: this phone's switch (off by
 // default, kept per phone: DEVICE.itsPush) and its Web Push subscription, which the its-bot Worker pushes to on a 仮押さえ
 // and a 予約確定. On (a tap): the notification permission asked first, in the tap (iOS grants the prompt only to a user
 // gesture: nothing is awaited before it), then a subscription for the Worker's VAPID key (ItsPushStatus.vapidPublic,

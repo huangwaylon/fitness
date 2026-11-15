@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A bot's dot (docs/design.md "Bots"), one look for the tabs (12px, the icon's corner), the menu's ボット and the
+  // A bot's dot (docs/bots.md), one look for the tabs (12px, the icon's corner), the menu's ボット and the
   // verdict card (14px): colour is health (good leaf, warn yuzu, bad coral, idle a sunk disc, unknown a hollow ring;
   // busy draws as good), shape is 「!」 (a person must look: a bar and a point, ink on yuzu, cream on coral, 14px).
   // Ringed in its plate (`--plate`: the card, a selected tab's cream), so a yuzu dot reads on the yuzu pill; warn's

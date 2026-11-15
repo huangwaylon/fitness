@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 保養所's 通知 (docs/design.md "Bots"; lib/its/push.ts): this phone's switch 「仮押さえと予約確定を通知する」, off by
+  // 保養所's 通知 (docs/bots.md; lib/its/push.ts): this phone's switch 「仮押さえと予約確定を通知する」, off by
   // default. A tap asks the notification permission first (in the tap), then subscribes and hands it to the Worker;
   // on only once the Worker took it. Where it can't work, one line says why (an iPhone's Safari tab: add it to the Home
   // Screen; notifications refused: the Settings app; an unsupported browser; a Worker without push yet: 準備中). On:

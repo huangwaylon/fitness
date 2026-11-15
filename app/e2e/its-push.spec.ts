@@ -1,4 +1,4 @@
-// ボット → 保養所's 通知 (docs/design.md "Bots"; lib/its/push.ts): off by default; the permission asked only by the
+// ボット → 保養所's 通知 (docs/bots.md; lib/its/push.ts): off by default; the permission asked only by the
 // switch's tap; the subscription (for the Worker's key from its status) POSTed to /its/push/subscribe; on only once the
 // Worker took it, kept across a reload; off unsubscribes at the Worker and in the browser; テスト通知 (a 5 s countdown
 // on the button after each test; 429: 「5秒ほど待ってからもう一度」); the lines where it can't work (an iPhone's Safari

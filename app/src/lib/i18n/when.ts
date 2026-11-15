@@ -1,5 +1,5 @@
 // The app's short day, `11/4（水）` / `Wed 11/4` (a list's or a heading's day, every sheet's: the long one, `11月4日（水）`, is
-// format.ts formatDate), and the bots' times and durations (docs/design.md "Bots": one vocabulary on the three
+// format.ts formatDate), and the bots' times and durations (docs/bots.md: one vocabulary on the three
 // pages), Tokyo's clock: today `11:54`, another day `11/4（水）2:41` (a key row's cell may break after the day), a future
 // one with ごろ (the caller's words); `4時間12分`, `12分`, `40秒`. The times need bots.* (bots.ts: each bot's lib loads it).
 import { t } from './index.ts';

@@ -1,4 +1,4 @@
-// ジム's acts (docs/design.md "Bots"), outliving the page: the settings last answered (`confirmed`), the acts not yet
+// ジム's acts (docs/bots.md), outliving the page: the settings last answered (`confirmed`), the acts not yet
 // answered (`queue`, the first on its way) and how many have answered. An act goes out after the ones before it, each
 // with its days' bases as the last answer left them, with config.ts's timeout only: closing ボット or picking another tab
 // never aborts one nor drops the rest (a 取り消す tapped after a close is sent, and its answer counted). The shown page

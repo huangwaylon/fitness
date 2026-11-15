@@ -1,4 +1,4 @@
-// The facilities the ITS booker can be offered (ボット → 保養所, docs/design.md "Bots"): the four rosters
+// The facilities the ITS booker can be offered (ボット → 保養所, docs/bots.md): the four rosters
 // (直営 · 通年 · 夏季 · 冬季, its/SITE.md §1) as the runner's config.py SKIP_HOTELS comments record them, under the
 // site's own spelling where it was seen (`verified`: the exact string service_group_select returned; the rest are the
 // roster pages' and may not match what the site offers). The single source of the roster (the runner keeps a pointer).

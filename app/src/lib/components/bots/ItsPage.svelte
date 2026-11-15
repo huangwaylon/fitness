@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ボット's 保養所 tab (docs/design.md "Bots"): the ITS booker as its Worker reports it (lib/its: GET /its/status) and
+  // ボット's 保養所 tab (docs/bots.md): the ITS booker as its Worker reports it (lib/its: GET /its/status) and
   // its settings, on BotPage: the status card (who stopped it in its sentence while stopped) with 直近1時間 (前回 · 次回 ·
   // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
   // sentence; 確認が必要 (the holds to finish by mail: bookingRows' action rows, their deadline and steps; a failed

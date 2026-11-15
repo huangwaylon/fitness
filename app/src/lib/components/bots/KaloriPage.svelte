@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ボット's メニュー tab (docs/design.md "Bots"): the Kalori scraper (the weekly chain-menu scrape, its merge into main
+  // ボット's メニュー tab (docs/bots.md): the Kalori scraper (the weekly chain-menu scrape, its merge into main
   // and the deploy) as its workflows report it in status.json (lib/kalori/status.ts), on BotPage: the verdict (順調 ·
   // 取得中 · 保留 · 遅れ · 不調 · まだありません; 遅れ by the phone's clock too) with 直近8週 (a cell a week; 前回 · 次回 · 品目, 不調:
   // 最後の成功) and its ⋯ (links only: 実行を開く while a run is worth a look, PRを開く while 保留, ワークフローを開く; a

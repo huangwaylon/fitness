@@ -1,4 +1,4 @@
-// ボット (docs/design.md "Bots"): the menu's ボット, a member's only, right above 設定, with the worst bot's 「!」 while one
+// ボット (docs/bots.md): the menu's ボット, a member's only, right above 設定, with the worst bot's 「!」 while one
 // needs a person; its sheet: the bottom tabs (a tablist: ジム left, 保養所, メニュー right), each tab's status dot
 // (data-tab-status, data-look; 「ジム、順調」), the dots kept across a reload, ← → to move between them,
 // the tab remembered for the app's session (ジム, the leftmost, the first time and after the app was closed), only the shown page mounted (it reads while shown, nothing

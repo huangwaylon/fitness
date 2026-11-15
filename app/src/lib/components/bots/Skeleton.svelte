@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A bot page's loading (docs/design.md "Bots"): the status card's shape, pale and pulsing (still under reduced
+  // A bot page's loading (docs/bots.md): the status card's shape, pale and pulsing (still under reduced
   // motion), until its first status, when none is kept from before. `attr`: the page's data-* (data-its-skeleton).
   let { attr }: { attr: string } = $props();
 </script>
