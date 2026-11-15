@@ -585,6 +585,19 @@ export class StoreCore {
   /** The admin's `promote {person, date, metric, value?}`: a held value made a row of `metrics` (the day's latest
    *  now, as an ingest's), the held row kept with its mark. `value`: which, when more than one is held (else the
    *  last seen). */
+  /** One-off, removed after its run: the BMI standard's old `pref` rows (key `bmiStd`, gone from the app), counted by
+   *  person and value, deleted with `confirm: 'drop-bmistd'`. No other row is read or touched. */
+  dropBmiStd(o: Rec): Record<string, unknown> {
+    const where = "type = 'pref' AND json_extract(data, '$.key') = 'bmiStd'";
+    const rows = this.io.sql.exec(`SELECT person, json_extract(data, '$.value') AS v FROM events WHERE ${where}`).toArray() as { person: string; v: unknown }[];
+    const by: Record<string, number> = {};
+    for (const r of rows) by[`${r.person}:${String(r.v)}`] = (by[`${r.person}:${String(r.v)}`] ?? 0) + 1;
+    if (o.confirm !== 'drop-bmistd') return { ok: true, rows: rows.length, by, deleted: 0 };
+    this.io.tx(() => this.io.sql.exec(`DELETE FROM events WHERE ${where}`));
+    const left = this.io.sql.exec(`SELECT COUNT(*) AS n FROM events WHERE ${where}`).toArray()[0].n;
+    return { ok: true, rows: rows.length, by, deleted: rows.length - Number(left), left };
+  }
+
   promoteHeld(o: Rec): Record<string, unknown> {
     if (!isPersonId(o.person) || typeof o.date !== 'string' || !isMetricKey(o.metric) || (o.value !== undefined && typeof o.value !== 'number')) return fail('bad_request');
     const { person, date, metric } = o as { person: PersonId; date: string; metric: string };

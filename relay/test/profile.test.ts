@@ -76,4 +76,19 @@ describe('the profile prefs', () => {
       expect(prefs(key, since)).toEqual([['B', { key: 'sex', value: 'f' }]]);
     }
   });
+
+  it('one-off: the BMI standard’s old rows counted, then deleted with the confirm; every other row stays', () => {
+    call(KEY_A, 'health');
+    kept('A', { key: 'sex', value: 'm' });
+    kept('B', { key: 'bmiStd', value: 'who' });
+    kept('A', { key: 'bmiStd', value: 'asia' });
+    send(KEY_A, { key: 'villagerName', value: 'テスト' });
+    const all = () => prefs(KEY_A).map(([, d]) => d.key);
+    expect(store.dropBmiStd({})).toEqual({ ok: true, rows: 2, by: { 'B:who': 1, 'A:asia': 1 }, deleted: 0 });
+    expect(all()).toEqual(['sex', 'bmiStd', 'bmiStd', 'villagerName']);
+    expect(store.dropBmiStd({ confirm: 'drop-bmistd' })).toMatchObject({ ok: true, rows: 2, deleted: 2, left: 0 });
+    expect(all()).toEqual(['sex', 'villagerName']);
+    // an old app's bmiStd: refused as the lock
+    expect(send(KEY_A, { key: 'bmiStd', value: 'who' })).toMatchObject({ ok: false, error: 'forbidden', detail: 'profile locked' });
+  });
 });

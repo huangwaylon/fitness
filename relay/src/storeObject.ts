@@ -218,6 +218,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };
       case 'promote':
         return this.core.promoteHeld(o);
+      // one-off: the BMI standard's old rows (store.ts dropBmiStd), removed after its run
+      case 'dropBmiStd':
+        return this.core.dropBmiStd(o);
       // the running shop ledgers against the full fold of the rows (`fix`: the fold's taken)
       case 'shopcheck':
         return this.core.shopCheck(o);
