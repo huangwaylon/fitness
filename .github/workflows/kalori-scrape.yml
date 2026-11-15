@@ -7,7 +7,9 @@
 # publish), the update (kalori.json built without write access; then, within the bands, a commit on main, else a
 # branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
 # app's bots tab reads: the only alert, no issue, no mail; then pages.yml and food-data.yml dispatched), the deploy check (the dispatched deploy's outcome). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
-# every input has its default as a fallback (`inputs.x || 'default'`) and behaves as a default dispatch. Only a run on
+# every input has its default as a fallback (`inputs.x || 'default'`) and behaves as a default dispatch. GitHub drops
+# scheduled runs: its-bot's cron dispatches the week's (`weekly`) from an hour past the schedule when no run is this
+# week's (its/worker/src/dispatch.ts dispatchKalori). Only a run on
 # main publishes. The token is given only to the steps that call `gh`: never to npm's.
 name: Kalori scrape
 
@@ -52,6 +54,10 @@ on:
       wip_tag:
         description: 'The work-in-progress prerelease, kalori-wip[-name] (another one: a smoke test, never published)'
         default: 'kalori-wip'
+      weekly:
+        description: "The weekly run (its-bot's dispatch of a dropped schedule tick): as the schedule, a refresh's since anew"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -110,11 +116,12 @@ jobs:
       # The first round only: kalori-wip from the accepted release (main's KALORI_TAG: a published release's data and
       # state, never a draft, a prerelease or a dated release left unmerged), and run.json's `since` (this refresh's
       # start). Later rounds keep both; a scheduled run finding last week's unfinished kalori-wip keeps its progress but
-      # starts its `since` anew (each shop's listing read again).
+      # starts its `since` anew (each shop's listing read again), as does its-bot's dispatch of it (`weekly`).
       - name: Seed the wip release
         id: wip
         env:
           GH_TOKEN: ${{ github.token }}
+          WEEKLY: ${{ github.event_name == 'schedule' || inputs.weekly == true }}
         run: |
           d="$RUNNER_TEMP/wip"; mkdir -p "$d"
           if ! gh release view "$WIP" > /dev/null 2>&1; then
@@ -138,7 +145,7 @@ jobs:
               --jq '[.assets[] | select(.state == "uploaded" and (.name == "run.json" or (.name | startswith("run.json."))))] | sort_by(.created_at) | last | .id // empty')
             [ -z "$id" ] || gh api -H 'Accept: application/octet-stream' "repos/$GH_REPO/releases/assets/$id" > "$d/run.json"
             # (lost or stale, run.json is only made again: a new name, the old ones deleted after)
-            if [ ! -s "$d/run.json" ] || [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            if [ ! -s "$d/run.json" ] || [ "$WEEKLY" = true ]; then
               jq -n --arg since "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{since: $since, seeded_from: "an unfinished kalori-wip"}' > "$d/run.json"
               u="run.json.$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"; cp "$d/run.json" "$d/$u"
               gh release upload "$WIP" "$d/$u"

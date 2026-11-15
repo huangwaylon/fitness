@@ -9,7 +9,7 @@ import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member } from '../.
 import { isRec } from '../../../app/src/lib/contract/guards.ts';
 import { jsonCapped, requestId } from '../../../relay/src/body.ts';
 import type { PushAnswer } from './bot.ts';
-import { dispatchHealth } from './dispatch.ts';
+import { dispatchHealth, dispatchKalori } from './dispatch.ts';
 import type { Env } from './env.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
 
@@ -53,9 +53,10 @@ export default {
   },
 
   /** Every 5 min: the watchdog's backstop (bot.ts watch; it sets the alarm again if it was lost). A throw is logged;
-   *  the next tick tries again. At :15 and :45 also the health workflows' dispatch (dispatch.ts dispatchHealth). */
+   *  the next tick tries again. At :15 and :45 also the health workflows' dispatch (dispatch.ts dispatchHealth); on
+   *  Tuesdays from 18:41 UTC Kalori's weekly run, unless one is this week's (dispatchKalori). */
   async scheduled(c: ScheduledController, env: Env): Promise<void> {
-    const health = dispatchHealth(env.GH_DISPATCH_TOKEN, c.scheduledTime);
+    const health = Promise.all([dispatchHealth(env.GH_DISPATCH_TOKEN, c.scheduledTime), dispatchKalori(env.GH_DISPATCH_TOKEN, c.scheduledTime)]);
     try {
       await bot(env).watch();
     } catch (e) {

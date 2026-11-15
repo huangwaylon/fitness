@@ -188,7 +188,10 @@ Each bot's doc has its deploy, secrets, stop switch, health checks, alerts and w
 ## 13. Refresh Kalori
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
 JST): the crawl's rounds, a dated release, then the update: merged into main and deployed by itself within the
-bands, else held as a PR. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
+bands, else held as a PR. GitHub drops scheduled runs, so its-bot's cron dispatches the week's run (`-f weekly=true`:
+the schedule's, its `since` anew) on a Tuesday tick from 18:41 to 20:41 UTC when no run was created since a day before
+the schedule and none is unfinished (`its/worker/src/dispatch.ts` `dispatchKalori`; `wrangler tail`'s `its
+kalori-dispatch`); the schedule stays the backstop. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
 run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
 release keeps the progress.

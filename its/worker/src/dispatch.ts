@@ -1,8 +1,8 @@
 // GitHub workflow_dispatch of the runner's workflow (README "How it works"), for 開始 and the watchdog: a run starts in
 // about a minute instead of at the next scheduled one; the watchdog's look at the workflow's unfinished runs, and its
-// cancel of a hung one. And the health workflows on time (dispatchHealth: docs/ops/observability.md "The alert"). A
-// fine-grained PAT (GH_DISPATCH_TOKEN: this repo, Actions read/write); unset, nothing is sent and the schedule starts
-// the run.
+// cancel of a hung one. And the health workflows on time (dispatchHealth: docs/ops/observability.md "The alert"), and
+// Kalori's weekly refresh (dispatchKalori). A fine-grained PAT (GH_DISPATCH_TOKEN: this repo, Actions read/write);
+// unset, nothing is sent and the schedule starts the run.
 import type { Dispatch } from './rules.ts';
 
 const REPO_URL = 'https://api.github.com/repos/huangwaylon/fitness';
@@ -105,4 +105,72 @@ export async function dispatchHealth(token: string | undefined, scheduledTime: n
     if (st !== 204) console.warn(`its health-dispatch refused wf=${wf} status=${st}`);
     return { wf, st };
   }));
+}
+
+// ---- Kalori's weekly refresh (kalori-scrape.yml; docs/ops/runbook.md "Refresh Kalori") ----
+// GitHub drops scheduled runs, and the weekly one is Kalori's only trigger: the cron dispatches it too, as it does the
+// health workflows. GitHub's schedule stays the backstop; a run it already started (or any other) means none is sent.
+const KALORI_WF = `${REPO_URL}/actions/workflows/kalori-scrape.yml`;
+export const KALORI_DISPATCH_URL = `${KALORI_WF}/dispatches`;
+const HOUR_MS = 3_600_000;
+/** Tuesday 17:41 UTC (Wednesday 02:41 JST): kalori-scrape.yml's cron. */
+const KALORI_DAY = 2, KALORI_H = 17, KALORI_M = 41;
+/** The dispatch waits an hour past the schedule (a late scheduled run has started by then), then each tick tries for
+ *  2 h (one refused or unanswered tries again at the next). */
+const KALORI_WAIT_MS = HOUR_MS, KALORI_TRIES_MS = 2 * HOUR_MS;
+/** A run created this long before the schedule or since (scheduled, dispatched, a retry's, by hand) is this week's:
+ *  nothing sent. */
+const KALORI_RECENT_MS = 24 * HOUR_MS;
+
+/** The week's scheduled time when `scheduledTime` is a tick that may dispatch it; else null. */
+export function kaloriSlot(scheduledTime: number): number | null {
+  const d = new Date(scheduledTime);
+  if (d.getUTCDay() !== KALORI_DAY) return null;
+  const slot = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), KALORI_H, KALORI_M);
+  const after = scheduledTime - slot;
+  return after >= KALORI_WAIT_MS && after < KALORI_WAIT_MS + KALORI_TRIES_MS ? slot : null;
+}
+export const kaloriRecentUrl = (slot: number) =>
+  `${KALORI_WF}/runs?created=${encodeURIComponent(`>=${new Date(slot - KALORI_RECENT_MS).toISOString().slice(0, 19)}Z`)}&per_page=1`;
+export const kaloriUnfinishedUrl = (status: string) => `${KALORI_WF}/runs?status=${status}&per_page=1`;
+
+/** A count of the runs a query lists (`total_count`), or null: no answer, a refusal or another body. */
+async function runCount(token: string, url: string): Promise<number | null> {
+  try {
+    const res = await gh(token, url);
+    const n = res.ok ? ((await res.json()) as { total_count?: unknown }).total_count : null;
+    return typeof n === 'number' ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+/** On a due tick (kaloriSlot), dispatch the weekly run on main unless one is this week's (created within
+ *  KALORI_RECENT_MS of the schedule) or unfinished (queued, running…: kalori-scrape.yml's concurrency group would
+ *  replace a pending retry with it). Exactly the scheduled run: no inputs but `weekly` (setup starts the refresh's
+ *  `since` anew, as a scheduled run does), so every input's default and the gates' "a default run". An unknown answer
+ *  sends nothing (the next tick asks again). One line each tick: `its kalori-dispatch …`. Never throws. */
+export async function dispatchKalori(token: string | undefined, scheduledTime: number): Promise<string | null> {
+  const slot = kaloriSlot(scheduledTime);
+  if (slot === null) return null;
+  const say = (what: string) => {
+    (what.startsWith('sent') || what.startsWith('skip') ? console.log : console.warn)(`its kalori-dispatch ${what}`);
+    return what;
+  };
+  if (!token) return say('no_token');
+  const recent = await runCount(token, kaloriRecentUrl(slot));
+  if (recent === null) return say('unknown asked=recent');
+  if (recent > 0) return say('skip why=recent');
+  for (const status of UNFINISHED) {
+    const n = await runCount(token, kaloriUnfinishedUrl(status));
+    if (n === null) return say(`unknown asked=${status}`);
+    if (n > 0) return say(`skip why=${status}`);
+  }
+  let st = 0;
+  try {
+    st = (await gh(token, KALORI_DISPATCH_URL, { method: 'POST', body: JSON.stringify({ ref: 'main', inputs: { weekly: 'true' } }) })).status;
+  } catch {
+    st = 0;
+  }
+  return say(st === 204 ? 'sent status=204' : `refused status=${st}`);
 }

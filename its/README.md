@@ -56,10 +56,10 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 
 | File | Role |
 |---|---|
-| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog's backstop, the health workflows' dispatch) |
+| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog's backstop, the health workflows' and Kalori's weekly dispatch) |
 | `worker/src/bot.ts` | `ItsBot`: the record in memory (one storage read at start), one batched put per change, the log lines |
 | `worker/src/rules.ts` | The lease, the events' rings, bookings, seen names, RunnerConfig, the verdict and the watchdog's decision |
-| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's, 開始's and push bodies; GitHub's dispatch (its-runner, the health workflows), unfinished runs and cancel; bindings and secrets |
+| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's, 開始's and push bodies; GitHub's dispatch (its-runner, the health workflows, Kalori's weekly run), unfinished runs and cancel; bindings and secrets |
 | `worker/src/push.ts`, `webpush.ts` | Web Push (Push below): what's sent when, the messages, the outcomes; RFC 8291/8292 with WebCrypto |
 
 | Route | Who | |
@@ -249,7 +249,7 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 |---|---|---|
 | `KEY_A`, `KEY_B` | Worker | The members' keys, **copied from the relay's** (`~/.config/island-fund/keys`) |
 | `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, the same value on both |
-| `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below), and the health workflows' (docs/ops/runbook.md §2). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
+| `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below), the health workflows' (docs/ops/runbook.md §2) and Kalori's weekly run's (§13). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
 | `ITS_HEALTH_TOKEN` | Worker + **repo** secret | `openssl rand -hex 32`, the same value on both: `gh secret set ITS_HEALTH_TOKEN` (a repository secret, not the `its` environment's: its-health.yml has no environment). Unset on the Worker: `/health/its` is 401 `no_health_token` |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | The Gmail account the site mails and its app password (the confirm leg reads the 申込 mail) |
 | `ITS_EMAIL` | `its` env | The applicant's mail address on the form (default: the IMAP user) |
