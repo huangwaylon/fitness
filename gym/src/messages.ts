@@ -198,7 +198,9 @@ export const SITE_BACK = '✅ ジムの予約サイトに再接続できまし�
 
 /** 📋's answer in parts (GET /gym/config's too, for the app): the title, a row per day that's checked or has a
  *  setting (its date, rule and ⏳ as daySetting words them), the trouble notice, and the closing line (the interval
- *  and the last and next check, or that checks are stopped). `statusLines` is LINE's text of it. */
+ *  and the last and next check, or that checks are stopped; the last an alarm with no day to check when it's the
+ *  newest: 「前回 11:30（チェックする日なし）」, so idle checks don't read as a stuck bot). `statusLines` is LINE's
+ *  text of it. */
 export interface StatusView {
   title: string;
   /** soft: nothing announced that day (🔕 通知オフ, or 💤 not checked yet), which the app shows soft. */
@@ -213,6 +215,7 @@ export function statusView(
   lastCheck: number | null,
   nextCheck: number | null,
   havingTrouble: boolean,
+  idleAt: number | null = null,
 ): StatusView {
   const days = [...new Set([...defaultDays(today), ...store.daysWithSettings()])].sort().map((day) => {
     const [rule, from] = daySettingParts(store, day, today);
@@ -222,7 +225,8 @@ export function statusView(
   let check = CHECK_PAUSED;
   if (!store.paused) {
     const [last, next] = [lastCheck, nextCheck].map((t) => (t === null ? '—' : clockAt(t)));
-    check = `${intervalLabel(store.intervalMinutes)}にチェック・前回 ${last}・次回 ${next}`;
+    const shown = idleAt !== null && idleAt > (lastCheck ?? 0) ? `${clockAt(idleAt)}（チェックする日なし）` : last;
+    check = `${intervalLabel(store.intervalMinutes)}にチェック・前回 ${shown}・次回 ${next}`;
   }
   const notice = havingTrouble ? '⚠️ 現在、ジムの予約サイトに接続しにくい状態です。' : null;
   return { title: '📋 日ごとの設定', days, notice, check };

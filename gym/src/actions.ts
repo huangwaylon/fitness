@@ -9,6 +9,7 @@ import {
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { CheckFailed, slotEnd, type Slot } from './hacomono.ts';
 import type { Line } from './line.ts';
+import type { Check } from './status.ts';
 import * as messages from './messages.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
 import { addDays, at, clockAt, localDateAt, type Clock, type Day } from './time.ts';
@@ -31,8 +32,10 @@ export interface Bot {
   line: Line;
   /** The one group answered and alerted ('' until set up). */
   groupId: string;
-  /** The last automatic or manual check. */
+  /** The last automatic or manual check (one that fetched). */
   lastCheck: number | null;
+  /** The recent checks, newest first (an idle one: an alarm with no day to check). */
+  checks: readonly Pick<Check, 't' | 'idle'>[];
   /** The next automatic check (null while stopped). */
   nextCheck(): Promise<number | null>;
   /** Fully failed checks in a row. */
@@ -302,7 +305,8 @@ export function loggedSetting(bot: Bot, day?: Day): string {
 
 async function statusViewOf(bot: Bot, now: number): Promise<[messages.StatusView, number | null]> {
   const nextCheck = await bot.nextCheck();
-  return [messages.statusView(bot.store, localDateAt(now), bot.lastCheck, nextCheck, bot.failures > 0), nextCheck];
+  const idleAt = bot.checks[0]?.idle ? bot.checks[0].t : null;
+  return [messages.statusView(bot.store, localDateAt(now), bot.lastCheck, nextCheck, bot.failures > 0, idleAt), nextCheck];
 }
 
 /** Every day that's checked or has a setting, and how checking goes (📋 設定を見る). */

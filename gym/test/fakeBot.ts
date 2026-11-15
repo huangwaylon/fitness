@@ -26,6 +26,7 @@ export function fakeBot() {
     line: line as unknown as Line & typeof line,
     groupId: GROUP,
     lastCheck: null as number | null,
+    checks: [] as { t: number; idle?: true }[],
     nextCheck: vi.fn<Bot['nextCheck']>(async () => null),
     failures: 0,
     checking: false,

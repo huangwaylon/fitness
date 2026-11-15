@@ -316,6 +316,11 @@ describe('status (📋) and /gym/config', () => {
     expect((await actions.status(bot)).at(-1)).toBe('30分ごとにチェック・前回 09:05・次回 —');
     bot.nextCheck.mockResolvedValue(at(today(), '12:10'));
     expect((await actions.status(bot)).at(-1)).toBe('30分ごとにチェック・前回 09:05・次回 12:10');
+    // an alarm with no day to check since: its time, said so (lastCheck stays the last fetch); an older one: not
+    bot.checks = [{ t: at(today(), '11:40'), idle: true }];
+    expect((await actions.status(bot)).at(-1)).toBe('30分ごとにチェック・前回 11:40（チェックする日なし）・次回 12:10');
+    bot.checks = [{ t: at(today(), '09:05') }, { t: at(today(), '08:35'), idle: true }];
+    expect((await actions.status(bot)).at(-1)).toBe('30分ごとにチェック・前回 09:05・次回 12:10');
     bot.failures = 1;
     expect((await actions.status(bot)).at(-2)).toContain('接続しにくい');
     bot.store.setPaused(true);
