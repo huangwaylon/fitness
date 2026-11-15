@@ -19,7 +19,7 @@
   import { timeOf } from '#lib/i18n/when.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shown, type BotVerdict } from '#lib/bots/types.ts';
-  import type { CardStrip, CellState } from '#lib/strip.ts';
+  import { pickIndex, type CardStrip, type CellState } from '#lib/strip.ts';
 
   interface Props {
     verdict: Pick<BotVerdict, 'tone' | 'w' | 'word' | 'sentence' | 'needsLook' | 'act'>;
@@ -57,7 +57,12 @@
     return last ? [...others, { ...last, last: true }] : others;
   });
 
-  let picked = $state<number | null>(null);
+  /** The cell picked, by its start (a read that shifts the cells keeps it on its slot); gone from the window: none. */
+  let pickedAt = $state<number | null>(null);
+  const picked = $derived(pickIndex(cells, pickedAt));
+  $effect(() => {
+    if (pickedAt !== null && picked === null) pickedAt = null;
+  });
   let el = $state<HTMLElement>();
   let dragging = false;
   /** The cell nearest the pointer's x (a tick when it changes). */
@@ -66,7 +71,7 @@
     const r = el.getBoundingClientRect();
     const i = Math.min(n - 1, Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * n)));
     if (i !== picked) cue('tick');
-    picked = i;
+    pickedAt = cells[i].start;
   }
   function down(e: PointerEvent) {
     dragging = true;
@@ -79,7 +84,7 @@
     const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : e.key === 'Home' ? -n : e.key === 'End' ? n : 0;
     if (!step) return;
     e.preventDefault();
-    picked = Math.min(n - 1, Math.max(0, (picked ?? n - 1) + step));
+    pickedAt = cells[Math.min(n - 1, Math.max(0, (picked ?? n - 1) + step))].start;
   }
   /** A time at the edge kept inside the cells (left- or right-aligned to its cell). */
   const edge = (i: number) => ((i + 0.5) / n < 0.07 ? '0 0' : (i + 0.5) / n > 0.9 ? '-100% 0' : undefined);
@@ -129,7 +134,10 @@
   .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--card)); }
   /* night: only warn and bad filled (warn the night's amber, its cells edged in ink); good, busy and idle plain */
   :global(:root[data-tod='night']) .status.good { background: var(--card); }
-  :global(:root[data-tod='night']) .status.warn .cell { box-shadow: inset 0 0 0 1px var(--text); }
+  /* (the strip's cells only, never the none ticks, the ghost or the swatches; warn keeps its cap, ink on yuzu: its shape
+     tells it from avail) */
+  :global(:root[data-tod='night']) .status.warn .strip .cell:not(.none) { box-shadow: inset 0 0 0 1px var(--text); }
+  :global(:root[data-tod='night']) .status.warn .strip .cell.warn { box-shadow: inset 0 3px 0 var(--c-ink), inset 0 0 0 1px var(--text); }
   .top { display: flex; align-items: center; gap: 8px; min-height: 24px; }
   .word { font: 700 15px/1.3 var(--font-ui); }
   .asof { font: 700 13px/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }

@@ -26,6 +26,12 @@ export interface CardStrip {
   empty?: { text: string; plain?: boolean } | null;
 }
 
+/** A picked cell's index by its start (the card keeps a pick on its slot across reads), or null once it left. */
+export const pickIndex = (cells: readonly StripCell[], start: number | null): number | null => {
+  const i = start === null ? -1 : cells.findIndex((c) => c.start === start);
+  return i < 0 ? null : i;
+};
+
 /** its/view.ts's name for contract/tokyo.ts clockAt (kept until that file's rewrite folds it). */
 export const hhmm = clockAt;
 

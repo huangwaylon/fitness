@@ -1,7 +1,7 @@
 // The bots' status strip's slots (strip.ts): the clock's grid (保養所's minutes), the checks in turn (ジム's: the
 // alarm's jitter leaves no false gap), the ticks on Tokyo's clock.
 import { describe, expect, it } from 'vitest';
-import { chain, gridStarts, stripTicks, type StripCell } from './strip.ts';
+import { chain, gridStarts, pickIndex, stripTicks, type StripCell } from './strip.ts';
 import { clockAt } from './contract/tokyo.ts';
 
 const MIN = 60_000;
@@ -40,5 +40,15 @@ describe('stripTicks', () => {
     const cells: StripCell[] = [0, 1, 2, 3].map((i) => ({ start: at('08:50') + i * 50 * MIN, end: at('08:50') + (i + 1) * 50 * MIN, state: 'ok', label: '' }));
     expect(stripTicks(cells, 3 * 3600_000)).toEqual([{ i: 0, label: '09:00' }, { i: 3, label: '12:00' }]);
     expect(stripTicks(cells, 3600_000)).toEqual([{ i: 0, label: '09:00' }, { i: 1, label: '10:00' }, { i: 2, label: '11:00' }, { i: 3, label: '12:00' }]);
+  });
+});
+
+describe('pickIndex', () => {
+  it('keeps a pick on its slot when a read shifts the cells, none once it left the window', () => {
+    const cells = (from: number) => Array.from({ length: 4 }, (_, i) => ({ start: (from + i) * 60_000, end: (from + i + 1) * 60_000, state: 'ok' as const, label: '' }));
+    expect(pickIndex(cells(0), 2 * 60_000)).toBe(2);
+    expect(pickIndex(cells(1), 2 * 60_000)).toBe(1); // a minute on: the same cell, one to the left
+    expect(pickIndex(cells(3), 2 * 60_000)).toBeNull(); // gone
+    expect(pickIndex(cells(0), null)).toBeNull();
   });
 });
