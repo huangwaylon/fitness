@@ -18,6 +18,8 @@ export { addDays, clockAt, localDateAt };
 export const at = (day: Day, clock: Clock): number => Date.parse(`${day}T${clock}:00+09:00`);
 /** 0 = Monday … 6 = Sunday. */
 export const weekday = (day: Day): number => (new Date(day).getUTCDay() + 6) % 7;
+/** Saturday or Sunday: オフ (🔕) unless set. @public (gym/src) */
+export const isWeekend = (day: Day): boolean => weekday(day) >= 5;
 export const minutesOf = (clock: Clock): number => Number(clock.slice(0, 2)) * 60 + Number(clock.slice(3, 5));
 /** Minutes since midnight as a clock time (kept within the day: 23:59 at most). */
 export const clockFrom = (minutes: number): Clock => {
@@ -27,8 +29,9 @@ export const clockFrom = (minutes: number): Clock => {
 
 // ---- The fixed rules ----
 
-/** Days checked without a setting: today and the next 3. The gym allows 3 reservations at a time, so a few near
- *  days at lunch are the usual; the rest wait for a setting. @public (gym/src) */
+/** Days checked without a setting: today and the next 3, but not a Saturday or Sunday (isWeekend: オフ unless set).
+ *  The gym allows 3 reservations at a time, so a few near weekdays at lunch are the usual; the rest wait for a
+ *  setting. @public (gym/src) */
 export const DAYS_TO_CHECK = 4;
 /** What those days are checked for: slots that start and end inside it (12:00 and 12:30). */
 export const DEFAULT_WINDOW: readonly [Clock, Clock] = ['12:00', '13:00'];
@@ -78,7 +81,7 @@ export interface StatusDay {
   day: Day;
   /** `10/5（月）` */
   date: string;
-  /** 🔔 終日, ⏰ 12:00〜13:00（ふだん）, 🔕 通知オフ, 💤 まだチェックしない（…） */
+  /** 🔔 終日, ⏰ 12:00〜13:00（ふだん）, 🔕 通知オフ（ふだん）, 💤 まだチェックしない（…） */
   rule: string;
   /** ⏳ 16:00から */
   from: string | null;
@@ -89,10 +92,14 @@ export interface StatusDay {
 /** One of the 25 days the calendar shows (today first). */
 export interface DayRow {
   day: Day;
-  /** The saved rule; null = none (ふだん within the default days, else 未チェック). */
+  /** The saved rule; null = none (ふだん within the default days, else 未チェック). An unset weekend day is 'skip' (its
+   *  rule in force: an app from before weekends went off shows it as オフ). */
   rule: Rule | null;
-  /** No saved rule, and a default day: DEFAULT_WINDOW applies. */
+  /** No saved rule, and a default weekday: DEFAULT_WINDOW applies. */
   usual: boolean;
+  /** A Saturday or Sunday (isWeekend): オフ when unset, which 🧹 goes back to. Older Workers leave it out (read as
+   *  false: their weekends are like any day). */
+  weekend: boolean;
   /** ⏳: not checked before this instant (it may be on an earlier day, set from LINE). */
   from: number | null;
   /** The slot starts already announced that day (each time once). */

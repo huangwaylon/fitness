@@ -13,7 +13,8 @@ import {
   type ActInput, type Change, type Clock, type Day, type DayAct, type DayRow, type Rule
 } from './contract.ts';
 
-/** A cell's fill: 終日 leaf, 時間指定 mint, ふだん mint dashed (the next DAYS_TO_CHECK days), 未チェック paper, オフ sunk. */
+/** A cell's fill: 終日 leaf, 時間指定 mint, ふだん mint dashed (the next DAYS_TO_CHECK weekdays), 未チェック paper, オフ
+ *  sunk (a weekend unset too). */
 type Fill = 'any' | 'range' | 'usual' | 'none' | 'off';
 export interface Cell extends MonthDay {
   /** One of the 25 days, in the month shown (else faint or blank, inert). */
@@ -29,8 +30,13 @@ export interface Cell extends MonthDay {
   label: string;
 }
 
-/** A day's own rule, or ふだん's window, or none (未チェック). */
+/** A day's own rule, or ふだん's window, or none (未チェック). An unset weekend's is 'skip' (the Worker sends it so). */
 export const ruleOf = (row: DayRow): Rule | null => row.rule ?? (row.usual ? [DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]] : null);
+
+/** A day with nothing saved reads as this rule: オフ on a weekend, else none. */
+const unsetRule = (row: DayRow): Rule | null => (row.weekend ? 'skip' : null);
+/** Nothing saved for the day (its rule is the usual: ふだん, オフ on a weekend, or 未チェック). */
+export const isUnset = (row: DayRow): boolean => row.rule === unsetRule(row);
 
 function fillOf(row: DayRow): Fill {
   if (row.rule === 'any') return 'any';
@@ -51,11 +57,12 @@ export const fromWords = (day: Day | null, when: number): string =>
 /** A row's ⏳ as words (fromWords), if set. */
 export const fromText = (row: DayRow): string | null => (row.from === null ? null : fromWords(row.day, row.from));
 
-/** The rule in words: 終日, 12:00〜13:00, ふだん（12:00〜13:00）, 未チェック, オフ. */
+/** The rule in words: 終日, 12:00〜13:00, ふだん（12:00〜13:00）, ふだん（オフ） (a weekend unset), 未チェック, オフ. */
 export function ruleText(row: DayRow): string {
   const f = fillOf(row);
   if (f === 'range') return longRange(row.rule as [Clock, Clock]);
   if (f === 'usual') return t('gym.rule.usual', { range: longRange(DEFAULT_WINDOW) });
+  if (f === 'off' && row.weekend) return t('gym.rule.usual', { range: t('gym.rule.off') });
   return t(`gym.rule.${f}`);
 }
 
@@ -162,23 +169,24 @@ const usualDay = (rows: readonly DayRow[], day: Day, defaultDays: number): boole
 const sameRule = (a: Rule | null, b: Rule | null) => a === b || (Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1]);
 const isDefault = (r: Rule | null) => sameRule(r, [DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]]);
 
-/** A row as the bot will have it after `act` (the page shows it at once; the answer replaces it). */
+/** A row as the bot will have it after `act` (the page shows it at once; the answer replaces it). `usual`: one of the
+ *  default days (a weekend unset is オフ whichever: 'skip', its rule in force, and anything else is saved). */
 export function predict(row: DayRow, act: DayInput, usual: boolean): DayRow {
   let { rule, from, announced } = row;
   const setRule = (r: Rule | null) => {
-    rule = usual && isDefault(r) ? null : r;
+    rule = usual && !row.weekend && isDefault(r) ? null : r;
     // a ⏳ the new window leaves no slot after is cleared (the bot's store.setRule)
     if (from !== null && from >= fromLimit(row.day, rule)) from = null; // (ふだん / none: DEFAULT_WINDOW)
   };
   if (act.a === 'any' || act.a === 'skip') setRule(act.a);
   if (act.a === 'range') setRule([act.s, act.e]);
   if (act.a === 'skip' || act.a === 'unfrom') from = null;
-  if (act.a === 'reset') [rule, from, announced] = [null, null, []];
+  if (act.a === 'reset') [rule, from, announced] = [unsetRule(row), null, []];
   if (act.a === 'from') {
     from = typeof act.at === 'number' ? act.at : at(row.day, act.at);
     if (rule === 'skip' || (rule === null && !usual)) setRule([DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]]);
   }
-  return { ...row, rule, from, announced, usual: rule === null && usual, resettable: rule !== null || from !== null || announced.length > 0 };
+  return { ...row, rule, from, announced, usual: rule === null && usual, resettable: rule !== unsetRule(row) || from !== null || announced.length > 0 };
 }
 
 /** Rows after an act on some of them. */

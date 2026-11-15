@@ -11,7 +11,7 @@
   import Segmented from '../ui/Segmented.svelte';
   import GymSlots from './GymSlots.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { fromDates, fromText, fromTimes, fromWords, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
+  import { fromDates, fromText, fromTimes, fromWords, isUnset, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import { DEFAULT_WINDOW, at, clockAt, localDateAt, fromRefusal, type ActInput, type Clock, type Day, type DayRow } from '#lib/gym/contract.ts';
 
@@ -19,7 +19,7 @@
   interface Props {
     open: boolean;
     row: DayRow | null;
-    /** One of the default days (unset: ふだん). */
+    /** One of the default days (unset: ふだん; a weekend's is オフ). */
     usualDay: boolean;
     /** The Worker's clock (GymPage pickNow), the times offered are after it. */
     now: number;
@@ -55,7 +55,8 @@
   /** The saved ⏳ isn't on the start day shown (its time can't move there): it stays until a time is picked. */
   const kept = $derived(row && row.from !== null && fromDate !== localDateAt(row.from) ? row.from : null);
   const watched = $derived(rule === 'any' || Array.isArray(rule));
-  const resetLabel = $derived(row && row.rule !== null && usualDay ? t('gym.editor.back') : t('gym.editor.reset'));
+  /** ふだんに戻す for a day with a ふだん to go back to (a default day, a weekend: オフ) and something saved. */
+  const resetLabel = $derived(row && !isUnset(row) && (usualDay || row.weekend) ? t('gym.editor.back') : t('gym.editor.reset'));
 
   // a new day: the picker and the choices start over
   $effect(() => {

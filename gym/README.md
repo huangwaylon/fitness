@@ -29,10 +29,11 @@ Each day has at most one rule (`src/store.ts`):
 | any | 🔔 終日 | Any open slot |
 | skip | 🔕 通知オフ | None that day |
 | `[start, end]` | ⏰ 12:00〜14:00 | Slots that start and end inside it (on the half hour; the end suggested an hour on) |
-| none | ⏰ or 💤 | ⏰ 12:00〜13:00（ふだん） (`DEFAULT_WINDOW`) for the next 4 days (`DAYS_TO_CHECK`), else 💤 not checked yet |
+| none | 🔕, ⏰ or 💤 | 🔕 通知オフ（ふだん） on a Saturday or Sunday; else ⏰ 12:00〜13:00（ふだん） (`DEFAULT_WINDOW`) for the next 4 days (`DAYS_TO_CHECK`), else 💤 not checked yet |
 
-Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near days at lunch are the usual;
-further days wait for a setting.
+Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near weekdays at lunch are the
+usual; further days wait for a setting. A weekend day is off unless set (⏰ 12:00〜13:00 on it is saved like any
+range); 🔕 on it saves nothing, and 🧹 puts it back to off.
 
 - **⏳ check from** a date and time: the day is ignored until then (e.g. Friday from Tuesday 18:00, when an earlier
   booking is over: 3 at a time). Kept between 🔔 and ⏰ unless the new window leaves no slot after it (then cleared,
@@ -104,7 +105,8 @@ further days wait for a setting.
   and `/gym/config` as the same tap on LINE (worker.test runs each kind both ways); the group is never told of it.
   The app's own list of its changes is `runtime.changes`: the latest per day and per check setting (🔕, 🧹, 🔕 on a
   day is one 🔕), at most 12, newest first. Names: `NAME_A` / `NAME_B` (secrets), else メンバーA / B. `/gym/config`
-  adds the calendar's 25 `rows` (`{day, rule, usual, from, announced, resettable, base}`), `defaultDays`,
+  adds the calendar's 25 `rows` (`{day, rule, usual, weekend, from, announced, resettable, base}`: an unset weekend
+  day is `rule: 'skip'`, so an older app shows it off), `defaultDays`,
   `intervals`, `checkReadyAt`, `checking` and `changes`. Logs:
   `act by=A a=any d=… changed=1 rid=…` a day, `changed … (by web A)`, `act by=A a=… refused <code>` (log level),
   `act refused 401|403|405|413|503 …` (warn).

@@ -329,6 +329,16 @@ describe('status (📋) and /gym/config', () => {
     expect(await actions.status(bot)).toEqual(before);
   });
 
+  it('sets a weekend day and puts it back to off with 🧹', async () => {
+    const sat = inDays(5);
+    const set = await actions.webAct(bot, { a: 'range', d: sat, s: '12:00', e: '13:00' }, 'A', 'r');
+    expect(set.body).toMatchObject({ ok: true, changed: true });
+    expect(bot.store.rule(sat)).toEqual(['12:00', '13:00']); // a setting on a weekend
+    const reset = await actions.webAct(bot, { a: 'reset', d: sat }, 'A', 'r');
+    expect(reset.body).toMatchObject({ ok: true, reply: '👍 10/17（土）の設定をリセットしました。いまは 🔕 通知オフ（ふだん） です。' });
+    expect(bot.store.rule(sat)).toBeUndefined();
+  });
+
   it('gives the calendar 25 rows: the rule, ふだん, ⏳, the announced times, whether 🧹 has anything, the base', async () => {
     bot.store.setRule(inDays(1), ['18:00', '20:00'], today());
     bot.store.setCheckFrom(inDays(2), at(inDays(1), '18:00'), today());
@@ -337,11 +347,13 @@ describe('status (📋) and /gym/config', () => {
     bot.lastManualCheck = NOW - 10_000;
     const c = await actions.config(bot);
     expect(c.rows).toHaveLength(DAYS_SHOWN);
-    expect(c.rows[0]).toMatchObject({ day: today(), rule: null, usual: true, from: null, announced: [], resettable: false });
+    expect(c.rows[0]).toMatchObject({ day: today(), rule: null, usual: true, weekend: false, from: null, announced: [], resettable: false });
     expect(c.rows[1]).toMatchObject({ rule: ['18:00', '20:00'], usual: false, resettable: true });
     expect(c.rows[2]).toMatchObject({ rule: null, usual: true, from: at(inDays(1), '18:00'), announced: ['12:00', '12:30'], resettable: true });
     expect(c.rows[4]).toMatchObject({ rule: null, usual: false, resettable: false }); // 💤
     expect(c.rows[10]).toMatchObject({ rule: 'skip', usual: false });
+    // a weekend unset: off (its rule in force), nothing to clear
+    expect(c.rows.slice(5, 7)).toMatchObject([{ rule: 'skip', usual: false, weekend: true, resettable: false }, { rule: 'skip', weekend: true }]);
     expect(c.rows[24].day).toBe(inDays(24));
     expect(new Set(c.rows.map((r) => r.base)).size).toBeGreaterThan(1);
     expect(c).toMatchObject({ defaultDays: DAYS_TO_CHECK, intervals: [10, 15, 30, 60], checkReadyAt: NOW + 50_000, checking: false, changes: [] });

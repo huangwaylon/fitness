@@ -92,8 +92,8 @@ describe('messages', () => {
     const view = m.statusView(s, TODAY, oct(3, '08:45'), null, true);
     expect(m.statusLines(view)).toEqual([
       '📋 日ごとの設定',
-      '・10/3（土）　⏰ 12:00〜13:00（ふだん）',
-      '・10/4（日）　🔕 通知オフ',
+      '・10/3（土）　🔕 通知オフ（ふだん）',
+      '・10/4（日）　🔕 通知オフ（ふだん）',
       '・10/5（月）　⏰ 12:00〜14:00　⏳ 10/4（日）16:00から',
       '・10/6（火）　⏰ 12:00〜13:00（ふだん）',
       '・10/20（火）　🔔 終日',
@@ -102,9 +102,9 @@ describe('messages', () => {
     ]);
     // the parts: each day's rule and ⏳ apart, as daySetting words them
     expect(view.days[2]).toEqual({ day: '2026-10-05', date: '10/5（月）', rule: '⏰ 12:00〜14:00', from: '⏳ 10/4（日）16:00から', soft: false });
-    expect(view.days[1]).toEqual({ day: '2026-10-04', date: '10/4（日）', rule: '🔕 通知オフ', from: null, soft: true });
+    expect(view.days[1]).toEqual({ day: '2026-10-04', date: '10/4（日）', rule: '🔕 通知オフ（ふだん）', from: null, soft: true });
     // soft: nothing announced that day (🔕, or 💤 not checked yet)
-    expect(view.days.map((d) => d.soft)).toEqual([false, true, false, false, false]);
+    expect(view.days.map((d) => d.soft)).toEqual([true, true, false, false, false]);
     const z = new Store(); // a default day's ⏳ alone, seen from a week before: 💤
     z.setCheckFrom('2026-10-05', oct(5, '09:00'), TODAY);
     expect(m.statusView(z, '2026-09-28', null, null, false).days.at(-1)).toMatchObject({ day: '2026-10-05', rule: expect.stringMatching(/^💤/), soft: true });
@@ -128,7 +128,7 @@ describe('messages', () => {
     const s = setStore();
     expect(['2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-20']
       .map((d) => m.dayButton(s, d, TODAY))).toEqual([
-      '10/3（土） ⏰', '10/4（日） 🔕', '10/5（月） ⏰⏳', '10/6（火） ⏰', '10/7（水） 💤', '10/20（火） 🔔',
+      '10/3（土） 🔕', '10/4（日） 🔕', '10/5（月） ⏰⏳', '10/6（火） ⏰', '10/7（水） 💤', '10/20（火） 🔔',
     ]);
   });
 
@@ -150,6 +150,6 @@ describe('messages', () => {
     expect(m.dayReset(s, '2026-10-07', TODAY)).toBe(
       '👍 10/7（水）の設定をリセットしました。いまは 💤 まだチェックしない（3日前から自動で12:00〜13:00をチェック） です。',
     );
-    expect(m.dayUnchanged(s, '2026-10-04', TODAY)).toBe('10/4（日）はすでに 🔕 通知オフ になっています。');
+    expect(m.dayUnchanged(s, '2026-10-04', TODAY)).toBe('10/4（日）はすでに 🔕 通知オフ（ふだん） になっています。');
   });
 });

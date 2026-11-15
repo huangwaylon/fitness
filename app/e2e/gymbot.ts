@@ -6,7 +6,7 @@
 // is 409 stale). No network.
 import type { Page } from './fixtures.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
-import { at, localDateAt, fromLimit, fromRefusal, fromWindow, weekday, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
+import { at, localDateAt, fromLimit, fromRefusal, fromWindow, isWeekend, weekday, type ActInput, type Change, type DayRow, type GymConfig, type Rule } from '../src/lib/gym/contract.ts';
 
 const ORIGIN = 'https://gym-bot.island-fund-relay.workers.dev';
 export const STATUS = `${ORIGIN}/status`;
@@ -50,23 +50,24 @@ export function fakeGym(now: () => number) {
   let next: Answer | null = null;
   let gate: Promise<void> | null = null;
   const bump = (d: string) => versions.set(d, (versions.get(d) ?? 0) + 1);
-  const usual = (d: string) => days.indexOf(d) < 4;
-  const isDefault = (r: Rule) => Array.isArray(r) && r[0] === '12:00' && r[1] === '13:00';
+  /** A day's rule with nothing saved (store.usualRule): オフ on a weekend, the window on the first 4 days, else none. */
+  const usual = (d: string): Rule | null => (isWeekend(d) ? 'skip' : days.indexOf(d) < 4 ? ['12:00', '13:00'] : null);
+  const same = (a: Rule | null, b: Rule | null) => a === b || (Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1]);
 
   function setRule(d: string, r: Rule) {
-    if (usual(d) && isDefault(r)) rules.delete(d);
+    if (same(r, usual(d))) rules.delete(d);
     else rules.set(d, r);
     if (r === 'skip') froms.delete(d);
     // a ⏳ the new window leaves no slot after is dropped (store.setRule)
-    if ((froms.get(d) ?? 0) >= fromLimit(d, rules.get(d) ?? (usual(d) ? r : null))) froms.delete(d);
+    if ((froms.get(d) ?? 0) >= fromLimit(d, rules.get(d) ?? usual(d))) froms.delete(d);
   }
 
   function row(d: string): DayRow {
-    const rule = rules.get(d) ?? null;
+    const saved = rules.get(d) ?? null;
     const a = announced.get(d) ?? [];
     return {
-      day: d, rule, usual: rule === null && usual(d), from: froms.get(d) ?? null, announced: a,
-      resettable: rule !== null || froms.has(d) || a.length > 0, base: `v${versions.get(d) ?? 0}`
+      day: d, rule: saved ?? (isWeekend(d) ? 'skip' : null), usual: saved === null && Array.isArray(usual(d)), weekend: isWeekend(d),
+      from: froms.get(d) ?? null, announced: a, resettable: saved !== null || froms.has(d) || a.length > 0, base: `v${versions.get(d) ?? 0}`
     };
   }
 
@@ -88,7 +89,7 @@ export function fakeGym(now: () => number) {
     else if (input.a === 'unfrom') froms.delete(d);
     else if (input.a === 'from') {
       froms.set(d, typeof input.at === 'number' ? input.at : at(d, input.at));
-      if (rules.get(d) === 'skip' || (!rules.has(d) && !usual(d))) setRule(d, ['12:00', '13:00']);
+      if (rules.get(d) === 'skip' || (!rules.has(d) && !Array.isArray(usual(d)))) setRule(d, ['12:00', '13:00']);
     }
     bump(d);
     const kept = s.changes.filter((c) => c.d !== d); // one a day, as the bot keeps them

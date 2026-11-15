@@ -4,7 +4,8 @@
 //   - ANY          → alert for any open slot that day (🔔 終日)
 //   - SKIP         → no alerts that day (🔕 通知オフ)
 //   - [start, end] → only slots inside that time range (⏰)
-//   - nothing      → DEFAULT_WINDOW within the next DAYS_TO_CHECK days, otherwise not checked yet (💤)
+//   - nothing      → SKIP on a Saturday or Sunday; else DEFAULT_WINDOW within the next DAYS_TO_CHECK days,
+//                    otherwise not checked yet (💤)
 //
 // A checked day can also have a "check from" time (⏳): the day is ignored until then. It's kept when the rule
 // changes between ANY and a range unless it then leaves no slot in the day's window (the contract's fromLimit),
@@ -17,7 +18,7 @@
 // Mutations set `dirty`; the bot then saves the state.
 import { CHECK_INTERVAL_MINUTES, DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { addDays, localDateAt, isoJst, type Clock, type Day } from './time.ts';
-import { fromLimit } from '../../app/src/lib/gym/contract.ts';
+import { fromLimit, isWeekend } from '../../app/src/lib/gym/contract.ts';
 
 export const VERSION = 3;
 export const ANY = 'any';
@@ -35,7 +36,7 @@ export interface StateJson {
   notified: string[];
 }
 
-/** Days checked (for DEFAULT_WINDOW) unless set otherwise. */
+/** Days checked (for DEFAULT_WINDOW) unless set otherwise; a weekend day among them isn't (usualRule). */
 export function defaultDays(today: Day): Day[] {
   return Array.from({ length: DAYS_TO_CHECK }, (_, i) => addDays(today, i));
 }
@@ -136,17 +137,24 @@ export class Store {
     return this.rulesByDay.get(day);
   }
 
-  /** The rule in force: the saved one, else DEFAULT_WINDOW for the default days, else undefined (not checked yet). */
+  /** A day's rule when nothing is saved (ふだん, which 🧹 goes back to): SKIP on a Saturday or Sunday, DEFAULT_WINDOW
+   *  for the other default days, else undefined (not checked yet). */
+  usualRule(day: Day, today: Day): Rule | undefined {
+    if (isWeekend(day)) return SKIP;
+    return defaultDays(today).includes(day) ? defaultRule() : undefined;
+  }
+
+  /** The rule in force: the saved one, else the usual. */
   effectiveRule(day: Day, today: Day): Rule | undefined {
-    return this.rulesByDay.get(day) ?? (defaultDays(today).includes(day) ? defaultRule() : undefined);
+    return this.rulesByDay.get(day) ?? this.usualRule(day, today);
   }
 
   /** Give a day its rule. Returns false if that's what it already was. */
   setRule(day: Day, rule: Rule, today: Day): boolean {
     const before = this.effectiveRule(day, today);
     if (rule === SKIP) this.changeCheckFrom(day, null);
-    if (sameRule(rule, defaultRule()) && defaultDays(today).includes(day)) {
-      // The default anyway; keeps the saved list short.
+    if (sameRule(rule, this.usualRule(day, today))) {
+      // The usual anyway; keeps the saved list short.
       if (this.rulesByDay.delete(day)) this.dirty = true;
     } else if (!sameRule(this.rulesByDay.get(day), rule)) {
       this.rulesByDay.set(day, typeof rule === 'string' ? rule : [rule[0], rule[1]]);

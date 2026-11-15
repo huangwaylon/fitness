@@ -52,9 +52,12 @@ test('the calendar: the whole month from Monday, next month, the 4-day default a
   await expect(grid.locator('.cell.out.later')).toHaveCount(2);
   await expect(grid.locator('.cell.out:not(.later):not(.blank)')).toHaveCount(3);
   await expect(day(0)).toHaveAttribute('aria-label', '11/4（水）（今日）、ふだん（12:00〜13:00）');
-  for (const i of [0, 1, 2, 3]) await expect(day(i)).toHaveAttribute('data-fill', 'usual');
-  await expect(day(4)).toHaveAttribute('data-fill', 'none');
-  await expect(day(4)).toHaveAttribute('aria-label', '11/8（日）、未チェック');
+  for (const i of [0, 1, 2]) await expect(day(i)).toHaveAttribute('data-fill', 'usual');
+  // the weekend off unless set (11/7–8), as ふだん
+  for (const i of [3, 4]) await expect(day(i)).toHaveAttribute('data-fill', 'off');
+  await expect(day(3)).toHaveAttribute('aria-label', '11/7（土）、ふだん（オフ）');
+  await expect(day(7)).toHaveAttribute('data-fill', 'none');
+  await expect(day(7)).toHaveAttribute('aria-label', '11/11（水）、未チェック');
   await expect(day(0).locator('[data-gym-time]')).toHaveCount(0); // ふだん: its dashed fill, no hours
   await expect(day(5)).toHaveAttribute('aria-label', '11/9（月）、終日、18:00から');
   await expect(day(5).locator('[data-gym-from]')).toBeVisible();
@@ -62,7 +65,7 @@ test('the calendar: the whole month from Monday, next month, the 4-day default a
   await expect(day(6).locator('[data-gym-announced="2"]')).toHaveText('2');
   await expect(day(6).locator('[data-gym-time]')).toHaveText(/18:30\s*20/, { useInnerText: true }); // stacked
   await expect(day(8)).toHaveAttribute('data-fill', 'off');
-  await expect(sheet.locator('[data-gym-cal-note]')).toHaveText('予約は同時に3件まで。設定のない日は近い4日だけ 12:00〜13:00 を見ます');
+  await expect(sheet.locator('[data-gym-cal-note]')).toHaveText('予約は同時に3件まで。設定のない日は近い4日だけ 12:00〜13:00 を見ます（土日はオフ）');
   // the legend inline under the grid
   await expect(sheet.locator('[data-gym-legend] > span')).toHaveText(['見ない', '終日', '時間指定', 'ふだん', 'オフ', '開始時刻', '通知済み']);
   // 44px: the days, ⋯
@@ -119,6 +122,17 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   await editor.locator('[data-gym-reset]').click();
   await expect(day(1)).toHaveAttribute('data-fill', 'usual');
   await expect.poll(() => gym.acts.slice(-2)).toEqual([{ a: 'skip', d: gym.days[1], base: 'v0' }, { a: 'reset', d: gym.days[1], base: 'v1' }]);
+  // a weekend day: オフ as its ふだん; ふだんに戻す puts it back to オフ
+  await page.locator('dialog[open] .navbar button.nav.close').last().click();
+  await day(3).click();
+  await expect(editor.locator('[data-gym-editor-now]')).toHaveText('いまの設定：ふだん（オフ）');
+  await expect(editor.locator('[data-gym-kind="off"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(editor.locator('[data-gym-reset]')).toHaveCount(0);
+  await editor.locator('[data-gym-kind="any"]').click();
+  await expect(editor.locator('[data-gym-reset]')).toHaveText('ふだんに戻す');
+  await editor.locator('[data-gym-reset]').click();
+  await expect(day(3)).toHaveAttribute('data-fill', 'off');
+  await expect(editor.locator('[data-gym-reset]')).toHaveCount(0);
 });
 
 test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 ends at 22:00; 通知の開始’s times the bot would refuse are disabled', async ({ page, context }) => {
@@ -298,40 +312,40 @@ test('select mode: weekday headers and days, one bulk act, one 取り消す; 時
   const bar = sheet.locator('[data-gym-bulk]');
   await expect(bar).toContainText('日付か曜日を選んでください');
   await expect(sheet.locator('[data-gym-select]')).toHaveCount(0); // 完了 in its place
-  await sheet.locator('[data-gym-weekday="5"]').click(); // 土: 11/7, 14, 21, 28
+  await sheet.locator('[data-gym-weekday="2"]').click(); // 水: 11/4, 11, 18, 25
   await expect(bar).toContainText('4日を選択');
   await day(5).click();
   await expect(bar).toContainText('5日を選択');
   await expect(day(5)).toHaveAttribute('aria-pressed', 'true');
   await bar.locator('[data-gym-bulk-act="skip"]').click();
-  for (const i of [3, 5, 10, 17, 24]) await expect(day(i)).toHaveAttribute('data-fill', 'off');
+  for (const i of [0, 5, 7, 14, 21]) await expect(day(i)).toHaveAttribute('data-fill', 'off');
   await expect.poll(() => gym.acts).toHaveLength(1);
-  await expect.poll(() => gym.acts[0]).toEqual({ a: 'skip', days: [3, 5, 10, 17, 24].map((i) => ({ d: gym.days[i], base: 'v0' })) });
+  await expect.poll(() => gym.acts[0]).toEqual({ a: 'skip', days: [0, 5, 7, 14, 21].map((i) => ({ d: gym.days[i], base: 'v0' })) });
   const toast = page.locator('.banner');
   await expect(toast).toContainText('5日をオフにしました');
   await toast.getByRole('button', { name: '取り消す' }).click();
-  await expect(day(3)).toHaveAttribute('data-fill', 'usual');
-  await expect(day(10)).toHaveAttribute('data-fill', 'none');
-  // undone in two acts: 11/7 back to ふだん's window, the rest reset
+  await expect(day(0)).toHaveAttribute('data-fill', 'usual');
+  await expect(day(7)).toHaveAttribute('data-fill', 'none');
+  // undone in two acts: today back to ふだん's window, the rest reset
   await expect.poll(() => gym.acts.slice(1)).toEqual([
-    { a: 'range', s: '12:00', e: '13:00', d: gym.days[3], base: 'v1' },
-    { a: 'reset', days: [5, 10, 17, 24].map((i) => ({ d: gym.days[i], base: 'v1' })) }
+    { a: 'range', s: '12:00', e: '13:00', d: gym.days[0], base: 'v1' },
+    { a: 'reset', days: [5, 7, 14, 21].map((i) => ({ d: gym.days[i], base: 'v1' })) }
   ]);
   await bar.locator('[data-gym-bulk-act="range"]').click();
   const pick = page.locator('dialog[open] [data-gym-bulk-range]');
   await pick.locator('[data-gym-slot="18:00"]').click();
   await pick.locator('[data-gym-slot="19:30"]').click();
   await page.locator('dialog[open] [data-gym-bulk-range-apply]').click();
-  await expect(day(17).locator('[data-gym-time]')).toHaveText(/18\s*20/, { useInnerText: true });
+  await expect(day(14).locator('[data-gym-time]')).toHaveText(/18\s*20/, { useInnerText: true });
   await expect.poll(() => gym.acts.at(-1)).toMatchObject({ a: 'range', s: '18:00', e: '20:00' });
   // the picks stay across months (the count their total; 12月 has none to pick yet)
   await sheet.locator('[data-gym-month="2026-12"]').click();
   await expect(bar).toContainText('5日を選択');
-  await expect(sheet.locator('[data-gym-weekday="5"]')).toBeVisible();
+  await expect(sheet.locator('[data-gym-weekday="2"]')).toBeVisible();
   await sheet.locator('[data-gym-month="2026-11"]').click();
   await sheet.locator('[data-gym-bulk-done]').click();
   await expect(bar).toHaveCount(0);
-  await expect(sheet.locator('[data-gym-weekday="5"]')).toHaveCount(0); // plain text out of the select mode
+  await expect(sheet.locator('[data-gym-weekday="2"]')).toHaveCount(0); // plain text out of the select mode
   // a long press on a day (a touch held half a second; the click as it's let go starts nothing more)
   await day(12).dispatchEvent('pointerdown', { pointerType: 'touch', isPrimary: true, clientX: 10, clientY: 10 });
   await expect(sheet.locator('[data-gym-bulk]')).toContainText('1日を選択');

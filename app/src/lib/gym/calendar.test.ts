@@ -1,7 +1,7 @@
 // ジム's calendar model (calendar.ts): a month's weeks and each cell (the 4-day default, the fills, the marks, the
 // words), the slot picker's rules, the ⏳ dates and times allowed, the optimistic rows, the undo of a change and a bulk act.
 import { describe, expect, it } from 'vitest';
-import { bulkAct, changeLine, fromDates, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, laterNote, monthCells, pickedDays, withBase, type SlotPick } from './calendar.ts';
+import { bulkAct, changeLine, fromDates, isUnset, fromText, fromTimes, movedDays, pickSlot, predict, predictAll, slotCount, SLOTS, undoActs, laterNote, monthCells, pickedDays, withBase, type SlotPick } from './calendar.ts';
 import { addDays, at, fromRefusal, type DayRow } from './contract.ts';
 
 /** Today: Thursday 2026-11-12, noon in Tokyo. */
@@ -9,7 +9,9 @@ const TODAY = '2026-11-12';
 const NOW = at(TODAY, '12:00');
 const day = (i: number) => addDays(TODAY, i);
 const row = (i: number, patch: Partial<DayRow> = {}): DayRow =>
-  ({ day: day(i), rule: null, usual: i < 4, from: null, announced: [], resettable: false, base: `b${i}`, ...patch });
+  ({ day: day(i), rule: null, usual: i < 4, weekend: false, from: null, announced: [], resettable: false, base: `b${i}`, ...patch });
+/** A weekend day unset, as the Worker sends it: オフ (rule 'skip'), not ふだん. */
+const weekend = (i: number, patch: Partial<DayRow> = {}): DayRow => row(i, { rule: 'skip', usual: false, weekend: true, ...patch });
 const rows = (patch: Record<number, Partial<DayRow>> = {}): DayRow[] => Array.from({ length: 25 }, (_, i) => row(i, patch[i]));
 
 /** This month's cells with a row, in order. */
@@ -152,6 +154,24 @@ describe('predict (the row shown before the answer)', () => {
     const r = predictAll(rows(), { a: 'skip', days: [{ d: day(5) }, { d: day(6) }] }, 4);
     expect(r.filter((x) => x.rule === 'skip').map((x) => x.day)).toEqual([day(5), day(6)]);
     expect(predictAll(rows(), { a: 'pause' }, 4)).toEqual(rows());
+  });
+});
+
+describe('a weekend (オフ unless set)', () => {
+  it('unset: オフ, as ふだん; set: its rule, ふだんに戻す back to オフ', () => {
+    const c = live(rows({ 2: weekend(2), 3: weekend(3, { rule: ['12:00', '13:00'], resettable: true }) }));
+    expect([c[2].fill, c[2].label]).toEqual(['off', '11/14（土）、ふだん（オフ）']);
+    expect([c[3].fill, c[3].label]).toEqual(['range', '11/15（日）、12:00〜13:00']);
+    expect([isUnset(weekend(2)), isUnset(weekend(3, { rule: 'any' })), isUnset(row(1)), isUnset(row(1, { rule: 'skip' }))]).toEqual([true, false, true, false]);
+  });
+
+  it('predicts as the bot: DEFAULT_WINDOW is a setting, オフ and 🧹 save nothing', () => {
+    expect(predict(weekend(2), { a: 'range', d: day(2), s: '12:00', e: '13:00' }, true)).toMatchObject({ rule: ['12:00', '13:00'], usual: false, resettable: true });
+    expect(predict(weekend(2, { rule: 'any', resettable: true }), { a: 'skip', d: day(2) }, true)).toMatchObject({ rule: 'skip', resettable: false });
+    expect(predict(weekend(2, { rule: 'any', announced: ['12:00'], resettable: true }), { a: 'reset', d: day(2) }, true)).toMatchObject({ rule: 'skip', usual: false, announced: [], resettable: false });
+    expect(predict(weekend(9), { a: 'from', d: day(9), at: '10:00' }, false)).toMatchObject({ rule: ['12:00', '13:00'], resettable: true }); // a ⏳ gives it the usual window
+    const was = rows({ 2: weekend(2) });
+    expect(undoActs(was, predictAll(was, { a: 'any', d: day(2) }, 4), 4)).toEqual([{ a: 'skip', d: day(2) }]);
   });
 });
 

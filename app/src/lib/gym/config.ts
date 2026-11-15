@@ -42,7 +42,7 @@ function parseRow(x: unknown): DayRow | null {
   const rule = parseRule(x.rule);
   const from = numOrNull(x.from);
   if (rule === undefined || from === undefined || !x.announced.every((c) => typeof c === 'string' && CLOCK.test(c))) return null;
-  return { day: x.day, rule, usual: x.usual, from, announced: [...(x.announced as string[])], resettable: x.resettable, base: x.base.slice(0, 12) };
+  return { day: x.day, rule, usual: x.usual, weekend: x.weekend === true, from, announced: [...(x.announced as string[])], resettable: x.resettable, base: x.base.slice(0, 12) };
 }
 
 /** A change, or null when garbled (left out). */

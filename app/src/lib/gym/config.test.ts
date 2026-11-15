@@ -13,7 +13,7 @@ const KEY = 'a'.repeat(64);
 const URL_ = 'https://gym.example';
 
 const row = (i: number, patch: Partial<DayRow> = {}): DayRow =>
-  ({ day: addDays('2026-10-03', i), rule: null, usual: i < 4, from: null, announced: [], resettable: false, base: `b${i}`, ...patch });
+  ({ day: addDays('2026-10-03', i), rule: null, usual: i < 4, weekend: false, from: null, announced: [], resettable: false, base: `b${i}`, ...patch });
 
 /** GET /gym/config's answer (gym/src/actions.ts config): 📋's parts, the 25 rows and the rest. */
 function wire(): GymConfig {
@@ -54,6 +54,13 @@ describe('parseConfig', () => {
   it('leaves a garbled change out, and takes missing extras as their defaults', () => {
     const p = { ...wire(), changes: [{ t: 'x' }, ...wire().changes], intervals: undefined, checking: undefined, defaultDays: undefined };
     expect(parseConfig(p)).toMatchObject({ changes: wire().changes, intervals: [10, 15, 30, 60], checking: false, defaultDays: 4 });
+  });
+
+  it('reads a weekend row; an older Worker’s rows (no weekend) as weekdays', () => {
+    const sat = { ...row(0), rule: 'skip', usual: false, weekend: true };
+    expect(parseConfig({ ...wire(), rows: [sat] })?.rows[0]).toEqual(sat);
+    const { weekend: _, ...old } = row(0);
+    expect(parseConfig({ ...wire(), rows: [old] })?.rows[0].weekend).toBe(false);
   });
 });
 

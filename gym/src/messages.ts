@@ -51,7 +51,8 @@ export function ruleLabel(rule: Rule | undefined): string {
   return `⏰ ${timeRange(...rule)}`;
 }
 
-/** After the default days' rule (nothing saved): the usual, which 🧹 goes back to. */
+/** After a rule in force with nothing saved (store.usualRule: ⏰ DEFAULT_WINDOW on the default days, 🔕 on a Saturday
+ *  or Sunday): the usual, which 🧹 goes back to. */
 const USUAL = '（ふだん）';
 
 /** A day's setting in its two parts: the rule (marked when it's the default) and when checking starts, if set. */
@@ -106,7 +107,7 @@ ${PROGRAMS.map((p) => p.label).join('・')}（トレーナー指名なし）
 
 export const HELP_TEXT = `${HELP}
 予約に空きが出たら、このグループでお知らせします。
-今日から${DAYS_TO_CHECK}日間は、特に設定しなくても${timeRange(...DEFAULT_WINDOW)}の枠をチェックします。
+今日から${DAYS_TO_CHECK}日間は、特に設定しなくても${timeRange(...DEFAULT_WINDOW)}の枠をチェックします。土日は、設定しなければ通知オフです。
 
 日ごとの設定
 ${ANY_LABEL}　空きが出たらいつでも通知

@@ -3,7 +3,7 @@
 // the bot's words, or refuses with a code and LINE's hint. Also the bot interface they and the cards need, 📋's
 // answer (status) and the app's /gym/config (config).
 import {
-  ACT_STATUS, CHANGES_KEPT, CHECK_COOLDOWN_MS, CLOSES, DAYS_SHOWN, INTERVALS, OPENS, fromRefusal, fromWindow, parseActInput,
+  ACT_STATUS, CHANGES_KEPT, CHECK_COOLDOWN_MS, CLOSES, DAYS_SHOWN, INTERVALS, OPENS, fromRefusal, fromWindow, isWeekend, parseActInput,
   type ActAnswer, type ActError, type Change, type ChangeKind, type DayRow, type GymConfig, type Member, type OpenSlot
 } from '../../app/src/lib/gym/contract.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
@@ -313,15 +313,18 @@ export async function status(bot: Bot, now = Date.now()): Promise<string[]> {
 /** The calendar's rows: today and the next DAYS_SHOWN - 1 days. */
 function rowsOf(store: Store, now: number): DayRow[] {
   const today = localDateAt(now);
-  const usual = defaultDays(today);
   const announced = store.notified();
   return Array.from({ length: DAYS_SHOWN }, (_, i) => {
     const day = addDays(today, i);
-    const rule = store.rule(day);
+    const saved = store.rule(day);
+    const usual = store.usualRule(day, today);
+    // an unset weekend as its rule in force, 'skip' (the contract's DayRow)
+    const rule = saved ?? (usual === SKIP ? SKIP : undefined);
     return {
       day,
       rule: rule === undefined ? null : typeof rule === 'string' ? rule : [rule[0], rule[1]],
-      usual: rule === undefined && usual.includes(day),
+      usual: saved === undefined && Array.isArray(usual),
+      weekend: isWeekend(day),
       from: store.checkFrom(day) ?? null,
       announced: announced.filter((t) => localDateAt(t) === day).map(clockAt),
       resettable: store.hasAnything(day),

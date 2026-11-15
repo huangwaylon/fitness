@@ -15,7 +15,7 @@ const oct = (day: number, clock: string): number => at(`2026-10-${String(day).pa
 describe('Store', () => {
   it('gives each day exactly one rule', () => {
     const s = new Store();
-    const d = addDays(TODAY, 1);
+    const d = addDays(TODAY, 2); // a Monday
     expect(s.effectiveRule(d, TODAY)).toEqual(NOON);
     expect(s.setRule(d, SKIP, TODAY)).toBe(true);
     expect(s.rule(d)).toBe(SKIP);
@@ -45,9 +45,26 @@ describe('Store', () => {
     s.setRule(days[2]!, ANY, TODAY);
     s.setRule(addDays(TODAY, 40), EVENING, TODAY);
     s.setRule(addDays(TODAY, 30), SKIP, TODAY); // far-off skip: nothing to check
-    expect([...s.windows(NOW)]).toEqual([
-      [days[0], NOON], [days[2], null], ...days.slice(3).map((d) => [d, NOON]), [addDays(TODAY, 40), EVENING],
-    ]);
+    // the weekend (days 0 and 1) off unless set
+    expect([...s.windows(NOW)]).toEqual([[days[2], null], [days[3], NOON], [addDays(TODAY, 40), EVENING]]);
+  });
+
+  it('keeps a Saturday or Sunday off unless set, and 🧹 puts it back', () => {
+    const s = new Store();
+    const [sat, sun, far] = [TODAY, addDays(TODAY, 1), addDays(TODAY, 8)];
+    for (const d of [sat, sun, far]) expect(s.effectiveRule(d, TODAY)).toBe(SKIP);
+    expect(s.setRule(sun, SKIP, TODAY)).toBe(false); // off anyway: not saved
+    expect(s.setRule(sat, NOON, TODAY)).toBe(true); // the weekday default is a setting on a weekend
+    expect(s.rules()).toEqual([[sat, NOON]]);
+    expect(s.windows(NOW).get(sat)).toEqual(NOON);
+    expect(s.setRule(sat, SKIP, TODAY)).toBe(true);
+    expect(s.rules()).toEqual([]);
+    s.setRule(far, ANY, TODAY);
+    expect(s.windows(NOW).get(far)).toBeNull();
+    expect(s.reset(far)).toBe(true);
+    expect(s.effectiveRule(far, TODAY)).toBe(SKIP);
+    expect(s.setCheckFrom(sun, oct(3, '18:00'), TODAY)).toBe(true); // a ⏳ turns it on with DEFAULT_WINDOW
+    expect(s.rule(sun)).toEqual(NOON);
   });
 
   it('purges what has passed', () => {
@@ -192,11 +209,13 @@ describe('Store', () => {
 
   it('tracks whether it changed', () => {
     const s = new Store();
-    s.setRule(TODAY, NOON, TODAY); // already the default
+    const monday = addDays(TODAY, 2);
+    s.setRule(monday, NOON, TODAY); // already the default
+    s.setRule(TODAY, SKIP, TODAY); // a Saturday: already off
     s.markNotified([]);
     s.purge(NOW);
     expect(s.dirty).toBe(false);
-    s.setRule(TODAY, SKIP, TODAY);
+    s.setRule(monday, SKIP, TODAY);
     expect(s.dirty).toBe(true);
   });
 
