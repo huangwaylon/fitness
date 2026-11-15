@@ -24,7 +24,7 @@ A product the page says may be discontinued (`ended`), the shop's listing no lon
 no longer has (`gone`) stays, marked `ended: true` and `pop: -1` (ranked under the current menu).
 
 What every item would carry is left to the app's loader (db.ts withJan, for `source: kalori`): `sv: true`, the one
-1食 portion and `brand` (its shop's name, the header's `shops`); 53.8k items are 9.9 MB, not 14 (parsed in the phone's
+1食 portion and `brand` (its shop's name, the header's `shops`); 54k items are 10 MB, not 14 (parsed in the phone's
 worker, and each refresh a blob in git); app/scripts/food-data.ts ships them by column (7.4 MB, 1.19 MB gzipped).
 """
 import argparse, glob, json, math, os, re, sys, unicodedata

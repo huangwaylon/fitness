@@ -5,7 +5,7 @@
 # - backstop: a merge's deploy still pending 160 min after status.json's write (the deploy-check job lost): the same
 #   look and outcome (.github/scripts/kalori-deploy.sh backstop: ok, a re-run, reverted, deploy_failed). (No
 #   workflow_run: a run the workflow token dispatched fires none.)
-# - late: the newest completed scheduled kalori-scrape run over 8 days old (late), or a run not done after 2 days or a
+# - late: the newest finished refresh (a completed scheduled run, or the status's own last run) over 8 days old (late), or a run not done after 2 days or a
 #   `running` status 8 h old with no run (stuck).
 # A job that fails writes its own alert.
 name: Kalori watch

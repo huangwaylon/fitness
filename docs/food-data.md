@@ -165,8 +165,8 @@ sheet layout):
 
 ## Kalori
 Chain and konbini menus (すき家, セブン, スタバ ...) from kalori.jp, shipped as `kalori.json`, a lazy secondary dataset
-like the products ([decisions](decisions.md#kalori-as-a-lazy-dataset)); public in git and on Pages by the owner's call,
-knowingly over kalori.jp's terms (第8条), which had kept it out.
+like the products, public in git and on Pages (why: [decisions](decisions.md#kalori-as-a-lazy-dataset)). Operating
+it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
 
 - **Source:** a release of this repo, `kalori-YYYY-MM-DD`, written by `food-data/scripts/kalori_scrape.py` in
   `kalori-scrape.yml` and pinned by `fetch.py`'s `KALORI_TAG`
@@ -179,22 +179,24 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   (or `all`) → `out/kalori.json` (`kalori_convert.py`, its counts printed; alone: `python3 -I
   food-data/scripts/kalori_convert.py food-data/raw/kalori`), then `npm run food:data` (lazy: no search keys added). A
   partial input fails the build and writes nothing: one of `data_src/kalori_shops.json`'s shops with no items, or under
-  45,000 items (a whole fetch ships ~54,000); `KALORI_ALLOW_PARTIAL=1` writes it anyway. The steps: [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
+  45,000 items (a whole fetch ships ~54,000); `KALORI_ALLOW_PARTIAL=1` writes it anyway.
 - **A refresh** (`kalori-scrape.yml`, weekly and by hand): incremental, seeded from the accepted release's data and
   state (main's `KALORI_TAG`; never a draft, prerelease or held one).
   Every shop's listing is read (new products, a changed count, a product gone from it); a product is fetched again
-  only when new, its sitemap `lastmod` changed, it failed before, an older `parser` wrote it (`PARSER_VERSION`) or it
-  was fetched before `refetch_before`. One a site no longer has is written `gone`. Shards are append-only; `compact`
+  only when new, its sitemap `lastmod` changed, its listing flag flipped, it failed before (a newer
+  `PARSER_VERSION` retries failures and no-nutrition marks), a parser before `RECORDS_FROM` wrote it, or it was
+  fetched before `refetch_before`. One a site no longer has is written `gone`. Shards are append-only; `compact`
   keeps one line a product. The diff against the
   accepted release gates publishing: over 15 % of products with changed values or 5 % missing refuses it (exit 6)
   unless `allow_big_diff`.
 - **Cost:** ~2.5k listing requests a week plus the changed products, about 9k a month. kalori.jp allows ~1,000 requests
-  an IP a day: rounds of 20 shards, each on a fresh runner (a new IP); one that hit the limit re-dispatched. A full refetch (`refetch_before` today, a `PARSER_VERSION` bump): ~56k
-  requests, 4-5 rounds.
+  an IP a day: rounds of 20 shards, each on a fresh runner (a new IP); one that hit the limit re-dispatched. A full refetch (`refetch_before` today, or
+  `RECORDS_FROM` raised with `PARSER_VERSION`): ~56k requests, 4-5 rounds.
 - **Exit codes** (`kalori_scrape.py`): 0 done or out of budget, 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
   a lost, timed-out or cancelled shard job are retried), 4 the pages no longer parse (never retried; no product marked
   no-nutrition), 5 more new no-nutrition marks than max(25, 2 % of the fetches) (undone; never retried), 6 the diff
-  over its limits. The **canary** runs first each round (the parsers on a few live pages); its exit 4 stops the round.
+  over its limits. The **canary** runs first each round (the parsers on a few live pages); any failure of it stops the round (exit 4:
+  `drift`).
 - **Releases:** `kalori-wip`, a prerelease while a refresh runs (`run.json` with its `since`, and per shard
   `state-N.json`, `shard-N.jsonl.gz`, replaced by a new upload renamed after, never clobbered; deleted on publishing); `kalori-YYYY-MM-DD` (never "latest"):
   `kalori-data.tar.gz` (folders `shards`, `state`: `shard-N.jsonl`, `state-N.json`; `coverage.json`, `diff.json`,
@@ -224,12 +226,11 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   70 min for the dispatched runs on `merge.sha`. Food data checks failed: the `(auto)` commit reverted, redeployed
   (`reverted`); Deploy UI failed: re-run once, then `deploy_failed`; both green: `ok`; a run unseen:
   `deploy_failed`. **The watch** (`kalori-watch.yml`, 6-hourly): the same for a deploy pending 160 min;
-  `late` (no scheduled refresh in 8 days), `stuck` (a run over 2 days, a stale `running`).
+  `late` and `stuck` (the runbook).
 - **The status:** `status.json` on the orphan branch `kalori-status` (one commit, force-pushed with a lease:
-  `kalori_status.py`, `.github/scripts/kalori-status.sh`): verdict, reasons, run, accepted dataset, diff (`tripped`: the failed gates), coverage,
-  merge, alert, the last 12 runs; a round writes `running` at setup. The bots page's メニュー tab reads it (an alert: a
-  dot, no email). Each reason, pausing, undoing:
-  [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
+  `kalori_status.py`, `.github/scripts/kalori-status.sh`): verdict, reasons, `at`, `next` (the next scheduled run),
+  run, accepted dataset, diff (`tripped`: the failed gates), coverage, merge, alert, the last 12 runs; a round writes
+  `running` at setup. ボット → メニュー reads it ([bots.md](bots.md)); its reasons: the runbook.
 - **Lessons** (the first crawl: ~3.5 h, ~75-80k requests): fresh-runner rounds beat a slower rate (the cap is per IP a
   day); never change the record format mid-crawl; anchor parsers on the data; a canary before each round; next full
   crawl: ask kalori.jp for a bulk export.
@@ -252,8 +253,8 @@ knowingly over kalori.jp's terms (第8条), which had kept it out.
   (bracketed anywhere, trailing, or before a last size bracket) or a trailing price, and a name over 60 characters cut
   before its last bracket, comma or space.
 - **Discontinued:** 販売終了かも？ (`ended`), off the listing (`listed: false`) or 旧： stays, `ended: true`, `pop: -1`,
-  `est: e` (no 推定 badges). **Retention** (`retired`): gone over 90 days, ended over 180 (official kcal: 180,
-  365), to the data's latest fetch (undated: the line's).
+  `est: e` (no 推定 badges). **Retention** (`retired`): gone over 90 days, ended over 180 (an official kcal not
+  marked 販売終了かも: 180, 360), to the data's latest fetch (undated: the line's).
 - **Categories:** the `genre`'s (`GENRE_CAT`; a sweets shop's or a cafe's cake/tart pastry 菓子・デザート; alcohol
   (`ALCOHOL`) in a drink or soup genre 酒; `snack` a sweet only in a sweets shop or by name, else the name's いも, 大豆・豆,
   魚介, 肉, 乳製品, ナッツ・種, 果物, 海藻, else 副菜 (a konbini's or supermarket's: 菓子); in soup, ice and dessert genres a

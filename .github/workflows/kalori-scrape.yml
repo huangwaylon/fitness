@@ -1,12 +1,12 @@
 # Kalori's refresh (docs/food-data.md "Kalori", docs/ops/runbook.md "Refresh Kalori"): an incremental crawl of kalori.jp
 # into the `kalori-wip` prerelease, in rounds, then a dated release `kalori-YYYY-MM-DD` that fetch.py's KALORI_TAG pins.
-# A round: the canary (the parsers on a few live pages; exit 4, a layout drift, stops it), setup (seed kalori-wip from
+# A round: the canary (the parsers on a few live pages; any failure stops it, exit 4 a layout drift), setup (seed kalori-wip from
 # the accepted release, main's KALORI_TAG; the sitemap once), 20 shards (each its own state-N.json and shard-N.jsonl.gz,
 # saved back even when it fails), a retry (a new run of the shards that hit the site's limits, exit 2 or 3, or whose job
 # was lost), the report (coverage, the diff against the accepted release; complete and within the diff's limits:
-# publish), the update (kalori.json built without write access; then, within the bands, a commit on main and the
-# deploy dispatched, else a branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
-# app's bots tab reads: the only alert, no issue, no mail), the deploy check (the dispatched deploy's outcome). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
+# publish), the update (kalori.json built without write access; then, within the bands, a commit on main, else a
+# branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
+# app's bots tab reads: the only alert, no issue, no mail; then pages.yml and food-data.yml dispatched), the deploy check (the dispatched deploy's outcome). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
 # every input has its default as a fallback (`inputs.x || 'default'`) and behaves as a default dispatch. Only a run on
 # main publishes. The token is given only to the steps that call `gh`: never to npm's.
 name: Kalori scrape
