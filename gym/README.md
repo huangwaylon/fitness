@@ -147,7 +147,7 @@ app (the page reads an older Worker's answers, not the other way round). `NAME_A
 
 - **Look**: the app's ボット → ジム (the verdict, the strip of the checks, the facts, the calendar; up to ~2 min
   old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next
-  check. **Alerts**: none outside the app: ボット's dot ([bots.md](../docs/bots.md)) on 故障, or 遅れ / 不調 that outlast
+  check (an idle alarm's as 「前回 11:30（チェックする日なし）」). **Alerts**: none outside the app: ボット's dot ([bots.md](../docs/bots.md)) on 故障, or 遅れ / 不調 that outlast
   their grace; the group gets `SITE_DOWN` after 3 failed checks.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
   `MODE = "off"`: LINE's taps are ignored and the app's changes and 🔎 refused (503 `mode_off`; the page still shows
