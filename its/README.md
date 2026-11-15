@@ -276,7 +276,7 @@ apply at the next run.
 cd its/worker
 npm ci
 npm run check && npm run knip && npm test   # CI runs these (.github/workflows/its.yml)
-npm run deploy                              # a clean its/worker/ at a commit on origin/main
+npm run deploy                              # a clean its/worker/ and its imports, at a commit on origin/main
 curl -s https://its-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mode":"on","sha":<the commit>}
 curl -s -H "Authorization: Bearer $ITS_HEALTH_TOKEN" https://its-bot.island-fund-relay.workers.dev/health/its
 ```

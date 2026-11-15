@@ -131,7 +131,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 ```sh
 npm ci
 npm run check && npm run knip && npm test   # CI runs these for gym/** (.github/workflows/gym.yml)
-npm run deploy                              # a clean gym/ at a commit on origin/main
+npm run deploy                              # a clean gym/ and its imports, at a commit on origin/main
 curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mode":"bot","sha":<the commit>}
 ```
 
