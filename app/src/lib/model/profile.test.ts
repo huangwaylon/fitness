@@ -20,8 +20,8 @@ const moves = (p: 'A' | 'B', days: number, kcal: number) => Array.from({ length:
 describe('the profile: age, height, energy, the BMI category, the defaults', () => {
   it('ageOn: a year more on the birthday (the day before, on, after), a 29 February’s on 1 March; ageAt by the Tokyo day', () => {
     const got = [
-      ageOn('1990-10-06', '2020-10-05'), ageOn('1990-10-06', '2020-10-06'), ageOn('1990-10-06', '2020-10-07'),
-      ageOn('1990-10-06', '2021-01-01'), ageOn('2000-02-29', '2021-02-28'), ageOn('2000-02-29', '2021-03-01'), ageOn('2000-02-29', '2024-02-29'),
+      ageOn('1990-03-15', '2020-03-14'), ageOn('1990-03-15', '2020-03-15'), ageOn('1990-03-15', '2020-03-16'),
+      ageOn('1990-03-15', '2021-01-01'), ageOn('2000-02-29', '2021-02-28'), ageOn('2000-02-29', '2021-03-01'), ageOn('2000-02-29', '2024-02-29'),
       ageOn('1990-01-01', '1990-01-01')
     ];
     const s = reduce({ metrics: [], events: [pref('A', T, { key: 'birth', value: '1990-11-03' })] });
