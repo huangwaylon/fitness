@@ -28,9 +28,11 @@ function sample(now: number): GymStatus {
 const status = (over: Partial<GymStatus> = {}): GymStatus => ({ ...sample(NOW), ...over });
 
 describe('needsAttention (ボット’s dot)', () => {
-  it('is on for 不調, 要対応 and 遅れ only', () => {
-    const on = (verdict: GymStatus['verdict']) => needsAttention(status({ verdict }));
-    expect([on('failing'), on('broken'), on('late')]).toEqual([true, true, true]);
+  it('is on only while a person must act: 故障, or 不調 for more than the site failing', () => {
+    const on = (verdict: GymStatus['verdict'], reasons: GymStatus['reasons'] = []) => needsAttention(status({ verdict, reasons }));
+    expect([on('broken'), on('broken', ['webhook_wrong']), on('failing', ['site_failing', 'push_retry'])]).toEqual([true, true, true]);
+    // the site failing (the bot retries) and 遅れ (the hourly cron re-arms it) heal on their own
+    expect([on('failing'), on('failing', ['site_failing']), on('late', ['overdue'])]).toEqual([false, false, false]);
     expect([on('healthy'), on('degraded'), on('stopped'), on('off')]).toEqual([false, false, false, false]);
   });
 });

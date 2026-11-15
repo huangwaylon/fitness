@@ -81,8 +81,10 @@ const DO: readonly Reason[] = ['mode_off', 'no_alarm', 'no_group', 'webhook_wron
 export const reasonLines = (s: GymStatus): string[] =>
   [...new Set([...s.reasons.slice(1).map((r) => t(`gym.reason.${r}`, { n: s.failures })), ...s.reasons.filter((r) => DO.includes(r)).map((r) => t(`gym.do.${r}`))])];
 
-/** ボット's dot (the menu's pill, the ジム tab): 不調, 要対応 or 遅れ. */
-export const needsAttention = (s: GymStatus): boolean => TONE[s.verdict] === 'bad' || s.verdict === 'late';
+/** ボット's dot (the menu's pill, the ジム tab): only while a person must act, so 故障, or 不調 for more than the site
+ *  failing (that and 遅れ heal on their own: the bot retries, the hourly cron re-arms the alarm). */
+export const needsAttention = (s: GymStatus): boolean =>
+  s.verdict === 'broken' || (s.verdict === 'failing' && !s.reasons.every((r) => r === 'site_failing'));
 
 const at = (ms: number | null, now: number): string => (ms === null ? t('bots.key.never') : timeOf(ms, now));
 

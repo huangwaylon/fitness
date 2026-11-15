@@ -6,10 +6,10 @@ The ボット sheet's design (moved from [design.md](design.md#settings); the ki
 demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 - **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中, yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応 (a fine bot needing a look),
   coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだ, hollow 不明; drawn on a tab and the menu's ボット (the worst) only while a person must act (`dotShown`,
-  the user 2026-11-15: 一部不調 while it retries shows in its page only), a failed read dimmed, kept.
+  the user 2026-11-15: what heals on its own shows in its page only: 一部不調, ジム's 遅れ and 不調 from the site failing), a failed read dimmed, kept.
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
 - **Page** (`BotPage`): one `StatusCard` (~132px): dot · word (15 bold) · 「12:00時点」 (13 soft) · ⋯; the act in ink (`act`,
-  保養所's mail) else the sentence, never restating the word (none when it says it); result line; the strip, 32 drawn in
+  保養所's mail, メニュー 保留's merge) else the sentence, never restating the word (none when it says it); result line; the strip, 32 drawn in
   a 44 hit (ok green, avail full height, warn capped, fail hatched, none a tick; 前回 ringed, its time the right tick in
   ink; 次回 a dashed ghost with its label, none stopped or off); 11px ticks; the counts > 0 with swatches + one 成果
   (いま空き · 予約 · 品目; 不調: 最後の成功). Never kept: a 32px sunk line (保養所 running: a plain 確認なし). Night: only

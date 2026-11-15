@@ -68,5 +68,6 @@
   "kalori.menu.label": "Menus actions",
   "kalori.menu.workflow": "Open the workflow",
   "kalori.strip.items": "{n} items",
-  "kalori.strip.first": "First update around {time}"
+  "kalori.strip.first": "First update around {time}",
+  "kalori.act.held": "Review the diff and merge"
 }
