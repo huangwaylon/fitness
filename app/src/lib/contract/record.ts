@@ -19,7 +19,7 @@ import { AHEAD_MS } from './ops.ts';
 import { listenOf } from './listen.ts';
 import { roomSaveOf, roomSaveSlot } from './roomSave.ts';
 import { LIMITS, shopPrice } from './rules.ts';
-import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
+import { isBirth, isSex } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
 import { localDateAt, nextDay, prevDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
@@ -44,11 +44,10 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'spend':
       return spendOf(d, now) !== null;
     case 'pref':
-      // the profile's values are checked here (contract/profile.ts: a sex, a birth date 1900 … 10 years ago, a BMI
-      // standard, or null), and the look's (contract/look.ts: a whole look, at most 20 コーデ); the other prefs' at read
-      // time (prefTaken)
+      // the look's values are checked here (contract/look.ts: a whole look, at most 20 コーデ); the other prefs' at read
+      // time (prefTaken); the profile's never come this far (locked: relay/src/store.ts `profile locked`)
       // a goal a day keeps may say the phone's Tokyo day it was set on (`day`: goalDay)
-      return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined && (!isProfileKey(d.key) || profileValueOk(d.key, d.value, localDateAt(now)))
+      return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined
         && (d.day === undefined || (isDailyGoalKey(d.key) && isLocalDate(d.day)))
         && (d.key !== 'look' || lookPrefOk(d.value)) && (d.key !== 'savedLooks' || savedLooksOk(d.value)) && (d.key !== 'seasonLook' || isSeasonLook(d.value));
     case 'harvest':
@@ -173,7 +172,7 @@ export function goalDay(d: Rec, at: number): LocalDate {
 }
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth', 'bmiStd'];
+const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth'];
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -187,9 +186,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'weatherMode': return isWeatherMode(v);
     case 'seasonLook': return isSeasonLook(v);
     case 'sex': return v === null || isSex(v);
-    // (a birth date's upper bound is the record's check when it's set: validEventData)
-    case 'birth': return v === null || isBirth(v, '9999-12-31');
-    case 'bmiStd': return v === null || isBmiStd(v);
+    case 'birth': return v === null || isBirth(v);
     default: {
       // a goal (contract/goals.ts): in its range, on its grid; a clearable one null / '' too
       const id = goalOfKey(key);
@@ -201,7 +198,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `tally_back`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`), the profile (`sex`, `birth`, `bmiStd`) or a goal kept as its latest (contract/goals.ts history
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`), the profile (`sex`, `birth`) or a goal kept as its latest (contract/goals.ts history
  *   `latest`: the body and meal-log goals): its subject and key;
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);

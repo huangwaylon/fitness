@@ -20,7 +20,6 @@ import { GOODS } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { profileValueOk, type ProfileKey } from '#lib/contract/profile.ts';
 
 /** 買う！ and its とりけす (and the packing list's removals and resets) wait this long before they are sent, with 取り消す
  *  on the banner. */
@@ -69,17 +68,6 @@ export function undoSpend(spendId: string): SendResult {
 
 // ---- The goals (contract/goals.ts GOALS), set where their charts are (けんこう, ごはん's グラフ). Health data itself is
 // never entered here: Apple Health is the source of truth.
-
-/**
- * A profile pref (せってい → プロフィール: `sex`, `birth`, `bmiStd`; contract/profile.ts), or null to clear it: a member
- * sets either member's, the guest only its own. Private: the record sends a member's to the members alone, the
- * guest's to the guest alone. `{ok:false}` for a value the record would refuse.
- */
-export function setProfile(who: Who, key: ProfileKey, value: string | null): SendResult {
-  const m = week.model;
-  if (!m || (m.me === 'G') !== (who === 'G') || !profileValueOk(key, value, localDateAt(m.now))) return { ok: false };
-  return week.send('pref', who === 'G' ? { key, value } : { person: who, key, value });
-}
 
 /**
  * `who`'s goal of `id`, or null to clear it (a clearable one): rounded to its grid's decimals, in its range and on its

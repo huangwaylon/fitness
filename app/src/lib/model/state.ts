@@ -18,7 +18,7 @@ import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.
 import { shopRowOf, type ShopEvent, type ShopRowAt } from '#lib/contract/shop.ts';
 import { farmOf } from '#lib/contract/farm.ts';
 import type { FarmRow } from './farm.ts';
-import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
+import { isBirth, isProfileKey, isSex, PROFILE_KEYS, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
 import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
 import { goalDay, spendOf } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
@@ -69,8 +69,8 @@ interface BellSpendRec { at: number; person: PersonId; spendId: string; item: Sh
  *  `goalLean`, the meal log's `kcalGoal` … `saltGoal`), each optional and shown only: none ever earns. */
 interface Prefs extends Partial<Record<LatestGoalKey, number>> {
   locale?: 'ja' | 'en'; villagerName?: string; villager?: string;
-  /** The profile (contract/profile.ts; model/profile.ts reads it): sex, birth date (`YYYY-MM-DD`), BMI standard. */
-  sex?: Sex; birth?: string; bmiStd?: BmiStd;
+  /** The profile (contract/profile.ts; model/profile.ts reads it): sex, birth date (`YYYY-MM-DD`). */
+  sex?: Sex; birth?: string;
   /** The look worn (contract/look.ts LookPref, as sent: resolveLook reads it, an unknown part as いつもの's); unset:
    *  いつもの. */
   look?: unknown;
@@ -658,9 +658,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       else if (lookPrefRead(d.value)) p.look = d.value;
     } else if (d.key === 'savedLooks' && Array.isArray(d.value)) p.savedLooks = readSavedLooks(d.value, person);
     else if (isProfileKey(d.key)) {
-      // The profile: a value, or null to clear it; anything else is ignored (as the record's slot: prefTaken).
+      // The profile (the rows kept: locked since 2026-11-15): a value, or an old row's null clearing it; anything else
+      // is ignored (as the record's slot: prefTaken), an old `bmiStd` row too.
       if (d.value === null) delete p[d.key];
-      else if (d.key === 'sex' ? isSex(d.value) : d.key === 'bmiStd' ? isBmiStd(d.value) : isBirth(d.value, '9999-12-31')) (p as Record<ProfileKey, unknown>)[d.key] = d.value;
+      else if (d.key === 'sex' ? isSex(d.value) : isBirth(d.value)) (p as Record<ProfileKey, unknown>)[d.key] = d.value;
     } else if (id !== null) {
       // a goal kept as its latest, or null / '' to clear it; anything else is ignored (the previous goal stays)
       const key = GOALS[id].key as LatestGoalKey;

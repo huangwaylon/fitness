@@ -4,7 +4,7 @@
 // logic tier's way (nothing drawn; the scenes and their hooks run).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { islandUp, loaded3d } from './island.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, openKenkou } from './hud.ts';
 import { newRecord } from './record.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 
@@ -25,8 +25,9 @@ type V3 = { model(slot: string): string | null; player(slot: string): boolean; l
 const model = (page: Page, slot: string) =>
   page.evaluate((s) => (window as unknown as { __villagers3?: V3 }).__villagers3?.model(s) ?? null, slot);
 const settings = (page: Page) => page.locator('dialog[open]').first();
-/** The profile's whose-pill head (せってい → プロフィール: health/Pick's avatar, the person picked). */
-const profileHead = (page: Page) => page.locator('dialog[open] [data-profile-section] .dd > .av > .av');
+/** けんこう's whose-pill head (health/Pick's avatar, the person picked). */
+const whoHead = (page: Page) => page.locator('dialog[open] label.dd.who > .av > .av');
+const pickWho = (page: Page, p: 'A' | 'B') => page.locator('dialog[open] select[data-pick="who"]').selectOption(p);
 const back = (page: Page) => settings(page).locator('.titlebar .back').click();
 
 test('the look picks the model: A and B human players, a villager look its villager; a new look swaps it where it stands', async ({ browser }) => {
@@ -116,10 +117,10 @@ test('the 2D heads: A’s and B’s portraits, drawn by the island’s renderer 
   test.setTimeout(90_000);
   await page.goto('?demo&date=2026-11-04T12:00');
   await loaded3d(page);
-  await fromMenu(page, 'settings');
-  await expect(profileHead(page)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
-  await page.locator('[data-profile-section] select[data-pick="who"]').selectOption('B');
-  await expect(profileHead(page)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
+  await openKenkou(page);
+  await expect(whoHead(page)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
+  await pickWho(page, 'B');
+  await expect(whoHead(page)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
   // kept for the next opening
   expect(await page.evaluate(() => (JSON.parse(localStorage.getItem('look.portraits') ?? '[]') as unknown[]).length)).toBeGreaterThanOrEqual(2);
 });
@@ -127,16 +128,16 @@ test('the 2D heads: A’s and B’s portraits, drawn by the island’s renderer 
 test('the 2D heads in the logic tier: a player’s stand-in figure, a villager look its villager', async ({ browser }) => {
   const rec = newRecord();
   const a = await phone(browser, rec, 'A');
-  await fromMenu(a, 'settings');
-  await expect(profileHead(a)).toHaveAttribute('data-portrait', 'figure');
-  await settings(a).locator('[data-profile-section] select[data-pick="who"]').selectOption('B');
-  await expect(profileHead(a)).toHaveAttribute('data-portrait', 'figure');
+  await openKenkou(a);
+  await expect(whoHead(a)).toHaveAttribute('data-portrait', 'figure');
+  await pickWho(a, 'B');
+  await expect(whoHead(a)).toHaveAttribute('data-portrait', 'figure');
   await a.context().close();
   rec.event('B', 'pref', { key: 'look', value: { kind: 'villager' } });
   const b = await phone(browser, rec, 'A');
-  await fromMenu(b, 'settings');
-  await settings(b).locator('[data-profile-section] select[data-pick="who"]').selectOption('B');
-  await expect(profileHead(b)).not.toHaveAttribute('data-portrait', /./);
-  await expect(profileHead(b).locator('img, svg').first()).toBeVisible();
+  await openKenkou(b);
+  await pickWho(b, 'B');
+  await expect(whoHead(b)).not.toHaveAttribute('data-portrait', /./);
+  await expect(whoHead(b).locator('img, svg').first()).toBeVisible();
   await b.context().close();
 });

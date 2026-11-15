@@ -83,9 +83,9 @@ members' からだ figures or profiles nor writes the economy or the real-world 
 room (`contract/guest.ts`). Why: a guest who plays but doesn't earn; a rule only the UI kept would leak via the cache.
 
 ### Profile
-Sex, birth date and BMI standard are private prefs like the body data ([backend](backend.md#the-guest) `rowsFor`); the
-BMI standard defaults to Asian cut-offs (JASSO, 23 / 25), and a suggested goal never overrides a set one. Why: right for
-East Asian bodies, and only what a phone may show is ever on it.
+Sex and birth date are private prefs like the body data ([backend](backend.md#the-guest) `rowsFor`), locked (the
+record refuses changes); BMI's category uses the Asian cut-offs (JASSO, 23 / 25) for everyone, and a suggested goal
+never overrides a set one. Why: right for East Asian bodies, and only what a phone may show is ever on it.
 
 ### Player avatars
 A and B are NH human players by default (a villager is an option), all clothing free; the default look, いつもの, is code,

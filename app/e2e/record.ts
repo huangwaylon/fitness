@@ -42,6 +42,12 @@ export function newRecord() {
     event(who: Who, type: string, data: Record<string, unknown>) {
       return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${sent.length}-${++events}`, type, data }, 100);
     },
+    /** A row the record kept before a rule refused its kind (the locked profile): written as a restore keeps it. */
+    kept(who: Who, type: string, data: Record<string, unknown>) {
+      store.handle({ key: KEY_OF[who], action: 'health' }, 100); // (the tables)
+      const slot = type === 'pref' ? `pref|${data.person ?? who}|${data.key}` : null;
+      db.sql.exec('INSERT INTO events (id, at, person, type, data, slot) VALUES (?, ?, ?, ?, ?, ?)', `kept${++events}`, new Date(clock.now() - 86_400_000).toISOString(), who, type, JSON.stringify(data), slot);
+    },
     /** The `pref` rows `who`'s phone gets (its snapshot, as the record filters it): [sender, data]. */
     prefs(who: Who): [Who, Record<string, unknown>][] {
       const snap = store.handle({ key: KEY_OF[who], action: 'snapshot' }, 100) as unknown as { rows: { events: [string, Who, string, string, string][] } };

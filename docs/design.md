@@ -97,9 +97,9 @@ the menu's ベル row opens it at once, full height, no tabs, its own chunk, at 
 
 ### Settings
 
-**設定** (`panel/SettingsSheet.svelte`): the menu's 設定 pill → its own full-height sheet: **姿** (the look's portrait,
-the よびな and what's worn → [the 姿 level](#sugata)), **プロフィール** ([Profile](#profile)), **サウンド**
-([Sound settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
+**設定** (`panel/SettingsSheet.svelte`): the menu's 設定 pill → its own full-height sheet: **プロフィール**
+([Profile](#profile)), **姿** (the look's portrait, the よびな and what's worn → [the 姿 level](#sugata)), **サウンド** ([Sound
+settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
 [Weather](#weather)'s switch too) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
 
 ### Bots
@@ -121,18 +121,17 @@ for A, B and the guest alike. Each person is NH's human player ([Players](#playe
 - The preview is the level's one WebGL context (the island's sleeps under the sheet), released on close; a player's
   round head for the chips and rows is drawn once and kept (`look/portraits.svelte.ts`).
 
-<a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`): one card.
-Whose (the two members, this phone's first; the guest only its own) with the age; sex, birthday (a native date field)
-and the BMI standard (Asian, the default · WHO; not the guest's). Prefs on the record ([backend](backend.md#events)
-`sex`, `birth`, `bmiStd`): either member sets either's; private to the two members (the guest's to the guest),
-enforced by the record. What it feeds:
+<a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`): read-only, a dense card, a
+row a person (「名前　男性・1990/1/1（35歳）」, 未設定 where missing): the two members (this phone's first), the guest
+only its own. Prefs on the record ([backend](backend.md#pref) `sex`, `birth`), locked; private to the two members (the
+guest's to the guest), enforced by the record. What it feeds:
 - **Height:** √(weight ÷ BMI) from Health's latest day with both (no height pref).
 - **Energy:** resting by Mifflin–St Jeor from the latest weigh-in; daily = resting + the average Move of the last 28
   Watch-worn days (at least 7, `activityOn`), else resting × 1.4; kept within 1.2–2.2 × resting (`model/profile.ts`).
 - **ごはん's defaults** ([Gohan](#gohan)), only while no goal is set (`contract/goals.ts` `derived`): kcal the daily
   energy (less 15 % while the goal weight is more than 0.5 kg under, never under the resting energy nor 1,500 / 1,200);
   salt and protein by sex and weight (食事摂取基準 2025).
-- **BMI's category** on the BMI card ([Kenkou](#kenkou)).
+- **BMI's category** on the BMI card ([Kenkou](#kenkou)): Asian cut-offs (23 / 25) for everyone.
 
 ### Kiroku
 

@@ -117,15 +117,11 @@ describe('validEventData: each type\'s shape', () => {
   });
 
 
-  it('a pref: a known key with a value, a profile value in range, a day only on a goal a day keeps, a season look', () => {
+  it('a pref: a known key with a value (the old BMI standard no more), a day only on a goal a day keeps, a season look', () => {
     expect(ok('pref', { key: 'locale', value: 'ja' })).toBe(true);
     expect(ok('pref', { key: 'nope', value: 1 })).toBe(false);
     expect(ok('pref', { key: 'locale' })).toBe(false);
-    expect(ok('pref', { key: 'sex', value: 'f' })).toBe(true);
-    expect(ok('pref', { key: 'sex', value: 'x' })).toBe(false);
-    expect(ok('pref', { key: 'birth', value: '1990-03-04' })).toBe(true);
-    expect(ok('pref', { key: 'birth', value: '2026-01-01' })).toBe(false); // under 10 years ago
-    expect(ok('pref', { key: 'bmiStd', value: null })).toBe(true);
+    expect(ok('pref', { key: 'bmiStd', value: 'asia' })).toBe(false);
     expect(ok('pref', { key: 'stepsGoal', value: 9000, day: '2026-11-05' })).toBe(true);
     expect(ok('pref', { key: 'stepsGoal', value: 9000, day: 'today' })).toBe(false);
     expect(ok('pref', { key: 'goalWeight', value: 60, day: '2026-11-05' })).toBe(false); // a latest-only goal has no day
@@ -230,18 +226,17 @@ describe('goalDay', () => {
 });
 
 describe('prefTaken: the island\'s and the profile\'s prefs', () => {
-  it('takes a weather mode, a season look, and a profile value or null', () => {
+  it('takes a weather mode, a season look, and a kept profile row’s value or null (never an old BMI standard’s: no slot)', () => {
     expect(prefTaken('weatherMode', 'real')).toBe(true);
     expect(prefTaken('weatherMode', 'sunny')).toBe(false);
     expect(prefTaken('seasonLook', null)).toBe(true);
     expect(prefTaken('seasonLook', 'winter')).toBe(false);
-    for (const k of ['sex', 'birth', 'bmiStd']) expect(prefTaken(k, null), k).toBe(true);
+    for (const k of ['sex', 'birth']) expect(prefTaken(k, null), k).toBe(true);
     expect(prefTaken('sex', 'm')).toBe(true);
     expect(prefTaken('sex', 'x')).toBe(false);
     expect(prefTaken('birth', '1990-03-04')).toBe(true);
     expect(prefTaken('birth', '1990-13-04')).toBe(false);
-    expect(prefTaken('bmiStd', 'who')).toBe(true);
-    expect(prefTaken('bmiStd', 'eu')).toBe(false);
+    for (const v of ['asia', 'who', null]) expect(prefTaken('bmiStd', v)).toBe(false);
   });
 });
 

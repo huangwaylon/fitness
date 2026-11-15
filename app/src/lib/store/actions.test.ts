@@ -93,15 +93,6 @@ describe('the settings’ and the island’s small sends', () => {
     a.setLanguage('ja');
   });
 
-  it('setProfile: a member sets either member’s, the guest only its own; a value the record refuses is not sent', async () => {
-    const { setProfile } = await import('./actions.ts');
-    await model();
-    expect([setProfile('B', 'sex', 'f').ok, setProfile('G', 'sex', 'f').ok, setProfile('A', 'sex', 'x').ok]).toEqual([true, false, false]);
-    await model('G');
-    expect([setProfile('G', 'sex', null).ok, setProfile('A', 'sex', 'm').ok]).toEqual([true, false]);
-    expect(sent()).toEqual([['pref', { person: 'B', key: 'sex', value: 'f' }], ['pref', { key: 'sex', value: null }]]);
-  });
-
   it('the harvest of the week open, the decorations once the model is there, the banner of an undoable send', async () => {
     const { confirmHarvest, sendDecor, sendDecors, undoBanner } = await import('./actions.ts');
     const { toasts } = await import('#lib/ui-state/toast.svelte.ts');

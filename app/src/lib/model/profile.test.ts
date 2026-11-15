@@ -4,7 +4,7 @@ import { foodGoal, proteinDefault } from './food.ts';
 import { activeKcal, ageAt, ageOn, bmiCategory, energyOf, heightCm, heightFrom, kcalDefault, lowKcal, mifflinStJeor, PAL_FALLBACK, profileOf, saltDefault, fibreDefault, fibreTarget } from './profile.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
-import { isBirth, latestBirth, PROFILE_KEYS } from '#lib/contract/profile.ts';
+import { isBirth, PROFILE_KEYS } from '#lib/contract/profile.ts';
 import { PREF_KEYS, PROFILE_PREF_KEYS } from '#lib/contract/api.ts';
 import { GOALS } from '#lib/contract/goals.ts';
 
@@ -30,19 +30,18 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     expect({ got, tokyo }).toEqual({ got: [29, 30, 30, 30, 20, 21, 24, 0], tokyo: [35, 36, null] });
   });
 
-  it('the contract’s literal key lists agree; the registry names the computed defaults', () => {
+  it('the contract’s literal key lists agree (the record’s profile rows: the model’s keys and the old BMI standard); the registry names the computed defaults', () => {
     expect({
       keys: [...PROFILE_PREF_KEYS], inPrefs: PROFILE_KEYS.every((k) => PREF_KEYS.includes(k)),
       derived: (['k', 'p', 'fa', 'c', 's'] as const).map((n) => GOALS[n].derived ?? null)
-    }).toEqual({ keys: [...PROFILE_KEYS], inPrefs: true, derived: ['energy', 'protein', null, null, 'salt'] });
+    }).toEqual({ keys: [...PROFILE_KEYS, 'bmiStd'], inPrefs: true, derived: ['energy', 'protein', null, null, 'salt'] });
   });
 
-  it('a birth date may be 1900 to 10 years before the day (a 29 February’s day: the 28th of that year)', () => {
+  it('a birth date: a real date from 1900', () => {
     expect({
-      latest: [latestBirth('2026-11-05'), latestBirth('2028-02-29')],
-      ok: ['1900-01-01', '2016-11-05', '1999-02-28'].map((v) => isBirth(v, '2026-11-05')),
-      no: ['1899-12-31', '2016-11-06', '1999-02-29', '2000-1-01', null].map((v) => isBirth(v, '2026-11-05'))
-    }).toEqual({ latest: ['2016-11-05', '2018-02-28'], ok: [true, true, true], no: [false, false, false, false, false] });
+      ok: ['1900-01-01', '2026-11-05', '2000-02-29'].map((v) => isBirth(v)),
+      no: ['1899-12-31', '1999-02-29', '2000-1-01', null].map((v) => isBirth(v))
+    }).toEqual({ ok: [true, true, true], no: [false, false, false, false] });
   });
 
   it('Mifflin–St Jeor against its worked examples; the height from a weight and the BMI it came with', () => {
@@ -52,15 +51,11 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     }).toEqual({ bmr: [1780, 1345.25, 1598.75, 1139], cm: [174.8, 160.1, 180] });
   });
 
-  it('bmiCategory: asia (23, 25) against who (25, 30), 18.5 under in both', () => {
-    const bmis = [18.4, 18.5, 22.9, 23, 24.9, 25, 29.9, 30];
-    expect({ asia: bmis.map((b) => bmiCategory(b, 'asia')), who: bmis.map((b) => bmiCategory(b, 'who')) }).toEqual({
-      asia: ['under', 'normal', 'normal', 'over', 'over', 'obese', 'obese', 'obese'],
-      who: ['under', 'normal', 'normal', 'normal', 'normal', 'over', 'over', 'obese']
-    });
+  it('bmiCategory: the Asian cut-offs, 18.5, 23 and 25', () => {
+    expect([18.4, 18.5, 22.9, 23, 24.9, 25, 29.9, 30].map((b) => bmiCategory(b))).toEqual(['under', 'normal', 'normal', 'over', 'over', 'obese', 'obese', 'obese']);
   });
 
-  it('reads the profile prefs (either member’s by either, cleared by null, a bad value ignored; the guest’s own)', () => {
+  it('reads the profile rows kept (either member’s by either, cleared by null, a bad value and an old BMI standard ignored; the guest’s own)', () => {
     const s = reduce({
       metrics: [],
       events: [
@@ -68,15 +63,16 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
         pref('B', T + 1, { key: 'birth', value: '1990-05-12', person: 'A' }),
         pref('A', T + 2, { key: 'sex', value: 'x' }), // ignored: the previous stays
         pref('B', T + 3, { key: 'sex', value: 'f' }),
-        pref('B', T + 4, { key: 'bmiStd', value: 'who' }),
-        pref('B', T + 5, { key: 'bmiStd', value: null }),
+        pref('B', T + 4, { key: 'bmiStd', value: 'who' }), // ignored
+        pref('B', T + 5, { key: 'birth', value: '1994-08-20' }),
+        pref('B', T + 6, { key: 'birth', value: null }), // cleared
         pref('G', T + 6, { key: 'sex', value: 'f' })
       ]
     });
     expect([profileOf(s, 'A'), profileOf(s, 'B'), profileOf(s, 'G')]).toEqual([
-      { sex: 'm', birth: '1990-05-12', bmiStd: 'asia' },
-      { sex: 'f', birth: null, bmiStd: 'asia' },
-      { sex: 'f', birth: null, bmiStd: 'asia' }
+      { sex: 'm', birth: '1990-05-12' },
+      { sex: 'f', birth: null },
+      { sex: 'f', birth: null }
     ]);
   });
 

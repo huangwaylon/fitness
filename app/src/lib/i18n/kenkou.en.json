@@ -40,13 +40,11 @@
   "health.body.body_fat_pct": "Body fat",
   "health.body.bmi": "BMI",
   "health.body.lean_kg": "Lean body mass",
-  "health.bmi.cat": "{cat} ({std})",
+  "health.bmi.cat": "{cat} (Asian cut-offs)",
   "health.bmi.under": "Underweight",
   "health.bmi.normal": "Normal",
   "health.bmi.over": "Overweight",
   "health.bmi.obese": "Obese",
-  "health.bmi.std.asia": "Asian cut-offs",
-  "health.bmi.std.who": "WHO cut-offs",
   "health.body.dayKey": "Measurements",
   "health.tabs": "Health and meals pages"
 }

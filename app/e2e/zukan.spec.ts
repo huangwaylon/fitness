@@ -197,6 +197,7 @@ test('the catalogue and the recipes: found entries with their counts, in all and
 // From 設定's 図鑑 row: on the rows ‹ goes back to 設定 (reopened where it was scrolled, the row focused); a kind's ‹
 // back to the rows; ✕ to the island.
 test('ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 500 }); // short enough that 設定 scrolls to its 図鑑 row
   await page.goto('?demo');
   await islandUp(page);
   await fromMenu(page, 'zukan');

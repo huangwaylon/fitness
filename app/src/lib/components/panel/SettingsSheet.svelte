@@ -1,8 +1,7 @@
 <script lang="ts">
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
-  // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
-  // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
-  // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
+  // at once (Sheet's `pop`). One scroller: プロフィール (read-only, a row a person: ProfileSection), 姿 (the look's
+  // portrait, the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
   // and 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the
   // same (2026-11-06), with a line saying it's visiting. The bots are the menu's ボット (components/bots), the island is
   // arranged in /editor, not here. 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner
@@ -115,6 +114,7 @@
           <button type="button" class="btn small paper" data-sfx="sync" aria-disabled={week.syncing} onclick={() => week.refresh({ unpark: true })}>{t('panel.unsentSend')}</button>
         </div>
       {/if}
+      <section class="sec" aria-labelledby="sec-profile" data-profile-section><h2 id="sec-profile" class="sec-label">{t('panel.profile')}</h2><ProfileSection {view} /></section>
       <section class="sec" aria-labelledby="sec-look">
         <h2 id="sec-look" class="sec-label">{t('panel.look')}</h2>
         <div class="prow static me" data-look-row={worn.kind}>
@@ -124,7 +124,6 @@
         </div>
         {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
-      <section class="sec" aria-labelledby="sec-profile" data-profile-section><h2 id="sec-profile" class="sec-label">{t('panel.profile')}</h2><ProfileSection {view} /></section>
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>

@@ -218,10 +218,9 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
   // B's body fat goal too (A's is left unset: the demo shows both a chart with one and one without)
   ev(at(addDays(wStart, 2), 21, 1), 'B', 'pref', { key: 'goalBodyFat', value: 26 });
-  // made-up profiles (せってい → プロフィール): the defaults' and the BMI card's category's inputs
+  // made-up profiles (せってい → プロフィール): the defaults' inputs
   ev(at(wStart, 21, 2), 'A', 'pref', { key: 'sex', value: 'm' });
   ev(at(wStart, 21, 3), 'A', 'pref', { key: 'birth', value: '1991-05-12' });
-  ev(at(wStart, 21, 4), 'A', 'pref', { key: 'bmiStd', value: 'asia' });
   ev(at(addDays(wStart, 2), 21, 2), 'B', 'pref', { key: 'sex', value: 'f' });
   ev(at(addDays(wStart, 2), 21, 3), 'B', 'pref', { key: 'birth', value: '1994-08-20' });
 

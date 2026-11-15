@@ -40,13 +40,11 @@
   "health.body.body_fat_pct": "体脂肪率",
   "health.body.bmi": "BMI",
   "health.body.lean_kg": "除脂肪体重",
-  "health.bmi.cat": "{cat}（{std}）",
+  "health.bmi.cat": "{cat}（アジア基準）",
   "health.bmi.under": "低体重",
   "health.bmi.normal": "普通体重",
   "health.bmi.over": "過体重",
   "health.bmi.obese": "肥満",
-  "health.bmi.std.asia": "アジア基準",
-  "health.bmi.std.who": "WHO基準",
   "health.body.dayKey": "測った日",
   "health.tabs": "健康とごはんのページ"
 }

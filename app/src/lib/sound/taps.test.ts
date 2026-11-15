@@ -58,7 +58,6 @@ const NONE: Record<string, string> = {
   'lib/components/look/LookPreview.svelte': 'a tap only hops the preview (its own motion, no cue)',
   'lib/components/look/VillagerGrid.svelte': 'the search field (the system keyboard); the villager already worn does nothing',
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
-  'lib/components/panel/ProfileSection.svelte': 'the choice already made does nothing; the birthday field opens the system date picker',
   'lib/components/bots/GymDayEditor.svelte': 'the start time opens the system picker',
   'lib/components/travel/PackList.svelte': 'the add and rename fields: the system keyboard clicks',
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',

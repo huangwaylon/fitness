@@ -62,17 +62,18 @@ export const GOAL_PREF_KEYS: readonly string[] = [
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, `look`
  * and `savedLooks` (contract/look.ts: the look worn and the コーデ), every
- * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`,
- * `bmiStd`: PROFILE_PREF_KEYS), the island's `weatherMode` (WEATHER_MODES) and its `seasonLook` (isSeasonLook): both
+ * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`:
+ * the rows kept, locked since 2026-11-15, PROFILE_PREF_KEYS), the island's `weatherMode` (WEATHER_MODES) and its `seasonLook` (isSeasonLook): both
  * island-wide, anyone's, the guest's too.
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'bmiStd', 'look', 'savedLooks', 'seasonLook'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'look', 'savedLooks', 'seasonLook'
 ];
 
-/** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): either member
- *  sets either member's (`data.person`), the guest only its own; private (contract/guest.ts rowsFor). */
+/** The profile's `pref` rows (contract/profile.ts PROFILE_KEYS, and `bmiStd`: the BMI standard's old rows, never read since
+ *  2026-11-15): locked, the record refuses them from anyone (`forbidden`, `profile locked`); the rows kept keep their
+ *  subject (`data.person`: eventSubject) and stay private (contract/guest.ts rowsFor). */
 export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth', 'bmiStd'];
 
 /** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the

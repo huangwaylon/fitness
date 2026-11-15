@@ -1,23 +1,23 @@
 // A person's profile and what it lets the app suggest (docs/design.md "Profile"; decisions: *Profile*): their age from
 // their birth date, their height from Health's own BMI, their resting and daily energy (Mifflin–St Jeor and their
-// Move), the BMI category by their standard, and the default goals a profile gives where none is set: kcal, salt and
+// Move), the BMI category (Asian cut-offs), and the default goals a profile gives where none is set: kcal, salt and
 // protein (model/food.ts foodGoal reads them; a goal the person set always wins). Pure: the record's prefs and rows
 // in, numbers out. Never ベル: the economy never imports it (deps.test.ts).
 import type { LocalDate, PersonId, Who } from '#lib/types.ts';
 import { isPersonId } from '#lib/contract/api.ts';
 import { FOOD_GOALS } from '#lib/contract/food.ts';
-import type { BmiStd, Sex } from '#lib/contract/profile.ts';
+import type { Sex } from '#lib/contract/profile.ts';
 import { addDays, localDateAt } from '#lib/time/dates.ts';
 import { latestAt, type State } from './state.ts';
 import { weighIns } from './weight.ts';
 import { activityOn } from './health.ts';
 
-/** A person's profile as set (unset: null; the BMI standard `asia` until chosen). */
-export interface Profile { sex: Sex | null; birth: LocalDate | null; bmiStd: BmiStd }
+/** A person's profile as set (unset: null). */
+export interface Profile { sex: Sex | null; birth: LocalDate | null }
 
 export function profileOf(s: Pick<State, 'prefs'>, who: Who): Profile {
   const p = s.prefs[who];
-  return { sex: p.sex ?? null, birth: p.birth ?? null, bmiStd: p.bmiStd ?? 'asia' };
+  return { sex: p.sex ?? null, birth: p.birth ?? null };
 }
 
 /** Age in whole years on `date` (both `YYYY-MM-DD`): a year more on each birthday (a 29 February's on 1 March in
@@ -142,11 +142,7 @@ const perMeal = (g: number): number => Math.round(g / 3);
 const MEAL_PROTEIN = { min: 20, none: 25 } as const;
 export const mealProteinTarget = (dayGoal: number | null): number => (dayGoal === null ? MEAL_PROTEIN.none : Math.max(MEAL_PROTEIN.min, perMeal(dayGoal)));
 
-/** A BMI's category by a standard: `asia` (JASSO: 肥満 from 25; WHO's Asian cut-off 23 for 過体重), `who` (25, 30);
- *  under 18.5 低体重 in both. */
+/** A BMI's category by the Asian cut-offs, everyone's (2026-11-15): 低体重 under 18.5, 過体重 from 23 (WHO's Asian
+ *  cut-off), 肥満 from 25 (JASSO). */
 type BmiCategory = 'under' | 'normal' | 'over' | 'obese';
-const BMI_CUTS: Record<BmiStd, { over: number; obese: number }> = { asia: { over: 23, obese: 25 }, who: { over: 25, obese: 30 } };
-export function bmiCategory(bmi: number, std: BmiStd): BmiCategory {
-  const c = BMI_CUTS[std];
-  return bmi < 18.5 ? 'under' : bmi < c.over ? 'normal' : bmi < c.obese ? 'over' : 'obese';
-}
+export const bmiCategory = (bmi: number): BmiCategory => (bmi < 18.5 ? 'under' : bmi < 23 ? 'normal' : bmi < 25 ? 'over' : 'obese');
