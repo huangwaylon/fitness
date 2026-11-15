@@ -11,7 +11,7 @@ import { D10, D4, ROSTER, SEASONS, fiscalYear, type Region, type RosterHotel } f
 import { t } from '#lib/i18n/index.ts';
 import '#lib/i18n/its.ts';
 import '#lib/i18n/bots.ts';
-import { gridStarts, hhmm, stripTicks, type CellState, type StripCell, type StripTick } from '#lib/strip.ts';
+import { gridStarts, hhmm, stripTicks, type CardStrip, type CellState, type StripCell } from '#lib/strip.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import { shortDay, durationOf, timeOf } from '#lib/i18n/when.ts';
 import { addDays, dayNum, monthWeeks, type MonthDay } from '#lib/contract/tokyo.ts';
@@ -410,12 +410,14 @@ const TONE: Record<Verdict, BotTone> = { healthy: 'good', starting: 'busy', idle
 const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', starting: 'starting', idle: 'waiting', degraded: 'trouble', late: 'late', failing: 'failing', stopped: 'stopped', off: 'off' };
 
 /** The card: its tone, word (bots.w: the verdict's own; a fine one with a hold waiting is drawn 要対応, types.ts shown)
- *  and sentence (遅れ: how long nothing was heard). */
+ *  and sentence (遅れ: how long nothing was heard; none without a reason, or for a hold waiting: the word and the act
+ *  say it). */
 export function verdictView(s: ItsStatus): { tone: BotTone; w: BotWord; word: string; sentence: string } {
-  const why = s.reasons[0] ?? 'none';
-  const sentence = why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
+  const why = s.reasons[0];
+  const sentence = !why || why === 'human_needed' ? ''
+    : why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
     : t(`its.reason.${why}`, { n: s.runner?.scanFailures ?? 0 });
-  // 一部不調 for nothing but a hold waiting for a person: 要対応 (the key row's and the tab's word); a real partial
+  // 一部不調 for nothing but a hold waiting for a person: 要対応 (the card's and the tab's word); a real partial
   // failure keeps 一部不調
   const w: BotWord = s.verdict === 'degraded' && s.reasons.length > 0 && s.reasons.every((r) => r === 'human_needed') ? 'needsYou' : WORD[s.verdict];
   return { tone: TONE[s.verdict], w, word: t(`bots.w.${w}`), sentence };
@@ -451,25 +453,16 @@ export function attentionLines(s: ItsStatus): string[] {
 /** A runner reporting now (not past LATE_AFTER_SEC, not stopping). */
 const liveOf = (s: ItsStatus): boolean => !!s.runner && s.now - s.runner.lastSeen < LATE_AFTER_SEC * 1000 && s.runner.phase !== 'stopping';
 
-/** The key row (docs/design.md "Bots"): 前回 (the last read, 正常 or 失敗) · 次回 (常時 with a live runner, its
- *  interval; スケジュール待ち without; なし while stopped or off: there's no next-run time) · 予約 (the stays ahead, 要対応
- *  among them; 不調: 最後の成功). */
-export function keyRow(s: ItsStatus, rows: readonly BookingRow[], now: number): { id: string; label: string; value: string; sub?: string }[] {
+/** The card's edges (docs/bots.md): 次回 (20秒ごと with a live runner; 起動待ち without; none while stopped or off)
+ *  and the 成果 term (予約{n}: the stays ahead; 不調: 最後の成功). */
+export function edges(s: ItsStatus, rows: readonly BookingRow[], now: number): { next: string | null; outcome: string | null } {
   const r = s.runner;
-  const off = s.mode === 'off' || s.settings.paused;
   const every = s.settings.intervalSec < 60 ? t('its.interval.s', { n: s.settings.intervalSec }) : t('its.interval.m', { n: s.settings.intervalSec / 60 });
-  const ahead = rows.filter((b) => b.state !== 'lapsed');
-  const acts = ahead.filter((b) => b.state === 'action').length;
-  return [
-    { id: 'last', label: t('bots.key.last'), value: r?.lastScanAt == null ? t('bots.key.never') : timeOf(r.lastScanAt, now),
-      ...(r?.lastScanAt == null ? {} : { sub: t(r.scanFailures > 0 ? 'its.key.failed' : 'its.key.ok') }) },
-    off ? { id: 'next', label: t('bots.key.next'), value: t('its.key.none'), sub: t(s.mode === 'off' ? 'bots.w.off' : 'bots.w.stopped') }
-      : liveOf(s) ? { id: 'next', label: t('bots.key.next'), value: t('its.key.live'), sub: t('its.key.every', { every }) }
-      : { id: 'next', label: t('bots.key.next'), value: t('its.key.wait') },
-    TONE[s.verdict] === 'bad'
-      ? { id: 'ok', label: t('bots.key.lastOk'), value: r?.lastOkAt == null ? t('bots.key.never') : timeOf(r.lastOkAt, now) }
-      : { id: 'bookings', label: t('its.key.bookings'), value: t('its.key.n', { n: ahead.length }), ...(acts ? { sub: t('its.key.acts', { n: acts }) } : {}) }
-  ];
+  const next = s.mode === 'off' || s.settings.paused ? null : liveOf(s) ? t('its.key.every', { every }) : t('its.key.wait');
+  const outcome = TONE[s.verdict] === 'bad'
+    ? t('bots.strip.lastOk', { time: r?.lastOkAt == null ? t('bots.key.never') : timeOf(r.lastOkAt, now) })
+    : t('its.strip.bookings', { n: rows.filter((b) => b.state !== 'lapsed').length });
+  return { next, outcome };
 }
 
 /** Running, or about to: polled every 15 s while shown, else every minute. */
@@ -659,19 +652,19 @@ export function minuteCells(minutes: readonly ScanMinute[], now: number): ScanCe
   });
 }
 
-/** The strip's line for VoiceOver 「直近1時間：確認238回、失敗2回、空きあり3分」 and the one under it 「確認238回 · 失敗2 ·
- *  空き3分」. */
-export function scanSummary(cells: readonly ScanCell[]): { summary: string; line: string } {
+/** 直近1時間 as the card draws it: the cells, the quarter hours under them, 前回 (the newest minute read), the states'
+ *  words, its line for VoiceOver 「直近1時間：確認238回、失敗2回、空きあり3分」; `live` (running), a neutral 確認なし in
+ *  its place while it has none (the warning is runner_silent's sentence, never twice). */
+export function scanStrip(cells: readonly ScanCell[], live: boolean): Omit<CardStrip, 'next' | 'outcome'> {
   const sum = (k: 'n' | 'fails' | 'avail') => cells.reduce((a, c) => a + c[k], 0);
-  const n = { n: sum('n'), fails: sum('fails'), avail: sum('avail') };
-  return { summary: t('its.scan.summary', n), line: t('its.scan.line', n) };
+  const strip = cells.map((c): StripCell => ({ start: c.t, end: c.t + MIN_MS, state: c.state, label: c.text }));
+  const i = cells.findLastIndex((c) => c.n > 0);
+  return {
+    cells: strip, ticks: stripTicks(strip, 15 * MIN_MS), last: i < 0 ? null : { i, label: cells[i].time },
+    words: { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), warn: t('its.scan.legend.warn'), fail: t('its.scan.legend.fail') },
+    summary: t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') }), empty: live ? { text: t('its.scan.empty'), plain: true } : null
+  };
 }
-
-/** The cells as the shared strip draws them. */
-export const stripCells = (cells: readonly ScanCell[]): StripCell[] => cells.map((c) => ({ start: c.t, end: c.t + MIN_MS, state: c.state, label: c.text }));
-
-/** The ticks under it: each quarter hour (15:00 · 15:15 …), at its cell's index. */
-export const scanTicks = (cells: readonly ScanCell[]): StripTick[] => stripTicks(stripCells(cells), 15 * MIN_MS);
 
 // ---- Recent events ----
 const EVENTS_SHOWN = 10;

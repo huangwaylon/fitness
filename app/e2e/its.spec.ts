@@ -1,7 +1,7 @@
 // ボット's 保養所 tab (docs/design.md "Bots"): a member's menu shows ボット with a dot while the bot needs a person
 // (要対応), and its sheet opens on 保養所, which reads the its-bot Worker's GET /its/status (lib/its/client.ts, mocked
-// here: the contract's example moved to the pinned time) and shows the verdict with its key row and ⋯, the hold that
-// needs a person in 確認が必要 (its deadline, the mail), 直近1時間, 最近の動き folded, 設定's folded rows and くわしく;
+// here: the contract's example moved to the pinned time) and shows the status card with its strip and ⋯, the hold that
+// needs a person in 確認が必要 (its deadline, the mail), 直近1時間 in the card, 最近の動き in くわしく, 設定's folded rows and くわしく;
 // ジム's tab leaves it. ⋯'s 開始 goes out at once (it needs a stay), its 停止 asks first; the settings are one draft: 保存 sends one PUT (its body checked: the allow-list `search` too), ✕, Esc and a tab switch
 // ask before dropping it, and a 409 (the
 // bare status) or a poll seeing someone else's save says so in the save bar, with 読み込み直す, 保存 turning 上書き保存
@@ -102,7 +102,7 @@ async function runAct(page: Page, its: ReturnType<Page['locator']>, action: 'sta
   if (action === 'stop') await page.getByRole('dialog', { name: '保養所の確認を停止しますか？' }).locator('[data-action="stop"]').click();
 }
 
-test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdict and its key row, 確認が必要 (the hold to finish by mail, its deadline), くわしく; ジム leaves it', async ({ page, context }) => {
+test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (the act, 前回, 次回, 予約), 確認が必要 (the hold to finish by mail, its deadline), くわしく; ジム leaves it', async ({ page, context }) => {
   const { sheet, its, calls } = await phone(page, context, 'A');
   const tab = page.locator('dialog[open] [data-bots-tab="its"]');
   await expect(tab).toHaveAttribute('aria-selected', 'true');
@@ -110,16 +110,15 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdic
   await expect(tab).toHaveAttribute('data-look', '');
   await expect(tab).toHaveAccessibleName('保養所、要対応');
   const verdict = its.locator('[data-its-verdict="degraded"]');
-  await expect(verdict.locator('.word')).toHaveText('要対応'); // a hold waiting is all: 要対応, not 一部不調
-  await expect(verdict.locator('[data-bots-head]')).toHaveText('NAGU 勝浦をメールで申込'); // the act first
+  await expect(verdict.locator('[data-bots-word]')).toHaveText('要対応'); // a hold waiting is all: 要対応, not 一部不調
+  await expect(verdict.locator('[data-bots-act]')).toHaveText('NAGU 勝浦をメールで申込'); // the act, in ink
   await expect(tab.locator('[data-dot="warn"][data-look]')).toHaveCount(1); // a person must act: the tab's 「!」
-  await expect(verdict).toContainText('対応が必要な予約があります。');
+  await expect(verdict.locator('[data-bots-say]')).toHaveCount(0); // the word and the act say it
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
-  // the key row: 前回 (the last read) · 次回 (常時: a live runner) · 予約 (要対応 among them)
-  const key = (id: string) => its.locator(`[data-its-key="${id}"]`);
-  await expect(key('last')).toHaveText(/前回\s*11:59\s*正常/);
-  await expect(key('next')).toHaveText(/次回\s*常時\s*15秒ごと/);
-  await expect(key('bookings')).toHaveText(/予約\s*1件\s*要対応1/);
+  // 次回 (a live runner: its interval) and 予約, the 成果 term (no key row; no read this hour: no strip)
+  await expect(its.locator('[data-its-key]')).toHaveCount(0);
+  await expect(its.locator('[data-its-scans]')).toHaveCount(0);
+  await expect(its.locator('[data-its-empty]')).toHaveText('確認なし'); // running: a neutral line, the warning is the sentence's
   await expect(its.locator('[data-its-menu]')).toHaveAccessibleName('保養所の操作');
   const y = async (sel: string) => (await sheet.locator(sel).boundingBox())!.y;
   // the hold, in 確認が必要 right under the verdict: its deadline (30 min from 11:44), the mail to look for; not again under 予約
@@ -228,8 +227,9 @@ test('停止 goes out at once, outside the draft; the edits go in one PUT with �
   expect(calls.filter((c) => c.method === 'POST')).toHaveLength(0);
   await runAct(page, its, 'stop');
   await expect(its).toHaveAttribute('data-its-run', 'stopped');
-  await expect(its.locator('[data-its-verdict="stopped"] .say')).toHaveText(/停止（.+・12:00）$/); // who stopped it, in the sentence
-  await expect(its.locator('[data-its-key="next"]')).toHaveText(/次回\s*なし\s*停止中/);
+  // who stopped it, in the sentence (in 確認が必要 while the act has the card's row); stopped with no read: no strip
+  await expect(its.locator('[data-its-alert] [data-its-reason]').first()).toHaveText(/停止（.+・12:00）$/);
+  await expect(its.locator('[data-its-empty], [data-its-scans]')).toHaveCount(0);
   expect(calls.filter((c) => c.method === 'POST')).toEqual([{ method: 'POST', path: '/its/run', auth: expect.stringMatching(/^Bearer /), rid: expect.any(String), body: { action: 'stop' } }]);
   await expect(its.locator('[data-its-save-bar]')).toHaveCount(0);
 
@@ -644,6 +644,11 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour', 
   await expect(strip.locator('[data-its-cell="fail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(30);
+  // 前回 the newest minute read, its time in ink; 次回 the runner's interval; the counts and 予約
+  await expect(strip.locator('[data-its-cell][data-last]')).toHaveCount(1);
+  await expect(its.locator('[data-its-next]')).toHaveText('次回15秒ごと');
+  await expect(its.locator('[data-its-count]')).toHaveText(['正常30', '空きあり1', '失敗1']);
+  await expect(its.locator('[data-its-outcome]')).toHaveText('予約1');
   // a tap on the failed minute names it
   const cell = strip.locator('[data-its-cell="fail"]');
   await cell.click();

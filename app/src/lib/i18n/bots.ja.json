@@ -29,7 +29,6 @@
   "bots.dur.m": "{m}分",
   "bots.dur.hm": "{h}時間{m}分",
   "bots.asOf": "{time}時点",
-  "bots.key.last": "前回",
   "bots.key.next": "次回",
   "bots.key.lastOk": "最後の成功",
   "bots.key.never": "まだ",
@@ -39,6 +38,5 @@
   "bots.sec.settings": "設定",
   "bots.cal.month": "表示する月",
   "bots.cal.weekday": "{wd}曜日をすべて選ぶ",
-  "bots.act.none": "対応不要",
-  "bots.act.look": "確認してください"
+  "bots.strip.lastOk": "最後の成功 {time}"
 }

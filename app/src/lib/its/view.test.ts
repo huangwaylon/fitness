@@ -11,7 +11,7 @@ import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './ro
 import {
   addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, nightGrid, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
   attentionLines, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
-  keyRow, savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanSummary, scanTicks, type Draft
+  edges, savedLine, seasonMiss, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanStrip, type Draft
 } from './view.ts';
 
 const jst = (s: string) => Date.parse(`${s}+09:00`);
@@ -435,23 +435,23 @@ describe('the roster', () => {
 describe('the verdict card and the poll', () => {
   it('gives each verdict its tone and the first reason its sentence', () => {
     // the verdict's own word (a hold waiting raises only a fine one's dot: bots/types.ts shown)
-    // a hold waiting is all: 要対応 (the key row's word); a real partial failure beside it keeps 一部不調
-    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'needsYou', word: '要対応', sentence: '対応が必要な予約があります。' });
+    // a hold waiting is all: 要対応 (the card's word); a real partial failure beside it keeps 一部不調
+    expect(verdictView(STATUS)).toEqual({ tone: 'warn', w: 'needsYou', word: '要対応', sentence: '' }); // the word and the act say it
     expect(verdictView(status({ reasons: ['scan_failing', 'human_needed'] }))).toMatchObject({ w: 'trouble', word: '一部不調' });
-    expect(verdictView(status({ verdict: 'healthy', reasons: [], events: [], bookings: [] }))).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '空室を探しています。' });
+    expect(verdictView(status({ verdict: 'healthy', reasons: [], events: [], bookings: [] }))).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '' });
     expect(verdictView(status({ verdict: 'starting', reasons: ['starting'], events: [], bookings: [] }))).toMatchObject({ tone: 'busy', word: '起動中' });
     expect(verdictView(status({ verdict: 'late', reasons: ['runner_silent'] })).tone).toBe('warn');
     expect(verdictView(status({ verdict: 'failing', reasons: ['scan_failing'], runner: { ...STATUS.runner!, scanFailures: 4 } }))).toMatchObject({ tone: 'bad', sentence: '空室の確認が4回続けて失敗しています。' });
     for (const v of ['stopped', 'idle', 'off'] as const) expect(verdictView(status({ verdict: v })).tone).toBe('idle');
   });
-  it('the key row: 前回 (the last read, 正常 or 失敗) · 次回 (常時 only with a live runner; スケジュール待ち; なし while stopped) · 予約 (不調: 最後の成功)', () => {
-    const keys = (x: ItsStatus) => Object.fromEntries(keyRow(x, bookingRows(x, TODAY), x.now).map((k) => [k.id, [k.value, k.sub ?? null]]));
-    expect(keys(STATUS)).toEqual({ last: ['13:10', '正常'], next: ['常時', '15秒ごと'], bookings: ['1件', '要対応1'] });
-    expect(keys(status({ now: STATUS.now + 50 * 60_000 })).next).toEqual(['スケジュール待ち', null]);
-    expect(keys(status({ settings: { ...STATUS.settings, paused: true } })).next).toEqual(['なし', '停止中']);
-    expect(keys(status({ runner: { ...STATUS.runner!, scanFailures: 2 } })).last).toEqual(['13:10', '失敗']);
-    expect(keys(status({ runner: null, events: [], bookings: [] }))).toEqual({ last: ['まだ', null], next: ['スケジュール待ち', null], bookings: ['0件', null] });
-    expect(keys(status({ verdict: 'failing', runner: { ...STATUS.runner!, lastOkAt: STATUS.runner!.lastScanAt! - 3600_000 } })).ok).toEqual(['12:10', null]);
+  it('the card’s edges: 次回 (15秒ごと only with a live runner; 起動待ち; none while stopped or off) · 予約 (不調: 最後の成功)', () => {
+    const e = (x: ItsStatus) => edges(x, bookingRows(x, TODAY), x.now);
+    expect(e(STATUS)).toEqual({ next: '15秒ごと', outcome: '予約1' });
+    expect(e(status({ now: STATUS.now + 50 * 60_000 })).next).toBe('起動待ち');
+    expect(e(status({ settings: { ...STATUS.settings, paused: true } })).next).toBeNull();
+    expect(e(status({ mode: 'off' })).next).toBeNull();
+    expect(e(status({ runner: null, events: [], bookings: [] }))).toEqual({ next: '起動待ち', outcome: '予約0' });
+    expect(e(status({ verdict: 'failing', runner: { ...STATUS.runner!, lastOkAt: STATUS.runner!.lastScanAt! - 3600_000 } })).outcome).toBe('最後の成功 12:10');
   });
   it('polls every 15 s while the runner is on its way or running, else every minute', () => {
     expect(pollMs(STATUS)).toBe(15_000);
@@ -631,8 +631,10 @@ describe('直近1時間', () => {
     expect(cells[59]).toMatchObject({ time: '12:00', n: 2, state: 'ok' });
     expect(cells.filter((c) => c.state === 'none')).toHaveLength(56);
     expect(cells[1]).toMatchObject({ state: 'none', text: '11:02 · 確認なし' });
-    expect(scanSummary(cells)).toEqual({ summary: '直近1時間：確認14回、失敗7回、空きあり2分', line: '確認14回 · 失敗7 · 空き2分' });
-    expect(scanTicks(cells)).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
+    const strip = scanStrip(cells, true);
+    expect(strip).toMatchObject({ summary: '直近1時間：確認14回、失敗7回、空きあり2分', last: { i: 59, label: '12:00' }, empty: { text: '確認なし', plain: true } });
+    expect(strip.ticks).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
+    expect(scanStrip(cells, false).empty).toBeNull(); // stopped: no line, no strip without a read
     // the client reads it, a garbled minute or code left out
     const s = parseStatus({ ...example.status, recentMinutes: [...example.status.recentMinutes, { minute: 'x' }, { minute: 1, n: 1, codes: { 'bad code': 1, ok_code: 2 } }] })!;
     expect(s.recentMinutes).toEqual([...example.status.recentMinutes, { minute: 1, n: 1, ok: 0, fail: 0, avail: 0, codes: { ok_code: 2 } }]);

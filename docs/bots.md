@@ -8,10 +8,12 @@ demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot
   coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだ, hollow 不明; drawn on a tab and the menu's ボット (the worst) only while a person must act (`dotShown`,
   the user 2026-11-15: 一部不調 while it retries shows in its page only), a failed read dimmed, kept.
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
-- **Page** (`BotPage`): `VerdictCard` (a `.card.pad`: dot, the headline: the act (`act`) or 「対応不要」, ⋯; the word a `.tag`,
-  「12:00時点」; sentence; result line; dense
-  `StatStrip` 前回 · 次回 · 成果, 不調: 最後の成功) · `AttentionCard` (only steps the sentence lacks) · `StatusStrip` (ok green,
-  空き full height, warn yellow capped, fail hatched, none a tick; empty: out, 保養所 running a sunk line, never a second warning) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
+- **Page** (`BotPage`): one `StatusCard` (~132px): dot · word (15 bold) · 「12:00時点」 (13 soft) · ⋯; the act in ink (`act`,
+  保養所's mail) else the sentence, never restating the word (none when it says it); result line; the strip, 32 drawn in
+  a 44 hit (ok green, avail full height, warn capped, fail hatched, none a tick; 前回 ringed, its time the right tick in
+  ink; 次回 a dashed ghost with its label, none stopped or off); 11px ticks; the counts > 0 with swatches + one 成果
+  (いま空き · 予約 · 品目; 不調: 最後の成功). Never kept: a 32px sunk line (保養所 running: a plain 確認なし). Night: only
+  warn (`--n-warn`) and bad filled. · `AttentionCard` (what the card lacks; an act's sentence) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
   ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.
 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月, 11月 · 12月; past days faint,

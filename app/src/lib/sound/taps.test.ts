@@ -14,7 +14,7 @@ const SKIP = [/\/dev\//, /\/editor\//];
 
 /** `self`: the handler (or what it sets off) plays the outcome's own cue. Where that sound comes from. */
 const SELF: Record<string, string> = {
-  'lib/components/bots/StatusStrip.svelte': 'the strip ticks as the finger lands on a cell or drags onto the next',
+  'lib/components/bots/StatusCard.svelte': 'the strip ticks as the finger lands on a cell or drags onto the next',
   'lib/components/island/Decor.svelte': 'a placed decoration jiggles with tick; in the decorate mode the mode plays its own',
   'lib/components/tent/TentEdit.svelte': 'tick to pick, turn or move a piece and for a tab, confirm to place and for a wallpaper, boop when it can\'t, undo to put away, to take back (取り消す) and to clear',
   'lib/components/tent/TentRoom.svelte': 'toggle-on / toggle-off for the room\'s light switch',

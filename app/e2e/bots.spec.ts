@@ -126,8 +126,8 @@ test('the menu’s ボット, right above 設定, 「!」 while a bot needs a pe
   await expect(tab('kalori')).not.toHaveAttribute('data-look');
   await expect(tab('kalori').locator('[data-dot]')).toHaveCount(0);
   await expect(tab('gym').locator('[data-dot="bad"][data-look]')).toHaveCount(1);
-  // the card leads with the act, the word a tag
-  await expect(sheet.locator('[data-gym-verdict] [data-bots-head]')).toHaveText('⋯から今すぐ確認');
+  // the card: the word, then its sentence (no act of its own)
+  await expect(sheet.locator('[data-gym-verdict] [data-bots-word]')).toHaveText('不調');
   // the keyboard: → moves the focus, Enter picks; the focus stays on the tab picked
   await tab('gym').focus();
   await page.keyboard.press('ArrowRight');
@@ -224,27 +224,26 @@ async function kaloriMenu(page: Page, k: ReturnType<Page['locator']>) {
   return rows;
 }
 
-test('メニュー 順調: the verdict and its key row, 直近8週, 前回の変更 (no tag), ⋯ (the workflow only), くわしく; no alert, no dot', async ({ page, context }) => {
+test('メニュー 順調: the card (no sentence: the word says it), 直近8週 with 前回 and 次回, 前回の変更 in くわしく, ⋯ (the workflow only); no alert, no dot', async ({ page, context }) => {
   const { sheet, tab, calls } = await phone(page, context, 'healthy');
   const k = await openKalori(page, tab, sheet);
   const verdict = k.locator('[data-kalori-verdict="healthy"]');
-  await expect(verdict).toContainText('順調');
-  await expect(verdict).toContainText('11/4（水）に更新しました。');
+  await expect(verdict.locator('[data-bots-word]')).toHaveText('順調');
+  await expect(verdict.locator('[data-bots-say], [data-bots-act]')).toHaveCount(0);
   await expect(k.locator('[data-kalori-alert]')).toHaveCount(0);
   await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'good');
-  // the key row: 前回 (the newest run kept: this morning's, ended 6:53) · 次回 · 品目
-  const key = (id: string) => k.locator(`[data-kalori-key="${id}"]`);
-  await expect(key('last')).toHaveText(/前回\s*6:53\s*公開/);
-  await expect(key('next')).toHaveText(/次回\s*11\/11（水）2:41ごろ/);
-  await expect(key('items')).toHaveText(/品目\s*54,269品\s*448店/);
+  // 前回 the newest run's week, ringed, its day the right-hand tick; 次回 the ghost's day; the 成果 term 品目
+  await expect(k.locator('[data-kalori-cell][data-last]')).toHaveCount(1);
+  await expect(k.locator('[data-kalori-tick][data-last]')).toHaveText('11/4');
+  await expect(k.locator('[data-kalori-next]')).toHaveText('次回11/11');
+  await expect(k.locator('[data-kalori-outcome]')).toHaveText('54,269品目');
   await expect(k.getByRole('heading', { level: 3 })).toHaveCount(0); // 前回の変更: in くわしく
   await expect(k.locator('[data-kalori-tag]')).toHaveCount(0);
   // 直近8週: 8 cells, one held (warn: yellow, capped), the summary for VoiceOver and under it, the newest cell's line
   await expect(k.locator('[data-kalori-cell]')).toHaveCount(8);
   await expect(k.locator('[data-kalori-cell="warn"]')).toHaveCount(1);
   await expect(k.locator('[data-kalori-strip]')).toHaveAccessibleName('直近8週：公開7回、保留1回、失敗0回');
-  await expect(k.locator('[data-kalori-scans] .legend')).toHaveText(/公開.*保留.*失敗.*実行なし/);
-  await expect(k.locator('[data-kalori-scan-line]')).toHaveText('公開7 · 保留1 · 失敗0');
+  await expect(k.locator('[data-kalori-count]')).toHaveText(['公開7', '保留1']); // only counts > 0, each with its swatch
   await k.locator('[data-kalori-cell]').last().click();
   await expect(k.locator('[data-kalori-scan-line]')).toHaveText('11/4（水）· 公開 · 追加12 値38 終了3 · 4時間12分');
   // ⋯: links only; nothing to run here
@@ -297,11 +296,11 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the s
   await tab('kalori').click();
   const k = sheet.locator('[data-kalori-page]');
   const verdict = k.locator('[data-kalori-verdict="held"]');
-  await expect(verdict.locator('.word')).toHaveText('保留'); // the bot's own word, never raised to 要対応
-  await expect(verdict.locator('[data-bots-head]')).toHaveText('差分を確認してマージ');
-  await expect(verdict).toContainText('変更が多すぎるため反映を止めました（削除 2.1%・上限1.5%）。アプリは11/4（水）のデータのままです。');
+  await expect(verdict.locator('[data-bots-word]')).toHaveText('保留'); // the bot's own word, never raised to 要対応
+  // 保留 keeps its sentence: what tripped, the data's day
+  await expect(verdict.locator('[data-bots-say]')).toHaveText('変更が多すぎるため反映を止めました（削除 2.1%・上限1.5%）。アプリは11/4（水）のデータのままです。');
   await expect(verdict).toHaveClass(/warn/);
-  await expect(k.locator('[data-kalori-key="last"]')).toHaveText(/前回\s*6:53\s*保留/); // the run held, not 公開
+  await expect(k.locator('[data-kalori-cell][data-last]')).toHaveAttribute('data-kalori-cell', 'warn'); // the run held, not 公開
   const alert = k.locator('[data-kalori-alert]');
   await expect(alert).toHaveAttribute('role', 'status');
   await expect(alert.getByRole('heading', { level: 3 })).toHaveText('確認が必要');
@@ -332,19 +331,19 @@ test('メニュー 保留 names only the gates that tripped (diff.tripped), neve
   await page.locator('dialog[open] .navbar button.nav.close').click();
   await openKalori(page, tab, sheet);
   await expect(verdict.locator('.say')).toHaveText('テストが失敗しました。');
-  await expect(verdict.locator('.word')).toHaveText('保留');
+  await expect(verdict.locator('[data-bots-word]')).toHaveText('保留');
 });
 
-test('メニュー 不調: the coral verdict, the reason’s sentence, 確認が必要 with the rest, 最後の成功 in the key row, ⋯ with the run', async ({ page, context }) => {
+test('メニュー 不調: the coral card, the reason’s sentence, 確認が必要 with the rest, 最後の成功 the 成果 term, ⋯ with the run', async ({ page, context }) => {
   const failing = (now: number) => kaloriStatus(now, { verdict: 'failing', reasons: ['drift', 'incomplete'], alert: { text: 'x', since: now }, coverage: { complete: false, fetched: 30000, discovered: 54269, failed: 12 } });
   const { sheet, tab } = await phone(page, context, 'healthy', { kalori: failing });
   const k = await openKalori(page, tab, sheet);
   const verdict = k.locator('[data-kalori-verdict="failing"]');
   await expect(verdict).toHaveClass(/bad/);
-  await expect(verdict.locator('.word')).toHaveText('不調');
-  await expect(verdict).toContainText('サイトの構成が変わり読み取れません。');
+  await expect(verdict.locator('[data-bots-word]')).toHaveText('不調');
+  await expect(verdict.locator('[data-bots-say]')).toHaveText('サイトの構成が変わり読み取れません。');
   await expect(k.locator('[data-kalori-alert] [data-kalori-reason]')).toHaveText(['取得が途中で止まりました。']); // the sentence's not again
-  await expect(k.locator('[data-kalori-key="ok"]')).toHaveText(/最後の成功\s*6:53/);
+  await expect(k.locator('[data-kalori-outcome]')).toHaveText('最後の成功 6:53');
   await expect(await kaloriMenu(page, k)).toHaveText(['実行を開く', 'ワークフローを開く']);
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
   await k.locator('[data-kalori-more] summary').click();
@@ -353,7 +352,7 @@ test('メニュー 不調: the coral verdict, the reason’s sentence, 確認が
   await expect(tab('kalori')).toHaveAttribute('data-look', '');
 });
 
-test('メニュー 取得中: the round in the verdict, 前回 the last run kept; まだ: idle, no bar nor strip', async ({ page, context }) => {
+test('メニュー 取得中: the round in the card, 前回 the last run kept; まだ: idle, 最初の更新 in the strip’s place', async ({ page, context }) => {
   const running = (now: number) => {
     const base = kaloriStatus(now);
     return kaloriStatus(now, { verdict: 'running', run: { ...(base.run as object), round: 2, result: 'running', startedAt: now - 3600_000, endedAt: null, shardsDone: 7 }, next: now + WEEK - 3600_000 });
@@ -362,19 +361,18 @@ test('メニュー 取得中: the round in the verdict, 前回 the last run kept
   const k = await openKalori(page, tab, sheet);
   await expect(k.locator('[data-kalori-verdict="running"]')).toContainText('2回目 · 20区画中7完了');
   await expect(k.locator('[data-kalori-alert]')).toHaveCount(0);
-  await expect(k.locator('[data-kalori-key="last"]')).toHaveText(/前回\s*6:53\s*公開/); // not the run under way
+  await expect(k.locator('[data-kalori-cell][data-last]')).toHaveAttribute('data-kalori-cell', 'ok'); // the last run kept, not the one under way
   await k.locator('[data-kalori-more] summary').click();
   await expect(k.getByRole('img', { name: /^前回の変更：追加12/ })).toBeVisible();
 
   setKalori((now) => kaloriStatus(now, { verdict: 'none', run: null, dataset: null, diff: null, coverage: null, merge: null, history: [] }));
   await page.locator('dialog[open] .navbar button.nav.close').click();
   await openKalori(page, tab, sheet);
-  await expect(k.locator('[data-kalori-verdict="none"]')).toContainText('まだありません');
-  await expect(k.locator('[data-kalori-verdict="none"]')).toContainText('最初の更新は11/11（水）2:41です。');
-  await expect(k.locator('[data-kalori-latest], [data-kalori-scans], [data-kalori-alert]')).toHaveCount(0); // nothing kept: no strip at all
+  await expect(k.locator('[data-kalori-verdict="none"] [data-bots-word]')).toHaveText('まだありません');
+  await expect(k.locator('[data-kalori-verdict="none"] [data-bots-say]')).toHaveCount(0);
+  await expect(k.locator('[data-kalori-empty]')).toHaveText('最初の更新は11/11ごろ'); // nothing kept: a line in the strip's place
+  await expect(k.locator('[data-kalori-latest], [data-kalori-scans], [data-kalori-alert]')).toHaveCount(0);
   await expect(tab('kalori')).toHaveAttribute('data-tab-status', 'idle');
-  await expect(k.locator('[data-kalori-key="last"]')).toHaveText(/前回\s*まだ/);
-  await expect(k.locator('[data-kalori-key="next"]')).toHaveText(/次回\s*11\/11（水）2:41ごろ/);
 });
 
 test('メニュー offline: 「読み込めませんでした（オフライン）」 with もう一度, the last known status kept, 更新中; a retry recovers', async ({ page, context }) => {

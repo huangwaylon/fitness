@@ -29,7 +29,6 @@
   "bots.dur.m": "{m} min",
   "bots.dur.hm": "{h} h {m} min",
   "bots.asOf": "as of {time}",
-  "bots.key.last": "Last",
   "bots.key.next": "Next",
   "bots.key.lastOk": "Last success",
   "bots.key.never": "Not yet",
@@ -39,6 +38,5 @@
   "bots.sec.settings": "Settings",
   "bots.cal.month": "Month",
   "bots.cal.weekday": "Select every {wd}",
-  "bots.act.none": "Nothing to do",
-  "bots.act.look": "Take a look"
+  "bots.strip.lastOk": "Last success {time}"
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
-  // ボット's ジム tab (docs/design.md "Bots"), on BotPage: the verdict with its key row (前回 · 次回 · いま) and its ⋯
+  // ボット's ジム tab (docs/design.md "Bots"), on BotPage: the status card with its strip (前回 · 次回 · いま空き) and its ⋯
   // (members, with this phone's key: lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its
   // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
   // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
-  // reasons, what to do), 直近12時間, then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
+  // reasons, what to do), then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
   // the heading; a tap opens the day's editor, GymDayEditor; 選択 under the grid or a long press the select mode, 完了 in 選択's place,
   // its sticky bar one bulk act, the picks kept across months), the days not settable yet and the 3-reservation note;
   // くわしく last, アプリで変更 (the last ones, one a day) at its bottom.
@@ -20,7 +20,7 @@
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { checkStrip, factRows, keyRow, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
+  import { checkStrip, edges, factRows, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
   import { bulkAct, changeLine, fromWords, longRange, laterNote, monthCells, movedDays, pickSlot, slotCount, undoActs, pickedDays, type SlotPick } from '#lib/gym/calendar.ts';
@@ -124,8 +124,7 @@
   const verdict = $derived(data && { ...driver.verdict(data, Date.now()), sentence: verdictView(data, cfgState === 'ok').sentence });
   const reasons = $derived(data ? reasonLines(data) : []);
   const facts = $derived(data ? factRows(data, nowMs) : []);
-  const strip = $derived(data && checkStrip(data));
-  const legend = { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), warn: t('gym.strip.legend.warn'), fail: t('gym.strip.legend.fail'), none: t('gym.strip.legend.none') };
+  const strip = $derived(data && { ...checkStrip(data), ...edges(data, nowMs) });
   /** The calendar: this month or next (the Worker's today's), its days. */
   const cal = monthPick(() => twoMonths(cfg?.rows[0]?.day ?? dayKey(minuteNow())));
   const cells = $derived(cfg ? monthCells(cfg.rows, cal.value) : []);
@@ -335,11 +334,11 @@
 {/snippet}
 
 <BotPage attr="gym" busy={poll.loading} failed={bot.failed} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict} stale={bot.stale}
-  readAt={bot.readAt} now={nowMs} keys={data ? keyRow(data, nowMs) : []}
+  readAt={bot.readAt} now={nowMs}
   rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} menu={cfg ? { label: t('gym.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={result || checking || cfg?.checking || (note && !editOpen) ? answer : undefined}
   attention={reasons.length ? { lines: reasons } : null}
-  strip={strip && { ...strip, title: t('gym.strip.title', { n: strip.width }), legend }}
+  {strip}
   {facts} more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), body: changesRow }] : []}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>

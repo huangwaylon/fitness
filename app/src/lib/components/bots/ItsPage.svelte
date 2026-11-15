@@ -1,9 +1,9 @@
 <script lang="ts">
   // ボット's 保養所 tab (docs/design.md "Bots"): the ITS booker as its Worker reports it (lib/its: GET /its/status) and
-  // its settings, on BotPage: the verdict (who stopped it in its sentence while stopped) with its key row (前回 · 次回 ·
+  // its settings, on BotPage: the status card (who stopped it in its sentence while stopped) with 直近1時間 (前回 · 次回 ·
   // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
   // sentence; 確認が必要 (the holds to finish by mail: bookingRows' action rows, their deadline and steps; a failed
-  // dispatch); 直近1時間 (empty while running: a warning); the migration notice; 日付, never folded: the calendar
+  // dispatch); the migration notice; 日付, never folded: the calendar
   // (ItsCalendar: this month or next, a switch beside the heading, 未保存 while the draft changed it; a tap a night, a
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
@@ -36,8 +36,8 @@
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, removeDate, toggleColumn, toggleNight,
-    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, keyRow, legacy, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanSummary, scanTicks, setSearch,
-    stopsAtBooked, stripCells, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
+    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, edges, legacy, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanStrip, setSearch,
+    stopsAtBooked, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { driver } from '#lib/its/bot.ts';
   import { pushOn } from '#lib/its/push.ts';
@@ -164,10 +164,9 @@
   /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
    *  shared strip. */
   const cells = $derived(status?.recentMinutes ? minuteCells(status.recentMinutes, status.now) : []);
-  const scans = $derived(scanSummary(cells));
-  /** Running (on, not stopped): a strip with no read in it is a warning, not left out. */
+  /** Running (on, not stopped): a strip with no read in it says 確認なし, not left out. */
   const live = $derived(!!status && status.mode === 'on' && !paused);
-  const legend = { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), warn: t('its.scan.legend.warn'), fail: t('its.scan.legend.fail'), none: t('its.scan.legend.none') };
+  const strip = $derived(status && cells.length ? { ...scanStrip(cells, live), ...edges(status, bookings, nowMs) } : null);
 
   function edit(f: (d: Draft) => Draft) {
     if (!status || !shown) return;
@@ -341,11 +340,11 @@
 {/snippet}
 
 <BotPage attr="its" busy={poll.loading} failed={bot.failed} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict} stale={bot.stale}
-  readAt={bot.readAt} now={nowMs} keys={status ? keyRow(status, bookings, nowMs) : []}
+  readAt={bot.readAt} now={nowMs}
   rootAttr={status ? { 'data-its-run': paused ? 'stopped' : 'running' } : {}} menu={status ? { label: t('its.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={runWhy || (paused && noDates) ? runNote : undefined}
   attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
-  strip={cells.length ? { cells: stripCells(cells), ticks: scanTicks(cells), title: t('its.scan.title'), legend, ...scans, ...(live ? { empty: t('its.scan.empty') } : {}) } : null}
+  {strip}
   {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
     {#if migrating}

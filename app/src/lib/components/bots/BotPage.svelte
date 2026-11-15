@@ -1,24 +1,18 @@
-<script lang="ts" module>
-  import type { StripCell, StripTick, CellState } from '#lib/strip.ts';
-  /** The history strip (StatusStrip's props). */
-  export interface BotStrip { cells: readonly StripCell[]; ticks: readonly StripTick[]; title: string; legend: Partial<Record<CellState, string>>; summary: string; line: string; empty?: string }
-</script>
-
 <script lang="ts">
-  // A bot's page (docs/design.md "Bots"), one order for the three: LoadError (a failed read), the verdict (VerdictCard:
-  // the word, the as-of, the sentence, an answer `note`, the key row, the bot's ⋯ `menu`), 要対応
-  // (AttentionCard, only for what the sentence doesn't say: steps and links, `attn` more of the bot's own), the
-  // history strip (StatusStrip; left out with nothing in it, unless `empty` warns), the bot's own sections and 設定
+  // A bot's page (docs/design.md "Bots"), one order for the three: LoadError (a failed read), the status (StatusCard:
+  // the word, the as-of, the act or the sentence, an answer `note`, the bot's ⋯ `menu`, the history `strip`), 要対応
+  // (AttentionCard, only for what the card doesn't say: steps and links, the sentence an act took the place of, `attn`
+  // more of the bot's own), the bot's own sections and 設定
   // (`children`: a sec-label and a card each), くわしく last (FactList, the page's `more` rows at its bottom), and `tail` (保養所's sticky 保存 bar). Until the
   // first status (none kept), or when it failed, the ⋯ stands alone in a row and the bot's own sections show all
-  // the same (ジム's calendar never waits on /status); a skeleton in the verdict's place. The shared CSS of the pages
+  // the same (ジム's calendar never waits on /status); a skeleton in the card's place. The shared CSS of the pages
   // lives here (.sec, .hint, .lbl). `attr`: the page's data-* prefix (data-gym-page, …).
   import type { Snippet } from 'svelte';
   import type { BotVerdict } from '#lib/bots/types.ts';
   import NavButton from '../ui/NavButton.svelte';
-  import VerdictCard, { type BotKey } from './VerdictCard.svelte';
+  import StatusCard from './StatusCard.svelte';
+  import type { CardStrip } from '#lib/strip.ts';
   import AttentionCard from './AttentionCard.svelte';
-  import StatusStrip from './StatusStrip.svelte';
   import FactList, { type MoreRow } from './FactList.svelte';
   import Skeleton from './Skeleton.svelte';
   import LoadError from './LoadError.svelte';
@@ -34,13 +28,12 @@
     stale: boolean;
     readAt?: number | null;
     now?: number;
-    keys?: readonly BotKey[];
     menu?: { label: string; onopen: () => void } | null;
     note?: Snippet;
     attention?: { lines: readonly string[]; links?: readonly { id: string; href: string; label: string }[] } | null;
     attn?: Snippet;
     children?: Snippet;
-    strip?: BotStrip | null;
+    strip?: CardStrip | null;
     facts: readonly { id: string; label: string; value: string; href?: string }[];
     /** Rows at the bottom of くわしく. */
     more?: readonly MoreRow[];
@@ -48,19 +41,19 @@
     /** More data-* on the page (ジム's data-config). */
     rootAttr?: Record<string, string>;
   }
-  let { rootAttr = {}, attr, busy, failed, onretry, verdict, vid, stale, readAt = null, now = Date.now(), keys = [], menu = null, note, attention, attn, children, strip, facts, more, tail }: Props = $props();
-  const showStrip = $derived(!!strip && (!!strip.empty || strip.cells.some((c) => c.state !== 'none')));
-  const showAttn = $derived(!!attn || !!attention?.lines.length || !!attention?.links?.length);
+  let { rootAttr = {}, attr, busy, failed, onretry, verdict, vid, stale, readAt = null, now = Date.now(), menu = null, note, attention, attn, children, strip, facts, more, tail }: Props = $props();
+  /** 確認が必要's lines: the sentence when the card shows the act in its place, then the page's. */
+  const lines = $derived([...(verdict?.needsLook && verdict.act && verdict.sentence ? [verdict.sentence] : []), ...(attention?.lines ?? [])]);
+  const showAttn = $derived(!!attn || !!lines.length || !!attention?.links?.length);
 </script>
 
 <div class="bpage" {...{ [`data-${attr}-page`]: '' }} {...rootAttr} aria-busy={busy}>
   {#if failed}<LoadError code={failed} {busy} {onretry} {attr} />{/if}
   {#if verdict}
-    <VerdictCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} {stale} {readAt} {now} {keys} page={attr} {menu} {note} />
+    <StatusCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} {stale} {readAt} {now} page={attr} {menu} {note} {strip} />
     {#if showAttn}
-      <AttentionCard tone={verdict.tone === 'bad' ? 'bad' : 'warn'} lines={attention?.lines ?? []} links={attention?.links} {attr} children={attn} />
+      <AttentionCard tone={verdict.tone === 'bad' ? 'bad' : 'warn'} {lines} links={attention?.links} {attr} children={attn} />
     {/if}
-    {#if showStrip && strip}<StatusStrip {...strip} {attr} />{/if}
   {:else}
     {#if menu || note}
       <div class="card pad actrow">

@@ -6,7 +6,7 @@
 import { t } from '#lib/i18n/index.ts';
 import { formatNum } from '#lib/i18n/index.ts';
 import { isNum, isRec, isText } from '#lib/contract/guards.ts';
-import type { CellState, StripCell, StripTick } from '#lib/strip.ts';
+import type { CardStrip, CellState, StripCell } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
 import type { BotTone, BotWord } from '#lib/bots/types.ts';
 import { shortDayAt, shortDay, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
@@ -206,20 +206,20 @@ const dataDay = (s: KaloriStatus): string => {
   return d ? shortDay(d) : t('kalori.unknown');
 };
 
-/** The verdict card: its tone, its word, and one plain sentence. */
+/** The status card: its tone, its word, and one plain sentence (none for 順調 and まだ: the word, the strip's 最初の
+ *  更新 line say it). */
 export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: BotWord; word: string; sentence: string; verdict: Verdict } {
   const v = verdictOf(s, now);
   const nextAt = s.next === null ? t('kalori.unknown') : whenOf(s.next);
   const bands = trippedOf(s);
   const first = s.reasons.find((r) => !isBand(r));
   const sentence =
-    v === 'healthy' ? t('kalori.say.healthy', { date: dataDay(s) })
+    v === 'healthy' || v === 'none' ? ''
     : v === 'running' ? t('kalori.say.running', { n: s.run?.round ?? 1, d: s.run?.shardsDone ?? 0, total: s.run?.shardsTotal ?? 20 })
     : v === 'held' ? (bands.length ? t(bands.every((b) => CHANGE_BANDS.has(b.code)) ? 'kalori.say.held' : 'kalori.say.heldOdd', { what: bands.map(bandText).join('、'), date: dataDay(s) })
       : first ? reasonText(s, first) : t('kalori.say.heldPlain', { date: dataDay(s) }))
     : v === 'late' ? t('kalori.reason.late', { time: nextAt })
-    : v === 'failing' ? (first ? reasonText(s, first) : t('kalori.reason.crash'))
-    : t('kalori.say.none', { time: nextAt });
+    : first ? reasonText(s, first) : t('kalori.reason.crash');
   return { tone: TONE[v], w: WORD[v], word: t(`bots.w.${WORD[v]}`), sentence, verdict: v };
 }
 
@@ -248,27 +248,15 @@ export const menuLinks = (s: KaloriStatus, now: number): { id: 'run' | 'pr' | 'w
   { id: 'workflow', href: `${REPO}actions/workflows/${WORKFLOW}` }
 ];
 
-/** The key row (docs/design.md "Bots"): 前回 (the newest run kept, with what came of it: the deploy's failure or
- *  revert when it's the merge's run, else its result; a run under way doesn't count yet) · 次回 · 品目 (the accepted data's; 不調: 最後の成功, the
- *  newest merged run). */
-export function keyRow(s: KaloriStatus, now: number): { id: string; label: string; value: string; sub?: string }[] {
-  const h = s.history.at(-1);
-  const d = s.merge?.deploy;
-  // the merge's outcome only when that newest run is the merge's (merged, or a released one the revert marked failed);
-  // a later run (a nochange, a failure) says its own
-  const mine = !!h && (h.result === 'merged' || (h.result === 'failed' && d === 'reverted' && h.tag !== null));
-  const out = !h ? undefined : mine && (d === 'failed' || d === 'reverted') ? t(`kalori.key.${d}`) : t(h.result === 'none' ? 'kalori.key.none' : `kalori.strip.${h.result}`);
-  const ok = s.history.findLast((w) => w.result === 'merged');
-  const third = verdictOf(s, now) === 'failing'
-    ? { id: 'ok', label: t('bots.key.lastOk'), value: ok ? timeOf(ok.t, now) : t('bots.key.never') }
-    : s.dataset?.items != null
-      ? { id: 'items', label: t('kalori.fact.items'), value: t('kalori.items', { n: formatNum(s.dataset.items) }), ...(s.dataset.shops === null ? {} : { sub: t('kalori.shops', { n: formatNum(s.dataset.shops) }) }) }
-      : null;
-  return [
-    { id: 'last', label: t('bots.key.last'), value: h ? timeOf(h.t, now) : t('bots.key.never'), ...(out ? { sub: out } : {}) },
-    { id: 'next', label: t('bots.key.next'), value: s.next === null ? t('kalori.unknown') : t('bots.key.about', { time: timeOf(s.next, now) }) },
-    ...(third ? [third] : [])
-  ];
+/** The card's edges (docs/bots.md): 次回 (the run's day) and the 成果 term (the accepted data's 品目; 不調: 最後の
+ *  成功, the newest merged run). */
+export function edges(s: KaloriStatus, now: number): { next: string | null; outcome: string | null } {
+  const next = s.next === null ? null : mdOf(s.next);
+  if (verdictOf(s, now) === 'failing') {
+    const ok = s.history.findLast((w) => w.result === 'merged');
+    return { next, outcome: t('bots.strip.lastOk', { time: ok ? timeOf(ok.t, now) : t('bots.key.never') }) };
+  }
+  return { next, outcome: s.dataset?.items != null ? t('kalori.strip.items', { n: formatNum(s.dataset.items) }) : null };
 }
 
 /** 網羅: 完了, else what was fetched of what was found, and the failures. */
@@ -328,9 +316,10 @@ function weekText(w: Week): string {
 
 /** The last 8 weeks, oldest first, a cell each, around the Wednesday run (`next`, stepped a week at a time until the
  *  newest cell holds `now`): green 公開, yellow capped 保留, coral hatched 失敗, a low tick no run (each week's newest
- *  run decides it; all of them are named in its line). Ticks every other week (the run's day); VoiceOver's line
- *  「直近8週：公開7回、保留1回、失敗0回」, the one under it 「公開7 · 保留1 · 失敗0」. */
-export function weekStrip(s: KaloriStatus, now: number): { cells: StripCell[]; ticks: StripTick[]; summary: string; line: string } {
+ *  run decides it; all of them are named in its line). Ticks every other week (the run's day), 前回 (the newest run's
+ *  week, its day), the states' words, VoiceOver's line 「直近8週：公開7回、保留1回、失敗0回」; no run ever kept:
+ *  「最初の更新は11/19ごろ」 in its place. */
+export function weekStrip(s: KaloriStatus, now: number): Omit<CardStrip, 'next' | 'outcome'> {
   // the first week's end past now, on the run's weekly grid (arithmetic: never a loop over the file's numbers)
   const base = (s.next ?? now) - LEAD_MS;
   const end = base + (Math.floor((now - base) / WEEK_MS) + 1) * WEEK_MS;
@@ -346,5 +335,11 @@ export function weekStrip(s: KaloriStatus, now: number): { cells: StripCell[]; t
   const count = (st: CellState) => cells.filter((c) => c.state === st).length;
   const ticks = cells.flatMap((c, i) => ((WEEKS - 1 - i) % 2 === 0 ? [{ i, label: mdOf(c.start + LEAD_MS) }] : []));
   const n = { ok: count('ok'), held: count('warn'), failed: count('fail') };
-  return { cells, ticks, summary: t('kalori.strip.summary', n), line: t('kalori.strip.line', n) };
+  const h = s.history.at(-1);
+  const i = h ? cells.findIndex((c) => h.t >= c.start && h.t < c.end) : -1;
+  return {
+    cells, ticks, last: i < 0 ? null : { i, label: mdOf(h!.t) }, summary: t('kalori.strip.summary', n),
+    words: { ok: t('kalori.strip.legend.ok'), warn: t('kalori.strip.legend.avail'), fail: t('kalori.strip.legend.fail') },
+    empty: s.history.length ? null : { text: t('kalori.strip.first', { time: s.next === null ? t('kalori.unknown') : mdOf(s.next) }) }
+  };
 }

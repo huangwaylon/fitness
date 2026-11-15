@@ -482,8 +482,8 @@ test('⋯: its rows per state; stopping asks first, restarting doesn’t; 確認
   const { gym, sheet } = await phone(page, context);
   const verdict = sheet.locator('[data-gym-verdict]');
   const menu = sheet.locator('[data-gym-menu]');
-  const [m, w] = [(await menu.boundingBox())!, (await verdict.locator('[data-bots-head]').boundingBox())!];
-  expect(Math.abs(m.y + m.height / 2 - (w.y + w.height / 2))).toBeLessThan(8); // on the headline's row
+  const [m, w] = [(await menu.boundingBox())!, (await verdict.locator('[data-bots-word]').boundingBox())!];
+  expect(Math.abs(m.y + m.height / 2 - (w.y + w.height / 2))).toBeLessThan(8); // on the word's row
   let rows = await menuRows(page, sheet);
   await expect(rows).toHaveText(['今すぐ確認', '確認を停止', '確認の間隔 · 15分ごと ›']);
   await expect(page.locator('dialog[open]').last()).toHaveAccessibleName('ジムの操作');

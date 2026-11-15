@@ -83,7 +83,7 @@ range); 🔕 on it saves nothing, and 🧹 puts it back to off.
   backup.
 - **Status**: a verdict with every reason that applies (rules in `status.ts`), the last and next check, the last
   success and error, failures in a row, LINE's quota and whether its webhook points here, and the last day's checks
-  (at most 150, the app's 直近12時間 strip: alarm or 🔎, a code per program, open and new counts, the push). Public
+  (at most 150, the app's strip: alarm or 🔎, a code per program, open and new counts, the push). Public
   on purpose: totals and codes only, never names, IDs, the group, the days' settings, slot times or error text. It
   reads the object's memory only; LINE's facts are read by the alarm after a push, and hourly. The Worker keeps the
   answer 60 s, so a flood costs Worker requests, not the object's.
@@ -146,7 +146,7 @@ app (the page reads an older Worker's answers, not the other way round). `NAME_A
 `$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
 - **Look**: the app's ボット → ジム (the calendar of the 25 days, the controls; under 動作状況 the verdict, the
-  直近12時間 strip of the checks and the facts; up to a minute old), or `curl -s $URL/status`. Details:
+  strip of the checks and the facts; up to a minute old), or `curl -s $URL/status`. Details:
   `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
   `MODE = "off"`: LINE's taps are ignored and the app's changes and 🔎 refused (503 `mode_off`; the page still shows

@@ -19,7 +19,7 @@ export interface BotState<S> {
   readonly fresh: boolean;
   /** The last read's failure code, or null. */
   readonly failed: string | null;
-  /** The status shown is the kept one, a read on its way or failed (VerdictCard's 更新中). */
+  /** The status shown is the kept one, a read on its way or failed (StatusCard's 更新中). */
   readonly stale: boolean;
   /** When the status shown was read (this phone's clock), or null. */
   readonly readAt: number | null;

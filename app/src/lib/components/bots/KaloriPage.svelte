@@ -1,14 +1,14 @@
 <script lang="ts">
   // ボット's メニュー tab (docs/design.md "Bots"): the Kalori scraper (the weekly chain-menu scrape, its merge into main
   // and the deploy) as its workflows report it in status.json (lib/kalori/status.ts), on BotPage: the verdict (順調 ·
-  // 取得中 · 保留 · 遅れ · 不調 · まだありません; 遅れ by the phone's clock too) with its key row (前回 · 次回 · 品目, 不調:
+  // 取得中 · 保留 · 遅れ · 不調 · まだありません; 遅れ by the phone's clock too) with 直近8週 (a cell a week; 前回 · 次回 · 品目, 不調:
   // 最後の成功) and its ⋯ (links only: 実行を開く while a run is worth a look, PRを開く while 保留, ワークフローを開く; a
-  // run is started on GitHub); 確認が必要 only for what its sentence leaves out (保留: the PR to merge by hand); 直近8週
-  // (a cell a week); くわしく, 前回の変更 at its bottom (ChangeBar: 追加 · 値の変更 · 終了 · 削除). No email nor issue: the card and the
+  // run is started on GitHub); 確認が必要 only for what its sentence leaves out (保留: the PR to merge by hand);
+  // くわしく, 前回の変更 at its bottom (ChangeBar: 追加 · 値の変更 · 終了 · 削除). No email nor issue: the card and the
   // dot are the one signal. Read while shown (useBot.svelte.ts).
   import { t } from '#lib/i18n/index.ts';
   import { minuteNow } from '#lib/time/clock.ts';
-  import { alertLines, changeParts, factRows, keyRow, menuLinks, verdictOf, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
+  import { alertLines, changeParts, edges, factRows, menuLinks, verdictOf, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
   import { driver } from '#lib/kalori/bot.ts';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import BotPage from './BotPage.svelte';
@@ -26,9 +26,8 @@
   const links = $derived(data ? menuLinks(data, now) : []);
   const LABEL = { run: 'bots.attn.run', pr: 'bots.attn.pr', workflow: 'kalori.menu.workflow' } as const;
   let menuOpen = $state(false);
-  const strip = $derived(data && !none ? weekStrip(data, now) : null);
+  const strip = $derived(data && { ...weekStrip(data, now), ...edges(data, now) });
   const change = $derived(data?.diff && !none ? changeParts(data.diff) : null);
-  const legend = { ok: t('kalori.strip.legend.ok'), warn: t('kalori.strip.legend.avail'), fail: t('kalori.strip.legend.fail'), none: t('kalori.strip.legend.none') };
 </script>
 
 <!-- 前回の変更: a row at the bottom of くわしく -->
@@ -37,9 +36,9 @@
 {/snippet}
 
 <BotPage attr="kalori" busy={bot.poll.loading} failed={bot.failed} onretry={() => void bot.poll.refresh()} {verdict} {vid}
-  stale={bot.stale} readAt={bot.readAt} {now} keys={data ? keyRow(data, now) : []} menu={data ? { label: t('kalori.menu.label'), onopen: () => (menuOpen = true) } : null}
+  stale={bot.stale} readAt={bot.readAt} {now} menu={data ? { label: t('kalori.menu.label'), onopen: () => (menuOpen = true) } : null}
   attention={{ lines, links: links.filter((l) => l.id === 'pr').map((l) => ({ id: 'pr', href: l.href, label: t('bots.attn.pr') })) }}
-  strip={strip && { ...strip, title: t('kalori.strip.title'), legend }}
+  {strip}
   facts={data ? factRows(data, now) : []} more={change ? [{ id: 'latest', label: t('kalori.sec.latest'), body: latestRow }] : []} />
 
 <!-- ⋯: links only, each opening GitHub in a new tab -->
