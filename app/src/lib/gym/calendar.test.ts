@@ -35,11 +35,11 @@ describe('monthCells', () => {
     expect([laterNote(rows(), '2026-11'), laterNote(rows(), '2026-12'), laterNote(rows().slice(0, 10), '2026-12')]).toEqual([null, '12/7以降はまだ設定できません', '12/1以降はまだ設定できません']);
   });
 
-  it('the 4-day default: the next 4 days ふだん 12–13 (mint, dashed), the rest 未確認', () => {
+  it('the 4-day default: the next 4 days ふだん 12–13 (mint, dashed), the rest 確認しない', () => {
     const cells = live(rows());
     expect(cells.slice(0, 5).map((c) => [c.fill, c.time])).toEqual([['usual', null], ['usual', null], ['usual', null], ['usual', null], ['none', null]]); // ふだん: its dashed fill, no hours
     expect(cells[0].label).toBe('11/12（木）（今日）、ふだん（12:00〜13:00）');
-    expect(cells[4].label).toBe('11/16（月）、未確認');
+    expect(cells[4].label).toBe('11/16（月）、確認しない');
   });
 
   it('fills, times and marks: 終日, 時間指定, オフ, ⏳, announced', () => {
@@ -197,7 +197,7 @@ describe('undo', () => {
     expect(undoActs(ranged, after(ranged, { a: 'any', d: day(9) }), 4)).toEqual([{ a: 'range', d: day(9), s: '18:00', e: '20:00' }]);
   });
 
-  it('back to ふだん with its window, to 未確認 with a reset', () => {
+  it('back to ふだん with its window, to 確認しない with a reset', () => {
     const was = rows();
     expect(undoActs(was, after(was, { a: 'any', d: day(1) }), 4)).toEqual([{ a: 'range', d: day(1), s: '12:00', e: '13:00' }]);
     expect(undoActs(was, after(was, { a: 'any', d: day(9) }), 4)).toEqual([{ a: 'reset', d: day(9) }]);

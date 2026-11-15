@@ -167,8 +167,10 @@
   .cell.warn { background: var(--c-yuzu); box-shadow: inset 0 3px 0 var(--text-soft), inset 0 0 0 1px var(--edge); }
   .cell.fail { background: repeating-linear-gradient(135deg, var(--c-coral) 0 3px, color-mix(in srgb, var(--c-coral) 45%, var(--card)) 3px 5px); }
   .strip .cell.none { height: 4px; }
-  /* idle: ran with nothing to check, a low sunk bar (neither none's tick nor ok's green) */
+  /* idle: ran with nothing to check, a low sunk bar (neither none's tick nor ok's green); the day's sunk beige at night
+     too (the night's --ctl-off is the card's navy: an outline alone) */
   .strip .cell.idle { height: 30%; box-shadow: inset 0 2px 0 var(--edge), inset 0 0 0 1px var(--edge); }
+  :global(:root[data-tod='night']) .cell.idle { background: var(--c-sunk); }
   .cell.none { box-shadow: none; background: color-mix(in srgb, var(--edge) 35%, var(--ctl-off)); }
   /* 前回 ringed; a picked cell outlined */
   .strip .cell.last, .strip .cell.on { outline: 2px solid var(--text); outline-offset: 1px; }
@@ -179,9 +181,8 @@
   .sline { display: flex; align-items: baseline; gap: 10px; margin-top: 2px; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }
   .line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin: 0; min-width: 0; }
   .count { display: inline-flex; align-items: center; gap: 4px; color: var(--text-soft); }
-  .count .cell { display: inline-block; width: 8px; height: 12px; flex: none; }
-  .count .cell.ok { height: 8px; }
-  .count .cell.idle { height: 5px; box-shadow: inset 0 0 0 1px var(--edge); }
+  /* every state's swatch one 10×10 square (its fill tells it, as the calendars' legends) */
+  .count .cell { display: inline-block; width: 10px; height: 10px; flex: none; }
   .outcome { color: var(--text); }
   .next { margin-left: auto; color: var(--text-soft); white-space: nowrap; }
   /* nothing kept: a line the strip's height in its place (sunk; plain: neutral, uncoloured) */

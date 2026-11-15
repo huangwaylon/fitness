@@ -2,7 +2,7 @@
   // ジム's calendar (docs/bots.md; the cells are lib/gym/calendar.ts monthCells), on MonthCalendar (保養所's grid
   // too): this month or next, Mon–Sun, the rows' days a button each (~46×54: the date and marks; 終日 a bell, オフ the
   // bell struck, 時間指定 its hours stacked, 13px), the rest faint, dashed or blank and inert; the legend under it
-  // (見ない first: the plain paper day). Fills: 終日 leaf,
+  // (確認しない first: the plain paper day). Fills: 終日 leaf,
   // 時間指定 mint, ふだん mint dashed (the next 4 days), 未チェック paper, オフ sunk; ⏳ a bare hourglass beside the
   // announced count (gold); picked (select mode) a yuzu ring; a day a poll saw change flashes. Select mode: a tap
   // toggles a day, a weekday's header toggles its column (the month's settable days); a long press starts it.

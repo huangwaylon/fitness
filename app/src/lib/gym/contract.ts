@@ -92,7 +92,7 @@ export interface StatusDay {
 /** One of the 25 days the calendar shows (today first). */
 export interface DayRow {
   day: Day;
-  /** The saved rule; null = none (ふだん within the default days, else 未確認). An unset weekend day is 'skip' (its
+  /** The saved rule; null = none (ふだん within the default days, else 確認しない). An unset weekend day is 'skip' (its
    *  rule in force: an app from before weekends went off shows it as オフ). */
   rule: Rule | null;
   /** No saved rule, and a default weekday: DEFAULT_WINDOW applies. */

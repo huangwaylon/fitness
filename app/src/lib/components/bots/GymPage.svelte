@@ -345,8 +345,9 @@
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
       <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month">
-        <!-- 選択 (完了) before the months, at their size (the kit's .chip.s: 32px drawn in a 44px hit) -->
-        {#if cfg && selecting}<button type="button" class="chip s sel" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
+        <!-- 選択 (完了) before the months, at their size (the kit's .chip.s: 32px drawn in a 44px hit); 完了 on (yuzu), so
+             the select mode shows; 12px before 11月, not a third month -->
+        {#if cfg && selecting}<button type="button" class="chip s sel" aria-pressed="true" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
         {:else if cfg}<button type="button" class="chip s sel" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
       </MonthSwitch>
       {#if cfgState === 'failed'}
@@ -425,8 +426,8 @@
   .note.bad { color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 
 
-  /* 選択 (完了): in MonthSwitch's slot, before 11月 · 12月 */
-  .sel { margin: 0; }
+  /* 選択 (完了): in MonthSwitch's slot, before 11月 · 12月, 12px from them (the slot's 8 + 4) */
+  .sel { margin: 0 4px 0 0; }
   .later { margin-bottom: 0; }
 
   /* the select mode's bar: stuck to the scroller's foot */

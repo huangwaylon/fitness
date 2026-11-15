@@ -17,14 +17,14 @@ demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot
   alarm with no day to check, none a tick; 前回 ringed, idle too, its time the right tick in ink); 11px ticks; one row: the
   counts > 0 with swatches (idle alone: its label 確認する日なし, no number) + one 成果 (いま空き{n}枠 · 予約 · 品目・店; 不調: 最後の成功), or the picked
   cell's line, and 「次回 12:09ごろ」 at its end (none stopped or off). Never kept: a 32px sunk line (保養所 running: a plain 確認なし). Night: only
-  warn (`--n-warn`) and bad filled. · `AttentionCard` (what the card lacks; an act's sentence) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom, named with their counts in its summary: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
+  warn (`--n-warn`) and bad filled; idle cells keep the day's beige. Count swatches one 10×10 square. · `AttentionCard` (what the card lacks; an act's sentence) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom, named with their counts in its summary: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
   ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.
 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月, 11月 · 12月; past days faint,
 not-yet days dashed; filled days mixed over cream by night too (ink ≥ 7.5:1); one weekday label 「{wd}曜日をすべて選ぶ」.
-ジム: ⋯ 今すぐ確認 · 停止/再開 · 間隔 ›; 54pt cells (`GymCalendar`, legend 見ない first), 選択 / 完了 before 11月 · 12月 at
+ジム: ⋯ 今すぐ確認 · 停止/再開 · 間隔 ›; 54pt cells (`GymCalendar`, legend 確認しない first), 選択 / 完了 (on: yuzu) 12px before 11月 · 12月 at
 their size (`.chip.s` in `MonthSwitch`'s slot) or long press; at once (取り消す).
 保養所: ⋯ 開始 / 停止; holds in 確認が必要. 日付 unfolded, 44 cells (`ItsCalendar`: a tap a night, a weekday its column;
 要対応 a yuzu 「!」 as the tab's, 仮押さえ a yuzu ring;
-✕ any stay) in the 保存 draft (未保存); 設定 folded: 施設 (presets; no ★), 詳細, 通知 (per phone; 自動で確定 in the draft).
+✕ any stay) in the 保存 draft (未保存); 設定 folded: 施設 (presets; no ★), 詳細, 通知 (自動で確定 first, in the draft; the push per phone, at once; one switch row each).
 メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next` too, naming the missed run (the last one due, not the file's coming `next`); 保留 names `diff.tripped`; ⋯ links only.

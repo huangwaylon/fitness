@@ -270,11 +270,20 @@ test('a draft isn’t dropped by a stray ✕, Esc or the ジム tab: each asks f
   const { sheet, its } = await phone(page, context, 'A');
   await open(sheet);
   const ask = page.locator('dialog[open] [data-discard-ask]');
-  // 自動で確定 in 通知 (the user asked: out of 詳細), still in the 保存 draft: 通知 says 未保存 and 自動確定
+  // 自動で確定 in 通知 (the user asked: out of 詳細), still in the 保存 draft: 通知 says 未保存 and 自動で確定
   await expect(its.locator('[data-its-fold="detail"] [data-its-auto]')).toHaveCount(0);
   await unfold(its, 'notify');
   const auto = its.locator('[data-its-fold="notify"] [data-its-auto]');
+  // first in 通知, saying it waits for 保存; drawn as the push row under it (the kit's switch row: one fill, edge, size)
+  await expect(its.locator('#its-settings')).toHaveText('設定・保存で反映');
+  await expect(auto).toContainText('保存で反映・仮押さえの後、申込まで自動で進めます');
+  const push = its.locator('[data-its-fold="notify"] [data-its-push]');
+  expect((await auto.boundingBox())!.y).toBeLessThan((await push.boundingBox())!.y);
+  const look = (l: typeof auto) => l.evaluate((e) => { const s = getComputedStyle(e); return [s.backgroundColor, s.boxShadow, s.transform, s.minHeight, Math.round(e.getBoundingClientRect().width)]; });
+  expect(await look(push)).toEqual(await look(auto));
   await auto.click();
+  // the note wraps by phrase (never 「予 / 約」)
+  await expect(page.locator('dialog[open] .note wbr').first()).toBeAttached();
   await page.locator('dialog[open] [data-action="cancel"]').click();
   await expect(auto).toBeFocused();
   await expect(auto).toHaveAttribute('aria-checked', 'false');
@@ -285,7 +294,7 @@ test('a draft isn’t dropped by a stray ✕, Esc or the ジム tab: each asks f
   await expect(auto).toHaveAttribute('aria-checked', 'true');
   await expect(auto).toBeFocused();
   await expect(its.locator('[data-its-date="2026-11-21"]')).toContainText('あと17日 · 自動で確定');
-  await expect(its.locator('[data-its-sum-notify]')).toHaveText('オフ・自動確定');
+  await expect(its.locator('[data-its-sum-notify]')).toHaveText('オフ・自動で確定');
   await expect(its.locator('[data-its-fold="notify"] [data-its-unsaved]')).toHaveCount(1);
   await expect(its.locator('[data-its-fold="detail"] [data-its-unsaved]')).toHaveCount(0);
   await expect(its.locator('[data-its-sum-detail]')).toHaveText('15秒・2人');

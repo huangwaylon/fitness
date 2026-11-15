@@ -118,8 +118,9 @@
   small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: 1.3; }
   .prow[aria-checked='true'] small { color: var(--c-ink-soft); }
   .prow[aria-disabled='true'] { cursor: default; }
-  /* nothing to turn on here (a Safari tab, a Worker without push): the disabled tier (sunk, no edge: SoundSection's) */
-  .prow[aria-disabled='true'][aria-checked='false'] { background: var(--ctl-off); box-shadow: none; transform: translateY(4px); color: var(--text-soft); }
+  /* nothing to turn on here (a Safari tab, a Worker without push): the kit's switch row as 自動で確定's above it, its
+     label soft and its switch faded (the line under it says why) */
+  .prow[aria-disabled='true'][aria-checked='false'] { color: var(--text-soft); }
   .prow[aria-disabled='true'][aria-checked='false'] .sw { opacity: .55; }
   .test { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .test .btn { margin: 0; }

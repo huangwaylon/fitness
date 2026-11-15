@@ -56,7 +56,7 @@
   "gym.ctl.stopNote": "No alerts until it's restarted.",
   "gym.ctl.stop": "Stop",
   "gym.ctl.cancel": "Cancel",
-  "gym.cal.label": "Alerts by day, {month}",
+  "gym.cal.label": "Settings by day, {month}",
   "gym.cal.select": "Select",
   "gym.cal.later": "From {day} on, days can't be set yet",
   "gym.cal.done": "Done",

@@ -37,7 +37,7 @@ describe('the draft', () => {
   it('設定’s rows: 自動で確定 is 通知’s (its summary and 未保存), 詳細 only 確認の間隔 and 人数', () => {
     const d = draft(), on = draft({ autoConfirm: true }), p = { search: [], off: [] };
     expect(settingsSummary(d, p, false)).toMatchObject({ detail: '15秒・2人', notify: 'オフ' });
-    expect(settingsSummary(on, p, true)).toMatchObject({ detail: '15秒・2人', notify: 'オン・自動確定' });
+    expect(settingsSummary(on, p, true)).toMatchObject({ detail: '15秒・2人', notify: 'オン・自動で確定' });
     expect(changedParts(on, d)).toEqual({ dates: false, hotels: false, detail: false, notify: true });
     expect(changedParts(draft({ guests: 3 }), d)).toEqual({ dates: false, hotels: false, detail: true, notify: false });
   });

@@ -9,7 +9,7 @@
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
   // (plain <details>, each with its summary and 未保存 while the draft changed it): 施設 (探す is the allow-list; presets,
   // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数),
-  // 通知 (this phone's push, at once: ItsNotify; 自動で確定, in the draft) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
+  // 通知 (自動で確定 first, in the draft: 保存で反映 under it; this phone's push, at once: ItsNotify, the same switch row) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
   // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
   // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
   // way or running, every minute otherwise, only while shown (useBot.svelte.ts); 保存 / 開始 / 停止 abort a read in
@@ -422,7 +422,7 @@
     {/if}
 
     <section class="sec" aria-labelledby="its-settings" data-its-settings>
-      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}<span class="sethint"> · {t('its.set.hint')}</span></h3>
+      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}<span class="sethint">{t('its.set.hint')}</span></h3>
       {#each fresh as r (r.key)}
         <div class="card pad fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
@@ -470,12 +470,12 @@
       <details class="card fold" data-its-fold="notify">
         <summary class="prow static"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{sums?.notify}</small></span>{#if changed.notify}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
-        <ItsNotify push={status.push} bind:on={notifyOn} />
         <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self"
           onclick={() => (shown!.autoConfirm ? setAuto(false) : (askAuto = true))}>
-          <span class="prl">{t('its.auto')}</span>
+          <span class="prl">{t('its.auto')}<small>{t('its.auto.hint')}</small></span>
           <span class="sw" aria-hidden="true"><i></i></span>
         </button>
+        <ItsNotify push={status.push} bind:on={notifyOn} />
         </div>
       </details>
       {#if recentOps}<p class="hint" data-its-saved-by><Phrases text={recentOps} /></p>{/if}
