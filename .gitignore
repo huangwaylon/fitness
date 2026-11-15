@@ -15,3 +15,7 @@ food-data/**/__pycache__/
 # its-bot's local dev (wrangler dev): the DO's local storage and the secrets file
 its/worker/.wrangler/
 its/worker/.dev.vars
+# local env files (the real person keys for real-data testing: .env.local): never committed
+.env
+.env.*
+!.env.example
