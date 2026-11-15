@@ -153,8 +153,6 @@ const DAY_MS = 86_400_000;
 const WEEK_MS = 7 * DAY_MS;
 /** 遅れ: the scheduled run this long overdue with no newer one. */
 const LATE_MS = DAY_MS;
-/** The dot on its own: the scheduled run this long overdue, whatever the file says. */
-const STALE_MS = 2 * DAY_MS;
 
 /** `4時間12分`; under an hour `38分`. */
 const duration = (ms: number): string => durationOf(ms, false);
@@ -165,18 +163,18 @@ const pct = (f: number): string => `${(Math.round(f * 1000) / 10).toFixed(1)}%`;
  *  it (a 順調, 取得中 or まだ file the workflows never got to rewrite). 保留 and 不調 stay theirs. */
 export function verdictOf(s: KaloriStatus, now: number): Verdict {
   if (s.verdict === 'held' || s.verdict === 'failing' || s.verdict === 'late') return s.verdict;
-  return overdue(s, now, LATE_MS) ? 'late' : s.verdict;
+  return overdue(s, now) ? 'late' : s.verdict;
 }
 
-/** The scheduled run more than `by` behind `now`, and no run started since it. */
-const overdue = (s: KaloriStatus, now: number, by: number): boolean => s.next !== null && now > s.next + by && !(s.run && s.run.startedAt >= s.next);
+/** The scheduled run more than LATE_MS behind `now`, and no run started since it. */
+const overdue = (s: KaloriStatus, now: number): boolean => s.next !== null && now > s.next + LATE_MS && !(s.run && s.run.startedAt >= s.next);
 
 const TONE: Record<Verdict, BotTone> = { healthy: 'good', running: 'busy', held: 'warn', late: 'warn', failing: 'bad', none: 'idle' };
 const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', running: 'fetching', held: 'held', late: 'late', failing: 'failing', none: 'none' };
 
-/** ボット's dot (the menu's pill, the メニュー tab): 保留, 不調 or 遅れ, an alert standing, or the run two days overdue. */
+/** ボット's dot (the menu's pill, the メニュー tab): 保留, 不調 or 遅れ (an overdue run is 遅れ), an alert standing. */
 export const needsAttention = (s: KaloriStatus, now: number): boolean =>
-  ['held', 'failing', 'late'].includes(verdictOf(s, now)) || s.alert !== null || overdue(s, now, STALE_MS);
+  ['held', 'failing', 'late'].includes(verdictOf(s, now)) || s.alert !== null;
 
 const isBand = (r: string): boolean => r.startsWith('band_');
 /** The bands of the changes themselves (保留's 変更が多すぎる); the others (item and shop counts, drops): いつもと違う. */

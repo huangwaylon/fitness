@@ -1,5 +1,5 @@
 // ボット's メニュー driver (lib/bots/types.ts): status.json (status.ts), its verdict (遅れ by the phone's clock too:
-// verdictOf) with 「!」 for 保留, 不調, 遅れ, an alert or a run two days overdue (needsAttention), read every minute while
+// verdictOf) with 「!」 for 保留, 不調, 遅れ, or an alert (needsAttention), read every minute while
 // shown. Loaded lazily (components/bots/registry.ts).
 import type { BotDriver } from '#lib/bots/types.ts';
 import { t } from '#lib/i18n/index.ts';

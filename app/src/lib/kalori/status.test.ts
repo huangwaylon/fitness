@@ -284,11 +284,11 @@ describe('fetchStatus', () => {
 });
 
 describe('the driver (lib/kalori/bot.ts)', () => {
-  it('its verdict: needsAttention’s 「!」 (an alert, two days overdue), 遅れ by the clock, 取得中 busy, 保留’s act', async () => {
+  it('its verdict: needsAttention’s 「!」 (an alert), 遅れ by the clock, 取得中 busy, 保留’s act', async () => {
     const { driver } = await import('./bot.ts');
     const cases: [Record<string, unknown>, number][] = [
       [{}, NOW], [{ verdict: 'held' }, NOW], [{ verdict: 'failing' }, NOW], [{ verdict: 'late' }, NOW], [{ alert: { text: 'x', since: NOW } }, NOW],
-      [{ verdict: 'running' }, NOW], [{ verdict: 'none' }, NOW], [{}, NEXT + DAY + 1], [{}, NEXT + 2 * DAY + 1]
+      [{ verdict: 'running' }, NOW], [{ verdict: 'none' }, NOW], [{}, NEXT + DAY + 1]
     ];
     for (const [over, now] of cases) expect(driver.verdict(status(over), now).needsLook, JSON.stringify(over)).toBe(needsAttention(status(over), now));
     expect(driver.verdict(status(), NEXT + DAY + 1)).toMatchObject({ tone: 'warn', w: 'late', word: '遅れ', needsLook: true });
