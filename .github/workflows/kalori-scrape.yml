@@ -2,7 +2,8 @@
 # into the `kalori-wip` prerelease, in rounds, then a dated release `kalori-YYYY-MM-DD` that fetch.py's KALORI_TAG pins.
 # A round: the canary (the parsers on a few live pages; any failure stops it, exit 4 a layout drift), setup (seed kalori-wip from
 # the accepted release, main's KALORI_TAG; the sitemap once), 20 shards (each its own state-N.json and shard-N.jsonl.gz,
-# saved back even when it fails), a retry (a new run of the shards that hit the site's limits, exit 2 or 3, or whose job
+# saved back even when it fails; at most 10 at a time, the rest queued: Actions' 20 jobs at once are account-wide, the
+# ITS runner 1 and suumo 8; a shard's rate is total_rate/20, so about half of it at once), a retry (a new run of the shards that hit the site's limits, exit 2 or 3, or whose job
 # was lost), the report (coverage, the diff against the accepted release; complete and within the diff's limits:
 # publish), the update (kalori.json built without write access; then, within the bands, a commit on main, else a
 # branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
@@ -187,6 +188,7 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
+      max-parallel: 10
       matrix:
         shard: ${{ fromJSON(inputs.shards || '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]') }}
     env:
