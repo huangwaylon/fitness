@@ -698,8 +698,11 @@ class Shard:
         if not index:
             self.log('WARNING: shops index unreadable; the shops in state only')
         owned = sorted(s for s in set(index) | set(self.shops) if owner(s, self.shards) == self.n)
-        if self.only:
-            owned = [s for s in owned if s in self.only]
+        if self.only:   # a test round: a shard owning none of them has nothing to do (exit 0, not a crash)
+            mine = [s for s in owned if s in self.only]
+            if owned and not mine:
+                raise Stop('none of only_shops in this shard: nothing to do')
+            owned = mine
         if not owned:
             raise Stop('no shops owned (index unreadable, no state)', 1)
         for slug in owned:

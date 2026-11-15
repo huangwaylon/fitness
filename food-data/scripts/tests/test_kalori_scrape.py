@@ -645,6 +645,13 @@ class FakeSite(unittest.TestCase):
         self.assertEqual(self.failures(), fails)
         self.assertEqual(len(self.lines()), n)
 
+    def test_only_shops_none_owned(self):
+        """An only_shops round: a shard owning none of them exits 0 (nothing to do), no page fetched, nothing written."""
+        self.menu()
+        self.assertEqual(self.scrape('--only-shops', 'not-mine'), 0, self.log)
+        self.assertEqual((self.lines(), self.product_hits()), ([], []))
+        self.assertIn('nothing to do', self.log[-1])
+
     def test_drift_without_a_canary(self):
         """A first crawl of a drifted site: DRIFT_STREAK drift pages in a row -> 4, nothing marked."""
         self.menu()

@@ -212,8 +212,7 @@ suumo 8), the rest queued: a round can take up to two shard budgets.
 3. **By hand** (`gh workflow run kalori-scrape.yml`, on main: another branch never publishes): `refetch_before` today
    for a full refetch. A test: `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`):
    never publishes or writes the status; its wip release goes when its shards end well, else `gh release delete
-   kalori-wip-<name> --cleanup-tag` (with `only_shops`, every shard owning none of them stops with exit 1: always by hand;
-   an all-green smoke: `max_requests` alone, e.g. 5). **Locally**: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
+   kalori-wip-<name> --cleanup-tag` (with `only_shops`, a shard owning none of them exits 0 with nothing to do). **Locally**: bump `KALORI_TAG` in `food-data/scripts/fetch.py`; `python3 -I
    food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run
    food:data`; the tests and `npm run verify`; commit `fetch.py` and `app/static/food/`.
 

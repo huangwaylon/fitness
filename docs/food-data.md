@@ -200,7 +200,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   with the ITS runner's 1 and suumo's 8), the rest queued as a second wave; a shard's rate is `total_rate`/20, so
   about half of it runs at once; one that hit the limit re-dispatched. A full refetch (`refetch_before` today, or
   `RECORDS_FROM` raised with `PARSER_VERSION`): ~56k requests, 4-5 rounds. Before the next one: ask kalori.jp for a bulk export.
-- **Exit codes** (`kalori_scrape.py`): 0 done or out of budget, 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
+- **Exit codes** (`kalori_scrape.py`): 0 done, out of budget or nothing to do (no shop of `only_shops` in the shard), 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
   a lost, timed-out or cancelled shard job are retried), 4 the pages no longer parse (never retried; no product marked
   no-nutrition), 5 more new no-nutrition marks than max(25, 2 % of the fetches) (undone; never retried), 6 the diff
   over its limits. The **canary** runs first each round (the parsers on a few live pages); any failure of it stops the round (exit 4:
