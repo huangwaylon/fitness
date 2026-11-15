@@ -101,6 +101,9 @@ describe('push.ts: the messages', () => {
     expect(await topicOf('2026-11-22', HOTEL)).toBe(t);
     expect(await topicOf('2026-11-21', HOTEL)).not.toBe(t);
     expect(await topicOf('2026-11-22', 'ホテル')).not.toBe(t);
+    // two spellings of one facility (normName's: the stays match by it) are one stay: one tag, a later push replaces
+    expect(await topicOf('2026-11-22', 'ＮＡＧＵ　勝浦')).toBe(t);
+    expect(await topicOf('2026-11-22', 'nagu勝浦')).toBe(t);
   });
 });
 

@@ -113,8 +113,9 @@ const sha256 = async (s: string) => new Uint8Array(await crypto.subtle.digest('S
 /** A subscription's id: its endpoint's SHA-256, hex. Logged as its first 6 characters. */
 export const epOf = async (endpoint: string): Promise<string> => [...(await sha256(endpoint))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
-/** One stay's Topic and tag: base64url(SHA-256(date|hotel)), 32 characters: a stay's later push replaces its earlier. */
-export const topicOf = async (date: string, hotel: string): Promise<string> => b64url(await sha256(`${date}|${hotel}`)).slice(0, 32);
+/** One stay's Topic and tag: base64url(SHA-256(its stayKey: date|normName(hotel))), 32 characters: a stay's later push
+ *  replaces its earlier, whichever spelling of the facility each event carries (stays match by normName). */
+export const topicOf = async (date: string, hotel: string): Promise<string> => b64url(await sha256(stayKey(date, hotel))).slice(0, 32);
 
 /** Subscriptions refreshed within PUSH_KEEP_DAYS. */
 export const liveSubs = (subs: PushSub[], now: number): PushSub[] => subs.filter((s) => now - s.at < KEEP_MS);

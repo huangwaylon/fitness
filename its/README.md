@@ -166,7 +166,7 @@ Web Push to the members' phones, opt-in per phone from ボット → 保養所 (
 one exception). The site's mail stays the backstop: Focus, Sleep or a dead battery can hold a push back.
 
 **What's sent when** (`worker/src/push.ts`, from the events a report adds; never raw bookings, never problems: those
-are its-health's issue, but for the watchdog's missing runner). One stay's notifications share a Topic and tag (base64url(SHA-256(`date|hotel`))[:32]), so a
+are its-health's issue, but for the watchdog's missing runner). One stay's notifications share a Topic and tag (base64url(SHA-256(`date|normName(hotel)`))[:32], the key stays match by), so a
 later one replaces the earlier; each is sent once per hold / stay whichever run reports it.
 
 | Event | When | Title · body (ja; en from the subscription's `lang`) | Urgency, TTL |
