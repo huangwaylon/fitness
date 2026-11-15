@@ -28,9 +28,10 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health         
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
-`version.json`, CSP header and the relay's CORS for it; its-bot's cron dispatches it and its-health.yml at :15, its-health.yml at
-:45: `its/worker/src/dispatch.ts`, with its `GH_DISPATCH_TOKEN`; GitHub's own schedules the backstop), red (GitHub mails the owner) unless all pass; it warns when the
-weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
+`version.json`, CSP header and the relay's CORS for it). GitHub drops most scheduled runs, so its-bot's cron dispatches
+health.yml at :15 and its-health.yml at :15 and :45 (`its/worker/src/dispatch.ts` `dueHealth`, its `GH_DISPATCH_TOKEN`;
+`its health-dispatch refused` warns); each workflow's own schedule is the backstop. Red (GitHub mails the owner)
+unless all pass; it warns when the weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
 fetch; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
@@ -177,16 +178,12 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 `npm run logs`, the checklist, the alert and `LOG_OFF`: [observability.md](observability.md).
 
 ## 12. The bots
-- The gym bot (`gym-bot`): deploy, secrets, the stop switch and its checks: [gym/README.md](../../gym/README.md).
-- The ITS booker (`its-bot` + the Actions runner): deploy, secrets, stop, back up the record, Push (VAPID setup,
-  rotation, the hand check): [its/README.md](../../its/README.md); the `its-alert` issue and a run's timeline:
-  its/README.md "Investigating" (Gmail is the ground truth for holds and 予約確定).
-- Rotating a token both sides share (§3's keys, the runner's): 停止 → change both → 開始.
-- **The ITS runner is silent** (the `runner_silent` push, verdict `late`): `cd its/worker && npx wrangler tail
-  --search "its watchdog"`, then its/README.md "Watchdog"; start one by hand: `gh workflow run its-runner.yml --ref main`.
-- **`GH_DISPATCH_TOKEN`** (開始's, the watchdog's and the health workflows' dispatch): a fine-grained PAT, `huangwaylon/fitness` only,
-  Actions read and write, ≤ 1 year (its/README.md "Secrets"). Set or rotate: `cd its/worker && npx wrangler secret
-  put GH_DISPATCH_TOKEN` (live at once, no deploy, no 停止), then delete the old token on GitHub.
+Each bot's doc has its deploy, secrets, stop switch, health checks, alerts and what to do when it breaks:
+- ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose". No alert outside the app.
+- 保養所 (`its-bot` + the Actions runner): [its/README.md](../../its/README.md) "Operations", "Investigating" (the
+  `its-alert` issue, `runner_silent`; Gmail is the ground truth), "Secrets" (`GH_DISPATCH_TOKEN`, also §2's dispatch;
+  a token both sides share: 停止 → change both → 開始).
+- メニュー (Kalori): §13.
 
 ## 13. Refresh Kalori
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
@@ -198,13 +195,14 @@ release keeps the progress.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.
 1. **A held update** (the PR `kalori-update/<tag>`, its body the gate table, `HELD` on the band that failed; no CI
-   runs on it): read the counts (items ~53.8k), then merge it by hand: the push to main runs the full CI and the
+   runs on it): read the counts (items ~54k), then merge it by hand: the push to main runs the full CI and the
    deploy, and accepts the release. Reject it: close the PR (or `gh release delete <tag> --cleanup-tag`): the next
    refresh starts again from the accepted one. `main_moved`: its branch sits on the old main, so redo it locally (3).
    Actions may not open PRs here: the status links the branch's compare page.
 2. **Undo an automatic merge:** `git revert <the "Kalori: <tag> (auto)" commit>`, push, `gh workflow run pages.yml
-   --ref main`, then `GH_REPO=huangwaylon/fitness .github/scripts/kalori-status.sh undo --tag <tag>` (its run no
-   longer counts toward the bands). The next refresh seeds from the restored `KALORI_TAG`.
+   --ref main`, then `GH_REPO=huangwaylon/fitness .github/scripts/kalori-status.sh undo --tag <tag> --fetch-py
+   food-data/scripts/fetch.py --kalori app/static/food/kalori.json` from the reverted main (its run no longer counts
+   toward the bands; the two files put the restored dataset in status.json). The next refresh seeds from the restored `KALORI_TAG`.
 3. **By hand** (`gh workflow run kalori-scrape.yml`, on main: another branch never publishes): `refetch_before` today
    for a full refetch (4-5 rounds). A test: `-f wip_tag=kalori-wip-<name>` (with `only_shops` or `max_requests`):
    never publishes or writes the status; its wip release goes when its shards end well, else `gh release delete
@@ -215,7 +213,8 @@ release keeps the progress.
 **Alerts:** `status.json` on the `kalori-status` branch (`kalori-scrape.yml`, `kalori-watch.yml`); an alert is a dot on
 the bots page's メニュー tab with its run and PR, no email. A healthy run clears it. Each reason:
 - `drift`: kalori.jp changed its pages. Update the fixtures (`food-data/scripts/tests/fixtures/`) and the parsers until
-  the tests pass, bump `PARSER_VERSION` (a full refetch), dispatch. `nonut` (the no-nutrition cap, marks undone):
+  the tests pass, bump `PARSER_VERSION` (and `RECORDS_FROM` to it when the records change: a full
+  refetch), dispatch. `nonut` (the no-nutrition cap, marks undone):
   likely a parser miss on a new page kind; fix it the same way.
 - `limits`, `incomplete`: dispatch again (the wip keeps the progress); recurring: a lower `total_rate`, or kalori.jp
   blocking runners.
@@ -227,4 +226,5 @@ the bots page's メニュー tab with its run and PR, no email. A healthy run cl
 - `deploy_failed`: Deploy UI failed twice, or its dispatch failed or was never seen: its log; re-run it (`gh run
   rerun <id>`), or undo (2).
 - `reverted`: Food data checks failed on the merge, so main has its revert: the checks' log; fix, then dispatch.
-- `late` (no refresh, scheduled or dispatched, in 8 days), `stuck` (a run over 2 days: `gh run cancel <id>`): dispatch.
+- `late` (no finished refresh, scheduled or dispatched, in 8 days), `stuck` (a run over 2 days, or a `running` status
+  8 h old with no run: `gh run cancel <id>`): dispatch.

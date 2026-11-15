@@ -33,12 +33,10 @@ Each day has at most one rule (`src/store.ts`):
 
 Why 4 days: 予約は同時に3件まで (the gym takes 3 reservations at a time), so a few near weekdays at lunch are the
 usual; further days wait for a setting. A weekend day is off unless set (⏰ 12:00〜13:00 on it is saved like any
-range); 🔕 on it saves nothing, and 🧹 puts it back to off. At the first load after this change the bot ran once
-(`mig:weekendOff` in its storage): a Saturday or Sunday then among the next 4 days with no rule got ⏰ 12:00〜13:00
-saved (its ⏳ kept), so it went on being checked; a new bot, or one whose state couldn't be read, saves none.
-Rolling the Worker back past 32b2e0dfe turns 12:00〜13:00 on again for near weekends with no saved rule (one turned
-off under this code is saved as nothing), and a re-deploy won't redo the move: clear `mig:weekendOff`, or set those
-weekends explicitly.
+range); 🔕 on it saves nothing, and 🧹 puts it back to off. A one-time move at load (`mig:weekendOff` in its storage)
+saved ⏰ 12:00〜13:00 on the near weekends then unset. A rollback to a deployment before 32b2e0dfe (the first with
+weekends off) checks unset near weekends again, and a re-deploy won't redo the move: clear `mig:weekendOff`, or set
+those weekends.
 
 - **⏳ check from** a date and time: the day is ignored until then (e.g. Friday from Tuesday 18:00, when an earlier
   booking is over: 3 at a time). Kept between 🔔 and ⏰ unless the new window leaves no slot after it (then cleared,
@@ -98,23 +96,19 @@ weekends explicitly.
   interval, stopped or not, the last and next check, and `text`, LINE's reply verbatim (`actions.ts` `config`; one
   test drives both). Read from memory, never kept. Logs `config read by=A`, `config refused 401 unauthorized` (log
   level; warn: 403 origin, 405 method, 401 `no_keys`), or `config failed <ErrName>` (500, with CORS).
-- **The app** (`POST /gym/act`, the contract's `ActInput`): `{a: any|skip|reset|unfrom, d, base?}`, `{a: range, d, s,
-  e, base?}`, `{a: from, d, at, base?}` (`at` a clock time on `d`, or an instant: the app sends one), `{a: interval, m}`, `{a: pause|resume|check}`, and
-  the calendar's bulk form `{a, days: [{d, base?}]}` (all or nothing). The bot reads it into the same actions as the
-  taps (`actions.ts` `parseAction` → `apply`), so the rules and the words are LINE's. Answers `{ok: true, changed,
-  reply, config}` (🔎 also `lines`, `partial`, `slots`); refusals `{ok: false, error, hint?}` with LINE's hint, each
-  code's status in the contract's `ACT_STATUS` (a 409 `stale` with `config`, a 429 `cooldown` with `Retry-After`),
-  with CORS. The page sends its acts one at a time. `base` is a day's setting (rule and ⏳, not the announced times)
-  as a short hash (each `/gym/config` row's): a 409 `stale` only when that day changed since; the interval and
-  stop/restart are absolute; LINE's taps stay last-writer-wins. A change made in the app leaves the same state, 📋
-  and `/gym/config` as the same tap on LINE (worker.test runs each kind both ways); the group is never told of it.
-  The app's own list of its changes is `runtime.changes`: the latest per day and per check setting (🔕, 🧹, 🔕 on a
-  day is one 🔕), at most 12, newest first. Names: `NAME_A` / `NAME_B` (secrets), else メンバーA / B. `/gym/config`
-  adds the calendar's 25 `rows` (`{day, rule, usual, weekend, from, announced, resettable, base}`: an unset weekend
-  day is `rule: 'skip'`, so an older app shows it off), `defaultDays`,
-  `intervals`, `checkReadyAt`, `checking` and `changes`. Logs:
-  `act by=A a=any d=… changed=1 rid=…` a day, `changed … (by web A)`, `act by=A a=… refused <code>` (log level),
-  `act refused 401|403|405|413|503 …` (warn).
+- **The app** (`POST /gym/act`, the contract's `ActInput`): a day's act (`any`, `skip`, `reset`, `unfrom`, `range`,
+  `from`), the calendar's bulk form `{a, days: [{d, base?}]}` (all or nothing), `interval`, `pause`, `resume`, `check`.
+  The bot reads it into the same actions as the taps (`actions.ts` `parseAction` → `apply`), so the rules, the words,
+  the state and 📋 are LINE's (worker.test runs each kind both ways); the group is never told of it. Answers `{ok:
+  true, changed, reply, config}` (🔎 also `lines`, `partial`, `slots`); refusals `{ok: false, error, hint?}`, each
+  code's status in `ACT_STATUS` (409 `stale` with `config`, 429 `cooldown` with `Retry-After`), with CORS. `base` is a
+  day's setting (rule and ⏳) hashed (each `/gym/config` row's): `stale` only when that day changed since; the
+  interval and stop/restart are absolute; LINE's taps stay last-writer-wins. `runtime.changes` is the app's list of
+  its changes (the latest per day and per check setting, at most 12; names `NAME_A` / `NAME_B`, else メンバーA / B).
+  `/gym/config` adds the calendar's 25 `rows` (the contract's `DayRow`: an unset weekend day is `rule: 'skip'`, so
+  an older app shows it off), `defaultDays`, `intervals`, `checkReadyAt`, `checking` and `changes`. Logs: `act by=A
+  a=any d=… changed=1 rid=…`, `changed … (by web A)`, `act by=A a=… refused <code>` (log level), `act refused
+  401|403|405|413|503 …` (warn).
 - **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors
   (through …)`, every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with
   `npx wrangler tail`.
@@ -142,6 +136,7 @@ curl -s https://gym-bot.island-fund-relay.workers.dev/health   # {"ok":true,"mod
 ```
 
 Tests run on Node with `cloudflare:workers` mocked, no network. The account is pinned in wrangler.toml (the relay's).
+The Worker imports `app/src/lib/gym/contract.ts`, `app/src/lib/contract/` and `relay/src/{auth,body}.ts` (gym.yml's paths).
 A deploy keeps the state and the alarm. A contract change (`app/src/lib/gym/contract.ts`): the Worker first, then the
 app (the page reads an older Worker's answers, not the other way round). `NAME_A` / `NAME_B` are put once
 (`npx wrangler secret put NAME_A`), before the deploy that should show them.
@@ -150,9 +145,10 @@ app (the page reads an older Worker's answers, not the other way round). `NAME_A
 
 `$URL` = `https://gym-bot.island-fund-relay.workers.dev`; `$GYM_TOKEN`, `$LINE_CHANNEL_TOKEN` from the secrets copy.
 
-- **Look**: the app's ボット → ジム (the calendar of the 25 days, the controls; under 動作状況 the verdict, the
-  strip of the checks and the facts; up to a minute old), or `curl -s $URL/status`. Details:
-  `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next check.
+- **Look**: the app's ボット → ジム (the verdict, the strip of the checks, the facts, the calendar; up to a minute
+  old), or `curl -s $URL/status`. Details: `npx wrangler tail`. In the group, 📋 設定を見る shows the last and next
+  check. **Alerts**: none outside the app: ボット's dot ([bots.md](../docs/bots.md)) on 故障, 遅れ 90 min past the next
+  check, or the site failing 6 h without a success; the group gets `SITE_DOWN` after 3 failed checks.
 - **Stop everything** (alerts gone wrong): `npm run deploy -- --var MODE:off` from a clean main, then commit
   `MODE = "off"`: LINE's taps are ignored and the app's changes and 🔎 refused (503 `mode_off`; the page still shows
   the settings). Back on: `MODE = "bot"`, deploy, then `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state`

@@ -78,7 +78,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: its/runner
 
-      # Before anything is installed: a stopped bot (paused, MODE off, no dates) ends the job here in seconds. Another
+      # Before anything is installed: a stopped bot (paused, MODE off, no dates, restart_cap) ends the job here in seconds. Another
       # run's lease doesn't (it may be a run that is ending: main.py's claim waits for it). Reads the config only, with
       # the image's python3 (remote.py is stdlib); prints codes, never the settings (remote.preflight_main).
       - name: Preflight
@@ -140,7 +140,7 @@ jobs:
           exec python restart.py "$deadline" xvfb-run -a --server-args='-screen 0 1280x1600x24' python main.py --remote --deadline "$deadline"
 
       # Whether the handoff job dispatches a successor: a run that lasted ITS_HANDOFF_AFTER_MIN, while the bot should
-      # run (the preflight again: paused, MODE off, no dates or no answer write run=0). Not after a cancel: someone
+      # run (the preflight again: paused, MODE off, no dates, restart_cap or no answer write run=0). Not after a cancel: someone
       # stopped it (or the watchdog, which dispatches itself). A run that died sooner is left to the watchdog.
       - name: Hand off?
         id: next

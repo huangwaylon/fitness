@@ -116,7 +116,7 @@ remote.py, whose docstring has the detail. Each seam is a no-op for a local run 
   record's seq); every date is Tokyo's
   (`book_hotels.tokyo_today`).
 - **Bounded**: `--deadline`, a drain ≤ 15 min, `run_end`; a stop, a ban and a silent Worker end it too (main.py's
-  docstring). The workflow's preflight skips the job only for paused, MODE off or no dates.
+  docstring). The workflow's preflight skips the job for paused, MODE off, no dates or `restart_cap`; no answer fails it.
 - **Reports** every 30 s, and at once after a hold or an outcome: counts and codes only (`remote.Remote.build_report`).
 - **Outcome codes** (lastError's `cls`, `solve_failed` and `human_needed` details) are lower-case codes:
   `confirm_booking.outcome_code`, chrome.py's leg; the app's list is contract.ts's `HUMAN_NEEDED_DETAILS`.
@@ -143,18 +143,13 @@ encryption uploads nothing. On the Mac: `scripts/fetch-logs.sh <run-id>[-<attemp
 
 ## The workflow (its-runner.yml)
 
-Each run dispatches the next as it ends (the `handoff` job, GITHUB_TOKEN, `actions: write` its only permission): when
-it lasted `ITS_HANDOFF_AFTER_MIN` (60 min), wasn't cancelled, the preflight, asked again, says run, and no other run
-of the workflow is unfinished (that one is the successor); the successor
-waits in the concurrency group till this run job ends. Also on 開始's dispatch, the its-bot watchdog's (its/README.md
-"Watchdog") and every 30 min (`7,37`; GitHub drops most ticks: a backstop). The `gate` job (no concurrency) ends a scheduled tick at once while another
+Each run dispatches the next as it ends (the `handoff` job), and 開始, the watchdog and the schedule (`7,37`, a
+backstop) start one too: its/README.md "Watchdog". The `gate` job (no concurrency) ends a scheduled tick at once while another
 run younger than `ITS_SKIP_YOUNGER_MIN` (ITS_RUN_MIN − 30) is in progress, so a tick never leaves a pending run for the
 next tick to cancel; the tick in a run's last 30 min queues the next run (it starts as this one ends), and a dispatch
 always queues. The `run` job holds the `its-runner` concurrency group: preflight, install, `main.py --remote --deadline
 START + ITS_RUN_MIN` (320 min) under `restart.py`, drain ≤ 15 min, inside the step's 345 and the job's 350 (test_remote's workflow test
-checks the nesting). its-health.yml reads the Worker's `/health/its` every 30 min with the repo secret
-`ITS_HEALTH_TOKEN` (inert without it) and keeps one `its-alert` issue: codes only; /health/its not answering is red, and
-twice in a row (the previous run failed too) the alert `health_unreachable`.
+checks the nesting). The alert (its-health.yml): its/README.md "Investigating".
 
 ## State
 

@@ -33,8 +33,8 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          # The Worker imports the shared contract (app/src/lib/its, and lib/contract through relay's auth) and
-          # relay/src/auth.ts; nothing else of the repo is needed (app/static's 521 MB above all). A file in the
+          # The Worker imports the shared contract (app/src/lib/its, lib/contract, lib/types.ts) and
+          # relay/src/{auth,body}.ts; nothing else of the repo is needed (app/static's 521 MB above all). A file in the
           # list, so not cone mode.
           sparse-checkout-cone-mode: false
           sparse-checkout: |

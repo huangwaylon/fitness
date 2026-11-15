@@ -117,8 +117,7 @@ weeks before.
 7. Close the alert's issue with the cause.
 
 ## The alert
-`health.yml` (hourly: dispatched at :15 by its-bot's cron, `its/worker/src/dispatch.ts`, as GitHub drops most of a
-schedule's runs; its own cron the backstop; and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
+`health.yml` (hourly, how it's started: [runbook §2](runbook.md#2-check-the-backend)) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
 labelled `alert` (or comments on the open one when its reasons change, not their counts) when, in the last 6 hours, errors > 20 (not
 counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
 day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead), or
@@ -126,10 +125,6 @@ no record backup has been good in 48 h; a green run closes it. The issue holds c
 `/health` fails the job.
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.
-
-## ITS investigating
-The ITS booker's record, logs, alert reasons and what to do are its own: [its/README.md](../../its/README.md)
-"Investigating" (one run's timeline: `npm run its:logs -- <run>` in `its/worker/`; Gmail is the ground truth).
 
 ## Costs
 ### The log (Free plan)

@@ -1,4 +1,4 @@
-// One its-runner run, investigated (docs/ops/observability.md "ITS investigating"): the Worker's record of it (GET
+// One its-runner run, investigated (its/README.md "Investigating"): the Worker's record of it (GET
 // /its/status with a member's key: its events, bookings, and the runner shown if it's this run) and its private log
 // (its/runner/scripts/fetch-logs.sh: downloaded, decrypted), merged into one timeline in Tokyo time.
 //   npm run its:logs -- <run>[-<attempt>] [--out DIR] [--no-log]
