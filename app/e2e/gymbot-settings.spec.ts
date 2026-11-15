@@ -316,16 +316,15 @@ test('⏳ on a 🔔 day ends at 21:00 (21:30 the bot refuses); a ⏰ that leaves
 
 test('select mode: weekday headers and days, one bulk act, one 取り消す; 時間指定 for them all; a long press starts it', async ({ page, context }) => {
   const { gym, day, sheet } = await phone(page, context);
-  // 選択 last in the months' row (the user's ask: beside 11月 · 12月), right-aligned, 44px; 完了 in its place
+  // 選択 just before 11月 · 12月 in their row, at their size (the user's ask); 完了 in its place
   const head = sheet.locator('[data-gym-config] .mhead');
   const box = async (sel: string) => (await head.locator(sel).boundingBox())!;
   for (const sel of ['[data-gym-select]', '[data-gym-bulk-done]']) {
     if (sel.endsWith('done]')) await sheet.locator('[data-gym-select]').click();
-    const [b, m, row] = [await box(sel), await box('[data-gym-month="2026-12"]'), (await head.boundingBox())!];
-    expect(b.height).toBeGreaterThanOrEqual(44);
-    expect(b.x).toBeGreaterThan(m.x + m.width);
+    const [b, m] = [await box(sel), await box('[data-gym-month="2026-11"]')];
+    expect(Math.abs(b.height - m.height)).toBeLessThan(1);
+    expect(b.x + b.width).toBeLessThanOrEqual(m.x);
     expect(Math.abs(b.y + b.height / 2 - (m.y + m.height / 2))).toBeLessThan(2);
-    expect(b.x + b.width).toBeLessThanOrEqual(row.x + row.width + 0.5);
   }
   const bar = sheet.locator('[data-gym-bulk]');
   await expect(bar).toContainText('日付か曜日を選んでください');
