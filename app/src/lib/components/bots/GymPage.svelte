@@ -5,8 +5,8 @@
   // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
   // reasons, what to do), 直近12時間, then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
   // the heading; a tap opens the day's editor, GymDayEditor; 選択 under the grid or a long press the select mode, 完了 in 選択's place,
-  // its sticky bar one bulk act, the picks kept across months), the days not settable yet, the 3-reservation note and
-  // アプリで変更 (the last ones, one a day, folded); くわしく last.
+  // its sticky bar one bulk act, the picks kept across months), the days not settable yet and the 3-reservation note;
+  // くわしく last, アプリで変更 (the last ones, one a day) at its bottom.
   // No 設定 section: every change applies at once (no draft): the page shows it, POST
   // /gym/act sends it after the ones before it (one at a time, each with its days' bases as the last answer left them),
   // and its banner offers 取り消す for 5 s (one undo an act or bulk act: lib/gym/calendar.ts undoActs); a failure puts
@@ -325,13 +325,22 @@
   {#if !editOpen}{@render noteRow()}{/if}
 {/snippet}
 
+<!-- アプリで変更: the last ones, one a day, at the bottom of くわしく -->
+{#snippet changesRow()}
+  <ul class="rows">
+    {#each (cfg?.changes ?? []).slice(0, 6) as c (`${c.t}-${c.d}-${c.a}`)}
+      <li data-gym-change><span class="txt"><b>{changeLine(c)}</b><small>{t('gym.changes.by', { who: c.who, time: timeOf(c.t, nowMs) })}</small></span></li>
+    {/each}
+  </ul>
+{/snippet}
+
 <BotPage attr="gym" busy={poll.loading} failed={bot.failed} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict} stale={bot.stale}
   readAt={bot.readAt} now={nowMs} keys={data ? keyRow(data, nowMs) : []}
   rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} menu={cfg ? { label: t('gym.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={result || checking || cfg?.checking || (note && !editOpen) ? answer : undefined}
   attention={reasons.length ? { lines: reasons } : null}
   strip={strip && { ...strip, title: t('gym.strip.title', { n: strip.width }), legend }}
-  {facts}>
+  {facts} more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), body: changesRow }] : []}>
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
       <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month" />
@@ -361,16 +370,6 @@
               <button type="button" class="btn small paper" data-gym-bulk-act="reset" data-sfx="tick" aria-disabled={!picked.length} onclick={bulkReset}>{t('gym.editor.reset')}</button>
             </div>
           </div>
-        {/if}
-        {#if cfg.changes.length}
-          <details class="changes" data-gym-changes>
-            <summary class="prow"><span class="prl">{t('gym.changes.title')}<small>{t('gym.changes.n', { n: Math.min(6, cfg.changes.length) })}</small></span><span class="chev" aria-hidden="true"></span></summary>
-            <ul class="card rows">
-              {#each cfg.changes.slice(0, 6) as c (`${c.t}-${c.d}-${c.a}`)}
-                <li data-gym-change><span class="txt"><b>{changeLine(c)}</b><small>{t('gym.changes.by', { who: c.who, time: timeOf(c.t, nowMs) })}</small></span></li>
-              {/each}
-            </ul>
-          </details>
         {/if}
       {/if}
     </section>
@@ -413,7 +412,6 @@
 </Sheet>
 
 <style>
-  .card { margin: 0; padding: 12px 14px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
 
   /* 今すぐ確認's line under the verdict's sentence */
   .rline { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); font-variant-numeric: tabular-nums; }
@@ -440,10 +438,7 @@
   .bulkbar .acts { display: flex; gap: 6px; }
   .bulkbar .btn { margin: 0; padding: 0 6px; flex: 1 1 0; min-width: 0; }
 
-  .changes > summary { list-style: none; }
-  .changes > summary::-webkit-details-marker { display: none; }
-  .changes[open] > summary { margin-bottom: 8px; }
-  .rows { list-style: none; display: grid; gap: 8px; margin: 0; }
+  .rows { list-style: none; display: grid; gap: 8px; margin: 0; padding: 0; }
   .rows > li + li { padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
   .txt { font-size: var(--fs-body); }
   .txt b { display: block; line-height: 1.3; }

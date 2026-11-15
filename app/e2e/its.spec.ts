@@ -143,6 +143,12 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the verdic
   await expect(its.locator('[data-its-fact="report"]')).toContainText('11:59');
   await expect(its.locator('[data-its-fact="mode"] dd')).toHaveText('稼働');
   await expect(its.locator('[data-its-foot]')).toHaveCount(0);
+  // 最近の動き: the fold's last row, under the facts (no card of its own)
+  const recent = its.locator('[data-its-more] > :last-child');
+  await expect(recent).toHaveAttribute('data-its-recent', '');
+  await expect(recent.getByRole('heading', { level: 3 })).toHaveText('最近の動き');
+  await expect(recent.locator('[data-its-event]')).toHaveCount(2);
+  await expect(its.locator('[data-its-recent]')).toHaveCount(1);
   // 日付 never folded: the calendar and the nights under it; 設定: folded rows with their summaries; who saved last
   await expect(its.locator('[data-its-fold]')).toHaveCount(3);
   await expect(its.locator('[data-its-fold="dates"]')).toHaveCount(0);

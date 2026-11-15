@@ -134,7 +134,6 @@
   "gym.mode.off": "Off",
   "gym.strip.line": "{n} checks · {fails} failed · {avail} open",
   "gym.strip.legend.warn": "Part failed",
-  "gym.changes.n": "{n}",
   "gym.menu.label": "Gym actions",
   "gym.menu.checkWait": "Check now (wait {s}s)",
   "gym.menu.stop": "Stop checking",

@@ -237,11 +237,8 @@ test('メニュー 順調: the verdict and its key row, 直近8週, 前回の変
   await expect(key('last')).toHaveText(/前回\s*6:53\s*公開/);
   await expect(key('next')).toHaveText(/次回\s*11\/11（水）2:41ごろ/);
   await expect(key('items')).toHaveText(/品目\s*54,269品\s*448店/);
-  await expect(k.getByRole('heading', { level: 3 })).toHaveText(['前回の変更']);
+  await expect(k.getByRole('heading', { level: 3 })).toHaveCount(0); // 前回の変更: in くわしく
   await expect(k.locator('[data-kalori-tag]')).toHaveCount(0);
-  await expect(k.getByRole('img', { name: '前回の変更：追加12、値の変更38、終了3、削除0' })).toBeVisible();
-  await expect(k.locator('.bar .seg')).toHaveCount(3); // 削除 0: in the legend only
-  await expect(k.locator('.legend > span[data-kalori-seg]')).toHaveText(['追加 12', '値の変更 38', '終了 3', '削除 0']);
   // 直近8週: 8 cells, one held (warn: yellow, capped), the summary for VoiceOver and under it, the newest cell's line
   await expect(k.locator('[data-kalori-cell]')).toHaveCount(8);
   await expect(k.locator('[data-kalori-cell="warn"]')).toHaveCount(1);
@@ -264,6 +261,13 @@ test('メニュー 順調: the verdict and its key row, 直近8週, 前回の変
   await expect(fact('rounds')).toHaveText('1回');
   await expect(fact('deploy')).toHaveText('完了');
   await expect(fact('rate')).toContainText('値の変更 0.1%・上限5.0%');
+  // 前回の変更: the fold's last row, under the facts
+  const latest = k.locator('[data-kalori-more] > :last-child');
+  await expect(latest).toHaveAttribute('data-kalori-latest', '');
+  await expect(latest.getByRole('heading', { level: 3 })).toHaveText('前回の変更');
+  await expect(latest.getByRole('img', { name: '前回の変更：追加12、値の変更38、終了3、削除0' })).toBeVisible();
+  await expect(latest.locator('.bar .seg')).toHaveCount(3); // 削除 0: in the legend only
+  await expect(latest.locator('.legend > span[data-kalori-seg]')).toHaveText(['追加 12', '値の変更 38', '終了 3', '削除 0']);
   await expect(k.locator('[data-kalori-fact="items"], [data-kalori-fact="last"], [data-kalori-fact="workflow"], [data-kalori-foot]')).toHaveCount(0);
   expect(calls.kalori).toBeGreaterThan(0);
 });
@@ -305,7 +309,6 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the s
   await expect(alert.getByRole('link')).toHaveText(['PRを開く']);
   await expect(alert.locator('[data-kalori-link="pr"]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/pull/901');
   expect((await alert.getByRole('link').boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await expect(k.locator('.legend > span[data-kalori-seg="gone"]')).toHaveText('削除 1,200');
   await expect(await kaloriMenu(page, k)).toHaveText(['実行を開く', 'PRを開く', 'ワークフローを開く']);
   for (const a of await page.locator('dialog[open] [data-action]').all()) expect((await a.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
@@ -315,6 +318,7 @@ test('メニュー 保留: the yuzu verdict, 確認が必要 (role status: the s
   // くわしく: no 変更率 nor PR beside 保留's own
   await k.locator('[data-kalori-more] summary').click();
   await expect(k.locator('[data-kalori-fact="rate"], [data-kalori-fact="pr"], [data-kalori-fact="run"]')).toHaveCount(0);
+  await expect(k.locator('.legend > span[data-kalori-seg="gone"]')).toHaveText('削除 1,200');
 });
 
 test('メニュー 保留 names only the gates that tripped (diff.tripped), never a band within its limit; a tests-only hold says so', async ({ page, context }) => {
@@ -358,8 +362,9 @@ test('メニュー 取得中: the round in the verdict, 前回 the last run kept
   const k = await openKalori(page, tab, sheet);
   await expect(k.locator('[data-kalori-verdict="running"]')).toContainText('2回目 · 20区画中7完了');
   await expect(k.locator('[data-kalori-alert]')).toHaveCount(0);
-  await expect(k.getByRole('img', { name: /^前回の変更：追加12/ })).toBeVisible();
   await expect(k.locator('[data-kalori-key="last"]')).toHaveText(/前回\s*6:53\s*公開/); // not the run under way
+  await k.locator('[data-kalori-more] summary').click();
+  await expect(k.getByRole('img', { name: /^前回の変更：追加12/ })).toBeVisible();
 
   setKalori((now) => kaloriStatus(now, { verdict: 'none', run: null, dataset: null, diff: null, coverage: null, merge: null, history: [] }));
   await page.locator('dialog[open] .navbar button.nav.close').click();

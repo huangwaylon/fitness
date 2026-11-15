@@ -11,7 +11,7 @@ demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot
 - **Page** (`BotPage`): `VerdictCard` (a `.card.pad`: dot, the headline: the act (`act`) or 「対応不要」, ⋯; the word a `.tag`,
   「12:00時点」; sentence; result line; dense
   `StatStrip` 前回 · 次回 · 成果, 不調: 最後の成功) · `AttentionCard` (only steps the sentence lacks) · `StatusStrip` (ok green,
-  空き full height, warn yellow capped, fail hatched, none a tick; empty: out, 保養所 running a sunk line, never a second warning) · sections · 設定 · くわしく (`FactList`).
+  空き full height, warn yellow capped, fail hatched, none a tick; empty: out, 保養所 running a sunk line, never a second warning) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
   ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.
 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月, 11月 · 12月; past days faint,

@@ -93,7 +93,7 @@ export function fakeGym(now: () => number) {
     }
     bump(d);
     const kept = s.changes.filter((c) => c.d !== d); // one a day, as the bot keeps them
-    s.changes = [{ t: now(), by: 'A' as const, who: 'ウェイ', a: input.a, d, text: '' }, ...kept].slice(0, 12);
+    s.changes = [{ t: now(), by: 'A' as const, who: 'ウェイ', a: input.a, d, text: `${label(d)}（ウェイ）` }, ...kept].slice(0, 12);
   }
 
   function act(input: ActInput): Answer {

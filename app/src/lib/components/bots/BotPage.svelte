@@ -9,7 +9,7 @@
   // the word, the as-of, the sentence, an answer `note`, the key row, the bot's ⋯ `menu`), 要対応
   // (AttentionCard, only for what the sentence doesn't say: steps and links, `attn` more of the bot's own), the
   // history strip (StatusStrip; left out with nothing in it, unless `empty` warns), the bot's own sections and 設定
-  // (`children`: a sec-label and a card each), くわしく last (FactList), and `tail` (保養所's sticky 保存 bar). Until the
+  // (`children`: a sec-label and a card each), くわしく last (FactList, the page's `more` rows at its bottom), and `tail` (保養所's sticky 保存 bar). Until the
   // first status (none kept), or when it failed, the ⋯ stands alone in a row and the bot's own sections show all
   // the same (ジム's calendar never waits on /status); a skeleton in the verdict's place. The shared CSS of the pages
   // lives here (.sec, .hint, .lbl). `attr`: the page's data-* prefix (data-gym-page, …).
@@ -19,7 +19,7 @@
   import VerdictCard, { type BotKey } from './VerdictCard.svelte';
   import AttentionCard from './AttentionCard.svelte';
   import StatusStrip from './StatusStrip.svelte';
-  import FactList from './FactList.svelte';
+  import FactList, { type MoreRow } from './FactList.svelte';
   import Skeleton from './Skeleton.svelte';
   import LoadError from './LoadError.svelte';
 
@@ -42,11 +42,13 @@
     children?: Snippet;
     strip?: BotStrip | null;
     facts: readonly { id: string; label: string; value: string; href?: string }[];
+    /** Rows at the bottom of くわしく. */
+    more?: readonly MoreRow[];
     tail?: Snippet;
     /** More data-* on the page (ジム's data-config). */
     rootAttr?: Record<string, string>;
   }
-  let { rootAttr = {}, attr, busy, failed, onretry, verdict, vid, stale, readAt = null, now = Date.now(), keys = [], menu = null, note, attention, attn, children, strip, facts, tail }: Props = $props();
+  let { rootAttr = {}, attr, busy, failed, onretry, verdict, vid, stale, readAt = null, now = Date.now(), keys = [], menu = null, note, attention, attn, children, strip, facts, more, tail }: Props = $props();
   const showStrip = $derived(!!strip && (!!strip.empty || strip.cells.some((c) => c.state !== 'none')));
   const showAttn = $derived(!!attn || !!attention?.lines.length || !!attention?.links?.length);
 </script>
@@ -70,7 +72,7 @@
   {/if}
   {@render children?.()}
   {#if verdict}
-    <FactList {facts} {attr} />
+    <FactList {facts} {more} {attr} />
     {@render tail?.()}
   {/if}
 </div>

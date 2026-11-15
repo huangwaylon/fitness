@@ -6,10 +6,10 @@
   // dispatch); 直近1時間 (empty while running: a warning); the migration notice; 日付, never folded: the calendar
   // (ItsCalendar: this month or next, a switch beside the heading, 未保存 while the draft changed it; a tap a night, a
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
-  // facilities by why: view.ts dateRows); 予約 (the other stays); 最近の動き (folded, the newest in its summary); 設定, its rows folded
+  // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
   // (plain <details>, each with its summary and 未保存 while the draft changed it): 施設 (探す is the allow-list; presets,
   // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数,
-  // 自動で確定), 通知 (this phone's push, at once: ItsNotify) and 最近の操作; くわしく last. The settings are one draft
+  // 自動で確定), 通知 (this phone's push, at once: ItsNotify) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
   // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
   // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
   // way or running, every minute otherwise, only while shown (useBot.svelte.ts); 保存 / 開始 / 停止 abort a read in
@@ -329,13 +329,24 @@
   {/if}
 {/snippet}
 
+<!-- 最近の動き: a row at the bottom of くわしく -->
+{#snippet recentRow()}
+  <ol class="rows ev">
+    {#each events as e (e.key)}
+      <li data-its-event data-bad={e.bad ? '' : undefined}>
+        <span class="time">{e.time}</span><span class="txt"><b class:bad={e.bad}>{e.what}</b>{#if e.info}<small>{e.info}</small>{/if}</span>
+      </li>
+    {/each}
+  </ol>
+{/snippet}
+
 <BotPage attr="its" busy={poll.loading} failed={bot.failed} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict} stale={bot.stale}
   readAt={bot.readAt} now={nowMs} keys={status ? keyRow(status, bookings, nowMs) : []}
   rootAttr={status ? { 'data-its-run': paused ? 'stopped' : 'running' } : {}} menu={status ? { label: t('its.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={runWhy || (paused && noDates) ? runNote : undefined}
   attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
   strip={cells.length ? { cells: stripCells(cells), ticks: scanTicks(cells), title: t('its.scan.title'), legend, ...scans, ...(live ? { empty: t('its.scan.empty') } : {}) } : null}
-  {facts} tail={dirty ? saveBar : undefined}>
+  {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
     {#if migrating}
       <div class="card pad note" data-its-migrate role="status">
@@ -411,18 +422,6 @@
       </section>
     {/if}
 
-    {#if events.length}
-      <details class="card recent" data-its-recent>
-        <summary class="prow static"><span class="prl">{t('its.sec.recent')}<small data-its-recent-sum>{[events[0].time, events[0].what, ...(events.length > 1 ? [t('its.ev.n', { n: events.length })] : [])].join(' · ')}</small></span><span class="chev" aria-hidden="true"></span></summary>
-        <ol class="rows ev">
-          {#each events as e (e.key)}
-            <li data-its-event data-bad={e.bad ? '' : undefined}>
-              <span class="time">{e.time}</span><span class="txt"><b class:bad={e.bad}>{e.what}</b>{#if e.info}<small>{e.info}</small>{/if}</span>
-            </li>
-          {/each}
-        </ol>
-      </details>
-    {/if}
     <section class="sec" aria-labelledby="its-settings" data-its-settings>
       <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}<span class="sethint"> · {t('its.set.hint')}</span></h3>
       {#each fresh as r (r.key)}
@@ -556,11 +555,8 @@
   .steps { margin: 6px 0 0; padding-left: 1.3em; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
   .ev .time { flex: none; align-self: flex-start; font-size: var(--fs-s); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-soft); padding-top: 2px; }
   .ev > li { align-items: flex-start; min-height: 0; }
-  /* 最近の動き: folded (くわしく's look), the newest in its summary */
-  .recent { padding: 0; }
-  .recent > summary { list-style: none; box-shadow: none; background: none; cursor: pointer; }
-  .recent > summary::-webkit-details-marker { display: none; }
-  .recent .ev { padding: 0 14px 12px; }
+  /* 最近の動き: a row of くわしく */
+  .ev { padding: 0; }
 
   .dtxt { padding: 6px 0; }
   :global(.bpage) .booked { color: var(--leaf-text); }

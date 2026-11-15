@@ -133,6 +133,13 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   await editor.locator('[data-gym-reset]').click();
   await expect(day(3)).toHaveAttribute('data-fill', 'off');
   await expect(editor.locator('[data-gym-reset]')).toHaveCount(0);
+  // アプリで変更: the last ones, one a day, the last row of くわしく
+  await page.locator('dialog[open] .navbar button.nav.close').last().click();
+  await page.locator('dialog[open] [data-gym-more] summary').click();
+  const changes = page.locator('dialog[open] [data-gym-more] > :last-child');
+  await expect(changes).toHaveAttribute('data-gym-changes', '');
+  await expect(changes.getByRole('heading', { level: 3 })).toHaveText('アプリで変更');
+  await expect(changes.locator('[data-gym-change]')).toHaveCount(3); // 11/9, 11/5 and 11/7
 });
 
 test('時間指定: a tap starts an hour, the next picks the last slot, 21:30 ends at 22:00; 通知の開始’s times the bot would refuse are disabled', async ({ page, context }) => {

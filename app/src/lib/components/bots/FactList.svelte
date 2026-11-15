@@ -1,17 +1,25 @@
+<script lang="ts" module>
+  import type { Snippet } from 'svelte';
+  /** A page's row at the bottom of くわしく: its id (the data-* key), heading and body. */
+  export interface MoreRow { id: string; label: string; body: Snippet }
+</script>
+
 <script lang="ts">
   // A bot's くわしく (docs/design.md "Bots"), the page's last row, folded: the secondary facts in two columns, a label
-  // over its value (a link a full 44px target), the bot's mode, version and workflow among them (no foot). Mounted only
-  // while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more).
+  // over its value (a link a full 44px target), the bot's mode, version and workflow among them (no foot); then the
+  // page's `more` rows under them, each its heading over its body (ジム's アプリで変更, 保養所's 最近の動き, メニュー's
+  // 前回の変更). Mounted only while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more, a
+  // row's data-its-recent).
   import { t } from '#lib/i18n/index.ts';
 
   interface Fact { id: string; label: string; value: string; href?: string }
-  let { facts, attr }: { facts: readonly Fact[]; attr: string } = $props();
+  let { facts, attr, more = [] }: { facts: readonly Fact[]; attr: string; more?: readonly MoreRow[] } = $props();
 
   let open = $state(false);
   const data = (k: string, v: string = '') => ({ [`data-${attr}-${k}`]: v });
 </script>
 
-{#if facts.length}
+{#if facts.length || more.length}
   <details class="card more" bind:open {...data('more')}>
     <summary class="prow static"><span class="prl">{t('bots.more')}</span><span class="chev" aria-hidden="true"></span></summary>
     {#if open}
@@ -20,6 +28,12 @@
           <div {...data('fact', f.id)}><dt>{f.label}</dt><dd>{#if f.href}<a href={f.href} target="_blank" rel="noopener noreferrer" data-sfx="open">{f.value}</a>{:else}{f.value}{/if}</dd></div>
         {/each}
       </dl>
+      {#each more as m (m.id)}
+        <section class="row" aria-labelledby="{attr}-more-{m.id}" {...data(m.id)}>
+          <h3 id="{attr}-more-{m.id}" class="rowl">{m.label}</h3>
+          {@render m.body()}
+        </section>
+      {/each}
     {/if}
   </details>
 {/if}
@@ -34,5 +48,8 @@
   .facts dd { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   /* a link: a full 44px target, without pushing its cell apart */
   .facts a { color: var(--sky-text); display: inline-flex; align-items: center; min-height: var(--hit); margin: -12px 0; }
+  /* a page's row under the facts: its heading over its body, a dashed rule above */
+  .row { display: grid; gap: 6px; margin: 0 14px; padding: 10px 0 12px; border-top: 1px dashed color-mix(in srgb, var(--text-soft) 40%, transparent); }
+  .rowl { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   /* (the chevron: theme.css, the bots' sheet) */
 </style>
