@@ -67,6 +67,7 @@ describe('cleanData', () => {
     expect(cleanData('req', { why: 'pocket short', ms: 1e12 })).toEqual({ ms: 1e7 });
     expect(cleanData('perf.sheet', { sheet: 'food', first: true, chunk: 12.34, long: 48, title: 'ごはん', sheetName: 'x' })).toEqual({ sheet: 'food', first: true, chunk: 12.3, long: 48 });
     expect(cleanData('perf.sheet', { sheet: 'island.food' })).toEqual({});
+    expect(cleanData('perf.scan', { frame: 412.3, dec50: 1.84, end: 'read', code: '4902102072618', name: 'コーラ' })).toEqual({ frame: 412.3, dec50: 1.8, end: 'read' });
   });
 
   it('the mic probe’s events: numbers and closed sets kept, heard text never', () => {

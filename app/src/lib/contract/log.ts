@@ -87,6 +87,10 @@ export const LOG_EVENTS = {
   // of `fx`'s, the flourish's kind that asked most (`fx1`, effects.ts FxKind) and its share (`fw1`); of `nodes`', the
   // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`); the point lights
   // (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
+  // ごはん's barcode scanner, once a session (lib/scan/timing.ts): ms from the camera's open to its first frame and to
+  // the read, the decode's p50 and max and the band grab's p50 (ms a frame read), the frames read, how it ended (a
+  // read, a typed number, the idle stop, none); never the code or the food
+  "perf.scan": { src: 'c', f: { frame: 'n', read: 'n', dec50: 'n', decMax: 'n', grab: 'n', n: 'n', end: ['read', 'typed', 'idle', 'none'] } },
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', pts: 'n', pm: 'b' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
