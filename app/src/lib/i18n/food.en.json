@@ -214,7 +214,7 @@
   "food.scan.far": "Can't read it? Hold it a little farther away",
   "food.scan.online": "Searching Open Food Facts…",
   "food.scan.none": "This product isn't in the data",
-  "food.scan.offline": "Not in the data (offline?)",
+  "food.scan.offline": "Offline: couldn't check",
   "food.scan.denied": "Camera access is off",
   "food.scan.deniedHow": "Settings › Apps › Safari › Camera",
   "food.scan.noCam": "The camera isn't available",

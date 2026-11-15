@@ -137,7 +137,7 @@ test('nowhere: この商品はデータにありません, もう一度 reads ag
   expect(await live(page)).toBe(0);
   mode = 'off';
   await scanLv(page).locator('[data-scan-retry]').click();
-  await expect(status(page)).toHaveText('データにありません（オフライン？）', { timeout: 20_000 });
+  await expect(status(page)).toHaveText('オフラインのため確認できません', { timeout: 20_000 });
   await scanLv(page).locator('[data-scan-num]').fill('4900000010658');
   await expect(status(page)).toHaveText('番号が正しくありません');
   await expect(scanLv(page).locator('[data-scan-code]'), 'the read code never shown under a wrong typed one').toHaveCount(0);
