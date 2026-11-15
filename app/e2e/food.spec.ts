@@ -108,9 +108,10 @@ test('a value the label doesn’t say: 「–」 in the amount, never 0.0; the d
   await sheet(page).locator('[data-food-more] summary').click();
   const salt = sheet(page).locator('[data-food-summary] [data-nutrient=s]');
   await expect(salt.locator('[data-partial]')).toHaveText('一部不明');
-  // on the 目標 line (the tile no taller than protein's, two lines under the value, never 「目 / 標」)
+  // on the 目標 line, wrapping only after 「一部不明・」 and at its spaces, never 「目 / 標」 (keep-all; how many lines is the
+  // font's: two on an iPhone, three in CI's Linux Chromium)
   await expect(salt.locator('small')).toHaveText(/^一部不明・目標\s7\.5\sg\s以下$/);
-  expect(await salt.locator('small').evaluate((e) => Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)))).toBe(2);
+  expect(await salt.locator('small').evaluate((e) => [getComputedStyle(e).wordBreak, e.querySelectorAll('wbr').length])).toEqual(['keep-all', 1]);
   await expect(salt.locator('.bar')).toHaveClass(/partial/);
   await expect(sheet(page).locator('[data-food-summary] [data-nutrient=p] [data-partial]')).toHaveCount(0);
 });
