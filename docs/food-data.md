@@ -206,7 +206,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   over its limits. The **canary** runs first each round (the parsers on a few live pages); any failure of it stops the round (exit 4:
   `drift`).
 - **Releases:** `kalori-wip`, a prerelease while a refresh runs (`run.json` with its `since`, and per shard
-  `state-N.json`, `shard-N.jsonl.gz`, replaced by a new upload renamed after, never clobbered; deleted on publishing); `kalori-YYYY-MM-DD` (never "latest"):
+  `state-N.json`, `shard-N.jsonl.gz`, replaced by a new upload renamed after, never clobbered; deleted on publishing); `kalori-YYYY-MM-DD` (marked Latest; past the newest 3, deleted after a publish, never the pinned one: `kalori_prune.py`):
   `kalori-data.tar.gz` (folders `shards`, `state`: `shard-N.jsonl`, `state-N.json`; `coverage.json`, `diff.json`,
   `run.json`) and `SHA256SUMS`, made a draft, its assets checked, then published (a failure deletes the draft). Only a
   run on main publishes; another `wip_tag` (`kalori-wip-<name>`), `only_shops` or `max_requests` is a test.

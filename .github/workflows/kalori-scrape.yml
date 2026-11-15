@@ -433,11 +433,23 @@ jobs:
           want=$(stat -c %s "$RUNNER_TEMP/kalori-data.tar.gz")
           have=$(gh release view "$tag" --json assets --jq '[.assets[] | select(.state == "uploaded") | "\(.name)=\(.size)"] | sort | join(" ")')
           [ "$have" = "SHA256SUMS=$(stat -c %s "$RUNNER_TEMP/SHA256SUMS") kalori-data.tar.gz=$want" ] || { echo "::error::the draft's assets: $have"; exit 1; }
-          gh release edit "$tag" --draft=false --latest=false
+          gh release edit "$tag" --draft=false --latest
           published=1
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           gh release delete "$WIP" --yes --cleanup-tag
           echo "published $tag" | tee -a "$GITHUB_STEP_SUMMARY"
+      # The dated releases past the newest 3 (this one and two to roll back to), never the one main's KALORI_TAG pins
+      # (kalori_prune.py: by the tag's date and suffix; never a wip, draft, prerelease or other release). A failure
+      # here is a warning: the update goes on.
+      - name: Delete the older Kalori releases
+        if: steps.publish.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OLD: ${{ steps.diff.outputs.old }}
+        run: |
+          gone=$(gh release list --limit 200 --json tagName,isDraft,isPrerelease | python3 -I food-data/scripts/kalori_prune.py --pinned "$OLD")
+          for t in $gone; do gh release delete "$t" --yes --cleanup-tag && echo "deleted $t" | tee -a "$GITHUB_STEP_SUMMARY"; done
       # For update-merge's gates and the status (whatever the diff said). Any job of the run can upload an artifact by
       # this name: update-merge takes it only when its digests match these outputs, which no other job can set.
       - name: The report's digests

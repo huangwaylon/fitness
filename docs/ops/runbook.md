@@ -198,6 +198,7 @@ run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel t
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
 release keeps the progress. Its 20 shards run at most 10 at a time (Actions' 20 jobs are account-wide: the ITS runner 1,
 suumo 8), the rest queued: a round can take up to two shard budgets.
+Releases: each publish is marked Latest and deletes the dated ones past the newest 3, never the pinned one (`kalori_prune.py`).
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.
 1. **A held update** (the PR `kalori-update/<tag>`, its body the gate table, `HELD` on the band that failed; no CI
