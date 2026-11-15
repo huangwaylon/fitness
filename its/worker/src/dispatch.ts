@@ -109,7 +109,7 @@ export async function dispatchHealth(token: string | undefined, scheduledTime: n
 
 // ---- Kalori's weekly refresh (kalori-scrape.yml; docs/ops/runbook.md "Refresh Kalori") ----
 // GitHub drops scheduled runs, and the weekly one is Kalori's only trigger: the cron dispatches it too, as it does the
-// health workflows. GitHub's schedule stays the backstop; a run it already started (or any other) means none is sent.
+// health workflows. GitHub's schedule stays the backstop; a weekly run it (or a tick) already started means none is sent.
 const KALORI_WF = `${REPO_URL}/actions/workflows/kalori-scrape.yml`;
 export const KALORI_DISPATCH_URL = `${KALORI_WF}/dispatches`;
 const HOUR_MS = 3_600_000;
@@ -118,9 +118,12 @@ const KALORI_DAY = 2, KALORI_H = 17, KALORI_M = 41;
 /** The dispatch waits an hour past the schedule (a late scheduled run has started by then), then each tick tries for
  *  2 h (one refused or unanswered tries again at the next). */
 const KALORI_WAIT_MS = HOUR_MS, KALORI_TRIES_MS = 2 * HOUR_MS;
-/** A run created this long before the schedule or since (scheduled, dispatched, a retry's, by hand) is this week's:
- *  nothing sent. */
+/** A weekly run created this long before the schedule or since (GitHub's schedule's, or a tick's dispatch) is this
+ *  week's: nothing sent. A retry's round, a smoke or a run by hand isn't one. */
 const KALORI_RECENT_MS = 24 * HOUR_MS;
+/** kalori-scrape.yml's `run-name` for a weekly run (the schedule's, or `weekly`): the runs list's `display_title`, the
+ *  only place it shows (the list has no inputs). */
+export const KALORI_WEEKLY_TITLE = 'Kalori scrape (weekly)';
 
 /** The week's scheduled time when `scheduledTime` is a tick that may dispatch it; else null. */
 export function kaloriSlot(scheduledTime: number): number | null {
@@ -131,7 +134,7 @@ export function kaloriSlot(scheduledTime: number): number | null {
   return after >= KALORI_WAIT_MS && after < KALORI_WAIT_MS + KALORI_TRIES_MS ? slot : null;
 }
 export const kaloriRecentUrl = (slot: number) =>
-  `${KALORI_WF}/runs?created=${encodeURIComponent(`>=${new Date(slot - KALORI_RECENT_MS).toISOString().slice(0, 19)}Z`)}&per_page=1`;
+  `${KALORI_WF}/runs?created=${encodeURIComponent(`>=${new Date(slot - KALORI_RECENT_MS).toISOString().slice(0, 19)}Z`)}&per_page=100`;
 export const kaloriUnfinishedUrl = (status: string) => `${KALORI_WF}/runs?status=${status}&per_page=1`;
 
 /** A count of the runs a query lists (`total_count`), or null: no answer, a refusal or another body. */
@@ -145,7 +148,20 @@ async function runCount(token: string, url: string): Promise<number | null> {
   }
 }
 
-/** On a due tick (kaloriSlot), dispatch the weekly run on main unless one is this week's (created within
+/** The weekly runs a page of runs lists (`event` schedule, or KALORI_WEEKLY_TITLE), or null: no answer, a refusal or
+ *  another body. */
+async function weeklyCount(token: string, url: string): Promise<number | null> {
+  try {
+    const res = await gh(token, url);
+    const runs = res.ok ? ((await res.json()) as { workflow_runs?: unknown }).workflow_runs : null;
+    if (!Array.isArray(runs)) return null;
+    return (runs as { event?: unknown; display_title?: unknown }[]).filter((r) => r.event === 'schedule' || r.display_title === KALORI_WEEKLY_TITLE).length;
+  } catch {
+    return null;
+  }
+}
+
+/** On a due tick (kaloriSlot), dispatch the weekly run on main unless one is this week's (a weekly run created within
  *  KALORI_RECENT_MS of the schedule) or unfinished (queued, running…: kalori-scrape.yml's concurrency group would
  *  replace a pending retry with it). Exactly the scheduled run: no inputs but `weekly` (setup starts the refresh's
  *  `since` anew, as a scheduled run does), so every input's default and the gates' "a default run". An unknown answer
@@ -158,7 +174,7 @@ export async function dispatchKalori(token: string | undefined, scheduledTime: n
     return what;
   };
   if (!token) return say('no_token');
-  const recent = await runCount(token, kaloriRecentUrl(slot));
+  const recent = await weeklyCount(token, kaloriRecentUrl(slot));
   if (recent === null) return say('unknown asked=recent');
   if (recent > 0) return say('skip why=recent');
   for (const status of UNFINISHED) {

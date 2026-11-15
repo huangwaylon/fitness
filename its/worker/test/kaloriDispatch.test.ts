@@ -1,13 +1,16 @@
 // Kalori's weekly run dispatched by the cron (src/dispatch.ts dispatchKalori): which ticks may send it, the runs asked
-// first (this week's, unfinished), the request GitHub gets (the scheduled run's: main, no inputs but `weekly`), and an
+// first (this week's weekly one, unfinished), the request GitHub gets (the scheduled run's: main, no inputs but `weekly`), and an
 // unknown answer sending nothing, with a stubbed fetch.
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { KALORI_DISPATCH_URL, UNFINISHED, dispatchKalori, kaloriRecentUrl, kaloriSlot, kaloriUnfinishedUrl } from '../src/dispatch.ts';
+import { KALORI_DISPATCH_URL, KALORI_WEEKLY_TITLE, UNFINISHED, dispatchKalori, kaloriRecentUrl, kaloriSlot, kaloriUnfinishedUrl } from '../src/dispatch.ts';
 
 // Tuesday 2026-11-17: the schedule at 17:41 UTC
 const SLOT = Date.parse('2026-11-17T17:41:00Z');
 const at = (iso: string) => Date.parse(`${iso}:00Z`);
 const runs = (n: number) => Response.json({ total_count: n, workflow_runs: [] });
+/** The runs list as GitHub has it: each run's event and display_title (its run-name). */
+const listed = (...rs: [string, string][]) => Response.json({ total_count: rs.length, workflow_runs: rs.map(([event, display_title], i) => ({ id: i + 1, event, display_title })) });
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -34,7 +37,7 @@ describe('the ticks that may dispatch Kalori’s weekly run', () => {
     expect(kaloriSlot(at('2026-11-10T19:00'))).toBe(Date.parse('2026-11-10T17:41:00Z'));
   });
   it('asks for the runs created since a day before the schedule', () => {
-    expect(kaloriRecentUrl(SLOT)).toBe('https://api.github.com/repos/huangwaylon/fitness/actions/workflows/kalori-scrape.yml/runs?created=%3E%3D2026-11-16T17%3A41%3A00Z&per_page=1');
+    expect(kaloriRecentUrl(SLOT)).toBe('https://api.github.com/repos/huangwaylon/fitness/actions/workflows/kalori-scrape.yml/runs?created=%3E%3D2026-11-16T17%3A41%3A00Z&per_page=100');
   });
 });
 
@@ -49,11 +52,26 @@ describe('dispatchKalori', () => {
     expect(line.mock.calls).toEqual([['its kalori-dispatch sent status=204']]);
   });
 
-  it('a run this week (GitHub’s schedule ran, or the last tick’s dispatch): nothing sent', async () => {
+  it('a weekly run this week (GitHub’s schedule ran, or the last tick’s dispatch): nothing sent', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
-    const f = stub((url) => (url === kaloriRecentUrl(SLOT) ? 1 : 0));
-    expect(await dispatchKalori('tok', at('2026-11-17T18:50'))).toBe('skip why=recent');
-    expect(f).toHaveBeenCalledTimes(1);
+    for (const run of [['schedule', 'Kalori scrape'], ['workflow_dispatch', KALORI_WEEKLY_TITLE]] as [string, string][]) {
+      const f = stub((url) => (url === kaloriRecentUrl(SLOT) ? listed(['workflow_dispatch', 'Kalori scrape'], run) : 0));
+      expect(await dispatchKalori('tok', at('2026-11-17T18:50'))).toBe('skip why=recent');
+      expect(f).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('a smoke, a retry’s round or a run by hand this week is no weekly run: the dispatch goes', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const f = stub((url) => (url === kaloriRecentUrl(SLOT) ? listed(['workflow_dispatch', 'Kalori scrape'], ['workflow_dispatch', 'Kalori scrape (round 2)']) : 0));
+    expect(await dispatchKalori('tok', at('2026-11-17T18:50'))).toBe('sent status=204');
+    expect(f.mock.calls.at(-1)![0]).toBe(KALORI_DISPATCH_URL);
+  });
+
+  it('the workflow names a weekly run as the check reads it', () => {
+    const yml = readFileSync(`${import.meta.dirname}/../../../.github/workflows/kalori-scrape.yml`, 'utf8');
+    expect(yml).toMatch(/^run-name: .*\(github\.event_name == 'schedule' \|\| inputs\.weekly\) && '([^']+)'/m);
+    expect(yml.match(/^run-name: .*&& '([^']+)'/m)![1]).toBe(KALORI_WEEKLY_TITLE);
   });
 
   it('a run unfinished (an older round queued or running): nothing sent', async () => {

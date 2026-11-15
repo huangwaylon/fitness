@@ -191,13 +191,15 @@ Each bot's doc has its deploy and rollback, secrets, stop switch, health checks,
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
 JST): the crawl's rounds, a dated release, then the update: merged into main and deployed by itself within the
 bands, else held as a PR. GitHub drops scheduled runs, so its-bot's cron dispatches the week's run (`-f weekly=true`:
-the schedule's, its `since` anew) on a Tuesday tick from 18:41 to 20:41 UTC when no run was created since a day before
+the schedule's, its `since` anew) on a Tuesday tick from 18:41 to 20:41 UTC when no weekly run (the schedule's, or one titled
+`Kalori scrape (weekly)`: a smoke, a retry's round or a run by hand don't count) was created since a day before
 the schedule and none is unfinished (`its/worker/src/dispatch.ts` `dispatchKalori`; `wrangler tail`'s `its
-kalori-dispatch`); the schedule stays the backstop. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
+kalori-dispatch`); the schedule stays the backstop, and a weekly run that finds a dated
+release published in the last 12 h stops before the canary (a late tick after the dispatch's refresh). Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
 run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
-release keeps the progress. Its 20 shards run at most 10 at a time (Actions' 20 jobs are account-wide: the ITS runner 1,
-suumo 8), the rest queued: a round can take up to two shard budgets.
+release keeps the progress. Its 20 shards run at most 8 at a time (Actions' 20 jobs are account-wide: the ITS runner 1,
+suumo 8, room left for the ITS runner's successor and the deploys), the rest queued: a round can take up to three shard budgets.
 Releases: each publish is marked Latest and deletes the dated ones past the newest 3, never the pinned one (`kalori_prune.py`); a held PR older than three publishes names a deleted release: close it.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.

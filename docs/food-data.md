@@ -198,9 +198,9 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   unless `allow_big_diff`.
 - **Cost:** ~3k listing requests a week (2026-11-14: 2,954 over 20 shards, ≤ 214 a shard) plus the changed products,
   ~13k a month. kalori.jp blocked at ~1,000 requests an IP a day (the first crawl): rounds of 20 shards, each on a
-  fresh runner (a new IP), at most 10 at a time (`max-parallel`: Actions' 20 jobs at once are account-wide, shared
-  with the ITS runner's 1 and suumo's 8), the rest queued as a second wave; a shard's rate is `total_rate`/20, so
-  about half of it runs at once; one that hit the limit re-dispatched. A full refetch (`refetch_before` today, or
+  fresh runner (a new IP), at most 8 at a time (`max-parallel`: Actions' 20 jobs at once are account-wide, shared
+  with the ITS runner's 1 and suumo's 8, and the ITS runner's successor and the deploys need room), the rest queued
+  in later waves; a shard's rate is `total_rate`/20, so 8/20 of it runs at once; one that hit the limit re-dispatched. A full refetch (`refetch_before` today, or
   `RECORDS_FROM` raised with `PARSER_VERSION`): ~56k requests, 4-5 rounds. Before the next one: ask kalori.jp for a bulk export.
 - **Exit codes** (`kalori_scrape.py`): 0 done, out of budget or nothing to do (no shop of `only_shops` in the shard), 1 a crash, 2 the 429 limit, 3 network errors (2, 3 and
   a lost, timed-out or cancelled shard job are retried), 4 the pages no longer parse (never retried; no product marked

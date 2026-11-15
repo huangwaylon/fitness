@@ -2,17 +2,21 @@
 # into the `kalori-wip` prerelease, in rounds, then a dated release `kalori-YYYY-MM-DD` that fetch.py's KALORI_TAG pins.
 # A round: the canary (the parsers on a few live pages; any failure stops it, exit 4 a layout drift), setup (seed kalori-wip from
 # the accepted release, main's KALORI_TAG; the sitemap once), 20 shards (each its own state-N.json and shard-N.jsonl.gz,
-# saved back even when it fails; at most 10 at a time, the rest queued: Actions' 20 jobs at once are account-wide, the
-# ITS runner 1 and suumo 8; a shard's rate is total_rate/20, so about half of it at once), a retry (a new run of the shards that hit the site's limits, exit 2 or 3, or whose job
+# saved back even when it fails; at most 8 at a time, the rest queued: Actions' 20 jobs at once are account-wide, the
+# ITS runner 1 and suumo 8, and the ITS runner's successor and the deploys need room; a shard's rate is total_rate/20, so 8/20 of it at once), a retry (a new run of the shards that hit the site's limits, exit 2 or 3, or whose job
 # was lost), the report (coverage, the diff against the accepted release; complete and within the diff's limits:
 # publish), the update (kalori.json built without write access; then, within the bands, a commit on main, else a
 # branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
 # app's bots tab reads: the only alert, no issue, no mail; then pages.yml and food-data.yml dispatched), the deploy check (the dispatched deploy's outcome). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
 # every input has its default as a fallback (`inputs.x || 'default'`) and behaves as a default dispatch. GitHub drops
 # scheduled runs: its-bot's cron dispatches the week's (`weekly`) from an hour past the schedule when no run is this
-# week's (its/worker/src/dispatch.ts dispatchKalori). Only a run on
+# week's (its/worker/src/dispatch.ts dispatchKalori: a weekly run is the schedule's or one named by run-name below). A
+# weekly run finding a dated release published in the last 12 h stops before the canary (GitHub's tick ran late,
+# after its-bot's dispatch had refreshed): never a run by hand. Only a run on
 # main publishes. The token is given only to the steps that call `gh`: never to npm's.
 name: Kalori scrape
+# (a weekly run's title is what its-bot's check reads: dispatch.ts KALORI_WEEKLY_TITLE)
+run-name: ${{ (github.event_name == 'schedule' || inputs.weekly) && 'Kalori scrape (weekly)' || (inputs.attempt && inputs.attempt != '1' && format('Kalori scrape (round {0})', inputs.attempt)) || 'Kalori scrape' }}
 
 on:
   schedule:
@@ -81,14 +85,30 @@ jobs:
     timeout-minutes: 10
     outputs:
       code: ${{ steps.canary.outputs.code }}
+      published: ${{ steps.fresh.outputs.tag }}
     steps:
+      # A weekly run (the schedule's, its-bot's `weekly`) after a dated release published in the last 12 h: this week's
+      # refresh is done (GitHub's tick ran late, after its-bot's dispatch), so nothing else runs, the status left as is.
+      - name: A refresh published already
+        id: fresh
+        if: github.event_name == 'schedule' || inputs.weekly == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          since=$(date -u -d '12 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          tag=$(gh release list --limit 20 --json tagName,publishedAt,isDraft,isPrerelease | jq -r --arg since "$since" \
+            '[.[] | select((.tagName | test("^kalori-[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9]+)?$")) and (.isDraft | not) and (.isPrerelease | not) and .publishedAt >= $since)] | first | .tagName // empty')
+          [ -z "$tag" ] || echo "::notice::$tag was published since $since: this week's refresh is done, nothing runs"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        if: steps.fresh.outputs.tag == ''
         with:
           persist-credentials: false
           sparse-checkout: food-data/scripts
       # exit 4: the pages no longer parse (update the fixtures and parsers, bump PARSER_VERSION); nothing else runs
       - name: Canary
         id: canary
+        if: steps.fresh.outputs.tag == ''
         run: |
           code=0
           python3 -I food-data/scripts/kalori_scrape.py canary || code=$?
@@ -97,6 +117,7 @@ jobs:
 
   setup:
     needs: canary
+    if: needs.canary.outputs.published == ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -188,7 +209,7 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 8
       matrix:
         shard: ${{ fromJSON(inputs.shards || '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]') }}
     env:
@@ -821,7 +842,7 @@ jobs:
     needs: [canary, setup, shard, retry, report, update-build, update-merge]
     if: >-
       always() && github.ref == 'refs/heads/main' && (inputs.wip_tag || 'kalori-wip') == 'kalori-wip' &&
-      !inputs.only_shops && !inputs.max_requests
+      !inputs.only_shops && !inputs.max_requests && needs.canary.outputs.published == ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
