@@ -75,8 +75,8 @@ export interface Dataset extends Partial<Credit> {
   shops?: Record<string, { name: string; aliases?: string[] }>;
 }
 
-/** A dataset file as shipped: its items as objects, or by column (`cols`, the products and the chain menus:
- *  scripts/food-data.ts columnar; db.ts decodeItems makes the same items of it). A column is one value per item, `null` where the item has none (`p`,
+/** A dataset file as shipped: by column (`cols`, every dataset since schema 2: scripts/food-data.ts columnar; db.ts
+ *  decodeItems makes the items of it), or an older file's items as objects. A column is one value per item, `null` where the item has none (`p`,
  *  `f`, `c`, `salt`: null, unknown); `idPrefix` is each id's without it (`off:`, `kal:`). */
 export type Shipped = Omit<Dataset, 'items'> & ({ items: Item[] } | { cols: Partial<Record<keyof Item, unknown[]>>; idPrefix?: string; items?: never });
 
@@ -86,6 +86,8 @@ export type Shipped = Omit<Dataset, 'items'> & ({ items: Item[] } | { cols: Part
  *  chain menus) load after the rest. */
 export interface FoodIndex {
   version: string;
+  /** The layout (db.ts FOOD_SCHEMA); none: an older build's (1, datasets as objects). */
+  schema?: number;
   files?: Record<string, string>;
   datasets: { file: string; source: string; badge: string; secondary: boolean; lazy: boolean }[];
 }

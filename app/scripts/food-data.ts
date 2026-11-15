@@ -14,17 +14,18 @@
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
 // Each core item gets its search keys (`keys`: lib/food/search.ts keysOf), so the first search builds none; a lazy
 // dataset's (products: 239 KB gzipped of keys) are built on load, in db.ts's slices. A product's barcode is dropped
-// when the id has it (`off:<jan>`: load.ts puts it back). The products and the chain menus ship by column (`cols`,
-// types.ts Shipped; db.ts decodeItems): 30k products 4.1 MB, 0.8 MB gzipped, against 5.8 MB and 1.1 MB as objects;
-// Kalori's 54k items 7.4 MB, 1.19 MB gzipped, against 10.0 MB and 1.62 MB.
-// index.json is written last: `files`, each shipped file's own version (a hash of its bytes, keys included), so a
+// when the id has it (`off:<jan>`: load.ts puts it back). Every dataset ships by column (`cols`, types.ts Shipped;
+// db.ts decodeItems), its ids without the prefix they share (`idPrefix`): 30k products 4.1 MB, 0.8 MB gzipped, against
+// 5.8 MB and 1.1 MB as objects; Kalori's 54k items 7.4 MB, 1.19 MB gzipped, against 10.0 MB and 1.62 MB.
+// index.json is written last, with `schema` (db.ts FOOD_SCHEMA: the layout; an app that reads an older one refuses
+// the index): `files`, each shipped file's own version (a hash of its bytes, keys included), so a
 // Kalori refresh refetches kalori.json alone, while a change here (keys, a dropped field) is a new version of
 // every file it touches; and `version`, that of them all (an older app's or worker's `?v=`, the fallback for an index
 // without `files`). out/'s index keeps the pipeline's own hash.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { decodeItems, headerOf } from '../src/lib/food/db.ts';
+import { decodeItems, FOOD_SCHEMA, headerOf } from '../src/lib/food/db.ts';
 import { keysOf } from '../src/lib/food/search.ts';
 import type { Dataset, Item, Shipped } from '../src/lib/food/types.ts';
 
@@ -39,8 +40,6 @@ const SIDECARS = ['index.json', 'verify.json'];
 /** Kalori's and the products' index entries, as build.py's build_index writes them. */
 const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };
 const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', secondary: true, lazy: true };
-/** The datasets shipped by column (types.ts Shipped), each with the id prefix its ids share. */
-const COLUMNAR: Record<string, string> = { 'products.json': 'off:', 'kalori.json': 'kal:' };
 /** The fields whose null a column keeps (unknown: db.ts decodeItems); another field's null would be lost. */
 const NULLS = new Set(['p', 'f', 'c', 'salt']);
 /** The columns' order: the rest after these, as the items first have them. */
@@ -75,9 +74,11 @@ function ship(f: string, d: Dataset, lazy: boolean): Dataset {
   return d;
 }
 
-/** A dataset by column: each field's values in item order, `null` where an item has none; ids without `prefix`. */
-function columnar(f: string, d: Dataset, prefix: string): Shipped {
+/** A dataset by column: each field's values in item order, `null` where an item has none; ids without the `xxx:`
+ * prefix they all share (`idPrefix`). */
+function columnar(f: string, d: Dataset): Shipped {
   const { items, ...head } = d;
+  const prefix = /^[^:]+:/.exec(items[0]?.id ?? '')?.[0] ?? fail(`${f}: no items, or an id without a prefix`);
   const keys = [...new Set([...COLS, ...items.flatMap((it) => Object.keys(it))])].filter((k) => items.some((it) => k in it)) as (keyof Item)[];
   const cols: Partial<Record<keyof Item, unknown[]>> = {};
   for (const k of keys) cols[k] = items.map((it) => (k === 'id' ? it.id.slice(prefix.length) : (it[k] ?? null)));
@@ -87,11 +88,8 @@ function columnar(f: string, d: Dataset, prefix: string): Shipped {
   return { ...head, idPrefix: prefix, cols };
 }
 
-/** A dataset file's bytes as shipped (by column for COLUMNAR's). */
-const shipped = (f: string, d: Dataset, lazy: boolean): string => {
-  const s = ship(f, d, lazy);
-  return JSON.stringify(f in COLUMNAR ? columnar(f, s, COLUMNAR[f]) : s);
-};
+/** A dataset file's bytes as shipped. */
+const shipped = (f: string, d: Dataset, lazy: boolean): string => JSON.stringify(columnar(f, ship(f, d, lazy)));
 
 /** The first 12 hex digits of a sha256: each shipped file's of its bytes (`files`), and `version`'s of each one's name
  * and bytes, verify.json then the datasets in index order (load.test.ts recomputes both). Writes index.json. */
@@ -105,7 +103,7 @@ function writeIndex(index: object, files: string[]): string {
     versions[f] = hex(createHash('sha256').update(b));
   }
   const version = hex(hash);
-  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...index, version, files: versions }));
+  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...index, version, files: versions, schema: FOOD_SCHEMA }));
   return version;
 }
 

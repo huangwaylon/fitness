@@ -31,11 +31,14 @@ snapshot, so a data refresh never rewrites one.
 
 ## Format
 
-**Dataset file** (`foods.json`, `dishes.json`, `extra_*.json`, ...):
+**Dataset file** (`foods.json`, `dishes.json`, `extra_*.json`, ...), in `out/`:
 `{ "source", "label", "attribution", "license", "url", "items": [ITEM, ...] }` (OFF adds `dumped`: the dump's
-newest `last_modified_t`). The credits read the five header fields as written. Shipped, `products.json` is by column:
-`"idPrefix": "off:", "cols": {field: [value per item]}`, null for none (`db.ts decodeItems`; old files load too; an
-older tab gets no products till a reload). A null value shows 「–」, a day's total missing one 「≥」.
+newest `last_modified_t`; Kalori `shops`). The credits read the five header fields as written. **Shipped** (schema 2),
+every dataset is by column: the header, then `"idPrefix": "<source>:", "cols": {field: [value per item]}`, the ids
+without the prefix they all share; columns `id name brand cat kcal p f c salt portions` first, the rest as the items
+first have them, none for a field no item has; `null` for none, but in `p f c salt` unknown (any other null fails the
+build; `food-data.ts columnar`, `db.ts decodeItems`). An app older than the decoder (before 2026-11-14 19:17 JST) gets no
+food data till its reload. A null value shows 「–」, a day's total missing one 「≥」.
 
 **ITEM** (`food-data/scripts/lib.py` `validate`; type `Item` in `app/src/lib/food/types.ts`):
 
@@ -58,7 +61,9 @@ older tab gets no products till a reload). A null value shows 「–」, a day's
 MEXT markers: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark dropped. kcal is MEXT's
 energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their ingredient lists.
 
-**`index.json`**: `{ "version", "files", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `files`:
+**`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }], "files", "schema" }`.
+`schema`: the layout (2: by column; `db.ts FOOD_SCHEMA`), and an app that reads an older one refuses the index (no
+fetch; it asks for the deployed build). `files`:
 each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its bytes; `version`: the same over all of
 them (`food-data.ts`), every file's key for an index without `files` (an older build's; the service worker reads both). `secondary` datasets rank
 slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`, `kalori.json`) load only when asked

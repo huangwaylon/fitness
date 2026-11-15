@@ -6,7 +6,7 @@
 // out (its items unsearchable) till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts
 // nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
 // index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
-import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
+import { addDataset, emptyDb, FOOD_SCHEMA, withJan, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
@@ -108,9 +108,17 @@ function cancelParses(ids: Iterable<number>): void {
   }
 }
 
+/** The food data is a later layout than this app reads (index.json `schema` past FOOD_SCHEMA): nothing fetched; the
+ *  deployed build reads it (dbHold asks Kit for it). */
+export class NewerFoodData extends Error {}
+
 /** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. */
 export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise<FoodDb> {
   const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
+  if (typeof index.schema === 'number' && index.schema > FOOD_SCHEMA) {
+    swallowed('food.schema');
+    throw new NewerFoodData(`food data schema ${index.schema}, this app reads ${FOOD_SCHEMA}`);
+  }
   const db = emptyDb(index);
   // (its close: what's still loading dropped, never retried or added)
   const mine = new Set<number>();

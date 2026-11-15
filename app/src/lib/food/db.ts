@@ -111,6 +111,10 @@ export interface ShopHit {
 /** The chain menus' shops holding every word of a query (no shop named in it: shopIn), the most foods first (a food
  *  in its states once), each with its name; the chips under the search's field (FoodSearch, from findFoods). */
 export const shopsFor = (db: FoodDb, query: string): ShopHit[] => findFoods(db, query, 1).shops;
+/** The shipped layout this app reads (index.json `schema`; scripts/food-data.ts writes it): 2, every dataset by column.
+ *  An index of a later one is refused (load.ts NewerFoodData). */
+export const FOOD_SCHEMA = 2;
+
 /** The values a column keeps when null (unknown, as the objects had them); another column's null is no field. */
 const NULLS: ReadonlySet<string> = new Set(['p', 'f', 'c', 'salt']);
 

@@ -3,7 +3,7 @@
 // with the sheet. What the components render from is `held` (runes): never a copy of their own, so a let-go catalog
 // is let go everywhere at once.
 import { quiet } from '#lib/quiet.ts';
-import { loadFoodDb, type FoodDb } from '#lib/food/index.ts';
+import { loadFoodDb, NewerFoodData, type FoodDb } from '#lib/food/index.ts';
 import { dropFoodImages, loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
 
@@ -25,6 +25,8 @@ export function foodDb(): Promise<FoodDb> {
     },
     (e: unknown) => {
       if (dbP === p) dbP = null;
+      // (data newer than this build: Kit asked for the deployed one now, taken at the next hide: ui-state/update.ts)
+      if (e instanceof NewerFoodData) void import('$app/state').then(({ updated }) => updated.check()).catch(() => {});
       throw e;
     }
   ));

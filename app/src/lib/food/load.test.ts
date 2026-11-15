@@ -5,8 +5,8 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
-import { loadFoodDb } from './load.ts';
-import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
+import { loadFoodDb, NewerFoodData } from './load.ts';
+import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
 import { entryOf, holds, tierOf, type Entry } from './search.ts';
@@ -106,10 +106,19 @@ describe('a file by column (the products, the chain menus: scripts/food-data.ts 
     expect(withJan({ source: 'off', label: 'x', items: structuredClone(objects) })).toEqual({ source: 'off', label: 'x', items: want });
   });
 
-  it.each([['products.json', 'off:', ['id', 'name', 'brand', 'cat', 'kcal']], ['kalori.json', 'kal:', ['id', 'name', 'cat', 'kcal', 'p']]])('is how %s ships: by column, ids without their prefix', (f, prefix, first) => {
+  it.each([['products.json', 'off:', ['id', 'name', 'brand', 'cat', 'kcal']], ['kalori.json', 'kal:', ['id', 'name', 'cat', 'kcal', 'p']], ['foods.json', 'mext:', ['id', 'name', 'cat', 'kcal', 'p']]])('is how %s ships: by column, ids without their prefix', (f, prefix, first) => {
     const file = JSON.parse(readFileSync(join(DIR, f), 'utf8')) as Shipped & { cols?: Record<string, unknown[]>; idPrefix?: string };
     expect(['items' in file, file.idPrefix, Object.keys(file.cols ?? {}).slice(0, 5)]).toEqual([false, prefix, first]);
     expect(Object.values(file.cols!).every((c) => c.length === countOf(file))).toBe(true);
+  });
+
+  it('is how every dataset ships (schema 2 in index.json: db.ts FOOD_SCHEMA), each with an `xxx:` idPrefix', () => {
+    expect(index.schema).toBe(FOOD_SCHEMA);
+    const bad = index.datasets.filter((d) => {
+      const file = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as { items?: unknown; cols?: { id?: unknown[] }; idPrefix?: string };
+      return 'items' in file || !Array.isArray(file.cols?.id) || !/^[^:]+:$/.test(file.idPrefix ?? '');
+    });
+    expect(bad.map((d) => d.file)).toEqual([]);
   });
 
   it('a chain menu by column loads as one by item did: its sv, brand and portions the loader’s (withJan)', () => {
@@ -559,8 +568,22 @@ describe('a dataset that fails to load', () => {
     }
   });
 
+  it('an index of a later schema than FOOD_SCHEMA: refused (NewerFoodData), no data file fetched', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (href: string) => {
+      asked.push(href);
+      return new Response(JSON.stringify({ ...index, schema: FOOD_SCHEMA + 1 }));
+    });
+    try {
+      await expect(loadFoodDb()).rejects.toBeInstanceOf(NewerFoodData);
+      expect(asked).toHaveLength(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('is left out at first, fetched again at its next chance, and added when it comes (onAdd: search again)', async () => {
-    const real = JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Dataset;
+    const real = withJan(JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Shipped);
     const small: Dataset = { ...real, items: real.items.slice(0, 20) };
     const idx: FoodIndex = { version: 'v1', datasets: [{ ...index.datasets[0], file: 'a.json', lazy: false }, { ...index.datasets[0], file: 'b.json', lazy: false }] };
     let failB = 1;

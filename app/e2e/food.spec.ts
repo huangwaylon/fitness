@@ -1961,8 +1961,11 @@ test('copy a meal: the members’ on the guest’s phone, 昨日と同じ on min
 test('最新の値にする: an entry whose food was corrected since offers its values now; a tap takes them, mine only', async ({ page }) => {
   await page.route('**/food/dishes.json*', async (route) => {
     const res = await route.fetch();
-    const d = (await res.json()) as { items: { id: string; kcal: number }[] };
-    for (const it of d.items) if (it.id === 'dishes:curry-chicken') it.kcal = 150;
+    // (by column: scripts/food-data.ts, ids without their idPrefix)
+    const d = (await res.json()) as { idPrefix: string; cols: { id: string[]; kcal: number[] } };
+    const at = d.cols.id.indexOf('curry-chicken');
+    expect([d.idPrefix, at >= 0]).toEqual(['dishes:', true]);
+    d.cols.kcal[at] = 150;
     await route.fulfill({ response: res, json: d });
   });
   await openFood(page);

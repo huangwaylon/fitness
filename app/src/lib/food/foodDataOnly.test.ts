@@ -70,7 +70,8 @@ describe('food:data --only kalori', () => {
     expect(k).not.toContain('"keys"');
     expect(readFileSync(join(to, 'a.json'))).toEqual(a);
     const index = JSON.parse(readFileSync(join(to, 'index.json'), 'utf8'));
-    expect(Object.keys(index)).toEqual(['version', 'datasets', 'files']);
+    expect(Object.keys(index)).toEqual(['version', 'datasets', 'files', 'schema']);
+    expect(index.schema).toBe(2);
     expect(index.datasets.map((d: { file: string }) => d.file)).toEqual(['a.json', 'kalori.json']);
     expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'kalori.json']));
   });
