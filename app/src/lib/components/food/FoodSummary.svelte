@@ -39,7 +39,7 @@
   const chip = $derived(goal === null || when === 'next' || (empty && when === 'past') ? null : goalChip(day.kcal, goal, when === 'today'));
   const gText = (n: number) => t('food.g', { n: n.toFixed(1) });
   /** A total some entry doesn't know (a product's salt, unknown on its label): the known ones' sum, shown 「≥」, its tile
-   *  saying 一部不明 in words (no hover on a phone) and its bar hatched. */
+   *  saying 一部不明 in words on its 目標 line (「一部不明・目標 7.5 g 以下」, no hover on a phone) and its bar hatched. */
   const partial = (k: string): boolean => (k === 'p' || k === 'fa' || k === 'c' || k === 's') && day.entries.some((e) => e.f[k] === null);
   /** The tiles: the four, fibre, and alcohol on a day with some. */
   const cells = $derived([
@@ -81,7 +81,7 @@
         {#if c.v === null}
           <dd class="money unknown" data-unknown>{t('food.unknown')}<small>{t('food.fiNone')}</small></dd>
         {:else}
-          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k)}<small class="pt" data-partial>{t('food.partial')}</small>{/if}{#if c.goal !== null}<small>{goalLabel(c.k, c.goal)}</small>{/if}</dd>
+          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k) || c.goal !== null}<small>{#if partial(c.k)}<span data-partial>{t('food.partial')}</span>{#if c.goal !== null}・<wbr />{/if}{/if}{#if c.goal !== null}{goalLabel(c.k, c.goal)}{/if}</small>{/if}</dd>
           {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} class:partial={partial(c.k)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
         {/if}
       </div>
@@ -125,9 +125,10 @@
   .more[open] .tg svg { rotate: 180deg; }
   .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; }
   dd.unknown { color: var(--text-soft); }
-  .cell { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
+  .cell { min-width: 0; padding: 8px 4px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
   dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   dd { margin: 4px 0 0; font-size: var(--fs-body); white-space: nowrap; }
-  /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it, only after 目標 (the copy's no-break spaces) */
-  dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; }
+  /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it, only at its spaces (keep-all: never 「目 / 標」);
+     「一部不明・」 its own line before it (the 4px sides fit 「目標 7.5 g 以下」 at 393) */
+  dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; word-break: keep-all; }
 </style>
