@@ -138,18 +138,23 @@ test('nowhere: この商品はデータにありません, もう一度 reads ag
   mode = 'off';
   await scanLv(page).locator('[data-scan-retry]').click();
   await expect(status(page)).toHaveText('データにありません（オフライン？）', { timeout: 20_000 });
+  await scanLv(page).locator('[data-scan-num]').fill('4900000010658');
+  await expect(status(page)).toHaveText('番号が正しくありません');
+  await expect(scanLv(page).locator('[data-scan-code]'), 'the read code never shown under a wrong typed one').toHaveCount(0);
   await scanLv(page).locator('[data-scan-byname]').click();
   await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
   await expect(sheet(page).locator('[data-food-q]')).toBeFocused();
 });
 
-test('the camera refused: said in the box, a typed number still finds it (13 digits search at once); a wrong one says so', async ({ page }) => {
+test('the camera refused: said in the box, a typed number still finds it (13 digits search at once, a wrong 13 said at once); a wrong one says so', async ({ page }) => {
   await camera(page, 'deny');
   await openScanner(page);
   await expect(scanLv(page).locator('[data-scan-cam=denied]')).toContainText('カメラが許可されていません');
   await expect(status(page)).toHaveText('番号を入力しても探せます');
   const num = scanLv(page).locator('[data-scan-num]');
   await num.fill('4900000010658');
+  await expect(status(page), '13 digits: said at once').toHaveText('番号が正しくありません');
+  await num.fill('49000000');
   await scanLv(page).locator('[data-scan-find]').click();
   await expect(status(page)).toHaveText('番号が正しくありません');
   expect(await overflow(page)).toEqual([]);

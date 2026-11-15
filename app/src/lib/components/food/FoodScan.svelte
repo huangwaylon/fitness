@@ -6,7 +6,7 @@
   // decoder decode.ts in its own chunk), never per frame. A read: the frame frozen, the corners leaf for FLASH_MS, the
   // camera off at once, then what the code is (scan.ts lookupCode: our products, else Open Food Facts online):
   // found, `onfound` (Food swaps this level for the amount); not found or unreached, a line and もう一度 · 名前で探す. A
-  // code whose check digit fails never reads (scanning goes on); a typed one says so. 13 valid digits search at once.
+  // code whose check digit fails never reads (scanning goes on); a typed one says so. 13 digits search at once.
   // The camera stops on every way out: the level left (‹, ✕, Esc, the sheet closed), the page hidden (and starts
   // again on the show, still reading), a code read; the decoder's memory is let go with the level. Timings as
   // performance marks (scan:open → scan:frame → scan:live → scan:read, scan:decode), for the e2e and Web Inspector.
@@ -172,7 +172,7 @@
     const v = e.currentTarget.value.normalize('NFKC').replace(/\D/g, '').slice(0, 13);
     e.currentTarget.value = typed = v;
     bad = false;
-    if (v.length === 13 && barcodeKeys(v).length) submit();
+    if (v.length === 13) submit();
   }
   function submit() {
     if (!okLen || phase === 'look') return;
@@ -214,8 +214,8 @@
 
   <p class="st" class:bad class:code={phase === 'look' && look === 'wait'} aria-live="polite" data-scan-status>{status}</p>
   {#if phase === 'none' || phase === 'offline'}
-    <p class="num-line" data-scan-code>{code}</p>
-    <div class="two-cta">
+    {#if !bad}<p class="num-line" data-scan-code>{code}</p>{/if}
+    <div class="acts">
       <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('food.retry')}</button>
       <button type="button" class="btn small" data-sfx="page" data-scan-byname onclick={onbyname}>{t('food.scan.byName')}</button>
     </div>
@@ -249,11 +249,17 @@
     position: absolute; inset: 0; margin: 0; padding: 0 16px; display: grid; place-content: center; gap: 6px; text-align: center;
     color: #fff; font: 700 var(--fs-body)/1.4 var(--font-ui);
   }
+  .msg b { font-weight: inherit; }
   .msg small { font-size: var(--fs-s); font-weight: 500; }
-  .st { margin: 0; min-height: 1.4em; text-align: center; font-size: var(--fs-s); line-height: 1.4; color: var(--text-soft); }
-  .st.bad { color: var(--coral-text); font-weight: 700; }
+  /* ごはん's note: 13, 700, soft (the search's 読み込み中, the amount's trust line) */
+  .st { margin: 0; min-height: 1.4em; text-align: center; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; color: var(--text-soft); }
+  .st.bad { color: var(--coral-text); }
   .st.code { font: 600 var(--fs-body)/1.4 var(--font-num); color: var(--text); }
-  .num-line { margin: -8px 0 0; text-align: center; font: 500 var(--fs-s)/1.4 var(--font-num); color: var(--text-soft); }
+  .num-line { margin: -8px 0 0; text-align: center; font: 600 var(--fs-s)/1.4 var(--font-num); color: var(--text-soft); }
+  /* ごはん's pair (the editors' and the amount's foot): the paper hugs its word, the action takes the rest */
+  .acts { display: flex; gap: 8px; }
+  .acts .btn { margin: 0; }
+  .acts .btn:not(.paper) { flex: 1; }
   .row { display: flex; gap: 8px; align-items: center; margin: 0; }
   .field {
     flex: 1; min-width: 0; height: var(--hit); padding: 0 12px; border: 0; border-radius: var(--r-pill); background: var(--ctl);
