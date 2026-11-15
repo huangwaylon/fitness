@@ -134,6 +134,8 @@
   .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--card)); }
   /* night: only warn and bad filled (warn the night's amber, its cells edged in ink); good, busy and idle plain */
   :global(:root[data-tod='night']) .status.good { background: var(--card); }
+  /* bad over the night's background, not its lighter card: the soft text 4.9:1 (4.06 over the card) */
+  :global(:root[data-tod='night']) .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--bg)); }
   /* (the strip's cells only, never the none ticks, the ghost or the swatches; warn keeps its cap, ink on yuzu: its shape
      tells it from avail) */
   :global(:root[data-tod='night']) .status.warn .strip .cell:not(.none) { box-shadow: inset 0 0 0 1px var(--text); }

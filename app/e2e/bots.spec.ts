@@ -454,6 +454,15 @@ test('ジム 不調 from the site failing: no 「!」 while the bot retries on i
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
   await expect(tab('gym')).not.toHaveAttribute('data-look');
   await expect(tab('gym')).toHaveAccessibleName('ジム、不調');
+  // at night the coral card is mixed over the night's background: its soft text (the as-of, the sentence) ≥ 4.5:1
+  await page.evaluate(() => document.documentElement.setAttribute('data-tod', 'night'));
+  const ratios = await sheet.locator('[data-gym-verdict]').evaluate((card) => {
+    const rgb = (c: string) => { const n = c.match(/[\d.]+/g)!.map(Number); return c.startsWith('color(') ? n.map((v) => v * 255) : n; };
+    const lum = (c: string) => { const [r, g, b] = rgb(c).map((v) => (v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const bg = lum(getComputedStyle(card).backgroundColor);
+    return ['[data-bots-asof]', '[data-bots-say]'].map((q) => { const l = lum(getComputedStyle(card.querySelector(q)!).color); return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05); });
+  });
+  for (const r of ratios) expect(r).toBeGreaterThanOrEqual(4.5);
 });
 
 test('no 「!」 on the menu while every bot is fine', async ({ page, context }) => {
