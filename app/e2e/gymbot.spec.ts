@@ -62,7 +62,7 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(tab).toHaveAttribute('aria-selected', 'true');
   const gym = sheet.locator('[data-gym-page]');
   await expect(gym.locator('[data-gym-verdict="degraded"] [data-bots-word]')).toHaveText('一部不調');
-  await expect(gym.locator('[data-gym-verdict] [data-bots-say]')).toHaveText('前回のチェックで一部が失敗しました。');
+  await expect(gym.locator('[data-gym-verdict] [data-bots-say]')).toHaveText('前回の確認で一部が失敗しました。');
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
   await expect(tab).toHaveAttribute('data-tab-status', 'warn'); // 一部不調, no person needed: no dot on the tab, said inside
   await expect(tab).not.toHaveAttribute('data-look');
@@ -74,8 +74,8 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   // 前回 the newest check's cell, ringed, its time the right-hand tick; 次回 the ghost; the 成果 term いま空き (no key row)
   await expect(gym.locator('[data-gym-key]')).toHaveCount(0);
   await expect(gym.locator('[data-gym-tick][data-last]')).toHaveText('11:54');
-  await expect(gym.locator('[data-gym-next]')).toHaveText('次回12:09ごろ');
-  await expect(gym.locator('[data-gym-outcome]')).toHaveText('いま空き1');
+  await expect(gym.locator('[data-gym-next]')).toHaveText('次回 12:09ごろ');
+  await expect(gym.locator('[data-gym-outcome]')).toHaveText('いま空き1枠');
   await expect(gym.locator('[data-bots-asof]')).toHaveText('12:00時点');
   // ⋯ on the card: named, a dialog's; the card has no other button
   const menu = gym.locator('[data-gym-verdict] [data-gym-menu]');
@@ -95,17 +95,17 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   await expect(scans.locator('.legend')).toHaveCount(0);
   const strip = gym.locator('[data-gym-strip]');
   await expect(strip.locator('[data-gym-cell]')).toHaveCount(24);
-  await expect(strip).toHaveAttribute('aria-label', '直近6時間：確認2回、失敗1回、空きあり2回');
+  await expect(strip).toHaveAttribute('aria-label', '直近6時間：確認2回、失敗1回、空き検出2回');
   await expect(strip.locator('[data-gym-cell]').last()).toHaveAttribute('data-gym-cell', 'warn');
   await expect(strip.locator('[data-gym-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-gym-cell="ok"]')).toHaveCount(0);
-  await expect(gym.locator('[data-gym-count]')).toHaveText(['空きあり1', '一部失敗1']); // each with its swatch, only those > 0
+  await expect(gym.locator('[data-gym-count]')).toHaveText(['空き検出1', '一部失敗1']); // each with its swatch, only those > 0
   await strip.locator('[data-gym-cell]').last().click();
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:54 · トレーニング○ ピラティス✕（タイムアウト） · 空き1');
   await page.keyboard.press('ArrowLeft');
   await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:39 手動 · トレーニング○ ピラティス○ · 空き1');
   await page.keyboard.press('ArrowLeft');
-  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:24 · チェックする日なし');
+  await expect(gym.locator('[data-gym-scan-line]')).toHaveText('11:24 · 確認する日なし');
   // one hit layer the strip's height (no per-cell buttons): a drag picks the cell under the finger as it goes
   const box = (await strip.boundingBox())!;
   expect(box.height).toBeGreaterThanOrEqual(44);

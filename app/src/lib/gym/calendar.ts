@@ -13,7 +13,7 @@ import {
   type ActInput, type Change, type Clock, type Day, type DayAct, type DayRow, type Rule
 } from './contract.ts';
 
-/** A cell's fill: 終日 leaf, 時間指定 mint, ふだん mint dashed (the next DAYS_TO_CHECK weekdays), 未チェック paper, オフ
+/** A cell's fill: 終日 leaf, 時間指定 mint, ふだん mint dashed (the next DAYS_TO_CHECK weekdays), 未確認 paper, オフ
  *  sunk (a weekend unset too). */
 type Fill = 'any' | 'range' | 'usual' | 'none' | 'off';
 export interface Cell extends MonthDay {
@@ -30,12 +30,12 @@ export interface Cell extends MonthDay {
   label: string;
 }
 
-/** A day's own rule, or ふだん's window, or none (未チェック). An unset weekend's is 'skip' (the Worker sends it so). */
+/** A day's own rule, or ふだん's window, or none (未確認). An unset weekend's is 'skip' (the Worker sends it so). */
 export const ruleOf = (row: DayRow): Rule | null => row.rule ?? (row.usual ? [DEFAULT_WINDOW[0], DEFAULT_WINDOW[1]] : null);
 
 /** A day with nothing saved reads as this rule: オフ on a weekend, else none. */
 const unsetRule = (row: DayRow): Rule | null => (row.weekend ? 'skip' : null);
-/** Nothing saved for the day (its rule is the usual: ふだん, オフ on a weekend, or 未チェック). A weekend's 'skip' with
+/** Nothing saved for the day (its rule is the usual: ふだん, オフ on a weekend, or 未確認). A weekend's 'skip' with
  *  🧹 something to clear and no ⏳ nor announced time is a saved オフ (from before weekends went off): set, as the
  *  Worker's `resettable` says. */
 export const isUnset = (row: DayRow): boolean =>
@@ -60,7 +60,7 @@ export const fromWords = (day: Day | null, when: number): string =>
 /** A row's ⏳ as words (fromWords), if set. */
 export const fromText = (row: DayRow): string | null => (row.from === null ? null : fromWords(row.day, row.from));
 
-/** The rule in words: 終日, 12:00〜13:00, ふだん（12:00〜13:00）, ふだん（オフ） (a weekend unset), 未チェック, オフ. */
+/** The rule in words: 終日, 12:00〜13:00, ふだん（12:00〜13:00）, ふだん（オフ） (a weekend unset), 未確認, オフ. */
 export function ruleText(row: DayRow): string {
   const f = fillOf(row);
   if (f === 'range') return longRange(row.rule as [Clock, Clock]);

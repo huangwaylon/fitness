@@ -211,7 +211,7 @@
   "its.scan.availDates": "rooms on {n} nights",
   "its.scan.summary": "Last hour: {n} reads, {fails} failed, rooms in {avail} minutes",
   "its.scan.legend.ok": "OK",
-  "its.scan.legend.avail": "Rooms",
+  "its.scan.legend.avail": "Saw rooms",
   "its.scan.legend.fail": "Failed",
   "its.ev.prev_unclean": "The previous run ended mid-way",
   "its.sec.notify": "Notifications",

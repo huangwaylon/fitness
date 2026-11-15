@@ -653,7 +653,7 @@ export function minuteCells(minutes: readonly ScanMinute[], now: number): ScanCe
 }
 
 /** 直近1時間 as the card draws it: the cells, the quarter hours under them, 前回 (the newest minute read), the states'
- *  words, its line for VoiceOver 「直近1時間：確認238回、失敗2回、空きあり3分」; `live` (running), a neutral 確認なし in
+ *  words, its line for VoiceOver 「直近1時間：確認238回、失敗2回、空き検出3分」; `live` (running), a neutral 確認なし in
  *  its place while it has none (the warning is runner_silent's sentence, never twice). */
 export function scanStrip(cells: readonly ScanCell[], live: boolean): Omit<CardStrip, 'next' | 'outcome'> {
   const sum = (k: 'n' | 'fails' | 'avail') => cells.reduce((a, c) => a + c[k], 0);

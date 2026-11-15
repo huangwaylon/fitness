@@ -235,8 +235,8 @@ test('メニュー 順調: the card (no sentence: the word says it), 直近8週 
   // 前回 the newest run's week, ringed, its day the right-hand tick; 次回 the ghost's day; the 成果 term 品目
   await expect(k.locator('[data-kalori-cell][data-last]')).toHaveCount(1);
   await expect(k.locator('[data-kalori-tick][data-last]')).toHaveText('11/4');
-  await expect(k.locator('[data-kalori-next]')).toHaveText('次回11/11');
-  await expect(k.locator('[data-kalori-outcome]')).toHaveText('54,269品目');
+  await expect(k.locator('[data-kalori-next]')).toHaveText('次回 11/11');
+  await expect(k.locator('[data-kalori-outcome]')).toHaveText('54,269品目・448店');
   await expect(k.getByRole('heading', { level: 3 })).toHaveCount(0); // 前回の変更: in くわしく
   await expect(k.locator('[data-kalori-tag]')).toHaveCount(0);
   // 直近8週: 8 cells, one held (warn: yellow, capped), the summary for VoiceOver and under it, the newest cell's line
@@ -450,7 +450,7 @@ test('ジム 不調 from the site failing: no 「!」 while the bot retries on i
   await expect(page.locator('[data-hud-bots-dot]')).toHaveCount(0);
   await page.locator('[data-hud-bots]').click();
   await expect(sheet.locator('[data-gym-verdict="failing"]')).toHaveClass(/bad/);
-  await expect(sheet.locator('[data-gym-verdict] [data-bots-say]')).toHaveText('予約サイトのチェックが3回続けて失敗しています。');
+  await expect(sheet.locator('[data-gym-verdict] [data-bots-say]')).toHaveText('予約サイトの確認が3回続けて失敗しています。');
   await expect(sheet.locator('[data-gym-verdict] [data-bots-act]')).toHaveCount(0);
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
   await expect(tab('gym')).not.toHaveAttribute('data-look');

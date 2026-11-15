@@ -248,15 +248,17 @@ export const menuLinks = (s: KaloriStatus, now: number): { id: 'run' | 'pr' | 'w
   { id: 'workflow', href: `${REPO}actions/workflows/${WORKFLOW}` }
 ];
 
-/** The card's edges (docs/bots.md): 次回 (the run's day) and the 成果 term (the accepted data's 品目; 不調: 最後の
- *  成功, the newest merged run). */
+/** The card's edges (docs/bots.md): 次回 (the run's day) and the 成果 term (the accepted data's 品目 and 店; 不調:
+ *  最後の成功, the newest merged run). */
 export function edges(s: KaloriStatus, now: number): { next: string | null; outcome: string | null } {
   const next = s.next === null ? null : mdOf(s.next);
   if (verdictOf(s, now) === 'failing') {
     const ok = s.history.findLast((w) => w.result === 'merged');
     return { next, outcome: t('bots.strip.lastOk', { time: ok ? timeOf(ok.t, now) : t('bots.key.never') }) };
   }
-  return { next, outcome: s.dataset?.items != null ? t('kalori.strip.items', { n: formatNum(s.dataset.items) }) : null };
+  const d = s.dataset;
+  if (d?.items == null) return { next, outcome: null };
+  return { next, outcome: d.shops == null ? t('kalori.strip.items', { n: formatNum(d.items) }) : t('kalori.strip.itemsShops', { n: formatNum(d.items), shops: formatNum(d.shops) }) };
 }
 
 /** 網羅: 完了, else what was fetched of what was found, and the failures. */

@@ -88,7 +88,7 @@ export const needsAttention = (s: GymStatus): boolean =>
 
 const at = (ms: number | null, now: number): string => (ms === null ? t('bots.key.never') : timeOf(ms, now));
 
-/** The card's edges (docs/bots.md): 次回 (the alarm; none while stopped or off) and the 成果 term (いま空き{n}, the
+/** The card's edges (docs/bots.md): 次回 (the alarm; none while stopped or off) and the 成果 term (いま空き{n}枠, the
  *  open slots the last check saw, when any; 不調: 最後の成功). */
 export function edges(s: GymStatus, now: number): { next: string | null; outcome: string | null } {
   const c = s.checks[0];
@@ -119,7 +119,7 @@ const outcome = (c: Check, p: (typeof PROGRAMS)[number]): string =>
   c.r![p] === 'ok' ? `${t(`gym.prog.${p}`)}○` : `${t(`gym.prog.${p}`)}✕（${t(`gym.outcome.${c.r![p]}`)}）`;
 
 /** A check's part of its cell's line: 「14:15 · トレーニング○ ピラティス○ · 空き2」, 手動 for a 🔎, what failed in words,
- *  a failed push; an alarm with no day to check: 「14:15 · チェックする日なし」. */
+ *  a failed push; an alarm with no day to check: 「14:15 · 確認する日なし」. */
 function checkText(c: Check): string {
   const when = c.by === 'tap' ? `${clockAt(c.t)} ${t('gym.by.tap')}` : clockAt(c.t);
   if (!c.r) return [when, t('gym.strip.idle')].join(' · ');
@@ -133,8 +133,8 @@ const allFailed = (c: Check): boolean => !!c.r && PROGRAMS.every((p) => c.r![p] 
  *  chain: a check's jitter leaves no false gap); fail when both programs failed, warn when one did, else avail when a
  *  slot was open, else ok; none when nothing was checked (stopped, backed off, an alarm with no day to check, or before
  *  the kept checks). With its ticks (every 2 hours, Tokyo), 前回 (the newest check's cell, its time), the states'
- *  words, its line for VoiceOver 「直近6時間：確認24回、失敗1回、空きあり3回」 (the checks that fetched), and, never
- *  checked, 「まだチェックしていません」 in its place. */
+ *  words, its line for VoiceOver 「直近6時間：確認24回、失敗1回、空き検出3回」 (the checks that fetched), and, never
+ *  checked, 「まだ確認していません」 in its place. */
 export function checkStrip(s: GymStatus): Omit<CardStrip, 'next' | 'outcome'> {
   const width = (s.intervalMin > 0 ? s.intervalMin : 15) * MIN_MS;
   const slots = chain(s.checks, (c) => c.t, s.now, width, CELLS);

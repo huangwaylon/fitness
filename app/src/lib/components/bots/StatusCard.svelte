@@ -5,9 +5,9 @@
   // actions). Row 2: what a person must do (the driver's `act`, in ink), else the sentence (never the word again), else
   // nothing. `note` (an action's answer: ジム's 今すぐ確認 line). Then the strip: the cells drawn 32 high in a 44 hit (ok
   // green, avail green full height, warn yellow capped, fail coral hatched, none a low tick: never colour alone), 前回
-  // ringed, 次回 a dashed ghost after them with its label; the ticks (前回's time the right-hand one, in ink); one line:
-  // each state's swatch and count (only those > 0) and the 成果 term, the picked cell's line once one is tapped. The
-  // cells are drawn only: one hit layer the strip's full height, a slider and one tab stop (a tap or a drag picks the
+  // ringed, 次回 a dashed ghost after them with its label (「次回 12:09ごろ」: never read as a range with 前回's time);
+  // the ticks (前回's time the right-hand one, in ink); one line: each state's swatch and count (only those > 0) and
+  // the 成果 term, the picked cell's line once one is tapped. The cells are drawn only: one hit layer the strip's full height, a slider and one tab stop (a tap or a drag picks the
   // cell nearest the finger's x; ← → Home End walk them); VoiceOver reads `summary`, then the picked cell's line.
   // Nothing kept: `empty` in the strip's place, else no strip. Filled by its tone (busy as good; at night only warn
   // and bad). `attr`: its data-* (data-its-verdict="healthy"); `page`: the page's data-* prefix (data-its-strip, …).
@@ -115,7 +115,7 @@
       </div>
       {#if strip.next}<span class="ghost" aria-hidden="true"><i class="cell"></i></span>{/if}
       <div class="ticks" aria-hidden="true">{#each ticks as k (`${k.i}-${k.last}`)}<span class:last={k.last} style:left={left(k.i)} style:translate={edge(k.i)} data-last={k.last || undefined} {...data('tick')}>{k.label}</span>{/each}</div>
-      {#if strip.next}<span class="nlabel" {...data('next')}><span class="sr">{t('bots.key.next')} </span>{strip.next}</span>{/if}
+      {#if strip.next}<span class="nlabel" {...data('next')}>{t('bots.key.next')} {strip.next}</span>{/if}
     </div>
     <p class="sline" aria-live="polite" {...data('scan-line')}>
       {#if picked !== null && cells[picked]}{cells[picked].label}
@@ -171,7 +171,6 @@
   .ticks span { position: absolute; translate: -50% 0; white-space: nowrap; }
   .ticks span.last { color: var(--text); }
   .nlabel { font: 700 11px/1.3 var(--font-num); color: var(--text-soft); white-space: nowrap; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .sline { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin: 2px 0 0; min-height: 1.3em; font-size: var(--fs-s); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: var(--lh); }
   .count { display: inline-flex; align-items: center; gap: 4px; color: var(--text-soft); }
   .count .cell { display: inline-block; width: 8px; height: 12px; flex: none; }

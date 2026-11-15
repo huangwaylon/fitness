@@ -164,7 +164,7 @@ describe('needsAttention (ボット’s dot)', () => {
 
 describe('edges and factRows', () => {
   it('次回 the run’s day · 品目 the accepted data’s; 不調: 最後の成功 (the newest merged run)', () => {
-    expect(edges(status(), NOW)).toEqual({ next: '11/18', outcome: '54,269品目' });
+    expect(edges(status(), NOW)).toEqual({ next: '11/18', outcome: '54,269品目・448店' });
     expect(edges(status({ next: null, dataset: null }), NOW)).toEqual({ next: null, outcome: null });
     const h = sample().history as Record<string, unknown>[];
     expect(edges(status({ verdict: 'failing', history: [...h.slice(0, -1), { ...h.at(-1), result: 'failed' }] }), NOW).outcome).toBe('最後の成功 11/4（水）2:42');

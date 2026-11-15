@@ -20,8 +20,8 @@ describe('StatusCard', () => {
   });
 
   it('nothing kept: `empty` in the strip’s place, else no row; something kept: the strip, never the empty line', () => {
-    const empty = card(strip('none', { empty: { text: 'まだチェックしていません' } }));
-    expect(empty).toMatch(/data-gym-empty[^>]*>まだチェックしていません/);
+    const empty = card(strip('none', { empty: { text: 'まだ確認していません' } }));
+    expect(empty).toMatch(/data-gym-empty[^>]*>まだ確認していません/);
     expect(empty).not.toContain('data-gym-strip');
     const blank = card(strip('none'));
     expect(blank).not.toContain('data-gym-strip');

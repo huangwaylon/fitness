@@ -41,28 +41,28 @@ describe('verdictView', () => {
   it('gives each verdict its tone, and the first reason its sentence', () => {
     expect(verdictView(status())).toEqual({ tone: 'good', w: 'healthy', word: '順調', sentence: '' }); // the word says it
     expect(verdictView(status({ verdict: 'degraded', reasons: ['site_failing', 'quota_high'], failures: 2 }))).toEqual({
-      tone: 'warn', w: 'trouble', word: '一部不調', sentence: '予約サイトのチェックが2回続けて失敗しています。'
+      tone: 'warn', w: 'trouble', word: '一部不調', sentence: '予約サイトの確認が2回続けて失敗しています。'
     });
     expect(verdictView(status({ verdict: 'late', reasons: ['overdue'] })).tone).toBe('warn');
     expect(verdictView(status({ verdict: 'failing', reasons: ['site_failing'], failures: 4 })).tone).toBe('bad');
     expect(verdictView(status({ verdict: 'broken', reasons: ['webhook_wrong'] }))).toMatchObject({ tone: 'bad', word: '故障' });
     expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).tone).toBe('idle');
-    expect(verdictView(status({ verdict: 'off', reasons: ['mode_off', 'no_alarm'] }))).toMatchObject({ tone: 'idle', word: 'オフ', sentence: 'チェックも通知もしません。' });
+    expect(verdictView(status({ verdict: 'off', reasons: ['mode_off', 'no_alarm'] }))).toMatchObject({ tone: 'idle', word: 'オフ', sentence: '確認も通知もしません。' });
   });
 
   it('without a reason, the sentence follows the verdict (never the word again)', () => {
-    expect(verdictView(status({ verdict: 'failing', reasons: [], failures: 0 })).sentence).toBe('チェックに失敗しています。');
-    expect(verdictView(status({ verdict: 'failing', reasons: [], failures: 3 })).sentence).toBe('予約サイトのチェックが3回続けて失敗しています。');
-    expect(verdictView(status({ verdict: 'broken', reasons: [] })).sentence).toBe('チェックに失敗しています。');
+    expect(verdictView(status({ verdict: 'failing', reasons: [], failures: 0 })).sentence).toBe('確認に失敗しています。');
+    expect(verdictView(status({ verdict: 'failing', reasons: [], failures: 3 })).sentence).toBe('予約サイトの確認が3回続けて失敗しています。');
+    expect(verdictView(status({ verdict: 'broken', reasons: [] })).sentence).toBe('確認に失敗しています。');
     expect(verdictView(status({ verdict: 'degraded', reasons: [] })).sentence).toBe('');
-    expect(verdictView(status({ verdict: 'late', reasons: [] })).sentence).toBe('チェックが予定より遅れています。');
+    expect(verdictView(status({ verdict: 'late', reasons: [] })).sentence).toBe('確認が予定より遅れています。');
     expect(verdictView(status({ verdict: 'stopped', reasons: [] }), true).sentence).toBe('⋯から再開できます。');
   });
 });
 
 describe('edges and factRows', () => {
   it('次回 the alarm (none while stopped or off) · いま空き when the last check saw a slot; 不調: 最後の成功', () => {
-    expect(edges(status(), NOW)).toEqual({ next: '12:09ごろ', outcome: 'いま空き1' });
+    expect(edges(status(), NOW)).toEqual({ next: '12:09ごろ', outcome: 'いま空き1枠' });
     const c = sample(NOW).checks;
     expect(edges(status({ checks: [{ ...c[0], open: 0 }] }), NOW).outcome).toBeNull();
     expect(edges(status({ checks: [c[4]] }), NOW).outcome).toBeNull(); // an alarm with no day: nothing seen
@@ -105,12 +105,12 @@ describe('checkStrip (24 intervals)', () => {
     expect(s.cells[0].start).toBe(NOW - 6 * 60 * MIN);
     expect(s.ticks.map((k) => k.label)).toEqual(['06:00', '08:00', '10:00']);
     expect(s.last).toEqual({ i: 23, label: '11:58' });
-    expect(s.summary).toBe('直近6時間：確認24回、失敗0回、空きあり0回');
+    expect(s.summary).toBe('直近6時間：確認24回、失敗0回、空き検出0回');
     expect(s.empty).toBeNull();
     expect(checkStrip(status({ intervalMin: 10, checks: every(2) })).summary).toMatch(/^直近4時間/);
     expect(checkStrip(status({ intervalMin: 0, checks: [] })).cells).toHaveLength(24); // (an older Worker: 15)
     // never checked: a line in its place
-    expect(checkStrip(status({ checks: [] }))).toMatchObject({ last: null, empty: { text: 'まだチェックしていません' } });
+    expect(checkStrip(status({ checks: [] }))).toMatchObject({ last: null, empty: { text: 'まだ確認していません' } });
   });
 
   it('fail when both programs failed, warn when one did, avail when a slot was open, none when nothing was checked; each names its check', () => {
@@ -123,11 +123,11 @@ describe('checkStrip (24 intervals)', () => {
     expect(cells.slice(-5).map((c) => c.state)).toEqual(['ok', 'fail', 'none', 'warn', 'avail']);
     expect(cells.at(-1)!.label).toBe('11:58 · トレーニング○ ピラティス○ · 空き2');
     expect(cells.at(-2)!.label).toBe('11:45 · トレーニング○ ピラティス✕（タイムアウト） · LINEへの通知に失敗');
-    expect(cells.at(-3)!.label).toBe('11:26 · チェックする日なし');
+    expect(cells.at(-3)!.label).toBe('11:26 · 確認する日なし');
     // before the 12 kept: nothing checked, said with the cell's own time
     expect(cells.slice(0, 12).every((c) => c.state === 'none')).toBe(true);
-    expect(cells[0].label).toBe('06:00 · チェックなし');
-    expect(summary).toBe('直近6時間：確認11回、失敗2回、空きあり1回');
+    expect(cells[0].label).toBe('06:00 · 確認なし');
+    expect(summary).toBe('直近6時間：確認11回、失敗2回、空き検出1回');
     expect(last).toEqual({ i: 23, label: '11:58' });
   });
 

@@ -29,7 +29,7 @@
   "gym.outcome.error": "error",
   "gym.pushFailed": "LINE alert failed",
   "gym.strip.legend.ok": "OK",
-  "gym.strip.legend.avail": "Open slots",
+  "gym.strip.legend.avail": "Saw openings",
   "gym.strip.legend.fail": "Failed",
   "gym.strip.none": "no check",
   "gym.strip.idle": "no day to check",
@@ -133,5 +133,5 @@
   "gym.result.next": "next in {s}s",
   "gym.ctl.intervalNote": "How often the gym is checked; the same as LINE's チェック設定.",
   "gym.strip.never": "Not checked yet",
-  "gym.strip.nowOpen": "{n} open now"
+  "gym.strip.nowOpen": "{n} slots open now"
 }

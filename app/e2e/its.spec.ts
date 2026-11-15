@@ -641,14 +641,14 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour', 
   await open(sheet);
   const strip = its.locator('[data-its-strip]');
   await expect(strip.locator('[data-its-cell]')).toHaveCount(60);
-  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認32回、失敗1回、空きあり1分');
+  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認32回、失敗1回、空き検出1分');
   await expect(strip.locator('[data-its-cell="fail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(30);
   // 前回 the newest minute read, its time in ink; 次回 the runner's interval; the counts and 予約
   await expect(strip.locator('[data-its-cell][data-last]')).toHaveCount(1);
-  await expect(its.locator('[data-its-next]')).toHaveText('次回15秒ごと');
-  await expect(its.locator('[data-its-count]')).toHaveText(['正常30', '空きあり1', '失敗1']);
+  await expect(its.locator('[data-its-next]')).toHaveText('次回 15秒ごと');
+  await expect(its.locator('[data-its-count]')).toHaveText(['正常30', '空き検出1', '失敗1']);
   await expect(its.locator('[data-its-outcome]')).toHaveText('予約1');
   // a tap on the failed minute names it
   const cell = strip.locator('[data-its-cell="fail"]');
@@ -674,7 +674,7 @@ test('直近1時間 from the Worker’s per-minute aggregate: every read of the 
   });
   await open(sheet);
   const strip = its.locator('[data-its-strip]');
-  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認328回、失敗2回、空きあり1分');
+  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認328回、失敗2回、空き検出1分');
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(40);
   await strip.locator('[data-its-cell="warn"]').click(); // 2 of 8 failed: warn, not fail
   await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8回 · 失敗2（http_503） · 空き3日$/);

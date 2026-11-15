@@ -28,7 +28,7 @@ describe('BotPage', () => {
 
   const verdict = { tone: 'good', w: 'healthy', word: '順調', sentence: 'x', needsLook: false } as const;
   const strip = (state: 'none' | 'ok', empty?: string) =>
-    ({ cells: [{ start: 0, end: 1, state, label: '' }], ticks: [], last: null, words: { ok: '正常' }, summary: 's', next: '12:10ごろ', outcome: 'いま空き2', empty: empty ? { text: empty } : null });
+    ({ cells: [{ start: 0, end: 1, state, label: '' }], ticks: [], last: null, words: { ok: '正常' }, summary: 's', next: '12:10ごろ', outcome: 'いま空き2枠', empty: empty ? { text: empty } : null });
 
   it('with a verdict: one card, its word and ⋯ (named, a dialog’s); no sentence row without one; a strip with nothing in it left out; くわしく last', () => {
     const { body } = render(BotPage, {
@@ -44,8 +44,8 @@ describe('BotPage', () => {
 
   it('the strip in the card: 次回’s ghost, the counts with their swatches, the 成果 term; nothing kept: the empty line', () => {
     const { body } = render(BotPage, { props: { ...base, failed: null, verdict, strip: strip('ok') } });
-    expect(body).toMatch(/data-gym-verdict[\s\S]*data-gym-strip[\s\S]*data-gym-next[^>]*>[\s\S]*12:10ごろ[\s\S]*data-gym-count="ok"[\s\S]*正常1[\s\S]*data-gym-outcome[^>]*>いま空き2/);
-    const empty = render(BotPage, { props: { ...base, failed: null, verdict, strip: strip('none', 'まだチェックしていません') } }).body;
+    expect(body).toMatch(/data-gym-verdict[\s\S]*data-gym-strip[\s\S]*data-gym-next[^>]*>[\s\S]*12:10ごろ[\s\S]*data-gym-count="ok"[\s\S]*正常1[\s\S]*data-gym-outcome[^>]*>いま空き2枠/);
+    const empty = render(BotPage, { props: { ...base, failed: null, verdict, strip: strip('none', 'まだ確認していません') } }).body;
     expect(empty).toContain('data-gym-empty');
     expect(empty).not.toContain('data-gym-strip');
   });

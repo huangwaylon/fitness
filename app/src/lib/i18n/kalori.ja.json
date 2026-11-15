@@ -68,6 +68,7 @@
   "kalori.menu.label": "メニューの操作",
   "kalori.menu.workflow": "ワークフローを開く",
   "kalori.strip.items": "{n}品目",
+  "kalori.strip.itemsShops": "{n}品目・{shops}店",
   "kalori.strip.first": "最初の更新は{time}ごろ",
   "kalori.act.held": "差分を確認してマージ"
 }

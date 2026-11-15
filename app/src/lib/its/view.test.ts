@@ -632,7 +632,7 @@ describe('直近1時間', () => {
     expect(cells.filter((c) => c.state === 'none')).toHaveLength(56);
     expect(cells[1]).toMatchObject({ state: 'none', text: '11:02 · 確認なし' });
     const strip = scanStrip(cells, true);
-    expect(strip).toMatchObject({ summary: '直近1時間：確認14回、失敗7回、空きあり2分', last: { i: 59, label: '12:00' }, empty: { text: '確認なし', plain: true } });
+    expect(strip).toMatchObject({ summary: '直近1時間：確認14回、失敗7回、空き検出2分', last: { i: 59, label: '12:00' }, empty: { text: '確認なし', plain: true } });
     expect(strip.ticks).toEqual([{ i: 14, label: '11:15' }, { i: 29, label: '11:30' }, { i: 44, label: '11:45' }, { i: 59, label: '12:00' }]);
     expect(scanStrip(cells, false).empty).toBeNull(); // stopped: no line, no strip without a read
     // the client reads it, a garbled minute or code left out

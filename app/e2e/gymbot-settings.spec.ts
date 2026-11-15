@@ -57,7 +57,7 @@ test('the calendar: the whole month from Monday, next month, the 4-day default a
   for (const i of [3, 4]) await expect(day(i)).toHaveAttribute('data-fill', 'off');
   await expect(day(3)).toHaveAttribute('aria-label', '11/7（土）、ふだん（オフ）');
   await expect(day(7)).toHaveAttribute('data-fill', 'none');
-  await expect(day(7)).toHaveAttribute('aria-label', '11/11（水）、未チェック');
+  await expect(day(7)).toHaveAttribute('aria-label', '11/11（水）、未確認');
   await expect(day(0).locator('[data-gym-time]')).toHaveCount(0); // ふだん: its dashed fill, no hours
   await expect(day(5)).toHaveAttribute('aria-label', '11/9（月）、終日、18:00から');
   await expect(day(5).locator('[data-gym-from]')).toBeVisible();
@@ -102,7 +102,7 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   const { gym, day, editor } = await phone(page, context);
   await day(5).click();
   await expect(page.locator('dialog[open] .navbar').last()).toContainText('11/9（月）');
-  await expect(editor.locator('[data-gym-editor-now]')).toHaveText('いまの設定：未チェック');
+  await expect(editor.locator('[data-gym-editor-now]')).toHaveText('いまの設定：未確認');
   await expect(editor.locator('[data-gym-reset]')).toHaveCount(0); // nothing to clear
   await editor.locator('[data-gym-kind="any"]').click();
   await expect(day(5)).toHaveAttribute('data-fill', 'any');
@@ -112,7 +112,7 @@ test('a day’s editor applies at once, and 取り消す puts the day back', asy
   await expect(toast).toContainText('11/9（月） 終日にしました');
   await toast.getByRole('button', { name: '取り消す' }).click();
   await expect(day(5)).toHaveAttribute('data-fill', 'none');
-  await expect.poll(() => gym.acts.at(-1)).toEqual({ a: 'reset', d: gym.days[5], base: 'v1' }); // a 未チェック day: back with a reset
+  await expect.poll(() => gym.acts.at(-1)).toEqual({ a: 'reset', d: gym.days[5], base: 'v1' }); // a 未確認 day: back with a reset
   // a ふだん day: back with its usual window, and ふだんに戻す once it has a rule
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
   await day(1).click();
@@ -489,8 +489,8 @@ test('⋯: its rows per state; stopping asks first, restarting doesn’t; 確認
   await expect(rows).toHaveText(['今すぐ確認', '確認を停止', '確認の間隔 · 15分ごと ›']);
   await expect(page.locator('dialog[open]').last()).toHaveAccessibleName('ジムの操作');
   await page.locator('dialog[open] [data-action="stop"]').click();
-  const ask = page.getByRole('dialog', { name: 'チェックを停止しますか？' });
-  await expect(ask).toContainText('チェックを停止しますか？');
+  const ask = page.getByRole('dialog', { name: '確認を停止しますか？' });
+  await expect(ask).toContainText('確認を停止しますか？');
   await expect(ask).toContainText('再開するまで、空きのお知らせは届きません。');
   await ask.locator('[data-action="cancel"]').click();
   expect(gym.acts).toEqual([]);
