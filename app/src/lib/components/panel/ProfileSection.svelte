@@ -3,7 +3,7 @@
   // 1990/1/1（35歳）」 (made-up). Locked (2026-11-15): nobody sets or clears it here, the record refuses every profile
   // pref. A member's phone shows the two members (this phone's first), the guest's only its own: the record sends a
   // member's to the members alone and the guest's to the guest alone (contract/guest.ts rowsFor). A value an old record
-  // never had says 未設定.
+  // never had is named (性別なし, 生年月日なし); neither: 未設定. The name 15 / 500, the value 15 bold (the dense rows').
   import type { Who, WeekView } from '#lib/types.ts';
   import { ageAt, profileOf } from '#lib/model/profile.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -19,11 +19,10 @@
     const m = week.model!;
     const { sex, birth } = profileOf(m.state, p);
     const age = ageAt(m.state, p, m.now);
-    const unset = t('profile.unset');
-    if (!sex && !birth) return unset;
+    if (!sex && !birth) return t('profile.unset');
     return t('profile.line', {
-      sex: sex ? t(`profile.sex.${sex}`) : unset,
-      birth: birth && age !== null ? t('profile.birth', { date: ymd(birth), n: age }) : unset
+      sex: t(`profile.sex.${sex ?? 'none'}`),
+      birth: birth && age !== null ? t('profile.birth', { date: ymd(birth), n: age }) : t('profile.birth.none')
     });
   }
 </script>
@@ -38,5 +37,6 @@
 
 <style>
   dl { margin: 0; }
+  .row.kv > dt { font: 500 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
   dd { margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
 </style>

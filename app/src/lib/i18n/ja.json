@@ -235,6 +235,8 @@
   "profile.unset": "未設定",
   "profile.line": "{sex}・{birth}",
   "profile.birth": "{date}（{n}歳）",
+  "profile.sex.none": "性別なし",
+  "profile.birth.none": "生年月日なし",
   "profile.sex.m": "男性",
   "profile.sex.f": "女性",
   "wx.game": "ゲーム",

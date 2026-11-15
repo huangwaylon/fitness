@@ -47,6 +47,9 @@ test('the profile: first in settings, read-only, the members’ to the members a
   await expect(a.page.locator('dialog[open] [data-settings] > section').first()).toHaveAttribute('data-profile-section', '');
   await expect.poll(() => rows(a.card)).toEqual([['A', lineA], ['B', lineB]]);
   await expect(a.page.locator('dialog[open] [data-profile-section]').locator('input, select, button, [role=radio]')).toHaveCount(0);
+  // the dense rows' balance: the name 15 / 500, the value 15 bold
+  const font = (sel: string) => a.card.first().locator(sel).evaluate((e) => { const s = getComputedStyle(e); return [s.fontSize, s.fontWeight]; });
+  expect([await font('dt'), await font('dd')]).toEqual([['15px', '500'], ['15px', '700']]);
   await a.page.context().close();
 
   // うめ's phone: hers first
@@ -54,9 +57,9 @@ test('the profile: first in settings, read-only, the members’ to the members a
   await expect.poll(() => rows(b.card)).toEqual([['B', lineB], ['A', lineA]]);
   await b.page.context().close();
 
-  // the guest: its own only, 未設定 where nothing was kept
+  // the guest: its own only, the missing value named
   const g = await settings(browser, rec, 'G');
-  await expect.poll(() => rows(g.card)).toEqual([['G', '女性・未設定']]);
+  await expect.poll(() => rows(g.card)).toEqual([['G', '女性・生年月日なし']]);
   expect(rec.prefs('G').map(([, d]) => d.key)).toEqual(['sex']); // never a member's
   expect(rec.prefs('A').filter(([who]) => who === 'G')).toEqual([]); // nor the guest's to a member
   await g.page.context().close();

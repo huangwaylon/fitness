@@ -235,6 +235,8 @@
   "profile.unset": "Not set",
   "profile.line": "{sex} · {birth}",
   "profile.birth": "{date} ({n})",
+  "profile.sex.none": "Sex not set",
+  "profile.birth.none": "Birth date not set",
   "profile.sex.m": "Male",
   "profile.sex.f": "Female",
   "wx.game": "Game",

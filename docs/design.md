@@ -122,7 +122,7 @@ for A, B and the guest alike. Each person is NH's human player ([Players](#playe
   round head for the chips and rows is drawn once and kept (`look/portraits.svelte.ts`).
 
 <a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`): read-only, a dense card, a
-row a person (「名前　男性・1990/1/1（35歳）」, 未設定 where missing): the two members (this phone's first), the guest
+row a person (「名前　男性・1990/1/1（35歳）」, a missing one named: 生年月日なし): the two members (this phone's first), the guest
 only its own. Prefs on the record ([backend](backend.md#pref) `sex`, `birth`), locked; private to the two members (the
 guest's to the guest), enforced by the record. What it feeds:
 - **Height:** √(weight ÷ BMI) from Health's latest day with both (no height pref).
