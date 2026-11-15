@@ -15,7 +15,7 @@ demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot
   保養所's mail, メニュー 保留's merge) else the sentence, never restating the word (none when it says it); result line; the strip, the
   card's width, 32 drawn in a 44 hit (ok green, avail full height, warn capped, fail hatched, idle a low sunk bar: ジム's
   alarm with no day to check, none a tick; 前回 ringed, idle too, its time the right tick in ink); 11px ticks; one row: the
-  counts > 0 with swatches (idle not counted) + one 成果 (いま空き{n}枠 · 予約 · 品目・店; 不調: 最後の成功), or the picked
+  counts > 0 with swatches (idle alone: its label 確認する日なし, no number) + one 成果 (いま空き{n}枠 · 予約 · 品目・店; 不調: 最後の成功), or the picked
   cell's line, and 「次回 12:09ごろ」 at its end (none stopped or off). Never kept: a 32px sunk line (保養所 running: a plain 確認なし). Night: only
   warn (`--n-warn`) and bad filled. · `AttentionCard` (what the card lacks; an act's sentence) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom, named with their counts in its summary: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
   ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.

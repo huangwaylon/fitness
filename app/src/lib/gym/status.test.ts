@@ -147,13 +147,13 @@ describe('checkStrip (24 intervals)', () => {
     expect(last).toEqual({ i: 23, label: '11:58' });
   });
 
-  it('idle alarms only (the live state: no day to check): idle cells, 前回 ringed on the newest, out of the counts', () => {
+  it('idle alarms only (the live state: no day to check): idle cells, 前回 ringed on the newest, their word in the counts\' row', () => {
     const idle = every(30).map((c) => check(c.t, { idle: true, r: undefined, ms: 3 }));
     const s = checkStrip(status({ checks: idle }));
     expect(s.cells.every((c) => c.state === 'idle')).toBe(true);
     expect(s.last).toEqual({ i: 23, label: '11:58' });
     expect(s.summary).toBe('直近6時間：確認0回、失敗0回、空き検出0回');
-    expect(s.words.idle).toBeUndefined(); // (out of the counts: the cell's line names it)
+    expect(s.words.idle).toBe('確認する日なし'); // (a label in the counts' row, no number: StatusCard)
     expect(s.empty).toBeNull();
     // a 🔎 tap beside an idle alarm: the cell is the tap's
     const mixed = checkStrip(status({ checks: [check(NOW - 2 * MIN, { by: 'tap' }), ...idle.slice(1)] }));

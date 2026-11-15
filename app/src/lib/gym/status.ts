@@ -163,7 +163,7 @@ export function checkStrip(s: GymStatus): Omit<CardStrip, 'next' | 'outcome'> {
   const n = { h: (CELLS * width) / 3600_000, n: done.length, fails: done.filter(failed).length, avail: done.filter((c) => c.open > 0).length };
   return {
     cells, ticks: stripTicks(cells, 2 * 3600_000), last: i < 0 ? null : { i, label: clockAt(slots[i].items.at(-1)!.t) }, summary: t('gym.strip.summary', n),
-    words: { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), warn: t('gym.strip.legend.warn'), fail: t('gym.strip.legend.fail') },
+    words: { ok: t('gym.strip.legend.ok'), avail: t('gym.strip.legend.avail'), warn: t('gym.strip.legend.warn'), fail: t('gym.strip.legend.fail'), idle: t('gym.strip.idle') },
     empty: s.checks.length ? null : { text: t('gym.strip.never') }
   };
 }

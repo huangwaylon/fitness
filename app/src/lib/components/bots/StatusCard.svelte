@@ -41,14 +41,19 @@
   const act = $derived(verdict.needsLook && verdict.act ? verdict.act : null);
   const data = (k: string, v: string | number = '') => ({ [`data-${page}-${k}`]: v });
 
-  const STATES: CellState[] = ['ok', 'avail', 'warn', 'fail'];
+  const STATES: CellState[] = ['ok', 'avail', 'warn', 'fail', 'idle'];
   const cells = $derived(strip?.cells ?? []);
   const n = $derived(cells.length);
   const blank = $derived(!cells.some((c) => c.state !== 'none'));
-  const counts = $derived(strip ? STATES.flatMap((s) => {
-    const k = cells.filter((c) => c.state === s).length;
-    return k && strip.words[s] ? [{ s, label: strip.words[s]!, n: k }] : [];
-  }) : []);
+  // (idle's word, a label without a number, only when nothing else is counted: a strip of idle alarms alone)
+  const counts = $derived.by(() => {
+    if (!strip) return [];
+    const all = STATES.flatMap((s) => {
+      const k = cells.filter((c) => c.state === s).length;
+      return k && strip.words[s] ? [{ s, label: strip.words[s]!, n: k }] : [];
+    });
+    return all.some((c) => c.s !== 'idle') ? all.filter((c) => c.s !== 'idle') : all;
+  });
   /** The ticks: 前回's in ink, the others clear of it. */
   const ticks = $derived.by(() => {
     if (!strip) return [];
@@ -119,7 +124,7 @@
       <p class="line" aria-live="polite" {...data('scan-line')}>
         {#if picked !== null && cells[picked]}{cells[picked].label}
         {:else}
-          {#each counts as c (c.s)}<span class="count" {...data('count', c.s)}><i class="cell {c.s}" aria-hidden="true"></i>{c.label}{formatNum(c.n)}</span>{/each}
+          {#each counts as c (c.s)}<span class="count" {...data('count', c.s)}><i class="cell {c.s}" aria-hidden="true"></i>{c.label}{#if c.s !== 'idle'}{formatNum(c.n)}{/if}</span>{/each}
           {#if strip.outcome}<span class="outcome" {...data('outcome')}>{strip.outcome}</span>{/if}
         {/if}
       </p>
@@ -176,6 +181,7 @@
   .count { display: inline-flex; align-items: center; gap: 4px; color: var(--text-soft); }
   .count .cell { display: inline-block; width: 8px; height: 12px; flex: none; }
   .count .cell.ok { height: 8px; }
+  .count .cell.idle { height: 5px; box-shadow: inset 0 0 0 1px var(--edge); }
   .outcome { color: var(--text); }
   .next { margin-left: auto; color: var(--text-soft); white-space: nowrap; }
   /* nothing kept: a line the strip's height in its place (sunk; plain: neutral, uncoloured) */

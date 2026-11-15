@@ -28,10 +28,11 @@ describe('StatusCard', () => {
     const blank = card(strip('none'));
     expect(blank).not.toContain('data-gym-strip');
     expect(blank).not.toContain('data-gym-empty');
-    // idle checks only (ジム's alarms with no day to check): the strip, its cells low, no count
-    const idle = card(strip('idle', { empty: null }));
+    // idle checks only (ジム's alarms with no day to check): the strip, its cells low; its word a label, no number
+    const idle = card(strip('idle', { empty: null, words: { ok: '正常', idle: '確認する日なし' } }));
     expect(idle).toContain('data-gym-cell="idle"');
-    expect(idle).not.toContain('data-gym-count');
+    expect(idle).toMatch(/data-gym-count="idle"[^>]*><i class="cell idle[^>]*><\/i>確認する日なし(<!--[^>]*-->)*<\/span>/);
+    expect(card(strip('idle', { empty: null }))).not.toContain('data-gym-count');
     const kept = card(strip('ok', { empty: { text: 'x' } }));
     expect(kept).toContain('data-gym-strip');
     expect(kept).not.toContain('data-gym-empty');

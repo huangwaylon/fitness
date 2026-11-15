@@ -140,7 +140,7 @@ test('a member’s ボット on ジム: the verdict, the facts and the checks; �
   expect(calls.n).toBe(n);
 });
 
-test('idle alarms only (no day to check, as since 11/14): the strip shows them, low and neutral, 前回 ringed; no counts, 次回 on the row', async ({ page, context }) => {
+test('idle alarms only (no day to check, as since 11/14): the strip shows them, low and neutral, 前回 ringed; 確認する日なし (no number) and 次回 on the row', async ({ page, context }) => {
   const MIN = 60_000;
   const { sheet } = await phone(page, context, 'A', undefined, undefined, (s) => ({
     ...s, verdict: 'healthy', reasons: [], lastError: null,
@@ -152,7 +152,7 @@ test('idle alarms only (no day to check, as since 11/14): the strip shows them, 
   await expect(gym.locator('[data-gym-empty]')).toHaveCount(0);
   await expect(strip.locator('[data-gym-cell]').last()).toHaveAttribute('data-last', 'true');
   await expect(gym.locator('[data-gym-tick][data-last]')).toHaveText('11:56');
-  await expect(gym.locator('[data-gym-count]')).toHaveCount(0);
+  await expect(gym.locator('[data-gym-count]')).toHaveText(['確認する日なし']);
   await expect(gym.locator('[data-gym-next]')).toHaveText('次回 12:09ごろ');
   // a low bar: taller than none's tick, lower than a check's; its line names it
   const h = (await strip.locator('[data-gym-cell]').last().boundingBox())!.height;
