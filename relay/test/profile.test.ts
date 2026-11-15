@@ -75,4 +75,22 @@ describe('the profile prefs', () => {
       expect(prefs(key, since)).toEqual([['B', { key: 'sex', value: 'f' }]]);
     }
   });
+
+  it('a load takes no pref of a key gone (bmiStd) and changes no kept profile; a fresh slot it restores', () => {
+    const at = (s: number) => new Date(T0 - s * 1000).toISOString();
+    expect(store.load({ rows: { events: [[at(9), 'A', 'old1', 'pref', '{"key":"bmiStd","value":"asia"}']] } })).toMatchObject({ ok: true, events: 0, skipped: 1, refused: { prefKey: 1, profileLocked: 0 } });
+    for (const key of [KEY_A, KEY_B, KEY_C]) expect(prefs(key)).toEqual([]);
+    kept('A', { key: 'sex', value: 'm' });
+    // a later row for a kept slot (A's sex) is refused, older or newer; one for an empty slot (B's birth) restores
+    const r = store.load({ rows: { events: [
+      [at(-60), 'A', 'old2', 'pref', '{"key":"sex","value":"f"}'],
+      [at(-61), 'B', 'old3', 'pref', '{"key":"sex","value":"m","person":"A"}'],
+      [at(8), 'B', 'old4', 'pref', '{"key":"birth","value":"1994-08-20"}']
+    ] } });
+    expect(r).toMatchObject({ ok: true, events: 1, skipped: 2, refused: { prefKey: 0, profileLocked: 2 } });
+    expect(prefs(KEY_A)).toEqual([['B', { key: 'birth', value: '1994-08-20' }], ['A', { key: 'sex', value: 'm' }]]);
+    expect(prefs(KEY_C)).toEqual([]);
+    // idempotent: the restored row is had, the refused ones refused again
+    expect(store.load({ rows: { events: [[at(8), 'B', 'old4', 'pref', '{"key":"birth","value":"1994-08-20"}']] } })).toMatchObject({ events: 0, skipped: 0 });
+  });
 });

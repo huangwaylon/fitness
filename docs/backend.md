@@ -72,6 +72,8 @@ The wedding types and `trip_note` are the members' only (the guest's are `forbid
 - The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Private** (`rowsFor`): a member's reaches
   the two members only, the guest's the guest only.
   **Locked:** the record refuses any profile pref from anyone (`forbidden`, `profile locked`); a change takes a code change.
+  A `load` too: it skips a `pref` of a key not in `PREF_KEYS` (an old dump's `bmiStd`) and a profile row whose slot
+  holds one (`refused` in its reply, logged `load refused`); an empty slot it restores.
 - Island-wide: `weatherMode` and `seasonLook` ([The real weather](#the-real-weather)).
 
 **Subjects and new keys:** `person` (whose goal; absent = the sender) only on the goal and profile prefs

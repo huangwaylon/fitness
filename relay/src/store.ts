@@ -20,7 +20,7 @@ import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot } from '../../app/src/lib/contract/record.ts';
 import { validEvent } from '../../app/src/lib/contract/shopCheck.ts';
 import {
-  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, PROFILE_PREF_KEYS, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, PREF_KEYS, PROFILE_PREF_KEYS, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
@@ -164,7 +164,11 @@ export interface ImportRows {
   held?: unknown[][];
 }
 
-export interface ImportResult { metrics: number; events: number; uploads: number; skipped: number; held?: number }
+export interface ImportResult {
+  metrics: number; events: number; uploads: number; skipped: number; held?: number;
+  /** Of `skipped`: a `pref` row of a key the model no longer reads, a profile row its locked slot already holds. */
+  refused?: { prefKey: number; profileLocked: number };
+}
 
 /** A value an ingest held back (metrics_held): first held at `at`, last seen at `last`, `n` times; `promoted` when the
  *  admin made it a row of `metrics` (null: never). */
@@ -1298,10 +1302,16 @@ export class StoreCore {
     return this.io.tx(() => {
       const out: ImportResult = { metrics: 0, events: 0, uploads: 0, skipped: 0, ...(rows.held ? { held: 0 } : {}) };
       const arrived = this.io.now();
+      this.refused = { prefKey: 0, profileLocked: 0 };
       for (const { tab, r } of all) {
         const v = !Array.isArray(r) ? 'skipped' : tab === 'metrics' ? this.importMetric(r, arrived) : tab === 'events' ? this.importEvent(r, arrived) : tab === 'held' ? this.importHeld(r) : this.importUpload(r);
         if (v === 'added') out[tab] = (out[tab] ?? 0) + 1;
         else if (v === 'skipped') out.skipped++;
+      }
+      const { prefKey, profileLocked } = this.refused;
+      if (prefKey + profileLocked) {
+        out.refused = { prefKey, profileLocked };
+        console.warn('store', 'load refused', `pref key ${prefKey}`, `profile locked ${profileLocked}`);
       }
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
@@ -1322,6 +1332,9 @@ export class StoreCore {
     return 'added';
   }
 
+  /** The current import's refusals (importEvent), counted for its result and its log line. */
+  private refused = { prefKey: 0, profileLocked: 0 };
+
   private importEvent(r: unknown[], arrived: number): 'added' | 'had' | 'skipped' {
     const [at, person, id, type, raw] = r;
     if (typeof at !== 'string' || !ISO_AT.test(at) || !isWho(person) || !isId(id) || typeof type !== 'string' || typeof raw !== 'string') return 'skipped';
@@ -1332,6 +1345,19 @@ export class StoreCore {
     const subject = isRec(d) ? eventSubject(type, d, person) : null;
     if (!isRec(d) || !subject) return 'skipped';
     const sql = this.io.sql;
+    // A pref of a key the model no longer reads (a dump's from before it went: bmiStd) is never taken back, and the
+    // locked profile (keep) covers a load too: a sex or birth row comes in only to a slot that holds none.
+    if (type === 'pref' && !PREF_KEYS.includes(d.key as string)) {
+      this.refused.prefKey++;
+      return 'skipped';
+    }
+    if (type === 'pref' && PROFILE_PREF_KEYS.includes(d.key as string)) {
+      const slot = eventSlot(type, person, subject, d, Date.parse(at));
+      if (!slot || this.slotRow(slot)) {
+        this.refused.profileLocked++;
+        return 'skipped';
+      }
+    }
     // A board post's, a packing list's and the wedding board's rows are taken as the record had them (a dump holds each
     // slot's latest row only: an edited post's first posting, an item's creation, a tick's task may be long gone, so
     // the rules for a phone's op would drop them), kept unless the row its slot holds beats it. What the guest could
