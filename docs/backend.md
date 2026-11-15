@@ -444,7 +444,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | `island-listen-v1` | ききみみ's audio ([kikimimi-engine.md](kikimimi-engine.md#playback)) | cache-first, never revalidated, outlives builds; a Range request passes to the network (`listenEvict`) |
 | `island-stt-v1` | the whisper model and runtime under `/stt/` ([kikimimi-mic.md](kikimimi-mic.md#hosting-and-the-service-worker)) | filled by the page after the mic opt-in (`lib/mic/models.ts ensureStt`); the worker only serves it |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
-| `island-food-v1`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
+| `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
 | `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
 | `island-offline-<id>` | a saved map area and its manifest | kept until deleted on the phone |

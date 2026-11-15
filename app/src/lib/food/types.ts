@@ -75,20 +75,20 @@ export interface Dataset extends Partial<Credit> {
   shops?: Record<string, { name: string; aliases?: string[] }>;
 }
 
-/** A dataset file as shipped: by column (`cols`, every dataset since schema 2: scripts/food-data.ts columnar; db.ts
- *  decodeItems makes the items of it), or an older file's items as objects. A column is one value per item, `null` where the item has none (`p`,
+/** A dataset file as shipped (schema 2): by column (`cols`: scripts/food-data.ts columnar; db.ts decodeItems makes the
+ *  items of it). A column is one value per item, `null` where the item has none (`p`,
  *  `f`, `c`, `salt`: null, unknown); `idPrefix` is each id's without it (`off:`, `kal:`). */
-export type Shipped = Omit<Dataset, 'items'> & ({ items: Item[] } | { cols: Partial<Record<keyof Item, unknown[]>>; idPrefix?: string; items?: never });
+export type Shipped = Omit<Dataset, 'items'> & { cols: Partial<Record<keyof Item, unknown[]>>; idPrefix: string };
 
 /** `index.json`: each data file's own content version (`files`: its `?v=`, so a refresh of one refetches that one;
- *  an older index without it: `version`, that of them all, for every file) and its datasets. `secondary` ones
+ *  `version`, that of them all) and its datasets. `secondary` ones
  *  (regional, school lunch, products) rank below the core ones (MEXT, dishes, eatout); `lazy` ones (products, the
  *  chain menus) load after the rest. */
 export interface FoodIndex {
   version: string;
-  /** The layout (db.ts FOOD_SCHEMA); none: an older build's (1, datasets as objects). */
+  /** The layout (db.ts FOOD_SCHEMA). */
   schema?: number;
-  files?: Record<string, string>;
+  files: Record<string, string>;
   datasets: { file: string; source: string; badge: string; secondary: boolean; lazy: boolean }[];
 }
 
@@ -98,9 +98,9 @@ export interface VerifyGroup {
   kcal: Record<string, number>;
 }
 
-/** `verify.json`: the cross-source groups, each item's group, and the sources' credits (older builds: a label only). */
+/** `verify.json`: the cross-source groups, each item's group, and the sources' credits. */
 export interface Verify {
-  sources: Record<string, Partial<Credit> | string>;
+  sources: Record<string, Partial<Credit>>;
   groups: VerifyGroup[];
   byId: Record<string, number>;
 }

@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb, NewerFoodData } from './load.ts';
-import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, withJan, type FoodDb } from './db.ts';
+import { addDataset, countOf, credits, decodeItems, emptyDb, fillIn, findFoods, FOOD_SCHEMA, toColumns, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
 import { entryOf, holds, tierOf, type Entry } from './search.ts';
@@ -59,8 +59,8 @@ describe('static/food', () => {
   it('every item makes a snapshot the record accepts, and has a 100 g portion to pick', () => {
     const bad: string[] = [];
     for (const d of index.datasets) {
-      // (as the loader has them: a chain menu's sv and brand are its, db.ts withJan)
-      for (const it of withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped).items) {
+      // (as the loader has them: a chain menu's sv and brand are its, db.ts fromFile)
+      for (const it of fromFile(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped).items) {
         const [first] = portionsOf(it);
         const op = foodOp({ id: 'f0000000', at: 1.8e12, d: '2026-11-03', m: 'l', g: first.g, f: toSnap(it, first.label) });
         if (!op || op.rm || op.f.n !== toSnap(it).n) bad.push(it.id);
@@ -71,7 +71,7 @@ describe('static/food', () => {
 
   it('carries MEXT’s fibre and alcohol (食物繊維総量, アルコール; food-data/ build), alcohol on drinks only', () => {
     const items = new Map<string, Item>();
-    for (const d of index.datasets) for (const it of withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped).items) items.set(it.id, it);
+    for (const d of index.datasets) for (const it of fromFile(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped).items) items.set(it.id, it);
     const of = (id: string) => [items.get(id)?.fib, items.get(id)?.alc];
     // ごはん, 玄米, ブロッコリー, まこんぶ, 鶏むね: fibre; ビール, 純米酒, ウイスキー: alcohol; 本みりん (a seasoning): none
     const ids = ['mext:01088', 'mext:01080', 'mext:06263', 'mext:09017', 'mext:11220', 'mext:16006', 'mext:16002', 'mext:16016', 'mext:16025'];
@@ -94,16 +94,22 @@ describe('a file by column (the products, the chain menus: scripts/food-data.ts 
     p: [5.6, null], f: [35.2, null], c: [53.6, null], salt: [null, 0.1], portions: [[{ label: '1袋', g: 60 }], null], aliases: [null, ['干し芋']]
   } };
 
-  it('decodes to the objects an older file had (a null P/F/C/salt kept unknown, another column’s null no field), a slice at a time', () => {
+  it('decodes to the items as objects (a null P/F/C/salt kept unknown, another column’s null no field), a slice at a time', () => {
     expect([countOf(cols), decodeItems(cols)]).toEqual([2, objects]);
     expect(decodeItems(cols, 1, 5)).toEqual([objects[1]]);
     expect(Object.keys(decodeItems(cols)[1])).not.toContain('brand');
   });
 
-  it('loads either way, the barcodes from the ids (an index and its file of either age)', () => {
+  it('loads with the barcodes from the ids; a file not by column (a later layout) loads empty, never a throw', () => {
     const want = objects.map((it) => ({ ...it, jan: it.id.slice(4) }));
-    expect(withJan(cols)).toEqual({ source: 'off', label: 'x', items: want });
-    expect(withJan({ source: 'off', label: 'x', items: structuredClone(objects) })).toEqual({ source: 'off', label: 'x', items: want });
+    expect(fromFile(cols)).toEqual({ source: 'off', label: 'x', items: want });
+    expect(fromFile({ source: 'off', label: 'x', items: structuredClone(objects) } as unknown as Shipped)).toEqual({ source: 'off', label: 'x', items: [] });
+  });
+
+  it('is what toColumns makes of the objects (scripts/food-data.ts ships by it)', () => {
+    expect(toColumns({ source: 'off', label: 'x', items: structuredClone(objects) })).toEqual(cols);
+    expect(() => toColumns({ source: 'off', items: [objects[0], { ...objects[1], id: 'mext:1' }] })).toThrow('mext:1: an id without off:');
+    expect(() => toColumns({ source: 'off', items: [{ ...objects[0], brand: null as never }] })).toThrow("has a null its column can't keep");
   });
 
   it.each([['products.json', 'off:', ['id', 'name', 'brand', 'cat', 'kcal']], ['kalori.json', 'kal:', ['id', 'name', 'cat', 'kcal', 'p']], ['foods.json', 'mext:', ['id', 'name', 'cat', 'kcal', 'p']]])('is how %s ships: by column, ids without their prefix', (f, prefix, first) => {
@@ -121,14 +127,14 @@ describe('a file by column (the products, the chain menus: scripts/food-data.ts 
     expect(bad.map((d) => d.file)).toEqual([]);
   });
 
-  it('a chain menu by column loads as one by item did: its sv, brand and portions the loader’s (withJan)', () => {
+  it('a chain menu loads as its items: its sv, brand and portions the loader’s (fillIn)', () => {
     const shops = { sukiya: { name: 'すき家' } };
     const rows: Item[] = [{ id: 'kal:1', name: '牛丼 並盛', shop: 'sukiya', cat: '丼・定食', kcal: 733, p: 22, f: 25, c: 104, salt: null, est: 'e' }, { id: 'kal:2', name: 'みそ汁', shop: 'sukiya', cat: '汁物', kcal: 30, p: null, f: null, c: null, salt: 1.2, fib: 0.5 }];
     const byCol: Shipped = { source: 'kalori', label: 'k', shops, idPrefix: 'kal:', cols: {
       id: ['1', '2'], name: ['牛丼 並盛', 'みそ汁'], cat: ['丼・定食', '汁物'], kcal: [733, 30], p: [22, null], f: [25, null], c: [104, null], salt: [null, 1.2], shop: ['sukiya', 'sukiya'], est: ['e', null], fib: [null, 0.5]
     } };
-    const loaded = withJan(byCol);
-    expect(loaded).toStrictEqual(withJan({ source: 'kalori', label: 'k', shops, items: structuredClone(rows) }));
+    const loaded = fromFile(byCol);
+    expect(loaded).toStrictEqual(fromFile(toColumns({ source: 'kalori', label: 'k', shops, items: structuredClone(rows) })));
     expect(loaded.items.map((it) => [it.sv, it.brand, portionsOf(it)])).toEqual([[true, 'すき家', [{ label: '1食', g: 100 }]], [true, 'すき家', [{ label: '1食', g: 100 }]]]);
   });
 });
@@ -146,13 +152,13 @@ describe('loadFoodDb', () => {
 
   it('fetches a lazy dataset once, when wanted: a logged entry’s alone (lazySources), the rest at a search’s want', async () => {
     const asked: string[] = [];
-    const idx: FoodIndex = { version: 'v0', datasets: index.datasets.filter((d) => d.lazy) };
+    const idx: FoodIndex = { version: 'v0', files: {}, datasets: index.datasets.filter((d) => d.lazy) };
     const empty = (source: string): Dataset => ({ source, label: source, items: [] });
     vi.stubGlobal('fetch', async (href: string) => {
       const file = href.match(/\/food\/([\w-]+\.json)/)![1];
       asked.push(file);
       if (file === 'index.json') return new Response(JSON.stringify(idx));
-      return file === 'verify.json' ? new Response(null, { status: 404 }) : new Response(JSON.stringify(empty(file)));
+      return file === 'verify.json' ? new Response(null, { status: 404 }) : new Response(JSON.stringify(toColumns(empty(file))));
     });
     try {
       const got = await loadFoodDb();
@@ -184,11 +190,11 @@ describe('loadFoodDb', () => {
   it('searches exactly as with keys built on load (a core dataset’s shipped `keys`, none in a lazy one; a product’s barcode from its id)', async () => {
     const ref = emptyDb(index);
     for (const d of index.datasets) {
-      const data = withJan(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped);
+      const data = fromFile(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped);
       expect(data.items.every((it) => typeof it.keys === (d.lazy ? 'undefined' : 'string')), d.file).toBe(true);
-      // the data as it was: no keys, every barcode (a chain menu's brand: its shop's, withJan)
+      // the data as it was: no keys, every barcode (a chain menu's brand: its shop's, fromFile)
       const items = data.items.map(({ keys: _k, ...it }) => it);
-      await addDataset(ref, d, withJan({ ...data, items }));
+      await addDataset(ref, d, fillIn({ ...data, items }));
     }
     ref.verify = db.verify;
     // the same order as loadFoodDb's (datasets in the order they came): the same ties
@@ -399,15 +405,13 @@ describe('the chain menus (Kalori, invented items)', () => {
   });
   const ids = (q: string, n = 60) => searchFoods(k, q, n).map((x) => x.id);
 
-  it('the file ships no sv, portion or brand (kalori_convert.py): the loader gives each its own (db.ts withJan)', () => {
+  it('the file ships no sv, portion or brand (kalori_convert.py): the loader gives each its own (db.ts fromFile)', () => {
     const shipped: Dataset = { source: 'kalori', shops: chains.shops, items: [{ id: 'kal:1', name: '牛丼 並盛', shop: 'sukiya', kcal: 733 }, { id: 'kal:9', name: 'x', shop: 'gone', kcal: 1 }] };
-    const [don, stray] = withJan(shipped).items;
+    const [don, stray] = fromFile(toColumns(shipped)).items;
     expect([don.sv, don.brand, stray.brand, portionsOf(don)]).toEqual([true, 'すき家', 'gone', [{ label: '1食', g: 100 }]]);
     expect(toSnap(don).sv).toBe(true);
-    // (an older file's, as shipped: its lone 1食 dropped; another set's items untouched)
-    const old = withJan({ source: 'kalori', shops: {}, items: [{ id: 'kal:2', name: 'y', shop: 's', brand: 'S', kcal: 1, sv: true, portions: [{ label: '1食', g: 100 }] }] }).items[0];
-    expect([old.brand, old.portions]).toEqual(['S', undefined]);
-    const off = withJan({ source: 'off', items: [{ id: 'off:4901', name: 'z', shop: 'x', kcal: 1 }] }).items[0];
+    // (another set's items untouched)
+    const off = fromFile(toColumns({ source: 'off', items: [{ id: 'off:4901', name: 'z', shop: 'x', kcal: 1 }] })).items[0];
     expect([off.sv, off.brand, off.jan]).toEqual([undefined, undefined, '4901']);
   });
 
@@ -492,7 +496,7 @@ describe('a catalog let go mid-load', () => {
     vi.stubGlobal('Worker', FakeWorker);
     vi.stubGlobal('location', { href: 'https://x.test/' });
     vi.stubGlobal('fetch', async (href: string) =>
-      new Response(href.includes('index.json') ? JSON.stringify({ version: 'v0', datasets: [{ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true }] }) : 'null'));
+      new Response(href.includes('index.json') ? JSON.stringify({ version: 'v0', files: {}, datasets: [{ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true }] }) : 'null'));
     try {
       const chances: number[] = [];
       const db = await loadFoodDb(async (n) => void chances.push(n));
@@ -533,7 +537,7 @@ describe('a catalog let go mid-load', () => {
     vi.stubGlobal('Worker', FakeWorker);
     vi.stubGlobal('location', { href: 'https://x.test/' });
     vi.stubGlobal('fetch', async (href: string) =>
-      new Response(href.includes('index.json') ? JSON.stringify({ version: 'v0', datasets: [{ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true }] }) : 'null'));
+      new Response(href.includes('index.json') ? JSON.stringify({ version: 'v0', files: {}, datasets: [{ file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true }] }) : 'null'));
     try {
       const db = await loadFoodDb();
       const more = db.wantMore();
@@ -553,21 +557,6 @@ describe('a catalog let go mid-load', () => {
 });
 
 describe('a dataset that fails to load', () => {
-  it('an index without per-file versions (an older build’s): every file under its `version`', async () => {
-    const asked: string[] = [];
-    vi.stubGlobal('fetch', async (href: string) => {
-      asked.push(href);
-      if (href.includes('index.json')) return new Response(JSON.stringify({ version: 'v0', datasets: [] }));
-      return new Response(null, { status: 404 });
-    });
-    try {
-      await loadFoodDb();
-      expect(asked.slice(1).map((h) => h.replace(/^.*\/food\//, ''))).toEqual(['verify.json?v=v0']);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
   it('an index of a later schema than FOOD_SCHEMA: refused (NewerFoodData), no data file fetched', async () => {
     const asked: string[] = [];
     vi.stubGlobal('fetch', async (href: string) => {
@@ -583,16 +572,16 @@ describe('a dataset that fails to load', () => {
   });
 
   it('is left out at first, fetched again at its next chance, and added when it comes (onAdd: search again)', async () => {
-    const real = withJan(JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Shipped);
+    const real = fromFile(JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Shipped);
     const small: Dataset = { ...real, items: real.items.slice(0, 20) };
-    const idx: FoodIndex = { version: 'v1', datasets: [{ ...index.datasets[0], file: 'a.json', lazy: false }, { ...index.datasets[0], file: 'b.json', lazy: false }] };
+    const idx: FoodIndex = { version: 'v1', files: {}, datasets: [{ ...index.datasets[0], file: 'a.json', lazy: false }, { ...index.datasets[0], file: 'b.json', lazy: false }] };
     let failB = 1;
     vi.useFakeTimers();
     vi.stubGlobal('fetch', async (href: string) => {
       if (href.includes('index.json')) return new Response(JSON.stringify(idx));
       if (href.includes('b.json') && failB-- > 0) throw new TypeError('offline');
       if (href.includes('verify.json')) return new Response(null, { status: 404 });
-      return new Response(JSON.stringify(small));
+      return new Response(JSON.stringify(toColumns(small)));
     });
     try {
       const got = await loadFoodDb((n) => new Promise((ok) => setTimeout(ok, 2000 * 2 ** n)));

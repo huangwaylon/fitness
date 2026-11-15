@@ -25,9 +25,9 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { decodeItems, FOOD_SCHEMA, headerOf } from '../src/lib/food/db.ts';
+import { FOOD_SCHEMA, toColumns } from '../src/lib/food/db.ts';
 import { keysOf } from '../src/lib/food/search.ts';
-import type { Dataset, Item, Shipped } from '../src/lib/food/types.ts';
+import type { Dataset } from '../src/lib/food/types.ts';
 
 const APP = join(import.meta.dirname, '..');
 const args = process.argv.slice(2);
@@ -40,10 +40,6 @@ const SIDECARS = ['index.json', 'verify.json'];
 /** Kalori's and the products' index entries, as build.py's build_index writes them. */
 const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };
 const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', secondary: true, lazy: true };
-/** The fields whose null a column keeps (unknown: db.ts decodeItems); another field's null would be lost. */
-const NULLS = new Set(['p', 'f', 'c', 'salt']);
-/** The columns' order: the rest after these, as the items first have them. */
-const COLS = ['id', 'name', 'brand', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'portions'];
 
 /** The datasets that ship alone (lazy, and in no verify.json group), in build_index's order. */
 const ALONE = { products: PRODUCTS, kalori: KALORI };
@@ -74,31 +70,25 @@ function ship(f: string, d: Dataset, lazy: boolean): Dataset {
   return d;
 }
 
-/** A dataset by column: each field's values in item order, `null` where an item has none; ids without the `xxx:`
- * prefix they all share (`idPrefix`). */
-function columnar(f: string, d: Dataset): Shipped {
-  const { items, ...head } = d;
-  const prefix = /^[^:]+:/.exec(items[0]?.id ?? '')?.[0] ?? fail(`${f}: no items, or an id without a prefix`);
-  const keys = [...new Set([...COLS, ...items.flatMap((it) => Object.keys(it))])].filter((k) => items.some((it) => k in it)) as (keyof Item)[];
-  const cols: Partial<Record<keyof Item, unknown[]>> = {};
-  for (const k of keys) cols[k] = items.map((it) => (k === 'id' ? it.id.slice(prefix.length) : (it[k] ?? null)));
-  if (items.some((it) => !it.id.startsWith(prefix))) fail(`${f}: an id without ${prefix}`);
-  const lost = items.find((it) => Object.entries(it).some(([k, v]) => v === null && !NULLS.has(k)));
-  if (lost) fail(`${f}: ${lost.id} has a null its column can't keep`);
-  return { ...head, idPrefix: prefix, cols };
+/** A dataset file's bytes as shipped: by column (db.ts toColumns). */
+function shipped(f: string, d: Dataset, lazy: boolean): string {
+  try {
+    return JSON.stringify(toColumns(ship(f, d, lazy)));
+  } catch (e) {
+    fail(`${f}: ${(e as Error).message}`);
+  }
 }
 
-/** A dataset file's bytes as shipped. */
-const shipped = (f: string, d: Dataset, lazy: boolean): string => JSON.stringify(columnar(f, ship(f, d, lazy)));
-
 /** The first 12 hex digits of a sha256: each shipped file's of its bytes (`files`), and `version`'s of each one's name
- * and bytes, verify.json then the datasets in index order (load.test.ts recomputes both). Writes index.json. */
+ * and bytes, verify.json then the datasets in index order (load.test.ts recomputes both). Writes index.json, once every
+ * dataset there is by column (`--only`'s untouched files too). */
 function writeIndex(index: object, files: string[]): string {
   const hex = (h: ReturnType<typeof createHash>) => h.digest('hex').slice(0, 12);
   const hash = createHash('sha256');
   const versions: Record<string, string> = {};
   for (const f of ['verify.json', ...files]) {
     const b = readFileSync(join(OUT, f));
+    if (f !== 'verify.json' && !(JSON.parse(b.toString('utf8')) as { cols?: unknown }).cols) fail(`${OUT}/${f} is not by column (schema ${FOOD_SCHEMA})`);
     hash.update(`${f}\0`).update(b).update('\0');
     versions[f] = hex(createHash('sha256').update(b));
   }
@@ -107,10 +97,9 @@ function writeIndex(index: object, files: string[]): string {
   return version;
 }
 
-/** build.py's dataset file, or one shipped by column (static/'s products.json, shipped again: decoded as it was). */
+/** build.py's dataset file (by item: out/'s layout; a shipped file is not one). */
 function readDataset(path: string, f: string): Dataset {
-  const d = JSON.parse(readFileSync(path, 'utf8')) as { items?: unknown; cols?: unknown; label?: unknown };
-  if (d.cols && typeof d.cols === 'object' && !d.items) return { ...headerOf(d as Shipped), items: decodeItems(d as Shipped) };
+  const d = JSON.parse(readFileSync(path, 'utf8')) as { items?: unknown; label?: unknown };
   if (!Array.isArray(d.items) || typeof d.label !== 'string') fail(`${f} is not a dataset ({label, items, …})`);
   return d as Dataset;
 }

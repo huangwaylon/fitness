@@ -594,7 +594,7 @@ class Read(unittest.TestCase):
 
 
     def test_main_reads_a_columnar_products_json(self):
-        # app/static/food/products.json ships by column (food-data.ts): its names still win (lib.dataset_items)
+        # app/static/food/products.json ships by column (food-data.ts): its names still win (lib.shipped_items)
         with tempfile.TemporaryDirectory() as d:
             write_shards(d, [row(1, 'タコ丼', shop_category='convenience'), row(2, 'イカ丼', shop_category='convenience')])
             off = os.path.join(d, 'products.json')

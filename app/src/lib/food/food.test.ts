@@ -113,7 +113,7 @@ describe('the catalog', () => {
   const db = emptyDb({ version: 'abc', datasets: [] });
   addDataset(db, meta('mext'), { source: 'mext', label: 'MEXT', attribution: 'a', license: 'l', url: 'u', items: [item('mext:1', 'ごはん', { kcal: 156 })] });
   addDataset(db, meta('toyonaka', true), { source: 'toyonaka', label: '豊中', items: [item('toyonaka:1', 'ごはん', { kcal: 160 }), item('toyonaka:2', 'ごはん大盛り')] });
-  db.verify = { sources: { mext: { label: 'verify mext' }, usda: { label: 'USDA', url: 'x' }, old: 'Old' }, groups: [{ n: 2, kcal: { mext: 156, toyonaka: 160 } }], byId: { 'mext:1': 0, 'toyonaka:1': 0 } };
+  db.verify = { sources: { mext: { label: 'verify mext' }, usda: { label: 'USDA', url: 'x' } }, groups: [{ n: 2, kcal: { mext: 156, toyonaka: 160 } }], byId: { 'mext:1': 0, 'toyonaka:1': 0 } };
 
   it('searches the datasets, one row per verify group, secondary ones below', () => {
     expect(searchFoods(db, 'ごはん').map((i) => i.id)).toEqual(['mext:1', 'toyonaka:2']);
@@ -126,8 +126,7 @@ describe('the catalog', () => {
     expect(credits(db)).toEqual([
       { label: 'MEXT', attribution: 'a', license: 'l', url: 'u' },
       { label: '豊中', attribution: '', license: '', url: '' },
-      { label: 'USDA', attribution: '', license: '', url: 'x' },
-      { label: 'Old', attribution: '', license: '', url: '' }
+      { label: 'USDA', attribution: '', license: '', url: 'x' }
     ]);
   });
 });

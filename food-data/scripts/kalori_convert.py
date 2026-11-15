@@ -775,7 +775,7 @@ def main(argv):
     off = []
     if a.off and os.path.exists(a.off):
         with open(a.off, encoding='utf-8') as fh:
-            off = lib.dataset_items(json.load(fh))   # app/static/food/products.json ships by column
+            off = lib.shipped_items(json.load(fh))   # app/static/food/products.json ships by column
     doc, report = build(a.paths, off)
     for it in doc['items']:
         lib.tidy(it)

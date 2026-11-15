@@ -159,11 +159,17 @@ def read_csv(path, rows=False):
     return list(csv.reader(f)) if rows else list(csv.DictReader(f))
 
 
-def dataset_items(doc):
-    """A dataset file's items: build.py's (`items`), or a file the app ships by column (app/static/food/products.json:
-    `cols`, one list per field, null where an item has none but P/F/C/salt's unknown, ids without `idPrefix`)."""
-    if 'items' in doc or 'cols' not in doc:
-        return doc['items']
+def shipped_count(doc):
+    """How many items a file the app ships (app/static/food/, by column) holds."""
+    if not isinstance(doc.get('cols'), dict):
+        raise ValueError('not a shipped dataset (no cols)')
+    return len(doc['cols'].get('id') or [])
+
+
+def shipped_items(doc):
+    """A shipped file's items (app/static/food/, schema 2: `cols`, one list per field, null where an item has none but
+    P/F/C/salt's unknown, ids without `idPrefix`), as build.py's file has them. out/'s files read `doc['items']`."""
+    shipped_count(doc)
     cols, prefix = doc['cols'], doc.get('idPrefix', '')
     out = []
     for i in range(len(cols.get('id', []))):

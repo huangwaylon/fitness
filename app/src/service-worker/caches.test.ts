@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -10,6 +10,11 @@ describe('service worker cache generations', () => {
     expect(SHELLS_KEPT).toBe(3);
     expect(staleCaches(keys, 'island-shell-6', keep)).toEqual(['island-shell-1', 'island-shell-2']);
     expect(staleCaches(keys, 'island-shell-6', keep, 1)).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
+  });
+
+  it('drops the food cache of an older layout (island-food-v1: schema 1, datasets as objects) and keeps FOOD_CACHE', () => {
+    expect(FOOD_CACHE).toBe('island-food-v2');
+    expect(staleCaches(['island-food-v1', FOOD_CACHE, 'island-shell-1'], 'island-shell-1', [...keep, FOOD_CACHE])).toEqual(['island-food-v1']);
   });
 
   it('first install: nothing to delete', () => {
@@ -465,7 +470,7 @@ describe('food data cache', () => {
 
 describe('food data fetches (foodFetch)', () => {
   const BASE = 'https://x.example/fitness/food/';
-  const index = (v: string) => JSON.stringify({ version: v, datasets: [{ file: 'foods.json' }, { file: 'products.json' }] });
+  const index = (v: string) => JSON.stringify({ version: v, datasets: [{ file: 'foods.json' }, { file: 'products.json' }], files: { 'foods.json': v, 'products.json': v, 'verify.json': v } });
   const files = (v: string) => ['foods.json', 'products.json', 'verify.json'].map((f) => `${BASE}${f}?v=${v}`);
   /** A Cache in memory (keys in insertion order, as CacheStorage's). */
   class MemCache {
@@ -587,11 +592,6 @@ describe('food data fetches (foodFetch)', () => {
     await settled();
     expect(asked).toEqual([`${BASE}index.json`, `${BASE}products.json?v=p2`]);
     expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...urls('p2')].sort());
-  });
-
-  it('an index without per-file versions: every file under its `version` (an older build’s)', async () => {
-    await loadAll('aaa');
-    expect([...cache.m.keys()].sort()).toEqual([`${BASE}index.json`, ...files('aaa')].sort());
   });
 
   it('never stores a failed answer', async () => {

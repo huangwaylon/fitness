@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { imgOf, kaloriImg, loadFoodImages, type FoodImageIndex } from './images.ts';
-import { addDataset, emptyDb, searchFoods, withJan } from './db.ts';
+import { addDataset, emptyDb, searchFoods, fromFile } from './db.ts';
 import type { FoodIndex, Shipped } from './types.ts';
 import { STATIC_MAX_FILES } from '../static-budget.ts';
 
@@ -93,7 +93,7 @@ describe('static/food-img', () => {
   it("maps only shipped foods' ids, each to a picture (a product's in a product sheet, p-, or its picture's own)", () => {
     const food = join(STATIC, 'food');
     const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
-    const items = (lazy: boolean) => fi.datasets.filter((d) => !d.lazy === !lazy).flatMap((d) => withJan(JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Shipped).items);
+    const items = (lazy: boolean) => fi.datasets.filter((d) => !d.lazy === !lazy).flatMap((d) => fromFile(JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Shipped).items);
     const lazyItems = items(true);
     const generic = new Set(items(false).map((it) => it.id)), products = new Set(lazyItems.filter((it) => !it.shop).map((it) => it.id));
     // the chain menus (Kalori, an item with a `shop`): Kalori's own pictures (images.ts kaloriImg), never these sheets
@@ -141,7 +141,7 @@ describe('sheet locality', () => {
     const food = join(STATIC, 'food');
     const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
     const db = emptyDb(fi);
-    for (const d of fi.datasets) await addDataset(db, d, withJan(JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Shipped));
+    for (const d of fi.datasets) await addDataset(db, d, fromFile(JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Shipped));
     const index = JSON.parse(readFileSync(join(DIR, 'index.json'), 'utf8')) as FoodImageIndex;
     const rows = QUERIES.map((q) => {
       const urls = new Set(searchFoods(db, q, 20).flatMap((it) => imgOf(index, it.id, 48)?.url ?? []));
@@ -161,7 +161,7 @@ describe('the picture table (food-data/images/table)', () => {
     const inTable = new Set(readdirSync(tdir).filter((f) => f.endsWith('.json')).flatMap((f) => (JSON.parse(readFileSync(join(tdir, f), 'utf8')) as { items: string[] }[]).flatMap((r) => r.items)));
     const food = join(STATIC, 'food');
     const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
-    const ids = fi.datasets.filter((d) => !d.lazy).flatMap((d) => withJan(JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Shipped).items.map((it) => it.id));
+    const ids = fi.datasets.filter((d) => !d.lazy).flatMap((d) => fromFile(JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Shipped).items.map((it) => it.id));
     expect(ids.filter((id) => !inTable.has(id))).toEqual([]);
   });
 });

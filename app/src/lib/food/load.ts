@@ -6,7 +6,7 @@
 // out (its items unsearchable) till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts
 // nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
 // index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
-import { addDataset, emptyDb, FOOD_SCHEMA, withJan, type FoodDb } from './db.ts';
+import { addDataset, emptyDb, FOOD_SCHEMA, fromFile, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
@@ -16,9 +16,8 @@ import { staticUrl } from '#lib/staticUrl.ts';
 const RETRIES = 4;
 
 const url = (file: string, v?: string): string => `${staticUrl(`food/${file}`)}${v ? `?v=${encodeURIComponent(v)}` : ''}`;
-/** A data file's `?v=`: its own (index.json's `files`), else the index's `version` (an index from before them). The
- *  service worker's foodFiles reads it the same way. */
-const fileV = (index: FoodIndex, file: string): string => index.files?.[file] ?? index.version;
+/** A data file's `?v=`: its own (index.json's `files`). The service worker's foodFiles reads it the same way. */
+const fileV = (index: FoodIndex, file: string): string => index.files[file];
 
 async function json<T>(href: string, init?: RequestInit): Promise<T> {
   const res = await fetch(href, init);
@@ -84,7 +83,7 @@ function startParser(): Worker | null {
  *  `mine`: its catalog's parses in flight (by id), for its close. */
 function fetchDataset(href: string, mine: Set<number>): Promise<Dataset> {
   const w = startParser();
-  if (!w) return json<Shipped>(href).then(withJan);
+  if (!w) return json<Shipped>(href).then(fromFile);
   const id = nextId++;
   mine.add(id);
   return new Promise<Dataset>((ok, no) => {

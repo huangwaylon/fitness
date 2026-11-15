@@ -37,8 +37,8 @@ newest `last_modified_t`; Kalori `shops`). The credits read the five header fiel
 every dataset is by column: the header, then `"idPrefix": "<source>:", "cols": {field: [value per item]}`, the ids
 without the prefix they all share; columns `id name brand cat kcal p f c salt portions` first, the rest as the items
 first have them, none for a field no item has; `null` for none, but in `p f c salt` unknown (any other null fails the
-build; `food-data.ts columnar`, `db.ts decodeItems`). An app older than the decoder (before 2026-11-14 19:17 JST) gets no
-food data till its reload. A null value shows 「–」, a day's total missing one 「≥」.
+build; `db.ts toColumns`, `decodeItems`). The service worker's food cache is `island-food-v2` since schema 2 (v1, of
+the old layout, is deleted at its activate). A null value shows 「–」, a day's total missing one 「≥」.
 
 **ITEM** (`food-data/scripts/lib.py` `validate`; type `Item` in `app/src/lib/food/types.ts`):
 
@@ -63,9 +63,9 @@ energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their 
 
 **`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }], "files", "schema" }`.
 `schema`: the layout (2: by column; `db.ts FOOD_SCHEMA`), and an app that reads an older one refuses the index (no
-fetch; it asks for the deployed build). `files`:
+fetch; it asks for the deployed build). `files` (required):
 each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its bytes; `version`: the same over all of
-them (`food-data.ts`), every file's key for an index without `files` (an older build's; the service worker reads both). `secondary` datasets rank
+them (`food-data.ts`). `secondary` datasets rank
 slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`, `kalori.json`) load only when asked
 for (`db.wantMore`: the search open, or a day with a product logged), parsed in a worker; a late dataset calls
 `db.onAdd` and the search runs again.
@@ -243,7 +243,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's
-  (`db.ts withJan`): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
+  (`db.ts fillIn`): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
   `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
   salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
   `vg`/`st` for trailing size, milk and temperature words (牛丼 並盛 · 大盛, ライス中, （ICED・Tall・豆乳）; default: current,

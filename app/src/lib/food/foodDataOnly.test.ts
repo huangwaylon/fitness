@@ -7,7 +7,8 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { decodeItems } from './db.ts';
+import { decodeItems, toColumns } from './db.ts';
+import type { Dataset, Item } from './types.ts';
 
 const APP = join(import.meta.dirname, '../../..');
 const STATIC = join(APP, 'static/food');
@@ -39,16 +40,25 @@ function hashes(dir: string, files: string[]) {
   return { files: out, version: all.digest('hex').slice(0, 12) };
 }
 
+/** A shipped file's items as build.py's file has them (its header, `items`). */
+function rowsOf(path: string) {
+  const { cols: _c, idPrefix: _p, ...head } = JSON.parse(readFileSync(path, 'utf8'));
+  return { ...head, items: decodeItems(JSON.parse(readFileSync(path, 'utf8'))) };
+}
+
 const item = (i: number, name: string) => ({ id: `kal:${i}`, name, shop: 'tako-ya', cat: '丼・定食', kcal: 500, p: 20.0, f: 10.5, c: null, salt: 2.3 });
-const dataset = (items: object[]) => ({ source: 'kalori', label: 'kalori.jp', shops: { 'tako-ya': { name: 'たこ屋' } }, items });
+const dataset = (items: object[]): Dataset => ({ source: 'kalori', label: 'kalori.jp', shops: { 'tako-ya': { name: 'たこ屋' } }, items: items as Item[] });
+
+/** A shipped core dataset (by column, its keys built). */
+const A = JSON.stringify(toColumns({ source: 'a', label: 'a', items: [{ id: 'a:1', name: 'たこ', kcal: 1, p: 1, f: 1, c: 1, salt: 0, keys: 'たこ' }] }));
 
 /** A static dir (index.json, verify.json, a core a.json, maybe an old kalori.json) and a data dir with a new kalori.json. */
 function fixture(withKalori: boolean) {
   const to = tmp(), src = tmp();
   const datasets = [{ file: 'a.json', source: 'a', badge: 'A', secondary: false, lazy: false }, ...(withKalori ? [KALORI] : [])];
   writeFileSync(join(to, 'verify.json'), '{"groups":[]}');
-  writeFileSync(join(to, 'a.json'), '{"label":"a","items":[{"id":"a:1","name":"たこ","keys":"たこ"}]}');
-  if (withKalori) writeFileSync(join(to, 'kalori.json'), JSON.stringify(dataset([item(1, 'old')])));
+  writeFileSync(join(to, 'a.json'), A);
+  if (withKalori) writeFileSync(join(to, 'kalori.json'), JSON.stringify(toColumns(dataset([item(1, 'old')]))));
   writeFileSync(join(to, 'index.json'), JSON.stringify({ version: '000000000000', datasets, files: {} }));
   writeFileSync(join(src, 'kalori.json'), `${JSON.stringify(dataset([item(1, 'タコ丼'), item(2, 'イカ丼 大盛')]), null, 1)}\n`);
   return { to, src };
@@ -76,7 +86,7 @@ describe('food:data --only kalori', () => {
     expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'kalori.json']));
   });
 
-  it('ships every kind of field by column and back, from the converter’s or a shipped file (update-merge runs it with node alone)', () => {
+  it('ships every kind of field by column and back (update-merge runs it with node alone)', () => {
     const { to, src } = fixture(true);
     // (every kind of field: unknown P/F/C/salt, absent fibre, flags, groups, aliases, the first item without some)
     const rows = [
@@ -88,8 +98,10 @@ describe('food:data --only kalori', () => {
     expect(run('--only', 'kalori', src, '--to', to).status).toBe(0);
     const shipped = readFileSync(join(to, 'kalori.json'), 'utf8');
     expect(decodeItems(JSON.parse(shipped))).toStrictEqual(rows);
-    // (the shipped file in again: the same bytes out)
+    // (its items in again, decoded: the same bytes out; the shipped file itself, by column, is no input)
     cpSync(join(to, 'kalori.json'), join(src, 'kalori.json'));
+    expect(run('--only', 'kalori', src, '--to', to).stderr).toContain('is not a dataset');
+    writeFileSync(join(src, 'kalori.json'), JSON.stringify(rowsOf(join(to, 'kalori.json'))));
     expect(run('--only', 'kalori', src, '--to', to).status).toBe(0);
     expect(readFileSync(join(to, 'kalori.json'), 'utf8')).toBe(shipped);
     // and a null its column couldn't keep: refused
@@ -114,11 +126,11 @@ describe('food:data --only kalori', () => {
     expect([r.status, r.stderr.includes('missing in')]).toEqual([1, true]);
   });
 
-  it.each(['kalori', 'products'])('reproduces the shipped index.json from the shipped %s.json (the same algorithm as the full path)', (name) => {
+  it.each(['kalori', 'products'])('reproduces the shipped index.json from the shipped %s.json’s items (the same algorithm as the full path)', (name) => {
     const to = join(tmp(), 'food'), src = tmp(), f = `${name}.json`;
     cpSync(STATIC, to, { recursive: true });
     mkdirSync(src, { recursive: true });
-    cpSync(join(STATIC, f), join(src, f));
+    writeFileSync(join(src, f), JSON.stringify(rowsOf(join(STATIC, f))));
     expect(run('--only', name, src, '--to', to).status).toBe(0);
     expect(readFileSync(join(to, 'index.json'), 'utf8')).toBe(readFileSync(join(STATIC, 'index.json'), 'utf8'));
     // (Buffer.equals: toEqual walks a 10 MB buffer byte by byte, ~15 s under verify's load)
@@ -133,8 +145,8 @@ describe('food:data --only products', () => {
   function fixture() {
     const to = tmp(), src = tmp();
     writeFileSync(join(to, 'verify.json'), '{"groups":[]}');
-    writeFileSync(join(to, 'a.json'), '{"label":"a","items":[{"id":"a:1","name":"たこ","keys":"たこ"}]}');
-    writeFileSync(join(to, 'kalori.json'), JSON.stringify(dataset([item(1, 'タコ丼')])));
+    writeFileSync(join(to, 'a.json'), A);
+    writeFileSync(join(to, 'kalori.json'), JSON.stringify(toColumns(dataset([item(1, 'タコ丼')]))));
     const datasets = [{ file: 'a.json', source: 'a', badge: 'A', secondary: false, lazy: false }, KALORI];
     writeFileSync(join(to, 'index.json'), JSON.stringify({ version: '000000000000', datasets, files: {} }));
     const doc = { source: 'off', label: 'Open Food Facts', license: 'ODbL 1.0', dumped: '2026-11-02', items: [product('4901234567894'), product('0012345678905', 'off:x')] };

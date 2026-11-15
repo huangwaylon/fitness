@@ -145,10 +145,10 @@ export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTE
 
 /** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
  *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in
- *  a cache of its own that outlives builds. Each file carries its own version (`?v=`: index.json's `files`, an older
- *  index's `version` for all), so a refresh of one (Kalori's, weekly) refetches that one; index.json, which names them,
- *  doesn't. */
-export const FOOD_CACHE = 'island-food-v1';
+ *  a cache of its own that outlives builds. Each file carries its own version (`?v=`: index.json's `files`), so a refresh
+ *  of one (Kalori's, weekly) refetches that one; index.json, which names them, doesn't. v2 since schema 2 (every file by
+ *  column): the activate's sweep deletes v1, so this build never meets a file of the old layout. */
+export const FOOD_CACHE = 'island-food-v2';
 export const isFoodData = (path: string): boolean => /\/food\/[\w-]+\.json$/.test(path);
 /** ごはん's pictures (static/food-img/, lib/food/images.ts): content-hashed sprite sheets, cached on first use in a cache
  *  of their own that outlives builds; index.json, which names them, from the network first (its last copy offline).
@@ -195,15 +195,14 @@ const FOOD_INDEX_TIMEOUT_MS = 2500;
 const NEXT = '?next';
 
 /** The files an index.json names (its datasets and verify.json), as the app fetches them (load.ts fileV): each under
- *  its own version (`files`), else the index's `version`, beside it. */
+ *  its own version (`files`), beside it; null for an index short of one. */
 function foodFiles(index: unknown, indexUrl: string): string[] | null {
-  const x = index as { version?: unknown; files?: unknown; datasets?: { file?: unknown }[] } | null;
-  if (!x || typeof x.version !== 'string' || !Array.isArray(x.datasets)) return null;
+  const x = index as { files?: unknown; datasets?: { file?: unknown }[] } | null;
+  if (!x || !x.files || typeof x.files !== 'object' || !Array.isArray(x.datasets)) return null;
+  const own = x.files as Record<string, unknown>;
   const files = [...x.datasets.map((d) => d.file), 'verify.json'];
-  if (files.some((f) => typeof f !== 'string')) return null;
-  const own = x.files && typeof x.files === 'object' ? (x.files as Record<string, unknown>) : {};
-  const v = (f: string) => (typeof own[f] === 'string' ? (own[f] as string) : (x.version as string));
-  return (files as string[]).map((f) => new URL(`${f}?v=${encodeURIComponent(v(f))}`, indexUrl).href);
+  if (files.some((f) => typeof f !== 'string' || typeof own[f] !== 'string')) return null;
+  return (files as string[]).map((f) => new URL(`${f}?v=${encodeURIComponent(own[f] as string)}`, indexUrl).href);
 }
 
 type FoodCacheLike = Pick<Cache, 'match' | 'put' | 'delete'> & { keys(): Promise<readonly Request[]> };

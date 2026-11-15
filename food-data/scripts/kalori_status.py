@@ -77,14 +77,10 @@ def bands_from_env():
 
 
 def summary(doc):
-    """{items, shops: set, ended} of a kalori.json: the converter's (`items`) or the shipped one, by column (`cols`)."""
-    cols = doc.get('cols') if 'items' not in doc else None
-    if isinstance(cols, dict):
-        return {'items': len(cols.get('id') or []), 'shops': set(doc.get('shops') or {}),
-                'ended': sum(1 for e in cols.get('ended') or [] if e)}
-    items = doc.get('items') or []
-    return {'items': len(items), 'shops': set(doc.get('shops') or {}),
-            'ended': sum(1 for it in items if isinstance(it, dict) and it.get('ended'))}
+    """{items, shops: set, ended} of a shipped kalori.json (by column; none: 0 items)."""
+    cols = doc.get('cols') if isinstance(doc.get('cols'), dict) else {}
+    return {'items': len(cols.get('id') or []), 'shops': set(doc.get('shops') or {}),
+            'ended': sum(1 for e in cols.get('ended') or [] if e)}
 
 
 def merged(history):

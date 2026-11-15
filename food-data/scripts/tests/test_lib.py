@@ -468,7 +468,7 @@ class OffPlausibility(unittest.TestCase):
             self.assertIsNone(off.ROUX.search(name), name)
             self.assertNotEqual(off.pick_cat([], name, 200), '調味料', name)
 
-    def test_dataset_items(self):
+    def test_shipped_items(self):
         # app/static/food/products.json by column (food-data.ts): the same items as build.py's, for kalori_convert --off
         items = [{'id': 'off:4901234567894', 'name': 'ほしいも', 'brand': 'X', 'cat': 'いも', 'kcal': 303, 'p': None, 'f': None,
                   'c': None, 'salt': 0.1}, {'id': 'off:x', 'name': 'のり塩', 'cat': '菓子・デザート', 'kcal': 554, 'p': 5.6,
@@ -477,8 +477,9 @@ class OffPlausibility(unittest.TestCase):
             'id': ['4901234567894', 'x'], 'name': ['ほしいも', 'のり塩'], 'brand': ['X', None], 'cat': ['いも', '菓子・デザート'],
             'kcal': [303, 554], 'p': [None, 5.6], 'f': [None, 35.2], 'c': [None, 53.6], 'salt': [0.1, None],
             'portions': [None, [{'label': '1袋', 'g': 60}]]}}
-        self.assertEqual(lib.dataset_items(cols), items)
-        self.assertEqual(lib.dataset_items({'items': items}), items)
+        self.assertEqual((lib.shipped_items(cols), lib.shipped_count(cols)), (items, 2))
+        with self.assertRaises(ValueError):   # build.py's layout is no shipped file
+            lib.shipped_items({'items': items})
 
     def test_dumped(self):
         d = tempfile.mkdtemp()

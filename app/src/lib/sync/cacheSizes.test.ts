@@ -19,7 +19,7 @@ const MB = 1048576;
 
 describe('cacheSizes', () => {
   it('names each cache by its field; every shell is the shell', () => {
-    expect(['island-shell-2026-11-11.abc1234', 'island-room-v1', 'island-villagers-v1', 'island-food-img-v1', 'island-food-v1', 'island-stt-v1', 'island-map-meta-v1', 'other-cache'].map(fieldOf))
+    expect(['island-shell-2026-11-11.abc1234', 'island-room-v1', 'island-villagers-v1', 'island-food-img-v1', 'island-food-v2', 'island-stt-v1', 'island-map-meta-v1', 'other-cache'].map(fieldOf))
       .toEqual(['shell', 'room', 'art', 'foodImg', 'food', 'stt', 'other', 'other']);
   });
 

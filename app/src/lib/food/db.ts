@@ -32,7 +32,7 @@ export interface FoodDb {
   close(): void;
 }
 
-export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+export const emptyDb = (index: Partial<FoodIndex> & Pick<FoodIndex, 'version'>): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 
 /** The lazy datasets' sources by their ids' prefix: a product's (`off:`) or a chain menu's (`kal:`). */
 const LAZY_PREFIX: Record<string, string> = { 'off:': 'off', 'kal:': 'kalori' };
@@ -117,20 +117,40 @@ export const FOOD_SCHEMA = 2;
 
 /** The values a column keeps when null (unknown, as the objects had them); another column's null is no field. */
 const NULLS: ReadonlySet<string> = new Set(['p', 'f', 'c', 'salt']);
+/** The columns' order: the rest after these, as the items first have them. */
+const COLS = ['id', 'name', 'brand', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'portions'];
 
-/** How many items a file holds, either way it's shipped. */
-export const countOf = (d: Shipped): number => ('cols' in d && d.cols ? (d.cols.id?.length ?? 0) : (d.items?.length ?? 0));
+/** A dataset by column, as shipped (scripts/food-data.ts; the tests' files): each field's values in item order, `null`
+ *  where an item has none (a field no item has: no column); ids without the `xxx:` prefix they all share (`idPrefix`).
+ *  Throws on an id without that prefix, or a null its column can't keep. */
+export function toColumns(d: Dataset): Shipped {
+  const { items, ...head } = d;
+  if (!items.length) return { ...head, idPrefix: '', cols: { id: [] } };
+  const prefix = /^[^:]+:/.exec(items[0].id)?.[0];
+  if (!prefix) throw new Error(`${items[0].id}: an id without a prefix`);
+  const bad = items.find((it) => !it.id.startsWith(prefix));
+  if (bad) throw new Error(`${bad.id}: an id without ${prefix}`);
+  const lost = items.find((it) => Object.entries(it).some(([k, v]) => v === null && !NULLS.has(k)));
+  if (lost) throw new Error(`${lost.id} has a null its column can't keep`);
+  const keys = [...new Set([...COLS, ...items.flatMap((it) => Object.keys(it))])].filter((k) => items.some((it) => k in it)) as (keyof Item)[];
+  const cols: Partial<Record<keyof Item, unknown[]>> = {};
+  for (const k of keys) cols[k] = items.map((it) => (k === 'id' ? it.id.slice(prefix.length) : (it[k] ?? null)));
+  return { ...head, idPrefix: prefix, cols };
+}
+
+/** How many items a file holds (none for a file not by column: a later layout's, never a throw). */
+export const countOf = (d: Shipped): number => (Array.isArray(d.cols?.id) ? d.cols.id.length : 0);
 
 /** A file's header: what's left without its items or columns. */
 export function headerOf(d: Shipped): Omit<Dataset, 'items'> {
-  const { items: _i, cols: _c, idPrefix: _p, ...head } = d as Shipped & { cols?: unknown; idPrefix?: unknown };
+  const { cols: _c, idPrefix: _p, ...head } = d;
   return head;
 }
 
-/** A columnar file's items `from` to `to` (types.ts Shipped), as the objects an older file had: a slice at a time in the
- *  worker, so the whole file is never twice in memory. */
+/** A file's items `from` to `to` (types.ts Shipped), as objects: a slice at a time in the worker, so the whole file is
+ *  never twice in memory. */
 export function decodeItems(d: Shipped, from = 0, to = countOf(d)): Item[] {
-  if (!('cols' in d) || !d.cols) return d.items!.slice(from, to);
+  if (!countOf(d)) return [];
   const cols = Object.entries(d.cols) as [string, unknown[]][];
   const prefix = d.idPrefix ?? '';
   const out: Item[] = [];
@@ -146,13 +166,14 @@ export function decodeItems(d: Shipped, from = 0, to = countOf(d)): Item[] {
   return out;
 }
 
-/** A file's items as objects (decodeItems; an older file's as they are), then a product's barcode back from its id
- *  (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys; a chain menu's (Kalori: kalori_convert.py
- *  ships neither) `sv` and its shop's name as its `brand` (the header's `shops`), before its keys are built; a
- *  serving's lone 1食 portion left out (portionsOf's default for an `sv` item; older files shipped one). */
-export function withJan(f: Shipped): Dataset {
-  // (a file of neither shape, a later format: no items, never a throw that retries it)
-  const d: Dataset = 'cols' in f && f.cols ? { ...headerOf(f), items: decodeItems(f) } : { ...(f as Dataset), items: f.items ?? [] };
+/** A file's items as objects (decodeItems), filled in (fillIn). A file not by column (a later layout): no items, never
+ *  a throw that retries it. */
+export const fromFile = (f: Shipped): Dataset => fillIn({ ...headerOf(f), items: decodeItems(f) });
+
+/** Schema 2's fill-ins on decoded items: a product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops
+ *  it), for the search's keys; a chain menu's (Kalori: kalori_convert.py ships neither) `sv` and its shop's name as its
+ *  `brand` (the header's `shops`), before its keys are built (portionsOf gives an `sv` item its 1食). */
+export function fillIn(d: Dataset): Dataset {
   const shops = d.source === 'kalori' ? (d.shops ?? {}) : null;
   for (const it of d.items) {
     if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);
@@ -160,7 +181,6 @@ export function withJan(f: Shipped): Dataset {
       it.sv ??= true;
       if (it.shop) it.brand ??= shops[it.shop]?.name ?? it.shop;
     }
-    if (it.sv && it.portions?.length === 1 && it.portions[0].g === 100 && it.portions[0].label === '1食') delete it.portions;
   }
   return d;
 }
@@ -218,7 +238,7 @@ export function credits(db: FoodDb): Credit[] {
   const sources = new Set(db.sets.map((s) => s.source));
   const extra = Object.entries(db.verify?.sources ?? {})
     .filter(([src]) => !sources.has(src))
-    .map(([, s]) => (typeof s === 'string' ? { label: s } : s));
+    .map(([, s]) => s);
   const out = new Map<string, Credit>();
   for (const c of [...db.sets, ...extra]) {
     if (c.label && !out.has(c.label)) out.set(c.label, { label: c.label, attribution: c.attribution ?? '', license: c.license ?? '', url: c.url ?? '' });

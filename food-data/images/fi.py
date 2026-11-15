@@ -34,7 +34,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))  # pmatch (python -I leaves the script's own folder off the path)
 sys.path.insert(1, str(HERE.parent / 'scripts'))
-from lib import dataset_items  # noqa: E402  (a shipped file's items: products.json is by column)
+from lib import shipped_items  # noqa: E402  (a shipped file's items: by column)
 REPO = HERE.parents[1]
 APP_FOOD = REPO / 'app' / 'static' / 'food'
 OUT = REPO / 'app' / 'static' / 'food-img'
@@ -77,7 +77,7 @@ def datasets():
     for d in idx['datasets']:
         if d.get('lazy'):
             continue  # packaged products: category tiles only
-        yield d['file'], dataset_items(json.loads((APP_FOOD / d['file']).read_text()))
+        yield d['file'], shipped_items(json.loads((APP_FOOD / d['file']).read_text()))
 
 
 def items_by_id():
@@ -645,7 +645,7 @@ def product_pictures(rows=None, byid=None):
     out = {}
     for d in idx['datasets']:
         if d.get('lazy'):
-            for it in dataset_items(json.loads((APP_FOOD / d['file']).read_text())):
+            for it in shipped_items(json.loads((APP_FOOD / d['file']).read_text())):
                 tags, generic = off.get(it['id'], ((), ''))
                 k, conf, _ = rules.match(it['name'], it['cat'], it.get('brand', ''), tags, generic)
                 if k and conf >= pmatch.CONFIDENT:
@@ -672,7 +672,7 @@ def cmd_pack():
     prodmap = {i: k for i, k in product_pictures(rows, byid).items() if k in shipping}
     # a product's sheet: its own name's search neighbourhood (たまねぎドレッシング with the onions), else its picture's
     pnames = {it['id']: it['name'] for d in json.loads((APP_FOOD / 'index.json').read_text())['datasets'] if d.get('lazy')
-              for it in dataset_items(json.loads((APP_FOOD / d['file']).read_text()))}
+              for it in shipped_items(json.loads((APP_FOOD / d['file']).read_text()))}
     pfam = {i: family_of({'ja': pnames[i], 'items': []}, byid, family_of(shipping[k], byid)) for i, k in prodmap.items()}
     # a picture whose generic cell is in that neighbourhood already serves the product from there
     pfam = {i: f for i, f in pfam.items() if f != family_of(shipping[prodmap[i]], byid) or not shipping[prodmap[i]]['items']}
