@@ -20,7 +20,7 @@ import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot } from '../../app/src/lib/contract/record.ts';
 import { validEvent } from '../../app/src/lib/contract/shopCheck.ts';
 import {
-  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, PROFILE_PREF_KEYS, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
@@ -720,6 +720,9 @@ export class StoreCore {
       : isWedType(body.type) ? wedClean(body.type, sent)
       // a saved room's name: one clean line (contract/roomSave.ts saveName)
       : body.type === 'room_save' && typeof sent.name === 'string' ? { ...sent, name: saveName(sent.name) } : sent;
+    // the profile is locked (2026-11-15): no one sets or clears a sex or a birth date (the BMI standard is gone); a
+    // change takes a code change (docs/backend.md `pref`). An older app drops it as any `forbidden`.
+    if (body.type === 'pref' && PROFILE_PREF_KEYS.includes(data.key as string)) return fail('forbidden', 'profile locked');
     // the guest writes everything on the island a member does, never the economy, a goal of the members' or the
     // members' own records (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');

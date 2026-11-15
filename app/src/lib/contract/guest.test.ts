@@ -19,10 +19,10 @@ describe('guestMayWrite', () => {
     for (const sc of [undefined, 'o', 'c', 'r', 'h', 't', 'u', 'v']) expect(guestMayWrite('decor', { sc }), String(sc)).toBe(true);
   });
 
-  it('its own prefs: cosmetic, the meal log’s goals, its profile and the island’s weather; never a person’s, an activity or a からだ goal', () => {
-    for (const key of ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'weatherMode', 'kcalGoal', 'proteinGoal', 'sex', 'birth', 'bmiStd'])
+  it('its own prefs: cosmetic, the meal log’s goals and the island’s weather; never its profile (locked), a person’s, an activity or a からだ goal', () => {
+    for (const key of ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'weatherMode', 'kcalGoal', 'proteinGoal'])
       expect(guestMayWrite('pref', { key }), key).toBe(true);
-    for (const key of ['stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean'])
+    for (const key of ['sex', 'birth', 'bmiStd', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean'])
       expect(guestMayWrite('pref', { key }), key).toBe(false);
     expect(guestMayWrite('pref', { key: 'villagerName', person: 'A' })).toBe(false);
     expect(guestMayWrite('pref', { key: 'weatherMode', person: 'G' })).toBe(false);

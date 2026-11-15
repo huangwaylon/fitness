@@ -12,9 +12,9 @@ import { goalKeysOf } from './goals.ts';
 import { listenSeen, listenSummaryJson } from './listen.ts';
 
 /** The guest's own prefs: cosmetic (its look and コーデ too: contract/look.ts), its meal log's daily goals (kcal and the nutrients; never another goal, never
- *  another person's), its own profile (contract/profile.ts: its sex, birth date and BMI standard) and the island's
- *  weather and look (`weatherMode`, `seasonLook`: one each for the island, whoever set it last). */
-const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'weatherMode', 'seasonLook', ...goalKeysOf('food'), ...PROFILE_PREF_KEYS];
+ *  another person's) and the island's weather and look (`weatherMode`, `seasonLook`: one each for the island, whoever
+ *  set it last). Its profile is locked, as everyone's (relay/src/store.ts `profile locked`). */
+const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'weatherMode', 'seasonLook', ...goalKeysOf('food')];
 
 type Rec = Record<string, unknown>;
 
@@ -25,7 +25,7 @@ type Rec = Record<string, unknown>;
  * `decor` op (the island's decorations and its layout, every home's room, its own home's look), the `board`, its
  * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), the field (`farm`: its own plants),
  * its ききみみ games (`listen`), a trip's packing list (`pack`: adding, and changing only what it added,
- * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal, profile or the
+ * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal or the
  * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
  * members' (or any `person`), a trip's notes (`trip_note`) or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`):
  * the members' real-world records, read by all three: the record answers `forbidden`.
@@ -76,7 +76,7 @@ function prefData(r: EventRow): Rec | null | false {
 }
 
 /**
- * Whether a profile `pref` row (sex, birth date, BMI standard: contract/profile.ts) reaches `viewer`: a member's
+ * Whether a profile `pref` row (sex, birth date, an old BMI standard: contract/api.ts PROFILE_PREF_KEYS) reaches `viewer`: a member's
  * (its subject `person`, else its sender, A or B) only the two members, the guest's only the guest. Any other row: yes.
  */
 function profileSeen(viewer: Who, r: EventRow, d: Rec): boolean {
