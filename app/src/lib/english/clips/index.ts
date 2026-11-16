@@ -294,6 +294,15 @@ import { joeyfinds } from './joeyfinds.ts';
 import { firstScene } from './firstscene.ts';
 import { carlyRoom } from './carlyroom.ts';
 import { truffled } from './truffled.ts';
+import { benDestress } from './bendestress.ts';
+import { chandlerAdopted } from './adopted.ts';
+import { ronRadio } from './ronradio.ts';
+import { dwightPunch } from './dwightpunch.ts';
+import { boyHaveYouLostYourMind } from './lostmind.ts';
+import { doNotMock } from './donotmock.ts';
+import { medicalMess } from './medicalmess.ts';
+import { bonVoyage } from './bonvoyage.ts';
+import { iceClown } from './iceclown.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -334,6 +343,8 @@ export const CLIPS: readonly Clip[] = [
   ronHumour,
   mriBlindDate,
   fakeCall,
+  ronRadio,
+  dwightPunch,
   dwightFetish,
   benpunch,
   dwightAppt,
@@ -418,6 +429,7 @@ export const CLIPS: readonly Clip[] = [
   canvassing,
   ronShot,
   firstScene,
+  doNotMock,
   ronharass,
   annLeaving,
   conflictPranks,
@@ -455,6 +467,8 @@ export const CLIPS: readonly Clip[] = [
   monaLisa,
   cheesecakeBandits,
   joeyParents,
+  medicalMess,
+  iceClown,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -462,9 +476,11 @@ export const CLIPS: readonly Clip[] = [
   ronMeditate,
   newport,
   annApril,
+  benDestress,
   bookSpoilers,
   possumTaskForce,
   leslieMom,
+  bonVoyage,
   tomSwagger,
   ronWill,
   benLeslieKiss,
@@ -533,6 +549,7 @@ export const CLIPS: readonly Clip[] = [
   kellyLarson,
   goodHusband,
   officeLock,
+  chandlerAdopted,
   dwightFavors,
   jerryPainting,
   icNewCast,
@@ -553,6 +570,7 @@ export const CLIPS: readonly Clip[] = [
   barbados,
   getIn,
   saylove,
+  boyHaveYouLostYourMind,
   didIStutter,
   waffleGift,
   pilotFacts,
