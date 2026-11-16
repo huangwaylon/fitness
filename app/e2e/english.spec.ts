@@ -398,7 +398,7 @@ test('the library: すべて 20 at a time with もっと見る, a show or a situ
   const parks = CLIPS.filter((c) => c.show === 'Parks and Recreation');
   await lib.locator('[data-en-chip="Parks"]').click();
   await expect(lib.locator('[data-en-chip="Parks"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(rows).toHaveCount(parks.length);
+  await expect(rows).toHaveCount(Math.min(20, parks.length));
   await expect(lib.locator('.sec-label')).toContainText(`Parks${parks.length}本`);
   await lib.locator('[data-en-chip=""]').click();
   await lib.locator(`[data-en-clip="${other.id}"]`).click();
