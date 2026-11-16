@@ -282,3 +282,21 @@ test('no captions on the video, and an answer’s notes come into view (they sit
   await expect(cardAt(page, 0).locator('[data-en-reveal]')).toBeInViewport();
   await expect(cardAt(page, 0).locator('[data-en-reveal] .rhead')).toBeInViewport();
 });
+
+test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, the island’s “ambient” again after', async ({ page }) => {
+  // WebKit's navigator.audioSession, stood in for (Playwright's WebKit has none): the types the page sets, in order
+  await page.addInitScript(() => {
+    const seen: string[] = [];
+    let type = 'auto';
+    Object.defineProperty(navigator, 'audioSession', { configurable: true, value: { get type() { return type; }, set type(t: string) { type = t; seen.push(t); } } });
+    (globalThis as unknown as { __sessions: string[] }).__sessions = seen;
+  });
+  await fakeYoutube(page);
+  await open(page);
+  await start(page);
+  const sessions = () => page.evaluate(() => (globalThis as unknown as { __sessions: string[] }).__sessions.slice());
+  await expect.poll(async () => (await sessions()).at(-1)).toBe('playback');
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
+  await expect.poll(async () => (await sessions()).at(-1)).toBe('ambient');
+});

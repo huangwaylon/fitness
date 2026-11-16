@@ -11,7 +11,7 @@
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
-import { Engine, stagePos } from './engine.ts';
+import { Engine, setAudioSession, stagePos } from './engine.ts';
 import { HourClock, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
@@ -142,6 +142,26 @@ export function wantMusic(): void {
   if (!sound.settings.music) setSound({ music: true });
 }
 
+/** A video has the floor (English Study's lesson): the island's audio paused and kept so (no tap, return or lock-screen
+ *  ▶ resumes it), and iOS's audio session 'playback', so the clip plays with the Ring/Silent switch on silent (under
+ *  the island's 'ambient' the page's session silenced the embed too). Off: 'ambient' again, and the island's sound as
+ *  it was. */
+let video = false;
+export function videoFocus(on: boolean): void {
+  if (video === on) return;
+  video = on;
+  if (on) {
+    engine?.pause();
+    tilePaused();
+    setAudioSession('playback');
+    return;
+  }
+  setAudioSession('ambient');
+  if (!engine?.ctx || document.hidden || silent(sound.settings)) return;
+  engine.resume();
+  syncMusic();
+}
+
 /** Inside a user gesture: start audio (or wake it after iOS suspended it, or restart a track something outside
  *  paused or the browser refused to start) if any setting wants it (session.ts gestureAction). Any tap does it, on
  *  a control or on plain scenery: a scenery tap sounds on pointerdown, which on a touch screen isn't a user
@@ -150,7 +170,7 @@ export function wantMusic(): void {
 function unlock(ev?: Event): void {
   const s = sound.settings;
   if (typeof window === 'undefined') return;
-  if (silent(s)) return;
+  if (silent(s) || video) return;
   const e = eng();
   const music = musicOn(s);
   const act = e.gesture((ev?.type ?? 'click') as Gesture, music);
@@ -166,6 +186,7 @@ function unlock(ev?: Event): void {
 function apply(): void {
   const e = engine;
   if (!e?.ctx) return;
+  if (video) return void e.pause();
   const s = sound.settings;
   e.setLevels(s);
   sound.unlocked = true;
@@ -220,7 +241,7 @@ function startCutIn(want: CutIn, loopMs?: number): boolean {
  *  room's, the island's), and what stays fetched (pinsFor). `fade`: how a change fades (a cut-in's own is its swap). */
 function syncMusic(fade: Fade = 'hour'): void {
   const e = engine;
-  if (!e?.ctx || document.hidden) return;
+  if (!e?.ctx || document.hidden || video) return;
   const s = sound.settings;
   if (!s.music || !anyOn(s)) {
     opening = false;
@@ -367,7 +388,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   initMediaSession({
     // ▶: only in front, with a kind on; ⏸ (and ⏹): the track holds until a tap in the app
     play: () => {
-      if (document.hidden || !engine?.ctx || silent(sound.settings)) return tilePaused();
+      if (document.hidden || video || !engine?.ctx || silent(sound.settings)) return tilePaused();
       engine.unhold();
       engine.resume();
       syncMusic();
@@ -390,7 +411,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   const onVisible = () => {
     if (document.hidden) return onHide();
     hourClock.start(); // even before the first tap: the tap's syncMusic needs the hour change after it
-    if (!engine?.ctx || silent(sound.settings)) return;
+    if (!engine?.ctx || silent(sound.settings) || video) return;
     engine.resume();
     syncMusic();
   };

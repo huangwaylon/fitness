@@ -84,6 +84,10 @@ function applySession(type: string): string | null {
   }
 }
 
+/** The page's audio session type: 'ambient' for the island (mixes, follows the Ring/Silent switch), 'playback' while
+ *  a video has the floor (English Study: a clip plays on silent, like a video app). WebKit only; elsewhere a no-op. */
+export const setAudioSession = (type: 'ambient' | 'playback'): void => void applySession(type);
+
 /** Run `f` when the main thread is idle (Safari has no requestIdleCallback: a short timeout instead). */
 function whenIdle(f: () => void, ms = 60): void {
   if (typeof requestIdleCallback === 'function') requestIdleCallback(() => f(), { timeout: 2000 });

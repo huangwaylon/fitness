@@ -76,8 +76,9 @@ const ALLOW: Record<string, string[]> = {
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
   // English Study (docs/english.md): its content, pure rules and the sheet's own components (the kit's ui/, the
-  // store's model and send, the storage's keys)
-  english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components'],
+  // store's model and send, the storage's keys), and sound's videoFocus (a lesson pauses the island's audio and sets
+  // iOS's session to 'playback', so a clip plays on the silent switch)
+  english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'sound'],
   components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
 };
 

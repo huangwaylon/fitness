@@ -11,6 +11,7 @@
   import Controls from './Controls.svelte';
   import FlagSheet from './FlagSheet.svelte';
   import { week } from '#lib/store/week.svelte.ts';
+  import { videoFocus } from '#lib/sound/sound.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { YtPlayer } from '../player.svelte.ts';
@@ -84,9 +85,12 @@
     if (act.unsent >= 60_000) writeRow(false);
     else keep();
   }
+  // the clip has the floor: the island's sound paused, iOS's session 'playback' so the silent switch doesn't mute it
+  videoFocus(true);
   const onHidden = () => document.visibilityState === 'hidden' && leaving();
   document.addEventListener('visibilitychange', onHidden);
   onDestroy(() => {
+    videoFocus(false);
     clearInterval(timer);
     document.removeEventListener('visibilitychange', onHidden);
     player?.pause();
