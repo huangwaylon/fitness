@@ -16,7 +16,7 @@ import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import { newOpId } from '#lib/contract/ops.ts';
 import type { RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { sellPrice } from '#lib/contract/shop.ts';
-import { GOODS } from '#lib/contract/pocket.ts';
+import { isGoods } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -255,10 +255,10 @@ export function recordFind(kind: FindKind, id: string, claim?: string): boolean 
   return week.send('find', { kind, id }).ok;
 }
 
-/** Record a pick-up the ずかん has no page for (contract/pocket.ts GOODS: wood, a branch, fruit, a weed…): one more in
+/** Record a pick-up the ずかん has no page for (contract/pocket.ts GOODS and GOAL_GOODS: wood, a branch, fruit, a weed…): one more in
  *  today's tally, so in my pocket for the shop; never a find. `claim` as recordFind's. */
 export function recordGoods(id: string, claim?: string): void {
-  if (Object.hasOwn(GOODS, id)) countOne(`goods:${id}`, claim);
+  if (isGoods(id)) countOne(`goods:${id}`, claim);
 }
 
 // ---- The shop (docs/design.md "The shop", contract/shop.ts): my pocket's catches sold and the day's stock bought, with

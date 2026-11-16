@@ -392,6 +392,11 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
  *  @public (relay/, sync/live.ts) */
 export const scopeMaySend = (who: Who, sc: string | undefined, id: string): boolean => scopeMayWrite(who, { sc, id });
 
+/** Whether `who` may pick up this thing (`pick`'s id): a goal tree's fruit (`fr:<person>:<fruit>`) its owner alone
+ *  (2026-11-16: credited to the tree's owner, contract/pocket.ts GOAL_GOODS), anything else anyone. The room refuses
+ *  the rest. @public (relay/, island/FruitTree.svelte) */
+export const pickMaySend = (who: Who, id: string): boolean => !id.startsWith('fr:') || id.startsWith(`fr:${who}:`);
+
 /** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. */
 function intentOf(o: Obj): Intent | null {
   switch (o.kind) {

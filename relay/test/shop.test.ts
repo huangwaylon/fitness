@@ -137,6 +137,17 @@ describe('the shop in the record', () => {
     expect(sell('A', 'goods:wood', 1, wood)).toEqual(refused('pocket short'));
   });
 
+  it('sells the goal trees’ fruit at its own price (contract/pocket.ts GOAL_GOODS): 60 a goal’s, 150 the gold one, the old fruit still 5', () => {
+    expect([sellPrice('goods:goal-apple'), sellPrice('goods:gold-fruit'), sellPrice('goods:apple')]).toEqual([60, 150, 5]);
+    expect(tally('A', { 'goods:goal-apple': 1, 'goods:goal-pear': 1, 'goods:gold-fruit': 1, 'goods:apple': 2 })).toMatchObject({ ok: true });
+    expect(sell('A', 'goods:goal-apple', 1, 61)).toEqual(refused()); // above its price
+    expect(sell('A', 'goods:goal-apple', 1, 60)).toEqual({ ok: true });
+    expect(sell('A', 'goods:gold-fruit', 1, 150)).toEqual({ ok: true });
+    expect(sell('A', 'goods:apple', 2, 10)).toEqual({ ok: true });
+    expect(sell('A', 'goods:apple', 1, 5)).toEqual(refused('pocket short'));
+    expect(sell('A', 'goods:goal-pear', 1, 60)).toEqual({ ok: true });
+  });
+
   it('an id once: a retry is a duplicate, never sold twice', () => {
     tally('A', { 'fish:koi': 1 });
     expect(sell('A', 'fish:koi', 1, K, 'sell-1')).toEqual({ ok: true });

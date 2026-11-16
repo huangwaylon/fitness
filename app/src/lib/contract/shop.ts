@@ -19,7 +19,7 @@
 import { isLocalDate, keysAre } from './api.ts';
 import { SELL } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { POCKET_KINDS } from './pocket.ts';
+import { GOAL_GOODS, POCKET_KINDS } from './pocket.ts';
 import { FARM, isFarmCrop, startKey, type Crop } from './farm.ts';
 
 interface SellData { species: string; n: number; v: number }
@@ -35,8 +35,13 @@ const SPECIES_RE = new RegExp(`^(${POCKET_KINDS.join('|')}):[a-z][a-z0-9-]{0,47}
 const ITEM_RE = /^f\d{1,6}$/;
 const isWhole = (v: unknown, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max;
 
-/** A species' sell price in かいがら (contract/shopPrices.ts), or undefined: not sellable. */
-export const sellPrice = (species: string): number | undefined => (Object.hasOwn(SELL, species) ? SELL[species] : undefined);
+/** A species' sell price in かいがら (contract/shopPrices.ts; the goal trees' fruit, pocket.ts GOAL_GOODS), or
+ *  undefined: not sellable. */
+export function sellPrice(species: string): number | undefined {
+  if (Object.hasOwn(SELL, species)) return SELL[species];
+  const id = species.startsWith('goods:') ? species.slice(6) : '';
+  return Object.hasOwn(GOAL_GOODS, id) ? GOAL_GOODS[id] : undefined;
+}
 
 /** A `sell`'s data as the model reads it: its shape only (the price was the record's rule when it was kept). */
 export function sellOf(d: Record<string, unknown>): SellData | null {

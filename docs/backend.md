@@ -315,7 +315,8 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
   and pack items. Not `spend`, `spend_void`, `harvest`, a member's or an activity / からだ goal, a `trip_note`,
   the wedding board, `ingest` or `uploads`: `forbidden` (the queue drops it). Rows are `person = G` (merge order A < B <
   G).
-- **The room:** the same as a member's; a `decor` op of another's home's look is refused for anyone (`scopeMaySend`).
+- **The room:** the same as a member's; a `decor` op of another's home's look is refused for anyone (`scopeMaySend`),
+  and so is a `pick` of another's goal-tree fruit (`fr:<person>:…`, `pickMaySend`: its owner's alone).
   `peer` is the partner for a member and either member for the guest; a high-five names whom it is for (`to`).
 - **Push:** of the members' notices it hears an event's, an ingest's only when it brought activity rows (`notify(n,
   guest)`), and a new epoch's; its welcome's `rec` is the room's `recG` (`index.ts Marks`).

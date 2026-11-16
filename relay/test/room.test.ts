@@ -675,6 +675,19 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     expect((saved.at(-1) as unknown[]).length).toBe(4);
   });
 
+  it('a goal tree’s fruit is its owner’s to pick up alone (pickMaySend); anything else anyone’s', () => {
+    const a = join(KEY_A);
+    const b = join(KEY_B);
+    a.sent = [];
+    b.sent = [];
+    say(b, { kind: 'pick', id: 'fr:A:apple', what: 'fruit:apple', at: [150, 40] }); // A's tree: refused
+    expect(a.sent).toEqual([]);
+    say(a, { kind: 'pick', id: 'fr:A:apple', what: 'fruit:apple', at: [150, 40] });
+    expect(b.sent.map((m) => m.kind)).toEqual(['pick']);
+    say(b, { kind: 'pick', id: 'fr:B:gold', what: 'fruit:gold', at: [150, 40] });
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'pick', id: 'fr:B:gold', who: 'B' });
+  });
+
   it('keeps the world while the partner is away, and replays it to a phone that opens later', () => {
     const a = join(KEY_A);
     say(a, { kind: 'catch', what: 'tarantula', id: 'bug:77', at: [60, 300], how: 'net' });

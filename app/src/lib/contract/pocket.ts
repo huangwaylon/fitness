@@ -15,7 +15,8 @@ export const GOODS: Readonly<Record<string, string>> = {
   wood: 'wood', softwood: 'softwood', hardwood: 'hardwood', 'tree-branch': 'tree branch',
   // a pulled weed (island/Care.svelte)
   weeds: 'clump of weeds',
-  // the goal trees' fruit (island/FruitTree.svelte) and a palm's coconuts
+  // the goal trees' fruit as picked up before 2026-11-16 (still in pockets, at NH's price: GOAL_GOODS now) and a palm's
+  // coconuts
   apple: 'apple', pear: 'pear', peach: 'peach', cherry: 'cherry', coconut: 'coconut',
   // mushroom season's (world/mushrooms.ts), the rare one dug up
   'round-mushroom': 'round mushroom', 'skinny-mushroom': 'skinny mushroom', 'flat-mushroom': 'flat mushroom',
@@ -29,3 +30,15 @@ export const GOODS: Readonly<Record<string, string>> = {
   'tomato-start': 'tomato start', 'wheat-start': 'wheat start', 'sugarcane-start': 'sugarcane start', 'potato-start': 'seed potato',
   'carrot-start': 'carrot start', 'pumpkin-start': 'pumpkin start'
 };
+
+/** The goal trees' fruit (island/FruitTree.svelte) since 2026-11-16, the user's economy review: goods of their own,
+ *  priced here and not by NH's list (scripts/shop-prices.ts never sees them): a met goal's fruit (`goal-<fruit>`) 60
+ *  かいがら, and the gold fruit of a day with all four met 150. Their own ids, so the plain fruit picked up before keep
+ *  their 5 (a price change never reprices a pocket). Only the tree's owner picks them up (live-protocol.ts pickMaySend):
+ *  one of each a day, the day's claim. */
+export const GOAL_GOODS: Readonly<Record<string, number>> = {
+  'goal-pear': 60, 'goal-peach': 60, 'goal-cherry': 60, 'goal-apple': 60, 'gold-fruit': 150
+};
+
+/** Whether `id` is one of the goods (NH's, GOODS, or the goal trees', GOAL_GOODS). */
+export const isGoods = (id: string): boolean => Object.hasOwn(GOODS, id) || Object.hasOwn(GOAL_GOODS, id);
