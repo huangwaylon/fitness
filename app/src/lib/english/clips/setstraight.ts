@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const setStraight: Clip = {
   id: 'setstraight', video: 'oMnxPsQanrs', title: 'Leslie Sets the World Straight (Episode Highlight)',
-  dur: 170, wpm: 160, band: 'slow', tags: ['職場'],
+  dur: 170, wpm: 160, band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

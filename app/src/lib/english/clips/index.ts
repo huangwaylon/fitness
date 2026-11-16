@@ -156,6 +156,15 @@ import { ohTheWall } from './ohthewall.ts';
 import { ronDesk } from './rondesk.ts';
 import { barbados } from './barbados.ts';
 import { jointMission } from './jointmission.ts';
+import { theMerger } from './themerger.ts';
+import { bookSpoilers } from './bookspoil.ts';
+import { thirdNipple } from './thirdnipple.ts';
+import { ronAprilTakeOver } from './ronapril.ts';
+import { dwightFetish } from './dwightfetish.ts';
+import { youngjim } from './youngjim.ts';
+import { creedDebbie } from './creeddebbie.ts';
+import { possumTaskForce } from './possumtask.ts';
+import { annFlowers } from './annflowers.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -169,12 +178,17 @@ export const CLIPS: readonly Clip[] = [
   mostLovedDenmark,
   jerryBurritoLie,
   jerryMugged,
+  dwightFetish,
   thiefOfJoy,
   benSaves,
   charity,
+  ronAprilTakeOver,
   gameRoom,
   aprilGetFired,
+  youngjim,
   johnnyGoodbye,
+  theMerger,
+  creedDebbie,
   dinnerParty,
   newHairdo,
   ronDesk,
@@ -185,6 +199,7 @@ export const CLIPS: readonly Clip[] = [
   ronDiane,
   beefMilk,
   andyAcademy,
+  annFlowers,
   jointMission,
   heroes,
   saveJJs,
@@ -200,7 +215,6 @@ export const CLIPS: readonly Clip[] = [
   fluSeason,
   banquetHair,
   leslieObama,
-  setStraight,
   jansStroller,
   vanBidding,
   ronAward,
@@ -208,9 +222,10 @@ export const CLIPS: readonly Clip[] = [
   ronLeslieLocked,
   womensAppreciation,
   jimBack,
+  // ふつう
+  setStraight,
   benCriminal,
   ronsTeam,
-  // ふつう
   twodates,
   ronFire,
   benArrested,
@@ -229,6 +244,8 @@ export const CLIPS: readonly Clip[] = [
   ronPermit,
   ronMeditate,
   newport,
+  bookSpoilers,
+  possumTaskForce,
   tomSwagger,
   ronWill,
   benLeslieKiss,
@@ -304,6 +321,7 @@ export const CLIPS: readonly Clip[] = [
   rossNothing,
   possum,
   ronWhiners,
+  thirdNipple,
   emmaLocked,
   perfectCrime,
   fakedating,

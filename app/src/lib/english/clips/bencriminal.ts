@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const benCriminal: Clip = {
-  id: 'bencriminal', video: '2tsny0fMwkI', title: 'Ben is a Criminal', dur: 190, wpm: 160, band: 'slow',
+  id: 'bencriminal', video: '2tsny0fMwkI', title: 'Ben is a Criminal', dur: 190, wpm: 160, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

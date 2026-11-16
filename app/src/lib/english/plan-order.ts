@@ -153,5 +153,14 @@ export const PLANNED: readonly string[] = [
   'jointmission',
   'obama',
   'meditation',
-  'jerrypaint'
+  'jerrypaint',
+  'creeddebbie',
+  'ronapril',
+  'bookspoil',
+  'dwightfetish',
+  'annflowers',
+  'thirdnipple',
+  'youngjim',
+  'themerger',
+  'possumtask'
 ];

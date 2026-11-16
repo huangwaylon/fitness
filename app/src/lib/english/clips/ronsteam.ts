@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const ronsTeam: Clip = {
   id: 'ronsteam', video: 'bTfXhroy2CQ', title: 'Leslie refuses Ron\'s generous offer', dur: 283, wpm: 160,
-  band: 'slow', tags: ['友だち', '職場'],
+  band: 'mid', tags: ['友だち', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
