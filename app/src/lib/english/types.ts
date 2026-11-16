@@ -90,11 +90,21 @@ export interface Scene {
   ja: string;
 }
 
+/** A beat's category, its main move (i18n `beat.<k>`: 頼む・誘う, 断る, 提案, 説明, 気持ち, 冗談, 皮肉, 言い合い, 動作;
+ *  their order: scenes.ts BEAT_KINDS). */
+export type BeatKind = 'ask' | 'decline' | 'suggest' | 'explain' | 'feeling' | 'joke' | 'irony' | 'argue' | 'action';
+
+/** A shorter moment inside one scene (2–10 s), categorized: the same rules as a scene's line, ≤ 30 characters. */
+export interface Beat extends Scene {
+  k: BeatKind;
+}
+
 /** A scenes file: scenes/<video id>.json. */
 export interface ScenesFile {
   video: string;
   scenes: readonly Scene[];
+  beats?: readonly Beat[];
 }
 
-/** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes when it has a file. */
-export type Bank = Clip & { scenes?: readonly Scene[] };
+/** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes (and beats) when it has a file. */
+export type Bank = Clip & { scenes?: readonly Scene[]; beats?: readonly Beat[] };

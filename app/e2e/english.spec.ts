@@ -437,10 +437,10 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
-  const scenes = waitressScenes.scenes;
+  const { scenes, beats } = waitressScenes;
   const strip = lesson(page).locator('[data-en-scene]');
   await expect(strip).toHaveAttribute('data-en-scene', '0');
-  await expect(strip).toHaveText(scenes[0].ja);
+  await expect(strip.locator('.ja')).toHaveText(beats[0].ja);
   // directly under the controls, one line, a full hit
   const under = async (sel: string) => {
     const [a, b] = [(await lesson(page).locator(sel).boundingBox())!, (await strip.boundingBox())!];
@@ -472,7 +472,6 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   expect((await since(page, n1)).filter((c) => c[0] === 'seekTo' || c[0] === 'playVideo')).toEqual([]);
   // playing on (8×): the next scene
   await expect(strip).toHaveAttribute('data-en-scene', '4');
-  await expect(strip).toHaveText(scenes[4].ja);
   // あらすじ off (字幕's sheet): gone, and still off in the next lesson (this phone's)
   const sw = page.locator('dialog[open] [data-en-cc-sheet] [data-en-scenes-toggle]');
   await lesson(page).locator('[data-en-cc-more]').click();
@@ -493,7 +492,7 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   let served = false;
   await page.route('**/english/c/waitress.*.json', async (r) => {
-    const { scenes: _, ...bank } = (await (await r.fetch()).json()) as Record<string, unknown>;
+    const { scenes: _, beats: __, ...bank } = (await (await r.fetch()).json()) as Record<string, unknown>;
     await r.fulfill({ json: bank });
     served = true;
   });
@@ -506,6 +505,51 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   await lesson(page).locator('[data-en-cc-more]').click();
   await expect(page.locator('dialog[open] [data-en-cc-sheet]')).toBeVisible();
   await expect(sw).toHaveCount(0);
+});
+
+test('場面のあらすじ’s beats: the strip shows the beat on now with its category; the list groups them under their scenes, filters by category, and a beat tapped plays from there', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  await start(page);
+  const { scenes, beats } = waitressScenes;
+  const strip = lesson(page).locator('[data-en-scene]');
+  await expect(strip).toHaveAttribute('data-en-beat', '0');
+  await expect(strip.locator('[data-en-beat-k]')).toHaveText('説明');
+  await expect(strip.locator('.ja')).toHaveText(beats[0].ja);
+  await strip.click();
+  const list = page.locator('dialog[open] [data-en-scenes]');
+  // すべて and the categories present, in the set's order; every scene a header, its beats under it
+  const filters = list.locator('[data-en-beat-filter]');
+  await expect(filters).toHaveText(['すべて', '頼む・誘う', '断る', '説明', '気持ち', '皮肉', '言い合い', '動作']);
+  await expect(filters.first()).toHaveAttribute('aria-checked', 'true');
+  await expect(list.locator('[data-en-scene-row]')).toHaveCount(scenes.length);
+  const rows = list.locator('[data-en-beat-row]');
+  await expect(rows).toHaveCount(beats.length);
+  const ids = (sel: string) => list.locator(sel).evaluateAll((els) => els.map((e) => e.getAttribute('data-en-beat-row')));
+  const inScene = (i: number) => beats.flatMap((b, j) => (b.t[0] >= scenes[i].t[0] && b.t[1] <= scenes[i].t[1] ? [String(j)] : []));
+  for (const i of scenes.keys()) expect(await ids(`[data-en-scene-group="${i}"] [data-en-beat-row]`), `scene ${i}'s beats`).toEqual(inScene(i));
+  await expect(rows.nth(0)).toHaveAttribute('aria-current', 'true');
+  await expect(rows.nth(1)).toHaveText(new RegExp(`0:0${beats[1].t[0]}\\s*頼む・誘う\\s*${beats[1].ja}`));
+  expect(Math.round((await rows.nth(1).boundingBox())!.height)).toBeGreaterThanOrEqual(44);
+  expect(Math.round((await filters.nth(1).boundingBox())!.height)).toBeGreaterThanOrEqual(44);
+  // 説明: only its beats, under their scenes; the others' headers go
+  await list.locator('[data-en-beat-filter="explain"]').click();
+  await expect(list.locator('[data-en-beat-filter="explain"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(filters.first()).toHaveAttribute('aria-checked', 'false');
+  await expect.poll(() => ids('[data-en-beat-row]')).toEqual(beats.flatMap((b, j) => (b.k === 'explain' ? [String(j)] : [])));
+  await expect(list.locator('[data-en-scene-row]')).toHaveCount(2);
+  // 皮肉: its one beat; tapped, the sheet closes and the clip plays from it, the strip on that beat
+  await list.locator('[data-en-beat-filter="irony"]').click();
+  const irony = beats.findIndex((b) => b.k === 'irony');
+  await expect(rows).toHaveCount(1);
+  await expect(list.locator('[data-en-scene-group]')).toHaveAttribute('data-en-scene-group', '4');
+  const n0 = (await ytCommands(page)).length;
+  await rows.first().click();
+  await expect(list).toHaveCount(0);
+  await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => JSON.stringify(c.slice(0, 2)))).toEqual([JSON.stringify(['seekTo', [beats[irony].t[0], true]]), JSON.stringify(['playVideo', []])]);
+  await expect(strip).toHaveAttribute('data-en-beat', String(irony));
+  await expect(strip.locator('[data-en-beat-k]')).toHaveText('皮肉');
+  await expect(strip.locator('.ja')).toHaveText(beats[irony].ja);
 });
 
 test('この動画のフレーズ: from the lesson’s bar and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {

@@ -127,9 +127,17 @@ gaps ≤ 5 s; `ja` ≤ 40 characters, no 「」『』 or quotation marks, no Eng
 The build adds `scenes` to the clip's bank (its file name carries their version too: `catalog.ts withScenes`); nothing
 more is precached.
 
+**Beats** (optional, the user 2026-11-16): the same clip in shorter steps, each categorized, in the same file:
+`"beats": [{ "t": [from, to], "ja", "k" }]`. `k` is the beat's main move, one of ask 頼む・誘う, decline 断る, suggest
+提案, explain 説明, feeling 気持ち, joke 冗談, irony 皮肉, argue 言い合い, action 動作 (`scenes.ts BEAT_KINDS`, i18n
+`beat.<k>`). The test holds them too: each 2–10 s, time order, no overlaps, gaps ≤ 5 s, each inside one scene's span,
+`ja` ≤ 30 characters with the scenes' line rules, `k` in the set; no keys but `video`, `scenes`, `beats`. The bank
+carries `beats` as well (their version is in the scenes' hash).
+
 Under the controls (under the video with 字幕 英語: The player), one calm line: the scene at the playhead (`scenes.ts sceneAt`; in a gap, the one before), following
-it as it plays. Tapped: a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
-there. 字幕's sheet's あらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
+it as it plays; with beats, the beat at the playhead instead, its category in a small pill before it. Tapped: a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
+there. With beats, the scenes are headers with their beats under them (time, category, line), and a chip row
+(すべて and the categories present) filters the beats; a header or a beat tapped plays from there. 字幕's sheet's あらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
 without scenes shows neither.
 
 ## Progress

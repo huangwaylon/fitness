@@ -10,7 +10,7 @@ import { carried, contentHash, precachable } from './src/service-worker/caches.t
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
 import { bankPath, metaOf, withScenes } from './src/lib/english/catalog.ts';
 import { planOf } from './src/lib/english/plan.ts';
-import type { Bank, Clip, Scene, ScenesFile } from './src/lib/english/types.ts';
+import type { Bank, Clip, ScenesFile } from './src/lib/english/types.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -151,30 +151,30 @@ const globsUncached: Plugin = {
  *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk, in the shared plan's order: plan.ts),
  *  and each bank a file of its own, `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
  *  the dev server), never bundled nor precached (caches.ts isEnglishData). A clip with scenes/<video>.json (場面のあらすじ)
- *  has them in its bank (`scenes`), their version in the file's name. The clips are read fresh (Vite's module runner)
+ *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. The clips are read fresh (Vite's module runner)
  *  once a build, and in dev again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
 const englishData = (): Plugin => {
   let root = process.cwd();
-  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, readonly Scene[]> };
+  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>> };
   let clips: Promise<Data> | null = null;
   const scenesDir = () => join(root, 'src/lib/english/scenes');
-  /** video → its scenes (the files lib/english/scenes.test.ts checks). */
+  /** video → its scenes and beats (the files lib/english/scenes.test.ts checks). */
   const readScenes = () => {
     const dir = scenesDir();
     const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')) : [];
     return new Map(files.map((f) => {
       const sf = JSON.parse(readFileSync(join(dir, f), 'utf8')) as ScenesFile;
-      return [sf.video, sf.scenes] as const;
+      return [sf.video, sf.beats ? { scenes: sf.scenes, beats: sf.beats } : { scenes: sf.scenes }] as const;
     }));
   };
   const read = () =>
     (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes() })));
   const meta = (d: Data, c: Clip) => withScenes(metaOf(c), d.scenes.get(c.video));
   const bank = (d: Data, c: Clip): Bank => {
-    const sc = d.scenes.get(c.video);
-    return sc ? { ...c, scenes: sc } : c;
+    const sf = d.scenes.get(c.video);
+    return sf ? { ...c, ...sf } : c;
   };
   return {
     name: 'english-data',

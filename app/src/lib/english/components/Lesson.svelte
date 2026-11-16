@@ -54,6 +54,7 @@
   let full = $state.raw<Bank | null>(null);
   /** 場面のあらすじ, when the bank has them, and its strip shown (this phone's). */
   const scenes = $derived(full?.scenes?.length ? full.scenes : null);
+  const beats = $derived(full?.beats?.length ? full.beats : undefined);
   let showScenes = $state(scenesOn());
   const toggleScenes = () => setScenes((showScenes = !showScenes));
   const len = $derived(qs.length);
@@ -227,9 +228,9 @@
   </div>
   {#snippet trailing()}<NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy(true)} />{/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
-  {#if scenes && showScenes && paired}<Scenes {scenes} paired time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
+  {#if scenes && showScenes && paired}<Scenes {scenes} {beats} paired time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <Controls {player} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} />
-  {#if scenes && showScenes && !paired}<Scenes {scenes} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
+  {#if scenes && showScenes && !paired}<Scenes {scenes} {beats} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
       <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />

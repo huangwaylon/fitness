@@ -4,7 +4,7 @@
 // lesson opens (data.ts). Pure.
 import { drawSize } from './draw.ts';
 import { clipHash, scenesHash } from './hash.ts';
-import type { Band, Clip, Scene } from './types.ts';
+import type { Band, Clip, ScenesFile } from './types.ts';
 
 /** The show, short (a row's sub line, a chip). */
 export type Show = 'Friends' | 'The Office' | 'Parks';
@@ -40,8 +40,8 @@ export function metaOf(c: Clip): ClipMeta {
   };
 }
 
-/** A clip's entry with its scenes' version, when it has scenes (vite.config.ts english-data). */
-export const withScenes = (m: ClipMeta, scenes: readonly Scene[] | undefined): ClipMeta => (scenes ? { ...m, sv: scenesHash(scenes) } : m);
+/** A clip's entry with its scenes' (and beats') version, when it has scenes (vite.config.ts english-data). */
+export const withScenes = (m: ClipMeta, sf: Pick<ScenesFile, 'scenes' | 'beats'> | undefined): ClipMeta => (sf ? { ...m, sv: scenesHash(sf.scenes, sf.beats) } : m);
 
 /** A bank's file, under the base path: its name carries its version (and its scenes'), so a cached copy is never stale and a page left
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
