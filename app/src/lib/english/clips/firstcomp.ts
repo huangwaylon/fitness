@@ -18,7 +18,7 @@
 import type { Clip } from '../types.ts';
 
 export const firstComplaint: Clip = {
-  id: 'firstcomp', video: '-555Hg5_Qqo', title: 'Pam Gets Her First Complaint', dur: 207, wpm: 162, band: 'slow',
+  id: 'firstcomp', video: '-555Hg5_Qqo', title: 'Pam Gets Her First Complaint', dur: 207, wpm: 162, band: 'mid',
   tags: ['職場', '電話'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

@@ -117,5 +117,14 @@ export const PLANNED: readonly string[] = [
   'chardstand',
   'ronslash',
   'animalctrl',
-  'bestburger'
+  'bestburger',
+  'dinnerparty',
+  'ronaward',
+  'thiefjoy',
+  'tomhitsonann',
+  'vanbidding',
+  'joeyaudition',
+  'aprilmen',
+  'isshehot',
+  'donnatweets'
 ];

@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const getaway: Clip = {
   id: 'getaway', video: '3QWX3Vtu5RQ', title: 'Chandler & Monica Delay Their Getaway', dur: 78, wpm: 175,
-  band: 'mid', tags: ['友だち', 'お願い・断り'],
+  band: 'fast', tags: ['友だち', 'お願い・断り'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [

@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const joeyStinks: Clip = {
-  id: 'joeystinks', video: '1MfB8Q1BW9w', title: 'Joey Stinks', dur: 68, wpm: 176, band: 'mid',
+  id: 'joeystinks', video: '1MfB8Q1BW9w', title: 'Joey Stinks', dur: 68, wpm: 176, band: 'fast',
   tags: ['友だち', '家'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

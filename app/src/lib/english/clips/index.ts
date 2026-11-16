@@ -120,6 +120,15 @@ import { animalControl } from './animalctrl.ts';
 import { chardStand } from './chardstand.ts';
 import { bestBurger } from './bestburger.ts';
 import { chickParent } from './chickparent.ts';
+import { isSheHot } from './isshehot.ts';
+import { vanBidding } from './vanbidding.ts';
+import { aprilMen } from './aprilmen.ts';
+import { thiefOfJoy } from './thiefjoy.ts';
+import { dinnerParty } from './dinnerparty.ts';
+import { donnaTweets } from './donnatweets.ts';
+import { ronAward } from './ronaward.ts';
+import { joeyBroadwayAudition } from './joeyaudition.ts';
+import { tomHitsOnAnn } from './tomhitsonann.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -129,9 +138,11 @@ export const CLIPS: readonly Clip[] = [
   chickParent,
   jerryBurritoLie,
   jerryMugged,
+  thiefOfJoy,
   gameRoom,
   aprilGetFired,
   johnnyGoodbye,
+  dinnerParty,
   centralperk,
   furniture,
   ronShowHost,
@@ -151,16 +162,22 @@ export const CLIPS: readonly Clip[] = [
   setStraight,
   ronFire,
   benArrested,
-  pumpJamm,
   jansStroller,
+  vanBidding,
+  ronAward,
   unsexyRoadTrip,
   ronLeslieLocked,
   womensAppreciation,
   jimBack,
   benCriminal,
   imFine,
-  firstComplaint,
+  aprilMen,
+  joeyBroadwayAudition,
+  tomHitsOnAnn,
   // ふつう
+  pumpJamm,
+  firstComplaint,
+  isSheHot,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -170,6 +187,7 @@ export const CLIPS: readonly Clip[] = [
   tomSwagger,
   ronWill,
   tomNegotiate,
+  donnaTweets,
   mamasDead,
   workBestie,
   andySecret,
@@ -198,11 +216,11 @@ export const CLIPS: readonly Clip[] = [
   aprilFired,
   runsAgain,
   promSeason,
+  // 速い
   getaway,
   evilLaugh,
   fluoride,
   joeyStinks,
-  // 速い
   kellyLarson,
   goodHusband,
   pamLabor,

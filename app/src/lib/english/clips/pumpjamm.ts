@@ -9,7 +9,7 @@
 import type { Clip } from '../types.ts';
 
 export const pumpJamm: Clip = {
-  id: 'pumpjamm', video: 'L2HEBwubs90', title: 'Pump Up the Jamm', dur: 90, wpm: 162, band: 'slow',
+  id: 'pumpjamm', video: 'L2HEBwubs90', title: 'Pump Up the Jamm', dur: 90, wpm: 162, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

@@ -18,7 +18,7 @@ import type { Clip } from '../types.ts';
 
 export const evilLaugh: Clip = {
   id: 'evillaugh', video: '8-6GQY0wZm0', title: 'Dwight\'s Evil Laugh', dur: 211, wpm: 175,
-  band: 'mid', tags: ['職場'],
+  band: 'fast', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
