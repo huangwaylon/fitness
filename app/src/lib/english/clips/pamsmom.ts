@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const pamsMom: Clip = {
-  id: 'pamsmom', video: 'ugm3hm6nxkI', title: 'Michael Is Dating Pam\'s Mom', dur: 278, wpm: 153, band: 'slow',
+  id: 'pamsmom', video: 'ugm3hm6nxkI', title: 'Michael Is Dating Pam\'s Mom', dur: 278, wpm: 153, band: 'mid',
   tags: ['職場', '恋愛'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

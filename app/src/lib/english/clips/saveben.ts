@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const saveBen: Clip = {
-  id: 'saveben', video: 'MmE62niQupI', title: 'SAVE BEN WYATT!', dur: 193, wpm: 153, band: 'slow',
+  id: 'saveben', video: 'MmE62niQupI', title: 'SAVE BEN WYATT!', dur: 193, wpm: 153, band: 'mid',
   tags: ['家', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronsKey: Clip = {
-  id: 'ronskey', video: 'fsCeZQ4cjGk', title: 'Ron, April and Andy\'s Wild Puzzle', dur: 349, wpm: 153, band: 'slow',
+  id: 'ronskey', video: 'fsCeZQ4cjGk', title: 'Ron, April and Andy\'s Wild Puzzle', dur: 349, wpm: 153, band: 'mid',
   tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

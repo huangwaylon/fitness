@@ -16,7 +16,7 @@
 import type { Clip } from '../types.ts';
 
 export const aprilLeslie: Clip = {
-  id: 'aprilleslie', video: 'vDVo1TIhwRk', title: 'April Becomes Leslie Knope', dur: 268, wpm: 168, band: 'mid',
+  id: 'aprilleslie', video: 'vDVo1TIhwRk', title: 'April Becomes Leslie Knope', dur: 268, wpm: 168, band: 'fast',
   tags: ['職場', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

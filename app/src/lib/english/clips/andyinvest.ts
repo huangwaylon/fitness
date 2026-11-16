@@ -17,7 +17,7 @@
 import type { Clip } from '../types.ts';
 
 export const andyInvestigates: Clip = {
-  id: 'andyinvest', video: 'KXOm29FkU48', title: 'Andy Dwyer Investigates', dur: 252, wpm: 153, band: 'slow',
+  id: 'andyinvest', video: 'KXOm29FkU48', title: 'Andy Dwyer Investigates', dur: 252, wpm: 153, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

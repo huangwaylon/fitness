@@ -17,7 +17,7 @@
 import type { Clip } from '../types.ts';
 
 export const chrisBestMan: Clip = {
-  id: 'bestman', video: '0GUGPA9V1UE', title: 'I Thought You Were My Friend!', dur: 123, wpm: 153, band: 'slow',
+  id: 'bestman', video: '0GUGPA9V1UE', title: 'I Thought You Were My Friend!', dur: 123, wpm: 153, band: 'mid',
   tags: ['友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

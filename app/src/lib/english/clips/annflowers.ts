@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const annFlowers: Clip = {
   id: 'annflowers', video: 'nKaUJj68lfY', title: 'Ann can buy herself flowers now', dur: 226, wpm: 153,
-  band: 'slow', tags: ['恋愛', '職場'],
+  band: 'mid', tags: ['恋愛', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

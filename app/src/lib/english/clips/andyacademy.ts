@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const andyAcademy: Clip = {
   id: 'andyacademy', video: '33Z9lQQywjg', title: 'Chris Coaches Andy for the Police Academy', dur: 108, wpm: 153,
-  band: 'slow', tags: ['職場', '友だち'],
+  band: 'mid', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

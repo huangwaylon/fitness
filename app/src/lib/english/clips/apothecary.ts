@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const apothecaryTable: Clip = {
-  id: 'apothecary', video: 'UfdFfETBs3w', title: 'My Apothecary Table!', dur: 179, wpm: 153, band: 'slow',
+  id: 'apothecary', video: 'UfdFfETBs3w', title: 'My Apothecary Table!', dur: 179, wpm: 153, band: 'mid',
   tags: ['友だち', '買い物'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

@@ -339,6 +339,16 @@ import { stressSweat } from './stresssweat.ts';
 import { aprilMouserat } from './mouserat.ts';
 import { asianjim } from './asianjim.ts';
 import { leslieDate } from './lesliedate.ts';
+import { dwightNewJob } from './dwightjob.ts';
+import { joeyDog } from './joeydog.ts';
+import { empOfMonth } from './empofmonth.ts';
+import { michaelsNephew } from './nephew.ts';
+import { lesliesBlackEye } from './blackeye.ts';
+import { mykonos } from './mykonos.ts';
+import { bigFight } from './bigfight.ts';
+import { joeyTeachesActing } from './joeyacting.ts';
+import { partyEarly } from './partyearly.ts';
+import { leaveTelescope } from './telescope.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -361,6 +371,7 @@ export const CLIPS: readonly Clip[] = [
   sellVeg,
   needyCall,
   dwightGun,
+  michaelsNephew,
   ronFixes,
   chairModel,
   nanaclub,
@@ -377,6 +388,7 @@ export const CLIPS: readonly Clip[] = [
   jerryMugged,
   benCool,
   tobyTherapy,
+  mykonos,
   rossBreak,
   birthdayGuide,
   benTreats,
@@ -390,6 +402,7 @@ export const CLIPS: readonly Clip[] = [
   benpunch,
   dwightAppt,
   andyComputer,
+  empOfMonth,
   thiefOfJoy,
   benSaves,
   ronSelfDefense,
@@ -430,10 +443,12 @@ export const CLIPS: readonly Clip[] = [
   dwightVotes,
   wetCement,
   bigDay,
+  dwightNewJob,
+  leaveTelescope,
   newHairdo,
   ronDesk,
+  partyEarly,
   roomie,
-  centralperk,
   furniture,
   ronShowHost,
   senatorOscar,
@@ -441,6 +456,8 @@ export const CLIPS: readonly Clip[] = [
   ronDiane,
   marbleBox,
   stressSweat,
+  // ふつう
+  centralperk,
   beefMilk,
   andyAcademy,
   annFlowers,
@@ -454,7 +471,6 @@ export const CLIPS: readonly Clip[] = [
   apothecaryTable,
   pamsMom,
   housetour,
-  // ふつう
   jointMission,
   ronLeslieLunch,
   treatTurnabout,
@@ -472,6 +488,7 @@ export const CLIPS: readonly Clip[] = [
   joeyLie,
   carlyRoom,
   officeSetUp,
+  joeyDog,
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
@@ -512,6 +529,7 @@ export const CLIPS: readonly Clip[] = [
   benCriminal,
   ronsTeam,
   jerryBack,
+  lesliesBlackEye,
   twodates,
   ronFire,
   benArrested,
@@ -559,6 +577,7 @@ export const CLIPS: readonly Clip[] = [
   mamasDead,
   workBestie,
   hypocrite,
+  // 速い
   andySecret,
   dwightUrine,
   conesOfDunshire,
@@ -566,13 +585,13 @@ export const CLIPS: readonly Clip[] = [
   videoDome,
   joeyfinds,
   aprilLeslie,
-  // 速い
   scarnRead,
   gryzzlBoxes,
   distract,
   leslieAnnForum,
   ronMeditation,
   rentASwag,
+  joeyTeachesActing,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
@@ -627,6 +646,7 @@ export const CLIPS: readonly Clip[] = [
   pamLabor,
   piemary,
   healthPlan,
+  bigFight,
   momFlirt,
   peckJoins,
   ronHearing,

@@ -23,7 +23,7 @@ import type { Clip } from '../types.ts';
 
 export const videoDome: Clip = {
   id: 'videodome', video: 'MrZTHXtpZYM', title: 'Ron loves the adult video store', dur: 314, wpm: 168,
-  band: 'mid', tags: ['職場', 'お願い・断り'],
+  band: 'fast', tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

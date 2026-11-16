@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const dwightUrine: Clip = {
-  id: 'dwighturine', video: 'EkZrJC4_xHA', title: 'Dwight Gives Michael His Urine', dur: 291, wpm: 168, band: 'mid',
+  id: 'dwighturine', video: 'EkZrJC4_xHA', title: 'Dwight Gives Michael His Urine', dur: 291, wpm: 168, band: 'fast',
   tags: ['職場', 'お願い・断り'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

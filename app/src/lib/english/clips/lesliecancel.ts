@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const leslieCancelled: Clip = {
   id: 'lesliecancel', video: 'JDebCHrNrdo', title: 'Leslie gets cancelled ft. Kathryn Hahn', dur: 175, wpm: 153,
-  band: 'slow', tags: ['職場', 'お願い・断り'],
+  band: 'mid', tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

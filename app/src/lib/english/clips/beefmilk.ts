@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const beefMilk: Clip = {
   id: 'beefmilk', video: 'N4B4ELSyDJg', title: 'Ron Deals With A “Beef Milk” Influencer', dur: 254, wpm: 153,
-  band: 'slow',
+  band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

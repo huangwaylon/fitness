@@ -336,5 +336,15 @@ export const PLANNED: readonly string[] = [
   'eyetest',
   'rachresume',
   'bobbymeet',
-  'chipmccapp'
+  'chipmccapp',
+  'dwightjob',
+  'mykonos',
+  'joeyacting',
+  'telescope',
+  'joeydog',
+  'nephew',
+  'empofmonth',
+  'bigfight',
+  'partyearly',
+  'blackeye'
 ];

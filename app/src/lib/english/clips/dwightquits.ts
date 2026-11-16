@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const dwightquits: Clip = {
   id: 'dwightquits', video: 'HobCfJyEm9o', title: 'Dwight Quits Dunder Mifflin',
-  dur: 151, wpm: 168, band: 'mid',
+  dur: 151, wpm: 168, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

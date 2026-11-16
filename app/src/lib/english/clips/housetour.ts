@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const housetour: Clip = {
   id: 'housetour', video: 'wFv3SQ0YTv0', title: 'House Tour from Hell - The Office US', dur: 244, wpm: 153,
-  band: 'slow', tags: ['家', '友だち'],
+  band: 'mid', tags: ['家', '友だち'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

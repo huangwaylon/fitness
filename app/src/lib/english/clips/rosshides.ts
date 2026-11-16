@@ -19,7 +19,7 @@ import type { Clip } from '../types.ts';
 
 export const rossHidesIt: Clip = {
   id: 'rosshides', video: 'g0wb4jPpl3s', title: 'Ross Tries (and Fails) to Hide His One-Night Stand from Rachel',
-  dur: 311, wpm: 153, band: 'slow',
+  dur: 311, wpm: 153, band: 'mid',
   tags: ['恋愛', '友だち'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

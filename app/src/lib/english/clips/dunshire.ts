@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const conesOfDunshire: Clip = {
-  id: 'dunshire', video: 'R5fBO-Ua2rk', title: 'The Cones of Dunshire', dur: 108, wpm: 168, band: 'mid',
+  id: 'dunshire', video: 'R5fBO-Ua2rk', title: 'The Cones of Dunshire', dur: 108, wpm: 168, band: 'fast',
   tags: ['家'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

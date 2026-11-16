@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const ronTough: Clip = {
   id: 'rontough', video: '-lu985jOKRc', title: 'Parks and Recreation | Ron\'s Tough Decision (Episode Highlight)',
-  dur: 90, wpm: 153, band: 'slow', tags: ['職場'],
+  dur: 90, wpm: 153, band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

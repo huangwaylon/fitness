@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const joeyfinds: Clip = {
   id: 'joeyfinds', video: 'tGlX74DANF0', title: 'Joey Finds Out About Chandler & Monica',
-  dur: 255, wpm: 168, band: 'mid',
+  dur: 255, wpm: 168, band: 'fast',
   tags: ['恋愛', '友だち'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
