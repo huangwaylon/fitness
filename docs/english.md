@@ -71,8 +71,10 @@ between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the ifram
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
 stopped), −5秒, この部分 (the question's segment), a scrubber with the time (never locked), and 0.75× only when the
 frame's `availablePlaybackRates` offer more than 1. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
-YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The e2e answer the frame with
-a stand-in player.
+YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
+iPhone 15): YouTube ignores a forced quality and picks by the frame's device pixels, so the width is the fix; 'hd720' is
+still asked (setPlaybackQuality) at ready and each play, and the quality played is counted once a play
+(`act:english.q.<quality>` in the log's `use`). The e2e answer the frame with a stand-in player.
 
 ## Progress
 

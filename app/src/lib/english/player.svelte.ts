@@ -2,7 +2,9 @@
 // script-src). The frame is told `listening` until it answers; it reports `onReady`, `infoDelivery` (the time, the
 // state) and `onError`; it's sent `command`s (seekTo, playVideo, pauseVideo). A segment pauses at its end: the time
 // between deliveries is extrapolated, checked every 100 ms. A play that doesn't start (iOS wants a tap on the video
-// itself the first time) says so (`stuck`).
+// itself the first time) says so (`stuck`). YouTube picks the quality from the frame's device pixels (a forced one is
+// ignored now), so the player is full width; 'hd720' is still asked at ready and at each play, a harmless hint, and the
+// quality it reports (`playbackQuality`) is told once a play (`onQuality`: the log).
 
 export const YT_ORIGIN = 'https://www.youtube-nocookie.com';
 
@@ -35,6 +37,8 @@ export function readMessage(data: unknown): { event: string; info: unknown } | n
   }
 }
 
+/** The quality asked (a hint only: YouTube goes by the frame's size). */
+const HINT = 'hd720';
 /** No answer to `listening` in this long: the embed is unavailable (blocked, or the network gave out). */
 const HELLO_MS = 12_000;
 /** A play asked this long ago that hasn't started: `stuck`. */
@@ -53,6 +57,8 @@ export class YtPlayer {
   /** The speeds the frame offers (its availablePlaybackRates; [] until it says), and the one set. */
   rates = $state<number[]>([]);
   rate = $state(1);
+  /** The quality the frame says it plays (its playbackQuality), null till it says. */
+  quality = $state<string | null>(null);
 
   #frame: HTMLIFrameElement;
   #last = { t: 0, at: 0 };
@@ -65,9 +71,13 @@ export class YtPlayer {
   #hello: ReturnType<typeof setInterval> | undefined;
   #tick: ReturnType<typeof setInterval>;
   #stuckTimer: ReturnType<typeof setTimeout> | undefined;
+  /** This play's quality told already (a play: each play or resume asked). */
+  #told = false;
+  #onQuality: ((q: string) => void) | undefined;
 
-  constructor(frame: HTMLIFrameElement) {
+  constructor(frame: HTMLIFrameElement, onQuality?: (q: string) => void) {
     this.#frame = frame;
+    this.#onQuality = onQuality;
     addEventListener('message', this.#onMessage);
     frame.addEventListener('load', this.#greet);
     this.#greet();
@@ -81,7 +91,7 @@ export class YtPlayer {
     this.#last = { t: from, at: performance.now() };
     this.time = from;
     this.#cmd('seekTo', [from, true]);
-    this.#cmd('playVideo');
+    this.#asked();
     this.stuck = false;
     this.#started = false;
     clearTimeout(this.#stuckTimer);
@@ -101,6 +111,13 @@ export class YtPlayer {
   /** Play on from where it stopped. */
   resume(): void {
     this.#stopAt = null;
+    this.#asked();
+  }
+
+  /** A play asked: the quality hint, then play (its quality told once it plays). */
+  #asked(): void {
+    this.#told = false;
+    this.#cmd('setPlaybackQuality', [HINT]);
     this.#cmd('playVideo');
   }
 
@@ -189,6 +206,7 @@ export class YtPlayer {
         this.#cmd('addEventListener', ['onStateChange']);
         this.#cmd('addEventListener', ['onError']);
         this.#noCaptions();
+        this.#cmd('setPlaybackQuality', [HINT]);
         break;
       case 'initialDelivery':
       case 'infoDelivery': {
@@ -197,6 +215,8 @@ export class YtPlayer {
         if (typeof info.duration === 'number' && info.duration > 0) this.duration = info.duration;
         if (Array.isArray(info.availablePlaybackRates)) this.rates = info.availablePlaybackRates.filter((r): r is number => typeof r === 'number');
         if (typeof info.playbackRate === 'number') this.rate = info.playbackRate;
+        if (typeof info.playbackQuality === 'string' && /^[a-z0-9]{1,12}$/i.test(info.playbackQuality)) this.quality = info.playbackQuality;
+        if (!this.#told && this.state === 'playing' && this.quality) (this.#told = true), this.#onQuality?.(this.quality);
         const t = info.currentTime;
         if (typeof t === 'number' && Number.isFinite(t)) {
           if (this.#seek !== null && Math.abs(t - this.#seek) > 2) break; // (the time from before the seek)
