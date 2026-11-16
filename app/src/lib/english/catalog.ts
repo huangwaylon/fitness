@@ -3,8 +3,8 @@
 // `clips/index.ts?english-index`, in the sheet's chunk) and writes each bank as a file of its own, fetched when a
 // lesson opens (data.ts). Pure.
 import { drawSize } from './draw.ts';
-import { clipHash, scenesHash } from './hash.ts';
-import type { Band, Clip, ScenesFile } from './types.ts';
+import { clipHash, scenesHash, transcriptHash } from './hash.ts';
+import type { Band, Clip, ScenesFile, TranscriptLine } from './types.ts';
 
 /** The show, short (a row's sub line, a chip). */
 export type Show = 'Friends' | 'The Office' | 'Parks' | 'iCarly';
@@ -27,6 +27,8 @@ export interface ClipMeta {
   v: string;
   /** Its scenes' version (hash.ts scenesHash), when it has scenes: in its bank file's name too. */
   sv?: string;
+  /** Its transcript's version (hash.ts transcriptHash), when it has one: in its bank file's name too. */
+  tv?: string;
   credit: string;
 }
 
@@ -43,6 +45,9 @@ export function metaOf(c: Clip): ClipMeta {
 /** A clip's entry with its scenes' (and beats') version, when it has scenes (vite.config.ts english-data). */
 export const withScenes = (m: ClipMeta, sf: Pick<ScenesFile, 'scenes' | 'beats'> | undefined): ClipMeta => (sf ? { ...m, sv: scenesHash(sf.scenes, sf.beats) } : m);
 
-/** A bank's file, under the base path: its name carries its version (and its scenes'), so a cached copy is never stale and a page left
+/** A clip's entry with its transcript's version, when it has one (vite.config.ts english-data). */
+export const withTranscript = (m: ClipMeta, lines: readonly TranscriptLine[] | undefined): ClipMeta => (lines ? { ...m, tv: transcriptHash(lines) } : m);
+
+/** A bank's file, under the base path: its name carries its version (and its scenes', its transcript's), so a cached copy is never stale and a page left
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
-export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}.json`;
+export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}.json`;

@@ -8,7 +8,8 @@ Code: `app/src/lib/english/` (content, logic, strings in `i18n.ts`, the sheet in
 
 A clip (`lib/english/types.ts` Clip) is an official YouTube video and our lesson over it: segments `[from, to]` s,
 English questions, Japanese notes (言っていること / 意味 / 迷いやすい点 / 使えるフレーズ) and a one-line `cue` for a
-second listen. A question quotes one short line at most (*key words* starred); no audio or transcript is ours to ship.
+second listen. A question quotes one short line at most (*key words* starred); no audio is ours to ship (the
+transcript is, since 2026-11-16: Transcripts).
 `clips/index.ts` lists them; one file a clip, each checked by the unit tests.
 
 - A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
@@ -139,6 +140,22 @@ it as it plays; with beats, the beat at the playhead instead, its category in a 
 there. With beats, the scenes are headers with their beats under them (time, category, line), and a chip row
 (すべて and the categories present) filters the beats; a header or a beat tapped plays from there. 字幕's sheet's あらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
 without scenes shows neither.
+
+## Transcripts
+
+せりふ: the clip's full English text with our Japanese translation (the user, 2026-11-16: the transcripts ship, the
+audio still never does). One file a video: `app/src/lib/english/transcripts/<YouTube video id>.en.json`,
+`{ "video", "lines": [{ "t": [from, to], "en" }] }` — the local whisper pass's segments (0.1 s; a run of 3+ identical
+lines is its loop over music or a talking head, cut), written by `app/scripts/english-transcripts.ts` from
+`~/friends/out/<video>/whisper.json` on the importer's machine. The translation is a second file,
+`<video id>.ja.json`: one line for each of the en file's, the same `t`, written by the translators (the paced fleet,
+`~/friends/TRANSLATE.md`). `transcripts.test.ts` holds every file: the shape (`video` = the file name), time order, no
+overlaps, the clip's end held when it's in the library; `en` ≤ 200 characters, trimmed; the ja file's lines the en
+file's own count and `t`s, `ja` ≤ 80 characters, no English lines (names in katakana), every character in the trimmed
+font. The build adds `lines` to the clip's bank, each line with its `ja` when the translation is in (its file name
+carries the transcript's version too: `catalog.ts withTranscript`); nothing more is precached. The lesson's せりふ
+button opens the whole transcript under the pinned player: the line at the playhead follows it as it plays (`transcripts.ts
+lineAt`), one tapped plays from there, the Japanese under its English when in.
 
 ## Progress
 

@@ -14,7 +14,7 @@ export const LIBRARY: readonly ClipMeta[] = INDEX;
 const byId = new Map(LIBRARY.map((m) => [m.id, m]));
 export const metaById = (id: string): ClipMeta | undefined => byId.get(id);
 
-const keyOf = (m: ClipMeta) => `${m.id}.${m.v}${m.sv ?? ''}`;
+const keyOf = (m: ClipMeta) => `${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}`;
 const banks = new Map<string, Promise<Bank>>();
 /** The banks fetched this session (a lesson opened on one starts with it, no wait). */
 const loaded = new Map<string, Bank>();

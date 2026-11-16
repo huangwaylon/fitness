@@ -8,9 +8,9 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
-import { bankPath, metaOf, withScenes } from './src/lib/english/catalog.ts';
+import { bankPath, metaOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
 import { planOf } from './src/lib/english/plan.ts';
-import type { Bank, Clip, ScenesFile } from './src/lib/english/types.ts';
+import type { Bank, Clip, JaTranscriptFile, ScenesFile, TranscriptFile, TranscriptLine } from './src/lib/english/types.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -151,15 +151,18 @@ const globsUncached: Plugin = {
  *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk, in the shared plan's order: plan.ts),
  *  and each bank a file of its own, `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
  *  the dev server), never bundled nor precached (caches.ts isEnglishData). A clip with scenes/<video>.json (場面のあらすじ)
- *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. The clips are read fresh (Vite's module runner)
+ *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. A clip with
+ *  transcripts/<video>.en.json (せりふ) has its lines in its bank too, each with the ja file's translation when in,
+ *  their version in the file's name as well. The clips are read fresh (Vite's module runner)
  *  once a build, and in dev again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
 const englishData = (): Plugin => {
   let root = process.cwd();
-  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>> };
+  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>>; lines: Map<string, TranscriptLine[]> };
   let clips: Promise<Data> | null = null;
   const scenesDir = () => join(root, 'src/lib/english/scenes');
+  const transcriptsDir = () => join(root, 'src/lib/english/transcripts');
   /** video → its scenes and beats (the files lib/english/scenes.test.ts checks). */
   const readScenes = () => {
     const dir = scenesDir();
@@ -169,12 +172,28 @@ const englishData = (): Plugin => {
       return [sf.video, sf.beats ? { scenes: sf.scenes, beats: sf.beats } : { scenes: sf.scenes }] as const;
     }));
   };
+  /** video → its transcript lines, each with its translation when the ja file is in (transcripts.test.ts holds the
+   *  ja files one line for each of the en file's, the same `t`s). */
+  const readTranscripts = () => {
+    const dir = transcriptsDir();
+    const files = existsSync(dir) ? readdirSync(dir) : [];
+    const ja = new Map(files.filter((f) => f.endsWith('.ja.json')).map((f) => {
+      const jf = JSON.parse(readFileSync(join(dir, f), 'utf8')) as JaTranscriptFile;
+      return [jf.video, jf.lines] as const;
+    }));
+    return new Map(files.filter((f) => f.endsWith('.en.json')).map((f) => {
+      const ef = JSON.parse(readFileSync(join(dir, f), 'utf8')) as TranscriptFile;
+      const jl = ja.get(ef.video);
+      return [ef.video, ef.lines.map((l, i) => (jl?.[i] ? { ...l, ja: jl[i].ja } : l))] as const;
+    }));
+  };
   const read = () =>
-    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes() })));
-  const meta = (d: Data, c: Clip) => withScenes(metaOf(c), d.scenes.get(c.video));
+    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts() })));
+  const meta = (d: Data, c: Clip) => withTranscript(withScenes(metaOf(c), d.scenes.get(c.video)), d.lines.get(c.video));
   const bank = (d: Data, c: Clip): Bank => {
     const sf = d.scenes.get(c.video);
-    return sf ? { ...c, ...sf } : c;
+    const lines = d.lines.get(c.video);
+    return { ...c, ...(sf && { ...sf }), ...(lines && { lines }) };
   };
   return {
     name: 'english-data',
@@ -185,9 +204,10 @@ const englishData = (): Plugin => {
       const d = await read();
       for (const f of d.deps) this.addWatchFile(f);
       if (existsSync(scenesDir())) for (const f of readdirSync(scenesDir())) this.addWatchFile(join(scenesDir(), f));
+      if (existsSync(transcriptsDir())) for (const f of readdirSync(transcriptsDir())) this.addWatchFile(join(transcriptsDir(), f));
       return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(planOf(d.clips).map((c) => meta(d, c))))});`, map: null };
     },
-    watchChange: (id) => void (/\/src\/lib\/english\/(clips|scenes)\//.test(id) && (clips = null)),
+    watchChange: (id) => void (/\/src\/lib\/english\/(clips|scenes|transcripts)\//.test(id) && (clips = null)),
     async generateBundle() {
       if (this.environment.name !== 'client') return;
       const d = await read();

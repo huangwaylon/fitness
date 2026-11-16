@@ -1,6 +1,6 @@
 // English Study's content (docs/english.md "Content"): a clip is an official YouTube video, played by YouTube's embed,
-// with our questions over its segments and our Japanese notes. Nothing of the clip's audio or transcript is ours to
-// ship: a question quotes one short line at most. Pure types.
+// with our questions over its segments and our Japanese notes. Its audio is never ours to ship; its transcript is
+// (the user, 2026-11-16: docs/english.md "Transcripts"). Pure types.
 
 /** How fast the clip's speech runs against the rest of the library: ゆっくり, ふつう, 速い = the slowest, middle and
  *  fastest third of all clips by `wpm` (clips/index.ts bandsOf; scripts/english-wpm.ts writes them). */
@@ -106,5 +106,28 @@ export interface ScenesFile {
   beats?: readonly Beat[];
 }
 
-/** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes (and beats) when it has a file. */
-export type Bank = Clip & { scenes?: readonly Scene[]; beats?: readonly Beat[] };
+/** A line of the clip's transcript (docs/english.md "Transcripts"): one whisper segment, its Japanese when translated. */
+export interface TranscriptLine {
+  /** [from, to], s into the video. */
+  t: readonly [number, number];
+  /** The line as heard (the local whisper pass's text, auto-transcribed). */
+  en: string;
+  /** Our Japanese translation, once the clip's ja file is in. */
+  ja?: string;
+}
+
+/** A transcript file: transcripts/<video id>.en.json (scripts/english-transcripts.ts, from the whisper pass). */
+export interface TranscriptFile {
+  video: string;
+  lines: readonly { t: readonly [number, number]; en: string }[];
+}
+
+/** A translation file: transcripts/<video id>.ja.json, one line for each of the en file's, same `t`s. */
+export interface JaTranscriptFile {
+  video: string;
+  lines: readonly { t: readonly [number, number]; ja: string }[];
+}
+
+/** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes (and beats) and
+ *  transcript lines when it has the files. */
+export type Bank = Clip & { scenes?: readonly Scene[]; beats?: readonly Beat[]; lines?: readonly TranscriptLine[] };
