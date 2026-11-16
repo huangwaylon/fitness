@@ -2,8 +2,7 @@
   import { asset } from '$app/paths';
   import { routeOf } from '#lib/ui-state/paths.ts';
   // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks).
-  import '@fontsource/fredoka/latin-600.css';
-  import '@fontsource/fredoka/latin-700.css';
+  import '#lib/styles/fredoka.css';
   // Zen Maru Gothic trimmed to the slices the app uses (scripts/font-subsets.ts).
   import '#lib/styles/fonts.css';
   import '#lib/styles/tokens.css';

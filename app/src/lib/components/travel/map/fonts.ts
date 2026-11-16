@@ -1,15 +1,15 @@
 // The map's one font: Zen Maru Gothic Bold, the app's own (docs/design.md "Type"), drawn by MapLibre from the style's
 // `font-faces` (each @fontsource slice a woff2 with its unicode-range, fetched only once a label needs one of its
 // characters, then rasterised on the phone). So Japanese and Latin labels are the same round face as the chrome. The
-// style has no glyphs URL: a character no slice covers (Cyrillic, Greek: their slices left out) is drawn in a local
-// font.
+// style has no glyphs URL: a character no slice covers (Cyrillic, Greek: their slices left out; Cyrillic's 700 isn't
+// even built, fonts.css has Greek's) is drawn in a local font.
 import type { FontFacesSpecification } from 'maplibre-gl';
 import ranges from '@fontsource/zen-maru-gothic/unicode.json';
 
 export const FONT = 'Zen Maru Gothic Bold';
 
 // (not the whole-font `japanese` file, 1.5 MB: no unicode.json range names it, so it was only ever deployed)
-const files = import.meta.glob(['../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', '!**/zen-maru-gothic-japanese-700-normal.woff2'], {
+const files = import.meta.glob(['../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', '!**/zen-maru-gothic-japanese-700-normal.woff2', '!**/zen-maru-gothic-cyrillic-700-normal.woff2'], {
   query: '?url', import: 'default', eager: true
 }) as Record<string, string>;
 
@@ -22,7 +22,7 @@ export function fontFaces(base = typeof location === 'undefined' ? 'http://local
   const byName = new Map(Object.entries(files).map(([p, url]) => [/zen-maru-gothic-(.+)-700-normal\.woff2$/.exec(p)![1], url]));
   const faces = Object.entries(ranges as Record<string, string>)
     .map(([k, r]) => ({ k: slice(k), r }))
-    .filter(({ k }) => byName.has(k) && k !== 'cyrillic' && k !== 'greek')
+    .filter(({ k }) => byName.has(k) && k !== 'greek')
     .sort((a, b) => ORDER(a.k) - ORDER(b.k))
     .map(({ k, r }) => ({ url: new URL(byName.get(k)!, base).href, 'unicode-range': r.split(',').map((s) => s.trim()) }));
   return { [FONT]: faces };

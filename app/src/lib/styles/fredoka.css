@@ -1,0 +1,16 @@
+/* Fredoka (numbers), latin 600 + 700: @fontsource's faces less their .woff fallback (every browser the app runs in
+   takes the woff2, listed first, so the .woff was only ever deployed). */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(../../../node_modules/@fontsource/fredoka/files/fredoka-latin-600-normal.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(../../../node_modules/@fontsource/fredoka/files/fredoka-latin-700-normal.woff2) format('woff2');
+}
