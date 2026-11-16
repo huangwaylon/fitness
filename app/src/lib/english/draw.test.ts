@@ -19,7 +19,7 @@ const bank: Question[] = [
   q('m1', 'marker', 'B2'), q('p1', 'phrase', 'B2'), q('s1', 'sound', 'B2'), q('x1', 'dict', 'B2', { choices: undefined, a: undefined, answer: 'x' }), q('x2', 'dict', 'C1', { choices: undefined, a: undefined, answer: 'y' }),
   q('p2', 'phrase', 'C1')
 ];
-const clip: Clip = { id: 'test', video: 'abcdefghijk', title: 'T', dur: 68, wpm: 120, band: 'mid', tags: [], credit: 'c', questions: bank };
+const clip: Clip = { id: 'test', video: 'abcdefghijk', title: 'T', dur: 68, wpm: 120, band: 'mid', tags: [], show: 'Friends', credit: 'c', questions: bank };
 const groups = (d: Question[]) => d.slice(1).reduce((m, x) => ({ ...m, [GROUP_OF[x.skill]]: (m[GROUP_OF[x.skill]] ?? 0) + 1 }), {} as Record<string, number>);
 
 describe('draw', () => {
@@ -53,6 +53,18 @@ describe('draw', () => {
     const fresh = ['d1', 'm1', 's1'];
     const most: History = Object.fromEntries(bank.filter((x) => x.skill !== 'gist' && !fresh.includes(x.id)).map((x) => [x.id, { play: 1, ok: true }]));
     for (let s = 0; s < 30; s++) expect(draw(clip, most, 2, String(s)).map((x) => x.id)).toEqual(expect.arrayContaining(fresh));
+  });
+  it('the native tier: none on play 1 (one when harder), ≤ 1 on play 2, 1–2 from play 3 while one is unseen', () => {
+    const c2: Clip = { ...clip, questions: [...bank, q('z1', 'infer', 'C2'), q('z2', 'humor', 'C2'), q('z3', 'attitude', 'C2')] };
+    const n2 = (d: Question[]) => d.filter((x) => x.level === 'C2').length;
+    for (let s = 0; s < 30; s++) {
+      expect(n2(draw(c2, {}, 1, String(s)))).toBe(0);
+      expect(n2(draw(c2, {}, 1, String(s), { harder: true }))).toBe(1);
+      const seen: History = Object.fromEntries(draw(c2, {}, 1, String(s)).map((x) => [x.id, { play: 1, ok: true }]));
+      expect(n2(draw(c2, seen, 2, String(s)))).toBeLessThanOrEqual(1);
+      const three = n2(draw(c2, seen, 3, String(s)));
+      expect(three >= 1 && three <= 2).toBe(true);
+    }
   });
   it('never two on a point, nor one revealing another; ≤ 1 dict, humor, predict', () => {
     for (let s = 0; s < 50; s++)

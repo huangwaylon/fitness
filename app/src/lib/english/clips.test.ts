@@ -25,6 +25,10 @@ const sentence = (q: Question) => q.choices && q.skill !== 'number' && q.skill !
 const len = (t: string) => [...t].length;
 /** Banks let off the level shares, and why (an ear check may bring them back). */
 const LEVELS_RELAXED: Record<string, string> = { seatingchart: 'h1 (C1) retired pending its ear check, 2026-11-16: B1 6/17, C1 3/17' };
+/** The native tier's skills (native-level.md §5). */
+const C2_SKILLS = ['infer', 'attitude', 'pragma', 'humor', 'sound', 'dict'];
+/** C2 stress items (`sound`) the user has ear-checked, `<clip> <id>`: the others ship retired. */
+const HEARD = new Set<string>([]);
 
 describe('the clips', () => {
   it('ids unique and short; the order a plain list', () => {
@@ -52,7 +56,7 @@ describe('the clips', () => {
           const at = `${c.id} ${q.id}`;
           expect(q.id, at).toMatch(/^[a-z0-9]{1,8}$/);
           expect(SKILLS, at).toContain(q.skill);
-          expect(['B1', 'B2', 'C1'], at).toContain(q.level);
+          expect(['B1', 'B2', 'C1', 'C2'], at).toContain(q.level);
           expect(q.point.length, at).toBeGreaterThan(0);
           if (q.skill === 'dict') {
             expect(q.choices, at).toBeUndefined();
@@ -147,13 +151,21 @@ describe('the clips', () => {
         }
         for (const q of qs) {
           const n = len(q.said) + len(q.mean) + len(q.trap);
-          expect(n >= 80 && n <= 120, `${q.id}: said + mean + trap ${n}`).toBe(true);
+          const [lo, hi] = q.level === 'C2' ? [90, 140] : [80, 120];
+          expect(n >= lo && n <= hi, `${q.id}: said + mean + trap ${n}`).toBe(true);
           expect(len(q.cue), `${q.id}: cue`).toBeLessThanOrEqual(40);
           expect(q.use, `${q.id}: use`).toMatch(/（.+）/);
         }
         const live = qs.filter((q) => !q.retired);
         expect(live.length >= 16 && live.length <= 24, 'bank size').toBe(true);
         const by = (f: (q: Question) => boolean) => live.filter(f).length;
+        // the native tier (native-level.md §5): 0 or 2–4, ≤ 1 a point, its skills only; a stress item (a C2 sound) ships
+        // retired until its ear check, then goes in HEARD
+        const c2 = live.filter((q) => q.level === 'C2');
+        expect(c2.length === 0 || (c2.length >= 2 && c2.length <= 4), `C2 ${c2.length}`).toBe(true);
+        expect(new Set(c2.map((q) => q.point)).size, 'C2 a point').toBe(c2.length);
+        for (const q of c2) expect(C2_SKILLS, `${q.id}: a C2 skill`).toContain(q.skill);
+        for (const q of c2) if (q.skill === 'sound') expect(HEARD.has(`${c.id} ${q.id}`), `${q.id}: a stress item, not ear-checked`).toBe(true);
         for (const sk of SKILLS) expect(by((q) => q.skill === sk), sk).toBeLessThanOrEqual(4);
         expect(by((q) => q.skill === 'gist')).toBeGreaterThanOrEqual(2);
         expect(by((q) => GROUP_OF[q.skill] === 'L')).toBeGreaterThanOrEqual(4);
@@ -165,7 +177,9 @@ describe('the clips', () => {
         for (const sk of ['phrase', 'sound', 'dict']) expect(by((q) => q.skill === sk), sk).toBeGreaterThanOrEqual(1);
         expect(by((q) => q.skill === 'predict')).toBeLessThanOrEqual(2);
         if (LEVELS_RELAXED[c.id]) return;
-        const share = (l: string) => by((q) => q.level === l) / live.length;
+        // B1/B2/C1 shares over the items below the native tier
+        const core = live.filter((q) => q.level !== 'C2');
+        const share = (l: string) => core.filter((q) => q.level === l).length / core.length;
         expect(share('B1') >= 0.2 && share('B1') <= 0.35, `B1 ${share('B1')}`).toBe(true);
         expect(share('B2') >= 0.4 && share('B2') <= 0.55, `B2 ${share('B2')}`).toBe(true);
         expect(share('C1') >= 0.2 && share('C1') <= 0.35, `C1 ${share('C1')}`).toBe(true);
@@ -188,11 +202,31 @@ describe('the clips', () => {
             for (const a of d) for (const b of d) if (a !== b) expect(a.reveals?.includes(b.point) ?? false, `${at}: ${a.id} reveals ${b.id}`).toBe(false);
             if (isBank(c)) for (const sk of SKILLS) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(2);
             if (isBank(c) && play === 2) expect(d.filter((q) => prev.includes(q) && q.skill !== 'gist').length, `${at}: repeats`).toBeLessThanOrEqual(1);
-            if (isBank(c) && play >= 2) expect(d.some((q) => q.level === 'C1'), `${at}: a C1`).toBe(true);
+            if (isBank(c) && play >= 2) expect(d.some((q) => q.level === 'C1' || q.level === 'C2'), `${at}: a C1`).toBe(true);
             for (const q of d) seen[q.id] = { play, ok: true };
             prev = d;
           }
         }
       });
     });
+
+  for (const c of CLIPS)
+    for (const harder of [false, true])
+      it(`${c.id} draws${harder ? ', harder' : ''}: the C2 tier per play (none on play 1 unless harder, then one; ≤ 1 on play 2; 1–2 from play 3 while one is unseen)`, () => {
+        const has = c.questions.filter((q) => !q.retired && q.level === 'C2');
+        for (let s = 0; s < 20; s++) {
+          const seen: History = {};
+          for (let play = 1; play <= 5; play++) {
+            const d = draw(c, seen, play, seedOf('A', c.id, play) + s, { harder });
+            const n = d.filter((q) => q.level === 'C2').length, at = `${c.id} play ${play} seed ${s}`;
+            if (play === 1) expect(n, at).toBe(harder && has.length ? 1 : 0);
+            else if (play === 2) expect(n, at).toBeLessThanOrEqual(1);
+            else {
+              expect(n, at).toBeLessThanOrEqual(2);
+              if (has.some((q) => !seen[q.id])) expect(n, at).toBeGreaterThanOrEqual(1);
+            }
+            for (const q of d) seen[q.id] = { play, ok: true };
+          }
+        }
+      });
 });

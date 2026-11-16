@@ -13,8 +13,9 @@ export type Skill =
   | 'detail' | 'number' | 'who'
   | 'infer' | 'attitude' | 'pragma' | 'humor' | 'predict'
   | 'marker' | 'phrase' | 'sound' | 'dict';
-/** The CEFR level the item targets (B1 stands for B1+). */
-type Level = 'B1' | 'B2' | 'C1';
+/** The CEFR level the item targets (B1 stands for B1+; C2 is the native tier: a second-order inference, two parts of
+ *  the clip set against each other, stress that decides the meaning, or exact weak forms at native speed). */
+type Level = 'B1' | 'B2' | 'C1' | 'C2';
 
 /** A question of a clip's bank (docs/english.md "Content"): a play draws 6–8 of them (draw.ts). */
 export interface Question {
@@ -72,6 +73,8 @@ export interface Clip {
   band: Band;
   /** The situation, one or two (職場, 店・レストラン, 電話, 家, 恋愛, 友だち, 旅行, 買い物, お願い・断り). */
   tags: readonly string[];
+  /** The show it's from (the page's chips). */
+  show: 'Friends' | 'The Office' | 'Parks and Recreation';
   /** Whose video (the channel), shown under the player. */
   credit: string;
   /** The bank (16–24 once written; a lesson of 8 before), in clip order. */

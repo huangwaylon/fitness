@@ -20,6 +20,10 @@ second listen. A question quotes one short line at most (*key words* starred); n
   repeat, then the group quotas (play 1 L2 I2 F1 at n 6; play 2+ leans to interpretation), new points first; always
   ≤ 1 dictation, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
   are kept with its place; choices are shuffled per player unless `keep`.
+- **The native tier (C2):** 0 or 2–4 items a bank, ≤ 1 a point, skills infer / attitude / pragma / humor / sound /
+  dict, notes 90–140 characters, not counted in the B1/B2/C1 shares; a stress item (a C2 `sound`) ships `retired` until
+  its ear check. The draw takes none on play 1 (one with `{ harder: true }`, the ⚙ むずかしめ opt-in), ≤ 1 on play 2,
+  1–2 from play 3 while one is unseen.
 - Speed: `wpm` is words a minute over speech time from the captions, one measure for every clip
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
   the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test).
