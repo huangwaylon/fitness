@@ -55,7 +55,8 @@ a stand-in player.
 A `listen` row (`gm` 'tv', `u` the clip's id, contract/listen.ts) each time a まとめ is reached (`f: 1`, every answer
 so far; a re-watch too), and one without `f` when a clip is left part-way with a minute or more not yet sent. `ms` is
 the active study time the row adds: the video playing with the page visible, plus a question card's time with input
-in the last 60 s, at most 90 s a question.
+in the last 60 s, at most 90 s a question. It is the only `listen` row the record takes (the retired ききみみ's
+were deleted); its owner gets it whole, everyone else `{d, g, n, ms, gm, f?}`.
 
 - **A day** (Tokyo) counts when a まとめ is reached. Weeks start on Monday.
 - **今週:** three dots (`●●○ 2/3日`), then 「今週の3日、達成」 (past three, 「4日」). Monday before any study:

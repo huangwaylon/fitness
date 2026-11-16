@@ -122,7 +122,6 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [sound-sync.md](docs/sound-sync.md) | How music and sounds stay in step across phones |
 | [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, 旅行, 結婚式, 登山 |
 | [english.md](docs/english.md) | English Study: the TV clips, the lesson flow, the embed, progress and flags |
-| [kikimimi.md](docs/kikimimi.md) · [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) · [curriculum.md](docs/curriculum.md) | The retired ききみみ: only what its old `listen` rows, the `quiz`/`play` intents and the relay's `/stt` still need |
 | [ops/perf.md](docs/ops/perf.md) | Performance: the budgets, how to measure, the open items |
 | [ops/runbook.md](docs/ops/runbook.md) | Running it: hosting, deploys, keys, the relay, recovery |
 | [ops/testing.md](docs/ops/testing.md) | The test tiers and why, CI (the lean gate, shards, the flaky ledger) and how to write a stable spec |

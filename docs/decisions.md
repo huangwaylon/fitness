@@ -434,8 +434,8 @@ NH's event tracks replace the hour's on their days; surf, wind, rain, birds and 
 
 ## ききみみ
 
-Retired on 2026-11-16 for English Study ([english.md](english.md)); what's left is in [kikimimi](kikimimi.md) and
-[the mic](kikimimi-mic.md).
+Replaced by English Study ([english.md](english.md)). Its `listen` rows were deleted from the record (admin
+`purge_listen`, after a verified dump); its live intents, the relay's `/stt` and its `mic.*` log events are gone.
 - **No microphone:** `microphone=()`. While it shipped it was off by default, recordings stayed in memory, and no
   transcript or speaking score left the phone.
 - **Old rows kept, never re-read for progress:** `listenOf` parses every shape ever written until the rows are deleted.
