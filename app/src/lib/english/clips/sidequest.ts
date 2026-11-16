@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const sideQuest: Clip = {
   id: 'sidequest', video: '7qhNXPBbiKA', title: 'April and Andy go on a side quest for a marriage license', dur: 217,
-  wpm: 187, band: 'mid', tags: ['恋愛', 'お願い・断り'],
+  wpm: 187, band: 'fast', tags: ['恋愛', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

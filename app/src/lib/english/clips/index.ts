@@ -56,6 +56,15 @@ import { perfectCrime } from './perfectcrime.ts';
 import { fiftyYears } from './fiftyyears.ts';
 import { ronHearing } from './ronhearing.ts';
 import { pityFudge } from './pityfudge.ts';
+import { whosDaddy } from './whosdaddy.ts';
+import { aprilFired } from './aprilfired.ts';
+import { disadulation } from './disadulation.ts';
+import { oldSchool } from './oldschool.ts';
+import { ronWhiners } from './ronwhiners.ts';
+import { janiceSocks } from './janicesocks.ts';
+import { kellyLarson } from './kellylarson.ts';
+import { workBestie } from './workbestie.ts';
+import { pamGivenUp } from './pamgivenup.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -75,17 +84,24 @@ export const CLIPS: readonly Clip[] = [
   ronMeditate,
   tomSwagger,
   mamasDead,
+  workBestie,
   scarnRead,
+  oldSchool,
+  pamGivenUp,
   // ふつう
+  janiceSocks,
   joeymakeup,
-  snowCones,
+  whosDaddy,
   annVibes,
+  snowCones,
   babySex,
+  aprilFired,
   getaway,
   evilLaugh,
   bucketList,
   fluoride,
   phoebebook,
+  kellyLarson,
   pamLabor,
   saylove,
   ronHearing,
@@ -93,10 +109,11 @@ export const CLIPS: readonly Clip[] = [
   ryanOffice,
   annOffended,
   couplesOnly,
-  sideQuest,
   // 速い
+  sideQuest,
   annclub,
   joeyStay,
+  disadulation,
   pitchWomen,
   kathybook,
   guysGripe,
@@ -104,6 +121,7 @@ export const CLIPS: readonly Clip[] = [
   collarBlind,
   rossNothing,
   possum,
+  ronWhiners,
   emmaLocked,
   perfectCrime,
   fakedating,
