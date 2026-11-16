@@ -14,15 +14,13 @@ import type { Focus } from '#lib/kikimimi/srs.ts';
 import type { Act } from '#lib/kikimimi/today.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
 import { keepLv, lastLv, lastTimer, sameDefault } from './prefs.ts';
-import { modeStack, taikaiStack, type Page } from './nav.ts';
-import { LANES } from '#lib/kikimimi/round/registry.ts';
+import { modeStack, type Page } from './nav.ts';
 
 /** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
 interface SheetUi {
   close(): void;
-  /** How many pages are pushed over the hub (終わる goes back to them), and the top one's kind. */
+  /** How many pages are pushed over the hub (終わる goes back to them). */
   pages(): number;
-  top(): Page['k'] | undefined;
   setPages(p: Page[]): void;
   /** おやすみ ものがたり's next chapter, at once (the night's きまぐれ card). */
   story?(): void;
@@ -52,40 +50,21 @@ export class KikiActions {
     g.playLesson(unit, l, { tier: (stage) => tierFor(level, stage), recheck });
   }
 
-  /** Play again: the host opens a new lobby at the same level (the others invited again if they were); another goes
-   *  back to the invite (the host's next). A lesson: again at once (a チェック retried as often as wanted; never
-   *  locks), a new deal; a co-op one's host: a new lobby with that lesson, the others invited again. */
+  /** Play again: a new lobby of mine at the same level. A lesson: again at once (a チェック retried as often as wanted;
+   *  never locks), a new deal. */
   again = (): void => {
     const g = this.#game(), v = g?.view;
     if (!g || !v) return;
     const ls = g.lesson;
-    if (v.gm === 'taikai' && v.amHost) {
-      const shared = !v.local, vs = v.vs;
-      g.close();
-      g.openTaikai({ vs });
-      if (shared) g.invite();
-      return;
-    }
-    if (ls && v.local) {
+    if (ls) {
       this.relesson(ls.unit.id, ls.lesson, ls.recheck, true);
       return;
     }
-    if (ls && v.amHost) {
-      const timer = v.timer;
-      g.close();
-      g.open(lastLv(), { timer });
-      g.invite();
-      this.#lesson(g, ls.unit.id, ls.lesson, false);
-      return;
-    }
-    const host = v.amHost, lv = v.lv as Level, shared = !v.local, practicing = g.practicing;
+    const lv = v.lv as Level, practicing = g.practicing;
     const o = { same: v.same, vs: v.vs, ladder: v.ladder, timer: v.timer };
     g.close();
-    if (host || !g.view.invite) {
-      g.open(lv, o);
-      if (host && shared) g.invite();
-      else if (practicing === 'weak') this.practice();
-    }
+    g.open(lv, o);
+    if (practicing === 'weak') this.practice();
   };
   /** A lesson after a lesson's results (もういっかい, the strip's つぎは): a new lobby of mine with that lesson's deck at
    *  my tier; `now`: straight into it (もういっかい), else its intro card. */
@@ -100,17 +79,14 @@ export class KikiActions {
   };
   /** 終わる, and a game's ‹ (mid-game: my answers so far kept): back to the page the game was started from, the stack
    *  under it as it was, with a fresh lobby of my own at the game's settings (a mode's page sets its game again:
-   *  ModeDetail; みんなで keeps a lane's game, the same people one さそう away; たいかい's page its tournament). From the
-   *  hub, or a lobby I joined (theirs is gone for me): the hub. */
+   *  ModeDetail). From the hub: the hub. */
   done = (): void => {
     const g = this.#game(), v = g?.view;
     if (!g || !v) return;
     if (!v.amHost || !this.#ui.pages()) return this.toHub();
-    const { gm, lv, timer, same, vs, ladder } = v, top = this.#ui.top();
+    const { timer, same, vs, ladder } = v;
     g.leave();
-    if (gm === 'taikai') return g.openTaikai({ vs, timer });
     g.open(lastLv(), { timer, same, vs, ladder });
-    if (top === 'lobby' && LANES.isLater(gm) && gm) g.setGame(gm, { lv, timer });
   };
   /** Back to the hub: a lobby of my own, kept alone (leaving the game I was in: a lobby I'd shared is cancelled). */
   toHub = (): void => {
@@ -190,13 +166,6 @@ export class KikiActions {
     if (g.view.ladder) g.configure({ ladder: false });
     this.#lesson(g, unit, l, recheck);
   };
-  /** The hub's たいかい banner: the tournament's lobby, mine (kept alone till さそう), its page over the hub. */
-  taikai = (): void => {
-    const g = this.#game();
-    if (!g) return;
-    g.openTaikai();
-    this.#ui.setPages(taikaiStack());
-  };
   /** みみ チェック (the first run's, the hub's card, せってい's もういちど): at once, alone, over the hub. */
   check = (): void => {
     const g = this.#game();
@@ -204,7 +173,7 @@ export class KikiActions {
     this.#ui.setPages([]);
     g.playCheck();
   };
-  /** 「じぶんで ひらく」 from an invite: a lobby of my own, as last set on this phone. */
+  /** A lobby of my own, as last set on this phone. */
   startOwn = (): void => {
     this.#game()?.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
   };

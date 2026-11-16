@@ -9,7 +9,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, runToPhase, runToQuestion, toMode, toTile } from './kikimimi-nav.ts';
+import { atHub, runToPhase, runToQuestion, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&kikimimi=fast';
@@ -62,8 +62,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await sheet(page).locator('[data-level="1"]').click();
   await expect(sheet(page).locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
   await expect(sheet(page).locator('[data-kiki-omakase-reset]')).toBeVisible();
-  await expect(sheet(page).locator('[data-kiki-players]')).toHaveCount(0);
-  await expect(sheet(page).locator('[data-kiki-invite-all]')).toBeVisible();
+  await expect(sheet(page).locator('[data-kiki-invite-all]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-kiki-start]')).toHaveText('始める');
   // こたえる じかん: 30 s by default; 60 kept on this phone for the next lobby
   await expect(sheet(page).locator('[data-timer="30"]')).toHaveAttribute('aria-checked', 'true');
@@ -237,127 +236,4 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
   await sheet(page).locator('[data-kiki-row="0"]').click();
   await expect(sheet(page).locator('[data-review] [data-kiki-transcript]')).toHaveCount(2);
   if (shots) await snap(page, `${shots}/dialogue-results.png`, true);
-});
-
-/** A and B in A's shared lobby (B from the banner's さんか); `vs`: A turns たいせん on before starting. */
-async function together(ctx: BrowserContext, vs = false): Promise<[Page, Page]> {
-  const a = await open(ctx, 'A');
-  const b = await open(ctx, 'B');
-  // (each tab hears the other's hello: the room's presence)
-  await expect.poll(() => a.evaluate(() => document.querySelector('.if-scene') !== null)).toBe(true);
-  await a.bringToFront();
-  await play(a);
-  await expect(sheet(a)).toHaveAttribute('data-phase', 'lobby');
-  await toTile(a, 'together');
-  // nobody's invited till さそう
-  await expect(b.locator('.banner', { hasText: 'ききみみに さそっています' })).toHaveCount(0);
-  await sheet(a).locator('[data-kiki-invite-all]').click();
-  await expect(sheet(a).locator('[data-kiki-players]')).toBeVisible();
-  // co-op is the default: たいせん off
-  await expect(sheet(a).locator('[data-kiki-vs]')).toHaveAttribute('data-kiki-vs', 'coop');
-  // B: the invite banner, 「ウェイが ききみみに さそっています」 [さんか]
-  const banner = b.locator('.banner', { hasText: 'ききみみに さそっています' });
-  await expect(banner).toBeVisible({ timeout: 15_000 });
-  // and the menu's leaf marks it (a dot) while it's live
-  await expect(b.locator('[data-hud-invited]')).toBeVisible();
-  await b.bringToFront();
-  await banner.getByRole('button', { name: 'さんか' }).click();
-  await expect(sheet(b)).toHaveAttribute('data-phase', 'lobby');
-  // B waits for A; A sees B joined
-  await expect(sheet(b).locator('.wait')).toContainText('始めるのを待っています');
-  await expect(sheet(b).locator('[data-kiki-start]')).toHaveCount(0);
-  await a.bringToFront();
-  await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'here'); // joined: neutral, not an answer's ✓
-  // こたえる じかん: the host's なし reaches B (the seed's bits 1-2), then back to 30
-  await sheet(a).locator('[data-timer="0"]').click();
-  await b.bringToFront();
-  await expect(sheet(b).locator('[data-kiki-timer]')).toHaveAttribute('data-kiki-timer', '0');
-  await expect(sheet(b).locator('[data-timer="0"]')).toHaveAttribute('aria-checked', 'true');
-  if (process.env.KIKI_SHOTS) await snap(b, '/tmp/kikimimi-shots/timers/lobby-guest.png');
-  await a.bringToFront();
-  await sheet(a).locator('[data-timer="30"]').click();
-  if (vs) {
-    await sheet(a).locator('[data-kiki-vs-pick="vs"]').click();
-    await expect(sheet(a).locator('[data-kiki-vs]')).toHaveAttribute('data-kiki-vs', 'vs');
-    // the host's setting reaches B (a new open: the seed's low bit)
-    await b.bringToFront();
-    await expect(sheet(b).locator('[data-kiki-vs-flag]')).toHaveAttribute('data-kiki-vs-flag', 'true');
-    await a.bringToFront();
-  }
-  await expect(sheet(a).locator('[data-kiki-start]')).toHaveText('始める（2人）');
-  await sheet(a).locator('[data-kiki-start]').click();
-  await expect(sheet(b)).not.toHaveAttribute('data-phase', 'lobby', { timeout: 10_000 });
-  return [a, b];
-}
-
-/** The 8 questions, A and B answering (`miss(who, i)`: that one picks a wrong choice); `each` after each reveal. */
-async function rounds(a: Page, b: Page, miss: (who: 'A' | 'B', i: number) => boolean, each: (i: number) => Promise<void>) {
-  for (let i = 0; i < 8; i++) {
-    for (const [p, who] of [[a, 'A'], [b, 'B']] as const) {
-      await p.bringToFront();
-      await runToQuestion(p, i);
-      await answer(p, miss(who, i));
-    }
-    await expect(sheet(a)).toHaveAttribute('data-phase', 'reveal');
-    await each(i);
-    // the reveal waits: B's よみおわった (its chip's 📖 on A's), A's つぎへ counting it
-    await b.bringToFront();
-    await expect(sheet(b)).toHaveAttribute('data-phase', 'reveal');
-    await expect(sheet(b).locator('[data-kiki-next]')).toHaveCount(0);
-    await sheet(b).locator('[data-kiki-ready]').click();
-    await expect(sheet(b).locator('[data-kiki-ready]')).toHaveAttribute('aria-pressed', 'true');
-    await a.bringToFront();
-    await expect(sheet(a).locator('[data-kiki-next]')).toHaveText('次へ（読み終わった 1/1）');
-    await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-ready', 'true');
-    if (i === 0 && process.env.KIKI_SHOTS) {
-      await snap(a, '/tmp/kikimimi-shots/timers/reveal-host.png');
-      await b.bringToFront();
-      await snap(b, '/tmp/kikimimi-shots/timers/reveal-guest-ready.png');
-      await a.bringToFront();
-    }
-    await sheet(a).locator('[data-kiki-next]').click();
-  }
-}
-
-test('two players, co-op (the default): A’s lobby invites B, they play together, the team’s tally on both phones and never who missed', async ({ browser }) => {
-  const ctx = await browser.newContext();
-  const [a, b] = await together(ctx);
-  // A misses 3, B the odd ones: 3 is nobody's (7/8); both right on 0, 2, 4, 6 (そろって 4)
-  const miss = (who: 'A' | 'B', i: number) => (who === 'A' ? i === 3 : i % 2 === 1);
-  await rounds(a, b, miss, async (i) => {
-    // both in: the reveal on both; B's chip stays neutral (co-op: no one's right or wrong shown, no points), and how many got it
-    await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'answered');
-    await expect(sheet(a).locator('[data-player="B"] .note')).toHaveCount(0);
-    await expect(sheet(a).locator('[data-kiki-team-now]')).toHaveAttribute('data-kiki-team-now', String(2 - Number(miss('A', i)) - Number(miss('B', i))));
-  });
-  for (const p of [a, b]) {
-    await p.bringToFront();
-    await expect(sheet(p)).toHaveAttribute('data-phase', 'results', { timeout: 20_000 });
-    await expect(sheet(p).locator('[data-kiki-team] b')).toHaveText('ふたりで 7 / 8');
-    await expect(sheet(p).locator('[data-kiki-team-all]')).toHaveText('そろって正解 4問');
-    // no ranking, and each phone's own tally only
-    await expect(sheet(p).locator('[data-rank]')).toHaveCount(0);
-    await expect(sheet(p).locator('[data-kiki-tally]')).toHaveText(p === a ? '自分は 7 / 8' : '自分は 4 / 8');
-    if (process.env.KIKI_SHOTS) await snap(p, `/tmp/kikimimi-shots/inc34/coop-results-${p === a ? 'A' : 'B'}.png`);
-  }
-  await ctx.close();
-});
-
-test('two players, たいせん: the host’s toggle reaches B, the reveal shows each one’s mark, the results rank them, the same on each phone', async ({ browser }) => {
-  const ctx = await browser.newContext();
-  const [a, b] = await together(ctx, true);
-  await rounds(a, b, (who, i) => who === 'B' && i % 2 === 1, async (i) => {
-    // たいせん: each other's ✓ turned into a reaction
-    await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', i % 2 === 1 ? 'wrong' : 'right');
-    await expect(sheet(a).locator('[data-kiki-team-now]')).toHaveCount(0);
-  });
-  // the results on both, A first (8 × 100 against 4 × 100), the same on each phone
-  for (const p of [a, b]) {
-    await p.bringToFront();
-    await expect(sheet(p)).toHaveAttribute('data-phase', 'results', { timeout: 20_000 });
-    await expect.poll(() => kiki(p, (k) => k.view().players.map((x) => [x.who, x.score]))).toEqual([['A', 800], ['B', 400]]);
-    await expect(sheet(p).locator('[data-rank="1"] [data-player="A"]')).toBeVisible();
-    await expect(sheet(p).locator('[data-kiki-team]')).toHaveCount(0);
-  }
-  await ctx.close();
 });

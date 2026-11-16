@@ -1285,7 +1285,7 @@
         <TreeShakes bind:this={shakes} scene={sceneEl} onsting={faces.sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />
-        <KikimimiHost live={relay ?? demoRelay} />
+        <KikimimiHost />
         {#if WeatherC}<WeatherC where="stage" skyH={horizonPx + 6} />{/if}
         {#if nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
         {#if bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}

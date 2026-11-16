@@ -1,8 +1,6 @@
-// ききみみ's hub and its one stack (docs/kikimimi.md "Navigation", "The hub", "あそぶ", "Mode detail", "みんなで"): the sheet opens on the hub (しずえ,
-// today's card, the four tiles, ⚙); あそぶ lists the playable modes by situation; a mode's page has its settings and
-// さそう / はじめる; ‹ pops one page, a backdrop tap or Esc too, ✕ closes from any page; さそう pushes みんなで with my
-// lobby shared, and ‹ from it cancels it (the invite gone from B's island). B's さんか lands on みんなで over the hub, and
-// ‹ leaves A's lobby for B's own hub. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/ux/. The logic tier.
+// ききみみ's hub and its one stack (docs/kikimimi.md "Navigation", "The hub", "あそぶ", "Mode detail"): the sheet opens on the hub (しずえ,
+// today's card, the three tiles, ⚙); あそぶ lists the playable modes by situation; a mode's page has its settings and
+// はじめる (solo only: no さそう); ‹ pops one page, a backdrop tap or Esc too, ✕ closes from any page. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/ux/. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -34,9 +32,9 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await fromMenu(page, 'kikimimi');
   await atHub(page);
   await expect(title(page)).toHaveText('ききみみ');
-  // the four tiles, each with its live line; ⚙ in ‹'s place
-  await expect(sheet(page).locator('[data-kiki-tile]')).toHaveCount(4);
-  await expect(sheet(page).locator('[data-kiki-tile="together"] small')).toHaveText('1人でもOK');
+  // the three tiles (no みんなで), each with its live line; ⚙ in ‹'s place
+  await expect(sheet(page).locator('[data-kiki-tile]')).toHaveCount(3);
+  await expect(sheet(page).locator('[data-kiki-tile="together"]')).toHaveCount(0);
   await expect(page.locator('dialog[open] [data-kiki-gear]')).toBeVisible();
   // today's menu: おさらい (the demo's misses due), きょうの いっぽ (the path's current unit), きまぐれ; one green button
   await expect(sheet(page).locator('[data-kiki-card]')).toHaveCount(3);
@@ -52,7 +50,7 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await expect(sheet(page).locator('[data-kiki-group="scene"] [data-kiki-mode-tile]')).toHaveText([/アナウンス/, /ようじ でんわ/, /たちぎき/]);
   await snap(page, 'asobu');
 
-  // ひとこと クイズ's page: the ばしょ row (はまべ's two steps), こたえる じかん, さそう / はじめる
+  // ひとこと クイズ's page: the ばしょ row (はまべ's two steps), こたえる じかん, はじめる
   await sheet(page).locator('[data-kiki-mode-tile="quiz"]').click();
   await expect(title(page)).toHaveText('ひとこと クイズ');
   await expect(sheet(page).locator('[data-stage="hama"]')).toHaveAttribute('aria-checked', 'true');
@@ -63,7 +61,7 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await sheet(page).locator('[data-stage="hama"]').click();
   await expect(sheet(page).locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
   await expect(sheet(page).locator('[data-kiki-start]')).toHaveText('始める');
-  await expect(sheet(page).locator('[data-kiki-invite-all]')).toHaveText('誘う');
+  await expect(sheet(page).locator('[data-kiki-invite-all]')).toHaveCount(0);
   await snap(page, 'mode-quiz');
 
   // ‹ back to あそぶ, Esc back to the hub
@@ -136,49 +134,4 @@ test('a menu card plays (きまぐれ: its mode, a lane game’s page first); �
   // nothing to lose yet (solo, the countdown): ✕ closes at once, no ask
   await page.locator('dialog[open] .navbar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-});
-
-test('みんなで: さそう shares my lobby; B’s さんか lands on みんなで; ‹ leaves it (B) and cancels it (A)', async ({ browser }) => {
-  test.slow();
-  const ctx = await browser.newContext();
-  const a = await ctx.newPage(), b = await ctx.newPage();
-  await open(a);
-  await open(b, 'B');
-  await a.bringToFront();
-  await fromMenu(a, 'kikimimi');
-  await atHub(a);
-  await a.locator('dialog[open] [data-kiki-tile="together"]').click();
-  await expect(title(a)).toHaveText('みんなで');
-  await expect(sheet(a).locator('[data-kiki-vs]')).toHaveAttribute('data-kiki-vs', 'coop');
-  await snap(a, 'lobby-alone');
-  await sheet(a).locator('[data-kiki-invite-all]').click();
-  const banner = b.locator('.banner', { hasText: 'ききみみに さそっています' });
-  await expect(banner).toBeVisible({ timeout: 15_000 });
-  await b.bringToFront();
-  await banner.getByRole('button', { name: 'さんか' }).click();
-  await expect(sheet(b)).toHaveAttribute('data-kiki-at', 'lobby');
-  await expect(title(b)).toHaveText('みんなで');
-  await expect(sheet(b).locator('.wait')).toContainText('始めるのを待っています');
-  await snap(b, 'lobby-joined');
-  await a.bringToFront();
-  await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'here');
-  await expect(sheet(a).locator('[data-kiki-start]')).toHaveText('始める（2人）');
-  await snap(a, 'lobby-shared');
-  // ✕ with B in my lobby asks first; the question's ✕ keeps it
-  await a.locator('dialog[open] .navbar .close').click();
-  const ask = a.getByRole('dialog', { name: '部屋を閉じますか？' });
-  await expect(ask).toContainText('みんなの部屋がなくなります');
-  await ask.locator('.navbar .close').click();
-  await expect(ask).toHaveCount(0);
-  // B's ‹: A's lobby left, B's own hub
-  await b.bringToFront();
-  await b.locator('dialog[open] .navbar .back').click();
-  await atHub(b);
-  await a.bringToFront();
-  await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'away');
-  // A's ‹: the lobby cancelled, kept alone again at the hub
-  await a.locator('dialog[open] .navbar .back').click();
-  await atHub(a);
-  await expect.poll(() => a.evaluate(() => (window as unknown as { __kiki: { view(): { local: boolean } } }).__kiki.view().local)).toBe(true);
-  await ctx.close();
 });

@@ -9,7 +9,6 @@
   import { LANES } from '#lib/kikimimi/round/registry.ts';
   import { currentReport } from '../progress.svelte.ts';
   import PathCard from '../path/PathCard.svelte';
-  import Icon from '../../ui/Icon.svelte';
   import { STORY_OK } from '../story/serials.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -29,7 +28,7 @@
             <span class="ic" aria-hidden="true">{m.icon}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
-            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span role="img" aria-label={t('kiki.chip.coop')}> · <Icon name="users" size={14} stroke={2.4} /></span>{/if}</span>
+            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}</span>
           </button>
         {/each}
       </div>

@@ -23,7 +23,6 @@ import { quizOpts } from '../games/quiz/def.ts';
 import { quizLane } from '../games/quiz/lane.ts';
 import { ladderLane } from '../games/ladder/lane.ts';
 import { lessonLane } from '../games/lesson/lane.ts';
-import { taikaiLane } from '../games/taikai/lane.ts';
 import { checkLane } from '../games/check/lane.ts';
 import { HENSHIN_MODE } from '../games/modes.ts';
 import { HENSHIN_LV } from '../bank.ts';
@@ -90,7 +89,7 @@ export interface Later {
 }
 
 /** The games built into the sheet's chunk. */
-const EAGER: readonly Lane[] = [quizLane, ladderLane, lessonLane, taikaiLane, checkLane];
+const EAGER: readonly Lane[] = [quizLane, ladderLane, lessonLane, checkLane];
 /** The games of their own chunks, by id (docs/kikimimi-engine.md "The listening games": tile, tachi, call, rush, news, long, henshin). */
 const LATER: Readonly<Record<GameId, Later>> = {
   // one line a game (Later)

@@ -29,8 +29,8 @@ app/src/lib/components/kikimimi/
   frame/          the shared round, reveal and results parts ("Shared UI")
   <gm>/views.ts   a game's lazy lobby / play / results pages
   nav.ts, KikimimiSheet.svelte, game.svelte.ts, clipPlayer.svelte.ts, chunkQueue.ts, packs.ts
-  hub/, asobu/, mode/, path/, zukan/, story/, taikai/, settings/, onboarding/, lesson/, scene/   (lazy)
-  KikimimiHost.svelte, invite.svelte.ts   always loaded; hear `quiz` and `play`
+  hub/, asobu/, mode/, path/, zukan/, story/, settings/, onboarding/, lesson/, scene/   (lazy)
+  KikimimiHost.svelte, invite.svelte.ts   always loaded; the sheet's open state (nothing on the Live)
 app/content/units/, app/content/listen/ (README.md: the listening schemas), app/content/mic/
 ```
 
@@ -441,6 +441,5 @@ transcript with its marks, `cja` and `why`, the clip blind again, then 聞き取
 ## Tests
 
 Pure vitest for every fold, deck and GameDef (session.test with fake time: lost messages, the beacon, the host gone, a
-stale `open`); byte budgets per op at the worst case (live-protocol.test). e2e (logic tier, Chromium): every game solo and co-op,
-two players over `?demo` and `?demo&as=B`, the welcome skipped (e2e/fixtures.ts `kikiFirstRun` keeps it), through the
-hub with e2e/kikimimi-nav.ts; the dual stack (`?wire=quiz`) in kikimimi-coop.spec.
+stale `open`); byte budgets per op at the worst case (live-protocol.test). e2e (logic tier, Chromium): every game solo, the welcome skipped (e2e/fixtures.ts `kikiFirstRun` keeps it), through the
+hub with e2e/kikimimi-nav.ts.

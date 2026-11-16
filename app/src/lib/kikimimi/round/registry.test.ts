@@ -9,7 +9,7 @@ const fake = (id: string): Lane => ({ id, def: () => ({ id, modes: { solo: true,
 
 describe('the registry', () => {
   it('has the games built into the sheet at once, each one’s lane under its id', () => {
-    for (const gm of ['quiz', 'ladder', 'lesson', 'taikai', 'check']) expect(LANES.of(gm)?.id).toBe(gm);
+    for (const gm of ['quiz', 'ladder', 'lesson', 'check']) expect(LANES.of(gm)?.id).toBe(gm);
     expect(LANES.of('nope')).toBeUndefined();
     expect(LANES.loading('quiz')).toBeNull(); // (nothing to wait for)
     expect(LANES.loading('nope')).toBeNull(); // (a game this build hasn't: the session blocks its open)

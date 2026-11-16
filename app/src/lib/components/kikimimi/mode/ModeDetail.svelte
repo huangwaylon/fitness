@@ -3,7 +3,7 @@
   // whether it can be shared), its settings (ひとこと クイズ: the ばしょ row; スピード はしご: its speeds and rule; アナウンス
   // and the quiz: こたえる じかん; a lane's game: the places its content has, if its mode offers them, and こたえる じかん; 音の
   // へんしん: each phenomenon's standing, henshin/Mastery.svelte; まるごと 聞く: the place's pieces, long/LongPieces.svelte),
-  // the volume-0 line when the sound is off, and the foot: さそう (the みんなで page, this game in it) and はじめる.
+  // the volume-0 line when the sound is off, and the foot: はじめる.
   // おさらい: a solo deck of my weak spots, はじめる alone. Entering it sets my lobby's game to the mode (a lane's: its
   // lane loaded first; a lobby kept alone: nothing on the wire). The ばしょ is おまかせ (みみ チェック's placed stage:
   // progress.svelte.ts currentOmakase) till a place is tapped, kept for the mode (prefs.ts stagePick) till
@@ -20,14 +20,13 @@
   import { keepLv, keepStagePick, keepTimer, stagePick } from '../prefs.ts';
   import StageRow from './StageRow.svelte';
   import TimerRow from './TimerRow.svelte';
-  import Icon from '../../ui/Icon.svelte';
   import LadderSteps from '../LadderSteps.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import { HENSHIN_LV } from '#lib/kikimimi/bank.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, m, oninvite, onpractice }: { game: QuizGame; m: ModeId; oninvite: () => void; onpractice: () => void } = $props();
+  let { game, m, onpractice }: { game: QuizGame; m: ModeId; onpractice: () => void } = $props();
   const v = $derived(game.view);
   const meta = $derived(modeOf(m));
   /** A lane's game (the page is keyed by its mode), the levels its ばしょ row offers (a lane's: every place, its
@@ -86,7 +85,6 @@
       <!-- (no 問 count for よるの おはなし) -->
       {#if meta.qs}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
       <span class="tag">{t('kiki.chip.mins', { n: meta.mins })}</span>
-      {#if meta.coop}<span class="tag"><Icon name="users" size={14} stroke={2.4} /> {t('kiki.chip.coop')}</span>{/if}
     </div>
   </div>
 
@@ -116,7 +114,6 @@
 </div>
 
 <div class="level-acts">
-  {#if meta.coop}<button type="button" class="btn paper" data-kiki-invite-all data-sfx="open" onclick={oninvite}>{t('kiki.inviteAll')}</button>{/if}
   <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => (m === 'review' ? onpractice() : game.go())}>{t('kiki.startSolo')}</button>
 </div>
 

@@ -20,7 +20,7 @@
   import { tick, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import { invitedNow, openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
+  import { openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
@@ -53,8 +53,6 @@
   let { bells, each, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
-  /** Someone's ききみみ invite is live. */
-  const invited = $derived(invitedNow());
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
 
@@ -191,7 +189,6 @@
         </g>
       </svg>
     </span>
-    {#if invited && !open}<span class="dot" data-hud-invited aria-hidden="true"></span>{/if}
   </button>
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
@@ -233,7 +230,7 @@
     <!-- 英語 (ききみみ): the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
     <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
       onclick={() => (wakeQuizVoice(), pick(() => openQuiz()))}>
-      <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
+      <span class="lbl">{t('panel.kikimimi')}</span>
       <span class="ic">
         <!-- a speech balloon in the gear's soft brown, three cream dots -->
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>
@@ -310,12 +307,6 @@
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }
-  .invited { display: block; margin-top: 3px; font-size: var(--fs-xs); color: var(--c-coral-text); }
-  /* an invite waiting (the leaf folded): a small coral dot on its rim */
-  .dot {
-    position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%; pointer-events: none;
-    background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream);
-  }
   .ic { position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
   /* ボット's: a bot needs a person (bots/StatusDot, ringed in the pill's cream) */
   .pill-dot { position: absolute; top: 0; right: 0; display: flex; line-height: 0; pointer-events: none; --plate: var(--c-cream); }

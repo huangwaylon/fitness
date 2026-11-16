@@ -142,12 +142,6 @@ export async function reloadUnlessLeaving(deployedNow: () => Promise<string | nu
   return safeReload(Date.now(), 'chunk');
 }
 
-/** A tap on 「アプリを こうしんしてね」 (a ききみみ invite of newer content than this build's): into the deployed build,
- *  once its worker controls the page (newWorker), through safeReload's loop guard. */
-export async function reloadForUpdate(): Promise<boolean> {
-  return (await newWorker()) && safeReload(Date.now(), 'update');
-}
-
 /** A memoised lazy import that forgets a failed load (the next call retries) and, for a chunk not fetched, reloads
  *  into a newer deployed build (reloadUnlessLeaving). `quiet`: a prefetch ahead of any tap (sheetChunks), whose
  *  failure never reloads the page under the player: the tap's own load reports it. */

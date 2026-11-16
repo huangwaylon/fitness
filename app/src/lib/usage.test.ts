@@ -126,9 +126,9 @@ describe('i18n catalogs', () => {
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('travel.'))).toEqual([]);
     expect(Object.keys(jaTravel).sort()).toEqual(Object.keys(enTravel).sort());
   });
-  it('keep ききみみ クイズ’s strings (kiki.*) in its own catalog, but the invite banner’s, out of the first load', () => {
+  it('keep ききみみ クイズ’s strings (kiki.*) in its own catalog, out of the first load', () => {
     for (const c of [jaKiki, enKiki]) expect(Object.keys(c).filter((k) => !k.startsWith('kiki.'))).toEqual([]);
-    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kiki.'))).toEqual(['kiki.invite', 'kiki.join']);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kiki.'))).toEqual([]);
   });
   it('keep each ききみみ game’s strings (kiki.<game>.*) in its own catalog (i18n/kiki-<game>.*.json, with its lane)', () => {
     for (const [f, c] of Object.entries(KIKI_GAMES.ja)) {

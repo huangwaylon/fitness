@@ -24,10 +24,8 @@ import { cue } from '#lib/sound/cues.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
 import { GAMES, chunksOf, itemsOf, pinDeck, usePractice } from './decks.ts';
 import { seedWith } from '#lib/kikimimi/recent.ts';
-import { currentAnswers, recentGames } from './progress.svelte.ts';
-import { tierOf, wagerAnswer } from '#lib/kikimimi/games/taikai/def.ts';
-import { offerEvents } from '#lib/kikimimi/games/taikai/pick.ts';
-import { taikaiLevels, taikaiOffer, taikaiOutcome, taikaiPickFor } from '#lib/kikimimi/games/taikai/source.ts';
+import { recentGames } from './progress.svelte.ts';
+import { wagerAnswer } from '#lib/kikimimi/games/taikai/def.ts';
 import { load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
 import { START_BAND, type Placement } from '#lib/kikimimi/games/check/def.ts';
 import { checkLevels } from '#lib/kikimimi/games/check/source.ts';
@@ -36,8 +34,6 @@ import { ChunkQueue } from './chunkQueue.ts';
 import { ClipPlayer } from './clipPlayer.svelte.ts';
 import { GameRecorder, checkPlacement } from './recorder.ts';
 import type { Stage } from '#lib/kikimimi/stages.ts';
-import { now as sceneNow } from '#lib/time/clock.ts';
-import { localDateAt } from '#lib/contract/tokyo.ts';
 
 /** A スピード はしご rung below its ladder's top: its reveal keeps the line hidden and silent (no replay, no transcript),
  *  so the next, faster rung is a listen of its own. */
@@ -51,12 +47,12 @@ export const canSlow = (it: Item): boolean => it.lv <= 2 && !isDialogue(it);
 const seedFor = (ask: SeedAsk): number => LANES.of(ask.gm)?.seed?.(ask, recentGames()) ?? seedWith(ask.random, ask.flags);
 
 /** What a heard op needs before the session takes it: an `open`, its deck's chunks. */
-export const needs = (m: RoundIn | null): Unit[] => (m?.op === 'open' ? chunksOf(m.gm, m.o, m.u, m.ids) : []);
+const needs = (m: RoundIn | null): Unit[] => (m?.op === 'open' ? chunksOf(m.gm, m.o, m.u, m.ids) : []);
 /** …and a later game's lane before them (round/registry.ts). */
 const wants = (m: RoundIn | null): Unit[] | Promise<unknown> => (m?.op === 'open' && LANES.loading(m.gm)) || needs(m);
 
 /** The tournament's wager round now (its last: a bet, then the choice). */
-export const isWager = (v: Pick<QuizView, 'gm' | 'i' | 'n'>): boolean => v.gm === 'taikai' && v.n > 1 && v.i === v.n - 1;
+const isWager = (v: Pick<QuizView, 'gm' | 'i' | 'n'>): boolean => v.gm === 'taikai' && v.n > 1 && v.i === v.n - 1;
 
 /** The longest between wake-ups (the host's beacon is every 3 s: round/session.ts WINDOWS.beacon). */
 const WAKE = 3000;
@@ -120,10 +116,6 @@ export class QuizGame {
   /** A game's pick for a lobby at a level, its option: 音の へんしん's phenomenon of the day (kikimimi/henshin.ts focusOf,
    *  or the one picked on its page), まるごと 聞く's piece (games/long/def.ts pieceFor, or the one picked). */
   readonly #focus: (gm: GameId, lv: number) => number | null;
-  /** The tournament: the lobby state its deck was last picked for (the host's), the game my offer was sent in (a
-   *  player's). */
-  #picked = '';
-  #offered = '';
   /** The game whose further answers were recorded (keepMore). */
   #more = '';
 
@@ -206,16 +198,6 @@ export class QuizGame {
       this.#act((s, now) => s.unlesson(now));
     });
   }
-  /** しずえの しゅうまつ たいかい (games/taikai/): a lobby of mine, kept alone till さそう, at my tier; its deck my week's
-   *  misses and fillers, picked again as the others' offers come (#taikaiOf). */
-  openTaikai(o: { vs?: boolean; timer?: QuizTimer } = {}): void {
-    this.#queue.then(() => [], () => {
-      this.practicing = false;
-      this.lesson = null;
-      this.#picked = '';
-      this.#act((s, now) => s.taikai({ tier: this.taikaiTier, timer: o.timer ?? 30, vs: o.vs, offered: this.taikaiOffer().length }, now));
-    });
-  }
   /** みみ チェック (games/check/): my lobby, alone, starts at once at かわ, its rounds picked as I answer; the levels
    *  around where it is load as it goes (the walk moves a band at a time: #refresh). */
   playCheck(): void {
@@ -226,15 +208,6 @@ export class QuizGame {
       this.#act((s, now) => s.check(checkLevels(START_BAND)[1], now));
       this.#act((s, now) => s.go(now));
     });
-  }
-  /** My tier for the tournament (my comfortable level's place). */
-  get taikaiTier(): number {
-    return tierOf(this.#level());
-  }
-  /** My offer to the tournament: my misses of its week, numbered (≤ 4). Its weekend is the scene clock's, as the hub's
-   *  banner (a `?date=` preview moves it). */
-  taikaiOffer(): number[] {
-    return taikaiOffer(currentAnswers(), sceneNow().getTime());
   }
   /** The wager's bet (before the choice). */
   setBet(b: number): void {
@@ -404,7 +377,6 @@ export class QuizGame {
     // the game I'm in keeps its deck whatever other phones' lobbies build (decks.ts)
     pinDeck(v.g ? v : null);
     this.#lessonOf(v);
-    this.#taikaiOf(v);
     // what its game wants in ahead (みみ チェック: the levels round its band, ready for its next round)
     const ahead = LANES.of(v.gm)?.ahead;
     if (ahead && v.phase !== 'results') void load(...ahead(v, itemsOf(v))).catch(() => {});
@@ -445,26 +417,6 @@ export class QuizGame {
     queueMicrotask(() => this.#act((s, now) => s.tier(tr, now)));
   }
 
-  /** The tournament's lobby: the host picks its deck again whenever the offers heard or the players' tiers change (once
-   *  the ids' levels are in: their chunks); a player sends its offer once it's in (again with its join after a lock: the
-   *  session). */
-  #taikaiOf(v: QuizView): void {
-    if (v.gm !== 'taikai' || v.phase !== 'lobby' || !v.g) return;
-    if (!v.amHost) {
-      if (this.#offered === v.g || !v.players.some((p) => p.who === this.me)) return;
-      this.#offered = v.g;
-      const evs = offerEvents(this.taikaiOffer());
-      queueMicrotask(() => this.#act((s, now) => evs.flatMap((e) => s.event(e.i, e.e, e.x, now))));
-      return;
-    }
-    const key = `${v.g}:${v.seed}:${JSON.stringify(v.evs)}:${JSON.stringify(v.tiers)}`;
-    if (key === this.#picked) return;
-    this.#picked = key;
-    const ids = taikaiPickFor({ seed: v.seed, me: this.me, mine: this.taikaiOffer(), evs: v.evs, tiers: v.tiers, recent: recentGames() });
-    if (ids.join() === v.ids.join()) return;
-    queueMicrotask(() => this.#queue.then(() => taikaiLevels(ids), () => this.#act((s, now) => s.pick(ids, now))));
-  }
-
   /** More of my answers of the game just recorded (まるごと 聞く's dictation, done on this phone at the results): a row
    *  of their own with the game's id, once (progress.ts gamesOf folds one game's rows into one: its answers once each,
    *  its minutes summed). Nothing on the wire. */
@@ -480,12 +432,9 @@ export class QuizGame {
     if (this.view?.g && this.view.phase !== 'lobby' && this.view.phase !== 'idle') this.#keep(this.view, this.#link.now(), false);
   }
 
-  /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way (the tournament's: the
-   *  team's trophy at the results). */
+  /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way. */
   #keep(v: QuizView, now: number, done: boolean): void {
-    const taikai = v.gm === 'taikai' ? { trophy: done ? taikaiOutcome(v.seed, v.ids, v.tiers, v.team.right).trophy : null, tier: v.tiers[this.me] ?? this.taikaiTier } : null;
-    const row = this.#recorder.keep(v, now, done, { lesson: this.lesson, practicing: this.practicing !== false, taikai });
-    if (row && taikai) row.d = localDateAt(sceneNow().getTime()); // (its weekend: the banner's clock, its trophy filed under it)
+    const row = this.#recorder.keep(v, now, done, { lesson: this.lesson, practicing: this.practicing !== false, taikai: null });
     if (!row) return;
     if (row.gm === 'check') this.placement = checkPlacement(row.r);
     this.recorded = row;

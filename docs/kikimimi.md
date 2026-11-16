@@ -105,14 +105,9 @@ level (stages.ts `stageAt`), else はまべ 2. A tap overrides it per mode; お�
 
 ## Co-op and たいせん
 
-- **Co-op is the default** with several players: the team tally (`kiki.team.2`, `kiki.team.3`) counts a question at
-  least one player got right; answers hide till the reveal, so a miss never costs what the partner caught. Under it,
-  そろって正解 (`kiki.teamAll`).
-- **Never shame:** in co-op the chips show only ✓; the reveal says how many got it (`kiki.teamNow`, `kiki.teamNone`),
-  never who. Each phone keeps its own tally (`kiki.tallyMine`) and review.
-- **協力 ／ 勝負** (`kiki.vs`), the host's lobby switch (where supported): points, ✓ / × at the reveal, a ranking. It rides
-  the seed's bit 0; flipping it deals a new deck; もう一度遊ぶ keeps it. The quiz ranks plain points; the tournament and
-  すうじ ラッシュ score against expectation.
+Removed with みんなで, the invites and しゅうまつ たいかい: the game is solo, and the sheet's game has no Live, so it
+sends and hears nothing. Old builds' `quiz` / `play` invites go unanswered; the relay and contract/live-protocol.ts keep
+parsing them until those builds are gone (kikimimi-engine.md "Wire migration").
 
 ## Dialogues
 
@@ -190,26 +185,20 @@ hub ─┬─ ⚙ 設定
      ├─ menu card ───────────────▶ [game frame] ─▶ results
      ├─ 遊ぶ ─┬─ しまの みち ─ unit ─▶ [frame]
      │        ├─ 寝る前に ─ StoryList ─▶ StoryFrame
-     │        └─ mode detail ─┬─▶ [frame] ─▶ results
-     │                        └─ みんなで (game preselected)
-     ├─ みんなで (lobby) ─▶ [frame on every phone] ─▶ results
+     │        └─ mode detail ─▶ [frame] ─▶ results
      ├─ 図鑑
-     ├─ 記録
-     └─ たいかい banner (Fri 18:00 – Mon 05:00) ─▶ TaikaiLobby
+     └─ 記録
 first open: welcome ─ sound check ─ みみ チェック ─ result ─▶ hub
 ```
 
 A hub and one push/pop stack (nav.ts `Page`, ≤ 4 deep, `MAX_DEPTH`), not a tab bar: each page's foot is its sticky
 action row, and most opens are "do today's thing".
-- ‹, a backdrop tap or Esc pops, and closes at the hub; ✕ closes the sheet from any page (with others in my lobby it
-  asks first).
+- ‹, a backdrop tap or Esc pops, and closes at the hub; ✕ closes the sheet from any page.
 - **A game** is a level over the page that started it: ‹ (a backdrop tap, Esc) leaves for that page, ✕ closes the
-  sheet. Mid-game both ask `kiki.quit` (the record so far is kept; with others, `kiki.quitOthers`: the game goes on
-  without me), except solo before my first answer. ‹ and 終わる land on the stack under the game with a fresh lobby of
-  mine (actions.ts `done`): a mode's page, the unit's page, みんなで, たいかい's page; from the hub or a lobby I joined, the
-  hub; the first run's みみ チェック, the welcome's last step.
-- **Results:** ‹ = 終わる (no ask); もう一度遊ぶ restarts the mode and re-invites.
-- **Deep links:** the invite opens `[lobby]` (`inviteStack`), the たいかい banner `[taikai]`, a mode `[asobu, mode]`.
+  sheet. Mid-game both ask `kiki.quit` (the record so far is kept), except before my first answer. ‹ and 終わる land on the stack under the game with a fresh lobby of
+  mine (actions.ts `done`): a mode's page, the unit's page; from the hub, the hub; the first run's みみ チェック, the welcome's last step.
+- **Results:** ‹ = 終わる (no ask); もう一度遊ぶ restarts the mode.
+- **Deep links:** a mode `[asobu, mode]`.
 - StoryFrame is a game page (‹ to 寝る前に, its place kept; a backdrop tap does nothing); its sleep timer ends it and the sheet fades closed
   over 2 s.
 
@@ -219,9 +208,9 @@ Cream cards on the tan panel (`--r-card` 24, buttons 16, taps ≥ 44 px).
 
 ### The hub
 
-The invite card while one waits; しずえ's line by the hour (never a count of missed days); the daily menu's three cards
+しずえ's line by the hour (never a count of missed days); the daily menu's three cards
 (a done card folds to ✓, the first undone has the only green button); a quiet 👂 みみ チェック card until a check row
-exists; four tiles, 遊ぶ · みんなで · 図鑑 · 記録; the たいかい banner; the week card (stamps and the quest); by day after a
+exists; three tiles, 遊ぶ · 図鑑 · 記録; the week card (stamps and the quest); by day after a
 bedtime chapter, `hub/MorningCard.svelte`.
 
 ### 遊ぶ
@@ -235,7 +224,7 @@ theirs from round/registry.ts):
 | 街で・電話で（場面で聞く） | アナウンス, ようじ でんわ, たちぎき |
 | じっくり（長めに聞く） | しずえの ニュース, まるごと 聞く |
 | 寝る前に（点数なし） | おやすみ ものがたり |
-| hub only | しずえの しゅうまつ たいかい (the banner), みみ チェック (first run; again from ⚙) |
+| hub only | みみ チェック (first run; again from ⚙) |
 
 Only playable modes show; an empty group is hidden; no "coming soon" wall, no filter UI. おさらい: 8 questions from the
 SRS ("Adaptivity").
@@ -269,20 +258,6 @@ playable items (`playIds`); the phrases caught k / n → 図鑑; 飛ばしてチ
 levels; a lane's game every place, its files' places beside them, catalog.ts `contentLevels`, for the
 「準備中」 line), 答える時間, and the foot 誘う / 始める. At volume 0, `kiki.testZero`. Units live on the path,
 not here.
-
-### しゅうまつ たいかい
-
-`taikai/TaikaiLobby.svelte`, from the hub's banner while `taikaiOpen` (`?date=` previews it): who's in with how many
-misses each offered (never which), 協力 ／ 勝負, a solo start or 誘う. The show (`TaikaiPlay.svelte`): the team against
-しずえ's target or 勝負's chips; a confident miss (bet ≥ 70) is a coral card with the answer large and the clip once more.
-Trophies sit on 記録's and 図鑑's shelves. Rules: kikimimi-engine.md "しゅうまつ たいかい".
-
-### みんなで
-
-The lobby, from the hub tile, a mode's 誘う or an invite (joined; read-only, `kiki.waitHost`): the game picker (co-op-only
-games included), `PathCard` (the host picks a unit and lesson for everyone), who's in, 協力 ／ 勝負, 音を1台にまとめる
-(default from 設定), 誘う and 始める（N人）. Alone: `kiki.soloOk`. An invite of content this build lacks (its `cv`) shows
-`kiki.update` with 更新する. Each phone's tier is its own, never shown beside anyone else's.
 
 ### The results page
 
@@ -452,11 +427,8 @@ quotas, "mistake" labels, easy / hard.
 
 ## UI details
 
-- **Starting.** The pill opens the sheet on its hub; the voice session begins in the pill's tap (`wakeQuizVoice`). While
-  an invite is live the pill's sub-label says so.
-- **The invite banner** (KikimimiHost.svelte, invite.svelte.ts: always loaded, a few hundred bytes) keeps the last 10
-  min of game intents and shows `kiki.invite` [`kiki.join`] through the toast host; さんか opens みんなで, joined. My lobby
-  stays on this phone until 誘う.
+- **Starting.** The pill opens the sheet on its hub; the voice session begins in the pill's tap (`wakeQuizVoice`).
+  KikimimiHost.svelte and invite.svelte.ts (always loaded) only mount and open the sheet.
 - **Mid-game notices** (`kiki.notice.*`): the host closed the room, the connection dropped, it stopped for inactivity.
 - **Look.** The paper theme and `ui/Sheet.svelte`; taps ≥ 44 px with `data-sfx`; an item without `ask` gets its type's
   (`kiki.ask.*`).
