@@ -6,6 +6,10 @@
 //                                   and shape): the geometry is the same in every colour, so it ships once, in its
 //                                   first colour
 //   <family>.<colour>.<mat>.webp    a colour's own baked albedo for each material that differs from the first's
+//   picker.<hash>.webp              the picker's atlas (HomePicker.svelte): every colour's swatch (48 px, its main
+//                                   material's albedo) and NH's own picker icons (72 px: the doors, the player house's
+//                                   walls and roofs), indexed by src/lib/layout/homes-picker.json; a run's new cells
+//                                   replace theirs in it, the rest are read back out of it
 // plus src/lib/layout/homes.json: each family's bounds, triangles, KB, hash and colours (with the materials each
 // swaps), and a wall's doorway (its DoorModel0 joint: where the door family stands; a tent's own door is put there in its
 // GLB). layout/homes.ts names them; components/world3d/home.ts puts them together.
@@ -14,10 +18,11 @@
 // inclines), into static/room/structures/ and src/lib/layout/structures.json (world3d/structure.ts draws them).
 //
 // Usage (from app/): NH_MODELS=~/Downloads/Model npm run home-models [-- --only=wall-na,door-simple]
+//                    npm run home-models -- --atlas    (the atlas alone, re-packed: no NH_MODELS)
 //                    NH_MODELS=~/Downloads/Model npm run structure-models
 // The model folder is untrusted input and never part of the repo: only the named folders' .dae and .png files are
 // copied into a scratch dir (three.js reads them in the page; nothing in them is run). Needs Google Chrome
-// (Playwright's channel 'chrome') and cwebp.
+// (Playwright's channel 'chrome'), cwebp and dwebp.
 import { chromium } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -33,6 +38,76 @@ const META = join(APP, 'src', 'lib', 'layout', STRUCT ? 'structures.json' : 'hom
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
 const TRIS = 6000;
+
+// ---- the picker's atlas ----
+const PICKER = join(APP, 'src', 'lib', 'layout', 'homes-picker.json');
+// (an icon drawn small reaches into what's beside it: each in a transparent gutter of PAD px)
+const CELL = 48, ICON = 72, PAD = 2, COLS = 24;
+interface Picker { file: string; w: number; h: number; cell: number; icon: number; pad: number; iconY: number; sw: Record<string, [number, string]>; icons: string[] }
+type Px = { w: number; h: number; px: Buffer };
+const decode = (file: string): Px => {
+  const b = execFileSync('dwebp', ['-quiet', '-pam', file, '-o', '-'], { maxBuffer: 1 << 28 });
+  const end = b.indexOf('ENDHDR\n') + 7, head = b.subarray(0, end).toString();
+  return { w: +/WIDTH (\d+)/.exec(head)![1], h: +/HEIGHT (\d+)/.exec(head)![1], px: b.subarray(end) };
+};
+const crop = (img: Px, x: number, y: number, n: number): Px => {
+  const px = Buffer.alloc(n * n * 4);
+  for (let r = 0; r < n; r++) img.px.copy(px, r * n * 4, ((y + r) * img.w + x) * 4, ((y + r) * img.w + x + n) * 4);
+  return { w: n, h: n, px };
+};
+/** The atlas re-packed: its cells as they stand, any `<family>.<colour>.swatch.webp` and `icon.<name>.webp` in `dirs`
+ *  over them (those in OUT then deleted); one lossy WebP named by its hash, and its index. */
+function packAtlas(dirs: string[]) {
+  const cells = new Map<string, Px>();
+  const old = existsSync(PICKER) ? (JSON.parse(readFileSync(PICKER, 'utf8')) as Picker) : null;
+  if (old) {
+    const img = decode(join(OUT, old.file)), cols = old.w / old.cell, step = old.icon + 2 * old.pad, icols = Math.floor(old.w / step);
+    for (const [fam, [i0, cs]] of Object.entries(old.sw)) [...cs].forEach((c, k) => cells.set(`${fam}.${c}`, crop(img, ((i0 + k) % cols) * old.cell, Math.floor((i0 + k) / cols) * old.cell, old.cell)));
+    old.icons.forEach((n, j) => cells.set(`icon.${n}`, crop(img, (j % icols) * step + old.pad, old.iconY + Math.floor(j / icols) * step + old.pad, old.icon)));
+  }
+  const loose: string[] = [];
+  let fresh = 0;
+  for (const d of dirs)
+    for (const f of readdirSync(d)) {
+      const m = /^(.+\.[A-J])\.swatch\.webp$/.exec(f) ?? /^(icon\..+)\.webp$/.exec(f);
+      if (!m) continue;
+      const img = decode(join(d, f));
+      if (img.w !== img.h || img.w !== (m[1].startsWith('icon.') ? ICON : CELL)) throw new Error(`${f}: ${img.w}×${img.h}`);
+      cells.set(m[1], img);
+      fresh++;
+      if (d === OUT) loose.push(join(d, f));
+    }
+  // (nothing new: left as it is, never re-encoded)
+  if (!fresh) return console.log(`atlas ${old?.file ?? 'none'}: no new cells`);
+  const sws = [...cells.keys()].filter((k) => !k.startsWith('icon.')).sort(), icons = [...cells.keys()].filter((k) => k.startsWith('icon.')).sort();
+  const w = COLS * CELL, step = ICON + 2 * PAD, icols = Math.floor(w / step), iconY = Math.ceil(sws.length / COLS) * CELL, h = iconY + Math.ceil(icons.length / icols) * step;
+  const px = Buffer.alloc(w * h * 4);
+  const put = (img: Px, x: number, y: number) => {
+    for (let r = 0; r < img.h; r++) img.px.copy(px, ((y + r) * w + x) * 4, r * img.w * 4, (r + 1) * img.w * 4);
+  };
+  const sw: Picker['sw'] = {};
+  sws.forEach((k, i) => {
+    const fam = k.slice(0, -2);
+    (sw[fam] ??= [i, ''])[1] += k.slice(-1);
+    put(cells.get(k)!, (i % COLS) * CELL, Math.floor(i / COLS) * CELL);
+  });
+  icons.forEach((k, j) => put(cells.get(k)!, (j % icols) * step + PAD, iconY + Math.floor(j / icols) * step + PAD));
+  const tmp = mkdtempSync(join(tmpdir(), 'nh-picker-')), pam = join(tmp, 'a.pam'), webpOut = join(tmp, 'a.webp');
+  writeFileSync(pam, Buffer.concat([Buffer.from(`P7\nWIDTH ${w}\nHEIGHT ${h}\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n`), px]));
+  execFileSync('cwebp', ['-quiet', '-q', '80', '-alpha_q', '90', '-m', '6', pam, '-o', webpOut]);
+  const bytes = readFileSync(webpOut), file = `picker.${createHash('sha256').update(bytes).digest('hex').slice(0, 8)}.webp`;
+  writeFileSync(join(OUT, file), bytes);
+  rmSync(tmp, { recursive: true, force: true });
+  if (old && old.file !== file) rmSync(join(OUT, old.file), { force: true });
+  for (const f of loose) rmSync(f);
+  const index: Picker = { file, w, h, cell: CELL, icon: ICON, pad: PAD, iconY, sw, icons: icons.map((k) => k.slice(5)) };
+  writeFileSync(PICKER, `{\n  "_": "scripts/home-models.ts: the picker's atlas (static/room/homes/<file>): each family's first swatch cell (${CELL} px, ${COLS} a row) and its colours in order, then NH's picker icons (${ICON} px in a ${PAD} px gutter, from iconY)",\n${Object.entries(index).map(([k, v]) => k === 'sw' ? `  "sw": {\n${Object.entries(sw).map(([f, e]) => `    ${JSON.stringify(f)}: ${JSON.stringify(e)}`).join(',\n')}\n  }` : `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n')}\n}\n`);
+  console.log(`atlas ${file}: ${sws.length} swatches, ${icons.length} icons, ${w}×${h}, ${(bytes.length / 1024).toFixed(1)} KB`);
+}
+if (process.argv.includes('--atlas')) {
+  packAtlas([OUT]);
+  process.exit(0);
+}
 
 const MODELS = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');
 if (!MODELS || !existsSync(MODELS)) {
@@ -78,6 +153,8 @@ if (!STRUCT) {
 const todo = [...fams.values()].filter((f) => !only.length || only.some((o) => f.name.startsWith(o)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-homes-'));
 const work = mkdtempSync(join(tmpdir(), 'nh-homes-out-'));
+/** This run's picker cells (swatches and icons), packed into the atlas at the end. */
+const cellDir = mkdtempSync(join(tmpdir(), 'nh-homes-cells-'));
 const copy = (folder: string) => {
   const dst = join(scratch, F(folder));
   if (existsSync(dst)) return;
@@ -179,15 +256,15 @@ for (const f of todo) {
   execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', '-km', ...si]);
   let bytes = statSync(out).size;
   const colours: Record<string, string[]> = { [first]: [] };
-  // each colour's swatch for a picker: its main material's albedo (the wall's, the roof's, the door's, the tent's), small
+  // each colour's swatch for the picker's atlas (homes only): its main material's albedo (the wall's, the roof's, the
+  // door's, the tent's), small
   const main = (m: Map<string, string>) => [...m.keys()].find((k) => /^m(Wall|Roof|Door|Tent)/.test(k)) ?? [...m.keys()][0];
   const swatch = (c: string, m: Map<string, string>) => {
     const k = main(m), uri = k && m.get(k);
-    if (!uri) return;
-    const png = join(dir, `sw-${c}.png`), w = join(OUT, `${f.name}.${c}.swatch.webp`);
+    if (!uri || STRUCT) return;
+    const png = join(dir, `sw-${c}.png`);
     writeFileSync(png, Buffer.from(uri.split(',')[1], 'base64'));
-    execFileSync('cwebp', ['-quiet', '-q', '80', '-resize', '48', '48', png, '-o', w]);
-    bytes += statSync(w).size;
+    execFileSync('cwebp', ['-quiet', '-q', '90', '-resize', String(CELL), String(CELL), png, '-o', join(cellDir, `${f.name}.${c}.swatch.webp`)]);
   };
   swatch(first, base);
   // each other colour: only its albedos that differ from the first's
@@ -223,11 +300,12 @@ for (const n of STRUCT ? [] : readdirSync(ROOT)) {
   if (!png) continue;
   const tmp = join(scratch, `${name}.png`);
   cpSync(join(src, png), tmp);
-  execFileSync('cwebp', ['-quiet', '-q', '82', '-resize', '72', '72', tmp, '-o', join(OUT, `${name}.webp`)]);
-  total += statSync(join(OUT, `${name}.webp`)).size;
+  execFileSync('cwebp', ['-quiet', '-q', '90', '-resize', String(ICON), String(ICON), tmp, '-o', join(cellDir, `${name}.webp`)]);
 }
+if (!STRUCT) packAtlas([cellDir]);
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(META, `{\n  "_": "scripts/home-models.ts${STRUCT ? ' --structures' : ''}: NH's ${STRUCT ? "bridges and inclines" : "homes' parts"} (bounds in model units, triangles, KB with the colours' textures, content hash, each colour's swapped materials)",\n  "families": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
 console.log(`${todo.length} families, ${(total / 1024 / 1024).toFixed(2)} MB`);
 rmSync(scratch, { recursive: true, force: true });
 rmSync(work, { recursive: true, force: true });
+rmSync(cellDir, { recursive: true, force: true });

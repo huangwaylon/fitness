@@ -175,8 +175,9 @@ to `/pair`). In test mode `?demo` runs it on the made-up island (`?demo&as=B` be
 ## Homes
 
 - **The catalogue** (`layout/homes.ts`, `homes.json`; `npm run home-models` with NH_MODELS converts NH's House* parts
-  into `static/room/homes/`: 63 families, each part's GLB in its first colour with the other colours' albedos and a
-  swatch each; NH's own picker icons for the doors and the player house):
+  into `static/room/homes/`: 63 families, each part's GLB in its first colour with the other colours' albedos; the
+  picker's one atlas, `picker.<hash>.webp` (`homes-picker.json`): every colour's swatch and NH's own picker icons for
+  the doors and the player house; `-- --atlas` re-packs it alone):
   - `campsite`: the campsite tent (ウェイ's by default);
   - `tent-n` (`w` 'A' | 'B'): NH's move-in tent; `tent-p`: the player's first tent;
   - `house`: NH's modular house, `w` a wall (`PA04Stucco.B`, or a villager house's NA…ND), `r` the same shape's roof,

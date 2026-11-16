@@ -1,12 +1,13 @@
 <script lang="ts">
   // いえを かえる (docs/island-layout.md "Homes"): a home's look, its owner's to change any time: NH's player house or a
   // villager's (its shape, its wall, its roof, its door, each in its colours), the move-in tents, or the campsite's tent.
-  // NH's own icons and each colour's swatch; the house itself turning in the preview as it's chosen. A look that would
+  // NH's own icons and each colour's swatch (sprites of one atlas: homes-picker.json); the house itself turning in the preview as it's chosen. A look that would
   // not fit where the home stands (its door stays put: model.ts originOf) is refused here, so the island stays valid;
   // the change goes out as the home's `h` op (store/layout.svelte.ts), every phone's island and the editor live.
   import { onMount } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
+  import PICK from '#lib/layout/homes-picker.json' with { type: 'json' };
   import { HOME_IDS, SHAPES, catalogue, doorPartOf, partOf, type HomeStyle, type Who } from '#lib/layout/homes.ts';
   import { withChanges } from '#lib/layout/model.ts';
   import { validate } from '#lib/layout/validate.ts';
@@ -31,6 +32,23 @@
   const named = (ja: Record<string, string>, k: string) => (i18n.locale === 'ja' ? (ja[k] ?? k) : k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^(\w)(\w*?)(siding|frame|panel|tile|weight)$/i, (_, a, b, c) => `${a}${b} ${c}`));
   const MODELS = ['house', 'tent-n', 'tent-p', 'campsite'] as const;
   const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  // the swatches and icons: one atlas (scripts/home-models.ts), each a cell of it drawn `px` wide
+  const atlas = `url(${base}${PICK.file})`;
+  const cell = (x: number, y: number, n: number, px: number) => {
+    const k = px / n;
+    return `background-image:${atlas};background-size:${PICK.w * k}px ${PICK.h * k}px;background-position:${-x * k}px ${-y * k}px`;
+  };
+  /** A family's colour's swatch (`wall-pa04-stucco`, `B`), 36 px. */
+  const SW = PICK.sw as unknown as Record<string, [first: number, colours: string]>;
+  const swatch = (fam: string, c: string) => {
+    const e = SW[fam], k = e?.[1].indexOf(c) ?? -1, i = (e?.[0] ?? 0) + k, cols = PICK.w / PICK.cell;
+    return k < 0 ? '' : cell((i % cols) * PICK.cell, Math.floor(i / cols) * PICK.cell, PICK.cell, 36);
+  };
+  /** NH's picker icon (`door-simple-r`, `wall-pa04-stucco`), `px` wide. */
+  const icon = (name: string, px: number) => {
+    const j = PICK.icons.indexOf(name), step = PICK.icon + 2 * PICK.pad, cols = Math.floor(PICK.w / step);
+    return j < 0 ? '' : cell((j % cols) * step + PICK.pad, PICK.iconY + Math.floor(j / cols) * step + PICK.pad, PICK.icon, px);
+  };
 
   // the look being chosen (from the home's own)
   let style = $state<HomeStyle>({ m: 'campsite' });
@@ -175,7 +193,7 @@
       <h3 class="sec-label">{t('homes.colour')}</h3>
       <div class="swatches">
         {#each ['A', 'B'] as c (c)}
-          <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={style.w === c} style:background-image={`url(${base}tent-n.${c}.swatch.webp)`} onclick={() => (style = { m: 'tent-n', w: c })}></button>
+          <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={style.w === c} style={swatch('tent-n', c)} onclick={() => (style = { m: 'tent-n', w: c })}></button>
         {/each}
       </div>
     {:else if style.m === 'house'}
@@ -188,11 +206,11 @@
       <h3 class="sec-label">{t('homes.wall')}</h3>
       {#each cat.walls[shape] ?? [] as w (w.material)}
         <div class="row">
-          <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.wall-pa04-${kebab(w.material)}.webp`} alt="" />{/if}{named(MAT, w.material)}</span>
+          <span class="mat">{#if shape === 'PA04'}<span class="ico" style={icon(`wall-pa04-${kebab(w.material)}`, 28)}></span>{/if}{named(MAT, w.material)}</span>
           <div class="swatches">
             {#each w.colours as c (c)}
               <button type="button" data-sfx="tick" class="sw" data-wall={`${w.material}.${c}`} aria-label={`${named(MAT, w.material)} ${c}`} aria-pressed={wall?.material === w.material && wall?.colour === c}
-                style:background-image={`url(${base}wall-${shape.toLowerCase()}-${kebab(w.material)}.${c}.swatch.webp)`} onclick={() => setWall(w.material, c)}></button>
+                style={swatch(`wall-${shape.toLowerCase()}-${kebab(w.material)}`, c)} onclick={() => setWall(w.material, c)}></button>
             {/each}
           </div>
         </div>
@@ -200,11 +218,11 @@
       <h3 class="sec-label">{t('homes.roof')}</h3>
       {#each cat.roofs[shape] ?? [] as r (r.material)}
         <div class="row">
-          <span class="mat">{#if shape === 'PA04'}<img src={`${base}icon.roof-pa04-${kebab(r.material)}.webp`} alt="" />{/if}{named(MAT, r.material)}</span>
+          <span class="mat">{#if shape === 'PA04'}<span class="ico" style={icon(`roof-pa04-${kebab(r.material)}`, 28)}></span>{/if}{named(MAT, r.material)}</span>
           <div class="swatches">
             {#each r.colours as c (c)}
               <button type="button" data-sfx="tick" class="sw" data-roof={`${r.material}.${c}`} aria-label={`${named(MAT, r.material)} ${c}`} aria-pressed={roof?.material === r.material && roof?.colour === c}
-                style:background-image={`url(${base}roof-${shape.toLowerCase()}-${kebab(r.material)}.${c}.swatch.webp)`} onclick={() => setRoof(r.material, c)}></button>
+                style={swatch(`roof-${shape.toLowerCase()}-${kebab(r.material)}`, c)} onclick={() => setRoof(r.material, c)}></button>
             {/each}
           </div>
         </div>
@@ -213,7 +231,7 @@
       <div class="doors">
         {#each cat.doors as d (d.style)}
           <button type="button" data-sfx="tick" class="door" data-door={d.style} aria-pressed={door?.style === d.style} onclick={() => setDoor(d.style, door?.shape ?? 'R', door?.colour ?? 'A')}>
-            <img src={`${base}icon.door-${kebab(d.style)}-${(door?.style === d.style ? door.shape : d.shapes[0]).toLowerCase()}.webp`} alt="" />
+            <span class="ico" style={icon(`door-${kebab(d.style)}-${(door?.style === d.style ? door.shape : d.shapes[0]).toLowerCase()}`, 44)}></span>
             <span>{named(DOOR, d.style)}</span>
           </button>
         {/each}
@@ -229,7 +247,7 @@
           <div class="swatches">
             {#each e?.colours ?? [] as c (c)}
               <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={door.colour === c}
-                style:background-image={`url(${base}door-${kebab(door.style)}-${door.shape.toLowerCase()}.${c}.swatch.webp)`} onclick={() => setDoor(door.style, door.shape, c)}></button>
+                style={swatch(`door-${kebab(door.style)}-${door.shape.toLowerCase()}`, c)} onclick={() => setDoor(door.style, door.shape, c)}></button>
             {/each}
           </div>
         </div>
@@ -258,12 +276,13 @@
   .lbl.sec-label { margin: 0 4px; }
   .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .mat { display: inline-flex; align-items: center; gap: 4px; min-width: 88px; font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .mat img { width: 28px; height: 28px; }
+  .ico { flex: none; background-repeat: no-repeat; }
+  .mat .ico { width: 28px; height: 28px; }
   .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
   /* a 36px swatch in a 44px target */
   .sw {
     position: relative; width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
-    background-size: cover; background-position: center; box-shadow: var(--sh-ctl);
+    background-repeat: no-repeat; box-shadow: var(--sh-ctl);
   }
   .sw::after { content: ''; position: absolute; inset: -4px; }
   .sw[aria-pressed='true'] { outline: 3px solid var(--c-yuzu); outline-offset: 2px; }
@@ -274,7 +293,7 @@
   }
   .door[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); }
   .door:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .door img { width: 44px; height: 44px; }
+  .door .ico { width: 44px; height: 44px; }
   .foot { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
   .why { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text); text-align: center; }
   .why::before { content: '! '; color: var(--c-coral); }

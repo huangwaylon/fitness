@@ -29,3 +29,35 @@ test('the house preview stays in view as the choices scroll, and a choice made s
   expect(await preview.getAttribute('data-shown')).not.toBe(shown);
   expect(await preview.boundingBox()).toEqual(top);
 });
+
+// the swatches and NH's icons are cells of one atlas (homes-picker.json, scripts/home-models.ts): one request on open,
+// every cell drawn from it at its own place
+test('the picker draws every swatch and icon from its one atlas', async ({ page }) => {
+  const asked: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().includes('/room/homes/') && r.url().endsWith('.webp')) asked.push(new URL(r.url()).pathname.split('/').pop()!);
+  });
+  await page.goto('tent/?demo&date=2026-11-04T12:00&as=B&home=B&preview=0');
+  await roomUp(page, 'tent');
+  await page.locator('[data-home-look]').click();
+  const pick = page.locator('[data-home-picker]');
+  await expect(pick.locator('[data-wall]').first()).toBeVisible();
+  const cells = await pick.locator('.sw, .ico').evaluateAll((els) => els.map((e) => ({ img: getComputedStyle(e).backgroundImage, at: getComputedStyle(e).backgroundPosition })));
+  // the player house's walls and roofs in their colours, their icons, the doors' icons, the chosen door's colours
+  expect(cells.length).toBeGreaterThan(60);
+  for (const c of cells) expect(c.img).toMatch(/\/room\/homes\/picker\.[0-9a-f]{8}\.webp"?\)$/);
+  expect(new Set(cells.map((c) => c.at)).size).toBe(cells.length);
+  // (the atlas itself loads: a real image the size its index says)
+  const url = /url\("?([^")]+)"?\)/.exec(cells[0].img)![1], file = url.split('/').pop()!;
+  const size = await page.evaluate((src) => new Promise<number[]>((ok) => {
+    const im = new Image();
+    im.onload = () => ok([im.naturalWidth, im.naturalHeight]);
+    im.onerror = () => ok([0, 0]);
+    im.src = src;
+  }), url);
+  expect(size).toEqual([1152, 1284]);
+  // another shape's materials: the same atlas, nothing else asked for
+  await page.locator('[data-shape="NC"]').click();
+  await expect(pick.locator('[data-wall]').first()).toBeVisible();
+  expect([...new Set(asked)]).toEqual([file]);
+});
