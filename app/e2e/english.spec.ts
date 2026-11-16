@@ -177,7 +177,9 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   await expect(sheet(page).locator('[data-en-today]')).toContainText('今日の動画 完了 ✓');
   // the library: ✓ on its row, last
   await sheet(page).locator('[data-en-all]').click();
-  await sheet(page).locator('[data-en-more]').click();
+  // (もっと見る till the whole library shows: it grows as banks land)
+  for (let i = 0; i * 20 < PLAN.length - 20; i++) await sheet(page).locator('[data-en-more]').click();
+  await expect(sheet(page).locator('[data-en-more]')).toHaveCount(0);
   const row = sheet(page).locator('[data-en-list] [data-en-clip="waitress"]');
   await expect(row).toHaveAttribute('data-done', 'true');
   await expect(sheet(page).locator('[data-en-list] [data-en-clip]').last()).toHaveAttribute('data-en-clip', 'waitress');
