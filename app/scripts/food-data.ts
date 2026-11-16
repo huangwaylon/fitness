@@ -80,20 +80,28 @@ function shipped(f: string, d: Dataset, lazy: boolean): string {
   }
 }
 
-/** The barcode shards (`<src>/jan/<k>.json`, build.py's `{code: ITEM}`) into OUT/jan/ by column, each of the codes
- * lib/food/jan.ts janShips (beyond `products`, no store code or weak name), sorted, its barcode in its id, no aliases;
- * none written for a shard left empty. OUT/jan/ replaced whole. Returns how many codes. */
+/** The barcode shards (`<src>/jan/<k>.json`, build.py's `{code: ITEM}` by the last 3 digits) into OUT/jan/ by column,
+ * regrouped by lib/food/jan.ts janShard (the last 2: 100 files), each of the codes janShips (beyond `products`, no
+ * store code or weak name), sorted, its barcode in its id, no aliases; none written for a shard left empty. OUT/jan/
+ * replaced whole. Returns how many codes. */
 function shipJan(src: string, products: Dataset): number {
   const have = new Set(products.items.map((it) => it.jan ?? it.id.slice(4)));
+  const groups = new Map<string, Item[]>();
+  for (const f of readdirSync(join(src, 'jan')).filter((f) => /^\d+\.json$/.test(f))) {
+    const shard = JSON.parse(readFileSync(join(src, 'jan', f), 'utf8')) as Record<string, Item>;
+    for (const it of Object.values(shard).filter((it) => janShips(it, have))) {
+      const k = janShard(it.jan!);
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(it);
+    }
+  }
   rmSync(join(OUT, 'jan'), { recursive: true, force: true });
   mkdirSync(join(OUT, 'jan'));
   let n = 0;
-  for (const f of readdirSync(join(src, 'jan')).filter((f) => /^\d{3}\.json$/.test(f)).sort()) {
-    const shard = JSON.parse(readFileSync(join(src, 'jan', f), 'utf8')) as Record<string, Item>;
-    const items = Object.keys(shard).sort().map((k) => shard[k]).filter((it) => janShips(it, have) && janShard(it.jan!) === f.slice(0, 3));
-    if (!items.length) continue;
+  for (const [k, items] of groups) {
+    items.sort((a, b) => (a.jan! < b.jan! ? -1 : 1));
     n += items.length;
-    writeFileSync(join(OUT, 'jan', f), shipped(`jan/${f}`, { source: 'off', items: items.map(({ aliases: _a, ...it }) => it) }, true));
+    writeFileSync(join(OUT, 'jan', `${k}.json`), shipped(`jan/${k}.json`, { source: 'off', items: items.map(({ aliases: _a, ...it }) => it) }, true));
   }
   return n;
 }

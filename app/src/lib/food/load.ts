@@ -115,7 +115,7 @@ function cancelParses(ids: Iterable<number>): void {
   }
 }
 
-/** The barcode shards fetched this session, by name (each ~1 KB; the service worker keeps them across sessions). */
+/** The barcode shards fetched this session, by name (each ~5 KB gzipped; the service worker keeps them across sessions). */
 const shards = new Map<string, Promise<Map<string, Item>>>();
 
 /** A shard's fetch waited for at most (a slow network: on to Open Food Facts, which says offline, never a hang). */

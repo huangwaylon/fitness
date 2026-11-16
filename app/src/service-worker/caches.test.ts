@@ -597,7 +597,7 @@ describe('food data fetches (foodFetch)', () => {
   it('a barcode shard (jan/): cached on use, kept while the index’s jan names it, dropped when it changes; never at the install', async () => {
     const janIndex = (v: string, jan: string) => JSON.stringify({ ...JSON.parse(index(v)), jan });
     served[`${BASE}index.json`] = janIndex('aaa', 'j1');
-    const shard = (j: string) => `${BASE}jan/881.json?v=${j}`;
+    const shard = (j: string) => `${BASE}jan/81.json?v=${j}`;
     served[shard('j1')] = 'shard-1';
     expect(await get(`${BASE}index.json`)).toBe(janIndex('aaa', 'j1'));
     for (const f of files('aaa')) await get(f);
@@ -617,8 +617,10 @@ describe('food data fetches (foodFetch)', () => {
     await get(`${BASE}index.json`);
     await settled();
     expect(cache.m.has(shard('j1'))).toBe(false);
-    expect(isFoodData('/fitness/food/jan/881.json')).toBe(true);
-    expect(precachable('food/jan/881.json')).toBe(false);
+    expect(isFoodData('/fitness/food/jan/81.json')).toBe(true);
+    expect(precachable('food/jan/81.json')).toBe(false);
+    // the 3-digit shards (before 2026-11-16) under the old jan: dropped by the new one's sweep
+    expect(staleFood([`${BASE}jan/881.json?v=j1`, `${BASE}jan/81.json?v=j2`], [], 'j2')).toEqual([`${BASE}jan/881.json?v=j1`]);
   });
 
   it('never stores a failed answer', async () => {

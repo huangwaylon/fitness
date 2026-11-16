@@ -1,4 +1,5 @@
-"""Open Food Facts (Japan subset) -> products.json (name search) + jan/<last 3 digits>.json (barcode lookup).
+"""Open Food Facts (Japan subset) -> products.json (name search) + jan/<last 3 digits>.json (barcode lookup; shipped
+regrouped by the last 2: app/scripts/food-data.ts shipJan).
 
 Inputs: raw/off/off_jp.jsonl (stream-filtered CSV dump, see fetch.py) and pages_*/page_*.json
 (API search pages: they add product_name_ja/en, which the CSV lacks, and a few products).

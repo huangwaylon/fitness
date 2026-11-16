@@ -4,8 +4,8 @@ import { janShard, janShips, storeCode, weakName } from './jan.ts';
 import type { Item } from './types.ts';
 
 describe('the barcode shards', () => {
-  it('a shard is the code’s last 3 digits', () => {
-    expect([janShard('4901330502881'), janShard('49012345')]).toEqual(['881', '345']);
+  it('a shard is the code’s last 2 digits', () => {
+    expect([janShard('4901330502881'), janShard('49012345')]).toEqual(['81', '45']);
   });
   it('a store’s own code (GS1 02, 20–29; an EAN-8’s 2) never ships; a maker’s does', () => {
     expect(['0200858803000', '2012345678901', '2912345678906', '21234567'].map(storeCode)).toEqual([true, true, true, true]);

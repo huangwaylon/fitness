@@ -40,7 +40,7 @@ describe('static/food', () => {
     expect(index.datasets.find((d) => d.file === 'kalori.json')).toMatchObject({ source: 'kalori', secondary: true, lazy: true });
   });
 
-  it('ships the barcode shards beyond the products by column (jan/<last 3>.json), no store code or weak name, under index.json’s jan', () => {
+  it('ships the barcode shards beyond the products by column (jan/<last 2>.json), no store code or weak name, under index.json’s jan', () => {
     const products = new Set(fromFile(JSON.parse(readFileSync(join(DIR, 'products.json'), 'utf8')) as Shipped).items.map((it) => it.jan ?? it.id.slice(4)));
     const shards = readdirSync(join(DIR, 'jan')).sort();
     const hash = createHash('sha256');

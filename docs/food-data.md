@@ -74,7 +74,8 @@ for (`db.wantMore`: the search open, or a day with a product logged), parsed in 
 kcal per 100 g} }], "byId": {item id: group index} }`. `src` is a dataset `source` (the item id prefix) or `usda`; every
 src used in a group is in `sources`. See [Verification](#verification).
 
-**`jan/<k>.json`**, in `out/`: `{ "<jan>": ITEM }`, `k` the code's last 3 digits; shipped by column (as a dataset,
+**`jan/<k>.json`**, in `out/`: `{ "<jan>": ITEM }`, `k` the code's last 3 digits; shipped regrouped by the last 2
+(100 files: `lib/food/jan.ts` `janShard`), by column (as a dataset,
 `source: off`, no aliases) with only the codes beyond `products.json`, no store code (GS1 02, 20–29) or name under 2
 letters (`lib/food/jan.ts`), under index.json's `jan` (one `?v=` for every shard; ODbL 1.0 as the products). Keys are JAN/EAN-13 or
 JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13, UPC-E and GTIN-14 dropped.
@@ -299,8 +300,8 @@ service worker once used (`caches.ts` carried, the name `scan`: never precached,
   zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`
   (lazy: asked for when the scanner opens, and waited for till indexed, 読み込み中 past 0.3 s; past 20 s the lookup
   goes on without it, and an answer OFF can't give is `late`: 「データの読み込み中のため確認できません」, never offline),
-  then its barcode shard (`load.ts janItem`: `jan/<last 3>.json`, ~0.8 KB gzipped, cached on use: 12,272 codes in
-  1,000 files, 1.5 MB, 0.8 MB gzipped; counter `found.jan`; past 6 s unanswered, on to OFF).
+  then its barcode shard (`load.ts janItem`: `jan/<last 2>.json`, ~5 KB gzipped, cached on use: 12,272 codes in
+  100 files, 1.4 MB, 0.5 MB gzipped; counter `found.jan`; past 6 s unanswered, on to OFF).
 - **Online fallback** (`lib/scan/off.ts`): a code we lack goes to Open Food Facts' API v2
   (`/api/v2/product/<code>.json`, a few fields; CORS open; CSP `connect-src` names that path only). Only the
   number is sent: no cookies, no referrer, no image. Its answer becomes an item per 100 g (kcal from kJ if needed; a

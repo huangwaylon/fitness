@@ -3,7 +3,7 @@
 // check, here on a copy).
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -170,6 +170,19 @@ describe('food:data --only products', () => {
     expect(index.datasets).toEqual([expect.objectContaining({ file: 'a.json' }), PRODUCTS, KALORI]);
     expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'products.json', 'kalori.json']));
   });
+
+  it('regroups build.py’s barcode shards (last 3 digits) by the last 2, sorted, the products’ codes and store codes left out', () => {
+    const { to, src } = fixture();
+    mkdirSync(join(src, 'jan'));
+    const code = (jan: string) => [jan, product(jan)] as const;
+    writeFileSync(join(src, 'jan', '981.json'), JSON.stringify(Object.fromEntries([code('4607001771981')])));
+    writeFileSync(join(src, 'jan', '881.json'), JSON.stringify(Object.fromEntries([code('4607001771881'), code('2012345678881')])));
+    writeFileSync(join(src, 'jan', '894.json'), JSON.stringify(Object.fromEntries([code('4901234567894')])));
+    expect(run('--only', 'products', src, '--to', to).status).toBe(0);
+    expect(readdirSync(join(to, 'jan'))).toEqual(['81.json']);
+    const shard = JSON.parse(readFileSync(join(to, 'jan', '81.json'), 'utf8'));
+    expect(shard.cols.id).toEqual(['4607001771881', '4607001771981']);
+  });
 });
 
 describe('food:data, the full path, and the barcode shards', () => {
@@ -183,13 +196,13 @@ describe('food:data, the full path, and the barcode shards', () => {
   it('a data dir without jan/ keeps the shipped shards (and their `jan`); one with them ships its own', () => {
     const from = src(), to = join(tmp(), 'food');
     mkdirSync(join(to, 'jan'), { recursive: true });
-    writeFileSync(join(to, 'jan', '883.json'), 'kept');
+    writeFileSync(join(to, 'jan', '83.json'), 'kept');
     expect(run(from, '--to', to).status).toBe(0);
-    expect(readFileSync(join(to, 'jan', '883.json'), 'utf8')).toBe('kept');
+    expect(readFileSync(join(to, 'jan', '83.json'), 'utf8')).toBe('kept');
     expect(JSON.parse(readFileSync(join(to, 'index.json'), 'utf8')).jan).toMatch(/^[0-9a-f]{12}$/);
     // (a data dir with jan/ is build.py's: the shipped shards replaced by its, here none)
     mkdirSync(join(from, 'jan'));
     expect(run(from, '--to', to).status).toBe(0);
-    expect(existsSync(join(to, 'jan', '883.json'))).toBe(false);
+    expect(existsSync(join(to, 'jan', '83.json'))).toBe(false);
   });
 });

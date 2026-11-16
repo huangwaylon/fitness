@@ -145,7 +145,7 @@ export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTE
 
 /** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
  *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in
- *  a cache of its own that outlives builds; a barcode shard (jan/, ~1 KB) only once a scan asks for it, kept while the
+ *  a cache of its own that outlives builds; a barcode shard (jan/, ~5 KB gzipped) only once a scan asks for it, kept while the
  *  index's `jan` names its version. Each file carries its own version (`?v=`: index.json's `files`), so a refresh
  *  of one (Kalori's, weekly) refetches that one; index.json, which names them, doesn't. v2 since schema 2 (every file by
  *  column): the activate's sweep deletes v1, so this build never meets a file of the old layout. */

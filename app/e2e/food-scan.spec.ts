@@ -156,7 +156,7 @@ test('a read while the products are arriving (fetched, parsing, indexing): ours 
   await expect(sheet(page).locator('.amt h3')).toHaveText('きなこ豆', { timeout: 20_000 });
 });
 
-test('in a barcode shard (beyond products.json): its jan/<last 3>.json fetched, its amount; OFF never asked', async ({ page }) => {
+test('in a barcode shard (beyond products.json): its jan/<last 2>.json fetched, its amount; OFF never asked', async ({ page }) => {
   await camera(page, { code: OFFS });
   const asked: string[] = [];
   const got: string[] = [];
@@ -167,7 +167,7 @@ test('in a barcode shard (beyond products.json): its jan/<last 3>.json fetched, 
   const amount = sheet(page).locator('.amt');
   await expect(amount.locator('h3')).toHaveText('ためしのコーラ', { timeout: 20_000 });
   await expect(amount.locator('[data-food-note]')).toHaveCount(0);
-  expect(got.map((p) => p.replace(/^.*\/food\//, ''))).toEqual(['jan/618.json']);
+  expect(got.map((p) => p.replace(/^.*\/food\//, ''))).toEqual(['jan/18.json']);
   await amount.locator('[data-done]').click();
   await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/ためしのコーラ/]);
   expect(asked, 'a shard’s: Open Food Facts never asked').toEqual([]);

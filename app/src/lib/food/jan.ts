@@ -1,10 +1,10 @@
 // The barcode shards (static/food/jan/, docs/food-data.md "Barcodes"): the Open Food Facts codes beyond products.json
-// (no Japanese name or a value missing, so not searchable, yet a scan's answer), by their last 3 digits. Pure: which
+// (no Japanese name or a value missing, so not searchable, yet a scan's answer), by their last 2 digits. Pure: which
 // codes ship (scripts/food-data.ts) and where one is (load.ts janItem).
 import type { Item } from './types.ts';
 
-/** A shard's name: a code's last 3 digits (food-data's lib.py shard_key; unchanged by a UPC-A's zero padding). */
-export const janShard = (code: string): string => code.slice(-3);
+/** A shard's name: a code's last 2 digits (100 shards, ~5 KB gzipped each; unchanged by a UPC-A's zero padding). */
+export const janShard = (code: string): string => code.slice(-2);
 
 /** A code a shop prints for itself (GS1's in-store ranges: 02 and 20–29; an EAN-8's 2): never one product across shops. */
 export const storeCode = (code: string): boolean => /^(02|2)/.test(code);

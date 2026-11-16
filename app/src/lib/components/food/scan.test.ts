@@ -61,12 +61,12 @@ describe('lookupCode: the barcode shards between ours and Open Food Facts', () =
   };
   afterEach(() => vi.unstubAllGlobals());
 
-  it('a code beyond the products: its shard (jan/<last 3>.json under the index’s jan), fetched once, OFF never asked', async () => {
+  it('a code beyond the products: its shard (jan/<last 2>.json under the index’s jan), fetched once, OFF never asked', async () => {
     const asked = serve(async () => new Response(shard));
     const ask = vi.fn();
     expect(await lookupCode('4607001771883', shardDb, '?', 'EAN-13', ask)).toEqual({ k: 'ours', item: { ...kvass, jan: '4607001771883' } });
     expect(await lookupCode('4607001771883', shardDb, '?', 'EAN-13', ask)).toMatchObject({ k: 'ours' });
-    expect(asked.map((h) => h.replace(/^.*\/food\//, ''))).toEqual(['jan/883.json?v=j1']);
+    expect(asked.map((h) => h.replace(/^.*\/food\//, ''))).toEqual(['jan/83.json?v=j1']);
     expect(ask).not.toHaveBeenCalled();
     expect(counted).toEqual(['act:scan.found.jan', 'act:scan.found.jan']);
   });
