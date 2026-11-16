@@ -333,8 +333,9 @@ interface Meta {
   rug?: 1;
   /** It has an emissive map (lit at night). */
   lit?: 1;
-  /** Its icon is NH's (static/room/icons), not the ずかん's. */
-  icon?: 1;
+  /** Its icon is NH's (static/room/icons), not the ずかん's; or an art key: NH's same picture is already that file
+   *  (static/art/<key>.webp: an editor kind's, artTwin). */
+  icon?: 1 | string;
   /** NH's surface: small things stand on its top. */
   s?: 1;
   /** Its top (scripts/room-surfaces.ts): how high, the rectangle (its own frame, model units), the tiles that hold. */
@@ -537,6 +538,18 @@ function icon(code: string, folder: string | null, cat?: string, packed = false)
   webp(join(src, png), join(packed ? WORK : OUT, 'icons', `${code}.webp`), 80, ['-resize', '96', '96']);
   return true;
 }
+/** NH's icons the art already has (static/art/items: the editor's own kinds of the same piece, outdoor-catalog.ts
+ *  inEditor), by their bytes' hash → their art key. */
+const ART_ITEMS = join(APP, 'static', 'art', 'items');
+let artItems: Map<string, string> | null = null;
+const hashOf = (f: string) => createHash('sha256').update(readFileSync(f)).digest('hex');
+/** A loose icon that is an art file's bytes: its copy deleted, that file's key (one file a picture). */
+function artTwin(code: string): string | undefined {
+  artItems ??= new Map(readdirSync(ART_ITEMS).filter((n) => n.endsWith('.webp')).map((n) => [hashOf(join(ART_ITEMS, n)), `items/${n.slice(0, -5)}`]));
+  const f = join(OUT, 'icons', `${code}.webp`), key = artItems.get(hashOf(f));
+  if (key) rmSync(f);
+  return key;
+}
 
 if (todo.length) {
   for (const p of todo) for (const f of [p.folder, ...p.tex]) copy(f);
@@ -618,12 +631,12 @@ if (todo.length) {
       mismatch.push(`${p.code} ${p.en}: bounds ${w}x${d} (${(x1 - x0).toFixed(1)} × ${(z1 - z0).toFixed(1)}), NH ${p.size}`);
       [w, d] = nh;
     }
-    const ic = icon(p.code, p.icon, p.cat, PACKED_ICONS.has(p.home ?? ''));
+    const packedIcon = PACKED_ICONS.has(p.home ?? ''), ic = icon(p.code, p.icon, p.cat, packedIcon) && ((!packedIcon && artTwin(p.code)) || 1);
     metas[p.code] = {
       w, d, h: +(y1 - Math.min(0, y0)).toFixed(1), kb: +(bytes / 1024).toFixed(1),
       v: createHash('sha256').update(readFileSync(modelOut(p))).digest('hex').slice(0, 8),
       ...(p.cat ? { cat: p.cat } : {}), ...(p.starter ? { starter: 1 as const } : {}), ...(p.rug ? { rug: 1 as const } : {}),
-      ...(lit ? { lit: 1 as const } : {}), ...(ic ? { icon: 1 as const } : {})
+      ...(lit ? { lit: 1 as const } : {}), ...(ic ? { icon: ic } : {})
     };
     console.log(`${p.code} ${p.en}: ${w}x${d} (NH ${p.size}), ${(bytes / 1024).toFixed(1)} KB, ${tris} tris${lit ? ', lit' : ''}`);
   }

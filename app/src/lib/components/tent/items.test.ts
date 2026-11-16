@@ -87,7 +87,7 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
       expect(JA[`tent.item.${code}`], code).toBeTruthy();
       expect(EN[`tent.item.${code}`], code).toBeTruthy();
       if (iconPacked(code)) continue;
-      const icon = m.icon || !m.cat ? join(STATIC, 'room', 'icons', `${code}.webp`) : join(STATIC, 'art', 'finds', 'items', `${m.cat}.webp`);
+      const icon = typeof m.icon === 'string' ? join(STATIC, 'art', `${m.icon}.webp`) : m.icon || !m.cat ? join(STATIC, 'room', 'icons', `${code}.webp`) : join(STATIC, 'art', 'finds', 'items', `${m.cat}.webp`);
       expect(existsSync(icon), icon).toBe(true);
     }
     // the loose set stays a few megabytes (~19 KB a piece; a room loads only its own), the packed ~30 MB in ~130 packs
@@ -187,6 +187,8 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     // its icon is the ずかん's (already on the phone), NH's own where the ずかん has none
     expect(iconUrl(codeOfFind(mapped[0])!)).toMatch(/art\/finds\/items\//);
     expect(iconUrl(WALLS[0])).toMatch(/room\/icons\/w\d+\.webp$/);
+    // or the art's same picture (an editor kind's: the wooden bucket), never a copy in room/icons
+    expect(iconUrl('f880')).toMatch(/art\/items\/wooden-bucket\.webp$/);
   });
 
   it('every light’s emitter (its point light) is where it glows: NH’s light locator inside the model, else inside its emissive part, at every facing', () => {

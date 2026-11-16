@@ -1,12 +1,14 @@
 // NH's own head icons of its special characters (the export's `Layout_NpcIcon_<code>`, 128 px) as 96 px WebPs,
 // static/room/npc/<id>.webp (under /room/: cached on first use, never at install): the ずかん's cast (components/kiroku/Cast.svelte), Resetti in the editor's reset, Booker and
-// Copper at the pairing page's gate. Which character is which code: world/visitorRoles.ts CAST.
+// Copper at the pairing page's gate. Which character is which code: world/visitorRoles.ts CAST; one picture is one file
+// (npcIcon: the twins'), and a run fails on two files of the same bytes.
 // Usage (from app/): NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run npc-icons
 // The model folder is untrusted input: only a folder's PNG is read (by cwebp); nothing in it is run.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { CAST } from '../src/lib/world/visitorRoles.ts';
+import { CAST, npcIcon } from '../src/lib/world/visitorRoles.ts';
 
 const OUT = join(import.meta.dirname, '..', 'static', 'room', 'npc');
 const ROOT = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');
@@ -16,12 +18,20 @@ if (!ROOT || !existsSync(ROOT)) {
 }
 mkdirSync(OUT, { recursive: true });
 let n = 0;
+const seen = new Map<string, string>();
 for (const [id, code] of CAST) {
   if (!/^[A-Za-z0-9]+$/.test(code)) throw new Error(`${id}: ${code}`);
+  if (npcIcon(id) !== id) {
+    rmSync(join(OUT, `${id}.webp`), { force: true });
+    continue;
+  }
   const dir = join(ROOT, `Layout_NpcIcon_${code}.Nin_NX_NVN`);
   const png = existsSync(dir) ? readdirSync(dir).find((f) => /^[A-Za-z0-9_]+\.png$/.test(f)) : undefined;
   if (!png) throw new Error(`${id}: no Layout_NpcIcon_${code}`);
   execFileSync('cwebp', ['-quiet', '-q', '82', '-alpha_q', '90', '-m', '6', '-resize', '96', '96', join(dir, png), '-o', join(OUT, `${id}.webp`)]);
+  const hash = createHash('sha256').update(readFileSync(join(OUT, `${id}.webp`))).digest('hex');
+  if (seen.has(hash)) throw new Error(`${id}'s icon is ${seen.get(hash)}'s: add it to visitorRoles.ts SAME_ICON`);
+  seen.set(hash, id);
   n++;
 }
 console.log(`${n} icons → static/room/npc/`);

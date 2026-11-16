@@ -27,8 +27,9 @@ interface ItemMeta {
   rug?: 1;
   /** It has an emissive map: lit at dusk and night. */
   lit?: 1;
-  /** Its icon is NH's own (static/room/icons), not the ずかん's. */
-  icon?: 1;
+  /** Its icon is NH's own (static/room/icons), not the ずかん's; or an art key: NH's same picture is that file (static/art/,
+   *  an editor kind's: scripts/room-models.ts artTwin). */
+  icon?: 1 | string;
   /** NH's surface (the ACNH spreadsheet's `surface`): small things stand on its top. */
   s?: 1;
   /** Its top, from its model (scripts/room-surfaces.ts): how high (model units), the rectangle it covers (its own
@@ -130,7 +131,7 @@ export const iconPacked = (code: string): boolean => !!ICONS[code];
  *  file isn't loose: `iconSrc`. */
 export function iconUrl(code: string): string {
   const m = ITEMS[code];
-  const path = m && !m.icon && m.cat ? `art/finds/items/${m.cat}.webp` : `room/icons/${code}.webp`;
+  const path = typeof m?.icon === 'string' ? `art/${m.icon}.webp` : m && !m.icon && m.cat ? `art/finds/items/${m.cat}.webp` : `room/icons/${code}.webp`;
   return staticUrl(path);
 }
 /** Any icon's picture: its URL, or a packed one's object URL. */

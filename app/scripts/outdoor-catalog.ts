@@ -79,7 +79,7 @@ async function sheet(name: string): Promise<Raw[]> {
 const field = (i: Raw, k: string): unknown => i[k] ?? i.variations?.[0]?.[k];
 const base = (file: string) => file.replace(/_Remake_\d+_\d+$/, '');
 
-type Item = Record<string, unknown> & { w: number; d: number; h: number; cat?: string; icon?: 1; pk?: unknown; v?: string; gy?: 1; rug?: 1; wl?: 1; cl?: 1; cr?: string; sm?: 1; s?: 1; u?: string };
+type Item = Record<string, unknown> & { w: number; d: number; h: number; cat?: string; icon?: 1 | string; pk?: unknown; v?: string; gy?: 1; rug?: 1; wl?: 1; cl?: 1; cr?: string; sm?: 1; s?: 1; u?: string };
 const json = (f: string) => JSON.parse(readFileSync(f, 'utf8'));
 const items: Record<string, Item> = { ...json(join(TENT, 'items.json')).items, ...json(join(TENT, 'more.json')).items };
 const packedIcons = json(join(TENT, 'more.json')).icons as Record<string, unknown>;
@@ -123,6 +123,7 @@ for (const r of rows.sort((a, b) => TABS.indexOf(a.tab) - TABS.indexOf(b.tab) ||
   }
   if (m.rug || m.wl || m.cl || m.cr) throw new Error(`outdoor-catalog: ${r.code} isn't a floor piece`);
   // its icon: the ずかん's (already on the phone) or NH's own, loose (a packed one would cost the editor a pack a tab)
+  if (typeof m.icon === 'string') throw new Error(`outdoor-catalog: ${r.code}'s icon is the art's ${m.icon} (an editor kind's: list it in IN_EDITOR)`);
   const own = !m.cat || m.icon;
   if (own && (packedIcons[r.code] || !existsSync(join(APP, 'static', 'room', 'icons', `${r.code}.webp`)))) throw new Error(`outdoor-catalog: ${r.code} has no loose icon`);
   const p: Record<string, unknown> = { t: r.tab, ja: nja, en: nen, i: own ? 1 : m.cat };

@@ -15,6 +15,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, 
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
+import { dedupeArt } from './art-dedupe.ts';
 
 const APP = join(import.meta.dirname, '..');
 const ART = join(APP, 'static', 'art');
@@ -301,6 +302,7 @@ if (probe) {
 }
 manifest.files = Object.fromEntries(Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b)));
 manifest.version += 1;
+dedupeArt(manifest.files, ART);
 writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
 writeFileSync(PLACES, `{\n${Object.entries(places).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n')}\n}\n`);
 rmSync(scratch, { recursive: true, force: true });

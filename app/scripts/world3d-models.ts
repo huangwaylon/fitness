@@ -399,6 +399,13 @@ if (probe) {
 }
 const jobUses = JOBS.flatMap((j) => (j.pack ? j.pack.map((m) => [memberName(j, m.id), m.uses!] as const) : j.uses ? [[j.name, j.uses] as const] : []));
 for (const k of Object.keys(assetMetas)) if (!jobUses.some(([n]) => n === k)) delete assetMetas[k];
+// (a model writeAssets dropped as another's copy, dedupeModels: its meta that one's, as its keys' `m`, so a run that
+// doesn't convert it keeps its keys)
+const oldKeys = existsSync(ASSET_META) ? (JSON.parse(readFileSync(ASSET_META, 'utf8')) as { keys: Record<string, { m: string }> }).keys : {};
+for (const [n, uses] of jobUses) {
+  const m = uses.map((u) => oldKeys[u.key]?.m).find((x) => x && x !== n);
+  if (!assetMetas[n] && m && assetMetas[m]) assetMetas[n] = assetMetas[m];
+}
 const GARDEN_META = join(dirname(META), 'garden.json'), isGarden = (k: string) => k.startsWith('garden/');
 writeGarden(GARDEN_META, Object.fromEntries(Object.entries(assetMetas).filter(([k]) => isGarden(k))));
 writeAssets(ASSET_META, Object.fromEntries(Object.entries(assetMetas).filter(([k]) => !isGarden(k))), metas, POC_USES, jobUses);

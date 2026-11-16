@@ -15,6 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { registerHooks } from 'node:module';
+import { dedupeArt } from './art-dedupe.ts';
 
 // The roster's look helpers import lib/art.ts, which reads Kit's `$app/paths` and the art manifest as JSON: stub the
 // one and load the other as JSON, so this script can read the roster outside Vite.
@@ -272,10 +273,10 @@ async function main() {
   // nh-icons.ts's), so a run can't delete an icon other code still uses.
   if (prune) for (const [key, e] of Object.entries(manifest.files)) {
     if (SPECS[key] || /^(derived|rendered|nh:)/.test(e.source)) continue; // models.ts's, nh-icons.ts's (and the old derived ones')
-    rmSync(join(OUT, e.path), { force: true });
+    if (e.path === `${key}.webp`) rmSync(join(OUT, e.path), { force: true });
     delete manifest.files[key];
   }
-  if (!todo.length) return writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
+  if (!todo.length) return dedupeArt(manifest.files, OUT), writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
 
   const infos = await resolve([...new Set(todo.flatMap(([, [, ...t]]) => t))]);
   const tmp = join(tmpdir(), `island-art-${process.pid}`);
@@ -284,6 +285,7 @@ async function main() {
 
   const save = () => {
     manifest.files = Object.fromEntries(Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b)));
+    dedupeArt(manifest.files, OUT);
     writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
   };
   mkdirSync(OUT, { recursive: true });

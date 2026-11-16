@@ -1,6 +1,6 @@
 // The special characters' roles (visitorRoles.ts): the same on every phone, each guest a model and its copy.
 import { describe, expect, it } from 'vitest';
-import { CAST, COLOURS, GUESTS, LUCKS, ROLES, fortuneOf, giftOf, guestHere, guestOn } from './visitorRoles.ts';
+import { CAST, COLOURS, GUESTS, LUCKS, ROLES, fortuneOf, giftOf, guestHere, guestOn, npcIcon } from './visitorRoles.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { has3d } from '../components/villager3d/manifest.ts';
 import { existsSync } from 'node:fs';
@@ -69,6 +69,6 @@ describe('visitor roles', () => {
   it('the cast: every special character once, NH’s icon for each', () => {
     const ids = CAST.map(([id]) => id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const id of ids) expect(existsSync(join(import.meta.dirname, '../../../static/room/npc', `${id}.webp`)), id).toBe(true);
+    for (const id of ids) expect(existsSync(join(import.meta.dirname, '../../../static/room/npc', `${npcIcon(id)}.webp`)), id).toBe(true);
   });
 });

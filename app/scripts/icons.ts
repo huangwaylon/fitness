@@ -1,9 +1,9 @@
 // Renders the app icons from design/icon/icon-source.png (the couple on a bench on the island, the user's art) with
 // Playwright + the installed Chrome, at exact pixel sizes. Usage (from app/): npm run icons:build → static/icons/*
 // (commit them). The source is a full-bleed square (iOS and Android round or mask it themselves).
-// - apple-touch-icon-180 and icon-192 (PNG), icon-512 and icon-maskable-512 (WebP via cwebp: ~30 KB instead of ~370 KB
-//   of photographic PNG, since they're in the install precache): the full square (both faces sit well inside the
-//   maskable 80% safe circle).
+// - apple-touch-icon-180 and icon-192 (PNG), icon-512 (WebP via cwebp: ~30 KB instead of ~370 KB of photographic PNG):
+//   the full square, both faces well inside the maskable 80% safe circle, so the web manifest lists it as `any` and
+//   again as `maskable` (one file).
 // - icon-192 (the manifest's, revalidated every launch) to 256 colours via ffmpeg (palettegen, no dither: 70 -> 24 KB,
 //   SSIM 0.96; the dithered one was noisier at no gain).
 // - favicon-32: a crop of the two faces, since the whole scene is mush at 32 px.
@@ -26,7 +26,6 @@ const jobs: [crop: Crop, px: number, file: string][] = [
   [FULL, 180, 'apple-touch-icon-180.png'],
   [FULL, 192, 'icon-192.png'],
   [FULL, 512, 'icon-512.webp'],
-  [FULL, 512, 'icon-maskable-512.webp'],
   [FACES, 32, 'favicon-32.png'],
 ];
 

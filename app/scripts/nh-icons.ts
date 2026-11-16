@@ -24,6 +24,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { slug } from './catalog.ts';
+import { dedupeArt } from './art-dedupe.ts';
 
 const APP = join(import.meta.dirname, '..');
 const ART = join(APP, 'static', 'art');
@@ -171,6 +172,7 @@ async function main() {
   for (const [k, e] of Object.entries(manifest.files)) if (!e.source) delete manifest.files[k];
   manifest.files = Object.fromEntries(Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b)));
   manifest.version += n ? 1 : 0;
+  dedupeArt(manifest.files, ART);
   writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
   console.log(`${n} icons from the game files; ${kept.length} kept as they were${kept.length ? `:\n  ${kept.join('\n  ')}` : ''}`);
 }

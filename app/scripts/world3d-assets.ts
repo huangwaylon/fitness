@@ -3,7 +3,7 @@
 // static/room/world3d/<group>/<id>.glb and src/lib/components/world3d/assets.json. The critters' names are NH's own
 // (Japanese, romanised as the game files spell them).
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BUGS, FISH as FISH_TABLE } from '../src/lib/world/critters.ts';
 import { POND_FISH } from '../src/lib/world/pondFish.ts';
@@ -533,6 +533,30 @@ export function writeAssets(file: string, metas: Record<string, Meta>, poc: Reco
     }
   }
   for (const k of Object.values(keys)) if (k.winter && !keys[k.winter as string]) delete k.winter;
+  dedupeModels(models, keys, join(import.meta.dirname, '..', 'static', 'room', 'world3d'));
+  writeAssetsJson(file, models, keys);
+}
+
+/** One file a model: a model whose GLB is another's bytes (its `v`: NH's sea and river fish shadows, the eels' fin and
+ *  narrow, a few winter bushes) is dropped, its keys on the first by name, its file deleted (gone already: a run that
+ *  didn't convert it, its meta the other's: world3d-models.ts). A pack's members share its file: not these. */
+function dedupeModels(models: Record<string, Meta>, keys: Record<string, Record<string, unknown>>, dir: string) {
+  const first = new Map<string, string>();
+  for (const m of Object.keys(models).sort()) {
+    if ((models[m] as { pack?: string }).pack) continue;
+    const to = first.get(models[m].v), file = join(dir, `${m}.glb`);
+    if (!to || (existsSync(file) && !readFileSync(file).equals(readFileSync(join(dir, `${to}.glb`))))) {
+      first.set(models[m].v, to ?? m);
+      continue;
+    }
+    rmSync(file, { force: true });
+    delete models[m];
+    for (const k of Object.values(keys)) if (k.m === m) k.m = to;
+  }
+}
+
+/** assets.json from its models and keys (the KB per kind summed here). */
+function writeAssetsJson(file: string, models: Record<string, Meta>, keys: Record<string, Record<string, unknown>>) {
   const sorted = <T>(o: Record<string, T>) => Object.entries(o).sort(([a], [b]) => a.localeCompare(b));
   const kb: Partial<Record<Cat, number>> = {};
   const catOf = new Map(Object.values(keys).map((k) => [k.m as string, k.cat as Cat]));

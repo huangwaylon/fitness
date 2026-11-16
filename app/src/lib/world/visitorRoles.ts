@@ -120,3 +120,7 @@ export const CAST: readonly (readonly [id: string, code: string, role: CastRole]
   ['katie', 'lom', 'none'], ['leila', 'kps', 'none'], ['luna', 'tap', 'none'], ['lyle', 'ott', 'none'], ['niko', 'mnc', 'none'], ['pelly', 'plk', 'none'],
   ['phyllis', 'plm', 'none'], ['porter', 'mnk', 'none']
 ];
+/** NH's head icons that are one picture (the twins'): one file, static/room/npc/<id>.webp (scripts/npc-icons.ts). */
+const SAME_ICON: Readonly<Record<string, string>> = { tommy: 'timmy' };
+/** A cast member's head icon's file id. */
+export const npcIcon = (id: string): string => SAME_ICON[id] ?? id;

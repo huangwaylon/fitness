@@ -74,7 +74,7 @@
       "source": "rendered from NH's model PltBushHydrangea3 (scripts/models.ts)"
     },
     "bushes/pink-hydrangea-winter": {
-      "path": "bushes/pink-hydrangea-winter.webp",
+      "path": "bushes/blue-hydrangea-winter.webp",
       "w": 125,
       "h": 120,
       "source": "rendered from NH's model PltBushHydrangea2Snow (scripts/models.ts)"
@@ -92,7 +92,7 @@
       "source": "rendered from NH's model PltBushCamellia3 (scripts/models.ts)"
     },
     "bushes/red-camellia-winter": {
-      "path": "bushes/red-camellia-winter.webp",
+      "path": "bushes/pink-camellia-winter.webp",
       "w": 121,
       "h": 119,
       "source": "rendered from NH's model PltBushCamellia2Snow (scripts/models.ts)"
@@ -116,7 +116,7 @@
       "source": "rendered from NH's model PltBushAzalea3 (scripts/models.ts)"
     },
     "bushes/white-azalea-winter": {
-      "path": "bushes/white-azalea-winter.webp",
+      "path": "bushes/pink-azalea-winter.webp",
       "w": 124,
       "h": 121,
       "source": "rendered from NH's model PltBushAzalea2Snow (scripts/models.ts)"
@@ -134,7 +134,7 @@
       "source": "rendered from NH's model PltBushHibiscus3 (scripts/models.ts)"
     },
     "bushes/yellow-hibiscus-winter": {
-      "path": "bushes/yellow-hibiscus-winter.webp",
+      "path": "bushes/red-hibiscus-winter.webp",
       "w": 124,
       "h": 120,
       "source": "rendered from NH's model PltBushHibiscus2Snow (scripts/models.ts)"
@@ -146,7 +146,7 @@
       "source": "rendered from NH's model PltBushOsmanthus3 (scripts/models.ts)"
     },
     "bushes/yellow-tea-olive-winter": {
-      "path": "bushes/yellow-tea-olive-winter.webp",
+      "path": "bushes/orange-tea-olive-winter.webp",
       "w": 118,
       "h": 120,
       "source": "rendered from NH's model PltBushOsmanthus2Snow (scripts/models.ts)"
@@ -2222,7 +2222,7 @@
       "source": "nh:Layout_MenuIcon_Potato"
     },
     "finds/potato-start": {
-      "path": "finds/potato-start.webp",
+      "path": "finds/carrot-start.webp",
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_SeedlingVegetable"
@@ -2240,7 +2240,7 @@
       "source": "nh:Layout_MenuIcon_SquashOrange"
     },
     "finds/pumpkin-start": {
-      "path": "finds/pumpkin-start.webp",
+      "path": "finds/carrot-start.webp",
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_SeedlingVegetable"
@@ -2402,7 +2402,7 @@
       "source": "nh:Layout_MenuIcon_SugarCane"
     },
     "finds/sugarcane-start": {
-      "path": "finds/sugarcane-start.webp",
+      "path": "finds/carrot-start.webp",
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_SeedlingVegetable"
@@ -2444,7 +2444,7 @@
       "source": "nh:Layout_MenuIcon_Tomato"
     },
     "finds/tomato-start": {
-      "path": "finds/tomato-start.webp",
+      "path": "finds/carrot-start.webp",
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_SeedlingVegetable"
@@ -2516,7 +2516,7 @@
       "source": "nh:Layout_MenuIcon_Wheat"
     },
     "finds/wheat-start": {
-      "path": "finds/wheat-start.webp",
+      "path": "finds/carrot-start.webp",
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_SeedlingVegetable"

@@ -38,7 +38,8 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
 `models` (per model: bounds, triangles, KB, content hash, `lit`), `keys` (per art key: the model, its scale, `anchor`
 `feet` / `centre` / `joint`, footprint, tap radius, shadow, facing, winter look, `lazy` group, stand-in) and `budgetKb`
 per kind: the fields are typed and explained in `world3d/assets.ts`; `world3d/assets.test.ts` holds every file to its
-kind's budget and the whole to 15 MB.
+kind's budget and the whole to 15 MB. One file a model: a model whose GLB is another's bytes (the sea and river fish shadows, a few
+winter bushes) is dropped and its keys share the other's (`world3d-assets.ts` dedupeModels).
 
 ## Rules
 
@@ -180,14 +181,14 @@ bytes]`), is in both part tables.
 Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
 
 <!-- assets:start -->
-598 keys, 495 models, 6.34 MB in all.
+598 keys, 483 models, 6.26 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
 | accessory | 3 | 3 | 52.6 | lazily (event) |
 | find | 129 | 52 | 406.8 | with the island |
 | scenery | 4 | 2 | 68.2 | with the island |
-| bush | 25 | 25 | 298.5 | with the island |
+| bush | 25 | 20 | 242.9 | with the island |
 | sea | 40 | 40 | 495 | lazily (sea) |
 | bug | 82 | 82 | 1106.3 | lazily (bug) |
 | fish | 83 | 83 | 891.5 | lazily (fish) |
@@ -197,7 +198,7 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
 | fx | 15 | 15 | 45.8 | with the island |
-| shadow | 15 | 15 | 41.9 | with the island |
+| shadow | 15 | 8 | 22.4 | with the island |
 | tool | 3 | 3 | 18.3 | with the island |
 | tree | 10 | 10 | 325.1 | with the island |
 

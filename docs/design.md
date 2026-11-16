@@ -1085,7 +1085,9 @@ Official NH renders only from `static/art/` through `<OfficialArt>`, with a fall
 screen; WebP, never upscaled. Manifest and helpers `lib/art.ts`; files from `scripts/fetch-assets.ts`, but the
 catalogue's, the critters' and the finds' icons: NH's own 2D icons from the game files (`scripts/nh-icons.ts`). The
 villagers and special characters: `lib/villagers/roster.ts`. Ours: sky, sea, ground, the jar, effects,
-marks, UI sprites. Names follow the Japanese game; no Nintendo fonts.
+marks, UI sprites. Names follow the Japanese game; no Nintendo fonts. One file a picture: a key whose picture another key's file
+already is points at it (`scripts/art-dedupe.ts`; the precached `host/` copies kept), and `static-files.test` fails on
+the same bytes under two names anywhere in `static/`.
 
 **The 3D renders** (`npm run models`: `scripts/models.ts`, its header): what NH has a model of is rendered from it for
 the 2D art (the campsite, the trees in their seasonal looks, the bushes, the lamps, the rocks, the bridge, the

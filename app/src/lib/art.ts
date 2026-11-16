@@ -15,8 +15,10 @@ interface ArtEntry {
   box?: [number, number, number, number];
 }
 
-/** key → [w, h], unpacked from the build's packed manifest (vite.config.ts slimArtManifest); the file is `<key>.webp`. */
+/** key → [w, h], unpacked from the build's packed manifest (vite.config.ts slimArtManifest); the file is `<key>.webp`,
+ *  or a key's of the same picture (SAME: scripts/art-dedupe.ts). */
 const FILES: Record<string, readonly [number, number]> = {};
+const SAME = (manifest as unknown as { same?: Record<string, string> }).same ?? {};
 for (const [g, [w, h, h2, plain, odd]] of Object.entries(manifest.files as unknown as Record<string, [number, number, number, string, string]>)) {
   const key = g.endsWith('/*-icon') ? (n: string) => `${g.slice(0, -7)}/${n}-icon` : (n: string) => `${g}/${n}`;
   for (const n of plain ? plain.split(',') : []) FILES[key(n)] = [w, h];
@@ -44,7 +46,7 @@ const CATALOG_SIZE = [96, 96] as const;
 export function art(key: string | null | undefined): ArtEntry | null {
   const size = key ? (FILES[key] ?? (CATALOG_KEY.test(key) ? CATALOG_SIZE : undefined)) : undefined;
   if (!key || !size) return null;
-  return { path: `${key}.webp`, w: size[0], h: size[1], ...(BOX[key] && { box: BOX[key] }) };
+  return { path: `${SAME[key] ?? key}.webp`, w: size[0], h: size[1], ...(BOX[key] && { box: BOX[key] }) };
 }
 
 /** Every manifest key (dev gallery, asset tests). */
