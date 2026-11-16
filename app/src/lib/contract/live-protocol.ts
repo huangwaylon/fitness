@@ -278,7 +278,7 @@ export interface Notice {
   calm?: true;
 }
 
-/** The events the island doesn't draw, only a sheet does (the meal log, ききみみ and English Study, its flags, the packing lists and trip notes, the
+/** The events the island doesn't draw, only a sheet does (the meal log, English Study and its flags, the packing lists and trip notes, the
  *  wedding board): a change of only these is `calm`. @public (relay/src/store.ts) */
 export const CALM_EVENTS: readonly EventType[] = ['food', 'food_repeat', 'food_recipe', 'food_custom', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'eflag', 'eflag_done'];
 

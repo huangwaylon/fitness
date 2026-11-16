@@ -163,7 +163,7 @@
   const spots = $derived(
     FRUITS.map((f, i) => {
       const met = fruitMet(f, (g) => ring(g).met), pct = f === 'gold' ? 100 : todayPct(ring(f));
-      // picked up by either of us today (the shared day's `fr:<person>:<fruit>`) is gone on both phones
+      // picked up today by the tree's owner (the shared day's `fr:<person>:<fruit>`: pickMaySend) is gone on every phone
       const id = fruitId(person.person, f), by = date === islandDay() ? takenBy(shared.day, `fr:${id}`) : null;
       // anyone's pick-up takes it at once, mine too (a phone that lost its own record, rec, gets my claim back in the
       // relay's replay: a claim can't be made twice, so a fruit kept on the ground for it could never be picked up)

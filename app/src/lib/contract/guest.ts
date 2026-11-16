@@ -1,6 +1,6 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, for a visitor who does
 // everything on the island a member does (2026-11-06: the island is everyone's alike: the もようがえ and the layout,
-// the decorations, the shop, the museum, the homes, the board, the flowers and the stars, ききみみ), sees the members'
+// the decorations, the shop, the museum, the homes, the board, the flowers and the stars, English Study), sees the members'
 // activity and ベル, but never earns or spends ベル, sets none of the members' goals, never writes their own records (the
 // wedding board, a trip's notes) and never sees their bodies (weight, body fat, BMI, lean mass and their goals). These
 // are the record's rules for that key, shared by the record (relay/src/store.ts: what it accepts from the guest and

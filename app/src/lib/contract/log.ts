@@ -98,7 +98,7 @@ export const LOG_EVENTS = {
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
   "api.ok": { src: 'c', f: API },
-  // a members-only call (keyed.ts: the relay recogniser, ジム's settings) that failed: which, why, its status; n: the
+  // a members-only call (keyed.ts: ジム's settings) that failed: which, why, its status; n: the
   // same one's repeats folded while unsent (once an incident)
   "keyed.fail": { src: 'c', f: { ep: ['gym', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
   "auth.lost": { src: 'c', f: { from: ['refresh', 'flush', 'ws'], code: 'n' } },
@@ -127,7 +127,7 @@ export const LOG_EVENTS = {
   // the installed app's storage kept from eviction (sync/persist.ts: asked once): granted, already so, and the quota's MB
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
   // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
-  // whether it's kept from eviction, and (r3 L7) each service worker cache's MB and the recogniser kept (sync/cacheSizes.ts)
+  // whether it's kept from eviction, and (r3 L7) each service worker cache's MB (sync/cacheSizes.ts)
   "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },

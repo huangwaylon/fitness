@@ -801,8 +801,8 @@ a building as the museum ([Buildings](#buildings)), with its own money, かい�
 person has a pocket and かいがら, the guest too.
 
 - **Inside, in 3D** (`shop/plan.ts` on the rooms' engine), in by its door. まめきち and つぶきち
-  behind the counter; today's stock in the room, the same on every phone (stage, table, back wall; the rest in the list
-  only). The camera as the rooms'. **Others in the shop are drawn** (presence `sc: 's'`).
+  behind the counter; my stock of today in the room, the same on each of my phones (stage, table, back wall; the rest in
+  the list only). The camera as the rooms'. **Others in the shop are drawn** (presence `sc: 's'`).
 - **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う); a
   tap on the twins, their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
@@ -816,7 +816,7 @@ person has a pocket and かいがら, the guest too.
 - A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷
-  20); at most 10,000.
+  20); at most 10,000. The goal trees' fruit are their own: 60, the gold one 150 ([Trees](#trees)).
 
 ### Dialogue
 
@@ -1181,6 +1181,9 @@ complete fanfare), fetched at first play. Effects jitter pitch.
 - **Background:** hidden → decks paused, ambience stopped, context suspended; back in front the hour fades in.
 - **Music off:** the fade-out, then every music file in memory released.
 - **iOS session:** `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch.
+- **A video's floor** (`videoFocus`, English Study's lesson while it's open): the island's audio paused and kept so (no
+  tap, return to the front, context coming back or lock-screen ▶ resumes it) and the session `playback`, so a clip
+  plays on silent; leaving it, `ambient` again and the sound as it was (a track held by ⏸ stays held).
 
 ### Audio files
 
