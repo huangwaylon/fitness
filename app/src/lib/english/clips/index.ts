@@ -267,6 +267,16 @@ import { birthdayGuide } from './birthdays.ts';
 import { captainjack } from './captainjack.ts';
 import { ronShot } from './ronshot.ts';
 import { rentASwag } from './rentaswag.ts';
+import { paulManager } from './paulmanager.ts';
+import { iChristmas } from './ichristmas.ts';
+import { officeLock } from './officelock.ts';
+import { prankUtica } from './prankutica.ts';
+import { suckit } from './suckit.ts';
+import { getIn } from './getin.ts';
+import { twilightCapsule } from './twilight.ts';
+import { lesliePleads } from './lesliepleads.ts';
+import { joeyLie } from './joeylie.ts';
+import { pilotOpening } from './pilotopen.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -316,6 +326,8 @@ export const CLIPS: readonly Clip[] = [
   ronAprilTakeOver,
   michaelBlastPast,
   dwightHimself,
+  iChristmas,
+  pilotOpening,
   gameRoom,
   aprilGetFired,
   youngjim,
@@ -338,6 +350,7 @@ export const CLIPS: readonly Clip[] = [
   ryankelly,
   costumePrize,
   germsTalk,
+  suckit,
   newHairdo,
   ronDesk,
   centralperk,
@@ -369,6 +382,7 @@ export const CLIPS: readonly Clip[] = [
   nutribars,
   heroes,
   donnaBully,
+  joeyLie,
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
@@ -387,12 +401,14 @@ export const CLIPS: readonly Clip[] = [
   loveOverMeat,
   tomAccent,
   textsMean,
+  twilightCapsule,
   animalControl,
   chardStand,
   leslieObama,
   jimBack,
   ronTomLucy,
   ronTooth,
+  paulManager,
   setStraight,
   benCriminal,
   ronsTeam,
@@ -468,6 +484,7 @@ export const CLIPS: readonly Clip[] = [
   ronPatience,
   prairie,
   itGuySecrets,
+  lesliePleads,
   annVibes,
   babySex,
   screwIt,
@@ -483,9 +500,11 @@ export const CLIPS: readonly Clip[] = [
   joeyStinks,
   kellyLarson,
   goodHusband,
+  officeLock,
   dwightFavors,
   jerryPainting,
   icNewCast,
+  prankUtica,
   pamLabor,
   piemary,
   momFlirt,
@@ -499,6 +518,7 @@ export const CLIPS: readonly Clip[] = [
   bucketList,
   daveex,
   barbados,
+  getIn,
   saylove,
   didIStutter,
   waffleGift,
