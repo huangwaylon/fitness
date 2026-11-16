@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -15,6 +15,10 @@ describe('service worker cache generations', () => {
   it('drops the food cache of an older layout (island-food-v1: schema 1, datasets as objects) and keeps FOOD_CACHE', () => {
     expect(FOOD_CACHE).toBe('island-food-v2');
     expect(staleCaches(['island-food-v1', FOOD_CACHE, 'island-shell-1'], 'island-shell-1', [...keep, FOOD_CACHE])).toEqual(['island-food-v1']);
+  });
+
+  it("drops ききみみ's old recogniser cache (island-stt-v1, up to ~67 MB; the mic went 2026-11-16)", () => {
+    expect(staleCaches(['island-stt-v1', 'island-shell-1'], 'island-shell-1', keep)).toEqual(['island-stt-v1']);
   });
 
   it('first install: nothing to delete', () => {
@@ -132,13 +136,6 @@ describe('precache', () => {
     // a map drew: its unchanged CSS copied, its changed chunk fetched
     expect(carryPlan(files, [old('assets/maplibre.C1.css')])).toEqual({ copy: ['_app/immutable/assets/maplibre.C1.css'], fetch: ['_app/immutable/chunks/maplibre.M2.js'] });
     expect(carryPlan(files, [])).toEqual({ copy: [], fetch: [] });
-  });
-  it("leaves ききみみ's recogniser out (the model, the runtime, its worker): only a phone that opted in fetches it", () => {
-    const stt = ['stt/manifest.json', '/stt/whisper-tiny.en@2575352d/onnx/encoder_model_quantized.onnx.e93ec822.p0', '/fitness/stt/ort/1.31.0/ort-wasm-simd-threaded.asyncify.mjs',
-      '_app/immutable/workers/stt.CGicPfKg.js', '/fitness/_app/immutable/workers/chunks/stt.Bx1.js'];
-    for (const p of stt) expect([isStt(p.startsWith('/') ? p : `/${p}`), precachable(p)]).toEqual([true, false]);
-    // the probe's own worker and chunks, and a path that merely holds the letters, stay
-    for (const p of ['_app/immutable/workers/gpu.worker-CRCDFGqX.js', '/sttx/a.json', '/fitness/art/x/stt/y.webp', '_app/immutable/chunks/stt-Ab1.js']) expect([isStt(p.startsWith('/') ? p : `/${p}`), precachable(p)]).toEqual([false, true]);
   });
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
     // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)

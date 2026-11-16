@@ -447,9 +447,8 @@ The English listening game's decisions in force; detail in [kikimimi](kikimimi.m
 - **Audio in packs**, each fetched whole and once, on Pages (no R2). Why: Pages' 20,000-file limit.
 - **`play` beside `quiz`:** later games send `play`; the quiz too once every phone knows it (`QUIZ_ON_PLAY`). Why: an
   older phone must still hear it.
-- **The microphone** is off by default and per phone; recordings stay in memory for their round; recognition runs on
-  the phone first, with disclosed fallbacks; no transcript or speaking score leaves the phone. Why: the voice is the
-  most personal data the app would touch.
+- **No microphone** (2026-11-16: the speaking modes removed, `microphone=()`). While it shipped it was off by default,
+  recordings stayed in memory, and no transcript or speaking score left the phone.
 - **Every place playable:** a lane's game offers all five places (catalog.ts `PLACE_LVS`), each with content of its own
   level: harder words and sentences up the island, not only more decoys. Why: everyone picks their level.
 - **Plain speech in the tiles:** a contraction shows as said, never expanded; only gonna / wanna / gotta are respelled

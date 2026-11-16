@@ -7,7 +7,7 @@ hosts. No ベル, かいがら or economy tie.
 This doc is the player's side: rules, screens, progress and rewards. The summary is docs/design.md "ききみみ クイズ";
 the relay's side, docs/backend.md. The other ききみみ docs:
 - [kikimimi-engine.md](kikimimi-engine.md): the round engine, the wire, content loading, audio and each game's deal.
-- [kikimimi-mic.md](kikimimi-mic.md): the opt-in speaking modes and the microphone's privacy rule.
+- [kikimimi-mic.md](kikimimi-mic.md): the speaking modes' removal (2026-11-16) and what is left of them.
 - [curriculum.md](curriculum.md): what is taught (stages, scenarios, units) and the content.
 
 The sheet's strings are kanji Japanese; mode names and the villagers' and しずえ's speech stay spaced kana (the
@@ -19,11 +19,7 @@ this doc names a string by its key.
 The one list for ききみみ (the engine, the mic and the curriculum point here).
 - **Wire:** stop parsing `quiz` on the client no sooner than 11-24, then drop it from the contract, relay last
   (kikimimi-engine.md "Wire migration").
-- **Mic:** the probe on both phones, then the backend thresholds (kikimimi-mic.md "The probe"); until then pick.ts's
-  自動 is whisper once its model is on the phone. Workers AI's data terms still to be written into docs/ops; until
-  then the relay recogniser is never 自動. Leftovers: こたえて！'s "is it this one?" band and its voice / tap
-  preference; くりかえし's device-local speaking span (checked against a month of placements before it touches みみ
-  チェック or the stats); the unit page's ロールプレイ row; the input latency off まねっこ's lag.
+- **Mic:** removed 2026-11-16; the relay's `/stt` and the `mic.*` log events go once old builds are gone (kikimimi-mic.md).
 - **Content:** curriculum.md "Backlog"; じっせん as a ladder, and card tiers below はまべ or above やま; placement on
   accent and phone clips, and a stage-boundary re-check offer.
 - **Not built (UX):** the couple quest's 30 / 90 setting (needs the relay); the 図鑑 tile's new-entry count and a
@@ -239,8 +235,6 @@ theirs from round/registry.ts):
 | 街で・電話で（場面で聞く） | アナウンス, ようじ でんわ, たちぎき |
 | じっくり（長めに聞く） | しずえの ニュース, まるごと 聞く |
 | 寝る前に（点数なし） | おやすみ ものがたり |
-| 声に出す（マイクを使う） | the mic modes, only while the mic is on (kikimimi-mic.md "Where they show") |
-| みんなで picker only | ふたりで ロールプレイ |
 | hub only | しずえの しゅうまつ たいかい (the banner), みみ チェック (first run; again from ⚙) |
 
 Only playable modes show; an empty group is hidden; no "coming soon" wall, no filter UI. おさらい: 8 questions from the
@@ -337,7 +331,7 @@ villagers heard, five hearts ("なかよし"). **スタンプ**: every stamp, le
 ### 設定
 
 `settings/KikiSettings.svelte` (its header has the rows, each kept on the phone: `DEVICE.kiki*`): the sound check, a
-lobby's default, 日本語訳, 今週の目標, みみ チェックをもう一度, 音声の出典, the mic (kikimimi-mic.md "Where they show").
+lobby's default, 日本語訳, 今週の目標, みみ チェックをもう一度, 音声の出典.
 
 ### First run
 
@@ -469,7 +463,7 @@ quotas, "mistake" labels, easy / hard.
 - **After a lock or app switch** iOS suspends the audio context (the voice is Web Audio): a タップして続ける card resumes
   it, so nothing plays with the screen locked; a story pauses and keeps its place.
 
-Speaking is opt-in and private: [kikimimi-mic.md](kikimimi-mic.md) "The privacy rule".
+Speaking was removed on 2026-11-16: [kikimimi-mic.md](kikimimi-mic.md).
 
 ## Tests
 

@@ -177,15 +177,6 @@ export const DEVICE = {
   kikiMada: 'island.kikiMada',
   /** localStorage: `1`: 音の へんしん's dictation answered with tiles on this phone (none: typed; docs/kikimimi.md "音の へんしん"). */
   kikiTiles: 'island.kikiTiles',
-  /** localStorage: `{ on, be }`: ききみみ's mic on this phone (off by default; lib/mic/pick.ts MicPrefs: the switch and
-   *  the 音声認識 picked, `auto` by default). Never synced; no recording is ever kept (docs/kikimimi-mic.md "The privacy rule"). */
-  mic: 'island.mic',
-  /** sessionStorage: `{ step, at }`: a refused mic's 「もう一度試す」 reloaded the app to come back to this mic step
-   *  (lib/mic/retry.ts; let go after 2 min). */
-  micRetry: 'island.micRetry',
-  /** localStorage, the e2e's only: a JSON list of what the tests' recogniser "hears", one entry a take (lib/mic/pick.ts
-   *  stubScript, backends/stub.ts); set at all, the stub is this phone's recogniser. */
-  sttStub: 'e2e.stt',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

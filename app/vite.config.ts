@@ -249,26 +249,6 @@ const featureNames: Plugin = {
   }
 };
 
-/** ききみみ's recogniser (lib/mic/backends/whisper.worker.ts: transformers.js and the ONNX runtime's JS, ~1 MB) under a
- *  stable name (`_app/immutable/workers/stt.<hash>.js`, a split chunk `workers/chunks/stt.<hash>.js`), so the service
- *  worker leaves it out of its precache and serves it from the recogniser's own cache (caches.ts isStt). A worker's
- *  build has its own output names (Kit's `worker` options); this wraps them. */
-const STT_WORKER = /\/src\/lib\/mic\/backends\/whisper\.worker\.ts$/;
-const sttNames: Plugin = {
-  name: 'stt-names',
-  outputOptions(o) {
-    const entry = o.entryFileNames, chunk = o.chunkFileNames;
-    if (typeof entry !== 'string' || typeof chunk !== 'string' || !entry.endsWith('/workers/[name]-[hash].js') || !chunk.endsWith('/workers/chunks/[hash].js')) throw new Error("vite.config.ts stt-names: Kit's worker file names changed; recheck the recogniser's names");
-    const ours = (c: { facadeModuleId?: string | null; moduleIds?: readonly string[] }) =>
-      STT_WORKER.test(c.facadeModuleId ?? '') || !!c.moduleIds?.some((id) => id.includes('/node_modules/@huggingface/transformers/') || id.includes('/node_modules/onnxruntime-'));
-    return {
-      ...o,
-      entryFileNames: (c) => (ours(c) ? entry.replace('[name]-[hash]', 'stt.[hash]') : entry),
-      chunkFileNames: (c) => (ours(c) ? chunk.replace('[hash]', 'stt.[hash]') : chunk)
-    };
-  }
-};
-
 /** three's Basis transcoder as an ES module without eval, for the island's KTX2 worker (components/world3d/ktx2.worker.ts;
  *  world3d/basisModule.ts). Its wasm isn't bundled: static/room/basis/ (scripts/world3d-ktx2.ts), fetched on first use,
  *  never precached. */
@@ -324,28 +304,23 @@ export default defineConfig({
       }
     })
   ],
-  // The recogniser's worker (sttNames): the ONNX runtime's build that takes its wasm from where it's told
-  // (lib/mic/backends/whisper.worker.ts: `/stt/ort/<ver>/`), not the bundle's, which names its 27 MB wasm for Vite to
-  // emit (over Pages' 25 MiB a file, and into the precache).
-  resolve: { alias: [{ find: /^onnxruntime-web\/webgpu$/, replacement: `${import.meta.dirname}/node_modules/onnxruntime-web/dist/ort.webgpu.min.mjs` }] },
   // A chunk imports another by a stable key, the page's import map naming its file (scripts/headers.ts writes it into
   // index.html): a changed chunk is the only file a deploy changes, not every chunk that imports it, and theirs, by its
   // new name (a deploy's update fetched ~250 KB of chunks that differed only in the names they import; review 11/10 r2).
   environments: { client: { build: { chunkImportMap: true } } },
-  worker: { format: 'es', plugins: () => [sttNames, basisModule] },
+  worker: { format: 'es', plugins: () => [basisModule] },
   build: {
     // The two phones it's for: an iPhone 15 and an iPhone 16 (shipped with iOS 17 and 18), on Safari.
     target: ['safari17', 'ios17'],
     cssTarget: ['safari17', 'ios17'],
     // (no gzip of every chunk for the size table: ~1 s of each build, 5 a push; the load budget measures what matters)
     reportCompressedSize: false,
-    // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS; the mic's
-    // AudioWorklet too (lib/mic/capture.worklet.js: the CSP's script-src takes 'self', never a data: URL).
-    assetsInlineLimit: (file) => (/\.woff2?$|\.worklet\.js$/.test(file) ? false : undefined)
+    // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS.
+    assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined)
   },
   // (worker threads, not forked processes: the same isolation per file, a third to almost half less wall time at
   // CI's 4 vCPU, 2026-11-08)
   // (src/no-network.setup.ts: a real request fails the test.) (coverage: `npm run coverage`, scripts/coverage-floors.ts). A timeout catches a hang: 15 s, not vitest's 5, since the
-  // CPU-bound tests (1.5-2.5 s alone: fields, museum visitors, terrain, mic models) passed 5 s on a loaded Mac (2026-11-13).
+  // CPU-bound tests (1.5-2.5 s alone: fields, museum visitors, terrain) passed 5 s on a loaded Mac (2026-11-13).
   test: { include: ['src/**/*.test.ts'], setupFiles: ['src/no-network.setup.ts'], pool: 'threads', testTimeout: 15_000, coverage: { include: ['src/**/*.ts'], reporter: ['json-summary', 'text-summary'] } }
 });

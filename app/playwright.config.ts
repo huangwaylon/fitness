@@ -23,10 +23,8 @@ const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.
 
 // E2E_SLOW=1 (the full tier: everything drawn under CI's software GL, a frame ~0.5 s): 3× the test's time, 2× an expect's
 const SLOW = !!process.env.E2E_SLOW;
-/** The mic's specs: their own project (chromium-mic), no other's. */
-const MIC = /kikimimi-mic.*\.spec\.ts$/;
 // E2E_X3 (the gate: the specs a push changed, scripts/e2e-impact.ts): their tests run in projects of their own,
-// chromium-x3 and chromium-mic-x3 (chromium-x3-solo: SHARED), each 3× and never retried: one failure in three is a flake the push brought, red
+// chromium-x3 (chromium-x3-solo: SHARED), each 3× and never retried: one failure in three is a flake the push brought, red
 const X3 = (process.env.E2E_X3 ?? '').split(/\s+/).filter(Boolean).map((f) => f.replace(/^e2e\//, ''));
 const file = (f: string) => new RegExp(`(^|/)${f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
 /** The specs that change the server for everyone (serve-build.ts `/__e2e/deploy`: the worker's bytes): their three copies
@@ -44,7 +42,6 @@ const x3 = (p: Project, files: string[]): Project[] => {
 // which WebKit's modulepreload never fetches again; a real new build has new URLs).
 const chromium: Project = {
   name: 'chromium',
-  testIgnore: MIC,
   use: {
     ...devices['iPhone 13'],
     browserName: 'chromium',
@@ -68,28 +65,6 @@ const chromium: Project = {
     }
   }
 };
-// the mic's specs (docs/kikimimi-mic.md "Tests"): Chromium's fake media (the permission granted without a prompt; the
-// capture fed one of our clips), else as `chromium` (muted, no audio out, no host but the preview). On a Mac headless
-// Chrome's capture waits on the OS's mic permission, so the specs feed the same clip through a getUserMedia shim too
-const chromiumMic: Project = {
-  name: 'chromium-mic',
-  testMatch: MIC,
-  use: {
-    ...devices['iPhone 13'],
-    browserName: 'chromium',
-    channel: process.env.CI ? undefined : 'chrome',
-    launchOptions: {
-      args: [
-        '--mute-audio',
-        '--disable-audio-output',
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream',
-        `--use-file-for-fake-audio-capture=${import.meta.dirname}/e2e/fixtures/mic/ladder-line.wav`,
-        '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost'
-      ]
-    }
-  }
-};
 
 export default defineConfig({
   testDir: 'e2e',
@@ -107,11 +82,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['./e2e/reporters/flaky.ts'], ['list'], ['json', { outputFile: 'playwright-results.json' }]] : 'list',
   projects: [
     // the users' browser (CI: on macOS, Safari's own WebKit; Linux's draws the island at ~1 frame a second)
-    { name: 'webkit', use: { ...devices['iPhone 15'] }, grepInvert: /@chromium/, testIgnore: MIC },
+    { name: 'webkit', use: { ...devices['iPhone 15'] }, grepInvert: /@chromium/ },
     chromium,
-    chromiumMic,
-    ...x3(chromium, X3.filter((f) => !MIC.test(f))),
-    ...x3(chromiumMic, X3.filter((f) => MIC.test(f)))
+    ...x3(chromium, X3)
   ],
   use: {
     baseURL: `http://127.0.0.1:${PORT}${BASE}/`,

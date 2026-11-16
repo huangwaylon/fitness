@@ -18,7 +18,7 @@ const ALLOW: Record<string, string[]> = {
   // packStore.ts (files in packs: planned, read on the phone; ききみみ's audio and the players' parts)
   math: [],
   quiet: [],
-  // keyed.ts: a members-only call (the key's header, one failure vocabulary): the mic, the bots
+  // keyed.ts: a members-only call (the key's header, one failure vocabulary): the bots
   keyed: [],
   // strip.ts: the bots' status strip, its slots placed (保養所's minutes, ジム's checks), on Tokyo's clock (contract/tokyo.ts)
   strip: ['contract'],
@@ -64,9 +64,6 @@ const ALLOW: Record<string, string[]> = {
   travel: ['contract'],
   // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's
   hiking: ['travel', 'i18n'],
-  // ききみみ's mic (docs/kikimimi-mic.md): the capture's audio session (sound/engine.ts applySession), the relay's
-  // `/stt` and the key (sync)
-  mic: ['sync', 'sound'],
   offline: ['travel', 'hiking', 'sync'],
   // ボット's ジム (docs/bots.md): the gym bot's /status, read and worded for its page, and its
   // /gym/config with the member key (the guards: contract/guards.ts)
@@ -81,7 +78,7 @@ const ALLOW: Record<string, string[]> = {
   // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
 };
 
 function files(dir: string): string[] {
@@ -146,13 +143,12 @@ describe('src/lib folder boundaries', () => {
 
   it('imports only what its folder allows', () => {
     // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib),
-    // sound/kk.ts imports static/audio/kk.json (its own chunk), the mic's recogniser the service worker's STT cache's
-    // name (service-worker/caches.ts STT_CACHE, the cache it fills), the saved map areas the worker's names and tile keys
+    // sound/kk.ts imports static/audio/kk.json (its own chunk), the saved map areas the worker's names and tile keys
     // for them (SAVED_PREFIX, tileKey), and 保養所ボット's demo the ITS contract's example (its/contract-example.json): the only
     // allowed reaches outside.
     const outside = (e: { from: string; to: string }) =>
       (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to)) ||
-      ((e.from === 'mic' || e.from === 'offline') && e.to.endsWith('service-worker/caches.ts')) || (e.from === 'its' && e.to.endsWith('its/contract-example.json'));
+      (e.from === 'offline' && e.to.endsWith('service-worker/caches.ts')) || (e.from === 'its' && e.to.endsWith('its/contract-example.json'));
     const bad = edges
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !FREE.includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);

@@ -28,9 +28,9 @@ export function safeReload(now = Date.now(), why: Why = 'other'): boolean {
   return true;
 }
 
-type Why = 'update' | 'stale' | 'chunk' | 'mic' | 'other';
-/** The page reloaded now, no loop guard (a tap's: a refused mic's 「もう一度試す」, lib/mic/retry.ts), `why` logged first. */
-export function reloadNow(why: Why): void {
+type Why = 'update' | 'stale' | 'chunk' | 'other';
+/** The page reloaded now, no loop guard, `why` logged first. */
+function reloadNow(why: Why): void {
   log('app.reload', { why });
   persistLog();
   markLeaving();

@@ -2,7 +2,7 @@
 // sorted into one vocabulary: `unpaired` (no key here, or no endpoint in this build), `refused` (401, 403, 404: not
 // this key's, the guest's, or a Worker without the route), `failed` (another status: the reply kept for the caller to
 // read), `unreached` (fetch threw: offline, a preflight refused), `timeout`, `aborted` (the caller's signal). Never
-// throws. Used by the relay recogniser (mic/backends/relay.ts) and ジム's 現在の設定 (gym/config.ts).
+// throws. Used by ジム's 現在の設定 (gym/config.ts).
 
 type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
 

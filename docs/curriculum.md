@@ -156,7 +156,6 @@ long-form above.
 | おやすみ ものがたり | extensive listening at 95 %+ comprehension | no score; serials st-johnny, st-cafe, st-tokyo |
 | よみきき サンド | listen → read → listen (metacognition) | no new content; blind first play |
 | おさらい, みみ チェック | spaced review of misses; placement | |
-| the mic modes | prosody, sentence rebuilding, minimal pairs in production | private, opt-in (kikimimi-mic.md) |
 
 **Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles, karaoke, ふたりで タイル (the two roles cover
 the information gap), turn-taking tap games, humour games (hard for TTS), ながら ききみみ (WebKit suspends audio on

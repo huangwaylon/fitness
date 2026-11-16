@@ -124,7 +124,7 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, 旅行, 結婚式, 登山 |
 | [english.md](docs/english.md) | English Study: the TV clips, the lesson flow, the embed, progress and flags |
 | [kikimimi.md](docs/kikimimi.md) | ききみみ, the English listening games, as the player sees them: games, hub, progress, rewards; its open items |
-| [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's round engine, wire, content loading and packs; the mic modes and their privacy rule |
+| [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's round engine, wire, content loading and packs; the mic modes' removal |
 | [curriculum.md](docs/curriculum.md) | What ききみみ teaches: stages, scenarios, units, content and TTS rules, the listening check, its backlog |
 | [app/content/listen/README.md](app/content/listen/README.md) | The listening units' YAML format |
 | [ops/perf.md](docs/ops/perf.md) | Performance: the budgets, how to measure, the open items |

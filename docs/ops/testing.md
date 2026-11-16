@@ -46,9 +46,8 @@ These gate the deploy:
 - `e2e-gate` ×4 (after `plan`): **the gate's e2e** (below) in Chromium, logic mode, without `@render` and `@quarantine`, on the build
   served as Pages serves it (`scripts/serve-build.ts`). Each shard builds (with its budgets); shard 1's `build-pages/`
   is the `site` artifact `deploy` ships.
-- `deploy` (after all of them): `site` to Cloudflare Pages once every job in its `GATE` env (pages.yml; checked by `scripts/deploy-gate.ts`) is `success` (ききみみ's
-  `stt/` from an Actions cache, `scripts/stt-models.ts`). Then https://island-fund.pages.dev must answer this build
-  (`_app/version.json`, 6 min at most) with its CSP header and the `stt/` manifest: only the deployment's own URL
+- `deploy` (after all of them): `site` to Cloudflare Pages once every job in its `GATE` env (pages.yml; checked by `scripts/deploy-gate.ts`) is `success`. Then
+  https://island-fund.pages.dev must answer this build (`_app/version.json`, 6 min at most) with its CSP header: only the deployment's own URL
   serving it is a **Pages alias lag** warning; neither is **Deploy not served**, red. No Cloudflare secret: a warning,
   nothing deployed.
 
@@ -112,7 +111,6 @@ npm run e2e -- --project=webkit   # this checkout's own port (from its path; E2E
 npm run e2e -- e2e/demo.spec.ts --project=webkit --repeat-each=10   # hunt a flake
 E2E_SWIFTSHADER=1 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # software GL, as CI's Linux draws
 E2E_RENDER=none npm run e2e -- --project=chromium   # the logic tier: the 3D engines draw nothing
-npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts): a fake mic fed our clip, muted
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```

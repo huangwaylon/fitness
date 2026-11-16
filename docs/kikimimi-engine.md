@@ -1,7 +1,7 @@
 # ききみみ engine: rounds, the wire, content and audio
 
 The platform under every ききみみ game. The player's side is [kikimimi.md](kikimimi.md); what is taught,
-[curriculum.md](curriculum.md); the mic modes, [kikimimi-mic.md](kikimimi-mic.md); the relay's side, docs/backend.md
+[curriculum.md](curriculum.md); the mic modes' removal, [kikimimi-mic.md](kikimimi-mic.md); the relay's side, docs/backend.md
 ("Live relay", "Events" `listen`, "Service worker"). What isn't built: kikimimi.md "Open items".
 
 ## Start here
@@ -10,8 +10,7 @@ The platform under every ききみみ game. The player's side is [kikimimi.md](k
   GameDef), kikimimi/catalog.ts (the modes, groups and places).
 - **Hooks:** `?kikimimi=fast` (short answer windows), `?wire=quiz|guarded|play`, `?date=` (ops/testing.md "URL
   params"); `KIKI_SHOTS=1` makes the e2e specs write screenshots under /tmp/kikimimi-shots/.
-- **Tests:** `npx vitest run src/lib/kikimimi`; `npm run e2e -- kikimimi --project=chromium` (the mic's:
-  `--project=chromium-mic`).
+- **Tests:** `npx vitest run src/lib/kikimimi`; `npm run e2e -- kikimimi --project=chromium`.
 - **Content:** edit the YAML (content/units, content/listen) or a TS bank, then `npm run kikimimi:levels`; levels.test
   fails until the committed output matches. A new listening file: app/content/listen/README.md "Adding a listening
   file".
@@ -22,7 +21,7 @@ The platform under every ききみみ game. The player's side is [kikimimi.md](k
 app/src/lib/kikimimi/
   round/          game-agnostic, pure, no Svelte: session, schedule, tally, wire, link, decks, types, registry
   games/<gm>/     def.ts (a pure GameDef) and lane.ts; listened.ts + listenLane.ts (the listening games);
-                  versions.ts (BUILD_V); modes.ts (the mic modes' metas)
+                  versions.ts (BUILD_V); modes.ts (音の へんしん's meta)
   bank*.ts, dialogues.ts, content/, source.ts, ladders.ts           the TS banks
   compile.ts, pool.ts, packing.ts, units.ts, listen.ts, story.ts, levels/   the compiler and its output
   progress.ts, srs.ts, advice.ts, path.ts, today.ts, week.ts, stamps.ts …   the folds behind 記録 and the menu
@@ -30,12 +29,12 @@ app/src/lib/components/kikimimi/
   frame/          the shared round, reveal and results parts ("Shared UI")
   <gm>/views.ts   a game's lazy lobby / play / results pages
   nav.ts, KikimimiSheet.svelte, game.svelte.ts, clipPlayer.svelte.ts, chunkQueue.ts, packs.ts
-  hub/, asobu/, mode/, path/, zukan/, story/, taikai/, settings/, onboarding/, lesson/, scene/, mic/   (lazy)
+  hub/, asobu/, mode/, path/, zukan/, story/, taikai/, settings/, onboarding/, lesson/, scene/   (lazy)
   KikimimiHost.svelte, invite.svelte.ts   always loaded; hear `quiz` and `play`
 app/content/units/, app/content/listen/ (README.md: the listening schemas), app/content/mic/
 ```
 
-The phone's ききみみ keys are `DEVICE.kikimimi*`, `kiki*` and `mic` (sync/storage.ts).
+The phone's ききみみ keys are `DEVICE.kikimimi*` and `kiki*` (sync/storage.ts).
 
 ## The round engine
 
@@ -76,7 +75,7 @@ sheet's chunk (`EAGER`); a later game is one `LATER` line and its own chunk.
 - **Strings:** `i18n/kiki-<gm>.{ja,en}.json` (`kiki.<gm>.*`), added by the views' `kiki-<gm>.ts` (deps.test: kikimimi/
   may not import i18n/).
 - **Catalog** (catalog.ts): each mode's shelf, icon, `places` and `game`. A lane's mode shows once its `LATER` line
-  exists and a file of its game is `listened` (`LANES.ready`), or its `content()` says so. A mic mode brings its own
+  exists and a file of its game is `listened` (`LANES.ready`), or its `content()` says so. 音の へんしん brings its own
   `mode` (`addMode`).
 - **A new game:** its lane, views and content; a `BUILD_V` line; `npm run kikimimi:levels`; teach cv.test's `decksOf` its
   deal. Tests: its kinds (determinism, grade, team, the row's round-trip through `listenOf`, `valid` bounds), the
@@ -85,8 +84,8 @@ sheet's chunk (`EAGER`); a later game is one `LATER` line and its own chunk.
 ### Shared UI
 
 `components/kikimimi/frame/`: the frames every game fills with snippets (RoundFrame, RevealFrame, Results /
-ResultsShell, ScoreCard), the review rows (ReviewList, ReviewRow, LineRow, HearButton, Note, FirstStamp, Why),
-ChoiceGrid (with the mic's answer slot), PlayerChip, Sandwich / SandButton; `Transcript` and `scene/*` beside it. Every
+ResultsShell, ScoreCard), the review rows (ReviewList, ReviewRow, HearButton, Note, FirstStamp, Why),
+ChoiceGrid, PlayerChip, Sandwich / SandButton; `Transcript` and `scene/*` beside it. Every
 `data-kiki-*` hook stays on its element.
 
 ## Sync

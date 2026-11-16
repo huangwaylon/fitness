@@ -115,7 +115,7 @@ session's).
 5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
    written/read against 100k / 5M a day).
 6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy (`STT_OFF = "1"` for `/stt`).
-   The mic probe's results: `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
+   Old builds' mic events: `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
 7. Close the alert's issue with the cause.
 
 ## The alert

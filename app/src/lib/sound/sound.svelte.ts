@@ -49,12 +49,10 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: 
 export const voice = $state<{ on: boolean; state: string | null }>({ on: false, state: null });
 /** The audio session's type before ききみみ set one (null: none set, or not supported). */
 let sessionWas: string | null = null;
-/** ききみみ's mic is open (micSession): the session is 'play-and-record' over the game's 'playback'. */
-let micOn = false;
-/** The session type ききみみ wants now ('play-and-record' with the mic open, 'playback' with a game on, else none): set
- *  it, and once none is wanted put back the one from before the first. One owner of the session type. */
+/** The session type ききみみ wants now ('playback' with a game on, else none): set it, and once none is wanted put back
+ *  the one from before the first. One owner of the session type. */
 function layerSession(): void {
-  const want = micOn ? 'play-and-record' : voice.on ? 'playback' : null;
+  const want = voice.on ? 'playback' : null;
   if (want) {
     const was = applySession(want);
     sessionWas ??= was;
@@ -221,7 +219,7 @@ export function voiceSession(on: boolean): boolean {
     if (!voice.on) return true;
     voice.on = false;
     e.clearVoice();
-    e.holdAwake(micOn);
+    e.holdAwake(false);
     layerSession();
     apply();
     return true;
@@ -241,25 +239,6 @@ export function voiceSession(on: boolean): boolean {
   setTimeout(() => (voice.state = ctx.state), QUEUED_DROP_MS);
   apply();
   return true;
-}
-
-/** ききみみ's mic open (`true`, inside the tap that opens it) or closed: the audio session 'play-and-record' while it
- *  is (WebKit: the clips play on while the mic records), the music held ducked and the context awake; closed, the
- *  session back to the game's 'playback' (or to what it was before) and the music up again. */
-export function micSession(on: boolean): void {
-  if (typeof window === 'undefined' || on === micOn) return;
-  micOn = on;
-  layerSession();
-  engine?.holdAwake(on || voice.on);
-  engine?.holdDuck(on);
-}
-
-/** The voice's audio context (made or woken: call it inside a tap), for the mic's capture: one clock for the clips and
- *  the mic. Null where Web Audio is missing. */
-export function audioCtx(): AudioContext | null {
-  if (typeof window === 'undefined') return null;
-  const e = eng();
-  return e.wakeVoice() ? e.ctx : null;
 }
 
 /** A voice clip decoded from the bytes `fetchBytes` gives (ききみみ's: a slice of its pack, components/kikimimi/packs.ts),

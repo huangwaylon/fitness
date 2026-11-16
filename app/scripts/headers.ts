@@ -2,18 +2,17 @@
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
-// - The Permissions-Policy turns every powerful feature off but geolocation, the microphone and the camera, which only
-//   our origin may ask for (the trip map's locate button, ききみみ's mic, ごはん's barcode scanner).
+// - The Permissions-Policy turns every powerful feature off (the microphone too) but geolocation and the camera, which
+//   only our origin may ask for (the trip map's locate button, ごはん's barcode scanner).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts; ききみみ's packs and bed in their names:
 //   sound.test, kikimimi/packing.test and tachi/board.test fail on a file whose bytes changed alone), and so are ごはん's picture sheets (`food-img/*.webp`:
 //   their names carry their content hash), the rooms' and the players' packs (`room/pack/*.pak`, `room/player/*.pak`:
 //   `<name>.<hash>.pak`, more.json and parts.json name them), the island's KTX2 packs (`room/tex/`: named by their
-//   images' hashes, fetched with the encoder's `?e=`), the Basis transcoder (`room/basis/`, fetched with its `?v=`) and
-//   ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or version), and the models (`*.glb`, all
+//   images' hashes, fetched with the encoder's `?e=`), the Basis transcoder (`room/basis/`, fetched with its `?v=`), and the models (`*.glb`, all
 //   under room/: every load carries its manifest's `?v=`, the converter's hash, and the room cache keeps them by URL
 //   for good anyway; world3d/hashed.test checks each file has its manifest's `v`); everything else keeps Pages'
-//   default (revalidated: `stt/manifest.json`, art/, terrain/, room/homes' loose KTX2s). One rule a path: Pages joins
+//   default (revalidated: art/, terrain/, room/homes' loose KTX2s). One rule a path: Pages joins
 //   two rules' same header with a comma.
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
@@ -22,15 +21,13 @@
 //   (Before 404.html is copied from it: `npm run build`.)
 // - index.html carries the chunks' import map (vite.config.ts chunkImportMap: a chunk imports another by a stable key),
 //   inline before any module, its hash added to the CSP's script-src.
-// - The models (`*.glb`, ~1,800 files, 51 MB), the room and player packs and the recogniser's parts (`stt/**.pN`; not
-//   its whole files: the runtime's .mjs is imported by its URL) go as application/x-protobuf: Cloudflare compresses only
-//   the types on its list, and model/gltf-binary and octet-stream aren't (gzip takes 28 % off the models, ~16 % off the
-//   packs, ~50 % off the recogniser); the loaders read the bytes whatever the type, and none trusts content-length (a
+// - The models (`*.glb`, ~1,800 files, 51 MB) and the room and player packs go as application/x-protobuf: Cloudflare
+//   compresses only the types on its list, and model/gltf-binary and octet-stream aren't (gzip takes 28 % off the
+//   models, ~16 % off the packs); the loaders read the bytes whatever the type, and none trusts content-length (a
 //   compressed answer has none).
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { STT_SETS } from '../src/lib/mic/models.ts';
 import { BOOT_WATCH_JS } from '../src/lib/ui-state/bootWatch.ts';
 
 const root = join(import.meta.dirname, '..', 'build-pages');
@@ -103,17 +100,11 @@ const permissions = ['payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'ac
   .map((f) => `${f}=()`)
   // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
   .concat('geolocation=(self)')
-  // ききみみ's mic (docs/kikimimi-mic.md "Hosting and the service worker"): our own origin only, opened only from a tap
-  .concat('microphone=(self)')
+  // no mic: nothing on the site records (ききみみ's speaking games went 2026-11-16)
+  .concat('microphone=()')
   // ごはん's barcode scanner (docs/food-data.md "Barcodes"): our own origin only, opened only from its button's tap
   .concat('camera=(self)')
   .join(', ');
-
-/** The recogniser's parts (`<path>.<sha8>.p<i>`, lib/mic/models.ts partNames), one rule an index. */
-const sttParts = Array.from({ length: Math.max(...STT_SETS.flatMap((s) => s.files.map((f) => f.parts))) }, (_, i) => `
-${base}/stt/*.p${i}
-  Content-Type: application/x-protobuf
-`).join('');
 
 const headers = `${base}/*
   Content-Security-Policy: ${csp.replace(/&#39;/g, "'").replace(/&quot;/g, '"')}; frame-ancestors 'none'
@@ -147,9 +138,6 @@ ${base}/room/tex/*
 ${base}/room/basis/*
   Cache-Control: public, max-age=31536000, immutable
 
-${base}/stt/:dir/*
-  Cache-Control: public, max-age=31536000, immutable
-${sttParts}
 ${base}/*.glb
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: application/x-protobuf

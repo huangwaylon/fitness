@@ -15,8 +15,8 @@ actions are `event` rows sent through a persisted queue and shown at once; healt
 Shortcut (`ingest`).
 
 One Worker, three SQLite-backed Durable Objects (`relay/wrangler.toml`): `ROOM` (`IslandRoom`: [Live
-relay](#live-relay)), `STORE` (`IslandStore`) and `LOG` (`IslandLog`: [observability](ops/observability.md)); it also
-serves `/stt`, ききみみ's recogniser ([kikimimi-mic.md](kikimimi-mic.md)).
+relay](#live-relay)), `STORE` (`IslandStore`) and `LOG` (`IslandLog`: [observability](ops/observability.md)); it still
+serves `/stt` for old builds (retired: [kikimimi-mic.md](kikimimi-mic.md)).
 
 <a id="tabs"></a>
 ## Tables
@@ -445,7 +445,6 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` dropped, then LRU past `ROOM_CAP_BYTES` (`roomEvict`) |
 | `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU past `ART_CAP_BYTES` |
 | `island-listen-v1` | ききみみ's audio ([kikimimi-engine.md](kikimimi-engine.md#playback)) | cache-first, never revalidated, outlives builds; a Range request passes to the network (`listenEvict`) |
-| `island-stt-v1` | the whisper model and runtime under `/stt/` ([kikimimi-mic.md](kikimimi-mic.md#hosting-and-the-service-worker)) | filled by the page after the mic opt-in (`lib/mic/models.ts ensureStt`); the worker only serves it |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |

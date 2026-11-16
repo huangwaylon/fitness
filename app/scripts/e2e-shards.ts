@@ -125,7 +125,7 @@ if (cmd === 'timings') {
   }
   rmSync(dir, { recursive: true });
   // (the fold keeps every key it ever saw: a renamed or deleted test's time stays unless pruned to today's tests)
-  const json = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', '--project=chromium', '--project=chromium-mic'], { encoding: 'utf8', maxBuffer: 64 << 20 });
+  const json = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', '--project=chromium'], { encoding: 'utf8', maxBuffer: 64 << 20 });
   const now = new Set(tests(JSON.parse(json.slice(json.indexOf('{'))) as Report).map((t) => key(t.file, t.titles)));
   const kept = Object.fromEntries(Object.entries(got).filter(([k]) => now.has(k)));
   writeFileSync('e2e/timings.json', sorted(kept));
