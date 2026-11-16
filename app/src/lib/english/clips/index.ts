@@ -204,6 +204,16 @@ import { triplets } from './triplets.ts';
 import { itGuySecrets } from './itguysecret.ts';
 import { rossJill } from './rossjill.ts';
 import { loveOverMeat } from './loveovermeat.ts';
+import { dwightAppt } from './dwightappt.ts';
+import { dwightHimself } from './dwighthimsf.ts';
+import { dwightCar } from './dwightcar.ts';
+import { tomsApartment } from './tomsapt.ts';
+import { wonderDog } from './wonderdog.ts';
+import { ronDentist } from './rondentist.ts';
+import { ronTough } from './rontough.ts';
+import { andyTest } from './andytest.ts';
+import { ronTomLucy } from './rontomlucy.ts';
+import { annApril } from './annapril.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -227,16 +237,21 @@ export const CLIPS: readonly Clip[] = [
   ronHumour,
   dwightFetish,
   benpunch,
+  dwightAppt,
   thiefOfJoy,
   benSaves,
   ronSelfDefense,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
+  dwightHimself,
   gameRoom,
   aprilGetFired,
   youngjim,
   aprilMeetings,
+  dwightCar,
+  tomsApartment,
+  wonderDog,
   johnnyGoodbye,
   theMerger,
   creedDebbie,
@@ -246,6 +261,7 @@ export const CLIPS: readonly Clip[] = [
   liceOffice,
   thisIsMyBoyfriendDerek,
   dwightVsDwight,
+  ronDentist,
   newHairdo,
   ronDesk,
   centralperk,
@@ -259,20 +275,22 @@ export const CLIPS: readonly Clip[] = [
   leslieCancelled,
   chrisBestMan,
   andyInvestigates,
+  ronTough,
   jointMission,
   ronLeslieLunch,
   treatTurnabout,
   kneecapping,
+  andyTest,
   heroes,
   donnaBully,
-  saveJJs,
   tobySafety,
   jansStroller,
   vanBidding,
   ronAward,
+  // ふつう
+  saveJJs,
   unsexyRoadTrip,
   weddingFund,
-  // ふつう
   buttOfJoke,
   ronSlash,
   mexBus,
@@ -289,6 +307,7 @@ export const CLIPS: readonly Clip[] = [
   chardStand,
   leslieObama,
   jimBack,
+  ronTomLucy,
   setStraight,
   benCriminal,
   ronsTeam,
@@ -311,6 +330,7 @@ export const CLIPS: readonly Clip[] = [
   ronPermit,
   ronMeditate,
   newport,
+  annApril,
   bookSpoilers,
   possumTaskForce,
   tomSwagger,

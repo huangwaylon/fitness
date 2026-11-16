@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const saveJJs: Clip = {
   id: 'savejjs', video: 'KM-unaWrilI', title: 'The Mission To Save Breakfast Food', dur: 211, wpm: 156,
-  band: 'slow', tags: ['店・レストラン', '職場'],
+  band: 'mid', tags: ['店・レストラン', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

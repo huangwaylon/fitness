@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const weddingFund: Clip = {
   id: 'weddingfund', video: 'R-OG-Lp9DHc', title: 'Monica\'s Parents Spent All of Her Wedding Money', dur: 89, wpm: 156,
-  band: 'slow', tags: ['家', '恋愛'],
+  band: 'mid', tags: ['家', '恋愛'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [

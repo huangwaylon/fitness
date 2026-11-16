@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const unsexyRoadTrip: Clip = {
   id: 'roadtrip', video: 'D_Ny_S2UC_U', title: 'Leslie\'s Road Trip Playlist for the Unsexiest of Rides', dur: 183,
-  wpm: 156, band: 'slow', tags: ['恋愛', '旅行'],
+  wpm: 156, band: 'mid', tags: ['恋愛', '旅行'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
