@@ -71,7 +71,7 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
   question can be left unanswered, and まとめ is always reachable.
 - **A miss:** the segment plays again by itself, a nudge with the `cue`, the choices as they were, and a quiet 答えを見る.
   A second miss shows 「答えはこれ」. Never red, ×, a sound or a percentage; ◎ first try, ○ second.
-- **書き取り:** the words heard are counted (「k/n 語 聞き取れました」), the rest shown in the answer colour.
+- **書き取り:** the words heard are counted (「k/n 語 聞き取れました」; none: 「答えはこれ」, never a 0), the rest shown in the answer colour.
 - **まとめ:** the scenes worth hearing again (anything not ◎), the clip's phrases, 通して見る. It finishes the clip once
   six questions (all, if fewer) are answered or shown; else it says how many are left and goes to the first.
 - Leaving keeps the place on this phone: the clip, the question, the answers. A play whose まとめ was reached is

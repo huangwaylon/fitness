@@ -65,7 +65,7 @@
           {@const done = clips.filter((m) => mine.clips.has(m.id)).length}
           <button type="button" class="row colrow" data-sfx="page" data-en-colrow={c.id} onclick={() => into(c.id)}>
             <span class="name">{s(`col.${c.id}`)}</span>
-            <span class="count">{s('libN', { n: clips.length })}{#if done} · {s('colDone', { n: done })}{/if}</span>
+            <span class="count">{s('libN', { n: clips.length })}{#if done}{` · ${s('colDone', { n: done })}`}{/if}</span>
             <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </button>
         {/each}

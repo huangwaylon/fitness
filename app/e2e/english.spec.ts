@@ -112,6 +112,10 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await card.locator('[data-choice="0"]').click();
   await expect(card.locator('[data-en-nudge]')).toContainText('もう一度聞いてみましょう。');
   await expect(card.locator('[data-en-nudge]')).toContainText((await questionAt(page, 0)).cue);
+  // brought up only as far as it takes: the question and its choices stay on screen for the retry
+  await expect(card.locator('[data-en-nudge]')).toBeInViewport();
+  await expect(card.locator('.stem')).toBeInViewport();
+  await expect(card.locator('[data-choice]').first()).toBeInViewport();
   await expect(card).toHaveAttribute('data-result', 'open');
   await expect(card.locator('[data-ans]')).toHaveCount(0);
   // the segment replayed by itself: from 0, paused at 10 s
@@ -159,9 +163,15 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
     if (!x.answer) continue;
     dict = true;
     const c = cardAt(page, n), all = x.answer.split(' ').length;
+    // no word heard: never a 0, the answer shown
+    await c.locator('[data-en-dict]').fill('zzz');
+    await c.locator('[data-en-dict-go]').click();
+    await expect(c.locator('[data-en-reveal] .rhead')).toHaveText('答えはこれ');
     await c.locator('[data-en-dict]').fill(x.answer.split(' ').slice(1).join(' '));
     await c.locator('[data-en-dict-go]').click();
     await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all} 語 聞き取れました`);
+    // the words apart, as typed
+    expect((await c.locator('[data-en-reveal] .words').textContent())!.trim().split(/\s+/)).toHaveLength(all);
     await c.locator('[data-en-dict]').fill(x.answer.toUpperCase() + '.');
     await c.locator('[data-en-dict-go]').click();
     await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all} 語 聞き取れました`);
@@ -191,7 +201,7 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await start(page);
   await lesson(page).locator('[data-en-flag="clip"]').click();
   const fs = page.locator('dialog[open] [data-en-flag-sheet="clip"]');
-  await expect(fs).toContainText('このクリップ全体');
+  await expect(fs).toContainText('この動画全体');
   await expect(fs.locator('[data-en-kind="other"]')).toHaveAttribute('aria-checked', 'true');
   await fs.locator('[data-en-flag-send]').click();
   await expect(page.locator('dialog[open] [data-en-flag-thanks]')).toBeVisible();
@@ -213,7 +223,7 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   // (the question as the flag saw it: no bank needed)
   await expect(rows.nth(0)).toContainText(`答え · Rachel Is a Bad Waitress · ${q0.stem}`);
   await expect(rows.nth(0)).toContainText('「salary の前が聞こえない」');
-  await expect(rows.nth(1)).toContainText('その他 · Rachel Is a Bad Waitress · クリップ');
+  await expect(rows.nth(1)).toContainText('その他 · Rachel Is a Bad Waitress · 動画');
   await expect(rows.nth(0)).toHaveAttribute('data-en-flag-row', 'open');
 });
 
@@ -261,6 +271,7 @@ test('the controls: play / pause on from where it stopped, −5 秒, this part a
   const n0 = (await ytCommands(page)).length;
   await c.locator('[data-yt-toggle="play"]').click();
   await expect(c.locator('[data-yt-toggle="pause"]')).toBeVisible();
+  await expect(c.locator('[data-yt-clock]')).toHaveText(/^\d:\d\d \/ \d:\d\d$/);
   await c.locator('[data-yt-toggle="pause"]').click();
   await c.locator('[data-yt-toggle="play"]').click();
   await expect.poll(async () => (await from(page, n0, 'playVideo')).map((x) => x[0])).toEqual(['playVideo', 'pauseVideo', 'playVideo']);
@@ -414,6 +425,7 @@ test('collections on すべて (those with 4+ clips), each a level: its note, it
   const work = cols.find((x) => x.c.id === 'work')!;
   const row = lib.locator('[data-en-colrow="work"]');
   await expect(row).toHaveText(new RegExp(`職場の会話\\s*${work.clips.length}本`));
+  await expect(row.locator('.count')).toHaveText(`${work.clips.length}本`); // none finished: no 0本完了
   // a chip's view has none
   await lib.locator('[data-en-chip="Friends"]').click();
   await expect(lib.locator('[data-en-cols]')).toHaveCount(0);

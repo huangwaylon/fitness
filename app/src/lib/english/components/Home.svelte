@@ -145,7 +145,7 @@
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
   .off { text-align: center; }
   .today .btn { margin-top: 6px; }
-  .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); padding: 10px; cursor: pointer; justify-self: center; }
+  .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); min-height: var(--hit); padding: 0 12px; cursor: pointer; justify-self: center; }
   .lib { flex: none; }
   .all { width: 100%; text-align: left; }
   .all .name { flex: 1; min-width: 0; font-weight: 700; }

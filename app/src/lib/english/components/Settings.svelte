@@ -33,7 +33,7 @@
       <span class="prl">{s('hard')}<small>{s('hardNote')}</small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
-    <h3 class="sec-label">{s('flags')}{#if open}<span class="n"> · {s('flagsOpen', { n: open })}</span>{/if}</h3>
+    <h3 class="sec-label">{s('flags')}{#if open}<span class="n">{` · ${s('flagsOpen', { n: open })}`}</span>{/if}</h3>
     {#if flags.length}
       <div class="card dense" role="list" data-en-flags>
         {#each flags as f (f.id)}

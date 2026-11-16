@@ -32,7 +32,7 @@
     {#if seg}
       <button type="button" class="chip s" data-sfx="tick" disabled={!ready} data-yt-seg onclick={() => player?.play(seg[0], seg[1])}><Icon name="replay" size={16} />{s('segAgain')}</button>
     {/if}
-    <span class="time" data-yt-clock>{clock(player?.time ?? 0)}{#if dur} / {clock(dur)}{/if}</span>
+    <span class="time" data-yt-clock>{clock(player?.time ?? 0)}{#if dur}{` / ${clock(dur)}`}{/if}</span>
     {#if slow}
       <button type="button" class="chip s" data-sfx="tick" aria-pressed={player?.rate === 0.75} data-yt-rate={player?.rate} onclick={() => player?.setRate(player.rate === 0.75 ? 1 : 0.75)}>0.75×</button>
     {/if}

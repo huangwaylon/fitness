@@ -146,7 +146,8 @@
   const intoView = (el: HTMLElement, what: 'reveal' | 'nudge') => {
     if (fresh !== what) return;
     fresh = null;
-    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    // the nudge only as far as it takes: the question and its choices stay on screen for the retry
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: what === 'nudge' ? 'nearest' : 'start' }));
   };
 
   function choose(i: number): void {
@@ -184,10 +185,15 @@
   const keyed = (line: string) => line.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
   const head = (x: QState) => {
     const r = x.r!;
-    return r.k === 'first' ? s('first') : r.k === 'second' ? s('second') : r.k === 'dict' ? s('heardWords', heard(r)) : s('shown');
+    if (r.k !== 'dict') return r.k === 'first' ? s('first') : r.k === 'second' ? s('second') : s('shown');
+    // never a 0 (docs/english.md "A miss"): no word heard reads as the answer shown
+    const h = heard(r);
+    return h.hit ? s('heardWords', h) : s('shown');
   };
   const again = $derived(at === len ? againOf(qs, st) : []);
   const phrase = (x: Question) => x.use.split('（')[0];
+  /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
+  const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
   const flag = (i: number | null) => ((flagQ = i), (flagOpen = true));
 </script>
 
@@ -199,7 +205,7 @@
     {#if at === -1}
       <article class="card pad" data-en-watch>
         <button type="button" class="flag" data-sfx="open" data-en-flag="clip" onclick={() => flag(null)}><Icon name="flag" size={14} />{s('flag')}</button>
-        <p class="lead"><b>{s('watchHead')}</b><br /><span class="meta">{s('watchNote')}</span></p>
+        <p class="lead"><b>{s('watchHead')}</b><span class="meta">{s('watchNote')}</span></p>
         <button type="button" class="btn sky" data-sfx="tick" data-en-watch-all onclick={() => ((watched = true), player?.play(0, null))}>
           {watched || player?.state === 'ended' ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
@@ -216,7 +222,7 @@
       {#key at}
         <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
           <button type="button" class="flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), from: q.seg[0], to: q.seg[1] })}{#if q.level === 'C2'} <span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
+          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), ...span(q) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
           <button type="button" class="btn sky small" data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
@@ -237,7 +243,7 @@
           {#if cur.r}
             <div class="reveal" data-en-reveal={cur.r.k} {@attach (el) => untrack(() => intoView(el, 'reveal'))}>
               <p class="rhead">{head(cur)}</p>
-              {#if cur.r.k === 'dict'}<p class="words" lang="en">{#each cur.r.words as w, i (i)}<span class:hit={w.hit} class:gap={!w.hit}>{w.w}</span> {/each}</p>{/if}
+              {#if cur.r.k === 'dict'}<p class="words" lang="en">{#each cur.r.words as w, i (i)}<span class:hit={w.hit} class:gap={!w.hit}>{w.w}</span>{' '}{/each}</p>{/if}
               {#if q.line}<p class="line" lang="en">{#each keyed(q.line) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>{/if}
               <dl class="why">
                 <dt>{s('said')}</dt><dd>{q.said}</dd>
@@ -257,7 +263,7 @@
           <ul class="again">
             {#each again as i (i)}
               <li><button type="button" class="btn small paper seg" data-sfx="tick" data-en-again={i} onclick={() => seg(qs[i])}>
-                <span>{s('seg', { from: qs[i].seg[0], to: qs[i].seg[1] })}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
+                <span>{s('seg', span(qs[i]))}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
             {/each}
           </ul>
         {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
@@ -291,7 +297,8 @@
   .card p { margin: 0; }
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
   .tag.hard { padding: 0 7px; margin-left: 2px; }
-  .lead, .stem { padding-right: 64px; }
+  .lead b, .card > .meta:first-of-type, .stem { padding-right: 64px; }
+  .lead b { display: block; }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
   .flag { position: absolute; top: 6px; right: 6px; appearance: none; border: 0; background: none; display: inline-flex; align-items: center; gap: 3px; min-height: var(--hit);
     padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); cursor: pointer; }
@@ -305,7 +312,7 @@
   input { font-size: var(--fs-input); padding: 10px 12px; border-radius: var(--r-row); border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); }
   .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); color: var(--c-ink); }
   .nudge .meta { color: inherit; }
-  .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); padding: 10px 4px; cursor: pointer; justify-self: start; }
+  .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); min-height: var(--hit); padding: 0 4px; cursor: pointer; justify-self: start; }
   .nudge .quiet { color: var(--c-ink-soft); text-decoration: underline; }
   .reveal, .nudge { scroll-margin-top: 72px; }
   .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }

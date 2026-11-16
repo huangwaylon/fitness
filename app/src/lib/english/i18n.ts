@@ -64,7 +64,7 @@ const S = {
   partnerWeek: { ja: '{name}の今週', en: "{name}'s week" },
   // the lesson
   watchHead: { ja: 'まず最後まで見てみましょう', en: 'Watch it all the way through first' },
-  watchNote: { ja: 'おすすめ：先に通して見てから質問へ。いつでも行き来できます。', en: 'Suggested: watch it once, then the questions. You can move back and forth any time.' },
+  watchNote: { ja: '質問へはいつでも進めます。', en: 'You can go to the questions any time.' },
   watchAll: { ja: '▶ 全部見る（{dur}）', en: '▶ Watch it all ({dur})' },
   watchAgain: { ja: '▶ もう一度見る', en: '▶ Watch again' },
   toQuestions: { ja: '質問へ ›', en: 'Questions ›' },
@@ -89,7 +89,6 @@ const S = {
   endHead: { ja: 'おつかれさまでした', en: 'Nice work' },
   endAgain: { ja: 'もう一度聞きたい場面', en: 'Scenes to hear again' },
   endAll: { ja: '全部、1回目で聞き取れました ◎', en: 'Every one on the first listen ◎' },
-  endPhrases: { ja: '今日のフレーズ', en: "Today's phrases" },
   endWatch: { ja: '▶ もう一度、通して見る', en: '▶ Watch it through again' },
   endHome: { ja: '完了', en: 'Done' },
   seg: { ja: '▶ {from}–{to}秒', en: '▶ {from}–{to} s' },
@@ -132,7 +131,7 @@ const S = {
   // flags
   flag: { ja: '報告', en: 'Report' },
   flagHead: { ja: 'どこが気になりましたか？', en: 'What looks off?' },
-  flagClip: { ja: 'このクリップ全体', en: 'The whole clip' },
+  flagClip: { ja: 'この動画全体', en: 'The whole clip' },
   flagQ: { ja: '質問 {i}：{stem}', en: 'Question {i}: {stem}' },
   flagNote: { ja: 'ひとこと（なくてもOK）', en: 'A note (optional)' },
   flagSend: { ja: '送る', en: 'Send' },
@@ -149,7 +148,7 @@ const S = {
   flagOpen: { ja: '確認待ち', en: 'Waiting' },
   flagFixed: { ja: '確認済み：直しました', en: 'Checked: fixed' },
   flagKept: { ja: '確認済み：このままです', en: 'Checked: kept as is' },
-  flagWhereClip: { ja: 'クリップ', en: 'The clip' }
+  flagWhereClip: { ja: '動画', en: 'The clip' }
 } satisfies Record<string, { ja: string; en: string }>;
 
 export type StringKey = keyof typeof S;
