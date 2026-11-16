@@ -22,7 +22,7 @@
   const home = () => (level = { k: 'home' });
 </script>
 
-<Sheet bind:open tunes label={s('title')} variant="full" timed="kikimimi" name="english">
+<Sheet bind:open tunes label={s('title')} variant="full" timed="english" name="english">
   <div class="en" lang={i18n.locale} data-english data-level={level.k}>
     {#if clip}
       {#key clip.id}<Lesson {clip} onback={home} onclose={close} />{/key}

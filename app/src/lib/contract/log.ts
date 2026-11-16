@@ -20,7 +20,7 @@ export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'to
 const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
 /** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts), the `use` counters' `sheet:` and the
  *  error events' `sheet` (the topmost open one). */
-const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'english', 'panel', 'zukan', 'settings', 'bots', 'farm', 'other'] as const;
+const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'english', 'panel', 'zukan', 'settings', 'bots', 'farm', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `walk` (someone walking in view)

@@ -34,7 +34,7 @@ export type SheetChunk = keyof typeof CHUNKS;
  *  chunk.fail named by the sheet: Safari's names no file). */
 export function prefetchSheet(k: SheetChunk): Promise<unknown> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return Promise.resolve();
-  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k === 'english' ? 'kikimimi' : k)));
+  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k)));
 }
 
 const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 200));
