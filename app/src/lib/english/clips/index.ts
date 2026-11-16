@@ -232,6 +232,16 @@ import { whiteWhale } from './whitewhale.ts';
 import { ronTooth } from './rontooth.ts';
 import { dwightVsAndy } from './dwightandy.ts';
 import { deppCondo } from './deppcondo.ts';
+import { leslieMom } from './lesliemom.ts';
+import { pilotFacts } from './pilotfacts.ts';
+import { gellerBowl } from './gellerbowl.ts';
+import { costumePrize } from './costumeprize.ts';
+import { ronsKey } from './ronskey.ts';
+import { zorpVigil } from './zorpvigil.ts';
+import { galBrunch } from './galbrunch.ts';
+import { videoDome } from './videodome.ts';
+import { kingpin } from './kingpin.ts';
+import { tomAccent } from './tomaccent.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -292,6 +302,7 @@ export const CLIPS: readonly Clip[] = [
   dwightVsDwight,
   ronDentist,
   ryankelly,
+  costumePrize,
   newHairdo,
   ronDesk,
   centralperk,
@@ -306,6 +317,7 @@ export const CLIPS: readonly Clip[] = [
   chrisBestMan,
   andyInvestigates,
   ronTough,
+  ronsKey,
   // ふつう
   jointMission,
   ronLeslieLunch,
@@ -333,6 +345,7 @@ export const CLIPS: readonly Clip[] = [
   ronLeslieLocked,
   womensAppreciation,
   loveOverMeat,
+  tomAccent,
   animalControl,
   chardStand,
   leslieObama,
@@ -364,11 +377,13 @@ export const CLIPS: readonly Clip[] = [
   annApril,
   bookSpoilers,
   possumTaskForce,
+  leslieMom,
   tomSwagger,
   ronWill,
   benLeslieKiss,
   ronChrisCrib,
   girlyApt,
+  zorpVigil,
   tomNegotiate,
   donnaTweets,
   donnaPosts,
@@ -379,17 +394,18 @@ export const CLIPS: readonly Clip[] = [
   dwightUrine,
   conesOfDunshire,
   dwightquits,
+  videoDome,
   scarnRead,
   gryzzlBoxes,
   distract,
   leslieAnnForum,
   ronMeditation,
-  // 速い
   oldSchool,
   joeyCrossword,
   pamGivenUp,
   verySober,
   rossJill,
+  // 速い
   parkspilot,
   prefired,
   whosDaddy,
@@ -409,6 +425,7 @@ export const CLIPS: readonly Clip[] = [
   annVibes,
   babySex,
   screwIt,
+  galBrunch,
   aprilFired,
   runsAgain,
   promSeason,
@@ -436,6 +453,7 @@ export const CLIPS: readonly Clip[] = [
   saylove,
   didIStutter,
   waffleGift,
+  pilotFacts,
   sideQuest,
   ronPoetry,
   aprilTynnyfer,
@@ -458,6 +476,7 @@ export const CLIPS: readonly Clip[] = [
   thirdNipple,
   emmaLocked,
   perfectCrime,
+  kingpin,
   fakedating,
   ironkitchen,
   seatingChart,
@@ -465,7 +484,8 @@ export const CLIPS: readonly Clip[] = [
   pityFudge,
   fiftyYears,
   noturkey,
-  sebastian
+  sebastian,
+  gellerBowl
 ];
 
 /** Each wpm's band, the library cut in thirds (types.ts Band): ゆっくり below the ⌊n/3⌋th slowest, 速い from the

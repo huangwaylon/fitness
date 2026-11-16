@@ -229,5 +229,15 @@ export const PLANNED: readonly string[] = [
   'offgrid',
   'dwightfavors',
   'piemary',
-  'deppcondo'
+  'deppcondo',
+  'ronskey',
+  'costumeprize',
+  'tomaccent',
+  'zorpvigil',
+  'gellerbowl',
+  'lesliemom',
+  'videodome',
+  'pilotfacts',
+  'galbrunch',
+  'kingpin'
 ];

@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const joeyCrossword: Clip = {
-  id: 'crossword', video: 'Ae1i7W2s9wY', title: 'Joey Is in a Crossword Puzzle', dur: 75, wpm: 170, band: 'fast',
+  id: 'crossword', video: 'Ae1i7W2s9wY', title: 'Joey Is in a Crossword Puzzle', dur: 75, wpm: 170, band: 'mid',
   tags: ['友だち', '家'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

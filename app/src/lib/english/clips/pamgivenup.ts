@@ -18,7 +18,7 @@
 import type { Clip } from '../types.ts';
 
 export const pamGivenUp: Clip = {
-  id: 'pamgivenup', video: 'EvsFBWUMrCw', title: 'Pam Has Just Given Up Trying', dur: 204, wpm: 170, band: 'fast',
+  id: 'pamgivenup', video: 'EvsFBWUMrCw', title: 'Pam Has Just Given Up Trying', dur: 204, wpm: 170, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
