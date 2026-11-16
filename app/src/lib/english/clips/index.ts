@@ -64,6 +64,16 @@ import { janiceSocks } from './janicesocks.ts';
 import { kellyLarson } from './kellylarson.ts';
 import { workBestie } from './workbestie.ts';
 import { pamGivenUp } from './pamgivenup.ts';
+import { daveReturns } from './davereturns.ts';
+import { joeyCrossword } from './crossword.ts';
+import { ronShowHost } from './ronhost.ts';
+import { ronPermit } from './ronpermit.ts';
+import { tobySafety } from './tobysafety.ts';
+import { pikitis } from './pikitis.ts';
+import { didIStutter } from './stutter.ts';
+import { prairie } from './prairie.ts';
+import { aprilTynnyfer } from './tynnyfer.ts';
+import { jansStroller } from './stroller.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -72,27 +82,35 @@ export const CLIPS: readonly Clip[] = [
   laundromat,
   centralperk,
   furniture,
+  ronShowHost,
   buttOfJoke,
   twodates,
+  tobySafety,
   fluSeason,
   phoebeRuns,
+  jansStroller,
   ronLeslieLocked,
   womensAppreciation,
   imFine,
   dwightDate,
+  ronPermit,
   ronMeditate,
   tomSwagger,
   mamasDead,
   workBestie,
   scarnRead,
-  oldSchool,
-  pamGivenUp,
   // ふつう
+  oldSchool,
+  joeyCrossword,
+  pamGivenUp,
   janiceSocks,
+  pikitis,
   joeymakeup,
   whosDaddy,
-  annVibes,
+  daveReturns,
   snowCones,
+  annVibes,
+  prairie,
   babySex,
   aprilFired,
   getaway,
@@ -102,16 +120,18 @@ export const CLIPS: readonly Clip[] = [
   phoebebook,
   kellyLarson,
   pamLabor,
-  saylove,
   ronHearing,
-  waffleGift,
   ryanOffice,
   annOffended,
   couplesOnly,
   // 速い
+  saylove,
+  didIStutter,
+  waffleGift,
   sideQuest,
-  annclub,
+  aprilTynnyfer,
   joeyStay,
+  annclub,
   disadulation,
   pitchWomen,
   kathybook,

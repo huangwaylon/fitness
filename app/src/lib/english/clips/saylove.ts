@@ -8,7 +8,7 @@ import type { Clip } from '../types.ts';
 
 export const saylove: Clip = {
   id: 'saylove', video: 'xmaFIlnrzsQ', title: 'The First Time Ross & Rachel Say "Love"', dur: 53, wpm: 186,
-  band: 'mid', tags: ['恋愛'],
+  band: 'fast', tags: ['恋愛'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [

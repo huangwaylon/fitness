@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const oldSchool: Clip = {
-  id: 'oldschool', video: 'DbBF91_b4eA', title: 'Tom and Jerry Go Old School', dur: 196, wpm: 170, band: 'slow',
+  id: 'oldschool', video: 'DbBF91_b4eA', title: 'Tom and Jerry Go Old School', dur: 196, wpm: 170, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
