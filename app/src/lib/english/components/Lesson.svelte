@@ -194,7 +194,7 @@
       {#key at}
         <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
           <button type="button" class="flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), from: q.seg[0], to: q.seg[1] })}{#if (q.level as string) === 'C2'} <span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
+          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), from: q.seg[0], to: q.seg[1] })}{#if q.level === 'C2'} <span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
           <button type="button" class="btn sky small" data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}

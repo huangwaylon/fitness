@@ -5,11 +5,10 @@
 // share). plan-order.ts keeps the order once written (scripts/english-plan.ts), so a clip added later goes after the
 // planned ones and nobody's today jumps back; the build orders the library's index by planOf (vite.config.ts
 // english-data). Pure.
-import { showOf } from './catalog.ts';
 import { PLANNED } from './plan-order.ts';
 import type { Clip } from './types.ts';
 
-type PlanClip = Pick<Clip, 'id' | 'wpm' | 'tags' | 'credit' | 'questions'>;
+type PlanClip = Pick<Clip, 'id' | 'wpm' | 'tags' | 'show' | 'questions'>;
 
 /** How far ahead of the ramp a clip may come for variety (clips). */
 const WINDOW = 5;
@@ -45,17 +44,17 @@ export function planOf<C extends PlanClip>(clips: readonly C[], planned: readonl
   const ease = easeOf(clips);
   const pool = clips.filter((c) => !out.includes(c)).sort((a, b) => ease.get(a.id)! - ease.get(b.id)! || (a.id < b.id ? -1 : 1));
   const share = new Map<string, number>();
-  for (const c of clips) share.set(showOf(c.credit), (share.get(showOf(c.credit)) ?? 0) + 1 / clips.length);
+  for (const c of clips) share.set(c.show, (share.get(c.show) ?? 0) + 1 / clips.length);
   const count = new Map<string, number>();
-  for (const c of out) count.set(showOf(c.credit), (count.get(showOf(c.credit)) ?? 0) + 1);
+  for (const c of out) count.set(c.show, (count.get(c.show) ?? 0) + 1);
   while (pool.length) {
     const [a, b] = [out.at(-1), out.at(-2)];
     const cost = (c: C, i: number) => {
-      const show = showOf(c.credit);
+      const show = c.show;
       let k = i;
-      if (a && b && showOf(a.credit) === show && showOf(b.credit) === show) k += 10;
+      if (a && b && a.show === show && b.show === show) k += 10;
       if (a && b && c.tags.some((t) => a.tags.includes(t) && b.tags.includes(t))) k += 10;
-      if (a && showOf(a.credit) === show) k += 1;
+      if (a && a.show === show) k += 1;
       if (a && c.tags[0] && a.tags.includes(c.tags[0])) k += 0.5;
       return k + 3 * ((count.get(show) ?? 0) / Math.max(1, out.length) - share.get(show)!);
     };
@@ -63,7 +62,7 @@ export function planOf<C extends PlanClip>(clips: readonly C[], planned: readonl
     for (let i = 1; i < Math.min(WINDOW, pool.length); i++) if (cost(pool[i], i) < cost(pool[best], best)) best = i;
     const [c] = pool.splice(best, 1);
     out.push(c);
-    count.set(showOf(c.credit), (count.get(showOf(c.credit)) ?? 0) + 1);
+    count.set(c.show, (count.get(c.show) ?? 0) + 1);
   }
   return out;
 }

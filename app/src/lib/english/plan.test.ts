@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CLIPS } from './clips/index.ts';
-import { showOf } from './catalog.ts';
 import { PLANNED } from './plan-order.ts';
 import { planOf } from './plan.ts';
 
-const CREDIT = { F: 'Friends (official YouTube channel)', O: 'The Office (official YouTube channel)', P: 'Parks and Recreation (official YouTube channel)' };
-const clip = (id: string, wpm: number, show: keyof typeof CREDIT, tags: string[] = ['家']) => ({ id, wpm, tags, credit: CREDIT[show], questions: [] });
+const SHOW = { F: 'Friends', O: 'The Office', P: 'Parks and Recreation' } as const;
+const clip = (id: string, wpm: number, show: keyof typeof SHOW, tags: string[] = ['家']) => ({ id, wpm, tags, show: SHOW[show], questions: [] });
 
 describe('the shared plan', () => {
   it('holds every clip once, the written order first', () => {
@@ -34,7 +33,7 @@ describe('the shared plan', () => {
     const plan = planOf(lib, []);
     for (let i = 2; i < plan.length - 2; i++) {
       const [a, b, c] = plan.slice(i - 2, i + 1);
-      expect(new Set([a, b, c].map((x) => showOf(x.credit))).size).toBeGreaterThan(1);
+      expect(new Set([a, b, c].map((x) => x.show)).size).toBeGreaterThan(1);
       expect(c.tags.some((t) => a.tags.includes(t) && b.tags.includes(t))).toBe(false);
     }
   });

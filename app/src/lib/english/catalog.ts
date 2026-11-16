@@ -26,15 +26,10 @@ export interface ClipMeta {
   credit: string;
 }
 
-/** The show of a clip, from its credit (the channel). */
-export function showOf(credit: string): Show {
-  if (/Parks and Recreation/.test(credit)) return 'Parks';
-  if (/The Office/.test(credit)) return 'The Office';
-  return 'Friends';
-}
+const SHORT: Record<Clip['show'], Show> = { Friends: 'Friends', 'The Office': 'The Office', 'Parks and Recreation': 'Parks' };
 
 export const metaOf = (c: Clip): ClipMeta => ({
-  id: c.id, video: c.video, title: c.title, show: showOf(c.credit), dur: c.dur, band: c.band, tags: c.tags,
+  id: c.id, video: c.video, title: c.title, show: SHORT[c.show], dur: c.dur, band: c.band, tags: c.tags,
   n: Math.min(drawSize(c.dur), c.questions.filter((q) => !q.retired).length), v: clipHash(c), credit: c.credit
 });
 

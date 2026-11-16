@@ -4,7 +4,6 @@
 // Prints the order: show, band, wpm, situations.
 import { writeFileSync } from 'node:fs';
 import { CLIPS } from '../src/lib/english/clips/index.ts';
-import { showOf } from '../src/lib/english/catalog.ts';
 import { planOf } from '../src/lib/english/plan.ts';
 
 const order = process.argv.includes('--fresh') ? planOf(CLIPS, []) : planOf(CLIPS);
@@ -17,4 +16,4 @@ ${order.map((c) => `  '${c.id}'`).join(',\n')}
 ];
 `
 );
-for (const [i, c] of order.entries()) console.log(String(i + 1).padStart(3), c.id.padEnd(13), showOf(c.credit).padEnd(10), c.band.padEnd(4), String(c.wpm).padStart(3), c.tags.join(' '));
+for (const [i, c] of order.entries()) console.log(String(i + 1).padStart(3), c.id.padEnd(13), c.show.padEnd(20), c.band.padEnd(4), String(c.wpm).padStart(3), c.tags.join(' '));
