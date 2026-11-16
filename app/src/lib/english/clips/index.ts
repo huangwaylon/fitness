@@ -185,6 +185,15 @@ import { giantHead } from './gianthead.ts';
 import { kneecapping } from './kneecapping.ts';
 import { weddingFund } from './weddingfund.ts';
 import { conesOfDunshire } from './dunshire.ts';
+import { benCool } from './bencool.ts';
+import { benpunch } from './benpunch.ts';
+import { fakingIt } from './fakingit.ts';
+import { aprilMeetings } from './aprilmeets.ts';
+import { ronHumour } from './ronhumour.ts';
+import { ronFixes } from './ronfixes.ts';
+import { dwightVsDwight } from './dwightself.ts';
+import { dwightquits } from './dwightquits.ts';
+import { michaelBlastPast } from './blastpast.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -193,6 +202,7 @@ export const CLIPS: readonly Clip[] = [
   laundromat,
   chickParent,
   sellVeg,
+  ronFixes,
   chairModel,
   ronsReviews,
   mostLovedDenmark,
@@ -200,15 +210,20 @@ export const CLIPS: readonly Clip[] = [
   dwightHobbit,
   jerryBurritoLie,
   jerryMugged,
+  benCool,
   rossBreak,
+  ronHumour,
   dwightFetish,
+  benpunch,
   thiefOfJoy,
   benSaves,
   charity,
   ronAprilTakeOver,
+  michaelBlastPast,
   gameRoom,
   aprilGetFired,
   youngjim,
+  aprilMeetings,
   johnnyGoodbye,
   theMerger,
   creedDebbie,
@@ -216,6 +231,7 @@ export const CLIPS: readonly Clip[] = [
   dinnerParty,
   liceOffice,
   thisIsMyBoyfriendDerek,
+  dwightVsDwight,
   newHairdo,
   ronDesk,
   centralperk,
@@ -293,6 +309,7 @@ export const CLIPS: readonly Clip[] = [
   andySecret,
   dwightUrine,
   conesOfDunshire,
+  dwightquits,
   scarnRead,
   gryzzlBoxes,
   distract,
@@ -307,6 +324,7 @@ export const CLIPS: readonly Clip[] = [
   whosDaddy,
   joeyBrain,
   benSkates,
+  fakingIt,
   // 速い
   janiceSocks,
   pikitis,
