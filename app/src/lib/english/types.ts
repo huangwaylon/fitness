@@ -119,13 +119,13 @@ export interface TranscriptLine {
 /** A transcript file: transcripts/<video id>.en.json (scripts/english-transcripts.ts, from the whisper pass). */
 export interface TranscriptFile {
   video: string;
-  lines: readonly { t: readonly [number, number]; en: string }[];
+  lines: readonly Omit<TranscriptLine, 'ja'>[];
 }
 
 /** A translation file: transcripts/<video id>.ja.json, one line for each of the en file's, same `t`s. */
 export interface JaTranscriptFile {
   video: string;
-  lines: readonly { t: readonly [number, number]; ja: string }[];
+  lines: readonly Required<Pick<TranscriptLine, 't' | 'ja'>>[];
 }
 
 /** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes (and beats) and

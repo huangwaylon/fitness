@@ -83,9 +83,8 @@ if (!dir) {
   process.exit(1);
 }
 const write = rest.includes('--write');
-const eq = rest.find((a) => a.startsWith('--ids='));
 const at = rest.indexOf('--ids');
-const ids = eq ? eq.slice(6).split(',') : at >= 0 ? (rest[at + 1]?.split(',') ?? []) : [];
+const ids = at >= 0 ? (rest[at + 1]?.split(',') ?? []) : [];
 const videos = readdirSync(dir).filter((d) => existsSync(join(dir, d, 'whisper.json')) && (ids.length === 0 || ids.includes(d)));
 const here = join(import.meta.dirname, '../src/lib/english/transcripts');
 let written = 0;

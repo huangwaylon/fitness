@@ -2,13 +2,12 @@
 // whisper pass, and every <video>.ja.json, our translations. The en file: the shape, time order and no overlaps, each
 // line ≤ 200 characters (the clip's length is the build's to hold: vite.config.ts english-data). The ja file: one line
 // for each of the en file's with the same `t`, each ≤ 80 characters, every character in the trimmed font (names in
-// katakana, no English lines). And lineAt.
+// katakana, no English lines). The line at the playhead is scenes.ts atTime's (scenes.test.ts).
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { lineAt } from './transcripts.ts';
-import { covers, parseRanges } from '../../../scripts/font-subsets.ts';
-import type { JaTranscriptFile, TranscriptFile, TranscriptLine } from './types.ts';
+import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
+import type { JaTranscriptFile, TranscriptFile } from './types.ts';
 
 const DIR = join(import.meta.dirname, 'transcripts');
 const EN = readdirSync(DIR).filter((f) => f.endsWith('.en.json'));
@@ -17,10 +16,6 @@ const EN_MAX = 200;
 const JA_MAX = 80;
 /** Two Latin words in a row: an English line. */
 const ENGLISH = /[A-Za-z]+[\s,.!?]+[A-Za-z]+/;
-/** The trimmed font's ranges (lib/styles/fonts.css), each weight. */
-const css = readFileSync(join(import.meta.dirname, '../styles/fonts.css'), 'utf8');
-const fontRanges = (w: number) => [...css.matchAll(/@font-face\s*{[^}]*}/g)].filter((m) => m[0].includes(`font-weight: ${w};`)).flatMap((m) => parseRanges(/unicode-range:\s*([^;]+);/.exec(m[0])?.[1] ?? ''));
-const FONT = [fontRanges(500), fontRanges(700)];
 
 /** The lines' timing: [from, to] with 0 ≤ from < to, in time order, no overlaps; the problems. */
 function checkTiming(lines: readonly { t: readonly [number, number] }[], name: string): string[] {
@@ -72,20 +67,9 @@ describe('transcript files', () => {
       if (typeof l.ja !== 'string' || !l.ja.trim()) return void bad.push(`${at}: ja`);
       if ([...l.ja].length > JA_MAX) bad.push(`${at}: over ${JA_MAX} characters`);
       if (ENGLISH.test(l.ja)) bad.push(`${at}: English words (names in katakana)`);
-      const missing = [...l.ja].filter((ch) => ch.codePointAt(0)! > 0x7f && FONT.some((r) => !covers(r, ch.codePointAt(0)!)));
+      const missing = notInTrimmedFont(l.ja);
       if (missing.length) bad.push(`${at}: not in the trimmed font: ${missing.join('')} (choose another word)`);
     });
     expect(bad).toEqual([]);
-  });
-});
-
-describe('lineAt', () => {
-  const ls: TranscriptLine[] = [
-    { t: [0, 4], en: 'a' },
-    { t: [4, 10], en: 'b' },
-    { t: [22, 28], en: 'c' },
-  ];
-  it('the line begun by then; in a gap the one before; before the first, the first', () => {
-    expect([0, 3.9, 4, 9.9, 15, 22, 99].map((t) => lineAt(ls, t))).toEqual([0, 0, 1, 1, 1, 2, 2]);
   });
 });

@@ -98,8 +98,9 @@
   let flagOpen = $state(false);
   let body: HTMLElement | undefined = $state();
   /** A level open over the lesson's place (kept): この動画のフレーズ, or セリフ when the bank has transcript lines. */
-  let study = $state<false | 'phrases' | 'lines'>(false);
-  const toStudy = (on: false | 'phrases' | 'lines') => ((study = on), body?.scrollTo({ top: 0 }));
+  type Level = false | 'phrases' | 'lines';
+  let study = $state<Level>(false);
+  const toStudy = (on: Level) => ((study = on), body?.scrollTo({ top: 0 }));
 
   const q = $derived<Question | null>(at >= 0 && at < len ? qs[at] : null);
   const cur = $derived(q ? st[at] : null);

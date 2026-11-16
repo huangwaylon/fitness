@@ -135,7 +135,7 @@ more is precached.
 `ja` ≤ 30 characters with the scenes' line rules, `k` in the set; no keys but `video`, `scenes`, `beats`. The bank
 carries `beats` as well (their version is in the scenes' hash).
 
-Under the controls (under the video with 字幕 英語: The player), one calm line: the scene at the playhead (`scenes.ts sceneAt`; in a gap, the one before), following
+Under the controls (under the video with 字幕 英語: The player), one calm line: the scene at the playhead (`scenes.ts atTime`; in a gap, the one before), following
 it as it plays; with beats, the beat at the playhead instead, its category in a small pill before it. Tapped: a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
 there. With beats, the scenes are headers with their beats under them (time, category, line), and a chip row
 (すべて and the categories present) filters the beats; a header or a beat tapped plays from there. 字幕's sheet's あらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
@@ -155,7 +155,7 @@ no English lines (names in katakana), every character in the trimmed font. The b
 bank, each with its `ja` when in, held to the clip's length (a file written before its clip joined the library needs no
 rewrite); the bank's file name carries the transcript's version (`catalog.ts withTranscript`); nothing more is
 precached. The lesson bar's セリフ button (a bank with lines only) opens the whole transcript as a level under the
-pinned player: the line at the playhead marked and kept in view (`transcripts.ts lineAt`; a touch or a wheel on the list
+pinned player: the line at the playhead marked and kept in view (`scenes.ts atTime`; a touch or a wheel on the list
 holds the follow 6 s), one tapped plays from there, the Japanese under its English when in.
 
 ## Progress

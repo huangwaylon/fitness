@@ -2,15 +2,15 @@
   // セリフ (docs/english.md "Transcripts"): a level of the lesson, under its pinned player. Every line of the clip's
   // transcript, in time order: its m:ss, the English, and under it in smaller grey our Japanese when the clip's
   // translation is in (the bank's lines carry it; a translation landing is a new bank file, so a row never grows under
-  // the reader). The line at the playhead follows playback (transcripts.ts lineAt), on the yuzu fill the scenes list
+  // the reader). The line at the playhead follows playback (scenes.ts atTime), on the yuzu fill the scenes list
   // marks "the one on now" with, and is scrolled into view on a line change — never over the user's own scrolling: a
   // touch or a wheel on the list holds the follow for a few seconds. A line tapped plays from its start.
-  import { lineAt } from '../transcripts.ts';
+  import { atTime } from '../scenes.ts';
   import { clock, s } from '../i18n.ts';
   import type { TranscriptLine } from '../types.ts';
 
   let { lines, time, onplay }: { lines: readonly TranscriptLine[]; time: number; onplay: (from: number) => void } = $props();
-  const at = $derived(lineAt(lines, time));
+  const at = $derived(atTime(lines, time));
   let list: HTMLElement | undefined = $state();
   /** The user's own scrolling (a touch or a wheel on the list): the follow holds off this long after (ms). */
   let held = 0;

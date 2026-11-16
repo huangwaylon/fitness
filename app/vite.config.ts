@@ -178,11 +178,11 @@ const englishData = (): Plugin => {
    *  joined the library never needs rewriting. */
   const readTranscripts = (clips: readonly Clip[]) => {
     const dir = transcriptsDir();
-    const read = <T,>(f: string): T | undefined => (existsSync(join(dir, f)) ? (JSON.parse(readFileSync(join(dir, f), 'utf8')) as T) : undefined);
+    const json = <T,>(f: string): T | undefined => (existsSync(join(dir, f)) ? (JSON.parse(readFileSync(join(dir, f), 'utf8')) as T) : undefined);
     return new Map(clips.flatMap((c) => {
-      const ef = read<TranscriptFile>(`${c.video}.en.json`);
+      const ef = json<TranscriptFile>(`${c.video}.en.json`);
       if (!ef) return [];
-      const jl = read<JaTranscriptFile>(`${c.video}.ja.json`)?.lines;
+      const jl = json<JaTranscriptFile>(`${c.video}.ja.json`)?.lines;
       const lines = ef.lines
         .map((l, i): TranscriptLine => (jl?.[i] ? { ...l, ja: jl[i].ja } : l))
         .filter((l) => l.t[0] < c.dur)

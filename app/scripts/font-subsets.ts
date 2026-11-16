@@ -32,6 +32,18 @@ export function parseRanges(range: string): [number, number][] {
 
 export const covers = (ranges: [number, number][], cp: number) => ranges.some(([a, b]) => cp >= a && cp <= b);
 
+let trimmed: [number, number][][] | undefined;
+/** The characters of `text` the trimmed font (fonts.css, either weight) can't show: the content tests' check, so a
+ *  file names the word to change instead of fonts.test.ts failing on the whole of src/. */
+export function notInTrimmedFont(text: string): string[] {
+  trimmed ??= WEIGHTS.map((w) =>
+    [...readFileSync(OUT, 'utf8').matchAll(/@font-face\s*{[^}]*}/g)]
+      .filter((m) => m[0].includes(`font-weight: ${w};`))
+      .flatMap((m) => parseRanges(/unicode-range:\s*([^;]+);/.exec(m[0])?.[1] ?? ''))
+  );
+  return [...text].filter((ch) => ch.codePointAt(0)! > 0x7f && trimmed!.some((r) => !covers(r, ch.codePointAt(0)!)));
+}
+
 /** Code points that must render in Zen Maru Gothic (also used by fonts.test.ts). */
 export function wanted(): Set<number> {
   const cps = new Set<number>();

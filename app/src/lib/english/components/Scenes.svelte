@@ -1,20 +1,20 @@
 <script lang="ts">
   // 場面のあらすじ (docs/english.md "Scene summaries"): one calm line under the player and its controls, following the
-  // playhead (scenes.ts sceneAt): the beat on now with its category in front (a clip with beats: finer steps), else the
+  // playhead (scenes.ts atTime): the beat on now with its category in front (a clip with beats: finer steps), else the
   // scene. `paired` (字幕 英語 on): directly under the video, on its black, centred like a caption line, so YouTube's
   // English and our Japanese gist read as a pair. Tapped: a sheet of every scene, its time then its line, and its beats
   // under it (time, category, line), the one on now marked; a chip row filters the beats by category; one tapped plays
   // from there. Our own outline (scenes/<video>.json), never the lines.
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
-  import { BEAT_KINDS, beatsByScene, sceneAt } from '../scenes.ts';
+  import { atTime, BEAT_KINDS, beatsByScene } from '../scenes.ts';
   import { clock, s } from '../i18n.ts';
   import type { Beat, BeatKind, Scene } from '../types.ts';
 
   type Props = { scenes: readonly Scene[]; beats?: readonly Beat[]; time: number; onplay: (from: number) => void; paired?: boolean };
   let { scenes, beats, time, onplay, paired = false }: Props = $props();
-  const at = $derived(sceneAt(scenes, time));
-  const bAt = $derived(beats ? sceneAt(beats, time) : -1);
+  const at = $derived(atTime(scenes, time));
+  const bAt = $derived(beats ? atTime(beats, time) : -1);
   const beat = $derived(beats?.[bAt]);
   /** Each scene's beats (indexes), and the categories present, in BEAT_KINDS' order. */
   const by = $derived(beats ? beatsByScene(scenes, beats) : null);
