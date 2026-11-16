@@ -18,6 +18,13 @@ async function questionAt(p: Page, i: number) {
 
 /** The player's commands from the `from`th on (addEventListener aside). */
 const since = async (p: Page, from: number) => (await ytCommands(p)).slice(from).filter((c) => c[0] !== 'addEventListener');
+/** The commands from the `from`th on, after the first `func` (a pause from a move just before may land first:
+ *  postMessage is async, slower on a throttled runner). */
+const from = async (p: Page, n: number, func: string) => {
+  const c = await since(p, n);
+  const i = c.findIndex((x) => x[0] === func);
+  return i < 0 ? [] : c.slice(i);
+};
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -66,7 +73,7 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   // ▶ 全部見る plays from the start, no stop
   const n0 = (await ytCommands(page)).length;
   await lesson(page).locator('[data-en-watch-all]').click();
-  await expect.poll(async () => (await since(page, n0)).map((c) => c[0])).toEqual(['seekTo', 'playVideo']);
+  await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo']);
   await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'playing');
   // ‹ home (the lesson's place kept: 続きから)
   await lesson(page).locator('[data-en-to-q]').click();
@@ -90,8 +97,8 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect(card).toHaveAttribute('data-result', 'open');
   await expect(card.locator('[data-ans]')).toHaveCount(0);
   // the segment replayed by itself: from 0, paused at 10 s
-  await expect.poll(async () => (await since(page, n0)).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
-  const cmds = await since(page, n0);
+  await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
+  const cmds = await from(page, n0, 'seekTo');
   expect(cmds.find((c) => c[0] === 'seekTo')?.[1]).toEqual([0, true]);
   expect(cmds.find((c) => c[0] === 'pauseVideo')![2]).toBeGreaterThanOrEqual(10);
   // a second miss: the answer, ○ on it, the notes; the picks never marked, nothing coral
@@ -226,7 +233,7 @@ test('the controls: play / pause on from where it stopped, −5 秒, this part a
   await expect(c.locator('[data-yt-toggle="pause"]')).toBeVisible();
   await c.locator('[data-yt-toggle="pause"]').click();
   await c.locator('[data-yt-toggle="play"]').click();
-  await expect.poll(async () => (await since(page, n0)).map((x) => x[0])).toEqual(['playVideo', 'pauseVideo', 'playVideo']);
+  await expect.poll(async () => (await from(page, n0, 'playVideo')).map((x) => x[0])).toEqual(['playVideo', 'pauseVideo', 'playVideo']);
   // −5 秒 and the scrubber seek, never locked
   const n1 = (await ytCommands(page)).length;
   await c.locator('[data-yt-scrub]').fill('40');
@@ -241,7 +248,12 @@ test('the controls: play / pause on from where it stopped, −5 秒, this part a
   await lesson(page).locator('[data-en-to-q]').click();
   const n2 = (await ytCommands(page)).length;
   await c.locator('[data-yt-seg]').click();
-  await expect.poll(async () => (await since(page, n2)).map((x) => x.slice(0, 2))).toEqual([['seekTo', [0, true]], ['playVideo', []]]);
+  // (the move to the card's pause may land just before: the segment's seek and play follow, whatever came first)
+  await expect.poll(async () => {
+    const c2 = (await since(page, n2)).map((x) => JSON.stringify(x.slice(0, 2)));
+    const i = c2.indexOf(JSON.stringify(['seekTo', [0, true]]));
+    return i >= 0 && c2[i + 1] === JSON.stringify(['playVideo', []]);
+  }).toBe(true);
 });
 
 test('no speed control when the frame offers only 1×', async ({ page }) => {
