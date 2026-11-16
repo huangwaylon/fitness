@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const joeymakeup: Clip = {
-  id: 'joeymakeup', video: 'vjpdPeVFW2M', title: 'Joey Is Wearing Makeup', dur: 96, wpm: 172, band: 'slow',
+  id: 'joeymakeup', video: 'vjpdPeVFW2M', title: 'Joey Is Wearing Makeup', dur: 96, wpm: 172, band: 'mid',
   tags: ['友だち', '家'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

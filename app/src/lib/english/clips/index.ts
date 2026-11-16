@@ -29,6 +29,14 @@ import { soulmates } from './soulmates.ts';
 import { sebastian } from './sebastian.ts';
 import { seatingChart } from './seatingchart.ts';
 import { noturkey } from './noturkey.ts';
+import { snowCones } from './snowcones.ts';
+import { mamasDead } from './mamasdead.ts';
+import { dwightDate } from './dwightdate.ts';
+import { scarnRead } from './scarnread.ts';
+import { collarBlind } from './collarblind.ts';
+import { ryanOffice } from './ryanoffice.ts';
+import { womensAppreciation } from './womensapp.ts';
+import { buttOfJoke } from './buttjoke.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -37,21 +45,29 @@ export const CLIPS: readonly Clip[] = [
   laundromat,
   centralperk,
   furniture,
+  buttOfJoke,
   twodates,
+  womensAppreciation,
   phoebeRuns,
-  joeymakeup,
+  dwightDate,
+  mamasDead,
   // ふつう
-  fluoride,
+  scarnRead,
+  joeymakeup,
+  snowCones,
   bucketList,
+  fluoride,
+  phoebebook,
+  ryanOffice,
   waffleGift,
   saylove,
   joeyStay,
-  possum,
-  phoebebook,
   annclub,
   // 速い
   kathybook,
+  collarBlind,
   savings,
+  possum,
   rossNothing,
   emmaLocked,
   fakedating,
