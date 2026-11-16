@@ -7,6 +7,14 @@ import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
+import { waitress } from '../src/lib/english/clips/waitress.ts';
+
+/** The card at place `i` of the lesson, and its question (this play's draw: by its id). */
+const cardAt = (p: Page, i: number) => p.locator(`dialog[open] [data-en-lesson] [data-en-q="${i}"]`);
+async function questionAt(p: Page, i: number) {
+  const id = await cardAt(p, i).getAttribute('data-en-qid');
+  return waitress.questions.find((q) => q.id === id)!;
+}
 
 /** The player's commands from the `from`th on (addEventListener aside). */
 const since = async (p: Page, from: number) => (await ytCommands(p)).slice(from).filter((c) => c[0] !== 'addEventListener');
@@ -95,20 +103,20 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect(card.locator('[data-en-reveal] u')).toHaveText('hundred dollar advance');
   await expect(card.locator('[data-en-nudge]')).toHaveCount(0);
   expect(await card.evaluate((el) => /不正解|間違|×|ざんねん/.test(el.textContent ?? ''))).toBe(false);
-  // q2: right first ◎
-  await lesson(page).locator('[data-en-next]').click();
-  await lesson(page).locator('[data-en-q="1"] [data-choice="1"]').click();
-  await expect(lesson(page).locator('[data-en-q="1"] [data-en-reveal]')).toContainText('◎ 聞き取れました');
-  // q3: a miss, then right: ○
-  await lesson(page).locator('[data-en-next]').click();
-  await lesson(page).locator('[data-en-q="2"] [data-choice="0"]').click();
-  await lesson(page).locator('[data-en-q="2"] [data-choice="1"]').click();
-  await expect(lesson(page).locator('[data-en-q="2"] [data-en-reveal]')).toContainText('○ 聞き取れました');
-  // q4: a miss, then 答えを見る
-  await lesson(page).locator('[data-en-next]').click();
-  await lesson(page).locator('[data-en-q="3"] [data-choice="0"]').click();
-  await lesson(page).locator('[data-en-q="3"] [data-en-show]').click();
-  await expect(lesson(page).locator('[data-en-q="3"]')).toHaveAttribute('data-result', 'shown');
+  // the next three choice items: right first ◎; a miss then right ○; a miss then 答えを見る
+  const plan = ['first', 'second', 'shown'];
+  for (let i = 1; plan.length; i++) {
+    await lesson(page).locator('[data-en-next]').click();
+    const x = await questionAt(page, i);
+    if (!x.choices) continue;
+    const wrong = x.choices.findIndex((_, k) => k !== x.a);
+    const how = plan.shift()!;
+    if (how !== 'first') await cardAt(page, i).locator(`[data-choice="${wrong}"]`).click();
+    if (how === 'shown') await cardAt(page, i).locator('[data-en-show]').click();
+    else await cardAt(page, i).locator(`[data-choice="${x.a}"]`).click();
+    await expect(cardAt(page, i)).toHaveAttribute('data-result', how);
+    if (how !== 'shown') await expect(cardAt(page, i).locator('[data-en-reveal]')).toContainText(how === 'first' ? '◎ 聞き取れました' : '○ 聞き取れました');
+  }
 });
 
 test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library, 今週 1/3日, これまで 1本; a dictation counts the words heard', async ({ page }) => {
@@ -116,21 +124,26 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   await open(page);
   await start(page);
   await lesson(page).locator('[data-en-to-q]').click();
-  await lesson(page).locator('[data-en-q="0"] [data-choice="1"]').click();
-  // to the dictation (q7), unanswered on the way
-  for (let i = 0; i < 6; i++) await lesson(page).locator('[data-en-next]').click();
-  const dict = lesson(page).locator('[data-en-q="6"]');
-  await dict.locator('[data-en-dict]').fill('I’m doing well');
-  await dict.locator('[data-en-dict-go]').click();
-  await expect(dict.locator('[data-en-reveal]')).toContainText('2/3 語 聞き取れました');
-  await dict.locator('[data-en-dict]').fill("I'm doing better.");
-  await dict.locator('[data-en-dict-go]').click();
-  await expect(dict.locator('[data-en-reveal]')).toContainText('3/3 語 聞き取れました');
-  await lesson(page).locator('[data-en-next]').click();
-  await lesson(page).locator('[data-en-next]').click();
-  await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
-  // every scene not heard in full the first time (the unanswered too): all but q1 and the dictation
-  await expect(lesson(page).locator('[data-en-again]')).toHaveCount(6);
+  await cardAt(page, 0).locator(`[data-choice="${(await questionAt(page, 0)).a}"]`).click();
+  // on to まとめ, the others unanswered; a dictation drawn: some words, then all
+  let n = 1, dict = false;
+  for (; ; n++) {
+    await lesson(page).locator('[data-en-next]').click();
+    if (await lesson(page).locator('[data-en-end]').count()) break;
+    const x = await questionAt(page, n);
+    if (!x.answer) continue;
+    dict = true;
+    const c = cardAt(page, n), all = x.answer.split(' ').length;
+    await c.locator('[data-en-dict]').fill(x.answer.split(' ').slice(1).join(' '));
+    await c.locator('[data-en-dict-go]').click();
+    await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all} 語 聞き取れました`);
+    await c.locator('[data-en-dict]').fill(x.answer.toUpperCase() + '.');
+    await c.locator('[data-en-dict-go]').click();
+    await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all} 語 聞き取れました`);
+  }
+  expect(await at(page)).toBe(String(n));
+  // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
+  await expect(lesson(page).locator('[data-en-again]')).toHaveCount(n - 1 - (dict ? 1 : 0));
   await lesson(page).locator('[data-en-done]').click();
   await expect(sheet(page).locator('[data-en-clip="waitress"]')).toHaveAttribute('data-done', 'true');
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '1');

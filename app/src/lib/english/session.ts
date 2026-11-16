@@ -8,6 +8,8 @@ import type { QState } from './lesson.ts';
 /** Where a lesson is: −1 the watch card, a question's index, or the questions' count (まとめ). */
 export interface Saved {
   v: string;
+  /** This play's questions (draw.ts), by id. */
+  ids: string[];
   at: number;
   st: QState[];
   unsent: number;

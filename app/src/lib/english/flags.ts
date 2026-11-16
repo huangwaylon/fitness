@@ -10,13 +10,12 @@ import type { Who } from '#lib/types.ts';
 
 /** A flag's data: on question `q` of `clip`, or the clip itself (null). `t`: the player's time, s. */
 export function flagData(clip: Clip, q: Question | null, kind: EflagKind, note: string, t: number | null): Eflag {
-  const qi = q ? clip.questions.indexOf(q) : null;
   const n = cleanLine(note, EFLAG_NOTE);
   const line = (x: string) => cleanLine(x, 400);
   return {
-    item: clip.id, q: qi, kind, ...(n && { note: n }), ...(t !== null && Number.isFinite(t) && t >= 0 && { t: Math.round(Math.min(t, 36_000) * 10) / 10 }),
+    item: clip.id, q: q ? q.id : null, kind, ...(n && { note: n }), ...(t !== null && Number.isFinite(t) && t >= 0 && { t: Math.round(Math.min(t, 36_000) * 10) / 10 }),
     v: q ? questionHash(q) : clipHash(clip),
-    seen: q ? { stem: line(q.stem), answer: line(q.choices ? q.choices[q.a ?? 0] : (q.answer ?? '')), line: line(q.line) } : null
+    seen: q ? { stem: line(q.stem), answer: line(q.choices ? q.choices[q.a ?? 0] : (q.answer ?? '')), line: line(q.line ?? q.stem) } : null
   };
 }
 

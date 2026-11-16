@@ -1,10 +1,9 @@
 // A lesson's rules (lesson.ts) and every clip's content (clips/): the miss → replay → second try → 「答えはこれ」 flow,
-// the dictation's words, the row's answers; each clip well-formed for the sheet and the record.
+// the dictation's words, the row's answers.
 import { describe, expect, it } from 'vitest';
 import { CLIPS } from './clips/index.ts';
-import { againOf, answersOf, blank, dictate, draw, heard, pick, reveal } from './lesson.ts';
+import { againOf, answersOf, blank, dictate, heard, pick, reveal } from './lesson.ts';
 import { listenOf } from '#lib/contract/listen.ts';
-import { cleanLine } from '#lib/contract/text.ts';
 
 const clip = CLIPS[0];
 const q = clip.questions[0]; // a: 1
@@ -33,53 +32,14 @@ describe('a dictation', () => {
   });
 });
 
-describe('draw', () => {
-  it('today: every question, in order (the banks will draw from here)', () => {
-    expect(draw(clip, [])).toEqual(clip.questions);
-  });
-});
-
 describe('まとめ and the row', () => {
   it('the scenes to hear again: anything not ◎ (unanswered too); the answers as a listen row takes them', () => {
     const st = clip.questions.map(() => blank());
     st[0] = pick(q, blank(), 1).st;
     st[1] = pick(clip.questions[1], pick(clip.questions[1], blank(), 0).st, 1).st;
     expect(againOf(clip.questions, st)).toEqual(clip.questions.map((_, i) => i).filter((i) => i !== 0));
-    const r = answersOf(clip, clip.questions, st);
-    expect(r).toEqual([[`${clip.id}-q1`, 1, 1, 0], [`${clip.id}-q2`, 0, 1, 1]]);
+    const r = answersOf(clip.questions, st);
+    expect(r).toEqual([[clip.questions[0].id, 1, 1, 0], [clip.questions[1].id, 0, 1, 1]]);
     expect(listenOf({ d: '2026-11-16', g: 'tvabcd12', gm: 'tv', u: clip.id, lv: 7, n: 1, ms: 1000, f: 1, r })).not.toBeNull();
   });
-});
-
-describe('the clips', () => {
-  it('ids unique and short, the order a plain list', () => {
-    expect(CLIPS.length).toBeGreaterThan(0);
-    expect(new Set(CLIPS.map((c) => c.id)).size).toBe(CLIPS.length);
-    for (const c of CLIPS) expect(c.id, c.id).toMatch(/^[a-z0-9][a-z0-9-]{0,11}$/);
-  });
-  for (const c of CLIPS)
-    it(`${c.id}: a YouTube id, 6–12 questions in the clip, choices with one answer, ≤ 1 dictation, every note`, () => {
-      expect(c.video).toMatch(/^[\w-]{11}$/);
-      expect(['slow', 'mid', 'fast']).toContain(c.band);
-      expect(c.questions.length).toBeGreaterThanOrEqual(6);
-      expect(c.questions.length).toBeLessThanOrEqual(12);
-      expect(c.questions.filter((x) => x.answer !== undefined).length).toBeLessThanOrEqual(1);
-      for (const [i, x] of c.questions.entries()) {
-        const at = `${c.id} q${i + 1}`;
-        expect(x.seg[0], at).toBeGreaterThanOrEqual(0);
-        expect(x.seg[1], at).toBeGreaterThan(x.seg[0]);
-        expect(x.seg[1], at).toBeLessThanOrEqual(c.dur);
-        if (x.choices) {
-          expect(x.answer, at).toBeUndefined();
-          expect(x.choices.length, at).toBeGreaterThanOrEqual(2);
-          expect(new Set(x.choices).size, at).toBe(x.choices.length);
-          expect(x.a !== undefined && x.a >= 0 && x.a < x.choices.length, at).toBe(true);
-        } else expect(x.answer, at).toMatch(/^[a-z' ]+$/);
-        for (const k of ['stem', 'cue', 'line', 'said', 'mean', 'trap', 'use'] as const) expect(x[k].trim().length, `${at} ${k}`).toBeGreaterThan(0);
-        // what a flag quotes is clean enough for the record (contract/eflag.ts)
-        for (const t of [x.stem, x.line]) expect(cleanLine(t, 400), at).toBe(t);
-        // never say incorrect (docs/english.md "The page")
-        for (const k of ['cue', 'said', 'mean', 'trap'] as const) expect(x[k], `${at} ${k}`).not.toMatch(/不正解|誤り|間違い|ざんねん|×/);
-      }
-    });
 });

@@ -1,7 +1,7 @@
 // A clip's lesson as the learner goes through it (docs/english.md "The page"), pure: a pick right first (◎) or on
 // the second listen (○); a first miss replays the segment with the cue, a second shows the answer (「答えはこれ」);
 // a dictation counts the words heard. Never a mark on a wrong pick. Also what a `listen` row says of the answers.
-import type { Clip, Question } from './types.ts';
+import type { Question } from './types.ts';
 
 export type Result =
   | { k: 'first' }
@@ -9,10 +9,6 @@ export type Result =
   | { k: 'shown' }
   /** A dictation: the target's words, each heard or not. */
   | { k: 'dict'; words: { w: string; hit: boolean }[] };
-
-/** The questions a play of `clip` asks, in order. Today every one; the question banks will draw 6–8 by `history` (the
- *  questions seen before), so the lesson reads its questions only through here. */
-export const draw = (clip: Clip, _history: readonly string[]): readonly Question[] => clip.questions;
 
 /** A question's state: its result (null: not settled), the misses so far, the last choice picked (−1 none), a
  *  dictation's last typing. */
@@ -55,13 +51,13 @@ const clean = (r: Result | null): boolean => r?.k === 'first' || (r?.k === 'dict
 /** The scenes to hear again at まとめ: every question not heard in full the first time (unanswered ones too). */
 export const againOf = (qs: readonly Question[], st: readonly QState[]): number[] => qs.flatMap((_, i) => (clean(st[i]?.r ?? null) ? [] : [i]));
 
-/** The settled answers as a `listen` row's `r` (contract/listen.ts): [id, right first, the choice (a dictation's words
- *  heard; −1 shown with none), the listens before it]. */
-export function answersOf(clip: Clip, qs: readonly Question[], st: readonly QState[]): [string, 0 | 1, number, number][] {
+/** The settled answers as a `listen` row's `r` (contract/listen.ts): [the question's id, right first, the authored
+ *  choice (a dictation's words heard; −1 shown with none), the listens before it]. */
+export function answersOf(qs: readonly Question[], st: readonly QState[]): [string, 0 | 1, number, number][] {
   return qs.flatMap((q, i): [string, 0 | 1, number, number][] => {
     const s = st[i], r = s?.r;
     if (!r) return [];
-    const id = `${clip.id}-q${clip.questions.indexOf(q) + 1}`;
+    const id = q.id;
     if (r.k === 'dict') {
       const h = heard(r);
       return [[id, h.hit === h.of ? 1 : 0, h.hit, 0]];

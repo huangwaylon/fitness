@@ -12,7 +12,7 @@ const clip = CLIPS[0];
 describe('flagData', () => {
   it('a question’s flag: what was shown, its version, the time to 0.1 s, the note cleaned; the record takes it', () => {
     const f = flagData(clip, clip.questions[1], 'answer', '  100ドル\nじゃない？ ', 4.234);
-    expect(f).toMatchObject({ item: clip.id, q: 1, kind: 'answer', note: '100ドル じゃない？', t: 4.2, v: questionHash(clip.questions[1]) });
+    expect(f).toMatchObject({ item: clip.id, q: clip.questions[1].id, kind: 'answer', note: '100ドル じゃない？', t: 4.2, v: questionHash(clip.questions[1]) });
     expect(f.seen).toEqual({ stem: clip.questions[1].stem, answer: clip.questions[1].choices![clip.questions[1].a!], line: clip.questions[1].line });
     expect(eflagOf(f as unknown as Record<string, unknown>)).toEqual(f);
   });

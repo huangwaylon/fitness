@@ -5,25 +5,44 @@
 /** How fast the clip's speech runs (its words a minute over speech time): ゆっくり < 100, ふつう 100–130, 速い > 130. */
 type Band = 'slow' | 'mid' | 'fast';
 
-/** The question's kind, shown on its card (大意 the gist first, ≤ 1 書き取り a clip). */
-type QType = '大意' | '詳細' | '数字' | '含み' | 'フレーズ' | 'ことば' | '書き取り';
+/** What a question tests, in four groups (draw.ts GROUP_OF): the gist; literal (detail, number, who); interpretive
+ *  (infer, attitude, pragma, humor, predict); form (marker, phrase, sound, dict). Its card label: i18n.ts `skill.*`. */
+export type Skill =
+  | 'gist'
+  | 'detail' | 'number' | 'who'
+  | 'infer' | 'attitude' | 'pragma' | 'humor' | 'predict'
+  | 'marker' | 'phrase' | 'sound' | 'dict';
+/** The CEFR level the item targets (B1 stands for B1+). */
+type Level = 'B1' | 'B2' | 'C1';
 
+/** A question of a clip's bank (docs/english.md "Content"): a play draws 6–8 of them (draw.ts). */
 export interface Question {
+  /** Stable (≤ 8 of a-z, 0-9), unique in the clip, never reused: a listen answer's id, a flag's `q`. */
+  id: string;
+  skill: Skill;
+  level: Level;
+  /** The fact or line it turns on: a draw holds at most one item per point. */
+  point: string;
+  /** Other points its stem, choices, line or notes give away: never drawn with those. */
+  reveals?: readonly string[];
   /** The segment that answers it, s into the video: [from, to]. */
   seg: readonly [number, number];
-  type: QType;
+  /** predict only: the continuation, played at the reveal. */
+  then?: readonly [number, number];
   /** The question, in English. */
   stem: string;
-  /** Its choices (English); absent for a dictation. */
+  /** Its choices (English, 3 or 4); absent for a dictation. */
   choices?: readonly string[];
   /** The right choice's index. */
   a?: number;
+  /** Keep the authored order (numbers, a scale); else shuffled per player. */
+  keep?: true;
   /** A dictation's words (lower case, as said). */
   answer?: string;
   /** The nudge for the second listen (Japanese): where to listen, never the answer. */
   cue: string;
-  /** The short line that answers it, its key words in *stars*. */
-  line: string;
+  /** The short line that answers it, its key words in *stars* (absent only for a whole-scene gist or a who by voices). */
+  line?: string;
   /** 言っていること: what is said. */
   said: string;
   /** 意味: what it means here. */
@@ -32,6 +51,8 @@ export interface Question {
   trap: string;
   /** 使えるフレーズ: a reusable chunk, its Japanese in （…）. */
   use: string;
+  /** Kept for old rows and flags, never drawn. */
+  retired?: true;
 }
 
 export interface Clip {
@@ -39,7 +60,7 @@ export interface Clip {
   id: string;
   /** The YouTube video's id. */
   video: string;
-  /** Its title as on YouTube. */
+  /** Its title as on YouTube (without "| Friends"). */
   title: string;
   /** Its length, s. */
   dur: number;
@@ -50,5 +71,6 @@ export interface Clip {
   tags: readonly string[];
   /** Whose video (the channel), shown under the player. */
   credit: string;
+  /** The bank (16–24 once written; a lesson of 8 before), in clip order. */
   questions: readonly Question[];
 }

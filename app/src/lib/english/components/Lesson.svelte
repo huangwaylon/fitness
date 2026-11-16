@@ -14,7 +14,8 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { YtPlayer } from '../player.svelte.ts';
-  import { againOf, answersOf, blank, dictate, draw, heard, pick, reveal, type QState } from '../lesson.ts';
+  import { againOf, answersOf, blank, dictate, heard, pick, reveal, type QState } from '../lesson.ts';
+  import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, save } from '../session.ts';
   import { clipHash } from '../hash.ts';
@@ -26,13 +27,17 @@
 
   const who: Who = untrack(() => week.model?.me ?? 'A');
   const v = untrack(() => clipHash(clip));
-  /** This play's questions (lesson.ts draw). */
-  const qs = untrack(() => draw(clip, []));
-  const len = qs.length;
   const saved = untrack(() => loadSaved(who, clip.id, v));
+  /** This play: its number (1 + the plays finished), its seed, its questions (draw.ts: a play left part-way keeps its
+   *  own; a finished one, at まとめ, draws the next). */
+  const past = untrack(() => historyOf(week.model?.state.listen ?? [], who, clip.id));
+  const kept = untrack(() => (saved && Array.isArray(saved.ids) && saved.at < saved.ids.length ? saved.ids.flatMap((id) => clip.questions.filter((q) => q.id === id)) : []));
+  const resume = !!saved && kept.length > 0 && kept.length === saved.ids.length && saved.st.length === kept.length;
+  const play = past.plays + 1;
+  const seed = untrack(() => seedOf(who, clip.id, play));
+  const qs = resume ? kept : untrack(() => draw(clip, past.seen, play, seed));
+  const len = qs.length;
   /** −1 the watch card, a question's index, len まとめ. */
-  /** A play left part-way resumes; a finished one (at まとめ) starts again from the watch card. */
-  const resume = !!saved && saved.at < len && saved.st.length === len;
   let at = $state(resume ? saved!.at : -1);
   let st = $state<QState[]>(resume ? saved!.st : qs.map(blank));
   let sentDay = $state<LocalDate | null>(saved?.sent ?? null);
@@ -48,7 +53,7 @@
   const today = () => localDateAt(week.model?.now ?? Date.now());
 
   function keep(): void {
-    save(who, clip.id, { v, at, st: $state.snapshot(st), unsent: act.unsent, perQ: act.perQ, sent: sentDay, t: Date.now() });
+    save(who, clip.id, { v, ids: qs.map((x) => x.id), at, st: $state.snapshot(st), unsent: act.unsent, perQ: act.perQ, sent: sentDay, t: Date.now() });
   }
   $effect(() => {
     void at;
@@ -69,7 +74,7 @@
     act = tick(act, performance.now(), now());
     const ms = Math.round(Math.min(act.unsent, 3_600_000));
     const g = `tv${Date.now().toString(36).slice(-6)}${Math.floor(Math.random() * 1296).toString(36).padStart(2, '0')}`;
-    week.send('listen', { d: today(), g, gm: TV_GM, u: clip.id, lv: 7, n: 1, ms, ...(finished && { f: 1 }), r: answersOf(clip, qs, st) });
+    week.send('listen', { d: today(), g, gm: TV_GM, u: clip.id, lv: 7, n: 1, ms, ...(finished && { f: 1 }), r: answersOf(qs, st) });
     act = sent(act);
     keep();
   }
@@ -136,14 +141,14 @@
       </article>
     {:else if q && cur}
       {#key at}
-        <article class="card pad" data-en-q={at} data-result={cur.r?.k ?? 'open'}>
+        <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
           <button type="button" class="flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: q.type, from: q.seg[0], to: q.seg[1] })}</p>
+          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), from: q.seg[0], to: q.seg[1] })}</p>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
           <button type="button" class="btn sky small" data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
             <div class="choices">
-              {#each q.choices as c, i (i)}
+              {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}
                 <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
                   aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}</span></button>
               {/each}
@@ -160,7 +165,7 @@
             <div class="reveal" data-en-reveal={cur.r.k}>
               <p class="rhead">{head(cur)}</p>
               {#if cur.r.k === 'dict'}<p class="words" lang="en">{#each cur.r.words as w, i (i)}<span class:hit={w.hit} class:gap={!w.hit}>{w.w}</span> {/each}</p>{/if}
-              <p class="line" lang="en">{#each keyed(q.line) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>
+              {#if q.line}<p class="line" lang="en">{#each keyed(q.line) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>{/if}
               <dl class="why">
                 <dt>{s('said')}</dt><dd>{q.said}</dd>
                 <dt>{s('mean')}</dt><dd>{q.mean}</dd>

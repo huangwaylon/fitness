@@ -11,8 +11,14 @@ English questions, Japanese notes (言っていること / 意味 / 迷いやす
 second listen. A question quotes one short line at most (*key words* starred); no audio or transcript is ours to ship.
 `clips/index.ts` lists them in order, easier first; one file a clip, each checked by the unit tests.
 
-- Pick a clip by its captions: ≥ 110 words a minute, ≥ 6 askable points, playable as an embed in Japan.
-- At most one 書き取り a clip; 大意 first, then in clip order.
+- A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
+  label: 大意 詳細 数字 誰が 含み 気持ち 言葉の働き 笑い 次の一言 つなぎ言葉 フレーズ 音 書き取り), a `level` (B1/B2/C1), a
+  `point` and the points it `reveals`. A bank is 16–24 items; `clips.test.ts` runs the review rubric's mechanical checks
+  (a lesson under 16 only the schema, segments, wording, dictations and draws).
+- **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
+  first, then group quotas (play 1 L2 I2 F1 at n 6; play 2+ leans to interpretation with a C1), unseen items and new
+  points first, ≤ 1 dictation, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
+  are kept with its place; choices are shuffled per player unless `keep`.
 - Bands: ゆっくり < 100 wpm, ふつう 100–130, 速い > 130.
 
 ## The page
