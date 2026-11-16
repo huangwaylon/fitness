@@ -182,11 +182,14 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
   await expect(lesson(page).locator('[data-en-again]')).toHaveCount(n - 1 - (dict ? 1 : 0));
   await lesson(page).locator('[data-en-done]').click();
-  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toHaveText('▶ もう一度（新しい質問）');
+  // the main card goes on to the plan's next clip (the finished one isn't offered again today, not even as a row)
+  await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', PLAN[1].id);
+  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toHaveText('▶ 始める');
+  await expect(sheet(page).locator('[data-en-lib] [data-en-clip="waitress"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '1');
   await expect(sheet(page).locator('[data-en-week-n]')).toHaveText('1/3日');
   await expect(sheet(page).locator('[data-en-clips]')).toHaveText('これまで 1本');
-  await expect(sheet(page).locator('[data-en-today]')).toContainText('今日の動画 完了 ✓');
+  await expect(sheet(page).locator('[data-en-today]')).toContainText('次の動画 · 今日の分は完了 ✓');
   // the library: ✓ on its row, last
   await sheet(page).locator('[data-en-all]').click();
   // (もっと見る till the whole library shows: it grows as banks land)
@@ -264,12 +267,11 @@ test('a play that doesn’t start (iOS wants a tap on the video): the hint; none
   await expect(lesson(page).locator('[data-yt-stuck]')).toContainText('動画を一度タップしてください');
 });
 
-test('the controls: play / pause on from where it stopped, −5 秒, this part again, the scrubber, 0.75× only when offered', async ({ page }) => {
+test('the controls: play / pause on from where it stopped, −5 秒, the scrubber, 0.75× only when offered; a question’s part from its card only', async ({ page }) => {
   await fakeYoutube(page, { rate: 4 });
   await open(page);
   await start(page);
   const c = lesson(page).locator('[data-yt-controls]');
-  await expect(c.locator('[data-yt-seg]')).toHaveCount(0); // (the watch card: no segment)
   const n0 = (await ytCommands(page)).length;
   await c.locator('[data-yt-toggle="play"]').click();
   await expect(c.locator('[data-yt-toggle="pause"]')).toBeVisible();
@@ -287,10 +289,11 @@ test('the controls: play / pause on from where it stopped, −5 秒, this part a
   await c.locator('[data-yt-rate]').click();
   await expect.poll(async () => (await since(page, n1)).at(-1)?.slice(0, 2)).toEqual(['setPlaybackRate', [0.75]]);
   await expect(c.locator('[data-yt-rate]')).toHaveAttribute('aria-pressed', 'true');
-  // on a question: this part again
+  // on a question: its part from the card's この部分を聞く, none in the controls
   await lesson(page).locator('[data-en-to-q]').click();
+  await expect(c.locator('[data-yt-seg]')).toHaveCount(0);
   const n2 = (await ytCommands(page)).length;
-  await c.locator('[data-yt-seg]').click();
+  await lesson(page).locator('[data-en-hear]').click();
   // (the move to the card's pause may land just before: the segment's seek and play follow, whatever came first)
   await expect.poll(async () => {
     const c2 = (await since(page, n2)).map((x) => JSON.stringify(x.slice(0, 2)));
@@ -345,7 +348,7 @@ test('字幕: YouTube’s own English captions on and off at any point, kept thr
   await expect(cc).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => funcs(n0)).toEqual(['loadModule ["captions"]', 'setOption ["captions","track",{"languageCode":"en"}]']);
   await lesson(page).locator('[data-en-to-q]').click();
-  await lesson(page).locator('[data-yt-seg]').click();
+  await lesson(page).locator('[data-en-hear]').click();
   await expect.poll(async () => (await funcs(n0)).filter((f) => f.startsWith('loadModule')).length).toBeGreaterThan(1);
   expect((await funcs(n0)).filter((f) => f.startsWith('unloadModule'))).toEqual([]);
   // off again: unloaded

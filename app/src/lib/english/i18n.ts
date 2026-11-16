@@ -7,7 +7,7 @@ const S = {
   title: { ja: 'English Study', en: 'English Study' },
   settings: { ja: '設定', en: 'Settings' },
   today: { ja: '今日の動画', en: "Today's clip" },
-  todayDone: { ja: '今日の動画 完了 ✓', en: "Today's clip done ✓" },
+  todayDone: { ja: '次の動画 · 今日の分は完了 ✓', en: "Next clip · today's done ✓" },
   start: { ja: '▶ 始める', en: '▶ Start' },
   resume: { ja: '▶ 続きから', en: '▶ Resume' },
   again: { ja: '▶ もう一度（新しい質問）', en: '▶ Again (new questions)' },
@@ -117,7 +117,6 @@ const S = {
   play: { ja: '再生', en: 'Play' },
   pause: { ja: '一時停止', en: 'Pause' },
   back5: { ja: '−5秒', en: '−5 s' },
-  segAgain: { ja: 'この部分', en: 'This part' },
   seek: { ja: '再生位置', en: 'Position' },
   captions: { ja: '字幕', en: 'Captions' },
   // the player's states
@@ -133,7 +132,8 @@ const S = {
   retryBank: { ja: 'もう一度', en: 'Try again' },
   // ⚙
   hard: { ja: 'むずかしめの質問を増やす', en: 'More harder questions' },
-  hardNote: { ja: 'ネイティブが聞き分けるニュアンスの質問が、1回目から出ます', en: 'Questions on the nuances native speakers hear, from the first play' },
+  // (two short lines, broken where it reads: Safari wraps Japanese anywhere, mid-word at 393 pt)
+  hardNote: { ja: 'ネイティブ級のニュアンスの質問が\n1回目から出ます', en: 'Questions on the nuances native speakers hear, from the first play' },
   hardTag: { ja: 'むずかしめ', en: 'Harder' },
   // flags
   flag: { ja: '報告', en: 'Report' },

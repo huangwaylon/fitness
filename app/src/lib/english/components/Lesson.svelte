@@ -214,7 +214,7 @@
   </div>
   {#snippet trailing()}<NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy(true)} />{/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
-  <Controls {player} seg={study ? null : (q?.seg ?? null)} />
+  <Controls {player} />
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
       <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />

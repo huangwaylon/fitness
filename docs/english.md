@@ -52,7 +52,9 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
 
 - **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
   もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, もう一度 (below), the
-  next clips in the plan, すべて見る（N本）›. Today's clip is the first in the plan neither finished nor skipped;
+  next clips in the plan, すべて見る（N本）›. Today's clip is the first in the plan neither finished nor skipped
+  (`progress.ts dailyOf`): once it's finished, the card goes on to the next (次の動画 · 今日の分は完了 ✓), and the
+  finished one comes back only as もう一度's row;
   別の動画にする shows the next and skips the one passed over for 14 days on this phone. All finished: 全部見ました and
   the one finished longest ago. A member sees the partner's line (finished today, or this week's days); the guest
   sees none.
@@ -90,8 +92,8 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
-stopped), −5秒, この部分 (the question's segment), a scrubber with the time (never locked), 字幕, and 0.75× only when the
-frame's `availablePlaybackRates` offer more than 1. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
+stopped), −5秒, a scrubber with the time (never locked), 字幕, and 0.75× only when the frame's `availablePlaybackRates` offer more than 1
+(a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
 it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`

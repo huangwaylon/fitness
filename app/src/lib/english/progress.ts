@@ -21,8 +21,6 @@ interface Study {
   ms: Map<LocalDate, number>;
   /** The latest day with any study row. */
   last: LocalDate | null;
-  /** Each day's last clip finished (mine only). */
-  byDay: Map<LocalDate, string>;
   /** Each clip's plays finished, and the day it was last finished (mine only). */
   plays: Map<string, number>;
   lastOn: Map<string, LocalDate>;
@@ -34,7 +32,7 @@ interface Study {
 
 /** `who`'s English Study rows, read as `me` gets them (mine whole, anyone else's summary). */
 export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
-  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, byDay: new Map(), plays: new Map(), lastOn: new Map(), seen: new Map(), again: new Set() };
+  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, plays: new Map(), lastOn: new Map(), seen: new Map(), again: new Set() };
   for (const r of rows) {
     if (r[1] !== who || r[3] !== 'listen') continue;
     let d: unknown;
@@ -55,7 +53,6 @@ export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
       if (own) {
         if (out.clips.has(own.u)) out.again.add(row.d);
         out.clips.add(own.u);
-        out.byDay.set(row.d, own.u);
         out.plays.set(own.u, (out.plays.get(own.u) ?? 0) + 1);
         if ((out.lastOn.get(own.u) ?? '') < row.d) out.lastOn.set(own.u, row.d);
       }
@@ -102,6 +99,16 @@ export function runOf(days: ReadonlySet<LocalDate>, today: LocalDate): { run: nu
     else if (++empty >= 2) run = 0;
   }
   return { run, ever };
+}
+
+/**
+ * Home's main card: the first clip in the plan (`lib`, the library's order) I haven't finished nor skipped (`skipped`:
+ * 別の動画にする), else the first not finished, else (all finished) the one finished longest ago. Today's finished, it's
+ * the next: the finished one again is only もう一度's row (reviewOf).
+ */
+export function dailyOf<C extends { id: string }>(lib: readonly C[], st: Pick<Study, 'clips' | 'lastOn'>, skipped: ReadonlySet<string>): C | undefined {
+  const open = (c: C) => !st.clips.has(c.id);
+  return lib.find((c) => open(c) && !skipped.has(c.id)) ?? lib.find(open) ?? lib.toSorted((a, b) => ((st.lastOn.get(a.id) ?? '') < (st.lastOn.get(b.id) ?? '') ? -1 : 1))[0];
 }
 
 /** Days after a clip's first finish before it's offered again, and after any later one. */

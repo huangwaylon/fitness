@@ -3,7 +3,7 @@
 // 2026-11-16 is a Monday.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
-import { away, daysThisWeek, reviewOf, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
+import { away, dailyOf, daysThisWeek, reviewOf, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
 
 let n = 0;
 const row = (who: 'A' | 'B' | 'G', d: string, extra: object = {}): EventRow =>
@@ -103,6 +103,22 @@ describe('the small numbers', () => {
   });
   it('away: 7 days or more since the last study', () => {
     expect([away(null, '2026-11-16'), away('2026-11-10', '2026-11-16'), away('2026-11-09', '2026-11-16')]).toEqual([false, false, true]);
+  });
+});
+
+describe('dailyOf: home’s main card', () => {
+  const lib = [{ id: 'waitress' }, { id: 'other' }, { id: 'third' }];
+  it('the first not finished nor skipped; once today’s is finished, the next in the plan, not it again', () => {
+    expect(dailyOf(lib, studyOf([], 'A', 'A'), new Set())?.id).toBe('waitress');
+    const today = studyOf([row('A', '2026-11-16')], 'A', 'A');
+    expect(dailyOf(lib, today, new Set())?.id).toBe('other');
+    expect(dailyOf(lib, today, new Set(['other']))?.id).toBe('third');
+    // skipped all: the first not finished all the same
+    expect(dailyOf(lib, today, new Set(['other', 'third']))?.id).toBe('other');
+  });
+  it('all finished: the one finished longest ago', () => {
+    const all = studyOf([row('A', '2026-11-10', { u: 'other' }), row('A', '2026-11-12', { u: 'third' }), row('A', '2026-11-16')], 'A', 'A');
+    expect(dailyOf(lib, all, new Set())?.id).toBe('other');
   });
 });
 

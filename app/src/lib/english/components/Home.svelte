@@ -1,6 +1,7 @@
 <script lang="ts">
   // English Study's home (docs/english.md "The page"): three cards. 今日の動画: the first clip in the shared plan
-  // (plan.ts: the library's order) neither finished nor skipped (別の動画にする shows the next and skips this one for 14
+  // (plan.ts: the library's order) neither finished nor skipped (progress.ts dailyOf: once today's is finished, the
+  // next; 別の動画にする shows the next and skips this one for 14
   // days: prefs.ts), its thumbnail, one meta line and
   // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress). ライブラリ: at most five rows (a play left
   // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
@@ -15,7 +16,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { LIBRARY as CLIPS, metaById, prefetch } from '../data.ts';
-  import { away, reviewOf, studyOf, weekView } from '../progress.ts';
+  import { away, dailyOf, reviewOf, studyOf, weekView } from '../progress.ts';
   import { backShown, loadSaved, markBack, partWay, partWays } from '../session.ts';
   import { skip, skipsOf } from '../prefs.ts';
   import { clock, s } from '../i18n.ts';
@@ -40,13 +41,10 @@
   let skipped = $state(untrack(() => skipsOf(me, today)));
   const open = (c: Clip) => !mine.clips.has(c.id);
   const allDone = $derived(!CLIPS.some(open));
-  /** Every clip finished: the one finished longest ago. */
-  const oldest = $derived(CLIPS.toSorted((a, b) => ((mine.lastOn.get(a.id) ?? '') < (mine.lastOn.get(b.id) ?? '') ? -1 : 1))[0]);
-  const daily = $derived(CLIPS.find((c) => open(c) && !skipped.has(c.id)) ?? CLIPS.find(open) ?? oldest);
+  /** The plan's next clip (done today: the one after it; the finished one again is もう一度's row only). */
+  const daily = $derived(dailyOf(CLIPS, mine, skipped)!);
   const doneToday = $derived(mine.days.has(today));
-  /** Done today: the card shows the clip finished today (別の動画にする still offers the next). */
-  const todays = $derived(doneToday ? metaById(mine.byDay.get(today) ?? '') : undefined);
-  const shown = $derived<Clip>((other ? metaById(other) : undefined) ?? todays ?? daily);
+  const shown = $derived<Clip>((other ? metaById(other) : undefined) ?? daily);
   /** The next clip after the one shown, the unfinished first (in order, round). */
   function nextAfter(id: string): string {
     const i = CLIPS.findIndex((c) => c.id === id);
@@ -109,7 +107,7 @@
     {#if back}<p class="back" data-en-back>{s('back')}</p>{/if}
     <article class="card pad today" data-en-today={shown.id}>
       <Thumb hero video={shown.video} show={shown.show} len={clock(shown.dur)} />
-      <p class="kicker">{doneToday && !other ? s('todayDone') : allDone && !other ? s('allDone') : s('today')}</p>
+      <p class="kicker">{allDone && !other ? s('allDone') : doneToday && !other ? s('todayDone') : s('today')}</p>
       <h3 lang="en">{shown.title}</h3>
       <p class="meta">{meta(shown)}</p>
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>

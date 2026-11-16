@@ -1,14 +1,14 @@
 <script lang="ts">
   // The player's own controls under the video (docs/english.md "The player"; the embed has none: controls=0): play /
-  // pause (on from where it stopped), −5 秒, this question's segment again, a scrubber with the time (seeking is
-  // never locked), 字幕 (YouTube's own English captions, off by default, this lesson's; counted once a play: the log's
+  // pause (on from where it stopped), −5 秒, a scrubber with the time (seeking is never locked; a question's segment
+  // is its card's この部分を聞く), 字幕 (YouTube's own English captions, off by default, this lesson's; counted once a play: the log's
   // act:english.cc), and 0.75× / 1× only when the frame offers more speeds than 1. The kit's 32px discs in 44px hits.
   import Icon from '#lib/components/ui/Icon.svelte';
   import { count } from '#lib/sync/log.ts';
   import type { YtPlayer } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
 
-  let { player, seg }: { player: YtPlayer | undefined; seg: readonly [number, number] | null } = $props();
+  let { player }: { player: YtPlayer | undefined } = $props();
   const playing = $derived(player?.state === 'playing' || player?.state === 'buffering');
   const ready = $derived(!!player && player.state !== 'loading' && player.state !== 'error');
   const dur = $derived(player?.duration || 0);
@@ -37,9 +37,6 @@
       <Icon name={playing ? 'pause' : 'play'} size={18} stroke={2.4} />
     </button>
     <button type="button" class="chip s" data-sfx="tick" disabled={!ready} data-yt-back5 onclick={() => player?.seek((player?.now() ?? 0) - 5)}>{s('back5')}</button>
-    {#if seg}
-      <button type="button" class="chip s" data-sfx="tick" disabled={!ready} data-yt-seg onclick={() => player?.play(seg[0], seg[1])}><Icon name="replay" size={16} />{s('segAgain')}</button>
-    {/if}
     <span class="time" data-yt-clock>{clock(player?.time ?? 0)}{#if dur}{` / ${clock(dur)}`}{/if}</span>
     <button type="button" class="chip s" data-sfx="tick" disabled={!ready} aria-pressed={!!player?.captions} data-yt-cc={player?.captions ? 'on' : 'off'} onclick={captions}>{s('captions')}</button>
     {#if slow}

@@ -30,7 +30,7 @@
   <div class="top"><NavBar pad title={s('settings')} {onback} {onclose} /></div>
   <div class="body sheet-scroll">
     <button type="button" class="prow" role="switch" aria-checked={hard} data-sfx="self" data-en-hard onclick={toggleHard}>
-      <span class="prl">{s('hard')}<small>{s('hardNote')}</small></span>
+      <span class="prl">{s('hard')}<small class="lines">{s('hardNote')}</small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
     <h3 class="sec-label">{s('flags')}{#if open}<span class="n">{` · ${s('flagsOpen', { n: open })}`}</span>{/if}</h3>
@@ -52,6 +52,7 @@
 </section>
 
 <style>
+  .lines { white-space: pre-line; }
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
   .top { flex: none; background-color: var(--surface); }
   .body { display: flex; flex-direction: column; gap: 8px; padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
