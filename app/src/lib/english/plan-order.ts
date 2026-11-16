@@ -308,5 +308,14 @@ export const PLANNED: readonly string[] = [
   'apothecary',
   'datingcv',
   'setup',
-  'healthplan'
+  'healthplan',
+  'fakewedding',
+  'nanaclub',
+  'tackleben',
+  'pacman',
+  'habits',
+  'unityquilt',
+  'aprilwedding',
+  'ursula',
+  'aprilleslie'
 ];

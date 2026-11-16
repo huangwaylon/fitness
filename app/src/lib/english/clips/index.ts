@@ -311,6 +311,15 @@ import { healthPlan } from './healthplan.ts';
 import { bigDay } from './bigday.ts';
 import { roomie } from './roomie.ts';
 import { officeSetUp } from './setup.ts';
+import { fakeWedding } from './fakewedding.ts';
+import { aprilLeslie } from './aprilleslie.ts';
+import { unityQuilt } from './unityquilt.ts';
+import { nanaclub } from './nanaclub.ts';
+import { aprilWedding } from './aprilwedding.ts';
+import { habits } from './habits.ts';
+import { ursula } from './ursula.ts';
+import { pacMan } from './pacman.ts';
+import { tackleBen } from './tackleben.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -334,6 +343,7 @@ export const CLIPS: readonly Clip[] = [
   dwightGun,
   ronFixes,
   chairModel,
+  nanaclub,
   ronsReviews,
   leslieReady,
   mostLovedDenmark,
@@ -341,6 +351,7 @@ export const CLIPS: readonly Clip[] = [
   dwightHobbit,
   doingAlcohol,
   ambulance,
+  fakeWedding,
   jerryBurritoLie,
   jerryMugged,
   benCool,
@@ -362,6 +373,7 @@ export const CLIPS: readonly Clip[] = [
   benSaves,
   ronSelfDefense,
   discoveringJammy,
+  tackleBen,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
@@ -445,6 +457,8 @@ export const CLIPS: readonly Clip[] = [
   firstScene,
   doNotMock,
   datingCv,
+  unityQuilt,
+  pacMan,
   ronharass,
   annLeaving,
   conflictPranks,
@@ -456,6 +470,7 @@ export const CLIPS: readonly Clip[] = [
   tomAccent,
   textsMean,
   twilightCapsule,
+  habits,
   animalControl,
   chardStand,
   leslieObama,
@@ -507,6 +522,7 @@ export const CLIPS: readonly Clip[] = [
   donnaTweets,
   donnaPosts,
   rossMarvel,
+  aprilWedding,
   mamasDead,
   workBestie,
   hypocrite,
@@ -516,6 +532,7 @@ export const CLIPS: readonly Clip[] = [
   dwightquits,
   videoDome,
   joeyfinds,
+  aprilLeslie,
   // 速い
   scarnRead,
   gryzzlBoxes,
@@ -566,6 +583,7 @@ export const CLIPS: readonly Clip[] = [
   officeLock,
   chandlerAdopted,
   dwightFavors,
+  ursula,
   jerryPainting,
   icNewCast,
   prankUtica,
