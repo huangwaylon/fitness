@@ -1,0 +1,1356 @@
+{
+  "wireMagic": "pb3",
+  "pens": [ {
+  
+  } ],
+  "wsWinStyles": [ {
+  
+  }, {
+    "mhModeHint": 2,
+    "juJustifCode": 0,
+    "sdScrollDir": 3
+  } ],
+  "wpWinPositions": [ {
+  
+  }, {
+    "apPoint": 6,
+    "ahHorPos": 20,
+    "avVerPos": 100,
+    "rcRows": 2,
+    "ccCols": 40
+  } ],
+  "events": [ {
+    "tStartMs": 0,
+    "dDurationMs": 94489,
+    "id": 1,
+    "wpWinPosId": 1,
+    "wsWinStyleId": 1
+  }, {
+    "tStartMs": 0,
+    "dDurationMs": 4740,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "you",
+      "acAsrConf": 204
+    }, {
+      "utf8": " told",
+      "tOffsetMs": 210,
+      "acAsrConf": 252
+    }, {
+      "utf8": " April",
+      "tOffsetMs": 480,
+      "acAsrConf": 208
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1020,
+      "acAsrConf": 248
+    }, {
+      "utf8": " were",
+      "tOffsetMs": 1170,
+      "acAsrConf": 252
+    }, {
+      "utf8": " breaking",
+      "tOffsetMs": 1290,
+      "acAsrConf": 169
+    }, {
+      "utf8": " up",
+      "tOffsetMs": 1680,
+      "acAsrConf": 252
+    }, {
+      "utf8": " with",
+      "tOffsetMs": 1770,
+      "acAsrConf": 201
+    } ]
+  }, {
+    "tStartMs": 1939,
+    "dDurationMs": 2801,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 1949,
+    "dDurationMs": 5100,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "me",
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 271,
+      "acAsrConf": 252
+    }, {
+      "utf8": " we",
+      "tOffsetMs": 541,
+      "acAsrConf": 249
+    }, {
+      "utf8": " can",
+      "tOffsetMs": 1411,
+      "acAsrConf": 252
+    }, {
+      "utf8": " assistant",
+      "tOffsetMs": 1561,
+      "acAsrConf": 252
+    }, {
+      "utf8": " ly",
+      "tOffsetMs": 2221,
+      "acAsrConf": 216
+    }, {
+      "utf8": " disagree",
+      "tOffsetMs": 2310,
+      "acAsrConf": 252
+    }, {
+      "utf8": " on",
+      "tOffsetMs": 2761,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 4730,
+    "dDurationMs": 2319,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 4740,
+    "dDurationMs": 6390,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "who",
+      "acAsrConf": 252
+    }, {
+      "utf8": " wore",
+      "tOffsetMs": 269,
+      "acAsrConf": 252
+    }, {
+      "utf8": " it",
+      "tOffsetMs": 390,
+      "acAsrConf": 135
+    }, {
+      "utf8": " best",
+      "tOffsetMs": 539,
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 780,
+      "acAsrConf": 0
+    }, {
+      "utf8": " still",
+      "tOffsetMs": 1139,
+      "acAsrConf": 130
+    }, {
+      "utf8": " use",
+      "tOffsetMs": 1650,
+      "acAsrConf": 201
+    }, {
+      "utf8": " an",
+      "tOffsetMs": 1829,
+      "acAsrConf": 252
+    }, {
+      "utf8": " iPad",
+      "tOffsetMs": 1920,
+      "acAsrConf": 248
+    } ]
+  }, {
+    "tStartMs": 7039,
+    "dDurationMs": 4091,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 7049,
+    "dDurationMs": 6691,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "one",
+      "acAsrConf": 220
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 480,
+      "acAsrConf": 231
+    }, {
+      "utf8": " read",
+      "tOffsetMs": 1201,
+      "acAsrConf": 252
+    }, {
+      "utf8": " books",
+      "tOffsetMs": 1380,
+      "acAsrConf": 199
+    }, {
+      "utf8": " all",
+      "tOffsetMs": 1651,
+      "acAsrConf": 252
+    }, {
+      "utf8": " the",
+      "tOffsetMs": 2521,
+      "acAsrConf": 252
+    }, {
+      "utf8": " time",
+      "tOffsetMs": 2581,
+      "acAsrConf": 205
+    }, {
+      "utf8": " okay",
+      "tOffsetMs": 2851,
+      "acAsrConf": 165
+    }, {
+      "utf8": " how",
+      "tOffsetMs": 3391,
+      "acAsrConf": 219
+    } ]
+  }, {
+    "tStartMs": 11120,
+    "dDurationMs": 2620,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 11130,
+    "dDurationMs": 4290,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "about",
+      "acAsrConf": 220
+    }, {
+      "utf8": " my",
+      "tOffsetMs": 179,
+      "acAsrConf": 206
+    }, {
+      "utf8": " own",
+      "tOffsetMs": 360,
+      "acAsrConf": 242
+    }, {
+      "utf8": " no",
+      "tOffsetMs": 570,
+      "acAsrConf": 226
+    }, {
+      "utf8": " nose",
+      "tOffsetMs": 810,
+      "acAsrConf": 201
+    }, {
+      "utf8": " for",
+      "tOffsetMs": 1049,
+      "acAsrConf": 235
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1560,
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1799,
+      "acAsrConf": 200
+    }, {
+      "utf8": " make",
+      "tOffsetMs": 2250,
+      "acAsrConf": 252
+    }, {
+      "utf8": " me",
+      "tOffsetMs": 2460,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 13730,
+    "dDurationMs": 1690,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 13740,
+    "dDurationMs": 4260,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "see",
+      "acAsrConf": 248
+    }, {
+      "utf8": " terrible",
+      "tOffsetMs": 180,
+      "acAsrConf": 195
+    }, {
+      "utf8": " movies",
+      "tOffsetMs": 750,
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 1080,
+      "acAsrConf": 252
+    }, {
+      "utf8": " then",
+      "tOffsetMs": 1229,
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1319,
+      "acAsrConf": 252
+    }, {
+      "utf8": " talk",
+      "tOffsetMs": 1380,
+      "acAsrConf": 249
+    } ]
+  }, {
+    "tStartMs": 15410,
+    "dDurationMs": 2590,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 15420,
+    "dDurationMs": 5160,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "through",
+      "acAsrConf": 218
+    }, {
+      "utf8": " them",
+      "tOffsetMs": 330,
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 509,
+      "acAsrConf": 216
+    }, {
+      "utf8": " put",
+      "tOffsetMs": 930,
+      "acAsrConf": 252
+    }, {
+      "utf8": " 20-inch",
+      "tOffsetMs": 1230,
+      "acAsrConf": 202
+    }, {
+      "utf8": " rims",
+      "tOffsetMs": 1980,
+      "acAsrConf": 226
+    }, {
+      "utf8": " on",
+      "tOffsetMs": 2340,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 17990,
+    "dDurationMs": 2590,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 18000,
+    "dDurationMs": 4680,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "your",
+      "acAsrConf": 99
+    }, {
+      "utf8": " Volkswagen",
+      "tOffsetMs": 150,
+      "acAsrConf": 241
+    }, {
+      "utf8": " Golf",
+      "tOffsetMs": 420,
+      "acAsrConf": 200
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 1170,
+      "acAsrConf": 204
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1590,
+      "acAsrConf": 233
+    }, {
+      "utf8": " insists",
+      "tOffsetMs": 2070,
+      "acAsrConf": 209
+    }, {
+      "utf8": " on",
+      "tOffsetMs": 2490,
+      "acAsrConf": 209
+    } ]
+  }, {
+    "tStartMs": 20570,
+    "dDurationMs": 2110,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 20580,
+    "dDurationMs": 4709,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "being",
+      "acAsrConf": 252
+    }, {
+      "utf8": " introduced",
+      "tOffsetMs": 119,
+      "acAsrConf": 249
+    }, {
+      "utf8": " as",
+      "tOffsetMs": 600,
+      "acAsrConf": 252
+    }, {
+      "utf8": " the",
+      "tOffsetMs": 810,
+      "acAsrConf": 126
+    }, {
+      "utf8": " brown",
+      "tOffsetMs": 990,
+      "acAsrConf": 221
+    }, {
+      "utf8": " Gosling",
+      "tOffsetMs": 1289,
+      "acAsrConf": 248
+    } ]
+  }, {
+    "tStartMs": 22670,
+    "dDurationMs": 2619,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 22680,
+    "dDurationMs": 5730,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "everything",
+      "acAsrConf": 236
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 720,
+      "acAsrConf": 252
+    }, {
+      "utf8": " just",
+      "tOffsetMs": 810,
+      "acAsrConf": 252
+    }, {
+      "utf8": " said",
+      "tOffsetMs": 839,
+      "acAsrConf": 207
+    }, {
+      "utf8": " makes",
+      "tOffsetMs": 1230,
+      "acAsrConf": 238
+    }, {
+      "utf8": " me",
+      "tOffsetMs": 1890,
+      "acAsrConf": 208
+    }, {
+      "utf8": " like",
+      "tOffsetMs": 2009,
+      "acAsrConf": 207
+    } ]
+  }, {
+    "tStartMs": 25279,
+    "dDurationMs": 3131,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 25289,
+    "dDurationMs": 5221,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "me",
+      "acAsrConf": 252
+    }, {
+      "utf8": " more",
+      "tOffsetMs": 271,
+      "acAsrConf": 246
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 1021,
+      "acAsrConf": 214
+    }, {
+      "utf8": " can't",
+      "tOffsetMs": 1261,
+      "acAsrConf": 252
+    }, {
+      "utf8": " take",
+      "tOffsetMs": 1711,
+      "acAsrConf": 252
+    }, {
+      "utf8": " it",
+      "tOffsetMs": 2011,
+      "acAsrConf": 236
+    }, {
+      "utf8": " anymore",
+      "tOffsetMs": 2131,
+      "acAsrConf": 249
+    }, {
+      "utf8": " okay",
+      "tOffsetMs": 2371,
+      "acAsrConf": 243
+    }, {
+      "utf8": " I'm",
+      "tOffsetMs": 2910,
+      "acAsrConf": 255
+    } ]
+  }, {
+    "tStartMs": 28400,
+    "dDurationMs": 2110,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 28410,
+    "dDurationMs": 2820,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "breaking",
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 420,
+      "acAsrConf": 252
+    }, {
+      "utf8": " up",
+      "tOffsetMs": 539,
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 570,
+      "acAsrConf": 161
+    }, {
+      "utf8": " guys",
+      "tOffsetMs": 1050,
+      "acAsrConf": 236
+    }, {
+      "utf8": " are",
+      "tOffsetMs": 1230,
+      "acAsrConf": 252
+    }, {
+      "utf8": " done",
+      "tOffsetMs": 1350,
+      "acAsrConf": 243
+    }, {
+      "utf8": " fine",
+      "tOffsetMs": 1650,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 30500,
+    "dDurationMs": 730,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 30510,
+    "dDurationMs": 4470,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "with",
+      "acAsrConf": 252
+    }, {
+      "utf8": " me",
+      "tOffsetMs": 480,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 31220,
+    "dDurationMs": 3760,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 31230,
+    "dDurationMs": 7320,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "fine",
+      "acAsrConf": 252
+    }, {
+      "utf8": " Oh",
+      "tOffsetMs": 299,
+      "acAsrConf": 230
+    }, {
+      "utf8": " April",
+      "tOffsetMs": 1340,
+      "acAsrConf": 218
+    }, {
+      "utf8": " I'm",
+      "tOffsetMs": 2340,
+      "acAsrConf": 208
+    }, {
+      "utf8": " drunk",
+      "tOffsetMs": 2759,
+      "acAsrConf": 211
+    } ]
+  }, {
+    "tStartMs": 34970,
+    "dDurationMs": 3580,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 34980,
+    "dDurationMs": 6980,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "you",
+      "acAsrConf": 202
+    }, {
+      "utf8": " made",
+      "tOffsetMs": 630,
+      "acAsrConf": 252
+    }, {
+      "utf8": " me",
+      "tOffsetMs": 900,
+      "acAsrConf": 252
+    }, {
+      "utf8": " drunk",
+      "tOffsetMs": 1110,
+      "acAsrConf": 217
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1590,
+      "acAsrConf": 203
+    }, {
+      "utf8": " made",
+      "tOffsetMs": 1860,
+      "acAsrConf": 252
+    }, {
+      "utf8": " me",
+      "tOffsetMs": 2070,
+      "acAsrConf": 252
+    }, {
+      "utf8": " drunk",
+      "tOffsetMs": 2250,
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 2570,
+      "acAsrConf": 164
+    } ]
+  }, {
+    "tStartMs": 38540,
+    "dDurationMs": 3420,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 38550,
+    "dDurationMs": 6630,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "you",
+      "acAsrConf": 252
+    }, {
+      "utf8": " know",
+      "tOffsetMs": 300,
+      "acAsrConf": 252
+    }, {
+      "utf8": " give",
+      "tOffsetMs": 1259,
+      "acAsrConf": 246
+    }, {
+      "utf8": " it",
+      "tOffsetMs": 1829,
+      "acAsrConf": 252
+    }, {
+      "utf8": " a",
+      "tOffsetMs": 1950,
+      "acAsrConf": 252
+    }, {
+      "utf8": " rest",
+      "tOffsetMs": 1980,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 41950,
+    "dDurationMs": 3230,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 41960,
+    "dDurationMs": 4869,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "okay",
+      "acAsrConf": 202
+    }, {
+      "utf8": " let's",
+      "tOffsetMs": 1000,
+      "acAsrConf": 236
+    }, {
+      "utf8": " get",
+      "tOffsetMs": 1869,
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 2020,
+      "acAsrConf": 217
+    }, {
+      "utf8": " to",
+      "tOffsetMs": 2080,
+      "acAsrConf": 150
+    }, {
+      "utf8": " bed",
+      "tOffsetMs": 2230,
+      "acAsrConf": 210
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 2410,
+      "acAsrConf": 252
+    }, {
+      "utf8": " know",
+      "tOffsetMs": 2800,
+      "acAsrConf": 252
+    }, {
+      "utf8": " why",
+      "tOffsetMs": 2860,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 45170,
+    "dDurationMs": 1659,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 45180,
+    "dDurationMs": 4170,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "are",
+      "acAsrConf": 216
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 59,
+      "acAsrConf": 217
+    }, {
+      "utf8": " guys",
+      "tOffsetMs": 180,
+      "acAsrConf": 252
+    }, {
+      "utf8": " fighting",
+      "tOffsetMs": 330,
+      "acAsrConf": 221
+    }, {
+      "utf8": " anyway",
+      "tOffsetMs": 930,
+      "acAsrConf": 247
+    }, {
+      "utf8": " it's",
+      "tOffsetMs": 1410,
+      "acAsrConf": 252
+    }, {
+      "utf8": " just",
+      "tOffsetMs": 1590,
+      "acAsrConf": 236
+    } ]
+  }, {
+    "tStartMs": 46819,
+    "dDurationMs": 2531,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 46829,
+    "dDurationMs": 4710,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "stupid",
+      "acAsrConf": 210
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 781,
+      "acAsrConf": 247
+    }, {
+      "utf8": " hate",
+      "tOffsetMs": 991,
+      "acAsrConf": 217
+    }, {
+      "utf8": " Ann",
+      "tOffsetMs": 1320,
+      "acAsrConf": 184
+    }, {
+      "utf8": " because",
+      "tOffsetMs": 1471,
+      "acAsrConf": 230
+    }, {
+      "utf8": " of",
+      "tOffsetMs": 1921,
+      "acAsrConf": 182
+    }, {
+      "utf8": " this",
+      "tOffsetMs": 2191,
+      "acAsrConf": 252
+    }, {
+      "utf8": " stupid",
+      "tOffsetMs": 2250,
+      "acAsrConf": 227
+    } ]
+  }, {
+    "tStartMs": 49340,
+    "dDurationMs": 2199,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 49350,
+    "dDurationMs": 5790,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "reason",
+      "acAsrConf": 216
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 510,
+      "acAsrConf": 226
+    }, {
+      "utf8": " hate",
+      "tOffsetMs": 689,
+      "acAsrConf": 252
+    }, {
+      "utf8": " Tom",
+      "tOffsetMs": 930,
+      "acAsrConf": 147
+    }, {
+      "utf8": " for",
+      "tOffsetMs": 1139,
+      "acAsrConf": 252
+    }, {
+      "utf8": " this",
+      "tOffsetMs": 1380,
+      "acAsrConf": 236
+    }, {
+      "utf8": " stupid",
+      "tOffsetMs": 1500,
+      "acAsrConf": 252
+    }, {
+      "utf8": " risen",
+      "tOffsetMs": 1770,
+      "acAsrConf": 206
+    } ]
+  }, {
+    "tStartMs": 51529,
+    "dDurationMs": 3611,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 51539,
+    "dDurationMs": 9391,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "who",
+      "acAsrConf": 252
+    }, {
+      "utf8": " cares",
+      "tOffsetMs": 151,
+      "acAsrConf": 252
+    }, {
+      "utf8": " if",
+      "tOffsetMs": 601,
+      "acAsrConf": 75
+    }, {
+      "utf8": " we",
+      "tOffsetMs": 1590,
+      "acAsrConf": 187
+    }, {
+      "utf8": " got",
+      "tOffsetMs": 1741,
+      "acAsrConf": 166
+    }, {
+      "utf8": " the",
+      "tOffsetMs": 2071,
+      "acAsrConf": 200
+    }, {
+      "utf8": " Jerry's",
+      "tOffsetMs": 2221,
+      "acAsrConf": 236
+    }, {
+      "utf8": " here",
+      "tOffsetMs": 2610,
+      "acAsrConf": 252
+    }, {
+      "utf8": " mmm",
+      "tOffsetMs": 2821,
+      "acAsrConf": 217
+    } ]
+  }, {
+    "tStartMs": 55130,
+    "dDurationMs": 5800,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 55140,
+    "dDurationMs": 8669,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "April",
+      "acAsrConf": 252
+    }, {
+      "utf8": " April",
+      "tOffsetMs": 360,
+      "acAsrConf": 207
+    }, {
+      "utf8": " paint",
+      "tOffsetMs": 960,
+      "acAsrConf": 231
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 1290,
+      "acAsrConf": 129
+    }, {
+      "utf8": " was",
+      "tOffsetMs": 4160,
+      "acAsrConf": 232
+    }, {
+      "utf8": " your",
+      "tOffsetMs": 5160,
+      "acAsrConf": 242
+    }, {
+      "utf8": " armor",
+      "tOffsetMs": 5309,
+      "acAsrConf": 233
+    }, {
+      "utf8": " on",
+      "tOffsetMs": 5640,
+      "acAsrConf": 179
+    } ]
+  }, {
+    "tStartMs": 60920,
+    "dDurationMs": 2889,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 60930,
+    "dDurationMs": 4559,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "her",
+      "acAsrConf": 252
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 179,
+      "acAsrConf": 224
+    }, {
+      "utf8": " broke",
+      "tOffsetMs": 480,
+      "acAsrConf": 238
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1469,
+      "acAsrConf": 252
+    }, {
+      "utf8": " up",
+      "tOffsetMs": 1649,
+      "acAsrConf": 252
+    }, {
+      "utf8": " well",
+      "tOffsetMs": 1710,
+      "acAsrConf": 150
+    }, {
+      "utf8": " we",
+      "tOffsetMs": 2280,
+      "acAsrConf": 243
+    }, {
+      "utf8": " got",
+      "tOffsetMs": 2609,
+      "acAsrConf": 252
+    }, {
+      "utf8": " back",
+      "tOffsetMs": 2730,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 63799,
+    "dDurationMs": 1690,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 63809,
+    "dDurationMs": 3541,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "together",
+      "acAsrConf": 209
+    }, {
+      "utf8": " again",
+      "tOffsetMs": 180,
+      "acAsrConf": 252
+    }, {
+      "utf8": " cuz",
+      "tOffsetMs": 420,
+      "acAsrConf": 185
+    }, {
+      "utf8": " what",
+      "tOffsetMs": 691,
+      "acAsrConf": 251
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 871,
+      "acAsrConf": 252
+    }, {
+      "utf8": " said",
+      "tOffsetMs": 960,
+      "acAsrConf": 237
+    }, {
+      "utf8": " do",
+      "tOffsetMs": 1170,
+      "acAsrConf": 248
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 1530,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 65479,
+    "dDurationMs": 1871,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 65489,
+    "dDurationMs": 3361,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "mean",
+      "acAsrConf": 252
+    }, {
+      "utf8": " say",
+      "tOffsetMs": 211,
+      "acAsrConf": 147
+    }, {
+      "utf8": " anything",
+      "tOffsetMs": 721,
+      "acAsrConf": 233
+    }, {
+      "utf8": " yeah",
+      "tOffsetMs": 1021,
+      "acAsrConf": 168
+    }, {
+      "utf8": " well",
+      "tOffsetMs": 1471,
+      "acAsrConf": 211
+    }, {
+      "utf8": " we",
+      "tOffsetMs": 1651,
+      "acAsrConf": 238
+    }, {
+      "utf8": " were",
+      "tOffsetMs": 1771,
+      "acAsrConf": 196
+    } ]
+  }, {
+    "tStartMs": 67340,
+    "dDurationMs": 1510,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 67350,
+    "dDurationMs": 3030,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "carrying",
+      "acAsrConf": 252
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 240,
+      "acAsrConf": 167
+    }, {
+      "utf8": " to",
+      "tOffsetMs": 390,
+      "acAsrConf": 182
+    }, {
+      "utf8": " bed",
+      "tOffsetMs": 480,
+      "acAsrConf": 231
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 690,
+      "acAsrConf": 252
+    }, {
+      "utf8": " correctly",
+      "tOffsetMs": 1019,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 68840,
+    "dDurationMs": 1540,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 68850,
+    "dDurationMs": 3839,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "pointed",
+      "acAsrConf": 227
+    }, {
+      "utf8": " out",
+      "tOffsetMs": 360,
+      "acAsrConf": 252
+    }, {
+      "utf8": " that",
+      "tOffsetMs": 480,
+      "acAsrConf": 208
+    }, {
+      "utf8": " we",
+      "tOffsetMs": 750,
+      "acAsrConf": 252
+    }, {
+      "utf8": " were",
+      "tOffsetMs": 839,
+      "acAsrConf": 252
+    }, {
+      "utf8": " arguing",
+      "tOffsetMs": 990,
+      "acAsrConf": 143
+    }, {
+      "utf8": " about",
+      "tOffsetMs": 1470,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 70370,
+    "dDurationMs": 2319,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 70380,
+    "dDurationMs": 3870,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "stuff",
+      "acAsrConf": 243
+    }, {
+      "utf8": " that",
+      "tOffsetMs": 270,
+      "acAsrConf": 199
+    }, {
+      "utf8": " was",
+      "tOffsetMs": 570,
+      "acAsrConf": 252
+    }, {
+      "utf8": " stupid",
+      "tOffsetMs": 660,
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 989,
+      "acAsrConf": 226
+    }, {
+      "utf8": " so",
+      "tOffsetMs": 1230,
+      "acAsrConf": 238
+    }, {
+      "utf8": " we",
+      "tOffsetMs": 1980,
+      "acAsrConf": 252
+    }, {
+      "utf8": " talked",
+      "tOffsetMs": 2070,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 72679,
+    "dDurationMs": 1571,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 72689,
+    "dDurationMs": 4051,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "it",
+      "acAsrConf": 252
+    }, {
+      "utf8": " out",
+      "tOffsetMs": 121,
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 211,
+      "acAsrConf": 252
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 360,
+      "acAsrConf": 252
+    }, {
+      "utf8": " apologized",
+      "tOffsetMs": 661,
+      "acAsrConf": 250
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 1231,
+      "acAsrConf": 246
+    }, {
+      "utf8": " he",
+      "tOffsetMs": 1411,
+      "acAsrConf": 218
+    } ]
+  }, {
+    "tStartMs": 74240,
+    "dDurationMs": 2500,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 74250,
+    "dDurationMs": 5640,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "apologized",
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 479,
+      "acAsrConf": 148
+    }, {
+      "utf8": " yeah",
+      "tOffsetMs": 510,
+      "acAsrConf": 166
+    }, {
+      "utf8": " that's",
+      "tOffsetMs": 1140,
+      "acAsrConf": 200
+    }, {
+      "utf8": " great",
+      "tOffsetMs": 1500,
+      "acAsrConf": 234
+    }, {
+      "utf8": " thanks",
+      "tOffsetMs": 1650,
+      "acAsrConf": 80
+    } ]
+  }, {
+    "tStartMs": 76730,
+    "dDurationMs": 3160,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 76740,
+    "dDurationMs": 6080,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "no",
+      "acAsrConf": 211
+    }, {
+      "utf8": " I'm",
+      "tOffsetMs": 500,
+      "acAsrConf": 251
+    }, {
+      "utf8": " drunk",
+      "tOffsetMs": 1500,
+      "acAsrConf": 234
+    }, {
+      "utf8": " don't",
+      "tOffsetMs": 1949,
+      "acAsrConf": 154
+    }, {
+      "utf8": " listen",
+      "tOffsetMs": 2309,
+      "acAsrConf": 207
+    }, {
+      "utf8": " to",
+      "tOffsetMs": 2489,
+      "acAsrConf": 209
+    }, {
+      "utf8": " me",
+      "tOffsetMs": 2699,
+      "acAsrConf": 209
+    }, {
+      "utf8": " no",
+      "tOffsetMs": 2879,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 79880,
+    "dDurationMs": 2940,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 79890,
+    "dDurationMs": 14599,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "Heather",
+      "acAsrConf": 252
+    }, {
+      "utf8": " no",
+      "tOffsetMs": 900,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 82810,
+    "dDurationMs": 11679,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 82820,
+    "dDurationMs": 11669,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "[Music]"
+    } ]
+  } ]
+}

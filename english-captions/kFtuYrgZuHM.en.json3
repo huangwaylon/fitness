@@ -1,0 +1,446 @@
+{
+  "wireMagic": "pb3",
+  "pens": [ {
+  
+  } ],
+  "wsWinStyles": [ {
+  
+  }, {
+    "mhModeHint": 2,
+    "juJustifCode": 0,
+    "sdScrollDir": 3
+  } ],
+  "wpWinPositions": [ {
+  
+  }, {
+    "apPoint": 6,
+    "ahHorPos": 20,
+    "avVerPos": 100,
+    "rcRows": 2,
+    "ccCols": 40
+  } ],
+  "events": [ {
+    "tStartMs": 0,
+    "dDurationMs": 57480,
+    "id": 1,
+    "wpWinPosId": 1,
+    "wsWinStyleId": 1
+  }, {
+    "tStartMs": 0,
+    "dDurationMs": 4080,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "The"
+    }, {
+      "utf8": " Lucille",
+      "tOffsetMs": 200
+    }, {
+      "utf8": " Lortel",
+      "tOffsetMs": 640
+    }, {
+      "utf8": " Theater,",
+      "tOffsetMs": 1000
+    }, {
+      "utf8": " badabada,",
+      "tOffsetMs": 1600
+    } ]
+  }, {
+    "tStartMs": 2270,
+    "dDurationMs": 1810,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 2280,
+    "dDurationMs": 3400,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "badabada,"
+    }, {
+      "utf8": " aha.",
+      "tOffsetMs": 1040
+    } ]
+  }, {
+    "tStartMs": 4070,
+    "dDurationMs": 1610,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 4080,
+    "dDurationMs": 5120,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "Joey"
+    }, {
+      "utf8": " Tribbiani",
+      "tOffsetMs": 280
+    } ]
+  }, {
+    "tStartMs": 5670,
+    "dDurationMs": 3530,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 5680,
+    "dDurationMs": 5600,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "gives"
+    }, {
+      "utf8": " an",
+      "tOffsetMs": 480
+    }, {
+      "utf8": " uneven",
+      "tOffsetMs": 1040
+    }, {
+      "utf8": " performance.",
+      "tOffsetMs": 1720
+    } ]
+  }, {
+    "tStartMs": 9190,
+    "dDurationMs": 2090,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 9200,
+    "dDurationMs": 3480,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "About"
+    }, {
+      "utf8": " Mr.",
+      "tOffsetMs": 480
+    }, {
+      "utf8": " Tribbiani",
+      "tOffsetMs": 800
+    }, {
+      "utf8": " is",
+      "tOffsetMs": 1360
+    }, {
+      "utf8": " not",
+      "tOffsetMs": 1440
+    }, {
+      "utf8": " the",
+      "tOffsetMs": 1600
+    }, {
+      "utf8": " worst",
+      "tOffsetMs": 1680
+    } ]
+  }, {
+    "tStartMs": 11270,
+    "dDurationMs": 1410,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 11280,
+    "dDurationMs": 4280,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "thing"
+    }, {
+      "utf8": " in",
+      "tOffsetMs": 280
+    }, {
+      "utf8": " THIS",
+      "tOffsetMs": 440
+    }, {
+      "utf8": " PRODUCTION.",
+      "tOffsetMs": 640
+    } ]
+  }, {
+    "tStartMs": 12670,
+    "dDurationMs": 2890,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 12680,
+    "dDurationMs": 2880,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "YES!",
+      "isSpeakerChange": 1
+    } ]
+  }, {
+    "tStartMs": 17350,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 17360,
+    "dDurationMs": 4400,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "KATE",
+      "isSpeakerChange": 1
+    }, {
+      "utf8": " MILLER'S",
+      "tOffsetMs": 320
+    }, {
+      "utf8": " AWKWARD",
+      "tOffsetMs": 800
+    }, {
+      "utf8": " AND",
+      "tOffsetMs": 1400
+    }, {
+      "utf8": " mannered",
+      "tOffsetMs": 1560
+    } ]
+  }, {
+    "tStartMs": 19350,
+    "dDurationMs": 2410,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 19360,
+    "dDurationMs": 5080,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "portrayal"
+    }, {
+      "utf8": " is",
+      "tOffsetMs": 640
+    }, {
+      "utf8": " laughable.",
+      "tOffsetMs": 880
+    } ]
+  }, {
+    "tStartMs": 21750,
+    "dDurationMs": 2690,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 21760,
+    "dDurationMs": 8520,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "Badabada,"
+    }, {
+      "utf8": " badabada,",
+      "tOffsetMs": 600
+    }, {
+      "utf8": " aha,",
+      "tOffsetMs": 1160
+    }, {
+      "utf8": " here",
+      "tOffsetMs": 1480
+    }, {
+      "utf8": " it",
+      "tOffsetMs": 1680
+    }, {
+      "utf8": " is.",
+      "tOffsetMs": 1800
+    }, {
+      "utf8": " The",
+      "tOffsetMs": 2560
+    } ]
+  }, {
+    "tStartMs": 24430,
+    "dDurationMs": 5850,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 24440,
+    "dDurationMs": 5840,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "direction"
+    }, {
+      "utf8": " by",
+      "tOffsetMs": 1160
+    }, {
+      "utf8": " Marshall",
+      "tOffsetMs": 1320
+    }, {
+      "utf8": " Townend",
+      "tOffsetMs": 2240
+    }, {
+      "utf8": " is",
+      "tOffsetMs": 3360
+    } ]
+  }, {
+    "tStartMs": 35110,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 35120,
+    "dDurationMs": 6600,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "Thank"
+    }, {
+      "utf8": " you.",
+      "tOffsetMs": 320
+    }, {
+      "utf8": " Boys",
+      "tOffsetMs": 1040
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 1280
+    }, {
+      "utf8": " girls,",
+      "tOffsetMs": 1400
+    }, {
+      "utf8": " you've",
+      "tOffsetMs": 1960
+    } ]
+  }, {
+    "tStartMs": 38110,
+    "dDurationMs": 3610,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 38120,
+    "dDurationMs": 6800,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "ruined"
+    }, {
+      "utf8": " my",
+      "tOffsetMs": 760
+    }, {
+      "utf8": " life.",
+      "tOffsetMs": 960
+    }, {
+      "utf8": " Please,",
+      "tOffsetMs": 1760
+    }, {
+      "utf8": " stuff",
+      "tOffsetMs": 2640
+    }, {
+      "utf8": " your",
+      "tOffsetMs": 3080
+    } ]
+  }, {
+    "tStartMs": 41710,
+    "dDurationMs": 3210,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 41720,
+    "dDurationMs": 5160,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "talentless"
+    }, {
+      "utf8": " faces",
+      "tOffsetMs": 880
+    }, {
+      "utf8": " with",
+      "tOffsetMs": 1760
+    }, {
+      "utf8": " my",
+      "tOffsetMs": 1960
+    }, {
+      "utf8": " mother's",
+      "tOffsetMs": 2160
+    }, {
+      "utf8": " crab",
+      "tOffsetMs": 2800
+    } ]
+  }, {
+    "tStartMs": 44910,
+    "dDurationMs": 1970,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 44920,
+    "dDurationMs": 5040,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "cakes."
+    } ]
+  }, {
+    "tStartMs": 46870,
+    "dDurationMs": 3090,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 46880,
+    "dDurationMs": 3080,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "Excuse"
+    }, {
+      "utf8": " me.",
+      "tOffsetMs": 720
+    } ]
+  }, {
+    "tStartMs": 53990,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 54000,
+    "dDurationMs": 3480,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "Does"
+    }, {
+      "utf8": " anyone",
+      "tOffsetMs": 80
+    }, {
+      "utf8": " mind",
+      "tOffsetMs": 440
+    }, {
+      "utf8": " if",
+      "tOffsetMs": 680
+    }, {
+      "utf8": " I",
+      "tOffsetMs": 800
+    }, {
+      "utf8": " save",
+      "tOffsetMs": 880
+    }, {
+      "utf8": " this?",
+      "tOffsetMs": 1120
+    }, {
+      "utf8": " Yeah.",
+      "tOffsetMs": 1440
+    } ]
+  } ]
+}

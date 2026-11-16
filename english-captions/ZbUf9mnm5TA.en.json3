@@ -1,0 +1,332 @@
+{
+  "wireMagic": "pb3",
+  "pens": [ {
+  
+  } ],
+  "wsWinStyles": [ {
+  
+  }, {
+    "mhModeHint": 2,
+    "juJustifCode": 0,
+    "sdScrollDir": 3
+  } ],
+  "wpWinPositions": [ {
+  
+  }, {
+    "apPoint": 6,
+    "ahHorPos": 20,
+    "avVerPos": 100,
+    "rcRows": 2,
+    "ccCols": 40
+  } ],
+  "events": [ {
+    "tStartMs": 0,
+    "dDurationMs": 72729,
+    "id": 1,
+    "wpWinPosId": 1,
+    "wsWinStyleId": 1
+  }, {
+    "tStartMs": 0,
+    "dDurationMs": 6770,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "this",
+      "acAsrConf": 236
+    }, {
+      "utf8": " song",
+      "tOffsetMs": 630,
+      "acAsrConf": 252
+    }, {
+      "utf8": " is",
+      "tOffsetMs": 960,
+      "acAsrConf": 252
+    }, {
+      "utf8": " called",
+      "tOffsetMs": 1319,
+      "acAsrConf": 252
+    }, {
+      "utf8": " 5,000",
+      "tOffsetMs": 2270,
+      "acAsrConf": 161
+    }, {
+      "utf8": " candles",
+      "tOffsetMs": 3270,
+      "acAsrConf": 236
+    }, {
+      "utf8": " in",
+      "tOffsetMs": 4020,
+      "acAsrConf": 151
+    }, {
+      "utf8": " the",
+      "tOffsetMs": 4440,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 4519,
+    "dDurationMs": 2251,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 4529,
+    "dDurationMs": 2241,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "wind",
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 8080,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 8090,
+    "dDurationMs": 5840,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "up",
+      "acAsrConf": 128
+    }, {
+      "utf8": " in",
+      "tOffsetMs": 690,
+      "acAsrConf": 252
+    }, {
+      "utf8": " the",
+      "tOffsetMs": 960,
+      "acAsrConf": 241
+    }, {
+      "utf8": " horsey",
+      "tOffsetMs": 1320,
+      "acAsrConf": 239
+    }, {
+      "utf8": " heaven",
+      "tOffsetMs": 1980,
+      "acAsrConf": 243
+    }, {
+      "utf8": " here's",
+      "tOffsetMs": 2580,
+      "acAsrConf": 236
+    }, {
+      "utf8": " a",
+      "tOffsetMs": 3330,
+      "acAsrConf": 225
+    }, {
+      "utf8": " thing",
+      "tOffsetMs": 3510,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 14070,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 14080,
+    "dDurationMs": 14020,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "he",
+      "acAsrConf": 205
+    }, {
+      "utf8": " trains",
+      "tOffsetMs": 1000,
+      "acAsrConf": 170
+    }, {
+      "utf8": " your",
+      "tOffsetMs": 1330,
+      "acAsrConf": 252
+    }, {
+      "utf8": " legs",
+      "tOffsetMs": 1630,
+      "acAsrConf": 226
+    }, {
+      "utf8": " for",
+      "tOffsetMs": 1900,
+      "acAsrConf": 252
+    }, {
+      "utf8": " angel's",
+      "tOffsetMs": 3000,
+      "acAsrConf": 0
+    }, {
+      "utf8": " wings",
+      "tOffsetMs": 4000,
+      "acAsrConf": 226
+    } ]
+  }, {
+    "tStartMs": 20490,
+    "dDurationMs": 7610,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 20500,
+    "dDurationMs": 13020,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "and",
+      "acAsrConf": 166
+    }, {
+      "utf8": " once",
+      "tOffsetMs": 1000,
+      "acAsrConf": 252
+    }, {
+      "utf8": " we've",
+      "tOffsetMs": 1330,
+      "acAsrConf": 252
+    }, {
+      "utf8": " all",
+      "tOffsetMs": 1750,
+      "acAsrConf": 252
+    }, {
+      "utf8": " said",
+      "tOffsetMs": 2320,
+      "acAsrConf": 252
+    }, {
+      "utf8": " it",
+      "tOffsetMs": 3300,
+      "acAsrConf": 247
+    }, {
+      "utf8": " bad",
+      "tOffsetMs": 4300,
+      "acAsrConf": 249
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 6570,
+      "acAsrConf": 202
+    }, {
+      "utf8": " take",
+      "tOffsetMs": 7570,
+      "acAsrConf": 252
+    } ]
+  }, {
+    "tStartMs": 28090,
+    "dDurationMs": 5430,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 28100,
+    "dDurationMs": 5420,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "a",
+      "acAsrConf": 146
+    }, {
+      "utf8": " running",
+      "tOffsetMs": 269,
+      "acAsrConf": 252
+    }, {
+      "utf8": " leap",
+      "tOffsetMs": 1050,
+      "acAsrConf": 252
+    }, {
+      "utf8": " and",
+      "tOffsetMs": 1260,
+      "acAsrConf": 236
+    }, {
+      "utf8": " you",
+      "tOffsetMs": 2070,
+      "acAsrConf": 217
+    }, {
+      "utf8": " learn",
+      "tOffsetMs": 2429,
+      "acAsrConf": 249
+    }, {
+      "utf8": " to",
+      "tOffsetMs": 2670,
+      "acAsrConf": 249
+    }, {
+      "utf8": " fly",
+      "tOffsetMs": 2700,
+      "acAsrConf": 78
+    } ]
+  }, {
+    "tStartMs": 33840,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 33850,
+    "dDurationMs": 7819,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "[Music]"
+    } ]
+  }, {
+    "tStartMs": 49920,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 49930,
+    "dDurationMs": 3260,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "the",
+      "acAsrConf": 255
+    }, {
+      "utf8": " pastor",
+      "tOffsetMs": 630,
+      "acAsrConf": 218
+    } ]
+  }, {
+    "tStartMs": 53200,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 53210,
+    "dDurationMs": 3000,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "you",
+      "acAsrConf": 200
+    } ]
+  }, {
+    "tStartMs": 58370,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 58380,
+    "dDurationMs": 14349,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "[Applause]"
+    } ]
+  }, {
+    "tStartMs": 61040,
+    "dDurationMs": 11689,
+    "wWinId": 1,
+    "aAppend": 1,
+    "segs": [ {
+      "utf8": "\n"
+    } ]
+  }, {
+    "tStartMs": 61050,
+    "dDurationMs": 11679,
+    "wWinId": 1,
+    "segs": [ {
+      "utf8": "[Music]"
+    } ]
+  } ]
+}
