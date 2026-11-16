@@ -70,12 +70,6 @@ describe('cleanData', () => {
     expect(cleanData('perf.scan', { frame: 412.3, dec50: 1.84, end: 'read', code: '4902102072618', name: 'コーラ' })).toEqual({ frame: 412.3, dec50: 1.8, end: 'read' });
   });
 
-  it('the mic probe’s events: numbers and closed sets kept, heard text never', () => {
-    expect(cleanData('mic.stt', { be: 'relay', model: 'turbo', step: 'spoken', ms: 812, wer: 12.5, ok: true, text: 'I would like a coffee' })).toEqual({ be: 'relay', model: 'turbo', step: 'spoken', ms: 812, wer: 12.5, ok: true });
-    expect(cleanData('mic.duplex', { ear: 'bluetooth', err: 'I would like a coffee', bleed: -41.26 })).toEqual({ ear: 'bluetooth', bleed: -41.3 });
-    expect(cleanData('mic.perm', { st: 'granted', inp: 'AirPods Pro' })).toEqual({ st: 'granted' });
-  });
-
   it('tokens, ids and routes', () => {
     expect([isToken('tent_full'), isToken('a b'), isToken(KEY.slice(0, 16)), isToken('Island3D.BkX9a2.js')]).toEqual([true, false, false, true]);
     expect([isLogId('k2j4h5g6f7'), isLogId(KEY), isLogId('abc')]).toEqual([true, false, false]);

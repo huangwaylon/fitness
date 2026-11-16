@@ -27,10 +27,10 @@ let measuring = false;
 
 /** The site's storage in use, once a Tokyo day (after a sync that worked, Safari tab or installed app, `wait` ms on):
  *  its growth over days, whether it's kept from eviction, and what each of the service worker's caches holds
- *  (cacheSizes.ts: MB a cache, the recogniser there or not) (the log's storage.use, MB only). The day is marked done
+ *  (cacheSizes.ts: MB a cache) (the log's storage.use, MB only). The day is marked done
  *  only once it's logged: the app hidden or closed meanwhile (the launch's first sync, mid-launch), the next sync tries
  *  again (marked first, storage.use stopped on 11-12). */
-export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now(), sizes: () => Promise<Record<string, number | boolean>> = () => import('./cacheSizes.ts').then((m) => m.cacheSizes()), wait = STORAGE_WAIT_MS): Promise<void> {
+export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now(), sizes: () => Promise<Record<string, number>> = () => import('./cacheSizes.ts').then((m) => m.cacheSizes()), wait = STORAGE_WAIT_MS): Promise<void> {
   const day = tokyoDayNum(now);
   if (measuring || !storage?.estimate || readJson(kv, DEVICE.storageDay) === day) return;
   measuring = true;

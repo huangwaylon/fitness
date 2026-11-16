@@ -15,8 +15,7 @@ actions are `event` rows sent through a persisted queue and shown at once; healt
 Shortcut (`ingest`).
 
 One Worker, three SQLite-backed Durable Objects (`relay/wrangler.toml`): `ROOM` (`IslandRoom`: [Live
-relay](#live-relay)), `STORE` (`IslandStore`) and `LOG` (`IslandLog`: [observability](ops/observability.md)); it still
-serves `/stt` for old builds (retired: [kikimimi-mic.md](kikimimi-mic.md)).
+relay](#live-relay)), `STORE` (`IslandStore`) and `LOG` (`IslandLog`: [observability](ops/observability.md)).
 
 <a id="tabs"></a>
 ## Tables
@@ -244,7 +243,7 @@ never data of record: the record still catches an offline phone up.
   `src/room.ts`) at `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}`
   (`sha`: the deployed commit); `POST /api`, `/admin`, `/log`
-  ([observability](ops/observability.md)), `/stt`.
+  ([observability](ops/observability.md)).
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key (`contract/ticket.ts`, `auth.ts admission`), else 403; a ticketed
   hello must be that person's. A phone clock over 5 minutes off has no live socket.

@@ -34,8 +34,8 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 Every event, its level, fields, kinds and when it is logged: the registry, `app/src/lib/contract/log.ts` `LOG_EVENTS`.
 
 ### Naming and levels
-- Names are `area.verb` / `area.noun` (app, perf, api, sync, queue, ws, gl, chunk, storage, mic, log, cron, room, admin,
-  …); `use`, `req`, `admin`, `stt` stay bare (a live name is never renamed: the history reads it).
+- Names are `area.verb` / `area.noun` (app, perf, api, sync, queue, ws, gl, chunk, storage, log, cron, room, admin,
+  …); `use`, `req`, `admin` stay bare (a live name is never renamed: the history reads it).
 - error: the app lost something or a bug threw; warn: degraded but recovered, or a refusal; info: lifecycle and
   samples; debug: polls (ITS's 15 s status).
 - An ok path logs only sampled (`api.ok`) or as a daily summary (`cron.wx`); a routine failure is a `swallow:` counter,
@@ -77,7 +77,6 @@ than the 30 days.
 - **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, the hard guard on the account's rows written): over a cap, dropped,
   `log.cap` once. Tables (`log`, keyed by `id`, no other index; `batches`; `caps`) and retention (events 30 days, batch
   ids and caps 2): `relay/src/log.ts`'s header.
-- `POST /stt` ([kikimimi-mic.md](../kikimimi-mic.md) "The relay endpoint"): nothing of the audio or its text kept.
 
 ## Reading
 From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or
@@ -114,8 +113,7 @@ session's).
 4. The relay live: `npx wrangler tail`; the dashboard's Workers Logs (3 days).
 5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
    written/read against 100k / 5M a day).
-6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy (`STT_OFF = "1"` for `/stt`).
-   Old builds' mic events: `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
+6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy.
 7. Close the alert's issue with the cause.
 
 ## The alert
@@ -131,8 +129,7 @@ Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (
 ## Costs
 ### The log (Free plan)
 Its requests and rows are the Request budget's "The log" row. Besides: storage ~250 B an event (~15 MB for 30 days);
-Worker CPU one JSON.parse of ≤ 64 KB a `/log`; Workers Logs a few hundred lines of 200k a day; Workers AI (`/stt`)
-~47 neurons an audio minute of 10k a day (the cap ~2.3k); on the phone, `log()` ~µs and a flush one stringify of
+Worker CPU one JSON.parse of ≤ 64 KB a `/log`; Workers Logs a few hundred lines of 200k a day; on the phone, `log()` ~µs and a flush one stringify of
 ≤ 32 KB and one fetch.
 
 ### Request budget

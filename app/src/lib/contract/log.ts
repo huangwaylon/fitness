@@ -100,7 +100,7 @@ export const LOG_EVENTS = {
   "api.ok": { src: 'c', f: API },
   // a members-only call (keyed.ts: the relay recogniser, ジム's settings) that failed: which, why, its status; n: the
   // same one's repeats folded while unsent (once an incident)
-  "keyed.fail": { src: 'c', f: { ep: ['stt', 'gym', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
+  "keyed.fail": { src: 'c', f: { ep: ['gym', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
   "auth.lost": { src: 'c', f: { from: ['refresh', 'flush', 'ws'], code: 'n' } },
   "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b', ...AT } },
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },
@@ -123,16 +123,10 @@ export const LOG_EVENTS = {
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
   // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
   // whether it's kept from eviction, and (r3 L7) each service worker cache's MB and the recogniser kept (sync/cacheSizes.ts)
-  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', listen: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n', stt: 'b' } },
+  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },
-  // ききみみ's mic probe (docs/kikimimi-mic.md "The probe"): numbers and closed sets only, never heard text
-  "mic.env": { src: 'c', f: { pwa: 'b', coi: 'b', gpu: 'b', gpuW: 'b', f16: 'b', arch: 't', wks: 'b', ses: 'b', mr: ['mp4', 'webm', 'none'], wl: 'b' } },
-  // (at: the probe's step, 設定's switch, a talk button; retry: the ask after 「もう一度試す」's reload; pwa: the Home Screen app)
-  "mic.perm": { src: 'c', f: { st: ['granted', 'denied', 'prompt', 'unsupported'], ms: 'n', again: 'b', asked: 'b', ec: 'b', sr: 'n', inp: ['builtin', 'bluetooth', 'wired', 'other'], at: ['probe', 'optin', 'button'], retry: 'b', pwa: 'b' } },
-  "mic.duplex": { src: 'c', f: { ear: ['none', 'wired', 'bluetooth'], aec: 'b', bleed: 'n', rtl: 'n', loud: ['none', 'quiet', 'ok'], pick: 'b', restored: 'b', err: 't' } },
-  "mic.stt": { src: 'c', f: { be: ['whisper-gpu', 'whisper-wasm', 'webkit', 'relay'], model: ['tiny.en', 'base.en', 'tiny.en-f16', 'turbo', 'none'], step: ['dl', 'load', 'clip', 'spoken'], ms: 'n', mb: 'n', audS: 'n', wer: 'n', ok: 'b', err: ['not-allowed', 'service-not-allowed', 'network', 'no-speech', 'aborted', 'audio-capture', 'oom', 'timeout', 'other'] } },
   // ボット's 保養所 (lib/its/client.ts): a call to the its-bot Worker that failed: which, its HTTP status (none:
   // no answer), the Worker's error code or the phone's (offline, timeout, json, no_key), ms
   "its.fail": { src: 'c', f: { op: ['status', 'settings', 'run', 'push_subscribe', 'push_unsubscribe', 'push_test'], err: 't', rid: 't', http: 'n', ms: 'n' } },
@@ -164,9 +158,7 @@ export const LOG_EVENTS = {
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
   admin: { src: 'r', f: { op: 't', st: 't' } },
-  "log.cap": { src: 'r', f: { bucket: 't' } },
-  // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
-  stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } }
+  "log.cap": { src: 'r', f: { bucket: 't' } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;
