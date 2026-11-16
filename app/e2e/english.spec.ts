@@ -424,8 +424,9 @@ test('collections on すべて (those with 4+ clips), each a level: its note, it
   await expect(lib.locator('[data-en-col-note]')).toHaveText('上司と同僚の会話');
   await expect(lib.locator('[data-en-chip]')).toHaveCount(0);
   const rows = lib.locator('[data-en-list] [data-en-clip]');
-  await expect(rows).toHaveCount(work.clips.length);
-  expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute('data-en-clip')))).toEqual(work.clips.map((m) => m.id));
+  // (its first 20: a collection pages like the library, and fills as banks land)
+  await expect(rows).toHaveCount(Math.min(20, work.clips.length));
+  expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute('data-en-clip')))).toEqual(work.clips.slice(0, 20).map((m) => m.id));
   await rows.nth(1).click();
   await expect(lesson(page)).toHaveAttribute('data-en-lesson', work.clips[1].id);
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
