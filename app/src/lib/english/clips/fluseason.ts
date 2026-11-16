@@ -16,7 +16,7 @@
 import type { Clip } from '../types.ts';
 
 export const fluSeason: Clip = {
-  id: 'fluseason', video: '7DxKsVWI1EA', title: 'People Are Getting Sick Again?!', dur: 194, wpm: 157, band: 'slow',
+  id: 'fluseason', video: '7DxKsVWI1EA', title: 'People Are Getting Sick Again?!', dur: 194, wpm: 157, band: 'mid',
   tags: ['職場', '買い物'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

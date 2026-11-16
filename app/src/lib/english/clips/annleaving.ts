@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const annLeaving: Clip = {
   id: 'annleaving', video: 'f9QHuKzvBVc', title: 'Ann Bribes Leslie with Food', dur: 167, wpm: 158,
-  band: 'slow', tags: ['友だち', '職場'],
+  band: 'mid', tags: ['友だち', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

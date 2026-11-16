@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const womensAppreciation: Clip = {
-  id: 'womensapp', video: '2ap7aEaPics', title: 'Women’s Appreciation', dur: 273, wpm: 158, band: 'slow',
+  id: 'womensapp', video: '2ap7aEaPics', title: 'Women’s Appreciation', dur: 273, wpm: 158, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

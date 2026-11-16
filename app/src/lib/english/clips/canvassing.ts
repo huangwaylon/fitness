@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const canvassing: Clip = {
   id: 'canvassing', video: 'fpjgXEga8AA', title: 'Parks and Recreation | Canvassing (Episode Highlight)', dur: 133,
-  wpm: 157, band: 'slow', tags: ['お願い・断り', '職場'],
+  wpm: 157, band: 'mid', tags: ['お願い・断り', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

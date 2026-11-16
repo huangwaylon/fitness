@@ -175,6 +175,16 @@ import { liceOffice } from './liceoffice.ts';
 import { monicaMillionaire } from './millionaire.ts';
 import { thisIsMyBoyfriendDerek } from './derek.ts';
 import { benSkates } from './benskates.ts';
+import { chrisBestMan } from './bestman.ts';
+import { donnaBully } from './donnabully.ts';
+import { dwightHobbit } from './hobbit.ts';
+import { andyInvestigates } from './andyinvest.ts';
+import { ronLeslieLunch } from './ronlunch.ts';
+import { treatTurnabout } from './treatturn.ts';
+import { giantHead } from './gianthead.ts';
+import { kneecapping } from './kneecapping.ts';
+import { weddingFund } from './weddingfund.ts';
+import { conesOfDunshire } from './dunshire.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -187,6 +197,7 @@ export const CLIPS: readonly Clip[] = [
   ronsReviews,
   mostLovedDenmark,
   poachBen,
+  dwightHobbit,
   jerryBurritoLie,
   jerryMugged,
   rossBreak,
@@ -216,9 +227,22 @@ export const CLIPS: readonly Clip[] = [
   andyAcademy,
   annFlowers,
   leslieCancelled,
+  chrisBestMan,
+  andyInvestigates,
   jointMission,
+  ronLeslieLunch,
+  treatTurnabout,
+  kneecapping,
   heroes,
+  donnaBully,
   saveJJs,
+  tobySafety,
+  jansStroller,
+  vanBidding,
+  ronAward,
+  unsexyRoadTrip,
+  weddingFund,
+  // ふつう
   buttOfJoke,
   ronSlash,
   mexBus,
@@ -226,16 +250,10 @@ export const CLIPS: readonly Clip[] = [
   ronharass,
   annLeaving,
   conflictPranks,
-  tobySafety,
   fluSeason,
   banquetHair,
-  jansStroller,
-  vanBidding,
-  ronAward,
-  unsexyRoadTrip,
   ronLeslieLocked,
   womensAppreciation,
-  // ふつう
   animalControl,
   chardStand,
   leslieObama,
@@ -274,6 +292,7 @@ export const CLIPS: readonly Clip[] = [
   workBestie,
   andySecret,
   dwightUrine,
+  conesOfDunshire,
   scarnRead,
   gryzzlBoxes,
   distract,
@@ -314,6 +333,7 @@ export const CLIPS: readonly Clip[] = [
   ronHearing,
   ryanOffice,
   bestBurger,
+  giantHead,
   couplesOnly,
   annOffended,
   phoebebook,

@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const conflictPranks: Clip = {
-  id: 'pranks', video: 'lqLv4AT1_ps', title: 'Conflict Resolution Pranks', dur: 259, wpm: 158, band: 'slow',
+  id: 'pranks', video: 'lqLv4AT1_ps', title: 'Conflict Resolution Pranks', dur: 259, wpm: 158, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

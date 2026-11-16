@@ -172,5 +172,15 @@ export const PLANNED: readonly string[] = [
   'canvassing',
   'newbrain',
   'lesliecancel',
-  'benskates'
+  'benskates',
+  'hobbit',
+  'treatturn',
+  'kneecapping',
+  'bestman',
+  'weddingfund',
+  'ronlunch',
+  'andyinvest',
+  'gianthead',
+  'donnabully',
+  'dunshire'
 ];

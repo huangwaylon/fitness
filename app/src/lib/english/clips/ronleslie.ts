@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const ronLeslieLocked: Clip = {
   id: 'ronleslie', video: 'b_9fjLc3JBs', title: 'Ron and Leslie get down to business', dur: 238, wpm: 157,
-  band: 'slow', tags: ['職場', '友だち'],
+  band: 'mid', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

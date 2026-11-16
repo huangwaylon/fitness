@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const mexBus: Clip = {
   id: 'mexbus', video: 'IVZUUaF1pQ0', title: 'Michael Scott’s Best Decision...or not', dur: 271, wpm: 157,
-  band: 'slow', tags: ['職場', '旅行'],
+  band: 'mid', tags: ['職場', '旅行'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

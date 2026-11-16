@@ -22,7 +22,7 @@ import type { Clip } from '../types.ts';
 
 export const banquetHair: Clip = {
   id: 'banquethair', video: 'OB5ZbUHsuPE', title: 'Two women being brave about who they are', dur: 279, wpm: 157,
-  band: 'slow', tags: ['職場', '友だち'],
+  band: 'mid', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronSlash: Clip = {
-  id: 'ronslash', video: 'abhlj4Pfftc', title: 'Ron Helps Slash the Budget', dur: 151, wpm: 157, band: 'slow',
+  id: 'ronslash', video: 'abhlj4Pfftc', title: 'Ron Helps Slash the Budget', dur: 151, wpm: 157, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

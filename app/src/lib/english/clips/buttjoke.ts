@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const buttOfJoke: Clip = {
   id: 'buttjoke', video: '2xui7lx4wvE', title: 'Butt of the Joke (Episode Highlight)', dur: 120, wpm: 157,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
