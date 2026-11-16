@@ -155,6 +155,11 @@ function report(rows: Row[], since: number): void {
     ['long frames in 5 s', frames.length, ms(pct(frames.map((r) => Number(r.d.long)), 0.5)), ms(pct(frames.map((r) => Number(r.d.long)), 0.95))],
     ...bootRows
   ].filter((r) => Number(r[1]) > 0));
+  // the launches that drew WebP fallbacks (perf.boot txFail/txWebp/txOff: world3d/ktx2.ts ktx2Stats; a session's later
+  // ones: swallow:ktx2.fail and ktx2.off in the counters below)
+  const fell = boots.filter((r) => Number(r.d.txFail) > 0 || Number(r.d.txWebp) > 0 || r.d.txOff === true);
+  const total = (f: string) => fell.reduce((n, r) => n + (Number(r.d[f]) || 0), 0);
+  if (boots.length) console.log(`\nKTX2 fallbacks: ${fell.length} of ${boots.length} launches drew WebPs${fell.length ? ` (${total('txFail')} KTX2s not had, ${total('txWebp')} WebPs drawn, ${fell.filter((r) => r.d.txOff === true).length} gave the transcoder up)` : ''}`);
   // the newest 10 builds (by their last event), the rest summed
   const builds = countBy(rows.filter((r) => r.src === 'c'), (r) => r.build ?? '-').map(([b, xs]) => ({ b, xs, last: Math.max(...xs.map((x) => x.ts)) })).sort((a, b) => b.last - a.last);
   table(`Builds (the newest 10 of ${builds.length})`, ['build', 'sessions', 'events', 'errors', 'os', 'last (Tokyo)'], builds.slice(0, 10).map(({ b, xs, last }) => [b, new Set(xs.map((x) => x.sid)).size, xs.length, xs.filter((x) => x.lvl === 3).length, [...new Set(xs.map((x) => x.os ?? '-'))].join(' '), tokyo(last)]));

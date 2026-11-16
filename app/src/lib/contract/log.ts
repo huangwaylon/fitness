@@ -76,9 +76,10 @@ export const LOG_EVENTS = {
   // version ask and its hold, older builds); `pre` the ms from the worker's fetch event to the page's clock start (on
   // WebKit that clock starts once the worker answers: the race's wait is before every mark), `swCold` the worker just
   // started for it; the worker's own network fetches meanwhile (the page's transfer sizes read 0 for every answer it
-  // gives), its room files of them and their KB (`swNet`, `swRoom`, `swKB`: Content-Length, else the cache index's size, else 0); the KTX2s transcoded (`tx`); the last late
+  // gives), its room files of them and their KB (`swNet`, `swRoom`, `swKB`: Content-Length, else the cache index's size, else 0); the KTX2s transcoded (`tx`), and the WebP fallbacks: KTX2s not had, textures drawn from their WebP, the transcoder given up
+  // (`txFail`, `txWebp`, `txOff`: world3d/ktx2.ts ktx2Stats); the last late
   // model's fetch end and its arrival in the scene (`lateF`, `lateA`)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', lateF: 'n', lateA: 'n' } },
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a

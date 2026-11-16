@@ -56,6 +56,12 @@ export interface BootReport {
   lateA?: number;
   /** The KTX2 textures transcoded by the report (ktx2.ts ktx2Stats.made: not read back from the texture cache). */
   tx?: number;
+  /** The WebP fallbacks (ktx2.ts ktx2Stats) by the report: textures whose KTX2 couldn't be had (a fetch or transcode
+   *  failure, a null, the worker given up), textures drawn from their WebP (those, and every one with `?ktx2=0`), and
+   *  the transcoder's worker given up for the page (an error, or silent past its stall: every miss a WebP from then). */
+  txFail?: number;
+  txWebp?: number;
+  txOff?: boolean;
   /** ms since the navigation's start when the record's model was first composed (week.svelte.ts dataAt; 0: not by
    *  the report): the farm's plots, the finds and the garden's crops are placed only from it. */
   data?: number;
@@ -201,7 +207,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'tx' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'tx' | 'txFail' | 'txWebp' | 'txOff' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;

@@ -14,7 +14,7 @@ import type { Answer, Ask } from './ktx2.worker.ts';
 import { hasTex, readTex, writeTex } from './texCache.ts';
 import { texHash, texKey, type GlbImage } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
-import { quiet } from '#lib/quiet.ts';
+import { quiet, swallowed } from '#lib/quiet.ts';
 import { warmToo } from '#lib/ui-state/swLate.ts';
 
 /** Bumped when what's kept changes shape or meaning (the encoder's settings and the transcoder are in the key anyway). */
@@ -66,7 +66,11 @@ let broken = false;
 const asks = new Map<number, (t: Transcoded | null) => void>();
 /** Waiting this long (ms) for the worker's next answer, it's given up on. */
 const STALL_MS = 8000;
-const fail = () => ((broken = true), stop());
+const fail = () => {
+  if (!broken) swallowed('ktx2.off');
+  broken = ktx2Stats.off = true;
+  stop();
+};
 /** To the worker (made if need be): a file to transcode, or with none its transcoder loaded (no answer). */
 function post(buf?: ArrayBuffer, t?: Target, ok?: (t: Transcoded | null) => void) {
   if (!worker) {
@@ -111,9 +115,13 @@ function stop() {
   asks.clear();
 }
 
-/** This page's textures so far: read back from the cache, transcoded, drawn from their WebP (no KTX2 for them, or
- *  none could be had); and the format (window.__world3d.ktx2: a spec's, a measure's). */
-export const ktx2Stats = { kept: 0, made: 0, webp: 0, target: null as Target | null };
+/** This page's textures so far: read back from the cache, transcoded, not had as KTX2 (`fail`: any trouble, a null
+ *  too: each also the log's `swallow:ktx2.fail`), drawn from their WebP (those, and every one with `?ktx2=0`), the
+ *  worker given up (`off`: `swallow:ktx2.off`); and the format (window.__world3d.ktx2: a spec's, a measure's; perf.boot
+ *  its tx fields). */
+export const ktx2Stats = { kept: 0, made: 0, fail: 0, webp: 0, off: false, target: null as Target | null };
+/** A texture whose KTX2 couldn't be had: counted, drawn from its WebP. */
+const failed = () => (ktx2Stats.fail++, swallowed('ktx2.fail'));
 /** Whether textures with a KTX2 are drawn from it on this page (a GPU format said: ktx2Target). */
 export const ktx2On = (): boolean => target !== null && !broken;
 
@@ -203,9 +211,10 @@ export async function loadTexture(url: string, o: { flipY: boolean; ktx2: boolea
         c.userData.mimeType = 'image/ktx2';
         return c;
       }
-      ktx2Stats.webp++;
+      failed();
     }
   }
+  if (o.ktx2) ktx2Stats.webp++;
   const w = await (plain ??= new TextureLoader()).loadAsync(url);
   w.flipY = o.flipY;
   return w;
@@ -226,8 +235,9 @@ export async function textureFrom(id: string, o: { flipY: boolean; ktx2?: () => 
       c.userData.mimeType = 'image/ktx2';
       return c;
     }
-    ktx2Stats.webp++;
+    failed();
   }
+  if (o.ktx2) ktx2Stats.webp++;
   const buf = await o.webp();
   if (!buf) throw new Error(`texture: no bytes for ${id}`);
   const url = URL.createObjectURL(new Blob([buf], { type: 'image/webp' }));
@@ -270,7 +280,7 @@ export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
           const key = texKey(h, CAPS);
           const pack = async () => `room/tex/${(await packsOf(parser)).ktx2}.ktx2p`;
           const tex = await levels(key, async () => fetchKtx2({ path: await pack(), entry: key }), t, async () => ktx2Url(await pack()));
-          if (!tex) return ktx2Stats.webp++, webpOf(parser, i, source);
+          if (!tex) return failed(), webpOf(parser, i, source);
           const c = compressed(tex);
           // (GLTFLoader's loadTextureImage's settings: glTF's UVs unflipped, its sampler's filters and wrapping)
           const s = parser.json.samplers?.[def.sampler ?? -1] ?? {};
@@ -311,6 +321,7 @@ const webpLoads = new WeakMap<GlbImage, Promise<unknown>>();
 function webpOf(parser: Parser, i: number, source: number): Promise<Texture | null> {
   const im = parser.json.images![source];
   if (im.bufferView !== undefined) return parser.loadTextureImage(i, source, parser.textureLoader);
+  ktx2Stats.webp++;
   let first = webpLoads.get(im);
   if (!first) {
     first = packsOf(parser).then(async ({ webp }) => {

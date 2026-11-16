@@ -15,7 +15,7 @@ type W3 = {
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
   go(z: number, k?: number, x?: number): void;
-  ktx2(): { kept: number; made: number; webp: number; target: string | null };
+  ktx2(): { kept: number; made: number; fail: number; webp: number; off: boolean; target: string | null };
 };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 const ready = (page: Page) => loaded3d(page);
@@ -40,7 +40,7 @@ test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@
   // under the CSP (world3d/ktx2.ts), none from a WebP
   const k = await w3(page, (w) => w.ktx2());
   expect(k.made + k.kept).toBeGreaterThan(20);
-  expect(k.webp).toBe(0);
+  expect([k.fail, k.webp, k.off]).toEqual([0, 0, false]);
 
   // a tap on open lawn between the villagers' homes and the stream (near world 200, 300) walks mine there
   const { at: [lx, lz], x, y } = await lawnTap(page, 200, 300);
@@ -177,6 +177,9 @@ test('no KTX2 (?ktx2=0): the island\'s models draw their WebPs, from their WebP 
   const k = await w3(page, (w) => w.ktx2());
   expect(k.target).toBeNull();
   expect(k.made + k.kept).toBe(0);
+  // (each a fallback, perf.boot's txWebp; none a KTX2 failure)
+  expect(k.webp).toBeGreaterThan(20);
+  expect([k.fail, k.off]).toEqual([0, false]);
   expect(packs.filter((p) => p === 'webpp').length).toBeGreaterThan(10);
   expect(packs).not.toContain('ktx2p');
   expect(errors.filter((e) => /GLTFLoader|texture/i.test(e))).toEqual([]);

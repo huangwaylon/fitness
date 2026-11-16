@@ -121,7 +121,7 @@ describe('where the launch\'s page came from (perf.boot shell)', () => {
     expect(shellFrom(nav([{ name: 'shell', description: 'same', duration: 40 }, { name: 't0', description: '1', duration: 1_000_000 }]), 1_000_212.6)).toEqual({ shell: 'same', raceMs: 40, pre: 213, swCold: true });
     expect(shellFrom(nav([{ name: 'shell', description: 'skip' }, { name: 't0', description: '0', duration: 1_000_000 }]), 999_990)).toEqual({ shell: 'skip', raceMs: 0, pre: -10, swCold: false });
     expect(shellFrom(nav([{ name: 'shell', description: 'skip' }]), 5), 'an older worker: no t0').toEqual({ shell: 'skip', raceMs: 0 });
-    const r = { pre: 213, swCold: true, swNet: 2, swRoom: 1, swKB: 40, tx: 3, lateF: 480, lateA: 520 };
+    const r = { pre: 213, swCold: true, swNet: 2, swRoom: 1, swKB: 40, tx: 3, txFail: 2, txWebp: 5, txOff: true, lateF: 480, lateA: 520 };
     expect(cleanData('perf.boot', r)).toEqual(r);
   });
   it('the worker\'s own network fetches, asked of it; {} with none, or none answering within a second', async () => {
