@@ -1,6 +1,7 @@
 // The shop's stock (docs/design.md "The shop"): STOCK_N pieces a Tokyo day, the first of the buy price list's pieces in
-// the day's order (seeded by the date and the island's seed) that the island hadn't found or bought by the day's start
-// (`stockOf`'s `found`: components/shop/stock.ts), so both phones agree all day. From UNITS_FROM the day's order keeps
+// the day's order (seeded by the date and the island's seed) that the island hadn't found nor the person bought by the
+// day's start (`stockOf`'s `found`: components/shop/stock.ts, each person's own since 2026-11-16), so their phones
+// agree all day. From UNITS_FROM the day's order keeps
 // the pieces cut from one pack together (`unit`: the phones' components/shop/stock.ts packOf), so a day fetches ~5
 // packs, not ~14. The phones import it only in the shops' lazy chunks (ShopRoom, VisitorShop) and the record from
 // contract/shopCheck.ts, so the buy prices (buyPrices.ts) never ride the first load (deps.test.ts). Pure.
@@ -49,7 +50,7 @@ function dayOrder(date: LocalDate, unit?: UnitOf): readonly string[] {
 }
 
 /** A Tokyo day's stock: the first STOCK_N pieces of the day's order not in `found` (room codes: the island's ずかん
- *  finds and anyone's buys as of the day's start, shop/stock.ts), fewer when the island has nearly all of them, none
+ *  finds and the person's own buys as of the day's start, shop/stock.ts), fewer when the island has nearly all of them, none
  *  when it has all (売り切れ). */
 export function stockOf(date: LocalDate, found: ReadonlySet<string> = new Set(), unit?: UnitOf): string[] {
   const out: string[] = [];

@@ -95,7 +95,7 @@
   const me = $derived(week.model?.me ?? viewer);
   const shop = $derived(week.model ? shopView(week.model.state, me) : { pocket: new Map<string, number>(), shells: 0, owned: [] as readonly string[] });
   // (as of the day's start: a find or a buy today leaves it as it was)
-  const stock = $derived(week.model ? stockAt(week.model.state, week.model.now) : []);
+  const stock = $derived(week.model ? stockAt(week.model.state, week.model.now, me) : []);
 
   // ---- my presence (the phone's one socket; the demo's two tabs share a channel; ?relay=&key= a test relay) ----
   const demo = !!week.demo;

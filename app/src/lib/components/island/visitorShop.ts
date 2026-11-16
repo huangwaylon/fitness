@@ -1,6 +1,6 @@
 // A guest's shop (visitorRoles.ts `shop`: Gracie's fine furniture, Wardell's any): a few pieces of the shop's own price
-// list (contract/stock.ts buyPrice: NH's ÷20), seeded by the date and the guest, never one in today's stock or one the
-// island had by the day's start (shop/stock.ts foundBefore), so both phones see the same. Bought as the shop's are
+// list (contract/stock.ts buyPrice: NH's ÷20), seeded by the date and the guest, never one in my stock today or one I
+// could place by the day's start (shop/stock.ts foundBefore: the island's finds, my own buys), so my phones see the same. Bought as the shop's are
 // (shop/stock.ts buyPiece with this offer as the stock: the record checks the price and the かいがら). Loaded with its
 // sheet (VisitorShop.svelte), never in the island's first load (the price list).
 import { BUY } from '#lib/contract/buyPrices.ts';

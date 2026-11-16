@@ -56,7 +56,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `room_save` | `roomSave.ts` | a room's saved arrangement in slot 1–3 ([design](design.md#the-tent) "Saved arrangements"), or emptied |
 | `board` | `board.ts` | a note or its removal ([board.md](board.md)) |
 | `food`, `food_repeat`, `food_recipe`, `food_custom` | `food.ts` | the meal log ([food-data.md](food-data.md)): own entries, owner-only edits (`foodAccept`); いつもの's skipped day stays skipped (`repeatAccept`); a recipe or custom food logs as an ordinary `food` with a snapshot |
-| `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short` |
+| `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short`; never which pieces a stock holds (each person's own, the phones': `shop/stock.ts`) |
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, n, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |

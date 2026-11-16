@@ -20,31 +20,48 @@ describe('かう’s stock', () => {
   /** The day's ずかん pieces (a balloon's find can be one) and the rest (the shop's alone: NH's whole catalogue). */
   const cats = plain.filter((c) => ITEMS[c].cat), rest = plain.filter((c) => !ITEMS[c].cat);
 
-  it('is 24 pieces, none the island found (anyone’s ずかん finds) or bought (anyone’s) before the day', () => {
+  it('is 24 pieces, none the island found (anyone’s ずかん finds) or I bought before the day', () => {
     const [f1, f2] = cats, [b1] = rest;
     const s: S = { finds: [find(f1, START - 60_000), find(f2, START - 1, 'G')], shop: [buy(b1, START - 3_600_000)] };
-    expect(foundBefore(s, START)).toEqual(new Set([f1, f2, b1]));
-    const stock = stockAt(s, NOW);
+    expect(foundBefore(s, START, 'B')).toEqual(new Set([f1, f2, b1]));
+    const stock = stockAt(s, NOW, 'B');
     expect(stock).toHaveLength(STOCK_N);
     for (const c of [f1, f2, b1]) expect(stock).not.toContain(c);
   });
 
-  it('is the same on both phones all day: a find or a buy today changes nothing till tomorrow', () => {
+  it('is each person’s own: the partner’s or the guest’s buy leaves my stock as it was (2026-11-16)', () => {
+    const [b1, b2] = rest;
+    const s: S = { finds: [find(cats[0], START - 1, 'B')], shop: [buy(b1, START - 60_000, 'B'), buy(b2, START - 60_000, 'G')] };
+    // B's present is everyone's to place: out of every stock; a buy only out of its buyer's
+    expect(foundBefore(s, START, 'A')).toEqual(new Set([cats[0]]));
+    expect(foundBefore(s, START, 'B')).toEqual(new Set([cats[0], b1]));
+    expect(foundBefore(s, START, 'G')).toEqual(new Set([cats[0], b2]));
+    expect(stockAt(s, NOW, 'A')).toEqual(stockOf('2026-11-09', new Set([cats[0]])));
+    expect(stockAt(s, NOW, 'A')).toContain(b1);
+    expect(stockAt(s, NOW, 'A')).toContain(b2);
+    expect(stockAt(s, NOW, 'B')).not.toContain(b1);
+    expect(stockAt(s, NOW, 'B')).toContain(b2);
+    expect(stockAt(s, NOW, 'G')).not.toContain(b2);
+  });
+
+  it('is the same on my phones all day: a find or a buy today changes nothing till tomorrow', () => {
     const a: S = { finds: [], shop: [] };
     const b: S = { finds: [find(cats[0], START + 3_600_000)], shop: [buy(rest[0], START + 7_200_000)] };
-    expect(stockAt(a, NOW)).toEqual(plain);
-    expect(stockAt(b, NOW)).toEqual(plain);
-    expect(stockAt(b, at('2026-11-10T09:00:00+09:00'))).toEqual(stockOf('2026-11-10', new Set([cats[0], rest[0]])));
+    expect(stockAt(a, NOW, 'B')).toEqual(plain);
+    expect(stockAt(b, NOW, 'B')).toEqual(plain);
+    expect(stockAt(b, at('2026-11-10T09:00:00+09:00'), 'B')).toEqual(stockOf('2026-11-10', new Set([cats[0], rest[0]])));
+    expect(stockAt(b, at('2026-11-10T09:00:00+09:00'), 'A')).toEqual(stockOf('2026-11-10', new Set([cats[0]])));
   });
 
   it('a recipe or a catch is no piece; a found piece the shop never sells changes nothing', () => {
     const s: S = { finds: [{ at: START - 1, person: 'A', kind: 'recipe', id: catOf(cats[0]) }, { at: START - 1, person: 'A', kind: 'fish', id: 'koi' }], shop: [] };
-    expect(stockAt(s, NOW)).toEqual(plain);
+    expect(stockAt(s, NOW, 'A')).toEqual(plain);
   });
 
-  it('sells out when the island has every piece', () => {
+  it('sells out for whoever has every piece, only for them', () => {
     const s: S = { finds: [], shop: Object.keys(BUY).map((c) => buy(c, START - 1)) };
-    expect(stockAt(s, NOW)).toEqual([]);
+    expect(stockAt(s, NOW, 'B')).toEqual([]);
+    expect(stockAt(s, NOW, 'A')).toEqual(plain);
   });
 });
 

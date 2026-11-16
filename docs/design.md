@@ -808,8 +808,9 @@ person has a pocket and かいがら, the guest too.
   object: cream at every hour (`.obj-cream`), its own rows (a sheet's follow the hour).
 - **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部選ぶ a section,
   全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
-- **かう**: today's stock, 24 pieces a day, seeded by pack, less what the island had by midnight; past
-  my かいがら dimmed; 全部買う, or short 「3点を買う」, cheapest first. The starts ([farming.md](farming.md)) in rows.
+- **かう**: my stock of today, 24 pieces a day, seeded by pack, less what I could place by midnight: the island's
+  furniture finds (a present is everyone's in もようがえ) and my own buys (each person's stock, the guest's its own, since
+  2026-11-16: a partner's buy no longer takes a piece from mine); past my かいがら dimmed; 全部買う, or short 「3点を買う」, cheapest first. The starts ([farming.md](farming.md)) in rows.
 - A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷

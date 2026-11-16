@@ -27,7 +27,7 @@
   const offer = $derived.by(() => {
     if (!m) return [];
     const date = localDateAt(m.now);
-    return offerOf(id, pool, date, foundBefore(m.state, dateMs(date) - ZONE_OFFSET_MS));
+    return offerOf(id, pool, date, foundBefore(m.state, dateMs(date) - ZONE_OFFSET_MS, m.me));
   });
   let pick = $state<string | null>(null);
   const why = $derived(pick ? (void mine, buyRefusal(pick, offer)) : null);
