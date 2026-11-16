@@ -3,11 +3,10 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
 import { eflagOf } from '#lib/contract/eflag.ts';
-import { CLIPS } from './clips/index.ts';
+import { fixture as clip } from './fixture.ts';
 import { flagData, flagsOf } from './flags.ts';
 import { questionHash } from './hash.ts';
 
-const clip = CLIPS[0];
 
 describe('flagData', () => {
   it('a question’s flag: what was shown, its version, the time to 0.1 s, the note cleaned; the record takes it', () => {

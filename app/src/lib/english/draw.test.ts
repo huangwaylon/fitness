@@ -1,6 +1,6 @@
 // The draw (draw.ts) over a made-up bank of 20: the size by length, the gist first then clip order, the quotas (play 1
-// L2 I2 F1; play 2+ L1 I3 F1 with a C1), unseen and new points first, ≤ 1 dict, points and reveals, a predict's
-// continuation, the same draw for the same seed; the history from listen rows; the choices' order.
+// L2 I2 F1; play 2+ L1 I3 F1), a C1 on play 2+ always, the unseen before any repeat, new points first, ≤ 1 dict, points
+// and reveals, a predict's continuation, the same draw for the same seed; the history from listen rows; the choices' order.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
 import { choiceOrder, draw, drawSize, GROUP_OF, historyOf, seedOf, type History } from './draw.ts';
@@ -44,6 +44,15 @@ describe('draw', () => {
     expect(groups(two)).toEqual({ L: 1, I: 3, F: 1 });
     expect(two.some((x) => x.level === 'C1')).toBe(true);
     expect(two.slice(1).filter((x) => one.includes(x))).toEqual([]);
+  });
+  it('play 2+: a C1 even when every C1 was seen; the unseen before any repeat', () => {
+    const c1s = new Set(bank.filter((x) => x.level === 'C1').map((x) => x.id));
+    const seenC1: History = Object.fromEntries([...c1s].map((id) => [id, { play: 1, ok: true }]));
+    for (let s = 0; s < 30; s++) expect(draw(clip, seenC1, 2, String(s)).some((x) => x.level === 'C1')).toBe(true);
+    // all but three non-gist items seen: those three are in, whatever the quotas say
+    const fresh = ['d1', 'm1', 's1'];
+    const most: History = Object.fromEntries(bank.filter((x) => x.skill !== 'gist' && !fresh.includes(x.id)).map((x) => [x.id, { play: 1, ok: true }]));
+    for (let s = 0; s < 30; s++) expect(draw(clip, most, 2, String(s)).map((x) => x.id)).toEqual(expect.arrayContaining(fresh));
   });
   it('never two on a point, nor one revealing another; ≤ 1 dict, humor, predict', () => {
     for (let s = 0; s < 50; s++)

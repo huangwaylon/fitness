@@ -16,8 +16,9 @@ second listen. A question quotes one short line at most (*key words* starred); n
   `point` and the points it `reveals`. A bank is 16–24 items; `clips.test.ts` runs the review rubric's mechanical checks
   (a lesson under 16 only the schema, segments, wording, dictations and draws).
 - **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
-  first, then group quotas (play 1 L2 I2 F1 at n 6; play 2+ leans to interpretation with a C1), unseen items and new
-  points first, ≤ 1 dictation, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
+  first, then the best set of the rest (a bounded search): on play 2+ a C1 whenever one fits, the unseen before any
+  repeat, then the group quotas (play 1 L2 I2 F1 at n 6; play 2+ leans to interpretation), new points first; always
+  ≤ 1 dictation, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
   are kept with its place; choices are shuffled per player unless `keep`.
 - Bands: ゆっくり < 100 wpm, ふつう 100–130, 速い > 130.
 

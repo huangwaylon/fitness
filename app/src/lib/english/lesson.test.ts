@@ -1,11 +1,10 @@
-// A lesson's rules (lesson.ts) and every clip's content (clips/): the miss → replay → second try → 「答えはこれ」 flow,
+// A lesson's rules (lesson.ts) over a made-up clip (fixture.ts): the miss → replay → second try → 「答えはこれ」 flow,
 // the dictation's words, the row's answers.
 import { describe, expect, it } from 'vitest';
-import { CLIPS } from './clips/index.ts';
+import { fixture as clip } from './fixture.ts';
 import { againOf, answersOf, blank, dictate, heard, pick, reveal } from './lesson.ts';
 import { listenOf } from '#lib/contract/listen.ts';
 
-const clip = CLIPS[0];
 const q = clip.questions[0]; // a: 1
 
 describe('a choice', () => {
