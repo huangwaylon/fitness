@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const leslieObama: Clip = {
-  id: 'obama', video: '1jTs121jq0Y', title: 'Leslie Meets Michelle Obama', dur: 70, wpm: 159, band: 'slow',
+  id: 'obama', video: '1jTs121jq0Y', title: 'Leslie Meets Michelle Obama', dur: 70, wpm: 159, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

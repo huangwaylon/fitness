@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const janiceSocks: Clip = {
   id: 'janicesocks', video: 'DiV379Hkl2E', title: 'Chandler Can’t Break Up with Janice', dur: 94, wpm: 172,
-  band: 'mid', tags: ['恋愛', '店・レストラン'],
+  band: 'fast', tags: ['恋愛', '店・レストラン'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [

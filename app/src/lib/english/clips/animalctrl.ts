@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const animalControl: Clip = {
-  id: 'animalctrl', video: 'P5RyGecbBY0', title: 'Animal Control Suck', dur: 96, wpm: 159, band: 'slow',
+  id: 'animalctrl', video: 'P5RyGecbBY0', title: 'Animal Control Suck', dur: 96, wpm: 159, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

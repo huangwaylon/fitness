@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const snowCones: Clip = {
   id: 'snowcones', video: '_qcWA1BX34k', title: 'Leslie tries bribing like a real politician', dur: 270, wpm: 172,
-  band: 'mid', tags: ['職場'],
+  band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

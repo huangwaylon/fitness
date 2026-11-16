@@ -165,6 +165,16 @@ import { youngjim } from './youngjim.ts';
 import { creedDebbie } from './creeddebbie.ts';
 import { possumTaskForce } from './possumtask.ts';
 import { annFlowers } from './annflowers.ts';
+import { michaelCheerUp } from './cheerupvideo.ts';
+import { joeyBrain } from './newbrain.ts';
+import { poachBen } from './poachben.ts';
+import { canvassing } from './canvassing.ts';
+import { rossBreak } from './rossbreak.ts';
+import { leslieCancelled } from './lesliecancel.ts';
+import { liceOffice } from './liceoffice.ts';
+import { monicaMillionaire } from './millionaire.ts';
+import { thisIsMyBoyfriendDerek } from './derek.ts';
+import { benSkates } from './benskates.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -176,8 +186,10 @@ export const CLIPS: readonly Clip[] = [
   chairModel,
   ronsReviews,
   mostLovedDenmark,
+  poachBen,
   jerryBurritoLie,
   jerryMugged,
+  rossBreak,
   dwightFetish,
   thiefOfJoy,
   benSaves,
@@ -189,7 +201,10 @@ export const CLIPS: readonly Clip[] = [
   johnnyGoodbye,
   theMerger,
   creedDebbie,
+  michaelCheerUp,
   dinnerParty,
+  liceOffice,
+  thisIsMyBoyfriendDerek,
   newHairdo,
   ronDesk,
   centralperk,
@@ -200,29 +215,31 @@ export const CLIPS: readonly Clip[] = [
   beefMilk,
   andyAcademy,
   annFlowers,
+  leslieCancelled,
   jointMission,
   heroes,
   saveJJs,
   buttOfJoke,
   ronSlash,
   mexBus,
+  canvassing,
   ronharass,
   annLeaving,
   conflictPranks,
-  animalControl,
-  chardStand,
   tobySafety,
   fluSeason,
   banquetHair,
-  leslieObama,
   jansStroller,
   vanBidding,
   ronAward,
   unsexyRoadTrip,
   ronLeslieLocked,
   womensAppreciation,
-  jimBack,
   // ふつう
+  animalControl,
+  chardStand,
+  leslieObama,
+  jimBack,
   setStraight,
   benCriminal,
   ronsTeam,
@@ -268,16 +285,18 @@ export const CLIPS: readonly Clip[] = [
   verySober,
   parkspilot,
   prefired,
+  whosDaddy,
+  joeyBrain,
+  benSkates,
+  // 速い
   janiceSocks,
   pikitis,
   joeymakeup,
-  whosDaddy,
   daveReturns,
   snowCones,
   neverLower,
   ronPatience,
   prairie,
-  // 速い
   annVibes,
   babySex,
   screwIt,
@@ -315,6 +334,7 @@ export const CLIPS: readonly Clip[] = [
   ohTheWall,
   kathybook,
   guysGripe,
+  monicaMillionaire,
   savings,
   birthdayMonth,
   collarBlind,

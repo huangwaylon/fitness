@@ -16,7 +16,7 @@ import type { Clip } from '../types.ts';
 
 export const neverLower: Clip = {
   id: 'neverlower', video: '1QQBB3cwNM0', title: '\'OUR PRICES HAVE NEVER BEEN LOWER!\' - The Office US', dur: 165,
-  wpm: 172, band: 'mid', tags: ['職場', '電話'],
+  wpm: 172, band: 'fast', tags: ['職場', '電話'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

@@ -18,7 +18,7 @@ import type { Clip } from '../types.ts';
 
 export const jimBack: Clip = {
   id: 'jimback', video: 'hkoBZJcx2xs', title: 'Jim Works in the Back', dur: 224, wpm: 159,
-  band: 'slow', tags: ['職場', '恋愛'],
+  band: 'mid', tags: ['職場', '恋愛'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

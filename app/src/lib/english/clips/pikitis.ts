@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const pikitis: Clip = {
-  id: 'pikitis', video: 'fDzT9ZqaGrM', title: 'Greg Pikitis', dur: 219, wpm: 172, band: 'mid',
+  id: 'pikitis', video: 'fDzT9ZqaGrM', title: 'Greg Pikitis', dur: 219, wpm: 172, band: 'fast',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

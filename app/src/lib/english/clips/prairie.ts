@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const prairie: Clip = {
   id: 'prairie', video: 'IDZyTjLPqSI', title: 'Leslie on the Prairie', dur: 281, wpm: 172,
-  band: 'mid', tags: ['職場', 'お願い・断り'],
+  band: 'fast', tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

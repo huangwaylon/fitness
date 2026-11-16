@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const chardStand: Clip = {
-  id: 'chardstand', video: 'pAxQi8vB55s', title: 'Ben Can\'t Take It Any More', dur: 219, wpm: 159, band: 'slow',
+  id: 'chardstand', video: 'pAxQi8vB55s', title: 'Ben Can\'t Take It Any More', dur: 219, wpm: 159, band: 'mid',
   tags: ['職場', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

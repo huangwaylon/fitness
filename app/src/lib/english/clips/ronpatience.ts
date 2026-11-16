@@ -16,7 +16,7 @@ import type { Clip } from '../types.ts';
 
 export const ronPatience: Clip = {
   id: 'ronpatience', video: 'Bqfu0wox3-g', title: 'Tom proving Ron is the most patient man on Earth', dur: 250, wpm: 172,
-  band: 'mid', tags: ['職場', '友だち'],
+  band: 'fast', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

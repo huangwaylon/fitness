@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const daveReturns: Clip = {
-  id: 'davereturns', video: '80Z0floB-eY', title: 'Ben Meets Leslie\'s Ex-boyfriend', dur: 256, wpm: 172, band: 'mid',
+  id: 'davereturns', video: '80Z0floB-eY', title: 'Ben Meets Leslie\'s Ex-boyfriend', dur: 256, wpm: 172, band: 'fast',
   tags: ['恋愛', '店・レストラン'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
