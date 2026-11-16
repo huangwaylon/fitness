@@ -56,7 +56,9 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
   skips the one passed over for 14 days on this phone. All finished: 全部見ました and the one finished longest ago.
   A member sees the partner's line (finished today, or this week's days); the guest sees none.
 - **The library:** one chip row (すべて, each show, each situation), the clips in order with the part-way first and the
-  finished last (✓, 2回), 20 at a time with もっと見る. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
+  finished last (✓, 2回), 20 at a time with もっと見る. On すべて, collections first (`collections.ts`: situation tags,
+  curated ids or both; shown with 4+ clips; 電話の英語, 断り方・お願い, 職場の会話, お店で, カメラに話す本音, 旅行), a row
+  「N本 · N本完了 ›」 and a level of its own: its note, its clips, no chips. Not courses: no order, nothing locked. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
   no referrer); offline or gone, a paper tile with the show's name.
 - **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into a first play; a C2 item's card
   carries a むずかしめ tag. Nothing is locked either way.

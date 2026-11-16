@@ -14,16 +14,17 @@
   let { open = $bindable() }: { open: boolean } = $props();
   type Level = { k: 'home' } | { k: 'library' } | { k: 'lesson'; id: string; from: 'home' | 'library' } | { k: 'settings' };
   let level = $state<Level>({ k: 'home' });
-  /** The library's chip and rows shown, kept while one of its lessons is open. */
+  /** The library's chip, collection and rows shown, kept while one of its lessons is open. */
   let filter = $state('');
+  let col = $state('');
   let count = $state(20);
   // every opening on home
   $effect(() => {
-    if (open) (level = { k: 'home' }), (filter = ''), (count = 20);
+    if (open) (level = { k: 'home' }), (filter = ''), (col = ''), (count = 20);
   });
   const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (metaById(l.id) ?? null) : null; });
   const close = () => (open = false);
-  const home = () => (level = { k: 'home' });
+  const home = () => ((level = { k: 'home' }), (col = ''));
   const lessonFrom = (from: 'home' | 'library') => (id: string) => (level = { k: 'lesson', id, from });
   const back = () => (level = level.k === 'lesson' && level.from === 'library' ? { k: 'library' } : { k: 'home' });
 </script>
@@ -35,7 +36,7 @@
     {:else if level.k === 'settings'}
       <Settings onback={home} onclose={close} />
     {:else if level.k === 'library'}
-      <Library bind:filter bind:count onopen={lessonFrom('library')} onback={home} onclose={close} />
+      <Library bind:filter bind:col bind:count onopen={lessonFrom('library')} onback={home} onclose={close} />
     {:else}
       <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onsettings={() => (level = { k: 'settings' })} onclose={close} />
     {/if}

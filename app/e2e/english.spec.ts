@@ -10,6 +10,8 @@ import { fakeYoutube, ytCommands } from './youtube.ts';
 import { waitress } from '../src/lib/english/clips/waitress.ts';
 import { CLIPS } from '../src/lib/english/clips/index.ts';
 import { planOf } from '../src/lib/english/plan.ts';
+import { metaOf } from '../src/lib/english/catalog.ts';
+import { shownOf } from '../src/lib/english/collections.ts';
 
 /** The clips as offered (the shared plan). */
 const PLAN = planOf(CLIPS);
@@ -397,4 +399,36 @@ test('the library: すべて 20 at a time with もっと見る, a show or a situ
   // home's card: the part-way one first
   await lib.locator('.navbar .back').click();
   await expect(sheet(page).locator('[data-en-lib] [data-en-clip]').first()).toHaveAttribute('data-en-clip', other.id);
+});
+
+test('collections on すべて (those with 4+ clips), each a level: its note, its clips in order, a lesson there goes back to it, ‹ the library', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  const cols = shownOf(PLAN.map(metaOf));
+  expect(cols.length).toBeGreaterThan(0);
+  await sheet(page).locator('[data-en-all]').click();
+  const lib = sheet(page).locator('[data-en-library]');
+  await expect(lib.locator('[data-en-colrow]')).toHaveCount(cols.length);
+  const work = cols.find((x) => x.c.id === 'work')!;
+  const row = lib.locator('[data-en-colrow="work"]');
+  await expect(row).toHaveText(new RegExp(`職場の会話\\s*${work.clips.length}本`));
+  // a chip's view has none
+  await lib.locator('[data-en-chip="Friends"]').click();
+  await expect(lib.locator('[data-en-cols]')).toHaveCount(0);
+  await lib.locator('[data-en-chip=""]').click();
+  await row.click();
+  await expect(lib).toHaveAttribute('data-en-col', 'work');
+  await expect(lib.locator('.navbar h2')).toHaveText('職場の会話');
+  await expect(lib.locator('[data-en-col-note]')).toHaveText('上司と同僚の会話');
+  await expect(lib.locator('[data-en-chip]')).toHaveCount(0);
+  const rows = lib.locator('[data-en-list] [data-en-clip]');
+  await expect(rows).toHaveCount(work.clips.length);
+  expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute('data-en-clip')))).toEqual(work.clips.map((m) => m.id));
+  await rows.nth(1).click();
+  await expect(lesson(page)).toHaveAttribute('data-en-lesson', work.clips[1].id);
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(lib).toHaveAttribute('data-en-col', 'work');
+  await lib.locator('.navbar .back').click();
+  await expect(lib).not.toHaveAttribute('data-en-col', /./);
+  await expect(lib.locator('.navbar h2')).toHaveText('ライブラリ');
 });
