@@ -1,3 +1,12 @@
+<script lang="ts" module>
+  // (the packed icons' reader, lib/artPack/artPack.ts: loaded with the first catalogue key, out of the first load)
+  type ArtPack = typeof import('#lib/artPack/artPack.ts');
+  let packs: ArtPack | null = null;
+  let loadingPacks: Promise<ArtPack> | null = null;
+  const loadPacks = (): Promise<ArtPack> =>
+    (loadingPacks ??= import('#lib/artPack/artPack.ts').then((m) => (packs = m)).catch((e) => ((loadingPacks = null), Promise.reject(e))));
+</script>
+
 <script lang="ts">
   // Official NH art with our fan-art as the fallback (missing key, or the image fails to load).
   //   <OfficialArt key={villagerArt('raymond')} alt="ジャック" size={120}>
@@ -6,9 +15,11 @@
   // `size` = rendered height (number → px, or any CSS length); width follows the art's aspect ratio.
   // Use `width` instead for width-driven layouts. Decorative art: pass alt="".
   // Renders with a padded canvas (art.ts BOX) are cropped to the figure, so sizes are comparable.
-  // The box is reserved from the manifest aspect ratio: no layout shift while loading.
+  // The box is reserved from the manifest aspect ratio: no layout shift while loading. A catalogue icon may be packed
+  // (lib/artPack/artPack.ts: the ずかん's clothing, recipes, artworks), its picture an object URL cut from its pack:
+  // data-art names the key of a picture that isn't its file's URL (a packed one's, or one not known yet).
   import type { Snippet } from 'svelte';
-  import { art, artUrl } from '#lib/art.ts';
+  import { art, artUrl, isCatalogKey } from '#lib/art.ts';
   import { getArtGate } from './artGate.ts';
 
   interface Props {
@@ -25,22 +36,36 @@
   let { key, alt = '', size, width, eager = false, priority = false, fallback }: Props = $props();
 
   const entry = $derived(art(key));
-  const src = $derived(artUrl(key));
+  // a file's URL at once; a catalogue icon's once the packs' index (and a packed one's pack) is in: asked for as the img
+  // nears the view (at once when eager), undefined till then (the box kept, nothing drawn), null if it can't be had
+  let got = $state<{ key: string; url: string | null } | null>(null);
+  const now = $derived(!key || !isCatalogKey(key) ? artUrl(key) : packs ? packs.artSrcNow(key) : undefined);
+  const src = $derived(now !== undefined ? now : got && got.key === key ? got.url : undefined);
+  const packed = $derived(src === undefined || !!src?.startsWith('blob:'));
   let failed = $state<string | null>(null);
   // over the 3D island: no download while the canvas draws the thing instead (artGate.ts); on the island `data-src` names the art either way (what the specs read)
   const gate = getArtGate();
   let openFor = $state<string | null>(null), img = $state<HTMLImageElement>();
-  const held = $derived(!!gate?.on && openFor !== src);
+  const held = $derived(!!gate?.on && openFor !== key);
   const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   $effect(() => {
-    if (!held || !img || !gate || !src) return;
-    const want = src;
+    if (!held || !img || !gate || !key) return;
+    const want = key;
     return gate.hold(img, () => (openFor = want));
+  });
+  $effect(() => {
+    if (src !== undefined || held || !img || !key) return;
+    const want = key;
+    const fetchIt = () => void loadPacks().then((m) => m.artSrc(want), () => null).then((url) => (got = { key: want, url }));
+    if (eager || priority || typeof IntersectionObserver !== 'function') return fetchIt();
+    const io = new IntersectionObserver((es) => es.some((e) => e.isIntersecting) && (io.disconnect(), fetchIt()), { rootMargin: '200px' });
+    io.observe(img);
+    return () => io.disconnect();
   });
   const css = (v: number | string | undefined) => (typeof v === 'number' ? `${v}px` : v);
 </script>
 
-{#if src && entry && failed !== src}
+{#if entry && src !== null && (src === undefined || failed !== src)}
   {#if entry.box}
     {@const [bx, by, bw, bh] = entry.box}
     <!-- Padded render: a box the size of the figure, the image shifted inside it. -->
@@ -55,8 +80,9 @@
     >
       <img
         bind:this={img}
-        src={held ? BLANK : src}
+        src={held || !src ? BLANK : src}
         data-src={gate ? src : undefined}
+        data-art={packed ? key : undefined}
         alt=""
         width={entry.w}
         height={entry.h}
@@ -67,15 +93,16 @@
         fetchpriority={priority ? 'high' : undefined}
         decoding="async"
         draggable="false"
-        onerror={() => held || (failed = src)}
+        onerror={() => held || !src || (failed = src)}
       />
     </span>
   {:else}
     <img
       bind:this={img}
       class="official"
-      src={held ? BLANK : src}
+      src={held || !src ? BLANK : src}
       data-src={gate ? src : undefined}
+      data-art={packed ? key : undefined}
       {alt}
       width={entry.w}
       height={entry.h}
@@ -86,7 +113,7 @@
       fetchpriority={priority ? 'high' : undefined}
       decoding="async"
       draggable="false"
-      onerror={() => held || (failed = src)}
+      onerror={() => held || !src || (failed = src)}
     />
   {/if}
 {:else if fallback}

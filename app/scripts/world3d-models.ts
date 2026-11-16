@@ -11,7 +11,8 @@
 // sea creatures and bugs: each member a node named its id), into static/room/museum/<name>.glb and
 // src/lib/components/museum/models.json (a member's `pack` its file), NH's museum floors and walls into
 // static/room/museum/tex/<name>.webp (each its own albedo, scaled down, tiled at run time), and the artworks' NH icons
-// into static/art/finds/art/<id>.webp (96 px, as the balloon catalogue's: a present's plate, the card).
+// into static/art/finds/art/<id>.webp (96 px, as the balloon catalogue's: a present's plate, the card), then packed
+// (scripts/art-packs.ts).
 //
 // With --shop it converts the shop's inside (routes/shop, components/shop): NH's built-up Nook's Cranny (IdrMarket02:
 // its walls, its checkered floor, the tiered stage, the counter corner), one GLB, static/room/shop/shell.glb, and
@@ -30,6 +31,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { ASSETS, POC_USES, writeAssets, writeDoc, writeGarden, type Use } from './world3d-assets.ts';
 import { fxGltf, type Fx } from './world3d-fx.ts';
+import { packArt } from './art-packs.ts';
 import { nhFolders } from './nh-folders.ts';
 import { FOSSIL_MODEL, packOf } from '../src/lib/components/museum/fossils.ts';
 import { ART } from '../src/lib/components/museum/artIds.ts';
@@ -374,6 +376,7 @@ if (MUSEUM) {
     cpSync(join(src, png), tmp);
     execFileSync('cwebp', ['-quiet', '-q', '86', '-alpha_q', '90', '-resize', '96', '96', tmp, '-o', join(APP, 'static', 'art', 'finds', 'art', `${a.id}.webp`)]);
   }
+  packArt(); // (into the ずかん's artworks pack: art-packs.ts)
   const names = new Set(MUSEUM_JOBS.flatMap((j) => (j.pack ? j.pack.map((m) => memberName(j, m.id)) : [j.name])));
   const sortedM = Object.fromEntries(Object.entries(metas).filter(([k]) => names.has(k)).sort(([a], [b]) => a.localeCompare(b)));
   writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts --museum: the museum's props (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sortedM).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);

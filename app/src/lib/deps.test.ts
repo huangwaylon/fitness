@@ -51,6 +51,8 @@ const ALLOW: Record<string, string[]> = {
   // record's, is bound in by the root layout: ui-state/preview.svelte.ts bindLook)
   'ui-state': [...DOMAIN, 'i18n', 'sync'],
   art: ['types', 'ui-state'],
+  // artPack/: the ずかん's packed icons (scripts/art-packs.ts), read on the phone over art.ts's keys
+  artPack: ['art'],
   villagers: ['types', 'art', 'i18n'],
   // (contract: the music stages' records and their rule, sound/stage.svelte.ts)
   sound: ['types', 'contract', 'time', 'sync', 'i18n', 'random'],
@@ -79,7 +81,7 @@ const ALLOW: Record<string, string[]> = {
   // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
 };
 
 function files(dir: string): string[] {

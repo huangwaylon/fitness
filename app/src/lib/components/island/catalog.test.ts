@@ -9,10 +9,12 @@ import {
   type Present
 } from './catalog.ts';
 import { inPool, seasons, slug, withArticle } from '../../../../scripts/catalog.ts';
+import { packedArt } from '../../../../scripts/art-packs.ts';
 import { precachable } from '../../../service-worker/caches.ts';
 import { art } from '#lib/art.ts';
 
 const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
+const PACKED = packedArt();
 const all: Present[] = [...ITEMS.map(({ id }) => ({ kind: 'item' as const, id })), ...RECIPES.map(({ id }) => ({ kind: 'recipe' as const, id }))];
 
 /** A seeded uniform source (mulberry32), so a run's odds are stable. */
@@ -53,17 +55,18 @@ describe('the catalogue (scripts/catalog.ts)', () => {
     expect([ja['item.name.froggy-chair'], en['item.name.froggy-chair']]).toEqual(['カエルのチェア', 'a froggy chair']);
     expect(ja['recipe.name.cherry-blossom-clock']).toBe('さくらクロック');
   });
-  it('has an icon for every entry (~2 KB webp), and no stray file', () => {
+  it('has an icon for every entry (~2 KB webp, loose or packed: scripts/art-packs.ts), and no stray file', () => {
     const sizes: number[] = [];
     for (const p of all) {
-      const f = join(STATIC, `art/${catalogArt(p)}.webp`);
-      expect(existsSync(f), f).toBe(true);
-      sizes.push(statSync(f).size);
+      const key = catalogArt(p), f = join(STATIC, `art/${key}.webp`);
+      const size = existsSync(f) ? statSync(f).size : PACKED.get(key)?.length;
+      expect(size, key).toBeGreaterThan(0);
+      sizes.push(size!);
     }
     expect(Math.max(...sizes)).toBeLessThan(8_000);
     expect(sizes.reduce((s, n) => s + n, 0) / sizes.length).toBeLessThan(3_000);
     for (const [dir, list] of [['items', ITEMS], ['recipes', RECIPES]] as const)
-      expect(readdirSync(join(STATIC, 'art/finds', dir)).sort()).toEqual(list.map((e) => `${e.id}.webp`).sort());
+      expect((existsSync(join(STATIC, 'art/finds', dir)) ? readdirSync(join(STATIC, 'art/finds', dir)) : []).sort()).toEqual(list.filter((e) => !PACKED.has(`finds/${dir}/${e.id}`)).map((e) => `${e.id}.webp`).sort());
   });
   it('keeps the icons out of the service worker’s install (cached on first use, like the other finds)', () => {
     expect(all.filter((p) => precachable(`art/${catalogArt(p)}.webp`))).toEqual([]);
@@ -137,7 +140,7 @@ describe('the pool rules', () => {
     // (none lacking: the very same draws as before art, the pick unchanged)
     expect(draw('2026-04-05', 50, 7)).toEqual(Array.from({ length: 50 }, ((r) => () => pickPresent('2026-04-05', r, false, []))(rng(7))));
     expect([catalogArt({ kind: 'item', id: 'famous-painting' }), catalogName({ kind: 'item', id: 'famous-painting' })]).toEqual(['finds/art/famous-painting', 'art.name.famous-painting']);
-    expect(art.length ? existsSync(join(STATIC, 'art/finds/art/famous-painting.webp')) : false).toBe(true);
+    expect(art.length ? PACKED.has('finds/art/famous-painting') : false).toBe(true);
   });
   it('names its art and its name key', () => {
     expect(catalogArt({ kind: 'item', id: 'froggy-chair' })).toBe('finds/items/froggy-chair');

@@ -83,7 +83,7 @@ of its members is on show):
 - **Fossils:** 22 packs, one a skeleton (`fossil-<set>`) and `fossils` (the 14 standalone ones), NH's `FtrFossil*`,
   128 px textures, ≤ 3,000 triangles a piece; 3.2 MB in all.
 - **Art:** the 43 genuine `FtrArt*` and `FtrSculpture*` (never a `*Fake`): `art-paintings-1|2` (256 px: they're read)
-  and `art-statues-1|2` (128 px); 0.8 MB. Their NH icons (`Layout_FtrIcon_*`) at 96 px in `static/art/finds/art/`.
+  and `art-statues-1|2` (128 px); 0.8 MB. Their NH icons (`Layout_FtrIcon_*`) at 96 px, packed into `static/art/finds/pack/art.<hash>.pak` (design.md "Official art").
 - **NH's museum-tank variants** (`*Museum`): the 12 sea creatures' (`sea-museum`) and the dung beetle's
   (`bug-museum`); the other variants are the catch's own meshes, so the aquarium and the garden keep the catch models.
 
@@ -212,7 +212,7 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts) |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |
-| finds/items/*, finds/recipes/* | not on the island: the balloon catalogue’s icons, on the catch plate |
+| finds/items/*, finds/recipes/*, finds/pack/* | not on the island: the balloon catalogue’s icons (clothing, recipes, artworks packed), on the catch plate |
 | deco/tape-deck | approximate: NH’s boom box (FtrRadicase) stands for the tape deck (the POC’s) |
 | finds/shovel, finds/watering-can | approximate: NH’s wooden shovel and watering can (the plain ones’ textures aren’t in the files) |
 <!-- assets:end -->

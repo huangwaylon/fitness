@@ -248,6 +248,7 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^art\/villagers\//, 'used', 'the villagers: the roster, the HUD, the tent, and the 3D island’s cards for a villager with no 3D model (has3d)'],
   [/^art\/host\//, 'used', 'しずえ / Tom Nook (Host.svelte: the news box, the sheets, the error page)'],
   [/^art\/finds\/(items|recipes)\//, 'used', 'the balloon catalogue’s icons (catalog.json: the presents, the ずかん, the tent’s items)'],
+  [/^art\/finds\/pack\//, 'used', 'the ずかん’s clothing, recipes and artworks, packed (scripts/art-packs.ts; lib/artPack: by its index)'],
   [/^art\/(reactions|money|fruit3d)\//, 'used', 'UI art: emotes and しずえ’s reactions, the ベル / leaf, the HUD’s fruit'],
   [/^audio\//, 'used', 'audio (sound/manifest.ts)'],
   [/^icons\//, 'used', 'the app icons (the web manifest, app.html)'],

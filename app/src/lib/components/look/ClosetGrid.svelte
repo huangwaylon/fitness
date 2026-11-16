@@ -10,6 +10,7 @@
   import { roving } from '../ui/roving.ts';
   import { closet, GARMENT_KINDS, OPTIONAL_KINDS, wornIn, type ClosetItem, type ClosetKind, type Hue, type Variant } from './closet.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { artSrc, artSrcNow } from '#lib/artPack/artPack.ts';
 
   interface Props {
     kind: ClosetKind;
@@ -50,6 +51,19 @@
     ...(OPTIONAL_KINDS.has(kind) && !hue ? [{ item: null, v: null, n: 0 }] : []),
     ...shown.slice(0, limit).map((item) => ({ item, v: face(item), n: all.indexOf(item) + 1 }))
   ]);
+  /** The shown tiles' icons' pictures (art keys: packed, lib/artPack/artPack.ts; a tab's icons are its pack's first). */
+  let urls = $state<Record<string, string | null>>({});
+  const asked = new Set<string>();
+  $effect(() => {
+    for (const tile of tiles) {
+      const key = tile.v?.icon;
+      if (!key || asked.has(key)) continue;
+      asked.add(key);
+      const now = artSrcNow(key);
+      if (now !== undefined) urls[key] = now;
+      else void artSrc(key).then((u) => (urls[key] = u));
+    }
+  });
   const rows = $derived(Array.from({ length: Math.ceil(tiles.length / COLS) }, (_, r) => tiles.slice(r * COLS, r * COLS + COLS)));
   const isWorn = (tile: Tile) => (tile.item ? tile.item.variants.some((v) => v.id === worn) : worn === null);
   const tabStop = $derived(tiles.find(isWorn) ?? tiles[0]);
@@ -69,14 +83,18 @@
 {#snippet art(tile: Tile)}
   {#if !tile.item || !tile.v}
     <svg class="none" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="M6.5 17.5 17.5 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
-  {:else if tile.v.icon}
+  {:else if tile.v.icon && urls[tile.v.icon] !== null}
     {@const tint = tile.v.tint}
-    <span class="ico">
-      <img src={tile.v.icon} alt="" width="96" height="96" loading="lazy" decoding="async" draggable="false"
-        style:filter={tint === null ? null : `grayscale(1) brightness(${tint})`} />
-      {#if tint !== null}
-        {@const mask = `url("${tile.v.icon}") center / contain no-repeat`}
-        <span class="tint" style:background={tile.v.swatch} style:-webkit-mask={mask} style:mask></span>
+    {@const url = urls[tile.v.icon]}
+    <!-- (empty while its pack comes) -->
+    <span class="ico" data-art={tile.v.icon}>
+      {#if url}
+        <img src={url} alt="" width="96" height="96" loading="lazy" decoding="async" draggable="false"
+          style:filter={tint === null ? null : `grayscale(1) brightness(${tint})`} />
+        {#if tint !== null}
+          {@const mask = `url("${url}") center / contain no-repeat`}
+          <span class="tint" style:background={tile.v.swatch} style:-webkit-mask={mask} style:mask></span>
+        {/if}
       {/if}
     </span>
   {:else if garment}

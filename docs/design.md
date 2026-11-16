@@ -1089,6 +1089,11 @@ marks, UI sprites. Names follow the Japanese game; no Nintendo fonts. One file a
 already is points at it (`scripts/art-dedupe.ts`; the precached `host/` copies kept), and `static-files.test` fails on
 the same bytes under two names anywhere in `static/`.
 
+**Packed icons** (`scripts/art-packs.ts`, `npm run art:packs`): the catalogue's clothing (by ずかん tab, the closet's
+icons first), recipes and artworks sit in `static/art/finds/pack/<tab>[-k].<hash>.pak` (≤ ~200 KB) with a hashed
+index; `lib/artPack` cuts a key's picture from its pack as it nears the view (one pack per single icon). Furniture and
+keys the code names stay loose. Cached in the art cache; a repack's old names go (`artEvict`).
+
 **The 3D renders** (`npm run models`: `scripts/models.ts`, its header): what NH has a model of is rendered from it for
 the 2D art (the campsite, the trees in their seasonal looks, the bushes, the lamps, the rocks, the bridge, the
 decorations), from the world's view, lit NH-style, under the scene's art keys; every look of one thing shares one

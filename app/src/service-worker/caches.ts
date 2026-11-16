@@ -168,6 +168,24 @@ export const foodImgEvict = (index: RoomIndex, now: number, cap = FOOD_IMG_CAP_B
  *  and renamed art stayed for good. */
 export const ART_CAP_BYTES = 30_000_000;
 export const ART_KEEP_MS = 24 * 3600_000;
+/** The ずかん's icon packs and their index (static/art/finds/pack/<name>.<hash>.pak|json: lib/artPack/artPack.ts): a name's
+ *  file under another hash (a repack) never asked for again. */
+const ART_PACK = /\/art\/finds\/pack\/([\w-]+)\.[0-9a-f]{8}\.(?:pak|json)$/;
+/** Which of the art cache's entries go (`index` in any order): a pack (or the packs' index) whose name has a newer hash
+ *  used since, at once; then, while the rest is over `cap`, the least recently used, never one used within `keepMs`. */
+export function artEvict(index: RoomIndex, now: number, cap = ART_CAP_BYTES, keepMs = ART_KEEP_MS): string[] {
+  const nameOf = (u: string) => ART_PACK.exec(new URL(u, 'https://x/').pathname)?.[1];
+  const newest = new Map<string, string>();
+  for (const u of Object.keys(index)) {
+    const n = nameOf(u), m = n && newest.get(n);
+    if (n && (!m || index[u][1] >= index[m][1])) newest.set(n, u);
+  }
+  const gone = Object.keys(index).filter((u) => {
+    const n = nameOf(u);
+    return n !== undefined && newest.get(n) !== u;
+  });
+  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
+}
 /** The cached sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names. */
 export function foodImgStale(keys: readonly string[], index: string): string[] {
   let sheets: unknown;
@@ -675,7 +693,7 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  * |---|---|---|---|
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
  * | listen (ききみみ packs) | LISTEN_CAP_BYTES 30 MB | LISTEN_KEEP_MS 10 min: a game in progress | a pack's slices; its older hash once unused 10 min |
- * | art (on use) | ART_CAP_BYTES 30 MB | ART_KEEP_MS 24 h: what the island shows now | - |
+ * | art (on use) | ART_CAP_BYTES 30 MB | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB | 0 | the sheets a new index no longer names (foodImgStale) |
  * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 60 MB | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */

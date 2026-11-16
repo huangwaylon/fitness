@@ -25,6 +25,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { slug } from './catalog.ts';
 import { dedupeArt } from './art-dedupe.ts';
+import { packArt } from './art-packs.ts';
 
 const APP = join(import.meta.dirname, '..');
 const ART = join(APP, 'static', 'art');
@@ -175,6 +176,9 @@ async function main() {
   dedupeArt(manifest.files, ART);
   writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
   console.log(`${n} icons from the game files; ${kept.length} kept as they were${kept.length ? `:\n  ${kept.join('\n  ')}` : ''}`);
+  // the ずかん's clothing, recipes and artworks into their packs (art-packs.ts)
+  const r = packArt();
+  console.log(`${r.packs} packs of ${r.packed} icons (${r.written} written, ${r.removed} removed)`);
 }
 
 if (import.meta.main)

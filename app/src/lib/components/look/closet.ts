@@ -5,7 +5,6 @@
 // pipeline's --all) is the same code. The wear rules (a one-piece clears the bottoms, a bottom clears a one-piece) are
 // here too, pure.
 import { isOnepiece, type Hex, type PartId, type PlayerLook } from '#lib/contract/look.ts';
-import { artUrl } from '#lib/art.ts';
 import PARTS from '../player3d/parts.json' with { type: 'json' };
 
 /** A grid of parts: a face part, the hair, or a garment (tops and one-pieces are both the `top` slot). */
@@ -24,7 +23,8 @@ export const GARMENT_KINDS: ReadonlySet<ClosetKind> = new Set(['top', 'onepiece'
 export const HUES = ['red', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'white', 'black'] as const;
 export type Hue = (typeof HUES)[number];
 
-/** One colour variant of an item: its part id, a swatch (the dot), its hue bucket, its icon (a URL; null: none) and how
+/** One colour variant of an item: its part id, a swatch (the dot), its hue bucket, its icon (an art key, packed:
+ *  lib/artPack/artPack.ts artSrc; null: none) and how
  *  the icon is tinted to its colour (null: the icon is this colour already; else the grey icon's brightness factor
  *  before the swatch multiplies it: ClosetGrid). */
 export interface Variant { id: PartId; swatch: Hex; hue: Hue; icon: string | null; tint: number | null }
@@ -76,8 +76,8 @@ const dist = (a: Hex, b: Hex) => {
   return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2 + (x[2] - y[2]) ** 2;
 };
 
-/** One entry of a closet: a part id, its swatch, and its line's catalogue icon (a URL) with the icon's own colour. */
-export interface Entry { id: PartId; swatch: Hex; icon?: { url: string; colour: Hex } | null }
+/** One entry of a closet: a part id, its swatch, and its line's catalogue icon (an art key) with the icon's own colour. */
+export interface Entry { id: PartId; swatch: Hex; icon?: { art: string; colour: Hex } | null }
 
 /**
  * A closet from a list of kinds and their entries. Garments group by colour line (itemKey), a face part or hairstyle
@@ -101,7 +101,7 @@ export function closetFrom(parts: Partial<Record<ClosetKind, Entry[]>>, colours:
         items.push(item);
         if (e.icon) icons.set(item, e.icon);
       }
-      const variant: Variant = { id: e.id, swatch: e.swatch, hue: hueOf(e.swatch), icon: icons.get(item)?.url ?? null, tint: null };
+      const variant: Variant = { id: e.id, swatch: e.swatch, hue: hueOf(e.swatch), icon: icons.get(item)?.art ?? null, tint: null };
       item.variants.push(variant);
       byId.set(e.id, { item, variant });
     }
@@ -142,9 +142,8 @@ function tableCloset(table: Table, swatches: Swatches): Closet {
     const kind = it.onepiece ? 'onepiece' : KIND_OF[it.slot];
     const swatch = swatches.items[id];
     if (!kind || !swatch) continue;
-    const url = it.icon ? artUrl(`finds/items/${it.icon}`) : null;
     const colour = it.icon ? swatches.icons[it.icon] : undefined;
-    (parts[kind] ??= []).push({ id, swatch, icon: url && colour ? { url, colour } : null });
+    (parts[kind] ??= []).push({ id, swatch, icon: it.icon && colour ? { art: `finds/items/${it.icon}`, colour } : null });
   }
   return closetFrom(parts, COLOURS);
 }

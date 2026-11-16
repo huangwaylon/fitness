@@ -24,6 +24,7 @@
     "assets:fetch": "node scripts/fetch-assets.ts",
     "catalog:build": "node scripts/catalog.ts",
     "icons:nh": "node scripts/nh-icons.ts",
+    "art:packs": "node scripts/art-packs.ts",
     "shop:prices": "node scripts/shop-prices.ts",
     "food:data": "node scripts/food-data.ts",
     "fonts:subset": "node scripts/font-subsets.ts",

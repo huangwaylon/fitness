@@ -76,6 +76,7 @@
     ["src/lib/components/board/**", ["board"]],
     ["src/lib/*/board*", ["board"]],
     ["src/lib/components/look/**", ["look", "players"]],
+    ["src/lib/artPack/**", ["zukan", "look", "critters"]],
     ["src/lib/*/look*", ["look", "players"]],
     ["src/lib/components/player3d/**", ["players", "look"]],
     ["src/lib/pack*", ["players", "kikimimi-packs"]],

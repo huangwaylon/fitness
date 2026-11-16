@@ -36,7 +36,7 @@ describe('the closet adapter', () => {
   });
 
   it('shows a line’s icon as it is on its nearest colour and tints it on the others', () => {
-    const icon = { url: '/i.webp', colour: '#f5f2d3' };
+    const icon = { art: 'finds/items/i', colour: '#f5f2d3' };
     const c = closetFrom({
       top: [{ id: 'TopsTexA0', swatch: '#891f1f', icon }, { id: 'TopsTexA1', swatch: '#d2cda0', icon }, { id: 'TopsTexA2', swatch: '#004f28', icon }]
     }, closet().colours);
@@ -44,7 +44,7 @@ describe('the closet adapter', () => {
     expect(cream.tint).toBeNull();
     expect(red.tint).toBeGreaterThanOrEqual(1);
     expect(green.tint).toBe(red.tint);
-    expect([red, cream, green].every((v) => v.icon === '/i.webp')).toBe(true);
+    expect([red, cream, green].every((v) => v.icon === 'finds/items/i')).toBe(true);
   });
 
   it('wears by NH’s rules: a one-piece clears the bottoms, a bottom clears a one-piece', () => {
@@ -105,7 +105,7 @@ describe('the part table’s closet (components/player3d/parts.json)', () => {
       for (const item of c.items(k)) {
         for (const v of item.variants) {
           expect(ITEMS[v.id].line, v.id).toBe(item.key);
-          expect(v.icon, v.id).toMatch(new RegExp(`/art/finds/items/${ITEMS[v.id].icon}\\.webp$`));
+          expect(v.icon, v.id).toBe(`finds/items/${ITEMS[v.id].icon}`);
           expect(HUES).toContain(v.hue);
         }
         expect(item.variants.filter((v) => v.tint === null), item.key).toHaveLength(1);

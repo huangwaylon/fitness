@@ -37,10 +37,12 @@ const BOX: Record<string, [number, number, number, number]> = {
 };
 
 /** The balloon catalogue's icons (components/island/catalog.ts, scripts/catalog.ts) and the genuine artworks' (NH's,
- *  museum/artIds.ts: scripts/world3d-models.ts --museum): ~2,000 files, all 96 px squares, so they stay out of the
- *  bundled manifest. */
+ *  museum/artIds.ts: scripts/world3d-models.ts --museum): ~2,000 icons, all 96 px squares, so they stay out of the
+ *  bundled manifest. The clothing, recipes and artworks are packed (lib/artPack/artPack.ts: their URL isn't artUrl's). */
 const CATALOG_KEY = /^finds\/(items|recipes|art)\/[a-z][a-z0-9-]*$/;
 const CATALOG_SIZE = [96, 96] as const;
+/** Whether a key is a catalogue icon's (it may be packed: lib/artPack/artPack.ts). */
+export const isCatalogKey = (key: string): boolean => CATALOG_KEY.test(key);
 
 /** Manifest entry for a key like 'villagers/raymond' (or a catalogue icon's), or null when that art isn't on disk. */
 export function art(key: string | null | undefined): ArtEntry | null {
@@ -54,7 +56,8 @@ export function artKeys(): string[] {
   return Object.keys(FILES);
 }
 
-/** URL for a key (base-path aware), or null when missing. */
+/** URL for a key (base-path aware), or null when missing. A packed catalogue icon has none of its own
+ *  (lib/artPack/artPack.ts artSrc). */
 export function artUrl(key: string | null | undefined): string | null {
   const e = art(key);
   return e ? staticUrl(`art/${e.path}`) : null;

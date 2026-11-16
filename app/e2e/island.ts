@@ -518,7 +518,8 @@ export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: 
     await Promise.all(icon.getAnimations().map((a) => a.finished.catch(() => {})));
     const img = icon.querySelector('img'), at = icon.getBoundingClientRect(), s = getComputedStyle(icon);
     const off = (v: string) => parseFloat(s.getPropertyValue(v)) || 0;
-    return { src: img?.dataset.src || img?.getAttribute('src') || '', x: at.left + at.width / 2 + off('--dx'), y: at.top + at.height / 2 + off('--dy') };
+    // (a packed catalogue icon is an object URL, or not known yet: data-art names its key)
+    return { src: img?.dataset.art ? `/${img.dataset.art}.webp` : img?.dataset.src || img?.getAttribute('src') || '', x: at.left + at.width / 2 + off('--dx'), y: at.top + at.height / 2 + off('--dy') };
   });
   expect(r.src).toMatch(typeof art === 'string' ? `/${art}.webp` : art);
   return { x: r.x, y: r.y };

@@ -54,10 +54,18 @@ test('コーデ: save, wear, うわがき, なまえ, けす with とりけす; 
   test.setTimeout(60_000);
   const rec = newRecord();
   const a = await phone(browser, rec, 'A');
+  const paks: string[] = [];
+  a.on('request', (r) => /\/art\/finds\/pack\/.+\.pak$/.test(r.url()) && paks.push(r.url().slice(r.url().lastIndexOf('/') + 1)));
   await expect(settings(a).locator('[data-look-worn]')).toHaveText('いつもの');
   await openLook(a);
   // nothing saved yet: it opens on ふく → トップス
   await expect(settings(a).locator('[data-look-tab=wear]')).toHaveAttribute('aria-selected', 'true');
+  // its tiles' catalogue icons drawn, cut from one pack (the tops' first: lib/artPack)
+  const icons = settings(a).locator('[data-closet=top] .ico img');
+  await expect(icons.first()).toBeVisible();
+  await expect.poll(() => icons.evaluateAll((is) => is.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth === 96) && is.length)).toBeGreaterThan(3);
+  expect(await icons.first().getAttribute('src')).toMatch(/^blob:/);
+  expect(paks).toEqual([expect.stringMatching(/^tops\.[0-9a-f]{8}\.pak$/)]);
   await expect(status(a)).toHaveText('★いつもの');
   await expect(settings(a).locator('[data-look-revert]')).toHaveCount(0);
 

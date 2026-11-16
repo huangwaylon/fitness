@@ -154,27 +154,43 @@ test('the catalogue and the recipes: found entries with their counts, in all and
       ev(3, 'find', { kind: 'recipe', id: 'mush-lamp' }, 'B'),
       ev(4, 'tally', { date: '2026-07-04', counts: { 'item:froggy-chair': 1 } }, 'B'),
       // a later tally of the same day replaces the earlier one
-      ev(5, 'tally', { date: '2026-07-04', counts: { 'item:froggy-chair': 2, 'recipe:mush-lamp': 1 } }, 'B')
+      ev(5, 'tally', { date: '2026-07-04', counts: { 'item:froggy-chair': 2, 'recipe:mush-lamp': 1 } }, 'B'),
+      ev(6, 'find', { kind: 'item', id: 'aran-knit-sweater' }, 'A')
     ];
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-07-04', events }));
   });
+  // (the clothing's, recipes' and artworks' icons are packed, lib/artPack: a pack fetched as its tiles near the view)
+  const paks: string[] = [];
+  page.on('request', (r) => /\/art\/finds\/pack\/.+\.pak$/.test(r.url()) && paks.push(r.url().slice(r.url().lastIndexOf('/') + 1)));
   await page.goto('?demo&date=2026-07-04T12:00');
   await islandUp(page);
   await fromMenu(page, 'zukan');
-  await expect(page.locator('[data-zukan="item"]')).toContainText(`1 / ${ITEMS.length}`);
+  await expect(page.locator('[data-zukan="item"]')).toContainText(`2 / ${ITEMS.length}`);
   await expect(page.locator('[data-zukan="recipe"]')).toContainText(`1 / ${RECIPES.length}`);
 
   await page.locator('[data-zukan="item"]').click();
   const head = page.locator('[data-zukan-head]');
   await expect(head).toContainText('カタログ');
-  await expect(head).toContainText(`1 / ${ITEMS.length}`);
+  await expect(head).toContainText(`2 / ${ITEMS.length}`);
   // by NH's categories, every tile built in the end (a slice per frame)
   await expect(page.locator('h4.set')).toHaveCount(12);
   await expect(page.locator('[data-zukan-grid] [data-entry]')).toHaveCount(ITEMS.length, { timeout: 10_000 });
   const chair = page.locator('button.tile[data-entry="froggy-chair"]');
   await expect(chair).toHaveAttribute('aria-label', 'カエルのチェア');
   await expect(chair.locator('[data-times]')).toHaveText('×5');
-  await expect(page.locator('.tile.unknown')).toHaveCount(ITEMS.length - 1);
+  await expect(page.locator('.tile.unknown')).toHaveCount(ITEMS.length - 2);
+  // the furniture first, each its own file: no pack yet; the sweater (トップス) once it's near the view, its pack's icons
+  await expect.poll(() => chair.locator('img').evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(96);
+  expect(await chair.locator('img').getAttribute('src')).toMatch(/\/art\/finds\/items\/froggy-chair\.webp$/);
+  expect(paks).toEqual([]);
+  const sweater = page.locator('button.tile[data-entry="aran-knit-sweater"]');
+  await sweater.scrollIntoViewIfNeeded();
+  await expect.poll(() => sweater.locator('img').evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(96);
+  expect(await sweater.locator('img').getAttribute('src')).toMatch(/^blob:/);
+  expect(paks).toContainEqual(expect.stringMatching(/^tops\.[0-9a-f]{8}\.pak$/)); // (its own pack: the closet icons first)
+  expect(paks.every((p) => /^(housewares|misc|wall|ceiling|tops|bottoms)/.test(p)) && new Set(paks).size === paks.length, paks.join(' ')).toBe(true);
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/catalog-tops-390.png` });
+  await chair.scrollIntoViewIfNeeded();
   await chair.click();
   const detail = head.locator('[data-zukan-detail="froggy-chair"]');
   await expect(detail).toContainText('カエルのチェア');
@@ -189,6 +205,11 @@ test('the catalogue and the recipes: found entries with their counts, in all and
   await expect(page.locator('h4.set')).toHaveCount(11);
   const lamp = page.locator('button.tile[data-entry="mush-lamp"]');
   await expect(lamp.locator('[data-times]')).toHaveText('×1');
+  await lamp.scrollIntoViewIfNeeded();
+  await expect.poll(() => lamp.locator('img').evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(96);
+  expect(await lamp.locator('img').getAttribute('src')).toMatch(/^blob:/);
+  expect(paks).toContainEqual(expect.stringMatching(/^recipes(-2)?\.[0-9a-f]{8}\.pak$/));
+  expect(new Set(paks).size).toBe(paks.length); // (each pack once)
   await lamp.click();
   await expect(head.locator('[data-zukan-detail="mush-lamp"]')).toContainText('キノコのランプ');
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/recipes-390.png` });

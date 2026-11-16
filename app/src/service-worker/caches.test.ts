@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -716,6 +716,28 @@ describe('ききみみ’s packs (LISTEN_CACHE, listenEvict)', () => {
   it('a clip’s old slice (?s=from-to, till 2026-11-10) goes at once, used lately or not; its pack stays', () => {
     const idx: RoomIndex = { [`${L}lv4.aaaaaaaa.pak?s=0-99`]: [100, now - 20 * min], [`${L}lv4.aaaaaaaa.pak?s=100-199`]: [100, now], [`${L}lv4.aaaaaaaa.pak`]: [1e6, now - 30 * min] };
     expect(listenEvict(idx, now).sort()).toEqual([`${L}lv4.aaaaaaaa.pak?s=0-99`, `${L}lv4.aaaaaaaa.pak?s=100-199`]);
+  });
+});
+
+describe('the ずかん’s icon packs (the art cache, artEvict)', () => {
+  const A = 'https://x.example/fitness/art/finds/pack/';
+  const h = 3600_000, now = 1000 * h;
+  it('cached on use in the art cache, never precached', () => {
+    for (const p of ['art/finds/pack/tops.eeb71a81.pak', 'art/finds/pack/index.04376759.json']) expect([precachable(p), warmable([`https://x.example/${p}`], 'https://x.example').length]).toEqual([false, 1]);
+  });
+  it('a pack whose hash changed (a repack) goes at once, used lately or not; the newest name stays', () => {
+    const idx: RoomIndex = {
+      [`${A}tops.aaaaaaaa.pak`]: [2e5, now - 2 * h], [`${A}tops.bbbbbbbb.pak`]: [2e5, now - h], [`${A}tops-2.cccccccc.pak`]: [2e5, now - 90 * h],
+      [`${A}index.dddddddd.json`]: [3e4, now - 3 * h], [`${A}index.eeeeeeee.json`]: [3e4, now], 'https://x.example/fitness/art/finds/items/fan.webp': [2e3, now - 99 * h]
+    };
+    expect(artEvict(idx, now).sort()).toEqual([`${A}index.dddddddd.json`, `${A}tops.aaaaaaaa.pak`]);
+  });
+  it('then the bound as before: the least recently used past 30 MB, never one used within 24 h', () => {
+    expect([ART_CAP_BYTES, ART_KEEP_MS]).toEqual([30_000_000, 24 * h]);
+    const idx: RoomIndex = { [`${A}tops.aaaaaaaa.pak`]: [20e6, now - 30 * h], [`${A}dress.bbbbbbbb.pak`]: [20e6, now - h] };
+    expect(artEvict(idx, now)).toEqual([`${A}tops.aaaaaaaa.pak`]);
+    idx[`${A}tops.aaaaaaaa.pak`][1] = now - 2 * h;
+    expect(artEvict(idx, now)).toEqual([]);
   });
 });
 

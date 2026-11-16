@@ -39,6 +39,9 @@ const at = (page: Page, sel: string) =>
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 test('a tap pops the balloon; its present falls onto the island and lies there until a tap picks it up', async ({ page }) => {
+  // (the ずかん's packs: lib/artPack)
+  const paks: string[] = [];
+  page.on('request', (r) => /\/art\/finds\/pack\/.+\.pak$/.test(r.url()) && paks.push(r.url()));
   const before = await open(page, '&balloon');
   const balloon = page.locator('.if-scene .balloon');
   // it drifts in from off the screen's edge: wait until it's well inside
@@ -70,6 +73,11 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
   // (or a genuine artwork for the museum: 1 present in 10, island/catalog.ts ART_ONE_IN)
   await plateOnly(page, /\/(finds\/(items|art)\/[^/]+|presents\/diy-recipe)\.webp/);
+  // its icon drawn: a packed one's (clothing, an artwork) cut from its one pack, else its own file
+  const icon = page.locator('[data-catch-stack] [data-fx="catch"].placed').last().locator('.catch-icon img');
+  await expect.poll(() => icon.evaluate((i: HTMLImageElement) => (i.complete ? i.naturalWidth : 0))).toBeGreaterThan(0);
+  const packed = (await icon.getAttribute('src'))!.startsWith('blob:');
+  expect(paks, String(packed)).toHaveLength(packed ? 1 : 0);
   // the ずかん's カタログ / レシピ: a first find of it, and one more in today's tally (held a minute before it's sent)
   const sent = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []) as { type: string; data: Record<string, unknown> }[]);
   const find = sent.find((e) => e.type === 'find')!.data as { kind: string; id: string };

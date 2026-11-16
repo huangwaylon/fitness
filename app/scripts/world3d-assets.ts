@@ -588,7 +588,7 @@ const NO_MODEL: [string, string][] = [
   ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts)'],
   ['deco/airport', 'not on the island: the pairing page’s map icon'],
   ['host/*, items/snack, items/dinner, money/*', 'not on the island: the panels’ and the HUD’s art'],
-  ['finds/items/*, finds/recipes/*', 'not on the island: the balloon catalogue’s icons, on the catch plate'],
+  ['finds/items/*, finds/recipes/*, finds/pack/*', 'not on the island: the balloon catalogue’s icons (clothing, recipes, artworks packed), on the catch plate'],
   ['deco/tape-deck', 'approximate: NH’s boom box (FtrRadicase) stands for the tape deck (the POC’s)'],
   ['finds/shovel, finds/watering-can', 'approximate: NH’s wooden shovel and watering can (the plain ones’ textures aren’t in the files)']
 ];
