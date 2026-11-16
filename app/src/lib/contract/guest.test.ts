@@ -53,19 +53,24 @@ describe('rowsFor the guest', () => {
     ]
   };
 
-  it('every row but the からだ ones: no weight, body fat, BMI or lean mass, no からだ goal, no member’s profile', () => {
+  it('every row but the からだ ones: no weight, body fat, BMI or lean mass, no からだ goal; everyone’s profile', () => {
     const g = rowsFor('G', rows);
     expect(g.metrics.map((r) => r[3])).toEqual(['steps', 'exercise_min', 'move_kcal', 'stand_min']);
-    expect(g.events.map((r) => r[2])).toEqual(['e1', 'e2', 'e3', 'e4', 'e9', 'e11', 'e12', 'e13', 'e14']);
+    expect(g.events.map((r) => r[2])).toEqual(['e1', 'e2', 'e3', 'e4', 'e9', 'e10', 'e11', 'e12', 'e13', 'e14']);
     // a member's English Study row as its summary, as the other member gets it
     expect(JSON.parse(g.events.find((r) => r[2] === 'e13')![4])).toEqual({ d: '2026-11-06', g: 'ab12', n: 1, ms: 60_000, gm: 'tv' });
     const text = JSON.stringify(g);
-    for (const k of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', '1990-01-01']) expect(text, k).not.toContain(k);
+    for (const k of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean']) expect(text, k).not.toContain(k);
   });
 
-  it('a member gets everything (the guest’s profile apart)', () => {
+  it('a member gets everything (the guest’s profile too)', () => {
     const a = rowsFor('A', rows);
     expect(a.metrics).toEqual(rows.metrics);
-    expect(a.events.map((r) => r[2])).toEqual(rows.events.map((r) => r[2]).filter((id) => id !== 'e11'));
+    expect(a.events.map((r) => r[2])).toEqual(rows.events.map((r) => r[2]));
+  });
+
+  it('a profile row naming no one it may (the guest’s sent by a member, an unknown person): no one gets it', () => {
+    const odd = { metrics: [], events: [e('A', 'x1', 'pref', { key: 'sex', value: 'm', person: 'G' }), e('G', 'x2', 'pref', { key: 'birth', value: '2000-01-01', person: 'Z' })] };
+    for (const who of ['A', 'B', 'G'] as const) expect(rowsFor(who, odd).events).toEqual([]);
   });
 });

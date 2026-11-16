@@ -1,6 +1,6 @@
 // 設定 → プロフィール (docs/design.md "Profile"): on a phone paired with a record of its own (e2e/record.ts: the
-// relay's real code) holding profile rows from before the lock, settings opens on a read-only row a person: a member's
-// phone the two members (its own first), the guest's only its own; the record refuses any profile pref from anyone.
+// relay's real code) holding profile rows from before the lock, settings opens on a read-only row a person, the same on
+// every phone: the two members and the guest (A, B, ゲスト); the record refuses any profile pref from anyone.
 // The BMI card (けんこう → からだ) says the average's category by the Asian cut-offs. Made-up values only.
 import { expect, test, type Browser, type Locator, PINNED_DATE } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -33,7 +33,7 @@ function ageNow(birth: string): number {
 /** A phone's profile rows: [who, line]. */
 const rows = (card: Locator) => card.evaluateAll((els) => els.map((e) => [e.getAttribute('data-profile'), e.querySelector('dd')?.textContent]));
 
-test('the profile: first in settings, read-only, the members’ to the members and the guest’s to the guest; locked on the record', async ({ browser }) => {
+test('the profile: first in settings, read-only, the same three rows on every phone; locked on the record', async ({ browser }) => {
   test.setTimeout(60_000);
   const rec = newRecord();
   rec.kept('A', 'pref', { key: 'sex', value: 'm' });
@@ -42,26 +42,25 @@ test('the profile: first in settings, read-only, the members’ to the members a
   rec.kept('B', 'pref', { key: 'birth', value: '1994-08-20' });
   rec.kept('G', 'pref', { key: 'sex', value: 'f' });
   const lineA = `男性・1990/5/12（${ageNow('1990-05-12')}歳）`, lineB = `女性・1994/8/20（${ageNow('1994-08-20')}歳）`;
+  const all = [['A', lineA], ['B', lineB], ['G', '女性・生年月日なし']];
 
   const a = await settings(browser, rec, 'A');
   await expect(a.page.locator('dialog[open] [data-settings] > section').first()).toHaveAttribute('data-profile-section', '');
-  await expect.poll(() => rows(a.card)).toEqual([['A', lineA], ['B', lineB]]);
+  await expect.poll(() => rows(a.card)).toEqual(all);
   await expect(a.page.locator('dialog[open] [data-profile-section]').locator('input, select, button, [role=radio]')).toHaveCount(0);
   // the dense rows' balance: the name 15 / 500, the value 15 bold
   const font = (sel: string) => a.card.first().locator(sel).evaluate((e) => { const s = getComputedStyle(e); return [s.fontSize, s.fontWeight]; });
   expect([await font('dt'), await font('dd')]).toEqual([['15px', '500'], ['15px', '700']]);
   await a.page.context().close();
 
-  // うめ's phone: hers first
+  // うめ's phone: the same rows, the same order
   const b = await settings(browser, rec, 'B');
-  await expect.poll(() => rows(b.card)).toEqual([['B', lineB], ['A', lineA]]);
+  await expect.poll(() => rows(b.card)).toEqual(all);
   await b.page.context().close();
 
-  // the guest: its own only, the missing value named
+  // the guest: the same three (a missing value named)
   const g = await settings(browser, rec, 'G');
-  await expect.poll(() => rows(g.card)).toEqual([['G', '女性・生年月日なし']]);
-  expect(rec.prefs('G').map(([, d]) => d.key)).toEqual(['sex']); // never a member's
-  expect(rec.prefs('A').filter(([who]) => who === 'G')).toEqual([]); // nor the guest's to a member
+  await expect.poll(() => rows(g.card)).toEqual(all);
   await g.page.context().close();
 
   // locked: no one sets or clears it

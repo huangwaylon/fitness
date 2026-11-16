@@ -78,25 +78,25 @@ function prefData(r: EventRow): Rec | null | false {
 }
 
 /**
- * Whether a profile `pref` row (sex, birth date: contract/profile.ts) reaches `viewer`: a member's
- * (its subject `person`, else its sender, A or B) only the two members, the guest's only the guest. Any other row: yes.
+ * Whether a profile `pref` row (sex, birth date: contract/profile.ts) reaches a viewer: everyone sees every person's
+ * (the user, 2026-11-16: 設定 → プロフィール the same on all three phones), a member's (its subject `person`, else its
+ * sender, A or B) and the guest's (its own, sent by it). A row naming anyone else: no one. Any other row: yes.
  */
-function profileSeen(viewer: Who, r: EventRow, d: Rec): boolean {
+function profileSeen(r: EventRow, d: Rec): boolean {
   if (!PROFILE_PREF_KEYS.includes(d.key as string)) return true;
   const subject = d.person === undefined ? r[1] : d.person;
-  return isPersonId(viewer) ? isPersonId(subject) : subject === 'G' && r[1] === 'G';
+  return isPersonId(subject) || (subject === 'G' && r[1] === 'G');
 }
 
-/** Whether an event row reaches the guest: all but the からだ goals and the members' profiles; every meal,
- *  everyone's, does. */
+/** Whether an event row reaches the guest: all but the からだ goals; everyone's profile and every meal do. */
 function guestSeesEvent(r: EventRow): boolean {
   const d = prefData(r);
-  return d === null || (d !== false && !BODY_GOAL_KEYS.includes(d.key) && profileSeen('G', r, d));
+  return d === null || (d !== false && !BODY_GOAL_KEYS.includes(d.key) && profileSeen(r, d));
 }
 
 /**
  * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
- * and every event but the からだ goals and the members' profiles (its own profile it does get), the members' English
+ * and every event but the からだ goals (everyone's profile included), the members' English
  * Study rows as their summaries (listenFor, as a member gets the other's). Never a からだ row: weight, body fat, BMI, lean mass.
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {
@@ -122,7 +122,7 @@ function listenFor(me: Who, r: EventRow): EventRow | null {
 
 /**
  * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): the guest's, guestRows; a member's,
- * everything but the guest's profile (the guest's alone), the others' English Study rows (the partner's and the guest's)
+ * everything, the others' English Study rows (the partner's and the guest's)
  * as their summaries (listenFor). @public (relay/src/store.ts)
  */
 export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
@@ -131,7 +131,7 @@ export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
   const events: EventRow[] = [];
   for (const r of rows.events) {
     const d = prefData(r);
-    const out = d === null || d === false || profileSeen(me, r, d) ? listenFor(me, r) : null;
+    const out = d === null || d === false || profileSeen(r, d) ? listenFor(me, r) : null;
     if (out !== r) changed = true;
     if (out) events.push(out);
   }

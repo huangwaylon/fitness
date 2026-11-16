@@ -69,8 +69,8 @@ The wedding types and `trip_note` are the members' only (the guest's are `forbid
 - Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)).
 - Goals, one key per charted metric (`goals.ts` GOALS). **Per day:** `stepsGoal`, `moveGoal`, `exerciseGoal`,
   `standGoal`, each with an optional `day` (`goalDay`). **Latest only** (or null): the からだ goals and the meal log's.
-- The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Private** (`rowsFor`): a member's reaches
-  the two members only, the guest's the guest only.
+- The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Shared by all three** (`rowsFor`, the user
+  2026-11-16): every person's reaches every phone; a row naming anyone else (the guest's sent by a member) reaches none.
   **Locked:** the record refuses any profile pref from anyone (`forbidden`, `profile locked`); a change takes a code change.
   A `load` too: it skips a `pref` of a key not in `PREF_KEYS` (an old dump's `bmiStd`) and a profile row whose slot
   holds one (`refused` in its reply, logged `load refused`); an empty slot it restores.
@@ -309,9 +309,8 @@ A third person, a visitor rather than a member ([design](design.md#the-guest), [
 one key, `KEY_C` (unset = no guest), who `G`. The economy, the members' goals and real-world records, the Health
 ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
 
-- **Reads** (`contract/guest.ts guestRows` via `rowsFor`): the members' activity, every event but the からだ goals and a
-  member's profile; its own `listen` rows whole, the members' as summaries. A member's snapshot never carries the
-  guest's profile.
+- **Reads** (`contract/guest.ts guestRows` via `rowsFor`): the members' activity, every event but the からだ goals
+  (everyone's profile included); its own `listen` rows whole, the members' as summaries.
 - **Writes** (`guestMayWrite`): what a member writes on the island, by the same rules, and its own meals, prefs
   and pack items. Not `spend`, `spend_void`, `harvest`, a member's or an activity / からだ goal, a `trip_note`,
   the wedding board, `ingest` or `uploads`: `forbidden` (the queue drops it). Rows are `person = G` (merge order A < B <

@@ -1,9 +1,9 @@
 <script lang="ts">
   // 設定 → プロフィール (docs/design.md "Profile"), settings' first section: one read-only row a person, 「ウェイ　男性・
   // 1990/1/1（35歳）」 (made-up). Locked (2026-11-15): nobody sets or clears it here, the record refuses every profile
-  // pref. A member's phone shows the two members (this phone's first), the guest's only its own: the record sends a
-  // member's to the members alone and the guest's to the guest alone (contract/guest.ts rowsFor). A value an old record
-  // never had is named (性別なし, 生年月日なし); neither: 未設定. The name 15 / 500, the value 15 bold (the dense rows').
+  // pref. The same on every phone (the user, 2026-11-16): the two members and the guest, in that order (A, B, ゲスト);
+  // the record sends everyone's profile to everyone (contract/guest.ts rowsFor). A value an old record never had is
+  // named (性別なし, 生年月日なし); neither: 未設定. The name 15 / 500, the value 15 bold (the dense rows').
   import type { Who, WeekView } from '#lib/types.ts';
   import { ageAt, profileOf } from '#lib/model/profile.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -11,7 +11,7 @@
 
   let { view }: { view: WeekView } = $props();
 
-  const whos = $derived<Who[]>(view.viewer === 'G' ? ['G'] : [view.me, view.partner]);
+  const whos: Who[] = ['A', 'B', 'G'];
   const name = (p: Who) => (p === 'G' ? view.guest.villagerName : view.people[p].villagerName);
   /** `1990/1/1`, both languages. */
   const ymd = (d: string) => `${d.slice(0, 4)}/${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;

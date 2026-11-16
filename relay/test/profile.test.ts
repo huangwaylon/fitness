@@ -54,7 +54,7 @@ describe('the profile prefs', () => {
     expect(r.meta).toMatchObject({ st: 'forbidden', why: 'pref.profile_locked' });
   });
 
-  it('keeps the rows from before: a member’s to the members alone, the guest’s to the guest alone', () => {
+  it('keeps the rows from before, everyone’s to everyone (the same プロフィール on all three phones)', () => {
     call(KEY_A, 'health');
     kept('A', { key: 'sex', value: 'm' });
     kept('A', { key: 'birth', value: '1990-05-12' });
@@ -64,15 +64,10 @@ describe('the profile prefs', () => {
     kept('G', { key: 'sex', value: 'f' });
     kept('B', { key: 'sex', value: 'f' });
 
-    // the guest: its own profile and the cosmetic pref, no member's (the full snapshot and the delta)
-    expect(prefs(KEY_C)).toEqual([['A', { key: 'villagerName', value: 'テスト' }], ['G', { key: 'sex', value: 'f' }]]);
-    expect(prefs(KEY_C, since)).toEqual([['G', { key: 'sex', value: 'f' }]]);
-    // the members: every member's profile, never the guest's
-    for (const key of [KEY_A, KEY_B]) {
-      const got = prefs(key);
-      expect(got.filter(([who]) => who === 'G')).toEqual([]);
-      expect(got.map(([, d]) => d.key)).toEqual(['sex', 'birth', 'birth', 'villagerName', 'sex']);
-      expect(prefs(key, since)).toEqual([['B', { key: 'sex', value: 'f' }]]);
+    // every phone: every person's profile and the cosmetic pref (the full snapshot and the delta)
+    for (const key of [KEY_A, KEY_B, KEY_C]) {
+      expect(prefs(key).map(([who, d]) => [who, d.key])).toEqual([['A', 'sex'], ['A', 'birth'], ['B', 'birth'], ['A', 'villagerName'], ['G', 'sex'], ['B', 'sex']]);
+      expect(prefs(key, since)).toEqual([['G', { key: 'sex', value: 'f' }], ['B', { key: 'sex', value: 'f' }]]);
     }
   });
 
@@ -88,8 +83,7 @@ describe('the profile prefs', () => {
       [at(8), 'B', 'old4', 'pref', '{"key":"birth","value":"1994-08-20"}']
     ] } });
     expect(r).toMatchObject({ ok: true, events: 1, skipped: 2, refused: { prefKey: 0, profileLocked: 2 } });
-    expect(prefs(KEY_A)).toEqual([['B', { key: 'birth', value: '1994-08-20' }], ['A', { key: 'sex', value: 'm' }]]);
-    expect(prefs(KEY_C)).toEqual([]);
+    for (const key of [KEY_A, KEY_C]) expect(prefs(key)).toEqual([['B', { key: 'birth', value: '1994-08-20' }], ['A', { key: 'sex', value: 'm' }]]);
     // idempotent: the restored row is had, the refused ones refused again
     expect(store.load({ rows: { events: [[at(8), 'B', 'old4', 'pref', '{"key":"birth","value":"1994-08-20"}']] } })).toMatchObject({ events: 0, skipped: 0 });
   });
