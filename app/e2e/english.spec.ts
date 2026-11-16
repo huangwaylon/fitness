@@ -2,7 +2,8 @@
 // nothing leaves the preview), never locked: 質問へ and ‹ 前へ / 次へ › always work; a miss replays the segment with the
 // cue and a quiet 答えを見る, a second miss 「答えはこれ」, never a mark on the pick; まとめ writes the clip's row (✓ in
 // the library, 今週 1/3日, これまで 1本); ⚑ 報告 on the clip and a question, listed in ⚙'s 報告した内容; the player's
-// offline and unavailable states, 字幕 オフ / 英語 / 日本語 and 場面のあらすじ; a lesson left resumes where it was. The logic tier.
+// offline and unavailable states, 字幕 オフ / 英語 / 日本語 and 場面のあらすじ; せりふ (the transcript) follows the playhead, a line
+// tapped plays from there; a lesson left resumes where it was. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -15,6 +16,8 @@ import { shownOf } from '../src/lib/english/collections.ts';
 import { hideAndShow } from './memory.ts';
 import { momentsOf } from '../src/lib/english/phrases.ts';
 import waitressScenes from '../src/lib/english/scenes/lm2MpPpkGL8.json' with { type: 'json' };
+import waitressEn from '../src/lib/english/transcripts/lm2MpPpkGL8.en.json' with { type: 'json' };
+import waitressJa from '../src/lib/english/transcripts/lm2MpPpkGL8.ja.json' with { type: 'json' };
 
 /** The clips as offered (the shared plan). */
 const PLAN = planOf(CLIPS);
@@ -590,6 +593,52 @@ test('この動画のフレーズ: from the lesson’s bar and from まとめ, t
   await expect(cards).toHaveCount(moments.length);
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
+});
+
+test('せりふ: from the lesson’s bar when the bank has lines, every line in time order with its Japanese, the playhead’s line marked and a tap seeks; no button when the bank has none', async ({ page }) => {
+  await fakeYoutube(page, { rate: 8 });
+  await open(page);
+  await start(page);
+  const lines = waitressEn.lines;
+  const clockOf = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  await lesson(page).locator('[data-en-transcript-open]').click();
+  await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('せりふ');
+  const lvl = lesson(page).locator('[data-en-transcript]');
+  const rows = lvl.locator('[data-en-line]');
+  await expect(rows).toHaveCount(lines.length);
+  // a row: its time, the English (lang en), its Japanese under it; the playhead's line marked
+  await expect(lvl).toHaveAttribute('data-en-at', '0');
+  await expect(rows.nth(0)).toHaveAttribute('aria-current', 'true');
+  await expect(rows.nth(2).locator('.t')).toHaveText(clockOf(lines[2].t[0]));
+  await expect(rows.nth(2).locator('.en')).toHaveText(lines[2].en);
+  await expect(rows.nth(2).locator('.en')).toHaveAttribute('lang', 'en');
+  await expect(rows.nth(2).locator('.ja')).toHaveText(waitressJa.lines[2].ja);
+  // a line tapped: from its start, playing on
+  const n0 = (await ytCommands(page)).length;
+  await rows.nth(4).click();
+  await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => JSON.stringify(c.slice(0, 2)))).toEqual([JSON.stringify(['seekTo', [lines[4].t[0], true]]), JSON.stringify(['playVideo', []])]);
+  await expect(lvl).toHaveAttribute('data-en-at', '4');
+  await expect(rows.nth(4)).toHaveAttribute('aria-current', 'true');
+  // playing on (8×): the mark follows the playhead
+  await expect.poll(() => lvl.getAttribute('data-en-at')).not.toBe('4');
+  // ‹ the watch card
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
+  // a bank without lines: no せりふ (フレーズ stays)
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  let served = false;
+  await page.route('**/english/c/waitress.*.json', async (r) => {
+    const { lines: _, ...bank } = (await (await r.fetch()).json()) as Record<string, unknown>;
+    await r.fulfill({ json: bank });
+    served = true;
+  });
+  await page.reload();
+  await islandUp(page);
+  await fromMenu(page, 'english');
+  await start(page);
+  await expect.poll(() => served).toBe(true);
+  await expect(lesson(page).locator('[data-en-transcript-open]')).toHaveCount(0);
+  await expect(lesson(page).locator('[data-en-phrases-open]')).toBeVisible();
 });
 
 test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, paused when the page is hidden, the island’s “ambient” again after', async ({ page }) => {

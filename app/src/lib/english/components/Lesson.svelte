@@ -8,7 +8,9 @@
   // start; the bank's in data.ts).
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
   // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度. この動画のフレーズ (the bar's
-  // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases).
+  // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases);
+  // せりふ (the bar's file button, a bank with transcript lines only) another, the whole transcript following the
+  // playhead (Transcript).
   // A bank with scenes shows 場面のあらすじ under the controls (Scenes; 字幕's sheet hides it on this phone); with 英語
   // captions on, directly under the video instead, as the Japanese line paired with YouTube's English one.
   import { onDestroy, untrack } from 'svelte';
@@ -18,6 +20,7 @@
   import Controls from './Controls.svelte';
   import FlagSheet from './FlagSheet.svelte';
   import ClipPhrases from './ClipPhrases.svelte';
+  import Transcript from './Transcript.svelte';
   import Scenes from './Scenes.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -94,9 +97,9 @@
   let flagQ = $state<number | null>(null);
   let flagOpen = $state(false);
   let body: HTMLElement | undefined = $state();
-  /** この動画のフレーズ open (over the lesson's place, kept). */
-  let study = $state(false);
-  const toStudy = (on: boolean) => ((study = on), body?.scrollTo({ top: 0 }));
+  /** A level open over the lesson's place (kept): この動画のフレーズ, or せりふ when the bank has transcript lines. */
+  let study = $state<false | 'phrases' | 'lines'>(false);
+  const toStudy = (on: false | 'phrases' | 'lines') => ((study = on), body?.scrollTo({ top: 0 }));
 
   const q = $derived<Question | null>(at >= 0 && at < len ? qs[at] : null);
   const cur = $derived(q ? st[at] : null);
@@ -223,17 +226,24 @@
 
 <section class="screen" role="presentation" data-en-lesson={clip.id} data-en-at={at} onpointerdown={input} onkeydown={input}>
   <div class="top">
-    {#if study}<NavBar pad title={s('phrases')} onback={() => toStudy(false)} {onclose} />
+    {#if study}<NavBar pad title={study === 'lines' ? s('transcript') : s('phrases')} onback={() => toStudy(false)} {onclose} />
     {:else}<NavBar pad title={clip.title} {onback} {onclose} {trailing} />{/if}
   </div>
-  {#snippet trailing()}<NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy(true)} />{/snippet}
+  {#snippet trailing()}
+    {#if full?.lines?.length}<NavButton kind="tool" icon="file" label={s('transcript')} sfx="open" data-en-transcript-open onclick={() => toStudy('lines')} />{/if}
+    <NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy('phrases')} />
+  {/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
   {#if scenes && showScenes && paired}<Scenes {scenes} {beats} paired time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <Controls {player} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} />
   {#if scenes && showScenes && !paired}<Scenes {scenes} {beats} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
-      <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />
+      {#if study === 'lines' && full.lines}
+        <Transcript lines={full.lines} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />
+      {:else}
+        <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />
+      {/if}
     {:else if at === -1 && !study}
       <article class="card pad" data-en-watch>
         <button type="button" class="flag" data-sfx="open" data-en-flag="clip" onclick={() => flag(null)}><Icon name="flag" size={14} />{s('flag')}</button>
@@ -300,7 +310,7 @@
           </ul>
         {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
         <button type="button" class="btn sky" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}>{s('endWatch')}</button>
-        <button type="button" class="btn paper" data-sfx="open" data-en-end-phrases onclick={() => toStudy(true)}>{s('phrasesGo')}</button>
+        <button type="button" class="btn paper" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>{s('phrasesGo')}</button>
       </article>
     {/if}
     <p class="credit">{s('credit', { credit: clip.credit })}</p>
