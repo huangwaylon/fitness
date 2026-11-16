@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const rossJill: Clip = {
   id: 'rossjill', video: 'rp76OhWOALI', title: 'Ross Is Dating Rachel\'s Sister', dur: 88, wpm: 170,
-  band: 'mid', tags: ['恋愛', '友だち'],
+  band: 'fast', tags: ['恋愛', '友だち'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [

@@ -239,5 +239,14 @@ export const PLANNED: readonly string[] = [
   'videodome',
   'pilotfacts',
   'galbrunch',
-  'kingpin'
+  'kingpin',
+  'michaeljim',
+  'leslieready',
+  'rosshides',
+  'bachelors',
+  'jerryback',
+  'textsmean',
+  'cheesebandit',
+  'paperco',
+  'apologyvids'
 ];

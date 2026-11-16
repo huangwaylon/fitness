@@ -242,10 +242,20 @@ import { galBrunch } from './galbrunch.ts';
 import { videoDome } from './videodome.ts';
 import { kingpin } from './kingpin.ts';
 import { tomAccent } from './tomaccent.ts';
+import { michaelJim } from './michaeljim.ts';
+import { textsMean } from './textsmean.ts';
+import { leslieReady } from './leslieready.ts';
+import { apologyVideos } from './apologyvids.ts';
+import { cheesecakeBandits } from './cheesebandit.ts';
+import { rossHidesIt } from './rosshides.ts';
+import { jerryBack } from './jerryback.ts';
+import { threeBachelors } from './bachelors.ts';
+import { paperco } from './paperco.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
   rossList,
+  michaelJim,
   waitress,
   bloomingdales,
   movember,
@@ -261,6 +271,7 @@ export const CLIPS: readonly Clip[] = [
   ronFixes,
   chairModel,
   ronsReviews,
+  leslieReady,
   mostLovedDenmark,
   poachBen,
   dwightHobbit,
@@ -318,6 +329,7 @@ export const CLIPS: readonly Clip[] = [
   andyInvestigates,
   ronTough,
   ronsKey,
+  rossHidesIt,
   // ふつう
   jointMission,
   ronLeslieLunch,
@@ -328,6 +340,7 @@ export const CLIPS: readonly Clip[] = [
   jansStroller,
   vanBidding,
   ronAward,
+  threeBachelors,
   heroes,
   donnaBully,
   saveJJs,
@@ -346,6 +359,7 @@ export const CLIPS: readonly Clip[] = [
   womensAppreciation,
   loveOverMeat,
   tomAccent,
+  textsMean,
   animalControl,
   chardStand,
   leslieObama,
@@ -355,6 +369,7 @@ export const CLIPS: readonly Clip[] = [
   setStraight,
   benCriminal,
   ronsTeam,
+  jerryBack,
   twodates,
   ronFire,
   benArrested,
@@ -368,6 +383,7 @@ export const CLIPS: readonly Clip[] = [
   ronBirthday,
   parksMakeover,
   monaLisa,
+  cheesecakeBandits,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -400,12 +416,13 @@ export const CLIPS: readonly Clip[] = [
   distract,
   leslieAnnForum,
   ronMeditation,
+  // 速い
   oldSchool,
   joeyCrossword,
   pamGivenUp,
   verySober,
   rossJill,
-  // 速い
+  paperco,
   parkspilot,
   prefired,
   whosDaddy,
@@ -429,6 +446,7 @@ export const CLIPS: readonly Clip[] = [
   aprilFired,
   runsAgain,
   promSeason,
+  apologyVideos,
   getaway,
   evilLaugh,
   whiteWhale,
