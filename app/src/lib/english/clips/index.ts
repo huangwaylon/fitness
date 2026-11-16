@@ -260,6 +260,13 @@ import { dinnerplan } from './dinnerplan.ts';
 import { monicabroke } from './monicabroke.ts';
 import { saveBen } from './saveben.ts';
 import { nutribars } from './nutribars.ts';
+import { germsTalk } from './germstalk.ts';
+import { janicedump } from './janicedump.ts';
+import { momFlirt } from './momflirt.ts';
+import { birthdayGuide } from './birthdays.ts';
+import { captainjack } from './captainjack.ts';
+import { ronShot } from './ronshot.ts';
+import { rentASwag } from './rentaswag.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -268,6 +275,7 @@ export const CLIPS: readonly Clip[] = [
   waitress,
   bloomingdales,
   dinnerplan,
+  janicedump,
   movember,
   datinglang,
   laundromat,
@@ -293,6 +301,7 @@ export const CLIPS: readonly Clip[] = [
   benCool,
   tobyTherapy,
   rossBreak,
+  birthdayGuide,
   ronHumour,
   mriBlindDate,
   fakeCall,
@@ -315,6 +324,7 @@ export const CLIPS: readonly Clip[] = [
   tomsApartment,
   wonderDog,
   policeExam,
+  captainjack,
   johnnyGoodbye,
   theMerger,
   creedDebbie,
@@ -327,6 +337,7 @@ export const CLIPS: readonly Clip[] = [
   ronDentist,
   ryankelly,
   costumePrize,
+  germsTalk,
   newHairdo,
   ronDesk,
   centralperk,
@@ -365,6 +376,7 @@ export const CLIPS: readonly Clip[] = [
   ronSlash,
   mexBus,
   canvassing,
+  ronShot,
   ronharass,
   annLeaving,
   conflictPranks,
@@ -432,6 +444,7 @@ export const CLIPS: readonly Clip[] = [
   distract,
   leslieAnnForum,
   ronMeditation,
+  rentASwag,
   // 速い
   oldSchool,
   joeyCrossword,
@@ -475,6 +488,7 @@ export const CLIPS: readonly Clip[] = [
   icNewCast,
   pamLabor,
   piemary,
+  momFlirt,
   ronHearing,
   ryanOffice,
   bestBurger,
