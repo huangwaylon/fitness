@@ -1,6 +1,7 @@
 // The homes in 3D (docs/island-layout.md "Homes"): a home's style built from NH's parts (layout/homes.ts partsOf:
 // a wall, a roof and a door in their colours, or a tent), as converted by scripts/home-models.ts into
-// static/room/homes/ (each part's GLB in its first colour, the other colours' albedos beside it). The wall and the roof
+// static/room/homes/ (each part's GLB in its first colour, the other colours' albedos as KTX2 packs beside it; their WebPs the
+// fallbacks', ktx2.ts). The wall and the roof
 // share NH's origin (the house's front wall, its middle); the door stands in the wall's doorway (homes.json `door`: NH's
 // DoorModel0 joint); a colour swaps the albedo of the materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
@@ -80,7 +81,8 @@ function albedo(base: string, family: string, colour: string, mat: string): Prom
   const key = `${family}.${colour}.${mat}`;
   let p = maps.get(key);
   if (!p) {
-    // (a colour's KTX2s in a pack beside them, by material: texHash.ts looseTextures)
+    // (a colour's KTX2s in a pack beside them, by material: texHash.ts looseTextures; the WebP, never a file of its
+    // own, from the fallbacks' packs by its path)
     p = loadTexture(`${base}${key}.webp?v=${FAMILIES[family]?.v ?? 0}`, { flipY: false, ktx2: `${family}.${colour}.ktx2p#${mat}` }).then(
       (t) => {
         t.colorSpace = SRGBColorSpace;

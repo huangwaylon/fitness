@@ -168,9 +168,23 @@ test('/world3d, the POC\'s address, opens the island', async ({ page }) => {
   await ready(page);
 });
 
-test('no KTX2 (?ktx2=0): the island\'s models draw their WebPs, from their WebP packs (they carry none: scripts/glb-webp.ts)', { tag: '@render' }, async ({ page }) => {
-  const packs: string[] = [], errors: string[] = [];
-  page.on('request', (r) => { if (/\/room\/tex\/[^/]+\.(webpp|ktx2p)/.test(r.url())) packs.push(new URL(r.url()).pathname.split('.').pop()!); });
+/** The room's texture files a page asked for: the WebP fallbacks' index and packs, KTX2 packs, a home's loose WebP. */
+function texAsks(page: Page) {
+  const asked: string[] = [];
+  page.on('request', (r) => {
+    const m = /\/room\/(tex\/(?:webp[.-][^/]+|[^/]+\.ktx2p)|homes\/[^/]+\.webp)/.exec(r.url());
+    if (m) asked.push(m[1].replace(/\?.*/, ''));
+  });
+  return {
+    index: () => asked.filter((a) => /^tex\/webp\.[0-9a-f]{8}\.json$/.test(a)).length,
+    packs: () => new Set(asked.filter((a) => /^tex\/webp-[a-z0-9]+-\d+\.[0-9a-f]{8}\.pak$/.test(a))).size,
+    ktx2: () => asked.filter((a) => a.endsWith('.ktx2p')).length,
+    loose: () => asked.filter((a) => a.startsWith('homes/'))
+  };
+}
+
+test('no KTX2 (?ktx2=0): the island\'s models and homes draw their WebPs, from the WebP fallbacks\' packs (the models carry none: scripts/glb-webp.ts)', { tag: '@render' }, async ({ page }) => {
+  const asks = texAsks(page), errors: string[] = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(`?${Q}&ktx2=0`);
   await ready(page);
@@ -180,8 +194,27 @@ test('no KTX2 (?ktx2=0): the island\'s models draw their WebPs, from their WebP 
   // (each a fallback, perf.boot's txWebp; none a KTX2 failure)
   expect(k.webp).toBeGreaterThan(20);
   expect([k.fail, k.off]).toEqual([0, false]);
-  expect(packs.filter((p) => p === 'webpp').length).toBeGreaterThan(10);
-  expect(packs).not.toContain('ktx2p');
+  // the index once, a few ~1 MB packs (the island's models, its villagers', its homes'), no KTX2, no loose WebP
+  expect(asks.index()).toBe(1);
+  expect(asks.packs()).toBeGreaterThan(2);
+  expect(asks.ktx2()).toBe(0);
+  expect(asks.loose()).toEqual([]);
+  expect(errors.filter((e) => /GLTFLoader|texture/i.test(e))).toEqual([]);
+});
+
+test('a KTX2 that can\'t be had (its pack not found): its WebP drawn from the fallbacks\' packs, each counted (perf.boot txFail, txWebp)', { tag: '@render' }, async ({ page }) => {
+  await page.route('**/room/tex/*.ktx2p*', (r) => r.fulfill({ status: 404, body: '' }));
+  const asks = texAsks(page), errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto(`?${Q}`);
+  await ready(page);
+  const k = await w3(page, (w) => w.ktx2());
+  expect(k.target).not.toBeNull();
+  expect(k.fail).toBeGreaterThan(20);
+  expect(k.webp).toBeGreaterThanOrEqual(k.fail);
+  expect(asks.index()).toBe(1);
+  expect(asks.packs()).toBeGreaterThan(2);
+  expect(asks.loose()).toEqual([]);
   expect(errors.filter((e) => /GLTFLoader|texture/i.test(e))).toEqual([]);
 });
 

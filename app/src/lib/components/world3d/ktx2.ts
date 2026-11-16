@@ -4,8 +4,9 @@
 // start reads the transcoded mip levels from IndexedDB (texCache.ts): no fetch, no transcoder. A miss fetches the
 // KTX2 (the service worker keeps it under /room/) and transcodes it in a worker (ktx2.worker.ts, three's Basis
 // transcoder: its wasm from static/room/basis/, fetched on the first miss only). Anything amiss, and the model's own
-// WebP is drawn, as before the plugin. The loose WebPs the models wear (a home's other colours, a player's face and
-// garments, from their packs: loadTexture, textureFrom) likewise.
+// WebP is drawn, as before the plugin: from the WebP fallbacks' packs (room/tex/webp-*.pak, ~1 MB each, their index
+// fetched on the first fallback only: fallbackWebp). The loose WebPs the models wear (a home's other colours, in those
+// packs too; a player's face and garments, from their own packs: loadTexture, textureFrom) likewise.
 import { ClampToEdgeWrapping, CompressedTexture, LinearFilter, LinearMipmapLinearFilter, MirroredRepeatWrapping, NearestFilter, RGBAFormat, RGBA_ASTC_4x4_Format, RGBA_BPTC_Format, RGBA_ETC2_EAC_Format, RGBA_S3TC_DXT5_Format, RGB_ETC2_Format, RGB_S3TC_DXT1_Format, RepeatWrapping, TextureLoader, UnsignedByteType, type CompressedPixelFormat, type PixelFormat, type Texture, type WebGLRenderer } from 'three';
 import type { GLTFLoader, GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import meta from './ktx2.json';
@@ -15,6 +16,7 @@ import { hasTex, readTex, writeTex } from './texCache.ts';
 import { texHash, texKey, type GlbImage } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
+import { PackStore } from '#lib/packStore.ts';
 import { warmToo } from '#lib/ui-state/swLate.ts';
 
 /** Bumped when what's kept changes shape or meaning (the encoder's settings and the transcoder are in the key anyway). */
@@ -194,15 +196,16 @@ async function fetchKtx2(w: Where): Promise<ArrayBuffer | null> {
 
 /** A loose WebP texture of the island's models (`url`: under room/, its content's hash or its model's in `?v=`): a
  *  home's other colour (a player's face or garment: textureFrom, from its pack). With `ktx2` and a GPU format, drawn from its KTX2 (texHash.ts
- *  looseTextures): `true` a file beside it, or `<pack>#<entry>` (a pack beside it); else, or on any trouble, the WebP
- *  as TextureLoader draws it (`flipY`: how it's drawn, the KTX2 encoded so: a compressed texture isn't flipped on
- *  upload). The caller sets its colour space, wrapping and the rest. */
+ *  looseTextures): `true` a file beside it, or `<pack>#<entry>` (a pack beside it); else, or on any trouble, its WebP
+ *  (in the WebP fallbacks' packs by its path under room/, else the file at `url`) as TextureLoader draws it (`flipY`:
+ *  how it's drawn, the KTX2 encoded so: a compressed texture isn't flipped on upload). The caller sets its colour
+ *  space, wrapping and the rest. */
 export async function loadTexture(url: string, o: { flipY: boolean; ktx2: boolean | string }): Promise<Texture> {
-  const t = target;
+  const t = target, u = new URL(url, document.baseURI), room = u.pathname.indexOf('/room/'), name = u.pathname.slice(u.pathname.lastIndexOf('/') + 1);
+  const dir = room >= 0 ? u.pathname.slice(room + 1, -name.length) : '';
   if (t && o.ktx2) {
-    const u = new URL(url, document.baseURI), room = u.pathname.indexOf('/room/'), name = u.pathname.slice(u.pathname.lastIndexOf('/') + 1);
     if (room >= 0 && name.endsWith('.webp')) {
-      const dir = u.pathname.slice(room + 1, -name.length), v = `?v=${u.searchParams.get('v') ?? ''}`;
+      const v = `?v=${u.searchParams.get('v') ?? ''}`;
       const [file, entry] = o.ktx2 === true ? [`${name.slice(0, -5)}.ktx2`] : o.ktx2.split('#');
       const tex = await levels(`${dir}${file}${v}${entry ? `#${entry}` : ''}`, () => fetchKtx2({ path: dir + file + v, entry }), t, async () => ktx2Url(dir + file + v));
       if (tex) {
@@ -215,11 +218,47 @@ export async function loadTexture(url: string, o: { flipY: boolean; ktx2: boolea
     }
   }
   if (o.ktx2) ktx2Stats.webp++;
+  const packed = room >= 0 && name.endsWith('.webp') ? await fallbackWebp(`${dir.slice(5)}${name.slice(0, -5)}`) : null;
+  if (packed) return fromWebp(packed, o.flipY);
   const w = await (plain ??= new TextureLoader()).loadAsync(url);
   w.flipY = o.flipY;
   return w;
 }
 let plain: TextureLoader | null = null;
+/** A WebP's bytes as TextureLoader draws them (`flipY`). */
+async function fromWebp(buf: ArrayBuffer, flipY: boolean): Promise<Texture> {
+  const url = URL.createObjectURL(new Blob([buf], { type: 'image/webp' }));
+  try {
+    const w = await (plain ??= new TextureLoader()).loadAsync(url);
+    w.flipY = flipY;
+    return w;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** The WebP fallbacks' index (room/tex/webp.<hash>.json, its hash ktx2.json `webp`: scripts/world3d-ktx2.ts): each
+ *  WebP's pack, by id (an embedded image's hash; a home albedo's path under room/ less `.webp`); fetched on the first
+ *  fallback only (asked again after a failure). */
+type WebpIndex = { packs: string[]; ids: Record<string, number> };
+let webpIndex: Promise<WebpIndex | null> | null = null;
+/** The packs, fetched whole (~1 MB each: the service worker's room cache keeps them), held while in use. */
+const webpPacks = new PackStore({ url: (stem) => site(`room/tex/${stem}.pak`), tag: 'webp', cap: 12_000_000, idleMs: 10_000, dropOnHide: true });
+const packEntries = new WeakMap<ArrayBuffer, Map<string, [number, number]> | null>();
+/** A WebP fallback's bytes (a copy), by its id; null when it can't be had. */
+async function fallbackWebp(id: string): Promise<ArrayBuffer | null> {
+  webpIndex ??= quiet(fetch(site(`room/tex/webp.${meta.webp}.json`)).then((r) => (r.ok ? (r.json() as Promise<WebpIndex>) : null)), 'webp.index', null).then((ix) => {
+    if (!ix) webpIndex = null;
+    return ix;
+  });
+  const ix = await webpIndex, n = ix?.ids[id];
+  if (!ix || n === undefined) return null;
+  const buf = await webpPacks.pack(ix.packs[n]);
+  if (!buf) return null;
+  if (!packEntries.has(buf)) packEntries.set(buf, entries(buf));
+  const at = packEntries.get(buf)?.get(id);
+  return at ? buf.slice(at[0], at[0] + at[1]) : null;
+}
 
 /** A texture from its bytes (a file of a pack: the players' parts, player3d/parts.ts): with a GPU format and a KTX2
  *  (`ktx2`: its bytes, asked for only when it isn't kept), drawn from it (kept as `id`: the KTX2's address under
@@ -240,14 +279,7 @@ export async function textureFrom(id: string, o: { flipY: boolean; ktx2?: () => 
   if (o.ktx2) ktx2Stats.webp++;
   const buf = await o.webp();
   if (!buf) throw new Error(`texture: no bytes for ${id}`);
-  const url = URL.createObjectURL(new Blob([buf], { type: 'image/webp' }));
-  try {
-    const w = await (plain ??= new TextureLoader()).loadAsync(url);
-    w.flipY = o.flipY;
-    return w;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  return fromWebp(buf, o.flipY);
 }
 
 /** A three texture of `tex`'s levels (its sampler and colour space set by the loader, as for any glTF texture). */
@@ -264,7 +296,7 @@ type Parser = GLTFParser & { json: Json; textureLoader: unknown; loadTextureImag
 /** `loader`'s models' embedded WebPs drawn from their KTX2 (once the island's renderer said which format). It stands
  *  in for GLTFLoader's own EXT_texture_webp (the models' textures are WebPs by that extension; a plugin by its name
  *  takes its place, ahead of the loader's default), drawing the WebP as that one does when there's no KTX2: the
- *  model's own, or, the island's models carrying none (scripts/glb-webp.ts), its WebP pack's. */
+ *  model's own, or, the island's models carrying none (scripts/glb-webp.ts), the WebP fallbacks' packs'. */
 export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
   return loader.register((p) => {
     const parser = p as Parser;
@@ -301,35 +333,35 @@ export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
 /** An embedded texture's hash: kept by a model without its WebPs (`extras.tex`), else its WebP's. */
 const hashOf = (parser: Parser, im: GlbImage): Promise<string> =>
   im.bufferView === undefined ? Promise.resolve(im.extras!.tex!) : (parser.getDependency('bufferView', im.bufferView) as Promise<ArrayBuffer>).then((b) => texHash(new Uint8Array(b)));
-/** A model's packs (ktx2Pack.ts packId, as scripts/world3d-ktx2.ts names them): its KTX2s' by its images' keys, its
- *  WebPs' by their hashes; asked on a miss. */
-const packIds = new WeakMap<Parser, Promise<{ ktx2: string; webp: string }>>();
-function packsOf(parser: Parser): Promise<{ ktx2: string; webp: string }> {
+/** A model's KTX2 pack (ktx2Pack.ts packId, as scripts/world3d-ktx2.ts names it: by its images' keys); asked on a
+ *  miss. */
+const packIds = new WeakMap<Parser, Promise<{ ktx2: string }>>();
+function packsOf(parser: Parser): Promise<{ ktx2: string }> {
   let p = packIds.get(parser);
   if (!p) {
     const ims = ((parser.json.images ?? []) as GlbImage[]).filter((im) => im.bufferView !== undefined || im.extras?.tex);
-    p = Promise.all(ims.map((im) => hashOf(parser, im))).then((hs) => ({ ktx2: packId(hs.map((h) => texKey(h, CAPS))), webp: packId(hs) }));
+    p = Promise.all(ims.map((im) => hashOf(parser, im))).then((hs) => ({ ktx2: packId(hs.map((h) => texKey(h, CAPS))) }));
     packIds.set(parser, p);
   }
   return p;
 }
 /** Texture `i` from its WebP, as GLTFLoader draws one: a model without its WebPs (scripts/glb-webp.ts) has it from
- *  its WebP pack, a blob: URL in its image's place while GLTFLoader reads it (its source then cached: a second
+ *  the WebP fallbacks' packs, a blob: URL in its image's place while GLTFLoader reads it (its source then cached: a second
  *  texture of the image asks no URL; not a data: URL, which Chromium's ImageBitmapLoader fetches: the CSP's
  *  connect-src). */
 const webpLoads = new WeakMap<GlbImage, Promise<unknown>>();
 function webpOf(parser: Parser, i: number, source: number): Promise<Texture | null> {
+  ktx2Stats.webp++;
   const im = parser.json.images![source];
   if (im.bufferView !== undefined) return parser.loadTextureImage(i, source, parser.textureLoader);
-  ktx2Stats.webp++;
   let first = webpLoads.get(im);
   if (!first) {
-    first = packsOf(parser).then(async ({ webp }) => {
-      const buf = await fetchKtx2({ path: `room/tex/${webp}.webpp`, entry: im.extras!.tex! });
+    first = (async () => {
+      const buf = await fallbackWebp(im.extras!.tex!);
       if (!buf) throw new Error(`world3d: no WebP for ${im.extras!.tex}`);
       im.uri = URL.createObjectURL(new Blob([buf], { type: 'image/webp' }));
       return parser.loadTextureImage(i, source, parser.textureLoader).finally(() => URL.revokeObjectURL(im.uri!));
-    });
+    })();
     webpLoads.set(im, first);
     return first as Promise<Texture | null>;
   }

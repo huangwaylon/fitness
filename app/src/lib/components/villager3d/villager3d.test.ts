@@ -22,7 +22,7 @@ describe('the villagers’ 3D models (villagers.json)', () => {
       expect(existsSync(f), id).toBe(true);
       expect(readFileSync(f).subarray(0, 4).toString(), id).toBe('glTF');
       expect(statSync(f).size / 1024, id).toBeLessThanOrEqual(BUDGET_KB);
-      // (its KB as converted: its WebPs are in its WebP pack, scripts/glb-webp.ts)
+      // (its KB as converted: its WebPs are in the WebP fallbacks' packs, scripts/glb-webp.ts)
       expect(e.kb, id).toBeCloseTo(withWebps(new Uint8Array(readFileSync(f)), join(DIR, '..', 'tex')).length / 1024, 0);
       expect(e.h, id).toBeGreaterThan(8);
     }

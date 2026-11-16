@@ -5,7 +5,8 @@
 //   <family>.glb                    one per shape and material (a wall NA in brick, a roof NC thatched, a door's style
 //                                   and shape): the geometry is the same in every colour, so it ships once, in its
 //                                   first colour
-//   <family>.<colour>.<mat>.webp    a colour's own baked albedo for each material that differs from the first's
+//   <family>.<colour>.<mat>.webp    a colour's own baked albedo for each material that differs from the first's (then
+//                                   npm run world3d-ktx2: its KTX2 made, the WebP into the fallbacks' packs)
 //   picker.<hash>.webp              the picker's atlas (HomePicker.svelte): every colour's swatch (48 px, its main
 //                                   material's albedo) and NH's own picker icons (72 px: the doors, the player house's
 //                                   walls and roofs), indexed by src/lib/layout/homes-picker.json; a run's new cells

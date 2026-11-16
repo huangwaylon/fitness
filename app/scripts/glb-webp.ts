@@ -1,12 +1,13 @@
 // The island's models without their WebPs (scripts/world3d-ktx2.ts): a GLB's embedded images are only its fallback once
-// their KTX2s exist (world3d/ktx2.ts draws those), so they go to the model's WebP pack (static/room/tex/<id>.webpp,
-// ktx2Pack.ts's container, by hash) and the GLB keeps each image's hash (`extras.tex`, texHash.ts glbTextures); the
-// page reads a WebP out of the pack only when it draws no KTX2. `unstrip` puts them back, for the tools that load a
-// model with three's own GLTFLoader (scripts/world3d-sheet.ts, seat-anchors.ts). A model's `v` and `kb` in its
-// manifest stay its converter's (the GLB as converted: villager3d.test compares them so).
-import { readFileSync } from 'node:fs';
+// their KTX2s exist (world3d/ktx2.ts draws those), so they go to the WebP fallbacks' packs (static/room/tex/
+// webp-<group>-<n>.<hash>.pak, ktx2Pack.ts's container, by hash; the homes' other colours' albedos in them too, by
+// path) and the GLB keeps each image's hash (`extras.tex`, texHash.ts glbTextures); the page reads a WebP out of a pack
+// only when it draws no KTX2. `unstrip` puts them back, for the tools that load a model with three's own GLTFLoader
+// (scripts/world3d-sheet.ts, seat-anchors.ts). A model's `v` and `kb` in its manifest stay its converter's (the GLB as
+// converted: villager3d.test compares them so).
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { entries, packId } from '../src/lib/components/world3d/ktx2Pack.ts';
+import { entries } from '../src/lib/components/world3d/ktx2Pack.ts';
 import { glbTextures, type GlbImage } from '../src/lib/components/world3d/texHash.ts';
 
 type View = { buffer: number; byteOffset?: number; byteLength: number; extensions?: { EXT_meshopt_compression?: { buffer: number; byteOffset?: number; byteLength: number } } };
@@ -92,16 +93,24 @@ export function strip(glb: Uint8Array, hashes: string[]): Uint8Array | null {
   return write(j, body);
 }
 
-/** A GLB as served to a tool's page (three's own GLTFLoader): an island model's WebPs back in from its WebP pack
+/** The WebP fallbacks' packs in `tex` (static/room/tex/): every entry, by id (an image's hash, a home albedo's path
+ *  under room/ less `.webp`). */
+export function readWebps(tex: string): Map<string, Uint8Array> {
+  const out = new Map<string, Uint8Array>();
+  for (const f of existsSync(tex) ? readdirSync(tex).sort() : [])
+    if (/^webp-.+\.pak$/.test(f)) {
+      const b = new Uint8Array(readFileSync(join(tex, f)));
+      for (const [id, [o, l]] of entries(b) ?? []) out.set(id, b.subarray(o, o + l));
+    }
+  return out;
+}
+const packsRead = new Map<string, Map<string, Uint8Array>>();
+/** A GLB as served to a tool's page (three's own GLTFLoader): an island model's WebPs back in from the WebP packs
  *  (`tex`: static/room/tex/). */
 export function withWebps(glb: Uint8Array, tex: string): Uint8Array {
-  const ts = glbTextures(glb);
-  if (!ts.some((t) => !t.webp)) return glb;
-  const pak = new Uint8Array(readFileSync(join(tex, `${packId(ts.map((t) => t.hash))}.webpp`))), es = entries(pak);
-  return unstrip(glb, (h) => {
-    const at = es?.get(h);
-    return at && pak.subarray(at[0], at[0] + at[1]);
-  });
+  if (!glbTextures(glb).some((t) => !t.webp)) return glb;
+  if (!packsRead.has(tex)) packsRead.set(tex, readWebps(tex));
+  return unstrip(glb, (h) => packsRead.get(tex)!.get(h));
 }
 
 /** `glb` with its stripped images' WebPs back in (`webp`: by hash), each a new view at the BIN chunk's end. */

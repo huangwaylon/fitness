@@ -7,8 +7,11 @@
 // scripts/ktx2-loose.json to tell when it changed. Packs, not a file a texture:
 // static/ stays under Cloudflare Pages' file cap (src/lib/static-files.test.ts). The phone transcodes a texture (ASTC
 // 4x4 on an iPhone: a quarter of the WebP's RGBA in GPU memory, no decode, no mipmap pass) and keeps the result
-// (world3d/texCache.ts). Then the island's models give up their WebPs (scripts/glb-webp.ts: into each model's WebP
-// pack, static/room/tex/<id>.webpp, read only where no KTX2 is drawn; the players' keep theirs), the rooms' own
+// (world3d/texCache.ts). Then the island's models give up their WebPs (scripts/glb-webp.ts), into the WebP fallbacks'
+// packs with the homes' other colours' albedos (static/room/tex/webp-<group>-<n>.<hash>.pak, at most WEBP_MAX each, a
+// model group's in path order, a home family's together; their index webp.<hash>.json, its hash ktx2.json `webp`;
+// fetched only where no KTX2 is drawn: ?ktx2=0, a failure). The packs are the pipeline's copy of those WebPs too, read
+// back each run; a loose albedo home-models.ts wrote goes in and is deleted. The players' keep theirs, the rooms' own
 // models are left as they are. Also copies three's Basis transcoder (its wasm) to
 // static/room/basis/: fetched by the transcoding worker on first use only (under /room/: the service worker keeps it
 // once used, never at install). Writes src/lib/components/world3d/ktx2.json (the encoder's settings, the transcoder's
@@ -24,7 +27,7 @@ import { join, relative } from 'node:path';
 import { createRequire } from 'node:module';
 import { promisify } from 'node:util';
 import { glbTextures, looseTextures, texHash, texKey, type Loose } from '../src/lib/components/world3d/texHash.ts';
-import { strip } from './glb-webp.ts';
+import { readWebps, strip } from './glb-webp.ts';
 import { entries, pack, packId } from '../src/lib/components/world3d/ktx2Pack.ts';
 import homes from '../src/lib/layout/homes.json' with { type: 'json' };
 import structures from '../src/lib/layout/structures.json' with { type: 'json' };
@@ -46,6 +49,8 @@ const OUT = join(ROOM, 'tex');
 const LOOSE = join(APP, 'scripts', 'ktx2-loose.json');
 const BASIS = join(APP, 'static', 'room', 'basis');
 const META = join(APP, 'src', 'lib', 'components', 'world3d', 'ktx2.json');
+/** A WebP fallbacks' pack's most bytes (a pack is fetched whole: Pages answers a Range with the whole file). */
+const WEBP_MAX = 1_000_000;
 /** basisu's settings: UASTC (ETC1S lost too much colour: the autumn leaves greyed, a median 34 dB against the WebP over
  *  the drawn pixels; UASTC 38), rate-distortion optimised and zstd-packed for size, mipmaps (sRGB-filtered), the sRGB
  *  transfer function. */
@@ -101,9 +106,10 @@ if (same) {
 const models = [...SRC.flatMap(walk).map((f): [string, Uint8Array] => [relative(ROOM, f), new Uint8Array(readFileSync(f))]), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([p, b]): [string, Uint8Array] => [`player/${p}`, b])];
 const texOf = new Map(models.map(([p, b]) => [p, glbTextures(b)]));
 const hashesOf = new Map([...texOf].map(([p, ts]) => [p, ts.map((t) => t.hash)]));
-// the WebPs the island's models no longer carry (their WebP packs: scripts/glb-webp.ts)
-const webps = new Map<string, Uint8Array>();
-for (const f of readdirSync(OUT)) if (f.endsWith('.webpp')) readPack(join(OUT, f), (id, b) => webps.set(id, b));
+// the WebPs the island's models no longer carry, and the homes' albedos (the WebP fallbacks' packs: scripts/glb-webp.ts)
+const webps = readWebps(OUT);
+/** A loose WebP's bytes: its file (home-models.ts just wrote it), else its entry in the WebP packs (`homes/x.B.mat`). */
+const looseWebp = (path: string): Uint8Array | null => readRoom(path) ?? webps.get(path.replace(/\.webp$/, '')) ?? null;
 const caps: Record<string, number> = {};
 for (const [m, px, ims] of CAPS) for (const i of ims) {
   const h = hashesOf.get(m)?.[i];
@@ -118,7 +124,7 @@ for (const [p, ts] of texOf) {
   if (!ts.length) continue;
   for (const t of ts) {
     const webp = t.webp ?? webps.get(t.hash);
-    if (!webp) throw new Error(`world3d-ktx2: ${p}'s ${t.hash} has no WebP (in the model or its WebP pack)`);
+    if (!webp) throw new Error(`world3d-ktx2: ${p}'s ${t.hash} has no WebP (in the model or the WebP packs)`);
     images.set(t.hash, webp);
   }
   const ks = ts.map((t) => texKey(t.hash, caps));
@@ -130,8 +136,8 @@ type Job = { webp: Uint8Array; flip: boolean; key: string };
 const jobs: Job[] = [...images].filter(([h]) => !done.has(texKey(h, caps)) && !done.has(h)).map(([h, webp]) => ({ webp, flip: false, key: h }));
 const looseHash: Record<string, string> = {};
 for (const l of loose) {
-  const webp = readRoom(l.path);
-  if (!webp) throw new Error(`world3d-ktx2: no ${l.path}`);
+  const webp = looseWebp(l.path);
+  if (!webp) throw new Error(`world3d-ktx2: no ${l.path} (a file, or in the WebP packs)`);
   looseHash[l.path] = texHash(webp);
   if (kept[l.path] !== looseHash[l.path]) done.delete(keyOf(l));
   if (!done.has(keyOf(l))) jobs.push({ webp, flip: l.flip, key: keyOf(l) });
@@ -208,20 +214,45 @@ for (const [f, b] of want) {
 }
 for (const d of new Set([OUT, ...loose.filter((l) => !inPlayer(l.out)).map((l) => join(ROOM, l.out, '..'))]))
   for (const f of readdirSync(d)) if (/\.ktx2p?$/.test(f) && !want.has(join(d, f))) rmSync(join(d, f)), removed++;
-// the island's models without their WebPs (scripts/glb-webp.ts): a model's in its WebP pack (by its images' hashes, as
-// its KTX2 pack by their keys), drawn only where no KTX2 is; the players' keep theirs (their packs, player-packs.ts)
-const webpWant = new Set<string>();
+// the island's models without their WebPs (scripts/glb-webp.ts); the players' keep theirs (their packs, player-packs.ts)
 let stripped = 0, freed = 0;
+/** The WebP fallbacks by what's drawn together: a model's images (by hash), a home family's GLB's and its other
+ *  colours' albedos (by path less `.webp`); each group's (world3d, villagers3d, homes, structures) in path order. */
+const units = new Map<string, [string, Uint8Array][]>();
+const unit = (k: string) => units.get(k) ?? units.set(k, []).get(k)!;
 for (const [p, b] of models) {
   const hs = hashesOf.get(p)!;
   if (inPlayer(p) || !hs.length) continue;
-  const f = join(OUT, `${packId(hs)}.webpp`), w = pack([...new Set(hs)].map((h) => [h, images.get(h)!]));
-  webpWant.add(f);
-  if (!existsSync(f) || !Buffer.from(w).equals(readFileSync(f))) writeFileSync(f, w);
+  for (const h of new Set(hs)) unit(p.replace(/\.glb$/, '')).push([h, images.get(h)!]);
   const s = strip(b, hs);
   if (s) writeFileSync(join(ROOM, p), s), stripped++, (freed += b.length - s.length);
 }
-for (const f of readdirSync(OUT)) if (f.endsWith('.webpp') && !webpWant.has(join(OUT, f))) rmSync(join(OUT, f)), removed++;
+for (const l of loose) if (!inPlayer(l.path)) unit(l.path.slice(0, l.path.indexOf('.'))).push([l.path.replace(/\.webp$/, ''), looseWebp(l.path)!]);
+// (filled in order, a unit never split, an image in the first unit that has it; files of the same bytes stored once)
+const webpPacks: { group: string; files: [string, Uint8Array][]; bytes: number }[] = [], placed = new Set<string>();
+for (const k of [...units.keys()].sort()) {
+  const group = k.slice(0, k.indexOf('/')), files = units.get(k)!.filter(([id]) => !placed.has(id) && placed.add(id));
+  const bytes = files.reduce((n, [, b]) => n + b.length, 0), last = webpPacks.at(-1);
+  if (!files.length) continue;
+  if (last && last.group === group && last.bytes + bytes <= WEBP_MAX) last.files.push(...files), (last.bytes += bytes);
+  else webpPacks.push({ group, files, bytes });
+}
+const sha8 = (b: Uint8Array | string) => createHash('sha256').update(b).digest('hex').slice(0, 8);
+const webpWant = new Set<string>(), webpIds: Record<string, number> = {}, stems: string[] = [], counts = new Map<string, number>();
+for (const wp of webpPacks) {
+  const b = pack(wp.files, true), n = counts.get(wp.group) ?? 0, stem = `webp-${wp.group}-${n}.${sha8(b)}`;
+  counts.set(wp.group, n + 1);
+  for (const [id] of wp.files) webpIds[id] = stems.length;
+  stems.push(stem);
+  webpWant.add(`${stem}.pak`);
+  if (!existsSync(join(OUT, `${stem}.pak`))) writeFileSync(join(OUT, `${stem}.pak`), b);
+}
+const index = `${JSON.stringify({ packs: stems, ids: Object.fromEntries(Object.entries(webpIds).sort(([a], [b]) => a.localeCompare(b))) })}\n`, webpV = sha8(index);
+webpWant.add(`webp.${webpV}.json`);
+writeFileSync(join(OUT, `webp.${webpV}.json`), index);
+for (const f of readdirSync(OUT)) if (/^webp[.-]/.test(f) && !webpWant.has(f)) rmSync(join(OUT, f)), removed++;
+// (the loose albedos home-models.ts wrote: in the packs now)
+for (const l of loose) if (!inPlayer(l.path) && existsSync(join(ROOM, l.path))) rmSync(join(ROOM, l.path)), removed++;
 // the players' KTX2s into their packs (each file's place into the part tables)
 const packed = packPlayer({ extra: playerOut });
 writeFileSync(LOOSE, `${JSON.stringify(Object.fromEntries(Object.entries(looseHash).sort(([a], [b]) => a.localeCompare(b))), null, 1)}\n`);
@@ -231,5 +262,5 @@ const wasm = createRequire(import.meta.url).resolve('three/examples/jsm/libs/bas
 mkdirSync(BASIS, { recursive: true });
 copyFileSync(wasm, join(BASIS, 'basis_transcoder.wasm'));
 const v = createHash('sha256').update(readFileSync(wasm)).digest('hex').slice(0, 8);
-writeFileSync(META, `${JSON.stringify({ _: 'scripts/world3d-ktx2.ts: the island models\' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones\' beside them), basisu\'s settings, the transcoder\'s content hash (static/room/basis/), the capped textures\' sizes (texHash.ts texKey)', enc, wasm: v, caps: Object.fromEntries(Object.entries(caps).sort(([a], [b]) => a.localeCompare(b))) }, null, 2)}\n`);
-console.log(`${images.size} embedded textures in ${packs.size} packs, ${loose.length} loose (${jobs.length} encoded, ${removed} files removed): ${want.size} files, ${(bytes / 1024).toFixed(0)} KB; ${webpWant.size} WebP packs, ${stripped} models stripped of theirs (${(freed / 1024).toFixed(0)} KB); the players' ${playerOut.size} in their ${packed.packs} packs (${packed.written} written); transcoder ${v}`);
+writeFileSync(META, `${JSON.stringify({ _: 'scripts/world3d-ktx2.ts: the island models\' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones\' beside them), basisu\'s settings, the transcoder\'s content hash (static/room/basis/), the capped textures\' sizes (texHash.ts texKey), the WebP fallbacks\' index (static/room/tex/webp.<hash>.json)', enc, wasm: v, webp: webpV, caps: Object.fromEntries(Object.entries(caps).sort(([a], [b]) => a.localeCompare(b))) }, null, 2)}\n`);
+console.log(`${images.size} embedded textures in ${packs.size} packs, ${loose.length} loose (${jobs.length} encoded, ${removed} files removed): ${want.size} files, ${(bytes / 1024).toFixed(0)} KB; ${stems.length} WebP packs (${Object.keys(webpIds).length} WebPs), ${stripped} models stripped of theirs (${(freed / 1024).toFixed(0)} KB); the players' ${playerOut.size} in their ${packed.packs} packs (${packed.written} written); transcoder ${v}`);

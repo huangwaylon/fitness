@@ -19,7 +19,7 @@ export function texHash(b: Uint8Array): string {
 export const texKey = (hash: string, caps: Partial<Record<string, number>>): string => (caps[hash] ? `${hash}@${caps[hash]}` : hash);
 
 /** A GLB's embedded textures, in its `images` order: each its WebP's hash and bytes, or, its WebP stripped into its
- *  model's WebP pack (scripts/world3d-ktx2.ts: the island's models draw their KTX2s), the hash it kept
+ *  WebP fallbacks' packs (scripts/world3d-ktx2.ts: the island's models draw their KTX2s), the hash it kept
  *  (`extras.tex`) and no bytes. The build script's and its test's. */
 export function glbTextures(b: Uint8Array): { hash: string; webp: Uint8Array | null }[] {
   const jl = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);

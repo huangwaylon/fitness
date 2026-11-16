@@ -1,7 +1,8 @@
 {
-  "_": "scripts/world3d-ktx2.ts: the island models' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones' beside them), basisu's settings, the transcoder's content hash (static/room/basis/), the capped textures' sizes (texHash.ts texKey)",
+  "_": "scripts/world3d-ktx2.ts: the island models' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones' beside them), basisu's settings, the transcoder's content hash (static/room/basis/), the capped textures' sizes (texHash.ts texKey), the WebP fallbacks' index (static/room/tex/webp.<hash>.json)",
   "enc": "-ktx2 -mipmap -srgb -uastc -uastc_level 2 -uastc_rdo_l 2 -ktx2_zstandard_level 18",
   "wasm": "6cf17dc8",
+  "webp": "58e9e54b",
   "caps": {
     "0ed75162a0e31f43": 256,
     "18d6bf565ba8e9c7": 256,
