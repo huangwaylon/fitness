@@ -166,6 +166,11 @@ export const DEVICE = {
   /** localStorage: `{[who]: 1}`: ききみみ's first-run welcome seen (or put off: あとで) by that player on this phone
    *  (docs/kikimimi.md "First run"). */
   kikiOnboarded: 'island.kikiOnboarded',
+  /** localStorage: `{who, clips: {[id]: Saved}}`: English Study's place in each clip begun on this phone (its question,
+   *  the answers, the study time not sent yet: lib/english/session.ts), so a lesson left resumes there. */
+  englishLesson: 'island.english.lesson',
+  /** localStorage: `{[who]: day}`: the last study day English Study's おかえりなさい was shown for (once a gap). */
+  englishBack: 'island.english.back',
   /** localStorage: `{[mode]: level}`: a ばしょ picked over おまかせ on a mode's page on this phone (none: おまかせ, the
    *  placed stage). */
   kikiStage: 'island.kikiStage',

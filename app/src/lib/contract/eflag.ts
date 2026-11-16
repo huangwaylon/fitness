@@ -7,11 +7,11 @@ import { isInt } from './ops.ts';
 import { isId } from './api.ts';
 
 /** What looks off (the sheet's chips; その他 the default). */
-const EFLAG_KINDS = ['answer', 'heard', 'question', 'timing', 'notes', 'other'] as const;
-type EflagKind = (typeof EFLAG_KINDS)[number];
+export const EFLAG_KINDS = ['answer', 'heard', 'question', 'timing', 'notes', 'other'] as const;
+export type EflagKind = (typeof EFLAG_KINDS)[number];
 
 /** A note's length at most (characters), and the quoted texts'. */
-const EFLAG_NOTE = 200;
+export const EFLAG_NOTE = 200;
 const SEEN_MAX = 400;
 /** A clip's id (as a `listen` row's `u`). */
 const ITEM_RE = /^[a-z0-9-]{1,12}$/;

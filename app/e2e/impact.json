@@ -1,6 +1,7 @@
 {
   "//": "Which e2e specs a changed file reaches (scripts/e2e-impact.ts, docs/ops/testing.md \"The gate\"): [path glob, [spec names]], paths under app/, the first rule whose specs exist wins. /editor/?view=phone is the island's もようがえ (e2e/island.ts openEditor): every spec that opens it is in the editor/ and layoutEdit/ rules. A spec name is its file without .spec.ts, `*` any run of letters, $1 the path's first `*`. A src file no rule maps tries its own name (fishing3d.ts: fishing3d*.spec.ts); one still unmapped adds nothing: the gate set runs, and the full logic tier after the deploy. Over the gate's budget, the push gets the gate set only. Every directory under src/ and content/ has a file some rule (or its name) maps, or is in `unmapped` with why (src/lib/e2e-impact.test.ts).",
   "rules": [
+    ["src/lib/english/**", ["english*"]],
     ["content/units/**", ["kikimimi-units", "kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
     ["content/listen/story/**", ["kikimimi-story", "kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
     ["content/**", ["kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
@@ -193,8 +194,6 @@
   ],
   "unmapped": {
     "src": "app.html and the type declarations: every spec loads them (the gate set)",
-    "src/lib/english": "English Study before its sheet: its e2e follow it",
-    "src/lib/english/clips": "English Study before its sheet: its e2e follow it",
     "src/lib/components/characters": "the /dev/characters page's viewer: not in the app",
     "src/lib/components/dev": "dev-only overlays: not in the app",
     "src/lib/model/fixtures": "the model's unit-test fixtures",

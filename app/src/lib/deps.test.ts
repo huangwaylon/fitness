@@ -78,7 +78,10 @@ const ALLOW: Record<string, string[]> = {
   // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world']
+  // English Study (docs/english.md): its content, pure rules and the sheet's own components (the kit's ui/, the
+  // store's model and send, the storage's keys)
+  english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components'],
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
 };
 
 function files(dir: string): string[] {

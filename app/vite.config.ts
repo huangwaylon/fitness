@@ -294,6 +294,9 @@ export default defineConfig({
           'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
           'media-src': ['self', 'blob:'],
+          // English Study's clips: YouTube's privacy-enhanced embed (lib/english/player.svelte.ts, driven over
+          // postMessage: no script of theirs on our page)
+          'frame-src': ['https://www.youtube-nocookie.com'],
           'style-src': ['self', 'unsafe-inline'],
           // the tent's meshopt decoder is WebAssembly (compiled, never eval'd JavaScript)
           'script-src': ['self', 'wasm-unsafe-eval'],

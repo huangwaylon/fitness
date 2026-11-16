@@ -1,0 +1,104 @@
+// English Study's week maths (docs/english.md "Progress"): the days (a まとめ reached, re-watches too), the run of
+// 3-day weeks with its rest week, the Monday boundary on Tokyo days, the minutes, the partner's line. Pinned dates:
+// 2026-11-16 is a Monday.
+import { describe, expect, it } from 'vitest';
+import type { EventRow } from '#lib/contract/api.ts';
+import { away, daysThisWeek, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
+
+let n = 0;
+const row = (who: 'A' | 'B' | 'G', d: string, extra: object = {}): EventRow =>
+  [`${d}T03:00:00.000Z`, who, `e${++n}`, 'listen', JSON.stringify({ d, g: `tv${n}aa`, gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 600_000, f: 1, r: [], ...extra })];
+const days = (...ds: string[]) => new Set(ds);
+/** The days of a week from its Monday: `k` of them. */
+const week = (monday: string, k: number) => Array.from({ length: k }, (_, i) => `${monday.slice(0, 8)}${String(+monday.slice(8) + i).padStart(2, '0')}`);
+
+describe('studyOf', () => {
+  it('counts a day per まとめ reached (a re-watch too), only English Study’s rows; a part-way row only adds minutes', () => {
+    const rows = [row('A', '2026-11-16'), row('A', '2026-11-17', { u: 'other' }), row('A', '2026-11-17'), row('A', '2026-11-18', { f: undefined, ms: 120_000 }),
+      ['2026-11-18T03:00:00.000Z', 'A', 'x', 'listen', JSON.stringify({ d: '2026-11-18', g: 'ab12', lv: 2, n: 1, ms: 9, r: [['w2-read', 1, 0, 0]] })] as EventRow,
+      row('B', '2026-11-19')];
+    const s = studyOf(rows, 'A', 'A');
+    expect([...s.days]).toEqual(['2026-11-16', '2026-11-17']);
+    expect([...s.clips].sort()).toEqual(['other', 'waitress']);
+    expect(s.ms.get('2026-11-16')).toBe(3 * 600_000 + 120_000);
+    expect(s.last).toBe('2026-11-18');
+  });
+  it('reads the partner’s summaries: days, never a clip', () => {
+    const summary: EventRow = ['2026-11-16T03:00:00.000Z', 'B', 'e1', 'listen', JSON.stringify({ d: '2026-11-16', g: 'tv1aa', n: 1, ms: 5, gm: 'tv', f: 1 })];
+    const s = studyOf([summary], 'B', 'A');
+    expect([...s.days]).toEqual(['2026-11-16']);
+    expect(s.clips.size).toBe(0);
+  });
+});
+
+describe('the week', () => {
+  it('starts on Monday (Tokyo days): Sunday is last week’s', () => {
+    const d = days('2026-11-15', '2026-11-16', '2026-11-17');
+    expect(daysThisWeek(d, '2026-11-15')).toBe(1);
+    expect(daysThisWeek(d, '2026-11-16')).toBe(1);
+    expect(daysThisWeek(d, '2026-11-22')).toBe(2);
+    expect(daysThisWeek(d, '2026-11-23')).toBe(0);
+  });
+  it('a row stamped late on Sunday night UTC is its Tokyo day’s (the row’s `d`)', () => {
+    // 2026-11-15T16:30Z is Monday 01:30 in Tokyo: the phone wrote d 2026-11-16
+    const late: EventRow = ['2026-11-15T16:30:00.000Z', 'A', 'z', 'listen', JSON.stringify({ d: '2026-11-16', g: 'tvzzzz', gm: 'tv', u: 'w', lv: 7, n: 1, ms: 1, f: 1, r: [] })];
+    expect(daysThisWeek(studyOf([late], 'A', 'A').days, '2026-11-16')).toBe(1);
+  });
+});
+
+describe('runOf', () => {
+  it('grows a week of 3+ days, holds through 1–2', () => {
+    expect(runOf(days(...week('2026-11-02', 3), ...week('2026-11-09', 4)), '2026-11-16')).toEqual({ run: 2, ever: 2 });
+    expect(runOf(days(...week('2026-11-02', 3), ...week('2026-11-09', 1)), '2026-11-16')).toEqual({ run: 1, ever: 1 });
+    expect(runOf(days(...week('2026-10-26', 3), ...week('2026-11-02', 2), ...week('2026-11-09', 3)), '2026-11-16')).toEqual({ run: 2, ever: 2 });
+  });
+  it('forgives one empty week, ends with two in a row (silently: the lifetime count stays)', () => {
+    expect(runOf(days(...week('2026-10-26', 3), ...week('2026-11-02', 3)), '2026-11-16')).toEqual({ run: 2, ever: 2 }); // 11-09 empty: a rest week
+    expect(runOf(days(...week('2026-10-19', 3), ...week('2026-10-26', 3)), '2026-11-16')).toEqual({ run: 0, ever: 2 }); // 11-02, 11-09 empty
+    // a new run starts with the next 3-day week
+    expect(runOf(days(...week('2026-10-12', 3), ...week('2026-11-09', 3)), '2026-11-16')).toEqual({ run: 1, ever: 2 });
+    // empty, then 1 day, then empty: never two empty in a row
+    expect(runOf(days(...week('2026-10-19', 3), ...week('2026-11-02', 1)), '2026-11-16')).toEqual({ run: 1, ever: 1 });
+  });
+  it('this week counts once it has its 3 days, not before; a re-watch day counts like any', () => {
+    expect(runOf(days(...week('2026-11-09', 3), '2026-11-16', '2026-11-17'), '2026-11-17')).toEqual({ run: 1, ever: 1 });
+    expect(runOf(days(...week('2026-11-09', 3), '2026-11-16', '2026-11-17', '2026-11-18'), '2026-11-18')).toEqual({ run: 2, ever: 2 });
+    expect(runOf(days(), '2026-11-16')).toEqual({ run: 0, ever: 0 });
+  });
+  it('judges the last week at the Monday rollover: on Sunday it’s still this week', () => {
+    const d = days(...week('2026-11-02', 3), ...week('2026-11-09', 1));
+    expect(runOf(d, '2026-11-15')).toEqual({ run: 1, ever: 1 });
+    expect(runOf(d, '2026-11-16')).toEqual({ run: 1, ever: 1 });
+    // two empty weeks after a run: still on through the second's Sunday, over from the Monday after
+    const old = days(...week('2026-10-19', 3));
+    expect(runOf(old, '2026-11-08')).toEqual({ run: 1, ever: 1 });
+    expect(runOf(old, '2026-11-09')).toEqual({ run: 0, ever: 1 });
+  });
+});
+
+describe('weekView', () => {
+  it('this week, the run, the clips, the minutes; Monday fresh before any study', () => {
+    const rows = [...week('2026-11-09', 3).map((d) => row('A', d)), row('A', '2026-11-16', { ms: 1_380_000 })];
+    expect(weekView(rows, 'A', '2026-11-16', 'うめ')).toEqual({ days: 1, fresh: false, run: 1, ever: 1, clips: 1, minutes: 25, partner: { name: 'うめ', today: false, days: 0 }, both: false });
+    expect(weekView(rows.slice(0, 3), 'A', '2026-11-16', 'うめ').fresh).toBe(true);
+    expect(weekView(rows.slice(0, 3), 'A', '2026-11-17', 'うめ').fresh).toBe(false);
+  });
+  it('the partner: today done and their days; ふたりとも once both have 3; the guest has none', () => {
+    const mine = week('2026-11-16', 3).map((d) => row('A', d));
+    const theirs = week('2026-11-16', 3).map((d) => ['', 'B', `b${d}`, 'listen', JSON.stringify({ d, g: 'tvbbbb', n: 1, ms: 5, gm: 'tv', f: 1 })] as EventRow);
+    const v = weekView([...mine, ...theirs], 'A', '2026-11-18', 'うめ');
+    expect([v.partner, v.both]).toEqual([{ name: 'うめ', today: true, days: 3 }, true]);
+    expect(weekView([...mine, ...theirs.slice(0, 2)], 'A', '2026-11-18', 'うめ').both).toBe(false);
+    const g = weekView([...mine, ...theirs, row('G', '2026-11-16')], 'G', '2026-11-18', '');
+    expect([g.partner, g.both, g.days]).toEqual([null, false, 1]);
+  });
+});
+
+describe('the small numbers', () => {
+  it('minutes to 5, 0 below 2.5', () => {
+    expect([roundedMinutes(0), roundedMinutes(149_000), roundedMinutes(150_000), roundedMinutes(41 * 60_000)]).toEqual([0, 0, 5, 40]);
+  });
+  it('away: 7 days or more since the last study', () => {
+    expect([away(null, '2026-11-16'), away('2026-11-10', '2026-11-16'), away('2026-11-09', '2026-11-16')]).toEqual([false, false, true]);
+  });
+});
