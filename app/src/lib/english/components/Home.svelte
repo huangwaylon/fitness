@@ -1,22 +1,26 @@
 <script lang="ts">
-  // English Study's home (docs/english.md "The page"): 今日の動画 (the first clip in order not finished; 別の動画にする
-  // the next), the week's block, the library (every clip, ✓ once finished). ⚙: 報告した内容. After 7+ days away, once:
-  // おかえりなさい.
+  // English Study's home (docs/english.md "The page"): three cards. 今日の動画: the first clip in order neither finished
+  // nor skipped (別の動画にする shows the next and skips this one for 14 days: prefs.ts), its thumbnail, one meta line and
+  // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress). ライブラリ: at most five rows (a play left
+  // part-way, the next clips in order, すべて見る › the library level). ⚙: むずかしめ and 報告した内容. After 7+ days
+  // away, once: おかえりなさい. Today's bank (and the part-way one's) is fetched ahead while idle.
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import WeekProgress from './WeekProgress.svelte';
+  import ClipRow from './ClipRow.svelte';
+  import Thumb from './Thumb.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
-  import { LIBRARY as CLIPS, prefetch } from '../data.ts';
+  import { LIBRARY as CLIPS, metaById, prefetch } from '../data.ts';
   import { away, studyOf, weekView } from '../progress.ts';
-  import { backShown, loadSaved, markBack, partWay } from '../session.ts';
+  import { backShown, loadSaved, markBack, partWay, partWays } from '../session.ts';
   import { skip, skipsOf } from '../prefs.ts';
-  import { durText, s } from '../i18n.ts';
+  import { clock, s } from '../i18n.ts';
   import type { ClipMeta as Clip } from '../catalog.ts';
   import type { Who } from '#lib/types.ts';
 
-  let { onopen, onsettings, onclose }: { onopen: (id: string) => void; onsettings: () => void; onclose: () => void } = $props();
+  let { onopen, onlibrary, onsettings, onclose }: { onopen: (id: string) => void; onlibrary: () => void; onsettings: () => void; onclose: () => void } = $props();
 
   const m = $derived(week.model);
   const me = $derived<Who>(m?.me ?? 'A');
@@ -29,16 +33,18 @@
   });
   const view = $derived(weekView(rows, me, today, partnerName));
 
-  /** 別の動画にする: the clip shown instead of the day's (null: the day's); the one it passed over skipped for 14 days
-   *  (prefs.ts), so the day's clip is the first in order neither finished nor skipped. */
+  /** 別の動画にする: the clip shown instead of the day's (null: the day's). */
   let other = $state<string | null>(null);
   let skipped = $state(untrack(() => skipsOf(me, today)));
   const open = (c: Clip) => !mine.clips.has(c.id);
-  const daily = $derived(CLIPS.find((c) => open(c) && !skipped.has(c.id)) ?? CLIPS.find(open) ?? CLIPS[0]);
+  const allDone = $derived(!CLIPS.some(open));
+  /** Every clip finished: the one finished longest ago. */
+  const oldest = $derived(CLIPS.toSorted((a, b) => ((mine.lastOn.get(a.id) ?? '') < (mine.lastOn.get(b.id) ?? '') ? -1 : 1))[0]);
+  const daily = $derived(CLIPS.find((c) => open(c) && !skipped.has(c.id)) ?? CLIPS.find(open) ?? oldest);
   const doneToday = $derived(mine.days.has(today));
   /** Done today: the card shows the clip finished today (別の動画にする still offers the next). */
-  const todays = $derived(doneToday ? CLIPS.find((c) => c.id === mine.byDay.get(today)) : undefined);
-  const shown = $derived<Clip>(CLIPS.find((c) => c.id === other) ?? todays ?? daily);
+  const todays = $derived(doneToday ? metaById(mine.byDay.get(today) ?? '') : undefined);
+  const shown = $derived<Clip>((other ? metaById(other) : undefined) ?? todays ?? daily);
   /** The next clip after the one shown, the unfinished first (in order, round). */
   function nextAfter(id: string): string {
     const i = CLIPS.findIndex((c) => c.id === id);
@@ -55,6 +61,18 @@
   }
   const resumes = (c: Clip) => partWay(loadSaved(me, c.id, c.v));
 
+  /** The library card: the latest play left part-way (not the one on today's card), then the next unfinished in order. */
+  const saved = untrack(() => partWays(me));
+  const part = $derived.by(() => {
+    const p = saved.find((x) => x.id !== shown.id && metaById(x.id)?.v === x.v);
+    return p ? { clip: metaById(p.id)!, at: p.at, n: p.n } : null;
+  });
+  const upNext = $derived.by(() => {
+    const i = CLIPS.findIndex((c) => c.id === shown.id);
+    return [...CLIPS.slice(i + 1), ...CLIPS.slice(0, i)].filter((c) => open(c) && !skipped.has(c.id) && c.id !== part?.clip.id).slice(0, part ? 2 : 3);
+  });
+
+  let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
   /** おかえりなさい: shown this opening, once a gap. */
   let back = $state(false);
   onMount(() => {
@@ -63,11 +81,15 @@
       back = true;
       markBack(me, last);
     }
-    // today's bank ahead, once home is idle (a lesson then opens with its questions, offline too)
+    // today's bank and the part-way one's ahead, once home is idle (their lessons then open with the questions, offline too)
     const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 2000 }) : setTimeout(f, 300));
-    idle(() => prefetch([shown]));
+    idle(() => prefetch([shown, part?.clip]));
+    const on = () => (online = true), off = () => (online = false);
+    addEventListener('online', on);
+    addEventListener('offline', off);
+    return () => (removeEventListener('online', on), removeEventListener('offline', off));
   });
-  const meta = (c: Clip) => s('meta', { dur: durText(c.dur), band: s(`band.${c.band}`), n: c.n });
+  const meta = (c: Clip) => [c.show, s(`band.${c.band}`), ...c.tags.slice(0, 1), s('qs', { n: c.n })].join(' · ');
 </script>
 
 <section class="screen" data-en-home>
@@ -79,24 +101,25 @@
   <div class="body sheet-scroll">
     {#if back}<p class="back" data-en-back>{s('back')}</p>{/if}
     <article class="card pad today" data-en-today={shown.id}>
-      <p class="kicker">{doneToday && !other ? s('todayDone') : s('today')}</p>
-      <h3>{shown.title}</h3>
-      <p class="meta">{shown.credit} · {meta(shown)}</p>
+      <Thumb hero video={shown.video} show={shown.show} len={clock(shown.dur)} />
+      <p class="kicker">{doneToday && !other ? s('todayDone') : allDone && !other ? s('allDone') : s('today')}</p>
+      <h3 lang="en">{shown.title}</h3>
+      <p class="meta">{meta(shown)}</p>
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>
         {resumes(shown) ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
       </button>
+      {#if !online}<p class="meta off" data-en-offline>{s('offlineHome')}</p>{/if}
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
     </article>
     <WeekProgress {view} />
     <h3 class="sec-label">{s('library')}</h3>
-    <div class="card dense lib">
-      {#each CLIPS as c (c.id)}
-        <button type="button" class="row" data-sfx="open" data-en-clip={c.id} data-done={mine.clips.has(c.id) || undefined} onclick={() => onopen(c.id)}>
-          <span class="tick" aria-hidden="true">{mine.clips.has(c.id) ? '✓' : ''}</span>
-          <span class="name">{c.title}{#if mine.clips.has(c.id)}<span class="sr-only">{s('done')}</span>{/if}</span>
-          <span class="len">{durText(c.dur)}</span>
-        </button>
-      {/each}
+    <div class="card dense lib" data-en-lib>
+      {#if part}<ClipRow clip={part.clip} plays={mine.plays.get(part.clip.id)} part={part} {onopen} />{/if}
+      {#each upNext as c (c.id)}<ClipRow clip={c} plays={mine.plays.get(c.id)} {onopen} />{/each}
+      <button type="button" class="row all" data-sfx="page" data-en-all onclick={onlibrary}>
+        <span class="name">{s('seeAll', { n: CLIPS.length })}</span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
     </div>
   </div>
 </section>
@@ -108,14 +131,15 @@
   .back { margin: 0; padding: 10px 14px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); color: var(--c-ink); font-weight: 700; }
   .today { display: grid; gap: 6px; flex: none; }
   .today p, .today h3 { margin: 0; }
+  .today :global(.thumb) { margin-bottom: 4px; }
   .kicker { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .today h3 { font: 700 var(--fs-talk)/1.3 var(--font-ui); }
+  .today h3 { font: 700 var(--fs-talk)/1.3 var(--font-ui); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
+  .off { text-align: center; }
   .today .btn { margin-top: 6px; }
   .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); padding: 10px; cursor: pointer; justify-self: center; }
   .lib { flex: none; }
-  .lib .row { width: 100%; text-align: left; }
-  .tick { flex: none; width: 1.2em; color: var(--c-leaf-text); font-weight: 700; }
-  .name { flex: 1; min-width: 0; }
-  .len { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
+  .all { width: 100%; text-align: left; }
+  .all .name { flex: 1; min-width: 0; font-weight: 700; }
+  .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
 </style>

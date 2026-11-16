@@ -8,6 +8,7 @@ import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
 import { waitress } from '../src/lib/english/clips/waitress.ts';
+import { CLIPS } from '../src/lib/english/clips/index.ts';
 
 /** The card at place `i` of the lesson, and its question (this play's draw: by its id). */
 const cardAt = (p: Page, i: number) => p.locator(`dialog[open] [data-en-lesson] [data-en-q="${i}"]`);
@@ -52,7 +53,14 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   await expect(sheet(page).locator('[data-en-today]')).toContainText('Rachel Is a Bad Waitress');
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '0');
   await expect(sheet(page).locator('[data-en-week-n]')).toHaveCount(0); // never 0日
-  await expect(sheet(page).locator('[data-en-clip="waitress"]')).toBeVisible();
+  // the thumbnail (YouTube's still, no referrer), the play's size; the library card's next clips and すべて見る
+  const thumb = sheet(page).locator('[data-en-today] [data-en-thumb] img');
+  await expect(thumb).toHaveAttribute('src', 'https://i.ytimg.com/vi/lm2MpPpkGL8/hqdefault.jpg');
+  await expect(thumb).toHaveAttribute('referrerpolicy', 'no-referrer');
+  await expect(sheet(page).locator('[data-en-today]')).toContainText('Friends · ゆっくり · 職場 · 6問');
+  await expect(sheet(page).locator('[data-en-lib] [data-en-clip]')).toHaveCount(3);
+  await expect(sheet(page).locator('[data-en-lib] [data-en-clip="waitress"]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-en-all]')).toHaveText(new RegExp(`すべて見る（${CLIPS.length}本）`));
   await start(page);
   // the embed: privacy-enhanced, the JS API for our origin, inline, its own referrer policy
   const frame = lesson(page).locator('[data-yt-frame]');
@@ -152,11 +160,17 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
   await expect(lesson(page).locator('[data-en-again]')).toHaveCount(n - 1 - (dict ? 1 : 0));
   await lesson(page).locator('[data-en-done]').click();
-  await expect(sheet(page).locator('[data-en-clip="waitress"]')).toHaveAttribute('data-done', 'true');
+  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toHaveText('▶ もう一度（新しい質問）');
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '1');
   await expect(sheet(page).locator('[data-en-week-n]')).toHaveText('1/3日');
   await expect(sheet(page).locator('[data-en-clips]')).toHaveText('これまで 1本');
   await expect(sheet(page).locator('[data-en-today]')).toContainText('今日の動画 完了 ✓');
+  // the library: ✓ on its row, last
+  await sheet(page).locator('[data-en-all]').click();
+  await sheet(page).locator('[data-en-more]').click();
+  const row = sheet(page).locator('[data-en-list] [data-en-clip="waitress"]');
+  await expect(row).toHaveAttribute('data-done', 'true');
+  await expect(sheet(page).locator('[data-en-list] [data-en-clip]').last()).toHaveAttribute('data-en-clip', 'waitress');
 });
 
 test('⚑ 報告 on a question and on the clip, a kind and a note or neither; 報告した内容 lists them', async ({ page }) => {
@@ -339,4 +353,40 @@ test('別の動画にする: the next clip, and the one passed over stays skippe
   await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', next!);
   await sheet(page).locator('[data-en-gear]').click();
   await expect(sheet(page).locator('[data-en-hard]')).toHaveAttribute('aria-checked', 'true');
+});
+
+test('the library: すべて 20 at a time with もっと見る, a show or a situation chip, a lesson opened there goes back to it; a play left part-way first, 途中', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  // a play left part-way on another clip than today's
+  const other = CLIPS[3];
+  await sheet(page).locator('[data-en-all]').click();
+  const lib = sheet(page).locator('[data-en-library]');
+  await expect(lib.locator('.navbar h2')).toHaveText('ライブラリ');
+  const rows = lib.locator('[data-en-list] [data-en-clip]');
+  await expect(rows).toHaveCount(Math.min(20, CLIPS.length));
+  await expect(rows.first().locator('[data-en-thumb] img')).toHaveAttribute('src', `https://i.ytimg.com/vi/${CLIPS[0].video}/mqdefault.jpg`);
+  if (CLIPS.length > 20) {
+    await expect(lib.locator('[data-en-more]')).toHaveText(`もっと見る（あと${CLIPS.length - 20}本）`);
+    await lib.locator('[data-en-more]').click();
+    await expect(rows).toHaveCount(Math.min(40, CLIPS.length));
+  }
+  const parks = CLIPS.filter((c) => /Parks/.test(c.credit));
+  await lib.locator('[data-en-chip="Parks"]').click();
+  await expect(lib.locator('[data-en-chip="Parks"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(rows).toHaveCount(parks.length);
+  await expect(lib.locator('.sec-label')).toContainText(`Parks${parks.length}本`);
+  await lib.locator('[data-en-chip=""]').click();
+  await lib.locator(`[data-en-clip="${other.id}"]`).click();
+  await expect(lesson(page)).toHaveAttribute('data-en-lesson', other.id);
+  await lesson(page).locator('[data-en-to-q]').click();
+  await expect(cardAt(page, 0)).toBeVisible();
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(lib).toBeVisible();
+  await expect(rows.first()).toHaveAttribute('data-en-clip', other.id);
+  await expect(rows.first().locator('[data-en-part]')).toHaveText('途中');
+  await expect(rows.first()).toContainText(/1\/\d+問/);
+  // home's card: the part-way one first
+  await lib.locator('.navbar .back').click();
+  await expect(sheet(page).locator('[data-en-lib] [data-en-clip]').first()).toHaveAttribute('data-en-clip', other.id);
 });

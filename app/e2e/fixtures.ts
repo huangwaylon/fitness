@@ -130,6 +130,9 @@ export const test = base.extend<Options & { hermetic: void }>({
         // the chain menus' pictures, hotlinked from Kalori (lib/food/images.ts kaloriImg): refused unless a spec answers
         // them (food-kalori's serveChains comes after), so a chain's row keeps its category's tile
         await c.route('https://assets.kalori.jp/**', (r) => r.abort());
+        // English Study's thumbnails, hotlinked from YouTube (english/components/Thumb.svelte): refused unless a spec
+        // answers them (youtube.ts fakeYoutube), so a row keeps its placeholder tile
+        await c.route('https://i.ytimg.com/**', (r) => r.abort());
         // what went out: one Chromium refused to resolve, or one a server answered (WebKit has no such block); a request
         // the test routes and fulfils or aborts itself (a mocked relay: board.spec, record.ts) never left
         const blocked = (e: string | undefined) => /NAME_NOT_RESOLVED|NAME_RESOLUTION_FAILED/.test(e ?? '');

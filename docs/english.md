@@ -40,10 +40,18 @@ second listen. A question quotes one short line at most (*key words* starred); n
 
 ## The page
 
-One sheet, two levels: home (今日の動画, this week, the library) and a clip's lesson; ⚙ holds 報告した内容.
+One sheet: home, the library, a clip's lesson (‹ back to where it was opened) and ⚙ (むずかしめの質問を増やす, 報告した内容).
 
-- **Home:** today's clip is the first in order not finished; 別の動画にする the next. The library lists every clip,
-  ✓ once finished. A member sees the partner's line (finished today, or this week's days); the guest sees none.
+- **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
+  もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, the next clips in order,
+  すべて見る（N本）›. Today's clip is the first in order neither finished nor skipped; 別の動画にする shows the next and
+  skips the one passed over for 14 days on this phone. All finished: 全部見ました and the one finished longest ago.
+  A member sees the partner's line (finished today, or this week's days); the guest sees none.
+- **The library:** one chip row (すべて, each show, each situation), the clips in order with the part-way first and the
+  finished last (✓, 2回), 20 at a time with もっと見る. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
+  no referrer); offline or gone, a paper tile with the show's name.
+- **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into a first play; a C2 item's card
+  carries a むずかしめ tag. Nothing is locked either way.
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable.
 - **A miss:** the segment plays again by itself, a nudge with the `cue`, the choices as they were, and a quiet 答えを見る.

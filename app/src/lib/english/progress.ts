@@ -23,11 +23,14 @@ interface Study {
   last: LocalDate | null;
   /** Each day's last clip finished (mine only). */
   byDay: Map<LocalDate, string>;
+  /** Each clip's plays finished, and the day it was last finished (mine only). */
+  plays: Map<string, number>;
+  lastOn: Map<string, LocalDate>;
 }
 
 /** `who`'s English Study rows, read as `me` gets them (mine whole, anyone else's summary). */
 export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
-  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, byDay: new Map() };
+  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, byDay: new Map(), plays: new Map(), lastOn: new Map() };
   for (const r of rows) {
     if (r[1] !== who || r[3] !== 'listen') continue;
     let d: unknown;
@@ -40,7 +43,12 @@ export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
     if (!row) continue;
     if (row.f === 1) {
       out.days.add(row.d);
-      if (own) out.clips.add(own.u), out.byDay.set(row.d, own.u);
+      if (own) {
+        out.clips.add(own.u);
+        out.byDay.set(row.d, own.u);
+        out.plays.set(own.u, (out.plays.get(own.u) ?? 0) + 1);
+        if ((out.lastOn.get(own.u) ?? '') < row.d) out.lastOn.set(own.u, row.d);
+      }
     }
     const wk = weekKeyOf(row.d);
     out.ms.set(wk, (out.ms.get(wk) ?? 0) + row.ms);

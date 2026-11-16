@@ -1,5 +1,5 @@
 // YouTube's embed, stood in for (docs/english.md "The player"): CI can't reach YouTube, so every request to
-// youtube-nocookie.com is answered here with a page that speaks the embed's postMessage protocol. It answers
+// youtube-nocookie.com (and i.ytimg.com's thumbnails) is answered here with a page that speaks the embed's postMessage protocol. It answers
 // `listening` with onReady and then an infoDelivery every 100 ms ({currentTime, playerState}), plays at `rate`× real
 // time from where it was sought, ends at `dur`, and keeps every command it got (with the time then) in window.__yt.
 // `error`: an onError with that code instead (150: not embeddable). `silent`: never answers. `noPlay`: a play never starts. `rates`: the speeds offered.
@@ -51,6 +51,12 @@ addEventListener('message', (e) => {
 export async function fakeYoutube(p: Page, opts: FakeYt = {}): Promise<void> {
   const o = { rate: 1, dur: 68, error: 0, silent: false, noPlay: false, rates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2], ...opts };
   await p.route('https://www.youtube-nocookie.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: page(o) }));
+  // the thumbnails (i.ytimg.com/vi/<id>/<size>.jpg): a still of the video's own colour, its id on it
+  await p.route('https://i.ytimg.com/**', (r) => {
+    const id = new URL(r.request().url()).pathname.split('/')[2] ?? '';
+    const hue = [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+    return r.fulfill({ status: 200, contentType: 'image/svg+xml', body: `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="hsl(${hue} 45% 55%)"/><text x="160" y="100" font-size="28" text-anchor="middle" fill="#fff" font-family="sans-serif">${id}</text></svg>` });
+  });
 }
 
 /** The embed's frame (once it's loaded). */

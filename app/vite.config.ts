@@ -305,8 +305,9 @@ export default defineConfig({
           // scan asks Open Food Facts' product API for a code our data lacks (lib/scan/off.ts OFF_API: that path only)
           'connect-src': ['self', 'https://world.openfoodfacts.org/api/v2/product/', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs); a member's chain
-          // menus show Kalori's pictures hotlinked (lib/food/images.ts kaloriImg)
-          'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp'],
+          // menus show Kalori's pictures hotlinked (lib/food/images.ts kaloriImg); English Study's thumbnails are YouTube's own
+          // stills, hotlinked (lib/english/components/Thumb.svelte; no referrer)
+          'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp', 'https://i.ytimg.com'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
           'media-src': ['self', 'blob:'],
           // English Study's clips: YouTube's privacy-enhanced embed (lib/english/player.svelte.ts, driven over

@@ -38,6 +38,10 @@ export function loadSaved(who: Who, id: string, v: string): Saved | null {
  *  length, not the bank's: a finished play's next opening draws the next). */
 export const partWay = (s: Saved | null): boolean => !!s && Array.isArray(s.ids) && s.at >= 0 && s.at < s.ids.length;
 
+/** My plays left part-way on this phone, the most recent first (each clip's version as saved). */
+export const partWays = (who: Who): { id: string; v: string; at: number; n: number }[] =>
+  Object.entries(all(who)).filter(([, x]) => partWay(x)).sort((a, b) => b[1].t - a[1].t).map(([id, x]) => ({ id, v: x.v, at: x.at, n: x.ids.length }));
+
 /** Keep my place in a clip. */
 export function save(who: Who, id: string, s: Saved): void {
   const clips = { ...all(who), [id]: s };

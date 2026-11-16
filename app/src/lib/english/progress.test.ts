@@ -22,6 +22,9 @@ describe('studyOf', () => {
     expect([...s.clips].sort()).toEqual(['other', 'waitress']);
     expect(s.ms.get('2026-11-16')).toBe(3 * 600_000 + 120_000);
     expect(s.last).toBe('2026-11-18');
+    // each clip's plays finished and the day last finished (the library's 2回)
+    expect(Object.fromEntries(s.plays)).toEqual({ waitress: 2, other: 1 });
+    expect(s.lastOn.get('waitress')).toBe('2026-11-17');
   });
   it('reads the partner’s summaries: days, never a clip', () => {
     const summary: EventRow = ['2026-11-16T03:00:00.000Z', 'B', 'e1', 'listen', JSON.stringify({ d: '2026-11-16', g: 'tv1aa', n: 1, ms: 5, gm: 'tv', f: 1 })];

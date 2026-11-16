@@ -10,10 +10,21 @@ const S = {
   todayDone: { ja: '今日の動画 完了 ✓', en: "Today's clip done ✓" },
   start: { ja: '▶ 始める', en: '▶ Start' },
   resume: { ja: '▶ 続きから', en: '▶ Resume' },
-  again: { ja: '▶ もう一度見る', en: '▶ Watch again' },
+  again: { ja: '▶ もう一度（新しい質問）', en: '▶ Again (new questions)' },
   other: { ja: '別の動画にする', en: 'A different clip' },
-  meta: { ja: '{dur} · {band} · {n}問', en: '{dur} · {band} · {n} questions' },
+  allDone: { ja: '全部見ました', en: 'You’ve seen them all' },
+  qs: { ja: '{n}問', en: '{n} questions' },
+  offlineHome: { ja: 'オフラインです。つながると再生できます', en: "You're offline: it plays once you're back online" },
   library: { ja: 'ライブラリ', en: 'Library' },
+  seeAll: { ja: 'すべて見る（{n}本）', en: 'See all ({n})' },
+  partTag: { ja: '途中', en: 'In progress' },
+  partAt: { ja: '{at}/{n}問', en: '{at}/{n}' },
+  times: { ja: '{n}回', en: '{n}×' },
+  libAll: { ja: 'すべて', en: 'All' },
+  libClips: { ja: '動画', en: 'Clips' },
+  libN: { ja: '{n}本', en: '{n}' },
+  libFilter: { ja: '絞り込み', en: 'Filter' },
+  more: { ja: 'もっと見る（あと{n}本）', en: 'More ({n} left)' },
   done: { ja: '完了', en: 'Done' },
   'band.slow': { ja: 'ゆっくり', en: 'Slow' },
   'band.mid': { ja: 'ふつう', en: 'Normal' },
@@ -130,6 +141,9 @@ export type StringKey = keyof typeof S;
 export function s(key: StringKey, params: Record<string, string | number> = {}): string {
   return S[key][i18n.locale].replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
 }
+
+/** A length on a row or a thumbnail: 1:08. */
+export const clock = (sec: number): string => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 
 /** A length in seconds as the sheet says it: 1分8秒 (whole minutes: 2分). */
 export const durText = (sec: number): string => {
