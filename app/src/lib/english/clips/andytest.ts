@@ -18,7 +18,7 @@ import type { Clip } from '../types.ts';
 
 export const andyTest: Clip = {
   id: 'andytest', video: '1CATyJf5giI', title: 'Andy is too smart for this test', dur: 183, wpm: 154,
-  band: 'slow', tags: ['職場', '家'],
+  band: 'mid', tags: ['職場', '家'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

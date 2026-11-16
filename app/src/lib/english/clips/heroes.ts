@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const heroes: Clip = {
   id: 'heroes', video: 'jpeE3WqqQp8', title: 'Leslie discovers the truth about her heroes', dur: 298, wpm: 155,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

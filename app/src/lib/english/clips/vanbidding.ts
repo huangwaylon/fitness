@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const vanBidding: Clip = {
-  id: 'vanbidding', video: '2eY8lfAF06s', title: 'Donna Sacrifices Her Mercedes', dur: 228, wpm: 154, band: 'slow',
+  id: 'vanbidding', video: '2eY8lfAF06s', title: 'Donna Sacrifices Her Mercedes', dur: 228, wpm: 154, band: 'mid',
   tags: ['お願い・断り', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

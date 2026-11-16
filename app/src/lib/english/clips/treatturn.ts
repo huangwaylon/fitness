@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const treatTurnabout: Clip = {
   id: 'treatturn', video: 'q99FZO5JXV4', title: 'Treat Yo Self Turnabout (Episode Highlight)', dur: 105, wpm: 154,
-  band: 'slow', tags: ['友だち', '恋愛'],
+  band: 'mid', tags: ['友だち', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

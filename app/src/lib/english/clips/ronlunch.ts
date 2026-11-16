@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const ronLeslieLunch: Clip = {
   id: 'ronlunch', video: 'PzYF03_w3WE', title: 'Ron and Leslie Make Up While Locked In A Room', dur: 248, wpm: 154,
-  band: 'slow', tags: ['友だち', '職場'],
+  band: 'mid', tags: ['友だち', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

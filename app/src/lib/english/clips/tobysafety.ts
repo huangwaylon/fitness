@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const tobySafety: Clip = {
   id: 'tobysafety', video: 'Dh7V1UheA6E', title: 'Toby\'s Health And Safety Meeting', dur: 226, wpm: 154,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const verySober: Clip = {
-  id: 'verysober', video: 'O4LLO6fjKoU', title: 'Leslie and Ben are very sober', dur: 280, wpm: 170, band: 'mid',
+  id: 'verysober', video: 'O4LLO6fjKoU', title: 'Leslie and Ben are very sober', dur: 280, wpm: 170, band: 'fast',
   tags: ['恋愛', '家'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

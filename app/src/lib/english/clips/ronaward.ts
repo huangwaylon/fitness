@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const ronAward: Clip = {
   id: 'ronaward', video: 'IEgEv00bNsw', title: 'Ron toys with Leslie\'s feelings | Parks and recreation', dur: 230,
-  wpm: 154, band: 'slow', tags: ['職場'],
+  wpm: 154, band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

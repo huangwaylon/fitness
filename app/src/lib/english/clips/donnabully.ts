@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const donnaBully: Clip = {
   id: 'donnabully', video: '50d2x7j2dZ4', title: 'Donna uncovers her anonymous bully', dur: 256, wpm: 155,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

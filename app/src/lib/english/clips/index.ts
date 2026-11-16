@@ -214,27 +214,42 @@ import { ronTough } from './rontough.ts';
 import { andyTest } from './andytest.ts';
 import { ronTomLucy } from './rontomlucy.ts';
 import { annApril } from './annapril.ts';
+import { doingAlcohol } from './alcohol.ts';
+import { ryankelly } from './ryankelly.ts';
+import { movember } from './movember.ts';
+import { ambulance } from './ambulance.ts';
+import { bloomingdales } from './bloomies.ts';
+import { mriBlindDate } from './mridate.ts';
+import { fakeCall } from './fakecall.ts';
+import { needyCall } from './needycall.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
   waitress,
+  bloomingdales,
+  movember,
   datinglang,
   laundromat,
   chickParent,
   chrisFlu,
   kevinTalk,
   sellVeg,
+  needyCall,
   ronFixes,
   chairModel,
   ronsReviews,
   mostLovedDenmark,
   poachBen,
   dwightHobbit,
+  doingAlcohol,
+  ambulance,
   jerryBurritoLie,
   jerryMugged,
   benCool,
   rossBreak,
   ronHumour,
+  mriBlindDate,
+  fakeCall,
   dwightFetish,
   benpunch,
   dwightAppt,
@@ -262,6 +277,7 @@ export const CLIPS: readonly Clip[] = [
   thisIsMyBoyfriendDerek,
   dwightVsDwight,
   ronDentist,
+  ryankelly,
   newHairdo,
   ronDesk,
   centralperk,
@@ -276,18 +292,18 @@ export const CLIPS: readonly Clip[] = [
   chrisBestMan,
   andyInvestigates,
   ronTough,
+  // ふつう
   jointMission,
   ronLeslieLunch,
   treatTurnabout,
   kneecapping,
   andyTest,
-  heroes,
-  donnaBully,
   tobySafety,
   jansStroller,
   vanBidding,
   ronAward,
-  // ふつう
+  heroes,
+  donnaBully,
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
@@ -353,12 +369,12 @@ export const CLIPS: readonly Clip[] = [
   distract,
   leslieAnnForum,
   ronMeditation,
+  // 速い
   oldSchool,
   joeyCrossword,
   pamGivenUp,
   verySober,
   rossJill,
-  // 速い
   parkspilot,
   prefired,
   whosDaddy,

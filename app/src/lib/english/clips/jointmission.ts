@@ -24,7 +24,7 @@ import type { Clip } from '../types.ts';
 
 export const jointMission: Clip = {
   id: 'jointmission', video: 'gl4x_NoBDd8', title: 'Leslie and Tom\'s "Joint" Mission', dur: 217, wpm: 154,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -25,7 +25,7 @@ import type { Clip } from '../types.ts';
 
 export const kneecapping: Clip = {
   id: 'kneecapping', video: 'qTKbULvknqo', title: 'The Kneecapping - The Office US', dur: 272, wpm: 154,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

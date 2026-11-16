@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const jansStroller: Clip = {
   id: 'stroller', video: 'j8RNwdcDn0g', title: 'Is Kevin the Dad of Jan\'s Baby? | Season 5 Deleted Scene | Superfan',
-  dur: 150, wpm: 154, band: 'slow', tags: ['職場'],
+  dur: 150, wpm: 154, band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
