@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const prefired: Clip = {
   id: 'prefired', video: '5HUQOzZLzFc', title: 'If You Haven\'t Fallen In Love With Me By Then',
-  dur: 86, wpm: 171, band: 'mid',
+  dur: 86, wpm: 171, band: 'fast',
   tags: ['職場', 'お願い・断り'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

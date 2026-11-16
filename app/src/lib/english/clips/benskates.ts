@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const benSkates: Clip = {
   id: 'benskates', video: 'P9vdDJIlz_U', title: 'Ben\'s most niche fantasy comes true', dur: 300, wpm: 171,
-  band: 'mid', tags: ['職場'],
+  band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

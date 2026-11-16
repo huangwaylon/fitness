@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const whosDaddy: Clip = {
-  id: 'whosdaddy', video: 'bEPVS5IDWy0', title: 'Who\'s Your Daddy?', dur: 204, wpm: 171, band: 'mid',
+  id: 'whosdaddy', video: 'bEPVS5IDWy0', title: 'Who\'s Your Daddy?', dur: 204, wpm: 171, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

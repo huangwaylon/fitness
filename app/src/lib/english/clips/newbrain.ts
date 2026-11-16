@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const joeyBrain: Clip = {
-  id: 'newbrain', video: '8LLOEdcSrSA', title: 'Joey Gets a New Brain', dur: 105, wpm: 171, band: 'mid',
+  id: 'newbrain', video: '8LLOEdcSrSA', title: 'Joey Gets a New Brain', dur: 105, wpm: 171, band: 'fast',
   tags: ['友だち', '職場'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

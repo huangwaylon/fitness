@@ -194,6 +194,16 @@ import { ronFixes } from './ronfixes.ts';
 import { dwightVsDwight } from './dwightself.ts';
 import { dwightquits } from './dwightquits.ts';
 import { michaelBlastPast } from './blastpast.ts';
+import { kevinTalk } from './kevintalk.ts';
+import { chrisFlu } from './chrisflu.ts';
+import { hypocrite } from './hypocrite.ts';
+import { ronSelfDefense } from './ronselfdef.ts';
+import { girlyApt } from './girlyapt.ts';
+import { monaLisa } from './monalisa.ts';
+import { triplets } from './triplets.ts';
+import { itGuySecrets } from './itguysecret.ts';
+import { rossJill } from './rossjill.ts';
+import { loveOverMeat } from './loveovermeat.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -201,6 +211,8 @@ export const CLIPS: readonly Clip[] = [
   datinglang,
   laundromat,
   chickParent,
+  chrisFlu,
+  kevinTalk,
   sellVeg,
   ronFixes,
   chairModel,
@@ -217,6 +229,7 @@ export const CLIPS: readonly Clip[] = [
   benpunch,
   thiefOfJoy,
   benSaves,
+  ronSelfDefense,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
@@ -228,6 +241,7 @@ export const CLIPS: readonly Clip[] = [
   theMerger,
   creedDebbie,
   michaelCheerUp,
+  triplets,
   dinnerParty,
   liceOffice,
   thisIsMyBoyfriendDerek,
@@ -270,6 +284,7 @@ export const CLIPS: readonly Clip[] = [
   banquetHair,
   ronLeslieLocked,
   womensAppreciation,
+  loveOverMeat,
   animalControl,
   chardStand,
   leslieObama,
@@ -289,6 +304,7 @@ export const CLIPS: readonly Clip[] = [
   isSheHot,
   ronBirthday,
   parksMakeover,
+  monaLisa,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -301,11 +317,13 @@ export const CLIPS: readonly Clip[] = [
   ronWill,
   benLeslieKiss,
   ronChrisCrib,
+  girlyApt,
   tomNegotiate,
   donnaTweets,
   donnaPosts,
   mamasDead,
   workBestie,
+  hypocrite,
   andySecret,
   dwightUrine,
   conesOfDunshire,
@@ -319,13 +337,14 @@ export const CLIPS: readonly Clip[] = [
   joeyCrossword,
   pamGivenUp,
   verySober,
+  rossJill,
+  // 速い
   parkspilot,
   prefired,
   whosDaddy,
   joeyBrain,
   benSkates,
   fakingIt,
-  // 速い
   janiceSocks,
   pikitis,
   joeymakeup,
@@ -334,6 +353,7 @@ export const CLIPS: readonly Clip[] = [
   neverLower,
   ronPatience,
   prairie,
+  itGuySecrets,
   annVibes,
   babySex,
   screwIt,

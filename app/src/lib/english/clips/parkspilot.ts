@@ -10,7 +10,7 @@
 import type { Clip } from '../types.ts';
 
 export const parkspilot: Clip = {
-  id: 'parkspilot', video: 'JbsBDzQ3NoE', title: 'Pilot (Episode Highlight)', dur: 125, wpm: 171, band: 'mid',
+  id: 'parkspilot', video: 'JbsBDzQ3NoE', title: 'Pilot (Episode Highlight)', dur: 125, wpm: 171, band: 'fast',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

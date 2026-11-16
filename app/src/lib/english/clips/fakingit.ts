@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const fakingIt: Clip = {
   id: 'fakingit', video: 'E27kSCBUIWc', title: 'Deep Down Everyone is Faking It', dur: 194, wpm: 171,
-  band: 'mid', tags: ['恋愛', '職場'],
+  band: 'fast', tags: ['恋愛', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -191,5 +191,15 @@ export const PLANNED: readonly string[] = [
   'dwightquits',
   'ronhumour',
   'aprilmeets',
-  'fakingit'
+  'fakingit',
+  'triplets',
+  'chrisflu',
+  'kevintalk',
+  'loveovermeat',
+  'ronselfdef',
+  'rossjill',
+  'monalisa',
+  'itguysecret',
+  'girlyapt',
+  'hypocrite'
 ];
