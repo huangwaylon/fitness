@@ -147,6 +147,15 @@ import { charity } from './charity.ts';
 import { conflictPranks } from './pranks.ts';
 import { parksMakeover } from './parksmakeov.ts';
 import { ronChrisCrib } from './roncrib.ts';
+import { leslieObama } from './obama.ts';
+import { andyAcademy } from './andyacademy.ts';
+import { sellVeg } from './sellveg.ts';
+import { jerryPainting } from './jerrypaint.ts';
+import { ronMeditation } from './meditation.ts';
+import { ohTheWall } from './ohthewall.ts';
+import { ronDesk } from './rondesk.ts';
+import { barbados } from './barbados.ts';
+import { jointMission } from './jointmission.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -154,6 +163,7 @@ export const CLIPS: readonly Clip[] = [
   datinglang,
   laundromat,
   chickParent,
+  sellVeg,
   chairModel,
   ronsReviews,
   mostLovedDenmark,
@@ -167,12 +177,15 @@ export const CLIPS: readonly Clip[] = [
   johnnyGoodbye,
   dinnerParty,
   newHairdo,
+  ronDesk,
   centralperk,
   furniture,
   ronShowHost,
   senatorOscar,
   ronDiane,
   beefMilk,
+  andyAcademy,
+  jointMission,
   heroes,
   saveJJs,
   buttOfJoke,
@@ -186,6 +199,7 @@ export const CLIPS: readonly Clip[] = [
   tobySafety,
   fluSeason,
   banquetHair,
+  leslieObama,
   setStraight,
   jansStroller,
   vanBidding,
@@ -230,6 +244,7 @@ export const CLIPS: readonly Clip[] = [
   gryzzlBoxes,
   distract,
   leslieAnnForum,
+  ronMeditation,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
@@ -258,6 +273,7 @@ export const CLIPS: readonly Clip[] = [
   joeyStinks,
   kellyLarson,
   goodHusband,
+  jerryPainting,
   pamLabor,
   ronHearing,
   ryanOffice,
@@ -267,6 +283,7 @@ export const CLIPS: readonly Clip[] = [
   phoebebook,
   bucketList,
   daveex,
+  barbados,
   saylove,
   didIStutter,
   waffleGift,
@@ -278,6 +295,7 @@ export const CLIPS: readonly Clip[] = [
   disadulation,
   pitchWomen,
   badReview,
+  ohTheWall,
   kathybook,
   guysGripe,
   savings,
