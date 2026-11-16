@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const gryzzlBoxes: Clip = {
   id: 'gryzzlbox', video: 'KX4JErnGUlE', title: 'Parks and Recreation | Gryzzl Goes Too Far (Episode Highlight)',
-  dur: 232, wpm: 169, band: 'mid', tags: ['職場'],
+  dur: 232, wpm: 169, band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

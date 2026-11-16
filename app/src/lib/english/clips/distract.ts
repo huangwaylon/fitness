@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const distract: Clip = {
   id: 'distract', video: 'f5qd1phdJ9I', title: 'April Sees Through Leslie and Ron\'s Distraction', dur: 241, wpm: 169,
-  band: 'mid', tags: ['職場', 'お願い・断り'],
+  band: 'fast', tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

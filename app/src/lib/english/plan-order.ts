@@ -300,5 +300,13 @@ export const PLANNED: readonly string[] = [
   'bendestress',
   'adopted',
   'lostmind',
-  'iceclown'
+  'iceclown',
+  'singlesnight',
+  'pamsmom',
+  'bigday',
+  'roomie',
+  'apothecary',
+  'datingcv',
+  'setup',
+  'healthplan'
 ];

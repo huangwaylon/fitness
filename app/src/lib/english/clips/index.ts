@@ -303,6 +303,14 @@ import { doNotMock } from './donotmock.ts';
 import { medicalMess } from './medicalmess.ts';
 import { bonVoyage } from './bonvoyage.ts';
 import { iceClown } from './iceclown.ts';
+import { apothecaryTable } from './apothecary.ts';
+import { pamsMom } from './pamsmom.ts';
+import { singlesNight } from './singlesnight.ts';
+import { datingCv } from './datingcv.ts';
+import { healthPlan } from './healthplan.ts';
+import { bigDay } from './bigday.ts';
+import { roomie } from './roomie.ts';
+import { officeSetUp } from './setup.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -345,6 +353,7 @@ export const CLIPS: readonly Clip[] = [
   fakeCall,
   ronRadio,
   dwightPunch,
+  singlesNight,
   dwightFetish,
   benpunch,
   dwightAppt,
@@ -385,8 +394,10 @@ export const CLIPS: readonly Clip[] = [
   suckit,
   dwightVotes,
   wetCement,
+  bigDay,
   newHairdo,
   ronDesk,
+  roomie,
   centralperk,
   furniture,
   ronShowHost,
@@ -402,6 +413,8 @@ export const CLIPS: readonly Clip[] = [
   ronsKey,
   rossHidesIt,
   saveBen,
+  apothecaryTable,
+  pamsMom,
   // ふつう
   jointMission,
   ronLeslieLunch,
@@ -418,6 +431,7 @@ export const CLIPS: readonly Clip[] = [
   donnaBully,
   joeyLie,
   carlyRoom,
+  officeSetUp,
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
@@ -430,6 +444,7 @@ export const CLIPS: readonly Clip[] = [
   ronShot,
   firstScene,
   doNotMock,
+  datingCv,
   ronharass,
   annLeaving,
   conflictPranks,
@@ -501,13 +516,13 @@ export const CLIPS: readonly Clip[] = [
   dwightquits,
   videoDome,
   joeyfinds,
+  // 速い
   scarnRead,
   gryzzlBoxes,
   distract,
   leslieAnnForum,
   ronMeditation,
   rentASwag,
-  // 速い
   oldSchool,
   joeyCrossword,
   pamGivenUp,
@@ -556,6 +571,7 @@ export const CLIPS: readonly Clip[] = [
   prankUtica,
   pamLabor,
   piemary,
+  healthPlan,
   momFlirt,
   peckJoins,
   ronHearing,

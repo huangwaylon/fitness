@@ -10,7 +10,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronMeditation: Clip = {
-  id: 'meditation', video: '7lHARAJFSgw', title: 'Ron Swanson vs. meditation', dur: 209, wpm: 169, band: 'mid',
+  id: 'meditation', video: '7lHARAJFSgw', title: 'Ron Swanson vs. meditation', dur: 209, wpm: 169, band: 'fast',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const scarnRead: Clip = {
-  id: 'scarnread', video: '-FoKU54ITuI', title: 'Threat Level Midnight Read Through', dur: 193, wpm: 169, band: 'mid',
+  id: 'scarnread', video: '-FoKU54ITuI', title: 'Threat Level Midnight Read Through', dur: 193, wpm: 169, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

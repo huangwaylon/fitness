@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const leslieAnnForum: Clip = {
   id: 'annforum', video: '-IFoOpnyDN0', title: 'The day Leslie fell in love with Ann', dur: 250, wpm: 169,
-  band: 'mid', tags: ['お願い・断り', '職場'],
+  band: 'fast', tags: ['お願い・断り', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

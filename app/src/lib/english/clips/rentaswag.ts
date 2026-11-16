@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const rentASwag: Clip = {
-  id: 'rentaswag', video: 'RYdSvdgl-FY', title: 'Rent-A-Swag: Origin Story', dur: 284, wpm: 169, band: 'mid',
+  id: 'rentaswag', video: 'RYdSvdgl-FY', title: 'Rent-A-Swag: Origin Story', dur: 284, wpm: 169, band: 'fast',
   tags: ['職場', '店・レストラン'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
