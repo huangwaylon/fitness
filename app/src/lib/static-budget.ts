@@ -5,8 +5,9 @@
 /** Pages' cap on a deployment's files (the Free plan; paid plans take 100,000). */
 export const PAGES_MAX_FILES = 20_000;
 /** The build's own files on top of static/: Kit's chunks and the 404 copy (892 measured), and English Study's banks,
- *  one a clip (lib/english/catalog.ts bankPath: 25 on 2026-11-16, ~150 soon); raise it as the library passes ~300. */
-export const BUILD_FILES = 1_200;
+ *  one a clip (lib/english/catalog.ts bankPath: 116 on 2026-11-16, the library's cap 1,600 the same day); with static/
+ *  at 9,211 that's ~11.7k of Pages' 20k. */
+export const BUILD_FILES = 2_600;
 /** Kept free for growth between a check and a deploy. */
 export const MARGIN_FILES = 1_000;
 /** static/'s share. */
