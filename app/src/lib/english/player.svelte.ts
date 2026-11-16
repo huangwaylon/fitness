@@ -2,9 +2,10 @@
 // script-src). The frame is told `listening` until it answers; it reports `onReady`, `infoDelivery` (the time, the
 // state) and `onError`; it's sent `command`s (seekTo, playVideo, pauseVideo). A segment pauses at its end: the time
 // between deliveries is extrapolated, checked every 100 ms. A play that doesn't start (iOS wants a tap on the video
-// itself the first time) says so (`stuck`). YouTube picks the quality from the frame's device pixels (a forced one is
-// ignored now), so the player is full width; 'hd720' is still asked at ready and at each play, a harmless hint, and the
-// quality it reports (`playbackQuality`) is told once a play (`onQuality`: the log).
+// itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality has been a no-op since
+// YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player is full width; the
+// quality it reports (`onPlaybackQualityChange`, or infoDelivery's `playbackQuality`) is told once a play (`onQuality`:
+// the log).
 
 export const YT_ORIGIN = 'https://www.youtube-nocookie.com';
 
@@ -37,8 +38,6 @@ export function readMessage(data: unknown): { event: string; info: unknown } | n
   }
 }
 
-/** The quality asked (a hint only: YouTube goes by the frame's size). */
-const HINT = 'hd720';
 /** No answer to `listening` in this long: the embed is unavailable (blocked, or the network gave out). */
 const HELLO_MS = 12_000;
 /** A play asked this long ago that hasn't started: `stuck`. */
@@ -120,10 +119,9 @@ export class YtPlayer {
     this.#asked();
   }
 
-  /** A play asked: the quality hint, then play (its quality told once it plays). */
+  /** A play asked (its quality told once it plays). */
   #asked(): void {
     this.#told = false;
-    this.#cmd('setPlaybackQuality', [HINT]);
     this.#cmd('playVideo');
   }
 
@@ -201,6 +199,12 @@ export class YtPlayer {
     this.#cmd('unloadModule', ['cc']);
   }
 
+  /** The quality the frame reports, if any; told once a play, once playing. */
+  #setQuality(q: unknown): void {
+    if (typeof q === 'string' && /^[a-z0-9]{1,12}$/i.test(q)) this.quality = q;
+    if (!this.#told && this.state === 'playing' && this.quality) (this.#told = true), this.#onQuality?.(this.quality);
+  }
+
   #onMessage = (e: MessageEvent): void => {
     if (e.origin !== YT_ORIGIN || e.source !== this.#frame.contentWindow) return;
     const m = readMessage(e.data);
@@ -212,8 +216,8 @@ export class YtPlayer {
         if (this.state === 'loading') this.state = 'ready';
         this.#cmd('addEventListener', ['onStateChange']);
         this.#cmd('addEventListener', ['onError']);
+        this.#cmd('addEventListener', ['onPlaybackQualityChange']);
         this.#noCaptions();
-        this.#cmd('setPlaybackQuality', [HINT]);
         break;
       case 'initialDelivery':
       case 'infoDelivery': {
@@ -222,8 +226,7 @@ export class YtPlayer {
         if (typeof info.duration === 'number' && info.duration > 0) this.duration = info.duration;
         if (Array.isArray(info.availablePlaybackRates)) this.rates = info.availablePlaybackRates.filter((r): r is number => typeof r === 'number');
         if (typeof info.playbackRate === 'number') this.rate = info.playbackRate;
-        if (typeof info.playbackQuality === 'string' && /^[a-z0-9]{1,12}$/i.test(info.playbackQuality)) this.quality = info.playbackQuality;
-        if (!this.#told && this.state === 'playing' && this.quality) (this.#told = true), this.#onQuality?.(this.quality);
+        this.#setQuality(info.playbackQuality);
         const t = info.currentTime;
         if (typeof t === 'number' && Number.isFinite(t)) {
           if (this.#seek !== null && Math.abs(t - this.#seek) > 2 && performance.now() - this.#seekAt < SEEK_MS) break; // (the time from before the seek)
@@ -234,6 +237,10 @@ export class YtPlayer {
       }
       case 'onStateChange':
         this.#set(stateOf(info));
+        this.#setQuality(undefined);
+        break;
+      case 'onPlaybackQualityChange':
+        this.#setQuality(info);
         break;
       case 'onError':
         this.state = 'error';

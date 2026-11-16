@@ -88,9 +88,9 @@ between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the ifram
 stopped), −5秒, この部分 (the question's segment), a scrubber with the time (never locked), and 0.75× only when the
 frame's `availablePlaybackRates` offer more than 1. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
-iPhone 15): YouTube ignores a forced quality and picks by the frame's device pixels, so the width is the fix; 'hd720' is
-still asked (setPlaybackQuality) at ready and each play, and the quality played is counted once a play
-(`act:english.q.<quality>` in the log's `use`). The e2e answer the frame with a stand-in player.
+iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
+it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`
+or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). The e2e answer the frame with a stand-in player.
 
 **The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
 answer, `bad` a file not its clip), the embed in error (`embed` with YouTube's `code`; `hello` no answer to the
