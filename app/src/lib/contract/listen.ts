@@ -1,91 +1,50 @@
-// ききみみ クイズ's progress rows (docs/kikimimi.md "Progress & feedback", docs/backend.md "Events" `listen`): one row
-// per person per game, written once at its results, with every answer of theirs. The record checks the shape
-// (validEventData) and sends a row whole to its owner only; everyone else gets its summary (that a game was played,
-// when, how long, with how many: the together summary), the guest and the members alike
-// (contract/guest.ts rowsFor). Pure, over the contract only (the relay imports it).
+// English Study's progress rows (docs/english.md "Progress", docs/backend.md "Events" `listen`): a row per clip's まとめ
+// reached (`f`), or for the minutes studied in a clip left part-way, with my answers so far. The record checks the
+// shape (validEventData) and sends a row whole to its owner only; everyone else gets its summary (that a clip was
+// studied, when, how long, whether it was finished), the guest and the members alike (contract/guest.ts rowsFor). Pure,
+// over the contract only (the relay imports it).
 import { isLocalDate } from './api.ts';
 import { isInt } from './ops.ts';
 import type { LocalDate, Who } from '../types.ts';
 
-/** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out; another game's, up to
- *  4095: a tile round's bitmask of wrong slots, a memo's per-slot result, docs/kikimimi-engine.md "The listen row"), the replays
- *  before it (🔁 and 🐢 alike; 0 is a first listen). */
+/** One answer: the question's id, right (1) or not (0), the choice picked (a dictation's words heard; −1: none), the
+ *  replays before it. */
 type ListenAnswer = [id: string, ok: 0 | 1, pick: number, rp: number];
 
-/** Right on the first listen (no 🔁 or 🐢 before it): what a stamp, the phrase ずかん and きろく's first-listen figures
- *  count. A row's answer, or one as きろく reads it (progress.ts Answer). */
-export const firstListenRight = (a: Readonly<ListenAnswer> | { ok: boolean; rp: number }): boolean =>
-  'ok' in a ? a.ok && a.rp === 0 : a[1] === 1 && a[3] === 0;
+/** English Study's `gm` (the only kind of row: the retired ききみみ's others were deleted 2026-11-16). */
+export const TV_GM = 'tv';
 
-export interface ListenRow {
-  /** The Tokyo day it was played. */
+interface ListenRow {
+  /** The Tokyo day it was studied. */
   d: LocalDate;
-  /** The game (the session's id). */
+  /** The session's id. */
   g: string;
-  /** Which game (docs/kikimimi-engine.md "The listen row", the protocol's `gm`); absent: the quiz. */
-  gm?: string;
-  /** Its unit, if the game has units (a ききみみ unit's lesson: docs/curriculum.md "Units"). */
-  u?: string;
-  /** The unit's lesson (docs/curriculum.md "Lessons", "The unit file"): 1 であい, 2 ばめん, 3 チェック, 4 おと, 5 じっせん; only with `u`. */
-  l?: number;
-  /** The team's first-listen right answers in a co-op lesson (§10: the session's team tally, the same number on both
-   *  phones), 0-6; only with `l`. */
-  tm?: number;
-  /** Its level (the protocol's 1-8: the stage, 5 the アナウンス pack). */
+  gm: typeof TV_GM;
+  /** The clip's id. */
+  u: string;
+  /** Its level (1-8: English Study sends 7). */
   lv: number;
-  /** The players in it (1-3). */
+  /** The people in it (1-3). */
   n: number;
-  /** How long it took, ms (≤ 1 h). */
+  /** The active study time the row adds, ms (≤ 1 h). */
   ms: number;
-  /** にがて れんしゅう (a solo deck of my weak spots), else absent. */
-  p?: 1;
-  /** English Study's clip (`gm` TV_GM) finished: its まとめ reached (a day of study); absent on a row of the minutes studied in a clip
-   *  left part-way (its answers so far, maybe none). */
+  /** The clip's まとめ reached (a day of study); absent: the minutes of a clip left part-way. */
   f?: 1;
-  /** My answers, in the game's order (the questions sat out aren't); none in a no-answer mode (minutesOnly). */
+  /** My answers so far, in the lesson's order (maybe none). */
   r: ListenAnswer[];
 }
 
-/** おやすみ ものがたり's `gm` (docs/kikimimi.md "おやすみ ものがたり"): a bedtime story has no questions, so its row's `r` is empty and
- *  only its minutes count (the week's stamp at ≥ 3 min, the couple quest); `u` its serial. */
-export const STORY_GM = 'story';
-/** The mic's games (docs/kikimimi-mic.md "In the registry", "The privacy rule"): a row of theirs carries minutes only, never an answer (nothing of a
- *  speaking game leaves the phone but how long it took). */
-const MIC_GMS: ReadonlySet<string> = new Set(['mane', 'kuri', 'pair', 'role']);
-/** English Study's clips (docs/english.md "Progress"): a row per まとめ reached (`f`) or a clip left part-way after a minute
- *  or more of study; `u` the clip's id, `ms` the active study time the row adds, `r` the answers so far (maybe none). */
-export const TV_GM = 'tv';
-/** A row of this game has no answers (a story's, a mic game's: its `r` empty). */
-export const minutesOnly = (gm: string | undefined): boolean => gm === STORY_GM || (gm !== undefined && MIC_GMS.has(gm));
+/** What everyone else sees of a row: never the clip, the level or the answers. */
+type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms' | 'gm' | 'f'>;
 
-/** What the other member sees of a row (docs/kikimimi.md "Storage"): never the level, the answers or the score. A
- *  unit's passed チェック adds the unit and `stamped` (docs/curriculum.md "Playing together": each person's stamps are the partner's
- *  to see, the answers never). */
-type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: string; stamped?: 1; gm?: string; f?: 1 };
-
-/** The lesson whose pass stamps a unit (チェック), and the first-listen rights it takes, own or the team's (§10). */
-export const CHECK_LESSON = 3;
-export const STAMP_MIN = 5;
-
-/** Whether a row stamps its unit (docs/curriculum.md "Lessons", "Playing together"): a チェック with ≥ 5 of my answers right on the
- *  first listen, or a co-op one whose team got ≥ 5. Derived, never stored. */
-export const stampsUnit = (row: Pick<ListenRow, 'u' | 'l' | 'tm' | 'r'>): boolean =>
-  row.u !== undefined && row.l === CHECK_LESSON && ((row.tm ?? 0) >= STAMP_MIN || row.r.filter(firstListenRight).length >= STAMP_MIN);
-
-/** The most answers a row holds (a game is 8), and the most replays an answer counts. */
-export const LISTEN_MAX_Q = 12;
-export const LISTEN_MAX_RP = 99;
-/** A lesson is one 6-question game (docs/curriculum.md "Lessons"): a co-op lesson's team tally `tm` is 0-6. */
-export const LESSON_QS = 6;
+const LISTEN_MAX_Q = 12;
+const LISTEN_MAX_RP = 99;
 const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;
-/** A row's game kind (`gm`), its unit's id (`u`) and its most level (`lv`). */
-const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
-const UNIT_RE = /^[a-z0-9-]{1,12}$/;
+const CLIP_RE = /^[a-z0-9-]{1,12}$/;
 const LV_MAX = 8;
-/** An item's id (a clip's file name). */
-export const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
-const KEYS = new Set(['d', 'g', 'gm', 'u', 'l', 'tm', 'lv', 'n', 'ms', 'p', 'f', 'r']);
+const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
+const KEYS = new Set(['d', 'g', 'gm', 'u', 'lv', 'n', 'ms', 'f', 'r']);
 
 function answerOf(a: unknown): ListenAnswer | null {
   if (!Array.isArray(a) || a.length !== 4) return null;
@@ -93,64 +52,48 @@ function answerOf(a: unknown): ListenAnswer | null {
   return typeof id === 'string' && ITEM_ID_RE.test(id) && (ok === 0 || ok === 1) && isInt(pick, -1, 4095) && isInt(rp, 0, LISTEN_MAX_RP) ? [id, ok, pick, rp] : null;
 }
 
-/** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range). Its day's bound (not after
- *  tomorrow) is the record's check (contract/record.ts validEventData). */
+/** The summary's fields every row has: a day, a session, the people, the minutes. */
+const summaryFields = (o: Record<string, unknown>): boolean =>
+  isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && isInt(o.n, 1, 3) && isInt(o.ms, 0, LISTEN_MAX_MS) && (o.f === undefined || o.f === 1);
+
+/** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range, another game's). Its day's
+ *  bound (not after tomorrow) is the record's check (contract/record.ts validEventData). */
 export function listenOf(d: unknown): ListenRow | null {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const o = d as Record<string, unknown>;
-  if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
-  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !isInt(o.lv, 1, LV_MAX) || !isInt(o.n, 1, 3) || !isInt(o.ms, 0, LISTEN_MAX_MS)) return null;
-  if (o.p !== undefined && o.p !== 1) return null;
-  // (finished: English Study's clip only)
-  if (o.f !== undefined && (o.f !== 1 || o.gm !== TV_GM)) return null;
-  if (o.gm !== undefined && (typeof o.gm !== 'string' || !GM_RE.test(o.gm))) return null;
-  if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;
-  if (o.l !== undefined && (o.u === undefined || !isInt(o.l, 1, 5))) return null;
-  if (o.tm !== undefined && (o.l === undefined || !isInt(o.tm, 0, LESSON_QS))) return null;
-  const gm = o.gm as string | undefined;
-  if (!Array.isArray(o.r) || o.r.length < (minutesOnly(gm) || gm === TV_GM ? 0 : 1) || o.r.length > (gm !== undefined && MIC_GMS.has(gm) ? 0 : LISTEN_MAX_Q)) return null;
+  if (Object.keys(o).some((k) => !KEYS.has(k)) || o.gm !== TV_GM || !summaryFields(o)) return null;
+  if (typeof o.u !== 'string' || !CLIP_RE.test(o.u) || !isInt(o.lv, 1, LV_MAX)) return null;
+  if (!Array.isArray(o.r) || o.r.length > LISTEN_MAX_Q) return null;
   const r: ListenAnswer[] = [];
   for (const a of o.r) {
     const x = answerOf(a);
     if (!x) return null;
     r.push(x);
   }
-  return {
-    d: o.d, g: o.g, ...(o.gm !== undefined && { gm: o.gm as string }), ...(o.u !== undefined && { u: o.u as string }), ...(o.l !== undefined && { l: o.l as number }),
-    ...(o.tm !== undefined && { tm: o.tm as number }), lv: o.lv, n: o.n, ms: o.ms, ...(o.p === 1 && { p: 1 as const }), ...(o.f === 1 && { f: 1 as const }), r
-  };
+  return { d: o.d as LocalDate, g: o.g as string, gm: TV_GM, u: o.u, lv: o.lv as number, n: o.n as number, ms: o.ms as number, ...(o.f === 1 && { f: 1 as const }), r };
 }
 
-/** A summary as the other member's phone gets it (`r` absent), or null. A stamp needs its unit (a bad one dropped);
- *  English Study's row says so (`gm`) and whether it finished a clip (`f`), never which one. */
+/** A summary as anyone else's phone gets it, or null. */
 export function listenSummaryOf(d: unknown): ListenSummary | null {
   if (!d || typeof d !== 'object') return null;
   const o = d as Record<string, unknown>;
-  if (!(isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && isInt(o.n, 1, 3) && isInt(o.ms, 0, LISTEN_MAX_MS))) return null;
-  const stamped = o.stamped === 1 && typeof o.u === 'string' && UNIT_RE.test(o.u);
-  const tv = o.gm === TV_GM;
-  return { d: o.d, g: o.g, n: o.n, ms: o.ms, ...(stamped && { u: o.u as string, stamped: 1 as const }), ...(tv && { gm: TV_GM }), ...(tv && o.f === 1 && { f: 1 as const }) };
+  if (o.gm !== TV_GM || !summaryFields(o)) return null;
+  return { d: o.d as LocalDate, g: o.g as string, n: o.n as number, ms: o.ms as number, gm: TV_GM, ...(o.f === 1 && { f: 1 as const }) };
 }
 
-/** A row's summary (the other member's copy): the game, a stamped unit's id when it passed a チェック, English Study's
- *  mark and whether the clip was finished. */
-const summaryOf = (row: ListenRow): ListenSummary =>
-  ({ d: row.d, g: row.g, n: row.n, ms: row.ms, ...(stampsUnit(row) && { u: row.u, stamped: 1 as const }), ...(row.gm === TV_GM && { gm: TV_GM, ...(row.f === 1 && { f: 1 as const }) }) });
-
 /**
- * What `viewer` gets of a `listen` row `sender` wrote: its own whole (`all`), anyone else's summary (`summary`: the
- * other member's, and since 2026-11-06 the guest's to the members and theirs to the guest alike).
+ * What `viewer` gets of a `listen` row `sender` wrote: its own whole (`all`), anyone else's summary (`summary`).
  * @public (contract/guest.ts)
  */
 export function listenSeen(viewer: Who, sender: Who): 'all' | 'summary' {
   return viewer === sender ? 'all' : 'summary';
 }
 
-/** A row's summary as JSON (the other member's copy), or null for a row that isn't one. */
+/** A row's summary as JSON (everyone else's copy), or null for a row that isn't one. */
 export function listenSummaryJson(raw: string): string | null {
   try {
     const row = listenOf(JSON.parse(raw));
-    return row ? JSON.stringify(summaryOf(row)) : null;
+    return row ? JSON.stringify({ d: row.d, g: row.g, n: row.n, ms: row.ms, gm: TV_GM, ...(row.f === 1 && { f: 1 }) }) : null;
   } catch {
     return null;
   }

@@ -48,7 +48,7 @@ describe('rowsFor the guest', () => {
       e('A', 'e10', 'pref', { key: 'birth', value: '1990-01-01' }),
       e('G', 'e11', 'pref', { key: 'birth', value: '1995-01-01' }),
       e('A', 'e12', 'pref', { key: 'weatherMode', value: 'game' }),
-      e('B', 'e13', 'listen', { d: '2026-11-06', g: 'ab12', lv: 2, n: 1, ms: 60_000, r: [['w1', 1, 0, 0]] }),
+      e('B', 'e13', 'listen', { d: '2026-11-06', g: 'ab12', gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 60_000, r: [['w1', 1, 0, 0]] }),
       e('G', 'e14', 'food', { id: 'f123456', at: 1 })
     ]
   };
@@ -57,8 +57,8 @@ describe('rowsFor the guest', () => {
     const g = rowsFor('G', rows);
     expect(g.metrics.map((r) => r[3])).toEqual(['steps', 'exercise_min', 'move_kcal', 'stand_min']);
     expect(g.events.map((r) => r[2])).toEqual(['e1', 'e2', 'e3', 'e4', 'e9', 'e11', 'e12', 'e13', 'e14']);
-    // a member's ききみみ game as its summary, as the other member gets it
-    expect(JSON.parse(g.events.find((r) => r[2] === 'e13')![4])).toEqual({ d: '2026-11-06', g: 'ab12', n: 1, ms: 60_000 });
+    // a member's English Study row as its summary, as the other member gets it
+    expect(JSON.parse(g.events.find((r) => r[2] === 'e13')![4])).toEqual({ d: '2026-11-06', g: 'ab12', n: 1, ms: 60_000, gm: 'tv' });
     const text = JSON.stringify(g);
     for (const k of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', '1990-01-01']) expect(text, k).not.toContain(k);
   });

@@ -24,7 +24,7 @@ type Rec = Record<string, unknown>;
  * pocket's catches): its catches (`find`, `tally`, `tally_back`) and its part of the island's day (`island`), any
  * `decor` op (the island's decorations and its layout, every home's room, its own home's look), the `board`, its
  * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), the field (`farm`: its own plants),
- * its ききみみ games and English Study's clips (`listen`), a flag on English Study's content (`eflag`; its review's `eflag_done` is the
+ * its English Study clips (`listen`), a flag on English Study's content (`eflag`; its review's `eflag_done` is the
  * members'), a trip's packing list (`pack`: adding, and changing only what it added,
  * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal or the
  * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
@@ -96,8 +96,8 @@ function guestSeesEvent(r: EventRow): boolean {
 
 /**
  * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
- * and every event but the からだ goals and the members' profiles (its own profile it does get), the members' ききみみ
- * games as their summaries (listenFor, as a member gets the other's). Never a からだ row: weight, body fat, BMI, lean mass.
+ * and every event but the からだ goals and the members' profiles (its own profile it does get), the members' English
+ * Study rows as their summaries (listenFor, as a member gets the other's). Never a からだ row: weight, body fat, BMI, lean mass.
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {
   const events: EventRow[] = [];
@@ -109,9 +109,9 @@ export function guestRows(rows: SnapshotRows): SnapshotRows {
 }
 
 /**
- * A `listen` row (ききみみ クイズ's answers, contract/listen.ts) as `me` gets it: its owner's whole; anyone else's
- * summary only (`{d, g, n, ms}`: a game played, never the level or the answers; a passed unit チェック adds `{u, stamped}`,
- * docs/curriculum.md "Playing together"), the guest's and the members' alike; null for a row that isn't one. Any other row as it is.
+ * A `listen` row (English Study's, contract/listen.ts) as `me` gets it: its owner's whole; anyone else's summary only
+ * (`{d, g, n, ms, gm, f?}`: a clip studied, never the clip, the level or the answers), the guest's and the members'
+ * alike; null for a row that isn't one. Any other row as it is.
  */
 function listenFor(me: Who, r: EventRow): EventRow | null {
   if (r[3] !== 'listen') return r;
@@ -122,8 +122,8 @@ function listenFor(me: Who, r: EventRow): EventRow | null {
 
 /**
  * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): the guest's, guestRows; a member's,
- * everything but the guest's profile (the guest's alone), the others' ききみみ games (the partner's and the guest's) as
- * their summaries (listenFor). @public (relay/src/store.ts)
+ * everything but the guest's profile (the guest's alone), the others' English Study rows (the partner's and the guest's)
+ * as their summaries (listenFor). @public (relay/src/store.ts)
  */
 export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
   if (me === 'G') return guestRows(rows);

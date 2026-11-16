@@ -1,7 +1,7 @@
-// ききみみ クイズ's progress rows (docs/kikimimi.md "Progress & feedback", docs/backend.md "Events" `listen`,
-// contract/listen.ts): one row per person per game; the record checks the shape, keeps every row (no slot), sends a
-// row whole to its owner only, the other member its summary, and nothing between the guest and the members (in every
-// snapshot and delta). Made-up answers only.
+// English Study's progress rows on the record (docs/backend.md "Events" `listen`, contract/listen.ts): the record checks
+// the shape (English Study's only: the retired ききみみ's rows are refused), keeps every row (no slot), sends a row
+// whole to its owner only and everyone else its summary, the guest and the members alike (in every snapshot and
+// delta). Made-up answers only.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { memSql } from './sqlite.ts';
@@ -11,13 +11,13 @@ const KEY_B = 'b'.repeat(64);
 const KEY_C = 'c'.repeat(64);
 const T0 = Date.parse('2026-11-05T03:00:00.000Z'); // 12:00 Tokyo, 2026-11-05
 
-const game = (g: string, extra: object = {}) => ({
-  d: '2026-11-05', g, lv: 3, n: 1, ms: 240_000,
-  r: [['w3-gotta', 1, 0, 0], ['n3-meet-1', 0, 2, 1], ['r3-coffee', 1, 0, 2], ['p3-boot', 0, -1, 0]],
+const clip = (g: string, extra: object = {}) => ({
+  d: '2026-11-05', g, gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 240_000,
+  r: [['g1', 1, 0, 0], ['s3', 0, 2, 1], ['d1', 1, 5, 2], ['p2', 0, -1, 0]],
   ...extra
 });
 
-describe('ききみみ progress rows', () => {
+describe('English Study progress rows', () => {
   let now: number;
   let store: StoreCore;
   beforeEach(() => {
@@ -34,83 +34,59 @@ describe('ききみみ progress rows', () => {
   const listens = (key: string, since?: string) =>
     (call(key, 'snapshot', since ? { since } : {}).rows.events as string[][]).filter((r) => r[3] === 'listen').map((r) => [r[1], JSON.parse(r[4])]);
 
-  it('takes a game’s row; refuses a bad shape, an unknown key or a day after tomorrow', () => {
+  it('takes a clip’s row; refuses a bad shape, an unknown key, another game’s or a day after tomorrow', () => {
     const bad: unknown[] = [];
     const ok = (data: object, want: boolean) => {
       const r = send(KEY_A, data);
       if (r.ok !== want) bad.push([data, r]);
     };
-    ok(game('ab12'), true);
-    ok(game('ab13', { p: 1, n: 1, lv: 1 }), true);
-    ok(game('ab14', { d: '2026-11-06' }), true); // tomorrow (a clock a little ahead)
-    ok(game('ab15', { d: '2026-11-07' }), false);
-    ok(game('ab16', { d: '2026-02-30' }), false);
-    ok(game('AB17'), false);
-    ok(game('ab18', { lv: 9 }), false);
-    ok(game('ab18b', { lv: 7 }), true); // ほし (levels 6-7 since 2026-11-06)
-    ok(game('ab19', { n: 4 }), false);
-    ok(game('ab20', { ms: 3_600_001 }), false);
-    ok(game('ab21', { p: 2 }), false);
-    ok(game('ab22', { r: [] }), false);
-    ok(game('ab23', { r: Array.from({ length: 13 }, () => ['w3-gotta', 1, 0, 0]) }), false);
-    ok(game('ab24', { r: [['w3-gotta', 2, 0, 0]] }), false);
-    ok(game('ab25', { r: [['w3-gotta', 1, 4096, 0]] }), false);
-    ok(game('ab26', { r: [['W3 gotta', 1, 0, 0]] }), false);
-    ok(game('ab27', { r: [['w3-gotta', 1, 0, 100]] }), false);
-    ok(game('ab28', { score: 1040 }), false);
-    // a later game's row (docs/kikimimi-engine.md "The listen row"): `gm`, `u`, a pick up to 4095 (a tile round's bitmask)
-    ok(game('ab29', { gm: 'tile', u: 'u03-kawa', r: [['w3-gotta', 0, 4095, 0]] }), true);
-    ok(game('ab30', { r: [['w3-gotta', 1, 4, 0]] }), true);
-    ok(game('ab31', { gm: 'T' }), false);
-    ok(game('ab32', { u: 'a'.repeat(13) }), false);
-    // a unit's lesson (docs/curriculum.md "Playing together"): `l` 1-5 with `u`, `tm` 0-6 with `l`
-    ok(game('ab33', { gm: 'unit', u: 'tr-hotel', l: 3, tm: 6 }), true);
-    ok(game('ab34', { u: 'tr-hotel', l: 1 }), true);
-    ok(game('ab35', { l: 1 }), false);
-    ok(game('ab36', { u: 'tr-hotel', l: 6 }), false);
-    ok(game('ab37', { u: 'tr-hotel', l: 3, tm: 7 }), false);
-    ok(game('ab38', { u: 'tr-hotel', tm: 5 }), false);
-    // a bedtime story (おやすみ ものがたり): no answers, only its minutes; any other game needs one
-    ok(game('ab39', { gm: 'story', u: 'st-johnny', lv: 4, r: [] }), true);
-    ok(game('ab40', { gm: 'tile', r: [] }), false);
+    ok(clip('ab12'), true);
+    ok(clip('ab13', { f: 1, r: [] }), true); // (まとめ reached with nothing answered)
+    ok(clip('ab14', { d: '2026-11-06' }), true); // tomorrow (a clock a little ahead)
+    ok(clip('ab15', { d: '2026-11-07' }), false);
+    ok(clip('ab16', { d: '2026-02-30' }), false);
+    ok(clip('AB17'), false);
+    ok(clip('ab18', { lv: 9 }), false);
+    ok(clip('ab19', { n: 4 }), false);
+    ok(clip('ab20', { ms: 3_600_001 }), false);
+    ok(clip('ab21', { f: 2 }), false);
+    ok(clip('ab22', { r: Array.from({ length: 13 }, () => ['g1', 1, 0, 0]) }), false);
+    ok(clip('ab23', { r: [['g1', 2, 0, 0]] }), false);
+    ok(clip('ab24', { r: [['g1', 1, 4096, 0]] }), false);
+    ok(clip('ab25', { r: [['G 1', 1, 0, 0]] }), false);
+    ok(clip('ab26', { r: [['g1', 1, 0, 100]] }), false);
+    ok(clip('ab27', { u: 'a'.repeat(13) }), false);
+    ok(clip('ab28', { u: undefined }), false);
+    ok(clip('ab29', { score: 1040 }), false);
+    // the retired ききみみ's rows: a quiz's (no `gm`), a game's, a story's, a unit's lesson
+    ok(clip('ab30', { gm: undefined }), false);
+    ok(clip('ab31', { gm: 'tile' }), false);
+    ok(clip('ab32', { gm: 'story', r: [] }), false);
+    ok(clip('ab33', { l: 3, tm: 5 }), false);
+    ok(clip('ab34', { p: 1 }), false);
     expect(bad).toEqual([]);
   });
 
-  it('keeps every game (no slot) and a retry once', () => {
-    send(KEY_A, game('ab12'), 'x1');
-    send(KEY_A, game('ab12'), 'x1');
-    send(KEY_A, game('cd34'));
+  it('keeps every row (no slot) and a retry once', () => {
+    send(KEY_A, clip('ab12'), 'x1');
+    send(KEY_A, clip('ab12'), 'x1');
+    send(KEY_A, clip('cd34'));
     expect(listens(KEY_A).map(([, d]) => d.g)).toEqual(['ab12', 'cd34']);
   });
 
   it('sends a row whole to its owner and its summary only to everyone else, the guest and the members alike', () => {
-    send(KEY_A, game('ab12', { n: 2 }));
-    send(KEY_B, game('ab12', { n: 2, lv: 3 }));
-    expect(send(KEY_C, game('zz99', { n: 1 })).ok).toBe(true); // the guest writes its own
-    const summary = { d: '2026-11-05', g: 'ab12', n: 2, ms: 240_000 };
-    const gSummary = { d: '2026-11-05', g: 'zz99', n: 1, ms: 240_000 };
-    expect(listens(KEY_A)).toEqual([['A', game('ab12', { n: 2 })], ['B', summary], ['G', gSummary]]);
-    expect(listens(KEY_B)).toEqual([['A', summary], ['B', game('ab12', { n: 2, lv: 3 })], ['G', gSummary]]);
-    expect(listens(KEY_C)).toEqual([['A', summary], ['B', summary], ['G', game('zz99', { n: 1 })]]);
+    send(KEY_A, clip('ab12', { f: 1 }));
+    send(KEY_B, clip('ab12', { n: 2 }));
+    expect(send(KEY_C, clip('zz99')).ok).toBe(true); // the guest writes its own
+    const sum = (g: string, extra: object = {}) => ({ d: '2026-11-05', g, n: 1, ms: 240_000, gm: 'tv', ...extra });
+    expect(listens(KEY_A)).toEqual([['A', clip('ab12', { f: 1 })], ['B', sum('ab12', { n: 2 })], ['G', sum('zz99')]]);
+    expect(listens(KEY_B)).toEqual([['A', sum('ab12', { f: 1 })], ['B', clip('ab12', { n: 2 })], ['G', sum('zz99')]]);
+    expect(listens(KEY_C)).toEqual([['A', sum('ab12', { f: 1 })], ['B', sum('ab12', { n: 2 })], ['G', clip('zz99')]]);
     // a delta likewise
     const since = new Date(now).toISOString();
-    send(KEY_B, game('ef56'));
-    send(KEY_C, game('gh78'));
-    expect(listens(KEY_A, since)).toEqual([['B', { d: '2026-11-05', g: 'ef56', n: 1, ms: 240_000 }], ['G', { d: '2026-11-05', g: 'gh78', n: 1, ms: 240_000 }]]);
-    expect(listens(KEY_C, since)).toEqual([['B', { d: '2026-11-05', g: 'ef56', n: 1, ms: 240_000 }], ['G', game('gh78')]]);
-  });
-
-  it('a passed unit チェック reaches the other member as its unit and `stamped` (never the answers or the team’s count), the guest’s and to the guest too', () => {
-    const six = (rights: number) => Array.from({ length: 6 }, (_, i) => [`w3-gotta`, i < rights ? 1 : 0, 0, 0]);
-    send(KEY_A, game('ab12', { n: 2, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5, r: six(3) })); // carried by the team
-    send(KEY_A, game('ab13', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(4) })); // not passed
-    send(KEY_A, game('ab14', { gm: 'unit', u: 'ev-bday', l: 2, r: six(6) })); // not a チェック
-    send(KEY_C, game('zz99', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(6) }));
-    const base = { d: '2026-11-05', ms: 240_000 };
-    const theirs = [['A', { ...base, g: 'ab12', n: 2, u: 'tr-hotel', stamped: 1 }], ['A', { ...base, g: 'ab13', n: 1 }], ['A', { ...base, g: 'ab14', n: 1 }]];
-    const guests = ['G', { ...base, g: 'zz99', n: 1, u: 'tr-hotel', stamped: 1 }];
-    expect(listens(KEY_B)).toEqual([...theirs, guests]);
-    expect(listens(KEY_A).map(([w, d]) => [w, d.g, d.stamped])).toEqual([['A', 'ab12', undefined], ['A', 'ab13', undefined], ['A', 'ab14', undefined], ['G', 'zz99', 1]]);
-    expect(listens(KEY_C)).toEqual([...theirs, ['G', game('zz99', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(6) })]]);
+    send(KEY_B, clip('ef56'));
+    send(KEY_C, clip('gh78'));
+    expect(listens(KEY_A, since)).toEqual([['B', sum('ef56')], ['G', sum('gh78')]]);
+    expect(listens(KEY_C, since)).toEqual([['B', sum('ef56')], ['G', clip('gh78')]]);
   });
 });

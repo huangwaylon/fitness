@@ -34,10 +34,11 @@ describe('purge_listen', () => {
 
   const seed = () => {
     store.load({ rows: { metrics: [['2026-11-05T01:00:00.000Z', 'A', '2026-11-05', 'steps', 4000], ['2026-11-05T01:00:00.000Z', 'B', '2026-11-05', 'steps', 5000]] } });
-    for (const [key, data, id] of [
-      [KEY_A, quiz('game1'), 'old-a1'], [KEY_A, quiz('game2', { gm: 'tile' }), 'old-a2'], [KEY_B, quiz('game3', { gm: 'story', r: [] }), 'old-b1'],
-      [KEY_C, quiz('game4'), 'old-g1'], [KEY_A, tv('clip1'), 'tv-a1'], [KEY_C, tv('clip2'), 'tv-g1']
-    ] as const) expect(send(key, 'listen', data, id).ok, id).toBe(true);
+    // (the old rows as a dump brings them: no phone can send one since listen.ts took English Study's rows only)
+    const old = [['A', 'old-a1', quiz('game1')], ['A', 'old-a2', quiz('game2', { gm: 'tile' })], ['B', 'old-b1', quiz('game3', { gm: 'story', r: [] })], ['G', 'old-g1', quiz('game4')]] as const;
+    expect(store.load({ rows: { events: old.map(([who, id, d], i) => [`2026-11-05T02:0${i}:00.000Z`, who, id, 'listen', JSON.stringify(d)]) } })).toMatchObject({ events: 4 });
+    expect(send(KEY_A, 'listen', quiz('game5')).ok).toBe(false);
+    for (const [key, data, id] of [[KEY_A, tv('clip1'), 'tv-a1'], [KEY_C, tv('clip2'), 'tv-g1']] as const) expect(send(key, 'listen', data, id).ok, id).toBe(true);
     expect(send(KEY_A, 'eflag', flag).ok).toBe(true);
     expect(send(KEY_B, 'pref', { key: 'locale', value: 'en' }).ok).toBe(true);
   };

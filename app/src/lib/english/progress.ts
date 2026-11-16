@@ -3,7 +3,7 @@
 // (`f`); weeks start on Monday. The run of 「3日の週」 grows with each week of 3+ days, holds through a week of 1–2 and
 // through one empty week, and ends with two empty weeks in a row.
 import type { EventRow } from '#lib/contract/api.ts';
-import { listenOf, listenSummaryOf, TV_GM } from '#lib/contract/listen.ts';
+import { listenOf, listenSummaryOf } from '#lib/contract/listen.ts';
 import { addDays, daysBetween, weekKeyOf } from '#lib/time/dates.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
@@ -36,11 +36,11 @@ export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
     } catch {
       continue;
     }
-    const row = who === me ? listenOf(d) : listenSummaryOf(d);
-    if (!row || row.gm !== TV_GM) continue;
+    const own = who === me ? listenOf(d) : null, row = who === me ? own : listenSummaryOf(d);
+    if (!row) continue;
     if (row.f === 1) {
       out.days.add(row.d);
-      if (row.u) out.clips.add(row.u), out.byDay.set(row.d, row.u);
+      if (own) out.clips.add(own.u), out.byDay.set(row.d, own.u);
     }
     const wk = weekKeyOf(row.d);
     out.ms.set(wk, (out.ms.get(wk) ?? 0) + row.ms);

@@ -120,7 +120,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       return op !== null && atNear(op.at, now);
     }
     case 'listen': {
-      // a ききみみ game's answers (contract/listen.ts), its day not after tomorrow
+      // an English Study row (contract/listen.ts), its day not after tomorrow
       const row = listenOf(d);
       return row !== null && row.d <= nextDay(localDateAt(now));
     }

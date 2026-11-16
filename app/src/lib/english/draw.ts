@@ -4,7 +4,7 @@
 // repeat, then the group quotas (play 2 and later lean to interpretation), new points first; then clip order. Never two
 // items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation.
 import type { EventRow } from '#lib/contract/api.ts';
-import { listenOf, TV_GM } from '#lib/contract/listen.ts';
+import { listenOf } from '#lib/contract/listen.ts';
 import type { Who } from '#lib/types.ts';
 import type { Clip, Question, Skill } from './types.ts';
 
@@ -29,7 +29,7 @@ export function historyOf(rows: readonly EventRow[], me: Who, clip: string): { p
     } catch {
       continue;
     }
-    if (!row || row.gm !== TV_GM || row.u !== clip) continue;
+    if (!row || row.u !== clip) continue;
     for (const [id, ok] of row.r) seen[id] = { play: plays + 1, ok: ok === 1 };
     if (row.f === 1) plays++;
   }

@@ -185,7 +185,7 @@ describe('validEventData: each type\'s shape', () => {
     expect(ok('food_custom', { id: 'mabcdef1' })).toBe(false);
   });
 
-  it('a sell, a buy and starts at their prices, a ききみみ game not after tomorrow, a pack and a wedding op by their own rules', () => {
+  it('a sell, a buy and starts at their prices, an English Study row not after tomorrow, a pack and a wedding op by their own rules', () => {
     // (the shop's prices: contract/shopCheck.ts validEvent, the record's whole check; validEventData its shape only)
     const full = (type: string, d: Record<string, unknown>) => validEvent(type, d, now);
     expect(full('sell', { species: 'fish:koi', n: 3, v: 600 })).toBe(true);
@@ -199,7 +199,7 @@ describe('validEventData: each type\'s shape', () => {
     expect(full('buy_starts', { crop: 'potato', n: 2, v: 28 })).toBe(true);
     expect(full('buy_starts', { crop: 'potato', n: 2, v: 27 })).toBe(false);
     expect(full('listen', { d: '2026-11-05' })).toBe(false);
-    const game = { d: '2026-11-05', g: 'ab12', lv: 2, n: 2, ms: 180_000, r: [['w2-read', 1, 0, 0]] };
+    const game = { d: '2026-11-05', g: 'ab12', gm: 'tv', u: 'waitress', lv: 7, n: 2, ms: 180_000, r: [['g1', 1, 0, 0]] };
     expect(ok('listen', game)).toBe(true);
     expect(ok('listen', { ...game, d: '2026-11-07' })).toBe(false);
     expect(ok('listen', { d: '2026-11-05' })).toBe(false);
