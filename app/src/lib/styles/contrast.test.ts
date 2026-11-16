@@ -1,4 +1,4 @@
-// The theme's readability (the 2026-11-07 contrast review, kept when ききみみ's sheet went): .obj-cream (an always-cream
+// The theme's readability (the 2026-11-07 contrast review): .obj-cream (an always-cream
 // object: a bubble, a cream button, a ticket) puts the day text colours and controls back inside it, so the same token
 // reads on navy and on cream, and the soft text holds 4.5:1 where it's read.
 import { readFileSync } from 'node:fs';

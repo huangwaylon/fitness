@@ -5,11 +5,11 @@ captions: design.md "Sound"; this doc is the mechanism.
 
 ## What is shared how
 
-- **Local (personal UI):** tap feedback (`taps.ts` `data-sfx`), shop and money cues, ききみみ's quiz cues, a setting's
+- **Local (personal UI):** tap feedback (`taps.ts` `data-sfx`), shop and money cues, a setting's
   preview (`setSound`), the wasps' chase music (my own villager chased).
 - **Derived (same everywhere from shared state and the clock):** hour music (`hourly.ts`, with the relay's `wx`), event
   music (`events.ts`), ambience (`ambient.ts`), place music (`places.ts`), しずえ's jingle (`radio.ts`, seeded by the
-  date), ききみみ's voice (`go at` and `playVoice({relayAt})`; in おなじへや only the host's phone speaks).
+  date).
 - **World events another player sees:** the existing intents (tree shakes, weeds and rocks, bushes and watering,
   catches and casts, fishing steps, high-fives, reactions, footsteps, fireworks) play their cue on every phone, with a
   gain by where it happened ("Remote cues").

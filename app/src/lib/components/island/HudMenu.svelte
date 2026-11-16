@@ -229,7 +229,7 @@
     <!-- 英語: English Study (lib/english) -->
     <button type="button" class="item" data-hud-english aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('english')}
       onclick={() => pick(() => english.show())}>
-      <span class="lbl">{t('panel.kikimimi')}</span>
+      <span class="lbl">{t('panel.english')}</span>
       <span class="ic">
         <!-- a speech balloon in the gear's soft brown, three cream dots -->
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>

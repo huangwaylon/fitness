@@ -2,8 +2,8 @@
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
-   One system: the palette below (one primitive a colour, the night's as --n-*), 7 radii (+ pill), 6 type sizes (+ input,
-   ききみみ's English), weights 500/700,
+   One system: the palette below (one primitive a colour, the night's as --n-*), 6 radii (+ pill), 6 type sizes (+ input),
+   weights 500/700,
    outlines only on tappable things (--sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
    Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
    ignored. Game objects (the HUD, plate, dialogue box, choices) stay cream / yellow at every time of day.
@@ -30,12 +30,10 @@
   --bar-floor: .34;                                      /* a chart's bar that met no goal: its fill's opacity (BarChart) */
   --c-sky:#4F9BE0;                                       /* the info sheets' sky: the airline strip, map water, the "now" marker (fills) */
   --c-rose:#E88FAE;                                      /* the wedding's rose: the ring, the letter's band and rules, the heart stamp */
-  /* the night's navy chrome (data-tod night below; ききみみ's bedtime story and its tile take it by day too) */
+  /* the night's navy chrome (data-tod night below) */
   --n-bg:#3A4886; --n-lip:#2E3A72; --n-card:#4858A0; --n-off:#34417C; --n-edge:#B9C3F0; --n-text:#FFF6E0; --n-soft:#DDE3FA;
   --n-warn:#7A5E22;                                      /* the night's warn surface: amber on navy (cream text 5.6:1) */
   --c-gold:#F2C14E;  --c-gold-lip:#B8862A;               /* NEW (.tag.new) and the gold medal / trophy fills (fills only) */
-  --c-silver:#C9CFD8; --c-silver-lip:#9AA3B1;            /* the silver medal (ききみみ's なかま) */
-  --c-bar:#3E9E4C;                                       /* a progress bar's fill on cream (passes 3:1 on the card) */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
@@ -43,12 +41,11 @@
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --leaf-text: var(--c-leaf-text); /* green text on the themed panel / card (night: a light green, 5.8:1 on navy) */
   --coral-text: var(--c-coral-text); /* coral text on the themed panel / card (night: a light coral, 4.7:1 on the navy card) */
-  --dim: .78;                  /* a set-aside thing that is still read (an away player): >= .75 */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
   --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
   --c-sky-text:#24609A; --sky-text: var(--c-sky-text); /* sky TEXT on the panel / card (5.2:1 on paper, 5:1 at dusk; night: a light sky, 5:1 on navy) */
-  /* a warn / highlight surface on the themed card (a bot's 一部不調, 確認が必要, a load error; ききみみ's mission, a tip):
+  /* a warn / highlight surface on the themed card (a bot's 一部不調, 確認が必要, a load error, a tip):
      yuzu over cream by day; night: --n-warn (yuzu mixed into navy came out grey). Stronger: a local yuzu mix over it */
   --warn-soft: color-mix(in srgb, var(--c-yuzu) 30%, var(--c-card));
   --rose-soft: color-mix(in srgb, var(--c-rose) 22%, var(--card)); /* the letter's rules, a rose tint */
@@ -65,7 +62,6 @@
   --fs-xs:.6875rem; --fs-s:.8125rem; --fs-body:.9375rem; --fs-talk:1.125rem;
   --fs-title: clamp(1.375rem, 6.4vw, 1.625rem); --fs-hero: clamp(2.25rem, 11vw, 2.75rem);
   --fs-input: max(16px, 1rem);
-  --fs-en: max(17px, var(--fs-talk)); /* ききみみ's English line (a prompt, a choice, a tile) */
   /* dense body text (13-15px) in the info sheets (りょこう, けっこんしき, トレイル): the system font; titles, labels and
      numbers stay --font-ui / --font-num */
   --font-body: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
@@ -74,7 +70,6 @@
   /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/panel · bars are pills ---------- */
   --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-pill:999px;
   --r-row:14px;     /* dense cards (the info sheets) */
-  --r-game:22px;    /* ききみみ's game cards (a speaker's stage, a ticket, a desk): the world's look inside the sheet */
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
   --lip-h:4px;      /* the one lip depth */
@@ -82,13 +77,11 @@
   /* the small lip: dense cards and rows (the 4px lip stays for game chrome and CTAs) */
   --lip-s:2px;
   --sh-lip-s:0 var(--lip-s) 0 var(--lip);
-  /* an always-cream object's lip (ききみみ's game cards and bubbles): the card's, in the cream's own tan by night too */
-  --sh-lip-cream:0 var(--lip-h) 0 var(--c-lip);
   --sh-float:0 12px 32px rgba(74, 58, 44, .18);
   /* a lifted thing's small soft drop under its lip (a picked tile, the letter, a shop line, the board's ✎) */
   --sh-drop:0 8px 18px rgb(74 58 44 / .16);
   /* a ring on the chosen / lit one (leaf), and on the one opened (yuzu): fixed colours, so a token at :root is safe */
-  --sh-sel:inset 0 0 0 3px var(--c-leaf); --sh-open:inset 0 0 0 2.5px var(--c-yuzu-lip);
+  --sh-open:inset 0 0 0 2.5px var(--c-yuzu-lip);
   /* text over a photo: the dark band under it */
   --scrim-photo:rgb(30 22 16 / .5);
 
@@ -208,10 +201,6 @@
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 /* a sheet's level pushed in from the right (the panel's day, 図鑑's kinds, ごはん's levels, りょこう's trip) */
 @keyframes if-lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-/* ききみみ's speaker: popping in as a line starts (a reaction mark, a stamp too), and the small lift while it talks
-   (if-pop-in 420ms var(--ease-bounce); if-speak 520ms ease-in-out infinite alternate) */
-@keyframes if-pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes if-speak { from { transform: translateY(0); } to { transform: translateY(-5px); } }
 
 /* ======================================================================================
    Builder A: scene + fx + keyframes (design.md "Motion").

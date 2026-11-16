@@ -1133,7 +1133,7 @@ song is now. Mute and volume stay local. The first tap after the app opens picks
 
 **Another player's sounds** (a shake, a dig, a splash, their footsteps…) reach every phone through the intents that
 show them, each played where it happens, by the island camera's ear (none off screen, softer toward the edge:
-sound-sync.md). Personal sounds stay mine: the controls' taps, the shop, the ききみみ cues, my wasps' music, a setting's
+sound-sync.md). Personal sounds stay mine: the controls' taps, the shop, my wasps' music, a setting's
 preview.
 
 <a id="kk-slider"></a>**K.K. Slider** (`kk.ts`, its header: the list, adding a song): K.K.'s songs, NH's titles, their
@@ -1163,9 +1163,8 @@ plays `boop`. Enforced by `taps.test.ts`.
 
 ### Mix
 
-Buses (`mix.ts` LEVELS): music, ambience and effects under the voice (ききみみ's clips: 音量 alone; they duck the music as
-a jingle does); master 音量 squared (default 0.8). A few voices at most and a cap per sound; jingles never overlap and
-duck the music. Effects decode on the unlock (only while 効果音 is on), but the `lazy` ones (the radio jingles, the
+Buses (`mix.ts` LEVELS): music, ambience and effects; master 音量 squared (default 0.8). A few voices at most and a cap
+per sound; jingles never overlap and duck the music. Effects decode on the unlock (only while 効果音 is on), but the `lazy` ones (the radio jingles, the
 complete fanfare), fetched at first play. Effects jitter pitch.
 
 ### Engine lifecycle
@@ -1179,8 +1178,6 @@ complete fanfare), fetched at first play. Effects jitter pitch.
 - **Background:** hidden → decks paused, ambience stopped, context suspended; back in front the hour fades in.
 - **Music off:** the fade-out, then every music file in memory released.
 - **iOS session:** `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch.
-- **Voice session** (the retired ききみみ's, its removal next): a game wakes the context even with sound
-  off, holds it awake and sets the session to `playback`; its end hands back to the settings.
 
 ### Audio files
 

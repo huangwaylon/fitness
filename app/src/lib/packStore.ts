@@ -1,5 +1,5 @@
 // Files packed end to end into a few static files (Cloudflare Pages caps a deploy at 20,000 files: lib/static-budget.ts),
-// read on the phone: ききみみ's audio (components/kikimimi/packs.ts) and the players' parts (player3d/parts.ts). A file is
+// read on the phone: the players' parts (player3d/parts.ts). A file is
 // a cut of its pack (`[stem, offset, bytes]`, the pack's stem naming its content: `<name>.<hash>`). Pages answers a Range
 // with the whole file (200, measured 2026-11-09), so a pack is only ever fetched whole: once at a time, whoever asks
 // (the page's parts at once share one fetch; the service worker shares its own), held in memory among the most recently

@@ -56,7 +56,7 @@
     title?: string;
     variant?: 'paper' | 'top' | 'pop' | 'full';
     onclose?: () => void;
-    /** A backdrop tap or Esc: false keeps the sheet open (a game going asks first: ききみみ's 「やめる？」). */
+    /** A backdrop tap or Esc: false keeps the sheet open (トレイル's: a level inside goes back first). */
     ondismiss?: () => boolean;
     children: Snippet;
     footer?: Snippet;

@@ -6,7 +6,6 @@
 //                                                  ├→ master (音量) → speakers
 //   music    <audio> deck A/B → gain ─┐            │
 //   ambience loop sources → ambient ──┴→ duck → muffle (low-pass) → music bus
-//   voice    ききみみ's clips → voice bus ─────────────→ master (音量 only: not the 効果音/ミュージック toggles)
 //
 // Music streams from two <audio> elements routed into the graph (decoding a whole 1–2 minute track would cost
 // 20–40 MB of PCM on a phone); their levels are gain nodes, because iOS ignores HTMLMediaElement.volume. Each hour is
@@ -37,8 +36,6 @@ const RELEASE_MS = 1000;
 const AHEAD_KEEP = 2;
 /** A lazy file that failed (offline) isn't asked for again for this long: its placeholder plays meanwhile. */
 const LAZY_RETRY_MS = 5 * 60_000;
-/** Voice clips (ききみみ) kept decoded at once, the least recently asked for going first: ~3 s of speech each. */
-const CLIP_CAP = 4;
 
 interface Deck {
   el: HTMLAudioElement;
@@ -75,7 +72,7 @@ function silentWav(): Blob {
 }
 
 /** Where `navigator.audioSession` exists (WebKit), set its type and return the one it had; elsewhere null. */
-export function applySession(type: string): string | null {
+function applySession(type: string): string | null {
   try {
     const nav = navigator as AudioSessionNav;
     if (!nav.audioSession) return null;
@@ -125,18 +122,10 @@ export function stagePos(t: MusicTrack, nowMs = Date.now()): number {
 }
 const isRainBed = (key: string): boolean => key === 'rain' || key.startsWith('rain:');
 
-/** A clip looped (engine.playClip): from `from` (s) for `dur` (s) at `gain`, faded in and out over `fade` (s). */
-export interface ClipLoop {
-  from: number;
-  dur: number;
-  gain: number;
-  fade: number;
-}
-
 export class Engine {
   ctx: AudioContext | null = null;
   #master!: GainNode;
-  #bus!: Record<Bus | 'ambient' | 'voice', GainNode>;
+  #bus!: Record<Bus | 'ambient', GainNode>;
   #duck!: GainNode;
   #muffle!: BiquadFilterNode;
   #levels: SoundSettings | null = null;
@@ -182,13 +171,6 @@ export class Engine {
   #releaseTimer: ReturnType<typeof setTimeout> | undefined;
   /** Paused from outside (holdMusic): no track sounds again until a tap (unlock) or the Media Session's ▶ (unhold). */
   #held = false;
-  /** Held awake (holdAwake: a ききみみ game): neither the idle timer nor everything off (sleep, hush) suspends it. */
-  #awake = false;
-  /** The music held down under a run of voice clips (holdDuck: a bedtime story's segments, no swell in their gaps). */
-  #duckHeld = false;
-  /** Decoded voice clips by key, least recently asked for first (CLIP_CAP), and the playing ones' keys (in #live). */
-  #clips = new Map<string, Promise<AudioBuffer | null>>();
-  #clipKey = 0;
   /** Called when a one-shot track (the opening, a jingle, a sting, a K.K. song) ends. */
   onended: ((key: string) => void) | null = null;
   /** Called when a track can't play: its file couldn't be fetched (offline, never heard) or the deck couldn't decode
@@ -209,16 +191,14 @@ export class Engine {
     const g = () => ctx.createGain();
     this.#master = g();
     this.#master.connect(ctx.destination);
-    this.#bus = { music: g(), sfx: g(), ambient: g(), voice: g() };
+    this.#bus = { music: g(), sfx: g(), ambient: g() };
     for (const b of Object.values(this.#bus)) b.gain.value = 0;
-    this.#bus.voice.gain.value = LEVELS.voice; // never changed: the master (音量) is its only level
     this.#duck = g();
     this.#muffle = ctx.createBiquadFilter();
     this.#muffle.type = 'lowpass';
     this.#muffle.frequency.value = 20000;
     this.#muffle.Q.value = 0.5;
     this.#bus.sfx.connect(this.#master);
-    this.#bus.voice.connect(this.#master);
     this.#bus.ambient.connect(this.#duck);
     this.#duck.connect(this.#muffle).connect(this.#bus.music).connect(this.#master);
     ctx.addEventListener('statechange', () => {
@@ -277,139 +257,6 @@ export class Engine {
     src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
     src.connect(ctx.destination);
     src.start();
-  }
-
-  /** Inside a tap, for ききみみ's voice (even while every sound setting is off): the context created or woken and its
-   *  output opened; nothing else (no decks, no effects' renderer or files). False where Web Audio is missing. */
-  wakeVoice(): boolean {
-    const ctx = this.#ensure();
-    if (!ctx) return false;
-    clearTimeout(this.#sleepTimer);
-    if (ctx.state !== 'running') this.#wake(ctx);
-    this.#openOutput(ctx);
-    this.#idle.poke();
-    return true;
-  }
-
-  /** A ききみみ game is on: the context stays awake between its clips (the idle timer, sleep() and hush() leave it
-   *  running; the background still suspends it: pause()). Off: the idle timer runs again. */
-  holdAwake(on: boolean): void {
-    this.#awake = on;
-    if (on) {
-      this.#idle.cancel();
-      clearTimeout(this.#sleepTimer);
-    } else this.#idle.poke();
-  }
-
-  /** A voice clip decoded from the bytes `fetchBytes` gives (ききみみ's: a slice of its pack, components/kikimimi/packs.ts),
-   *  kept by `key` among the last CLIP_CAP asked for; asked again while it decodes, the same promise. Null without a
-   *  context, when there are no bytes (offline and never cached: `fetchBytes` gives null or throws), or undecodable
-   *  (not kept: asked again, it tries again). */
-  loadBytes(key: string, fetchBytes: () => Promise<ArrayBuffer | null>): Promise<AudioBuffer | null> {
-    let p = this.#clips.get(key);
-    if (p) this.#clips.delete(key);
-    else {
-      const q: Promise<AudioBuffer | null> = this.#decodeBytes(fetchBytes).then((b) => {
-        if (!b && this.#clips.get(key) === q) this.#clips.delete(key);
-        return b;
-      });
-      p = q;
-    }
-    this.#clips.set(key, p);
-    while (this.#clips.size > CLIP_CAP) this.#clips.delete(this.#clips.keys().next().value!);
-    return p;
-  }
-
-  async #decodeBytes(fetchBytes: () => Promise<ArrayBuffer | null>): Promise<AudioBuffer | null> {
-    try {
-      if (!this.ctx) return null;
-      const bytes = await fetchBytes();
-      if (!bytes || !this.ctx) return null;
-      return await this.ctx.decodeAudioData(bytes);
-    } catch {
-      return null;
-    }
-  }
-
-  /** Play a voice clip on the voice bus at `at` (the audio clock; now if missing or past: a late one plays whole, from
-   *  its start), the music ducked under it. Null when the context can't sound now (locked, interrupted, in the
-   *  background: session.ts canSound). `endsAt`: the audio-clock time it ends. `loop`: the buffer looped (a bed under a
-   *  conversation: no buffer of its length made). */
-  playClip(buf: AudioBuffer, o: { at?: number; loop?: ClipLoop } = {}): { stop(): void; endsAt: number } | null {
-    const ctx = this.#ready();
-    if (!ctx) return null;
-    const at = Math.max(ctx.currentTime, o.at ?? 0);
-    const key = -++this.#clipKey; // apart from the limiter's keys (positive)
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const l = o.loop;
-    const g = l ? ctx.createGain() : null;
-    if (g && l) {
-      const end = at + l.dur, p = g.gain;
-      p.setValueAtTime(0, at);
-      p.linearRampToValueAtTime(l.gain, at + l.fade);
-      p.setValueAtTime(l.gain, end - l.fade);
-      p.linearRampToValueAtTime(0, end);
-      src.loop = true;
-      src.connect(g).connect(this.#bus.voice);
-    } else src.connect(this.#bus.voice);
-    src.onended = () => {
-      this.#live.delete(key);
-      src.disconnect();
-      g?.disconnect();
-    };
-    if (l) (src.start(at, l.from), src.stop(at + l.dur));
-    else src.start(at);
-    this.#live.set(key, src);
-    const endsAt = at + (l ? l.dur : buf.duration);
-    this.#duckUnder(at, endsAt);
-    const stop = () => {
-      if (!this.#live.has(key)) return;
-      this.#stop(key);
-      this.#unduck();
-    };
-    this.#dropIfStuck(ctx, stop);
-    this.#idle.poke();
-    return { stop, endsAt };
-  }
-
-  /** The game's over: its clips stop and the decoded ones go; the voice back at its level, the music let up. */
-  clearVoice(): void {
-    this.#stopClips();
-    this.#clips.clear();
-    this.fadeVoice([]);
-    this.holdDuck(false);
-  }
-
-  /** The music held down (on) under a run of clips with gaps between them (a bedtime story), so it doesn't swell back
-   *  in each gap and dip again; off: it comes back (the release). Each clip's own dip is skipped while held. */
-  holdDuck(on: boolean): void {
-    const ctx = this.ctx;
-    if (!ctx || on === this.#duckHeld) return;
-    this.#duckHeld = on;
-    const p = this.#duck.gain, t = ctx.currentTime, plan = duckPlan(t, t);
-    p.cancelScheduledValues(t);
-    p.setValueAtTime(p.value, t);
-    if (on) p.linearRampToValueAtTime(plan[1].gain, plan[1].t);
-    else p.linearRampToValueAtTime(1, plan[3].t);
-  }
-
-  /** The voice's own level over time, as points `{t: s from now, gain: 0-1}` (a sleep timer's fade: bedtime.ts
-   *  fadeCurve); none: back to full at once (a pause, the next story, the session's end). */
-  fadeVoice(points: readonly { t: number; gain: number }[]): void {
-    const ctx = this.ctx;
-    if (!ctx) return;
-    const g = this.#bus.voice.gain, t = ctx.currentTime;
-    g.cancelScheduledValues(t);
-    if (!points.length) return void g.setValueAtTime(LEVELS.voice, t);
-    g.setValueAtTime(LEVELS.voice * points[0].gain, t + points[0].t);
-    for (const pt of points.slice(1)) g.linearRampToValueAtTime(LEVELS.voice * pt.gain, t + pt.t);
-  }
-
-  #stopClips(): void {
-    const playing = [...this.#live.keys()].filter((k) => k < 0);
-    for (const k of playing) this.#stop(k);
-    if (playing.length) this.#unduck();
   }
 
   #wake(ctx: AudioContext): void {
@@ -643,7 +490,7 @@ export class Engine {
     const f = this.#decks[this.#front];
     // A track held by an outside ⏸ (holdMusic) or refused by the browser isn't sounding: the next tap restarts it.
     const sounding = !!this.track && !(f.el.paused && !f.starting);
-    if (!ctx || ctx.state !== 'running' || sounding || document.hidden || this.#awake) return;
+    if (!ctx || ctx.state !== 'running' || sounding || document.hidden) return;
     if (this.#live.size) return this.#idle.poke();
     this.#asleep = true;
     void ctx.suspend().catch(() => {});
@@ -651,23 +498,11 @@ export class Engine {
 
   /** The music dips under a jingle and comes back after it. */
   #duckUnder(at: number, until: number): void {
-    if (this.#duckHeld) return;
     const p = this.#duck.gain;
     p.cancelScheduledValues(at);
     const plan = duckPlan(at, until);
     p.setValueAtTime(plan[0].gain, plan[0].t);
     for (const pt of plan.slice(1)) p.linearRampToValueAtTime(pt.gain, pt.t);
-  }
-
-  /** A voice clip stopped early: the music comes back from where its dip is. */
-  #unduck(): void {
-    const ctx = this.ctx;
-    if (!ctx || this.#duckHeld) return;
-    const p = this.#duck.gain;
-    const t = ctx.currentTime;
-    p.cancelScheduledValues(t);
-    p.setValueAtTime(p.value, t);
-    p.linearRampToValueAtTime(1, t + 0.4);
   }
 
   /** Muffle the music under the phone and sheets (a low-pass, as NH does under its menus). */
@@ -1127,7 +962,6 @@ export class Engine {
       d.el.pause();
     }
     void this.setAmbient([], true);
-    this.#stopClips(); // a clip cut by the lock doesn't carry on from its middle on the way back
     this.#asleep = false;
     void ctx.suspend().catch(() => {});
   }
@@ -1145,7 +979,7 @@ export class Engine {
    *  where they are and the context sleeps, so turning the volume up again resumes the same track in place. */
   hush(): void {
     clearTimeout(this.#sleepTimer);
-    this.#sleepTimer = setTimeout(() => this.#awake || this.pause(), 800);
+    this.#sleepTimer = setTimeout(() => this.pause(), 800);
   }
 
   /** Everything off: no music, no ambience, a suspended context, the files let go. */
@@ -1154,6 +988,6 @@ export class Engine {
     this.release();
     void this.setAmbient([]);
     clearTimeout(this.#sleepTimer);
-    this.#sleepTimer = setTimeout(() => this.#awake || void this.ctx?.suspend().catch(() => {}), 800);
+    this.#sleepTimer = setTimeout(() => void this.ctx?.suspend().catch(() => {}), 800);
   }
 }

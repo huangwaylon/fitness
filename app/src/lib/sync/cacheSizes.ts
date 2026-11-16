@@ -1,5 +1,5 @@
 // What each of the service worker's caches holds, for storage.use (once a Tokyo day, sync/persist.ts): MB a cache, by
-// its index where it keeps one (`__<name>-index`: each URL's bytes and last use; the room, ききみみ's packs, the art,
+// its index where it keeps one (`__<name>-index`: each URL's bytes and last use; the room, the art,
 // the photos, the tiles, the food images), else its files counted (their Content-Length, else their bodies: the
 // shells, the fonts, the audio, the food data); the recogniser's (~67 MB, the mic's) only whether it's there, its parts
 // never read for this. Loaded only then (not in the first load). Never rejects: a cache it can't read is left out.

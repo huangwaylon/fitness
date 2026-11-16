@@ -1,4 +1,4 @@
-// The museum's visitors (docs/design.md "The museum"), pure: NH villagers (ききみみ's friends, VISITORS below, NH's own
+// The museum's visitors (docs/design.md "The museum"), pure: NH villagers (VISITORS below, NH's own
 // 3D models) come in through the day, up to eight across the museum and two to a room (spread so most rooms have
 // someone, the aquarium and the bug garden first), each for half an hour or so in one room: in at its door, from one
 // linger point to the next (admiring an exhibit, a little hop now and then; sitting on a bench; chatting in pairs at two
