@@ -2,7 +2,7 @@
 // nothing leaves the preview), never locked: 質問へ and ‹ 前へ / 次へ › always work; a miss replays the segment with the
 // cue and a quiet 答えを見る, a second miss 「答えはこれ」, never a mark on the pick; まとめ writes the clip's row (✓ in
 // the library, 今週 1/3日, これまで 1本); ⚑ 報告 on the clip and a question, listed in ⚙'s 報告した内容; the player's
-// offline and unavailable states, 字幕 オフ / 英語 / 日本語 and 場面のあらすじ; せりふ (the transcript) follows the playhead, a line
+// offline and unavailable states, 字幕 オフ / 英語 / 日本語 and 場面のあらすじ; セリフ (the transcript) follows the playhead, a line
 // tapped plays from there; a lesson left resumes where it was. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -595,14 +595,14 @@ test('この動画のフレーズ: from the lesson’s bar and from まとめ, t
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
 });
 
-test('せりふ: from the lesson’s bar when the bank has lines, every line in time order with its Japanese, the playhead’s line marked and a tap seeks; no button when the bank has none', async ({ page }) => {
+test('セリフ: from the lesson’s bar when the bank has lines, every line in time order with its Japanese, the playhead’s line marked and a tap seeks; no button when the bank has none', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
   const lines = waitressEn.lines;
   const clockOf = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
   await lesson(page).locator('[data-en-transcript-open]').click();
-  await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('せりふ');
+  await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('セリフ');
   const lvl = lesson(page).locator('[data-en-transcript]');
   const rows = lvl.locator('[data-en-line]');
   await expect(rows).toHaveCount(lines.length);
@@ -624,7 +624,7 @@ test('せりふ: from the lesson’s bar when the bank has lines, every line in 
   // ‹ the watch card
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
-  // a bank without lines: no せりふ (フレーズ stays)
+  // a bank without lines: no セリフ (フレーズ stays)
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   let served = false;
   await page.route('**/english/c/waitress.*.json', async (r) => {

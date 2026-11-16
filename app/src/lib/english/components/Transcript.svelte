@@ -1,5 +1,5 @@
 <script lang="ts">
-  // せりふ (docs/english.md "Transcripts"): a level of the lesson, under its pinned player. Every line of the clip's
+  // セリフ (docs/english.md "Transcripts"): a level of the lesson, under its pinned player. Every line of the clip's
   // transcript, in time order: its m:ss, the English, and under it in smaller grey our Japanese when the clip's
   // translation is in (the bank's lines carry it; a translation landing is a new bank file, so a row never grows under
   // the reader). The line at the playhead follows playback (transcripts.ts lineAt), on the yuzu fill the scenes list

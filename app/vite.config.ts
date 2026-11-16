@@ -152,8 +152,8 @@ const globsUncached: Plugin = {
  *  and each bank a file of its own, `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
  *  the dev server), never bundled nor precached (caches.ts isEnglishData). A clip with scenes/<video>.json (場面のあらすじ)
  *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. A clip with
- *  transcripts/<video>.en.json (せりふ) has its lines in its bank too, each with the ja file's translation when in,
- *  their version in the file's name as well. The clips are read fresh (Vite's module runner)
+ *  transcripts/<video>.en.json (セリフ) has its lines in its bank too, each with the ja file's translation when in,
+ *  held to the clip's length, their version in the file's name as well. The clips are read fresh (Vite's module runner)
  *  once a build, and in dev again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
@@ -172,23 +172,26 @@ const englishData = (): Plugin => {
       return [sf.video, sf.beats ? { scenes: sf.scenes, beats: sf.beats } : { scenes: sf.scenes }] as const;
     }));
   };
-  /** video → its transcript lines, each with its translation when the ja file is in (transcripts.test.ts holds the
-   *  ja files one line for each of the en file's, the same `t`s). */
-  const readTranscripts = () => {
+  /** video → its transcript lines, the library's clips only, each with its translation when the ja file is in
+   *  (transcripts.test.ts holds the ja files one line for each of the en file's, the same `t`s), held to the clip's
+   *  length here (a line begun after its end dropped, one running past it cut), so a file written before its clip
+   *  joined the library never needs rewriting. */
+  const readTranscripts = (clips: readonly Clip[]) => {
     const dir = transcriptsDir();
-    const files = existsSync(dir) ? readdirSync(dir) : [];
-    const ja = new Map(files.filter((f) => f.endsWith('.ja.json')).map((f) => {
-      const jf = JSON.parse(readFileSync(join(dir, f), 'utf8')) as JaTranscriptFile;
-      return [jf.video, jf.lines] as const;
-    }));
-    return new Map(files.filter((f) => f.endsWith('.en.json')).map((f) => {
-      const ef = JSON.parse(readFileSync(join(dir, f), 'utf8')) as TranscriptFile;
-      const jl = ja.get(ef.video);
-      return [ef.video, ef.lines.map((l, i) => (jl?.[i] ? { ...l, ja: jl[i].ja } : l))] as const;
+    const read = <T,>(f: string): T | undefined => (existsSync(join(dir, f)) ? (JSON.parse(readFileSync(join(dir, f), 'utf8')) as T) : undefined);
+    return new Map(clips.flatMap((c) => {
+      const ef = read<TranscriptFile>(`${c.video}.en.json`);
+      if (!ef) return [];
+      const jl = read<JaTranscriptFile>(`${c.video}.ja.json`)?.lines;
+      const lines = ef.lines
+        .map((l, i): TranscriptLine => (jl?.[i] ? { ...l, ja: jl[i].ja } : l))
+        .filter((l) => l.t[0] < c.dur)
+        .map((l) => (l.t[1] > c.dur ? { ...l, t: [l.t[0], c.dur] as const } : l));
+      return lines.length ? [[c.video, lines] as const] : [];
     }));
   };
   const read = () =>
-    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts() })));
+    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts(module.CLIPS) })));
   const meta = (d: Data, c: Clip) => withTranscript(withScenes(metaOf(c), d.scenes.get(c.video)), d.lines.get(c.video));
   const bank = (d: Data, c: Clip): Bank => {
     const sf = d.scenes.get(c.video);

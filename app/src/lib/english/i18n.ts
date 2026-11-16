@@ -97,8 +97,8 @@ const S = {
   phrasesNote: { ja: '質問で取り上げたセリフを、時間の順に。▶ でその場面を聞けます。', en: 'The lines the questions quote, in time order. ▶ plays the moment.' },
   phrasesNone: { ja: 'この動画には、まだフレーズがありません', en: 'No lines for this clip yet' },
   phrasePlay: { ja: '{t}から聞く', en: 'Hear from {t}' },
-  // せりふ (Transcript)
-  transcript: { ja: 'せりふ', en: 'Transcript' },
+  // セリフ (Transcript)
+  transcript: { ja: 'セリフ', en: 'Transcript' },
   transcriptNote: { ja: 'この動画のセリフを全部、時間の順に。タップするとその行から再生します。', en: 'Every line of the clip, in time order. Tap one to play from there.' },
   seg: { ja: '▶ {from}–{to}秒', en: '▶ {from}–{to} s' },
   credit: { ja: '動画：{credit}（YouTubeの埋め込みで再生）。質問と解説は私たちが作ったものです。', en: 'Video: {credit}, played by YouTube’s embed. The questions and notes are ours.' },

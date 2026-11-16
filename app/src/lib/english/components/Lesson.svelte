@@ -9,7 +9,7 @@
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
   // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度. この動画のフレーズ (the bar's
   // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases);
-  // せりふ (the bar's file button, a bank with transcript lines only) another, the whole transcript following the
+  // セリフ (the bar's file button, a bank with transcript lines only) another, the whole transcript following the
   // playhead (Transcript).
   // A bank with scenes shows 場面のあらすじ under the controls (Scenes; 字幕's sheet hides it on this phone); with 英語
   // captions on, directly under the video instead, as the Japanese line paired with YouTube's English one.
@@ -97,7 +97,7 @@
   let flagQ = $state<number | null>(null);
   let flagOpen = $state(false);
   let body: HTMLElement | undefined = $state();
-  /** A level open over the lesson's place (kept): この動画のフレーズ, or せりふ when the bank has transcript lines. */
+  /** A level open over the lesson's place (kept): この動画のフレーズ, or セリフ when the bank has transcript lines. */
   let study = $state<false | 'phrases' | 'lines'>(false);
   const toStudy = (on: false | 'phrases' | 'lines') => ((study = on), body?.scrollTo({ top: 0 }));
 

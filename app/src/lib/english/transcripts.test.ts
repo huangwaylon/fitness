@@ -1,12 +1,11 @@
-// せりふ, the clips' transcripts (docs/english.md "Transcripts"): every transcripts/<video>.en.json, as the importer
-// writes them from the whisper pass, and every <video>.ja.json, our translations. The en file: the shape, time order
-// and no overlaps, the clip's end held when the clip is in the library, each line ≤ 200 characters. The ja file: one
-// line for each of the en file's with the same `t`, each ≤ 80 characters, every character in the trimmed font (names
-// in katakana, no English lines). And lineAt.
+// セリフ, the clips' transcripts (docs/english.md "Transcripts"): every transcripts/<video>.en.json, written from the
+// whisper pass, and every <video>.ja.json, our translations. The en file: the shape, time order and no overlaps, each
+// line ≤ 200 characters (the clip's length is the build's to hold: vite.config.ts english-data). The ja file: one line
+// for each of the en file's with the same `t`, each ≤ 80 characters, every character in the trimmed font (names in
+// katakana, no English lines). And lineAt.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CLIPS } from './clips/index.ts';
 import { lineAt } from './transcripts.ts';
 import { covers, parseRanges } from '../../../scripts/font-subsets.ts';
 import type { JaTranscriptFile, TranscriptFile, TranscriptLine } from './types.ts';
@@ -23,14 +22,13 @@ const css = readFileSync(join(import.meta.dirname, '../styles/fonts.css'), 'utf8
 const fontRanges = (w: number) => [...css.matchAll(/@font-face\s*{[^}]*}/g)].filter((m) => m[0].includes(`font-weight: ${w};`)).flatMap((m) => parseRanges(/unicode-range:\s*([^;]+);/.exec(m[0])?.[1] ?? ''));
 const FONT = [fontRanges(500), fontRanges(700)];
 
-/** The lines' timing: [from, to] with 0 ≤ from < to, in time order, no overlaps, the clip's end held; the problems. */
-function checkTiming(lines: readonly { t: readonly [number, number] }[], name: string, dur: number | undefined): string[] {
+/** The lines' timing: [from, to] with 0 ≤ from < to, in time order, no overlaps; the problems. */
+function checkTiming(lines: readonly { t: readonly [number, number] }[], name: string): string[] {
   const bad: string[] = [];
   lines.forEach((l, i) => {
     const at = `${name} #${i}`;
     const [a, b] = Array.isArray(l.t) && l.t.length === 2 ? l.t : [NaN, NaN];
     if (!Number.isFinite(a) || !Number.isFinite(b) || a < 0 || b <= a) bad.push(`${at}: t [from, to], 0 ≤ from < to`);
-    if (dur !== undefined && b > dur) bad.push(`${at}: ends after the clip (${dur} s)`);
     const prev = lines[i - 1];
     if (prev?.t && a < prev.t[1]) bad.push(`${at}: overlaps or out of order`);
   });
@@ -48,8 +46,7 @@ describe('transcript files', () => {
     expect(Object.keys(o).filter((k) => !['video', 'lines'].includes(k)), 'keys: video and lines only').toEqual([]);
     expect(o.video, 'video = the file name').toBe(f.replace(/\.en\.json$/, ''));
     expect(Array.isArray(o.lines) && o.lines.length > 0, 'lines: a list').toBe(true);
-    const dur = CLIPS.find((c) => c.video === o.video)?.dur;
-    const bad = checkTiming(o.lines, 'line', dur);
+    const bad = checkTiming(o.lines, 'line');
     o.lines.forEach((l, i) => {
       const at = `line #${i}`;
       if (Object.keys(l).sort().join() !== 'en,t') return void bad.push(`${at}: { en, t } only`);
@@ -67,7 +64,7 @@ describe('transcript files', () => {
     const en = EN.includes(`${video}.en.json`) ? (JSON.parse(readFileSync(join(DIR, `${video}.en.json`), 'utf8')) as TranscriptFile) : undefined;
     expect(en, `the en file ${video}.en.json`).toBeDefined();
     expect(o.lines.length, 'one line for each of the en file’s').toBe(en!.lines.length);
-    const bad = checkTiming(o.lines, 'line', CLIPS.find((c) => c.video === video)?.dur);
+    const bad = checkTiming(o.lines, 'line');
     o.lines.forEach((l, i) => {
       const at = `line #${i}`;
       if (Object.keys(l).sort().join() !== 'ja,t') return void bad.push(`${at}: { ja, t } only`);

@@ -1,4 +1,4 @@
-// せりふ, the clip's transcript (docs/english.md "Transcripts"): which line is on at the playhead. The lines are the
+// セリフ, the clip's transcript (docs/english.md "Transcripts"): which line is on at the playhead. The lines are the
 // local whisper pass's segments with our Japanese translations when in (transcripts/<video>.en|ja.json, in the clip's
 // bank: vite.config.ts english-data), each in time order. Pure.
 import type { TranscriptLine } from './types.ts';

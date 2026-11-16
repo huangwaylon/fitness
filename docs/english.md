@@ -143,19 +143,20 @@ without scenes shows neither.
 
 ## Transcripts
 
-せりふ: the clip's full English text with our Japanese translation (the user, 2026-11-16: the transcripts ship, the
-audio still never does). One file a video: `app/src/lib/english/transcripts/<YouTube video id>.en.json`,
-`{ "video", "lines": [{ "t": [from, to], "en" }] }` — the local whisper pass's segments (0.1 s; a run of 3+ identical
-lines is its loop over music or a talking head, cut), written by `app/scripts/english-transcripts.ts` from
-`~/friends/out/<video>/whisper.json` on the importer's machine. The translation is a second file,
-`<video id>.ja.json`: one line for each of the en file's, the same `t`, written by the translators (the paced fleet,
-`~/friends/TRANSLATE.md`). `transcripts.test.ts` holds every file: the shape (`video` = the file name), time order, no
-overlaps, the clip's end held when it's in the library; `en` ≤ 200 characters, trimmed; the ja file's lines the en
-file's own count and `t`s, `ja` ≤ 80 characters, no English lines (names in katakana), every character in the trimmed
-font. The build adds `lines` to the clip's bank, each line with its `ja` when the translation is in (its file name
-carries the transcript's version too: `catalog.ts withTranscript`); nothing more is precached. The lesson's せりふ
-button opens the whole transcript under the pinned player: the line at the playhead follows it as it plays (`transcripts.ts
-lineAt`), one tapped plays from there, the Japanese under its English when in.
+セリフ: the clip's full English text, with our Japanese translation when written (the user, 2026-11-16: the
+transcripts ship, the audio still never does). One file a video: `app/src/lib/english/transcripts/<YouTube video id>.en.json`,
+`{ "video", "lines": [{ "t": [from, to], "en" }] }`: the local whisper pass's segments (0.1 s; noise that is mostly not
+Latin letters dropped; a run of 3+ identical lines, its loop over music or a talking head, cut; a line over 200
+characters split at a sentence end), written by `npm run english:transcripts -- <out dir> [--ids a,b] --write` from
+`~/friends/out/<video>/whisper.json`. A translation is a second file, `<video id>.ja.json`: one line for each of the en
+file's, the same `t`. `transcripts.test.ts` holds every file: the shape (`video` = the file name), time order, no
+overlaps; `en` ≤ 200 characters, trimmed; the ja file's lines the en file's own count and `t`s, `ja` ≤ 80 characters,
+no English lines (names in katakana), every character in the trimmed font. The build adds `lines` to a library clip's
+bank, each with its `ja` when in, held to the clip's length (a file written before its clip joined the library needs no
+rewrite); the bank's file name carries the transcript's version (`catalog.ts withTranscript`); nothing more is
+precached. The lesson bar's セリフ button (a bank with lines only) opens the whole transcript as a level under the
+pinned player: the line at the playhead marked and kept in view (`transcripts.ts lineAt`; a touch or a wheel on the list
+holds the follow 6 s), one tapped plays from there, the Japanese under its English when in.
 
 ## Progress
 
