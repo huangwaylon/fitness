@@ -10,11 +10,6 @@ next activate. What is left, and why:
 contract/log.ts keeps the `mic.*` log events: builds from before the removal may still send them until they reload.
 They go with the relay cleanup (Phase 6), after the old builds are gone.
 
-## はつおん ききわけ
-
-app/content/mic/pairs.yaml and games/pair/pairs.ts still compile into the `mic-pairs` part, and its audio pack is still
-shipped. Nothing plays them. They go with the rest of the old content after the switch to English Study.
-
 ## In the registry
 
 Old `listen` rows of the mic games (`gm` `mane`, `kuri`, `pair`, `role`) carry minutes only (`r: []`).

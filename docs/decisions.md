@@ -434,29 +434,12 @@ NH's event tracks replace the hour's on their days; surf, wind, rain, birds and 
 
 ## ききみみ
 
-The English listening game's decisions in force; detail in [kikimimi](kikimimi.md) and [the mic](kikimimi-mic.md).
-- **Lazy:** the sheet and each level's content are their own chunks; the first load gains only the invite listener.
-  Why: nothing heavy before it's opened.
-- **The host is the clock:** the host's `skip` is its position, beaconed every 3 s; every phone adopts it. A lobby is
-  local until 「誘う」. Why: a computed schedule drifted after one lost message.
-- **Modes and options ride on the seed's bits**, the host picking the least repeated of 24 seeds. Why: no relay deploy,
-  and every phone deals the same deck.
-- **A level shows only when every item has a clip.** Why: the clips are the readiness signal, nothing to flip.
-- **American English first;** UK/AU only as tagged accent exposure (≤ 10 %) at やま and ほし. Why: the learners' target,
-  with a little variety at the top.
-- **Audio in packs**, each fetched whole and once, on Pages (no R2). Why: Pages' 20,000-file limit.
-- **`play` beside `quiz`:** later games send `play`; the quiz too once every phone knows it (`QUIZ_ON_PLAY`). Why: an
-  older phone must still hear it.
-- **No microphone** (2026-11-16: the speaking modes removed, `microphone=()`). While it shipped it was off by default,
-  recordings stayed in memory, and no transcript or speaking score left the phone.
-- **Every place playable:** a lane's game offers all five places (catalog.ts `PLACE_LVS`), each with content of its own
-  level: harder words and sentences up the island, not only more decoys. Why: everyone picks their level.
-- **Plain speech in the tiles:** a contraction shows as said, never expanded; only gonna / wanna / gotta are respelled
-  tiles; a stage caps its reduced tiles (listen.ts `REDUCED_CAP`: 20 / 25 / 30 %), and a recorded line carries its
-  `tone:` (scripts/tts/tone-picks.json). Why: listening, not slang drills, and a tone that fits the line.
-- **‹ back to the English page, a look-back not a rewind:** ‹ mid-game returns where it started, ✕ to the island;
-  「前の問題」 only shows the last question. Why: simple for kids and non-technical players.
-- **Stories stop at the auto-lock** (no wake lock, no lock-screen playback). Why: the screen doesn't stay on at bedtime.
+Retired on 2026-11-16 for English Study ([english.md](english.md)); what's left is in [kikimimi](kikimimi.md) and
+[the mic](kikimimi-mic.md).
+- **No microphone:** `microphone=()`. While it shipped it was off by default, recordings stayed in memory, and no
+  transcript or speaking score left the phone.
+- **Old rows kept, never re-read for progress:** `listenOf` parses every shape ever written until the rows are deleted.
+  Why: the partner's summaries and a restore re-read the record.
 
 ## Trips and offline
 

@@ -136,52 +136,11 @@ export const DEVICE = {
   /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,
    *  not again after a reload). */
   newYearIntro: 'island.newYearIntro',
-  /** localStorage: `1` … `7`: the ききみみ クイズ level last played on this phone (the next lobby's;
-   *  components/kikimimi/KikimimiSheet.svelte). */
-  kikimimiLv: 'island.kikimimiLv',
-  /** localStorage: `20` | `30` | `60` | `0` (none): the ききみみ こたえる じかん last set on this phone (the next lobby's;
-   *  30 by default). */
-  kikimimiTimer: 'island.kikimimiTimer',
-  /** localStorage: `{who, rows: [{at, row}]}`, my last ききみみ games' `listen` rows (contract/listen.ts) as recorded on
-   *  this phone: きろく's fallback while offline or before the record has them (components/kikimimi/progress.svelte.ts;
-   *  the record's rows win, by game id). */
-  kikimimiGames: 'island.kikimimiGames',
-  /** localStorage: `string[][]`, the item ids of my last ききみみ games on this phone, newest first (kikimimi/recent.ts:
-   *  the host's seed with the least overlap, a solo game's and にがて れんしゅう's freshest items; at most 6 games). */
-  kikimimiRecent: 'island.kikimimiRecent',
-  /** localStorage: `{who, fr: {[villager]: level}, ph: string[]}`: what ききみみ's ずかん last showed on this phone (the
-   *  friendship levels announced with a heart, the phrases caught marked NEW until seen; components/kikimimi/zukan/). */
-  kikiZukan: 'island.kikiZukan',
-  /** localStorage: `3` | `5` | `7`: ききみみ's weekly target in days on this phone (its せってい; 3 by default). */
-  kikiWeekGoal: 'island.kikiWeekGoal',
-  /** localStorage: `1` | `0`: ききみみ's 「おとを 1だいに まとめる」 default for a new lobby on this phone (off by default). */
-  kikiSame: 'island.kikiSame',
-  /** localStorage: `always` | `missed` | `never`: when ききみみ shows the Japanese at a reveal and in the review (always
-   *  by default). */
-  kikiJa: 'island.kikiJa',
-  /** localStorage: `{who, s: {[serial]: {done, at?, last?, guess?, later?}}, timer?}`: おやすみ ものがたり on this phone
-   *  (kikimimi/bedtime.ts SerialProgress: the chapters finished and when, where to pick up, the morning-after guess;
-   *  the sleep timer last set). */
-  kikiStory: 'island.kikiStory',
-  /** localStorage: `{[who]: 1}`: ききみみ's first-run welcome seen (or put off: あとで) by that player on this phone
-   *  (docs/kikimimi.md "First run"). */
-  kikiOnboarded: 'island.kikiOnboarded',
   /** localStorage: `{who, clips: {[id]: Saved}}`: English Study's place in each clip begun on this phone (its question,
    *  the answers, the study time not sent yet: lib/english/session.ts), so a lesson left resumes there. */
   englishLesson: 'island.english.lesson',
   /** localStorage: `{[who]: day}`: the last study day English Study's おかえりなさい was shown for (once a gap). */
   englishBack: 'island.english.back',
-  /** localStorage: `{[mode]: level}`: a ばしょ picked over おまかせ on a mode's page on this phone (none: おまかせ, the
-   *  placed stage). */
-  kikiStage: 'island.kikiStage',
-  /** localStorage: `{[who]: stage[]}`: the しまの みち landmarks whose celebration that player has seen on this phone
-   *  (docs/kikimimi.md "Stamps, letters and landmarks"; the badge stays, from the stamps). */
-  kikiLandmarks: 'island.kikiLandmarks',
-  /** localStorage: `{[who]: [itemId, day][]}`: よみきき サンド's まだ on this phone, folded in as "hard" (kikimimi/srs.ts
-   *  madaOf; no row, nothing on the wire; the newest 200 a player). */
-  kikiMada: 'island.kikiMada',
-  /** localStorage: `1`: 音の へんしん's dictation answered with tiles on this phone (none: typed; docs/kikimimi.md "音の へんしん"). */
-  kikiTiles: 'island.kikiTiles',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
@@ -269,6 +228,17 @@ const safe = <T>(f: () => T): T | null => {
 let local: KV | null = safe(() => win?.localStorage ?? null);
 let session: KV | null = safe(() => win?.sessionStorage ?? null);
 let listener: ((p: StorageProblem) => void) | null = null;
+
+/** localStorage keys of what's gone: ききみみ's (its levels, timer, games copy, ずかん, story, stages… and its mic's),
+ *  retired with it on 2026-11-16. Each load removes them (routes/+layout.ts; nothing once they're gone). */
+const RETIRED = ['island.kikimimiLv', 'island.kikimimiTimer', 'island.kikimimiGames', 'island.kikimimiRecent', 'island.kikiZukan',
+  'island.kikiWeekGoal', 'island.kikiSame', 'island.kikiJa', 'island.kikiStory', 'island.kikiOnboarded', 'island.kikiStage',
+  'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe'] as const;
+
+/** The retired keys removed from this phone's localStorage (none there: nothing happens). */
+export function clearRetired(kv: KV | null = local): void {
+  if (kv) for (const k of RETIRED) safe(() => kv.removeItem(k));
+}
 
 /** Tests: swap the stores. */
 export function configureStorage(o: { local?: KV | null; session?: KV | null }): void {

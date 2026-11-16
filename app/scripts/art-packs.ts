@@ -5,7 +5,7 @@
 // didn't change keeps its name and bytes, so the phones' caches keep it). A clothing tab's closet icons first
 // (player3d/parts.json), so a closet tab costs its first pack. Loose (static/art/finds/<group>/<id>.webp, each its own
 // URL): the furniture (the shop's ずかん pieces, the tree gifts, the tent's) and every key the code names (a literal
-// `finds/items/…` in src: けんこう's cards, ききみみ's pictures, the trips' packing list), so a single one never costs a
+// `finds/items/…` in src: けんこう's cards, the trips' packing list), so a single one never costs a
 // pack. The index (each pack's keys) goes to static/art/finds/pack/index.<hash>.json and its hash to
 // src/lib/artPack/packs.json (bundled). A key's bytes come from its loose file (scripts/nh-icons.ts and world3d-models.ts
 // --museum write them there) over the packs as they are; a key that should be loose and is only packed is written

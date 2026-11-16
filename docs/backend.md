@@ -258,7 +258,7 @@ never data of record: the record still catches an offline phone up.
   `MAX_BYTES` (a `replay` ≤ `REPLAY_BYTES`). Client intents:
   - The shared world's, kept for the day ([Shared world](#shared-world)): `walk`, `act`, `catch`, `world`, `pick`,
     `put`, `shake`, `decor`.
-  - Presence only: `drag`, `tent`, `fish`, `say`, ききみみ's `quiz` and `play`
+  - Presence only: `drag`, `tent`, `fish`, `say`, the retired ききみみ's `quiz` and `play`, sent by no build now
     ([kikimimi-engine.md](kikimimi-engine.md#the-play-wire)); `highfive`, held a day for an away recipient
     ([decisions](decisions.md#a-high-five-goes-over-the-relay-only)); `music` ([sound-sync.md](sound-sync.md)); `saved`,
     `ping` → `pong`, `got`.
@@ -396,7 +396,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Client** (`store/live.ts`): `onChange` → one `refresh({fresh: true})` after `PUSH_GATHER_MS`, skipped when the
   cache has it and for this page's own `event` (`sid`); my other devices' wait till they pause (`MINE_WAIT_MS`), so the
   editor's burst of writes from the Mac is a few fetches, and so does a partner's `calm` run (only events the island
-  doesn't draw: live-protocol.ts CALM_EVENTS, the meal log, ききみみ, packing, the wedding board; `CALM_WAIT_MS` 10 s).
+  doesn't draw: live-protocol.ts CALM_EVENTS, the meal log, `listen`, packing, the wedding board; `CALM_WAIT_MS` 10 s).
 
 ## Service worker
 `app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`).
@@ -444,7 +444,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 |---|---|---|
 | `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` dropped, then LRU past `ROOM_CAP_BYTES` (`roomEvict`) |
 | `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU past `ART_CAP_BYTES` |
-| `island-listen-v1` | ききみみ's audio ([kikimimi-engine.md](kikimimi-engine.md#playback)) | cache-first, never revalidated, outlives builds; a Range request passes to the network (`listenEvict`) |
+| `island-listen-v1` | the retired ききみみ's audio ([kikimimi-engine.md](kikimimi-engine.md#audio)) | cache-first, never revalidated, outlives builds; a Range request passes to the network (`listenEvict`) |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
@@ -461,9 +461,9 @@ cross-origin and always live.
 
 - **Offline:** what a phone has shown once reads offline; nothing is prefetched unasked (`e2e/offline.spec.ts`
   checks each kind). Precached (`scripts/load-budget.ts` `PRECACHE`): the common font slices
-  (`PRECACHED_FONT_SLICES`), each trip's cover and the trail tracks. MapLibre, ききみみ's parts and what a phone may
+  (`PRECACHED_FONT_SLICES`), each trip's cover and the trail tracks. MapLibre and what a phone may
   never open (vite.config.ts `feature-names`) go into this version's shell when first loaded and are carried on by each
-  install (`carryPlan`); offline they import only if a shell holds them (`travel/map/cached.ts`, `pool.ts`), else
+  install (`carryPlan`); offline they import only if a shell holds them (`travel/map/cached.ts`), else
   オフラインです. The installed app asks `navigator.storage.persist()` once, after its first good sync
   (`sync/persist.ts`).
 - **Saved areas** ([design](design.md#offline-maps)): `lib/offline/plan.ts` (pure) sizes an area by measured means per

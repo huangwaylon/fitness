@@ -241,16 +241,16 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc in the 44px hit, one look everywhere,
   over a photo or a map too (‹ grown into a pill: ‹ しまへ in a room, ‹ 戻る on the board). No other ✕ or ‹. Floating
   cards put the same ✕ at their top-right corner.
-- **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (ききみみ), whose data (健康,
+- **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (English Study), whose data (健康,
   ごはん). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
   place (`middle`), 健康 | ごはん's page switch.
 - **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存), no キャンセル.
   An edit mode inside a sheet or the world (a memo, a board note, a goal's tray) has キャンセル then its action. A confirm
   asks 「…を削除しますか？」 and answers with the verb, never はい / いいえ: a list's is an `ActionSheet` (the coral 削除
-  row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける, ききみみ's やめる) a sheet
+  row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける) a sheet
   with キャンセル + the verb (`.two-cta`, `.btn.danger` when it loses something). A delete that can be undone acts at
   once with 取り消す on its banner.
-- The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, ききみみ, ボット, 設定) open and close at once:
+- The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, English Study, ボット, 設定) open and close at once:
   no zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
 
 ### Unified kit
@@ -276,8 +276,7 @@ stay trip data).
   `/dev/kit`.
 - **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.prow` + `.sw` on/off · `.btn` a verb, never a
   status; a card's acts behind one ⋯.
-- **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome;
-  ききみみ keeps emoji as decoration only (medals, badges, a domain's mark), its controls and locks drawn.
+- **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome.
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills; packing
   categories as NH items (`packView.ts`). No characters in the sheets.
 - Every tappable has its `data-sfx` (the shown tab / chip `none`); fields 16px+; no grabber.
@@ -579,11 +578,11 @@ phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
   (`guest.jarNote` in place of the rewards), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
   Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours, no ボット ([Bots](bots.md)).
-  ききみみ: the members' games as their summaries. Its island opens at its own villager (far up the island; only the
+  English Study: its own progress, no partner line. Its island opens at its own villager (far up the island; only the
   open position, `IslandScene` `GUEST_OPEN_BACK`).
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every
   home's room and its own house's look, the editor, watering, wishes, the weather, the shop, the museum, K.K., the
-  board, ききみみ), its finds credited in the shared 図鑑. It earns and spends no ベル, sets none of our goals and writes
+  board, English Study), its finds credited in the shared 図鑑. It earns and spends no ベル, sets none of our goals and writes
   neither the wedding board nor a trip's notes (the record refuses those).
 - **Its villager:** as the members' ([Sleep](#sleep)), never on an outing of its own; drawn like the partner's (a lilac
   name tag), a tap a high-five.
@@ -763,7 +762,7 @@ found it when, NH's line) pinned.
   nothing ([perf](ops/perf.md)).
 - **The curator:** フータ behind his desk, watching my villager near him, else still but for his blinks (the visitors
   too); he greets me once a visit, a tap is one of his lines (never twice running), now and then the newest find.
-- **Visitors** (`visitors.ts`): NH villagers from ききみみ's cast through the Tokyo day, a few a room, seeded by the date
+- **Visitors** (`visitors.ts`): NH villagers, three of each personality, through the Tokyo day, a few a room, seeded by the date
   (the same everywhere, nothing sent); a tap: a hop and a line in its personality's voice.
 - **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds and each genuine artwork a
   present has held. A tap: its card (who found it and when, a skeleton's progress), docked clear of the exhibit; with a
@@ -955,13 +954,6 @@ boom box) plays on a day either of us met 🍑 Exercise, or when the island is o
 ラジオ体操 on the island's [shared stage](#shared-music) and every awake villager (the guest's and a visitor too) does
 NH's three stretches together on every phone; then it's done for the day.
 
-### ききみみ クイズ
-
-English listening for A, B and the guest: everything is [kikimimi.md](kikimimi.md) (speaking
-[kikimimi-mic.md](kikimimi-mic.md), the content [curriculum.md](curriculum.md)). On the island: the menu's 英語 pill
-opens its full-height sheet, the island paused under it; an invite shows as a toast and on the pill
-([kikimimi.md](kikimimi.md) "UI details").
-
 ### Trips
 
 旅行, the trip guides (data, relay and maps: [travel.md](travel.md)), in the [unified kit](#unified-kit): the menu's
@@ -1044,7 +1036,7 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
   `styles/theme.css`.
 - **Text colours by surface:** themed surfaces take `--text`, `--text-soft`, `--leaf-text`, `--coral-text`; an
   always-cream object (a bubble, a cream button, a ticket) carries `.obj-cream`, the day colours back inside it. Content
-  text ≥ 13px (`--fs-s`); ききみみ's `readability.test.ts` holds both.
+  text ≥ 13px (`--fs-s`); `styles/contrast.test.ts` holds the palettes at 4.5:1.
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
 - **Tokens:** `styles/tokens.css` is the one source, block by block (`styles/vars.test.ts`: every `var(--x)`
   is defined). Coral is for errors only; the chart pair `--person-a` / `--person-b` is CVD-checked.

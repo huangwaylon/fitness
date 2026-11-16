@@ -228,8 +228,8 @@ Most red runs are the spec, not the app. Run a new or changed spec with `--repea
    `__world.idle()`, `__tent.stats().frames`, `data-*` attributes, `__world3d.camStill()` (the tap areas placed for the
    camera's last move); never `waitForTimeout` to "let it settle" (the hooks are `unknown` on `Window`, `src/app.d.ts`:
    a spec types what it reads).
-3. **Step the clock** when the app's timers matter: `page.clock.install({ time })`, `runFor(ms)` (rAF too). ききみみ:
-   install before the goto and step (e2e/kikimimi-nav.ts `runToQuestion`); never while a mic take listens.
+3. **Step the clock** when the app's timers matter: `page.clock.install({ time })`, `runFor(ms)` (rAF too):
+   install before the goto and step.
 4. **Find things by role or test id**, not by position or `nth()`: `getByRole('button', { name })`, `[data-tab=…]`,
    `[data-critter]`. Add a `data-*` hook when there is none.
 5. **WebKit is the browser.** It scrolls by whole px (compare a camera z with a tolerance), has no mouse wheel on a

@@ -112,14 +112,14 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
   const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || (pathOf(u).endsWith('.pak') && now - index[u][1] > PAK_UNUSED_MS));
   return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
 }
-/** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak: lib/kikimimi/packing.ts, docs/kikimimi-engine.md "Audio"),
+/** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak, docs/kikimimi-engine.md "Audio"),
  *  fetched whole as a game needs them and cached on first use in a cache of their own that outlives builds: cache first,
  *  never revalidated (the hash is in the name: a re-spoken clip makes a new pack name), bounded by bytes like the room
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
 export const LISTEN_CACHE = 'island-listen-v1';
 export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** The listen cache's bound: past it, the least recently used packs go (of ~124 MiB of packs in all: docs/kikimimi-engine.md
- *  "Packs"; a level-4 game's eight are ~9 MB). */
+/** The listen cache's bound: past it, the least recently used packs go (of ~124 MiB of packs in all; a level-4 game's
+ *  eight were ~9 MB). */
 export const LISTEN_CAP_BYTES = 30_000_000;
 /** A pack used within this is never evicted (a game in progress keeps its packs; a page still on the last build its
  *  packs' older versions). */

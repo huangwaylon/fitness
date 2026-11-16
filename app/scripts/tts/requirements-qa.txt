@@ -1,9 +1,0 @@
-# scripts/tts/tts.py wer / mos / sv: whisper normalising and WER, UTMOS (torch.hub tarepan/SpeechMOS), ECAPA (speechbrain)
-jiwer==4.0.0
-whisper-normalizer==1.0.0
-librosa==0.11.0
-soundfile==0.14.0
-torch==2.15.0
-torchaudio==2.11.1  # the newest wheel (none for torch 2.15 yet); SpeechMOS and speechbrain only load and resample
-speechbrain==1.1.2
-praat-parselmouth==0.4.7  # tts.py prosody: a toned take's pitch and silences (src/lib/kikimimi/tone.ts)

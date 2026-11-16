@@ -264,9 +264,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .sec-label.leaf { color: var(--leaf-text); }
 .sec-label.sticky { position: sticky; top: var(--sticky-top, 0px); z-index: 2; margin: 0 -12px; padding: 10px 16px 6px; background: var(--surface); }
 /* a tag: a small label on a row (a category, ☑ 1/3, a game's level, a booking's state), a sunk pill at 13px; in the
-   kit's scope (the full sheet and anything opened in it), ききみみ's and ボット's (a pop sheet). .new: the one NEW marker
+   kit's scope (the full sheet and anything opened in it) and ボット's (a pop sheet). .new: the one NEW marker
    (gold, anywhere: a museum room's new finds, ことば's first catch) */
-:where(.kit, [data-kikimimi], [data-bots]) .tag, .tag.new {
+:where(.kit, [data-bots]) .tag, .tag.new {
   display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap;
   font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); background: var(--ctl-off);
 }

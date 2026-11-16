@@ -13,7 +13,7 @@
 //   vitest      npx vitest run (--quick: only the tests this branch's changes reach, `--changed` from where it left origin/main)
 //   quarantine  scripts/e2e-quarantine.ts: every quarantined test has an owner
 //   docs        scripts/docs-check.ts: the docs' links, anchors and paths, and the code's citations of them, resolve
-//   build       --build: npm run build (the kikimimi budget, the headers, load-budget's precache limit)
+//   build       --build: npm run build (the headers, load-budget's precache limit)
 // No e2e: that's `npm run e2e:ci-like`.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';

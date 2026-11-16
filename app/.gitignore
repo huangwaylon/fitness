@@ -5,7 +5,7 @@ build-pages/
 test-results/
 playwright-report/
 playwright-results.json
-# the kikimimi TTS pipeline: venvs, reference WAVs, raw masters, work files (scripts/kikimimi-audio.ts)
+# the asset scripts' work folders (.cache/player/, .cache/room/)
 .cache/
 # npm run coverage (vitest --coverage: coverage/coverage-summary.json)
 coverage/

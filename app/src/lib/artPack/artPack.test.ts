@@ -25,7 +25,7 @@ describe('what’s packed', () => {
   it('the clothing, recipes and artworks, by ずかん tab; never the furniture (the shop, the tree gifts, the tent) nor a key the code names', () => {
     expect(SCRIPT_CLOTHING).toEqual(CLOTHING_CATEGORIES);
     const pins = pinned();
-    expect(pins.size).toBeGreaterThan(40);
+    expect(pins.size).toBeGreaterThan(15);
     for (const it of ITEMS) {
       const key = `finds/items/${it.id}`;
       const furniture = (FURNITURE_CATEGORIES as readonly string[]).includes(it.category);

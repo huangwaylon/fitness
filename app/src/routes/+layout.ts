@@ -1,6 +1,6 @@
 // Client-rendered PWA: the browser computes the week from the record's snapshot (lib/model).
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
-import { DEVICE, localKV, readJson } from '#lib/sync/storage.ts';
+import { DEVICE, clearRetired, localKV, readJson } from '#lib/sync/storage.ts';
 import { resolve } from '$app/paths';
 import { opensIsland } from '#lib/ui-state/boot.ts';
 import type { LayoutLoad } from './$types';
@@ -12,6 +12,8 @@ import { watchClaims } from '#lib/ui-state/update.ts';
 (globalThis as { __islandStarted?: () => void }).__islandStarted?.();
 // a newer worker's claim asks Kit for the deployed version from now on, not from the layout's mount (ui-state/update.ts)
 watchClaims(() => updated.check());
+// the keys of what's gone, off this phone (sync/storage.ts RETIRED)
+clearRetired();
 
 export const ssr = false;
 export const prerender = false;

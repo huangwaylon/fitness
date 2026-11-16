@@ -1,9 +1,9 @@
-// Files into packs of a bounded size, as stably as can be (ききみみ's audio: kikimimi/packing.ts; the players' parts:
+// Files into packs of a bounded size, as stably as can be (the players' parts:
 // player3d/packing.ts): a pack whose files didn't change keeps its bytes, name and hash, so the phones' caches keep it.
 // Pure.
 
 /** A home's k-th part's name (1-based): the home's own name for the first. */
-export const partName = (home: string, k: number): string => (k === 1 ? home : `${home}-${k}`);
+const partName = (home: string, k: number): string => (k === 1 ? home : `${home}-${k}`);
 
 /** A file to pack: its id and length (bytes). */
 interface PackClip {

@@ -36,7 +36,7 @@ const PUSH_GATHER_MS = 300;
  *  at most MINE_MAX_MS after the first. The welcome and the 15-minute check converge the rest. */
 const MINE_WAIT_MS = 30_000;
 const MINE_MAX_MS = 120_000;
-/** A partner's change of only what the island doesn't draw (the relay's `calm`: a meal, ききみみ, a packing list, the
+/** A partner's change of only what the island doesn't draw (the relay's `calm`: a meal, a listen row, a packing list, the
  *  wedding board) while the socket is up: one trailing fetch this long after the last, at most CALM_MAX_MS after the
  *  first (a meal logged every ~5 s was 12 fetches in 80 s; r3 L9). The island's own (a catch, the farm) at once. */
 const CALM_WAIT_MS = 10_000;
@@ -411,7 +411,7 @@ export class LiveBackend implements Backend {
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
-      // (a ききみみ game's row refused, by a relay from before it: kept on this phone for きろく, no toast; docs/kikimimi.md "Storage";
+      // (a `listen` row refused, by a relay from before its fields: no toast;
       // a buy of a piece I have already, my other phone's: nothing lost, no toast)
       if (r.dropped.some((ev) => ev.type !== 'listen' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();

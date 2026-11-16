@@ -139,8 +139,9 @@ export interface State {
   /** My foods (`food_custom`: each custom food's ops, contract/food.ts) as raw rows (RAW_EVENTS); everyone's, read by
    *  everyone (model/food.ts customs). Never read by the economy. */
   foodCustom: EventRow[];
-  /** ききみみ クイズ's games (`listen`, contract/listen.ts) as raw rows (RAW_EVENTS): my own whole, the partner's as
-   *  summaries (contract/guest.ts rowsFor); read by the game's きろく only (kikimimi/progress.ts). Never read by the economy. */
+  /** The `listen` rows (contract/listen.ts: English Study's, and the old ききみみ's until they're deleted) as raw rows
+   *  (RAW_EVENTS): my own whole, the partner's as summaries (contract/guest.ts rowsFor); read by English Study's
+   *  progress (english/progress.ts). Never read by the economy. */
   listen: EventRow[];
   /** English Study's flags and their reviews (`eflag`, `eflag_done`: contract/eflag.ts) as raw rows (RAW_EVENTS),
    *  everyone's; read by its sheet only (lib/english/flags.ts). Never read by the economy. */

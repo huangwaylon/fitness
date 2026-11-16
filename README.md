@@ -89,7 +89,6 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/src/lib/layout/` | The island's editable layout: its grid, ops, default, nav and checks |
 | `app/src/lib/world/` | The island's game model, pure (no component, no DOM): the world and its walk, critters, sea, weather, day seeds, the farm's batch writes |
 | `app/src/lib/food/`, `sound/` | The food data's loading and search; the music and sounds |
-| `app/src/lib/kikimimi/`, `mic/` | ききみみ: decks, content, the round's rules; the mic (capture, VAD, recognisers, matching) |
 | `app/src/lib/travel/`, `hiking/`, `wedding/` | 旅行's trip guides (`trips/`); 登山's trails and tracks; 結婚式's board settings and progress |
 | `app/src/lib/bots/`, `gym/`, `its/`, `kalori/` | ボット: the bots' shared status types; the gym bot's, the ITS booker's and Kalori's clients |
 | `app/src/lib/offline/` | Map areas saved ahead for offline: their tiles and size |
@@ -123,10 +122,7 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [sound-sync.md](docs/sound-sync.md) | How music and sounds stay in step across phones |
 | [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, 旅行, 結婚式, 登山 |
 | [english.md](docs/english.md) | English Study: the TV clips, the lesson flow, the embed, progress and flags |
-| [kikimimi.md](docs/kikimimi.md) | ききみみ, the English listening games, as the player sees them: games, hub, progress, rewards; its open items |
-| [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's round engine, wire, content loading and packs; the mic modes' removal |
-| [curriculum.md](docs/curriculum.md) | What ききみみ teaches: stages, scenarios, units, content and TTS rules, the listening check, its backlog |
-| [app/content/listen/README.md](app/content/listen/README.md) | The listening units' YAML format |
+| [kikimimi.md](docs/kikimimi.md) · [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) · [curriculum.md](docs/curriculum.md) | The retired ききみみ: only what its old `listen` rows, the `quiz`/`play` intents and the relay's `/stt` still need |
 | [ops/perf.md](docs/ops/perf.md) | Performance: the budgets, how to measure, the open items |
 | [ops/runbook.md](docs/ops/runbook.md) | Running it: hosting, deploys, keys, the relay, recovery |
 | [ops/testing.md](docs/ops/testing.md) | The test tiers and why, CI (the lean gate, shards, the flaky ledger) and how to write a stable spec |

@@ -10,7 +10,7 @@ const ctx: Ctx = {
   specs: ['boot.spec.ts', 'tent.spec.ts', 'tent-hold.spec.ts', 'bots-call.spec.ts', 'bots-mic-role.spec.ts', 'fishing3d.spec.ts', 'offline.spec.ts', 'big.spec.ts'],
   importers: new Map([['island.ts', Array.from({ length: 11 }, (_, i) => `s${i}.spec.ts`)], ['trips.ts', ['tent-hold.spec.ts']]]),
   rules: [
-    ['content/**', ['offline']],
+    ['static/sounds/**', ['offline']],
     ['src/lib/components/bots/*/**', ['bots-$1*', 'bots-mic-$1*']],
     ['src/lib/components/tent/**', ['tent*']],
     ['src/lib/nowhere/**', ['missing']],
@@ -25,14 +25,14 @@ describe('e2e impact', () => {
     expect(mapFile('src/lib/components/bots/call/Call.svelte', ctx)).toEqual(['bots-call.spec.ts']);
     expect(mapFile('src/lib/components/bots/role/x.ts', ctx)).toEqual(['bots-mic-role.spec.ts']);
     expect(mapFile('src/lib/components/tent/engine.ts', ctx)).toEqual(['tent-hold.spec.ts', 'tent.spec.ts']);
-    expect(mapFile('content/listen/a.yaml', ctx)).toEqual(['offline.spec.ts']);
+    expect(mapFile('static/sounds/a.m4a', ctx)).toEqual(['offline.spec.ts']);
     expect(mapFile('src/lib/components/world3d/fishing3d.ts', ctx)).toEqual(['fishing3d.spec.ts']);
     expect(mapFile('src/lib/nowhere/x.ts', ctx)).toEqual([]);
     expect(mapFile('static/x.webp', ctx)).toEqual([]);
   });
 
   it('changed specs 3×, a helper its importers, an unmapped file the gate set only', () => {
-    const s = select(['e2e/tent.spec.ts', 'e2e/trips.ts', 'src/lib/store/actions.ts', 'src/lib/x.test.ts', 'content/a.yaml'], ctx);
+    const s = select(['e2e/tent.spec.ts', 'e2e/trips.ts', 'src/lib/store/actions.ts', 'src/lib/x.test.ts', 'static/sounds/b.m4a'], ctx);
     expect(s.gate).toEqual(['boot.spec.ts']);
     expect(s.x3).toEqual(['tent.spec.ts']);
     expect([...s.reached.keys()].sort()).toEqual(['offline.spec.ts', 'tent-hold.spec.ts']);
@@ -93,7 +93,7 @@ describe('e2e/impact.json', () => {
   const specs = readdirSync(join(app, 'e2e')).filter((f) => f.endsWith('.spec.ts'));
   const walk = (d: string): string[] => readdirSync(join(app, d)).flatMap((f) => (statSync(join(app, d, f)).isDirectory() ? walk(`${d}/${f}`) : [`${d}/${f}`]));
   const dirs = new Map<string, string[]>();
-  for (const f of [...walk('src'), ...walk('content')].filter((f) => !f.endsWith('.test.ts'))) {
+  for (const f of walk('src').filter((f) => !f.endsWith('.test.ts'))) {
     const d = f.slice(0, f.lastIndexOf('/'));
     dirs.set(d, [...(dirs.get(d) ?? []), f]);
   }
