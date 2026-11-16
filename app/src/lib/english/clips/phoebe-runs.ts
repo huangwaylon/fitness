@@ -21,7 +21,7 @@
 import type { Clip } from '../types.ts';
 
 export const phoebeRuns: Clip = {
-  id: 'phoebe-runs', video: 'uKfPu5UgzDE', title: 'Phoebe Runs Like Kermit the Frog', dur: 263, wpm: 163, band: 'slow',
+  id: 'phoebe-runs', video: 'uKfPu5UgzDE', title: 'Phoebe Runs Like Kermit the Frog', dur: 263, wpm: 163, band: 'mid',
   tags: ['友だち', 'お願い・断り'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

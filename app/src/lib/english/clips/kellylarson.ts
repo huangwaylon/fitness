@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const kellyLarson: Clip = {
   id: 'kellylarson', video: 'E8nPjG4UpPU', title: 'Time-Capsule Nutjob Kelly Larson', dur: 237, wpm: 177,
-  band: 'mid', tags: ['職場', 'お願い・断り'],
+  band: 'fast', tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

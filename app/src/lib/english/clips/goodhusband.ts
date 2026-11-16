@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const goodHusband: Clip = {
   id: 'goodhusband', video: 'OdA8QNTqn-A', title: 'Chris\' guide to being a good husband', dur: 245, wpm: 177,
-  band: 'mid', tags: ['恋愛', '友だち'],
+  band: 'fast', tags: ['恋愛', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const dwightDate: Clip = {
-  id: 'dwightdate', video: '-3qsZ2HTmKQ', title: 'Dwight Interrupts Michael\'s Date', dur: 133, wpm: 163, band: 'slow',
+  id: 'dwightdate', video: '-3qsZ2HTmKQ', title: 'Dwight Interrupts Michael\'s Date', dur: 133, wpm: 163, band: 'mid',
   tags: ['恋愛', '友だち'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

@@ -18,7 +18,7 @@ import type { Clip } from '../types.ts';
 
 export const leslieRedFlag: Clip = {
   id: 'modelun', video: 'NJlRjN77LGo', title: 'Leslie exposes her biggest red flag in front of Ben', dur: 260,
-  wpm: 163, band: 'slow', tags: ['恋愛', '友だち'],
+  wpm: 163, band: 'mid', tags: ['恋愛', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

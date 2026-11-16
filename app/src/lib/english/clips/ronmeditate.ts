@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronMeditate: Clip = {
-  id: 'ronmeditate', video: 'ActknnwERUs', title: 'Ron Swanson Tries Meditation', dur: 135, wpm: 163, band: 'slow',
+  id: 'ronmeditate', video: 'ActknnwERUs', title: 'Ron Swanson Tries Meditation', dur: 135, wpm: 163, band: 'mid',
   tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

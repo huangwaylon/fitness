@@ -111,14 +111,26 @@ import { jimBack } from './jimback.ts';
 import { ronDiane } from './rondiane.ts';
 import { jerryBurritoLie } from './burritolie.ts';
 import { beefMilk } from './beefmilk.ts';
+import { jerryMugged } from './jerrymugged.ts';
+import { ronSlash } from './ronslash.ts';
+import { aprilGetFired } from './aprilgetfire.ts';
+import { mexBus } from './mexbus.ts';
+import { newport } from './newport.ts';
+import { animalControl } from './animalctrl.ts';
+import { chardStand } from './chardstand.ts';
+import { bestBurger } from './bestburger.ts';
+import { chickParent } from './chickparent.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
   waitress,
   datinglang,
   laundromat,
+  chickParent,
   jerryBurritoLie,
+  jerryMugged,
   gameRoom,
+  aprilGetFired,
   johnnyGoodbye,
   centralperk,
   furniture,
@@ -128,6 +140,10 @@ export const CLIPS: readonly Clip[] = [
   beefMilk,
   heroes,
   buttOfJoke,
+  ronSlash,
+  mexBus,
+  animalControl,
+  chardStand,
   twodates,
   tobySafety,
   fluSeason,
@@ -136,8 +152,6 @@ export const CLIPS: readonly Clip[] = [
   ronFire,
   benArrested,
   pumpJamm,
-  phoebeRuns,
-  leslieRedFlag,
   jansStroller,
   unsexyRoadTrip,
   ronLeslieLocked,
@@ -146,10 +160,13 @@ export const CLIPS: readonly Clip[] = [
   benCriminal,
   imFine,
   firstComplaint,
+  // ふつう
+  phoebeRuns,
+  leslieRedFlag,
   dwightDate,
   ronPermit,
   ronMeditate,
-  // ふつう
+  newport,
   tomSwagger,
   ronWill,
   tomNegotiate,
@@ -185,12 +202,13 @@ export const CLIPS: readonly Clip[] = [
   evilLaugh,
   fluoride,
   joeyStinks,
+  // 速い
   kellyLarson,
   goodHusband,
-  // 速い
   pamLabor,
   ronHearing,
   ryanOffice,
+  bestBurger,
   couplesOnly,
   annOffended,
   phoebebook,

@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronPermit: Clip = {
-  id: 'ronpermit', video: 'Cq9rqDNOgh4', title: 'Ron\'s Permit', dur: 189, wpm: 163, band: 'slow',
+  id: 'ronpermit', video: 'Cq9rqDNOgh4', title: 'Ron\'s Permit', dur: 189, wpm: 163, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
