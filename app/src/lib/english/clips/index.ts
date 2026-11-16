@@ -320,6 +320,15 @@ import { habits } from './habits.ts';
 import { ursula } from './ursula.ts';
 import { pacMan } from './pacman.ts';
 import { tackleBen } from './tackleben.ts';
+import { shutdown } from './shutdown.ts';
+import { icSetTour } from './icsettour.ts';
+import { printfire } from './printfire.ts';
+import { ent720 } from './ent720.ts';
+import { bossAway } from './bossaway.ts';
+import { rachelJob } from './racheljob.ts';
+import { housetour } from './housetour.ts';
+import { willBeFine } from './willbefine.ts';
+import { marbleBox } from './marblebox.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -346,6 +355,7 @@ export const CLIPS: readonly Clip[] = [
   nanaclub,
   ronsReviews,
   leslieReady,
+  shutdown,
   mostLovedDenmark,
   poachBen,
   dwightHobbit,
@@ -395,6 +405,7 @@ export const CLIPS: readonly Clip[] = [
   creedDebbie,
   michaelCheerUp,
   triplets,
+  willBeFine,
   dinnerParty,
   liceOffice,
   thisIsMyBoyfriendDerek,
@@ -415,6 +426,7 @@ export const CLIPS: readonly Clip[] = [
   ronShowHost,
   senatorOscar,
   ronDiane,
+  marbleBox,
   beefMilk,
   andyAcademy,
   annFlowers,
@@ -427,6 +439,7 @@ export const CLIPS: readonly Clip[] = [
   saveBen,
   apothecaryTable,
   pamsMom,
+  housetour,
   // ふつう
   jointMission,
   ronLeslieLunch,
@@ -439,6 +452,7 @@ export const CLIPS: readonly Clip[] = [
   ronAward,
   threeBachelors,
   nutribars,
+  rachelJob,
   heroes,
   donnaBully,
   joeyLie,
@@ -471,6 +485,7 @@ export const CLIPS: readonly Clip[] = [
   textsMean,
   twilightCapsule,
   habits,
+  bossAway,
   animalControl,
   chardStand,
   leslieObama,
@@ -518,6 +533,7 @@ export const CLIPS: readonly Clip[] = [
   girlyApt,
   zorpVigil,
   craigTemp,
+  printfire,
   tomNegotiate,
   donnaTweets,
   donnaPosts,
@@ -573,11 +589,13 @@ export const CLIPS: readonly Clip[] = [
   promSeason,
   apologyVideos,
   tomScreenBan,
+  ent720,
   getaway,
   evilLaugh,
   whiteWhale,
   fluoride,
   joeyStinks,
+  icSetTour,
   kellyLarson,
   goodHusband,
   officeLock,

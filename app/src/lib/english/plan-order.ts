@@ -317,5 +317,14 @@ export const PLANNED: readonly string[] = [
   'unityquilt',
   'aprilwedding',
   'ursula',
-  'aprilleslie'
+  'aprilleslie',
+  'willbefine',
+  'housetour',
+  'shutdown',
+  'racheljob',
+  'icsettour',
+  'bossaway',
+  'marblebox',
+  'printfire',
+  'ent720'
 ];
