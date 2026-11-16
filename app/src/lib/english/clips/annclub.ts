@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const annclub: Clip = {
   id: 'annclub', video: 'YTVezU88sgY', title: 'Ann gets kicked out of the exclusive club', dur: 266, wpm: 190,
-  band: 'mid', tags: ['職場', '友だち'],
+  band: 'fast', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

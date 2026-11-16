@@ -37,6 +37,15 @@ import { collarBlind } from './collarblind.ts';
 import { ryanOffice } from './ryanoffice.ts';
 import { womensAppreciation } from './womensapp.ts';
 import { buttOfJoke } from './buttjoke.ts';
+import { tomSwagger } from './newjerry.ts';
+import { getaway } from './getaway.ts';
+import { babySex } from './babysex.ts';
+import { pamLabor } from './pamlabor.ts';
+import { fluSeason } from './fluseason.ts';
+import { sideQuest } from './sidequest.ts';
+import { evilLaugh } from './evillaugh.ts';
+import { guysGripe } from './guysgripe.ts';
+import { couplesOnly } from './couplesonly.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -47,23 +56,32 @@ export const CLIPS: readonly Clip[] = [
   furniture,
   buttOfJoke,
   twodates,
-  womensAppreciation,
+  fluSeason,
   phoebeRuns,
+  womensAppreciation,
   dwightDate,
+  tomSwagger,
   mamasDead,
-  // ふつう
   scarnRead,
+  // ふつう
   joeymakeup,
   snowCones,
+  babySex,
+  getaway,
+  evilLaugh,
   bucketList,
   fluoride,
   phoebebook,
+  pamLabor,
+  saylove,
   ryanOffice,
   waffleGift,
-  saylove,
-  joeyStay,
-  annclub,
+  couplesOnly,
+  sideQuest,
   // 速い
+  annclub,
+  joeyStay,
+  guysGripe,
   kathybook,
   collarBlind,
   savings,
@@ -71,10 +89,10 @@ export const CLIPS: readonly Clip[] = [
   rossNothing,
   emmaLocked,
   fakedating,
-  soulmates,
-  sebastian,
   seatingChart,
-  noturkey
+  soulmates,
+  noturkey,
+  sebastian
 ];
 
 /** Each wpm's band, the library cut in thirds (types.ts Band): ゆっくり below the ⌊n/3⌋th slowest, 速い from the
