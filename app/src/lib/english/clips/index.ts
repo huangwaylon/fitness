@@ -251,6 +251,15 @@ import { rossHidesIt } from './rosshides.ts';
 import { jerryBack } from './jerryback.ts';
 import { threeBachelors } from './bachelors.ts';
 import { paperco } from './paperco.ts';
+import { tobyTherapy } from './tobytherapy.ts';
+import { retreat } from './retreat.ts';
+import { andyComputer } from './andycomp.ts';
+import { icNewCast } from './icnewcast.ts';
+import { rossMarvel } from './rossmarvel.ts';
+import { dinnerplan } from './dinnerplan.ts';
+import { monicabroke } from './monicabroke.ts';
+import { saveBen } from './saveben.ts';
+import { nutribars } from './nutribars.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -258,12 +267,14 @@ export const CLIPS: readonly Clip[] = [
   michaelJim,
   waitress,
   bloomingdales,
+  dinnerplan,
   movember,
   datinglang,
   laundromat,
   dwightVsAndy,
   chickParent,
   chrisFlu,
+  monicabroke,
   kevinTalk,
   sellVeg,
   needyCall,
@@ -280,6 +291,7 @@ export const CLIPS: readonly Clip[] = [
   jerryBurritoLie,
   jerryMugged,
   benCool,
+  tobyTherapy,
   rossBreak,
   ronHumour,
   mriBlindDate,
@@ -287,6 +299,7 @@ export const CLIPS: readonly Clip[] = [
   dwightFetish,
   benpunch,
   dwightAppt,
+  andyComputer,
   thiefOfJoy,
   benSaves,
   ronSelfDefense,
@@ -330,6 +343,7 @@ export const CLIPS: readonly Clip[] = [
   ronTough,
   ronsKey,
   rossHidesIt,
+  saveBen,
   // ふつう
   jointMission,
   ronLeslieLunch,
@@ -341,6 +355,7 @@ export const CLIPS: readonly Clip[] = [
   vanBidding,
   ronAward,
   threeBachelors,
+  nutribars,
   heroes,
   donnaBully,
   saveJJs,
@@ -403,6 +418,7 @@ export const CLIPS: readonly Clip[] = [
   tomNegotiate,
   donnaTweets,
   donnaPosts,
+  rossMarvel,
   mamasDead,
   workBestie,
   hypocrite,
@@ -456,6 +472,7 @@ export const CLIPS: readonly Clip[] = [
   goodHusband,
   dwightFavors,
   jerryPainting,
+  icNewCast,
   pamLabor,
   piemary,
   ronHearing,
@@ -476,6 +493,7 @@ export const CLIPS: readonly Clip[] = [
   ronPoetry,
   aprilTynnyfer,
   joeyStay,
+  retreat,
   annclub,
   disadulation,
   pitchWomen,
