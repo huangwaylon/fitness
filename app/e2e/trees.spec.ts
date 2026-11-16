@@ -1,6 +1,8 @@
 // The trees' fruit through a day (docs/design.md "Trees"): each person's tree beside their villager; grey in the canopy
 // at 0, colouring with progress; once met it falls to the ground (once); a tap picks it up and it stays gone for the
-// Tokyo day (this phone's fruit-day); all four met, the canopy glints. Picking up never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
+// Tokyo day (this phone's fruit-day); all four met, the canopy glints and a gold fruit falls too. Only the tree's
+// owner picks its fruit up (into their pocket: 60 かいがら, the gold one 150); another's tap opens the popup. Picking up
+// never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
 // goals settled by 23:00). The popup's 朝 / 昼 / 夜 fill as meals are logged in ごはん.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -48,18 +50,31 @@ test('met fruit falls to the ground in colour; unmet ones colour with progress; 
     const g = Number(/grayscale\(([\d.]+)\)/.exec(await f.locator('.f').evaluate((el) => getComputedStyle(el).filter))?.[1]);
     expect(g).toBeGreaterThan(0), expect(g).toBeLessThan(0.55); // 50–95% of the goal by night
   }
-  // a tree with all four met glints
+  // a tree with all four met glints, and its gold fruit lies in front of the four
   for (const p of ['A', 'B']) {
-    const all = (await page.locator(`[data-stage="ground"][data-tree="${p}"]`).count()) === 4;
+    const all = (await page.locator(`[data-stage="ground"][data-tree="${p}"]:not([data-fruit="gold"])`).count()) === 4;
     await expect(page.locator(`.glints[data-tree="${p}"]`)).toHaveCount(all ? 1 : 0);
+    await expect(page.locator(`[data-fruit="gold"][data-tree="${p}"]`)).toHaveCount(all ? 1 : 0);
+  }
+  await page.waitForTimeout(1700); // the drops' bounce is over
+
+  // the partner's fallen fruit isn't mine to pick up: a tap opens their tree's popup, the fruit stays
+  const theirs = page.locator('[data-stage="ground"][data-tree="B"]').first();
+  if (await theirs.count()) {
+    const [tid, tb] = [await theirs.getAttribute('data-fruit'), (await theirs.boundingBox())!];
+    await page.mouse.click(tb.x + tb.width / 2, tb.y + tb.height / 2);
+    await expect(page.locator('.detail')).toBeVisible();
+    await expect(page.locator(`[data-stage="ground"][data-fruit="${tid}"][data-tree="B"]`)).toHaveCount(1);
+    // (a second tap closes it: a shake wants a third)
+    await page.mouse.click(tb.x + tb.width / 2, tb.y + tb.height / 2);
+    await expect(page.locator('.detail')).toHaveCount(0);
   }
 
-  // pick one up: it hops away; ベル don't move
+  // pick one of mine up: it hops away into my pocket; ベル don't move
   const bells = await hudBells(page).getAttribute('aria-label');
-  const one = ground.first();
+  const one = page.locator('[data-stage="ground"][data-tree="A"]').first();
   const [id, tree] = [await one.getAttribute('data-fruit'), await one.getAttribute('data-tree')];
   const b = (await one.boundingBox())!;
-  await page.waitForTimeout(1700); // the drop's bounce is over
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await expect(page.locator(`[data-fruit="${id}"][data-tree="${tree}"]`)).toHaveCount(0);
   await expect(page.locator('.detail')).toHaveCount(0); // a pick-up, not the popup

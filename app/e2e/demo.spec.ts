@@ -408,8 +408,8 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ まで：あと [1-8]つ$|^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
   // its last line: when this person's data last arrived (one home: the tree popup)
   await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
-  // each tree's four fruits (in the canopy, or fallen once met: e2e/trees.spec.ts)
-  await expect(page.locator('.if-scene [data-fruit]')).toHaveCount(8);
+  // each tree's four fruits (in the canopy, or fallen once met; the gold one besides: e2e/trees.spec.ts)
+  await expect(page.locator('.if-scene [data-fruit]:not([data-fruit="gold"])')).toHaveCount(8);
 });
 
 test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, hearts; never a sheet event', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {

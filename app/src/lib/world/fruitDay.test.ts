@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
-import { fruitDay, fruitFilter, fruitId, greyAt, markDropped, markPicked, stageOf } from './fruitDay.ts';
+import { fruitDay, fruitFilter, fruitGoods, fruitId, fruitMet, greyAt, markDropped, markPicked, stageOf } from './fruitDay.ts';
+import { sellPrice } from '#lib/contract/shop.ts';
+import { pickMaySend } from '#lib/contract/live-protocol.ts';
 import { TREE_FRUIT } from '../components/island/scene.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 
@@ -74,5 +76,32 @@ describe('the tree layout', () => {
   it('a canopy spot and a ground spot for each goal, left to right in ring order', () => {
     expect(TREE_FRUIT).toHaveLength(RING_FRUITS.length);
     for (let i = 1; i < TREE_FRUIT.length; i++) expect(TREE_FRUIT[i][0]).toBeGreaterThan(TREE_FRUIT[i - 1][0]);
+  });
+});
+
+describe('the goal fruit’s payout (2026-11-16: 60 a goal’s, 150 the gold one, credited to the tree’s owner)', () => {
+  const metOf = (n: number) => (f: (typeof RING_FRUITS)[number]) => RING_FRUITS.indexOf(f) < n;
+  it('the gold fruit is met only the day all four goals are', () => {
+    for (let n = 0; n <= 4; n++) expect(fruitMet('gold', metOf(n))).toBe(n === 4);
+    expect(RING_FRUITS.map((f) => fruitMet(f, metOf(2)))).toEqual([true, true, false, false]);
+  });
+  it('a picked-up fruit is its own goods: 60 a goal’s, 150 the gold one; the fruit picked up before keeps its 5', () => {
+    expect(RING_FRUITS.map((f) => sellPrice(`goods:${fruitGoods(f)}`))).toEqual([60, 60, 60, 60]);
+    expect(sellPrice(`goods:${fruitGoods('gold')}`)).toBe(150);
+    expect(RING_FRUITS.map((f) => sellPrice(`goods:${f}`))).toEqual([5, 5, 5, 5]);
+    // a perfect day's tree: 4 × 60 + 150
+    expect([...RING_FRUITS, 'gold' as const].reduce((a, f) => a + sellPrice(`goods:${fruitGoods(f)}`)!, 0)).toBe(390);
+  });
+  it('the gold one is picked up once a day, as the others (its own id in the day)', () => {
+    const d = '2026-11-16';
+    expect(stageOf(fruitId('A', 'gold'), true, fruitDay(d))).toBe('fall');
+    markPicked(d, fruitId('A', 'gold'));
+    expect(stageOf(fruitId('A', 'gold'), true, fruitDay(d))).toBe('gone');
+    expect(stageOf(fruitId('B', 'gold'), true, fruitDay(d))).toBe('fall');
+    expect(stageOf(fruitId('A', 'gold'), true, fruitDay('2026-11-17'))).toBe('fall');
+  });
+  it('only the tree’s owner picks its fruit up (the room’s rule); other things anyone', () => {
+    expect([pickMaySend('A', 'fr:A:apple'), pickMaySend('B', 'fr:A:apple'), pickMaySend('G', 'fr:B:gold'), pickMaySend('B', 'fr:B:gold')]).toEqual([true, false, false, true]);
+    expect(pickMaySend('G', 's4560')).toBe(true);
   });
 });

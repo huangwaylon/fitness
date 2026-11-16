@@ -1,7 +1,7 @@
 // The pocket's table (docs/design.md "The shop"): every tally key the shop's うる can show (contract/pocket.ts's kinds),
 // its section, its name's i18n key and its official icon, one place for all. Prices are the record's
 // (contract/shopPrices.ts); the names load with the catch names (i18n/catch.ts).
-import { GOODS, type PocketKind } from '#lib/contract/pocket.ts';
+import { GOAL_GOODS, GOODS, type PocketKind } from '#lib/contract/pocket.ts';
 import { CROPS } from '#lib/contract/farm.ts';
 
 /** うる's sections, in its order (NH's pocket-ish: the critters, the beach, the trees' and the ground's; the fields'
@@ -46,6 +46,12 @@ export function pocketItem(key: string): PocketItem | null {
     case 'fragment':
       return { key, section: 'other', name: `beach.name.${id}`, art: `finds/${id}` };
     case 'goods':
+      // the goal trees' fruit since 2026-11-16 (contract/pocket.ts GOAL_GOODS): a goal's under its fruit's name and art,
+      // the gold one its own
+      if (Object.hasOwn(GOAL_GOODS, id)) {
+        const f = id === 'gold-fruit' ? null : id.slice(5);
+        return { key, section: 'fruit', name: `beach.name.${f ?? id}`, art: f ? `fruit/${f}` : 'finds/star-fragment' };
+      }
       if (!Object.hasOwn(GOODS, id)) return null;
       return { key, section: GOODS_SECTION[id] ?? 'other', name: id in GOODS_ART && GOODS_ART[id].startsWith('critters/') ? `critter.name.${id}` : `beach.name.${id}`, art: GOODS_ART[id] ?? `finds/${id}` };
     default:

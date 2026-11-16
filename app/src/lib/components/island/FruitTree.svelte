@@ -3,9 +3,10 @@
   // canopy, 🍐 🍑 🍒 🍎 left to right (RING_FRUITS, TREE_FRUIT). Each hangs grey at 0 and fills with colour as today's
   // amount nears its goal (fruitDay.ts greyAt). Once met it drops to the ground in front of the trunk (FRUIT_SPOTS): the
   // tree shakes, the fruit falls and bounces, a little dust, once (fruit-day in localStorage: a reload finds it lying
-  // there). A tap on it picks it up (a hop, a sparkle; gone until the next Tokyo day) into my pocket (the shop buys it,
-  // かいがら, never ベル: the ベル
-  // come from the goal, on read. With all four met the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
+  // there). The tree's owner's tap picks it up (a hop, a sparkle; gone until the next Tokyo day) into their pocket (the
+  // shop buys it, 60 かいがら, never ベル: the ベル come from the goal, on read); anyone else's tap opens the popup. With
+  // all four met a gold fruit falls too (150 かいがら: fruitDay.ts) and the canopy glints now and then like NH's money
+  // tree, so the day's progress stays after the pick-up.
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
@@ -38,7 +39,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from '#lib/world/fruitDay.ts';
+  import { GOLD_ART, fruitDay, fruitFilter, fruitGoods, fruitId, fruitMet, markDropped, markPicked, stageOf, type TreeFruit } from '#lib/world/fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
@@ -82,6 +83,13 @@
   const FORE = 0.62;
   /** A hanging fruit is drawn at the ground size, scaled down (so the fall scales it up, one image). */
   const UP = TREE_FRUIT_U / FRUIT_U;
+  /** The gold fruit (all four met): [dx, up] in the canopy, its middle top, and [dx, dz] on the ground, in front of
+   *  the four (fruitDay.ts). */
+  const GOLD_UP: [number, number] = [0, 76], GOLD_SPOT: [number, number] = [0, -30];
+  /** The tree's fruit, the gold one last (drawn only once met). */
+  const FRUITS: readonly TreeFruit[] = [...RING_FRUITS, 'gold'];
+  const artOf = (f: TreeFruit) => (f === 'gold' ? GOLD_ART : fruitArt(f));
+  const modelOf = (f: TreeFruit) => (f === 'gold' ? GOLD_ART : `fruit/${f}`);
   /** The money-tree glints on a perfect day: [left, top] in % of the canopy. */
   const GLINTS: [number, number][] = [[25, 38], [52, 22], [72, 44], [44, 58]];
   const detailId = $props.id();
@@ -150,36 +158,39 @@
   /** (read again for each new day; a pick or a drop replaces it) */
   let rec = $derived(fruitDay(date));
   /** Fruit falling right now: its drop plays once. */
-  let falling = $state<RingFruit[]>([]);
+  let falling = $state<TreeFruit[]>([]);
 
   const spots = $derived(
-    RING_FRUITS.map((f, i) => {
-      const r = ring(f);
+    FRUITS.map((f, i) => {
+      const met = fruitMet(f, (g) => ring(g).met), pct = f === 'gold' ? 100 : todayPct(ring(f));
       // picked up by either of us today (the shared day's `fr:<person>:<fruit>`) is gone on both phones
       const id = fruitId(person.person, f), by = date === islandDay() ? takenBy(shared.day, `fr:${id}`) : null;
       // anyone's pick-up takes it at once, mine too (a phone that lost its own record, rec, gets my claim back in the
       // relay's replay: a claim can't be made twice, so a fruit kept on the ground for it could never be picked up)
       const gone = !!by;
-      const stage = gone && r.met ? 'gone' : stageOf(id, r.met, rec);
+      const stage = gone && met ? 'gone' : stageOf(id, met, rec);
       // hanging: [dx, up] in the canopy's frame; on the ground: its own spot (gx, gz) in front of the trunk
-      const tx = TREE_FRUIT[i][0], up = TREE_FRUIT[i][1];
-      const gx = x + lean + FRUIT_SPOTS[i][0] + off[0], gz = z + FRUIT_SPOTS[i][1] + off[1];
+      const [tx, up] = TREE_FRUIT[i] ?? GOLD_UP, spot = FRUIT_SPOTS[i] ?? GOLD_SPOT;
+      const gx = x + lean + spot[0] + off[0], gz = z + spot[1] + off[1];
       const down = stage === 'ground' || stage === 'gone';
       // the canopy spot seen from the ground spot (units, its frame): the fall starts there
-      const fx = x + tx - gx, fy = -up + FRUIT_SPOTS[i][1] * FORE;
+      const fx = x + tx - gx, fy = -up + spot[1] * FORE;
       // (the 3D island's model: drained toward grey as the DOM's filter, 0 once met)
-      const grey = r.met ? 0 : Math.max(0, 1 - todayPct(r) / 100) * 0.9;
-      return { f, i, met: r.met, stage, filter: fruitFilter(r.met ? 100 : todayPct(r)), tx, up, gx, gz, fx, fy, down, grey };
+      const grey = met ? 0 : Math.max(0, 1 - pct / 100) * 0.9;
+      // (the gold one hangs only once met, as it falls)
+      const shown = f !== 'gold' || met;
+      return { f, i, met, stage, filter: fruitFilter(met ? 100 : pct), tx, up, gx, gz, fx, fy, down, grey, shown };
     })
   );
   const rowL = $derived(x + lean + off[0] + FRUIT_SPOTS[0][0] - FRUIT_U);
   const rowR = $derived(x + lean + off[0] + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U);
   /** The fruit row's middle in depth (its button stands there, in front of whoever stands at the trunk). */
   const rowZ = $derived(z + off[1] + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2);
-  /** Fallen fruit, waiting to be picked up. */
+  /** Fallen fruit, waiting to be picked up (by the tree's owner alone: `pickable`). */
   const ground = $derived(spots.filter((s) => s.stage === 'ground'));
+  const pickable = $derived(week.view?.viewer === person.person ? ground : []);
   /** All four met today: the canopy glints (NH's money tree). */
-  const allMet = $derived(spots.every((s) => s.met));
+  const allMet = $derived(RING_FRUITS.every((f) => ring(f).met));
 
   // A newly met fruit falls: on the first render after a beat (the tree is seen first), else after its colour has
   // filled in; the tree shakes once for them all and they fall 150 ms apart. Each is marked as it falls, so a reload
@@ -201,7 +212,7 @@
       }, wait);
     });
   });
-  function drop(d: string, f: RingFruit) {
+  function drop(d: string, f: TreeFruit) {
     if (rec.date !== d) return;
     rec = markDropped(d, fruitId(person.person, f));
     falling = [...falling, f];
@@ -222,11 +233,11 @@
   const dropFx = (n: number) => (fx = fx.filter((e) => e.n !== n));
 
   /** NH's pick-up: the fruit hops up and shrinks away (an out transition: transform and opacity only). */
-  /** Picks up a fallen fruit: gone from this phone until the next Tokyo day, into my pocket to sell at the shop (no
-   *  ベル: those come from the goal). */
-  function collect(f: RingFruit) {
-    const s = spots.find((p) => p.f === f);
-    if (!s || s.stage !== 'ground') return;
+  /** Picks up a fallen fruit of my tree: gone from this phone until the next Tokyo day, into my pocket to sell at the
+   *  shop (fruitDay.ts fruitGoods; no ベル: those come from the goal). */
+  function collect(f: TreeFruit) {
+    const s = pickable.find((p) => p.f === f);
+    if (!s) return;
     // first wins: claimed at the tap (the partner's phone sees it picked up, by my villager)
     const sid = `fr:${fruitId(person.person, f)}`;
     if (!shared.share({ kind: 'pick', id: sid, what: `fruit:${f}`, at: [Math.round(s.gx), Math.round(s.gz)] }).fresh) return;
@@ -235,7 +246,7 @@
     cue('fruit-pick');
     rec = markPicked(date, fruitId(person.person, f));
     addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
-    recordGoods(f, `pick:${sid}`);
+    recordGoods(fruitGoods(f), `pick:${sid}`);
   }
 
   /** `sound`: a tap or a real event rustles; idle life's shake stays silent. */
@@ -258,7 +269,7 @@
   onMount(() =>
     shared.on(({ e, live }) => {
       if (e.kind !== 'pick' || !e.id.startsWith(`fr:${person.person}:`)) return;
-      const f = e.id.slice(5 + person.person.length) as RingFruit, s = spots.find((p) => p.f === f);
+      const f = e.id.slice(5 + person.person.length) as TreeFruit, s = spots.find((p) => p.f === f);
       if (!s || !live) return;
       partnerTurnTo(s.gx, e.who);
       cue('fruit-pick');
@@ -301,17 +312,17 @@
    *  fallen fruit, else the popup. */
   function rowTap(e: MouseEvent) {
     const btn = e.currentTarget as HTMLElement | null;
-    if (!e.detail || !btn) return ground.length ? collect(ground[0].f) : tap(null, false);
+    if (!e.detail || !btn) return pickable.length ? collect(pickable[0].f) : tap(null, false);
     const r = btn.getBoundingClientRect();
     const k = r.width / (rowR - rowL);
     const px = rowL + (e.clientX - r.left) / k;
     const near = <T extends { gx: number }>(list: T[]) => list.reduce((a, b) => (Math.abs(b.gx - px) < Math.abs(a.gx - px) ? b : a));
-    if (ground.length) {
-      const g = near(ground);
+    if (pickable.length) {
+      const g = near(pickable);
       if (Math.abs(g.gx - px) <= Math.max(22, 22 / k)) return collect(g.f);
     }
-    // (off a fruit: over the trunk's base, so it counts toward a shake as the trunk's own tap would)
-    tap(near(spots).f, false, true);
+    // (off a fruit, or another's: over the trunk's base, so it counts toward a shake as the trunk's own tap would)
+    tap(near(spots.slice(0, RING_FRUITS.length)).f as RingFruit, false, true);
   }
 
   /** {@attach}: the popup in screen space (docs/design.md "Trees"): over every tint and weather (never dimmed), in the
@@ -394,11 +405,11 @@
     style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} data-sfx="self" onclick={() => tap(null)}></button>
   <!-- today's fruit in the canopy (grey → colour with progress) -->
   {#each spots as s (s.f)}
-    {#if !s.down}
+    {#if !s.down && s.shown}
       <span class="fruit up" data-fruit={s.f} data-tree={person.person} data-stage={s.stage}
         style:left={u(s.tx)} style:top={u(-s.up)} style:width={u(FRUIT_U)} style:--up={UP}>
         <span class="f" style:filter={s.filter}>
-          <OfficialArt key={fruitArt(s.f)} size={u(FRUIT_U)} eager>
+          <OfficialArt key={artOf(s.f)} size={u(FRUIT_U)} eager>
             {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{s.f}" /></svg>{/snippet}
           </OfficialArt>
         </span>
@@ -432,20 +443,20 @@
   <!-- the 3D island's fruit in the canopy (camera.svelte.ts m3): NH's model at its spot on the canopy's front, the DOM's
        art hidden; the same instance falls to its ground spot (FruitTree's own fall) -->
   {#each spots as s (s.f)}
-    {#if !s.down}
+    {#if !s.down && s.shown}
       <i class="m3n" {@attach w.at({ bare: true, x: x + s.tx * 1.25, z: z - 34, lift: s.up + 14, h: 4, always: true,
-        m3: { key: `fruit/${s.f}`, id: `fruit-${person.person}-${s.f}`, grey: s.grey, art: () => canopyEl?.parentElement?.querySelector(`.fruit.up[data-fruit="${s.f}"]`) } })}></i>
+        m3: { key: modelOf(s.f), id: `fruit-${person.person}-${s.f}`, grey: s.grey, art: () => canopyEl?.parentElement?.querySelector(`.fruit.up[data-fruit="${s.f}"]`) } })}></i>
     {/if}
   {/each}
 {/if}
 <!-- met: on the ground in front of the trunk (each its own node, so a villager stands among them), until picked up -->
 {#each spots as s (s.f)}
   {#if s.down && s.stage !== 'gone'}
-    <div class="node" {@attach w.at({ x: s.gx, z: s.gz, h: FRUIT_U, m3: { key: `fruit/${s.f}`, id: `fruit-${person.person}-${s.f}`, ms: falling.includes(s.f) ? 520 : 0 } })}>
+    <div class="node" {@attach w.at({ x: s.gx, z: s.gz, h: FRUIT_U, m3: { key: modelOf(s.f), id: `fruit-${person.person}-${s.f}`, ms: falling.includes(s.f) ? 520 : 0 } })}>
       <span class="fruit" class:drop={falling.includes(s.f)} data-fruit={s.f} data-tree={person.person} data-stage={s.stage}
         style:width={u(FRUIT_U)} style:--fx={u(s.fx)} style:--fy={u(s.fy)} style:--up={UP} out:pickUp>
         <span class="f" style:filter={s.filter}>
-          <OfficialArt key={fruitArt(s.f)} size={u(FRUIT_U)} eager>
+          <OfficialArt key={artOf(s.f)} size={u(FRUIT_U)} eager>
             {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{s.f}" /></svg>{/snippet}
           </OfficialArt>
         </span>
@@ -458,8 +469,8 @@
 {/each}
 <div class="node" {@attach w.at({ x: (rowL + rowR) / 2, z: rowZ, h: 30, dz: -40, inv: true })}>
   <button type="button" class="row-btn" style:left={u(-(rowR - rowL) / 2)} style:top={u(-FRUIT_U * 0.5)} style:width={u(rowR - rowL)}
-    aria-label={ground.length ? t(`tree.pick.${ground[0].f}`) : label} aria-expanded={open} aria-controls={detailId}
-    tabindex={ground.length ? 0 : -1} data-sfx="self" data-tree-row={person.person} onclick={rowTap}></button>
+    aria-label={pickable.length ? t(`tree.pick.${pickable[0].f}`) : label} aria-expanded={open} aria-controls={detailId}
+    tabindex={pickable.length ? 0 : -1} data-sfx="self" data-tree-row={person.person} onclick={rowTap}></button>
 </div>
 
 {#each fx as e (e.n)}

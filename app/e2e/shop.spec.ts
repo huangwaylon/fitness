@@ -151,7 +151,21 @@ test('魚の全部 sells the fish only; 30 wood in one row tap; the starts in �
   await expect(wood).toHaveCount(0);
 });
 
-// (a piece found before the day leaves the stock: shop/stock.test; the demo stamps its seeded rows today)
+test('the goal trees’ fruit sells under くだもの: 60 a goal’s, 150 the gold one, the fruit picked up before still 5', async ({ page }) => {
+  await seed(page, [tally({ 'goods:goal-apple': 2, 'goods:gold-fruit': 1, 'goods:apple': 1 })]);
+  await page.goto(`shop${Q}`);
+  await openList(page, 'sell');
+  const sec = page.locator('[data-shop-sec="fruit"] + ul');
+  await expect(sec.locator('[data-shop-catch="goods:goal-apple"]')).toHaveAttribute('data-n', '2');
+  await expect(sec.locator('[data-shop-catch="goods:gold-fruit"]')).toHaveAttribute('data-n', '1');
+  await expect(sec.locator('[data-shop-catch="goods:apple"]')).toHaveAttribute('data-n', '1');
+  for (const k of ['goal-apple', 'gold-fruit', 'apple']) await sec.locator(`[data-shop-catch="goods:${k}"]`).click(); // a tap: the stack
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(() => shells(page)).toBe(2 * 60 + 150 + 5);
+});
+
+// (a piece found before the day leaves every stock, a buy only its buyer's: shop/stock.test; the demo stamps its seeded
+// rows today)
 test('a piece found or bought today stays in the day’s stock till tomorrow, the same on every phone', async ({ page }) => {
   // the day's first two pieces (contract/shop.test pins the order): the omurice bought by B, the skeleton found by the
   // guest this morning

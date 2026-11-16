@@ -23,5 +23,8 @@ describe('the pocket’s table', () => {
     expect([pocketItem('item:froggy-chair'), pocketItem('goods:nope'), pocketItem('wood')]).toEqual([null, null, null]);
     // the fields': a vegetable sells with the fruit's neighbours, its start in 苗 (no 全部 there: held to plant)
     expect([pocketItem('goods:tomato')?.section, pocketItem('goods:tomato-start')?.section]).toEqual(['veg', 'start']);
+    // the goal trees' fruit since 2026-11-16: くだもの, a goal's its fruit's name and art, the gold one NH's star fragment
+    expect(pocketItem('goods:goal-apple')).toEqual({ key: 'goods:goal-apple', section: 'fruit', name: 'beach.name.apple', art: 'fruit/apple' });
+    expect(pocketItem('goods:gold-fruit')).toEqual({ key: 'goods:gold-fruit', section: 'fruit', name: 'beach.name.gold-fruit', art: 'finds/star-fragment' });
   });
 });
