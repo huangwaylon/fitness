@@ -107,7 +107,8 @@
     act = tick(act, performance.now(), now());
     const ms = Math.round(Math.min(act.unsent, 3_600_000));
     const g = `tv${Date.now().toString(36).slice(-6)}${Math.floor(Math.random() * 1296).toString(36).padStart(2, '0')}`;
-    week.send('listen', { d: today(), g, gm: TV_GM, u: clip.id, lv: 7, n: 1, ms, ...(finished && { f: 1 }), r: answersOf(qs, st) });
+    // (the answers in a finished play's rows only up to its まとめ: a later one would read as the next play's, draw.ts historyOf)
+    week.send('listen', { d: today(), g, gm: TV_GM, u: clip.id, lv: 7, n: 1, ms, ...(finished && { f: 1 }), r: finished || !sentDay ? answersOf(qs, st) : [] });
     act = sent(act);
     keep();
   }

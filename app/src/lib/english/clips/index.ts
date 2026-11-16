@@ -1,8 +1,7 @@
-// English Study's clips, in the order they're offered (easier first): today's clip is the first not finished yet.
-// One line a clip: its file in this folder, its lesson in docs/english.md's shape (lib/english/types.ts Clip).
-// clips.test checks every one (ids, segments, choices, the notes, the bands and this order).
-// Order: by band (ゆっくり → ふつう → 速い; bandsOf), the first five lessons first as they were; within a band slower
-// first, the situation changing from one clip to the next.
+// English Study's clips. One line a clip: its file in this folder, its lesson in docs/english.md's shape
+// (lib/english/types.ts Clip). clips.test checks every one (ids, segments, choices, the notes, the bands and that the
+// list goes by band). The order offered isn't this list's but the shared plan's (plan.ts, plan-order.ts: the build
+// orders the index by it). Here: by band (ゆっくり → ふつう → 速い; bandsOf), within a band slower first.
 import type { Band, Clip } from '../types.ts';
 import { waitress } from './waitress.ts';
 import { centralperk } from './centralperk.ts';

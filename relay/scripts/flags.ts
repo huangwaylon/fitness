@@ -11,10 +11,10 @@ import { eflagDoneOf, eflagOf, type Eflag, type EflagDone } from '../../app/src/
 import { cleanLine } from '../../app/src/lib/contract/text.ts';
 
 type Row = [at: string, who: string, id: string, type: string, data: string];
-/** Per clip: its versions, segments and stems, by question id (or, from before the ids, by place). */
-type ByQ<T> = Record<string, T> | T[];
+/** Per clip: its versions, segments and stems, by question id (a flag from the first build, by place, finds none: gone). */
+type ByQ<T> = Record<string, T>;
 type Content = Record<string, { video: string; title: string; v: string; q: ByQ<string>; seg: ByQ<[number, number]>; stem: ByQ<string> }>;
-const byQ = <T>(x: ByQ<T> | undefined, k: string | number): T | undefined => (x as Record<string, T> | undefined)?.[k];
+const byQ = <T>(x: ByQ<T> | undefined, k: string | number): T | undefined => (typeof k === 'string' && x ? x[k] : undefined);
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test');
 const KINDS: Record<string, string> = { answer: '答え', heard: '聞こえた言葉・字幕', question: '問題文', timing: '再生の位置', notes: '解説', other: 'その他' };
