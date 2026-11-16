@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const andySecret: Clip = {
   id: 'andysecret', video: 'OaVa1cpWLk8', title: 'Can Andy keep a secret?', dur: 269, wpm: 168,
-  band: 'slow', tags: ['恋愛', '職場'],
+  band: 'mid', tags: ['恋愛', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

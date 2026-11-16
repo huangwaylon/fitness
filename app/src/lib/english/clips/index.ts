@@ -91,6 +91,16 @@ import { johnnyGoodbye } from './johnnybye.ts';
 import { daveex } from './daveex.ts';
 import { verySober } from './verysober.ts';
 import { andySecret } from './andysecret.ts';
+import { prefired } from './prefired.ts';
+import { benArrested } from './benarrested.ts';
+import { distract } from './distract.ts';
+import { leslieRedFlag } from './modelun.ts';
+import { banquetHair } from './banquethair.ts';
+import { goodHusband } from './goodhusband.ts';
+import { promSeason } from './promseason.ts';
+import { birthdayMonth } from './birthdaymnth.ts';
+import { setStraight } from './setstraight.ts';
+import { ronPoetry } from './ronpoetry.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -107,9 +117,13 @@ export const CLIPS: readonly Clip[] = [
   twodates,
   tobySafety,
   fluSeason,
+  banquetHair,
+  setStraight,
   ronFire,
+  benArrested,
   pumpJamm,
   phoebeRuns,
+  leslieRedFlag,
   jansStroller,
   ronLeslieLocked,
   womensAppreciation,
@@ -122,15 +136,17 @@ export const CLIPS: readonly Clip[] = [
   tomNegotiate,
   mamasDead,
   workBestie,
-  andySecret,
   // ふつう
+  andySecret,
   scarnRead,
   gryzzlBoxes,
+  distract,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
   verySober,
   parkspilot,
+  prefired,
   janiceSocks,
   pikitis,
   joeymakeup,
@@ -145,10 +161,12 @@ export const CLIPS: readonly Clip[] = [
   screwIt,
   aprilFired,
   runsAgain,
+  promSeason,
   getaway,
   evilLaugh,
   fluoride,
   kellyLarson,
+  goodHusband,
   pamLabor,
   ronHearing,
   ryanOffice,
@@ -162,6 +180,7 @@ export const CLIPS: readonly Clip[] = [
   didIStutter,
   waffleGift,
   sideQuest,
+  ronPoetry,
   aprilTynnyfer,
   joeyStay,
   annclub,
@@ -171,6 +190,7 @@ export const CLIPS: readonly Clip[] = [
   kathybook,
   guysGripe,
   savings,
+  birthdayMonth,
   collarBlind,
   rossNothing,
   possum,
