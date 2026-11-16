@@ -5,8 +5,8 @@
 // - The Permissions-Policy turns every powerful feature off (the microphone too) but geolocation and the camera, which
 //   only our origin may ask for (the trip map's locate button, ごはん's barcode scanner).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
-//   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts; ききみみ's packs and bed in their names:
-//   sound.test, kikimimi/packing.test and tachi/board.test fail on a file whose bytes changed alone), and so are ごはん's picture sheets (`food-img/*.webp`:
+//   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts: sound.test fails on a file whose bytes
+//   changed alone), and so are ごはん's picture sheets (`food-img/*.webp`:
 //   their names carry their content hash), the rooms' and the players' packs (`room/pack/*.pak`, `room/player/*.pak`:
 //   `<name>.<hash>.pak`, more.json and parts.json name them), the island's KTX2 packs (`room/tex/`: named by their
 //   images' hashes, fetched with the encoder's `?e=`), the Basis transcoder (`room/basis/`, fetched with its `?v=`), and the models (`*.glb`, all

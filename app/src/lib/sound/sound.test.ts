@@ -78,13 +78,10 @@ describe('audio manifest (static/audio/manifest.json, kk.json)', () => {
       for (const s of sizes) expect(s, dir).toBeLessThan(file * 1024 * 1024);
       expect(sizes.reduce((a, b) => a + b, 0), dir).toBeLessThan(all * 1024 * 1024);
     }
-    // and every audio file on disk is named (nothing ships unused; ききみみ's packs are named by lib/kikimimi/packs.json
-    // and checked by kikimimi/packing.test.ts, its party bed by clipPlayer.svelte.ts PARTY_BED, checked by
-    // components/kikimimi/tachi/board.test.ts)
+    // and every audio file on disk is named (nothing ships unused)
     const onDisk = readdirSync(STATIC, { recursive: true, withFileTypes: true })
       .filter((d) => d.isFile() && !d.name.endsWith('.json'))
-      .map((d) => relative(STATIC, join(d.parentPath, d.name)))
-      .filter((p) => !p.startsWith('kikimimi/') && !p.startsWith('listen/') && !p.startsWith('beds/'));
+      .map((d) => relative(STATIC, join(d.parentPath, d.name)));
     expect(onDisk.filter((p) => !paths.includes(p))).toEqual([]);
   });
   it('every entry carries its file’s content hash (`v`: a re-cut file is a new URL; `npm run audio:music -- --hashes`)', () => {

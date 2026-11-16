@@ -1,7 +1,7 @@
 // What a deploy uploads (docs/ops/runbook.md §1): Cloudflare Pages takes at most 20,000 files a deployment (the Free
 // plan), and the build adds Kit's chunks and the 404 copy to static/'s files (892 measured on 2026-11-16: `npm run
 // build` gave 14,614 files, _headers aside, with static/ at 13,722). static/'s cap keeps a build allowance and a margin under Pages' cap;
-// past it, move something into a pack first (as ききみみ's clips and the food pictures).
+// past it, move something into a pack first (as the rooms' models and the food pictures).
 /** Pages' cap on a deployment's files (the Free plan; paid plans take 100,000). */
 export const PAGES_MAX_FILES = 20_000;
 /** The build's own files on top of static/ (Kit's chunks, the 404 copy): 892 measured, rounded up. */

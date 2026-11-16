@@ -1179,7 +1179,7 @@ complete fanfare), fetched at first play. Effects jitter pitch.
 - **Background:** hidden → decks paused, ambience stopped, context suspended; back in front the hour fades in.
 - **Music off:** the fade-out, then every music file in memory released.
 - **iOS session:** `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch.
-- **Voice session** ([kikimimi-engine.md](kikimimi-engine.md#audio)): a ききみみ game wakes the context even with sound
+- **Voice session** (the retired ききみみ's, its removal next): a game wakes the context even with sound
   off, holds it awake and sets the session to `playback`; its end hands back to the settings.
 
 ### Audio files

@@ -1,4 +1,4 @@
-// A cache bounded by bytes (the room's, caches.ts roomEvict; ききみみ's packs', listenEvict; the art's, the photos', the
+// A cache bounded by bytes (the room's, caches.ts roomEvict; the art's, the photos', the
 // tiles', ごはん's pictures'): its index (each file's bytes and last use) in memory while the worker runs, written to the
 // cache itself a moment after a change (one write for a burst of files), with the files it lets go deleted then. Read
 // back the first time the cache is asked for, and matched to the cache's files: one put as the worker was stopped, or a

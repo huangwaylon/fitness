@@ -35,8 +35,7 @@ export function olderShells(keys: readonly string[], current: string): string[] 
  *  lib/sound/manifest.ts), so a hit is never stale and is served without asking the network; a re-cut file is a new
  *  URL, and the old one ages out of its class's LRU. Three classes, each keeping its most recently used few: the music
  *  (the hours, the event music, the rooms: 0.1–1.1 MB each), K.K.'s songs (a song or two heard: they never push the
- *  hours out) and the rest (the effects and beds: small; a loose ききみみ clip from before the packs ages out with them).
- *  ききみみ's packs have a cache of their own (LISTEN_CACHE). */
+ *  hours out) and the rest (the effects and beds: small). */
 export const AUDIO_CACHE = 'island-audio-v1';
 export const isAudio = (path: string): boolean => path.includes('/audio/');
 export const isMusic = (path: string): boolean => path.includes('/audio/music/') || path.includes('/audio/places/');
@@ -112,36 +111,6 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
   const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || (pathOf(u).endsWith('.pak') && now - index[u][1] > PAK_UNUSED_MS));
   return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
 }
-/** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak, docs/kikimimi-engine.md "Audio"),
- *  fetched whole as a game needs them and cached on first use in a cache of their own that outlives builds: cache first,
- *  never revalidated (the hash is in the name: a re-spoken clip makes a new pack name), bounded by bytes like the room
- *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
-export const LISTEN_CACHE = 'island-listen-v1';
-export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** The listen cache's bound: past it, the least recently used packs go (of ~124 MiB of packs in all; a level-4 game's
- *  eight were ~9 MB). */
-export const LISTEN_CAP_BYTES = 30_000_000;
-/** A pack used within this is never evicted (a game in progress keeps its packs; a page still on the last build its
- *  packs' older versions). */
-export const LISTEN_KEEP_MS = 10 * 60_000;
-/** The listen cache's own index (beside its packs, under this path in the scope): each URL's bytes and last use. */
-export const LISTEN_INDEX = '__listen-index';
-
-/** Which of the listen cache's packs go (`index` in any order, RoomIndex's shape): a pack's older versions (the same
- *  name under another hash, used less recently) once unused for `keepMs`, then, while the rest is over `cap`, the least
- *  recently used, never one used within `keepMs`. */
-export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTES, keepMs = LISTEN_KEEP_MS): string[] {
-  const urls = Object.keys(index);
-  const nameOf = (u: string) => new URL(u, 'https://x/').pathname.replace(/\.[0-9a-f]+\.pak$/, '');
-  const newest = new Map<string, string>();
-  for (const u of urls) {
-    const n = nameOf(u), m = newest.get(n);
-    if (!isSlice(u) && (!m || index[u][1] >= index[m][1])) newest.set(n, u);
-  }
-  const gone = urls.filter((u) => isSlice(u) || (newest.get(nameOf(u)) !== u && now - index[u][1] > keepMs));
-  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
-}
-
 /** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
  *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in
  *  a cache of its own that outlives builds; a barcode shard (jan/, ~5 KB gzipped) only once a scan asks for it, kept while the
@@ -478,7 +447,7 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
  *  (PRECACHED_FONT_SLICES; the rest cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
@@ -569,7 +538,7 @@ export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolea
 
 /** The worker's own network fetches lately (perf.boot's `swNet`, `swRoom`, `swKB`: the page's resource timings read a
  *  transfer size of 0 for every answer the worker gives, one it fetched too): when each started, a room file or not,
- *  its bytes: its Content-Length, else the size its cache's index takes (`sized`: the room's, the art's, ききみみ's packs;
+ *  its bytes: its Content-Length, else the size its cache's index takes (`sized`: the room's, the art's;
  *  Pages sends the models brotli'd, with none), else 0 (never a copy of the body read for it); the last `keep`. The
  *  navigation preload isn't one (the browser's). */
 export function netLog(keep = 600) {
@@ -678,7 +647,6 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  * | cache | cap | kept (used within) | stale at once |
  * |---|---|---|---|
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
- * | listen (ききみみ packs) | LISTEN_CAP_BYTES 30 MB | LISTEN_KEEP_MS 10 min: a game in progress | a pack's slices; its older hash once unused 10 min |
  * | art (on use) | ART_CAP_BYTES 30 MB | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB | 0 | the sheets a new index no longer names (foodImgStale) |
  * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 60 MB | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |

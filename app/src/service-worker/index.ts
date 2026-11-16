@@ -5,7 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, listenEvict, roomEvict, roomFiles, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -30,7 +30,7 @@ const VILLAGERS = 'island-villagers-v1';
 // Precache built JS/CSS + static files (caches.ts precachable): the common font slices (the rest, many files, are
 // cached on first use); the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
-// never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines) and ききみみ's parts:
+// never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines) and the features:
 // kept in the shell the first time they're used, then carried by each install (CARRIED; caches.ts carryPlan).
 const CHUNKS = immutable.map((f) => f.path).filter(precachable);
 const CARRIED = immutable.map((f) => f.path).filter(carried);
@@ -56,8 +56,8 @@ self.addEventListener('install', (event) => {
       // install (one flaky fetch of ~370 failed it, and every resume's update with it), an unchanged one copied from an
       // older shell (caches.ts installStatics: by its content hash)
       await cache.addAll(chunks);
-      // what this phone used of MapLibre and ききみみ's parts (an older shell holds it): an unchanged file copied, a
-      // changed one fetched (each on its own: a miss costs only that map or game offline till it's used again)
+      // what this phone used of MapLibre and the features (an older shell holds it): an unchanged file copied, a
+      // changed one fetched (each on its own: a miss costs only that map or feature offline till it's used again)
       const held = (await Promise.all(olds.map((c) => c.keys()))).flat().map((r) => r.url);
       const plan = carryPlan(CARRIED, held);
       for (const p of plan.copy) {
@@ -92,7 +92,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea)
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
       await self.clients.claim();
       // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
       await self.registration.navigationPreload?.enable().catch(() => {});
@@ -122,7 +122,6 @@ const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, n
 /** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */
 const flying = new Map<string, Promise<Response>>();
 const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
-const listenUsed = boundedCache(LISTEN_CACHE, LISTEN_INDEX, (idx, now) => listenEvict(idx, now));
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES));
 const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => artEvict(idx, now));
@@ -238,35 +237,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ききみみ's packs whole: cache first and never revalidated (the hash is in the name), fetched whole (lib/packStore.ts;
-  // a Range request goes to the network), once at a time (fetchShared), stored after the answer; each use marks the pack
-  // in the index, the least recently used going past the cache's bytes, never one used in the last 10 minutes
-  // (caches.ts listenEvict).
-  if (isListenPack(url.pathname)) {
-    if (req.headers.has('range')) return;
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(LISTEN_CACHE);
-        const hit = await cache.match(req);
-        if (hit) {
-          event.waitUntil(listenUsed(req.url).catch(() => {}));
-          return hit;
-        }
-        return fetchShared(flying, req.url, () => fetch(req).then((res) => {
-          if (res.ok && res.status === 200) {
-            const copy = res.clone(), sized = res.clone();
-            event.waitUntil((async () => {
-              await cache.put(req, copy);
-              await listenUsed(req.url, await sizeOf(sized, req.url));
-            })().catch(() => {}));
-          }
-          return res;
-        }));
-      })()
-    );
-    return;
-  }
-
   // Audio: cache first and never revalidated (every URL carries its file's hash: caches.ts), fetched whole by the sound
   // engine (it plays music from a blob, so no Range requests reach here; one that does goes to the network). A hit
   // that isn't its class's newest is re-put to mark it recently used; each class keeps its few (least recently used
@@ -322,7 +292,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // the maps' MapLibre the first time a map draws, a ききみみ part the first time a game loads it: kept in this
+  // the maps' MapLibre the first time a map draws, a feature's chunk the first time it's used: kept in this
   // version's shell (the install carries them on)
   if (carried(url.pathname)) {
     event.respondWith((async () => {
@@ -394,7 +364,7 @@ self.addEventListener('message', (event) => {
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
   // a moment after a use, outside every event, bounded.ts)
   if (d?.k === 'flush') {
-    event.waitUntil(Promise.all([roomUsed, listenUsed, photoUsed, tileUsed, artUsed, foodImgUsed].map((u) => u.pending())).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
+    event.waitUntil(Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed].map((u) => u.pending())).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
     return;
   }
   if (!Array.isArray(d?.urls)) return;

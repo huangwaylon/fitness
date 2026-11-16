@@ -1,8 +1,8 @@
 # ききみみ engine (retired)
 
 The round engine, its games, the content compiler and the levels' chunks went with the old game on 2026-11-16
-([kikimimi.md](kikimimi.md)). Left: two presence intents in the contract, the row's fields, and the audio packs until
-they go.
+([kikimimi.md](kikimimi.md)). Left: two presence intents in the contract and the row's fields. Its audio packs went too, and
+the service worker deletes their `island-listen-v1` cache at its next activate.
 
 ## Sync
 
@@ -23,8 +23,3 @@ bounded, and checks `gm` by `GM_RE` (a shape, never a list). `{kind: 'quiz'}` is
 rp]`; `pick` −1…4095; `lv` 1–8. A mic game's or a story's row is minutes only (`minutesOnly`). The relay checks rows
 with the same file and refuses unknown keys, so a row field ships relay first. `stampsUnit`: curriculum.md "Playing
 together". English Study writes the same row (`gm` 'tv': [english.md](english.md#progress)).
-
-## Audio
-
-The old packs (`static/audio/listen/*.pak`) and the worker's `island-listen-v1` cache are still shipped; nothing plays
-them. They go next.

@@ -437,14 +437,13 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   nothing open, never in front, but for an incompatible build (version.json `compat` past `contract/compat.ts
   COMPAT`: bump it for a protocol or stored-shape change). Never on a timer; once a deployed version a session
   (`island.updateFor`, `island.staleFor`). `e2e/sw-update.spec.ts` drives it through `scripts/serve-build.ts`.
-- **Packs** (the players' and ききみみ's): fetched whole (Pages answers a Range with the whole file), one fetch at a
+- **Packs** (the players'): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`fetchShared`).
 
 | Cache | Holds | Rule |
 |---|---|---|
 | `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` dropped, then LRU past `ROOM_CAP_BYTES` (`roomEvict`) |
 | `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU past `ART_CAP_BYTES` |
-| `island-listen-v1` | the retired ききみみ's audio ([kikimimi-engine.md](kikimimi-engine.md#audio)) | cache-first, never revalidated, outlives builds; a Range request passes to the network (`listenEvict`) |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
