@@ -329,6 +329,16 @@ import { rachelJob } from './racheljob.ts';
 import { housetour } from './housetour.ts';
 import { willBeFine } from './willbefine.ts';
 import { marbleBox } from './marblebox.ts';
+import { daddyDisco } from './daddydisco.ts';
+import { charityPick } from './charitypick.ts';
+import { andyEyeTest } from './eyetest.ts';
+import { rachResume } from './rachresume.ts';
+import { chipMcCapp } from './chipmccapp.ts';
+import { bobbyMeet } from './bobbymeet.ts';
+import { stressSweat } from './stresssweat.ts';
+import { aprilMouserat } from './mouserat.ts';
+import { asianjim } from './asianjim.ts';
+import { leslieDate } from './lesliedate.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -347,6 +357,7 @@ export const CLIPS: readonly Clip[] = [
   chrisFlu,
   monicabroke,
   kevinTalk,
+  daddyDisco,
   sellVeg,
   needyCall,
   dwightGun,
@@ -384,6 +395,7 @@ export const CLIPS: readonly Clip[] = [
   ronSelfDefense,
   discoveringJammy,
   tackleBen,
+  charityPick,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
@@ -425,8 +437,10 @@ export const CLIPS: readonly Clip[] = [
   furniture,
   ronShowHost,
   senatorOscar,
+  leslieDate,
   ronDiane,
   marbleBox,
+  stressSweat,
   beefMilk,
   andyAcademy,
   annFlowers,
@@ -463,6 +477,7 @@ export const CLIPS: readonly Clip[] = [
   weddingFund,
   ronNoRegret,
   snakeJuice,
+  aprilMouserat,
   buttOfJoke,
   ronSlash,
   mexBus,
@@ -522,6 +537,7 @@ export const CLIPS: readonly Clip[] = [
   newport,
   annApril,
   benDestress,
+  andyEyeTest,
   bookSpoilers,
   possumTaskForce,
   leslieMom,
@@ -534,6 +550,7 @@ export const CLIPS: readonly Clip[] = [
   zorpVigil,
   craigTemp,
   printfire,
+  bobbyMeet,
   tomNegotiate,
   donnaTweets,
   donnaPosts,
@@ -590,6 +607,7 @@ export const CLIPS: readonly Clip[] = [
   apologyVideos,
   tomScreenBan,
   ent720,
+  asianjim,
   getaway,
   evilLaugh,
   whiteWhale,
@@ -599,6 +617,7 @@ export const CLIPS: readonly Clip[] = [
   kellyLarson,
   goodHusband,
   officeLock,
+  chipMcCapp,
   chandlerAdopted,
   dwightFavors,
   ursula,
@@ -651,6 +670,7 @@ export const CLIPS: readonly Clip[] = [
   emmaLocked,
   perfectCrime,
   kingpin,
+  rachResume,
   fakedating,
   ironkitchen,
   seatingChart,
