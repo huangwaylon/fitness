@@ -38,6 +38,7 @@
     "knip": "knip",
     "verify": "node scripts/verify.ts",
     "english:hashes": "node scripts/english-hashes.ts",
+    "english:transcripts": "node scripts/english-transcripts.ts",
     "english:wpm": "node scripts/english-wpm.ts",
     "english:plan": "node scripts/english-plan.ts",
     "models": "node scripts/models.ts",

@@ -15,8 +15,15 @@ type Whisper = { transcription?: { offsets?: { from?: number; to?: number }; tex
 /** A video's lines from its whisper pass: 0.1 s, text trimmed, inside the clip's length when it's a library clip. */
 function linesOf(w: Whisper, dur: number | undefined): { t: [number, number]; en: string }[] {
   const out: { t: [number, number]; en: string }[] = [];
+  const latin = (ch: string) => /[A-Za-zÀ-ɏ]/.test(ch);
   for (const s of w.transcription ?? []) {
-    const en = (s.text ?? '').replace(/\s+/g, ' ').trim();
+    let en = (s.text ?? '').replace(/\s+/g, ' ').trim();
+    if (!en) continue;
+    // a line mostly not Latin is the whisper's noise over music (Cyrillic, CJK), never the clip's speech: drop it; a
+    // stray non-Latin letter in a Latin line goes with it
+    const letters = [...en].filter((c) => /\p{L}/u.test(c));
+    if (letters.length && letters.filter(latin).length * 2 < letters.length) continue;
+    en = [...en].filter((c) => !/\p{L}/u.test(c) || latin(c)).join('').replace(/\s+/g, ' ').trim();
     if (!en) continue;
     let a = Math.round((s.offsets?.from ?? 0) / 100) / 10;
     let b = Math.round((s.offsets?.to ?? 0) / 100) / 10;
