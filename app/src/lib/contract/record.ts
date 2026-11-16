@@ -17,6 +17,7 @@ import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { shopRowOf } from './shop.ts';
 import { AHEAD_MS } from './ops.ts';
 import { listenOf } from './listen.ts';
+import { eflagDoneOf, eflagOf } from './eflag.ts';
 import { roomSaveOf, roomSaveSlot } from './roomSave.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isSex } from './profile.ts';
@@ -123,6 +124,12 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       const row = listenOf(d);
       return row !== null && row.d <= nextDay(localDateAt(now));
     }
+    case 'eflag':
+      // English Study's flag on a clip or a question (contract/eflag.ts)
+      return eflagOf(d) !== null;
+    case 'eflag_done':
+      // the review's answer to a flag (contract/eflag.ts; a member's: contract/guest.ts)
+      return eflagDoneOf(d) !== null;
     default:
       return true;
   }

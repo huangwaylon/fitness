@@ -15,9 +15,8 @@ function keysFile(): string | null {
   return existsSync(f) ? f : null;
 }
 
-let secret: string | null = null;
-function secretOf(): string {
-  if (secret) return secret;
+/** The two members' keys (lower case), or exit. */
+function keys(): { a: string; b: string } {
   const file = !process.env.KEY_A || !process.env.KEY_B ? keysFile() : null;
   const fileKeys: Record<string, string> = file
     ? Object.fromEntries(readFileSync(file, 'utf8').trim().split('\n').map((l) => l.split('=') as [string, string]))
@@ -28,7 +27,21 @@ function secretOf(): string {
     console.error('set KEY_A and KEY_B in the environment, or KEYS_FILE');
     process.exit(1);
   }
+  return { a, b };
+}
+
+let secret: string | null = null;
+function secretOf(): string {
+  if (secret) return secret;
+  const { a, b } = keys();
   return (secret = createHmac('sha256', `${a}:${b}`).update(SIGN_LABEL).digest('hex'));
+}
+
+/** An `/api` request as member A (a review's own writes, its reads: relay/scripts/flags.ts), its JSON reply. */
+export async function asMember(body: object): Promise<Record<string, unknown>> {
+  const res = await fetch(`${RELAY}/api`, { method: 'POST', body: JSON.stringify({ key: keys().a, ...body }), headers: { 'Content-Type': 'text/plain' } });
+  if (!res.ok) throw new Error(`/api: ${res.status}`);
+  return (await res.json()) as Record<string, unknown>;
 }
 
 /** A signed POST to the record's /admin. */

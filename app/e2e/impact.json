@@ -196,6 +196,8 @@
   ],
   "unmapped": {
     "src": "app.html and the type declarations: every spec loads them (the gate set)",
+    "src/lib/english": "English Study before its sheet: its e2e follow it",
+    "src/lib/english/clips": "English Study before its sheet: its e2e follow it",
     "src/lib/components/characters": "the /dev/characters page's viewer: not in the app",
     "src/lib/components/dev": "dev-only overlays: not in the app",
     "src/lib/model/fixtures": "the model's unit-test fixtures",

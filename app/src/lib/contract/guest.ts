@@ -24,7 +24,8 @@ type Rec = Record<string, unknown>;
  * pocket's catches): its catches (`find`, `tally`, `tally_back`) and its part of the island's day (`island`), any
  * `decor` op (the island's decorations and its layout, every home's room, its own home's look), the `board`, its
  * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), the field (`farm`: its own plants),
- * its ききみみ games (`listen`), a trip's packing list (`pack`: adding, and changing only what it added,
+ * its ききみみ games and English Study's clips (`listen`), a flag on English Study's content (`eflag`; its review's `eflag_done` is the
+ * members'), a trip's packing list (`pack`: adding, and changing only what it added,
  * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal or the
  * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
  * members' (or any `person`), a trip's notes (`trip_note`) or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`):
@@ -52,6 +53,7 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'pack_chk':
     case 'pack_reset':
     case 'room_save':
+    case 'eflag':
       return true;
     case 'pref':
       return d.person === undefined && GUEST_PREF_KEYS.includes(d.key);

@@ -40,6 +40,9 @@ export interface ListenRow {
   ms: number;
   /** にがて れんしゅう (a solo deck of my weak spots), else absent. */
   p?: 1;
+  /** English Study's clip (`gm` TV_GM) finished: its まとめ reached (a day of study); absent on a row of the minutes studied in a clip
+   *  left part-way (its answers so far, maybe none). */
+  f?: 1;
   /** My answers, in the game's order (the questions sat out aren't); none in a no-answer mode (minutesOnly). */
   r: ListenAnswer[];
 }
@@ -50,13 +53,16 @@ export const STORY_GM = 'story';
 /** The mic's games (docs/kikimimi-mic.md "In the registry", "The privacy rule"): a row of theirs carries minutes only, never an answer (nothing of a
  *  speaking game leaves the phone but how long it took). */
 const MIC_GMS: ReadonlySet<string> = new Set(['mane', 'kuri', 'pair', 'role']);
+/** English Study's clips (docs/english.md "Progress"): a row per まとめ reached (`f`) or a clip left part-way after a minute
+ *  or more of study; `u` the clip's id, `ms` the active study time the row adds, `r` the answers so far (maybe none). */
+export const TV_GM = 'tv';
 /** A row of this game has no answers (a story's, a mic game's: its `r` empty). */
 export const minutesOnly = (gm: string | undefined): boolean => gm === STORY_GM || (gm !== undefined && MIC_GMS.has(gm));
 
 /** What the other member sees of a row (docs/kikimimi.md "Storage"): never the level, the answers or the score. A
  *  unit's passed チェック adds the unit and `stamped` (docs/curriculum.md "Playing together": each person's stamps are the partner's
  *  to see, the answers never). */
-type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: string; stamped?: 1 };
+type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: string; stamped?: 1; gm?: string; f?: 1 };
 
 /** The lesson whose pass stamps a unit (チェック), and the first-listen rights it takes, own or the team's (§10). */
 export const CHECK_LESSON = 3;
@@ -76,7 +82,7 @@ const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;
 /** An item's id (a clip's file name). */
 export const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
-const KEYS = new Set(['d', 'g', 'gm', 'u', 'l', 'tm', 'lv', 'n', 'ms', 'p', 'r']);
+const KEYS = new Set(['d', 'g', 'gm', 'u', 'l', 'tm', 'lv', 'n', 'ms', 'p', 'f', 'r']);
 
 function answerOf(a: unknown): ListenAnswer | null {
   if (!Array.isArray(a) || a.length !== 4) return null;
@@ -92,12 +98,14 @@ export function listenOf(d: unknown): ListenRow | null {
   if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
   if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !isInt(o.lv, 1, QUIZ_LVS.length) || !isInt(o.n, 1, 3) || !isInt(o.ms, 0, LISTEN_MAX_MS)) return null;
   if (o.p !== undefined && o.p !== 1) return null;
+  // (finished: English Study's clip only)
+  if (o.f !== undefined && (o.f !== 1 || o.gm !== TV_GM)) return null;
   if (o.gm !== undefined && (typeof o.gm !== 'string' || !GM_RE.test(o.gm))) return null;
   if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;
   if (o.l !== undefined && (o.u === undefined || !isInt(o.l, 1, 5))) return null;
   if (o.tm !== undefined && (o.l === undefined || !isInt(o.tm, 0, LESSON_QS))) return null;
   const gm = o.gm as string | undefined;
-  if (!Array.isArray(o.r) || o.r.length < (minutesOnly(gm) ? 0 : 1) || o.r.length > (gm !== undefined && MIC_GMS.has(gm) ? 0 : LISTEN_MAX_Q)) return null;
+  if (!Array.isArray(o.r) || o.r.length < (minutesOnly(gm) || gm === TV_GM ? 0 : 1) || o.r.length > (gm !== undefined && MIC_GMS.has(gm) ? 0 : LISTEN_MAX_Q)) return null;
   const r: ListenAnswer[] = [];
   for (const a of o.r) {
     const x = answerOf(a);
@@ -106,22 +114,25 @@ export function listenOf(d: unknown): ListenRow | null {
   }
   return {
     d: o.d, g: o.g, ...(o.gm !== undefined && { gm: o.gm as string }), ...(o.u !== undefined && { u: o.u as string }), ...(o.l !== undefined && { l: o.l as number }),
-    ...(o.tm !== undefined && { tm: o.tm as number }), lv: o.lv, n: o.n, ms: o.ms, ...(o.p === 1 && { p: 1 as const }), r
+    ...(o.tm !== undefined && { tm: o.tm as number }), lv: o.lv, n: o.n, ms: o.ms, ...(o.p === 1 && { p: 1 as const }), ...(o.f === 1 && { f: 1 as const }), r
   };
 }
 
-/** A summary as the other member's phone gets it (`r` absent), or null. A stamp needs its unit (a bad one dropped). */
+/** A summary as the other member's phone gets it (`r` absent), or null. A stamp needs its unit (a bad one dropped);
+ *  English Study's row says so (`gm`) and whether it finished a clip (`f`), never which one. */
 export function listenSummaryOf(d: unknown): ListenSummary | null {
   if (!d || typeof d !== 'object') return null;
   const o = d as Record<string, unknown>;
   if (!(isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && isInt(o.n, 1, 3) && isInt(o.ms, 0, LISTEN_MAX_MS))) return null;
   const stamped = o.stamped === 1 && typeof o.u === 'string' && UNIT_RE.test(o.u);
-  return { d: o.d, g: o.g, n: o.n, ms: o.ms, ...(stamped && { u: o.u as string, stamped: 1 as const }) };
+  const tv = o.gm === TV_GM;
+  return { d: o.d, g: o.g, n: o.n, ms: o.ms, ...(stamped && { u: o.u as string, stamped: 1 as const }), ...(tv && { gm: TV_GM }), ...(tv && o.f === 1 && { f: 1 as const }) };
 }
 
-/** A row's summary (the other member's copy): the game, and a stamped unit's id when it passed a チェック. */
+/** A row's summary (the other member's copy): the game, a stamped unit's id when it passed a チェック, English Study's
+ *  mark and whether the clip was finished. */
 const summaryOf = (row: ListenRow): ListenSummary =>
-  ({ d: row.d, g: row.g, n: row.n, ms: row.ms, ...(stampsUnit(row) && { u: row.u, stamped: 1 as const }) });
+  ({ d: row.d, g: row.g, n: row.n, ms: row.ms, ...(stampsUnit(row) && { u: row.u, stamped: 1 as const }), ...(row.gm === TV_GM && { gm: TV_GM, ...(row.f === 1 && { f: 1 as const }) }) });
 
 /**
  * What `viewer` gets of a `listen` row `sender` wrote: its own whole (`all`), anyone else's summary (`summary`: the

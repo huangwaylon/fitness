@@ -59,7 +59,8 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `food`, `food_repeat`, `food_recipe`, `food_custom` | `food.ts` | the meal log ([food-data.md](food-data.md)): own entries, owner-only edits (`foodAccept`); いつもの's skipped day stays skipped (`repeatAccept`); a recipe or custom food logs as an ordinary `food` with a snapshot |
 | `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short` |
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
-| `listen` | `listen.ts` | one ききみみ game's answers ([kikimimi.md](kikimimi.md)); **private** (`rowsFor`): whole to its owner, a summary to the others (`stampsUnit`) |
+| `listen` | `listen.ts` | one ききみみ game's answers ([kikimimi.md](kikimimi.md)) or English Study's clip (`gm` 'tv', [english.md](english.md#progress)); **private** (`rowsFor`): whole to its owner, a summary to the others (`stampsUnit`) |
+| `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
 

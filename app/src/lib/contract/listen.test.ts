@@ -1,7 +1,7 @@
 // contract/listen.ts: ききみみ クイズ's progress rows (docs/kikimimi.md "Storage") and who gets what of them
 // (contract/guest.ts rowsFor, which the demo applies too).
 import { describe, expect, it } from 'vitest';
-import { CHECK_LESSON, STAMP_MIN, STORY_GM, listenOf, listenSeen, listenSummaryJson, listenSummaryOf, stampsUnit, type ListenRow } from './listen.ts';
+import { CHECK_LESSON, STAMP_MIN, STORY_GM, TV_GM, listenOf, listenSeen, listenSummaryJson, listenSummaryOf, stampsUnit, type ListenRow } from './listen.ts';
 import { rowsFor } from './guest.ts';
 import type { EventRow, SnapshotRows } from './api.ts';
 
@@ -37,6 +37,20 @@ describe('listenOf', () => {
     // くりかえし チャレンジ's (a mic game): minutes only too
     expect(listenOf({ ...story, gm: 'kuri', u: undefined })).toEqual({ ...story, gm: 'kuri', u: undefined });
     expect(JSON.parse(listenSummaryJson(JSON.stringify(story))!)).toEqual({ d: '2026-11-05', g: 'st12ab', n: 1, ms: 600_000 });
+  });
+  it('English Study’s clip (TV_GM): finished (`f`) or part-way, answers or none; its summary says `gm` and `f`, never the clip or the answers', () => {
+    const tv = { d: '2026-11-05', g: 'tv12ab', gm: TV_GM, u: 'waitress', lv: 7, n: 1, ms: 600_000, f: 1, r: [['waitress-q1', 1, 1, 0], ['waitress-q2', 0, 1, 1]] };
+    expect(listenOf(tv)).toEqual(tv);
+    const { f: _f, ...part } = { ...tv, r: [] };
+    expect(listenOf(part)).toEqual(part);
+    expect(listenOf({ ...tv, r: [] })).toEqual({ ...tv, r: [] }); // (まとめ reached with nothing answered: never locked)
+    for (const bad of [{ ...tv, f: 2 }, { ...tv, f: true }, { ...tv, gm: 'tile' }, { ...tv, gm: undefined }, { ...part, gm: 'tile' }])
+      expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
+    expect(JSON.parse(listenSummaryJson(JSON.stringify(tv))!)).toEqual({ d: '2026-11-05', g: 'tv12ab', n: 1, ms: 600_000, gm: TV_GM, f: 1 });
+    expect(JSON.parse(listenSummaryJson(JSON.stringify(part))!)).toEqual({ d: '2026-11-05', g: 'tv12ab', n: 1, ms: 600_000, gm: TV_GM });
+    expect(listenSummaryOf({ d: '2026-11-05', g: 'tv12ab', n: 1, ms: 1, gm: TV_GM, f: 1 })).toEqual({ d: '2026-11-05', g: 'tv12ab', n: 1, ms: 1, gm: TV_GM, f: 1 });
+    // another game's `gm` or a stray `f` is not carried
+    expect(listenSummaryOf({ d: '2026-11-05', g: 'tv12ab', n: 1, ms: 1, gm: 'tile', f: 1 })).toEqual({ d: '2026-11-05', g: 'tv12ab', n: 1, ms: 1 });
   });
   it('a unit’s lesson (docs/curriculum.md "Playing together"): `l` 1-5 with `u`, `tm` 0-6 with `l`', () => {
     const lesson = { ...row, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5 };
