@@ -45,6 +45,5 @@ export function sceneSfx(kind: SceneSfx, at?: readonly [number, number]): void {
   cue(`scene-${kind}`, at ? { at } : undefined);
 }
 
-/** Whether an element is drawn now: a world node outside the camera's window is `visibility: hidden` with its last box
- *  (stale), so it neither guards a spot nor counts as lying there. (The one DOM helper here.) */
-export const shownNow = (el: Element): boolean => el.checkVisibility?.({ visibilityProperty: true }) ?? true;
+// (shownNow: placement.ts's, here too for the scenery's callers)
+export { shownNow } from './placement.ts';

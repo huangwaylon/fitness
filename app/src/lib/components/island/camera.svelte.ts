@@ -389,7 +389,7 @@ export class World {
 
   /** The map of the world node `el` is in (itself or an ancestor), on screen now: its origin in client px and its scale,
    *  from the 3D camera as the projector places it (no layout read: a speech balloon follows its speaker through a camera
-   *  move, balloonFollow.ts). Null when `el` is in none, or in a body's (no plain map). */
+   *  move, balloonFollow.ts). Null when `el` is in none, or in a body's (no plain map); the map null while the node is out of view. */
   frameOf(el: Element): (() => NodeFrame | null) | null {
     let at: Element | null = el, n: Node | undefined;
     while (at && !(n = this.byEl.get(at))) at = at.parentElement;
@@ -398,7 +398,8 @@ export class World {
     node.followed = true;
     return () => {
       const t = this.three, v = this.view;
-      if (!t || !this.nodes.has(node)) return null;
+      // (out of view: hidden, its balloon too)
+      if (!t || !this.nodes.has(node) || !node.shown) return null;
       const [x, z, lift] = node.live ? node.live() : [node.x, node.z, node.lift];
       const q = t.at(x, z, lift ?? node.lift ?? 0, Q), k = q.k / v.s;
       const ky = node.mode === 'flat' ? k * Math.max(0.02, q.ground) : node.model ? k * q.up : k;

@@ -8,8 +8,8 @@
   // them (placement.ts placeBy, NH's rule for every speaker): above the head when there's room, else beside, else below,
   // at most NEAR px off, never over the HUD, しずえ's box, a tree's popup, the speaker or off the safe area (what gives
   // way first: the campsite, then the island's things, then the villagers); it follows the speaker while it talks and
-  // closes if they go (my villager hushes as it sets off walking). The box is sized for its longest page, so it never
-  // jumps between pages.
+  // closes if they go or out of view (my villager hushes as it sets off walking). The box is sized for its longest page,
+  // so it never jumps between pages.
   // A line may end on a choice (NH's answers: Jack's 「キャンディを あげる」): its answers show in a row at the balloon's
   // foot (the box keeps their room on every page) once the last page has typed; until one is picked a tap on the box
   // does nothing (left alone 15 s, it closes unanswered).
@@ -18,7 +18,7 @@
   // not when a new line replaces it. `read`: the last page's time left alone (ms; a brief greeting's shorter), `avoid`:
   // boxes it keeps off besides (client px: the museum's plaques).
   import { tick } from 'svelte';
-  import { TAIL_IN, placeBy, type Side } from './placement.ts';
+  import { TAIL_IN, onScreen, placeBy, type Side } from './placement.ts';
   import type { Box } from '#lib/world/geom.ts';
   import type { SaySpeaker } from '#lib/world/say.ts';
   import { followOf } from './balloonFollow.ts';
@@ -152,7 +152,7 @@
     if (!at(said.n)) close();
   }
   /** One of the camera's frames while it moves: the balloon carried with its speaker (transforms only, no layout read:
-   *  balloonFollow.ts), or out of sight till it settles when its speaker can't be followed. */
+   *  balloonFollow.ts), or out of sight till it settles when its speaker can't be followed or is out of view. */
   export function track() {
     if (!held || !said?.placed) return;
     const a = follow?.now();
@@ -184,6 +184,8 @@
     // its layout size (a pop-in's scale, mid-way, would make the box look smaller than it stands)
     const st = (scene?.querySelector('.stage') ?? scene)?.getBoundingClientRect(), box = el && { width: el.offsetWidth, height: el.offsetHeight };
     if (!scene || !st || !box || !speaker || said?.n !== n) return false;
+    // a speaker out of view (a world node past the horizon or behind the camera keeps its last box): none to stand by
+    if (typeof Element !== 'undefined' && speaker instanceof Element && !onScreen(speaker)) return false;
     const src = (seen = speaker.getBoundingClientRect());
     const from = { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom };
     // never over the speaker
@@ -224,8 +226,10 @@
     watcher = setInterval(() => {
       if (said?.n !== n || !speaker) return clearInterval(watcher);
       if (!speaker.isConnected) return close();
-      // (the camera moving: carried by track, placed again once it settles)
+      // (the camera moving: carried by track, out of sight while they are, placed again once it settles)
       if (held) return void (moved = 0);
+      // (gone out of view standing still: walked past the horizon)
+      if (speaker instanceof Element && !onScreen(speaker)) return close();
       const r = speaker.getBoundingClientRect();
       if (!seen || Math.abs(r.left - seen.left) + Math.abs(r.top - seen.top) + Math.abs(r.width - seen.width) < 8) return void (moved = 0);
       if (++moved < 3) return;

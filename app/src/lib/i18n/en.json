@@ -939,6 +939,7 @@
   "visitor.pete": "Pete",
   "visitor.leilani": "Leilani",
   "visitor.lottie": "Lottie",
+  "visitor.said": "{name}: “{text}”",
   "visitor.chip": "Chip",
   "visitor.nat": "Nat",
   "visitor.rover": "Rover",

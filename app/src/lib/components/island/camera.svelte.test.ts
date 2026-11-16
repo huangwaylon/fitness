@@ -50,6 +50,28 @@ describe('an off-screen walker', () => {
   });
 });
 
+describe('a speech balloon’s speaker out of view (frameOf, balloonFollow.ts)', () => {
+  it('its node’s map is null while the node is hidden (past the horizon: the balloon steps away, not into the sky)', () => {
+    const w = new World(), base = flat();
+    // (past z 2000: not visible, as past the horizon)
+    w.useThree({ ...base, at: (x, z, lift, out) => Object.assign(base.at(x, z, lift, out), { visible: z < 2000 }) });
+    let pos: [number, number, number] = [10, 10, 0];
+    const el = { style: { setProperty() {}, visibility: '', opacity: '', clipPath: '' } as unknown as CSSStyleDeclaration, classList: { toggle() {} }, toggleAttribute() {}, parentElement: null };
+    w.at({ x: 10, z: 10, live: () => pos })(el as unknown as HTMLElement);
+    w.step(0);
+    const frame = w.frameOf(el as unknown as Element)!;
+    expect(frame()).not.toBeNull();
+    pos = [10, 2400, 0];
+    w.step(0);
+    expect(el.style.visibility).toBe('hidden');
+    expect(frame()).toBeNull();
+    pos = [10, 20, 0];
+    w.step(0);
+    expect(frame()).not.toBeNull();
+    w.useThree(null);
+  });
+});
+
 describe('a rush hushes the nodes that paint nothing', () => {
   /** A node's element, painting (a fill) or not (a bare tap area), on a scene; getComputedStyle counted per element. */
   const scene = { id: 'scene' };

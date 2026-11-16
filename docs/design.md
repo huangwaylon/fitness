@@ -819,15 +819,15 @@ person has a pocket and かいがら, the guest too.
 
 ### Dialogue
 
-`world/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`. The speech balloon and the catch plate read like NH's
-box: 33 ms a glyph, two lines a page. A tap finishes the page, the next turns it, the last closes it; an orange ▼ bobs
+`world/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`. The speech balloon and catch plate read like NH's box:
+33 ms a glyph, two lines a page. A tap finishes the page, the next turns it, the last closes it; an orange ▼ bobs
 while another page follows. Left alone a page turns after 6 s. The name tag tilts top-left in the speaker's
-NH colour. No voices. A visitor's first tap is their introduction, a first find adds 「ずかんに のったよ！」; a line may end on
-NH's answers (Jack, K.K.).
+NH colour. No voices. A first find adds 「ずかんに のったよ！」; a line may end on NH's answers (Jack, K.K.).
 
-Where it stands, one rule for every speaker (`island/placement.ts` `placeBy`): by the speaker, its tail pointing at
-them, nearness first; clear of every control if it can, never over the HUD, しずえ's box, a popup or the speaker. It
-follows a speaker who moves (`island/balloonFollow.ts`) and closes if they go.
+Placement, one rule for every speaker (`island/placement.ts` `placeBy`): by the speaker, its tail at them,
+nearness first; clear of every control if it can, never over the HUD, しずえ's box, a popup or the speaker. It follows
+a speaker who moves (`island/balloonFollow.ts`) and closes if they go; none out of view (a visitor's line: a banner with
+their name).
 
 ### Villager taps
 

@@ -41,7 +41,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { eventJingle } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { EDGE, clearAt, guardsU, stageGeo } from './placement.ts';
+  import { EDGE, clearAt, guardsU, onScreen, stageGeo } from './placement.ts';
   import { zodiacOf } from '#lib/world/beach.ts';
   import { hook, hookFlag, islandSeed } from '#lib/world/devHooks.ts';
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
@@ -294,8 +294,19 @@
   /** A line of theirs is in the balloon (until it closes, or 20 s at most: another speaker may replace it). */
   let speakingUntil = 0;
   const speaking = () => Date.now() < speakingUntil;
+  let bannerTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(bannerTimer));
+  /** Their line in the balloon by them; out of view (a catch's cheer or thanks while they stand past the horizon or
+   *  behind the camera), a banner with their name instead: a balloon has no one to stand by. */
   function say(name: string, parts: string | string[], from: Element, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
     speakingUntil = Date.now() + 20_000;
+    if (!o.choices?.length && !onScreen(from)) {
+      const text = [parts].flat().join(' ').replace(/\s*\n\s*/g, ' '), ms = Math.max(3600, 1200 + [...text].length * 70);
+      toasts.show(t('visitor.said', { name, text }), ms, { reaction: 'joy' });
+      clearTimeout(bannerTimer);
+      bannerTimer = setTimeout(() => ((speakingUntil = 0), o.ondone?.()), ms);
+      return;
+    }
     rawSay?.(name, parts, from, { ...o, ondone: () => ((speakingUntil = 0), o.ondone?.()) });
   }
 
@@ -635,8 +646,11 @@
     if (g.given) return say(name, t(`chat.sp.${id}.given`), target, { colour });
     recordFind('item', g.item);
     cue('emote-joy');
-    say(name, t(`chat.sp.${id}.${key}`, { item: g.name }), target, { colour });
-    toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy' });
+    const got = () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy' });
+    // (out of view their line is a banner itself: the word on the gift after it)
+    const off = !onScreen(target);
+    say(name, t(`chat.sp.${id}.${key}`, { item: g.name }), target, { colour, ondone: off ? got : undefined });
+    if (!off) got();
   }
   /** A guest's tap after their introduction: their role's. */
   function guest(id: GuestId, name: string, target: Element, colour: string, first = false) {

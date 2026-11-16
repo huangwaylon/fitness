@@ -5,7 +5,15 @@
 // (placeBy: NH's rule, nearness first); a plate or a caption by the point it's about (place).
 import { hits, type Box } from '#lib/world/geom.ts';
 
-
+/** Whether an element is drawn now: a world node out of view (outside the camera's window, past the horizon, behind the
+ *  camera) is `visibility: hidden` with its last box (stale), so it neither guards a spot nor counts as lying there. */
+export const shownNow = (el: Element): boolean => el.checkVisibility?.({ visibilityProperty: true }) ?? true;
+/** Whether an element is drawn and its box is on screen: a speaker a balloon may stand by (Talk.svelte at()). */
+export function onScreen(el: Element): boolean {
+  if (!shownNow(el)) return false;
+  const r = el.getBoundingClientRect();
+  return r.width + r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
+}
 
 /** The stage's box, the px → u factor and what of the stage is on screen (u). */
 export function stageGeo(scene: HTMLElement | undefined) {
@@ -32,7 +40,7 @@ function guards(skip?: (el: Element) => boolean): Box[] {
     if (el.classList.contains('balloon') || el.closest('[data-fx]:not(.placed)')) continue; // an overlay still being measured
     if (skip?.(el)) continue;
     // a world node out of view keeps its last box: not on screen, not in the way
-    if ((el as HTMLElement).checkVisibility && !(el as HTMLElement).checkVisibility({ visibilityProperty: true })) continue;
+    if (!shownNow(el)) continue;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
     out.push({ x0: r.left - 6, y0: r.top - 6, x1: r.right + 6, y1: r.bottom + 6 });
