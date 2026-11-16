@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const tomHitsOnAnn: Clip = {
-  id: 'tomhitsonann', video: 'KHark3X5jHI', title: 'Tom Hits on Ann', dur: 250, wpm: 161, band: 'slow',
+  id: 'tomhitsonann', video: 'KHark3X5jHI', title: 'Tom Hits on Ann', dur: 250, wpm: 161, band: 'mid',
   tags: ['お願い・断り', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

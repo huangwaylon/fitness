@@ -16,7 +16,7 @@ import type { Clip } from '../types.ts';
 
 export const aprilMen: Clip = {
   id: 'aprilmen', video: '3jYNwLE_8R0', title: 'April thinks men are better than women', dur: 173, wpm: 161,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -11,7 +11,7 @@
 import type { Clip } from '../types.ts';
 
 export const aprilFired: Clip = {
-  id: 'aprilfired', video: 'CD9iAdtUFqI', title: 'April Ludgate’s Getting Fired', dur: 139, wpm: 174, band: 'mid',
+  id: 'aprilfired', video: 'CD9iAdtUFqI', title: 'April Ludgate’s Getting Fired', dur: 139, wpm: 174, band: 'fast',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

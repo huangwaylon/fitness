@@ -129,6 +129,15 @@ import { donnaTweets } from './donnatweets.ts';
 import { ronAward } from './ronaward.ts';
 import { joeyBroadwayAudition } from './joeyaudition.ts';
 import { tomHitsOnAnn } from './tomhitsonann.ts';
+import { chairModel } from './chairmodel.ts';
+import { benLeslieKiss } from './firstkiss.ts';
+import { ronBirthday } from './ronbirthday.ts';
+import { benSaves } from './bensaves.ts';
+import { mostLovedDenmark } from './loveddenmark.ts';
+import { ironkitchen } from './ironkitchen.ts';
+import { saveJJs } from './savejjs.ts';
+import { ronharass } from './ronharass.ts';
+import { donnaPosts } from './donnaposts.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -136,9 +145,12 @@ export const CLIPS: readonly Clip[] = [
   datinglang,
   laundromat,
   chickParent,
+  chairModel,
+  mostLovedDenmark,
   jerryBurritoLie,
   jerryMugged,
   thiefOfJoy,
+  benSaves,
   gameRoom,
   aprilGetFired,
   johnnyGoodbye,
@@ -150,18 +162,17 @@ export const CLIPS: readonly Clip[] = [
   ronDiane,
   beefMilk,
   heroes,
+  saveJJs,
   buttOfJoke,
   ronSlash,
   mexBus,
+  ronharass,
   animalControl,
   chardStand,
-  twodates,
   tobySafety,
   fluSeason,
   banquetHair,
   setStraight,
-  ronFire,
-  benArrested,
   jansStroller,
   vanBidding,
   ronAward,
@@ -170,14 +181,18 @@ export const CLIPS: readonly Clip[] = [
   womensAppreciation,
   jimBack,
   benCriminal,
+  // ふつう
+  twodates,
+  ronFire,
+  benArrested,
   imFine,
   aprilMen,
   joeyBroadwayAudition,
   tomHitsOnAnn,
-  // ふつう
   pumpJamm,
   firstComplaint,
   isSheHot,
+  ronBirthday,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -186,8 +201,10 @@ export const CLIPS: readonly Clip[] = [
   newport,
   tomSwagger,
   ronWill,
+  benLeslieKiss,
   tomNegotiate,
   donnaTweets,
+  donnaPosts,
   mamasDead,
   workBestie,
   andySecret,
@@ -213,10 +230,10 @@ export const CLIPS: readonly Clip[] = [
   prairie,
   babySex,
   screwIt,
+  // 速い
   aprilFired,
   runsAgain,
   promSeason,
-  // 速い
   getaway,
   evilLaugh,
   fluoride,
@@ -254,6 +271,7 @@ export const CLIPS: readonly Clip[] = [
   emmaLocked,
   perfectCrime,
   fakedating,
+  ironkitchen,
   seatingChart,
   soulmates,
   pityFudge,

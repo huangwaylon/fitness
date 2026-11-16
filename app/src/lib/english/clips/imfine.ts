@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const imFine: Clip = {
-  id: 'imfine', video: '9Ex4UcLaYNc', title: 'I\'m Fine, B*tch, I\'m Fine', dur: 193, wpm: 161, band: 'slow',
+  id: 'imfine', video: '9Ex4UcLaYNc', title: 'I\'m Fine, B*tch, I\'m Fine', dur: 193, wpm: 161, band: 'mid',
   tags: ['家', '職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

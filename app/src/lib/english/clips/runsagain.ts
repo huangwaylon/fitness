@@ -9,7 +9,7 @@
 import type { Clip } from '../types.ts';
 
 export const runsAgain: Clip = {
-  id: 'runsagain', video: 'kjl_mAFKFLc', title: 'Leslie Runs Again', dur: 279, wpm: 174, band: 'mid',
+  id: 'runsagain', video: 'kjl_mAFKFLc', title: 'Leslie Runs Again', dur: 279, wpm: 174, band: 'fast',
   tags: ['職場', '家'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

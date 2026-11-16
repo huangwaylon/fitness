@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const promSeason: Clip = {
-  id: 'promseason', video: 'oGUp36qcueM', title: 'Prom Season', dur: 289, wpm: 174, band: 'mid',
+  id: 'promseason', video: 'oGUp36qcueM', title: 'Prom Season', dur: 289, wpm: 174, band: 'fast',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const ronFire: Clip = {
   id: 'ronfire', video: 'JLhO2gazhWU', title: 'Ron Swanson Tried to Fire Leslie Knope', dur: 126, wpm: 161,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

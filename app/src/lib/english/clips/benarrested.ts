@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const benArrested: Clip = {
-  id: 'benarrested', video: 'EZstVEdHijI', title: 'Ben gets arrested', dur: 191, wpm: 161, band: 'slow',
+  id: 'benarrested', video: 'EZstVEdHijI', title: 'Ben gets arrested', dur: 191, wpm: 161, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

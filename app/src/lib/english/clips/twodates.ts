@@ -18,7 +18,7 @@
 import type { Clip } from '../types.ts';
 
 export const twodates: Clip = {
-  id: 'twodates', video: 'xb9S6MT2ea4', title: 'Rachel Gets Set Up with Two Guys', dur: 115, wpm: 161, band: 'slow',
+  id: 'twodates', video: 'xb9S6MT2ea4', title: 'Rachel Gets Set Up with Two Guys', dur: 115, wpm: 161, band: 'mid',
   tags: ['友だち', '恋愛'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

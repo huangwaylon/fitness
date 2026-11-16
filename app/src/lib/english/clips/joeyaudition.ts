@@ -11,7 +11,7 @@ import type { Clip } from '../types.ts';
 
 export const joeyBroadwayAudition: Clip = {
   id: 'joeyaudition', video: 'ImhDYdqi5a0', title: 'Joey Lands a Huge Broadway Audition', dur: 96, wpm: 161,
-  band: 'slow', tags: ['友だち', '家'],
+  band: 'mid', tags: ['友だち', '家'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
