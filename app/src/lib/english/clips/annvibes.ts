@@ -1,0 +1,341 @@
+// REVIEW 2026-11-16: pass 7, fix 15, drop 2, new 1; ear checks 2
+// “Ann discovers the concept of "vibes" | Parks and Recreation” (the official Parks and Recreation channel, Season 6):
+// Ann drives April to her vet-school orientation in Bloomington; April walks out, makes Ann play her 65-year-old
+// grandmother on the campus tour, refuses to enroll on a gut feeling, and Ann ends up using April's "gut" herself.
+// Segments from the captions, words from whisper (2026-11-16). Left out on purpose: the "Kevorkian" surname (51 s) and
+// the Dale Earnhardt Jr. bibs (73 s; world knowledge), "What if I'm a murderer? / Come on. It's funny." (59–64 s,
+// captions lose the start and the speaker is unclear), the Titanic line (115 s), "I have some planning to do" (125 s,
+// whisper only), "Aren't you glad" (144 s, captions "are you glad"), the stolen-phone texting line (170–174 s; only its
+// last clause "It's not that big of a deal" is used, in nt2) and Guy Fieri (207 s). Whisper loops "Good." after 240 s.
+// EAR CHECK: 3.8–7.6 s h1 — "Is that where you're gonna sit?" and "Trunk." are April's, "I'm driving…" Ann's (by turn
+//   order and sense; no name in the lines)
+// EAR CHECK: 217.4 s g2 — "Well, right now my gut is saying… Mariah Carey the whole way home" is Ann's (it follows
+//   April's "You just listen when it says something"; no name in the line)
+import type { Clip } from '../types.ts';
+
+export const annVibes: Clip = {
+  id: 'annvibes', video: 'A7sa4ewfPr4', title: 'Ann discovers the concept of "vibes"', dur: 248, wpm: 173, band: 'mid',
+  tags: ['旅行', '友だち'],
+  show: 'Parks and Recreation',
+  credit: 'Parks and Recreation (official YouTube channel)',
+  questions: [
+    // R fix: V2 (blind 60 %): the stem's "where else she would sit" settled whose seat it was; it now names the moment
+    //   only, so "Ann" vs "herself" has to come from the lines
+    // why: bags ← "trunk" heard as the place for luggage, a normal road-trip question; driving ← "Where else would I
+    //      sit?" missed, so "trunk" heard as where April would rather ride (whose seat is being asked about)
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'trunk', seg: [0, 8.0],
+      stem: 'In the car, why is April’s one-word answer “Trunk.” funny?',
+      choices: ['She wants Ann to put the bags in the trunk first', 'She’d rather Ann rode in the trunk, away from her',
+                'She’d rather ride in the trunk herself, away from Ann'], a: 1,
+      cue: '「Where else would I sit?」への一語の返事。',
+      line: 'I’m driving. Where else would I sit? — *Trunk.*',
+      said: '「運転するのに、ほかにどこに座るの」と言う Ann に、April は一言「トランク」。',
+      mean: '隣に座られたくない、という悪口を一語で言う冗談。',
+      trap: 'trunk を荷物の置き場と聞くと、ふつうの旅の会話に取れる。誰の席の話かを追う。',
+      use: 'Where else would I be?（ほかにどこにいるっていうの）' },
+
+    // why: interview ← "helped April get into" heard as still trying to get in; first class ← "vet school" + "today"
+    //      heard as classes starting
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'orient', seg: [7.65, 13.45],
+      stem: 'In her talk to the camera, what is happening at the vet school today?',
+      choices: ['April’s entrance interview', 'April’s first real class',
+                'April’s orientation day'], a: 2,
+      cue: '「today’s」のあと、長めの一語。',
+      line: 'I helped April *get into* vet school… and *today’s her orientation*',
+      said: 'April の入学を手伝った。今日はオリエンテーションの日だと話す。',
+      mean: 'orientation ＝ 入学前の説明会。授業はまだ。',
+      trap: 'get into を「これから入る」と取ると面接に聞こえる。helped の過去形で、合格は済んだ話。',
+      use: 'Today’s my first day at orientation.（今日は新人説明会の日なんだ）' },
+
+    // why: nothing organic ← "organic baby blanket" heard as the reason; chemical toys ← "chemical" heard as what the
+    //      store sells
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'refinery', reveals: ['funfact'], seg: [13.9, 22.5],
+      stem: 'Why won’t Ann buy the baby blanket back home in Pawnee?',
+      choices: ['The only baby store there is next to a refinery', 'The only baby store there sells nothing organic',
+                'The only baby store there sells chemical-filled toys'], a: 0,
+      cue: '「fun fact」のあと、店についての一文。',
+      line: 'our only baby store is *attached to a chemical refinery*.',
+      said: '地元の唯一のベビー用品店は化学工場にくっついている、と話す。',
+      mean: 'attached to ～ ＝ ～に隣接した。だから地元では買いたくない。',
+      trap: 'organic や chemical が耳に残り、品ぞろえの話に聞こえやすい。理由は店の場所。',
+      use: 'The hotel is attached to the station.（ホテルは駅に直結してる）' },
+
+    // R fix: V2 (blind 55 %): the key was the only nuanced choice and "a fact everyone knows" was a filler; now three
+    //   readings of the aside, each as plausible from the choices alone
+    // why: charming detail ← "fun" taken at face value (お楽しみの小ネタ); side topic ← "fun fact" heard as its usual job,
+    //      opening a tangent of trivia
+    { id: 'm1', skill: 'marker', level: 'C1', point: 'funfact', reveals: ['refinery'], seg: [16.45, 22.5],
+      stem: 'When Ann explains why not Pawnee, what does her two-word aside do?',
+      choices: ['It dresses up a grim fact as a fun one', 'It flags a cheerful detail she finds charming',
+                'It opens a fun side topic for a moment'], a: 0,
+      cue: '「but」の直後、短い二語の前置き。',
+      line: 'I would get one in Pawnee, but, *fun fact*, our only baby store is attached to a chemical refinery.',
+      said: '「地元で買えばいいけど、小ネタ」と言ってから、店が化学工場の隣だと話す。',
+      mean: '楽しい小ネタの前置きを、ぞっとする事実に付けた乾いた冗談。',
+      trap: 'fun を文字通り取りやすい。前置きと中身がずれたら、わざとの皮肉を疑う。',
+      use: 'Fun fact: I’ve never been on a plane.（小ネタ：飛行機に乗ったことがない）' },
+
+    // R fix: S1/N7: the stem said "orientation", d1's key; now it names the moment without it
+    // why: lucky things ← the odd list taken at face value, as charms for a big day; teasing Ann ← "everything you
+    //      need" heard as Ann overpacking for her
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'list', seg: [30.5, 42.7],
+      stem: 'When Ann checks that April has everything she needs, what does April’s reply show?',
+      choices: ['She’s packed a few odd things for luck today', 'She’s teasing Ann for packing too much for her',
+                'She doesn’t care about it and is joking'], a: 2,
+      cue: 'ポケットの中身として挙げる物の種類。',
+      line: 'An *empty Sprite can*, an *old man’s fingernail* in my pocket…',
+      said: '持ち物を聞かれ、空きかん、おじいさんのつめ、ある有名人の写真を挙げる。',
+      mean: 'わざと役に立たない物を並べ、質問をまともに受けていない。',
+      trap: '並べた物を本物の持ち物と取りやすい。答えがばかげていたら、質問をかわす合図。',
+      use: 'Yep, I’ve got everything I need.（うん、必要な物は全部ある）' },
+
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'allset', seg: [40.6, 42.8],
+      stem: 'Type how April ends her list: “___.” (3 words)', answer: "i'm all set",
+      cue: '「roller coaster」のすぐあと。',
+      line: '*I’m all set*.',
+      said: '並べ終えて「準備万端」と締める。I’m all がつながる。',
+      mean: 'all set ＝ 準備OK。店で「ほかにご用は？」への返事にも使う。',
+      trap: 'all と set がつながり、一語に聞こえやすい。最後の t はほぼ消えるが、語は3つ。',
+      use: 'No thanks, I’m all set.（いえ、大丈夫です）' },
+
+    // R fix: V2 (blind 60 %): "join the tour" and "thanking Laura" were weak; now two readings built from the line's own
+    //   words (the "tortured" tour, the praise of Laura)
+    // why: tour a torture ← "tortured" heard as what the tour does to April (wrong target); trust ← "who seems really
+    //      nice" heard as the point of the remark
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'tortured', seg: [50.05, 59.1],
+      stem: 'As Ann leaves them together, what is her remark about Laura really doing?',
+      choices: ['Joking that April will find the tour a torture', 'Praising Laura so that April will trust her',
+                'Warning April not to give Laura a hard time'], a: 2,
+      cue: '「really nice」のあとに続く部分。',
+      line: 'you go with Laura, who seems really nice and *does not deserve to be tortured*',
+      said: '「Laura と行って。感じのいい人で、いじめられる筋合いはない」と言う。',
+      mean: 'Laura の説明の形で、April に「意地悪しないで」と釘を刺している。',
+      trap: 'tortured を「ツアーがつらい」と取りやすい。誰が誰を苦しめるかを聞く。',
+      use: 'Be nice. He doesn’t deserve that.（優しくね。あの人は悪くないんだから）' },
+
+    // R fix: V2 (blind 50 %): "dull and uncool" was the only two-part choice and "nearly over" a filler; now a near
+    //   sound (late) and the literal reading; S1/N7: the stem said "orientation" (d1's key), and the line still shows it,
+    //   so reveals gains 'orient'
+    // why: started late ← near sound, lame/late; too hard ← "lame" read through its old sense (weak, 弱い)
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'lame', reveals: ['orient'], seg: [80.0, 87.7],
+      stem: 'Why did April walk out, in her own words?',
+      choices: ['It had started late', 'It was boring and dumb', 'It was too hard for her'], a: 1,
+      cue: '「but it was」のあとの一語。',
+      line: 'I was at orientation, but it was *lame*, so I left',
+      said: '「行ったけど、つまらないから出て、そのまま歩いてきた」と言う。',
+      mean: 'lame ＝ ださい、退屈。若者がよく使う軽い悪口。',
+      trap: 'lame は late に似て聞こえ、辞書の「足が不自由」から「弱い」とも取れる。会話では「つまらない」。',
+      use: 'The party was lame, so we left.（パーティーがつまらなくて帰った）' },
+
+    // R fix: V2 (blind 50 %): "playing along with a joke" was weak; now a second stern frame (boss) and a soft one
+    // why: boss ← the order "right now" heard without the address that makes it a parent's; friend ← "young lady" heard
+    //      as a polite, soft title (おじょうさん)
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'younglady', seg: [86.8, 91.4],
+      stem: 'When Ann answers April’s excuse, how does she sound?',
+      choices: ['Like a boss warning a worker', 'Like a friend gently talking her round',
+                'Like a parent scolding a teenager'], a: 2,
+      cue: '文の最後、April への呼びかけ。',
+      line: 'We are going back there *right now, young lady*.',
+      said: '「今すぐ戻るのよ、おじょうさん」と言う。',
+      mean: 'young lady は親が子どもを叱る時の決まった呼び方。年上の立場から言っている。',
+      trap: 'lady を丁寧な呼び方と取ると優しく聞こえる。命令のあとの young lady は、上司でなく親の叱り方。',
+      use: 'Not so fast, young man.（ちょっと待ちなさい）' },
+
+    // R drop: p2 (V2 blind 60 % + V1): an instant re-ask meaning "promise me" is common sense; no rebalance makes a
+    //   distractor both tempting and refutable. Pragma stays at 1 (p1).
+
+    // R fix: V2 (blind ~50 %): "old grandmother" was the only oddly specific choice; now three parallel roles. S4: the
+    //   segment ended at 107.9, 0.1 s after "am"; it now ends at 106.8, before "that's", and the line drops Ann's reply
+    // why: mother ← Ann's parent-like "young lady" just before; stranger ← April's "get off me, stranger" in the store
+    //      taken as the act
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'grandma', reveals: ['age', 'younglady'], seg: [93.0, 106.8],
+      stem: 'Once they’re back with Laura, what does the “deal” turn out to be?',
+      choices: ['Ann must pretend to be April’s mother', 'Ann must pretend to be April’s grandmother',
+                'Ann must pretend not to know April'], a: 1,
+      cue: '「this is Ann」のあと、April の紹介。',
+      line: 'because of our deal… this is Ann, my *65-year-old grandmother*.',
+      said: '「約束だから戻った」と言った April が、Ann を「65歳のおばあちゃん」と紹介する。',
+      mean: '約束の「話を合わせる」は、このおばあちゃん役のこと。',
+      trap: '直前の叱り方が親のようなので、母親役と思いやすい。紹介の最後の語まで聞く。',
+      use: 'Just play along, okay?（とにかく話を合わせて）' },
+
+    // why: 55 ← "sixty" heard as "fifty" (only the first sound differs); 75 ← "seventy" also starts with s
+    { id: 'n2', skill: 'number', level: 'B1', point: 'age', reveals: ['grandma'], seg: [100.4, 106.6],
+      stem: 'How old does April say Ann is?',
+      choices: ['55', '65', '75'], a: 1, keep: true,
+      cue: '「my」のあと、年齢の前半。',
+      line: 'this is Ann, my *65-year-old* grandmother.',
+      said: 'Ann を「65歳のおばあちゃん」として紹介する。',
+      mean: 'sixty-five-year-old とひと続きに言う。名詞の前では year に s が付かない。',
+      trap: 'fifty と sixty は出だしの f と s の差。速いと頭の音を落としやすい。',
+      use: 'My grandpa is seventy-two.（うちのおじいちゃんは72歳）' },
+
+    // R drop: s1 (V2 blind 50 %): only "we'd love to" is idiomatic, so grammar picks the key without the audio
+    // R new: s2 replaces it (sound ≥ 1). Blind read: ~35 %; all three fit "a real ___ kind of college town"
+    // why: hippie ← the unreleased final p heard as the start of a second syllable; hick ← final p and k sound alike when
+    //      neither is released (Ann is from a small town)
+    { id: 's2', skill: 'sound', level: 'B2', point: 'hip', seg: [109.1, 112.45],
+      stem: 'Fill the gap: “It seems like a real ___ kind of college town.”',
+      choices: ['hip', 'hippie', 'hick'], a: 0,
+      cue: '「real」のあと、短く切れる一語。',
+      line: 'It seems like a real *hip* kind of college town.',
+      said: 'Ann が「とても今っぽい大学町ね」と言う。',
+      mean: 'hip ＝ 今っぽい。やや古い語で、直後に April が「今どき言わない」と返す。',
+      trap: '語末の p は破裂せず、hick や hippie と紛れやすい。音節の数と口の閉じ方を聞く。',
+      use: 'It’s a really hip neighborhood.（すごくおしゃれな地区だね）' },
+
+    // R fix: V2 (blind 55 %): "secretly excited" was a filler; now a near miss on the same target (Ann as too old to
+    //   hear), refuted by "Cool means good"
+    // why: mocking Laura ← right mechanism, wrong target: "cool" is Laura's word; hard of hearing ← repeating a line is
+    //      what you do for a deaf grandparent
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'cool', reveals: ['grandma'], seg: [128.1, 136.38],
+      stem: 'When April repeats Laura’s description to Ann, why is it funny?',
+      choices: ['She’s mocking Laura for using a childish word', 'She acts as if Ann is too old to know slang',
+                'She acts as if Ann is too old to hear well'], a: 1,
+      cue: 'くり返したあとの、呼びかけと説明。',
+      line: 'She said the B Line is cool, *Meemaw*. *Cool means good*.',
+      said: 'Laura の言葉をくり返し、Ann を「おばあちゃん」と呼んで cool の意味を教える。',
+      mean: 'おばあちゃん役の Ann を、若者言葉を知らない人扱いする演技。',
+      trap: 'くり返しは耳の遠い人向けや Laura いじりにも聞こえる。続く意味の説明まで聞く。',
+      use: 'Translation: he likes it.（訳すと、気に入ったってこと）' },
+
+    // why: one term ← Ann's "you're gonna love it here" taken as winning her over; next year ← "not going here" heard
+    //      as "not now"
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'decide', seg: [142.3, 163.6],
+      stem: 'After the tour, what does April decide about the school?',
+      choices: ['Not to go to school there at all', 'To try it for one term first',
+                'To start there next year instead'], a: 0,
+      cue: 'ツアーのあとの April の返事と、最後の一言。',
+      line: 'I’m *not going to school here*. … Yeah, I’m not going here.',
+      said: '「来てよかったでしょ」と言われても「意味なかった。ここには通わない」と言い切る。',
+      mean: '迷った答えではなく、はっきりした決定。',
+      trap: 'Ann がほめ続けるので、前向きになったと思いやすい。返事は本人の言葉で確かめる。',
+      use: 'I’m not doing it. I don’t want to.（やらない。やりたくないの）' },
+
+    // R fix: V2 (blind 55 %): the stem's "pushes back after the tour" pointed at backing out, and the key was the only
+    //   specific choice; now a neutral stem and parallel choices
+    // why: freak out ← near sound (flake/freak), and Ann is upset; drift off ← "flaky" read as absent-minded (ぼんやり)
+    { id: 'ph3', skill: 'phrase', level: 'C1', point: 'flake', reveals: ['decide'], seg: [148.95, 153.3],
+      stem: 'Right after the tour, what does Ann tell April not to do?',
+      choices: ['Get upset and make a scene about it', 'Zone out and stop listening to her',
+                'Back out of something she agreed to'], a: 2,
+      cue: '「April, don’t」のすぐあと。',
+      line: 'April, *don’t flake out on this*. You’re gonna love it here.',
+      said: '「ここで投げ出さないで。きっと気に入るから」と説得する。',
+      mean: 'flake out on ～ ＝ 予定を土壇場でやめる。',
+      trap: 'flake と freak は出だしが似ていて「取り乱す」に聞こえやすい。on のあとに物事が来たら予定の話。',
+      use: 'Don’t flake on me tonight.（今夜ドタキャンしないでね）' },
+
+    // R fix: V2 (blind 60 %): only the key carried an explanation tied to the "grandma" act; now each target has a
+    //   parallel reason
+    // why: the town ← April's "I'm not going here" right after makes it sound like a dig at a town full of kids;
+    //      April herself ← "Am I 65 years old?" heard as her worrying she's too old (right mechanism, wrong target)
+    // anchor: 153.4–159.6 s Ann says "tons of youngsters"; April repeats the word and asks "Am I 65 years old?", the
+    //         age she gave Ann as the fake grandmother (104.7 s)
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'youngsters', reveals: ['age', 'grandma'], seg: [153.25, 163.6],
+      stem: 'When April repeats Ann’s last word back to her, who is the joke on?',
+      choices: ['Ann: her word is an old person’s word', 'April: she feels old next to the students',
+                'Bloomington: it is a town full of kids'], a: 0,
+      cue: '問い返しのあとの、年齢の質問。',
+      line: 'tons of *youngsters*. — *Youngsters? Am I 65 years old?*',
+      said: '「若者がたくさんいる」と言う Ann に、April は「若者？私、65歳？」と返す。',
+      mean: 'youngsters は年配の人の言い方。役の年齢を出して、年寄りなのは Ann だと返す。',
+      trap: '「私が65？」を April 自身の話と取りやすい。前の冗談と同じ数字なら、その相手に向く。',
+      use: 'Who even says “groovy” anymore?（今どき「イカす」なんて言う？）' },
+
+    // R fix: V2 + §9.4: the title ("Ann discovers… vibes") gave away "uses April's own way of deciding"; now asked as
+    //   where the argument ends, which the title doesn't settle. reveals gains 'decide'
+    // why: think it over ← Ann's "I care about your future" heard as winning April round; keeps pushing ← the argument
+    //      heard as still going when the music line comes
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', reveals: ['gut', 'decide'], seg: [166.7, 224.5],
+      stem: 'When they drive home, where does the school argument stand?',
+      choices: ['April still won’t go, and Ann lets it go', 'April will think it over, and Ann is pleased',
+                'April still won’t go, and Ann keeps pushing'], a: 0,
+      cue: '口論の最後、Ann が話をどこへ移すか。',
+      line: 'right now *my gut is saying* that we are going to listen to Mariah Carey the whole way home.',
+      said: 'April は「直感は正しい」と譲らず、Ann は「直感だと帰りは Mariah Carey」と言う。',
+      mean: '学校の話をやめ、April のやり方で音楽を決めた。',
+      trap: '説得が続くと思いやすい。話題がふいに変わったら、言い合いを手放した合図。',
+      use: 'My gut says pizza tonight.（直感だと今夜はピザだね）' },
+
+    // anchor: 174.2–175.4 s "it's not that big of a deal": both sources have "of"; about 7 words in 1.2 s
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'bigdeal', seg: [173.6, 176.3],
+      stem: 'Type the end of April’s brush-off: “It’s not ___.” (5 words)', answer: 'that big of a deal',
+      cue: '「What, Ann?」で始まる返事の最後。文法より音を。',
+      line: 'It’s not *that big of a deal*.',
+      said: '「大したことないでしょ」と流す。that big of a は「ザッビゴヴァ」とひと続き。',
+      mean: '文法書では that big a deal だが、会話では of を入れる形がとても多い。',
+      trap: '習った形に合わせて of を書き落としやすい。書き取りは、聞こえた音をそのまま書く。',
+      use: 'Relax, it’s not that big of a deal.（落ち着いて、大ごとじゃないよ）' },
+
+    // R fix: V2 (blind 50 %) + K1: "Calm, and only a bit let down" was defensible on "just a little"; now hurt vs
+    //   angry vs caring, and the key no longer names "quitting" (g1's key)
+    // why: angry ← "disappointed" heard as anger; hurt ← "disappointed" heard as about Ann herself (傷ついた)
+    { id: 'a4', skill: 'attitude', level: 'B2', point: 'care', reveals: ['decide'], seg: [175.45, 183.1],
+      stem: 'How does Ann come across in her talk that starts with “Listen”?',
+      choices: ['Angry, and done arguing about April’s choice', 'Caring, and let down by April’s choice',
+                'Hurt, and taking April’s choice personally'], a: 1,
+      cue: '「I know you don’t believe this」のあと。',
+      line: 'I *care about your future*. And I’m *just a little disappointed*…',
+      said: '「信じないだろうけど、あなたの将来が大事。少しがっかりしてる」と話す。',
+      mean: '話の中心は April の将来。just a little は弱めで、怒ってはいない。',
+      trap: 'disappointed を怒りや「傷ついた」と取りやすい。誰のための話かを聞く。',
+      use: 'I’m just a little worried about you.（ちょっと心配なだけ）' },
+
+    // why: against ← "fence" read literally as a wall between her and the school (拒否); fairly sure ← "whether I
+    //      wanted to do it" heard as "I wanted to do it"
+    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'fence', seg: [183.1, 188.4],
+      stem: 'Before she got there, how sure was April about vet school?',
+      choices: ['She hadn’t made up her mind yet', 'She was dead set against going',
+                'She was fairly sure she wanted it'], a: 0,
+      cue: '「I was」のあと、場所のたとえ。',
+      line: 'I was *on the fence* about whether I wanted to do it',
+      said: '「行きたいかどうか、決めかねてた」と言う。',
+      mean: 'on the fence ＝ どちらにも決めていない。フェンスの上で、どちらにも降りていない。',
+      trap: 'fence を「壁」と取ると反対の意味に聞こえる。about whether が続いたら、迷っている印。',
+      use: 'I’m still on the fence about the trip.（旅行に行くか、まだ迷ってる）' },
+
+    // R fix: V2: the key was the only "feeling", which the title ("vibes") points at; now all three are feelings
+    // why: bore her ← "lame" from earlier (the orientation she walked out of); fail ← "wasn't right for me" heard as
+    //      not good enough for it (the Japanese modesty frame)
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gut', reveals: ['decide', 'lame'], seg: [185.9, 193.3],
+      stem: 'Once she got there, what made up April’s mind?',
+      choices: ['A feeling that it wasn’t right for her', 'A feeling that the work would bore her',
+                'A feeling that she would fail classes'], a: 0,
+      cue: '「as soon as I got there」のあと。',
+      line: 'as soon as I got there, I just had a *gut feeling* that it *wasn’t right for me*',
+      said: '「着いたとたん、自分には合わないと直感した。それだけ」と言う。',
+      mean: 'gut feeling ＝ 直感。理由を説明できない感覚で決めた、と言っている。',
+      trap: '前に lame と言っていたので、退屈な説明が理由に思える。ここで本人が挙げるのは直感だけ。',
+      use: 'I have a gut feeling about this.（なんだか予感がする）' },
+
+    // R fix: V2 (blind 55 %): the stem's "reason for quitting" set up doubt, and "relieved" was weak; now a neutral
+    //   stem and a stronger near miss (hurt at not being asked)
+    // why: impressed ← "boom… decision made" heard as admiring the speed (sincerity flip); hurt ← "huge life decision"
+    //      heard as one Ann expected to be part of (the friend's frame)
+    { id: 'a5', skill: 'attitude', level: 'B2', point: 'boom', reveals: ['decide'], seg: [190.6, 196.25],
+      stem: 'When Ann answers April’s “that’s all”, how does she sound?',
+      choices: ['Impressed that April knew her mind so fast', 'Hurt that April made it without asking her',
+                'Doubtful a big choice can be made so fast'], a: 2,
+      cue: '「So」で始まる問い返し。',
+      line: 'So *just like that*, boom, *huge life decision* made?',
+      said: '「そんなにあっさり、ドンと人生の大決断？」と問い返す。',
+      mean: 'just like that ＝ あっさり。大きな決断との差を指摘し、疑っている。',
+      trap: 'boom の勢いを感心と取りやすい。「大きな事」と「あっさり」が並んだら、疑いの問い返し。',
+      use: 'Just like that? No discussion?（そんなにあっさり？相談もなし？）' },
+
+    // R fix: V2 (blind 60 %): "a lucky few" was weak; now three ways of getting an answer, all parallel
+    // why: train ← "get your gut to talk" heard as a skill to build; ask the right way ← Ann's "How do you get…" heard
+    //      as answered with a method
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'listen', seg: [210.8, 217.2],
+      stem: 'What does April’s answer to Ann’s question suggest about gut feelings?',
+      choices: ['You wait for them; you can’t call them up', 'You ask them the right way, and they answer',
+                'You train them, and they get louder in time'], a: 0,
+      cue: '答えの1文目の打ち消しと、2文目。',
+      line: '*You don’t get your gut to talk* to you. You *just listen* when it says something.',
+      said: '「直感にしゃべらせるんじゃない。何か言ってきたら聞くだけ」と答える。',
+      mean: '直感は呼び出すものではなく、向こうから来るもの。',
+      trap: 'get ～ to talk を「訓練で話させる」と取りやすい。You don’t で相手の前提を打ち消している。',
+      use: 'Don’t force it. It’ll come to you.（無理しないで。そのうち浮かぶよ）' }
+  ]
+};

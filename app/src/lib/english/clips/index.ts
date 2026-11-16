@@ -46,6 +46,16 @@ import { sideQuest } from './sidequest.ts';
 import { evilLaugh } from './evillaugh.ts';
 import { guysGripe } from './guysgripe.ts';
 import { couplesOnly } from './couplesonly.ts';
+import { imFine } from './imfine.ts';
+import { annOffended } from './annoffended.ts';
+import { annVibes } from './annvibes.ts';
+import { ronMeditate } from './ronmeditate.ts';
+import { pitchWomen } from './pitchwomen.ts';
+import { ronLeslieLocked } from './ronleslie.ts';
+import { perfectCrime } from './perfectcrime.ts';
+import { fiftyYears } from './fiftyyears.ts';
+import { ronHearing } from './ronhearing.ts';
+import { pityFudge } from './pityfudge.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -58,14 +68,18 @@ export const CLIPS: readonly Clip[] = [
   twodates,
   fluSeason,
   phoebeRuns,
+  ronLeslieLocked,
   womensAppreciation,
+  imFine,
   dwightDate,
+  ronMeditate,
   tomSwagger,
   mamasDead,
   scarnRead,
   // ふつう
   joeymakeup,
   snowCones,
+  annVibes,
   babySex,
   getaway,
   evilLaugh,
@@ -74,23 +88,29 @@ export const CLIPS: readonly Clip[] = [
   phoebebook,
   pamLabor,
   saylove,
-  ryanOffice,
+  ronHearing,
   waffleGift,
+  ryanOffice,
+  annOffended,
   couplesOnly,
   sideQuest,
   // 速い
   annclub,
   joeyStay,
-  guysGripe,
+  pitchWomen,
   kathybook,
-  collarBlind,
+  guysGripe,
   savings,
-  possum,
+  collarBlind,
   rossNothing,
+  possum,
   emmaLocked,
+  perfectCrime,
   fakedating,
   seatingChart,
   soulmates,
+  pityFudge,
+  fiftyYears,
   noturkey,
   sebastian
 ];
