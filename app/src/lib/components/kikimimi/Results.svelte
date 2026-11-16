@@ -3,12 +3,12 @@
   // team's tally or the ranking, how many I got right, my いっぱつ, おわる / もういっかい): a lesson's strip, my feedback,
   // then the review list (frame/ReviewList.svelte), the game's main learning moment. With misses it opens on them
   // (「まちがえた だけ」 on, the first one open) and offers 「まちがえた もんだいを もういちど」 (those again, solo, as
-  // practice; a quiz's). Each row: ○ / × and the sentence; tapped open, its English with the sound marks and the karaoke
+  // practice; a quiz's). Each row: ○ (or a plain dot, never a ×) and the sentence; tapped open, its English with the sound marks and the karaoke
   // as ▶︎ plays it (a dialogue: its whole transcript), the marks' key, the Japanese (a reply's on two lines), the trap's
   // note, every choice with its Japanese (cja) and 解説 (why) where the item has them, what I picked, ▶︎ and 🐢
   // (levels 1-2), and よみきき サンド's 「読んでから もう一度」. いっぱつ (right on the first listen) a stamp.
   // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
-  // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
+  // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ or a dot, and ▶︎ at
   // each speed.
   // A game's own over it (the tournament's: taikai/TaikaiResults.svelte): しずえ's line (`hostLine`) and a card on top
   // (`extra`: the trophy).
@@ -183,7 +183,7 @@
           {@const last = items[l.from + l.n - 1]}
           {@const [pre, focus, post] = splitFocus(last)}
           <li class="item card ladder" data-review-ladder={j} data-ok={mine[j] === l.n}>
-            <span class="sym" class:ok={mine[j] === l.n} aria-hidden="true">{mine[j] === l.n ? '○' : '×'}</span>
+            <span class="sym" class:ok={mine[j] === l.n} aria-hidden="true">{mine[j] === l.n ? '○' : '・'}</span>
             <div class="txt">
               <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
               <p class="ja">{last.ja}</p>
@@ -193,7 +193,7 @@
                   {@const i = l.from + k}
                   <li data-review={i} data-ok={ok(i)}>
                     <span class="x">{sx(SPEEDS[k])}×</span>
-                    <span class="sym small" class:ok={ok(i)}><span aria-hidden="true">{ok(i) ? '○' : '×'}</span><span class="sr-only">{ok(i) ? t('kiki.right') : t('kiki.wrong')}</span></span>
+                    <span class="sym small" class:ok={ok(i)}><span aria-hidden="true">{ok(i) ? '○' : '・'}</span><span class="sr-only">{ok(i) ? t('kiki.right') : t('kiki.wrong')}</span></span>
                     <span class="q">{it.ask ?? t('kiki.ask.word')} → <b lang={it.type === 'word' ? 'en' : undefined}>{it.choices[it.answer]}</b>
                       {#if !ok(i) && v.answers[i]}<span class="picked" data-kiki-picked>{t('kiki.picked', { a: it.choices[v.answers[i]!.k] })}</span>{/if}</span>
                   </li>
@@ -241,7 +241,7 @@
                 {#if dlg}<span class="en" lang="en">→ {dlg.choices[dlg.answer]}</span>
                 {:else if open}<span class="en big" data-kiki-review-en><SoundLine en={r.it.en} focus={r.it.focus} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
                 {:else}<span class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</span>{/if}
-                {#if !open && !r.ok && r.k !== null}<span class="picked">{t('kiki.picked', { a: choiceText(r.it, r.k) })} ×</span>{/if}
+                {#if !open && !r.ok && r.k !== null}<span class="picked">{t('kiki.picked', { a: choiceText(r.it, r.k) })}</span>{/if}
               {/snippet}
               {#snippet hear()}
                 <HearButton data-kiki-hear={r.i} onclick={() => game.hear(r.it)} />
@@ -261,7 +261,7 @@
                   {#each r.it.choices as c, k (k)}
                     {@const m = k === r.it.answer ? 'right' : k === r.k ? 'wrong' : null}
                     <li data-mark={m ?? undefined}>
-                      <span class="o" aria-hidden="true">{m === 'right' ? '○' : m === 'wrong' ? '×' : '・'}</span>
+                      <span class="o" aria-hidden="true">{m === 'right' ? '○' : '・'}</span>
                       <span><span lang={r.it.type === 'num' ? undefined : 'en'}>{c}</span><small data-kiki-cja={k}>{r.it.cja[k]}</small></span>
                     </li>
                   {/each}
@@ -270,7 +270,7 @@
               {#if r.it.note}<Note text={r.it.note} />{/if}
               {#if r.it.why}<Why text={r.it.why} />{/if}
               {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
-              {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
+              {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })}</p>{/if}
               <div class="sand">{@render sand(r.it)}</div>
             </ReviewRow>
           {/if}
@@ -305,7 +305,7 @@
   .trips ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .trips li {
     padding: 4px 10px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui);
-    background: color-mix(in srgb, var(--c-coral) 16%, var(--card)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c-coral) 55%, transparent);
+    background: var(--ctl-off); box-shadow: inset 0 0 0 1.5px var(--c-lip);
   }
   .none { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .tags { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
@@ -314,15 +314,15 @@
   .opts { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 4px; }
   .opts li { display: grid; grid-template-columns: 1.2em 1fr; gap: 4px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .opts li[data-mark='right'] { color: var(--leaf-text); }
-  .opts li[data-mark='wrong'] { color: var(--coral-text); }
+  .opts li[data-mark='wrong'] { color: var(--text-soft); }
   .opts small { display: block; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
+  .sym { font: 700 22px/1.2 var(--font-ui); color: var(--text-soft); }
   .sym.ok { color: var(--leaf-text); }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); color: var(--text); }
   .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; }
   .ja, .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .ja span, .ans span { display: block; }
-  .picked { color: var(--coral-text); }
+  .picked { color: var(--text-soft); }
   .sand:empty { display: none; }
   /* スピード はしご: each ladder's steps, climbed leaf; its review row (not folded: the rungs and ▶︎ at each speed) */
   .climbs { display: grid; gap: 8px; padding: 12px 14px; }

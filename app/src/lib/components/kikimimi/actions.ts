@@ -1,20 +1,16 @@
-// What the ききみみ sheet's buttons start (docs/kikimimi.md "UI details"), over the sheet's game: もういっかい, a lesson again or
-// the next one, 終わる and a game's ‹ (back to the page it was started from), はまべ's quick quiz, the hub's today card, the ずかん's phrase review, the
-// misses again, おさらい, a recommendation's start, a unit's lesson, みみ チェック, a lobby of my own. The sheet keeps its own state
-// (open, its stack of pages: nav.ts) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
-// unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum.md "Playing together").
+// What the ききみみ sheet's buttons start (docs/kikimimi.md "UI details"), over the sheet's game: もういっかい, a lesson again,
+// 終わる and a game's ‹ (back to the page it was started from), the misses again, おさらい, a lobby of my own. The sheet
+// keeps its own state (open, its stack of pages: nav.ts) and hands it in as `ui`.
 import type { QuizGame } from './game.svelte.ts';
 import { cardKind } from '#lib/kikimimi/games/lesson/recipe.ts';
-import type { Item, Level } from '#lib/kikimimi/bank.ts';
+import type { Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
-import { modeOf } from '#lib/kikimimi/catalog.ts';
 import { tierFor, type Lesson } from '#lib/kikimimi/lesson.ts';
 import { practiceFor } from '#lib/kikimimi/report.ts';
 import type { Focus } from '#lib/kikimimi/srs.ts';
-import type { Act } from '#lib/kikimimi/today.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
-import { keepLv, lastLv, lastTimer, sameDefault } from './prefs.ts';
-import { modeStack, type Page } from './nav.ts';
+import { lastLv, lastTimer, sameDefault } from './prefs.ts';
+import type { Page } from './nav.ts';
 
 /** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
 interface SheetUi {
@@ -22,8 +18,6 @@ interface SheetUi {
   /** How many pages are pushed over the hub (終わる goes back to them). */
   pages(): number;
   setPages(p: Page[]): void;
-  /** おやすみ ものがたり's next chapter, at once (the night's きまぐれ card). */
-  story?(): void;
 }
 
 export class KikiActions {
@@ -34,16 +28,6 @@ export class KikiActions {
     this.#ui = ui;
   }
 
-  /** The game, in my own lobby kept alone (a practice deck's place), else null. */
-  #solo(): QuizGame | null {
-    const g = this.#game();
-    return g?.view?.amHost && g.view.local ? g : null;
-  }
-  /** The game, in a lobby I host (kept alone or shared: a lesson's place), else null. */
-  #hosting(): QuizGame | null {
-    const g = this.#game();
-    return g?.view?.amHost && g.view.phase === 'lobby' ? g : null;
-  }
   /** A unit's lesson into my lobby, at my tier (my comfortable level against the unit's stage). */
   #lesson(g: QuizGame, unit: string, l: Lesson, recheck: boolean): void {
     const level = currentReport()?.stats.level ?? null;
@@ -96,31 +80,6 @@ export class KikiActions {
     g.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
     this.#ui.setPages([]);
   };
-  /** はまべ's stop on the path: ひとこと クイズ's page at はまべ. */
-  quickQuiz = (): void => {
-    const g = this.#game(), v = g?.view;
-    if (!g || !v) return;
-    const lv: Level = v.lv === 2 ? 2 : 1;
-    g.configure({ lv, ladder: false });
-    keepLv(lv);
-    this.#ui.setPages(modeStack('quiz'));
-  };
-  /** The hub's today card: ひとこと クイズ at my place, at once. */
-  quiz = (lv: Level): void => {
-    const g = this.#game();
-    if (!g) return;
-    if (this.#solo()) g.configure({ lv, ladder: false });
-    else g.open(lv, { timer: lastTimer() }); // (from an invite's idle hub: my own lobby first)
-    keepLv(lv);
-    g.go();
-  };
-  /** The ずかん's phrase review: those items as a solo deck at once (recorded as practice). */
-  reviewPhrases = (items: Item[]): void => {
-    const g = this.#solo();
-    if (!g) return;
-    if (g.view.ladder) g.configure({ ladder: false });
-    g.practice(items, 'weak');
-  };
   /** まちがえた もんだいを もういちど: the last game's misses as a solo deck (a lobby of mine kept alone: nothing on the
    *  wire), its reveals untimed as every reveal, recorded as practice. */
   replayMissed = (): void => {
@@ -140,38 +99,6 @@ export class KikiActions {
     if (!g || !r) return;
     if (g.view.ladder) g.configure({ ladder: false }); // (a quiz's: from a recommendation in スピード はしご's lobby)
     void practiceFor(r, LEVELS, g.view.seed, focus, recentGames()).then((items) => g.practice(items, 'weak'), () => {});
-  };
-  /** A menu card's (hub, today.ts): おさらい, the 30-day recheck or a unit's lesson (its intro card), ひとこと クイズ at
-   *  my place, スピード はしご or アナウンス at once. */
-  menu = (a: Act): void => {
-    const g = this.#game();
-    if (!g) return;
-    if (a.k === 'review') this.practice();
-    else if (a.k === 'recheck') this.startLesson(a.unit, 'check', true);
-    else if (a.k === 'lesson') this.startLesson(a.unit, a.lesson);
-    else if (a.k === 'quiz') this.quiz(a.lv as Level);
-    else if (a.k === 'story') this.#ui.story?.();
-    else if (modeOf(a.m).game) this.#ui.setPages(modeStack(a.m)); // (a lane's game: its page, its places)
-    else {
-      if (a.m === 'ladder') g.configure({ ladder: true });
-      else g.configure({ ladder: false, lv: 5 });
-      g.go();
-    }
-  };
-  /** A unit's lesson from the path or its page: my lobby (a quiz's) takes its deck at my tier and shows its intro card;
-   *  shared, everyone's (a co-op lesson). The 30-day recheck is solo. */
-  startLesson = (unit: string, l: Lesson, recheck = false): void => {
-    const g = recheck ? this.#solo() : this.#hosting();
-    if (!g) return;
-    if (g.view.ladder) g.configure({ ladder: false });
-    this.#lesson(g, unit, l, recheck);
-  };
-  /** みみ チェック (the first run's, the hub's card, せってい's もういちど): at once, alone, over the hub. */
-  check = (): void => {
-    const g = this.#game();
-    if (!g) return;
-    this.#ui.setPages([]);
-    g.playCheck();
   };
   /** A lobby of my own, as last set on this phone. */
   startOwn = (): void => {

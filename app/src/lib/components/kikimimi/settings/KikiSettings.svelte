@@ -1,45 +1,22 @@
 <script lang="ts">
   // ききみみ's せってい (docs/kikimimi.md "設定"), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
-  // voice, with the earphones tip and the volume-0 line); 「おとを 1だいに まとめる」 as a new lobby's default; にほんごやく
-  // (when the Japanese shows: いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち). Each kept on this
-  // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); 音声の出典
-  // (まるごと 聞く's real recordings' credits: LongCredits). Its own chunk.
+  // voice, with the earphones tip and the volume-0 line); にほんごやく (when the Japanese shows: いつも / まちがえた とき /
+  // みない), kept on this phone; 音声の出典 (まるごと 聞く's real recordings' credits: LongCredits). Its own chunk.
   import Icon from '../../ui/Icon.svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
   import LongCredits from './LongCredits.svelte';
   import type { QuizGame } from '../game.svelte.ts';
-  import { JA_MODES, WEEK_GOALS, keepSame, keepWeekGoal, sameDefault, weekGoal, type JaMode, type WeekGoal } from '../prefs.ts';
+  import { JA_MODES, type JaMode } from '../prefs.ts';
   import { sound } from '#lib/sound/sound.svelte.ts';
-  import { cue } from '#lib/sound/cues.ts';
-  import { PLACES, placeOfLv } from '#lib/kikimimi/catalog.ts';
-  import { currentPlacement } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, ja, onja, oncheck }: { game: QuizGame; ja: JaMode; onja: (m: JaMode) => void; oncheck: () => void } = $props();
-  /** Where my last みみ チェック placed me (null: none yet). */
-  const placed = $derived.by(() => {
-    const p = currentPlacement(), place = p ? PLACES.find((x) => x.id === placeOfLv(p.lv)) : undefined;
-    return place ? `${t(`kiki.stage.${place.id}`)} ${'★'.repeat(place.stars)}` : null;
-  });
+  let { game, ja, onja }: { game: QuizGame; ja: JaMode; onja: (m: JaMode) => void } = $props();
   /** The sound check tried (its hint shows). */
   let tested = $state(false);
-  let same = $state(sameDefault());
-  let goal = $state<WeekGoal>(weekGoal());
   const zero = $derived(sound.settings.volume <= 0);
   async function test() {
     tested = true;
     await game.test();
-  }
-  function toggleSame() {
-    same = !same;
-    cue(same ? 'toggle-on' : 'toggle-off');
-    keepSame(same);
-    // my lobby kept alone takes it now too
-    if (game.view?.amHost && game.view.local && game.view.same !== same) game.configure({ same });
-  }
-  function pickGoal(x: WeekGoal) {
-    goal = x;
-    keepWeekGoal(x);
   }
 </script>
 
@@ -52,10 +29,6 @@
       {:else if tested}<p class="hint"><Phrases text={t('kiki.testHint')} /></p>
       {:else}<p class="hint"><Phrases text={t('kiki.set.earphones')} /></p>{/if}
     </div>
-    <button type="button" class="prow" role="switch" aria-checked={same} data-kiki-set-same data-sfx="self" onclick={toggleSame}>
-      <span class="prl">{t('kiki.same')}<small><Phrases text={t('kiki.set.sameSub')} /></small></span>
-      <span class="sw" aria-hidden="true"><i></i></span>
-    </button>
   </section>
 
   <section class="sec" aria-labelledby="kk-ja">
@@ -68,25 +41,6 @@
     </div>
   </section>
 
-  <section class="sec" aria-labelledby="kk-check">
-    <h3 id="kk-check" class="sec-label">{t('kiki.check.title')}</h3>
-    <button type="button" class="prow" data-kiki-set-check data-sfx="confirm" onclick={oncheck}>
-      <span class="prl">{t('kiki.check.again')}<small data-kiki-set-placed>{placed ? t('kiki.check.now', { stage: placed }) : t('kiki.check.none')}</small></span>
-      <span class="chev" aria-hidden="true">›</span>
-    </button>
-  </section>
-
-  <section class="sec" aria-labelledby="kk-goal">
-    <h3 id="kk-goal" class="sec-label">{t('kiki.set.goal')}</h3>
-    <div class="chips" role="radiogroup" aria-labelledby="kk-goal" data-kiki-set-goal={goal}>
-      {#each WEEK_GOALS as x (x)}
-        <button type="button" class="chip big" role="radio" aria-checked={goal === x} data-goal={x} data-sfx={goal === x ? 'none' : 'tick'}
-          onclick={() => goal !== x && pickGoal(x)}>{t('kiki.set.days', { n: x })}</button>
-      {/each}
-    </div>
-    <p class="hint"><Phrases text={t('kiki.set.goalSub')} /></p>
-  </section>
-
   <LongCredits />
 </div>
 
@@ -97,5 +51,4 @@
   .chips .chip { flex: 1; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hint.warn { color: var(--coral-text); }
-  .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--text-soft); }
 </style>

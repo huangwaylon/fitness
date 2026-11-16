@@ -1,7 +1,6 @@
-// おやすみ ものがたり (docs/kikimimi.md "おやすみ ものがたり"): at 21:30 the hub's きまぐれ card is the bedtime story and plays it at
-// once in the night frame (no ‹, no score); ⏸ / ▶, the sleep timer, the words shown, ⏭ to the last segment, and the
-// chapter's end: its end card, the next chapter unlocked in the list. By day, after a chapter finished the night
-// before, the morning card asks what happens next; the guess is revealed at the next chapter's end. Screenshots
+// おやすみ ものがたり (docs/kikimimi.md "おやすみ ものがたり"): あそぶ › 寝る前に › a chapter plays in the night frame (no
+// score); ⏸ / ▶, the sleep timer, the words shown, ⏭ to the last segment, and the chapter's end: its end card, the next
+// chapter unlocked in the list. Screenshots
 // (KIKI_SHOTS=1) into /tmp/kikimimi-shots/story/. The logic tier (Playwright's Chromium is muted).
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -35,14 +34,11 @@ async function toEnd(p: Page) {
   await runToSee(p, frame(p).locator('[data-kiki-story-end]'));
 }
 
-test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; its end unlocks the next chapter', async ({ page }) => {
+test('21:30: 寝る前に plays the story; ⏸ / ▶, the timer, the words; its end unlocks the next chapter', async ({ page }) => {
   await open(page, '2026-11-04T21:30');
-  const whim = sheet(page).locator('[data-kiki-card="whim"]');
-  await expect(whim).toContainText('おやすみ ものがたり');
-  await expect(whim).toContainText('ジャスミンの きっさてん・第1話');
-  await snap(page, 'hub-night');
-
-  await whim.locator('[data-kiki-card-go]').click();
+  await sheet(page).locator('[data-kiki-tile="asobu"]').click();
+  await sheet(page).locator('[data-kiki-mode-tile="story"]').click();
+  await sheet(page).locator('[data-kiki-chapter="st-cafe-1"]').click();
   await expect(frame(page)).toBeVisible();
   await expect(sheet(page)).toHaveAttribute('data-kiki-at', 'story-frame');
   await expect(sheet(page)).toHaveAttribute('data-kiki-night', '');
@@ -93,31 +89,8 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
   await expect(list.locator('[data-kiki-chapter="st-cafe-2"]')).toHaveAttribute('aria-disabled', 'false');
   await expect(list.locator('[data-kiki-chapter="st-cafe-3"]')).toHaveAttribute('data-kiki-locked', 'true');
   await snap(page, 'list');
-  // ‹ to the hub; the session's minutes kept as a story row (no answers)
+  // ‹ to あそぶ, then the hub
+  await page.locator('dialog[open] .navbar .back').click();
   await page.locator('dialog[open] .navbar .back').click();
   await atHub(page);
-});
-
-test('the morning after: the hub asks what happens next; the guess is revealed at the next chapter’s end', async ({ page }) => {
-  // ジョニーの たび's chapter 1 heard last night
-  await page.addInitScript(() => {
-    if (!localStorage.getItem('island.kikiStory'))
-      localStorage.setItem('island.kikiStory', JSON.stringify({ who: 'A', s: { 'st-johnny': { done: { 1: '2026-11-03' }, last: 1 } } }));
-  });
-  await open(page, '2026-11-04T12:00');
-  const card = sheet(page).locator('[data-kiki-predict]');
-  await expect(card).toContainText('昨日の続き、どうなると思う？');
-  await expect(card.locator('[data-kiki-predict-pick]')).toHaveCount(3);
-  await snap(page, 'hub-morning');
-  await card.locator('[data-kiki-predict-pick="0"]').click();
-  await expect(sheet(page).locator('[data-kiki-predict-thanks]')).toBeVisible();
-
-  // あそぶ › おやすみ ものがたり › chapter 2 of ジョニーの たび, to its end: the guess revealed
-  await sheet(page).locator('[data-kiki-tile="asobu"]').click();
-  await sheet(page).locator('[data-kiki-mode-tile="story"]').click();
-  await sheet(page).locator('[data-kiki-chapter="st-johnny-2"]').click();
-  await expect(frame(page).locator('[data-kiki-story-title]')).toHaveText('Snowed In in Vermont');
-  await toEnd(page);
-  await expect(frame(page).locator('[data-kiki-story-reveal="right"]')).toContainText('昨日の予想、当たり！');
-  await snap(page, 'end-reveal');
 });

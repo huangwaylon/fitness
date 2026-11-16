@@ -1,148 +1,34 @@
 <script module lang="ts">
-  export type Tile = 'asobu' | 'zukan' | 'record';
+  export type Tile = 'asobu' | 'record';
 </script>
 
 <script lang="ts">
-  // ききみみ's hub, the sheet's root (docs/kikimimi.md "The hub"): しずえ's line, today's menu (today.ts: おさらい ·
-  // きょうの いっぽ · きまぐれ; a done card folds to a stamp, the first undone one has the only green button; any one
-  // means 「きょうは OK」), then the entry tiles (あそぶ · ずかん · きろく, each with one live line) and the week card.
-  // Every place is one tap from here; ⚙ is the title bar's. Its own chunk.
-  import type { Who } from '#lib/types.ts';
-  import Host from '../../characters/Host.svelte';
+  // ききみみ's hub, the sheet's root (docs/kikimimi.md "The hub"): the hour's hello and the two entry tiles (あそぶ, with
+  // how many modes it has, and きろく). Every place is one tap from here; ⚙ is the title bar's. Its own chunk.
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
-  import { placeOfLv, shelves, whims, PLACES } from '#lib/kikimimi/catalog.ts';
+  import { shelves } from '#lib/kikimimi/catalog.ts';
   import { LANES } from '#lib/kikimimi/round/registry.ts';
-  import { stageAt } from '#lib/kikimimi/stages.ts';
-  import { isLadderGame } from '#lib/kikimimi/progress.ts';
-  import { rechecksDue } from '#lib/kikimimi/stamps.ts';
-  import { finished, finishedStory, isNight, pickMenu, type Act, type Card } from '#lib/kikimimi/today.ts';
-  import { nextOf, pickSerial } from '#lib/kikimimi/bedtime.ts';
-  import { SERIALS, STORY_OK, serialOf, storyProgress } from '../story/serials.svelte.ts';
-  import MorningCard from './MorningCard.svelte';
-  import { currentOmakase, currentPath, currentPlacement, currentReport, currentUnits } from '../progress.svelte.ts';
-  import { weekCard } from '#lib/kikimimi/week.ts';
-  import { weekGoal } from '../prefs.ts';
-  import WeekCard from './WeekCard.svelte';
+  import { STORY_OK } from '../story/serials.svelte.ts';
+  import { currentReport } from '../progress.svelte.ts';
   import { jst } from '#lib/time/clock.ts';
-  import Phrases from '../../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  interface Props {
-    me: Who;
-    ontile: (k: Tile) => void;
-    /** A menu card's play. */
-    onact: (a: Act) => void;
-    /** The みみ チェック card: the check, at once. */
-    oncheck: () => void;
-  }
-  let { me, ontile, onact, oncheck }: Props = $props();
+  let { ontile }: { ontile: (k: Tile) => void } = $props();
   const TILES: readonly { k: Tile; icon: string }[] = [
     { k: 'asobu', icon: '🎧' },
-    { k: 'zukan', icon: '📖' },
     { k: 'record', icon: '🌱' }
   ];
 
   const report = $derived(currentReport());
   const hour = jst().hour;
-  const greet = t(hour < 5 || hour >= 18 ? 'kiki.hub.evening' : hour < 11 ? 'kiki.hub.morning' : 'kiki.hub.day');
-  const stage = $derived(report?.stats.level == null ? null : stageAt(report.stats.level));
-  /** Today's quiz: おまかせ's level (みみ チェック's placed one, else my comfortable one, else はまべ 2). */
-  const lv = $derived(currentOmakase());
-  /** No みみ チェック yet: its card (the first run put off, or a player from before it). */
-  const unplaced = $derived(!!report && !currentPlacement());
-  const placeOf = (x: number) => PLACES.find((p) => p.id === placeOfLv(x));
-  const path = $derived(currentPath());
-  const stops = $derived(path.stages.flatMap((s) => s.stops));
-  const cur = $derived(stops.find((s) => s.current) ?? null);
+  const hello = t(hour < 5 || hour >= 18 ? 'kiki.hub.evening' : hour < 11 ? 'kiki.hub.morning' : 'kiki.hub.day');
   const ctx = $derived({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK, games: (gm: string) => LANES.ready(gm) });
-  /** After 21:00 きまぐれ is おやすみ ものがたり (today.ts isNight); by day the morning card may ask about last night's. */
-  const night = isNight(hour) && STORY_OK;
-  /** Tonight's story: the serial to go on with and its chapter (bedtime.ts pickSerial, nextOf). */
-  const tonight = $derived.by(() => {
-    const progress = storyProgress(me), unit = pickSerial(progress, SERIALS.map((s) => ({ unit: s.unit, chapters: s.chapters.length })));
-    const s = unit ? serialOf(unit) : undefined;
-    return s ? { name: s.name, ch: nextOf(progress[s.unit], s.chapters.length).ch } : null;
-  });
-  const menu = $derived(
-    report
-      ? pickMenu({
-          day: report.today, due: report.due, recheck: rechecksDue(currentUnits(), report.today)[0] ?? null,
-          next: cur ? { unit: cur.id, lesson: cur.next } : null, lv,
-          whims: whims(ctx), hour, night,
-          sessions: [
-            ...report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ at: g.at, p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv, gm: g.gm })),
-            ...report.stories.filter((s) => s.d === report.today && finishedStory(s.ms)).map((s) => ({ at: s.at, p: false, ladder: false, lv: 4, story: true }))
-          ].sort((a, b) => a.at - b.at)
-        })
-      : null
-  );
-  const weekly = $derived(
-    report
-      ? weekCard({
-          today: report.today, me, goal: weekGoal(), others: report.others,
-          mine: [...report.games.map((g) => ({ d: g.d, n: g.r.length, ms: g.ms })), ...report.stories.map((s) => ({ d: s.d, n: 0, ms: s.ms, story: true }))]
-        })
-      : null
-  );
-  const hello = $derived(menu?.all ? t('kiki.hub.enough') : greet);
-  const firstOpen = $derived(menu?.cards.find((c) => !c.done) ?? null);
-  const unitName = (id: string) => stops.find((s) => s.id === id)?.name ?? '';
-  /** A card's title and line. */
-  function words(c: Card): { title: string; line: string } {
-    const a = c.act;
-    if (!a) return { title: t('kiki.menu.allDone'), line: '' };
-    switch (a.k) {
-      case 'review': return { title: t('kiki.review.picked', { n: a.n }), line: t('kiki.chip.mins', { n: 3 }) };
-      case 'recheck': return { title: t('kiki.lesson.recheck'), line: `${unitName(a.unit)}・${t('kiki.chip.mins', { n: 2 })}` };
-      case 'lesson': return { title: unitName(a.unit), line: `${t(`kiki.lesson.${a.lesson}`)}・${t('kiki.chip.mins', { n: 2 })}` };
-      case 'quiz': {
-        const p = placeOf(a.lv);
-        return { title: t('kiki.mode.quiz'), line: `${p ? `${t(`kiki.stage.${p.id}`)} ${'★'.repeat(p.stars)}・` : ''}${t('kiki.chip.qs', { n: 8 })}・${t('kiki.chip.mins', { n: 4 })}` };
-      }
-      case 'mode': return { title: t(`kiki.mode.${a.m}`), line: t(`kiki.modeSub.${a.m}`) };
-      case 'story': return { title: t('kiki.mode.story'), line: tonight ? `${tonight.name}・${t('kiki.story.chapter', { n: tonight.ch })}` : t('kiki.modeSub.story') };
-    }
-  }
   const modes = $derived(shelves(ctx).reduce((n, s) => n + s.modes.length, 0));
-  const lines = $derived<Record<Tile, string>>({
-    asobu: t('kiki.tile.asobuLine', { n: modes }),
-    zukan: t('kiki.tile.zukanLine'),
-    record: stage ? `${t(`kiki.stage.${stage.id}`)} ${'★'.repeat(stage.stars)}` : t('kiki.tile.recordNone')
-  });
+  const lines = $derived<Record<Tile, string>>({ asobu: t('kiki.tile.asobuLine', { n: modes }), record: t('kiki.tile.recordLine') });
 </script>
 
 <div class="hub" data-kiki-page="hub">
-  <div class="hello">
-    <span class="host" aria-hidden="true"><Host head size={48} animate={false} eager /></span>
-    <p class="kana" data-kiki-hello>{hello}</p>
-  </div>
-  {#if menu}
-    <ol class="menu" data-kiki-menu data-kiki-ok={menu.ok ? 'true' : undefined}>
-      {#each menu.cards as c (c.slot)}
-        {@const w = words(c)}
-        <li class="mc card" class:done={c.done} class:next={c === firstOpen} data-kiki-card={c.slot} data-kiki-done={c.done || undefined}>
-          <span class="txt">
-            <small class="slot">{t(`kiki.menu.${c.slot}`)}</small>
-            <b>{w.title}</b>
-            {#if w.line && !c.done}<small>{w.line}</small>{/if}
-          </span>
-          {#if c.done}<span class="stamp" role="img" aria-label={t('kiki.menu.doneLabel')}>✓</span>
-          {:else if c.act}
-            <button type="button" class="btn small" class:paper={c !== firstOpen} data-kiki-card-go={c.slot} data-sfx="confirm" onclick={() => onact(c.act!)}>{t('kiki.startSolo')}</button>
-          {/if}
-        </li>
-      {/each}
-    </ol>
-    {#if !night}<MorningCard {me} today={report!.today} />{/if}
-    <p class="ok" data-kiki-ok-line>{t(menu.all ? 'kiki.menu.all' : menu.ok ? 'kiki.menu.ok' : 'kiki.menu.hint')}</p>
-  {/if}
-  {#if unplaced}
-    <div class="check card" data-kiki-check-card>
-      <span class="ear" aria-hidden="true">👂</span>
-      <span class="ctxt"><b>{t('kiki.check.title')}</b><small><Phrases text={t('kiki.check.card')} /></small></span>
-      <button type="button" class="btn small paper" data-kiki-check-start data-sfx="confirm" onclick={oncheck}>{t('kiki.startSolo')}</button>
-    </div>
-  {/if}
+  <p class="hello kana" data-kiki-hello>{hello}</p>
   <nav class="tiles" aria-label={t('kiki.title')}>
     {#each TILES as tile (tile.k)}
       <button type="button" class="tile tile-btn" data-kiki-tile={tile.k} data-sfx="open" onclick={() => ontile(tile.k)}>
@@ -152,39 +38,13 @@
       </button>
     {/each}
   </nav>
-  {#if weekly}<WeekCard card={weekly} />{/if}
 </div>
 
 <style>
   .hub { display: grid; gap: 14px; }
-  .hello { display: flex; align-items: center; gap: 12px; padding: 4px 6px; }
-  .hello p { margin: 0; font: 700 var(--fs-body)/1.45 var(--font-ui); }
-  .host { flex: none; line-height: 0; }
-  .menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .mc { display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 76px; box-sizing: border-box; }
-  /* the next one: green-edged; a done one folds to a line and its stamp */
-  .mc.next { box-shadow: var(--sh-lip), inset 0 0 0 2px var(--c-leaf); }
-  .mc.done { min-height: 52px; padding: 8px 14px; background: color-mix(in srgb, var(--card) 70%, transparent); box-shadow: none; }
-  .mc .txt { flex: 1; min-width: 0; display: grid; gap: 2px; }
-  .mc b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .mc.done b { font-size: var(--fs-body); color: var(--text-soft); }
-  .mc small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .mc .slot { letter-spacing: .04em; }
-  .mc .btn { flex: none; margin-bottom: var(--lip-h); }
-  .stamp {
-    flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; transform: rotate(-8deg);
-    font: 700 20px/1 var(--font-ui); color: var(--coral-text); box-shadow: inset 0 0 0 2px var(--c-coral);
-  }
-  .ok { margin: -4px 6px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  /* みみ チェック not taken yet: a small card, never the green button (the menu's) */
-  .check { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
-  .ear { flex: none; font-size: 24px; line-height: 1; }
-  .ctxt { flex: 1; min-width: 0; display: grid; gap: 2px; }
-  .ctxt b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
-  .ctxt small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .check .btn { flex: none; margin-bottom: var(--lip-h); }
-  /* the four entry tiles: one row in the thumb's arc, each ≥ 84 × 92 */
-  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .hello { margin: 0; padding: 4px 6px; font: 700 var(--fs-body)/1.45 var(--font-ui); }
+  /* the entry tiles: one row in the thumb's arc */
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .tile {
     min-height: 96px; padding: 10px 4px 8px; border-radius: var(--r-card); display: grid; justify-items: center; align-content: start; gap: 4px;
     text-align: center;

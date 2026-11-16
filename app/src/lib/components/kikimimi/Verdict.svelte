@@ -39,7 +39,7 @@
   <!-- a rung: climbed (+100), or right but not climbed (a replay, or the ladder stopped under it), or missed -->
   <p class="line" class:ok={right} data-kiki-climb={climbed ? 'up' : right ? 'held' : 'stop'}>
     {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')}{#if climbed} <b>+{RUNG_POINTS}</b>{/if}
-    {:else}<span class="sym" aria-hidden="true">×</span>{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
+    {:else}{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
   </p>
   <span class="climb" class:up={climbed}>
     {#if climbed}{t(rs!.n === rs!.of ? 'kiki.rung.top' : 'kiki.rung.up', { x: sx(SPEEDS[rs!.n - 1]) })}
@@ -55,8 +55,8 @@
 <RevealFrame {out} {right} {picked} pts={plain ? 0 : RIGHT} badge={!rs && firstListen(right, replayed, same)} {coop} {rightNow} line={rs ? climb : undefined} extra={missedPic} sand={sand && { it, player: sand }} />
 
 <style>
-  /* a rung's line: the frame's ○ / × line (frame/RevealFrame.svelte), the themed coral and leaf text */
-  .line { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
+  /* a rung's line: the frame's line (frame/RevealFrame.svelte), plain text, the leaf's when right */
+  .line { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--text); }
   .line.ok { color: var(--leaf-text); }
   .line b { font-family: var(--font-num); }
   .line .sym { font-size: 1.2em; }

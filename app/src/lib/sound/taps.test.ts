@@ -41,7 +41,6 @@ const SELF: Record<string, string> = {
   'lib/components/island/Balloon.svelte': 'scene-balloon',
   'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said',
   'lib/components/layoutEdit/IslandEdit.svelte': 'tick to pick, turn or move a thing and for a tab, confirm to put it down, boop when it can\'t, undo to put away (TentEdit\'s)',
-  'lib/components/kikimimi/settings/KikiSettings.svelte': 'おとを 1だいに まとめる → toggle-on / toggle-off',
   'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };
 
@@ -74,7 +73,7 @@ const NONE: Record<string, string> = {
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/kikimimi/mode/StageRow.svelte': 'the place already chosen, or one with no level yet, does nothing',
   'lib/components/kikimimi/mode/TimerRow.svelte': 'the answer time already chosen does nothing',
-  'lib/components/kikimimi/settings/KikiSettings.svelte': 'the translation or weekly target already chosen does nothing',
+  'lib/components/kikimimi/settings/KikiSettings.svelte': 'the translation already chosen does nothing',
   'lib/components/kikimimi/story/StoryFrame.svelte': 'おやすみ ものがたり: ⏮ ⏯ ⏭, the sleep timer and the words are silent at bedtime (no cue over the story\'s voice)',
   'lib/components/kikimimi/frame/RoundFrame.svelte': 'よみおわった once tapped does nothing',
   'lib/components/kikimimi/long/LongTranscript.svelte': 'a line with no clip to hear (offline, a guest’s turn) does nothing',

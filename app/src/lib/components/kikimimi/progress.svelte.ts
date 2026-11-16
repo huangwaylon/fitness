@@ -17,17 +17,13 @@ import { levelMark, sx } from './look.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { madaOf, markMada } from '#lib/kikimimi/srs.ts';
-import { INDEX, LONG_ENTRIES, entryOf, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
+import { INDEX, LONG_ENTRIES, entryOf } from '#lib/kikimimi/pool.ts';
 import { heardOf, pieceFor, type Heard } from '#lib/kikimimi/games/long/def.ts';
 import { dayNum } from '#lib/contract/tokyo.ts';
 import { focusOf, phenomenaOf, type PhState } from '#lib/kikimimi/henshin.ts';
-import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
-import { LESSONS } from '#lib/kikimimi/stages.ts';
-import { levelRank } from '#lib/kikimimi/bank.ts';
 import { PLACES, omakaseLv } from '#lib/kikimimi/catalog.ts';
 import { stageOf } from '#lib/kikimimi/games/listened.ts';
 import { lastPlacement } from '#lib/kikimimi/games/check/def.ts';
-import { hooksOn } from '#lib/world/devHooks.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type Kept = { at: number; row: ListenRow };
@@ -107,7 +103,7 @@ export function currentUnits(): Map<string, UnitState> {
 }
 
 /** Every answer of my report's games (srs.ts's phrases); empty before the week's first load. Reactive. */
-export function currentAnswers(): Answer[] {
+function currentAnswers(): Answer[] {
   const m = memoNow();
   return m ? (m.answers ??= answersOf(m.report.games)) : [];
 }
@@ -148,25 +144,8 @@ export function currentLong(lv: number): { ids: string[]; heard: Map<string, Hea
 let added = $state(0);
 export const unitAdded = (): void => void added++;
 
-/** The units on しまの みち: the build's (the index's path lines) and any put in at run time. A unit still a draft (not
- *  voiced: no clips) shows only with the dev hooks on (a dev build or test mode). Reactive. */
-export function pathUnits(): PathUnit[] {
-  void added;
-  const drafts = hooksOn();
-  const out: PathUnit[] = [];
-  for (const id of unitIds()) {
-    const line = INDEX.paths.find((p) => p[0] === id);
-    const part = line ? null : unitPart(id)?.unit;
-    const u: PathUnit | null = line
-      ? { id, name: line[1], stage: line[2], domain: line[3], host: line[4], status: line[5], lessons: lessonsOfMask(line[6]), ...(line[7] && { short: line[7] }) }
-      : part ? { id, name: part.name, stage: part.stage, domain: part.domain, also: part.also, host: part.host, status: part.status, lessons: LESSONS.filter((l) => !!part.lessons[l]), ...(part.cando.short && { short: part.cando.short }) } : null;
-    if (u && (u.status !== 'draft' || drafts)) out.push(u);
-  }
-  return out;
-}
-
 /** My latest みみ チェック (its placed level and skills; games/check/def.ts lastPlacement), null before one. Reactive. */
-export function currentPlacement(): ReturnType<typeof lastPlacement> {
+function currentPlacement(): ReturnType<typeof lastPlacement> {
   const r = currentReport();
   return r ? lastPlacement(r.games) : null;
 }
@@ -174,16 +153,6 @@ export function currentPlacement(): ReturnType<typeof lastPlacement> {
 /** おまかせ's level now (catalog.ts omakaseLv: the placed one, else my comfortable level, else はまべ 2). Reactive. */
 export function currentOmakase(): number {
   return omakaseLv(currentPlacement()?.lv ?? null, currentReport()?.stats.level ?? null, LEVELS);
-}
-
-/** しまの みち now (path.ts, from my report: the stamps, my level (きろく's comfortable one) and みみ チェック's placed one
- *  (what's shown softly, 「ここから」), the units of my lessons in order). Reactive: call it in a $derived. */
-export function currentPath(filter: Filter = 'all'): Path {
-  const r = currentReport();
-  const states = currentUnits();
-  const played = r ? r.games.flatMap((g) => (g.u !== undefined && g.l !== undefined ? [g.u] : [])) : [];
-  const placed = currentPlacement();
-  return pathOf({ units: pathUnits(), states, level: r?.stats.level ?? null, placed: placed ? levelRank(placed.lv) : null, played, filter });
 }
 
 /** A recommendation's words: its title and why (きろく's rows, the results' 「つぎは…」). */

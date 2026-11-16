@@ -38,7 +38,7 @@
     {:else}
       <p>
         {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')}{#if pts} <b>+{pts}</b>{/if}
-        {:else}<span class="sym" aria-hidden="true">×</span>{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
+        {:else}{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
         {#if badge}<FirstStamp pop data-kiki-bonus />{/if}
       </p>
     {/if}
@@ -50,8 +50,8 @@
 
 <style>
   .verdict { display: grid; justify-items: center; gap: 6px; }
-  /* on the panel: the themed coral and leaf text (night's light ones); a game's own line (`line`) styles its own the same */
-  .verdict p { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
+  /* on the panel: plain text, the leaf's when right (night's light one); a game's own line (`line`) styles its own the same */
+  .verdict p { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--text); }
   .verdict.ok p { color: var(--leaf-text); }
   .verdict b { font-family: var(--font-num); }
   .verdict .sym { font-size: 1.2em; }

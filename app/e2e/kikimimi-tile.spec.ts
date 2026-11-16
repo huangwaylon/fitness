@@ -215,37 +215,6 @@ test('drag alongside tap: onto a slot (not the next one), onto a filled one (ins
   await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
 });
 
-test('前の問題: from round 2 a chip opens the round before’s review on this phone; the game goes on under it; its ▶︎ waits for the clip', async ({ context }) => {
-  const page = await phone(context, DAY);
-  await toTile(page);
-  await sheet(page).locator('[data-kiki-start]').click();
-  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
-  await expect(sheet(page).locator('[data-kiki-prev]')).toHaveCount(0);
-  await build(page, true);
-  await sheet(page).locator('[data-kiki-tile-done]').click();
-  await sheet(page).locator('[data-kiki-next]').click();
-  // round 2, its clip playing: the card has round 1's row opened (wrong, what I put), ▶︎ off while the clip plays
-  await runToQuestion(page, 1, 'play');
-  await sheet(page).locator('[data-kiki-prev]').click();
-  const card = page.locator('[data-kiki-prev-card="0"]');
-  await expect(card).toBeVisible();
-  await expect(card.locator('[data-review="0"]')).toHaveAttribute('data-ok', 'false');
-  await expect(card.locator('[data-kiki-review-en]')).toBeVisible();
-  await expect(card.locator('[data-kiki-tile-heard]')).toBeVisible();
-  await expect(card.locator('[data-kiki-hear="0"]')).toHaveAttribute('aria-disabled', 'true');
-  // the game goes on: the answer window, the timer on the card, ▶︎ on (a review's play, not round 2's replay)
-  await runToQuestion(page, 1, 'answer');
-  await expect(card.locator('.timer')).toHaveCount(await sheet(page).locator('.q > .timer').count());
-  await expect(card.locator('[data-kiki-hear="0"]')).toHaveAttribute('aria-disabled', 'false');
-  await card.locator('[data-kiki-hear="0"]').click();
-  expect(await page.evaluate(() => (window as unknown as { __kiki: { view(): { answers: unknown[] } } }).__kiki.view().answers[1] ?? null)).toBeNull();
-  await page.locator('dialog[open]:has([data-kiki-prev-card]) .navbar .close').last().click();
-  await expect(card).toHaveCount(0);
-  await build(page);
-  await sheet(page).locator('[data-kiki-tile-done]').click();
-  await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
-});
-
 test('全部戻す offers 取り消す; time up sends what’s placed: the reveal shows my words and what was missing', async ({ context }) => {
   const page = await phone(context, DAY);
   await toTile(page);

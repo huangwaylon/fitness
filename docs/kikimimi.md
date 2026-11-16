@@ -208,10 +208,7 @@ Cream cards on the tan panel (`--r-card` 24, buttons 16, taps ≥ 44 px).
 
 ### The hub
 
-しずえ's line by the hour (never a count of missed days); the daily menu's three cards
-(a done card folds to ✓, the first undone has the only green button); a quiet 👂 みみ チェック card until a check row
-exists; three tiles, 遊ぶ · 図鑑 · 記録; the week card (stamps and the quest); by day after a
-bedtime chapter, `hub/MorningCard.svelte`.
+The hour's greeting line and two tiles, 遊ぶ · 記録 (hub/Hub.svelte). The daily menu, the みみ チェック card, the week card and しずえ's portrait are gone.
 
 ### 遊ぶ
 
@@ -231,26 +228,11 @@ SRS ("Adaptivity").
 
 ### しまの みち
 
-The island path of units (curriculum.md "Units"), from 遊ぶ's first card and the menu's 今日の一歩
-(`path/IslandPath.svelte`, its own chunk; the pure model `kikimimi/path.ts` `pathOf`).
-- **Stages in order**, each folding under its head (name, ★, landmark, ✓ k / n), open for the current unit's stage and
-  the placed one; anchors (`glue`) first. はまべ has no units: its stop is the quiz.
-- **The current unit:** the last played and unstamped, else the first unstamped from my comfortable stage up; its next
-  lesson (`nextLesson`): the core lessons, the チェック until stamped, then the extras. 続ける opens that lesson's intro
-  card; a tap elsewhere opens the unit's page.
-- **Never locked.** Above the placed (or comfortable + 1) stage a stage is soft (striped, `kiki.path.soft`); one with no
-  units is mist.
-- **Domains** are tags (`DOMAINS`: an emoji badge and a tint) filtered by chips; others collapse to a dot so the stage
-  keeps its shape; anchors stay under every filter.
-- **Couple view:** ✓ mine, ✓✓ both, an outlined ✓ the partner's alone; never their answers.
-- The 30-day recheck (`rechecksDue`) is a yuzu banner and takes menu card 1 when due. A `draft` unit shows only with the
-  dev hooks (a dev build or test mode).
+Removed: no path, units, stamps or letters in the sheet (the lesson engine stays until the old content goes).
 
 ### A unit's page
 
-`path/UnitPage.svelte`: the backdrop with the host; the can-do's line (`cando.short`, the full one under 詳しく); the
-stamp line (mine and the partner's) with my tally; the letter once stamped; the three core lessons and the extras with
-playable items (`playIds`); the phrases caught k / n → 図鑑; 飛ばしてチェック until the チェック is next or stamped.
+Removed with しまの みち.
 
 ### Mode detail
 
@@ -265,11 +247,7 @@ The frame (frame/RoundFrame, RevealFrame) owns the bar, countdown, replay row, t
 input and reveal. The round sits at the top in every phase (nothing above moves when the tiles, choices or reveal come
 in). The round's one action sits in the sticky foot (できた, `action`) and the reveal's 次へ / 読み終わった
 take its place, sunk for 1.2 s after the reveal shows (a press begun before never counts; `?kikimimi=fast` skips it
-unless `&arm`); secondary actions sit by their content. From round 2 the frame's `👀 前の問題` chip (frame/LookBack;
-not ‹, which is the title bar's leave) opens the previous round's review on this phone only (not while the round goes on with that round's piece, `peek`:
-でんわ's memo from memory, たちぎき's later rounds, まるごと 聞く and ニュース, whose text would give the answers away) (the game's own row, `review`, opened with no ▾, else its line,
-Japanese and note; ことば タイル passes TileRow): the round goes on under it with its timer on the card, and its ▶︎ is a review's play,
-off while the round's clip plays or another phone speaks. One round back; earlier ones are in the results. しずえ's words are polite (です／ます); casual cheers are the villagers'. The results: しずえ's line with the team tally or ranking, my tally and 1回目で正解 count, the missed features, the review list, 終わる /
+unless `&arm`); secondary actions sit by their content. No look back mid-game: the review is in the results. しずえ's words are polite (です／ます); casual cheers are the villagers'. The results: しずえ's line with the team tally or ranking, my tally and 1回目で正解 count, the missed features, the review list, 終わる /
 もう一度遊ぶ. A lesson adds a strip: the unit's dots, the next lesson, after a チェック the stamp (two for a double) or
 `kiki.stamp.notYet`, and the letter the first time. 読んでから もう一度 on a review row is よみきき サンド
 (kikimimi-engine.md "よみきき サンド").
@@ -298,10 +276,7 @@ the trophies, the couple line (times played together and minutes, never a level)
 
 ### 図鑑
 
-`zukan/KikiZukan.svelte` (its header: where it opens), four tabs (`kiki.zukan.tab.*`), owner-only; pure folds
-`kikimimi/zukan.ts`, `friendship.ts`, week.ts `weekStamps`. **言葉**: every unit's and serial's key phrases, caught
-(srs.ts `phrasesOf`) with its Japanese and ★, heard a silhouette, never ？. **声**: the cast's voices. **仲間**: the
-villagers heard, five hearts ("なかよし"). **スタンプ**: every stamp, letter, badge, trophy and chapter finished.
+Removed: no word, voice, friend or stamp collection.
 
 ### 設定
 
@@ -310,12 +285,7 @@ lobby's default, 日本語訳, 今週の目標, みみ チェックをもう一�
 
 ### First run
 
-1. **Welcome** (`onboarding/Welcome.svelte`, once per player and phone, the guest too): あとで lands on the hub with the
-   quiet 👂 card.
-2. **The sound check** (🔊, the volume-0 line).
-3. **みみ チェック**, the placement (kikimimi-engine.md "みみ チェック"): solo, about 3 minutes, a progress bar, no score.
-4. **The result** (`onboarding/Placed.svelte`): `kiki.placed.say` on the five-place strip, 得意 / これから chips,
-   `kiki.placed.mine` (only you see it). It sets おまかせ.
+Removed: no welcome and no みみ チェック; the sheet opens on the hub.
 
 ## Progress & feedback
 
@@ -378,45 +348,23 @@ landmarks. **No かいがら:** English practice pays nothing in the island econ
 
 ### The daily menu
 
-`today.ts`, pure, from the Tokyo day, the report and the SRS: the same on every phone of mine.
-
-| Card | Content |
-|---|---|
-| 1 おさらい | due SRS cards, capped at 8 (`kiki.review.picked`, never "14 overdue"); a due 30-day recheck takes its place; none due: folded as done |
-| 2 今日の一歩 | the current unit's next lesson; before units, ひとこと クイズ at my place |
-| 3 きまぐれ | one playable mode in turn by the day, never yesterday's (not the quiz when card 2 is one; ニュース only 05:00–11:00; never a mic mode); 21:00–04:00 おやすみ ものがたり |
-
-One finished session (a row with ≥ 4 answers, or a story heard ≥ 3 min) means 今日はOK and stamps the day; it ticks the
-first undone card it matches, else the first undone card, so free play is never "off menu".
+Removed: no three-card menu.
 
 ### The weekly stamp card
 
-`week.ts`, `WeekCard`: a target of 3, 5 or 7 days a week (default 3), a day stamped by one finished session. 今週聞いた日
-k / n and 月…日 dots; met, `kiki.week.met`. A new card each Monday, nothing said of the last, never "0 days"; a met week
-is a stamp in 図鑑.
+Removed with the menu.
 
 ### ふたりの クエスト
 
-One shared bar of minutes heard, Monday to Sunday, 60 min. Minutes, not right answers, so each person adds the same at
-any level. It sums both members' `ms` (my rows and the partner's summaries), never who added what, never the guest's;
-met, `kiki.quest.met`; missed, nothing said. The guest has its own solo quest (30 min).
+Removed.
 
 ### Stamps, letters and landmarks
 
-- **A unit's stamp:** 5 of 6 right on the first listen in its チェック, alone or as a team (curriculum.md "Playing
-  together"); retakeable. Computed from the rows (`kikimimi/stamps.ts`), never stored.
-- **Letters:** my stamp brings the host villager's letter (40–60 words using a unit phrase; `kikimimi/letters.ts`), never
-  for the partner's stamp alone: open on the results that first stamped it, then on the unit's page and in 図鑑 › スタンプ.
-- **Landmarks:** a stage whose units I've all stamped is cleared (path.ts `landmarksOf`): its head carries the landmark
-  (`kiki.landmark.*`), the first time with a celebration card. Cosmetic.
-- **Trophies:** the tournament's bronze (taking part), silver, gold.
+Removed with しまの みち.
 
 ### なかよし
 
-`friendship.ts`, from my answers: +2 for a villager's item understood on the first listen, +1 after a replay, nothing
-for a miss; a dialogue counts each villager in it. Points never drop and are never shown; hearts at 10 / 30 / 70 / 150
-/ 300 (`FRIEND_LEVELS`), each person's own. In 図鑑 › 仲間: L1 their English greeting, L2 a short letter, L3 a
-phone-friend badge 📞, L4 a silver frame, L5 their photo in a gold frame.
+Removed with 図鑑.
 
 ## Empty and edge states
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   // A round's choices (docs/kikimimi.md "The game"; kikimimi-engine.md "Shared UI" ChoiceGrid): dimmed until the first play ends, then one
-  // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
+  // final tap; mine marked as picked; at the reveal ○ on the right one and my pick shown plain, never a × (`onlyMarked`: only those
   // two, a dialogue's and a picture round's, so the transcript under them is never under the sticky つぎへ; the marked ones scrolled clear of it). Text, or pictures (art keys) in a
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
   // Japanese (`ja`, the item's cja) under it, smaller.
@@ -31,7 +31,7 @@
     onlyMarked?: boolean;
     onpick: (k: number) => void;
   } = $props();
-  /** A choice's look: mine (picked, before the reveal), right (○), wrong (my pick, ×), or none. */
+  /** A choice's look: mine (picked, before the reveal), right (○), wrong (my pick: plain, no mark), or none. */
   function mark(k: number): 'mine' | 'right' | 'wrong' | null {
     if (reveal) return k === right ? 'right' : picked === k ? 'wrong' : null;
     return picked === k ? 'mine' : null;
@@ -61,7 +61,7 @@
       aria-disabled={!open} aria-label={label?.(c)} data-sfx={open ? 'choice-pick' : 'none'}
       onclick={() => open && onpick(k)}>
       {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k] && ja[k] !== c}<span class="cja" lang="ja" data-kiki-cja={k}><Phrases text={ja[k]} /></span>{/if}{/if}
-      {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
+      {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{/if}
     </button>
     {/if}
   {/each}
@@ -82,14 +82,13 @@
   .ch[data-mark='mine'] { background: var(--ctl-sel); color: var(--c-ink); }
   /* the marked ones on fixed cream (any time of day, .obj-cream): the day leaf and coral text */
   .ch[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); box-shadow: inset 0 0 0 3px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
-  .ch[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 30%, var(--c-card)); color: var(--c-ink); }
+  .ch[data-mark='wrong'] { background: color-mix(in srgb, var(--c-lip) 22%, var(--c-card)); color: var(--c-ink); }
   /* set aside after the reveal: sunk (the off control: no edge, no lip), its soft text >= 4.5:1 (night 7.5, day 4.9) */
   .choices:has([data-mark='right']) .ch:not([data-mark]) { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; }
   /* a marked text choice: room for its ○ / × either side (the text kept centred), never over a long choice's words */
   .ch:is([data-mark='right'], [data-mark='wrong']):not(.pics .ch) { padding-inline: 40px; }
   .ch .sym { position: absolute; top: 4px; right: 10px; font: 700 26px/1 var(--font-ui); }
   .ch .sym.ok { color: var(--leaf-text); }
-  .ch .sym.ng { color: var(--coral-text); }
   .tx { overflow-wrap: anywhere; }
   /* the Japanese under it: smaller, in the choice's own full colour (any tile, any time of day: >= 4.5:1 even on a
      set-aside choice) */

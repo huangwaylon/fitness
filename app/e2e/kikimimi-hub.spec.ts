@@ -32,15 +32,10 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await fromMenu(page, 'kikimimi');
   await atHub(page);
   await expect(title(page)).toHaveText('ききみみ');
-  // the three tiles (no みんなで), each with its live line; ⚙ in ‹'s place
-  await expect(sheet(page).locator('[data-kiki-tile]')).toHaveCount(3);
-  await expect(sheet(page).locator('[data-kiki-tile="together"]')).toHaveCount(0);
+  // two tiles (あそぶ, きろく), each with its line; ⚙ in ‹'s place; no menu cards, week card or しずえ
+  await expect(sheet(page).locator('[data-kiki-tile]')).toHaveCount(2);
   await expect(page.locator('dialog[open] [data-kiki-gear]')).toBeVisible();
-  // today's menu: おさらい (the demo's misses due), きょうの いっぽ (the path's current unit), きまぐれ; one green button
-  await expect(sheet(page).locator('[data-kiki-card]')).toHaveCount(3);
-  await expect(sheet(page).locator('[data-kiki-card="review"]')).toContainText('選びました');
-  await expect(sheet(page).locator('[data-kiki-card-go]:not(.paper)')).toHaveCount(1);
-  await expect(sheet(page).locator('[data-kiki-ok-line]')).toHaveText('1つで今日はOK。残りはおまけです');
+  await expect(sheet(page).locator('[data-kiki-card], [data-kiki-week-card], [data-kiki-check-card]')).toHaveCount(0);
   await snap(page, 'hub');
 
   // あそぶ: the modes by situation, only the playable ones (おさらい: the demo's A has played)
@@ -94,44 +89,15 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await page.locator('dialog[open] [data-kiki-gear]').click();
   await expect(title(page)).toHaveText('設定');
   await expect(sheet(page).locator('[data-kiki-test]')).toBeVisible();
-  // こんしゅうの めあて 3 by default, 5 kept; にほんごやく みない; おとを 1だいに まとめる on for my lobby
-  await expect(sheet(page).locator('[data-goal="3"]')).toHaveAttribute('aria-checked', 'true');
-  await sheet(page).locator('[data-goal="5"]').click();
-  expect(await page.evaluate(() => localStorage.getItem('island.kikiWeekGoal'))).toBe('5');
+  // にほんごやく みない; no めあて, みみ チェック or おとを 1だいに まとめる
   await sheet(page).locator('[data-ja="never"]').click();
   await expect(sheet(page)).toHaveAttribute('data-kiki-ja', 'never');
-  await sheet(page).locator('[data-kiki-set-same]').click();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __kiki: { view(): { same: boolean } } }).__kiki.view().same)).toBe(true);
+  await expect(sheet(page).locator('[data-goal], [data-kiki-set-check], [data-kiki-set-same]')).toHaveCount(0);
   await snap(page, 'settings');
-  // the hub's week card: the days against 5, the couple quest's minutes together (one bar, no names)
-  await page.locator('dialog[open] .navbar .back').click();
-  const card = sheet(page).locator('[data-kiki-week-card]');
-  await expect(card).toHaveAttribute('data-kiki-week-goal', '5');
-  await expect(card.locator('[data-kiki-day]')).toHaveCount(7);
-  await expect(card.locator('[data-kiki-quest]')).toContainText('ふたりで');
-  await expect(card).not.toContainText('うめ');
-  await card.scrollIntoViewIfNeeded();
-  await snap(page, 'hub-week');
-  await page.locator('dialog[open] [data-kiki-gear]').click();
 
   // ✕ from a page closes the sheet; the next opening is the hub again
   await page.locator('dialog[open] .navbar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await fromMenu(page, 'kikimimi');
   await atHub(page);
-});
-
-test('a menu card plays (きまぐれ: its mode, a lane game’s page first); ✕ before my first answer closes at once', async ({ page }) => {
-  test.slow();
-  await open(page);
-  await fromMenu(page, 'kikimimi');
-  await atHub(page);
-  await sheet(page).locator('[data-kiki-card-go="whim"]').click();
-  // (the pinned day's きまぐれ is 音の へんしん, a lane's game: its page first, then はじめる)
-  await expect(sheet(page).locator('[data-kiki-mode-page="henshin"]')).toBeVisible();
-  await sheet(page).locator('[data-kiki-start]').click();
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
-  // nothing to lose yet (solo, the countdown): ✕ closes at once, no ask
-  await page.locator('dialog[open] .navbar .close').click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
 });

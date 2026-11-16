@@ -6,14 +6,11 @@
   // round's one action (`action`: ことば タイル's できた) and at the reveal, in its place, the host's 次へ (with how many
   // tapped 読み終わった), the others' 読み終わった; the host gone, anyone's 次へ. Those two are armed ARM_MS after the reveal
   // shows (sunk till then, and a tap whose press began before never counts: a double tap on できた never skips the
-  // reveal). From round 2, 「👀 前の問題」 at the top-left (LookBack: `review`, the
-  // game's own review row; not while the round goes on with that one's piece: `peek`). The round sits at the top in every phase and game, so nothing moves when the tiles, choices
-  // or reveal come in and 前の問題 is always in the same place. Any game's.
+  // reveal). The round sits at the top in every phase and game, so nothing moves when the tiles, choices or reveal
+  // come in. Any game's.
   import type { Snippet } from 'svelte';
   import Icon from '../../ui/Icon.svelte';
   import { hook, hookFlag } from '#lib/world/devHooks.ts';
-  import type { QuizGame } from '../game.svelte.ts';
-  import LookBack from './LookBack.svelte';
   import type { Who } from '#lib/types.ts';
   import type { RoundPhase } from '#lib/kikimimi/round/types.ts';
   import Host from '../../characters/Host.svelte';
@@ -35,9 +32,7 @@
     players: { who: Who; here: boolean; answered: boolean; ready: boolean; score: number; pick?: { ok: boolean } }[];
   }
 
-  let { game, v, now, me, type, answered, verdict, stage, input, after, action, review, peek = true, onnext, onready }: {
-    /** The game (前の問題's card). */
-    game: QuizGame;
+  let { v, now, me, type, answered, verdict, stage, input, after, action, onnext, onready }: {
     v: FrameView;
     /** The relay's clock (the bar's place). */
     now: number;
@@ -53,11 +48,6 @@
     after?: Snippet;
     /** The round's one action in the foot (できた) while there's no 次へ / 読み終わった. */
     action?: Snippet;
-    /** The game's review row for round i, opened (前の問題; none: the line and its Japanese), ▶︎ allowed. */
-    review?: Snippet<[number, boolean]>;
-    /** 前の問題 may open now: false while this round goes on with the round before's piece (でんわ's memo from memory,
-     *  たちぎき's later rounds, one まるごと 聞く or ニュース piece), whose text would give its answers away. Its row stays. */
-    peek?: boolean;
     onnext: () => void;
     onready: () => void;
   } = $props();
@@ -93,10 +83,9 @@
 </script>
 
 <div class="q" data-kiki-q={v.i} data-type={type} data-phase={v.phase}>
-  {#if !solo || v.i > 0}
+  {#if !solo}
     <div class="players">
-      {#if peek}<LookBack {game} row={review} />{/if}
-      {#if !solo}{#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} ready={p.ready} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}{/if}
+      {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} ready={p.ready} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
     </div>
   {/if}
 

@@ -233,7 +233,7 @@
   {/if}
 {/snippet}
 
-<RoundFrame {game} {v} now={game.now} me={game.me} type={r.kind === 'henshin.pick' ? 'word' : 'tile'} answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {v} now={game.now} me={game.me} type={r.kind === 'henshin.pick' ? 'word' : 'tile'} answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {#if drag.lift}<Lift l={drag.lift} />{/if}
 {/if}
 

@@ -21,7 +21,6 @@
   import { dropOn } from './drop.ts';
   import { TileDrag } from './drag.svelte.ts';
   import Lift from './Lift.svelte';
-  import TileRow, { tileRow } from './TileRow.svelte';
   import { blank, easy, isCoop } from '../listenView.ts';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import RevealFrame from '../frame/RevealFrame.svelte';
@@ -255,9 +254,8 @@
   {/if}
 {/snippet}
 
-{#snippet review(i: number, canHear: boolean)}<TileRow {game} r={tileRow(game, i)} open {canHear} />{/snippet}
 
-<RoundFrame {game} {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} {review} onnext={() => game.next()} onready={() => game.ready()} />
+<RoundFrame {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
 {#if drag.lift}<Lift l={drag.lift} />{/if}
 {/if}
 

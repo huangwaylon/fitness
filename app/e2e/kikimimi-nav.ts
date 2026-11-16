@@ -18,20 +18,6 @@ export async function toMode(p: Page, m: 'quiz' | 'ladder' | 'announce' | 'revie
   await expect(kikiSheet(p).locator(`[data-kiki-mode-page="${m}"]`)).toBeVisible();
 }
 
-/** From the hub: a tile's page (きろく, ずかん). */
-export async function toTile(p: Page, k: 'record' | 'zukan') {
-  await atHub(p);
-  await kikiSheet(p).locator(`[data-kiki-tile="${k}"]`).click();
-  await expect(kikiSheet(p)).toHaveAttribute('data-kiki-at', k);
-}
-
-/** しまの みち: a stage open (its head tapped when it's folded: the current unit's and the placed one are open at first). */
-export async function openStage(p: Page, stage: string) {
-  const head = kikiSheet(p).locator(`[data-kiki-stage-toggle="${stage}"]`);
-  if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click();
-  await expect(head).toHaveAttribute('aria-expanded', 'true');
-}
-
 /** A game's schedule on the page's clock (`page.clock.install()` before the goto; the pinned day kept): the countdown,
  *  the lead, a clip's play window (its length from clips.json, not the audio's) and the reveal's wait are the session's
  *  timers on the relay's clock (game.svelte.ts #refresh; the demo's relay is Date.now()), so stepping the clock runs

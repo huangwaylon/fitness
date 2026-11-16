@@ -7,12 +7,9 @@ export type Page =
   | { k: 'mode'; m: ModeId }
   | { k: 'record' }
   | { k: 'settings' }
-  | { k: 'path' }
-  | { k: 'unit'; id: string }
-  | { k: 'zukan'; unit: string | null }
   | { k: 'story' };
 
-/** The deepest stack: three pages over the hub (the path's unit's ずかん over あそぶ is the one that reaches it). */
+/** The deepest stack: four pages over the hub. */
 export const MAX_DEPTH = 4;
 
 const same = (a: Page, b: Page): boolean => JSON.stringify(a) === JSON.stringify(b);

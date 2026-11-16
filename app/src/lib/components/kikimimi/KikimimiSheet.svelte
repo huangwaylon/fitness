@@ -13,15 +13,13 @@
   // ききみみ's sheet (docs/kikimimi.md "Navigation", "UI details"), its own chunk with the bank, the deck, the session
   // and the strings: full height (Sheet's `pop`), one title bar (the page's name, the game's question 3 / 8; ‹ and ✕,
   // ⚙ at the root) over one scroller. The root is the hub; its pages are pushed on one stack (nav.ts): あそぶ › a mode,
-  // きろく, せってい, しまの みち › a unit › the ずかん (ことば · こえ · なかま · スタンプ). Solo only: the game has no Live, so
+  // きろく, せってい. Solo only: the game has no Live, so
   // nothing is sent or heard. ‹ pops one, ✕ closes the sheet from any page, a backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
   // the results; a game whose lane has its own views (round/registry.ts; views.ts: the tournament's, みみ チェック's, a
   // later game's) shows them in their place, each its own chunk. A game is a level over the page that started it: its ‹ (a backdrop tap, Esc) and the results' 終わる land
   // there (actions.ts done), its ✕ closes the sheet; mid-game both ask 「ここでやめますか？」 first unless nothing is lost
   // (before my first answer). Opened from the HUD's ききみみ (my own lobby, kept alone: the hub). The voice
-  // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip. A player's first
-  // open on this phone (none played yet) has the welcome in the hub's place (onboarding/: hello, the sound check, then
-  // みみ チェック, whose result is onboarding/Placed).
+  // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip.
   import { untrack } from 'svelte';
   import '#lib/i18n/kikimimi.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -32,14 +30,12 @@
   import Results from './Results.svelte';
   import LessonIntro from './LessonIntro.svelte';
   import { QuizGame } from './game.svelte.ts';
-  import { currentHenshin, currentLong, currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
+  import { currentHenshin, currentLong, currentReport, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
-  import { jaMode, keepJa, keepOnboarded, lastLv, lastTimer, onboarded, sameDefault, type JaMode } from './prefs.ts';
+  import { jaMode, keepJa, lastLv, lastTimer, sameDefault, type JaMode } from './prefs.ts';
   import { LANES } from '#lib/kikimimi/round/registry.ts';
   import { viewOf } from './views.ts';
   import { packs } from './packs.ts';
-  import { rechecksDue } from '#lib/kikimimi/stamps.ts';
-  import type { Filter } from '#lib/kikimimi/path.ts';
   import { pop, push as pushOn, type Page } from './nav.ts';
   import type { Tile } from './hub/Hub.svelte';
   import { addUnit, itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
@@ -51,8 +47,6 @@
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
   import { hook, hooksOn } from '#lib/world/devHooks.ts';
-  import { nextOf, pickSerial } from '#lib/kikimimi/bedtime.ts';
-  import { SERIALS, serialOf, storyProgress } from './story/serials.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -80,25 +74,17 @@
   let story = $state<{ unit: string; ch: number; seg: number } | null>(null);
   /** The hub shows: my lobby with nothing pushed, or no game of mine yet (an invite waiting). */
   const atHub = $derived(!story && !!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
-  /** The first run's welcome in the hub's place (docs/kikimimi.md "First run"): once per player on this phone, never for one
-   *  who has played (their stage is their rows'). */
-  let welcome = $state(false);
   /** The game's lane (round/registry.ts), and its own view for this phase (null: the quiz's). */
   const lane = $derived(LANES.of(v?.gm));
   const slot = $derived(!v || !v.g ? null : v.phase === 'lobby' ? 'lobby' : v.phase === 'results' ? 'results' : mid && v.phase !== 'countdown' ? 'play' : null);
   const own = $derived(slot ? viewOf(v?.gm, slot) : null);
-  let pathFilter = $state<Filter>('all');
-  const path = $derived(inLobby ? currentPath(pathFilter) : null);
   const pageTitle = (p: Page): string => {
     switch (p.k) {
       case 'asobu': return t('kiki.tile.asobu');
       case 'mode': return t(`kiki.mode.${p.m}`);
       case 'record': return t('kiki.tile.record');
       case 'settings': return t('kiki.set.title');
-      case 'path': return t('kiki.path.title');
-      case 'zukan': return t('kiki.tile.zukan');
       case 'story': return t('kiki.mode.story');
-      case 'unit': return path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title');
     }
   };
   const title = $derived(
@@ -136,8 +122,6 @@
     story = null;
     if (page?.k !== 'story') pages = pushOn(pages, { k: 'story' });
   }
-  /** The 30-day rechecks (solo: in my lobby kept alone). */
-  const due = $derived(hosting && page?.k === 'path' && v?.local ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
 
   // Each opening: a game of its own, solo (no Live: nothing on the wire); closing leaves it. Who I am may come a moment
   // after the sheet (the week's first load). The game begins once the remembered level's chunk is in (pool.ts).
@@ -183,36 +167,10 @@
       asking = false;
       pages = [];
       story = null;
-      welcome = false;
-      welcomeAt = 1;
-      fromWelcome = false;
     };
   });
-  $effect(() => {
-    if (!open || !me || welcome) return;
-    const r = currentReport();
-    if (r && !r.games.length && !onboarded(me)) untrack(() => (welcome = true));
-  });
-  /** The welcome left: あとで (the hub, its card for the check) or on into みみ チェック (its ‹ back to the welcome's
-   *  last step: `welcomeAt`). */
-  let welcomeAt = $state<1 | 2>(1);
-  let fromWelcome = false;
-  function welcomed(check: boolean) {
-    if (me) keepOnboarded(me);
-    welcome = false;
-    fromWelcome = check;
-    if (check) act.check();
-  }
-  $effect(() => {
-    if (v?.phase === 'results') fromWelcome = false;
-  });
-  /** A game left mid-way (‹): to the page it was started from (actions.ts done); the first run's check to the welcome. */
-  function leaveGame() {
-    const toWelcome = fromWelcome && v?.gm === 'check';
-    fromWelcome = false;
-    act.done();
-    if (toWelcome) [welcome, welcomeAt] = [true, 2];
-  }
+  /** A game left mid-way (‹): to the page it was started from (actions.ts done). */
+  const leaveGame = () => act.done();
   // The voice session the opening tap began ends as the sheet closes (a game or not), and the packs held go.
   $effect(() => {
     if (open)
@@ -258,25 +216,15 @@
   const act = new KikiActions(() => game, {
     close: () => (open = false),
     pages: () => pages.length,
-    setPages: (p) => (pages = p),
-    story: () => playTonight()
+    setPages: (p) => (pages = p)
   });
   /** A bedtime chapter played at once (StoryFrame). */
   function playStory(unit: string, ch: number, seg = 0) {
     if (v?.phase === 'idle') act.startOwn();
     story = { unit, ch, seg };
   }
-  /** The night's きまぐれ card: the serial to go on with, at its next chapter (つづき: its segment). */
-  function playTonight() {
-    const progress = me ? storyProgress(me) : {};
-    const unit = pickSerial(progress, SERIALS.map((s) => ({ unit: s.unit, chapters: s.chapters.length })));
-    const s = unit ? serialOf(unit) : undefined;
-    if (!s) return;
-    const at = nextOf(progress[s.unit], s.chapters.length);
-    playStory(s.unit, at.ch, at.seg);
-  }
   function tile(k: Tile) {
-    enter(k === 'asobu' ? { k: 'asobu' } : k === 'zukan' ? { k: 'zukan', unit: null } : { k: 'record' });
+    enter(k === 'asobu' ? { k: 'asobu' } : { k: 'record' });
   }
   // a game in sight (a lesson's card; a mode's page once it has dealt its own deck:
   // ModeDetail): its first question's packs fetched now; a look at the hub, あそぶ's list (its lobby's deck is not what a
@@ -299,8 +247,8 @@
 {/snippet}
 
 <Sheet bind:open tunes label={t('kiki.title')} variant="pop" ondismiss={dismiss} timed="kikimimi">
-  <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub && !welcome ? gear : null} /></div>
-  <div class="kk-body sheet-scroll" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
+  <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub ? gear : null} /></div>
+  <div class="kk-body sheet-scroll" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>
     {#if game && v}
       {@const g = game}
@@ -318,18 +266,14 @@
           <p class="say kana">{t(`kiki.notice.${v.notice}`)}</p>
           <button type="button" class="btn small" data-sfx="back" onclick={act.toHub}>{t('kiki.back')}</button>
         </div>
-      {:else if atHub && welcome}
-        <Lazy load={() => import('./onboarding/Welcome.svelte')}>{#snippet children(Welcome)}
-          <Welcome game={g} at={welcomeAt} onlater={() => welcomed(false)} onstart={() => welcomed(true)} />
-        {/snippet}</Lazy>
       {:else if atHub}
         <Lazy load={() => import('./hub/Hub.svelte')}>{#snippet children(Hub)}
-          <Hub me={g.me} ontile={tile} onact={act.menu} oncheck={act.check} />
+          <Hub ontile={tile} />
         {/snippet}</Lazy>
       {:else if hosting && page}
         {#if page.k === 'asobu'}
           <Lazy load={() => import('./asobu/Asobu.svelte')}>{#snippet children(Asobu)}
-            <Asobu {path} onpath={() => enter({ k: 'path' })} onmode={(m) => enter(m === 'story' ? { k: 'story' } : { k: 'mode', m })} />
+            <Asobu onmode={(m) => enter(m === 'story' ? { k: 'story' } : { k: 'mode', m })} />
           {/snippet}</Lazy>
         {:else if page.k === 'mode'}
           <Lazy load={() => import('./mode/ModeDetail.svelte')}>{#snippet children(ModeDetail)}
@@ -341,24 +285,11 @@
           {/snippet}</Lazy>
         {:else if page.k === 'settings'}
           <Lazy load={() => import('./settings/KikiSettings.svelte')}>{#snippet children(KikiSettings)}
-            <KikiSettings game={g} {ja} onja={(m) => ((ja = m), keepJa(m))} oncheck={act.check} />
-          {/snippet}</Lazy>
-        {:else if page.k === 'path' && path}
-          <Lazy load={() => import('./path/IslandPath.svelte')}>{#snippet children(IslandPath)}
-            <IslandPath {path} bind:filter={pathFilter} {due} onunit={(id) => enter({ k: 'unit', id })} onlesson={act.startLesson}
-              onquiz={act.quickQuiz} onzukan={() => enter({ k: 'zukan', unit: null })} />
-          {/snippet}</Lazy>
-        {:else if page.k === 'unit'}
-          <Lazy load={() => import('./path/UnitPage.svelte')}>{#snippet children(UnitPage)}
-            {#key page.id}<UnitPage id={page.id} onlesson={act.startLesson} onzukan={(unit) => enter({ k: 'zukan', unit })} />{/key}
+            <KikiSettings game={g} {ja} onja={(m) => ((ja = m), keepJa(m))} />
           {/snippet}</Lazy>
         {:else if page.k === 'story'}
           <Lazy load={() => import('./story/StoryList.svelte')}>{#snippet children(StoryList)}
             <StoryList me={g.me} onplay={playStory} />
-          {/snippet}</Lazy>
-        {:else if page.k === 'zukan'}
-          <Lazy load={() => import('./zukan/KikiZukan.svelte')}>{#snippet children(KikiZukan)}
-            <KikiZukan me={g.me} unit={page.unit} onreview={act.reviewPhrases} />
           {/snippet}</Lazy>
         {/if}
       {:else if v.phase === 'lobby' && lesson}

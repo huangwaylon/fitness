@@ -14,13 +14,13 @@ describe('the one stack', () => {
   });
   it('keeps a page already on top once', () => {
     expect(push([{ k: 'record' }], { k: 'record' })).toEqual([{ k: 'record' }]);
-    expect(push([{ k: 'unit', id: 'a' }], { k: 'unit', id: 'b' })).toHaveLength(2);
+    expect(push([{ k: 'mode', m: 'quiz' }], { k: 'mode', m: 'tile' })).toHaveLength(2);
   });
   it('never grows past its depth', () => {
     let s: Page[] = [];
-    for (const p of [{ k: 'asobu' }, { k: 'path' }, { k: 'unit', id: 'u' }, { k: 'zukan', unit: 'u' }, { k: 'zukan', unit: null }] as Page[]) s = push(s, p);
+    for (const p of [{ k: 'asobu' }, { k: 'mode', m: 'quiz' }, { k: 'settings' }, { k: 'story' }, { k: 'record' }] as Page[]) s = push(s, p);
     expect(s).toHaveLength(MAX_DEPTH);
-    expect(s.at(-1)).toEqual({ k: 'zukan', unit: null });
+    expect(s.at(-1)).toEqual({ k: 'record' });
   });
   it('builds the deep link: a mode over あそぶ', () => {
     expect(pop(modeStack('ladder'))).toEqual([{ k: 'asobu' }]);

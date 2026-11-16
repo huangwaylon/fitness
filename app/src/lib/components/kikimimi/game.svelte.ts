@@ -447,9 +447,9 @@ export class QuizGame {
     this.#cued = key;
     if (v.phase === 'lead' && !v.out) cue('quiz-pop');
     else if (v.phase === 'reveal' && !v.out) {
-      // (my answer as the session graded it: a later game's isn't a choice)
+      // (my answer as the session graded it: a later game's isn't a choice; a miss has no sound, never an "oops")
       const a = v.answers[v.i], mine = v.players.find((p) => p.who === this.me)?.pick;
-      cue(a && (mine ? mine.ok : a.k === this.items[v.i]?.answer) ? 'quiz-right' : 'quiz-wrong');
+      if (a && (mine ? mine.ok : a.k === this.items[v.i]?.answer)) cue('quiz-right');
     } else if (v.phase === 'results' && v.g) cue('quiz-end');
   }
 }

@@ -1,24 +1,20 @@
 <script lang="ts">
-  // あそぶ (docs/kikimimi.md "遊ぶ"): しまの みち's card on top, then the playable modes grouped by situation (さくっと,
-  // まちで・でんわで, じっくり, ねる まえに), a 2-column grid per group: each mode's name, its one-line subtitle, its
-  // minutes and the people icon when it can be shared (catalog.ts: each mode's shelf and icon; a lane's game once this build has its
+  // あそぶ (docs/kikimimi.md "遊ぶ"): the playable modes grouped by situation (さくっと, まちで・でんわで, じっくり,
+  // ねる まえに), a 2-column grid per group: each mode's name, its one-line subtitle and its minutes (catalog.ts: each mode's shelf and icon; a lane's game once this build has its
   // lane and content). Only what this build can play shows; an empty group is hidden. Its own chunk.
-  import type { Path } from '#lib/kikimimi/path.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { shelves, type ModeId } from '#lib/kikimimi/catalog.ts';
   import { LANES } from '#lib/kikimimi/round/registry.ts';
   import { currentReport } from '../progress.svelte.ts';
-  import PathCard from '../path/PathCard.svelte';
   import { STORY_OK } from '../story/serials.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { path, onpath, onmode }: { path: Path | null; onpath: () => void; onmode: (m: ModeId) => void } = $props();
+  let { onmode }: { onmode: (m: ModeId) => void } = $props();
   const report = $derived(currentReport());
   const groups = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK, games: (gm) => LANES.ready(gm) }));
 </script>
 
 <div class="asobu" data-kiki-page="asobu">
-  {#if path && path.stages.some((s) => s.stops.length)}<PathCard {path} onopen={onpath} />{/if}
   {#each groups as g (g.group)}
     <section class="shelf" aria-labelledby="kk-g-{g.group}" data-kiki-group={g.group}>
       <h3 id="kk-g-{g.group}" class="sec-label">{t(`kiki.group.${g.group}`)}<small>{t(`kiki.groupSub.${g.group}`)}</small></h3>

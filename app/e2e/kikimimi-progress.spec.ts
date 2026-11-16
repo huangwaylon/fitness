@@ -6,7 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { kikiSheet, runToQuestion, toMode, toTile } from './kikimimi-nav.ts';
+import { kikiSheet, runToQuestion, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&kikimimi=fast';
@@ -34,56 +34,6 @@ async function playGame(page: Page, wrong: readonly number[]) {
   }
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
 }
-
-test('after a solo game: my feedback, the hub’s menu, きろく, and the menu’s おさらい starts my weak spots', async ({ page }) => {
-  await page.clock.install(); // (the games' plays stepped through: kikimimi-nav.ts runUntil)
-  await page.goto(`?demo&${Q}`);
-  await islandUp(page);
-  await fromMenu(page, 'kikimimi');
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await toMode(page, 'quiz');
-  await sheet(page).locator('[data-kiki-start]').click();
-  await playGame(page, [1, 4]);
-  // the results: しずえ's line from my きろく and what tripped me (two misses)
-  const fb = sheet(page).locator('[data-kiki-feedback]');
-  await expect(fb).toBeVisible();
-  await expect(fb.locator('.fb-line')).not.toBeEmpty();
-  await expect(sheet(page).locator('[data-trip]').first()).toBeVisible();
-  await shot(page, '1-results-feedback');
-
-  // もういっかい → the mode's page again; ‹ ‹ to the hub, きろく
-  await sheet(page).locator('[data-kiki-again]').click();
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await expect(sheet(page).locator('[data-kiki-mode-page="quiz"]')).toBeVisible();
-  await page.locator('dialog[open] .navbar .back').click();
-  await page.locator('dialog[open] .navbar .back').click();
-  // the hub's menu (which card a game ticks: today.test; here the row's day is the relay clock's, not the pinned one)
-  await expect(sheet(page).locator('[data-kiki-menu]')).toBeVisible();
-  await shot(page, '1b-hub-menu');
-  await toTile(page, 'record');
-  const prog = sheet(page).locator('[data-kiki-progress]');
-  await expect(prog).toBeVisible();
-  await expect(prog.locator('[data-kiki-stage]')).toHaveAttribute('data-kiki-stage', /^(hama|kawa|mori|yama)$/);
-  await expect(prog.locator('[data-skill]')).toHaveCount(8);
-  await expect(prog.locator('[data-skill="lr"]')).not.toHaveAttribute('data-m', '');
-  // this week: the demo's Monday-to-Wednesday games and today's
-  await expect(prog.locator('[data-kiki-week]')).not.toHaveAttribute('data-kiki-week', '0');
-  await expect(prog.locator('[data-kiki-trend] svg')).toBeVisible();
-  // the couple summary: games with B this week, never a level
-  await expect(prog.locator('[data-kiki-together]')).toBeVisible();
-  await shot(page, '2-kiroku');
-  await prog.locator('details.more summary').click();
-  await shot(page, '3-kiroku-details');
-
-  // the menu's おさらい (the demo's misses are due): a solo game of my weak spots (8 questions, not the lobby's deck)
-  const shared = await kiki(page, (k) => k.items());
-  await page.locator('dialog[open] .navbar .back').click();
-  await sheet(page).locator('[data-kiki-card-go="review"]').click();
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
-  const items = await kiki(page, (k) => k.items());
-  expect(items).toHaveLength(8);
-  expect(items).not.toEqual(shared);
-});
 
 test('おさらい (あそぶ) plays a deck of my weak spots and records it; 1 of 8 right gets no praise, the retry as next step', async ({ page }) => {
   await page.clock.install(); // (the games' plays stepped through: kikimimi-nav.ts runUntil)

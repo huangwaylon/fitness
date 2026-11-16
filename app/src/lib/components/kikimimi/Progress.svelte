@@ -1,36 +1,20 @@
 <script lang="ts">
-  // ききみみ クイズ's きろく (docs/kikimimi.md "Progress & feedback" UI), the lobby's second tab, its own lazy chunk: my
-  // stage (a stat tile: the curriculum's stage, its CEFR and a meter of how far into it), the sub-skills as horizontal
-  // bars (mastery, one hue, the value at the bar's end; unmeasured an outlined, empty track with 「まだ」), the first-listen trend
-  // (the last 5 games' mean, its change, a 12-point sparkline), this week's days (7 dots, never a streak), the
-  // the together summary (games together and everyone's minutes, never a level;
-  // the guest's phone too) and the details (per type, accent and level: one table, one header row) folded; with no game
-  // yet, しずえ's hello and 「あそぶ」 (back to the lobby's first tab). スピード はしご's measure once a ladder's been
-  // climbed: the fastest comfortable speed (a stat tile) over one bar a rung (the share of the recent ladders that
-  // climbed it, labelled directly; one hue). Mine alone: the record sends the
-  // others only a summary (contract/guest.ts rowsFor). The trophy shelf: しずえの しゅうまつ たいかい's trophies, the best
-  // of each weekend, newest first (their place in the tent is a later step).
+  // ききみみ クイズ's きろく (docs/kikimimi.md "Progress & feedback" UI), its own lazy chunk: スピード はしご's measure once a
+  // ladder's been climbed (the fastest comfortable speed over one bar a rung), the first-listen trend (the last 5 games'
+  // mean, its change, a 12-point sparkline), this week's days (7 dots, never a streak), the together summary and the
+  // details (per type, accent and level: one table) folded; with no game yet, a hello and 「あそぶ」. No stage, level
+  // estimate or skill bars. Mine alone: the record sends the others only a summary (contract/guest.ts rowsFor).
   import type { Report } from '#lib/kikimimi/report.ts';
   import { SPEED_MIN } from '#lib/kikimimi/progress.ts';
-  import { stageAt } from '#lib/kikimimi/stages.ts';
-  import { SKILLS } from '#lib/kikimimi/tags.ts';
-  import { levelAt, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
+  import type { Accent, ItemType } from '#lib/kikimimi/bank.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
-  import { MEDAL, levelMark, sx } from './look.ts';
-  import { trophiesOf } from '#lib/kikimimi/games/taikai/def.ts';
-  import Host from '../characters/Host.svelte';
+  import { levelMark, sx } from './look.ts';
   import { t } from '#lib/i18n/index.ts';
   import Icon from '../ui/Icon.svelte';
 
   let { report, onplay }: { report: Report; onplay: () => void } = $props();
   const s = $derived(report.stats);
-  const stage = $derived(s.level === null ? null : stageAt(s.level));
-  /** The level to play next (the comfortable one, a level that exists: やま and ほし above level 4): the next step within
-   *  the stage, not a second stage. */
-  const comfy = $derived(levelAt(Math.min(6, Math.max(1, Math.round(s.level ?? 1)))));
   const pct = (x: number) => Math.round(x * 100);
-  /** The trophy shelf: each weekend's best (its Friday), newest first. */
-  const trophies = $derived([...trophiesOf(report.games)].sort(([a], [b]) => (a < b ? 1 : -1)));
   // the sparkline: first-listen accuracy per game, 0-100 % on a fixed scale (one axis), the last point marked
   const W = 120, H = 36, PAD = 5;
   const pts = $derived(report.trend.map((y, i, a) => [a.length > 1 ? PAD + (i * (W - 2 * PAD)) / (a.length - 1) : W / 2, H - PAD - y * (H - 2 * PAD)] as const));
@@ -50,23 +34,10 @@
 
 <div class="prog" data-kiki-progress>
   {#if !report.games.length}
-    <div class="hello card">
-      <span class="host" aria-hidden="true"><Host head size={52} animate={false} eager /></span>
-      <p class="kana">{t('kiki.prog.empty')}</p>
-    </div>
+    <p class="hello card kana">{t('kiki.prog.empty')}</p>
     <!-- nothing yet (a guest's first visit, a new phone): the way to a first game -->
     <button type="button" class="btn" data-kiki-prog-play data-sfx="tick" onclick={onplay}>{t('kiki.tile.asobu')}</button>
   {:else}
-    <!-- the stage: a stat tile with a meter -->
-    <section class="tile card" aria-labelledby="kp-level" data-kiki-stage={stage?.id}>
-      <h3 id="kp-level" class="sec-label in">{t('kiki.prog.level')}</h3>
-      {#if stage}
-        <p class="stage"><span class="stars" aria-hidden="true">{'★'.repeat(stage.stars)}</span>{t(`kiki.stage.${stage.id}`)}<small>{stage.cefr}</small></p>
-        <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pct(stage.into)} aria-label={t(`kiki.stage.${stage.id}`)}><i style:width="{Math.max(4, pct(stage.into))}%"></i></div>
-        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { stars: levelMark(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
-      {/if}
-    </section>
-
     {#if report.speed.ladders}
       {@const sp = report.speed}
       <!-- スピード はしご: the fastest comfortable speed, and one bar a rung (the share of recent ladders that climbed it) -->
@@ -86,21 +57,6 @@
       </section>
     {/if}
 
-
-    <!-- the sub-skills: one series of horizontal bars, labelled directly -->
-    <section class="sec" aria-labelledby="kp-skills">
-      <h3 id="kp-skills" class="sec-label">{t('kiki.prog.skills')}</h3>
-      <ul class="bars card" data-kiki-skills>
-        {#each SKILLS as k (k)}
-          {@const m = s.skills[k].m}
-          <li data-skill={k} data-m={m === null ? '' : pct(m)}>
-            <span class="bl">{t(`kiki.skill.${k}`)}</span>
-            <span class="track" aria-hidden="true">{#if m !== null}<i style:width="{Math.max(3, pct(m))}%"></i>{/if}</span>
-            <span class="bv">{m === null ? t('kiki.prog.notYet') : t('kiki.prog.pct', { pct: pct(m) })}</span>
-          </li>
-        {/each}
-      </ul>
-    </section>
 
     <div class="pair">
       <!-- the trend: a stat tile with a sparkline -->
@@ -123,20 +79,8 @@
           {#each report.days as on, i (i)}<li class:on aria-label="{t(`kiki.day.${i}`)} {on ? '✓' : ''}"><span aria-hidden="true">{t(`kiki.day.${i}`)}</span></li>{/each}
         </ol>
         <p class="note">{t('kiki.prog.weekN', { n: daysN, m: report.minutes })}</p>
-        {#if report.koe}<p class="note" data-kiki-koe-mins={report.koe}>{t('kiki.prog.koeMins', { m: report.koe })}</p>{/if}
       </section>
     </div>
-
-    {#if trophies.length}
-      <section class="tile card" aria-labelledby="kp-cups" data-kiki-trophies={trophies.length}>
-        <h3 id="kp-cups" class="sec-label in">{t('kiki.prog.trophies')}</h3>
-        <ul class="shelf">
-          {#each trophies as [fri, cup] (fri)}
-            <li data-kiki-shelf={cup}><span class="cup" aria-hidden="true">{MEDAL[cup]}</span><small>{t('kiki.prog.trophyWeek', { m: +fri.slice(5, 7), d: +fri.slice(8, 10) })}</small><span class="sr-only">{t(`kiki.trophy.${cup}`)}</span></li>
-          {/each}
-        </ul>
-      </section>
-    {/if}
 
     {#if report.together.partner}
       <section class="tile card together" aria-labelledby="kp-two" data-kiki-together>
@@ -168,35 +112,17 @@
   .prog { display: grid; gap: 14px; --bar: var(--c-bar); --bar-track: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
   /* night's navy card: the lighter leaf (≥ 3:1 there; the day's #3E9E4C passes the dataviz checks on cream) */
   :global(:root[data-tod='night']) .prog { --bar: var(--c-leaf); }
-  .hello { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
-  .hello p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
-  .host { flex: none; line-height: 0; }
-  .sec { display: grid; gap: 8px; }
+  .hello { margin: 0; padding: 10px 14px; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .sec-label.in { margin: 0; }
   .tile { display: grid; gap: 6px; padding: 12px 14px; align-content: start; }
-  /* the trophy shelf: a wooden ledge under the cups */
-  .shelf {
-    list-style: none; margin: 0; padding: 0 4px 6px; display: flex; gap: 12px; overflow-x: auto;
-    box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--c-lip) 70%, transparent);
-  }
-  .shelf li { flex: none; display: grid; justify-items: center; gap: 2px; }
-  .shelf .cup { font-size: 34px; line-height: 1.1; }
-  .shelf small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .stage { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 700 var(--fs-title)/1.2 var(--font-ui); }
-  .stage small { font-size: var(--fs-s); color: var(--text-soft); }
-  .stars { color: var(--c-coral); font-size: var(--fs-s); letter-spacing: 1px; }
-  .meter { height: 10px; border-radius: var(--r-pill); background: var(--bar-track); overflow: hidden; }
-  .meter i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
   .note { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .bars { list-style: none; margin: 0; padding: 12px 14px; display: grid; gap: 10px; }
   .bars li { display: grid; grid-template-columns: 7.5em 1fr 3em; align-items: center; gap: 10px; }
   .bl { font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .track { height: 12px; border-radius: 0 4px 4px 0; background: var(--bar-track); }
   .track i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
-  /* unmeasured: an outline, so an empty bar never reads as 0 % */
-  li[data-m=""] .track { background: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bar) 45%, var(--card)); }
   .bv { font: 700 var(--fs-s)/1 var(--font-num); text-align: right; color: var(--text); }
-  li[data-m=''] .bv { color: var(--text-soft); }
   .bars.rungs { padding: 4px 0; gap: 8px; }
   .rungs li { grid-template-columns: 3em 1fr 3em; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }

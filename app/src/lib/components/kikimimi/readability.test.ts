@@ -23,10 +23,9 @@ const theme = readFileSync(join(STYLES, 'theme.css'), 'utf8');
 /** `file selector` pairs allowed under 13px: counts, marks and badges, never a sentence or a label to read. */
 const SMALL = new Set([
   'Progress.svelte .more thead th', // a table's column heads
-  'mode/StageRow.svelte .stars', 'onboarding/Placed.svelte .stars', 'zukan/Words.svelte .zc .stars', // ★ counts (aria-hidden)
-  'zukan/Words.svelte .zc .new', 'zukan/Voices.svelte .got-mark', // a tile's corner badge
-  'zukan/Voices.svelte .more', 'zukan/Stamps.svelte .day', 'zukan/Stamps.svelte .chs small', 'path/VillagerLetter.svelte .etxt small', // numbers
-  'taikai/TaikaiPlay.svelte .pips i.line::after, .pips i.gold::after', 'frame/PlayerChip.svelte .read', // icons
+  'mode/StageRow.svelte .stars', 'onboarding/Placed.svelte .stars', // ★ counts (aria-hidden)
+  'path/VillagerLetter.svelte .etxt small', // numbers
+  'frame/PlayerChip.svelte .read', // icons
   'scene/MarkLegend.svelte .say', 'scene/MarkLegend.svelte .dot', 'scene/SoundLine.svelte .w.st::before', // the marks' samples
   'scene/PhoneFrame.svelte .tm', // a call's running time
   'long/LongTranscript.svelte .q', // a question's number by the line that answers it

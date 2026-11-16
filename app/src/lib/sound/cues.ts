@@ -31,7 +31,7 @@ export type Cue =
   // a birthday's cake
   | 'birthday-cake'
   // ききみみ クイズ (components/kikimimi): a question's villager popping in, a reveal right or wrong, the results
-  | 'quiz-pop' | 'quiz-right' | 'quiz-wrong' | 'quiz-end';
+  | 'quiz-pop' | 'quiz-right' | 'quiz-end';
 
 interface CueDef {
   sound: SoundId;
@@ -165,7 +165,6 @@ export const CUES: Record<Cue, CueDef> = {
   // little pop, a right answer's sparkle, a wrong one's oops, the results' jingle
   'quiz-pop': { sound: 'pop', gain: 0.8, step: 5 },
   'quiz-right': { sound: 'sparkle', step: 3 },
-  'quiz-wrong': { sound: 'oops', gain: 0.8 },
   'quiz-end': { sound: 'miles' }
 };
 
