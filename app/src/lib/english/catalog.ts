@@ -7,7 +7,7 @@ import { clipHash, scenesHash } from './hash.ts';
 import type { Band, Clip, ScenesFile } from './types.ts';
 
 /** The show, short (a row's sub line, a chip). */
-export type Show = 'Friends' | 'The Office' | 'Parks';
+export type Show = 'Friends' | 'The Office' | 'Parks' | 'iCarly';
 
 /** A clip as listed: its bank's version and the play's size, not its questions. */
 export interface ClipMeta {
@@ -30,7 +30,7 @@ export interface ClipMeta {
   credit: string;
 }
 
-const SHORT: Record<Clip['show'], Show> = { Friends: 'Friends', 'The Office': 'The Office', 'Parks and Recreation': 'Parks' };
+const SHORT: Record<Clip['show'], Show> = { Friends: 'Friends', 'The Office': 'The Office', 'Parks and Recreation': 'Parks', iCarly: 'iCarly' };
 
 export function metaOf(c: Clip): ClipMeta {
   const items = c.questions.filter((q) => !q.retired).length;

@@ -74,7 +74,7 @@ export interface Clip {
   /** The situation, one or two (職場, 店・レストラン, 電話, 家, 恋愛, 友だち, 旅行, 買い物, お願い・断り). */
   tags: readonly string[];
   /** The show it's from (the page's chips). */
-  show: 'Friends' | 'The Office' | 'Parks and Recreation';
+  show: 'Friends' | 'The Office' | 'Parks and Recreation' | 'iCarly';
   /** Whose video (the channel), shown under the player. */
   credit: string;
   /** The bank (16–24 once written; a lesson of 8 before), in clip order. */
