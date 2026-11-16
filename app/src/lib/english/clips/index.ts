@@ -3,7 +3,15 @@
 // clips.test checks every one (ids, segments, choices, the notes).
 import type { Clip } from '../types.ts';
 import { waitress } from './waitress.ts';
+import { centralperk } from './centralperk.ts';
+import { furniture } from './furniture.ts';
+import { laundromat } from './laundromat.ts';
+import { datinglang } from './datinglang.ts';
 
 export const CLIPS: readonly Clip[] = [
-  waitress
+  waitress,
+  datinglang,
+  laundromat,
+  centralperk,
+  furniture
 ];
