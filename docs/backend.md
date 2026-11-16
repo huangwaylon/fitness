@@ -224,7 +224,7 @@ one tile").
   and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
   late rows too (`LATE_MARGIN_MS`).
-- **Admin:** `POST /admin`, signed (the secret above; a `restore`, `rev` or `logpurge` taken once
+- **Admin:** `POST /admin`, signed (the secret above; a `restore`, `rev`, `logpurge` or `purge_listen` taken once
   per signature, `admin_seen`). Its ops: [runbook §9](ops/runbook.md#9-the-record) (`load` by the same rules,
   idempotent: `test/restore.test.ts`).
 - **Push-driven:** after a write the object tells the room ([Push](#push)), which keeps the last `rec {at, rev}` for

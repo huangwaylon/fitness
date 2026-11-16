@@ -158,6 +158,9 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.
+- **`listen-counts`**, **`purge-listen [--dry-run]`**: the `listen` rows per person and game; the purge **deletes**
+  the retired ききみみ's (every person's), keeping English Study's (`gm` 'tv'), then starts a new epoch (the user's
+  one-off, 2026-11-16; dump and `verify-dump` first). Their ids stay in `ids`, so a resend is a duplicate.
 - **`compact --delete-health-history [max] [rev]`**: **deletes Health history rows**, all of which are kept
   ([backend](../backend.md#the-record) "Compaction"; at most `max`, default 5,000; the admin op also needs
   `confirm: 'delete-health-history'`). **On hold:** the 04:15 Tokyo cron compacts only with `COMPACT_CRON = "1"` in

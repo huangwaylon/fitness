@@ -43,6 +43,7 @@ import { saveName } from '../../app/src/lib/contract/roomSave.ts';
 import { caughtOf, isShopEvent, reowe, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type Ledger, type ShopEvent, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
+import { TV_GM } from '../../app/src/lib/contract/listen.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
@@ -85,7 +86,9 @@ const UPLOADS_KEEP_MS = 60 * 86_400_000;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 /** The admin ops taken once per signature (a replay within the window would restore, start an epoch or purge again). */
-const ADMIN_ONCE = ['restore', 'rev', 'logpurge'];
+const ADMIN_ONCE = ['restore', 'rev', 'logpurge', 'purge_listen'];
+/** A `listen` row's game (contract/listen.ts `gm`): `quiz` when absent, `?` when its data isn't JSON. */
+const LISTEN_GM = "CASE WHEN json_valid(data) THEN coalesce(json_extract(data, '$.gm'), 'quiz') ELSE '?' END";
 /** How long their signatures are remembered: past the signature's own window (±5 minutes) on both sides. */
 const ADMIN_SEEN_MS = 10 * 60_000;
 /** Compaction (compact): at most this many metrics rows deleted a run. Each delete writes ~4 rows (the row, its `at`
@@ -1523,6 +1526,40 @@ export class StoreCore {
   private uploadRows(): unknown[][] {
     return this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
       .map((r) => [r.at, r.person, r.status, r.bytes, r.notes]);
+  }
+
+  // ---------------------------------------------------------------- the old ききみみ rows
+
+  /** The admin's `listen_counts`: the `listen` rows per person and game (`gm`; `quiz` when absent, `?` when the row
+   *  isn't JSON). Counts only. */
+  listenCounts(): Record<string, Record<string, number>> {
+    const out: Record<string, Record<string, number>> = {};
+    const rows = this.io.sql.exec<{ person: string; gm: string; n: number }>(
+      `SELECT person, ${LISTEN_GM} AS gm, count(*) AS n FROM events WHERE type = 'listen' GROUP BY person, gm`
+    ).toArray();
+    for (const r of rows) (out[r.person] ??= {})[String(r.gm)] = Number(r.n);
+    return out;
+  }
+
+  /**
+   * The admin's `purge_listen {keep_gm: 'tv', dry_run?}` (the user's one-off, 2026-11-16): deletes the retired
+   * ききみみ's `listen` rows, every person's, keeping English Study's (`gm` TV_GM), in one transaction. Refused without
+   * `keep_gm: 'tv'`; `dry_run`: the counts, nothing deleted. A listen row has no slot and feeds no running ledger, so
+   * nothing else changes; its id stays in `ids`, so a phone's resend of it is acknowledged as a duplicate and never
+   * kept again. A new epoch after a delete, so every phone drops its cached copies. Taken once per signature.
+   */
+  purgeListen(o: Rec): Record<string, unknown> {
+    if (o.keep_gm !== TV_GM) return { ok: false, error: 'bad_request', detail: `pass keep_gm: '${TV_GM}'` };
+    const dry = o.dry_run === true;
+    const r = this.io.tx(() => {
+      const before = this.listenCounts();
+      const gone: Record<string, number> = {};
+      for (const [who, by] of Object.entries(before)) for (const [gm, n] of Object.entries(by)) if (gm !== TV_GM) gone[who] = (gone[who] ?? 0) + n;
+      if (!dry) this.io.sql.exec(`DELETE FROM events WHERE type = 'listen' AND ${LISTEN_GM} <> ?`, TV_GM);
+      return { before, gone, after: dry ? before : this.listenCounts() };
+    });
+    const deleted = Object.values(r.gone).reduce((a, b) => a + b, 0);
+    return { ok: true, dry_run: dry, ...r, deleted: dry ? 0 : deleted, counts: this.counts(), ...(!dry && deleted ? { rev: this.bumpRev() } : {}) };
   }
 
   // ---------------------------------------------------------------- compaction

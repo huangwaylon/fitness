@@ -20,6 +20,10 @@
 //   verify-dump [date]  the restore drill, writing nothing: the newest backup (or that day's) from the archive's release
 //                       (gh), decrypted and read in memory, its rows per table next to the live record's `counts`
 //                       (only counts printed: never a row, never the key)
+//   listen-counts       the `listen` rows per person and game (`gm`), counts only
+//   purge-listen [--dry-run]
+//                       the retired ききみみ's `listen` rows DELETED (every person's; English Study's, gm 'tv', kept; the
+//                       user's 2026-11-16 one-off: dump and verify-dump first), the counts before and after; a new epoch
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
 //   shopcheck [fix]     the running field and shop ledgers against the full fold of the rows; `fix`: the fold's taken
@@ -31,7 +35,7 @@ import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
 
-const args = process.argv.slice(2).filter((a: string) => a !== '--test');
+const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
 const CHUNK = 400;
 
@@ -138,6 +142,12 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'compact', confirm: 'delete-health-history', ...(max ? { max: Number(max) } : {}), ...(rest.includes('rev') ? { rev: true } : {}) })));
     break;
   }
+  case 'listen-counts':
+    console.log(JSON.stringify(await signed({ op: 'listen_counts' })));
+    break;
+  case 'purge-listen':
+    console.log(JSON.stringify(await signed({ op: 'purge_listen', keep_gm: 'tv', ...(process.argv.includes('--dry-run') ? { dry_run: true } : {}) })));
+    break;
   case 'held':
     console.log(JSON.stringify(await signed({ op: 'held', ...(arg ? { person: arg } : {}) })));
     break;
@@ -157,6 +167,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | listen-counts | purge-listen [--dry-run] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix]  [--test]');
     process.exit(1);
 }

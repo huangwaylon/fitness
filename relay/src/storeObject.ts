@@ -28,7 +28,7 @@ export async function twice<T>(f: () => Promise<T>): Promise<T> {
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
 /** The signed ops that only read (no audit row when they succeed). */
-const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held']);
+const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'listen_counts']);
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -170,6 +170,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   (`next`: the `after` of the next page; the audit on the first);
    * - `compact {confirm: 'delete-health-history', max?, rev?}`: the record's compaction now (store.ts compactOp: it
    *   deletes Health history rows, refused without the confirm; `rev: true` starts a new epoch after it);
+   * - `listen_counts`: the `listen` rows per person and game; `purge_listen {keep_gm: 'tv', dry_run?}`: the retired
+   *   ききみみ's deleted, English Study's kept (store.ts purgeListen; a new epoch after);
    * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
    *   its rules (idempotent: what it has is skipped);
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
@@ -226,6 +228,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.decorCheck(o);
       case 'load':
         return this.core.load(o);
+      case 'listen_counts':
+        return { ok: true, listen: this.core.listenCounts() };
+      case 'purge_listen':
+        return this.core.purgeListen(o);
       case 'dump':
         return { rev: this.core.rev(), ...this.core.dumpPage(o) };
       case 'compact':
