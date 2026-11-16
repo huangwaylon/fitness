@@ -110,6 +110,8 @@
     const r = pick(q, cur, i);
     st[at] = r.st;
     if (r.replay) seg(q);
+    // a predict's continuation, heard once it's settled
+    else if (r.st.r && q.then) player?.play(q.then[0], q.then[1]);
   }
   let typed = $state('');
   $effect(() => {
