@@ -51,7 +51,7 @@
   import { useWorld } from './camera.svelte.ts';
   import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
   import { besideStage, guestSpot } from '#lib/layout/spots.ts';
-  import { ROLES, fortuneOf, giftOf, isGuest, type GuestId } from '#lib/world/visitorRoles.ts';
+  import { ROLES, fortuneOf, giftOf, isGuest, npcIcon, type GuestId } from '#lib/world/visitorRoles.ts';
   import { findKey, findsView } from '#lib/model/finds.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -297,12 +297,12 @@
   let bannerTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(bannerTimer));
   /** Their line in the balloon by them; out of view (a catch's cheer or thanks while they stand past the horizon or
-   *  behind the camera), a banner with their name instead: a balloon has no one to stand by. */
-  function say(name: string, parts: string | string[], from: Element, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
+   *  behind the camera), a banner with their name and icon instead (`who`: the speaker, else the one shown): a balloon has no one to stand by. */
+  function say(name: string, parts: string | string[], from: Element, o: { colour?: string; choices?: Choice[]; ondone?: () => void; who?: string } = {}) {
     speakingUntil = Date.now() + 20_000;
     if (!o.choices?.length && !onScreen(from)) {
       const text = [parts].flat().join(' ').replace(/\s*\n\s*/g, ' '), ms = Math.max(3600, 1200 + [...text].length * 70);
-      toasts.show(t('visitor.said', { name, text }), ms, { reaction: 'joy' });
+      toasts.show(t('visitor.said', { name, text }), ms, { reaction: 'joy', npc: npcIcon(o.who ?? shown ?? '') });
       clearTimeout(bannerTimer);
       bannerTimer = setTimeout(() => ((speakingUntil = 0), o.ondone?.()), ms);
       return;
@@ -581,7 +581,7 @@
     // Cyrus a line of his; Reese one of hers, and the count again
     const cyrus = coupleTurn++ % 2 === 0;
     last = visitorLine((cyrus ? 'cyrus' : 'reese') as VisitorId, Math.random, last);
-    if (cyrus) say(t('visitor.cyrus'), t(last), target, { colour: CYRUS_TAG });
+    if (cyrus) say(t('visitor.cyrus'), t(last), target, { colour: CYRUS_TAG, who: 'cyrus' });
     else say(t('visitor.reese'), [t(last), count], target, { colour: TAG.reese });
   }
 
@@ -646,7 +646,7 @@
     if (g.given) return say(name, t(`chat.sp.${id}.given`), target, { colour });
     recordFind('item', g.item);
     cue('emote-joy');
-    const got = () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy' });
+    const got = () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy', npc: npcIcon(id) });
     // (out of view their line is a banner itself: the word on the gift after it)
     const off = !onScreen(target);
     say(name, t(`chat.sp.${id}.${key}`, { item: g.name }), target, { colour, ondone: off ? got : undefined });
@@ -696,8 +696,8 @@
       faceToward(A, actors.mine.x);
       clearTimeout(thanksTimer);
       thanksTimer = setTimeout(() => {
-        const what = t(`critter.name.${c.id}`);
-        if (!speaking()) say(t(`visitor.${id}`), t(`chat.sp.${id}.cheer`, { name: what }), a, { colour: TAG[id] });
+        // (the fish's name from its catalog, loaded first: never a raw key)
+        void loadNames().catch(() => {}).then(() => !speaking() && say(t(`visitor.${id}`), t(`chat.sp.${id}.cheer`, { name: t(`critter.name.${c.id}`) }), a, { colour: TAG[id] }));
       }, 2600);
     }
   }
@@ -770,7 +770,7 @@
     }
     // (the vegetable's pop over their head first, then their words)
     clearTimeout(thanksTimer);
-    thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy' }) : undefined }), THANKS_MS);
+    thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy', npc: npcIcon(id) }) : undefined }), THANKS_MS);
   }
   const THANKS_MS = 1100;
   /** The ask's piece today (vegRequest.ts vegGift: the same on every phone), null: none left, or the island has it. */

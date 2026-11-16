@@ -827,7 +827,7 @@ NH colour. No voices. A first find adds 「ずかんに のったよ！」; a li
 Placement, one rule for every speaker (`island/placement.ts` `placeBy`): by the speaker, its tail at them,
 nearness first; clear of every control if it can, never over the HUD, しずえ's box, a popup or the speaker. It follows
 a speaker who moves (`island/balloonFollow.ts`) and closes if they go; none out of view (a visitor's line: a banner with
-their name).
+their name and icon).
 
 ### Villager taps
 

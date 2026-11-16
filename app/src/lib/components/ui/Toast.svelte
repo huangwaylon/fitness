@@ -3,7 +3,7 @@
   // ToastHost renders it inside the open sheet's <dialog> when there is one: a popover outside a modal dialog is
   // inert. Slides down below the status row, holds (the store decides how long), slides up: the store
   // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro.
-  // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
+  // Left: a 36px icon on a pebble (partner's villager for partner events, a visitor's head for their words, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
   import type { Who } from '#lib/types.ts';
   import Host from '../characters/Host.svelte';
   import Villager from '../characters/Villager.svelte';
@@ -12,11 +12,14 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import Phrases from './Phrases.svelte';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   interface Props {
     text: string;
     /** A partner event: show that person's villager icon. */
     person?: Who;
+    /** A special character's words or gift: their head icon's file id (visitorRoles npcIcon). */
+    npc?: string;
     /** Official reaction icon on the right (`reactions/<id>`). */
     reaction?: string;
     /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */
@@ -30,7 +33,7 @@
     /** Sliding out (the store drops it right after). */
     leaving?: boolean;
   }
-  let { text, person, reaction, action, low = false, onhold, ondismiss, leaving = false }: Props = $props();
+  let { text, person, npc, reaction, action, low = false, onhold, ondismiss, leaving = false }: Props = $props();
 
   let gone = $state(false);
   let startY = 0;
@@ -94,6 +97,7 @@
     <span class="pebble" aria-hidden="true">
       {#if person && lookOf(person).kind === 'player'}<Avatar worn {person} size={36} />
       {:else if person}<Villager {person} size={36} head animate={false} eager />
+      {:else if npc}<img src={staticUrl(`room/npc/${npc}.webp`)} alt="" width="36" height="36" decoding="async" />
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
     <span class="txt"><Phrases {text} /></span>

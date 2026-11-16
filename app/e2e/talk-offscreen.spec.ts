@@ -5,6 +5,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, islandUp } from './island.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
+import CATCH from '../src/lib/i18n/catch.ja.json' with { type: 'json' };
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -29,6 +30,16 @@ const balloonOff = (page: Page) =>
     return b ? Math.hypot(Math.max(0, b.left - a.right, a.left - b.right), Math.max(0, b.top - a.bottom, a.top - b.bottom)) : null;
   }, CHIP);
 
+/** Whether the text's last character (the closing 」) stands on a line of its own: its box below the one before it. */
+const closeAlone = (txt: Element) => {
+  const w = document.createTreeWalker(txt, NodeFilter.SHOW_TEXT), nodes: Text[] = [];
+  while (w.nextNode()) if ((w.currentNode as Text).data.trim()) nodes.push(w.currentNode as Text);
+  const box = (n: Text, i: number) => { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); return r.getBoundingClientRect(); };
+  const last = nodes.at(-1)!, end = box(last, last.data.trimEnd().length - 1);
+  const prevNode = last.data.trimEnd().length > 1 ? last : nodes.at(-2)!, prev = box(prevNode, prevNode === last ? last.data.trimEnd().length - 2 : prevNode.data.trimEnd().length - 1);
+  return end.top > prev.bottom - 2;
+};
+
 async function open(page: Page) {
   await seed(page);
   await page.goto('?demo&date=2026-11-16T12:00&guest=chip&critter=none');
@@ -50,6 +61,13 @@ test('Chip out of view (past the horizon from まえ): his cheer at a catch is a
   await expect(page.locator('.banner[role="status"] .txt')).toContainText(JA['chat.sp.chip.cheer'].split(' ')[0], { timeout: 8000 });
   await expect(page.locator('.banner[role="status"] .txt')).toContainText(JA['visitor.chip']);
   await expect(page.locator('[data-fx="talk"].placed')).toHaveCount(0);
+  // the banner is his: his own icon on the left (not しずえ's), the fish's real name, and its closing 」 never alone on a line
+  const banner = page.locator('.banner[role="status"]');
+  expect(await banner.locator('.txt').evaluate(closeAlone)).toBe(false);
+  // (WebKit's keep-all breaks between ！ and 」 where the line runs out: the pair is kept on one line)
+  await expect(banner.locator('.txt .num').last()).toHaveText('！」');
+  await expect(banner.locator('.pebble img')).toHaveAttribute('src', /room\/npc\/chip\.webp/);
+  await expect(banner.locator('.txt')).toContainText(CATCH['critter.name.sea-bass']);
 });
 
 test('Chip in view: his cheer at a catch is the balloon by him', async ({ page }) => {

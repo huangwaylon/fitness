@@ -21,6 +21,8 @@ describe('phrases', () => {
     expect(phrases('トマトの苗を買いました（9かいがら）').at(-1)).toEqual(['', '（9', 'かいがら）']);
     expect(phrases('5株（12個）')).toEqual([['', '5', '株', '（12', '個）']]);
     expect(lines('「はい」と言った。」')).toEqual(['「はい」と', '言った。」']);
+    // (WebKit's keep-all breaks between 、。！？ and a closing bracket: the pair kept on one line)
+    expect(phrases('うおまさ「いい だね！」').at(-1)).toEqual([' だね', '！」', '']);
   });
   it('strands no bracket at a line’s end or start in any Japanese line of the app', () => {
     const ends = /[（「『【〔〈《［]$/, starts = /^[）」』】〕〉》］、。・ー]/;

@@ -13,6 +13,8 @@ export interface Toast {
   low?: boolean;
   /** A partner event: that person's villager on the left instead of しずえ. */
   person?: Who;
+  /** A special character's words or gift (a visitor's line out of view): their head icon on the left (its file id: visitorRoles npcIcon). */
+  npc?: string;
   /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
   code?: 'save-failed';
   /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step (returns the ms granted). */
@@ -21,7 +23,7 @@ export interface Toast {
   leaving?: boolean;
 }
 
-type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'code' | 'hold' | 'low'>;
+type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'npc' | 'code' | 'hold' | 'low'>;
 
 /** The banner's slide-out before it is dropped. */
 export const TOAST_OUT_MS = 240;
