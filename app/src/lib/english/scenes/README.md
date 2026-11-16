@@ -1,0 +1,1 @@
+場面のあらすじ: `<YouTube video id>.json` = `{ "video", "scenes": [{ "t": [from, to], "ja" }] }`, our own one-line Japanese outline every 10–20 s (never the lines, in any language); checked by `../scenes.test.ts`, added to the clip's bank by vite.config.ts english-data (docs/english.md "Scene summaries").

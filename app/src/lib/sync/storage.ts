@@ -146,6 +146,9 @@ export const DEVICE = {
   /** localStorage: `{[who]: {[clip]: day}}`: the clips 別の動画にする passed over on this phone, each kept 14 days
    *  (lib/english/prefs.ts): today's clip skips them. */
   englishSkip: 'island.english.skip',
+  /** localStorage: `true` | `false`: English Study's 場面のあらすじ strip under the player shown on this phone
+   *  (lib/english/prefs.ts; shown by default). */
+  englishScenes: 'island.english.scenes',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

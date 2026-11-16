@@ -3,8 +3,8 @@
 // `clips/index.ts?english-index`, in the sheet's chunk) and writes each bank as a file of its own, fetched when a
 // lesson opens (data.ts). Pure.
 import { drawSize } from './draw.ts';
-import { clipHash } from './hash.ts';
-import type { Band, Clip } from './types.ts';
+import { clipHash, scenesHash } from './hash.ts';
+import type { Band, Clip, Scene } from './types.ts';
 
 /** The show, short (a row's sub line, a chip). */
 export type Show = 'Friends' | 'The Office' | 'Parks';
@@ -25,6 +25,8 @@ export interface ClipMeta {
   items: number;
   /** The clip's version (hash.ts clipHash): its saved place's, a clip flag's, and its bank file's name. */
   v: string;
+  /** Its scenes' version (hash.ts scenesHash), when it has scenes: in its bank file's name too. */
+  sv?: string;
   credit: string;
 }
 
@@ -38,6 +40,9 @@ export function metaOf(c: Clip): ClipMeta {
   };
 }
 
-/** A bank's file, under the base path: its name carries its version, so a cached copy is never stale and a page left
+/** A clip's entry with its scenes' version, when it has scenes (vite.config.ts english-data). */
+export const withScenes = (m: ClipMeta, scenes: readonly Scene[] | undefined): ClipMeta => (scenes ? { ...m, sv: scenesHash(scenes) } : m);
+
+/** A bank's file, under the base path: its name carries its version (and its scenes'), so a cached copy is never stale and a page left
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
-export const bankPath = (m: Pick<ClipMeta, 'id' | 'v'>): string => `english/c/${m.id}.${m.v}.json`;
+export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}.json`;

@@ -7,21 +7,21 @@ import INDEX from './clips/index.ts?english-index';
 import { staticUrl } from '#lib/staticUrl.ts';
 import { log } from '#lib/sync/log.ts';
 import { bankPath, type ClipMeta } from './catalog.ts';
-import type { Clip } from './types.ts';
+import type { Bank } from './types.ts';
 
 /** Every clip with a lesson, in the order they're offered (the shared plan: plan.ts). */
 export const LIBRARY: readonly ClipMeta[] = INDEX;
 const byId = new Map(LIBRARY.map((m) => [m.id, m]));
 export const metaById = (id: string): ClipMeta | undefined => byId.get(id);
 
-const keyOf = (m: ClipMeta) => `${m.id}.${m.v}`;
-const banks = new Map<string, Promise<Clip>>();
+const keyOf = (m: ClipMeta) => `${m.id}.${m.v}${m.sv ?? ''}`;
+const banks = new Map<string, Promise<Bank>>();
 /** The banks fetched this session (a lesson opened on one starts with it, no wait). */
-const loaded = new Map<string, Clip>();
-export const bankNow = (m: ClipMeta): Clip | undefined => loaded.get(keyOf(m));
+const loaded = new Map<string, Bank>();
+export const bankNow = (m: ClipMeta): Bank | undefined => loaded.get(keyOf(m));
 
 /** A clip's bank. Rejects offline or on a failed fetch (asked again next time). */
-export function loadBank(m: ClipMeta): Promise<Clip> {
+export function loadBank(m: ClipMeta): Promise<Bank> {
   const key = keyOf(m);
   let p = banks.get(key);
   if (!p) {
@@ -29,7 +29,7 @@ export function loadBank(m: ClipMeta): Promise<Clip> {
     p = fetch(staticUrl(bankPath(m))).then(async (res) => {
       http = res.status;
       if (!res.ok) throw new Error(`english bank ${key}: ${res.status}`);
-      const clip = (await res.json()) as Clip;
+      const clip = (await res.json()) as Bank;
       if (clip.id !== m.id || !Array.isArray(clip.questions)) throw new Error(`english bank ${key}: not its clip`);
       loaded.set(key, clip);
       return clip;

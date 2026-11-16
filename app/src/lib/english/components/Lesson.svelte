@@ -9,6 +9,7 @@
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
   // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度. この動画のフレーズ (the bar's
   // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases).
+  // A bank with scenes shows 場面のあらすじ under the controls (Scenes), its あらすじ chip hiding it on this phone.
   import { onDestroy, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -16,6 +17,7 @@
   import Controls from './Controls.svelte';
   import FlagSheet from './FlagSheet.svelte';
   import ClipPhrases from './ClipPhrases.svelte';
+  import Scenes from './Scenes.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { videoFocus } from '#lib/sound/sound.svelte.ts';
@@ -27,12 +29,12 @@
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
   import { bankNow, loadBank } from '../data.ts';
-  import { harderOn } from '../prefs.ts';
+  import { harderOn, scenesOn, setScenes } from '../prefs.ts';
   import { safeReload } from '#lib/ui-state/reload.ts';
   import { log } from '#lib/sync/log.ts';
   import { durText, s } from '../i18n.ts';
   import type { ClipMeta } from '../catalog.ts';
-  import type { Clip, Question } from '../types.ts';
+  import type { Bank, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
 
   let { clip, onback, onclose }: { clip: ClipMeta; onback: () => void; onclose: () => void } = $props();
@@ -48,7 +50,11 @@
   const seed = untrack(() => seedOf(who, clip.id, play));
   let qs = $state.raw<Question[]>([]);
   /** The whole bank, once in (この動画のフレーズ). */
-  let full = $state.raw<Clip | null>(null);
+  let full = $state.raw<Bank | null>(null);
+  /** 場面のあらすじ, when the bank has them, and its strip shown (this phone's). */
+  const scenes = $derived(full?.scenes?.length ? full.scenes : null);
+  let showScenes = $state(scenesOn());
+  const toggleScenes = () => setScenes((showScenes = !showScenes));
   const len = $derived(qs.length);
   /** The bank: 'ready' once drawn. */
   let bank = $state<'loading' | 'failed' | 'ready'>('loading');
@@ -56,7 +62,7 @@
   /** −1 the watch card, a question's index, len まとめ. */
   let at = $state(resume ? saved!.at : -1);
   let st = $state<QState[]>([]);
-  function begin(c: Clip): void {
+  function begin(c: Bank): void {
     qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn() });
     st = resume && qs.length === saved!.ids.length ? saved!.st : qs.map(blank);
     if (resume && qs.length !== saved!.ids.length) at = -1;
@@ -218,7 +224,8 @@
   </div>
   {#snippet trailing()}<NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy(true)} />{/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
-  <Controls {player} />
+  <Controls {player} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} />
+  {#if scenes && showScenes}<Scenes {scenes} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
       <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />

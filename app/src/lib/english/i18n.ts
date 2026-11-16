@@ -119,6 +119,14 @@ const S = {
   back5: { ja: '−5秒', en: '−5 s' },
   seek: { ja: '再生位置', en: 'Position' },
   captions: { ja: '字幕', en: 'Captions' },
+  'cc.off': { ja: 'オフ', en: 'off' },
+  'cc.en': { ja: '英語', en: 'English' },
+  'cc.ja': { ja: '日本語', en: 'Japanese' },
+  // 場面のあらすじ (Scenes)
+  scenes: { ja: 'あらすじ', en: 'Summary' },
+  scenesTitle: { ja: '場面のあらすじ', en: 'Scene by scene' },
+  scenesNote: { ja: '動画の流れを短くまとめたものです（セリフの訳ではありません）。タップするとその場面から再生します。', en: 'A short outline of the clip in our words (not the lines). Tap one to play from there.' },
+  sceneOpen: { ja: '場面のあらすじを一覧で見る', en: 'All the scenes' },
   // the player's states
   offline: { ja: 'オフラインのため動画を再生できません。つながると再生できます。', en: "You're offline: the video plays once you're back online." },
   unavailable: { ja: 'この動画は今、ここでは再生できません。', en: "This video can't be played here right now." },

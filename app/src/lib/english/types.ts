@@ -80,3 +80,21 @@ export interface Clip {
   /** The bank (16–24 once written; a lesson of 8 before), in clip order. */
   questions: readonly Question[];
 }
+
+/** A moment of the clip in our own words (docs/english.md "Scene summaries"): one short Japanese sentence of who does
+ *  what, never a line's words in any language. scenes/<video>.json holds a clip's, written by the importer. */
+export interface Scene {
+  /** [from, to], s into the video. */
+  t: readonly [number, number];
+  /** ≤ 40 characters, normal kanji, no quotes. */
+  ja: string;
+}
+
+/** A scenes file: scenes/<video id>.json. */
+export interface ScenesFile {
+  video: string;
+  scenes: readonly Scene[];
+}
+
+/** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes when it has a file. */
+export type Bank = Clip & { scenes?: readonly Scene[] };

@@ -92,19 +92,40 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
-stopped), −5秒, a scrubber with the time (never locked), 字幕, and 0.75× only when the frame's `availablePlaybackRates` offer more than 1
+stopped), −5秒, a scrubber with the time (never locked), 字幕, あらすじ (a clip with scenes only), and 0.75× only when the frame's `availablePlaybackRates` offer more than 1
 (a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
 it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`
-or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). Captions are unloaded at ready and at each play, unless 字幕 is on:
-YouTube's own English track (`loadModule` captions, `setOption` captions track en, again at each play), off by default
-and again in each lesson (the player's, not saved); turned on, counted once a play (`act:english.cc`). The e2e answer
+or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). Captions are unloaded at ready and at each play, unless 字幕 is on.
+字幕 cycles オフ → 英語 → 日本語, オフ by default and again in each lesson (the player's, not saved); turned on, counted
+once a play (`act:english.cc`). 英語: YouTube's own English track (`loadModule` captions, `setOption` captions track en,
+again at each play). 日本語: `setOption` track `{ languageCode: 'en', translationLanguage: { languageCode: 'ja' } }`
+(YouTube's auto-translation), or `{ languageCode: 'ja' }` once the frame has listed a Japanese track (its `tracklist`,
+read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocumented). How it went is counted 5 s into
+each play (`act:english.ccja.<track | tr | offer | none | silent>`: a Japanese track on, the translation on, offered
+only, no Japanese reported, nothing reported). Unverified on the iPhone: if the embed ignores it, the captions stay
+English or off. The e2e answer
 the frame with a stand-in player.
 
 **The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
 answer, `bad` a file not its clip), the embed in error (`embed` with YouTube's `code`; `hello` no answer to the
 handshake), a play that didn't start (`stuck`, once a lesson); each with the clip and whether the phone was online.
+
+## Scene summaries
+
+場面のあらすじ: our own short Japanese outline of the clip, one sentence (≤ 40 characters) every 10–20 s: who does what
+and why, never a line's words in any language, no quoted dialogue. Written on another machine (the importer), one file
+a video: `app/src/lib/english/scenes/<YouTube video id>.json`, `{ "video", "scenes": [{ "t": [from, to], "ja" }] }`.
+`scenes.test.ts` holds every file: the shape (`video` = the file name), time order within the clip's `dur`, no overlaps,
+gaps ≤ 5 s; `ja` ≤ 40 characters, no 「」『』 or quotation marks, no English words, every character in the trimmed font.
+The build adds `scenes` to the clip's bank (its file name carries their version too: `catalog.ts withScenes`); nothing
+more is precached.
+
+Under the controls, one calm line: the scene at the playhead (`scenes.ts sceneAt`; in a gap, the one before), following
+it as it plays. Tapped: a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
+there. The controls' あらすじ chip shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
+without scenes shows neither.
 
 ## Progress
 

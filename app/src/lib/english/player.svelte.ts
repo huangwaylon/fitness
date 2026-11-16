@@ -5,8 +5,9 @@
 // itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality has been a no-op since
 // YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player is full width; the
 // quality it reports (`onPlaybackQualityChange`, or infoDelivery's `playbackQuality`) is told once a play (`onQuality`:
-// the log). Captions off, unless the lesson's 字幕 toggle turns YouTube's own on (`setCaptions`; this player's, so a
-// lesson's: off again at the next).
+// the log). Captions off, unless the lesson's 字幕 choice turns YouTube's own on (`setCaptions`; this player's, so a
+// lesson's: off again at the next): English, or Japanese (a Japanese track if the video has one, else YouTube's
+// auto-translation of the English; whether it took is told once a play: `onJa`, the log).
 
 export const YT_ORIGIN = 'https://www.youtube-nocookie.com';
 
@@ -39,12 +40,55 @@ export function readMessage(data: unknown): { event: string; info: unknown } | n
   }
 }
 
+/** The 字幕 choice: none, YouTube's English track, or Japanese (its track, or the English auto-translated). */
+export type CcMode = 'off' | 'en' | 'ja';
+/** What the frame reports of its captions (the module's tracklist, track and translationLanguages), as language codes. */
+export interface CcInfo {
+  tracks?: string[];
+  trLangs?: string[];
+  track?: { lang: string; tr?: string };
+}
+/** How 日本語 went, once a play: a Japanese track on, the translation on, Japanese offered and not seen on, no
+ *  Japanese in what was reported, or nothing reported at all. */
+export type JaOutcome = 'track' | 'tr' | 'offer' | 'none' | 'silent';
+
+const isJa = (l: string | undefined) => !!l && /^ja\b/i.test(l);
+const langsOf = (v: unknown): string[] | undefined =>
+  Array.isArray(v) ? v.map((x) => (typeof x === 'string' ? x : (x as { languageCode?: unknown } | null)?.languageCode)).filter((l): l is string => typeof l === 'string') : undefined;
+
+/** The captions' info in a delivery (infoDelivery or apiInfoDelivery), wherever the frame nests it (≤ 3 deep), or null.
+ *  The embed's shape here is undocumented: anything else is ignored. */
+export function captionsOf(info: unknown, depth = 0): CcInfo | null {
+  if (!info || typeof info !== 'object' || Array.isArray(info) || depth > 3) return null;
+  const o = info as Record<string, unknown>;
+  const tracks = langsOf(o.tracklist), trLangs = langsOf(o.translationLanguages);
+  const tk = o.track && typeof o.track === 'object' ? (o.track as { languageCode?: unknown; translationLanguage?: { languageCode?: unknown } | null }) : null;
+  const tr = tk?.translationLanguage?.languageCode;
+  const track = typeof tk?.languageCode === 'string' ? { lang: tk.languageCode, ...(typeof tr === 'string' && { tr }) } : undefined;
+  if (tracks || trLangs || track) return { ...(tracks && { tracks }), ...(trLangs && { trLangs }), ...(track && { track }) };
+  for (const v of Object.values(o)) {
+    const r = captionsOf(v, depth + 1);
+    if (r) return r;
+  }
+  return null;
+}
+
+/** How 日本語 went, from what the frame reported (null: nothing). */
+export function jaOutcome(cc: CcInfo | null): JaOutcome {
+  if (!cc) return 'silent';
+  if (isJa(cc.track?.lang)) return 'track';
+  if (isJa(cc.track?.tr)) return 'tr';
+  return cc.tracks?.some(isJa) || cc.trLangs?.some(isJa) ? 'offer' : 'none';
+}
+
 /** No answer to `listening` in this long: the embed is unavailable (blocked, or the network gave out). */
 const HELLO_MS = 12_000;
 /** A play asked this long ago that hasn't started: `stuck`. */
 const STUCK_MS = 2_500;
 /** A seek's deliveries from before it are let go this long at most. */
 const SEEK_MS = 3_000;
+/** 日本語's outcome told this long into a play (the module loads once it plays). */
+const JA_MS = 5_000;
 
 export class YtPlayer {
   state = $state<YtState>('loading');
@@ -61,8 +105,8 @@ export class YtPlayer {
   rate = $state(1);
   /** The quality the frame says it plays (its playbackQuality), null till it says. */
   quality = $state<string | null>(null);
-  /** YouTube's English captions on (the 字幕 toggle; off by default). */
-  captions = $state(false);
+  /** YouTube's captions (the 字幕 choice; off by default). */
+  captions = $state<CcMode>('off');
 
   #frame: HTMLIFrameElement;
   #last = { t: 0, at: 0 };
@@ -80,10 +124,18 @@ export class YtPlayer {
   /** This play's quality told already (a play: each play or resume asked). */
   #told = false;
   #onQuality: ((q: string) => void) | undefined;
+  /** The captions' info the frame reported (null: none yet). */
+  #cc: CcInfo | null = null;
+  /** This play's 日本語 outcome told already; the Japanese track asked already. */
+  #jaTold = false;
+  #jaTried = false;
+  #jaTimer: ReturnType<typeof setTimeout> | undefined;
+  #onJa: ((r: JaOutcome) => void) | undefined;
 
-  constructor(frame: HTMLIFrameElement, onQuality?: (q: string) => void) {
+  constructor(frame: HTMLIFrameElement, onQuality?: (q: string) => void, onJa?: (r: JaOutcome) => void) {
     this.#frame = frame;
     this.#onQuality = onQuality;
+    this.#onJa = onJa;
     addEventListener('message', this.#onMessage);
     frame.addEventListener('load', this.#greet);
     this.#greet();
@@ -125,6 +177,8 @@ export class YtPlayer {
   /** A play asked (its quality told once it plays). */
   #asked(): void {
     this.#told = false;
+    this.#jaTold = false;
+    this.#jaTried = false;
     this.#cmd('playVideo');
   }
 
@@ -134,10 +188,11 @@ export class YtPlayer {
     this.#cmd('setPlaybackRate', [r]);
   }
 
-  /** YouTube's English captions on or off, at once (and at ready and each play after: #captionsNow). */
-  setCaptions(on: boolean): void {
-    this.captions = on;
+  /** YouTube's captions off, English or Japanese, at once (and at ready and each play after: #captionsNow). */
+  setCaptions(mode: CcMode): void {
+    this.captions = mode;
     this.#captionsNow();
+    if (this.state === 'playing') this.#jaLater();
   }
 
   pause(): void {
@@ -159,6 +214,7 @@ export class YtPlayer {
     clearInterval(this.#hello);
     clearInterval(this.#tick);
     clearTimeout(this.#stuckTimer);
+    clearTimeout(this.#jaTimer);
   }
 
   /** The time now, s: the last delivery's, plus the time since while playing. */
@@ -199,21 +255,50 @@ export class YtPlayer {
     this.state = st;
     if (st === 'playing' || st === 'buffering') (this.stuck = false), (this.#started = true);
     // (each play, not each delivery: the module loaded again and again would flicker)
-    if (st === 'playing' && was !== 'playing') this.#captionsNow();
+    if (st === 'playing' && was !== 'playing') {
+      this.#captionsNow();
+      this.#jaLater();
+    }
   }
 
   /** No captions on the video unless asked: listening is the point. cc_load_policy=0 only stops YouTube forcing them; a
    * viewer's own caption setting (YouTube's, or iOS's "Closed Captions + SDH") still turns them on, and the module loads
    * once a video plays, so it's unloaded at ready and at each play. Both module names, as the embed has used each.
-   * Asked (`captions`): loaded with the English track, again at each play (the module may only load once it plays). */
+   * Asked (`captions`): loaded with the English track, again at each play (the module may only load once it plays).
+   * 日本語: the Japanese track when the frame has reported one, else YouTube's auto-translation of the English (the embed
+   * may ignore either: then they stay English or off). */
   #captionsNow(): void {
-    if (this.captions) {
+    if (this.captions !== 'off') {
       this.#cmd('loadModule', ['captions']);
-      this.#cmd('setOption', ['captions', 'track', { languageCode: 'en' }]);
+      if (this.captions === 'en') this.#cmd('setOption', ['captions', 'track', { languageCode: 'en' }]);
+      else if (this.#cc?.tracks?.some(isJa)) this.#cmd('setOption', ['captions', 'track', { languageCode: 'ja' }]);
+      else this.#cmd('setOption', ['captions', 'track', { languageCode: 'en', translationLanguage: { languageCode: 'ja' } }]);
       return;
     }
     this.#cmd('unloadModule', ['captions']);
     this.#cmd('unloadModule', ['cc']);
+  }
+
+  /** 日本語's outcome, JA_MS into this play (once a play). */
+  #jaLater(): void {
+    if (this.captions !== 'ja' || this.#jaTold) return;
+    clearTimeout(this.#jaTimer);
+    this.#jaTimer = setTimeout(() => {
+      if (this.captions !== 'ja' || this.#jaTold) return;
+      this.#jaTold = true;
+      this.#onJa?.(jaOutcome(this.#cc));
+    }, JA_MS);
+  }
+
+  /** The captions' info a delivery holds, kept; on 日本語, a Japanese track the frame lists is asked for (once a play). */
+  #setCaptionsInfo(info: unknown): void {
+    const cc = captionsOf(info);
+    if (!cc) return;
+    this.#cc = { ...this.#cc, ...cc };
+    if (this.captions === 'ja' && !this.#jaTried && this.#cc.tracks?.some(isJa) && !isJa(this.#cc.track?.lang)) {
+      this.#jaTried = true;
+      this.#cmd('setOption', ['captions', 'track', { languageCode: 'ja' }]);
+    }
   }
 
   /** The quality the frame reports, if any; told once a play, once playing. */
@@ -234,6 +319,7 @@ export class YtPlayer {
         this.#cmd('addEventListener', ['onStateChange']);
         this.#cmd('addEventListener', ['onError']);
         this.#cmd('addEventListener', ['onPlaybackQualityChange']);
+        this.#cmd('addEventListener', ['onApiChange']);
         this.#captionsNow();
         break;
       case 'initialDelivery':
@@ -244,6 +330,7 @@ export class YtPlayer {
         if (Array.isArray(info.availablePlaybackRates)) this.rates = info.availablePlaybackRates.filter((r): r is number => typeof r === 'number');
         if (typeof info.playbackRate === 'number') this.rate = info.playbackRate;
         this.#setQuality(info.playbackQuality);
+        this.#setCaptionsInfo(info);
         const t = info.currentTime;
         if (typeof t === 'number' && Number.isFinite(t)) {
           if (this.#seek !== null && Math.abs(t - this.#seek) > 2 && performance.now() - this.#seekAt < SEEK_MS) break; // (the time from before the seek)
@@ -258,6 +345,9 @@ export class YtPlayer {
         break;
       case 'onPlaybackQualityChange':
         this.#setQuality(info);
+        break;
+      case 'apiInfoDelivery':
+        this.#setCaptionsInfo(info);
         break;
       case 'onError':
         this.state = 'error';

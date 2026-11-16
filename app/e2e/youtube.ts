@@ -3,6 +3,8 @@
 // `listening` with onReady and then an infoDelivery every 100 ms ({currentTime, playerState}), plays at `rate`× real
 // time from where it was sought, ends at `dur`, and keeps every command it got (with the time then) in window.__yt.
 // `error`: an onError with that code instead (150: not embeddable). `silent`: never answers. `noPlay`: a play never starts. `rates`: the speeds offered.
+// `tracks`: its caption tracks (language codes), reported (apiInfoDelivery: tracklist, track, translationLanguages) once
+// the captions module is loaded and at each track set; none: captions never reported (the shape is undocumented).
 import type { Frame, Page } from './fixtures.ts';
 
 export interface FakeYt {
@@ -14,11 +16,15 @@ export interface FakeYt {
   noPlay?: boolean;
   /** The speeds it offers (availablePlaybackRates). */
   rates?: number[];
+  /** Its caption tracks, reported once the module loads (none: never reported). */
+  tracks?: string[];
 }
 
 const page = (o: Required<FakeYt>) => `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#222;color:#eee;font:14px sans-serif">
 <p id="t">fake youtube</p><script>
-const RATE = ${o.rate}, DUR = ${o.dur}, ERROR = ${o.error}, SILENT = ${o.silent}, NO_PLAY = ${o.noPlay}, RATES = ${JSON.stringify(o.rates)};
+const RATE = ${o.rate}, DUR = ${o.dur}, ERROR = ${o.error}, SILENT = ${o.silent}, NO_PLAY = ${o.noPlay}, RATES = ${JSON.stringify(o.rates)}, TRACKS = ${JSON.stringify(o.tracks)};
+let track = {};
+const cc = () => TRACKS.length && send('apiInfoDelivery', { captions: { tracklist: TRACKS.map((l) => ({ languageCode: l })), track, translationLanguages: [{ languageCode: 'ja' }, { languageCode: 'fr' }] } });
 let speed = 1;
 let t = 0, st = -1, at = performance.now(), ready = false;
 const yt = window.__yt = { cmds: [], videoId: location.pathname.split('/').pop(), search: location.search };
@@ -43,13 +49,15 @@ addEventListener('message', (e) => {
     else if (m.func === 'playVideo') { if (!NO_PLAY) set(1); }
     else if (m.func === 'pauseVideo') set(2);
     else if (m.func === 'setPlaybackRate') { t = now(); at = performance.now(); speed = m.args[0]; }
+    else if (m.func === 'loadModule') cc();
+    else if (m.func === 'setOption' && m.args[1] === 'track') { track = m.args[2]; cc(); }
   }
 });
 </script>`;
 
 /** Answer the embed on this page with the stand-in player. */
 export async function fakeYoutube(p: Page, opts: FakeYt = {}): Promise<void> {
-  const o = { rate: 1, dur: 68, error: 0, silent: false, noPlay: false, rates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2], ...opts };
+  const o = { rate: 1, dur: 68, error: 0, silent: false, noPlay: false, rates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2], tracks: [], ...opts };
   await p.route('https://www.youtube-nocookie.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: page(o) }));
   // the thumbnails (i.ytimg.com/vi/<id>/<size>.jpg): a still of the video's own colour, its id on it
   await p.route('https://i.ytimg.com/**', (r) => {

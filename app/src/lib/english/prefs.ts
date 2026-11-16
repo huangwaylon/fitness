@@ -1,5 +1,6 @@
 // English Study's choices on this phone (docs/english.md "The page"): むずかしめの質問を増やす (⚙; off by default: it
-// only lets the native tier into a first play, draw.ts), and the clips 別の動画にする passed over, each for SKIP_DAYS
+// only lets the native tier into a first play, draw.ts), 場面のあらすじ's strip (the lesson's あらすじ chip; shown by
+// default), and the clips 別の動画にする passed over, each for SKIP_DAYS
 // (today's clip skips them; never a lock: the library still opens them).
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { daysBetween } from '#lib/time/dates.ts';
@@ -7,6 +8,9 @@ import type { LocalDate, Who } from '#lib/types.ts';
 
 export const harderOn = (): boolean => readJson<boolean>(localKV(), DEVICE.englishHard) === true;
 export const setHarder = (on: boolean): void => void writeJson(localKV(), DEVICE.englishHard, on);
+/** 場面のあらすじ's strip under the player (the lesson's あらすじ chip; shown by default). */
+export const scenesOn = (): boolean => readJson<boolean>(localKV(), DEVICE.englishScenes) !== false;
+export const setScenes = (on: boolean): void => void writeJson(localKV(), DEVICE.englishScenes, on);
 
 /** How long a skip lasts, days. */
 export const SKIP_DAYS = 14;

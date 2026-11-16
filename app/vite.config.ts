@@ -4,12 +4,13 @@ import { defineConfig, type Plugin } from 'vitest/config';
 import { runnerImport } from 'vite';
 import { execSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
-import { bankPath, metaOf } from './src/lib/english/catalog.ts';
+import { bankPath, metaOf, withScenes } from './src/lib/english/catalog.ts';
 import { planOf } from './src/lib/english/plan.ts';
-import type { Clip } from './src/lib/english/types.ts';
+import type { Bank, Clip, Scene, ScenesFile } from './src/lib/english/types.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -149,39 +150,58 @@ const globsUncached: Plugin = {
 /** English Study's data (docs/english.md "Data"): clips/'s files stay the source; `clips/index.ts?english-index` is
  *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk, in the shared plan's order: plan.ts),
  *  and each bank a file of its own, `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
- *  the dev server), never bundled nor precached (caches.ts isEnglishData). The clips are read fresh (Vite's module runner) once a build, and in dev
- *  again after one of them changes. */
+ *  the dev server), never bundled nor precached (caches.ts isEnglishData). A clip with scenes/<video>.json (場面のあらすじ)
+ *  has them in its bank (`scenes`), their version in the file's name. The clips are read fresh (Vite's module runner)
+ *  once a build, and in dev again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
 const englishData = (): Plugin => {
   let root = process.cwd();
-  let clips: Promise<{ clips: Clip[]; deps: string[] }> | null = null;
+  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, readonly Scene[]> };
+  let clips: Promise<Data> | null = null;
+  const scenesDir = () => join(root, 'src/lib/english/scenes');
+  /** video → its scenes (the files lib/english/scenes.test.ts checks). */
+  const readScenes = () => {
+    const dir = scenesDir();
+    const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')) : [];
+    return new Map(files.map((f) => {
+      const sf = JSON.parse(readFileSync(join(dir, f), 'utf8')) as ScenesFile;
+      return [sf.video, sf.scenes] as const;
+    }));
+  };
   const read = () =>
-    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies })));
+    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes() })));
+  const meta = (d: Data, c: Clip) => withScenes(metaOf(c), d.scenes.get(c.video));
+  const bank = (d: Data, c: Clip): Bank => {
+    const sc = d.scenes.get(c.video);
+    return sc ? { ...c, scenes: sc } : c;
+  };
   return {
     name: 'english-data',
     enforce: 'pre',
     configResolved: (c) => void (root = c.root),
     async load(id) {
       if (!id.endsWith(ENGLISH_INDEX)) return;
-      const { clips: all, deps } = await read();
-      for (const f of deps) this.addWatchFile(f);
-      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(planOf(all).map(metaOf)))});`, map: null };
+      const d = await read();
+      for (const f of d.deps) this.addWatchFile(f);
+      if (existsSync(scenesDir())) for (const f of readdirSync(scenesDir())) this.addWatchFile(join(scenesDir(), f));
+      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(planOf(d.clips).map((c) => meta(d, c))))});`, map: null };
     },
-    watchChange: (id) => void (id.includes('/src/lib/english/clips/') && (clips = null)),
+    watchChange: (id) => void (/\/src\/lib\/english\/(clips|scenes)\//.test(id) && (clips = null)),
     async generateBundle() {
       if (this.environment.name !== 'client') return;
-      for (const c of (await read()).clips) this.emitFile({ type: 'asset', fileName: bankPath(metaOf(c)), source: JSON.stringify(c) });
+      const d = await read();
+      for (const c of d.clips) this.emitFile({ type: 'asset', fileName: bankPath(meta(d, c)), source: JSON.stringify(bank(d, c)) });
     },
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const id = ENGLISH_BANK.exec(req.url?.split('?')[0] ?? '')?.[1];
         if (!id) return next();
-        read().then(({ clips: all }) => {
-          const c = all.find((x) => x.id === id);
+        read().then((d) => {
+          const c = d.clips.find((x) => x.id === id);
           if (!c) return next();
           res.setHeader('content-type', 'application/json');
-          res.end(JSON.stringify(c));
+          res.end(JSON.stringify(bank(d, c)));
         }, next);
       });
     }
