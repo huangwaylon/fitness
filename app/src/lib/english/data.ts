@@ -8,7 +8,7 @@ import { staticUrl } from '#lib/staticUrl.ts';
 import { bankPath, type ClipMeta } from './catalog.ts';
 import type { Clip } from './types.ts';
 
-/** Every clip with a lesson, in the order they're offered (clips/index.ts). */
+/** Every clip with a lesson, in the order they're offered (the shared plan: plan.ts). */
 export const LIBRARY: readonly ClipMeta[] = INDEX;
 const byId = new Map(LIBRARY.map((m) => [m.id, m]));
 export const metaById = (id: string): ClipMeta | undefined => byId.get(id);

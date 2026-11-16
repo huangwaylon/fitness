@@ -9,7 +9,7 @@ Code: `app/src/lib/english/` (content, logic, strings in `i18n.ts`, the sheet in
 A clip (`lib/english/types.ts` Clip) is an official YouTube video and our lesson over it: segments `[from, to]` s,
 English questions, Japanese notes (言っていること / 意味 / 迷いやすい点 / 使えるフレーズ) and a one-line `cue` for a
 second listen. A question quotes one short line at most (*key words* starred); no audio or transcript is ours to ship.
-`clips/index.ts` lists them in order, easier first; one file a clip, each checked by the unit tests.
+`clips/index.ts` lists them; one file a clip, each checked by the unit tests.
 
 - A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
   label: 大意 詳細 数字 誰が 含み 気持ち 言葉の働き 笑い 次の一言 つなぎ言葉 フレーズ 音 書き取り), a `level` (B1/B2/C1), a
@@ -22,16 +22,20 @@ second listen. A question quotes one short line at most (*key words* starred); n
   are kept with its place; choices are shuffled per player unless `keep`.
 - Speed: `wpm` is words a minute over speech time from the captions, one measure for every clip
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
-  the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test); the order goes band
-  by band, the situation changing clip to clip.
+  the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test).
+- **The plan** (`plan.ts`): one order every phone offers the clips in, so both members meet the same clip most days
+  without seeing each other's. A slow ramp by ease (wpm's rank 0.7, the bank's C1+ share's 0.3; a bank under 16 the
+  mean) with variety: each pick the one of the nearest five that avoids three of a show or a situation in a row and
+  keeps the shows near their share. `plan-order.ts` keeps it as written (`npm run english:plan`; `-- --fresh` only
+  while nobody is part-way); a clip added since goes after it. The build orders the index by it.
 
 ## Data
 
 `clips/` stays the source. The build makes two things of it (vite.config.ts `english-data`):
 
-- **The index** (`catalog.ts` ClipMeta: id, video, title, show, length, band, tags, the play's size, the clip's
-  version `v` = `hash.ts clipHash`, credit), the module `clips/index.ts?english-index`, in the sheet's chunk: home,
-  the library and ⚙ need nothing else. Nothing in the app imports `clips/` itself (`deps.test.ts`).
+- **The index**, in the plan's order (`catalog.ts` ClipMeta: id, video, title, show, length, band, tags, the play's
+  size, the clip's version `v` = `hash.ts clipHash`, credit), the module `clips/index.ts?english-index`, in the
+  sheet's chunk: home, the library and ⚙ need nothing else. Nothing in the app imports `clips/` itself (`deps.test.ts`).
 - **A bank a clip**, `english/c/<id>.<v>.json` (the clip as authored), fetched when its lesson opens; home fetches
   today's ahead while idle. The service worker keeps them (`island-english-v1`, cache first: the name carries the
   version), never precached. A lesson shows its player and watch card at once; its questions say 読み込み中… till the
@@ -44,7 +48,7 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
 
 - **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
   もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, the next clips in order,
-  すべて見る（N本）›. Today's clip is the first in order neither finished nor skipped; 別の動画にする shows the next and
+  すべて見る（N本）›. Today's clip is the first in the plan neither finished nor skipped; 別の動画にする shows the next and
   skips the one passed over for 14 days on this phone. All finished: 全部見ました and the one finished longest ago.
   A member sees the partner's line (finished today, or this week's days); the guest sees none.
 - **The library:** one chip row (すべて, each show, each situation), the clips in order with the part-way first and the

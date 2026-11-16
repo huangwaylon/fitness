@@ -27,7 +27,7 @@ export interface ClipMeta {
 }
 
 /** The show of a clip, from its credit (the channel). */
-function showOf(credit: string): Show {
+export function showOf(credit: string): Show {
   if (/Parks and Recreation/.test(credit)) return 'Parks';
   if (/The Office/.test(credit)) return 'The Office';
   return 'Friends';

@@ -9,6 +9,10 @@ import { fromMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
 import { waitress } from '../src/lib/english/clips/waitress.ts';
 import { CLIPS } from '../src/lib/english/clips/index.ts';
+import { planOf } from '../src/lib/english/plan.ts';
+
+/** The clips as offered (the shared plan). */
+const PLAN = planOf(CLIPS);
 
 /** The card at place `i` of the lesson, and its question (this play's draw: by its id). */
 const cardAt = (p: Page, i: number) => p.locator(`dialog[open] [data-en-lesson] [data-en-q="${i}"]`);
@@ -363,13 +367,13 @@ test('the library: すべて 20 at a time with もっと見る, a show or a situ
   await fakeYoutube(page);
   await open(page);
   // a play left part-way on another clip than today's
-  const other = CLIPS[3];
+  const other = PLAN[3];
   await sheet(page).locator('[data-en-all]').click();
   const lib = sheet(page).locator('[data-en-library]');
   await expect(lib.locator('.navbar h2')).toHaveText('ライブラリ');
   const rows = lib.locator('[data-en-list] [data-en-clip]');
   await expect(rows).toHaveCount(Math.min(20, CLIPS.length));
-  await expect(rows.first().locator('[data-en-thumb] img')).toHaveAttribute('src', `https://i.ytimg.com/vi/${CLIPS[0].video}/mqdefault.jpg`);
+  await expect(rows.first().locator('[data-en-thumb] img')).toHaveAttribute('src', `https://i.ytimg.com/vi/${PLAN[0].video}/mqdefault.jpg`);
   if (CLIPS.length > 20) {
     await expect(lib.locator('[data-en-more]')).toHaveText(`もっと見る（あと${CLIPS.length - 20}本）`);
     await lib.locator('[data-en-more]').click();

@@ -1,6 +1,7 @@
 <script lang="ts">
-  // English Study's home (docs/english.md "The page"): three cards. 今日の動画: the first clip in order neither finished
-  // nor skipped (別の動画にする shows the next and skips this one for 14 days: prefs.ts), its thumbnail, one meta line and
+  // English Study's home (docs/english.md "The page"): three cards. 今日の動画: the first clip in the shared plan
+  // (plan.ts: the library's order) neither finished nor skipped (別の動画にする shows the next and skips this one for 14
+  // days: prefs.ts), its thumbnail, one meta line and
   // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress). ライブラリ: at most five rows (a play left
   // part-way, the next clips in order, すべて見る › the library level). ⚙: むずかしめ and 報告した内容. After 7+ days
   // away, once: おかえりなさい. Today's bank (and the part-way one's) is fetched ahead while idle.

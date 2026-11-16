@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
 import { bankPath, metaOf } from './src/lib/english/catalog.ts';
+import { planOf } from './src/lib/english/plan.ts';
 import type { Clip } from './src/lib/english/types.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
@@ -146,9 +147,9 @@ const globsUncached: Plugin = {
  *  with it; the bundle's check keeps any other chunk from importing MapLibre. Kit enforces its own file names in the
  *  client build; this wraps them. */
 /** English Study's data (docs/english.md "Data"): clips/'s files stay the source; `clips/index.ts?english-index` is
- *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk), and each bank a file of its own,
- *  `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by the dev server), never bundled
- *  nor precached (caches.ts isEnglishData). The clips are read fresh (Vite's module runner) once a build, and in dev
+ *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk, in the shared plan's order: plan.ts),
+ *  and each bank a file of its own, `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
+ *  the dev server), never bundled nor precached (caches.ts isEnglishData). The clips are read fresh (Vite's module runner) once a build, and in dev
  *  again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
@@ -165,7 +166,7 @@ const englishData = (): Plugin => {
       if (!id.endsWith(ENGLISH_INDEX)) return;
       const { clips: all, deps } = await read();
       for (const f of deps) this.addWatchFile(f);
-      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(all.map(metaOf)))});`, map: null };
+      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(planOf(all).map(metaOf)))});`, map: null };
     },
     watchChange: (id) => void (id.includes('/src/lib/english/clips/') && (clips = null)),
     async generateBundle() {
