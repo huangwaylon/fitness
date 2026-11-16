@@ -8,12 +8,13 @@ const flag = { item: 'waitress', q: 1, kind: 'answer', note: '100じゃなくて
 describe('eflagOf', () => {
   it('takes a question’s flag and a clip’s, the note and the time optional', () => {
     expect(eflagOf(flag)).toEqual(flag);
+    expect(eflagOf({ ...flag, q: 'g1' })).toEqual({ ...flag, q: 'g1' });
     expect(eflagOf({ item: 'waitress', q: null, kind: 'other', v: 'abc', seen: null })).toEqual({ item: 'waitress', q: null, kind: 'other', v: 'abc', seen: null });
     const { note: _n, t: _t, ...bare } = flag;
     expect(eflagOf(bare)).toEqual(bare);
   });
   it('refuses anything else', () => {
-    for (const bad of [{ ...flag, extra: 1 }, { ...flag, item: 'Waitress' }, { ...flag, item: 'a'.repeat(13) }, { ...flag, q: -1 }, { ...flag, q: 1.5 }, { ...flag, q: undefined },
+    for (const bad of [{ ...flag, extra: 1 }, { ...flag, item: 'Waitress' }, { ...flag, item: 'a'.repeat(13) }, { ...flag, q: -1 }, { ...flag, q: 1.5 }, { ...flag, q: '' }, { ...flag, q: 'G1' }, { ...flag, q: 'abcdefghi' }, { ...flag, q: undefined },
       { ...flag, kind: 'wrong' }, { ...flag, note: '' }, { ...flag, note: ' x' }, { ...flag, note: 'a\u0007b' }, { ...flag, note: 'x'.repeat(201) }, { ...flag, t: -1 }, { ...flag, t: 1.25 },
       { ...flag, t: '4' }, { ...flag, v: '' }, { ...flag, v: 'ABC' }, { ...flag, seen: null }, { ...flag, q: null }, { ...flag, seen: { ...seen, stem: '' } },
       { ...flag, seen: { ...seen, more: 'x' } }, { ...flag, seen: 'x' }])

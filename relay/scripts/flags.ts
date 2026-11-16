@@ -11,7 +11,10 @@ import { eflagDoneOf, eflagOf, type Eflag, type EflagDone } from '../../app/src/
 import { cleanLine } from '../../app/src/lib/contract/text.ts';
 
 type Row = [at: string, who: string, id: string, type: string, data: string];
-type Content = Record<string, { video: string; title: string; v: string; q: string[]; seg: [number, number][]; stem: string[] }>;
+/** Per clip: its versions, segments and stems, by question id (or, from before the ids, by place). */
+type ByQ<T> = Record<string, T> | T[];
+type Content = Record<string, { video: string; title: string; v: string; q: ByQ<string>; seg: ByQ<[number, number]>; stem: ByQ<string> }>;
+const byQ = <T>(x: ByQ<T> | undefined, k: string | number): T | undefined => (x as Record<string, T> | undefined)?.[k];
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test');
 const KINDS: Record<string, string> = { answer: '答え', heard: '聞こえた言葉・字幕', question: '問題文', timing: '再生の位置', notes: '解説', other: 'その他' };
@@ -63,11 +66,11 @@ async function list(all: boolean): Promise<void> {
 }
 
 function describe(id: string, at: string, who: string, f: Eflag, c: Content[string] | undefined, d: (EflagDone & { at: string }) | undefined): string {
-  const t = f.t ?? (f.q !== null ? c?.seg[f.q]?.[0] : undefined);
+  const t = f.t ?? (f.q !== null ? byQ(c?.seg, f.q)?.[0] : undefined);
   const link = c ? `https://youtu.be/${c.video}${t !== undefined ? `?t=${Math.floor(t)}` : ''}` : '';
-  const nowV = c ? (f.q === null ? c.v : c.q[f.q]) : undefined;
+  const nowV = c ? (f.q === null ? c.v : byQ(c.q, f.q)) : undefined;
   const changed = nowV === undefined ? 'gone' : nowV === f.v ? 'unchanged' : 'changed since';
-  const lines = [`  ⚑ ${id}  ${at.slice(0, 16).replace('T', ' ')}Z  ${who}  ${KINDS[f.kind]}  ${f.q === null ? 'the clip' : `Q${f.q + 1}`}  [${changed}]`];
+  const lines = [`  ⚑ ${id}  ${at.slice(0, 16).replace('T', ' ')}Z  ${who}  ${KINDS[f.kind]}  ${f.q === null ? 'the clip' : typeof f.q === 'number' ? `Q${f.q + 1}` : f.q}  [${changed}]`];
   if (f.seen) lines.push(`    Q:      ${f.seen.stem}`, `    answer: ${f.seen.answer}`, `    line:   ${f.seen.line}`);
   if (f.note) lines.push(`    note:   「${f.note}」`);
   if (link) lines.push(`    at:     ${link}${f.t !== undefined ? `  (${f.t} s)` : ''}`);

@@ -12,6 +12,12 @@
   const open = $derived(flags.filter((f) => !f.done).length);
   const when = new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', dateStyle: 'short', timeStyle: 'short' });
   const formatWhen = (iso: string) => (iso ? when.format(new Date(iso)) : '');
+  /** Where a flag is: the clip, or its question by place (an id: its place in the clip's bank). */
+  const whereOf = (item: string, q: string | number | null) => {
+    if (q === null) return s('flagWhereClip');
+    const i = typeof q === 'number' ? q : (CLIPS.find((c) => c.id === item)?.questions.findIndex((x) => (x as { id?: string }).id === q) ?? -1);
+    return i >= 0 ? s('flagWhere', { i: i + 1 }) : String(q);
+  };
   const titleOf = (id: string) => CLIPS.find((c) => c.id === id)?.title ?? id;
 </script>
 
@@ -24,7 +30,7 @@
         {#each flags as f (f.id)}
           <div class="row item" role="listitem" data-en-flag-row={f.done ? f.done.outcome : 'open'}>
             <p class="state">{f.done ? (f.done.outcome === 'fixed' ? s('flagFixed') : s('flagKept')) : s('flagOpen')}{#if f.done?.note}<span class="soft">「{f.done.note}」</span>{/if}</p>
-            <p>{s(`kind.${f.flag.kind}`)} · {titleOf(f.flag.item)} · {f.flag.q === null ? s('flagWhereClip') : s('flagWhere', { i: f.flag.q + 1 })}</p>
+            <p>{s(`kind.${f.flag.kind}`)} · {titleOf(f.flag.item)} · {whereOf(f.flag.item, f.flag.q)}</p>
             {#if f.flag.note}<p class="soft">「{f.flag.note}」</p>{/if}
             <p class="soft">{formatWhen(f.at)}</p>
           </div>

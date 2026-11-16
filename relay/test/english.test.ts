@@ -47,11 +47,13 @@ describe('English Study on the record', () => {
     expect(send(KEY_C, 'eflag', flag, 'f1').ok).toBe(true);
     expect(send(KEY_B, 'eflag', { item: 'waitress', q: null, kind: 'other', v: 'z1', seen: null }, 'f2').ok).toBe(true);
     expect(send(KEY_A, 'eflag', { ...flag, kind: 'nope' }).ok).toBe(false);
+    expect(send(KEY_A, 'eflag', { ...flag, q: 'g1' }, 'f3').ok).toBe(true); // (by the question's id)
+    expect(send(KEY_A, 'eflag', { ...flag, q: 'G 1' }).ok).toBe(false);
     expect(send(KEY_C, 'eflag_done', { flag: 'f1', outcome: 'fixed' }).error).toBe('forbidden');
     expect(send(KEY_A, 'eflag_done', { flag: 'f1', outcome: 'kept', note: 'このままです' }, 'd1').ok).toBe(true);
     expect(send(KEY_A, 'eflag_done', { flag: 'f1', outcome: 'maybe' }).ok).toBe(false);
     for (const key of [KEY_A, KEY_B, KEY_C]) {
-      expect(rows(key, 'eflag').map(([w, d]) => [w, d.kind])).toEqual([['G', 'answer'], ['B', 'other']]);
+      expect(rows(key, 'eflag').map(([w, d]) => [w, d.kind])).toEqual([['G', 'answer'], ['B', 'other'], ['A', 'answer']]);
       expect(rows(key, 'eflag_done')).toEqual([['A', { flag: 'f1', outcome: 'kept', note: 'このままです' }]]);
     }
   });

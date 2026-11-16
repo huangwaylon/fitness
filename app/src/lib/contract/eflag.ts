@@ -15,6 +15,8 @@ export const EFLAG_NOTE = 200;
 const SEEN_MAX = 400;
 /** A clip's id (as a `listen` row's `u`). */
 const ITEM_RE = /^[a-z0-9-]{1,12}$/;
+/** A question's id. */
+const Q_RE = /^[a-z0-9]{1,8}$/;
 /** A content version (lib/english/hash.ts contentHash). */
 const V_RE = /^[a-z0-9]{1,16}$/;
 
@@ -28,8 +30,9 @@ interface EflagSeen {
 export interface Eflag {
   /** The clip's id. */
   item: string;
-  /** The question's index (0-based), null: the clip as a whole. */
-  q: number | null;
+  /** The question's id (lib/english/types.ts Question.id), null: the clip as a whole. (A number: a flag from the
+   *  first build, by the question's place.) */
+  q: string | number | null;
   kind: EflagKind;
   note?: string;
   /** The player's time then, s (one decimal). */
@@ -64,7 +67,7 @@ function seenOf(v: unknown): EflagSeen | null | undefined {
 export function eflagOf(d: Record<string, unknown>): Eflag | null {
   if (!keysIn(d, ['item', 'q', 'kind', 'note', 't', 'v', 'seen'])) return null;
   if (typeof d.item !== 'string' || !ITEM_RE.test(d.item) || typeof d.v !== 'string' || !V_RE.test(d.v)) return null;
-  if (d.q !== null && !isInt(d.q, 0, 49)) return null;
+  if (d.q !== null && !(typeof d.q === 'string' ? Q_RE.test(d.q) : isInt(d.q, 0, 49))) return null;
   if (!(EFLAG_KINDS as readonly unknown[]).includes(d.kind)) return null;
   if (d.note !== undefined && !textOk(d.note, EFLAG_NOTE)) return null;
   if (d.t !== undefined && !(typeof d.t === 'number' && d.t >= 0 && d.t <= 36_000 && Math.round(d.t * 10) === d.t * 10)) return null;
@@ -72,7 +75,7 @@ export function eflagOf(d: Record<string, unknown>): Eflag | null {
   // a question's flag says what was shown; a clip's has nothing to quote
   if (seen === undefined || (d.q === null) !== (seen === null)) return null;
   return {
-    item: d.item, q: d.q as number | null, kind: d.kind as EflagKind, ...(d.note !== undefined && { note: d.note as string }),
+    item: d.item, q: d.q as string | number | null, kind: d.kind as EflagKind, ...(d.note !== undefined && { note: d.note as string }),
     ...(d.t !== undefined && { t: d.t as number }), v: d.v, seen
   };
 }
