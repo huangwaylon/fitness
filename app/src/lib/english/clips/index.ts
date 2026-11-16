@@ -222,19 +222,32 @@ import { bloomingdales } from './bloomies.ts';
 import { mriBlindDate } from './mridate.ts';
 import { fakeCall } from './fakecall.ts';
 import { needyCall } from './needycall.ts';
+import { dwightFavors } from './dwightfavors.ts';
+import { piemary } from './piemary.ts';
+import { rossList } from './rosslist.ts';
+import { policeExam } from './policeexam.ts';
+import { dwightGun } from './dwightgun.ts';
+import { offGrid } from './offgrid.ts';
+import { whiteWhale } from './whitewhale.ts';
+import { ronTooth } from './rontooth.ts';
+import { dwightVsAndy } from './dwightandy.ts';
+import { deppCondo } from './deppcondo.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
+  rossList,
   waitress,
   bloomingdales,
   movember,
   datinglang,
   laundromat,
+  dwightVsAndy,
   chickParent,
   chrisFlu,
   kevinTalk,
   sellVeg,
   needyCall,
+  dwightGun,
   ronFixes,
   chairModel,
   ronsReviews,
@@ -267,6 +280,7 @@ export const CLIPS: readonly Clip[] = [
   dwightCar,
   tomsApartment,
   wonderDog,
+  policeExam,
   johnnyGoodbye,
   theMerger,
   creedDebbie,
@@ -324,6 +338,7 @@ export const CLIPS: readonly Clip[] = [
   leslieObama,
   jimBack,
   ronTomLucy,
+  ronTooth,
   setStraight,
   benCriminal,
   ronsTeam,
@@ -381,6 +396,7 @@ export const CLIPS: readonly Clip[] = [
   joeyBrain,
   benSkates,
   fakingIt,
+  offGrid,
   janiceSocks,
   pikitis,
   joeymakeup,
@@ -398,12 +414,15 @@ export const CLIPS: readonly Clip[] = [
   promSeason,
   getaway,
   evilLaugh,
+  whiteWhale,
   fluoride,
   joeyStinks,
   kellyLarson,
   goodHusband,
+  dwightFavors,
   jerryPainting,
   pamLabor,
+  piemary,
   ronHearing,
   ryanOffice,
   bestBurger,
@@ -432,6 +451,7 @@ export const CLIPS: readonly Clip[] = [
   savings,
   birthdayMonth,
   collarBlind,
+  deppCondo,
   rossNothing,
   possum,
   ronWhiners,
