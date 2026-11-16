@@ -15,7 +15,7 @@ export const GOODS: Readonly<Record<string, string>> = {
   wood: 'wood', softwood: 'softwood', hardwood: 'hardwood', 'tree-branch': 'tree branch',
   // a pulled weed (island/Care.svelte)
   weeds: 'clump of weeds',
-  // the goal trees' fruit as picked up before 2026-11-16 (still in pockets, at NH's price: GOAL_GOODS now) and a palm's
+  // the goal trees' fruit as picked up before 2026-11-16 (in the pockets as GOAL_GOODS now: pocketKey) and a palm's
   // coconuts
   apple: 'apple', pear: 'pear', peach: 'peach', cherry: 'cherry', coconut: 'coconut',
   // mushroom season's (world/mushrooms.ts), the rare one dug up
@@ -33,12 +33,24 @@ export const GOODS: Readonly<Record<string, string>> = {
 
 /** The goal trees' fruit (island/FruitTree.svelte) since 2026-11-16, the user's economy review: goods of their own,
  *  priced here and not by NH's list (scripts/shop-prices.ts never sees them): a met goal's fruit (`goal-<fruit>`) 60
- *  かいがら, and the gold fruit of a day with all four met 150. Their own ids, so the plain fruit picked up before keep
- *  their 5 (a price change never reprices a pocket). Only the tree's owner picks them up (live-protocol.ts pickMaySend):
- *  one of each a day, the day's claim. */
+ *  かいがら, and the gold fruit of a day with all four met 150. The plain fruit picked up before is folded in as its
+ *  goal's (pocketKey). Only the tree's owner picks them up (live-protocol.ts pickMaySend): one of each a day, the day's
+ *  claim. */
 export const GOAL_GOODS: Readonly<Record<string, number>> = {
   'goal-pear': 60, 'goal-peach': 60, 'goal-cherry': 60, 'goal-apple': 60, 'gold-fruit': 150
 };
 
 /** Whether `id` is one of the goods (NH's, GOODS, or the goal trees', GOAL_GOODS). */
 export const isGoods = (id: string): boolean => Object.hasOwn(GOODS, id) || Object.hasOwn(GOAL_GOODS, id);
+
+/** The plain goal fruit picked up before 2026-11-16 (`goods:apple`…) → the goal's own (GOAL_GOODS), the user's of
+ *  2026-11-16: one row in うる, at 60. */
+const OLD_FRUIT: Readonly<Record<string, string>> = {
+  'goods:apple': 'goods:goal-apple', 'goods:pear': 'goods:goal-pear', 'goods:peach': 'goods:goal-peach', 'goods:cherry': 'goods:goal-cherry'
+};
+
+/** A tally key or a sell's species as the pocket counts it: an old goal fruit as its goal's (OLD_FRUIT), anything else
+ *  as it is. The rows stay as kept (their tallies and sells, their かいがら); the record's fold and the phones' read
+ *  them through this (contract/shop.ts caughtOf, sellOf, sellPrice), so an old build's sale of `goods:apple` takes
+ *  from the same pocket. */
+export const pocketKey = (k: string): string => (Object.hasOwn(OLD_FRUIT, k) ? OLD_FRUIT[k] : k);

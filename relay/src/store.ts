@@ -41,6 +41,7 @@ import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
 import { caughtOf, isShopEvent, reowe, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type Ledger, type ShopEvent, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
+import { pocketKey } from '../../app/src/lib/contract/pocket.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { TV_GM } from '../../app/src/lib/contract/listen.ts';
@@ -1112,8 +1113,9 @@ export class StoreCore {
     if (type === 'tally' || type === 'tally_back') {
       if (!isTally(d)) return;
       const sign = type === 'tally_back' ? -1 : 1;
-      for (const k in d.counts) {
-        const delta = d.counts[k] - (was?.[k] ?? 0);
+      for (const key in d.counts) {
+        // (an old goal fruit's into its goal's, as caughtOf: contract/pocket.ts pocketKey)
+        const delta = d.counts[key] - (was?.[key] ?? 0), k = pocketKey(key);
         if (!delta) continue;
         st.caught.set(k, (st.caught.get(k) ?? 0) + sign * delta);
         if (sign < 0) st.back.set(k, (st.back.get(k) ?? 0) + delta);
@@ -1644,6 +1646,8 @@ function shopStateOf(raw: string): ShopState | null {
   try {
     const x = JSON.parse(raw) as { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; h: number; w: string[] };
     if (!Array.isArray(x.c) || !Array.isArray(x.w) || typeof x.h !== 'number') return null;
+    // (one kept before an old goal fruit counted as its goal's, 2026-11-16: folded again, contract/pocket.ts pocketKey)
+    if ([x.c, x.b, x.s, x.v, x.o].some((m) => m?.some(([k]) => pocketKey(k) !== k))) return null;
     return { caught: new Map(x.c), back: new Map(x.b), l: { sold: new Map(x.s), soldV: new Map(x.v), owed: new Map(x.o), shells: x.h, owned: x.w } };
   } catch {
     return null;

@@ -46,8 +46,8 @@ describe('the pocket’s table (contract/pocket.ts)', () => {
       ...Object.keys(GOODS).map((id) => `goods:${id}`)];
     expect(keys.filter((k) => !isSellable(k) || !sellOf({ species: k, n: 1, v: sellPrice(k)! }))).toEqual([]);
     // NH's sell prices ÷ 20: wood 60 Bells (3, the floor), a branch 5 (3), a coral 500, a T. rex skull 6,000, a pearl 10,000
-    expect(['goods:wood', 'goods:softwood', 'goods:hardwood', 'goods:tree-branch', 'shell:coral', 'fossil:t-rex-skull', 'shell:pearl', 'goods:apple', 'fragment:star-fragment']
-      .map(sellPrice)).toEqual([3, 3, 3, 3, 25, 300, 500, 5, 13]);
+    expect(['goods:wood', 'goods:softwood', 'goods:hardwood', 'goods:tree-branch', 'shell:coral', 'fossil:t-rex-skull', 'shell:pearl', 'goods:coconut', 'fragment:star-fragment']
+      .map(sellPrice)).toEqual([3, 3, 3, 3, 25, 300, 500, 13, 13]);
   });
 });
 

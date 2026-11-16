@@ -137,15 +137,25 @@ describe('the shop in the record', () => {
     expect(sell('A', 'goods:wood', 1, wood)).toEqual(refused('pocket short'));
   });
 
-  it('sells the goal trees’ fruit at its own price (contract/pocket.ts GOAL_GOODS): 60 a goal’s, 150 the gold one, the old fruit still 5', () => {
-    expect([sellPrice('goods:goal-apple'), sellPrice('goods:gold-fruit'), sellPrice('goods:apple')]).toEqual([60, 150, 5]);
-    expect(tally('A', { 'goods:goal-apple': 1, 'goods:goal-pear': 1, 'goods:gold-fruit': 1, 'goods:apple': 2 })).toMatchObject({ ok: true });
+  it('sells the goal trees’ fruit at its own price (contract/pocket.ts GOAL_GOODS): 60 a goal’s, 150 the gold one', () => {
+    expect([sellPrice('goods:goal-apple'), sellPrice('goods:gold-fruit')]).toEqual([60, 150]);
+    expect(tally('A', { 'goods:goal-apple': 1, 'goods:goal-pear': 1, 'goods:gold-fruit': 1 })).toMatchObject({ ok: true });
     expect(sell('A', 'goods:goal-apple', 1, 61)).toEqual(refused()); // above its price
     expect(sell('A', 'goods:goal-apple', 1, 60)).toEqual({ ok: true });
     expect(sell('A', 'goods:gold-fruit', 1, 150)).toEqual({ ok: true });
-    expect(sell('A', 'goods:apple', 2, 10)).toEqual({ ok: true });
-    expect(sell('A', 'goods:apple', 1, 5)).toEqual(refused('pocket short'));
     expect(sell('A', 'goods:goal-pear', 1, 60)).toEqual({ ok: true });
+  });
+
+  it('the plain fruit picked up before 2026-11-16 is its goal’s (pocketKey): one pocket, 60; an old build’s sale of it at 5 or 60 kept', () => {
+    expect(['goods:apple', 'goods:pear', 'goods:peach', 'goods:cherry'].map(sellPrice)).toEqual([60, 60, 60, 60]);
+    expect(tally('A', { 'goods:apple': 3, 'goods:goal-apple': 1 })).toMatchObject({ ok: true });
+    expect(sell('A', 'goods:apple', 1, 5)).toEqual({ ok: true }); // an old build's list
+    expect(sell('A', 'goods:apple', 1, 60)).toEqual({ ok: true });
+    expect(sell('A', 'goods:apple', 1, 61)).toEqual(refused());
+    expect(sell('A', 'goods:goal-apple', 2, 120)).toEqual({ ok: true }); // the old one and the new one, one pocket
+    expect(sell('A', 'goods:apple', 1, 60)).toEqual(refused('pocket short'));
+    expect(sell('A', 'goods:goal-apple', 1, 60)).toEqual(refused('pocket short'));
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
   });
 
   it('an id once: a retry is a duplicate, never sold twice', () => {
@@ -275,6 +285,18 @@ describe('the shop’s running ledger (O5)', () => {
     expect(store.shopCheck()).toMatchObject({ A: 'differs' });
     expect(store.shopCheck({ fix: true })).toMatchObject({ A: 'differs' });
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
+  });
+
+  it('a ledger kept before the old fruit was its goal’s is folded again (pocketKey), its かいがら as they were', () => {
+    batch([{ type: 'tally', data: { date: D, counts: { 'goods:apple': 2, 'fish:koi': 1 } } }]);
+    batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 5 } }]);
+    // the running ledger as the record kept it before 2026-11-16's conversion: the old fruit under its own key
+    db.db.prepare(`UPDATE meta SET v = replace(v, 'goods:goal-apple', 'goods:apple') WHERE k = 'shop|A'`).run();
+    expect(store.shopCheck()).toMatchObject({ A: 'differs' });
+    expect(batch([{ type: 'sell', data: { species: 'goods:goal-apple', n: 1, v: 60 } }]).results[0].ok).toBe(true);
+    expect(batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 60 } }]).results[0]).toMatchObject({ ok: false, detail: 'pocket short' });
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(JSON.parse((db.db.prepare(`SELECT v FROM meta WHERE k = 'shop|A'`).get() as { v: string }).v).h).toBe(65);
   });
 });
 

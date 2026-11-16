@@ -85,10 +85,10 @@ describe('the goal fruit’s payout (2026-11-16: 60 a goal’s, 150 the gold one
     for (let n = 0; n <= 4; n++) expect(fruitMet('gold', metOf(n))).toBe(n === 4);
     expect(RING_FRUITS.map((f) => fruitMet(f, metOf(2)))).toEqual([true, true, false, false]);
   });
-  it('a picked-up fruit is its own goods: 60 a goal’s, 150 the gold one; the fruit picked up before keeps its 5', () => {
+  it('a picked-up fruit is its own goods: 60 a goal’s, 150 the gold one; the fruit picked up before as its goal’s, 60', () => {
     expect(RING_FRUITS.map((f) => sellPrice(`goods:${fruitGoods(f)}`))).toEqual([60, 60, 60, 60]);
     expect(sellPrice(`goods:${fruitGoods('gold')}`)).toBe(150);
-    expect(RING_FRUITS.map((f) => sellPrice(`goods:${f}`))).toEqual([5, 5, 5, 5]);
+    expect(RING_FRUITS.map((f) => sellPrice(`goods:${f}`))).toEqual([60, 60, 60, 60]);
     // a perfect day's tree: 4 × 60 + 150
     expect([...RING_FRUITS, 'gold' as const].reduce((a, f) => a + sellPrice(`goods:${fruitGoods(f)}`)!, 0)).toBe(390);
   });

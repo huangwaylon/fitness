@@ -489,9 +489,10 @@ with **fog** as an hour's extra.
 - **Falling:** met, the tree shakes and the fruit drops in front of the trunk with a thud and a puff; once per phone;
   a reload finds it lying there.
 - **Picking up:** the tree's owner's tap on a fallen fruit picks it up, gone on every phone until the next Tokyo day
-  (`fr:<person>:<fruit>`), into their pocket for the shop: 60 かいがら (`contract/pocket.ts GOAL_GOODS`; no ベル). Only
-  the owner (the room refuses another's pick, `pickMaySend`); anyone else's tap opens the popup. A tap within 22u of a
-  fallen fruit picks up the nearest, else it opens the popup.
+  (`fr:<person>:<fruit>`), into their pocket for the shop: 60 かいがら (`contract/pocket.ts GOAL_GOODS`; no ベル; the
+  plain fruit picked up before 2026-11-16 in the same row, `pocketKey`). Only the owner (the room refuses another's
+  pick, `pickMaySend`); anyone else's tap opens the popup. A tap within 22u of a fallen fruit picks up the nearest,
+  else it opens the popup.
 - **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
   star fragment's art and model) falls in front of the four: 150 かいがら, the owner's as the others.
 - **The popup** stands in screen space over every tint, between the HUD and the screen's foot, over its tree as far

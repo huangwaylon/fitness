@@ -19,7 +19,7 @@
 import { isLocalDate, keysAre } from './api.ts';
 import { SELL } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { GOAL_GOODS, POCKET_KINDS } from './pocket.ts';
+import { GOAL_GOODS, POCKET_KINDS, pocketKey } from './pocket.ts';
 import { FARM, isFarmCrop, startKey, type Crop } from './farm.ts';
 
 interface SellData { species: string; n: number; v: number }
@@ -35,19 +35,21 @@ const SPECIES_RE = new RegExp(`^(${POCKET_KINDS.join('|')}):[a-z][a-z0-9-]{0,47}
 const ITEM_RE = /^f\d{1,6}$/;
 const isWhole = (v: unknown, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max;
 
-/** A species' sell price in かいがら (contract/shopPrices.ts; the goal trees' fruit, pocket.ts GOAL_GOODS), or
- *  undefined: not sellable. */
-export function sellPrice(species: string): number | undefined {
+/** A species' sell price in かいがら (contract/shopPrices.ts; the goal trees' fruit, pocket.ts GOAL_GOODS, an old
+ *  one's as its goal's: pocketKey), or undefined: not sellable. */
+export function sellPrice(key: string): number | undefined {
+  const species = pocketKey(key);
   if (Object.hasOwn(SELL, species)) return SELL[species];
   const id = species.startsWith('goods:') ? species.slice(6) : '';
   return Object.hasOwn(GOAL_GOODS, id) ? GOAL_GOODS[id] : undefined;
 }
 
-/** A `sell`'s data as the model reads it: its shape only (the price was the record's rule when it was kept). */
+/** A `sell`'s data as the model reads it: its shape only (the price was the record's rule when it was kept), its
+ *  species as the pocket counts it (pocket.ts pocketKey: an old goal fruit's sale takes from its goal's). */
 export function sellOf(d: Record<string, unknown>): SellData | null {
   if (!keysAre(d, ['species', 'n', 'v']) || typeof d.species !== 'string' || !SPECIES_RE.test(d.species)) return null;
   if (!isWhole(d.n, SELL_MAX_N) || !isWhole(d.v, 10_000_000)) return null;
-  return { species: d.species, n: d.n, v: d.v };
+  return { species: pocketKey(d.species), n: d.n, v: d.v };
 }
 
 /** A `buy`'s data as the model reads it: its shape only. */
@@ -89,16 +91,16 @@ export interface TallyDay { back?: boolean; counts: Readonly<Record<string, numb
 
 /**
  * What a person's pocket was filled with, as the record and the phones both fold it: per key, Σ their days' tallies
- * − Σ what they gave back, then the field's net (contract/farm.ts: a harvest in, a planted start out); and the
- * given-back counts apart (`back`, for what a sold one owes: owedOf). No floor at 0, on either side: the record's days
+ * − Σ what they gave back (an old goal fruit as its goal's: pocket.ts pocketKey), then the field's net (contract/farm.ts:
+ * a harvest in, a planted start out); and the given-back counts apart (`back`, for what a sold one owes: owedOf). No floor at 0, on either side: the record's days
  * never give back more than they hold (tally.ts backCovered), and a phone's cache that holds a give-back before its
  * day's tally counts it against the pocket, never for it (the phone then offers less than the record would, never more).
  */
 export function caughtOf(days: Iterable<TallyDay>, farmNet: Iterable<readonly [string, number]> = []): { caught: Map<string, number>; back: Map<string, number> } {
   const caught = new Map<string, number>(), back = new Map<string, number>();
   for (const day of days)
-    for (const k in day.counts) {
-      const n = day.counts[k];
+    for (const key in day.counts) {
+      const n = day.counts[key], k = pocketKey(key);
       caught.set(k, (caught.get(k) ?? 0) + (day.back ? -n : n));
       if (day.back) back.set(k, (back.get(k) ?? 0) + n);
     }

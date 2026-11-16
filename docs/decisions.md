@@ -190,7 +190,9 @@ The shop ([design](design.md#the-shop)), a 3D room, has its own per-person curre
 tallies, the stock from the date. Why: NH's prices, nothing stored for the stock, and no request per catch.
 Except the goal trees' fruit (2026-11-16, the user's economy review): 60 a met goal's, 150 the gold one of a day
 with all four met, the tree's owner's alone (`contract/pocket.ts GOAL_GOODS`), so fitness is ~10–12 % of a typical
-day's かいがら; goods of their own, so fruit picked up before keeps its 5.
+day's かいがら; goods of their own. The plain fruit picked up before counts as its goal's (`pocketKey`, the user's of
+2026-11-16: one row, 60): the rows stay as kept, past sales keep their かいがら, and an old build's sale of it at 5 is
+still taken.
 
 ## App and hosting
 

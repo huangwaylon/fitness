@@ -7,7 +7,7 @@ import { foldEvents, reduce } from './state.ts';
 import { shopView } from './shop.ts';
 import { weekBells } from './bells.ts';
 import { stockOf, buyPrice } from '#lib/contract/stock.ts';
-import { caughtOf, isShopEvent, shopLedger, shopRowOf } from '#lib/contract/shop.ts';
+import { caughtOf, isShopEvent, sellPrice, shopLedger, shopRowOf } from '#lib/contract/shop.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 
@@ -43,6 +43,18 @@ describe('the pocket and かいがら', () => {
     expect(shopView(s, 'G')).toEqual({ pocket: new Map(), shells: 40, owned: [] });
     expect(shopView(s, 'B')).toEqual({ pocket: new Map(), shells: 0, owned: [] });
     expect(shopView(s, 'A')).toBe(a); // memoised
+  });
+
+  it('the plain fruit picked up before 2026-11-16 is its goal’s (contract/pocket.ts pocketKey): one row, at 60; a past sale as kept', () => {
+    const fruit = reduce({ metrics: [], events: [
+      ev(at('09:00', '2026-11-15'), 'A', 'tally', { date: '2026-11-15', counts: { 'goods:apple': 3, 'goods:pear': 1 } }),
+      ev(at('09:00', '2026-11-16'), 'A', 'tally', { date: '2026-11-16', counts: { 'goods:goal-apple': 1, 'goods:gold-fruit': 1 } }),
+      ev(at('09:10', '2026-11-15'), 'A', 'sell', { species: 'goods:apple', n: 1, v: 5 }) // at the old 5: kept so
+    ] });
+    const a = shopView(fruit, 'A');
+    expect([...a.pocket]).toEqual([['goods:goal-apple', 3], ['goods:goal-pear', 1], ['goods:gold-fruit', 1]]);
+    expect(a.shells).toBe(5);
+    expect([...a.pocket.keys()].map(sellPrice)).toEqual([60, 60, 150]);
   });
 
   it('a queued sell or buy shows at once', () => {
