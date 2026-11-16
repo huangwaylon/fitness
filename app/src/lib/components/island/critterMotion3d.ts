@@ -113,6 +113,9 @@ export function critterMotion3d(d: Motion3Deps) {
     return m.xyz;
   }
   const fishYaw = (f: Fish) => ((s) => mos.get(s.id)?.out ?? yawOf(s.flip ? 1 : -1, 0))(srcFish(f));
+  /** The shadow's middle as fish3 last set it (its glide: world x, z), where its water is (its nose may be over a bank
+   *  or the clifftop: Island3D reads the water's height here, world3d/swim.ts). */
+  const fishMid = (f: Fish) => mos.get(srcFish(f).id)?.g;
   /** The 3D bug's spot this frame (world x, z, lift): on its itinerary, the itinerary's own curve (critterPath.ts bugAt:
    *  a butterfly's meander and bob, a hop's arc), turned the way it flies; off it (startled, leaving), its moves by
    *  the 3D island's curves, a lift-off rising first; netted, it holds still. */
@@ -171,5 +174,5 @@ export function critterMotion3d(d: Motion3Deps) {
   /** Hidden in 3D: once it's leaving, over its leave's last FADE3_MS (it fades out as it goes). */
   const bugOff = (bp: Bug) => ((b) => b.gone && performance.now() >= b.goneAt + b.ms - FADE3_MS)(srcBug(bp));
 
-  return { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff, ball3, ballRoll, ballOff };
+  return { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, fishMid, bug3, bugYaw, bugOff, ball3, ballRoll, ballOff };
 }

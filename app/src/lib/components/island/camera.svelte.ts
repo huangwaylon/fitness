@@ -101,6 +101,9 @@ interface M3 {
   y?: number;
   /** On the water's surface (a float, a lily pad), `lift` above it. */
   water?: boolean;
+  /** Where its water is read (world x, z), when not at the node: a fish's shadow stands by its nose, its middle in the
+   *  water (world3d/swim.ts). */
+  wet?: () => { x: number; z: number } | undefined;
   /** It gives off a flourish every `every` ms where it is (a dive spot's bubbles, a firefly, the campfire's flames):
    *  fx3d.ts' kinds; with no model of its own (`key` ''), only that. */
   emit?: { kind: string; every: number; v?: string; size?: number; lift?: number };

@@ -509,7 +509,7 @@
   // behind it. While it plays with my line its nose meets the float: backed off a little, each nibble a bump on it with
   // the float's dip (fishing3d.ts), the bite a lunge onto it as it plunges; scared, it darts off with a quick tail
   // wiggle. The models fade in and out (world3d/things.ts: never popped).
-  const { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff, ball3, ballRoll, ballOff } = critterMotion3d({
+  const { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, fishMid, bug3, bugYaw, bugOff, ball3, ballRoll, ballOff } = critterMotion3d({
     line: () => line, nose: () => nose, lineN: () => lineN, relayNow: () => shared.now(), snapshot: (v) => $state.snapshot(v) as typeof v
   });
   /** My line's fish, nose to the float from `at` (performance.now() ms) on, for that line (`n`: lineN). */
@@ -1456,7 +1456,7 @@
   {#each Object.entries(fishes) as [pk, f] (pk)}
     {#if f}
       <!-- (its moves, its heading and its nose at the float: fish3, each frame; it fades in and out: world3d/things.ts) -->
-      <i class="m3n" {@attach w.at({ bare: true, x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, get off() { return f.gone; }, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })} {@attach mirrorFish(f)}></i>
+      <i class="m3n" {@attach w.at({ bare: true, x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, wet: () => fishMid(f), get off() { return f.gone; }, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })} {@attach mirrorFish(f)}></i>
     {/if}
   {/each}
   {#if diving?.chase}

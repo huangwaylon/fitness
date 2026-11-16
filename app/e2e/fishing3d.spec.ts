@@ -155,7 +155,7 @@ for (const [water, q, cam, sel, miss] of [
 // in the rivers"): a fresh water's surface is 74% opaque and the sea's deep water whole, so a shadow drawn before it
 // (renderOrder 0) showed as a tenth of itself, nothing over a pond's or a stream's dark bed; and in a pond put down
 // (pond.ts, on the grass) the shadow 2.5 under the stream's level was under the grass. Each is drawn after the water
-// (world3d/things.ts UNDER_WATER) between the bed and the surface (Island3D waterY, bedY).
+// (world3d/things.ts UNDER_WATER) between the bed and the surface at its middle (Island3D waterY, bedY; swim.ts).
 const POND_OP = { sc: 'o', id: 'pond-e2e', at: 1793708607120, k: 'pond', x: 5, z: 16, f: 0, who: 'A' };
 for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
   test(`the ${water}'s shadow is drawn over its water, between the bed and the surface`, async ({ page }) => {
@@ -166,11 +166,13 @@ for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
     await loaded3d(page);
     type S = { x: number; y: number; z: number; hidden: boolean; order: number };
     const shadow = () => page.evaluate((wt) => {
-      const w = (window as unknown as { __world3d: { where(id: string): S | null; water(x: number, z: number): [number, number] } }).__world3d;
+      const g = window as unknown as { __world3d: { where(id: string): S | null; water(x: number, z: number): [number, number] }; __fish: { fish(): { id: string; x: number; z: number }[] } };
+      const w = g.__world3d;
       for (let n = 0; n < 200; n++) {
-        const p = w.where(`fish-${wt}-${n}`);
-        // (placed and fading in: a model just made stands at the origin till its first frame)
-        if (p && !p.hidden && (p as S & { fade: number }).fade > 0) return { ...p, water: w.water(p.x, -p.z) };
+        const p = w.where(`fish-${wt}-${n}`), f = g.__fish.fish().find((f) => f.id === `fish-${wt}-${n}`);
+        // (placed and fading in: a model just made stands at the origin till its first frame; the water read at its
+        // middle, world3d/swim.ts: the model stands by its nose, which may be over the bank)
+        if (p && f && !p.hidden && (p as S & { fade: number }).fade > 0) return { ...p, water: w.water(f.x, f.z) };
       }
       return null;
     }, water);

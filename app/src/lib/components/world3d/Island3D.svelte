@@ -66,6 +66,7 @@
   import { createBuilt } from './built.ts';
   import { lookOf } from './groundLook.ts';
   import { POND_Y } from './pond.ts';
+  import { wetLift } from './swim.ts';
   import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
   import { washAt } from '#lib/layout/swash.ts';
   import { inOval } from '#lib/world/world.ts';
@@ -583,6 +584,8 @@
   let lamps3: LampSpot[] = [];
   // (the ground is built as the engine starts: 0 before it, should anything ask)
   const heightOf = (x: number, z: number) => lground?.heightAt(x, z) ?? 0;
+  /** The water's height for a swimmer (swim.ts wetLift): a fish's read at its middle (m3 `wet`), not its nose. */
+  const waters = { waterY, bedY, heightOf };
   const feetOf = (x: number, z: number) => lground?.feet(x, z) ?? 0;
   /** The self-light of the island's models at each time of day (engine.ts TOD lift): the 3D villagers' too. */
   const LIFT = { day: 0.32, dusk: 0.22, night: 0.08 } as const;
@@ -641,7 +644,7 @@
       seen.add(n.id);
       const b = modelBounds(a.m);
       // a flier's model hangs by its middle at the node's height; the rest stand on their feet
-      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.m3.water ? Math.max(waterY(n.x, n.z) + n.lift, Math.min(bedY(n.x, n.z) + 0.1, waterY(n.x, n.z))) - heightOf(n.x, n.z) : n.lift;
+      const base = n.m3.y !== undefined ? n.m3.y - heightOf(n.x, n.z) : n.m3.water ? wetLift(waters, n.x, n.z, n.lift, n.m3.wet?.()) : n.lift;
       const lift = base - (a.anchor === 'centre' && b ? ((b.min[1] + b.max[1]) / 2) * a.s : 0);
       let L = live3.get(n.id);
       const fresh = !L || L.m !== a.m;

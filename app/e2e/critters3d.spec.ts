@@ -114,6 +114,86 @@ test('a fish shadow fades in where it comes and swims smoothly: never a jump bet
   expect(maxStep(s)).toBeLessThan(8);
 });
 
+// A fish's model stands by its nose, its middle in its water: the water's height is its middle's. A sea fish off the
+// back beach beside the clifftop, facing the cliff (its nose over the clifftop's stream tier, 40.7 up), was drawn in
+// the sky till its first swim, then dropped to the sea in one frame (the user's world, 2026-11-16). The page's
+// Math.random a constant: the hook's fish then comes at one spot off the back beach by the left-hand cliff, facing it
+// (and swims to that same spot, keeping its heading).
+test("a sea fish facing the cliff stays in the sea: every frame from its first under the sea's surface", { tag: '@logic' }, async ({ page }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0.21;
+    type W = { where(id: string): { x: number; y: number; z: number } | null; water(x: number, z: number): [number, number]; stats(): { frames: number; at: number }; go(z: number, k: number, x: number): void; client(x: number, z: number): [number, number]; view(): { camZ: number } };
+    const g = window as unknown as { __world3d?: W; __ys: [number, number][]; __step(): boolean };
+    g.__ys = [];
+    let drawn = -1, t0 = 0, moved = false;
+    // every frame drawn from its first for 3 s (past its first swims; the engine's frame time): its height, and the
+    // water's at its nose (where its model stands); true once done (stepped by the test's waitForFunction, every rAF)
+    g.__step = () => {
+      const w = g.__world3d, p = w?.where('fish-sea-1'), st = w?.stats();
+      // (the camera on the back beach's left end from the first frame: the hook's fish comes in view)
+      if (w && st && st.frames > 0 && !moved) {
+        moved = true;
+        let best: [number, number] | null = null;
+        for (let z = 900; z <= 1700; z += 20) {
+          w.go(z, 1.8, -60);
+          const d = Math.abs(w.client(-60, 1560)[1] - innerHeight * 0.55);
+          if (!best || d < best[1]) best = [w.view().camZ, d];
+        }
+        w.go(best![0], 1.8, -60);
+      }
+      if (p && st && (p.x || p.z) && st.frames !== drawn) {
+        g.__ys.push([p.y, w!.water(p.x, -p.z)[0]]);
+        t0 ||= st.at;
+        drawn = st.frames;
+      }
+      return !!t0 && st!.at - t0 >= 3000;
+    };
+  });
+  await page.goto('?demo&visitor=none&critter=fish&coast=back&date=2026-11-04T12:00');
+  await page.waitForFunction(() => (window as unknown as { __step(): boolean }).__step(), null, { polling: 'raf', timeout: 30_000 });
+  expect(await is3d(page)).toBe(true);
+  const ys = await page.evaluate(() => (window as unknown as { __ys: [number, number][] }).__ys);
+  const sea = await page.evaluate(() => (window as unknown as { __world3d: { water(x: number, z: number): [number, number] } }).__world3d.water(0, 2000)[0]);
+  // (the case: its nose over the clifftop's water)
+  expect(ys[0][1], 'its nose over the clifftop').toBeGreaterThan(sea + 20);
+  // every frame in the sea: under its surface, 2.5 under it or over the seabed
+  for (const [y] of ys) {
+    expect(y).toBeLessThanOrEqual(sea);
+    expect(y).toBeGreaterThan(sea - 2.6);
+  }
+});
+
+// The same in fresh water: a river's and a pond's fish in theirs, at the water's height at its middle every frame, its
+// nose over a bank or not (it jumped ~3.5 u as its nose crossed one).
+for (const water of ['river', 'pond'] as const)
+  test(`a ${water} fish at its water's height, read at its middle, every frame`, { tag: '@logic' }, async ({ page }) => {
+    await page.addInitScript(() => {
+      type W = { where(id: string): { x: number; y: number; z: number } | null; water(x: number, z: number): [number, number]; stats(): { frames: number; at: number } };
+      const g = window as unknown as { __world3d?: W; __fish?: { fish(): { id: string; x: number; z: number }[] }; __ys: [number, number][]; __step(): boolean };
+      g.__ys = [];
+      let drawn = -1, t0 = 0;
+      g.__step = () => {
+        const w = g.__world3d, f = g.__fish?.fish()[0], p = f && w?.where(f.id), st = w?.stats();
+        // (its height, and the water's at its middle)
+        if (f && p && st && (p.x || p.z) && st.frames !== drawn) {
+          g.__ys.push([p.y, w!.water(f.x, f.z)[0]]);
+          t0 ||= st.at;
+          drawn = st.frames;
+        }
+        return !!t0 && st!.at - t0 >= 4000;
+      };
+    });
+    await page.goto(`?demo&visitor=none&critter=${water}&date=2026-11-04T12:00`);
+    await page.waitForFunction(() => (window as unknown as { __step(): boolean }).__step(), null, { polling: 'raf', timeout: 30_000 });
+    expect(await is3d(page)).toBe(true);
+    const ys = await page.evaluate(() => (window as unknown as { __ys: [number, number][] }).__ys);
+    expect(ys.length).toBeGreaterThan(5);
+    for (const [y, top] of ys) {
+      expect(y).toBeLessThanOrEqual(top + 0.01);
+      expect(y).toBeGreaterThan(top - 2.6);
+    }
+  });
+
 /** The fishing flow up to my float waiting on the water, the fish swimming up to it (fishing3d.spec's start). */
 async function castAtFish(page: Page): Promise<string> {
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
