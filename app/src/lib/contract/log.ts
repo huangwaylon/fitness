@@ -119,6 +119,11 @@ export const LOG_EVENTS = {
   "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'shop', 'museum', 'map', 'other'], restored: 'b', ...AT } },
   // file: the chunk's base name (vite:preloadError's); n: its failures folded while unsent
   "chunk.fail": { src: 'c', f: { file: 't', n: 'n', ...AT } },
+  // English Study (lib/english): a clip's bank that didn't load (data.ts: its HTTP status, none for no answer; `bad` a
+  // file not its clip), YouTube's embed in error (`code` its onError's: 100 gone, 101/150 not embeddable, 153 no
+  // referrer…; `hello` no answer to the handshake in 12 s), a play asked that didn't start (`stuck`, once a lesson);
+  // the clip's id, whether the phone said it was online
+  "english.fail": { src: 'c', f: { what: ['bank', 'embed', 'hello', 'stuck'], clip: 't', http: 'n', code: 'n', bad: 'b', on: 'b', ...AT } },
   // the installed app's storage kept from eviction (sync/persist.ts: asked once): granted, already so, and the quota's MB
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
   // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
