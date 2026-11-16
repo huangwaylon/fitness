@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const annVibes: Clip = {
-  id: 'annvibes', video: 'A7sa4ewfPr4', title: 'Ann discovers the concept of "vibes"', dur: 248, wpm: 173, band: 'mid',
+  id: 'annvibes', video: 'A7sa4ewfPr4', title: 'Ann discovers the concept of "vibes"', dur: 248, wpm: 173, band: 'fast',
   tags: ['旅行', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

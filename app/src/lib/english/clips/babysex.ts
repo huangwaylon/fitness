@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const babySex: Clip = {
-  id: 'babysex', video: '5KuiOGNpa-0', title: 'Ann and Chris Are Having a...', dur: 172, wpm: 173, band: 'mid',
+  id: 'babysex', video: '5KuiOGNpa-0', title: 'Ann and Chris Are Having a...', dur: 172, wpm: 173, band: 'fast',
   tags: ['家', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

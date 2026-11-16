@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const screwIt: Clip = {
-  id: 'screwit', video: 'LK48_nun3KE', title: 'Ben and Leslie Say "Screw It"', dur: 124, wpm: 173, band: 'mid',
+  id: 'screwit', video: 'LK48_nun3KE', title: 'Ben and Leslie Say "Screw It"', dur: 124, wpm: 173, band: 'fast',
   tags: ['恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

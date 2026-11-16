@@ -138,6 +138,15 @@ import { ironkitchen } from './ironkitchen.ts';
 import { saveJJs } from './savejjs.ts';
 import { ronharass } from './ronharass.ts';
 import { donnaPosts } from './donnaposts.ts';
+import { ronsTeam } from './ronsteam.ts';
+import { newHairdo } from './newhairdo.ts';
+import { dwightUrine } from './dwighturine.ts';
+import { annLeaving } from './annleaving.ts';
+import { ronsReviews } from './ronreviews.ts';
+import { charity } from './charity.ts';
+import { conflictPranks } from './pranks.ts';
+import { parksMakeover } from './parksmakeov.ts';
+import { ronChrisCrib } from './roncrib.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -146,15 +155,18 @@ export const CLIPS: readonly Clip[] = [
   laundromat,
   chickParent,
   chairModel,
+  ronsReviews,
   mostLovedDenmark,
   jerryBurritoLie,
   jerryMugged,
   thiefOfJoy,
   benSaves,
+  charity,
   gameRoom,
   aprilGetFired,
   johnnyGoodbye,
   dinnerParty,
+  newHairdo,
   centralperk,
   furniture,
   ronShowHost,
@@ -167,6 +179,8 @@ export const CLIPS: readonly Clip[] = [
   ronSlash,
   mexBus,
   ronharass,
+  annLeaving,
+  conflictPranks,
   animalControl,
   chardStand,
   tobySafety,
@@ -181,6 +195,7 @@ export const CLIPS: readonly Clip[] = [
   womensAppreciation,
   jimBack,
   benCriminal,
+  ronsTeam,
   // ふつう
   twodates,
   ronFire,
@@ -193,6 +208,7 @@ export const CLIPS: readonly Clip[] = [
   firstComplaint,
   isSheHot,
   ronBirthday,
+  parksMakeover,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -202,12 +218,14 @@ export const CLIPS: readonly Clip[] = [
   tomSwagger,
   ronWill,
   benLeslieKiss,
+  ronChrisCrib,
   tomNegotiate,
   donnaTweets,
   donnaPosts,
   mamasDead,
   workBestie,
   andySecret,
+  dwightUrine,
   scarnRead,
   gryzzlBoxes,
   distract,
@@ -226,11 +244,11 @@ export const CLIPS: readonly Clip[] = [
   snowCones,
   neverLower,
   ronPatience,
-  annVibes,
   prairie,
+  // 速い
+  annVibes,
   babySex,
   screwIt,
-  // 速い
   aprilFired,
   runsAgain,
   promSeason,
