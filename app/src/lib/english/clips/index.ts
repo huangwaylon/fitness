@@ -277,6 +277,15 @@ import { twilightCapsule } from './twilight.ts';
 import { lesliePleads } from './lesliepleads.ts';
 import { joeyLie } from './joeylie.ts';
 import { pilotOpening } from './pilotopen.ts';
+import { benTreats } from './bentreats.ts';
+import { discoveringJammy } from './jammy.ts';
+import { ronNoRegret } from './ronjamm.ts';
+import { snakeJuice } from './snakejuice.ts';
+import { joeyParents } from './joeyparents.ts';
+import { craigTemp } from './craigtemp.ts';
+import { antiHack } from './antihack.ts';
+import { tomScreenBan } from './tomscreens.ts';
+import { peckJoins } from './peckjoins.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -312,6 +321,7 @@ export const CLIPS: readonly Clip[] = [
   tobyTherapy,
   rossBreak,
   birthdayGuide,
+  benTreats,
   ronHumour,
   mriBlindDate,
   fakeCall,
@@ -322,6 +332,7 @@ export const CLIPS: readonly Clip[] = [
   thiefOfJoy,
   benSaves,
   ronSelfDefense,
+  discoveringJammy,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
@@ -386,6 +397,8 @@ export const CLIPS: readonly Clip[] = [
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
+  ronNoRegret,
+  snakeJuice,
   buttOfJoke,
   ronSlash,
   mexBus,
@@ -427,6 +440,7 @@ export const CLIPS: readonly Clip[] = [
   parksMakeover,
   monaLisa,
   cheesecakeBandits,
+  joeyParents,
   phoebeRuns,
   leslieRedFlag,
   dwightDate,
@@ -443,6 +457,7 @@ export const CLIPS: readonly Clip[] = [
   ronChrisCrib,
   girlyApt,
   zorpVigil,
+  craigTemp,
   tomNegotiate,
   donnaTweets,
   donnaPosts,
@@ -485,6 +500,7 @@ export const CLIPS: readonly Clip[] = [
   prairie,
   itGuySecrets,
   lesliePleads,
+  antiHack,
   annVibes,
   babySex,
   screwIt,
@@ -493,6 +509,7 @@ export const CLIPS: readonly Clip[] = [
   runsAgain,
   promSeason,
   apologyVideos,
+  tomScreenBan,
   getaway,
   evilLaugh,
   whiteWhale,
@@ -508,6 +525,7 @@ export const CLIPS: readonly Clip[] = [
   pamLabor,
   piemary,
   momFlirt,
+  peckJoins,
   ronHearing,
   ryanOffice,
   bestBurger,
