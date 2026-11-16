@@ -92,6 +92,15 @@ const S = {
   openYoutube: { ja: 'YouTubeで開く', en: 'Open in YouTube' },
   noStart: { ja: '再生が始まらないときは、動画を一度タップしてください。', en: "If it doesn't start, tap the video once." },
   retry: { ja: 'もう一度読み込む', en: 'Load again' },
+  // the bank (data.ts)
+  loading: { ja: '読み込み中…', en: 'Loading…' },
+  bankFailed: { ja: '質問を読み込めませんでした', en: "The questions didn't load" },
+  bankOffline: { ja: 'オフラインのため質問を読み込めません。つながると読み込めます。', en: "You're offline: the questions load once you're back online." },
+  retryBank: { ja: 'もう一度', en: 'Try again' },
+  // ⚙
+  hard: { ja: 'むずかしめの質問を増やす', en: 'More harder questions' },
+  hardNote: { ja: 'ネイティブが聞き分けるニュアンスの質問が、1回目から出ます', en: 'Questions on the nuances native speakers hear, from the first play' },
+  hardTag: { ja: 'むずかしめ', en: 'Harder' },
   // flags
   flag: { ja: '報告', en: 'Report' },
   flagHead: { ja: 'どこが気になりましたか？', en: 'What looks off?' },
@@ -112,7 +121,6 @@ const S = {
   flagOpen: { ja: '確認待ち', en: 'Waiting' },
   flagFixed: { ja: '確認済み：直しました', en: 'Checked: fixed' },
   flagKept: { ja: '確認済み：このままです', en: 'Checked: kept as is' },
-  flagWhere: { ja: '質問 {i}', en: 'Question {i}' },
   flagWhereClip: { ja: 'クリップ', en: 'The clip' }
 } satisfies Record<string, { ja: string; en: string }>;
 

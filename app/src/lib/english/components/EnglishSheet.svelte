@@ -6,7 +6,7 @@
   import Home from './Home.svelte';
   import Lesson from './Lesson.svelte';
   import Settings from './Settings.svelte';
-  import { CLIPS } from '../clips/index.ts';
+  import { metaById } from '../data.ts';
   import { s } from '../i18n.ts';
   import { i18n } from '#lib/i18n/index.ts';
 
@@ -17,7 +17,7 @@
   $effect(() => {
     if (open) level = { k: 'home' };
   });
-  const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (CLIPS.find((c) => c.id === l.id) ?? null) : null; });
+  const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (metaById(l.id) ?? null) : null; });
   const close = () => (open = false);
   const home = () => (level = { k: 'home' });
 </script>

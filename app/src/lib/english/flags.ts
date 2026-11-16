@@ -4,17 +4,18 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { EFLAG_NOTE, eflagDoneOf, eflagOf, type Eflag, type EflagKind } from '#lib/contract/eflag.ts';
 import { cleanLine } from '#lib/contract/text.ts';
-import { clipHash, questionHash } from './hash.ts';
-import type { Clip, Question } from './types.ts';
+import { questionHash } from './hash.ts';
+import type { ClipMeta } from './catalog.ts';
+import type { Question } from './types.ts';
 import type { Who } from '#lib/types.ts';
 
 /** A flag's data: on question `q` of `clip`, or the clip itself (null). `t`: the player's time, s. */
-export function flagData(clip: Clip, q: Question | null, kind: EflagKind, note: string, t: number | null): Eflag {
+export function flagData(clip: Pick<ClipMeta, 'id' | 'v'>, q: Question | null, kind: EflagKind, note: string, t: number | null): Eflag {
   const n = cleanLine(note, EFLAG_NOTE);
   const line = (x: string) => cleanLine(x, 400);
   return {
     item: clip.id, q: q ? q.id : null, kind, ...(n && { note: n }), ...(t !== null && Number.isFinite(t) && t >= 0 && { t: Math.round(Math.min(t, 36_000) * 10) / 10 }),
-    v: q ? questionHash(q) : clipHash(clip),
+    v: q ? questionHash(q) : clip.v,
     seen: q ? { stem: line(q.stem), answer: line(q.choices ? q.choices[q.a ?? 0] : (q.answer ?? '')), line: line(q.line ?? q.stem) } : null
   };
 }

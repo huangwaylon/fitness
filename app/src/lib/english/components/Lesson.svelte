@@ -4,6 +4,8 @@
   // segment with the cue and a quiet 答えを見る; a second shows 「答えはこれ」. No red, no ×, no sound, no score.
   // The place is kept on this phone (session.ts). The study time (active.ts) goes into the `listen` rows: one when
   // まとめ is reached (once a day a clip), one for time not yet sent when the lesson is left (≥ 1 min).
+  // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
+  // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度.
   import { onDestroy, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -18,29 +20,55 @@
   import { againOf, answersOf, blank, dictate, heard, pick, reveal, type QState } from '../lesson.ts';
   import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
-  import { loadSaved, save } from '../session.ts';
-  import { clipHash } from '../hash.ts';
+  import { loadSaved, partWay, save } from '../session.ts';
+  import { bankNow, loadBank } from '../data.ts';
+  import { harderOn } from '../prefs.ts';
+  import { safeReload } from '#lib/ui-state/reload.ts';
   import { durText, s } from '../i18n.ts';
+  import type { ClipMeta } from '../catalog.ts';
   import type { Clip, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
 
-  let { clip, onback, onclose }: { clip: Clip; onback: () => void; onclose: () => void } = $props();
+  let { clip, onback, onclose }: { clip: ClipMeta; onback: () => void; onclose: () => void } = $props();
 
   const who: Who = untrack(() => week.model?.me ?? 'A');
-  const v = untrack(() => clipHash(clip));
+  const v = untrack(() => clip.v);
   const saved = untrack(() => loadSaved(who, clip.id, v));
   /** This play: its number (1 + the plays finished), its seed, its questions (draw.ts: a play left part-way keeps its
-   *  own; a finished one, at まとめ, draws the next). */
+   *  own ids; a finished one, at まとめ, draws the next). A saved place is of this very bank (its version). */
   const past = untrack(() => historyOf(week.model?.state.listen ?? [], who, clip.id));
-  const kept = untrack(() => (saved && Array.isArray(saved.ids) && saved.at < saved.ids.length ? saved.ids.flatMap((id) => clip.questions.filter((q) => q.id === id)) : []));
-  const resume = !!saved && kept.length > 0 && kept.length === saved.ids.length && saved.st.length === kept.length;
+  const resume = partWay(saved) && saved!.st.length === saved!.ids.length;
   const play = past.plays + 1;
   const seed = untrack(() => seedOf(who, clip.id, play));
-  const qs = resume ? kept : untrack(() => draw(clip, past.seen, play, seed));
-  const len = qs.length;
+  // (draw.ts takes `{ harder }` with its native-tier rules, docs/english.md "Content": till then it is ignored)
+  const drawWith = draw as (...a: [...Parameters<typeof draw>, { harder: boolean }]) => Question[];
+  let qs = $state.raw<Question[]>([]);
+  const len = $derived(qs.length);
+  /** The bank: 'ready' once drawn. */
+  let bank = $state<'loading' | 'failed' | 'ready'>('loading');
+  let fails = 0;
   /** −1 the watch card, a question's index, len まとめ. */
   let at = $state(resume ? saved!.at : -1);
-  let st = $state<QState[]>(resume ? saved!.st : qs.map(blank));
+  let st = $state<QState[]>([]);
+  function begin(c: Clip): void {
+    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : drawWith(c, past.seen, play, seed, { harder: harderOn() });
+    st = resume && qs.length === saved!.ids.length ? saved!.st : qs.map(blank);
+    if (resume && qs.length !== saved!.ids.length) at = -1;
+    bank = 'ready';
+  }
+  function fetchBank(): void {
+    bank = 'loading';
+    loadBank(clip).then(begin, () => {
+      // a second failure online: the file is gone (a deploy since this page loaded), so the newer build
+      if (++fails > 1 && navigator.onLine && safeReload(Date.now(), 'chunk')) return;
+      bank = 'failed';
+    });
+  }
+  untrack(() => {
+    const now = bankNow(clip);
+    if (now) begin(now);
+    else fetchBank();
+  });
   let sentDay = $state<LocalDate | null>(saved?.sent ?? null);
   let act: Active = newActive(saved?.unsent ?? 0, resume ? saved!.perQ : {});
   let player = $state<YtPlayer>();
@@ -54,12 +82,14 @@
   const today = () => localDateAt(week.model?.now ?? Date.now());
 
   function keep(): void {
+    if (bank !== 'ready') return;
     save(who, clip.id, { v, ids: qs.map((x) => x.id), at, st: $state.snapshot(st), unsent: act.unsent, perQ: act.perQ, sent: sentDay, t: Date.now() });
   }
   $effect(() => {
     void at;
     void JSON.stringify(st);
     void sentDay;
+    void bank;
     untrack(keep);
   });
 
@@ -98,7 +128,7 @@
   });
 
   function go(n: number): void {
-    at = Math.max(-1, Math.min(len, n));
+    at = Math.max(-1, bank === 'ready' ? Math.min(len, n) : Math.min(0, n));
     player?.pause();
     body?.scrollTo({ top: 0 });
     // まとめ reached: the day's row (once a day a clip; a re-watch another day counts again)
@@ -154,11 +184,19 @@
           {watched || player?.state === 'ended' ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
       </article>
+    {:else if bank !== 'ready'}
+      <article class="card pad" data-en-bank={bank} aria-live="polite">
+        {#if bank === 'loading'}<p class="meta">{s('loading')}</p>
+        {:else}
+          <p>{navigator.onLine ? s('bankFailed') : s('bankOffline')}</p>
+          <button type="button" class="btn small paper" data-sfx="tick" data-en-bank-retry onclick={fetchBank}>{s('retryBank')}</button>
+        {/if}
+      </article>
     {:else if q && cur}
       {#key at}
         <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
           <button type="button" class="flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), from: q.seg[0], to: q.seg[1] })}</p>
+          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), from: q.seg[0], to: q.seg[1] })}{#if (q.level as string) === 'C2'} <span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
           <button type="button" class="btn sky small" data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
@@ -213,7 +251,9 @@
       <button type="button" class="btn" data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}</button>
     {:else}
       <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => go(at - 1)}>{s('prev')}</button>
-      {#if at < len}
+      {#if bank !== 'ready'}
+        <span class="btn-gap"></span>
+      {:else if at < len}
         <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-next onclick={() => go(at + 1)}>{at === len - 1 ? s('toEnd') : s('next')}</button>
       {:else}
         <button type="button" class="btn" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
@@ -221,7 +261,7 @@
     {/if}
   </div>
 </section>
-<FlagSheet bind:open={flagOpen} {clip} q={flagQ === null ? null : qs[flagQ]} n={flagQ} time={() => (player ? player.now() : null)} />
+<FlagSheet bind:open={flagOpen} {clip} q={flagQ === null ? null : (qs[flagQ] ?? null)} n={flagQ} time={() => (player ? player.now() : null)} />
 
 <style>
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
@@ -230,6 +270,7 @@
   .card { position: relative; flex: none; display: grid; gap: 8px; }
   .card p { margin: 0; }
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
+  .tag.hard { padding: 0 7px; margin-left: 2px; }
   .lead, .stem { padding-right: 64px; }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
   .flag { position: absolute; top: 6px; right: 6px; appearance: none; border: 0; background: none; display: inline-flex; align-items: center; gap: 3px; min-height: var(--hit);
@@ -263,5 +304,5 @@
   .ph { color: var(--text-soft); font-size: var(--fs-s); }
   .credit { margin: 4px 4px 0; font-size: 12px; color: var(--text-soft); }
   .foot { flex: none; display: flex; gap: 10px; padding: 10px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(12px + var(--safe-left)); background: var(--surface); }
-  .foot .btn { flex: 1; }
+  .foot .btn, .foot .btn-gap { flex: 1; }
 </style>

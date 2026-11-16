@@ -25,6 +25,8 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
+/** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
+const ENGLISH_SHEET = 80 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
 const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
@@ -80,6 +82,16 @@ for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is
 const feats = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^(en|en-[\w-]+|wedding)\./.test(f)).map((f) => `_app/immutable/chunks/${f}`);
 for (const f of feats) if (first.has(f) || precachable(f)) fail.push(`${f} (a feature carried once used) is in the first load or the precache`);
 
+// English Study: its banks are files fetched on use (caches.ts isEnglishData), never precached; its sheet's chunk holds
+// the library's index, which grows with the clips (~41 KB gzipped at 1,000), so it's capped
+const banks = readdirSync(join(BUILD, 'english/c'));
+if (!banks.length) fail.push('no English Study banks in build-pages/english/c/');
+for (const b of banks) if (precachable(`english/c/${b}`)) fail.push(`english/c/${b} (an English Study bank) is precachable`);
+const englishSheet = manifest['src/lib/english/components/EnglishSheet.svelte'];
+const englishGz = englishSheet ? gzipSync(readFileSync(join(BUILD, englishSheet.file))).length : 0;
+if (!englishSheet) fail.push('no English Study sheet chunk in the build');
+else if (englishGz > ENGLISH_SHEET) fail.push(`English Study's sheet chunk is ${kb(englishGz)} gzipped (≤ ${kb(ENGLISH_SHEET)}: its banks bundled?)`);
+
 // the precache: what the worker fetches at install (its index.html and its own script aside)
 let pre = 0, preFiles = 0;
 const walk = (d: string) => {
@@ -98,7 +110,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);

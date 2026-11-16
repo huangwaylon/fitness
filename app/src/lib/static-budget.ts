@@ -4,8 +4,9 @@
 // past it, move something into a pack first (as the rooms' models and the food pictures).
 /** Pages' cap on a deployment's files (the Free plan; paid plans take 100,000). */
 export const PAGES_MAX_FILES = 20_000;
-/** The build's own files on top of static/ (Kit's chunks, the 404 copy): 892 measured, rounded up. */
-export const BUILD_FILES = 1_000;
+/** The build's own files on top of static/: Kit's chunks and the 404 copy (892 measured), and English Study's banks,
+ *  one a clip (lib/english/catalog.ts bankPath: 25 on 2026-11-16, ~150 soon); raise it as the library passes ~300. */
+export const BUILD_FILES = 1_200;
 /** Kept free for growth between a check and a deploy. */
 export const MARGIN_FILES = 1_000;
 /** static/'s share. */

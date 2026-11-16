@@ -1,11 +1,14 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { runnerImport } from 'vite';
 import { execSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
+import { bankPath, metaOf } from './src/lib/english/catalog.ts';
+import type { Clip } from './src/lib/english/types.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -142,6 +145,48 @@ const globsUncached: Plugin = {
  *  and トレイル's map/engine.ts: their basemap, fonts and layers, ~40 KB gzipped), which import MapLibre and run only
  *  with it; the bundle's check keeps any other chunk from importing MapLibre. Kit enforces its own file names in the
  *  client build; this wraps them. */
+/** English Study's data (docs/english.md "Data"): clips/'s files stay the source; `clips/index.ts?english-index` is
+ *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk), and each bank a file of its own,
+ *  `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by the dev server), never bundled
+ *  nor precached (caches.ts isEnglishData). The clips are read fresh (Vite's module runner) once a build, and in dev
+ *  again after one of them changes. */
+const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
+const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
+const englishData = (): Plugin => {
+  let root = process.cwd();
+  let clips: Promise<{ clips: Clip[]; deps: string[] }> | null = null;
+  const read = () =>
+    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies })));
+  return {
+    name: 'english-data',
+    enforce: 'pre',
+    configResolved: (c) => void (root = c.root),
+    async load(id) {
+      if (!id.endsWith(ENGLISH_INDEX)) return;
+      const { clips: all, deps } = await read();
+      for (const f of deps) this.addWatchFile(f);
+      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(all.map(metaOf)))});`, map: null };
+    },
+    watchChange: (id) => void (id.includes('/src/lib/english/clips/') && (clips = null)),
+    async generateBundle() {
+      if (this.environment.name !== 'client') return;
+      for (const c of (await read()).clips) this.emitFile({ type: 'asset', fileName: bankPath(metaOf(c)), source: JSON.stringify(c) });
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const id = ENGLISH_BANK.exec(req.url?.split('?')[0] ?? '')?.[1];
+        if (!id) return next();
+        read().then(({ clips: all }) => {
+          const c = all.find((x) => x.id === id);
+          if (!c) return next();
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify(c));
+        }, next);
+      });
+    }
+  };
+};
+
 const MAP_ENGINE = /\/src\/lib\/components\/(travel|hiking)\/map\/engine\.ts$/;
 const mapLibreNames: Plugin = {
   name: 'maplibre-names',
@@ -239,6 +284,7 @@ export default defineConfig({
     mapLibreNames,
     basisModule,
     featureNames,
+    englishData(),
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },

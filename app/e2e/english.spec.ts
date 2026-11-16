@@ -173,7 +173,8 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await lesson(page).locator('[data-en-to-q]').click();
   await lesson(page).locator('[data-en-flag="0"]').click();
   const fq = page.locator('dialog[open] [data-en-flag-sheet="0"]');
-  await expect(fq).toContainText(`質問 1：${(await questionAt(page, 0)).stem}`);
+  const q0 = await questionAt(page, 0);
+  await expect(fq).toContainText(`質問 1：${q0.stem}`);
   await fq.locator('[data-en-kind="answer"]').click();
   await fq.locator('[data-en-flag-note]').fill('salary の前が聞こえない');
   await fq.locator('[data-en-flag-send]').click();
@@ -183,15 +184,18 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await sheet(page).locator('[data-en-gear]').click();
   const rows = sheet(page).locator('[data-en-flag-row]');
   await expect(rows).toHaveCount(2);
-  await expect(rows.nth(0)).toContainText('答え · Rachel Is a Bad Waitress · 質問 1');
+  // (the question as the flag saw it: no bank needed)
+  await expect(rows.nth(0)).toContainText(`答え · Rachel Is a Bad Waitress · ${q0.stem}`);
   await expect(rows.nth(0)).toContainText('「salary の前が聞こえない」');
   await expect(rows.nth(1)).toContainText('その他 · Rachel Is a Bad Waitress · クリップ');
   await expect(rows.nth(0)).toHaveAttribute('data-en-flag-row', 'open');
 });
 
-test('the player offline: a note in its place, the embed once back online; unavailable: a note and a link to YouTube', async ({ page, context }) => {
+test('the player offline: a note in its place, the embed once back online; today’s bank fetched ahead, so its questions work', async ({ page, context }) => {
   await fakeYoutube(page);
+  const ahead = page.waitForResponse(/\/english\/c\/waitress\.\w+\.json$/);
   await open(page);
+  expect((await ahead).ok()).toBe(true);
   await context.setOffline(true);
   await sheet(page).locator('[data-en-start]').click();
   await expect(lesson(page).locator('[data-yt-offline]')).toContainText('オフライン');
@@ -299,4 +303,40 @@ test('a lesson plays on the silent switch: iOS audio session “playback” whil
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
   await expect.poll(async () => (await sessions()).at(-1)).toBe('ambient');
+});
+
+test('a bank that doesn’t load: the player and the watch card all the same, 質問を読み込めませんでした with もう一度, then its questions', async ({ page }) => {
+  await fakeYoutube(page);
+  let fail = true;
+  await page.route(/\/english\/c\/[\w-]+\.\w+\.json$/, (r) => (fail ? r.fulfill({ status: 503, body: '' }) : r.fallback()));
+  await open(page);
+  await start(page);
+  await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
+  await lesson(page).locator('[data-en-to-q]').click();
+  const bank = lesson(page).locator('[data-en-bank]');
+  await expect(bank).toHaveAttribute('data-en-bank', 'failed');
+  await expect(bank).toContainText('質問を読み込めませんでした');
+  await expect(lesson(page).locator('[data-en-next]')).toHaveCount(0);
+  fail = false;
+  await bank.locator('[data-en-bank-retry]').click();
+  await expect(cardAt(page, 0)).toHaveAttribute('data-result', 'open');
+});
+
+test('別の動画にする: the next clip, and the one passed over stays skipped (today’s card after a reload); ⚙ むずかしめ kept on this phone', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  const today = sheet(page).locator('[data-en-today]');
+  await expect(today).toHaveAttribute('data-en-today', 'waitress');
+  await sheet(page).locator('[data-en-other]').click();
+  const next = await today.getAttribute('data-en-today');
+  expect(next).not.toBe('waitress');
+  await sheet(page).locator('[data-en-gear]').click();
+  const hard = sheet(page).locator('[data-en-hard]');
+  await expect(hard).toHaveAttribute('aria-checked', 'false');
+  await hard.click();
+  await expect(hard).toHaveAttribute('aria-checked', 'true');
+  await open(page);
+  await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', next!);
+  await sheet(page).locator('[data-en-gear]').click();
+  await expect(sheet(page).locator('[data-en-hard]')).toHaveAttribute('aria-checked', 'true');
 });

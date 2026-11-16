@@ -7,11 +7,12 @@
   import { flagData } from '../flags.ts';
   import { s } from '../i18n.ts';
   import { t } from '#lib/i18n/index.ts';
-  import type { Clip, Question } from '../types.ts';
+  import type { ClipMeta } from '../catalog.ts';
+  import type { Question } from '../types.ts';
 
   interface Props {
     open: boolean;
-    clip: Clip;
+    clip: Pick<ClipMeta, 'id' | 'v'>;
     /** The question, or null: the clip. */
     q: Question | null;
     /** Its place in the lesson (0-based), as shown. */

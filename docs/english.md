@@ -25,6 +25,19 @@ second listen. A question quotes one short line at most (*key words* starred); n
   the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test); the order goes band
   by band, the situation changing clip to clip.
 
+## Data
+
+`clips/` stays the source. The build makes two things of it (vite.config.ts `english-data`):
+
+- **The index** (`catalog.ts` ClipMeta: id, video, title, show, length, band, tags, the play's size, the clip's
+  version `v` = `hash.ts clipHash`, credit), the module `clips/index.ts?english-index`, in the sheet's chunk: home,
+  the library and ⚙ need nothing else. Nothing in the app imports `clips/` itself (`deps.test.ts`).
+- **A bank a clip**, `english/c/<id>.<v>.json` (the clip as authored), fetched when its lesson opens; home fetches
+  today's ahead while idle. The service worker keeps them (`island-english-v1`, cache first: the name carries the
+  version), never precached. A lesson shows its player and watch card at once; its questions say 読み込み中… till the
+  bank is in, or 質問を読み込めませんでした / offline with もう一度 (failing again online: a reload into the newer build).
+  `load-budget.ts` holds the sheet's chunk to 80 KB gzipped and the banks out of the precache.
+
 ## The page
 
 One sheet, two levels: home (今日の動画, this week, the library) and a clip's lesson; ⚙ holds 報告した内容.

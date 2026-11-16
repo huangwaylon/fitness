@@ -443,6 +443,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU past `ART_CAP_BYTES` |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
+| `island-english-v1` | English Study's banks ([english.md](english.md#data)) | cache-first (the name carries the version), never precached; a clip's older versions dropped, then the first stored past 400 (`englishEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
 | `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
 | `island-offline-<id>` | a saved map area and its manifest | kept until deleted on the phone |

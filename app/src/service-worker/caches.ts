@@ -119,6 +119,37 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  column): the activate's sweep deletes v1, so this build never meets a file of the old layout. */
 export const FOOD_CACHE = 'island-food-v2';
 export const isFoodData = (path: string): boolean => /\/food\/(jan\/)?[\w-]+\.json$/.test(path);
+/** English Study's banks (`english/c/<id>.<v>.json`, written by the build: lib/english/data.ts, catalog.ts bankPath):
+ *  ~6.5 KB each, fetched when a lesson opens or home prefetches it, never precached; served cache first in a cache of
+ *  their own that outlives builds (the name carries the clip's version, so a copy is never stale). */
+export const ENGLISH_CACHE = 'island-english-v1';
+const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
+export const isEnglishData = (path: string): boolean => ENGLISH_BANK.test(path);
+/** The banks kept (~2.6 MB): past it, the first stored go. */
+const ENGLISH_KEEP = 400;
+/** Which banks go (`keys` in the order stored): a clip's older versions once a newer one is stored, then the first
+ *  stored past `keep`. */
+export function englishEvict(keys: readonly string[], keep = ENGLISH_KEEP): string[] {
+  const idOf = (u: string) => ENGLISH_BANK.exec(new URL(u, 'https://x/').pathname)?.[1];
+  const last = new Map(keys.map((k, i) => [idOf(k), i]));
+  const older = keys.filter((k, i) => last.get(idOf(k)) !== i);
+  const rest = keys.filter((k, i) => last.get(idOf(k)) === i);
+  return [...older, ...rest.slice(0, Math.max(0, rest.length - keep))];
+}
+/** A bank's answer (pure for tests): the cached copy, else the network's, stored after (`after`: waitUntil). */
+export async function englishFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void): Promise<Response> {
+  const hit = await cache.match(req).catch(() => undefined);
+  if (hit) return hit;
+  const res = await net(req);
+  if (res.ok) {
+    const copy = res.clone();
+    after((async () => {
+      await cache.put(req, copy);
+      for (const old of englishEvict((await cache.keys()).map((k) => k.url))) await cache.delete(old);
+    })().catch(() => {}));
+  }
+  return res;
+}
 /** ごはん's pictures (static/food-img/, lib/food/images.ts): content-hashed sprite sheets, cached on first use in a cache
  *  of their own that outlives builds; index.json, which names them, from the network first (its last copy offline).
  *  Once a new index is in, the sheets it no longer names go (foodImgStale). */
@@ -447,11 +478,11 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
  *  (PRECACHED_FONT_SLICES; the rest cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), English Study's banks (ENGLISH_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isEnglishData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

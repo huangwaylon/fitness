@@ -192,6 +192,16 @@ describe('inside components/', () => {
   });
 });
 
+describe('English Study’s banks', () => {
+  it('the app never bundles clips/ (each bank a file of its own: lib/english/data.ts), only its index, `clips/index.ts?english-index`', () => {
+    const CLIPS = join(LIB, 'english/clips/');
+    const app = [...graph.keys()].filter((f) => !f.endsWith('.test.ts') && !f.startsWith(CLIPS));
+    const bad = app.filter((f) => [...reachable(f)].some((g) => g.startsWith(CLIPS) && !g.includes('?')));
+    expect(bad.map((f) => relative(LIB, f))).toEqual([]);
+    expect(graph.get(join(LIB, 'english/data.ts'))).toContain(join(CLIPS, 'index.ts?english-index'));
+  });
+});
+
 describe('the relay boundary', () => {
   it('relay/ (its code, tests and scripts) imports from the app only contract/, and contract/ reaches only itself, types.ts and random.ts', () => {
     const RELAY = resolve(LIB, '../../../relay');

@@ -2,19 +2,18 @@
   // English Study's home (docs/english.md "The page"): 今日の動画 (the first clip in order not finished; 別の動画にする
   // the next), the week's block, the library (every clip, ✓ once finished). ⚙: 報告した内容. After 7+ days away, once:
   // おかえりなさい.
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import WeekProgress from './WeekProgress.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
-  import { CLIPS } from '../clips/index.ts';
+  import { LIBRARY as CLIPS, prefetch } from '../data.ts';
   import { away, studyOf, weekView } from '../progress.ts';
   import { backShown, loadSaved, markBack, partWay } from '../session.ts';
-  import { drawSize } from '../draw.ts';
-  import { clipHash } from '../hash.ts';
+  import { skip, skipsOf } from '../prefs.ts';
   import { durText, s } from '../i18n.ts';
-  import type { Clip } from '../types.ts';
+  import type { ClipMeta as Clip } from '../catalog.ts';
   import type { Who } from '#lib/types.ts';
 
   let { onopen, onsettings, onclose }: { onopen: (id: string) => void; onsettings: () => void; onclose: () => void } = $props();
@@ -30,9 +29,12 @@
   });
   const view = $derived(weekView(rows, me, today, partnerName));
 
-  /** 別の動画にする: the clip shown instead of the day's (null: the day's). */
+  /** 別の動画にする: the clip shown instead of the day's (null: the day's); the one it passed over skipped for 14 days
+   *  (prefs.ts), so the day's clip is the first in order neither finished nor skipped. */
   let other = $state<string | null>(null);
-  const daily = $derived(CLIPS.find((c) => !mine.clips.has(c.id)) ?? CLIPS[0]);
+  let skipped = $state(untrack(() => skipsOf(me, today)));
+  const open = (c: Clip) => !mine.clips.has(c.id);
+  const daily = $derived(CLIPS.find((c) => open(c) && !skipped.has(c.id)) ?? CLIPS.find(open) ?? CLIPS[0]);
   const doneToday = $derived(mine.days.has(today));
   /** Done today: the card shows the clip finished today (別の動画にする still offers the next). */
   const todays = $derived(doneToday ? CLIPS.find((c) => c.id === mine.byDay.get(today)) : undefined);
@@ -41,9 +43,17 @@
   function nextAfter(id: string): string {
     const i = CLIPS.findIndex((c) => c.id === id);
     const after = [...CLIPS.slice(i + 1), ...CLIPS.slice(0, i)];
-    return (after.find((c) => !mine.clips.has(c.id)) ?? after[0] ?? CLIPS[0]).id;
+    return (after.find((c) => open(c) && !skipped.has(c.id)) ?? after.find(open) ?? after[0] ?? CLIPS[0]).id;
   }
-  const resumes = (c: Clip) => partWay(loadSaved(me, c.id, clipHash(c)));
+  function another(): void {
+    const was = shown;
+    other = nextAfter(was.id);
+    if (open(was)) {
+      skip(me, was.id, today);
+      skipped = skipsOf(me, today);
+    }
+  }
+  const resumes = (c: Clip) => partWay(loadSaved(me, c.id, c.v));
 
   /** おかえりなさい: shown this opening, once a gap. */
   let back = $state(false);
@@ -53,8 +63,11 @@
       back = true;
       markBack(me, last);
     }
+    // today's bank ahead, once home is idle (a lesson then opens with its questions, offline too)
+    const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 2000 }) : setTimeout(f, 300));
+    idle(() => prefetch([shown]));
   });
-  const meta = (c: Clip) => s('meta', { dur: durText(c.dur), band: s(`band.${c.band}`), n: Math.min(drawSize(c.dur), c.questions.filter((q) => !q.retired).length) });
+  const meta = (c: Clip) => s('meta', { dur: durText(c.dur), band: s(`band.${c.band}`), n: c.n });
 </script>
 
 <section class="screen" data-en-home>
@@ -72,7 +85,7 @@
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>
         {resumes(shown) ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
       </button>
-      {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={() => (other = nextAfter(shown.id))}>{s('other')}</button>{/if}
+      {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
     </article>
     <WeekProgress {view} />
     <h3 class="sec-label">{s('library')}</h3>

@@ -3,10 +3,12 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
 import { eflagOf } from '#lib/contract/eflag.ts';
-import { fixture as clip } from './fixture.ts';
+import { fixture } from './fixture.ts';
+import { metaOf } from './catalog.ts';
 import { flagData, flagsOf } from './flags.ts';
-import { questionHash } from './hash.ts';
+import { clipHash, questionHash } from './hash.ts';
 
+const clip = { ...fixture, ...metaOf(fixture) };
 
 describe('flagData', () => {
   it('a question’s flag: what was shown, its version, the time to 0.1 s, the note cleaned; the record takes it', () => {
@@ -17,7 +19,7 @@ describe('flagData', () => {
   });
   it('a clip’s flag, no note, no player yet', () => {
     const f = flagData(clip, null, 'other', '   ', null);
-    expect(f).toEqual({ item: clip.id, q: null, kind: 'other', v: expect.any(String), seen: null });
+    expect(f).toEqual({ item: clip.id, q: null, kind: 'other', v: clipHash(fixture), seen: null });
     expect(eflagOf(f as unknown as Record<string, unknown>)).toEqual(f);
   });
   it('a dictation’s answer is its words', () => {
