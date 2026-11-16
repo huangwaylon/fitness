@@ -74,6 +74,16 @@ import { didIStutter } from './stutter.ts';
 import { prairie } from './prairie.ts';
 import { aprilTynnyfer } from './tynnyfer.ts';
 import { jansStroller } from './stroller.ts';
+import { ronWill } from './ronwill.ts';
+import { neverLower } from './neverlower.ts';
+import { tomNegotiate } from './tomdeal.ts';
+import { parkspilot } from './parkspilot.ts';
+import { ronFire } from './ronfire.ts';
+import { heroes } from './heroes.ts';
+import { runsAgain } from './runsagain.ts';
+import { gryzzlBoxes } from './gryzzlbox.ts';
+import { pumpJamm } from './pumpjamm.ts';
+import { screwIt } from './screwit.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -83,10 +93,13 @@ export const CLIPS: readonly Clip[] = [
   centralperk,
   furniture,
   ronShowHost,
+  heroes,
   buttOfJoke,
   twodates,
   tobySafety,
   fluSeason,
+  ronFire,
+  pumpJamm,
   phoebeRuns,
   jansStroller,
   ronLeslieLocked,
@@ -96,35 +109,42 @@ export const CLIPS: readonly Clip[] = [
   ronPermit,
   ronMeditate,
   tomSwagger,
+  ronWill,
+  tomNegotiate,
   mamasDead,
   workBestie,
-  scarnRead,
   // ふつう
+  scarnRead,
+  gryzzlBoxes,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
+  parkspilot,
   janiceSocks,
   pikitis,
   joeymakeup,
   whosDaddy,
   daveReturns,
   snowCones,
+  neverLower,
   annVibes,
   prairie,
   babySex,
+  screwIt,
   aprilFired,
+  runsAgain,
   getaway,
   evilLaugh,
-  bucketList,
   fluoride,
-  phoebebook,
   kellyLarson,
   pamLabor,
   ronHearing,
   ryanOffice,
-  annOffended,
-  couplesOnly,
   // 速い
+  couplesOnly,
+  annOffended,
+  phoebebook,
+  bucketList,
   saylove,
   didIStutter,
   waffleGift,

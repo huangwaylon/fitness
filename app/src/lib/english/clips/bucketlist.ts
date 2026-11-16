@@ -10,7 +10,7 @@
 import type { Clip } from '../types.ts';
 
 export const bucketList: Clip = {
-  id: 'bucketlist', video: '8R5tWHUEn7Q', title: "Andy's Bucket List", dur: 206, wpm: 185, band: 'mid',
+  id: 'bucketlist', video: '8R5tWHUEn7Q', title: "Andy's Bucket List", dur: 206, wpm: 185, band: 'fast',
   tags: ['家', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

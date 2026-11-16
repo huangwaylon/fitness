@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const annOffended: Clip = {
-  id: 'annoffended', video: '9szxKFkGea0', title: 'Ann gets offended', dur: 236, wpm: 185, band: 'mid',
+  id: 'annoffended', video: '9szxKFkGea0', title: 'Ann gets offended', dur: 236, wpm: 185, band: 'fast',
   tags: ['友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const couplesOnly: Clip = {
   id: 'couplesonly', video: '8H16SWHUAuM', title: 'Michael Tricks People Into Coming To His Party',
-  dur: 132, wpm: 185, band: 'mid', tags: ['職場', 'お願い・断り'],
+  dur: 132, wpm: 185, band: 'fast', tags: ['職場', 'お願い・断り'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
