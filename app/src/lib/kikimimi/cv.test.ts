@@ -10,7 +10,7 @@ import { gameCv } from './compile.ts';
 import { deck } from './deck.ts';
 import { ladderDeck } from './ladder.ts';
 import { lessonDeck, type Tier } from './lesson.ts';
-import { ENTRIES, INDEX, gameCvOf, ladders, levelItems, listenOf, loadAll, partItems, unitPart, type Unit } from './pool.ts';
+import { ENTRIES, INDEX, gameCvOf, ladders, levelItems, listenOf, loadAll, unitPart } from './pool.ts';
 import { henshinDeal, henshinRounds } from './games/henshin/def.ts';
 import { LESSONS } from './stages.ts';
 import { BUILD_V } from './games/versions.ts';
@@ -22,8 +22,6 @@ import { callDeal, callRounds } from './games/call/def.ts';
 import { rushDeal, rushRounds } from './games/rush/def.ts';
 import { newsDeal } from './games/news/def.ts';
 import { longDeal, longRounds, piecesAt } from './games/long/def.ts';
-import { pairDeal, sayOf } from './games/pair/def.ts';
-import type { PairCard } from './games/pair/pairs.ts';
 
 const SEEDS = Array.from({ length: 20 }, (_, s) => s);
 const QUIZ_ENTRIES = ENTRIES.filter((e) => e.lv !== 8).length;
@@ -52,8 +50,6 @@ function decksOf(key: string): unknown {
   if (gm === 'news') return SEEDS.map((s) => newsDeal(20_400 + s * 19, [listenOf(unit)!], { sky: 'rain', fog: false, hi: 23 }).map((c) => [c.id, c.answer, c.news.trap, c.choices.length, c.lines?.map((l) => l.clip) ?? []]));
   // まるごと 聞く's: each piece of the file, each question's choices shown and answer at every ear, the lines' gaps
   if (gm === 'long') { const p = listenOf(unit)!; return piecesAt([p]).map((_, piece) => { const cs = longDeal([p], { piece }); return [cs[0].lines!.map((l) => [l.clip, (l as { at?: number }).at]), [0, 1, 2, 3].map((ear) => longRounds(cs, { lv: cs[0].lv, ear }, () => 0).map((r) => [r.id, r.shown, r.answer]))]; }); }
-  // はつおん's: 8 pairs a seed, the word to say on each
-  if (gm === 'pair') return SEEDS.map((s) => pairDeal(s, partItems(unit as Unit) as PairCard[]).map((c) => [c.id, sayOf(s, c.id)]));
   // 音の へんしん's: 8 phrases a seed for a few days' phenomena, each round's kind, choices and tiles at every ear
   if (gm === 'henshin') return SEEDS.map((s) => [0, 3, 7, 14].map((focus) => { const cs = henshinDeal(s, levelItems(8), { focus }); return [0, 1, 2, 3].map((ear) => henshinRounds(cs, s, { ear }, () => 0).map((r) => [r.id, r.kind === 'henshin.pick' ? [r.choices.length, r.answer] : r.board])); }));
   const part = unitPart(unit)!;
@@ -103,7 +99,10 @@ describe('ききみみ content versions', () => {
     const now: Record<string, { cv: string; decks: string }> = {};
     const unbumped: string[] = [];
     for (const key of Object.keys(INDEX.games).sort()) {
-      const cv = INDEX.games[key], decks = digest(decksOf(key)), was = golden[key];
+      const cv = INDEX.games[key], was = golden[key];
+      // (はつおん, a mic game, retired 2026-11-16: no deal left, its content compiled until it goes; kept as it was)
+      if (key.startsWith('pair:')) { if (was) now[key] = was; continue; }
+      const decks = digest(decksOf(key));
       if (was && was.decks !== decks && was.cv === cv) unbumped.push(key);
       // (the same decks with another cv, new clip lengths: kept as it was, so a re-voicing needs no update here)
       now[key] = was && was.decks === decks ? was : { cv, decks };

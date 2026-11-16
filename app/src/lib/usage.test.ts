@@ -76,6 +76,8 @@ const prefixes = new Set([
   ...[...code.matchAll(/"([\w.:/#-]+)\{/g)].map((m) => m[1])
 ]);
 const hostLines = new Set([...code.matchAll(/(?:hostLine\(|===\s*)'(\w+)'/g)].map((m) => m[1]));
+/** A ききみみ results line's keys (components/kikimimi/listenView.ts hostLine(prefix, …): `<prefix>.all|some|few`). */
+for (const m of code.matchAll(/hostLine\('([\w.]+)',/g)) for (const x of ['all', 'some', 'few']) literals.add(`${m[1]}.${x}`);
 const DYNAMIC: readonly RegExp[] = [
   // panel/previewLabel.ts: `${zone}.${key}.${v}`, 設定's 季節 (zone 'season') over ui-state/preview.ts's choices
   /^season\.(event|season|weather|tod)\.[\w-]+$/,

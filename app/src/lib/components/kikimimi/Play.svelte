@@ -199,7 +199,7 @@
 
   <ChoiceGrid choices={it.choices} right={it.answer} pics={it.type === 'pic'} label={it.type === 'pic' ? (c) => PIC_JA[c] ?? '' : undefined}
     english={!(it.type === 'num' || (it.rung && it.type !== 'word'))} ja={it.type === 'pic' ? undefined : it.cja} {open} {reveal} dim={!open && !reveal && !mine} picked={mine?.k ?? null}
-    onlyMarked={reveal && (!!dlg || it.type === 'pic')} voice={it.type === 'reply' && !show} onpick={(k) => game.answer(k)} />
+    onlyMarked={reveal && (!!dlg || it.type === 'pic')} onpick={(k) => game.answer(k)} />
 {/snippet}
 
 {#snippet after()}

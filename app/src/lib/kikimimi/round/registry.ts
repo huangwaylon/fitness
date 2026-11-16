@@ -25,7 +25,7 @@ import { ladderLane } from '../games/ladder/lane.ts';
 import { lessonLane } from '../games/lesson/lane.ts';
 import { taikaiLane } from '../games/taikai/lane.ts';
 import { checkLane } from '../games/check/lane.ts';
-import { HENSHIN_MODE, KURI_MODE, MANE_MODE, PAIR_MODE, ROLE_MODE } from '../games/modes.ts';
+import { HENSHIN_MODE } from '../games/modes.ts';
 import { HENSHIN_LV } from '../bank.ts';
 
 /** A game's deck as the phone names it: its game, seed, options (as on the wire), unit and items' ids (an `open`'s). */
@@ -78,12 +78,11 @@ export interface Lane<O = any> {
 }
 
 /**
- * A later game: its lane by import() (its own chunk); its mode when the catalog hasn't one for it (a mic mode's,
- * docs/kikimimi-mic.md "In the registry": catalog.ts addMode); whether this build has its content (none: a `listened` file of its
+ * A later game: its lane by import() (its own chunk); its mode when the catalog hasn't one for it (音の へんしん's:
+ * catalog.ts addMode); whether this build has its content (none: a `listened` file of its
  * game in the index, as wave 2's: kikimimi-engine.md "Listen parts"). One line each, e.g.
  *   tile: { lane: () => import('../games/tile/lane.ts') },
- *   mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: { id: 'mane', group: 'koe', …, requires: 'mic', gate: micReady } },
- */
+ *  */
 export interface Later {
   lane: () => Promise<{ lane: Lane }>;
   mode?: ModeMeta;
@@ -92,7 +91,7 @@ export interface Later {
 
 /** The games built into the sheet's chunk. */
 const EAGER: readonly Lane[] = [quizLane, ladderLane, lessonLane, taikaiLane, checkLane];
-/** The games of their own chunks, by id (docs/kikimimi-engine.md "The listening games": tile, tachi, call, rush, news; the mic modes). */
+/** The games of their own chunks, by id (docs/kikimimi-engine.md "The listening games": tile, tachi, call, rush, news, long, henshin). */
 const LATER: Readonly<Record<GameId, Later>> = {
   // one line a game (Later)
   tile: { lane: () => import('../games/tile/lane.ts') },
@@ -101,10 +100,6 @@ const LATER: Readonly<Record<GameId, Later>> = {
   rush: { lane: () => import('../games/rush/lane.ts') },
   news: { lane: () => import('../games/news/lane.ts') },
   long: { lane: () => import('../games/long/lane.ts') },
-  mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: MANE_MODE },
-  kuri: { lane: () => import('../games/kuri/lane.ts'), content: () => true, mode: KURI_MODE },
-  role: { lane: () => import('../games/role/lane.ts'), content: () => true, mode: ROLE_MODE },
-  pair: { lane: () => import('../games/pair/lane.ts'), content: () => !!INDEX.units['mic-pairs'], mode: PAIR_MODE },
   henshin: { lane: () => import('../games/henshin/lane.ts'), content: () => (INDEX.units[HENSHIN_LV]?.n ?? 0) >= 12, mode: HENSHIN_MODE },
 };
 

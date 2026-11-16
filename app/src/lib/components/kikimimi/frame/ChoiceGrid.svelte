@@ -3,16 +3,12 @@
   // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
   // two, a dialogue's and a picture round's, so the transcript under them is never under the sticky つぎへ; the marked ones scrolled clear of it). Text, or pictures (art keys) in a
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
-  // Japanese (`ja`, the item's cja) under it, smaller. A reply round (`voice`) with the mic on: こたえて！ under them
-  // (mic/MicAnswer.svelte, its own chunk, loaded at the first such round and kept to the game's end).
-  import Lazy from '#lib/components/ui/Lazy.svelte';
+  // Japanese (`ja`, the item's cja) under it, smaller.
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import Phrases from '../../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { localKV } from '#lib/sync/storage.ts';
-  import { readMic } from '#lib/mic/pick.ts';
 
-  let { choices, right, pics = false, label, english = true, ja, open, reveal, dim, picked, onlyMarked = false, voice = false, onpick }: {
+  let { choices, right, pics = false, label, english = true, ja, open, reveal, dim, picked, onlyMarked = false, onpick }: {
     choices: readonly string[];
     /** The right one (marked at the reveal). */
     right: number;
@@ -33,8 +29,6 @@
     picked: number | null;
     /** Only the marked ones (a dialogue's or a picture round's reveal). */
     onlyMarked?: boolean;
-    /** A reply round: the answer may be said (こたえて！, docs/kikimimi-mic.md "こたえて！"). */
-    voice?: boolean;
     onpick: (k: number) => void;
   } = $props();
   /** A choice's look: mine (picked, before the reveal), right (○), wrong (my pick, ×), or none. */
@@ -57,12 +51,6 @@
     const over = Math.max(...marked.map((m) => m.getBoundingClientRect().bottom)) + 8 - bar.getBoundingClientRect().top;
     if (scroller && over > 0) scroller.scrollBy({ top: over, behavior: 'smooth' });
   }
-  const micOn = readMic(localKV()).on;
-  /** こたえて！ mounted: a reply round has come with the mic on. */
-  let answering = $state(false);
-  $effect.pre(() => {
-    if (voice && micOn) answering = true;
-  });
 </script>
 
 <div class="choices" class:pics class:only={onlyMarked} class:dim bind:this={grid} role="group" aria-label={t('kiki.pick')}>
@@ -78,9 +66,6 @@
     {/if}
   {/each}
 </div>
-{#if answering}
-  <Lazy load={() => import('../mic/MicAnswer.svelte')}>{#snippet children(MicAnswer)}<MicAnswer {voice} {choices} {open} {reveal} {onpick} />{/snippet}</Lazy>
-{/if}
 
 <style>
   .choices { display: grid; gap: 10px; transition: opacity var(--dur-quick); }

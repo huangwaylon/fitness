@@ -6,8 +6,6 @@
 // (the view's lines, kiki-mane.*): never a score, never 「ちがう」. Pure.
 import { frames, medianF0, semitones } from './pitch.ts';
 
-/** Seconds a frame (pitch.ts HOP at 16 kHz). */
-export const FRAME_S = 0.01;
 /** The speech's span: frames within this of the loudest (dB). */
 const SPAN_DB = 25;
 /** A nucleus stands this far (dB) above the dips on each side of it, and this many frames from the last. */

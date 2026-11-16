@@ -1,8 +1,7 @@
 // ききみみ's modes as the hub shows them (docs/kikimimi.md "遊ぶ", "Mode detail"; docs/kikimimi-engine.md "Files", "The listening games"): each
 // mode's shelf (grouped by situation), icon, length, question count, whether it can be shared and whether its page offers
 // the ばしょ; which are playable on this build (only those show: never a 「もうすぐ」 wall, an empty group hidden; a lane's
-// game once this build has its lane and the index its content; a mode with a `gate` only while it opens on this phone:
-// the mic's, docs/kikimimi-mic.md "Where they show"); and the ばしょ ladder over the contract's levels (docs/kikimimi.md "Places":
+// game once this build has its lane and the index its content); and the ばしょ ladder over the contract's levels (docs/kikimimi.md "Places":
 // はまべ 1 / 2, かわ, もり, やま, ほし; level 5 is the アナウンス mode, not a place). Pure.
 import { levelAt } from './bank.ts';
 
@@ -10,11 +9,11 @@ import { levelAt } from './bank.ts';
  *  おやすみ ものがたり the bedtime serials (no lobby, no score: components/kikimimi/story/); しずえの しゅうまつ たいかい the
  *  weekend's quiz show (games/taikai/: the hub's banner, its own lobby, on no shelf). Wave 2's are each a game of its
  *  own lane (round/registry.ts): ことば タイル, すうじ ラッシュ, ようじ でんわ, たちぎき, しずえの ニュース; a later game's mode
- *  may come with its registry line (addMode: the mic's). */
+ *  may come with its registry line (addMode: 音の へんしん's). */
 export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce' | 'story' | 'taikai' | 'tile' | 'rush' | 'call' | 'tachi' | 'news' | 'long' | (string & {});
-/** The あそぶ page's shelves, in order: さくっと, まちで・でんわで, じっくり, ねる まえに, 声に 出す (the mic's modes). */
-export type Group = 'quick' | 'scene' | 'long' | 'night' | 'koe';
-const GROUPS: readonly Group[] = ['quick', 'scene', 'long', 'night', 'koe'];
+/** The あそぶ page's shelves, in order: さくっと, まちで・でんわで, じっくり, ねる まえに. */
+export type Group = 'quick' | 'scene' | 'long' | 'night';
+const GROUPS: readonly Group[] = ['quick', 'scene', 'long', 'night'];
 
 /** What this build and this player have: the levels offered (deck.ts LEVELS), スピード はしご's clips, any game to
  *  review, a voiced bedtime serial, the tournament's weekend now (window.ts taikaiOpen), and which lanes' games can be
@@ -51,10 +50,6 @@ export interface ModeMeta {
   window?: number;
   /** Playable by this build and this player (not a lane's game). */
   ok?(c: Ctx): boolean;
-  /** Shown only while this is true on this phone (a mic mode's: the mic on and its recogniser ready), beside the rest. */
-  gate?(): boolean;
-  /** What a player needs to play it (the みんなで picker says 「マイクが オフです」 for one without it). */
-  requires?: 'mic';
 }
 
 const quizLevels = (c: Ctx): boolean => c.levels.some((lv) => lv !== 5);
@@ -84,13 +79,13 @@ export const modeOfGame = (gm: string): ModeMeta | undefined => MODES.find((m) =
 /** A mode can be played now. */
 export function playable(id: ModeId, c: Ctx): boolean {
   const m = modeOf(id);
-  return (m.game ? !!c.games?.(m.game) : !!m.ok?.(c)) && (m.gate?.() ?? true);
+  return (m.game ? !!c.games?.(m.game) : !!m.ok?.(c));
 }
 
 /** The modes きまぐれ picks from (today.ts): the playable ones on a day's shelf (not おさらい, the stories, the
- *  tournament, nor a mic mode: never a surprise to speak; nor まるごと 聞く: six minutes at ほし, chosen, not dealt). */
+ *  tournament; nor まるごと 聞く: six minutes at ほし, chosen, not dealt). */
 export const whims = (c: Ctx): ModeId[] =>
-  MODES.filter((m) => m.id !== 'review' && m.id !== 'long' && !m.requires && (m.group === 'quick' || m.group === 'scene' || m.group === 'long') && playable(m.id, c)).map((m) => m.id);
+  MODES.filter((m) => m.id !== 'review' && m.id !== 'long' && (m.group === 'quick' || m.group === 'scene' || m.group === 'long') && playable(m.id, c)).map((m) => m.id);
 
 /** The あそぶ page's shelves: each group with its playable modes, empty groups left out. */
 export function shelves(c: Ctx): { group: Group; modes: ModeMeta[] }[] {

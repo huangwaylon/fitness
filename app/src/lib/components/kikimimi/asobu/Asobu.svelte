@@ -29,7 +29,7 @@
             <span class="ic" aria-hidden="true">{m.icon}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
-            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span role="img" aria-label={t('kiki.chip.coop')}> · <Icon name="users" size={14} stroke={2.4} /></span>{/if}{#if m.requires === 'mic'}<span role="img" aria-label={t('kiki.micGame')}> · <Icon name="mic" size={14} stroke={2.4} /></span>{/if}</span>
+            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span role="img" aria-label={t('kiki.chip.coop')}> · <Icon name="users" size={14} stroke={2.4} /></span>{/if}</span>
           </button>
         {/each}
       </div>

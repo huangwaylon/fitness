@@ -44,17 +44,12 @@ describe('the later games’ modes', () => {
     expect(whims(lanes('call')).sort()).toEqual(['announce', 'call', 'ladder', 'quiz']);
     expect([modeOf('tile').icon, modeOf('news').places, modeOf('call').places]).toEqual(['🧩', true, true]);
   });
-  it('a mode from a registry line (a mic mode): on 声に出す, last, while its gate is open; never きまぐれ’s', () => {
-    let on = false;
-    addMode({ id: 'mane-t', group: 'koe', icon: '🦜', mins: 3, qs: 4, coop: false, game: 'mane-t', requires: 'mic', gate: () => on });
-    expect(() => addMode({ ...modeOf('mane-t') })).toThrow();
-    const c = lanes('mane-t');
-    expect(shelves(c).map((s) => s.group)).toEqual(['quick', 'scene', 'night']);
-    on = true;
-    expect(shelves(c).map((s) => s.group)).toEqual(['quick', 'scene', 'night', 'koe']);
-    expect(playable('mane-t', { ...c, games: () => false })).toBe(false);
-    expect(whims(c)).not.toContain('mane-t');
-    expect(modeOf('mane-t').requires).toBe('mic');
+  it('a mode from a registry line: on its shelf, after the catalog’s own', () => {
+    addMode({ id: 'late-t', group: 'night', icon: '🦜', mins: 3, qs: 4, coop: false, game: 'late-t' });
+    expect(() => addMode({ ...modeOf('late-t') })).toThrow();
+    const c = lanes('late-t');
+    expect(shelves(c).find((s) => s.group === 'night')!.modes.map((m) => m.id).at(-1)).toBe('late-t');
+    expect(playable('late-t', { ...c, games: () => false })).toBe(false);
   });
   it('a lane’s game’s places: its listened files’ stages, each place’s first level', () => {
     const listen = { 's1-tile-a': ['tile', 2, 'listened'], 's3-tile': ['tile', 4, 'listened'], 's0-tile': ['tile', 1, 'listened'], 's2-tile': ['tile', 3, 'draft'], 's2-call': ['call', 3, 'listened'] } as const;

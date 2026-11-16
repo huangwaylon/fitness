@@ -83,11 +83,10 @@
     <b>{t(`kiki.modeSub.${m}`)}</b>
     <p>{m === 'ladder' ? t('kiki.ladderAbout') : t(`kiki.modeAbout.${m}`)}</p>
     <div class="chips" aria-label={t('kiki.mode')}>
-      <!-- (no 問 count for a mic mode, nor for よるの おはなし) -->
-      {#if meta.qs && !meta.requires}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
+      <!-- (no 問 count for よるの おはなし) -->
+      {#if meta.qs}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
       <span class="tag">{t('kiki.chip.mins', { n: meta.mins })}</span>
       {#if meta.coop}<span class="tag"><Icon name="users" size={14} stroke={2.4} /> {t('kiki.chip.coop')}</span>{/if}
-      {#if meta.requires === 'mic'}<span class="tag"><Icon name="mic" size={14} stroke={2.4} /> {t('kiki.micGame')}</span>{/if}
     </div>
   </div>
 
@@ -110,8 +109,7 @@
   {:else if m === 'review' && due}
     <p class="hint" data-kiki-review-due>{t('kiki.review.picked', { n: due })}</p>
   {/if}
-  <!-- (a mic mode keeps its own time: no こたえる じかん) -->
-  {#if m !== 'review' && !meta.requires}
+  {#if m !== 'review'}
     <TimerRow timer={v.timer} window={meta.window} onpick={(x) => (game.configure({ timer: x }), keepTimer(x))} />
   {/if}
   {#if zero}<p class="hint warn" data-kiki-zero><span aria-hidden="true">🔊</span> {t('kiki.testZero')}</p>{/if}

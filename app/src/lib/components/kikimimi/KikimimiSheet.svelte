@@ -75,8 +75,6 @@
    *  others in my lobby: 「部屋を閉じますか？」. The kit's confirm (docs/design.md "Forms and confirms"): キャンセル + the
    *  coral verb, its ✕ the safe choice too. */
   let asking = $state<false | 'leave' | 'quit' | 'close'>(false);
-  /** A mic game's さんか asked first (role/MicJoin.svelte: joining is consenting): its game, and whether the mic is on. */
-  let micJoin = $state<{ g: string; on: boolean } | null>(null);
   const v = $derived(game?.view ?? null);
   const MID: readonly QuizPhase[] = ['countdown', 'lead', 'play', 'answer', 'reveal'];
   const mid = $derived(!!v && MID.includes(v.phase));
@@ -206,7 +204,6 @@
       if (hooksOn()) delete (window as unknown as { __kiki?: unknown }).__kiki;
       game = null;
       asking = false;
-      micJoin = null;
       pages = [];
       story = null;
       welcome = false;
@@ -317,24 +314,15 @@
     const iv = v.invite;
     if (v.phase === 'idle' && iv) {
       const named = iv.gm === 'taikai' ? 'taikai' : modeOfGame(iv.gm)?.id;
-      const what = iv.blocked ? t('kiki.update.why') : named ? `${t(`kiki.mode.${named}`)}${micMode(iv.gm) ? ` · 🎤 ${t('kiki.micGame')}` : ''}` : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
+      const what = iv.blocked ? t('kiki.update.why') : named ? t(`kiki.mode.${named}`) : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
         : iv.ladder ? t('kiki.mode.ladder') : iv.lv === 5 ? t('kiki.mode.announce') : `${t('kiki.mode.quiz')} · ${levelMark(iv.lv)} ${t(`kiki.lv.${iv.lv}`)}`;
       return { g: iv.g, name: hostName(iv.host), what: iv.started ? `${what} · ${t('kiki.started')}` : what, blocked: !!iv.blocked };
     }
     const live = hosting && v.local ? liveInvite() : null;
     return live && !been.has(live.g) ? { g: live.g, name: hostName(live.host), what: '', blocked: false } : null;
   });
-  /** A game's mode when it uses the mic (ロールプレイ: its invitee asked first). */
-  const micMode = (gm: string) => {
-    const m = modeOfGame(gm);
-    return m?.requires === 'mic' ? m : null;
-  };
-  /** さんか (the hub's card, the banner's): a mic game's asked first (MicJoin), any other joined. */
+  /** さんか (the hub's card, the banner's). */
   function joinIt(g: string, it = game) {
-    const gm = it?.view.invite?.g === g ? it.view.invite.gm : heardQuiz().map(gameIn).find((m) => m?.op === 'open' && m.g === g)?.gm;
-    const mic = gm ? micMode(gm) : null;
-    if (mic && !micJoin) return void (micJoin = { g, on: mic.gate?.() ?? true });
-    micJoin = null;
     it?.join(g);
     pages = inviteStack();
   }
@@ -475,12 +463,6 @@
     {/if}
   </div>
 
-  {#if micJoin}
-    {@const mj = micJoin}
-    <Lazy load={() => import('./role/MicJoin.svelte')}>{#snippet children(MicJoin)}
-      <MicJoin on={mj.on} onjoin={() => micJoin && joinIt(micJoin.g)} oncancel={() => (micJoin = null)} />
-    {/snippet}</Lazy>
-  {/if}
   <!-- the ask: キャンセル (and its ✕) goes on, the coral verb leaves (the other confirms' footer) -->
   <Sheet bind:open={() => !!asking, (o) => { if (!o) asking = false; }} title={t(asking === 'close' ? 'kiki.closeAsk' : 'kiki.quit')}>
     <p class="ask-note" data-kiki-ask={asking || undefined}>{t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')}</p>

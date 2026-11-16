@@ -12,8 +12,8 @@ import { isText } from '../../../contract/guards.ts';
 export const PAIR_UNIT = 'mic-pairs';
 
 /** The contrasts (§2.4): r/l, b/v, th/s/z, s/sh, the vowels Japanese merges, teen/ty, a word's last consonant. */
-export const SOUNDS = ['l-r', 'b-v', 'th', 's-sh', 'vowel', 'teen-ty', 'final'] as const;
-export type Sound = (typeof SOUNDS)[number];
+const SOUNDS = ['l-r', 'b-v', 'th', 's-sh', 'vowel', 'teen-ty', 'final'] as const;
+type Sound = (typeof SOUNDS)[number];
 
 /** One word of a pair. */
 interface PairWord {
@@ -32,7 +32,7 @@ interface PairWord {
   how: string;
 }
 
-export interface PairCard extends Item {
+interface PairCard extends Item {
   pair: { sound: Sound; words: readonly [PairWord, PairWord] };
 }
 
@@ -52,7 +52,7 @@ const cap = (w: string): string => w[0].toUpperCase() + w.slice(1);
 
 /** The file's problems (empty: fine): its header, each pair's id (unique), sound, villager (a US voice), help, and
  *  two words with every field, different, and each word in only one pair. */
-export function pairProblems(raw: unknown): string[] {
+function pairProblems(raw: unknown): string[] {
   const f = raw as { schema?: unknown; unit?: unknown; status?: unknown; pairs?: unknown };
   const bad: string[] = [];
   if (f?.schema !== 1) bad.push('schema: 1');
