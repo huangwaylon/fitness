@@ -1,5 +1,5 @@
 // The full-height sheets' frame (ui/Sheet.svelte: top, pop, full): the screen's height, edge to edge, its corners square,
-// so no island shows in a rounded corner over Safari's bottom bar (farm/shop r5: けんこう, 設定, ずかん, ききみみ and the
+// so no island shows in a rounded corner over Safari's bottom bar (farm/shop r5: けんこう, 設定, ずかん and the
 // panel were rounded at the bottom).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';

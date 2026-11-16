@@ -48,7 +48,7 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(settings(page)).toBeVisible();
   // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then 旅行, 結婚式, 登山, 英語
-  // (ききみみ), 設定 (the user's order, in kanji: 2026-11-08), each a 44px pill, on screen, the same width (no ずかん:
+  // (English Study), 設定 (the user's order, in kanji: 2026-11-08), each a 44px pill, on screen, the same width (no ずかん:
   // 設定's since 2026-11-08; ボット, a paired member's between 英語 and 設定, isn't in demo: its.spec.ts, bots.spec.ts)
   await expect(pills(page)).toHaveCount(6);
   await expect(page.locator('[data-hud-zukan]')).toHaveCount(0);

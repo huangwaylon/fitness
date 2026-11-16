@@ -15,7 +15,7 @@ const ALLOW: Record<string, string[]> = {
   random: [],
   // the leaves (FREE): math.ts (clamp, smoothstep, the easing curves), quiet.ts (a swallowed failure counted in
   // IslandLog, the log plugging its counter in) and staticUrl.ts (a static file's URL: $app/paths only); packPlan.ts and
-  // packStore.ts (files in packs: planned, read on the phone; ききみみ's audio and the players' parts)
+  // packStore.ts (files in packs: planned, read on the phone: the players' parts)
   math: [],
   quiet: [],
   // keyed.ts: a members-only call (the key's header, one failure vocabulary): the bots

@@ -10,7 +10,7 @@
 // source scan missed is "unsure".
 //   The modules: the import graph from the routes, the service worker and vite.config.ts (imports, import(),
 // import.meta.glob, new URL(…, import.meta.url)); what it doesn't reach is listed: dead, or only the tests' and the
-// build scripts' (fixtures, ききみみ's content sources compiled to levels/*.json).
+// build scripts' (fixtures).
 //
 // Usage (from app/): npm run unused [-- --json] [-- --list=safe|used|unsure] [-- --seen=/tmp/seen.txt]
 //   (the probe that writes --seen's file: node scripts/unused-probe.ts <port>, with the build served)

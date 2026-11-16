@@ -21,7 +21,7 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  useless offline without their audio packs, which aren't precached either) kept on first use instead (caches.ts
  *  isKikiPart), so the cap back to 3 MB; 2.94 → 2.61 MB with the wedding's and the trips' heroes cached on first view
  *  (2026-11-09: caches.ts isGuidePhoto); 2.95 → 2.85 MB with the English catalogs and the wedding board carried
- *  once used (2026-11-11: caches.ts carried). */
+ *  once used (2026-11-11: caches.ts carried); 2.85 → 2.64 MB with ききみみ's sheet gone (2026-11-16). */
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;

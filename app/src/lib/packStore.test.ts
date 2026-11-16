@@ -1,4 +1,4 @@
-// The phone's packs (packStore.ts; ききみみ's audio, the players' parts): a pack fetched whole, once though its files are
+// The phone's packs (packStore.ts: the players' parts): a pack fetched whole, once though its files are
 // asked for at once, held within a byte cap (the newest always, one on its way never let go), a failure not kept; a
 // file's bytes a copy cut from it; prefetch asks for each pack once, the first first, and nothing more after a clear;
 // with idleMs, all let go that long after the last ask.
