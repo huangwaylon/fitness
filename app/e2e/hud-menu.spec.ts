@@ -55,7 +55,7 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await expect(pills(page).nth(1)).toHaveAttribute('data-hud-travel', '');
   await expect(pills(page).nth(2)).toHaveAttribute('data-hud-wedding', '');
   await expect(pills(page).nth(3)).toHaveAttribute('data-hud-hiking', '');
-  await expect(pills(page).nth(4)).toHaveAttribute('data-hud-kikimimi', '');
+  await expect(pills(page).nth(4)).toHaveAttribute('data-hud-english', '');
   await expect(pills(page).nth(5)).toHaveAttribute('data-hud-settings', '');
   await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '英語', '設定']);

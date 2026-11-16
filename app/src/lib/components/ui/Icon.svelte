@@ -84,6 +84,7 @@
     eye: '<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>',
     target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
     play: '<path d="M6 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L7.5 3.64A1 1 0 0 0 6 4.5z"/>',
+    pause: '<rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/>',
     stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
     // ボット's tabs: 保養所 (a bed, its pillow), ジム (a barbell: the HUD's dumbbell is けんこう's)
     bed: '<path d="M3 5v15M3 17h18M21 20v-5a3 3 0 0 0-3-3h-7v5"/><rect x="5.5" y="11.5" width="3.5" height="3" rx="1.5"/>',

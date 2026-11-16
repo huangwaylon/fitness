@@ -5,6 +5,7 @@
 // offline and unavailable states; a lesson left resumes where it was. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
 
 /** The player's commands from the `from`th on (addEventListener aside). */
@@ -19,8 +20,9 @@ const at = (p: Page) => lesson(p).getAttribute('data-en-at');
 async function open(page: Page, q = '') {
   await page.goto(`?demo${q}`);
   await islandUp(page);
-  await page.evaluate(() => (window as unknown as { __english: { open(): void } }).__english.open());
+  await fromMenu(page, 'english');
   await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
+  await expect(page.locator('dialog[open] .navbar h2')).toHaveText('English Study');
 }
 /** The day's clip, from its card. */
 async function start(page: Page) {
@@ -35,7 +37,7 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   await expect(sheet(page).locator('[data-en-today]')).toContainText('Rachel Is a Bad Waitress');
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '0');
   await expect(sheet(page).locator('[data-en-week-n]')).toHaveCount(0); // never 0日
-  await expect(sheet(page).locator('[data-en-clip]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-en-clip="waitress"]')).toBeVisible();
   await start(page);
   // the embed: privacy-enhanced, the JS API for our origin, inline, its own referrer policy
   const frame = lesson(page).locator('[data-yt-frame]');
@@ -198,4 +200,41 @@ test('a play that doesn’t start (iOS wants a tap on the video): the hint; none
   await start(page);
   await lesson(page).locator('[data-en-watch-all]').click();
   await expect(lesson(page).locator('[data-yt-stuck]')).toContainText('動画を一度タップしてください');
+});
+
+test('the controls: play / pause on from where it stopped, −5 秒, this part again, the scrubber, 0.75× only when offered', async ({ page }) => {
+  await fakeYoutube(page, { rate: 4 });
+  await open(page);
+  await start(page);
+  const c = lesson(page).locator('[data-yt-controls]');
+  await expect(c.locator('[data-yt-seg]')).toHaveCount(0); // (the watch card: no segment)
+  const n0 = (await ytCommands(page)).length;
+  await c.locator('[data-yt-toggle="play"]').click();
+  await expect(c.locator('[data-yt-toggle="pause"]')).toBeVisible();
+  await c.locator('[data-yt-toggle="pause"]').click();
+  await c.locator('[data-yt-toggle="play"]').click();
+  await expect.poll(async () => (await since(page, n0)).map((x) => x[0])).toEqual(['playVideo', 'pauseVideo', 'playVideo']);
+  // −5 秒 and the scrubber seek, never locked
+  const n1 = (await ytCommands(page)).length;
+  await c.locator('[data-yt-scrub]').fill('40');
+  await expect.poll(async () => (await since(page, n1)).at(-1)).toEqual(['seekTo', [40, true], expect.any(Number)]);
+  await c.locator('[data-yt-back5]').click();
+  await expect.poll(async () => { const x = (await since(page, n1)).at(-1)!; return [x[0], (x[1] as number[])[0] < 40]; }).toEqual(['seekTo', true]);
+  // 0.75×: offered here
+  await c.locator('[data-yt-rate]').click();
+  await expect.poll(async () => (await since(page, n1)).at(-1)?.slice(0, 2)).toEqual(['setPlaybackRate', [0.75]]);
+  await expect(c.locator('[data-yt-rate]')).toHaveAttribute('aria-pressed', 'true');
+  // on a question: this part again
+  await lesson(page).locator('[data-en-to-q]').click();
+  const n2 = (await ytCommands(page)).length;
+  await c.locator('[data-yt-seg]').click();
+  await expect.poll(async () => (await since(page, n2)).map((x) => x.slice(0, 2))).toEqual([['seekTo', [0, true]], ['playVideo', []]]);
+});
+
+test('no speed control when the frame offers only 1×', async ({ page }) => {
+  await fakeYoutube(page, { rates: [1] });
+  await open(page);
+  await start(page);
+  await expect(lesson(page).locator('[data-yt-scrub]')).toBeEnabled();
+  await expect(lesson(page).locator('[data-yt-rate]')).toHaveCount(0);
 });

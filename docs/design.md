@@ -58,8 +58,7 @@ on empty ground walks my villager there.
   2. **旅行** (a plane) → [Trips](#trips)
   3. **結婚式** (a heart) → [wedding.md](wedding.md)
   4. **登山** (a mountain) → [hiking.md](hiking.md)
-  5. **英語** (a speech balloon) → [ききみみ クイズ](#ききみみ-クイズ) (「誘われています！」 under its name, and a coral dot on
-     the folded leaf, while someone's invite is live)
+  5. **英語** (a speech balloon) → [English Study](english.md)
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](bots.md)
   7. **設定** (a gear) → [設定](#settings)
 
@@ -1068,7 +1067,7 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   キャンセル · 閉じる · 戻る · 元に戻す (restore; an undo is 取り消す) · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 ·
   ゲスト (the guest player; お客さん only for NH's visitors) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた ·
   作る · 資料 · a range with 〜; a day `11/4（水）` (when.ts), alone `11月4日（水）`; the game's own words stay (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and official names as NH
-  writes them. A sheet's title may differ from its button (けんこう → 健康, 英語 → ききみみ). linebreaks.test checks the sheets'
+  writes them. A sheet's title may differ from its button (けんこう → 健康, 英語 → English Study). linebreaks.test checks the sheets'
   keys for spaces between Japanese characters and for the kana spellings of the list.
 
 ## Small screens

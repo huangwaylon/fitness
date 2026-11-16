@@ -48,6 +48,11 @@ export class YtPlayer {
   error = $state<number | null>(null);
   /** A play was asked and nothing started. */
   stuck = $state(false);
+  /** The video's length, s (0 until the frame says). */
+  duration = $state(0);
+  /** The speeds the frame offers (its availablePlaybackRates; [] until it says), and the one set. */
+  rates = $state<number[]>([]);
+  rate = $state(1);
 
   #frame: HTMLIFrameElement;
   #last = { t: 0, at: 0 };
@@ -83,6 +88,28 @@ export class YtPlayer {
     this.#stuckTimer = setTimeout(() => (this.stuck = !this.#started && this.state !== 'error'), STUCK_MS);
   }
 
+  /** Seek to `t` s, playing on if it was (a segment's stop let go). */
+  seek(t: number): void {
+    const to = Math.max(0, this.duration ? Math.min(t, this.duration) : t);
+    this.#stopAt = null;
+    this.#seek = to;
+    this.#last = { t: to, at: performance.now() };
+    this.time = Math.round(to * 10) / 10;
+    this.#cmd('seekTo', [to, true]);
+  }
+
+  /** Play on from where it stopped. */
+  resume(): void {
+    this.#stopAt = null;
+    this.#cmd('playVideo');
+  }
+
+  /** The speed (one the frame offers). */
+  setRate(r: number): void {
+    this.rate = r;
+    this.#cmd('setPlaybackRate', [r]);
+  }
+
   pause(): void {
     this.#stopAt = null;
     this.#cmd('pauseVideo');
@@ -105,7 +132,7 @@ export class YtPlayer {
 
   /** The time now, s: the last delivery's, plus the time since while playing. */
   now(): number {
-    return this.state === 'playing' ? this.#last.t + (performance.now() - this.#last.at) / 1000 : this.#last.t;
+    return this.state === 'playing' ? this.#last.t + ((performance.now() - this.#last.at) / 1000) * this.rate : this.#last.t;
   }
 
   #post(o: object): void {
@@ -157,6 +184,9 @@ export class YtPlayer {
       case 'infoDelivery': {
         if (!info || typeof info !== 'object') break;
         if (typeof info.playerState === 'number') this.#set(stateOf(info.playerState));
+        if (typeof info.duration === 'number' && info.duration > 0) this.duration = info.duration;
+        if (Array.isArray(info.availablePlaybackRates)) this.rates = info.availablePlaybackRates.filter((r): r is number => typeof r === 'number');
+        if (typeof info.playbackRate === 'number') this.rate = info.playbackRate;
         const t = info.currentTime;
         if (typeof t === 'number' && Number.isFinite(t)) {
           if (this.#seek !== null && Math.abs(t - this.#seek) > 2) break; // (the time from before the seek)

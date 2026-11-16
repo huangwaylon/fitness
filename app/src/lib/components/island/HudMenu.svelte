@@ -5,8 +5,7 @@
   // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
-  // hiking/open.svelte.ts), 英語 (しずえ's head: ききみみ's sheet opened here, the voice session begun in the tap itself;
-  // 「誘われています！」 on it, and a dot on the leaf, while someone's invite is live), ボット (a robot's head: the bots'
+  // hiking/open.svelte.ts), 英語 (English Study's sheet, lib/english), ボット (a robot's head: the bots'
   // sheet, members only; the worst of the bots' dots while one needs a person, a coral or yuzu 「!」, never a green
   // one; every bot read as the menu unfolds: bots/summary.svelte.ts) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
@@ -20,7 +19,9 @@
   import { tick, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import { openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
+  import { openQuiz } from '../kikimimi/invite.svelte.ts';
+  import { english } from '#lib/english/open.svelte.ts';
+  import { hooksOn } from '#lib/ui-state/preview.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
@@ -53,6 +54,8 @@
   let { bells, each, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
+  // the old ききみみ sheet, off the menu since English Study took the 英語 pill: its specs' way in until it's deleted
+  if (typeof location !== 'undefined' && hooksOn(new URLSearchParams(location.search))) (window as unknown as { __kikiOpen?: () => void }).__kikiOpen = () => openQuiz();
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
 
@@ -227,9 +230,9 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
       </span>
     </button>
-    <!-- 英語 (ききみみ): the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
-    <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
-      onclick={() => (wakeQuizVoice(), pick(() => openQuiz()))}>
+    <!-- 英語: English Study (lib/english) -->
+    <button type="button" class="item" data-hud-english aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('english')}
+      onclick={() => pick(() => english.show())}>
       <span class="lbl">{t('panel.kikimimi')}</span>
       <span class="ic">
         <!-- a speech balloon in the gear's soft brown, three cream dots -->

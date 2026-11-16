@@ -1,8 +1,7 @@
 // The island's sheets' chunks: each loaded once (ui-state/reload.ts lazy), by its first opening
 // or ahead of it: one a quiet moment once the island is in and the service worker controls the page (its caches
 // serve them: never a second download, never a failed fetch Safari would keep for the page's life), and the one a
-// HUD button is touched down for. けんこう's chunk holds ごはん's code, never its food data (that loads on use). ききみみ's warm() also
-// brings in its hub and the remembered level's items.
+// HUD button is touched down for. けんこう's chunk holds ごはん's code, never its food data (that loads on use).
 import { isChunkError, lazy } from '#lib/ui-state/reload.ts';
 import { chunkSheet } from '#lib/sync/log.ts';
 import { workerControls } from '#lib/ui-state/swLate.ts';
@@ -11,6 +10,7 @@ import { weddingSheet } from '../wedding/open.svelte.ts';
 import { hiking } from '../hiking/open.svelte.ts';
 import { kenkou } from '../health/open.svelte.ts';
 import { prefetchBots } from '../bots/open.svelte.ts';
+import { english } from '#lib/english/open.svelte.ts';
 
 export const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
 export const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
@@ -19,7 +19,7 @@ export const loadKikimimi = lazy(() => import('../kikimimi/KikimimiSheet.svelte'
 
 const CHUNKS = {
   health: () => kenkou.prefetch(),
-  kikimimi: () => loadKikimimi(true).then((m) => m.warm()),
+  english: () => english.prefetch(),
   travel: () => trips.prefetch(),
   hiking: () => hiking.prefetch(),
   wedding: () => weddingSheet.prefetch(),
@@ -35,7 +35,7 @@ export type SheetChunk = keyof typeof CHUNKS;
  *  chunk.fail named by the sheet: Safari's names no file). */
 export function prefetchSheet(k: SheetChunk): Promise<unknown> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return Promise.resolve();
-  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k)));
+  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k === 'english' ? 'kikimimi' : k)));
 }
 
 const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 200));

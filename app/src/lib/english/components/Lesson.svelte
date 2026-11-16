@@ -8,6 +8,7 @@
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Player from './Player.svelte';
+  import Controls from './Controls.svelte';
   import FlagSheet from './FlagSheet.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -123,6 +124,7 @@
 <section class="screen" role="presentation" data-en-lesson={clip.id} data-en-at={at} onpointerdown={input} onkeydown={input}>
   <div class="top"><NavBar pad title={clip.title} {onback} {onclose} /></div>
   <Player video={clip.video} title={clip.title} bind:player />
+  <Controls {player} seg={q?.seg ?? null} />
   <div class="body sheet-scroll" bind:this={body}>
     {#if at === -1}
       <article class="card pad" data-en-watch>

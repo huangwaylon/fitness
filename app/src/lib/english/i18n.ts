@@ -66,6 +66,12 @@ const S = {
   endHome: { ja: '完了', en: 'Done' },
   seg: { ja: '▶ {from}–{to}秒', en: '▶ {from}–{to} s' },
   credit: { ja: '動画：{credit}（YouTubeの埋め込みで再生）。質問と解説は私たちが作ったものです。', en: 'Video: {credit}, played by YouTube’s embed. The questions and notes are ours.' },
+  // the player's controls (Controls)
+  play: { ja: '再生', en: 'Play' },
+  pause: { ja: '一時停止', en: 'Pause' },
+  back5: { ja: '−5秒', en: '−5 s' },
+  segAgain: { ja: 'この部分', en: 'This part' },
+  seek: { ja: '再生位置', en: 'Position' },
   // the player's states
   offline: { ja: 'オフラインのため動画を再生できません。つながると再生できます。', en: "You're offline: the video plays once you're back online." },
   unavailable: { ja: 'この動画は今、ここでは再生できません。', en: "This video can't be played here right now." },

@@ -21,11 +21,13 @@ interface Study {
   ms: Map<LocalDate, number>;
   /** The latest day with any study row. */
   last: LocalDate | null;
+  /** Each day's last clip finished (mine only). */
+  byDay: Map<LocalDate, string>;
 }
 
 /** `who`'s English Study rows, read as `me` gets them (mine whole, anyone else's summary). */
 export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
-  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null };
+  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, byDay: new Map() };
   for (const r of rows) {
     if (r[1] !== who || r[3] !== 'listen') continue;
     let d: unknown;
@@ -38,7 +40,7 @@ export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
     if (!row || row.gm !== TV_GM) continue;
     if (row.f === 1) {
       out.days.add(row.d);
-      if (row.u) out.clips.add(row.u);
+      if (row.u) out.clips.add(row.u), out.byDay.set(row.d, row.u);
     }
     const wk = weekKeyOf(row.d);
     out.ms.set(wk, (out.ms.get(wk) ?? 0) + row.ms);

@@ -32,8 +32,10 @@
   /** 別の動画にする: the clip shown instead of the day's (null: the day's). */
   let other = $state<string | null>(null);
   const daily = $derived(CLIPS.find((c) => !mine.clips.has(c.id)) ?? CLIPS[0]);
-  const shown = $derived<Clip>(CLIPS.find((c) => c.id === other) ?? daily);
   const doneToday = $derived(mine.days.has(today));
+  /** Done today: the card shows the clip finished today (別の動画にする still offers the next). */
+  const todays = $derived(doneToday ? CLIPS.find((c) => c.id === mine.byDay.get(today)) : undefined);
+  const shown = $derived<Clip>(CLIPS.find((c) => c.id === other) ?? todays ?? daily);
   /** The next clip after the one shown, the unfinished first (in order, round). */
   function nextAfter(id: string): string {
     const i = CLIPS.findIndex((c) => c.id === id);

@@ -37,7 +37,9 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 `iframe_api` script (it would need a third-party `script-src`). A segment pauses at its end (the time extrapolated
 between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
-`playsinline=1`. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
+`playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
+stopped), −5秒, この部分 (the question's segment), a scrubber with the time (never locked), and 0.75× only when the
+frame's `availablePlaybackRates` offer more than 1. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The e2e answer the frame with
 a stand-in player.
 
