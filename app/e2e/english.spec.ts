@@ -12,6 +12,7 @@ import { CLIPS } from '../src/lib/english/clips/index.ts';
 import { planOf } from '../src/lib/english/plan.ts';
 import { metaOf } from '../src/lib/english/catalog.ts';
 import { shownOf } from '../src/lib/english/collections.ts';
+import { hideAndShow } from './memory.ts';
 import { momentsOf } from '../src/lib/english/phrases.ts';
 
 /** The clips as offered (the shared plan). */
@@ -405,7 +406,7 @@ test('この動画のフレーズ: from the lesson’s bar and from まとめ, t
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
 });
 
-test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, the island’s “ambient” again after', async ({ page }) => {
+test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, paused when the page is hidden, the island’s “ambient” again after', async ({ page }) => {
   // WebKit's navigator.audioSession, stood in for (Playwright's WebKit has none): the types the page sets, in order
   await page.addInitScript(() => {
     const seen: string[] = [];
@@ -418,6 +419,12 @@ test('a lesson plays on the silent switch: iOS audio session “playback” whil
   await start(page);
   const sessions = () => page.evaluate(() => (globalThis as unknown as { __sessions: string[] }).__sessions.slice());
   await expect.poll(async () => (await sessions()).at(-1)).toBe('playback');
+  // put away while it plays: paused (the 'playback' session would play on in the lock screen)
+  await lesson(page).locator('[data-en-watch-all]').click();
+  await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'playing');
+  const n = (await ytCommands(page)).length;
+  await hideAndShow(page);
+  await expect.poll(async () => (await ytCommands(page)).slice(n).some((c) => c[0] === 'pauseVideo')).toBe(true);
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
   await expect.poll(async () => (await sessions()).at(-1)).toBe('ambient');

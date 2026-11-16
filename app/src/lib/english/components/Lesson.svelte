@@ -129,12 +129,16 @@
   }
   // the clip has the floor: the island's sound paused, iOS's session 'playback' so the silent switch doesn't mute it
   videoFocus(true);
-  const onHidden = () => document.visibilityState === 'hidden' && leaving();
+  // put away (an app switch, the lock): the clip paused, or the 'playback' session plays it on the lock screen
+  const away = () => (player?.pause(), leaving());
+  const onHidden = () => document.visibilityState === 'hidden' && away();
   document.addEventListener('visibilitychange', onHidden);
+  addEventListener('pagehide', away);
   onDestroy(() => {
     videoFocus(false);
     clearInterval(timer);
     document.removeEventListener('visibilitychange', onHidden);
+    removeEventListener('pagehide', away);
     player?.pause();
     leaving();
   });
