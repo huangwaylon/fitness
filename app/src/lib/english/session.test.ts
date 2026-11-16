@@ -12,4 +12,7 @@ describe('partWay (home’s 続きから)', () => {
     // まとめ: the play's own length (3 here, drawn from a bank of 21), not the bank's
     expect(partWay(at(3))).toBe(false);
   });
+  it('is never a play whose まとめ was reached, even one gone back from after it (its next opening draws the next)', () => {
+    expect(partWay({ ...at(1), sent: '2026-11-16' })).toBe(false);
+  });
 });

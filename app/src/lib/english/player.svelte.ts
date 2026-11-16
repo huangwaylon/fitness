@@ -43,6 +43,8 @@ const HINT = 'hd720';
 const HELLO_MS = 12_000;
 /** A play asked this long ago that hasn't started: `stuck`. */
 const STUCK_MS = 2_500;
+/** A seek's deliveries from before it are let go this long at most. */
+const SEEK_MS = 3_000;
 
 export class YtPlayer {
   state = $state<YtState>('loading');
@@ -63,8 +65,10 @@ export class YtPlayer {
   #frame: HTMLIFrameElement;
   #last = { t: 0, at: 0 };
   #stopAt: number | null = null;
-  /** A seek on its way: deliveries' times ignored until one is near it. */
+  /** A seek on its way: deliveries' times ignored until one is near it (or SEEK_MS has passed: one landing further off,
+   *  a keyframe's, never holds the segment's stop back). */
   #seek: number | null = null;
+  #seekAt = 0;
   #heard = false;
   /** The last play asked has started (playing or buffering since). */
   #started = true;
@@ -88,6 +92,7 @@ export class YtPlayer {
   play(from: number, to: number | null): void {
     this.#stopAt = to;
     this.#seek = from;
+    this.#seekAt = performance.now();
     this.#last = { t: from, at: performance.now() };
     this.time = from;
     this.#cmd('seekTo', [from, true]);
@@ -103,6 +108,7 @@ export class YtPlayer {
     const to = Math.max(0, this.duration ? Math.min(t, this.duration) : t);
     this.#stopAt = null;
     this.#seek = to;
+    this.#seekAt = performance.now();
     this.#last = { t: to, at: performance.now() };
     this.time = Math.round(to * 10) / 10;
     this.#cmd('seekTo', [to, true]);
@@ -136,6 +142,7 @@ export class YtPlayer {
   reload(src: string): void {
     this.state = 'loading';
     this.error = null;
+    this.stuck = false;
     this.#frame.src = src;
   }
 
@@ -219,7 +226,7 @@ export class YtPlayer {
         if (!this.#told && this.state === 'playing' && this.quality) (this.#told = true), this.#onQuality?.(this.quality);
         const t = info.currentTime;
         if (typeof t === 'number' && Number.isFinite(t)) {
-          if (this.#seek !== null && Math.abs(t - this.#seek) > 2) break; // (the time from before the seek)
+          if (this.#seek !== null && Math.abs(t - this.#seek) > 2 && performance.now() - this.#seekAt < SEEK_MS) break; // (the time from before the seek)
           this.#seek = null;
           this.#last = { t, at: performance.now() };
         }

@@ -3,7 +3,9 @@
   // always works), the questions in order and まとめ; ‹ 前へ / 次へ › at the foot, never locked. A miss replays the
   // segment with the cue and a quiet 答えを見る; a second shows 「答えはこれ」. No red, no ×, no sound, no score.
   // The place is kept on this phone (session.ts). The study time (active.ts) goes into the `listen` rows: one when
-  // まとめ is reached (once a day a clip), one for time not yet sent when the lesson is left (≥ 1 min).
+  // まとめ is reached (once a play: a finished play isn't resumed, its next opening draws the next), one for time not
+  // yet sent when the lesson is left (≥ 1 min). Its failures are logged (english.fail: the embed's, a play that doesn't
+  // start; the bank's in data.ts).
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
   // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度.
   import { onDestroy, untrack } from 'svelte';
@@ -24,6 +26,7 @@
   import { bankNow, loadBank } from '../data.ts';
   import { harderOn } from '../prefs.ts';
   import { safeReload } from '#lib/ui-state/reload.ts';
+  import { log } from '#lib/sync/log.ts';
   import { durText, s } from '../i18n.ts';
   import type { ClipMeta } from '../catalog.ts';
   import type { Clip, Question } from '../types.ts';
@@ -67,7 +70,8 @@
     if (now) begin(now);
     else fetchBank();
   });
-  let sentDay = $state<LocalDate | null>(saved?.sent ?? null);
+  /** The day this play's まとめ wrote its row (a resumed play is one not finished: none yet). */
+  let sentDay = $state<LocalDate | null>(null);
   let act: Active = newActive(saved?.unsent ?? 0, resume ? saved!.perQ : {});
   let player = $state<YtPlayer>();
   let watched = $state(false);
@@ -129,8 +133,8 @@
     at = Math.max(-1, bank === 'ready' ? Math.min(len, n) : Math.min(0, n));
     player?.pause();
     body?.scrollTo({ top: 0 });
-    // まとめ reached: the day's row (once a day a clip; a re-watch another day counts again)
-    if (at === len && sentDay !== today()) {
+    // まとめ reached: the play's row (once; もう一度 the same day is a play of its own and writes its own)
+    if (at === len && !sentDay) {
       sentDay = today();
       writeRow(true);
     }
@@ -152,8 +156,26 @@
     st[at] = r.st;
     if (r.replay) seg(q);
     // a predict's continuation, heard once it's settled
-    else if (r.st.r && q.then) player?.play(q.then[0], q.then[1]);
+    else if (r.st.r) heardThen(q);
   }
+  /** 答えを見る after a miss: settled, so a predict's continuation plays too. */
+  function showAnswer(): void {
+    if (!q || !cur) return;
+    fresh = 'reveal';
+    st[at] = reveal(cur);
+    heardThen(q);
+  }
+  const heardThen = (x: Question) => x.then && player?.play(x.then[0], x.then[1]);
+
+  // the embed's failures and a play that doesn't start (the first a lesson: iOS asks a tap on the video once), logged
+  let stuckTold = false;
+  $effect(() => {
+    const p = player;
+    if (!p) return;
+    const on = navigator.onLine;
+    if (p.state === 'error') untrack(() => log('english.fail', { what: p.error === null ? 'hello' : 'embed', clip: clip.id, ...(p.error !== null && { code: p.error }), on }, 2));
+    else if (p.stuck && !stuckTold) (stuckTold = true), untrack(() => log('english.fail', { what: 'stuck', clip: clip.id, on }, 1));
+  });
   let typed = $state('');
   $effect(() => {
     typed = untrack(() => cur?.typed ?? '');
@@ -210,7 +232,7 @@
           {/if}
           {#if !cur.r && cur.miss === 1}
             <div class="nudge" data-en-nudge {@attach (el) => untrack(() => intoView(el, 'nudge'))}><p>{s('nudge')}</p><p class="meta">{q.cue}</p>
-              <button type="button" class="quiet" data-sfx="tick" data-en-show onclick={() => ((fresh = 'reveal'), (st[at] = reveal(cur)))}>{s('showAnswer')}</button></div>
+              <button type="button" class="quiet" data-sfx="tick" data-en-show onclick={showAnswer}>{s('showAnswer')}</button></div>
           {/if}
           {#if cur.r}
             <div class="reveal" data-en-reveal={cur.r.k} {@attach (el) => untrack(() => intoView(el, 'reveal'))}>

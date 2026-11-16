@@ -1,6 +1,6 @@
 // A lesson's place on this phone (docs/english.md "The page": leaving keeps the place): per player, per clip, the
-// question shown, each question's state and the study time counted but not yet in a row, and the day its まとめ last
-// wrote a row. Dropped when the clip's content changed (its version), the oldest let go past KEEP.
+// question shown, each question's state and the study time counted but not yet in a row, and the day this play's
+// まとめ wrote its row. Dropped when the clip's content changed (its version), the oldest let go past KEEP.
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import type { QState } from './lesson.ts';
@@ -14,7 +14,7 @@ export interface Saved {
   st: QState[];
   unsent: number;
   perQ: Record<number, number>;
-  /** The day a まとめ of this clip last wrote its row (null: never). */
+  /** The day this play's まとめ wrote its row (null: not yet): a finished play isn't resumed. */
   sent: LocalDate | null;
   /** When it was saved (ms): the oldest go first. */
   t: number;
@@ -35,8 +35,9 @@ export function loadSaved(who: Who, id: string, v: string): Saved | null {
 }
 
 /** Whether a saved place is a play left part-way: on a question, not the watch card nor the play's まとめ (its own
- *  length, not the bank's: a finished play's next opening draws the next). */
-export const partWay = (s: Saved | null): boolean => !!s && Array.isArray(s.ids) && s.at >= 0 && s.at < s.ids.length;
+ *  length, not the bank's), and its まとめ not reached (one gone back from after it is finished: its next opening draws
+ *  the next). */
+export const partWay = (s: Saved | null): boolean => !!s && Array.isArray(s.ids) && !s.sent && s.at >= 0 && s.at < s.ids.length;
 
 /** My plays left part-way on this phone, the most recent first (each clip's version as saved). */
 export const partWays = (who: Who): { id: string; v: string; at: number; n: number }[] =>

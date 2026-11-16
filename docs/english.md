@@ -74,7 +74,8 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
 - **書き取り:** the words heard are counted (「k/n 語 聞き取れました」), the rest shown in the answer colour.
 - **まとめ:** the scenes worth hearing again (anything not ◎), the clip's phrases, 通して見る. It finishes the clip once
   six questions (all, if fewer) are answered or shown; else it says how many are left and goes to the first.
-- Leaving keeps the place on this phone: the clip, the question, the answers.
+- Leaving keeps the place on this phone: the clip, the question, the answers. A play whose まとめ was reached is
+  finished, even if gone back from it: its next opening draws the next.
 
 ## The player
 
@@ -91,10 +92,14 @@ iPhone 15): YouTube ignores a forced quality and picks by the frame's device pix
 still asked (setPlaybackQuality) at ready and each play, and the quality played is counted once a play
 (`act:english.q.<quality>` in the log's `use`). The e2e answer the frame with a stand-in player.
 
+**The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
+answer, `bad` a file not its clip), the embed in error (`embed` with YouTube's `code`; `hello` no answer to the
+handshake), a play that didn't start (`stuck`, once a lesson); each with the clip and whether the phone was online.
+
 ## Progress
 
-A `listen` row (`gm` 'tv', `u` the clip's id, contract/listen.ts) each time a まとめ is reached (`f: 1`, every answer
-so far; a re-watch too), and one without `f` when a clip is left part-way with a minute or more not yet sent. `ms` is
+A `listen` row (`gm` 'tv', `u` the clip's id, contract/listen.ts) once a play, when its まとめ is reached (`f: 1`, every
+answer so far; もう一度 the same day is a play of its own), and one without `f` when a clip is left part-way with a minute or more not yet sent. `ms` is
 the active study time the row adds: the video playing with the page visible, plus a question card's time with input
 in the last 60 s, at most 90 s a question. It is the only `listen` row the record takes (the retired ききみみ's
 were deleted); its owner gets it whole, everyone else `{d, g, n, ms, gm, f?}`.
