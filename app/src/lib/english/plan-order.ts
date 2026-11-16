@@ -283,5 +283,13 @@ export const PLANNED: readonly string[] = [
   'antihack',
   'peckjoins',
   'craigtemp',
-  'tomscreens'
+  'tomscreens',
+  'rossmona',
+  'pamprank',
+  'firstscene',
+  'carlyroom',
+  'wetcement',
+  'joeyfinds',
+  'dwightvotes',
+  'truffled'
 ];

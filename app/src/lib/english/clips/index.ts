@@ -286,11 +286,20 @@ import { craigTemp } from './craigtemp.ts';
 import { antiHack } from './antihack.ts';
 import { tomScreenBan } from './tomscreens.ts';
 import { peckJoins } from './peckjoins.ts';
+import { pamprank } from './pamprank.ts';
+import { dwightVotes } from './dwightvotes.ts';
+import { rossMona } from './rossmona.ts';
+import { wetCement } from './wetcement.ts';
+import { joeyfinds } from './joeyfinds.ts';
+import { firstScene } from './firstscene.ts';
+import { carlyRoom } from './carlyroom.ts';
+import { truffled } from './truffled.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
   rossList,
   michaelJim,
+  rossMona,
   waitress,
   bloomingdales,
   dinnerplan,
@@ -339,6 +348,7 @@ export const CLIPS: readonly Clip[] = [
   dwightHimself,
   iChristmas,
   pilotOpening,
+  pamprank,
   gameRoom,
   aprilGetFired,
   youngjim,
@@ -362,6 +372,8 @@ export const CLIPS: readonly Clip[] = [
   costumePrize,
   germsTalk,
   suckit,
+  dwightVotes,
+  wetCement,
   newHairdo,
   ronDesk,
   centralperk,
@@ -394,6 +406,7 @@ export const CLIPS: readonly Clip[] = [
   heroes,
   donnaBully,
   joeyLie,
+  carlyRoom,
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
@@ -404,6 +417,7 @@ export const CLIPS: readonly Clip[] = [
   mexBus,
   canvassing,
   ronShot,
+  firstScene,
   ronharass,
   annLeaving,
   conflictPranks,
@@ -470,6 +484,7 @@ export const CLIPS: readonly Clip[] = [
   conesOfDunshire,
   dwightquits,
   videoDome,
+  joeyfinds,
   scarnRead,
   gryzzlBoxes,
   distract,
@@ -549,6 +564,7 @@ export const CLIPS: readonly Clip[] = [
   annclub,
   disadulation,
   pitchWomen,
+  truffled,
   badReview,
   ohTheWall,
   kathybook,
