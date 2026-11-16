@@ -101,17 +101,31 @@ import { promSeason } from './promseason.ts';
 import { birthdayMonth } from './birthdaymnth.ts';
 import { setStraight } from './setstraight.ts';
 import { ronPoetry } from './ronpoetry.ts';
+import { firstComplaint } from './firstcomp.ts';
+import { leslieAnnForum } from './annforum.ts';
+import { joeyStinks } from './joeystinks.ts';
+import { benCriminal } from './bencriminal.ts';
+import { unsexyRoadTrip } from './roadtrip.ts';
+import { senatorOscar } from './senatoroscar.ts';
+import { jimBack } from './jimback.ts';
+import { ronDiane } from './rondiane.ts';
+import { jerryBurritoLie } from './burritolie.ts';
+import { beefMilk } from './beefmilk.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
   waitress,
   datinglang,
   laundromat,
+  jerryBurritoLie,
   gameRoom,
   johnnyGoodbye,
   centralperk,
   furniture,
   ronShowHost,
+  senatorOscar,
+  ronDiane,
+  beefMilk,
   heroes,
   buttOfJoke,
   twodates,
@@ -125,22 +139,27 @@ export const CLIPS: readonly Clip[] = [
   phoebeRuns,
   leslieRedFlag,
   jansStroller,
+  unsexyRoadTrip,
   ronLeslieLocked,
   womensAppreciation,
+  jimBack,
+  benCriminal,
   imFine,
+  firstComplaint,
   dwightDate,
   ronPermit,
   ronMeditate,
+  // ふつう
   tomSwagger,
   ronWill,
   tomNegotiate,
   mamasDead,
   workBestie,
-  // ふつう
   andySecret,
   scarnRead,
   gryzzlBoxes,
   distract,
+  leslieAnnForum,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
@@ -165,12 +184,13 @@ export const CLIPS: readonly Clip[] = [
   getaway,
   evilLaugh,
   fluoride,
+  joeyStinks,
   kellyLarson,
   goodHusband,
+  // 速い
   pamLabor,
   ronHearing,
   ryanOffice,
-  // 速い
   couplesOnly,
   annOffended,
   phoebebook,

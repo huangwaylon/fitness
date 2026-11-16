@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const pamLabor: Clip = {
-  id: 'pamlabor', video: '6ILnFPZtOKY', title: 'Pam Goes into Labor', dur: 276, wpm: 182, band: 'mid',
+  id: 'pamlabor', video: '6ILnFPZtOKY', title: 'Pam Goes into Labor', dur: 276, wpm: 182, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

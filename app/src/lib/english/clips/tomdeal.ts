@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const tomNegotiate: Clip = {
-  id: 'tomdeal', video: '5_1LuKDuvk8', title: 'Tom\'s Negotiation Skills', dur: 203, wpm: 166, band: 'slow',
+  id: 'tomdeal', video: '5_1LuKDuvk8', title: 'Tom\'s Negotiation Skills', dur: 203, wpm: 166, band: 'mid',
   tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

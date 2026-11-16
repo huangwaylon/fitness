@@ -10,7 +10,7 @@ import type { Clip } from '../types.ts';
 
 export const workBestie: Clip = {
   id: 'workbestie', video: 'ENw2r_HY6RU', title: 'Donna meets her new dramatic work bestie', dur: 196, wpm: 167,
-  band: 'slow', tags: ['職場', '友だち'],
+  band: 'mid', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const ryanOffice: Clip = {
-  id: 'ryanoffice', video: '1tlgVpbSZcE', title: 'Ryan Gets His Own Office', dur: 230, wpm: 184, band: 'mid',
+  id: 'ryanoffice', video: '1tlgVpbSZcE', title: 'Ryan Gets His Own Office', dur: 230, wpm: 184, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

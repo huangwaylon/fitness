@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const ronHearing: Clip = {
   id: 'ronhearing', video: 'byYsenDcx0A', title: 'Ron Swanson Answers Questions with Questions', dur: 190, wpm: 184,
-  band: 'mid', tags: ['職場'],
+  band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
