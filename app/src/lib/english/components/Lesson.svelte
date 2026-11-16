@@ -40,8 +40,6 @@
   const resume = partWay(saved) && saved!.st.length === saved!.ids.length;
   const play = past.plays + 1;
   const seed = untrack(() => seedOf(who, clip.id, play));
-  // (draw.ts takes `{ harder }` with its native-tier rules, docs/english.md "Content": till then it is ignored)
-  const drawWith = draw as (...a: [...Parameters<typeof draw>, { harder: boolean }]) => Question[];
   let qs = $state.raw<Question[]>([]);
   const len = $derived(qs.length);
   /** The bank: 'ready' once drawn. */
@@ -51,7 +49,7 @@
   let at = $state(resume ? saved!.at : -1);
   let st = $state<QState[]>([]);
   function begin(c: Clip): void {
-    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : drawWith(c, past.seen, play, seed, { harder: harderOn() });
+    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn() });
     st = resume && qs.length === saved!.ids.length ? saved!.st : qs.map(blank);
     if (resume && qs.length !== saved!.ids.length) at = -1;
     bank = 'ready';
