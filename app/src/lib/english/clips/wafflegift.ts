@@ -11,7 +11,7 @@ import type { Clip } from '../types.ts';
 
 export const waffleGift: Clip = {
   id: 'wafflegift', video: 'EKJ0SYcn2ik', title: 'Ann and Ben compete for the *perfect* gift', dur: 251, wpm: 186,
-  band: 'fast', tags: ['友だち', '買い物'],
+  band: 'mid', tags: ['友だち', '買い物'],
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // R fix: “Ann wins, Ben gives up” was weak (V2, blind ≈ 50 %); replaced with Ben outbidding her at the last second

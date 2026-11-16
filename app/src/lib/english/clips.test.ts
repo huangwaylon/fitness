@@ -3,7 +3,7 @@
 // that leaks the key, dictations, coverage per bank, reveals, and draws over five plays. A lesson from before the
 // banks (under 16 items) is held to the schema, segments, banned words, dictations and the draws only.
 import { describe, expect, it } from 'vitest';
-import { CLIPS } from './clips/index.ts';
+import { bandsOf, CLIPS } from './clips/index.ts';
 import { draw, GROUP_OF, seedOf, type History } from './draw.ts';
 import { cleanLine } from '#lib/contract/text.ts';
 import type { Clip, Question } from './types.ts';
@@ -31,6 +31,14 @@ describe('the clips', () => {
     expect(CLIPS.length).toBeGreaterThan(0);
     expect(new Set(CLIPS.map((c) => c.id)).size).toBe(CLIPS.length);
     for (const c of CLIPS) expect(c.id, c.id).toMatch(/^[a-z0-9][a-z0-9-]{0,11}$/);
+  });
+
+  it('bands: the library’s thirds by wpm (scripts/english-wpm.ts --write); the order by band', () => {
+    const bands = bandsOf(CLIPS.map((c) => c.wpm));
+    expect(CLIPS.map((c) => `${c.id} ${c.band}`)).toEqual(CLIPS.map((c, i) => `${c.id} ${bands[i]}`));
+    const rank = { slow: 0, mid: 1, fast: 2 };
+    const order = CLIPS.map((c) => rank[c.band]);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 
   for (const c of CLIPS)

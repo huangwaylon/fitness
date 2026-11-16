@@ -21,7 +21,7 @@
 import type { Clip } from '../types.ts';
 
 export const joeyStay: Clip = {
-  id: 'joeystay', video: 'MBBUJj1hbZg', title: 'Joey Wants Rachel to Stay', dur: 94, wpm: 189, band: 'fast',
+  id: 'joeystay', video: 'MBBUJj1hbZg', title: 'Joey Wants Rachel to Stay', dur: 94, wpm: 189, band: 'mid',
   tags: ['家', '友だち'],
   credit: 'Friends (official YouTube channel)',
   questions: [

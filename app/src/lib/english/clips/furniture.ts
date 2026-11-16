@@ -7,8 +7,8 @@ export const furniture: Clip = {
   video: 'w0Y5yHEOE10',
   title: 'Chandler and Joey Finally Go Furniture Shopping',
   dur: 243,
-  wpm: 132,
-  band: 'fast',
+  wpm: 152,
+  band: 'slow',
   tags: ['家', '買い物'],
   credit: 'Chandler and Joey Finally Go Furniture Shopping | Friends, official Friends channel (YouTube)',
   questions: [

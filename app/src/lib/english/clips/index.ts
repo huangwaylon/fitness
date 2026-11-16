@@ -1,9 +1,9 @@
 // English Study's clips, in the order they're offered (easier first): today's clip is the first not finished yet.
 // One line a clip: its file in this folder, its lesson in docs/english.md's shape (lib/english/types.ts Clip).
-// clips.test checks every one (ids, segments, choices, the notes).
-// Order: by band (ゆっくり → ふつう → 速い), the first five lessons as they were; then the banks of 2026-11-16 (all 速い),
-// slower first, the situation changing from one to the next.
-import type { Clip } from '../types.ts';
+// clips.test checks every one (ids, segments, choices, the notes, the bands and this order).
+// Order: by band (ゆっくり → ふつう → 速い; bandsOf), the first five lessons first as they were; within a band slower
+// first, the situation changing from one clip to the next.
+import type { Band, Clip } from '../types.ts';
 import { waitress } from './waitress.ts';
 import { centralperk } from './centralperk.ts';
 import { furniture } from './furniture.ts';
@@ -31,22 +31,25 @@ import { seatingChart } from './seatingchart.ts';
 import { noturkey } from './noturkey.ts';
 
 export const CLIPS: readonly Clip[] = [
+  // ゆっくり
   waitress,
   datinglang,
   laundromat,
   centralperk,
   furniture,
   twodates,
-  fluoride,
   phoebeRuns,
+  joeymakeup,
+  // ふつう
+  fluoride,
   bucketList,
   waffleGift,
   saylove,
-  joeymakeup,
-  phoebebook,
-  possum,
   joeyStay,
+  possum,
+  phoebebook,
   annclub,
+  // 速い
   kathybook,
   savings,
   rossNothing,
@@ -57,3 +60,11 @@ export const CLIPS: readonly Clip[] = [
   seatingChart,
   noturkey
 ];
+
+/** Each wpm's band, the library cut in thirds (types.ts Band): ゆっくり below the ⌊n/3⌋th slowest, 速い from the
+ *  ⌊2n/3⌋th on, ふつう between. clips.test holds every clip's band to it; scripts/english-wpm.ts writes them. */
+export function bandsOf(wpms: readonly number[]): Band[] {
+  const sorted = [...wpms].sort((a, b) => a - b);
+  const lo = sorted[Math.floor(sorted.length / 3)], hi = sorted[Math.floor((2 * sorted.length) / 3)];
+  return wpms.map((w) => (w < lo ? 'slow' : w < hi ? 'mid' : 'fast'));
+}

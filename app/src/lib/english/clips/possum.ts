@@ -10,7 +10,7 @@ import type { Clip } from '../types.ts';
 
 export const possum: Clip = {
   id: 'possum', video: 'lMc0jj-kNCM', title: 'How to Catch a Possum According to Andy', dur: 118, wpm: 197,
-  band: 'fast', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // why: agreeing ← Japanese そうですね as a yes before adding detail; remembering ← well as えーと

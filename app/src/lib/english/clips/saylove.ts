@@ -8,7 +8,7 @@ import type { Clip } from '../types.ts';
 
 export const saylove: Clip = {
   id: 'saylove', video: 'xmaFIlnrzsQ', title: 'The First Time Ross & Rachel Say "Love"', dur: 53, wpm: 186,
-  band: 'fast', tags: ['恋愛'],
+  band: 'mid', tags: ['恋愛'],
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: the key was the only choice about both of them; "scared to commit" was weak. A title-led distractor now (V2/K3)

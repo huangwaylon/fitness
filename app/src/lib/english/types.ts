@@ -2,8 +2,9 @@
 // with our questions over its segments and our Japanese notes. Nothing of the clip's audio or transcript is ours to
 // ship: a question quotes one short line at most. Pure types.
 
-/** How fast the clip's speech runs (its words a minute over speech time): ゆっくり < 100, ふつう 100–130, 速い > 130. */
-type Band = 'slow' | 'mid' | 'fast';
+/** How fast the clip's speech runs against the rest of the library: ゆっくり, ふつう, 速い = the slowest, middle and
+ *  fastest third of all clips by `wpm` (clips/index.ts bandsOf; scripts/english-wpm.ts writes them). */
+export type Band = 'slow' | 'mid' | 'fast';
 
 /** What a question tests, in four groups (draw.ts GROUP_OF): the gist; literal (detail, number, who); interpretive
  *  (infer, attitude, pragma, humor, predict); form (marker, phrase, sound, dict). Its card label: i18n.ts `skill.*`. */
@@ -64,8 +65,10 @@ export interface Clip {
   title: string;
   /** Its length, s. */
   dur: number;
-  /** Words a minute over speech time (from the captions). */
+  /** Words a minute over speech time (the union of the caption events that hold words), from the captions: one
+   *  measure for every clip (scripts/english-wpm.ts). */
   wpm: number;
+  /** Its third of the library by wpm. */
   band: Band;
   /** The situation, one or two (職場, 店・レストラン, 電話, 家, 恋愛, 友だち, 旅行, 買い物, お願い・断り). */
   tags: readonly string[];

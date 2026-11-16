@@ -8,7 +8,7 @@ export const datinglang: Clip = {
   title: 'Rachel Doesn’t Understand Dating Language',
   dur: 89,
   wpm: 129,
-  band: 'mid',
+  band: 'slow',
   tags: ['恋愛', '友だち'],
   credit: 'Rachel Doesn’t Understand Dating Language | Friends, official Friends channel (YouTube)',
   questions: [

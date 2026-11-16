@@ -7,8 +7,8 @@ export const laundromat: Clip = {
   video: 'BsBhGoKpyHI',
   title: 'Ross and Rachel’s First Date at the Laundromat',
   dur: 311,
-  wpm: 114,
-  band: 'mid',
+  wpm: 128,
+  band: 'slow',
   tags: ['恋愛', 'お願い・断り'],
   credit: 'Ross and Rachel’s First Date at the Laundromat | Friends, official Friends channel (YouTube)',
   questions: [

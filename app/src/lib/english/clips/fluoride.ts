@@ -8,7 +8,7 @@ import type { Clip } from '../types.ts';
 
 export const fluoride: Clip = {
   id: 'fluoride', video: '8c0JrJdJrBA', title: 'Leslie and Tom Sex Up Fluoride', dur: 214, wpm: 176,
-  band: 'fast', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // why: poison ← strychnine and cyanide follow, in the wrong relation; drug ← it's added to water to treat teeth

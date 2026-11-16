@@ -7,8 +7,8 @@ export const centralperk: Clip = {
   video: 'yHQi4YmMF68',
   title: 'Rachel Gets a Job at Central Perk',
   dur: 138,
-  wpm: 136,
-  band: 'fast',
+  wpm: 153,
+  band: 'slow',
   tags: ['職場', '友だち'],
   credit: 'Rachel Gets a Job at Central Perk | Friends, official Friends channel (YouTube)',
   questions: [

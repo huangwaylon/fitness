@@ -38,6 +38,7 @@
     "knip": "knip",
     "verify": "node scripts/verify.ts",
     "english:hashes": "node scripts/english-hashes.ts",
+    "english:wpm": "node scripts/english-wpm.ts",
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",
     "room-packs": "node scripts/room-packs.ts",

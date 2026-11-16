@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const waitress: Clip = {
-  id: 'waitress', video: 'lm2MpPpkGL8', title: 'Rachel Is a Bad Waitress', dur: 68, wpm: 126, band: 'mid',
+  id: 'waitress', video: 'lm2MpPpkGL8', title: 'Rachel Is a Bad Waitress', dur: 68, wpm: 126, band: 'slow',
   tags: ['職場', 'お願い・断り'],
   credit: 'Friends (official YouTube channel)',
   questions: [
