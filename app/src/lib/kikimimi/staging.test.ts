@@ -1,10 +1,7 @@
 // ききみみ's staging (docs/kikimimi.md "Visuals"): every scene's backdrop on disk at 1x / 2x / 3x and in the art
 // manifest, level 4's items each staged (a known scene or none, a valid channel), the sound marks landing on their words,
 // and the line as SoundLine renders it.
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { art } from '#lib/art.ts';
 import { CHANNELS, HENSHIN_LV, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
 import { AUTHORED as BANK } from './source.ts';
 import { MARKS, NOISE, PLACES } from './staging.ts';
@@ -24,8 +21,6 @@ const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
 // (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
 await loadAll();
 
-const STATIC = join(import.meta.dirname, '../../../static');
-const SCRIPT = JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/scenes/scenes.json'), 'utf8')) as { scenes: Record<string, string> };
 /** Levels 4-7 (5 the アナウンス pack): the staged levels. */
 const L4 = BANK.filter((it) => it.lv >= 4 && it.lv !== HENSHIN_LV);
 /** 音の へんしん's phrases (level 8): the plain stage, one `say` mark over the focus where it's said otherwise. */
@@ -34,14 +29,6 @@ const DRILL = BANK.filter((it) => it.lv === HENSHIN_LV);
 const OWN = new Set(CONTENT.map((it) => it.id));
 
 describe('kikimimi scenes', () => {
-  it('every scene has its three webps, its manifest entry at the card size, and its prompt', () => {
-    expect(Object.keys(SCRIPT.scenes).sort()).toEqual([...SCENE_IDS].sort());
-    for (const id of SCENE_IDS) {
-      for (const s of ['', '@2x', '@3x']) expect(existsSync(join(STATIC, `art/scene/${id}${s}.webp`)), `${id}${s}`).toBe(true);
-      expect(art(`scene/${id}`), id).toMatchObject({ w: 393, h: 224 });
-    }
-  });
-
   it('every level-4 to level-7 item is staged: a known scene or none, a valid channel', () => {
     expect(Object.keys(PLACES).sort()).toEqual(L4.filter((it) => !OWN.has(it.id)).map((it) => it.id).sort());
     // the sets' items carry theirs, never in the tables too

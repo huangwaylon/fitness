@@ -5,7 +5,6 @@ import { boundsOf, ROOM_IDS, type RoomId } from './plan.ts';
 import { LINES, visitorLine, type LineContext } from './visitorLines.ts';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { has3d } from '../villager3d/manifest.ts';
-import { CAST } from '#lib/kikimimi/cast.ts';
 import { mulberry32 } from '#lib/random.ts';
 import type { Pt } from './plan.ts';
 
@@ -36,12 +35,11 @@ const inside = (p: VisitorPose, r: { x0: number; x1: number; z0: number; z1: num
 const snap = (ps: readonly VisitorPose[]) => ps.map((p) => ({ ...p, point: p.point?.id ?? null }));
 
 describe('the museum’s visitors: who', () => {
-  it('three of each personality, each the roster’s, with NH’s model and a ききみみ voice', () => {
+  it('three of each personality, each the roster’s, with NH’s model', () => {
     expect(VISITORS.length).toBe(24);
     for (const [id, pers] of VISITORS) {
       expect(ROSTER[id as keyof typeof ROSTER]?.personality, id).toBe(pers);
       expect(has3d(id), id).toBe(true);
-      expect(CAST[id as keyof typeof CAST], id).toBeTruthy();
     }
     const counts = Object.groupBy(VISITORS, ([, p]) => p);
     for (const p of Object.keys(LINES)) expect(counts[p as keyof typeof counts]?.length).toBe(3);

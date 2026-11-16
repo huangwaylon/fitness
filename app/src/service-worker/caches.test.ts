@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -92,25 +92,20 @@ describe('audio cache (an LRU per class)', () => {
 describe('precache', () => {
   it('leaves the critters (fish, bugs, junk), the beach finds and the presents out: they are cached on first use', () => {
     for (const p of ['art/critters/sea-bass.webp', '/fitness/art/critters/common-butterfly.webp', 'art/finds/cowrie.webp', '/fitness/art/finds/t-rex-skull.webp', 'art/presents/froggy-chair.webp']) expect(precachable(p)).toBe(false);
-    // ききみみ's scene backdrops, at every scale
-    for (const p of ['art/scene/cafe.webp', '/fitness/art/scene/gate@2x.webp', 'art/scene/living@3x.webp']) expect(precachable(p)).toBe(false);
   });
   it("leaves the maps' MapLibre out (its chunk, worker and CSS, the engines): kept once a map draws", () => {
     for (const p of ['_app/immutable/chunks/maplibre.D4lzds31.js', '/fitness/_app/immutable/workers/maplibre-gl-worker-Br3j0JGE.js', '_app/immutable/assets/maplibre.qvkd0SPb.css']) expect(precachable(p)).toBe(false);
     // the map's own light component and the rest of the chunks stay
     for (const p of ['_app/immutable/chunks/LRf9-Dmh.js', '_app/immutable/assets/TravelSheet.oVavZwKD.css']) expect(precachable(p)).toBe(true);
   });
-  it("leaves ききみみ's parts out (levels/parts/*.json's chunks): kept once a game loads them, carried with MapLibre", () => {
-    for (const p of ['_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js', '/fitness/_app/immutable/chunks/kiki-s2-call-b.CpMVfY-b.js']) expect([isKikiPart(p.replace(/^\/?/, '/')), precachable(p), carried(p)]).toEqual([true, false, true]);
-    expect([carriedNameOf('https://x.test/fitness/_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js'), carriedNameOf('/_app/immutable/chunks/DjWTDWF4.js')]).toEqual(['kiki-lv4-1', null]);
-    // ききみみ's code (its sheet, pages, lanes) stays precached; so does a chunk merely named like one
-    for (const p of ['_app/immutable/chunks/Ckfv2d2q.js', '_app/immutable/assets/KikimimiSheet.x1.css', '_app/immutable/chunks/kikimimi.Ab1.js']) expect([precachable(p), carried(p)]).toEqual([true, false]);
+  it('carries MapLibre; a plain chunk has no carried name', () => {
     expect(carried('_app/immutable/chunks/maplibre.D4lzds31.js')).toBe(true);
+    expect(carriedNameOf('/_app/immutable/chunks/DjWTDWF4.js')).toBeNull();
   });
   it('leaves the features a phone may never open out (the English catalogs, the wedding board): kept once used', () => {
-    const feats = ['_app/immutable/chunks/en.Ba527raq.js', '/fitness/_app/immutable/chunks/en-kiki-call.DVtnZiTH.js', '_app/immutable/chunks/wedding.DQVcQLzo.js'];
+    const feats = ['_app/immutable/chunks/en.Ba527raq.js', '/fitness/_app/immutable/chunks/en-travel.DVtnZiTH.js', '_app/immutable/chunks/wedding.DQVcQLzo.js'];
     for (const p of feats) expect([precachable(p), carried(p)]).toEqual([false, true]);
-    expect(feats.map(carriedNameOf)).toEqual(['en', 'en-kiki-call', 'wedding']);
+    expect(feats.map(carriedNameOf)).toEqual(['en', 'en-travel', 'wedding']);
     // their CSS, the menu's openers and a chunk merely named like one stay
     for (const p of ['_app/immutable/assets/WeddingSheet.x1.css', '_app/immutable/chunks/Co_ed_l8.js', '_app/immutable/chunks/weddings.Ab1.js', '_app/immutable/chunks/enx.Ab1.js', '_app/immutable/chunks/hiking.Ab1.js']) expect([precachable(p), carried(p)]).toEqual([true, false]);
   });
@@ -127,12 +122,12 @@ describe('precache', () => {
     expect(carryPlan(files, [old('en.O1.js'), old('wedding.O3.js'), old('en-tent.N5.js')]))
       .toEqual({ copy: ['_app/immutable/chunks/en-tent.N5.js'], fetch: ['_app/immutable/chunks/en.N1.js', '_app/immutable/chunks/wedding.N3.js', '_app/immutable/chunks/wedding.N4.js'] });
   });
-  it("an install copies the carried files an older shell holds, fetches a changed part by name and MapLibre's once a map drew", () => {
-    const files = ['_app/immutable/chunks/kiki-lv1.NEW1.js', '_app/immutable/chunks/kiki-lv2.SAME.js', '_app/immutable/chunks/kiki-lv4.NEW4.js', '_app/immutable/chunks/maplibre.M2.js', '_app/immutable/assets/maplibre.C1.css'];
+  it("an install copies the carried files an older shell holds, fetches a changed chunk by name and MapLibre's once a map drew", () => {
+    const files = ['_app/immutable/chunks/en-food.NEW1.js', '_app/immutable/chunks/en-tent.SAME.js', '_app/immutable/chunks/en-gym.NEW4.js', '_app/immutable/chunks/maplibre.M2.js', '_app/immutable/assets/maplibre.C1.css'];
     const old = (p: string) => `https://x.test/fitness/_app/immutable/${p}`;
-    // lv1 changed (another hash held), lv2 the same, lv4 never loaded (lv4-1 is another part); no map drawn
-    expect(carryPlan(files, [old('chunks/kiki-lv1.OLD1.js'), old('chunks/kiki-lv2.SAME.js'), old('chunks/kiki-lv4-1.X.js'), old('chunks/Ab.js')]))
-      .toEqual({ copy: ['_app/immutable/chunks/kiki-lv2.SAME.js'], fetch: ['_app/immutable/chunks/kiki-lv1.NEW1.js'] });
+    // en-food changed (another hash held), en-tent the same, en-gym never loaded (en-gym-x is another chunk); no map drawn
+    expect(carryPlan(files, [old('chunks/en-food.OLD1.js'), old('chunks/en-tent.SAME.js'), old('chunks/en-gym-x.X.js'), old('chunks/Ab.js')]))
+      .toEqual({ copy: ['_app/immutable/chunks/en-tent.SAME.js'], fetch: ['_app/immutable/chunks/en-food.NEW1.js'] });
     // a map drew: its unchanged CSS copied, its changed chunk fetched
     expect(carryPlan(files, [old('assets/maplibre.C1.css')])).toEqual({ copy: ['_app/immutable/assets/maplibre.C1.css'], fetch: ['_app/immutable/chunks/maplibre.M2.js'] });
     expect(carryPlan(files, [])).toEqual({ copy: [], fetch: [] });

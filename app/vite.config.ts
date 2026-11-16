@@ -102,7 +102,7 @@ const preloadListenersOff: Plugin = {
  *  lists every file of the build (~11,700: the art, the rooms, the fonts' subsets), which the worker filtered as it
  *  started, 560 KB of script (56 KB gzipped) fetched with each update check that finds a deploy. The lists are Kit's
  *  defines, set on the worker's environment just before its build; its manifest module names them, and here they're
- *  written in already filtered. The chunks kept on first use (caches.ts carried: MapLibre, ききみみ's parts) stay listed:
+ *  written in already filtered. The chunks kept on first use (caches.ts carried: MapLibre, the features) stay listed:
  *  each install carries them on. The static files' entries carry their content hash. */
 const swPrecacheOnly: Plugin = {
   name: 'sw-precache-only',
@@ -128,8 +128,7 @@ const swPrecacheOnly: Plugin = {
 };
 
 /** Vitest's file-system module cache (on by default, node_modules/.vitest-cache) keys a module on its own source: an
- *  `import.meta.glob`'s list of files was cached with it, so a file added under the glob (kikimimi's levels/parts/*.json,
- *  a new unit's chunk) stayed unseen by vitest till the cache was cleared. A module with a glob is never cached. */
+ *  `import.meta.glob`'s list of files was cached with it, so a file added under the glob stayed unseen by vitest till the cache was cleared. A module with a glob is never cached. */
 const globsUncached: Plugin = {
   name: 'vitest-globs-uncached',
   configureVitest(ctx) {
@@ -168,40 +167,11 @@ const mapLibreNames: Plugin = {
   }
 };
 
-/** ききみみ's content chunks (pool.ts: each levels/parts/<part>.json its own chunk, ~690 KB gzipped in all) under a
- *  stable name (`_app/immutable/chunks/kiki-<part>.<hash>.js`), so the service worker leaves them out of its precache
- *  (caches.ts isKikiPart: kept once a game loads them; useless offline without their audio packs, kept the same way)
- *  and an install fetches a changed part by its name. Nothing imports a part statically (the bundle's check). */
-const KIKI_PART = /\/src\/lib\/kikimimi\/levels\/parts\/([\w-]+)\.json$/;
-const kikiPartNames: Plugin = {
-  name: 'kiki-part-names',
-  applyToEnvironment: (env) => env.name === 'client',
-  outputOptions(o) {
-    const chunk = o.chunkFileNames;
-    if (typeof chunk !== 'function') throw new Error("vite.config.ts kiki-part-names: Kit's client chunk names changed; recheck the parts' names");
-    return {
-      ...o,
-      chunkFileNames: (c) => {
-        const part = KIKI_PART.exec(c.facadeModuleId ?? '')?.[1];
-        return part && c.moduleIds.every((id) => KIKI_PART.test(id)) ? chunk(c).replace('[hash]', `kiki-${part}.[hash]`) : chunk(c);
-      }
-    };
-  },
-  generateBundle(_, bundle) {
-    const isPart = (f: string) => /(^|\/)kiki-[\w-]+\./.test(f.slice(f.lastIndexOf('/') + 1));
-    const parts = Object.values(bundle).filter((c) => c.type === 'chunk' && isPart(c.fileName));
-    if (!parts.length) throw new Error('vite.config.ts kiki-part-names: no ききみみ part chunk named; recheck pool.ts PARTS');
-    for (const c of Object.values(bundle)) {
-      if (c.type === 'chunk' && c.imports.some(isPart)) throw new Error(`vite.config.ts kiki-part-names: ${c.fileName} imports a ききみみ part statically; load it through pool.ts`);
-    }
-  }
-};
-
 /** What a phone may never open, under stable names (`_app/immutable/chunks/<name>.<hash>.js`): the English catalogs
  *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on), the wedding board's sheet (`wedding`) and
  *  ごはん's barcode scanner and its decoder (`scan`), so
  *  the service worker leaves them out of its precache (caches.ts carried: kept once used, an install carrying a changed
- *  one by its name, as ききみみ's parts). Not トレイル's: a trail never opened works offline on the mountain
+ *  one by its name). Not トレイル's: a trail never opened works offline on the mountain
  *  (offline.spec). A chunk is named only if all of it is the feature's; nothing outside the feature imports one
  *  statically (the bundle's check). */
 const FEATURE_CHUNK: [RegExp, (m: RegExpExecArray) => string][] = [
@@ -268,7 +238,6 @@ export default defineConfig({
     globsUncached,
     mapLibreNames,
     basisModule,
-    kikiPartNames,
     featureNames,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),

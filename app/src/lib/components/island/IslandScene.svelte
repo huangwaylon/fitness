@@ -47,8 +47,6 @@
   import { HIGHFIVE_LIVE_MS, heardHighFive } from '#lib/world/highFives.ts';
   import TreeShakes from './TreeShakes.svelte';
   import PartnerNews from './PartnerNews.svelte';
-  import KikimimiHost from '../kikimimi/KikimimiHost.svelte';
-  import { quiz } from '../kikimimi/invite.svelte.ts';
   import { HATS, birthdaysShown, isBirthday } from '#lib/world/birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from '#lib/world/wedding.ts';
   import { eventAt } from '#lib/world/events.ts';
@@ -172,11 +170,10 @@
   /** Whose villager is in the tent (one place at a time: nowhere on the island then). */
   const inTent = (id: VillagerActor): boolean => id !== 'mine' && where.inTent[whoOf(id)];
 
-  const covered = $derived(paused || ui.overlay || quiz.open);
+  const covered = $derived(paused || ui.overlay);
   /** Its CSS (data-covered, data-sheet: every animation held, the island hidden): under a sheet only once the sheet is
    *  up (its first frame out, ui.up), not in the tap's frame, where restyling the island's 600 elements held up the
-   *  sheet's first frame. (data-sheet: never for ききみみ's alone, whose sheet is in the scene
-   *  and animates.) */
+   *  sheet's first frame. */
   const up = $derived(ui.up.length > 0);
   // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the
   // taps and the overlays. No WebGL (failed3): the island's message instead (never on the users' iPhones).
@@ -1285,7 +1282,6 @@
         <TreeShakes bind:this={shakes} scene={sceneEl} onsting={faces.sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />
-        <KikimimiHost />
         {#if WeatherC}<WeatherC where="stage" skyH={horizonPx + 6} />{/if}
         {#if nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
         {#if bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}

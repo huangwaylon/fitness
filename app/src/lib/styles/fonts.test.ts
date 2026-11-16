@@ -12,8 +12,6 @@ import jaSheets from '#lib/i18n/sheets.ja.json';
 import enSheets from '#lib/i18n/sheets.en.json';
 import jaFood from '#lib/i18n/food.ja.json';
 import enFood from '#lib/i18n/food.en.json';
-import jaKiki from '#lib/i18n/kikimimi.ja.json';
-import enKiki from '#lib/i18n/kikimimi.en.json';
 import jaTravel from '#lib/i18n/travel.ja.json';
 import enTravel from '#lib/i18n/travel.en.json';
 import jaWed from '#lib/i18n/wedding.ja.json';
@@ -31,13 +29,8 @@ import enKalori from '#lib/i18n/kalori.en.json';
 import jaBots from '#lib/i18n/bots.ja.json';
 import enBots from '#lib/i18n/bots.en.json';
 
-/** Each ききみみ game's own strings (i18n/kiki-<game>.*.json: `kiki.<game>.*`, merged in with its lane by addCatalog). */
-const KIKI_GAMES = {
-  ja: import.meta.glob<Record<string, string>>('../i18n/kiki-*.ja.json', { eager: true, import: 'default' }),
-  en: import.meta.glob<Record<string, string>>('../i18n/kiki-*.en.json', { eager: true, import: 'default' })
-};
-const ja = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
-const en = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
+const ja = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
+const en = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');

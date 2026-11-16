@@ -20,7 +20,7 @@ import type { Pt, Rect, Wing } from './plan.ts';
 import { SEA_TANKS } from './seaTanks.ts';
 import { visitorLine, type Line, type LineContext, type RoomKind } from './visitorLines.ts';
 
-/** Who visits: three of each NH personality from ききみみ's cast (kikimimi/cast.ts), each with NH's model
+/** Who visits: three of each NH personality, each with NH's model
  *  (villager3d/villagers.json); visitors.test holds them to the roster. */
 export const VISITORS: readonly (readonly [id: string, personality: Personality])[] = [
   ['goldie', 'normal'], ['maple', 'normal'], ['molly', 'normal'],

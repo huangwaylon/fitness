@@ -7,11 +7,11 @@ import { runnerTrouble, tally } from '../../scripts/e2e-flakes.ts';
 import { failedSpecs, missed, rulesFor } from '../../scripts/e2e-missed.ts';
 
 const ctx: Ctx = {
-  specs: ['boot.spec.ts', 'tent.spec.ts', 'tent-hold.spec.ts', 'kikimimi-call.spec.ts', 'kikimimi-mic-role.spec.ts', 'fishing3d.spec.ts', 'offline.spec.ts', 'big.spec.ts'],
+  specs: ['boot.spec.ts', 'tent.spec.ts', 'tent-hold.spec.ts', 'bots-call.spec.ts', 'bots-mic-role.spec.ts', 'fishing3d.spec.ts', 'offline.spec.ts', 'big.spec.ts'],
   importers: new Map([['island.ts', Array.from({ length: 11 }, (_, i) => `s${i}.spec.ts`)], ['trips.ts', ['tent-hold.spec.ts']]]),
   rules: [
     ['content/**', ['offline']],
-    ['src/lib/components/kikimimi/*/**', ['kikimimi-$1*', 'kikimimi-mic-$1*']],
+    ['src/lib/components/bots/*/**', ['bots-$1*', 'bots-mic-$1*']],
     ['src/lib/components/tent/**', ['tent*']],
     ['src/lib/nowhere/**', ['missing']],
     ['src/lib/huge/**', ['big']]
@@ -22,8 +22,8 @@ const ctx: Ctx = {
 
 describe('e2e impact', () => {
   it('maps a path by the first rule whose specs exist, $1 its first *, else the file name', () => {
-    expect(mapFile('src/lib/components/kikimimi/call/Call.svelte', ctx)).toEqual(['kikimimi-call.spec.ts']);
-    expect(mapFile('src/lib/components/kikimimi/role/x.ts', ctx)).toEqual(['kikimimi-mic-role.spec.ts']);
+    expect(mapFile('src/lib/components/bots/call/Call.svelte', ctx)).toEqual(['bots-call.spec.ts']);
+    expect(mapFile('src/lib/components/bots/role/x.ts', ctx)).toEqual(['bots-mic-role.spec.ts']);
     expect(mapFile('src/lib/components/tent/engine.ts', ctx)).toEqual(['tent-hold.spec.ts', 'tent.spec.ts']);
     expect(mapFile('content/listen/a.yaml', ctx)).toEqual(['offline.spec.ts']);
     expect(mapFile('src/lib/components/world3d/fishing3d.ts', ctx)).toEqual(['fishing3d.spec.ts']);

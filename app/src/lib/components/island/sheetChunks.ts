@@ -15,7 +15,6 @@ import { english } from '#lib/english/open.svelte.ts';
 export const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
 export const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
 export const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
-export const loadKikimimi = lazy(() => import('../kikimimi/KikimimiSheet.svelte'));
 
 const CHUNKS = {
   health: () => kenkou.prefetch(),

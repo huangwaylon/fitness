@@ -9,7 +9,6 @@ import jaMain from './ja.json';
 import jaTab from './kenkou.ja.json';
 import jaSheets from './sheets.ja.json';
 import jaFood from './food.ja.json';
-import jaKiki from './kikimimi.ja.json';
 import jaTravel from './travel.ja.json';
 import jaWed from './wedding.ja.json';
 import jaNames from './catch.ja.json';
@@ -18,9 +17,7 @@ import jaIts from './its.ja.json';
 import jaKalori from './kalori.ja.json';
 import jaBots from './bots.ja.json';
 
-/** Each ききみみ game's own strings (kiki-<game>.ja.json, merged in with its lane). */
-const jaKikiGames: Record<string, string> = Object.assign({}, ...Object.values(import.meta.glob<Record<string, string>>('./kiki-*.ja.json', { eager: true, import: 'default' })));
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaKiki, ...jaKikiGames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
 
 /** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */
@@ -28,9 +25,6 @@ const WORLD: RegExp[] = [
   // lines: しずえ, the visitors, the curator, the twins, ハニワくん, the snowman, notes in bottles
   /^host\./, /^chat\./, /^visitor\./, /^museum\.curator/, /^shop\.say\./, /^tent\.hha\./, /^tent\.theme\./, /^tent\.colour\./,
   /^world\./, /^beach\./, /^critter\./, /^shake\./, /^present\./, /^zodiac\./, /^harvest\.(hello|doneHost)$/,
-  /^kiki\.(invite|join|host)/,
-  // ききみみ's spaced-kana lines in its sheet (しずえ's, under .kana's keep-all: theme.css)
-  /^kiki\.(hub\.|cheer\.|fb\.|notice\.|ready$|taikai\.(hello$|reveal\.|host\.)|welcome\.(hello|sound)$|placed\.say$|mission\.(call|task)$|path\.hello$|prog\.empty$)/,
   /^guest\.(arrived|welcome)$/, /^panel\.sheet(Offline|Retry)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
   // the HUD, the island's own controls and plates (the leaf menu's pills are a sheet's copy: kanji since 2026-11-08)
   /^island\.(health|food|menu)/, /^zukan\.title$/, /^wallet\.title$/,
@@ -65,10 +59,7 @@ describe('ja copy: the sheets (word-break: normal)', () => {
   });
 });
 
-/** ききみみ zones its own keys (its しずえ and NPC lines inside the sheet are the world's: docs/kikimimi.md): out of the
- *  sheets' spelling rules. */
-const PENDING = /^kiki\./;
-const sheet = Object.entries(ja).filter(([k]) => !isWorld(k) && !PENDING.test(k));
+const sheet = Object.entries(ja).filter(([k]) => !isWorld(k));
 const JA = '[\\u3040-\\u30ff\\u4e00-\\u9fff々ー]';
 
 describe('ja copy: the sheets are normal Japanese', () => {
@@ -82,10 +73,9 @@ describe('ja copy: the sheets are normal Japanese', () => {
   });
 });
 
-// The terms the health review found spelt two ways across sheets (health plan C6), for every sheet's key, ききみみ's
-// too: 図鑑 (not ずかん), 捕まえる, 作る, a range with 〜 (10/29〜11/4, 3〜60%: never – or ～), 取り消す for an undo,
+// The terms the health review found spelt two ways across sheets (health plan C6), for every sheet's key: 図鑑 (not ずかん), 捕まえる, 作る, a range with 〜 (10/29〜11/4, 3〜60%: never – or ～), 取り消す for an undo,
 // 資料 for food data's sources (「{n}件の資料で一致」). The world keeps its kana (「ずかんに のったよ！」).
-describe('ja copy: one spelling per term, every sheet (ききみみ too)', () => {
+describe('ja copy: one spelling per term, every sheet', () => {
   const sheets = Object.entries(ja).filter(([k]) => !isWorld(k));
   const bad = (re: RegExp) => sheets.filter(([, v]) => re.test(v)).map(([k, v]) => `${k}: ${v}`);
   it('図鑑, 捕まえた, 作る, 取り消す', () => {

@@ -15,8 +15,6 @@ import jaSheets from '#lib/i18n/sheets.ja.json';
 import enSheets from '#lib/i18n/sheets.en.json';
 import jaFood from '#lib/i18n/food.ja.json';
 import enFood from '#lib/i18n/food.en.json';
-import jaKiki from '#lib/i18n/kikimimi.ja.json';
-import enKiki from '#lib/i18n/kikimimi.en.json';
 import jaTravel from '#lib/i18n/travel.ja.json';
 import enTravel from '#lib/i18n/travel.en.json';
 import jaWed from '#lib/i18n/wedding.ja.json';
@@ -36,8 +34,6 @@ import enCatalog from '#lib/i18n/catalog.en.json';
 import jaTent from '#lib/i18n/tent.ja.json';
 import enTent from '#lib/i18n/tent.en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
-import { sceneArt } from '#lib/components/kikimimi/scene/stage.ts';
-import { SCENE_IDS } from '#lib/kikimimi/bank.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { KIND_LIST } from '#lib/layout/catalog.ts';
@@ -76,8 +72,6 @@ const prefixes = new Set([
   ...[...code.matchAll(/"([\w.:/#-]+)\{/g)].map((m) => m[1])
 ]);
 const hostLines = new Set([...code.matchAll(/(?:hostLine\(|===\s*)'(\w+)'/g)].map((m) => m[1]));
-/** A ききみみ results line's keys (components/kikimimi/listenView.ts hostLine(prefix, …): `<prefix>.all|some|few`). */
-for (const m of code.matchAll(/hostLine\('([\w.]+)',/g)) for (const x of ['all', 'some', 'few']) literals.add(`${m[1]}.${x}`);
 const DYNAMIC: readonly RegExp[] = [
   // panel/previewLabel.ts: `${zone}.${key}.${v}`, 設定's 季節 (zone 'season') over ui-state/preview.ts's choices
   /^season\.(event|season|weather|tod)\.[\w-]+$/,
@@ -91,13 +85,8 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-/** Each ききみみ game's own strings (i18n/kiki-<game>.*.json: `kiki.<game>.*`, merged in with its lane by addCatalog). */
-const KIKI_GAMES = {
-  ja: import.meta.glob<Record<string, string>>('./i18n/kiki-*.ja.json', { eager: true, import: 'default' }),
-  en: import.meta.glob<Record<string, string>>('./i18n/kiki-*.en.json', { eager: true, import: 'default' })
-};
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
@@ -125,19 +114,6 @@ describe('i18n catalogs', () => {
     for (const c of [jaTravel, enTravel]) expect(Object.keys(c).filter((k) => !k.startsWith('travel.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('travel.'))).toEqual([]);
     expect(Object.keys(jaTravel).sort()).toEqual(Object.keys(enTravel).sort());
-  });
-  it('keep ききみみ クイズ’s strings (kiki.*) in its own catalog, out of the first load', () => {
-    for (const c of [jaKiki, enKiki]) expect(Object.keys(c).filter((k) => !k.startsWith('kiki.'))).toEqual([]);
-    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kiki.'))).toEqual([]);
-  });
-  it('keep each ききみみ game’s strings (kiki.<game>.*) in its own catalog (i18n/kiki-<game>.*.json, with its lane)', () => {
-    for (const [f, c] of Object.entries(KIKI_GAMES.ja)) {
-      const g = /kiki-([a-z0-9]+)\.ja\.json$/.exec(f)![1];
-      expect(Object.keys(c).filter((k) => !k.startsWith(`kiki.${g}.`)), f).toEqual([]);
-      expect(Object.keys(c).sort(), f).toEqual(Object.keys(KIKI_GAMES.en[f.replace('.ja.', '.en.')] ?? {}).sort());
-      expect(Object.keys(c).filter((k) => k in jaKiki), f).toEqual([]);
-    }
-    expect(Object.keys(KIKI_GAMES.en).length).toBe(Object.keys(KIKI_GAMES.ja).length);
   });
   it('keep けっこんしき’s strings (wed.*) in its own catalog, but the menu pill’s, out of the first load', () => {
     for (const c of [jaWed, enWed]) expect(Object.keys(c).filter((k) => !k.startsWith('wed.'))).toEqual([]);
@@ -218,8 +194,6 @@ describe('official art (static/art/manifest.json)', () => {
     ...RING_FRUITS.map((f) => `fruit3d/${f}`),
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`),
-    // ききみみ's scene backdrops (kikimimi/bank.ts SCENE_IDS, kikimimi/scene/stage.ts sceneArt)
-    ...SCENE_IDS.map(sceneArt),
     // the scene's catches (world/critters.ts critterArt)
     ...[...Object.keys(FISH), ...Object.keys(POND_FISH), ...Object.keys(BUGS), ...JUNK, ...Object.keys(SEA)].map((id) => critterArt(id as keyof typeof FISH)),
     // the beach finds (world/beach.ts findArt)

@@ -18,7 +18,6 @@
   import { hiking } from '#lib/components/hiking/open.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
   import { kenkou } from '#lib/components/health/open.svelte.ts';
-  import { quiz } from '#lib/components/kikimimi/invite.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
@@ -126,7 +125,7 @@
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
     <Hud today={view.wallet.today} balance={view.wallet.balance} each={view.viewer === 'G' ? (['A', 'B'] as const).map((p) => ({ name: view.people[p].villagerName, bells: view.wallet.people[p].balance })) : undefined} bind:panelOpen bind:zukanOpen bind:settingsOpen {later} />
-    <HudCoins {view} covered={sheetOpen || quiz.open || ui.overlay} {later} />
+    <HudCoins {view} covered={sheetOpen || ui.overlay} {later} />
     <div class="top">
       <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={sheetOpen} />
     </div>

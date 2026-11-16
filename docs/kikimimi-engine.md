@@ -40,7 +40,7 @@ The phone's ききみみ keys are `DEVICE.kikimimi*` and `kiki*` (sync/storage.t
 
 ### Types
 
-`round/types.ts`, each field documented there. An `AnswerValue` is an int 0–255 or ≤ 12 ints 0–63; `RoundTiming
+round/types.ts, each field documented there. An `AnswerValue` is an int 0–255 or ≤ 12 ints 0–63; `RoundTiming
 {lead, play, answer, auto?}` in ms (an `auto` reveal moves on after 3 s; every other reveal is untimed);
 `GameDef.next` deals an adaptive game's next round (みみ チェック, くりかえし).
 
@@ -51,7 +51,7 @@ tally.ts grades with it, so team tallies and scores agree on every phone.
 
 ### RoundSession
 
-`round/session.ts`, pure: folds intents and the clock into `{phase, players, answers, scores, i}`; its windows are
+round/session.ts, pure: folds intents and the clock into `{phase, players, answers, scores, i}`; its windows are
 `WINDOWS` there. `answer` validates with `deck.valid`; `s` is capped at `maxScore`; rounds ≤ `PLAY_ROUNDS` (32), the quiz
 family's `QUIZ_QS` (8). A heard `open` whose cv isn't mine, or of an unknown game or options, is `blocked: 'update'`
 (the card offers 更新する); a `quiz` open has no cv and is never blocked.
@@ -61,15 +61,15 @@ and everything after it (chunkQueue.ts) until its lane and chunks are in, then h
 
 ### The quiz as a GameDef
 
-`games/quiz/def.ts`: `opts [lv, timer]` (timer: `TIMERS`' index); `deck(seed, lv)`, a round per item (games/quiz/kinds.ts),
+games/quiz/def.ts: `opts [lv, timer]` (timer: `TIMERS`' index); `deck(seed, lv)`, a round per item (games/quiz/kinds.ts),
 `grade = points(right)`. スピード はしご is `ladder` (same opts; a `ladder.rung` round per rung, lower reveals `auto`, the
 deck's `score` the climb). `lesson` (opts `[lv, timer, lesson, tier]`, its unit `u`) is a unit's lesson (curriculum.md
-"Lesson decks and stamps"). `games/quiz/session.ts` `QuizRounds` is the quiz sheet's lobby; おさらい stays a local deck
+"Lesson decks and stamps"). games/quiz/session.ts `QuizRounds` is the quiz sheet's lobby; おさらい stays a local deck
 (srs.ts).
 
 ### The registry
 
-Every game is a lane in `round/registry.ts` (`Lane`, documented there): quiz, ladder, lesson, taikai and check ride the
+Every game is a lane in round/registry.ts (`Lane`, documented there): quiz, ladder, lesson, taikai and check ride the
 sheet's chunk (`EAGER`); a later game is one `LATER` line and its own chunk.
 - **Pages:** `components/kikimimi/<gm>/views.ts` exports lazy `{ lobby?, play?, results? }`, mounted through `<Lazy>`.
 - **Strings:** `i18n/kiki-<gm>.{ja,en}.json` (`kiki.<gm>.*`), added by the views' `kiki-<gm>.ts` (deps.test: kikimimi/
@@ -83,7 +83,7 @@ sheet's chunk (`EAGER`); a later game is one `LATER` line and its own chunk.
 
 ### Shared UI
 
-`components/kikimimi/frame/`: the frames every game fills with snippets (RoundFrame, RevealFrame, Results /
+components/kikimimi/frame/: the frames every game fills with snippets (RoundFrame, RevealFrame, Results /
 ResultsShell, ScoreCard), the review rows (ReviewList, ReviewRow, HearButton, Note, FirstStamp, Why),
 ChoiceGrid, PlayerChip, Sandwich / SandButton; `Transcript` and `scene/*` beside it. Every
 `data-kiki-*` hook stays on its element.
@@ -249,7 +249,7 @@ static/ under its file count (lib/static-budget.ts).
   `voiceSession(on)`, inside a tap, unlocks the context even with sound off and sets the audio session to `playback`
   (plays with the silent switch on); `playVoice` starts a clip at its relay time, ducking the music; decoded buffers in
   an LRU of 4 (`CLIP_CAP`). **Dialogues** (clipPlayer.svelte.ts `playSequence`): each line at its relay time.
-- **Fetching** (`components/kikimimi/packs.ts`, `lib/packStore.ts`): Pages answers a Range with the whole file, so a pack
+- **Fetching** (components/kikimimi/packs.ts, `lib/packStore.ts`): Pages answers a Range with the whole file, so a pack
   is fetched whole once, held in memory (`HOLD_BYTES`, 12 MB) and each clip cut from it and decoded just in time.
   `prefetchClips` fetches the first question's packs once a game is in sight (a mode's page, みんなで, a lesson's card,
   another's lobby: `QuizGame.ahead`), the rest of the deck's from the countdown; never for the hub or あそぶ; none after
@@ -282,7 +282,7 @@ What each game deals and grades. The player's side is kikimimi.md "遊ぶ"; why 
 
 ### しゅうまつ たいかい
 
-A weekend quiz show from the week's misses (`games/taikai/`), Fri 18:00 – Mon 05:00 Tokyo (`window.ts`).
+A weekend quiz show from the week's misses (games/taikai/), Fri 18:00 – Mon 05:00 Tokyo (`window.ts`).
 - **The deck, and why `ids`.** A phone knows only its own player's answers, so no seed can deal the others' misses: each
   phone offers ≤ 4 misses in the lobby as `ev` ops, the host picks (`taikaiPick`: round-robin, topped up with fresh
   items, the hardest last as the wager) and sends them as the `open`'s `ids` (≤ 8).
@@ -295,7 +295,7 @@ A weekend quiz show from the week's misses (`games/taikai/`), Fri 18:00 – Mon 
 
 ### みみ チェック
 
-The placement (`games/check/`): solo, nothing on the wire, dealt a round at a time through `GameDef.next`. Starts at
+The placement (games/check/): solo, nothing on the wire, dealt a round at a time through `GameDef.next`. Starts at
 かわ (bands: はまべ 1, はまべ 2, かわ, もり, やま, ほし), up a band after 2 right, down after 1 wrong, stops after two
 reversals (≥ 8 items) or at 12. The skills take turns (数字, つながる音, 返事・本音, 似た音, one gist) over voiced
 items (`TAIKAI_IDS`). Placed: the reversals' mean, rounded down; each skill's band gives the chips. Row `{gm: 'check',
@@ -304,19 +304,19 @@ lv: <placed>, u: <a digit a skill, x unsampled>}`. Other games' tiers come from 
 ### The listening games
 
 ことば タイル, たちぎき, ようじ でんわ, すうじ ラッシュ and しずえの ニュース deal `listened` files at the lobby's place and
-share `games/listened.ts` (pure: `EMPTY` 63, `ROLES` 2, `listenOpts` `[lv, timer, ear]`, `filesOf`, `tierAt`, `shareOf`,
+share games/listened.ts (pure: `EMPTY` 63, `ROLES` 2, `listenOpts` `[lv, timer, ear]`, `filesOf`, `tierAt`, `shareOf`,
 `cvOver`, `listenGame` / `listenRecord` over a game's `ListenRules`); each lane.ts is one `listenLane(RULES, deal, more?)`.
 **The ear** is each player's tier (0 はまべ … 3 やま: `tierOf`) against the deck's place (ほし's counts as やま's, so a
 やま ear plays ほし as authored): below, easy; above, hard; else as authored. **A place with no content** (`stageOf`,
 catalog.ts `contentPlaceOf`): `filesOf` deals the nearest place's files (a tie: the lower) and `tierAt(ear, lv, deck)`
 (deck: a card's `lv`) makes everyone hard on a deck from below the picked place, easy from above. The wire keeps the
-picked `lv`; an older build deals nothing there, so its cv differs and it's blocked (更新する). Co-op has two roles; the team tally is `team.all`. The pages share `components/kikimimi/listenView.ts`. A
+picked `lv`; an older build deals nothing there, so its cv differs and it's blocked (更新する). Co-op has two roles; the team tally is `team.all`. The pages share components/kikimimi/listenView.ts. A
 unit's lesson on recipe 2 deals their cards the same way (curriculum.md "Recipe 2"). Each has an e2e solo, at night and
 co-op on the shipped files.
 
 ### ことば タイル
 
-Rebuild what you heard (`games/tile/`). 6 sentences, shortest first; the clip plays once with no tiles, then the words
+Rebuild what you heard (games/tile/). 6 sentences, shortest first; the clip plays once with no tiles, then the words
 plus 1–4 sound decoys (weak forms, contractions) are tapped into order. A card's `id` is the clip, its `tile.id` the
 row's id. The sentences are plain speech at natural speed: the tiles are the written words (gonna, wanna, gotta the
 only respelled ones), each heard in its clip, in one order (content/listen/README.md "tile").
@@ -326,9 +326,9 @@ only respelled ones), each heard in its clip, in one order (content/listen/READM
   are the whole sentence or one role's half. 100 a sentence.
 - **Co-op:** role 0 the odd slots, role 1 the others. **Row:** `[tile id, ok, wrong-slot mask, rp]`.
 - **Input:** a tap fills my next empty slot (its dashed yuzu outline) or takes a placed tile back; a drag past 8 px
-  (`tile/drag.svelte.ts`, Pointer Events, `touch-action: none` on tiles and my slots only while the window is open)
+  (tile/drag.svelte.ts, Pointer Events, `touch-action: none` on tiles and my slots only while the window is open)
   drops onto a slot (a filled one: inserted, the rest shifting into the nearest empty slot of mine, else replaced),
-  moves a placed tile (a list reorder) or takes it back; the sentence previews the drop while held (`tile/drop.ts`,
+  moves a placed tile (a list reorder) or takes it back; the sentence previews the drop while held (tile/drop.ts,
   pure). Shifting walks my slots only (never the partner's or easy's given word, which is fixed: no lip, a pin). The
   window's end cancels a drag. With my slots full, a tile's tap flashes the sentence's outline. 全部戻す reads 取り消す
   for 4 s after. An empty slot shows its place as a small circled number (never read as a word); the count at the
@@ -339,7 +339,7 @@ only respelled ones), each heard in its clip, in one order (content/listen/READM
 
 ### たちぎき
 
-Overheard three-speaker talk (`games/tachi/`). 2 conversations of 30–50 s, 3 rounds each: opinions (match three Japanese
+Overheard three-speaker talk (games/tachi/). 2 conversations of 30–50 s, 3 rounds each: opinions (match three Japanese
 claims to three faces), changed (who changed their mind), plan (what happens next).
 - **Timing:** the conversation plays before opinions only (+10 s); changed and plan have no clip and nothing replays at
   their reveals (`quietReveal`). After the first play each line replays alone (`game.hear`, not a replay).
@@ -354,7 +354,7 @@ claims to three faces), changed (who changed their mind), plan (what happens nex
 
 ### ようじ でんわ
 
-Phone errands that change mid-call (`games/call/`). 3 calls, 2 rounds each: the call (lines `<id>-<n>` on the relay
+Phone errands that change mid-call (games/call/). 3 calls, 2 rounds each: the call (lines `<id>-<n>` on the relay
 clock), then `<id>-memo` with no clip: a memo of chip rows (what, how many, when, where); the reveal fills the errand's
 basket with what you caught (`basketOf`).
 - **Tiers** (`tierAt`): easy 2 rows, as authored 3, hard 4 plus a sound-trap chip on a number's row (`trapOf`: teen ↔
@@ -366,7 +366,7 @@ basket with what you caught (`basketOf`).
 
 ### すうじ ラッシュ
 
-A café rush of numbers (`games/rush/`). `npm run kikimimi:rush` expands each place's frames into s0–s4-rush.yaml (about a
+A café rush of numbers (games/rush/). `npm run kikimimi:rush` expands each place's frames into s0–s4-rush.yaml (about a
 third of the customers corrected mid-order, はまべ fewer); rush.test checks they're as generated.
 - **Deck:** 8 customers, never two of one frame; a card is a `num` Item with `rush: {ask, at, was, b}`.
 - **Tiers:** hard all 4 chips; as authored 3 (never dropping `was` or the twin); easy 3, `was` dropped. Answers open when
@@ -401,7 +401,7 @@ any level but in no mix, so never a quiz level, a place or the tournament's), co
   adds the wrong choices' words as decoys, hard topped up from sound swaps). Tiles send the board's index per word; a
   typed answer is matched on the phone (match.ts `matchTyped`) and sent the same way (`typedAnswer`: a word right its
   tile, else `OTHER` 62), so nothing typed goes on the wire. The window grows 3 s a missing word. Tiles tap and drag
-  as ことば タイル's (`tile/drag.svelte.ts`, `tile/drop.ts`, the lifted copy `tile/Lift.svelte`); 300 ms before the
+  as ことば タイル's (tile/drag.svelte.ts, tile/drop.ts, the lifted copy tile/Lift.svelte); 300 ms before the
   window ends the phone sends what's placed or typed (a partial answer, wrong unless whole).
 - **Row:** `lv` 8, `[id, ok, pick, rp]` (`henshinRecord`). **Takes:** `<id>`, careful `<id>-c`, fast `<id>-f` (bank.ts
   `takeIds`) share its pack.
@@ -410,7 +410,7 @@ any level but in no mix, so never a quiz level, a place or the tournament's), co
 
 ### まるごと 聞く
 
-The long piece (`games/long/`). Content: content/listen/s0–s3-long.yaml and s4-long-a…d.yaml (`game: long`; all generated
+The long piece (games/long/). Content: content/listen/s0–s3-long.yaml and s4-long-a…d.yaml (`game: long`; all generated
 but ほし's c and d, real), compiled as listen parts; their questions and dictation lines also go into the index's `long` (listen.ts
 `longEntries`), so 記録 and おさらい know them.
 - **Options** `[lv, timer, ear, piece]` (`longOpts`): the host's piece (a pick, else def.ts `pieceFor`).

@@ -1,11 +1,3 @@
-<script module lang="ts">
-  import { openQuiz } from '../kikimimi/invite.svelte.ts';
-  import { hooksOn } from '#lib/ui-state/preview.ts';
-  // the old ききみみ sheet, off the menu since English Study took the 英語 pill: its specs' way in until it's deleted
-  // (module-level: a closure of the component's would hold its detached HUD, and the island's renderer with it)
-  if (typeof location !== 'undefined' && hooksOn(new URLSearchParams(location.search))) (window as unknown as { __kikiOpen?: () => void }).__kikiOpen = () => openQuiz();
-</script>
-
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
   // toggle; aria-expanded) that drops seven pills down under it (six for the guest: no ボット), right-aligned (the user's order, 2026-11-08; kanji on

@@ -293,7 +293,7 @@ are frozen). The level banks stay TypeScript with their `lv`.
 - **Checks** (units.ts `checkUnits`; errors stop the compiler, warnings print): schema, ids and homes, each item within
   one step of the stage, the can-do, the recipe, tiers, American only, every clip past draft, the phrase, recycling and
   coverage rules, a letter past draft.
-- **Level-deck invariance:** the levels' chunks are byte-identical with and without units; `kikimimi/decks.golden.json`
+- **Level-deck invariance:** the levels' chunks are byte-identical with and without units; kikimimi/decks.golden.json
   digests the decks for seeds 0–99 per level, so homing an item can't change a quiz deck (a deliberate bank change is
   `vitest -u`). A unit shows from `voiced` (a draft only with the dev hooks on).
 

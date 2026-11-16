@@ -9,3 +9,5 @@ playwright-results.json
 .cache/
 # npm run coverage (vitest --coverage: coverage/coverage-summary.json)
 coverage/
+# the e2e shards' test lists (scripts/e2e-shards.ts plan: written by CI)
+shards/

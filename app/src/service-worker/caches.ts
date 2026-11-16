@@ -64,13 +64,12 @@ export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
 /** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle),
  *  the balloon presents and the visitors' extras (shown only when one is about or in the ずかん), NH's ground
- *  textures (terrain/nh/: the layout's terrain) and ききみみ's scene backdrops (art/scene/, level 4 only, ~45 KB a scene
- *  at 3 scales: the phone's one): cached on first use, not at install. */
+ *  textures (terrain/nh/: the layout's terrain): cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean =>
-  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/') || path.includes('/art/scene/');
+  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/');
 /** The layout's pieces' 2D art (trees, bushes, flowers, the deco and decor, the bridges) and the world's winter and
  *  night looks: the 3D island draws their models (none of it drawn there: scripts/unused-probe.ts), so it is
- *  もようがえ's trays' and ききみみ's pictures, cached on first use, not at install (~400 KB). The birthday hats stay
+ *  もようがえ's trays' pictures, cached on first use, not at install (~400 KB). The birthday hats stay
  *  precached: the DOM draws them over the 3D villagers. */
 export const isDecorArt = (path: string): boolean =>
   /\/art\/.+-(winter|lit)\.webp$/.test(path) || (/\/art\/(trees|bushes|flowers|deco|decor|bridges)\//.test(path) && !/\/art\/deco\/birthday-hat-/.test(path));
@@ -358,32 +357,26 @@ export const isGuidePhoto = (path: string): boolean => ((isTravel(path) || isHik
  *  its CSS (~1.8 MB raw, ~480 KB on the wire): not at install, but kept in the shell the first time a map draws, and
  *  carried by each install after that (copied when unchanged, fetched when changed: index.ts). */
 const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/maplibre\.|workers\/maplibre-gl-worker-|assets\/maplibre\.)/.test(path);
-/** ききみみ's content (pool.ts: each levels/parts/<part>.json its own chunk, `kiki-<part>.<hash>.js`, named so by
- *  vite.config.ts kiki-part-names; ~690 KB on the wire in all, the precache's biggest growth): not at install (a game's
- *  part is of no use offline without its audio pack, which LISTEN_CACHE keeps on first use too), but kept in the shell
- *  the first time a game loads it, and carried by each install after that (a changed part fetched by its name). */
-export const isKikiPart = (path: string): boolean => /\/_app\/immutable\/chunks\/kiki-[\w-]+\.[\w-]+\.js$/.test(path);
 /** What a phone may never open (vite.config.ts feature-names): the English catalogs' chunks (`en`, `en-<part>`: only
  *  with English on), the wedding board's (`wedding`) and ごはん's barcode decoder (`scan`, its wasm beside it, ~400 KB
  *  on the wire). Not precached (~0.1 MB on the wire, and the English ones
- *  change with every string): kept once used, and carried by each install after that, as ききみみ's parts. */
+ *  change with every string): kept once used, and carried by each install after that. */
 const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/(chunks\/(en(-[\w-]+)?|wedding|scan)\.[\w-]+\.js|assets\/zxing_reader\.[\w-]+\.wasm)$/.test(path);
-/** A carried chunk's name (`kiki-<part>`, `en-<part>`, `wedding`: one name for all the board's chunks; `scan`, its
+/** A carried chunk's name (`en-<part>`, `wedding`: one name for all the board's chunks; `scan`, its
  *  wasm's too) in its path or URL, else null. */
 export const carriedNameOf = (path: string): string | null =>
   /(?:^|\/)_app\/immutable\/assets\/zxing_reader\.[\w-]+\.wasm$/.test(path) ? 'scan'
-  : (/(?:^|\/)_app\/immutable\/chunks\/(kiki-[\w-]+|en(?:-[\w-]+)?|wedding|scan)\.[\w-]+\.js$/.exec(path)?.[1] ?? null);
-/** The build files kept in the shell on first use and carried by each install (MapLibre, ききみみ's parts, the
- *  features above): listed in the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
+  : (/(?:^|\/)_app\/immutable\/chunks\/(en(?:-[\w-]+)?|wedding|scan)\.[\w-]+\.js$/.exec(path)?.[1] ?? null);
+/** The build files kept in the shell on first use and carried by each install (MapLibre and the features above): listed in the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
 export const carried = (path: string): boolean => {
   const p = path.startsWith('/') ? path : `/${path}`;
-  return isMapLibre(p) || isKikiPart(p) || isFeatureChunk(p);
+  return isMapLibre(p) || isFeatureChunk(p);
 };
 
 /**
  * What an install does with this build's carried files (`files`, as the manifest lists them) given what the older
  * shells hold (`held`: their URLs or paths): `copy` the ones they hold as they are; `fetch` the changed ones a phone
- * uses: all of MapLibre's once a map has drawn (any of its files held), and a ききみみ part or a feature's chunk whose
+ * uses: all of MapLibre's once a map has drawn (any of its files held), and a feature's chunk whose
  * name is held (another build's copy). The rest wait for first use.
  */
 export function carryPlan(files: readonly string[], held: readonly string[]): { copy: string[]; fetch: string[] } {
@@ -485,11 +478,11 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
  *  (PRECACHED_FONT_SLICES; the rest cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre, ききみみ's parts and the features a phone may never open (carried: kept once used), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isKikiPart(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

@@ -1,5 +1,8 @@
 # ききみみ: the English listening game
 
+**Retired (2026-11-16):** its sheet and everything it rendered are gone (the 英語 pill opens English Study,
+[english.md](english.md)); the content, the audio and these docs go next.
+
 A listening game for Japanese speakers learning English, for one to three players (A, B and the guest), opened from
 the HUD menu's 「英語」 pill and synced so everyone plays the same round at once. Villagers speak the English; しずえ
 hosts. No ベル, かいがら or economy tie.
@@ -118,7 +121,7 @@ each line's Japanese.
 
 ## Visuals
 
-- **Scene card** (`scene/SceneCard.svelte`): a staged item's setting from the lead-in to the reveal: a painted backdrop
+- **Scene card** (scene/SceneCard.svelte): a staged item's setting from the lead-in to the reveal: a painted backdrop
   (bank.ts `SCENE_IDS`), the place's name and the channel (face to face, `PhoneFrame`, `PaFrame`, `VideoFrame`, all
   CSS/SVG). Levels 1–3 stay on the plain stage.
 - **The backdrops** are generated paper-gouache (`npm run art:scenes`; no text or numbers, so they never give an answer
@@ -236,7 +239,7 @@ Removed with しまの みち.
 
 ### Mode detail
 
-`mode/ModeDetail.svelte`: backdrop, cast and blurb, the place row (`mode/StageRow.svelte`: the quiz's
+mode/ModeDetail.svelte: backdrop, cast and blurb, the place row (mode/StageRow.svelte: the quiz's
 levels; a lane's game every place, its files' places beside them, catalog.ts `contentLevels`, for the
 「準備中」 line), 答える時間, and the foot 誘う / 始める. At volume 0, `kiki.testZero`. Units live on the path,
 not here.
@@ -254,14 +257,14 @@ unless `&arm`); secondary actions sit by their content. No look back mid-game: t
 
 ### おやすみ ものがたり
 
-A bedtime story in the night palette whatever the hour, no score (`story/StoryFrame.svelte`, its own chunk; serials in
+A bedtime story in the night palette whatever the hour, no score (story/StoryFrame.svelte, its own chunk; serials in
 app/content/listen/story/).
 - **The frame:** the scene dimmed with the heads of who's in it; ⏮ ⏯ ⏭; the sleep timer 10 / 20 / 30 min or 全部;
   本文を見る (hidden by default) and 詳しく. The end card unlocks the next chapter.
-- **Model and player** (`kikimimi/bedtime.ts`, `story/player.svelte.ts`): chapters unlock one by one (finished: played to
+- **Model and player** (kikimimi/bedtime.ts, story/player.svelte.ts): chapters unlock one by one (finished: played to
   the end, or the timer ran out in its last third), resume where left, play on the voice bus with the music down; a
   timed story goes on into the next chapter after a pause.
-- **The list** (`story/StoryList.svelte`, 遊ぶ › 寝る前に): each serial's chapters, later ones locked; past `draft` only.
+- **The list** (story/StoryList.svelte, 遊ぶ › 寝る前に): each serial's chapters, later ones locked; past `draft` only.
 - **The hub:** 21:00–04:00 (today.ts `isNight`) きまぐれ is the story; by day `MorningCard` asks `kiki.story.morning` (the
   chapter's `predict` choices).
 - **Minutes, no score:** a `listen` row `{gm: 'story', u: <serial>, lv 4, n 1, r: []}` of the time heard (≥ 10 s), one
@@ -280,7 +283,7 @@ Removed: no word, voice, friend or stamp collection.
 
 ### 設定
 
-`settings/KikiSettings.svelte` (its header has the rows, each kept on the phone: `DEVICE.kiki*`): the sound check, a
+settings/KikiSettings.svelte (its header has the rows, each kept on the phone: `DEVICE.kiki*`): the sound check, a
 lobby's default, 日本語訳, 今週の目標, みみ チェックをもう一度, 音声の出典.
 
 ### First run
@@ -332,7 +335,7 @@ each person's own; only summaries reach the partner.
 
 ### Recommendations and feedback
 
-`kikimimi/advice.ts`, pure (thresholds there):
+kikimimi/advice.ts, pure (thresholds there):
 - **What next** on the results (`kiki.rec.*`, ≤ 3, one tap each): due cards ≥ 4 → おさらい; the weakest skills; a level
   nudge (the last 3 games ≥ 85 % → a try higher; ≤ 50 % → practice first); an accent ≥ 15 points below; an unmeasured
   skill; スピード はしご.

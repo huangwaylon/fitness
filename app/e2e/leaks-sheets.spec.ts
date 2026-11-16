@@ -1,14 +1,13 @@
 // Memory let go of by the sheets and their rooms (docs/ops/testing.md "Memory"; leaks.spec.ts has the scenes): what a
 // sheet loads is let go of with it, a kept sheet (ui-state/keptSheets.ts) goes when the page is hidden (an iOS app
-// switch fires only visibilitychange, never pagehide), and a round of ききみみ, もようがえ or the wallet leaves no
+// switch fires only visibilitychange, never pagehide), and a round of もようがえ or the wallet leaves no
 // WebGL context, listener, DOM or ArrayBuffers behind. Measured after forced GCs (e2e/memory.ts, Chromium's CDP, hence
 // @chromium); the post-deploy logic tier (not the gate's set).
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE, loaded3d, nav } from './island.ts';
-import { fromMenu, openRewards } from './hud.ts';
+import { openRewards } from './hud.ts';
 import { roomUp } from './rooms.ts';
 import { hideAndShow, measure, watch, type Probe } from './memory.ts';
-import { runToPhase, runToQuestion, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&as=B&critter=none&visitor=none';
@@ -62,36 +61,6 @@ test('ごはん searched, closed, the page hidden: the kept sheet and the food c
   note('ごはん searched, closed, hidden', base, after);
   expect(searched.heap - base.heap, 'the catalog in while searching (MB): else this measures nothing').toBeGreaterThan(5);
   expect(after.heap - base.heap, 'JS heap after the hide over the baseline (MB)').toBeLessThan(2.5);
-});
-
-// A ききみみ round (docs/kikimimi.md): the quiz played solo to its results, the sheet closed, twice. Its packs (lib/
-// packStore.ts: let go with the sheet), clips and lanes go with it.
-test('a ききみみ quiz played to its results and closed, twice: nothing left behind', { tag: '@chromium' }, async ({ page }) => {
-  await watch(page);
-  await page.clock.install();
-  await page.goto(`${Q}&kikimimi=fast`);
-  await loaded3d(page);
-  const sheet = page.locator('dialog[open] [data-kikimimi]');
-  const round = async () => {
-    await fromMenu(page, 'kikimimi');
-    await expect(sheet).toHaveAttribute('data-phase', 'lobby');
-    await toMode(page, 'quiz');
-    await sheet.locator('[data-kiki-start]').click();
-    for (let i = 0; i < 8; i++) {
-      await runToQuestion(page, i, 'answer');
-      await sheet.locator('[data-choice="0"]').click();
-      await runToPhase(page, 'reveal');
-      await sheet.locator('[data-kiki-next]').click();
-    }
-    await runToPhase(page, 'results');
-    await closeAll(page);
-  };
-  await round();
-  const first = await measure(page);
-  await round();
-  const after = await measure(page);
-  note('a quiz round', first, after);
-  flat(first, after);
 });
 
 // もようがえ (docs/design.md "The tent"): the tray opened, a few pieces, walls and floors picked (their models and

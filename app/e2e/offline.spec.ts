@@ -1,8 +1,7 @@
 // The app offline (docs/backend.md "Service worker" › Offline): once visited online, a trip's hero and the photos seen
 // come from the service worker's caches, a trail's track (precached) draws its chart and its map's route, and a photo
 // never seen shows the paper placeholder, not WebKit's "?"; the sync pill counts the taps waiting. The logic tier (maps are
-// stubs), but the drawn map offline (@render). ききみみ: a game played online plays offline (its parts kept in the shell
-// once loaded, never precached), one never played says オフラインです.
+// stubs), but the drawn map offline (@render).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 import { BASE } from './island.ts';
@@ -108,56 +107,6 @@ test.describe('offline after a visit', () => {
     expect(missed).toEqual([]);
     await expect(page.locator('dialog[open] [data-map-note="offline"]')).toHaveCount(0);
     expect((await mapState(page)).mode).toBe('ready');
-    await context.setOffline(false);
-  });
-
-  // ききみみ's parts (levels/parts/*.json's chunks) aren't precached: kept in the shell once a game loads them
-  test("ききみみ: a game played online plays offline; one never played says it's offline", { tag: '@chromium' }, async ({ page, context }) => {
-    test.setTimeout(120_000);
-    const kiki = (p: Page) => p.locator('dialog[open] [data-kikimimi]');
-    const toMode = async (m: string) => {
-      await fromMenu(page, 'kikimimi');
-      await expect(kiki(page)).toHaveAttribute('data-kiki-at', 'hub');
-      await kiki(page).locator('[data-kiki-tile="asobu"]').click();
-      await kiki(page).locator(`[data-kiki-mode-tile="${m}"]`).click();
-      await expect(kiki(page).locator(`[data-kiki-mode-page="${m}"]`)).toBeVisible();
-    };
-    const gm = () => page.evaluate(() => (window as unknown as { __kiki?: { view(): { gm: string | null } } }).__kiki?.view().gm ?? null);
-    const KIKI = `${BASE}/?demo&date=2026-11-07T10:00&kikimimi=fast`;
-    await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
-    await page.goto(KIKI);
-    await up(page);
-    await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
-    const held = () => page.evaluate(async () => {
-      const shell = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
-      return (await (await caches.open(shell)).keys()).flatMap((r) => /\/chunks\/(kiki-[\w-]+)\./.exec(r.url)?.[1] ?? []);
-    });
-    // none at install
-    expect(await held()).toEqual([]);
-
-    // online: ことば タイル started (its parts loaded, so kept)
-    await toMode('tile');
-    await kiki(page).locator('[data-kiki-start]').click();
-    await expect.poll(gm).toBe('tile');
-    await expect(kiki(page).locator('[data-kiki-tile-wait], [data-kiki-tile-pool]').first()).toBeVisible({ timeout: 15_000 });
-    // (its first place's tile files: かわ's since their A1 flip)
-    await expect.poll(async () => (await held()).some((c) => /^kiki-s\d-tile/.test(c)), { timeout: 10_000 }).toBe(true);
-    expect(await held()).not.toContain('kiki-ladder');
-
-    await context.setOffline(true);
-    await page.reload();
-    await up(page);
-    // the tiles again, offline
-    await toMode('tile');
-    await expect(page.getByText('オフラインです')).toHaveCount(0);
-    await kiki(page).locator('[data-kiki-start]').click();
-    await expect.poll(gm).toBe('tile');
-    await expect(kiki(page).locator('[data-kiki-tile-wait], [data-kiki-tile-pool]').first()).toBeVisible({ timeout: 15_000 });
-    // スピード はしご, never played: its part never asked for, and the note says why
-    await page.reload();
-    await up(page);
-    await toMode('ladder');
-    await expect(page.getByText('オフラインです')).toBeVisible();
     await context.setOffline(false);
   });
 });

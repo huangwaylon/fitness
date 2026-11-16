@@ -1,6 +1,6 @@
 // TrailMap's props into its engine (feed.svelte.ts): whichever comes first, the engine or the track, the track is
 // drawn; each prop moves only its own part of the map. On Svelte's client runtime: vitest compiles .svelte.ts files for
-// the server (no effects run), so the module is compiled for the client here (as kikimimi/scene/karaoke.test.ts).
+// the server (no effects run), so the module is compiled for the client here.
 import { afterAll, describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

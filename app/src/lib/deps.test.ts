@@ -81,7 +81,7 @@ const ALLOW: Record<string, string[]> = {
   // English Study (docs/english.md): its content, pure rules and the sheet's own components (the kit's ui/, the
   // store's model and send, the storage's keys)
   english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
 };
 
 function files(dir: string): string[] {
@@ -162,7 +162,7 @@ describe('src/lib folder boundaries', () => {
 // Inside components/: the 3D renderers and rooms draw, the sheets are the UI over them. A renderer never imports a
 // sheet (what both need is world/'s, or a kit's), and a sheet another sheet only by an edge named here.
 const RENDERERS = ['world3d', 'villager3d', 'player3d', 'person3d', 'rooms', 'homes', 'tent', 'museum', 'shop'];
-const SHEETS = ['panel', 'health', 'food', 'kikimimi', 'wallet', 'board', 'kiroku', 'bots', 'travel', 'hiking', 'wedding', 'look', 'sheets', 'editor', 'layoutEdit'];
+const SHEETS = ['panel', 'health', 'food', 'wallet', 'board', 'kiroku', 'bots', 'travel', 'hiking', 'wedding', 'look', 'sheets', 'editor', 'layoutEdit'];
 /** The one renderer → sheet edge: the villagers' portraits (すがた's), the cards' faces on the island and in the rooms. */
 const RENDERER_READS = ['look/portraits.svelte.ts'];
 /** Sheet → sheet, on purpose: ごはん on けんこう's kit (its pager, range, cards, whose) and けんこう hosting ごはん, 登山

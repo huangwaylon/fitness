@@ -13,7 +13,7 @@ export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
 const PILL = { bells: '[data-hud-bells]', english: '[data-hud-english]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', bots: '[data-hud-bots]', settings: '[data-hud-settings]' };
 const SHEET = {
-  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', kikimimi: 'dialog[open] [data-kikimimi]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', bots: 'dialog[open] [data-bots]', settings: 'dialog[open] [data-settings]'
+  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', bots: 'dialog[open] [data-bots]', settings: 'dialog[open] [data-settings]'
 };
 
 /** Unfold the menu (if folded) and wait for its pills to be shown (HudMenu shows them at once; the poll guards a
@@ -38,12 +38,6 @@ export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'clic
     await row[how]();
     await expect(page.locator(SHEET.zukan)).toBeVisible();
     await expect(page.locator('dialog[open]')).toHaveCount(1);
-    return;
-  }
-  if (which === 'kikimimi') {
-    // the old ききみみ sheet, off the menu since English Study took the 英語 pill (HudMenu's hook, until it's deleted)
-    await page.evaluate(() => (window as unknown as { __kikiOpen(): void }).__kikiOpen());
-    await expect(page.locator(SHEET.kikimimi)).toBeVisible();
     return;
   }
   await unfoldMenu(page, how);

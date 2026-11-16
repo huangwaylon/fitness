@@ -573,26 +573,3 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   await expect.poll(async () => Object.keys(await index()).length - ((await room()).length - 1), { timeout: 60_000 }).toBe(0);
   expect(Object.entries(await index()).find(([u]) => u.endsWith(real.url))?.[1][0]).toBeGreaterThan(100);
 });
-
-// (in Chromium, as the room's)
-test('ききみみ’s packs: the lobby’s deck’s pack goes into the listen cache whole, once, with its bytes in the index', { tag: '@chromium' }, async ({ page }) => {
-  test.setTimeout(60_000);
-  await page.goto('?demo&kikimimi=fast');
-  await islandUp(page);
-  await controlled(page);
-  await fromMenu(page, 'kikimimi');
-  await expect(page.locator('dialog[open] [data-kikimimi]')).toHaveAttribute('data-phase', 'lobby');
-  await page.locator('dialog[open] [data-kikimimi] [data-kiki-tile="asobu"]').click();
-  await page.locator('dialog[open] [data-kikimimi] [data-kiki-mode-tile="quiz"]').click(); // (a game in sight: its deck's first pack)
-  const listen = () => page.evaluate(async () => {
-    const c = await caches.open('island-listen-v1');
-    const idx = await c.match(new URL('__listen-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
-    return { keys: (await c.keys()).map((k) => { const u = new URL(k.url); return u.pathname + u.search; }), index: idx ? ((await idx.json()) as Record<string, [number, number]>) : {} };
-  });
-  // (the quiz's deck, はまべ's: its pack whole, as Pages answers a Range; never a slice `?s=`)
-  const pack = /\/audio\/listen\/lv\d\.[0-9a-f]{8}\.pak$/;
-  await expect.poll(async () => Object.entries((await listen()).index).filter(([u, [n]]) => pack.test(u) && n > 100_000).length, { timeout: 20_000 }).toBe(1);
-  expect((await listen()).keys.filter((p) => p.includes('?s='))).toEqual([]);
-  // and not in the audio LRU's cache
-  expect(await page.evaluate(async () => (await (await caches.open('island-audio-v1')).keys()).filter((k) => k.url.includes('/audio/listen/')).length)).toBe(0);
-});

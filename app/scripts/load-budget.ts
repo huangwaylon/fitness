@@ -29,7 +29,7 @@ const PRECACHE = 3 * 1024 * 1024;
 const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
-  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/kikimimi/KikimimiSheet.svelte', 'src/lib/components/health/HealthSheet.svelte',
+  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/health/HealthSheet.svelte',
   'src/lib/components/food/FoodScan.svelte', 'src/lib/scan/decode.ts'
 ];
 
@@ -76,10 +76,6 @@ for (const src of LAZY_SOURCES) {
 }
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
 
-// ききみみ's parts: never precached (vite.config.ts kiki-part-names names them)
-const parts = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^kiki-/.test(f)).map((f) => `_app/immutable/chunks/${f}`);
-if (!parts.length) fail.push('no ききみみ part chunks (_app/immutable/chunks/kiki-*.js; vite.config.ts kiki-part-names)');
-for (const f of parts) if (first.has(f) || precachable(f)) fail.push(`${f} (a ききみみ part) is in the first load or the precache`);
 // what a phone may never open (the English catalogs, the wedding board: vite.config.ts feature-names): carried
 const feats = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^(en|en-[\w-]+|wedding)\./.test(f)).map((f) => `_app/immutable/chunks/${f}`);
 for (const f of feats) if (first.has(f) || precachable(f)) fail.push(`${f} (a feature carried once used) is in the first load or the precache`);

@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { nameParts, phrases } from './phrases.ts';
 import ja from './ja.json';
-import jaKiki from './kikimimi.ja.json';
 
 const lines = (t: string) => phrases(t).map((p) => p.join(''));
-const cat: Record<string, string> = { ...ja, ...jaKiki };
+const cat: Record<string, string> = ja;
 const t = (k: string, p: Record<string, string> = {}) => cat[k].replace(/\{(\w+)\}/g, (_, n: string) => p[n]);
 
 describe('phrases', () => {
