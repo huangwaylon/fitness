@@ -34,6 +34,10 @@ export function loadSaved(who: Who, id: string, v: string): Saved | null {
   return s && s.v === v && Array.isArray(s.st) && typeof s.at === 'number' ? s : null;
 }
 
+/** Whether a saved place is a play left part-way: on a question, not the watch card nor the play's まとめ (its own
+ *  length, not the bank's: a finished play's next opening draws the next). */
+export const partWay = (s: Saved | null): boolean => !!s && Array.isArray(s.ids) && s.at >= 0 && s.at < s.ids.length;
+
 /** Keep my place in a clip. */
 export function save(who: Who, id: string, s: Saved): void {
   const clips = { ...all(who), [id]: s };

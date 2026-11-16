@@ -10,7 +10,8 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { CLIPS } from '../clips/index.ts';
   import { away, studyOf, weekView } from '../progress.ts';
-  import { backShown, loadSaved, markBack } from '../session.ts';
+  import { backShown, loadSaved, markBack, partWay } from '../session.ts';
+  import { drawSize } from '../draw.ts';
   import { clipHash } from '../hash.ts';
   import { durText, s } from '../i18n.ts';
   import type { Clip } from '../types.ts';
@@ -42,7 +43,7 @@
     const after = [...CLIPS.slice(i + 1), ...CLIPS.slice(0, i)];
     return (after.find((c) => !mine.clips.has(c.id)) ?? after[0] ?? CLIPS[0]).id;
   }
-  const resumes = (c: Clip) => { const v = loadSaved(me, c.id, clipHash(c)); return !!v && v.at >= 0 && v.at < c.questions.length; };
+  const resumes = (c: Clip) => partWay(loadSaved(me, c.id, clipHash(c)));
 
   /** おかえりなさい: shown this opening, once a gap. */
   let back = $state(false);
@@ -53,7 +54,7 @@
       markBack(me, last);
     }
   });
-  const meta = (c: Clip) => s('meta', { dur: durText(c.dur), band: s(`band.${c.band}`), n: c.questions.length });
+  const meta = (c: Clip) => s('meta', { dur: durText(c.dur), band: s(`band.${c.band}`), n: Math.min(drawSize(c.dur), c.questions.filter((q) => !q.retired).length) });
 </script>
 
 <section class="screen" data-en-home>
