@@ -9,7 +9,8 @@
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
   // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度. この動画のフレーズ (the bar's
   // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases).
-  // A bank with scenes shows 場面のあらすじ under the controls (Scenes), its あらすじ chip hiding it on this phone.
+  // A bank with scenes shows 場面のあらすじ under the controls (Scenes; 字幕's sheet hides it on this phone); with 英語
+  // captions on, directly under the video instead, as the Japanese line paired with YouTube's English one.
   import { onDestroy, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -86,6 +87,8 @@
   let sentDay = $state<LocalDate | null>(null);
   let act: Active = newActive(saved?.unsent ?? 0, resume ? saved!.perQ : {});
   let player = $state<YtPlayer>();
+  /** With 英語 captions, the line sits under the video: the English and the Japanese gist read as a pair. */
+  const paired = $derived(player?.captions === 'en');
   let watched = $state(false);
   let flagQ = $state<number | null>(null);
   let flagOpen = $state(false);
@@ -224,8 +227,9 @@
   </div>
   {#snippet trailing()}<NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy(true)} />{/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
+  {#if scenes && showScenes && paired}<Scenes {scenes} paired time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <Controls {player} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} />
-  {#if scenes && showScenes}<Scenes {scenes} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
+  {#if scenes && showScenes && !paired}<Scenes {scenes} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
       <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />

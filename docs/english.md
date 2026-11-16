@@ -92,20 +92,25 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
-stopped), −5秒, a scrubber with the time (never locked), 字幕, あらすじ (a clip with scenes only), and 0.75× only when the frame's `availablePlaybackRates` offer more than 1
+stopped), −5秒, a scrubber with the time (never locked), 字幕 and its ⋯ sheet, and 0.75× only when the frame's `availablePlaybackRates` offer more than 1
 (a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
 it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`
 or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). Captions are unloaded at ready and at each play, unless 字幕 is on.
-字幕 cycles オフ → 英語 → 日本語, オフ by default and again in each lesson (the player's, not saved); turned on, counted
+字幕 cycles オフ → 英語 → 日本語 in one tap, the clip playing on, オフ by default and again in each lesson (the player's, not saved); turned on, counted
 once a play (`act:english.cc`). 英語: YouTube's own English track (`loadModule` captions, `setOption` captions track en,
 again at each play). 日本語: `setOption` track `{ languageCode: 'en', translationLanguage: { languageCode: 'ja' } }`
 (YouTube's auto-translation), or `{ languageCode: 'ja' }` once the frame has listed a Japanese track (its `tracklist`,
 read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocumented). How it went is counted 5 s into
 each play (`act:english.ccja.<track | tr | offer | none | silent>`: a Japanese track on, the translation on, offered
 only, no Japanese reported, nothing reported). Unverified on the iPhone: if the embed ignores it, the captions stay
-English or off. The e2e answer
+English or off. YouTube shows one caption track only, and the dialogue is never ours to render, so there are never two
+tracks: with 英語 on, 場面のあらすじ's line sits directly under the video instead, on its black and centred, the English
+caption and the Japanese gist read as a pair. ⋯ beside the chip opens 字幕's sheet: 言語 (the chip's choice),
+**字幕の大きさ** 小 / 中 / 大 / 特大 = `setOption` captions `fontSize` −1 / 0 / 1 / 2 (大 by default: the user found
+YouTube's own small; this phone's), sent each time the captions load and when it changes, and あらすじ (a clip with
+scenes). The e2e answer
 the frame with a stand-in player.
 
 **The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
@@ -122,9 +127,9 @@ gaps ≤ 5 s; `ja` ≤ 40 characters, no 「」『』 or quotation marks, no Eng
 The build adds `scenes` to the clip's bank (its file name carries their version too: `catalog.ts withScenes`); nothing
 more is precached.
 
-Under the controls, one calm line: the scene at the playhead (`scenes.ts sceneAt`; in a gap, the one before), following
+Under the controls (under the video with 字幕 英語: The player), one calm line: the scene at the playhead (`scenes.ts sceneAt`; in a gap, the one before), following
 it as it plays. Tapped: a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
-there. The controls' あらすじ chip shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
+there. 字幕's sheet's あらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
 without scenes shows neither.
 
 ## Progress

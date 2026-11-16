@@ -1,9 +1,10 @@
 // English Study's choices on this phone (docs/english.md "The page"): むずかしめの質問を増やす (⚙; off by default: it
-// only lets the native tier into a first play, draw.ts), 場面のあらすじ's strip (the lesson's あらすじ chip; shown by
-// default), and the clips 別の動画にする passed over, each for SKIP_DAYS
+// only lets the native tier into a first play, draw.ts), 場面のあらすじ's line and 字幕の大きさ (字幕's sheet;
+// shown, and 大, by default), and the clips 別の動画にする passed over, each for SKIP_DAYS
 // (today's clip skips them; never a lock: the library still opens them).
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { daysBetween } from '#lib/time/dates.ts';
+import { CC_SIZES, type CcSize } from './player.svelte.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
 export const harderOn = (): boolean => readJson<boolean>(localKV(), DEVICE.englishHard) === true;
@@ -11,6 +12,12 @@ export const setHarder = (on: boolean): void => void writeJson(localKV(), DEVICE
 /** 場面のあらすじ's strip under the player (the lesson's あらすじ chip; shown by default). */
 export const scenesOn = (): boolean => readJson<boolean>(localKV(), DEVICE.englishScenes) !== false;
 export const setScenes = (on: boolean): void => void writeJson(localKV(), DEVICE.englishScenes, on);
+/** 字幕の大きさ (YouTube's captions fontSize; 大 by default: the user found YouTube's own small). */
+export function ccSizeOf(): CcSize {
+  const n = readJson<number>(localKV(), DEVICE.englishCcSize);
+  return (CC_SIZES as readonly unknown[]).includes(n) ? (n as CcSize) : 1;
+}
+export const setCcSize = (n: CcSize): void => void writeJson(localKV(), DEVICE.englishCcSize, n);
 
 /** How long a skip lasts, days. */
 export const SKIP_DAYS = 14;

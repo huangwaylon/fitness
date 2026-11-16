@@ -10,6 +10,7 @@
   import { YtPlayer, embedUrl } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
   import { count } from '#lib/sync/log.ts';
+  import { ccSizeOf } from '../prefs.ts';
 
   let { video, title, player = $bindable() }: { video: string; title: string; player?: YtPlayer } = $props();
 
@@ -27,6 +28,7 @@
   $effect(() => {
     if (!frame || player) return;
     player = new YtPlayer(frame, (q) => count(`act:english.q.${q}`), (r) => count(`act:english.ccja.${r}`));
+    player.ccSize = ccSizeOf();
   });
   onDestroy(() => player?.destroy());
   const ps = $derived(player?.state ?? 'loading');

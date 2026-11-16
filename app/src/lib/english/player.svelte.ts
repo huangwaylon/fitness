@@ -42,6 +42,9 @@ export function readMessage(data: unknown): { event: string; info: unknown } | n
 
 /** The 字幕 choice: none, YouTube's English track, or Japanese (its track, or the English auto-translated). */
 export type CcMode = 'off' | 'en' | 'ja';
+/** 字幕の大きさ 小 / 中 / 大 / 特大: YouTube's captions fontSize (−1 … 3 accepted; 0 its default). */
+export const CC_SIZES = [-1, 0, 1, 2] as const;
+export type CcSize = (typeof CC_SIZES)[number];
 /** What the frame reports of its captions (the module's tracklist, track and translationLanguages), as language codes. */
 export interface CcInfo {
   tracks?: string[];
@@ -107,6 +110,8 @@ export class YtPlayer {
   quality = $state<string | null>(null);
   /** YouTube's captions (the 字幕 choice; off by default). */
   captions = $state<CcMode>('off');
+  /** The captions' size (字幕の大きさ; 大 by default: Player.svelte sets this phone's). */
+  ccSize = $state<CcSize>(1);
 
   #frame: HTMLIFrameElement;
   #last = { t: 0, at: 0 };
@@ -188,6 +193,12 @@ export class YtPlayer {
     this.#cmd('setPlaybackRate', [r]);
   }
 
+  /** The captions' size, at once when they're on (and each time they load: #captionsNow). */
+  setCcSize(n: CcSize): void {
+    this.ccSize = n;
+    if (this.captions !== 'off') this.#cmd('setOption', ['captions', 'fontSize', n]);
+  }
+
   /** YouTube's captions off, English or Japanese, at once (and at ready and each play after: #captionsNow). */
   setCaptions(mode: CcMode): void {
     this.captions = mode;
@@ -266,13 +277,14 @@ export class YtPlayer {
    * once a video plays, so it's unloaded at ready and at each play. Both module names, as the embed has used each.
    * Asked (`captions`): loaded with the English track, again at each play (the module may only load once it plays).
    * 日本語: the Japanese track when the frame has reported one, else YouTube's auto-translation of the English (the embed
-   * may ignore either: then they stay English or off). */
+   * may ignore either: then they stay English or off). Their size (字幕の大きさ) each time they load. */
   #captionsNow(): void {
     if (this.captions !== 'off') {
       this.#cmd('loadModule', ['captions']);
       if (this.captions === 'en') this.#cmd('setOption', ['captions', 'track', { languageCode: 'en' }]);
       else if (this.#cc?.tracks?.some(isJa)) this.#cmd('setOption', ['captions', 'track', { languageCode: 'ja' }]);
       else this.#cmd('setOption', ['captions', 'track', { languageCode: 'en', translationLanguage: { languageCode: 'ja' } }]);
+      this.#cmd('setOption', ['captions', 'fontSize', this.ccSize]);
       return;
     }
     this.#cmd('unloadModule', ['captions']);
@@ -298,6 +310,7 @@ export class YtPlayer {
     if (this.captions === 'ja' && !this.#jaTried && this.#cc.tracks?.some(isJa) && !isJa(this.#cc.track?.lang)) {
       this.#jaTried = true;
       this.#cmd('setOption', ['captions', 'track', { languageCode: 'ja' }]);
+      this.#cmd('setOption', ['captions', 'fontSize', this.ccSize]);
     }
   }
 

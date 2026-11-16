@@ -149,6 +149,9 @@ export const DEVICE = {
   /** localStorage: `true` | `false`: English Study's 場面のあらすじ strip under the player shown on this phone
    *  (lib/english/prefs.ts; shown by default). */
   englishScenes: 'island.english.scenes',
+  /** localStorage: −1 | 0 | 1 | 2: English Study's 字幕の大きさ (YouTube's captions fontSize) on this phone
+   *  (lib/english/prefs.ts; 1, 大, by default). */
+  englishCcSize: 'island.english.ccSize',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
