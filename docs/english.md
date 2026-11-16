@@ -69,6 +69,11 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
   carries a むずかしめ tag. Nothing is locked either way.
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable.
+- **この動画のフレーズ** (the lesson bar's list button, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
+  level under the same pinned player, ‹ back to where it was. The bank's quoted lines (every question's `line`, the
+  retired too), once each, in time order; lines starting within a second are one moment, a card each: ▶ m:ss plays it,
+  then each line (key words underlined), 言っていること, 意味 and the phrase. Only the questions' own short quotes,
+  never a transcript.
 - **A miss:** the segment plays again by itself, a nudge with the `cue`, the choices as they were, and a quiet 答えを見る.
   A second miss shows 「答えはこれ」. Never red, ×, a sound or a percentage; ◎ first try, ○ second.
 - **書き取り:** the words heard are counted (「k/n 語 聞き取れました」; none: 「答えはこれ」, never a 0), the rest shown in the answer colour.
@@ -85,12 +90,15 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
-stopped), −5秒, この部分 (the question's segment), a scrubber with the time (never locked), and 0.75× only when the
+stopped), −5秒, この部分 (the question's segment), a scrubber with the time (never locked), 字幕, and 0.75× only when the
 frame's `availablePlaybackRates` offer more than 1. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
 it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`
-or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). The e2e answer the frame with a stand-in player.
+or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). Captions are unloaded at ready and at each play, unless 字幕 is on:
+YouTube's own English track (`loadModule` captions, `setOption` captions track en, again at each play), off by default
+and again in each lesson (the player's, not saved); turned on, counted once a play (`act:english.cc`). The e2e answer
+the frame with a stand-in player.
 
 **The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
 answer, `bad` a file not its clip), the embed in error (`embed` with YouTube's `code`; `hello` no answer to the

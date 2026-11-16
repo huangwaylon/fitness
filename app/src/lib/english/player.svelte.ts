@@ -5,7 +5,8 @@
 // itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality has been a no-op since
 // YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player is full width; the
 // quality it reports (`onPlaybackQualityChange`, or infoDelivery's `playbackQuality`) is told once a play (`onQuality`:
-// the log).
+// the log). Captions off, unless the lesson's 字幕 toggle turns YouTube's own on (`setCaptions`; this player's, so a
+// lesson's: off again at the next).
 
 export const YT_ORIGIN = 'https://www.youtube-nocookie.com';
 
@@ -60,6 +61,8 @@ export class YtPlayer {
   rate = $state(1);
   /** The quality the frame says it plays (its playbackQuality), null till it says. */
   quality = $state<string | null>(null);
+  /** YouTube's English captions on (the 字幕 toggle; off by default). */
+  captions = $state(false);
 
   #frame: HTMLIFrameElement;
   #last = { t: 0, at: 0 };
@@ -131,6 +134,12 @@ export class YtPlayer {
     this.#cmd('setPlaybackRate', [r]);
   }
 
+  /** YouTube's English captions on or off, at once (and at ready and each play after: #captionsNow). */
+  setCaptions(on: boolean): void {
+    this.captions = on;
+    this.#captionsNow();
+  }
+
   pause(): void {
     this.#stopAt = null;
     this.#cmd('pauseVideo');
@@ -186,15 +195,23 @@ export class YtPlayer {
     if (!st || this.state === 'error') return;
     // the time as it was when the state changed (extrapolation goes on from there)
     this.#last = { t: this.now(), at: performance.now() };
+    const was = this.state;
     this.state = st;
     if (st === 'playing' || st === 'buffering') (this.stuck = false), (this.#started = true);
-    if (st === 'playing') this.#noCaptions();
+    // (each play, not each delivery: the module loaded again and again would flicker)
+    if (st === 'playing' && was !== 'playing') this.#captionsNow();
   }
 
-  /** No captions on the video: listening is the point. cc_load_policy=0 only stops YouTube forcing them; a viewer's own
-   * caption setting (YouTube's, or iOS's "Closed Captions + SDH") still turns them on, and the module loads once a video
-   * plays, so it's unloaded at ready and at each play. Both module names, as the embed has used each. */
-  #noCaptions(): void {
+  /** No captions on the video unless asked: listening is the point. cc_load_policy=0 only stops YouTube forcing them; a
+   * viewer's own caption setting (YouTube's, or iOS's "Closed Captions + SDH") still turns them on, and the module loads
+   * once a video plays, so it's unloaded at ready and at each play. Both module names, as the embed has used each.
+   * Asked (`captions`): loaded with the English track, again at each play (the module may only load once it plays). */
+  #captionsNow(): void {
+    if (this.captions) {
+      this.#cmd('loadModule', ['captions']);
+      this.#cmd('setOption', ['captions', 'track', { languageCode: 'en' }]);
+      return;
+    }
     this.#cmd('unloadModule', ['captions']);
     this.#cmd('unloadModule', ['cc']);
   }
@@ -217,7 +234,7 @@ export class YtPlayer {
         this.#cmd('addEventListener', ['onStateChange']);
         this.#cmd('addEventListener', ['onError']);
         this.#cmd('addEventListener', ['onPlaybackQualityChange']);
-        this.#noCaptions();
+        this.#captionsNow();
         break;
       case 'initialDelivery':
       case 'infoDelivery': {

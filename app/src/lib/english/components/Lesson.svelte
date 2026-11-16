@@ -7,13 +7,16 @@
   // yet sent when the lesson is left (≥ 1 min). Its failures are logged (english.fail: the embed's, a play that doesn't
   // start; the bank's in data.ts).
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
-  // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度.
+  // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度. この動画のフレーズ (the bar's
+  // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases).
   import { onDestroy, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Player from './Player.svelte';
   import Controls from './Controls.svelte';
   import FlagSheet from './FlagSheet.svelte';
+  import ClipPhrases from './ClipPhrases.svelte';
+  import NavButton from '#lib/components/ui/NavButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { videoFocus } from '#lib/sound/sound.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -44,6 +47,8 @@
   const play = past.plays + 1;
   const seed = untrack(() => seedOf(who, clip.id, play));
   let qs = $state.raw<Question[]>([]);
+  /** The whole bank, once in (この動画のフレーズ). */
+  let full = $state.raw<Clip | null>(null);
   const len = $derived(qs.length);
   /** The bank: 'ready' once drawn. */
   let bank = $state<'loading' | 'failed' | 'ready'>('loading');
@@ -55,6 +60,7 @@
     qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn() });
     st = resume && qs.length === saved!.ids.length ? saved!.st : qs.map(blank);
     if (resume && qs.length !== saved!.ids.length) at = -1;
+    full = c;
     bank = 'ready';
   }
   function fetchBank(): void {
@@ -78,6 +84,9 @@
   let flagQ = $state<number | null>(null);
   let flagOpen = $state(false);
   let body: HTMLElement | undefined = $state();
+  /** この動画のフレーズ open (over the lesson's place, kept). */
+  let study = $state(false);
+  const toStudy = (on: boolean) => ((study = on), body?.scrollTo({ top: 0 }));
 
   const q = $derived<Question | null>(at >= 0 && at < len ? qs[at] : null);
   const cur = $derived(q ? st[at] : null);
@@ -96,7 +105,7 @@
   });
 
   // the active clock: a tick a second (and on each input), what's on screen with it
-  const now = () => ({ playing: player?.state === 'playing', visible: document.visibilityState === 'visible', q: at >= 0 && at < len ? at : null });
+  const now = () => ({ playing: player?.state === 'playing', visible: document.visibilityState === 'visible', q: !study && at >= 0 && at < len ? at : null });
   const timer = setInterval(() => (act = tick(act, performance.now(), now())), 1000);
   function input() {
     act = touched(tick(act, performance.now(), now()), performance.now());
@@ -199,11 +208,17 @@
 </script>
 
 <section class="screen" role="presentation" data-en-lesson={clip.id} data-en-at={at} onpointerdown={input} onkeydown={input}>
-  <div class="top"><NavBar pad title={clip.title} {onback} {onclose} /></div>
+  <div class="top">
+    {#if study}<NavBar pad title={s('phrases')} onback={() => toStudy(false)} {onclose} />
+    {:else}<NavBar pad title={clip.title} {onback} {onclose} {trailing} />{/if}
+  </div>
+  {#snippet trailing()}<NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy(true)} />{/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
-  <Controls {player} seg={q?.seg ?? null} />
+  <Controls {player} seg={study ? null : (q?.seg ?? null)} />
   <div class="body sheet-scroll" bind:this={body}>
-    {#if at === -1}
+    {#if study && full}
+      <ClipPhrases clip={full} onplay={(from, to) => player?.play(from, to)} />
+    {:else if at === -1 && !study}
       <article class="card pad" data-en-watch>
         <button type="button" class="flag" data-sfx="open" data-en-flag="clip" onclick={() => flag(null)}><Icon name="flag" size={14} />{s('flag')}</button>
         <p class="lead"><b>{s('watchHead')}</b><span class="meta">{s('watchNote')}</span></p>
@@ -269,11 +284,12 @@
           </ul>
         {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
         <button type="button" class="btn sky" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}>{s('endWatch')}</button>
+        <button type="button" class="btn paper" data-sfx="open" data-en-end-phrases onclick={() => toStudy(true)}>{s('phrasesGo')}</button>
       </article>
     {/if}
     <p class="credit">{s('credit', { credit: clip.credit })}</p>
   </div>
-  <div class="foot">
+  <div class="foot" class:off={study}>
     {#if at === -1}
       <button type="button" class="btn" data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}</button>
     {:else}
@@ -333,4 +349,5 @@
   .credit { margin: 4px 4px 0; font-size: 12px; color: var(--text-soft); }
   .foot { flex: none; display: flex; gap: 10px; padding: 10px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(12px + var(--safe-left)); background: var(--surface); }
   .foot .btn, .foot .btn-gap { flex: 1; }
+  .foot.off { display: none; }
 </style>

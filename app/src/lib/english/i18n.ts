@@ -91,6 +91,12 @@ const S = {
   endAll: { ja: '全部、1回目で聞き取れました ◎', en: 'Every one on the first listen ◎' },
   endWatch: { ja: '▶ もう一度、通して見る', en: '▶ Watch it through again' },
   endHome: { ja: '完了', en: 'Done' },
+  // この動画のフレーズ (ClipPhrases)
+  phrases: { ja: 'この動画のフレーズ', en: 'Lines from this clip' },
+  phrasesGo: { ja: 'この動画のフレーズ ›', en: 'Lines from this clip ›' },
+  phrasesNote: { ja: '質問で取り上げたセリフを、時間の順に。▶ でその場面を聞けます。', en: 'The lines the questions quote, in time order. ▶ plays the moment.' },
+  phrasesNone: { ja: 'この動画には、まだフレーズがありません', en: 'No lines for this clip yet' },
+  phrasePlay: { ja: '{t}から聞く', en: 'Hear from {t}' },
   seg: { ja: '▶ {from}–{to}秒', en: '▶ {from}–{to} s' },
   credit: { ja: '動画：{credit}（YouTubeの埋め込みで再生）。質問と解説は私たちが作ったものです。', en: 'Video: {credit}, played by YouTube’s embed. The questions and notes are ours.' },
   // a question's card label, by its skill (types.ts Skill)
@@ -113,6 +119,7 @@ const S = {
   back5: { ja: '−5秒', en: '−5 s' },
   segAgain: { ja: 'この部分', en: 'This part' },
   seek: { ja: '再生位置', en: 'Position' },
+  captions: { ja: '字幕', en: 'Captions' },
   // the player's states
   offline: { ja: 'オフラインのため動画を再生できません。つながると再生できます。', en: "You're offline: the video plays once you're back online." },
   unavailable: { ja: 'この動画は今、ここでは再生できません。', en: "This video can't be played here right now." },

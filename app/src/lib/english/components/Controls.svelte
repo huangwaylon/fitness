@@ -1,8 +1,10 @@
 <script lang="ts">
   // The player's own controls under the video (docs/english.md "The player"; the embed has none: controls=0): play /
   // pause (on from where it stopped), −5 秒, this question's segment again, a scrubber with the time (seeking is
-  // never locked), and 0.75× / 1× only when the frame offers more speeds than 1. The kit's 32px discs in 44px hits.
+  // never locked), 字幕 (YouTube's own English captions, off by default, this lesson's; counted once a play: the log's
+  // act:english.cc), and 0.75× / 1× only when the frame offers more speeds than 1. The kit's 32px discs in 44px hits.
   import Icon from '#lib/components/ui/Icon.svelte';
+  import { count } from '#lib/sync/log.ts';
   import type { YtPlayer } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
 
@@ -12,6 +14,12 @@
   const dur = $derived(player?.duration || 0);
   const slow = $derived(!!player && player.rates.includes(0.75) && player.rates.some((r) => r !== 1));
   const clock = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  let ccTold = false;
+  function captions() {
+    if (!player) return;
+    player.setCaptions(!player.captions);
+    if (player.captions && !ccTold) (ccTold = true), count('act:english.cc');
+  }
   function toggle() {
     if (!player) return;
     if (playing) player.pause();
@@ -33,6 +41,7 @@
       <button type="button" class="chip s" data-sfx="tick" disabled={!ready} data-yt-seg onclick={() => player?.play(seg[0], seg[1])}><Icon name="replay" size={16} />{s('segAgain')}</button>
     {/if}
     <span class="time" data-yt-clock>{clock(player?.time ?? 0)}{#if dur}{` / ${clock(dur)}`}{/if}</span>
+    <button type="button" class="chip s" data-sfx="tick" disabled={!ready} aria-pressed={!!player?.captions} data-yt-cc={player?.captions ? 'on' : 'off'} onclick={captions}>{s('captions')}</button>
     {#if slow}
       <button type="button" class="chip s" data-sfx="tick" aria-pressed={player?.rate === 0.75} data-yt-rate={player?.rate} onclick={() => player?.setRate(player.rate === 0.75 ? 1 : 0.75)}>0.75×</button>
     {/if}

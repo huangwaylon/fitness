@@ -12,6 +12,7 @@ import { CLIPS } from '../src/lib/english/clips/index.ts';
 import { planOf } from '../src/lib/english/plan.ts';
 import { metaOf } from '../src/lib/english/catalog.ts';
 import { shownOf } from '../src/lib/english/collections.ts';
+import { momentsOf } from '../src/lib/english/phrases.ts';
 
 /** The clips as offered (the shared plan). */
 const PLAN = planOf(CLIPS);
@@ -323,6 +324,82 @@ test('no captions on the video, and an answer’s notes come into view (they sit
   await cardAt(page, 0).locator(`[data-choice="${q.a}"]`).click();
   await expect(cardAt(page, 0).locator('[data-en-reveal]')).toBeInViewport();
   await expect(cardAt(page, 0).locator('[data-en-reveal] .rhead')).toBeInViewport();
+});
+
+test('字幕: YouTube’s own English captions on and off at any point, kept through each play, off again in the next lesson', async ({ page }) => {
+  await fakeYoutube(page, { rate: 8 });
+  await open(page);
+  await start(page);
+  const funcs = async (n = 0) => (await ytCommands(page)).slice(n).map((c) => `${c[0]} ${JSON.stringify(c[1])}`);
+  const cc = lesson(page).locator('[data-yt-cc]');
+  await expect(cc).toHaveText('字幕');
+  await expect(cc).toHaveAttribute('aria-pressed', 'false');
+  // off: unloaded at ready and at a play, never loaded
+  await expect.poll(() => funcs()).toEqual(expect.arrayContaining(['unloadModule ["captions"]', 'unloadModule ["cc"]']));
+  await lesson(page).locator('[data-en-watch-all]').click();
+  await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'playing');
+  expect((await funcs()).filter((f) => /^(loadModule|setOption)/.test(f))).toEqual([]);
+  // on, mid-play: loaded with the English track at once, again at the next play, never unloaded
+  const n0 = (await ytCommands(page)).length;
+  await cc.click();
+  await expect(cc).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => funcs(n0)).toEqual(['loadModule ["captions"]', 'setOption ["captions","track",{"languageCode":"en"}]']);
+  await lesson(page).locator('[data-en-to-q]').click();
+  await lesson(page).locator('[data-yt-seg]').click();
+  await expect.poll(async () => (await funcs(n0)).filter((f) => f.startsWith('loadModule')).length).toBeGreaterThan(1);
+  expect((await funcs(n0)).filter((f) => f.startsWith('unloadModule'))).toEqual([]);
+  // off again: unloaded
+  const n1 = (await ytCommands(page)).length;
+  await cc.click();
+  await expect(cc).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(() => funcs(n1)).toEqual(['unloadModule ["captions"]', 'unloadModule ["cc"]']);
+  // on, then the lesson left: the next opening starts off
+  await cc.click();
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await start(page);
+  await expect(lesson(page).locator('[data-yt-cc]')).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(() => funcs()).toEqual(expect.arrayContaining(['unloadModule ["captions"]']));
+  expect((await funcs()).filter((f) => f.startsWith('loadModule'))).toEqual([]);
+});
+
+test('この動画のフレーズ: from the lesson’s bar and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {
+  await fakeYoutube(page, { rate: 8 });
+  await open(page);
+  await start(page);
+  const moments = momentsOf(waitress);
+  const page2 = lesson(page).locator('[data-en-phrases]');
+  await lesson(page).locator('[data-en-phrases-open]').click();
+  await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('この動画のフレーズ');
+  const cards = page2.locator('[data-en-moment]');
+  await expect(cards).toHaveCount(moments.length);
+  const froms = (await cards.evaluateAll((els) => els.map((e) => Number(e.getAttribute('data-en-moment')))));
+  expect(froms).toEqual(moments.map((m) => m.from));
+  expect(froms).toEqual([...froms].sort((a, b) => a - b));
+  // a card: its time, the line (key words underlined, English), 言っていること, 意味, the phrase
+  const m0 = moments[0], q0 = m0.qs[0];
+  await expect(cards.first().locator('[data-en-moment-play]')).toHaveText(`${Math.floor(m0.from / 60)}:${String(Math.floor(m0.from % 60)).padStart(2, '0')}`);
+  await expect(cards.first().locator(`[data-en-phrase="${q0.id}"] .line`)).toHaveAttribute('lang', 'en');
+  await expect(cards.first().locator(`[data-en-phrase="${q0.id}"] .line u`).first()).toHaveText(q0.line!.match(/\*([^*]+)\*/)![1]);
+  await expect(cards.first()).toContainText(`言っていること${q0.said}`);
+  await expect(cards.first()).toContainText(`意味${q0.mean}`);
+  await expect(cards.first()).toContainText(q0.use);
+  expect((await cards.first().locator('[data-en-moment-play]').boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  // ▶: the moment, paused at its end
+  const n0 = (await ytCommands(page)).length;
+  await cards.nth(1).locator('[data-en-moment-play]').click();
+  await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
+  const cmds = await from(page, n0, 'seekTo');
+  expect(cmds[0][1]).toEqual([moments[1].from, true]);
+  expect(cmds.at(-1)![2]).toBeGreaterThanOrEqual(moments[1].to);
+  // ‹ the watch card; then from まとめ, ‹ back to it
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
+  await lesson(page).locator('[data-en-to-q]').click();
+  while (!(await lesson(page).locator('[data-en-end]').count())) await lesson(page).locator('[data-en-next]').click();
+  await lesson(page).locator('[data-en-end-phrases]').click();
+  await expect(cards).toHaveCount(moments.length);
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
 });
 
 test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, the island’s “ambient” again after', async ({ page }) => {
