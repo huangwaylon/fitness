@@ -83,7 +83,8 @@
     if (ready) request('isl', SONG, { ms: STRETCH_MS });
     else if (el) {
       sceneSfx('decor');
-      say?.(t('world.deck'), t(stretchedToday(date) ? 'world.deck.done' : 'world.deck.when'), el, { colour: '#FFF1C9' });
+      // (the radio's art is the speaker: the node and .deck are 0×0, which Talk's onScreen refuses)
+      say?.(t('world.deck'), t(stretchedToday(date) ? 'world.deck.done' : 'world.deck.when'), el.querySelector<HTMLElement>('.radio') ?? el, { colour: '#FFF1C9' });
     }
     return true;
   }
