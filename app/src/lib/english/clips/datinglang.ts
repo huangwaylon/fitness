@@ -10,6 +10,7 @@ export const datinglang: Clip = {
   wpm: 129,
   band: 'slow',
   tags: ['恋愛', '友だち'],
+  show: 'Friends',
   credit: 'Rachel Doesn’t Understand Dating Language | Friends, official Friends channel (YouTube)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [3, 12], stem: 'How does she feel her date went?',

@@ -14,6 +14,7 @@ import type { Clip } from '../types.ts';
 export const noturkey: Clip = {
   id: 'noturkey', video: '0X46OBRIQQM', title: 'Monica Isn\'t Making a Turkey', dur: 86, wpm: 224, band: 'fast',
   tags: ['家', '友だち'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind 60 % — "secret" was a filler; both distractors are now coherent openings (V2/K3)

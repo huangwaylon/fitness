@@ -23,6 +23,7 @@ import type { Clip } from '../types.ts';
 export const joeyStay: Clip = {
   id: 'joeystay', video: 'MBBUJj1hbZg', title: 'Joey Wants Rachel to Stay', dur: 94, wpm: 189, band: 'mid',
   tags: ['家', '友だち'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind 50 % and right; only the key had a story ("heard it from Ross"). Now all three say how.

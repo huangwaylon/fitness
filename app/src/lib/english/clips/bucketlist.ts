@@ -12,6 +12,7 @@ import type { Clip } from '../types.ts';
 export const bucketList: Clip = {
   id: 'bucketlist', video: '8R5tWHUEn7Q', title: "Andy's Bucket List", dur: 206, wpm: 185, band: 'mid',
   tags: ['家', '恋愛'],
+  show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // why: Andy ← "you watch me play" comes first, so "me" carries over; take turns ← "and then… you" heard as

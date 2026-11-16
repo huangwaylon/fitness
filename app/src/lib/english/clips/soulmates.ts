@@ -17,6 +17,7 @@ import type { Clip } from '../types.ts';
 export const soulmates: Clip = {
   id: 'soulmates', video: '8zNhLsqrjVs', title: "Monica Doesn't Believe in Soul Mates", dur: 84, wpm: 213, band: 'fast',
   tags: ['恋愛', '家'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind pass 80 % (two weak distractors); now both distractors reuse said words in the wrong relation

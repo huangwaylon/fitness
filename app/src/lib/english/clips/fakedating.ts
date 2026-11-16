@@ -20,6 +20,7 @@ import type { Clip } from '../types.ts';
 export const fakedating: Clip = {
   id: 'fakedating', video: 'o5027VakBfw', title: 'When fake dating goes too far', dur: 196, wpm: 206, band: 'fast',
   tags: ['恋愛', '友だち'],
+  show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // R fix: blind 55 % — the key was the only two-part reason; all three are now "X, and Y".

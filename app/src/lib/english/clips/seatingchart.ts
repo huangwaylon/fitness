@@ -14,6 +14,7 @@ import type { Clip } from '../types.ts';
 export const seatingChart: Clip = {
   id: 'seatingchart', video: 'TwbtoThdx3E', title: 'Monica Loves Her Seating Chart', dur: 95, wpm: 213,
   band: 'fast', tags: ['家', '友だち'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: the key was the only choice about the parents and the others were weak (V2, blind ≈ 60 %); all three are now about the parents

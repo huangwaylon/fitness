@@ -20,6 +20,7 @@ import type { Clip } from '../types.ts';
 export const twodates: Clip = {
   id: 'twodates', video: 'xb9S6MT2ea4', title: 'Rachel Gets Set Up with Two Guys', dur: 115, wpm: 161, band: 'slow',
   tags: ['友だち', '恋愛'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind pass 85 % (the title gives "set up", and both distractors were off the scene); now a choosing

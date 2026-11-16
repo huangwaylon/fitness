@@ -10,6 +10,7 @@ export const laundromat: Clip = {
   wpm: 128,
   band: 'slow',
   tags: ['恋愛', 'お願い・断り'],
+  show: 'Friends',
   credit: 'Ross and Rachel’s First Date at the Laundromat | Friends, official Friends channel (YouTube)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [0, 21], stem: 'How does Ross tell Rachel he’ll be at the laundromat too?',

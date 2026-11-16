@@ -17,6 +17,7 @@ import type { Clip } from '../types.ts';
 export const sebastian: Clip = {
   id: 'sebastian', video: 'qjPnbUrYsw0', title: 'Ron Loves Lil\' Sebastian', dur: 98, wpm: 224, band: 'fast',
   tags: ['職場'],
+  show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // R fix: blind 90 % — only the key was specific; a "famous singer" distractor now uses the stage-intro words.

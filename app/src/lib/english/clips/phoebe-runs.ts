@@ -23,6 +23,7 @@ import type { Clip } from '../types.ts';
 export const phoebeRuns: Clip = {
   id: 'phoebe-runs', video: 'uKfPu5UgzDE', title: 'Phoebe Runs Like Kermit the Frog', dur: 263, wpm: 163, band: 'slow',
   tags: ['友だち', 'お願い・断り'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R drop: n1 (number, "six ___-dollar man"): V1. "The Six Million Dollar Man" is a TV title, so the key comes from

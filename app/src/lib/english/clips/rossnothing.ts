@@ -20,6 +20,7 @@ import type { Clip } from '../types.ts';
 export const rossNothing: Clip = {
   id: 'rossnothing', video: 'voCKV_bM7CI', title: 'Rachel Means NOTHING to Ross', dur: 75, wpm: 204, band: 'fast',
   tags: ['恋愛', '友だち'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind 60 %; "more than a friend" was the only other reading of the line. Now a strong slip reading.

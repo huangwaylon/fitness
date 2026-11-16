@@ -10,6 +10,7 @@ export const centralperk: Clip = {
   wpm: 153,
   band: 'slow',
   tags: ['職場', '友だち'],
+  show: 'Friends',
   credit: 'Rachel Gets a Job at Central Perk | Friends, official Friends channel (YouTube)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [0, 13], stem: 'How did Rachel’s job hunt go today?',

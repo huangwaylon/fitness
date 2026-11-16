@@ -19,6 +19,7 @@ import type { Clip } from '../types.ts';
 export const phoebebook: Clip = {
   id: 'phoebebook', video: '5gDVzMcpE1s', title: 'Phoebe Writes a Book About Chandler and Monica', dur: 91, wpm: 185,
   band: 'mid', tags: ['友だち', '恋愛'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // why: the baby kind ← the swap the couple keeps arguing over; wrong size ← "baby" said, wrong relation

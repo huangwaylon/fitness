@@ -13,6 +13,7 @@ import type { Clip } from '../types.ts';
 export const joeymakeup: Clip = {
   id: 'joeymakeup', video: 'vjpdPeVFW2M', title: 'Joey Is Wearing Makeup', dur: 96, wpm: 172, band: 'slow',
   tags: ['友だち', '家'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind 50 % — only the key had a coherent second half; both distractors now follow the real first half

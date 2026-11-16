@@ -10,6 +10,7 @@ export const fixture: Clip = {
   wpm: 120,
   band: 'mid',
   tags: ['職場'],
+  show: 'Friends',
   credit: 'Test',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', seg: [0, 20], stem: 'What does she ask for?', choices: ['A day off', 'Part of her pay early', 'A raise'], a: 1, cue: 'お金の頼み方に注目。', line: 'a *hundred dollar advance*?', ...notes },

@@ -10,6 +10,7 @@ export const furniture: Clip = {
   wpm: 152,
   band: 'slow',
   tags: ['家', '買い物'],
+  show: 'Friends',
   credit: 'Chandler and Joey Finally Go Furniture Shopping | Friends, official Friends channel (YouTube)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [0, 11], stem: 'What are the two roommates arguing about?',

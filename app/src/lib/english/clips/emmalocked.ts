@@ -22,6 +22,7 @@ import type { Clip } from '../types.ts';
 export const emmaLocked: Clip = {
   id: 'emmalocked', video: 'e-wpYDsUKoU', title: 'Emma Is Locked in the Apartment', dur: 90, wpm: 209, band: 'fast',
   tags: ['家'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: blind 80 % (the only choice with "mother" and "key" together, and i3's stem names his mother).

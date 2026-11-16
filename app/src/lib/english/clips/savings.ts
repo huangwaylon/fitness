@@ -14,6 +14,7 @@ import type { Clip } from '../types.ts';
 export const savings: Clip = {
   id: 'savings', video: 'Xo9ZETYi9Vs', title: 'Chandler Drains His Savings Account', dur: 91, wpm: 203, band: 'fast',
   tags: ['友だち', '家'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: "Do you do all this?" didn't fit the walk-in moment, so the key was guessable; now two plural near-misses

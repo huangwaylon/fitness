@@ -12,6 +12,7 @@ import type { Clip } from '../types.ts';
 export const kathybook: Clip = {
   id: 'kathybook', video: 'qYlwMAhh92g', title: 'Chandler Secretly Loves Joey\'s Girlfriend', dur: 79, wpm: 199,
   band: 'fast', tags: ['友だち', '恋愛'],
+  show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
     // R fix: the title made the old key the only fit (V2, §9.4); now asks how the talk turns, all three about the gift
