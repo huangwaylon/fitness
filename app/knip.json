@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": ["e2e/reporters/*.ts"],
   "ignore": ["design/**", "scripts/models-page.js", "scripts/room-models-page.js", "scripts/room-surfaces-page.js", "scripts/world3d-page.js", "scripts/world3d-sheet-page.js", "scripts/villagers3d-page.js", "scripts/players3d-page.js"],
-  "ignoreIssues": { "src/lib/contract/listen.ts": ["exports"], "src/lib/contract/live-protocol.ts": ["types"] },
+  "ignoreIssues": { "src/lib/contract/listen.ts": ["exports"] },
   "ignoreDependencies": ["gltfpack", "@fontsource/fredoka"],
   "ignoreBinaries": ["cwebp", "dwebp", "ffmpeg", "safaridriver"]
 }

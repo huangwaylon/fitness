@@ -258,8 +258,7 @@ never data of record: the record still catches an offline phone up.
   `MAX_BYTES` (a `replay` ≤ `REPLAY_BYTES`). Client intents:
   - The shared world's, kept for the day ([Shared world](#shared-world)): `walk`, `act`, `catch`, `world`, `pick`,
     `put`, `shake`, `decor`.
-  - Presence only: `drag`, `tent`, `fish`, `say`, the retired ききみみ's `quiz` and `play`, sent by no build now
-    ([kikimimi-engine.md](kikimimi-engine.md#the-play-wire)); `highfive`, held a day for an away recipient
+  - Presence only: `drag`, `tent`, `fish`, `say`; `highfive`, held a day for an away recipient
     ([decisions](decisions.md#a-high-five-goes-over-the-relay-only)); `music` ([sound-sync.md](sound-sync.md)); `saved`,
     `ping` → `pong`, `got`.
 

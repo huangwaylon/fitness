@@ -116,13 +116,6 @@ export type Intent =
    *  phrase: never kept or replayed; a phone that comes while it's out hears the step again (its angler's phone sends
    *  it when it sees them come), and an angler whose phone goes is no longer fishing. */
   | { kind: 'fish'; ph: FishPhase; id?: string; pt?: Pt; from?: Pt; s?: number }
-  /** ききみみ クイズ (docs/kikimimi-engine.md "Sync"), presence only: never kept, acked or replayed, to everyone here. `g` the
-   *  game; QuizWire's ops. */
-  | ({ kind: 'quiz' } & QuizWire)
-  /** ききみみ's games, every one (docs/kikimimi-engine.md "Sync", 2026-11-06): the quiz's successor, the same presence
-   *  only (never kept, acked or replayed, to everyone here); `gm` names the game, which the relay never checks against
-   *  a list. PlayWire's ops. */
-  | ({ kind: 'play' } & PlayWire)
   /** A music stage (docs/sound-sync.md): what plays at `src` (`isl` the island, K.K. and the cut-ins; `t`/`u`/`v` a room's
    *  stereo, `pc` the piece) from `at` (the relay's clock: position 0 of the song) for `ms`; no `song`: stopped. Acked,
    *  never in the ring: the room keeps the last record per source (newerMusic), replayed at hello while musicLive. */
@@ -154,51 +147,6 @@ export const musicBeats = (m: { song?: string | null; at: number; ms?: number; w
  *  clock, an offline tap, can't pin the stage). @public (relay/) */
 export const musicAt = (at: number, t: number): number => (Math.abs(at - t) > MUSIC_SKEW_MS ? t : at);
 const SONG = /^[a-z0-9-]{1,32}$/;
-
-/** A quiz op (docs/kikimimi-engine.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
- *  seed's low bits the lobby's flags: kikimimi/seed.ts, bit 0 たいせん, 1 スピード はしご, 2-3 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
- *  it or the game, `go` the game starts at `at` (the relay's clock), `a` my answer to question `i` (choice `k`, `rp`
- *  replayed or slowed, `s` my running total), `skip` the host's position: question `i` starts at `at` (0-8; 8: the
- *  results), sent as it changes (つぎへ) and every few seconds as a beacon; a player's `skip` is its よみおわった (`i` the
- *  question it's in) or, the host gone, its つぎへ (`i` the next); `end` the host cancelled it.
- *  @public (kikimimi/round/wire.ts) */
-export type QuizWire =
-  | { g: string; op: 'open'; seed: number; lv: QuizLv; same: boolean }
-  | { g: string; op: 'join' | 'leave' | 'end' }
-  | { g: string; op: 'go'; at: number }
-  | { g: string; op: 'a'; i: number; k: number; rp: boolean; s: number }
-  | { g: string; op: 'skip'; i: number; at: number };
-/** A quiz's level: 1-3 the first bank, 4 もり (docs/curriculum.md "Modes"), 5 the アナウンス pack, 6 やま, 7 ほし, 8 room for
- *  the next without a relay deploy (a phone offers only the levels it has every clip of: kikimimi/deck.ts LEVELS).
- *  @public (kikimimi/) */
-export const QUIZ_LVS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
-export type QuizLv = (typeof QUIZ_LVS)[number];
-/** A quiz's questions (`a`'s `i` 0-7, `skip`'s 0-8), choices (`k` 0-3) and the most a game's `s` may say: 8 × (100 +
- *  30), the first-listen bonus's days (now 100 a right answer, いっぱつ a badge: a phone from before still sends its
- *  totals); kikimimi/deck.test.ts checks them against deck.ts and score.ts. @public (kikimimi/) */
-export const QUIZ_QS = 8;
-/** @public (kikimimi/) */
-export const QUIZ_MAX_S = 1040;
-
-/** A game op (docs/kikimimi-engine.md "The play wire"): `g` the game's id, `gm` which game (`quiz`, `ladder`, `tile`...).
- *  `open` a lobby: `cv` the content version (a phone with another can't join), `seed`, `f` flags (bit 0 おなじへや,
- *  bit 1 たいせん, bit 2 reserved), `o` the game's options (≤ 4 ints 0-255), `u` a unit, `ids` a shared review deck's
- *  item ids (≤ 8). `join` (`tr` the player's tier), `leave`, `end`; `go` at `at` with the players `pl` (A 1, B 2, G 4);
- *  `a` my answer to round `i` (`k` a choice 0-255, or 1-12 tiles 0-63; `rp` replays, `s` my running total); `skip` the
- *  host's position (round `i` 0-32 starts at `at`; 32 at most: the results); `ev` reserved (a buzz-in, a synced ▶︎).
- *  @public (kikimimi/) */
-export type PlayWire =
-  | { g: string; gm: string; op: 'open'; cv: string; seed: number; f: number; o: number[]; u?: string; ids?: number[] }
-  | { g: string; gm: string; op: 'join'; tr?: number }
-  | { g: string; gm: string; op: 'leave' | 'end' }
-  | { g: string; gm: string; op: 'go'; at: number; pl: number }
-  | { g: string; gm: string; op: 'a'; i: number; k: number | number[]; rp: number; s: number }
-  | { g: string; gm: string; op: 'skip'; i: number; at: number }
-  | { g: string; gm: string; op: 'ev'; i: number; e: number; x?: number };
-/** A game's most rounds (`a`'s and `ev`'s `i` 0-31, `skip`'s 0-32) and its most points (`s`). @public (kikimimi/) */
-export const PLAY_ROUNDS = 32;
-/** @public (kikimimi/) */
-export const PLAY_MAX_S = 9999;
 
 /** A decor op on the wire: the island's decorations (no scope, contract/decor.ts), a home's room (`sc` t, u, v,
  *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts), checked as it's relayed. */
@@ -534,10 +482,6 @@ function intentOf(o: Obj): Intent | null {
         kind: 'fish', ph: o.ph, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}),
         ...(o.from !== undefined ? { from: o.from as Pt } : {}), ...(o.s !== undefined ? { s: o.s as number } : {})
       };
-    case 'quiz':
-      return quizOf(o);
-    case 'play':
-      return playOf(o);
     case 'music': {
       if (!oneOf(MUSIC_SRCS)(o.src) || !isTime(o.at)) return null;
       if (o.song !== undefined && (typeof o.song !== 'string' || !SONG.test(o.song) || !within(o.ms, [1, MUSIC_MS_MAX]))) return null;
@@ -555,67 +499,6 @@ function intentOf(o: Obj): Intent | null {
     }
     default:
       return null;
-  }
-}
-
-const QUIZ_G = /^[a-z0-9]{4,8}$/;
-const QUIZ_OPS: readonly unknown[] = ['open', 'join', 'leave', 'go', 'a', 'skip', 'end'];
-/** A quiz op's fields (known ones only, by its op), or null. */
-function quizOf(o: Obj): Intent | null {
-  if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || !QUIZ_OPS.includes(o.op)) return null;
-  const g = o.g;
-  switch (o.op) {
-    case 'open':
-      if (!Number.isInteger(o.seed) || (o.seed as number) < 0 || (o.seed as number) > 0xffff_ffff || !within(o.lv, [1, QUIZ_LVS.length]) || typeof o.same !== 'boolean') return null;
-      return { kind: 'quiz', g, op: 'open', seed: o.seed as number, lv: o.lv as QuizLv, same: o.same };
-    case 'go':
-      return isTime(o.at) ? { kind: 'quiz', g, op: 'go', at: o.at } : null;
-    case 'a':
-      if (!within(o.i, [0, QUIZ_QS - 1]) || !within(o.k, [0, 3]) || typeof o.rp !== 'boolean' || !within(o.s, [0, QUIZ_MAX_S])) return null;
-      return { kind: 'quiz', g, op: 'a', i: o.i as number, k: o.k as number, rp: o.rp, s: o.s as number };
-    case 'skip':
-      return within(o.i, [0, QUIZ_QS]) && isTime(o.at) ? { kind: 'quiz', g, op: 'skip', i: o.i as number, at: o.at } : null;
-    default:
-      return { kind: 'quiz', g, op: o.op as 'join' | 'leave' | 'end' };
-  }
-}
-
-/** A game's kind (`gm`: docs/kikimimi-engine.md "The listen row") and a unit's id (`u`), on the wire and in a `listen` row.
- *  @public (contract/listen.ts) */
-export const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
-const PLAY_CV = /^[0-9a-f]{6}$/;
-export const UNIT_RE = /^[a-z0-9-]{1,12}$/;
-const PLAY_OPS: readonly unknown[] = ['open', 'join', 'leave', 'go', 'a', 'skip', 'end', 'ev'];
-const ints = (x: unknown, lo: number, hi: number, min: number, max: number): x is number[] =>
-  Array.isArray(x) && x.length >= min && x.length <= max && x.every((n) => within(n, [lo, hi]));
-/** A game op's fields (known ones only, by its op), or null (docs/kikimimi-engine.md "The play wire"). `gm` is a shape only:
- *  the relay doesn't know the games. */
-function playOf(o: Obj): Intent | null {
-  if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || typeof o.gm !== 'string' || !GM_RE.test(o.gm) || !PLAY_OPS.includes(o.op)) return null;
-  const { g, gm } = o;
-  switch (o.op) {
-    case 'open':
-      if (typeof o.cv !== 'string' || !PLAY_CV.test(o.cv) || !within(o.seed, [0, 0xffff_ffff]) || !within(o.f, [0, 7]) || !ints(o.o, 0, 255, 0, 4)) return null;
-      if ((o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) || (o.ids !== undefined && !ints(o.ids, 0, 99_999, 0, 8))) return null;
-      return {
-        kind: 'play', g, gm, op: 'open', cv: o.cv, seed: o.seed as number, f: o.f as number, o: o.o,
-        ...(o.u !== undefined ? { u: o.u as string } : {}), ...(o.ids !== undefined ? { ids: o.ids as number[] } : {})
-      };
-    case 'join':
-      if (o.tr !== undefined && !within(o.tr, [0, 3])) return null;
-      return { kind: 'play', g, gm, op: 'join', ...(o.tr !== undefined ? { tr: o.tr as number } : {}) };
-    case 'go':
-      return isTime(o.at) && within(o.pl, [1, 7]) ? { kind: 'play', g, gm, op: 'go', at: o.at, pl: o.pl as number } : null;
-    case 'a':
-      if (!within(o.i, [0, PLAY_ROUNDS - 1]) || !(within(o.k, [0, 255]) || ints(o.k, 0, 63, 1, 12)) || !within(o.rp, [0, 99]) || !within(o.s, [0, PLAY_MAX_S])) return null;
-      return { kind: 'play', g, gm, op: 'a', i: o.i as number, k: o.k as number | number[], rp: o.rp as number, s: o.s as number };
-    case 'skip':
-      return within(o.i, [0, PLAY_ROUNDS]) && isTime(o.at) ? { kind: 'play', g, gm, op: 'skip', i: o.i as number, at: o.at } : null;
-    case 'ev':
-      if (!within(o.i, [0, PLAY_ROUNDS - 1]) || !within(o.e, [0, 255]) || (o.x !== undefined && !within(o.x, [0, 65_535]))) return null;
-      return { kind: 'play', g, gm, op: 'ev', i: o.i as number, e: o.e as number, ...(o.x !== undefined ? { x: o.x as number } : {}) };
-    default:
-      return { kind: 'play', g, gm, op: o.op as 'leave' | 'end' };
   }
 }
 

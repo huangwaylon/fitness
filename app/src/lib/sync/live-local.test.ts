@@ -24,19 +24,19 @@ describe('the demo relay (two tabs and the guest’s over a BroadcastChannel)', 
     return { live, heard };
   };
 
-  it('passes a quiz op to everyone else here, the guest’s too (presence only: nothing with nobody there)', async () => {
+  it('passes a phrase to everyone else here, the guest’s too (presence only: nothing with nobody there)', async () => {
     vi.stubGlobal('addEventListener', () => {});
     vi.stubGlobal('removeEventListener', () => {});
     const a = open('A');
-    expect(a.live.send({ kind: 'quiz', g: 'k3x9a2', op: 'open', seed: 7, lv: 1, same: false })).toBe(false);
+    expect(a.live.send({ kind: 'say', text: 'hi' })).toBe(false);
     const g = open('G'), b = open('B');
     await until(() => a.live.status().here.length === 2 && g.live.status().here.length === 2);
-    expect(g.live.send({ kind: 'quiz', g: 'k3x9a2', op: 'join' })).toBe(true);
-    expect(a.live.send({ kind: 'quiz', g: 'k3x9a2', op: 'go', at: 5 })).toBe(true);
+    expect(g.live.send({ kind: 'say', text: 'yo' })).toBe(true);
+    expect(a.live.send({ kind: 'say', text: 'go' })).toBe(true);
     await until(() => a.heard.length === 1 && b.heard.length === 2 && g.heard.length === 1);
-    expect(a.heard[0]).toMatchObject({ kind: 'quiz', op: 'join', who: 'G' });
-    expect(b.heard.map((m) => [m.who, (m as { op?: string }).op])).toEqual([['G', 'join'], ['A', 'go']]);
-    expect(g.heard[0]).toMatchObject({ kind: 'quiz', op: 'go', at: 5, who: 'A' });
+    expect(a.heard[0]).toMatchObject({ kind: 'say', text: 'yo', who: 'G' });
+    expect(b.heard.map((m) => [m.who, (m as { text?: string }).text])).toEqual([['G', 'yo'], ['A', 'go']]);
+    expect(g.heard[0]).toMatchObject({ kind: 'say', text: 'go', who: 'A' });
   });
 
   it('a music stage set from a clock more than MUSIC_SKEW_MS off is taken at the relay’s clock, as the relay does', async () => {

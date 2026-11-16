@@ -5,7 +5,6 @@
 // (contract/guest.ts rowsFor). Pure, over the contract only (the relay imports it).
 import { isLocalDate } from './api.ts';
 import { isInt } from './ops.ts';
-import { GM_RE, QUIZ_LVS, UNIT_RE } from './live-protocol.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 /** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out; another game's, up to
@@ -80,6 +79,10 @@ export const LISTEN_MAX_RP = 99;
 export const LESSON_QS = 6;
 const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;
+/** A row's game kind (`gm`), its unit's id (`u`) and its most level (`lv`). */
+const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
+const UNIT_RE = /^[a-z0-9-]{1,12}$/;
+const LV_MAX = 8;
 /** An item's id (a clip's file name). */
 export const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const KEYS = new Set(['d', 'g', 'gm', 'u', 'l', 'tm', 'lv', 'n', 'ms', 'p', 'f', 'r']);
@@ -96,7 +99,7 @@ export function listenOf(d: unknown): ListenRow | null {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const o = d as Record<string, unknown>;
   if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
-  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !isInt(o.lv, 1, QUIZ_LVS.length) || !isInt(o.n, 1, 3) || !isInt(o.ms, 0, LISTEN_MAX_MS)) return null;
+  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !isInt(o.lv, 1, LV_MAX) || !isInt(o.n, 1, 3) || !isInt(o.ms, 0, LISTEN_MAX_MS)) return null;
   if (o.p !== undefined && o.p !== 1) return null;
   // (finished: English Study's clip only)
   if (o.f !== undefined && (o.f !== 1 || o.gm !== TV_GM)) return null;

@@ -382,68 +382,6 @@ describe('live protocol: a high-five (v2, the relay only)', () => {
   });
 });
 
-describe('live protocol: ききみみ クイズ (`quiz`, presence only)', () => {
-  const g = 'k3x9a2';
-  const T = 1_793_527_259_353;
-  const ops = [
-    { kind: 'quiz', g, op: 'open', seed: 4_294_967_295, lv: 3, same: false },
-    { kind: 'quiz', g, op: 'join' },
-    { kind: 'quiz', g, op: 'leave' },
-    { kind: 'quiz', g, op: 'go', at: T },
-    { kind: 'quiz', g, op: 'a', i: 7, k: 3, rp: true, s: 1040 },
-    { kind: 'quiz', g, op: 'skip', i: 0, at: T },
-    { kind: 'quiz', g, op: 'skip', i: 8, at: T },
-    { kind: 'quiz', g, op: 'end' }
-  ];
-
-  it('each op, its known fields only (another op’s dropped), out through the relay as it came in', () => {
-    for (const o of ops) {
-      expect(parseClient(j({ ...o, extra: 'x', who: 'B', t: 3 })), o.op).toEqual({ v: 3, ...o });
-      expect(parseServer(j({ ...o, who: 'G', t: T })), o.op).toEqual({ v: 3, ...o, who: 'G', t: T });
-    }
-    expect(parseClient(j({ kind: 'quiz', g, op: 'join', seed: 5, at: T, i: 1 }))).toEqual({ v: 3, kind: 'quiz', g, op: 'join' });
-    expect(parseClient(j({ kind: 'quiz', g: 'abcd', op: 'open', seed: 0, lv: 1, same: true }))).toEqual({ v: 3, kind: 'quiz', g: 'abcd', op: 'open', seed: 0, lv: 1, same: true });
-    expect(parseClient(j({ kind: 'quiz', g, op: 'a', i: 0, k: 0, rp: false, s: 0 }))).toEqual({ v: 3, kind: 'quiz', g, op: 'a', i: 0, k: 0, rp: false, s: 0 });
-  });
-
-  it('levels 1-8 (4 もり, 5 アナウンス, 6 やま, 7 ほし, 8 room for the next: the relay passes them before the phones offer them)', () => {
-    for (const lv of [1, 2, 3, 4, 5, 6, 7, 8]) {
-      const o = { kind: 'quiz', g, op: 'open', seed: 7, lv, same: false };
-      expect(parseClient(j(o)), String(lv)).toEqual({ v: 3, ...o });
-      expect(parseServer(j({ ...o, who: 'A', t: T })), String(lv)).toEqual({ v: 3, ...o, who: 'A', t: T });
-    }
-  });
-
-  it('refuses junk: a bad game id, op or field', () => {
-    const [open, , , go, a, skip] = ops;
-    const bad = [
-      { ...open, g: 'abc' }, { ...open, g: 'abcdefghi' }, { ...open, g: 'ABCD' }, { ...open, g: 'ab-cd' }, { ...open, g: 1234 }, { kind: 'quiz', op: 'join' },
-      { ...open, op: 'start' }, { ...open, op: undefined },
-      { ...open, seed: -1 }, { ...open, seed: 4_294_967_296 }, { ...open, seed: 1.5 }, { ...open, seed: '1' }, { ...open, lv: 0 }, { ...open, lv: 9 }, { ...open, lv: 1.5 }, { ...open, same: 1 }, { ...open, same: undefined },
-      { ...go, at: -1 }, { ...go, at: 'now' }, { ...go, at: undefined },
-      { ...a, i: 8 }, { ...a, i: -1 }, { ...a, k: 4 }, { ...a, k: 0.5 }, { ...a, rp: 0 }, { ...a, s: 1041 }, { ...a, s: -1 }, { ...a, s: undefined },
-      { ...skip, i: 9 }, { ...skip, i: -1 }, { ...skip, at: undefined }
-    ];
-    for (const b of bad) expect(parseClient(j(b)), JSON.stringify(b)).toBeNull();
-    expect(parseClient(v1(open))).toBeNull();
-  });
-
-  it('small: every op ≤ 210 bytes from the phone, ≤ 256 relayed (the guest’s)', () => {
-    for (const o of ops) {
-      expect(j({ ...o, c: 999_999_999 }).length, o.op).toBeLessThanOrEqual(210);
-      expect(JSON.stringify({ v: 3, ...o, who: 'G', t: T }).length, o.op).toBeLessThanOrEqual(MAX_BYTES);
-    }
-  });
-
-  it('never kept, acked or claimed; the guest sends it', () => {
-    for (const o of ops) {
-      expect(isStored(o as never), o.op).toBe(false);
-      expect(isAcked(o as never), o.op).toBe(false);
-      expect(claimOf(o as never), o.op).toBeNull();
-    }
-  });
-});
-
 describe('live protocol: a music stage (`music`, docs/sound-sync.md)', () => {
   const at = 1_793_000_000_000;
   it('a start (song, length, a room stereo its piece) or a stop, acked, never kept in the ring, the guest may send it', () => {
