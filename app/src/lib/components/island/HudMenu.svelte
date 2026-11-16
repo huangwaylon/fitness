@@ -1,3 +1,11 @@
+<script module lang="ts">
+  import { openQuiz } from '../kikimimi/invite.svelte.ts';
+  import { hooksOn } from '#lib/ui-state/preview.ts';
+  // the old ききみみ sheet, off the menu since English Study took the 英語 pill: its specs' way in until it's deleted
+  // (module-level: a closure of the component's would hold its detached HUD, and the island's renderer with it)
+  if (typeof location !== 'undefined' && hooksOn(new URLSearchParams(location.search))) (window as unknown as { __kikiOpen?: () => void }).__kikiOpen = () => openQuiz();
+</script>
+
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
   // toggle; aria-expanded) that drops seven pills down under it (six for the guest: no ボット), right-aligned (the user's order, 2026-11-08; kanji on
@@ -19,9 +27,7 @@
   import { tick, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import { openQuiz } from '../kikimimi/invite.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
-  import { hooksOn } from '#lib/ui-state/preview.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
@@ -54,8 +60,6 @@
   let { bells, each, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
-  // the old ききみみ sheet, off the menu since English Study took the 英語 pill: its specs' way in until it's deleted
-  if (typeof location !== 'undefined' && hooksOn(new URLSearchParams(location.search))) (window as unknown as { __kikiOpen?: () => void }).__kikiOpen = () => openQuiz();
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
 
