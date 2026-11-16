@@ -153,6 +153,8 @@ interface Stats {
   paused: boolean;
   /** False in the e2e's logic mode (testMode.ts drawOff): the frames run, nothing is drawn. */
   drawn: boolean;
+  /** The ground has been on screen (a frame drew it, not held back by the warm-up; the logic mode's first frame). */
+  island: boolean;
 }
 
 /** How far past a limit a pinch may go (eased back on release), as a factor: in past the end ZOOM_OVER, out past the
@@ -314,8 +316,10 @@ export interface Island3 {
   /** In onFrame's hook: what of the scene wanted the full rate (perf.rest's names: contract/log.ts LOG_FULL_WHY). */
   tag(name: string): void;
   /** After each frame drawn: its start and end (ms) and what held some of it back (programs linking, models or cards
-   *  loading), null: it was whole (the launch's clock, boot.ts). */
-  onDrawn(fn: ((t0: number, t1: number, wait: BootWait) => void) | null): void;
+   *  loading), null: it was whole (the launch's clock, boot.ts); `island`: the ground has been on screen (stats). */
+  onDrawn(fn: ((t0: number, t1: number, wait: BootWait, island: boolean) => void) | null): void;
+  /** Whether `obj` is drawn as it is (none of its materials new or held back by the warm-up: hold), or waits. */
+  ready(obj: Object3D): boolean;
   /** Each pixel-ratio swap a gesture makes (light: down as the camera starts moving, back once it's still): the ms of
    *  setPixelRatio and setSize, and the first frame's own after it (its CPU: the buffers made again as it draws). */
   onSwap(fn: ((on: boolean, setMs: number, frameMs: number) => void) | null): void;
@@ -336,6 +340,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   renderer.shadowMap.enabled = opts.shadows;
   renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
+  // (island/camera.svelte.ts ISLAND_BEND_R: the sky's horizon before this camera's up)
   bendU.uBendR.value = 1300;
   // (a ground built on this renderer: the layout's terrain bakes its look on the GPU)
   const ground = makeGround(renderer);
@@ -824,7 +829,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
-  let drawnHook: ((t0: number, t1: number, wait: BootWait) => void) | null = null;
+  let drawnHook: ((t0: number, t1: number, wait: BootWait, island: boolean) => void) | null = null;
   const groupsPlaced = new Map<string, { obj: Object3D; off: () => void; ball: Sphere }>();
   /** The placed groups (a home, a bridge, a pond: still, bounds known) culled with the camera, as three can't: their
    *  meshes are bent in the shader, so each group's ball is bent here (its middle; its radius doubled, for the shadow
@@ -898,6 +903,17 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const warm = createWarmup(renderer);
   const heldBack: Object3D[] = [];
   const warming = (m: Material) => warm.has(m);
+  /** Not drawn yet: new to the renderer (the next frame compiles it), or warming. */
+  const waits = (m: Material) => !renderer.properties.has(m) || warm.has(m);
+  /** None of `obj`'s materials `waits` (or warming alone: held back now). */
+  function ready(obj: Object3D, test = waits): boolean {
+    if (!parallel) return true;
+    let ok = true;
+    obj.traverse((o) => void (ok &&= !someMaterial(o, test)));
+    return ok;
+  }
+  /** The ground has been on screen (stats `island`). */
+  let island = false;
   let compiles = 0, holding = false, calmAt = 0;
   const materialsOf = (o: Object3D): Material[] => {
     const m = (o as Mesh).material as Material | Material[] | undefined;
@@ -1159,8 +1175,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
     else renderer.info.reset();
+    // (a mount's first frame only compiles, and a held-back ground isn't drawn: the canvas still blank)
+    if (!island && !compileOnly) island = noDraw || ready(ground.group, warming);
     const t1 = now();
-    drawnHook?.(t, t1, held ? 'link' : things.pending() ? 'models' : cards.pending() ? 'cards' : null);
+    drawnHook?.(t, t1, held ? 'link' : things.pending() ? 'models' : cards.pending() ? 'cards' : null, island);
     if (swapAt && !noDraw && !compileOnly) {
       swapHook?.(swapOn, swapSet, t1 - t);
       swapAt = 0;
@@ -1346,6 +1364,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     onDrawn(fn) {
       drawnHook = fn;
     },
+    ready: (obj) => ready(obj),
     onSwap(fn) {
       swapHook = fn;
     },
@@ -1356,7 +1375,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), shadowSize: sun.shadow.mapSize.x, frames, at: lastFrame, input: lastInput,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, slots: l.slots, pointMask: pointMask.on, fx: effects.count(),
-        fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, fxWhy: { ...fxWhy }, paused, drawn: !noDraw
+        fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, fxWhy: { ...fxWhy }, paused, drawn: !noDraw, island
       };
     },
     dispose() {

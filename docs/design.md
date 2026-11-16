@@ -384,7 +384,8 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
 - **No WebGL** (never on the target iPhones): a line in the middle of the scene (`[data-no3d]`); the rest works.
 - **In 3D** ([decisions](decisions.md) "The island in 3D"): the canvas sits under the stage's nodes; the World's step
   runs in the engine's frame ([Frame rate](#frame-rate)). The villagers and the day's visitor are NH's models (one with
-  none is its render's card).
+  none, or in the warm-up, is its render's card). The DOM's marks, 「！」 and fruit wait for the island on screen; the
+  sky opens at its horizon (`horizonGuess`).
   - **The camera** (`world3d/islandCam.ts`): the default zoom (1) is the widest, x centred, one finger only scrolls
     along the island (free: no snap, no automatic move); zoomed in it pans sideways too, within the land. A pinch zooms
     about its middle to 3.2, rubber-banding past the default. A gesture is one kind start to end; a touch on a
@@ -396,18 +397,17 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
   placed through the 3D camera. **One depth order** for the DOM: nearer in front, ties by x. World-anchored overlays (a
   tree's popup, a bite's 「！」) stand over everything at their true size. Only nodes near the camera are shown.
 - **The ground and the water** are the layout's, built on the phone: [island-layout.md](island-layout.md).
-  **The sea's wash** (`layout/swash.ts`): NH's waves on every sea shore, the foam running up and the
-  wet sand drying, out of step along a beach; the shore one colour ramp by depth, rivers fading into the sea.
+  **The sea's wash** (`layout/swash.ts`): NH's waves on each shore, out of step along a beach; the shore one
+  colour ramp by depth, rivers fading into the sea.
 - **Layout:** the default island (`layout/default.json`; what stands where: [island-layout.md](island-layout.md)):
   the homes A (ウェイ, left) and B (うめ, right) on every phone (never mirrored), the goal trees on their outer sides.
-  The wild flowers (clumps of one kind, the season's in turn) and weed spots are scattered, seeded
+  The wild flowers (clumps of one kind) and weed spots are scattered, seeded
   (`npm run layout` → `world/scatter.json`). **Decor** (`world/fixedDecor.ts`): NH's outdoor furniture and seasonal
-  pieces, each a walk obstacle; a tap answers in place (the pump waters, the shishi-odoshi tips, the rest knock); lamps
-  and the campfire light from dusk. **The decor's life** (`island/ambient.ts`): 19–22 a villager sits at the campfire;
+  pieces, each a walk obstacle; a tap answers in place (the pump waters, the shishi-odoshi tips, the rest knock). **The decor's life** (`island/ambient.ts`): 19–22 a villager sits at the campfire;
   on an exercise-goal day pull-ups now and then; when both met every goal, at dusk side by side on the front bench.
   **Sitting** (`island/sitting.ts`): a tap on a seat walks my villager to its nearest free seat, else a `boop`.
 - **Winter and night looks:** NH's snowy models and the models' own light, lit at dusk and night (`world3d/lights.ts`).
-- **Sizes** (`scene.ts`): NH's proportions against an 80u villager; taps: [Scene interactions](#scene-interactions).
+- **Sizes** (`scene.ts`): NH's proportions; taps: [Scene interactions](#scene-interactions).
 - **Fixed over the island:** the sky, the HUD, the weather, the fireworks and the shooting stars; DOM art over the
   canvas takes the time of day's multiply, a light none.
 

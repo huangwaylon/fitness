@@ -1,7 +1,7 @@
 // The World's step under the scene's hook (camera.svelte.ts): someone walking off screen asks only for the ambience's
 // frames, the game clock still stepping it (IslandScene anyMoving, scene.ts charInView).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { World, type Proj3 } from './camera.svelte.ts';
+import { ISLAND_BEND_R, World, horizonGuess, type Proj3 } from './camera.svelte.ts';
 import { charInView, VILLAGER } from './scene.ts';
 import type { At } from '../world3d/engine.ts';
 
@@ -135,5 +135,24 @@ describe('a rush hushes the nodes that paint nothing', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe('horizonGuess', () => {
+  it("is the engine's horizon at the opening zoom (engine.ts horizon: islandCam's camera over the log)", async () => {
+    const { PerspectiveCamera, Vector3 } = await import('three');
+    const { FOV, backAt, dropPivot, horizonAt, pitchAt, pose } = await import('../world3d/islandCam.ts');
+    const { bendU } = await import('../world3d/bend.ts');
+    bendU.uBendR.value = ISLAND_BEND_R;
+    for (const [w, h] of [[393, 852], [393, 659], [390, 600], [320, 568], [430, 932], [768, 1024]]) {
+      const cam = new PerspectiveCamera(FOV, w / h, 20, 6000), camZ = 137, tg = new Float64Array(2);
+      dropPivot(cam, w, h);
+      pose(cam, 240, 0, camZ, backAt(w / h), pitchAt(1));
+      horizonAt(cam, camZ, tg);
+      const p = new Vector3(240, tg[0], tg[1]).project(cam);
+      expect(horizonGuess(w, h)).toBeCloseTo(Math.max(0, ((1 - p.y) / 2) * h), 1);
+    }
+    const { readFileSync } = await import('node:fs');
+    expect(readFileSync(new URL('../world3d/engine.ts', import.meta.url), 'utf8')).toContain(`bendU.uBendR.value = ${ISLAND_BEND_R};`);
   });
 });

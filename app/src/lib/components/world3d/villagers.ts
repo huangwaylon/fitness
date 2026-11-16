@@ -81,7 +81,7 @@ interface Frame3 {
 
 export interface Villagers3 {
   /** One frame: `active` the island moves (the camera, a walk): the bones are posed. Returns the slots still drawn as
-   *  cards (no model, or loading) and whether one moves. */
+   *  cards (no model, loading, or not drawn yet: in the warm-up) and whether one moves. */
   frame(t: number, specs: readonly VSpec[], active: boolean): Frame3;
   /** The time of day's self-light (engine.ts TOD lift). */
   lift(l: number): void;
@@ -183,13 +183,16 @@ export interface Parts {
   rest(id: string, part: string, out: Matrix4): Matrix4 | null;
 }
 
-/** `fishing`: anyone may fish here (the island; not the editor's K.K.), so NH's rod is loaded ahead. */
-export function createVillagers(add: (o: Object3D) => () => void, dir: string, kick: () => void, parts: Parts | null = null, fishing = true): Villagers3 {
+/** `fishing`: anyone may fish here (the island; not the editor's K.K.), so NH's rod is loaded ahead. `ready`: a model
+ *  would be drawn now (engine.ts ready: its materials out of the warm-up). */
+export function createVillagers(add: (o: Object3D) => () => void, dir: string, kick: () => void, parts: Parts | null = null, fishing = true, ready: (o: Object3D) => boolean = () => true): Villagers3 {
   interface W {
     /** The model's key (person3d's, or the roster id) and, while a new look's loads over the old model, its key. */
     key: string;
     next: string | null;
     v: Villager3D | null;
+    /** Its first model drawn (out of the engine's warm-up): its card till then. */
+    drawn: boolean;
     loading: boolean;
     off: () => void;
     x: number;
@@ -293,7 +296,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     } else if (w && w.key === key) w.next = null;
     if (!w) {
-      const nw: W = { key, next: null, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null };
+      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null };
       ws.set(s.slot, nw);
       const p = make(s);
       if (p) {
@@ -385,7 +388,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     for (const s of specs) {
       seen.add(s.slot);
       const w = ensure(s), v = w.v;
-      if (!v) {
+      // (a new model's programs wait in the engine's warm-up, held back: it's hidden, its blob of shadow with it, and its
+      // card stays till it's drawn, a frame soon to look again; drawn, never a gap with only the blob)
+      if (!v || (!w.drawn && !(w.drawn = ready(v.group)))) {
+        if (v) (v.group.visible = false), (moving = true);
         cards.add(s.slot);
         continue;
       }
@@ -532,6 +538,11 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
     /** The model drawn (person3d's key: `v:<roster id>` a villager, `p:…` a human player), null till one is in. */
     model: (slot: string) => (ws.get(slot)?.v ? ws.get(slot)!.key : null),
+    /** What stands for it in the last frame: its card, its model drawn (shown and out of the warm-up). */
+    figure: (slot: string) => {
+      const v = ws.get(slot)?.v;
+      return { card: out.cards.has(slot), body: !!v && v.group.visible && ready(v.group) };
+    },
     /** Its tap area (u: width, height), once measured. */
     size: (slot: string) => ws.get(slot)?.size ?? null,
     /** A human player drawn (player3d's: it has dress()), not a villager (a stand-in's too). */

@@ -1046,7 +1046,8 @@
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);
     lateFrom = performance.now();
-    if (timed) e.onDrawn(timed.frame);
+    // (the island on screen: the world layer's HTML stand-ins show from then, IslandScene's [data-island3])
+    e.onDrawn((t0, t1, wait, island) => (timed?.frame(t0, t1, wait), island && !scene.hasAttribute('data-island3') && scene.toggleAttribute('data-island3', true)));
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
@@ -1065,7 +1066,7 @@
     };
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN, revWas = -1;
-    vil3 = createVillagers((o) => e.add(o), dirs.villagers, () => e.kick(), e.things);
+    vil3 = createVillagers((o) => e.add(o), dirs.villagers, () => e.kick(), e.things, true, (o) => e.ready(o));
     // the 2D heads' portraits of the players' looks (the partner's, one never opened in すがた here): drawn through this
     // renderer when the island is idle
     painter = createPainter(e.renderer(), dirs.player, () => e.idle() || e.isPaused(), () => e.kick());
@@ -1225,6 +1226,7 @@
       watch?.stop();
       built.stop();
       e.onDrawn(null);
+      scene.removeAttribute('data-island3');
       offRest();
       boot = timed = null;
       offLayout();

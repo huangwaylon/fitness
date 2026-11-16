@@ -135,6 +135,25 @@ interface Model3 {
 /** The 3D island's game clock: the World steps itself at least this often (ms) while anything moves, drawn or not. */
 const SIM_MS = 33;
 
+/** The island's log (world3d/bend.ts): its radius (u), engine.ts's (not imported there: the 3D chunk would split this
+ *  module off the first load's; camera.svelte.test checks they agree). */
+export const ISLAND_BEND_R = 1300;
+/** The 3D camera's horizon (px from the top) on a `vw` × `vh` screen at its opening zoom, before the engine is up to
+ *  say (Island3D onhorizon), so the sky opens where it stays. Its camera's (world3d/islandCam.ts: a 30° lens, 420 u
+ *  across at the pivot, the pivot 0.16 of the height below the middle, pitched 58°: layout/hides.ts PITCH.def) over the log (horizonAt's
+ *  tangent, 3 u up), worked out without three: camera.svelte.test checks it against the engine's. */
+export function horizonGuess(vw: number, vh: number): number {
+  const tan = Math.tan((15 * Math.PI) / 180), p = (58 * Math.PI) / 180, back = 420 / ((2 * tan * vw) / vh);
+  // (the camera from the pivot: up and back; the log's axis R below the pivot)
+  const cy = back * Math.sin(p), cz = back * Math.cos(p), R = ISLAND_BEND_R + 3, oy = -ISLAND_BEND_R;
+  const base = Math.atan2(cy - oy, cz), a = Math.acos(Math.min(1, R / Math.hypot(cy - oy, cz)));
+  const th = Math.cos(base + a) < Math.cos(base - a) ? base + a : base - a;
+  const dy = oy + R * Math.sin(th) - cy, dz = R * Math.cos(th) - cz;
+  // (in the camera's frame, looking down at the pivot by p)
+  const depth = -dy * Math.sin(p) - dz * Math.cos(p), up = dy * Math.cos(p) - dz * Math.sin(p);
+  return Math.max(0, ((1 - up / (depth * tan)) / 2 + 0.16) * vh);
+}
+
 /** Where a world point is on screen (px from the scene's top-left): the perspective scale (CSS px a unit there over
  *  `view.s`), the ground's foreshortening there (a flat mark's), its distance from the camera, and whether it's in
  *  front of the horizon (nothing is, before the 3D camera is up). */

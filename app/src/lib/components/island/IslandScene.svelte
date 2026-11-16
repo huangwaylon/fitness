@@ -86,7 +86,7 @@
   import { decorLayout } from '#lib/contract/decor.ts';
   import Decor from './Decor.svelte';
   import Board from '../board/Board.svelte';
-  import { World, dropLive, provideWorld } from './camera.svelte.ts';
+  import { World, dropLive, horizonGuess, provideWorld } from './camera.svelte.ts';
   import { hybridFor, hybridsOf } from '#lib/world/care.ts';
   import { garden } from '#lib/world/sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
@@ -496,7 +496,8 @@
     }
     vh = world.view.vh;
     s = world.view.s;
-    horizonPx = world.view.horizon;
+    // (before the 3D camera's up, where it will be: the sky's sun and clouds dropped ~90-170 px as it said)
+    horizonPx = world.three ? world.view.horizon : horizonGuess(world.view.vw, vh);
   }
   /** Someone walking: the full rate while one is on screen or about to be (scene.ts charInView's margin: one walking in
    *  gets it a frame before it shows); one off it only the ambience's (the game clock still steps it). */
@@ -1354,6 +1355,9 @@
   /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
   .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
+  /* the world layer's HTML stand-ins (the marks, the board's 「！」, the canopy's fruit) wait for the island on screen
+     (Island3D's data-island3): placed a frame or more before it, they showed over a blank canvas */
+  .scene[data-r3]:not([data-island3]) :global(:is(.float[data-mark], .news, .fruit)) { opacity: 0 !important; --art3d: off; }
   /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
      render's lump floating where that render's eye was */
   .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }
