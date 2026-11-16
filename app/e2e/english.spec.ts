@@ -93,7 +93,7 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   const n0 = (await ytCommands(page)).length;
   await card.locator('[data-choice="0"]').click();
   await expect(card.locator('[data-en-nudge]')).toContainText('もう一度聞いてみましょう。');
-  await expect(card.locator('[data-en-nudge]')).toContainText('「salary」の前の言葉に注目して');
+  await expect(card.locator('[data-en-nudge]')).toContainText((await questionAt(page, 0)).cue);
   await expect(card).toHaveAttribute('data-result', 'open');
   await expect(card.locator('[data-ans]')).toHaveCount(0);
   // the segment replayed by itself: from 0, paused at 10 s
@@ -173,7 +173,7 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await lesson(page).locator('[data-en-to-q]').click();
   await lesson(page).locator('[data-en-flag="0"]').click();
   const fq = page.locator('dialog[open] [data-en-flag-sheet="0"]');
-  await expect(fq).toContainText('質問 1：What is Rachel asking Terry for?');
+  await expect(fq).toContainText(`質問 1：${(await questionAt(page, 0)).stem}`);
   await fq.locator('[data-en-kind="answer"]').click();
   await fq.locator('[data-en-flag-note]').fill('salary の前が聞こえない');
   await fq.locator('[data-en-flag-send]').click();
