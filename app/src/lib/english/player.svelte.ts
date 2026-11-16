@@ -166,6 +166,15 @@ export class YtPlayer {
     this.#last = { t: this.now(), at: performance.now() };
     this.state = st;
     if (st === 'playing' || st === 'buffering') (this.stuck = false), (this.#started = true);
+    if (st === 'playing') this.#noCaptions();
+  }
+
+  /** No captions on the video: listening is the point. cc_load_policy=0 only stops YouTube forcing them; a viewer's own
+   * caption setting (YouTube's, or iOS's "Closed Captions + SDH") still turns them on, and the module loads once a video
+   * plays, so it's unloaded at ready and at each play. Both module names, as the embed has used each. */
+  #noCaptions(): void {
+    this.#cmd('unloadModule', ['captions']);
+    this.#cmd('unloadModule', ['cc']);
   }
 
   #onMessage = (e: MessageEvent): void => {
@@ -179,6 +188,7 @@ export class YtPlayer {
         if (this.state === 'loading') this.state = 'ready';
         this.#cmd('addEventListener', ['onStateChange']);
         this.#cmd('addEventListener', ['onError']);
+        this.#noCaptions();
         break;
       case 'initialDelivery':
       case 'infoDelivery': {

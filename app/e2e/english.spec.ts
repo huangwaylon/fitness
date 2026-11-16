@@ -16,8 +16,8 @@ async function questionAt(p: Page, i: number) {
   return waitress.questions.find((q) => q.id === id)!;
 }
 
-/** The player's commands from the `from`th on (addEventListener aside). */
-const since = async (p: Page, from: number) => (await ytCommands(p)).slice(from).filter((c) => c[0] !== 'addEventListener');
+/** The player's commands from the `from`th on (addEventListener and the captions' unloadModule aside). */
+const since = async (p: Page, from: number) => (await ytCommands(p)).slice(from).filter((c) => c[0] !== 'addEventListener' && c[0] !== 'unloadModule');
 /** The commands from the `from`th on, after the first `func` (a pause from a move just before may land first:
  *  postMessage is async, slower on a throttled runner). */
 const from = async (p: Page, n: number, func: string) => {
@@ -262,4 +262,23 @@ test('no speed control when the frame offers only 1×', async ({ page }) => {
   await start(page);
   await expect(lesson(page).locator('[data-yt-scrub]')).toBeEnabled();
   await expect(lesson(page).locator('[data-yt-rate]')).toHaveCount(0);
+});
+
+test('no captions on the video, and an answer’s notes come into view (they sit under the choices, below an iPhone’s fold)', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  await start(page);
+  // captions unloaded at ready (a viewer's own caption setting would turn them on), and again once it plays
+  const unloads = async () => (await ytCommands(page)).filter((c) => c[0] === 'unloadModule').map((c) => JSON.stringify(c[1]));
+  await expect.poll(unloads).toEqual(expect.arrayContaining(['["captions"]', '["cc"]']));
+  const n0 = (await unloads()).length;
+  await lesson(page).locator('[data-en-watch-all]').click();
+  await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'playing');
+  await expect.poll(async () => (await unloads()).length).toBeGreaterThan(n0);
+  // the first question, answered right: its notes scrolled into view
+  await lesson(page).locator('[data-en-to-q]').click();
+  const q = await questionAt(page, 0);
+  await cardAt(page, 0).locator(`[data-choice="${q.a}"]`).click();
+  await expect(cardAt(page, 0).locator('[data-en-reveal]')).toBeInViewport();
+  await expect(cardAt(page, 0).locator('[data-en-reveal] .rhead')).toBeInViewport();
 });

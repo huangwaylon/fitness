@@ -104,10 +104,19 @@
     }
   }
   const seg = (x: Question) => player?.play(x.seg[0], x.seg[1]);
+  /** What the learner just did on this card ('reveal' or 'nudge'), so only that scrolls into view, not a card come
+   *  back to. On an iPhone the notes sit under the choices, below the fold: they're brought up, the key row above. */
+  let fresh = $state<'reveal' | 'nudge' | null>(null);
+  const intoView = (el: HTMLElement, what: 'reveal' | 'nudge') => {
+    if (fresh !== what) return;
+    fresh = null;
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
 
   function choose(i: number): void {
     if (!q || !cur) return;
     const r = pick(q, cur, i);
+    fresh = r.st.r ? 'reveal' : r.replay ? 'nudge' : null;
     st[at] = r.st;
     if (r.replay) seg(q);
     // a predict's continuation, heard once it's settled
@@ -157,14 +166,14 @@
             </div>
           {:else}
             <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" lang="en" data-en-dict />
-            <button type="button" class="btn small paper" data-sfx="tick" data-en-dict-go onclick={() => (st[at] = dictate(q, cur, typed))}>{cur.r ? s('answerAgain') : s('answer')}</button>
+            <button type="button" class="btn small paper" data-sfx="tick" data-en-dict-go onclick={() => ((fresh = 'reveal'), (st[at] = dictate(q, cur, typed)))}>{cur.r ? s('answerAgain') : s('answer')}</button>
           {/if}
           {#if !cur.r && cur.miss === 1}
-            <div class="nudge" data-en-nudge><p>{s('nudge')}</p><p class="meta">{q.cue}</p>
-              <button type="button" class="quiet" data-sfx="tick" data-en-show onclick={() => (st[at] = reveal(cur))}>{s('showAnswer')}</button></div>
+            <div class="nudge" data-en-nudge {@attach (el) => untrack(() => intoView(el, 'nudge'))}><p>{s('nudge')}</p><p class="meta">{q.cue}</p>
+              <button type="button" class="quiet" data-sfx="tick" data-en-show onclick={() => ((fresh = 'reveal'), (st[at] = reveal(cur)))}>{s('showAnswer')}</button></div>
           {/if}
           {#if cur.r}
-            <div class="reveal" data-en-reveal={cur.r.k}>
+            <div class="reveal" data-en-reveal={cur.r.k} {@attach (el) => untrack(() => intoView(el, 'reveal'))}>
               <p class="rhead">{head(cur)}</p>
               {#if cur.r.k === 'dict'}<p class="words" lang="en">{#each cur.r.words as w, i (i)}<span class:hit={w.hit} class:gap={!w.hit}>{w.w}</span> {/each}</p>{/if}
               {#if q.line}<p class="line" lang="en">{#each keyed(q.line) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>{/if}
@@ -233,6 +242,7 @@
   .nudge .meta { color: inherit; }
   .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); padding: 10px 4px; cursor: pointer; justify-self: start; }
   .nudge .quiet { color: var(--c-ink-soft); text-decoration: underline; }
+  .reveal, .nudge { scroll-margin-top: 72px; }
   .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }
   .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-leaf-text); }
   .line { font-style: italic; }
