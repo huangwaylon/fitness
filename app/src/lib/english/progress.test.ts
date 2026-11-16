@@ -3,7 +3,7 @@
 // 2026-11-16 is a Monday.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
-import { away, daysThisWeek, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
+import { away, daysThisWeek, reviewOf, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
 
 let n = 0;
 const row = (who: 'A' | 'B' | 'G', d: string, extra: object = {}): EventRow =>
@@ -103,5 +103,35 @@ describe('the small numbers', () => {
   });
   it('away: 7 days or more since the last study', () => {
     expect([away(null, '2026-11-16'), away('2026-11-10', '2026-11-16'), away('2026-11-09', '2026-11-16')]).toEqual([false, false, true]);
+  });
+});
+
+describe('reviewOf: a finished clip again, new questions', () => {
+  const lib = [{ id: 'waitress', items: 24 }, { id: 'other', items: 20 }, { id: 'third', items: 20 }];
+  const none = new Set<string>();
+  const answers = (k: number, p = 'a') => Array.from({ length: k }, (_, i) => [`${p}${i}`, 1, 0, 0]);
+  // finished the week before 11-16's: waitress with 4 of its items met, other with 12 (and 6 more in a part-way row)
+  const done = [row('A', '2026-11-06', { r: answers(4) }), row('A', '2026-11-08', { u: 'other', r: answers(12, 'o') })];
+  const more = row('A', '2026-11-08', { u: 'other', f: undefined, r: answers(6, 'p') });
+  it('waits for a study day this week, then offers the clip with the most items not met, never today’s', () => {
+    expect(reviewOf(studyOf(done, 'A', 'A'), '2026-11-18', lib, none)).toBe(null);
+    const st = studyOf([...done, more, row('A', '2026-11-16', { u: 'third' })], 'A', 'A');
+    expect(st.seen.get('other')?.size).toBe(18);
+    expect(reviewOf(st, '2026-11-18', lib, none)).toBe('waitress');
+    expect(reviewOf(st, '2026-11-18', lib, new Set(['waitress']))).toBe('other');
+  });
+  it('as many new: the one finished longest ago; not within 7 days of its finish, nor 28 once played twice', () => {
+    const even = [{ id: 'waitress', items: 4 }, { id: 'other', items: 12 }, { id: 'third', items: 20 }];
+    const rows = [...done, row('A', '2026-11-16', { u: 'third' })];
+    expect(reviewOf(studyOf(rows, 'A', 'A'), '2026-11-18', even, none)).toBe('waitress');
+    const twice = [row('A', '2026-10-30'), ...rows];
+    expect(reviewOf(studyOf(twice, 'A', 'A'), '2026-11-18', even, none)).toBe('other');
+    expect(reviewOf(studyOf(twice, 'A', 'A'), '2026-11-18', even, new Set(['other']))).toBe(null);
+  });
+  it('once a week: none after a clip is finished again this week, again the next', () => {
+    const rows = [...done, row('A', '2026-11-16', { u: 'third' }), row('A', '2026-11-17', { u: 'other' })];
+    expect(studyOf(rows, 'A', 'A').again).toEqual(new Set(['2026-11-17']));
+    expect(reviewOf(studyOf(rows, 'A', 'A'), '2026-11-18', lib, none)).toBe(null);
+    expect(reviewOf(studyOf([...rows, row('A', '2026-11-23', { u: 'fourth' })], 'A', 'A'), '2026-11-23', lib, none)).toBe('waitress');
   });
 });

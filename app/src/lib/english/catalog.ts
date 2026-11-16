@@ -21,6 +21,8 @@ export interface ClipMeta {
   tags: readonly string[];
   /** A play's questions (draw.ts drawSize, or the live items if fewer). */
   n: number;
+  /** The bank's live items (home's もう一度 prefers a clip with many not met yet). */
+  items: number;
   /** The clip's version (hash.ts clipHash): its saved place's, a clip flag's, and its bank file's name. */
   v: string;
   credit: string;
@@ -28,10 +30,13 @@ export interface ClipMeta {
 
 const SHORT: Record<Clip['show'], Show> = { Friends: 'Friends', 'The Office': 'The Office', 'Parks and Recreation': 'Parks' };
 
-export const metaOf = (c: Clip): ClipMeta => ({
-  id: c.id, video: c.video, title: c.title, show: SHORT[c.show], dur: c.dur, band: c.band, tags: c.tags,
-  n: Math.min(drawSize(c.dur), c.questions.filter((q) => !q.retired).length), v: clipHash(c), credit: c.credit
-});
+export function metaOf(c: Clip): ClipMeta {
+  const items = c.questions.filter((q) => !q.retired).length;
+  return {
+    id: c.id, video: c.video, title: c.title, show: SHORT[c.show], dur: c.dur, band: c.band, tags: c.tags,
+    n: Math.min(drawSize(c.dur), items), items, v: clipHash(c), credit: c.credit
+  };
+}
 
 /** A bank's file, under the base path: its name carries its version, so a cached copy is never stale and a page left
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */

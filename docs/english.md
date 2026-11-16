@@ -51,10 +51,15 @@ second listen. A question quotes one short line at most (*key words* starred); n
 One sheet: home, the library, a clip's lesson (‹ back to where it was opened) and ⚙ (むずかしめの質問を増やす, 報告した内容).
 
 - **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
-  もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, the next clips in order,
-  すべて見る（N本）›. Today's clip is the first in the plan neither finished nor skipped; 別の動画にする shows the next and
-  skips the one passed over for 14 days on this phone. All finished: 全部見ました and the one finished longest ago.
-  A member sees the partner's line (finished today, or this week's days); the guest sees none.
+  もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, もう一度 (below), the
+  next clips in the plan, すべて見る（N本）›. Today's clip is the first in the plan neither finished nor skipped;
+  別の動画にする shows the next and skips the one passed over for 14 days on this phone. All finished: 全部見ました and
+  the one finished longest ago. A member sees the partner's line (finished today, or this week's days); the guest
+  sees none.
+- **もう一度** (`progress.ts reviewOf`): a finished clip offered again with new questions, a row beside today's clip
+  (never in its place), at most once a week: on a week with a study day and no clip finished again yet; a clip
+  finished 7+ days ago (28+ once it's had two plays), the one with the most items not met first, then the oldest.
+  Its sub line says 新しい質問; ignoring it changes nothing.
 - **The library:** one chip row (すべて, each show, each situation), the clips in order with the part-way first and the
   finished last (✓, 2回), 20 at a time with もっと見る. On すべて, collections first (`collections.ts`: situation tags,
   curated ids or both; shown with 4+ clips; 電話の英語, 断り方・お願い, 職場の会話, お店で, カメラに話す本音, 旅行), a row

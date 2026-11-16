@@ -26,11 +26,15 @@ interface Study {
   /** Each clip's plays finished, and the day it was last finished (mine only). */
   plays: Map<string, number>;
   lastOn: Map<string, LocalDate>;
+  /** Each clip's items answered or shown, ever (mine only). */
+  seen: Map<string, Set<string>>;
+  /** The days a clip finished before was finished again (mine only). */
+  again: Set<LocalDate>;
 }
 
 /** `who`'s English Study rows, read as `me` gets them (mine whole, anyone else's summary). */
 export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
-  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, byDay: new Map(), plays: new Map(), lastOn: new Map() };
+  const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, byDay: new Map(), plays: new Map(), lastOn: new Map(), seen: new Map(), again: new Set() };
   for (const r of rows) {
     if (r[1] !== who || r[3] !== 'listen') continue;
     let d: unknown;
@@ -41,9 +45,15 @@ export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
     }
     const own = who === me ? listenOf(d) : null, row = who === me ? own : listenSummaryOf(d);
     if (!row) continue;
+    if (own) {
+      const seen = out.seen.get(own.u) ?? new Set<string>();
+      for (const [id] of own.r) seen.add(id);
+      out.seen.set(own.u, seen);
+    }
     if (row.f === 1) {
       out.days.add(row.d);
       if (own) {
+        if (out.clips.has(own.u)) out.again.add(row.d);
         out.clips.add(own.u);
         out.byDay.set(row.d, own.u);
         out.plays.set(own.u, (out.plays.get(own.u) ?? 0) + 1);
@@ -92,6 +102,26 @@ export function runOf(days: ReadonlySet<LocalDate>, today: LocalDate): { run: nu
     else if (++empty >= 2) run = 0;
   }
   return { run, ever };
+}
+
+/** Days after a clip's first finish before it's offered again, and after any later one. */
+const REVIEW_AFTER = 7, REVIEW_AFTER_2 = 28;
+
+/**
+ * The clip home's library card offers again, with new questions (もう一度), or null: at most once a week, on a week
+ * that already has a study day and no clip finished again yet; a clip finished REVIEW_AFTER days ago or more
+ * (REVIEW_AFTER_2 once it's had two plays), the one with the most items I haven't met first, then the one finished
+ * longest ago. Never today's clip (`not`): only a row beside it.
+ */
+export function reviewOf(st: Study, today: LocalDate, lib: readonly { id: string; items: number }[], not: ReadonlySet<string>): string | null {
+  const wk = weekKeyOf(today);
+  if (!daysThisWeek(st.days, today) || [...st.again].some((d) => weekKeyOf(d) === wk && d <= today)) return null;
+  const unseen = (c: { id: string; items: number }) => Math.max(0, c.items - (st.seen.get(c.id)?.size ?? 0));
+  const due = lib.filter((c) => {
+    const on = st.lastOn.get(c.id);
+    return on && !not.has(c.id) && daysBetween(on, today) >= ((st.plays.get(c.id) ?? 0) >= 2 ? REVIEW_AFTER_2 : REVIEW_AFTER);
+  });
+  return due.toSorted((a, b) => unseen(b) - unseen(a) || (st.lastOn.get(a.id)! < st.lastOn.get(b.id)! ? -1 : st.lastOn.get(a.id)! > st.lastOn.get(b.id)! ? 1 : 0))[0]?.id ?? null;
 }
 
 /** Minutes shown for a week's ms: rounded to 5 (0 shows nothing). */

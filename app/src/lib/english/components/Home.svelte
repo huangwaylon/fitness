@@ -3,8 +3,9 @@
   // (plan.ts: the library's order) neither finished nor skipped (別の動画にする shows the next and skips this one for 14
   // days: prefs.ts), its thumbnail, one meta line and
   // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress). ライブラリ: at most five rows (a play left
-  // part-way, the next clips in order, すべて見る › the library level). ⚙: むずかしめ and 報告した内容. After 7+ days
-  // away, once: おかえりなさい. Today's bank (and the part-way one's) is fetched ahead while idle.
+  // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
+  // the library level). ⚙: むずかしめ and 報告した内容. After 7+ days away, once: おかえりなさい. Today's bank (and the
+  // part-way and offered ones') is fetched ahead while idle.
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
@@ -14,7 +15,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { LIBRARY as CLIPS, metaById, prefetch } from '../data.ts';
-  import { away, studyOf, weekView } from '../progress.ts';
+  import { away, reviewOf, studyOf, weekView } from '../progress.ts';
   import { backShown, loadSaved, markBack, partWay, partWays } from '../session.ts';
   import { skip, skipsOf } from '../prefs.ts';
   import { clock, s } from '../i18n.ts';
@@ -68,9 +69,14 @@
     const p = saved.find((x) => x.id !== shown.id && metaById(x.id)?.v === x.v);
     return p ? { clip: metaById(p.id)!, at: p.at, n: p.n } : null;
   });
+  /** もう一度: a finished clip with new questions, beside today's (never in its place). */
+  const review = $derived.by(() => {
+    const id = reviewOf(mine, today, CLIPS, new Set([shown.id, daily.id, part?.clip.id ?? '']));
+    return id ? metaById(id) : undefined;
+  });
   const upNext = $derived.by(() => {
     const i = CLIPS.findIndex((c) => c.id === shown.id);
-    return [...CLIPS.slice(i + 1), ...CLIPS.slice(0, i)].filter((c) => open(c) && !skipped.has(c.id) && c.id !== part?.clip.id).slice(0, part ? 2 : 3);
+    return [...CLIPS.slice(i + 1), ...CLIPS.slice(0, i)].filter((c) => open(c) && !skipped.has(c.id) && c.id !== part?.clip.id).slice(0, Math.min(3, 4 - +!!part - +!!review));
   });
 
   let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
@@ -84,7 +90,7 @@
     }
     // today's bank and the part-way one's ahead, once home is idle (their lessons then open with the questions, offline too)
     const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 2000 }) : setTimeout(f, 300));
-    idle(() => prefetch([shown, part?.clip]));
+    idle(() => prefetch([shown, part?.clip, review]));
     const on = () => (online = true), off = () => (online = false);
     addEventListener('online', on);
     addEventListener('offline', off);
@@ -116,6 +122,7 @@
     <h3 class="sec-label">{s('library')}</h3>
     <div class="card dense lib" data-en-lib>
       {#if part}<ClipRow clip={part.clip} plays={mine.plays.get(part.clip.id)} part={part} {onopen} />{/if}
+      {#if review}<ClipRow clip={review} plays={mine.plays.get(review.id)} again {onopen} />{/if}
       {#each upNext as c (c.id)}<ClipRow clip={c} plays={mine.plays.get(c.id)} {onopen} />{/each}
       <button type="button" class="row all" data-sfx="page" data-en-all onclick={onlibrary}>
         <span class="name">{s('seeAll', { n: CLIPS.length })}</span>
