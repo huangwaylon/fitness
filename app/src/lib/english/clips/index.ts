@@ -84,12 +84,21 @@ import { runsAgain } from './runsagain.ts';
 import { gryzzlBoxes } from './gryzzlbox.ts';
 import { pumpJamm } from './pumpjamm.ts';
 import { screwIt } from './screwit.ts';
+import { ronPatience } from './ronpatience.ts';
+import { badReview } from './badreview.ts';
+import { gameRoom } from './gameroom.ts';
+import { johnnyGoodbye } from './johnnybye.ts';
+import { daveex } from './daveex.ts';
+import { verySober } from './verysober.ts';
+import { andySecret } from './andysecret.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
   waitress,
   datinglang,
   laundromat,
+  gameRoom,
+  johnnyGoodbye,
   centralperk,
   furniture,
   ronShowHost,
@@ -113,12 +122,14 @@ export const CLIPS: readonly Clip[] = [
   tomNegotiate,
   mamasDead,
   workBestie,
+  andySecret,
   // ふつう
   scarnRead,
   gryzzlBoxes,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
+  verySober,
   parkspilot,
   janiceSocks,
   pikitis,
@@ -127,6 +138,7 @@ export const CLIPS: readonly Clip[] = [
   daveReturns,
   snowCones,
   neverLower,
+  ronPatience,
   annVibes,
   prairie,
   babySex,
@@ -145,6 +157,7 @@ export const CLIPS: readonly Clip[] = [
   annOffended,
   phoebebook,
   bucketList,
+  daveex,
   saylove,
   didIStutter,
   waffleGift,
@@ -154,6 +167,7 @@ export const CLIPS: readonly Clip[] = [
   annclub,
   disadulation,
   pitchWomen,
+  badReview,
   kathybook,
   guysGripe,
   savings,
