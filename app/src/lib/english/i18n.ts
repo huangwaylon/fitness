@@ -139,7 +139,7 @@ const S = {
   flagClipRow: { ja: 'この動画を報告', en: 'Report this clip' },
   // 場面のあらすじ (Scenes)
   scenes: { ja: 'あらすじ', en: 'Summary' },
-  scenesSub: { ja: '動画の下に1行で表示（質問の間は隠れます）', en: 'One line under the video (hidden during the questions)' },
+  scenesSub: { ja: '動画のすぐ下に表示（質問の間は隠れます）', en: 'Under the video (hidden during the questions)' },
   scenesTitle: { ja: '場面のあらすじ', en: 'Scene by scene' },
   scenesNote: { ja: '動画の流れを短くまとめたものです（セリフの訳ではありません）。タップするとその場面から再生します。', en: 'A short outline of the clip in our words (not the lines). Tap one to play from there.' },
   sceneOpen: { ja: '場面のあらすじを一覧で見る', en: 'All the scenes' },

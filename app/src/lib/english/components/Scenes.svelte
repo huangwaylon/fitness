@@ -24,7 +24,7 @@
   const label = (k: BeatKind) => s(`beat.${k}`);
 </script>
 
-{#if strip}<button type="button" class="strip" data-sfx="open" aria-label={s('sceneOpen')} data-en-scene={at} data-en-beat={beat ? bAt : undefined} onclick={() => (open = true)}>
+{#if strip}<button type="button" class="strip" data-sfx="open" aria-label={`${beat ? `${label(beat.k)}：` : ''}${beat?.ja ?? scenes[at].ja}（${s('sceneOpen')}）`} data-en-scene={at} data-en-beat={beat ? bAt : undefined} onclick={() => (open = true)}>
   {#if beat}<span class="kind" data-en-beat-k={beat.k}>{label(beat.k)}</span>{/if}
   <span class="ja">{beat?.ja ?? scenes[at].ja}</span><Icon name="chevron-right" size={16} />
 </button>{/if}
