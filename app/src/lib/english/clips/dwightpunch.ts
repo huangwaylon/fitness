@@ -220,7 +220,7 @@ export const dwightPunch: Clip = {
       line: 'I know a ton of *14*-year-old girls that could…',
       said: '「あいつに勝てる14歳の女の子なら山ほど知ってる」と言う。',
       mean: 'a ton of 〜 ＝ たくさんの〜。ドワイトの弱さを言うための大げさな言い方。',
-      trap: 'forty なら前の「フォー」が強い。後ろの「ティーン」が強く長ければ14。fifteen は「フィフ」。',
+      trap: '4 なら「フォー」だけ、40 なら前が強い「フォーティ」、15 は「フィフ」。後ろの「ティーン」が長ければ14。',
       use: 'I have a ton of work today.（今日は仕事が山ほどある）' },
 
     { id: 'h1', skill: 'humor', level: 'B1', point: 'belt', seg: [99.45, 105.3],

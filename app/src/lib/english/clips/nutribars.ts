@@ -69,7 +69,7 @@ export const nutribars: Clip = {
       line: 'balloon up to 600 pounds and … a heart attack at *43*',
       said: '「600ポンドまで太って、43歳で心臓発作」という例を出す。',
       mean: 'at 43 ＝ 43歳で。極端な例を出して、それでも自由だと言っている。',
-      trap: '前の600につられやすい。at のあとの「フォーティスリー」を聞く。33 は「サーティ」で始まる。',
+      trap: '33 は「サーティ」、60 は「シックスティ」で始まる。「フォーティ」で終われば40、最後に「スリー」で43。',
       use: 'I had my first kid at thirty-three.（33歳で最初の子が生まれた）' },
 
     // R fix: blind 60–85 % (the key was the only sincere reading, and the stem's "To me" pointed at it); the stem no

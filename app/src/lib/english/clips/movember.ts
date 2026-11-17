@@ -119,7 +119,7 @@ export const movember: Clip = {
       line: 'over the next *three months*… That’s the winter season. *Three months.*',
       said: '「この先3か月で…」と始め、別の人が「冬のシーズンだ。3か月」と言い直す。',
       mean: 'over the next three months ＝ この先3か月で。2回言うので、2回目で確かめられる。',
-      trap: 'thirty は「サーティ」、thirteen は「サーティーン」と長い。短い「スリー」のあとが months。',
+      trap: '30 は「サーティ」、13 は「サーティーン」。「スリー」のあと「マンス」なら3か月、「ウィーク」なら3週間。',
       use: 'Over the next three months, I’ll save money.（この先3か月で貯金する）' },
 
     { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [59.6, 66],

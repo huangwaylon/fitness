@@ -132,7 +132,7 @@ export const rentASwag: Clip = {
       line: 'and I’m *$46 under budget*.',
       said: '「今はこれが精一杯。しかも予算より46ドル安く済んだ」と言う。',
       mean: 'under budget ＝ 予算より安く済んだ。節約の自慢。',
-      trap: 'fourteen なら後ろの「ティーン」が長く強い。forty のあとの six まで聞いて一つの数。',
+      trap: 'fourteen なら「ティーン」が長い。sixty は「シックスティ」で始まる。「フォーティ」のあと six まで聞けば46。',
       use: 'We came in under budget.（予算内で済みました）' },
 
     { id: 'i4', skill: 'detail', level: 'B1', point: 'cheap', seg: [119.4, 128.1],

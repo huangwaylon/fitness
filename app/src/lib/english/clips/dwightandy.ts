@@ -123,7 +123,7 @@ export const dwightVsAndy: Clip = {
       line: 'I’ve seen *over 240* of them.',
       said: '「240本以上見た」と言う。',
       mean: 'over ＝ 〜より多く。「映画のことは何でも知っている」の理由として出した数。',
-      trap: '240 は「ハンドレッド」のあと「フォーティ」。214 は「フォーティーン」と伸び、24 には hundred がない。',
+      trap: '24 には hundred がない。214 は「フォーティーン」、2,400 は「サウザンド」。「ハンドレッド・フォーティ」なら240。',
       use: 'I’ve been there over twenty times.（20回以上行ったよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'announce', seg: [36.1, 64],

@@ -190,12 +190,12 @@ export const neverLower: Clip = {
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['condition'], seg: [92.3, 136.3],
       stem: 'How does the practice end for Dwight?', ja: '練習は、ドワイトにとってどう終わる？',
-      choices: ['Dwight may lose his job', 'Dwight makes a big sale', 'Michael refuses the sale'], a: 0,
-      choicesJa: ['仕事を失うかもしれない', '大きな注文を取る', 'マイケルが注文を断る'],
+      choices: ['Michael gets a big order', 'Dwight gets a big order', 'The client hangs up'], a: 0,
+      choicesJa: ['マイケルが大口の注文を取る', 'ドワイトが大口の注文を取る', '客が電話を切る'],
       cue: '電話がマイケルに代わったあと',
       said: '電話はマイケルに代わり、客は大きな注文を約束する。条件はドワイトのクビ。',
-      mean: '練習のはずが、売ったのはマイケル、ドワイトは危ない立場で終わる。',
-      trap: '大きな注文の話が出るので、ドワイトの手柄だと思いやすい。電話はもうマイケル。',
+      mean: '練習のはずが、電話はマイケルに代わり、マイケルが100万ドルの注文をもらう。',
+      trap: 'ドワイトの練習なので、ドワイトの手柄だと思いやすい。Give me the phone で電話はマイケルへ。',
       use: 'Well, that backfired.（まあ、裏目に出たね）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'threewords', reveals: ['rules'], seg: [100.3, 106.5], retired: true,
@@ -228,7 +228,7 @@ export const neverLower: Clip = {
       line: 'I’m gonna buy *$1 million worth* of paper products today.',
       said: '「今日、紙製品を100万ドル分買おう」と言う。',
       mean: '〜 worth of ＝ 〜分の。1 million ＝ 100万。急に大きな注文になる。',
-      trap: 'hundred や ten は聞こえない。million と billion は最初の m／b だけがちがう。',
+      trap: '100,000 なら hundred thousand、10 million なら ten、billion なら「ビ」。「ワンミリオン」なら100万。',
       use: 'Twenty dollars’ worth of gas, please.（ガソリン20ドル分お願いします）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'regret', seg: [129.6, 133.75],
@@ -239,7 +239,7 @@ export const neverLower: Clip = {
       line: 'I don’t think *you’ll* regret it.',
       said: 'マイケルが客に「後悔はさせませんよ」と言う。',
       mean: 'you’ll ＝ you will。ll は暗い音で「ユーォ」のように聞こえる。先のことの約束。',
-      trap: 'll がほぼ消え、you に聞こえやすい。we’ll なら「ウィ」で始まる。',
+      trap: 'you なら「ユー」ですぐ regret。we’ll なら「ウィ」で始まる。「ユーォ」と暗い音が残れば you’ll。',
       use: 'I don’t think you’ll need a coat.（コートは要らないと思うよ）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'condition', seg: [134.4, 140.6],

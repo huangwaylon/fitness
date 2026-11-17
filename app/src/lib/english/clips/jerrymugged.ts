@@ -119,7 +119,7 @@ export const jerryMugged: Clip = {
       line: 'The mayor is going to divert *$2,500* to the parks',
       said: '「市長が2,500ドルを公園の警備に回す」と言う。',
       mean: 'divert ＝ （お金を）別の所から回す。twenty-five hundred とも言う。',
-      trap: '250 なら fifty、25,000 なら thousand が聞こえる。2,500 は hundred。',
+      trap: '「…フィフティ」で終われば250、「…サウザンド」なら25,000。最後が「ハンドレッド」なら2,500。',
 
       use: 'It’s twenty-five hundred dollars.（2,500ドルです）' },
 
@@ -238,7 +238,7 @@ export const jerryMugged: Clip = {
       line: 'So I *go to* reach for it',
       said: '「で、取ろうと手を伸ばす」と、今の形で話を進める。',
       mean: '過去の話でも、盛り上がる所は今の形で話すことが多い。go to は「ゴウタ」に近い。',
-      trap: '過去の話なので went to と思いやすい。got to なら「ガ」。最初の「ゴウ」の音で go to。',
+      trap: 'went to なら「ウェン」、got to なら「ガラ」。「ゴウタ」と聞こえれば go to。過去の話でも今の形。',
       use: 'So I go up and say hi.（で、近づいてあいさつするわけ）' },
 
     { id: 'i3', skill: 'infer', level: 'B1', point: 'truth', reveals: ['tom'], seg: [157.3, 167.1],

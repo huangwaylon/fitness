@@ -113,7 +113,7 @@ export const joeyCrossword: Clip = {
       cue: '「I said no」のあと', line: '*Why’d you* say no?',
       said: '断ったと聞いて「なんで断ったの？」と聞き返す。',
       mean: 'Why’d you ＝ Why did you。did が縮んで「ワイジュ」とひと続きになる。',
-      trap: 'd が you にとけ、Why do you に聞こえやすい。didn’t なら「ン」が残る。',
+      trap: 'Why do you なら「ワイドゥユ」と3拍。didn’t なら「ディドゥン」の「ン」。「ワイジュ」と2拍なら Why’d you。',
       use: 'Why’d you leave so early?（なんでそんなに早く帰ったの？）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'lines', seg: [31.55, 40.9],
