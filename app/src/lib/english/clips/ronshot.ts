@@ -25,7 +25,7 @@ export const ronShot: Clip = {
       cue: '「at my house」のあと',
       line: 'at my house, I got *a wife and three beautiful daughters*.',
       said: '「家には妻と、かわいい娘が3人いる」と話す。',
-      mean: 'a wife and three daughters ＝ 妻1人と娘3人で4人。I got は I have のくだけた形。',
+      mean: 'a wife and three daughters ＝ 妻と娘3人で4人。I got は I have のくだけた形。',
       trap: 'three が一番強く聞こえるので、そのまま選びやすい。a wife の a も1人と数える。',
       use: 'I live with my wife and two kids.（妻と子ども2人と暮らしてる）' },
 
