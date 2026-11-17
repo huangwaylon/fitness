@@ -1,18 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 5, new 1
 // “Wet Cement  - The Office US” (the official The Office channel, BEST OF SEASON 4): the sidewalk outside is wet,
 // and Michael begs the office for something to put in it; he turns down initials and a picture, loves the celebrity
 // handprints, loves a face print even more, ignores a safety warning, gives a grand speech, then tells the camera
 // what it means to him.
-// Segments from the captions, words from whisper (2026-11-16). Only Michael is named in the audio ("Phil" is in
-// whisper only); the others are "a coworker".
-// Untested on purpose: 24–47 s (a childhood story and "You draw a picture… says so much more than words" overlap and
-// are garbled in the captions), "it's drying" at 9.4 s (captions "strike"), "Ma'am, translate" at 52.6 s (captions
-// "man"), 63–69 s (crowd), the "Hurry, please" / "Can you breathe?" / "Hold your breath" asides inside 75–86 s, and
-// 86–91 s (innuendo).
-// REVIEW 2026-11-16: pass 6, fix 14, drop 1, new 0; ear checks 1
-// Open: c2's segment is 15.9 s (a C2 talking-head item, inside the 25 s limit); the repo's 3–15 s test may need the
-//   C2 exemption.
-// EAR CHECK: 81.5 s c1 — the second view: whisper "it's deep down inside", captions "it's your outside" (c1's "Deep inside"
-//   choice uses whisper's words; the key rests on "that's also not true", in both)
+// Segments from the captions, words from whisper (2026-11-16). Only Michael is named in the audio; the others are
+// "a coworker". Untested: 24–47 s (the childhood story, garbled), 63–69 s (crowd), 86–91 s (innuendo).
 import type { Clip } from '../types.ts';
 
 export const wetCement: Clip = {
@@ -21,93 +13,90 @@ export const wetCement: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: h2 was dropped, so 'loveit' left the reveals; the why comment is rewrapped. Blind 45 %, kept as is.
-    // why: cools as they get sillier ← he says "no" to the initials and the picture, and the face idea sounds silly;
-    //   first sensible ← the handprints are the safe, famous idea and he says "I love it" to them
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'arc', reveals: ['more', 'safe', 'initials', 'handprints'],
-      seg: [0, 63.4],
-      stem: 'How does Michael’s hunt for an idea turn out?',
-      choices: ['He likes the ideas more as they get riskier', 'He cools on the ideas as they get sillier',
-                'He takes the first sensible idea he hears'], a: 0,
-      cue: '案が出るたびの、Michael の返事の変化。',
-      said: 'イニシャルや絵には「だめ」。手形に「最高」、顔に「もっと最高」、危ないと言われても「最高」。',
-      mean: '案が大胆で危なくなるほど、Michael は喜ぶ。止める声も通じない。',
-      trap: '最初は断り続けるので「全部断る」と取りやすい。後半の返事の変化を聞く。',
-      use: 'The crazier, the better.（ぶっ飛んでるほどいい）' },
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'write', reveals: ['dream'], seg: [6.0, 14.2],
+      stem: 'What does Michael ask everyone?',
+      ja: 'マイケルはみんなに何を聞いている？',
+      choices: ['What to write in the cement', 'Who should write in it first', 'How long it takes to dry'], a: 0,
+      choicesJa: ['セメントに何を書くか', 'だれが最初に書くか', '乾くまでどのくらいか'],
+      cue: '最後の質問。',
+      line: 'Wet cement, outside, it’s drying, fast… *what do I write?*',
+      said: '「外のセメントが乾いていく、急げ。何を書けばいい？」と言う。',
+      mean: 'What do I write? ＝ 何を書けばいい？ 書く中身のアイデアを求めている。',
+      trap: 'drying（乾いていく）が聞こえるので、乾く時間の話と思いやすい。質問は what。',
+      use: 'What do I write here?（ここには何を書けばいいですか）' },
 
-    // R fix: V2 (blind 75 %, right): with the title, writing in wet cement was the only fun use. All three now
-    //   write in it; the distractors twist "I" and "lifelong".
-    // why: who first ← "what do I write?" heard without the "I", as a turn-taking question; so it lasts ←
-    //   "lifelong" heard as lasting, and "it's drying, fast" as a worry about how to write it
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'write', reveals: ['dream'], seg: [0, 14.2],
-      stem: 'What does Michael want everyone’s ideas for?',
-      choices: ['What to write in the cement before it dries', 'Who should be first to write in the cement',
-                'How to write in the cement so it will last'], a: 0,
-      cue: '外の何が急いでいるかと、最後の質問。',
-      line: '*Wet cement, outside*… This is a lifelong dream, *what do I write?*',
-      said: '「外のセメントが乾いていく、急げ。一生の夢なんだ、何を書けばいい？」と呼びかける。',
-      mean: '欲しいのは、乾く前にセメントに書く言葉のアイデア。',
-      trap: 'lifelong や fast から「誰が」「どう残す」の話にも聞こえるが、聞いているのは what。',
-      use: 'Quick, I need your ideas!（急いで、アイデアちょうだい！）' },
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'lost', seg: [6.0, 11.1],
+      stem: 'What does a coworker tell Michael at first?',
+      ja: '同僚は最初にマイケルに何と言う？',
+      choices: ['They don’t understand him', 'They have no ideas', 'They are too busy now'], a: 0,
+      choicesJa: ['何の話か分からない', 'アイデアがない', '今は忙しい'],
+      cue: '「Ideas please」のあとの一言。',
+      line: 'Michael, *we don’t know what you’re talking about*.',
+      said: '「マイケル、何の話か分からないんだけど」と言う。',
+      mean: 'what you’re talking about ＝ あなたが話していること。何の話か説明して、という意味。',
+      trap: 'don’t know から「アイデアがない」と思いやすい。分からないのは話の中身。',
+      use: 'Sorry, I don’t know what you’re talking about.（ごめん、何の話か分からない）' },
 
-    // why: no ideas ← "we don't know" heard as "we can't think of anything"; too busy ← the usual office push-back
-    //   to a boss shouting "right now, go"
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'lost', seg: [6.0, 11.1],
-      stem: 'What is the coworker doing when cutting in after “Ideas please, right now”?',
-      choices: ['Asking him to explain what this is about', 'Telling him they have no ideas to give',
-                'Telling him they are too busy right now'], a: 0,
-      cue: 'Ideas please のあとの一言と、Michael の返し。',
-      line: 'Michael, *we don’t know what you’re talking about*. — Wet cement, outside…',
-      said: '「何の話か分からない」と口をはさみ、Michael は「外のセメント」と説明しはじめる。',
-      mean: '断りではなく、まず事情を説明してと求める言い方。',
-      trap: 'don’t know から「アイデアがない」と取りやすいが、分からないのは話の中身。直後の説明が答え。',
-      use: 'Sorry, what are we talking about?（ごめん、何の話？）' },
-
-    // why: last night ← dream = 寝て見る夢; last for all time ← lifelong read as "lasting forever", which fits cement
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'dream', reveals: ['write'], seg: [10.4, 14.2],
-      stem: 'Just before asking what to write, how does Michael describe this chance?',
-      choices: ['Something he has wanted all his life', 'Something he dreamed about last night',
-                'Something that will last for all time'], a: 0,
-      cue: '「what do I write」の直前の言い方。',
+      stem: 'What does “a *lifelong dream*” mean here?',
+      ja: '「a lifelong dream」はここではどういう意味？',
+      choices: ['Something he always wanted', 'Something he dreamed last night', 'Something that lasts forever'], a: 0,
+      choicesJa: ['ずっとやりたかったこと', '昨夜見た夢', 'ずっと残るもの'],
+      cue: '「what do I write」の直前。',
       line: 'This is a *lifelong dream*, what do I write?',
       said: '「これは一生の夢なんだ。何を書けばいい？」と言う。',
-      mean: 'lifelong ＝ 生まれてからずっとの。昔からやりたかったこと、という大げさな言い方。',
-      trap: 'dream を寝て見る夢、lifelong を「永遠に残る」と取りやすい。life は「一生」。',
-      use: 'Seeing Paris is a lifelong dream.（パリは昔からの夢なんだ）' },
+      mean: 'lifelong ＝ 一生の、昔からずっとの。lifelong dream ＝ 昔からの夢。大げさに言っている。',
+      trap: 'dream から寝て見る夢を思いやすい。ここは「ずっとやりたかったこと」。',
+      use: 'Seeing Paris is my lifelong dream.（パリに行くのは昔からの夢）' },
 
-    // R fix: V2 (blind 55 %, right: initials are the classic answer). "A short message" became the handprint, a later
-    //   idea, so two of the four are ideas that do come up.
-    // why: full name ← "Some idiot named…" right after; handprint ← the idea Michael loves later; a picture ← a later
-    //   idea in the brainstorm
     { id: 'd3', skill: 'detail', level: 'B1', point: 'initials', seg: [13.5, 17.0],
-      stem: 'What does the first coworker suggest Michael put in the cement?',
-      choices: ['His initials', 'His full name', 'His handprint', 'A picture'], a: 0,
-      cue: '「Michael, you could put」のあと。',
+      stem: 'What does a coworker suggest first?',
+      ja: '同僚が最初に出す案は？',
+      choices: ['His initials', 'A picture', 'His handprints'], a: 0,
+      choicesJa: ['イニシャル', '絵', '手形'],
+      cue: '「you could put」のあと。',
       line: 'Michael, you could put *your initials* in it. — MGS, no.',
-      said: '同僚が「イニシャルを入れたら」と言い、Michael は「MGS、だめ」と返す。',
-      mean: 'initials ＝ 名前の頭文字。最初の案は頭文字で、すぐ断られる。',
-      trap: 'あとで絵や手形の案も出るので混ざりやすい。最初の案は put のすぐあとを聞く。',
+      said: '同僚が「イニシャルを入れたら」と言い、マイケルは「MGS、だめ」と返す。',
+      mean: 'initials ＝ 名前の頭文字。you could 〜 ＝ 〜したらどう？という軽い提案。',
+      trap: 'あとで絵や手形の案も出るので混ざりやすい。最初の案は put のすぐあと。',
       use: 'Just put your initials here.（ここにイニシャルだけ書いて）' },
 
-    // R fix: V2 (blind 55 %, right: "complain" was a weak literal reading). It became the wrong-direction reading,
-    //   blame for credit.
-    // why: get blamed ← "claim… for it" heard as being held to account (credit and blame mixed); be paid ← credit
-    //   read as money (クレジット)
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'initials', seg: [13.5, 24.15],
-      stem: 'What does Michael fear a stranger named “Mark Greg Sputnik” would do?',
-      choices: ['Say that he was the one who wrote it', 'Get blamed for writing in the cement',
-                'Ask to be paid for using his initials'], a: 0,
-      cue: '「will」のあとの動詞と、その目的語。',
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'credit', reveals: ['initials'], seg: [13.5, 24.15],
+      stem: 'What does “*claim credit* for it” mean here?',
+      ja: '「claim credit for it」はここではどういう意味？',
+      choices: ['Say he made it', 'Get blamed for it', 'Ask for money for it'], a: 0,
+      choicesJa: ['自分が作ったと言う', 'そのせいで責められる', 'それでお金を求める'],
+      cue: '「Mark Greg Sputnik will」のあと。',
       line: 'Some idiot named Mark Greg Sputnik will *claim credit for it*.',
-      said: '「マーク・グレッグ・スプートニクとかいう奴が自分のだと言う」と断る。',
-      mean: 'claim credit ＝ 自分の手柄だと言う。claim は苦情ではない。',
-      trap: 'credit をお金、claim を責められる話と取りやすい。二語で一つの意味。',
-      use: 'She claimed credit for my work.（彼女が私の仕事を自分の手柄にした）' },
+      said: '「MGS って名前の別のバカが、自分のだと言い出す」と断る。',
+      mean: 'claim credit ＝ 自分の手柄だと言う。同じ頭文字の他人に取られるのがいや。',
+      trap: 'credit からクレジット（お金）を思いやすい。credit ＝ 手柄。',
+      use: 'She took credit for my idea.（彼女が私のアイデアを自分の手柄にした）' },
 
-    // R fix: V2 (blind 55 %, right: "correct a detail" was weak). It became the opposite reading of the explainer.
-    // why: more slowly ← Michael's "translate" (if caught) sounds like a speed problem, and she talks fast; nothing
-    //   to do with it ← her story never says "cement", so a reply can sound like a dismissal (refuted: "in the cement")
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'kelly', reveals: ['handprints'], seg: [46.8, 56.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['more', 'initials', 'handprints'], seg: [17.0, 61.0],
+      stem: 'Which idea does Michael like best?',
+      ja: 'マイケルが一番気に入った案はどれ？',
+      choices: ['Putting his face in it', 'Making handprints in it', 'Writing his initials in it'], a: 0,
+      choicesJa: ['顔を押しつける', '手形をつける', 'イニシャルを書く'],
+      cue: '案が出るたびのマイケルの返事。',
+      said: 'イニシャルには「だめ」、手形には「最高」、顔には「もっと最高」と言う。',
+      mean: 'I love it ＝ 最高、気に入った。more が付くと「さらに気に入った」。',
+      trap: '手形にも I love it と言うので迷いやすい。最後の I love it more! が決め手。',
+      use: 'I love it! Let’s do that.（最高！それにしよう）' },
+
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'lifetime', seg: [21.4, 25.5],
+      stem: 'What does “*once in a lifetime*” mean?',
+      ja: '「once in a lifetime」はどういう意味？',
+      choices: ['Very rare', 'Very easy', 'Very old'], a: 0,
+      choicesJa: ['めったにない', 'とても簡単', 'とても古い'],
+      cue: '「opportunity」の前。',
+      line: '*Once in a lifetime* opportunity, people.',
+      said: '「一生に一度のチャンスなんだぞ、みんな」と急かす。',
+      mean: 'once in a lifetime ＝ 一生に一度の、めったにない。opportunity ＝ チャンス。',
+      trap: 'life（命・人生）から長い時間の話と思いやすい。once ＝ 一度。',
+      use: 'It’s a once in a lifetime trip.（一生に一度の旅行だよ）' },
+
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'kelly', reveals: ['handprints'], seg: [46.8, 56.6], retired: true,
       stem: 'Why does another coworker speak up right after the E! story?',
       choices: ['To say what idea her story was getting at', 'To repeat her story more slowly for Michael',
                 'To say her story has nothing to do with it'], a: 0,
@@ -118,71 +107,55 @@ export const wetCement: Clip = {
       trap: '速さの話や「関係ない」という返しに取りやすい。新しく出た語に注目。',
       use: 'What she means is, we need more time.（つまり、もっと時間が要るってこと）' },
 
-    // R fix: V2/V1 (blind 70 %, right: world knowledge of the Chinese Theater gave the key). All three are now
-    //   things stars do leave in that cement, so only the audio's "hand" decides.
-    // why: footprints ← "-prints" caught, "hand" lost; signatures ← names are the other thing stars leave there
     { id: 'd2', skill: 'detail', level: 'B1', point: 'handprints', seg: [52.2, 56.6],
-      stem: 'According to the coworker who explains, what is the E! story about?',
-      choices: ['Handprints that stars press into cement', 'Footprints that stars press into cement',
-                'Names that stars sign into the cement'], a: 0,
+      stem: 'What is the E! story about?',
+      ja: 'E! の話は何についての話？',
+      choices: ['Stars’ handprints in cement', 'Stars’ footprints in cement', 'Stars’ names in cement'], a: 0,
+      choicesJa: ['セメントに残したスターの手形', 'セメントに残したスターの足形', 'セメントに書いたスターの名前'],
       cue: '「She’s talking about」のあと。',
       line: 'She’s talking about *the handprints that celebrities make in the cement*.',
-      said: '「セレブがセメントに付ける手形の話です」と説明する。',
-      mean: 'handprints ＝ 手形。有名人がセメントに手を押しつけて残すもの。',
-      trap: '足形やサインも有名人らしい話。prints だけ拾わず、前の hand まで聞くと「手」。',
-      use: 'Wipe your handprints off the glass.（ガラスの手の跡をふいて）' },
+      said: '「有名人がセメントに付ける手形の話です」と説明する。',
+      mean: 'handprints ＝ 手形。celebrities ＝ 有名人。hand ＋ prints（跡）。',
+      trap: 'prints だけ聞くと足形かもと思いやすい。前の hand まで聞く。',
+      use: 'There are handprints on the window.（窓に手の跡がついてる）' },
 
-    // R fix: V2 (blind 55 %, right: "too far" was the odd one out). It became "just as much", so the three choices
-    //   are more / less / the same.
-    // why: not as much ← "more" heard as a comparison he's making against the face; just as much ← "more" is short
-    //   and easy to lose, and "I love it" alone sounds like the same reply
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'more', reveals: ['star', 'handprints'], seg: [52.2, 59.7],
-      stem: 'How does Michael react to the idea of using his face?',
-      choices: ['He likes it even better than the handprints', 'He likes it, but not as much as the handprints',
-                'He likes it just as much as the handprints'], a: 0,
-      cue: '最後の返事に足される一語。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'more', reveals: ['handprints'], seg: [52.2, 59.7],
+      stem: 'How much does Michael like the face idea?',
+      ja: 'マイケルは顔の案をどのくらい気に入った？',
+      choices: ['More than the handprints', 'Less than the handprints', 'The same as the handprints'], a: 0,
+      choicesJa: ['手形より気に入った', '手形ほどではない', '手形と同じくらい'],
+      cue: '顔の案への返事の最後の一語。',
       line: 'If you were a real star, you’d put your face in it. — *I love it more!*',
       said: '手形に「最高！」と言い、顔の案には「もっと最高！」と返す。',
-      mean: 'love it more ＝ さらに気に入った。案が大胆になるほど喜んでいる。',
-      trap: 'more が短く、聞こえないと手形と同じ返事に聞こえる。返事の最後の一語まで聞く。',
-      use: 'I love this one even more.（こっちのほうがもっと好き）' },
+      mean: 'love it more ＝ もっと気に入った。more ＝ もっと。',
+      trap: 'more は短く、落とすと手形と同じ返事に聞こえる。最後の一語まで聞く。',
+      use: 'I like this one more.（こっちのほうが好き）' },
 
-    // R fix: V2 (blind 70 %, right: after "If you were…" only "you'd" was grammatical). All three now fit the
-    //   grammar and differ by sound only; one 'd against 'd've is heavy reduction, so the level is C1.
-    // why: could ← /kʊd/ rhymes with "you'd", and the y-/k- start is quick; you'd have ← a weak extra "of" sound
-    //   between "you'd" and "put" is easy to imagine in fast speech
-    { id: 's1', skill: 'sound', level: 'C1', point: 'star', seg: [56.6, 59.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'star', reveals: ['more'], seg: [56.6, 59.7],
       stem: 'Fill the gap: “If you were a real star, ___ your face in it.”',
+      ja: '空いている所に入る語は？「If you were a real star, ___ your face in it.」',
       choices: ['you’d put', 'you could put', 'you’d have put'], a: 0,
-      cue: 'star のあと、とても短い一音。',
+      choicesJa: ['〜するだろう', '〜できるだろう', '〜しただろう'],
+      cue: '「star」のすぐあと。',
       line: 'If you were a real star, *you’d put* your face in it.',
       said: '「本物のスターなら、顔を押しつけるよね」と言う。',
-      mean: 'you’d ＝ you would。d はほぼ聞こえず「ユッ・プッ」と二拍。',
-      trap: 'could なら k の破裂、have なら「ァヴ」の一拍が増える。速い所は拍の数を数えて聞き分ける。',
+      mean: 'you’d ＝ you would。「ユッ・プッ」と短い2音で、d はほぼ聞こえない。',
+      trap: 'could なら「クッ」の音が、have なら「ァヴ」の音が入る。you の直後を聞く。',
       use: 'If I were you, I’d ask.（私なら聞いてみる）' },
 
-
-    // R fix: V2 (blind 55 %, right: "daring" was weak). It became the does/doesn't trap. S4: 58.2 s cut "your
-    //   face", and 61.2 s ran into the whisper-only "I love it!".
-    // why: safe enough ← "doesn't" is weak and lost, so "seem safe" sounds like a go-ahead; keep the cement safe ←
-    //   "safe" heard without "doesn't", as care for the cement
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'safe', reveals: ['more'], seg: [56.6, 61.0],
-      stem: 'What is the coworker’s reply to Michael’s “I love it more!” doing?',
-      choices: ['Warning him that the idea could hurt him', 'Saying the idea seems safe enough to try',
-                'Asking how they’ll keep the cement safe'], a: 0,
-      cue: '「I love it more!」のすぐあとの一言。',
-      line: '*That doesn’t seem safe.*',
-      said: '顔の案に大喜びする Michael に、同僚が「安全じゃなさそう」と言う。',
-      mean: 'doesn’t seem ＝ ～ではなさそう。やめて、と柔らかく伝える注意。',
-      trap: 'safe だけ拾うと「セメントを守る」話に聞こえる。doesn’t は否定の注意。',
-      use: 'That doesn’t seem like a good idea.（それ、いい考えじゃなさそう）' },
+      stem: 'What does the coworker want Michael to do?',
+      ja: '同僚はマイケルにどうしてほしい？',
+      choices: ['Not do the face idea', 'Do the face idea fast', 'Do the handprints first'], a: 0,
+      choicesJa: ['顔の案をやめる', '顔の案を急いでやる', '先に手形をやる'],
+      cue: '「I love it more!」のすぐあと。',
+      line: 'Michael, *that doesn’t seem safe*.',
+      said: '大喜びするマイケルに、同僚が「それ、安全じゃなさそう」と言う。',
+      mean: 'doesn’t seem safe ＝ 安全じゃなさそう。「やめたほうがいい」をやわらかく言う形。',
+      trap: 'safe だけ拾うと「安全だからどうぞ」に聞こえやすい。doesn’t を聞く。',
+      use: 'That doesn’t seem safe.（それ、危なそうだよ）' },
 
-    // R drop: h2 (K1/N1): its key line, "I love it!" after the warning, is in whisper only, and g1's key (riskier is
-    //   better) also defends a "danger draws him in" reading. Never shipped, so deleted; the ear check went with it.
-
-    // why: narrows ← "the idea of a man" heard as one specific idea, a refinement rather than a retreat to "a man"; has died ←
-    //   "immortalize a man" sounds like a memorial
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'idea', seg: [68.3, 76.85],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'idea', seg: [68.3, 76.85], retired: true,
       stem: 'In the cement speech, what does “Maybe the idea of a man” do?',
       choices: ['It takes back the contrast he has just drawn', 'It narrows his point to one kind of idea',
                 'It shows the speech honors a man who has died'], a: 0,
@@ -193,26 +166,19 @@ export const wetCement: Clip = {
       trap: 'immortalize で葬式の話に聞こえやすい。Maybe は前言を引っこめる合図。',
       use: 'Well, maybe not a party, but dinner.（パーティーじゃなくても、夕食なら）' },
 
-    // why: deep inside ← "deep" is heard, and it's the next view he names; born with ← greatness and skin (the body)
-    //   heard as something natural
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'skin', seg: [76.4, 80.45],
-      stem: 'What does Michael say “some people” believe about greatness?',
-      choices: ['That it’s only on the surface', 'That it’s hidden deep inside', 'That it’s something you’re born with'],
-      a: 0,
-      cue: '「some people say」の前の二語。',
-      line: 'Greatness is only *skin deep*, some people say. Well, that’s not true.',
-      said: '「偉大さは皮一枚だけ、と言う人もいる。それは違う」と話す。',
-      mean: 'skin deep ＝ 表面だけの。「美しさは見かけだけ」という言い回しの言いかえ。',
-      trap: 'deep から「奥深い」と取りやすいが、皮の厚さまで、つまり浅い。',
-      use: 'His charm is only skin deep.（彼の魅力は見かけだけ）' },
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'skin', seg: [76.4, 80.45],
+      stem: 'What does “only *skin deep*” mean?',
+      ja: '「only skin deep」はどういう意味？',
+      choices: ['Only on the outside', 'Deep down inside', 'There from birth'], a: 0,
+      choicesJa: ['見た目だけ', '心の奥深く', '生まれつき'],
+      cue: '「some people say」の前。',
+      line: 'Greatness is only *skin deep*, some people say.',
+      said: '「偉大さは見かけだけ、と言う人もいる」と話す。',
+      mean: 'skin deep ＝ 皮一枚の深さ、つまり見かけだけ。Beauty is only skin deep. が元の決まり文句。',
+      trap: 'deep から「奥深い」と思いやすい。皮の厚さまでなので浅い。deep down inside は次の別の意見。',
+      use: 'Beauty is only skin deep.（美しさは見かけだけ）' },
 
-    // anchor: 79.7–80.5 s "Well, that's not true" after the first view; 83.6–85.4 s "that's also not true" after the
-    //   second: both places are ruled out, and no third is given before "Go!"
-    // R fix: V2 (blind 50 %, right: the only choice with a reason after the colon). All three now give a place and
-    //   a reason in the same shape.
-    // why: deep inside ← the last-heard view taken as his own, with "also" lost under "Hold your breath" (the
-    //   last-heard keyword); both ← rejecting two views heard as granting each a part (wrong direction)
-    { id: 'c1', skill: 'humor', level: 'C2', point: 'skin', seg: [76.4, 85.55],
+    { id: 'c1', skill: 'humor', level: 'C2', point: 'skin', seg: [76.4, 85.55], retired: true,
       stem: 'Taken seriously, what has Michael’s speech said about where greatness lies?',
       choices: ['Nowhere: he rejects both views he names', 'Deep inside: he rejects only the surface view',
                 'In both: he finds some truth in each view'], a: 0,
@@ -223,29 +189,18 @@ export const wetCement: Clip = {
       trap: '最後に出た意見が答えに聞こえやすい。also not true の also は、二つ目も消すという合図。',
       use: 'Good? Not really. Bad? Also no.（良かった？いや。悪い？それも違う）' },
 
-    // R fix: V2 (blind 55 %, right: the only choice about the future). "Face over initials" (never mentioned) became
-    //   a future reading built on "a real star". The key lost "to him" and the notes lost "That's me", c2's anchor,
-    //   so g2 no longer reveals 'aboutme' (that reveal blocked c2 from play 3 in 19/20 draws).
-    // why: family ← "grandkids… great-grandkids" heard as people invited today; famous ← "a real star" in the
-    //   brainstorm, and "come back here when I'm 100" heard as fans coming (refuted: "That's me", "a good feeling")
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'legacy', seg: [90.1, 112.9],
-      stem: 'What is Michael’s comment to the camera mainly about?',
-      choices: ['Why the face print will matter years from now',
-                'Why he wants his family to come and see the ceremony',
-                'Why he hopes the face print will make him famous one day'], a: 0,
-      cue: '話の最後のほう、何年後の話か。',
-      said: '「今日は特別な日」と始め、孫やひ孫のこと、年をとってからここへ戻ってくる日のことを話す。',
-      mean: '顔の跡は何十年先まで残り、そのときも意味を持つ、という話。',
-      trap: 'grandkids から家族を呼ぶ話に聞こえやすいが、孫は未来の話。そこを聞く。',
-      use: 'I want to be remembered for this.（これで覚えていてほしい）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'legacy', reveals: ['hundred'], seg: [90.1, 112.9],
+      stem: 'What does Michael picture in the future?',
+      ja: 'マイケルは将来のどんな場面を思い描いている？',
+      choices: ['Showing kids his face print', 'Seeing his face on TV', 'Making a new sidewalk'], a: 0,
+      choicesJa: ['子どもたちに顔の跡を見せる', '自分の顔をテレビで見る', '新しい歩道を作る'],
+      cue: '話の後半。',
+      said: '孫やひ孫の話をし、100歳になったらここに来て「これが僕だ」と言う日を思い描く。',
+      mean: 'Look, kids ＝ ほら、みんな（子どもたち）。顔の跡を見せる日を想像している。',
+      trap: '最初のスターや E! の話からテレビを思いやすい。kids と that face hole を聞く。',
+      use: 'Look, kids! That’s where I grew up.（ほら、みんな！あそこで育ったんだ）' },
 
-    // anchor: 91.4 s "a very special day for me", 93.7–94.4 s "it's really not about me", then 105.4–105.9 s "say,
-    //   'That's me.'": the comment that disowns itself ends on him
-    // R fix: V2 (blind 65 %, right): "He says today is not about him" set up the irony, so the "after all" key stood
-    //   out. The stem now points at the grandkids; the choices are parallel ("mostly about… in the end").
-    // why: family ← "It's about my grandkids… great-grandkids" taken as sincere (sincerity flip); growing old ←
-    //   "when I'm 100" heard as the point (the last-heard keyword; refuted: "That's me" is where it ends)
-    { id: 'c2', skill: 'infer', level: 'C2', point: 'aboutme', seg: [90.1, 106.0],
+    { id: 'c2', skill: 'infer', level: 'C2', point: 'aboutme', seg: [90.1, 106.0], retired: true,
       stem: 'In his comment to the camera, how does his talk of grandkids land?',
       choices: ['As mostly about Michael himself, in the end', 'As mostly about his family, in the end',
                 'As mostly about growing old, in the end'], a: 0,
@@ -256,29 +211,41 @@ export const wetCement: Clip = {
       trap: '孫の話を本心と取りやすい。前置きの否定は、あとの言葉と比べてから信じる。',
       use: 'It’s not about me. Okay, maybe a little.（私の話じゃない。まあ、少しはね）' },
 
-    // why: sixty / eighty ← the usual "when I'm old" ages; ninety ← -ty heard where "a hun-" is weak
     { id: 'n1', skill: 'number', level: 'B1', point: 'hundred', seg: [95.9, 101.95], keep: true,
-      stem: 'At what age does Michael picture himself coming back?',
-      choices: ['Sixty', 'Eighty', 'Ninety', 'A hundred'], a: 3,
+      stem: 'At what age does Michael picture coming back?',
+      ja: 'マイケルは何歳でここに戻ってくると思い描いている？',
+      choices: ['60', '80', '90', '100'], a: 3,
+      choicesJa: ['60歳', '80歳', '90歳', '100歳'],
       cue: '「when I’m」のあとの数。',
       line: 'I can come back here when I’m *100*…',
       said: '「100歳になったらここに戻ってきて」と話す。',
       mean: 'a hundred ＝ 100。年をとった自分を大げさに思い描いている。',
-      trap: 'a が弱く「ハンドレッ」だけ聞こえる。-ty の数と違い、hun の音で始まる。',
+      trap: 'a が弱く「ハンドレッ」だけ聞こえる。60・80・90 は「〜ティ」で終わる。',
       use: 'My grandma just turned ninety.（祖母がちょうど90歳になった）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'piece', seg: [101.35, 105.05],
       stem: 'Type what he says: “and I can find ___ cement” (3 words)', answer: 'that piece of',
-      cue: '「find」のあと、三語がつながる。',
+      ja: '書こう：「and I can find ___ cement」（3語）',
+      cue: '「find」のあと、3語がつながる。',
       line: 'and I can find *that piece of* cement',
       said: '「あのセメントのかけらを見つけて」と言う。',
-      mean: 'piece of がつながり「ピーソブ」に近い。that の th も弱い。年をとっても場所を覚えているつもり。',
-      trap: 'of が弱く消えて、語の数を数えにくい。piece のあとは of が来やすい。',
+      mean: 'a piece of 〜 ＝ 〜のひとつ、ひとかけら。piece of がつながり「ピーソブ」に近い。',
+      trap: 'of が小さく短くなり、2語に聞こえやすい。piece のあとは of が来やすい。',
       use: 'Can I have a piece of cake?（ケーキを一切れもらえる？）' },
 
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'goodfeel', seg: [104.9, 112.9],
+      stem: 'How does Michael feel at the end?',
+      ja: '最後にマイケルはどんな気持ち？',
+      choices: ['Good about it', 'Sorry about it', 'Bored with it'], a: 0,
+      choicesJa: ['いい気分', '後悔している', 'あきている'],
+      cue: '最後の一文。',
+      line: 'I don’t know. *It’s a good feeling.*',
+      said: '「うまく言えないけど、いい気分だ」と締める。',
+      mean: 'It’s a good feeling ＝ いい気分だ。I don’t know は「うまく言えないけど」の前置き。',
+      trap: 'I don’t know から迷いや後悔と思いやすい。気持ちは最後の good feeling。',
+      use: 'I don’t know. It just feels right.（うまく言えないけど、しっくりくる）' },
 
-    // R fix: S4 (105.75 s cut "me"); now 104.9–109.5.
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'facehole', seg: [104.9, 109.5],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'facehole', seg: [104.9, 109.5], retired: true,
       stem: 'Type the end: “Look, kids, your daddy ___.” (4 words)', answer: 'left that face hole',
       cue: '「your daddy」のあと、四語。',
       line: 'Look, kids, your daddy *left that face hole*.',
@@ -286,20 +253,5 @@ export const wetCement: Clip = {
       mean: 'left that の t が消え「レフザッ」に近い。face hole は s と h がつながる。',
       trap: 'left の t が落ちやすい。過去の話なら left（残した）を考える。',
       use: 'Who left the lights on?（電気つけっぱなしにしたの誰？）' },
-
-    // R fix: V2/K1 (blind 60 %, right): "sure" sat badly with "I don't know". All three are now a feeling plus a
-    //   reading of "I don't know". S4: 105.75 s cut "me".
-    // why: unsure ← "I don't know" read as doubt about the face print (the Japanese わからない = 迷い); embarrassed ←
-    //   "face hole" sounds silly, so he might be laughing it off
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'goodfeel', seg: [104.9, 112.9],
-      stem: 'How does Michael feel as he ends his comment to the camera?',
-      choices: ['Happy, even if he can’t explain why', 'Unsure, as if it might have been a mistake',
-                'Embarrassed, as if the plan sounds silly'], a: 0,
-      cue: '最後の二文と、その順番。',
-      line: '*I don’t know. It’s a good feeling.*',
-      said: '「わからない」と言葉に詰まったあと、「いい気分だ」と締める。',
-      mean: 'I don’t know は説明をあきらめる合図。気持ちは最後の good feeling にある。',
-      trap: '「わからない」を迷いや後悔と取りやすい。英語では話を打ち切るときにもよく使う。',
-      use: 'I don’t know. It just feels right.（うまく言えないけど、しっくりくる）' },
   ]
 };
