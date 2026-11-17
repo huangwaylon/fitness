@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const donnaPosts: Clip = {
-  id: 'donnaposts', video: 'mky1433VH-k', title: '#BitchBoss', dur: 278, wpm: 166, band: 'mid',
+  id: 'donnaposts', video: 'mky1433VH-k', title: '#BitchBoss', dur: 278, wpm: 166, band: 'fast',
   tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

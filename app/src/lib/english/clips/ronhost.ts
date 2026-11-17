@@ -16,7 +16,7 @@ import type { Clip } from '../types.ts';
 
 export const ronShowHost: Clip = {
   id: 'ronhost', video: 'AWBuLWGRi4s', title: 'Ron gives advice as a show host, naturally', dur: 248, wpm: 151,
-  band: 'slow', tags: ['電話', '職場'],
+  band: 'mid', tags: ['電話', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

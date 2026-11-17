@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const leslieDate: Clip = {
   id: 'lesliedate', video: 'xmEp21iP618', title: 'When Leslie didn\'t realise it was a date', dur: 223, wpm: 151,
-  band: 'slow', tags: ['恋愛', '店・レストラン'],
+  band: 'mid', tags: ['恋愛', '店・レストラン'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

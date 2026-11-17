@@ -375,12 +375,25 @@ import { mysteryParty } from './mysteryparty.ts';
 import { spencerRoastsCarly } from './nemesister.ts';
 import { realityExposed } from './realityexpo.ts';
 import { dutchKiss } from './dutchkiss.ts';
+import { replaceHarry } from './replaceharry.ts';
+import { spencerFriends } from './spencerfrnds.ts';
+import { catFreddie } from './catfreddie.ts';
+import { halfoween } from './halfoween.ts';
+import { goPublic } from './gopublic.ts';
+import { dwightAmyAdams } from './dwightamy.ts';
+import { dateMike } from './datemike.ts';
+import { ribbing } from './ribbing.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
+  spencerFriends,
+  catFreddie,
   mysteryParty,
+  goPublic,
   spencerRoastsCarly,
+  replaceHarry,
   realityExposed,
+  halfoween,
   andyJamie,
   lewTrial,
   rossList,
@@ -433,6 +446,7 @@ export const CLIPS: readonly Clip[] = [
   rossBreak,
   birthdayGuide,
   benTreats,
+  ribbing,
   ronHumour,
   mriBlindDate,
   fakeCall,
@@ -440,6 +454,7 @@ export const CLIPS: readonly Clip[] = [
   dwightPunch,
   singlesNight,
   gingerbread,
+  dateMike,
   dwightFetish,
   benpunch,
   dwightAppt,
@@ -478,6 +493,7 @@ export const CLIPS: readonly Clip[] = [
   michaelCheerUp,
   triplets,
   willBeFine,
+  dwightAmyAdams,
   dinnerParty,
   liceOffice,
   thisIsMyBoyfriendDerek,
@@ -492,13 +508,13 @@ export const CLIPS: readonly Clip[] = [
   bigDay,
   dwightNewJob,
   leaveTelescope,
+  // ふつう
   newHairdo,
   ronDesk,
   partyEarly,
   ronShowHost,
   senatorOscar,
   leslieDate,
-  // ふつう
   roomie,
   furniture,
   ronDiane,
@@ -621,12 +637,12 @@ export const CLIPS: readonly Clip[] = [
   craigTemp,
   printfire,
   bobbyMeet,
+  // 速い
   tomNegotiate,
   donnaTweets,
   donnaPosts,
   rossMarvel,
   aprilWedding,
-  // 速い
   mamasDead,
   workBestie,
   hypocrite,

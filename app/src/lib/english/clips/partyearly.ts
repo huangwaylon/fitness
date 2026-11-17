@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const partyEarly: Clip = {
   id: 'partyearly', video: 'YJR238M6XJA', title: 'Michael and Dwight Rock Up to the Party Early', dur: 150, wpm: 151,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

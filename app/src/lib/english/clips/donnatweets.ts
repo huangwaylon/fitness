@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const donnaTweets: Clip = {
   id: 'donnatweets', video: 'cGSgmNgPVkY', title: 'Donna Triggers B*tch Boss Leslie', dur: 278, wpm: 166,
-  band: 'mid', tags: ['職場'],
+  band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

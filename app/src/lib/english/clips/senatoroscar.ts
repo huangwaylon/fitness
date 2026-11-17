@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const senatorOscar: Clip = {
   id: 'senatoroscar', video: 'Ga6N2au2xrc', title: 'Is the Senator Seducing Oscar?', dur: 129, wpm: 151,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

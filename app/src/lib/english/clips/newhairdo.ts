@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const newHairdo: Clip = {
   id: 'newhairdo', video: 'C86lv4VbySE', title: 'Leslie Knope\'s New Hairdo', dur: 220, wpm: 151,
-  band: 'slow', tags: ['友だち', '職場'],
+  band: 'mid', tags: ['友だち', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

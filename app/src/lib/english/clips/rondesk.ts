@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronDesk: Clip = {
-  id: 'rondesk', video: 'FGgGLLhbf78', title: 'Ron Swanson\'s New Desk', dur: 217, wpm: 151, band: 'slow',
+  id: 'rondesk', video: 'FGgGLLhbf78', title: 'Ron Swanson\'s New Desk', dur: 217, wpm: 151, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

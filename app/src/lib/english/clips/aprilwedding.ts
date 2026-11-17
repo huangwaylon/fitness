@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const aprilWedding: Clip = {
   id: 'aprilwedding', video: 'Vh2UEgU2xDc', title: 'April runs Donna\'s wedding like a military operation', dur: 280,
-  wpm: 166, band: 'mid', tags: ['友だち'],
+  wpm: 166, band: 'fast', tags: ['友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

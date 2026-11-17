@@ -12,7 +12,7 @@
 import type { Clip } from '../types.ts';
 
 export const rossMarvel: Clip = {
-  id: 'rossmarvel', video: 'ksopMY3_FWo', title: 'Ross Was a Medical Marvel', dur: 69, wpm: 166, band: 'mid',
+  id: 'rossmarvel', video: 'ksopMY3_FWo', title: 'Ross Was a Medical Marvel', dur: 69, wpm: 166, band: 'fast',
   tags: ['家'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

@@ -372,5 +372,13 @@ export const PLANNED: readonly string[] = [
   'realityexpo',
   'blinddate',
   'mysteryparty',
-  'dutchkiss'
+  'dutchkiss',
+  'ribbing',
+  'gopublic',
+  'spencerfrnds',
+  'datemike',
+  'replaceharry',
+  'halfoween',
+  'dwightamy',
+  'catfreddie'
 ];
