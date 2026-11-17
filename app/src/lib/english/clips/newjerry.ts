@@ -66,7 +66,8 @@ export const tomSwagger: Clip = {
       line: 'One screwed-up sentence. And *30 years later*…',
       said: '「言いまちがい一つで、30年後には…」と未来を思い描く。',
       mean: 'thirty は前を強く、ty は短い。thirteen は teen を強く長く言う。',
-      trap: 't が軽い「ラ」の音になり、thirteen とまぎれやすい。',
+      trap: 'three なら ty も teen もない。teen が長いと thirteen。前が強いと thirty。',
+
       use: 'Ten years from now, who knows?（10年後なんて、誰にも分からない）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrongtree', seg: [104.7, 113.1],
@@ -227,7 +228,7 @@ export const tomSwagger: Clip = {
       line: 'It took me *12 years*, but I reinvented myself.',
       said: '「12年かかったけど、自分を変えた」と話す。',
       mean: 'It took me 〜 ＝ 〜かかった。',
-      trap: 'twelve と twenty は出だしが同じ。twelve は短く終わり、twenty は ty がつく。',
+      trap: 'two なら「トゥー」で終わる。twenty は最後に「ティ」。「ルヴ」なら twelve。',
       use: 'It took me two years to save up.（貯めるのに2年かかった）' },
 
     { id: 'f3', skill: 'infer', level: 'B2', point: 'leaninto', seg: [222, 233.7],

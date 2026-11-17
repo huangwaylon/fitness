@@ -33,7 +33,7 @@ export const ronBirthday: Clip = {
       line: 'I’m gonna need *about 40 dozen* of those.',
       said: '「40ダースくらい要るんだけど」と言う。',
       mean: 'dozen ＝ 12個。40 dozen ＝ 480個。ありえない量で、パーティーの準備らしい。',
-      trap: 'forty と fourteen は似ている。-ty は前を強く、-teen はうしろを長く言う。',
+      trap: 'four なら ty も teen もない。fourteen はうしろが長い。前が強ければ forty。',
       use: 'I’ll need about two dozen eggs.（卵が2ダースくらい要る）' },
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'workcall', seg: [14.3, 22.6],
@@ -142,7 +142,7 @@ export const ronBirthday: Clip = {
       line: 'Nice try, Ron. You’re not getting anything *out of* me.',
       said: '「うまいね、ロン。何も聞き出せないよ」と言う。',
       mean: 'get 〜 out of 人 ＝ 人から〜を聞き出す。out of は「アウラ」とつながる。',
-      trap: 'of が「ア」だけになり、off に聞こえやすい。最後が「ラ」なら out of。',
+      trap: 'of が「ア」だけになる。off や off of なら「フ」の音が残る。「アウラ」なら out of。',
       use: 'Good luck getting a word out of him.（彼から何か聞き出すのは無理だよ）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'father', seg: [129.5, 144.5], retired: true,
@@ -262,7 +262,7 @@ export const ronBirthday: Clip = {
       line: 'what you said to me *five years ago* when Eagleton offered me that job',
       said: '「5年前、イーグルトンに誘われて相談したとき、何て言ったか覚えてる？」と聞く。',
       mean: 'offer 人 a job ＝ 人に仕事を持ちかける。昔の相談を思い出させている。',
-      trap: 'five と nine は「アイ」の音が同じ。最初の f と n の音で聞き分ける。',
+      trap: 'five と nine は「アイ」が同じ。fifteen なら teen がつく。f の音なら five。',
       use: 'We met five years ago.（5年前に会ったよね）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'hometown', seg: [229.3, 254.2], retired: true,

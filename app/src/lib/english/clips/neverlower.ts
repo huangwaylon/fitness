@@ -228,7 +228,7 @@ export const neverLower: Clip = {
       line: 'I’m gonna buy *$1 million worth* of paper products today.',
       said: '「今日、紙製品を100万ドル分買おう」と言う。',
       mean: '〜 worth of ＝ 〜分の。1 million ＝ 100万。急に大きな注文になる。',
-      trap: 'million と billion は最初の音だけがちがう。m は口を閉じて鼻にひびかせる音。',
+      trap: 'hundred や ten は聞こえない。million と billion は最初の m／b だけがちがう。',
       use: 'Twenty dollars’ worth of gas, please.（ガソリン20ドル分お願いします）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'regret', seg: [129.6, 133.75],
@@ -239,7 +239,7 @@ export const neverLower: Clip = {
       line: 'I don’t think *you’ll* regret it.',
       said: 'マイケルが客に「後悔はさせませんよ」と言う。',
       mean: 'you’ll ＝ you will。ll は暗い音で「ユーォ」のように聞こえる。先のことの約束。',
-      trap: 'll がほぼ消えるので、you に聞こえやすい。最後に「ォ」が残るかを聞く。',
+      trap: 'll がほぼ消え、you に聞こえやすい。we’ll なら「ウィ」で始まる。',
       use: 'I don’t think you’ll need a coat.（コートは要らないと思うよ）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'condition', seg: [134.4, 140.6],

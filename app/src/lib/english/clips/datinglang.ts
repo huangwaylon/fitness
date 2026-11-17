@@ -141,7 +141,7 @@ export const datinglang: Clip = {
       line: '“You’re such a nice guy” means… *dating leather-wearing alcoholics* and complaining about them to you.',
       said: '「『いい人ね』は『悪い男と付き合って愚痴を言う』って意味」。',
       mean: 'such a nice guy ＝ すごくいい人。ほめ言葉だが、恋人にはしないとやんわり断っている。',
-      trap: 'nice はほめ言葉なので、好かれていると思いやすい。means のあとが本音で、恋人ではなく愚痴を聞く役。',
+      trap: 'nice はほめ言葉なので、好かれていると思いやすい。実際は、愚痴を聞くだけの友だちにされる。',
       use: 'He’s a really nice guy.（彼、本当にいい人だよ）' },
 
     { id: 's2', skill: 'sound', level: 'B1', point: 'gonna', seg: [31.5, 36], stem: 'Fill the gap: “I’m ___ be dating…”',
@@ -152,7 +152,7 @@ export const datinglang: Clip = {
       line: '“You’re such a nice guy” means “*I’m gonna* be dating…”',
       said: '「『ひどい男たちと付き合うつもり』って意味」と言う。',
       mean: 'gonna ＝ going to（〜するつもり）。会話ではほとんど「ガナ」と短く言う。',
-      trap: 'wanna（ワナ）と音が似ていて、まぎれやすい。最初が「ガ」なら gonna。',
+      trap: 'wanna（ワナ）や gotta（ガラ）とまぎれやすい。「ガ」で始まり「ナ」で終われば gonna。',
       use: 'I’m gonna be late.（遅れそう）' },
 
     { id: 'd1', skill: 'phrase', level: 'B2', point: 'd1', seg: [37, 45], stem: 'What does “I think we should see other people” mean?',

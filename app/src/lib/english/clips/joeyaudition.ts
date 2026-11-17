@@ -84,7 +84,7 @@ export const joeyBroadwayAudition: Clip = {
       line: 'I read it and I *didn’t* understand a single word.',
       said: '「読んだけど、一語も分からなかった」と言う。',
       mean: 'didn’t の t はほぼ消え、「ディドゥン」と短い。a single word（一語も）は not とセット。',
-      trap: 'n’t が小さいと did に聞こえやすい。最後の「ン」が残るかを聞く。',
+      trap: 'n’t が小さく did に聞こえやすい。don’t は「ドウン」。「ディ」と「ン」なら didn’t。',
       use: 'I didn’t get a single word.（一言も分からなかった）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'directing', seg: [25.3, 28.6],

@@ -18,7 +18,7 @@ export const kathybook: Clip = {
       line: 'Hey, *do you guys* have any wrapping paper?',
       said: '「ねえ、包装紙ある？」とみんなに聞く。',
       mean: 'do you guys ＝ 「ドゥユガイズ」より「ジュガイズ」に近い。you guys ＝ みんな。',
-      trap: 'did you（ディジュ）とまぎれやすい。最初が「ジュ」だけなら do you。',
+      trap: 'did you なら「ディジュ」、get なら「ゲッ」。「ジュ」と guys なら do you guys。',
       use: 'Do you guys have any tape?（誰かテープ持ってる？）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'promise', reveals: ['phoebe'], seg: [0, 18.8],

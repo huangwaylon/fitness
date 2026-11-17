@@ -203,7 +203,7 @@ export const saylove: Clip = {
       line: 'Well, that’s the first time *we’ve said* that.',
       said: '「これ、二人が初めて言ったね」と気づく。',
       mean: 'we’ve said ＝ 私たちが（今まで）言った。’ve はほぼ聞こえず「ウィ」に近い。',
-      trap: '’ve の「ヴ」がほぼ消え、we’re とまぎれやすい。said か saying かで決める。',
+      trap: '’ve の「ヴ」はほぼ消える。we’re saying なら「イング」、you’ve なら「ユー」で始まる。',
       use: 'That’s the first time I’ve been here.（ここに来たのは初めて）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'kiss', seg: [38.6, 41.6],

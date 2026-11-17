@@ -119,7 +119,7 @@ export const johnnyGoodbye: Clip = {
       line: 'And I *can’t* be the person that makes you lose what you love.',
       said: '「あなたの大好きなものを奪う人にはなれない」と言う。',
       mean: 'can’t は t がほぼ消えるが、「キャーン」と強く長い。can は弱く「クン」に近い。',
-      trap: 't が聞こえないので can と思いやすい。強く長い「キャーン」なら can’t。',
+      trap: 't が消えて can と思いやすい。won’t は「ウォウン」。強く長い「キャーン」なら can’t。',
       use: 'I can’t make it tonight.（今夜は行けないんだ）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'what', seg: [92.8, 98.6],

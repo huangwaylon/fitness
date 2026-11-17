@@ -19,7 +19,7 @@ export const couplesOnly: Clip = {
       line: 'Do you have any idea what time *we’ll* get out of here?',
       said: '「何時にここを出られるか、分かってる？」と不満を言う。',
       mean: 'we’ll ＝ we will。「ウィル」より短く、最後は暗い「ル」の音。',
-      trap: 'we’d（ウィド）とまぎれやすい。最後が「ド」で止まるか、「ル」が残るかを聞く。',
+      trap: 'we’d なら最後が「ド」で止まる。will だけでは主語がなく文にならない。「ル」が残れば we’ll。',
       use: 'What time will we get there?（何時に着くかな）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'leastme', seg: [6.7, 12],
@@ -138,7 +138,7 @@ export const couplesOnly: Clip = {
       line: 'to dinner *at least nine times*',
       said: '「少なくとも9回は、僕とパムを食事に誘ってきた」と話す。',
       mean: 'at least ＝ 少なくとも。本当はもっと多いかもしれない、ということ。',
-      trap: 'nineteen なら teen が強く長い。短く切れて times に続くかを聞く。',
+      trap: 'nineteen なら teen が強く長い。five は「ファイ」。短い「ナイン」なら nine。',
       use: 'I’ve called at least three times.（少なくとも3回は電話したよ）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'keepask', reveals: ['nine', 'getout'], seg: [69.4, 76.8], retired: true,
@@ -181,7 +181,7 @@ export const couplesOnly: Clip = {
       line: 'But *I got to* give him credit.',
       said: '「でも、それは認めないとね」と言う。',
       mean: 'I got to ＝ 〜しなきゃ（I have got to）。「アイガラ」とつながる。',
-      trap: 'get to（〜させてもらえる）とまぎれやすい。got の t は軽い「ラ」の音、o は口を大きく開ける。',
+      trap: 'get to（ゲッタ）とまぎれやすい。I’d have to なら「ハ」が聞こえる。',
       use: 'I got to go, see you!（もう行かなきゃ、またね）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'noorder', seg: [78.9, 85.6],
@@ -249,7 +249,7 @@ export const couplesOnly: Clip = {
       line: 'I only have *six* wine glasses',
       said: '「ワイングラスが6つしかない」と言う。',
       mean: 'only ＝ 〜しかない。グラスが少ないことを、人数を増やせない言い訳にしている。',
-      trap: 'sixteen なら teen が長く強い。six は短く、すぐ wine に続く。',
+      trap: 'sixteen なら teen が長く強い。four は「フォー」。短い「シックス」なら six。',
       use: 'We only have two rooms left.（残りは2部屋だけです）' },
   ]
 };

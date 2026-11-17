@@ -108,7 +108,7 @@ export const unsexyRoadTrip: Clip = {
       line: 'learning to speak Mandarin, *16 minutes* of old-timey car horn',
       said: '中国語講座のあとに「昔の車のクラクション16分」が入っている。',
       mean: 'old-timey ＝ 昔ふうの。わざと退屈でうるさいものを長く入れている。',
-      trap: 'sixteen と sixty は似ている。-teen はうしろが強く長い。-ty は前が強い。',
+      trap: 'six なら teen も ty もない。sixty は前が強い。うしろが長ければ sixteen。',
       use: 'It’s about sixteen minutes long.（だいたい16分くらい）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'loud', seg: [79.4, 86.6],
@@ -130,7 +130,7 @@ export const unsexyRoadTrip: Clip = {
       line: 'You *can* change it if you want.',
       said: '「変えたかったら変えていいよ」と言う。',
       mean: 'can は小さく短く「クン」。can’t なら「キャーン」と強く長くなる。',
-      trap: '小さい can は聞き逃しやすく、can’t と迷う。if you want が続くなら「してもいい」。',
+      trap: 'can’t なら強く長い「キャーン」。should は「シュ」で始まる。小さい「クン」なら can。',
       use: 'You can sit here if you want.（よかったらここに座っていいよ）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'snuck', seg: [103.4, 110.65],

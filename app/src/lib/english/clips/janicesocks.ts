@@ -45,7 +45,7 @@ export const janiceSocks: Clip = {
       line: 'I am so glad *you called me*.',
       said: '「電話をくれてうれしい」と言う。',
       mean: 'called me は「コーゥミ」とつながり、d はほぼ消える。l は暗い「ゥ」の音。',
-      trap: 'caught（コート）も t が消えて似て聞こえる。「ゥ」の音があれば called。',
+      trap: 'caught（コート）も似ている。called back なら「バック」が残る。「ゥ」の音なら called。',
       use: 'So glad you made it!（来てくれてうれしい！）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [11.9, 15.3],

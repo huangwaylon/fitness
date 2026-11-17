@@ -153,7 +153,7 @@ export const parksMakeover: Clip = {
       line: 'Cool, Jerry. *I’d take* your advice if I wanted to be…',
       said: '「〜になりたいなら、きみの意見を聞くけどね」と言う。',
       mean: 'I’d ＝ I would。if I wanted（もし〜なら）とセット。d は t に飲まれ、ほぼ聞こえない。',
-      trap: 'd が消えて I take に聞こえやすい。うしろに if があれば I’d。',
+      trap: 'd が消えて I take に聞こえやすい。I’ll なら暗い「ゥ」が残る。うしろに if があれば I’d。',
       use: 'I’d go if I had time.（時間があれば行くんだけど）' },
 
     { id: 'i2', skill: 'infer', level: 'B1', point: 'oldjob', seg: [72.6, 78.95],
@@ -218,7 +218,7 @@ export const parksMakeover: Clip = {
       line: 'I have been here, well, *30-some years*.',
       said: '「ここに、まあ、30何年かいる」と言う。',
       mean: '30-some ＝ 30いくつか。はっきり数えていないほど長い。',
-      trap: 'thirty と thirteen は似ている。-ty は最初を強く、-teen はうしろを長く強く言う。',
+      trap: 'thirteen はうしろを長く強く言う。forty は「フォー」で始まる。「サーティ」なら thirty。',
       use: 'I’ve lived here twenty-some years.（ここに20何年住んでる）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cope', seg: [135.9, 141.6],
@@ -251,7 +251,7 @@ export const parksMakeover: Clip = {
       line: 'we take *the old logo from the 1970s*',
       said: '「1970年代の古いロゴで、限定の帽子やポスターを作る」と話す。',
       mean: 'the 1970s ＝ 70年代（ナインティーンセブンティーズ）。昔のものをあえて使う。',
-      trap: 'sixties と seventies は始まりが同じ s。seven の v の音を聞く。',
+      trap: 'sixties は「シックス」、nineties は「ナイン」で始まる。v の音なら seventies。',
       use: 'It’s a song from the seventies.（70年代の曲だよ）' },
 
     { id: 'f7', skill: 'phrase', level: 'B2', point: 'swept', seg: [164.4, 169.95],
