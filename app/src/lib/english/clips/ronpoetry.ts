@@ -1,12 +1,8 @@
-// REVIEW 2026-11-16: pass 7, fix 15, drop 0, new 0; ear checks 1
-// OPEN: h1 (meat) and i2 (whisky) can still be guessed from knowing Ron; the audio settles both.
+// A2 REVIEW 2026-11-17: keep 13, rewrite 3, retire 5, new 1 (p2 stays retired)
 // “Poetry Does Nothing For Ron Swanson | Parks and Recreation” (the official Parks and Recreation channel, Season 6):
 // Leslie gives Ron a train ticket and a plan for his trip; a letter praising Leslie plays in voice-over; Ron finds the
-// one place in Europe he likes, then reads the poem Leslie asked for.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 182 s; whisper's repeated line after it
-// is a hallucination. The Burns poem (149–173 s) is untested (old poetic English). No predict item (the cut before
-// "but" at 21.8 s is too tight). No who item: the letter's voice isn't named in the audio, so no key rests on it.
-// EAR CHECK: 61.0 s p2 — whisper “let the world wash over them”, captions “watch over them” (key assumes wash)
+// one place in Europe he likes, then reads the poem Leslie asked for. Talk ends at ≈ 182 s. The Burns poem
+// (149–173 s) is untested (old poetic English). The letter's voice isn't named in the audio, so no key rests on it.
 import type { Clip } from '../types.ts';
 
 export const ronPoetry: Clip = {
@@ -15,87 +11,57 @@ export const ronPoetry: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: "turns it down and heads home" was a filler (V2/K3); now his-own-find, from “much to my surprise”. Seg runs
-    //   to the note at the cliffs, which shows the islands were her stop.
-    // why: own find ← "it turns out… there is one place" heard as his own discovery; let down ← the title (poetry does
-    //   nothing) read as the whole trip failing
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'plan', reveals: ['surprise', 'stay'], seg: [0, 147],
-      stem: 'How does Leslie’s plan for Ron’s trip work out?',
-      choices: ['It leads him to the one place he really loves', 'He skips her stops and finds a place himself',
-                'He follows it, but every stop lets him down'], a: 0,
-      cue: '最初の文句と、島での最後の一言をくらべる。',
-      said: '最初は「この大陸にこれ以上いたいと思うか？」と言うが、計画どおり進んでスコットランドの島に着く。',
-      mean: '島では「この旅は来る価値がある」と言う。ヨーロッパ嫌いの彼が本気で喜ぶ。',
-      trap: '最初の文句だけで「断った」と思いやすい。旅の終わりの感想まで聞く。',
-      use: 'Trust me, it’s worth the trip.（信じて、行く価値あるよ）' },
-
     { id: 'd1', skill: 'detail', level: 'B1', point: 'ticket', reveals: ['parts'], seg: [0, 9.2],
-      stem: 'What is the first part of Leslie’s wedding gift?',
+      stem: 'What is the first part of Leslie’s gift?', ja: 'レスリーの贈り物の最初の一つは？',
       choices: ['A train ticket', 'A plane ticket', 'A bus ticket'], a: 0,
-      cue: '「Part one of many」のあと、ロンの聞き返し。',
+      choicesJa: ['列車の切符', '飛行機の切符', 'バスの切符'],
+      cue: '「Part one of many」のあと',
       line: 'Part one of many. — A *train ticket*?',
-      said: 'レスリーが結婚祝いを渡し、ロンが中を見て「列車の切符？」と聞き返す。',
-      mean: 'ちゃんとした結婚祝いの「その1」。この切符で旅の続きが始まる。',
-      trap: '旅行と聞くと飛行機を思い浮かべやすい。ticket の前の短い一語を聞く。',
-      use: 'Two train tickets to Paris, please.（パリまで列車の切符を2枚）' },
-
-    // R fix: "at the wedding" was refuted by "finally… a proper wedding gift" (after the wedding); now "once he's back
-    //   home", the other reading of "many" (V2).
-    // why: in pieces ← "part one" read as part of one object to put together; back home ← "many" read as more gifts
-    //   later, the itinerary missed
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'parts', reveals: ['letter'], seg: [5.0, 19.9],
-      stem: 'What does Leslie suggest about the gift when she hands it over?',
-      choices: ['More of it is waiting for him along the way', 'It comes in pieces he must put together',
-                'She’ll give him the rest once he’s home'], a: 0,
-      cue: '渡すときの短い一言と、そのあとの itinerary。',
-      line: 'Part one of many.',
-      said: '「その1。まだまだ続くよ」と言い、日程表どおりに進めばがっかりしないと約束する。',
-      mean: '切符は始まりで、旅の先々に次の贈り物が待っている、という予告。',
-      trap: 'part を部品と取ると「組み立て」に聞こえる。後の itinerary が旅の話だと示す。',
-      use: 'This is just part one.（これはまだ第1弾）' },
-
-    // why: touched ← gruff men hiding feelings is the usual script; the cost ← "train ticket" + "extend my stay" read as
-    //   money worries
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'stay', seg: [9.0, 14.3],
-      stem: 'How does Ron react to the idea behind the gift?',
-      choices: ['He hates the idea of staying longer', 'He’s touched, but hides it behind a joke',
-                'He worries about what a longer stay costs'], a: 0,
-      cue: '質問の形だが、最後の continent の前の形容詞。',
-      line: 'You think I want to extend my stay on this *godforsaken continent*?',
-      said: '「この見捨てられた大陸に、もっといたいと思うか？」と聞き返す。',
-      mean: 'godforsaken ＝ ひどくて何もない場所。答えを求めない質問で、いやだと言っている。',
-      trap: '疑問文なので本当に聞いていると取りやすい。強い形容詞が気持ちを示している。',
-      use: 'Why would I want to stay longer?（なんで長居したいと思うの）' },
-
-    // R fix: "slowly, one stop a day" was a filler (V2); now "a rough guide", what "follow that itinerary" means
-    //   without the idiom.
-    // why: her letter ← "letter" read as 手紙 (and letters come later in the clip); rough guide ← only "follow that
-    //   itinerary" caught, "to the letter" lost
+      said: 'レスリーが結婚祝いを渡し、ロンが「列車の切符？」と聞き返す。',
+      mean: 'train ticket ＝ 列車の切符。wedding gift ＝ 結婚祝い。',
+      trap: 'ticket だけ聞くと、飛行機だと思いやすい。前の train を聞く。',
+      use: 'One train ticket to London, please.（ロンドンまでの切符を1枚ください）' },
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'parts', seg: [3, 9.6],
+      stem: 'What does “Part one of many” tell Ron?', ja: '「Part one of many」はロンに何を伝えている？',
+      choices: ['More gifts will come', 'It comes in many pieces', 'He gets the rest at home'], a: 0,
+      choicesJa: ['このあとも贈り物が続く', 'たくさんの部品に分かれている', '残りは家でもらえる'],
+      cue: '切符を渡す時の一言',
+      line: 'I finally got you a proper wedding gift. *Part one of many.*',
+      said: 'レスリーが「やっとちゃんとした結婚祝いよ。その1、まだ続くよ」と言う。',
+      mean: 'part one of many ＝ たくさんあるうちの1つ目。旅の先々で続きがある。',
+      trap: 'part（部品）から、ばらばらの物だと思いやすい。one of many ＝ 何個もあるうちの1つ。',
+      use: 'This is part one of three.（これは3つのうちの1つ目です）' },
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'stay', seg: [9, 14.3],
+      stem: 'How does Ron feel about staying in Europe longer?', ja: 'ロンはヨーロッパに長くいることをどう思っている？',
+      choices: ['He doesn’t want to', 'He is happy to', 'He worries about money'], a: 0,
+      choicesJa: ['いたくない', '喜んでいたい', 'お金が心配'],
+      cue: '「A train ticket?」のあと',
+      line: 'You think I want to *extend my stay* on this *godforsaken continent*?',
+      said: 'ロンが「この最悪の大陸に、もっといたいと思うか？」と聞き返す。',
+      mean: 'extend my stay ＝ 滞在をのばす。godforsaken ＝ 神に見捨てられた（ひどい場所）。',
+      trap: 'want to（〜したい）が聞こえるが、質問の形で「いたくない」と言っている。',
+      use: 'I’d like to extend my stay.（滞在をのばしたいのですが）' },
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'letter', seg: [12.8, 20.1],
-      stem: 'What does Leslie ask Ron to do with the itinerary?',
-      choices: ['Follow it exactly as written', 'Follow the letter she wrote with it', 'Use it only as a rough guide'],
-      a: 0,
-      cue: '「If you follow that itinerary」のあとの3語。',
+      stem: 'Leslie says, “Follow it *to the letter*.” What does that mean?', ja: '「Follow it to the letter」の意味は？',
+      choices: ['Exactly as written', 'Like her letter says', 'Only as a rough guide'], a: 0,
+      choicesJa: ['書いてある通りに正確に', '彼女の手紙の通りに', 'ざっとした目安として'],
+      cue: '「itinerary」のあと',
       line: 'If you follow that itinerary *to the letter*, I promise you, you will not be disappointed.',
-      said: '「日程表をきっちり守れば、がっかりさせない」と約束する。',
-      mean: 'to the letter ＝ 一字一句そのとおりに。指示を正確に守ること。',
-      trap: 'letter を手紙と取りやすい。follow ... to the letter で一つの言い方。',
-      use: 'Follow the recipe to the letter.（レシピどおりに正確に作って）' },
-
-    // why: will ← the weak "would" heard as a plan; wouldn't ← the -n't guessed from the grumpy tone; could ← the d heard,
-    //   the vowel lost
+      said: 'レスリーが「日程表をきっちり守れば、絶対がっかりしない」と言う。',
+      mean: 'to the letter ＝ 一字一句その通りに。itinerary ＝ 旅の日程表。',
+      trap: 'letter（手紙）から、手紙の話だと思いやすい。ここは「文字」の letter。',
+      use: 'I followed the recipe to the letter.（レシピ通りきっちり作った）' },
     { id: 's1', skill: 'sound', level: 'B2', point: 'offer', seg: [19.7, 23.6],
-      stem: 'Fill the gap: “Well, I ___ offer to buy you a drink…”',
-      choices: ['would', 'will', 'wouldn’t', 'could'], a: 0,
-      cue: '「Well, I」のあと、弱く短い語。',
+      stem: '“Well, I ___ offer to buy you a drink…”', ja: '空所に入るのは？',
+      choices: ['would', 'will', 'could'], a: 0,
+      choicesJa: ['（おごり）たいところだが', '（おごる）よ', '（おごる）こともできる'],
+      cue: '「Well, I」のあと',
       line: 'Well, I *would* offer to buy you a drink, but…',
-      said: '「一杯おごりたいところだが…」と言いかけ、but で続ける。',
-      mean: 'would は「本当なら〜する」の仮の話。あとに but が来て、できない理由が続く。',
-      trap: 'would は弱く「ウッ」くらい。will だと but と合わない。前置きの形と覚える。',
+      said: 'ロンが「一杯おごりたいところだが…」と言いかける。',
+      mean: 'I would 〜, but… ＝ 〜したいところだが。would は小さく短く「ウド」。',
+      trap: 'would と will は似て聞こえやすい。but が続くので would。',
       use: 'I would help, but I’m busy.（手伝いたいけど、忙しくて）' },
-
-    // why: turning it down ← "but" + grumbling read as a refusal; asking for a pub ← "where…?" taken as a real question
-    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'drink', reveals: ['offer'], seg: [19.7, 25.2],
+    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'drink', reveals: ['offer'], seg: [19.7, 25.2], retired: true,
       stem: 'What is Ron doing with his line about buying Leslie a drink?',
       choices: ['Thanking her, with a dig at Europe', 'Turning down her gift, but politely',
                 'Asking her to find a pub for them'], a: 0,
@@ -105,24 +71,17 @@ export const ronPoetry: Clip = {
       mean: 'お礼の気持ちを示しつつ、ヨーロッパへの文句を混ぜている。',
       trap: 'where を本当の質問と取りやすい。答えを求めない、文句の言い方。',
       use: 'Where would I even find one?（そもそもどこにあるんだよ）' },
-
-    // R fix: "between" in the stem gave away two (V2/S1); the stem now names the moment only.
-    // why: one ← only "a pub" heard, not the shops; three ← "there's a pub" said three times
-    { id: 'n1', skill: 'number', level: 'B1', point: 'shops', seg: [24.0, 29.4],
-      stem: 'When Leslie points out pubs, how many butcher shops does she mention?',
-      choices: ['One', 'Two', 'Three'], a: 1, keep: true,
-      cue: '「between those」のあと。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'shops', seg: [24, 29.4],
+      stem: 'The pub is between how many butcher shops?', ja: 'パブは何軒の肉屋の間にある？',
+      choices: ['1', '2', '3'], a: 1, keep: true,
+      choicesJa: ['1軒', '2軒', '3軒'],
+      cue: '「between those」のあと',
       line: 'there’s a pub *between those two* butcher shops.',
-      said: '「あそこにもパブ、あそこにも、あの肉屋とその隣の肉屋の間にも」と指さす。',
-      mean: 'ロンドンにはパブがいくらでもある、と言い返している。',
-      trap: 'there’s a pub が3回続くので3と取りやすい。数は between のあとに来る。',
-      use: 'It’s between the bank and the café.（銀行とカフェの間だよ）' },
-
-    // R fix: "mistakes the butcher shops for pubs" was absurd (K3); now "pleased with London's pubs", the literal read of
-    //   "Let's go to that one".
-    // why: farthest ← he picks a different pub, read as being difficult; pleased ← "Let's go to that one" read as
-    //   eagerness, the "but… first" missed
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'butcher', reveals: ['shops'], seg: [24.0, 34.0],
+      said: 'レスリーが「あの2軒の肉屋の間にもパブがある」と指さす。',
+      mean: 'between those two ＝ あの2つの間に。butcher shop ＝ 肉屋。',
+      trap: 'pub が3回聞こえるので、3だと思いやすい。between のあとの数。',
+      use: 'It’s between the bank and the station.（銀行と駅の間です）' },
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'butcher', reveals: ['shops'], seg: [24.0, 34.0], retired: true,
       stem: 'What makes Ron’s choice of pub funny?',
       choices: ['The meat shops excite him more than the pub', 'He picks the farthest pub just to annoy her',
                 'He finally sounds keen on London’s pubs'], a: 0,
@@ -132,36 +91,17 @@ export const ronPoetry: Clip = {
       mean: 'ロンドンで初めてやる気を見せたのが肉屋。肉好きの彼らしいオチ。',
       trap: '別のパブを選んだので意地悪と取りやすい。but のあとが本当の楽しみ。',
       use: 'But first, let’s grab some food.（でも先に何か食べよう）' },
-
-    // why: we'd ← the ll after we is weak and sounds like d; we're ← "be stopping" heard as present -ing
-    { id: 's2', skill: 'sound', level: 'B2', point: 'stopping', reveals: ['shops', 'butcher'], seg: [29.2, 33.8],
-      stem: 'Fill the gap: “Let’s go to that one, but ___ stopping in those two…”',
+    { id: 's2', skill: 'sound', level: 'B2', point: 'stopping', reveals: ['shops'], seg: [29.2, 33.8],
+      stem: '“Let’s go to that one, but ___ stopping in those two…”', ja: '空所に入るのは？',
       choices: ['we’ll be', 'we’d be', 'we’re'], a: 0,
-      cue: '「but」のすぐあと、主語にくっついた音。',
+      choicesJa: ['（寄って）いくことになる', '（寄って）いくだろう', '（寄って）いる'],
+      cue: '「but」のあと',
       line: 'Let’s go to that one, but *we’ll be* stopping in those two butcher shops first.',
-      said: '「あそこにしよう。ただし先に肉屋2軒に寄ってからだ」。',
-      mean: 'we’ll be -ing ＝ 予定として「〜することになる」。決定事項として言っている。',
-      trap: 'we’ll の l は弱く、we’d に聞こえやすい。be が続けば will の未来形。',
-      use: 'We’ll be stopping for lunch.（途中でお昼に寄ります）' },
-
-    // R fix: "award committee" in the stem made praise obvious, and "don't care, so Leslie needs help" was incoherent
-    //   (V2/K3).
-    // why: nobody cares ← the opening about apathetic people taken as the point; works too much ← "every waking moment"
-    //   read as a worry
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'praise', reveals: ['contrast'], seg: [52.0, 106.2],
-      stem: 'What is the letter in the voice-over mainly saying?',
-      choices: ['Leslie truly cares about making others’ lives better', 'Most people in town no longer care about Leslie',
-                'Leslie works far too hard and needs to slow down'], a: 0,
-      cue: '最初の暗い話のあと、どこで話が変わるか。',
-      said: '無関心な人が多いと始め、レスリーは違う、皆を本気で気にかけると続ける。',
-      mean: '推薦の手紙。人の暮らしを良くするのが彼女の生きがいだとまとめる。',
-      trap: '最初の無関心な人の話を主題と取りやすい。not one of these people から本題。',
-      use: 'She really cares about people.（彼女は本当に人を思いやる）' },
-
-    // R fix: rebalanced (V2): "complain about the town" and "help the town" are now a warning and a nobody-helps-her
-    //   complaint, both built from "don't care".
-    // why: warn ← "not one of these people" heard as "not yet"; nobody helps ← "don't care at all" taken as about her
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'contrast', seg: [52.0, 67.0],
+      said: 'ロンが「あそこにしよう。ただし先に肉屋2軒に寄る」と言う。',
+      mean: 'we’ll be 〜ing ＝ 〜することになる（予定）。we’ll は「ウィル」と短い。',
+      trap: 'we’ll と we’d は似て聞こえやすい。最後の音が「ル」か「ド」かを聞く。',
+      use: 'We’ll be stopping in Kyoto.（京都に寄っていきます）' },
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'contrast', seg: [52.0, 67.0], retired: true,
       stem: 'Why does the letter open by describing people in the writer’s town?',
       choices: ['To set Leslie apart from people like that', 'To warn that Leslie could become like them',
                 'To complain that nobody there helps Leslie'], a: 0,
@@ -171,13 +111,6 @@ export const ronPoetry: Clip = {
       mean: '先に反対の例を出し、彼女の良さを目立たせる書き方。',
       trap: '最初だけ聞くと町の悪口に聞こえる。not one of these のあとが言いたいこと。',
       use: 'Unlike most people, she listens.（大半の人と違って、彼女は聞いてくれる）' },
-
-    // R fix: "apathetic" in the stem gave the key away, and "rush through life" was a filler (V2/S1); C is now the
-    //   other "watch" reading.
-    // why: look after them ← captions' "watch over them" (to protect); watch closely ← "watch" heard, "over" read as
-    //   looking on
-    // retired: the ear-check policy: the key rests on “wash” (whisper “wash over them”, captions “watch over them”,
-    //   61.0 s); back after the ear check
     { id: 'p2', skill: 'phrase', level: 'C1', point: 'wash', seg: [57.0, 64.4], retired: true,
       stem: 'How does the letter say these people deal with the world?',
       choices: ['They let life pass without taking part', 'They let others look after them in life',
@@ -188,45 +121,45 @@ export const ronPoetry: Clip = {
       mean: 'wash over ＝ 波のように過ぎる。何にも関わらない、というたとえ。',
       trap: 'watch over（見守る）と聞こえやすい。後ろの barely notice と合う方を。',
       use: 'Just let it wash over you.（気にせず受け流して）' },
-
-    // R fix: "big, costly" and "about her work" were easy to rule out (V2); now two adjective pairs parallel to the key.
-    // why: personal ← "come to her" heard as private problems; serious ← "problems" + a town job read as hard ones
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'petty', seg: [71.0, 80.0],
-      stem: 'What kind of problems do people bring to Leslie?',
-      choices: ['Trivial, silly ones', 'Odd, personal ones', 'Hard, serious ones'], a: 0,
-      cue: '「with the」のあと、-est で終わる2語。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'praise', reveals: ['contrast'], seg: [64, 106.2],
+      stem: 'What does the letter say about Leslie?', ja: '手紙はレスリーについて何と言っている？',
+      choices: ['She makes people’s lives better', 'She works much too hard', 'Nobody in town cares about her'], a: 0,
+      choicesJa: ['人の生活をよくする人だ', '働きすぎだ', '町の誰も彼女を気にしない'],
+      cue: '最後の「her true purpose」のあと',
+      line: 'Leslie Knope is not one of these people… her true purpose on Earth… is *making people’s lives better*.',
+      said: '手紙が「レスリーの本当の生きがいは、人の生活をよくすること」と言う。',
+      mean: 'purpose ＝ 目的、生きがい。make 〜 better ＝ 〜をよくする。',
+      trap: '最初に「無関心な人が多い」とあるので、レスリーも、と思いやすい。not one of these。',
+      use: 'She makes my life better.（彼女のおかげで毎日がいい）' },
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'petty', seg: [71, 80],
+      stem: 'What kind of problems do people bring to Leslie?', ja: '人々はレスリーにどんな問題を持ちこむ？',
+      choices: ['Small, silly ones', 'Strange, private ones', 'Hard, serious ones'], a: 0,
+      choicesJa: ['小さくてくだらない問題', '変わった個人的な問題', '難しくて深刻な問題'],
+      cue: '「come to her with」のあと',
       line: 'People come to her with the *pettiest, stupidest* problems',
-      said: '「みんなとてもささいで、くだらない問題を持ち込む」。',
-      mean: 'それでも彼女は本気で気にかける、と次につなげる前置き。',
-      trap: 'petty は聞き慣れない語。すぐ後の stupidest と同じ方向の意味だと考える。',
-      use: 'Sorry, it’s a petty question.（ささいな質問ですみません）' },
-
-    // R fix: "compares her to someone else" had no one to compare with (K3); now like = "for example", a real reading.
-    // why: example ← like read as for example; unsure ← like read as a vague filler that softens the claim
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', reveals: ['petty'], seg: [75.4, 80.0],
-      stem: 'After “she cares”, what does the next short word do?',
-      choices: ['It sets up a stronger version of the claim', 'It brings in an example of her caring',
-                'It makes the claim sound less certain'], a: 0,
-      cue: '「she cares」が2回。その間の一語。',
+      said: '手紙が「みんな、すごくささいでくだらない問題を持ちこむ」と言う。',
+      mean: 'petty ＝ ささいな。stupid ＝ くだらない。-est ＝ いちばん〜。',
+      trap: 'レスリーが本気で向き合うので、深刻な問題だと思いやすい。',
+      use: 'It’s a stupid problem.（くだらない問題だよ）' },
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', reveals: ['petty'], seg: [75.4, 80],
+      stem: 'What does “*like really actually* cares” do?', ja: '「like really actually cares」は何をしている？',
+      choices: ['Makes “cares” stronger', 'Gives an example', 'Makes it less sure'], a: 0,
+      choicesJa: ['cares を強める', '例を挙げる', '自信をなくす'],
+      cue: '問題の話のすぐあと',
       line: 'and she cares, *like really actually* cares, what happens to them.',
-      said: '「彼女は気にかける。いや、本当に、心から気にかける」。',
-      mean: 'この like は「つまり、もっと言うと」。言い直して強める合図。',
-      trap: 'like を「たとえば」と取ると例が続くと思う。後ろは例ではなく��強い言い直し。',
-      use: 'It was good, like really good.（よかった。いや、本当によかった）' },
-
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'better', seg: [80.0, 85.2],
-      stem: 'Type what you hear: “your life ___ every day.” (2 words)', answer: 'gets better',
-      cue: '「her friend」のあと。2語目の t は弾む音。',
+      said: '手紙が「彼女は気にかける。いや、本当に心から気にかける」と言う。',
+      mean: 'like ＝ ここでは「いや、もっと言うと」。really actually を重ねて強めている。',
+      trap: 'like（〜のような）から、例が来ると思いやすい。同じ cares をくり返す。',
+      use: 'It was, like, really good.（なんていうか、本当によかった）' },
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'better', seg: [80, 85.2],
+      stem: 'Type what you hear: “your life ___ every day.” (2 words)', ja: '空所の2語を書こう', answer: 'gets better',
+      cue: '「your life」のあと',
       line: 'if you’re lucky enough to be her friend, your life *gets better* every day.',
-      said: '「彼女の友だちになれた人は、毎日暮らしが良くなっていく」。',
-      mean: 'gets better ＝ 前より良くなる。get が「変化」を表す。',
-      trap: 'better の t は「ラ」に近く、gets と続くと「ゲッツベラー」。一語ずつ切って書く。',
-      use: 'It gets better every day.（日に日に良くなってる）' },
-
-    // R fix: "the writer's own secret dream job" was a filler (V2); now a keyword trap on "astronaut".
-    // why: mocks Leslie ← the silly example read as aimed at her; her old dream ← "astronaut" + "her true purpose"
-    //   heard together
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'hotdog', seg: [89.8, 98.4],
+      said: '手紙が「彼女の友だちなら、毎日暮らしがよくなる」と言う。',
+      mean: 'get better ＝ よくなる。lucky enough to 〜 ＝ 運よく〜できる。',
+      trap: 'gets と better がつながり「ゲッツベラー」。better の t は軽い「ラ」の音。',
+      use: 'It gets better every day.（毎日よくなっている）' },
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'hotdog', seg: [89.8, 98.4], retired: true,
       stem: 'What makes the line about other people’s purposes funny?',
       choices: ['It puts a silly goal right beside a grand one', 'It hints that Leslie’s purpose is just as silly',
                 'It says Leslie once dreamed of space'], a: 0,
@@ -236,35 +169,36 @@ export const ronPoetry: Clip = {
       mean: '立派な夢とばかばかしい夢を、同じまじめさで並べるところが笑い。',
       trap: 'ばかにしているのはレスリーではない。直後に彼女の本当の目標が語られる。',
       use: 'For some people, that’s golf.（人によっては、それがゴルフだったりね）' },
-
-    // R fix: "Polite" made the key the only sincere-and-nuanced choice (K6); now "grudging", a closer stance.
-    // why: sarcastic ← "terribleness" carries over to the whole line; grudging ← praising a place to please Leslie
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'surprise', reveals: ['muchto'], seg: [106.5, 118.6],
-      stem: 'How does Ron sound about finding a place he likes?',
-      choices: ['Honestly surprised to be impressed', 'Sarcastic, still mocking Europe here',
-                'Grudging, saying it to please Leslie'], a: 0,
-      cue: '「But it turns out」から、声と言葉の変化。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['surprise', 'stay'], seg: [106, 147],
+      stem: 'Where does Leslie’s plan take Ron?', ja: 'レスリーの計画で、ロンはどこへ行く？',
+      choices: ['Islands in Scotland', 'A pub in London', 'A big city in France'], a: 0,
+      choicesJa: ['スコットランドの島々', 'ロンドンのパブ', 'フランスの大都市'],
+      cue: 'ヨーロッパを避けてきた話のあと',
+      line: '*These tiny islands off the coast of Scotland*… This is worth the trip.',
+      said: 'ロンが「スコットランド沖の小さな島々。ここは来る価値がある」と話す。',
+      mean: 'island ＝ 島。off the coast of 〜 ＝ 〜の沖の。ロンが気に入る場所。',
+      trap: '最初にロンドンのパブが出るので、そこがゴールだと思いやすい。',
+      use: 'We visited a tiny island.（小さな島に行った）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'surprise', reveals: ['muchto'], seg: [110, 119],
+      stem: 'How does Ron feel about this place in Europe?', ja: 'ロンはこのヨーロッパの場所をどう思っている？',
+      choices: ['Surprised he likes it', 'Bored by it', 'Angry to be there'], a: 0,
+      choicesJa: ['気に入って驚いている', '退屈している', 'いることに怒っている'],
+      cue: '「But it turns out」のあと',
       line: 'But it turns out, *much to my surprise*, there is actually one place in Europe that is *worth seeing*.',
-      said: '「ヨーロッパは避けてきたが、意外にも見る価値のある所が一つあった」。',
-      mean: 'much to my surprise と actually で、本当に意外だと認めている。',
-      trap: '直前の terribleness で皮肉と取りやすい。But から反対の話。',
-      use: 'Much to my surprise, I loved it.（意外にも、すごく気に入った）' },
-
+      said: 'ロンが「意外にも、ヨーロッパに見る価値のある所が一つあった」と言う。',
+      mean: 'worth seeing ＝ 見る価値がある。it turns out ＝ 結局〜だとわかった。',
+      trap: '前に「ヨーロッパを避けてきた」とあるので、嫌っていると思いやすい。But のあと。',
+      use: 'This temple is worth seeing.（このお寺は見る価値がある）' },
     { id: 'x2', skill: 'dict', level: 'B2', point: 'muchto', reveals: ['surprise'], seg: [112.4, 118.6],
-      stem: 'Type what you hear: “But it turns out, ___, there is…” (4 words)',
+      stem: 'Type: “But it turns out, ___, there is…” (4 words)', ja: '空所の4語を書こう',
       answer: 'much to my surprise',
-      cue: '「turns out」のあと、4語のまとまり。',
+      cue: '「it turns out」のあと',
       line: 'But it turns out, *much to my surprise*, there is actually one place in Europe',
-      said: '「でも分かったことに、驚いたことに、ヨーロッパにも一つだけ…」。',
-      mean: 'much to my surprise ＝ とても意外なことに。文の途中に入れて驚きを足す。',
-      trap: 'to と my はとても弱く「マッチュマイ」とつながる。4語あると思って書く。',
-      use: 'Much to my surprise, the train was early.（意外にも列車が早く来た）' },
-
-    // R fix: "strong" cued the key and "fresh water" was weak (V2/K6); all three are now aged drinks, told apart only
-    //   by "distilled".
-    // why: beer ← "barreled" + "prepared for consumption" fit beer; wine ← "God's chosen" read as monks, "barreled"
-    //   fits wine, "distilled" is missed
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'elixirs', seg: [118.8, 131.0],
+      said: 'ロンが「でも驚いたことに、ヨーロッパにも一つだけ…」と言う。',
+      mean: 'much to my surprise ＝ とても驚いたことに。決まった言い方。',
+      trap: 'much to my がつながり「マッチトゥマイ」と速い。to は小さく短く言う。',
+      use: 'Much to my surprise, he said yes.（驚いたことに、彼はOKした）' },
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'elixirs', seg: [118.8, 131.0], retired: true,
       stem: 'What is Ron describing as “God’s chosen elixirs”?',
       choices: ['A spirit made and aged on the islands', 'A beer brewed and aged on the islands',
                 'A wine made and aged by island monks'], a: 0,
@@ -274,31 +208,35 @@ export const ronPoetry: Clip = {
       mean: 'distilled ＝ 蒸留した。たるで寝かせる強いお酒を大げさに言っている。',
       trap: 'barreled ならビールもワインも合うが、distilled（蒸留）はどちらにも使わない。',
       use: 'This is worth the trip alone.（これだけで来た価値がある）' },
-
-    // R fix: "read quietly" was a filler (V2); now her own poem, from “Love, Leslie” at the end of the note.
-    // why: her poem ← the note is signed "Love, Leslie", "by… Robert Burns" lost; write ← "the poem by…" heard as his
-    //   own poem about the view
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'aloud', seg: [132.5, 147.0],
-      stem: 'At the cliffs, what does Leslie’s note ask Ron to do?',
-      choices: ['Read a poem out loud', 'Read a poem she wrote', 'Write a poem of his own'], a: 0,
-      cue: '「please read」のあとの2語。',
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'trip', seg: [127, 133],
+      stem: 'Ron says, “This is *worth the trip*.” What does he mean?', ja: 'ロンの「This is worth the trip」の意味は？',
+      choices: ['It was good to come', 'The trip cost too much', 'He wants to go home'], a: 0,
+      choicesJa: ['来てよかった', '旅費が高すぎた', '家に帰りたい'],
+      cue: '島の説明のあと',
+      line: 'prepared for consumption. *This is worth the trip.*',
+      said: 'ロンが「ここは、はるばる来る価値がある」と言う。',
+      mean: 'worth the trip ＝ わざわざ来る価値がある。旅行でほめる時の言い方。',
+      trap: 'worth（価値）から、お金の話だと思いやすい。来てよかった、という意味。',
+      use: 'The view is worth the trip.（この景色は来る価値がある）' },
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'aloud', seg: [136, 146],
+      stem: 'At the cliffs, what does Leslie’s note ask Ron to do?', ja: '崖の上で、レスリーの手紙はロンに何を頼む？',
+      choices: ['Read a poem out loud', 'Read a poem she wrote', 'Write his own poem'], a: 0,
+      choicesJa: ['詩を声に出して読む', '彼女が書いた詩を読む', '自分で詩を書く'],
+      cue: '「please」のあと',
       line: 'please *read out loud* the poem by the great Scotsman Robert Burns.',
-      said: '「海をながめながら、詩人バーンズの詩を声に出して読んで」と手紙にある。',
-      mean: 'read out loud ＝ 声に出して読む。read だけなら黙読でもいい。',
-      trap: '最後の Love, Leslie で彼女の詩と思いやすい。by のあとの名前が作者。',
-      use: 'Could you read it out loud?（声に出して読んでくれる？）' },
-
-    // R fix: "with care" claimed a tone the words don't carry (V1); the key now rests on the reading heard to its end.
-    // why: never read it ← "what she thought I'd get" read as not trying; blames the poet ← the poem is by Burns, not her
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'getout', reveals: ['aloud'], seg: [170.0, 182.6],
-      stem: 'What makes Ron’s comment after the reading funny?',
-      choices: ['He reads it right to the end, then shrugs it off', 'He admits he never really read the poem at all',
-                'He blames the poet, not Leslie, for wasting time'], a: 0,
-      cue: '詩の朗読が終わったあとの、短い一言。',
+      said: '手紙に「海をながめながら、バーンズの詩を声に出して読んで」とある。',
+      mean: 'read out loud ＝ 声に出して読む。poem ＝ 詩。',
+      trap: 'Love Leslie で終わるので、レスリーの詩だと思いやすい。by のあとが作者。',
+      use: 'Please read it out loud.（声に出して読んでください）' },
+    { id: 'h2', skill: 'attitude', level: 'B1', point: 'getout', reveals: ['aloud'], seg: [175, 183],
+      stem: 'What does Ron think of the poem?', ja: 'ロンはその詩をどう思った？',
+      choices: ['It did nothing for him', 'It made him cry', 'He loved every word'], a: 0,
+      choicesJa: ['何も感じなかった', '泣いてしまった', '一語一語が大好き'],
+      cue: '詩を読んだあとの一言',
       line: 'I don’t know what she thought I’d *get out of that*.',
-      said: '詩を最後まで読んだあと「彼女は俺がこれで何を得ると思ったんだか」と言う。',
-      mean: 'get out of ＝ 〜から得る。丁寧に読んだのに、感想はそっけない。その落差が笑い。',
-      trap: '主語は she。詩人ではなく、レスリーの考えについて言っている。',
-      use: 'What did you get out of it?（それで何を得たの）' },
+      said: 'ロンが「彼女は俺がこれで何を得ると思ったんだか」と言う。',
+      mean: 'get 〜 out of … ＝ …から〜を得る。何も得られなかった、という意味。',
+      trap: '最後まで読んだので、気に入ったと思いやすい。I don’t know が手がかり。',
+      use: 'What did you get out of the class?（その授業で何を得た？）' },
   ]
 };
