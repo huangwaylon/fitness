@@ -1,13 +1,11 @@
-// REVIEW 2026-11-16: pass 6, fix 15, drop 0, new 0; ear checks 2
-// Open: g2 and f1 segments still play the curse at ~60 s (not tested, but it's in the audio the learner replays).
+// A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 2, new 2
+// A2 LATE: crude fart humor all through, and an F-word at 59.5 s (no segment plays it; the full clip does)
 // “Jerry Has a Fart Attack | Parks and Recreation” (the official Parks and Recreation channel, Season 5): at the
 // office Halloween party, a plan to jump out and scare Tom ends with Jerry collapsing; at the hospital his coworkers
 // visit, one of them pushes the doctor to call it a "fart attack", and Jerry, grateful, vows to make some changes.
 // Segments from the captions, words from whisper (2026-11-16). No item uses the opening (0–21 s: it needs the
-// episode's setup, and FDR/Pearl Harbor is world knowledge), the screams and crosstalk at 31–46 s, the curse and the
-// insults at 59–68 s, or “gas X” at 81.5 s (captions “gas x”, whisper “gas hacks”). Only Tom, Ann, Jerry and the
-// doctor are named or addressed in the audio; other speakers are “someone” or “a coworker”.
-// EAR CHECK: 67.0 s i1 — the "eat farts for lunch?" line is Tom's voice (his "I didn't know that" at 70.6 s implies it)
+// episode's setup), the screams and crosstalk at 31–46 s, the curse and the insults at 59–72 s, or “gas X” at 81.5 s.
+// Only Tom, Ann, Jerry and the doctor are named or addressed in the audio; other speakers are “someone” or “a coworker”.
 // EAR CHECK: 133.4 s s1 / 135.0 s x1 — "you've always" with an audible 've; "leave it to us" linked
 import type { Clip } from '../types.ts';
 
@@ -17,64 +15,66 @@ export const fartAttack: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 + §9.4 (85 % blind): the title names Jerry, and he was only in the key. Both distractors are now the
-    //   scare's other endings, one with Jerry in it.
-    // why: Tom shaken ← the prank script (the scare works); Jerry laughs ← "Jerry!" and "God, gross" heard as Jerry
-    //   spoiling the moment, not falling ill
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'prank', seg: [21.0, 72.6],
-      stem: 'How does the party plan in the first half turn out?',
-      choices: ['The scare meant for Tom ends with Jerry needing help', 'The scare meant for Tom works, and Tom is left shaken',
-                'The scare meant for Tom is spoiled when Jerry laughs'], a: 0,
-      cue: '計画の相手と、そのあと名前を呼ばれる人。',
-      said: 'Tom を驚かせる計画だったが、Jerry が倒れて心臓発作かと騒ぎになる。',
-      mean: 'いたずらが、思わぬ相手と結果につながった。病院の場面はその続き。',
-      trap: 'いたずらは成功して終わる型で聞きやすい。heart attack と Tom の軽口がヒント。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'prank', seg: [21.0, 58.5],
+      stem: 'How does the plan to scare Tom end?',
+      ja: 'トムを驚かせる計画は、どうなる？',
+      choices: ['Jerry falls ill', 'Tom gets scared', 'Tom laughs at them'], a: 0,
+      choicesJa: ['ジェリーが倒れる', 'トムが驚く', 'トムがみんなを笑う'],
+      cue: '計画のあと、名前を何度も呼ばれる人。',
+      said: 'トムを驚かせる計画だったが、ジェリーが倒れて「心臓発作かも」と騒ぎになる。',
+      mean: 'heart attack ＝ 心臓発作。いたずらが、思わぬ結果になった。',
+      trap: 'いたずらは成功して終わると思いやすい。Jerry! と heart attack がヒント。',
       use: 'The joke kind of backfired.（その冗談、ちょっと裏目に出た）' },
 
-    // R fix: V2 (55 % blind): "Going outside with Tom for Halloween" was a filler; "as he walks into the bathroom"
-    //   (wait outside … for Tom = he's inside) replaces it.
-    // why: help Tom ← "wait outside the bathroom for Tom" heard as waiting to help him; walks in ← "outside the
-    //   bathroom" heard without "wait … for", so the scare seems to come on the way in
     { id: 'd1', skill: 'detail', level: 'B1', point: 'plan', seg: [21.5, 27.3],
       stem: 'What does someone suggest doing to cheer things up?',
-      choices: ['Scaring Tom as he leaves the bathroom', 'Waiting by the bathroom to help Tom out',
-                'Scaring Tom as he walks into the bathroom'], a: 0,
+      ja: '元気を出すために、何をしようと言う？',
+      choices: ['Scare Tom by the bathroom', 'Help Tom in the bathroom', 'Wait for Tom by his desk'], a: 0,
+      choicesJa: ['トイレのそばでトムを驚かせる', 'トイレでトムを手伝う', 'トムの机のそばで待つ'],
       cue: '「for Tom and」のあとの動詞。',
       line: 'Let’s go *wait outside the bathroom for Tom* and *scare him*.',
-      said: '「トイレの外で Tom を待ちぶせして、驚かせよう」と提案する。',
-      mean: 'wait for 人 and ～ ＝ 人を待って〜する。いたずらの計画。',
+      said: '「トイレの外でトムを待ちぶせして、驚かせよう」と言う。',
+      mean: 'wait for 人 and 〜 ＝ 人を待って〜する。いたずらの計画。',
       trap: 'wait outside だけだと「手伝いに待つ」とも取れる。and のあとの動詞が目的。',
       use: 'Let’s wait outside and surprise her.（外で待って、彼女を驚かせよう）' },
 
-    // why: polite no ← "would" heard as a hedge (〜かもね、でも…); something else ← "cheer me up" heard as asking what
-    //   would
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'cheerup', seg: [23.7, 31.7],
-      stem: 'What does the reply to the plan do?',
-      choices: ['Says yes to the plan, warmly', 'Turns the plan down, politely', 'Asks for another plan, gently'], a: 0,
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'cheerup', seg: [23.7, 31.7],
+      stem: 'What does “That would cheer me up” mean here?',
+      ja: 'ここでの「That would cheer me up」はどういう意味？',
+      choices: ['That sounds like fun', 'I don’t want to do that', 'I’m already happy'], a: 0,
+      choicesJa: ['それは楽しそう', 'それはしたくない', 'もう元気だよ'],
       cue: '提案と同じ言葉をくり返す返事。',
       line: 'I know it would *cheer you up*. … — *That would cheer me up.*',
       said: '「元気が出るよ」と誘われ、同じ言葉で「それなら元気が出る」と返す。',
-      mean: '相手の言葉をくり返して「いいね」と乗っている。would は「そうしたら」。',
-      trap: 'would を遠回しの断りと取りやすいが、すぐ計画が始まる。返事のあとも聞く。',
+      mean: 'cheer 人 up ＝ 元気づける。相手の言葉をくり返して「いいね」と乗っている。',
+      trap: 'would を遠回しの断りと思いやすいが、すぐ計画が始まる。返事のあとも聞く。',
       use: 'Pizza tonight? — That would make my day.（今夜ピザ？ーそれ最高）' },
 
-    // why: hold on ← grip = つかむ, read literally; get the phone ← "Call 911" just before, so "get" sounds like an
-    //   errand
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'grip', seg: [55.6, 60.4],
-      stem: 'What is Jerry being told to do, right after the dinosaur remark?',
-      choices: ['Control himself and calm down', 'Hold on to something firmly', 'Go and get the phone for help'], a: 0,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'breathe', seg: [50.5, 56.0],
+      stem: 'What is Jerry told to do?',
+      ja: 'ジェリーは何をするように言われる？',
+      choices: ['Just breathe', 'Stand up now', 'Lie down now'], a: 0,
+      choicesJa: ['とにかく息をして', '今すぐ立って', '今すぐ横になって'],
+      cue: '「Call 911」のあと。',
+      line: 'Call 911. … *Just breathe*, okay? *You’re gonna be fine*.',
+      said: '「911に電話して」のあと、「ゆっくり息をして。大丈夫だから」と声をかける。',
+      mean: 'Just breathe ＝ とにかく息をして。You’re gonna be fine ＝ 大丈夫だよ。',
+      trap: 'breathe（息をする）は breath（息）と似ているが、ここは動詞。fine で安心させている。',
+      use: 'Just breathe. You’re gonna be fine.（ゆっくり息をして。大丈夫だよ）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'grip', seg: [55.6, 59.3],
+      stem: 'What does “Jerry, get a grip” mean?',
+      ja: '「Jerry, get a grip」はどういう意味？',
+      choices: ['Calm down', 'Hold on tight', 'Get the phone'], a: 0,
+      choicesJa: ['落ち着け', 'しっかりつかまれ', '電話を取れ'],
       cue: '「Jerry,」のあとの三語。',
       line: 'Jerry, *get a grip*. — Sorry, guys.',
-      said: '「Jerry、しっかりしろ」と言われ、Jerry が「ごめん」と謝る。',
+      said: '「ジェリー、しっかりしろ」と言われ、ジェリーが「ごめん」と謝る。',
       mean: 'get a grip ＝ 落ち着け、しっかりしろ。取り乱している人への言葉。',
       trap: 'grip を「握る」と取ると、何かにつかまる話に聞こえる。人に言うときは気持ちの話。',
       use: 'Get a grip. It’s just a test.（落ち着いて。ただのテストだよ）' },
 
-    // R fix: V2 + S1 (65 % blind): "snap" in the stem gave away the rebuke; it's now "call out", so "call 911"
-    //   becomes a real reading. Choices made parallel.
-    // why: the one they meant to scare ← true of Tom, but not why he's called out here; call 911 ← "Call 911" was said a
-    //   moment before, to someone, and "Jerry's having a heart attack!" can sound like an alarm to him
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'tom', seg: [65.5, 72.6],
+    { id: 'i1', retired: true, skill: 'infer', level: 'C1', point: 'tom', seg: [65.5, 72.6],
       stem: 'Why does someone call out “Tom!” right after the lunch remark?',
       choices: ['He made a joke without knowing Jerry is ill', 'He is needed to call 911 for Jerry right now',
                 'He was the one the scare was meant for'], a: 0,
@@ -85,24 +85,7 @@ export const fartAttack: Clip = {
       trap: 'Tom はいたずらの相手なので、その話に引かれやすい。名前の直後の説明が理由。',
       use: 'Oops, sorry, I didn’t know.（あっ、ごめん、知らなかった）' },
 
-    // R fix: V2 + K6 (75 % blind): the key was the only "and" against two "but"s. All three are now "and wants/takes",
-    //   with a payback and a bills reading.
-    // why: get back at ← "they did cause it" heard as Jerry's own grudge; cover his bills ← "massive hospital
-    //   bills" plus "leave it to us" at the end heard as an offer to pay
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['wakeup', 'glad'], seg: [72.0, 136.4],
-      stem: 'What is the hospital scene mostly about?',
-      choices: ['Jerry recovers, and takes the scare as a reason to change',
-                'Jerry recovers, and wants to get back at those who scared him',
-                'Jerry recovers, and wants his coworkers to cover his bills'], a: 0,
-      cue: '後半、Jerry 自身が話す部分。',
-      said: '同僚が見舞いに来て、医者に「おなら発作」と言わせたがる人もいる。Jerry は感謝している。',
-      mean: '軽くすんだ Jerry が、出来事を前向きに受け止める場面。',
-      trap: '入院費や「原因は彼ら」が耳に残るが、Jerry 本人は怒らず、払ってとも言わない。',
-      use: 'I’m taking this as a sign.（これを合図だと受け止めるよ）' },
-
-    // why: Jerry called them boring ← "boring" is said, but it's the giver's word; joke gift ← in this office Jerry
-    //   is the usual target, so it sounds like a prank present
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'jumbles', seg: [75.2, 81.35],
+    { id: 'a1', retired: true, skill: 'attitude', level: 'C1', point: 'jumbles', seg: [75.2, 81.35],
       stem: 'What does the way the gift is described show about the giver?',
       choices: ['Kind, though with a small dig at Jerry’s taste', 'Kind, and just passing on what Jerry said of them',
                 'Unkind: it is a joke gift Jerry won’t like'], a: 0,
@@ -113,43 +96,35 @@ export const fartAttack: Clip = {
       trap: 'boring だけだと Jerry の感想に聞こえるが、you like to do が続く。',
       use: 'I got you that weird tea you like.（君が好きな、あの変なお茶を買ってきたよ）' },
 
-    // R fix: V2 (60 % blind): "The papers from Jerry's doctor" was a filler. All three are now "The news …, without …";
-    //   "gently" is the Japanese softening frame.
-    // why: quickly ← "straight" heard as straight away (すぐに); gently ← the Japanese frame: bad news should come
-    //   softened (遠回しに), so "give it to me" sounds like a request for care
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'straight', seg: [83.2, 88.05],
-      stem: 'When Ann is asked how Jerry is, what does the asker want?',
-      choices: ['The news honestly, without softening it', 'The news quickly, without a long story',
-                'The news gently, without a shock'],
-      a: 0,
-      cue: '「How is he, Ann?」のあとの決まった言い方。',
+      stem: 'What does “Give it to me straight” mean?',
+      ja: '「Give it to me straight」はどういう意味？',
+      choices: ['Tell me honestly', 'Tell me quickly', 'Tell me very gently'], a: 0,
+      choicesJa: ['正直に言って', '早く言って', 'とても優しく言って'],
+      cue: '「How is he, Ann?」のあと。',
       line: 'How is he, Ann? *Give it to me straight.*',
-      said: '「Ann、具合は？ はっきり言ってくれ」と聞く。',
+      said: '「アン、具合は？はっきり言ってくれ」と聞く。',
       mean: 'give it to me straight ＝ 遠回しにせず正直に言って。悪い知らせへの覚悟。',
-      trap: 'straight を「すぐに」と取りやすい。ここは「飾らずに」。遠回しを頼む言い方ではない。',
+      trap: 'straight を「すぐに」と思いやすい。ここは「飾らずに」。',
       use: 'Doctor, just give it to me straight.（先生、はっきり言ってください）' },
 
-    // R fix: V2 (50 % blind): "a day or two" was the default guess among three; "Tomorrow morning" added (four
-    //   strong choices, in time order).
-    // why: today ← "out of here" heard as leaving right now; tomorrow ← "a day" heard alone; a week or two ← the "or
-    //   two" frame with a longer unit
     { id: 'n1', skill: 'number', level: 'B1', point: 'day', seg: [83.2, 88.05], keep: true,
       stem: 'When does Ann say Jerry should leave the hospital?',
+      ja: 'アンによると、ジェリーはいつ退院できる？',
       choices: ['Later today', 'Tomorrow morning', 'In a day or two', 'In a week or two'], a: 2,
+      choicesJa: ['今日のうちに', '明日の朝', '1、2日で', '1、2週間で'],
       cue: '「out of here」のあと、or two の前。',
       line: 'He should be *out of here in a day or two*.',
       said: '「1日か2日で退院できるはず」と答える。',
       mean: 'out of here ＝ ここを出る（退院する）。軽くすんだ、という知らせ。',
-      trap: 'out of here だけ聞くと今すぐ出るように聞こえる。in のあとの期間を聞く。',
+      trap: 'out of here だけ聞くと、今すぐ出るように聞こえる。in のあとの期間を聞く。',
       use: 'I’ll be back in a day or two.（1、2日で戻ります）' },
 
-    // R fix: V2 (50 % blind): the choices are now the four mild/serious × heart/stomach pairs, so neither word alone
-    //   picks the key.
-    // why: serious ← "heart attack" assumed to be grave; stomach ← "gastrointestinal distress" and the gas talk come
-    //   next
     { id: 'd2', skill: 'detail', level: 'B1', point: 'mild', seg: [87.6, 92.7],
       stem: 'How does the doctor describe what happened to Jerry?',
-      choices: ['A mild heart attack', 'A serious heart attack', 'A mild stomach upset', 'A serious stomach upset'], a: 0,
+      ja: '医者は、ジェリーに何が起きたと言う？',
+      choices: ['A mild heart attack', 'A serious heart attack', 'A mild stomach upset'], a: 0,
+      choicesJa: ['軽い心臓発作', '重い心臓発作', '軽い胃の不調'],
       cue: '「He had a」のあとの最初の語。',
       line: 'He had a *mild heart attack*.',
       said: '医者が「軽い心臓発作でした」と答える。',
@@ -157,42 +132,53 @@ export const fartAttack: Clip = {
       trap: 'heart attack から重い病気を想像しやすい。前に付いた mild が程度を決める。',
       use: 'It’s just a mild cold.（ただの軽い風邪だよ）' },
 
-    // R fix: V2 (55 % blind): "would rather not discuss the case" was a filler. All three now answer yes/no plus a
-    //   reason.
-    // why: caused by the scare ← the first half's scare is the obvious cause; a term, not polite ← "Not really" heard
-    //   as "not really something I'd say"
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'notreally', seg: [97.3, 106.2],
-      stem: 'How does the doctor answer the question about a term for it?',
-      choices: ['No such term; the gas is common in heart attacks', 'No such term; the gas was caused by the scare',
-                'Yes, a term exists, but it is not polite to use'], a: 0,
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wakeup', 'glad'], seg: [92.0, 136.4],
+      stem: 'What does Jerry decide at the hospital?',
+      ja: '病院で、ジェリーは何を決める？',
+      choices: ['To change his life', 'To get back at them', 'To make them pay bills'], a: 0,
+      choicesJa: ['生活を変える', 'みんなに仕返しする', 'みんなに入院費を払わせる'],
+      cue: '後半、ジェリー自身が話す部分。',
+      said: '同僚が見舞いに来る。ジェリーは「こうなってよかった。生活を変える」と言う。',
+      mean: '軽くすんだジェリーが、出来事を前向きに受け止める。',
+      trap: '入院費や「原因は彼ら」が耳に残るが、ジェリーは怒らず、払ってとも言わない。',
+      use: 'I’m taking this as a sign.（これを合図だと受け止めるよ）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'notreally', seg: [97.3, 106.2],
+      stem: 'What does the doctor say about a name for it?',
+      ja: 'その呼び名について、医者は何と言う？',
+      choices: ['There isn’t really one', 'It’s called a fart attack', 'It is a secret word'], a: 0,
+      choicesJa: ['特にない', '「おなら発作」と言う', '秘密の言葉がある'],
       cue: '最初の短い返事と、そのあとの説明。',
       line: '*Not really.* Gastrointestinal distress is *common during a cardiac event*.',
       said: '「特にない。心臓発作で胃腸が乱れるのはよくあること」と答える。',
-      mean: 'Not really ＝ 特にない。呼び名はなく、よくある症状だと冷静に説明する。',
-      trap: 'Not really を「言いにくい」と取りやすい。続く common が理由を語る。',
+      mean: 'Not really ＝ 特にない・そうでもない。よくある症状だと冷静に説明する。',
+      trap: 'Not really を「言いにくい」と思いやすい。続く common が理由。',
       use: 'Any questions? — Not really.（質問は？ー特にないです）' },
 
-    // R fix: V2 (60 % blind): "Says sorry for asking so much" read as a filler; "Admits his silly wish is too much"
-    //   (the same Japanese frame, now parallel to the key) replaces it.
-    // why: cost ← "too much" heard as price, with the hospital bills to come; admits ← the Japanese frame:
-    //   「無理を言ってすみません」, a rhetorical question read as a real one
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'toomuch', seg: [97.3, 110.4],
-      stem: 'What does the coworker do with his last question to the doctor?',
-      choices: ['Insists his silly wish is a small one', 'Asks how much Jerry’s care will cost',
-                'Admits his silly wish is too much'], a: 0,
+      stem: 'What does “Is that too much to ask?” mean?',
+      ja: '「Is that too much to ask?」はどういう意味？',
+      choices: ['It’s a small thing to want', 'How much will it cost?', 'It’s too much, he knows'], a: 0,
+      choicesJa: ['ささいな願いでしょ', 'いくらかかる？', '無理なのは分かってる'],
       cue: '「fart attack」のあとの、短い問い。',
       line: 'I just want to hear the doctor say that Jerry had a fart attack. *Is that too much to ask?*',
       said: '「医者から“おなら発作”と聞きたいだけ。それって無理な頼み？」と言う。',
       mean: 'ささいな願いだと言い張る決まり文句。「そのくらい、いいでしょ」。',
-      trap: 'too much を値段や「無理でした」と取りやすい。ここは「大した頼みじゃない」と押す。',
+      trap: 'too much を値段や「無理でした」と思いやすい。ここは「大した頼みじゃない」と押す。',
       use: 'I just want one quiet day. Too much?（静かな一日がほしいだけ。無理？）' },
 
-    // R fix: V2 (60 % blind): "making Jerry worse" and "to tease him" were weak. The new near misses: "they" taken as
-    //   the food just listed, and "it" taken as his recovery.
-    // why: the food ← "balloons and the flowers and the food" just before, so "they" sounds like the food (and the
-    //   gas); got better ← "cause it" heard as causing his recovery, "Well," missed
-    // anchor: 114.9 s "you're so sweet to come visit this often" → 117.4 s "Well, they did cause it": "did" (past)
-    //   points at what caused the heart attack, the scare in the first half, so the visits are tied to blame
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'sweet', seg: [109.0, 117.0],
+      stem: 'What does Jerry mean by “you’re so sweet”?',
+      ja: 'ジェリーの「you’re so sweet」はどういう意味？',
+      choices: ['You are very kind', 'You are very funny', 'You are very late'], a: 0,
+      choicesJa: ['とても優しい', 'とてもおもしろい', 'とても遅い'],
+      cue: '花や食べ物の話のあと。',
+      line: 'And my goodness, *you’re so sweet* to come visit this often.',
+      said: '「まあ、何度もお見舞いに来てくれて、本当に優しいね」と言う。',
+      mean: 'sweet ＝ 文字どおりは「甘い」。人に言うと「優しい・親切」。',
+      trap: 'sweet から甘い物を思いやすい。人に使うと「優しい」。',
+      use: 'That’s so sweet of you.（優しいね、ありがとう）' },
+
     { id: 'c1', skill: 'attitude', level: 'C2', point: 'cause', reveals: ['prank'], seg: [110.0, 119.0],
       stem: 'After the thanks for visiting so often, what does “Well, they…” hint?',
       choices: ['The visitors are there partly from guilt', 'The food they brought is what made him ill',
@@ -204,27 +190,18 @@ export const fartAttack: Clip = {
       trap: 'they を直前の food と取りやすい。visit への返しなので they は見舞い客。did が前半を指す。',
       use: 'Well, you did break it.（まあ、壊したのは君だしね）', retired: true },
 
-    // R fix: V2 (80 % blind): "Worried, mostly about cost" was flat; "Embarrassed, and eager to put it behind him"
-    //   (the fart angle) replaces it. C5: the key states f3's change, so it reveals 'wakeup'.
-    // why: bitter ← the Japanese frame: "that's okay" as 建前, hiding resentment; embarrassed ← the gas talk all
-    //   scene, and "No, that's okay" heard as brushing it off
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'glad', reveals: ['wakeup'], seg: [118.5, 129.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'glad', reveals: ['wakeup'], seg: [118.5, 129.5],
       stem: 'How does Jerry feel about what happened to him?',
-      choices: ['Thankful, and ready to change his life', 'Bitter, though too polite to say so',
-                'Embarrassed, and eager to put it behind him'], a: 0,
-      cue: '「No, that’s okay」のあとの気持ちの言葉。',
+      ja: 'ジェリーは、自分に起きたことをどう感じている？',
+      choices: ['Glad, and ready to change', 'Angry, but too polite', 'Shy, and wants to forget'], a: 0,
+      choicesJa: ['うれしくて、変わるつもり', '怒っているが、礼儀正しく黙る', '恥ずかしくて、忘れたい'],
+      cue: '「No, that’s okay」のあと。',
       line: 'No, that’s okay. *I’m glad this happened.*',
       said: '「いいんだ。こうなってよかった」と言い、生活を変えるつもりだと話す。',
       mean: '責めるどころか、出来事を前向きに受け止めている。',
-      trap: 'that’s okay を遠慮の建前と取りやすい。続く I’m glad と changes が本心を示す。',
+      trap: 'that’s okay を遠慮の建前と思いやすい。続く I’m glad と changes が本心を示す。',
       use: 'Honestly, I’m glad it happened.（正直、ああなってよかった）' },
 
-    // why: takes it back ← "I mean" read as a correction of "I'm glad"; bills really worry him ← the Japanese frame:
-    //   the real feeling (本音) comes out in the aside
-    // R fix: V2 (65 % blind): the key was the only two-part answer. All three are now two-part; C5: its key and line
-    //   give away a2's and f3's points, so it reveals them.
-    // anchor: 121.8–126.6 s "I mean, yeah, I could do without the… bills, but no, this was a wake-up call. I'm gonna
-    //   make some changes": "but no" cancels the aside and returns to "I'm glad this happened"
     { id: 'c2', skill: 'pragma', level: 'C2', point: 'without', reveals: ['glad', 'wakeup'], seg: [119.0, 129.5],
       stem: 'What does Jerry’s “I mean, yeah… but no” do?',
       choices: ['Grants one downside, then stands by his upbeat view', 'Grants one downside, then admits it is his real worry',
@@ -236,73 +213,69 @@ export const fartAttack: Clip = {
       trap: 'I mean を言い直しと取ると、「よかった」を取り消したように聞こえる。but no のあとが着地点。',
       use: 'I mean, yeah, it’s far, but worth it.（まあ遠いけど、行く価値あり）', retired: true },
 
-    // why: managed without ← do without = 無しで済ます, read as "he can manage without paying"; easy to pay ← "could
-    //   do" heard as "could pay"
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'without', seg: [121.3, 126.7],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'without', seg: [121.3, 126.7],
       stem: 'What does Jerry say about the hospital bills?',
-      choices: ['He would rather not have them', 'He can manage without paying them', 'He could pay them with ease'],
-      a: 0,
+      ja: 'ジェリーは入院費について何と言う？',
+      choices: ['He’d rather not have them', 'He won’t pay them', 'He can pay them easily'], a: 0,
+      choicesJa: ['ないほうがいい', '払うつもりはない', '楽に払える'],
       cue: '「I could」のあとの三語。',
       line: 'yeah, I *could do without* the massive hospital bills',
       said: '「まあ、高い入院費はないほうがいいけど」と言う。',
-      mean: 'could do without ～ ＝ 〜はないほうがいい。軽い不満をやわらかく言う形。',
-      trap: 'do without は「無しで済ます」とも読めるので、払わずに済むように聞こえやすい。',
+      mean: 'could do without 〜 ＝ 〜はないほうがいい。軽い不満をやわらかく言う言い方。',
+      trap: 'do without は「なしで済ます」とも読めるので、払わずに済むと思いやすい。',
       use: 'I could do without the rain.（雨はなくていいんだけどな）' },
 
-    // R fix: V2 + S2 (95 % blind): the stem quoted the idiom under test, and both distractors were absurd literal
-    //   readings. The stem now names the moment; the distractors are built on what's said around it.
-    // why: lucky break ← "I'm glad this happened" just before; heart better ← "mild heart attack" and "out of here in a
-    //   day or two" earlier, with "wake-up" heard as getting back on his feet
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'wakeup', seg: [121.3, 126.7],
-      stem: 'After “but no”, what does Jerry say the whole thing was for him?',
-      choices: ['A warning that he has to change', 'A lucky break from his dull routine', 'A sign his heart is getting better'], a: 0,
+      stem: 'After “but no”, what does Jerry call the whole thing?',
+      ja: '「but no」のあと、ジェリーは今回のことを何だと言う？',
+      choices: ['A warning to change', 'A lucky little break', 'A sign he’s better'], a: 0,
+      choicesJa: ['変われという警告', '運のいいちょっとした休み', '良くなっている合図'],
       cue: 'すぐあとの「I’m gonna」に続く言葉。',
       line: 'this was a *wake-up call*. I’m gonna *make some changes*.',
       said: '「これは目を覚ませという合図だった。生活を変える」と言う。',
       mean: 'wake-up call ＝ 目を覚まさせる出来事、警告。変わるきっかけ。',
-      trap: 'wake-up を「回復」や「幸運」と取りやすい。後ろの make some changes が決め手。',
+      trap: 'wake-up を「回復」や「幸運」と思いやすい。後ろの make some changes が決め手。',
       use: 'That exam was a real wake-up call.（あの試験で目が覚めた）' },
 
-    // why: 13 ← thirty/thirteen; 40 ← "at least another" heard as adding to a bigger total
     { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', seg: [125.45, 129.5], keep: true,
       stem: 'How many more years does Jerry say he wants with his family?',
+      ja: 'ジェリーは、家族とあと何年一緒にいたいと言う？',
       choices: ['At least 13', 'At least 30', 'At least 40'], a: 1,
+      choicesJa: ['少なくとも13年', '少なくとも30年', '少なくとも40年'],
       cue: '「another」のすぐあとの数。',
       line: 'I want at least *another 30 years* with Gail and my girls.',
       said: '「妻と娘たちと、少なくともあと30年は一緒にいたい」と言う。',
-      mean: 'another ＋数＝さらに〜。健康に気をつけて長生きしたい、ということ。',
-      trap: 'thirty と thirteen は似ている。-teen は後ろを強く長く、-ty は前を強く言う。',
+      mean: 'another ＋数 ＝ さらに〜。健康に気をつけて長生きしたい、ということ。',
+      trap: 'thirty と thirteen は似ている。-teen は後ろを強く長く、-ty は前を強く言う。40 は「フォーティ」。',
       use: 'I need another ten minutes.（あと10分ください）' },
 
-    // R fix: C5: its line holds s1's answer ("you've always"), so it reveals 'planned'.
-    // why: pay the bills ← "massive hospital bills" a moment before; leave him alone ← "leave" taken literally
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'leave', reveals: ['planned'], seg: [129.2, 136.4],
-      stem: 'What does the promise at the very end suggest will happen?',
-      choices: ['His coworkers will take charge of his health plans', 'His coworkers will help him pay the hospital bills',
-                'His coworkers will leave him alone so he can rest'], a: 0,
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'leave', reveals: ['planned'], seg: [129.2, 136.4],
+      stem: 'What do the coworkers promise Jerry at the end?',
+      ja: '最後に、同僚はジェリーに何を約束する？',
+      choices: ['To help with his plans', 'To pay his hospital bills', 'To leave him alone'], a: 0,
+      choicesJa: ['計画を手伝う', '入院費を払う', 'そっとしておく'],
       cue: '「the future」の話と、最後の短い一文。',
       line: 'You are gonna have *the future that you’ve always planned*. Just *leave it to us*.',
       said: '「思い描いた未来は手に入る。私たちに任せて」と言う。',
-      mean: 'leave it to us ＝ 任せて。Jerry の「変わりたい」を周りが引き受ける宣言。',
-      trap: 'leave を「放っておく」と取ると逆になる。leave it to 人は「人に任せる」。',
+      mean: 'leave it to us ＝ 私たちに任せて。ジェリーの「変わりたい」を周りが引き受ける。',
+      trap: 'leave を「放っておく」と取ると逆になる。leave it to 人 は「人に任せる」。',
       use: 'Don’t worry about dinner. Leave it to me.（夕食は心配しないで。任せて）' },
 
-    // R fix: V2 (55 % blind): the "you've always + verb" chunk won on habit; "we've always" (y/w near sound, and the
-    //   speakers' "leave it to us" right after) makes four strong choices.
-    // why: you always planned ← the weak 've lost; you'd always planned ← 've and 'd are both one short consonant;
-    //   we've always ← /juv/ vs /wiv/, with "us" in the next line
     { id: 's1', skill: 'sound', level: 'B2', point: 'planned', seg: [131.4, 136.4],
       stem: 'Fill the gap: “…the future that ___ planned.”',
-      choices: ['you’ve always', 'you always', 'you’d always', 'we’ve always'], a: 0,
-      cue: '「the future that」のあと、always の前の小さな音。',
+      ja: '「…the future that ___ planned.」の空所は？',
+      choices: ['you’ve always', 'you always', 'you’d always'], a: 0,
+      choicesJa: ['あなたがずっと〜してきた', 'あなたがいつも〜する', 'あなたがずっと〜していただろう'],
+      cue: 'always の前の小さな音。',
       line: 'You are gonna have the future that *you’ve always* planned.',
       said: '「ずっと思い描いてきた未来が手に入る」と励ます。',
       mean: 'you’ve always planned ＝ 今までずっと計画してきた。’ve は弱く always につながる。',
-      trap: '’ve は短い v だけで消えやすい。always と一緒なら完了形を疑う。',
+      trap: '’ve は短い v だけで消えやすい。v なら「ヴォ」とつながり、’d なら d で止まる。',
       use: 'It’s the trip you’ve always wanted.（ずっと行きたかった旅だよ）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [133.1, 136.4],
       stem: 'Type the last words: “Just ___.” (4 words)', answer: 'leave it to us',
+      ja: '「Just ___.」の4語を書こう。',
       cue: '「planned」のあと、Just に続く短い語。',
       line: 'Just *leave it to us*.',
       said: '「私たちに任せて」と言う。',

@@ -38,7 +38,7 @@ export const bondtux: Clip = {
       line: 'But these are *the three* that Monica pre-approved.',
       said: '「でも、モニカが前もって OK したのはこの3着」と言う。',
       mean: 'pre-approved ＝ 前もって OK ずみ。選べる範囲は決まっている。',
-      trap: 'these と three は出だしが似て、数を聞き落としやすい。th のあとの r を聞く。',
+      trap: 'these と three は出だしが似る。three は「スリー」と r が入る。two は「トゥー」、four は「フォー」。',
       use: 'These three are already approved.（この3つはもう承認ずみです）' },
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'guest', seg: [13.4, 24.4],

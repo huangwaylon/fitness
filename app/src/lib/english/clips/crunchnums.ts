@@ -29,7 +29,7 @@ export const crunchNumbers: Clip = {
       line: 'It’s *4:30* in the morning.',
       said: '「朝の4時半だ」と言って話を始める。',
       mean: '4:30 ＝ four thirty。まだ暗いうちから働いている、という場面。',
-      trap: 'thirty と thirteen は似て聞こえる。-ty は前、-teen は後ろが強いのが目印。',
+      trap: 'thirty と thirteen は似て聞こえる。-ty は前、-teen は後ろが強い。5:00 なら「ファイヴ」で始まる。',
       use: 'It’s 4:30 in the morning!（朝の4時半だよ！）' },
 
     { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'kids', seg: [0, 11.0],
@@ -63,7 +63,7 @@ export const crunchNumbers: Clip = {
       line: 'I am just a *44-year-old* guy with a paper route.',
       said: '「ただの44歳の新聞配達の男だ」と言う。',
       mean: '44-year-old ＝ 44歳の。名詞の前では year に s は付かない。',
-      trap: '新聞配達は10代の仕事のイメージなので 14 に引かれやすい。forty-four は f の音が2回。',
+      trap: '新聞配達のイメージで 14 に引かれやすい。forty-four は「フォーティフォー」。54 は「フィフティ」で始まる。',
       use: 'I’m a forty-four-year-old guy.（44歳の男です）' },
 
     { id: 'n3', skill: 'number', level: 'B1', point: 'weeks', seg: [41.3, 44.8], keep: true,
@@ -75,7 +75,7 @@ export const crunchNumbers: Clip = {
       line: 'We’ve been making 5 a.m. deliveries for *a couple weeks* now.',
       said: '「朝5時の配達を、2、3週間続けている」と言う。',
       mean: 'a couple weeks ＝ 2、3週間。会話では of が抜けやすい。',
-      trap: 'a couple のあとの語が短く弱いので、days にも months にも聞こえやすい。最後の音を聞く。',
+      trap: 'a couple のあとの語は短い。weeks は「ウィークス」、days は「デイズ」、months は「マンス」。',
       use: 'We’ve been doing this for a couple weeks.（2、3週間これをやってる）' },
 
     { id: 'h2', retired: true, skill: 'humor', level: 'C1', point: 'air', seg: [45.7, 52.0],
@@ -181,7 +181,7 @@ export const crunchNumbers: Clip = {
       line: 'Why would I love that? *Can we* afford a delivery guy?',
       said: '「なんで私が？配達係を雇う余裕はある？」と聞き直す。',
       mean: 'afford ＝ お金の余裕がある。can は弱く「クン」に近い。can’t なら母音が長い。',
-      trap: 'can’t の t は消えやすいので迷いやすい。弱く短ければ can、強く長ければ can’t。',
+      trap: 'can’t の t は消えやすい。弱く短い「クン」なら can、強く長ければ can’t。could は「クッ」。',
       use: 'Can we afford a new car?（新しい車を買う余裕ある？）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'loftknow', seg: [143.3, 152.1],

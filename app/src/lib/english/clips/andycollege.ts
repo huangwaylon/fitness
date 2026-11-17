@@ -82,7 +82,7 @@ export const andyCollege: Clip = {
       line: 'I’m gonna start by taking *just one class*.',
       said: '「自分を高めたいから、まずは1つだけ授業を取る」と話す。',
       mean: 'just one ＝ 1つだけ。start by 〜ing ＝ まず〜から始める。',
-      trap: '直前の「好きなだけ試せる」から、たくさん取ると思いやすい。本人の計画は1つ。',
+      trap: '直前の「好きなだけ試せる」から、たくさん取ると思いやすい。just のあとは「ワン」。',
       use: 'I’ll start with just one.（まずは1つだけにする）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'advice', reveals: ['horizons'], seg: [20.9, 40.6],
@@ -174,7 +174,7 @@ export const andyCollege: Clip = {
       line: 'We will be working on basic chords for the first *four weeks*.',
       said: '先生が「最初の4週間は基本のコードをやります」と言う。',
       mean: 'four weeks ＝ 4週間。アンディがすぐ「4週間も？」とくり返す。',
-      trap: 'for と four は同じ音。「for the first four」の並びで、どちらが数かを決める。',
+      trap: 'for と four は同じ音。数は2つ目の「フォー」。fourteen なら「ティーン」、forty なら「ティ」が付く。',
       use: 'It takes about four weeks.（4週間くらいかかります）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'weeks', seg: [80.8, 85.6],
@@ -231,7 +231,7 @@ export const andyCollege: Clip = {
       line: 'We *won’t* be using actual lasers in this course.',
       said: '「この授業では本物のレーザーは使いません」と教授が言う。',
       mean: 'won’t ＝ will not。「ウォウント」と口を丸めて言う。',
-      trap: 't が消えると want（ワント）に近い。won’t は「オウ」と口が丸い。',
+      trap: 't が消えると want（ワント）に近い。won’t は「オウ」と口が丸い。wouldn’t なら「ウドゥン」。',
       use: 'I won’t be home until late.（帰りは遅くなるよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'theory', reveals: ['lasers'], seg: [148.9, 153.5],

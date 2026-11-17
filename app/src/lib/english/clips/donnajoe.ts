@@ -291,7 +291,7 @@ export const donnaJoe: Clip = {
       line: 'Sometimes I *disappear for a day or two*',
       said: '「ときどき1、2日いなくなる。釣りかサッカー観戦で」と言う。',
       mean: '自由に動き回る自分を見せ、縛られたくないと伝える前置き。',
-      trap: 'for a の a は弱く、day と or もつながる。単位の語は強く言うので、そこを拾う。',
+      trap: 'for a の a は弱い。day は「デイ」、hour は「アウア」、week は「ウィーク」。',
       use: 'I’ll be gone for a day or two.（1、2日留守にするね）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'pindown', seg: [221.5, 228.3],

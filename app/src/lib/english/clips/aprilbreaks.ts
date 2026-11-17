@@ -74,7 +74,7 @@ export const aprilBreakup: Clip = {
       line: 'You put *20-inch* rims on your Volkswagen Golf.',
       said: '「フォルクスワーゲンのゴルフに20インチのホイールを付けた」と言う。',
       mean: 'rims ＝ タイヤのホイール。小さな車に大きなホイールを付ける見栄っぱりな改造。',
-      trap: 'twenty の t は弱く「トゥウェニー」に近い。twelve と出だしが同じ。',
+      trap: 'twenty は「トゥウェニー」、twelve は「トゥウェルヴ」。22 なら最後に two が付く。',
       use: 'Do you have a 20-inch suitcase?（20インチのスーツケースある？）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'likeme', seg: [22.5, 26.2], retired: true,
@@ -96,7 +96,7 @@ export const aprilBreakup: Clip = {
       line: 'Everything you just said makes *me like me* more.',
       said: '「今言ったこと全部で、自分がもっと好きになった」とトムが返す。',
       mean: 'makes me like me ＝ 自分を好きにさせる。「ミライクミ」とひと続きになる。',
-      trap: '仲直りの流れで like you と聞きやすい。小さく短く言う me も音で聞く。',
+      trap: '仲直りの流れで like you と聞きやすい。最初も最後も「ミ」なら me like me。',
       use: 'This view makes me want to stay.（この景色を見ると残りたくなる）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'fedup', seg: [24.5, 28.5],
