@@ -18,7 +18,7 @@ import type { Clip } from '../types.ts';
 
 export const bobbyMeet: Clip = {
   id: 'bobbymeet', video: 'XCvC8pUI4ZA', title: 'Parks and Recreation | Meet Bobby Newport (Episode Highlight)',
-  dur: 107, wpm: 165, band: 'mid', tags: ['職場'],
+  dur: 107, wpm: 165, band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const girlyApt: Clip = {
-  id: 'girlyapt', video: 'lfFrvd50PCk', title: 'Joey’s New Girly Apartment', dur: 270, wpm: 165, band: 'mid',
+  id: 'girlyapt', video: 'lfFrvd50PCk', title: 'Joey’s New Girly Apartment', dur: 270, wpm: 165, band: 'fast',
   tags: ['家', '友だち'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

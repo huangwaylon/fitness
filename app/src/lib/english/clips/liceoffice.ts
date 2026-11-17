@@ -16,7 +16,7 @@
 import type { Clip } from '../types.ts';
 
 export const liceOffice: Clip = {
-  id: 'liceoffice', video: 'K1HHUx7CNC0', title: 'Lice Invasion', dur: 295, wpm: 150, band: 'slow',
+  id: 'liceoffice', video: 'K1HHUx7CNC0', title: 'Lice Invasion', dur: 295, wpm: 150, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

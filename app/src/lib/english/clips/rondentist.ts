@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const ronDentist: Clip = {
   id: 'rondentist', video: 'Lgfqhhf-WSk', title: 'Andy and Ron at the Dentist | Parks and Recreation', dur: 170,
-  wpm: 150, band: 'slow', tags: ['職場', '友だち'],
+  wpm: 150, band: 'mid', tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

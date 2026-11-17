@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const leaveTelescope: Clip = {
-  id: 'telescope', video: 'YllmYoVdfR4', title: 'Leave the Telescope', dur: 302, wpm: 150, band: 'slow',
+  id: 'telescope', video: 'YllmYoVdfR4', title: 'Leave the Telescope', dur: 302, wpm: 150, band: 'mid',
   tags: ['職場', '買い物'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

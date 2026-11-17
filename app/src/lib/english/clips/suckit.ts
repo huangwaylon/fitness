@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const suckit: Clip = {
-  id: 'suckit', video: 'S2XOOESpZg0', title: 'Suck It, Oscar!', dur: 224, wpm: 150, band: 'slow',
+  id: 'suckit', video: 'S2XOOESpZg0', title: 'Suck It, Oscar!', dur: 224, wpm: 150, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

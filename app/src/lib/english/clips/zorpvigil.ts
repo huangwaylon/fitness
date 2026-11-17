@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const zorpVigil: Clip = {
-  id: 'zorpvigil', video: 'iTmKoRbKc0I', title: 'Leslie gets jealous of a journalist', dur: 362, wpm: 165, band: 'mid',
+  id: 'zorpvigil', video: 'iTmKoRbKc0I', title: 'Leslie gets jealous of a journalist', dur: 362, wpm: 165, band: 'fast',
   tags: ['職場', '恋愛'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

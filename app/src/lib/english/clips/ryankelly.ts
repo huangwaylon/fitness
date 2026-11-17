@@ -20,7 +20,7 @@
 import type { Clip } from '../types.ts';
 
 export const ryankelly: Clip = {
-  id: 'ryankelly', video: 'AHMpAVf8wps', title: 'You Are Toxic', dur: 226, wpm: 150, band: 'slow',
+  id: 'ryankelly', video: 'AHMpAVf8wps', title: 'You Are Toxic', dur: 226, wpm: 150, band: 'mid',
   tags: ['職場', '恋愛'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

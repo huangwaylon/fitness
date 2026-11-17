@@ -20,7 +20,7 @@ import type { Clip } from '../types.ts';
 
 export const dwightVotes: Clip = {
   id: 'dwightvotes', video: 'TADOKwgIHKA', title: 'Dwight Rigs the Votes - The Office US', dur: 248, wpm: 150,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

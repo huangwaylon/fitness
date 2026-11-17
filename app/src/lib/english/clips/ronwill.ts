@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronWill: Clip = {
-  id: 'ronwill', video: '_YsUOCt22fU', title: 'Ron Writes a Will', dur: 200, wpm: 165, band: 'mid',
+  id: 'ronwill', video: '_YsUOCt22fU', title: 'Ron Writes a Will', dur: 200, wpm: 165, band: 'fast',
   tags: ['職場', 'お願い・断り'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

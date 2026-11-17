@@ -21,7 +21,7 @@
 import type { Clip } from '../types.ts';
 
 export const printfire: Clip = {
-  id: 'printfire', video: 'VUuTXRn8s7c', title: 'Burning Printers', dur: 311, wpm: 165, band: 'mid',
+  id: 'printfire', video: 'VUuTXRn8s7c', title: 'Burning Printers', dur: 311, wpm: 165, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

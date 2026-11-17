@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const costumePrize: Clip = {
-  id: 'costumeprize', video: '7GXJroiTMMc', title: 'Halloween Contest', dur: 309, wpm: 150, band: 'slow',
+  id: 'costumeprize', video: '7GXJroiTMMc', title: 'Halloween Contest', dur: 309, wpm: 150, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

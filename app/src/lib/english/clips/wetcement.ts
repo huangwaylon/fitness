@@ -17,7 +17,7 @@ import type { Clip } from '../types.ts';
 
 export const wetCement: Clip = {
   id: 'wetcement', video: 'tg-scNVvWDU', title: 'Wet Cement  - The Office US', dur: 135, wpm: 150,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

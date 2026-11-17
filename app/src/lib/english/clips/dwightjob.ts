@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const dwightNewJob: Clip = {
   id: 'dwightjob', video: '73u88Fka8k4', title: 'Dwight\'s New Job  - The Office US', dur: 72, wpm: 150,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

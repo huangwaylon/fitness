@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const bigDay: Clip = {
   id: 'bigday', video: 'v-xHE5KrLSY', title: 'Donna, Ben and Gary\'s Big Day (Episode Highlight)', dur: 188,
-  wpm: 150, band: 'slow', tags: ['家', '職場'],
+  wpm: 150, band: 'mid', tags: ['家', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

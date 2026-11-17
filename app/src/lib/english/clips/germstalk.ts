@@ -18,7 +18,7 @@ import type { Clip } from '../types.ts';
 
 export const germsTalk: Clip = {
   id: 'germstalk', video: 'L-NSPhLHIBA', title: 'How to Prevent the Spread of Germs  - The Office US', dur: 124,
-  wpm: 150, band: 'slow', tags: ['職場'],
+  wpm: 150, band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

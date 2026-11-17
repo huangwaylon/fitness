@@ -12,7 +12,7 @@ import type { Clip } from '../types.ts';
 
 export const thisIsMyBoyfriendDerek: Clip = {
   id: 'derek', video: 'Nlb5vTI910E', title: 'This is my Boyfriend Derek', dur: 204, wpm: 150,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

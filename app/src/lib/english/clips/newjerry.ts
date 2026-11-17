@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const tomSwagger: Clip = {
   id: 'newjerry', video: '-bmfy_Vj7Ng', title: 'Ron Swanson Saves Tom’s Swagger', dur: 299, wpm: 165,
-  band: 'mid',
+  band: 'fast',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

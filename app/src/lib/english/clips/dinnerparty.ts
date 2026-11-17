@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const dinnerParty: Clip = {
-  id: 'dinnerparty', video: 'af0GMFIlb4Q', title: 'The Dinner Party From Hell', dur: 245, wpm: 150, band: 'slow',
+  id: 'dinnerparty', video: 'af0GMFIlb4Q', title: 'The Dinner Party From Hell', dur: 245, wpm: 150, band: 'mid',
   tags: ['友だち', '家'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

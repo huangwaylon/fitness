@@ -16,7 +16,7 @@
 import type { Clip } from '../types.ts';
 
 export const ronChrisCrib: Clip = {
-  id: 'roncrib', video: 'PXUsf9c6yoY', title: 'Ron vs Chris\'s Parenting', dur: 289, wpm: 165, band: 'mid',
+  id: 'roncrib', video: 'PXUsf9c6yoY', title: 'Ron vs Chris\'s Parenting', dur: 289, wpm: 165, band: 'fast',
   tags: ['職場', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

@@ -13,7 +13,7 @@
 import type { Clip } from '../types.ts';
 
 export const dwightVsDwight: Clip = {
-  id: 'dwightself', video: 'glMgnCJ98Aw', title: 'Dwight vs. Dwight', dur: 144, wpm: 150, band: 'slow',
+  id: 'dwightself', video: 'glMgnCJ98Aw', title: 'Dwight vs. Dwight', dur: 144, wpm: 150, band: 'mid',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

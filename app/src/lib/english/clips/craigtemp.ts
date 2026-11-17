@@ -15,7 +15,7 @@ import type { Clip } from '../types.ts';
 
 export const craigTemp: Clip = {
   id: 'craigtemp', video: 'sLo1Q4xRGBs', title: 'When your coworker is a lot but you respect the hustle', dur: 196,
-  wpm: 165, band: 'mid', tags: ['職場'],
+  wpm: 165, band: 'fast', tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

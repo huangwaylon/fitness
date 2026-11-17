@@ -14,7 +14,7 @@
 import type { Clip } from '../types.ts';
 
 export const benLeslieKiss: Clip = {
-  id: 'firstkiss', video: 'aF2tasp8Zqc', title: 'Ben and Leslie\'s First Kiss', dur: 264, wpm: 165, band: 'mid',
+  id: 'firstkiss', video: 'aF2tasp8Zqc', title: 'Ben and Leslie\'s First Kiss', dur: 264, wpm: 165, band: 'fast',
   tags: ['恋愛', '職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
