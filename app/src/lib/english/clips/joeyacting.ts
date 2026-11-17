@@ -1,14 +1,11 @@
-// REVIEW 2026-11-16: pass 7, fix 13, drop 0, new 0; ear checks 1
-// Open question: d3 (tweezers), i1 and n1 (232 ÷ 13) are famous lines; a Friends fan gets them blind whatever the
-//   choices, so I judged those from a non-fan's read.
+// A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 3, new 0
 // “Joey Teaches Acting | Friends” (the official Friends channel, Best of Season 3): Joey opens a soap-opera acting
 // class, explains "reacting", tells some students they'll need to be better-looking, and shares his tricks for crying,
 // looking evil and taking bad news.
 // Segments from the captions, words from whisper (2026-11-16). Whisper loops from ≈101 s (after the last line). The
 // sources differ at 61.1 s ("picks up the tree" / "Some tricks of the trade") and 63.5 s ("I've been able to cry" /
-// "I've never been able to cry"); no key rests on those words, and no line quotes them.
-// EAR CHECK: 31.0 s c1 — Joey stresses "RE-acting" on the first syllable (whisper writes "re-acting"; ship only once
-//   confirmed)
+// "I've never been able to cry"); no key rests on those words.
+// EAR CHECK: 31.0 s c1 (retired) — Joey stresses "RE-acting" on the first syllable
 import type { Clip } from '../types.ts';
 
 export const joeyTeachesActing: Clip = {
@@ -17,38 +14,31 @@ export const joeyTeachesActing: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: V2 (§9.4) — the title says he teaches, so "teaching a class" stood alone; all three are now teaching, and
-    //   what for decides it
-    // why: stage ← "acting" caught, "for soap operas" missed, and a class is the classic stage setting; Days of Our
-    //   Lives ← the show is named, but as where he learned, not what he teaches
     { id: 'g2', skill: 'gist', level: 'B1', point: 'class', seg: [5.7, 22.0],
       stem: 'What is Joey doing in this scene?',
-      choices: ['Teaching a class on soap acting', 'Teaching a class on stage acting',
-                'Coaching new actors for Days of Our Lives'], a: 0,
-      cue: '「I will be」のあと、何をするか。',
-      line: 'I will be *teaching acting for soap operas*.',
+      ja: 'このシーンでジョーイは何をしている？',
+      choices: ['Teaching soap opera acting', 'Teaching acting for the stage', 'Acting in a soap opera'], a: 0,
+      choicesJa: ['昼ドラの演技を教えている', '舞台の演技を教えている', '昼ドラに出演している'],
+      cue: '「I will be」のあと。',
+      line: 'I am Mr. Tribbiani, and I will be *teaching acting for soap operas*.',
       said: '「トリビアーニです。昼ドラの演技を教えます」と自己紹介している。',
-      mean: 'teach acting ＝ 演技を教える。教える側に立っている。',
-      trap: 'acting だけ拾うと何の演技か分からない。for のあとの soap operas（昼ドラ）まで聞く。',
+      mean: 'soap opera ＝ 昼ドラ。teach acting ＝ 演技を教える。今日は教える側。',
+      trap: 'Days of Our Lives（出演中のドラマ）の名前も出るので、出演中だと思いやすい。I will be teaching が答え。',
       use: 'I’ll be teaching English this term.（今学期は英語を教えます）' },
 
-    // R fix: V2 — "as Dr. Drake" was only on the key; the distractors now share "first day" or "Dr. Drake"
-    // why: acting class ← he is teaching a class, so "first day" is heard as a class; last day ← "first" and "last" are
-    //   both short words before "day"
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'firstday', seg: [16.9, 31.6],
-      stem: 'When did Joey learn the lesson he is about to share?',
-      choices: ['On his first day as Dr. Drake', 'On his first day of acting class', 'On his last day as Dr. Drake'], a: 0,
-      cue: '「on my」のあと、いつの話か。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'firstday', seg: [15.1, 31.6], keep: true,
+      stem: 'When did Joey learn the lesson he shares?',
+      ja: 'ジョーイが話す教えは、いつ学んだもの？',
+      choices: ['His first day as Dr. Drake', 'His very first acting class', 'His last day as Dr. Drake'], a: 0,
+      choicesJa: ['ドクター・ドレイク役の初日', 'いちばん最初の演技の授業', 'ドクター・ドレイク役の最後の日'],
+      cue: '「on my」のあと。',
       line: 'on *my first day* as Dr. Drake Ramoray… I learned that',
       said: '「ドクター・ドレイク役の初日に学んだ」と言っている。',
-      mean: 'first day as ～ ＝ 〜としての初日。現場で学んだ教えだと示している。',
-      trap: '授業中なので「最初の授業」と思いやすい。as のあとの役名で、撮影現場の話と分かる。',
+      mean: 'first day as 〜 ＝ 〜としての初日。撮影の現場で学んだ教え。',
+      trap: '授業中なので「最初の授業」と思いやすい。as のあとの役名で、撮影の話と分かる。',
       use: 'On my first day here, I got lost.（ここに来た初日、迷子になった）' },
 
-    // R fix: V2 — "admits he doesn't know" was weak; the choices are now three ways a teacher's definition can misfire
-    // why: wrong ← "re-acting" / "acting again" heard as Joey confusing two words; technical ← a pro explaining a term
-    //   to a class, the "jargon" reading
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'again', seg: [24.9, 34.6],
+    { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'again', seg: [24.9, 34.6],
       stem: 'What is funny about how Joey explains his key word?',
       choices: ['He warns against a mistake nobody would make', 'He gets the meaning of his own key word wrong',
                 'He makes a simple idea sound very technical'], a: 0,
@@ -59,10 +49,6 @@ export const joeyTeachesActing: Clip = {
       trap: '語の分け方の話なので言いそこないに聞こえるが、本人は分かったうえで真顔で注意している。',
       use: 'Just to be clear, this isn’t a test.（念のため言うと、これはテストじゃない）' },
 
-    // why: re-ACT-ing ← the dictionary stress, which a fluent learner expects; evenly ← the Japanese habit of giving
-    //   each syllable the same weight (リアクティング)
-    // anchor: 31.0 s whisper writes "re-acting" with a hyphen, and 31.7–33.4 s he rules out "acting again", a reading
-    //   that only arises if "re" stands out
     { id: 'c1', skill: 'sound', level: 'C2', point: 'again', seg: [24.9, 34.6],
       stem: 'Where does Joey put the stress in “reacting”?',
       choices: ['On “re”: RE-acting', 'On “act”: re-ACT-ing', 'Evenly on every part'], a: 0,
@@ -73,51 +59,31 @@ export const joeyTeachesActing: Clip = {
       trap: '辞書どおりの強勢を予想しやすい。強さの位置で意味が変わる。直後の打ち消しが手がかり。',
       use: 'It’s RE-cover, as in cover again.（「もう一度覆う」の re-cover だよ）', retired: true },
 
-    // R fix: V2 — "remember their lines" was weak; it's now the method-acting reading, the usual acting-class advice
-    // why: from memory ← the usual acting-class advice (悲しいことを思い出す); calm ← "tricks" from a pro heard as
-    //   calming tips for nervous actors
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'tips', reveals: ['tweezers', 'evil'], seg: [24.9, 100.3],
-      stem: 'What do Joey’s acting tips have in common?',
-      choices: ['They make a face with a trick, not a feeling', 'They call up a real feeling from memory',
-                'They keep actors calm in front of the camera'], a: 0,
-      cue: '泣く、悪い顔、悪い知らせ、それぞれの方法。',
-      said: '泣くときはピンセット、悪事の顔は釣り針、悪い知らせは割り算、と方法を並べる。',
-      mean: 'どれも感情を本当に感じるのではなく、体や頭の小技で顔だけ作る方法。',
-      trap: '演技の授業なので「本当の気持ちを思い出す」方法を予想しやすいが、どれも小技で顔だけ作る。',
-      use: 'Here’s a little trick I use.（私がやってるちょっとしたコツがあるの）' },
-
-    // R fix: V2 — "saying your own line on cue" was weak; it's now "speaking right after", which keeps the key's frame
-    // why: second time ← "re-acting" split as re + acting, the reading he rules out; speaking ← "line" and "someone else
-    //   just did" heard without "you don't have", as your turn to speak
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'reacting', seg: [30.5, 41.0],
-      stem: 'How does Joey define the skill he calls most important?',
-      choices: ['Responding when someone else has spoken', 'Speaking right after someone else has spoken',
-                'Doing a scene a second time over'], a: 0,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'reacting', seg: [30.5, 41.0],
+      stem: 'What does “reacting” mean, Joey says?',
+      ja: 'ジョーイによると「reacting」とはどういう意味？',
+      choices: ['Answering others’ lines', 'Saying your very own line', 'Acting a scene again'], a: 0,
+      choicesJa: ['ほかの人のセリフに反応する', '自分のセリフを言う', '同じ場面をもう一度演じる'],
       cue: '「It means」のあと。',
-      line: 'It means *you don’t have a line, but someone else just did*.',
-      said: '「自分にセリフがなくて、ほかの人が言ったとき」と説明している。',
-      mean: 'reacting ＝ 相手のセリフへの反応。黙って表情で返す演技のこと。',
-      trap: 'line が聞こえるので「自分のセリフ」の話に聞こえる。don’t have の否定を落とさない。',
+      line: 'This does not mean acting again. *It means you don’t have a line, but someone else just did*.',
+      said: '「もう一度演じる、ではない。自分にセリフがなくて、ほかの人が言ったとき」と説明する。',
+      mean: 'react ＝ 反応する。line ＝ セリフ。相手のセリフに、表情で返す演技。',
+      trap: 're- から「もう一度」と思いやすいが、本人が not mean acting again と打ち消している。',
       use: 'Don’t talk. Just react.（しゃべらないで、反応だけして）' },
 
-    // R fix: V2 — "a side note he almost forgot" paraphrased "before I forget"; the key is now "tacked on in passing",
-    //   next to two equally specific readings
-    // why: planned ← "much more attractive" is said with weight and gets the laugh; a reply ← "Oh" at the start heard
-    //   as reacting to someone
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'byway', seg: [49.3, 56.4],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'byway', seg: [49.3, 56.4], keep: true,
       stem: 'How does Joey bring in the point about looks?',
-      choices: ['As an extra point tacked on in passing', 'As the warning he planned to end on',
-                'As an answer to a student’s question'], a: 0,
-      cue: '「thanks a lot」のあと、文の頭の決まり文句。',
+      ja: 'ジョーイは見た目の話をどうやって始める？',
+      choices: ['As a side point', 'As his main point', 'As a student’s question'], a: 0,
+      choicesJa: ['ついでの話として', 'いちばん大事な話として', '生徒の質問への答えとして'],
+      cue: '「thanks a lot」のあと。',
       line: '*Oh, by the way, before I forget*, to work in soap operas…',
       said: '「あ、ところで、忘れないうちに」と前置きして、見た目の話を始める。',
-      mean: 'by the way ＝ ついでに、話は変わるけど。本筋ではない付け足しの合図。',
-      trap: '中身が強烈なので本題に聞こえるが、前置きは「ついで」の扱い。前置きで話の重さを測る。',
+      mean: 'by the way ＝ ところで、ついでに。before I forget ＝ 忘れないうちに。',
+      trap: '中身が強烈なので本題に聞こえるが、by the way が付いたら「ついでの話」の合図。',
       use: 'Oh, by the way, your mom called.（あ、そうそう、お母さんから電話あったよ）' },
 
-    // R fix: K5/K6 — the key alone was two-part ("advice; he doesn't hear…"); all three now share the form
-    // why: joke ← the audience laughs, so he must be joking; one student ← "some of you" heard as pointed at someone
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'attractive', reveals: ['byway', 'moving'], seg: [49.3, 59.6],
+    { id: 'a1', retired: true, skill: 'attitude', level: 'C1', point: 'attractive', reveals: ['byway', 'moving'], seg: [49.3, 59.6],
       stem: 'How does Joey mean the tip about becoming “more attractive”?',
       choices: ['As advice; he doesn’t hear the insult', 'As a joke; he expects the class to laugh',
                 'As a dig; he aims it at one student'], a: 0,
@@ -128,7 +94,18 @@ export const joeyTeachesActing: Clip = {
       trap: '笑いが起きるので冗談に聞こえる。前の by the way と後の moving along が、本人の軽さを示す。',
       use: 'No offense, but you need a haircut.（悪気はないけど、髪切ったほうがいいよ）' },
 
-    // anchor: 53.9–54.6 s "are going to have to" in both sources: five weak words in under a second
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'moving', seg: [52.6, 59.6],
+      stem: 'What does Joey do with “moving right along”?',
+      ja: 'ジョーイは「moving right along」で何をする？',
+      choices: ['Goes to the next point', 'Asks if they all agree', 'Says it was a joke'], a: 0,
+      choicesJa: ['次の話に進む', 'みんな賛成か聞く', '冗談だったと言う'],
+      cue: '「All right」のあと。',
+      line: 'All right, *moving right along*.',
+      said: '「よし、さっさと次へ」と言って、次の話に移る。',
+      mean: 'moving right along ＝ では次へ。話を区切って先に進む言い方。',
+      trap: 'All right は「いいですか」と聞いているようにも聞こえるが、返事を待たずに次へ進む。',
+      use: 'Okay, moving right along…（はい、では次に…）' },
+
     { id: 'c2', skill: 'dict', level: 'C2', point: 'attractive', seg: [52.6, 56.2],
       stem: 'Type the words: “some of you ___ become much more attractive.” (5 words)', answer: 'are going to have to',
       cue: '「some of you」のあと。文法より、聞こえた音を。',
@@ -138,70 +115,65 @@ export const joeyTeachesActing: Clip = {
       trap: 'are を聞き落として going to から書きやすい。弱い be動詞も一語に数える。',
       use: 'We’re going to have to wait.（待つしかなさそうだ）', retired: true },
 
-    // R fix: V2 — "says sorry" was easy to rule out; it's now "says it was only a joke", the take-back after a laugh
-    // why: asks ← "All right" heard as checking with the class (いいですか); only a joke ← after a harsh remark gets a
-    //   laugh, the usual move is to take it back
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'moving', seg: [52.6, 59.6],
-      stem: 'Right after the tip about looks, what does Joey do?',
-      choices: ['Goes straight on to his next point', 'Asks the class if they agree with him',
-                'Tells them it was only a joke'], a: 0,
-      cue: '「All right」のあとの三語。',
-      line: 'All right, *moving right along*.',
-      said: '「よし、どんどん次へ」と言って、次の話に移る。',
-      mean: 'moving right along ＝ さっさと次へ。話を区切って先に進む言い方。',
-      trap: 'All right は「いいですか」と確認にも聞こえるが、ここは区切りの合図。返事を待っていない。',
-      use: 'Okay, moving right along…（はい、では次に…）' },
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'tips', reveals: ['tweezers', 'evil'], seg: [60.7, 100.3],
+      stem: 'What are Joey’s acting tips like?',
+      ja: 'ジョーイの演技のコツはどんなもの？',
+      choices: ['Simple tricks to make a face', 'Remembering real feelings', 'Staying calm on camera'], a: 0,
+      choicesJa: ['顔を作る簡単な小ワザ', '本当の気持ちを思い出す', 'カメラの前で落ち着く'],
+      cue: '「Some」で始まる一言のあと。',
+      line: 'Some *tricks of the trade*. … all I do there is try and divide 232 by 13.',
+      said: '泣くときはピンセット、悪い顔は釣り針、悪い知らせは割り算、とコツを並べる。',
+      mean: 'tricks of the trade ＝ 仕事のコツ、裏ワザ。どれも気持ちを感じずに顔だけ作る方法。',
+      trap: '演技の授業なので「本当の気持ちを思い出す」と思いやすい。どれも小ワザで顔を作るだけ。',
+      use: 'Here’s a little trick I use.（私がやってるちょっとしたコツがあるの）' },
 
-    // why: scissors ← "cut a hole" just before suggests a cutting tool; onion ← the classic way to fake tears
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'tweezers', reveals: ['hole'], seg: [63.0, 72.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'tweezers', reveals: ['hole'], seg: [63.0, 72.6], keep: true,
       stem: 'What does Joey use when a scene needs him to cry?',
+      ja: '泣く場面で、ジョーイは何を使う？',
       choices: ['A pair of tweezers', 'A pair of scissors', 'A slice of onion'], a: 0,
-      cue: '「cut a hole」のあと、何を使うか。',
+      choicesJa: ['ピンセット', 'はさみ', '玉ねぎ1切れ'],
+      cue: '「cut a hole」のあと。',
       line: 'I cut a hole in my pocket, take *a pair of tweezers*',
       said: '「泣く場面では、ポケットに穴を開けて、ピンセットを使う」と言う。',
-      mean: 'tweezers ＝ ピンセット。a pair of で数える道具。',
-      trap: '直前の cut から「はさみ」を想像しやすい。take a pair of のあとの語をそのまま聞く。',
+      mean: 'tweezers ＝ ピンセット。2本で1組の道具は a pair of と数える。',
+      trap: '直前の cut（切る）から「はさみ」を思いやすい。take a pair of のあとを聞く。',
       use: 'Do you have a pair of tweezers?（ピンセットある？）' },
 
-    // why: something sad ← the usual acting-class advice (悲しいことを思い出す); a bottle ← "a hole in my pocket" heard as
-    //   hiding a prop
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'pain', reveals: ['tweezers', 'hole'], seg: [63.0, 74.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'pain', reveals: ['tweezers', 'hole'], seg: [63.0, 74.8], keep: true,
       stem: 'How does Joey’s crying trick work?',
-      choices: ['A little pain brings real tears', 'He thinks of something very sad', 'The pocket hides a tear-drop bottle'],
-      a: 0,
-      cue: '道具を取り出したあとの動作。',
+      ja: 'ジョーイの泣くコツは、どういうしくみ？',
+      choices: ['Pain brings real tears', 'He thinks of sad things', 'He hides a tear bottle'], a: 0,
+      choicesJa: ['痛みで本当に涙が出る', '悲しいことを考える', '涙のびんを隠している'],
+      cue: '道具を取り出したあと。',
       line: 'I cut a hole in my pocket, take a pair of tweezers, and *just start pulling*.',
-      said: '「ポケットに穴を開け、ピンセットで…とにかく引っ張る」と、涙を出す方法を話す。',
-      mean: '何を引っ張るかは言わないが、痛みで涙を出すということ。',
-      trap: '演技の授業なので「悲しいことを思い出す」と予想しやすい。pulling で、体を使う方法だと分かる。',
+      said: '「ポケットに穴を開け、ピンセットで…とにかく引っぱる」と話す。',
+      mean: 'pull ＝ 引っぱる。何を引っぱるかは言わないが、痛みで涙を出すということ。',
+      trap: '演技の授業なので「悲しいことを考える」と思いやすい。pulling で、体を使う方法だと分かる。',
       use: 'Just start typing, and it’ll come.（とにかく書き始めれば出てくるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hole', seg: [66.4, 69.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hole', seg: [66.4, 70.1], keep: true,
       stem: 'Type what he says: “I ___ my pocket.” (4 words)', answer: 'cut a hole in',
+      ja: '「I」と「my pocket」の間の4語を書こう。',
       cue: '「have to cry」のあと。',
       line: 'I *cut a hole in* my pocket',
       said: '「ポケットに穴を開ける」と言っている。',
-      mean: 'cut a はつながって「カラ」に近い（t が弾む）。hole in も「ホウリン」と一続き。',
-      trap: 'cut a が一語に聞こえ、a を落としやすい。冠詞 a も一語として書く。',
+      mean: 'cut a は t が軽い「ラ」の音になり「カラ」。hole in も「ホウリン」とひと続き。',
+      trap: 'cut a が1語に聞こえ、a を落としやすい。小さな a も1語として書く。',
       use: 'I cut a hole in the box.（箱に穴を開けた）' },
 
-    // why: bad news ← the next trick, said in the same "let's say I've just…" frame; pain ← a fish hook in the eyebrow
-    //   taken at face value
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'evil', seg: [77.2, 88.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'evil', seg: [76.9, 87.6], keep: true,
       stem: 'What is the fish-hook face meant to show?',
-      choices: ['That he has just done something evil', 'That he has just gotten bad news', 'That he is in terrible pain'],
-      a: 0,
+      ja: '釣り針の顔は、何を表すため？',
+      choices: ['He just did something bad', 'He just got some bad news', 'He is in great pain'], a: 0,
+      choicesJa: ['悪いことをしたばかり', '悪い知らせを受けたばかり', 'ひどく痛い'],
       cue: '「convey」のあと。',
       line: 'let’s say I want to convey that I’ve just *done something evil*.',
       said: '「悪いことをした直後だと伝えたいなら」と言い、釣り針の顔を説明する。',
-      mean: 'convey ＝ 伝える・表す。悪事をはたらいた人の顔の作り方。',
-      trap: '次の「悪い知らせ」も同じ形 let’s say I’ve just… で始まる。動詞のあとの中身で分ける。',
+      mean: 'convey ＝ 伝える、表す。evil ＝ 悪い。let’s say 〜 ＝ たとえば〜としよう。',
+      trap: '次の「悪い知らせ」も let’s say I’ve just… で始まる。just のあとの中身で分ける。',
       use: 'Let’s say you missed the last train.（たとえば終電を逃したとしよう）' },
 
-    // R fix: V2 — "the time he hurt his eyebrow" was weak; it's now a pun reading ("hook" + "I like it" ≈ hooked)
-    // why: real trick ← he presents it as standard practice ("your basic"); pun ← "fish hook… and I like it" heard as
-    //   wordplay on "hooked", though he never says it
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'fishhook', reveals: ['evil'], seg: [78.8, 91.4],
+    { id: 'h3', retired: true, skill: 'humor', level: 'C1', point: 'fishhook', reveals: ['evil'], seg: [78.8, 91.4],
       stem: 'What makes Joey’s fish-hook description funny?',
       choices: ['It is an oddly exact recipe for a look', 'It is a real trick soap actors swear by',
                 'It is a pun on “hooked”, as in addicted'], a: 0,
@@ -212,73 +184,64 @@ export const joeyTeachesActing: Clip = {
       trap: '本人が「定番」と言うので本当の技に聞こえるが、言い方の大げささが笑いの中心。',
       use: 'You look like you just won the lottery.（宝くじ当たったみたいな顔してる）' },
 
-    // why: own version ← "your basic" with "your" taken as his own or the listener's; first step ← "basic" = 基礎, a
-    //   beginner's exercise
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'basic', seg: [83.0, 88.2],
-      stem: 'How does Joey introduce the fish-hook face?',
-      choices: ['As the standard face everyone uses', 'As his very own simple version', 'As a first step for beginners'],
-      a: 0,
-      cue: '「that would be」のあとの二語。',
-      line: 'that would be *your basic* “I’ve got a fish hook in my eyebrow, and I like it.”',
-      said: '「それはよくある『眉に釣り針、気に入ってる』顔」と言う。',
-      mean: 'your basic ～ ＝ よくある・定番の〜。your は「あなたの」ではない。',
-      trap: 'your を「あなたの」、basic を「基礎」と取りやすい。your basic で一まとまり。',
-      use: 'It’s your basic tourist trap.（よくある観光客向けの店だよ）' },
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'basic', seg: [80.4, 87.6],
+      stem: 'What does “your basic” mean here?',
+      ja: 'ここでの「your basic」の意味は？',
+      choices: ['The usual, standard', 'Yours and nobody else’s', 'For beginners only'], a: 0,
+      choicesJa: ['よくある、定番の', 'あなただけの', '初心者だけの'],
+      cue: '「that would be」のあと。',
+      line: 'Well, that would be *your basic* “I’ve got a fish hook in my eyebrow, and I like it.”',
+      said: '「それはよくある『眉に釣り針、でも気に入ってる』顔だ」と言う。',
+      mean: 'your basic 〜 ＝ よくある、定番の〜。your は「あなたの」ではない。',
+      trap: 'your を「あなたの」、basic を「初心者向け」と思いやすい。your basic でひとまとまり。',
+      use: 'It’s your basic hotel room.（よくある普通のホテルの部屋だよ）' },
 
-    // R fix: V2 — a fourth sound-alike, "I've just got", which differs only in the final n
-    // why: I just got ← the weak 've vanishes and "gotten" is heard short; I'd ← 've and 'd are both one soft consonant
-    //   before "just"; I've just got ← the 've caught, the n of "gotten" lost
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [91.5, 95.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [91.6, 95.4], keep: true,
       stem: 'Fill the gap: “Okay, let’s say ___ bad news.”',
-      choices: ['I’ve just gotten', 'I just got', 'I’d just gotten', 'I’ve just got'], a: 0,
-      cue: '「let’s say」のあと、弱い音と語尾の n。',
-      line: 'let’s say *I’ve just gotten* bad news.',
-      said: '「たとえば悪い知らせを受けたとしよう」と言っている。',
-      mean: '’ve はほぼ聞こえず、gotten の tt は詰まって「ガッン」に近い。',
-      trap: '’ve が消えると I just got に聞こえる。最後の n まで聞くと完了形と分かる。',
+      ja: '空いている所に入る語は？',
+      choices: ['I’ve just gotten', 'I just got', 'I just get'], a: 0,
+      choicesJa: ['（今）受けたばかり', 'さっき受けた', 'たった今受ける'],
+      cue: '「let’s say」のあと。',
+      line: 'Let’s say *I’ve just gotten* bad news.',
+      said: '「たとえば、悪い知らせを受けたとしよう」と言っている。',
+      mean: '’ve はほぼ聞こえない。gotten は tt がつまって「ガッン」と最後に「ン」が残る。',
+      trap: 'get なら「ゲッ」。got は「ガッ」で「ン」がない。「ガッン」と「ン」で終われば gotten。',
       use: 'I’ve just gotten home.（今帰ったところ）' },
 
-    // R fix: V2/K6 — the key was the only choice sharing a number with each distractor (232 with one, 13 with the
-    //   other); a full 2 × 2 now, in ascending order
-    // why: by 30 ← thirteen/thirty, the -teen/-ty trap; 222 ← "two thirty-two" heard as "two twenty-two"
-    { id: 'n1', skill: 'number', level: 'B1', point: 'divide', seg: [92.4, 100.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'divide', seg: [93.0, 99.6], keep: true,
       stem: 'What sum does Joey do in his head for bad news?',
+      ja: '悪い知らせの顔のために、ジョーイは頭の中で何を計算する？',
       choices: ['222 divided by 13', '222 divided by 30', '232 divided by 13', '232 divided by 30'], a: 2,
-      cue: '「divide」のあとの二つの数。',
+      choicesJa: ['222を13で割る', '222を30で割る', '232を13で割る', '232を30で割る'],
+      cue: '「divide」のあと。',
       line: 'all I do there is try and divide *232 by 13*.',
       said: '「悪い知らせの顔は、232を13で割ろうとするだけ」と言う。',
-      mean: 'two thirty-two ＝ 232。区切って言う読み方。',
-      trap: 'thirteen と thirty は似て聞こえる。teen は後ろが強く長い、ty は前が強く短い。',
+      mean: 'two thirty-two ＝ 232。区切って言う読み方。divide A by B ＝ A を B で割る。',
+      trap: '222 なら「トゥエンティ」、232 は「サーティ」。13 は「サーティーン」と最後をのばす。30 は「サーティ」と短い。',
       use: 'What’s twenty percent of sixty?（60の20%っていくつ？）' },
 
-    // R fix: V2/S1 — the stem said "help with the bad-news face", so only the face-based choice fit; the stem is now
-    //   neutral, and a second face-based reason (not laughing) sits beside the key
-    // why: recall ← a sum as a memory aid, a common study trick; not laughing ← actors use a hard thought to keep a
-    //   straight face, which also changes the face
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'math', reveals: ['divide'], seg: [92.4, 100.3],
-      stem: 'Why does a hard sum work as Joey’s bad-news trick?',
-      choices: ['The strain of it looks like worry', 'It helps him recall his next line', 'It keeps him from laughing'],
-      a: 0,
-      cue: '「bad news」のあと、何をするか。',
-      line: 'all I do there is try and *divide 232 by 13*.',
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'math', reveals: ['divide', 'gotten'], seg: [93.0, 99.6], keep: true,
+      stem: 'Why does a hard sum work for bad news?',
+      ja: 'なぜむずかしい計算が、悪い知らせの顔に使える？',
+      choices: ['Thinking hard looks like worry', 'It helps him remember his lines', 'It stops him from laughing'], a: 0,
+      choicesJa: ['必死に考える顔が、困った顔に見える', 'セリフを思い出せる', '笑わずにすむ'],
+      cue: '「bad news」のあと。',
+      line: 'Let’s say I’ve just gotten bad news. Well, all I do there is try and *divide 232 by 13*.',
       said: '悪い知らせを受けた顔は、232÷13 を暗算しようとするだけ、と言う。',
-      mean: '難しい計算に必死な顔が、困って思い悩む顔に見える、という裏技。',
-      trap: '計算は暗記や笑いをこらえるのにも使うが、ここは悪い知らせの顔の作り方。必死な顔そのものが狙い。',
+      mean: 'むずかしい計算に必死な顔が、困って悩んでいる顔に見える、という裏ワザ。',
+      trap: '計算は笑いをこらえるのにも使えるが、ここは bad news（悪い知らせ）の顔の作り方。',
       use: 'Try to look worried.（困った顔をしてみて）' },
 
-    // R fix: V2 — "a secret he's shy to admit" was easy to rule out; now two "easy trick" choices, so the attitude
-    //   decides (he hands it to a class as a tip)
-    // why: ashamed ← admitting he fakes feelings sounds embarrassing; took years ← "tricks" from a pro heard as hard-won
-    //   craft
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'math', reveals: ['divide'], seg: [94.4, 100.3],
-      stem: 'How does Joey present his bad-news trick?',
-      choices: ['As an easy trick he’s pleased with', 'As an easy trick he’s a bit ashamed of',
-                'As a hard skill that took him years'], a: 0,
-      cue: '「Well」のあと、「is」までの言い方。',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'allido', reveals: ['divide'], seg: [95.4, 99.6],
+      stem: 'How does Joey talk about this trick?',
+      ja: 'ジョーイはこのコツをどう話している？',
+      choices: ['Proud that it’s easy', 'A bit ashamed of the trick', 'It took him years'], a: 0,
+      choicesJa: ['簡単で得意げ', 'このコツが少しはずかしい', '何年もかかった'],
+      cue: '「Well」のあと。',
       line: 'Well, *all I do there* is try and divide 232 by 13.',
       said: '「まあ、そこでやるのは、232を13で割ろうとするだけ」と言う。',
-      mean: 'all I do is ～ ＝ 〜するだけ。簡単さを強調し、得意げに種明かししている。',
-      trap: '裏技を明かすので、照れや苦労話に聞こえやすい。all I do は「これだけ」の合図。',
+      mean: 'all I do is 〜 ＝ 〜するだけ。簡単さを強く言い、得意げに種明かしをしている。',
+      trap: '裏ワザを明かすので、照れや苦労話に聞こえやすい。all I do は「これだけ」の合図。',
       use: 'All I do is add a little salt.（塩を少し足すだけ）' },
   ]
 };
