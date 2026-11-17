@@ -1,16 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 4, new 2
 // “Rachel Goes Into Labor | Friends” (the official Friends channel, Best of Season 8): Ross is proud of a record-fast
 // trip to the hospital, the friends got there first anyway, and at the desk the private room they asked for is gone.
 // Rachel tells Ross to pay the nurse; he asks politely instead; Rachel threatens to leave, a contraction hits, and she
 // agrees to "look" at the semi-private room.
-// Segments from the captions, words from whisper (2026-11-16). The captions stretch each line's last word (“over”
-// 9.5 s, “sooner” 64.4 s, “look” 132.4 s); whisper's timings settle those. Ross is named at 36.9 s and 44.2 s and
-// Rachel at 43.4 s; the speaker of “Man, if only you'd gotten here sooner” (61.6 s) isn't settled, so no item keys on
-// it. Untested: 61.6 s (“you gotten”/“you'd gotten”), 66.3 s (“were”/“are all we have”), 79.7 s (“room”/“rooms”), and
-// 119.9 s, where both sources have “see us in my private room” (probably “see a semi-private room”; no key rests on it).
-// REVIEW 2026-11-16: pass 8, fix 13, drop 0, new 0; ear checks 1 (unchanged)
-// OPEN: play-3 draws (seeds 7 and 14, and every seed with “harder” on) can't place an unseen C2: c2 shares `cave`
-//   with the gist g2, and c1 reveals three points. This was there before the review (slightly worse before)
-// EAR CHECK: 52.0 s r1 — the cut falls after “semi-private?” and before “we asked for a private room”
+// Segments from the captions, words from whisper (2026-11-16); whisper's timings settle the captions' stretched last
+// words. Untested: 61.6 s (speaker of “if only you'd gotten here sooner”), 66.3 s, 79.7 s, 119.9 s (garbled).
 import type { Clip } from '../types.ts';
 
 export const laborroom: Clip = {
@@ -19,23 +13,19 @@ export const laborroom: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // why: eleven ← “-even” is the part that carries, the first syllable lost; seventeen ← -teen/-ty and a “record”
-    //   that sounds like a long trip
     { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [1, 6.5], keep: true,
-      stem: 'How long did the trip from home to the hospital take?',
-      choices: ['Under seven minutes', 'Under eleven minutes', 'Under seventeen minutes'], a: 0,
-      cue: '「in under」のすぐあと、数字とその単位。',
+      stem: 'How long did the trip to the hospital take?',
+      ja: '病院までどのくらいかかった？',
+      choices: ['Under 7 minutes', 'Under 11 minutes', 'Under 17 minutes'], a: 0,
+      choicesJa: ['7分以内', '11分以内', '17分以内'],
+      cue: '「in under」のすぐあと。',
       line: 'From home to the hospital *in under seven minutes*.',
-      said: '「家から病院まで7分かからなかった。やった！」と喜んでいる。',
-      mean: 'in under ～ minutes ＝ ～分以内で。速さを自慢する言い方。',
-      trap: 'seven の後半「ヴン」は eleven とも似る。teen なら語尾が長く強く聞こえる。',
+      said: '「家から病院まで7分かからなかった。やった！」と喜ぶ。',
+      mean: 'in under 〜 minutes ＝ 〜分もかからずに。速さを自慢する言い方。',
+      trap: 'eleven は「イレ」で始まる。seventeen なら最後の「ティーン」が長く強い。',
       use: 'We got there in under an hour.（1時間かからずに着いたよ）' },
 
-    // R fix: V2, the lone “Sincerely” choice was a filler, so the labor joke stood out; it's now a sincere reading of
-    //   “the hard part” (the pregnancy) that Ross's “No, but come on” refutes
-    // why: scared ← right mechanism, wrong target: a fast drive is an easy thing to be sarcastic about; pregnancy over ←
-    //   “the hard part is truly over” taken at face value, as the nine months
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'over', seg: [5, 13.2],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'over', seg: [5, 13.2], retired: true,
       stem: 'How does Rachel answer Ross’s “We did it”?',
       choices: ['Sarcastically: the real work hasn’t even started', 'Sarcastically: his fast driving scared her',
                 'Sincerely: the hard months of pregnancy are over'], a: 0,
@@ -46,50 +36,43 @@ export const laborroom: Clip = {
       trap: 'Yes で始まると同意に聞こえる。相手が No, but で言い訳を始めたら、皮肉だったしるし。',
       use: 'Oh great, that’s the hard part done.（よし、大変なのは済んだね…って、まさか）' },
 
-    // R fix: V2/§9.5, “do you beat us” (a present for a past event) and “did he” (one person) were ruled out by logic;
-    //   now “did they” (the friends are a group) and three choices
-    // why: did they ← “did you” shrinks to “didja”, heard as the group he's facing; get us ← “beat” with the flapped t
-    //   between vowels heard as a softer verb
     { id: 's1', skill: 'sound', level: 'B2', point: 'beat', seg: [20, 23.3],
       stem: 'Fill the gap: “How the hell ___ here?”',
+      ja: '空いている所に入る語は？「How the hell ___ here?」',
       choices: ['did you beat us', 'did they beat us', 'did you get us'], a: 0,
-      cue: '「How the hell」のあと、速くつながる4語。',
+      choicesJa: ['君たちが先に着いた', '彼らが先に着いた', '君たちが私たちを連れてきた'],
+      cue: '「How the hell」のあと。',
       line: 'How the hell *did you beat us* here?',
-      said: '「なんで先に着いてるんだ？」と驚いている。',
-      mean: 'did you は「ディジャ」、beat us は t が弾んで「ビーラス」に近い。',
-      trap: 'did you がつぶれて did they に聞こえやすい。目の前の相手に聞くなら you。',
+      said: '「なんで先に着いてるんだ？」と驚く。',
+      mean: 'beat ＝ 先を越す、勝つ。did you は「ディジュ」、beat us は t が軽い「ラ」の音で「ビーラス」。',
+      trap: 'they なら「ゼイ」の音が入る。get は「ゲッ」と短く、beat は「ビー」と伸びる。',
       use: 'You beat me to it!（先を越されちゃった！）' },
 
-    // why: walked ← “Did you guys walk?” is said, but it's a joke question; subway ← “took a…” caught, the short noun
-    //   after it lost
     { id: 'd1', skill: 'detail', level: 'B1', point: 'cab', seg: [20.5, 25.6],
-      stem: 'How did the friends get to the hospital so fast?',
-      choices: ['They took a cab', 'They walked over', 'They took the subway'], a: 0,
-      cue: '「beat us here」の問いへの最初の答え。',
+      stem: 'How did the friends get to the hospital?',
+      ja: '友だちはどうやって病院に来た？',
+      choices: ['They took a cab', 'They walked', 'They took the subway'], a: 0,
+      choicesJa: ['タクシーで', '歩いて', '地下鉄で'],
+      cue: '「beat us here」への最初の答え。',
       line: 'We *took a cab*. Did you guys walk?',
-      said: '「どうやって先に着いたんだ」と聞かれ、「タクシーで。そっちは歩いてきたの？」と返す。',
-      mean: '歩いたのかという問いは、遅かった二人へのからかい。',
-      trap: 'walk が聞こえても、それは相手に向けた冗談の質問。自分たちの手段は最初の一文。',
+      said: '「タクシーで来た。そっちは歩いてきたの？」と返す。',
+      mean: 'take a cab ＝ タクシーに乗る。歩いたの？は遅かった二人へのからかい。',
+      trap: 'walk が聞こえるが、それは相手への冗談の質問。自分たちの手段は最初の文。',
       use: 'Let’s just take a cab.（タクシーで行こうよ）' },
 
-    // R fix: S1/V2, the stem said “they took a cab too”, which gave away d1's key; it now quotes only “but I did…”
-    // why: tests at the hospital ← test = 検査, a hospital word; phoned ahead ← “we called from the car” later in the
-    //   scene, moved here
     { id: 'i1', skill: 'infer', level: 'B2', point: 'tests', reveals: ['cab'], seg: [22.5, 30],
-      stem: 'What does Ross’s “but I did…” add to his answer?',
-      choices: ['He had rehearsed the trip on earlier days', 'He had some tests done at this hospital',
-                'He had phoned the hospital several times first'], a: 0,
-      cue: '「but」のあと、自分がしたことを言う部分。',
-      line: 'we took a cab too, but I *did test runs*.',
-      said: '「僕らもタクシーだよ。でも僕は下見で何度も走ってみたんだ」と言う。',
-      mean: 'test run ＝ 本番前の試し走り。準備までしたのに負けた悔しさ。',
-      trap: 'test を「検査」と取ると病院の話に聞こえる。run と組むと「試しにやってみる」。',
+      stem: 'What did Ross do before today?',
+      ja: 'ロスは今日より前に何をしていた？',
+      choices: ['Practiced the trip', 'Had tests at the hospital', 'Called the hospital'], a: 0,
+      choicesJa: ['病院までの道を練習した', '病院で検査を受けた', '病院に電話した'],
+      cue: '「but I did」のあと。',
+      line: 'No, we took a cab, too, but I *did test runs*.',
+      said: '「僕らもタクシーだよ。でも僕は試しに何度も走ってみたんだ」と言う。',
+      mean: 'test run ＝ 本番前の試し。準備までしたのに負けて悔しい。',
+      trap: 'test から病院の「検査」を思いやすい。run と組むと「試しにやってみる」。',
       use: 'Let’s do a test run first.（まず一度試してみよう）' },
 
-    // R fix: V2, “a quicker route home” was a filler; now a direction flip (teasing the friends as slow)
-    // why: teasing them as slow ← right target, wrong direction: the friends were the fast ones; hard to find ← “to this
-    //   hospital” heard as a complaint about the place
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'tunnel', reveals: ['tests'], seg: [25, 36.7],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'tunnel', reveals: ['tests'], seg: [25, 36.7], retired: true,
       stem: 'Why does Ross ask about a “magic tunnel”?',
       choices: ['He can’t believe anyone beat his fast trip', 'He is teasing the friends for being so slow',
                 'He is joking that the hospital is hard to find'], a: 0,
@@ -100,83 +83,77 @@ export const laborroom: Clip = {
       trap: '道を本当に聞いているように聞こえるが、直前の悔しさとつなげると冗談だと分かる。',
       use: 'Is there a secret shortcut or something?（秘密の近道でもあるの？）' },
 
-    // R fix: V2, “glad he has friends” didn't fit the moment; now the kind reading of the same words (let him enjoy it)
-    // why: let him enjoy it ← the words taken as kind permission; worried he'll be in the way ← a plausible thought for
-    //   a woman in labor, but she says nothing about inside
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'talk', seg: [32.3, 40.3],
-      stem: 'When Rachel tells Ross to stay and talk, how does she feel?',
-      choices: ['Fed up with his chatter about the trip', 'Happy to let him enjoy his record trip',
-                'Worried he would get in the way inside'], a: 0,
-      cue: '彼のトンネルの話のすぐあと。自分は何をしに行くと言うか。',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'talk', seg: [32.3, 40.3],
+      stem: 'How does Rachel feel about Ross’s talk?',
+      ja: 'ロスの話に、レイチェルはどんな気持ち？',
+      choices: ['Tired of it', 'Happy for him', 'Worried about him'], a: 0,
+      choicesJa: ['うんざりしている', '一緒に喜んでいる', '心配している'],
+      cue: 'トンネルの話のすぐあと。',
       line: 'Ross, you *stay here and talk*. I’m gonna go *have a baby*.',
       said: '「あなたはここで話してて。私は赤ちゃんを産みに行くから」と言う。',
-      mean: '速さの話ばかりの Ross へのいら立ち。今いちばん大事なことを思い出させている。',
-      trap: '言葉だけなら優しい提案。自分の大きな用事と並べたら、皮肉まじりの一言。',
+      mean: '速さの話ばかりのロスにいらいら。今いちばん大事なのは出産だと伝えている。',
+      trap: '言葉だけなら優しい提案。自分の大きな用事と並べて、皮肉を込めている。',
       use: 'You keep talking. I’ll be inside.（どうぞ話してて。私は中にいるから）' },
 
-    // why: call from the car ← “we called from the car” is said, a worry it didn't go through; far enough along ← the
-    //   usual labor-ward script, not in the words
     { id: 'g1', skill: 'gist', level: 'B1', point: 'room', reveals: ['asked'], seg: [41.8, 69.3],
-      stem: 'What is the trouble at the front desk about?',
-      choices: ['Which kind of room they will get', 'Whether their call ahead got through',
-                'Whether Rachel is far enough along'], a: 0,
-      cue: '名前を言ったあと、何度も出てくる一つの言葉。',
-      said: '電話で予約したが、用意されていたのは希望と違う部屋。二人は抗議する。',
-      mean: '個室か、相部屋に近い部屋か。部屋の種類をめぐるやりとり。',
-      trap: '電話の話も出てくるが、それは確認できている。問題は部屋のほう。',
-      use: 'There’s a problem with my room.（部屋のことで問題があるみたいで）' },
+      stem: 'What is the problem at the front desk?',
+      ja: '受付での問題は何？',
+      choices: ['They can’t get a private room', 'Their phone call didn’t get through', 'Rachel isn’t ready yet'], a: 0,
+      choicesJa: ['個室がとれない', '電話が通じていなかった', 'レイチェルはまだ早い'],
+      cue: '何度も出てくる一つの言葉。',
+      said: '車から電話で個室を頼んだが、用意されていたのは相部屋。二人は抗議する。',
+      mean: 'private room ＝ 個室。semi-private ＝ 2人ほどで使う部屋。部屋の種類でもめている。',
+      trap: '電話の話も出るが、それは届いている。問題は部屋のほう。',
+      use: 'There’s a problem with my room.（部屋のことで問題があって）' },
 
-    // why: private ← “semi-” is short and unstressed before the key word; another floor ← “labor room” heard, the rest
-    //   filled in
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'called', seg: [42.0, 46.5],
+      stem: 'How did Ross and Rachel contact the hospital?',
+      ja: 'ロスとレイチェルは、どうやって病院に連絡した？',
+      choices: ['They called from the car', 'They emailed last week', 'They came in yesterday'], a: 0,
+      choicesJa: ['車から電話した', '先週メールした', '昨日来た'],
+      cue: '「I’m Ross Geller」のあと。',
+      line: 'This is Rachel Green. — I’m Ross Geller. *We called from the car*.',
+      said: '「レイチェル・グリーンです」「ロス・ゲラーです。車から電話しました」と言う。',
+      mean: 'This is 〜 ＝ （受付で）〜です。We called ＝ 電話しました。予約の確認でよく使う。',
+      trap: 'car が聞こえるので、車で来た話だけと思いやすい。called（電話した）を聞く。',
+      use: 'Hi, this is Tanaka. I called earlier.（田中です。先ほど電話しました）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'semi', seg: [44.5, 49.8],
-      stem: 'What kind of room does the nurse say is waiting for them?',
-      choices: ['A semi-private labor room', 'A private labor room', 'A labor room on another floor'], a: 0,
-      cue: '「we have a」のあと、room の前の語。',
+      stem: 'What kind of room is waiting for them?',
+      ja: '二人のためにどんな部屋が用意されている？',
+      choices: ['A semi-private room', 'A private room', 'A room upstairs'], a: 0,
+      choicesJa: ['相部屋に近い部屋', '個室', '上の階の部屋'],
+      cue: '「We have a」のあと。',
       line: 'We have a *semi-private* labor room waiting for you.',
-      said: '看護師が「セミプライベートの出産用の部屋をご用意しています」と言う。',
-      mean: 'semi-private ＝ 2人ほどで使う部屋。完全な個室ではない。',
-      trap: 'semi- は短く弱いので、private だけが耳に残りやすい。前の音まで聞く。',
+      said: '看護師が「セミプライベートの出産部屋をご用意しています」と言う。',
+      mean: 'semi-private ＝ 2人ほどで使う部屋。semi ＝ 半分。完全な個室ではない。',
+      trap: 'semi は短く弱いので、private だけが耳に残りやすい。前の「セミ」を聞く。',
       use: 'Is this a private room or shared?（個室ですか、相部屋ですか）' },
 
-    // R fix: V2/K5, the key alone named a reason (“they asked for something else”) and the apology choice was ruled out
-    //   by “we called from the car”; all three are now bare moves. B1: its line shows the room trouble, so it reveals
-    //   `room`
-    // why: an explanation ← the echo “Semi-private?” heard as a real question about the word; see the room first ← the
-    //   polite “I'm sorry” (すみません) heard as a lead-in to a request
-    // predict: the segment stops after “Semi-private?”, the reveal plays “we asked for a private room”
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'asked', reveals: ['semi', 'room'], seg: [45.5, 52], then: [52, 58],
-      stem: 'After “Whoa, whoa, whoa. I’m sorry. Semi-private?”, what comes next?',
-      choices: ['An objection about what they booked', 'A request to see the room first',
-                'A question about what the word means'], a: 0,
-      cue: 'whoa の繰り返しと、相手の言葉をくり返す言い方。',
-      line: 'Whoa, whoa… I’m sorry. Semi-private? *We asked for a private room.*',
-      said: '「待って。セミプライベート？個室を頼んだんですよ」と言う。',
-      mean: 'この I’m sorry は謝罪でなく「ちょっと待って」。言葉のくり返しは反論の前ぶれ。',
-      trap: '「すみません」から丁寧な頼みを予想しやすい。whoa のあとの sorry は抗議の入り口。',
+    { id: 'r1', skill: 'pragma', level: 'B2', point: 'asked', reveals: ['semi'], seg: [45.5, 55.0],
+      stem: 'What does Ross mean by “I’m sorry” here?',
+      ja: 'ここでのロスの「I’m sorry」はどういう意味？',
+      choices: ['Wait, what did you say?', 'I apologize to you', 'I feel bad for you'], a: 0,
+      choicesJa: ['待って、今なんて？', 'あなたに謝ります', 'お気の毒に'],
+      cue: '「Whoa」のくり返しのあと。',
+      line: 'Whoa, whoa, whoa, whoa. *I’m sorry.* Semi-private? We asked for a private room.',
+      said: '「待って待って。すみません、セミプライベート？個室を頼んだんですけど」と言う。',
+      mean: 'この I’m sorry ＝ 「え、すみません、今なんて？」。聞き返して反論する前置き。',
+      trap: 'sorry から謝っていると思いやすい。すぐあとに相手の言葉をくり返して抗議している。',
       use: 'I’m sorry, did you say tomorrow?（すみません、明日って言いました？）' },
 
-    // R fix: V2, “booked a day ahead” was weak; now “being cleaned” (currently heard, a hospital reason). B1: the stem
-    //   (“no private room”) gives away g1's point
-    // why: being cleaned ← “currently” caught, the reason filled in with a hospital routine; important people ←
-    //   Rachel's claim later, put in the nurse's mouth
     { id: 'd3', skill: 'detail', level: 'B1', point: 'unavail', reveals: ['room'], seg: [55, 61.5],
-      stem: 'What reason does the nurse give for no private room?',
-      choices: ['They’re all taken at the moment', 'They’re being cleaned right now', 'They’re kept for important people'],
-      a: 0,
-      cue: '「unfortunately」のあと、文の最後の語。',
+      stem: 'Why is there no private room, says the nurse?',
+      ja: '看護師によると、個室がないのはなぜ？',
+      choices: ['They’re all taken now', 'They’re being cleaned', 'They’re for VIPs only'], a: 0,
+      choicesJa: ['今は全部ふさがっている', '掃除中', 'VIP専用'],
+      cue: '「currently」のあと。',
       line: 'we can’t guarantee a private room, and *currently, they’re all unavailable*.',
-      said: '「個室はお約束できず、今はすべてふさがっています」と説明する。',
+      said: '「個室はお約束できません。今はすべてふさがっています」と説明する。',
       mean: 'currently ＝ 今のところ。unavailable ＝ 使えない、空きがない。',
-      trap: 'currently だけ拾うと「清掃中」などと補いやすい。理由は最後の一言、空きがないこと。',
+      trap: 'あとでレイチェルが「大事な客用」と言うが、看護師の理由は unavailable（空きがない）。',
       use: 'Sorry, that size is currently unavailable.（すみません、そのサイズは今品切れです）' },
 
-    // R fix: K7/K6, the key was the longest and the only two-part choice; all three are now one clause. B1: a choice
-    //   names the test runs, so it reveals `tests`
-    // why: the friends ← right callback, wrong target: they beat Ross, but they took no room; test runs ← wrong
-    //   direction: the test runs came before, and the trip was under seven minutes
-    // anchor: 61.6 s the line follows “they're all unavailable”; 1.5–17 s Ross's “under seven minutes… some kind of a
-    //   record”
-    // retired: one C2 alone is under 2 (c2 retired)
     { id: 'c1', skill: 'humor', level: 'C2', point: 'sooner', reveals: ['unavail', 'seven', 'tests'], seg: [55.2, 65.3],
       stem: 'Why does the line about getting there sooner get a laugh?',
       choices: ['Ross’s record-fast trip still wasn’t fast enough', 'The friends got here first, so Ross looks slow',
@@ -188,101 +165,99 @@ export const laborroom: Clip = {
       trap: '友だちに先を越された話も速さの話だが、部屋を取ったのは友だちではない。前ふりは自分たちの記録。',
       use: 'So much for leaving early.（早く出た意味、なかったね）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'second', seg: [69.3, 72],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'second', seg: [69.3, 72],
       stem: 'Type what Ross says: “Okay, uh, just ___.” (4 words)', answer: 'give us a second',
-      cue: '「Okay, uh, just」のあと。小さな語が二つ入る。',
+      ja: '書こう：「Okay, uh, just ___.」（4語）',
+      cue: '「Okay, uh, just」のあと。',
       line: 'Okay, uh, just *give us a second*.',
       said: '看護師に「ちょっと待ってください」と言い、二人で相談する。',
-      mean: 'give us a が「ギヴァサ」とつながる。us と a はほとんど音にならない。',
-      trap: 'give a second と書きたくなるが、us が弱く入っている。',
+      mean: 'give us a second ＝ ちょっと待って。give us a が「ギヴァサ」とつながる。',
+      trap: 'us と a が小さく短く、give a second と書きやすい。4語を数える。',
       use: 'Can you give me a second?（ちょっと待ってもらえる？）' },
 
-    // R fix: V2, “for women further along” was off the words; now right mechanism (saving), wrong target (emergencies)
-    // why: all full ← Ross's view (“they're out of rooms”), the line just before; kept for emergencies ← “saving them”
-    //   heard, the “important people” lost
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'saving', seg: [78, 83.4],
-      stem: 'What does Rachel believe about the private rooms?',
-      choices: ['Some are free but held for VIPs', 'They are all full, as the nurse says',
-                'Some are free but kept for emergencies'], a: 0,
-      cue: '「They’re not, Ross」のあと。', line: 'They’re not, Ross. They’re just *saving them for the important people*.',
-      said: '「空きがないんだよ」と言う Ross に、「大事な客用に取ってあるだけ」と返す。',
-      mean: 'save ＝ 取っておく。空きはあるのに出し惜しみされている、と思っている。',
-      trap: '直前の Ross の意見と混ざりやすい。They’re not のあとが本音。',
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'money', seg: [73.5, 78.0],
+      stem: 'What does Rachel tell Ross to do?',
+      ja: 'レイチェルはロスに何をしろと言う？',
+      choices: ['Give the nurse money', 'Find a doctor', 'Call another hospital'], a: 0,
+      choicesJa: ['看護師にお金を渡す', '医者を探す', '別の病院に電話する'],
+      cue: '「Ross」と呼んだあとの小さな声。',
+      line: '*Give her some money*.',
+      said: '小声で「彼女にお金を渡して」と言う。',
+      mean: 'Give her some money ＝ 彼女にお金を渡して。お金で個室をもらおうという考え。',
+      trap: 'あとで別の病院の話も出るが、それはもっとあと。ここは money を聞く。',
+      use: 'Can you give me some change?（小銭をくれる？）' },
+
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'saving', seg: [78, 83.4],
+      stem: 'What does Rachel think about the private rooms?',
+      ja: 'レイチェルは個室についてどう思っている？',
+      choices: ['Some are kept for VIPs', 'They are all full', 'Some are kept for emergencies'], a: 0,
+      choicesJa: ['VIP用に取ってある', '全部ふさがっている', '急患用に取ってある'],
+      cue: '「They’re not, Ross」のあと。',
+      line: 'They’re not, Ross. They’re just *saving them for the important people*.',
+      said: '「空きがないんだよ」と言うロスに、「大事な人用に取ってあるだけ」と返す。',
+      mean: 'save 〜 for … ＝ …のために〜を取っておく。空きはあると思っている。',
+      trap: '直前のロスの「空きがない」と混ざりやすい。They’re not のあとがレイチェルの考え。',
       use: 'I’m saving this seat for a friend.（この席、友だちのために取ってあるの）' },
 
-    // why: we'll be ← 'd almost silent before “be”, heard as the more common future; we're ← be heard as part of the
-    //   vowel; we've been ← a v-like blur
     { id: 's2', skill: 'sound', level: 'B2', point: 'wed', seg: [83, 86.4],
       stem: 'Fill the gap: “Well, then ___ in a lot of trouble.”',
-      choices: ['we’d be', 'we’ll be', 'we’re', 'we’ve been'], a: 0,
-      cue: '「Well, then」のすぐあと、短い2語。',
+      ja: '空いている所に入る語は？「Well, then ___ in a lot of trouble.」',
+      choices: ['we’d be', 'we’ll be', 'we’re'], a: 0,
+      choicesJa: ['〜だろうね（もしもの話）', '〜になる', '〜だ'],
+      cue: '「Well, then」のすぐあと。',
       line: 'Well, then *we’d be* in a lot of trouble.',
-      said: '「もしそうなら大変なことになるわ」。’d はほぼ聞こえない。',
-      mean: 'What if I was…? という仮定への返事なので、仮定の would（’d）。',
-      trap: 'd が消えると we’ll be にも聞こえる。もしもの話への返事なら ’d と考える。',
+      said: '「もしそうなら大変なことになるわ」と言う。',
+      mean: 'we’d ＝ we would。「もし大統領だったら？」へのもしもの返事。',
+      trap: 'we’ll be なら小さい「ル」が残る。we’re なら be が来ない。「ウィッビー」と詰まれば we’d be。',
       use: 'Then we’d have to leave early.（それなら早めに出ないとね）' },
 
-    // R fix: V2, “he would panic” was off the words and “mocks his geography” named the line; now a near miss on the
-    //   same target (nobody would believe it)
-    // why: even a president ← the topic stays on rooms, so the answer “should” too; nobody would believe it ← right
-    //   target (Ross), wrong mechanism: she mocks what he knows, not his image
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'president', reveals: ['wed'], seg: [83, 89.4],
-      stem: 'Why does Rachel’s answer to “What if I was the president?” get a laugh?',
-      choices: ['She takes it literally and mocks what he knows', 'She says even a president would get no room today',
-                'She says nobody would believe he was president'], a: 0,
-      cue: '「in a lot of trouble」の理由として何を挙げるか。',
-      line: 'Well, then *we’d be in a lot of trouble*. You *don’t know where any countries are*.',
-      said: '「大統領だったら？」に「それは大変ね。あなた国の場所も知らないし」と返す。',
-      mean: 'Ross は「偉い人なら」のつもり。それを本物の大統領の話にずらして、からかっている。',
-      trap: '部屋の話が続くと思うと「部屋はもらえない」に引かれる。返事が話をずらしたら冗談。',
-      use: 'If I ran things, we’d be in trouble.（私が仕切ったら大変なことになるよ）' },
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'president', reveals: ['wed'], seg: [83, 89.4],
+      stem: 'Why would Ross as president be trouble?',
+      ja: 'ロスが大統領だと、なぜ大変？',
+      choices: ['He doesn’t know where countries are', 'He can’t make up his mind fast', 'He talks far too much to people'], a: 0,
+      choicesJa: ['国の場所を知らない', 'なかなか決められない', '人にしゃべりすぎる'],
+      cue: '「in a lot of trouble」のあと。',
+      line: 'Well, then we’d be in a lot of trouble. *You don’t know where any countries are*.',
+      said: '「大統領だったら？」に「それは大変。あなた、国の場所も知らないし」と返す。',
+      mean: 'ロスは「偉い人なら」のつもり。それを本物の大統領の話にずらしてからかっている。',
+      trap: 'さっきの「ここで話してて」から、しゃべりすぎと思いやすい。理由は You don’t know のあと。',
+      use: 'I don’t know where anything is here.（ここ、何がどこにあるか分からない）' },
 
-    // why: an offer of money ← Rachel just told him to pay, and “Say, would you…” sounds like a lead-in; a firm demand ←
-    //   what Rachel wants from him, not what he does
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'mind', seg: [91.8, 101.6],
-      stem: 'What is Ross doing with “Say, would you, um…”?',
-      choices: ['Making a timid request instead of paying', 'Slipping in an offer of money politely',
-                'Making a firm demand for a better room'], a: 0,
-      cue: 'um や uh の数と、最後に何をお願いしているか。',
-      line: 'Say, would you, um, would you *mind checking again*…?',
-      said: '「あの、もう一度確認していただけませんか、個室が空いていないか」と遠慮がちに頼む。',
-      mean: 'お金を渡せと言われたのに、ただ丁寧にお願いし直している。押しの弱さが出ている。',
-      trap: '直前の「お金を」から、渡す前置きに聞こえやすい。お金の話は一言も出ていない。',
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'mind', seg: [91.8, 101.6],
+      stem: 'What does Ross do instead of giving money?',
+      ja: 'ロスはお金を渡す代わりに何をする？',
+      choices: ['Asks her to check again', 'Asks for a doctor', 'Asks for a cheaper room'], a: 0,
+      choicesJa: ['もう一度確認してと頼む', '医者を呼んでと頼む', '安い部屋を頼む'],
+      cue: '「would you mind」のあと。',
+      line: 'Say, would you, um, *would you mind checking again*…?',
+      said: '「あの、もう一度確認していただけませんか」と遠慮がちに頼む。',
+      mean: 'Would you mind 〜ing? ＝ 〜していただけますか。とても丁寧な頼み方。',
+      trap: '直前の「お金を渡して」から、渡すと思いやすい。money は一言も出てこない。',
       use: 'Would you mind checking again?（もう一度確認していただけますか）' },
 
-    // why: walks out ← her threat (“not the only hospital in the city”) taken as what she does; gets the private room ←
-    //   the nurse's last offer misheard (both sources even have “private”)
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'cave', seg: [101, 123.5],
-      stem: 'How does Rachel’s stand against the nurse end?',
-      choices: ['She backs down and goes to see the room', 'She walks out to try another hospital',
-                'She wins and gets the private room'], a: 0,
-      cue: '陣痛のあと、看護師の申し出への返事。',
-      said: 'ほかの病院へ行くと言いかけたところで陣痛が来て、看護師の部屋の案内に応じる。',
-      mean: '強気の抗議が、陣痛ひとつで終わってしまう流れ。',
-      trap: '途中の「ほかにも病院はある」が強く残るが、言い終わる前に陣痛が来ている。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'cave', seg: [101, 123.5],
+      stem: 'How does Rachel’s fight with the nurse end?',
+      ja: 'レイチェルと看護師の言い合いはどう終わる？',
+      choices: ['She agrees to see the room', 'She leaves for another hospital', 'She gets a private room'], a: 0,
+      choicesJa: ['部屋を見ることにする', '別の病院へ行く', '個室をもらう'],
+      cue: '陣痛のあと、看護師への返事。',
+      said: 'ほかの病院へ行くと言いかけたところで陣痛が来て、部屋を見ることに応じる。',
+      mean: 'contraction ＝ 陣痛。強気の抗議が、陣痛ひとつで終わってしまう。',
+      trap: '「ほかにも病院はある」が強く残るが、言い終わる前に陣痛が来る。',
       use: 'Fine, you win.（分かった、あなたの勝ち）' },
 
-    // R fix: V2, “can't hear her voice” was a filler; now “don't care” heard as not caring what the nurse thinks
-    // why: doesn't mind ← “don't care” = 気にしない, the “for” lost; doesn't care what she thinks ← “I don't really care”
-    //   heard as the whole clause, “for your tone” lost
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'tone', seg: [103.9, 107.7],
-      stem: 'Right after “I have to say”, what is Rachel telling the nurse?',
-      choices: ['She doesn’t like the way the nurse talks', 'She doesn’t mind how the nurse talks to her',
-                'She doesn’t care what the nurse thinks of her'], a: 0,
-      cue: '「I have to say」のあと、care のあとの語。',
+      stem: 'What does “I don’t really *care for* your tone” mean?',
+      ja: '「I don’t really care for your tone」はどういう意味？',
+      choices: ['I don’t like how you talk', 'I don’t mind how you talk', 'I don’t care what you think'], a: 0,
+      choicesJa: ['あなたの言い方が気に入らない', 'あなたの言い方は気にしない', 'あなたの考えはどうでもいい'],
+      cue: '「I have to say」のあと。',
       line: 'I have to say, I *don’t really care for your tone*.',
       said: '「言わせてもらうけど、その言い方は気に入らないわ」と言う。',
-      mean: 'not care for ～ ＝ ～が好きではない。tone ＝ 口調。抗議の決まり文句。',
-      trap: 'don’t care を「気にしない」と取ると逆の意味になる。care for は「好む」。',
+      mean: 'not care for 〜 ＝ 〜が好きではない。tone ＝ 口調、言い方。',
+      trap: 'don’t care から「気にしない」と思いやすい。care for は「好む」。',
       use: 'I don’t really care for spicy food.（辛い物はあまり好きじゃない）' },
 
-    // R fix: V2, “still finds the nurse rude” was said openly, so nobody would take it; now the direction flip (she
-    //   still means to leave)
-    // why: the pain ← near miss on what she hides, but the “ow”s say it out loud; still means to leave ← right target
-    //   (the threat), wrong direction: “it couldn't hurt to look” accepts the room
-    // anchor: 107.8–111.6 s the threat (“not the only hospital… we have no problem to—”), cut off by the contraction,
-    //   then “it couldn't hurt to look”
-    // retired: for the draws: play 3 drew no C2 while one was unseen (g2 shares its point, cave)
     { id: 'c2', skill: 'attitude', level: 'C2', point: 'cave', reveals: ['look'], seg: [107.5, 123.5],
       stem: 'With her last reply, what is Rachel trying not to say?',
       choices: ['That she’s giving up her threat to go elsewhere', 'That the pain is much worse than she admits',
@@ -294,18 +269,16 @@ export const laborroom: Clip = {
       trap: '痛みは声で隠さず出している。隠しているのは、さっきの強気を引っこめること。',
       use: 'I guess I could take a quick look.（ちょっと見るだけなら、まあ）', retired: true },
 
-    // R fix: V2/K5, two distractors were the same literal-hurt misreading (the key was the odd one out); the second is
-    //   now “couldn't” heard as a refusal, and all three are about seeing it
-    // why: hurt more ← hurt taken literally right after the contraction; not worth the bother ← the negative
-    //   “couldn't” heard as a dismissal
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'look', reveals: ['cave'], seg: [119.3, 123.5],
-      stem: 'What does Rachel’s final reply to the nurse mean?',
-      choices: ['Seeing it can’t do any harm', 'Seeing it would only hurt more', 'Seeing it is not worth the bother'], a: 0,
-      cue: '最後の返事。hurt の前の否定の形。',
-      line: 'Would you like to see… room? — Yeah, it *couldn’t hurt to look*.',
-      said: '部屋を見るかと聞かれ「見るだけなら損はない」と答える。',
-      mean: 'It couldn’t hurt to ～ ＝ ～しても損はない。気軽な受け入れ。',
-      trap: '陣痛の直後で hurt を「痛い」、couldn’t を断りと取りやすい。Yeah で始まる受け入れ。',
+      stem: 'What does “it *couldn’t hurt* to look” mean?',
+      ja: '「it couldn’t hurt to look」はどういう意味？',
+      choices: ['It’s fine to just look', 'Looking will hurt more', 'It’s not worth a look'], a: 0,
+      choicesJa: ['見るだけなら損はない', '見るともっと痛くなる', '見る価値はない'],
+      cue: '最後の返事。',
+      line: 'Yeah, it *couldn’t hurt to look*.',
+      said: '部屋を見るかと聞かれ「見るだけなら損はないわね」と答える。',
+      mean: 'It couldn’t hurt to 〜 ＝ 〜しても損はない。気軽に受け入れる言い方。',
+      trap: '陣痛の直後なので hurt を「痛い」と思いやすい。Yeah で始まる受け入れ。',
       use: 'It couldn’t hurt to ask.（聞くだけ聞いてみたら）' },
   ]
 };
