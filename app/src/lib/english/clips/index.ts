@@ -356,6 +356,16 @@ import { gingerbread } from './gingerbread.ts';
 import { jerryPlace } from './jerryplace.ts';
 import { tomFailure } from './tomfailure.ts';
 import { laborroom } from './laborroom.ts';
+import { staceySwab } from './staceyswab.ts';
+import { samFriend } from './samfriend.ts';
+import { creddieTogether } from './creddie.ts';
+import { influencerFightClub } from './influfight.ts';
+import { icFirstShow } from './icfirstshow.ts';
+import { killerTuna } from './killertuna.ts';
+import { sandScam } from './sandscam.ts';
+import { shelbyFight } from './shelbyfight.ts';
+import { grandpaAssistant } from './grandpaasst.ts';
+import { firstPrank } from './firstprank.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -372,12 +382,16 @@ export const CLIPS: readonly Clip[] = [
   laundromat,
   dwightVsAndy,
   chickParent,
+  shelbyFight,
+  staceySwab,
   chrisFlu,
   monicabroke,
   kevinTalk,
   daddyDisco,
+  grandpaAssistant,
   sellVeg,
   needyCall,
+  creddieTogether,
   dwightGun,
   michaelsNephew,
   ronFixes,
@@ -386,8 +400,10 @@ export const CLIPS: readonly Clip[] = [
   ronsReviews,
   leslieReady,
   shutdown,
+  sandScam,
   mostLovedDenmark,
   poachBen,
+  icFirstShow,
   dwightHobbit,
   doingAlcohol,
   ambulance,
@@ -413,12 +429,15 @@ export const CLIPS: readonly Clip[] = [
   andyComputer,
   empOfMonth,
   tomFailure,
+  killerTuna,
   thiefOfJoy,
   benSaves,
   ronSelfDefense,
   discoveringJammy,
   tackleBen,
   charityPick,
+  influencerFightClub,
+  firstPrank,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
@@ -482,6 +501,7 @@ export const CLIPS: readonly Clip[] = [
   apothecaryTable,
   pamsMom,
   housetour,
+  samFriend,
   jointMission,
   ronLeslieLunch,
   treatTurnabout,
