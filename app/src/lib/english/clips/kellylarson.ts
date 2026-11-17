@@ -1,15 +1,11 @@
+// A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 5, new 3
 // “Time-Capsule Nutjob Kelly Larson | Parks and Recreation” (the official Parks and Recreation channel, Season 3): a fan
 // asks Leslie to put the Twilight books in Pawnee's time capsule, handcuffs himself in her office when she says no, and
 // settles in for a long stay.
 // Segments from the captions, words from whisper (2026-11-16). Left out on purpose: "your mom… complete failure"
-// (141–144 s, only an insult), the Robert Pattinson line (170–176 s, innuendo), "heartbreak" (captions "her break
-// man", 147 s), "listen to him/them" (159 s), and the screaming at 200–208 s (whisper only; the captions are empty).
-// The man Kelly calls sad (128–144 s) and the person offering to handle Kelly (110 s) aren't named in the audio, so the
-// stems don't name them.
-// REVIEW 2026-11-16: pass 7, fix 16, drop 0, new 0; ear checks 0
-// REVIEW open: no C2 (native-tier) items yet; GUIDE-v2 §10 asks for 2–4 per bank (an author task).
-// REVIEW: the three ear checks went (s1 and x1: both transcripts agree; a1: "all the way back to her birth" carries the
-// dryness in the words, and captions' "births" doesn't touch the key).
+// (141–144 s, only an insult), the Robert Pattinson line (170–176 s, innuendo), "heartbreak" (147 s), "listen to
+// him/them" (159 s), and the screaming at 200–208 s. The man Kelly calls sad (128–144 s) and the person offering to
+// handle Kelly (110 s) aren't named in the audio, so the stems don't name them.
 import type { Clip } from '../types.ts';
 
 export const kellyLarson: Clip = {
@@ -18,32 +14,28 @@ export const kellyLarson: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 — "before he does anything drastic" told that she says no, and the key sat between the two distractors
-    // (blind 60 %); now all three end in a no, and only how she gets there differs.
-    // why: no at once ← "We're not taking suggestions" heard, "have a seat" missed; think it over ← Japanese frame: a polite no is deferred
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'pitch', reveals: ['plead'], seg: [0, 81.5],
-      stem: 'How does Leslie handle Kelly’s request in her office?',
-      choices: ['She lets him make his case, then says no', 'She says no at once and shows him out',
-                'She says she’ll think it over, then says no'], a: 0,
-      cue: '最初の断りのあと、席をすすめる一言と最後の返事。',
-      said: '最初は断るが、結局すわらせて話を聞き、最後に「やっぱりダメ」と言う。',
-      mean: '話は聞くが、答えは変わらない。丁寧に聞いてから断る流れ。',
-      trap: 'not taking suggestions で門前払いと取りやすいが、すぐ席をすすめている。',
-      use: 'I hear you, but the answer is no.（言い分は分かるけど、答えはノー）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', reveals: ['plead'], seg: [0, 26],
+      stem: 'What does Kelly want from Leslie?',
+      ja: 'ケリーはレスリーに何を求めている？',
+      choices: ['Twilight in the time capsule', 'A job in Leslie’s own office', 'Leslie to email him back'], a: 0,
+      choicesJa: ['トワイライトをタイムカプセルに入れること', 'レスリーの職場での仕事', 'メールの返事'],
+      cue: '「make a suggestion」のあと。',
+      said: 'ケリーがタイムカプセルに「トワイライト」の本を入れてほしいと頼みに来る。',
+      mean: 'suggestion ＝ 提案。タイムカプセルに入れる物を提案しに来た。',
+      trap: 'e-mailing が聞こえるのでメールの話と思いやすい。本題は suggestion のあと。',
+      use: 'Can I make a suggestion?（ひとつ提案してもいい？）' },
 
-    // why: apology ← "I'm sorry" read as a real apology; wait your turn ← "not taking" read as "not yet"
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'refuse', seg: [7.4, 10.6],
-      stem: 'What is Leslie doing with her first reply to Kelly’s suggestion?',
-      choices: ['Turning him down before he starts', 'Apologizing for keeping him waiting',
-                'Asking him to wait for his turn'], a: 0,
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'refuse', seg: [7.4, 10.6],
+      stem: 'What is Leslie doing with “I’m sorry. We’re not taking suggestions”?',
+      ja: '「I’m sorry. We’re not taking suggestions」でレスリーは何をしている？',
+      choices: ['Saying no to him', 'Saying sorry for being late', 'Asking him to wait'], a: 0,
+      choicesJa: ['断っている', '遅れたことを謝っている', '待つように頼んでいる'],
       cue: '「Oh」のあとの2つの文。', line: 'Oh, *I’m sorry*. We’re *not taking suggestions*.',
-      said: '「すみません、提案は受け付けていないんです」と、話を聞く前に断る。',
-      mean: 'I’m sorry は謝罪ではなく、断りを柔らかくする前置き。',
-      trap: '日本語の「すみません」と同じで、謝っているわけではない。後ろの not が本題。',
-      use: 'Sorry, we’re not taking any more orders.（すみません、もう注文は受けていません）' },
-
-    // why: offended ← a rude guess usually gets offense; daughter ← "younger" + "girl" read as someone else writing
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'boy', seg: [13.8, 23.2],
+      said: '「すみません、提案は受け付けていないんです」と言う。',
+      mean: 'この I’m sorry は謝りではなく、断りをやわらげる前置き。',
+      trap: 'sorry から謝っていると思いやすい。あとの not taking が本題。',
+      use: 'Sorry, we’re not taking orders now.（すみません、今は注文を受けていません）' },
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'boy', seg: [13.8, 23.2], retired: true,
       stem: 'Why does the audience laugh at Kelly’s answer to Leslie’s guess?',
       choices: ['He simply corrects her, calling himself a boy', 'He acts hurt, then admits she is right',
                 'He says his young daughter wrote the emails'], a: 0,
@@ -52,11 +44,7 @@ export const kellyLarson: Clip = {
       said: '「もっと若い女の子だと思った」と言われ、「違います。年上の男子です」と平然と返す。',
       mean: '大人なのに boy と言い、失礼な予想を気にもしないのがおかしい。',
       trap: '失礼なことを言われたら怒るのが普通の流れ。ここは淡々と言葉を入れ替えるだけ。',
-      use: 'Sorry, I’m not who you expected.（すみません、思ってた人と違って）' },
-
-    // R fix: V2 — "Fill out a request" was a filler (blind 55 %); now "Beg her for a favor", the literal plead.
-    // why: beg ← plead = 嘆願, read as begging; apologize ← plead read as begging forgiveness
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'plead', seg: [26.6, 30.4],
+      use: 'Sorry, I’m not who you expected.（すみません、思ってた人と違って）' },    { id: 'p1', skill: 'phrase', level: 'B2', point: 'plead', seg: [26.6, 30.4], retired: true,
       stem: 'After “Sure, Kelly. Have a seat,” what does Leslie invite him to do?',
       choices: ['Make his argument', 'Beg her for a favor', 'Apologize for coming'], a: 0,
       cue: '「Have a seat」のあと、短い3語。', line: 'Sure, Kelly. Have a seat. *Plead your case.*',
@@ -64,47 +52,39 @@ export const kellyLarson: Clip = {
       mean: 'plead your case ＝ 自分の主張を述べる。裁判の言い方を軽く使っている。',
       trap: 'plead を「頼みこむ・謝る」と取りやすい。case は「言い分」の意味。',
       use: 'Okay, go ahead and make your case.（じゃあ、言い分をどうぞ）' },
-
-    // R fix: V2 — "Pleased that he is starting at the beginning" was easy to strike (blind 60 %); new C is a reaction to
-    // the odd "named Morgan" just before.
-    // why: impressed ← "all the way back" read as admiration; confused ← the odd "Stephenie Meyer, named Morgan" read as her problem
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'birth', seg: [36.2, 39.7],
-      stem: 'When Kelly starts with the author’s birth, how does Leslie react?',
-      choices: ['Dryly noting this will take a while', 'Sincerely impressed by his research',
-                'Confused about who he is talking about'], a: 0,
-      cue: '「Oh」で始まる文と、最後の短い Okay。',
-      line: 'Oh, you’re going *all the way back* to her birth. *Okay.*',
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'birth', seg: [36.2, 39.7],
+      stem: 'How does Leslie feel when Kelly starts with the author’s birth?',
+      ja: '作者の誕生から話し始めたケリーに、レスリーはどう感じている？',
+      choices: ['Tired of it already', 'Very interested in it', 'Angry at Kelly now'], a: 0,
+      choicesJa: ['もううんざり', 'とても興味がある', 'ケリーに怒っている'],
+      cue: '「Oh」で始まる文。', line: 'Oh, you’re going *all the way back* to her birth. *Okay.*',
       said: '「生まれたところまでさかのぼるのね。分かった」と言う。',
-      mean: 'all the way back で「長くなりそう」とあきれている。',
-      trap: '言葉だけならほめているようにも取れる。all the way back と、話を区切る最後の Okay で判断。',
+      mean: 'all the way back ＝ ずっと前まで。長くなりそうだとあきれている。',
+      trap: '言葉だけならほめているようにも聞こえやすい。最後の Okay でしかたなく聞く感じ。',
       use: 'Oh, we’re starting from the very beginning.（あ、最初から話すのね）' },
 
-    // R fix: V2 — the key was the middle, world-knowledge answer (blind 50 %); now the key is the largest, and "a
-    // million" is what's left when "hundred" is lost.
-    // why: 1 million ← "a hundred million" with "hundred" lost; 10 million ← hundred heard as ten
-    { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [39.3, 43.1],
-      stem: 'How many copies does Kelly say the books have sold?',
-      choices: ['More than 1 million', 'More than 10 million', 'More than 100 million'], a: 2, keep: true,
-      cue: '「more than」のあと、million の前。', line: 'they have sold more than *100 million* copies worldwide.',
-      said: '合わせて世界で1億部以上売れた、と数字で説得しようとする。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [39.3, 43.1], keep: true,
+      stem: 'How many copies have the books sold, says Kelly?',
+      ja: '本は何部売れたとケリーは言う？',
+      choices: ['More than 1 million', 'More than 10 million', 'More than 100 million'], a: 2,
+      choicesJa: ['100万部以上', '1000万部以上', '1億部以上'],
+      cue: '「more than」のあと。', line: 'they have sold more than *100 million* copies worldwide.',
+      said: '「合わせて世界で1億部以上売れた」と言う。',
       mean: 'a hundred million ＝ 1億。英語は3けたごとに区切って数える。',
-      trap: 'hundred が弱いと a million に聞こえやすい。a と million の間を聞く。',
+      trap: 'hundred が弱いと a million（100万）に聞こえやすい。a と million の間を聞く。',
       use: 'It sold over a million copies.（100万部以上売れたんだよ）' },
 
-    // R fix: V2 — "had you seen" doesn't fit the question (blind 70 %); now "did you see", as natural as the key.
-    // why: Haven't ← the -n't reading turns it into surprise; been to ← "seen" lost; did you see ← "have you" weakened to a short "d'ya"
     { id: 's1', skill: 'sound', level: 'B2', point: 'seen', seg: [43.0, 46.6],
       stem: 'Fill the gap: “Now, ___ any of the Twilight movies?”',
-      choices: ['have you seen', 'haven’t you seen', 'did you see', 'have you been to'], a: 0,
-      cue: 'Now のあと、とても短く弱い出だし。', line: 'Now, *have you seen* any of the Twilight movies? — No, I have not.',
-      said: '映画を見たことがあるか聞き、Leslie は「ありません」と答える。',
+      ja: '「Now, ___ any of the Twilight movies?」の空所は？',
+      choices: ['have you seen', 'haven’t you seen', 'did you see'], a: 0,
+      choicesJa: ['見たことある', '見たことないの', '見た'],
+      cue: 'Now のあとの弱い出だし。', line: 'Now, *have you seen* any of the Twilight movies? — No, I have not.',
+      said: '映画を見たことがあるか聞き、レスリーは「ありません」と答える。',
       mean: 'have you は弱く「ハヴュ」とつながる。答えの I have not と対になる。',
-      trap: 'haven’t なら「見てないの？」と驚く意味。n’t の小さな「ン」を聞く。',
-      use: 'Have you seen the new Star Wars?（新しいスター・ウォーズ見た？）' },
-
-    // R fix: V2 — "photos he took himself" was a filler (blind 55 %); B and C are now nearer misreadings.
-    // why: best scenes ← "describe" heard, "shot for shot" read as picking shots; pictures ← katakana ショット = a photo
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'shot', seg: [46.2, 55.8],
+      trap: 'haven’t なら「見てないの？」と驚く意味。小さな「ン」があるかを聞く。',
+      use: 'Have you seen the new movie?（新しい映画、見た？）' },
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'shot', seg: [46.2, 55.8], retired: true,
       stem: 'How does Kelly offer to describe the movies to Leslie?',
       choices: ['Every scene, one after another', 'Only the best scenes, briefly', 'With pictures he brought along'],
       a: 0,
@@ -114,38 +94,39 @@ export const kellyLarson: Clip = {
       mean: 'shot for shot ＝ 1カットずつそのまま。とても長くなる予告。',
       trap: 'ショットを「写真」と取りやすい。映画の shot は1つのカットのこと。',
       use: 'He told me the whole plot in detail.（話を一から全部聞かされた）' },
-
-    // R fix: V2 — "already full of stuff" was easy to strike (blind 50 %); new C is a reason a listener could bring in.
-    // why: too new ← "at this moment in time" read as "too recent"; for kids ← the scene's teen-fan framing read as her reason
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pawnee', seg: [55.5, 67.9],
-      stem: 'What reason does Leslie give for saying no?',
-      choices: ['The books have nothing to do with Pawnee', 'The books are too new to belong in it',
-                'The books are meant for kids, not adults'], a: 0,
-      cue: '「It’s about」のあとと、最後の文。',
-      line: 'It’s about *life in Pawnee*… there is *nothing in Twilight that is specific to Pawnee*.',
-      said: 'タイムカプセルは今の町の暮らしを残すもの。この本には町らしさがないと言う。',
-      mean: '人気があるかどうかではなく、町と関係があるかが基準。',
-      trap: 'moment in time から「新しすぎる」と取りやすいが、基準は町と関係があるかどうか。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pawnee', seg: [55.5, 67.5],
+      stem: 'Why does Leslie say no to the books?',
+      ja: 'レスリーはなぜその本を断る？',
+      choices: ['They aren’t about Pawnee', 'They are too new for it', 'They are only for kids'], a: 0,
+      choicesJa: ['ポーニーの話ではない', '新しすぎる', '子ども向けでしかない'],
+      cue: '「It’s about」のあとと、最後の文。', line: 'It’s about *life in Pawnee*… there is *nothing in Twilight that is specific to Pawnee*.',
+      said: '「この本にはポーニーらしさが何もない」と言う。',
+      mean: 'specific to 〜 ＝ 〜ならではの。人気より、町と関係があるかが大事。',
+      trap: 'moment in time から「新しすぎる」と思いやすい。理由は Pawnee との関係。',
       use: 'It has nothing to do with our town.（うちの町とは関係ないよ）' },
 
-    // R fix: V2 — the key was the only explanation of the joke, the rest were facts (blind 60 %); new B is a second
-    // reading of the joke itself.
-    // why: never been ← "exactly like" read as a guess; insult ← comparing Pawnee to a vampire town read as a put-down
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'forks', seg: [67.6, 75.1],
-      stem: 'Why is Kelly’s comparison of the two towns funny?',
-      choices: ['His exceptions undo his own point', 'He insults Pawnee while trying to praise it',
-                'He admits he has never been to Forks'], a: 0,
-      cue: '「exactly like」のあと、except で始まる部分。',
-      line: 'the town of Forks, Washington, is *exactly like* Pawnee. *Except for* the climate and *the vampires*.',
-      said: '「Forks は Pawnee とそっくり。気候とヴァンパイア以外は」と言う。',
-      mean: '「ヴァンパイア以外は同じ」では、話の中心が違い、反論になっていない。',
-      trap: 'けなしたと取りやすいが、言葉はほめている。except のあとは違う点。',
-      use: 'It’s just like home, except for the weather.（天気以外は地元そっくり）' },
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'forks', seg: [67.6, 75.1],
+      stem: 'What does “except for” mean here?',
+      ja: 'ここでの「except for」はどういう意味？',
+      choices: ['But not', 'And also', 'Because of'], a: 0,
+      choicesJa: ['〜は別として', 'それに〜も', '〜のせいで'],
+      cue: '「exactly like Pawnee」のあと。', line: 'Forks, Washington, is *exactly like* Pawnee. *Except for* the climate and the vampires.',
+      said: '「フォークスはポーニーそっくり。気候とヴァンパイア以外は」と言う。',
+      mean: 'except for 〜 ＝ 〜以外は。ヴァンパイアが違えば全然ちがうのが笑い。',
+      trap: 'exactly like のあとなので、同じ点を足すと思いやすい。except は「除いて」。',
+      use: 'The room is nice, except for the noise.（音以外は、いい部屋だね）' },
 
-    // R fix: V2/K6 — the key was the only hedged "sounds like" and C was a filler (blind 55 %); now three parallel
-    // readings, C taking Kelly for one of "those kids".
-    // why: blames April ← "I think it's kind of cool" makes April the target; Kelly ← "those kids" read as the man in cuffs
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'lecture', seg: [91.0, 102.5],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'leave', seg: [76.5, 80],
+      stem: 'What does Leslie mean by “ask you to leave”?',
+      ja: 'レスリーの「ask you to leave」はどういう意味？',
+      choices: ['Please go home now', 'I will ask you later', 'I have a question for you'], a: 0,
+      choicesJa: ['もう帰ってください', 'あとで聞きます', '質問があります'],
+      cue: '「reconsider」と頼まれたあと。', line: 'And *I’m going to have to ask you to leave*.',
+      said: '「お帰りいただきます」と言う。',
+      mean: 'ask you to leave ＝ 帰ってと頼む。I’m going to have to でていねいだが強い。',
+      trap: 'ask から「質問する」を思いやすい。ask you to leave ＝ 帰ってと頼む。',
+      use: 'Sorry, I’ll have to ask you to wait.（すみません、お待ちいただけますか）' },
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'lecture', seg: [91.0, 102.5], retired: true,
       stem: 'Why does April ask Leslie who she is even talking about?',
       choices: ['She lectures April like a parent about bad friends',
                 'She blames April for letting Kelly in',
@@ -156,103 +137,116 @@ export const kellyLarson: Clip = {
       mean: '大人が子どもに言う決まり文句で、この場面と合っていない。',
       trap: '話の流れから April を責めていると取りやすいが、those kids は誰も指していない。',
       use: 'Who are you even talking about?（それ、誰の話？）' },
-
-    // why: worried ← the lecture itself sounds like worry; impressed ← she admits something, read as giving in
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'annoyed', seg: [100.6, 104.4],
-      stem: 'When April challenges her, how does Leslie explain her outburst?',
-      choices: ['She is just annoyed by the whole thing', 'She is worried that April may copy Kelly',
-                'She is secretly impressed and hiding it'], a: 0,
-      cue: '「I don’t know」のあと、短い2つの文。', line: 'I don’t know. I’m sorry. I’m *just annoyed*.',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'annoyed', seg: [100.6, 104.4],
+      stem: 'How does Leslie feel, she says?',
+      ja: 'レスリーは自分の気持ちを何と言う？',
+      choices: ['A bit annoyed', 'Very scared', 'Really sad'], a: 0,
+      choicesJa: ['ちょっとイライラ', 'とてもこわい', 'すごく悲しい'],
+      cue: '「I’m sorry」のあと。', line: 'I don’t know. I’m sorry. I’m *just annoyed*.',
       said: '「分からない。ごめん。ただイライラしてるだけ」と認める。',
-      mean: '説教の中身に意味はなく、Kelly の件でイライラしていただけ。',
-      trap: '説教の内容から「心配」と取りやすいが、本人が理由をはっきり言っている。',
-      use: 'Sorry, I’m just a little stressed.（ごめん、ちょっと余裕がないだけ）' },
+      mean: 'annoyed ＝ イライラした。説教したのは、ケリーの件でイライラしていたから。',
+      trap: '説教のあとなので、怒りや心配と思いやすい。本人が just annoyed と言っている。',
+      use: 'Sorry, I’m just a little tired.（ごめん、ちょっと疲れてるだけ）' },
 
-    // R fix: V2/§9.2 — the stem quoted the marker under test (blind 60 %); it now names the moment, and C is the
-    // Kelly problem a listener expects her to return to.
-    // why: new topic ← "subject" read as a fresh topic; back to Kelly ← "But" read as a return to the main problem
     { id: 'm1', skill: 'marker', level: 'B2', point: 'subject', seg: [103.3, 109.6],
-      stem: 'How does Leslie bring up Orrin right after her apology?',
-      choices: ['She ties him to the friends talk she just gave', 'She drops the friends talk for a new topic',
-                'She uses him to get back to the Kelly problem'], a: 0,
-      cue: '「I’m just annoyed」のすぐあと。続く友だちの話。',
-      line: 'But *while we’re on the subject*, your friend Orrin… he concerns me.',
-      said: 'ついでに、と言って April の友だち Orrin の話を持ち出し、心配だと言う。',
-      mean: '今の話に関係あることを足すときの言い方。「その話が出たついでに」。',
-      trap: 'subject を「新しい話題」と取りやすい。今の話題に乗っかるのが while の働き。',
+      stem: 'What does “while we’re on the subject” do?',
+      ja: '「while we’re on the subject」は何をしている？',
+      choices: ['Adds more on the same topic', 'Changes to a new topic', 'Ends the talk'], a: 0,
+      choicesJa: ['同じ話題で、ひとつ付け足す', '新しい話題に変える', '話を終わらせる'],
+      cue: '「I’m just annoyed」のすぐあと。', line: 'But *while we’re on the subject*, your friend Orrin… he concerns me.',
+      said: '「ついでに言うと、あなたの友だちのオリンが心配」と言う。',
+      mean: 'その話が出たついでに、という意味。友だちの話に付け足している。',
+      trap: 'subject（話題）から新しい話題と思いやすい。while は「〜のうちに」で同じ話の続き。',
       use: 'While we’re on the subject, who’s paying?（その話のついでに、誰が払う？）' },
 
-    // why: 13 ← thirty heard as thirteen (-teen/-ty stress); 3 minutes / 30 minutes ← the unit missed
-    { id: 'n2', skill: 'number', level: 'B1', point: 'seconds', seg: [110.2, 115.5],
-      stem: 'How long does the person offering to handle Kelly say they need?',
-      choices: ['13 seconds', '30 seconds', '3 minutes', '30 minutes'], a: 1, keep: true,
-      cue: '「Give me」のあとの数と単位。', line: 'I’ll take care of this trespasser. Give me *30 seconds*.',
-      said: '「この侵入者は任せて。30秒くれ」と言う。Leslie は警備を呼ぶと答える。',
-      mean: 'すぐ片づけられるという自信の表れ。',
+    { id: 'n2', skill: 'number', level: 'B1', point: 'seconds', seg: [110.2, 115.5], keep: true,
+      stem: 'How much time does the man ask for?',
+      ja: 'その男はどれだけ時間がほしいと言う？',
+      choices: ['13 seconds', '30 seconds', '3 minutes', '30 minutes'], a: 1,
+      choicesJa: ['13秒', '30秒', '3分', '30分'],
+      cue: '「Give me」のあと。', line: 'I’ll take care of this trespasser. Give me *30 seconds*.',
+      said: '「この侵入者は任せて。30秒くれ」と言う。',
+      mean: 'Give me 〜 ＝ 〜ちょうだい。すぐ片づけられるという自信。',
       trap: 'thirty と thirteen は強く言う所が違う。-ty は前、-teen は後ろが強い。',
       use: 'Give me five minutes.（5分ちょうだい）' },
 
-    // R fix: V2 — "Cut it an hour shorter" was the weak one, leaving a later/earlier coin flip (blind 50 %); now "longer"
-    // (push = stretch it out), so all three are readings of push.
-    // why: longer ← "push" read as stretch out; earlier ← "push" read as push forward
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'push', seg: [115.2, 119.3],
-      stem: 'What does Leslie ask the others to do with the meeting?',
+      stem: 'What does Leslie want to do with the meeting?',
+      ja: 'レスリーは会議をどうしたい？',
       choices: ['Move it an hour later', 'Make it an hour longer', 'Start it an hour earlier'], a: 0,
-      cue: '「Guys」のあと。meeting と hour の間。', line: 'Guys, can we *push the meeting an hour*?',
+      choicesJa: ['1時間遅らせる', '1時間長くする', '1時間早く始める'],
+      cue: '「Guys」のあと。', line: 'Guys, can we *push the meeting an hour*?',
       said: '「みんな、会議を1時間ずらせる？」と頼む。',
-      mean: 'push ＝ （予定を）後ろにずらす。push back とも言う。',
-      trap: 'push を「前へ押す」と取ると早める意味になる。予定の push はふつう遅らせる。',
+      mean: 'push ＝（予定を）うしろにずらす。push back とも言う。',
+      trap: 'push（押す）から「前に早める」と思いやすい。予定の push はふつう遅らせる。',
       use: 'Can we push dinner to eight?（夕食を8時にずらせる？）' },
 
-    // R fix: V2 — "Nobody has ever done this here before" was the plain opposite (blind 60 %); now shock at a fan going
-    // this far, the reading of "Damn it" alone.
-    // why: shocked ← "Damn it" read as shock at something new; blames Leslie ← "Again?" read as "you again?"
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'again', seg: [119.2, 126.0],
-      stem: 'What does the reply to Leslie’s explanation suggest?',
-      choices: ['Something like this has happened before', 'The speaker is shocked a fan went this far',
-                'Leslie keeps letting strange people in'], a: 0,
-      cue: '説明を聞いた人の、最後の一語。', line: '— Damn it. *Again?*',
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'again', seg: [119.2, 126.0],
+      stem: 'What does the reply “Again?” tell us?',
+      ja: '「Again?」という返事から何が分かる？',
+      choices: ['This has happened before', 'This is the very first time', 'Leslie did it herself'], a: 0,
+      choicesJa: ['前にもあった', '初めてのこと', 'レスリー自身がやった'],
+      cue: '説明を聞いた人の最後の一語。', line: '— Damn it. *Again?*',
       said: '手錠の件を聞いて「くそ、またか」と返す。',
-      mean: 'Again? の一語で、前にも同じようなことがあったと分かる。',
-      trap: 'Damn it だけなら驚きにも取れる。最後の Again? が「前にもあった」の手がかり。',
+      mean: 'Again? ＝ また？ 前にも同じようなことがあった、と分かる。',
+      trap: 'Damn it だけなら驚いただけにも聞こえやすい。最後の Again? が手がかり。',
       use: 'The train is late? Again?（電車遅れてる？また？）' },
 
-    // R fix: V2 — "Trouble at work" was a vague filler (blind 55 %); now "his boss", parallel to the other two.
-    // why: boss ← "you look sad" + office setting; his mom ← "mom" is said right after
     { id: 'd3', skill: 'detail', level: 'B1', point: 'girl', seg: [128.4, 135.5],
-      stem: 'What does Kelly guess is behind the other man’s sad look?',
+      stem: 'Why is the man sad, Kelly guesses?',
+      ja: 'その男が悲しいのはなぜだとケリーは思う？',
       choices: ['Trouble with a girl', 'Trouble with his boss', 'Trouble with his mom'], a: 0,
-      cue: '「You look sad」のあと、Kelly の短い質問。', line: '*It’s a girl*, isn’t it? I can tell.',
+      choicesJa: ['女の子のこと', '上司のこと', 'お母さんのこと'],
+      cue: '「You look sad」のあと。', line: '*It’s a girl*, isn’t it? I can tell.',
       said: '「悲しそうだね」と言い、悪口を返されても「女の子のことでしょ」と言う。',
-      mean: 'isn’t it? は確信に近い推測。I can tell ＝ 見れば分かる。',
-      trap: 'このあと mom が出てくるが、それは言い返しの悪口。Kelly の推測は最初の質問。',
+      mean: 'It’s a girl, isn’t it? ＝ 女の子のことでしょ？ と、確信に近い推測。',
+      trap: 'あとで mom が出てくるが、それは言い返しの悪口。ケリーの推測は最初。',
       use: 'You look tired. Long day?（疲れてるね。大変な日だった？）' },
 
-    // why: in his car ← the usual place for keys; thrown away ← "far away" read as gone for good
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'cantell', reveals: ['girl'], seg: [132.5, 135.5],
+      stem: 'What does Kelly mean by “I can tell”?',
+      ja: 'ケリーの「I can tell」はどういう意味？',
+      choices: ['I can see it', 'I will tell you', 'I can say it'], a: 0,
+      choicesJa: ['見れば分かる', '教えてあげる', '言うことができる'],
+      cue: 'isn’t it? のあと。', line: 'It’s a girl, isn’t it? *I can tell.*',
+      said: '「女の子のことでしょ？見れば分かる」と言う。',
+      mean: 'I can tell ＝ 見れば分かる、分かるよ。顔や様子から分かるときの言い方。',
+      trap: 'tell から「言う・教える」を思いやすい。can tell は「見分けられる」。',
+      use: 'You’re nervous. I can tell.（緊張してるね。分かるよ）' },
+
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'timeup', seg: [175.8, 179.5],
+      stem: 'What does “Time is up” mean here?',
+      ja: 'ここでの「Time is up」はどういう意味？',
+      choices: ['There is no more time', 'It is time to wake up', 'It is a good time'], a: 0,
+      choicesJa: ['もう時間切れ', '起きる時間だ', 'いいタイミングだ'],
+      cue: '「Okay, buddy」のあと。', line: 'Okay, buddy. *Time is up.* Give us the keys.',
+      said: '「よし、時間切れだ。鍵を出せ」と言う。',
+      mean: 'Time is up ＝ 時間切れ、もう終わり。試験や順番の終わりにも言う。',
+      trap: 'up から「起きる」を思いやすい。Time’s up は「時間が終わった」。',
+      use: 'Time’s up. Pens down, please.（時間です。ペンを置いてください）' },
+
     { id: 'd4', skill: 'detail', level: 'B1', point: 'keys', seg: [176.3, 181.35],
-      stem: 'Where does Kelly say the handcuff keys are?',
-      choices: ['Hidden somewhere very far away', 'Left in his car out front', 'Thrown away where no one can find them'],
-      a: 0,
+      stem: 'Where are the handcuff keys, says Kelly?',
+      ja: '手錠の鍵はどこにあるとケリーは言う？',
+      choices: ['Hidden somewhere far away', 'In his car out in front', 'Thrown away in the trash'], a: 0,
+      choicesJa: ['どこか遠くに隠してある', '表に止めた車の中', 'ごみ箱に捨てた'],
       cue: '「Give us the keys」への答え。', line: 'Give us the keys. — They’re *hidden somewhere very far away*.',
       said: '「鍵を出せ」と言われ、「ずっと遠くに隠してある」と答える。',
-      mean: '最初から外されないように準備していた、ということ。',
-      trap: 'far away を「捨てた」と取りやすい。hidden ＝ どこかにある、が要点。',
+      mean: 'hidden ＝ 隠された。外されないように、最初から準備していた。',
+      trap: 'far away から「捨てた」と思いやすい。hidden ＝ どこかに隠してある。',
       use: 'I left my keys somewhere at home.（鍵を家のどこかに置いてきた）' },
 
-    // why: cut free ← "cut you loose" heard and taken as done; books in ← the usual "she gives in" script
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'standoff', reveals: ['pillow', 'keys'], seg: [176.3, 221.3],
-      stem: 'Where do things stand between Leslie and Kelly at the end?',
-      choices: ['She lets him stay, and he is in no hurry', 'Security cuts him free and walks him out',
-                'She gives in and adds the books after all'], a: 0,
-      cue: '「stop!」のあとの彼女の決断と、最後の発見。',
-      said: '鍵はなく、警備も止め、Leslie は好きなだけいさせると決める。でも彼は枕まで持ってきた。',
-      mean: '我慢比べになったが、相手のほうが準備できている。',
-      trap: 'cut you loose は「切って外すぞ」という脅しで、実際には止めている。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'standoff', reveals: ['pillow', 'keys'], seg: [176.3, 221.3],
+      stem: 'How does it end with Kelly?',
+      ja: 'ケリーの件はどう終わる？',
+      choices: ['Leslie lets him stay', 'He is taken out', 'Leslie adds the books'], a: 0,
+      choicesJa: ['レスリーが彼をそのままいさせる', '彼は外に連れ出される', 'レスリーが本を入れる'],
+      cue: '「stop!」のあとのレスリーの言葉。',
+      said: '警備を止めて「いたいならいさせる」と決めるが、彼は枕まで持ってきていた。',
+      mean: 'let him stay ＝ いさせておく。待てば帰るという作戦。',
+      trap: 'cut you loose（切って外すぞ）が聞こえるので、連れ出されると思いやすい。',
       use: 'Fine, stay as long as you like.（いいよ、好きなだけいれば）' },
-    // R fix: V2/K1 — the key said "she" though "You're trespassing" isn't tied to Leslie in the audio, and C was easy
-    // to strike (blind 50 %); the choices no longer name a speaker. seg starts at 182.7 (182.6 cut "loose").
-    // why: admits wrong ← "the fact remains" read as a concession; quotes a law ← "perfectly legal" read as legal knowledge
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'fact', seg: [182.7, 190.4],
+    { id: 'h4', skill: 'humor', level: 'C1', point: 'fact', seg: [182.7, 190.4], retired: true,
       stem: 'Why is Kelly’s “the fact remains…” reply funny?',
       choices: ['He insists on a “fact” that was just refuted', 'He admits they are right, in fancy words',
                 'He quotes a law that no one has heard of'], a: 0,
@@ -262,40 +256,35 @@ export const kellyLarson: Clip = {
       mean: 'the fact remains は議論を決める言い方。根拠なしで使うので空回りしている。',
       trap: 'fact と legal で法律に詳しいように聞こえるが、何も示していない。',
       use: 'The fact remains, we’re late.（とにかく、遅刻は遅刻だよ）' },
-
-    // R fix: V2/S2 — the quoted preface signalled a "but" (blind 60 %); the stem now names the moment, and C is the
-    // threat reading of "cause any trouble".
-    // why: leave quietly ← "I really don't want to cause trouble" read as backing down; threat ← "trouble" read as a warning
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'trouble', seg: [190.2, 196.1],
-      stem: 'Told again that he’s trespassing, what is Kelly setting up?',
-      choices: ['A firm demand, softened in advance', 'A polite promise to leave quietly',
-                'A threat of trouble if he is refused'], a: 0,
-      cue: '前置きのあと、but で始まる文。', line: 'Look, I really *don’t want to cause any trouble*. *But*…',
-      said: '「面倒を起こしたいわけじゃない」と前置きして、but のあとで条件を突きつける。',
-      mean: '本音は but のあと。前置きは強い要求を和らげるため。',
-      trap: '日本語の「お騒がせして」のような謝罪と取りやすい。but が来たら本題の合図。',
+      stem: 'What is Kelly doing with “I don’t want any trouble, but…”?',
+      ja: '「I don’t want to cause any trouble, but…」でケリーは何をしている？',
+      choices: ['Softening a strong demand', 'Saying sorry and then leaving', 'Saying he will fight'], a: 0,
+      choicesJa: ['強い要求をやわらげて言う', '謝って帰る', 'けんかすると言う'],
+      cue: '前置きのあと、but の文。', line: 'Look, I really *don’t want to cause any trouble*. *But*…',
+      said: '「面倒を起こしたいわけじゃない」と前置きして、but のあとで条件を言う。',
+      mean: '本音は but のあと。前置きは強い要求をやわらげるため。',
+      trap: 'trouble から謝っていると思いやすい。but が来たら本題の合図。',
       use: 'I don’t mean to be rude, but…（失礼なつもりはないけど…）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [191.8, 196.1],
-      stem: 'Type what Kelly says: “But I am ___ until you put Twilight in.” (3 words)', answer: 'not gonna leave',
-      cue: '「But I am」のあと、強く言う語から。', line: 'But I am *not gonna leave* until you put Twilight in the time capsule.',
-      said: '本を入れてくれるまで帰らない、と言い切る。',
-      mean: 'not gonna ＝ not going to。強く言うと決意になる。',
+      stem: 'Type what Kelly says: “But I am ___ until…” (3 words)', answer: 'not gonna leave',
+      ja: '「But I am ___ until…」の空所を書こう（3語）',
+      cue: '「But I am」のあと。', line: 'But I am *not gonna leave* until you put Twilight in the time capsule.',
+      said: '「本を入れてくれるまで帰らない」と言い切る。',
+      mean: 'not gonna ＝ not going to。強く言うと「絶対〜しない」という決意になる。',
       trap: 'not の t は止まるだけで「ナッ」、gonna は「ガナ」。2語が1つに聞こえやすい。',
       use: 'I’m not gonna give up.（あきらめないよ）' },
 
-    // R fix: V2 — "given up and getting ready to leave" was easy to strike (blind 60 %); new C keeps her "hungry" plan alive.
-    // why: fall asleep ← pillow = sleep; hungry sooner ← "two hours" + "hungry" read as her plan working
     { id: 'i2', skill: 'infer', level: 'C1', point: 'pillow', seg: [207.2, 221.3],
-      stem: 'What does Leslie’s last discovery mean for her plan?',
-      choices: ['Waiting him out will take far longer than hoped', 'He will soon fall asleep and be easy to move',
-                'He will get hungry even sooner than she thought'], a: 0,
-      cue: '「two hours」の計画と、最後の短い文。',
-      line: 'In *two hours*, he’s gonna be so hungry… begging me to… *He brought a pillow.*',
-      said: '「2時間もすればお腹がすいて泣きつくはず」と言いかけて、枕を持参していたと気づく。',
-      mean: '長期戦の準備ができている。待てば帰るという計画は通じない。',
-      trap: '枕から「眠る」を連想しやすい。準備のよさ＝長くいるつもり、と読む。',
+      stem: 'What does Kelly’s pillow tell Leslie?',
+      ja: 'ケリーの枕から、レスリーは何が分かる？',
+      choices: ['He will stay a long time', 'He is hungry already', 'He wants to go home'], a: 0,
+      choicesJa: ['長くいるつもり', 'もうおなかがすいている', '家に帰りたい'],
+      cue: '「two hours」の計画と最後の文。', line: 'In *two hours*, he’s gonna be so hungry… *He brought a pillow.*',
+      said: '「2時間で腹ペコになって泣きつく」と言いかけて、枕持参に気づく。',
+      mean: '枕を持ってきた＝泊まるつもり。待てば帰るという作戦は通じない。',
+      trap: 'hungry はレスリーの予想で、まだ起きていない。最後の pillow が答え。',
       use: 'He came prepared.（準備万端で来たね）' },
-
   ]
 };
