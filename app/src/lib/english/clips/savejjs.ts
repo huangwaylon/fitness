@@ -43,7 +43,7 @@ export const saveJJs: Clip = {
       stem: 'What does Leslie say is happening to JJ’s diner?',
       ja: 'JJ のダイナーはどうなると、レスリーは言う？',
       choices: ['It will close for good', 'It will look new soon', 'It will stay just the same'], a: 0,
-      choicesJa: ['なくなってしまう', '10年後には新しくなる', 'そのまま変わらない'],
+      choicesJa: ['なくなってしまう', 'もうすぐ新しく見える', 'そのまま変わらない'],
       cue: '「Even JJ’s diner」のあと',
       line: 'Even JJ’s diner is *disappearing*.',
       said: '「JJ のダイナーまで、なくなっちゃう」と言う。',
