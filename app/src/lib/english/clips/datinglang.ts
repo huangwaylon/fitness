@@ -72,7 +72,7 @@ export const datinglang: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'g2', seg: [11.5, 47], stem: 'What do the friends explain to Rachel?',
       ja: '友だちはレイチェルに何を説明している？',
       choices: ['What dating lines mean', 'How to ask a person out', 'Where to go for a date'], a: 0,
-      choicesJa: ['デートの言葉の本当の意味', 'デートに誘う方法', '初デートで行く場所'],
+      choicesJa: ['デートの決まり文句の意味', 'デートに誘う方法', 'デートで行く場所'],
       cue: '真ん中の、いくつもの例',
       line: 'It’s like *dating language*. … “It’s not you” means… It is you.',
       said: '「デート用の言葉なの。『君のせいじゃない』は『君のせい』」。',

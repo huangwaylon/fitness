@@ -180,7 +180,7 @@ export const joeyCrossword: Clip = {
     { id: 'd4', skill: 'detail', level: 'B1', point: 'career', seg: [47.3, 56.3],
       stem: 'What other reason does Rachel give for doing it?', ja: 'レイチェルが言う、もう一つの理由は？',
       choices: ['It would help his career', 'The magazine would pay well', 'The writers would like him'], a: 0,
-      choicesJa: ['宣伝になって仕事のためになる', '雑誌がお金をたくさん払う', '脚本家に好かれる'],
+      choicesJa: ['彼の仕事のためになる', '雑誌がお金をたくさん払う', '脚本家に好かれる'],
 
       cue: '「And plus」のあと', line: 'the publicity would be *really good for your career*',
       said: '「宣伝になるし、仕事のためにすごくいい」と言う。',
