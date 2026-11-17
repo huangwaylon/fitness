@@ -1,17 +1,12 @@
-// REVIEW 2026-11-16: pass 3, fix 16, drop 1, new 0; ear checks 8
-// REVIEW open: s1 is ~60 % blind (gonna reads more natural than gotta / was gonna); left as is, the near sounds are the real ones — rewrite?
+// A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 6, new 4
 // “Ron Loves Lil' Sebastian | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Leslie
 // surprises the team with Pawnee's beloved mini horse; everyone is thrilled except Ben, who can't see the big deal.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 77 s; whisper's repeated lines after it
-// are hallucinations. No predict item (no clean pause before a projected move). The "Get out" at 77 s is untested.
-// EAR CHECK: 6.6 s a0 — Leslie's “possibly… potentially… the universe” is thrilled hype, not real doubt or modesty (key rests on tone)
-// EAR CHECK: 23.0 s a1 x1 — the man (assumed Ron) sounds starstruck; “I'd get to meet him”: the d of I'd nearly gone, “get to” flapped
-// EAR CHECK: 27.1 s — captions “it's really him”, whisper “Oh, my God, I hate him” (no key rests on it since review; a1's line now stops before it)
-// EAR CHECK: 45.8 s p1 a2 pr1 g2 — the newcomer is “Ben” (whisper “Ben”, captions “van”)
-// EAR CHECK: 45.8 s a2 — “He's not a pony, Ben” sounds offended for the horse, not irritated at the interruption or teacherly (key rests on tone)
+// are hallucinations. The id m1 was a draft, deleted before it shipped: never reuse it.
+// EAR CHECK: 23.0 s x1 — “I'd get to meet him”: the d of I'd nearly gone, “get to” flapped
+// EAR CHECK: 45.8 s p1 g2 pr1 — the newcomer is “Ben” (whisper “Ben”, captions “van”)
 // EAR CHECK: 50.9 s s2 — “Does he do something”: does‿he linked, h dropped (both have “does he”)
 // EAR CHECK: 64.1 s w1 s1 — whisper “Jerry's gonna”, captions “jerry's going to”; Jerry himself answers “Yes, I am”
-// EAR CHECK: 73.7 s pr1 — whisper “I just gotta be honest”, captions “i just got to be honest” (same meaning; no key on the form)
 import type { Clip } from '../types.ts';
 
 export const sebastian: Clip = {
@@ -20,36 +15,32 @@ export const sebastian: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: blind 90 % — only the key was specific; a "famous singer" distractor now uses the stage-intro words.
-    //        The seg ran to 31 s, where nothing said it's an animal (V1); now to 49.2 s, through "pony… mini horse".
-    // why: singer ← "Ladies and gentlemen, the world famous…" is a stage intro + "festival"; day off ← "you've worked so hard" + surprise = a reward
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'surprise', seg: [0, 49.2],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'proud', seg: [0, 7],
+      stem: 'How does Leslie feel about her team?',
+      ja: 'レスリーはチームのことをどう思っている？',
+      choices: ['Very proud of them', 'Worried about them', 'Angry with them'], a: 0,
+      choicesJa: ['とても誇りに思っている', '心配している', '怒っている'],
+      cue: '「tomorrow」のあと',
+      line: 'and I am *so proud of all of you*. You’ve worked so hard',
+      said: '「本当にみんなを誇りに思う。よく頑張ったね」と言う。',
+      mean: 'be proud of 〜 ＝「〜を誇りに思う」。ほめるときの決まり文句。',
+      trap: '「お祭りは明日」と急ぐ話に聞こえやすいが、続くのはほめ言葉。',
+      use: 'I’m so proud of you.（あなたを誇りに思う）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'surprise', seg: [4.5, 49.2],
       stem: 'What is Leslie’s surprise for her team?',
-      choices: ['A visit from a famous local animal', 'A famous singer to open tomorrow’s festival',
-                'A paid day off for all their hard work'], a: 0,
-      cue: '紹介のあと、みんながそれを何と呼ぶか。',
+      ja: 'レスリーがチームに用意したサプライズは？',
+      choices: ['A famous little horse', 'A famous singer', 'A day off for everyone'], a: 0,
+      choicesJa: ['有名な小さな馬', '有名な歌手', '全員のお休み'],
+      cue: '紹介のあと、みんなが何と呼ぶか',
       line: 'Ladies and gentlemen, the *world famous Lil’ Sebastian*.',
-      said: 'チームをほめたあと、町で有名な小さな馬を紹介する。',
-      mean: 'world famous は大げさ。実は地元で大人気の馬。',
-      trap: 'world famous は舞台の紹介の決まり文句で歌手と思いやすい。あとで pony と呼ばれる。',
+      said: '「みなさん、世界的に有名なリル・セバスチャンです！」と紹介する。',
+      mean: 'world famous ＝「世界的に有名」。実は町で大人気の小さな馬。',
+      trap: 'Ladies and gentlemen は舞台の紹介なので、歌手と思いやすい。',
       use: 'I have a surprise for you all.（みんなにサプライズがあるの）' },
 
-    // R fix: blind 80 % — the key was the only "Most…, but Ben…" choice; both distractors now single Ben out too.
-    // why: Ben worried ← "be very careful" + age + illness pinned on the newcomer; Ben won over ← the usual sitcom script, his questions get answers
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'reaction', reveals: ['honest'], seg: [0, 76.5],
-      stem: 'How does the group react to the surprise overall?',
-      choices: ['Most are thrilled, but Ben can’t see why', 'Most are thrilled, but Ben worries it’s too old',
-                'Everyone is thrilled, Ben too, once he hears the story'], a: 0,
-      cue: '歓声のあと、最後まで質問を重ねる人の声。',
-      said: 'みんなは大喜び。Ben だけは質問を重ね、最後に何がすごいのか分からないと言う。',
-      mean: '町の人には伝説の馬でも、彼にはただの小さな馬。その温度差が場面の笑い。',
-      trap: 'careful や病気の話が続くので心配の場面に見えるが、それは別の人の世話の注意。',
-      use: 'Am I missing something here?（何か見落としてる？）' },
-
-    // R fix: blind 60 % — "builds up" cued hype and the key was the only upbeat choice; "playfully" also clashed with
-    //        Leslie's sincere excitement (K1). Stem neutral, key now "thrilled… for effect", a modest-pride distractor added.
-    // why: unsure ← possibly/potentially read as real doubt (日本語の「かもしれない」); modest ← "you've worked so hard" + hedges read as 謙遜
-    { id: 'a0', skill: 'attitude', level: 'C1', point: 'buildup', seg: [6.1, 17],
+    // retired (A2): the key rests on tone (hype, not doubt)
+    { id: 'a0', skill: 'attitude', level: 'C1', point: 'buildup', seg: [6.1, 17], retired: true,
       stem: 'When Leslie describes her surprise, how does she sound?',
       choices: ['Thrilled, and piling on big claims for effect', 'Unsure, so softening her claim in case it flops',
                 'Proud, but modestly playing down her own idea'], a: 0,
@@ -60,10 +51,8 @@ export const sebastian: Clip = {
       trap: 'かもしれない＝自信がない、と取りやすい。後ろがこれほど大げさなら、ふざけた強調。',
       use: 'This is possibly the best pizza ever.（これ、たぶん史上最高のピザ）' },
 
-    // R fix: blind 70 % — "annoyed" was a filler; now an old-friend reading of "never thought". The line dropped
-    //        "It's really him" (captions only; whisper hears "I hate him" there).
-    // why: still alive ← "never thought" + "him" heard as "never thought he'd still be around"; old friend ← "meet him" read as meeting again
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'meet', seg: [22.5, 28],
+    // retired (A2): the speaker unsure and the key a feeling read from the voice; x1 keeps the line
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'meet', seg: [22.5, 28], retired: true,
       stem: 'When a man says “I never thought…”, what is he feeling?',
       choices: ['Starstruck, finally meeting a hero', 'Surprised the horse is still alive',
                 'Touched, seeing an old friend again'],
@@ -75,56 +64,55 @@ export const sebastian: Clip = {
       trap: 'never thought だけ拾うと「まだ生きていたとは」と取りやすい。get to meet は初めて会えた喜び。',
       use: 'I never thought I’d get to see Paris.（パリに行けるなんて思わなかった）' },
 
-    // R fix: "get to meet him" is 4 words, not 3 (stem and cue); the trap was about I'd, which sits outside the gap.
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'meet', seg: [24.6, 27],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'meet', seg: [23.6, 27],
       stem: 'Type what he says: “I never thought I’d ___.” (4 words)', answer: 'get to meet him',
-      cue: '「I never thought」のあと、短くつながる4語。',
+      ja: '「I never thought I’d ___.」の空所を書こう（4語）',
+      cue: '「I never thought」のあと',
       line: 'I never thought I’d *get to meet him*.',
-      said: '「彼に会えるなんて」。get to は「ゲラ」に近く、him の h も弱い。',
-      mean: 'get to meet ＝ 会う機会に恵まれる。うれしさを含む言い方。',
-      trap: 'meet‿him は h が落ちて一語に聞こえ、語数を少なく数えやすい。弱い代名詞を探す。',
+      said: '「まさか彼に会えるなんて思わなかった」と言う。',
+      mean: 'get to 〜 ＝「〜できる（機会に恵まれる）」。get to は「ゲラ」と聞こえ、him の h も弱い。',
+      trap: 'meet him が「ミーティム」と一語に聞こえ、語を落としやすい。',
       use: 'Did you get to meet the chef?（シェフに会えた？）' },
 
-    // why: 1978 ← nineteen-eighty-seven heard with the last two digits swapped; 1997 ← "nineteen" + "seven" caught, the middle lost
     { id: 'n1', skill: 'number', level: 'B1', point: 'year', reveals: ['last'], seg: [30.6, 37],
-      stem: 'In what year did Lil’ Sebastian first appear at the festival?',
+      stem: 'What year did Lil’ Sebastian first come to the festival?',
+      ja: 'リル・セバスチャンが初めてお祭りに出たのは何年？',
       choices: ['1978', '1987', '1997'], a: 1, keep: true,
-      cue: '「debut」のあと、年号。',
+      choicesJa: ['1978年', '1987年', '1997年'],
+      cue: '「debut」のあと',
       line: 'Lil’ Sebastian made his debut at the last Harvest Festival in *1987*',
-      said: '前回のお祭り、1987年にデビューしたと説明している。',
-      mean: '1987 は nineteen eighty-seven と、2けたずつ二つに分けて読む。',
-      trap: '後半を聞き逃すと seven だけ残り、97 や 78 にずれやすい。年号は2けたずつ聞く。',
+      said: '「1987年の前回のお祭りでデビューした」と説明する。',
+      mean: '1987 ＝ nineteen eighty-seven。年は2けたずつ分けて読む。debut ＝ デビュー。',
+      trap: '後半を聞き逃すと seven だけ残り、97 や 78 にずれやすい。',
       use: 'I first came here in 1998.（初めてここに来たのは1998年）' },
 
-    // R fix: blind 55 % — "for many years" was the only choice with a span; now three parallel "since/then" claims.
-    // why: every year since ← debut + "for the next few years" suggest a regular event; first held ← "debut" moved from the horse to the festival
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'last', reveals: ['year'], seg: [30.6, 37],
-      stem: 'From how Lil’ Sebastian’s debut is described, what can you tell about the festival?',
-      choices: ['It hasn’t been held since then', 'It’s been held every year since then',
-                'It was first held that year'], a: 0,
-      cue: '「debut at the」のあとの一語と、年号。',
+    // A2: was an infer on what “the last festival” says about the festival; now the word's meaning
+    { id: 'i1', skill: 'phrase', level: 'C1', point: 'last', reveals: ['year'], seg: [30.6, 37],
+      stem: 'What does “the last Harvest Festival” mean here?',
+      ja: '「the last Harvest Festival」は、ここではどういう意味？',
+      choices: ['The one before this', 'The final one ever', 'The first one ever'], a: 0,
+      choicesJa: ['今回の前の回', '最後の回（もうない）', '初めての回'],
+      cue: '「debut at the」のあと',
       line: 'made his debut at *the last Harvest Festival* in 1987',
-      said: '1987年の「前回の」お祭りでデビューした、と説明している。',
-      mean: 'last ＝ この前の。それ以来お祭りは開かれていなかった、ということ。',
-      trap: 'debut を聞くと「初めての回」と取りやすい。the last ＋行事は「前回の」が多い。',
+      said: '「前回、1987年のお祭りでデビューした」と言う。',
+      mean: 'the last 〜 ＝「この前の〜」。お祭りは明日なので「最後の回」ではない。',
+      trap: 'last ＝「最後」と思いやすい。行事の前の last はたいてい「前回の」。',
       use: 'When was the last time you went camping?（最後にキャンプしたのはいつ？）' },
 
-    // R fix: blind 75 % — "hugely popular" was the only positive, emphatic choice; the choices are now parallel.
-    // why: strange ← katakana-style 現象 = an odd event; short-lived ← "instant" read as quickly over
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'phenom', seg: [30.6, 37],
       stem: 'What does “an instant phenomenon” mean here?',
-      choices: ['A big hit right from the start', 'A strange event right from the start', 'A quick fad that soon ended'],
-      a: 0,
-      cue: '「instant」のあと。訳語に引っぱられないで。',
+      ja: '「an instant phenomenon」は、ここではどういう意味？',
+      choices: ['A big hit from the start', 'A strange event from the start', 'Popular only for a short time'], a: 0,
+      choicesJa: ['最初から大人気', '最初から不思議な出来事', '少しの間だけ人気'],
+      cue: '「instant」のあと',
       line: 'and he was an *instant phenomenon*.',
-      said: '「あっという間に大人気になった」と言っている。',
-      mean: 'phenomenon は人や物が「大ブーム」になったときにも使う。instant ＝ すぐに。',
-      trap: '「現象」と訳すと不思議な出来事に聞こえる。instant を「すぐ終わる」と取るのも逆。',
+      said: '「あっという間に大人気になった」と言う。',
+      mean: 'phenomenon ＝ 大ブーム（の人・物）。instant ＝ すぐに。instant hit とも言う。',
+      trap: '「現象」と訳すと不思議な出来事に聞こえる。instant を「すぐ終わる」と思うのも逆。',
       use: 'The song became an instant hit.（その曲はすぐにヒットした）' },
 
-    // R fix: blind 60 % — "even" marked the key as the punchline; reworded so all three are flat claims.
-    // why: really a girl ← "girl's name" keyword in the wrong relation; never popular ← "number three" sounds low after "number one"
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'names', seg: [36.8, 43.4],
+    // retired (A2): a “what makes it funny” item; n3 asks the number
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'names', seg: [36.8, 43.4], retired: true,
       stem: 'What makes the last fact about baby names funny?',
       choices: ['His name was a hit for baby girls as well', 'It hints that the horse was really a girl',
                 'It shows the name was never that popular'], a: 0,
@@ -135,23 +123,44 @@ export const sebastian: Clip = {
       trap: 'girl を聞いて「実はメス」と取りやすい。ここは人気の大きさを付け足す一言。',
       use: 'It was the number one song that year.（その年の1位の曲だった）' },
 
-    // R fix: blind 85 % — both distractors were the same "deal = 取引" reading; one is now "what's wrong with it?",
-    //        a real sense of the idiom that "what am I missing" rules out.
-    // why: cost ← deal = 取引・お得; wrong with it ← "What's the deal with…?" also means "what's wrong with…?"
+    { id: 'n3', skill: 'number', level: 'B1', point: 'names', seg: [36.8, 43.4],
+      stem: 'For girls, what number was the name Sebastian?',
+      ja: '女の子の名前で、セバスチャンは何位だった？',
+      choices: ['No. 1', 'No. 2', 'No. 3'], a: 2, keep: true,
+      choicesJa: ['1位', '2位', '3位'],
+      cue: '「boy’s name」のあと',
+      line: 'the number one boy’s name in Pawnee. And the *number three girl’s name*.',
+      said: '「男の子の名前で1位、女の子の名前でも3位だった」と言う。',
+      mean: 'number one ＝ 1位。馬の名前を女の子にまで付けるほどの人気、という笑い。',
+      trap: '先に number one が聞こえるので1位と思いやすい。girl’s の前の数を聞く。',
+      use: 'It was the number one song that year.（その年の1位の曲だった）' },
+
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'deal', seg: [42.6, 45.7],
-      stem: 'When Ben asks about the horse, what does “What’s the deal with…” mean?',
-      choices: ['Why is everyone so excited about it?', 'How much did it cost to bring it here?',
-                'Is something wrong with it? Is it sick?'], a: 0,
-      cue: '直前の「what am I missing」と並べて考えて。',
+      stem: 'What does Ben mean by “What’s the deal”?',
+      ja: 'ベンの「What’s the deal」はどういう意味？',
+      choices: ['Why is it so special?', 'How much does it cost?', 'Is it sick or hurt?'], a: 0,
+      choicesJa: ['何がそんなに特別なの？', 'いくらかかるの？', '病気かけがなの？'],
+      cue: '直前の「what am I missing」',
       line: 'So what am I missing? *What’s the deal* with this pony?',
-      said: '「何を見落としてる？このポニーの何がすごいの？」',
-      mean: 'What’s the deal with ～? ＝ ～は何が特別なの、とわけを聞くくだけた言い方。',
-      trap: 'deal を取引と取るとお金の話。「どこか変？」の意味もあるが、ここは前の文の言い直し。',
+      said: '「何を見落としてる？このポニーの何がすごいの？」と聞く。',
+      mean: 'What’s the deal with 〜? ＝「〜は何が特別なの？」とわけを聞くくだけた言い方。',
+      trap: 'deal（取引）からお金の話と思いやすいが、前の文の言い直し。',
       use: 'What’s the deal with this line?（この行列、どうしたの？）' },
 
-    // R fix: blind 60 % — the key was the only negative feeling; "amused" became "annoyed he cut into the story".
-    // why: annoyed ← Ben's question does interrupt the history, same edge in the voice; patiently teaching ← "there's a big difference" sounds like an explanation for a newcomer
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'pony', seg: [44.3, 49.2],
+    // A2: was “How does the group react overall?” over the whole clip (76 s); now Ben's view at the end
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'reaction', reveals: ['honest'], seg: [43, 76.5],
+      stem: 'What does Ben think of the horse in the end?',
+      ja: '最後に、ベンはこの馬をどう思っている？',
+      choices: ['He doesn’t see why it’s special', 'He loves it like everyone else', 'He is worried it is sick'], a: 0,
+      choicesJa: ['何が特別なのか分からない', 'みんなと同じく大好き', '病気ではと心配している'],
+      cue: '最後のベンの返事',
+      said: 'みんなは大喜び。ベンだけは質問を重ね、「何がすごいのか分からない」と言う。',
+      mean: 'big deal ＝ 大したこと。町の人には伝説の馬でも、ベンにはただの小さな馬。',
+      trap: '病気の話が続くので心配していると思いやすいが、それは世話の注意。',
+      use: 'Am I missing something here?（何か見落としてる？）' },
+
+    // retired (A2): the key rests on tone (offended, not irritated); d3 asks the words
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'pony', seg: [44.3, 49.2], retired: true,
       stem: 'In the reply that starts “He’s not a…”, how does the speaker sound?',
       choices: ['Offended on the horse’s behalf', 'Annoyed that Ben cut into the story', 'Patiently teaching Ben a new word'],
       a: 0,
@@ -162,23 +171,32 @@ export const sebastian: Clip = {
       trap: '説明の形なので親切に教えていると取りやすい。何に言い返しているか、big difference の言い張りを聞く。',
       use: 'It’s not a cold. There’s a big difference.（ただの風邪じゃない。全然違う）' },
 
-    // R drop: m1 (marker, "Well, then…") — blind 60 %; "Well, then" = それなら is transparent at this level (V3), and a
-    //         stronger distractor (irritated, brushing it off) would be defensible from tone (K1). Never shipped: deleted.
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pony', seg: [44.3, 49.2],
+      stem: 'If not a pony, what is Lil’ Sebastian?',
+      ja: 'ポニーでないなら、リル・セバスチャンは何？',
+      choices: ['A mini horse', 'A baby horse', 'A big horse'], a: 0,
+      choicesJa: ['ミニホース（小型の馬）', '子馬', '大きな馬'],
+      cue: '「He’s not a pony」のあと',
+      line: 'He’s not a pony, Ben. He’s a *mini horse*, there’s a big difference.',
+      said: '「ポニーじゃない、ミニホースだ。大違いだ」と言い返す。',
+      mean: 'mini ＝ 小さい。There’s a big difference ＝「全然違う」。ほぼ同じなのに言い張る。',
+      trap: 'pony も horse も聞こえて迷いやすい。not のあとを聞く。',
+      use: 'It’s not a cold. There’s a big difference.（風邪じゃない。全然違うよ）' },
 
-    // why: Did ← only the d is caught and the vowel lost; Doesn't ← a puzzled check reading, n't easy to imagine
     { id: 's2', skill: 'sound', level: 'B2', point: 'doeshe', seg: [49.2, 52.2],
       stem: 'Fill the gap: “Why is he so famous? ___ do something?”',
+      ja: '「Why is he so famous? ___ do something?」の空所は？',
       choices: ['Does he', 'Did he', 'Doesn’t he'], a: 0,
-      cue: '「famous」のすぐあと、文頭の弱い音。',
+      choicesJa: ['彼は（今）〜する？', '彼は〜した？', '彼は〜するんでしょ？'],
+      cue: '「famous」のすぐあと',
       line: '*Does he* do something? What does he do?',
-      said: '「何かするの？何をするの？」。does he は「ダズィ」と短い。',
-      mean: 'h が落ちて does‿he がつながる。今できることを聞くので現在形。',
-      trap: 'Did he だと昔の話になる。Doesn’t he なら「するんでしょ？」と確かめる意味。',
+      said: 'ベンが「なんで有名なの？何かするの？」と聞く。',
+      mean: 'does he は h が落ちて「ダズィ」とつながる。今できることを聞くので現在の形。',
+      trap: 'Did he だと昔の話。Doesn’t he なら「するんでしょ？」と確かめる意味。',
       use: 'Does he speak English?（彼、英語話せる？）' },
 
-    // R fix: blind 65 % — "clever tricks" isn't a reason to laugh (filler); now a mascot reading of "Notre Dame".
-    // why: studied ← "degree" heard, "honorary" missed (literal); mascot ← a famous college name + an animal = a sports mascot
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'degree', seg: [49.2, 56.1],
+    // retired (A2): a “what makes the reply funny” item (an honorary degree)
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'degree', seg: [49.2, 56.1], retired: true,
       stem: 'When Ben asks what the horse does, what makes the reply funny?',
       choices: ['It offers a human honor as if it proved his worth', 'It claims the horse really studied at a college',
                 'It reveals the horse is a college’s sports mascot'], a: 0,
@@ -189,10 +207,8 @@ export const sebastian: Clip = {
       trap: 'honorary を聞き逃すと「大学で学んだ」に聞こえる。名誉学位は学ばずにもらえる。',
       use: 'He has a degree in economics.（彼は経済学の学位を持っている）' },
 
-    // R fix: "Diabetes…" was true — Jerry says he and the horse are "both on the same diabetes medication" (K2).
-    //        Now "bad hearing" (both + a body part missed); trap rewritten (it claimed diabetes was only Jerry's).
-    // why: weak heart ← "very careful" + "severe" suggest a dangerous condition; hearing ← "cataracts" unknown, "both" = two ears
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'health', seg: [55.8, 63.9],
+    // retired (A2): cataracts and arthritis are words above this learner, the choices two-part
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'health', seg: [55.8, 63.9], retired: true,
       stem: 'What health problems does the horse have?',
       choices: ['Bad eyes and stiff, painful joints', 'Bad eyes and a weak, tired heart',
                 'Bad hearing and stiff, painful joints'], a: 0,
@@ -203,65 +219,77 @@ export const sebastian: Clip = {
       trap: 'cataracts が分からないと both だけ残り、耳とも取れる。直後の in both eyes で絞る。',
       use: 'Be careful, he has a bad back.（気をつけて、彼は腰が悪いの）' },
 
-    // why: 20 ← the "-five" swallowed before "now"; 35 ← "guy's" blurs into the number, heard as thirty-
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'careful', seg: [55.8, 60],
+      stem: 'What does everyone need to be with the horse?',
+      ja: 'みんなは馬に対してどうしないといけない？',
+      choices: ['Very careful', 'Very quiet', 'Very quick'], a: 0,
+      choicesJa: ['とても注意深く', 'とても静かに', 'とてもすばやく'],
+      cue: '「We all need to be」のあと',
+      line: 'We all need to be *very careful*, okay?',
+      said: '「みんな、すごく気をつけないとね」と注意する。',
+      mean: 'need to 〜 ＝「〜しないといけない」。be careful ＝「気をつけて」。年を取った馬だから。',
+      trap: 'very のあとの語は短く速い。「ケアフォー」と聞こえる。',
+      use: 'Be careful, the floor is wet.（気をつけて、床がぬれてる）' },
+
     { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [57.5, 61],
       stem: 'How old is the horse now?',
+      ja: 'その馬はいま何歳？',
       choices: ['20', '25', '35'], a: 1, keep: true,
-      cue: '「this little guy’s」のすぐあと。',
+      choicesJa: ['20歳', '25歳', '35歳'],
+      cue: '「this little guy’s」のすぐあと',
       line: 'Remember, this little guy’s *25* now',
       said: '「この子はもう25歳なんだから」と念を押す。',
-      mean: 'guy’s は guy is の短縮。馬としてはかなりの高齢で、だから注意が必要。',
-      trap: 'guy’s の s が数字にくっつき、five が now に紛れやすい。最後の音まで聞く。',
+      mean: 'guy’s ＝ guy is。little guy ＝「この子」と親しく呼ぶ言い方。馬としては高齢。',
+      trap: 'guy’s の s が数字にくっつき、five が now にまぎれやすい。最後の音まで聞く。',
       use: 'My cat is fifteen now.（うちの猫ももう15歳）' },
 
-    // why: got to ← gonna/gotta near sound; was going to ← "Jerry's" heard as "Jerry was", a plan that fell through
-    // R fix: seg was 2.0 s (< 3 s); now 62.4–65.6, which keeps "Yes, I am" (it rules out "got to": that would be "Yes, I have").
     { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['jerry'], seg: [62.4, 65.6],
       stem: 'Fill the gap: “___ look after him.”',
+      ja: '「___ look after him.」の空所は？',
       choices: ['Jerry’s going to', 'Jerry’s got to', 'Jerry was going to'], a: 0,
-      cue: '名前のすぐあと、短くつながる音。',
+      choicesJa: ['ジェリーが〜することになっている', 'ジェリーは〜しなければならない', 'ジェリーは〜するはずだった'],
+      cue: '名前のすぐあと',
       line: '*Jerry’s going to* look after him.',
-      said: '「Jerry が面倒を見ることになってる」。going to は「ゴナ」に近い。',
-      mean: '決まった予定を伝える言い方。本人もすぐ「はい」と受ける。',
-      trap: 'gonna と gotta は似ているが gotta は「しなきゃ」。was なら「予定だったのに」。',
+      said: '「ジェリーがこの子の世話をするのよ」と言う。',
+      mean: 'going to は「ゴナ」と聞こえる（gonna）。決まった予定を言う形。',
+      trap: 'gonna と gotta は似ているが、gotta は「〜しなきゃ」。was なら「予定だったのに」。',
       use: 'I’m going to look after the kids.（子どもたちの面倒は私が見るよ）' },
 
-    // why: Leslie ← she gives the instruction, so the speaker is heard as the carer; Ben ← the last name heard before this
-    // R fix: skill who → detail (V4): the carer is named in words ("Jerry's going to…"), not told apart by voice.
     { id: 'w1', skill: 'detail', level: 'B1', point: 'jerry', seg: [63.6, 67.6],
       stem: 'Who will take care of the horse?',
+      ja: '馬の世話をするのはだれ？',
       choices: ['Jerry', 'Leslie', 'Ben'], a: 0,
-      cue: '「look after him」の前の名前と、そのあとの返事。',
+      choicesJa: ['ジェリー', 'レスリー', 'ベン'],
+      cue: '「look after him」の前の名前',
       line: '*Jerry’s* going to look after him. — Yes, I am.',
-      said: '「Jerry が世話をする」と言われ、本人が「そうだよ」と答える。',
-      mean: 'look after ＝ 面倒を見る。Yes, I am は「はい、僕がやります」という返事。',
-      trap: '指示する人の声が目立つので、その人が世話をすると思いやすい。文頭の主語を聞く。',
+      said: '「ジェリーが世話をする」と言われ、本人が「はい」と答える。',
+      mean: 'look after 〜 ＝「〜の面倒を見る」。Yes, I am ＝「はい、僕がやります」。',
+      trap: '指示する人の声が目立つので、その人が世話をすると思いやすい。文の最初の名前を聞く。',
       use: 'Could you look after my bag?（かばんを見ていてもらえますか）' },
 
-    // R fix: blind 65 % — the key was the only one tying Jerry to the horse; all three are now about him and the job.
-    // why: breaks ← "medication" = his own illness, a practical warning; sick animals ← "look after him" + medicine = experience
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'meds', reveals: ['jerry'], seg: [63.6, 70.5],
-      stem: 'Why does Jerry mention his medication?',
-      choices: ['To bond with the horse over a shared illness', 'To warn he may need breaks for his own illness',
-                'To show he has looked after sick animals before'], a: 0,
-      cue: '「Yes, I am」のあと、「same」が何を指すか。',
-      line: 'We are both on the *same diabetes medication*. Are you my glucotrol *buddy*?',
-      said: '「同じ糖尿病の薬を飲んでる。薬仲間だね」と馬に話しかける。',
-      mean: '世話係にぴったりな理由として、持病が同じという妙な共通点を挙げている。',
-      trap: 'medication から仕事の注意や経験の話と取りやすい。both と buddy が仲間意識の合図。',
-      use: 'We’re both on the same team.（僕たち同じチームだね）' },
+    // A2: was an infer on why Jerry mentions his medication (long choices); now what the two share
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'meds', reveals: ['jerry'], seg: [63.6, 70.5],
+      stem: 'What do Jerry and the horse both take?',
+      ja: 'ジェリーと馬が二人とも飲んでいるものは？',
+      choices: ['The same medicine', 'The same vitamins', 'The same food'], a: 0,
+      choicesJa: ['同じ薬', '同じビタミン剤', '同じエサ'],
+      cue: '「Yes, I am」のあと',
+      line: 'We are both on the *same diabetes medication*.',
+      said: '「僕たち、同じ糖尿病の薬を飲んでるんだ」と馬に話しかける。',
+      mean: 'be on 〜 medication ＝「〜の薬を飲んでいる」。妙な共通点が笑い。',
+      trap: 'diabetes（糖尿病）は難しい語だが、答えは最後の medication（薬）。',
+      use: 'I’m on medication for a cold.（風邪の薬を飲んでいます）' },
 
-    // R fix: blind 85 % — "admit a lie" was a filler; now "hasn't been paying attention" (his earlier "what am I missing").
-    // why: not listening ← "So what am I missing?" earlier + "be honest" as a confession; stronger yes ← the opening "Yeah" read as a yes (日本語の「はい」)
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'honest', reveals: ['reaction'], seg: [70.7, 76.2],
-      stem: 'After “Isn’t it amazing?”, what does Ben’s “I just gotta be honest” do?',
-      choices: ['Warns that his opinion is different', 'Admits he hasn’t been paying attention',
-                'Adds weight to the yes he just gave'], a: 0,
-      cue: '「Yeah」で始まるが、そのあとに来る中身。',
+      stem: 'Why does Ben say “I just gotta be honest”?',
+      ja: 'ベンはなぜ「I just gotta be honest」と言う？',
+      choices: ['He is about to disagree', 'He is about to say yes', 'He is about to say sorry'], a: 0,
+      choicesJa: ['反対の意見を言うため', '賛成するため', '謝るため'],
+      cue: '「Yeah」のあとの中身',
       line: 'Yeah, I just *gotta be honest*. I don’t know what the big deal is.',
-      said: '「うん、正直に言うと、何がそんなにすごいのか分からない」と答える。',
-      mean: '人と違う意見を言う、という予告の前置き。Yeah は返事の入り口だけ。',
-      trap: 'Yeah を聞いて賛成と取りやすい。I gotta be honest のあとには反対意見が来やすい。',
-      use: 'I gotta be honest, I didn’t like it.（正直言うと、好きじゃなかった）' },
+      said: '「うん、正直言うと、何がすごいのか分からない」と答える。',
+      mean: 'gotta be honest ＝「正直に言わなきゃ」。人と違う意見を言う前置き。gotta ＝ got to。',
+      trap: '最初の Yeah で賛成と思いやすいが、このあと反対意見が来る。',
+      use: 'To be honest, I didn’t like it.（正直言うと、好きじゃなかった）' },
   ]
 };
