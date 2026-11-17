@@ -1,23 +1,13 @@
-// REVIEW 2026-11-16: pass 4, fix 17, drop 1, new 0; ear checks 10
-// REVIEW Q: n1 dropped (Six Million Dollar Man is world knowledge); the bank now has no number item, as the clip has
-//   no other number. Fine to leave it that way?
-// REVIEW Q: form items (p2, p3, pr1) were judged on cues in the choices, not on a fluent reader knowing the chunk.
+// A2 REVIEW 2026-11-17: keep 9, rewrite 7, retire 5, new 5
 // “Phoebe Runs Like Kermit the Frog | Friends” (the official Friends channel, Best of Season 6): Rachel is embarrassed
 // by how Phoebe runs, dodges her with a fake injury, gets caught, and finally tries running Phoebe's way.
 // Segments from the captions, words from whisper (2026-11-16). Whisper repeats one line from 213 s on (hallucination);
-// 213–263 s rests on the captions alone.
+// 213–263 s rests on the captions alone. The clip has no number.
 // EAR CHECK: 51.4 s m1 d1 — “I mean, I live with her” (both agree); speaker assumed Rachel
 // EAR CHECK: 63.2 s s1 — “I don't think I can ever run again”: “can” weak /kən/, not “can't” (both: can)
-// EAR CHECK: 72.0 s h1 — speakers assumed: Monica “I'm sorry that I hurt your ankles”, Rachel “Ankle.”, Monica
-//   “We'll see.” (captions put “see” at 85.0 s after music, whisper at 75.0–76.3 s; seg ends 77.0 s)
 // EAR CHECK: 89.5 s x1 — captions “sneak out out”, whisper “and sneak out.”; answer “sneak out”
-// EAR CHECK: 101.0 s a1 — Phoebe's “Please, Rachel. I am not an idiot.”: hurt and not fooled (tone)
-// EAR CHECK: 117.5 s a2 — Rachel's apology sounds sincere (tone); whisper timings drift ~5 s here, captions used
 // EAR CHECK: 128.4 s s2 — “what should you have done”: should‿you‿have reduced (both agree on the words)
-// EAR CHECK: 178.0 s h2 — “I am not uptight, man” is a tense shout (tone); captions also have a stammered “not up”
-// EAR CHECK: 206.3 s h3 — “Satan… the neighbor's dog”: whisper puts “dog” at ~212 s, captions at 231.4 s (after music)
 // EAR CHECK: 232–243 s g2 — captions only (whisper hallucinates here); speaker of “this feels great… I feel so free” assumed Rachel
-// NOTE: 193 s captions “I'm more freak”, whisper “I'm more free”; no item uses that line.
 import type { Clip } from '../types.ts';
 
 export const phoebeRuns: Clip = {
@@ -26,96 +16,117 @@ export const phoebeRuns: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R drop: n1 (number, "six ___-dollar man"): V1. "The Six Million Dollar Man" is a TV title, so the key comes from
-    //   world knowledge (blind pass 95 %), and the captions themselves hear "billion". Never shipped, so deleted.
-    //   The clip has no other number, so no number item is required.
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'catchup', seg: [0, 3.6],
+      stem: 'What does Rachel mean by “I’ll catch up”?',
+      ja: 'レイチェルの「I’ll catch up」はどういう意味？',
+      choices: ['I will join you soon', 'We will talk about it later', 'I will wait here'], a: 0,
+      choicesJa: ['すぐ追いつく', 'あとで話そう', 'ここで待っている'],
+      cue: '最初、靴ひもを結ぶと言ったあと。', line: 'So you go ahead. *I’ll catch up.*',
+      said: '「靴ひもを結ばなきゃ。先に行って。すぐ追いつくから」と言う。',
+      mean: 'catch up ＝ 追いつく。go ahead（先に行って）とセットでよく使う。',
+      trap: 'catch up には「近況を話す」の意味もあるが、ここは先に行ってのあと。追いつく話。',
+      use: 'You go ahead. I’ll catch up.（先に行って。すぐ追いつくから）' },
 
-    // R fix: blind pass 55 %; "can't keep up" replaced with the reading the scene invites (fix Phoebe's running).
-    //   Distractor 3 says they live together, so it reveals d1's point
-    // why: change how she runs ← "runs weird" + "tell her the truth" read as Rachel's goal; move out ← "I live
-    //   with her" read as the problem itself
+    { id: 'p6', skill: 'phrase', level: 'B2', point: 'crush', seg: [24.5, 33.2],
+      stem: 'What does “had a crush on him” mean?',
+      ja: '「had a crush on him」はどういう意味？',
+      choices: ['Liked him a lot', 'Was scared of him', 'Felt sorry for him'], a: 0,
+      choicesJa: ['彼が大好きだった', '彼がこわかった', '彼をかわいそうに思った'],
+      cue: 'モニカの名前のあとの話。', line: 'Monica *had such a crush on him* that she used to kiss his poster every night.',
+      said: '「モニカは彼に夢中で、毎晩寝る前にポスターにキスしてた」と話す。',
+      mean: 'have a crush on ＋人 ＝ 〜に片思いする、夢中になる。恋バナでよく使う。',
+      trap: 'crush は文字どおりは「つぶす」。毎晩ポスターにキスするので「好き」。',
+      use: 'I had a crush on him in school.（学生のころ、彼に片思いしてた）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'problem', reveals: ['getout', 'live'], seg: [44, 59.8],
-      stem: 'What is Rachel’s problem with Phoebe?',
-      choices: ['She wants to stop running with Phoebe', 'She wants Phoebe to run in a less odd way',
-                'She has to move out of Phoebe’s place'], a: 0,
-      cue: 'she’s going to want to のあとの気持ち。', line: 'I just don’t know how to *get out of it*.',
-      said: 'またフィービーに走ろうと言われるが、どう断ればいいか分からない。',
-      mean: '走り方が恥ずかしいので、一緒に走るのをやめたい。',
-      trap: 'runs, live with her などの語だけ拾うと別の悩みに見える。悩みは don’t know how のあと。',
+      stem: 'What is Rachel’s problem?',
+      ja: 'レイチェルの悩みは何？',
+      choices: ['She can’t say no to Phoebe', 'She hurt her ankle running', 'She has to move out soon'], a: 0,
+      choicesJa: ['フィービーに「いや」と言えない', '走って足首を痛めた', 'もうすぐ引っ越さないといけない'],
+      cue: '後半、レイチェルの長めの一言。', line: 'I know she’s gonna want to run again. I just don’t know how to *get out of it*.',
+      said: '「フィービーはまた走ろうと言うはず。どう断ればいいか分からない」と言う。',
+      mean: 'フィービーと走るのが恥ずかしいが、断り方が分からない。',
+      trap: 'live with her から引っ越しの話に思いやすい。悩みは don’t know how のあと。',
       use: 'I don’t know how to say no.（どう断ればいいか分からない）' },
 
-    // R fix: blind pass 60 % (series knowledge plus a weak "race"); race → a running club, closer to the talk
-    // why: work ← a common reason two people meet daily; running club ← "run again" read as a standing date
     { id: 'd1', skill: 'detail', level: 'B1', point: 'live', seg: [46.5, 52.7],
       stem: 'Why is it hard for Rachel to avoid Phoebe?',
-      choices: ['They share an apartment', 'They work at the same place', 'They are in the same running club'], a: 0,
-      cue: 'get out of it のあと、付け足しの一文。', line: 'I mean, *I live with her*.',
-      said: '「だって一緒に住んでるんだもん」と付け足す。',
-      mean: '毎日顔を合わせるので、ただ避けるわけにはいかない。',
-      trap: 'live を「生きる」と取ると意味が通らない。live with ＋人 は「一緒に住む」。',
+      ja: 'レイチェルがフィービーを避けられないのはなぜ？',
+      choices: ['They live together', 'They work together', 'They run in a club'], a: 0,
+      choicesJa: ['一緒に住んでいる', '一緒に働いている', '同じランニングクラブにいる'],
+      cue: 'get out of it のあとの一文。', line: 'I mean, *I live with her*.',
+      said: '「だって、一緒に住んでるんだもん」と付け足す。',
+      mean: 'live with ＋人 ＝ 〜と一緒に住む。毎日会うので、避けられない。',
+      trap: 'live を「ライブ」や「生きる」と思いやすい。live with her は「彼女と住んでいる」。',
       use: 'I live with two roommates.（ルームメイト2人と住んでいる）' },
 
-    // why: tired ← "get out" read as stopping mid-run; apartment ← "out" + "I live with her"
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'getout', seg: [47, 52.7],
       stem: 'What does Rachel mean by “get out of it”?',
-      choices: ['Find a way to avoid doing it', 'Leave the apartment for good', 'Stop feeling so tired after it'],
-      a: 0,
-      cue: 'I know she’s going to want to のあと。', line: 'I just don’t know how to *get out of it*.',
-      said: '「どうやって抜け出せばいいか分からない」。',
-      mean: 'get out of ＋ 予定・約束 ＝ うまく逃れる、やらずに済ませる。',
-      trap: 'out を「外に出る」と取ると、家を出る話に見える。of のあとが予定なら「逃れる」。',
-      use: 'Can I get out of the meeting?（会議を抜けられる？）' },
+      ja: 'レイチェルの「get out of it」はどういう意味？',
+      choices: ['Find a way not to go', 'Leave the apartment', 'Stop feeling tired'], a: 0,
+      choicesJa: ['行かずに済む方法を見つける', 'アパートを出ていく', '疲れを感じなくなる'],
+      cue: 'she’s gonna want to のあと。', line: 'I just don’t know how to *get out of it*.',
+      said: '「どうやって抜け出せばいいか分からない」と言う。',
+      mean: 'get out of ＋予定・約束 ＝ うまく逃れる、やらずに済ませる。断りたいときの言い方。',
+      trap: 'out から「外に出る」を思いやすい。of のあとが約束や予定なら「やらずに済ませる」。',
+      use: 'Can I get out of the meeting?（会議を抜けてもいい？）' },
 
-    // R fix: blind pass 60 % (topic change was a filler); replaced with I mean's softening use
-    // why: correction ← I mean's other use; softening ← I mean as a hedge (「というか」)
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['live'], seg: [49.4, 52.7],
-      stem: 'What does “I mean” do in Rachel’s last sentence here?',
-      choices: ['Adds the reason behind what she just said', 'Fixes a word she said by mistake',
-                'Softens what she said so it sounds kinder'], a: 0,
-      cue: 'I mean の前の文と、あとの文のつながり。', line: '…how to get out of it. *I mean*, I live with her.',
-      said: '「抜け出し方が分からない。だって一緒に住んでるし」。',
-      mean: 'ここの I mean は「だって」「つまり」。前の話の理由を足している。',
-      trap: 'I mean は言い直しにも使うが、ここは前の語を直していない。あとが理由なら「だって」。',
-      use: 'I can’t go. I mean, I’m broke.（行けない。だってお金ないし）' },
+      stem: 'What does Rachel’s “I mean” do here?',
+      ja: 'レイチェルの「I mean」はここで何をしている？',
+      choices: ['Gives a reason', 'Fixes a mistake', 'Changes the topic'], a: 0,
+      choicesJa: ['理由を足している', '言ったことを直している', '話題を変えている'],
+      cue: 'get out of it の直後。', line: '…how to get out of it. *I mean*, I live with her.',
+      said: '「抜け出し方が分からない。だって一緒に住んでるし」と言う。',
+      mean: 'I mean ＝ ここでは「だって」。前に言ったことの理由を付け足している。',
+      trap: 'I mean は言い直しにも使うが、ここは前の言葉を直していない。あとが理由なら「だって」。',
+      use: 'I can’t go. I mean, I have work.（行けない。だって仕事があるし）' },
 
-    // why: asking why ← "Why don't you" read literally (なぜ〜しないの); blaming ← "straight" heard as a moral word
-    // R fix: key lengthened (the key was strictly shortest in 45 % of the bank; C7 ≤ 40 %)
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'straight', seg: [52.6, 56.1],
-      stem: 'What is the line “Why don’t you just be straight with her?” doing?',
-      choices: ['Suggesting what Rachel ought to do here', 'Asking why Rachel has not done it',
-                'Blaming Rachel for being dishonest'], a: 0,
-      cue: 'すぐあとに続く、短い命令の形。', line: '*Why don’t you* just be straight with her? Tell her the truth.',
-      said: '「正直に言えばいいじゃない。本当のことを言いなよ」と友だちが言う。',
-      mean: 'Why don’t you…? は理由を聞く質問ではなく、提案。',
-      trap: '「なぜ〜しないの？」と訳すと責めているように聞こえる。すぐあとの命令形が提案の合図。',
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'straight', seg: [52.6, 56.1],
+      stem: 'What does “Why don’t you just…” mean here?',
+      ja: '「Why don’t you just…」はここでどういう意味？',
+      choices: ['You should just do this', 'Tell me why you won’t', 'You did a bad thing'], a: 0,
+      choicesJa: ['こうしたらいいよ', 'しない理由を教えて', '悪いことをしたね'],
+      cue: '「Tell her」の直前。', line: '*Why don’t you* just be straight with her? Tell her the truth.',
+      said: '「正直に言えば？本当のことを言いなよ」と言われる。',
+      mean: 'Why don’t you…? ＝「〜したら？」という提案。straight ＝ 正直。',
+      trap: '「なぜ〜しないの？」と訳すと責める感じに聞こえやすい。あとの Tell her が合図。',
       use: 'Why don’t you just ask her?（彼女に聞いてみたら？）' },
 
-    // R fix: blind pass 75 % (the sitcom irony picked the only lie); now two lies, so the listener needs which one
-    // why: tells the truth ← what she just agreed to do; busy ← the usual excuse script, but no plans are named
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'excuse', seg: [55.9, 66.4],
-      stem: 'Right after agreeing to tell the truth, what does Rachel do?',
-      choices: ['Fakes an injury to get out of running', 'Tells Phoebe the truth about her running',
-                'Makes up a busy day to get out of running'], a: 0,
-      cue: 'Phoebe が来た直後の、最初の一文。', line: 'Hey, Pheebs. *Monica tripped me.*',
-      said: '「本当のことを言う」と言った直後、「モニカに転ばされた」と言う。',
-      mean: '作り話のけが。正直に言う決心が、本人を前にした途端に崩れる。',
-      trap: '直前の「言うよ」に引っぱられやすい。決めた事と実際にする事のずれが笑いの元。',
-      use: 'I think I twisted my ankle.（足首をひねったみたい）' },
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'excuse', reveals: ['can'], seg: [55.9, 66.4],
+      stem: 'Why does Rachel say “Monica tripped me”?',
+      ja: 'レイチェルはなぜ「モニカに転ばされた」と言う？',
+      choices: ['So she doesn’t have to run', 'Because Monica really did it', 'To get Monica in trouble'], a: 0,
+      choicesJa: ['走らずに済ませるため', 'モニカが本当にやったから', 'モニカを困らせるため'],
+      cue: 'フィービーが来た直後。', line: 'Monica tripped me. *I don’t think I can ever run again.*',
+      said: '「モニカに転ばされた。もう二度と走れないと思う」と言う。',
+      mean: '本当のことを言うと決めた直後なのに、けがの作り話。走らずに済ませたい。',
+      trap: 'モニカが本当にやったと思いやすい。直前に「本当のことを言う」と決めて、すぐこれ。',
+      use: 'I think I hurt my ankle.（足首を痛めたみたい）' },
 
-    // why: can't ← "don't think" + can't feel like the same negative; could/should ← one weak syllable
-    // R fix: the stem ("I don't think I ___ ever run again") gives away i1's fake injury; added excuse to reveals
     { id: 's1', skill: 'sound', level: 'B2', point: 'can', reveals: ['excuse'], seg: [61.5, 66.4],
       stem: 'Fill the gap: “I don’t think I ___ ever run again.”',
-      choices: ['can', 'can’t', 'could', 'should'], a: 0,
-      cue: 'I のあと、とても弱く短い一語。', line: 'I don’t think I *can* ever run again.',
-      said: '「もう二度と走れないと思う」。can は弱く「クン」。',
-      mean: '否定は don’t think の方に付ける。I think I can’t より自然。',
-      trap: 'can’t の t は消えやすいが、can’t は母音が強く長い。弱い「クン」なら can。',
+      ja: '「I don’t think I ___ ever run again.」の空所は？',
+      choices: ['can', 'can’t', 'could'], a: 0,
+      choicesJa: ['できる', 'できない', 'できた'],
+      cue: 'I のあと、弱く短い一語。', line: 'I don’t think I *can* ever run again.',
+      said: '「もう二度と走れないと思う」と言う。',
+      mean: 'can は弱く「クン」と短い。否定は don’t think の方に付けるので、ここは can。',
+      trap: 'can’t の t は聞こえにくいが、can’t は「キャーン」と強く長い。弱い「クン」なら can。',
       use: 'I don’t think I can make it.（行けそうにない）' },
 
-    // R fix: blind pass 75 % ("doctor" a filler); now a doubt reading and the literal wait-and-see reading
-    // why: doubts the injury ← "We'll see" as 「どうだか」; too soon to know ← "We'll see" read literally (様子を見よう)
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'wellsee', seg: [71.5, 77],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'ankles', reveals: ['wellsee'], seg: [71, 76],
+      stem: 'Fill the gap: “I’m sorry that I hurt your ___.”',
+      ja: '「I’m sorry that I hurt your ___.」の空所は？',
+      choices: ['ankles', 'ankle', 'uncle'], a: 0,
+      choicesJa: ['足首（両方）', '足首（片方）', 'おじさん'],
+      cue: 'モニカが謝る一文の最後。', line: 'Rachel, I’m sorry that I hurt your *ankles*. — Ankle.',
+      said: 'モニカが「足首を痛めてごめん」と謝り、レイチェルが「片方」と直す。',
+      mean: 'ankles ＝ 両方の足首。最後の「ス」で2つと分かる。レイチェルは片方だと直す。',
+      trap: 'ankle も uncle も「アンクル」に聞こえやすい。最後に「ス」があるかを聞く。',
+      use: 'I hurt my ankle.（足首をけがした）' },
+
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'wellsee', seg: [71.5, 77], retired: true,
       stem: 'What is the joke in Monica’s last reply, “We’ll see”?',
       choices: ['She hints she might hurt the other one too', 'She doubts that the ankle is really hurt',
                 'She means it is too soon to know how bad it is'], a: 0,
@@ -125,55 +136,60 @@ export const phoebeRuns: Clip = {
       trap: 'We’ll see を「様子を見よう」とそのまま取ると気づきにくい。直前の単数への直しと組で聞く。',
       use: 'We’ll see about that.（それはどうかな）' },
 
-    // R fix: blind pass 60 % ("buy" a filler); now a near-verb trap on grab
-    // why: hide ← "grab your running shoes" heard as taking them away; wait ← the opening "tie my shoe" scene
     { id: 'd2', skill: 'detail', level: 'B1', point: 'shoes', reveals: ['sneak'], seg: [87, 90.7],
       stem: 'What did Phoebe see Rachel do this morning?',
-      choices: ['Grab her running shoes and quietly slip out', 'Hide Phoebe’s running shoes in a closet',
-                'Put on her shoes and wait by the door'], a: 0,
-      cue: 'I saw you のあとの動き二つ。', line: 'I saw you *grab your running shoes* this morning and sneak out.',
-      said: '「今朝ランニングシューズを持って、こっそり出ていくのを見た」。',
-      mean: 'grab ＝ さっとつかむ。sneak out ＝ こっそり出る。',
-      trap: 'shoes だけ拾うと買い物や靴ひもの場面に見える。動詞（grab, sneak）を拾うこと。',
-      use: 'Let me grab my jacket.（上着取ってくるね）' },
+      ja: '今朝、フィービーはレイチェルが何をするのを見た？',
+      choices: ['Take her shoes and leave quietly', 'Hide Phoebe’s running shoes', 'Tie her shoes by the door'], a: 0,
+      choicesJa: ['靴を持って、こっそり出ていく', 'フィービーの靴を隠す', 'ドアのそばで靴ひもを結ぶ'],
+      cue: 'I saw you のあと。', line: 'I saw you *grab your running shoes* this morning and *sneak out*.',
+      said: '「今朝、ランニングシューズを持ってこっそり出ていくのを見た」と言う。',
+      mean: 'grab ＝ さっとつかむ。sneak out ＝ こっそり出ていく。',
+      trap: 'shoes だけ拾うと靴ひもの場面を思いやすい。動きを表す grab と sneak を聞く。',
+      use: 'Let me grab my jacket.（上着を取ってくるね）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'sneak', seg: [87, 90.7],
       stem: 'Type what Phoebe says: “…this morning and ___.” (2 words)', answer: 'sneak out',
-      cue: 'this morning and のあと、文の最後。', line: '…this morning and *sneak out*.',
-      said: '「今朝、こっそり出ていった」。sneak と out がつながる。',
-      mean: 'sneak out ＝ 気づかれないように出ていく。',
-      trap: 'sneak の k と out がつながり「スニーカウ」に聞こえる。out の t も弱い。',
-      use: 'I sneaked out early.（こっそり早めに抜けた）' },
+      ja: '「…this morning and ___.」の空所を書こう（2語）',
+      cue: 'this morning and のあと。', line: '…this morning and *sneak out*.',
+      said: '「今朝、こっそり出ていった」と言う。',
+      mean: 'sneak out ＝ 気づかれないように出ていく。sneak の k と out がつながる。',
+      trap: 'sneak と out がつながり「スニーカウ」に聞こえやすい。out の t も弱い。',
+      use: 'I sneaked out of the meeting early.（会議をこっそり早めに抜けた）' },
 
-    // R fix: blind pass 60 % (key the only one tied to the injury); distractor 2 now a test-of-fitness excuse too
-    // why: practice ← "checking to see if I could run" heard as training; looking for Phoebe ← "checking" +
-    //   "Phoebe" said together
     { id: 'd3', skill: 'detail', level: 'B2', point: 'checking', reveals: ['can'], seg: [92.9, 100.6],
-      stem: 'What excuse does Rachel give for running alone?',
-      choices: ['She was testing whether she could run', 'She was practicing so she could keep up',
-                'She was out looking for Phoebe on the path'], a: 0,
+      stem: 'What excuse does Rachel give?',
+      ja: 'レイチェルはどんな言い訳をする？',
+      choices: ['She was checking her ankle', 'She was practicing to be faster', 'She was looking for Phoebe'], a: 0,
+      choicesJa: ['足首の具合を確かめていた', '速くなるために練習していた', 'フィービーを探していた'],
       cue: 'I was を何度か言い直したあと。', line: 'I was actually just *checking to see if I could run*. And I can.',
-      said: '「走れるかどうか確かめてただけ。で、走れた」と言い訳する。',
-      mean: 'けがは治ったという流れにして、ごまかそうとしている。',
-      trap: 'checking を「探す」と取ると人を探す話になる。to see if は「〜かどうか確かめる」。',
+      said: '「走れるか確かめてただけ。で、走れた」と言い訳する。',
+      mean: 'check to see if ＝ 〜かどうか確かめる。けがは治った、という話にしてごまかしている。',
+      trap: 'checking から「探す」を思いやすい。to see if のあとが確かめた中身。',
       use: 'I’m just checking to see if it works.（動くか確かめてるだけ）' },
 
-    // R fix: blind pass 70 % ("relieved" off-mood); replaced with a keyword trap on "idiot"
-    // why: calling Rachel an idiot ← "idiot" is said, but about herself (I am not); polite request ← please = お願いします
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'idiot', reveals: ['checking'], seg: [95.9, 103.9],
-      stem: 'When Phoebe says “Please, Rachel…”, how does she feel?',
-      choices: ['Hurt, and not fooled by the excuse', 'Angry, calling Rachel an idiot for lying',
-                'Polite, asking Rachel for a favor'], a: 0,
-      cue: 'Please, Rachel のあとの一文。', line: 'Please, Rachel. *I am not an idiot.*',
-      said: '「やめてよ、レイチェル。私ばかじゃないから」。',
-      mean: 'この Please は「お願い」ではなく「よしてよ」。見え見えの言い訳への反発。',
-      trap: 'please をカタカナの「プリーズ＝お願い」と取りやすい。あとに続く文で気持ちが決まる。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'idiot', reveals: ['checking'], seg: [95.9, 103.9],
+      stem: 'How does Phoebe feel about the excuse?',
+      ja: 'フィービーはその言い訳をどう思っている？',
+      choices: ['She doesn’t believe it', 'She believes it', 'She thinks it’s funny'], a: 0,
+      choicesJa: ['信じていない', '信じている', 'おもしろいと思っている'],
+      cue: 'Please, Rachel のあと。', line: 'Please, Rachel. *I am not an idiot.*',
+      said: '「やめてよ、レイチェル。私、ばかじゃないから」と言う。',
+      mean: 'この Please は「よしてよ」。見え見えのうそだと分かっている。',
+      trap: 'please から「お願い」を思いやすい。あとの I am not an idiot で気持ちが分かる。',
       use: 'Oh, please. Nobody believes that.（よしてよ。誰も信じないよ）' },
 
-    // R fix: blind pass 65 % ("sarcastic" off-mood); replaced with the smoothing-apology frame (すみません to end it)
-    // why: just to end the fight ← the stammer and "okay?" read as a quick すみません; defensive ← "situation"
-    //   heard as an excuse word
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'apology', seg: [117, 127.8],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'second', reveals: ['can'], seg: [105.3, 109.5],
+      stem: 'What does “for a second” mean here?',
+      ja: '「for a second」はここでどういう意味？',
+      choices: ['For a short time', 'For the second time', 'In second place'], a: 0,
+      choicesJa: ['少しのあいだ', '2回目に', '2位で'],
+      cue: 'Phoebe と呼びかけたあとの質問。', line: 'Phoebe. *Can I talk to you for a second?*',
+      said: '「フィービー、ちょっと話せる？」と声をかける。',
+      mean: 'for a second ＝ ちょっとだけ。Can I talk to you…? は話を切り出すときの決まり文句。',
+      trap: 'second を「2番目」と思いやすい。ここは「秒」から来た「ちょっとの間」。',
+      use: 'Can I talk to you for a second?（ちょっと話せる？）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'apology', seg: [117, 127.8], retired: true,
       stem: 'How does Rachel sound once she starts with “Phoebe, look…”?',
       choices: ['Sincere, owning up to what she did wrong', 'Nervous, saying sorry just to end the fight',
                 'Defensive, sure she did nothing wrong'], a: 0,
@@ -183,44 +199,51 @@ export const phoebeRuns: Clip = {
       trap: '口ごもりや okay? を、早く終わらせたい謝罪と取りやすい。horribly など自分を責める語が本気の合図。',
       use: 'I handled that badly. I’m sorry.（対応がまずかった。ごめん）' },
 
-    // R fix: cut "did you" (K3/K4: "what did you done" isn't English, so nobody would pick it)
-    // why: could/would ← the same reduced frame, only the first sound differs
     { id: 's2', skill: 'sound', level: 'C1', point: 'shouldhave', seg: [127.6, 132.4],
       stem: 'Fill the gap: “So, what ___ done?”',
+      ja: '「So, what ___ done?」の空所は？',
       choices: ['should you have', 'could you have', 'would you have'], a: 0,
-      cue: 'what のあと、つながって速い三語。', line: 'So, what *should you have* done?',
-      said: '「じゃあ、どうすべきだった？」。「シュジュヴ」に縮む。',
-      mean: 'フィービーは答えを分かっていて、レイチェル自身に言わせようとしている。',
-      trap: 'd と y がつながり「ジュ」になる。最初の音が「シュ」か「ク」か「ウ」かで聞き分ける。',
+      choicesJa: ['すべきだった', 'できた', 'しただろう'],
+      cue: 'what のあと、速い三語。', line: 'So, what *should you have* done?',
+      said: '「じゃあ、どうすべきだった？」とフィービーが聞く。',
+      mean: 'should you have が「シュジュヴ」と縮む。答えを分かっていて、本人に言わせたい。',
+      trap: 'd と y がつながって「ジュ」になる。最初の音が「シュ」か「ク」か「ウ」かを聞く。',
       use: 'What should I have done?（どうすればよかった？）' },
 
-    // R fix: blind pass 80 %; "agreeing she has said enough" → the あいづち frame (uh-huh as accepting)
-    // why: which of two ← "which" read as a choice question; accepting ← "uh-huh" heard as あいづち that closes it
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'whichis', reveals: ['shouldhave'], seg: [130, 135.5],
-      stem: 'What is Phoebe doing with “Uh-huh. Which is?”',
-      choices: ['Pushing Rachel to actually say the truth', 'Asking which of two things Rachel means',
-                'Accepting the apology and moving on'], a: 0,
-      cue: '直前のレイチェルの文の最後の語。', line: 'I should have told you the truth. — Uh-huh. *Which is?*',
+      stem: 'Phoebe says “Which is?” What does she want?',
+      ja: 'フィービーの「Which is?」は何を求めている？',
+      choices: ['Rachel to say the truth', 'Rachel to choose one of two', 'Rachel to stop talking'], a: 0,
+      choicesJa: ['本当のことを言ってほしい', 'どちらか選んでほしい', '話をやめてほしい'],
+      cue: 'Uh-huh のあとの短い質問。', line: 'I should have told you the truth. — Uh-huh. *Which is?*',
       said: '「本当のことを言うべきだった」に「うん。で、それは？」と返す。',
-      mean: '言葉だけの反省で終わらせず、本当の理由を言わせようとしている。',
-      trap: 'which を「どちら」と取ると選ぶ質問に見える。Which is? は「それは何？」と続きを促す形。',
-      use: 'And the reason is…?（で、理由は…？）' },
+      mean: 'Which is? ＝「それは何？」。中身を本人に言わせようとしている。',
+      trap: 'which から「どっち」を思いやすい。ここは直前の the truth を受けて「その中身は？」。',
+      use: 'And the reason is…?（で、理由は？）' },
 
-    // R fix: blind pass 80 % (two fillers, and "at all" an absolute in the key); now two reassuring readings
-    // why: imagined ← "Why do you care?" read as denying anyone looked; stare at everyone ← a common comfort
-    //   line, but she argues from “never see again”, not from “everyone”
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'embarrass', seg: [141.5, 152],
+      stem: 'How does Rachel feel running with Phoebe?',
+      ja: 'フィービーと走るとき、レイチェルはどう感じる？',
+      choices: ['Embarrassed', 'Very tired', 'A bit scared'], a: 0,
+      choicesJa: ['恥ずかしい', 'とても疲れる', '少しこわい'],
+      cue: 'the way that you run のあと。', line: 'Well, *it’s embarrassing*. People were looking at us like we were crazy.',
+      said: '「だって恥ずかしいの。みんな変な目で見てた」と打ち明ける。',
+      mean: 'embarrassing ＝ 恥ずかしい。like we were crazy ＝ 変な人を見るように。',
+      trap: '途中で言葉が止まるので、疲れの話かと思いやすい。So? のあとの一言が本音。',
+      use: 'It’s a little embarrassing.（ちょっと恥ずかしい）' },
+
     { id: 'i2', skill: 'infer', level: 'B2', point: 'strangers', seg: [151.8, 158.4],
-      stem: 'What is Phoebe’s point about the people who were looking?',
-      choices: ['Strangers’ opinions should not matter', 'Rachel only imagined they were looking',
-                'People stare at everyone, so it’s not personal'], a: 0,
-      cue: 'Why do you care? のあとのやりとり。', line: 'But people that you *don’t know and will never see again*.',
+      stem: 'Why does Phoebe say Rachel shouldn’t care?',
+      ja: 'フィービーはなぜ気にしなくていいと言う？',
+      choices: ['She will never see them again', 'Nobody was really looking at them', 'Everybody looks at everyone'], a: 0,
+      choicesJa: ['二度と会わない人たちだから', '誰も見ていなかったから', 'みんな誰でも見るものだから'],
+      cue: 'Why do you care? のあと。', line: 'But people that you *don’t know and will never see again*.',
       said: '「でも知らない人で、二度と会わない人でしょ」と言う。',
-      mean: 'そんな人にどう見られても関係ない、と言いたい。',
-      trap: 'people が何度も出るので人付き合いの話に見えやすい。but のあとが言い返しの中身。',
-      use: 'Who cares? You’ll never see them again.（気にしない。二度と会わないし）' },
+      mean: '知らない人にどう見られても関係ない、という意味。',
+      trap: 'people が何度も出るので、人目の話を続けていると思いやすい。but のあとが言い返しの中身。',
+      use: 'Who cares? We’ll never see them again.（気にしない。二度と会わないし）' },
 
-    // why: posture ← up + tight read literally; too proud ← "uptight" heard as stuck-up
-    { id: 'p3', skill: 'phrase', level: 'C1', point: 'uptight', seg: [169.8, 178.7],
+    { id: 'p3', skill: 'phrase', level: 'C1', point: 'uptight', seg: [169.8, 178.7], retired: true,
       stem: 'What does Phoebe mean when she calls Rachel “uptight”?',
       choices: ['Too tense and worried about others', 'Standing up very straight and stiff',
                 'Too proud to talk to other people'], a: 0,
@@ -230,9 +253,7 @@ export const phoebeRuns: Clip = {
       trap: 'up と tight で「背筋が伸びた」と文字通りに取りやすい。人の性格を表す語として覚える。',
       use: 'Relax, don’t be so uptight.（そんなに堅くならないで）' },
 
-    // R fix: blind pass 80 % (two fillers); now a just-joking reading and a keyword trap on "man"
-    // why: only joking ← "man" heard as playful; insult ← "man" taken as calling Phoebe a man
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'notuptight', reveals: ['uptight'], seg: [177.6, 188.3],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'notuptight', reveals: ['uptight'], seg: [177.6, 188.3], retired: true,
       stem: 'Why is Rachel’s reply “I am not…, man” funny?',
       choices: ['Her tense denial proves Phoebe’s point', 'She is only joking and is not upset',
                 'She insults Phoebe by calling her “man”'], a: 0,
@@ -242,21 +263,18 @@ export const phoebeRuns: Clip = {
       trap: 'man を冗談や悪口と取るとずれる。むきになった声と、似合わない気楽な man の組み合わせが笑い。',
       use: 'Chill out, man.（落ち着けって）' },
 
-    // R fix: blind pass 50 % (speed a stock filler) → a keyword trap on "legs"; level B2 → B1 (said plainly after
-    //   "because"), which also keeps B1 at 24 % after n1's drop
-    // why: coach ← "when I was a kid" heard as training; legs ← "legs were gonna fall off" said soon after
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'kid', seg: [193.2, 197.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'kid', seg: [193.2, 198.6],
       stem: 'Why does Phoebe run the way she does?',
-      choices: ['It is the only way running feels fun to her', 'A coach taught her that way as a kid',
-                'It keeps her legs from getting tired'], a: 0,
-      cue: 'because のあと。', line: 'I run like I did when I was a kid, because *that’s the only way it’s fun*.',
-      said: '「子どもの頃みたいに走るの。それしか楽しい走り方がないから」。',
-      mean: '理由は楽しさ。速さや見た目は気にしていない。',
-      trap: 'kid だけ拾うと子どもの頃に習った話に見える。理由は because のあとに来る。',
-      use: 'That’s the only way it’s fun.（それが一番楽しいやり方）' },
+      ja: 'フィービーはなぜあんな走り方をする？',
+      choices: ['It is more fun that way', 'A coach taught her that', 'It keeps her from getting tired'], a: 0,
+      choicesJa: ['その方が楽しいから', 'コーチに教わったから', '疲れにくいから'],
+      cue: 'because のあと。', line: 'I run like I did when I was a kid. Because *it’s the only way it’s fun*.',
+      said: '「子どものころみたいに走るの。それが唯一楽しい走り方だから」と言う。',
+      mean: 'the only way ＝ それしかない。理由は楽しさ。',
+      trap: 'kid から子どものころに習った話を思いやすい。理由は because のあとに来る。',
+      use: 'That’s the only way it’s fun.（そうしないと楽しくない）' },
 
-    // why: naughty child ← running from Satan read as guilt; chasing evil ← Satan taken literally
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'satan', seg: [202, 214],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'satan', seg: [202, 214], retired: true,
       stem: 'What is the joke in “running away from Satan”?',
       choices: ['Satan turns out to be just a neighbor’s dog', 'Phoebe says she was a naughty, wild child',
                 'Phoebe thinks running can chase evil away'], a: 0,
@@ -266,16 +284,15 @@ export const phoebeRuns: Clip = {
       trap: 'Satan を本当の悪魔と取ると話が重くなる。間のあとの説明で正体が分かることが多い。',
       use: 'You know, the guy next door.（ほら、隣の人）' },
 
-    // R fix: blind pass 75 %; "only when no one is watching" → the humoring-a-friend script
-    // why: embarrassed ← "people are staring" said near the end; to please Phoebe ← "You're right" read as giving in
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', seg: [231.9, 250.5],
-      stem: 'How does Rachel feel about running by the end?',
-      choices: ['She loves running Phoebe’s way after all', 'She joins in only to make Phoebe happy',
-                'She still feels too embarrassed to go on'], a: 0,
-      cue: 'you’re right のあとの感想。', line: 'You’re right, this *feels great*!… I feel so *free*',
-      said: '「本当だ、気持ちいい！すごく自由な感じ」と言う。',
-      mean: 'フィービーの走り方を試して、楽しさが分かった。最初の悩みの答え。',
-      trap: 'staring が聞こえるので「まだ人目が気になる」に引かれやすい。感想を言う声に注目。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [231.9, 250.5],
+      stem: 'How does Rachel feel at the end?',
+      ja: '最後、レイチェルはどんな気持ち？',
+      choices: ['She loves running this way', 'She is still too embarrassed', 'She runs only for Phoebe'], a: 0,
+      choicesJa: ['この走り方が気に入った', 'まだ恥ずかしすぎる', 'フィービーのためだけに走る'],
+      cue: '最後の感想。', line: 'You’re right, this *feels great*!… I feel so *free*!',
+      said: '「本当だ、気持ちいい！すごく自由な感じ！」と言う。',
+      mean: 'feel great ＝ 気持ちいい。走り方の楽しさが分かった。',
+      trap: '人目の話が続いたので、まだ恥ずかしいと思いやすい。最後の感想が答え。',
       use: 'This feels great!（これ、気持ちいい！）' },
   ]
 };

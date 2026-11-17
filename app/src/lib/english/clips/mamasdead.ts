@@ -1,12 +1,10 @@
-// REVIEW 2026-11-16: pass 6, fix 14, drop 0, new 0; ear checks 1
-// OPEN: r1's cut at 63.5 s is 0.2 s before "I'm" (captions), under the 0.3 s rule; moving it earlier would clip "will".
+// A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 2
 // “"Well hey, your Mama's dead" - The Office US” (the official The Office channel, Best of Season 4): Toby asks
 // Michael to deal with Stanley's outburst; Michael insists it was a joke, then dodges Toby's challenge to go and ask.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 82 s; whisper's repeated line after it
-// is a hallucination. The lines at 33–53 s (Michael's race and "your mama's dead" jokes) are untested on purpose; the
-// garbled opening (0–3 s) and "whoa, what, dog" (24–27 s) carry no key. Speakers are settled by "Toby" (27.9 s) and
+// is a hallucination. Michael's race and "your mama's dead" jokes (43–53 s) are untested on purpose; the garbled
+// opening (0–3 s) and "whoa, what, dog" (24–27 s) carry no key. Speakers are settled by "Toby" (27.9 s) and
 // "Michael" (71.2 s).
-// EAR CHECK: 63.5 s r1 — the cut falls after “Okay. I will.” and before “I'm not feeling…” (captions: will 63.2, I'm 63.7)
 import type { Clip } from '../types.ts';
 
 export const mamasDead: Clip = {
@@ -15,56 +13,50 @@ export const mamasDead: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: Stanley is sick ← "stomach hurts" later in the clip; apologize ← "what happened with Stanley" read as Michael
-    //   being the one at fault
-    // R fix: its trap names the stomachache, d3's key (N7): added `stomach` to reveals.
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'deal', reveals: ['morning', 'insub', 'address', 'stomach'], seg: [0, 19.0],
-      stem: 'Why has Toby come to see Michael?',
-      choices: ['To get him to deal with Stanley’s rudeness', 'To tell him that Stanley is feeling unwell',
-                'To get him to say sorry to Stanley'], a: 0,
-      cue: '「I really think that you need to」のあと。',
-      said: 'トビーが、今朝のスタンリーの件に対処すべきだと言い、上司への反抗だったと続ける。',
-      mean: '人事のトビーは、部下の態度をマイケルにきちんと処理してほしい。',
-      trap: '後半の「おなかが痛い」が耳に残ると病気の話に見えるが、それは別の人の話。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'deal', reveals: ['morning', 'insub', 'address'], seg: [0, 19.0],
+      stem: 'What problem does Toby bring to Michael?',
+      ja: 'トビーはマイケルにどんな問題を持ってくる？',
+      choices: ['Stanley was rude to Michael', 'Stanley is feeling very sick', 'Toby wants to go home early'], a: 0,
+      choicesJa: ['スタンリーがマイケルに失礼だった', 'スタンリーの具合がとても悪い', 'トビーが早く帰りたい'],
+      cue: '「you need to」のあと。',
+      said: 'トビーが、今朝のスタンリーの件に対処すべきだと言いに来る。',
+      mean: '人事のトビーは、スタンリーが上司に反抗したことをきちんと処理してほしい。',
+      trap: 'room や joking が耳に残りやすいが、トビーが来た理由は you need to のあと。',
       use: 'Can I talk to you for a second?（ちょっといいですか）' },
 
-    // why: yesterday ← the past tense "what happened" alone; at lunch ← the usual time for office trouble
     { id: 'd1', skill: 'detail', level: 'B1', point: 'morning', reveals: ['address'], seg: [4.8, 10.6],
       stem: 'When did the trouble with Stanley happen?',
+      ja: 'スタンリーとのもめごとはいつ起きた？',
       choices: ['This morning', 'Yesterday', 'At lunchtime'], a: 0,
-      cue: '「what happened with Stanley」のすぐあと。',
-      line: 'what happened with Stanley *this morning*.',
+      choicesJa: ['今朝', '昨日', '昼休み'],
+      cue: '「Stanley」の名前のすぐあと。', line: 'what happened with Stanley *this morning*.',
       said: '「今朝のスタンリーの件に、対処すべきだと思う」と言う。',
-      mean: 'ついさっきの出来事。だからトビーはすぐ話しに来た。',
-      trap: 'happened の過去形だけで昨日と思いやすい。名前の後ろの2語が時を言う。',
+      mean: 'this morning ＝ 今朝。ついさっきのことなので、トビーはすぐ話しに来た。',
+      trap: 'happened（過去形）から昨日と思いやすい。名前のあとの2語が時を言う。',
       use: 'About what happened this morning…（今朝のことなんだけど）' },
 
-    // R fix: "write it down on file" was a weak link to 住所 (V2); now "send a note", address = 宛先.
-    // why: speech ← address = 演説; send a note ← address = 宛先, writing to someone
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'address', seg: [4.8, 10.6],
-      stem: 'What does Toby want Michael to do about the incident?',
-      choices: ['Deal with it directly', 'Give a talk about it', 'Send Stanley a note'], a: 0,
-      cue: '「you need to」のあとの動詞。',
-      line: 'I really think that you need to *address* what happened with Stanley',
-      said: '「スタンリーの件に、ちゃんと向き合うべきだと思う」と言う。',
-      mean: 'address ＝ 問題に取り組む、対処する。仕事でよく使う動詞。',
-      trap: 'address は宛先や演説の意味もあるが、後ろに問題が来れば「対処する」。',
-      use: 'We need to address this issue.（この問題に対処しないと）' },
+      stem: 'What does “address” mean here?',
+      ja: 'ここでの「address」はどういう意味？',
+      choices: ['Deal with it', 'Give a speech', 'Write a letter'], a: 0,
+      choicesJa: ['対処する', '演説する', '手紙を書く'],
+      cue: '「you need to」のあとの動詞。', line: 'I really think that you need to *address* what happened with Stanley',
+      said: '「スタンリーの件に、ちゃんと対処すべきだと思う」と言う。',
+      mean: 'address ＋問題 ＝ 問題に取り組む、対処する。仕事でよく使う。',
+      trap: 'address から「住所」や「演説」を思いやすい。あとに問題が来れば「対処する」。',
+      use: 'We need to address this problem.（この問題に対処しないと）' },
 
-    // why: confused ← "what are you…about?" taken as a real question; worried ← a boss hearing of trouble usually is
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'brushoff', seg: [10.4, 16.6],
-      stem: 'How does Michael first respond to Toby’s concern?',
-      choices: ['He brushes it off as nonsense', 'He’s honestly confused about it',
-                'He’s worried about what Toby knows'], a: 0,
-      cue: '質問の形だが、その直後の短い一文。',
-      line: 'What are you *blabbering* about? *Nothing happened.*',
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'brushoff', seg: [9.3, 13.3],
+      stem: 'What does Michael think of Toby’s worry?',
+      ja: 'マイケルはトビーの心配をどう思っている？',
+      choices: ['It’s about nothing', 'It’s very serious', 'It’s Stanley’s fault'], a: 0,
+      choicesJa: ['何でもないことだ', 'とても深刻だ', 'スタンリーのせいだ'],
+      cue: 'トビーの話のすぐあとの返事。', line: 'What are you *blabbering* about? *Nothing happened.*',
       said: '「何をぺちゃくちゃ言ってるんだ？何もなかったよ」と返す。',
-      mean: 'blabber ＝ くだらないことをしゃべる。相手の話を相手にしない言い方。',
-      trap: '疑問文なので本当に分からないと取りやすい。すぐ後で何もないと言い切る。',
-      use: 'What are you talking about?（何言ってるの）' },
-
-    // why: unhappy ← openly read as showing his feelings; honest ← openly = 正直に
-    { id: 'p2', skill: 'phrase', level: 'C1', point: 'insub', seg: [13.3, 16.8],
+      mean: 'blabber ＝ くだらないことをしゃべる。相手の話を相手にしていない。',
+      trap: '質問の形なので本当に分からないと思いやすい。すぐあとで「何もない」と言い切る。',
+      use: 'What are you talking about?（何言ってるの？）' },
+    { id: 'p2', skill: 'phrase', level: 'C1', point: 'insub', seg: [13.3, 16.8], retired: true,
       stem: 'What does Toby say Stanley did?',
       choices: ['Defied his boss in front of others', 'Showed he was unhappy with his job',
                 'Spoke his honest mind to his boss'], a: 0,
@@ -74,21 +66,17 @@ export const mamasDead: Clip = {
       mean: 'insubordinate ＝ 上の人の指示に従わない、反抗的な。openly で人前だと分かる。',
       trap: 'openly を「正直に」と取ると良いことに聞こえる。後ろの長い語が中身。',
       use: 'That was out of line.（あれは言い過ぎだった）' },
-
-    // why: break room ← the usual office spot for a clash; his office ← "my office" said later in the clip
     { id: 'd2', skill: 'detail', level: 'B1', point: 'room', seg: [15.9, 19.0],
-      stem: 'Where did the clash with Stanley happen?',
-      choices: ['In the conference room', 'In the break room', 'In Michael’s office'], a: 0,
-      cue: '「That」のあと、聞き返しの場所。',
-      line: 'That, in the *conference room*? — Yeah.',
-      said: '「あれ？会議室のこと？」と聞き返し、トビーが「そう」と答える。',
-      mean: 'みんなのいる会議室での出来事。人前だったので問題になる。',
-      trap: '後で my office が出てくるので選びやすい。in the のあとの語を聞く。',
+      stem: 'Where did the trouble with Stanley happen?',
+      ja: 'スタンリーとのもめごとはどこで起きた？',
+      choices: ['In the conference room', 'In the break room', 'In Michael’s own office'], a: 0,
+      choicesJa: ['会議室', '休憩室', 'マイケルの部屋'],
+      cue: 'マイケルの聞き返し。', line: 'That, in the *conference room*? — Yeah.',
+      said: '「あれのこと？会議室の？」と聞き返し、トビーが「そう」と答える。',
+      mean: 'conference room ＝ 会議室。みんなの前だったので問題になる。',
+      trap: 'あとで my office が出てくるので選びやすい。in the のあとの語を聞く。',
       use: 'Let’s talk in the conference room.（会議室で話そう）' },
-
-    // R fix: "walking around the office" was a filler (V2); now "chatting about work", a guess for an unknown verb.
-    // why: arguing ← "Did I stutter?" heard as a fight; chatting ← "joshing" unknown, filled in with the office default
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'joshing', seg: [18.8, 24.2],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'joshing', seg: [18.8, 24.2], retired: true,
       stem: 'How does Michael describe what he and Stanley were doing?',
       choices: ['Teasing each other for fun', 'Having a heated argument', 'Just chatting about work'], a: 0,
       cue: '「We were」のあと、-ing と around。',
@@ -97,59 +85,72 @@ export const mamasDead: Clip = {
       mean: 'josh around ＝ からかい合う、ふざける。古めのくだけた言い方。',
       trap: 'josh を知らないと雑談と取りやすい。〜ing around は「〜して遊ぶ・ふざける」。',
       use: 'We were just kidding around.（ただふざけてただけ）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'doubt', reveals: ['seem'], seg: [26.9, 34.0],
+      stem: 'Does Toby believe Stanley was joking?',
+      ja: 'トビーは、スタンリーが冗談を言ったと信じている？',
+      choices: ['No, he doesn’t', 'Yes, he does', 'He thinks it’s funny'], a: 0,
+      choicesJa: ['いいえ、信じていない', 'はい、信じている', 'おもしろいと思っている'],
+      cue: '「joking, Toby」への返事。', line: 'He was joking, Toby, all right? — He *didn’t seem like* he was joking.',
+      said: '「冗談だよ」に「冗談には見えなかった」と返す。',
+      mean: 'seem like ＝ 〜のように見える。静かな言い方だが、はっきり反対している。',
+      trap: '強い言葉がないので、受け入れたと思いやすい。seem の前の didn’t を聞く。',
+      use: 'He didn’t seem happy.（彼はうれしそうに見えなかった）' },
 
-    // R fix: "says Stanley lied" was a filler (V2); now agreeing to end the talk, the Japanese frame for a quiet reply.
-    // why: goes along ← "did seem" heard (the -n't lost); ends it ← a quiet, short reply read as giving in politely
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'doubt', reveals: ['seem'], seg: [26.9, 34.0],
-      stem: 'How does Toby take Michael’s claim that Stanley was joking?',
-      choices: ['He doesn’t buy it', 'He goes along with it', 'He agrees, just to end the talk'], a: 0,
-      cue: '「He was joking, Toby」への返事と、マイケルの次の一言。',
-      line: 'He was joking, Toby, all right? — He *didn’t seem like* he was joking. — Well, you don’t get it…',
-      said: '「冗談だよ」に「そうは見えなかった」と返し、マイケルが「分かってないな」と言う。',
-      mean: '静かだが、はっきり反対している。マイケルの反論もそれを示す。',
-      trap: '強い言葉がないので受け入れたと取りやすい。seem の前の否定を聞く。',
-      use: 'I’m not so sure about that.（それはどうかな）' },
-
-    // why: did ← the t of didn't is lost; doesn't/does ← the d heard, the tense lost
     { id: 's1', skill: 'sound', level: 'B2', point: 'seem', seg: [28.9, 32.3],
       stem: 'Fill the gap: “He ___ seem like he was joking.”',
-      choices: ['didn’t', 'did', 'doesn’t', 'does'], a: 0,
-      cue: '「He」のすぐあと、短い音のあとの小さな間。',
-      line: 'He *didn’t* seem like he was joking.',
+      ja: '「He ___ seem like he was joking.」の空所は？',
+      choices: ['didn’t', 'did', 'doesn’t'], a: 0,
+      choicesJa: ['〜なかった', '〜した', '〜ない'],
+      cue: '「He」のすぐあと。', line: 'He *didn’t* seem like he was joking.',
       said: '「冗談を言ってるようには見えなかった」と返す。',
-      mean: 'didn’t の t はほぼ消え「ディドゥン」。n の音と小さな間が否定のしるし。',
-      trap: 't が聞こえないので did と取りやすい。n と間が残っていれば否定。',
-      use: 'It didn’t seem like a joke.（冗談には見えなかった）' },
+      mean: 'didn’t の t はほぼ消えて「ディドゥン」。n の音と小さな間が否定のしるし。',
+      trap: 't が聞こえないので did と思いやすい。「ン」と小さな間が残れば否定。',
+      use: 'It didn’t look like a joke.（冗談には見えなかった）' },
 
-    // R fix: the key was the only two-part choice (K6); B is now two-part too.
-    // why: goes with Toby ← "Okay. I will." taken at face value; sends Toby ← "why don't we go" heard as Toby going
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'dodge', reveals: ['excuse', 'office'], seg: [52.9, 82.8],
-      stem: 'How does the talk between Toby and Michael end?',
-      choices: ['Michael dodges going, and pokes at Toby', 'Michael agrees, and they go to Stanley',
-                'Michael sends Toby to talk to Stanley himself'], a: 0,
-      cue: '「Okay. I will.」のあと、何が起きるか。',
-      said: '「行くよ」と言いながら体調を理由に先延ばしし、最後はトビーへの嫌みで終わる。',
-      mean: 'マイケルはスタンリーと向き合うのを避けている。トビーには強く出られる。',
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'unkind', seg: [37.5, 41.5],
+      stem: 'How does Michael talk to Toby here?',
+      ja: 'ここでマイケルはトビーにどんな話し方をしている？',
+      choices: ['In an unkind way', 'In a kind way', 'In a scared way'], a: 0,
+      choicesJa: ['意地悪な言い方', 'やさしい言い方', 'こわがっている言い方'],
+      cue: 'Toby への反論の途中。', line: '*If you had any friends*, you would understand.',
+      said: '「お前に友だちがいれば、分かるはずだ」と言う。',
+      mean: 'If you had any friends ＝ もし友だちがいれば。「お前には友だちがいない」と言っている。',
+      trap: 'if の文はやわらかく聞こえやすい。でも中身は「友だちがいない」という悪口。',
+      use: 'If I had time, I would go.（時間があれば行くのに）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [38.5, 43.3],
+      stem: 'What do friends do, says Michael?',
+      ja: '友だちは何をするものだとマイケルは言う？',
+      choices: ['Joke with one another', 'Help one another', 'Eat lunch with one another'], a: 0,
+      choicesJa: ['おたがいに冗談を言う', 'おたがいに助け合う', '一緒にお昼を食べる'],
+      cue: 'understand のあと。', line: 'If you had any friends, you would understand. *Friends joke with one another.*',
+      said: '「友だちがいれば分かる。友だちはおたがい冗談を言い合うんだ」と言う。',
+      mean: 'one another ＝ おたがい。冗談だったと言いたくて、トビーを下に見ている。',
+      trap: 'friends が何度も出るので、助け合う話を思いやすい。動詞 joke を聞く。',
+      use: 'We help one another at work.（職場ではおたがい助け合う）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'dodge', reveals: ['excuse', 'office'], seg: [52.9, 82.8],
+      stem: 'How does the talk end?',
+      ja: '話はどう終わる？',
+      choices: ['Michael doesn’t go to Stanley', 'Michael and Toby go to Stanley', 'Toby goes to Stanley alone'], a: 0,
+      choicesJa: ['マイケルはスタンリーのところへ行かない', '二人でスタンリーのところへ行く', 'トビーが一人でスタンリーのところへ行く'],
+      cue: '「Okay. I will.」のあと。',
+      said: '「行くよ」と言いながら、体調を理由に先延ばしする。',
+      mean: 'マイケルはスタンリーと向き合うのを避けている。最後はトビーに嫌みを言う。',
       trap: 'I will だけ聞くと行くと思いやすい。そのあとの though と言い訳まで聞く。',
       use: 'Let’s deal with it tomorrow.（それは明日にしよう）' },
 
-    // why: alone ← "why don't we go" heard as an offer; why not yet ← "why…?" read as a real question
-    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'ask', reveals: ['whydont'], seg: [55.3, 63.5],
-      stem: 'What is Toby really doing with his suggestion about Stanley?',
-      choices: ['Testing Michael’s claim by checking it', 'Offering to go and talk to Stanley alone',
-                'Asking why Michael hasn’t talked to him yet'], a: 0,
-      cue: '「if you really believe」のあとの提案。',
-      line: 'if you really believe that Stanley was joking, *why don’t we go ask*…?',
-      said: '「本当に冗談だったと思うなら、一緒に本人に聞きに行こう」と言う。',
-      mean: '本当なら確かめられるはず、とマイケルの言い分を試している。',
-      trap: 'why を理由の質問と取りやすい。why don’t we は「〜しよう」という誘い。',
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'ask', reveals: ['whydont'], seg: [55.3, 63.5],
+      stem: 'Toby says “Why don’t we go ask him?” What is it?',
+      ja: 'トビーの「Why don’t we go ask him?」は何？',
+      choices: ['An idea to do together', 'A question about the reason', 'An order to Michael'], a: 0,
+      choicesJa: ['一緒にしようという提案', '理由をたずねる質問', 'マイケルへの命令'],
+      cue: 'really believe のあと。', line: 'if you really believe that Stanley was joking, *why don’t we go ask* him now?',
+      said: '「本当に冗談だったと思うなら、今から本人に聞きに行こう」と言う。',
+      mean: 'Why don’t we…? ＝「〜しようよ」という誘い。本当かどうか確かめたい。',
+      trap: 'why から理由を聞く質問と思いやすい。why don’t we は「〜しよう」。',
       use: 'Why don’t we ask him?（本人に聞いてみようよ）' },
-
-    // predict: the segment stops after "Okay. I will."; the reveal plays the excuse
-    // R fix: "a request that Toby come along" was already in "why don't we" (K3); now a dig at Toby, which Michael does
-    //   make, but two turns later.
-    // why: a plan ← "I will" heard as real agreement; a dig ← Michael's jabs at Toby earlier set up another one
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'excuse', seg: [55.3, 63.5], then: [63.5, 70.6],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'excuse', seg: [55.3, 63.5], retired: true, then: [63.5, 70.6],
       stem: 'Michael agrees to go. What kind of line comes next?',
       choices: ['A reason he can’t go after all', 'A plan for what to say to Stanley',
                 'A dig at Toby for doubting him'], a: 0,
@@ -159,100 +160,81 @@ export const mamasDead: Clip = {
       mean: '口では引き受けても、すぐ行けない理由を出して逃げる。',
       trap: 'I will で本当に行くと思いやすい。ずっと否定していた人の短い返事に注意。',
       use: 'Sure, I will. Just not today.（いいよ、やるよ。今日じゃないけど）' },
-
-    // why: made ill ← the stomach talk taken at face value, tied to the clash; Toby instead ← "why don't we" heard as
-    //   Toby offering to go
-    // R fix: the stem names the stomachache, d3's key (N7): added `stomach` to reveals.
     { id: 'i1', skill: 'infer', level: 'B2', point: 'excuse', reveals: ['stomach'], seg: [56.2, 70.6],
-      stem: 'What does the timing of Michael’s stomachache suggest?',
-      choices: ['It’s a handy way out of asking Stanley', 'The morning’s clash made him feel ill',
-                'He’d rather Toby went to ask in his place'], a: 0,
-      cue: '「Okay. I will.」の直後に何を言い出すか。',
-      line: 'Okay. I will. — I’m not feeling very well right now, though.',
-      said: '本人に聞きに行こうと言われ、「行くよ」と答えた直後に具合が悪いと言い出す。',
-      mean: 'タイミングが良すぎる。スタンリーと向き合うのを避ける口実だと分かる。',
-      trap: '体調の話をそのまま信じやすい。直前に何を頼まれたかと並べて聞く。',
+      stem: 'Why does Michael say his stomach hurts?',
+      ja: 'マイケルはなぜおなかが痛いと言う？',
+      choices: ['To avoid asking Stanley', 'The morning made him feel sick', 'So Toby will go instead'], a: 0,
+      choicesJa: ['スタンリーに聞きに行かずに済むように', '今朝のことで気分が悪くなった', 'トビーに代わりに行ってもらうため'],
+      cue: '「Okay. I will.」の直後。', line: 'Okay. I will. — I’m not feeling very well right now, though.',
+      said: '「行こう」と言われて「行くよ」と答え、すぐ具合が悪いと言い出す。',
+      mean: 'タイミングが良すぎる。スタンリーと向き合うのを避ける口実。',
+      trap: '体の話をそのまま信じやすい。直前に何を頼まれたかと並べて聞く。',
       use: 'That’s convenient timing.（ずいぶん都合のいいタイミングだね）' },
 
-    // R fix: "Why do we go ask" doesn't fit the gap (GUIDE §9.5); now "Why can't we".
-    // why: did we ← the weak don't heard as did; won't ← the n heard, the vowel guessed; can't ← the n and t heard
     { id: 's2', skill: 'sound', level: 'B2', point: 'whydont', reveals: ['ask'], seg: [58.6, 63.5],
-      stem: 'Fill the gap: “___ go ask…?”',
-      choices: ['Why don’t we', 'Why didn’t we', 'Why won’t we', 'Why can’t we'], a: 0,
-      cue: '「Stanley was joking」のあと、つながった最初の3語。',
-      line: '*why don’t we* go ask…?',
-      said: '「冗談だと思うなら」のあと、三語がつながり「ワイドンウィ」と聞こえる。',
-      mean: 'don’t の t が落ち、we とつながる。速いと二語くらいに聞こえる。',
-      trap: 'didn’t なら「なぜしなかった」で責める意味。過去の d の音があるか聞く。',
+      stem: 'Fill the gap: “___ go ask him now?”',
+      ja: '「___ go ask him now?」の空所は？',
+      choices: ['Why don’t we', 'Why didn’t we', 'Why can’t we'], a: 0,
+      choicesJa: ['〜しようよ', 'なぜ〜しなかった', 'なぜ〜できない'],
+      cue: '「Stanley was joking」のあと。', line: '*why don’t we* go ask him now?',
+      said: '「今から本人に聞きに行こうよ」と言う。',
+      mean: 'don’t の t が落ちて we とつながり「ワイドンウィ」。「〜しようよ」の誘い。',
+      trap: 'didn’t なら「なぜしなかった」と責める意味。「ディ」の音があるかを聞く。',
       use: 'Why don’t we grab lunch?（お昼でも行かない？）' },
 
-    // R fix: "asking Toby a question" was weak (V2); now though as an intensifier ("really, though").
-    // why: stressing ← though read as emphasis, as in "it hurts, though!"; topic change ← it ends the sentence, so it
-    //   seems to move on
     { id: 'm1', skill: 'marker', level: 'B2', point: 'though', reveals: ['excuse', 'stomach'], seg: [63.4, 68.7],
-      stem: 'After “right now”, what does Michael’s last short word signal?',
-      choices: ['A catch to what he just agreed to', 'That he’s stressing how bad he feels',
-                'That he’s moving to a new topic'], a: 0,
-      cue: '「right now」のあと、文の終わりの一語。',
-      line: 'I’m not feeling very well right now, *though*.',
+      stem: 'What does “though” at the end mean here?',
+      ja: '文の最後の「though」はここでどういう意味？',
+      choices: ['But', 'So', 'Also'], a: 0,
+      choicesJa: ['でも', 'だから', 'それに'],
+      cue: '「right now」のあとの一語。', line: 'I’m not feeling very well right now, *though*.',
       said: '「行くよ」のあと「でも今ちょっと具合が悪いんだよね」と付け足す。',
-      mean: '文末の though ＝「でもね」。前に言ったことに条件をつける。',
-      trap: '文末なので強調の一語に聞こえやすい。though が後ろに来たら、前の話への「でも」。',
-      use: 'It’s nice. A bit pricey, though.（いいね。ちょっと高いけど）' },
+      mean: '文の最後の though ＝「〜だけどね」。前に言ったことに「でも」をつける。',
+      trap: '文の最後なので強めの一語に聞こえやすい。though が後ろなら前の話への「でも」。',
+      use: 'It’s nice. A bit expensive, though.（いいね。ちょっと高いけど）' },
 
-    // R fix: "he has a meeting" doesn't fit "not feeling very well" (K3); now another body part.
-    // why: headache ← "not feeling very well" filled in with the usual complaint; back ← the b/k of "stomach" half heard
     { id: 'd3', skill: 'detail', level: 'B1', point: 'stomach', reveals: ['excuse'], seg: [63.4, 68.7],
-      stem: 'What reason does Michael give for maybe going home early?',
-      choices: ['His stomach hurts', 'His head hurts', 'His back hurts'], a: 0,
-      cue: '「so I may be going home」の前。',
-      line: 'My *stomach hurts*, so I may be going home early today',
+      stem: 'What part of Michael hurts, he says?',
+      ja: 'マイケルは体のどこが痛いと言う？',
+      choices: ['His stomach', 'His back', 'His left leg'], a: 0,
+      choicesJa: ['おなか', '背中', '左足'],
+      cue: 'so I may be の前。', line: 'My *stomach hurts*, so I may be going home early today',
       said: '「おなかが痛いから、今日は早く帰るかも」と言う。',
-      mean: 'スタンリーに聞きに行かないための理由として出している。',
-      trap: '具合が悪いと聞くと頭痛を思いやすい。so の前の体の部分を聞く。',
+      mean: 'stomach ＝ おなか、胃。My stomach hurts ＝ おなかが痛い。',
+      trap: '具合が悪いと聞くと、どこでもありそうに思える。so の前の体の部分を聞く。',
       use: 'My stomach hurts a little.（ちょっとおなかが痛い）' },
 
-    // R fix: the segment cut "today" (captions 68.6 s); it now ends at 69.4 (S4).
     { id: 'x1', skill: 'dict', level: 'B1', point: 'home', reveals: ['stomach', 'excuse'], seg: [65.4, 69.4],
       stem: 'Type what you hear: “so I may be ___ today.” (3 words)', answer: 'going home early',
-      cue: '「may be」のあと、3語。',
-      line: 'My stomach hurts, so I may be *going home early* today',
-      said: '「おなかが痛いから、今日は早く帰るかも」。',
-      mean: 'go home early ＝ 早退する。may be going は「〜することになるかも」とぼかす形。',
-      trap: 'going と home がつながり「ゴーインホーム」。ng の g はほぼ聞こえない。',
+      ja: '「so I may be ___ today.」の空所を書こう（3語）',
+      cue: '「may be」のあと、3語。', line: 'My stomach hurts, so I may be *going home early* today',
+      said: '「おなかが痛いから、今日は早く帰るかも」と言う。',
+      mean: 'go home early ＝ 早く帰る、早退する。may be going ＝ 〜するかも。',
+      trap: 'going と home がつながり「ゴーインホーム」に聞こえる。g はほぼ聞こえない。',
       use: 'I’m going home early today.（今日は早めに帰ります）' },
 
-    // why: Michael's daughter ← "my daughter" heard without who said it; Stanley's ← the talk is about Stanley
-    // R fix: its stem and line hold "stomach", d3's key (N7): added `stomach` to reveals.
-    { id: 'w1', skill: 'who', level: 'B2', point: 'daughter', reveals: ['stomach'], seg: [69.0, 82.5],
-      stem: 'Who talks about a daughter’s stomachaches, and whose daughter?',
-      choices: ['Toby, about his own daughter', 'Michael, about his own daughter',
-                'Toby, about Stanley’s daughter'], a: 0,
-      cue: '文頭の呼びかけの名前と、my のあと。',
-      line: 'You know, *Michael*, sometimes *my daughter’s* stomach hurts…',
-      said: '名前を呼んでから「うちの娘も、学校に意地悪な子がいるとおなかが痛くなる」と話す。',
-      mean: '呼ばれた名前で、話しているのはもう一人の方だと分かる。',
-      trap: 'my daughter だけ聞くと話し手を決めにくい。文頭で誰の名前を呼んだか聞く。',
+    { id: 'w1', skill: 'who', level: 'B1', point: 'daughter', reveals: ['stomach'], seg: [69.0, 75.5],
+      stem: 'Whose daughter gets stomachaches?',
+      ja: 'おなかが痛くなるのは誰の娘？',
+      choices: ['Toby’s daughter', 'Michael’s daughter', 'Stanley’s daughter'], a: 0,
+      choicesJa: ['トビーの娘', 'マイケルの娘', 'スタンリーの娘'],
+      cue: '最初に呼ぶ名前と、my のあと。', line: 'You know, *Michael*, sometimes *my daughter’s* stomach hurts…',
+      said: 'トビーがマイケルの名前を呼び、「うちの娘もおなかが痛くなる」と話す。',
+      mean: 'Michael と呼んでいるので、話しているのはトビー。my daughter ＝ トビーの娘。',
+      trap: 'Michael から、マイケルの娘と思いやすい。呼びかけの名前は聞き手。',
       use: 'You know, my son does that too.（うちの息子もそうなんだよ）' },
 
-    // R fix: "see a doctor" was weak (V2); now the comforting reading of "sometimes my daughter's…".
-    // why: nothing to worry about ← "sometimes… too" read as reassurance; mean girl ← the keyword pinned on Michael,
-    //   the bully
     { id: 'i2', skill: 'infer', level: 'C1', point: 'scared', reveals: ['daughter', 'stomach'], seg: [69.0, 82.5],
-      stem: 'What is Toby hinting with his story about a child at school?',
-      choices: ['Michael is just scared of facing Stanley', 'His pain is common and nothing serious',
-                'Michael is acting like a mean girl'], a: 0,
-      cue: '学校で何があると、おなかが痛くなるのか。',
-      line: 'sometimes my daughter’s stomach hurts *when there’s a mean girl at school*.',
+      stem: 'What does Toby mean with his story?',
+      ja: 'トビーは自分の話で何を言いたい？',
+      choices: ['Michael is scared of Stanley', 'Michael’s pain is serious', 'Michael is like a mean girl'], a: 0,
+      choicesJa: ['マイケルはスタンリーがこわい', 'マイケルの痛みは深刻だ', 'マイケルは意地悪な子のようだ'],
+      cue: '学校で何があると痛くなるか。', line: 'sometimes my daughter’s stomach hurts *when there’s a mean girl at school*.',
       said: '「娘も、学校に意地悪な子がいるとおなかが痛くなる」と話す。',
-      mean: '会いたくない相手がいると体の具合が悪くなる。マイケルもそうだ、とほのめかす。',
-      trap: 'mean girl をマイケルのことと取りやすい。痛くなるのは子どもの方。',
-      use: 'Are you sure you’re not just nervous?（ただ緊張してるだけじゃない？）' },
-
-    // why: Stanley scares him ← the item's own topic, but he names Toby, not Stanley; mixes up ← "psychological" heard as
-    //   a mistake for physical
-    // R fix: its line holds "stomach hurts", d3's key (N7): added `stomach` to reveals.
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'office', reveals: ['scared', 'stomach'], seg: [74.5, 82.8],
+      mean: '会いたくない相手がいると体が痛くなる。マイケルも同じだ、と言いたい。',
+      trap: 'mean girl（意地悪な子）をマイケルのことと思いやすい。痛くなるのは娘の方。',
+      use: 'Are you just nervous?（ただ緊張してるだけじゃない？）' },
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'office', reveals: ['scared', 'stomach'], seg: [74.5, 82.8], retired: true,
       stem: 'What makes Michael’s comeback to Toby funny?',
       choices: ['His jab at Toby admits Toby was right', 'He admits that Stanley scares him most',
                 'He mixes up “psychological” with “physical”'], a: 0,
