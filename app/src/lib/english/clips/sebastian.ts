@@ -83,7 +83,7 @@ export const sebastian: Clip = {
       line: 'Lil’ Sebastian made his debut at the last Harvest Festival in *1987*',
       said: '「1987年の前回のお祭りでデビューした」と説明する。',
       mean: '1987 ＝ nineteen eighty-seven。年は2けたずつ分けて読む。debut ＝ デビュー。',
-      trap: '後半を聞き逃すと seven だけ残り、97 や 78 にずれやすい。',
+      trap: 'eighty-seven（87）を seventy-eight（78）と取り違えやすい。先に来るのは eighty。',
       use: 'I first came here in 1998.（初めてここに来たのは1998年）' },
 
     // A2: was an infer on what “the last festival” says about the festival; now the word's meaning
@@ -240,7 +240,7 @@ export const sebastian: Clip = {
       line: 'Remember, this little guy’s *25* now',
       said: '「この子はもう25歳なんだから」と念を押す。',
       mean: 'guy’s ＝ guy is。little guy ＝「この子」と親しく呼ぶ言い方。馬としては高齢。',
-      trap: 'guy’s の s が数字にくっつき、five が now にまぎれやすい。最後の音まで聞く。',
+      trap: 'twenty だけで20と思いやすい。すぐあとの five まで聞くと25。',
       use: 'My cat is fifteen now.（うちの猫ももう15歳）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['jerry'], seg: [62.4, 65.6],

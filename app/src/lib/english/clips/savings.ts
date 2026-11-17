@@ -208,7 +208,7 @@ export const savings: Clip = {
       ja: '「somebody’s got a little crush on Casey」はどういう意味？',
       choices: ['Somebody likes Casey', 'Somebody hurt Casey', 'Somebody is mad at Casey'], a: 0,
       choicesJa: ['誰かがケイシーを好き', '誰かがケイシーを傷つけた', '誰かがケイシーに怒っている'],
-      cue: '「What I think?」のあと。',
+      cue: '「You know what I think?」のあと。',
       line: 'I think *somebody’s got a little crush on Casey*.',
       said: '「誰かさん、ケイシーに気があるな」と言う。',
       mean: 'have a crush on ～ ＝ 〜が好き（片思い）。somebody はチャンドラーのこと。',

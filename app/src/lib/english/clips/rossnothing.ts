@@ -164,7 +164,7 @@ export const rossNothing: Clip = {
       cue: '「divorced」のあとの数。', line: 'I just don’t want to be *divorced three times*.',
       said: '「3回も離婚したくない」と言う。今回で3回目になる。',
       mean: 'three times ＝ 3回。twice（2回）、once（1回）も合わせて覚えたい。',
-      trap: 'three と tree は似ているが、ここは times の前の数。「スリー」をはっきり聞く。',
+      trap: 'two（2）と思いやすいが、times の前は「スリー」。今回で3回目の離婚になる。',
       use: 'This is my third time here.（ここに来るのは3回目）' },
 
     { id: 'i3', skill: 'infer', level: 'B1', point: 'excuse', reveals: ['three', 'nothing'], seg: [31, 37.9],
