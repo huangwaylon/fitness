@@ -42,7 +42,7 @@ export const fiftyYears: Clip = {
       line: 'Well, it was *1963*…',
       said: '出会いを聞かれて「1963年だった」と答える。',
       mean: '年は2けたずつ読む。1963 ＝ nineteen sixty-three。',
-      trap: 'sixty（60）と fifty（50）はまぎれやすい。「シックス」の音を聞く。',
+      trap: 'fifty は「フィフ」、seventy は「セヴン」で始まる。「シックスティスリー」なら 1963。',
       use: 'We met back in 2015.（出会ったのは2015年）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'met', reveals: ['year'], seg: [3.7, 14.8], retired: true,

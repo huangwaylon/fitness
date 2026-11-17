@@ -20,10 +20,10 @@ export const ryanOffice: Clip = {
       choices: ['Wait and do it later', 'Start doing it right now', 'Give the job to Phyllis'], a: 0,
       choicesJa: ['様子を見てあとでやる', '今すぐ始める', 'フィリスに仕事を回す'],
       cue: 'ライアンの最初の返事から。',
-      line: 'Maybe we should just *wait and find out*.',
-      said: '「会社がつぶれるかもしれないし、様子を見よう」と言う。',
-      mean: 'wait and find out ＝ 様子を見る。もっともらしい理由で後回し。',
-      trap: '最後に「今やろう」と聞こえるので、すぐやると思いやすい。ライアンはずっと待ちたがる。',
+      line: 'it doesn’t seem like there’s *much of a point* if the company’s going under.',
+      said: '「会社がつぶれるなら、やる意味はあまりないと思う」と言う。',
+      mean: 'not much of a point ＝ あまり意味がない。もっともらしい理由で後回しにしている。',
+      trap: '途中で「今やろう」という声も出るが、ライアンは理由をつけて後回しにしたがる。',
       use: 'Let’s wait and see.（様子を見よう）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'under', seg: [4.9, 12.9],
@@ -68,7 +68,7 @@ export const ryanOffice: Clip = {
       line: '…shouldn’t be taking *2-hour lunches* without telling me.',
       said: '「黙って2時間も昼休みを取っちゃだめ」と言う。',
       mean: 'two-hour lunch ＝ 2時間の昼休み。数字＋hour が名詞の前に来ると s は付かない。',
-      trap: 'two-hour は「トゥーアワ」とひと続き。lunches の前の数字を聞く。',
+      trap: 'one は「ワン」、three は「スリー」。「トゥーアワ」とつながれば two-hour。',
       use: 'We have a two-hour layover.（乗り継ぎが2時間ある）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'brushoff', seg: [36.4, 42.6],

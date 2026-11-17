@@ -86,7 +86,7 @@ export const pitchWomen: Clip = {
       said: '「商談では座らない。強くて威圧的に見せたい」と断る。',
       mean: 'aggressive ＝ 攻撃的、imposing ＝ 相手を圧倒する。相手に圧をかけるのが彼のやり方。',
       trap: 'カタカナの「アグレッシブ」（積極的）から、やる気の話と思いやすい。',
-      use: 'Please, have a seat.（どうぞ、おかけください）' },
+      use: 'I want to appear calm.（落ち着いて見せたい）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', reveals: ['needs'], seg: [36.9, 47.6], keep: true,
       stem: 'How fast does Dwight say he will make the sale?',
       ja: 'ドワイトは、何分で売ると言う？',
