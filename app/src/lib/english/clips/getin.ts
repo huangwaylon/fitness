@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 5, new 0
 // “GET IN - The Office US” (the official The Office channel, BEST OF SEASON 5): Dwight, sure a conspiracy is behind his
 // bad customer reviews, suspects listeners in the car and on his calls and confronts Kelly in her nook; then Jim
 // notices Kelly has gone cold on him and, through a matching mug, works out that he skipped her party.
@@ -9,7 +10,6 @@
 // no key rests on those words, and the lines trim them. The 44–54 s shoes/Pam exchange (speakers unclear) and the
 // 124–129 s "that's what she said" run are untested. Kelly is named at 79.1 and 157.8 s, Jim at 53.3 and 177.9 s,
 // Dwight at 123.2 s. i3, pr4 and d6 don't name who answers Jim (the phone voice at 209–213 s says "visit me").
-// REVIEW 2026-11-16: pass 5, fix 19, drop 0, new 0; ear checks 1
 // EAR CHECK: 65.3 s pr1 — the customer's "I'm sorry?" rises (whisper writes "?"; the captions have no punctuation)
 import type { Clip } from '../types.ts';
 
@@ -19,50 +19,30 @@ export const getIn: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %, right): only the key named a real complaint. Now three parallel "run of bad X" causes.
-    // why: lost orders ← "redouble my order" on the call (keyword, wrong relation); low sales ← the paper-salesman
-    //   script and "our downfall"
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'reviews', seg: [19.5, 129],
-      stem: 'Through his car ride, call and visit to Kelly, what is Dwight after?',
-      choices: ['Who is behind his run of bad customer reviews', 'Who is behind his run of lost customer orders',
-                'Who is behind his run of low sales numbers'], a: 0,
-      cue: 'Kelly の言い返しと、Dwight の the reason のあと。',
-      said: '陰謀を信じ、車でも電話でも盗み聞きを疑い、Kelly を問いつめる。',
-      mean: '客からの評価が悪い理由を、自分ではなく誰かの陰謀のせいにしている。',
-      trap: 'order や downfall が残ると、注文や売上の話に聞こえる。最後の reviews で分かる。',
-      use: 'Who’s behind all this?（いったい誰の仕業だ？）' },
-
-    // why: car rental ← "in this car" heard right after; head office ← "they" as the bosses (the corporate-paranoia
-    //   script)
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'monitor', seg: [23.2, 28.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'monitor', seg: [23.2, 28.6], keep: true,
       stem: 'In the car, who does Dwight say might be listening?',
+      ja: '車の中で、ドワイトはだれが聞いているかもと言う？',
       choices: ['People in customer service', 'People at the car rental desk', 'People in the head office'], a: 0,
-      cue: 'might be の前、文の最初の二語。',
+      choicesJa: ['お客様窓口の人たち', 'レンタカー窓口の人たち', '本社の人たち'],
+      cue: '「might be」の前',
       line: '*Customer service* might be monitoring this conversation.',
-      said: '「カスタマーサービスがこの会話を監視しているかもしれない」と言う。',
-      mean: 'monitor ＝ 見張る、聞いて記録する。車の中なのに本気で心配している。',
-      trap: 'すぐあとの in this car から、車の会社と取りやすい。主語は文の最初に来る。',
+      said: '「お客様窓口が、この会話を聞いているかもしれない」と言う。',
+      mean: 'monitor ＝ 見はる、聞いて記録する。車の中なのに本気で心配している。',
+      trap: 'すぐあとの In this car? から、車の会社と思いやすい。だれかは文の最初に来る。',
       use: 'This call may be monitored.（この通話は録音されることがあります）' },
 
-    // R fix: V2 (blind 85 %, right): "to defend his worry" pointed at caution and the distractors had no shape in
-    //   common. Neutral stem; three parallel "X now beats Y later" readings.
-    // why: saying sorry ← "sorry" read as an apology (literal reading); staying quiet ← "safe" plus the hush-hush car
-    //   scene and "monitoring"
     { id: 'p1', skill: 'phrase', level: 'B1', point: 'safe', seg: [23.2, 28.6],
-      stem: 'What does the saying Dwight uses in the car mean?',
-      choices: ['Taking care now beats regretting it later', 'Saying sorry now beats a fight later',
-                'Staying quiet now beats being caught later'], a: 0,
-      cue: 'You never know のあと、決まり文句。',
+      stem: 'What does “Better safe than sorry” mean?',
+      ja: '「Better safe than sorry」はどういう意味？',
+      choices: ['Be careful now, not sorry later', 'Say sorry first, then fight', 'Keep quiet so you’re safe'], a: 0,
+      choicesJa: ['あとで後悔するより、今気をつける', '先にあやまって、それからけんか', '安全のためにだまっている'],
+      cue: '「You never know」のあと',
       line: 'You never know. *Better safe than sorry.*',
-      said: '「何があるか分からない。用心するに越したことはない」と言う。',
-      mean: 'sorry ＝ 後悔する。あとで悔やむより、先に用心するほうがいい。',
-      trap: 'sorry を「ごめん」と取ると、謝る話に聞こえる。ここは「悔やむ」側の意味。',
-      use: 'Take an umbrella. Better safe than sorry.（傘を持って行きな。念のため）' },
+      said: '「何があるか分からない。用心するにこしたことはない」と言う。',
+      mean: 'Better safe than sorry ＝「あとで後悔するより、用心したほうがいい」。sorry ＝ ここは「後悔する」。',
+      trap: 'sorry から「ごめん」と思いやすい。ここはあやまる話ではない。',
+      use: 'Take an umbrella. Better safe than sorry.（かさを持って行きな。念のため）' },
 
-    // R fix: V2 (blind 75 %, right): only the key held the absurd suspects. All three now name them; they differ in
-    //   who says them and whether he means it.
-    // why: mocks Jim ← Jim asks "what are you thinking here?", so the list is taken as Jim's (wrong speaker); calming
-    //   Jim ← the absurd list heard as deliberate (sincerity flip)
     { id: 'h1', skill: 'humor', level: 'C1', point: 'suspects', seg: [28.6, 41.3],
       stem: 'Why does Dwight’s answer about who benefits get a laugh?',
       choices: ['He treats NASA and the mob as real suspects', 'He mocks Jim for suspecting NASA and the mob',
@@ -72,57 +52,44 @@ export const getIn: Clip = {
       said: '「我々の失脚で得をするのは誰だ？NASA か、マフィアか」と真剣に考える。',
       mean: '評価が悪いだけなのに、NASA まで本気で疑う。大げさなずれが笑い。',
       trap: 'ばかげた名前は冗談に聞こえやすい。名前を挙げ、理由まで考えるのは Dwight。',
-      use: 'Who benefits from this?（これで得するのは誰？）' },
+      use: 'Who benefits from this?（これで得するのは誰？）', retired: true },
 
-    // why: a little ← the s of "there's" runs into "little", heard as "there's a"; a lot of ← "l…t" caught, with "a"
-    //   from the linking
-    // R fix: S4: the segment ended 0.4 s after "that". It now runs through Jim's "Is there some evidence?"
-    { id: 's1', skill: 'sound', level: 'B2', point: 'little', seg: [36.95, 42.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'little', seg: [36.95, 42.4], keep: true,
       stem: 'Fill the gap: “and there’s ___ evidence of that.”',
+      ja: 'すき間をうめよう：「and there’s ___ evidence of that.」',
       choices: ['little', 'a little', 'a lot of'], a: 0,
-      cue: 'there’s のすぐあと、evidence の前。',
+      choicesJa: ['ほとんどない（little）', '少しある（a little）', 'たくさんある（a lot of）'],
+      cue: '「there’s」のすぐあと',
       line: 'and there’s *little* evidence of that.',
-      said: '「証拠はほとんどない」。there’s little はつながる。',
-      mean: 'little ＝ ほとんどない、a little ＝ 少しある。意味が逆。',
-      trap: 's と little がつながり、a が入ったように聞こえる。but then の流れで確かめる。',
+      said: '「その証拠はほとんどない」と言う。',
+      mean: 'little ＝ ほとんどない。a little ＝ 少しある。a があるかないかで意味が反対。',
+      trap: 'a little なら前に小さな「ア」、a lot of なら「ロッ」。「ゼアズ リル」と続けば little。',
       use: 'There’s little time left.（もうほとんど時間がない）' },
 
-    // R fix: V2 (blind 70 %, right): "suddenly tells… to shut up" made shock the obvious reply. The stem now names
-    //   the moment only, and both distractors are apologies.
-    // why: talking over him / taking so long ← "I'm sorry" read as an apology (Japanese すみません), with "shut up"
-    //   heard as a rebuke the customer accepts
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [63.36, 66.5],
-      stem: 'When Dwight breaks off the customer’s order, what does the customer’s reply do?',
-      choices: ['Checks, startled, what Dwight just said', 'Apologizes for talking over Dwight',
-                'Apologizes for taking so long to order'], a: 0,
-      cue: 'shut up の直後、上がり調子の短い返事。',
+      stem: 'What does the customer mean by “I’m sorry?”',
+      ja: 'お客さんの「I’m sorry?」はどういう意味？',
+      choices: ['What did you just say?', 'I really apologize.', 'I feel very sad.'], a: 0,
+      choicesJa: ['今なんて言いました？', '本当にすみません', 'とても悲しい'],
+      cue: '「shut up」の直後',
       line: 'Wait, shut up. — *I’m sorry?*',
-      said: '注文の途中で「待て、黙れ」と言われ、客は「はい？」と聞き返す。',
-      mean: '上がり調子の I’m sorry? は「今なんて？」。謝っているのではなく、驚いて聞き返している。',
-      trap: 'I’m sorry を「すみません」と取りやすい。語尾が上がれば聞き返し。',
+      said: '注文のとちゅうで「待て、だまれ」と言われ、「はい？」と聞き返す。',
+      mean: '語尾が上がる I’m sorry? ＝「はい？今なんて？」。あやまっているのではない。',
+      trap: 'I’m sorry から「すみません」と思いやすい。急に「だまれ」と言われたので、おどろいて聞き返している。',
       use: 'I’m sorry? Could you say that again?（はい？もう一度言ってもらえますか）' },
 
-    // R fix: V2 (blind 75 %, right): the "calm down" distractor was weak. Now three purposes a phone call could have.
-    // why: noise ← "Breathing. Is that you?" heard as a noise complaint; interrupting ← "shut up" just before, so
-    //   holding the breath is heard as one more way to silence him
     { id: 'i2', skill: 'infer', level: 'B2', point: 'listen', seg: [66.1, 80.6],
       stem: 'Why does Dwight tell the customer to hold his breath?',
-      choices: ['To find out if a third person is listening', 'To cut the noise so he can take the order',
-                'To keep the customer from interrupting him'], a: 0,
-      cue: '息を止めさせたあと、Dwight が誰に呼びかけるか。',
+      ja: 'ドワイトはなぜ、お客さんに息を止めさせる？',
+      choices: ['To hear if someone else is there', 'To take the order more quickly', 'To stop him from talking'], a: 0,
+      choicesJa: ['ほかにだれかいるか聞くため', '注文を早く取るため', '彼を話させないため'],
+      cue: '息を止めさせたあとの言葉',
       line: 'Well, stop. *Hold your breath.* … *Who’s there?* … Kelly, is that you?',
-      said: '客に息を止めさせ、それでも聞こえる息に「誰だ？Kelly か？」と呼びかける。',
-      mean: '電話を誰かが盗み聞きしていると疑い、客の息と区別しようとしている。',
-      trap: '息がうるさいという苦情に聞こえやすい。止めさせたあとの Who’s there? が目的を示す。',
-      use: 'Is someone else on the line?（ほかに誰か電話に出てる？）' },
+      said: '息を止めさせ、まだ聞こえる息に「だれだ？ケリーか？」と呼びかける。',
+      mean: 'Who’s there? ＝「だれかいるの？」。電話をだれかが聞いていると思っている。',
+      trap: '息がうるさいから止めさせたと思いやすい。止めたあとの Who’s there? が目的。',
+      use: 'Is someone else on the line?（ほかにだれか電話に出てる？）' },
 
-    // C2 humor: who the joke is on
-    // R fix: K2: Kelly really is on the line (79–90 s), so "Kelly, for breathing too loudly" was half true on screen.
-    //   Replaced with a sincerity flip.
-    // why: the customer ← right mechanism (someone misses the point), wrong target: his literal "yes" is the sane reply;
-    //   teasing ← the absurd order "stop" heard as Dwight playing with him (sincerity flip)
-    // anchor: 71.6–73.2 s "Is that you? — Well, I am breathing, yeah." answers the paranoid question literally; 73.4–74.9
-    //   s "Well, stop. Hold your breath." treats that answer as a real problem
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'breath', seg: [66.1, 75.5],
       stem: 'In the breathing exchange on the phone, who is the joke on?',
       choices: ['Dwight, whose question has an obvious answer', 'The customer, who doesn’t see what Dwight means',
@@ -132,11 +99,20 @@ export const getIn: Clip = {
       said: '「息の音がする。お前か？」に、客は「まあ、息はしてますけど」と答え、Dwight は「なら止めろ」と言う。',
       mean: '客の返事は当然の事実。それを問題扱いする Dwight のほうがおかしい。',
       trap: '客がずれた返事をしたように聞こえやすい。言葉どおりの答えが一番まともなら、笑いは質問した側に向く。',
-      use: 'Well, I am human, yeah.（まあ、人間ですからね）' },
+      use: 'Well, I am human, yeah.（まあ、人間ですからね）', retired: true },
 
-    // R fix: V2 (blind 55 %, right): the distractors weren't parallel. Now three ways of answering his hint.
-    // why: coy ← "I think you know" heard as hitting home (the guilty party's script); sharp ← "you always say that"
-    //   heard as a complaint
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reviews', seg: [79, 124],
+      stem: 'What does Dwight think is behind his bad reviews?',
+      ja: 'ドワイトは、評価が悪いのは何のせいだと思っている？',
+      choices: ['People working against him', 'His own rude manners', 'Problems with the phones'], a: 0,
+      choicesJa: ['自分に反対する人たちの計画', '自分の失礼な態度', '電話の問題'],
+      cue: '「The reason that I got」のあと',
+      line: 'There is *a massive conspiracy* going on here, and I know you’re involved.',
+      said: '「悪い評価は、大きな陰謀のせいだ。お前もかかわってる」とケリーに言う。',
+      mean: 'conspiracy ＝ 陰謀、ひそかな計画。自分の態度ではなく、だれかのせいにしている。',
+      trap: 'ケリーが「失礼だから」と言うので、それと思いやすい。聞かれているのはドワイトの考え。',
+      use: 'I think someone is working against me.（だれかが私のじゃまをしていると思う）' },
+
     { id: 'h3', skill: 'humor', level: 'C1', point: 'alwayssay', seg: [92.38, 96.5],
       stem: 'Why does Kelly’s reply to Dwight’s “I think you know” get a laugh?',
       choices: ['She answers his hint honestly: she rarely has a clue', 'She answers his hint coyly: she knows but won’t say',
@@ -146,36 +122,30 @@ export const getIn: Clip = {
       said: '「分かってるだろ」に、「いつもそう言うけど、だいたい分からない」と返す。',
       mean: '決めぜりふを真に受けて、正直に答えている。芝居がかった脅しが空回り。',
       trap: '問いつめられた人はとぼけるのが普通の流れ。ここは本気。almost never ＝ ほとんど〜ない。',
-      use: 'You always say that.（いつもそう言うよね）' },
+      use: 'You always say that.（いつもそう言うよね）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'upto', seg: [96.1, 98.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'upto', seg: [96.1, 98.3], keep: true,
       stem: 'Type Dwight’s question: “___, girl, huh?” (5 words)', answer: 'what are you up to',
-      cue: 'girl の前まで、一続きの質問。',
+      ja: 'ドワイトの質問を入力：「___, girl, huh?」（5語）',
+      cue: '「girl」の前まで',
       line: '*What are you up to*, girl, huh?',
-      said: '「何をたくらんでる？」。what are you は短くつながる。',
-      mean: 'be up to ＝ 何かをしている、たくらんでいる。ただの「最近どう？」にも使う。',
-      trap: 'are と you が弱く、what とひとまとまりになる。速くても5語あると知って書く。',
+      said: '「何をたくらんでる？」と聞く。',
+      mean: 'What are you up to? ＝「何してるの？／何をたくらんでる？」。what are you は「ワラユ」とつながる。',
+      trap: 'are と you が小さく短く、what とひとまとまりに聞こえる。5語あるか数える。',
       use: 'What are you up to this weekend?（週末は何するの？）' },
 
-    // R fix: S1: "naming coworkers" relied on "Phyllis", which the captions hear as "so let's"; only "Stanley" is in
-    //   both. V2 (blind 70 %, right): the distractors were a promotion and a half-heard "put up with". Now three
-    //   paranoid readings, one built on "are they paying you".
-    // why: paid to keep quiet ← "are they paying you" (keyword, wrong relation); letting her take the blame ← the
-    //   frame-up script, with "put" heard as "put it on you"
-    { id: 'p2', skill: 'phrase', level: 'C1', point: 'putup', seg: [97.85, 100.87],
-      stem: 'When Dwight’s questions turn to his coworkers, what does he suspect?',
-      choices: ['They got Kelly to do it for them', 'They paid Kelly to keep quiet about it',
-                'They let Kelly take the blame for it'], a: 0,
-      cue: '名前の前後、put で始まる質問。',
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'putup', seg: [97.85, 100.87],
+      stem: 'What does “put you up to this” mean?',
+      ja: '「put you up to this」はどういう意味？',
+      choices: ['Made you do this', 'Paid you for this', 'Helped you with this'], a: 0,
+      choicesJa: ['あなたにこれをやらせた', 'これのためにお金をはらった', 'これを手伝った'],
+      cue: '名前のすぐあと',
       line: '…*put you up to this*? Stanley, *are they paying you*?',
-      said: '「誰かにやらされたのか？スタンリー、金をもらってるのか？」と疑う。',
-      mean: 'put 人 up to 〜 ＝ 人をそそのかして〜させる。黒幕は別にいる。',
-      trap: 'paying が残ると口止め料に聞こえる。put you up to this で「やらせた」。',
-      use: 'Who put you up to this?（誰にやれって言われたの？）' },
+      said: '「だれかにやらされたのか？スタンリー、金をもらってるのか？」と疑う。',
+      mean: 'put 人 up to 〜 ＝「人に〜をやらせる、そそのかす」。黒幕は別にいると思っている。',
+      trap: 'すぐあとの paying から、お金の話と思いやすい。put you up to は「やらせた」。',
+      use: 'Who put you up to this?（だれにやれって言われたの？）' },
 
-    // R fix: V2 (blind 85 %, right): only the key held a contradiction. All three now start "the brains, yet…".
-    // why: someone's helper ← "too stupid to do it by yourself" heard as "she only helps" (half the line); too scared
-    //   ← "Of course I am" read as daring her to admit it
     { id: 'h4', skill: 'humor', level: 'C1', point: 'mastermind', seg: [100.85, 105.8],
       stem: 'Why does Dwight’s explanation of Kelly’s role get a laugh?',
       choices: ['He calls her the brains, yet too dim to act alone', 'He calls her the brains, yet just someone’s helper',
@@ -185,41 +155,32 @@ export const getIn: Clip = {
       said: '「お前が黒幕なのは分かってる。だが一人でやるには頭が足りない」と言う。',
       mean: '黒幕（頭脳）なのに頭が悪い、と一文で矛盾している。本人は筋が通っているつもり。',
       trap: '後半を「手下だ」と取りやすいが、言うのは too stupid。矛盾が笑い。',
-      use: 'You’re the brains of this, aren’t you?（これを考えたのは君だろ）' },
+      use: 'You’re the brains of this, aren’t you?（これを考えたのは君だろ）', retired: true },
 
-    // R fix: V2 (blind 70 %, right): only the key objected. All three now object first and differ in the second move.
-    // why: saying sorry ← "Yeah" at the start heard as giving in, plus the Japanese frame of smoothing things over at
-    //   work; who's been talking ← "maybe if…" heard as her guessing at the source of his idea
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'nook', reveals: ['polite'], seg: [109, 115.72],
-      stem: 'How does Kelly react to being called stupid?',
-      choices: ['She objects, then turns the blame back on him', 'She objects, then says sorry to calm him down',
-                'She objects, then asks who has been talking'], a: 0,
-      cue: 'Yeah のあと、and maybe で始まる後半。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nook', reveals: ['polite'], seg: [109, 115.72],
+      stem: 'How does Kelly feel when Dwight calls her stupid?',
+      ja: 'ドワイトにバカと言われて、ケリーはどう思う？',
+      choices: ['She is angry', 'She is sorry', 'She is scared'], a: 0,
+      choicesJa: ['怒っている', '悪いと思っている', 'こわがっている'],
+      cue: '「Yeah, you just can’t」のあと',
       line: 'Yeah, you just can’t come into my nook and *call me stupid*.',
-      said: '「人の場所に来てバカ呼ばわりはないでしょ」と言い返し、評価の話で突き返す。',
-      mean: '文頭の Yeah は同意でなく「そうよ」と勢いをつける語。怒っている。',
-      trap: 'Yeah を「うん」と同意に取りやすい。続く can’t と maybe if で反撃と分かる。',
-      use: 'You can’t just yell at me.（いきなり怒鳴るなんてないでしょ）' },
+      said: '「人の場所に来てバカよばわりなんて、ありえない」と言い返す。',
+      mean: 'you can’t just 〜 ＝「〜するなんてありえない」。怒って言い返している。',
+      trap: '前に you scared me と言うので、こわがっていると思いやすい。ここは強く言い返している。',
+      use: 'You can’t just yell at me.（いきなりどなるなんてないでしょ）' },
 
-    // R fix: V2 (blind 90 %, right): nt2's stem says "and polite"; nt2 now reveals `polite`. "Too long to answer
-    //   calls" swapped for a salesman's complaint as likely as rudeness.
-    // why: pushy ← the salesman script plus "redouble my order"; errors ← "redouble my order" from the call
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [109, 115.72],
-      stem: 'According to Kelly, why do people give Dwight bad reviews?',
-      choices: ['He isn’t nice or polite enough', 'He pushes customers too hard to buy',
-                'He makes too many errors on orders'], a: 0,
-      cue: 'maybe if のあと、二つの形容詞。',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [109, 115.72], keep: true,
+      stem: 'Why does Dwight get bad reviews, Kelly says?',
+      ja: 'ケリーによると、ドワイトの評価が悪いのはなぜ？',
+      choices: ['He isn’t nice or polite', 'He pushes people to buy', 'He makes order mistakes'], a: 0,
+      choicesJa: ['感じがよくなく、ていねいでない', '買えと押しつける', '注文をまちがえる'],
+      cue: '「maybe if」のあと',
       line: '…*nice and polite*, then people wouldn’t give you such bad customer reviews.',
-      said: '「もう少し感じよく礼儀正しければ、ひどい評価はつかないのに」と言う。',
-      mean: '評価が悪いのは陰謀ではなく、Dwight の態度のせいだ、という指摘。',
-      trap: '客の評価と聞くと、押し売りやミスを想像しやすい。if のあとの形容詞が理由。',
-      use: 'Be a little nicer to customers.（お客さんにもう少し優しく）' },
+      said: '「もう少し感じよく、ていねいなら、ひどい評価はつかないのに」と言う。',
+      mean: 'nice and polite ＝ 感じがよく、ていねい。評価が悪いのはドワイトの態度のせい。',
+      trap: 'お客の評価と聞くと、押し売りやミスを思いやすい。if のあとの nice and polite が理由。',
+      use: 'Be a little nicer to customers.（お客さんにもう少しやさしく）' },
 
-    // C2 dict: weak words at speed, and a form grammar would "correct"
-    // anchor: 111.6–113.4 s both sources "if you were a little bit more nice and polite"; four weak words before "nice",
-    //   and "more nice" where grammar expects "nicer"
-    // R fix: B1: the stem's "and polite" gives d3's key, so nt2 reveals `polite`; its line holds s1's "little", so it
-    //   reveals that too. S4: the end cut "then"; the segment now runs to after "reviews".
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'morenice', reveals: ['polite', 'little'], seg: [111.45, 115.75],
       stem: 'Type what Kelly says: “maybe if you were ___ and polite” (5 words)', answer: 'a little bit more nice',
       cue: 'were のあと、polite の前まで。弱い語も全部。',
@@ -227,131 +188,113 @@ export const getIn: Clip = {
       said: '「もうちょっと感じよく礼儀正しければ」。a little bit more は弱く速い。',
       mean: '話し言葉では、polite と並べて nicer でなく more nice と言うこともある。',
       trap: '習った nicer に直したくなり、a や bit も落としやすい。聞こえた5語を書く。',
-      use: 'Could you be a little bit more careful?（もうちょっと気をつけてくれる？）' },
+      use: 'Could you be a little bit more careful?（もうちょっと気をつけてくれる？）', retired: true },
 
-    // R fix: V2 (blind 90 %, right): only the key was about Kelly, and "Ryan" is never said (a face). Now three
-    //   causes of Kelly's mood, each from something said in the scene.
-    // why: sided with Dwight ← Jim's "Sorry about Dwight" (keyword, wrong relation); Darryl ← Jim asks "how are you and
-    //   Darryl?" and gets a short answer, heard as a sore spot
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'missed', reveals: ['curt', 'party'], seg: [135, 215],
-      stem: 'Across his talks with Kelly and others, what is Jim piecing together?',
-      choices: ['Why Kelly is upset with him: he missed her party', 'Why Kelly is upset with him: he sided with Dwight',
-                'Why Kelly is upset with him: he joked about Darryl'], a: 0,
-      cue: '最後の電話で Jim が聞くことと、その答え。',
-      said: 'Kelly の冷たさに気づいた Jim は、同じマグから、行かなかった会にたどり着く。',
-      mean: 'Kelly の怒りは、パーティーに来なかったせいだと分かってくる。',
-      trap: 'Dwight や Darryl の名前が残ると、それが原因に聞こえる。最後の答えを待つ。',
-      use: 'Wait, did I miss a party?（待って、パーティーを逃した？）' },
-
-    // R fix: V2 (blind 75 %, right): "her short chat" in the stem gave "brief" away. The stem now names the moment;
-    //   the choices are three moods, one with the right mood and the wrong cause.
-    // why: cheerful ← "we're cool" read as "great"; upset about Darryl ← the mood is right but pinned on Darryl, while
-    //   "we're cool" says they're fine
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'curt', reveals: ['noactually'], seg: [139.7, 153.2],
-      stem: 'How does Kelly come across when Jim asks about Darryl?',
-      choices: ['Distant, and ending the chat fast', 'Cheerful, and happy to talk about him',
-                'Upset, because things with him are bad'], a: 0,
-      cue: 'Kelly の返事の長さと数。',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'curt', reveals: ['noactually'], seg: [139.7, 153.2],
+      stem: 'How does Kelly talk to Jim?',
+      ja: 'ケリーはジムとどう話す？',
+      choices: ['Short and cold', 'Long and happy', 'Sad about Darryl'], a: 0,
+      choicesJa: ['短く、冷たく', '長く、楽しそうに', 'ダリルのことで悲しそうに'],
+      cue: 'ケリーの返事の長さ',
       line: 'Hey, how are you and Darryl? — *Um, we’re cool.* — *Bye.*',
-      said: 'Jim が話しかけても、Kelly は「うん、順調」「じゃあね」で終わらせる。',
-      mean: 'いつもはおしゃべりな人が一言で切り上げる。何か怒っている合図。',
-      trap: 'we’re cool は「順調」。Darryl とは問題ない。機嫌は返事の短さに出る。',
+      said: 'ジムが話しかけても、「うん、順調」「じゃあね」で終わらせる。',
+      mean: 'we’re cool ＝「うまくいってる」。いつもおしゃべりな人が一言で切り上げるのは、怒っている合図。',
+      trap: 'Darryl の名前が出るので、彼のことで悲しいと思いやすい。we’re cool で問題はない。',
       use: 'We’re cool. See you.（大丈夫。またね）' },
 
-    // why: fifty ← -teen/-ty; five ← only the first syllable caught
-    { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [154.2, 161.4],
-      stem: 'What length of time does Jim mention in his question about Kelly?',
-      choices: ['Five minutes', 'Fifteen minutes', 'Fifty minutes'], a: 1, keep: true,
-      cue: 'go on for のあと、数と単位。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [154.2, 161.4], keep: true,
+      stem: 'What length of time does Jim talk about?',
+      ja: 'ジムは何分と言う？',
+      choices: ['5 minutes', '15 minutes', '50 minutes'], a: 1,
+      choicesJa: ['5分', '15分', '50分'],
+      cue: '「go on for」のあと',
       line: 'where she didn’t go on for *15 minutes* without taking a breath?',
-      said: '「Kelly が15分しゃべり続けなかった会話なんて、ある？」と聞く。',
-      mean: 'go on ＝ 話し続ける。息つく間もなく、と大げさに言う。',
-      trap: 'fifteen は後ろを強く長く、fifty は前を強く短く言う。語尾の「ティーン」を聞く。',
+      said: '「ケリーが15分しゃべり続けなかった会話なんて、ある？」と聞く。',
+      mean: 'go on for 〜 ＝ 〜の間しゃべり続ける。fifteen ＝ 15。',
+      trap: '5 なら「ファイブ」だけ。fifty（50）は前が強く短い。後ろが「ティーン」と長ければ15。',
       use: 'She went on for an hour.（彼女は1時間しゃべり続けた）' },
 
-    // R fix: V2 (blind 50 %, right): the key was the only choice about Kelly talking a lot. Now all three are about how
-    //   their talks go.
-    // why: rarely says much ← the Japanese いいえ frame: "no" as rejecting the question's picture of a talker; never
-    //   talked ← "No" heard as answering only "have you ever had a conversation"
     { id: 'i3', skill: 'infer', level: 'C1', point: 'noactually', reveals: ['minutes'], seg: [154.2, 162.53],
-      stem: 'What does the short reply to Jim’s question about Kelly mean?',
-      choices: ['Kelly always talks at length with her too', 'Kelly rarely says much when they talk',
-                'She has never really talked with Kelly'], a: 0,
-      cue: '質問の中の否定と、返事の No の関係。',
+      stem: 'What does “No, actually” mean here?',
+      ja: 'ここでの「No, actually」はどういう意味？',
+      choices: ['Kelly always talks a long time', 'Kelly rarely talks very much', 'She never talks with Kelly'], a: 0,
+      choicesJa: ['ケリーはいつも長く話す', 'ケリーはめったに話さない', '彼女はケリーと話したことがない'],
+      cue: '質問の中の didn’t',
       line: 'Have you ever had a conversation with Kelly where she *didn’t* go on for 15 minutes…? — *No, actually.*',
       said: '「長話しなかった会話ってある？」に「ないね、そういえば」と答える。',
-      mean: '「長話しなかったことはない」＝いつも長話。今日の短さは変だ。',
-      trap: '「いいえ」と取ると逆に聞こえる。英語の No は「そんな会話はなかった」。didn’t まで含めて考える。',
+      mean: 'No ＝「そんな会話はなかった」。つまりケリーはいつも長話。だから今日の短さは変。',
+      trap: '日本語の「いいえ」と同じに考えると逆になりやすい。質問の didn’t まで入れて考える。',
       use: 'No, actually, now that you mention it.（ううん、言われてみれば）' },
 
-    // R fix: V2 (blind 85 %, right): a board game and the news were out of place at work (and g2's old distractor
-    //   said "office politics"). Now both literal readings sit in the office.
-    // why: talking politics ← "politics" read as government politics; games ← "play… game" taken literally
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'politics', seg: [175.3, 178.5],
-      stem: 'When Jim asks if Kelly is mad at him, what does the reply mean?',
-      choices: ['He keeps out of office power plays now', 'He no longer plays games at the office',
-                'He no longer talks about politics at work'], a: 0,
-      cue: 'anymore の前、何を「しない」か。',
-      line: 'Oh, I *don’t play the politics game* anymore, Jim.',
-      said: '「ああ、僕はもう社内政治はやらないんだ、Jim」と答える。',
-      mean: 'politics game ＝ 職場の駆け引き。関わらない、と逃げている。',
-      trap: 'politics を国の政治、game を遊びと取りやすい。職場で politics と言えば駆け引き。',
-      use: 'I stay out of office politics.（社内政治には関わらない）' },
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'missed', reveals: ['curt', 'party'], seg: [169, 213.5],
+      stem: 'Why is Kelly cold to Jim?',
+      ja: 'ケリーはなぜジムに冷たい？',
+      choices: ['He missed her party', 'He was rude to Darryl', 'He sided with Dwight'], a: 0,
+      choicesJa: ['彼女のパーティーに来なかった', 'ダリルに失礼だった', 'ドワイトの味方をした'],
+      cue: '最後の電話の答え',
+      said: '同じマグから、ジムはケリーのパーティーに行かなかったと気づく。',
+      mean: 'party favors（パーティーのおみやげ）のマグから、行かなかった会にたどりつく。',
+      trap: 'Dwight や Darryl の名前が先に出るので、それが原因と思いやすい。最後の答えを待つ。',
+      use: 'Wait, did I miss a party?（待って、パーティーをのがした？）' },
 
-    // R fix: V2 (blind 60 %, right): "go on" ignored the "Wait". Now a near miss: "That's pretty weird" heard as a
-    //   comment on the story.
-    // why: the story is strange ← "That's pretty weird" right after the New York story; a moment to think ← "Wait"
-    //   as "hold on, let me catch up"
-    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'wait', seg: [187.1, 193.6],
-      stem: 'When asked “Can I tell you what else I learned?”, what does the listener do?',
-      choices: ['He breaks in to point out something he’s spotted', 'He breaks in to say the story sounds strange',
-                'He breaks in to ask for a moment to think'], a: 0,
-      cue: 'Wait のあと、話題が何に変わるか。',
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'politics', seg: [175.3, 178.5],
+      stem: 'What does “I don’t play the politics game” mean?',
+      ja: '「I don’t play the politics game」はどういう意味？',
+      choices: ['I stay out of office drama', 'I don’t play games at work', 'I don’t talk about elections'], a: 0,
+      choicesJa: ['職場のかけひきにはかかわらない', '職場でゲームはしない', '選挙の話はしない'],
+      cue: 'ジムの質問への返事',
+      line: 'Oh, I *don’t play the politics game* anymore, Jim.',
+      said: '「ああ、ぼくはもう社内のかけひきはやらないんだ、ジム」と答える。',
+      mean: 'politics game ＝ 職場のかけひき、人間関係のあらそい。かかわらないと言ってにげている。',
+      trap: 'politics から国の政治、game から遊びを思いやすい。職場の politics は「かけひき」。',
+      use: 'I stay out of office politics.（社内のかけひきにはかかわらない）' },
+
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'wait', seg: [187.1, 193.6],
+      stem: 'Why does Jim stop the talk with “Wait”?',
+      ja: 'ジムはなぜ「Wait」と話を止める？',
+      choices: ['He sees the same mug', 'He needs time to think', 'He has to take a call'], a: 0,
+      choicesJa: ['同じマグを見つけた', '考える時間がほしい', '電話に出なければならない'],
+      cue: '「Wait」のあと',
       line: 'Can I tell you what else I learned? — *Wait.* That’s pretty weird. … Andy has *a mug just like that*.',
-      said: '「ほかにも話そうか？」に「待って、変だな。Andy も同じマグだ」と返す。',
-      mean: 'Wait ＝ 話をさえぎり、気づいたことに話題を移す合図。長話を止めている。',
-      trap: 'pretty weird を話への感想と取りやすい。すぐ mug の話に移れば、さえぎり。',
+      said: '「ほかにも話そうか？」に「待って、変だな。アンディも同じマグだ」と返す。',
+      mean: 'Wait ＝「待って」。話を止めて、気づいたこと（同じマグ）に話を変える合図。',
+      trap: 'pretty weird（かなり変）を、相手の話への感想と思いやすい。すぐあとの mug の話が理由。',
       use: 'Wait, isn’t that my jacket?（待って、それ私の上着じゃない？）' },
 
-    // R fix: V2 (blind 60 %, right) and S3 (the cue's "out" was only in the key). Now three party gifts that differ in
-    //   direction and reason.
-    // why: from the guests ← "favor" read as a favor done for Kelly (katakana フェイバー), so the gift runs the other way;
-    //   prizes ← "party" plus the talent show named next
     { id: 'p4', skill: 'phrase', level: 'B2', point: 'favors', seg: [190.85, 196.5],
-      stem: 'What does the speaker say the mugs were?',
-      choices: ['Gifts Kelly gave each guest at her party', 'Gifts the guests gave Kelly at her party',
-                'Prizes Kelly gave the winners at her party'], a: 0,
-      cue: 'Kelly のあと、party で始まる二語。',
+      stem: 'What were the mugs?',
+      ja: 'マグは何だった？',
+      choices: ['Gifts from Kelly’s party', 'Gifts the guests gave Kelly', 'Prizes from a contest'], a: 0,
+      choicesJa: ['ケリーのパーティーのおみやげ', 'お客がケリーにあげた物', 'コンテストの賞品'],
+      cue: '「Kelly gave them out」のあと',
       line: 'Kelly *gave them out*… *party favors*.',
-      said: '「ああ、Kelly がパーティーのおみやげに配ったんだよ」と言う。',
-      mean: 'party favors ＝ パーティーで客に配る小さな記念品。',
-      trap: 'favor を「親切」と取ると、客からのお礼に聞こえる。party favors で一語、配るのは主催者。',
-      use: 'We gave out candy as party favors.（パーティーのおみやげにお菓子を配った）' },
+      said: '「ああ、ケリーがパーティーのおみやげに配ったんだよ」と言う。',
+      mean: 'party favors ＝ パーティーで、来た人に配る小さなおみやげ。give out ＝ 配る。',
+      trap: 'favor から「親切」や「お礼」を思いやすい。配ったのは主催のケリー。',
+      use: 'We gave out candy as party favors.（パーティーのおみやげにおかしを配った）' },
 
-    // why: goodbye to summer ← "over the summer" heard as the reason for the party; a talent contest ← "Got Talent"
-    //   taken as an office event
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'party', seg: [196.4, 201.8],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'party', seg: [196.4, 201.8], keep: true,
       stem: 'What was Kelly’s party for?',
-      choices: ['Watching a show’s last episode', 'Saying goodbye to the summer', 'A talent contest at the office'],
-      a: 0,
-      cue: 'What party? への答え、finale の前後。',
+      ja: 'ケリーのパーティーは何のため？',
+      choices: ['A TV show’s last episode', 'The end of the summer', 'A contest at the office'], a: 0,
+      choicesJa: ['テレビ番組の最終回', '夏の終わり', '職場のコンテスト'],
+      cue: '「What party?」への答え',
       line: '…*America’s Got Talent finale party* over the summer.',
       said: '「夏にあった、テレビ番組の最終回を見るパーティー」と答える。',
-      mean: 'finale ＝ 最終回。over the summer は「夏の間に」で、理由ではない。',
-      trap: 'summer が最後に聞こえるので、夏の会と取りやすい。party の前の語が中身。',
-      use: 'We’re having a finale party Sunday.（日曜に最終回を見る会をする）' },
+      mean: 'finale ＝ 最終回。over the summer ＝「夏の間に」で、パーティーの目的ではない。',
+      trap: 'summer が最後に聞こえるので、夏のパーティーと思いやすい。party の前の finale が中身。',
+      use: 'We’re having a finale party on Sunday.（日曜に最終回を見る会をする）' },
 
-    // why: working late ← the office setting and the usual excuse; never told ← Jim's "do you know anything about this
-    //   party?" heard as him never having heard of it
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'skip', seg: [207.9, 212.85],
-      stem: 'According to the answer Jim gets, why did he skip the party?',
-      choices: ['He chose to go and see her instead', 'He had to work late on the night',
-                'He was never told about the party'], a: 0,
-      cue: 'Yes のあと、but の後半。',
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'skip', seg: [207.9, 212.85], keep: true,
+      stem: 'Why did Jim skip the party, he hears?',
+      ja: 'ジムがパーティーに行かなかったのは、なぜだと分かる？',
+      choices: ['He went to visit someone', 'He had to work late', 'Nobody told him about it'], a: 0,
+      choicesJa: ['人に会いに行った', 'おそくまで仕事だった', 'だれも教えてくれなかった'],
+      cue: '「but」のあと',
       line: 'I said you *definitely should go*, but *you wanted to visit me instead*.',
-      said: '「行くべきって言ったのに、あなたは私に会いに来るほうを選んだ」と答える。',
-      mean: 'Jim は知っていて、行かないほうを選んでいた。本人が忘れていただけ。',
-      trap: '誘われなかった話だと思い込みやすい。I said で、前に知らせていたと分かる。',
-      use: 'I wanted to see you instead.（代わりにあなたに会いたかった）' },
+      said: '「行くべきって言ったのに、あなたは私に会いに来るほうを選んだ」と言われる。',
+      mean: 'instead ＝ その代わりに。ジムはパーティーの代わりに、電話の相手に会いに行った。',
+      trap: 'さそわれなかったと思いやすい。I said you should go で、前から知っていたと分かる。',
+      use: 'I wanted to see you instead.（その代わりにあなたに会いたかった）' },
   ]
 };
