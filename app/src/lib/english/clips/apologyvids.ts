@@ -1,22 +1,12 @@
-// “Leslie invents apology videos | Parks and Recreation” (the official Parks and Recreation channel, Season 1): Leslie
-// locks up a company gift basket, joins the men's after-work drinks, opens the basket to keep them from leaving, then
-// confesses on video, to her coworkers and to Ron, who thinks it's no big deal, and finally "whistle-blows" herself.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 35.6 s (whisper's "red tape and uphill
-// battles" isn't in the captions), 50–57 s (introductions), 60–63 s ("is yours…", unclear), 75–81 s (Ann's line with
-// an insult, missing from the captions), 102.6–117.5 s (no speech), 175.5 s (whisper "prudish", captions "pretty"),
-// 179–180 s (whisper's "darling" isn't in the captions), 196–203 s (the potpourri talk; who says "not the one on
-// trial"), 221–226 s (who says "Why can't I look away?"), 258.8–268 s (captions "worth the crime" vs whisper "worse
-// than the crime", and most of the "double dirty" line is missing from the captions), 298.4–318.8 s (music; whisper's
-// repeated "see you next time" is a hallucination).
-// REVIEW 2026-11-16: pass 5, fix 19, drop 0, new 0; ear checks 3 (on 2 lines, unchanged)
-//   Open: h1 (21.5 s), nt1 (23.9 s) and i1 (17.3 s) run past 15 s, because each needs both ends: the party names for
-//   h1, the bar and the video for nt1, the question and the reply for i1.
-//   Open: draw sim, play 4, seeds 6 and 16 (1, 6 and 14 with "harder" on): no unseen C2 can be drawn (nt1 shares
-//   `basket` with g2; nt3 reveals `bigdeal`). This was there before the review.
+// A2 REVIEW 2026-11-17: keep 9, rewrite 10, retire 5, new 1
+// “Leslie invents apology videos | Parks and Recreation” (the official Parks and Recreation channel): Leslie locks away
+// a gift basket under the ethics rules, then opens it to keep the "boys club" party going, and spends the next day
+// apologizing on video, to the office and to Ron, who thinks it isn't a big deal.
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 298 s (whisper's repeated "see you next
+// time" is a hallucination). Untested: the nudity and "bitches" lines (23–27 s, 77–80 s), the list of officials
+// (151–166 s) and the white-Protestant line (240–243 s).
 // EAR CHECK: 236.7–240.0 s nt2 s1 — both sources have "It's not that big a deal" and "it isn't a big deal": confirm
-//   no "of" before "a", and that the t of "isn't" drops before "a"
-// EAR CHECK: 40.3–41.7 s x1 — both sources have "I'll tell you what's up": confirm the linking ("tell you" → "telyu",
-//   "what's up" run together)
+// EAR CHECK: 40.3–41.7 s x1 — both sources have "I'll tell you what's up": confirm the linking ("tell you" → "telyu")
 import type { Clip } from '../types.ts';
 
 export const apologyVideos: Clip = {
@@ -25,100 +15,101 @@ export const apologyVideos: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: $20 ← the weak "five" of "twenty-five" lost before "for"; $250 ← "twenty-five" heard as "two-fifty"
     { id: 'n1', skill: 'number', level: 'B1', point: 'limit', seg: [14.0, 20.2],
-      stem: 'What is the most a gift can be worth, by the rule Leslie cites?',
+      stem: 'By the rule, how much can a gift be worth at most?',
+      ja: '決まりでは、贈り物は最大いくらまで？',
       choices: ['$20', '$25', '$250'], a: 1, keep: true,
-      cue: 'gifts over のあと、金額の数字。',
+      choicesJa: ['20ドル', '25ドル', '250ドル'],
+      cue: '「gifts over」のあと。',
       line: 'we are not allowed to accept *gifts over $25* for corruption reasons.',
       said: '「汚職防止のため、25ドルを超える贈り物は受け取れない」と言う。',
-      mean: '会社から届いたかごは高そうなので、受け取れば規則違反になる。',
-      trap: 'twenty-five の five は for の前で弱く、twenty だけ拾いやすい。数字は最後まで聞く。',
-      use: 'Is there a limit on gifts?（贈り物に上限はありますか）' },
+      mean: 'over 〜 ＝ 〜を超える。be not allowed to 〜 ＝ 〜してはいけない。',
+      trap: 'twenty で止めずに最後の five まで聞く。two-fifty なら fifty で終わる。',
+      use: 'We’re not allowed to take tips.（チップは受け取れないんです）' },
 
-    // R fix: V2 (blind 70 %): "small fish in a big town" was a filler. The new trap keeps "watching" but flips who
-    //   watches.
-    // why: no room ← the literal bowl (金魚鉢) read as being boxed in, and she has just cited a rule; each other ←
-    //   "always watching" heard, but not who is watching
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'fishbowl', seg: [19.4, 29.5],
-      stem: 'What does Leslie’s fish-tank image say about their jobs?',
-      choices: ['The public sees everything they do', 'They must keep an eye on each other',
-                'The rules leave them no room to move'], a: 0,
-      cue: 'fishbowl のあと、and で続く言い換え。',
+      stem: '“We *live in a fishbowl*.” What does Leslie mean?',
+      ja: '「We live in a fishbowl」とはどういう意味？',
+      choices: ['People see all they do', 'They must watch each other', 'The rules are too strict'], a: 0,
+      choicesJa: ['すべて人に見られている', 'おたがいを見張らないといけない', '決まりが厳しすぎる'],
+      cue: '「and the public」のあと。',
       line: 'We *live in a fishbowl* and *the public is always watching*.',
       said: '「私たちは金魚鉢の中にいて、市民はいつも見ている」と言う。',
-      mean: 'live in a fishbowl ＝ 何をしても周りから丸見え。公務員は人目にさらされている。',
-      trap: '金魚鉢を「狭い・窮屈」と取りやすい。比喩のすぐあとの文が、意味の説明になる事が多い。',
-      use: 'It’s like living in a fishbowl here.（ここは何でも丸見えだね）' },
+      mean: 'live in a fishbowl ＝ いつも人に見られている。金魚鉢の金魚のように丸見え。',
+      trap: 'fish（魚）から自然の話と思いやすい。すぐあとの always watching が意味を教える。',
+      use: 'Famous people live in a fishbowl.（有名人はいつも見られている）' },
 
-    // R fix: V2 (blind 50 %): the key carried its own reason ("so nobody can enjoy it"); the others didn't. Now
-    //   three bare actions.
-    // why: send back ← "not allowed to accept" makes returning it the usual script; Tom keeps the cheese ← Tom's
-    //   "I want to take that cheese…" from the opening
     { id: 'd1', skill: 'detail', level: 'B1', point: 'lock', seg: [29.6, 35.1],
-      stem: 'What does Leslie decide to do with the basket?',
-      choices: ['Lock it away out of reach', 'Send it back to the company', 'Let Tom keep just the cheese'], a: 0,
-      cue: 'temptation のあとの動詞。',
+      stem: 'What will Leslie do with the gift basket?',
+      ja: 'レスリーは贈り物のかごをどうする？',
+      choices: ['Lock it away', 'Send it back', 'Give Tom the cheese'], a: 0,
+      choicesJa: ['鍵をかけてしまう', '送り返す', 'トムにチーズをあげる'],
+      cue: '「to avoid temptation」のあと。',
       line: 'to avoid temptation, I’m going to *lock it up*.',
       said: '「誘惑に負けないよう、鍵をかけてしまっておく」と言う。',
-      mean: '返すのでも分けるのでもなく、誰も手を出せないように保管する。あとの展開の前ふり。',
-      trap: '受け取れない物は返すのが普通なので、返送と思いやすい。言ったのは lock の動作。',
-      use: 'I’ll lock it up for now.（とりあえず、しまっておくね）' },
+      mean: 'lock 〜 up ＝ 〜に鍵をかけてしまう。avoid temptation ＝ 誘惑をさける。',
+      trap: 'I’m so sorry と謝るので、送り返すと思いやすい。I’m going to のあとを聞く。',
+      use: 'Please lock up when you leave.（出るときは鍵をかけてね）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'whatsup', seg: [39.3, 44.9],
       stem: 'Type Leslie’s answer: “I’ll ___.” (4 words)', answer: "tell you what's up",
-      cue: 'What is up? と聞かれた直後。',
+      ja: 'レスリーの答えを書こう：「I’ll ___.」（4語）',
+      cue: '「What is up?」への答え。',
       line: 'I’ll *tell you what’s up*. A couple of ladies are coming to…',
-      said: '「何かって？教えてあげる」と返す。',
-      mean: 'tell you は「テリュー」、what’s up は「ワッツァップ」とつながる。相手の質問を使った返し。',
-      trap: 'you と what’s が弱く、2語に聞こえやすい。相手の質問の語は、返事に戻ってきやすい。',
-      use: 'I’ll tell you what happened.（何があったか話すよ）' },
+      said: '「どうしたって？ 教えてあげる」と返す。',
+      mean: 'I’ll tell you what’s up ＝ 何なのか教えてあげる。tell you が「テリュ」とつながる。',
+      trap: 'tell you がひと続きで1語に聞こえやすい。what’s の s も弱い。4語を数える。',
+      use: 'I’ll tell you what’s going on.（何が起きてるか教えるよ）' },
 
-    // why: gossip ← "socializing" heard as chatting about people; club rules ← "The boys club is more about…" heard
-    //   as an explanation of how the club works
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'topic', seg: [58.0, 75.3],
-      stem: 'What does the reply to Leslie’s “What’s the topic?” suggest she expected?',
-      choices: ['A serious talk about work', 'Some gossip about the office', 'An explanation of the club’s rules'],
-      a: 0,
-      cue: '返事の more about … than … の比べ方。',
-      line: 'So what are you guys talking about? … The boys club is *more about socializing than work*, you know?',
-      said: '「議題は？」と聞くと、「この集まりは仕事より付き合いの場。肩の力を抜いて」と返される。',
-      mean: '議題を聞くのは会議の発想。返事は、仕事の話をしに来たと思われた事を示す。',
-      trap: 'socializing を「うわさ話」と取りやすい。何を打ち消す返事かを聞く。',
-      use: 'It’s more social than business.（仕事というより、交流の場だよ）' },
-
-    // R fix: V2 (blind 55 %): "laugh at her joke" was a filler. The new trap is the idiom's usual sense, promotion.
-    // why: beer ← "Let me get you a beer" just before; promoted ← "glass ceiling" learned as a block on women's
-    //   promotion (昇進の壁), but nothing about a promotion is said
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'ceiling', seg: [64.0, 70.15],
-      stem: 'What is Leslie celebrating with her line about a sound?',
-      choices: ['Getting into a group that was all men', 'Being the first woman to be promoted',
-                'Being offered a beer by the men'], a: 0,
-      cue: 'glass のあとの語と、何が割れたか。',
+      stem: '“*A glass ceiling being shattered*.” Why is Leslie happy?',
+      ja: '「ガラスの天井が割れた音」。レスリーは何を喜んでいる？',
+      choices: ['Getting into a men-only group', 'Getting a new, better job', 'Being given a beer'], a: 0,
+      choicesJa: ['男だけの集まりに入れた', 'もっといい仕事に就いた', 'ビールをもらった'],
+      cue: '「Did you hear that?」のあと。',
       line: 'That was the sound of *a glass ceiling being shattered*.',
-      said: '「今の聞こえた？ガラスの天井が割れた音よ」と言う。',
-      mean: 'glass ceiling ＝ 女性の参加や昇進を阻む見えない壁。男だけの集まりに入れた事を大げさに祝う。',
-      trap: '直前にビールを勧められたので、その話と思いやすい。比喩は「何が割れたか」で決まる。',
-      use: 'She broke the glass ceiling.（彼女はガラスの天井を破った）' },
+      said: '「今の聞こえた？ ガラスの天井が割れた音よ」と言う。',
+      mean: 'glass ceiling ＝ 女性の出世をはばむ見えない壁。男だけの集まりに入れたことを喜ぶ。',
+      trap: '音の話なので、本当に何か割れたと思いやすい。たとえで「壁を破った」。',
+      use: 'She broke the glass ceiling.（彼女は見えない壁を破った）' },
 
-    // R fix: V2 (blind 60 %): two thin distractors. Both now carry the scene's own words (breaking in, welcoming).
-    // why: celebrate ← the glass-ceiling line earlier; thank ← "Glad to have you. Let me get you a beer"
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'basket', reveals: ['lock', 'ceiling'], seg: [82.4, 122.0],
-      stem: 'Why does Leslie end up bringing out wine and cheese?',
-      choices: ['To keep the men from going home', 'To celebrate breaking into the club',
-                'To thank the men for welcoming her'], a: 0,
-      cue: 'out of beer のあと、男たちが何をし始めるか。',
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'topic', seg: [69, 75.3],
+      stem: 'What is the “boys club” mostly about, says a man?',
+      ja: '男の人によると、「ボーイズクラブ」は主に何の集まり？',
+      choices: ['Having fun together', 'Talking about work', 'Planning city events'], a: 0,
+      choicesJa: ['一緒に楽しむこと', '仕事の話', '町の行事の計画'],
+      cue: '「more about」のあと。',
+      line: 'The boys club is *more about socializing than work*, you know?',
+      said: '「議題は？」と聞くレスリーに、「この集まりは仕事より付き合い。肩の力を抜いて」と言う。',
+      mean: 'more about A than B ＝ B より A が中心。socialize ＝ 人と付き合う、交流する。',
+      trap: '「議題は？」と聞いたので、仕事の話と思いやすい。than work（仕事より）を聞く。',
+      use: 'It’s more about fun than winning.（勝つより楽しむのが大事）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'basket', reveals: ['lock', 'ceiling'], seg: [82.4, 122.0],
+      stem: 'Why does Leslie bring out the wine and cheese?',
+      ja: 'レスリーはなぜワインとチーズを出す？',
+      choices: ['To keep the men from leaving', 'To celebrate joining the club', 'To thank the men for beer'], a: 0,
+      choicesJa: ['男たちを帰らせないため', 'クラブに入れたお祝いのため', 'ビールのお礼のため'],
+      cue: 'ビールがなくなったあと。',
       line: 'We’re out of beer. … I think I’m gonna *take off*, too. … I got wine.',
-      said: 'ビールが切れて男たちが帰り始めると、レスリーは引き止め、ワインとチーズを持って戻る。',
-      mean: '会を続けるため、しまったはずの贈り物を開けた。これが後の謝罪の原因。',
-      trap: '「ガラスの天井」の流れで、お祝いと思いやすい。きっかけは帰りかけた男たち。',
-      use: 'Wait, don’t go yet! I have snacks.（待って、まだ帰らないで！おやつあるよ）' },
+      said: 'ビールが切れて男たちが帰り始めると、レスリーは引き止め、ワインとチーズを持ってくる。',
+      mean: 'out of 〜 ＝ 〜がなくなった。take off ＝ ここでは「帰る」。',
+      trap: 'お祝いの話のあとなので、お祝いと思いやすい。みんなが帰り始めた直後に出している。',
+      use: 'We’re out of milk.（牛乳が切れた）' },
 
-    // R fix: V2 (blind 50 %): the apology choice had no basis in the line. Now a warm-joke reading of the same
-    //   "Uh, yeah".
-    // why: agrees ← "Uh, yeah, because parties usually get started…" opens like agreement; stays on ← a joke read as
-    //   friendly teasing that ends in a yes (Japanese ノリツッコミ)
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'booze', seg: [93.35, 99.55],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'goodfeeling', seg: [93, 96.5],
+      stem: '“*Let’s keep this good feeling going*.” What does Leslie want?',
+      ja: '「Let’s keep this good feeling going」でレスリーは何を望んでいる？',
+      choices: ['Everyone to stay longer', 'Everyone to go home now', 'Everyone to cheer up'], a: 0,
+      choicesJa: ['みんなにもっと残ってほしい', 'みんなにもう帰ってほしい', 'みんなに元気を出してほしい'],
+      cue: '「Wait, you guys」のあと。',
+      line: 'Wait, you guys. *Let’s keep this good feeling going*. It’s just getting started.',
+      said: '帰ろうとする人たちに、「待って。このいい感じを続けよう。まだ始まったばかり」と言う。',
+      mean: 'keep 〜 going ＝ 〜を続ける。It’s just getting started ＝ まだ始まったばかり。',
+      trap: 'good feeling から「元気を出して」と思いやすい。みんなが帰る話の中で言っている。',
+      use: 'Let’s keep it going!（このまま続けよう！）' },
+
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'booze', seg: [93.35, 99.55], retired: true,
       stem: 'When Leslie says the night is just getting started, how does a man answer?',
       choices: ['He teases her for trying to keep it going', 'He agrees, since the fun starts later on',
                 'He jokes, but warmly offers to stay on'], a: 0,
@@ -129,12 +120,6 @@ export const apologyVideos: Clip = {
       trap: 'yeah, because で始まるので同意に聞こえやすい。常識と逆の理由が続いたら皮肉。',
       use: 'Oh yeah, because that always works.（ああ、それでいつもうまくいくもんね）' },
 
-    // R fix: V2 (blind 55 %): the distractors were padded ("for the night", "herself"). Trimmed, so the three read
-    //   alike.
-    // why: bought it ← the cheerful "Hey!" makes it sound like her own treat for the party; Ann's ← Ann came along
-    //   with her, so the bottle seems to be hers
-    // anchor: 6.1–10.3 s the basket holds "Great Lakes wine… that cheese"; 117.5–121 s "I got wine… and cheese";
-    //   129.3–136.3 s to camera "in a foolish attempt to infiltrate a boys club, I violated the… ethics code"
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'basket', reveals: ['ethics', 'lock'], seg: [117.2, 141.1], retired: true,
       stem: 'After her video statement, how should we hear “I got wine. And cheese.”?',
       choices: ['As the gift basket she had locked away', 'As a treat she ran out and bought',
@@ -146,39 +131,19 @@ export const apologyVideos: Clip = {
       trap: '明るい「Hey!」だけだと、ただの差し入れに聞こえる。場面とカメラへの一言は、つなげて聞く。',
       use: 'Wait, is this from the gift basket?（待って、これって贈答品のかごの？）' },
 
-    // R fix: V2 (blind 60 %): "coworkers want to see her punished" was an outside reason, easy to rule out under
-    //   "by her own account". Now a fear she could voice herself.
-    // why: city manager ← "an official reprimand from the city manager" heard as already ordered; Ron will report ←
-    //   "I asked Ron to blow the whistle on me", but he refused
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'standard', seg: [127.5, 298.3],
-      stem: 'By her own account, why must Leslie go so far in making amends?',
-      choices: ['She must meet a higher bar as a woman', 'The city manager has ordered her to',
-                'She expects Ron to report her otherwise'], a: 0,
-      cue: '「あなたの世界では」のあと、but で始まる文。',
-      line: 'But I am a woman and I need to *hold myself up to a higher standard*.',
-      said: '「私は女性だから、自分をより高い基準で律する」とロンに言う。',
-      mean: '女性の公務員は男性より厳しく見られるという考えが、謝罪をどこまでも大きくしている。',
-      trap: '処分やロンへの頼み事も出るが、命令も告発もない。理由は I need to の部分。',
-      use: 'I hold myself to a higher standard.（自分には厳しくしている）' },
-
-    // R fix: V2 (blind 50 %): only the key named the state. Now a distractor uses "Indiana" too.
-    // why: men's rule ← "infiltrate a boys club" just before "violated"; drinking law ← "the state of Indiana" + the
-    //   beer and wine at the bar
     { id: 'd3', skill: 'detail', level: 'B1', point: 'ethics', reveals: ['basket'], seg: [128.9, 137.0],
       stem: 'In her first video, what does Leslie say she broke?',
-      choices: ['The state’s ethics code for officials', 'The men’s rule against women in the club',
-                'An Indiana law on drinking in public'], a: 0,
-      cue: 'violated のあと、the から Indiana まで。',
+      ja: '最初の動画で、レスリーは何を破ったと言う？',
+      choices: ['The state’s ethics code', 'The club’s men-only rule', 'A law on drinking outside'], a: 0,
+      choicesJa: ['州の倫理規定', 'クラブの男性だけの決まり', '外での飲酒の法律'],
+      cue: '「I violated」のあと。',
       line: 'I *violated the government employee ethics code* of the state of Indiana.',
-      said: '「男の集まりに入りこもうとして、州の公務員倫理規定を破った」と言う。',
-      mean: '破ったのは州の公務員の規則。上限を超える贈り物を開けた事を指す。',
-      trap: '直前の boys club から、その集まりの決まりと思いやすい。violated の目的語を最後まで聞く。',
-      use: 'Sorry, that’s against the rules here.（すみません、ここではそれは規則違反です）' },
+      said: '「男の集まりに入りこもうとして、州の公務員倫理規定を破りました」と言う。',
+      mean: 'violate ＝ 破る、違反する。ethics code ＝ 倫理のきまり。',
+      trap: 'boys club の話が前にあるので、クラブの決まりと思いやすい。violated のあとを聞く。',
+      use: 'You can’t violate the rules.（規則を破ってはいけない）' },
 
-    // R fix: S3: the cue held "apologize", which only the key had in that form. The cue now points at "right now".
-    // why: own party ← "Republican" comes first, so it sounds like a partisan list (but "Democrat" follows); Indiana ←
-    //   "the state of Indiana" a moment before, heard as the scope (but "in America", Minnesota, Wisconsin)
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'list', reveals: ['basket'], seg: [145.3, 166.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'list', reveals: ['basket'], seg: [145.3, 166.8], retired: true,
       stem: 'Why does Leslie’s list of names get a laugh?',
       choices: ['She means to apologize to each one in turn', 'She apologizes only to women in her party',
                 'She apologizes to Indiana’s women officials'], a: 0,
@@ -189,122 +154,113 @@ export const apologyVideos: Clip = {
       trap: 'Republican と Democrat が両方出るので党の話ではない。範囲は in America。',
       use: 'Let’s go one by one, in alphabetical order.（一人ずつ、名前順でいこう）' },
 
-    // R fix: V2 (blind 70 %): "let in some fresh air" was too literal to tempt anyone. Now the trap is the Japanese
-    //   「空気」 frame: settling the room.
-    // why: calm down ← "air" heard as 場の空気, so clearing it sounds like settling everyone; lighter ← "clear" heard
-    //   as clearing away a heavy topic
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'air', reveals: ['basket'], seg: [167.5, 174.2],
-      stem: 'When Leslie faces the office, what does her first set phrase do?',
-      choices: ['It warns that a confession is coming', 'It asks everyone to calm down first',
-                'It moves the talk somewhere lighter'], a: 0,
-      cue: 'Last night の直前、短い決まり文句。',
+      stem: 'Leslie tells the office, “*Let’s clear the air*.” What is she doing?',
+      ja: '「Let’s clear the air」でレスリーは何をしている？',
+      choices: ['Starting to admit something', 'Asking everyone to calm down', 'Changing to a lighter topic'], a: 0,
+      choicesJa: ['何かを打ち明け始めている', 'みんなに落ち着いてと頼んでいる', '軽い話題に変えている'],
+      cue: '最初の決まり文句と、そのあと。',
       line: '*Let’s clear the air*. Last night, I opened up this gift basket…',
-      said: '「すっきりさせましょう。昨夜、このかごを開けました」と切り出す。',
-      mean: 'clear the air ＝ 隠し事やわだかまりを話して、場の空気を晴らす。告白の前置き。',
-      trap: 'air を「場の空気」と取ると、落ち着かせる話に聞こえる。直後の告白が意味を決める。',
-      use: 'Can we talk? I want to clear the air.（話せる？わだかまりをなくしたいんだ）' },
+      said: '「はっきりさせましょう。昨夜、このかごを開けました」と切り出す。',
+      mean: 'clear the air ＝ 誤解やもやもやをなくす。打ち明け話の前置き。',
+      trap: 'air（空気）から、窓を開ける話と思いやすい。あとに打ち明け話が続く。',
+      use: 'Let’s talk and clear the air.（話してすっきりさせよう）' },
 
-    // R fix: V2 (blind 60 %): the key was the only careful choice ("every rule closely"). Now each choice is a
-    //   habit with a slant.
-    // why: bends the rules ← "Really?" heard as "typical of you"; private ← "I don't even know you anymore" read
-    //   literally
     { id: 'i2', skill: 'infer', level: 'B2', point: 'stickler', seg: [174.1, 182.1],
-      stem: 'What does the coworker’s reaction tell us about Leslie’s usual ways?',
-      choices: ['She usually sticks closely to the rules', 'She often bends the rules for herself',
-                'She usually keeps her private life private'], a: 0,
-      cue: 'usually のあとと、anymore で終わる文。',
+      stem: 'What is Leslie usually like, says the coworker?',
+      ja: '同僚によると、レスリーはいつもはどんな人？',
+      choices: ['Very strict about rules', 'Easy about the rules', 'Quiet about her life'], a: 0,
+      choicesJa: ['規則にとても厳しい', '規則にゆるい', '自分のことを話さない'],
+      cue: '「You’re usually」のあと。',
       line: 'You’re *usually* such a… *stickler for the rules*. … It’s like *I don’t even know you anymore*.',
       said: '「いつもは規則にうるさいのに。知らない人みたい」と驚く。',
-      mean: 'stickler ＝ 決まりにうるさい人。今回は、いつもの彼女と正反対という反応。',
-      trap: 'I don’t even know you は「よく知らない」ではなく、普段との差に驚く決まり文句。',
-      use: 'She’s a stickler for deadlines.（彼女は締め切りにうるさい）' },
+      mean: 'stickler for 〜 ＝ 〜にうるさい人。I don’t even know you ＝ まるで別人だ。',
+      trap: '今回規則を破ったので、ゆるい人と思いやすい。usually（いつもは）を聞く。',
+      use: 'My boss is a stickler for time.（上司は時間にうるさい）' },
 
-    // R fix: V2 (blind 50 %): "forgotten it" was a filler. Now "Two wrongs…" is heard as shifting the blame.
-    // why: sorry ← she is apologizing to everyone today, so an apology seems due here too; blames the rules ← "Two
-    //   wrongs do not make a right" heard as an excuse
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'writeup', seg: [181.7, 188.55],
-      stem: 'Reminded of how she treated a coworker last year, what is Leslie’s stance?',
-      choices: ['She stands by it and would do it again', 'She’s sorry and adds it to her apology',
-                'She admits it, but blames the rules'], a: 0,
-      cue: 'Yes, I did のあと、and で続く部分。',
+      stem: 'About the phone calls last year, what does Leslie say?',
+      ja: '去年の電話の件について、レスリーは何と言う？',
+      choices: ['She would do it again', 'She is sorry about it', 'The rules made her do it'], a: 0,
+      choicesJa: ['またやる', 'それを悪かったと思う', '規則のせいでそうした'],
+      cue: '「Yes, I did, and」のあと。',
       line: 'Yes, I did, and *I would do it again*. Two wrongs do not make a right.',
       said: '私用電話を注意した件を「ええ、した。またやる」と認める。',
-      mean: '今日は謝ってばかりだが、過去の厳しさは引かない。自分にも他人にも厳しい人。',
-      trap: '謝罪の場面なので、昔の事も謝ると思いやすい。and のあとに今の立場が出る。',
-      use: 'I stand by what I said.（言った事は撤回しない）' },
+      mean: 'I would do it again ＝ 同じ場面ならまたやる。後悔していない。',
+      trap: '謝りの場面なので、これも謝ると思いやすい。and のあとで引かないと分かる。',
+      use: 'I’d do it again.（またやるよ）' },
 
-    // R fix: V2 (blind 55 %): the distractors weren't "really saying" readings. Now each is an intent Ron could
-    //   have.
-    // why: make it official ← "very important" + an ethics matter make email sound like the formal route; short
-    //   version ← "very long" heard as the problem
     { id: 'pr2', skill: 'pragma', level: 'C1', point: 'email', seg: [212.3, 220.9],
-      stem: 'When Leslie warns her story is very long, what is Ron really saying?',
-      choices: ['Spare me from having to hear it', 'Make it official, since it’s important',
-                'Give me the short version, quickly'], a: 0,
-      cue: 'very long の直後、ロンの短い返事。',
+      stem: '“A long story.” — “*Put it in an email?*” What does Ron mean?',
+      ja: '「とても長い話がある」「メールにしてくれる？」。ロンは何を言いたい？',
+      choices: ['He doesn’t want to hear it', 'It’s important, so write it', 'Make it short, quickly'], a: 0,
+      choicesJa: ['聞きたくない', '大事だから書いて', '早く短くして'],
+      cue: '「very long story」への返事。',
       line: 'I have a very important and *very long story* to tell you. — *Put it in an email?*',
       said: '「大事で、とても長い話がある」と言われ、ロンは「メールにしてくれる？」と返す。',
-      mean: '長話を聞きたくない本音を、メールという形で言っている。',
-      trap: '倫理の話なので、記録を残す正式な手順と思いやすい。very long への返事として聞く。',
-      use: 'Can you just send me an email?（メールで送ってくれる？）' },
+      mean: 'Put it in an email ＝ メールで送って。今ここで長話を聞きたくない、という逃げ。',
+      trap: 'important（大事）から、きちんと記録したいと思いやすい。long への返事として聞く。',
+      use: 'Can you put it in an email?（メールで送ってもらえる？）' },
 
-    // R fix: V2 (blind 50 %): "agrees to keep the matter small" went against "I will blow". Now a mocking reading.
-    // why: garbles ← "in proportion" isn't the set phrase, so it sounds like a slip; mocks him ← the echo of his
-    //   words heard as a jab at him
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'proportion', seg: [226.9, 232.2],
-      stem: 'When told not to blow this out of proportion, why is Leslie’s reply funny?',
-      choices: ['She flips his phrase to defend her fuss', 'She garbles the idiom without noticing',
-                'She mocks him for overreacting himself'], a: 0,
-      cue: 'out of と、レスリーの返しの違い。',
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'proportion', seg: [226.9, 232.2],
+      stem: '“Let’s not *blow this out of proportion*.” Why is Leslie’s reply funny?',
+      ja: '「大げさにしないで」へのレスリーの返事はなぜおかしい？',
+      choices: ['She turns his words around', 'She gets the words wrong', 'She says he overreacts'], a: 0,
+      choicesJa: ['彼の言葉をひっくり返して使う', '言葉をまちがえる', '彼こそ大げさだと言う'],
+      cue: '同じ形の返事。',
       line: 'Let’s not blow this out of proportion. — I will *blow this in proportion*.',
-      said: '「大げさにするな」と言われ、「適切な大きさで騒ぎます」と同じ形で返す。',
-      mean: 'out of を in に変え、自分の騒ぎ方は妥当だと言い張る言葉遊び。',
-      trap: 'わざと崩した言い方で、うっかりではない。相手の言葉を一語だけ変えて返すのは反論の型。',
-      use: 'Let’s not blow this out of proportion.（大げさにしないでおこう）' },
+      said: '「大げさにするな」と言われ、「ちょうどいい大きさで騒ぎます」と同じ形で返す。',
+      mean: 'blow 〜 out of proportion ＝ 〜を大げさにする。out を in に変えて言い返している。',
+      trap: 'まちがえたように聞こえるが、わざと out を in にした言葉遊び。',
+      use: 'Don’t blow it out of proportion.（大げさにしないで）' },
 
-    // R fix: S3: the cue held "from", a word only the key had. The cue now says "before city manager".
-    // why: apology ← she has been apologizing all along, and "official… city manager" fits a formal letter; fine ←
-    //   the $25 limit from the opening
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'standard', seg: [229, 252],
+      stem: 'Why does Leslie take this so seriously?',
+      ja: 'レスリーはなぜこんなに深刻にとらえる？',
+      choices: ['A woman must do even better', 'The city manager told her to', 'Ron will report her if not'], a: 0,
+      choicesJa: ['女性はもっときちんとしなければ', '市の管理官に言われたから', 'しないとロンに報告されるから'],
+      cue: '「But I am」のあと。',
+      line: 'But I am a woman and I need to *hold myself up to a higher standard*.',
+      said: '「でも私は女性だから、自分をもっと高い基準で律しないと」とロンに言う。',
+      mean: 'hold myself to a higher standard ＝ 自分にもっと厳しくする。',
+      trap: 'city manager の話が出るので、命令されたと思いやすい。理由は But のあと。',
+      use: 'I hold myself to a high standard.（自分に厳しくしている）' },
+
     { id: 'd5', skill: 'detail', level: 'B1', point: 'reprimand', reveals: ['limit'], seg: [232.3, 236.65],
-      stem: 'What is the minimum punishment for this, according to Leslie?',
-      choices: ['A formal warning from the city manager', 'A formal apology to the city manager',
-                'A $25 fine paid to the city'], a: 0,
-      cue: 'minimum punishment のあと、city manager の前。',
+      stem: 'What is the smallest punishment, says Leslie?',
+      ja: 'レスリーによると、いちばん軽い罰は何？',
+      choices: ['A formal warning', 'A formal apology', 'A $25 fine'], a: 0,
+      choicesJa: ['正式な注意', '正式な謝罪', '25ドルの罰金'],
+      cue: '「punishment for this」のあと。',
       line: 'The *minimum punishment* for this is *an official reprimand* from the city manager.',
-      said: '「最低でも、市の管理官から正式な戒告」と言う。',
-      mean: 'reprimand ＝ 戒告、正式な叱責。クビや罰金ではなく、記録に残る注意。',
-      trap: '謝ってばかりの流れで、謝罪文と思いやすい。reprimand は受ける側の処分で、自分が出すものではない。',
-      use: 'He got a warning, nothing more.（彼は注意を受けただけ）' },
+      said: '「最低でも、市の管理官からの正式な注意」と言う。',
+      mean: 'minimum ＝ 最低の。reprimand ＝ 叱責、正式な注意。',
+      trap: '謝る話が続いているので、謝罪と思いやすい。reprimand は「叱られる」ほう。',
+      use: 'What’s the minimum price?（最低価格はいくら？）' },
 
-    // anchor: 236.7–238.0 s both sources have "it's not that big a deal": six words in about 1.3 s, with "a" a weak
-    //   schwa between "big" and "deal" and no "of"
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'bigdeal', seg: [236.65, 240.0],
       stem: 'Type the reply: “It’s ___.” (5 words)', answer: 'not that big a deal',
-      cue: 'city manager のすぐあと。文法より、聞こえた音を。',
+      ja: '返事を書こう：「It’s ___.」（5語）',
+      cue: '「city manager」のあとの返事。',
       line: 'It’s *not that big a deal*.',
-      said: '「そこまで大した事じゃない」と速く返す。a は弱く小さい。',
-      mean: 'that big a deal は形容詞が a の前に出る形。of が入る言い方もあるが、ここは入っていない。',
-      trap: 'that を落としたり of を足したりしやすい。文法でなく、聞こえた音を書く。',
-      use: 'It’s not that big a deal, honestly.（正直、そこまでの事じゃないよ）' },
+      said: 'ロンが「そこまで大したことじゃない」と速く返す。',
+      mean: 'not that big a deal ＝ そこまで大したことじゃない。big が a の前に出る形。a は弱い。',
+      trap: 'that を落としたり、of を足したりしやすい。文法ではなく、聞こえた5語を書く。a も1語。',
+      use: 'It’s not that big a deal, honestly.（正直、そこまでのことじゃないよ）' },
 
-    // why: is ← the t of "isn't" drops before "a", leaving "izn"; wasn't ← the "last night" past frame of the story
-    // R fix: V2 (blind 60 %): "Maybe" in the stem settled it by logic. The stem now starts "…in your world", so the
-    //   sound decides.
-    { id: 's1', skill: 'sound', level: 'B2', point: 'isnt', reveals: ['bigdeal'], seg: [236.65, 243.6],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'isnt', reveals: ['bigdeal'], seg: [236.65, 243.6],
       stem: 'Fill the gap: “…in your world it ___ a big deal.”',
+      ja: '空いている所に入る語は？「…in your world it ___ a big deal.」',
       choices: ['isn’t', 'is', 'wasn’t'], a: 0,
-      cue: 'world it のあと、big deal の前の短い語。',
+      choicesJa: ['〜ではない', '〜だ', '〜ではなかった'],
+      cue: '「Maybe in your world」のあと。',
       line: 'Maybe in your world it *isn’t* a big deal.',
-      said: '「あなたの世界では大した事じゃないかもね」とロンに返す。',
-      mean: 'isn’t の t はほぼ消え「イズンア」とつながる。相手の見方をいったん認める言い方。',
-      trap: 't が消えても n の鼻音は残る。「ン」が聞こえたら否定。is だと逆の意味になる。',
-      use: 'Maybe for you it isn’t a problem.（あなたには問題じゃないかもね）' },
+      said: '「あなたの世界では大したことじゃないかもね」とロンに返す。',
+      mean: 'isn’t は「イズン」。t が消えて次の a とつながり「イズナ」に近い。',
+      trap: 'is なら「イズ」で「ン」がない。wasn’t なら「ワ」で始まる。最初の音と「ン」を聞く。',
+      use: 'It isn’t a big deal.（大したことじゃない）' },
 
-    // R fix: V2 (blind 60 %): "thanks him and lets it drop" was a filler. Now "What do you suggest" heard as a real
-    //   question.
-    // why: agrees ← the short "No." gets lost; asks in earnest ← "What do you suggest we do?" heard as a real request
-    //   for advice
-    { id: 'pr3', skill: 'pragma', level: 'C1', point: 'coverup', seg: [247.5, 258.7],
+    { id: 'pr3', skill: 'pragma', level: 'C1', point: 'coverup', seg: [247.5, 258.7], retired: true,
       stem: 'What does Leslie do with Ron’s advice to go easier on herself?',
       choices: ['She twists it into advice to cover it up', 'She asks him in earnest what to do next',
                 'She agrees she’s being too hard on herself'], a: 0,
@@ -315,22 +271,19 @@ export const apologyVideos: Clip = {
       trap: 'What do you suggest は相談に聞こえるが、反論の前ふり。続く質問で本音が分かる。',
       use: 'So what, you want me to just ignore it?（じゃあ何、放っておけって言うの？）' },
 
-    // why: women officials ← her first video's apology list; Ron and the manager ← the two people the last scene
-    //   names as able to punish her
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'confession', reveals: ['list'], seg: [278.95, 286.1],
-      stem: 'Who will Leslie email her written confession to?',
-      choices: ['Everyone in Pawnee’s government', 'Every woman in public office', 'Ron and the city manager'], a: 0,
-      cue: 'emailing to のあと、文の最後まで。',
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'confession', seg: [278.95, 286.1],
+      stem: 'Who will Leslie email her confession to?',
+      ja: 'レスリーは告白文をだれにメールする？',
+      choices: ['Everyone in Pawnee’s government', 'Every woman in public office', 'Just Ron and the city manager'], a: 0,
+      choicesJa: ['ポーニーの役所の全員', '公職の女性全員', 'ロンと市の管理官だけ'],
+      cue: '「emailing to」のあと。',
       line: 'which I will be *emailing to everyone in the entire Pawnee government*.',
-      said: '「告白文を書いた。ポーニーの市役所の全員にメールで送る」と言う。',
-      mean: '注意で済む件を、役所全体に知らせる。償いがどんどん大きくなっている。',
-      trap: '前のビデオの「全米の女性公務員」と混ざりやすい。宛先は to のあとの everyone in…。',
-      use: 'I’ll email it to the whole team.（チーム全員にメールで送るね）' },
+      said: '「告白文を書いた。ポーニーの役所の全員にメールで送る」と言う。',
+      mean: 'confession ＝ 告白、白状。entire ＝ 全部の。',
+      trap: '前に全米の女性公務員に謝ったので迷いやすい。emailing to のあとを聞く。',
+      use: 'I’ll email it to everyone.（全員にメールするね）' },
 
-    // R fix: V2 (blind 50 %): the rules choice was weak. Now the third option is her own apology videos.
-    // why: report her ← a link inside a confession sounds like a complaint form; videos ← her video statements are
-    //   what this scene follows, so a link seems to point there
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'pits', seg: [286.2, 292.5],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'pits', seg: [286.2, 292.5], retired: true,
       stem: 'What does the link Leslie attaches show about her confession?',
       choices: ['It slips in some praise for herself', 'It gives people a place to report her',
                 'It points people to her apology videos'], a: 0,
@@ -341,14 +294,7 @@ export const apologyVideos: Clip = {
       trap: '告白にリンクと聞くと、通報先や謝罪ビデオと思いやすい。just to のあとが目的。',
       use: 'Just a friendly reminder about Friday.（金曜の件、念のためのお知らせです）' },
 
-    // R fix: V2 (blind 60 %): "the city" was remote. Now the near miss has the right target, Leslie, and the wrong
-    //   mechanism (a word she misuses).
-    // why: Ron ← "he refused" sounds like blame for not reporting a wrong: the right mechanism, the wrong target;
-    //   doesn't know the word ← "whistle blow myself" heard as a slip, but she used "blow the whistle on me" rightly
-    // anchor: 292.8–297.4 s "I asked Ron to blow the whistle on me and he refused… that is why I had to whistle blow
-    //   myself": every clause has "I" for its subject, and a whistle-blower exposes others, so "myself" turns a
-    //   confession into a brave act; 236.7 s Ron's "It's not that big a deal" is why he refused
-    { id: 'nt3', skill: 'humor', level: 'C2', point: 'whistle', reveals: ['bigdeal'], seg: [292.4, 298.3],
+    { id: 'nt3', skill: 'humor', level: 'C2', point: 'whistle', reveals: ['bigdeal'], seg: [292.4, 298.3], retired: true,
       stem: 'In Leslie’s last line about blowing the whistle, who is the joke on?',
       choices: ['Leslie, who makes a confession sound heroic', 'Leslie, who doesn’t know what whistle-blowing is',
                 'Ron, for refusing to report a real wrong'], a: 0,

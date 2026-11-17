@@ -1,6 +1,4 @@
-// REVIEW 2026-11-16: pass 1, fix 22, drop 1, new 1; ear checks 2
-// OPEN: nt4 (new C2) keys "but look" as Leslie defending Shauna's place on the list, not a dig at Ann; if you hear
-//   real spite toward Ann in her voice at 145 s, drop nt4 (the bank keeps 2 C2 items).
+// A2 REVIEW 2026-11-17: keep 9, rewrite 10, retire 5, new 0
 // “How to make friends as an adult (according to Leslie) | Parks and recreation” (the official Parks and Recreation
 // channel, Season 2 playlist): Ann cancels their weekly chat, so Leslie calls an impromptu Galentine's Day brunch to
 // find "an Ann who lives in Pawnee"; her "just for fun" questions turn out to be a test, the guests find her friendship
@@ -8,18 +6,11 @@
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Ann (5.1, 11.7, 83.4, 90.0, 146.2,
 // 154.1 s), Donna (40.5, 134.8, 187.0, 272.8 s), April (55.8, 137.9, 201.3 s), Shauna (107.9, 140.9, 242.4, 288.6 s),
 // Ethel (147.7, 240.3 s), Evelyn (152.5 s). Leslie is never named; she runs every scene and every talking head.
-// Left out on purpose: 16–24.8 s (whisper only: "I'm coming in, voicemail", "I have not been taken"), the Liam Neeson
-// "Taken" reference (world knowledge), "tampon commercial" (70.5 s), "whipped cream… do not Google that phrase"
-// (102.7–106.5 s), Shauna's married boyfriend (113.6–119 s), "Rome's played out" (captions "let's play it out", 122.9 s),
-// "skin flicks… top me off" (214–219.8 s), the annulments and Keith Sweat (232.7–239.4 s: backstory and a long con),
+// Left out on purpose: 16–24.8 s (whisper only), the Liam Neeson "Taken" reference (world knowledge), "tampon
+// commercial" (70.5 s), "whipped cream… do not Google that phrase" (102.7–106.5 s), Shauna's married boyfriend
+// (113.6–119 s), "Rome's played out" (122.9 s), "skin flicks… top me off" (214–219.8 s), the annulments (232.7–239.4 s),
 // "Leave the bag" (280.7 s) and "I'll see you next week" (whisper only, 292 s): speakers unclear.
-// Not an ear check: the captions' "this candle" (195.9 s) is whisper's "it's Scandal" (h2 stands on the other three);
-// the captions' "Hops in Eaglewood" (46.4 s) is whisper's "haps in Migglewood" (p1 doesn't quote it).
-// EAR CHECK: 29.2–32.2 s h1 — both sources: "That's exactly what they'd make you say. — Also, no one's making me say
-//   this." Assumed: Leslie says the first line to the voicemail, and the second is Ann's recording going on (her
-//   "I'll call you later" at 38 s matches April's message). Confirm the two voices.
-// EAR CHECK: 76.9 s s1 — captions "weren't gonna", whisper "weren't going to": the key is "weren't gonna" (dictation-
-//   style scoring ignores gonna/going to); confirm the t of "weren't" is weak but the negative is audible.
+// EAR CHECK: 76.9 s s1 — captions "weren't gonna", whisper "weren't going to": the key is "weren't gonna"
 import type { Clip } from '../types.ts';
 
 export const galBrunch: Clip = {
@@ -28,38 +19,31 @@ export const galBrunch: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: K4, cut "Seven to eleven hours" (only "seven" caught: a filler); notes trimmed to ≤ 120
-    // why: one or two ← "one to" runs together like "one or"; two to seven ← the weak "to" heard as "two"
     { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 6.85],
-      stem: 'How long does Leslie say she will be in her office?',
-      choices: ['One or two hours', 'One to seven hours', 'Two to seven hours'], a: 1, keep: true,
-      cue: '「in my office for」のあと、数の幅。',
+      stem: 'How long will Leslie be in her office?',
+      ja: 'レスリーはどのくらいオフィスにいると言う？',
+      choices: ['1 or 2 hours', '1 to 7 hours', '2 to 7 hours'], a: 1, keep: true,
+      choicesJa: ['1〜2時間', '1〜7時間', '2〜7時間'],
+      cue: '「in my office for」のあと。',
       line: 'I will be in my office for *one to seven hours*…',
       said: 'アンとの毎週のおしゃべりのため、オフィスに「1〜7時間」こもると言う。',
-      mean: '幅が広すぎる冗談で、どれだけ長話かが伝わる。',
-      trap: 'to は弱く「タ」になり、or や two に聞こえやすい。幅は A to B の形で待つ。',
-      use: 'It takes one to two hours.（1〜2時間かかります）' },
+      mean: 'one to seven ＝ 1から7まで。長電話の幅が大きすぎるのがおかしい。',
+      trap: 'or なら「1か2」、to なら「〜から〜まで」。最初が one か two かも聞く。',
+      use: 'It takes two to three hours.（2〜3時間かかります）' },
 
-    // R fix: V2, blind 65 % (the key was the only reason a call gets cancelled); a "call you later" distractor now;
-    //   notes trimmed
-    // why: phone ← "she'll call you later" heard as the reason, as if the line dropped; coming up ← "came up" read
-    //   literally (上がってくる), as if Ann were coming to the office in person
     { id: 'd1', skill: 'detail', level: 'B1', point: 'cameup', seg: [10.6, 18],
-      stem: 'What was Ann’s message while Leslie was in the bathroom?',
-      choices: ['Something came up, so the chat is off', 'Her phone was dying, so she’d call back',
-                'She was coming up to the office instead'], a: 0,
-      cue: '「She said」のあと、短い決まり文句。',
+      stem: 'What was Ann’s message?',
+      ja: 'アンからの伝言は何？',
+      choices: ['Something came up for her', 'Her phone battery was dying', 'She was coming over'], a: 0,
+      choicesJa: ['急用ができた', '電話の電池が切れそう', 'こっちに来る'],
+      cue: '「She said」のあと。',
       line: 'She said *something came up*…',
       said: 'エイプリルが「アンから電話。急用ができたって。あとでかけ直すって」と伝える。',
-      mean: 'something came up ＝ 急用ができた。断りの決まり文句。',
-      trap: 'call you later から別の理由を想像しやすい。came up は「急に起きる」。',
-      use: 'Sorry, something came up. Rain check?（ごめん、急用で。また今度でいい？）' },
+      mean: 'something came up ＝ 急用ができた。予定を断るときの決まり文句。',
+      trap: 'came up（上がってきた）から「来る」と思いやすい。something came up でひとまとまり。',
+      use: 'Sorry, something came up. Can we talk tomorrow?（ごめん、急用ができた。明日話せる？）' },
 
-    // R fix: V2 + K2, blind 55 %; "her voice shows she is scared" could only be refuted by ear; now a kidnap-script
-    //   reading the words refute ("I am a free woman, untaken"); notes trimmed
-    // why: forced ← "no one's making me say this" read as an admission, with "no one's" lost; plea ← the kidnap talk
-    //   ("they'd make you say") heard as Ann slipping in a coded cry for help
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'voicemail', seg: [24.3, 33.9],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'voicemail', seg: [24.3, 33.9], retired: true,
       stem: 'Why is the message’s next line funny after Leslie’s reply?',
       choices: ['The recording seems to answer her doubt', 'Ann admits someone is making her talk',
                 'Ann slips in a hidden plea for help'], a: 0,
@@ -70,11 +54,7 @@ export const galBrunch: Clip = {
       trap: '誘拐の話から、助けを求める合図を探しやすい。no one’s の否定を聞き落とさない。',
       use: 'Honestly, nobody put me up to this.（ほんとに、誰かに頼まれたわけじゃない）' },
 
-    // R fix: V2 + K5, blind 60 %: the key was the only "manner" choice among "asking about X"; now three parallel
-    //   moves, one of them built on Donna's reply; notes trimmed
-    // why: listening ← Donna answers "I'm listening to…", so the questions seem to have asked that; hometown ←
-    //   "Donnatown" heard as a real place
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'greet', seg: [40, 47.4],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'greet', seg: [40, 47.4], retired: true,
       stem: 'What are Leslie’s quick questions to Donna doing?',
       choices: ['Saying hi and asking how she is', 'Asking what she is listening to',
                 'Asking about the town she grew up in'], a: 0,
@@ -85,96 +65,77 @@ export const galBrunch: Clip = {
       trap: 'town や good を文字通りに取ると、町の話に聞こえる。返事の内容に引っぱられず、あいさつは形で覚える。',
       use: 'Hey, what’s good? Long time!（よう、元気？久しぶり！）' },
 
-    // R fix: V2, blind 60 %; "worried about work" was a filler, now a sincere-pride misreading; notes trimmed
-    // why: glad ← "my husband" heard as a proud answer she's been waiting to give; shy ← "my husband" + a sharp reply read
-    //   as embarrassment (日本語の照れ)
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'girltalk', seg: [55.3, 63.95],
-      stem: 'When Leslie asks April about her love life, how does April react?',
-      choices: ['She’s annoyed by the girl talk and wants out', 'She’s glad to talk about her husband at last',
-                'She’s too shy to talk about her husband'], a: 0,
-      cue: '答えの終わりの呼び方と、最後の二語。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'girltalk', seg: [55.3, 63.95],
+      stem: 'When Leslie asks about her love life, how does April feel?',
+      ja: '恋の話を聞かれて、エイプリルはどんな気持ち？',
+      choices: ['Annoyed, she wants to work', 'Happy to talk about him', 'Too shy to answer'], a: 0,
+      choicesJa: ['うんざりして、仕事に戻りたい', '彼のことを話せてうれしい', '恥ずかしくて答えられない'],
+      cue: '「my husband」のあと。',
       line: '…my husband, *weirdo*. Can I get back to work now? *Thanks. Bye.*',
-      said: '「夫に決まってるでしょ、変な人。仕事に戻っていい？どうも、じゃあね」と返す。',
-      mean: 'weirdo と一方的な Thanks. Bye. で、早く切り上げたい気持ちが出る。',
-      trap: '恋の話を嫌がる様子は照れにも見える。呼び名と締め方で本音を聞く。',
+      said: '「夫に決まってるでしょ、変な人。仕事に戻っていい？ どうも、じゃあね」と返す。',
+      mean: 'Can I get back to work? ＝ 仕事に戻っていい？ 早く話を終わらせたい合図。',
+      trap: 'husband（夫）の話なので、のろけと思いやすい。weirdo（変な人）と Bye で、うんざりと分かる。',
       use: 'Can I get back to work now?（もう仕事に戻っていい？）' },
 
-    // R fix: V2, blind 70 %: "really for" in the stem flagged a hidden purpose, and "goodbye party" was weak; notes trimmed
-    // why: bond ← the Galentine's script (women bonding) that the talking head turns into a test; cheer up ← "she is
-    //   gone, and I have accepted it" heard as the reason for a party
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'tryout', seg: [71.7, 100.1],
-      stem: 'What is the brunch for, as Leslie explains it to the camera?',
-      choices: ['Trying out the women to find one new Ann', 'Getting the women to bond as one group',
-                'Cheering herself up now that Ann is gone'], a: 0,
-      cue: 'カメラに向かって話す部分、何をするつもりか。',
-      line: '…so I will *test them out* on the ultimate battlefield of female friendship…',
-      said: 'カメラに「パーニーに住むアンが必要。候補を試す」と話す。',
-      mean: '楽しい会に見えて、実は親友の選考会。battlefield（戦場）が本音を表す。',
-      trap: '女性の会なので、仲良くなる会や気晴らしに聞こえやすい。カメラへの一言で目的が分かる。',
-      use: 'Let’s test it out this weekend.（今週末に試してみよう）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tryout', seg: [71.7, 100.1],
+      stem: 'Why is Leslie having the brunch?',
+      ja: 'レスリーはなぜブランチを開く？',
+      choices: ['To find a new best friend', 'To make the women one group', 'To cheer herself up'], a: 0,
+      choicesJa: ['新しい親友を見つけるため', '女性たちを一つのグループにするため', '自分を元気づけるため'],
+      cue: 'カメラへの「I need」の文。',
+      line: 'I need an Ann who lives in Pawnee… so I will *test them out*…',
+      said: 'カメラに「パーニーに住むアンが必要。候補を試すの」と話す。',
+      mean: 'test 〜 out ＝ 〜を試す。アンの代わりになる親友を探している。',
+      trap: 'bonding（仲良くなる）と言うので、みんなの仲の話と思いやすい。I need のあとが本音。',
+      use: 'I need a friend who lives nearby.（近くに住む友だちがほしい）' },
 
-    // R fix: V2, blind 50 %: "Wait," in the stem signalled surprise, pointing at the negative; cut; notes trimmed
-    // why: were gonna ← the t of weren't drops, leaving "were"; wouldn't ← the same w…n't shape and the same sense;
-    //   wanted to ← "gonna" ≈ "wanna"
     { id: 's1', skill: 'sound', level: 'B2', point: 'werent', seg: [75.5, 82.5],
       stem: 'Fill the gap: “I thought you ___ do Galentine’s Day this year…”',
-      choices: ['were gonna', 'weren’t gonna', 'wouldn’t', 'wanted to'], a: 1,
-      cue: '「I thought you」のあと、短い音のまとまり。',
+      ja: '空いている所は？「I thought you ___ do Galentine’s Day this year…」',
+      choices: ['weren’t gonna', 'were gonna', 'wouldn’t'], a: 0,
+      choicesJa: ['〜しないつもりだった', '〜するつもりだった', '〜しないだろう'],
+      cue: '「I thought you」のあと。',
       line: 'I thought you *weren’t gonna* do Galentine’s Day this year because…',
       said: '「今年はやらないと思ってた。あの人が引っ越したから」と言う。',
-      mean: 'weren’t gonna ＝ 〜するつもりじゃなかった。理由と合う。',
-      trap: 'weren’t の t が落ちて were に聞こえやすい。否定は後ろの理由と合うかで確かめる。',
-      use: 'I thought you weren’t coming!（来ないと思ってた！）' },
+      mean: 'weren’t gonna ＝ 〜するつもりじゃなかった。「ワーントガナ」と速い。',
+      trap: 'were gonna との差は「ン」の音だけ。wouldn’t なら「ウドゥン」で、gonna は続かない。',
+      use: 'I thought you weren’t coming.（来ないと思ってた）' },
 
-    // R drop: nt1 (C2 attitude, "I have accepted it", never shipped). V2: blind 65 % ("As a front" was the only knowing
-    //   reading). It also shared `tryout` with gist g1, so it could never be drawn on g1's plays: with harder on, play 3
-    //   (a g1 play) found no C2 left in 9 of 20 seeds, which fails the repo's draw test. Replaced by nt4 on another point.
-
-    // R fix: notes trimmed to ≤ 120 (the item itself passes: blind 35 %, wrong)
-    // why: guess ← the question form taken literally, as a quiz; change the subject ← "jacuzzi" heard as a new topic
-    //   (her home)
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'boast', seg: [125.2, 130.95],
-      stem: 'After “When did you go to Asia?”, what does her question back do?',
-      choices: ['It proves she has been there, as a boast', 'It asks the others to guess where she shops',
-                'It turns the talk to her house and jacuzzi'], a: 0,
-      cue: '「I go all the time」に続く、質問の形の一文。',
+      stem: '“*Where do you think I got* that?” What is Donna doing?',
+      ja: '「あれ、どこで手に入れたと思う？」でドナは何をしている？',
+      choices: ['Showing off that she’s been', 'Asking them to guess a shop', 'Changing the topic to her house'], a: 0,
+      choicesJa: ['行ったことを自慢している', '店を当ててもらおうとしている', '家の話に変えている'],
+      cue: '「go to Asia?」への返事。',
       line: 'I go all the time. *Where do you think I got* that…',
       said: '「しょっちゅう行ってる。あの置き物、どこで買ったと思う？」と返す。',
-      mean: '答えを求めない質問。「アジアに決まってる」と、行った証拠を自慢している。',
-      trap: '疑問文なので「当てて」と聞こえやすい。Where do you think…? は自慢にも使う。',
-      use: 'Who do you think made this cake?（このケーキ、誰が作ったと思う？）' },
+      mean: 'Where do you think 〜? ＝ どこだと思う？ 答えは分かりきっている、自慢の質問。',
+      trap: '質問の形なので、本当に当ててほしいと思いやすい。I go all the time が先に答え。',
+      use: 'Guess where I got this bag.（このバッグ、どこで買ったと思う？）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'wayback', seg: [134.3, 139.4],
       stem: 'Type what Leslie says about Donna: “Confident, worldly, we ___.” (3 words)', answer: 'go way back',
-      cue: '「worldly」のあと、短い3語。',
+      ja: 'ドナについての言葉を書こう：「Confident, worldly, we ___.」（3語）',
+      cue: '「worldly」のあと。',
       line: 'Donna Meagle, confident, worldly, we *go way back*.',
       said: 'ドナについて「自信家で世慣れてる。昔からの付き合い」と言う。',
-      mean: 'go way back ＝ ずっと前からの知り合い。way は「ずっと」を強める語。',
-      trap: 'way を「道」と取ると意味が通らない。3語がつながり「ゴウェイバック」に聞こえる。',
-      use: 'Oh, we go way back.（ああ、古い付き合いなんだ）' },
+      mean: 'go way back ＝ 昔からの知り合いだ。way は「ずっと」と強める語。',
+      trap: 'way を「道」と思うと意味が分からない。go way back でひとまとまり。',
+      use: 'We go way back. We met in school.（昔からの仲なの。学校で会った）' },
 
-    // R fix: notes trimmed to ≤ 120 (the item passes: blind 45 %)
-    // why: not pretty ← "hot" = attractive, the slang every learner knows; popular ← "not like" missed, flipping the line
-    //   to its opposite
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'sohot', seg: [140.4, 148.8],
-      stem: 'After calling Shauna “a real fixer-upper”, what does Leslie say about Ann?',
-      choices: ['Ann’s life wasn’t going well then either', 'Ann wasn’t very good-looking back then',
-                'Ann was the most popular girl back then'], a: 0,
-      cue: '「but look」のあと、Ann の話。',
+      stem: '“It’s *not like Ann was doing so hot*.” What does Leslie mean?',
+      ja: '「not like Ann was doing so hot」とはどういう意味？',
+      choices: ['Ann wasn’t doing well then', 'Ann wasn’t good-looking then', 'Ann was very popular then'], a: 0,
+      choicesJa: ['アンも当時うまくいっていなかった', 'アンは当時きれいじゃなかった', 'アンは当時とても人気だった'],
+      cue: '「but look」のあと。',
       line: '…a real fixer-upper, but look, it’s *not like Ann was doing so hot* when I met her.',
-      said: '「手のかかる人。でも出会ったころのアンだって調子よくなかった」と言う。',
-      mean: 'not doing so hot ＝ うまくいっていない。ショーナにも見込みはある、という理屈。',
-      trap: 'hot を「見た目がいい」と取りやすいが、調子の話。',
-      use: 'I’m not doing so hot today.（今日はあまり調子が良くない）' },
+      said: '「手のかかる人。でも、出会ったころのアンだって調子よくなかった」と言う。',
+      mean: 'not doing so hot ＝ あまりうまくいっていない。hot（暑い・魅力的）とは関係ない。',
+      trap: 'hot を「魅力的」と思うと見た目の話に聞こえる。doing so hot は調子の話。',
+      use: 'I’m not doing so hot today.（今日はあまり調子がよくない）' },
 
-    // R new: nt4, C2 pragma on f2's point, replacing nt1. Blind read before the transcript check: 40 % (the dig at Ann
-    //   is as tempting as the key).
-    // why: dig ← right mechanism, wrong target: an unflattering line about Ann heard as spite now that she's gone;
-    //   write off ← right target, wrong direction: the list of flaws heard as the verdict, "but look" missed
-    // anchor: 144.3–147.7 s "a real fixer-upper, but look, it's not like Ann was doing so hot when I met her": "but
-    //   look" turns from Shauna's flaws to a reason she could still work, and "when I met her" puts Ann's trouble
-    //   before their friendship, as the precedent
-    { id: 'nt4', skill: 'pragma', level: 'C2', point: 'sohot', seg: [140.4, 148.8],
+    { id: 'nt4', skill: 'pragma', level: 'C2', point: 'sohot', seg: [140.4, 148.8], retired: true,
       stem: 'Right after “a real fixer-upper”, what is Leslie’s line about Ann doing?',
       choices: ['Talking herself into Shauna as a real choice', 'Taking a dig at Ann now that she’s gone',
                 'Writing Shauna off, since Ann was hard work'], a: 0,
@@ -185,70 +146,43 @@ export const galBrunch: Clip = {
       trap: '悪口に聞こえやすいが、when I met her で話は過去。but のあとは、誰の弁護かを聞く。',
       use: 'Sure, he’s messy. But look, so was I.（確かにだらしない。でも、僕だってそうだった）' },
 
-    // R fix: V2, blind 70 % (the key was the only idiom-like meaning); distractors now read like idiom meanings too;
-    //   notes trimmed
-    // why: dark moods ← "dark" read literally, with "crotchety" right after it; works hard ← "horse" read literally
-    //   (働き者の馬)
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'darkhorse', seg: [147.3, 151.9],
-      stem: 'What does Leslie mean by the first thing she calls Ethel?',
-      choices: ['Someone who might surprise everyone', 'Someone hard to read, with dark moods',
-                'Someone who works hard, with no thanks'], a: 0,
-      cue: '「Ethel」の名前のすぐあとの言い方。',
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'darkhorse', seg: [147.3, 151.9],
+      stem: 'Leslie calls Ethel “a bit of a *dark horse*.” Meaning?',
+      ja: 'エセルは「a bit of a dark horse」。どういう意味？',
+      choices: ['She may surprise everyone', 'She has dark moods', 'She works hard with no thanks'], a: 0,
+      choicesJa: ['みんなを驚かせるかもしれない', '暗い気分になりやすい', '感謝されずに一生懸命働く'],
+      cue: '「Ethel Biebers」のあと。',
       line: 'Ethel Biebers, bit of a *dark horse*, crotchety, but probably wise.',
       said: 'エセルを「ちょっとダークホース。気難しいけど、たぶん賢い」と言う。',
-      mean: 'dark horse ＝ 実力が知られていない人。意外な活躍への期待。',
-      trap: 'dark から暗い性格を連想しやすく、あとの crotchety も後押しする。比喩は全体で覚える。',
-      use: 'She’s a bit of a dark horse.（彼女は意外な実力者かも）' },
+      mean: 'dark horse ＝ 実力が知られていない、意外な候補。日本語の「ダークホース」と同じ。',
+      trap: 'dark（暗い）から、暗い性格と思いやすい。dark horse でひとまとまり。',
+      use: 'He’s the dark horse in this race.（彼はこのレースのダークホースだ）' },
 
-    // R fix: V2, blind 50 %; "a real pick" was weak; now "a.k.a. fake Ann" heard as a likeness; notes trimmed
-    // why: reminds ← "a.k.a. fake Ann" heard as why she's there; old friend ← "we go way back", said of Donna,
-    //   carried over
     { id: 'i1', skill: 'infer', level: 'B2', point: 'bodies', seg: [151.9, 159.65],
-      stem: 'From Leslie’s words about Evelyn, why is Evelyn at the brunch?',
-      choices: ['Because they needed people to fill seats', 'Because she reminds Leslie of Ann',
-                'Because she’s an old friend of Leslie’s'], a: 0,
-      cue: '名字の話のあと、honestly で始まる一言。',
+      stem: '“Honestly, *we just needed bodies*.” Why is Evelyn there?',
+      ja: '「正直、人数がほしかっただけ」。イヴリンはなぜいる？',
+      choices: ['To fill the seats', 'She is a lot like Ann', 'She is an old friend'], a: 0,
+      choicesJa: ['席を埋めるため', 'アンによく似ているから', '昔からの友だちだから'],
+      cue: '「Honestly」のあと。',
       line: 'And then we got Evelyn, a.k.a. fake Ann. … Honestly, *we just needed bodies*.',
       said: 'イヴリンを「別名ニセのアン。名字も知らない。正直、人数合わせ」と紹介する。',
-      mean: 'need bodies ＝ 頭数がほしい。候補ではなく、席を埋めるため。',
-      trap: 'fake Ann から「アンに似ている」と取りやすい。honestly のあとが本当の理由。',
-      use: 'We need more bodies for the game.（試合の人数が足りない）' },
+      mean: 'bodies ＝ ここでは「人数」。だれでもいいから人がほしかった、ということ。',
+      trap: 'fake Ann（ニセのアン）から、アンに似た人と思いやすい。名字も知らない人。',
+      use: 'We just need more people for the game.（ゲームにもっと人数がほしいだけ）' },
 
-    // R fix: V2, blind 55 % ("no one" was weak, and "mostly since" was the only hedge); two Shauna readings now;
-    //   notes trimmed
-    // why: Donna ← "first place" heard as her winning; best answers ← Shauna is the one who stayed for the questions,
-    //   heard as winning them
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['default'], seg: [156.6, 293.8],
-      stem: 'How does Leslie’s search for a new best friend end up?',
-      choices: ['With Shauna, the one guest left at the end', 'With Donna, who was first in the rankings',
-                'With Shauna, who did best on the questions'], a: 0,
-      cue: '最後の二人の言葉と、それまでに帰った人。',
-      said: '順位表が見つかり、ドナたちは怒って帰る。残ったショーナに「消去法で」と決める。',
-      mean: '選考会は、選ばれる側が去って崩れる。勝ち残りではなく、残っただけ。',
-      trap: 'first place が聞こえるとドナに決まったと思いやすい。一位でも帰った人は選べない。',
-      use: 'Looks like it’s just you and me.（どうやら、あなたと私だけね）' },
-
-    // R fix: S3, the cue's "Day" was a word only the key had ("day"); notes trimmed
-    // why: not a holiday ← "not technically" heard as "not really a holiday"; not just women ← "a group of women" heard in
-    //   the wrong relation
     { id: 'd3', skill: 'detail', level: 'B1', point: 'date', seg: [159.4, 169.55],
-      stem: 'Right after “happy Galentine’s Day”, what does Leslie admit?',
-      choices: ['Today isn’t the right day for it', 'It isn’t really a holiday at all', 'It isn’t meant just for women'],
-      a: 0,
-      cue: 'お祝いの言葉のすぐあと、Now で始まる一文。',
+      stem: 'What does Leslie admit about today?',
+      ja: 'レスリーは今日について何を認める？',
+      choices: ['It isn’t the right date', 'It isn’t a real holiday', 'It isn’t just for women'], a: 0,
+      choicesJa: ['正しい日ではない', '本当の祝日ではない', '女性だけの日ではない'],
+      cue: '「Galentine’s Day」のあと。',
       line: 'Now this is *not technically the right date*, but any time a group of women…',
       said: '「厳密には今日じゃないけど、女性がブランチに集まればその精神」と言う。',
-      mean: 'not technically ＝ 厳密には違う。日付の違いを認めて流す。',
-      trap: 'technically を落とすと「本当の祝日じゃない」に聞こえる。何が違うかは最後の語で。',
-      use: 'Technically, it’s not my birthday yet.（厳密には、まだ誕生日じゃないけど）' },
+      mean: 'not technically ＝ 厳密に言えば〜ではない。the right date ＝ 正しい日付。',
+      trap: 'holiday（祝日）の話が続くので迷いやすい。not のあとの right date を聞く。',
+      use: 'It’s not technically a holiday.（厳密には祝日じゃない）' },
 
-    // R fix: V2, blind 75 % (the key was the only non-literal reading); now a second "test" reading, wrong in what is
-    //   tested; notes trimmed to ≤ 140
-    // why: know me ← right mechanism, wrong target: a quiz on Leslie herself (her "correct answer" later makes it
-    //   tempting); just a game ← "just for fun, nothing serious" taken at face value
-    // anchor: 174.9–179.8 s "nothing serious" is followed by "complete honesty… I'll be able to tell if you're lying":
-    //   no one polices a game that's only for fun, and lying is about yourself, not about knowing her
-    { id: 'nt2', skill: 'infer', level: 'C2', point: 'test', seg: [173.97, 181.2],
+    { id: 'nt2', skill: 'infer', level: 'C2', point: 'test', seg: [173.97, 181.2], retired: true,
       stem: 'Which plain-English version keeps what Leslie means about her questions?',
       choices: ['“It’s a game in name, but I’m judging you.”', '“It’s a quiz on how well you know me.”',
                 '“It’s just a game, so relax and have fun.”'], a: 0,
@@ -259,98 +193,90 @@ export const galBrunch: Clip = {
       trap: '「私をどれだけ知ってるか」のクイズではない。うそを見抜くのは本人の答え。軽い言葉のあとの but に本気。',
       use: 'Just a quick chat. Nothing serious.（ちょっと話すだけ。深い話じゃない）' },
 
-    // R fix: V2, blind 55 % (the key was the only one about the pattern); now three readings of her "but"; notes trimmed
-    // why: true favorite ← "but… actually" promises a different show, and the name is heard as new; fashion ← "for
-    //   fashion" heard as a change of subject away from TV
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'scandal', seg: [186.5, 201.1],
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'scandal', seg: [186.5, 201.1],
       stem: 'Why is Donna’s answer about her favorite show funny?',
-      choices: ['Her “but” promises a change that never comes', 'Her “but” brings in her true favorite at last',
-                'Her “but” turns the talk from TV to fashion'], a: 0,
-      cue: '分け方が変わるたびに、何が答えになるか。',
+      ja: '好きな番組についてのドナの答えはなぜおかしい？',
+      choices: ['Every answer is the same show', 'She names a different show', 'She says she never watches TV'], a: 0,
+      choicesJa: ['どの答えも同じ番組', 'ちがう番組を言う', 'テレビは見ないと言う'],
+      cue: 'くり返される番組名。',
       line: 'For live tweeting, it’s Scandal… But for fashion, it’s *actually Scandal*. *My answer is Scandal*.',
-      said: '「実況も一気見もスキャンダル、でもおしゃれなら実はスキャンダル」。',
-      mean: 'but と actually で別の答えを予告し、結局同じ番組。期待を外す笑い。',
-      trap: 'but や actually は変化の合図だが、ここはわざと裏切る。番組名を最後まで聞く。',
-      use: 'For lunch? Pizza. For dinner? Also pizza.（昼はピザ。夜も、やっぱりピザ）' },
+      said: '「実況もスキャンダル、一気見もスキャンダル、でもおしゃれなら…実はスキャンダル」と言う。',
+      mean: 'But for 〜 ＝ でも〜なら。but で別の答えを期待させて、また同じ番組。',
+      trap: 'But が聞こえるので、別の番組が来ると思いやすい。最後まで同じ名前。',
+      use: 'My answer is pizza. Always pizza.（私の答えはピザ。いつもピザ）' },
 
-    // R fix: V2, blind 60 % ("watch together" was a filler); now "correct" read as correcting Donna; notes trimmed
-    // why: joke ← a host's playful "the right answer is my show!", a common party tease; fixing ← "correct answer" heard
-    //   as setting Donna's facts straight
     { id: 'i2', skill: 'infer', level: 'C1', point: 'test', seg: [219.9, 227],
-      stem: 'When Leslie gives her own answer to the TV question, what does it show?',
-      choices: ['She is grading their answers against hers', 'She is joking, to lighten up a dull game',
-                'She is fixing a mistake in Donna’s answer'], a: 0,
-      cue: '自分の答えの言い出し方と、相手の聞き返し。',
+      stem: '“*The correct answer* for favorite TV show is…” What does it show?',
+      ja: '「好きな番組の正解は…」から何が分かる？',
+      choices: ['She is grading their answers', 'She is joking to lighten things', 'She is fixing Donna’s mistake'], a: 0,
+      choicesJa: ['みんなの答えを採点している', '場を和ませる冗談を言っている', 'ドナのまちがいを直している'],
+      cue: '聞き返す声も聞く。',
       line: '*The correct answer* for favorite TV show is Friday Night Lights. — *The correct answer?*',
       said: '「好きな番組の正解はフライデー・ナイト・ライツ」と言い、「正解？」と聞き返される。',
-      mean: '好みに正解はない。自分の答えを基準に採点しているのがもれた。',
-      trap: '冗談や、ドナの答えの訂正に聞こえやすい。聞き返しが、冗談に聞こえなかった証拠。',
-      use: 'There’s no right answer here.（これに正解はないよ）' },
+      mean: '好みに「正解」はない。ただの遊びと言いながら、実はテストしている。',
+      trap: '冗談に聞こえやすいが、聞き返す声で、みんなも変だと気づいていると分かる。',
+      use: 'There’s no right answer.（正解はないよ）' },
 
-    // R fix: notes trimmed to ≤ 120 (the item passes: blind 40 %, wrong)
-    // why: Rome ← her solo trip, the story she told earlier, carried over; blog posts ← "based on my blog" in the wrong
-    //   relation
     { id: 'd5', skill: 'detail', level: 'B1', point: 'memoir', seg: [242.6, 254.1],
-      stem: 'What is Shauna’s memoir about?',
-      choices: ['Finding happiness by smiling through pain', 'Her trip alone to Rome after a breakup',
-                'The most-read posts from her blog'], a: 0,
-      cue: '「it’s about」のあと。',
+      stem: 'What is Shauna’s book about?',
+      ja: 'ショーナの本は何についての本？',
+      choices: ['Finding happiness through pain', 'Her trip alone to Rome', 'Her most-read blog posts'], a: 0,
+      choicesJa: ['つらさの中で幸せを見つけること', 'ローマへの一人旅', 'よく読まれたブログ記事'],
+      cue: '「my journey」のあと。',
       line: '…it’s about my journey to *find happiness by smiling through the pain*.',
-      said: 'ブログが元の回想録で、「痛みを笑顔でこらえ幸せを探す旅」の話。',
-      mean: 'smile through the pain ＝ つらくても笑ってしのぐ。',
-      trap: '先に聞こえる based on my blog に引っぱられやすい。中身は about のあと。',
-      use: 'Just smile through it.（笑って乗り切ろう）' },
+      said: '「ブログが元の回想録で、痛みを笑顔でこらえて幸せを探す旅の話」と言う。',
+      mean: 'smile through the pain ＝ つらくても笑顔でいる。journey ＝ ここでは「心の旅」。',
+      trap: 'blog（ブログ）や Rome（ローマ）の話も出るので迷いやすい。it’s about のあとを聞く。',
+      use: 'It’s about finding your way.（自分の道を見つける話です）' },
 
-    // R fix: V2 + K6, blind 55 %: the key was the only hedged choice; now a hedged sincerity flip too; notes trimmed
-    // why: hiding ← the Japanese frame: a short "Okay" heard as modest praise held back; work with her ← "work with"
-    //   read literally, as working together on the book
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'workwith', seg: [242.6, 254.1],
-      stem: 'After Shauna’s memoir answer, what does the reply show?',
-      choices: ['Not wowed, but it’s something to build on', 'Impressed, but hiding it behind “okay”',
-                'Keen to work with her on writing it'], a: 0,
-      cue: '答えのあと、Okay で始まる短い返事。',
+      stem: 'Leslie says, “Okay, *I can work with that*.” How does she feel?',
+      ja: 'レスリーの「Okay, I can work with that」はどんな気持ち？',
+      choices: ['Not wowed, but it’s a start', 'Very impressed by the whole idea', 'Keen to write it with her'], a: 0,
+      choicesJa: ['すごくはないが、悪くない', '考え全体にとても感心している', '一緒に書きたい'],
+      cue: 'ショーナの話への返事。',
       line: 'Okay, *I can work with that*.',
       said: 'ショーナの話を聞いて「まあ、それなら何とかなる」と返す。',
-      mean: 'I can work with that ＝ 理想ではないが使える。妥協の一言。',
-      trap: 'Okay を控えめなほめ言葉、work with を「一緒に働く」と取りやすい。that は話の中身。',
-      use: 'Not perfect, but I can work with that.（完ぺきじゃないけど、それでいける）' },
+      mean: 'I can work with that ＝ それなら何とかなる。満点ではないが、使える、という気持ち。',
+      trap: 'work から「一緒に仕事する」と思いやすい。ここは「それでなんとかやれる」。',
+      use: 'It’s not perfect, but I can work with that.（完璧じゃないけど、何とかなる）' },
 
-    // R fix: V2 + K1, blind 55 %; "she claims it's just memories" was also a defensible joke in the segment, so the stem
-    //   now points past "Friendship rankings"; the key was the longest by far; notes trimmed
-    // why: herself ← "for me… which one of you" heard as her ranking herself too; memories ← "jotting down memories",
-    //   said just before, taken as the explanation
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'notwhat', reveals: ['test'], seg: [253.75, 267.5],
-      stem: 'Once “Friendship rankings” is read out, why is Leslie’s explanation funny?',
-      choices: ['She denies it, then describes just that', 'She says it only holds memories of today',
-                'She admits she ranks herself in it, too'], a: 0,
-      cue: '否定の一言のあと、simply で始まる説明。',
-      line: 'It’s *not what it sounds like*. It’s simply a way for me to figure out *which one of you is the best*.',
-      said: '「友情ランキング」を読まれ、「そういうのじゃない。誰が一番か見きわめる方法」と言う。',
-      mean: '否定したそばから、ランキングそのものを説明する。言い訳が白状になる笑い。',
-      trap: '前の「思い出」に引っぱられやすい。否定のあとの説明が本当に違うかを聞く。',
-      use: 'Okay, this isn’t what it looks like.（待って、これは見た目どおりじゃないの）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['default', 'notwhat', 'firstplace'], seg: [253.75, 293.8],
+      stem: 'How does the brunch end?',
+      ja: 'ブランチはどう終わる？',
+      choices: ['All but Shauna leave', 'Donna stays as best friend', 'They all become friends'], a: 0,
+      choicesJa: ['ショーナ以外はみんな帰る', 'ドナが親友として残る', 'みんな友だちになる'],
+      cue: '順位表が見つかったあと。',
+      said: '順位表が見つかり、みんな怒って帰る。残ったショーナを「消去法で」親友に決める。',
+      mean: 'That’s messed up ＝ ひどい。みんなが出ていき、一人だけ残る。',
+      trap: 'Donna が一位だったので、ドナが残ると思いやすい。最後に名前が出るのはショーナ。',
+      use: 'Everyone left except me.（私以外みんな帰った）' },
 
-    // R fix: notes trimmed to ≤ 120 (the item passes: blind 45 %)
-    // why: low rank ← "angry" + rankings: the usual reason to be upset, against "first place"; teasing ← her cheery
-    //   question read as a joke
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'notwhat', reveals: ['test'], seg: [258.5, 267.5],
+      stem: 'Leslie says, “It’s *not what it sounds like*.” What does she mean?',
+      ja: '「It’s not what it sounds like」とはどういう意味？',
+      choices: ['Don’t get the wrong idea', 'I can’t hear you well', 'It sounds very nice'], a: 0,
+      choicesJa: ['誤解しないで', 'よく聞こえない', 'とてもいい感じに聞こえる'],
+      cue: '「Friendship rankings」のあと。',
+      line: 'Friendship rankings. — *It’s not what it sounds like*. It’s simply a way… to figure out which one of you is the best.',
+      said: '「友情ランキング」を読まれ、「そういうのじゃない。だれが一番か見きわめる方法」と言う。',
+      mean: 'It’s not what it sounds like ＝ 聞こえるほど悪いことじゃない。言いわけの決まり文句。',
+      trap: 'sounds から「音」の話と思いやすい。ここは「〜のように聞こえる」。',
+      use: 'Wait, it’s not what it sounds like!（待って、そういうんじゃないの！）' },
+
     { id: 'i3', skill: 'infer', level: 'C1', point: 'firstplace', seg: [267.6, 276.2],
-      stem: 'What does Leslie’s question to Donna show about Leslie?',
-      choices: ['She thinks a top rank should please Donna', 'She thinks Donna is upset about a low rank',
-                'She knows Donna’s not angry and is teasing'], a: 0,
-      cue: 'Donna への問いと、そのすぐあとの理由。',
+      stem: '“Why are you angry? *You were in first place*.” Leslie thinks…?',
+      ja: '「なんで怒ってるの？ 一位だったのに」。レスリーはどう考えている？',
+      choices: ['First place should make her happy', 'Donna is only joking around', 'Donna was in last place'], a: 0,
+      choicesJa: ['一位ならうれしいはずだ', 'ドナはふざけているだけ', 'ドナは最下位だった'],
+      cue: '帰ろうとするドナへの言葉。',
       line: 'Donna, why are you angry? *You were in first place*.',
-      said: '帰ろうとするドナに「何で怒ってるの？一位だったのに」と言う。',
-      mean: '順位をつけられたこと自体が嫌なのに、一位なら喜ぶはずと思っている。そのずれ。',
-      trap: '怒る理由は順位の低さ、という型で聞きやすい。first place で順位の話は消える。',
-      use: 'Why the long face? You won!（なんで浮かない顔？勝ったのに）' },
+      said: '帰ろうとするドナに「なんで怒ってるの？ 一位だったのに」と言う。',
+      mean: '順位をつけたこと自体が問題なのに、一位なら喜ぶはずと思っている。',
+      trap: 'Donna が怒る理由を順位の低さと思いやすい。first place（一位）と言っている。',
+      use: 'Why are you upset? You won!（なんで怒ってるの？ 勝ったじゃない）' },
 
-    // R fix: K1, "too polite to say" claimed politeness, but leaving the word out here is a pointed jab; key reworded;
-    //   notes trimmed to ≤ 140
-    // why: lost for words ← the pause heard as delight too big for words (sincerity flip); talked over ← the gap heard as
-    //   someone cutting in
-    // anchor: 275.9–280.2 s a 2 s gap between "really" and "brunch" that no one fills, between "That's messed up… I'm
-    //   leaving" (268–271.5 s) and "If you do this again next year, don't call me" (281.6–285.6 s)
-    { id: 'nt3', skill: 'attitude', level: 'C2', point: 'brunch', seg: [272.3, 286.3],
+    { id: 'nt3', skill: 'attitude', level: 'C2', point: 'brunch', seg: [272.3, 286.3], retired: true,
       stem: 'In “This was a really… brunch”, what does the gap leave out?',
       choices: ['A harsh word she leaves them to fill in', 'A kind word so big she can’t find it',
                 'Words cut off when someone talks over her'], a: 0,
@@ -361,19 +287,16 @@ export const galBrunch: Clip = {
       trap: '言葉に詰まると、感動で言葉が出ないようにも聞こえる。前後の「帰る」「呼ばないで」と合わせて聞く。',
       use: 'Well, that was… an experience.（いやあ、なんというか…いい経験だったよ）' },
 
-    // R fix: V1 + V2, blind 70 %: the walkout alone answered it ("the only one who stayed"), not the phrase; now every
-    //   choice fits a guest who stayed, and only "by default" picks the key; notes trimmed
-    // why: loyal ← wrong implication: staying heard as a merit that won her the spot; safe pick ← katakana デフォルト =
-    //   the standard setting, plus "no one obvious candidate" earlier
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'default', seg: [286.5, 293.8],
-      stem: 'Why is Shauna the new best friend, according to the last lines?',
-      choices: ['Only because no one else is left', 'Because staying showed she’s loyal',
-                'Because she was the safe, standard pick'], a: 0,
-      cue: '「Well」のあとの二語と、そのくり返し。',
+      stem: '“Well, *by default*, it’s Shauna.” Why Shauna?',
+      ja: '「Well, by default, it’s Shauna」。なぜショーナ？',
+      choices: ['No one else is left', 'She showed she’s loyal', 'She was the safe pick'], a: 0,
+      choicesJa: ['ほかにだれも残っていない', '信頼できると分かった', '無難な選択だった'],
+      cue: '「Well」のあと。',
       line: 'Well, *by default*, it’s Shauna. … *By default?*',
-      said: '「まあ、消去法でショーナかな」と言い、「親友をそうやって決めるの？消去法で？」と返る。',
-      mean: 'by default ＝ ほかに残っていないから。勝ち取ったのではない。',
-      trap: 'カタカナのデフォルトから「定番」、残ったことから「忠実さ」と取りやすい。',
-      use: 'I won by default; nobody else came.（不戦勝だよ、誰も来なかった）' },
+      said: '「まあ、消去法でショーナかな」と言い、「親友をそうやって決めるの？ 消去法で？」と返る。',
+      mean: 'by default ＝ ほかに選ぶものがないので、自動的に。',
+      trap: 'default（デフォルト＝初期設定）から「無難」と思いやすい。ここは「残ったから」。',
+      use: 'I won by default. No one else came.（不戦勝だよ。だれも来なかった）' },
   ]
 };

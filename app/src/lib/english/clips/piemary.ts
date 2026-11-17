@@ -1,16 +1,13 @@
+// A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 1
 // “Leslie won't be intimidated by cream pies | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 7): Ben's campaign drops a pie contest for candidates' wives from Leslie's schedule; the press turns it into
 // "she looks down on families", Leslie decides to enter, and a women's group threatens to protest her if she does.
 // Segments from the captions, words from whisper (2026-11-16). The contest's name is a pun (whisper "Pie Mary",
 // captions "primary"), so stems call it "the pie contest" and no item turns on the word. Jen (the adviser) is named
 // only later (187.9 s), so she is "the adviser" or "the visitor".
-// Untested on purpose: 4–8 s (the "types of talk" list: "reel, and Ted" / "real intent"), 73–90 s (whisper loops),
-// 147–156 s (the shouted questions; "None of your business" is missing from the captions), 203–208 s (the cookbook
-// title is a pun on a book title), 236–244 s (the doorbell and greetings), 291–297 s apart from “Chop, chop” ("Babe" /
-// "I think", "bacon", "want" / "won").
-// EAR CHECK: 291.2 s c2 — "Chop, chop" is Ben's (he says "Hi. Ben Wyatt." at 296 s; whisper has "Babe, the oven's
-//   ready", the captions "I think the oven's ready")
-// REVIEW 2026-11-16: pass 7, fix 17, drop 0, new 0; ear checks 1
+// Untested on purpose: 4–8 s (the "types of talk" list: "reel, and Ted" / "real intent"), 56–63 s (the Valium line),
+// 73–90 s (whisper loops), 147–156 s (the shouted questions; "None of your business" is missing from the captions),
+// 203–208 s (the cookbook title is a pun on a book title), 236–244 s (the doorbell and greetings), 289–297 s.
 import type { Clip } from '../types.ts';
 
 export const piemary: Clip = {
@@ -19,51 +16,43 @@ export const piemary: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: rain ← the usual reason for a poncho; her blazer ← "melted crayon on my blazer" is the last thing she says
     { id: 'd1', skill: 'detail', level: 'B1', point: 'poncho', seg: [8.05, 16.55],
       stem: 'Why is the visitor wearing a poncho in Leslie’s house?',
-      choices: ['Everything in the house is sticky', 'It has been raining hard all day',
-                'She spilled something on her blazer'], a: 0,
-      cue: '「because」のあと、文の最後の一語。',
+      ja: '客はなぜレスリーの家でポンチョを着ている？',
+      choices: ['Everything in the house is sticky', 'It has been raining all day', 'She spilled coffee on her jacket'], a: 0,
+      choicesJa: ['家じゅうがベタベタだから', '一日中雨が降っているから', '上着にコーヒーをこぼしたから'],
+      cue: '「because」のあと、最後の一語。',
       line: 'because every surface area in your house is *sticky*.',
-      said: '「この家はどこもベタベタだから」と答え、前回は上着に溶けたクレヨンが付いたと言う。',
-      mean: '子どものいる家への皮肉まじりの理由。雨とは関係ない。',
-      trap: 'blazer が最後に聞こえるので今の汚れと取りやすいが、Last time の話。',
-      use: 'Careful, the table’s a little sticky.（気をつけて、テーブルちょっとベタベタ）' },
+      said: '「この家はどこもベタベタだから。前は上着に溶けたクレヨンが付いた」と言う。',
+      mean: 'sticky ＝ ベタベタする。子どもがいる家なので、汚れないように着ている。',
+      trap: 'ポンチョから雨を思いやすい。because のあとの理由を最後まで聞く。',
+      use: 'My hands are sticky. Where’s the sink?（手がベタベタ。流しはどこ？）' },
 
-    // R fix: V2 (blind 50 %: "real work gets done" was the only other reading, and it praised a town she is leaving).
-    //   "A nice break from the busy city" (wrong direction) replaces it.
-    // why: a nice break ← "get back to a city" heard as leaving a quiet place she enjoyed; too busy ← "a ton of stuff
-    //   scheduled" just before
     { id: 'i1', skill: 'infer', level: 'B2', point: 'city', seg: [33.8, 38.8],
-      stem: 'What does the visitor’s goodbye suggest about Leslie’s town?',
-      choices: ['Not much worth her time happens there', 'It is a nice break from the busy city',
-                'It is too busy for her to stay long'], a: 0,
-      cue: '「get back to a city」のあとの説明。',
+      stem: '“Back to *a city where things happen*.” What does she mean?',
+      ja: '「何かが起きる街に戻らなきゃ」とはどういう意味？',
+      choices: ['Nothing happens in this town', 'This town is quiet and nice', 'This town is too busy'], a: 0,
+      choicesJa: ['この町では何も起きない', 'この町は静かでいい所', 'この町は忙しすぎる'],
+      cue: '「excuse me, then」のあと。',
       line: 'I have to get back to *a city where things happen*.',
-      said: '「何かが起きる街に戻らなきゃ」と言って出て行く。',
-      mean: '裏返すと「ここは何も起きない街」。軽い嫌み。',
-      trap: '都会に戻る＝ここは息抜き、と取りやすい。where things happen の裏は「ここは何もない」。',
-      use: 'I need to get back to the office.（会社に戻らなきゃ）' },
+      said: '「では失礼。何かが起きる街に戻らないと」と言って出ていく。',
+      mean: 'where things happen ＝ 何かが起きる（ここは起きない）。この町を小ばかにしている。',
+      trap: 'busy な街の話なので「この町は忙しい」と思いやすい。逆で「ここは退屈」。',
+      use: 'I need to get back to work.（仕事に戻らなきゃ）' },
 
-    // R fix: V2 (blind 50 %: the three choices weren't parallel, and "no real duties" read as a filler). Three short
-    //   "Full of / Something" descriptions now.
-    // why: battles ← mine = 地雷 heard as war; nobody wants it ← "that's the problem" heard as a warning off the role
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'minefield', seg: [51.85, 56.0],
-      stem: 'How does the adviser describe the role of a candidate’s wife?',
-      choices: ['Full of hidden dangers', 'Full of tough battles', 'Something nobody wants'], a: 0,
-      cue: '「that’s the problem」のあと、最後の名詞。',
+      stem: 'Being a candidate’s wife “is a *minefield*.” Meaning?',
+      ja: '候補者の妻は「a minefield」。どういう意味？',
+      choices: ['Full of hidden dangers', 'Full of hard battles', 'Something nobody wants'], a: 0,
+      choicesJa: ['見えない危険だらけ', 'きつい戦いだらけ', 'だれもやりたくないもの'],
+      cue: '「Being the wife of」のあと。',
       line: 'Being the wife of is a *minefield*.',
-      said: '「候補者の妻という立場は地雷原だ」と言う。',
-      mean: 'minefield ＝ どこに危険があるか分からない状況。一言で失敗しかねない。',
-      trap: '地雷から戦争の話と取りやすい。勝ち負けでなく「踏むと危ない」場所のたとえ。',
-      use: 'Office politics can be a minefield.（社内政治は地雷だらけ）' },
+      said: '「候補者の妻という立場は地雷原よ」と言う。',
+      mean: 'minefield ＝ 地雷原。どこで失敗するか分からない、危ない場所のたとえ。',
+      trap: 'field（野原）から、のどかな場所と思いやすい。mine は「地雷」。',
+      use: 'Office politics can be a minefield.（社内の人間関係は地雷原だよ）' },
 
-    // R fix: V2 (blind 60 %: "knowledge" in the stem pointed at "too smart", and "want a wife who has run" contradicted
-    //   the stem). "May think she wants to be the candidate" (her own "I was an actual candidate") replaces it.
-    // why: wants to be the candidate ← "I was an actual candidate" is said; dull ← a wife who talks policy heard as
-    //   boring
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'smarties', reveals: ['minefield'], seg: [51.85, 65.55],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'smarties', reveals: ['minefield'], seg: [51.85, 65.55], retired: true,
       stem: 'Why does the adviser see Leslie’s knowledge of the issues as a problem?',
       choices: ['Voters get nervous about a wife who seems smart',
                 'Voters may think she wants to be the candidate',
@@ -75,11 +64,7 @@ export const piemary: Clip = {
       trap: 'actual candidate が聞こえるので経験の話と取りやすい。結論は最後の一文。',
       use: 'Don’t overthink it. Keep it simple.（考えすぎないで、シンプルに）' },
 
-    // R fix: V2 (blind 70 %: "can't judge voters at all" was a filler). "She already rates them fairly" (the line
-    //   taken as a sincere denial) replaces it.
-    // why: rates them fairly ← "I don't think that is possible" heard as "I'm not doing that"; can't win ← "possible"
-    //   heard about Leslie's chances
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'possible', seg: [65.45, 71.6],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'possible', seg: [65.45, 71.6], retired: true,
       stem: 'Why is the adviser’s reply to “underestimating the voters” funny?',
       choices: ['She means voters can’t be rated too low',
                 'She means she already rates them fairly',
@@ -91,39 +76,30 @@ export const piemary: Clip = {
       trap: '「見くびってない」の否定や勝ち目の話と取りやすい。that は直前の動詞を指す。',
       use: 'I don’t think that’s possible.（それは無理だと思う）' },
 
-    // R fix: V2 (blind 85 %: the only choice where the press makes trouble). "Ben is hiding her away" (right
-    //   mechanism, wrong target) replaces the praise reading.
-    // why: hiding her ← "your campaign released a schedule" puts Ben in the questions first; let it go ← Leslie's turn
-    //   to "Ben's $150 million" project heard as working
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'press', reveals: ['careto'], seg: [90.85, 156.0],
-      stem: 'How does the press handle Leslie skipping the pie contest?',
-      choices: ['They turn it into a story that she looks down on homemaking',
-                'They turn it into a story that Ben is hiding her away',
-                'They let it go once she points to Ben’s big project'], a: 0,
-      cue: '記者たちの質問が、何についての質問か。',
-      said: '欠場を「何の主張か」と問われ、ベンの事業に話を向けても、子どもや家庭の質問が続く。',
-      mean: 'パイの欠場が「家庭を軽く見ている」話にすり替えられていく。',
-      trap: '彼女は大きな事業の話で切り抜けようとするが、記者は乗らず質問が続く。',
-      use: 'Let’s focus on the bigger picture.（もっと大きな話に目を向けよう）' },
-
-    // R fix: V2 (blind 70 %: "a break" was a filler). "Checking whether Ben has time" (Care to = would you like to,
-    //   the polite frame) and "confirm the schedule" (a keyword trap) now.
-    // why: has time ← "Care to…?" = would you like to, heard as a polite offer; confirm ← "released a schedule" heard
-    //   as what he asks about
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'careto', seg: [90.85, 97.3],
-      stem: 'What is the reporter doing with the short question that ends the turn?',
-      choices: ['Pushing Ben to justify his wife’s choice', 'Checking whether Ben has time to explain',
-                'Asking Ben to confirm the schedule is right'], a: 0,
-      cue: '予定の話のあと、最後の三語。',
+      stem: 'The reporter asks Ben, “*Care to explain?*” What is he doing?',
+      ja: '記者の「Care to explain?」は何をしている？',
+      choices: ['Pushing Ben to give a reason', 'Asking if Ben has some time', 'Checking the day’s schedule'], a: 0,
+      choicesJa: ['ベンに理由を言わせようとしている', 'ベンに時間があるか聞いている', '予定を確かめている'],
+      cue: 'ターンの最後の短い質問。',
       line: 'it looks like your wife is skipping the… *Care to explain?*',
       said: '「奥さんはあの催しに出ないようですね。説明していただけますか」と聞く。',
-      mean: 'Care to ～? は形はていねいでも、記者が言うと「説明してもらおうか」という追及。',
-      trap: 'Care to を親切な誘いと取りやすいが、問いつめる言い方にもなる。',
-      use: 'Care to tell me what happened here?（何があったか説明してくれる？）' },
+      mean: 'Care to explain? ＝ 説明してもらえますか。ていねいな形だが、強く理由を求めている。',
+      trap: 'care（気にする）から「気にしますか」と思いやすい。Care to 〜? ＝ 〜してくれる？',
+      use: 'Care to join us?（一緒にどう？）' },
 
-    // why: June's pie lost ← "June Hartwell's buttermilk meringue" is named just before; bad bakers ← "loser" heard
-    //   as the other wives' baking
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'loser', seg: [104.2, 111.3],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'press', reveals: ['careto'], seg: [91, 134.8],
+      stem: 'What do the reporters say about Leslie skipping the contest?',
+      ja: 'コンテストに出ないレスリーについて、記者たちは何と言う？',
+      choices: ['She looks down on home life', 'She is hiding from reporters', 'She is too busy to cook'], a: 0,
+      choicesJa: ['家庭を見下している', '記者から逃げている', '忙しくて料理ができない'],
+      cue: '記者たちの質問の中身。',
+      said: '欠場を「何の主張か」と聞かれ、ベンの事業に話を向けても、子どもや家庭の質問が続く。',
+      mean: 'homemaking ＝ 家事、家庭づくり。欠場を「家庭を軽く見ている」話にされる。',
+      trap: 'ベンの1億5千万ドルの話も出るが、それはレスリーのかわし。記者の質問を聞く。',
+      use: 'That’s not what I meant at all.（そんなつもりじゃまったくない）' },
+
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'loser', seg: [104.2, 111.3], retired: true,
       stem: 'Why is the line about the last contest’s loser a joke?',
       choices: ['It treats the contest itself as a loss for women',
                 'It mocks June’s pie as the one that came last',
@@ -135,67 +111,67 @@ export const piemary: Clip = {
       trap: 'June の名前の直後なので彼女のパイの話と取りやすい。loser は all women。',
       use: 'Honestly, nobody wins here.（正直、これじゃ誰も得しない）' },
 
-    // why: fifteen/fifty ← -teen/-ty; one fifteen ← "one fifty" heard as "one fifteen"
     { id: 'n1', skill: 'number', level: 'B1', point: 'million', seg: [117.95, 126.45], keep: true,
-      stem: 'How much is Ben’s revitalization project, as Leslie puts it?',
+      stem: 'How much is Ben’s project, says Leslie?',
+      ja: 'レスリーによると、ベンの事業はいくら？',
       choices: ['$15 million', '$50 million', '$115 million', '$150 million'], a: 3,
-      cue: '「Like Ben’s」のすぐあとの数。',
+      choicesJa: ['1500万ドル', '5000万ドル', '1億1500万ドル', '1億5000万ドル'],
+      cue: '「Like Ben’s」のあと。',
       line: 'We’re just focusing on bigger issues. Like Ben’s *$150 million* revitalization project.',
-      said: '「大きな問題に集中してる。ベンの1億5千万ドルの事業とか」と話をそらす。',
-      mean: 'one fifty million ＝ 150。記者の目をパイからそらしたい。',
-      trap: '-ty は前が強く、-teen は後ろが強い。語尾の強さで分ける。',
-      use: 'It’s a fifty-dollar ticket, not fifteen.（15ドルじゃなくて50ドルの切符）' },
+      said: '「大きな問題に集中してるの。ベンの1億5千万ドルの事業とか」と話をそらす。',
+      mean: 'one hundred fifty million ＝ 1億5千万。million ＝ 100万。',
+      trap: 'fifteen と fifty は強く言う所が違う。hundred が入るかも聞く。',
+      use: 'It costs about two million yen.（だいたい200万円かかる）' },
 
-    // R fix: V2 (blind 50 %: "Don't you ever" is hard to say before "cook" without the t, so it was easy to rule out).
-    //   "Do you even" (ever/even, one sound apart, and natural from a hostile reporter) replaces it.
-    // why: did ← "do" weakened to "d'" sounds like a past "did"; even ← ever and even differ only in the last sound,
-    //   and the accusing tone fits "even"
     { id: 's1', skill: 'sound', level: 'B2', point: 'cook', seg: [129.6, 135.15],
       stem: 'Fill the gap: “___ cook for your children?”',
+      ja: '空いている所に入る語は？「___ cook for your children?」',
       choices: ['Do you ever', 'Did you ever', 'Do you even'], a: 0,
-      cue: '「homemaking」の文のあと、問いの頭の三語。',
+      choicesJa: ['（ふだん）〜することはある？', '（今までに）〜したことはある？', 'そもそも〜するの？'],
+      cue: '質問の最初の3語。',
       line: '*Do you ever* cook for your children?',
-      said: '「子どもに料理をしたことはあるのか」と記者が聞く。',
-      mean: 'Do you が弱まり「ジュ」に近い。ever と続けて「ジュエヴァ」。',
-      trap: '縮んだ Do you は did に、ever は even にも聞こえる。語尾が「ヴァ」か「ヴン」かを聞く。',
-      use: 'Do you ever eat breakfast?（朝ごはん食べることある？）' },
+      said: '記者が「子どもに料理をすることはあるんですか」と聞く。',
+      mean: 'Do you ever 〜? ＝ 〜することはある？ do you が「ドゥユ」と弱く速い。',
+      trap: 'ever と even は音が近い。最後が「ヴァ」なら ever、「ヴン」なら even。',
+      use: 'Do you ever eat breakfast?（朝ごはんって食べることある？）' },
 
-    // R fix: V2 (blind 55 %). Both distractors now turn on the same "right here", so the place word alone doesn't pick
-    //   the key.
-    // why: kids nearby ← "right here in front of you" heard as about the kids; can't say ← "What are you talking
-    //   about?" heard as dodging
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'standing', seg: [134.65, 141.55],
-      stem: 'Why does Leslie’s answer to the childcare question get a laugh?',
-      choices: ['He asks where she is while she stands in front of him',
-                'He asks who watches her kids while they stand nearby',
-                'She can’t say who is watching her kids right now'], a: 0,
-      cue: '記者の問いの最後と、彼女の答えの場所の語。',
+    { id: 'h3', skill: 'humor', level: 'B1', point: 'standing', seg: [134.65, 141.55],
+      stem: '“While you’re out God knows where?” Why is Leslie’s answer funny?',
+      ja: '「どこかに出歩いている間？」へのレスリーの答えはなぜおかしい？',
+      choices: ['She’s right in front of him', 'Her kids are standing nearby', 'She doesn’t know where she is'], a: 0,
+      choicesJa: ['彼の目の前にいる', '子どもがそばに立っている', '自分がどこにいるか分からない'],
+      cue: '「talking about?」のあと。',
       line: 'while you’re *out*… knows where? — *I’m standing right here in front of you.*',
-      said: '「どこかに出歩いている間、子どもは誰が見てる？」に「目の前にいますけど」と返す。',
-      mean: '決めつけた質問が、本人を目の前にして成り立っていない。',
-      trap: '誰が子どもを見ているかの答えと取りやすい。彼女が言っているのは自分の居場所。',
-      use: 'I’m right here, you know.（ここにいるんだけど）' },
+      said: '「どこかに出歩いている間、子どもはだれが見てる？」に「目の前にいますけど」と返す。',
+      mean: 'right here in front of you ＝ まさにあなたの目の前に。どこにいるかは見れば分かる。',
+      trap: 'children が聞こえるので、子どもの話に思いやすい。答えは自分のいる場所。',
+      use: 'I’m right here in front of you!（目の前にいるでしょ！）' },
 
-    // R fix: V2 (blind 70 %: "power and money" was a filler). "Looks down on wives like June" (the host's claim just
-    //   before, moved onto June's lines) replaces it.
-    // why: looks down on June ← the host's "women who love their families are stupid" just before; equal ← "we all make
-    //   certain choices" heard as fair
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'haveitall', seg: [171.8, 178.75],
-      stem: 'What is June suggesting about Leslie with her two “chose” sentences?',
-      choices: ['Leslie’s family comes second for her', 'Leslie looks down on wives like June',
-                'Both of their choices are equally fine'], a: 0,
-      cue: '二つの「chose」を並べると、何が対になるか。',
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'easy', seg: [139.2, 143.4],
+      stem: 'The reporter says, “Okay, *take it easy*.” What does he mean?',
+      ja: '記者の「Okay, take it easy」はどういう意味？',
+      choices: ['Calm down', 'Go more slowly', 'Take a short break'], a: 0,
+      choicesJa: ['落ち着いて', 'もっとゆっくり', '少し休んで'],
+      cue: '「in front of you」のあと。',
+      line: 'Okay, *take it easy*. Let’s not get emotional.',
+      said: 'レスリーが言い返すと、「まあまあ、落ち着いて。感情的にならないで」と言う。',
+      mean: 'Take it easy ＝ 落ち着いて、むきにならないで。別れのあいさつ「じゃあね」にも使う。',
+      trap: 'easy から「簡単に」と思いやすい。言い返された直後なので「落ち着いて」。',
+      use: 'Take it easy. It’s not a big deal.（落ち着いて。大したことないよ）' },
+
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'haveitall', seg: [171.8, 178.75],
+      stem: 'What does June say she chose to do?',
+      ja: 'ジューンは自分が何を選んだと言う？',
+      choices: ['Put her family first', 'Try to have it all', 'Skip the pie contest'], a: 0,
+      choicesJa: ['家族を第一にする', '全部を手に入れようとする', 'パイのコンテストに出ない'],
+      cue: '二つ目の「chose」のあと。',
       line: 'Ms. Knope *chose to try to have it all*. *I chose to put my family first.*',
-      said: '「人それぞれ。ノープさんは全部を取ろうとし、私は家族を第一にした」と言う。',
-      mean: '自分は家族が一番、と並べることで、相手は家族が後回しだとほのめかす。',
-      trap: 'we all make choices は公平に聞こえるが、前置き。後ろの対比に本音がある。',
-      use: 'I chose to put my health first.（健康を一番にすることにした）' },
+      said: '「ノープさんは全部を取ろうとした。私は家族を第一にした」と言う。',
+      mean: 'put 〜 first ＝ 〜をいちばんに考える。have it all ＝ 仕事も家庭も全部手に入れる。',
+      trap: '先に have it all が聞こえるが、それはレスリーのこと。I chose のあとを聞く。',
+      use: 'I always put my family first.（いつも家族をいちばんに考える）' },
 
-    // R fix: V2 (blind 55 %: "slip in an extreme claim" was the only knowing choice). "Lets June disagree" (the hedge
-    //   taken as real 遠慮) replaces "wants some facts". N1/C8: the line is trimmed.
-    // why: lets her disagree ← "just speculating" taken at face value as modesty; softens ← "Oh, I'm just…" heard as a
-    //   step back after June's calm answer
-    { id: 'p3', skill: 'pragma', level: 'C1', point: 'speculating', reveals: ['haveitall'], seg: [178.7, 184.5],
+    { id: 'p3', skill: 'pragma', level: 'C1', point: 'speculating', reveals: ['haveitall'], seg: [178.7, 184.5], retired: true,
       stem: 'What does the host’s opening, before his question about Leslie’s family, do?',
       choices: ['Covers himself so he can push a harsher claim', 'Lets June disagree, since he is only guessing',
                 'Softens his view after June’s calm answer'], a: 0,
@@ -206,73 +182,65 @@ export const piemary: Clip = {
       trap: '前置きを本当の控えめさと取りやすい。but のあとの中身の重さで判断する。',
       use: 'I’m just saying, it’s a little late.（言ってみただけ、ちょっと遅いよね）' },
 
-    // why: thirteen ← "three" plus the stressed "hours" heard as -teen; three days ← "took" heard with a long wait
     { id: 'n2', skill: 'number', level: 'B1', point: 'hours', seg: [184.7, 190.05], keep: true,
-      stem: 'How long did it take for the adviser’s warning to come true?',
-      choices: ['Two hours', 'Three hours', 'Thirteen hours', 'Three days'], a: 1,
+      stem: 'How long did it take for the adviser to be right?',
+      ja: 'アドバイザーの言ったとおりになるまで、どのくらいかかった？',
+      choices: ['2 hours', '3 hours', '13 hours', '3 days'], a: 1,
+      choicesJa: ['2時間', '3時間', '13時間', '3日'],
       cue: '「it only took」のあと。',
       line: 'it only took *three hours* for Jen to be right.',
-      said: '「ジェンの言った通りになるのに3時間しかかからなかった」と言う。',
-      mean: '心配されていた「話題の的」に、あっという間になった。',
-      trap: 'three と hours がつながると -teen に聞こえやすい。teen なら「ティーン」が長く強い。',
-      use: 'It only took ten minutes.（10分しかかからなかった）' },
+      said: '「ジェンの言ったとおりになるのに、3時間しかかからなかった」と言う。',
+      mean: 'it took 〜 ＝ 〜かかった。only で「たった」。',
+      trap: 'three と thirteen は終わりの長さで分かれる。単位の hours まで聞く。',
+      use: 'It only took ten minutes.（たった10分で済んだ）' },
 
-    // R fix: V2 (blind 55 %: "show how silly the tradition is" contradicts entering it). "To win, so she can promote
-    //   her cookbook" (said, but after "Besides") is the near miss now.
-    // why: cookbook ← "So I'll win, and then I can promote my… cookbook" is said, as an extra; prove them wrong ← the
-    //   host's "hates her family" just before
     { id: 'g2', skill: 'gist', level: 'B2', point: 'enter', reveals: ['hours'], seg: [184.7, 208.5],
-      stem: 'What is Leslie’s main reason for entering the pie contest after all?',
-      choices: ['To stop the story from crowding out Ben’s plan',
-                'To prove the host wrong about how she sees family',
-                'To win, so she can promote her cookbook'], a: 0,
-      cue: 'ベンの反対のあと、「But the more」で始まる文。',
-      said: 'ベンは「すぐ収まる」と言うが、彼女は「騒ぎが続くほど経済政策が話題にならない」と出場を決める。',
-      mean: '目的は選挙のため。パイの腕前や本の宣伝は Besides のあとのおまけ。',
-      trap: '番組の「家族嫌い」発言への反論と取りやすいが、彼女が言う理由は選挙の話。',
-      use: 'It’s not worth the distraction.（気が散るだけで、やる価値がない）' },
+      stem: 'Why does Leslie decide to enter the pie contest?',
+      ja: 'レスリーはなぜパイのコンテストに出ると決める？',
+      choices: ['So Ben’s plan gets heard', 'To prove the reporters wrong', 'Just to sell her cookbook'], a: 0,
+      choicesJa: ['ベンの政策が聞いてもらえるように', '記者がまちがっていると示すため', '料理本を売るためだけ'],
+      cue: '政策について言う文。',
+      said: 'ベンは「すぐ収まる」と言うが、「騒ぎが続くほど政策が話題にならない」と出場を決める。',
+      mean: 'distraction ＝ 気をそらすもの。自分が話題になると、ベンの政策が目立たない。',
+      trap: 'cookbook（料理本）の話も出るが、それは「それに」と足したおまけ。',
+      use: 'I don’t want to be a distraction.（じゃまになりたくない）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'less', seg: [195.6, 199.3],
-      stem: 'Type it: “The more they talk about this, ___ talk about your plan.” (5 words)',
+      stem: 'Type it: “The more they talk about this, ___ talk about…” (5 words)',
+      ja: '聞こえた言葉を書こう：「…talk about this, ___ talk about your plan.」（5語）',
       answer: "the less they're going to",
-      cue: '「the more」と対になる部分。後半は速く弱い。',
+      cue: '「the more」と対になる部分。',
       line: 'the more they talk about this, *the less they’re going to* talk about your economic plan.',
-      said: '「この話が続くほど、政策の話は減る」と言う。後半が速い。',
+      said: '「この話が続くほど、政策の話は減る」と言う。',
       mean: 'the more A, the less B ＝ A が増えるほど B は減る。',
-      trap: 'they’re が弱く消えたように聞こえやすい。going to の前の主語を待つ。',
+      trap: 'they’re が弱く、消えたように聞こえやすい。5語を数えて聞く。',
       use: 'The more you practice, the less you worry.（練習するほど不安は減る）' },
 
-    // R fix: V2 (blind 55 %). "Her real reason, after the official one" (main vs extra flipped) replaces "a whole new
-    //   topic".
-    // why: an objection ← "Besides" heard as "but"; the real reason ← the pies sound more like her than the economic
-    //   plan, so Besides is heard as "the truth is"
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'besides', reveals: ['enter'], seg: [198.9, 202.6],
-      stem: 'What does the word that opens “I’m good at making pies” signal?',
-      choices: ['One more reason on top of the first', 'A point against what she just said',
-                'Her real reason, after the official one'], a: 0,
-      cue: '経済政策の話のすぐあと、最初の一語。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['enter'], seg: [198.9, 202.6],
+      stem: 'Leslie says, “*Besides*, I’m good at making pies.” What does “besides” do?',
+      ja: '「Besides, I’m good at making pies」の besides は何をしている？',
+      choices: ['Adds one more reason', 'Says the opposite', 'Gives her real reason'], a: 0,
+      choicesJa: ['理由をもう一つ足す', '反対のことを言う', '本当の理由を言う'],
+      cue: '政策の話のあとの最初の一語。',
       line: '*Besides*, I’m good at making pies. So I’ll win…',
       said: '「それに、パイ作りは得意。だから勝てる」と続ける。',
-      mean: 'besides ＝ それに、おまけに。主な理由のあとに、もう一つの理由を足す。',
-      trap: 'besides を but や本音の合図と取りやすい。文頭なら「それに」で、理由の追加。',
+      mean: 'besides ＝ それに。前の理由に、同じ方向の理由を足す。',
+      trap: 'but のような逆の話と思いやすい。besides は同じ向きに足す語。',
       use: 'Besides, it’s on the way.（それに、通り道だし）' },
 
-    // why: still awake ← "meltdowns for no reason" heard as the end; one outside ← "briefly got outside" heard as still
-    //   out
-    // R fix: S1: the stem named Ben, and no name or address settles who reads the list. It names the moment only.
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'kids', seg: [210.2, 222.85],
-      stem: 'At the end of the long list about the kids, how are they now?',
-      choices: ['They are all asleep at last', 'They are all still awake', 'One of them is still outside'], a: 0,
-      cue: 'リストの最後、「They’re all」のあと。',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'kids', seg: [211, 222.85],
+      stem: 'After all that, what are the kids doing now?',
+      ja: 'いろいろあったあと、子どもたちは今どうしている？',
+      choices: ['They are all asleep', 'They are all awake', 'One is still outside'], a: 0,
+      choicesJa: ['みんな寝ている', 'みんな起きている', '一人はまだ外にいる'],
+      cue: '長いリストの最後。',
       line: 'Somehow, kids back in bed. *They’re all napping.*',
-      said: '軽食、寝かしつけ、三人同時のかんしゃく、一人が外へ、と並べ、最後に「全員寝た」と言う。',
-      mean: '大変だったが、なんとか全員寝かせた。',
-      trap: '途中の大騒ぎが印象に残るが、答えはリストの最後。briefly は「少しの間だけ」。',
-      use: 'Somehow, we made it on time.（なんとか間に合った）' },
+      said: 'おやつ、寝かしつけ、三人同時のかんしゃく、一人が外へ、と並べ、「全員寝た」と言う。',
+      mean: 'nap ＝ 昼寝する。tucked in ＝ 寝かしつけた。',
+      trap: '一人が外に出た話があるので迷いやすい。最後の一文を聞く。',
+      use: 'The kids are napping. Let’s talk quietly.（子どもが昼寝中。静かに話そう）' },
 
-    // anchor: 228.8–230.8 s "one for directly into mouth": both sources have no "my"/"your" before "mouth", at 182 wpm
-    //   in a list that runs on from “One for baking”
-    { id: 'c1', skill: 'dict', level: 'C2', point: 'mouth', seg: [225.4, 231.05],
+    { id: 'c1', skill: 'dict', level: 'C2', point: 'mouth', seg: [225.4, 231.05], retired: true,
       stem: 'Type the end: “One for baking, ___.” (5 words)', answer: 'one for directly into mouth',
       cue: '「One for baking」と同じ形のくり返し。文法より音を。',
       line: 'One for baking, *one for directly into mouth*.',
@@ -281,55 +249,43 @@ export const piemary: Clip = {
       trap: '習った文法に合わせて into my mouth と足したくなる。書き取りは聞こえた音だけ。',
       use: 'One for now, one for later.（一つは今、一つはあとで）' },
 
-    // why: worried ← a visitor from a women's group arriving after the press trouble; back Ben ← a women's group at a
-    //   candidate's home heard as an endorsement visit
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'award', seg: [244.5, 250.55],
-      stem: 'How does Leslie react when Elise arrives?',
-      choices: ['Hopeful that she has come with an award', 'Worried that she has come to protest',
-                'Glad that she has come to back Ben'], a: 0,
-      cue: '「are you here to」のあとと、次の文。',
+      stem: 'How does Leslie feel when Elise arrives?',
+      ja: 'エリースが来たとき、レスリーはどんな気持ち？',
+      choices: ['Hopeful about an award', 'Worried about a protest', 'Glad she backs Ben'], a: 0,
+      choicesJa: ['賞をもらえると期待している', '抗議を心配している', 'ベンを応援してくれて喜んでいる'],
+      cue: '「are you here to」のあと。',
       line: 'are you here to *give me the Woman of the Year Award*? *I have a speech prepared.*',
-      said: '「年間最優秀女性の賞をくれに来たの？スピーチも用意してある」と言い、すぐ見せようとする。',
-      mean: '勝手に期待して、はしゃいでいる。返事は短い No。',
-      trap: '女性団体と聞いて抗議を連想しやすいが、彼女の言葉は期待そのもの。',
-      use: 'I have a speech prepared, just in case.（念のため、あいさつを用意してある）' },
+      said: '「年間最優秀女性の賞をくれに来たの？ スピーチも用意してある」と言う。',
+      mean: 'Are you here to 〜? ＝ 〜しに来たの？ スピーチまで用意して、期待いっぱい。',
+      trap: 'あとで抗議の話になるので、心配していると思いやすい。来た直後の言葉を聞く。',
+      use: 'Are you here to pick up your order?（ご注文の受け取りですか）' },
 
-    // R fix: V2 (blind 70 %: "a fair old tradition" contradicts "I agree"). "Dumb, but she wants the win" (her own "So
-    //   I'll win" earlier) replaces it, so two choices share "dumb but".
-    // why: wants the win ← "I'm good at making pies. So I'll win" earlier; the protest is dumb ← "it's dumb" heard
-    //   about Elise's group
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'dumb', seg: [257.0, 264.25],
-      stem: 'What is Leslie’s own view of the pie contest?',
-      choices: ['She agrees it is dumb but will do it for Ben', 'She thinks it is dumb but wants the win',
-                'She thinks the protest is the dumb part'], a: 0,
-      cue: '「I agree」のあとと、「but」のあと。',
+      stem: 'What does Leslie herself think of the pie contest?',
+      ja: 'レスリー自身はパイのコンテストをどう思っている？',
+      choices: ['It’s dumb, but for Ben', 'It’s dumb, but she’ll win', 'It’s fun, and she loves it'], a: 0,
+      choicesJa: ['くだらないが、ベンのため', 'くだらないが、勝てる', '楽しくて大好き'],
+      cue: '「I agree that」のあと。',
       line: 'I *agree that it’s dumb*, but *this is not about me*. It’s about Ben.',
-      said: '「くだらないのは同感。でも私の問題じゃなくて、ベンのため」と言う。',
-      mean: '本心は反対のまま、選挙のために出る。I agree で相手を認めてから but で理由。',
-      trap: '勝ちたいから出る、と取りやすい。but のあとの not about me が理由。',
-      use: 'I agree it’s silly, but let’s do it.（ばかげてるのは同感、でもやろう）' },
+      said: '「くだらないのは同感。でも私の問題じゃなくて、ベンのためなの」と言う。',
+      mean: 'This is not about me ＝ 自分のためじゃない。but のあとが本音。',
+      trap: '「勝てる」と言っていたので、勝ちたいからだと思いやすい。about Ben が理由。',
+      use: 'This isn’t about me. It’s about the team.（私のことじゃない。チームのためなの）' },
 
-    // R fix: V2 + S1 (blind 70 %: "a contest she doesn't believe in" in the stem pointed at "give up"; it also states
-    //   a2's key). The stem names the moment only; "win the small fight first" (lose/win order flipped) replaces "try
-    //   again next time".
-    // why: fight every battle ← both "battle" and "war" heard as fighting harder; win it first ← "lose" and "win" heard
-    //   in the wrong order
     { id: 'f4', skill: 'phrase', level: 'C1', point: 'battle', reveals: ['dumb'], seg: [261.6, 267.65],
-      stem: 'What does the short saying Leslie ends her answer with mean here?',
-      choices: ['Give up a small fight to win the big one', 'Fight every small fight to win the big one',
-                'Win the small fight first, then the big one'], a: 0,
-      cue: '「he will do more for women」のあと、対になる四語。',
+      stem: '“*Lose a battle, win the war*.” What does Leslie mean?',
+      ja: '「Lose a battle, win the war」とはどういう意味？',
+      choices: ['Lose small, win big', 'Fight every small fight', 'Win the small fight first'], a: 0,
+      choicesJa: ['小さく負けて、大きく勝つ', '小さな戦いを全部戦う', 'まず小さな戦いに勝つ'],
+      cue: '「So, you know」のあと。',
       line: 'So, you know, *lose a battle, win the war*, that kind of thing.',
-      said: '「小さな戦いに負けて、大きな戦争に勝つ、ってこと」と言う。',
-      mean: '目先の主張は捨てて、大きな目的（ベンの当選）を取る、という考え。',
-      trap: 'battle と war から「全部戦う」と取りやすい。lose と win の対比を聞く。',
-      use: 'Lose the battle, win the war.（小さく負けて、大きく勝つ）' },
+      said: '「つまり、小さな戦いに負けて、大きな戦争に勝つ、ってこと」と言う。',
+      mean: 'battle ＝ 一つの戦い。war ＝ 戦争全体。くだらない催しに出ても、選挙に勝てばいい。',
+      trap: 'battle と war は似た語なので混ざりやすい。war（全体）で勝つのが目的。',
+      use: 'Sometimes you lose a battle to win the war.（大きく勝つために小さく負けることもある）' },
 
-    // R fix: V2 (blind 50 %: "boast that their pie will win" fits no line). "Her threat of a protest is taken back"
-    //   (right move, wrong scope: only the pies are taken back) replaces it.
-    // why: the protest taken back ← "Metaphorically" heard as cancelling the whole warning; turned into a threat ← the
-    //   order reversed
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'civil', seg: [270.6, 281.25],
+    { id: 'h4', skill: 'humor', level: 'C1', point: 'civil', seg: [270.6, 281.25], retired: true,
       stem: 'Why is Elise’s warning about the protest funny?',
       choices: ['Her threat of pies in the face is taken back at once',
                 'Her threat of a protest is taken back at once',
@@ -341,13 +297,7 @@ export const piemary: Clip = {
       trap: 'Metaphorically で全部取り消したと取りやすいが、消したのはパイだけ。抗議はそのまま。',
       use: 'Metaphorically speaking, of course.（もちろん、たとえだけど）' },
 
-    // anchor: 285.9 s "my husband Ben is a progressive champion of women's rights", then 291.2 s "Chop, chop": the
-    //   order to hurry up and bake follows the praise at once; 296 s "Hi. Ben Wyatt." he greets Elise only after
-    // R fix: V2 (blind 50 %: "sound hollow" was the only knowing choice). Key and near miss are now a direct flip
-    //   (undercuts / backs up what she said).
-    // why: backs it up ← "Chop, chop" heard as cheering her on (sincerity flip); mocks Elise ← the pie talk heard as
-    //   aimed at her protest
-    { id: 'c2', skill: 'infer', level: 'C2', point: 'chopchop', seg: [285.4, 297.0],
+    { id: 'c2', skill: 'infer', level: 'C2', point: 'chopchop', seg: [285.4, 297.0], retired: true,
       stem: 'Right after Leslie praises Ben to Elise, what does his “Chop, chop” do?',
       choices: ['It undercuts what she just said about him', 'It backs up what she just said about him',
                 'It mocks what Elise just said about the contest'], a: 0,
