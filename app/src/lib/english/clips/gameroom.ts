@@ -1,15 +1,11 @@
+// A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 5, new 3
 // “Chandler & Monica Argue About Move In Plans | Friends” (the official Friends channel, Best of Season 6): Monica
 // plans a beautiful guest room for Rachel's old room, Chandler wants a game room, she says no, he mocks her plan; then
 // Joey checks they're still moving in, because his roommate ad is out.
 // Segments from the captions, words from whisper (2026-11-16). Whisper puts "Hey, what's up?" at 95 s, the captions at
-// 101.3 s; the captions are used. Untested: 0–10 s (the phone message; speakers unclear), "Hey/Or whatever" (31.6 s),
-// whisper's "Of course" (62 s, no caption), 94.6 s "your beautiful game room" (captions) vs "guest room" (whisper),
-// Joey's ad and reasons (109–132 s: "non-ugly", "a girl who is 19"), and "Not just a hat rack, my friend" (whose
-// head, and how meant, is arguable). Monica/Chandler are named where the words settle it ("Gee, Chandler", "Monica
-// and I had a stupid fight", Rachel's room = Monica's).
-// REVIEW 2026-11-16: pass 6, fix 16, drop 0, new 0; ear checks 0
-//   Open: c1 (C2, "what is she not saying?") still invites the "she has already decided" key by its type, and its
-//   segment is 27.5 s (the plan through the bare "No."). Drop it if the user's ear says the "No." isn't needed.
+// 101.3 s; the captions are used. Untested: whisper's "Of course" (62 s, no caption), 94.6 s "game room" (captions) vs
+// "guest room" (whisper), Joey's ad and reasons (109–132 s: "non-ugly", "a girl who is 19"), and the hat rack line.
+// The opening phone lines' speakers are unclear: p2 names no one.
 import type { Clip } from '../types.ts';
 
 export const gameRoom: Clip = {
@@ -18,35 +14,49 @@ export const gameRoom: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %): "who sleeps in it" was a filler; a near miss on the outcome ("he talks her round")
-    //   replaces it, so both plan-choices have to be told apart by the ending
-    // why: talks her round ← he keeps pushing (Asteroids, the guest-room jab), but she never gives way; move in at all ←
-    //   "when you move in" and Joey's later "still moving in?", but both plans assume he does
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'room', reveals: ['guest'], seg: [10.7, 96],
-      stem: 'How does the talk about Rachel’s room go?',
-      choices: ['Each has a plan for it, and she won’t give way', 'Each has a plan for it, and he talks her round',
-                'They argue over whether he should move in at all'], a: 0,
-      cue: '二人それぞれの案と、彼女の短い返事。',
-      said: '彼女は客間、彼はゲーム部屋を出し、彼女は「No.」の一言で断る。',
-      mean: '部屋の使い道をめぐる言い合い。話し合おうとしても、彼女は譲らない。',
-      trap: '彼が食い下がるので説得できたと取りやすい。move in も出るが、引っ越しは決まった前提。',
-      use: 'Let’s figure out what to do with it.（それをどうするか決めよう）' },
-
-    // why: office ← a roll-top desk is coming in her plan; keep for Rachel ← "Rachel's room" is how she names it
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'thanks', seg: [4, 10],
+      stem: 'What does “How about ‘Thanks for taking the message’?” mean?',
+      ja: '「How about ‘Thanks for taking the message’?」はどういう意味？',
+      choices: ['You should say thank you', 'Let’s say thanks together', 'Thank you for the message'], a: 0,
+      choicesJa: ['お礼くらい言ってよ', '一緒にお礼を言おう', '伝言ありがとう'],
+      cue: '「I don’t know」のあと',
+      line: 'Who was it? — I don’t know. — *How about “Thanks for taking the message”?*',
+      said: '「だれから？」「知らない」「伝言を受けてくれてありがとう、は？」と返す。',
+      mean: 'How about 〜? ＝「〜はどう？」。ここは「お礼くらい言ったら？」とたしなめている。',
+      trap: 'Thanks が聞こえるので、お礼を言っていると思いやすい。How about が前にある。',
+      use: 'Thanks for taking the message.（伝言を受けてくれてありがとう）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'room', reveals: ['guest'], seg: [10.7, 51],
+      stem: 'What are Monica and Chandler talking about?',
+      ja: 'モニカとチャンドラーは、何について話している？',
+      choices: ['What to do with Rachel’s room', 'Where they should move to next', 'Who will pay the rent'], a: 0,
+      choicesJa: ['レイチェルの部屋をどうするか', 'どこに引っ越すか', 'だれが家賃を払うか'],
+      cue: 'チャンドラーの「Hey, listen」から',
+      said: '空くレイチェルの部屋を、モニカは客間、チャンドラーはゲーム部屋にしたい。',
+      mean: 'what we wanna do with it ＝「それをどうしたいか」。部屋の使い道の話し合い。',
+      trap: 'move in（一緒に住む）が聞こえるので、引っ越し先の話と思いやすい。',
+      use: 'Let’s talk about what to do with it.（それをどうするか話そう）' },
+    { id: 's3', skill: 'sound', level: 'B1', point: 'wanna', seg: [12.5, 17],
+      stem: 'Fill the gap: “___ talk about what we wanna do with it?”',
+      ja: 'すき間をうめよう：「___ talk about what we wanna do with it?」',
+      choices: ['You wanna', 'You gonna', 'You gotta'], a: 0,
+      choicesJa: ['〜したい？（You wanna）', '〜するつもり？（You gonna）', '〜しなきゃ（You gotta）'],
+      cue: '「Rachel’s room」のあとの質問',
+      line: '*You wanna* talk about what we wanna do with it?',
+      said: '「部屋をどうするか、話し合わない？」と聞く。',
+      mean: 'wanna ＝ want to（〜したい）。You wanna 〜? ＝「〜しない？」と軽くさそう言い方。',
+      trap: 'gonna（ガナ）とまぎれやすい。「ワナ」と口を丸めて始まれば wanna。',
+      use: 'You wanna get some coffee?（コーヒー飲みに行かない？）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'guest', reveals: ['cards'], seg: [17.6, 24.5],
       stem: 'What does Monica want to turn Rachel’s room into?',
-      choices: ['A room for visitors to stay in', 'An office built around a big desk', 'A room kept ready for Rachel'], a: 0,
-      cue: '「I was thinking」のあと、room の前の語。',
+      ja: 'モニカは、レイチェルの部屋を何にしたい？',
+      choices: ['A room for guests to stay', 'An office with a big desk', 'A room kept for Rachel'], a: 0,
+      choicesJa: ['お客さんが泊まる部屋', '大きな机のある仕事部屋', 'レイチェル用に残す部屋'],
+      cue: '「I was thinking」のあと',
       line: 'I was thinking we should have a *beautiful guest room*, right?',
-      said: '「すてきな客間にしたいの。マホガニーのベッドに、いつも花を」と話す。',
-      mean: 'guest room ＝ 泊まりに来た人の部屋。客を迎える部屋の計画。',
-      trap: 'roll-top desk が聞こえると仕事部屋に引かれるが、机は客の感想カード用。',
-      use: 'There’s a guest room if you need it.（客間あるから使って）' },
-
-    // R fix: V2 (blind 80 %): "left the planning to Chandler" was weak; a scope shift (the furniture yes, the room's use
-    //   no) replaces it, refuted by "guest room" at the start of her plan
-    // why: making it up ← the line taken at face value; scope ← "that much" heard as "not the main question", but she
-    //   opened with what the room is for
+      said: '「すてきな客間にしたいの。ベッドに、いつも花をかざって」と話す。',
+      mean: 'guest room ＝ 泊まりに来た人の部屋。I was thinking 〜 ＝「〜はどうかなと思ってた」。',
+      trap: 'desk（机）が聞こえると、仕事部屋と思いやすい。机はお客さんのカード用。',
+      use: 'There’s a guest room if you need it.（客間があるから使って）' },
     { id: 'h1', skill: 'humor', level: 'C1', point: 'thought', seg: [19.8, 34.2],
       stem: 'Why does Monica’s “I really haven’t thought about it” get a laugh?',
       choices: ['Her plan was far too detailed for that to be true', 'She admits she was making it all up on the spot',
@@ -56,27 +66,18 @@ export const gameRoom: Clip = {
       said: 'ベッドや花、カードまで話した直後、「そんなに考えてないけど」と付け足す。',
       mean: '言葉と直前の細かさが食い違う。本気の計画をごまかそうとして、かえってばれる。',
       trap: '言葉通りなら思いつき。用途も最初に言っている。言葉と、前の中身の量を比べる。',
-      use: 'I haven’t really thought about it.（あんまり考えてないんだけど）' },
-
-    // why: complaints ← comment cards are often for problems; notes to each other ← "people can tell us" heard loosely
+      use: 'I haven’t really thought about it.（あんまり考えてないんだけど）', retired: true },
     { id: 'd2', skill: 'detail', level: 'B1', point: 'cards', seg: [24.2, 29.5],
       stem: 'What are the little comment cards on the desk for?',
-      choices: ['So guests can say how much they loved it', 'So guests can point out what needs fixing',
-                'So guests can leave notes for each other'], a: 0,
-      cue: '「so people can」のあと。',
+      ja: '机の上の小さなカードは、何のため？',
+      choices: ['To say they love it', 'To say what needs fixing', 'To leave notes for others'], a: 0,
+      choicesJa: ['どれだけ気に入ったか書くため', '直してほしい所を書くため', 'ほかの人にメモを残すため'],
+      cue: '「so people can」のあと',
       line: 'little comment cards so people can *tell us how much they love staying here*.',
-      said: '机に小さな感想カードを置き、泊まるのがどれだけ楽しいか書いてもらう、と言う。',
-      mean: 'ホテルのアンケートのよう。しかも、ほめ言葉だけが書かれる前提。',
-      trap: 'comment card は苦情用という印象があるが、ここは how much they love。',
+      said: '「泊まるのがどれだけ楽しいか、書いてもらうカード」と言う。',
+      mean: 'comment card ＝ ホテルのアンケートのようなカード。しかも、ほめ言葉だけが書かれる前提。',
+      trap: 'comment card は苦情用と思いやすい。how much they love を聞く。',
       use: 'Please fill out this comment card.（このアンケートにご記入ください）' },
-
-    // R fix: V2 (blind 75 %; the item type invites "she has decided"). One rewrite: "unsure he'll move in" (no anchor
-    //   either way) becomes a near miss on the same modest words (worried he'll find it silly), refuted by the bare "No."
-    //   S4: the segment now starts at the desk (24.4 s), 27.5 s; it can't be shorter and still hold the "No."
-    // why: his ideas ← "haven't thought about it" read as 遠慮, an invitation to talk; silly ← "Or whatever" read as
-    //   embarrassment, but a woman who fears her plan is silly doesn't answer his with a flat "No."
-    // anchor: 18.2–29 s a full plan (bed, tables, flowers, desk, cards), then 31.6–33 s "haven't thought about it that
-    //   much", then 51.2 s a bare "No." to his idea: the plan was settled before she asked
     { id: 'c1', skill: 'attitude', level: 'C2', point: 'thought', seg: [24.4, 51.9],
       stem: 'When Monica says she hasn’t thought about it much, what is she not saying?',
       choices: ['That her mind is already made up', 'That she wants to plan it with him',
@@ -86,69 +87,62 @@ export const gameRoom: Clip = {
       said: '細かい計画のあと「そんなに考えてない」と言い、彼の案には説明なしで「No.」と返す。',
       mean: '控えめな一言は、もう決めてあることを隠すため。彼の案を即座に断ることで、それが分かる。',
       trap: '「考えてない」を遠慮や照れと取りやすい。控えめな言葉は、そのあとの行動で答え合わせ。',
-      use: 'Whatever you like. But maybe the blue one?（何でもいいよ。でも青かな？）' },
-
-    // R fix: V2 (blind 90 %): "that much" after the gap made only a negative fit; the stem now stops before it, so the
-    //   emphatic "I really have thought about it" is a real option
-    // why: have ← the t of haven't drops; hadn't ← the n survives in both, and the past fits "I was thinking" nearby
-    { id: 's2', skill: 'sound', level: 'B2', point: 'thought', seg: [31, 34.2],
+      use: 'Whatever you like. But maybe the blue one?（何でもいいよ。でも青かな？）', retired: true },
+    { id: 's2', skill: 'sound', level: 'B1', point: 'thought', seg: [31, 34.2],
       stem: 'Fill the gap: “You know, I really ___ thought about it…”',
+      ja: 'すき間をうめよう：「You know, I really ___ thought about it…」',
       choices: ['haven’t', 'have', 'hadn’t'], a: 0,
-      cue: '「really」のすぐあと、短い一語。',
+      choicesJa: ['考えていない（haven’t）', '考えた（have）', '考えていなかった（hadn’t）'],
+      cue: '「really」のすぐあと',
       line: 'I really *haven’t* thought about it that much.',
-      said: '「そんなに考えてないけど」と言っている。',
-      mean: 'haven’t の t はほぼ消え、「ハヴン」で止まる。n の音が否定の印。',
-      trap: 't が消えると have に聞こえやすい。have thought なら「考えた」で逆の意味。n が残るかを聞く。',
+      said: '「そんなに考えてないんだけどね」と言う。',
+      mean: 'haven’t の t はほぼ消え、「ハヴン」で止まる。n の音が「ない」のしるし。',
+      trap: 't が消えると have に聞こえやすい。have なら「考えた」で逆の意味。',
       use: 'I haven’t decided yet.（まだ決めてない）' },
-
-    // R fix: V2 (blind 55 %): "not serious" was weak; "softens the idea" (I mean as a hedge) replaces it, refuted by
-    //   the sales pitch that follows
-    // why: corrects ← I mean as self-repair, a common use; softens ← I mean often hedges, but he goes on to sell it
-    //   ("the real ones, the big big big ones")
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'likeidea', seg: [33.5, 41],
+      stem: 'How does Chandler bring up his own idea?',
+      ja: 'チャンドラーは、自分の案をどう切り出す？',
+      choices: ['He likes hers, but adds his', 'He says hers is bad', 'He waits until she asks him'], a: 0,
+      choicesJa: ['彼女の案をほめてから、自分のを言う', '彼女の案はだめだと言う', '彼女に聞かれるまで待つ'],
+      cue: '「Well」で始まる返事',
+      line: 'Well, *I like that idea*. Obviously. *But I was thinking maybe*… it could be a game room.',
+      said: '「その案いいね。もちろん。でも、ゲーム部屋もいいかなって」と言う。',
+      mean: 'I like that idea, but I was thinking… ＝ ほめてから、自分の案をやわらかく出す。',
+      trap: 'I like that idea から、賛成で終わると思いやすい。but のあとが本音。',
+      use: 'I like that idea, but I was thinking maybe Friday.（いい案だね。でも金曜もいいかなって）' },
     { id: 'm1', skill: 'marker', level: 'B2', point: 'mean', seg: [37.7, 49.3],
-      stem: 'Right after “a game room, you know?”, what does Chandler’s “I mean” do?',
-      choices: ['Backs the idea up with a reason to like it', 'Fixes a word he has just said wrong',
-                'Softens the idea so it sounds less pushy'], a: 0,
-      cue: '「game room」のあと、文頭の二語。',
+      stem: 'Why does Chandler say “I mean” after “game room”?',
+      ja: 'チャンドラーは「game room」のあと、なぜ「I mean」と言う？',
+      choices: ['To give a reason for it', 'To fix a wrong word', 'To make it sound softer'], a: 0,
+      choicesJa: ['その理由を言うため', 'まちがえた言葉を直すため', 'やわらかく聞こえるようにするため'],
+      cue: '「game room」のあとの2語',
       line: 'it could be a game room, you know? *I mean*, you can buy old arcade games',
-      said: '「ゲーム部屋とか。だってさ、本物の昔のゲーム機が買えるんだよ」と続ける。',
-      mean: 'I mean ＝「だってさ」。言い直しでなく、案の良さを付け足して押している。',
-      trap: 'I mean は言い直しや和らげにも使うが、ここは続けて売り込む。続く中身で判断する。',
+      said: '「ゲーム部屋とか。だってさ、昔のゲーム機が買えるんだよ」と続ける。',
+      mean: 'I mean ＝ ここは「だってさ」。案のいい所を足して、売りこんでいる。',
+      trap: 'I mean は言い直しにも使うので、まちがいを直すと思いやすい。続く中身で判断。',
       use: 'Let’s go. I mean, it’s free.（行こうよ。だってタダだし）' },
-
-    // why: $20 ← the weak "-dred" makes "two hundred" sound like "twenty"; $2,000 ← "the real ones, the big ones"
-    //   sounds expensive
     { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [41.3, 49.3], keep: true,
       stem: 'What does Chandler say an old arcade game costs?',
+      ja: '昔のゲーム機はいくらだと、チャンドラーは言う？',
       choices: ['$20', '$200', '$2,000'], a: 1,
-      cue: '「Asteroids」のすぐあと。',
+      choicesJa: ['20ドル', '200ドル', '2,000ドル'],
+      cue: '「Asteroids」のすぐあと',
       line: 'like Space Invaders and Asteroids *for $200*',
-      said: '「昔の本物のゲーム機が200ドルで買える」と言う。',
-      mean: 'arcade game ＝ ゲームセンターの大きなゲーム機。安く買えると売り込んでいる。',
-      trap: 'hundred が弱く twenty にも聞こえやすい。最後の「ドゥレッド」まで聞く。',
+      said: '「本物の昔のゲーム機が、200ドルで買える」と言う。',
+      mean: 'arcade game ＝ ゲームセンターの大きなゲーム機。two hundred ＝ 200。',
+      trap: 'hundred が小さく、twenty にも聞こえやすい。最後の「ハンドレッド」まで聞く。',
       use: 'You can get one for about fifty bucks.（50ドルくらいで買えるよ）' },
-
-    // R fix: V2 (blind 50 %): "relieved" was weak; "hurt, ready to drop it" (upset, but the wrong direction) replaces
-    //   it, refuted by "Let's discuss it"
-    // why: hurt ← a flat no after his pitch reads as a blow, but he presses on; amused ← his joking delivery ("Gee,
-    //   Chandler")
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'reject', seg: [50.7, 60.9],
-      stem: 'How does Chandler take Monica’s one-word answer?',
-      choices: ['Annoyed, and pushing for a real talk', 'Hurt, and ready to let the subject drop', 'Amused, since he was only half serious'], a: 0,
-      cue: '「No.」のあとの、長い返事の終わり。',
+      stem: 'How does Chandler feel about Monica’s “No”?',
+      ja: 'モニカの「No」に、チャンドラーはどう感じている？',
+      choices: ['Unhappy; he wants to talk', 'Hurt; he drops the whole idea', 'Amused; he was joking'], a: 0,
+      choicesJa: ['不満で、話し合いたい', '傷ついて、あきらめる', 'おもしろがっている（冗談だった）'],
+      cue: '「No.」のあとの長い返事',
       line: 'Let’s *discuss it before we reject it completely*.',
-      said: '「No って、『面白い案ね、断る前に話し合いましょう』って意味だよね？」と返す。',
-      mean: '話し合いもなしに断られた不満を、冗談の形で伝えている。',
-      trap: 'おどけた口調で面白がって、または傷ついて引くように見えるが、求めているのは話し合い。',
+      said: '「その No って『断る前に話し合いましょう』って意味だよね？」と返す。',
+      mean: 'discuss ＝ 話し合う。reject ＝ 断る。話し合いもなく断られた不満を、冗談の形で伝えている。',
+      trap: 'おどけた口調なので、おもしろがっていると思いやすい。求めているのは話し合い。',
       use: 'Can we at least talk about it?（せめて話し合えない？）' },
-
-    // R fix: V2 (blind 55 %): "give me your reasons" became a one-dimension near miss ("think it over alone"),
-    //   refuted by "Let's". S4: 16.7 s → 7.4 s (53.9–61.3), which still holds "Let's discuss it before we reject it"
-    // why: alone ← "discuss it before we reject it" heard as "think before you say no", but it's "Let's"; nicer no ←
-    //   he acts out a sweeter reply, so it sounds like
-    //   he only wants a gentler tone
-    // anchor: 57.7–60.1 s "Let's discuss it before we reject it": "Let's" makes it a talk between them, and it must
-    //   come before the no; nothing in his version is about tone
     { id: 'c2', skill: 'infer', level: 'C2', point: 'reject', seg: [53.9, 61.3],
       stem: 'Which plain-English version keeps what Chandler means by “no as in…”?',
       choices: ['“Talk it over with me before you say no.”', '“Think it over alone before you say no.”',
@@ -158,66 +152,50 @@ export const gameRoom: Clip = {
       said: '「その No は『面白い案ね、断る前に話し合おう』って意味だよね？」と、望んだ返事を演じる。',
       mean: '欲しいのは優しい言い方でも一人での再考でもなく、断る前の二人の話し合い。',
       trap: '甘い口調をまねるので「優しく断って」に聞こえやすい。最後の文の Let’s（一緒に）が本題。',
-      use: 'Can we talk before you decide?（決める前に話せる？）' },
-
-    // R fix: V2 (blind 75 %): "gives in and says yes" was weak; a keyword trap on "interesting idea" (good idea, but
-    //   too costly) replaces it
-    // why: too costly ← "interesting idea" heard as praise, plus the $200 named earlier; another day ← "Talk about it"
-    //   taken as a promise to talk
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'butno', seg: [61.3, 68.6],
-      stem: 'Why does Monica’s answer after “I’m sorry” get a laugh?',
-      choices: ['She does his steps, then still says no', 'She likes the idea, but says it costs too much',
-                'She agrees to talk it over another day'], a: 0,
-      cue: '謝ったあとの、短い三つの言葉。',
+      use: 'Can we talk before you decide?（決める前に話せる？）', retired: true },
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'butno', seg: [61.3, 68.6],
+      stem: 'Why is Monica’s answer after “I’m sorry” funny?',
+      ja: '「I’m sorry」のあとのモニカの答えは、なぜおかしい？',
+      choices: ['She talks, then still says no', 'She likes it but it’s costly', 'She agrees to talk later'], a: 0,
+      choicesJa: ['話し合ったことにして、やはり断る', '気に入るが、高すぎる', 'あとで話そうと言う'],
+      cue: '謝ったあとの短い3つの言葉',
       line: 'Yes, *interesting idea*. *Talk about it*. *But no*.',
-      said: '「ごめん。面白い案ね。話し合いました。でもダメ」と言う。',
-      mean: '彼が求めた手順を形だけ全部こなし、答えは同じ No。手順の早送りが笑い。',
-      trap: 'interesting や talk about it だけ拾うと、認めたように聞こえる。but のあとが結論。',
-      use: 'Great idea. Still no.（いい案ね。でもダメ）' },
-
-    // R fix: V2 (blind 60 %): "gives up and agrees to her antiques" became a role swap ("she mocks his idea, and he
-    //   backs down"), refuted because "Are you mocking me?" is hers
-    // why: share ← the sitcom compromise ending; role swap ← both mock and both push, so who did which is easy to flip
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'mock', reveals: ['guest'], seg: [68.8, 96],
-      stem: 'Where does the argument end up?',
-      choices: ['He mocks her plan, and she calls him on it', 'They agree to share the room between them',
-                'She mocks his idea, and he backs down'], a: 0,
-      cue: '最後の、彼女の短い問いと彼の答え。',
-      said: '理由を言い合ううち、彼が客間をからかい、彼女が「からかってるの？」と問いつめる。',
-      mean: '話はまとまらず、最後はからかいと言い合いで終わる。',
-      trap: '仲直りで終わると予想しやすく、誰がからかったかも入れ替わりやすい。最後の問いは彼女。',
+      said: '「面白い案ね。話し合いました。でもダメ」と言う。',
+      mean: 'But no ＝「でもダメ」。言われた手順を形だけ全部やって、答えは同じ No。',
+      trap: 'interesting idea だけ聞くと、認めたと思いやすい。but のあとが結論。',
+      use: 'Great idea. But no.（いい案ね。でもダメ）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'mock', reveals: ['guest'], seg: [68.8, 96],
+      stem: 'How does the argument end?',
+      ja: '言い合いはどう終わる？',
+      choices: ['He makes fun of her plan', 'They agree to share the room', 'She makes fun of his idea'], a: 0,
+      choicesJa: ['彼が彼女の案をからかう', '部屋を2人で分けることにする', '彼女が彼の案をからかう'],
+      cue: '最後の、モニカの短い質問',
+      said: '理由を言い合ううち、チャンドラーが客間をからかい、「からかってる？」と言われる。',
+      mean: 'Are you mocking me? ＝「私をからかってるの？」。話はまとまらずに終わる。',
+      trap: '仲直りで終わると思いやすい。だれがからかったかも入れかわりやすい。',
       use: 'Are you making fun of me?（私のことからかってる？）' },
-
-    // R fix: V2 (blind 60 %): "accepts and drops it" became "gives in, though let down", refuted by his Asteroids
-    //   comeback, now in the segment (to 79.8 s)
-    // why: finished ← "that's it?" read literally as "is that all you'll say?"; gives in ← a let-down "that's it?" read
-    //   as surrender, but he comes straight back with Asteroids
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'thatsit', reveals: ['guest'], seg: [68.8, 79.8],
-      stem: 'What does Chandler’s “So, that’s it?” do?',
-      choices: ['Protests that the talk ended so fast', 'Checks that she has finished speaking', 'Gives in, though he sounds let down'], a: 0,
-      cue: '「But no.」の直後の短い問いと、彼女の返し。',
+      stem: 'What does Chandler mean by “So, that’s it?”',
+      ja: 'チャンドラーの「So, that’s it?」はどういう意味？',
+      choices: ['He’s upset it ended so fast', 'He checks that she’s done', 'He agrees and gives up'], a: 0,
+      choicesJa: ['すぐ終わったのが不満', '話し終わったか確かめている', '賛成してあきらめる'],
+      cue: '「But no.」のすぐあと',
       line: '*So, that’s it?* — I just don’t think that… arcade games go in the beautiful guest room.',
-      said: '「それで終わり？」と聞き、彼女は理由を説明し始める。',
-      mean: '確認でなく抗議。「話し合いもなしに終わりか」と食い下がっている。',
-      trap: '文字通りなら確認や了解。相手が理由を言い始め、彼もすぐ言い返すのが抗議の印。',
+      said: '「それで終わり？」と聞き、モニカは理由を言い始める。',
+      mean: 'So, that’s it? ＝「それで終わり？」。確認ではなく、話し合いもなしかという不満。',
+      trap: '言葉どおりの確認と思いやすい。モニカが理由を言い始めるのが、不満が伝わったしるし。',
       use: 'So that’s it? We’re done?（それで終わり？もうおしまい？）' },
-
-    // why: won't fit ← "the big, big, big ones" is still in the ear; cost ← a price was named for the games
     { id: 'd3', skill: 'detail', level: 'B1', point: 'antiques', reveals: ['guest'], seg: [70.5, 76.7],
       stem: 'What reason does Monica give for saying no?',
-      choices: ['The guest room will be full of antiques', 'The big machines won’t fit in the room',
-                'The games cost more than they can spend'], a: 0,
-      cue: '二つ目の文、filled with のあと。',
+      ja: 'モニカは、断る理由を何と言う？',
+      choices: ['It will be full of antiques', 'The machines are too big', 'The games cost too much'], a: 0,
+      choicesJa: ['アンティークでいっぱいにする', 'ゲーム機が大きすぎる', 'ゲームが高すぎる'],
+      cue: '2つ目の文の「filled with」',
       line: 'The beautiful guest room’s going to be *filled with antiques*.',
-      said: '「ゲーム機は客間に合わない。客間はアンティークでいっぱいにするの」と言う。',
-      mean: 'antiques ＝ 古い家具など。それで飾る部屋に、ゲーム機は合わないという理由。',
-      trap: 'big big big が耳に残り「大きすぎる」に引かれるが、理由は部屋の雰囲気。',
-      use: 'The living room is full of antiques.（居間はアンティークでいっぱい）' },
-
-    // R fix: V2 (blind 75 %): "knows nothing about antiques" was weak; "backing down with a joke" replaces it,
-    //   refuted by "is perfect"
-    // why: sincere ← he might really think an old game counts as an antique; backing down ← a joke after a no often
-    //   closes a fight, but "perfect" pushes his idea
+      said: '「客間はアンティークでいっぱいにするの」と言う。',
+      mean: 'antiques ＝ 古い家具など。be filled with 〜 ＝ 〜でいっぱいになる。ゲーム機は合わない。',
+      trap: '前の big, big, big が耳に残り、大きすぎると思いやすい。',
+      use: 'The room is filled with antiques.（部屋はアンティークでいっぱい）' },
     { id: 'h3', skill: 'humor', level: 'C1', point: 'asteroids', reveals: ['antiques'], seg: [74.3, 80],
       stem: 'Why is Chandler’s comeback about Asteroids funny?',
       choices: ['He bends “antiques” to fit his game idea', 'He really thinks old games are antiques',
@@ -227,35 +205,27 @@ export const gameRoom: Clip = {
       said: '「アンティークで飾る」に「だからアステロイドがぴったり。一番古い」と返す。',
       mean: '「古い物」という一点だけを取って、自分の案に合う理屈を作る。こじつけの笑い。',
       trap: '本気の主張や、冗談で引いたと取りやすい。perfect は押す語。意味をずらしているだけ。',
-      use: 'Which is exactly why we should go.（だからこそ行くべきなんだ）' },
-
+      use: 'Which is exactly why we should go.（だからこそ行くべきなんだ）', retired: true },
     { id: 'x1', skill: 'dict', level: 'B2', point: 'asteroids', seg: [76.4, 80],
       stem: 'Type the start of his reply: “___ Asteroids is perfect.” (3 words)', answer: 'which is why',
-      cue: '「antiques」の直後、文頭の三語。',
+      ja: '返事の最初の3語を入力：「___ Asteroids is perfect.」',
+      cue: '「antiques」のすぐあと',
       line: '*Which is why* Asteroids is perfect.',
-      said: '「だからこそアステロイドがぴったりなんだ」と返す。',
-      mean: 'which is why ＝ だからこそ。相手の言葉を受けて理由に変える。三語が「ウィチズワイ」とつながる。',
-      trap: 'which is がつながり一語に聞こえやすい。語の数で区切りを確かめる。',
-      use: 'It’s cheap, which is why I buy it.（安いから、それを買うの）' },
-
-    // R fix: V2 (blind 70 %): "What do you" was the only natural present question; the gap now takes "have", and
-    //   "What have you got" (just as natural, ワタヴュガッ) replaces "What would you"
-    // why: did ← "do" shrinks to "da", close to "did"; have you got ← the common British-sounding twin of the same
-    //   question, with the same h and v
+      said: '「だからこそ、アステロイドがぴったりなんだ」と返す。',
+      mean: 'which is why ＝「だからこそ」。相手の言葉を受けて、自分の理由に変える。「ウィッチズワイ」とつながる。',
+      trap: 'which is がつながり、1語に聞こえやすい。3語あるか数える。',
+      use: 'It’s cheap, which is why I buy it.（安い。だから買うの）' },
     { id: 's1', skill: 'sound', level: 'B2', point: 'whatdo', reveals: ['guest'], seg: [79.8, 84.3],
       stem: 'Fill the gap: “___ against the beautiful guest room?”',
+      ja: 'すき間をうめよう：「___ against the beautiful guest room?」',
       choices: ['What do you have', 'What did you have', 'What have you got'], a: 0,
-      cue: '文の最初、つながって速い三語。',
+      choicesJa: ['何が気に入らないの（What do you have）', '何が気に入らなかったの（What did you have）', '何を持ってるの（What have you got）'],
+      cue: '文の最初の速い部分',
       line: '*What do you have* against the beautiful guest room?',
       said: '「客間の何が気に入らないの？」と聞く。',
-      mean: 'What do you が「ワダヤ」と縮む。have ～ against ＝ ～が気に入らない。',
-      trap: 'do は弱く「ダ」程度で did と紛れやすい。have you got とは got の有無で分ける。',
+      mean: 'What do you は「ワダヤ」と縮む。have 〜 against … ＝ …の何がいやなのか。',
+      trap: 'do は小さく「ダ」で、did とまぎれやすい。have you got とは got の有無で分ける。',
       use: 'What do you have against sushi?（お寿司の何がいやなの？）' },
-
-    // R fix: V2 (blind 80 %): the key was the only negative choice; "Sorry" became "Playful, but he likes her plan",
-    //   refuted by the "30 seconds away" reason and "Are you mocking me?"
-    // why: sincere ← "Nothing" heard as a real yes; playful ← a light tease between a couple, but his reason says the
-    //   room is pointless
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'mock', reveals: ['guest', 'seconds'], seg: [82.1, 96],
       stem: 'When Chandler says he has nothing against her room, how does he sound?',
       choices: ['Sarcastic: he’s making fun of her plan', 'Sincere: he has come round to her plan',
@@ -265,63 +235,50 @@ export const gameRoom: Clip = {
       said: '「何もない。特にみんなすぐ近くに住んでるし」と言い、「からかってる？」と言われる。',
       mean: '反対しないと言いつつ、理由で客間の無意味さを突く。',
       trap: 'Nothing. だけなら同意か冗談。理由の中身と Are you mocking me? が答え合わせ。',
-      use: 'No, I’m sure it’ll be lovely.（いや、きっとすてきだと思うよ）' },
-
-    // R fix: V2 (blind 70 %) + C5: "kept small" was weak; "ready at short notice" (friends close = sudden guests)
-    //   replaces it. The stem names the guest room, so reveals `guest` is added
-    // why: busy ← friends close by = friends over a lot (the wrong implication); short notice ← close friends could turn
-    //   up any time, but nobody stays over 30 seconds from home
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'seconds', reveals: ['guest'], seg: [83.9, 91.5],
-      stem: 'What does the remark about where their friends live imply about the guest room?',
-      choices: ['It would hardly ever be used by anyone', 'It would be busy with friends dropping by',
-                'It would need to be ready at short notice'], a: 0,
-      cue: '「especially since」のあとの理由。',
+      use: 'No, I’m sure it’ll be lovely.（いや、きっとすてきだと思うよ）', retired: true },
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'seconds', reveals: ['guest'], seg: [83.9, 91.5],
+      stem: 'What does Chandler mean about the guest room?',
+      ja: 'チャンドラーは、客間について何が言いたい？',
+      choices: ['No one will stay in it', 'Friends will drop by a lot', 'It must be ready quickly'], a: 0,
+      choicesJa: ['だれも泊まらない', '友だちがよく来る', 'すぐ使えるようにしないと'],
+      cue: '「especially since」のあと',
       line: '*especially since everybody that we know lives about 30 seconds away*.',
-      said: '「客間に文句はないよ。特に、知り合いはみんな30秒のところだしね」と言う。',
-      mean: '泊まりに来る人はいない、つまり客間は無駄という皮肉。理由を言うふりをしている。',
-      trap: '近くに友だち＝よく来る・急に来る、と取りやすい。でも客間は泊まる部屋。',
-      use: 'Especially since it’s right next door.（特にすぐ隣だしね）' },
-
-    // R fix: V2 (blind 55 %): "3 minutes" became "13 seconds" (thirty/thirteen), so the funny-small answer isn't
-    //   unique
-    // why: 13 seconds ← thirty and thirteen differ in stress and the final -n; 30 minutes ← thirty heard, the unit
-    //   swapped to the more usual "minutes"
+      said: '「特に、知り合いはみんな30秒のところに住んでるしね」と言う。',
+      mean: 'especially since 〜 ＝「特に〜だから」。近所の人は泊まらないので、客間はむだという皮肉。',
+      trap: '友だちが近い＝よく来る、と思いやすい。客間は「泊まる」部屋。',
+      use: 'Especially since it’s right next door.（特にすぐとなりだしね）' },
     { id: 'n2', skill: 'number', level: 'B1', point: 'seconds', seg: [85.8, 90.4], keep: true,
       stem: 'How far away does everyone they know live?',
+      ja: '2人の知り合いは、どのくらい近くに住んでいる？',
       choices: ['About 13 seconds', 'About 30 seconds', 'About 30 minutes'], a: 1,
-      cue: '「lives about」のあと。',
+      choicesJa: ['13秒くらい', '30秒くらい', '30分くらい'],
+      cue: '「lives about」のあと',
       line: 'everybody that we know lives about *30 seconds away*.',
-      said: '「知り合いはみんな30秒のところに住んでるしね」と言う。',
-      mean: '～ seconds away ＝ そこから～秒。距離を時間で言う英語の言い方。',
-      trap: '単位が速く続き minutes と取りやすい。thirty は頭が強く、-teen なら後ろが強く長い。',
+      said: '「知り合いはみんな30秒のところに住んでる」と言う。',
+      mean: '〜 seconds away ＝ そこから〜秒。距離を時間で言う英語の言い方。',
+      trap: 'thirty は前を強く、thirteen は後ろの「ティーン」を強く長く言う。',
       use: 'The station is five minutes away.（駅は5分のところ）' },
-
-    // why: fight ← the fight was just mentioned, so it sounds like a worried friend; will put out ← "my ad came out"
-    //   with the tense missed
     { id: 'i1', skill: 'infer', level: 'B2', point: 'ad', seg: [102.7, 108.8],
-      stem: 'Why does Joey check that they’re still moving in together?',
-      choices: ['His ad for a new roommate is already out', 'He’s afraid the fight will break them up',
-                'He’s about to put an ad out for a roommate'], a: 0,
-      cue: '「right?」のあと、Cuz で始まる理由。',
+      stem: 'Why does Joey check that they’re still moving in?',
+      ja: 'ジョーイはなぜ、2人がまだ一緒に住むのか確かめる？',
+      choices: ['His ad is already out', 'The fight may end them', 'He will put out an ad'], a: 0,
+      choicesJa: ['もう広告を出したから', 'けんかで別れるかもしれないから', 'これから広告を出すから'],
+      cue: '「right?」のあとの理由',
       line: 'But you’re still moving in together, right? *Cuz my ad came out today*.',
-      said: '「でも一緒に住むのは変わらないよな？今日、俺の広告が出たんだ」と確かめる。',
-      mean: '心配なのは二人の仲より、もう出した同居人募集の広告。',
-      trap: 'けんかの直後で気づかいに聞こえるが、理由は cuz のあと。came out は過去で、もう出ている。',
+      said: '「でも一緒に住むのは変わらないよな？今日、広告が出たんだ」と確かめる。',
+      mean: 'came out ＝（広告などが）出た。心配なのは2人の仲より、もう出した同居人募集の広告。',
+      trap: 'けんかの直後なので、2人を心配していると思いやすい。came out は過去で、もう出ている。',
       use: 'The ad came out this morning.（広告は今朝出た）' },
-
-    // R fix: V2 (blind 70 %): "a move to a new place" was weak; "a calmer, slower life" (pace = speed, the other
-    //   direction) replaces it, refuted by "someone who's different than me"
-    // why: faster ← pace = ペース, speed; slower ← the same literal reading, the other way, and "after living with you"
-    //   sounds like relief
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'pace', seg: [117.7, 124.5],
-      stem: 'What does Joey mean by “an interesting change of pace”?',
-      choices: ['Something different from what he’s used to', 'A faster and busier way to live day to day',
-                'A calmer, slower life than with Chandler'], a: 0,
-      cue: '「after living with you」のあとの言い方。',
+      stem: 'What does Joey mean by “a change of pace”?',
+      ja: 'ジョーイの「a change of pace」はどういう意味？',
+      choices: ['Something new and different', 'A faster, busier way to live', 'A calmer, slower life'], a: 0,
+      choicesJa: ['いつもとちがう、新しいこと', 'もっと速い生活', 'もっと落ち着いた生活'],
+      cue: '「after living with you」から',
       line: 'after living with you, it’d be an *interesting change of pace*',
-      said: '「お前と暮らしたあとだし、女性の同居人は面白い気分転換になる」と言う。',
-      mean: 'change of pace ＝ いつもと違うことで気分を変える。速さではない。',
-      trap: 'pace を速さと取ると速くも遅くも読める。change of ～ は「目先を変える」。',
+      said: '「お前と住んだあとだし、いい気分転換になる」と言う。',
+      mean: 'change of pace ＝ いつもとちがうことで気分を変えること。速さの話ではない。',
+      trap: 'pace（速さ）から、速い・おそいの話と思いやすい。',
       use: 'Let’s eat out for a change of pace.（気分を変えて外で食べよう）' },
   ]
 };
