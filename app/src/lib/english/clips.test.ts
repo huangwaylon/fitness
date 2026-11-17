@@ -191,7 +191,8 @@ describe('the clips', () => {
         }
         for (const q of qs) {
           const n = len(q.said) + len(q.mean) + len(q.trap);
-          const [lo, hi] = q.level === 'C2' ? [90, 140] : [80, 120];
+          // A2 notes spell an idiom out (literal, then here): room up to 160
+          const [lo, hi] = q.level === 'C2' ? [90, a2 ? 160 : 140] : [a2 ? 60 : 80, a2 ? 160 : 120];
           expect(n >= lo && n <= hi, `${q.id}: said + mean + trap ${n}`).toBe(true);
           expect(len(q.cue), `${q.id}: cue`).toBeLessThanOrEqual(40);
           expect(q.use, `${q.id}: use`).toMatch(/（.+）/);

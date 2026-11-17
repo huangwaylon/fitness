@@ -20,7 +20,7 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
   (a lesson under 16 only the schema, segments, wording, dictations and draws). A bank whose file has the line
   `// A2 REVIEW` (reviewed for the A1–A2 learner, 2026-11-17) has the A2 rules: 12–24 live, gist ≥ 2, L ≥ 4, F ≥ 4
   (phrase ≥ 1, sound + dict ≥ 1), I 2 to 40 %, humor and predict ≤ 1, each skill ≤ 5, C2 0–2; B1 45–65 %, B2 25–45 %,
-  C1 ≤ 15 %; a key-length tell with 6 characters of slack. The others keep the older rules until their review.
+  C1 ≤ 15 %; a key-length tell with 6 characters of slack; said + mean + trap 60–160 characters. The others keep the older rules until their review.
 - **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
   first, then the best set of the rest (a bounded search): the unseen before any repeat, then the group quotas
   (L I F: n 6 2 1 2, play 2+ 2 2 1; n 7 2 1 3 / 2 2 2; n 8 3 1 3 / 2 2 3), new points first; always ≤ 1 C1, ≤ 1
