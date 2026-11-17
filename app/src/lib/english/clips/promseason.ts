@@ -1,4 +1,4 @@
-// REVIEW 2026-11-16: pass 7, fix 17, drop 0, new 0; ear checks 1
+// A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 6, new 4
 // “Prom Season | Parks and Recreation” (the official Parks and Recreation channel, Season 6): the Parks staff run a high
 // school prom; three of them recall their own proms to camera, Leslie and Ron compete for a student helper, and Andy
 // tries to talk April into enjoying it.
@@ -6,10 +6,7 @@
 // loop. Untested: who speaks the opening complaints (0–15 s; no names in the audio), Andy's "bloom of youth" line at
 // 123 s (garbled in both), April's reason at 153–156 s (a dark joke; only her last clause is used), the DJ stretch at
 // 161–199 s (crowd overlap; "Grizzledum" garbled in both), "Run, Allison, run" at 226 s (speaker unclear), and
-// "Congratulations, Ron. You've ruined prom" at 261 s (whose line it is decides whether it's praise). The stories to
-// camera are named by their content, never by who is on screen. Nothing turns on "Yes!" at 64 s (whisper only).
-// EAR CHECK: 40 s a2 — whisper "but I looked fly as hell", captions "but uh I would fly as hell" (assumed "looked";
-//   the key, pleased with his look, rests on it)
+// "Congratulations, Ron. You've ruined prom" at 261 s. The stories to camera are named by their content.
 import type { Clip } from '../types.ts';
 
 export const promSeason: Clip = {
@@ -18,11 +15,19 @@ export const promSeason: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: blind pass 50 % ("really doing" flagged a hidden meaning; "offering to get rid of them" was weak); the
-    //   stem is neutral, and a distractor now carries over the "Tell me about it" agreement just before
-    // why: real tip ← "I have an idea" sounds like a helpful offer; joining in ← "Tell me about it" a few seconds
-    //   earlier was agreement, so this reply can sound like more of the same
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'garbage', seg: [11.5, 17.6],
+    { id: 'ph6', skill: 'phrase', level: 'B2', point: 'tellme', seg: [5.5, 9.5],
+      stem: '“Where’s my smoke machine?” — “*Tell me about it*.” Meaning?',
+      ja: '「Tell me about it」とはどういう意味？',
+      choices: ['I feel the same way', 'Please tell me more', 'I don’t know about it'], a: 0,
+      choicesJa: ['ほんとそれ、同じ気持ち', 'もっと聞かせて', 'それは知らない'],
+      cue: '文句のあとの短い返事。',
+      line: 'Where’s my Yeezus Mountain? — *Tell me about it.* I specifically requested…',
+      said: '「頼んだものはどこ？」と言う人に「ほんとそれ」と返し、自分の文句を続ける。',
+      mean: 'Tell me about it ＝ 文字どおりは「それを話して」。ここは「ほんとそれ、分かる」。',
+      trap: '文字どおり「もっと話して」と思いやすい。すぐ自分の文句を言い出すので「同感」。',
+      use: 'It’s so hot today. — Tell me about it.（今日暑いね。—ほんとそれ）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'garbage', seg: [11.5, 17.6], retired: true,
       stem: 'When someone offers “an idea” about the albums, what is he doing?',
       choices: ['Telling the man to quit complaining', 'Giving him a real tip for storing them',
                 'Joining in his complaint about the gear'], a: 0,
@@ -33,62 +38,53 @@ export const promSeason: Clip = {
       trap: 'I have an idea で親切な提案や同意と取りやすい。提案の中身が乱暴なら皮肉を疑う。',
       use: 'Here’s an idea: why not ask her?（いい考えがある。彼女に聞いたら？）' },
 
-    // why: grounded ← "my parents" comes right after; his job ← "impeached" points to an office he held
     { id: 'd2', skill: 'detail', level: 'B1', point: 'egged', seg: [17.5, 26.4],
-      stem: 'In the first story to camera, why couldn’t he leave the house?',
-      choices: ['People would throw eggs at him', 'His parents had grounded him', 'He had to stay and do his job'], a: 0,
-      cue: '「couldn’t leave the house without」のあと。',
+      stem: 'In the first prom story, why couldn’t he go out?',
+      ja: '一つ目のプロムの話で、なぜ外に出られなかった？',
+      choices: ['People threw eggs at him', 'His parents grounded him', 'He had to stay and work'], a: 0,
+      choicesJa: ['卵を投げつけられたから', '親に外出禁止にされたから', '仕事で家にいたから'],
+      cue: '「without」のあと。',
       line: 'I couldn’t leave the house *without being egged*.',
-      said: '「だんがいされたばかりで、外に出れば卵をぶつけられた」と言う。',
-      mean: 'egg は動詞で「卵をぶつける」。出れば必ず卵をぶつけられた。',
-      trap: 'すぐあとに parents が出るので「外出禁止」と取りやすい。-ed で動詞と分かる。',
+      said: '「外に出れば必ず卵をぶつけられた」と言う。',
+      mean: 'egg は動詞で「卵をぶつける」。without 〜ing ＝ 〜せずには。',
+      trap: 'すぐあとに parents が出るので外出禁止と思いやすい。egged を聞く。',
       use: 'I can’t go out without being recognized.（外に出ると必ず気づかれる）' },
 
-    // R fix: blind pass 75 % (the key was the only hedged, two-part choice; "best night" was a filler); the
-    //   distractors now each take one story's detail and lay it on all three
-    // why: date who left ← "my date was pretty pissed" and "I left early" mixed into one pattern; grow up fast ← Ron's
-    //   "felt like I had outgrown it" laid on all three
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'pastproms', seg: [17.5, 113.0],
-      stem: 'What do the stories told to the camera have in common?',
-      choices: ['None of them got a normal prom night', 'Each was let down by a date who left',
-                'Each says prom made them grow up fast'], a: 0,
-      cue: '3人がカメラに話す、自分のプロムの話。',
-      said: '3人がそれぞれ自分のプロムを語る。どれも普通の楽しい一夜ではなかった。',
-      mean: '高校のプロムを手伝う場面に、大人たちのほろ苦いプロムの思い出が差しこまれる構成。',
-      trap: '一人の話（怒った相手、卒業した気分）を全員に広げやすい。3人に共通する点だけを残す。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pastproms', seg: [17.5, 42.4],
+      stem: 'How did these two men’s proms go?',
+      ja: 'この二人のプロムはどうだった？',
+      choices: ['Neither one went well', 'Both were perfect nights', 'Both went with their parents'], a: 0,
+      choicesJa: ['どちらもうまくいかなかった', 'どちらも最高の夜だった', 'どちらも親と行った'],
+      cue: 'カメラに話す二人のプロムの話。',
+      said: '一人は居間で親とプロム、もう一人は15分しかいられず相手を怒らせた。',
+      mean: 'どちらも普通の楽しいプロムではなかった。prom ＝ 高校のダンスパーティー。',
+      trap: 'looked fly（かっこよかった）で満足そうに聞こえる。でも相手は怒っていた。',
       use: 'My prom was a total disaster.（私のプロムは散々だった）' },
 
-    // R fix: blind pass 50 % ("gets the details wrong" was weak); a distractor now reads the parents' kindness as
-    //   guilt (申し訳ない)
-    // why: mess ← "messed up" taken literally, as a mess to clear; feels bad ← "my parents threw me a prom" heard as a
-    //   debt he can't repay
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'messedup', seg: [22.4, 29.0],
-      stem: 'What does he mean when he sums up the living-room prom?',
-      choices: ['It still bothers him, even today', 'He still has a mess to clean up', 'He still feels bad for his parents'],
-      a: 0,
+      stem: '“I’m still *messed up* from it.” What does he mean?',
+      ja: '「I’m still messed up from it」とはどういう意味？',
+      choices: ['It still bothers him today', 'He still has to clean up', 'He feels sorry for his parents'], a: 0,
+      choicesJa: ['今もまだ引きずっている', 'まだ片づけが残っている', 'まだ親に申し訳ない'],
       cue: '「I think I’m still」のあと。',
       line: 'my parents threw me a prom in our living room… *I’m still messed up from it*.',
-      said: '親が居間でプロムを開いてくれて「いまだに引きずってる」と言う。',
-      mean: 'messed up ＝ 心に傷が残る。親の優しさが、かえってつらい思い出に。',
-      trap: 'mess を「散らかす」や親への遠慮と取りやすい。messed up from ～ は傷が残ること。',
+      said: '「親が居間でプロムを開いてくれた。今でも引きずってる」と言う。',
+      mean: 'messed up ＝ 心が乱れている、傷が残っている。くだけた言い方。',
+      trap: 'mess（散らかす）から片づけの話と思いやすい。from it は「そのせいで」。',
       use: 'That movie messed me up for weeks.（あの映画、何週間も引きずった）' },
 
-    // why: Five ← the -teen ending is missed; Fifty ← -teen/-ty, told apart by stress
     { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [28.9, 36.2], keep: true,
-      stem: 'In the second story to camera, how long was he at his prom?',
-      choices: ['Five minutes', 'Fifteen minutes', 'Fifty minutes'], a: 1,
-      cue: '「I was actually only」のあと、minutes の前。',
-      line: 'I was actually only… for *15 minutes*.',
+      stem: 'In the second story, how long was he at his prom?',
+      ja: '二つ目の話で、彼はプロムにどのくらいいた？',
+      choices: ['5 minutes', '15 minutes', '50 minutes'], a: 1,
+      choicesJa: ['5分', '15分', '50分'],
+      cue: '「only in my prom for」のあと。',
+      line: 'I was actually only in my prom for *15 minutes*.',
       said: '「実はプロムにいたのは15分だけ」と言う。',
       mean: '身じたくに時間をかけすぎた、という話の始まり。',
-      trap: 'fifteen は -teen を強く長く言う。fifty なら前の FIF が強い。強さの位置を聞く。',
+      trap: 'fifteen は後ろの「ティーン」を強く長く言う。fifty なら前が強い。',
       use: 'I was only there for fifteen minutes.（15分しかいなかった）' },
 
-    // R fix: K6/V2 (blind 50 %): the key was the only two-part choice ("Pleased; …"); all three are now one clause
-    // why: sorry ← "my date was pretty pissed" heard as regret; embarrassed ← a listener's own verdict on the story,
-    //   laid on him
-    // retired: the ear-check policy: the key rests on “looked” (whisper “I looked fly as hell”, captions “I would fly
-    //   as hell”, 40 s); back after the ear check
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'worthit', seg: [35.9, 42.4], retired: true,
       stem: 'Looking back, how does he feel about missing most of his prom?',
       choices: ['Pleased that he looked so good', 'Sorry that he let his date down', 'Embarrassed that he was so vain'],
@@ -100,38 +96,31 @@ export const promSeason: Clip = {
       trap: '相手が怒った話で反省と取りやすい。but のあとに本人の評価が来る。',
       use: 'It was expensive, but it looked amazing.（高かったけど、最高だった）' },
 
-    // R fix: blind pass 70 % (two fillers); a distractor is now the "put it in writing = I don't trust you" reading
-    // why: doubt ← "get that in writing" is also what you say when you don't trust a promise; a letter ← "Thank you,
-    //   Principal Russell" just before
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'writing', seg: [43.0, 52.3],
-      stem: 'After the principal’s praise, what does Leslie’s request show?',
-      choices: ['She wants the A-plus on record, like a grade', 'She doubts he really means the A-plus',
-                'She wants him to sign a formal thank-you letter'], a: 0,
-      cue: '「Thank you, Principal Russell」のあとの質問。',
+      stem: 'Leslie asks, “Can I get that *in writing*?” What does she want?',
+      ja: '「Can I get that in writing?」でレスリーは何がほしい？',
+      choices: ['The praise written down', 'A letter for her to sign', 'A new grade from the school'], a: 0,
+      choicesJa: ['ほめ言葉を書いたもの', '彼女がサインする手紙', '学校からの新しい成績'],
+      cue: '「Thank you」のあとの質問。',
       line: 'A-plus? Thank you, Principal Russell. *Can I get that in writing?*',
-      said: '「A＋？ありがとうございます。それ、書面でもらえます？」と聞く。',
-      mean: 'ほめ言葉を成績のように残したい、半分本気の頼み。優等生の顔が出ている。',
-      trap: 'in writing を「信用しない」の合図と取りやすいが、直前に Thank you と喜んでいる。',
-      use: 'Could you put that in an email?（それ、メールでもらえる？）' },
+      said: '「A＋？ ありがとうございます。それ、書いてもらえます？」と聞く。',
+      mean: 'in writing ＝ 書面で。ほめ言葉を成績のように残したい、優等生らしい頼み。',
+      trap: 'in writing は「信用しない」ときにも使うが、ここは Thank you と喜んでいる。',
+      use: 'Could I get that in writing?（それ、書面でもらえますか）' },
 
-    // R pass: blind pass 65 %, but only through p1's stem (the praise) and line, which i2 already reveals (`writing`)
-    // why: young ← "haven't changed" is often about looks; dances ← the prom setting suggests the old habit was
-    //   planning parties
     { id: 'i2', skill: 'infer', level: 'B2', point: 'changed', reveals: ['writing'], seg: [47.0, 55.7],
-      stem: 'What does “you haven’t changed since high school” suggest about Leslie back then?',
-      choices: ['She cared a lot about grades then too', 'She looked just as young as she does now',
-                'She was already planning school dances then'], a: 0,
-      cue: '「Can I get that in writing?」のすぐあと。',
+      stem: '“You haven’t changed since high school.” What does he mean?',
+      ja: '「高校のころから変わってないね」とはどういう意味？',
+      choices: ['She was like this then too', 'She looks as young as then', 'She still plans school dances'], a: 0,
+      choicesJa: ['当時もこんな感じだった', '当時と同じくらい若く見える', 'まだ学校のダンスを計画している'],
+      cue: '「in writing?」のすぐあと。',
       line: 'Oh, Leslie, *you haven’t changed since high school*.',
-      said: '成績を書面でほしがる姿を見て、「高校のころと変わらないね」と言う。',
-      mean: 'A＋を喜び、書面でほしがるのは昔から。成績にこだわる生徒だったと分かる。',
+      said: '成績を書面でほしがる姿に、「高校のころと変わらないね」と言う。',
+      mean: 'A＋を喜び、書面でほしがるのは昔から。成績にこだわる生徒だった。',
       trap: 'haven’t changed は見た目の話にも使うが、ここは直前の言動を受けている。',
       use: 'You haven’t changed a bit.（全然変わってないね）' },
 
-    // R fix: K6/V2 (blind 70 %): the key was the only nuanced "X, though Y" choice; a distractor now has the same shape
-    // why: missed it ← "I didn't even notice" taken at face value, with "no bigs" as quiet pleasure; annoyed ← "no
-    //   bigs" read as brushing someone off
-    { id: 'a3', skill: 'attitude', level: 'C1', point: 'nobigs', reveals: ['writing'], seg: [49.4, 59.7],
+    { id: 'a3', skill: 'attitude', level: 'C1', point: 'nobigs', reveals: ['writing'], seg: [49.4, 59.7], retired: true,
       stem: 'When someone mentions her A-plus, how is Leslie acting?',
       choices: ['Acting cool, though she clearly cares', 'Pleased, though she missed hearing it',
                 'Annoyed that people keep bringing it up'], a: 0,
@@ -142,25 +131,19 @@ export const promSeason: Clip = {
       trap: '言葉どおりなら「知らなかった」になる。直前の言動と食い違う返事は、ふりを疑う。',
       use: 'Oh, that? No big deal.（ああ、あれ？大したことないよ）' },
 
-    // R fix: blind pass 50 % ("can't believe" is the stock phrase); "don't", just as idiomatic and also ending in a
-    //   lost -n't, is added as a fourth
-    // why: can ← the t of "can't" drops, so only the vowel decides; couldn't ← "gave" (past) pulls toward a past form;
-    //   don't ← "I don't believe…" is as common, and both -n't endings fade to a nasal
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [52.3, 57.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [52.3, 57.4],
       stem: 'Fill the gap: “I ___ believe he gave you an A-plus.”',
-      choices: ['can’t', 'can', 'couldn’t', 'don’t'], a: 0,
-      cue: '「haven’t changed」の次の文、最初の2語。',
+      ja: '空いている所に入る語は？「I ___ believe he gave you an A-plus.」',
+      choices: ['can’t', 'can', 'don’t'], a: 0,
+      choicesJa: ['〜できない', '〜できる', '〜しない'],
+      cue: '「haven’t changed」の次の文。',
       line: 'I *can’t* believe he gave you an A-plus.',
       said: '「彼が君にA＋をあげたなんて信じられない」と言う。',
-      mean: 'can’t は母音が強く長い「キャーン」、肯定の can は弱く短い「クン」。',
-      trap: 't はほぼ聞こえない。強く長い「キャー」なら can’t、「ドウ」なら don’t。母音で決める。',
+      mean: 'I can’t believe 〜 ＝ 〜なんて信じられない。can’t は強く長い「キャーン」。',
+      trap: 't はほぼ聞こえない。強く長い「キャー」なら can’t、「ドウ」なら don’t。',
       use: 'I can’t believe it’s Friday already.（もう金曜なんて信じられない）' },
 
-    // R fix: blind pass 70 % ("meant for Ron" was a filler); a distractor now puts the laugh on Allison's grand reply,
-    //   which comes after the laugh
-    // why: no idea ← "orchestrate" is a big word, so the job sounds strange to her; Allison's honor ← "it would be my
-    //   honor" is grand too, but the laugh (67.8 s) comes before it
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'balloon', seg: [59.3, 73.4],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'balloon', seg: [59.3, 73.4], retired: true,
       stem: 'Why does the audience laugh at Leslie’s question for Allison?',
       choices: ['The solemn build-up leads to a small job', 'Allison has no idea what a balloon drop is',
                 'Allison treats a small job as an honor'], a: 0,
@@ -171,11 +154,7 @@ export const promSeason: Clip = {
       trap: '難しい語や my honor に引かれやすいが、笑いは返事の前。前置きと中身を比べる。',
       use: 'Can I ask you something serious?（真剣な話してもいい？）' },
 
-    // why: Allison ← the letdown script (big build-up, small ask) makes the listener the butt; Ron ← he steps in right
-    //   after to win her over
-    // anchor: 60.6–63.9 s "very important and very serious… listen to me closely" said in earnest; 69.8–72.5 s "it
-    //   would be my honor" — "Oh, hooray!": nobody is let down, and Leslie celebrates a job she truly rates
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'balloon', seg: [59.3, 73.4],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'balloon', seg: [59.3, 73.4], retired: true,
       stem: 'In the balloon-drop request, who is the joke on?',
       choices: ['Leslie, who truly thinks it’s a grand honor', 'Allison, who hoped for something much bigger',
                 'Ron, who has been left out of the plan'], a: 0,
@@ -186,55 +165,43 @@ export const promSeason: Clip = {
       trap: 'がっかり役を探してアリソンと取りやすいが、彼女は快く受ける。笑われるのは本気すぎる側。',
       use: 'I take my snack duty very seriously.（おやつ係は本気でやってるの）' },
 
-    // why: $14 ← -teen/-ty; $400 ← a government job ("subcontracted by the government") makes a bigger sum seem likely
     { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [78.0, 84.4], keep: true,
       stem: 'How much does Ron offer Allison to help him?',
+      ja: 'ロンは手伝いのお礼にアリソンにいくら払うと言う？',
       choices: ['$14', '$40', '$400'], a: 1,
+      choicesJa: ['14ドル', '40ドル', '400ドル'],
       cue: '「I’ll give you」のあと。',
       line: 'I’ll give you *$40*.',
       said: '「手伝ってくれたら40ドル払う」と持ちかける。',
-      mean: '仕事の中身を説明してから、報酬の額をはっきり言う。',
-      trap: 'forty は前の FOR が強く短い。fourteen なら後ろの -teen が強く長い。',
+      mean: 'I’ll give you 〜 ＝ 〜あげるよ。仕事の中身を言ってから、額をはっきり言う。',
+      trap: 'forty は前の「フォー」が強く短い。fourteen なら後ろの「ティーン」が強く長い。',
       use: 'I’ll give you twenty bucks.（20ドルあげるよ）' },
 
-    // R fix: blind pass 60 % ("punishing her for the helium" was a filler); a distractor now reads the offer as Ron
-    //   just wanting cheap labor
-    // why: helping ← both are adults running the prom, so it reads as teamwork; cheap help ← "screw some angle irons
-    //   onto some two-by-fours" for $40 sounds like a chore he wants off his hands
     { id: 'i3', skill: 'infer', level: 'B2', point: 'poach', reveals: ['forty'], seg: [78.0, 90.9],
-      stem: 'What is Ron doing when he offers Allison the job?',
-      choices: ['Luring her away from Leslie with pay', 'Getting cheap help for a dull job',
-                'Helping Leslie by keeping her busy'], a: 0,
-      cue: 'アリソンが受けたあと、レスリーが言う一言。',
+      stem: 'What is Ron really doing with his offer?',
+      ja: 'ロンはその申し出で、本当は何をしている？',
+      choices: ['Taking Allison away from Leslie', 'Getting cheap help for a job', 'Helping Leslie out a little'], a: 0,
+      choicesJa: ['アリソンをレスリーから引き抜く', '安い手伝いを集める', 'レスリーを少し助ける'],
+      cue: 'アリソンが受けたあとの、レスリーの一言。',
       line: '*I know what you’re doing, Ron, and I will defeat you.*',
-      said: 'お金を出すと彼女は即OK。レスリーは「狙いは分かってる、負けない」と言う。',
-      mean: 'お金で手伝いから引き抜いている。宣戦布告で、張り合いだと分かる。',
-      trap: '協力や安い手伝い集めに見えやすい。I will defeat you は、相手を敵と見ている言い方。',
+      said: 'お金を出すと彼女はすぐOK。レスリーは「狙いは分かってる。負けない」と言う。',
+      mean: 'I know what you’re doing ＝ たくらみは分かってる。張り合いだと分かる。',
+      trap: '安い手伝い集めに見えやすい。I will defeat you は相手を敵と見ている言い方。',
       use: 'I know what you’re up to.（何たくらんでるか分かってるよ）' },
 
-    // R fix: blind pass 50 % (the key was the only specific choice); a distractor is now as specific, built from a
-    //   name said in the segment
-    // why: truck ← "picked her up in my truck" said just before; Merle Haggard ← the singer's name comes right before
-    //   "left early", so it sounds like where he went
     { id: 'd3', skill: 'detail', level: 'B1', point: 'quarry', seg: [98.4, 105.9],
-      stem: 'Why did the man who took Susan Hoffler leave the prom early?',
-      choices: ['To work a shift at the quarry', 'To drive his date home in his truck', 'To see Merle Haggard play that night'],
-      a: 0,
+      stem: 'Why did Ron leave his prom early?',
+      ja: 'ロンはなぜプロムを早く出た？',
+      choices: ['To go to his job', 'To drive his date home', 'To see a singer play'], a: 0,
+      choicesJa: ['仕事に行くため', '相手を車で送るため', '歌手のライブを見るため'],
       cue: '「left early to go to」のあと。',
       line: 'then I left early *to go to my shift at the quarry*.',
-      said: '「トラックで迎えに行き、スローダンスを踊って、採石場のシフトで早く帰った」と話す。',
-      mean: 'shift ＝ 勤務の時間帯。プロムの途中で仕事に行った、という話。',
-      trap: '直前の truck や歌手名に引かれやすい。to go to のあとの行き先を聞く。',
+      said: '「トラックで迎えに行き、一曲踊って、採石場の仕事で早く出た」と話す。',
+      mean: 'shift ＝ 勤務の時間帯。quarry ＝ 石を切り出す場所。',
+      trap: '直前の truck や歌手の名前に引かれやすい。to go to のあとの行き先を聞く。',
       use: 'I have an early shift tomorrow.（明日は早番なんだ）' },
 
-    // R fix: blind pass 60 % ("lost interest in Susan" was a target shift nobody hears); it is now a scope shift:
-    //   "never went again" read as having had enough proms. S4: the segment ran 17.9 s; it now starts at "and then I
-    //   left early" (10.8 s)
-    // why: too tall ← "outgrown" is first learned for clothes and size; enough proms ← "never went again" heard as
-    //   being full up, though he went once
-    // anchor: 104–113 s "shift at the quarry. I was 12 years old. Never went again. Felt like I had outgrown it":
-    //   after a work shift, at twelve, prom is outgrown as a stage of life, not a size
-    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'twelve', reveals: ['quarry'], seg: [102.7, 113.5],
+    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'twelve', reveals: ['quarry'], seg: [102.7, 113.5], retired: true,
       stem: 'Taken seriously, what does his last remark say about him at twelve?',
       choices: ['He already saw himself as a grown man', 'He had grown too tall for the dances',
                 'He had been to enough proms by then'], a: 0,
@@ -245,61 +212,77 @@ export const promSeason: Clip = {
       trap: 'outgrow を服のサイズの意味で取りやすい。直前の仕事の話とつなげると、心の成長の意味になる。',
       use: 'I think I’ve outgrown video games.（もうゲームは卒業したかな）' },
 
-    // why: Seventeen ← the usual prom age; Twenty ← "twelve" and "twenty" both start with "tw-"
     { id: 'n4', skill: 'number', level: 'B1', point: 'twelve', reveals: ['quarry'], seg: [102.9, 108.6], keep: true,
-      stem: 'How old was he at that prom, he says?',
-      choices: ['Twelve', 'Seventeen', 'Twenty'], a: 0,
+      stem: 'How old was Ron at that prom?',
+      ja: 'そのプロムのとき、ロンは何歳だった？',
+      choices: ['12', '17', '20'], a: 0,
+      choicesJa: ['12歳', '17歳', '20歳'],
       cue: '「quarry」のあと、I was に続く数。',
       line: '*I was 12 years old.*',
       said: '「そのとき12歳だった」と言う。',
-      mean: 'プロムは高校の行事なのに12歳。しかも採石場で働いていた、という大げさな話。',
-      trap: 'プロムの年齢を知っていると17歳を選びやすい。twelve は最後の lve まで聞く。',
+      mean: 'プロムは高校の行事なのに12歳で、しかも働いていた。大げさな話。',
+      trap: 'プロムの年を知っていると17歳を選びやすい。twelve は最後の「ルヴ」まで聞く。',
       use: 'I was twelve when we moved here.（ここに越してきたのは12歳のとき）' },
 
-    // R fix: blind pass 55 % ("saw it only once or twice" contradicts the list of viewings); a distractor is now the
-    //   ending the story was set up for
-    // why: name wrong ← "Expendables 2" might sound like a slip; took ten viewings ← "the third time, it was OK" and
-    //   "I realized something" set up a happy ending that never comes
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'expendables', seg: [133.6, 148.6],
-      stem: 'Why does Andy’s movie example get a laugh?',
-      choices: ['His example ends up proving the opposite', 'He gets the name of the movie wrong',
-                'He says it took ten viewings to like it'], a: 0,
-      cue: '何回も見た結果、最後に気づいたこと。',
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'leave', seg: [115.8, 130.8],
+      stem: 'How does April feel about the prom?',
+      ja: 'エイプリルはプロムをどう思っている？',
+      choices: ['She wants to leave', 'She loves the music', 'She wants to dance'], a: 0,
+      choicesJa: ['早く帰りたい', '音楽が気に入っている', '踊りたい'],
+      cue: '「We went to prom」のあと。',
+      line: 'Well, we did it. We went to prom. Yay! *Let’s go now.* … *Andy, I hate teenagers.*',
+      said: '「はい、プロムに来た。わーい。もう帰ろう」と言い、「10代は嫌い」と続ける。',
+      mean: 'Let’s go now ＝ もう行こう（帰ろう）。Yay! は気のない言い方。',
+      trap: 'Yay!（わーい）で喜んでいると思いやすい。すぐ Let’s go now と言う。',
+      use: 'Okay, we did it. Let’s go now.（よし、終わった。もう行こう）' },
+
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'chance', seg: [128.8, 133.8],
+      stem: 'Andy says, “If you *give this a chance*…” What does he want?',
+      ja: '「If you give this a chance…」でアンディは何をしてほしい？',
+      choices: ['April to try it first', 'April to take a break', 'April to wait for him'], a: 0,
+      choicesJa: ['まず試してみてほしい', '休んでほしい', '待っていてほしい'],
+      cue: '「I hate teenagers」への返事。',
+      line: 'If you *give this a chance*, you’re going to love it. I promise.',
+      said: '「ちゃんと試してみれば、きっと好きになる。約束する」と言う。',
+      mean: 'give 〜 a chance ＝ 〜を試してみる、〜に機会をあげる。',
+      trap: 'chance を「チャンスを見つける」と思いやすい。give 〜 a chance でひとまとまり。',
+      use: 'Give it a chance. You might like it.（試してみて。気に入るかもよ）' },
+
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'expendables', seg: [137, 148.6],
+      stem: 'After watching the movie ten times, what did Andy realize?',
+      ja: '映画を10回見て、アンディは何に気づいた？',
+      choices: ['It’s not a good movie', 'It’s his favorite movie', 'It’s better the third time'], a: 0,
+      choicesJa: ['いい映画じゃない', 'お気に入りの映画だ', '3回目のほうがいい'],
+      cue: '「I realized」のあと。',
       line: 'tenth time I watched it, I realized something. *It’s not a good movie.*',
-      said: '「1回目も2回目も嫌い、10回見て気づいた。いい映画じゃない」と言う。',
-      mean: '「見続ければ好きになる」の例のはずが、つまらないで終わる。説得が逆の証拠になる。',
-      trap: 'OK や I realized で好きになる流れに聞こえる。結論が主張と合うかを聞く。',
+      said: '「10回見て気づいた。いい映画じゃない」と言う。',
+      mean: '「見続ければ好きになる」の例のはずが、つまらないで終わる。そのずれが笑い。',
+      trap: 'The third time, it was OK で好きになる流れに聞こえる。最後の一文まで聞く。',
       use: 'Give it a few tries.（何回か試してみて）' },
 
-    // R fix: blind pass 50 % ("one song" didn't fit any words said); a distractor now reads the errand as a short
-    //   break before joining him
-    // why: join after ← "I'm gonna go to the girls' bathroom" heard as "back in a minute"; hated ← "I hate teenagers"
-    //   earlier, carried over to dancing
     { id: 'p3', skill: 'pragma', level: 'B2', point: 'excuse', seg: [150.4, 159.8],
-      stem: 'How does April answer Andy’s invitation to dance?',
-      choices: ['She finds an excuse and lets him go alone', 'She says she’ll join him after a quick break',
-                'She tells him she has always hated dancing'], a: 0,
-      cue: '「go dance」のあと、but で終わる返事。',
+      stem: 'How does April answer “Why don’t we go dance?”',
+      ja: '「踊りに行こうよ」に、エイプリルはどう答える？',
+      choices: ['She makes an excuse not to', 'She’ll join him after a break', 'She says she hates dancing'], a: 0,
+      choicesJa: ['理由をつけて踊らない', '休んだあとで加わる', '踊るのが嫌いだと言う'],
+      cue: '「go dance」のあと、but の文。',
       line: 'I’m gonna go to the girls’ bathroom… *but you can dance if you want*.',
-      said: '「女子トイレを見回ってくる。踊りたければどうぞ」と返し、アンディは大喜び。',
-      mean: '用事を作って自分は踊らず、相手には許可を出す。断りと気づかいを一度にしている。',
-      trap: 'トイレのあとで合流、と取りやすい。you だけが主語なので、彼女は踊らない。',
+      said: '「女子トイレを見てくる。でも踊りたければどうぞ」と返す。',
+      mean: 'you can 〜 if you want ＝ よかったらどうぞ。自分は踊らず、相手に許可を出す。',
+      trap: 'トイレのあとで合流すると思いやすい。you だけが主語なので、彼女は踊らない。',
       use: 'I’ll sit this one out. You go ahead.（今回はパス、どうぞ行って）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'trick', seg: [203.6, 207.9],
       stem: 'Type what Leslie says: “There’s ___.” (5 words)', answer: 'a little trick to it',
+      ja: 'レスリーの言葉を書こう：「There’s ___.」（5語）',
       cue: '「cord before?」のあと。',
       line: 'There’s *a little trick to it*.',
       said: '「ちょっとしたコツがあるのよ」と教え始める。',
-      mean: 'little の t は弾み「リル」に近い。trick to it もひと続き。',
-      trap: 'a と to が弱く、聞き落としやすい。trick to it は「それのコツ」で、to は前置詞。',
+      mean: 'trick ＝ コツ。little の t は軽い「ラ」の音で「リル」に近い。',
+      trap: 'a と to が弱く、聞き落としやすい。trick to it はひと続き。5語を数える。',
       use: 'There’s a trick to opening this jar.（このビンを開けるにはコツがある）' },
 
-    // R fix: blind pass 70 % ("the rope will snap" was a filler); a distractor now puts the laugh on the handshake
-    //   simile, a real part of the lesson
-    // why: wrong way ← "not too tight" and "towards the ground" sound like tips that might be off; handshake ← the
-    //   simile is the oddest phrase in the lesson, but the laugh lands on "So just pull the rope?"
-    { id: 'h5', skill: 'humor', level: 'C1', point: 'cord', reveals: ['trick'], seg: [203.6, 218.4],
+    { id: 'h5', skill: 'humor', level: 'C1', point: 'cord', reveals: ['trick'], seg: [203.6, 218.4], retired: true,
       stem: 'Why does Leslie’s lesson on the cord get a laugh?',
       choices: ['She makes a simple pull sound like a skill', 'She gives Allison the wrong way to pull it',
                 'She likens pulling a rope to a handshake'], a: 0,
@@ -310,42 +293,41 @@ export const promSeason: Clip = {
       trap: '説明が細かいので本当のコツと取りやすい。聞き手の要約が、説明の中身をあばいている。',
       use: 'So basically, just push the button?（要するに、ボタンを押すだけ？）' },
 
-    // R fix: blind pass 60 % ("a prize later" was a filler); a distractor is now the Japanese 「仕事ですから」 frame
-    // why: pays well ← "reward" taken as money; only her duty ← "you don't have to thank me" heard as 「仕事ですから」,
-    //   duty rather than joy
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thankme', seg: [217.4, 223.4],
+      stem: '“Oh, *you don’t have to thank me*.” What is Leslie doing?',
+      ja: '「Oh, you don’t have to thank me」でレスリーは何をしている？',
+      choices: ['Answering thanks kindly', 'Asking for more thanks', 'Telling her to thank Ron'], a: 0,
+      choicesJa: ['お礼にやさしく返している', 'もっとお礼を求めている', 'ロンにお礼を言えと言っている'],
+      cue: 'アリソンのお礼への返事。',
+      line: 'Thanks, Leslie… — Oh, *you don’t have to thank me*.',
+      said: '「ありがとう」と言われ、「お礼なんていいのよ」と返す。',
+      mean: 'You don’t have to thank me ＝ お礼はいらないよ。お礼への感じのいい返し方。',
+      trap: 'have to から「お礼を言わなきゃ」と思いやすい。don’t have to は「しなくていい」。',
+      use: 'You don’t have to thank me. It was easy.（お礼なんていいよ。簡単だったし）' },
+
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'reward', seg: [218.0, 225.9],
-      stem: 'When Allison thanks her, what does Leslie mean by her reply?',
-      choices: ['Doing the job is thanks enough for her', 'The government pays its workers very well',
-                'She was only doing what her job requires'], a: 0,
-      cue: '「お礼はいい」と言ったあと。',
+      stem: '“Working for the government *is its own reward*.” Meaning?',
+      ja: '「is its own reward」とはどういう意味？',
+      choices: ['The work itself is thanks enough', 'The government pays very well', 'It’s just part of her job'], a: 0,
+      choicesJa: ['仕事をすること自体がごほうび', '役所は給料がいい', '仕事の一部にすぎない'],
+      cue: '「government」のあと。',
       line: 'Working for the government *is its own reward*.',
-      said: '「お礼はいい。行政の仕事は、それ自体がご褒美」と返す。',
+      said: '「行政の仕事は、それ自体がごほうびなの」と言う。',
       mean: 'A is its own reward ＝ Aをすること自体が報い。見返りはいらない、という意味。',
-      trap: 'reward を報酬、前半を「仕事ですから」と取りやすい。its own＝それ自体。',
+      trap: 'reward を「給料」と思いやすい。its own ＝ それ自体の。',
       use: 'Helping out is its own reward.（手伝えること自体がうれしい）' },
 
-    // R fix: blind pass 75 % (the key was the only abstract, two-part choice); the distractors are now questions of
-    //   the same kind, each built on words said
-    // why: whose idea ← "for making prom happen in the first place" heard as the point in dispute; credit ← "I
-    //   assembled that cage" heard as a fight over who gets thanked
     { id: 'g1', skill: 'gist', level: 'B2', point: 'rivalry', reveals: ['reward', 'cage'], seg: [218.0, 257.0],
-      stem: 'What are Leslie and Ron really arguing about as the balloons are set to drop?',
-      choices: ['What really makes a job worth doing', 'Whose idea the prom was in the first place',
-                'Who gets the credit for the balloon drop'], a: 0,
-      cue: '「faces」と「cage」、二人が見ろと言うもの。',
-      said: 'レスリーは仕事自体がご褒美、ロンは稼ぎが大事と、顔を見ろ、おりを見ろと競う。',
-      mean: '仕事の価値は人の笑顔か、自分の稼ぎか。アリソンを前に、二人の考えがぶつかる。',
-      trap: 'おりや in the first place から手柄争いと取りやすい。中心は働く理由。',
+      stem: 'What are Leslie and Ron arguing about?',
+      ja: 'レスリーとロンは何について言い合っている？',
+      choices: ['What makes work worth doing', 'Whose idea the prom was', 'Who gets credit for the balloons'], a: 0,
+      choicesJa: ['働く意味は何か', 'プロムはだれの案か', '風船の手柄はだれのものか'],
+      cue: '二人が「見て」と言うもの。',
+      said: 'レスリーは「人の顔を見て」、ロンは「おりを見ろ。働いてお金をもらった」と言い合う。',
+      mean: '仕事の価値は人の笑顔か、自分の稼ぎか。二人の考えがぶつかる。',
+      trap: 'おり（cage）から手柄争いだと思いやすい。中心は働く理由。',
       use: 'For me, it’s not about the money.（私にとってはお金じゃないの）' },
 
-    // R fix: blind pass 65 % ("warning that the cage could give way" was a filler); a near miss now has the right
-    //   mechanism (echoing her) and the wrong purpose. S4: the segment ran 24.4 s; it now holds her second "Look at
-    //   the faces" (with "that's what government is about") through his "fuel and medicine" (12.1 s)
-    // why: just a laugh ← echoing someone's line is often mockery; credit ← "I assembled that cage" heard as a bid for
-    //   credit, though he claims only the cage, and stresses the pay
-    // anchor: 240.2–242.2 s "That's what government is about. Look at the faces"; 242.9–251.3 s "No, look at that
-    //   cage… I assembled that cage and was paid for my labor": the same "look at" frame, with pay in place of faces
-    // retired: g1 reveals its point (cage), so play 4 under g1 drew no C2
     { id: 'nt2', skill: 'pragma', level: 'C2', point: 'cage', seg: [239.8, 251.9], retired: true,
       stem: 'What is Ron doing with “No, look at that cage”?',
       choices: ['Copying her pitch to make the opposite point', 'Mocking her line just to get a laugh',
