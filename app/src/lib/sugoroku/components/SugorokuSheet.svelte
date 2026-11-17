@@ -23,26 +23,29 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { CARDS } from '../cards.ts';
-  import { choose, eventDone, pictureDone, tried, MAX_TICKETS, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceAsWord,
-    sentenceDone, spin, swap, twice, wordScore, HOME_BONUS, type Game, type Level as SeatLevel, type Seat } from '../game.ts';
+  import { choose, eventDone, pictureBonus, pictureDone, tried, MAX_TICKETS, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceAsWord,
+    sentenceDone, spin, swap, twice, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
   import { pathOf } from '../board.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, pickSentence, type Line, type Sentence } from '../sentences.ts';
   import { clearGame, loadGame, saveGame } from '../save.ts';
+  import { loadShelf, shelve, type Shelf } from '../shelf.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
-  type Level = 'menu' | 'how' | 'setup' | 'play' | 'results';
+  type Level = 'menu' | 'how' | 'shelf' | 'setup' | 'play' | 'results';
   let level = $state<Level>('menu');
   let game = $state<Game | null>(null);
   let saved = $state<Game | null>(null);
   $effect(() => {
-    if (open) (saved = loadGame()), (level = 'menu');
+    if (open) (saved = loadGame()), (shelf = loadShelf()), (level = 'menu');
   });
   const close = () => (open = false);
   /** To the menu: the save as it is now (a game played since the opening). */
-  const toMenu = () => ((saved = loadGame()), (level = 'menu'));
+  const toMenu = () => ((saved = loadGame()), (shelf = loadShelf()), (level = 'menu'));
+  /** ことばだな (shelf.ts): this phone's games, kept. */
+  let shelf = $state<Shelf>({ words: [], items: [], games: 0 });
 
   // the words and lines (their own chunks), asked for as the sheet opens
   let words = $state<Words | null>(null);
@@ -74,13 +77,28 @@
   /** Each seat's level (ふつう till changed). */
   let levels = $state<Record<string, SeatLevel>>({});
   const LEVELS = [1, 2, 3] as const;
+  /** ペア: a pick sharing the seat of the pick before it. */
+  let paired = $state<Record<string, boolean>>({});
+  let length = $state<Length>('normal');
+  const LENGTHS = ['short', 'normal', 'long'] as const;
+  /** The seats the picks make (a ペア folded into the seat before it). */
+  const seatsOf = (ks: readonly string[]): Seat[] => {
+    const out: Seat[] = [];
+    for (const k of ks) {
+      const c = candidates.find((x) => keyOf(x) === k);
+      if (!c) continue;
+      if (paired[k] && out.length && !out[out.length - 1].pair) out[out.length - 1].pair = c;
+      else out.push({ ...c, level: levels[k] ?? 2, pair: null });
+    }
+    return out;
+  };
+  const seatCount = $derived(seatsOf(picked).length);
   function toggle(x: Cand) {
     const k = keyOf(x);
     picked = picked.includes(k) ? picked.filter((p) => p !== k) : picked.length < MAX_PLAYERS ? [...picked, k] : picked;
   }
   function start() {
-    const seats = picked.map((k) => ({ ...candidates.find((c) => keyOf(c) === k)!, level: levels[k] ?? 2 }));
-    const g0 = newGame(seats, `${now()}:${picked.join(',')}`);
+    const g0 = newGame(seatsOf(picked), `${now()}:${picked.join(',')}`, length);
     shown = g0.players.map((p) => p.pos);
     set(g0);
     level = 'play';
@@ -101,6 +119,7 @@
     confirmEnd = false;
     if (shown.length !== g.players.length) shown = g.players.map((p) => p.pos);
     if (g.phase.k === 'end') {
+      if (saved !== null || game?.phase.k !== 'end' || level === 'play') shelf = shelve(g);
       clearGame();
       saved = null;
       level = 'results';
@@ -123,21 +142,25 @@
     set(saved);
     level = 'play';
   }
+  let rollTimer: ReturnType<typeof setInterval> | undefined;
+  $effect(() => () => clearInterval(rollTimer));
   function doSpin(dice = false) {
     if (!game || rolling !== null) return;
+    const from = game;
     const next = spin(game, dice);
     const ph = next.phase;
     const n = 'spun' in ph ? ph.spun : 1;
     let k = 0;
     rolling = 1;
-    const id = setInterval(() => {
+    const id = (rollTimer = setInterval(() => {
       rolling = (k++ % 6) + 1;
       if (k < 8) return;
       clearInterval(id);
       rolling = null;
+      if (game !== from) return; // (a new game or a resume since: this roll is void)
       rolled = n;
       set(next);
-    }, 70);
+    }, 70));
   }
 
   const g = $derived(game);
@@ -171,7 +194,10 @@
   const pairs = $derived.by(() => {
     if (!g) return [];
     const seen = new Set<string>(), out: { en: string; ja: string }[] = [];
-    for (const m of [...g.made].reverse()) if (m.ja && !seen.has(m.text) && out.length < 5) (seen.add(m.text), out.push({ en: m.text, ja: m.ja }));
+    const ok = (en: string, ja: string) => !seen.has(en) && !out.some((x) => x.ja === ja);
+    for (const m of [...g.made].reverse()) if (m.ja && ok(m.text, m.ja) && out.length < 4) (seen.add(m.text), out.push({ en: m.text, ja: m.ja }));
+    // and up to two from earlier games on this phone (ことばだな): what was met before comes back
+    for (const w of shelf.words) if (ok(w.en, w.ja) && out.length < 6 && !g.made.some((m) => m.text === w.en)) (seen.add(w.en), out.push({ en: w.en, ja: w.ja }));
     return out;
   });
   const cardParts = (en: string) => en.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
@@ -191,8 +217,31 @@
             <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
           {/if}
           <button type="button" class="btn" class:paper={!!saved} data-sfx="open" data-sg-new onclick={setup}>{s('newGame')}</button>
-          <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (level = 'how')}>{s('howTo')}</button>
+          <div class="row2">
+            <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (level = 'how')}>{s('howTo')}</button>
+            <button type="button" class="btn small paper" data-sfx="page" data-sg-shelf onclick={() => (level = 'shelf')}>{s('shelf')}{#if shelf.words.length}（{shelf.words.length}）{/if}</button>
+          </div>
         </div>
+      </div>
+    {:else if level === 'shelf'}
+      <div class="top"><NavBar pad title={s('shelf')} onback={toMenu} onclose={close} /></div>
+      <div class="body sheet-scroll" data-sg-shelf-page>
+        <p class="note">{s('shelfNote', { n: shelf.games })}</p>
+        <h3 class="sec-label">{s('souvenirs')} {shelf.items.length}/{PICTURES.length}</h3>
+        <div class="card pad zukan">
+          {#each PICTURES as p (p.key)}
+            {@const have = shelf.items.includes(p.w)}
+            <span class="zk" class:have title={have ? p.w : ''}><img src={artUrl(p.key) ?? ''} alt={have ? p.ja : ''} width="36" height="36" /></span>
+          {/each}
+        </div>
+        <h3 class="sec-label">{s('shelfWords')}</h3>
+        {#if shelf.words.length}
+          <div class="card dense" role="list">
+            {#each shelf.words.slice(0, 60) as w (w.en)}
+              <div class="row recap" role="listitem"><span class="txt"><span lang="en" class="en2">{w.en}</span><span class="ja2">{w.ja}</span></span></div>
+            {/each}
+          </div>
+        {:else}<p class="note">{s('shelfEmpty')}</p>{/if}
       </div>
     {:else if level === 'how'}
       <div class="top"><NavBar pad title={s('howTo')} onback={toMenu} onclose={close} /></div>
@@ -224,18 +273,29 @@
               {#if c}
                 <div class="row lrow" role="listitem" data-sg-level-row={k}>
                   <Avatar {...headOf(c)} size={32} /><span class="nm">{c.name}</span>
-                  <span class="seg" role="radiogroup" aria-label={s('levelOf', { name: c.name })}>
+                  {#if picked.indexOf(k) > 0 && picked.length >= 3}
+                    <button type="button" class="sg-chip" role="switch" aria-checked={!!paired[k]} data-sfx="none" data-sg-pair={k}
+                      onclick={() => (paired = { ...paired, [k]: !paired[k] })}>{s('pair')}</button>
+                  {/if}
+                  {#if !paired[k] || picked.indexOf(k) === 0}<span class="seg" role="radiogroup" aria-label={s('levelOf', { name: c.name })}>
                     {#each LEVELS as lv (lv)}
                       <button type="button" role="radio" class="sg-chip" aria-checked={(levels[k] ?? 2) === lv} data-sfx="none" data-sg-level={lv}
                         onclick={() => (levels = { ...levels, [k]: lv })}>{s(`level.${lv}`)}</button>
                     {/each}
-                  </span>
+                  </span>{/if}
                 </div>
               {/if}
             {/each}
           </div>
         {/if}
-        <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={picked.length < MIN_PLAYERS} onclick={start}>{s('start')}</button>
+        {#if picked.length >= 3}<p class="note">{s('pairNote')}</p>{/if}
+        <h3 class="sec-label">{s('length')}</h3>
+        <span class="seg wide2" role="radiogroup" aria-label={s('length')}>
+          {#each LENGTHS as L (L)}
+            <button type="button" role="radio" class="sg-chip" aria-checked={length === L} data-sfx="none" data-sg-length={L} onclick={() => (length = L)}>{s(`length.${L}`)}</button>
+          {/each}
+        </span>
+        <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={seatCount < MIN_PLAYERS} onclick={start}>{s('start')}</button>
       </div>
     {:else if level === 'play' && g && cur && ph}
       <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
@@ -243,7 +303,8 @@
         <div class="scores">
           {#each g.players as p, i (i)}
             <span class="score" class:now={i === g.turn} data-sg-score={i}>
-              <Avatar {...headOf(p)} size={28} /><b>{p.stars}</b><small class="lv">{s(`level.${p.level}`)}</small>
+              <Avatar {...headOf(p)} size={28} />{#if p.pair}<span class="pairhead"><Avatar {...headOf(p.pair)} size={20} /></span>{/if}
+              {#key p.stars}<b class="bump">{p.stars}</b>{/key}<small class="lv">{s(`level.${p.level}`)}</small>
               {#if p.items.length}<small class="lv ic" data-sg-items={p.items.length}><Icon name="gift" size={12} />{p.items.length}</small>{/if}
               {#if p.tickets.length}<small class="lv ic" data-sg-tickets={p.tickets.length}><Icon name="tag" size={12} />{p.tickets.length}</small>{/if}
             </span>
@@ -253,14 +314,14 @@
         <Board players={g.players} {shown} turn={g.turn} {compact} />
         <div class="panel card pad">
           {#if walking || rolling !== null}
-            <div class="spinning">{#if rolling !== null || rolled}<span class="die" data-sg-die>{rolling ?? rolled}</span><p>{rolling === null ? s('spun', { n: rolled }) : ''}</p>
+            <div class="spinning">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><p>{rolling === null ? s('spun', { n: rolled }) : ''}</p>
               {:else}<p data-sg-moving>{s('walking')}</p>{/if}</div>
           {:else if ph.k === 'spin'}
             <div class="who">
-              <Avatar {...headOf(cur)} size={64} />
+              <Avatar {...headOf(cur)} size={64} />{#if cur.pair}<span class="pairhead big"><Avatar {...headOf(cur.pair)} size={44} /></span>{/if}
               <div>
-                <p class="turnof">{s('turnOf', { name: cur.name })}</p>
-                <p class="note">{s('passTo', { name: cur.name })}</p>
+                <p class="turnof">{s('turnOf', { name: cur.pair ? s('pairName', { a: cur.name, b: cur.pair.name }) : cur.name })}</p>
+                <p class="note">{cur.pair ? s('pairTurn') : s('passTo', { name: cur.name })}</p>
               </div>
             </div>
             <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={() => doSpin()}>{s('spin')}</button>
@@ -298,7 +359,7 @@
               <button type="button" class="btn small" data-sfx="tick" onclick={() => set(sentenceAsWord(g))}>{s('next')}</button>
             {:else}<p class="note">{s('loading')}</p>{/if}
           {:else if ph.k === 'picture'}
-            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(t) => set(tried(g, t))} ondone={(m) => set(pictureDone(g, m))} />{/key}
+            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} bonus={pictureBonus(g, ph.item)} misses0={ph.misses} ontry={(t) => set(tried(g, t))} ondone={(m) => set(pictureDone(g, m))} />{/key}
           {:else if ph.k === 'event' && card}
             <div class="event" data-sg-event={ph.card}>
               {#if card.who}<Avatar person="G" villager={card.who} size={48} />{/if}
@@ -372,6 +433,8 @@
   .top { flex: none; background-color: var(--surface); }
   .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px;
     padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
+  /* (a scroller's column: its cards keep their height, never squeezed to fit) */
+  .body > * { flex-shrink: 0; }
   .hero { display: flex; flex-direction: column; gap: 10px; }
   .lead { margin: 0 0 4px; font: 700 var(--fs-body)/1.5 var(--font-ui); text-wrap: pretty; }
   .how { margin: 0; padding-left: 28px !important; display: grid; gap: 8px; font-size: var(--fs-body); line-height: 1.5; }
@@ -392,14 +455,29 @@
   .score { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 2px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .score b { font: 600 16px/1 var(--font-num); }
+  /* a score that changed pops once (stars in) */
+  .bump { display: inline-block; animation: bump 420ms var(--ease-bounce); }
+  @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.45); color: var(--c-gold); } 100% { transform: scale(1); } }
+  .pairhead { margin-left: -10px; display: inline-flex; }
+  .pairhead.big { margin-left: -24px; align-self: flex-end; }
+  .row2 { display: flex; gap: 8px; justify-content: center; }
+  .wide2 { align-self: center; }
+  .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
+  .zk { display: grid; place-items: center; }
+  .zk img { width: 36px; height: 36px; object-fit: contain; filter: grayscale(1) brightness(.2) opacity(.25); }
+  .zk.have img { filter: none; }
+  /* the dice shake while rolling */
+  .die.rolling { animation: shake 140ms linear infinite; }
+  @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg) translateY(-2px); } 75% { transform: rotate(10deg) translateY(1px); } }
   .lv { font: 700 10px/1 var(--font-ui); color: var(--text-soft); }
   .lv.ic { display: inline-flex; align-items: center; gap: 1px; }
   .tray { display: flex; flex-wrap: wrap; gap: 2px; padding-left: 46px; }
   .tray img { width: 28px; height: 28px; object-fit: contain; }
   .setnote { text-align: center; }
   .chip-eff { padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .lrow { display: flex !important; align-items: center; gap: 8px; }
-  .lrow .nm { flex: 1; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .lrow { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .lrow .nm { flex: 1 0 auto; min-width: 4.5em; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .lrow .seg { margin-left: auto; }
   .seg { display: inline-flex; gap: 4px; }
   .sg-chip { min-height: 36px; padding: 0 10px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer;
     background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); }

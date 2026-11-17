@@ -28,6 +28,8 @@
   let misses = $state(untrack(() => misses0));
   let stage = $state<'try' | 'miss' | 'right' | 'answer'>(untrack(() => (misses0 >= 2 ? 'answer' : 'try')));
   let peeked = $state(untrack(() => peeked0));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(timer));
   const unseen = $derived(hideJa && !peeked);
   const words = $derived(placed.map((id) => tiles.find((t) => t.id === id)!.w));
 
@@ -41,7 +43,7 @@
       misses = 1;
       ontry({ misses, peeked });
       stage = 'miss';
-      setTimeout(() => ((placed = []), (stage = 'try')), 900);
+      timer = setTimeout(() => ((placed = []), (stage = 'try')), 900);
     }
   }
   const takeBack = (k: number) => stage === 'try' && (placed = placed.slice(0, k));

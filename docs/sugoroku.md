@@ -10,7 +10,9 @@ guest's, or a villager friend's): the one sheet with characters in it, since the
 
 - **Seats** (だれが遊ぶ？): 2–4 of the members, the guest and villager friends (しずえ, たぬきち…; never the guest's own
   villager twice), turns in the order picked, each an English **level** (`game.ts LEVEL`): what its spaces ask, not
-  what they pay, so a mixed table stays close.
+  what they pay, so a mixed table stays close. With 3+ picked, a pick can be a **ペア** with the one before it: one
+  seat, token and score for two (the one less sure of English taps; the other only says 「もうすこし！」), at the first's
+  level. A **length**: みじかい (by round 5), ふつう (the round someone's home), ながい (everyone home, 12 rounds at most).
 
   | | やさしい | ふつう | むずかしい |
   |---|---|---|---|
@@ -35,14 +37,18 @@ guest's, or a villager friend's): the one sheet with characters in it, since the
     「答えはこれ」. No line left for the level (or offline): the stone plays as ことば.
   - **絵** (`pictures.ts`): an NH item's picture (the app's art: 41 bugs, sea things, farm finds, fruit, treats), its
     Japanese, its English to spell by the level: 5 stars, 3 after 「おしい！」, 1 with 「答えはこれ」, and it's yours as a
-    **souvenir** (each once a game); three of a set (虫 海 畑 果物 おやつ) +5 once.
+    **souvenir** (each once a game; a set begun is 3× likelier); three of a set (虫 海 畑 果物 おやつ) +5 once, said on
+    the stone.
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
     it), its effect as a chip: good or neutral only; a move stops at the fork. Some give a **ticket** to keep (two at
-    most): サイコロ2つ券 (spent at a roll: two dice, the better) or ヒント券 (spent on a hinted word: its full stars).
+    most; a third pays 2 stars instead): サイコロ2つ券 (spent at a roll: two dice, the better) or ヒント券 (spent on a hinted
+    word: its full stars). The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
   - **あがり**: +6, +3, +1 by order home. The game ends with the round someone got home in (equal turns), after
     `MAX_ROUNDS` (10, 9, 8 by seats), or 終了: about 5 rounds, 10–20 minutes.
-- **Results**: the ranking with each seat's souvenirs, **ふりかえり** (up to five of the game's things with Japanese, to
-  match English ↔ Japanese; a mismatch just lets go), and 今日のことば, everything made with its Japanese.
+- **Results**: the ranking with each seat's souvenirs, **ふりかえり** (up to four of the game's things with Japanese and
+  two from earlier games, each Japanese once, to match English ↔ Japanese; a mismatch just lets go), and 今日のことば.
+- **ことばだな** (`shelf.ts`, the menu's): every finished game's words, lines and pictures with Japanese (300 at most,
+  newest first) and the souvenirs ever found, as an NH-style ずかん (the unfound dark).
 
 ## Tiles
 
@@ -63,4 +69,6 @@ a game night works offline).
 ## Saving
 
 The game is saved on the phone after every step (`save.ts`, `DEVICE.sugoroku`): ‹ or ✕ mid-game leaves it to
-続きから; a finished one is cleared. One game a phone. A save from another shape (`v`) or content (`CONTENT`) reads as none.
+続きから; a finished one is cleared and put on the shelf (`DEVICE.sugorokuShelf`). One game a phone. A turn's tries
+(misses, ヒント, 意味を見る) are in the save. A save of another shape (`v`) or structure (`CONTENT`: the stones' kinds and
+links, the cards' effects, the pictures' sets; never the copy) reads as none, as does a corrupt one.

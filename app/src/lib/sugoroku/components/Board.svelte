@@ -62,8 +62,8 @@
 
 <style>
   /* as wide as fits, and short enough that the turn's panel stays above Safari's fold (the sheet's ~330 px besides it) */
-  .board { position: relative; width: min(100%, calc((100svh - 330px) * 360 / 420)); aspect-ratio: 360 / 420; margin: 0 auto; transition: width 220ms var(--ease-soft); }
-  .board.compact { width: min(40%, calc((100svh - 560px) * 360 / 420)); min-width: 120px; }
+  .board { position: relative; width: min(100%, calc((100svh - 330px) * 360 / 420)); aspect-ratio: 360 / 420; margin: 0 auto; }
+  .board.compact { width: max(150px, min(40%, calc((100svh - 520px) * 360 / 420))); }
   svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 0 var(--c-edge)); }
   .grass { fill: color-mix(in srgb, var(--c-mint) 70%, #9fd38a); }
   .river { fill: color-mix(in srgb, var(--c-sky) 85%, white); }

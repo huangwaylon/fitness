@@ -7,11 +7,18 @@
 
   let { pairs, seed }: { pairs: readonly { en: string; ja: string }[]; seed: string } = $props();
   const left = $derived(pairs.map((p, i) => ({ i, t: p.en })));
-  const right = $derived(shuffle(pairs.map((p, i) => ({ i, t: p.ja })), seeded(`${seed}:review`)));
+  // (never left in the English's order: a shuffle that changed nothing goes again)
+  const right = $derived.by(() => {
+    const r = seeded(`${seed}:review`);
+    let out = pairs.map((p, i) => ({ i, t: p.ja }));
+    for (let k = 0; k < 5 && (k === 0 || out.every((x, j) => x.i === j)); k++) out = shuffle([...out], r);
+    return out;
+  });
   let held = $state<number | null>(null);
   let found = $state<number[]>([]);
   function pickJa(i: number) {
     if (held === null) return;
+    // (the pairs' Japanese are all different: SugorokuSheet's pairs)
     if (held === i) found = [...found, i];
     held = null;
   }

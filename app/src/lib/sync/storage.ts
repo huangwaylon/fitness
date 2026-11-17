@@ -145,6 +145,8 @@ export const DEVICE = {
   englishHard: 'island.english.hard',
   /** localStorage: 英語すごろく's game in play on this phone (lib/sugoroku/game.ts Game), so a game closed half-way resumes. */
   sugoroku: 'island.sugoroku',
+  /** localStorage: 英語すごろく's ことばだな on this phone (lib/sugoroku/shelf.ts): every game's words, lines and souvenirs, kept. */
+  sugorokuShelf: 'island.sugoroku.shelf',
   /** localStorage: `{[who]: {[clip]: day}}`: the clips 別の動画にする passed over on this phone, each kept 14 days
    *  (lib/english/prefs.ts): today's clip skips them. */
   englishSkip: 'island.english.skip',

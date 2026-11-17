@@ -2,7 +2,7 @@
 // step (localStorage: a game closed half-way resumes). Every random is seeded by the game's seed and its step counter
 // (every step moves it on), so a saved game replays the same. No ベル, no record: the stars are the game's own.
 import type { Who } from '#lib/types.ts';
-import { fnv1a, seeded } from '#lib/random.ts';
+import { fnv1a, seeded, weighted } from '#lib/random.ts';
 import { BOARD, GOAL, stepFrom, toGoal } from './board.ts';
 import { newBag, refill, scoreOf, spellable, without, type Score } from './tiles.ts';
 import { CARDS, type Card, type Ticket } from './cards.ts';
@@ -16,13 +16,22 @@ export const LEVEL: Readonly<Record<Level, { minLen: number; everyday: number; h
   3: { minLen: 4, everyday: 1, hintHalf: true }
 };
 
-export interface Seat {
-  /** A member or the guest (their worn head), else null: a villager friend (`villager`). */
+/** Someone at the table: a member or the guest (their worn head), else (who null) a villager friend. */
+interface Person {
   who: Who | null;
   villager: string | null;
   name: string;
-  level: Level;
 }
+export interface Seat extends Person {
+  level: Level;
+  /** ペア: a second person sharing this seat (one token, one score; the one less sure of English taps, the other
+   *  only helps). */
+  pair?: Person | null;
+}
+/** How long a game runs: みじかい ends by round 5, ふつう when someone's home (or MAX_ROUNDS), ながい when everyone's
+ *  home (or 12 rounds). */
+export type Length = 'short' | 'normal' | 'long';
+const ROUND_CAP: Record<Length, (seats: number) => number> = { short: () => 5, normal: (n) => MAX_ROUNDS[n] ?? 10, long: () => 12 };
 export interface Player extends Seat {
   pos: number;
   stars: number;
@@ -68,13 +77,15 @@ type Phase =
 
 /** The save's shape; CONTENT: the board's, cards' and pictures' build, hashed (a save from another reads as none:
  *  save.ts; the lines are picked afresh by the phase's `r`). */
-const V = 3;
-const CONTENT = fnv1a(JSON.stringify([BOARD, CARDS, PICTURES])).toString(36);
+const V = 4;
+// (the structure only: a copy fix or a stone moved on the drawing never drops a game in play)
+const CONTENT = fnv1a(JSON.stringify([BOARD.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, ...fx }) => fx), PICTURES.map((p) => p.set)])).toString(36);
 
 export interface Game {
   v: typeof V;
   content: string;
   seed: string;
+  length: Length;
   /** The steps taken (the next random's salt). */
   n: number;
   turn: number;
@@ -100,12 +111,14 @@ export const HOME_BONUS = [6, 3, 1, 0];
 const SENTENCE_STARS = [6, 4, 2];
 export const UNSEEN_BONUS = 2;
 export const MAX_TICKETS = 2;
-const LUCKY_FROM = [...'bcdfghlmnprstwy'];
+export const FULL_TICKETS = 2;
+/** The lucky letters come from the common consonants (a rare one was often in no rack: a dead bonus). */
+const LUCKY_FROM = [...'dghlmnprst'];
 
 const rnd = (g: Game) => seeded(`${g.seed}:${g.n}`);
 const copy = (g: Game) => g.players.map((p) => ({ ...p }));
 
-export function newGame(seats: readonly Seat[], seed: string): Game {
+export function newGame(seats: readonly Seat[], seed: string, length: Length = 'normal'): Game {
   const r = seeded(seed);
   let bag = newBag(r);
   const players = seats.map((s) => {
@@ -116,7 +129,7 @@ export function newGame(seats: readonly Seat[], seed: string): Game {
   const a = LUCKY_FROM[Math.floor(r() * LUCKY_FROM.length)];
   const rest = LUCKY_FROM.filter((l) => l !== a);
   const lucky = [a, rest[Math.floor(r() * rest.length)]];
-  return { v: V, content: CONTENT, seed, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [] };
+  return { v: V, content: CONTENT, seed, length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [] };
 }
 
 /** Whether this turn's player spins twice (keeps the better): the catch-up for the last in stars, 2+ behind. */
@@ -174,7 +187,9 @@ function land(g: Game, spun: number, r: () => number): Game {
   if (kind === 'picture') {
     const taken = new Set(g.players.flatMap((p) => p.items));
     const left = PICTURES.map((_, i) => i).filter((i) => !taken.has(i));
-    if (left.length) return { ...g, phase: { k: 'picture', item: left[Math.floor(r() * left.length)], spun, r: r() } };
+    // a set I've begun is likelier (×3), so its bonus can come within a game
+    const mine = (set: string) => me.items.filter((i) => PICTURES[i].set === set).length;
+    if (left.length) return { ...g, phase: { k: 'picture', item: weighted(left.map((i) => [i, mine(PICTURES[i].set) ? 3 : 1] as const), r), spun, r: r() } };
   }
   if (kind === 'event') {
     let cards = g.cards.length >= CARDS.length ? [] : g.cards;
@@ -246,6 +261,12 @@ const without1 = <T,>(xs: readonly T[], x: T): T[] => { const i = xs.indexOf(x);
 /** The stars for a picture spelt after `misses` nudges (2: after 答えはこれ). */
 export const pictureStars = (misses: number): number => PICTURE_STARS[Math.min(misses, 2)];
 
+/** The set bonus this seat's next souvenir would pay (its set's third). */
+export const pictureBonus = (g: Game, item: number): number => {
+  const have = g.players[g.turn].items;
+  return (setsOf([...have, item]) - setsOf(have)) * SET_BONUS;
+};
+
 /** A picture spelt: its stars, and its souvenir (a third of a set: SET_BONUS more). */
 export function pictureDone(g: Game, misses: number): Game {
   if (g.phase.k !== 'picture') return g;
@@ -266,7 +287,8 @@ export function eventDone(g: Game): Game {
   const players = copy(g);
   const me = players[g.turn];
   if (c.stars) me.stars += c.stars;
-  if (c.ticket && me.tickets.length < MAX_TICKETS) me.tickets = [...me.tickets, c.ticket];
+  // a ticket past the two held pays FULL_TICKETS stars instead
+  if (c.ticket) me.tickets.length < MAX_TICKETS ? (me.tickets = [...me.tickets, c.ticket]) : (me.stars += FULL_TICKETS);
   if (c.gift) for (const [i, p] of players.entries()) {
     if (i === g.turn) continue;
     const n = Math.min(c.gift, p.stars);
@@ -285,8 +307,8 @@ export function eventDone(g: Game): Game {
 /** After the home screen. */
 export const homeDone = (g: Game): Game => (g.phase.k === 'home' ? next({ ...g, n: g.n + 1 }) : g);
 
-/** The next seat on the way. The game ends with the round someone got home in (every seat the same number of turns),
- *  after MAX_ROUNDS, or once everyone's home. */
+/** The next seat on the way. The game ends with the round someone got home in (every seat the same number of turns;
+ *  ながい: once everyone's home), after the length's last round, or once everyone's home. */
 function next(g: Game): Game {
   const players = g.players.map((p) => ({ ...p }));
   const end = { ...g, players, phase: { k: 'end' } as const };
@@ -295,7 +317,7 @@ function next(g: Game): Game {
   for (let i = 0; i < players.length * 2; i++) {
     turn = (turn + 1) % players.length;
     if (turn === 0) {
-      if (players.some((p) => p.home !== null) || round >= (MAX_ROUNDS[players.length] ?? 10)) return end;
+      if ((g.length !== 'long' && players.some((p) => p.home !== null)) || round >= ROUND_CAP[g.length](players.length)) return end;
       round++;
     }
     if (players[turn].home === null) break;
@@ -304,7 +326,8 @@ function next(g: Game): Game {
 }
 
 /** Whether this round is the last (someone's home, or the rounds are up). */
-export const lastRound = (g: Game): boolean => g.players.some((p) => p.home !== null) || g.round >= (MAX_ROUNDS[g.players.length] ?? 10);
+export const lastRound = (g: Game): boolean =>
+  (g.length !== 'long' && g.players.some((p) => p.home !== null)) || g.round >= ROUND_CAP[g.length](g.players.length);
 
 /** End now (終了): whoever's on the way stays where they are. */
 export const finish = (g: Game): Game => ({ ...g, phase: { k: 'end' } });
@@ -320,8 +343,10 @@ export function ranking(g: Game): number[] {
 /** Whether a saved value is a game this build can play (its shape, version and content). */
 export function isGame(x: unknown): x is Game {
   const g = x as Game;
-  return !!g && g.v === V && g.content === CONTENT && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
-    && g.players.every((p) => Array.isArray(p.rack) && Array.isArray(p.items) && Array.isArray(p.tickets) && typeof p.pos === 'number' && p.pos >= 0
+  return !!g && g.v === V && g.content === CONTENT && (g.length === 'short' || g.length === 'normal' || g.length === 'long') && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
+    && Number.isInteger(g.turn) && g.turn >= 0 && g.turn < g.players.length && Array.isArray(g.bag) && Array.isArray(g.made) && Array.isArray(g.cards)
+    && g.players.every((p) => Array.isArray(p.rack) && Array.isArray(p.items) && p.items.every((i) => !!PICTURES[i])
+      && Array.isArray(p.tickets) && p.tickets.every((t) => t === 'hint' || t === 'dice') && typeof p.pos === 'number' && p.pos >= 0
       && p.pos <= GOAL && p.level >= 1 && p.level <= 3)
     && (g.phase.k !== 'event' || !!CARDS[g.phase.card]) && (g.phase.k !== 'picture' || !!PICTURES[g.phase.item]);
 }

@@ -69,6 +69,7 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await expect(sheet(page).locator('[data-sg-level-row]')).toHaveCount(2);
   await sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]').click();
   await expect(sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]')).toHaveAttribute('aria-checked', 'true');
+  await sheet(page).locator('[data-sg-length="short"]').click();
   await sheet(page).locator('[data-sg-start]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
   await expect(sheet(page).locator('[data-sg-space]')).toHaveCount(27);
@@ -82,9 +83,12 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await sheet(page).locator('[data-sg-end-yes]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(2);
-  // the finished game isn't offered again
+  // the finished game isn't offered again; its words are on the shelf (ことばだな)
   await sheet(page).locator('.navbar button').first().click();
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
+  await sheet(page).locator('[data-sg-shelf]').click();
+  await expect(sheet(page)).toHaveAttribute('data-level', 'shelf');
+  await expect(sheet(page).locator('[data-sg-shelf-page] .zk')).not.toHaveCount(0);
 });
 
 test('a game left half-way resumes after a reload (続きから), where it was', async ({ page }) => {

@@ -15,13 +15,17 @@
     pic: Picture;
     level: number;
     seed: string;
+    /** The set bonus a souvenir here pays (game.ts pictureBonus). */
+    bonus?: number;
     /** The turn so far (a sheet reopened mid-turn). */
     misses0?: number;
     /** A miss, to keep. */
     ontry: (t: { misses: number }) => void;
     ondone: (misses: number) => void;
   }
-  let { pic, level, seed, misses0 = 0, ontry, ondone }: Props = $props();
+  let { pic, level, seed, bonus = 0, misses0 = 0, ontry, ondone }: Props = $props();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(timer));
 
   const choices = $derived(level === 1 ? choicesFor(pic, seeded(`${seed}:c:${pic.w}`)) : []);
   const tiles = $derived(level > 1 ? lettersFor(pic, level, seeded(`${seed}:l:${pic.w}`)).map((l, id) => ({ id, l })) : []);
@@ -39,7 +43,7 @@
     misses = 1;
     ontry({ misses });
     stage = 'miss';
-    setTimeout(() => ((placed = given >= 0 ? [given] : []), (stage = 'try')), 900);
+    timer = setTimeout(() => ((placed = given >= 0 ? [given] : []), (stage = 'try')), 900);
   }
   function pick(c: string) {
     if (stage !== 'try') return;
@@ -72,7 +76,7 @@
         {#each placed as id, k (id)}<button type="button" class="tile in" data-sfx="tick" onclick={() => takeBack(k)}>{tiles[id].l.toUpperCase()}</button>{/each}
       </div>
       <div class="rack" lang="en">
-        {#each tiles as t (t.id)}
+        {#each tiles.filter((t) => t.id !== given) as t (t.id)}
           <button type="button" class="tile" disabled={placed.includes(t.id)} data-sfx="tick" data-sg-letter={t.l} onclick={() => put(t.id)}>{t.l.toUpperCase()}</button>
         {/each}
       </div>
@@ -80,7 +84,8 @@
   {:else}
     <p class="ask">{stage === 'answer' ? s('answer') : s('souvenir')}</p>
     <p class="en" lang="en" data-sg-answer>{pic.w}</p>
-    <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses)}</b></p>
+    <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses) + bonus}</b></p>
+    {#if bonus}<p class="set" data-sg-set-bonus>{s('setDone', { n: bonus })}</p>{/if}
     <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(misses)}>{s('next')}</button>
   {/if}
 </section>
@@ -110,5 +115,6 @@
   .tile.in { background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
   .en { margin: 0; font: 600 28px/1.2 var(--font-num); letter-spacing: .04em; }
   .pts { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--c-gold); }
+  .set { margin: 0; padding: 3px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .pts b { font: 600 28px/1 var(--font-num); color: var(--c-ink); }
 </style>
