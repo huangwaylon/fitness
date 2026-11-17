@@ -21,7 +21,7 @@ export const willBeFine: Clip = {
       line: 'Three days ago, I slipped *five* pieces of gold paper…',
       said: '「3日前、金色の紙を5枚、荷物にこっそり入れた」とカメラに話す。',
       mean: 'five pieces of 〜 ＝ 〜を5枚。slip ＝ そっと入れる。',
-      trap: '文の頭の three days ago の three が残りやすい。数は slipped のすぐあと。',
+      trap: 'three は文の頭の three days ago。ten なら「テン」、fifteen なら「ティーン」が長い。slipped のあとは「ファイヴ」。',
       use: 'I slipped a note into her bag.（彼女のかばんにメモをそっと入れた）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'discount', seg: [37.3, 46.9],
@@ -288,7 +288,7 @@ export const willBeFine: Clip = {
       line: 'Pam, could you set up a call in there in *about 15 minutes*, please?',
       said: '「15分後くらいに、あの部屋で電話をつないで」とパムに頼む。',
       mean: 'fifteen ＝ 15。後ろの「ティーン」を強く長く言う。',
-      trap: 'fifty（50）なら前の「フィフ」が強く、最後は短い「ティ」。five なら「ティ」がない。',
+      trap: 'fifty なら前が強く最後は短い「ティ」。five なら「ティ」がない。an hour なら数がなく「アワー」。',
       use: 'Can we meet in about fifteen minutes?（15分後くらいに会える？）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'meeting', seg: [373.4, 383.0],

@@ -93,7 +93,7 @@ export const mykonos: Clip = {
       line: 'You’re *the fifth person* to tell me that today.',
       said: '「今日それを言われたの、君で5人目だよ」と返す。',
       mean: 'fifth ＝ 5番目。the fifth person ＝ 5人目。',
-      trap: 'fifteenth（15番目）なら後ろに「ティーンス」と長く続く。fifth は短く終わる。',
+      trap: 'third（3番目）なら「サード」。fifteenth なら「ティーンス」と長く続く。fifth は「フィフス」と短い。',
       use: 'You’re the third person to ask me.（聞かれたの、君で3人目だ）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'tired', reveals: ['fifth'], seg: [78.7, 82.75],

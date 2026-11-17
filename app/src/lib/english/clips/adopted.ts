@@ -232,7 +232,7 @@ export const chandlerAdopted: Clip = {
       line: 'And he *paid me $50* not to tell.',
       said: '「それに、言わないようにって50ドルくれた」とオーウェンが言う。',
       mean: 'fifty ＝ 50。最初の「フィ」を強く言う。not to tell ＝ 言わないように。',
-      trap: 'fifteen なら後ろの「ティーン」が強く長い。どこが強いかで決まる。',
+      trap: 'fifteen なら後ろの「ティーン」が強く長い。500 なら hundred が続く。',
       use: 'I paid fifty dollars for this.（これに50ドル払った）' },
 
     { id: 'i3', skill: 'detail', level: 'B1', point: 'giveback', reveals: ['paid'], seg: [162.4, 169.4],
