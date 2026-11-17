@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 英語すごろく's sheet (docs/sugoroku.md "Rules"), its own chunk: a full sheet on the unified kit, its levels
+  // 英語すごろく, English Study's third tab (docs/sugoroku.md "Rules"), its own chunk (the tab's Lazy), its levels
   // menu (続きから / 新しいゲーム / あそびかた) → だれが遊ぶ？ (2–3 of us, each as their own character, in the
   // order picked, each its English level) → the game (the board over the turn's panel: whose turn and the dice, the
   // fork's choice, then the space's ことば, ぶん, 絵, イベント or あがり; the board drawn small during a turn's English;
@@ -8,7 +8,6 @@
   // save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on each player's own phone (online.svelte.ts: every action a
   // move to the relay, the game the moves folded; a phone whose turn it isn't watches). No ベル. The island is paused under it.
   import { untrack } from 'svelte';
-  import Sheet from '#lib/components/ui/Sheet.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
@@ -31,9 +30,19 @@
   import type { Who } from '#lib/types.ts';
   import { foldMoves, lengthCode, seatsCode, type Move } from '../online.ts';
   import { listen, nameOf as personName, online, sendMove, startOnline } from '../online.svelte.ts';
-  import { sugoroku } from '../open.svelte.ts';
 
-  let { open = $bindable() }: { open: boolean } = $props();
+  interface Props {
+    /** The tab is shown (English Study open on it). */
+    active: boolean;
+    /** Opened by an invitation's 参加: straight into the online game. */
+    join?: boolean;
+    onclose: () => void;
+    /** Whether its top level (the menu) is shown: English Study's tab bar only there. */
+    ontop?: (top: boolean) => void;
+  }
+  let { active, join = false, onclose, ontop }: Props = $props();
+  const open = $derived(active);
+  $effect(() => ontop?.(level === 'menu'));
   type Level = 'menu' | 'how' | 'setup' | 'play' | 'results';
   let level = $state<Level>('menu');
   let game = $state<Game | null>(null);
@@ -47,16 +56,14 @@
       saved = loadGame();
       level = 'menu';
       // an invitation's 参加: straight into the online game, once it's folded (the words and lines may still be on their way)
-      wantOnline = sugoroku.ask?.arg === 'online' && sugoroku.ask !== askSeen;
-      askSeen = sugoroku.ask;
+      wantOnline = join;
     });
   });
   let wantOnline = $state(false);
-  let askSeen: unknown = null;
   $effect(() => {
     if (wantOnline && onlineGame && onlineGame.phase.k !== 'end') untrack(() => ((wantOnline = false), (shown = []), (mode = 'online'), (level = 'play')));
   });
-  const close = () => (open = false);
+  const close = () => onclose();
   /** To the menu: the save as it is now (a game played since the opening). */
   const toMenu = () => ((saved = loadGame()), (level = 'menu'));
 
@@ -236,7 +243,6 @@
   const headOf = (x: { who: Who }) => ({ person: x.who, worn: true });
 </script>
 
-<Sheet bind:open tunes label={s('title')} variant="full">
   <div class="sg" data-sugoroku data-level={level}>
     {#if level === 'menu'}
       <div class="top"><NavBar pad title={s('title')} onclose={close} /></div>
@@ -434,10 +440,9 @@
       </div>
     {/if}
   </div>
-</Sheet>
 
 <style>
-  .sg { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .sg { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
   .top { flex: none; background-color: var(--surface); }
   .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px;
     padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }

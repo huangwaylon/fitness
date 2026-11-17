@@ -1,11 +1,11 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops eight pills down under it (seven for the guest: no ボット), right-aligned (the user's order, 2026-11-08; kanji on
+  // toggle; aria-expanded) that drops seven pills down under it (six for the guest: no ボット), right-aligned (the user's order, 2026-11-08; kanji on
   // them since then, easier to read than spaced kana):
   // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
-  // hiking/open.svelte.ts), 英語 (English Study's sheet, lib/english), すごろく (a die: 英語すごろく, lib/sugoroku), ボット (a robot's head: the bots'
+  // hiking/open.svelte.ts), 英語 (English Study's sheet, lib/english), ボット (a robot's head: the bots'
   // sheet, members only; the worst of the bots' dots while one needs a person, a coral or yuzu 「!」, never a green
   // one; every bot read as the menu unfolds: bots/summary.svelte.ts) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
@@ -20,7 +20,6 @@
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import { english } from '#lib/english/open.svelte.ts';
-  import { sugoroku } from '#lib/sugoroku/open.svelte.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
@@ -234,15 +233,6 @@
       <span class="ic">
         <!-- a speech balloon in the gear's soft brown, three cream dots -->
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>
-      </span>
-    </button>
-    <!-- すごろく: 英語すごろく (lib/sugoroku), the board game under English -->
-    <button type="button" class="item" data-hud-sugoroku aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('sugoroku')}
-      onclick={() => pick(() => sugoroku.show())}>
-      <span class="lbl">{t('panel.sugoroku')}</span>
-      <span class="ic">
-        <!-- a die in the gear's soft brown, its pips cream -->
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="gear" x="3" y="3" width="18" height="18" rx="4.5" /><circle cx="8.2" cy="8.2" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="15.8" cy="15.8" r="1.7" /></svg>
       </span>
     </button>
     {#if bots.length}

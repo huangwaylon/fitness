@@ -1,7 +1,7 @@
 // 英語すごろく on several phones (docs/sugoroku.md "Online"): this phone's online game (its id and moves, kept on the
 // phone: DEVICE.sugorokuOnline), heard from and sent to the relay (`sg` intents, kept in the day's ring: a phone that
 // opens later or reloads gets the day's moves again, its own included). Listening starts with the island (Hud), so
-// a game someone starts with me in it comes as an invitation (a banner with 参加, opening the sheet). The game itself
+// a game someone starts with me in it comes as an invitation (a banner with 参加, opening English Study on すごろく). The game itself
 // is the moves folded (online.ts foldMoves), by the sheet.
 import { untrack } from 'svelte';
 import type { Relayed, SgIntent } from '#lib/contract/live-protocol.ts';
@@ -14,7 +14,7 @@ import { week } from '#lib/store/week.svelte.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
 import { heard, seatsOf, type Move } from './online.ts';
-import { sugoroku } from './open.svelte.ts';
+import { english } from '#lib/english/open.svelte.ts';
 import { s } from './i18n.ts';
 
 interface Kept { g: string; log: Move[]; held: Move[] }
@@ -48,7 +48,7 @@ function hear(m: Relayed): void {
     // a new game with me in it: mine now, and the invitation (not for one I started: my own replayed)
     if (!seatsOf(move.s ?? '').some((x) => x.who === me())) return;
     keep({ g: move.g, log: [move], held: cur.g === move.g ? cur.held : [] });
-    if (who !== me() && !sugoroku.open) toasts.show(s('invite', { name: nameOf(who) }), 12_000, { action: { label: s('join'), run: () => sugoroku.show('online') } });
+    if (who !== me() && !english.open) toasts.show(s('invite', { name: nameOf(who) }), 12_000, { action: { label: s('join'), run: () => english.show('sugoroku') } });
     return;
   }
   // a move of a game not (yet) here: held, in case its start comes after it (a replay's order)

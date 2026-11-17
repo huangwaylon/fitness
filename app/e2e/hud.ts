@@ -11,9 +11,9 @@ export const hudMenu = (page: Page) => page.locator('[data-hud-menu]');
 /** The menu's ベル row (the wallet's balance in data-bells, today's in data-today; hidden while folded). */
 export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
-const PILL = { bells: '[data-hud-bells]', english: '[data-hud-english]', sugoroku: '[data-hud-sugoroku]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', bots: '[data-hud-bots]', settings: '[data-hud-settings]' };
+const PILL = { bells: '[data-hud-bells]', english: '[data-hud-english]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', bots: '[data-hud-bots]', settings: '[data-hud-settings]' };
 const SHEET = {
-  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', sugoroku: 'dialog[open] [data-sugoroku]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', bots: 'dialog[open] [data-bots]', settings: 'dialog[open] [data-settings]'
+  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', bots: 'dialog[open] [data-bots]', settings: 'dialog[open] [data-settings]'
 };
 
 /** Unfold the menu (if folded) and wait for its pills to be shown (HudMenu shows them at once; the poll guards a

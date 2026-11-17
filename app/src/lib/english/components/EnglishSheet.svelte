@@ -5,6 +5,8 @@
   // lib/english/session.ts; フレーズ at its card: deck.ts). The island is paused under it (+page's sheetOpen).
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import TabBar from '#lib/components/ui/TabBar.svelte';
+  import Lazy from '#lib/components/ui/Lazy.svelte';
+  import { english } from '../open.svelte.ts';
   import Home from './Home.svelte';
   import Phrases from './Phrases.svelte';
   import Library from './Library.svelte';
@@ -15,7 +17,7 @@
   import { i18n } from '#lib/i18n/index.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
-  type Tab = 'home' | 'phrases';
+  type Tab = 'home' | 'phrases' | 'game';
   type Level = { k: Tab } | { k: 'library' } | { k: 'lesson'; id: string; from: 'home' | 'library' } | { k: 'settings' };
   let level = $state<Level>({ k: 'home' });
   /** The library's chip, collection and rows shown, kept while one of its lessons is open. */
@@ -23,12 +25,20 @@
   let col = $state('');
   let count = $state(20);
   // every opening on home
+  /** すごろく's tab: its menu shown (the tab bar with it), and an invitation's 参加 (english.show('sugoroku')). */
+  let gameTop = $state(true);
+  let join = $state(false);
+  let askSeen: unknown = null;
   $effect(() => {
-    if (open) (level = { k: 'home' }), (filter = ''), (col = ''), (count = 20);
+    if (!open) return;
+    const ask = english.ask;
+    const invited = ask?.arg === 'sugoroku' && ask !== askSeen;
+    askSeen = ask;
+    (level = { k: invited ? 'game' : 'home' }), (filter = ''), (col = ''), (count = 20), (join = invited), (gameTop = true);
   });
   const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (metaById(l.id) ?? null) : null; });
-  const tab = $derived<Tab | null>(level.k === 'home' || level.k === 'phrases' ? level.k : null);
-  const TABS = [{ id: 'home', label: s('tabHome'), icon: 'play' }, { id: 'phrases', label: s('tabPhrases'), icon: 'quote' }] as const;
+  const tab = $derived<Tab | null>(level.k === 'home' || level.k === 'phrases' || (level.k === 'game' && gameTop) ? level.k : null);
+  const TABS = [{ id: 'home', label: s('tabHome'), icon: 'play' }, { id: 'phrases', label: s('tabPhrases'), icon: 'quote' }, { id: 'game', label: s('tabGame'), icon: 'dice' }] as const;
   const close = () => (open = false);
   const home = () => ((level = { k: 'home' }), (col = ''));
   const lessonFrom = (from: 'home' | 'library') => (id: string) => (level = { k: 'lesson', id, from });
@@ -44,6 +54,11 @@
         <Settings onback={home} onclose={close} />
       {:else if level.k === 'library'}
         <Library bind:filter bind:col bind:count onopen={lessonFrom('library')} onback={home} onclose={close} />
+      {:else if level.k === 'game'}
+        <!-- 英語すごろく (lib/sugoroku): its own chunk -->
+        <Lazy load={() => import('#lib/sugoroku/components/SugorokuGame.svelte')}>
+          {#snippet children(Game)}<Game active={open} {join} onclose={close} ontop={(t) => (gameTop = t)} />{/snippet}
+        </Lazy>
       {:else if level.k === 'phrases'}
         <Phrases onhome={home} onclose={close} />
       {:else}

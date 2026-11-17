@@ -27,6 +27,7 @@ const S = {
   tabs: { ja: 'ページ', en: 'Pages' },
   tabHome: { ja: 'ホーム', en: 'Home' },
   tabPhrases: { ja: 'フレーズ', en: 'Phrases' },
+  tabGame: { ja: 'すごろく', en: 'Sugoroku' },
   deckFrom: { ja: '動画では', en: 'In the clip' },
   deckSave: { ja: '☆ 復習に入れる', en: '☆ Add to review' },
   deckSaved: { ja: '★ 復習に入れました', en: '★ In your review' },

@@ -1,4 +1,4 @@
-// 英語すごろく (docs/sugoroku.md): the leaf menu's すごろく pill opens it; a new game for the two members, one at むずかしい;
+// 英語すごろく (docs/sugoroku.md): English Study's third tab, すごろく; a new game for the two members, one at むずかしい;
 // turns play through (the dice, the fork's 遠回り, then the space's ことば with ヒント and これにする, ぶん and 絵 tapped in any order till 答えはこれ, イベント's OK); the game
 // resumes from 続きから after a reload; 終了 shows the results. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
@@ -8,6 +8,12 @@ import { fromMenu } from './hud.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 
 const sheet = (p: Page) => p.locator('dialog[open] [data-sugoroku]');
+/** English Study from the leaf menu, then its すごろく tab. */
+async function openGame(p: Page) {
+  await fromMenu(p, 'english');
+  await p.locator('dialog[open] [data-en-tab="game"]').click();
+  await expect(sheet(p)).toBeVisible();
+}
 
 /** Play the current turn to its end, whatever the space. */
 async function playTurn(p: Page) {
@@ -56,7 +62,7 @@ async function playTurn(p: Page) {
 async function start(page: Page) {
   await page.goto('?demo');
   await islandUp(page);
-  await fromMenu(page, 'sugoroku');
+  await openGame(page);
   await expect(sheet(page)).toHaveAttribute('data-level', 'menu');
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
   await sheet(page).locator('[data-sg-new]').click();
@@ -98,7 +104,7 @@ test('a game left half-way resumes after a reload (続きから), where it was',
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('island.sugoroku') ?? 'null')?.turn)).toBe(Number(turn));
   await page.reload();
   await islandUp(page);
-  await fromMenu(page, 'sugoroku');
+  await openGame(page);
   await sheet(page).locator('[data-sg-resume]').click();
   await expect(sheet(page).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', turn!);
   await expect(sheet(page).locator('[data-sg-score] b')).toHaveText(stars);
@@ -112,7 +118,7 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   await islandUp(a);
   await islandUp(b);
   await a.bringToFront();
-  await fromMenu(a, 'sugoroku');
+  await openGame(a);
   await sheet(a).locator('[data-sg-new]').click();
   await sheet(a).locator('[data-sg-mode="online"]').click();
   await sheet(a).locator('[data-sg-start]').click();

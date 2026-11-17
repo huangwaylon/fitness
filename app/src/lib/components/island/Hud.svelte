@@ -18,7 +18,6 @@
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
-  import { sugoroku } from '#lib/sugoroku/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
   import { botsSheet, listenOpen, openIts } from '../bots/open.svelte.ts';
   import { loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
@@ -97,8 +96,6 @@
 {#if hiking.Sheet}<hiking.Sheet bind:open={hiking.open} />{/if}
 <!-- English Study's (lib/english) -->
 {#if english.Sheet}<english.Sheet bind:open={english.open} />{/if}
-<!-- 英語すごろく's (lib/sugoroku) -->
-{#if sugoroku.Sheet}<sugoroku.Sheet bind:open={sugoroku.open} />{/if}
 <!-- ボット's, opened by the menu's pill (members only) -->
 {#if botsSheet.Sheet}<botsSheet.Sheet bind:open={botsSheet.open} />{/if}
 <!-- けんこう and ごはん's, opened by the dumbbell or a tree's ごはん -->

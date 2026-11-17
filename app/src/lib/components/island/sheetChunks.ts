@@ -11,7 +11,6 @@ import { hiking } from '../hiking/open.svelte.ts';
 import { kenkou } from '../health/open.svelte.ts';
 import { prefetchBots } from '../bots/open.svelte.ts';
 import { english } from '#lib/english/open.svelte.ts';
-import { sugoroku } from '#lib/sugoroku/open.svelte.ts';
 
 export const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
 export const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
@@ -20,7 +19,6 @@ export const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
 const CHUNKS = {
   health: () => kenkou.prefetch(),
   english: () => english.prefetch(),
-  sugoroku: () => sugoroku.prefetch(),
   travel: () => trips.prefetch(),
   hiking: () => hiking.prefetch(),
   wedding: () => weddingSheet.prefetch(),
@@ -36,8 +34,7 @@ export type SheetChunk = keyof typeof CHUNKS;
  *  chunk.fail named by the sheet: Safari's names no file). */
 export function prefetchSheet(k: SheetChunk): Promise<unknown> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return Promise.resolve();
-  // (すごろく's failure logs as `other`: the record's sheet names are the contract's, unchanged for it)
-  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k === 'sugoroku' ? 'other' : k)));
+  return CHUNKS[k]().catch((e: unknown) => void (isChunkError(e) && chunkSheet(k)));
 }
 
 const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 200));
