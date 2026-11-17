@@ -4,7 +4,7 @@
 // trick, tests him with a “think fast”, and believes him; Spencer has forgotten the woman's name and plans to have the
 // friend, as a “butler”, read her driver's license, but he's been saying it to the woman herself.
 // Segments from the captions, words from whisper (2026-11-17). Spencer is named by the title; the friend is never
-// named for sure, so stems call him “his friend”. Who is who rests on the words: the doubter asks “You expect me to
+// named for sure, so stems leave him out. Who is who rests on the words: the doubter asks “You expect me to
 // fall for this again?”, and the one who “really can't see” is Spencer.
 // Untested on purpose: 25–31 s (the fall and “That's my fault, I deserve it”, whose speaker isn't settled), 40.4 s
 // (captions “her purse”, whisper “her person”: no line quotes it), 45–56 s (captions “You're not Freddy, are you?”,
@@ -30,8 +30,8 @@ export const blindDate: Clip = {
       use: 'She just might be the one.（運命の人かもしれない）' },
 
     { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['again', 'truth'], seg: [0, 31],
-      stem: 'How does his friend’s view of Spencer’s story change?',
-      ja: 'スペンサーの話への友だちの見方は、どう変わる？',
+      stem: 'How does the view of Spencer’s story change?',
+      ja: 'スペンサーの話への見方は、どう変わる？',
       choices: ['First doubts, then half believes', 'First believes, then doubts', 'Doubts, and is proved right'], a: 0,
       choicesJa: ['最初は疑い、やがて半分信じる', '最初は信じ、やがて疑う', '疑って、その通りだった'],
       cue: '最初の疑う一言と、物を投げたあとの一言。',
@@ -53,8 +53,8 @@ export const blindDate: Clip = {
       use: 'It’s early, but I have a good feeling.（まだ早いけど、いい予感がする）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'met', seg: [5.2, 9.45],
-      stem: 'Where did Spencer meet the woman?',
-      ja: 'スペンサーはその女性とどこで出会った？',
+      stem: 'Where did Spencer meet his date?',
+      ja: 'スペンサーはデートの相手とどこで出会った？',
       choices: ['At the emergency room', 'At an eye doctor’s office', 'Online, through a chat app'], a: 0,
       choicesJa: ['救急外来で', '眼科で', 'ネットのチャットで'],
       cue: '「only talked」のあと、場所を表す言葉。',
@@ -101,8 +101,8 @@ export const blindDate: Clip = {
       use: 'I’m not falling for that again.（もうその手には乗らないよ）', retired: true },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'again', seg: [11.3, 17],
-      stem: 'How does his friend first react to Spencer’s request?',
-      ja: 'スペンサーの頼みに、友だちは最初どう反応する？',
+      stem: 'How is Spencer’s request first taken?',
+      ja: 'スペンサーの頼みは、最初どう受け取られる？',
       choices: ['He doesn’t believe Spencer', 'He is worried about him', 'He is angry about the date'], a: 0,
       choicesJa: ['信じていない', '彼を心配している', 'デートのことで怒っている'],
       cue: '最初の質問と、最後の again。',
@@ -125,8 +125,8 @@ export const blindDate: Clip = {
       use: 'Yeah, no, I’m not doing that.（いやいや、それはやらないよ）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'truth', seg: [13.2, 25.2],
-      stem: 'Why does his friend start to believe Spencer?',
-      ja: '友だちはなぜスペンサーを信じ始める？',
+      stem: 'What shows that Spencer really can’t see?',
+      ja: 'スペンサーが本当に見えないと分かるのは、何から？',
       choices: ['Spencer can’t catch the throw', 'Spencer swears he can’t see', 'Spencer says he’s sorry'], a: 0,
       choicesJa: ['スペンサーが投げた物を受け取れない', 'スペンサーが見えないと誓う', 'スペンサーが謝る'],
       cue: '「think fast」と、そのあとの短い声。',
@@ -161,8 +161,8 @@ export const blindDate: Clip = {
       use: 'Could you help me up the stairs?（階段を上がるのを手伝って）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['name', 'license'], seg: [28.5, 47.6],
-      stem: 'What does Spencer want his friend to do on the date?',
-      ja: 'デートで、スペンサーは友だちに何をしてほしい？',
+      stem: 'What does Spencer want done on the date?',
+      ja: 'デートで、スペンサーは何をしてもらいたい？',
       choices: ['Find out her name', 'Find out her age', 'Drive them to dinner'], a: 0,
       choicesJa: ['彼女の名前を調べる', '彼女の年を調べる', '二人を夕食に車で送る'],
       cue: '「pretend to be」のあと。',

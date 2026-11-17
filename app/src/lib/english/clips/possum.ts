@@ -58,10 +58,10 @@ export const possum: Clip = {
       use: 'I didn’t plan it. It just happened.（計画したわけじゃない。そうなっただけ）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'explain', seg: [23, 29.9],
-      stem: 'Andy says, “Let me explain something to you.” What is he doing?',
-      ja: 'アンディの「Let me explain something to you」は何をしている？',
-      choices: ['Offering to teach her', 'Asking her to explain', 'Saying sorry to her'], a: 0,
-      choicesJa: ['教えてあげようとしている', '説明してと頼んでいる', '謝っている'],
+      stem: 'Why does Andy say “Let me explain something”?',
+      ja: 'アンディは、なぜ「Let me explain something」と言う？',
+      choices: ['To offer to teach her', 'To ask her to explain', 'To say sorry to her'], a: 0,
+      choicesJa: ['教えてあげるため', '説明してと頼むため', '謝るため'],
       cue: 'アンディの最初の一文',
       line: '*Let me explain something to you*, Tweep.',
       said: '「ひとつ説明してあげよう、トゥイープ」と話し始める。',
@@ -112,7 +112,7 @@ export const possum: Clip = {
       said: '「考えてなかったの？」に「全然」と答える。',
       mean: 'not at all ＝「全然〜ない」。「考えていなかった？」への答えなので「全然考えてない」。',
       trap: 'not が聞こえて迷いやすい。続く how little I was thinking で確か。',
-      use: 'Do you mind? — Not at all.（かまいませんか？—全然いいですよ）' },
+      use: 'Do you mind if I sit here? — Not at all.（ここに座ってもいい？—どうぞ）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'pit', seg: [42.3, 53.2],
       stem: 'Why does Andy say he wasn’t scared?',
@@ -148,7 +148,7 @@ export const possum: Clip = {
       said: '「あのさ、友だちってばかみたいだな」と言い直し始める。',
       mean: 'You know what? ＝「あのさ・そうだ」。新しく思いついたことを言う前の合図。質問ではない。',
       trap: '疑問の形なので「知ってる？」と聞いていると思いやすい。答えを待たずに話が続く。',
-      use: 'You know what? Let’s take a taxi.（そうだ、タクシーで行こう）' },
+      use: 'You know what? Let’s just stay home.（そうだ、もう家にいよう）' },
 
     // A2: was “why does the audience laugh at the correction”; now the word itself (colleague, a work word)
     { id: 'h2', skill: 'detail', level: 'B1', point: 'colleagues', reveals: ['pit'], seg: [50.5, 56.8],

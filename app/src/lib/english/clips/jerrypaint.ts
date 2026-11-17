@@ -113,7 +113,7 @@ export const jerryPainting: Clip = {
       said: '「よし、今すぐこれを外さないと」と言う。',
       mean: 'gotta ＝ got to（〜しなきゃ）。t が軽い「ラ」の音で「ガラ」に近い。',
       trap: 'ought to は「オーラ」、gonna は「ガナ」。「ガ」で始まり「ラ」なら gotta。',
-      use: 'I gotta go. Talk later.（もう行かなきゃ、またね）' },
+      use: 'We gotta leave now.（もう出なきゃ）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'anywhere', seg: [82.3, 85.4],
       stem: 'What does “this painting isn’t going anywhere” mean?', ja: '“this painting isn’t going anywhere” はどういう意味？',

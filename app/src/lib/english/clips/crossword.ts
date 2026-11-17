@@ -147,7 +147,7 @@ export const joeyCrossword: Clip = {
       use: 'Who knows what will happen?（どうなるか分からないよ）' },
 
     { id: 'h1', skill: 'humor', level: 'B2', point: 'head', reveals: ['pep'], seg: [42.95, 49.2],
-      stem: 'What does the friend mean by “If only there was…”?', ja: '“If only there was…” で、友だちは何を言いたい？',
+      stem: 'What is Joey told with “If only there was…”?', ja: 'ジョーイは「If only there was…」で、何を言われている？',
       choices: ['Joey has no brain at all', 'Joey should plan his answers', 'The writers control Joey'], a: 0,
       choicesJa: ['ジョーイには頭がない', 'ジョーイは答えを準備すべき', '脚本家がジョーイを操っている'],
       cue: '文の最初の言い方',

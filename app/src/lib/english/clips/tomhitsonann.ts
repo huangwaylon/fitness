@@ -110,7 +110,7 @@ export const tomHitsOnAnn: Clip = {
       trap: 'out の t が次の a とつながり、一語に聞こえやすい。過去の話なので dug。',
       use: 'They dug out the old tree.（古い木を掘り出した）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'year', seg: [85.8, 92.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'year', seg: [85.8, 92.9], retired: true, keep: true,
       stem: 'How long has the pit been there?',
       ja: '穴はどのくらいそこにある？',
       choices: ['A few months', 'Almost a year', 'Several years'], a: 1,
@@ -158,7 +158,7 @@ export const tomHitsOnAnn: Clip = {
       trap: '事故や議題の話と思いやすい。直前の恋人の悪口が向きを決める。',
       use: 'I think it’s time to move on.（もう次に進むときだと思う）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'hitting', seg: [128.4, 131.7],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'hitting', seg: [128.4, 131.7], retired: true,
       stem: 'How does Ann feel when she cuts Tom off?',
       ja: 'トムをさえぎったとき、アンはどんな気持ち？',
       choices: ['Surprised and annoyed', 'Happy and flattered', 'Calm and amused'], a: 0,
@@ -206,7 +206,7 @@ export const tomHitsOnAnn: Clip = {
       trap: '「アイッラヴ」なら I’d love、「アイラヴ」なら I love、「ハフタ」なら have to。',
       use: 'I’d love to, but I’m busy tonight.（ぜひ、でも今夜は忙しくて）' },
 
-    { id: 'd5', skill: 'detail', level: 'B2', point: 'govt', seg: [153.1, 164.7],
+    { id: 'd5', skill: 'detail', level: 'B2', point: 'govt', seg: [153.1, 164.7], retired: true,
       stem: 'Why does Ann say the city must act?',
       ja: 'アンはなぜ市が何とかすべきだと言う？',
       choices: ['The land belongs to the city', 'The builder asked the city', 'The city gave the permit'], a: 0,
@@ -278,7 +278,7 @@ export const tomHitsOnAnn: Clip = {
       trap: '小さな例を謙遜と取りやすい。I led と proud of は胸を張る言い方で、本人は本気の自慢。',
       use: 'Big win this week? I cleaned the fridge.（今週の快挙？冷蔵庫の掃除）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'scratch', seg: [219.3, 224.2],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'scratch', seg: [219.3, 224.2], retired: true,
       stem: 'What kind of park does Leslie say the pit lets her build?',
       ja: 'この穴で、レスリーはどんな公園を作れると言う？',
       choices: ['One built from nothing', 'One fixed from an old park', 'One made with little money'], a: 0,

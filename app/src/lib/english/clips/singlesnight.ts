@@ -215,7 +215,7 @@ export const singlesNight: Clip = {
       said: '「ありがとう。今はいいかな。飲むつもりは…」と言葉をにごす。',
       mean: 'I’m good ＝「結構です」。Thanks と組むと、やわらかい断り。',
       trap: 'good（元気）、for now（今は）から、あとで飲むと思いやすい。I’m good は断り。',
-      use: 'I’m good, thanks.（大丈夫です、ありがとう）' },
+      use: 'I think I’m good for now, thanks.（今は大丈夫です、ありがとう）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'donna', reveals: ['choice'], seg: [146.0, 188.6],
       stem: 'How does Donna treat Ann at the end?',
@@ -230,8 +230,8 @@ export const singlesNight: Clip = {
       use: 'Come on, you can do this.（ほら、あなたならできる）' },
 
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'maybe', seg: [146.0, 149.6],
-      stem: 'Does the man plan to see Ann again?',
-      ja: '男性はまたアンに会うつもり？',
+      stem: 'Does Ann’s chat partner plan to see her again?',
+      ja: 'アンの話し相手は、またアンに会うつもり？',
       choices: ['Probably not', 'Yes, very soon', 'Yes, later tonight'], a: 0,
       choicesJa: ['たぶん会わない', 'うん、すぐに', 'うん、今夜あとで'],
       cue: '別れのあいさつの最後',

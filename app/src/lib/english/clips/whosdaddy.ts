@@ -141,7 +141,7 @@ export const whosDaddy: Clip = {
       said: '「陣痛が10分おきに来てる」と報告する。',
       mean: 'every ten minutes ＝ 10分ごと。出産が近づいている合図。',
       trap: 'five は「ファイヴ」。twenty は「トゥエンティ」と長い。短く「テン」なら10。',
-      use: 'The bus comes every fifteen minutes.（バスは15分おきに来る）' },
+      use: 'My phone buzzes every ten minutes.（スマホが10分おきに鳴る）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'rehearse', seg: [47.0, 87.05],
       stem: 'What are Michael and Dwight doing in this part?',
@@ -153,7 +153,7 @@ export const whosDaddy: Clip = {
       said: 'ドワイトが妊婦役、マイケルが付き添い役で、陣痛から病院までを練習する。',
       mean: 'prepare for 〜 ＝ 〜の準備をする。スイカを赤ちゃんに見立てた予行演習。',
       trap: '病院や呼吸の話から講習会を思いやすいが、先生はいない。二人で役を演じている。',
-      use: 'Let’s do a practice run first.（まず一度、予行演習しよう）' },
+      use: 'Let’s practice once before the real thing.（本番の前に一度練習しよう）' },
 
     { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', seg: [47.5, 52.5],
       stem: 'What does Michael tell Dwight to keep doing?',

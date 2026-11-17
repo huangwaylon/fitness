@@ -94,7 +94,7 @@ export const darwin: Clip = {
       said: '「あきらめない」に「あきらめなきゃだめだ」、「いや、だめじゃない」と続く。',
       mean: 'have to は「ハフタ」とつながる。次の I don’t が、今の話だという合図。',
       trap: 'had to なら返事は I didn’t のはず。You’ve got なら「ガッ」の音が入る。',
-      use: 'You have to try this place.（この店、絶対行ってみて）' },
+      use: 'You have to see a doctor.（医者にみてもらわないと）' },
 
     { id: 'i1', retired: true, skill: 'infer', level: 'B2', point: 'name', seg: [47.3, 60.9],
       stem: 'What is “Angela Bernard” in Andy and Dwight’s argument?',

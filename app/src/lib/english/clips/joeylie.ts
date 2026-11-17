@@ -233,8 +233,8 @@ export const joeyLie: Clip = {
       use: 'I can’t do this alone. Help?（一人じゃ無理。手伝って？）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'comeup', seg: [49.8, 52.95],
-      stem: 'Type what the friend promises: “We’ll ___ a good lie.” (3 words)', answer: 'come up with',
-      ja: '友だちの約束を書き取る：「We’ll ___ a good lie.」（3語）',
+      stem: 'Type the promise: “We’ll ___ a good lie.” (3 words)', answer: 'come up with',
+      ja: '約束の言葉を書き取る：「We’ll ___ a good lie.」（3語）',
       cue: '「Don’t worry」を2回言ったあと。',
       line: 'Don’t worry… We’ll *come up with* a good lie.',
       said: '「心配しないで。うまいうそを考えよう」と言う。',
@@ -252,7 +252,7 @@ export const joeyLie: Clip = {
       said: '手伝うと言われ、「いいね、それは助かる」と答える。',
       mean: 'That’d be great ＝ それは助かる。申し出を受けるときの決まった言い方。',
       trap: 'That’ll なら最後が「ル」、It’ll なら「イ」で始まる。ここは短い「ザッド」。',
-      use: 'That’d be great, thanks.（それは助かる、ありがとう）' },
+      use: 'That’d be great. Thank you so much.（それは助かります。本当にありがとう）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'sure', seg: [52.8, 56.85],
       stem: 'What does “Sure” mean after “Thank you”?',

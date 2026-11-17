@@ -143,7 +143,7 @@ export const practiceDate: Clip = {
       line: 'I accidentally drank an entire bottle of vinegar. *I thought it was terrible wine*.',
       said: '「酢を一本飲んだことがある。ひどいワインだと思った」と話す。',
       mean: 'vinegar ＝ 酢。terrible wine ＝ まずいワイン。I thought 〜 ＝ 〜だと思った。',
-      trap: 'accidentally から水と間違えたと思いやすい。I thought のあとが答え。',
+      trap: 'accidentally から、水だと思って飲んだと考えやすい。I thought のあとが答え。',
       use: 'I thought it was sugar. It was salt.（砂糖だと思ったら塩だった）' },
 
     { id: 'm2', skill: 'marker', level: 'B2', point: 'literally', seg: [74.9, 81.7],

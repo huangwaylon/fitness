@@ -61,7 +61,7 @@ export const didIStutter: Clip = {
       trap: 'フルネームはしかられる合図にもなるので迷いやすい。続く propose で分かる。',
       use: 'He proposed to her in Paris.（彼はパリで彼女にプロポーズした）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'proposing', reveals: ['propose', 'coffee'], seg: [50.8, 59.1],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'proposing', reveals: ['propose', 'coffee'], seg: [50.8, 59.1], retired: true,
       stem: 'What does Jim really “propose”?',
       ja: 'ジムが本当に「propose」したことは？',
       choices: ['That Pam gets him coffee', 'That Pam marries him', 'That they leave early'], a: 0,
@@ -151,7 +151,7 @@ export const didIStutter: Clip = {
       said: 'マイケルが名前を呼んで当て、その人が「もっと新しい留守電は？」と言う。',
       mean: '当てられた人が次に話す。Yes, 名前 ＝「はい、どうぞ」と発言させる言い方。',
       trap: '中身が前の案と同じなので、同じアンディと思いやすい。直前に呼ばれた名前を聞く。',
-      use: 'Yes, you in the back?（はい、後ろの方どうぞ）' },
+      use: 'Yes, the woman by the window?（はい、窓ぎわの方どうぞ）' },
 
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'mock', reveals: ['message'], seg: [91.0, 97.4], retired: true,
       stem: 'What is the second voicemail idea really doing?',
@@ -234,7 +234,7 @@ export const didIStutter: Clip = {
       trap: '文字どおり「どもった？」と聞いていると思いやすい。強い断りの決まり文句。',
       use: 'I already said no.（もう断ったよね）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'water', reveals: ['stutter'], seg: [117.0, 128.6],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'water', reveals: ['stutter'], seg: [117.0, 128.6], retired: true,
       stem: 'After the long silence, what does Michael say he will do?',
       ja: '長い沈黙のあと、マイケルは何をすると言う？',
       choices: ['Get a glass of water', 'Call Stanley’s boss', 'Start the meeting again'], a: 0,

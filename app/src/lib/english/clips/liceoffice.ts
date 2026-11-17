@@ -51,7 +51,7 @@ export const liceOffice: Clip = {
       said: 'シラミが出ると、すぐ「メレディス、シラミ？シャワーを浴びる約束は？」と言われる。',
       mean: 'blame ＝ 〜のせいにする。証拠もないのに、すぐメレディスのせいにする。',
       trap: 'ドワイトが一番さわぐので、選びやすい。最初に名前を呼ばれる人を聞く。',
-      use: 'Don’t blame me!（私のせいにしないで！）' },
+      use: 'It’s not my fault!（私のせいじゃない！）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'names', seg: [38.5, 47.3], retired: true,
       stem: 'Why does Dwight’s list of what he was called get a laugh?',
@@ -274,10 +274,10 @@ export const liceOffice: Clip = {
       use: 'My dad is fifty years old.（父は50歳です）' },
 
     { id: 'pr4', skill: 'pragma', level: 'B1', point: 'getyou', seg: [256, 264.5],
-      stem: 'Pam asks, “Can I get you something?” What is she doing?',
-      ja: 'パムが「何か買ってこようか？」と聞く。何をしている？',
-      choices: ['Offering to buy her something', 'Asking her for a little money', 'Asking her to come along too'], a: 0,
-      choicesJa: ['何か買ってくると申し出ている', '少しお金をちょうだいと頼んでいる', '一緒に来てと頼んでいる'],
+      stem: 'Why does Pam say “Can I get you something?”',
+      ja: 'パムは、なぜ「Can I get you something?」と言う？',
+      choices: ['To offer to buy her something', 'To ask her for a little money', 'To ask her to come along'], a: 0,
+      choicesJa: ['何か買ってくると申し出るため', '少しお金をちょうだいと頼むため', '一緒に来てと頼むため'],
       cue: '「Meredith」と呼んだあと',
       line: 'Meredith, *can I get you something special* while I’m at the store?',
       said: '「メレディス、お店に行くついでに、何か特別なものを買ってこようか？」と聞く。',

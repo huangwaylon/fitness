@@ -195,7 +195,7 @@ export const ronLeslieLocked: Clip = {
       said: '「ねえロン、いっしょに〜しない？」と言いかけて、さえぎられる。',
       mean: 'Why don’t we 〜? ＝「〜しようよ」。t はほぼ消え「ワイドンウィ」。',
       trap: 'Ron と呼んだあとなので you と思いやすい。won’t you は「ウォンチュ」。最後が「ウィ」なら we。',
-      use: 'Why don’t we grab lunch?（お昼食べに行かない？）' },
+      use: 'Why don’t we just take a break?（ちょっと休憩しない？）' },
 
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'sithere', reveals: ['choose', 'whydont'], seg: [107.2, 113.3], retired: true,
       stem: 'When Leslie starts “Why don’t we just…”, what does Ron do?',

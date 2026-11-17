@@ -94,8 +94,8 @@ export const ironkitchen: Clip = {
       use: 'I’m a little reluctant to say yes.（ちょっと引き受けにくいな）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'planned', seg: [17.5, 21.5],
-      stem: 'What did the friend expect of Monica?',
-      ja: '友だちはモニカがどうしていると思っていた？',
+      stem: 'What did Monica’s friend expect of her?',
+      ja: 'モニカの友だちは、モニカがどうしていると思っていた？',
       choices: ['A complete plan', 'A late plan', 'No plan at all'], a: 0,
       choicesJa: ['全部計画している', '計画が遅れている', '計画がまったくない'],
       cue: '「I thought」のあと',
@@ -187,7 +187,7 @@ export const ironkitchen: Clip = {
       said: '「事情があるのは分かるし、同情する。本当に。でも…」と言う。',
       mean: 'feel for 〜 ＝「〜を気の毒に思う」。気持ちを先に認めてから、but で頼む。',
       trap: 'feelings for you（好き）と思いやすい。for 〜 だけなら「同情する」。',
-      use: 'I feel for you, I really do.（気持ちは分かるよ、本当に）' },
+      use: 'I feel for you. That sounds really hard.（気の毒に。本当に大変そうだね）' },
 
     // retired (A2): predicting “what kind of move” is meta; pr1 teaches the phrase
     { id: 'r1', skill: 'predict', level: 'B2', point: 'feelfor', seg: [38.6, 43.3], retired: true, then: [43.3, 50.5],

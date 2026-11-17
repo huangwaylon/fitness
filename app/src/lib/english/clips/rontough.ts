@@ -23,7 +23,7 @@ export const ronTough: Clip = {
       said: '逆さ腹筋を「文字どおり世界を違う角度から見られる」と言う。',
       mean: 'literally ＝ 文字どおり、本当に。逆さなので、本当に違う角度から見ている。',
       trap: '「違う視点で見る」はふつうたとえなので、ここもたとえと思いやすい。逆さの今は本当にそう。',
-      use: 'I literally ran all the way here.（本当にここまでずっと走ってきた）' },
+      use: 'I literally just got here.（本当に今着いたところ）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'gym', reveals: ['isnt'], seg: [0, 11.9],
       stem: 'What does Ron mean by “Isn’t there a men’s gymnasium…?”',
@@ -144,7 +144,7 @@ export const ronTough: Clip = {
       trap: 'if she wins から選挙運動を思いやすい。between のあとを聞く。',
       use: 'I divide my time between work and family.（仕事と家族に時間を分けている）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'slack', seg: [41.95, 49],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'slack', seg: [41.95, 49], retired: true,
       stem: 'What does “pick up the slack” mean?',
       ja: '「pick up the slack」はどういう意味？',
       choices: ['Do the work left undone', 'Watch the slow workers', 'Make the office relaxed'], a: 0,

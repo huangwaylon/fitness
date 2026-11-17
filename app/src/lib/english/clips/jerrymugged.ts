@@ -46,7 +46,7 @@ export const jerryMugged: Clip = {
       trap: 'coming から「届く途中」と思いやすい。not があるので、来ていない。',
       use: 'My refund finally came through.（やっと返金が届いた）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'sorrysay', seg: [48.5, 54],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'sorrysay', seg: [48.5, 54], retired: true,
       stem: 'What does “I am sorry to say this, but” do?', ja: '“I am sorry to say this, but” は何をしている？',
       choices: ['Warns bad news is coming', 'Says sorry for a mistake', 'Asks people for help'], a: 0,
       choicesJa: ['悪い話が来ると前置きする', 'ミスを謝る', '人に助けを頼む'],
@@ -67,7 +67,7 @@ export const jerryMugged: Clip = {
       trap: 'happy や worked から、ほめられたと思いやすい。その前に叱る言葉が続く。',
       use: 'It worked, but I got in trouble.（うまくいったけど、怒られた）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'possessed', seg: [59.1, 70.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'possessed', seg: [59.1, 70.8], retired: true,
       stem: 'What is Paul asking with “What possessed you to do that?”', ja: '“What possessed you to do that?” で、ポールは何を聞いている？',
       choices: ['Why she did it', 'Who made her do it', 'How she got on TV'], a: 0,
       choicesJa: ['なぜそんなことをしたのか', '誰にやらされたのか', 'どうやってテレビに出たのか'],
@@ -79,9 +79,9 @@ export const jerryMugged: Clip = {
       use: 'What possessed you to buy that?（なんでそんなの買ったの）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'sorrybut', seg: [61.2, 66.0],
-      stem: 'What is Leslie doing with “I’m sorry, Paul, but…”?', ja: '“I’m sorry, Paul, but…” で、レスリーは何をしている？',
-      choices: ['Explaining why she did it', 'Saying sorry, promising to stop', 'Blaming the security head'], a: 0,
-      choicesJa: ['なぜやったかを説明している', '謝って、もうしないと約束している', '警備の責任者のせいにしている'],
+      stem: 'Why does Leslie say “I’m sorry, Paul, but” here?', ja: 'レスリーは、なぜここで「I’m sorry, Paul, but」と言う？',
+      choices: ['To explain why she did it', 'To say sorry and stop', 'To blame the security head'], a: 0,
+      choicesJa: ['なぜやったかを説明するため', '謝って、もうやめるため', '警備の責任者のせいにするため'],
       cue: '「sorry」のあと',
       line: 'I’m sorry, Paul, *but* one of my guys *got mugged* in the park.',
       said: '「すみません、でも部下が公園で襲われたんです」と返す。',
@@ -124,9 +124,9 @@ export const jerryMugged: Clip = {
       use: 'It’s twenty-five hundred dollars.（2,500ドルです）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 91.2],
-      stem: 'What is Leslie doing with “We treat everyone with respect”?', ja: '“We treat everyone with respect” で、レスリーは何をしている？',
-      choices: ['Standing up for Jerry', 'Asking who he means', 'Agreeing with his joke'], a: 0,
-      choicesJa: ['ジェリーをかばっている', '誰のことか聞いている', '彼の冗談に乗っている'],
+      stem: 'Why does Leslie say “We treat everyone with respect”?', ja: 'レスリーは、なぜ「We treat everyone with respect」と言う？',
+      choices: ['To stand up for Jerry', 'To ask who he means', 'To go along with his joke'], a: 0,
+      choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に乗るため'],
       cue: '「分からない」のあとの一文',
       line: 'I don’t know *who you’re referring to*. We treat everyone with *respect* around here.',
       said: '「誰のことか分かりません。ここでは全員を大切にしています」と返す。',
@@ -177,7 +177,7 @@ export const jerryMugged: Clip = {
       trap: '直前に nervous と聞いていたので、緊張だと思いやすい。理由は because のあと。',
       use: 'I can’t talk right now, sorry.（今ちょっと話せないの、ごめん）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'doubt', seg: [137.3, 146.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'doubt', seg: [137.3, 146.7], retired: true,
       stem: 'Why does someone ask “Were you even in the park?”', ja: '“Were you even in the park?” と聞くのはなぜ？',
       choices: ['They think he made it up', 'They think it was elsewhere', 'They think his arm is fake'], a: 0,
       choicesJa: ['作り話だと思っている', 'ほかの場所だったと思っている', '腕のけがはうそだと思っている'],
@@ -200,7 +200,7 @@ export const jerryMugged: Clip = {
       trap: 'burrito がはっきり聞こえ、行き先だと思いやすい。行き先は on my way to のあと。',
       use: 'I stopped for coffee on my way here.（来る途中でコーヒーを買った）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'fall', reveals: ['notmugged', 'reach'], seg: [146.6, 157.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'fall', reveals: ['notmugged', 'reach'], seg: [146.6, 157.6], retired: true,
       stem: 'How does Jerry say he hurt his shoulder?', ja: 'ジェリーは、どうやって肩をけがしたと言う？',
       choices: ['He fell reaching for food', 'His dog pulled him down hard', 'He tripped on a log'], a: 0,
       choicesJa: ['食べ物を取ろうとして転んだ', '犬に強く引っぱられて倒れた', '丸太につまずいた'],

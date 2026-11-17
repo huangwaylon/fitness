@@ -67,7 +67,7 @@ export const aprilTynnyfer: Clip = {
       said: '「その人たち、聞いたことない」と言う。',
       mean: 'I’ve never heard of 〜 ＝「〜は聞いたことがない」。v は小さく never につながる。',
       trap: '唇をかむ v なら I’ve、舌の d なら I’d、何もなければ I never。',
-      use: 'I’ve never been to Hawaii.（ハワイは行ったことがない）' },
+      use: 'I’ve never heard of that place.（そこ、聞いたことないな）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'delay', seg: [67.7, 72],
       stem: 'Type the first words on her return: “___, ladies.” (4 words)', answer: 'sorry for the delay',
@@ -134,7 +134,7 @@ export const aprilTynnyfer: Clip = {
       said: '「ちょっと言っていい？」と前置きし、「今すごく楽しい」と言う。',
       mean: 'Can I just say something? ＝「ちょっと言わせて」。言いたいことの前置き。',
       trap: '日本語の「ちょっといい？」は苦情の前置きにもなるが、ここは気持ちの話。',
-      use: 'Can I just say, this is delicious.（言わせて、これおいしい）' },
+      use: 'Can I just say something? I love this place.（ちょっと言わせて。ここ大好き）' },
 
     // A2: was “What is April really up to?” over 138 s; now her plain advice in 36 s
     { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['offer'], seg: [129.8, 165.4],
@@ -169,7 +169,7 @@ export const aprilTynnyfer: Clip = {
       said: '「ここで働いたら『うぇ』ってなるし、レスリーは『ぺらぺら』」と言う。',
       mean: 'be like ＝「〜って言う・〜って感じ」。セリフや声をそのまま引用する言い方。',
       trap: 'like は「〜のような」や口ぐせにもなるが、あとに声まねが来たら引用。',
-      use: 'And I was like, “No way!”（で、私「うそでしょ！」って）' },
+      use: 'And he was like, “Really?”（で、彼「本当？」って）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'jail', seg: [141, 148.3],
       stem: 'Where does Tynnyfer say her husband is?',
@@ -196,10 +196,10 @@ export const aprilTynnyfer: Clip = {
       use: 'You should totally come with us.（ぜひ一緒においでよ）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'offer', reveals: ['say'], seg: [150, 153.5],
-      stem: 'With “You should totally stay…”, what is April doing?',
-      ja: '「You should totally stay…」で、エイプリルは何をしている？',
-      choices: ['She invites her to stay', 'She asks to stay with her', 'She tells her to go home'], a: 0,
-      choicesJa: ['泊まりにおいでと誘う', '泊めてほしいと頼む', '家に帰れと言う'],
+      stem: 'Why does April say “You should totally stay…”?',
+      ja: 'エイプリルは、なぜ「You should totally stay…」と言う？',
+      choices: ['To invite her to stay', 'To ask to stay with her', 'To tell her to go home'], a: 0,
+      choicesJa: ['泊まりにおいでと誘うため', '泊めてほしいと頼むため', '家に帰れと言うため'],
       cue: '「Yes」の返事のあと',
       line: 'Okay. *You should totally stay in my house* in Miami.',
       said: '「ぜひマイアミの私の家に泊まって」と言う。',

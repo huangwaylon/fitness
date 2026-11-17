@@ -18,8 +18,8 @@ export const ronShot: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'n1', skill: 'number', level: 'B1', point: 'home', seg: [0, 7.53], keep: true,
-      stem: 'How many people does the man at the start live with?',
-      ja: '最初の男性は、家で何人と暮らしている？',
+      stem: 'How many people does the first hunter live with?',
+      ja: '最初に話す狩り仲間は、家で何人と暮らしている？',
       choices: ['Three', 'Four', 'Five'], a: 1,
       choicesJa: ['3人', '4人', '5人'],
       cue: '「at my house」のあと',

@@ -23,7 +23,7 @@ export const rossJill: Clip = {
       said: '「気がないなら、どうしてまた誘ってくるんだ」と言う。',
       mean: 'be into 〜 ＝ 〜が好き。ask 〜 out ＝ 〜をデートに誘う。',
       trap: 'said yes（はいと言った）と思いやすい。誘ったのは彼女の方。',
-      use: 'I think he’s into you.（彼、あなたのこと好きだと思う）' },
+      use: 'She asked me out again!（彼女にまた誘われた！）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'askout', seg: [3, 6.2],
       stem: 'Type what he says: “Why would she ___?” (4 words)', answer: 'ask me out again',
@@ -56,7 +56,7 @@ export const rossJill: Clip = {
       said: '「明日の夜、バレンタインデー。一年でいちばんロマンチックな日」と言う。',
       mean: 'tomorrow night ＝ 明日の夜。バレンタインデーが明日。',
       trap: '「トゥナイ」で始まれば tonight、「ウィーケン」なら this weekend、「トゥモロー」と長ければ tomorrow night。',
-      use: 'Are you free tomorrow night?（明日の夜、空いてる？）' },
+      use: 'Let’s meet tomorrow night.（明日の夜に会おう）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'hope', seg: [10.3, 16.6],
       stem: 'What does “*Who knows what could happen?*” show?',
@@ -92,7 +92,7 @@ export const rossJill: Clip = {
       said: '妹との組み合わせは変すぎて無理だと言い、ロスが「もう会わない」と言うとお礼を言う。',
       mean: 'I can’t do it ＝ 無理。二人が付き合うこと自体がいやだと言っている。',
       trap: '明日の夜の話が多いので、その日だけと思いやすい。I won’t see her again で納得する。',
-      use: 'I can’t do this anymore.（もうこれ以上無理）' },
+      use: 'Please don’t see her again.（もう彼女に会わないで）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'weird', reveals: ['freak'], seg: [23.4, 32.8],
       stem: 'How does Rachel feel about Ross and her sister?',

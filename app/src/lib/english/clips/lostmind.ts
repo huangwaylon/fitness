@@ -97,7 +97,7 @@ export const boyHaveYouLostYourMind: Clip = {
       said: '「何を言い出すか分からない。とんでもないことを。R指定なんだ」と話す。',
       mean: 'Who knows 〜? ＝ 〜はだれにも分からない。R rated ＝ 大人向け（子どもは見られない映画の印）。',
       trap: '子どもの話なので、子どもが何かすると思いやすい。心配しているのは自分の口。',
-      use: 'Who knows what will happen?（何が起きるか分からないよ）' },
+      use: 'Who knows what I’ll say next?（次に何を言うか分からないよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'fine', seg: [58.3, 64.2],
       stem: 'How does Michael say “Fine, fine, fine”?',

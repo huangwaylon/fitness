@@ -153,7 +153,7 @@ export const datinglang: Clip = {
       said: '「『ひどい男たちと付き合うつもり』って意味」と言う。',
       mean: 'gonna ＝ going to（〜するつもり）。会話ではほとんど「ガナ」と短く言う。',
       trap: 'wanna（ワナ）や gotta（ガラ）とまぎれやすい。「ガ」で始まり「ナ」で終われば gonna。',
-      use: 'I’m gonna be late.（遅れそう）' },
+      use: 'I’m gonna call you tonight.（今夜電話するね）' },
 
     { id: 'd1', skill: 'phrase', level: 'B2', point: 'd1', seg: [37, 45], stem: 'What does “I think we should see other people” mean?',
       ja: '“I think we should see other people” はどういう意味？',
@@ -164,7 +164,7 @@ export const datinglang: Clip = {
       said: '「『他の人とも会うべき』は『もう会ってる』って意味」。',
       mean: 'see other people ＝ 他の人とも付き合う。I already am ＝ もうそうしている。',
       trap: 'see を「会う」と思うと、友だちの話に聞こえやすい。',
-      use: 'Are you seeing anyone?（今、付き合ってる人いる？）' },
+      use: 'I think we should see other people.（ほかの人とも付き合うべきだと思う）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'everybody', seg: [40.5, 46], stem: 'Who knows this dating language?',
       ja: 'このデートの言葉を知っているのは誰？',

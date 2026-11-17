@@ -56,7 +56,7 @@ export const jansStroller: Clip = {
       said: '「もう持ってるし、これは前のよりずっと下」と言う。',
       mean: 'way ＋比べる言葉 ＝「ずっと〜」。会話で much の代わりによく使う。worse ＝ もっと悪い。',
       trap: 'than は小さく短く言い、worse につながる。way を「道」と思わない。',
-      use: 'This one is way better.（こっちのほうがずっといい）' },
+      use: 'This hotel is way worse than the last one.（このホテル、前のよりずっとひどい）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [18.4, 26.0],
       stem: 'What price is given for Jan’s own stroller?',
       ja: 'ジャンのベビーカーの値段は？',

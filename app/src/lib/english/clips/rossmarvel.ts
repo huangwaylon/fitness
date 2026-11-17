@@ -83,7 +83,7 @@ export const rossMarvel: Clip = {
       said: '「パパは私の部屋をジムにした」と言う。',
       mean: 'turn A into B ＝ AをBに変える。モニカの部屋はすぐに別の部屋になった。',
       trap: 'あとで箱の話が出るので、箱と思いやすい。into のあとの a gym を聞く。',
-      use: 'We turned the garage into an office.（ガレージを仕事部屋にした）' },
+      use: 'They turned the old bank into a café.（古い銀行をカフェに変えた）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['gym'], seg: [12.4, 16.4], keep: true,
       stem: 'How soon after Monica moved out did Dad change her room?',

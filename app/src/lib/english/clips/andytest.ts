@@ -37,7 +37,7 @@ export const andyTest: Clip = {
       trap: 'great だけだと自慢に聞こえる。But で始まるほめ言葉の前には、言いにくい事がある。',
       use: 'Well, he’s got a great personality.（まあ、性格はいいんだよね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'prep', reveals: ['divorce'], seg: [11, 55.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'prep', reveals: ['divorce'], seg: [11, 55.8], retired: true,
       stem: 'What is the first part of the clip mostly about?',
       ja: 'クリップの前半は主に何の話？',
       choices: ['His wife helps him get ready', 'Andy explains how tests work', 'His wife asks him to quit'], a: 0,
@@ -116,7 +116,7 @@ export const andyTest: Clip = {
       trap: 'cheat と you だけだと、アンディが裏切られる話に。on の後が相手、with の後が一緒の人。',
       use: 'I’d choose you every time.（何度でも君を選ぶよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'creepy', seg: [44.3, 56.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'creepy', seg: [44.3, 56.4], retired: true,
       stem: 'How does Andy feel about the lucky charm?',
       ja: 'アンディはお守りをどう思う？',
       choices: ['He loves it', 'He hates it', 'He is scared of it'], a: 0,
@@ -140,7 +140,7 @@ export const andyTest: Clip = {
       trap: '名前を聞くので、本人確認と思いやすい。make sure のあとが理由。',
       use: 'Just to make sure, is this the right bus?（念のため、このバスで合ってますか）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'test', reveals: ['machine'], seg: [63.5, 108],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'test', reveals: ['machine'], seg: [63.5, 108], retired: true,
       stem: 'How does Andy do on the personality test?',
       ja: 'アンディの性格検査はどうなる？',
       choices: ['He gives very strange answers', 'He answers every question well', 'The machine stops working'], a: 0,
@@ -175,7 +175,7 @@ export const andyTest: Clip = {
       trap: 'move から、場所を動くと思いやすい。ここは「次の質問へ」。',
       use: 'Okay, let’s move on.（よし、次に進もう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'revolver', seg: [82.6, 97.4],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'revolver', seg: [82.6, 97.4], retired: true,
       stem: 'Why does Andy give his gun to the kid?',
       ja: 'アンディが子どもに銃を渡すのはなぜ？',
       choices: ['He wanted that as a kid, too', 'Kids learn respect that way', 'The kid is almost a cop'], a: 0,
@@ -211,7 +211,7 @@ export const andyTest: Clip = {
       trap: 'like から「好き」や「〜に似ている」と思いやすい。あとにセリフが続く。',
       use: 'And he was like, “No way!”（で、彼は「まさか！」って言ったの）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'dad', seg: [97.4, 110.8],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'dad', seg: [97.4, 110.8], retired: true,
       stem: 'What does “*Dad, you’re alive?*” tell us?',
       ja: '「Dad, you’re alive?」から何が分かる？',
       choices: ['He hasn’t seen his dad in years', 'His dad is a police officer', 'His dad lives with him'], a: 0,
@@ -244,6 +244,18 @@ export const andyTest: Clip = {
       mean: 'Such a shame ＝ もったいない・惜しい。満点を取ったのに、もう一つの検査で落ちた。',
       trap: 'failed（落ちた）だけ聞くと、両方落ちたと思いやすい。but の前後で分かれる。',
       use: 'What a shame!（それは惜しいね！）' },
+
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'chiefview', reveals: ['genius', 'sweetkid', 'doesnt'], seg: [119.5, 143.3],
+      stem: 'What does the chief think of Andy?',
+      ja: '署長は、アンディをどう思っている？',
+      choices: ['Smart, but wrong for the job', 'Kind, but not smart enough for it', 'Ready to be a great cop'], a: 0,
+      choicesJa: ['頭はいいが、警官には向かない', '優しいが、頭が足りない', 'すぐにいい警官になれる'],
+      cue: '署長の話の最後まで',
+      line: 'He’s a sweet kid. *Just doesn’t have what it takes to be a cop*. … he’s certainly *something of a genius*.',
+      said: '「いい子だが、警官の素質はない。でも、たしかに天才的だ」と話す。',
+      mean: 'what it takes ＝ 必要なもの・素質。genius ＝ 天才。頭はいいが、警官には向かない。',
+      trap: 'sweet kid（いい子）から、ほめているだけと思いやすい。Just doesn’t have が本音。',
+      use: 'She has what it takes.（彼女には素質がある）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', seg: [125.1, 133.1],
       stem: 'What did Andy score on the written test?',

@@ -115,7 +115,7 @@ export const healthPlan: Clip = {
       said: '「分かった、もういい。いいか、全員と面談する」と言い出す。',
       mean: 'You know what? ＝ いいか、あのね。質問ではなく、決めたことを言う前の合図。',
       trap: '質問の形なので「知ってる？」と思いやすい。答えを待たずに次を話す。',
-      use: 'You know what? Let’s just order pizza.（よし、もうピザ頼もう）' },
+      use: 'You know what? I’ll call them myself.（よし、自分で電話するよ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'nocover', seg: [74.5, 81.6],
       stem: 'What will Dwight take away from everyone?',
@@ -172,7 +172,7 @@ export const healthPlan: Clip = {
       said: '「クビにはできないよ」「できる」と言い合う。',
       mean: 'can’t の t はほぼ聞こえない。can は小さく短く、can’t は強く長い「キャーン」。',
       trap: 't が聞こえず can と書きやすい。強さと長さで決める。続く Yes, I can もヒント。',
-      use: 'You can’t park here.（ここは駐車できません）' },
+      use: 'You can’t eat in the library.（図書館では食べられません）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'day', reveals: ['cant'], seg: [139.6, 142.9], keep: true,
       stem: 'For how long is Dwight manager, he says?',

@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 10, new 1
+// A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 10, new 1 · sweep: cakerush twins retired (p1 s1 x1), new f4 x2
 // “Carly Throws A Murder Mystery Party! | iCarly | NickRewind” (NickRewind, Best of iCarly): a party game flops.
 // The guests draw character cards, the murderer is revealed at once, Freddie tries to keep everyone from leaving, the
 // cake is lost, nobody dances, and in the kitchen Millicent's grandma tries to get her off her phone.
@@ -6,7 +6,6 @@
 // the speaker is Pearl's partner). Other speakers aren't named, so stems say "a guest" or "someone" and no key rests
 // on who it is. Left out: the secretary card (50–59 s), the character-switch talk (105–113 s), "drink heavily", an
 // ethnic idiom (160 s), the wordless stretches (219–229 s, 260–273 s), and the kitchen slang ("dope", "flipping").
-// EAR CHECK: 179.8–180.2 s s1 — "you've worked" in both sources: check the 've is audible as a v
 // EAR CHECK: 196.5–201.5 s f3 — whisper's line is long here: confirm the seg holds "I'm famished"
 import type { Clip } from '../types.ts';
 
@@ -148,7 +147,7 @@ export const mysteryParty: Clip = {
       trap: 'Freddie への皮肉に聞こえるが、オチは最後の never met。矛先は本人に向いている。',
       use: 'It matters to my future wife.（未来の奥さんのためなの）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'face', reveals: ['worked'], seg: [176.8, 187.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'face', reveals: ['worked'], seg: [176.8, 187.0], retired: true,
       stem: 'Why does the guest say “we want to be here for Freddie”?',
       ja: '客はなぜ「we want to be here for Freddie」と言う？',
       choices: ['To soften what comes next', 'To say the party is great', 'To take back what was said before'], a: 0,
@@ -160,7 +159,7 @@ export const mysteryParty: Clip = {
       trap: 'ほめ言葉に聞こえるが、but のあとの face it からが本音。パーティーはほめていない。',
       use: 'I know you tried, but honestly…（頑張ったのは分かるけど、正直…）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'worked', seg: [178.7, 182.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'worked', seg: [178.7, 182.2], retired: true,
       stem: 'Fill the gap: “we know how hard ___ on this”',
       ja: '「we know how hard ___ on this」の空所は？',
       choices: ['you’ve worked', 'you worked', 'you work'], a: 0,
@@ -184,7 +183,7 @@ export const mysteryParty: Clip = {
       trap: 'highlight（一番よかった）から楽しいと思いやすい。一番がドラマの話、というのが本音。',
       use: 'Honestly, the snacks were the highlight.（正直、おやつが一番よかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'outta', seg: [195.3, 198.85],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'outta', seg: [195.3, 198.85], retired: true,
       stem: 'Type the end: “but after that we are ___.” (3 words)', answer: 'out of here',
       ja: '「but after that we are ___.」の最後を書こう（3語）',
       cue: '「after that we are」のあと',
@@ -217,6 +216,28 @@ export const mysteryParty: Clip = {
       mean: 'ケーキが済めば帰れるので、早く終わらせたい。「前から」は口実。',
       trap: 'always thought を本当の好みと取りやすい。直前の no time と合わせて聞く。',
       use: 'No time—let’s skip to the good part.（時間ないから、いいとこまで飛ばそう）' },
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'atleast', seg: [232.6, 237.5],
+      stem: 'What does “at least” mean here?',
+      ja: 'ここで「at least」はどういう意味？',
+      choices: ['Even just a little', 'Much more than that', 'Right now, quickly'], a: 0,
+      choicesJa: ['せめて少しでも', 'それよりずっと多く', '今すぐ'],
+      cue: 'ケーキが落ちたあとの質問',
+      line: 'Is there *at least* some pudding in the fridge? — I ate it.',
+      said: '「せめてプリンくらい冷蔵庫にない？」と聞くと、「食べちゃった」。',
+      mean: 'at least ＝ せめて、少なくとも。いちばんほしい物がだめなとき、小さな代わりを求める。',
+      trap: 'pudding から「たくさん食べたい」と思いやすい。at least ＝ せめて。少しでいいという気持ち。',
+      use: 'Is there at least some coffee?（せめてコーヒーくらいある？）' },
+
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'wholenew', seg: [238.4, 244],
+      stem: 'Type the end: “go bake you a ___ cake.” (2 words)', answer: 'whole new',
+      ja: '「go bake you a ___ cake.」の空所を書こう（2語）',
+      cue: '「bake you a」のあと',
+      line: 'your mom can just go bake you a *whole new* cake.',
+      said: '「お母さんたちが、新しいケーキを丸ごと焼けばいい」と言う。',
+      mean: 'a whole new 〜 ＝ まったく新しい〜。whole は「ホウル」、h はほぼ聞こえない。',
+      trap: 'whole と hole（穴）は同じ音。ここは「まるごと」の whole。',
+      use: 'It’s a whole new world.（まったく新しい世界だ）' },
+
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'labor', seg: [238.8, 251.9],
       stem: 'How does someone react to the women baking a new cake?',

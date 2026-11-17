@@ -73,8 +73,8 @@ export const perfectCrime: Clip = {
       use: 'As I was leaving, it started to rain.（出ようとしたら雨が降ってきた）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'tiffany', seg: [9.8, 14.7],
-      stem: 'Who is the woman who catches Dwight?',
-      ja: 'ドワイトを見つけた女性はだれ？',
+      stem: 'In Dwight’s story, who catches him?',
+      ja: 'ドワイトの話で、彼を見つけたのはだれ？',
       choices: ['The owner’s daughter', 'A night-shift guard', 'A police officer'], a: 0,
       choicesJa: ['店のオーナーの娘', '夜の警備員', '警察官'],
       cue: '「She tells me to stop」のあと',
@@ -155,7 +155,7 @@ export const perfectCrime: Clip = {
       said: '「30年後、はがきが届く」と言う。',
       mean: 'thirty は前を強く言い、t が軽い「ラ」の音で「サーリィ」に近い。',
       trap: 'thirteen は「ティーン」が長く強い。three は短く、forty は「フォー」で始まる。',
-      use: 'Twenty years later, we met again.（20年後、また会った）' },
+      use: 'Thirty years later, I got a letter.（30年後、手紙が届いた）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'son', seg: [26.5, 29.7],
       stem: 'Who is the chief of police, the postcard says?',

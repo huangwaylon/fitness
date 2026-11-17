@@ -99,7 +99,7 @@ export const joeyBroadwayAudition: Clip = {
       use: 'She wrote it, and she’s directing it.（脚本も演出も彼女）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', seg: [28.3, 36.9],
-      stem: 'Did the friend really see the Macbeth movie?', ja: '友だちは本当にマクベスの映画を見た？',
+      stem: 'Did the person praising Macbeth really see it?', ja: 'マクベスをほめた人は、本当に映画を見た？',
       choices: ['No, only the previews', 'Yes, with Jackass', 'Yes, but didn’t like it'], a: 0,
       choicesJa: ['いいえ、予告編だけ', 'はい、ジャッカスと一緒に', 'はい、でも気に入らなかった'],
       cue: '「No, but」のあと',
@@ -207,9 +207,9 @@ export const joeyBroadwayAudition: Clip = {
       use: 'I got a callback for the job!（その仕事、二次面接に呼ばれた！）' },
 
     { id: 'p1', skill: 'marker', level: 'B1', point: 'byway', reveals: ['eggnog'], seg: [75.3, 80.1],
-      stem: 'What does “by the way” do here?', ja: 'ここでの “by the way” は何をしている？',
-      choices: ['Brings up a new topic', 'Greets someone new', 'Starts a long complaint'], a: 0,
-      choicesJa: ['別の話を始める', '来た人にあいさつする', '長い文句を言い始める'],
+      stem: 'Why does Joey say “by the way” here?', ja: 'ジョーイは、なぜここで「by the way」と言う？',
+      choices: ['To bring up a new topic', 'To greet someone new', 'To start a long complaint'], a: 0,
+      choicesJa: ['別の話を始めるため', '来た人にあいさつするため', '長い文句を言い始めるため'],
       cue: '冷蔵庫の話の直前',
       line: '*Oh, hey, by the way*, that eggnog in our fridge was great.',
       said: '「あ、そうそう、ところで」と、冷蔵庫のエッグノッグの話を始める。',

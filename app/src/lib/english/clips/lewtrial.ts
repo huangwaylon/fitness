@@ -256,7 +256,7 @@ export const lewTrial: Clip = {
       said: '最後の望みの証人も味方でなくなり、ルーバートは「もっとほしい」と言う。',
       mean: 'our last hope ＝ 最後の望み。I just want more ＝ もっとほしいだけ。状況は悪くなる。',
       trap: 'dropping the case（取り下げ）が聞こえて、よくなると思いやすい。すぐ Wrong again と返される。',
-      use: 'Well, that backfired.（うわ、裏目に出た）' },
+      use: 'That just made things worse.（それで余計に悪くなった）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [308.0, 314.5], keep: true,
       stem: 'What amount does Lewbert name to the judge?',

@@ -75,8 +75,8 @@ export const icFirstShow: Clip = {
       use: 'Do you think I could do it?（私にできると思う？）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'want', seg: [42, 48.6], keep: true,
-      stem: 'How does the friend answer Carly’s question?',
-      ja: '友だちはカーリーの質問にどう答える？',
+      stem: 'How does Carly’s friend answer her question?',
+      ja: 'カーリーの友だちは、カーリーの質問にどう答える？',
       choices: ['Leaves it up to her', 'Says it doesn’t matter', 'Gives an honest view'], a: 0,
       choicesJa: ['決めるのは彼女だと言う', 'どうでもいいと言う', '正直な意見を言う'],
       cue: '答えの後半、「what you」のあと。',
@@ -96,8 +96,8 @@ export const icFirstShow: Clip = {
       use: 'Doesn’t matter. Let’s just go.（どうでもいいよ。行こう）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'producer', seg: [51.4, 57.7], keep: true,
-      stem: 'How does the friend feel about “my new producer”?',
-      ja: '「my new producer」と聞いて、友だちはどう感じる？',
+      stem: 'How does Carly’s friend feel about “my new producer”?',
+      ja: '「my new producer」と聞いて、カーリーの友だちはどう感じる？',
       choices: ['Happy, but checking', 'Sure that it’s him', 'Hurt by the news'], a: 0,
       choicesJa: ['うれしいけど、確かめている', '自分のことだと確信している', 'その知らせに傷ついた'],
       cue: '「producer」の直後の声と質問。',
@@ -208,7 +208,7 @@ export const icFirstShow: Clip = {
       said: '「子どもの頃に、これ全部考え出したんだよ」と励ます。',
       mean: 'come up with ＝ 考え出す、思いつく。came と up、up と with がつながる。',
       trap: 'up with が短くなり、came だけ聞こえやすい。3語でひとつの意味。',
-      use: 'Who came up with this idea?（このアイデア、だれが考えたの？）' },
+      use: 'I came up with a better plan.（もっといい案を思いついた）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'show', reveals: ['bots', 'baby'], seg: [183.7, 223.0],
       stem: 'What does Carly share on the new show?',
@@ -292,8 +292,8 @@ export const icFirstShow: Clip = {
       use: 'It won’t help, but I’ll buy it anyway.（意味ないけど、どうせ買っちゃう）' },
 
     { id: 'p3', skill: 'pragma', level: 'B2', point: 'emo', seg: [253.5, 262.5], keep: true,
-      stem: 'What does the friend mean by “a little emo”?',
-      ja: '友だちの「a little emo」はどういう意味？',
+      stem: 'What does Carly’s friend mean by “a little emo”?',
+      ja: 'カーリーの友だちの「a little emo」はどういう意味？',
       choices: ['Keep it a bit lighter', 'That line was very moving', 'Stop the show now'], a: 0,
       choicesJa: ['もう少し明るくして', '今のはとても感動的だった', '今すぐ番組をやめて'],
       cue: '「comedy show」のあと。',

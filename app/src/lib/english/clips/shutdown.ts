@@ -145,7 +145,7 @@ export const shutdown: Clip = {
       trap: 'tomorrow の最初は弱く、to だけ聞くと tonight とも取れる。後ろの「モロウ」を聞く。',
       use: 'What about dinner tomorrow?（明日の夕食はどうなるの？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'pct', seg: [61.2, 67.0],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'pct', seg: [61.2, 67.0], retired: true,
       stem: 'By how much does the city need to cut its spending?',
       ja: '市は支出をどれだけ減らす必要がある？',
       choices: ['22 percent', '30 percent', '32 percent', '40 percent'], a: 2, keep: true,
@@ -169,7 +169,7 @@ export const shutdown: Clip = {
       trap: 'even 40 を数字の丸めだけと思いやすい。止められても slash it と言い続ける。',
       use: 'Let’s make it an even hundred.（きりよく100にしよう）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bat', seg: [80.8, 87.6],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bat', seg: [80.8, 87.6], retired: true,
       stem: 'What does “right off the bat” mean?',
       ja: '「right off the bat」はどういう意味？',
       choices: ['First of all', 'Just maybe', 'As a quick guess'], a: 0,
@@ -181,7 +181,7 @@ export const shutdown: Clip = {
       trap: 'bat（バット）から当てずっぽうを思いやすい。「すぐに、最初に」の決まり文句。',
       use: 'Right off the bat, I liked her.（会ってすぐ彼女が気に入った）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'creative', seg: [87.4, 93.95],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'creative', seg: [87.4, 93.95], retired: true,
       stem: 'How does the official answer the City Hall idea?',
       ja: '市役所を売る案に、職員はどう答える？',
       choices: ['Says no, nicely', 'Says yes, with a condition', 'Says yes, wants more'], a: 0,
@@ -228,7 +228,7 @@ export const shutdown: Clip = {
       trap: 'all of なら「オーロヴ」、hold of なら「ホウルド」。「アウ」と聞こえたら out on。',
       use: 'Don’t lose out on the early-bird price.（早割を逃さないで）' },
 
-    { id: 'pr4', skill: 'phrase', level: 'B2', point: 'hear', seg: [93.6, 97.5],
+    { id: 'pr4', skill: 'phrase', level: 'B2', point: 'hear', seg: [93.6, 97.5], retired: true,
       stem: 'What does Ron mean by “I hear that”?',
       ja: 'ロンの「I hear that」はどういう意味？',
       choices: ['I understand your point', 'I can hear you well', 'I agree, no more ideas'], a: 0,

@@ -127,7 +127,7 @@ export const ribbing: Clip = {
       said: '「一緒に食べる？」と聞かれ、マイケルは「もちろん」と答える。',
       mean: 'Are you gonna 〜? ＝ 〜するの？ 「アユガナ」とつながる。gonna ＝ going to。',
       trap: 'Aren’t なら「アーンチュ」と n が入る。Do you wanna なら「ドゥユワナ」。「アユガナ」なら Are you gonna。',
-      use: 'Are you gonna finish that?（それ、全部食べる？）' },
+      use: 'Are you gonna eat with us?（一緒に食べる？）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'crew', seg: [102.7, 111.5],
       stem: 'Why does Michael add “Crew that I am one of”?', ja: 'マイケルはなぜ “Crew that I am one of” と言い足す？',

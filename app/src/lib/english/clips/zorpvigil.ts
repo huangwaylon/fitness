@@ -125,7 +125,7 @@ export const zorpVigil: Clip = {
       said: 'yeah を何度も重ね、「全然分かる。もちろん分かる」と言う。',
       mean: 'get it ＝ 分かる。totally ＝ すっかり。言いすぎるのは、平気なふりのしるし。',
       trap: 'get から「手に入れる」と思いやすい。会話の get it は「分かる」。',
-      use: 'Oh, I get it now. Thanks.（ああ、やっと分かった。ありがとう）' },
+      use: 'I totally get it. No worries.（すごく分かるよ。気にしないで）' },
 
     // R fix: V2 (blind 70 %): the fillers (good press, broke a rule) are now a literal reading and a fair reporter's angle
     // why: join ← "two people… here" read literally, as staff taking part; wasting staff ← a reporter's usual angle on
@@ -209,7 +209,7 @@ export const zorpVigil: Clip = {
       use: 'I’m gonna be honest with you.（正直に言うね）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'council', seg: [191.35, 196.85],
-      stem: 'Why isn’t Leslie dating Ben, says her friend?', ja: '友だちによると、レスリーはなぜベンと付き合っていない？',
+      stem: 'Why isn’t Leslie dating Ben, she is reminded?', ja: 'レスリーは、なぜベンと付き合っていないと言われる？',
       choices: ['She chose to run for council', 'She works for the city manager', 'He chose to run for council'], a: 0,
       choicesJa: ['彼女が市議会選に出ると決めた', '彼女が市の管理官の下で働いている', '彼が市議会選に出ると決めた'],
       cue: '「because」のあと',
@@ -220,7 +220,7 @@ export const zorpVigil: Clip = {
       use: 'She’s going to run for mayor.（彼女は市長選に出るつもりだ）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'canta', seg: [191.35, 199.85],
-      stem: 'How does Leslie answer her friend?', ja: 'レスリーは友だちにどう答える？',
+      stem: 'How does Leslie answer the reminder about Ben?', ja: 'ベンのことを言われて、レスリーはどう答える？',
       choices: ['She argues back', 'She agrees with her', 'She says sorry'], a: 0,
       choicesJa: ['言い返す', '「そうだね」と認める', '謝る'],
       cue: '「Oh, so」で始まる返事',

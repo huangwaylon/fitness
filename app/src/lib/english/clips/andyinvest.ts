@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 10, new 3
+// A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 10, new 3 · sweep: cross-bank twins retired or rewritten
 // “Andy Dwyer Investigates | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Andy finds
 // his computer gone and takes it for the practice theft he asked the office for; he grills co-workers until Chris
 // says another computer was stolen too; the police officer says it's just a report, Andy loses heart, and he's offered
@@ -28,7 +28,7 @@ export const andyInvestigates: Clip = {
       trap: 'exam（試験）が聞こえるので、試験が始まったと思いやすい。so I could practice が目的。',
       use: 'I could use the practice.（練習しておけるのは助かる）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'month', reveals: ['practice'], seg: [21.95, 27.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'month', reveals: ['practice'], seg: [21.95, 27.4], retired: true, keep: true,
       stem: 'How long ago did Andy ask the office to steal from him?',
       ja: 'アンディが「盗んで」と頼んだのはどのくらい前？',
       choices: ['About a week', 'About a month', 'About a year'], a: 1,
@@ -73,7 +73,7 @@ export const andyInvestigates: Clip = {
       trap: 'Yes から始まるので告白に聞こえる。話が細かく大げさすぎたら、冗談の合図。',
       use: 'Yes, I’m a secret spy. Obviously.（そう、私はスパイ。当然でしょ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [49.2, 53.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [49.2, 53.2], retired: true, keep: true,
       stem: 'For how much does Jerry say he would sell it?',
       ja: 'ジェリーは、いくらで売ると言う？',
       choices: ['$15', '$50', '$150'], a: 2,
@@ -140,7 +140,7 @@ export const andyInvestigates: Clip = {
       trap: '責める言葉の中に stupid and handsome、sexy とほめ言葉が混ざる。そこが笑い。',
       use: 'Don’t play dumb with me.（とぼけないで）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'another', seg: [111.95, 120.5],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'another', seg: [111.95, 120.5], retired: true,
       stem: 'Why does Chris think this is a real theft?',
       ja: 'クリスは、なぜ本当の盗みだと思う？',
       choices: ['Another office lost one too', 'His own one is missing too', 'Someone saw the thief'], a: 0,
@@ -175,10 +175,10 @@ export const andyInvestigates: Clip = {
       use: 'So what’s the plan here?（で、ここではどうするの？）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', reveals: ['money'], seg: [139.6, 146.3],
-      stem: 'After “I love your enthusiasm, but…”, what does he do?',
-      ja: '「I love your enthusiasm, but…」のあと、警官は何をする？',
-      choices: ['Says no, kindly', 'Says yes to the plan', 'Asks Andy to work harder'], a: 0,
-      choicesJa: ['やさしく断る', '計画に賛成する', 'もっとがんばれと言う'],
+      stem: 'Why does the officer say “I love your enthusiasm” here?',
+      ja: '警官は、なぜここで「I love your enthusiasm」と言う？',
+      choices: ['To say no kindly', 'To say yes to the plan', 'To ask Andy to work harder'], a: 0,
+      choicesJa: ['やさしく断るため', '計画に賛成するため', 'もっとがんばれと言うため'],
       cue: 'ほめ言葉のあとの but。',
       line: 'Andy, *I love your enthusiasm, but* we don’t really have the kind of money…',
       said: '「やる気は大好きだけど、大がかりな捜査をするお金はない」と言う。',
@@ -198,7 +198,19 @@ export const andyInvestigates: Clip = {
       trap: '捜査の話なので、証拠や被害の大きさを思いやすい。have のあとの money を聞く。',
       use: 'I don’t have that kind of money.（そんな大金は持ってない）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'boring', seg: [152.55, 164.4],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'letgo', seg: [146.8, 152.8],
+      stem: 'What does Andy say he can’t do as a future cop?',
+      ja: 'アンディは、未来の警官として何ができないと言う？',
+      choices: ['Let this guy go', 'Fill out the report', 'Pay for the search'], a: 0,
+      choicesJa: ['この犯人を見のがす', '報告書を書く', '捜査のお金を払う'],
+      cue: '「As a future cop」のあと',
+      line: 'As a future cop, you have to understand, *I cannot let this guy go*.',
+      said: '「未来の警官として、この犯人を見のがすわけにはいかない」と言う。',
+      mean: 'let 人 go ＝（つかまえずに）行かせる、見のがす。cannot ＝ できない。',
+      trap: '先に report（報告書）が聞こえるので、その話と思いやすい。cannot のあとが答え。',
+      use: 'I can’t let this chance go.（このチャンスは逃せない）' },
+
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'boring', seg: [152.55, 164.4], retired: true,
       stem: 'What is the officer really telling Andy at the end?',
       ja: '警官は最後に、アンディに本当は何を伝えている？',
       choices: ['Police work may not suit him', 'He should try a quieter job', 'He should write the report first'], a: 0,
@@ -221,6 +233,18 @@ export const andyInvestigates: Clip = {
       mean: '事件の言葉 stole を借りて、Andy のやる気を奪ったのはあなた、と警官をとがめる皮肉。',
       trap: '落ち込んだ本人をからかう冗談にも聞こえる。「盗んだ人」は誰を指すか、直前の発言で決める。',
       use: 'What happened? You look down.（どうしたの？元気ないね）' },
+
+    { id: 'd7', skill: 'detail', level: 'B2', point: 'account', seg: [183.8, 189.9],
+      stem: 'Who is Andy told to listen to?',
+      ja: 'アンディは、だれの話を聞くように言われる？',
+      choices: ['The policeman', 'Chris Traeger', 'His coworker Gary'], a: 0,
+      choicesJa: ['警官', 'クリス・トレーガー', '同僚のゲイリー'],
+      cue: '文の最後の一語',
+      line: 'I think you might want to *take into account what the policeman said*.',
+      said: '「警官の言ったことを考えに入れたほうがいい」と言われる。',
+      mean: 'take into account ＝ 考えに入れる。might want to は「〜したほうがいいかも」と、やわらかくすすめる言い方。',
+      trap: '熱心さ（dedication）をほめられるので、続けろと言われたと思いやすい。最後の policeman を聞く。',
+      use: 'Please take the weather into account.（天気のことも考えに入れてね）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [187.5, 232.2],
       stem: 'How does it end for Andy?',
@@ -246,7 +270,7 @@ export const andyInvestigates: Clip = {
       trap: '「悲しい」は前のどの場面にも合いそう。服の話とセットの場面を探す。',
       use: 'And no pajamas at work, even on Fridays.（金曜でも、職場でパジャマはなし）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'bail', seg: [203.6, 207.9],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'bail', seg: [203.6, 207.9], retired: true,
       stem: 'What does “bail on being a cop” mean?',
       ja: '「bail on being a cop」の意味は？',
       choices: ['Give up on it', 'Pay to get out', 'Take a short break'], a: 0,
@@ -258,7 +282,7 @@ export const andyInvestigates: Clip = {
       trap: '警察の話なので bail を「保釈金」と思いやすい。bail on ＋ 予定 ＝ やめる。',
       use: 'Sorry, I have to bail on dinner.（ごめん、夕食は行けなくなった）' },
 
-    { id: 'mind', skill: 'phrase', level: 'B1', point: 'keepmind', seg: [215.5, 220.7],
+    { id: 'mind', skill: 'phrase', level: 'B1', point: 'keepmind', reveals: ['clothes'], seg: [215.5, 220.7],
       stem: 'What does “keep in mind” mean?',
       ja: '「keep in mind」の意味は？',
       choices: ['Remember this', 'Forget this', 'Write this down'], a: 0,
@@ -280,6 +304,18 @@ export const andyInvestigates: Clip = {
       mean: '断ったのは仕事の中身でなく、服を脱げなくなる条件のせい。',
       trap: 'part-time などの情報も聞こえるので理由を取り違えやすい。No deal の直前の条件が理由。',
       use: 'One condition: no phones.（条件が一つ。スマホは禁止）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'clothes', seg: [216.3, 222.1],
+      stem: 'What must Andy do if he takes the job?',
+      ja: 'その仕事を受けるなら、アンディは何をしなければならない？',
+      choices: ['Keep his clothes on', 'Carry a gun', 'Work every night'], a: 0,
+      choicesJa: ['服を着たままでいる', '銃を持つ', '毎晩働く'],
+      cue: '「you must」のあと',
+      line: 'if you take this job, *you must keep your clothes on* at all times, even if you get sad.',
+      said: '「この仕事をするなら、悲しくなっても、いつも服を着ていること」と言われる。',
+      mean: 'must ＝ しなければならない。keep 〜 on ＝ 着たままでいる。落ちこむと服を脱ぐアンディへの条件。',
+      trap: 'あとで gun（銃）の話が出るので、銃と思いやすい。must のすぐあとが答え。',
+      use: 'You must keep your seatbelt on.（シートベルトはずっと締めてください）' },
 
     { id: 'nodeal', skill: 'phrase', level: 'B1', point: 'nodeal', seg: [220.5, 226.4],
       stem: 'What does “No deal” mean?',

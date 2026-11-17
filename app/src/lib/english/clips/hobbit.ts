@@ -28,7 +28,7 @@ export const dwightHobbit: Clip = {
       use: 'I don’t know. I mean, it’s pretty far.（どうかな。だって結構遠いし）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'cabo', seg: [0, 6.95],
-      stem: 'How does the man sound, talking about Cabo?', ja: 'カボの話をする男は、どんな人に聞こえる？',
+      stem: 'How does Ryan’s friend sound, talking about Cabo?', ja: 'カボの話をするライアンの友だちは、どんな人に聞こえる？',
       choices: ['He looks down on poor places', 'He worries about safety', 'He is tired of fancy trips'], a: 0,
       choicesJa: ['貧しい国を見下している', '安全を心配している', 'ぜいたくな旅にあきている'],
       cue: '「poverty」の前後',
@@ -39,7 +39,7 @@ export const dwightHobbit: Clip = {
       use: 'I’m not really a luxury traveler.（ぜいたく旅行はあまりしない）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'cabo', seg: [3.0, 6.95],
-      stem: 'What does the man say people go to Cabo to get?', ja: 'カボに行くと何が手に入ると、男は言う？',
+      stem: 'What does Ryan’s friend say people go to Cabo for?', ja: 'カボに行くと何が手に入ると、ライアンの友だちは言う？',
       choices: ['Some glamour', 'Real local life', 'Peace and quiet'], a: 0,
       choicesJa: ['華やかさ', '本当の地元の暮らし', '静かな時間'],
       cue: '文の最後の一語',
@@ -103,7 +103,7 @@ export const dwightHobbit: Clip = {
       said: 'ライアンの友人がドワイトの見た目や農場をネタに何度もからかい、ドワイトはまじめに答える。',
       mean: 'tease ＝ からかう。からかう側と、気づかずに本気で答える側のずれ。',
       trap: 'ドワイトの短い返事は冷たく聞こえやすい。どれも本気の答えで、ネタにされているのは彼。',
-      use: 'Are you making fun of me?（からかってる？）' },
+      use: 'Stop teasing me. It isn’t funny.（からかわないで。面白くないよ）' },
 
     { id: 'p6', skill: 'phrase', level: 'B1', point: 'howyou', seg: [38.5, 42.5],
       stem: 'What does “How you doing?” mean here?', ja: 'ここでの “How you doing?” はどういう意味？',
@@ -248,7 +248,7 @@ export const dwightHobbit: Clip = {
       use: 'Come Friday, we’ll be on the beach.（金曜になれば、もうビーチだ）' },
 
     { id: 'p4', skill: 'pragma', level: 'B1', point: 'toomuch', seg: [95.2, 98.85],
-      stem: 'What is “too much” for the friend?', ja: '友だちにとって「too much」なのは何？',
+      stem: 'What is “too much” for Ryan’s friend?', ja: 'ライアンの友だちにとって「too much」なのは何？',
       choices: ['The gross details', 'The strange word', 'The drinks he had'], a: 0,
       choicesJa: ['気持ち悪い話の中身', '変な言葉', '飲んだお酒'],
       cue: '幼虫の話の直後',

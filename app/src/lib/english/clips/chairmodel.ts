@@ -292,7 +292,7 @@ export const chairModel: Clip = {
       said: '「友だちを紹介しようと思ってる人へ」と前置きする。',
       mean: 'fix 人 up with 人 ＝ 人にデートの相手を紹介する。up と with が目印。',
       trap: 'fix を「直す」と思うと「元気づける」に聞こえる。fix 人 up with 人 は紹介。',
-      use: 'Can you fix me up with someone?（だれか紹介してくれない？）' },
+      use: 'My sister wants to fix me up with her coworker.（姉が同僚を紹介したがってる）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'template', reveals: ['page'], seg: [118.0, 131.4],
       stem: 'What kind of woman should they look for?',

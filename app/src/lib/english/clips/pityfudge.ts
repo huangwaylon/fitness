@@ -80,7 +80,7 @@ export const pityFudge: Clip = {
       said: '様子のおかしいみんなに「どうしたの？」と聞く。',
       mean: 'What’s going on? ＝ どうしたの？何が起きてるの？ 様子が変なときに使う。',
       trap: 'going から「どこかへ行く」話を思いやすい。go on ＝ 起きる、という決まり文句。',
-      use: 'Hey, what’s going on?（ねえ、どうしたの？）' },
+      use: 'What’s going on? You look upset.（どうしたの？元気ないね）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'sortof', reveals: ['away'], seg: [22.2, 30],
       stem: 'Why does the answer start with “um, sort of”?',

@@ -182,7 +182,7 @@ export const theMerger: Clip = {
       said: '「さあ、分からない。つまり、友だちだよ」と続ける。',
       mean: 'I mean ＝「つまり」。あいまいな答えを言い直して、具体的にする。',
       trap: '「意味する」と直訳すると反論に聞こえる。I mean のあとには言い直しが来る。',
-      use: 'It’s fine. I mean, it’s not perfect.（大丈夫。まあ、完ぺきではないけど）' },
+      use: 'No idea. I mean, I just got here.（さあ。だって、今来たばかりだし）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', reveals: ['imean'], seg: [189.4, 201.5],
       stem: 'How sure is Jim about him and Pam?',

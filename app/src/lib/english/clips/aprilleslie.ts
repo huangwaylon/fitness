@@ -269,8 +269,8 @@ export const aprilLeslie: Clip = {
       use: 'Short version: it won’t cost you a thing.（要するに、一銭もかからないよ）' },
 
     { id: 'd6', skill: 'detail', level: 'B1', point: 'extra', reveals: ['math'], seg: [222.0, 230.0],
-      stem: 'How much more will the man have to pay?',
-      ja: '男性はいくら多く払うことになる？',
+      stem: 'How much extra will the citizen have to pay?',
+      ja: 'その市民は、いくら余分に払うことになる？',
       choices: ['No extra money at all', 'A little extra money', 'Twice as much money'], a: 0,
       choicesJa: ['追加のお金はまったくなし', '少しだけ追加のお金', '2倍のお金'],
       cue: '「Look,」のあと',

@@ -4,7 +4,8 @@
 // from Poison Control turns up.
 // Segments from the captions, words from whisper (2026-11-16). The product word at 2.8 s, the word before "off your
 // brain" at 19.9 s and the nickname at 42–45 s differ between the sources: no key or shown line uses them. Speakers
-// aren't named in the audio, so items say "the speaker"; the keys rest on words and turn order only. Left out on
+// aren't named in the audio: stems name Spencer (the "lovable goofball") and Lewbert (the seller) as the show does,
+// else "the first taster"; the keys rest on words and turn order only. Left out on
 // purpose: the Ben Affleck lines (24–30 s), the "cool one" praise (40–45 s) and the insult before "Trina" at 48 s.
 import type { Clip } from '../types.ts';
 
@@ -26,7 +27,7 @@ export const lewbJuice: Clip = {
       use: 'Honestly? I think it’s too expensive.（正直に言うと、高すぎると思う）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'name', seg: [3.3, 12.1],
-      stem: 'Why did the speaker expect the juice to taste terrible?', ja: 'この人は、なぜジュースがひどい味だと思っていた？',
+      stem: 'Why did the first taster expect the juice to taste bad?', ja: '最初に飲んだ人は、なぜひどい味だと思っていた？',
       choices: ['Because of its name', 'Because it’s a foot scrub', 'Because of its color'], a: 0,
       choicesJa: ['名前のせい', '足の角質取りだから', '色のせい'],
       cue: '「because」のあと',
@@ -178,7 +179,7 @@ export const lewbJuice: Clip = {
       use: 'Please, you’re the real star here.（いやいや、主役は君だよ）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'growup', seg: [36.75, 40.9],
-      stem: 'Type what the speaker asks: “Will I ever ___?” (4 words)', ja: '書こう：“Will I ever ___?”（4語）',
+      stem: 'Type what Spencer asks: “Will I ever ___?” (4 words)', ja: 'スペンサーの言葉を書こう：“Will I ever ___?”（4語）',
       answer: 'have to grow up',
       cue: '「ever」のあと',
       line: 'Will I ever *have to grow up*?',
@@ -221,7 +222,7 @@ export const lewbJuice: Clip = {
       use: 'You can stay as long as you’re quiet.（静かにしてるなら、いていいよ）' },
 
     { id: 'i3', skill: 'infer', level: 'C1', point: 'aslongas', seg: [46, 56],
-      stem: 'What has the speaker probably been doing?', ja: 'この人は、たぶん何をしていた？',
+      stem: 'What has Lewbert probably been doing?', ja: 'ルーバートは、たぶん何をしていた？',
       choices: ['Selling the juice', 'Drinking too much', 'Giving it away'], a: 0,
       choicesJa: ['ジュースを売っていた', '飲みすぎていた', 'タダで配っていた'],
       cue: '許可の条件と、すぐあとの emergency',
@@ -232,7 +233,7 @@ export const lewbJuice: Clip = {
       use: 'We weren’t supposed to do this.（これ、やっちゃいけなかったんだ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'alarm', seg: [46, 56],
-      stem: 'How does the speaker react to who is coming?', ja: '誰が来たか分かって、この人はどうする？',
+      stem: 'How does Lewbert react to who is coming?', ja: '誰が来たか分かって、ルーバートはどうする？',
       choices: ['Alarmed, wants to leave fast', 'Guilty, ready to say sorry', 'Happy to see her again'], a: 0,
       choicesJa: ['あわてて、すぐ逃げたい', '悪いと思って、謝るつもり', 'また会えてうれしい'],
       cue: '最初の叫びと、最後の一言',

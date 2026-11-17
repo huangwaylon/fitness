@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 3, new 0
+// A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 3, new 0 · sweep: cross-bank twins retired or rewritten
 // “Andy's Stress Sweating | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Andy, who asked
 // his coworkers to steal from his desk so he could practise for the police exam, treats his missing computer as a case;
 // he questions suspects, a police officer tells him real police work is mostly writing reports, he thinks of quitting,
@@ -7,8 +7,7 @@
 // “officer” (96.3 s); the person who offers the job is never named, so stems avoid naming them. Untested on purpose:
 // 14–16.4 s (“A game is the foot”, a garbled saying), 30.6–39.5 s (the glasses lines, and “took my talents to South
 // Beach”, a sports reference), 95.6 s (captions “plan”, whisper “play”), 104.6 s (whose “Boom”), 133–136 s (who says
-// “the person who stole his positive attitude”), 137.7–150.4 s (the carpet-store suspect: captions “the way I figure his”).
-// EAR CHECK: 184.9 s r1 — the cut falls after “if you take this job” (job 184.7) and before “you must” (you 185.2)
+// “the person who stole his positive attitude”); at 137.7–144 s the captions have “the way I figure his” (d4 quotes only the words after).
 import type { Clip } from '../types.ts';
 
 export const stressSweat: Clip = {
@@ -17,18 +16,6 @@ export const stressSweat: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'practice', seg: [4, 28.8],
-      stem: 'Why did Andy ask coworkers to steal from his desk?',
-      ja: 'アンディはなぜ、同僚に机から物をぬすんでとたのんだ？',
-      choices: ['To practice for a police exam', 'To test the office guards', 'To play a joke on them'], a: 0,
-      choicesJa: ['警察の試験の練習のため', '会社の警備をためすため', 'みんなをからかうため'],
-      cue: '「so I could」のあと',
-      line: 'I told everyone in the office… they should *steal something from my desk* so I could *practice*.',
-      said: '「練習のために、机から何かぬすんでとみんなにたのんだ」とカメラに話す。',
-      mean: 'so I could 〜 ＝「〜できるように」。警察学校の入試に捜査があるので、練習用の事件を作った。',
-      trap: 'steal（ぬすむ）から、いたずらと思いやすい。目的は so I could practice。',
-      use: 'Quiz me so I can practice.（練習したいから問題出して）' },
-
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'practice', seg: [4.1, 29],
       stem: 'After his comment to the camera, how should we hear “Aha, it’s gone”?',
       choices: ['As delight: his practice case has finally begun', 'As alarm: a real thief has robbed his desk',
@@ -40,7 +27,7 @@ export const stressSweat: Clip = {
       trap: '物が消えたら困るはず、という型で聞きやすい。この形式では、カメラへの一言が答え合わせになる。',
       use: 'Finally, a real case! Let’s do this.（ついに本物の事件だ！さあやるぞ）', retired: true },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [16.6, 21.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [16.6, 21.8], retired: true,
       stem: 'Why does Andy say “See” at the start?',
       ja: 'アンディはなぜ、最初に「See」と言う？',
       choices: ['To start an explanation', 'To ask people to look', 'To show he understands'], a: 0,
@@ -75,7 +62,7 @@ export const stressSweat: Clip = {
       trap: 'Yes から始まるので白状に聞こえやすい。話が細かく大げさなほど、皮肉を疑う。',
       use: 'Yes, I ate all twelve donuts. Happy?（ええ、12個全部食べたわよ。満足？）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [43, 52.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [43, 52.7], retired: true, keep: true,
       stem: 'What price is named for the computer?',
       ja: 'パソコンの値段はいくらと言われる？',
       choices: ['$50', '$115', '$150', '$1,500'], a: 2,
@@ -110,7 +97,7 @@ export const stressSweat: Clip = {
       trap: '先に look at me が聞こえるので、目を見る決まりと思いやすい。have to のあとの tell me が中身。',
       use: 'You have to tell me the truth.（本当のことを言わなきゃだめ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'ohman', reveals: ['notme'], seg: [78.5, 83.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'ohman', reveals: ['notme'], seg: [78.5, 83.3], retired: true,
       stem: 'How does Andy feel when he hears “it wasn’t me”?',
       ja: '「ぼくじゃない」と聞いて、アンディはどう思う？',
       choices: ['A little let down', 'Happy for his friend', 'Proud of himself'], a: 0,
@@ -134,7 +121,7 @@ export const stressSweat: Clip = {
       trap: '何人も出てくるので、声だけではまざりやすい。直後の Jerry という名前を手がかりに。',
       use: 'Sorry, it wasn’t me. I promise.（ごめん、ぼくじゃないよ。本当に）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'lying', reveals: ['notme'], seg: [84.6, 94.3],
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'lying', reveals: ['notme'], seg: [84.6, 94.3], retired: true,
       stem: 'What does “I can never tell when people are lying” mean?',
       ja: '「I can never tell when people are lying」はどういう意味？',
       choices: ['I never know if it’s a lie', 'I never tell people lies', 'I never talk about lies'], a: 0,
@@ -180,7 +167,7 @@ export const stressSweat: Clip = {
       trap: '最後の explosives（ばくだん）だけがだめと思いやすい。any of that は全部のこと。',
       use: 'Thanks, but we’re not doing any of that.（ありがとう、でもどれもやらないよ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', reveals: ['money'], seg: [107.3, 113.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', reveals: ['money'], seg: [107.3, 113.3], retired: true,
       stem: 'Why is “I love your enthusiasm” said here?',
       ja: 'ここではなぜ「I love your enthusiasm」と言う？',
       choices: ['To praise him, then say no', 'To praise him, then say yes', 'To praise him, then ask help'], a: 0,
@@ -192,7 +179,7 @@ export const stressSweat: Clip = {
       trap: 'love が聞こえて、賛成と思いやすい。but のあとが本当に言いたいこと。',
       use: 'I love the idea, but not today.（いい考えだけど、今日はやめとこう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'money', reveals: ['paperwork'], seg: [107.3, 113.3], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'money', reveals: ['paperwork'], seg: [107.3, 113.3], retired: true, keep: true,
       stem: 'Why won’t the police do more, the officer says?',
       ja: '警察がそれ以上しない理由は何だと、警官は言う？',
       choices: ['There isn’t the money for it', 'The computer isn’t worth enough', 'There isn’t any proof of a crime'],
@@ -229,6 +216,30 @@ export const stressSweat: Clip = {
       trap: 'got to なら「ガ」で始まる。have to なら「ハフタ」。「オー」で始まれば ought to。',
       use: 'You ought to see a doctor.（医者に行った方がいいよ）' },
 
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'carpet', seg: [139.2, 150.2],
+      stem: 'Why does Andy suspect the carpet store man?',
+      ja: 'アンディはなぜ、じゅうたん店の男をあやしむ？',
+      choices: ['He yelled at Andy', 'He was in Miami', 'He sells computers'], a: 0,
+      choicesJa: ['アンディをどなったから', 'マイアミにいたから', 'パソコンを売っているから'],
+      cue: '「Plus」のあと',
+      line: 'criminals love to wrap things up in rugs. *Plus, he yelled at me* when I tried to unroll ’em all…',
+      said: '「犯人はじゅうたんで包むのが好き。それに、広げようとしたらどなられた」と話す。',
+      mean: 'yell at 人 ＝ 人をどなる。Plus ＝「それに」と理由を足す言い方。',
+      trap: 'マイアミや「売る」は、前のゲイリーの話。Plus のあとの yelled が答え。',
+      use: 'Plus, it’s cheaper on weekdays.（それに、平日のほうが安いよ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'whycop', seg: [149.6, 164.6],
+      stem: 'Why does Andy lose hope after the officer’s talk?',
+      ja: 'アンディは、警官の話のあと、なぜやる気をなくす？',
+      choices: ['He can’t investigate bad guys', 'He failed the police exam', 'He likes the guard job more'], a: 0,
+      choicesJa: ['悪いやつを捜査できないから', '警察の試験に落ちたから', '警備の仕事のほうがいいから'],
+      cue: '「I mean, gosh」のあと',
+      line: 'what the policeman said. — I mean, gosh, *if I can’t even investigate bad guys, why become a cop at all?*',
+      said: '「悪いやつを捜査すらできないなら、何のために警官になるんだ」と落ちこむ。',
+      mean: 'why 〜 at all? ＝「そもそも何のために〜？」。捜査ができないなら意味がない、という気持ち。',
+      trap: '前に試験の話が出たので、落ちたと思いやすい。if I can’t even investigate が理由。',
+      use: 'Why go at all if it’s closed?（閉まってるなら、そもそも行く意味ある？）' },
+
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'account', seg: [150, 162.9],
       stem: 'Which plain-English version keeps what the reply to Andy’s update means?',
       choices: ['“Drop the case, like the officer said.”', '“Think it over, then decide for yourself.”',
@@ -262,9 +273,9 @@ export const stressSweat: Clip = {
       said: '「警官になるの、やめようかな」と言う。',
       mean: 'bail on 〜 ＝「〜をやめる、投げ出す」。予定や人にも使うくだけた言い方。',
       trap: 'bail を保釈金と取ると、お金をはらう話に聞こえる。bail on は「投げ出す」。',
-      use: 'Sorry I bailed on you last night.（昨日の夜はドタキャンしてごめん）' },
+      use: 'I might bail on the party tonight.（今夜のパーティー、やめておくかも）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'clothes', seg: [179.3, 184.9], then: [184.9, 189.5],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'clothes', seg: [179.3, 184.9], retired: true, then: [184.9, 189.5],
       stem: 'After “But keep in mind, if you take this job,” what comes?',
       ja: '「ただし、この仕事を受けるなら」のあと、何が来る？',
       choices: ['A rule he will have to follow', 'Something good about the job', 'Why the job is right for him'], a: 0,

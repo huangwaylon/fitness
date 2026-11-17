@@ -22,7 +22,7 @@ export const mamasDead: Clip = {
       said: 'トビーが、今朝のスタンリーの件に対処すべきだと言いに来る。',
       mean: '人事のトビーは、スタンリーが上司に反抗したことをきちんと処理してほしい。',
       trap: 'room や joking が耳に残りやすいが、トビーが来た理由は you need to のあと。',
-      use: 'Can I talk to you for a second?（ちょっといいですか）' },
+      use: 'Do you have a minute?（少しお時間いいですか）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'morning', reveals: ['address'], seg: [4.8, 10.6],
       stem: 'When did the trouble with Stanley happen?',
@@ -107,7 +107,7 @@ export const mamasDead: Clip = {
       trap: 't が聞こえず did と思いやすい。「ン」と小さな間があれば didn’t、「ダ」で始まれば doesn’t。',
       use: 'It didn’t look like a joke.（冗談には見えなかった）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'unkind', seg: [37.5, 41.5],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'unkind', seg: [37.5, 41.5], retired: true,
       stem: 'How does Michael talk to Toby here?',
       ja: 'ここでマイケルはトビーにどんな話し方をしている？',
       choices: ['In an unkind way', 'In a kind way', 'In a scared way'], a: 0,
@@ -180,7 +180,7 @@ export const mamasDead: Clip = {
       said: '「今から本人に聞きに行こうよ」と言う。',
       mean: 'don’t の t が落ちて we とつながり「ワイドンウィ」。「〜しようよ」の誘い。',
       trap: 'didn’t なら「ディ」、can’t なら「キャン」が入る。「ドン」と聞こえたら don’t。',
-      use: 'Why don’t we grab lunch?（お昼でも行かない？）' },
+      use: 'Why don’t we ask him now?（今、彼に聞いてみない？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'though', reveals: ['excuse', 'stomach'], seg: [63.4, 68.7],
       stem: 'What does “though” at the end mean here?',

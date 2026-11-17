@@ -35,7 +35,7 @@ export const giantHead: Clip = {
       said: '「明日の夜デートがある」と報告する。',
       mean: 'tomorrow night ＝ 明日の夜。このあと場面がそのデートに変わる。',
       trap: '「トゥナイ」で終われば今夜、「トゥモロー・ナイ」なら明日の夜、「ネクスト」で始まれば来週末。',
-      use: 'Are you free tomorrow night?（明日の夜あいてる？）' },
+      use: 'I have a date tomorrow night.（明日の夜、デートがあるの）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'work', seg: [3.9, 8.7],
       stem: 'How does Chandler know Allison?',
@@ -131,10 +131,10 @@ export const giantHead: Clip = {
       use: 'My degree was totally useless here.（ここでは学位がまるで役に立たない）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['major'], seg: [26.2, 32.5],
-      stem: 'What does Allison’s “I mean” do here?',
-      ja: 'アリソンの「I mean」はここで何をしている？',
-      choices: ['Gives the reason', 'Softens what she said', 'Takes it back'], a: 0,
-      choicesJa: ['理由を言う', '言ったことをやわらげる', '取り消す'],
+      stem: 'Why does Allison say “I mean” here?',
+      ja: 'アリソンは、なぜここで「I mean」と言う？',
+      choices: ['To give the reason', 'To soften what she said', 'To take it back'], a: 0,
+      choicesJa: ['理由を言うため', '言ったことをやわらげるため', '取り消すため'],
       cue: '最初の一文のすぐあと。', line: '*I mean*, how often do you look in the… and see “philosopher wanted”?',
       said: '「だってさ、求人で『哲学者求む』なんて見る？」と続ける。',
       mean: 'I mean ＝ だって、つまり。前に言ったことの理由を足す合図。',

@@ -36,7 +36,7 @@ export const ronAward: Clip = {
       said: '自分が「今年の女性」だと思いこんだレスリーが手紙を読ませると、受賞者はロンだった。',
       mean: 'award winner ＝ 受賞者。女性団体の賞が、男のロンに行ってしまった。',
       trap: '最初のスープの話が残りやすい。決め手は、読み上げの最後の名前。',
-      use: 'And the winner is…（受賞者は…）' },
+      use: 'The winner of the prize is my sister.（賞をとったのは私の姉です）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'destiny', seg: [27.95, 33.9], retired: true,
       stem: 'What makes Leslie’s line about every girl’s dream funny?',
@@ -69,7 +69,7 @@ export const ronAward: Clip = {
       said: '自分の受賞を聞いて「やっと来たか」と言う。',
       mean: 'it’s about time ＝ ようやくだ、遅すぎたくらい。もらって当然という顔。',
       trap: 'it’s about がつながり「イツァバウ」に聞こえる。3語あると思って書く。',
-      use: 'You’re here! It’s about time.（来た！やっとか）' },
+      use: 'The bus is finally here. It’s about time.（やっとバスが来た。遅すぎるよ）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'tease', seg: [75.5, 96.9],
       stem: 'Ron thinks awards are stupid. Why keep this one?',
@@ -84,10 +84,10 @@ export const ronAward: Clip = {
       use: 'I couldn’t resist teasing him.（からかわずにいられなかった）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'however', reveals: ['tease'], seg: [82.9, 92.3],
-      stem: 'What does “However” do here?',
-      ja: 'ここでの「However」の働きは？',
-      choices: ['Turns the plan around', 'Adds another reason', 'Starts a whole new topic'], a: 0,
-      choicesJa: ['予定をひっくり返す', '理由をもう一つ足す', '新しい話を始める'],
+      stem: 'Why does Ron say “However” here?',
+      ja: 'ロンは、なぜここで「However」と言う？',
+      choices: ['To turn the plan around', 'To add another reason', 'To start a whole new topic'], a: 0,
+      choicesJa: ['予定をひっくり返すため', '理由をもう一つ足すため', '新しい話を始めるため'],
       cue: '「and I don’t」のあと。',
       line: 'because she works really hard and I don’t. … *However*, she cares way too much…',
       said: '「彼女はよく働き、私は働かない。…しかし、彼女は気にしすぎる」と続ける。',

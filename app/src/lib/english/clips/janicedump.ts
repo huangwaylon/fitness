@@ -72,7 +72,7 @@ export const janicedump: Clip = {
       said: '「分かってる、分かってる」と言い、「そしてあなたはアパートを失って…」と続ける。',
       mean: 'you（あなた）を主語にして話すので、ロス本人ではなくジャニスが続けている。',
       trap: 'ロスの不運の話なので、ロスが続けていると思いやすい。I ではなく you に変わる。',
-      use: 'I know, I know. You told me.（分かってる、聞いたよ）' },
+      use: 'I know, I know. I’m late again.（分かってる、また遅刻だよね）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'lose', seg: [13.6, 18.95],
       stem: 'Type the next item: “…lose your apartment, and then ___.” (4 words)', answer: 'you lose your job',

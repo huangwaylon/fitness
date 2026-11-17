@@ -72,7 +72,7 @@ export const ambulance: Clip = {
       trap: 'insurance（保険）の話が続くので、保険で払えたと思いやすい。',
       use: 'Excuse me, out of the way!（すみません、通して！）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [34, 37.2],
-      stem: 'What amount does the woman at the desk give?', ja: '受付の女性が言う金額は？',
+      stem: 'What amount does the receptionist give?', ja: '受付の人が言う金額は？',
       choices: ['$50', '$500', '$5,000'], a: 1, keep: true,
       choicesJa: ['50ドル', '500ドル', '5,000ドル'],
       cue: '「there’s a」のあと',

@@ -144,7 +144,7 @@ export const movember: Clip = {
       said: '「本当だって、そっちでみんなといたいよ」と答える。',
       mean: 'I’d rather ＝ むしろ〜したい。I’d の d はほぼ聞こえない。',
       trap: 'I’d better なら「ベラ」、I’d like to なら「ライク」。「ラザー」と聞こえれば rather。',
-      use: 'I’d rather stay in tonight.（今夜は家にいたいな）' },
+      use: 'I’d rather take the train.（電車で行くほうがいいな）' },
 
     // R fix: K2: "tired and low" was half true (a Batman voice is low), and "echoey" in the key isn't in the words.
     //   Now "tired and flat" against "strange and eerie" (spooky).

@@ -48,7 +48,7 @@ export const ronMeditate: Clip = {
       trap: '隣の店と聞くと、騒音を思い浮かべやすい。although のあとの最初の名詞を聞く。',
       use: 'The location is not ideal, but it’s cheap.（場所はいまいちだけど安い）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'right', seg: [20.5, 25.5],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'right', seg: [20.5, 25.5], retired: true,
       stem: 'Why does Chris say, “Excuse me, ladies, on your right”?',
       ja: 'クリスはなぜ「Excuse me, ladies, on your right」と言う？',
       choices: ['He is walking past them', 'He wants them to look right', 'He is giving them directions'], a: 0,
@@ -132,7 +132,7 @@ export const ronMeditate: Clip = {
       trap: 'at all の t が軽い「ラ」の音になり、a lot に聞こえやすい。was か wasn’t かは「ン」で聞く。',
       use: 'I didn’t sleep at all last night.（昨夜はまったく寝られなかった）' },
 
-    { id: 'h1', skill: 'attitude', level: 'B1', point: 'praise', reveals: ['blank'], seg: [67.6, 76.8],
+    { id: 'h1', skill: 'attitude', level: 'B1', point: 'praise', reveals: ['blank'], seg: [67.6, 76.8], retired: true,
       stem: 'How does Chris feel about Ron’s answer?',
       ja: 'ロンの答えを聞いて、クリスはどう感じる？',
       choices: ['Amazed', 'Angry', 'Worried'], a: 0,
@@ -173,7 +173,7 @@ export const ronMeditate: Clip = {
       said: '「頑張りすぎるな」と2回言う。',
       mean: 'Don’t try so hard ＝ そんなに頑張らないで。力を抜けば楽になる、という助言。',
       trap: 'Don’t try から「やめろ」と思いやすい。so hard がつくと「頑張りすぎるな」。',
-      use: 'Don’t try so hard. Just relax.（頑張りすぎないで。気楽にね）' },
+      use: 'Take it easy. Don’t try so hard.（気楽にね。頑張りすぎないで）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'job', seg: [86, 111.6],
       stem: 'How does the day end for Ron?',
@@ -222,7 +222,7 @@ export const ronMeditate: Clip = {
       trap: '控えめな告白を、もう一度の頼みと取りやすい。止まった文は、相手の返事から補う。',
       use: 'If you need someone who loves mornings…（朝型の人が必要なら…）' },
 
-    { id: 'g3', skill: 'infer', level: 'C1', point: 'flex', reveals: ['job'], seg: [96.55, 111.6],
+    { id: 'g3', skill: 'infer', level: 'C1', point: 'flex', reveals: ['job'], seg: [96.55, 111.6], retired: true,
       stem: 'Why does Chris give Ron the job?',
       ja: 'クリスはなぜロンを採用する？',
       choices: ['Ron came even with no interest', 'Ron told him the truth', 'Ron is good at meditating'], a: 0,

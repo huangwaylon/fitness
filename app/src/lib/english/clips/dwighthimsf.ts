@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 3, rewrite 10, retire 7, new 4
+// A2 REVIEW 2026-11-17: keep 3, rewrite 10, retire 7, new 4 · sweep: dwightself twins retired (d2 d4 f1 p2 s1 i1), new d5 d6
 // “Dwight Fights Himself - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US): at his
 // yearly karate seminar Dwight pitches the throat punch with a Yakuza story; Kevin refuses to be his partner, a coworker
 // says Dwight's only worthy opponent is himself, and Dwight demonstrates on himself while the coworker cheers him on.
@@ -24,7 +24,7 @@ export const dwightHimself: Clip = {
       trap: 'once a year から「去年の復習」と思いやすい。newest（いちばん新しい）を聞く。',
       use: 'Can you update me on the project?（プロジェクトの最新状況を教えて）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'yearly', seg: [8.6, 13.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'yearly', seg: [8.6, 13.0], retired: true,
       stem: 'How often does Dwight hold his seminar?', ja: 'ドワイトはどのくらいの間隔でセミナーを開く？',
       choices: ['Once a year', 'Twice a year', 'Once a month'], a: 0,
       choicesJa: ['年に1回', '年に2回', '月に1回'],
@@ -78,6 +78,17 @@ export const dwightHimself: Clip = {
 
     // why: escape ← "arrives" heard as the attackers coming, so they must get out first; the trolley ← "Trolley
     //   Museum" is the last place word heard
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'museum', seg: [23.2, 29.6],
+      stem: 'Where are they visiting in Dwight’s story?', ja: 'ドワイトの話では、みんなはどこを訪れている？',
+      choices: ['A trolley museum', 'A karate school', 'A train station'], a: 0,
+      choicesJa: ['路面電車の博物館', '空手の道場', '駅'],
+      cue: '「visiting the」のあと',
+      line: 'and you happen to be *visiting* the Lackawanna *Trolley Museum*.',
+      said: '「たまたま路面電車の博物館に来ている」という設定を話す。',
+      mean: 'visit ＝ 訪れる。museum ＝ 博物館（ミューズィアム）。trolley ＝ 路面電車。',
+      trap: 'trolley から駅と思いやすい。最後の Museum が場所。',
+      use: 'We’re visiting the museum today.（今日は博物館に行く）' },
+
     { id: 'd1', skill: 'detail', level: 'B2', point: 'holdoff', seg: [32.0, 36.1], retired: true,
       stem: 'In Dwight’s story, what problem does he ask them to solve?',
       choices: ['How to keep the attackers back until help comes', 'How to escape the museum before the attackers come',
@@ -89,7 +100,7 @@ export const dwightHimself: Clip = {
       trap: 'arrives を敵の到着と取ると「逃げる」になる。until の後ろは誰が来るかを聞く。',
       use: 'Can you hold them off for five minutes?（5分だけ待たせておいて）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'throat', seg: [35.6, 39.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'throat', seg: [35.6, 39.2], retired: true,
       stem: 'What move does Dwight say always works?', ja: 'ドワイトが「必ずうまくいく」と言う技は？',
       choices: ['A punch to the throat', 'A hard punch to the nose', 'A kick to the knee'], a: 0,
       choicesJa: ['のどへのパンチ', '鼻への強いパンチ', 'ひざへのキック'],
@@ -100,7 +111,7 @@ export const dwightHimself: Clip = {
       trap: '冒頭で broken nose と何度も叫ぶので鼻を選びやすい。ここは throat の「スロウ」を聞く。',
       use: 'You can’t go wrong with the pasta here.（ここのパスタならまず外れない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtoknow', seg: [39.5, 42.3],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtoknow', seg: [39.5, 42.3], retired: true,
       stem: 'What does “Good to know” mean?', ja: '“Good to know” はどういう意味？',
       choices: ['Thanks, that’s useful', 'I knew that already', 'I don’t believe you'], a: 0,
       choicesJa: ['ありがとう、役に立つ', 'それはもう知ってた', '信じられない'],
@@ -173,7 +184,7 @@ export const dwightHimself: Clip = {
       trap: '「自分が最大の敵」という言い回しに聞こえやすいが、ここは誰が相手をするかの話。',
       use: 'Honestly, only you can do it.（正直、できるのは君だけ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'false', seg: [53, 56],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'false', seg: [53, 56], retired: true,
       stem: 'Fill the gap: “False. I ___ choke you with your shoelace.”', ja: '空所に入るのは？ “False. I ___ choke you with your shoelace.”',
       choices: ['did', 'didn’t', 'tried to'], a: 0,
       choicesJa: ['本当に〜した', '〜しなかった', '〜しようとした'],
@@ -202,7 +213,7 @@ export const dwightHimself: Clip = {
       said: '「皆さんには失礼ながら、あなたにふさわしい相手はあなた自身だ」と言う。',
       mean: 'with all due respect ＝ お言葉ですが、失礼ながら。言いにくいことの前に置く前置き。',
       trap: 'respect を「尊敬」と思いやすい。この前置きのあとには、相手が喜ばない話が来る。',
-      use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
+      use: 'With all due respect, I see it differently.（お言葉ですが、私の考えは違います）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'correct', seg: [62.2, 65.75],
       stem: 'How does Dwight take the coworker’s words?', ja: 'ドワイトは同僚の言葉をどう受けとる？',
@@ -250,8 +261,19 @@ export const dwightHimself: Clip = {
       mean: '止めずに実況して盛り上げている。ドワイトは本気で受けて戦い続ける。',
       trap: 'Oh my God を心配の声と思いやすい。そのあとの言葉は、止める話ではなく実況。',
       use: 'Come on, keep going!（ほら、続けて！）' },
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'wrist', seg: [76.2, 80.2],
+      stem: 'What does Dwight grab after “Block”?', ja: '「Block」のあと、ドワイトはどこをつかむ？',
+      choices: ['The wrist', 'The nose', 'The elbow'], a: 0,
+      choicesJa: ['手首', '鼻', 'ひじ'],
+      cue: '「Block」のすぐあと',
+      line: 'Here it comes. Block. *Grasp wrist* as such.',
+      said: '「来たぞ。受ける。手首をこうつかむ」と、ひとりで動く。',
+      mean: 'grasp ＝ つかむ。wrist ＝ 手首（リスト）。',
+      trap: 'nose と elbow は、このあとの技で出てくる。Block のすぐあとは wrist。',
+      use: 'I hurt my wrist playing tennis.（テニスで手首をいためた）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B1', point: 'twohands', seg: [80.2, 85.4],
+
+    { id: 'i1', skill: 'phrase', level: 'B1', point: 'twohands', seg: [80.2, 85.4], retired: true,
       stem: 'What does Dwight mean by “Good point”?', ja: 'ドワイトの “Good point” はどういう意味？',
       choices: ['You’re right about that', 'That was a good punch', 'Let’s try that again'], a: 0,
       choicesJa: ['それはそのとおりだ', 'いいパンチだった', 'もう一回やろう'],
@@ -286,7 +308,7 @@ export const dwightHimself: Clip = {
       trap: 'not for long を「もうやめる」と思いやすい。続かないのは、負けている状態のほう。',
       use: 'I’m behind now, but not for long.（今は遅れてるけど、すぐ追いつく）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'upperhand', seg: [111.7, 115.3],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'upperhand', seg: [111.7, 115.3], retired: true,
       stem: 'What does “get the upper hand” mean?', ja: '“get the upper hand” はどういう意味？',
       choices: ['Start winning', 'Put a hand up', 'Hold hands'], a: 0,
       choicesJa: ['優勢になる', '手を上げる', '手をつなぐ'],

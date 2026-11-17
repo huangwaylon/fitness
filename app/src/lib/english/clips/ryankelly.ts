@@ -60,7 +60,7 @@ export const ryankelly: Clip = {
       said: '「確かにね」と受けて、間をおき「あなたはいい人じゃないと思う」と面と向かって言う。',
       mean: 'fair enough ＝「それはもっとも」。相手の言い分を受け入れる決まり文句。',
       trap: 'fair（公平）と enough（十分）から「もういい」と思いやすい。ここは「なるほど」。',
-      use: 'Fair enough. Let’s do it your way.（もっともだね。君のやり方でいこう）' },
+      use: 'Fair enough. I’ll pay next time.（もっともだね。次はぼくが払うよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'dislike', seg: [19.2, 25.9],
       stem: 'How does Pam feel about Ryan?',

@@ -149,7 +149,7 @@ export const fiftyYears: Clip = {
       said: '「レスリーは一人200ドルくれると言った」と話す。',
       mean: 'bucks ＝ ドル（くだけた言い方）。each ＝ 一人ずつ。二人で400ドル。',
       trap: '「トゥーハンドレッド」なら200。one hundred は「ワン」、twenty や thousand とも違う。',
-      use: 'It’s ten bucks each.（一人10ドルね）' },
+      use: 'They paid us fifty bucks each.（一人50ドルずつもらった）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [41.2, 46.2],
       stem: 'Type the end: “…to ___, but it’s impossible.” (3 words)', answer: 'keep this going',

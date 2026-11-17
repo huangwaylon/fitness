@@ -145,7 +145,7 @@ export const banquetHair: Clip = {
       trap: 'it の t が軽い「ラ」の音になり、一語に聞こえやすい。動詞＋it＋up の形。',
       use: 'Should I pin it up?（髪、上げたほうがいい？）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B2', point: 'sir', seg: [79.6, 84.5],
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'sir', seg: [79.6, 84.5], retired: true,
       stem: 'What does “I’m off the clock” mean?',
       ja: '「I’m off the clock」の意味は？',
       choices: ['I’m not working now', 'My watch is not working', 'I’m late for work'], a: 0,
@@ -157,7 +157,7 @@ export const banquetHair: Clip = {
       trap: 'clock（時計）から、時計の話や遅刻の話を思いやすい。ここは仕事中かどうか。',
       use: 'Sorry, I’m off the clock.（すみません、今は勤務時間外なんです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'mayor', seg: [84.3, 91.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'mayor', seg: [84.3, 91.9], retired: true,
       stem: 'When will Leslie wear her hair like this?',
       ja: 'レスリーは、いつこの髪型にすると言う？',
       choices: ['When she becomes mayor', 'At her mother’s parties', 'Every day from now on'], a: 0,

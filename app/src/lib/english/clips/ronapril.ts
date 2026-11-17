@@ -25,7 +25,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'literally（文字どおり）がつくので、むずかしく考えやすい。ここは本当に逆さの景色。',
       use: 'Try looking at it from a different perspective.（別の見方をしてみて）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'gym', seg: [9.95, 18.6],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'gym', seg: [9.95, 18.6], retired: true,
       stem: 'What is Ron really saying with “Isn’t there a men’s gymnasium…?”',
       ja: '「Isn’t there a men’s gymnasium…?」で、ロンが本当に言いたいことは？',
       choices: ['Please stop doing it here', 'There is a better gym', 'Does this place have a gym?'], a: 0,
@@ -72,7 +72,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '謙遜や「小さくても有能」と取りやすいが、ineffective まで言う。逆向きの努力は本音。',
       use: 'I keep my weekends free on purpose.（週末はわざと空けてるんだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'four', seg: [33.3, 44.45], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'four', seg: [33.3, 44.45], retired: true, keep: true,
       stem: 'Leslie does the work of how many people?',
       ja: 'レスリーは何人分の仕事をしている？',
       choices: ['Two', 'Four', 'Seven'], a: 1,
@@ -96,7 +96,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'slack を「さぼる」と取ると、見張り役に聞こえる。ここは空いた分を引き取る。',
       use: 'I can pick up the slack this week.（今週は私が穴を埋めるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'deputy', seg: [44.45, 56.35],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'deputy', seg: [44.45, 56.35], retired: true,
       stem: 'What does Ron say “No!” to?',
       ja: 'ロンは何に「No!」と言う？',
       choices: ['Hiring a new person', 'Leslie running for council', 'Chris praising Leslie'], a: 0,
@@ -178,7 +178,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '「アイライク」なら I’d like、最後が「ラヴ」なら I’d love、「ウィー」で始まれば We’d like。',
       use: 'I’d like to check out, please.（チェックアウトをお願いします）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'shop', seg: [116.9, 122.4],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'shop', seg: [116.9, 122.4], retired: true,
       stem: 'What does “Set up shop in our office” mean?',
       ja: '「Set up shop in our office」はどういう意味？',
       choices: ['Work from our office', 'Open a store in our office', 'Take Leslie’s job'], a: 0,
@@ -212,7 +212,7 @@ export const ronAprilTakeOver: Clip = {
       said: '「エイプリルは厄介だが、明らかに彼女が答えだ」と言う。',
       mean: 'she’s clearly the answer ＝ はっきり彼女が答え。悪口は前置きで、but のあとが本題。',
       trap: 'きつい言葉が先に来るので、反対に聞こえやすい。but のあとに本音が来る。',
-      use: 'It’s a long drive, but it’s worth it.（遠いけど、行く価値はある）' },
+      use: 'It’s expensive, but it’s worth it.（高いけど、その価値はある）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'please', reveals: ['rather', 'begged', 'taught'], seg: [174.6, 210.4],
       stem: 'How does Ron get April to agree?',

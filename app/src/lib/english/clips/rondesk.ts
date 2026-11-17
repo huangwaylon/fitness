@@ -87,8 +87,8 @@ export const ronDesk: Clip = {
       use: 'It’s over. Time to get over it.（終わったこと。もう切りかえよう）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'tea', seg: [56.3, 67.4],
-      stem: 'What did the man do with the sprinkler water?',
-      ja: 'その男性はスプリンクラーの水で何をした？',
+      stem: 'What did the citizen do with the sprinkler water?',
+      ja: 'その市民は、スプリンクラーの水で何をした？',
       choices: ['He made tea with it', 'He watered his garden', 'He drank it straight'], a: 0,
       choicesJa: ['お茶をいれた', '庭に水をまいた', 'そのまま飲んだ'],
       cue: '看板の話のあと、So の文。',
@@ -110,8 +110,8 @@ export const ronDesk: Clip = {
       use: 'It said “wet paint,” so I touched it.（「ペンキ塗りたて」とあったから触った）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'sir', seg: [67.3, 74.4],
-      stem: 'How does the man feel by the end of his “Sir?”s?',
-      ja: '「Sir?」をくり返したあと、男性はどんな気持ち？',
+      stem: 'How does the citizen feel by the end of his “Sir?”s?',
+      ja: '「Sir?」をくり返したあと、その市民はどんな気持ち？',
       choices: ['Angry at being ignored', 'Worried that Ron is sick', 'Thankful for Ron’s help'], a: 0,
       choicesJa: ['無視されて怒っている', 'ロンの具合を心配している', 'ロンの助けに感謝している'],
       cue: '最後の短い一文。',

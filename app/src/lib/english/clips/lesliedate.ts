@@ -279,7 +279,7 @@ export const leslieDate: Clip = {
       said: '「もう少しワインを飲もう。流れにまかせよう」と言う。',
       mean: 'see where 〜 takes us ＝ 〜の流れにまかせよう。',
       trap: 'where the は「ウェアザ」、takes us は「テイクサス」とつながる。6語を数えて書く。',
-      use: 'Let’s just see where the day takes us.（今日は流れにまかせよう）' },
+      use: 'Let’s see where the night takes us.（今夜は流れにまかせよう）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'age', reveals: ['younger'], seg: [179.0, 187.3], retired: true,
       stem: 'When her mother says Leslie isn’t getting younger, why does Leslie’s reply get a laugh?',

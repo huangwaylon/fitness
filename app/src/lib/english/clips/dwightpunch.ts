@@ -84,7 +84,7 @@ export const dwightPunch: Clip = {
       said: '「黒帯にも勝てる」と言ったあと、「いいか、昔は荒っぽい連中といたんだ」と始める。',
       mean: '文の頭の See, は「というのもね、いいかい」。自分の話の理由を説明し始める合図。',
       trap: 'see から「見る」「分かる？」と思いやすい。文の頭の See, は説明の前置き。',
-      use: 'See, the thing is, I’m new here.（というのも、ここは初めてで）' },
+      use: 'See, I grew up in a small town.（というのも、小さな町で育ったから）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'crowd', seg: [22.2, 29.9],
       stem: 'What does “run with a tough crowd” mean?', ja: '“run with a tough crowd” はどういう意味？',

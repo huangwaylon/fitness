@@ -72,7 +72,7 @@ export const ronHumour: Clip = {
       said: '「僕らは当然知ってるけど、友だちに説明してあげて」と頼む。',
       mean: '自分も知らないのを、「友だちのため」という形でごまかしている。',
       trap: 'obviously（もちろん）を聞くと、本当に知っていると思いやすい。知らないのを隠している。',
-      use: 'Why don’t you go first?（先にどうぞ）' },
+      use: 'Could you explain it for my friends?（友だちのために説明してもらえますか）' },
 
     // anchor: 45.9–46.4 s six words inside about half a second, right after "what consulting is, but"; both sources
     { id: 'nt1', skill: 'dict', level: 'C2', point: 'whydont', seg: [45.2, 48.5],
@@ -295,7 +295,7 @@ export const ronHumour: Clip = {
       said: '「いい知らせ」と電話で切り出すが、Oh, boy と言い、「仕事はいらないって」と伝える。',
       mean: 'Oh, boy ＝ あちゃー、まずいな。悪い流れのときの声。',
       trap: '喜びにも使うので、good news と合わせて明るく思いやすい。続く報告で決める。',
-      use: 'Oh, boy. Here we go again.（あーあ、またか）' },
+      use: 'Oh, boy. That’s not good.（あーあ、それはまずいね）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B2', point: 'awkward', reveals: ['outcome'], seg: [212.0, 221.4],
       stem: 'Why say “Well, this is uncomfortable” here?',
@@ -307,6 +307,6 @@ export const ronHumour: Clip = {
       said: '「そうですか」のあと、「さて、気まずいね」とだけ言う。',
       mean: 'uncomfortable ＝ 気まずい。気まずさをわざと口に出す言い方。謝ってはいない。',
       trap: '気まずい場面なので謝ったと思いやすいが、sorry はない。',
-      use: 'Well, this is awkward.（えーと、気まずいね）' },
+      use: 'Well, this is uncomfortable.（えーと、これは気まずいな）' },
   ]
 };

@@ -110,7 +110,7 @@ export const jointMission: Clip = {
       trap: 'Aren’t なら最初に「ン」が入る。Do you want to なら「ドゥユワナ」。ここは「アーユー」。',
       use: 'Are you gonna finish that?（それ、全部食べる？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'money', reveals: ['shirtname'], seg: [97.4, 102.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'money', reveals: ['shirtname'], seg: [97.4, 102.3], retired: true, keep: true,
       stem: 'How much did Tom pay to put his name on the shirt?',
       ja: 'トムはシャツに名前を入れるのにいくら払った？',
       choices: ['$20', '$100', '$120', '$200'], a: 2,
@@ -245,7 +245,7 @@ export const jointMission: Clip = {
       mean: '過去の仮定なので文法では If I had known だが、会話では If I knew もよく使う。',
       trap: '習った仮定法に合わせて had を足したくなる。正しい文でなく聞こえた音を書く。',
       use: 'If I knew, I’d have told you.（知ってたら言ってたよ）' },
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'kingpin', seg: [177.85, 196.5],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'kingpin', seg: [177.85, 196.5], retired: true,
       stem: 'How does the stakeout end?',
       ja: '張り込みはどう終わる？',
       choices: ['The man is someone they know', 'A stranger runs away', 'They scare the man off'], a: 0,
@@ -257,7 +257,7 @@ export const jointMission: Clip = {
       trap: '物音や外見の説明から、知らない人と思いやすい。最後にくり返される名前が答え。',
       use: 'Wait, I know that guy!（待って、あの人知ってる！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'looks', reveals: ['kingpin'], seg: [186.7, 190.5],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'looks', reveals: ['kingpin'], seg: [186.7, 190.5],
       stem: 'Fill the gap: “Oh my God, ___ Andy.”',
       ja: '「Oh my God, ___ Andy.」の空所は？',
       choices: ['it looks like', 'it looked like', 'he looks like'], a: 0,

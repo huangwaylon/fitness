@@ -2,7 +2,7 @@
 // “Rachel's Job Search Isn't Going Well... | Friends” (the official Friends channel, Best of Season 1): Rachel sends
 // résumés out for any job to escape waitressing; a friend's hints reveal a mistake on all of them.
 // Speech runs only 13–55 s; whisper loops its last line from 54 s. The friends besides Rachel are never named in the
-// audio, so items call them "a friend".
+// audio: stems name Chandler for the proofreading lines (as the show does) and call the other "one helper".
 import type { Clip } from '../types.ts';
 
 export const rachResume: Clip = {
@@ -50,7 +50,7 @@ export const rachResume: Clip = {
       trap: 'the ones to work for はほめる形なので本気に聞こえる。Popular を形容詞にしている。',
       use: 'If you’re splurging, this is the place.（ぜいたくするなら、ここだね）' },
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'really', reveals: ['doyou'], seg: [15.3, 20.8],
-      stem: 'What does the friend mean by “Do you *really* want…?”', ja: '友だちの「Do you really want…?」の意味は？',
+      stem: 'What does one helper mean by “Do you *really* want…?”', ja: '手伝っている一人の「Do you really want…?」の意味は？',
       choices: ['I don’t think it fits you', 'I think it’s a great job', 'I want that job too'], a: 0,
       choicesJa: ['君に合わないと思う', 'いい仕事だと思う', 'ぼくもその仕事がほしい'],
       cue: '「running low on resumes」のあと',
@@ -140,7 +140,7 @@ export const rachResume: Clip = {
       trap: '最初の uh（えっと）で、no に聞こえやすい。uh は考える間で、答えは yeah。',
       use: 'Yeah, why? Is something wrong?（うん、なんで？何かあった？）' },
     { id: 'i3', skill: 'infer', level: 'C1', point: 'mistake', seg: [32.7, 43.3],
-      stem: 'What does the friend’s “*Uh, nothing*” really mean?', ja: '友だちの「Uh, nothing」の本当の意味は？',
+      stem: 'What does Chandler’s “*Uh, nothing*” really mean?', ja: 'チャンドラーの「Uh, nothing」の本当の意味は？',
       choices: ['There is a problem', 'Everything is fine', 'I didn’t read them'], a: 0,
       choicesJa: ['問題がある', '全部大丈夫', '読んでいない'],
       cue: '「yeah, why?」のあと',
@@ -150,7 +150,7 @@ export const rachResume: Clip = {
       trap: 'nothing（何もない）から、問題なしと思いやすい。前の uh と、見直したかという質問が手がかり。',
       use: 'Oh, nothing. Never mind.（ううん、何でもない）' },
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'mistake', seg: [32.7, 43.3],
-      stem: 'Is the friend’s praise of her computer skills sincere?', ja: 'パソコンの腕前をほめる友だちは本気？',
+      stem: 'Is Chandler’s praise of her computer skills sincere?', ja: 'パソコンの腕前をほめるチャンドラーは本気？',
       choices: ['No, there is a mistake', 'No, the jobs are bad', 'Yes, she is very good'], a: 0,
       choicesJa: ['いいえ、ミスがある', 'いいえ、仕事がよくない', 'はい、彼女はとても上手'],
       cue: '「Uh, nothing」のあと',

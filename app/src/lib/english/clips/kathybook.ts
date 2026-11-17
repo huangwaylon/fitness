@@ -83,7 +83,7 @@ export const kathybook: Clip = {
       said: '「実はね、これはキャシーの誕生日用なんだ」。',
       mean: 'Actually ＝ 実は、いや本当は。相手の思い込み（自分へのプレゼント）を直している。',
       trap: '「実際に」と訳すと、ただの強調に聞こえやすい。思い込みを直すときの合図。',
-      use: 'Actually, I ordered the fish.（いえ、わたしは魚を頼みました）' },
+      use: 'Actually, this is for my mom.（実は、これは母へのものなんです）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'book', seg: [18.9, 23.6],
       stem: 'What is the gift for Kathy?', ja: 'キャシーへの贈り物は何？',
@@ -116,7 +116,7 @@ export const kathybook: Clip = {
       said: '「触らないで。指の油が本を傷めるから」と注意する。',
       mean: 'destructive ＝ 傷める、こわす。誰の指にもある油まで気にするほど、大事にしている。',
       trap: 'fingers と oils だけ聞くと、手が汚れていると思いやすい。指の油は誰にでもある。',
-      use: 'Please don’t touch the paintings.（絵に触らないでください）' },
+      use: 'Please don’t touch it. It breaks easily.（触らないで。こわれやすいの）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'hair', seg: [29.1, 38.5], retired: true,
       stem: 'Why does the line about Ross’s hair get a laugh?',
@@ -162,7 +162,7 @@ export const kathybook: Clip = {
       said: '「『同居人の彼女がひそかに好き』って伝えるのに最高だね」とからかう。',
       mean: 'secretly ＝ こっそり。手間のかかる高い贈り物で、気持ちがバレると言っている。',
       trap: 'great はほめ言葉に聞こえやすい。to say のあとの中身が、からかいの理由。',
-      use: 'I got you a little something.（ちょっとしたものを用意したよ）' },
+      use: 'This is just a small thank-you gift.（ほんのお礼の品です）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'how', reveals: ['couple'], seg: [38.4, 49.4],
       stem: 'Who did Chandler call to find the book?', ja: '本を探すために、チャンドラーは誰に電話した？',
@@ -194,7 +194,7 @@ export const kathybook: Clip = {
       said: '「本屋を何軒か回って、ディーラーにも何人か話を聞いた」。',
       mean: 'a couple of ＝ 2つ3つ、いくつか。ちょうど2とは限らない軽い言い方。',
       trap: 'a couple of は「アカプラ」とひと続きになり、of がほぼ消える。',
-      use: 'Give me a couple of minutes.（2、3分ちょうだい）' },
+      use: 'I’ll be back in a couple of days.（2、3日で戻るよ）' },
 
     { id: 'p3', skill: 'phrase', level: 'B1', point: 'sweet', seg: [46, 51],
       stem: 'What does “That’s so sweet” mean here?', ja: 'ここでの “That’s so sweet” はどういう意味？',
@@ -230,7 +230,7 @@ export const kathybook: Clip = {
       use: 'It’s not too late, is it?（まだ間に合うよね？）' },
 
     { id: 'h2', skill: 'detail', level: 'B1', point: 'orange', seg: [60.0, 68.4],
-      stem: 'What does Joey give Kathy, in the friend’s words?', ja: '友だちの話では、ジョーイはキャシーに何をあげる？',
+      stem: 'In the joke, what does Joey give Kathy?', ja: 'そのたとえ話では、ジョーイはキャシーに何をあげる？',
       choices: ['An orange', 'A book', 'Some flowers'], a: 0,
       choicesJa: ['オレンジ', '本', '花'],
       cue: '文の最後の言葉',

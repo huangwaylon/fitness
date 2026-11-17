@@ -112,7 +112,7 @@ export const nutribars: Clip = {
       said: '「できる。そうする自由がある」と、同じことを言いかえる。',
       mean: 'free to 〜 ＝ 自由に〜できる。do so ＝ そうする。to は小さく短く「タ」。',
       trap: 'to が弱く、free do so と聞こえやすい。free のあとには to が来やすい。',
-      use: 'Feel free to ask me anything.（何でも気軽に聞いてね）' },
+      use: 'You’re free to leave at any time.（いつでも自由に帰っていいですよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'qa', seg: [24.3, 69.0],
       stem: 'What are the people’s questions like?', ja: '集まった人たちの質問は、どんな感じ？',
@@ -156,10 +156,10 @@ export const nutribars: Clip = {
       said: '「コーンは果物、シロップは茂みから取れる」と言われ、アンは「やれやれ」とつぶやく。',
       mean: 'Oh, boy ＝ やれやれ、困った。コーンは果物ではない。おかしな話に困っている。',
       trap: 'Oh boy は喜ぶときにも使うので、明るいと思いやすい。直前の話がおかしいかを聞く。',
-      use: 'Oh, boy. Here we go again.（やれやれ、またか）' },
+      use: 'Oh, boy. This is going to be hard.（やれやれ、これは大変だ）' },
 
     { id: 'i2', skill: 'detail', level: 'B1', point: 'pretext', seg: [46.5, 55.9],
-      stem: 'What does the man really want from Ann?', ja: 'この男性が、本当にアンにほしいものは？',
+      stem: 'What does this guest really want from Ann?', ja: 'この参加者が、本当にアンにほしいものは？',
       choices: ['Her phone number', 'Proof she’s a nurse', 'Her advice on food'], a: 0,
       choicesJa: ['電話番号', '看護師だという証拠', '食べ物のアドバイス'],
       cue: '「the point is」のあと',

@@ -26,10 +26,10 @@ export const pikitis: Clip = {
       use: 'I’ll be back in a couple of hours.（2、3時間で戻ります）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['sure'], seg: [19.2, 23.95],
-      stem: 'What does the officer’s “I mean” do here?',
-      ja: 'ここで警官の「I mean」はどんな働き？',
-      choices: ['Gives his conclusion', 'Shows he is unsure', 'Asks Leslie a question'], a: 0,
-      choicesJa: ['結論を言う', '自信がないと示す', 'レスリーに質問する'],
+      stem: 'Why does the officer say “I mean” here?',
+      ja: '警官は、なぜここで「I mean」と言う？',
+      choices: ['To give his conclusion', 'To show he is unsure', 'To ask Leslie a question'], a: 0,
+      choicesJa: ['結論を言うため', '自信がないと示すため', 'レスリーに質問するため'],
       cue: '時間を言った直後の2語。',
       line: '*I mean*, it must have been somebody else.',
       said: '「つまり、ほかの誰かのはずだ」と言う。',
@@ -245,7 +245,7 @@ export const pikitis: Clip = {
       said: '「そもそも、あのとき食べていたのはプラムだった」と言う。',
       mean: 'actually ＝ 実は。plum ＝ プラム（すもも）。決定的な事実をさらりと出す。',
       trap: '桃の話が続いたので peach と思いこみやすい。actually のあとに本当の話が来る。',
-      use: 'Actually, I’m from Osaka.（実は大阪出身なんです）' },
+      use: 'Actually, I was here first.（実は、私が先に来てたんです）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'care', seg: [168.5, 173.6],
       stem: 'Leslie says, “I don’t care what you say.” What does she mean?',

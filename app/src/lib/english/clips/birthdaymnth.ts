@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 2, new 1
+// A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 2, new 1 · sweep: cross-bank twins retired or rewritten
 // “It's Birthday Month - The Office US” (the official The Office channel, Best of Season 4): a coworker lists the
 // month's birthdays, and Jim proposes one shared party, then explains to camera what Michael's parties are like.
 // Segments from the captions, words from whisper (2026-11-16). Talk runs ≈ 0–62 s; whisper loops after 63 s. Untested:
@@ -48,10 +48,10 @@ export const birthdayMonth: Clip = {
       use: 'Mine is at the end of the month.（私のは月末です）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', reveals: ['shared'], seg: [5.95, 12.25],
-      stem: 'What is Jim doing with “Why don’t we just…”?',
-      ja: 'ジムは「Why don’t we just…」で何をしている？',
-      choices: ['Making a suggestion', 'Asking for a reason', 'Complaining about it'], a: 0,
-      choicesJa: ['提案している', '理由を聞いている', '文句を言っている'],
+      stem: 'Why does Jim say “Why don’t we just…” here?',
+      ja: 'ジムは、なぜここで「Why don’t we just…」と言う？',
+      choices: ['To make a suggestion', 'To ask for a reason', 'To complain about it'], a: 0,
+      choicesJa: ['提案するため', '理由を聞くため', '文句を言うため'],
       cue: '「I have an idea」の直後。',
       line: 'I have an idea. *Why don’t we just* do one big shared party?',
       said: '「考えがある。一回、大きなパーティーにしない？」と言う。',
@@ -103,7 +103,7 @@ export const birthdayMonth: Clip = {
       said: '「冗談のプレゼントを渡して、乾杯のあいさつをする」と言う。',
       mean: 'make a toast ＝ 乾杯のあいさつをする。a が小さく短く、makes にくっつく。',
       trap: 'a を落とすと makes toast（パンを焼く）。小さな a があるか聞く。the なら「ザ」が聞こえる。',
-      use: 'Let’s make a toast to Ken!（ケンに乾杯しよう）' },
+      use: 'Let’s make a toast to the new couple!（新しいカップルに乾杯しよう）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'twotypes', seg: [24.9, 29], keep: true,
       stem: 'How many kinds of toasts does Michael make?',
@@ -176,7 +176,7 @@ export const birthdayMonth: Clip = {
       trap: 'big から、大きなパーティーと思いやすい。big は believer にかかる。',
       use: 'I’m a big believer in breakfast.（朝ごはんは大事だと思ってる）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', reveals: ['hedge'], seg: [44.5, 50.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', reveals: ['hedge'], seg: [44.5, 50.9], retired: true,
       stem: 'What does “to a fault” mean here?',
       ja: 'ここで「to a fault」はどういう意味？',
       choices: ['Too much', 'By mistake', 'Because of others'], a: 0,
@@ -200,10 +200,10 @@ export const birthdayMonth: Clip = {
       use: 'It’s maybe, possibly, a little expensive.（ちょっと、まあ、高いかもね）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'so', seg: [57.2, 62.8],
-      stem: 'What does Jim’s “So” do here?',
-      ja: 'ここでジムの「So」はどんな働き？',
-      choices: ['Wraps up what he said', 'Tells what happened next', 'Starts a new topic'], a: 0,
-      choicesJa: ['話をまとめる', '次に起きたことを言う', '新しい話を始める'],
+      stem: 'Why does Jim say “So” here?',
+      ja: 'ジムは、なぜここで「So」と言う？',
+      choices: ['To wrap up what he said', 'To tell what happened next', 'To start a new topic'], a: 0,
+      choicesJa: ['話をまとめるため', '次に起きたことを言うため', '新しい話を始めるため'],
       cue: '例を言い終えたあとの一語。',
       line: '*So*, I think, yeah.',
       said: '「というわけで、まあ、そういうこと」と言う。',

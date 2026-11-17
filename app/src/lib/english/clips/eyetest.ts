@@ -201,7 +201,7 @@ export const andyEyeTest: Clip = {
       trap: 'won’t なら「ウォウン」、don’t なら「ドウン」。短い「ウドゥン」なら wouldn’t。',
       use: 'I wouldn’t worry about it.（気にしなくていいと思うよ）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'imean', seg: [93.3, 100.8],
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'imean', seg: [93.3, 100.8], retired: true,
       stem: 'What does “Well, I mean, yeah” mean here?', ja: 'ここでの “Well, I mean, yeah” はどういう意味？',
       choices: ['Actually, yes, there is more', 'No, nothing else, thanks', 'No, and here’s why'], a: 0,
       choicesJa: ['実は、まだある', 'ううん、ほかにはない、ありがとう', 'ないよ、理由はね'],
@@ -223,7 +223,7 @@ export const andyEyeTest: Clip = {
       trap: 'swallowed（飲みこんだ）はすぐあとのガムの話。once ate のあとの with まで聞く。',
       use: 'Take the wrapper off first.（まず包み紙を取って）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [116.85, 120.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [116.85, 120.3], retired: true, keep: true,
       stem: 'For how long has Andy swallowed his gum?', ja: 'アンディは何年、ガムを飲みこんできた？',
       choices: ['20 years', '25 years', '35 years'], a: 1,
       choicesJa: ['20年', '25年', '35年'],
@@ -266,7 +266,7 @@ export const andyEyeTest: Clip = {
       trap: 'thanks から、素直なお礼だと思いやすい。for nothing（何もしないことに）が皮肉のしるし。',
       use: 'Thanks for nothing, weather app.（役に立たないな、天気アプリ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [149.5, 156.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [149.5, 156.6], retired: true, keep: true,
       stem: 'How long do they think they can skip the doctor?', ja: '二人は、何年医者に行かなくていいと思っている？',
       choices: ['2 years', '10 years', '100 years'], a: 1,
       choicesJa: ['2年', '10年', '100年'],

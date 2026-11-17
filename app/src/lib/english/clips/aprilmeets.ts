@@ -155,8 +155,8 @@ export const aprilMeetings: Clip = {
       use: 'I just want to feel heard.（ただ話を聞いてほしいだけ）' },
 
     { id: 'n3', skill: 'detail', level: 'B1', point: 'complaint', seg: [111.9, 122],
-      stem: 'Who did the man yell at, says the complaint?',
-      ja: '苦情によると、男は誰にどなった？',
+      stem: 'Who did the visitor yell at, says the complaint?',
+      ja: '苦情によると、その訪問者は誰にどなった？',
       choices: ['Five-year-old girls', 'The referees', 'The girls’ coaches'], a: 0,
       choicesJa: ['5歳の女の子たち', '審判', '女の子たちのコーチ'],
       cue: 'complaint のあと。', line: 'According to the complaint, you yelled at *five-year-old girls*.',
@@ -229,8 +229,8 @@ export const aprilMeetings: Clip = {
       use: 'That meeting went nowhere.（あの会議、何も進まなかった）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'nurse', seg: [158.2, 171],
-      stem: 'Is the man happy she is a nurse?',
-      ja: '彼女が看護師だと聞いて、男は喜んでいる？',
+      stem: 'Is the visitor happy she is a nurse?',
+      ja: '彼女が看護師だと聞いて、その訪問者は喜んでいる？',
       choices: ['Yes, he has a health question', 'No, he needs help with parks', 'No, he doesn’t believe her'], a: 0,
       choicesJa: ['はい、体の相談がある', 'いいえ、公園のことで助けがいる', 'いいえ、信じていない'],
       cue: '「great news」のすぐあと。', line: 'I’m a nurse. — Seriously? That’s great news. I have *the weirdest thing on my arm*.',

@@ -111,7 +111,7 @@ export const fluSeason: Clip = {
       said: '「メインの歌手が決まったし、希望リストは捨てられる」と言う。',
       mean: 'get rid of ＝ 捨てる・処分する。「ゲリダヴ」とひと続きに聞こえる。',
       trap: 'of は小さく短く「ア」程度で、聞き落としやすい。4語でひとまとまり。',
-      use: 'I need to get rid of old clothes.（古い服を処分しなきゃ）' },
+      use: 'Can you help me get rid of these boxes?（この箱を処分するの手伝ってくれる？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'longshots', seg: [74.2, 78.6],
       stem: 'Andy says, “Those are *long shots*.” What does he mean?',

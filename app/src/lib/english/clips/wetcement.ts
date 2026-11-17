@@ -223,7 +223,7 @@ export const wetCement: Clip = {
       said: '「100歳になったらここに戻ってきて」と話す。',
       mean: 'a hundred ＝ 100。年をとった自分を大げさに思い描いている。',
       trap: '「ハンドレッ」なら 100。「シックスティ」なら 60、「エイティ」なら 80、「ナインティ」なら 90。',
-      use: 'My grandma just turned ninety.（祖母がちょうど90歳になった）' },
+      use: 'I want to live to 100.（100歳まで生きたい）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'piece', seg: [101.35, 105.05],
       stem: 'Type what he says: “and I can find ___ cement” (3 words)', answer: 'that piece of',

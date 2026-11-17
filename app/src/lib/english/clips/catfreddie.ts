@@ -53,7 +53,7 @@ export const catFreddie: Clip = {
       trap: 'not here から「今出かけた」と思いやすいが、そうは言っていない。ただ「いない」だけ。',
       use: 'Wait, didn’t you just say she was home?（待って、家にいるって言わなかった？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'dodge', reveals: ['handsome'], seg: [15.5, 22.5],
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'dodge', reveals: ['handsome'], seg: [15.5, 22.5], retired: true,
       stem: 'What does Cat’s reply to “But didn’t you just say…” do?',
       ja: '「でもさっき言わなかった？」へのキャットの返事は、何をしている？',
       choices: ['Avoids it by flattering him', 'Says she got mixed up', 'Tells him to stop asking'], a: 0,
@@ -75,7 +75,7 @@ export const catFreddie: Clip = {
       said: '名前を確かめられ、キャットは「なんで？猫が好きなの？」と聞き返す。',
       mean: '名前の Cat を、動物の cat（猫）の話だと受け取っている。そのずれが笑い。',
       trap: 'Why?（なんで？）から名前への不満に思いやすいが、続く You like cats? は明るい質問。',
-      use: 'Why do you ask?（なんでそんなこと聞くの？）' },
+      use: 'Why? Do you like dogs?（なんで？犬が好きなの？）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [40.8, 44.0],
       stem: 'Who does Cat turn out to be?',

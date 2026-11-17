@@ -26,7 +26,7 @@ export const rossNothing: Clip = {
       said: '「レイチェルは親友で、昔は愛してたけど、今はただの妻」と言う。',
       mean: 'just ＝「ただの」。ふつう妻は友だちより近いので、順番がさかさまで笑える。',
       trap: 'just には「ちょうど今」の意味もあるが、ここは名詞の前。「ただの〜」。',
-      use: 'It’s just a cold.（ただの風邪だよ）' },
+      use: 'He’s just my coworker.（彼はただの同僚だよ）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['past'], seg: [0, 40],
       stem: 'What does Ross want his friends to believe?',
@@ -135,10 +135,10 @@ export const rossNothing: Clip = {
       use: 'You could do worse than this hotel.（このホテルなら悪くないよ）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wrong', seg: [25, 29],
-      stem: 'Ross says “I’m sorry, but…” What is he doing?',
-      ja: 'ロスの「I’m sorry, but…」は何をしている？',
-      choices: ['Saying they are wrong', 'Saying sorry to Rachel', 'Asking them for help'], a: 0,
-      choicesJa: ['みんなの考えはちがうと言う', 'レイチェルに謝る', 'みんなに助けを頼む'],
+      stem: 'Why does Ross say “I’m sorry, but” here?',
+      ja: 'ロスは、なぜここで「I’m sorry, but」と言う？',
+      choices: ['To say they are wrong', 'To say sorry to Rachel', 'To ask them for help'], a: 0,
+      choicesJa: ['みんなの考えはちがうと言うため', 'レイチェルに謝るため', 'みんなに助けを頼むため'],
       cue: 'ジョーイのあと、ロスの最初の文。', line: '*I’m sorry, but* you guys are wrong.',
       said: '「悪いけど、君たちは違うよ」と言い返す。',
       mean: 'I’m sorry, but… ＝「悪いけど」。謝るのではなく、反対する前の前置き。',
@@ -165,7 +165,7 @@ export const rossNothing: Clip = {
       said: '「3回も離婚したくない」と言う。今回で3回目になる。',
       mean: 'three times ＝ 3回。twice（2回）、once（1回）も合わせて覚えたい。',
       trap: 'two（2）と思いやすいが、times の前は「スリー」。今回で3回目の離婚になる。',
-      use: 'This is my third time here.（ここに来るのは3回目）' },
+      use: 'I’ve moved three times.（3回引っ越したことがある）' },
 
     { id: 'i3', skill: 'infer', level: 'B1', point: 'excuse', reveals: ['three', 'nothing'], seg: [31, 37.9],
       stem: 'What is Ross’s real reason, someone says?',
@@ -187,7 +187,7 @@ export const rossNothing: Clip = {
       said: '「言わせてもらうと、お見事」とほめる。',
       mean: 'well done ＝ よくやった、お見事。人をほめるときの決まり文句。',
       trap: 'ステーキの「ウェルダン（よく焼き）」を思いやすい。人に言えば「よくやった」。',
-      use: 'Well done! You passed the test.（よくやった！合格だね）' },
+      use: 'Well done! That was great.（よくやった！すばらしかった）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'annul', reveals: ['fine', 'forget'], seg: [40.1, 55.5],
       stem: 'What does Ross say he will do now?',

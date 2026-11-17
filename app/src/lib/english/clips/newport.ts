@@ -24,7 +24,7 @@ export const newport: Clip = {
       said: '「会えてうれしいよ。久しぶりだね」と言う。',
       mean: 'It’s been a while ＝「久しぶり」。Good to see you と一緒によく使うあいさつ。',
       trap: 'while（〜の間）から「待った」と思いやすい。会っていなかった時間の話。',
-      use: 'Hi! It’s been a while.（やあ、久しぶり）' },
+      use: 'It’s been a while. How are you?（久しぶり。元気？）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'forgot', reveals: ['boring'], seg: [9.8, 18.45],
       stem: 'Does Bobby remember what he ran for?',

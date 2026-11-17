@@ -190,7 +190,7 @@ export const evilLaugh: Clip = {
       said: '「デイビーはクビ。チャールズもクビ。ジェーンは狂った」と並べる。',
       mean: 'got fired ＝ クビになった。fire には「クビにする」の意味もある。',
       trap: 'went crazy も聞こえるが、それはジェーン。名前のすぐあとの言葉を組で聞く。',
-      use: 'He got fired last week.（彼は先週クビになった）' },
+      use: 'My friend got fired today.（友だちが今日クビになった）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'list', reveals: ['me'], seg: [120, 129],
       stem: 'Whose names are on Dwight’s list?',
@@ -274,10 +274,10 @@ export const evilLaugh: Clip = {
       use: 'Any kind of tape will do.（テープなら何でもいいよ）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'doubt', seg: [182.0, 186.2],
-      stem: 'What does “I kind of doubt Gabe has suet” do?',
-      ja: '「I kind of doubt Gabe has suet」は何をしている？',
-      choices: ['Gently says no to the idea', 'Asks Dwight to go and check', 'Agrees with the idea'], a: 0,
-      choicesJa: ['やんわり案を断る', 'ドワイトに確かめてと頼む', '案に賛成する'],
+      stem: 'Why does the parent say “I kind of doubt”?',
+      ja: '赤ちゃんの親は、なぜ「I kind of doubt」と言う？',
+      choices: ['To gently say no to the idea', 'To ask Dwight to go check', 'To agree with the idea'], a: 0,
+      choicesJa: ['やんわり案を断るため', 'ドワイトに確かめてと頼むため', '案に賛成するため'],
       cue: '提案への返事、Gabe の前。',
       line: '*I kind of doubt* Gabe has suet.',
       said: '「ゲイブが脂を持ってるとは、ちょっと思えない」と返す。',

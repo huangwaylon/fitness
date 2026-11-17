@@ -131,7 +131,7 @@ export const joeymakeup: Clip = {
       said: 'モニカが「うちで夕食を作る」と言い、一人ずつ予定を聞いていく。',
       mean: '家に帰らない仲間で、感謝祭の夕食をしようという話。',
       trap: 'going home が聞こえると帰省の話と思いやすい。帰るのはジョーイだけ。',
-      use: 'How about dinner at my place?（うちで夕食はどう？）' },
+      use: 'Why don’t you come over for dinner?（うちに夕食を食べに来ない？）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'tellyou', reveals: ['offer'], seg: [52.2, 56.8],
       stem: 'Monica says, “I’ll tell you what.” What comes next?',
@@ -143,7 +143,7 @@ export const joeymakeup: Clip = {
       said: '「よし、こうしよう。うちで夕食を作るのはどう？」と言う。',
       mean: 'I’ll tell you what ＝「じゃあ、こうしよう」。提案や申し出の前に言う前置き。',
       trap: 'tell から「秘密を話す」と思いやすい。あとに How about が続く。',
-      use: 'Tell you what, I’ll pay this time.（じゃあ、今回はわたしが払うよ）' },
+      use: 'I’ll tell you what, let’s split it.（じゃあこうしよう、割り勘にしよう）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'potatoes', seg: [55.15, 60.7],
       stem: 'Which food is Monica asked to make?',

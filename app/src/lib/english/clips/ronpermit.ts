@@ -229,7 +229,7 @@ export const ronPermit: Clip = {
       said: '「子どもがいるよ！」と言われ、「確かに」と答える。',
       mean: 'Good point ＝ いい指摘だ、確かに。相手の言うことを認める言い方。',
       trap: 'point を「指さす」と思いやすい。ここは「言いたいこと・指摘」。',
-      use: 'Good point. I hadn’t thought of that.（確かに。それは考えてなかった）' },
+      use: 'Good point. Let’s ask first.（確かに。先に聞いてみよう）' },
 
     { id: 'pd2', skill: 'phrase', level: 'B1', point: 'worry', seg: [135.25, 141.6],
       stem: 'Ron says, “*Not to worry*. I have a permit.” Meaning?',

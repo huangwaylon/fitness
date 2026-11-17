@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 5, new 0
+// A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 5, new 0 · sweep: mysteryparty twins retired (f2 i1)
 // “me when they're singing happy birthday at a restaurant 💀 | iCarly #Shorts” (NickRewind, Best of the New iCarly 🎉):
 // at Freddie's party, a guest with a date wants to leave; the host pleads, they strike a deal (cake, dancing, drinks,
 // then out), and the guests rush the cake and the song.
@@ -37,7 +37,7 @@ export const cakeRush: Clip = {
       trap: 'あとのケーキや飲み物の話と混ざりやすい。この一文は You know の念押しだけで、約束はない。',
       use: 'You know how much this means to me.（これが私にとってどれだけ大事か分かるでしょ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'nevermet', seg: [0, 7.9],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'nevermet', seg: [0, 7.9], retired: true,
       stem: 'Who is the guest’s date with?',
       ja: 'ゲストのデートの相手は？',
       choices: ['Someone the guest never met', 'Someone the guest met once', 'Someone the guest dated before'], a: 0,
@@ -212,7 +212,7 @@ export const cakeRush: Clip = {
       trap: '3語が一つの音に聞こえて、here だけ書きやすい。間の of を落とさない。',
       use: 'I’m out of here. See you tomorrow.（じゃ帰るね、また明日）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'famished', seg: [27.6, 36.95],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'famished', seg: [27.6, 36.95], retired: true,
       stem: 'What does “I’m famished” mean?',
       ja: '「I’m famished」はどういう意味？',
       choices: ['I’m very hungry', 'I’m very tired', 'I’m very bored'], a: 0,

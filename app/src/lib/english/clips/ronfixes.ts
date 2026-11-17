@@ -250,15 +250,15 @@ export const ronFixes: Clip = {
       use: 'You know what? You deserve this.（そうだ、これは君が受け取るべきだ）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['earned'], seg: [113.6, 117],
-      stem: 'What does Ron’s “You know what?” do here?',
-      ja: 'ここでロンの「You know what?」はどんな働き？',
-      choices: ['Starts a sudden new idea', 'Asks if she knows the tool', 'Warns her of a complaint'], a: 0,
-      choicesJa: ['急に思いついたことを言い始める', '道具を知っているか聞く', '文句の前ぶれ'],
+      stem: 'Why does Ron say “You know what?” here?',
+      ja: 'ロンは、なぜここで「You know what?」と言う？',
+      choices: ['To start a sudden new idea', 'To ask if she knows the tool', 'To warn her of a complaint'], a: 0,
+      choicesJa: ['急に思いついたことを言い始めるため', '道具を知っているか聞くため', '文句を言う前置きのため'],
       cue: '答えを待たずに続く、文頭の3語。',
       line: '*You know what?* Keep this.',
       said: '「そうだ」と言い、「これ持っていきな」と渡す。',
       mean: 'You know what? ＝ そうだ、よし。思いついたことを言う前の合図で、答えは待たない。',
       trap: '質問の形なので「知ってる？」と思いやすい。答えを待たずに続けば、ただの前置き。',
-      use: 'You know what? Let’s order pizza.（そうだ、ピザ頼もう）' },
+      use: 'You know what? Keep the change.（そうだ、おつりはとっておいて）' },
   ]
 };

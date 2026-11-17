@@ -237,7 +237,7 @@ export const paulManager: Clip = {
       said: '「2023年モデルの試作品で、カメラが11個くらいある」と自慢する。',
       mean: '数の前の like ＝ だいたい、〜くらい。eleven は「イレヴン」。',
       trap: 'seven なら「セ」、twenty なら「トゥエ」で始まる。「イレ」と聞こえたら11。',
-      use: 'It takes like ten minutes.（10分くらいかかるよ）' },
+      use: 'It’s like a ten-minute walk.（歩いて10分くらいです）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'chickcard', seg: [250.3, 260.9],
       stem: 'What does the chicken card stand for?',

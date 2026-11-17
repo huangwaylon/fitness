@@ -27,7 +27,7 @@ export const bossAway: Clip = {
       trap: 'first time から初対面だと思いやすい。初めてなのは「正しく言えたこと」。',
       use: 'That’s the first time you’ve gotten it right.（ちゃんとできたの初めてだね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'spouts', seg: [13, 21],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'spouts', seg: [13, 21], retired: true,
       stem: 'What is the local habit with water fountains?', ja: '水飲み場での、この町の人の癖は？',
       choices: ['They put their mouths over it', 'They put their hands over it', 'They drink from underneath it'], a: 0,
       choicesJa: ['水の出る口に口をかぶせる', '水の出る口に手をかぶせる', '下から飲む'],
@@ -190,7 +190,7 @@ export const bossAway: Clip = {
       said: '「水の勢いを上げたら？」と言う。',
       mean: 'turn up ＝ 強くする、上げる。turn と up がつながり「ターナップ」に近い。',
       trap: 'turn down なら「ダウン」、tune up なら「チューン」。「ターナップ」と聞こえれば turn up。',
-      use: 'Can you turn up the heat?（暖房を強くしてくれる？）' },
+      use: 'Could you turn up the volume?（音量を上げてもらえますか）' },
 
     // why: wants Ann to fill in ← "fill in for Leslie" + Ann at Leslie's desk (right target, wrong direction); more urgent
     //   ← "major project" taken sincerely

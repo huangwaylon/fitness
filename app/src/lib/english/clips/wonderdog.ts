@@ -116,7 +116,7 @@ export const wonderDog: Clip = {
       said: '「それで僕がチャンピオンを預かった」と言う。',
       mean: 'look after ＝ 世話をする。looked の d と after がつながり「ルッカフター」に近い。',
       trap: 'd が after とつながって消えやすい。look at と取ると意味が変わる。',
-      use: 'Could you look after my bag?（荷物を見ててもらえますか）' },
+      use: 'Who will look after your dog?（犬の世話はだれがするの？）' },
 
     { id: 'h2', skill: 'phrase', level: 'B2', point: 'mutt', seg: [22.35, 27.95],
       stem: 'What does “half amazing, half terrific” say about the dog?',
@@ -155,10 +155,10 @@ export const wonderDog: Clip = {
       use: 'I feel better than ever.（今までで一番調子がいい）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'ifimay', seg: [42.3, 48.25],
-      stem: 'What is Chris doing with “Andy, if I may”?',
-      ja: '「Andy, if I may」で、クリスは何をしている？',
-      choices: ['Asking to give some advice', 'Asking to see the dog again', 'Asking to keep the dog'], a: 0,
-      choicesJa: ['意見を言わせてと頼んでいる', 'また犬に会いたいと頼んでいる', '犬を飼いたいと頼んでいる'],
+      stem: 'Why does Chris say “Andy, if I may” here?',
+      ja: 'クリスは、なぜここで「Andy, if I may」と言う？',
+      choices: ['To ask to give some advice', 'To ask to see the dog again', 'To ask to keep the dog'], a: 0,
+      choicesJa: ['意見を言わせてと頼むため', 'また犬に会いたいと頼むため', '犬を飼いたいと頼むため'],
       cue: '名前と短い返事のあと。',
       line: 'Andy, *if I may* — Yes? — Dogs tend to take on…',
       said: '「アンディ、ちょっといいかな」と切り出し、犬と飼い主の話を始める。',

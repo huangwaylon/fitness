@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 0
+// A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 0 · sweep: pitchwomen twins retired (f5 pr3)
 // A2 LATE: fast (175 wpm), and the clip plays crude lines (killing women, 325–332 s, 292–297 s) the learner can't skip
 // “Selling to Women - The Office US” (the official The Office channel, BEST OF SEASON 7 - The Office US): David Wallace
 // gives Dwight the huge White Pages account; the office, afraid he can't sell to women, coaches him in role-plays that
@@ -178,7 +178,7 @@ export const whiteWhale: Clip = {
       said: '座るよう勧められ、「商談中は座らない。強く、威圧的に見せたい」と答える。',
       mean: 'aggressive ＝ 攻撃的、imposing ＝ 威圧的。客に圧をかけるつもり。',
       trap: '立つのは礼儀、と思いやすい。aggressive は「積極的」より強く、相手をおどす感じ。',
-      use: 'Please have a seat.（どうぞ、おかけください）' },
+      use: 'I want to look confident.（自信があるように見せたい）' },
 
     { id: 'n3', skill: 'number', level: 'B1', point: 'twelve', seg: [188.3, 192.15], keep: true,
       stem: 'How fast does Dwight say he will sell?',
@@ -237,7 +237,7 @@ export const whiteWhale: Clip = {
       trap: '2つの a が落ちやすく、nod は not に聞こえやすい。名詞の前の a を確かめる。',
       use: 'A little smile helps a lot.（ちょっとした笑顔が大事）' },
 
-    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'kindof', seg: [250.3, 259.05],
+    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'kindof', seg: [250.3, 259.05], retired: true,
       stem: 'What does Dwight mean by “Kind of”?',
       ja: 'ドワイトの「Kind of」はどういう意味？',
       choices: ['A little, not fully', 'Yes, completely', 'No, not at all'], a: 0,
@@ -272,7 +272,7 @@ export const whiteWhale: Clip = {
       trap: '話をやめるので、笑いすぎと思いやすい。nightmares が気持ちを決める。',
       use: 'That movie gave me nightmares.（あの映画で悪い夢を見た）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'lostcause', seg: [334.1, 337.8],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'lostcause', seg: [334.1, 337.8], retired: true,
       stem: 'What does “a lost cause” mean here?',
       ja: 'ここで「a lost cause」はどういう意味？',
       choices: ['It can’t be fixed', 'They lost the reason', 'It will get better'], a: 0,

@@ -63,7 +63,7 @@ export const sellVeg: Clip = {
       trap: '質問に today があるので、今日の新鮮なものと思いやすい。返事は always。',
       use: 'The pasta is always a safe bet.（パスタなら外れなし）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'cantgo', seg: [25.3, 30.8],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'cantgo', seg: [25.3, 30.8], retired: true,
       stem: 'What does “you can’t go wrong” mean here?',
       ja: 'ここで「you can’t go wrong」はどういう意味？',
       choices: ['Any choice is good', 'Red is the only choice', 'Don’t go the wrong way'], a: 0,
@@ -76,16 +76,16 @@ export const sellVeg: Clip = {
       use: 'You can’t go wrong with either.（どっちを選んでも大丈夫）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['cantgo'], seg: [25.3, 30.8],
-      stem: 'What does the seller’s “I mean” do here?',
-      ja: 'ここで店の人の「I mean」はどんな働き？',
-      choices: ['Makes her praise stronger', 'Takes back her praise', 'Changes the topic'], a: 0,
-      choicesJa: ['ほめ言葉を強める', 'ほめ言葉を取り消す', '話題を変える'],
+      stem: 'Why does the seller say “I mean” here?',
+      ja: '店の人は、なぜここで「I mean」と言う？',
+      choices: ['To make her praise stronger', 'To take back her praise', 'To change the topic'], a: 0,
+      choicesJa: ['ほめ言葉を強めるため', 'ほめ言葉を取り消すため', '話題を変えるため'],
       cue: '「good」のすぐあとのつなぎ言葉。',
       line: 'Red cabbage is good. *I mean*, you can’t go wrong.',
       said: '「赤もいいよ。っていうか、どれも外れなし」と続ける。',
       mean: 'I mean ＝ ここでは「っていうか」。前のほめ言葉を、もっと強く言い直す。',
       trap: '「いや」と訳すと取り消しに思いやすい。I mean のあとが前より強ければ、強める働き。',
-      use: 'It’s cheap. I mean, really cheap.（安い。っていうか、すごく安い）' },
+      use: 'The food is good. I mean, really amazing.（料理はおいしい。っていうか、本当に最高）' },
 
     { id: 'h1', skill: 'humor', level: 'B1', point: 'funthing', seg: [25.3, 34.2],
       stem: 'How does the seller fix “the fun thing about cabbage”?',
@@ -143,7 +143,7 @@ export const sellVeg: Clip = {
       said: '追い出してと頼まれるが、すぐには何もできない。市の規則を調べる、で終わる。',
       mean: 'check the rules ＝ 規則を調べる。まだ解決していない、先送り。',
       trap: 'kick them out を何度も聞くので、追い出したと思いやすい。最後の一言が結論。',
-      use: 'Let me check and get back to you.（確認して連絡します）' },
+      use: 'Let me check the rules first.（まず規則を確認させて）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'manager', reveals: ['kick'], seg: [65.5, 74],
       stem: 'Who is asked to kick the stand out?',
@@ -157,7 +157,7 @@ export const sellVeg: Clip = {
       trap: '頼む人と頼まれる人を取りちがえやすい。最初に呼ぶ名前は相手のこと。',
       use: 'You’re the manager. Can you help?（店長さんですよね。お願いできますか）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'whatdo', reveals: ['wanna', 'manager'], seg: [65.5, 74],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'whatdo', reveals: ['wanna', 'manager'], seg: [65.5, 74], retired: true,
       stem: 'How does Ben feel when told to “do something”?',
       ja: '「何とかして」と言われて、ベンはどう感じる？',
       choices: ['He doesn’t think he can help', 'He is ready to act now', 'He is glad she asked'], a: 0,
@@ -169,7 +169,7 @@ export const sellVeg: Clip = {
       trap: '文字どおり取ると、指示を待っているように聞こえる。言い方は「無理だよ」。',
       use: 'What do you want me to say?（何て言えばいいの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', seg: [67.15, 74],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', seg: [67.15, 74], retired: true,
       stem: 'Fill the gap: “___ me to do?”',
       ja: '空所を埋める：「___ me to do?」',
       choices: ['What do you want', 'What did you want', 'What would you want'], a: 0,
@@ -189,7 +189,7 @@ export const sellVeg: Clip = {
       said: '「市の責任者でしょ、追い出して」と言う。',
       mean: 'kick out ＝ 追い出す。them は小さく「エム」くらいで、kick とつながる。',
       trap: 'them の th が消えて kick out だけに聞こえやすい。語数を数える。',
-      use: 'They kicked us out at closing time.（閉店で追い出された）' },
+      use: 'The guard kicked them out of the store.（警備員が彼らを店から追い出した）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'rules', reveals: ['kick'], seg: [67.2, 74],
       stem: 'Why should the stand be kicked out, she says?',
@@ -248,6 +248,6 @@ export const sellVeg: Clip = {
       said: '「まあ、ちょっとあやしいのは認めるけど…」と言う。',
       mean: 'iffy ＝ あやしい、微妙。if（もし）から来たくだけた語。',
       trap: 'iffy は silly と音が近いので迷いやすい。認めているのは、自分の言い分の弱さ。',
-      use: 'The weather looks a little iffy.（天気がちょっと怪しい）' },
+      use: 'This milk smells a little iffy.（この牛乳、ちょっと怪しいにおいがする）' },
   ]
 };

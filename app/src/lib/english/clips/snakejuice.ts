@@ -28,8 +28,8 @@ export const snakeJuice: Clip = {
       use: 'In general, I don’t drink coffee.（ふだんはコーヒーを飲みません）' },
 
     { id: 'p1', skill: 'detail', level: 'B1', point: 'guarantee', seg: [10.3, 18.9],
-      stem: 'What does Ron tell the man to do?',
-      ja: 'ロンは男に何をしろと言う？',
+      stem: 'What does Ron tell the stranger to do?',
+      ja: 'ロンは、知らない人に何をしろと言う？',
       choices: ['Drink it right now', 'Buy a bottle later', 'Leave the club'], a: 0,
       choicesJa: ['今すぐ飲め', 'あとでボトルを買え', '店から出ていけ'],
       cue: '「Thanks, man」のあと',
@@ -97,7 +97,7 @@ export const snakeJuice: Clip = {
       said: '「言いたいことは分かった。もう二度としない」と言う。',
       mean: 'It won’t happen again ＝ もう二度としません。謝るときの決まり文句。',
       trap: 'won’t（〜しない）が小さく聞こえると、また起こると思いやすい。「ウォウント」と口を丸める。',
-      use: 'I’m sorry. It won’t happen again.（すみません。二度としません）' },
+      use: 'Sorry I’m late. It won’t happen again.（遅れてすみません。もうしません）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'shares', seg: [56.45, 61.5],
       stem: 'What does the club’s owner have to do?',
@@ -131,7 +131,7 @@ export const snakeJuice: Clip = {
       trap: '文法どおり says と書きたくなる。say のあとに s の音はなく、すぐ and が続く。',
       use: 'Do what she say, you’ll be okay.（彼女の言うとおりにすれば大丈夫）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'slow', seg: [73.6, 81.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'slow', seg: [73.6, 81.3], retired: true,
       stem: 'Why is Leslie going slow with Ben?',
       ja: 'レスリーがベンとゆっくり進めているのはなぜ？',
       choices: ['She might lose her job', 'She might lose a friend', 'She isn’t sure she likes him'], a: 0,
@@ -143,7 +143,7 @@ export const snakeJuice: Clip = {
       trap: 'あとで feelings（気持ち）が出るので、それが理由と思いやすい。because のすぐあとを聞く。',
       use: 'I’m careful because I might lose it.（なくすかもしれないから気をつけてる）' },
 
-    { id: 'p5', skill: 'pragma', level: 'B1', point: 'nooffense', seg: [73.6, 78.3],
+    { id: 'p5', skill: 'pragma', level: 'B1', point: 'nooffense', seg: [73.6, 78.3], retired: true,
       stem: 'What does “No offense, but” mean here?',
       ja: 'ここでの「No offense, but」はどういう意味？',
       choices: ['I don’t mean to be rude', 'I’m sorry for my mistake', 'I have some good news'], a: 0,
@@ -201,7 +201,7 @@ export const snakeJuice: Clip = {
       trap: '決意の言葉どおりに場面を聞きやすい。カメラの言葉と、直後の場面のずれを聞く。',
       use: 'I’m totally calm. I am SO calm.（ぜんぜん落ち着いてるから。超落ち着いてる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'fight', reveals: ['together', 'favor', 'push'], seg: [121.0, 165.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'fight', reveals: ['together', 'favor', 'push'], seg: [121.0, 165.8], retired: true,
       stem: 'How does Leslie and Ann’s fight end?',
       ja: 'レスリーとアンのけんかはどう終わる？',
       choices: ['They may stop working together', 'They make up and go dance', 'They laugh and say they’re sorry'], a: 0,
@@ -212,6 +212,7 @@ export const snakeJuice: Clip = {
       mean: 'Maybe we shouldn’t work together ＝ 一緒に働かないほうがいいかも。けんかは仕事の話まで広がる。',
       trap: 'I’m sorry や favor（親切）が聞こえるので、仲直りと思いやすい。最後の言葉で決まる。',
       use: 'It just kept getting worse.（どんどんひどくなっていった）' },
+
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'sorry', reveals: ['push', 'favor'], seg: [144.6, 153.15], retired: true,
       stem: 'Is the “sorry” about thinking of her friend for the job a real apology?',
@@ -224,7 +225,7 @@ export const snakeJuice: Clip = {
       trap: 'sorry だけで謝罪と取りやすい。but のあとに本音が来る。',
       use: 'Sorry for caring, okay?（心配してごめんなさいね）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'push', seg: [146.85, 151.4],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'push', seg: [146.85, 151.4], retired: true,
       stem: 'What does Leslie say happens without her push?',
       ja: 'レスリーが背中を押さないと、どうなると言う？',
       choices: ['Ann never moves ahead', 'Ann works far too hard', 'Ann goes the wrong way'], a: 0,
@@ -244,7 +245,7 @@ export const snakeJuice: Clip = {
       said: '「あなたのためを思っただけ」と言う。',
       mean: 'do you a favor ＝ あなたのためになることをする。「ドゥユァフェイヴァ」とつながる。',
       trap: 'you a がひとつの音に聞こえ、a を落としやすい。4語なので a も書く。',
-      use: 'Could you do me a favor?（ちょっとお願いしていい？）' },
+      use: 'I’m happy to do you a favor.（喜んで力になるよ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'together', seg: [161.0, 165.8],
       stem: 'Fill the gap: “Maybe we ___ work together then.”',
@@ -293,5 +294,17 @@ export const snakeJuice: Clip = {
       mean: 'hire ＝ 雇う。酔った次の朝でも、仕事は待っている。',
       trap: 'hire と fire は最初の音だけ違う。h は息だけ、f は唇をかむ音。become は聞こえない。',
       use: 'We need to hire more staff.（もっと人を雇わないと）' },
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'hungover', seg: [253.0, 273.5],
+      stem: 'How does everyone feel the next morning?',
+      ja: '次の朝、みんなはどんな調子？',
+      choices: ['Sick from last night’s drinks', 'Great after a morning run', 'Sorry about the big fight'], a: 0,
+      choicesJa: ['ゆうべのお酒で気分が悪い', '朝のランニングで絶好調', '大げんかを反省している'],
+      cue: '「hire a new PR director」のあと',
+      line: 'Oh my god, I’m *so hungover*. … I feel great, I ran 5K this morning. — Really? — *No, I threw up* in the shower.',
+      said: 'みんなが次々に「ああ、ひどい二日酔い」と言い、「5キロ走った」も冗談だった。',
+      mean: 'hungover ＝ 二日酔い。I’m so hungover ＝ ひどい二日酔いだ。5キロの話もうそで、本当は吐いていた。',
+      trap: 'I feel great（絶好調）が聞こえるので元気だと思いやすい。すぐ No, I threw up と打ち消す。',
+      use: 'I think I drank too much last night.（ゆうべ飲みすぎたみたい）' },
   ]
 };

@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 8, new 1
+// A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 8, new 1 · sweep: workbestie twins retired (t1 r1 d4 d5)
 // “When your coworker is a lot but you respect the hustle | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 6): Leslie pairs her staff with their Eagleton counterparts and brings in Craig as a filing temp; his
 // intensity wins Donna over, and when Leslie plans to cut him, Donna defends him and the staff start offering to leave.
@@ -27,7 +27,7 @@ export const craigTemp: Clip = {
       trap: 'with のあとに名前が来るので、新しい上司の発表と思いやすい。paired up は「組になる」。',
       use: 'We’ll pair you up with a buddy.（相棒と組んでもらいます）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'tom', seg: [12.0, 21.1],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'tom', seg: [12.0, 21.1], retired: true,
       stem: 'How does Tom feel about having no partner?',
       ja: '組む相手がいないことを、トムはどう思う？',
       choices: ['Proud of being special', 'Sad to be left out again', 'Angry at Leslie'], a: 0,
@@ -149,7 +149,7 @@ export const craigTemp: Clip = {
       trap: 'Denver の婚約者の話が耳に残りやすい。最後の come and go が怒りの中身。',
       use: 'Is everyone leaving me?（みんな私を置いていくの？）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'cut', seg: [108.0, 114.15], then: [114.15, 116.7],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'cut', seg: [108.0, 114.15], retired: true, then: [114.15, 116.7],
       stem: 'After “your job is secure,” what will Leslie say next?',
       ja: '「あなたの仕事は大丈夫」のあと、レスリーは次に何を言う？',
       choices: ['Bad news about someone else', 'Bad news about Donna’s pay', 'A request for extra work'], a: 0,
@@ -221,7 +221,7 @@ export const craigTemp: Clip = {
       trap: 'was なら「ワズ」で終わる。am not なら「アム」。「ワズン」と「ン」が残れば wasn’t。',
       use: 'I wasn’t planning on it, but sure.（そのつもりはなかったけど、いいよ）', retired: true },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'leave', seg: [129.0, 136.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'leave', seg: [129.0, 136.3], retired: true,
       stem: 'Where is Donna’s condo?',
       ja: 'ドナのマンションはどこ？',
       choices: ['In Seattle', 'In Denver', 'In Eagleton'], a: 0,
@@ -233,7 +233,7 @@ export const craigTemp: Clip = {
       trap: 'Denver もすぐあとに出るが、そこは婚約者（fiancé）がいる所。condo のあとを聞く。',
       use: 'I’ve got a place in Seattle.（シアトルに家があるんだ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'larry', seg: [137.1, 141.1], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'larry', seg: [137.1, 141.1], retired: true, keep: true,
       stem: 'What does Larry offer to do?',
       ja: 'ラリーは何をすると申し出る？',
       choices: ['Go back into retirement', 'Take a smaller salary', 'Move to the Eagleton office'], a: 0,

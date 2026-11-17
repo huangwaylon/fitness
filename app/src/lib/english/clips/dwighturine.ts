@@ -142,7 +142,7 @@ export const dwightUrine: Clip = {
       said: 'ドワイトに尿を頼み、理由を聞かれて、うっかりハイになったかもと打ち明ける。',
       mean: '自分の代わりに検査に出す尿を、ドワイトから手に入れたい。',
       trap: 'filing（書類整理）は前の人への頼みの口実。ドワイトに頼むのは尿。',
-      use: 'Can you do me a favor?（ひとつ頼んでもいい？）' },
+      use: 'I need your help with this.（これ、手伝ってほしいんだ）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'refuse', seg: [111.4, 123.5],
       stem: 'What does Dwight’s “Then” mean in “Then I refuse”?',

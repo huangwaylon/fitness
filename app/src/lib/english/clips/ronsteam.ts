@@ -162,7 +162,7 @@ export const ronsTeam: Clip = {
       said: '「本名はゲーリーと言ったら、『どうでもいい』と言われた」と話す。',
       mean: 'Who cares? ＝「どうでもいい」。本当の名前を気にしていない。',
       trap: '「楽しいグループ」と言うので仲良しと思いやすいが、名前はどうでもいい扱い。',
-      use: 'Who cares? Let’s just go.（どうでもいいよ。行こう）' },
+      use: 'Who cares? It’s just a name.（どうでもいいよ。ただの名前だし）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'me', seg: [94.5, 105.4],
       stem: 'Who is the “one great man” in Tom’s speech?',

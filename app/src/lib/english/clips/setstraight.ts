@@ -67,7 +67,7 @@ export const setStraight: Clip = {
       said: '「彼女には話させない。…今のは言い方がまずかった。要するに」と言い直す。',
       mean: 'came out wrong ＝ 口から出た言葉が、言いたいこととずれた。The point is ＝ 要するに。',
       trap: 'wrong を「うそ」だと思いやすい。came out とセットで「言い方」の話。',
-      use: 'Sorry, that came out wrong.（ごめん、今の言い方はよくなかった）' },
+      use: 'Wait, that came out wrong.（待って、今の言い方はまずかった）' },
 
     { id: 'nt3', skill: 'infer', level: 'C2', point: 'silence', reveals: ['wrong', 'tired'], seg: [27.6, 50.55], retired: true,
       stem: 'Once Ben explains himself, what did his slip actually mean to say?',
@@ -264,7 +264,7 @@ export const setStraight: Clip = {
       said: '「ブーイングと歓声が半々か」「そんなもんだね」と言い合う。',
       mean: '50/50 ＝ fifty-fifty、半分ずつ。about right ＝ だいたい合っている。',
       trap: 'boos が先に聞こえるので、ほとんどブーイングだと思いやすい。前の数字を聞く。',
-      use: 'It’s fifty-fifty whether it rains.（雨が降るかは五分五分）' },
+      use: 'The chance is fifty-fifty.（確率は五分五分だ）' },
 
     { id: 'h4', skill: 'phrase', level: 'B1', point: 'late', seg: [143, 149],
       stem: 'What does “My bad” mean?', ja: '“My bad” はどういう意味？',

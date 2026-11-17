@@ -211,6 +211,6 @@ export const poachBen: Clip = {
       said: 'マイケルが「何言ってるんだ。スクラントンはダサくない。楽しい支店だ」と言う。',
       mean: 'lame ＝ ダサい（くだけた言い方）。What is 〜 talking about? ＝ 何を言ってるんだ。',
       trap: 'What is he talking about? を、意味がわからない質問だと思いやすい。',
-      use: 'What are you talking about?（何言ってるの？）' },
+      use: 'This town is not boring at all.（この町は全然つまらなくない）' },
   ]
 };

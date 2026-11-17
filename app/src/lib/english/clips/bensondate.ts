@@ -252,7 +252,7 @@ export const mrsBensonCrashes: Clip = {
       trap: '反論したので全部断ったと聞きやすい。言い返しは、何に返していないかまで聞く。',
       use: 'Fine, but I’m cutting my own steak.（いいけど、肉は自分で切る）' },
     { id: 'g3', skill: 'gist', level: 'C1', point: 'twist', seg: [271.7, 287],
-      stem: 'Who is the woman Spencer has met?', ja: 'スペンサーが出会った女性は誰？',
+      stem: 'Who turns out to be Spencer’s new love?', ja: 'スペンサーの新しい恋の相手は、誰だった？',
       choices: ['McKenna, the matchmaker', 'A woman from her list', 'Harper, Carly’s roommate'], a: 0,
       choicesJa: ['仲人のマッケナ', 'マッケナのリストの女性', 'カーリーのルームメイトのハーパー'],
       cue: '「future sister-in-law?」のあと',

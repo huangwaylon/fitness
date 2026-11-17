@@ -44,7 +44,7 @@ export const waitress: Clip = {
       said: '「まだ長く働いてないのは分かってるけど」と切り出す。',
       mean: 'I know 〜, but… ＝「〜は分かってるけど」。先に弱みを認めて、言いにくい頼みを切り出す前置き。',
       trap: '言いわけやお礼に聞こえやすいが、but のあとが本題の頼みごと。',
-      use: 'I know you’re busy, but…（忙しいのは分かってるけど…）' },
+      use: 'I know it’s short notice, but…（急なのは分かってるけど…）' },
 
     { id: 'x2', skill: 'dict', level: 'B2', point: 'wondering', seg: [3.7, 6.7],
       stem: 'Type what she says: “but I ___, do you think…” (2 words)', answer: 'was wondering',
@@ -53,7 +53,7 @@ export const waitress: Clip = {
       said: '「〜かなと思って」と頼み始める。',
       mean: 'I was wondering ＝「〜かなと思って」。丁寧に頼む決まった出だし。was は「ワz」と小さく短く言う。',
       trap: 'was が聞こえず、I wondering と書きやすい。',
-      use: 'I was wondering if you could help me.（手伝ってもらえないかなと思って）' },
+      use: 'I was wondering if I could leave early.（早めに帰れないかなと思って）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [6.2, 10.4],
       stem: 'How much money does Rachel ask for?',
@@ -100,7 +100,7 @@ export const waitress: Clip = {
       said: '「というのはね、毎年スキーに行くの」と事情を話し始める。',
       mean: 'See, ＝「というのはね」。文の頭の See は「見て」ではなく、事情を説明し始める合図。',
       trap: 'see ＝ 見る と思いやすいが、何も見せていない。すぐ説明が続く。',
-      use: 'See, the thing is, I’m new here.（というのはね、ここは初めてなんです）' },
+      use: 'See, I usually take the train.（というのも、いつもは電車なんです）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'father', reveals: ['reason'], seg: [14.3, 19.8],
       stem: 'Who normally pays for Rachel’s ticket?',
@@ -225,7 +225,7 @@ export const waitress: Clip = {
       said: '「うん、言いたいことは分かる。分かるよ」と受け止める。',
       mean: 'I’m with you ＝「分かるよ・同感だよ」。文字どおりの「一緒にいる」ではない。',
       trap: 'with から「一緒に行く」と思いやすいが、話を聞いて「分かる」と返している。',
-      use: 'I’m with you on that.（それは同感です）' },
+      use: 'I hear you. I’m with you.（分かるよ。同じ意見だよ）' },
 
     // A2: was “How does Rachel take the criticism?” (two-part choices); now her plain view of her work
     { id: 't3', skill: 'attitude', level: 'B1', point: 'better', reveals: ['hear', 'reply'], seg: [41, 50.4],

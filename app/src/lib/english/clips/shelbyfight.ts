@@ -83,7 +83,7 @@ export const shelbyFight: Clip = {
       said: '「タイムアウトは取れない！」とはっきり断る。',
       mean: 'can’t は t がほぼ消えるが、「キャーン」と長く強い。can は「クン」と弱く短い。',
       trap: 'could は「クッド」。can は短く弱い「クン」。長く強い「キャーン」なら can’t。',
-      use: 'You can’t park here.（ここは駐車できません）' },
+      use: 'You can’t smoke in here.（ここでたばこは吸えません）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'easy', seg: [124.7, 133.2],
       stem: 'Mid-fight, what is Carly doing when she says “Hi, Shelby”?',

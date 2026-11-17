@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 7, new 4
+// A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 7, new 4 · sweep: whitewhale twins retired (d2 x1)
 // A2 LATE: the jokes lean on sexism, killing and a crude body line; good office chunks, but a poor first clip
 // “How to Pitch to Women - The Office US” (the official The Office channel, BEST OF SEASON 9): the office coaches
 // Dwight through role-plays on selling to a woman client; he stands, looms, can't show he's listening, and is given up on.
@@ -76,7 +76,7 @@ export const pitchWomen: Clip = {
       mean: 'have a seat ＝「座る」のていねいな言い方。お客さんを迎えるときの決まり文句。',
       trap: 'have（持つ）から、いすを持つ・買うと思いやすい。have a seat で「座る」。',
       use: 'Please have a seat.（どうぞおかけください）' },
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'sit', reveals: ['seat'], seg: [34.1, 41.95],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'sit', reveals: ['seat'], seg: [34.1, 41.95], retired: true,
       stem: 'Why does Dwight stay standing in the meeting?',
       ja: 'ドワイトはなぜ、商談で立ったままでいる？',
       choices: ['To look strong and scary', 'To look keen and lively', 'To keep the meeting short'], a: 0,
@@ -159,7 +159,7 @@ export const pitchWomen: Clip = {
       mean: 'show us（見せて）を「目に見える証拠を」と文字どおりに取って、まじめに言い返している。',
       trap: '「無理」から、やりたくないと思いやすい。続く理由を聞く。',
       use: 'Nod if you can hear me.（聞こえたらうなずいて）' },
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'nod', seg: [101.8, 107.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'nod', seg: [101.8, 107.3], retired: true,
       stem: 'Type the words: “___ shows that I hear you.” (6 words)', answer: 'a little smile and a nod',
       ja: '空いている語を入力：「___ shows that I hear you.」（6語）',
       cue: '「What are you doing?」への答え',
@@ -210,7 +210,7 @@ export const pitchWomen: Clip = {
       said: '「普通の人みたいにうなずいて」に「ぼくは人間だ」と返す。',
       mean: 'like a person ＝「普通の人みたいに」。それを「人間じゃない」と言われたと受け取った。',
       trap: 'ほめられたと思いやすい。言われた人があわてて Of course となだめている。',
-      use: 'Just act natural.（自然にしてて）' },
+      use: 'Just be yourself.（いつもどおりでいいよ）' },
     { id: 'nt3', skill: 'sound', level: 'C2', point: 'person', seg: [131.0, 139.1], retired: true,
       stem: 'Where is the stress in “I am a person,” and why?',
       choices: ['On “am”: insisting, against a hint that he isn’t', 'On “I”: setting himself against someone who isn’t',

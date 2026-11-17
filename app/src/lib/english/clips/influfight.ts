@@ -254,8 +254,8 @@ export const influencerFightClub: Clip = {
       use: 'I’ve got twenty bucks on the Giants.（ジャイアンツに20ドル賭けてる）' },
 
     { id: 'i7', skill: 'infer', level: 'B2', point: 'rooting', reveals: ['hundred'], seg: [233.6, 238.0],
-      stem: 'What does the friend really think will happen?',
-      ja: '友だちは本当は、どうなると思っている？',
+      stem: 'What does the person betting really expect?',
+      ja: '賭けている人は、本当はどうなると思っている？',
       choices: ['Carly will lose', 'Carly will win', 'It will be a tie'], a: 0,
       choicesJa: ['カーリーが負ける', 'カーリーが勝つ', '引き分け'],
       cue: '「a hundred on」のあとと「but」',

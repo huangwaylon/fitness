@@ -5,7 +5,7 @@
 // grow up.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈150.5 s. Ross is addressed by name at
 // 128.7 s, and his lines are tied together by "Look, Rach", "you only want good things for me" and "my girlfriend";
-// the other friends are never named, so stems say "a friend" and no item turns on who they are. Untested on purpose:
+// the other friends are never named, so stems leave the speaker out and no item turns on who they are. Untested on purpose:
 // 56–58 s ("I'll hold" / "a hole"), 64–66 s (only "so made up" is used), 93–96 s (speakers unclear), 100.9 s, 110–117 s
 // (the "surgically remove the boyfriend" joke), 134–137 s ("sleep with her"), 141.3–142.6 s.
 // EAR CHECK: 149.5 s g2 — "You grow up!" is Ross's (the one just told "Grow up!"), after a gap of ≈5 s
@@ -133,7 +133,7 @@ export const markCall: Clip = {
       said: '電話を切って「面接が決まった」。ランチで準備も手伝ってもらえる。',
       mean: 'マークの紹介で、仕事の面接を受けられることになった。恋ではなく仕事の話。',
       trap: 'apologize は初めに聞こえるが、結果ではない。結果は切ったあとの一言で聞く。',
-      use: 'Guess what? I got the job!（聞いて、仕事決まったの！）' },
+      use: 'I got the interview!（面接までこぎつけた！）' },
 
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'apologize', seg: [52.0, 57.0],
       stem: 'What does Rachel tell Mark on the phone?',
@@ -219,8 +219,8 @@ export const markCall: Clip = {
       use: 'I gotta go. See you!（もう行かなきゃ。またね）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'blame', reveals: ['callmark'], seg: [102.9, 111.0],
-      stem: 'How does Ross feel about the friend’s idea?',
-      ja: '友だちの案を、ロスはどう思っている？',
+      stem: 'How does Ross feel about the “call him” idea?',
+      ja: '「電話してみたら」という案を、ロスはどう思っている？',
       choices: ['Annoyed by it', 'Thankful for it', 'Happy about it'], a: 0,
       choicesJa: ['いらいらしている', '感謝している', '喜んでいる'],
       cue: '相手の言葉をまねしたあとの、お礼の言い方。',
@@ -231,8 +231,8 @@ export const markCall: Clip = {
       use: 'What did I do to you?（僕が何かした？）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'growup', seg: [106.0, 150.9],
-      stem: 'How does Ross’s argument with the friend end?',
-      ja: '友だちとの言い合いは、どう終わる？',
+      stem: 'How does Ross’s argument end?',
+      ja: 'ロスの言い合いは、どう終わる？',
       choices: ['He just says it back', 'He agrees to grow up', 'He calms down at last'], a: 0,
       choicesJa: ['同じ言葉を言い返す', '大人になると約束する', 'やっと落ち着く'],
       cue: '最後のやりとりと、少し間をおいた一言。',
@@ -267,8 +267,8 @@ export const markCall: Clip = {
       use: 'Am I wrong? It’s two in the morning!（僕が悪い？夜中の2時だよ！）' },
 
     { id: 'i2', skill: 'infer', level: 'B1', point: 'aboutyou', seg: [128.5, 134.3],
-      stem: 'What is the friend’s point to Ross?',
-      ja: '友だちは、ロスに何を言いたい？',
+      stem: 'What is Ross told about this?',
+      ja: 'ロスは、このことについて何と言われる？',
       choices: ['He makes it about himself', 'He should keep it secret', 'He should help Rachel'], a: 0,
       choicesJa: ['自分の話にしている', '秘密にすべき', 'レイチェルを手伝うべき'],
       cue: '名前を呼んだあとの2文。',
@@ -291,8 +291,8 @@ export const markCall: Clip = {
       use: 'Even if it rains, so what?（雨が降ったとしても、だから何？）' },
 
     { id: 'x2', skill: 'dict', level: 'B2', point: 'overyourself', reveals: ['growup'], seg: [141.2, 145.2],
-      stem: 'Type the friend’s reply: “Then ___. Grow up!” (3 words)', answer: 'get over yourself',
-      ja: '「Then ___. Grow up!」の3語を書こう。',
+      stem: 'Type the reply to Ross: “Then ___. Grow up!” (3 words)', answer: 'get over yourself',
+      ja: 'ロスへの返事の3語を書こう：「Then ___. Grow up!」',
       cue: 'Then のあと、Grow up の前の3語。',
       line: 'Then *get over yourself*. Grow up!',
       said: '「だったら自分中心はやめて。大人になって！」と突き放す。',

@@ -34,7 +34,7 @@ export const furniture: Clip = {
       said: 'チャンドラーが「ルールはない。むしろ君に貸しがある」と言う。',
       mean: 'you owe me ＝ 君は私に借りがある。つまり「買うのは君」。If anything ＝ むしろ。',
       trap: 'owe（借りがある）を知らないと、チャンドラーが払う話に聞こえやすい。',
-      use: 'Thanks! I owe you one.（ありがとう、ひとつ借りができたね）' },
+      use: 'If anything, you owe me a coffee.（むしろ、君がコーヒーをおごる番だよ）' },
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'p3', seg: [9.4, 13], stem: 'Joey asks, “How’d you *get there*?” What does he mean?',
       ja: 'ジョーイの「How’d you get there?」はどういう意味？',
       choices: ['Why do you think that?', 'How did you come here?', 'Where did you go?'], a: 0,

@@ -41,7 +41,7 @@ export const medicalMess: Clip = {
       trap: '壁と聞くと大けがに思えるが、原因はくしゃみ。Yeah のあとの中身で判断。',
       use: 'Yeah, he “worked late.” At the bar.（うん、「残業」ね。バーで）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'aboutright', seg: [19.0, 23.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'aboutright', seg: [19.0, 23.6], retired: true,
       stem: 'What does “That sounds about right” mean?',
       ja: '「That sounds about right」はどういう意味？',
       choices: ['That’s easy to believe', 'His head is all right', 'That sounds wrong to me'], a: 0,
@@ -76,6 +76,18 @@ export const medicalMess: Clip = {
       mean: 'Well, I mean ＝ ええと、つまり。言い直しの合図。ここから長い症状の話。',
       trap: '「まあ」のように、答えをやわらげる語と思いやすい。後ろに yeah が来る。',
       use: 'No. Well, I mean, maybe a little.（いや。まあ、ちょっとはね）' },
+
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'list', seg: [27.4, 69.8],
+      stem: 'What does Dr. Harris do about Andy’s long list?',
+      ja: 'ハリス先生は、アンディの長いリストにどうする？',
+      choices: ['Only helps with the thumb', 'Helps with every problem', 'Says he is not sick at all'], a: 0,
+      choicesJa: ['親指だけ手当てする', '全部の問題を手当てする', 'どこも悪くないと言う'],
+      cue: '「Just fix me」のあと、先生の返事。',
+      line: 'Just fix me. — Well, *I can help you with a thumb*, and I’ll have to give you referrals for specialists for the other 1,000 things.',
+      said: '先生は「親指なら手当てできる。ほかの千個は専門医を紹介する」と言う。',
+      mean: 'I can help you with 〜 ＝ 〜なら手伝える。referral ＝ 紹介状。親指以外は専門医へ。',
+      trap: 'リストが長いので、全部みてくれると思いやすい。the other 1,000 things は専門医行き。',
+      use: 'I can help you with your bags.（荷物、お手伝いしますよ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'ankles', seg: [37.3, 42.0],
       stem: 'What does Andy say his ankles do?',
@@ -113,7 +125,7 @@ export const medicalMess: Clip = {
       trap: '最初の転んだ話と結びつけやすいが、親指は別の話。on the way を聞く。',
       use: 'I lost my umbrella on the way over here.（来る途中で傘をなくした）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'nothing', seg: [58.6, 68.0],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'nothing', seg: [58.6, 68.0], retired: true,
       stem: 'What does Andy mean by “thanks for nothing”?',
       ja: 'アンディの「thanks for nothing」はどういう意味？',
       choices: ['You didn’t help me at all', 'You helped me for free', 'I’m glad it’s nothing'], a: 0,
@@ -184,7 +196,7 @@ export const medicalMess: Clip = {
       trap: 'want なら短い「ワ」で have がない。don’t なら頭が「ド」。ここは「ウォウント」。',
       use: 'You won’t have to wait long.（長く待たなくて大丈夫）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'divorce', seg: [92.8, 103.0],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'divorce', seg: [92.8, 103.0], retired: true,
       stem: 'Why doesn’t April want Andy to wear glasses?',
       ja: 'エイプリルはなぜアンディにメガネをかけてほしくない？',
       choices: ['She likes his face as it is', 'Glasses cost too much', 'The doctor got the test wrong'], a: 0,
@@ -240,7 +252,7 @@ export const medicalMess: Clip = {
       trap: 'get you が一語に聞こえ、your と書きやすい。後ろの home まで、3語で数える。',
       use: 'Let’s get you a coffee.（コーヒーでも買ってあげるよ）' },
 
-    { id: 'n4', skill: 'number', level: 'B1', point: 'cost', seg: [137.2, 140.8], keep: true,
+    { id: 'n4', skill: 'number', level: 'B1', point: 'cost', seg: [137.2, 140.8], retired: true, keep: true,
       stem: 'How much is the deductible for dental work?',
       ja: '歯の治療の自己負担はいくら？',
       choices: ['$50', '$500', '$5,000'], a: 1,
@@ -263,7 +275,7 @@ export const medicalMess: Clip = {
       trap: 'you’re wrong で自信があるように聞こえる。ぼかし語が重なったら、知らないサイン。',
       use: 'I did the tax thing online, I think.（税金のあれ、ネットでやった…はず）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'end', reveals: ['cost'], seg: [147.5, 181.0],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'end', reveals: ['cost'], seg: [147.5, 181.0], retired: true,
       stem: 'What do Andy and April decide at the end?',
       ja: '最後にアンディとエイプリルは何を決める？',
       choices: ['No more doctors', 'See another doctor', 'Pay the $500'], a: 0,
@@ -275,7 +287,7 @@ export const medicalMess: Clip = {
       trap: '直前に「ほかの医者に」という案が出るので、続けると思いやすい。No のあとが答え。',
       use: 'No more takeout. Let’s cook at home.（もう出前はなし。家で作ろう）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'reelin', seg: [166.3, 178.6],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'reelin', seg: [166.3, 178.6], retired: true,
       stem: 'What does “reel you in” mean here?',
       ja: 'ここで「reel you in」はどういう意味？',
       choices: ['Pull you in like a fish', 'Make you feel better', 'Send you back home'], a: 0,

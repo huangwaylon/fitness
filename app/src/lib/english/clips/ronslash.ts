@@ -39,10 +39,10 @@ export const ronSlash: Clip = {
       use: 'Right off the bat, I liked her.（最初からすぐ彼女が気に入った）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'creative', seg: [25.9, 32.55],
-      stem: 'What does “That is a very creative idea, but…” do?',
-      ja: '「That is a very creative idea, but…」は何をしている？',
-      choices: ['Says no in a kind way', 'Says yes with a condition', 'Makes fun of the idea'], a: 0,
-      choicesJa: ['やんわり断る', '条件つきで賛成する', '案をばかにする'],
+      stem: 'Why is Ron told it’s “a very creative idea”?',
+      ja: 'ロンは、なぜ「a very creative idea」と言われる？',
+      choices: ['To say no in a kind way', 'To say yes with a condition', 'To make fun of the idea'], a: 0,
+      choicesJa: ['やんわり断るため', '条件つきで賛成するため', '案をばかにするため'],
       cue: 'ほめ言葉のすぐあとの一語。',
       line: 'Ron, that is a *very creative idea*, *but* we don’t want to sell…',
       said: '「面白い発想だ。でも大きな資産は売りたくない」と断る。',
@@ -265,7 +265,7 @@ export const ronSlash: Clip = {
       said: 'ロンの反対を聞いて、「はい、ロン、次に行くよ」と打ち切る。',
       mean: 'move on ＝ 次に進む。会議で話題を変えるときの決まり文句。',
       trap: 'move から、引っ越しや部屋を出る話と思いやすい。会議で言えば「次の話」。',
-      use: 'Okay, let’s move on.（では、次に進みましょう）' },
+      use: 'Let’s move on to the next item.（次の議題に移りましょう）' },
 
     { id: 'nt3', skill: 'infer', level: 'C2', point: 'unique', seg: [114.0, 121.9], retired: true,
       stem: 'Which plain-English version keeps Ron’s point in his reply to Ben?',

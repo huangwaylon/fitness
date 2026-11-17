@@ -15,7 +15,7 @@ export const policeExam: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'nail', seg: [0, 9.5],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'nail', seg: [0, 9.5], retired: true,
       stem: 'Andy says he’s “gonna nail” it. What does that mean?',
       ja: 'アンディは「gonna nail」すると言う。どういう意味？',
       choices: ['He will do it very well', 'He will fail it very badly', 'He will skip that part'], a: 0,
@@ -142,7 +142,7 @@ export const policeExam: Clip = {
       trap: 'up から「立って」と思いやすい。順番を呼ぶ場面の up は「出番」。up next なら「次」。',
       use: 'Okay, you’re up.（はい、あなたの番ですよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'check', seg: [58.7, 67.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'check', seg: [58.7, 67.2], retired: true,
       stem: 'Why does the officer ask, “Is your name Andy?”',
       ja: '係の人はなぜ「名前はアンディ？」と聞く？',
       choices: ['To test the machine', 'To check he is Andy', 'To help him relax'], a: 0,
@@ -214,7 +214,7 @@ export const policeExam: Clip = {
       trap: 'everyone を no one と聞きやすい。みんなはアンディと呼ぶ。答えを決めたのは Andrew。',
       use: 'So, that’s a no?（じゃあ、ダメってこと？）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B2', point: 'moveon', reveals: ['sono'], seg: [75.5, 83.0],
+    { id: 'r1', skill: 'pragma', level: 'B2', point: 'moveon', reveals: ['sono'], seg: [75.5, 83.0], retired: true,
       stem: 'What does the officer mean by “Let’s move on”?',
       ja: '係の人の「Let’s move on」は、どういう意味？',
       choices: ['Go to the next question', 'Ask the same question once again', 'Stop the whole test'], a: 0,

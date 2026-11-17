@@ -36,7 +36,7 @@ export const joeyHoops: Clip = {
       said: '「やあテリー、また会えてうれしいよ。久しぶりだね」と言う。',
       mean: 'It’s been a while ＝ 久しぶり。Nice to see you again と一緒によく使う。',
       trap: 'a while ago（少し前）と混ざりやすい。It’s been ＝ 時間がたった。',
-      use: 'Hi! It’s been a while.（やあ、久しぶり）' },
+      use: 'Nice to see you again. It’s been a while.（また会えてうれしい。久しぶりだね）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'start', seg: [13.3, 16.55],
       stem: 'Fill the gap: “When ___ start?”',
@@ -60,7 +60,7 @@ export const joeyHoops: Clip = {
       said: '「じゃあ、今から始めようか」と答え、ジョーイは「オーケー」と返す。',
       mean: 'Why don’t we 〜? ＝「〜しようよ」という提案。理由は聞いていない。',
       trap: 'why を「なぜ」と文字どおりに取ると、理由を聞いているように聞こえる。we と組なら提案。',
-      use: 'Why don’t we grab lunch?（お昼食べに行かない？）' },
+      use: 'Why don’t we start right now?（今すぐ始めない？）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'scenes', seg: [17.3, 20.3],
       stem: 'What does Terry say he is giving Joey?',
@@ -96,7 +96,7 @@ export const joeyHoops: Clip = {
       said: '「どうしてそう思うわけ？」と聞き返している。',
       mean: 'would you が「ウッジュ」のようにつながる。would は弱く、ほぼ「ウd」。',
       trap: 'd だけが残るので did に聞こえやすい。did なら「ディ」、do なら「ドゥ」の母音が出る。',
-      use: 'Why would you say that?（なんでそんなこと言うの？）' },
+      use: 'Why would you think that?（なんでそう思うの？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'twin', seg: [27.3, 34.2],
       stem: 'Why did Joey expect to be offered the part?',

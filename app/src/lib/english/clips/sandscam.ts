@@ -206,7 +206,7 @@ export const sandScam: Clip = {
       said: '「ほらカーリー、ぐいっと飲んでみたら？」と勧める。',
       mean: 'Why don’t you 〜? ＝「〜したら？」と勧める言い方。「ワイドンチュ」に近い。',
       trap: 'won’t なら「ウォウン」と口を丸める。Won’t you なら最初に Why がない。',
-      use: 'Why don’t you sit down?（座ったら？）' },
+      use: 'Why don’t you have some water?（お水でも飲んだら？）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'fishfood', seg: [241.6, 252.3],
       stem: 'When Carly refuses the drink, what does she say is in it?',

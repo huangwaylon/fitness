@@ -72,10 +72,10 @@ export const phoebeRuns: Clip = {
       use: 'Can I get out of the meeting?（会議を抜けてもいい？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['live'], seg: [49.4, 52.7],
-      stem: 'What does Rachel’s “I mean” do here?',
-      ja: 'レイチェルの「I mean」はここで何をしている？',
-      choices: ['Gives a reason', 'Fixes a mistake', 'Changes the topic'], a: 0,
-      choicesJa: ['理由を足している', '言ったことを直している', '話題を変えている'],
+      stem: 'Why does Rachel say “I mean” here?',
+      ja: 'レイチェルは、なぜここで「I mean」と言う？',
+      choices: ['To give a reason', 'To fix a mistake', 'To change the topic'], a: 0,
+      choicesJa: ['理由を足すため', '言ったことを直すため', '話題を変えるため'],
       cue: 'get out of it の直後。', line: '…how to get out of it. *I mean*, I live with her.',
       said: '「抜け出し方が分からない。だって一緒に住んでるし」と言う。',
       mean: 'I mean ＝ ここでは「だって」。前に言ったことの理由を付け足している。',
@@ -91,7 +91,7 @@ export const phoebeRuns: Clip = {
       said: '「正直に言えば？本当のことを言いなよ」と言われる。',
       mean: 'Why don’t you…? ＝「〜したら？」という提案。straight ＝ 正直。',
       trap: '「なぜ〜しないの？」と訳すと責める感じに聞こえやすい。あとの Tell her が合図。',
-      use: 'Why don’t you just ask her?（彼女に聞いてみたら？）' },
+      use: 'Why don’t you just tell him the truth?（彼に本当のことを言ったら？）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'excuse', reveals: ['can'], seg: [55.9, 66.4],
       stem: 'Why does Rachel say “Monica tripped me”?',
@@ -187,7 +187,7 @@ export const phoebeRuns: Clip = {
       said: '「フィービー、ちょっと話せる？」と声をかける。',
       mean: 'for a second ＝ ちょっとだけ。Can I talk to you…? は話を切り出すときの決まり文句。',
       trap: 'second を「2番目」と思いやすい。ここは「秒」から来た「ちょっとの間」。',
-      use: 'Can I talk to you for a second?（ちょっと話せる？）' },
+      use: 'Wait for a second, please.（ちょっと待ってください）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'apology', seg: [117, 127.8], retired: true,
       stem: 'How does Rachel sound once she starts with “Phoebe, look…”?',

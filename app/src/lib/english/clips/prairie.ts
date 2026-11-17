@@ -199,7 +199,7 @@ export const prairie: Clip = {
       said: '「認める。もう耐えられない。あなたの勝ち」と言う。',
       mean: 'can’t take it anymore ＝ もう我慢できない。限界を認める決まり文句。',
       trap: 'can’t の t は消え、take と it がつながる。小さな it を落とさずに書く。',
-      use: 'I can’t take this heat anymore.（この暑さはもう無理）' },
+      use: 'I can’t take it anymore. I quit.（もう我慢できない。やめる）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'huzzah', seg: [207.4, 210.9],
       stem: 'Fill the gap: “I’m ___ saying huzzah.”',
@@ -254,7 +254,7 @@ export const prairie: Clip = {
       said: '「私も会員なの。あなたがいてくれたら本当に助かる」と言う。',
       mean: 'could use 〜 ＝ 〜があると助かる。人に使えば「来てくれたら助かる」。',
       trap: 'use から「利用する」を思いやすい。could use はほしい、助かるという言い方。',
-      use: 'I could really use a coffee.（コーヒーがあると本当に助かる）' },
+      use: 'We could really use your help.（あなたの助けがあると本当に助かる）' },
     { id: 'nt1', skill: 'pragma', level: 'C2', point: 'lonely', seg: [233.0, 247.4], retired: true,
       stem: 'Why does Leslie list the meetings and parties as “the only problem”?',
       choices: ['To offer the company he lacks without saying so', 'To warn him off politely, since he avoids people',

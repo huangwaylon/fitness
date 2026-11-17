@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 6, rewrite 13, retire 3, new 0
+// A2 REVIEW 2026-11-17: keep 6, rewrite 13, retire 3, new 0 · sweep: cross-bank twins retired or rewritten
 // “Tom's Screen Ban | Parks and Recreation” (the official Parks and Recreation channel, Season 5): banned from screens
 // for a week, Tom gets lost driving to work, despairs at Jerry's email habits, and goes to Ron's cabin to detox, where
 // Ron's “talk it all out” idea opens a flood about every site and app he loves.
@@ -25,7 +25,7 @@ export const tomScreenBan: Clip = {
       trap: '質問には yes か no で答えると思いやすい。英語でも、答えずに話を変える返事はよくある。',
       use: 'We still on for lunch?（ランチの約束、まだ大丈夫？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'late', seg: [2.3, 5.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'late', seg: [2.3, 5.6], retired: true, keep: true,
       stem: 'How late is Tom for work?', ja: 'トムは仕事に何分遅れている？',
       choices: ['Half an hour', 'An hour', 'An hour and a half', 'Two and a half hours'], a: 2,
       choicesJa: ['30分', '1時間', '1時間半', '2時間半'],
@@ -51,7 +51,7 @@ export const tomScreenBan: Clip = {
       trap: 'GPS が使えないのは故障ではなく禁止のせい。figured it out のあとの中身を聞く。',
       use: 'I found it in the end, somehow.（なんとか最後には見つけた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'circles', seg: [8.9, 11.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'circles', seg: [8.9, 11.9], retired: true,
       stem: 'Type what Tom says: “I just ___ until I saw something familiar.” (4 words)', ja: '書こう：“I just ___ until I saw something familiar.”（4語）',
       answer: 'drove around in circles',
       cue: '「I just」のあと',
@@ -137,7 +137,7 @@ export const tomScreenBan: Clip = {
       trap: 'far away だけ拾うと、行き方の話だと思いやすい。電力会社が知らない＝電気がない。',
       use: 'There’s no signal out there.（あそこは電波が入らない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'ride', seg: [66.7, 72.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'ride', seg: [66.7, 72.3], retired: true,
       stem: 'Why does Tom want a ride home after work?', ja: 'トムはなぜ帰りに車で送ってほしい？',
       choices: ['He can’t find his way home', 'His car broke down', 'He hates driving at night'], a: 0,
       choicesJa: ['帰り道が分からない', '車が故障した', '夜の運転がいや'],
@@ -158,6 +158,18 @@ export const tomScreenBan: Clip = {
       mean: 'no chance がもう否定なので、あとはふつうの can。弱く「クン」に近い。',
       trap: 'can’t なら「キャーン」と長く、t で止まる。could は「クッド」。短く弱い「クン」なら can。',
       use: 'There’s no way I can eat all that.（あれを全部食べるなんて無理）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'chopping', seg: [79.2, 84.4],
+      stem: 'What is Tom getting good at?',
+      ja: 'トムは何が上手になってきている？',
+      choices: ['Chopping wood', 'Driving a car', 'Using a map'], a: 0,
+      choicesJa: ['まき割り', '車の運転', '地図を使うこと'],
+      cue: '「getting really good at」のあと',
+      line: 'Fresh air, no screens. I’m *getting really good at chopping wood* too.',
+      said: '「空気はきれい、画面もない。まき割りもすごく上手になってきた」と言う。',
+      mean: 'get good at 〜 ＝ 〜が上手になる。chop wood ＝ まきを割る。',
+      trap: '前に GPS や運転の話があったので、そちらと思いやすい。good at のあとが答え。',
+      use: 'I’m getting good at cooking.（料理が上手になってきた）' },
 
     { id: 'i4', skill: 'detail', level: 'B2', point: 'splinter', seg: [84, 93.6],
       stem: 'What does Tom want to do about the splinter?', ja: 'とげが刺さって、トムは何をしたい？',
@@ -241,7 +253,7 @@ export const tomScreenBan: Clip = {
       use: 'Okay, that’s enough for today.（よし、今日はここまで）' },
 
     { id: 'd8', skill: 'detail', level: 'B1', point: 'podcast', seg: [178.4, 183.4],
-      stem: 'What do Tom and his friend do on their podcast?', ja: 'トムと友だちは、ポッドキャストで何をする？',
+      stem: 'What do Tom and Jean-Ralphio do on their podcast?', ja: 'トムとジャン・ラルフィオは、ポッドキャストで何をする？',
       choices: ['Rate different kinds of nachos', 'Review places that sell nachos', 'Teach how to make nachos'], a: 0,
       choicesJa: ['いろんなナチョスを採点する', 'ナチョスの店を紹介する', 'ナチョスの作り方を教える'],
       cue: '「where we」のあと',

@@ -288,7 +288,7 @@ export const tackleBen: Clip = {
       said: 'がっかりするレスリーに「これが正しい判断だ。約束する」と言う。',
       mean: 'the right call ＝ 正しい判断。審判の判定（call）から来た言い方。',
       trap: 'call を「電話」と思いやすい。call は「判断」の意味でもよく使う。',
-      use: 'Leaving early was the right call.（早めに出たのは正解だった）' },
+      use: 'Taking the train was the right call.（電車にしたのは正解だった）' },
 
     // retired (A2): a C2 irony reading
     { id: 'c1', skill: 'infer', level: 'C2', point: 'zen', reveals: ['outofmy'], seg: [160.0, 180.0], retired: true,

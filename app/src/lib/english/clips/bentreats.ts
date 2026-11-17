@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 6, new 0
+// A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 6, new 0 · sweep: cross-bank twins retired or rewritten
 // “Ben Treats Himself | Parks and Recreation” (the official Parks and Recreation channel, Season 4): on their yearly
 // Treat Yourself day, Donna talks Tom into bringing a stressed-out Ben along; the spa and acupuncture only make him
 // tenser, his one buy is a pack of socks, and when they ask what he'd really spend big on, he finally treats himself.
@@ -6,7 +6,6 @@
 // 53.6–63 s, 114–121 s (the acupuncture rhyme), 146–149 s, 172–178 s, 263.8 s, 268–271 s (slang), 279–284 s.
 // EAR CHECK: 91–94.4 s x1 — whisper has "I knew you wouldn't get it" twice (91.1 and 92.6 s), the captions once (93.0 s);
 //   check it's said once and the segment starts clean
-// EAR CHECK: 143.3 s nt1 — "More of a rare coins guy" is taken as Ben's own correction (neither source names the speaker)
 import type { Clip } from '../types.ts';
 
 export const benTreats: Clip = {
@@ -38,7 +37,7 @@ export const benTreats: Clip = {
       trap: 'Exactly を賛成と取ると、誘いに乗ったように聞こえる。誰の名前を呼ぶかで決める。',
       use: 'What do you think about inviting Sam?（サムも誘うのはどう？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'coulduse', seg: [40.1, 46.85],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'coulduse', seg: [40.1, 46.85], retired: true,
       stem: 'What does “he could use a day off” mean?',
       ja: '「he could use a day off」はどういう意味？',
       choices: ['He really needs one', 'He is free to take one', 'He has one left to use'], a: 0,
@@ -153,9 +152,9 @@ export const benTreats: Clip = {
       said: '「針のことを忘れられるように、好きな物の話をするよ」と言う。',
       mean: 'take one’s mind off ～ ＝ 〜から気をそらす。不安を忘れさせる言い方。',
       trap: 'take と off から「針を抜く」と思いやすい。mind（気持ち）を針からはなす、の意味。',
-      use: 'A movie might take your mind off it.（映画でも見たら気がまぎれるよ）' },
+      use: 'Music helps take my mind off work.（音楽を聞くと仕事のことを忘れられる）' },
 
-    { id: 'nt1', skill: 'phrase', level: 'B2', point: 'coins', seg: [137.4, 146.1],
+    { id: 'nt1', skill: 'phrase', level: 'B2', point: 'coins', seg: [137.4, 146.1], retired: true,
       stem: 'What does “More of a rare coins guy” mean?',
       ja: '「More of a rare coins guy」はどういう意味？',
       choices: ['I like coins better', 'I like stamps better', 'I don’t like either'], a: 0,

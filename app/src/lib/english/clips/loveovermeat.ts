@@ -36,7 +36,7 @@ export const loveOverMeat: Clip = {
       said: '「今夜の計画、何だと思う？」に、ロンは「いや」とだけ答える。トムはかまわず話す。',
       mean: 'Guess what? ＝ ねえ聞いて。話を始める前置き。ロンは文字どおり当てるのを断っている。',
       trap: 'guess（当てる）だけ聞くと、本当にクイズに聞こえる。トムは答えを待たずに話す。',
-      use: 'Guess what? I got the job!（聞いて！仕事決まった！）' },
+      use: 'Guess what? We’re having a party.（聞いて！パーティーするんだ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'dress', seg: [19.1, 26.6],
       stem: 'What surprise has Tom gotten for Lucy?',
@@ -60,7 +60,7 @@ export const loveOverMeat: Clip = {
       said: '「喜ぶと思う？」に「100パーセント。息ぴったりだから」と答える。',
       mean: 'a hundred percent ＝ 100%。in sync ＝ 気持ちがぴったり合っている。',
       trap: '大げさなトムなら110%も言いそう。「ハンドレッド」で終われば100、「アンド・テン」が続けば110、「ナインティ」なら90。',
-      use: 'I’m a hundred percent sure.（100パーセント確かだよ）' },
+      use: 'I’m one hundred percent sure it’s here.（ここにあるって100パーセント確か）' },
 
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'bully', seg: [33, 43.4],
       stem: 'How interested is Ron in Tom’s news?',
@@ -86,7 +86,7 @@ export const loveOverMeat: Clip = {
       trap: '3つ並ぶので、最初の food に引っぱられやすい。most of all のあとが一番。',
       use: 'Most of all, I love the quiet.（何より静かなのがいい）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'leadin', seg: [62.9, 72.5],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'leadin', seg: [62.9, 72.5], retired: true,
       stem: 'Why does Ron say, “I normally don’t get involved…, but”?',
       ja: 'ロンはなぜ「I normally don’t get involved…, but」と言う？',
       choices: ['To soften what comes next', 'To refuse to talk about it at all', 'To ask if she wants news'], a: 0,
@@ -120,7 +120,7 @@ export const loveOverMeat: Clip = {
       trap: 'quite を「まあまあ」と取りやすい。ここは「かなり」。',
       use: 'I was quite taken with the city.（その街がすっかり気に入った）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'walkback', seg: [86.75, 91.6],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'walkback', seg: [86.75, 91.6], retired: true,
       stem: 'What does “walk back what you said” mean?',
       ja: '「walk back what you said」はどういう意味？',
       choices: ['Take back your words', 'Say it more gently', 'Walk away from it'], a: 0,
@@ -258,7 +258,7 @@ export const loveOverMeat: Clip = {
       trap: 'weird はロンへの言葉なので、笑われるのもロンと思いやすい。何を変と呼んだかを聞く。',
       use: 'He’s weirdly honest. It’s great.（彼、変なくらい正直。そこがいい）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'allin', seg: [198.7, 202.3],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'allin', seg: [198.7, 202.3], retired: true,
       stem: 'What does Tom mean by “I’m all in”?',
       ja: 'トムの「I’m all in」はどういう意味？',
       choices: ['He is completely serious', 'He is done talking', 'He wants to move in'], a: 0,
@@ -270,7 +270,7 @@ export const loveOverMeat: Clip = {
       trap: 'in から「中に入る、一緒に住む」と思いやすい。Look のあとの決意の一言。',
       use: 'If you’re in, I’m all in.（君がやるなら、僕も全力で）' },
 
-    { id: 'p5', skill: 'phrase', level: 'C1', point: 'gun', seg: [201.4, 205.1],
+    { id: 'p5', skill: 'phrase', level: 'C1', point: 'gun', seg: [201.4, 205.1], retired: true,
       stem: 'What does “jumping the gun” mean?',
       ja: '「jumping the gun」はどういう意味？',
       choices: ['Moving too fast', 'Only joking', 'Waiting too long'], a: 0,

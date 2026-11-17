@@ -89,7 +89,7 @@ export const ronBirthday: Clip = {
       said: '「何も聞いてない」と言われ、「じゃあ前の誕生日に彼女が何をしたか話せ」と言う。',
       mean: 'Why don’t you 〜? ＝ 〜したら？、〜してくれ。理由ではなく頼み。前の例から手口を探る。',
       trap: 'Why から、理由を聞いていると思いやすい。うしろに動詞が来たら頼みや提案。',
-      use: 'Why don’t you sit down?（座ったら？）' },
+      use: 'Why don’t you tell me what happened?（何があったか話してよ）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'kidnap', seg: [75.0, 80.25],
       stem: 'What does the coworker mean by “She kidnapped me from work”?', ja: '“She kidnapped me from work” で、同僚は何を言いたい？',
@@ -231,7 +231,7 @@ export const ronBirthday: Clip = {
       said: '「エイプリルのリストは？」に「あなたをからかう方法のリストよ」と答える。',
       mean: 'mess with 人 ＝ 人をからかう、困らせる。パーティーの気配は作り事だった。',
       trap: 'mess（散らかり）から、片付けの話だと思いやすい。with 人なら「からかう」。',
-      use: 'Relax, I’m just messing with you.（落ち着いて、からかってるだけ）' },
+      use: 'Don’t mess with me. I’m serious.（からかわないで。本気なの）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['alone', 'messwith'], seg: [207, 252],
       stem: 'How does Leslie handle Ron’s birthday in the end?', ja: '最後に、レスリーはロンの誕生日をどうする？',

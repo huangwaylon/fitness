@@ -16,10 +16,10 @@ export const donnaPosts: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'double', seg: [6.5, 14.9],
-      stem: 'What is Leslie doing with “a double standard”?',
-      ja: '「a double standard」で、レスリーは何をしている？',
-      choices: ['Saying it is unfair', 'Asking for a vote', 'Asking a real question'], a: 0,
-      choicesJa: ['不公平だと言っている', '投票を求めている', '本当に質問している'],
+      stem: 'Why does Leslie say “a double standard” here?',
+      ja: 'レスリーは、なぜここで「a double standard」と言う？',
+      choices: ['To say it is unfair', 'To ask for a vote', 'To ask a real question'], a: 0,
+      choicesJa: ['不公平だと言うため', '投票を求めるため', '本当に質問するため'],
       cue: '「anyone else」のあとの2語。',
       line: 'Okay, does anyone else here see a *double standard*?',
       said: '「ほかに、二重基準だと思う人はいない？」と割って入る。',
@@ -39,7 +39,7 @@ export const donnaPosts: Clip = {
       trap: 'juicy story（おいしいネタ）で記者を思いやすい。正体は直後の短い答え。',
       use: 'I heard it from a friend of a friend.（友だちの友だちから聞いた）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'brunch', seg: [48.4, 55.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'brunch', seg: [48.4, 55.3], retired: true,
       stem: 'Why did the hairdresser pass on Donna’s posts?',
       ja: '美容師はなぜドナの投稿を渡した？',
       choices: ['Donna missed her brunch', 'Donna wrote about her', 'To help the hearing'], a: 0,
@@ -61,7 +61,7 @@ export const donnaPosts: Clip = {
       trap: 'd が聞こえにくく、you bothered と書きやすい。過去の「もし」なら had が入る。',
       use: 'If you’d told me, I’d have come.（言ってくれたら来たのに）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'recess', seg: [55.8, 64.4],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'recess', seg: [55.8, 64.4], retired: true,
       stem: 'Why does Donna ask for a “brief recess”?',
       ja: 'ドナはなぜ「brief recess（少し休憩）」を頼む？',
       choices: ['To stop the reading for now', 'To keep her posts private', 'To say sorry to Leslie'], a: 0,
@@ -129,7 +129,7 @@ export const donnaPosts: Clip = {
       trap: '美容師への文句が先に出るので、怒りの話と思いやすい。最後の一言が今の気持ち。',
       use: 'I honestly don’t know anymore.（正直、もう分からない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'respect', seg: [102.2, 109.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'respect', seg: [102.2, 109.8], retired: true,
       stem: 'What else does Leslie not have, says the questioner?',
       ja: '質問した人は、レスリーにほかに何がないと言う？',
       choices: ['Her workers’ respect', 'The council’s respect', 'The town’s trust'], a: 0,
@@ -177,7 +177,7 @@ export const donnaPosts: Clip = {
       trap: 'いかにも言いそうなことを選びやすい。並べたものを最後まで聞く。',
       use: 'My thing is cooking for friends.（友だちに料理するのが好きなの）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'steam', seg: [126.2, 130.1],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'steam', seg: [126.2, 130.1], retired: true,
       stem: 'What does “blow off steam” mean?',
       ja: '「blow off steam」はどういう意味？',
       choices: ['Let out stress', 'Take a short break', 'Share work news'], a: 0,
@@ -190,8 +190,8 @@ export const donnaPosts: Clip = {
       use: 'I go running to blow off steam.（うさ晴らしに走るんだ）' },
 
     { id: 'h2', skill: 'humor', level: 'B1', point: 'yes', seg: [153.2, 162.3],
-      stem: 'When does the man say Leslie is annoying?',
-      ja: '男の人は、レスリーがいつうざいと言う？',
+      stem: 'When does Leslie’s supporter say she is annoying?',
+      ja: 'レスリーの味方の男性は、レスリーがいつうざいと言う？',
       choices: ['Right now', 'Every day', 'Never'], a: 0,
       choicesJa: ['今', '毎日', '一度もない'],
       cue: '4つめの質問と、その答え。',
@@ -201,7 +201,7 @@ export const donnaPosts: Clip = {
       trap: '最初の質問に No と答えるので、Never を選びやすい。最後の質問の right now を聞く。',
       use: 'Am I talking too much right now?（今しゃべりすぎてる？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'C1', point: 'feathers', seg: [159.9, 174.1],
+    { id: 'p3', skill: 'pragma', level: 'C1', point: 'feathers', seg: [159.9, 174.1], retired: true,
       stem: 'How does he answer “So you do think I’m annoying?”',
       ja: '「やっぱりうざいと思ってるの？」に、彼はどう答える？',
       choices: ['Yes, but in a soft way', 'No, everyone loves her', 'He only praises her'], a: 0,
@@ -225,7 +225,7 @@ export const donnaPosts: Clip = {
       trap: 'bullet（弾）から、けがやけんかの話と思いやすい。for me がつけば身代わり。',
       use: 'Thanks for taking the blame for me.（かばってくれてありがとう）' },
 
-    { id: 'a5', skill: 'attitude', level: 'C1', point: 'heroic', seg: [210.3, 220.2],
+    { id: 'a5', skill: 'attitude', level: 'C1', point: 'heroic', seg: [210.3, 220.2], retired: true,
       stem: 'How sorry is Leslie for being annoying?',
       ja: 'うざかったことを、レスリーはどのくらい謝っている？',
       choices: ['Only a little sorry', 'Very, very sorry', 'Not sorry at all'], a: 0,

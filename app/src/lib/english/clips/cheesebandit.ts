@@ -117,7 +117,7 @@ export const cheesecakeBandits: Clip = {
       said: '「お腹がすいてるだけ。お昼を食べてないから」と言う。',
       mean: 'have not had 〜 ＝ まだ〜を食べていない。ふだんは haven’t had と短く言う。',
       trap: 'ふだんの haven’t ではなく、わざと have not と分けて言う。3語ともはっきり聞こえる。',
-      use: 'I haven’t had lunch yet.（まだお昼を食べていません）' },
+      use: 'We have not had dinner yet.（まだ夕食を食べていません）' },
     { id: 's2', skill: 'sound', level: 'B2', point: 'dropoff', reveals: ['braverman'], seg: [116.5, 120.0],
       stem: 'Which words do you hear: “Yeah, ___ downstairs”?',
       ja: '「Yeah, ___ downstairs」の空所に聞こえるのは？',

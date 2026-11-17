@@ -99,8 +99,8 @@ export const ent720: Clip = {
       trap: 'Yeah（うん）で始まるので乗り気と思いやすい。名前を勝手に変えられた直後の一言。',
       use: 'Wait, what is happening right now?（待って、今何が起きてるの？）' },
     { id: 'i2', skill: 'detail', level: 'B1', point: 'recep', seg: [71.9, 78.5],
-      stem: 'Is the woman the receptionist?',
-      ja: 'その女性は受付の人？',
+      stem: 'What does she say when asked “Are you the receptionist?”',
+      ja: '「Are you the receptionist?」と聞かれて、彼女は何と答える？',
       choices: ['She isn’t really sure', 'Yes, for ten years', 'No, she is just a model'], a: 0,
       choicesJa: ['自分でもよく分からない', 'はい、10年やっている', 'いいえ、ただのモデル'],
       cue: '「Are you the receptionist?」への返事',
@@ -268,6 +268,6 @@ export const ent720: Clip = {
       said: '「お言葉ですが、経営のことは自分たちで分かってます」と返す。',
       mean: 'with all due respect ＝ お言葉ですが。このあとに反対や断りが来る合図。',
       trap: 'respect（尊敬）から従うと思いやすい。この前置きのあとは、ほぼ反対の意見。',
-      use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
+      use: 'With all due respect, that’s not true.（お言葉ですが、それは違います）' },
   ]
 };

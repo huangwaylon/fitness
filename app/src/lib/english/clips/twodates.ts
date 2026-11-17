@@ -39,7 +39,7 @@ export const twodates: Clip = {
       said: '男性を紹介されたレイチェルが「今ちょっと取り込み中で」と返す。',
       mean: 'in the middle of something ＝ 何かの途中。「今は困る」とやんわり伝える。',
       trap: 'just から「すぐ終わる」と思いやすいが、時間の話はしていない。',
-      use: 'Sorry, I’m in the middle of something.（ごめん、今ちょっと手が離せなくて）' },
+      use: 'I’m in the middle of dinner.（今、夕食の最中なの）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'winning', seg: [17, 26.3],
       stem: 'What does “We’re winning” show about the friends?',
@@ -75,7 +75,7 @@ export const twodates: Clip = {
       said: '帰ろうとする男性を「いやいや、座って座って」と引き止める。',
       mean: 'have a seat ＝ どうぞ座って。sit down よりていねいで、店や会社でもよく聞く。',
       trap: 'have ＝「持つ」から「席を取る」と思いやすい。人にすすめる決まり文句。',
-      use: 'Please have a seat.（どうぞおかけください）' },
+      use: 'Have a seat. I’ll be right back.（座ってて。すぐ戻るね）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'havent', seg: [29.6, 33.2],
       stem: 'Fill the gap: “Rachel, you ___ touched Eldon’s hair.”',
@@ -121,7 +121,7 @@ export const twodates: Clip = {
       said: '「フィービー、これじゃタダのマッサージに見合わないよ」と言う。',
       mean: 'worth ＝ 〜に見合う。マッサージを条件に来たが、割に合わないほど気まずい。',
       trap: 'お金の話も出るので「お金」と思いやすい。お金はレイチェルに渡す話。',
-      use: 'It’s not worth the trouble.（そこまでする価値はないよ）' },
+      use: 'This isn’t really worth the wait.（これ、待つほどの価値はないな）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'eldon', seg: [46.8, 52.6],
       stem: 'What two things are said about Eldon?',
@@ -166,7 +166,7 @@ export const twodates: Clip = {
       said: '友だちを責め、男性二人にも一言ずつ言ってから「ひとりで行く」と去る。',
       mean: 'どちらも選ばず、紹介そのものを断って出ていく。',
       trap: 'soft hair をほめるので「選んだ」と思いやすい。but のあとで断っている。',
-      use: 'Thanks, but I’ll pass.（ありがとう、でも遠慮しとく）' },
+      use: 'I’d rather go by myself.（一人で行くほうがいいな）' },
 
     { id: 't2', skill: 'attitude', level: 'B1', point: 'needdate', seg: [69.4, 74.15],
       stem: 'How does Rachel feel at “Thank you very much, but…”?',
@@ -204,10 +204,10 @@ export const twodates: Clip = {
       use: 'He’s the only one I really liked.（本当に気に入ったのは彼だけ）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [79.8, 86.1],
-      stem: 'What does “I mean” do here?',
-      ja: 'ここでの「I mean」の働きは？',
-      choices: ['Softens what she said', 'Explains a hard word', 'Starts a new complaint'], a: 0,
-      choicesJa: ['言ったことを和らげる', '難しい言葉を説明する', '新しい文句を始める'],
+      stem: 'Why does Rachel say “I mean” here?',
+      ja: 'レイチェルは、なぜここで「I mean」と言う？',
+      choices: ['To soften what she said', 'To explain a hard word', 'To start a new complaint'], a: 0,
+      choicesJa: ['言ったことを和らげるため', '難しい言葉を説明するため', '新しい文句を始めるため'],
       cue: '友だちを責めた直後。',
       line: '*I mean*, no offense to you guys, really.',
       said: '友だちを責めたあと、男性二人に「悪気はないのよ」と付け足す。',

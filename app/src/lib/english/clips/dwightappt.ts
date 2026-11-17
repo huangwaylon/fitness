@@ -236,7 +236,7 @@ export const dwightAppt: Clip = {
       said: 'パムのうったえのあと「なあパム」と呼び、少し間をおいて「君の言う通りだ」と言う。',
       mean: 'You know what? ＝ あのね。質問ではなく、考えや結論を言う前の前置き。',
       trap: '質問の形なので、本当に聞いていると思いやすい。このあとは結論が来る。',
-      use: 'You know what? Let’s just go.（もういいや、行こう）' },
+      use: 'You know what? You’re right.（そうだね、君の言うとおり）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [106.6, 112.5], keep: true,
       stem: 'How much does Dwight say the cuts save on plumbing and electricity?',
       ja: '水道と電気で、いくら浮くとドワイトは言っている？',

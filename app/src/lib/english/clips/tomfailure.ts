@@ -39,8 +39,8 @@ export const tomFailure: Clip = {
       use: 'Thanks! I’m pretty proud of it.（ありがとう、けっこう自信作なんだ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'wine', seg: [25.2, 34.0],
-      stem: 'What has the man by the bar sent over?',
-      ja: 'バーの男性は何を届けさせた？',
+      stem: 'What has a guest at the bar sent over?',
+      ja: 'バーにいる客は、何を届けさせた？',
       choices: ['Wine and a business card', 'Wine and a thank-you note', 'Wine and the bill for it'], a: 0,
       choicesJa: ['ワインと名刺', 'ワインとお礼のメモ', 'ワインとその請求書'],
       cue: '「sent you over」のあと',
@@ -227,7 +227,7 @@ export const tomFailure: Clip = {
       said: '「前にも破産したことはある」と言う。',
       mean: 'I’ve の v はほぼ聞こえず、gone が強い。go bust ＝ 破産する。',
       trap: 'went なら「ウェン」、gone は「ゴン」。I’d gone なら「アイド」と d が入る。',
-      use: 'I’ve been there before.（前にも行ったことがある）' },
+      use: 'I’ve lost money in the past.（前にもお金を失ったことがある）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'comeup', seg: [140.4, 143.4],
       stem: 'Type what Lucy says: “and you’ll ___ a new idea.” (3 words)', answer: 'come up with',

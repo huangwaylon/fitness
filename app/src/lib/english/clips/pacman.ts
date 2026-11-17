@@ -144,8 +144,8 @@ export const pacMan: Clip = {
       use: 'I’m not late. The bus is.（遅れたのは私じゃない、バスだ）', retired: true },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'problems', seg: [32.3, 37.6],
-      stem: 'Why does the friend offer to keep the game?',
-      ja: '友だちはなぜ、ゲームを持って帰ろうかと言う？',
+      stem: 'Why does the gift giver offer to keep the game?',
+      ja: 'ゲームをくれた人は、なぜ持って帰ろうかと言う？',
       choices: ['It’s causing fights', 'They don’t like it much', 'Chandler hates it'], a: 0,
       choicesJa: ['けんかの元になっている', 'あまり気に入っていない', 'チャンドラーがきらっている'],
       cue: '「if this game」のあと',
@@ -168,8 +168,8 @@ export const pacMan: Clip = {
       use: 'Keep it. It’s a gift.（持ってて。プレゼントだから）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'love', reveals: ['gift'], seg: [32.3, 40.2],
-      stem: 'How do they answer the friend’s offer?',
-      ja: '友だちの「持って帰ろうか」に、どう答える？',
+      stem: 'How do they answer the gift giver’s offer?',
+      ja: 'ゲームをくれた人の「持って帰ろうか」に、どう答える？',
       choices: ['No, they want to keep it', 'Yes, to stop the fights', 'Only for a little while'], a: 0,
       choicesJa: ['いや、自分たちで持っていたい', 'うん、けんかをやめるため', '少しの間だけ'],
       cue: '返事の最初',

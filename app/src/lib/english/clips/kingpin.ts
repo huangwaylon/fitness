@@ -31,7 +31,7 @@ export const kingpin: Clip = {
       trap: '張り込み＝緊張、と思いやすいが、言葉は遊びに行くような明るさ。',
       use: 'I feel like a real chef!（本物のシェフみたい！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cd', seg: [19.5, 27.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cd', seg: [19.5, 27.3], retired: true,
       stem: 'What kind of songs did Leslie put on the mix CD?',
       ja: 'レスリーはミックスCDにどんな歌を入れた？',
       choices: ['Songs about people watching people', 'Songs about people following people', 'Songs about cops chasing bad guys'], a: 0,
@@ -64,7 +64,7 @@ export const kingpin: Clip = {
       said: '「名前を入れるのに120ドルかけた」と言う。',
       mean: 'bucks ＝ dollars のくだけた言い方。120 は one twenty と読むことが多い。',
       trap: '20 なら「トゥエンティ」だけ、200 は「トゥーハンドレッ」。前に「ワン」があれば120。',
-      use: 'It cost me fifty bucks.（50ドルもしたんだよ）' },
+      use: 'I paid twenty bucks for this shirt.（このシャツに20ドル払った）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'black', seg: [39.7, 45.8],
       stem: 'What does Leslie tell Tom to wear instead?',
@@ -138,8 +138,8 @@ export const kingpin: Clip = {
       use: 'I’m supposed to meet her at six.（6時に彼女と会うことになってる）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [115.2, 121.3], keep: true,
-      stem: 'How late is the man Andy is meant to meet?',
-      ja: 'アンディが会うはずの男は、どのくらい遅れている？',
+      stem: 'How late is the person Andy is waiting for?',
+      ja: 'アンディが待っている相手は、どのくらい遅れている？',
       choices: ['2 minutes', '12 minutes', '20 minutes'], a: 2,
       choicesJa: ['2分', '12分', '20分'],
       cue: '「He’s like」のあと。',

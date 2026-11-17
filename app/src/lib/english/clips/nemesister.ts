@@ -113,7 +113,7 @@ export const spencerRoastsCarly: Clip = {
       said: '「ちょっと気にしすぎじゃない？」と聞く。',
       mean: 'take it personally ＝ 自分への攻撃と取る、気にしすぎる。a little too ＝ ちょっと〜すぎ。',
       trap: 'taking this と a little がひと続きに聞こえる。5語を数えて書く。',
-      use: 'Don’t take it personally.（気にしないで）' },
+      use: 'Please don’t take this too personally.（あまり深刻に受け止めないでね）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'together', seg: [133.4, 140.6],
       stem: 'Who says influencers have to stick together?',

@@ -28,7 +28,7 @@ export const ronTomLucy: Clip = {
       trap: 'well（元気）から、体調の話と思いやすい。going well（うまくいく）への返事。',
       use: 'How’s work? — Better than ever!（仕事どう？ー今までで最高！）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'dress', seg: [15.9, 26.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'dress', seg: [15.9, 26.1], retired: true,
       stem: 'What surprise does Tom have for Lucy?',
       ja: 'トムはルーシーにどんなサプライズを用意した？',
       choices: ['A dress that matches his', 'Some hand cream to try', 'A role in the wedding'], a: 0,
@@ -40,7 +40,7 @@ export const ronTomLucy: Clip = {
       trap: 'butler of honor（付き添い役）はトム自身の役。I got のあとを聞く。',
       use: 'We got matching T-shirts.（おそろいのTシャツを買ったんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [25.7, 32.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [25.7, 32.6], retired: true, keep: true,
       stem: 'How sure is Tom that Lucy will like the gift?',
       ja: 'トムは、ルーシーがプレゼントを喜ぶとどれくらい思っている？',
       choices: ['Ninety percent', 'A hundred percent', 'A hundred and ten percent'], a: 1,
@@ -52,7 +52,7 @@ export const ronTomLucy: Clip = {
       trap: '「ア・ハンドレッド」で終われば100、続けて「アンド・テン」なら110、「ナインティ」で始まれば90。',
       use: 'Are you sure? — A hundred percent.（確か？ー絶対）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'marry', seg: [32.4, 37.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'marry', seg: [32.4, 37.5], retired: true,
       stem: 'Fill the gap: “___ her tomorrow.”',
       ja: '「___ her tomorrow.」の空所は？',
       choices: ['I’d marry', 'I’ll marry', 'I want to marry'], a: 0,
@@ -64,11 +64,11 @@ export const ronTomLucy: Clip = {
       trap: 'I’ll（アイル）なら予定の話。I want to なら「ワナ」が聞こえる。小さな d を聞く。',
       use: 'I’d move there tomorrow.（明日にでも引っ越したいくらい）' },
 
-    { id: 'a1', skill: 'marker', level: 'B1', point: 'food', seg: [34.7, 43.3],
-      stem: 'What does Ron do with “More importantly”?',
-      ja: 'ロンは「More importantly」で何をする？',
-      choices: ['Moves to what he cares about', 'Asks Tom for more details', 'Tells Tom some bad news'], a: 0,
-      choicesJa: ['自分の気になる話に移る', 'トムにもっと詳しく聞く', 'トムに悪い知らせを言う'],
+    { id: 'a1', skill: 'marker', level: 'B1', point: 'food', seg: [34.7, 43.3], retired: true,
+      stem: 'Why does Ron say “More importantly” here?',
+      ja: 'ロンは、なぜここで「More importantly」と言う？',
+      choices: ['To move to what he cares about', 'To ask Tom for more details', 'To tell Tom some bad news'], a: 0,
+      choicesJa: ['自分の気になる話に移るため', 'トムにもっと詳しく聞くため', 'トムに悪い知らせを言うため'],
       cue: '「Bully for you」のあと',
       line: '*Bully for you*, son. *More importantly*, do you have tri-tip for tonight?',
       said: '「よかったな」と流し、「それより今夜、牛肉はあるか」と聞く。',
@@ -112,7 +112,7 @@ export const ronTomLucy: Clip = {
       trap: '「口を出さない」で終わると思いやすい。but のあとの I’ll just say it が本題。',
       use: 'I don’t usually say this, but…（ふだんは言わないんだけど…）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'taken', seg: [71.5, 79.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'taken', seg: [71.5, 79.6], retired: true,
       stem: 'What does “quite taken with you” mean?',
       ja: '「quite taken with you」はどういう意味？',
       choices: ['He likes you a lot', 'He is seeing someone', 'He was surprised by you'], a: 0,
@@ -182,7 +182,7 @@ export const ronTomLucy: Clip = {
       trap: '言うことを忘れたと取りやすいが、続くのは自分の正直さの話だけ。',
       use: 'Let me rephrase that.（言い方を変えさせて）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'island', reveals: ['leak'], seg: [132.3, 147.1],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'island', reveals: ['leak'], seg: [132.3, 147.1], retired: true,
       stem: 'Why does Lucy say “Now we’re on an island?”',
       ja: 'ルーシーはなぜ「Now we’re on an island?」と言う？',
       choices: ['Ron made Tom’s plan bigger', 'Ron said Tom lies a lot', 'Ron wants to buy an island'], a: 0,

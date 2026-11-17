@@ -158,7 +158,7 @@ export const donnaBully: Clip = {
       said: '「悪いレビューと言えば、あれでいいことを思いついた」と話す。',
       mean: 'Speaking of 〜 ＝「〜と言えば」。前の話につなげて、自分の話を始める。',
       trap: 'speaking から「話している」と思いやすい。前の話題を受ける決まり文句。',
-      use: 'Speaking of food, are you hungry?（食べ物と言えば、お腹すいた？）' },
+      use: 'Speaking of lunch, where should we eat?（お昼といえば、どこで食べる？）' },
 
     // retired (A2): a metaphor joke (the celery of desserts)
     { id: 'h2', skill: 'humor', level: 'C1', point: 'celery', seg: [110.3, 118.0], retired: true,

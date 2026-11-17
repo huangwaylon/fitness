@@ -59,7 +59,7 @@ export const housetour: Clip = {
       said: '「座って、いや入って、いや、えっと、くつろいで」と言い直し続ける。',
       mean: 'or を重ね、I don’t know（えっと）まで言う。ホスト役に慣れず、緊張している。',
       trap: '「座って」は命令に聞こえるが、すぐ言い直す。言い直しの多さは緊張のしるし。',
-      use: 'Sorry, I’m a little nervous.（ごめん、ちょっと緊張してて）' },
+      use: 'I always get nervous before meetings.（会議の前はいつも緊張する）' },
 
     { id: 'p1', skill: 'phrase', level: 'B1', point: 'home', seg: [35.5, 42.2],
       stem: 'What does “make yourself at home” mean?',
@@ -184,7 +184,7 @@ export const housetour: Clip = {
       said: '「白をやわらかくしたくて卵の殻の白にしたら、なんと同じ色だった」と話す。',
       mean: 'Guess what? ＝ なんと、聞いて。exactly the same ＝ まったく同じ。',
       trap: '塗装屋の失敗だと思いやすいが、注文どおり。白と卵の殻の白が同じ色だった。',
-      use: 'Guess what? I got the job!（聞いて！仕事が決まったの！）' },
+      use: 'Guess what? They’re exactly the same.（聞いて！まったく同じなんだって）' },
 
     { id: 'p3', retired: true, skill: 'phrase', level: 'C1', point: 'puppy', seg: [134.5, 141.2],
       stem: 'When the host explains the bench, what do his last two words refer to?',

@@ -230,7 +230,7 @@ export const empOfMonth: Clip = {
       trap: '見た目の話と取りやすいが、何も言っていない。starting to think は疑いの始まり。',
       use: 'I’m starting to think he’s lost.（あいつ迷ってるんじゃないかと思えてきた）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'record', seg: [146.9, 150],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'record', seg: [146.9, 150], retired: true,
       stem: 'What does “For the record” mean?', ja: '“For the record” はどういう意味？',
       choices: ['Just to be clear', 'Please write this down', 'I have a secret'], a: 0,
       choicesJa: ['はっきり言っておくと', 'これを書きとめて', '秘密があるの'],
@@ -241,7 +241,7 @@ export const empOfMonth: Clip = {
       trap: 'record を「記録」と思うと、書きとめる話に聞こえやすい。文の頭なら「言っておくと」。',
       use: 'For the record, I was right.（言っておくけど、私が正しかった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'next', seg: [149.2, 158],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'next', seg: [149.2, 158], retired: true,
       stem: 'What does Pam mean by “why doesn’t Jim just pick”?', ja: 'パムの “why doesn’t Jim just pick” はどういう意味？',
       choices: ['Jim can just pick the next one', 'She wants to know Jim’s reason', 'Jim should keep the award'], a: 0,
       choicesJa: ['ジムが次の人を選べばいい', 'ジムの理由を知りたい', 'ジムが賞をもらっておけばいい'],

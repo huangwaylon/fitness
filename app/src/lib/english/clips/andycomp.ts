@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 7, new 1
+// A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 7, new 1 · sweep: cross-bank twins retired or rewritten
 // “The Case of Andy's Missing Computer | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Andy, studying for the police exam, takes his missing computer for the practice theft he asked the office to stage;
 // he grills Gary and Chris, a second theft shows it's real, and a police officer deflates him with a report form.
@@ -15,18 +15,6 @@ export const andyComputer: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'practice', reveals: ['steal'], seg: [4.3, 29.6],
-      stem: 'Why is Andy happy his computer is gone?',
-      ja: 'アンディはなぜパソコンがなくなって喜ぶ？',
-      choices: ['He thinks it’s for practice', 'He wants a new computer', 'He thinks Gary took it'], a: 0,
-      choicesJa: ['練習用だと思っている', '新しいパソコンがほしい', 'ゲイリーが取ったと思っている'],
-      cue: '「police academy」の話のあと',
-      line: 'I told everyone… they should *steal something from my desk so I could practice*.',
-      said: '「皆に、練習のために机から何か盗んでくれと頼んでおいた」と話す。',
-      mean: 'so I could 〜 ＝「〜できるように」。なくなったのは練習用の事件だと思っている。',
-      trap: 'Aha!（よし！）は困った声ではなく、待っていた合図。so I could practice を聞く。',
-      use: 'Okay, let’s do this.（よし、やるぞ）' },
-
     { id: 'm1', skill: 'marker', level: 'B1', point: 'see', seg: [14, 22.1],
       stem: 'What does Andy’s “See,” mean here?',
       ja: 'アンディの文の最初の「See,」は、ここではどういう意味？',
@@ -107,6 +95,18 @@ export const andyComputer: Clip = {
       trap: 'yourself と away がつながり、一語に聞こえやすい。3語を数える。',
       use: 'Your smile gave you away.（笑顔でバレバレだよ）' },
 
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'suspects', reveals: ['sorry', 'letdown', 'tell'], seg: [56, 100.7],
+      stem: 'Who does Andy question, and in what order?',
+      ja: 'アンディは、だれをどの順で問いつめる？',
+      choices: ['Gary, then Chris', 'Chris, then Gary', 'Gary, then the officer'], a: 0,
+      choicesJa: ['ゲイリー、次にクリス', 'クリス、次にゲイリー', 'ゲイリー、次に警官'],
+      cue: '名前を呼んで話しかける所',
+      line: 'Jerry, if that even is your real name… — *Chris Traeger.* … *I know you did it.*',
+      said: 'まずジェリー（本名ゲイリー）を、次に「クリス、お前がやったな」と問いつめる。',
+      mean: 'I know you did it ＝「お前がやったのは分かってる」。相手を犯人と決めつける言い方。',
+      trap: 'ジェリーとゲイリーは同じ人。2人目は Chris Traeger と名前を呼ぶ所で分かる。',
+      use: 'I think you took my umbrella.（私の傘、持っていったでしょ）' },
+
     // retired (A2): a “why is it funny” item on names
     { id: 'h1', skill: 'humor', level: 'C1', point: 'realname', seg: [58, 70.8], retired: true,
       stem: 'After Gary corrects his name, why is Andy’s next line funny?',
@@ -178,7 +178,7 @@ export const andyComputer: Clip = {
       trap: 'tell（言う）から、「絶対言わない」と思いやすい。when people are lying が続く。',
       use: 'I can’t tell if it’s salt or sugar.（塩か砂糖か分からない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'comeup', seg: [91.4, 94.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'comeup', seg: [91.4, 94.8], retired: true,
       stem: 'Type the gap: “Hopefully that ___ in my police work.” (3 words)', answer: "doesn't come up",
       ja: '「Hopefully that ___ in my police work.」の空所を書こう（3語）',
       cue: '「Hopefully that」のあと',
@@ -238,7 +238,7 @@ export const andyComputer: Clip = {
       trap: 'アンディが作戦を並べるので、大がかりな捜査と思いやすい。警官は断っている。',
       use: 'Less exciting than I hoped.（思ったより地味だった）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'better', seg: [122.6, 128.1],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'better', seg: [122.6, 128.1], retired: true,
       stem: 'Once Andy believes the theft is real, how does he feel?',
       ja: '盗難が本物だと分かって、アンディはどんな気持ち？',
       choices: ['Thrilled to have a real case', 'Unsure whether he’s being lied to', 'Upset that his test is ruined'],
@@ -285,7 +285,7 @@ export const andyComputer: Clip = {
       trap: 'love で賛成と取りやすい。but のあとは代案でなく、無理な訳。',
       use: 'Love the idea, but no budget.（いい案だけど、予算がない）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'writing', seg: [152.3, 160.1],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'writing', seg: [152.3, 160.1], retired: true,
       stem: 'According to the officer, what is most police work?',
       ja: '警官によると、警察の仕事のほとんどは何？',
       choices: ['Writing things down', 'Chasing people down', 'Waiting around for calls'], a: 0,
@@ -309,7 +309,7 @@ export const andyComputer: Clip = {
       trap: '今この場を離れろの意味と思いやすい。直前の「仕事の大半は書類」から、仕事選びの話。',
       use: 'Maybe this job isn’t for you.（この仕事、向いてないのかも）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'oughta', reveals: ['boring'], seg: [159.9, 164.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'oughta', reveals: ['boring'], seg: [159.9, 164.3], retired: true,
       stem: 'Fill the gap: “…maybe you ___ do something else.”',
       ja: '「…maybe you ___ do something else.」の空所は？',
       choices: ['ought to', 'got to', 'want to'], a: 0,

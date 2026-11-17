@@ -58,7 +58,7 @@ export const leslieMom: Clip = {
       said: '母の「ふーん」に「まあいいや。で、明日集会をやるの」と続ける。',
       mean: 'anyway ＝ それはともかく、で。反応がなくても、本当の話に進む合図。',
       trap: '「とにかく」と訳すと話を終える感じがする。anyway のあとに本題が来ることが多い。',
-      use: 'Anyway, where was I?（で、何の話だっけ）' },
+      use: 'Anyway, the meeting is tomorrow.（それはともかく、会議は明日です）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [42.95, 46.6], keep: true,
       stem: 'What time is the town hall meeting?',
@@ -248,8 +248,8 @@ export const leslieMom: Clip = {
       use: 'I think I oversold the hotel.（ホテルをほめすぎたかも）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'garage', seg: [285.9, 292.6],
-      stem: 'What does the neighbor say the man in the cast does?',
-      ja: 'ギプスの男性は何をしている、と近所の人は言う？',
+      stem: 'What does the neighbor say Andy does?',
+      ja: '近所の人は、アンディが何をしていると言う？',
       choices: ['Plays music all night', 'Fixes cars all night', 'Leaves lights on all night'], a: 0,
       choicesJa: ['一晩中音楽をやる', '一晩中車を直す', '一晩中明かりをつけている'],
       cue: 'I don’t care about any of that のあと。',

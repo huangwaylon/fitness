@@ -154,7 +154,7 @@ export const printfire: Clip = {
       said: '「ダーネルが3ドルくれると言った」と話す。',
       mean: 'bucks ＝ ドル（くだけた言い方）。ほんの小銭で引き受けた。',
       trap: 'thirty なら最後に「ティ」が付き、前を強く言う。five は「ファイヴ」。ここは「スリー」。',
-      use: 'It’s only five bucks.（たった5ドルだよ）' },
+      use: 'Can I borrow three bucks?（3ドル貸してくれる？）' },
 
     { id: 'c3', skill: 'humor', level: 'C2', point: 'chump', seg: [134.6, 147.1], retired: true,
       stem: 'In this comment about Darnell, who is the joke really on?',

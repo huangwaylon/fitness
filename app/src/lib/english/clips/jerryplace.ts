@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 0
+// A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 0 · sweep: lesliecancel twins retired (d1 w2 h1 g1), new g3
 // “Jerry Knows His Place | Parks and Recreation” (the official Parks and Recreation channel, Season 4): asked about
 // Nick Newport on camera, Leslie calls him a jerk without knowing he died that day; Jen calls on her to cancel her
 // events, and at an emergency meeting Ben, Ann, April and Andy split before Leslie decides to campaign on, "in a classy
@@ -17,7 +17,7 @@ export const jerryPlace: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'river', seg: [0, 8.4], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'river', seg: [0, 8.4], retired: true, keep: true,
       stem: 'What does Leslie promise to do if she is elected?',
       ja: '当選したら、レスリーは何をすると約束する？',
       choices: ['Stop dumping waste in the river', 'Pay to clean up the river', 'Stop them from buying river land'], a: 0,
@@ -39,7 +39,7 @@ export const jerryPlace: Clip = {
       said: 'ニックについて聞かれて悪口を言うと、記者は「今日亡くなった件です」と言い直す。',
       mean: 'Sorry, I meant 〜 ＝「すみません、〜のことです」。亡くなったと知らずに悪口を言ってしまった。',
       trap: 'He died? の前の悪口が長いので、記者に怒ったと思いやすい。Sorry, I meant のあとが本当の質問。',
-      use: 'Sorry, I meant the other one.（すみません、もう一方のことです）' },
+      use: 'Sorry, I meant Tuesday, not Thursday.（すみません、木曜じゃなく火曜のことです）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'frankly', seg: [17.6, 22.55],
       stem: 'What does “Frankly” tell us here?',
@@ -63,7 +63,7 @@ export const jerryPlace: Clip = {
       trap: 'dying の g はほぼ消え、earlier とつながって「ダイイナーリア」に近い。2語あるか数える。',
       use: 'Can you comment on the delay?（おくれについて一言いただけますか）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'bummer', seg: [36.9, 44.4],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'bummer', seg: [36.9, 44.4], retired: true,
       stem: 'Why is “a bummer” a strange thing to say here?',
       ja: 'ここで「a bummer」と言うのは、なぜ変？',
       choices: ['It’s too casual for a death', 'It’s too formal and long', 'It sounds happy about it'], a: 0,
@@ -98,8 +98,8 @@ export const jerryPlace: Clip = {
       use: 'Out of respect, let’s skip the speeches.（敬意を込めて、スピーチはなしで）', retired: true },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.4, 93.25], keep: true,
-      stem: 'How old was the man who died?',
-      ja: '亡くなった人は何歳だった？',
+      stem: 'How old was Nick Newport?',
+      ja: 'ニック・ニューポートは何歳だった？',
       choices: ['88', '90', '98', '99'], a: 2,
       choicesJa: ['88歳', '90歳', '98歳', '99歳'],
       cue: '「that man is」のあと',
@@ -180,7 +180,7 @@ export const jerryPlace: Clip = {
       trap: 'attitude をカタカナの「態度（が悪い）」と思いやすい。ここは「気の持ちよう」。',
       use: 'You can’t do it? Not with that attitude!（できない？そんな弱気じゃね！）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'call', reveals: ['ann', 'apologize'], seg: [110.8, 155.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'call', reveals: ['ann', 'apologize'], seg: [110.8, 155.4], retired: true,
       stem: 'What does Leslie decide at the end?',
       ja: '最後に、レスリーは何を決める？',
       choices: ['Keep going, but politely', 'Stop the campaign for now', 'Say sorry, then stop'], a: 0,
@@ -204,7 +204,7 @@ export const jerryPlace: Clip = {
       trap: 'fine から賛成や「がんばる」と思いやすい。すぐあとの文がベンと反対なので、本音の前置き。',
       use: 'Okay, fine. I’ll tell you what happened.（分かった、何があったか話すよ）' },
 
-    { id: 'w2', skill: 'who', level: 'B2', point: 'ann', reveals: ['april'], seg: [116.05, 123.65],
+    { id: 'w2', skill: 'who', level: 'B2', point: 'ann', reveals: ['april'], seg: [116.05, 123.65], retired: true,
       stem: 'Who thinks Leslie should stop, at least for now?',
       ja: '「少なくとも今はやめるべき」と思っているのはだれ？',
       choices: ['Ann', 'April', 'Ben'], a: 0,
@@ -238,6 +238,17 @@ export const jerryPlace: Clip = {
       mean: '中身を聞かずに反対するのは、意見ではなく「アンに逆らいたいだけ」だから。そのずれが笑い。',
       trap: 'but のあとを正式な意見と取りやすい。前半とセットで、理由のない反対と分かる。',
       use: 'I didn’t read it, but I love it.（読んでないけど、気に入った）', retired: true },
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'andy', seg: [123.9, 139.8],
+      stem: 'What does Andy think the team should do?', ja: 'アンディは、チームはどうすべきだと思っている？',
+      choices: ['Keep campaigning, no matter what', 'Stop until Leslie says sorry', 'Take a short break first'], a: 0,
+      choicesJa: ['何があっても選挙活動を続ける', 'レスリーが謝るまでやめる', 'まず少し休む'],
+      cue: '「Andy?」と呼ばれたあと',
+      line: 'I absolutely think that we should *keep campaigning*. The worst possible thing we could do would be *to stop*.',
+      said: '「絶対に続けるべきだ。やめるのが最悪だ」と力説する。',
+      mean: 'keep 〜ing ＝ 〜し続ける。the worst thing ＝ いちばん悪いこと。やめないで、という意見。',
+      trap: 'stop が何度も聞こえるので、やめる派と思いやすい。keep campaigning が彼の意見。',
+      use: 'I think we should keep going.（続けたほうがいいと思う）' },
+
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'panini', seg: [135.05, 139.7],
       stem: 'Right after Andy’s speech, what does his next question do?',

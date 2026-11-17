@@ -25,7 +25,7 @@ export const goodHusband: Clip = {
       trap: 'have to なら「ハフタ」、need to なら「ニード」。「ワナ」なら want to。',
       use: 'You don’t wanna know.（聞かない方がいいよ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'asked', seg: [1.8, 8.38],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'asked', seg: [1.8, 8.38], retired: true,
       stem: 'What does “*you asked for it*” mean here?',
       ja: 'ここでの「you asked for it」はどういう意味？',
       choices: ['You wanted to hear it', 'You asked very kindly', 'You asked too many times'], a: 0,
@@ -102,7 +102,7 @@ export const goodHusband: Clip = {
       choices: ['To make Ann leave', 'To make the club fun', 'To vent about work'], a: 0,
       choicesJa: ['アンに出ていってもらうため', '会を楽しくするため', '仕事の愚痴を言うため'],
       cue: '「At first」のあと',
-      line: 'At first, this was funny, but *it’s gotten out of hand*. … *Sushi and cigar club* now.',
+      line: 'At first, this was funny, but it’s gotten out of hand. … *Sushi and cigar club* now.',
       said: '「最初は面白かったけど、度が過ぎた」と言い、「今は寿司と葉巻の会」と言う。',
       mean: 'get out of hand ＝ 手に負えなくなる。アンが避ける物を並べて、遠回しに追い出している。',
       trap: 'funny（面白い）から、会を楽しくしたいと思いやすい。アンが避ける物を思い出す。',
@@ -118,7 +118,7 @@ export const goodHusband: Clip = {
       trap: 'v を b と聞くと bent に聞こえる。下くちびるをかむ v の音。',
       use: 'I just need to vent for a minute.（ちょっと愚痴を聞いて）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'seehow', reveals: ['sushi'], seg: [78.9, 83.4],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'seehow', reveals: ['sushi'], seg: [78.9, 83.4], retired: true,
       stem: 'How does Ann feel when she answers them?',
       ja: '仲間に答えるとき、アンはどんな気持ち？',
       choices: ['Hurt that they want her gone', 'Sorry she spoiled the club', 'Happy about their joke'], a: 0,
@@ -130,7 +130,7 @@ export const goodHusband: Clip = {
       trap: 'I see（分かった）から、反省していると思いやすい。how it is がつくと「そういうことね」。',
       use: 'Oh, I see how it is.（ああ、そういうことね）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'amazing', seg: [83.95, 89.4],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'amazing', seg: [83.95, 89.4], retired: true,
       stem: 'How does the other member feel?',
       ja: 'もう一人の仲間はどんな気持ち？',
       choices: ['Not sorry at all', 'Very sorry for Ann', 'Worried about Ann'], a: 0,
@@ -153,7 +153,7 @@ export const goodHusband: Clip = {
       trap: 'don’t を強めると「悪く思わない」という否定の強調。ここは人と人の対比。強勢は何と比べるかを示す。',
       use: 'You can go home. I’m staying.（帰っていいよ。私は残る）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'home', seg: [89.85, 101.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'home', seg: [89.85, 101.5], retired: true,
       stem: 'Why can’t Ann complain at home?',
       ja: 'アンが家で愚痴を言えないのはなぜ？',
       choices: ['Chris tries to help too much', 'Chris gets angry at her', 'Chris is too busy at work'], a: 0,

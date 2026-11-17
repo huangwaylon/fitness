@@ -222,7 +222,7 @@ export const buttOfJoke: Clip = {
       said: '町をかばったあと、「とにかく、狩りと釣りのシーズンは…」と戻る。',
       mean: 'anyway ＝「とにかく」。脱線を切り上げて、本題に戻る合図。',
       trap: '「まあいいや」とトムに折れたと思いやすい。続く話題を聞く。',
-      use: 'Anyway, where were we?（で、どこまで話したっけ）' },
+      use: 'Anyway, let’s get back to work.（それはさておき、仕事に戻ろう）' },
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'winding', seg: [83.2, 89.2],
       stem: 'What does “winding down” mean here?',
       ja: '「winding down」は、ここでどういう意味？',

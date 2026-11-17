@@ -133,7 +133,7 @@ export const saveJJs: Clip = {
       said: '「もうたくさん。土地は取られても、お店までは取らせない」と決める。',
       mean: 'Enough is enough ＝「もうがまんしない」。大きく負けたあとに、好きな店まで失うのは許せない。',
       trap: 'JJ が事情を話すので、たのまれたと思いやすい。JJ は助けをたのんでいない。',
-      use: 'Enough is enough. I’m calling them.（もうがまんしない。電話する）' },
+      use: 'Enough is enough. I’m leaving.（もうたくさん。帰る）' },
     { id: 'f3', skill: 'phrase', level: 'C1', point: 'damned', seg: [59.4, 66.3],
       stem: 'When Leslie brings up her waffles, what does she mean?',
       choices: ['She won’t let them take the diner as well', 'She’d be shocked if they took the diner as well',

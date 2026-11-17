@@ -192,7 +192,7 @@ export const pilotFacts: Clip = {
       trap: 'downsizing が本物らしく聞こえる。前の go along with it が手がかり。',
       use: 'Relax, I’m just joking.（落ち着いて、冗談だよ）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B2', point: 'letgo', reveals: ['downsize'], seg: [189.5, 200.9],
+    { id: 'p5', skill: 'phrase', level: 'B2', point: 'letgo', reveals: ['downsize'], seg: [189.5, 200.9], retired: true,
       stem: 'What does “let you go” mean here?',
       ja: 'ここでの「let you go」はどういう意味？',
       choices: ['End your job here', 'Send you home early', 'Tell you the news first'], a: 0,

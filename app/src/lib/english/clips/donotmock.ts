@@ -76,7 +76,7 @@ export const doNotMock: Clip = {
       said: '「本当にやめての『やめて』と、笑いすぎての『やめて』の区別が難しい」と言い訳する。',
       mean: 'tell the difference ＝ 違いが分かる、見分ける。hard to 〜 ＝ 〜するのが難しい。',
       trap: 'hard to tell を「聞こえにくい」と思いやすい。tell the difference は「見分ける」。',
-      use: 'I can’t tell the difference.（違いが分からない）' },
+      use: 'It’s hard to tell the difference.（違いを見分けるのは難しい）' },
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'gut', seg: [69.0, 73.2], retired: true,
       stem: 'In Michael’s acted-out “stop”, what does he claim he is doing?',
       choices: ['Laughing as hard as he can', 'Feeling sick to his stomach', 'Trying hard not to laugh out loud'], a: 0,

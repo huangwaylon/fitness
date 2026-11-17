@@ -196,7 +196,7 @@ export const neverLower: Clip = {
       said: '電話はマイケルに代わり、客は大きな注文を約束する。条件はドワイトのクビ。',
       mean: '練習のはずが、電話はマイケルに代わり、マイケルが100万ドルの注文をもらう。',
       trap: 'ドワイトの練習なので、ドワイトの手柄だと思いやすい。Give me the phone で電話はマイケルへ。',
-      use: 'Well, that backfired.（まあ、裏目に出たね）' },
+      use: 'In the end, he got the big order.（結局、彼が大口の注文を取った）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'threewords', reveals: ['rules'], seg: [100.3, 106.5], retired: true,
       stem: 'Why is Jim’s choice of three words for Dwight so pointed?',

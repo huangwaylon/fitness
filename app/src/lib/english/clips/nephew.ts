@@ -52,7 +52,7 @@ export const michaelsNephew: Clip = {
       said: '「何か手ちがいがあったみたい」と言い、「そのまま飲む？はるばるもどろうか？」と聞く。',
       mean: 'mix-up ＝ 手ちがい、取りちがえ。some sort of ＝ 何かの。だれのせいかをぼかしている。',
       trap: 'mix（まぜる）から、飲み物の話と思いやすい。mix-up は「取りちがえ」。',
-      use: 'Sorry, there was a mix-up with your order.（すみません、ご注文に手ちがいがありました）' },
+      use: 'Sorry, there was a mix-up with the rooms.（すみません、部屋の手ちがいがありました）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [38.9, 44], keep: true,
       stem: 'How long has the new assistant been working there?',
@@ -110,7 +110,7 @@ export const michaelsNephew: Clip = {
       said: '「あいつは最悪じゃない。最悪はだれか分かる？前にいたインターンだ」と返す。',
       mean: 'You know who 〜? ＝ 答えを待たず、自分で答える前置き。ルークから話をそらしている。',
       trap: '質問なので、みんなに答えさせたいと思いやすい。すぐ自分で That intern と答える。',
-      use: 'You know what? Let’s just order pizza.（ねえ、もうピザたのもうよ）' },
+      use: 'You know who’s the best? My mom.（だれが一番か知ってる？うちの母だよ）' },
 
     { id: 'h1', skill: 'marker', level: 'B2', point: 'intern', seg: [63.7, 75.3],
       stem: 'What does “though” mean in “Good worker, though”?',

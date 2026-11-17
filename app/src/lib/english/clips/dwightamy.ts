@@ -255,7 +255,7 @@ export const dwightAmyAdams: Clip = {
       said: '一人は「ケイティと会う」、もう一人は「ロイのいとこの引っこしを手伝う」と答える。',
       mean: 'What are you up to? と同じく、週末の予定を聞く会話。二人は別々の相手と過ごす。',
       trap: '引っこしは片方だけの予定。だれの予定かは I と we で分ける。',
-      use: 'What are you up to this weekend?（週末なにするの？）' },
+      use: 'Sorry, I’m busy this weekend.（ごめん、今週末は予定があるの）' },
 
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'plans', seg: [232.55, 235.7], keep: true,
       stem: 'Type the question: “Um, so ___ this weekend?” (4 words)', answer: 'you got big plans',

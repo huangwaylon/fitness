@@ -28,10 +28,10 @@ export const itGuySecrets: Clip = {
       use: 'It’s either this one or that one.（これかあれか、どっちかだ）' },
 
     { id: 'interupt', skill: 'phrase', level: 'B1', point: 'interrupt', seg: [12.5, 16.3],
-      stem: 'What does “Sorry to interrupt” do?',
-      ja: '「Sorry to interrupt」は何をしている？',
-      choices: ['Says sorry for cutting in', 'Says sorry for being late', 'Says goodbye to everyone'], a: 0,
-      choicesJa: ['話のじゃまをしてすみませんと言う', '遅れてすみませんと言う', 'みんなにさよならを言う'],
+      stem: 'Why does Nick say “Sorry to interrupt”?',
+      ja: 'ニックは、なぜ「Sorry to interrupt」と言う？',
+      choices: ['To say sorry for cutting in', 'To say sorry for being late', 'To say goodbye to everyone'], a: 0,
+      choicesJa: ['話のじゃまをしたことを謝るため', '遅れたことを謝るため', 'みんなにさよならを言うため'],
       cue: 'ニックの最初の一言。',
       line: 'Hey, guys. Uh, *sorry to interrupt*. I just wanted to say goodbye.',
       said: '「みんな、じゃましてごめん。さよならを言いたくて」と入ってくる。',
@@ -52,8 +52,8 @@ export const itGuySecrets: Clip = {
       use: 'I’m going down to Texas for work.（仕事でテキサスへ行くんだ）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnow', seg: [20.7, 24.9],
-      stem: 'He’s told “Not now.” What does Nick do?',
-      ja: '「今はだめ」と言われて、ニックはどうする？',
+      stem: 'What does Nick do after “Not now”?',
+      ja: '「Not now」と言われたあと、ニックはどうする？',
       choices: ['Explains why it must be now', 'Says he’ll come back later', 'Asks how long it will take'], a: 0,
       choicesJa: ['今でないといけない理由を話す', 'あとでまた来ると言う', 'どのくらいかかるか聞く'],
       cue: '「Oh, yeah」のあと。',
@@ -84,7 +84,7 @@ export const itGuySecrets: Clip = {
       said: '「なあ、こいつの名前なんだっけ？」と聞くが、だれも知らない。',
       mean: '文の最後の again ＝「…だっけ？」。聞いたはずのことを、もう一度聞く言い方。',
       trap: 'again ＝「また」から、新しく聞いていると思いやすい。忘れたことを聞き直す形。',
-      use: 'Sorry, what was your name again?（ごめん、お名前なんでしたっけ）' },
+      use: 'Sorry, what was the address again?（すみません、住所なんでしたっけ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'hates', seg: [34.8, 39.5],
       stem: 'How does Nick feel at “Okay, look, I get it, people”?',
@@ -143,7 +143,7 @@ export const itGuySecrets: Clip = {
       said: '「もう忘れちゃったの？」と聞く。',
       mean: 'Did you がつながって「ディジュ」と聞こえる。d と y が合わさって「ジュ」。',
       trap: 'Didn’t なら「ン」が残る。Could なら「ク」で始まる。最初の音を聞く。',
-      use: 'Did you get my message?（メッセージ届いた？）' },
+      use: 'Did you lock the door?（ドアのカギ、かけた？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [48.6, 52.3], keep: true,
       stem: 'How many parties a week does Nick say they have?',

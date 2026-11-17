@@ -23,7 +23,7 @@ export const laborroom: Clip = {
       said: '「家から病院まで7分かからなかった。やった！」と喜ぶ。',
       mean: 'in under 〜 minutes ＝ 〜分もかからずに。速さを自慢する言い方。',
       trap: 'eleven なら「イレ」で始まる。seventeen なら最後の「ティーン」が長く強い。「セヴン」で止まれば 7。',
-      use: 'We got there in under an hour.（1時間かからずに着いたよ）' },
+      use: 'The bus got us there in under ten minutes.（バスで10分もかからずに着いた）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'over', seg: [5, 13.2], retired: true,
       stem: 'How does Rachel answer Ross’s “We did it”?',

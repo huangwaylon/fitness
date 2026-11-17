@@ -98,7 +98,7 @@ export const unsexyRoadTrip: Clip = {
       said: '「最高のCDを作った」と言い、演説、中国語講座などを並べる。',
       mean: 'burn a CD ＝ CDを作る（焼く）。awesome（最高）と言うが、中身はわざと退屈なもの。',
       trap: '曲のCDだと思いやすい。並ぶ中身を一つずつ聞く。',
-      use: 'I made a playlist for the drive.（ドライブ用にプレイリスト作った）' },
+      use: 'We made a CD for the trip.（旅行用にCDを作った）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'horn', seg: [66.3, 71.9], keep: true,
       stem: 'How long is the car horn track on the CD?', ja: 'CDの車のクラクションは何分？',

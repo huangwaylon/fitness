@@ -3,7 +3,7 @@
 // Rachel finds herself drawn to every man she sees; a friend says it's normal around the fourth month of pregnancy.
 // At her check-up a new doctor stands in, and Rachel treats the exam like a first date until he asks what's going on.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Rachel, Dr. Long, Dr. Schiff. The
-// friend who carried triplets is never named, so items say "her friend".
+// friend who carried triplets (Phoebe) is never named in the audio; stems name her as the show does.
 // Untested on purpose: 0–15 s and 33 s (the sweatpants and "thrice as randy" lines), 25 s, 57–60 s ("a good pill"),
 // 77–81 s (captions "Bald haircut", whisper "Bull haircut"), 132–138 s (the "lie down on the table" exchange).
 import type { Clip } from '../types.ts';
@@ -15,8 +15,8 @@ export const rachelFlirtsDoctor: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'normal', reveals: ['fourth'], seg: [16.0, 52.0],
-      stem: 'What does her friend say about Rachel’s feelings?',
-      ja: 'レイチェルの気持ちについて、友だちは何と言う？',
+      stem: 'What does Phoebe say about Rachel’s feelings?',
+      ja: 'レイチェルの気持ちについて、フィービーは何と言う？',
       choices: ['It’s normal at this time', 'It will stop very soon', 'It is rare and very strange'], a: 0,
       choicesJa: ['この時期にはふつう', 'もうすぐ止まる', 'めずらしくて、とても変'],
       cue: '「Wait a second」のあと。',
@@ -27,8 +27,8 @@ export const rachelFlirtsDoctor: Clip = {
       use: 'Don’t worry, that’s completely normal.（心配しないで、よくあることだよ）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'fourth', seg: [16.2, 25], keep: true,
-      stem: 'According to her friend, which month of pregnancy is Rachel in?',
-      ja: '友だちによると、レイチェルは妊娠何か月目？',
+      stem: 'According to Phoebe, which month of pregnancy is Rachel in?',
+      ja: 'フィービーによると、レイチェルは妊娠何か月目？',
       choices: ['The third', 'The fourth', 'The fifth'], a: 1,
       choicesJa: ['3か月目', '4か月目', '5か月目'],
       cue: '「Around the」のあと。2回出てくる。',
@@ -51,8 +51,8 @@ export const rachelFlirtsDoctor: Clip = {
       use: 'Oh, that explains a lot.（ああ、それで納得）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'cutout', seg: [44.4, 51.6],
-      stem: 'Why does her friend tell the cutout story?',
-      ja: '友だちはなぜ、等身大パネルの話をする？',
+      stem: 'Why does Phoebe tell the cutout story?',
+      ja: 'フィービーはなぜ、等身大パネルの話をする？',
       choices: ['To show she did it too', 'To warn Rachel about it', 'To make Rachel laugh'], a: 0,
       choicesJa: ['自分も同じだったと伝える', 'そのことでレイチェルに注意する', 'レイチェルを笑わせる'],
       cue: '「I remember」で始まる話。',
@@ -176,7 +176,7 @@ export const rachelFlirtsDoctor: Clip = {
       said: '「出身は？お仕事は？」と聞かれ、「医者です」と答える。',
       mean: 'What do you do? ＝ お仕事は何？ 診察中の医者に聞くのがおかしい。',
       trap: '仕事を聞くのは失礼と思いやすいが、ふつうの質問。診察中の医者に聞くからおかしい。',
-      use: 'So, what do you do?（お仕事は何を？）' },
+      use: 'And what do you do for a living?（で、お仕事は何を？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'meant', seg: [100.6, 109.4],
       stem: 'After his answer, how does Rachel try to save her question?',

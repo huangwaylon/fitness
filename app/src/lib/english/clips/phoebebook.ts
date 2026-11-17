@@ -62,10 +62,10 @@ export const phoebebook: Clip = {
       use: 'This old hotel creeps me out.（この古いホテル、なんだか不気味）' },
 
     { id: 'r1', skill: 'pragma', level: 'B2', point: 'sorry', reveals: ['slower'], seg: [12.9, 16],
-      stem: 'Phoebe says, “I’m sorry.” What is she doing?',
-      ja: 'フィービーが「I’m sorry」と言う。何をしている？',
-      choices: ['Stopping them to ask something', 'Saying sorry before she leaves', 'Feeling bad about their fight'], a: 0,
-      choicesJa: ['二人を止めて、頼みごとをする', '帰る前に謝る', '二人のけんかを気の毒に思う'],
+      stem: 'Why does Phoebe say “I’m sorry” here?',
+      ja: 'フィービーは、なぜここで「I’m sorry」と言う？',
+      choices: ['To stop them and ask something', 'To say sorry before she leaves', 'To show she feels bad for them'], a: 0,
+      choicesJa: ['二人を止めて、頼みごとをするため', '帰る前に謝るため', '二人を気の毒に思っていると示すため'],
       cue: '「I’m sorry」のすぐあと',
       line: 'You guys, *I’m sorry*. Can you please talk a little slower?',
       said: '「ごめん、もう少しゆっくり話してくれる？」と割り込む。',
@@ -175,7 +175,7 @@ export const phoebebook: Clip = {
       said: '「人は、ほめ言葉なら何でも信じる」とも書く。',
       mean: 'as long as ＝ 〜でさえあれば。compliment ＝ ほめ言葉。さっきのいい話は、ご機嫌取りだった。',
       trap: 'long から「長い」と思いやすい。as long as でひとまとまりの言い方。',
-      use: 'You can stay as long as you’re quiet.（静かにしていれば、いていいよ）' },
+      use: 'It’s fine as long as it’s quick.（すぐ済むなら大丈夫）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'marsha', seg: [53.2, 62.8],
       stem: 'Who does Phoebe say she is writing about?',

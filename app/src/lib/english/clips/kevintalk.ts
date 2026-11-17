@@ -161,7 +161,7 @@ export const kevinTalk: Clip = {
       said: '「説明に時間がかかった」と言われ、ケビンが「わかった、普通に話す」と言う。',
       mean: '時間の節約のつもりが、逆に時間がかかっていると示されて、折れる。',
       trap: 'word code（言葉の決まり）の話が出たので、規則のせいだと思いやすい。',
-      use: 'Fine, I’ll do it.（わかった、やるよ）' },
+      use: 'Fine, fine. I’ll ask her.（わかった、わかった。彼女に聞くよ）' },
     { id: 'm1', skill: 'marker', level: 'B2', point: 'though', reveals: ['hour'], seg: [93.4, 96.7],
       stem: 'What does “*though*” show in “Does it save time, though?”', ja: '「Does it save time, though?」の though は何を表す？',
       choices: ['Doubt about Kevin’s point', 'Interest in the time saved', 'Agreement with Kevin'], a: 0,

@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 5, new 1
+// A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 5, new 1 · sweep: cross-bank twins retired or rewritten
 // “Ben Destresses His Life | Parks and Recreation” (the official Parks and Recreation channel, Season 4): a tense Ben
 // snaps at the office over overdue forms and admits to the camera that his reason for staying in town is gone; Donna
 // talks Tom into bringing him along on Treat Yourself day, and the spa and acupuncture leave him more stressed than ever.
@@ -162,7 +162,19 @@ export const benDestress: Clip = {
       trap: '前の場面の書類の話から、書類のせいと思いやすい。could use a day off が理由。',
       use: 'I could use a coffee.（コーヒーが飲みたいな）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'snap', seg: [100.4, 104.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'bringben', seg: [97.4, 135.3],
+      stem: 'What do Donna and Tom argue about?',
+      ja: 'ドナとトムは、何について言い合う？',
+      choices: ['Whether Ben can come along', 'Where to go for lunch', 'How much money to spend'], a: 0,
+      choicesJa: ['ベンを連れていくかどうか', 'お昼をどこで食べるか', 'いくらお金を使うか'],
+      cue: '「Donna, you and I」のあたり',
+      line: 'he *could use a day off*. … There’s *no way Ben can* … *keep up with us*. … — Tom. — Fine.',
+      said: 'ドナは「ベンも連れていこう」、トムは「ついてこられない」と言い合い、トムが折れる。',
+      mean: 'keep up with 人 ＝ 人についていく。Fine ＝「分かったよ」と、しぶしぶ認める一言。',
+      trap: 'soup（スープ）の話が出るので、お昼の話と思いやすい。中心はベンを連れていくか。',
+      use: 'Can my friend come along?（友だちも一緒に行っていい？）' },
+
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'snap', seg: [100.4, 104.2], retired: true,
       stem: 'What does “about to snap” mean here?',
       ja: 'ここでの「about to snap」はどういう意味？',
       choices: ['Close to losing control', 'Very thin and weak', 'Strong enough to take it'], a: 0,
@@ -209,7 +221,7 @@ export const benDestress: Clip = {
       trap: 'Exactly（その通り）で始まるので、賛成と思いやすい。no way が反対の言葉。',
       use: 'Sorry, this is kind of our thing.（ごめん、これは私たちの恒例なんだ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'fine', reveals: ['against'], seg: [122.8, 135.3],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'fine', reveals: ['against'], seg: [122.8, 135.3], retired: true,
       stem: 'What does Tom mean by “Fine”?',
       ja: 'トムの「Fine」はどういう意味？',
       choices: ['Okay, Ben can come', 'Ben looks just fine', 'No, Ben stays here'], a: 0,
@@ -245,19 +257,7 @@ export const benDestress: Clip = {
       trap: 'pamper の始まりが pay に似ていて、お金の話に聞こえやすい。yourself と一緒に聞く。',
       use: 'Pamper yourself this weekend.（週末は自分を甘やかして）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'stressed', seg: [158.0, 203.0],
-      stem: 'How does Ben feel at the spa?',
-      ja: 'スパで、ベンはどんな気持ち？',
-      choices: ['More stressed than ever', 'Finally very relaxed', 'Bored but calm and happy'], a: 0,
-      choicesJa: ['今までで一番ストレス', 'やっとすごくくつろいでいる', 'たいくつだけど落ち着いて満足'],
-      cue: '「Just relax, man」から',
-      line: 'This is *the most stressed out* I’ve ever been in my life.',
-      said: 'ハープの音にも緊張し、針を打たれて「人生で一番ストレスを感じてる」「助けて」と言う。',
-      mean: 'stressed out ＝ ストレスでいっぱい。the most 〜 I’ve ever been ＝ 今までで一番〜。',
-      trap: 'relax が何度も聞こえるので、くつろげたと思いやすい。本人の most stressed out で分かる。',
-      use: 'This is the most tired I’ve ever been.（今までで一番疲れてる）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'harps', seg: [159.95, 166.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'harps', seg: [159.95, 166.6], retired: true,
       stem: 'What makes Ben nervous at the spa?',
       ja: 'スパでベンを緊張させるものは？',
       choices: ['The sound of the harps', 'The thought of needles', 'Being away from work'], a: 0,

@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 6, new 1
+// A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 6, new 1 · sweep: jerryplace twins retired (g1 n1 d4 p3), new g3
 // “Leslie gets cancelled ft. Kathryn Hahn | Parks And Rec” (the official Parks and Recreation channel, Season 4):
 // on TV, Leslie calls Nick Newport a jerk without knowing he died that day; Jen calls on her to cancel her campaign
 // events, and Leslie's team meeting decides whether to keep going.
@@ -30,7 +30,7 @@ export const leslieCancelled: Clip = {
       trap: 'Sweetums（お菓子会社）が聞こえるので、工場を閉めると思いやすい。stop … from を聞く。',
       use: 'Can you stop the dog from barking?（犬が吠えないようにしてくれる？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'died', seg: [8.2, 45.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'died', seg: [8.2, 45.2], retired: true,
       stem: 'What goes wrong for Leslie in the TV interview?',
       ja: 'テレビのインタビューで、レスリーは何をしくじる？',
       choices: ['She insults a man who died', 'She forgets the man’s name', 'She calls his son a jerk'], a: 0,
@@ -138,8 +138,19 @@ export const leslieCancelled: Clip = {
       mean: '政治を休もうと言いながら、相手候補だけに活動中止を求めている。その要求自体が政治的な一手。',
       trap: '言葉どおり休戦の呼びかけと取りやすい。名指しは一人だけ。誰に向けた要求かで、ねらいを聞く。',
       use: 'Now’s not the time. Let’s talk later.（今はその時じゃない、あとで話そう）' },
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'situation', seg: [87.3, 103.5],
+      stem: 'How does Leslie describe Nick Newport?', ja: 'レスリーは、ニック・ニューポートのことをどう言う？',
+      choices: ['Awful, but still a man who died', 'Kind, and loved by the whole town', 'Young, and new to the town'], a: 0,
+      choicesJa: ['ひどい人だが、亡くなった一人の人', '親切で、町じゅうに愛された人', '若くて、町に来たばかりの人'],
+      cue: '「Here’s a situation」のあと',
+      line: 'he’s an *awful man*. *However*, he is a man and *he died*. … He polluted this town.',
+      said: '「ひどい男。でも人間で、亡くなった」と、良い面と悪い面を行き来する。',
+      mean: 'however ＝ でも、しかし。悪い点と「亡くなった」事実を交互に並べて迷っている。',
+      trap: '亡くなった人なので、ほめていると思いやすい。awful や polluted が悪い面。',
+      use: 'It’s expensive. However, it’s worth it.（高い。でも、その価値はある）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.3, 92.92], keep: true,
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.3, 92.92], retired: true, keep: true,
       stem: 'How old was the man who died?',
       ja: '亡くなった人は何歳だった？',
       choices: ['88', '98', '99'], a: 1,
@@ -209,7 +220,7 @@ export const leslieCancelled: Clip = {
       trap: 'that は「ザ」と小さく、with that がつながる。attitude は「アティテュード」。',
       use: 'Not with that attitude!（そんな弱気じゃ無理だよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'apologize', reveals: ['annview'], seg: [116.1, 120.45],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'apologize', reveals: ['annview'], seg: [116.1, 120.45], retired: true,
       stem: 'What did Ann want Leslie to do before campaigning again?',
       ja: 'アンは、レスリーにまず何をしてほしい？',
       choices: ['Apologize to Bobby in person', 'Apologize to Bobby on TV', 'Send Bobby a note of sympathy'],
@@ -258,7 +269,7 @@ export const leslieCancelled: Clip = {
       trap: '力強い言い方なので、根拠があるように聞こえる。同じ語のくり返しは、中身の薄さのサイン。',
       use: 'Quitting is not an option.（やめるという選択はない）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'no', reveals: ['call'], seg: [140.6, 149.7],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'no', reveals: ['call'], seg: [140.6, 149.7], retired: true,
       stem: 'Why does Leslie talk about Ann’s “beautiful face” first?',
       ja: 'レスリーはなぜ先にアンの「beautiful face」の話をする？',
       choices: ['To make her “no” softer', 'To agree with Ann after all', 'To make fun of Ann'], a: 0,

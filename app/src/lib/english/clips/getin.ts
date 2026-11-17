@@ -132,7 +132,7 @@ export const getIn: Clip = {
       said: '「何をたくらんでる？」と聞く。',
       mean: 'What are you up to? ＝「何してるの？／何をたくらんでる？」。what are you は「ワラユ」とつながる。',
       trap: 'are と you が小さく短く、what とひとまとまりに聞こえる。5語あるか数える。',
-      use: 'What are you up to this weekend?（週末は何するの？）' },
+      use: 'Hey, what are you up to?（ねえ、何してるの？）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'putup', seg: [97.85, 100.87],
       stem: 'What does “put you up to this” mean?',
@@ -144,7 +144,7 @@ export const getIn: Clip = {
       said: '「だれかにやらされたのか？スタンリー、金をもらってるのか？」と疑う。',
       mean: 'put 人 up to 〜 ＝「人に〜をやらせる、そそのかす」。黒幕は別にいると思っている。',
       trap: 'すぐあとの paying から、お金の話と思いやすい。put you up to は「やらせた」。',
-      use: 'Who put you up to this?（だれにやれって言われたの？）' },
+      use: 'Did someone put you up to this?（だれかにやらされたの？）' },
 
     { id: 'h4', skill: 'humor', level: 'C1', point: 'mastermind', seg: [100.85, 105.8],
       stem: 'Why does Dwight’s explanation of Kelly’s role get a laugh?',

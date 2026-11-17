@@ -233,7 +233,7 @@ export const sideQuest: Clip = {
       said: '「おばあちゃんにしていい？」と聞かれ、一言「いいわよ」と答える。',
       mean: 'Fine. だけの返事は「仕方ないわね」に近い。いやそうでも、答えは yes。',
       trap: '短くて素っ気ないので、断ったと思いやすい。Fine は OK の意味。',
-      use: 'Fine, I’ll do it.（分かった、やるよ）' },
+      use: 'Fine. You can borrow my car.（いいよ。車を貸してあげる）' },
 
     { id: 'd6', skill: 'detail', level: 'B1', point: 'memos', seg: [156.7, 162.7],
       stem: 'What was gathered up for Leslie?',
@@ -257,7 +257,7 @@ export const sideQuest: Clip = {
       said: '「今まで見た中でいちばん美しいもの」と言う。',
       mean: 'the most 〜 I’ve ever seen ＝ 今まで見た中でいちばん〜。最高にほめる言い方。',
       trap: 'Is it OK? という質問に引かれて、まあまあと思いやすい。most を聞く。',
-      use: 'It’s the best pizza I’ve ever had.（今まで食べた中でいちばんのピザ）' },
+      use: 'That’s the most beautiful view I’ve ever seen.（今まで見た中でいちばんきれいな景色）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'together', seg: [172.0, 197.0],
       stem: 'How does the clip end?',

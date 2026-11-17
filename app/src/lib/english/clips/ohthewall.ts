@@ -35,7 +35,7 @@ export const ohTheWall: Clip = {
       said: '「みんなに来たメールって何？」と聞かれ、「もっと具体的に頼むよ、ドワイト」と返す。',
       mean: '返事の最後に相手の名前を呼んでいる。specific ＝ 具体的な。',
       trap: 'メールを書いたのは David Wallace なので、選びやすい。聞いたのは返事で呼ばれた人。',
-      use: 'Can you be more specific?（もう少し具体的に言ってもらえますか）' },
+      use: 'Could you be more specific about the time?（時間をもう少し具体的に言えますか）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [12.3, 16.2],
       stem: 'How many emails a day does Michael say he gets?',
@@ -200,7 +200,7 @@ export const ohTheWall: Clip = {
       said: '「今日が最後の出社だったら？もう二度と会えなかったら？」と言う。',
       mean: 'What if 〜? ＝ もし〜だったらどうする？ 不安なときによく使う。',
       trap: 'last day at work から、仕事やお金の心配と思いやすい。次の文が心配の中身。',
-      use: 'What if it rains tomorrow?（明日雨だったらどうする？）' },
+      use: 'What if we miss the last train?（終電を逃したらどうしよう）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'saidit', seg: [133.9, 137.5],
       stem: 'What does “*There, I said it*” show?',

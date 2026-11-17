@@ -83,10 +83,10 @@ export const savings: Clip = {
       use: 'Who needs a car in Tokyo?（東京で車なんて要らないよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['savings', 'age'], seg: [36.5, 41.8],
-      stem: 'What does Chandler’s “I mean” do here?',
-      ja: 'ここでチャンドラーの「I mean」はどんな働き？',
-      choices: ['Adds a reason to his answer', 'Takes back the age he gave', 'Starts a new topic'], a: 0,
-      choicesJa: ['答えに理由を足す', '言った年齢を取り消す', '新しい話を始める'],
+      stem: 'Why does Chandler say “I mean” here?',
+      ja: 'チャンドラーは、なぜここで「I mean」と言う？',
+      choices: ['To add a reason to his answer', 'To take back the age he gave', 'To start a new topic'], a: 0,
+      choicesJa: ['答えに理由を足すため', '言った年齢を取り消すため', '新しい話を始めるため'],
       cue: '年齢のすぐあと、文の始めの2語。',
       line: 'I’m 29. *I mean*, who needs a savings account?',
       said: '「29だし。だってさ、貯金なんて要らないでしょ」と続ける。',
@@ -189,7 +189,7 @@ export const savings: Clip = {
       said: '「彼女、けっこういい感じなんだ」と言う。',
       mean: 'pretty cool ＝ けっこういい感じ。形容詞の前の pretty は「けっこう」。',
       trap: 'pretty を「かわいい」と思いやすい。cool と cold は最後の音で聞き分ける。',
-      use: 'The hotel was pretty nice.（ホテル、けっこう良かったよ）' },
+      use: 'The new boss seems pretty cool.（新しい上司、けっこういい人みたい）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'casey', seg: [58.0, 69.8],
       stem: 'What does Chandler want Joey to do?',
@@ -235,7 +235,7 @@ export const savings: Clip = {
       said: '「二人の仲を取り持ってあげようか？」と申し出る。',
       mean: 'fix A up ＝ 恋人になりそうな人を紹介する、デートをセッティングする。',
       trap: 'fix を「直す」と思いやすい。恋愛の話で fix up と来たら「紹介する」。',
-      use: 'Can you fix me up with someone?（誰か紹介してくれない？）' },
+      use: 'Could you fix me up with your sister?（お姉さんを紹介してくれない？）' },
 
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'pieces', reveals: ['savings', 'casey'], seg: [73.2, 81.5], retired: true,
       stem: 'How does Chandler mean his answer to “What do you think?”',

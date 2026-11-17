@@ -62,7 +62,7 @@ export const realityExposed: Clip = {
       said: '「ねえ、一回ちょっと私をたたいてみたら？」と持ちかける。',
       mean: 'Why don’t you 〜? ＝ 〜したら？ 理由を聞く文ではなく提案の決まった言い方。',
       trap: 'why を「なぜ」と思うと質問に聞こえる。Why don’t you ＋ 動詞は「〜したら？」。',
-      use: 'Why don’t you just ask her?（彼女に聞いてみたら？）' },
+      use: 'Why don’t you just try it once?（一回だけやってみたら？）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'troll', reveals: ['hitme'], seg: [41.8, 51.5],
       stem: 'What does Sunny “hit” Carly with?',

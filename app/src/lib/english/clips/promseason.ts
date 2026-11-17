@@ -142,7 +142,7 @@ export const promSeason: Clip = {
       said: '「彼が君にA＋をあげたなんて信じられない」と言う。',
       mean: 'I can’t believe 〜 ＝ 〜なんて信じられない。can’t は強く長い「キャーン」。',
       trap: 't はほぼ聞こえない。強く長い「キャーン」なら can’t、短く弱い「クン」なら can、「ドウン」なら don’t。',
-      use: 'I can’t believe it’s Friday already.（もう金曜なんて信じられない）' },
+      use: 'I can’t believe you remembered.（覚えててくれたなんて信じられない）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'balloon', seg: [59.3, 73.4], retired: true,
       stem: 'Why does the audience laugh at Leslie’s question for Allison?',
@@ -295,10 +295,10 @@ export const promSeason: Clip = {
       use: 'So basically, just push the button?（要するに、ボタンを押すだけ？）' },
 
     { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thankme', seg: [217.4, 223.4],
-      stem: '“Oh, *you don’t have to thank me*.” What is Leslie doing?',
-      ja: '「Oh, you don’t have to thank me」でレスリーは何をしている？',
-      choices: ['Answering thanks kindly', 'Asking for more thanks', 'Telling her to thank Ron'], a: 0,
-      choicesJa: ['お礼にやさしく返している', 'もっとお礼を求めている', 'ロンにお礼を言えと言っている'],
+      stem: 'Why does Leslie say “You don’t have to thank me”?',
+      ja: 'レスリーは、なぜ「You don’t have to thank me」と言う？',
+      choices: ['To answer thanks kindly', 'To ask for more thanks', 'To tell her to thank Ron'], a: 0,
+      choicesJa: ['お礼にやさしく返すため', 'もっとお礼を求めるため', 'ロンにお礼を言えと言うため'],
       cue: 'アリソンのお礼への返事。',
       line: 'Thanks, Leslie… — Oh, *you don’t have to thank me*.',
       said: '「ありがとう」と言われ、「お礼なんていいのよ」と返す。',

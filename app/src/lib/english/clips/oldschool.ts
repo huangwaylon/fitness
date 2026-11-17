@@ -1,10 +1,8 @@
-// A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 2, new 1
+// A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 2, new 1 · sweep: cross-bank twins retired or rewritten
 // “Tom and Jerry Go Old School | Parks and Recreation” (the official Parks and Recreation channel, Season 4): asked
 // only to pick a new font, Tom pitches a full makeover, gets told off for dreaming big, sulks over Jerry's sandwich,
 // then wins praise with an idea he got from Jerry's old ID card. Segments from the captions, words from whisper
 // (2026-11-16). Talk ends at ≈ 185 s.
-// EAR CHECK: 8.8 s a3 — whisper "I've never been more bored", captions "…more bored" without "never" (the key "bored"
-//   is in both)
 import type { Clip } from '../types.ts';
 
 export const oldSchool: Clip = {
@@ -13,7 +11,7 @@ export const oldSchool: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'bored', seg: [8.3, 11.6],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'bored', seg: [8.3, 11.6], retired: true,
       stem: 'How does Tom feel about the talk on fonts?',
       ja: '書体（フォント）の話を、トムはどう感じている？',
       choices: ['Very bored', 'Very interested', 'Very excited'], a: 0,
@@ -35,7 +33,7 @@ export const oldSchool: Clip = {
       mean: 'ask 〜 to do ＝ 〜に…するよう頼む。頼まれた範囲を大きく外れている。',
       trap: 'Sopranos（テレビ番組）の名前が出るので、まねが問題と思いやすい。',
       use: 'This isn’t what I asked for.（これは頼んだものと違います）' },
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'stick', seg: [25.2, 30.7],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'stick', seg: [25.2, 30.7], retired: true,
       stem: 'What does “stick to the assignment” mean?',
       ja: '「stick to the assignment」はどういう意味？',
       choices: ['Do only what was asked', 'Check with Chris first', 'Work on it together'], a: 0,
@@ -46,7 +44,7 @@ export const oldSchool: Clip = {
       mean: 'stick to 〜 ＝ 〜から外れない、〜を守る。計画やルールにも使う。',
       trap: 'stick together（団結する）とまぎれやすい。to のあとが守るもの。',
       use: 'Let’s stick to the plan.（計画どおりにいこう）' },
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'drone', seg: [29.9, 34.8],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'drone', seg: [29.9, 34.8], retired: true,
       stem: 'Will Tom take Jerry’s advice?',
       ja: 'トムはジェリーの助言に従う？',
       choices: ['No, he won’t', 'Yes, he will', 'Yes, but later'], a: 0,
@@ -57,7 +55,7 @@ export const oldSchool: Clip = {
       mean: 'if 以下は、トムがなりたくない姿。だから「従わない」という意味。',
       trap: 'I’d take your advice だけ聞くと、従うと思いやすい。if のあとまで聞く。',
       use: 'I’d go, if I had time.（時間があれば行くんだけど）' },
-    { id: 'i4', skill: 'phrase', level: 'B2', point: 'oldjob', seg: [34.0, 41.0],
+    { id: 'i4', skill: 'phrase', level: 'B2', point: 'oldjob', seg: [34.0, 41.0], retired: true,
       stem: 'What does “technically” mean here?',
       ja: 'ここでの「technically」はどういう意味？',
       choices: ['Officially, on paper', 'Using a computer', 'Very carefully'], a: 0,
@@ -78,7 +76,7 @@ export const oldSchool: Clip = {
       said: '「今のレンジャーたち。何してる？誰も気にしない」と言う。',
       mean: 'What are they は「ワラゼイ」のようにつながる。up to 〜 ＝ 〜をしている。',
       trap: 'were なら「ワー」と残る。Where なら「ウェア」で始まる。current（今の）なので現在。',
-      use: 'What are you up to this weekend?（今週末なにするの？）' },
+      use: 'What are the kids up to?（子どもたち、何してる？）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'font', seg: [81.4, 85.2],
       stem: 'What did Chris really ask them to do?',
       ja: 'クリスが本当に頼んだことは何？',
@@ -153,6 +151,17 @@ export const oldSchool: Clip = {
       mean: 'pathetic ＝ みじめな。2回言ってからの terrific（最高）は皮肉。',
       trap: 'terrific だけ聞くと、喜んでいると思いやすい。前の pathetic が本音。',
       use: 'Thanks, that sounds great.（ありがとう、いいね）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'jerrynow', reveals: ['daughters'], seg: [112.4, 129.1],
+      stem: 'What does Tom say his life is turning into?',
+      ja: 'トムは、自分の生活がどうなっていくと言う？',
+      choices: ['Boring, just like Jerry’s', 'Exciting, full of big plans', 'Busy with a new company'], a: 0,
+      choicesJa: ['ジェリーと同じ、たいくつな生活', '大きな計画でいっぱいの生活', '新しい会社でいそがしい生活'],
+      cue: '「I guess」のあと',
+      line: '*I guess I’m Jerry now.* After work, I’ll just go home, straight to my boring house… *What a miserable life.*',
+      said: '「もう僕もジェリーだ。家に帰って妻にキス、娘3人と夕食。なんてみじめな人生」と言う。',
+      mean: 'I guess I’m 〜 now ＝「どうやら僕も〜になった」。ジェリーのような毎日をなげいている。',
+      trap: '妻や娘の話は、ふつうは幸せな話。最後の miserable（みじめ）でトムの気持ちが分かる。',
+      use: 'I guess I’m a morning person now.（どうやら朝型になったみたい）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'daughters', seg: [116.15, 127.2], keep: true,
       stem: 'In Tom’s picture of Jerry’s life, how many daughters are there?',
       ja: 'トムが思いえがくジェリーの暮らしでは、娘は何人？',
@@ -203,7 +212,7 @@ export const oldSchool: Clip = {
       said: '「なんてこった」と言い、「行かなきゃ」と急に席を立つ。',
       mean: 'gotta ＝ got to（＝ have to）。t が軽い「ラ」の音で「ガラ」。',
       trap: 'gotta を get や got と書きたくなる。got to が縮まって1語に聞こえる。',
-      use: 'Sorry, I gotta go.（ごめん、もう行かなきゃ）' },
+      use: 'Oh no, I gotta go. My bus is here.（あ、行かなきゃ。バスが来た）' },
     { id: 'd3', skill: 'detail', level: 'B1', point: 'products', seg: [151.6, 158.6],
       stem: 'What does Tom plan to make with the old logo?',
       ja: 'トムは古いロゴで何を作るつもり？',
@@ -215,17 +224,6 @@ export const oldSchool: Clip = {
       mean: 'limited edition ＝ 数量限定品。昔のロゴを限定グッズにして売る案。',
       trap: '最初の大改造案（制服や看板）とまざりやすい。今回は作る物が並ぶ。',
       use: 'Is this a limited edition?（これ限定品ですか）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['credit', 'products'], seg: [152, 185.5],
-      stem: 'How does Tom finally win praise?',
-      ja: 'トムは最後にどうやってほめられる？',
-      choices: ['With goods using an old logo', 'With new signs for the parks', 'With a reality show idea'], a: 0,
-      choicesJa: ['古いロゴを使ったグッズの案で', '公園の新しい看板の案で', 'リアリティ番組の案で'],
-      cue: '最後の企画の説明と、その反応',
-      line: 'we take the *old logo* from the 1970s, and we make limited-edition hats… — This is amazing.',
-      said: '70年代の古いロゴで限定グッズを作る案を出し、「すばらしい」とほめられる。',
-      mean: 'limited edition ＝ 数量限定。大きく変える案ではなく、昔の物を生かす案。',
-      trap: '前半の看板やリアリティ番組の案も出るが、それは断られた案。',
-      use: 'This is amazing!（これはすばらしい！）' },
     { id: 'd4', skill: 'detail', level: 'B2', point: 'nostalgia', seg: [160.2, 165.8],
       stem: 'In Tom’s plan, why will parents go to the parks?',
       ja: 'トムの案では、親たちはなぜ公園に行く？',

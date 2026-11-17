@@ -71,7 +71,7 @@ export const daveex: Clip = {
       trap: 'このあとデイブとレスリーが二人で話すので迷いやすい。席を立つのはベン。',
       use: 'Excuse me. I’m going to use the restroom.（失礼、お手洗いに行ってきます）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'love', seg: [39.6, 50.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'love', seg: [39.6, 50.2], retired: true,
       stem: 'What does Leslie think Dave just said?',
       ja: 'デイブが今何と言った、とレスリーは聞き返す？',
       choices: ['He still loves her', 'He once loved her', 'He loves someone new'], a: 0,
@@ -192,7 +192,7 @@ export const daveex: Clip = {
       trap: 'デイブが外に出るので、二人で出たと思いやすい。出るのはデイブ一人。',
       use: 'No, thanks. I’m fine here.（いいえ、結構。ここでいい）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'weregood', reveals: ['catchup'], seg: [120.85, 125.95],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'weregood', reveals: ['catchup'], seg: [120.85, 125.95], retired: true,
       stem: 'What does Leslie mean by “I think we’re good”?',
       ja: 'レスリーの「I think we’re good」はどういう意味？',
       choices: ['No more, thank you', 'We are still friends', 'I am feeling well'], a: 0,

@@ -13,8 +13,8 @@ export const mostLovedDenmark: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'd1', skill: 'detail', level: 'B1', point: 'mongolia', seg: [8, 18.5],
-      stem: 'What did the woman from Mongolia become?',
-      ja: 'モンゴルから来た女性は何になった？',
+      stem: 'What did the guest from Mongolia become?',
+      ja: 'モンゴルから来たゲストは何になった？',
       choices: ['Mayor, then police chief', 'A teacher, then the mayor', 'A police chief’s wife'], a: 0,
       choicesJa: ['町長、それから警察署長', '先生、それから町長', '警察署長の妻'],
       cue: '「Then she became」のあと',
@@ -25,8 +25,8 @@ export const mostLovedDenmark: Clip = {
       use: 'First I was a student, then a teacher.（最初は学生、それから先生になった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'admire', seg: [10.4, 19.7],
-      stem: 'How does Leslie feel about the woman from Mongolia?',
-      ja: 'レスリーはモンゴルの女性をどう思っている？',
+      stem: 'How does Leslie feel about the guest from Mongolia?',
+      ja: 'レスリーはモンゴルから来たゲストをどう思っている？',
       choices: ['She really likes her', 'She is jealous of her', 'She thinks it’s too much'], a: 0,
       choicesJa: ['大好き', 'うらやましく思っている', 'やりすぎだと思う'],
       cue: '経歴のあとの最後の一言',

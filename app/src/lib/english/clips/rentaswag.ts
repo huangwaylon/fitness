@@ -114,7 +114,7 @@ export const rentASwag: Clip = {
       use: 'You passed? Glad to hear it!（受かったの？よかった！）' },
 
     { id: 'pr2', skill: 'attitude', level: 'B1', point: 'dodge', seg: [108.55, 115.15],
-      stem: 'What does the speaker really think of the store?', ja: 'この人は、本当は店をどう思っている？',
+      stem: 'What does Ron really think of the store?', ja: 'ロンは、本当は店をどう思っている？',
       choices: ['It’s quite terrible', 'It’s really great', 'It’s just okay'], a: 0,
       choicesJa: ['かなりひどい', 'すごくいい', 'まあまあ'],
       cue: '「So you like the place?」への返事',

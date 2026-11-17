@@ -229,7 +229,7 @@ export const prankUtica: Clip = {
       said: '「カレンにコピー機のことは言うな」に「了解」と返す。',
       mean: 'Copy that ＝ 了解（無線の言葉）。copier（コピー機）と音が重なるのも笑いどころ。',
       trap: 'copy を「コピーする」と文字どおりに取りやすい。無線の copy は「受け取った」。',
-      use: 'Copy that. On my way.（了解。今向かう）' },
+      use: 'Copy that. I’ll call you back.（了解。折り返します）' },
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'goodfeel', seg: [185.7, 195.0], retired: true,
       stem: 'In the closing comment to the camera, why did seeing him feel good?',
       choices: ['He had hurt her, and now he looked silly', 'He had hurt her, and now he seemed sorry',

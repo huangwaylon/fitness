@@ -234,7 +234,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'beast を彼女のことと取りやすいが、前の文で政府のたとえと分かる。',
       use: 'What a lovely way to put it.（なんて素敵な言い方）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'regret', seg: [121.5, 133.5],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'regret', seg: [121.5, 133.5], retired: true,
       stem: 'What does Ron say he does regret?',
       ja: 'ロンが本当に悔やんでいることは？',
       choices: ['Not warning her about a project', 'Asking her for a job', 'Leaving his government job'], a: 0,
@@ -271,10 +271,10 @@ export const ronLeslieLunch: Clip = {
       use: 'It wasn’t the same without you.（君がいないと違ったよ）' },
 
     { id: 'mk1', skill: 'marker', level: 'B2', point: 'well', seg: [143.0, 150.3],
-      stem: '“*Yeah, well*, there’s a way to fix that.” What does it do?',
-      ja: '「Yeah, well, there’s a way to fix that」の yeah, well は何をしている？',
-      choices: ['Agrees, then turns to a fix', 'Agrees, then says goodbye', 'Doubts him and argues'], a: 0,
-      choicesJa: ['受け止めて、解決の話に向ける', '受け止めて、別れを言う', '疑って言い返す'],
+      stem: 'Why does Leslie say “Yeah, well” here?',
+      ja: 'レスリーは、なぜここで「Yeah, well」と言う？',
+      choices: ['To agree, then offer a fix', 'To agree, then say goodbye', 'To doubt him and argue'], a: 0,
+      choicesJa: ['受け止めて、解決の話に向けるため', '受け止めて、別れを言うため', '疑って言い返すため'],
       cue: 'ロンの話の直後、最初の2語。',
       line: '*Yeah, well*, there’s a way to *fix that*.',
       said: '「うん、でもね、それを直す方法があるよ」と返す。',

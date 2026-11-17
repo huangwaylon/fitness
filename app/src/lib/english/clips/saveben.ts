@@ -226,7 +226,7 @@ export const saveBen: Clip = {
       said: '「すみません、今なにが起きてるんですか？」と聞き返す。',
       mean: 'I’m sorry ＝ ここでは「すみません（よく分からない）」。聞き返す前に言う。',
       trap: 'sorry から、あやまっていると思いやすい。すぐあとに質問が来れば聞き返し。',
-      use: 'Sorry, what did you just say?（すみません、今なんて？）' },
+      use: 'I’m sorry, I don’t follow.（すみません、話についていけません）' },
     { id: 'p4', skill: 'phrase', level: 'B2', point: 'poach', seg: [137, 146],
       stem: 'What does “*making it all about her*” mean?', ja: '「making it all about her」の意味は？',
       choices: ['Putting herself at the center', 'Doing all the work herself', 'Spending all the money'], a: 0,

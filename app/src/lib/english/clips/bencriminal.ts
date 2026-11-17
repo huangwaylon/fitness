@@ -73,7 +73,7 @@ export const benCriminal: Clip = {
       trap: 'hammer（金づち）から力仕事を思いやすい。while の前後は対比。',
       use: 'Someone has to be the bad guy.（誰かが嫌われ役にならないと）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'both', reveals: ['hammer'], seg: [33.0, 41.3],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'both', reveals: ['hammer'], seg: [33.0, 41.3], retired: true,
       stem: 'What does Ben mean by “do both”?',
       ja: 'ベンの「do both」はどういう意味？',
       choices: ['Be nice and tough', 'Work day and night', 'Run two offices'], a: 0,
@@ -97,7 +97,7 @@ export const benCriminal: Clip = {
       trap: 'ほめ言葉で悪い知らせを包む型に聞こえるが、ここは一文ずつ交互。文の数と順番を数えて聞く。',
       use: 'Good news and bad news.（いい知らせと悪い知らせがある）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'mandatory', seg: [46.8, 53.45],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'mandatory', seg: [46.8, 53.45], retired: true,
       stem: 'What does “super mandatory” mean here?',
       ja: '「super mandatory」は、ここではどういう意味？',
       choices: ['You must follow them', 'They are very fun', 'They are not needed'], a: 0,
@@ -225,7 +225,7 @@ export const benCriminal: Clip = {
       trap: 'bribe からお金を思いやすいが、お金の話は出ていない。直前の一言を聞く。',
       use: 'You should try some. It’s really good.（食べてみて。本当においしいよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [125.6, 132.38],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [125.6, 132.38], retired: true,
       stem: 'What does Ben’s “I mean” show here?',
       ja: 'ここでのベンの「I mean」は何を表す？',
       choices: ['He takes back what he said', 'He explains a word', 'He says it again more strongly'], a: 0,

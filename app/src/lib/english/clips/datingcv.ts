@@ -153,7 +153,7 @@ export const datingCv: Clip = {
       said: '「そうだ、プロフィール作りを手伝ってあげる。楽しいよ」と言う。',
       mean: 'You know what? ＝ ねえ、そうだ。答えはいらず、新しい案を出す前に言う。',
       trap: '質問の形なので答えを待っていると思いやすい。すぐ I’ll help you と案が続く。',
-      use: 'You know what? Let’s eat out tonight.（そうだ、今夜は外で食べよう）' },
+      use: 'You know what? I’ll do it myself.（そうだ、自分でやるよ）' },
     { id: 'i3', skill: 'infer', level: 'C1', point: 'differentguy', seg: [96.8, 102.15], retired: true,
       stem: 'What does the question right after the goodbye hint about Ann?',
       choices: ['She has been seeing more than one man', 'She has been hiding a new boyfriend',

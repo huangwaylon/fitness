@@ -252,7 +252,7 @@ export const ronpothole: Clip = {
       said: '「引いた？」に「いや、むしろ逆だ」と答える。',
       mean: 'On the contrary ＝ その反対。引くどころか、むしろ気に入った。',
       trap: 'No だけなら「平気」くらいに聞こえる。on the contrary は「むしろ好き」まで言う。',
-      use: 'Bored? On the contrary, I loved it.（退屈？とんでもない、最高だった）' },
+      use: 'Tired? On the contrary, I feel great.（疲れた？とんでもない、元気いっぱい）' },
 
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'makeup', reveals: ['rouge', 'date'], seg: [243.1, 250.4],
       stem: 'What is Diane’s last remark about the date really about?',

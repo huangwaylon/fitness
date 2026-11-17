@@ -73,7 +73,7 @@ export const peckJoins: Clip = {
       said: '「ねえ、お願い。これが痛いか教えて」と言う。',
       mean: 'do me a favor ＝「お願いがあるんだけど」。頼みごとの前に言う決まり文句。',
       trap: 'favor（好意）から、何かしてあげる話と思いやすい。do me（私に）なので頼む側。',
-      use: 'Can you do me a favor?（ちょっとお願いしてもいい？）' },
+      use: 'Do me a favor and call me later.（あとで電話してくれる？）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'part', seg: [48.0, 59.7],
       stem: 'What did Josh tell Miranda about the reboot?',
@@ -180,7 +180,7 @@ export const peckJoins: Clip = {
       trap: '最後の easy（楽）から、落ち着いていたと思いやすい。but also の前後を聞く。',
       use: 'It was exciting, but also a little scary.（わくわくしたけど、ちょっと怖くもあった）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'cameras', seg: [201.0, 207.6],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'cameras', seg: [201.0, 207.6], retired: true,
       stem: 'How many cameras does the new phone have?',
       ja: '新しいスマホにはカメラがいくつある？',
       choices: ['7', '11', '17'], a: 1,
@@ -193,8 +193,8 @@ export const peckJoins: Clip = {
       use: 'It has like ten rooms.（部屋が10くらいある）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'unprof', seg: [235.8, 245.1],
-      stem: 'How does the speaker feel about being called unprofessional?',
-      ja: '「プロらしくない」と言われることを、話し手はどう思っている？',
+      stem: 'How does this actor feel about being “unprofessional”?',
+      ja: '「プロらしくない」と言われることを、この俳優はどう思っている？',
       choices: ['Agrees with a laugh', 'Disagrees with them', 'Feels hurt by it'], a: 0,
       choicesJa: ['笑って認めている', '反対している', '傷ついている'],
       cue: '「unprofessional」のあと',
@@ -227,7 +227,7 @@ export const peckJoins: Clip = {
       trap: 'たとえは、あとに続く具体例（撮影場所の話）で中身を確かめる。',
       use: 'Feels like we grew up in one town.（同じ町で育ったみたい）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'amazing', seg: [280.5, 284.9],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'amazing', seg: [280.5, 284.9], retired: true,
       stem: 'Why is “not great. It’s amazing.” funny?',
       ja: '「not great. It’s amazing.」はなぜおかしい？',
       choices: ['It sounds modest, then brags', 'It says the idea is bad', 'It brags, then sounds modest'], a: 0,
@@ -240,8 +240,8 @@ export const peckJoins: Clip = {
       use: 'It’s not good. It’s perfect.（いいどころか、完璧）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'aversion', seg: [292.2, 298.1],
-      stem: 'How does the speaker say they dislike reboots?',
-      ja: '話し手は、リブートが苦手なことをどう言う？',
+      stem: 'How does this actor say they dislike reboots?',
+      ja: 'この俳優は、リブートが苦手なことをどう言う？',
       choices: ['Softly, so it sounds nicer', 'Unsure, still deciding', 'Bluntly, being totally honest'], a: 0,
       choicesJa: ['やわらかく、感じよく', '迷っていて、まだ決めていない', 'はっきり、まったく正直に'],
       cue: '「aversion」の前後',
@@ -264,8 +264,8 @@ export const peckJoins: Clip = {
       use: 'Don’t marry yourself to the first plan.（最初の案にこだわりすぎないで）' },
 
     { id: 'g3', skill: 'gist', level: 'B2', point: 'reboot', reveals: ['aversion'], seg: [298.0, 343.0],
-      stem: 'What is the speaker’s view of this reboot?',
-      ja: '話し手は、このリブートをどう思っている？',
+      stem: 'What does this actor think of this reboot?',
+      ja: 'この俳優は、このリブートをどう思っている？',
       choices: ['Most fail, but this one works', 'Reboots usually work well', 'This one stayed the same'], a: 0,
       choicesJa: ['たいてい失敗するが、これはうまくいった', 'リブートはたいていうまくいく', 'これは何も変えなかった'],
       cue: '後半の「But」のあと',
@@ -288,8 +288,8 @@ export const peckJoins: Clip = {
       use: 'That team was lightning in a bottle.（あのチームは奇跡みたいなものだった）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'ages', seg: [332, 341.25], keep: true,
-      stem: 'Who else does the speaker think the show can reach?',
-      ja: '若い人のほかに、誰がこの番組を楽しめると言う？',
+      stem: 'Who else does this actor think the show can reach?',
+      ja: '若い人のほかに、この俳優は誰が楽しめると言う？',
       choices: ['Late teens or early 20s', 'Late 20s or early 30s', 'Late 30s or early 40s'], a: 1,
       choicesJa: ['10代後半か20代前半', '20代後半か30代前半', '30代後半か40代前半'],
       cue: '「younger audience」のあと',

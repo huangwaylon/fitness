@@ -26,8 +26,8 @@ export const mykonos: Clip = {
       use: 'This jacket makes you look good.（このジャケット似合ってるね）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'technique', reveals: ['plant'], seg: [19.4, 27.5],
-      stem: 'How does Michael make the speaker look good?',
-      ja: 'マイケルはどうやって話し手をよく見せる？',
+      stem: 'How does Michael make Andy look good?',
+      ja: 'マイケルはどうやってアンディをよく見せる？',
       choices: ['Helpful questions and laughing', 'Tough questions and laughing', 'Helpful questions and clapping'], a: 0,
       choicesJa: ['答えやすい質問と笑うこと', '厳しい質問と笑うこと', '答えやすい質問と拍手'],
       cue: '「techniques of」のあと。',
@@ -165,7 +165,7 @@ export const mykonos: Clip = {
       said: '「やりとげられると、自信を持ってほしい」と言う。',
       mean: 'pull 〜 off ＝ 難しいことをうまくやりとげる。',
       trap: 'off から「やめる」と思いやすい。pull it off は「うまくやる」。',
-      use: 'I can’t believe we pulled it off!（うまくいったなんて信じられない！）' },
+      use: 'I know you can pull this off.（君ならうまくやれるよ）' },
 
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'confident', reveals: ['pulloff'], seg: [168.5, 176.2], retired: true,
       stem: 'When Andy says no one will work harder, what is he trying not to say?',

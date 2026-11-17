@@ -170,10 +170,10 @@ export const ronsKey: Clip = {
       use: 'This job is a dead end.（この仕事は先がない）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'better', reveals: ['note2'], seg: [233.8, 241.1],
-      stem: 'What is Andy doing with “If it makes you feel any better…”?',
-      ja: 'アンディの「If it makes you feel any better…」は何をしている？',
-      choices: ['Saying something kind', 'Making a joke of her', 'Changing the topic'], a: 0,
-      choicesJa: ['やさしいことを言う', '彼女をからかう', '話題を変える'],
+      stem: 'Why does Andy say “…makes you feel any better”?',
+      ja: 'アンディは、なぜ「…makes you feel any better」と言う？',
+      choices: ['To say something kind', 'To make a joke of her', 'To change the topic'], a: 0,
+      choicesJa: ['やさしいことを言うため', '彼女をからかうため', '話題を変えるため'],
       cue: '文の最初と、最後の too。', line: '*If it makes you feel any better*, I had a big crush on you, too.',
       said: '「気が楽になるなら言うけど、僕も君が好きだった」と打ち明ける。',
       mean: 'If it makes you feel any better ＝ 慰めになるなら。自分も同じだと明かして慰める。',
@@ -209,7 +209,7 @@ export const ronsKey: Clip = {
       said: '「家の錠は16日ごとに替えている」と明かす。',
       mean: 'every 〜 days ＝ 〜日ごと。sixteen は後ろの「ティーン」を強く長く言う。',
       trap: 'six だけなら短い「シクス」。sixty は前が強く「シクスティ」。後ろが強く長ければ16。',
-      use: 'The bus comes every fifteen minutes.（バスは15分ごとに来る）' },
+      use: 'The train leaves every sixteen minutes.（電車は16分ごとに出る）' },
 
     { id: 'i4', skill: 'infer', level: 'B2', point: 'useless', seg: [253.3, 261.75],
       stem: 'What does Ron’s news mean for the lost key?',

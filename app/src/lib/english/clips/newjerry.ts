@@ -36,7 +36,7 @@ export const tomSwagger: Clip = {
       trap: 'not と to がひと続きになり、trying to と聞こえやすい。not は短くても残る。',
       use: 'I’m trying not to laugh.（笑わないようにしてるの）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'ahead', seg: [42.5, 47],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'ahead', seg: [42.5, 47], retired: true,
       stem: 'What does Tom mean by “Way ahead of you”?', ja: '“Way ahead of you” で、トムは何を言いたい？',
       choices: ['I already did it', 'I’m walking in front', 'You are too slow'], a: 0,
       choicesJa: ['もうやってあるよ', '前を歩いている', 'きみは遅すぎる'],
@@ -81,7 +81,7 @@ export const tomSwagger: Clip = {
       trap: 'barking（吠える）から、騒ぐ話だと思いやすい。続く never が決め手。',
       use: 'You’re barking up the wrong tree.（それはお門ちがいだよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'andy', reveals: ['wrongtree'], seg: [104.7, 113.1],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'andy', reveals: ['wrongtree'], seg: [104.7, 113.1], retired: true,
       stem: 'Why can’t Andy be the new Jerry?', ja: 'アンディはなぜ新しいジェリーになれない？',
       choices: ['He never feels ashamed', 'Everyone likes him too much', 'He never does silly things'], a: 0,
       choicesJa: ['何をされても恥ずかしがらない', 'みんなに好かれすぎている', 'ばかなことをしない'],
@@ -209,7 +209,7 @@ export const tomSwagger: Clip = {
       trap: 'No を「君は悲しくない」という答えと取りやすい。頼まれたのは聞くこと。何への No かを考える。',
       use: 'Can I vent for a minute? — No.（ちょっと愚痴っていい？—だめ）' },
 
-    { id: 'a3', skill: 'phrase', level: 'B1', point: 'whining', seg: [202.5, 211.0],
+    { id: 'a3', skill: 'phrase', level: 'B1', point: 'whining', seg: [202.5, 211.0], retired: true,
       stem: 'What does Ron tell Tom to do?', ja: 'ロンはトムに何をしろと言う？',
       choices: ['Fight back for himself', 'Accept being the Jerry', 'Talk about his feelings'], a: 0,
       choicesJa: ['自分のために立ち向かう', 'いじられ役を受け入れる', '気持ちを話す'],
@@ -231,7 +231,7 @@ export const tomSwagger: Clip = {
       trap: 'two なら「トゥー」で終わる。twenty は最後に「ティ」。「ルヴ」なら twelve。',
       use: 'It took me two years to save up.（貯めるのに2年かかった）' },
 
-    { id: 'f3', skill: 'infer', level: 'B2', point: 'leaninto', seg: [222, 233.7],
+    { id: 'f3', skill: 'infer', level: 'B2', point: 'leaninto', seg: [222, 233.7], retired: true,
       stem: 'Why does Tom plan to buy sweatpants and a novel?', ja: 'トムはなぜスウェットパンツと小説を買うつもり？',
       choices: ['He gives up and accepts it', 'He wants to cheer himself up', 'He wants to fit in quietly'], a: 0,
       choicesJa: ['あきらめて受け入れる', '自分を元気づけたい', '目立たずなじみたい'],
@@ -287,7 +287,7 @@ export const tomSwagger: Clip = {
       trap: '「承りました」のように前向きに思いやすい。すぐあとにジェリーの話を続けている。',
       use: 'Thanks, noted.（了解、覚えておきます）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'hearing', seg: [266.6, 278.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'hearing', seg: [266.6, 278.6], retired: true,
       stem: 'Why does Ron bring Jerry back?', ja: 'ロンはなぜジェリーを呼び戻す？',
       choices: ['So people tease Jerry, not Tom', 'So Jerry can train an intern', 'So Jerry can finish his work'], a: 0,
       choicesJa: ['トムでなくジェリーがからかわれるように', 'ジェリーがインターンを教えるため', 'ジェリーが仕事を終えるため'],

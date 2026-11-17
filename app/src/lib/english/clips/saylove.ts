@@ -85,9 +85,9 @@ export const saylove: Clip = {
       use: 'No Wi-Fi? We’ll have to deal with it.（Wi-Fi なし？ 仕方ないね）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [14.3, 19],
-      stem: 'What is Rachel doing with “I’m sorry if…”?', ja: '“I’m sorry if…” で、レイチェルは何をしている？',
-      choices: ['Being kind, but not changing', 'Saying sorry and changing her mind', 'Asking if Ross is scared'], a: 0,
-      choicesJa: ['やさしく言うが、考えは変えない', '謝って、考えを変える', 'ロスがこわがっているか聞く'],
+      stem: 'Why does Rachel say “I’m sorry if” here?', ja: 'レイチェルは、なぜここで「I’m sorry if」と言う？',
+      choices: ['To be kind, but not change', 'To say sorry and change her mind', 'To ask if Ross is scared'], a: 0,
+      choicesJa: ['やさしく言うが、考えは変えないため', '謝って、考えを変えるため', 'ロスがこわがっているか聞くため'],
       cue: '「sorry」のあとの but',
       line: 'and *I’m sorry if that scares you, but*…',
       said: '「こわがらせたならごめん。でも…」と前置きする。',
@@ -148,7 +148,7 @@ export const saylove: Clip = {
       said: '「最後は一緒になるって分かってるから」と理由を言う。',
       mean: 'end up 〜 ＝ 最後は〜になる。end（終わる）とはちがい、行き着く先を言う。',
       trap: 'end が聞こえて「別れる」と思いやすい。end up together ＝ 最後は一緒。',
-      use: 'We ended up staying an extra night.（結局もう一泊した）' },
+      use: 'We ended up eating at the hotel.（結局ホテルで食べることになった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'tough', seg: [29.6, 33.4],
       stem: 'How does Ross sound when he says “tough”?', ja: '“tough” と言うとき、ロスはどんな感じ？',
@@ -215,7 +215,7 @@ export const saylove: Clip = {
       said: '「じゃあ、キスするよ」と、これも言い返す調子で言う。',
       mean: 'I’m gonna ＝ I’m going to（〜するよ）。これからすぐすることを言う。',
       trap: '短い動詞は最初の音で決まる。kiss の k は息が強く出る。miss は口を閉じた「ム」から。',
-      use: 'I’m gonna grab a coffee.（ちょっとコーヒー買ってくる）' },
+      use: 'I’m gonna kiss you.（キスするよ）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'better', reveals: ['kiss'], seg: [39.6, 44],
       stem: 'What does Rachel mean by “You better”?', ja: '“You better” で、レイチェルは何を言いたい？',

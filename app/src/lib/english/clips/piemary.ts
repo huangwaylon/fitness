@@ -273,7 +273,7 @@ export const piemary: Clip = {
       said: '「くだらないのは同感。でも私の問題じゃなくて、ベンのためなの」と言う。',
       mean: 'This is not about me ＝ 自分のためじゃない。but のあとが本音。',
       trap: 'dumb と言うので、出ないと思いやすい。but のあとの about Ben が答え。',
-      use: 'This isn’t about me. It’s about the team.（私のことじゃない。チームのためなの）' },
+      use: 'It’s not about me. It’s about you.（私のことじゃない、あなたのことなの）' },
 
     { id: 'f4', skill: 'phrase', level: 'C1', point: 'battle', reveals: ['dumb'], seg: [261.6, 267.65],
       stem: 'What does Leslie mean by “lose a battle, win the war”?',

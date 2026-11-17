@@ -73,7 +73,7 @@ export const tomNegotiate: Clip = {
       said: '「ここまではいい。でも…」と、さらに条件を出す。',
       mean: 'so far ＝ 今のところ。続く but で「まだ足りない」と次の要求へ。',
       trap: 'far（遠い）から距離の話と思いやすい。so far は「今のところ」。',
-      use: 'So far, so good.（今のところ順調）' },
+      use: 'How’s the new job? So far, so good.（新しい仕事は？今のところ順調）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'maguire', seg: [65.1, 72], retired: true,
       stem: 'Why does Tom say “No” when his quote is finished for him?',

@@ -28,7 +28,7 @@ export const samFriend: Clip = {
       use: 'He’s a bit rough around the edges.（ちょっと粗削りな人だよ）' },
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'punch', seg: [10.86, 16.6],
-      stem: 'Who does Sam say would punch her friend?', ja: 'サムは、友だちを殴るのは誰だと言う？',
+      stem: 'Who would punch her best friend, says Sam?', ja: 'サムによると、親友を殴るのは誰？',
       choices: ['Anybody but Sam', 'Only Sam herself', 'Nobody at all'], a: 0,
       choicesJa: ['サム以外の誰でも', 'サムだけ', '誰も殴らない'],
       cue: '最初の文の主語',
@@ -236,7 +236,7 @@ export const samFriend: Clip = {
       said: '「髪の引っぱり合いのあと仲直り」と言い、二人とも「ごめん」。',
       mean: 'make up ＝ 仲直りする。「ごめん」は二回、別々の声。',
       trap: 'ごめんが二つ聞こえても、その前に hair-pulling（髪の引っぱり合い）がある。after で順番を聞く。',
-      use: 'Did you two make up yet?（二人はもう仲直りした？）' },
+      use: 'We had a fight, but we made up.（けんかしたけど、仲直りした）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'backat', seg: [264.2, 271.35],
       stem: 'What does “Back at you” mean here?', ja: 'ここでの “Back at you” はどういう意味？',

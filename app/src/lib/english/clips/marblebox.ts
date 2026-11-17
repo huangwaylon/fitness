@@ -90,7 +90,7 @@ export const marbleBox: Clip = {
       said: 'マイケルが「とにかく、自分にできないと思う理由はない」と言う。',
       mean: 'Anyway ＝ とにかく。わき道の話を終えて、元の話（会社はうまくいく）に戻る合図。',
       trap: 'anyway は話を変える時にも使うが、ここは前の「うまくいく」に戻っている。',
-      use: 'Anyway, where was I?（とにかく、どこまで話したっけ）' },
+      use: 'Anyway, I think I can do it.（とにかく、私ならできると思う）' },
     { id: 'h1', skill: 'humor', level: 'C1', point: 'climate', seg: [82.4, 92.5],
       stem: 'Michael says “*In all climates*.” Why is it funny?', ja: 'マイケルの「In all climates」はなぜおかしい？',
       choices: ['He thinks “climate” means weather', 'He will sell it all over the world', 'He says times are bad'], a: 0,

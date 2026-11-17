@@ -5,7 +5,7 @@
 // stunt for her “to protect you”. Segments from the captions, words from whisper (2026-11-17).
 // Speakers: Cat is addressed at 155 s, 162 s, 244.5 s and 263.8 s, and Freddie names her at 125.5 s; Sam names herself
 // at 234.3 s and is the one who means to “jump the tuna” (170 s, 175–183 s). Nobody is named in 0–58 s, so those stems
-// say “the third friend” or “she”; the woman who greets Freddie (92.8 s) isn't named either. No key uses the Dice/tuna
+// say “the third friend” or “she”; the woman who greets Freddie (92.8 s) is Cat (named at 125.5 s). No key uses the Dice/tuna
 // backstory, the kiss itself (184–191 s), the garbled 162–165 s, or the lines where the sources differ.
 // EAR CHECK: 242.6 s r1 — the predict cut falls after "Fine!" and before "I'll jump the tuna!" (gap ~0.4 s)
 // EAR CHECK: 62.0 s s1 — the n't of "wouldn't" is audible (both sources say "wouldn't")
@@ -111,7 +111,7 @@ export const killerTuna: Clip = {
       trap: 'But actually（でも実は）で反対しそうに聞こえやすいが、続くのは I like that（いいね）。',
       use: 'Actually, I like that idea.（意外といいね、その案）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'lured', seg: [94.7, 106.0],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'lured', seg: [94.7, 106.0], retired: true,
       stem: 'What does Freddie think happened to Sam?',
       ja: 'フレディはサムに何があったと思っている？',
       choices: ['She’s in the hospital', 'She’s in trouble with police', 'She got lost in LA'], a: 0,
@@ -135,8 +135,8 @@ export const killerTuna: Clip = {
       use: 'Aren’t you full of questions today!（今日は質問が多いね！）' },
 
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'handsome', seg: [106.6, 113.5],
-      stem: 'How does the woman answer Freddie’s question?',
-      ja: 'フレディの質問に、その女性はどう答える？',
+      stem: 'How does Cat answer Freddie’s question?',
+      ja: 'フレディの質問に、キャットはどう答える？',
       choices: ['She changes the subject', 'She explains where Sam is', 'She admits it was a trick'], a: 0,
       choicesJa: ['話をそらす', 'サムの居場所を説明する', 'だましたと認める'],
       cue: '彼の質問に、答えているかどうか。',
@@ -252,7 +252,7 @@ export const killerTuna: Clip = {
       trap: 'word を「言葉」と取ると、言葉の取り消しに思いやすい。直前の promised（約束した）と結ぶ。',
       use: 'I never go back on my word.（約束は絶対に守る）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'fine', seg: [232.3, 242.6], then: [242.6, 249.5],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'fine', seg: [232.3, 242.6], retired: true, then: [242.6, 249.5],
       stem: 'After “Somebody has to jump…”, Cat says “Fine!”. What comes next?',
       ja: '「誰かが跳ばなきゃ」に、キャットが「Fine!」。次に来るのは？',
       choices: ['She’ll do the jump herself', 'She dares Sam to jump', 'She won’t stay and watch'], a: 0,

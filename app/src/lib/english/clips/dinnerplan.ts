@@ -39,7 +39,7 @@ export const dinnerplan: Clip = {
       trap: 'least（いちばん少ない）から「気にしない」と思いやすい。否定のあとなら「特に〜は」。',
       use: 'Nobody wants to wait. Least of all me.（誰も待ちたくない。私は特に）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'plans', seg: [12.0, 18.5],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'plans', seg: [12.0, 18.5], retired: true,
       stem: 'Why doesn’t Jim have plans tonight?',
       ja: 'ジムはなぜ今夜、予定がない？',
       choices: ['Michael told him not to', 'He wanted to work late', 'Pam had other plans'], a: 0,
@@ -73,7 +73,7 @@ export const dinnerplan: Clip = {
       said: '本社と話したと言い、「金曜を楽しんで」と全員を帰す。お礼の声が返る。',
       mean: 'go enjoy your Friday ＝ 金曜の夜を楽しんで。残業はなし、もう帰っていい、という知らせ。',
       trap: 'overtime（残業）が聞こえるので、残業が続く話に思いやすい。最後の go enjoy が答え。',
-      use: 'Go enjoy your weekend.（週末を楽しんで）' },
+      use: 'Go enjoy the rest of your day.（残りの一日を楽しんでね）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'horn', seg: [44.2, 47.3],
       stem: 'What does “I just got off the horn” mean here?',
@@ -109,7 +109,7 @@ export const dinnerplan: Clip = {
       trap: 'Happy Friday とみんなに言ったあとなので、全員を誘うように思いやすい。呼ぶ名前を聞く。',
       use: 'How about dinner at my place?（うちで夕食はどう？）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bullet', seg: [55.4, 58.9],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bullet', seg: [55.4, 58.9], retired: true,
       stem: 'What does “We dodged a bullet” mean?',
       ja: '「We dodged a bullet」はどういう意味？',
       choices: ['We escaped something bad', 'We broke a rule', 'We got through a hard week'], a: 0,
@@ -121,7 +121,7 @@ export const dinnerplan: Clip = {
       trap: '直前の Happy Friday から一週間の話に思いやすい。弾をよける＝危ないことを避けた。',
       use: 'The flight was canceled. We dodged a bullet.（あの便は欠航。助かった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'trap', seg: [58.5, 69.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'trap', seg: [58.5, 69.6], retired: true,
       stem: 'Why does Michael say “You said you didn’t have plans”?',
       ja: 'マイケルはなぜ「予定はないって言ったよね」と言う？',
       choices: ['So that Jim can’t say no', 'To check that Jim is free', 'To tease Jim about Friday'], a: 0,
@@ -144,7 +144,7 @@ export const dinnerplan: Clip = {
       trap: 'わなに気づいた点だけ見ると「ひどい」と怒る返事に寄る。credit は感心の言葉。返事は相手の打った手に返す。',
       use: 'Okay, you got me. I’ll come.（分かった、参ったよ。行く）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [69.5, 76.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [69.5, 76.5], retired: true, keep: true,
       stem: 'How many times has Michael asked them to dinner?',
       ja: 'マイケルは二人を何回、夕食に誘った？',
       choices: ['9', '19', '90'], a: 0,
@@ -212,7 +212,7 @@ export const dinnerplan: Clip = {
       said: '「何時に行けばいい？」と聞き、マイケルが名前を呼んで答える。',
       mean: 'What time should I 〜? ＝ 何時に〜すればいい？ 返事の頭の呼びかけで、誰が聞いたか分かる。',
       trap: 'Andy や Angela もすぐあとに名前が出るが、それは招待客の一覧。返事の最初の名前を聞く。',
-      use: 'What time should I be there?（何時に行けばいい？）' },
+      use: 'What time should I come over?（何時ごろ行けばいい？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'arriving', seg: [85.3, 90.2], retired: true,
       stem: 'Why is the question about arrival time funny?',

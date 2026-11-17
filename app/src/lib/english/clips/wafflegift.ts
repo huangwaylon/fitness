@@ -2,7 +2,7 @@
 // “Ann and Ben compete for the *perfect* gift | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): Ann and Ben fight over a waffle iron for Leslie, lose it at auction, join a pawn-shop bidding war, then
 // team up and ask Leslie to cut back her many friendship holidays. Talk ends at ≈ 230 s. The pawn-shop owner is
-// “the man”; who says “Get in line” and “I'm in” is left unnamed. Holiday ownership in the opening is muddled in
+// “the shop owner”; who says “Get in line” and “I'm in” is left unnamed. Holiday ownership in the opening is muddled in
 // both transcripts, so no item rests on it.
 // EAR CHECK: 110.0 s r1 — the cut falls after “I'll tell you what” and before “I'll give it to you…”
 import type { Clip } from '../types.ts';
@@ -33,7 +33,7 @@ export const waffleGift: Clip = {
       said: 'アンが「JJ’s で初めて一緒に遊んだ日の記念日よ」と言う。',
       mean: 'hang out ＝ 一緒に遊ぶ・過ごす。anniversary ＝ 記念日。友だちの記念日にも使う。',
       trap: 'anniversary から恋人の記念日だと思いやすい。',
-      use: 'Do you want to hang out this weekend?（今週末、遊ばない？）' },
+      use: 'We first hung out at a café.（初めて遊んだのはカフェだった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'benfeel', reveals: ['pillow'], seg: [22.5, 33.45], retired: true,
       stem: 'How does Ben feel about the way Leslie celebrates?',
@@ -108,10 +108,10 @@ export const waffleGift: Clip = {
       said: 'アンが店の男に「ちょっと手伝ってもらえないかな」と頼む。',
       mean: 'I was wondering if you could 〜 ＝ 〜してもらえませんか（丁寧な頼み方）。',
       trap: 'help me out はひと続きで、out の t はほぼ聞こえない。',
-      use: 'I was wondering if you could help me.（手伝っていただけませんか）' },
+      use: 'I was wondering if I could borrow this.（これ、お借りできないかなと思って）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'saynomore', reveals: ['helpout'], seg: [62.4, 70.85],
-      stem: 'What does the man mean by “*Say no more*”?', ja: '男の「Say no more」はどういう意味？',
+      stem: 'What does the shop owner mean by “*Say no more*”?', ja: '店主の「Say no more」はどういう意味？',
       choices: ['I get it, I’ll help', 'Please stop talking', 'No, I can’t help'], a: 0,
       choicesJa: ['わかった、手伝うよ', '話すのをやめて', 'いや、手伝えない'],
       cue: 'アンの頼みへの最初の返事',
@@ -122,7 +122,7 @@ export const waffleGift: Clip = {
       use: 'Say no more. I’ll do it.（言わなくていいよ、やっておく）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'everyone', seg: [70, 80.7],
-      stem: 'What does the man mean by “You and everyone else”?', ja: '男の「You and everyone else」はどういう意味？',
+      stem: 'What does the shop owner mean by “You and everyone else”?', ja: '店主の「You and everyone else」はどういう意味？',
       choices: ['Many people want it', 'He is tired of helping', 'Nobody wants it'], a: 0,
       choicesJa: ['欲しい人がたくさんいる', '手伝うのに疲れた', '誰も欲しがらない'],
       cue: 'アンの「buy it」への返事',
@@ -174,10 +174,10 @@ export const waffleGift: Clip = {
       said: 'ロズの説明を2人が先に言ってしまい、「はいはい、わかってる」と言う。',
       mean: 'we get it ＝ もうわかったよ。2人にも同じような記念日があり、聞き飽きている。',
       trap: '一緒に言うので、感動していると思いやすい。get it は「もう十分」。',
-      use: 'Okay, okay, I get it.（はいはい、わかったよ）' },
+      use: 'Yeah, we get it. You love it.（はいはい、分かったよ。大好きなんだね）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'start', seg: [98.4, 106.55],
-      stem: 'What first price does the man say?', ja: '男が最初に言う値段は？',
+      stem: 'What first price does the shop owner say?', ja: '店主が最初に言う値段は？',
       choices: ['$650', '$6,500', '$615,000', '$650,000'], a: 3, keep: true,
       choicesJa: ['650ドル', '6,500ドル', '61万5千ドル', '65万ドル'],
       cue: '「start the bidding」のあと',
@@ -262,7 +262,7 @@ export const waffleGift: Clip = {
       said: '計画があると聞いて「何でもいい、乗った」と言う。',
       mean: 'I’m in ＝ 文字どおり「中にいる」、ここでは「参加する、乗った」。誘われた時の返事。',
       trap: 'in から場所の話だと思いやすい。whatever it is（何であれ）への返事。',
-      use: 'Pizza tonight? I’m in.（今夜ピザ？乗った）' },
+      use: 'A hike on Sunday? I’m in.（日曜にハイキング？行く行く）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'compromise', reveals: ['keepup'], seg: [174, 214],
       stem: 'What do Ann and Ben ask Leslie for?', ja: 'アンとベンはレスリーに何を頼む？',

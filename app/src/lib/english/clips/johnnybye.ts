@@ -80,9 +80,9 @@ export const johnnyGoodbye: Clip = {
       use: 'Let’s go, and figure it out there.（行こう、あとは向こうで考えよう）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [81.9, 88.1],
-      stem: 'What does “Like, even better than…” do here?', ja: 'ここでの “Like, even better than…” は何をしている？',
-      choices: ['Adds a bigger compliment', 'Makes the praise smaller', 'Gives an example'], a: 0,
-      choicesJa: ['もっと大きなほめ言葉を足す', 'ほめ言葉を小さくする', '例を出す'],
+      stem: 'Why does April say “Like, even better than” here?', ja: 'エイプリルは、なぜここで「Like, even better than」と言う？',
+      choices: ['To add a bigger compliment', 'To make the praise smaller', 'To give an example'], a: 0,
+      choicesJa: ['もっと大きなほめ言葉を足すため', 'ほめ言葉を小さくするため', '例を出すため'],
       cue: '「the best host」のあと',
       line: 'you’re the best host. *Like, even better than* my all-time favorite host',
       said: '「最高の司会者。っていうか、大好きな司会者より上」と言う。',
@@ -163,7 +163,7 @@ export const johnnyGoodbye: Clip = {
       said: '「信じてくれた。支えてくれた。幸せにしてくれる」と並べる。',
       mean: 'believe in 人 ＝ 人の力を信じる。believe 人（言葉を信じる）とはちがう。',
       trap: '小さく短く言う in を落とすと、「言葉を信じた」になる。supported と surprised も近い。',
-      use: 'Thanks for believing in me.（信じてくれてありがとう）' },
+      use: 'You always supported me. Thank you.（いつも支えてくれてありがとう）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'happier', seg: [103.6, 107.0],
       stem: 'Type what Andy says: “Happier than I ___.” (5 words)', ja: 'アンディの言葉を書こう：“Happier than I ___.”（5語）',

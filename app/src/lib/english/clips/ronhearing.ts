@@ -271,6 +271,6 @@ export const ronHearing: Clip = {
       said: '「公務中なので今は話せません」と言い、「でも、うん、会えるよ」と付け足す。',
       mean: 'in the middle of 〜 ＝ 〜の最中。堅くしても、yes のくり返しにうれしさが出る。',
       trap: '前半だけ聞くと冷たく断ったと思いやすい。But のあとが本音。',
-      use: 'Sorry, I’m in the middle of something.（ごめん、今ちょっと手が離せない）' },
+      use: 'I’m in the middle of a meeting.（今、会議の最中です）' },
   ]
 };

@@ -14,7 +14,7 @@ export const leslieAnnForum: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'fa', skill: 'phrase', level: 'B2', point: 'fireaway', seg: [6.5, 10.1],
+    { id: 'fa', skill: 'phrase', level: 'B2', point: 'fireaway', seg: [6.5, 10.1], retired: true,
       stem: 'Leslie says, “So *fire away*.” What does she mean?',
       ja: 'レスリーの「So fire away」はどういう意味？',
       choices: ['Please ask your questions', 'Please wait your turn', 'Please speak more quietly'], a: 0,
@@ -37,7 +37,7 @@ export const leslieAnnForum: Clip = {
       trap: '「怒鳴られる」が耳に残ると我慢や不満の話に聞こえる。what I hear is… は耳でなく解釈の話。',
       use: 'What I hear is that you care.（つまり、気にかけてるってことだよね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'barry', seg: [47, 56],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'barry', seg: [47, 56], retired: true,
       stem: '“*Thank you so much*, Barry… Anyone else?” What is Leslie doing?',
       ja: '「Thank you so much, Barry… Anyone else?」でレスリーは何をしている？',
       choices: ['Stopping him before he starts', 'Thanking him for his good point', 'Asking him to keep it short'], a: 0,
@@ -98,10 +98,10 @@ export const leslieAnnForum: Clip = {
       use: 'I’m supporting myself now.（今は自分で生活してるよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'anyway', reveals: ['support'], seg: [93.6, 101.8],
-      stem: 'Ann says, “*But anyway*, he fell in.” What does “but anyway” do?',
-      ja: '「But anyway, he fell in」の but anyway は何をしている？',
-      choices: ['Goes back to her main story', 'Says sorry for what she said', 'Gives a reason for the fall'], a: 0,
-      choicesJa: ['本題の話に戻る', '言ったことを謝る', '落ちた理由を言う'],
+      stem: 'Why does Ann say “But anyway” here?',
+      ja: 'アンは、なぜここで「But anyway」と言う？',
+      choices: ['To go back to her story', 'To say sorry for that', 'To explain why he fell'], a: 0,
+      choicesJa: ['本題の話に戻るため', '言ったことを謝るため', '彼が落ちた理由を言うため'],
       cue: '彼の仕事の話と、落ちた話のつなぎ目。',
       line: 'actually, I support him. *But anyway*, he fell in and broke both his legs.',
       said: '彼の仕事の話を少しして「まあそれはいいとして」と、落ちた話に戻る。',
@@ -224,7 +224,7 @@ export const leslieAnnForum: Clip = {
       trap: '「明日行く」で止めると、見に行くだけに聞こえる。and then のあとに次の計画。',
       use: 'And when that’s done, we’ll celebrate.（それが済んだら、お祝いしよう）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'pinky', seg: [176.8, 191.8],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'pinky', seg: [176.8, 191.8], retired: true,
       stem: 'When Ann asks “Is that a promise?”, how does Leslie answer?',
       ja: '「約束？」と聞かれて、レスリーはどう答える？',
       choices: ['Very seriously, with a date', 'As a joke, like a game', 'Carefully, promising little'], a: 0,
@@ -248,7 +248,7 @@ export const leslieAnnForum: Clip = {
       trap: 'wanna は「ワ」で始まる。gotta は「ガラ」、gonna は「ガナ」と n の音。',
       use: 'We’re gonna need a bigger table.（もっと大きいテーブルがいるね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [207.9, 212.4],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [207.9, 212.4], retired: true,
       stem: 'How long has Leslie worked at the parks department?',
       ja: 'レスリーは公園課で何年働いている？',
       choices: ['4 years', '6 years', '16 years'], a: 1, keep: true,

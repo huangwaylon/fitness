@@ -224,7 +224,7 @@ export const ronWill: Clip = {
       said: '「州政府があなたのお金で役人を増やし、図書館でも建てる」と言うと、ロンは折れる。',
       mean: '政府ぎらいのロンが嫌がる使い道をわざと並べて、数字を言わせている。',
       trap: '図書館はいい使い道に聞こえやすい。ロンの返事 Fine（分かった）が手がかり。',
-      use: 'Fine, you win.（分かった、君の勝ち）' },
+      use: 'Fine. Do it your way.（分かった。好きにして）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [133.1, 172.3],
       stem: 'How does the meeting with Trevor end?',

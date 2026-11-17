@@ -130,8 +130,8 @@ export const barbados: Clip = {
       use: 'Can you get me out of this meeting?（この会議から抜けさせてくれない？）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'island', seg: [45.35, 50.65],
-      stem: 'What is the friend saying with “we’re excited… but”?',
-      ja: '「we’re excited… but」で、友だちは何を伝えている？',
+      stem: 'What is Ross told with “we’re excited… but”?',
+      ja: 'ロスは「we’re excited… but」で、何を伝えられている？',
       choices: ['A kind no to the lectures', 'A happy yes to the lectures', 'A joke about the island'], a: 0,
       choicesJa: ['講演はやんわりお断り', '講演に喜んで行く', '島についての冗談'],
       cue: '「Yeah, Ross, I mean」のあと。',

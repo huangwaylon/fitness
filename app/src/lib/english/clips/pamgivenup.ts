@@ -83,7 +83,7 @@ export const pamGivenUp: Clip = {
       trap: 'coffee からデートの誘いと思いやすい。get me ～ は「〜を持ってきて」。',
       use: 'I propose we order pizza.（ピザを頼むことを提案します）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'energize', reveals: ['percolate'], seg: [60.95, 79.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'energize', reveals: ['percolate'], seg: [60.95, 79.5], retired: true,
       stem: 'What is Michael’s meeting for?',
       ja: 'マイケルの会議は何のため？',
       choices: ['Making the office more lively', 'Getting Pam to try harder', 'Making a new phone message'], a: 0,
@@ -117,7 +117,7 @@ export const pamGivenUp: Clip = {
       said: '「はい、アンディ」と指名され、留守電を変えようと言う。',
       mean: '会議では名前を呼んで指名する。誰の案かは、直前の名前で分かる。',
       trap: 'あとでジムも似た案を出すので混ざりやすい。指名の名前と次の発言を組で聞く。',
-      use: 'Yes, you in the back.（はい、後ろの方どうぞ）' },
+      use: 'Yes, the man in the blue shirt.（はい、青いシャツの方どうぞ）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'zing', seg: [80.28, 88.15],
       stem: 'What would the new phone message have more of?',
@@ -153,7 +153,7 @@ export const pamGivenUp: Clip = {
       trap: '日本語の「いい言葉ですね」は遠回しな否定にもなるが、ここは本気。何をほめたかを聞く。',
       use: 'That’s exactly what I was looking for.（まさにそれを探してた）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'cooking', seg: [91.55, 98.62],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'cooking', seg: [91.55, 98.62], retired: true,
       stem: 'Michael says, “Now we’re cooking.” What does he mean?',
       ja: 'マイケルの「Now we’re cooking」はどういう意味？',
       choices: ['Now it is going well', 'Now we are in trouble', 'Now we can have lunch'], a: 0,
@@ -187,7 +187,7 @@ export const pamGivenUp: Clip = {
       said: '「よし、いいぞ。ちょっと水を取ってくる」と言う。',
       mean: 'grab ＝ ここでは「さっと取ってくる」。食べ物や飲み物によく使う。',
       trap: 'grab は「つかむ」なので、強く握ると思いやすい。grab a coffee ＝ コーヒーを買う。',
-      use: 'Let’s grab a coffee.（コーヒーでも飲みに行こう）' },
+      use: 'I’m going to grab some water.（ちょっと水を取ってくる）' },
 
     { id: 'x3', skill: 'dict', level: 'B2', point: 'second', seg: [133.5, 137.0],
       stem: 'Type Toby’s question: “Can I ___?” (5 words)', answer: 'talk to you a second',
@@ -209,7 +209,7 @@ export const pamGivenUp: Clip = {
       said: '「今朝のスタンリーの件に対処して。堂々と逆らった」と話す。',
       mean: 'address ＝ ここでは「問題に取り組む」。insubordinate ＝ 上司に従わない。',
       trap: 'address を「話しかける」と取ると、謝る話に聞こえる。次の一言を聞く。',
-      use: 'We need to address this problem.（この問題に対処しないと）' },
+      use: 'Can you address this issue, please?（この問題に対応してもらえますか）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'denial', reveals: ['nothing'], seg: [139.0, 183.7],
       stem: 'What does Michael say about Stanley by the end?',
@@ -233,9 +233,9 @@ export const pamGivenUp: Clip = {
       said: '「何をぺらぺら言ってるんだ。何もなかった」と言う。',
       mean: 'What are you が「ワラユ」と一続き。t は軽い「ラ」の音になる。',
       trap: '「ワラユ」なら are。were なら「ワッワーユ」と口が丸まり、have you been なら「ハヴュビン」と長い。',
-      use: 'What are you talking about?（何の話？）' },
+      use: 'What are you laughing about?（何を笑ってるの？）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'nothing', reveals: ['blabber'], seg: [143.7, 152.4],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'nothing', reveals: ['blabber'], seg: [143.7, 152.4], retired: true,
       stem: 'What does Michael first tell Toby?',
       ja: 'マイケルは最初、トビーに何と言う？',
       choices: ['Nothing happened', 'He will talk to Stanley', 'Stanley said sorry'], a: 0,
@@ -278,11 +278,11 @@ export const pamGivenUp: Clip = {
       trap: 'stutter（どもる）から話し方や言い直しの話と取りやすい。Whoa の反応で強さが分かる。',
       use: 'You heard me. I said no.（聞こえたでしょ。だめって言ったの）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notjoking', seg: [160, 166.1],
-      stem: 'What does Toby’s “He didn’t seem like he was joking” do?',
-      ja: 'トビーの「He didn’t seem like he was joking」は何をしている？',
-      choices: ['Gently disagrees with Michael', 'Politely agrees with Michael', 'Says Toby saw nothing'], a: 0,
-      choicesJa: ['やんわり反対する', '丁寧に賛成する', '何も見ていないと言う'],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notjoking', seg: [160, 166.1], retired: true,
+      stem: 'Why does Toby say “didn’t seem like he was joking”?',
+      ja: 'トビーは、なぜ「didn’t seem like he was joking」と言う？',
+      choices: ['To gently disagree with Michael', 'To politely agree with Michael', 'To say he saw nothing'], a: 0,
+      choicesJa: ['マイケルにやんわり反対するため', 'マイケルに丁寧に賛成するため', '何も見ていないと言うため'],
       cue: '「He was joking」への返事。',
       line: 'He was joking, Toby… — *He didn’t seem like he was joking.*',
       said: '「冗談だったんだよ」に「冗談には見えなかった」と返す。',

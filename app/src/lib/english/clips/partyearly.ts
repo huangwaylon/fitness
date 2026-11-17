@@ -221,7 +221,7 @@ export const partyEarly: Clip = {
       said: '「ゲストが来るまで、ふたはしておいて」とすすめる。',
       mean: 'leave ～ on ＝ 〜をつけたままにする。cover on は「カヴァロン」とつながる。',
       trap: 'the は弱く、cover と on がつながるので、語の数が分かりにくい。4語を確かめて書く。',
-      use: 'Leave the lights on, please.（電気はつけたままにしてね）' },
+      use: 'Leave the cover on, please.（カバーはかけたままにしてね）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'mayo', reveals: ['cover'], seg: [115.8, 129.9], retired: true,
       stem: 'Why does his advice about the salad get a laugh?',

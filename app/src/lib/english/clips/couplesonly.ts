@@ -11,7 +11,7 @@ export const couplesOnly: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B2', point: 'well', seg: [3, 7.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'well', seg: [3, 7.1], retired: true,
       stem: 'Fill the gap: “…what time ___ get out of here?”', ja: '空所に入るのは？ “…what time ___ get out of here?”',
       choices: ['we’ll', 'will', 'we’d'], a: 0,
       choicesJa: ['私たちは〜する（we will）', '〜する（will）', '私たちは〜だろう（we would）'],
@@ -22,7 +22,7 @@ export const couplesOnly: Clip = {
       trap: 'we’d なら最後が「ド」で止まる。will だけでは主語がなく文にならない。「ル」が残れば we’ll。',
       use: 'What time will we get there?（何時に着くかな）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'leastme', seg: [6.7, 12],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'leastme', seg: [6.7, 12], retired: true,
       stem: 'What does Michael mean by “Least of all me”?', ja: '“Least of all me” で、マイケルは何を言いたい？',
       choices: ['I hate it most of all', 'I mind it the very least', 'I always leave last'], a: 0,
       choicesJa: ['僕が一番いやだ', '僕は一番気にしない', '僕はいつも最後に帰る'],
@@ -54,7 +54,7 @@ export const couplesOnly: Clip = {
       trap: 'plans と working から、自分で取り消したと思いやすい。told us が決め手。',
       use: 'Remember you told me to come early?（早く来てって言ったよね）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'enough', seg: [23.5, 27.5],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'enough', seg: [23.5, 27.5], retired: true,
       stem: 'What does Michael mean by “Enough is enough”?', ja: '“Enough is enough” で、マイケルは何を言いたい？',
       choices: ['I won’t accept this anymore', 'We have enough people in here', 'This is good enough for me'], a: 0,
       choicesJa: ['もうがまんしない', 'ここには人が十分いる', '僕にはこれで十分だ'],
@@ -120,9 +120,9 @@ export const couplesOnly: Clip = {
       use: 'But you said you were free!（でも空いてるって言ったじゃない）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'howabout', seg: [58.3, 63],
-      stem: 'What is Michael doing with “How about you, Pam, me”?', ja: '“How about you, Pam, me…” で、マイケルは何をしている？',
-      choices: ['Inviting them to dinner', 'Asking about their plans', 'Saying thank you to them'], a: 0,
-      choicesJa: ['二人を食事に誘っている', '二人の予定を聞いている', '二人にお礼を言っている'],
+      stem: 'Why does Michael say “How about you, Pam, me” here?', ja: 'マイケルは、なぜここで「How about you, Pam, me」と言う？',
+      choices: ['To invite them to dinner', 'To ask about their plans', 'To thank them both'], a: 0,
+      choicesJa: ['二人を食事に誘うため', '二人の予定を聞くため', '二人にお礼を言うため'],
       cue: '「celebrate」のあと',
       line: 'I think we should celebrate. *How about you, Pam, me*, Casa, a little dinner…',
       said: '「お祝いしよう。君とパムと僕で、食事とダンスとお酒はどう？」と言う。',
@@ -151,7 +151,7 @@ export const couplesOnly: Clip = {
       trap: '社交辞令のような形だけの誘いと取りやすいが、9回も誘うのは本気。回数に注目。',
       use: 'He won’t take no for an answer.（断っても全然引かないの）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'getout', seg: [73.8, 76.8],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'getout', seg: [73.8, 76.8], retired: true,
       stem: 'What does Jim say he and Pam have done every time?', ja: 'ジムとパムは毎回どうしてきたと、ジムは言う？',
       choices: ['Avoided going to the dinner', 'Left the dinner early', 'Got Michael to call it off'], a: 0,
       choicesJa: ['食事に行かずにすませた', '食事から早く帰った', 'マイケルに取りやめさせた'],
@@ -218,7 +218,7 @@ export const couplesOnly: Clip = {
       trap: 'should I が「シュダイ」とひと続きになり、I を落としやすい。be も弱く短い。',
       use: 'What time should I be arriving?（何時に着けばいいですか）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'glasses', seg: [86.5, 92.4],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'glasses', seg: [86.5, 92.4], retired: true,
       stem: 'Why can’t Dwight come to the dinner?', ja: 'ドワイトはなぜ食事会に行けない？',
       choices: ['It’s only for couples', 'He has to work late', 'Michael doesn’t like him'], a: 0,
       choicesJa: ['カップルだけの会だから', '残業があるから', 'マイケルに嫌われているから'],
@@ -229,7 +229,7 @@ export const couplesOnly: Clip = {
       trap: '残業の話が前にあったので、仕事のせいだと思いやすい。理由は名前のすぐあと。',
       use: 'Is this area members only?（ここは会員専用ですか）' },
 
-    { id: 'r1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['glasses'], seg: [87.5, 92.4],
+    { id: 'r1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['glasses'], seg: [87.5, 92.4], retired: true,
       stem: 'What does “And besides” do here?', ja: 'ここでの “And besides” は何をしている？',
       choices: ['Adds another reason', 'Says sorry to Dwight', 'Changes his answer'], a: 0,
       choicesJa: ['もう一つ理由を足す', 'ドワイトに謝る', '答えを変える'],
@@ -240,7 +240,7 @@ export const couplesOnly: Clip = {
       trap: '断ったあとに折れる流れを思いやすい。besides のあとは、もう一つの理由。',
       use: 'It’s late. And besides, I’m tired.（もう遅いし、それに疲れてる）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [89.6, 95],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [89.6, 95], retired: true,
       stem: 'How many wine glasses does Michael say he has?', ja: 'マイケルはワイングラスがいくつあると言う？',
       choices: ['Four', 'Six', 'Sixteen'], a: 1, keep: true,
       choicesJa: ['4つ', '6つ', '16個'],
@@ -251,5 +251,16 @@ export const couplesOnly: Clip = {
       mean: 'only ＝ 〜しかない。グラスが少ないことを、人数を増やせない言い訳にしている。',
       trap: 'sixteen なら teen が長く強い。four は「フォー」。短い「シックス」なら six。',
       use: 'We only have two rooms left.（残りは2部屋だけです）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'jan', seg: [89.8, 95.3],
+      stem: 'Who is Michael’s partner at the dinner?', ja: '食事会での、マイケルの相手は誰？',
+      choices: ['Jan', 'Angela', 'Pam'], a: 0,
+      choicesJa: ['ジャン', 'アンジェラ', 'パム'],
+      cue: '「me and」のすぐあと',
+      line: 'So it will be *me and Jan* and Pam and Jim. And Angela and Andy.',
+      said: '「僕とジャン、パムとジム、それにアンジェラとアンディ」と言う。',
+      mean: 'me and Jan ＝ 僕とジャン。名前を二人ずつ組にして、カップルを並べている。',
+      trap: 'パムやアンジェラの名前も聞こえるが、それぞれジムとアンディの組。me のすぐあとを聞く。',
+      use: 'It will be me and my wife.（私と妻の二人です）' },
   ]
 };

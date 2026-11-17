@@ -202,7 +202,7 @@ export const tomAccent: Clip = {
       said: '「家に帰って、二度とここに来なくていいように、許可証をください」とたのむ。',
       mean: 'never come back here ＝「二度とここに来ない」。早くこの町を出たいという本音。',
       trap: 'come back が聞こえて、また来たいと思いやすい。前の never で反対の意味になる。',
-      use: 'I just want to go home.（とにかく家に帰りたい）' },
+      use: 'I’ll never come back here.（もう二度とここには来ない）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'attend', seg: [174.3, 179.5],
       stem: 'Fill the gap: “Um, well, I’m ___ be attending the event.”',

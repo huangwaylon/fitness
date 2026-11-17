@@ -24,7 +24,7 @@ export const leslieObama: Clip = {
       said: '「やあ、グラント、元気？」に「元気です」と答える。',
       mean: 'How you doing? ＝ How are you doing?（元気？）。are を落としたくだけたあいさつ。',
       trap: 'doing から「何してる？」と思いやすい。返事が Doing good（元気）なのであいさつ。',
-      use: 'Hey, how you doing?（やあ、元気？）' },
+      use: 'How you doing? Good to see you.（元気？会えてうれしいよ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [3.8, 9.9],
       stem: 'What job is Leslie thinking about taking?',

@@ -60,7 +60,7 @@ export const daveReturns: Clip = {
       trap: 'campaign（選挙）の話が多いが、中心はレスリーをほめる順番と中身。',
       use: 'Okay, you win this one.（はいはい、今回は君の勝ち）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sayagain', seg: [86.8, 92.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sayagain', seg: [86.8, 92.3], retired: true,
       stem: 'Ben says, “*You can say that again*.” What does he mean?',
       ja: 'ベンの「You can say that again」はどういう意味？',
       choices: ['I agree with you', 'Please say it again', 'You are just being nice'], a: 0,
@@ -83,7 +83,7 @@ export const daveReturns: Clip = {
       trap: 'first を話の順番と取ると割り込みに聞こえる。彼の文は終わっていた。',
       use: 'Hey, that was my idea first!（それ、先に言ったの僕だよ！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'endorse', seg: [94.5, 99.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'endorse', seg: [94.5, 99.5], retired: true,
       stem: 'Why were they at the police station today?',
       ja: '今日、二人が警察署にいたのはなぜ？',
       choices: ['To get the chief’s support', 'To invite the chief to dinner', 'To plan the chief’s party'], a: 0,
@@ -120,10 +120,10 @@ export const daveReturns: Clip = {
       use: 'Did you just say that?（今、そう言った？）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'denial', seg: [120.2, 131],
-      stem: 'Dave says, “*Nothing was said*.” What is he doing?',
-      ja: 'デイブの「Nothing was said」は何をしている？',
-      choices: ['Hiding what he just said', 'Saying it once more', 'Asking Ben to listen'], a: 0,
-      choicesJa: ['今言ったことをごまかしている', 'もう一度言っている', 'ベンに聞いてと頼んでいる'],
+      stem: 'Why does Dave say “Nothing was said”?',
+      ja: 'デイブは、なぜ「Nothing was said」と言う？',
+      choices: ['To hide what he just said', 'To say it once more', 'To ask Ben to listen'], a: 0,
+      choicesJa: ['今言ったことをごまかすため', 'もう一度言うため', 'ベンに聞いてと頼むため'],
       cue: '「just say?」のあと',
       line: 'What did you just say? — Nothing, I didn’t, *nothing was said*.',
       said: '「今なんて？」と聞かれ、「何も、言ってない、何も言われてない」と答える。',
@@ -223,7 +223,7 @@ export const daveReturns: Clip = {
       trap: 'a lot のあとなので大きな数を待ちやすい。「シックス」で止まれば 6、sixteen は「ティーン」が長く、sixty は「ティ」で終わる。',
       use: 'It takes about six minutes.（6分くらいかかります）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [165.2, 171], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [165.2, 171], retired: true, keep: true,
       stem: 'What time is Dave’s flight tomorrow?',
       ja: 'デイブの明日の便は何時？',
       choices: ['12:05', '12:15', '12:50', '2:15'], a: 1,
@@ -315,6 +315,6 @@ export const daveReturns: Clip = {
       said: '「警官で、君が好きで、銃も持ってる？」と言い、「あわててない」とくり返す。',
       mean: 'freak out ＝ ひどくあわてる。あわてていないと言いながら、銃をこわがっている。',
       trap: 'in love から、やきもちと思いやすい。話の中心は gun（銃）。',
-      use: 'Don’t freak out, but I lost the keys.（落ち着いて聞いて、鍵なくした）' },
+      use: 'Relax, I’m not freaking out.（落ち着いて、取り乱してないから）' },
   ]
 };

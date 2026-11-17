@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 2, new 1
+// A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 2, new 1 · sweep: d3 retired (dwighthimsf twin), new w1
 // “Dwight vs. Dwight - The Office US” (the official The Office channel, Best of Season 6): at Dwight's yearly karate
 // seminar he pitches a "relatable" Yakuza scenario and swears by the throat punch; Kevin won't spar with him, so Jim
 // (named at 115.4 s) flatters him into demonstrating on himself, and keeps the self-fight going. Segments from the
@@ -111,7 +111,18 @@ export const dwightVsDwight: Clip = {
       mean: 'Let me demonstrate ＝ やって見せよう。demonstrate ＝ 実際にやって見せる。',
       trap: '直前の「防げない」をドワイトの言葉と思いやすい。No のあとが彼の答え。',
       use: 'Let me show you how it works.（どう動くか見せるね）' },
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'kevin', seg: [44.3, 52.5],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'kevingo', seg: [42.6, 46.5],
+      stem: 'Who does Dwight tell to attack him?', ja: 'ドワイトは、誰に「かかってこい」と言う？',
+      choices: ['Kevin', 'Jim', 'The whole class'], a: 0,
+      choicesJa: ['ケビン', 'ジム', 'クラス全員'],
+      cue: '「Someone attack me」のあと',
+      line: 'Let me demonstrate. *Someone attack me. Kevin, go!*',
+      said: '「やって見せる。誰か攻撃してこい。ケビン、行け！」と言う。',
+      mean: 'Someone attack me ＝ 誰かかかってこい。最後に名前を呼んで指名する。',
+      trap: 'someone から全員と思いやすい。すぐあとに呼ぶ名前が答え。',
+      use: 'Someone help me, please!（誰か手伝って！）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'kevin', seg: [44.3, 52.5], retired: true,
       stem: 'Why won’t Kevin attack Dwight?',
       ja: 'ケビンはなぜドワイトに向かっていかない？',
       choices: ['Dwight hurt him last time', 'He hurt Dwight badly last time', 'Dwight cheated last time'], a: 0,
@@ -145,16 +156,16 @@ export const dwightVsDwight: Clip = {
       trap: 'didn’t なら「ン」が残る。tried to なら「トライ」。強い「ディッド」なら did。',
       use: 'I did call you. Twice.（ちゃんと電話したよ。2回）' },
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'worthy', seg: [55.6, 61.2],
-      stem: '“The most worthy opponent of you is you.” What is Jim doing?',
-      ja: '「The most worthy opponent of you is you」ジムは何をしている？',
-      choices: ['Making Dwight fight himself', 'Offering to fight Dwight', 'Saying no one will fight'], a: 0,
-      choicesJa: ['ドワイトを自分自身と戦わせようとしている', '自分がドワイトと戦うと言っている', '誰も戦わないと言っている'],
+      stem: 'Why does Jim say “worthy opponent of you is you”?',
+      ja: 'ジムは、なぜ「worthy opponent of you is you」と言う？',
+      choices: ['To make Dwight fight himself', 'To offer to fight Dwight', 'To say no one will fight'], a: 0,
+      choicesJa: ['ドワイトを自分自身と戦わせるため', '自分がドワイトと戦うと言うため', '誰も戦わないと言うため'],
       cue: '「opponent of you is」のあと',
       line: 'Okay, with all due respect to everyone here, I think the *most worthy opponent of you is you*.',
       said: '「みなさんには失礼ながら、あなたにふさわしい相手は、あなた自身だと思う」と言う。',
       mean: 'worthy opponent ＝ ふさわしい相手。ほめる形で、自分と戦うように仕向けている。',
       trap: '最後の you を me と聞くと、自分が相手をすると思いやすい。is you を聞く。',
-      use: 'With all due respect, I disagree.（失礼ながら、私は反対です）' },
+      use: 'She’s a worthy opponent.（彼女は手ごわい相手だ）' },
     { id: 'c3', skill: 'attitude', level: 'C2', point: 'worthy', seg: [55.6, 64.8], retired: true,
       stem: 'What does Dwight’s answer show about how he took the suggestion?',
       choices: ['As a plain fact, needing no modesty at all', 'As kind praise he is glad of, and thanks him for',

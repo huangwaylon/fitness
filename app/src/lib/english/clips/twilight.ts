@@ -26,7 +26,7 @@ export const twilightCapsule: Clip = {
       said: '「お願いだから静かにして」「ごめん」「声を落として。気をつかって」と言う。',
       mean: 'keep it down ＝ 声や音を小さくして。直前の be quiet（静かにして）と同じ頼み。',
       trap: 'down から「座って」や「下に置いて」を思いやすい。前の be quiet が手がかり。',
-      use: 'Could you keep it down, please?（少し静かにしてもらえますか）' },
+      use: 'Please keep it down after ten.（10時以降はお静かに願います）' },
 
     { id: 'a0', skill: 'attitude', level: 'B1', point: 'worst', seg: [22.4, 28.75],
       stem: 'How does Leslie feel about her coworkers here?',

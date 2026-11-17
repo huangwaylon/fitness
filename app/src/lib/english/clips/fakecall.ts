@@ -98,7 +98,7 @@ export const fakeCall: Clip = {
       said: '長い説明のあと、「了解」と短く答える。',
       mean: 'Copy that ＝ 了解。無線の言い方から来た表現で、少しおどけて使う。',
       trap: 'copy を「コピーする、写す」と思いやすい。返事なら「受け取った」の意味。',
-      use: 'Copy that. On my way.（了解、今行く）' },
+      use: 'Copy that. I’ll be there in five.（了解、5分で行く）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'beat', seg: [39.6, 48],
       stem: 'What does Andy mean by “how we can beat it”?',
@@ -282,6 +282,6 @@ export const fakeCall: Clip = {
       said: '「ほかの電話は取り次がないで」と言い、「どこまで話したっけ？」と言う。',
       mean: 'Where were we? ＝ どこまで話したっけ。話を元に戻す決まり文句。',
       trap: '文字どおり「どこにいた？」と思いやすい。話のとちゅうに戻るときの言い方。',
-      use: 'Sorry about that. Where were we?（失礼、どこまで話しましたっけ）' },
+      use: 'Okay, where were we?（さて、どこまで話したっけ）' },
   ]
 };

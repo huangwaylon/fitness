@@ -235,7 +235,7 @@ export const joeyfinds: Clip = {
       said: '「ジョーイ、ちょっと話せる？」と呼びとめる。',
       mean: 'Can I talk to you for a second? ＝ ちょっといい？ 大事な話の前の決まった頼み方。',
       trap: 'for a second（少しの間）から「待って」と思いやすい。前の talk to you（話す）が答え。',
-      use: 'Can I talk to you for a second?（ちょっと話してもいい？）' },
+      use: 'Excuse me, can I talk to you for a minute?（すみません、少しお話ししてもいいですか）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'promise', seg: [203.6, 230.0],
       stem: 'What do Chandler and Monica want from Joey?',
@@ -259,7 +259,7 @@ export const joeyfinds: Clip = {
       said: '「だれにも言わなかったのは、大ごとにしたくなかったから」と話す。',
       mean: 'make a big deal out of 〜 ＝ 〜で大さわぎする。さわがれたくなかった。',
       trap: '隠す理由は「続くか分からない」もよくあるが、ここではさわぎを避けたいこと。',
-      use: 'Don’t make a big deal out of it.（大げさにしないで）' },
+      use: 'Please don’t make a big deal about my birthday.（誕生日のこと、大げさにしないでね）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigdeal', reveals: ['reason'], seg: [209.2, 217.3],
       stem: 'What does Joey mean by “it is a big deal”?',

@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2
+// A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2 · sweep: cross-bank twins retired or rewritten
 // “Michael Scott's Guide to Birthdays - The Office US” (the official The Office channel, Best of Season 4): the office
 // throws Michael-style parties for all 13 birthdays, so Jim tries one combined party; one person wants her own cake,
 // another hates it, Toby asks to be added, the planner refuses, and Jim calls the whole thing off after a show of
@@ -16,7 +16,7 @@ export const birthdayGuide: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirteen', seg: [0, 6.25], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirteen', seg: [0, 6.25], retired: true, keep: true,
       stem: 'How many people work in this office?',
       ja: 'このオフィスで働いているのは何人？',
       choices: ['13', '30', '33'], a: 0,
@@ -28,7 +28,7 @@ export const birthdayGuide: Clip = {
       trap: 'thirty は「サーティ」と短く終わる。33 なら thirty-three と数が2つ続く。2回とも「ティーン」なら13。',
       use: 'There are five of us on the team.（うちのチームは5人です）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'toasts', seg: [18.5, 25.7],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'toasts', seg: [18.5, 25.7], retired: true,
       stem: 'What is the second kind of toast like?',
       ja: '2つ目の種類の乾杯のあいさつは、どんなもの？',
       choices: ['Rude or horrible', 'A joke about age', 'Short and sweet'], a: 0,
@@ -74,18 +74,6 @@ export const birthdayGuide: Clip = {
       trap: '「かもしれない」を自信のなさや「少し」と取りやすい。控えめな語の重なりは本音を疑う。',
       use: 'It’s maybe, possibly, a little too loud.（もしかすると、ちょっとうるさいかも）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [39.5, 56.5],
-      stem: 'What does Jim want to do about the birthdays?',
-      ja: 'ジムは誕生日会をどうしたい？',
-      choices: ['Have one big party for all', 'Have one party each month', 'Have the parties after work'], a: 0,
-      choicesJa: ['全員で大きな会を1回やる', '毎月1回ずつ会をやる', '会を仕事のあとにやる'],
-      cue: '「productive」のあとの提案。',
-      line: 'We can just have *one big, fun party*. And everybody’s happy, and nobody wastes their time.',
-      said: '「大きな楽しい会を1回やれば、みんな満足で、だれも時間をむだにしない」と話す。',
-      mean: 'one big party ＝ 大きな会を1回。13回の会を1回にまとめる案。',
-      trap: 'wastes their time（時間のむだ）から、時間や回数を変える話だと思いやすい。one big がポイント。',
-      use: 'Let’s just have one big dinner.（大きな夕食会を1回やろうよ）' },
-
     { id: 'r1', retired: true, skill: 'predict', level: 'C1', point: 'great', seg: [64.6, 68.5], then: [68.5, 71.6],
       stem: 'After the question about the idea, a short “No.” comes. What follows?',
       choices: ['A stronger word of praise for the idea', 'A milder word: the idea is just okay',
@@ -109,7 +97,7 @@ export const birthdayGuide: Clip = {
       trap: 'do you なら「ドゥユ」で「ディ」がない。didn’t you なら「ディドゥンチュ」と「ン」が入る。',
       use: 'Oh, did you get my email?（そうだ、メール届いた？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', reveals: ['plan'], seg: [81.0, 87.1], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', seg: [81.0, 87.1], keep: true,
       stem: 'What does the memo want a break from?',
       ja: 'メモには、何から一休みしたいと書いてある？',
       choices: ['All the cake', 'All the songs', 'All the gifts'], a: 0,
@@ -121,7 +109,7 @@ export const birthdayGuide: Clip = {
       trap: '冒頭で歌やプレゼントの話も出るので、それだと思いやすい。名前が出るのはケーキだけ。',
       use: 'I could use a break.（ちょっと休みたいな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', reveals: ['plan'], seg: [96.5, 102.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', seg: [96.5, 102.1], keep: true,
       stem: 'Type the words: “This way we ___ out of the way at once.” (3 words)', answer: 'get it all',
       ja: '「This way we」のあとの3語を書こう。',
       cue: '「This way we」のすぐあと。',
@@ -142,6 +130,18 @@ export const birthdayGuide: Clip = {
       mean: 'Can I have 〜? ＝ 〜をもらえる？ my own ＝ 自分だけの。I really prefer 〜 ＝ 〜のほうがいい。',
       trap: 'パイはあとで別の人が頼むもの。最初に頼まれるのは cake。',
       use: 'Can I have my own room?（自分の部屋をもらえますか）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['devils', 'likeme'], seg: [109.5, 144.6],
+      stem: 'How do people react to Jim’s one-party plan?',
+      ja: 'ジムの「パーティーは1回」案に、みんなはどう反応する？',
+      choices: ['Each wants their own cake', 'Everyone happily agrees with it', 'Nobody cares about it'], a: 0,
+      choicesJa: ['それぞれ自分のケーキを欲しがる', 'みんな喜んで賛成する', 'だれも気にしない'],
+      cue: '「Hey, Jim」から始まる頼みごと',
+      line: 'Hey, Jim, can I have *my own cake*? … I *want to pick the cake*. … *I want pie*.',
+      said: '「自分のケーキがほしい」「ケーキは自分で選びたい」「パイがいい」と注文が続く。',
+      mean: 'I want to pick ＝「自分で選びたい」。1回のパーティーなのに、みんな自分の好みを言い出す。',
+      trap: '「Wow, that was easy」から、うまくいったと思いやすい。続く注文の数で分かる。',
+      use: 'Can I pick the cake this time?（今回はケーキを選んでいい？）' },
 
     { id: 'i2', skill: 'attitude', level: 'B1', point: 'likeme', reveals: ['devils'], seg: [119.5, 124.4],
       stem: 'How does the next man feel about devil’s food?',
@@ -297,10 +297,10 @@ export const birthdayGuide: Clip = {
       use: 'What am I supposed to do with all this?（これ全部どうしろっていうの）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['outcome'], seg: [242.5, 247.7],
-      stem: 'What does “I mean” do in “Michael. I mean, Jim”?',
-      ja: '「Michael. I mean, Jim」の「I mean」の働きは？',
-      choices: ['Fixes a wrong name', 'Gives a reason', 'Starts a joke'], a: 0,
-      choicesJa: ['まちがえた名前を直す', '理由を言う', '冗談を始める'],
+      stem: 'Why does Jim’s coworker say “I mean” here?',
+      ja: '同僚は、なぜここで「I mean」と言う？',
+      choices: ['To fix a wrong name', 'To give a reason', 'To make a little joke'], a: 0,
+      choicesJa: ['まちがえた名前を直すため', '理由を言うため', 'ちょっとした冗談を言うため'],
       cue: '「Hey」のあと。',
       line: 'Hey, Michael. *I mean*, Jim.',
       said: '同僚が「やあ、マイケル。じゃなくて、ジム」と呼ぶ。',

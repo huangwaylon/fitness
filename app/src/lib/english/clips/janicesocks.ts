@@ -79,7 +79,7 @@ export const janiceSocks: Clip = {
       said: 'ひどい一日の話をしてから、「あなたにこれを買ってきたの」と靴下を渡す。',
       mean: 'I got you 〜 ＝ あなたに〜を買ってきた。話の中心は、彼女の一日と贈り物。',
       trap: '写真の話が出るので、写真を見せに来たと思いやすい。写真は手元にない。',
-      use: 'I got you a little something.（ちょっとしたものを買ってきたよ）' },
+      use: 'I got you these. Do you like them?（これ買ってきたよ。気に入った？）' },
 
     { id: 'd1', skill: 'detail', level: 'B2', point: 'proofs', reveals: ['sucked'], seg: [15.2, 20.3],
       stem: 'Why was Janice’s day so bad?', ja: 'ジャニスの一日は、なぜひどかった？',
@@ -101,7 +101,7 @@ export const janiceSocks: Clip = {
       said: '撮影の説明を少し足してから、「とにかく」と本題に戻る。',
       mean: 'anyway ＝ とにかく、それで。わき道から本題に戻る合図。',
       trap: '新しい話を始めると思いやすい。このあとも同じ写真の話が続く。',
-      use: 'Anyway, where was I?（それで、どこまで話したっけ）' },
+      use: 'Anyway, that’s what happened.（とにかく、そういうことがあったの）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'sucked', reveals: ['proofs'], seg: [18.35, 20.4],
       stem: 'Type what she says: “Anyway, they ___ sucked.” (2 words)', ja: '彼女の言葉を書こう：“Anyway, they ___ sucked.”（2語）',

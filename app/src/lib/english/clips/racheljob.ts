@@ -189,7 +189,7 @@ export const rachelJob: Clip = {
       said: '「よし、こうする」と言って、店長に電話するつもりだと話し出す。',
       mean: 'you know what? は答えを求めない。決めたことを言う前の合図。',
       trap: '疑問の形なので「知ってる？」と思いやすい。答えを待たずに続く。',
-      use: 'You know what? Let’s just order pizza.（よし、もうピザ頼もう）' },
+      use: 'You know what? I’m just going to call him.（もういい、彼に電話しちゃう）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'gunther', reveals: ['decide'], seg: [46.4, 51.45],
       stem: 'From her plan to call Gunther, what has Rachel already done?',

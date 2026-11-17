@@ -43,7 +43,7 @@ export const prefired: Clip = {
       said: '「ジョーが集めているから、それで少し雑談できると思って」と言う。',
       mean: 'small talk ＝ 軽い雑談、世間話。上の人の好きな物で話題を用意した。',
       trap: 'Joe collects から「ジョーにあげる」と思いやすい。about it（それについて）まで聞く。',
-      use: 'Let’s skip the small talk.（世間話は抜きにしよう）' },
+      use: 'He’s good at small talk.（彼は世間話がうまい）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'rescue', seg: [8.7, 11.8],
       stem: 'What does “the piranha’s a rescue” mean?',

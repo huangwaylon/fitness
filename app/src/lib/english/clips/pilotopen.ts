@@ -26,8 +26,8 @@ export const pilotOpening: Clip = {
       use: 'Okay, tell me. Who is he?（さあ教えて。誰なの？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'work', seg: [2, 5.5],
-      stem: 'Who is the man, according to Monica?',
-      ja: 'モニカによると、その男性は誰？',
+      stem: 'Who is Monica’s date, according to her?',
+      ja: 'モニカによると、デートの相手は誰？',
       choices: ['Someone she works with', 'An old friend from school', 'A friend of her brother'], a: 0,
       choicesJa: ['職場の人', '学校の古い友だち', '兄の友だち'],
       cue: '「It’s just」のあと',
@@ -153,7 +153,7 @@ export const pilotOpening: Clip = {
       said: '落ちこむロスに「コーヒー持ってくるね」と言い、ロスは「ありがとう」。',
       mean: 'Let me get you 〜 ＝ 〜を持ってくるね。相手に何かしてあげる申し出。',
       trap: 'get を「もらう」と思うと、頼んでいるように聞こえる。get you ＝ あなたに持ってくる。',
-      use: 'Let me get you some water.（お水を持ってきますね）' },
+      use: 'Let me get you a chair.（いすを持ってきますね）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'happy', seg: [103.4, 110.6],
       stem: 'Does Ross really hope Carol will be happy?',
@@ -267,7 +267,7 @@ export const pilotOpening: Clip = {
       said: '脱線した冗談のあと、「とにかく、そこから逃げなきゃと思った」と話を戻す。',
       mean: 'anyway ＝ とにかく、それはさておき。話を本筋に戻す合図。',
       trap: 'anyway を「どうでもいい」と思いやすい。脱線のあとの anyway は話を戻す働き。',
-      use: 'Anyway, where was I?（で、どこまで話したっけ）' },
+      use: 'Anyway, I had to get out of there.（とにかく、そこを出るしかなかった）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'drifted', seg: [247.35, 252.6],
       stem: 'What does “drifted apart” mean?',

@@ -146,7 +146,7 @@ export const youngjim: Clip = {
       said: '「ドワイトとは前によく営業に回った」と言う。',
       mean: 'used to ＝ 以前はよく〜した。「ユースタ」とつながる。',
       trap: 'had to なら「ハットゥ」、have to なら「ハフタ」。「ユー」で始まれば used to。',
-      use: 'I used to live near here.（昔この近くに住んでたんだ）' },
+      use: 'We used to go there all the time.（昔はよくそこに行ってた）' },
     { id: 'h4', skill: 'humor', level: 'C1', point: 'warn', seg: [82.6, 92.6], retired: true,
       stem: 'Why does the end of Jim’s comment to the camera get a laugh?',
       choices: ['He treats a simple fact as a great tragedy', 'He admits he isn’t allowed to talk about it',
@@ -252,7 +252,7 @@ export const youngjim: Clip = {
       said: '「二人一組のチームで、任務がある」と言う。',
       mean: 'teams of two ＝ 二人ずつのチーム。of のあとの数が人数。',
       trap: 'two は短く、to と同じ音で聞き落としやすい。three は「スリー」、four は「フォー」。',
-      use: 'A table for two, please.（2人です）' },
+      use: 'We’ll work in teams of two.（二人一組で動きます）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'seriously', seg: [162.5, 166.7],
       stem: 'How does Jim feel when Dwight sits in the back?',

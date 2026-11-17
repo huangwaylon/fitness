@@ -174,7 +174,7 @@ export const possumTaskForce: Clip = {
       said: '「選ばなくていいでしょ」と言う。',
       mean: 'don’t have to ＝「〜しなくていい」。must not（してはいけない）とはちがう。',
       trap: 'you don’t が「ユドン」、have to が「ハフタ」とつながる。4語あるか数える。',
-      use: 'You don’t have to pay me back.（返さなくていいよ）' },
+      use: 'You don’t have to come if you’re busy.（忙しいなら来なくていいよ）' },
     { id: 'd5', skill: 'detail', level: 'B1', point: 'recycle', seg: [77.5, 81.5],
       stem: 'What is the first favor Leslie asks for?',
       ja: 'レスリーが最初にたのむことは？',

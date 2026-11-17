@@ -82,7 +82,7 @@ export const halfoween: Clip = {
       said: '言い合う二人に「コーンドッグ買ってきたら？」と言う。',
       mean: 'Why don’t you 〜? ＝ 〜したら？ 理由ではなく提案。ここでは二人を引き離している。',
       trap: 'Why から「なぜ」と思いやすい。Why don’t you＋動詞は「〜したら？」。',
-      use: 'Why don’t you take a break?（ちょっと休んだら？）' },
+      use: 'Why don’t you go get some coffee?（コーヒーでも買ってきたら？）' },
 
     { id: 'a4', skill: 'attitude', level: 'B1', point: 'bicker', reveals: ['corndogs'], seg: [83.4, 88.2],
       stem: 'How do the two act as they leave?',
@@ -164,7 +164,7 @@ export const halfoween: Clip = {
       said: '「よし、あの紫のロボットを見つけなきゃ」と言う。',
       mean: 'gotta ＝ have to（〜しなきゃ）。t が軽い「ラ」の音で「ガラ」に近い。',
       trap: 'have to や got to と書きやすい。聞こえたまま gotta と書く。',
-      use: 'I gotta go. See you tomorrow.（もう行かなきゃ。また明日）' },
+      use: 'We just gotta find the exit.（とにかく出口を見つけなきゃ）' },
 
     { id: 'f3', skill: 'phrase', level: 'C1', point: 'fudge', seg: [136.5, 141.4], retired: true,
       stem: 'What do they plan to do once they find whoever is inside?',

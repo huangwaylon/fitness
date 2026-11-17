@@ -85,7 +85,7 @@ export const ronsReviews: Clip = {
       trap: '批判を「まあまあ」程度の評価と取りがち。星ゼロで、認める所は残していない。命令の相手は you で、順位の話でもない。',
       use: 'Go big or go home.（やるなら全力、でなければやめとけ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [41.6, 50.85], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [41.6, 50.85], retired: true, keep: true,
       stem: 'How many cats would be “too sad,” Donna says?',
       ja: 'ドナは、猫が何匹だと「悲しすぎる」と言う？',
       choices: ['Two', 'Six', 'Sixteen', 'Sixty'], a: 1,

@@ -159,7 +159,7 @@ export const dwightVotes: Clip = {
       trap: '最高点の人に渡したと言うので点数は見ている。分からなかったのは誰の番号か。',
       use: 'It was anonymous, I promise.（匿名だったんだ、本当に）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'could', seg: [137.6, 142.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'could', seg: [137.6, 142.3], retired: true,
       stem: 'Fill the gap: “There’s no way I ___ given it to myself.”',
       ja: '空所に入る語は？「自分にあげることなんて ___ はずがない」',
       choices: ['could have', 'should have', 'would have'], a: 0,
@@ -247,10 +247,10 @@ export const dwightVotes: Clip = {
       use: 'Okay, let’s get back to the point.（はい、本題に戻ろう）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'record', seg: [185.35, 188.75],
-      stem: 'What does “for the record” do here?',
-      ja: 'ここでの「for the record」の役目は？',
-      choices: ['Makes a fact clear', 'Starts a written note', 'Adds a small joke'], a: 0,
-      choicesJa: ['事実をはっきりさせる', 'メモを書き始める', 'ちょっとした冗談を足す'],
+      stem: 'Why does Pam say “for the record” here?',
+      ja: 'パムは、なぜここで「for the record」と言う？',
+      choices: ['To make a fact clear', 'To start a written note', 'To add a small joke'], a: 0,
+      choicesJa: ['事実をはっきりさせるため', 'メモを書き始めるため', 'ちょっとした冗談を足すため'],
       cue: '「Okay」のすぐあと、本題の前の言い方。',
       line: 'Okay, *for the record*, I am pregnant',
       said: 'パムが「はっきり言っておくけど、私は妊娠してる」と言う。',

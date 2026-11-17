@@ -131,7 +131,7 @@ export const joeyDog: Clip = {
       said: 'ジョーイは「自分のことは自分でできると分かって」と言う。',
       mean: 'take care of myself ＝ 自分の面倒を見る。本題はジョーイの自立。',
       trap: '最初の犬と値段に引っぱられやすい。後半の I can’t take care of myself が本題。',
-      use: 'I can take care of myself.（自分のことは自分でできる）' },
+      use: 'She can take care of herself.（彼女は自分のことは自分でできる）' },
 
     { id: 'ph1', skill: 'phrase', level: 'B2', point: 'dropped', seg: [49.5, 57.0],
       stem: 'What did Chandler do after Joey said no earlier?',
@@ -191,7 +191,7 @@ export const joeyDog: Clip = {
       said: '「助けたいだけなんだ。君が大丈夫か確かめたい」と言う。',
       mean: 'just ＝「ただ〜だけ」。help 人 out ＝ 人を助ける。make sure ＝ 確かめる。',
       trap: 'okay? が謝りにも聞こえるが、申し出は取り消していない。',
-      use: 'I’m just trying to help.（助けたいだけだよ）' },
+      use: 'Sorry, I was just trying to help.（ごめん、手伝おうとしただけなんだ）' },
 
     { id: 'c2', skill: 'sound', level: 'C2', point: 'okay', seg: [65.65, 70.95],
       stem: 'After “make sure that you’re okay”, where is Joey’s stress, and why?',

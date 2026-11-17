@@ -1,4 +1,4 @@
-// A2 REVIEW 2026-11-17: keep 8, rewrite 11, retire 5, new 2
+// A2 REVIEW 2026-11-17: keep 8, rewrite 11, retire 5, new 2 · sweep: cross-bank twins retired or rewritten
 // “Parks Department Makeover | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Chris asks
 // Tom to redesign the logo, which comes down to picking a font; Tom ranks Jerry his “number three” on a team of two,
 // pitches a whole-department makeover instead, sulks that he's become Jerry, and then spots Jerry's 1970s ID card and
@@ -34,7 +34,7 @@ export const parksMakeover: Clip = {
       said: '「部のロゴを作り直してほしい」と言われ、「今のところいいね」と答える。',
       mean: 'so far ＝ 今のところ。Sounds cool ＝ よさそう。続きを聞くまで決めない言い方。',
       trap: 'cool を「寒い」と思いやすい。ここは「いいね」。so far は「ここまでは」。',
-      use: 'So far, so good.（今のところ順調）' },
+      use: 'The hotel looks nice so far.（ホテル、今のところいい感じ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'font', seg: [9.0, 15.8], retired: true,
       stem: 'Why is Tom’s question about the assignment funny?',
@@ -188,7 +188,7 @@ export const parksMakeover: Clip = {
       trap: 'pick me up は「迎えに来て」でよく聞くので、送り迎えだと思いやすい。',
       use: 'I need a little pick-me-up.（ちょっと元気が出るものがほしい）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'terrific', reveals: ['pickmeup'], seg: [116.3, 121.65],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'terrific', reveals: ['pickmeup'], seg: [116.3, 121.65], retired: true,
       stem: 'How does Tom feel about the sandwich?', ja: 'サンドイッチについて、トムはどう感じている？',
       choices: ['Sad about his own life', 'Happy with the sandwich', 'Amused by Jerry’s joke'], a: 0,
       choicesJa: ['自分の暮らしがみじめ', 'サンドイッチがうれしい', 'ジェリーの冗談がおもしろい'],
@@ -278,7 +278,7 @@ export const parksMakeover: Clip = {
       trap: 'possibly を「かもしれない」と取ると迷いに聞こえる。前後がほめ言葉なら飾り。',
       use: 'Possibly the best pizza in New York.（もしかするとNYで一番のピザ）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'idcard', seg: [177.2, 187.25],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'idcard', seg: [177.2, 187.25], retired: true,
       stem: 'According to Tom, what gave him the idea?', ja: 'トムによると、何がアイデアのきっかけ？',
       choices: ['Jerry’s old ID card', 'Jerry’s wise words', 'Jerry’s font tips'], a: 0,
       choicesJa: ['ジェリーの古い身分証', 'ジェリーのためになる言葉', 'ジェリーの書体のアドバイス'],
