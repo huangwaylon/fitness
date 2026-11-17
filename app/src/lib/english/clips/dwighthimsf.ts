@@ -1,14 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 3, rewrite 10, retire 7, new 4
 // “Dwight Fights Himself - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US): at his
 // yearly karate seminar Dwight pitches the throat punch with a Yakuza story; Kevin refuses to be his partner, a coworker
 // says Dwight's only worthy opponent is himself, and Dwight demonstrates on himself while the coworker cheers him on.
 // Segments from the captions, words from whisper (2026-11-16). Only Dwight, Kevin and Jim are named; everyone else is
 // "a coworker", and no item depends on which coworker speaks.
-// Untested on purpose: 0–9 s (shouted moves), 88–111 s (the fight itself: shouts and visual; whisper "In step!",
-// captions "INSTEP"), 122–147 s (screams; whisper invents "Thank you" at 142 s).
-// No ear checks: every key rests on words both sources agree on.
-// REVIEW 2026-11-16: pass 6, fix 16, drop 1, new 0; ear checks 0
-// OPEN: c1's segment is 25.4 s, a hair over the 25 s C2 talking-head limit; no clean cut keeps both "Because" and
-//   "PUNCH" with 0.5 s margins.
+// Untested on purpose: 0–9 s (shouted moves), 88–111 s (the fight itself: shouts and visual), 122–147 s (screams).
 import type { Clip } from '../types.ts';
 
 export const dwightHimself: Clip = {
@@ -17,23 +13,42 @@ export const dwightHimself: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: V2, the key was the only choice about anything new; "new moves he made up" now shares that frame
-    // why: his own moves ← "newest developments" heard as Dwight's own inventions; last year's moves ← "once a year"
-    //   heard as a yearly review
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'seminar', seg: [8.6, 23.6],
-      stem: 'According to the comment to camera, what is Dwight’s seminar for?',
-      choices: ['To bring everyone up to date on karate', 'To try out new moves he came up with',
-                'To go over the moves from last year’s class'], a: 0,
-      cue: '最初の文、「holds a seminar」のあと。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'seminar', reveals: ['yearly'], seg: [8.6, 23.6],
+      stem: 'What is Dwight’s seminar for?', ja: 'ドワイトのセミナーは何のため？',
+      choices: ['To teach the newest karate', 'To try his own new moves', 'To review last year’s class'], a: 0,
+      choicesJa: ['空手の最新情報を教える', '自分の新しい技を試す', '去年の授業を復習する'],
+      cue: '「holds a seminar」のあと',
       line: 'Once a year, Dwight holds a seminar *updating us on the newest developments* in the world of karate.',
       said: '年に一度、ドワイトが空手の最新情報を伝えるセミナーを開く、とカメラに話す。',
-      mean: 'update ＝ 最新の状態にする。新しく変わった点を知らせる会。',
-      trap: 'once a year から「去年の復習」と取りやすい。目的は updating のあと。',
+      mean: 'update ＝ 最新の状態にする。updating us on 〜 ＝ 私たちに〜の最新情報を伝える。',
+      trap: 'once a year から「去年の復習」と思いやすい。newest（いちばん新しい）を聞く。',
       use: 'Can you update me on the project?（プロジェクトの最新状況を教えて）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'yearly', seg: [8.6, 13.0],
+      stem: 'How often does Dwight hold his seminar?', ja: 'ドワイトはどのくらいの間隔でセミナーを開く？',
+      choices: ['Once a year', 'Twice a year', 'Once a month'], a: 0,
+      choicesJa: ['年に1回', '年に2回', '月に1回'],
+      cue: '最初の二語',
+      line: '*Once a year*, Dwight holds a seminar',
+      said: '「年に一度、ドワイトがセミナーを開く」と話す。',
+      mean: 'once a year ＝ 年に1回。a は「〜につき」。once a week（週1回）も同じ形。',
+      trap: 'once と twice は似て聞こえやすい。「ワンス」は w、「トゥワイス」は t で始まる。',
+      use: 'I go to the dentist once a year.（歯医者には年に1回行く）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [13.5, 19.3], keep: true,
+      stem: 'How old are martial arts, says the coworker?', ja: '武術は何年前からあると、同僚は言う？',
+      choices: ['100 years', '1,000 years', '10,000 years'], a: 1,
+      choicesJa: ['100年', '1,000年', '1万年'],
+      cue: '「the one thing that」のすぐあと',
+      line: 'the one thing that *thousand-year-old* martial arts do',
+      said: '「千年の歴史がある武術」と言う。',
+      mean: 'thousand-year-old ＝ 千年前からある。数字＋year-old で、名詞の前に置ける。',
+      trap: 'hundred は「ハンドレッド」、thousand は「サウザンド」。前に ten がないので 1,000。',
+      use: 'It’s a two-hundred-year-old house.（築200年の家だよ）' },
 
     // why: useful ← "change… all the time" taken at face value; a chore ← "once a year" (said just before) heard as
     //   the complaint
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'change', reveals: ['thousand', 'seminar'], seg: [13.5, 19.3],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'change', reveals: ['thousand', 'seminar'], seg: [13.5, 19.3], retired: true,
       stem: 'In the comment to camera, how does the speaker see the yearly updates?',
       choices: ['As a joke, since old arts hardly ever change', 'As useful, since old arts keep changing fast',
                 'As a chore, since they come only once a year'], a: 0,
@@ -43,17 +58,6 @@ export const dwightHimself: Clip = {
       mean: '千年変わらないものに「いつも変化」と言うのは皮肉。最新情報など、ほぼない。',
       trap: 'as we all know を本気の前置きと取りやすい。古さと変化が並んだら皮肉を疑う。',
       use: 'As we all know, Mondays are everyone’s favorite.（ご存じのとおり、月曜はみんな大好きだよね）' },
-
-    // why: a hundred ← hundred/thousand, the near sound; ten thousand ← "thousand" heard, the size before it lost
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [13.5, 19.3],
-      stem: 'How old does the comment to camera say martial arts are?',
-      choices: ['A hundred years old', 'A thousand years old', 'Ten thousand years old'], a: 1, keep: true,
-      cue: '「the one thing that」のすぐあと。',
-      line: 'the one thing that *thousand-year-old* martial arts do',
-      said: '「千年の歴史がある武術」と言う。',
-      mean: 'thousand-year-old ＝ 千年前からある。数字＋year-old で、名詞の前に置ける。',
-      trap: 'hundred と thousand は語尾が似る。thou の「サウ」と、ten が前に付くかを聞く。',
-      use: 'It’s a two-hundred-year-old house.（築200年の家だよ）' },
 
     // anchor: 14–18.7 s to camera, "the one thing… thousand-year-old martial arts do all the time is change"; 19.9–38.4 s
     //   Dwight's "relatable" set-up (Yakuza, a trolley museum, triads) ends in "You cannot go wrong with a throat punch"
@@ -74,7 +78,7 @@ export const dwightHimself: Clip = {
 
     // why: escape ← "arrives" heard as the attackers coming, so they must get out first; the trolley ← "Trolley
     //   Museum" is the last place word heard
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'holdoff', seg: [32.0, 36.1],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'holdoff', seg: [32.0, 36.1], retired: true,
       stem: 'In Dwight’s story, what problem does he ask them to solve?',
       choices: ['How to keep the attackers back until help comes', 'How to escape the museum before the attackers come',
                 'How to beat the attackers before the trolley comes'], a: 0,
@@ -85,36 +89,65 @@ export const dwightHimself: Clip = {
       trap: 'arrives を敵の到着と取ると「逃げる」になる。until の後ろは誰が来るかを聞く。',
       use: 'Can you hold them off for five minutes?（5分だけ待たせておいて）' },
 
-    // why: the nose ← "broken nose… boom" shouted at the start; the knee ← a common karate move, the "throat" sound lost
     { id: 'd2', skill: 'detail', level: 'B1', point: 'throat', seg: [35.6, 39.2],
-      stem: 'What move does Dwight say always works?',
+      stem: 'What move does Dwight say always works?', ja: 'ドワイトが「必ずうまくいく」と言う技は？',
       choices: ['A punch to the throat', 'A hard punch to the nose', 'A kick to the knee'], a: 0,
-      cue: '「You cannot go wrong with」のあと。',
+      choicesJa: ['のどへのパンチ', '鼻への強いパンチ', 'ひざへのキック'],
+      cue: '「go wrong with」のあと',
       line: 'You *cannot go wrong* with a *throat punch*.',
-      said: '「のど突きなら失敗しない」と答える。',
-      mean: 'can’t go wrong with ～ ＝ ～なら失敗しない。おすすめの決まり文句。',
-      trap: '冒頭で broken nose と何度も叫ぶので鼻を選びやすい。ここでは throat の「スロウ」を聞く。',
+      said: '「のど突きなら失敗しない」と言う。',
+      mean: 'can’t go wrong with 〜 ＝ 〜なら失敗しない、〜ならまちがいない。おすすめするときの決まり文句。',
+      trap: '冒頭で broken nose と何度も叫ぶので鼻を選びやすい。ここは throat の「スロウ」を聞く。',
       use: 'You can’t go wrong with the pasta here.（ここのパスタならまず外れない）' },
 
-    // R fix: V2 + K3, "Kevin lost a shoelace" was a filler and the key the only judgment; now three parallel reasons
-    // why: too rough with Dwight ← who did what to whom is lost at speed (wrong direction); ripped his pants ← "pants"
-    //   is said, but Dwight pulled them down (keyword trap)
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtoknow', seg: [39.5, 42.3],
+      stem: 'What does “Good to know” mean?', ja: '“Good to know” はどういう意味？',
+      choices: ['Thanks, that’s useful', 'I knew that already', 'I don’t believe you'], a: 0,
+      choicesJa: ['ありがとう、役に立つ', 'それはもう知ってた', '信じられない'],
+      cue: '「no defense for that」のあと',
+      line: 'Okay, so there’s no defense for that. *Good to know*.',
+      said: '「じゃあ、それは防ぎようがないんだ。いいこと聞いた」と言う。',
+      mean: 'Good to know ＝ 知れてよかった、いいこと聞いた。新しい情報を聞いたときの返事。',
+      trap: 'know から「知ってる」と思いやすい。It’s good to know の It’s を落とした形。',
+      use: 'The shop opens at nine? Good to know.（店は9時開店？いいこと聞いた）' },
+
+    { id: 'x3', skill: 'dict', level: 'B1', point: 'letme', seg: [42.0, 45.6],
+      stem: 'Type: “No, there is a defense for that. ___ demonstrate.” (2 words)', ja: '書こう：“No, there is a defense for that. ___ demonstrate.”（2語）',
+      answer: 'let me',
+      cue: '「defense for that」のすぐあと',
+      line: 'No, there is a defense for that. *Let me* demonstrate.',
+      said: '「いや、防ぎ方はある。やってみせよう」と言う。',
+      mean: 'Let me 〜 ＝ 私に〜させて。t がほぼ消え、「レッミ」と一語のように聞こえる。',
+      trap: 't が聞こえないので lemme のように書きやすい。let と me の2語で書く。',
+      use: 'Let me help you with that.（それ、手伝わせて）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'noway', seg: [45.5, 50.0],
+      stem: 'What does Kevin mean by “No way”?', ja: 'ケビンの “No way” はどういう意味？',
+      choices: ['He won’t do it', 'He can’t find the way', 'He is very surprised'], a: 0,
+      choicesJa: ['やらない', '道が分からない', 'すごく驚いている'],
+      cue: '「Kevin, go!」への返事',
+      line: 'Someone attack me. Kevin, go! — *No way*.',
+      said: '「ケビン、来い！」と言われ、「絶対いやだ」と答える。',
+      mean: 'No way ＝ 絶対いや、無理。頼まれたことをはっきり断る、くだけた言い方。',
+      trap: 'No way は「うそでしょ！」と驚くときにも使う。ここは「来い」への返事なので断り。',
+      use: 'Sing at the party? No way!（パーティーで歌う？絶対いや！）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'lasttime', seg: [46.9, 53.2],
-      stem: 'Why does Kevin say no when Dwight picks him?',
-      choices: ['Dwight was too rough with him last time', 'He was too rough with Dwight last time',
-                'He ripped his pants in the last class'], a: 0,
-      cue: '「No way」のあと、「Last time」で始まる話。',
+      stem: 'Why does Kevin say no to Dwight?', ja: 'ケビンはなぜドワイトに「いや」と言う？',
+      choices: ['Dwight hurt him last time', 'He hurt Dwight last time', 'He ripped his pants last time'], a: 0,
+      choicesJa: ['前回ドワイトにひどい目にあった', '前回ドワイトにけがをさせた', '前回ズボンを破いた'],
+      cue: '「Last time」で始まる話',
       line: 'Last time *you pulled my pants down*… then *you tried to choke me* with my shoelace.',
-      said: '「前回はズボンを下ろされ、靴ひもで首を絞められかけた」と断る。',
-      mean: '練習相手になるとひどい目にあう、という理由。',
-      trap: '速いと主語を落とし、ケビンがやった話に聞こえる。you pulled、you tried の you を拾う。',
-      use: 'No way. Last time I got lost.（無理。前回は迷子になったんだ）' },
+      said: '「前回はズボンを下ろされ、靴ひもで首をしめられかけた」と断る。',
+      mean: 'last time ＝ 前回。練習相手になるとひどい目にあう、という理由。',
+      trap: '速いと主語を聞き落とし、ケビンがやった話に聞こえやすい。you pulled、you tried の you を拾う。',
+      use: 'No, thanks. Last time I got lost.（遠慮しとく。前回は迷子になったんだ）' },
 
     // R fix: V2, the key was the only choice about a correction; the cold-apology filler is gone and the distractors
     //   are a denial and a correction of the wrong detail
     // why: made it up ← "False" heard as calling Kevin a liar; the pants part ← he does correct one part, but the
     //   choking, not the pants
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'false', reveals: ['lasttime'], seg: [46.9, 56.0],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'false', reveals: ['lasttime'], seg: [46.9, 56.0], retired: true,
       stem: 'When Dwight answers Kevin with “False…”, why is it funny?',
       choices: ['His correction makes his own story worse', 'He says Kevin made the whole story up',
                 'He corrects the pants part, not the choking'], a: 0,
@@ -129,7 +162,7 @@ export const dwightHimself: Clip = {
     //   self-serving choice; "just Kevin" (scope) replaces "a stronger partner"
     // why: just Kevin ← it follows Kevin's refusal, but "respect to everyone here" covers them all (scope shift); his
     //   own worst enemy ← "the opponent of you is you" heard as the idiom about self-defeat
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'worthy', reveals: ['respect'], seg: [48.2, 62.4],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'worthy', reveals: ['respect'], seg: [48.2, 62.4], retired: true,
       stem: 'What is the coworker really after with the “most worthy opponent” line?',
       choices: ['Getting all of them out of fighting Dwight', 'Getting just Kevin out of fighting Dwight',
                 'Getting Dwight to see he’s his own worst enemy'], a: 0,
@@ -140,19 +173,18 @@ export const dwightHimself: Clip = {
       trap: '「自分が最大の敵」という言い回しに聞こえやすいが、ここは誰が相手をするかの話。',
       use: 'Honestly, only you can do it.（正直、できるのは君だけ）' },
 
-    // R fix: B1, the stem ("I ___ choke you with your shoelace") gives away d3; added reveals
-    // why: didn't ← "False" sets up a denial, and the t of n't is hard to hear; tried to ← an echo of Kevin's words
-    { id: 's1', skill: 'sound', level: 'B2', point: 'false', reveals: ['lasttime'], seg: [53.0, 56.0],
-      stem: 'Fill the gap: “False. I ___ choke you with your shoelace.”',
+    { id: 's1', skill: 'sound', level: 'B2', point: 'false', seg: [53, 56],
+      stem: 'Fill the gap: “False. I ___ choke you with your shoelace.”', ja: '空所に入るのは？ “False. I ___ choke you with your shoelace.”',
       choices: ['did', 'didn’t', 'tried to'], a: 0,
-      cue: 'I のあと、強く短く言われる一語。',
+      choicesJa: ['本当に〜した', '〜しなかった', '〜しようとした'],
+      cue: 'I のあと、強く短い一語',
       line: 'False. I *did* choke you with your shoelace.',
-      said: '「違う。本当に絞めた」。did を強く言う。',
-      mean: '肯定文の did は「本当に～した」の強調。否定ではなく、事実を言い張っている。',
-      trap: 'False のあとなので didn’t を予想しやすい。didn’t なら「ン」が残る。強く短い did だけ。',
+      said: '「違う。本当にしめた」と言う。did を強く言う。',
+      mean: '肯定の文の did は「本当に〜した」と強める言い方。言い張っている。',
+      trap: 'didn’t なら最後に「ン」、tried to なら「トライ」が聞こえる。短く強い「ディッ」だけなら did。',
       use: 'I did lock the door. I checked.（ちゃんと鍵はかけた。確かめたよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'comeat', seg: [54.65, 57.45],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'comeat', seg: [54.65, 57.45], retired: true,
       stem: 'Type what Dwight says after the shoelace line: “Now, ___.” (3 words)', answer: 'come at me',
       cue: '「shoelace」のすぐあと、短い命令。',
       line: 'Now, *come at me*.',
@@ -161,39 +193,32 @@ export const dwightHimself: Clip = {
       trap: 'come at me が「カマッミー」のようにつながり、at が消えやすい。前置詞を一語足して書く。',
       use: 'Come at me with your best offer.（いちばんいい条件で来てよ）' },
 
-    // R fix: V2 + K3, the thank-you filler is gone; the choices are now soften/respect × the others/Dwight
-    // why: respect for everyone ← "respect to everyone here" taken literally (keyword trap); criticism of Dwight ← the
-    //   right function, the wrong target: the remark flatters Dwight
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'respect', seg: [56.2, 62.4],
-      stem: 'When a coworker opens with “Okay, with all due…”, what is the opening for?',
-      choices: ['To soften a remark about the others in the room', 'To show real respect for everyone in the room',
-                'To soften a criticism of Dwight’s demo'], a: 0,
-      cue: 'respect の直後の「to 誰」と、そのあとの話。',
+      stem: 'Why does the coworker say “with all due respect”?', ja: '同僚はなぜ “with all due respect” と言う？',
+      choices: ['To say something hard, politely', 'To thank everyone for coming', 'To show he loves karate'], a: 0,
+      choicesJa: ['言いにくいことを、ていねいに言うため', '来てくれたみんなにお礼を言うため', '空手が好きだと伝えるため'],
+      cue: '「Okay」のあとの前置き',
       line: 'with *all due respect to everyone here*, I think the most worthy opponent of you is you.',
-      said: '「皆さんには失礼ながら」と前置きし、ドワイトの相手は本人だけ、と言う。',
-      mean: '相手が喜ばない話の前置き。ここでは「皆では力不足」と言う前。',
-      trap: 'respect を「尊敬」と取りやすい。この前置きのあとには、言いにくい話が来る。',
+      said: '「皆さんには失礼ながら、あなたにふさわしい相手はあなた自身だ」と言う。',
+      mean: 'with all due respect ＝ お言葉ですが、失礼ながら。言いにくいことの前に置く前置き。',
+      trap: 'respect を「尊敬」と思いやすい。この前置きのあとには、相手が喜ばない話が来る。',
       use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
 
-    // R fix: V2, the joke filler is gone; "sees through the flattery" is a near miss, since the line is flattery (i2)
-    // why: sees through it ← the coworker's line really is flattery with a motive, but Dwight answers "That is
-    //   correct"; plays it down ← the Japanese frame: praise is met with modesty
-    //   (謙遜), so the add-on sounds like one
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'correct', seg: [62.2, 65.75],
-      stem: 'How does Dwight take the coworker’s compliment?',
-      choices: ['As plain fact; he agrees at once', 'As flattery; he sees right through it', 'As too much; he plays it down'],
-      a: 0,
-      cue: 'ほめ言葉のすぐあと、最初の3語。',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'correct', seg: [62.2, 65.75],
+      stem: 'How does Dwight take the coworker’s words?', ja: 'ドワイトは同僚の言葉をどう受けとる？',
+      choices: ['He agrees right away', 'He laughs it off', 'He gets a little shy'], a: 0,
+      choicesJa: ['すぐに「そのとおり」と認める', '笑ってごまかす', '少し照れる'],
+      cue: '同僚の話のすぐあと',
       line: '*That is correct.* Unless there happen to be measles present.',
-      said: '「その通りだ」とすぐ認め、「はしかがいなければな」と付け足す。',
-      mean: 'That is correct は事実を確かめる固い言い方。謙遜も照れもない。',
-      trap: 'ほめられたら謙遜、という型で聞くと Unless を遠慮に取る。最初の一言で態度が決まる。',
-      use: 'That is correct. I made it myself.（そのとおり。自分で作ったんだ）' },
+      said: '「そのとおりだ」とすぐ認め、「はしかがあれば別だが」と付け足す。',
+      mean: 'That is correct ＝ そのとおり。事実を認めるかたい言い方。照れも遠慮もない。',
+      trap: 'ほめられたら照れる、と思いやすい。最初の一言 That is correct で決まる。',
+      use: 'That’s correct. I made it myself.（そのとおり。自分で作ったんだ）' },
 
     // R fix: K5 + V2, the key was the only choice not starting "He admits"; all three are now "He says…"
     // why: he's ill ← "measles" heard as his own illness today; a coworker could win ← "Unless" heard as taking the
     //   praise back
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'correct', seg: [62.2, 65.75],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'correct', seg: [62.2, 65.75], retired: true,
       stem: 'Why is Dwight’s “Unless…” add-on funny?',
       choices: ['He says only a disease could ever beat him', 'He says he’s ill, so he can’t fight today',
                 'He says a coworker could beat him after all'], a: 0,
@@ -204,51 +229,41 @@ export const dwightHimself: Clip = {
       trap: 'Unless を「実は負けるかも」と取りやすいが、出てくるのは人でなく病気。',
       use: 'I never get lost. Unless there’s no signal.（迷子にはならない。電波がなければ別）' },
 
-    // R fix: K1 + V2, "as a real match" clashed with c3 (the coworker is mocking, not sincere), and "back to work" was
-    //   a filler; the key is now "play along", and the fool line read literally is the new distractor
-    // why: tell him to stop ← "making you look like such a fool" taken as plain criticism; break it up ← "Oh my God"
-    //   heard as worry
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'eggon', reveals: ['upperhand', 'fool'], seg: [65.3, 115.3],
-      stem: 'How do those watching respond to Dwight’s fight with himself?',
-      choices: ['They play along, as if it were a real match', 'They tell him he looks silly and should stop',
-                'They get worried and try to break it up'], a: 0,
-      cue: '見ている側の質問や声かけの中身。',
-      said: '「もう片方の手は？」「ばかにされてるよ」「互角だね」と、試合のように声をかける。',
-      mean: '止めずに実況してあおっている。ドワイトはそれを本気で受けて戦い続ける。',
-      trap: 'Oh my God を心配の声と取りやすい。そのあとの言葉が止める話か、あおる話かを聞く。',
-      use: 'Come on, keep going!（ほら、続けて！）' },
-
-    // R fix: V2, the "unsure" filler is gone; "just say" read literally ("just tell us") replaces it
-    // why: a summary ← "So" heard as wrapping up what Dwight agreed to; explain, not show ← "just say" read literally as
-    //   "just tell us"
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'letssay', reveals: ['throat', 'comeat'], seg: [65.35, 71.95],
-      stem: 'After the measles line, what do the coworker’s first few words do?',
-      choices: ['Set up an imagined fight to try out', 'Sum up what Dwight has just agreed to',
-                'Ask Dwight to just explain, not show, a move'], a: 0,
-      cue: 'So のあとの3語と、続く話の中身。',
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'letssay', seg: [65.35, 71.95],
+      stem: 'What does “let’s just say” mean here?', ja: 'ここでの “let’s just say” はどういう意味？',
+      choices: ['Let’s imagine', 'Let’s be honest', 'Let’s stop here'], a: 0,
+      choicesJa: ['仮に〜としよう', '正直に言おう', 'ここでやめよう'],
+      cue: '「So」のあとの3語',
       line: '*So, let’s just say* that Dwight has come at you with the throat punch.',
       said: '「じゃあ、仮にドワイトがのど突きで向かってきたとしよう」と言う。',
-      mean: 'let’s just say ＝ 仮に～としよう。想定の場面を作る前置き。',
-      trap: 'So を「まとめ」、say を「言って」と取りやすい。後ろに that＋想定の話が来るかを聞く。',
+      mean: 'let’s just say ＝ 仮に〜としよう。想像の場面を作るときの前置き。',
+      trap: 'say から「言おう」と思いやすい。後ろに that ＋ 想像の話が来れば「仮に」。',
       use: 'Let’s just say the train is late.（仮に電車が遅れたとしよう）' },
 
-    // R fix: V2, "Kevin" was a weak option; a generic "he" (any attacker) is the near miss a learner takes
-    // why: any attacker ← "he" heard as generic, a rule for real fights; "Good point. Second throat punch" shows Dwight
-    //   takes it as his own other hand; a triad ← the attackers in Dwight's story
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'twohands', reveals: ['throat'], seg: [80.2, 85.4],
-      stem: 'In the coworker’s question about the other hand, who is “he”?',
-      choices: ['Dwight, as the one attacking', 'Any real attacker in a street fight', 'A triad from the museum story'],
-      a: 0,
-      cue: '「he does have two」と、そのあとの返事。',
-      line: 'what if *he* comes at you with the other hand because *he does have two*? — Good point. *Second* throat punch.',
-      said: '「手は2本あるし、もう片方で来たら？」と聞かれ、「いい点だ。2発目」と応じる。',
-      mean: 'he は攻める役のドワイト自身。ひとりで両役なので、手も2本。',
-      trap: 'he を一般の敵や話の敵と取りやすい。すぐ Second throat punch と続く。',
-      use: 'Good point. I hadn’t thought of that.（いい指摘。それは考えてなかった）' },
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'eggon', seg: [70.0, 115.0],
+      stem: 'What do the others do during Dwight’s fight?', ja: 'ドワイトのひとり試合の間、ほかの人たちはどうする？',
+      choices: ['Cheer like it’s a real fight', 'Tell him to stop now', 'Leave the room quietly'], a: 0,
+      choicesJa: ['本物の試合のように盛り上げる', 'もうやめてと言う', '静かに部屋を出る'],
+      cue: '見ている人たちの声',
+      said: '「もう片方の手は？」「ばかにされてるよ」「互角だね」と、試合のように声をかける。',
+      mean: '止めずに実況して盛り上げている。ドワイトは本気で受けて戦い続ける。',
+      trap: 'Oh my God を心配の声と思いやすい。そのあとの言葉は、止める話ではなく実況。',
+      use: 'Come on, keep going!（ほら、続けて！）' },
+
+    { id: 'i1', skill: 'phrase', level: 'B1', point: 'twohands', seg: [80.2, 85.4],
+      stem: 'What does Dwight mean by “Good point”?', ja: 'ドワイトの “Good point” はどういう意味？',
+      choices: ['You’re right about that', 'That was a good punch', 'Let’s try that again'], a: 0,
+      choicesJa: ['それはそのとおりだ', 'いいパンチだった', 'もう一回やろう'],
+      cue: '「he does have two」のあとの返事',
+      line: 'what if he comes at you with the other hand because he does have two? — *Good point*.',
+      said: '「手は2本あるし、もう片方で来たら？」と聞かれ、「いい指摘だ」と答える。',
+      mean: 'Good point ＝ いい指摘だ、確かに。相手の意見を認めるときの返事。',
+      trap: 'point を「点数」や「先」と思いやすい。ここは「意見のポイント」。',
+      use: 'Good point. I hadn’t thought of that.（確かに。それは考えてなかった）' },
 
     // R fix: K2 wording, "let it pass through" isn't what absorb means; now "soak it up"
     // why: block ← "Block" was his move just before; hit back ← a fight scene's usual next move
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'absorb', reveals: ['throat'], seg: [83.0, 87.5],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'absorb', reveals: ['throat'], seg: [83.0, 87.5], retired: true,
       stem: 'After the second punch, what does Dwight tell himself to do?',
       choices: ['Take the hit and soak it up', 'Block the hit with his other arm',
                 'Hit back at once just as hard'], a: 0,
@@ -259,39 +274,27 @@ export const dwightHimself: Clip = {
       trap: '少し前に Block と言ったので「防ぐ」を選びやすい。absorb は吸収、つまり受ける側。',
       use: 'The company can absorb the cost.（会社がその費用をかぶれる）' },
 
-    // R fix: K5 + V2, the denial is now parallel ("disagrees… winning") so the key isn't one of only two "agrees"
-    // why: disagrees ← "really" missed, the reply heard as pushing back; stops ← "not for long" heard as "I won't keep
-    //   this up long"
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fool', seg: [96.6, 101.6],
-      stem: 'How does Dwight answer the remark that he looks like a fool?',
-      choices: ['He agrees, and vows to turn it around', 'He disagrees, and says he’s winning',
-                'He agrees, and says he’ll stop now'], a: 0,
-      cue: '短い同意のあと、but で始まる一言。',
+    { id: 'a3', skill: 'phrase', level: 'B2', point: 'fool', seg: [96.6, 101.6],
+      stem: 'What does Dwight mean by “But not for long”?', ja: 'ドワイトの “But not for long” はどういう意味？',
+      choices: ['He’ll turn it around soon', 'He’ll stop the fight soon', 'He’ll take a break soon'], a: 0,
+      choicesJa: ['すぐに逆転する', 'すぐに試合をやめる', 'すぐにひと休みする'],
+      cue: '「He really is」のあと',
       line: 'He’s making you look like such a fool. — He *really is*, *but not for long*.',
       said: '「ばかにされてるね」に「確かに。だが今のうちだ」と返す。',
-      mean: 'not for long ＝ 長くは続かない。すぐ逆転するという宣言。',
-      trap: 'not for long を「もうやめる」と取りやすい。続かないのは、ばかにされている状態のほう。',
+      mean: 'not for long ＝ 長くは続かない。ばかにされている今の状態は、すぐ終わるという宣言。',
+      trap: 'not for long を「もうやめる」と思いやすい。続かないのは、負けている状態のほう。',
       use: 'I’m behind now, but not for long.（今は遅れてるけど、すぐ追いつく）' },
 
-    // R drop: c2 (humor C2, who the joke is on). Blind 75 %: the key was the only clever, quoted choice, and the item
-    //   duplicated i1 (he = Dwight) and a3 (same line, same point). One rewrite couldn't make a Dwight-centred near miss
-    //   that isn't also defensible, so it goes (never shipped).
-
-
-    // R fix: S2 + V2, the stem quoted "evenly matched", which gives the meaning of "upper hand"; the stem is neutral and
-    //   "the real Dwight" (identity reading of "one of you") replaces the floor option
-    // why: the real Dwight ← "one of you" heard as about which one is which; the higher hand ← "upper hand" taken
-    //   literally (上の手)
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'upperhand', seg: [111.7, 115.3],
-      stem: 'Near the end of the fight, what does the coworker say is hard to tell?',
-      choices: ['Which of them will gain the advantage', 'Which of them is the real Dwight',
-                'Which of them will grab the higher hand'], a: 0,
-      cue: '文の最後、get the のあとの2語。',
+      stem: 'What does “get the upper hand” mean?', ja: '“get the upper hand” はどういう意味？',
+      choices: ['Start winning', 'Put a hand up', 'Hold hands'], a: 0,
+      choicesJa: ['優勢になる', '手を上げる', '手をつなぐ'],
+      cue: '文の最後、「get the」のあと',
       line: 'I don’t know how one of you is going to *get the upper hand*.',
-      said: '「互角すぎて、どっちが優位に立つか分からない」と言う。',
-      mean: 'get the upper hand ＝ 優位に立つ。手そのものの話ではない決まり文句。',
-      trap: 'upper を「上」、hand を「手」と字のまま取りやすい。形で覚える。',
-      use: 'Their team got the upper hand late.（終盤で相手チームが優位に立った）' },
+      said: '「互角すぎて、どっちが優勢になるか分からない」と言う。',
+      mean: 'get the upper hand ＝ 優勢になる、有利になる。手そのものの話ではない決まり文句。',
+      trap: 'upper を「上」、hand を「手」と字のまま思いやすい。ひとまとまりで「優勢」。',
+      use: 'Our team got the upper hand.（うちのチームが優勢になった）' },
 
     // anchor: 74–76.4 s "I am attacking myself"; 112.2–114.6 s "You two are so evenly matched" said to one man: the
     //   match can't be anything but even
@@ -309,13 +312,14 @@ export const dwightHimself: Clip = {
       trap: '実況の言葉をそのまま取りやすい。相手が何人かを確かめれば、ほめ言葉でないと分かる。',
       use: 'Wow, a tie. Who saw that coming?（へえ、引き分け。誰が予想した？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'surprise', seg: [115.0, 121.6],
-      stem: 'Type the end of Dwight’s tip to Jim: “what is called the ___.” (3 words)', answer: 'element of surprise',
-      cue: '「what is called the」のあと、少し間があく。',
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'surprise', seg: [115, 121.6],
+      stem: 'Type the end of Dwight’s tip to Jim: “what is called the ___.” (3 words)', ja: '書こう：“what is called the ___.”（3語）',
+      answer: 'element of surprise',
+      cue: '「what is called the」のあと',
       line: 'we always have what is called the *element of surprise*.',
-      said: '「我々には、いわゆる不意打ちという武器がある」とジムに言う。',
+      said: '「我々には、いわゆる不意打ちという強みがある」とジムに言う。',
       mean: 'the element of surprise ＝ 不意をつくこと。相手が予想しない強み。',
       trap: 'element of が「エレメンタブ」のようにつながる。of を落とさず3語で書く。',
-      use: 'Let’s keep the element of surprise.（サプライズは秘密にしておこう）' },
+      use: 'Let’s keep the element of surprise.（不意をつけるよう、秘密にしておこう）' },
   ]
 };
