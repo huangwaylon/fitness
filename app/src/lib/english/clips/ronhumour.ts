@@ -1,17 +1,13 @@
+// A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 7, new 1
 // “Ron hates accountant humour | Parks and Recreation” (the official Parks and Recreation channel, Season 7): the
 // friends pitch April to Barney's accounting firm for its new consulting wing, plan a presentation, win a meeting,
 // and then April turns the job down.
 // Segments from the captions, words from whisper (2026-11-16). Ben and Barney are named in the audio; the other
-// speakers never are, so stems say “one friend”, “the speaker” and no key rests on who they are. Untested on purpose:
-// 26–29 s (“Dad” in the captions, “Ted!” in whisper), 65 s (“the summer off” in whisper, “the Summer's offices” in the
-// captions), 82–90 s (“Huh? What do you say?… Oh, Ben. That was amazing.”: whisper only), 168–176 s (“anything Andy
-// did”: backstory).
-// EAR CHECK: 45.9–46.4 s nt1 — the six words “why don't you go ahead and” in about 0.6 s (both sources agree on the
-//   words; the item claims they run together)
-// EAR CHECK: 106.1–108.3 s x1 s1 — “give her” with the h dropped (“giver”), and the flapped t in “not as” (“nadas”)
-// REVIEW 2026-11-16: pass 10, fix 14, drop 0, new 0; ear checks 2
-// REVIEW open: at1's segment ends at 28.2 s, between "They like me here" and "you gotta hear this" (0.5 s after
-//   "here" would cut "gotta"); check that it doesn't end mid-word on the phone
+// speakers never are, so stems say “one friend” and no key rests on who they are. Untested on purpose: 26–29 s, 65 s,
+// 82–90 s (whisper only), 168–176 s (backstory).
+// EAR CHECK: 45.9–46.4 s nt1 — the six words “why don't you go ahead and” in about 0.6 s (both sources agree)
+// EAR CHECK: 101.1 s i1 — “Not interested” is Ben (Barney has just praised “Oh, Ben. That was amazing”)
+// EAR CHECK: 106.1–108.3 s x1 s1 — “give her” with the h dropped (“giver”), and the t in “not as” (“nadas”)
 import type { Clip } from '../types.ts';
 
 export const ronHumour: Clip = {
@@ -20,40 +16,31 @@ export const ronHumour: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 — the key was the only specific choice ("consulting wing"); all three now name a concrete ask
-    // why: Ben rehired ← the staff greet Ben like a returning star; April's money ← "finances" is said, about
-    //   the Grizzle deal
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'pitch', seg: [4.3, 41.6],
-      stem: 'Why have they all come to see Barney at the firm?',
-      choices: ['To get April hired for a new part of the firm', 'To get Ben rehired at his old desk there',
-                'To get the firm to handle April’s money'], a: 0,
-      cue: '終わりの「we just think that」のあと。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'pitch', seg: [4.3, 41.6],
+      stem: 'Why have they come to see Barney?',
+      ja: 'みんなは、なぜバーニーに会いに来た？',
+      choices: ['To get April a job there', 'To get Ben his job back', 'To ask about April’s money'], a: 0,
+      choicesJa: ['エイプリルをそこで働かせるため', 'ベンを元の仕事にもどすため', 'エイプリルのお金の相談をするため'],
+      cue: '「we just think that」のあと。',
       line: 'we just think that *April would be a great hire*.',
-      said: 'April を新しい相談部門で雇ってほしいと、Barney に頼みに来た。',
-      mean: 'hire ＝ 採用する人。訪問の目的は April の売りこみ。',
-      trap: 'Ben が大歓迎されるので Ben の話に聞こえやすい。目的は we just think のあと。',
+      said: 'エイプリルを新しい相談部門で雇ってほしいと、バーニーに頼みに来た。',
+      mean: 'hire ＝ 雇う、採用する人。a great hire ＝ 雇えばきっと役に立つ人。',
+      trap: 'ベンが大歓迎されるので、ベンの話と思いやすい。目的は we just think のあと。',
       use: 'I think she’d be a great hire.（彼女はきっといい人材です）' },
 
-    // R fix: V2 + tone — the key was the only warm choice; now "tense" (the shout read as a warning) and "unsure"
-    //   (the name mix-up) compete, and the segment runs on to "They like me here", which settles it in words
-    // why: tense ← "Ben is here!" shouted to the back sounds like a warning that the boss has come; unsure ← the
-    //   staff call him by the wrong name ("Ted!/Dad") in between
     { id: 'at1', skill: 'attitude', level: 'B1', point: 'welcome', seg: [13.4, 28.2],
-      stem: 'How do the people at the firm react when Ben walks in?',
-      choices: ['Thrilled, like a favorite is back', 'Tense, like a boss has walked in',
-                'Unsure, like they half know him'], a: 0,
-      cue: '名前を何回、誰に向かって呼んでいるか。',
+      stem: 'How do the people at the firm feel when Ben walks in?',
+      ja: 'ベンが来たとき、事務所の人たちはどう感じている？',
+      choices: ['Very happy to see him', 'A bit nervous about him', 'Not sure who he is'], a: 0,
+      choicesJa: ['会えてとてもうれしい', '少し緊張している', 'だれだか分からない'],
+      cue: 'ベンの名前の呼び方。',
       line: '*Ben! Ben is here.* Hi, Ben. … *Ben is here!* … *They like me here.*',
-      said: 'Ben に気づいて名前を呼び、奥の同僚にも「Ben が来た！」と知らせる。',
-      mean: '何度も呼んで周りに知らせるのは、大歓迎のしるし。',
-      trap: '奥へ叫ぶのは警告にも聞こえるが、Hi, Ben と明るく続き、本人も They like me here と言う。',
+      said: 'ベンに気づいて名前を呼び、奥の同僚にも「ベンが来た！」と知らせる。',
+      mean: '何度も呼んで周りに知らせるのは、大歓迎のしるし。本人も They like me here と言う。',
+      trap: '奥へ叫ぶので警告にも聞こえるが、Hi, Ben と明るく続く。',
       use: 'Hey, everyone! Mike is here!（みんな、マイクが来たよ！）' },
 
-    // R fix: V2 — the key named "actually", the very word the pun bends; all three now describe a move, none
-    //   quotes it
-    // why: mocks accountants ← the title says Ron hates this humor, so it can sound like a dig; keeps a distance ←
-    //   the Japanese frame: stiff, formal words read as 距離を置く
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'pun1', seg: [18.8, 24.0],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'pun1', seg: [18.8, 24.0], retired: true,
       stem: 'In the reply to the welcome, what is the odd word choice doing?',
       choices: ['Bending an everyday word into an accounting one', 'Mocking the dull, fussy way accountants talk',
                 'Using a stiff, formal word to keep his distance'], a: 0,
@@ -64,9 +51,7 @@ export const ronHumour: Clip = {
       trap: '堅い語は距離の印に聞こえやすいが、相手は会計士。相手の業界の言葉は親しみの冗談。',
       use: 'It’s statistically likely I’ll be late.（統計的に見て、遅れる可能性大）' },
 
-    // why: internship ← the visit is about a job, so an earlier application seems likely; consulting ← "consulting
-    //   wing" is said right after
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'grizzle', seg: [30.5, 41.6],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'grizzle', seg: [30.5, 41.6], retired: true,
       stem: 'How is April already connected to the firm?',
       choices: ['She worked on a deal the firm handled the money for', 'She once applied for an internship at the firm',
                 'She did consulting work for the firm on a deal'], a: 0,
@@ -77,63 +62,54 @@ export const ronHumour: Clip = {
       trap: 'すぐあとの consulting につられやすい。that 以下が事務所のした仕事。',
       use: 'We worked on the same project last year.（去年、同じ案件をやったんです）' },
 
-    // R fix: V2 — "inviting him" was the only sensible choice; the item now turns on the face-saving move (we
-    //   know, they don't), which is what the turn does; notes and line rewritten
-    // why: admits ← the request sounds like an honest "please explain", if "obviously very familiar" is missed;
-    //   tests Barney ← an accountant asked to explain his own field sounds like a quiz
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'whydont', seg: [41.0, 48.8],
-      stem: 'How does the speaker get Barney to explain consulting?',
-      choices: ['He claims to know and says it’s for his friends', 'He admits he doesn’t know and asks for help',
-                'He tests whether Barney can explain it well'], a: 0,
-      cue: 'but の前後、we と they の使い分け。',
+      stem: 'Why does he ask Barney to “tell my friends”?',
+      ja: '彼はなぜバーニーに「友だちに説明して」と頼む？',
+      choices: ['He doesn’t know it himself', 'His friends asked him to', 'He wants to test Barney'], a: 0,
+      choicesJa: ['自分も知らないから', '友だちに頼まれたから', 'バーニーを試したいから'],
+      cue: '「but」の前後。',
       line: '*We’re obviously very familiar* with what consulting is, but … tell *my friends here*',
       said: '「僕らは当然知ってるけど、友だちに説明してあげて」と頼む。',
-      mean: '自分も知らないのを、友だちのためという形でごまかしている。',
-      trap: 'obviously を聞き逃すと素直な質問に聞こえる。we と they の使い分けを聞く。',
+      mean: '自分も知らないのを、「友だちのため」という形でごまかしている。',
+      trap: 'obviously（もちろん）を聞くと、本当に知っていると思いやすい。知らないのを隠している。',
       use: 'Why don’t you go first?（先にどうぞ）' },
 
     // anchor: 45.9–46.4 s six words inside about half a second, right after "what consulting is, but"; both sources
-    //   have "why don't you go ahead and tell my friends here"
     { id: 'nt1', skill: 'dict', level: 'C2', point: 'whydont', seg: [45.2, 48.5],
       stem: 'Type the start of the request: “___ tell my friends here” (6 words)', answer: "why don't you go ahead and",
-      cue: '「but」のすぐあと。6語が一気に流れる。',
+      ja: '「tell my friends here」の前の6語を書こう。',
+      cue: '「but」のすぐあと。',
       line: 'but *why don’t you go ahead and* tell my friends here',
-      said: '「友だちに説明してあげてよ」の前半。6語が半秒ほどに詰まっている。',
-      mean: 'don’t you は「ドンチュ」、ahead and は「アヘッダン」。go ahead は背中を押す語。',
+      said: '「友だちに説明してあげてよ」の前半。6語が半秒ほどにつまっている。',
+      mean: 'don’t you は「ドンチュ」、ahead and は「アヘッダン」。go ahead and 〜 ＝ さあ〜して。',
       trap: 'why don’t you tell と書きやすい。音の数を数え、短い go ahead and を探す。',
       use: 'Go ahead and take a seat.（どうぞ座ってください）' },
 
-    // R fix: V2 — "worried/unsure" were weak; "shocked" (Holy crap as shock) and "doubtful" (She'll take it heard as
-    //   a question) now compete
-    // why: shocked ← "Holy crap" right after "firing" sounds like dismay; doubtful ← "She'll take it" heard as
-    //   "Will she take it?"
     { id: 'at2', skill: 'attitude', level: 'B1', point: 'excited', seg: [55.0, 64.4],
-      stem: 'Hearing that consultants often fire people, how does one friend react?',
-      choices: ['Thrilled; he’s sure it suits her', 'Shocked; he thinks it’s too harsh for her',
-                'Doubtful; he isn’t sure she’ll take it'], a: 0,
-      cue: '「Holy crap」のあとの短い文の連続。',
-      line: '*Holy crap. This is the job for her.* I can feel it.',
-      said: '「クビも多く嫌われがち」と聞き、「これは彼女の仕事だ」と言う。',
-      mean: '嫌われる仕事こそ彼女向きだと大喜びしている。',
-      trap: 'Holy crap は驚きの声なので「ひどい」にも聞こえる。直後の This is the job で向きが決まる。',
+      stem: 'How does one friend feel about the job for April?',
+      ja: '仲間の一人は、その仕事をエイプリルにどう思う？',
+      choices: ['Sure it’s right for her', 'Shocked that it’s so harsh', 'Not sure she’ll take it'], a: 0,
+      choicesJa: ['ぴったりだと思う', 'きびしすぎてびっくり', '受けるか分からない'],
+      cue: '「well-liked」のあと。',
+      line: 'consultants aren’t exactly well-liked. — *This is the job for her.* I can feel it.',
+      said: '「クビも多く、きらわれがち」と聞き、「これは彼女の仕事だ。そんな気がする」と言う。',
+      mean: 'This is the job for her ＝ これこそ彼女の仕事。きらわれる仕事こそ彼女向きだと喜ぶ。',
+      trap: '前の「きらわれがち」から、ショックを受けたと思いやすい。続く This is the job で決まる。',
       use: 'This is the one. I can feel it.（これだ、そんな気がする）' },
 
-    // why: economics / accounting ← both are said, as Barney's guesses, right before her real major
     { id: 'd2', skill: 'detail', level: 'B1', point: 'major', seg: [66.8, 74.8],
       stem: 'What did April study in college?',
-      choices: ['Her own made-up subject', 'Economics and business', 'Accounting and math'], a: 0,
-      cue: '質問のあとの2つの推測、そのあとの答え。',
+      ja: 'エイプリルは大学で何を勉強した？',
+      choices: ['A major she made up', 'Economics and business', 'Accounting and math'], a: 0,
+      choicesJa: ['自分で作った専攻', '経済とビジネス', '会計と数学'],
+      cue: '二つの推測のあとの答え。',
       line: 'Economics? Accounting? — She *designed her own major*. Halloween studies.',
       said: '「経済？会計？」と聞かれ、「自分で専攻を作った。ハロウィン学」と答える。',
-      mean: 'design one’s own major ＝ 専攻を自分で組み立てる。',
-      trap: '先に聞こえた2つは Barney の推測。答えは返事の側にある。',
+      mean: 'major ＝ 大学の専攻。design one’s own major ＝ 専攻を自分で組み立てる。',
+      trap: '先に聞こえる2つはバーニーの推測。答えは返事の側にある。',
       use: 'What did you major in?（専攻は何でしたか）' },
 
-    // R fix: V2 — the key quoted "interest you", the pun itself; a second word-play reading (a fumble after "uh")
-    //   now competes with it
-    // why: growing salary ← "compound interest" is money that grows, the literal reading; garbles it ← the "uh"
-    //   before it heard as a slip
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'compound', seg: [74.5, 82.5],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'compound', seg: [74.5, 82.5], retired: true,
       stem: 'Why is the pitch’s closing question meant to be funny?',
       choices: ['It works a banking phrase into the pitch on purpose', 'It garbles a banking phrase he only half knows',
                 'It hints she’ll want her salary to grow fast'], a: 0,
@@ -144,73 +120,66 @@ export const ronHumour: Clip = {
       trap: '文字通りだとお金の話。uh は言いよどみでなく、しゃれの前の「ため」。',
       use: 'Does that pique your interest?（ちょっと興味わいた？）' },
 
-    // why: not qualified ← the friends say so later (107 s), so it feels like Barney's reason; apply right away ←
-    //   "too late" heard as "hurry"
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'toolate', reveals: ['qualified'], seg: [89.8, 96.6],
-      stem: 'What is Barney’s answer to their request for April?',
-      choices: ['A no, because applications are closed', 'A no, because she isn’t qualified enough',
-                'A yes, if she can apply right away'], a: 0,
-      cue: '「I’m sorry, but」の前とあとの理由。',
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'toolate', reveals: ['qualified'], seg: [89.8, 96.6],
+      stem: 'What is Barney’s answer about April?',
+      ja: 'エイプリルについて、バーニーの答えは？',
+      choices: ['No, it’s too late to apply', 'No, she isn’t good enough', 'Yes, if she applies today'], a: 0,
+      choicesJa: ['だめ、応募には遅すぎる', 'だめ、力が足りない', 'いいよ、今日応募するなら'],
+      cue: '「I’m sorry, but」の前とあと。',
       line: 'But it’s *too late for her to apply*. I’m sorry, but we’re *not really taking any more applicants*.',
       said: '「応募にはもう遅い。悪いけど、これ以上は受け付けていない」と言う。',
-      mean: 'I’m sorry, but ＝ 断りの前置き。理由は締め切りで、彼女の力ではない。',
-      trap: 'あとで仲間が「資格不足」と話すので、それが理由に聞こえやすい。',
+      mean: 'I’m sorry, but ＝ 断りの前置き。理由はしめ切りで、彼女の力ではない。',
+      trap: 'あとで仲間が「資格が足りない」と話すので、それが理由に思いやすい。',
       use: 'I’m sorry, but we’re fully booked.（申し訳ありませんが、満席です）' },
 
-    // why: lesser job / later start ← "exception" heard as a softer deal for April; "someone else" is what says it
-    //   isn't her
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'exception', seg: [95.0, 102.6],
-      stem: 'What does the quick “Not interested” turn down?',
-      choices: ['A job offered to him instead', 'A lesser job offered for April', 'A later start date for April'], a: 0,
-      cue: '「exception」のあとの2語と、短い返事。',
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'exception', seg: [95.0, 102.6],
+      stem: 'Who could Barney make an exception for?',
+      ja: 'バーニーが例外にしてもいいのはだれ？',
+      choices: ['Ben', 'April', 'Nobody'], a: 0,
+      choicesJa: ['ベン', 'エイプリル', 'だれもいない'],
+      cue: '「exception」のあとと、短い返事。',
       line: 'Though I could make an exception *for someone else*. — *Not interested.*',
-      said: '「ほかの誰かなら例外にしてもいい」と言われ、すぐ「興味ない」と返す。',
-      mean: 'someone else は売りこみ役の本人。April でなく本人が誘われ、断った。',
-      trap: 'exception を April への特別扱いと聞きやすい。for のあとを聞く。',
+      said: '「ほかのだれかなら例外にしてもいい」と言われ、ベンがすぐ「興味ない」と返す。',
+      mean: 'make an exception ＝ 例外にする。someone else はベン。ベンが誘われ、断った。',
+      trap: 'exception をエイプリルへの特別扱いと思いやすい。someone else（ほかの人）を聞く。',
       use: 'Thanks, but I’m not interested.（ありがとう、でも興味ないです）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'shot', seg: [104.0, 107.65],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'shot', seg: [104.0, 107.65],
       stem: 'Type the plan: “We just have to convince Barney to ___.” (4 words)', answer: 'give her a shot',
-      cue: '「convince Barney to」のあと。her の h に注意。',
+      ja: '「convince Barney to」のあとの4語を書こう。',
+      cue: '「convince Barney to」のあと。',
       line: 'We just have to convince Barney to *give her a shot*.',
-      said: '「Barney を説得して、彼女にチャンスをあげてもらおう」と言う。',
-      mean: 'give ～ a shot ＝ 試しにやらせる。her の h が落ちて「ギヴァ」。',
-      trap: 'give it a shot に聞こえやすい。誰に、が抜けていないか語数で確かめる。',
+      said: '「バーニーを説得して、彼女にチャンスをあげてもらおう」と言う。',
+      mean: 'give 人 a shot ＝ 人に試しにやらせる。her の h が落ちて「ギヴァ」と聞こえる。',
+      trap: 'give it a shot に聞こえやすい。4語あると思って、her を書く。',
       use: 'Just give me a shot.（一度だけやらせてみて）' },
 
-    // R fix: V2 — "First problem" in the stem settled the gap by meaning; the stem now starts at "she's"
-    // why: just as ← the flapped t in "not as" (ナラズ) blurs the n-word; nearly as ← both start with n and end in
-    //   "as"
     { id: 's1', skill: 'sound', level: 'B2', point: 'qualified', seg: [106.0, 110.4],
       stem: 'Fill the gap: “She’s ___ qualified as the other applicants.”',
+      ja: '空いている所に入る2語は？',
       choices: ['not as', 'just as', 'nearly as'], a: 0,
-      cue: '「first problem」のあと、短い2語。',
+      choicesJa: ['〜ほど…でない', '同じくらい', 'ほとんど同じくらい'],
+      cue: '「first problem」のあと。',
       line: 'first problem, she’s *not as* qualified as the other applicants.',
       said: '「まず問題は、ほかの応募者ほど資格がないこと」と言う。',
-      mean: 'not as の t が弾んで「ナラズ」。not as ～ as ＝ ～ほどではない。',
-      trap: 't が「ラ」になると just as と逆に取りやすい。音節が2つか3つかも数える。',
+      mean: 'not as 〜 as ＝ 〜ほどではない。not の t が軽い「ラ」の音になり「ナラズ」。',
+      trap: '「ナラズ」が just as（ジャスタズ）と逆に聞こえやすい。最初が「ナ」か「ジャ」か。',
       use: 'It’s not as hard as it looks.（見た目ほど難しくないよ）' },
 
-    // why: study accounting ← "college" + "accounting" heard as a plan to go back to school; college writes ← "her
-    //   college" heard as a reference letter
     { id: 'd3', skill: 'detail', level: 'B1', point: 'degree', seg: [109.4, 114.6],
       stem: 'What “simple solution” does one friend come up with?',
-      choices: ['Break in and change her degree', 'Send her back to study accounting',
-                'Get her college to write to Barney'], a: 0,
-      cue: '「Simple solution」のあとの2つの動作。',
+      ja: '仲間の一人が思いつく「簡単な解決策」は？',
+      choices: ['Break in and change her degree', 'Send her back to study accounting', 'Have her college call Barney'], a: 0,
+      choicesJa: ['大学に忍びこんで専攻を変える', '会計を勉強し直させる', '大学からバーニーに電話してもらう'],
+      cue: '「Simple solution」のあと。',
       line: 'I *break into her college*, and I *change her degree* to accounting.',
       said: '「簡単さ。大学に忍びこんで、専攻を会計に書きかえる」と言う。',
-      mean: 'break into ＝ 不法に入りこむ。記録を変える無茶な案。',
-      trap: 'college と accounting で学び直しに聞こえやすい。動詞の break into を聞く。',
+      mean: 'break into ＝ 勝手に入りこむ。記録を変えるむちゃな案。',
+      trap: 'college と accounting から勉強し直す話と思いやすい。break into を聞く。',
       use: 'Simple solution: we leave early.（簡単な解決策：早く出よう）' },
 
     // anchor: 117.5–122.1 s "Impossible math equation? I solve it. X equals Y, obviously.": an "answer" that says
-    //   nothing, called obvious, inside his own story, which then rewards him (126.1 s "50 years", 130.2 s "math trophy")
-    // R fix: K5 — the choices are now parallel ("X: reason"), and the professor's choice no longer states the 50
-    //   years n1 asks
-    // why: the professor ← right mechanism, wrong target: on its surface the story makes the professor look slow;
-    //   math ← "impossible math equation" heard as a dig at math
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'equation', reveals: ['fifty'], seg: [114.2, 134.4],
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'equation', reveals: ['fifty'], seg: [114.2, 134.4], retired: true,
       stem: 'In the friend’s college story, who is the joke on?',
       choices: ['The teller: his genius answer means nothing', 'The professor: decades stuck on an easy sum',
                 'Math itself: it makes simple things hard'], a: 0,
@@ -221,51 +190,43 @@ export const ronHumour: Clip = {
       trap: '主役の目線だと教授が笑われ役に見える。答えの中身を確かめてから、誰がおかしいかを決める。',
       use: 'Trust me, I’m basically a genius.（任せて、ほぼ天才だから）' },
 
-    // why: 15 ← -teen vs -ty: "fifty" can sound like "fifteen"; 5 ← only "fif-" is caught
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifty', seg: [122.6, 127.6],
-      stem: 'How long has the professor been working on the equation?',
-      choices: ['5 years', '15 years', '50 years'], a: 2, keep: true,
-      cue: '「working on that for」のあとの数。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifty', seg: [122.6, 127.6], keep: true,
+      stem: 'How long has the professor been working on the problem?',
+      ja: '教授はその問題に何年取り組んできた？',
+      choices: ['5 years', '15 years', '50 years'], a: 2,
+      choicesJa: ['5年', '15年', '50年'],
+      cue: '「working on that for」のあと。',
       line: 'I’ve been working on that for *50 years*.',
       said: '空想の中で、教授が「その問題に50年取り組んできた」と言う。',
-      mean: 'fifty は前を強く「フィフティ」。fifteen なら後ろの teen が強く長い。',
-      trap: '-teen と -ty は聞き分けにくい。強勢の位置と、最後の音で決める。',
+      mean: 'fifty は最初を強く「フィフティ」。fifteen なら最後の「ティーン」を強く長く言う。',
+      trap: '-teen と -ty は聞き分けにくい。強く言う所が最初か最後かで決める。',
       use: 'I’ve been waiting for 50 minutes.（50分待ってるんだけど）' },
 
-    // R fix: V2 + V4 — "isn't a real resume" was the only sitcom-shaped choice, and the fact is stated, not implied
-    //   (skill infer → detail); all three are now odd "resumes" told apart by the words
-    // why: photo with April ← "photograph" + "puppet" caught, the relation lost; autograph ← "signed" caught,
-    //   "photograph" lost
     { id: 'i2', skill: 'detail', level: 'B2', point: 'resume', seg: [136.5, 147.9],
-      stem: 'What was the “resume” April applied to parks with?',
-      choices: ['A signed photo of a puppet named Alf', 'A photo of April with a puppet named Alf',
-                'A puppet’s autograph on a blank page'], a: 0,
-      cue: '「applied to parks with」のあと、just で始まる説明。',
+      stem: 'What was April’s old resume?',
+      ja: 'エイプリルの前の履歴書は何だった？',
+      choices: ['A signed photo of a puppet', 'A list of her old jobs', 'A short letter about herself'], a: 0,
+      choicesJa: ['人形のサイン入り写真', '前の仕事のリスト', '自分についての短い手紙'],
+      cue: '「applied to parks」のあと。',
       line: 'It’s *just a signed photograph of a puppet* named Alf. — Okay, so we make her an *actual resume*',
-      said: '前の履歴書は、人形のサイン入り写真だけ。「本物を作ろう」となる。',
-      mean: 'just ＝ ただの～。actual resume ＝ ちゃんとした履歴書。',
-      trap: 'signed や puppet だけ拾うと組み合わせを取りちがえる。of のつながりを聞く。',
+      said: '前の履歴書は、人形のサイン入り写真だけ。「本物の履歴書を作ろう」となる。',
+      mean: 'just ＝ ただの〜。actual resume ＝ ちゃんとした履歴書。',
+      trap: 'resume（履歴書）から、ふつうの職歴リストを思いやすい。just a のあとを聞く。',
       use: 'Let’s make you an actual plan.（ちゃんとした計画を立てよう）' },
 
-    // R fix: V2 — "every person pitching in" was the only natural ask; "hand-picked" (hands + most importantly)
-    //   now competes
-    // why: best people ← "most importantly" right after, heard as picking a few; good with hands ← "hands" taken
-    //   literally (craft work)
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'hands', seg: [146.0, 154.3],
-      stem: 'For the presentation, what kind of help is going to be needed?',
-      choices: ['Everybody they can get, all at once', 'A few of their best people, hand-picked',
-                'People who are good with their hands'], a: 0,
-      cue: '「presentation」のあと、need に続く4語。',
+      stem: 'What does “all hands on deck” mean?',
+      ja: '「all hands on deck」の意味は？',
+      choices: ['Everyone has to help', 'Only the best people help', 'People who are good with hands'], a: 0,
+      choicesJa: ['全員で手伝う', 'いちばんできる人だけ手伝う', '手先が器用な人'],
+      cue: '「Gonna need」のあと。',
       line: 'Gonna need *all hands on deck*. That’s Craig, Donna, and most importantly—',
-      said: '発表会のために「総出でいく」と言い、Craig、Donna…と名前を挙げる。',
-      mean: 'all hands on deck ＝ 船の「全員甲板へ」から、全員で取りかかる。',
-      trap: 'hands を「手」と取ると手作業の話になる。すぐあとに人の名前が並ぶ。',
+      said: '発表会のために「総出でいく」と言い、クレイグ、ドナ…と名前を挙げる。',
+      mean: 'all hands on deck ＝ 船の「全員、甲板へ」から、全員で取りかかる。',
+      trap: 'hands を「手」と思うと手作業の話になる。すぐあとに人の名前が並ぶ。',
       use: 'Big order today. All hands on deck!（今日は大口注文、全員集合！）' },
 
-    // R fix: V2 — the key was the only choice where Gary loses; all three now start "Gary gets…"
-    // why: most important ← "most importantly" was the last thing said before the names broke off; credit ← a name
-    //   called out at the end sounds like being honored
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'gary', seg: [154.0, 166.5],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'gary', seg: [154.0, 166.5], retired: true,
       stem: 'Why does the call for Gary Gergich get a laugh?',
       choices: ['Gary gets the job nobody else wants', 'Gary gets the credit for the whole idea',
                 'Gary gets saved for the most important role'], a: 0,
@@ -276,71 +237,76 @@ export const ronHumour: Clip = {
       trap: '直前の most importantly で重要な役に聞こえやすい。雑用の行き先を追う。',
       use: 'Dishes, anyone? Didn’t think so.（皿洗いしたい人？だよね）' },
 
-    // R fix: V2 — "take the blame" was the only idiomatic offer; the distractors are now offers of the same size
-    // why: cover money ← "account" heard as money; keep an eye ← an accounting firm, so "accountable" heard as
-    //   auditing her
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'accountable', seg: [183.0, 190.2],
-      stem: 'What is the speaker offering if April disappoints Barney?',
-      choices: ['To take the blame for it himself', 'To cover any money she loses', 'To keep an eye on her work himself'],
-      a: 0,
-      cue: '「disappoints you」のあと、hold me のあとの語。',
+      stem: 'What does “you can hold me accountable” mean?',
+      ja: '「you can hold me accountable」の意味は？',
+      choices: ['You can blame me', 'You can pay me', 'You can watch me'], a: 0,
+      choicesJa: ['私の責任にしていい', '私に払っていい', '私を見張っていい'],
+      cue: '「disappoints you」のあと。',
       line: 'And if she disappoints you, you can *hold me accountable*.',
-      said: '「期待はずれなら、僕の責任にしてくれていい」と言う。',
-      mean: 'hold ～ accountable ＝ ～の責任にする。会計事務所だけに account のしゃれも。',
-      trap: 'account を「口座・会計」と取るとお金の話に聞こえる。決まり形で覚える。',
+      said: '「彼女が期待はずれなら、僕の責任にしてくれていい」と言う。',
+      mean: 'hold 人 accountable ＝ 人の責任にする。account（会計）とかけた、会計事務所向けの言い方。',
+      trap: 'account から「口座・会計」を思いやすい。hold 人 accountable で覚える。',
       use: 'If it fails, hold me responsible.（失敗したら私の責任にして）' },
 
-    // why: the presentation ← "that presentation we put together says it all" was said just before; the promise ←
-    //   "hold me accountable" was the last thing said to him
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'meet', reveals: ['accountable'], seg: [189.0, 197.2],
-      stem: 'What finally makes Barney agree to meet April?',
-      choices: ['How hard her friends are trying', 'What the presentation shows about her',
-                'The promise to take the blame for her'], a: 0,
-      cue: '「You know what?」のあと、If で始まる理由。',
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'meet', reveals: ['accountable'], seg: [189.0, 197.2],
+      stem: 'Why does Barney agree to meet April?',
+      ja: 'バーニーはなぜエイプリルに会うことにする？',
+      choices: ['Her friends are trying so hard', 'The presentation about her', 'The promise to take the blame'], a: 0,
+      choicesJa: ['仲間がとてもがんばっているから', '彼女についての発表', '責任をとるという約束'],
+      cue: '「You know what?」のあと。',
       line: 'You know what? *If her friends are trying this hard*, there must be something amazing about her.',
-      said: '「仲間がここまで頑張るなら、彼女にはすごい何かがあるはず。明日会おう」と言う。',
-      mean: '決め手は資料や約束でなく、仲間の熱意。',
-      trap: '直前の presentation や accountable が理由に聞こえやすい。If 以下が結論の理由。',
+      said: '「仲間がここまでがんばるなら、彼女にはすごい何かがあるはず。明日会おう」と言う。',
+      mean: 'must be ＝ 〜にちがいない。決め手は資料や約束でなく、仲間の熱意。',
+      trap: '直前の presentation や accountable が理由に聞こえやすい。If のあとが理由。',
       use: 'If you say so, it must be good.（君がそう言うなら、きっといいんだね）' },
 
-    // R fix: V2 + K6 — "After all their work" set up a twist and "herself" marked the key; both are gone
-    // why: Barney backs out ← "I see" and "this is uncomfortable" heard as Barney's; gets the job ← "good news" is
-    //   said on the call
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [189.0, 221.0],
       stem: 'How does the effort to get April the job end?',
+      ja: 'エイプリルに仕事をとらせる作戦は、どう終わる？',
       choices: ['April turns the job down', 'Barney refuses to meet her', 'April is offered the job'], a: 0,
-      cue: '電話のあと、伝えられた April の返事。',
+      choicesJa: ['エイプリルが仕事を断る', 'バーニーが会うのを断る', 'エイプリルが仕事をもらう'],
+      cue: '電話のあとの報告。',
       line: 'Tell her I’ll meet with her tomorrow. … *She doesn’t want the job.* — I see.',
-      said: '明日会うと決まったのに、電話の April は「その仕事は要らない」と答える。',
-      mean: '仲間の努力が実った瞬間に、本人が断るというオチ。',
-      trap: '最後の I see や uncomfortable で Barney の取り消しに聞こえやすい。断ったのは誰か。',
+      said: '明日会うと決まったのに、電話のエイプリルは「その仕事はいらない」と答える。',
+      mean: 'turn down ＝ 断る。仲間の努力が実った瞬間に、本人が断るというオチ。',
+      trap: '最後の I see でバーニーが取り消したように思いやすい。断ったのはだれかを聞く。',
       use: 'Thanks, but I’ll pass.（ありがとう、でも遠慮しとく）' },
 
-    // why: going well ← "oh boy!" can be glee, and "good news" was just said; happy surprise ← "oh" heard as
-    //   pleased surprise
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'ohboy', reveals: ['outcome'], seg: [200.4, 212.8],
-      stem: 'After “we got some good news”, what does the next short reaction signal?',
-      choices: ['That the call is going badly', 'That the news is going over well', 'That April has a happy surprise'],
-      a: 0,
-      cue: '「good news」のあとの短い声と、数秒後の報告。',
+    { id: 'holdon', skill: 'phrase', level: 'B1', point: 'holdon', seg: [196.5, 200.6],
+      stem: 'What does “Hold on” mean here?',
+      ja: 'ここでの「Hold on」の意味は？',
+      choices: ['Wait a moment', 'Hold it tightly', 'Hang up the phone'], a: 0,
+      choicesJa: ['ちょっと待って', 'しっかりつかんで', '電話を切って'],
+      cue: '「tomorrow」のあと。',
+      line: '*Hold on.* April? Hey, we were just talking about you.',
+      said: '「ちょっと待って」と言って、エイプリルに電話する。',
+      mean: 'hold on ＝ ちょっと待って。電話や会話でよく使う。',
+      trap: 'hold（持つ）から「つかむ」と思いやすい。hold on ＝ 待つ。',
+      use: 'Hold on, let me check.（ちょっと待って、確認するね）' },
+
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'ohboy', reveals: ['outcome'], seg: [200.4, 212.8],
+      stem: 'What does “Oh, boy” show here?',
+      ja: 'ここでの「Oh, boy」は何を示す？',
+      choices: ['Something is going wrong', 'The news makes April happy', 'April has a surprise'], a: 0,
+      choicesJa: ['何かがうまくいっていない', '知らせにエイプリルが喜んでいる', 'エイプリルにサプライズがある'],
+      cue: '「good news」のあとの短い声。',
       line: 'We got some good news. … *Oh, boy.* … Okay. … *She doesn’t want the job.*',
-      said: '「いい知らせ」と電話で切り出すが、Oh, boy、Okay と続き、「仕事は要らないって」と伝える。',
-      mean: 'Oh, boy ＝ あちゃー、まずい。',
-      trap: '喜びにも使うので、good news と合わせて明るく取りやすい。続く報告で決める。',
+      said: '「いい知らせ」と電話で切り出すが、Oh, boy と言い、「仕事はいらないって」と伝える。',
+      mean: 'Oh, boy ＝ あちゃー、まずいな。悪い流れのときの声。',
+      trap: '喜びにも使うので、good news と合わせて明るく思いやすい。続く報告で決める。',
       use: 'Oh, boy. Here we go again.（あーあ、またか）' },
 
-    // R fix: V2 — the key was the only neutral choice; reworded so all three are plain acts of the same size
-    // why: apologizes ← the Japanese frame: an awkward moment calls for すみません; blames April ← "uncomfortable"
-    //   heard as a complaint about her
-    { id: 'pr3', skill: 'pragma', level: 'C1', point: 'awkward', reveals: ['outcome'], seg: [212.0, 221.4],
-      stem: 'What does the closing line do after April’s answer is passed on?',
-      choices: ['Admits out loud how awkward it is', 'Says sorry to Barney for his trouble',
-                'Blames April for letting them all down'], a: 0,
-      cue: '「I see」のあと、Well で始まる一言。',
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'awkward', reveals: ['outcome'], seg: [212.0, 221.4],
+      stem: 'What does “Well, this is uncomfortable” do?',
+      ja: '「Well, this is uncomfortable」は何をしている？',
+      choices: ['Admits it feels awkward', 'Says sorry to Barney', 'Blames April for this'], a: 0,
+      choicesJa: ['気まずいと認める', 'バーニーに謝る', 'エイプリルを責める'],
+      cue: '「I see」のあと。',
       line: 'I see. — *Well, this is uncomfortable.*',
       said: '「そうですか」のあと、「さて、気まずいね」とだけ言う。',
-      mean: '気まずさをわざと口に出して、場の空気を認める言い方。謝罪でも非難でもない。',
-      trap: '日本語では気まずい場面で謝りやすいが、sorry はない。言葉にない謝罪や責めを足さずに聞く。',
+      mean: 'uncomfortable ＝ 気まずい。気まずさをわざと口に出す言い方。謝ってはいない。',
+      trap: '気まずい場面なので謝ったと思いやすいが、sorry はない。',
       use: 'Well, this is awkward.（えーと、気まずいね）' },
   ]
 };
