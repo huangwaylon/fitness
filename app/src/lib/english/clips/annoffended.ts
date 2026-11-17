@@ -238,7 +238,7 @@ export const annOffended: Clip = {
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'push', seg: [183.1, 193.5],
       stem: 'What happens to Ann if Leslie doesn’t push her?', ja: 'レスリーが押さないと、アンはどうなる？',
       choices: ['She doesn’t move forward', 'She takes the wrong road', 'She gets a new job'], a: 0,
-      choicesJa: ['前に進まない', '間違った方へ行く', '新しい仕事に就く'],
+      choicesJa: ['前に進まない', '道をまちがえる', '新しい仕事に就く'],
       cue: '「if I don’t push you」のあと',
       line: 'if I don’t *push you in the right direction*, you *end up standing still*',
       said: 'レスリーが「私が押さないと、あなたは止まったまま」と言う。',

@@ -124,7 +124,7 @@ export const ronPatience: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'ride', seg: [66.4, 72.8],
       stem: 'Why does Tom ask Ron for a ride?', ja: 'トムはなぜロンに車で送ってほしいと頼む？',
       choices: ['He can’t find his way home', 'He wants to see the cabin', 'He is too tired to drive'], a: 0,
-      choicesJa: ['家への道がわからない', '小屋に行きたい', '疲れて運転できない'],
+      choicesJa: ['家への道がわからない', '小屋を見たい', '疲れて運転できない'],
       cue: '「a ride after work?」のあと',
       line: 'can you get me a ride after work? There’s *no chance I can find my way home*.',
       said: 'トムが「帰り道がわからないから、送って」と頼む。',

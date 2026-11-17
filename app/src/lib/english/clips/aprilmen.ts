@@ -1,17 +1,9 @@
-// REVIEW 2026-11-16: pass 14, fix 8, drop 0, new 0; ear checks 2
+// A2 REVIEW 2026-11-17: keep 14, rewrite 2, retire 6, new 2 (nt3 stays retired)
 // “April thinks men are better than women | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Paula Hork, Pawnee's first woman on the city council, now 82, tells the women's group about the old days; Leslie
 // vows to revive Paula's commission, April trolls her, and at its first meeting the men try to take it over.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 150.8 s (music after; the captions'
-// last line is "it's not the seventh yet", whisper's garbled "It's not for seventh yet": the calendar callback, kept
-// out like the rest of that thread). Untested on purpose: 37.4–43.4 s (bra / mirrors), 45–53 s ("pervert", the
-// kiss), 55–79 s except the commission line (the calendar thread), 100.5–106.3 s ("sausage fest"), 149.6 s (the
-// callback). Both sources spell "beau" as "bow" (93.6 s, same sound; f3's line writes beau). At 135.4 s whisper has
-// "Kelsey and Milton", the captions "councilman Milton": stems use Councilman Milton, and no key rests on the name.
-// EAR CHECK: 27.3–28.3 s nt1 — both sources have "quite a ways to go"; confirm the s of "ways" is heard before the
-//   C2 dictation keys on it
-// EAR CHECK: 145.2–146.3 s nt3 — the stress in "This is my commission" falls on "my" (against "we'll take it from
-//   here"), not on "commission" (ship only once confirmed)
+// Talk ends at ≈ 150.8 s. Untested on purpose: 37.4–43.4 s, 45–53 s, 55–79 s except the commission line (the calendar
+// thread), 100.5–106.3 s, 149.6 s. At 135.4 s whisper has "Kelsey and Milton", the captions "councilman Milton".
 import type { Clip } from '../types.ts';
 
 export const aprilMen: Clip = {
@@ -20,71 +12,57 @@ export const aprilMen: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %: the key was the only choice about her council years); choices rebalanced, and the
-    //   "eighty-second birthday" choice gave away n1's key without a reveals, so the number is gone
-    // why: run again ← "still going strong" plus "my time on the city council" heard as a comeback; birthday ←
-    //   "still going strong at 82" heard as a birthday toast
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'visit', seg: [0, 38.85],
-      stem: 'Why has Paula been invited to speak to the group?',
-      choices: ['To talk about her old days on the city council', 'To get the women to back her run for council again',
-                'To be honored by the group on her birthday'], a: 0,
-      cue: '最初のお礼の言葉と、カメラへの紹介。',
-      said: '「市議会時代の話なんて誰も興味ないと思った」と言い、初の女性市議だと紹介される。',
-      mean: '会の目的は、昔の女性議員の経験を聞くこと。',
-      trap: 'still going strong から復帰や誕生日を想像しやすい。目的は本人の最初の一言に出る。',
-      use: 'I didn’t think anyone would care.（誰も興味ないと思ってた）' },
-
-    // why: 72 ← "seventy" and "eighty" are both two-beat -ty numbers; 92 ← the same, and "at" blurs the onset
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [8.22, 11.8], keep: true,
-      stem: 'How old is Paula?',
-      choices: ['72', '82', '92'], a: 1,
-      cue: '「still going strong」のあとの数。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', seg: [0, 38.85],
+      stem: 'Why is Paula talking to the women’s group?', ja: 'ポーラはなぜ女性の会で話している？',
+      choices: ['To tell about her council days', 'To ask the women for their votes', 'To have a birthday party'], a: 0,
+      choicesJa: ['市議会時代の話をするため', '票を頼むため', '誕生日を祝うため'],
+      cue: 'ポーラの最初の言葉',
+      line: 'I didn’t think anybody really cared about *my time on the city council*.',
+      said: 'ポーラが「市議会時代の話なんて、誰も興味ないと思ってた」と言う。',
+      mean: 'my time on 〜 ＝ 〜にいた時のこと。昔の市議会の話をしに来ている。',
+      trap: '82歳と年齢が出るので、誕生日の会だと思いやすい。',
+      use: 'It’s a pleasure to be here.（ここに来られてうれしいです）' },
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [8.22, 11.8],
+      stem: 'How old is Paula?', ja: 'ポーラは何歳？',
+      choices: ['72', '82', '92'], a: 1, keep: true,
+      choicesJa: ['72歳', '82歳', '92歳'],
+      cue: '「Still going strong」のあと',
       line: 'Still going strong *at 82*.',
-      said: '「82歳でまだまだ元気」とほめている。',
-      mean: 'still going strong ＝ 年を取っても衰えず元気。人にも物にも使う。',
-      trap: '-ty の数は頭の音で決まる。eighty は「エイ」、seventy は「セ」、ninety は「ナイ」で始まる。',
-      use: 'My old laptop is still going strong.（古いパソコンがまだ元気に動く）' },
-
-    // why: recipe ← receipt and recipe share "re-ci-"; tissue ← "handkerchief" sets up something to wipe with
+      said: 'レスリーが「82歳でまだまだ元気」とほめる。',
+      mean: 'eighty-two ＝ 82。going strong ＝ 元気で活躍している。',
+      trap: 'eighty と ninety、seventy は似て聞こえやすい。最初の「エイ」を聞く。',
+      use: 'She’s still going strong at ninety.（90歳でまだまだ元気だ）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'receipt', seg: [13.1, 18.1],
-      stem: 'When asked about the handkerchief, what does Paula say it really is?',
+      stem: 'What does Paula say the “handkerchief” really is?', ja: 'ポーラは「ハンカチ」が本当は何だと言う？',
       choices: ['A receipt', 'A recipe', 'A tissue'], a: 0,
-      cue: '「it’s not a handkerchief」のあと。',
+      choicesJa: ['レシート', 'レシピ', 'ティッシュ'],
+      cue: '「handkerchief」のあと',
       line: 'Well, it’s *not* a handkerchief. It’s *a receipt*.',
-      said: '「ハンカチじゃなくて、レシートよ」と答える。',
-      mean: '古いハンカチだと思われていたのは、ただのレシート。年齢いじりの質問を、さらりとかわしている。',
-      trap: 'receipt の p は読まない。「リシート」と聞こえたらレシート、「レサピ」ならレシピ。',
-      use: 'Can I get a receipt, please?（レシートをもらえますか）' },
-
-    // why: 14 ← -teen/-ty; 50 ← fifty and forty both open on f and end in -ty
-    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [17.9, 22.95], keep: true,
-      stem: 'How long ago was Paula Pawnee’s first woman on the council?',
-      choices: ['14 years', '40 years', '50 years'], a: 1,
-      cue: '「city councilor」のすぐあとの数。',
+      said: 'ポーラが「ハンカチじゃなくて、レシートよ」と答える。',
+      mean: 'receipt ＝ レシート、領収書。p は読まない。',
+      trap: 'receipt（リシート）と recipe（レシピ）は似ている。最後の「ト」を聞く。',
+      use: 'Can I have a receipt, please?（レシートをもらえますか）' },
+    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [17.9, 22.95],
+      stem: 'How long ago was Paula on the council first?', ja: 'ポーラが初の女性市議になったのは何年前？',
+      choices: ['14 years', '40 years', '50 years'], a: 1, keep: true,
+      choicesJa: ['14年前', '40年前', '50年前'],
+      cue: '「city councilor」のあと',
       line: 'Pawnee’s first female city councilor *40 years ago*',
-      said: '「40年前に、ポーニー初の女性市議になった」と紹介している。',
-      mean: '今から40年前の話。このあと出てくる70年代の話と時期が合う。',
-      trap: 'forty は頭が強く「フォーティ」、fourteen は後ろの「ティーン」が強く長い。強さの位置で聞き分ける。',
-      use: 'I moved here forty years ago.（40年前にここへ越してきた）' },
-
-    // R fix: V2 (blind 65 %: the moving-away choice was off-topic, leaving a two-way pick); it's now "a long way"
-    //   heard as distance still to cover
-    // why: close to equal ← "come a long way" heard, "but… a ways to go" missed; little better ← "come a long way"
-    //   heard as "have a long way to go", so only the second half is kept
+      said: 'レスリーが「40年前に、町で初めての女性市議になった」と紹介する。',
+      mean: 'forty years ago ＝ 40年前。first female ＝ 初の女性の。',
+      trap: 'forty と fourteen は似て聞こえやすい。forty は前を強く言う。',
+      use: 'I came here forty years ago.（40年前にここへ来た）' },
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'ways', seg: [23.8, 29.5],
-      stem: 'In the comment to camera, how are things for women in Pawnee?',
-      choices: ['Much better than before, with more still to do', 'Much better than before, and close to equal now',
-                'Little better than before, with a long way to go'], a: 0,
-      cue: '「come」で始まる言い方と、but のあと。',
+      stem: 'How are things for women in Pawnee now?', ja: '今、パーニーの女性の状況はどう？',
+      choices: ['Better, but more to do', 'Better, and now all equal', 'No better than before'], a: 0,
+      choicesJa: ['よくなったが、まだ先がある', 'よくなって、今は平等', '前と変わらない'],
+      cue: '「Women have」のあと',
       line: 'Women have *come a long way* in Pawnee, but we still have *quite a ways to go*.',
-      said: '「女性はずいぶん進歩したけど、まだ先は長い」と言っている。',
-      mean: 'come a long way ＝ 大きく前進した。but 以下で「まだ道半ば」と付け足す。',
-      trap: 'come a long way を「まだ遠い」と取りやすい。but の前後で分けて聞く。',
-      use: 'You’ve come a long way since April.（4月からずいぶん上達したね）' },
-
-    // anchor: 26.4–28.3 s "but we still have quite a ways to go": five words in about a second, and "a ways" is the
-    //   American form that grammar would turn into "a way"
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'ways', seg: [24.3, 29.5],
+      said: 'レスリーが「女性はずいぶん進歩したけど、まだ先は長い」と言う。',
+      mean: 'come a long way ＝ 大きく進歩した。have a way to go ＝ まだ先が長い。',
+      trap: 'long way が2回聞こえるので、どちらも同じ意味だと思いやすい。but のあと。',
+      use: 'You’ve come a long way.（ずいぶん上達したね）' },
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'ways', seg: [24.3, 29.5], retired: true,
       stem: 'Type the end: “…but we still have ___.” (5 words)', answer: 'quite a ways to go',
       cue: '「still have」のあと。文法より、聞こえた音を。',
       line: 'but we still have *quite a ways to go*.',
@@ -92,53 +70,47 @@ export const aprilMen: Clip = {
       mean: 'a ways は「かなりの道のり」を言うアメリカの話し言葉。a なのに ways で、決まった形。',
       trap: 'a のあとの複数形を直して way と書きたくなる。習った形より、聞こえた音を書く。',
       use: 'The station is still a ways off.（駅はまだ結構遠いよ）' },
-
-    // why: on the council ← "council" is said in the scene and men ran it, so a councilman sounds right; both ←
-    //   "husband or father's" heard as two signatures
     { id: 'd2', skill: 'detail', level: 'B1', point: 'sign', seg: [27.9, 35.25],
-      stem: 'To book this conference room, what would she technically need?',
-      choices: ['Her husband’s or her father’s signature', 'A signature from a man on the council',
-                'Both her husband’s and her father’s signatures'], a: 0,
-      cue: '「without」のあと。何人の名前か。',
+      stem: 'What would Paula need to book this room?', ja: 'ポーラがこの部屋を予約するには何が必要？',
+      choices: ['Her husband or father signing', 'A councilman signing for her', 'Some money from city hall'], a: 0,
+      choicesJa: ['夫か父のサイン', '男性議員のサイン', '市からのお金'],
+      cue: '「without」のあと',
       line: 'technically, I’m not allowed to reserve this conference room *without my husband or father’s signature*.',
-      said: '「建前では、夫か父のサインがないとこの会議室を予約できない」と言う。',
-      mean: '古い規則がまだ残っている例。technically ＝ 規則の上では。',
-      trap: 'husband と father の両方が聞こえ、「両方」と取りやすい。or なら、どちらか一方。',
-      use: 'Technically, we’re closed, but come in.（一応閉店だけど、どうぞ）' },
-
-    // R fix: V2 (blind 65 %: "a friendly club where all got along" was an odd one out); all three now say men ran
-    //   it, and the key no longer claims women were kept out (Paula was on the council)
-    // why: young men ← boys = 少年, the same "ran it / weren't welcome" shape; fun hobby ← club read literally as
-    //   部活, a pastime
+      said: 'ポーラが「建前では、夫か父のサインがないと会議室を予約できない」と言う。',
+      mean: 'reserve ＝ 予約する。signature ＝ サイン、署名。technically ＝ 規則の上では。',
+      trap: '議会の話が続くので、議員のサインだと思いやすい。my husband or father。',
+      use: 'I’d like to reserve a room.（部屋を予約したいのですが）' },
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'club', seg: [33.2, 38.85],
-      stem: 'What does Paula say government was like in the ’70s?',
-      choices: ['Men ran it, and women weren’t welcome', 'Young men ran it, and older men weren’t welcome',
-                'Men ran it, and treated it like a hobby'],
-      a: 0,
-      cue: '「government was」のあと、二語の言い方。',
+      stem: 'Paula says government was “*a boys’ club*.” What does she mean?', ja: 'ポーラの「a boys’ club」の意味は？',
+      choices: ['Only men were welcome', 'Young men ran all of it', 'It was just a hobby'], a: 0,
+      choicesJa: ['男だけが歓迎された', '若い男が仕切っていた', 'ただの趣味だった'],
+      cue: '「Government was」のあと',
       line: 'Government was *a real boys’ club* back in the ’70s.',
-      said: '「70年代の政治は、まさに男だけの世界だった」と話す。',
-      mean: 'boys’ club ＝ 男同士で固まり、女性を入れない集団。批判の言い方で、楽しい会ではない。',
-      trap: 'boys を「少年」、club を「部活」と取ると別の絵になる。職場の話なら「男社会」。',
-      use: 'The industry is still a boys’ club.（あの業界はまだ男社会だ）' },
-
-    // R fix: V2 (blind 60 %: "honor Paula" was weak) and S4 (the segment cut into April's "I think"); the new
-    //   distractor turns on who restarts it, and the segment ends before April speaks
-    // why: room rule ← the conference room rule is the last "unfair rule" mentioned; ask Paula ← Paula's own
-    //   commission, so she seems the one to restart it ("I'm gonna" missed)
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', seg: [79.1, 83.8],
-      stem: 'After Paula’s story, what does Leslie decide to do?',
-      choices: ['Get Paula’s old commission going herself', 'Get the old conference room rule changed',
-                'Ask Paula to start her old commission again'], a: 0,
-      cue: '「I’m gonna」のあと、何を動かすと言うか。',
+      said: 'ポーラが「70年代の政治は、まさに男だけの世界だった」と話す。',
+      mean: 'a boys’ club ＝ 男だけの仲間うち。女性が入れない集まり。',
+      trap: 'boys（男の子）から、若い人の話だと思いやすい。男性全体のこと。',
+      use: 'This office is a real boys’ club.（この職場は男社会だ）' },
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknow', seg: [78, 82],
+      stem: 'What does Leslie’s “*You know what?*” do?', ja: 'レスリーの「You know what?」の働きは？',
+      choices: ['Starts a new idea', 'Asks a real question', 'Ends the meeting'], a: 0,
+      choicesJa: ['新しい考えを言い出す', '本当に質問する', '会を終える'],
+      cue: 'ポーラの話のあと',
+      line: '*You know what?* I’m gonna get that commission going…',
+      said: 'レスリーが「そうだ、あの委員会を私が動かす」と言い出す。',
+      mean: 'You know what? ＝「そうだ」「ねえ」。思いついたことを言う前の合図。',
+      trap: '疑問の形なので、答えを待っていると思いやすい。すぐ続きを言う。',
+      use: 'You know what? Let’s do it.（そうだ、やろう）' },
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'plan', seg: [79.1, 83.8],
+      stem: 'What does Leslie decide to do?', ja: 'レスリーは何をすると決める？',
+      choices: ['Start Paula’s old commission', 'Change the old room rules', 'Ask Paula to try it again'], a: 0,
+      choicesJa: ['ポーラの昔の委員会を始める', '部屋の規則を変える', 'ポーラにもう一度頼む'],
+      cue: '「I’m gonna」のあと',
       line: 'You know what? I’m gonna get *that commission* going, because this inequality has gone on long enough.',
-      said: '「あの委員会を私が動かす。この不平等はもう十分続いた」と宣言する。',
-      mean: 'that commission ＝ ポーラが昔作ろうとした委員会。それを引き継ぐ決意。',
-      trap: 'that が何を指すかを落とすと別の計画に聞こえる。that は直前の話を指す。',
-      use: 'That’s gone on long enough.（それはもう十分続いたよ）' },
-
-    // why: means it ← "No, I'm not" taken at face value; half means it ← "I think…" heard as thinking aloud
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'troll', seg: [83.35, 96.6],
+      said: 'レスリーが「あの委員会を私が動かす。不平等はもう十分」と宣言する。',
+      mean: 'get 〜 going ＝ 〜を動かし始める。commission ＝ 委員会。',
+      trap: 'ポーラが作ろうとした話なので、ポーラがやると思いやすい。I’m gonna。',
+      use: 'Let’s get this party going!（さあ、パーティーを始めよう）' },
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'troll', seg: [83.35, 96.6], retired: true,
       stem: 'How serious is April about men being better than women?',
       choices: ['She doesn’t mean it; she is putting on an act', 'She means it; she says so when doubted',
                 'She half means it; she is thinking aloud'], a: 0,
@@ -148,12 +120,7 @@ export const aprilMen: Clip = {
       mean: '否定してさらに大げさにするのは、相手を怒らせるための芝居。本気の意見ではない。',
       trap: 'No, I’m not を言葉どおり取ると本気に聞こえる。極端な話ほど、わざとの可能性が高い。',
       use: 'Relax, I’m just messing with you.（落ち着いて、からかっただけ）' },
-
-    // why: the men ← praise that absurd heard as sarcasm aimed at men; Paula ← it comes right after her story, as if
-    //   brushing it aside
-    // anchor: 92.3–96 s "April, stop it" is answered with "Leslie, you'll never land a beau with that domineering tone":
-    //   she names Leslie and attacks her tone; no line mocks the men or mentions Paula's story
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'troll', seg: [86.4, 100.2],
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'troll', seg: [86.4, 100.2], retired: true,
       stem: 'Who is April’s speech about men really aimed at?',
       choices: ['Leslie, to annoy her after her big speech', 'The men here, by praising them far too much',
                 'Paula, by brushing aside her life’s story'], a: 0,
@@ -163,10 +130,7 @@ export const aprilMen: Clip = {
       mean: '男をほめる形だが、名指しで口調を責める相手はレスリー。怒る相手を選んでからかっている。',
       trap: 'ほめすぎを男への皮肉と取りやすい。言葉の矛先は、名前を呼ばれた人と「you」で決まる。',
       use: 'Don’t take the bait. She wants a reaction.（乗らないで。反応がほしいだけ）' },
-
-    // why: win a vote ← land = 勝ち取る, and this is a government office; take a bow ← "bow" is how both transcripts
-    //   hear it, the literal word
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'beau', reveals: ['troll'], seg: [92.85, 96.6],
+    { id: 'f3', skill: 'phrase', level: 'C1', point: 'beau', reveals: ['troll'], seg: [92.85, 96.6], retired: true,
       stem: 'What does April say Leslie will never do with that tone?',
       choices: ['Find herself a boyfriend', 'Win a vote on the council', 'Take a bow after a speech'], a: 0,
       cue: '「land a」のあとの短い一語。',
@@ -175,36 +139,27 @@ export const aprilMen: Clip = {
       mean: 'beau は古風な「恋人」。land ＝ 苦労して手に入れる。昔の価値観をわざと演じている。',
       trap: 'beau は bow（おじぎ）と同じ音。音だけで取ると舞台の話。land のあとは手に入れる物。',
       use: 'She finally landed her dream job.（ついに夢の仕事を手に入れた）' },
-
-    // why: picked them ← "departments" missed, so the members sound like his own list; told them men ← the all-male
-    //   result read back as an order
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'assume', seg: [106.9, 116.35],
-      stem: 'Why does Chris decide he is to blame?',
-      choices: ['He assumed departments would send women', 'He picked every member of it himself',
-                'He told departments to send only men'], a: 0,
-      cue: '「I just」のあと、部署について何と言うか。',
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'assume', seg: [106.9, 116.35],
+      stem: 'What did Chris think would happen?', ja: 'クリスはどうなると思っていた？',
+      choices: ['Departments would send women', 'Only men would come to it', 'Leslie would pick the people'], a: 0,
+      choicesJa: ['女性を出す部署もある', '男性だけが来る', 'レスリーが人を選ぶ'],
+      cue: '「I just assumed」のあと',
       line: 'I just *assumed* that some of the departments *would send women*. … I am part of the problem.',
-      said: '「どこかの部署は女性を出すと思ってた。僕も問題の一部だ」と気づく。',
-      mean: '確かめずに思い込んだことが、男だけの委員会を生んだ。',
-      trap: 'assume は「思い込む」で、命令ではない。would send は「送るだろう」という予想。',
-      use: 'I just assumed you knew.（てっきり知ってると思ってた）' },
-
-    // R fix: V2 (blind 75 %: the key was the only choice where she resists); a distractor now shares the first half
-    // why: rebalance ← "we are gonna need to rebalance this commission" heard as the outcome; lets it go ← "they are
-    //   delicious, I must say" heard as giving in
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'meeting', reveals: ['take', 'role', 'girl'], seg: [106.9, 149.3],
-      stem: 'How does the commission’s first meeting turn?',
-      choices: ['The men try to take over, and Leslie pushes back', 'The men try to take over, and Leslie lets it go',
-                'The men agree to rebalance it, and Leslie thanks them'], a: 0,
-      cue: '後半の、お礼の言葉と彼女の返事。',
-      said: '男だけだと気づいたあと、男性議員が彼女を外そうとし、彼女は断る。',
-      mean: '昔ポーラが話したような扱いが、今もまだ残っている、という流れ。',
-      trap: 'rebalance や delicious だけ拾うと別の結末に聞こえる。最後に誰が何を言い切ったかで判断。',
-      use: 'I’m not done yet. Let me finish.（まだ終わってない。最後まで言わせて）' },
-
-    // why: teasing the asker ← "next to you" missed, so the compliment seems aimed at the person spoken to; mistakes a
-    //   woman for a man ← the right mix-up, the wrong direction
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'lady', seg: [120.35, 127.1],
+      said: 'クリスが「どこかの部署は女性を出すと思ってた。僕も問題の一部だ」と言う。',
+      mean: 'assume ＝ 思いこむ。part of the problem ＝ 問題の一部（自分にも責任）。',
+      trap: '男しかいないのを見て、それを予想していたと思いやすい。assumed は思いこみ。',
+      use: 'I just assumed you knew.（知ってると思いこんでた）' },
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'meeting', reveals: ['take', 'role', 'girl', 'mine', 'wetake'], seg: [106.9, 149.3],
+      stem: 'How does the commission’s first meeting go?', ja: '委員会の最初の会議はどうなる？',
+      choices: ['The men try to take over', 'The men agree to add women', 'Leslie lets the men lead'], a: 0,
+      choicesJa: ['男たちが仕切ろうとする', '男たちが女性を加えると賛成する', 'レスリーが男たちに任せる'],
+      cue: '男性議員のお礼のあと',
+      line: 'you did a great job… *but we’ll take it from here*. … No, I don’t. *This is my commission*.',
+      said: '男性議員が「ここからは我々が」と言い、レスリーは「これは私の委員会」と言い返す。',
+      mean: 'take over ＝ 乗っ取る、仕切る。レスリーは引かない。',
+      trap: 'rebalance（見直す）と言うので、男たちが女性を加えると思いやすい。',
+      use: 'I’ll take it from here.（ここからは私がやります）' },
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'lady', seg: [120.35, 127.1], retired: true,
       stem: 'Why does the reply about a “lady” get a laugh?',
       choices: ['His one example of a woman is really a man', 'He is teasing the man he is talking to',
                 'He mistakes a woman for a man'], a: 0,
@@ -214,38 +169,26 @@ export const aprilMen: Clip = {
       mean: '女性がいないという指摘への反論が、言い直しで崩れ、指摘の正しさを示してしまう。',
       trap: '先に lady、あとで man の順。Oh, wait, no は自分の言葉を取り消す合図。',
       use: 'Oh, wait, no. That was last week.（あ、違う。それは先週だ）' },
-
-    // R fix: V2 (blind 65 %: the key was the only polite-but-unkind choice); "politely" now in a distractor too
-    // why: keep leading ← praise read as trust (the Japanese frame: thanks = you're in charge); asking for help ←
-    //   "we'll" heard as including her
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'take', reveals: ['wetake', 'girl'], seg: [129.1, 135.82],
-      stem: 'What is Councilman Milton doing with his thanks to Leslie?',
-      choices: ['Praising her, then politely pushing her out', 'Thanking her, then asking her to keep leading',
-                'Praising her, then politely asking for her help'], a: 0,
-      cue: 'ほめ言葉のあと、but で何が来るか。',
+      stem: 'What is Milton doing with his thanks to Leslie?', ja: 'ミルトンのお礼は何をしている？',
+      choices: ['Pushing her out politely', 'Asking her to keep leading', 'Asking her for more help'], a: 0,
+      choicesJa: ['ていねいに追い出している', '続けて仕切ってと頼んでいる', 'もっと手伝ってと頼んでいる'],
+      cue: '「but」のあと',
       line: 'you did *a great job* setting it up and getting the snacks ready, *but we’ll take it from here*.',
-      said: '「準備とお菓子、よくやった。でもここからは我々がやる」と言う。',
-      mean: 'take it from here ＝ ここから先は引き受ける。ほめ言葉は外すための前置き。',
-      trap: 'ほめられると任されたと思いやすい。but のあとが本題で、we に彼女は入らない。',
-      use: 'Thanks, I’ll take it from here.（ありがとう、ここからは自分でやるよ）' },
-
-    // why: you'll ← the same -'ll shape, and "you did a great job" just before puts "you" in the ear; I'll ← one man
-    //   is speaking, so "I" seems to fit
+      said: 'ミルトンが「準備とお菓子、よくやった。でもここからは我々がやる」と言う。',
+      mean: 'ほめてから but で本音。take it from here ＝ ここからは引き受ける（あなたは不要）。',
+      trap: 'great job（よくやった）で、ほめているだけだと思いやすい。but のあと。',
+      use: 'Thanks, I’ll take it from here.（ありがとう、あとはやります）' },
     { id: 's2', skill: 'sound', level: 'B2', point: 'wetake', seg: [131.7, 135.82],
-      stem: 'Fill the gap: “…but ___ take it from here.”',
+      stem: '“…but ___ take it from here.”', ja: '空所に入るのは？',
       choices: ['we’ll', 'you’ll', 'I’ll'], a: 0,
-      cue: '「but」のすぐあと、短く弱い語。',
+      choicesJa: ['我々が', 'あなたが', '私が'],
+      cue: '「but」のあと',
       line: '…but *we’ll* take it from here.',
-      said: '「でも、ここからは我々でやる」。we’ll は弱く「ウィル」に近い。',
-      mean: 'we’ll なら男性たちが引き継ぐ。you’ll なら彼女に任せる、で逆の意味。',
-      trap: '直前の you did に引かれ、you’ll と聞きやすい。語頭の「ウィ」と「ユ」を聞く。',
-      use: 'We’ll handle it from here.（ここからはこちらで対応します）' },
-
-    // why: on "commission" ← she was just sent for snacks, so "real work, not snacks" sounds like the contrast; on
-    //   "this" ← Paula's old commission came up earlier, so "this one" seems to be set against it
-    // anchor: 134.0 s "we'll take it from here" (the men claim it), then 144.6–146.3 s "No, I don't. This is my
-    //   commission": the contrast is whose it is, we against my
-    // retired: C2 stress item, until the ear check (the stress on “my” in “This is my commission”)
+      said: 'ミルトンが「でも、ここからは我々でやる」と言う。',
+      mean: 'we’ll ＝ we will。小さく短く「ウィル」と言う。',
+      trap: 'we’ll と you’ll は似て聞こえやすい。最初の「ウィ」か「ユ」かを聞く。',
+      use: 'We’ll call you later.（あとで電話します）' },
     { id: 'nt3', skill: 'sound', level: 'C2', point: 'role', reveals: ['wetake', 'take'], seg: [133.25, 147.15], retired: true,
       stem: 'Where is the stress in “This is my commission,” and why?',
       choices: ['On “my”: it belongs to her, not the men', 'On “commission”: real work, not snacks',
@@ -256,47 +199,46 @@ export const aprilMen: Clip = {
       mean: 'my が強いと「あなたたちのではなく、私の」という対比になる。日本語なら「私の、なの」。',
       trap: '直前のお菓子の話から、仕事の中身の対比と取りやすい。強勢は、相手の言葉の何に言い返しているかで決まる。',
       use: 'It’s not your call. It’s my decision.（決めるのはあなたじゃない、私よ）' },
-
-    // why: hurt and stepping back ← the polite "but" heard as a soft retreat; pleased, so handing over ← "they are
-    //   delicious, I must say" taken as the whole answer
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'role', seg: [134.45, 140.15],
-      stem: 'How does Leslie take Milton’s thanks?',
-      choices: ['Proud of her snacks, but firm about her role', 'Hurt by his words, but willing to step back',
-                'Pleased by the praise, so glad to hand it over'], a: 0,
-      cue: 'お菓子の話のあと、but で何と言うか。',
+      stem: 'What does Leslie mean by “that is *not the point*”?', ja: 'レスリーの「that is not the point」の意味は？',
+      choices: ['Snacks aren’t what matters', 'Her snacks are not very good', 'She wants to go home'], a: 0,
+      choicesJa: ['お菓子は大事なことではない', 'お菓子がおいしくない', '家に帰りたい'],
+      cue: 'お菓子の話のあと',
       line: 'I *did* put the snacks together, and they are delicious, I must say, but *that is not the point*.',
-      said: '「お菓子は確かに私が作ったし、おいしい。でもそこじゃない」と返す。',
-      mean: 'ほめ言葉は受け取り、外されることには反対している。not the point が本題。',
-      trap: 'delicious で喜んでいるように聞こえる。but のあとに本音が来る。',
-      use: 'That’s nice, but that’s not the point.（うれしいけど、そこじゃないの）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'applause', seg: [139.28, 142.38],
-      stem: 'Type what Milton calls for: “___ for the girl.” (3 words)', answer: 'round of applause',
-      cue: '「not the point」のすぐあと。of は弱い。',
+      said: 'レスリーが「お菓子は確かに私が作った。おいしい。でもそこじゃない」と言う。',
+      mean: 'That is not the point ＝ 大事なのはそこじゃない。話をずらされた時に使う。',
+      trap: 'delicious（おいしい）でお菓子の話だと思いやすい。but のあとが本音。',
+      use: 'That’s not the point.（そういう問題じゃない）' },
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'applause', seg: [139.28, 142.38],
+      stem: 'Type what Milton calls for: “___ for the girl.” (3 words)', ja: 'ミルトンの言葉の空所3語を書こう',
+      answer: 'round of applause',
+      cue: '「for the girl」の前',
       line: '*Round of applause* for the girl.',
-      said: '「この子に拍手を」と呼びかける。',
-      mean: 'round of applause ＝ 拍手。of は弱く「ア」程度で、「ラウンダブ」とつながる。',
-      trap: 'of がほとんど聞こえず、2語に聞こえやすい。round と applause の間に小さな音を探す。',
-      use: 'Let’s give her a round of applause!（彼女に拍手を！）' },
-
-    // R fix: V2 (blind 70 %: "the leader, and the praise is real" was weak); now a keyword trap on "has to leave"
-    // why: a guest leaving early ← "she has to leave" heard as her own plan, "to get more snacks" missed; too young ←
-    //   girl = 少女, read as a remark on her age
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'girl', reveals: ['applause'], seg: [139.28, 145.18],
-      stem: 'What does Milton’s applause line show about how he sees Leslie?',
-      choices: ['As a helper, and not as the one in charge', 'As a guest, who has to leave early',
-                'As too young to sit on the commission'], a: 0,
-      cue: '拍手のあと、彼女に何をさせると言うか。',
-      line: 'Round of applause for *the girl*. And she has to leave to *get more snacks*.',
-      said: '「この子に拍手を。お菓子を買いに退席する」と勝手に決める。',
-      mean: '大人の女性を the girl と呼び、お菓子係として送り出す。対等と見ていない。',
-      trap: '拍手は敬意に見えるが、次の文で用事を言いつける。ほめ言葉は次の文と合わせて読む。',
-      use: 'Please don’t call me “the girl.”（「お嬢ちゃん」と呼ばないで）' },
-
-    // R fix: V2 (blind 60 %: "apologizing" was weak); now the literal reading of "Why so…?" as a real question
-    // why: really hurt ← ouch = 痛い, taken literally; asking in earnest ← "Why so…?" read as a real question about
-    //   her reasons
-    { id: 'a3', skill: 'attitude', level: 'C1', point: 'ornery', seg: [145.15, 149.3],
+      said: 'ミルトンが「この子に拍手を」と呼びかける。',
+      mean: 'a round of applause ＝ 拍手。人をたたえる時の決まった言い方。',
+      trap: 'round of がつながり「ラウンダヴ」と聞こえやすい。applause は「アプローズ」。',
+      use: 'Let’s give him a round of applause!（彼に拍手を！）' },
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'girl', reveals: ['applause'], seg: [139.28, 145.18],
+      stem: 'How does Milton see Leslie?', ja: 'ミルトンはレスリーをどう見ている？',
+      choices: ['As a helper, not a leader', 'As a guest who must go', 'As too young to join'], a: 0,
+      choicesJa: ['リーダーではなく手伝いの人', '帰るべき客', '参加するには若すぎる人'],
+      cue: '「She has to leave」のあと',
+      line: 'Round of applause for *the girl*. She has to leave to *get more snacks*.',
+      said: 'ミルトンが「この子に拍手を。お菓子を買いに出るから」と勝手に決める。',
+      mean: 'the girl（女の子）と呼び、お菓子係にしている。リーダーと見ていない。',
+      trap: 'girl から若すぎると思いやすい。get more snacks（お菓子係）が手がかり。',
+      use: 'I’ll get more snacks.（お菓子をもっと買ってくるね）' },
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'mine', seg: [143.5, 147],
+      stem: 'What does Leslie say about the commission?', ja: 'レスリーは委員会について何と言う？',
+      choices: ['It is hers', 'It is the men’s', 'It is Paula’s'], a: 0,
+      choicesJa: ['自分の委員会だ', '男たちの委員会だ', 'ポーラの委員会だ'],
+      cue: '「No, I don’t」のあと',
+      line: 'She has to leave to get more snacks. — No, I don’t. *This is my commission*.',
+      said: 'レスリーが「行かないわ。これは私の委員会よ」と言う。',
+      mean: 'my commission ＝ 私の委員会。No, I don’t ＝ 行く必要はない。',
+      trap: 'もとはポーラの案なので、ポーラのだと思いやすい。my を聞く。',
+      use: 'No, I don’t. This is my seat.（いいえ、ここは私の席です）' },
+    { id: 'a3', skill: 'attitude', level: 'C1', point: 'ornery', seg: [145.15, 149.3], retired: true,
       stem: 'What is Milton doing when he answers Leslie’s refusal?',
       choices: ['Brushing her point off as a bad mood', 'Admitting that her words really hurt him',
                 'Asking in earnest what has upset her'], a: 0,

@@ -177,7 +177,7 @@ export const jerryBurritoLie: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'shoulder', seg: [135.3, 140.1],
       stem: 'Which injury does Jerry say is real?', ja: 'ジェリーが本物だと言うけがは？',
       choices: ['His hurt shoulder', 'His broken arm', 'His badly twisted knee'], a: 0,
-      choicesJa: ['肩のけが', '腕の骨折', 'ひざのねんざ'],
+      choicesJa: ['肩のけが', '腕の骨折', 'ひざのひどいねんざ'],
       cue: '「This is real」のあと',
       line: 'This is real. I really *dislocated my shoulder*.',
       said: 'ジェリーが「これは本物。本当に肩を外した」と言う。',

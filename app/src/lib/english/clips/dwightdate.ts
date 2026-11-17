@@ -66,7 +66,7 @@ export const dwightDate: Clip = {
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'farm', seg: [42.4, 46.3],
       stem: 'What does Michael think of Dwight’s farm talk?', ja: 'マイケルはドワイトの農場の話をどう思っている？',
       choices: ['Women won’t like it', 'It is very funny', 'It is a really good story'], a: 0,
-      choicesJa: ['女性に受けない', 'とてもおもしろい', 'いい話だ'],
+      choicesJa: ['女性に受けない', 'とてもおもしろい', 'とてもいい話だ'],
       cue: '「shut up about」のあと',
       line: 'Dwight, *shut up about the farm*. It’s *not relatable*. Nobody owns a farm.',
       said: 'マイケルが「農場の話はやめろ。誰も共感できない」と言う。',
