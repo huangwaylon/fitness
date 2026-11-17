@@ -1,11 +1,9 @@
-// REVIEW 2026-11-16: pass 3, fix 16, drop 0, new 0; ear checks 1
-//   (fixes: 12 blind-pass rebalances, i1 and nt2 stems (S1, K1), x1 and d4 segment edges)
+// A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 5, new 1
+// A2 LATE: a pickup night in a bar, with sexual jokes (6–17 s) and a horse-meat gag; few everyday chunks.
 // “Dwight Interrupts Michael's Date - The Office US” (the official The Office channel, Best of Season 6): a night out
 // in quick cuts; Dwight's farm talk wins a woman over, he pitches an invention, then pulls Michael away for "twins".
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 112 s; whisper's lines after that are a
-// loop. Untested: 6–17 s (Dwight's shirt explained in sexual terms), "Mose hates to gild the horses" (both sources,
-// likely "geld"), 72–88 s ("Sears said no": whisper has "no" at 74.1 s, the captions at 81.2 s, before the Pixar
-// lines, so the punchline and the Pixar speaker are unclear), and the company names (the captions garble them).
+// Talk ends at ≈ 112 s; whisper's lines after that are a loop. Untested: 6–17 s, "Mose hates to gild the horses",
+// 72–88 s ("Sears said no" and the Pixar lines: speaker and timing unclear), the company names.
 // EAR CHECK: 96 s g2 p1 — "Oh, my God. Twins. I'm sorry. You understand. Nice to meet you" assumed Michael's (he
 //   answers "I found twins" after Dwight calls "Michael"; no name in the line itself)
 import type { Clip } from '../types.ts';
@@ -16,10 +14,7 @@ export const dwightDate: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: blind 70 %: the question choice wasn't parallel (no "As X:" frame); all three now name a move and a reading
-    // why: guess ← "Looks like you're going to…" heard as a guess at where he's off to; praise ← "casual" heard just
-    //   before, and relaxed clothes sound like a compliment
-    { id: 'a0', skill: 'attitude', level: 'C1', point: 'outfit', seg: [0, 5.9],
+    { id: 'a0', skill: 'attitude', level: 'C1', point: 'outfit', seg: [0, 5.9], retired: true,
       stem: 'How is the remark about a fish fry meant?',
       choices: ['As a tease: the outfit looks out of place', 'As a guess: he must be off to a party',
                 'As praise: he looks relaxed and easygoing'], a: 0,
@@ -29,108 +24,76 @@ export const dwightDate: Clip = {
       mean: 'fish fry は気取らない食事会。服が場違いだとからかっている。',
       trap: 'going to を行き先の質問と取りやすい。Looks like ～ は見た目への感想。',
       use: 'Looks like you’re ready for the beach!（海にでも行くみたいだね！）' },
-
-    // R fix: blind 55 %: "two sisters" made the date choice odd; it now matches the title's "date" (§9.4), so the
-    //   title pulls toward a distractor, not the key
-    // why: selling ← Dwight describes his invention and lists companies; double date ← the title says "date", and
-    //   "twins" sounds like a pair set up in advance
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'night', reveals: ['drop', 'twins'], seg: [20.4, 112.3],
-      stem: 'What are Michael and Dwight mostly doing tonight?',
-      choices: ['Trying to pick up women together', 'Selling Dwight’s latest invention', 'On a double date set up for them'], a: 0,
-      cue: '後半の「Drop this one」と、そのあとの流れ。',
-      said: '二人で女性に話しかけ、合わないと次へ移る。最後は双子を見つけて移動する。',
-      mean: '二人組で女性に声をかけて回る夜。Dwight が話をさらう。',
-      trap: '発明の話は目の前の女性に向けたもの。双子も途中で見つけた話で、約束ではない。',
-      use: 'Want to go say hi to them?（あの人たちに声かけに行く？）' },
-
-    // R fix: blind 65 %: "knows nothing about men's style" was off the clip's words; now a "blunt" reading of "No,
-    //   it's not a good idea"
-    // why: wore one ← "no such thing as a good hairpiece" sounds like the voice of experience; blunt ← Oscar's flat
-    //   "No, it's not a good idea" heard as the thing being pushed back on
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'hair', seg: [23.5, 36.6],
-      stem: 'When Oscar warns against a hairpiece, why is his advice brushed off?',
-      choices: ['He has a full head of thick hair', 'He once wore a bad hairpiece himself',
-                'He always gives his advice too bluntly'], a: 0,
-      cue: '「Oscar」と呼んだあとの「You …」の文。',
-      line: 'that’s easy enough for you to say, Oscar. You have that *thick, beautiful* … *hair*.',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'nosuch', seg: [25, 28.4],
+      stem: 'Type Oscar’s words: “There’s ___ a good hairpiece.” (4 words)', ja: 'オスカーの言葉の空所4語を書こう',
+      answer: 'no such thing as',
+      cue: 'There’s のあとの4語',
+      line: 'There’s *no such thing as* a good hairpiece.',
+      said: 'オスカーが「いいかつらなんて、ない」と言い切る。',
+      mean: 'There’s no such thing as 〜 ＝ 〜なんてものはない（強く言い切る）。',
+      trap: 'such thing はつながり「サッチシング」。as は小さく短く言うので聞き落としやすい。',
+      use: 'There’s no such thing as a free lunch.（タダより高いものはない）' },
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'hair', seg: [26, 36.6],
+      stem: 'What does Oscar have, says Michael?', ja: 'マイケルによると、オスカーには何がある？',
+      choices: ['Thick, beautiful hair', 'A very good hairpiece', 'A nice new outfit'], a: 0,
+      choicesJa: ['太くてきれいな髪', 'とてもいいかつら', 'すてきな新しい服'],
+      cue: '「You have that」のあと',
+      line: 'that’s easy enough for you to say, Oscar. *You have that thick, beautiful* … *hair*.',
       said: '「君だから言えるんだ。太くてきれいな髪があるんだから」と返す。',
-      mean: '髪の悩みがない人の忠告は聞けない、という言い分。かつらを考えているのは話し手。',
-      trap: '経験者の言葉にも聞こえるが、理由は Oscar 自身の髪。You have のあとを聞く。',
-      use: 'You’ve never had this problem.（君はこの悩み、なったことないでしょ）' },
-
-    // R fix: blind 65 %: the key was the only choice without "easy"/"follow"-type surface words; reworded so the key
-    //   also carries "easy", the keyword the trap builds on
-    // why: simple ← "easy" read as "your advice is easy to follow"; agreeing ← "Yeah" at the start heard as a yes
-    //   (the Japanese はい frame)
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hair', seg: [25.8, 31],
-      stem: 'What does the reply starting “Yeah, but” say about Oscar’s advice?',
-      choices: ['It’s easy to give when it isn’t your problem', 'It is simple and easy to follow',
-                'It is right, and he plans to follow it'], a: 0,
-      cue: '「Yeah, but」の but のあと。',
+      mean: 'thick ＝ 太い、多い。髪が多い人に「かつらはやめろ」と言われても、と反論している。',
+      trap: 'hairpiece（かつら）が先に聞こえるので、オスカーがかつらだと思いやすい。',
+      use: 'You have beautiful hair.（きれいな髪だね）' },
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hair', seg: [26, 31],
+      stem: 'What does “that’s *easy* enough for you *to say*” mean?', ja: '「that’s easy enough for you to say」の意味は？',
+      choices: ['It’s not your problem', 'It is very easy to do', 'You are right about that'], a: 0,
+      choicesJa: ['あなたの問題じゃないから', 'やるのは簡単だ', 'あなたの言うとおり'],
+      cue: '「Yeah, but」のあと',
       line: 'Yeah, but *that’s easy enough for you to say*, Oscar.',
       said: '「まあね、でもそれは君だから言えることだよ」と返す。',
-      mean: 'easy for you to say ＝ 自分は困らないから言える。忠告を押し返す決まり文句。',
-      trap: 'Yeah を賛成と取ると同意に聞こえる。Yeah, but のあとが本音。',
-      use: 'That’s easy for you to say.（君だから言えるんだよ）' },
-
-    // R fix: seg starts at 25.8 (was 25.9, 0.4 s before "There's"; "idea" ends 25.78)
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'nosuch', seg: [25.8, 28.3],
-      stem: 'Type Oscar’s words: “There’s ___ a good hairpiece.” (4 words)', answer: 'no such thing as',
-      cue: '「There’s」のすぐあと、つながる4語。',
-      line: 'There’s *no such thing as* a good hairpiece.',
-      said: '「いいかつらなんてものは存在しない」と言い切る。',
-      mean: 'no such thing as ～ ＝ ～なんてない。such thing as が一続きに。',
-      trap: 'as はほぼ「ァズ」と弱く、次の a と重なる。決まった型で覚えると拾える。',
-      use: 'There’s no such thing as a free lunch.（ただより高いものはない）' },
-
-    // R fix: blind 65 %: "angry enough to start a real fight" was a filler and the key the only nuanced choice; now a
-    //   "bored" reading, and the three are parallel
-    // why: bored ← "shut up about the farm" heard as his own fatigue with Dwight's stories; teasing ← "shut up"
-    //   between friends is often play
+      mean: 'easy for you to say ＝ 君は困っていないから言える。人の助言に軽く反論する言い方。',
+      trap: 'easy から「簡単にできる」と思いやすい。言うのが簡単、という意味。',
+      use: 'That’s easy for you to say.（あなたはいいよね、そう言えて）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'night', seg: [38.3, 74],
+      stem: 'What does Dwight talk about with the woman?', ja: 'ドワイトは女性と何の話をする？',
+      choices: ['His farm and his invention', 'His job and his boss', 'His car and his house'], a: 0,
+      choicesJa: ['農場と自分の発明', '仕事と上司', '車と家'],
+      cue: '「How many horses」の前後',
+      line: 'Wait, you’re worried about your *horses*? … I *invented a device* called Burger on the Go.',
+      said: '女性が「馬が心配なの？」と聞き、ドワイトは自分の発明の話を始める。',
+      mean: 'invent ＝ 発明する。device ＝ 装置。農場の馬と、発明品の話をしている。',
+      trap: 'マイケルの仕事仲間も出てくるので、仕事の話だと思いやすい。',
+      use: 'I invented a new game.（新しいゲームを考えたんだ）' },
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'farm', seg: [42.4, 46.3],
-      stem: 'How does the speaker feel about Dwight’s farm talk?',
-      choices: ['Worried the woman will find it boring', 'Tired of farm stories he’s heard before',
-                'Only teasing a friend in a playful way'], a: 0,
-      cue: '「shut up」のあとに続く二つの理由。',
-      line: '*shut up about the farm*. It’s *not relatable*.',
-      said: '「農場の話はやめろ。共感されない」と止める。',
-      mean: 'relatable ＝ 聞き手が自分ごとに感じられる。女性受けしない話題だと心配している。',
-      trap: 'shut up だけだと自分が飽きたようにも、ふざけたようにも聞こえる。強い言葉は、続く理由で温度を測る。',
-      use: 'Let’s talk about something more relatable.（もっと身近な話をしよう）' },
-
-    // R fix: S1: "that warning" presupposed a1's key; stem now names the moment. Choices recast as three verdicts on
-    //   Michael's call (blind 65 %)
-    // why: got through ← "How many horses…?" heard as polite small talk that moves things along; bores her ← "cool"
-    //   read as クール (cold, unmoved), the katakana false friend
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'backfire', reveals: ['farm'], seg: [42.4, 52.3],
-      stem: 'Right after “Nobody owns a farm”, what does the woman’s reply show?',
-      choices: ['Michael misjudged; she likes the farm talk', 'Michael got through; she changes the subject',
-                'Michael was right; farm talk bores her'], a: 0,
-      cue: '「Wait」で始まる返事と、そのあとの質問。',
-      line: 'Nobody owns a farm. — *Wait, you’re worried about your horses? That’s cool.*',
-      said: '止めた直後、女性が「馬が心配なの？すてき」と食いつく。',
-      mean: '止めた話題に相手が興味を示し、心配が裏目に出る。That’s cool は「いいね」。',
-      trap: 'cool を「クール（冷めた）」と取ると逆になる。続けて質問していれば、話に乗っている。',
-      use: 'Wait, you play the guitar? That’s cool.（え、ギター弾けるの？いいね）' },
-
-    // why: Nine ← "and three quarters" said weakly after; a half ← the usual fraction; Ninety-three ← "nine-and-three"
-    //   runs together like "ninety-three"
-    { id: 'n1', skill: 'number', level: 'B1', point: 'horses', seg: [49.8, 54.05], keep: true,
-      stem: 'How many horses does Dwight say he has?',
-      choices: ['Nine', 'Nine and a half', 'Nine and three quarters', 'Ninety-three'], a: 2,
-      cue: '「How many horses」への答え、最後まで。',
-      line: '*Nine and three quarters.*',
-      said: '「何頭いるの？」と聞かれ、「9と4分の3頭」と答える。',
-      mean: 'three quarters ＝ 4分の3。馬の数としてはありえない半端な数。',
-      trap: 'and が弱く「ナインナン」とつながり ninety にも聞こえる。quarters まで聞く。',
-      use: 'The glass is three quarters full.（グラスは4分の3まで入ってる）' },
-
-    // why: pony ← a small horse "counting less" is a reading a fluent listener can build alone; part-owned ← Mose was
-    //   named just before as working the horses, so shared ownership fits
-    // anchor: 52.4–53.6 s "Nine and three quarters", then 54.1–64.4 s "…obtain… hamburgers… from a horse without killing
-    //   the animal": the missing quarter has gone into burgers
-    // R fix: blind 70 %: the stem named the invention, and only the key was about it; the stem now just names the count
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'device', reveals: ['horses'], seg: [49.8, 64.7],
+      stem: 'What does Michael think of Dwight’s farm talk?', ja: 'マイケルはドワイトの農場の話をどう思っている？',
+      choices: ['Women won’t like it', 'It is very funny', 'It is a really good story'], a: 0,
+      choicesJa: ['女性に受けない', 'とてもおもしろい', 'いい話だ'],
+      cue: '「shut up about」のあと',
+      line: 'Dwight, *shut up about the farm*. It’s *not relatable*. Nobody owns a farm.',
+      said: 'マイケルが「農場の話はやめろ。誰も共感できない」と言う。',
+      mean: 'shut up about 〜 ＝ 〜の話はやめろ（乱暴）。relatable ＝ 共感できる。',
+      trap: 'farm の話が続くので、ほめていると思いやすい。shut up は強く止める言葉。',
+      use: 'That’s so relatable.（それ、すごくわかる）' },
+    { id: 'i1', skill: 'attitude', level: 'B1', point: 'backfire', reveals: ['farm'], seg: [45, 50.5],
+      stem: 'How does the woman feel about Dwight’s horses?', ja: '女性はドワイトの馬の話をどう思っている？',
+      choices: ['She thinks it’s cool', 'She thinks it’s boring', 'She thinks it’s scary'], a: 0,
+      choicesJa: ['すてきだと思う', 'つまらないと思う', 'こわいと思う'],
+      cue: '「Nobody owns a farm」のあと',
+      line: 'Wait, you’re worried about your horses? *That’s cool.*',
+      said: '女性が「待って、馬が心配なの？すてき」と食いつく。',
+      mean: 'That’s cool ＝ すてき、いいね。マイケルの予想とは逆に、女性は興味を持った。',
+      trap: '直前にマイケルが止めたので、退屈していると思いやすい。最後の That’s cool。',
+      use: 'You play the guitar? That’s cool.（ギター弾くの？いいね）' },
+    { id: 'n1', skill: 'number', level: 'B1', point: 'horses', seg: [49.8, 54.05],
+      stem: 'How many horses does Dwight say he has?', ja: 'ドワイトは馬が何頭いると言う？',
+      choices: ['9', '9 and a half', '9 and three quarters', '93'], a: 2, keep: true,
+      choicesJa: ['9頭', '9頭半', '9と4分の3頭', '93頭'],
+      cue: '「How many horses」への答え',
+      line: 'How many horses do you have? — *Nine and three quarters.*',
+      said: '「馬は何頭いるの？」と聞かれ、「9と4分の3頭」と答える。',
+      mean: 'three quarters ＝ 4分の3。quarter ＝ 4分の1。半分は a half。',
+      trap: 'nine の後ろを聞き落とすと「9頭」。and のあとの quarters まで聞く。',
+      use: 'Three quarters of an hour.（45分）' },
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'device', reveals: ['horses'], seg: [49.8, 64.7], retired: true,
       stem: 'What explains the odd number in Dwight’s answer about horses?',
       choices: ['One horse has already given up some burgers', 'One horse is just a pony, so it counts less',
                 'One horse is partly owned by Mose on the farm'], a: 0,
@@ -140,52 +103,37 @@ export const dwightDate: Clip = {
       mean: '半端な4分の3頭は、発明をもう試した跡。数の謎があとの説明で解ける、時間差の笑い。',
       trap: 'ポニーや共同の持ち主など、数だけで理由を作りやすい。変な数字が出たら、すぐあとの話とつなげる。',
       use: 'So that explains the missing cookies.（それでクッキーが減ってたのか）' },
-
-    // why: Ten ← the "-lve" end is weak, so it sounds like a short number; Twenty ← twelve and twenty share "tw-"
-    { id: 'n2', skill: 'number', level: 'B1', point: 'sliders', seg: [54.05, 64.7], keep: true,
-      stem: 'Instead of six regular burgers, how many sliders can you get?',
-      choices: ['Ten', 'Twelve', 'Twenty'], a: 1,
-      cue: '「or」のすぐあと、sliders の前の数。',
+    { id: 'n2', skill: 'number', level: 'B1', point: 'sliders', seg: [54.05, 64.7],
+      stem: 'How many sliders can the device give?', ja: 'その装置で、スライダー（小さいハンバーガー）は何個取れる？',
+      choices: ['6', '10', '12', '20'], a: 2, keep: true,
+      choicesJa: ['6個', '10個', '12個', '20個'],
+      cue: '「or」のあとの数',
       line: 'six regular-sized hamburgers, or *12 sliders*',
       said: '「普通サイズのハンバーガー6個、またはスライダー12個」と言う。',
-      mean: 'slider はミニサイズのハンバーガー。小さいので数は2倍。',
-      trap: 'twelve と twenty は出だしが同じ。twelve は短く終わり、twenty は「ニー」と伸びる。',
-      use: 'Can we get a plate of sliders?（ミニバーガーを一皿もらえる？）' },
-
-    // why: travel ← "on the go" = while moving, a known chunk, taken as what the device is for; deliver ← "from a horse"
-    //   heard as transport by horse
+      mean: 'slider ＝ 小さいハンバーガー。regular-sized ＝ 普通サイズ。',
+      trap: '先に six（6）が聞こえるが、それは普通サイズの数。or のあとが答え。',
+      use: 'A regular-sized coffee, please.（普通サイズのコーヒーをください）' },
     { id: 'd3', skill: 'detail', level: 'B1', point: 'device', seg: [54.05, 64.7],
-      stem: 'What is Dwight’s invention supposed to do?',
-      choices: ['Take burger meat from a living horse', 'Cook burgers fast while you travel',
-                'Deliver burgers to people by horse'], a: 0,
-      cue: '「obtain」から「animal」までの説明。',
+      stem: 'What does Dwight’s invention do?', ja: 'ドワイトの発明は何をする？',
+      choices: ['Takes meat from a live horse', 'Cooks burgers on the road', 'Brings burgers by horse'], a: 0,
+      choicesJa: ['生きた馬から肉を取る', '移動中にハンバーガーを焼く', '馬でハンバーガーを届ける'],
+      cue: '最後の「without」のあと',
       line: 'obtain… hamburgers… *from a horse without killing the animal*.',
-      said: '「馬を殺さずに、馬からハンバーガーを取り出せる装置」だと説明する。',
-      mean: '生きた馬から肉を取る、という突飛な発明。on the go は言葉遊び。',
-      trap: 'on the go を聞くと「移動しながら食べる」道具に聞こえる。名前より、続く説明の動詞で判断。',
-      use: 'I usually eat breakfast on the go.（朝ごはんはだいたい移動しながら）' },
-
-    // R fix: blind 75 %: the stem quoted the phrase under test (§9.2); now names the moment, choices evened out
-    // why: close to a deal ← "considering" heard as serious interest from big names; just started ← "still" read as
-    //   "he hasn't shown them all yet"
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'considering', seg: [64.45, 72.5],
-      stem: 'What does the list of companies suggest about his invention?',
-      choices: ['None of the firms has actually said yes', 'Several of the firms are close to a deal',
-                'He has only just started showing it around'], a: 0,
-      cue: '会社名ごとにくり返される同じ言い方。',
+      said: 'ドワイトが「馬を殺さずに、馬からハンバーガーを取れる装置だ」と話す。',
+      mean: 'without killing 〜 ＝ 〜を殺さずに。とんでもない発明の冗談。',
+      trap: 'Burger on the Go（移動中のバーガー）という名前から、料理の道具だと思いやすい。',
+      use: 'I did it without help.（手伝いなしでやったよ）' },
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'considering', seg: [64.45, 72.5],
+      stem: 'What does “still *considering* it” mean?', ja: '「still considering it」の意味は？',
+      choices: ['No one has decided yet', 'They have all said yes', 'They have all said no'], a: 0,
+      choicesJa: ['まだ誰も決めていない', '全社が OK した', '全社が断った'],
+      cue: '何度もくり返す言葉',
       line: 'George Foreman is *still considering it*. … is *still considering it*.',
-      said: '有名な会社を次々に挙げ、どこも「まだ検討中」だと言う。',
-      mean: 'still considering は返事がないまま。何社も並ぶほど、乗り気でないと分かる。',
-      trap: '大手の名前で有望に聞こえる。同じ「検討中」が続いたら、遠回しの no を疑う。',
-      use: 'They said they’d think about it.（考えておくって言われた）' },
-
-    // why: lots of interest ← the sincerity flip: big names plus "considering" taken as good news; when to decide ←
-    //   the literal reading: considering = a decision on its way
-    // anchor: 64.8–72.2 s the same "is still considering it" after one company name after another, for a device that
-    //   takes meat from a living horse (54.1–64.4 s): nobody has said yes, and nobody will
-    // R fix: K1/V1: "got the joke" had no joke to get (Dwight means it); the stem now asks which reply fits what the
-    //   list really tells her, so the sincere "Wow" is the near miss, not a rival key
-    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'considering', seg: [64.45, 72.5],
+      said: '会社の名前を次々に挙げ、どこも「まだ検討中」だと言う。',
+      mean: 'consider ＝ よく考える。still considering ＝ まだ検討中。',
+      trap: '有名な会社ばかりなので、OK をもらったと思いやすい。still（まだ）が手がかり。',
+      use: 'We’re still considering it.（まだ検討中です）' },
+    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'considering', seg: [64.45, 72.5], retired: true,
       stem: 'Which reply from the woman would fit what his list really tells her?',
       choices: ['So, no one has said yes yet?', 'Wow, that’s a lot of interest!', 'When do they have to decide?'], a: 0,
       cue: '同じ言い方の回数と、発明の中身。',
@@ -194,25 +142,17 @@ export const dwightDate: Clip = {
       mean: '本人は明るく言うが、何社も検討中のままなのは返事がない印。気づいたなら、からかい半分に確かめるのが合う。',
       trap: '有名な名前が並ぶと「すごいね」と返しやすい。返事は言葉の調子でなく、話の中身の実態に合わせる。',
       use: 'So that’s a no, then?（つまりダメってこと？）' },
-
-    // R fix: blind 80 %: "tired of hearing about horses" had no tie to Michael's talk; all three now "Dwight tells him…"
-    // why: she's bored ← "I'm bored" is said, but by Dwight, about his own talk; go home ← "Drop this one" heard as
-    //   calling the night off
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'twins', reveals: ['drop', 'men'], seg: [86.8, 112.3],
-      stem: 'Why does Michael suddenly end the talk with the woman?',
-      choices: ['Dwight tells him he has found twins', 'Dwight tells him the woman seems bored',
-                'Dwight tells him it’s time to go home'], a: 0,
-      cue: '「Why?」と聞き返したあとの答え。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'twins', reveals: ['men'], seg: [86.8, 112.3],
+      stem: 'Why does Michael leave the woman?', ja: 'マイケルはなぜ女性のもとを去る？',
+      choices: ['Dwight found twins', 'The woman is bored', 'It’s time to go home'], a: 0,
+      choicesJa: ['ドワイトが双子を見つけた', '女性が退屈している', 'もう帰る時間だ'],
+      cue: 'マイケルの「Why?」への答え',
       line: 'Why? — I *found twins*. — Oh, my God. Twins.',
-      said: '「なぜ？」に「双子を見つけた」と返され、喜んで女性に別れを告げる。その双子は男だった。',
-      mean: '双子と聞いただけで、話していた相手をあっさり置いていく。',
-      trap: 'I’m bored が聞こえるが、退屈なのは呼びに来た側。誰の気持ちかは主語で確かめる。',
-      use: 'Sorry, something came up. I have to go.（ごめん、用事ができた。行かなきゃ）' },
-
-    // R fix: blind 70 %: "quit drinking" was a weak reading of drop; now the "drop it" (let it go) idiom
-    // why: let it go ← "drop it" = stop arguing, a common chunk; story ← "I'm bored" right after, and a long story was
-    //   just being told
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'drop', reveals: ['twins'], seg: [88.4, 91.5],
+      said: '「なぜ？」に「双子を見つけた」と返され、マイケルは喜んで女性に別れを告げる。',
+      mean: 'found ＝ find（見つける）の過去形。双子の女性だと思って、すぐ移動する。',
+      trap: 'ドワイトの I’m bored（退屈だ）が聞こえるので、女性が退屈だと思いやすい。',
+      use: 'I found it!（見つけた！）' },
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'drop', reveals: ['twins'], seg: [88.4, 91.5], retired: true,
       stem: 'When Dwight calls Michael over, what is he asking him to do?',
       choices: ['Leave the woman he’s talking to', 'Let go of the point he’s arguing', 'Stop his story; it’s boring'], a: 0,
       cue: '「this one」が指すもの。すぐあとの理由も。',
@@ -221,51 +161,37 @@ export const dwightDate: Clip = {
       mean: 'drop ＝ 手を引く。this one は今話している女性。人に使うとかなり失礼な言い方。',
       trap: 'drop it（その話はやめろ）と取りやすい。this one が何かは次の一言で確かめる。',
       use: 'Let’s drop this topic, okay?（この話はやめよう、ね？）' },
-
-    // R fix: blind 60 %: the key was the only two-part choice; the distractors now have a reason too
-    // why: apology ← "I'm sorry" at face value, as if he'd said something wrong; check ← "You understand" heard as a
-    //   question (分かった？)
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [93.45, 99.4],
-      stem: 'Hearing about the twins, what do the next words to the woman do?',
-      choices: ['End the talk, assuming she won’t mind', 'Apologize for something rude he said',
-                'Check she understood, then explain more'], a: 0,
-      cue: '「Twins.」のすぐあとの短い3つの文。',
+      stem: 'What is Michael doing with “Nice to meet you”?', ja: 'マイケルの「Nice to meet you」は何をしている？',
+      choices: ['Saying goodbye', 'Saying hello', 'Saying thank you'], a: 0,
+      choicesJa: ['別れを告げる', 'あいさつして出会う', 'お礼を言う'],
+      cue: '「I’m sorry」のあと',
       line: '*I’m sorry. You understand. Nice to meet you.*',
-      said: '「ごめん。分かるよね。会えてよかった」と言い残す。',
-      mean: 'You understand. は質問でなく「分かるよね」の決めつけ。謝る形で話を切り上げる。',
-      trap: 'I’m sorry を謝罪と取りやすい。Nice to meet you で締めたら別れの言葉。',
-      use: 'Sorry, you understand. Gotta run!（ごめん、分かるよね。急がなきゃ！）' },
-
-    // R fix: blind 50 %: "Weren't they" was out of place for people standing there; now "Aren't those"
-    // why: Are they ← the final "n't" is barely there before "they"; Aren't those ← a near sound, and the twins are
-    //   across the room; Aren't these ← "they" and "these" both start with a soft th
+      said: 'マイケルが「ごめん。わかるよね。会えてよかった」と去る。',
+      mean: 'Nice to meet you は出会いのあいさつ。ここでは別れのあいさつに使っている。',
+      trap: '出会いのあいさつだと思いやすい。言いながら去っていく。',
+      use: 'It was nice meeting you.（お会いできてよかったです）' },
     { id: 's1', skill: 'sound', level: 'B2', point: 'arent', seg: [99.3, 106.05],
-      stem: 'Fill the gap: “___ magnificent?”',
-      choices: ['Aren’t they', 'Are they', 'Aren’t those', 'Aren’t these'], a: 0,
-      cue: '文の最初の2語。母音と最後の子音に注意。',
+      stem: '“___ magnificent?”', ja: '空所に入るのは？',
+      choices: ['Aren’t they', 'Are they', 'Aren’t those'], a: 0,
+      choicesJa: ['すばらしくない？', 'すばらしい？', 'あれ、すばらしくない？'],
+      cue: '双子を見せた時の最初の言葉',
       line: '*Aren’t they* magnificent?',
-      said: '双子を見せて「すばらしくない？」と同意を求める。',
-      mean: 'Aren’t they ～? は同意を求める形。aren’t の t はほぼ消える。',
-      trap: 't が消えても n の音は残る。Are they なら単なる質問で、相手の意見を聞く形になる。',
-      use: 'Aren’t these shoes cute?（この靴かわいくない？）' },
-
-    // why: not twins ← a twist about the twins themselves is the expected surprise; taken ← the dating script: they
-    //   already have partners
-    // R fix: seg ends at 107.95 (was 108, cutting "I love")
+      said: 'ドワイトが双子を見せて「すばらしいだろ？」と言う。',
+      mean: 'Aren’t they 〜? ＝ 〜じゃない？（同意を求める）。「アーンゼイ」と t はほぼ消える。',
+      trap: 'n’t が小さく、Are they と聞こえやすい。「アーン」の「ン」を聞く。',
+      use: 'Aren’t they cute?（かわいくない？）' },
     { id: 'd4', skill: 'detail', level: 'B1', point: 'men', seg: [99.3, 107.95],
-      stem: 'What turns out to be the problem with the twins?',
-      choices: ['They’re men, not women', 'They’re not really twins', 'They’re already taken'], a: 0,
-      cue: '「magnificent?」への返事、最初の2語。',
+      stem: 'What is the problem with the twins?', ja: '双子の何が問題？',
+      choices: ['They are men', 'They aren’t twins', 'They have dates'], a: 0,
+      choicesJa: ['男性だ', '双子じゃない', 'デートの相手がいる'],
+      cue: 'マイケルの返事',
       line: '*They’re men*, Dwight.',
-      said: '「すばらしいだろ？」に「男じゃないか、Dwight」と返す。',
-      mean: '女性の双子だと思って来たのに、男の双子だった。期待が外れる。',
-      trap: 'men は短く、文末の Dwight に気を取られやすい。返事の最初の2語に答えがあることが多い。',
-      use: 'Wait, they’re not who I thought.（あれ、思ってた人たちじゃない）' },
-
-    // R fix: blind 55 %: the key was the only two-part choice; reworded to one clause like the others
-    // why: sorry ← a reply right after a complaint heard as an apology; teasing ← the joke aimed at Michael, who got
-    //   excited (but Dwight himself called them "magnificent")
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'men', seg: [105.6, 112.3],
+      said: '「すばらしいだろ？」に、マイケルが「男じゃないか、ドワイト」と返す。',
+      mean: 'They’re ＝ They are。men ＝ man の複数形。女性の双子ではなかった。',
+      trap: 'magnificent（すばらしい）だけ聞くと、問題がないと思いやすい。',
+      use: 'They’re my brothers.（彼らは私の兄弟です）' },
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'men', seg: [105.6, 112.3], retired: true,
       stem: 'Why is Dwight’s reply to the news about the men funny?',
       choices: ['He just wanted twins, not dates for them', 'He’s sorry he didn’t look more closely',
                 'He’s teasing Michael for getting excited'], a: 0,
@@ -275,5 +201,15 @@ export const dwightDate: Clip = {
       mean: 'a good set of は道具を集める時の言い方。女性かは関係なく、双子そのものが好き。',
       trap: '文句のあとの返事は謝罪に聞こえやすいが、I love で始まる。動詞で気持ちを聞く。',
       use: 'I love finding a good used bookstore.（いい古本屋を見つけるのが好き）' },
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'wrong', seg: [107.5, 112.3],
+      stem: 'How does Michael feel about Dwight at the end?', ja: '最後に、マイケルはドワイトをどう思っている？',
+      choices: ['Dwight is so weird', 'Dwight is very smart', 'Dwight is very kind'], a: 0,
+      choicesJa: ['ドワイトはすごく変だ', 'ドワイトはすごく頭がいい', 'ドワイトはすごく優しい'],
+      cue: '最後のマイケルの一言',
+      line: 'I love finding a good set of twins. — *Something is wrong with you.*',
+      said: '「いい双子を見つけるの、好きだ」「お前、どこかおかしい」。',
+      mean: 'Something is wrong with you ＝ あなた、どこかおかしい。あきれた時の言い方。',
+      trap: 'love や good で、喜んでいると思いやすい。wrong が手がかり。',
+      use: 'Something is wrong with my phone.（スマホの調子がおかしい）' },
   ]
 };
