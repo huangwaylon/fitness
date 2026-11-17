@@ -1,17 +1,13 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 6, new 3
 // “Leslie gets jealous of a journalist | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Leslie
 // and Ben sit up with a doomsday group's all-night vigil in the park; when a reporter asks about Ben, Leslie tries to keep
 // the two apart, and before dawn she admits to Ron that she still wants to be with him.
-// Segments from the captions, words from whisper (2026-11-16). Untested on purpose: 68–76 s (“Planet Nutbrain”/“nut
-// brand”, “bran”/“brand”), 104–107 s (the reporter's name), 155 s and 209 s (sex), 225–235 s (“keep your pants on”),
-// 242 s (“For her”/“or”).
+// Segments from the captions, words from whisper (2026-11-16). Untested on purpose: 68–76 s, 104–107 s (the reporter's
+// name), 155 s and 209 s (sex), 225–235 s ("keep your pants on"), 242 s. h1 says "the city worker": the speaker of
+// "nothing better to do" (Ben or Chris) isn't settled by the words.
 // EAR CHECK: 192.4 s s1 — whisper “I’m gonna remind you”, captions “I’m going to remind you”; the key is the reduced form
 // EAR CHECK: 210.6 s x1 — whisper “I gotta keep them away”, captions “I got to keep them away”; the key is “gotta keep”
 // EAR CHECK: 306.9 s r1 — the cut must fall after “Ron” and before “if the world was ending tomorrow”
-// REVIEW 2026-11-16: pass 6, fix 17, drop 1, new 0; ear checks 3
-// Open: a cold re-read (fresh session, choices only) still beats d2, a3, d5 and i3 at 70–80 %. d2 and d5 lean on show
-//   knowledge, and i3 on the title ("jealous"); a3's stammer is hard to hide from a sitcom-savvy reader.
-// Open: i3 assumes the reporter is the one who says "I could check that out" (the rest of her lines fit); if it's Ben,
-//   the key still holds, but the said note (記者が興味を見せる) should change.
 import type { Clip } from '../types.ts';
 
 export const zorpVigil: Clip = {
@@ -20,36 +16,38 @@ export const zorpVigil: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: shut it down ← "terrible news" and "cult" build a danger story, and city staff do go; reporter ← a reporter
-    //   asks questions later in the clip, so it sounds like a job for the paper
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'go', reveals: ['vigil'], seg: [0, 72.2],
-      stem: 'Why does Leslie end up spending the night at the park?',
-      choices: ['She insists on watching a vigil she isn’t worried about',
-                'The city has asked her to shut down a vigil it fears',
-                'A reporter has asked her help to cover the doomsday story'], a: 0,
-      cue: 'Herb の知らせへの反応と、最後に自分から言い出すこと。',
-      line: 'Look, there’s *nothing to worry about*… I think Ben and I *should accompany you* tonight.',
-      said: '「世界が終わる」という知らせに、レスリーは「心配ない」と言いつつ、今夜ベンと付き添うと言い張る。',
-      mean: '危険だからではなく、自分から見守りに行く場面。',
-      trap: 'cult や terrible news で危険な話に聞こえやすい。本人の「心配ない」を聞く。',
-      use: 'There’s nothing to worry about.（心配することないよ）' },
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'afraidso', seg: [12.8, 18.0],
+      stem: 'What does Herb mean by “Afraid so”?', ja: 'ハーブの “Afraid so” はどういう意味？',
+      choices: ['Yes, sadly', 'No, not really', 'I’m scared'], a: 0,
+      choicesJa: ['あいにく、そう', 'いや、そうでもない', 'こわい'],
+      cue: '「You sure it’s tomorrow?」への返事',
+      line: 'You sure it’s tomorrow? — *Afraid so*. Right at dawn.',
+      said: '「本当に明日？」と聞かれ、「あいにくね。夜明けちょうどに」と答える。',
+      mean: 'Afraid so ＝ I’m afraid so（あいにく、そうです）。悪い知らせに「はい」と言うときの言い方。',
+      trap: 'afraid から「こわい」と思いやすい。I’m afraid は「あいにく」の前置きにもなる。',
+      use: 'Is the shop closed? — Afraid so.（店、閉まってる？ーあいにく）' },
 
-    // R fix: V2 (blind 75 %): the key was the only choice in the park and the only quiet one; three park choices now,
-    //   and the key no longer says "vigil" (g1 shows that word)
-    // R fix (2): a cold re-read still got it (75 %): "all night" was the only overnight choice; a hilltop vigil (the
-    //   doomsday cliché) replaces the week-long camp
-    // why: march at dawn ← "at dawn" is said twice, just before; hilltop ← the doomsday-cult picture, with "in the
-    //   park" missed
     { id: 'd1', skill: 'detail', level: 'B1', point: 'vigil', seg: [22.5, 33.5],
-      stem: 'According to Leslie, what do the group’s members do every few years?',
-      choices: ['Stay up all night in the park', 'Stay up all night on a hilltop',
-                'March through the park at dawn'], a: 0,
-      cue: 'predict のあと、and they have の続き。',
+      stem: 'What do the group’s members do every few years?', ja: 'このグループは、数年ごとに何をする？',
+      choices: ['Stay up all night in the park', 'Stay up all night on a hill', 'Walk through the park at dawn'], a: 0,
+      choicesJa: ['公園で一晩中起きている', '丘の上で一晩中起きている', '夜明けに公園を歩く'],
+      cue: '「and they have」のあと',
       line: 'they have an *all-night vigil in the park*',
       said: '残った信者が数年ごとに世界の終わりを予言し、公園で徹夜の集まりを開く、と説明する。',
-      mean: 'vigil ＝ 夜通し起きて待つ集まり。',
-      trap: '直前に at dawn が2回出るので「夜明けに集まる」と取りやすい。all-night は一晩中。',
-      use: 'They held a candlelight vigil.（キャンドルを灯して集まった）' },
+      mean: 'all-night ＝ 一晩中の。vigil ＝ 夜通し起きて待つ集まり。',
+      trap: '前に at dawn が2回出るので、夜明けに集まると思いやすい。all-night は一晩中。',
+      use: 'The store is open all night.（その店は一晩中開いている）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'go', seg: [27.0, 68.0],
+      stem: 'Why does Leslie go to the park tonight?', ja: 'レスリーはなぜ今夜公園に行く？',
+      choices: ['She insists on going along', 'The city fears the group', 'A reporter asks her to'], a: 0,
+      choicesJa: ['一緒に行くと言いはる', '市がグループをこわがっている', '記者に頼まれる'],
+      cue: '「At any rate」のあと',
+      line: 'Look, there’s *nothing to worry about*… I think Ben and I *should accompany you* tonight. … *I insist*.',
+      said: '「心配ない」と言いつつ、今夜ベンと付き添うと言いはる。',
+      mean: 'accompany ＝ 一緒に行く。I insist ＝ ぜひそうさせて。危険だからではなく、自分から行く。',
+      trap: 'cult（カルト）で危険な話だと思いやすい。本人は nothing to worry about と言う。',
+      use: 'No, no, I insist. Let me pay.（いやいや、ぜひ私に払わせて）' },
 
     // R fix: V2 (blind 55 %): the key was the only choice about critics; three "Anyone who…" choices now, built on who
     //   does what to whom
@@ -57,7 +55,7 @@ export const zorpVigil: Clip = {
     //   "very reasonable" pinned on the wrong side
     // why: joins ← "reasonable" heard as the members' own image; attackers look sensible ← "attacking something very
     //   reasonable" with the adjective put on the attackers
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'name', seg: [39.8, 49.5],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'name', seg: [39.8, 49.5], retired: true,
       stem: 'What is the thinking behind the group’s name?',
       choices: ['Anyone who attacks them will look unfair', 'Anyone who attacks them will look sensible',
                 'Anyone who joins them will look sensible'], a: 0,
@@ -68,62 +66,38 @@ export const zorpVigil: Clip = {
       trap: '名前は入る人のため、という型で取りやすい。if のあと、誰が誰を批判するかを聞く。',
       use: 'Complain, and you look like the bad guy.（文句を言うと、こっちが悪者に見える）' },
 
-    // why: 50 ← fifteen/fifty (-teen/-ty); 5 ← "every few years" and a weak "fif-" leave a small number
-    { id: 'n1', skill: 'number', level: 'B1', point: 'times', seg: [50.5, 55.5],
-      stem: 'How many times has the group said the world would end?',
-      choices: ['5', '15', '50'], a: 1, keep: true,
-      cue: 'end のすぐあと、回数を言う部分。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'times', seg: [50.5, 55.5], keep: true,
+      stem: 'How many times has the group said the world would end?', ja: 'このグループは、世界が終わると何回言った？',
+      choices: ['5', '15', '50'], a: 1,
+      choicesJa: ['5回', '15回', '50回'],
+      cue: '「world’s gonna end」のすぐあと',
       line: 'They’ve said that the world’s gonna end *15 times*',
       said: '「世界が終わると言ったのは15回」。だから心配ない、という話。',
-      mean: 'fifteen は teen を強く長く言う。fifty は前の fif が強い。',
-      trap: '-teen と -ty は聞き分けにくい。teen は「ティーン」と長く伸び、強勢も後ろにある。',
+      mean: 'fifteen は後ろの「ティーン」を強く長く言う。fifty は前の「フィフ」が強い。',
+      trap: 'fifty なら「フィフティ」と前が強い。five は「ファイヴ」だけ。「ティーン」と伸びれば15。',
       use: 'I’ve told you fifteen times!（もう15回は言ったよ！）' },
 
-    // R fix: V2 (blind 55 %): "how often" was a filler; it's now an apology for the joke before (Live Strong)
-    // why: less certain ← "I think" right after reads as a hedge, and "at any rate" as "at least"; the joke ← it follows
-    //   the Lance Armstrong joke, so it sounds like a retreat from it
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'rate', seg: [62.1, 65.8],
-      stem: 'What does Leslie’s opening phrase do before “I think Ben and I…”?',
-      choices: ['It moves on from the side talk to her plan', 'It makes her plan sound less certain',
-                'It admits the joke before it fell flat'], a: 0,
-      cue: 'I think の直前、3語の決まった言い方。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'rate', seg: [62.1, 65.8],
+      stem: 'What does “At any rate” mean?', ja: '“At any rate” はどういう意味？',
+      choices: ['Anyway', 'At a good price', 'At last'], a: 0,
+      choicesJa: ['とにかく', 'いい値段で', 'ついに'],
+      cue: '「I think」の前の3語',
       line: '*At any rate*, I think Ben and I should accompany you tonight.',
       said: '有名人の別れ話のあと、「とにかく、今夜はベンと私が付き添う」と切り出す。',
-      mean: 'At any rate ＝「それはさておき」。脱線した話を本題に戻す。',
-      trap: 'rate を「割合・料金」と文字通りに取ると意味がずれる。文頭の3語は話の切りかえ。',
+      mean: 'At any rate ＝ とにかく、それはさておき。脱線した話を本題に戻す。',
+      trap: 'rate から「料金」と思いやすい。文の頭の3語は、話を切りかえる合図。',
       use: 'At any rate, let’s order.（それはさておき、注文しよう）' },
 
-    // R fix: V2 (blind 50 %): the key was the only choice naming Leslie and the only one about feelings; all three are
-    //   now one-clause reasons of the same length
-    // why: early start ← the usual excuse for leaving early; silly ← "forced to hang out" heard as a complaint about the
-    //   vigil
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'weird', seg: [78.4, 87.3],
-      stem: 'Why does Ben say he won’t stay long tonight?',
-      choices: ['Things with Leslie still feel awkward', 'He has an early start at work tomorrow',
-                'The vigil feels a bit silly to him'], a: 0,
-      cue: 'It’s just のあと、文の最後の形容詞。',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'weird', seg: [78.4, 87.3],
+      stem: 'Why won’t Ben stay long tonight?', ja: 'ベンはなぜ今夜長くいない？',
+      choices: ['Things with Leslie feel weird', 'He has work early tomorrow', 'The vigil seems silly'], a: 0,
+      choicesJa: ['レスリーとまだ気まずい', '明日は朝早く仕事がある', '集まりがばかばかしい'],
+      cue: '「It’s just」のあと',
       line: 'I’ll *come for a bit*, but… I’m not gonna stay. It’s just… *still kind of weird*, right?',
       said: '「少しは行くけど、長くはいない。まだちょっと気まずいでしょ」と言う。',
-      mean: 'weird ＝ 変。ここでは二人の間が気まずいこと。理由をぼかして伝えている。',
-      trap: '「仕方なく」と聞くと、行事が嫌に聞こえやすい。It’s just のあとに本当の理由が来る。',
-      use: 'It’s still a little weird for me.（まだちょっと気まずくて）' },
-
-    // R fix: V2 (blind 65 %): the key was the only two-sided feeling; every choice now pairs a feeling with how she
-    //   handles it
-    // R fix (2): a cold re-read got it at 80 % ("minds but hides it" is the sitcom default); the "glad" choice is now a
-    //   second "she minds", so the feeling alone doesn't pick the key
-    // why: pushes him to stay ← she minds, and "I insist" earlier sounds like her pushing; means it ← the yeahs taken
-    //   at face value
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'yeah', seg: [78.4, 92.2],
-      stem: 'How does Leslie take Ben’s plan to leave early?',
-      choices: ['She minds, but tries hard to seem fine', 'She minds, and pushes him to stay longer',
-                'She’s fine with it, and means what she says'], a: 0,
-      cue: '返事の yeah の数と、そのあとの2つの言い方。',
-      line: 'Yeah, yeah, yeah… mm-hmm, *totally get it*. *Definitely get it*.',
-      said: 'ベンが「長くはいない」と言うと、yeah を何度も重ね、「全然分かる」と言う。',
-      mean: '分かったと何度も言いすぎるのは、平気なふりのサイン。',
-      trap: 'totally を本気の同意と取りやすい。同じ返事が続きすぎたら、気持ちを隠していると疑う。',
-      use: 'No, totally, I get it. It’s fine.（いや、全然分かるよ。大丈夫）' },
+      mean: 'weird ＝ 変な。ここでは二人の間が気まずいこと。for a bit ＝ 少しの間。',
+      trap: '行事がいやなのだと思いやすい。It’s just のあとに本当の理由が来る。',
+      use: 'I’ll come for a bit, but I can’t stay.（少し顔を出すけど、長くはいられない）' },
 
     // R fix: V2 (blind 50 %): "joking, doesn't mind" was the easy throw-away; it's now a second "she cares" reading
     //   that the words don't support, so the key isn't the only choice where she minds
@@ -131,7 +105,7 @@ export const zorpVigil: Clip = {
     //   Ben hears ← she does mind, but nothing in the words is aimed at Ben
     // anchor: 92.3–101.6 s "Lots of people don't hang out", then pairs that were never close, ending on "probably";
     //   right after the run of "yeah"s at 87.6–92 s
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'yeah', seg: [78.4, 101.9],
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'yeah', seg: [78.4, 101.9], retired: true,
       stem: 'In her comment to the camera, what does Leslie’s list of pairs give away?',
       choices: ['She’ll grab any pair at all to make it seem normal', 'She thinks those pairs drifted apart, as she and Ben did',
                 'She hopes Ben hears this and starts calling again'], a: 0,
@@ -142,10 +116,21 @@ export const zorpVigil: Clip = {
       trap: '会わない＝疎遠になった、と取りやすい。慰めの例が苦しいほど、本人は気にしている。',
       use: 'It’s fine. Lots of people eat alone.（平気。一人で食べる人なんて大勢いる）' },
 
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'getit', seg: [86.0, 92.2],
+      stem: 'What does Leslie mean by “totally get it”?', ja: 'レスリーの “totally get it” はどういう意味？',
+      choices: ['I fully understand', 'I’ll go and get it', 'I totally forgot'], a: 0,
+      choicesJa: ['よく分かる', '取ってくる', 'すっかり忘れてた'],
+      cue: 'たくさんの yeah のあと',
+      line: 'Yeah, yeah, yeah… mm-hmm, *totally get it*. *Definitely get it*.',
+      said: 'yeah を何度も重ね、「全然分かる。もちろん分かる」と言う。',
+      mean: 'get it ＝ 分かる。totally ＝ すっかり。言いすぎるのは、平気なふりのしるし。',
+      trap: 'get から「手に入れる」と思いやすい。会話の get it は「分かる」。',
+      use: 'Oh, I get it now. Thanks.（ああ、やっと分かった。ありがとう）' },
+
     // R fix: V2 (blind 70 %): the fillers (good press, broke a rule) are now a literal reading and a fair reporter's angle
     // why: join ← "two people… here" read literally, as staff taking part; wasting staff ← a reporter's usual angle on
     //   officials at a harmless event
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'interpret', seg: [101.8, 112.25],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'interpret', seg: [101.8, 112.25], retired: true,
       stem: 'When the reporter mentions two people from the city manager’s office, what is she hinting?',
       choices: ['The city is more worried than it admits', 'The city has sent staff to join the group',
                 'The city is wasting staff on a harmless event'], a: 0,
@@ -156,54 +141,41 @@ export const zorpVigil: Clip = {
       trap: '記者の質問はむだ遣いの批判に聞こえやすい。So の前の質問とつなげて聞く。',
       use: 'So I shouldn’t read anything into that?（じゃあ、深い意味はないってこと？）' },
 
-    // R fix: V2 (blind 55 %): three "He clears the city by…" choices now, so the frame gives nothing away
-    // why: mocking the cult ← "says more about me than them" heard as a dig at "them"; teasing her ← "them" heard as
-    //   aimed at the reporter who asked
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'nothing', reveals: ['interpret'], seg: [107.1, 116.6],
-      stem: 'Why is the reply to the reporter’s question about the staff funny?',
-      choices: ['He clears the city by putting himself down', 'He clears the city by mocking the cult',
-                'He clears the city by teasing the reporter'], a: 0,
-      cue: 'except のあとと、最後の比べ方。',
-      line: 'Nothing except that *I had nothing better to do*. Which probably *says more about me* than them.',
-      said: '「意味はない。ほかにやることがなかっただけ。それは彼らより僕のことを物語るね」と答える。',
-      mean: '市は心配していないと示すため、自分は暇人だと認める。自分を下げる笑い。',
-      trap: 'them は信者のこと。最後の比べ方を悪口と取りやすいが、下げているのは自分。',
-      use: 'That says more about me than you.（それは君より僕の問題だね）' },
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'nothing', seg: [107.1, 116.6],
+      stem: 'Why is the city worker at the park, he says?', ja: '市の職員は、公園に来た理由を何と言う？',
+      choices: ['He had nothing better to do', 'The city is worried', 'He wants to join the group'], a: 0,
+      choicesJa: ['ほかにすることがなかった', '市が心配している', 'グループに入りたい'],
+      cue: '「except that」のあと',
+      line: 'Nothing except that *I had nothing better to do*. Which probably says more about me than them.',
+      said: '「意味はない。ほかにやることがなかっただけ」と答える。',
+      mean: 'nothing better to do ＝ ほかにすることがない、ひま。市は心配していない、と言うために自分を下げている。',
+      trap: '記者が「市の職員が二人いる」と言うので、市が心配していると思いやすい。答えは nothing better to do。',
+      use: 'I had nothing better to do, so I came.（ひまだったから来たんだ）' },
 
-    // R fix: V2 (blind 65 %): the party-stories filler is now "story" as a news story (she is a reporter); "earlier in the
-    //   evening" is now why he came
-    // why: news story ← story = 記事, and she is writing one; why he came ← "What's the story?" = 何があった、どうして
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'story', seg: [139.1, 144.1],
-      stem: 'When the reporter makes clear she means Ben, what is she asking?',
-      choices: ['Who he is and what his situation is', 'Why he decided to come tonight',
-                'What he thinks of her news story'], a: 0,
-      cue: 'I meant のあと、短い質問。',
+      stem: 'What does “What’s his story?” ask?', ja: '“What’s his story?” は何を聞いている？',
+      choices: ['What kind of man he is', 'What news he is writing', 'Where he went tonight'], a: 0,
+      choicesJa: ['どんな人なのか', '何の記事を書いているか', '今夜どこへ行ったか'],
+      cue: '「I meant Ben」のあと',
       line: 'I meant Ben. *What’s his story?*',
       said: '「クリスじゃなくてベン。どういう人？」と聞く。「独身？」の続き。',
-      mean: 'What’s his story? ＝ どんな人？事情は？恋人の有無も含めて探る聞き方。',
-      trap: '記者なので story を「記事」と取りやすい。人について聞くときは「素性・事情」。',
-      use: 'Who’s the new guy? What’s his story?（新人誰？どんな人？）' },
+      mean: 'What’s his story? ＝ どんな人？事情は？恋人がいるかも含めて聞く言い方。',
+      trap: '記者なので story を「記事」と思いやすい。人について聞くときは「どんな人か」。',
+      use: 'Who’s the new guy? What’s his story?（新人は誰？どんな人？）' },
 
-    // R fix: V2 (blind 70 %): "offended" was a filler; it's now "suspicious" (her jealousy later makes it tempting), and
-    //   "bored" is now "cool"
-    // why: cool ← "I don't know" and "not sure" taken as a calm brush-off; suspicious ← "Who? Ben?" heard as her
-    //   turning the question back on the reporter
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'fluster', seg: [143.7, 150.5],
-      stem: 'How does Leslie sound when she is asked about Ben?',
-      choices: ['Flustered, tripping over her words', 'Cool, as if she’d rather not gossip',
-                'Suspicious, as if testing the reporter'], a: 0,
-      cue: '答えの最初の数語、同じ語のくり返し。',
+      stem: 'How does Leslie sound when asked about Ben?', ja: 'ベンのことを聞かれて、レスリーはどう聞こえる？',
+      choices: ['Nervous, lost for words', 'Calm, not interested', 'Angry at the reporter'], a: 0,
+      choicesJa: ['あせって、言葉が出ない', '落ち着いていて、興味がない', '記者に怒っている'],
+      cue: '答えの最初の数語',
       line: 'Who? Ben? *I… I don’t know. I… I’m not… I’m not sure.*',
       said: '「誰？ベン？えっと…分からない…よく知らない」と、何度も言いかける。',
-      mean: 'よく知る人のことを聞かれて、言葉が出てこない。動揺のサイン。',
-      trap: 'I don’t know だけ聞くと冷静にかわしたように聞こえる。言いかけてやめる回数に注目する。',
+      mean: 'よく知っている人のことを聞かれて、言葉が出てこない。あせっているしるし。',
+      trap: 'I don’t know だけ聞くと、冷静にかわしたように思いやすい。何度も言いかけてやめている。',
       use: 'Who, me? I… I’m not sure.（え、私？えっと…よく分からない）' },
 
-    // R drop: nt2 (attitude C2, "what is she trying not to say?"): its key (they once dated) rests on lines at 192 s and
-    //   300 s, outside its segment (S4, V1); blind 70 %; it shared a3's point. Never shipped, so deleted.
-
     // why: softens ← nay = いいえ, heard as pulling the claim back; disagrees ← "nay" as a no-vote aimed at the reporter
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'nay', seg: [159.3, 163.4],
+    { id: 'f4', skill: 'phrase', level: 'C1', point: 'nay', seg: [159.3, 163.4], retired: true,
       stem: 'In her last line about Ben, what does the old-fashioned word do?',
       choices: ['It turns her claim into a stronger one', 'It softens her claim into a weaker one',
                 'It shows she disagrees with the reporter'], a: 0,
@@ -214,60 +186,64 @@ export const zorpVigil: Clip = {
       trap: 'nay を「いいえ」と取ると、取り消しや反対に聞こえる。後ろの語が前より強いかを聞く。',
       use: 'It was good, nay, amazing.（良かった、いや、最高だった）' },
 
-    // why: wanna ← once "I'm" shrinks, gonna and wanna differ only in the first consonant; have to ← "hafta" has the
-    //   same two-beat rhythm
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'happyhelp', seg: [166.5, 170.5],
+      stem: 'What does Leslie mean by “Happy to help”?', ja: 'レスリーの “Happy to help” はどういう意味？',
+      choices: ['You’re welcome', 'I’m happy today', 'Please help me'], a: 0,
+      choicesJa: ['どういたしまして', '今日はうれしい', '手伝って'],
+      cue: '「Thanks」への返事',
+      line: 'Cool. Thanks. — *Happy to help*.',
+      said: '「ありがとう」と言われ、「お役に立ててよかった」と返す。',
+      mean: 'Happy to help ＝ お役に立ててうれしい。thank you への返事で、you’re welcome と同じ。',
+      trap: 'happy から「うれしい気分」の話だと思いやすい。お礼への決まった返事。',
+      use: 'Thanks so much! — Happy to help.（本当にありがとう！ーどういたしまして）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'remind', seg: [191.35, 196.85],
-      stem: 'Fill the gap: “___ remind you that the reason…”',
+      stem: 'Fill the gap: “___ remind you that the reason…”', ja: '空所に入るのは？ “___ remind you that the reason…”',
       choices: ['I’m gonna', 'I wanna', 'I have to'], a: 0,
-      cue: '文の最初、remind の前の弱い2拍。',
+      choicesJa: ['〜するよ', '〜したい', '〜しなきゃ'],
+      cue: '文の最初、remind の前',
       line: '*I’m gonna* remind you that the reason…',
       said: '「言っておくけど」と切り出す。I’m gonna が「アムガナ」と短い。',
-      mean: 'I’m gonna ＋ 動詞 ＝ これから〜するよ、という予告。ここでは釘を刺す前置き。',
-      trap: 'I’m の m が溶けて wanna に聞こえやすい。g の音があるかを聞く。',
+      mean: 'I’m gonna ＋動詞 ＝ これから〜するよ。ここでは「言っておくけど」の前置き。',
+      trap: 'I wanna なら「ワナ」、I have to なら「ハフタ」。「アムガナ」と g が聞こえれば gonna。',
       use: 'I’m gonna be honest with you.（正直に言うね）' },
 
-    // R fix: V2 (blind 55 %): the key was the only choice about Leslie; three "… decided to…" choices now, two of them
-    //   on "city council", told apart by the subject
-    // why: city manager ← "city" is heard, and Ben is from the city manager's office; he ran ← the subject of "decided"
-    //   lost in fast speech
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'council', reveals: ['fluster'], seg: [191.35, 196.85],
-      stem: 'According to her friend, why isn’t Leslie dating Ben?',
-      choices: ['She decided to run for city council', 'She decided to work for the city manager',
-                'He decided to run for city council'], a: 0,
-      cue: 'because のあと、誰が何を決めたか。',
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'council', seg: [191.35, 196.85],
+      stem: 'Why isn’t Leslie dating Ben, says her friend?', ja: '友だちによると、レスリーはなぜベンと付き合っていない？',
+      choices: ['She chose to run for council', 'She works for the city manager', 'He chose to run for council'], a: 0,
+      choicesJa: ['彼女が市議会選に出ると決めた', '彼女が市の管理官の下で働いている', '彼が市議会選に出ると決めた'],
+      cue: '「because」のあと',
       line: 'the reason you’re not dating him is because *you decided to run for city council*.',
-      said: '友だちが「付き合わないのは、あなたが市議会選に出ると決めたからでしょ」と思い出させる。',
-      mean: '付き合わないのはレスリー自身の選択だった、という指摘。',
-      trap: 'city が聞こえるので市の仕事の話と混ざりやすい。decided の主語を聞く。',
-      use: 'Remember, this was your idea.（忘れないで、言い出したのは君だよ）' },
+      said: '友だちが「付き合わないのは、あなたが市議会選に出ると決めたからでしょ」と言う。',
+      mean: 'run for 〜 ＝ 〜の選挙に出る。付き合わないのは、レスリー自身が決めたこと。',
+      trap: 'city が聞こえるので、市の仕事の話と混ざりやすい。decided の前の you を聞く。',
+      use: 'She’s going to run for mayor.（彼女は市長選に出るつもりだ）' },
 
-    // R fix: V2 (blind 50 %): three "verb, as if…" choices of one length now
-    // why: checks ← it has a question's form and rising pitch; gives in ← "Oh, so…" heard as accepting the point
-    //   (そっか)
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'canta', seg: [191.35, 199.85],
-      stem: 'When her friend reminds her why she isn’t dating Ben, what does Leslie’s reply do?',
-      choices: ['Pushes back, as if the idea is unfair', 'Checks, as if she truly isn’t sure',
-                'Gives in, as if she sees the point'], a: 0,
-      cue: 'Oh, so で始まる返事の、文の形。',
+      stem: 'How does Leslie answer her friend?', ja: 'レスリーは友だちにどう答える？',
+      choices: ['She argues back', 'She agrees with her', 'She says sorry'], a: 0,
+      choicesJa: ['言い返す', '「そうだね」と認める', '謝る'],
+      cue: '「Oh, so」で始まる返事',
       line: 'Oh, so *just because I can’t go out with him, someone else can?*',
       said: '「じゃあ、私が付き合えないからって、ほかの人ならいいわけ？」と言い返す。',
-      mean: '答えを求めない反語の質問。理屈で負けても、ほかの人もダメだと言い張っている。',
-      trap: 'Oh, so は「そっか」と納得にも聞こえる。疑問の形でも、言い返しなら答えは求めていない。',
+      mean: 'just because 〜 ＝ 〜だからって。質問の形だが答えは求めず、ほかの人もだめだと言い張っている。',
+      trap: 'Oh, so は「そっか」と納得したようにも聞こえやすい。続く just because… ? は言い返し。',
       use: 'Oh, so now it’s my fault?（え、じゃあ私のせいってこと？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotta', seg: [209.3, 212.0],
-      stem: 'Type what she says: “I ___ them away from each other…” (2 words)', answer: 'gotta keep',
-      cue: '2回目の I のあと、them の前の2語。',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotta', seg: [209.3, 212],
+      stem: 'Type what she says: “I ___ them away from each other…” (2 words)', ja: '書こう：“I ___ them away from each other…”（2語）',
+      answer: 'gotta keep',
+      cue: '2回目の I のあと',
       line: 'I gotta stop this. I *gotta keep* them away from each other…',
-      said: '「止めなきゃ。引き離さなきゃ」。got to が「ガラ」と縮む。',
-      mean: 'gotta ＝ have got to ＝ have to。焦りが出る言い方。',
-      trap: 'have が消え、gotta の t は弾んで「ラ」に近い。got to に戻すと意味が分かる。',
+      said: '「止めなきゃ。二人を引き離さなきゃ」と言う。',
+      mean: 'gotta ＝ have got to ＝ have to（〜しなきゃ）。あせっているときの言い方。',
+      trap: 'have が消え、gotta の t は軽い「ラ」の音で「ガラ」。got to に戻すと意味が分かる。',
       use: 'I gotta go, my train’s here.（もう行かなきゃ、電車が来た）' },
 
     // R fix: V2 (blind 75 %) + S1: "take him herself" was a filler; it's now her own "losers" line. The stem no longer
     //   says she is talking to Ben (who "you" is can't be settled from the words)
     // why: Zorp ← her own stated reason, taken at face value; losers ← she has just called the party-goers losers
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'party', seg: [234.9, 249.75],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'party', seg: [234.9, 249.75], retired: true,
       stem: 'Why does Leslie go from mocking the party to blocking it?',
       choices: ['She doesn’t want Ben there with the reporter', 'She doesn’t want Ben seen with the losers there',
                 'She wants Ben here in case Zorp shows up'], a: 0,
@@ -283,7 +259,7 @@ export const zorpVigil: Clip = {
     //   nastiest line, and it comes just before
     // anchor: 243.6–247.9 s Leslie orders Ben "you should stay here… because you can't go"; 260.7 s the reporter's
     //   goodbye is "Leslie, thanks as always"; Leslie's verdict lands on the person she has just been bossing around
-    { id: 'nt3', skill: 'humor', level: 'C2', point: 'rude', seg: [243.1, 267.1],
+    { id: 'nt3', skill: 'humor', level: 'C2', point: 'rude', seg: [243.1, 267.1], retired: true,
       stem: 'When Leslie calls the reporter unpleasant, who is the joke on?',
       choices: ['Leslie, since she’s the one who acted rudely', 'The reporter, since she brushed off the warning',
                 'Herb, since his threat was the rudest line'], a: 0,
@@ -294,60 +270,59 @@ export const zorpVigil: Clip = {
       trap: '最後の悪口を、直前の脅しや断り方への反応と取りやすい。悪口は、言った本人の行動と比べて聞く。',
       use: 'Look who’s talking.（よく言うよ）' },
 
-    // why: 12 ← twelve and twenty both start "tw"; 30 ← thirty and twenty share -ty, and the weak start blurs
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [282.7, 290.5],
-      stem: 'How long does Ron say is left until the end?',
-      choices: ['12 minutes', '20 minutes', '30 minutes'], a: 1, keep: true,
-      cue: 'only のあと、until の前の数。',
+    { id: 'f7', skill: 'phrase', level: 'B2', point: 'chances', seg: [255.5, 260.8],
+      stem: 'What does “I’ll take my chances” mean?', ja: '“I’ll take my chances” はどういう意味？',
+      choices: ['I’ll go anyway', 'I’ll stay here, then', 'I’ll think about it'], a: 0,
+      choicesJa: ['それでも行く', 'じゃあここに残る', '考えておく'],
+      cue: '「You wanna be here for that?」への返事',
+      line: 'You wanna be here for that? — *I think I’ll take my chances*.',
+      said: '「それを見たくない？」と言われ、「まあ、賭けてみる（行く）」と答える。',
+      mean: 'take my chances ＝ 危ないかもしれないが、やってみる。止められても自分で決めるときの言い方。',
+      trap: 'chance から「チャンスをもらう」と思いやすい。ここは「危険を承知で行く」。',
+      use: 'It might rain, but I’ll take my chances.（雨かもしれないけど、行ってみる）' },
+
+    { id: 'h5', skill: 'pragma', level: 'B1', point: 'alsono', seg: [278.0, 290.5],
+      stem: 'What is Ron’s answer to Leslie’s request?', ja: 'レスリーの頼みに、ロンはどう答える？',
+      choices: ['No, not even today', 'Yes, but only today', 'Yes, any time'], a: 0,
+      choicesJa: ['だめ、今日でもだめ', 'いいよ、今日だけ', 'いいよ、いつでも'],
+      cue: '「Normally」のあとと、最後の二語',
+      line: 'Can I speak with you about a personal matter? — *Normally, no.* But given… *also no*.',
+      said: '「普段ならノー。でも人類の終わりが近いとしても、やっぱりノー」と答える。',
+      mean: 'Normally, no ＝ 普段ならだめ。But で例外を予想させて、also no（それでもだめ）で終わる。',
+      trap: 'But given で「今日は特別にいい」と思いやすい。最後の also no を聞く。',
+      use: 'Normally, no. But today is okay.（普段はだめ。でも今日はいいよ）' },
+
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [282.7, 290.5], keep: true,
+      stem: 'How long does Ron say is left until the end?', ja: '終わりまであと何分だと、ロンは言う？',
+      choices: ['12 minutes', '20 minutes', '30 minutes'], a: 1,
+      choicesJa: ['12分', '20分', '30分'],
+      cue: '「only」のあと',
       line: 'given there’s only *20 minutes* until the end of human existence',
       said: '「人類の終わりまで、あと20分しかないとしても」と前置きする。',
-      mean: 'twenty の二つ目の t は弱く、twenny に近く聞こえることもある。',
-      trap: 'twelve と twenty は最初が同じ。語尾の -ty を聞く。thirty は「サ」から。',
+      mean: 'twenty の2つ目の t は弱く、「トゥエニ」に近く聞こえる。',
+      trap: 'twelve なら「トゥエルヴ」、thirty なら「サ」で始まる。「トゥエニ」と聞こえれば20。',
       use: 'There’s only twenty minutes left.（あと20分しかない）' },
 
-    // R fix: V2 (blind 60 %): the key was the only choice with a twist; one distractor is now the reverse twist
-    // why: turns into a yes ← "But given…" is the usual set-up for an exception; excuse ← the end of the world is named,
-    //   so it sounds like his reason for saying no
-    { id: 'h5', skill: 'humor', level: 'C1', point: 'alsono', seg: [282.7, 290.5],
-      stem: 'Why does Ron’s answer to Leslie’s request get a laugh?',
-      choices: ['It promises an exception, then says no again', 'It starts as a no, then turns into a yes',
-                'It refuses, with the world ending as its excuse'], a: 0,
-      cue: 'Normally のあと、But で始まる後半の最後。',
-      line: '*Normally, no.* But given there’s only… until the end of human existence, *also no*.',
-      said: '「普段ならノー。でも人類の終わりが近いことを考えても、やっぱりノー」と答える。',
-      mean: 'But given 〜 は例外を出す前置き。期待させて同じ答えなのが笑い。',
-      trap: 'But given で「今日は特別」と予想しやすい。逆の話が来なければ冗談。',
-      use: 'Normally, no. Today? Also no.（普段はダメ。今日は？やっぱりダメ）' },
-
-    // R fix: V2 (blind 65 %): the apology filler is now a second confession (of what she did), so "confession" isn't a
-    //   giveaway
-    // why: what she did ← "I tried to screw up…" and "because of me" lead toward more owning-up; promise ← "lost my
-    //   mind" leads toward a vow to stop
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'want', reveals: ['fluster'], seg: [299.3, 306.9],
-      then: [306.9, 313.6],
-      stem: 'After “But I have to tell you, Ron…”, what kind of thing comes next?',
-      choices: ['A confession of how she still feels', 'A confession of what she did to Ben',
-                'A promise to make things right with Ben'], a: 0,
-      cue: '「別れたのは私のせい」のあとの But。',
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'want', seg: [299.3, 306.9], then: [306.9, 313.6],
+      stem: 'After “I have to tell you, Ron…”, what comes next?', ja: '“I have to tell you, Ron…” のあとに来るのは？',
+      choices: ['How she still feels', 'What she did to Ben', 'A plan to fix things'], a: 0,
+      choicesJa: ['今の本当の気持ち', 'ベンにしたこと', '元に戻す計画'],
+      cue: '「別れたのは私のせい」のあとの But',
       line: 'We broke up because of me. But I have to tell you, Ron, *if the world was ending tomorrow, I’d want to be with him*.',
       said: '「別れたのは私のせい。でも明日世界が終わるなら、彼といたい」と言う。',
-      mean: 'I have to tell you は本音の前置き。But で反省と逆の気持ちが来る。',
-      trap: '反省の続きを予想しやすい。But は逆向き、この前置きのあとは本音が多い。',
+      mean: 'I have to tell you ＝ 正直に言うと。本音の前置き。But で反省とは逆の気持ちが来る。',
+      trap: '反省の続きを予想しやすい。But は向きを変える合図。この前置きのあとは本音が多い。',
       use: 'I have to tell you, I miss it.（正直に言うと、恋しいんだ）' },
 
-    // R fix: V2 (blind 50 %): two choices now start from “a regular Friday”, told apart by what comes back with it
-    // why: stop worrying ← "a regular Friday" heard as comfort, everything back to normal; tell Ben ← the usual "if the
-    //   world was ending" romance script
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'same', reveals: ['want'], seg: [313.4, 333.6],
-      stem: 'What is the point of Ron’s reply to Leslie’s confession?',
-      choices: ['Tomorrow will be normal, and so will her problem',
-                'Tomorrow will be normal, so she can stop worrying',
-                'The end may be near, so she should tell Ben now'], a: 0,
-      cue: 'Ron の後半、position で終わる文。',
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'same', seg: [313.4, 333.6],
+      stem: 'What does Ron tell Leslie?', ja: 'ロンはレスリーに何と言う？',
+      choices: ['Her problem will still be there', 'She can stop worrying tomorrow', 'She should tell Ben now'], a: 0,
+      choicesJa: ['悩みはそのまま残る', '明日には心配しなくていい', '今すぐベンに言うべき'],
+      cue: 'ロンの最後の文',
       line: 'It’ll be a regular Friday, and you’ll be in the *exact same position* you were in before.',
-      said: 'ロンは「世界は終わらない。日が昇り、普通の金曜になって、前と同じ状況のままだ」と言う。',
-      mean: '世界の終わりは言い訳にならない、という指摘。悩みは残ったまま。',
-      trap: '「いつもの金曜」を慰めと取りやすい。戻るのは前と同じ状況で、悩みも一緒に戻る。',
-      use: 'Tomorrow, you’ll still have the same problem.（明日になっても、問題は同じだよ）' },
+      said: 'ロンは「世界は終わらない。普通の金曜になって、前と同じ状況のままだ」と言う。',
+      mean: 'the exact same position ＝ まったく同じ状況。世界の終わりは言い訳にならない、という意味。',
+      trap: '「普通の金曜」を、なぐさめだと思いやすい。悩みも一緒に戻ってくる。',
+      use: 'Tomorrow, you’ll have the same problem.（明日になっても、問題は同じだよ）' },
   ]
 };
