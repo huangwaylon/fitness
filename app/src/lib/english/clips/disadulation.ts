@@ -104,7 +104,7 @@ export const disadulation: Clip = {
       line: '*Three demerits*, and you’ll receive a citation.',
       said: '「罰点3つで、警告書を1枚もらう」と言う。',
       mean: 'citation ＝ 正式な注意書き。〜, and you’ll … ＝ 〜すれば…になる。',
-      trap: 'このあと数字が次々に出るので混ざりやすい。数字と後ろの名詞をセットで聞く。',
+      trap: 'two は「トゥー」、four は「フォー」、five は「ファイブ」。demerits の前の「スリー」が答え。',
       use: 'Three strikes and you’re out.（3回でアウトだよ）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'chain', reveals: ['three', 'five', 'two', 'verbal'],
@@ -139,7 +139,7 @@ export const disadulation: Clip = {
       line: '*Five citations*, and you’re looking at a violation.',
       said: '「警告書5枚で、違反1つになる」と言う。',
       mean: 'you’re looking at 〜 ＝ 〜が待っている。「見る」ではなく、結果を言う言い方。',
-      trap: 'すぐあとに four が出るので混ざりやすい。数字のあとの名詞を確かめる。',
+      trap: 'three は「スリー」、four は「フォー」。citations の前の「ファイブ」が答え。',
       use: 'You’re looking at a two-hour wait.（2時間待ちになりますよ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'verbal', seg: [35, 38.4],
@@ -173,7 +173,7 @@ export const disadulation: Clip = {
       line: 'a written warning. *Two of those*, that’ll land you in a world of hurt…',
       said: '「書面の注意が2つで、ひどい目にあう」と言う。',
       mean: 'of those ＝ それらのうち。前の written warning を指している。',
-      trap: '少し前の four が耳に残りやすい。of those の前の数を聞く。',
+      trap: 'one は「ワン」。前の four も残りやすい。of those の前の「トゥー」が答え。',
       use: 'Two of those, please.（それを2つください）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'hurt', reveals: ['two', 'thatll'], seg: [40.8, 46.4],
