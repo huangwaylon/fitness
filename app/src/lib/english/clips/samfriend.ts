@@ -229,8 +229,8 @@ export const samFriend: Clip = {
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'makeup', seg: [261.9, 279.2],
       stem: 'How does the shirt fight end?', ja: 'Tシャツのけんかは、どう終わる？',
-      choices: ['More fighting, then both say sorry', 'Both say sorry, no more fighting', 'Only Carly says sorry'], a: 0,
-      choicesJa: ['もっとけんかして、二人とも謝る', '二人とも謝り、それ以上けんかしない', 'カーリーだけ謝る'],
+      choices: ['More fighting, then both say sorry', 'They stop talking to each other', 'Only Carly says sorry'], a: 0,
+      choicesJa: ['もっとけんかして、二人とも謝る', '口をきかなくなる', 'カーリーだけ謝る'],
       cue: '「painful」のあとと、最後の二つの声',
       line: 'the two were able to *make up*. — *I’m sorry.* — *I’m sorry.*',
       said: '「髪の引っぱり合いのあと仲直り」と言い、二人とも「ごめん」。',

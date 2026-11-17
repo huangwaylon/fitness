@@ -168,8 +168,8 @@ export const rossNothing: Clip = {
       use: 'I’ve moved three times.（3回引っ越したことがある）' },
 
     { id: 'i3', skill: 'infer', level: 'B1', point: 'excuse', reveals: ['three', 'nothing'], seg: [29.9, 39.7],
-      stem: 'What is Ross’s real reason, someone says?',
-      ja: 'ロスの本当の理由は何だと言われる？',
+      stem: 'Why does Ross really want to stay married?',
+      ja: 'ロスが結婚を続けたい本当の理由は？',
       choices: ['He still loves Rachel', 'He wants a nice wife', 'He is scared of lawyers'], a: 0,
       choicesJa: ['まだレイチェルが好き', 'いい奥さんがほしい', '弁護士がこわい'],
       cue: '「using this」のあと。', line: 'now he’s *using* this three divorces reason… *because he loves her*.',

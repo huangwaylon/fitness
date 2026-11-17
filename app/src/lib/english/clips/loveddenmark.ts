@@ -154,8 +154,8 @@ export const mostLovedDenmark: Clip = {
       use: 'The kids just love her.（子どもたちは彼女が大好き）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'contrast', seg: [58, 85.9],
-      stem: 'How does Leslie’s town treat her?',
-      ja: 'レスリーの町は彼女をどう扱っている？',
+      stem: 'How does Leslie’s town feel about her?',
+      ja: 'レスリーの町は彼女をどう思っている？',
       choices: ['It doesn’t like her', 'It loves her a lot', 'It made her a statue'], a: 0,
       choicesJa: ['彼女をきらっている', 'とても愛している', '彼女の像を作った'],
       cue: '「your town?」のあと',

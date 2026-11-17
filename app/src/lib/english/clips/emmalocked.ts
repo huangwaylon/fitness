@@ -121,8 +121,8 @@ export const emmaLocked: Clip = {
       use: 'Oh yeah, that’s gonna happen.（はいはい、そうなるよね）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'leftwater', seg: [19, 27.2],
-      stem: 'What does Rachel suddenly think she left on?',
-      ja: 'レイチェルは急に、何をつけっぱなしにしたと思う？',
+      stem: 'What does Rachel first think she left on?',
+      ja: 'レイチェルが最初に、つけっぱなしだと思ったのは？',
       choices: ['The water', 'The stove', 'The lights'], a: 0,
       choicesJa: ['水', 'コンロ', '電気'],
       cue: '「Oh, my God!」のあと。',

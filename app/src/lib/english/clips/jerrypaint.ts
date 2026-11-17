@@ -159,13 +159,13 @@ export const jerryPainting: Clip = {
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'vibe', reveals: ['someone'], seg: [114.6, 134.7],
       stem: 'Why is Tom upset, in his talk to the camera?', ja: 'カメラの前で、トムはなぜ怒っている？',
-      choices: ['It ruins his cool image', 'He was painted without asking', 'It shows a babyish side'], a: 0,
-      choicesJa: ['かっこいいイメージが台なし', '断りなく描かれた', '子どもっぽい面がばれた'],
+      choices: ['It ruins his cool image', 'He was painted without asking', 'His face is painted badly'], a: 0,
+      choicesJa: ['かっこいいイメージが台なし', '断りなく描かれた', '顔が下手に描かれた'],
       cue: '「killed」のあと',
       line: 'Jerry has *killed the Jay-Z vibe*… and *replaced it* with the fat brown baby vibe',
       said: '公共の場に飾られ、「ジェイ・Z風」の自分が「赤ちゃん風」に変わった、と嘆く。',
       mean: 'vibe ＝ 雰囲気、キャラ。kill ＝ ここでは「台なしにする」。',
-      trap: 'baby から、かくしていた面がばれたと思いやすい。replaced は「別のものに変えた」。',
+      trap: '前の pot belly の文句から、絵が下手だからと思いやすい。理由は killed the Jay-Z vibe。',
       use: 'That totally killed the mood.（それで雰囲気が台なし）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['vibe'], seg: [121.4, 131.3], keep: true,

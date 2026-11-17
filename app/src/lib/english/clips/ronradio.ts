@@ -170,7 +170,7 @@ export const ronRadio: Clip = {
       trap: 'gala（パーティー）が聞こえるので、その話が多いと思いやすい。hopefully は「だといいな」。',
       use: 'Hopefully, the rain stops by noon.（昼までに雨がやむといいけど）' },
     { id: 'g3', skill: 'gist', level: 'B1', point: 'caller1', reveals: ['hangover'], seg: [84.3, 106.4],
-      stem: 'What does the first caller ask Ron about?', ja: '最初の電話の人は、ロンに何を聞く？',
+      stem: 'What does the caller after “Hello again” ask?', ja: '「Hello again」のあとの電話の人は、何を聞く？',
       choices: ['What’s wrong with Joan', 'The gala tonight', 'Ron’s favorite whiskey'], a: 0,
       choicesJa: ['ジョーンはどうしたのか', '今夜のパーティー', 'ロンの好きなウイスキー'],
       cue: '「You’re on the air」のあと',

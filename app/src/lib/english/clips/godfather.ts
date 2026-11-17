@@ -67,8 +67,8 @@ export const godfather: Clip = {
       use: 'It’s my day— I mean, our day.（僕の日、いや、みんなの日）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'paper', seg: [59.9, 68.75],
-      stem: 'Why does a coworker keep repeating this line?',
-      ja: '同僚はなぜこの言葉をくり返す？',
+      stem: 'Why does a coworker keep saying “paper and printer needs”?',
+      ja: '同僚はなぜ「paper and printer needs」とくり返す？',
       choices: ['To sell paper at church', 'To ask what paper they need', 'To joke about the program'], a: 0,
       choicesJa: ['教会で紙を売り込むため', 'どんな紙が要るか聞くため', '式のプログラムをからかうため'],
       cue: '同じ文を何度くり返すか、その言い方。',

@@ -135,8 +135,8 @@ export const bucketList: Clip = {
       use: 'I’ve never flown business class.（ビジネスクラスに乗ったことがない）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['cash'], seg: [42.3, 84.6],
-      stem: 'What do Andy and April do after that?',
-      ja: 'そのあと、アンディとエイプリルは何をする？',
+      stem: 'What do Andy and April do tonight?',
+      ja: '今夜、アンディとエイプリルは何をする？',
       choices: ['Try his list at home', 'Plan a big trip', 'Give up very soon'], a: 0,
       choicesJa: ['家でリストをやってみる', '大旅行を計画する', 'すぐにあきらめる'],
       cue: 'お金を数える声と、そのあとの感想。',
