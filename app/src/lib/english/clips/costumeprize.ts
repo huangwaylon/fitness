@@ -300,7 +300,7 @@ export const costumePrize: Clip = {
       use: 'He’s our leader, as it were.（彼はいわば私たちのリーダー）' },
 
     // R fix: V2 (blind 60 %): three named winners now; the called-off filler went
-    // why: Kelly �� the long fuss over her costume change; Kevin ← his costume opens the clip
+    // why: Kelly ← the long fuss over her costume change; Kevin ← his costume opens the clip
     { id: 'g2', skill: 'gist', level: 'B1', point: 'winner', seg: [258.4, 288.0],
       stem: 'How does the costume contest end?',
       choices: ['Oscar wins without a real costume', 'Kelly wins in the costume she changed into',

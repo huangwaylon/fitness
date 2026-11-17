@@ -245,7 +245,7 @@ export const ronShare: Clip = {
       line: 'now and *forever*. Hold up, *Forever 21*, *21* gun *salute*. *Salute* your shorts…',
       said: 'forever、21、salute と、前の語を拾って次の言い方へつなげる。',
       mean: '意味でなく語でつなぐしりとり。商談の場で一人で盛り上がるのが笑い。',
-      trap: 'salute を乾杯、名前を自慢と取りや��い。同じ語が2回続けば言葉遊び。',
+      trap: 'salute を乾杯、名前を自慢と取りやすい。同じ語が2回続けば言葉遊び。',
       use: 'Sorry, I got a little carried away.（ごめん、ちょっと調子に乗った）' },
 
     // R fix: V2, N7 — "apologizing" was easy to cut (blind 55 %); now "a one-off" (one of many / one-off); its line

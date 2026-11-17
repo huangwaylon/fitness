@@ -173,7 +173,7 @@ export const catFreddie: Clip = {
       line: '– Says who? – *You. Says you.* – When? – *Last night.*',
       said: '「誰が言ったの？」に、Freddie が「君だよ。ゆうべ」と答える。',
       mean: '話の出どころは Cat 本人。言った本人が「誰が？」と聞いている。',
-      trap: 'you を話題の Sam と取ったり、When? の答��を聞き流したりしやすい。短い返事を2つとも聞く。',
+      trap: 'you を話題の Sam と取ったり、When? の答えを聞き流したりしやすい。短い返事を2つとも聞く。',
       use: 'Says who? That’s not what I heard.（誰がそう言ったの？聞いた話と違うよ）' },
 
     // R fix: V2 (blind 55 %): the accusation option didn't match anything said. Now the graphic list he just gave is
@@ -226,7 +226,7 @@ export const catFreddie: Clip = {
       choices: ['want to', 'wanted to', 'won’t', 'going to'], a: 0,
       cue: '文の2語目、短く縮んだ音。',
       line: 'You *wanna* hang out with me today?',
-      said: '「今��、私と遊ばない？」と聞いている。',
+      said: '「今日、私と遊ばない？」と聞いている。',
       mean: 'want to が「ワナ」と一つに縮む。会話でとてもよく使う形。',
       trap: '「ナ」を n’t と取ると won’t、「ゴナ」と取ると going to になる。上がり調子も手がかり。',
       use: 'Do you wanna grab lunch?（お昼、一緒にどう？）' },

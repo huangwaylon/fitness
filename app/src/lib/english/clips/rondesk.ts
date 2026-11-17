@@ -227,7 +227,7 @@ export const ronDesk: Clip = {
       stem: 'Which plain-English version keeps what Ron is telling Chris?',
       choices: ['“Your plan would wreck us, which I’d enjoy, but undo it.”',
                 '“Your plan is awful, and I’m sorry to be so blunt about it.”',
-                '“Your plan would wreck us, which I��d hate, so undo it.”'], a: 0,
+                '“Your plan would wreck us, which I’d hate, so undo it.”'], a: 0,
       cue: 'compliment のあとの so と、「miserable」。',
       line: '*I mean that as a compliment*, *so it pains me* to say this. My department has to *go back*…',
       said: '「ほめ言葉だ。だから言うのはつらいが、部署は元に戻さないと」と言い、職員の不満を挙げる。',

@@ -249,7 +249,7 @@ export const bonVoyage: Clip = {
       cue: '最後の「Looks like」で始まる一言。',
       line: 'I don’t think there’s *anything I can do*. … Looks like we *hit a wall*.',
       said: '夫は「規則を見たけど打つ手はなさそう」と言い、最後に「行き詰まったね」とまとめる。',
-      mean: 'hit a wall ＝ 壁にぶつかる、行き詰まる。今は打つ手がないという���論。',
+      mean: 'hit a wall ＝ 壁にぶつかる、行き詰まる。今は打つ手がないという結論。',
       trap: 'bylaws を調べたと聞くと、抜け道が見つかったと思いやすい。',
       use: 'I think we’ve hit a wall here.（ここで行き詰まったね）' },
 

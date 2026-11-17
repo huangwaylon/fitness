@@ -234,7 +234,7 @@ export const leslieReady: Clip = {
       line: '*Far and away*, the best prize that life has to offer…',
       said: 'ルーズベルトの「人生最高の賞は、やりがいのある仕事に打ち込む機会」を引く。',
       mean: 'far and away ＝ ずば抜けて、断然。best を強める言い方で、距離の話ではない。',
-      trap: 'far away���遠く）と聞こえやすい。最上級の前に来たら「断然」。',
+      trap: 'far away（遠く）と聞こえやすい。最上級の前に来たら「断然」。',
       use: 'This is far and away the best ramen.（これは断然いちばんのラーメン）' },
 
     // R fix: V2 (blind 55 %): the key was the only two-part answer. Now two of the three are.

@@ -219,7 +219,7 @@ export const dateMike: Clip = {
       line: 'Maybe we should tell her that he’s *not normally like this*.',
       said: '「いつもはこうじゃないって、彼女に言った方がいいかも」と話す。',
       mean: '今のマイケルは普段と違う、と伝えたい。彼女に引かれないか心配している。',
-      trap: 'not は弱く短く、聞き落とすと「いつも��うだ」と逆の意味になる。否定語は動詞のあとに注意。',
+      trap: 'not は弱く短く、聞き落とすと「いつもそうだ」と逆の意味になる。否定語は動詞のあとに注意。',
       use: 'Sorry, I’m not normally like this.（ごめん、いつもはこうじゃないんだ）' },
 
     // R fix: V2 (blind 60 %): the key's "further and further away" stood out; all three now start "Each one…"
@@ -336,7 +336,7 @@ export const dateMike: Clip = {
       stem: 'In the last few lines, how does Michael respond to the pressure?',
       choices: ['He gives in, saying he was only kidding', 'He stands firm and refuses to leave',
                 'He laughs it off and carries on as before'], a: 0,
-      cue: '「Now.��のあとの返事と、whoa のあとの一文。',
+      cue: '「Now.」のあとの返事と、whoa のあとの一文。',
       line: 'Okay. All right. Okay… whoa. *I’m just kidding around.*',
       said: '「わかった、分かったよ。おっと、ふざけてただけ」と言う。',
       mean: 'okay を重ねて従い、kidding around（ふざけてただけ）と言い訳して引き下がる。',

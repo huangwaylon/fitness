@@ -134,7 +134,7 @@ export const wonderDog: Clip = {
       trap: 'd が after とつながって消えやすい。look at と取ると意味が変わる。',
       use: 'Could you look after my bag?（荷物を見ててもらえますか）' },
 
-    // R fix: V2 (blind 55 %): "not two breeds" in the key spelled out the contrast. Three parallel "He���" descriptions.
+    // R fix: V2 (blind 55 %): "not two breeds" in the key spelled out the contrast. Three parallel "He…" descriptions.
     // why: takes it back ← "mutt" can sound rude (雑種), so the praise sounds like a quick fix; wrong breeds ← "half…
     //   half" is the usual way to name two breeds
     { id: 'h2', skill: 'humor', level: 'C1', point: 'mutt', seg: [22.35, 27.95],

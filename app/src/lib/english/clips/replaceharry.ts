@@ -254,7 +254,7 @@ export const replaceHarry: Clip = {
       line: 'Well, *not for real*. We just *make him think* he’s being replaced.',
       said: '「本当に替えるんじゃない。替えられると思わせるだけ」と説明する。',
       mean: '入れ替わりのふりで焦らせて、ベッドから出させる作戦。',
-      trap: 'replace が何度も聞こえるので本当の交代に、冒頭の cancel から中止の話にも見える。think の���を聞く。',
+      trap: 'replace が何度も聞こえるので本当の交代に、冒頭の cancel から中止の話にも見える。think の後を聞く。',
       use: 'Not for real, just pretend.（本気じゃなくて、ふりだけ）' },
 
     // R fix: blind 60 %: "asks to sing with the new singer" was a filler. It's now the stay-in-bed script, which

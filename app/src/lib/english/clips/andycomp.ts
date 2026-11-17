@@ -163,7 +163,7 @@ export const andyComputer: Clip = {
     // why: relieved ← the usual reaction to a friend's innocence; doubtful ← "Really?" heard as doubt
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'letdown', seg: [78.7, 83.4],
       stem: 'How does Andy take Gary’s answer?',
-      choices: ['Let down that Gary isn���t the thief', 'Relieved that his friend is in the clear',
+      choices: ['Let down that Gary isn’t the thief', 'Relieved that his friend is in the clear',
                 'Doubtful, as if Gary might be lying'], a: 0,
       cue: 'Oh, man のため息のような言い方。',
       line: 'It wasn’t me. — *Oh, man. Really?*',

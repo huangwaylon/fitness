@@ -205,7 +205,7 @@ export const mexBus: Clip = {
       said: '「社会に恩返し？もうやったよ。今度は僕がもらう番だ」と言う。',
       mean: 'give back の反対で take と言い切る。自分勝手を堂々と言うおかしさ。',
       trap: 'take だけ聞くと「休みを取る」などに取りやすい。give back と対になっている。',
-      use: 'I’ve given enough. Now it’s my turn.（もう十分あげた。���は私の番）', retired: true },
+      use: 'I’ve given enough. Now it’s my turn.（もう十分あげた。今は私の番）', retired: true },
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'anyway', reveals: ['wed', 'take'], seg: [216.9, 229.65],
       stem: 'Which plain version keeps what “we’d probably screw everything up” is doing?',
       choices: ['“Honestly, you’re better off without us.”', '“Honestly, we’re sorry to let you down.”',

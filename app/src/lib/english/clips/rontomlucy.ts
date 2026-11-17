@@ -288,7 +288,7 @@ export const ronTomLucy: Clip = {
       cue: 'ルーシーの質問への、トムの答え。',
       line: 'You just have to *ignore him*. — So you didn’t mean what you said? — Look, *I’m all in*.',
       said: '「ロンは気にしないで」と言うと「じゃあ本気じゃなかったの？」と聞かれ、「本気だよ」と認める。',
-      mean: '無視してと言うの���照れ隠し。ロンが正しかったから、ごまかしたかった。',
+      mean: '無視してと言うのは照れ隠し。ロンが正しかったから、ごまかしたかった。',
       trap: '「無視して」を「本気じゃない」と取りやすい。照れ隠しかは、問い返された時の答えで分かる。',
       use: 'Don’t listen to him. …Okay, it’s true.（あいつの話は気にしないで…まあ、本当だけど）' },
 
@@ -315,7 +315,7 @@ export const ronTomLucy: Clip = {
       a: 0,
       cue: '「Look」のすぐあとの短い言い方。',
       line: 'Look, *I’m all in*. That’s all I meant.',
-      said: '「本気じゃな���ったの？」に、「僕は本気だ。言いたかったのはそれだけ」と答える。',
+      said: '「本気じゃなかったの？」に、「僕は本気だ。言いたかったのはそれだけ」と答える。',
       mean: 'all in ＝ 全部を賭けている。ポーカーの言葉で、迷いなく本気。',
       trap: '「疲れた」の意味もあり、あとの「期待しない」に引かれやすいが、all in は迷わず本気。',
       use: 'I’m all in on this plan.（この計画に全力で乗るよ）' },

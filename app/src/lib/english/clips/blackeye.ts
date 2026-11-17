@@ -170,7 +170,7 @@ export const lesliesBlackEye: Clip = {
       trap: '訂正にも使うが、ここは同じ方向の話が続く。あとの中身で訂正か補足かを見分ける。',
       use: 'It’s fine. I mean, it’s not perfect.（大丈夫。まあ、完ぺきじゃないけど）' },
 
-    // R fix: N6: a broken character in the trap (習った��法 → 習った文法). a2's mean had the same (＝).
+    // R fix: N6: a broken character in the trap (習った文法). a2's mean had the same (＝).
     // why: whom ← the grammar instinct "fixes" the second who; the reduced "doesn't" and linked "bailed out" are lost
     //   at speed
     // anchor: 59.8–61.6 s both sources have “it doesn't matter who bailed out who”, ≈ 200 wpm, then the same pattern

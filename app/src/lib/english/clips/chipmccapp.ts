@@ -89,7 +89,7 @@ export const chipMcCapp: Clip = {
       cue: 'ファンへの言葉と、父への言葉を比べて。',
       said: 'ファンには「君たちこそスター」と優しく、父には昼食のことでどなり散らす。',
       mean: '表の顔と裏の顔の差。会ってみたら、思っていた人と違った。',
-      trap: 'どなる場面が強いので、だれにでも冷たいと思いやすい。二人への断りは軽く、どなる相手は父��け。',
+      trap: 'どなる場面が強いので、だれにでも冷たいと思いやすい。二人への断りは軽く、どなる相手は父だけ。',
       use: 'He’s nice to customers but mean to staff.（客には優しいのに、店員には冷たい）' },
 
     // R fix: V2 — blind 50 %: with the title, the one cynical-but-friendly choice stood out. "Real modesty" becomes

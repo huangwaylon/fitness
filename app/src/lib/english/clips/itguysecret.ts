@@ -248,7 +248,7 @@ export const itGuySecrets: Clip = {
       cue: '「on Facebook」のすぐあと。文法より、聞こえた音を。',
       line: '*Why you been telling* people you’re not on Facebook?',
       said: '「なんでやってないなんて言ってたんだ？」と聞く。have がなく、4語が速くつながる。',
-      mean: '会話では Why have you been の have が落ち、Why you been にな���ことがある。',
+      mean: '会話では Why have you been の have が落ち、Why you been になることがある。',
       trap: '文法どおり have を足したくなる。書き取りは、聞こえた語を書く。',
       use: 'Where you been all day?（一日どこにいたの？）' },
 

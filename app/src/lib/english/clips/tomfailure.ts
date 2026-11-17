@@ -145,7 +145,7 @@ export const tomFailure: Clip = {
 
     // R fix: V2, blind 75 %. The distractors are now the other two senses of "blow up": losing his temper, and the
     //   hit Tom meant.
-    // why: angry ← blow up = 怒��が爆発する, the other common sense; a hit ← the narrator repeats Tom's words, and
+    // why: angry ← blow up = 怒りが爆発する, the other common sense; a hit ← the narrator repeats Tom's words, and
     //   "but not in a good way" is lost
     { id: 'h2', skill: 'humor', level: 'C1', point: 'blowup', seg: [86.1, 95.75],
       stem: 'Why does the narrator’s first line get a laugh?',

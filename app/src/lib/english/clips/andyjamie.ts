@@ -237,7 +237,7 @@ export const andyJamie: Clip = {
       line: 'you know what, we *don’t have a lot of* time',
       said: '「そうだ、あまり時間がないから」と言う。',
       mean: 'a lot of が「アラーラ」とつながる。t は弾み、of は「ア」程度に弱い。',
-      trap: 'have a が���ハヴァ」とつながり、a を落としやすい。don’t の t も消えやすい。',
+      trap: 'have a が「ハヴァ」とつながり、a を落としやすい。don’t の t も消えやすい。',
       use: 'I don’t have a lot of cash on me.（今あまり現金を持ってなくて）' },
 
     // R fix: V2 (blind 50 %): the set phrase stood out among three; a fourth choice makes a 2 × 2 grid (are/were ×
@@ -264,7 +264,7 @@ export const andyJamie: Clip = {
                 'He gets angry at her for keeping it a secret'], a: 0,
       cue: '彼女が去ったあと、Andy がくり返す言葉。',
       line: 'Oh my god, oh my god. *I had no idea.*',
-      said: '彼女が高校生だと分かり��「なんてこった」「全然知らなかった」と言う。',
+      said: '彼女が高校生だと分かり、「なんてこった」「全然知らなかった」と言う。',
       mean: '彼女を責めるより、自分は悪くないと必死に言い訳している。',
       trap: 'I had no idea は冷静な説明に、You never told me は非難に聞こえる。慌てた声を聞く。',
       use: 'I swear, I had no idea.（本当に、全然知らなかったんだ）' },

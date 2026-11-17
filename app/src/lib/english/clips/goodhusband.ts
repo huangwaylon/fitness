@@ -254,7 +254,7 @@ export const goodHusband: Clip = {
       cue: '曲の流れ方の説明と、最後のほめ言葉。',
       line: 'The songs just play *one right after the other*. This is an *excellent rectangle*.',
       said: '「曲が次々に流れる。素晴らしい長方形だ」と感心する。',
-      mean: '当たり前の機能に本気で感動し、機械を「長方形」と呼ぶ��そのずれが笑い。',
+      mean: '当たり前の機能に本気で感動し、機械を「長方形」と呼ぶ。そのずれが笑い。',
       trap: 'one right after the other を不満と取りやすい。excellent で本気の感心と分かる。',
       use: 'This app is excellent. It does everything.（このアプリ最高、何でもできる）' },
 

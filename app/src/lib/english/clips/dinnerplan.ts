@@ -101,7 +101,7 @@ export const dinnerplan: Clip = {
 
     // R fix: V2 (blind 50 %: "read an email" was a filler); now "got on a call", the got on / got off near miss
     // why: got on ← "got off" heard as "got on", the short particle lost; warning ← a horn is a warning sound
-    //   (クラクショ��)
+    //   (クラクション)
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'horn', seg: [44.2, 47.3],
       stem: 'What does Michael tell everybody he has just done?',
       choices: ['Finished a phone call with head office', 'Just got on a call with head office',
