@@ -46,6 +46,7 @@ export const andyJamie: Clip = {
       choices: ['Tiring, Andy won’t stop', 'Fun, they laugh a lot', 'Busy with lots of work talk'], a: 0,
       choicesJa: ['疲れる、アンディが止まらない', '楽しい、よく笑う', '仕事の話ばかりで忙しい'],
       cue: '「check out this sunshine」から',
+      line: 'Check out this sunshine, man… — *Lord, beer me strength.*',
       said: 'アンディが天気の話、歌、CDとしゃべり続け、ジムは短く返してカメラに「力をください」とこぼす。',
       mean: 'アンディは話したい、ジムは静かにしてほしい。ジムはうんざりしている。',
       trap: 'アンディが歌うので、楽しそうと思いやすい。ジムの短い返事を聞く。',
