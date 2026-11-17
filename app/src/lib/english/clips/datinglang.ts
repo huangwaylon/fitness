@@ -1,4 +1,5 @@
-// A2 REVIEW 2026-11-17: keep 2, rewrite 4, retire 2, new 8
+// A2 REVIEW 2026-11-17: keep 2, rewrite 4, retire 2, new 10
+
 // “Rachel Doesn't Understand Dating Language | Friends” (official Friends channel): Phoebe is back from a date; the
 // friends tell Rachel what polite dating lines really mean; Ross learns the truth about his dog's “farm”.
 import type { Clip } from '../types.ts';
@@ -14,8 +15,19 @@ export const datinglang: Clip = {
   show: 'Friends',
   credit: 'Rachel Doesn’t Understand Dating Language | Friends, official Friends channel (YouTube)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [3, 24], stem: 'How did Phoebe’s date go?',
-      ja: 'フィービーのデートはどうだった？',
+    { id: 'w1', skill: 'who', level: 'B1', point: 'phoebe', seg: [0, 8], stem: 'Who comes in and talks about her date?',
+      ja: '入ってきて、自分のデートの話をするのは誰？',
+      choices: ['Phoebe', 'Rachel', 'Monica'], a: 0,
+      choicesJa: ['フィービー', 'レイチェル', 'モニカ'],
+      cue: '最初のあいさつの名前',
+      line: 'Hi, guys. — Hey, *Phoebe*. — Hey, oh, how did it go?',
+      said: '「みんな、やあ」「やあ、フィービー」「どうだった？」。',
+      mean: 'Hey, Phoebe. ＝ やあ、フィービー。入ってきた人の名前を呼んであいさつしている。',
+      trap: 'タイトルにレイチェルの名前があるので、レイチェルだと思いやすい。最初に呼ばれる名前を聞く。',
+      use: 'Hi, guys! How’s it going?（みんな、元気？）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [3, 24], stem: 'How did the date go?',
+      ja: 'デートはどうだった？',
       choices: ['Not so good', 'Really well', 'She can’t tell yet'], a: 0,
       choicesJa: ['あまり良くなかった', 'とても良かった', 'まだわからない'],
       cue: '「How did it go?」への返事',
@@ -24,8 +36,9 @@ export const datinglang: Clip = {
       mean: 'not so good ＝ あまり良くない。bad よりやわらかい言い方。',
       trap: '「また会おう」の話が出るので、うまくいったと思いやすい。最初の返事が答え。',
       use: 'How did it go?（どうだった？）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'subway', seg: [6.5, 11], stem: 'Where did Phoebe’s date walk her?',
-      ja: 'デートの相手は、フィービーをどこまで送った？',
+
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'subway', seg: [6.5, 11], stem: 'Where did her date walk her?',
+      ja: 'デートの相手は、彼女をどこまで送った？',
       choices: ['To the subway', 'To her apartment', 'To a taxi'], a: 0,
       choicesJa: ['地下鉄の駅まで', '彼女のアパートまで', 'タクシーまで'],
       cue: '「He walked me」のあと',
@@ -34,6 +47,7 @@ export const datinglang: Clip = {
       mean: 'walk 人 to 〜 ＝ 〜まで歩いて送る。subway ＝ 地下鉄（アメリカ英語）。',
       trap: 'walked を「歩いた」だけと思うと、送ってもらった話だと気づきにくい。to のあとが行き先。',
       use: 'Can I walk you to the station?（駅まで送ろうか）' },
+
     { id: 'x1', skill: 'dict', level: 'B1', point: 'dothis', seg: [8, 11],
       stem: 'Type what he said: “We should ___.” (3 words)', ja: '彼が言ったことを書こう：“We should ___.”（3語）', answer: 'do this again',
       cue: '「We should」のあと',
@@ -42,6 +56,7 @@ export const datinglang: Clip = {
       mean: 'We should do this again ＝ また今度こうしよう。別れぎわの決まり文句。',
       trap: 'do と this がつながり「ドゥディス」と聞こえる。again は「アゲン」に近い。',
       use: 'We should do this again.（また今度やろうね）' },
+
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'goodright', reveals: ['dothis'], seg: [11, 16],
       stem: 'How does Rachel feel about “We should do this again”?',
       ja: '“We should do this again” を、レイチェルはどう思っている？',
@@ -53,6 +68,7 @@ export const datinglang: Clip = {
       mean: 'That’s good, right? ＝ いいことだよね？ right? で「〜だよね」と確かめる。',
       trap: 'みんなの「Oh.」で、悪い話だと思いやすい。本人は good と言う。',
       use: 'That’s good, right?（それっていいことだよね？）' },
+
     { id: 'g2', skill: 'gist', level: 'B1', point: 'g2', seg: [11.5, 47], stem: 'What do the friends explain to Rachel?',
       ja: '友だちはレイチェルに何を説明している？',
       choices: ['What dating lines mean', 'How to ask a person out', 'Where to go for a date'], a: 0,
@@ -63,6 +79,7 @@ export const datinglang: Clip = {
       mean: 'dating language ＝ デートで使う決まり文句。言葉と本音がちがう例をいくつも挙げている。',
       trap: '例が多いので、誘い方の話だと思いやすい。means のあとが本音。',
       use: 'What does that really mean?（それって本当はどういう意味？）' },
+
     { id: 'i1', skill: 'infer', level: 'B2', point: 'i1', reveals: ['dothis'], seg: [14, 21], stem: 'What does “We should do this again” really mean?',
       ja: '“We should do this again” は、本当はどういう意味？',
       choices: ['He wants another date soon', 'He won’t ask her out again', 'He wants to meet her friends'], a: 1,
@@ -73,6 +90,7 @@ export const datinglang: Clip = {
       mean: '別れぎわの「また今度ね」は、実は「もう会う気はない」という合図のことが多い。',
       trap: '言葉どおりなら「また会いたい」なので、そう思いやすい。Uh, no. のあとの説明が本音。',
       use: 'Let’s do this again sometime.（またいつかやろうね）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 's1', reveals: ['dothis', 'i1'], seg: [14, 19], stem: '“___ translated, ‘We should do this again’ means…”',
       choices: ['Loosely', 'Roughly', 'Simply'], a: 0, retired: true,
       cue: '「ル」で始まる言葉。最後は -ly。',
@@ -81,6 +99,7 @@ export const datinglang: Clip = {
       mean: 'loosely translated ＝ ざっくり訳すと。くわしくではなく大まかに、という意味。',
       trap: 'roughly も自然。音の「ルース」で聞き分けよう。',
       use: 'Loosely translated, it’s a “no.”（要はノーだね）' },
+
     { id: 'p3', skill: 'phrase', level: 'B1', point: 'sincewhen', seg: [19.5, 25], stem: 'What does “Since when?” mean here?',
       ja: 'ここでの “Since when?” はどういう意味？',
       choices: ['When did this start?', 'What time is it now?', 'How long was the date?'], a: 0,
@@ -91,6 +110,7 @@ export const datinglang: Clip = {
       mean: 'Since when? ＝ いつから？ 知らなかったことに驚いたときの言い方。',
       trap: 'when から時刻を聞いていると思いやすい。since は「〜から」で、始まりを聞いている。',
       use: 'Since when do you drink coffee?（いつからコーヒー飲むの？）' },
+
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'p1', seg: [24, 32], stem: 'What does “It’s not you” really mean?',
       ja: '“It’s not you” は、本当はどういう意味？',
       choices: ['It’s your fault', 'It’s my fault', 'It’s nobody’s fault'], a: 0,
@@ -101,6 +121,7 @@ export const datinglang: Clip = {
       mean: 'It’s not you, it’s me ＝「君のせいじゃない、僕の問題」。別れの決まり文句。',
       trap: '続きの it’s me（僕のせい）に引っぱられやすい。すぐ It is you と言う。',
       use: 'It’s not you, it’s me.（君のせいじゃない、僕の問題なんだ）' },
+
     { id: 'm1', skill: 'marker', level: 'B2', point: 'youknowlike', seg: [24.5, 31], stem: 'What comes after “You know, like”?',
       ja: '“You know, like” のあとに来るのは？',
       choices: ['An example', 'A question', 'A new topic'], a: 0,
@@ -111,6 +132,7 @@ export const datinglang: Clip = {
       mean: 'you know, like ＝ ほら、例えば。この like は「好き」でなく「例えば」。これから例を言う合図。',
       trap: 'like を「好き」と思いやすい。うしろに例のセリフが続くことで分かる。',
       use: 'You know, like, a small café.（ほら、例えば小さいカフェとか）' },
+
     { id: 'i2', skill: 'pragma', level: 'B2', point: 'i2', seg: [31, 38], stem: 'What does “You’re such a nice guy” really mean?',
       ja: '“You’re such a nice guy” は、本当はどういう意味？',
       choices: ['I won’t date you', 'I want to date you', 'I want to marry you'], a: 0,
@@ -121,6 +143,7 @@ export const datinglang: Clip = {
       mean: 'such a nice guy ＝ すごくいい人。ほめ言葉だが、恋人にはしないとやんわり断っている。',
       trap: 'nice はほめ言葉なので、好かれていると思いやすい。愚痴の相手＝相談相手。',
       use: 'He’s a really nice guy.（彼、本当にいい人だよ）' },
+
     { id: 's2', skill: 'sound', level: 'B1', point: 'gonna', seg: [31.5, 36], stem: 'Fill the gap: “I’m ___ be dating…”',
       ja: '空所に入る音は？ “I’m ___ be dating…”',
       choices: ['gonna', 'wanna', 'gotta'], a: 0,
@@ -131,6 +154,7 @@ export const datinglang: Clip = {
       mean: 'gonna ＝ going to（〜するつもり）。会話ではほとんど「ガナ」と短く言う。',
       trap: 'wanna（ワナ）と音が似ていて、まぎれやすい。最初が「ガ」なら gonna。',
       use: 'I’m gonna be late.（遅れそう）' },
+
     { id: 'd1', skill: 'phrase', level: 'B2', point: 'd1', seg: [37, 45], stem: 'What does “I think we should see other people” mean?',
       ja: '“I think we should see other people” はどういう意味？',
       choices: ['I’m already dating someone', 'I want to make new friends', 'I need some time alone'], a: 0,
@@ -141,6 +165,7 @@ export const datinglang: Clip = {
       mean: 'see other people ＝ 他の人とも付き合う。I already am ＝ もうそうしている。',
       trap: 'see を「会う」と思うと、友だちの話に聞こえやすい。',
       use: 'Are you seeing anyone?（今、付き合ってる人いる？）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'everybody', seg: [40.5, 46], stem: 'Who knows this dating language?',
       ja: 'このデートの言葉を知っているのは誰？',
       choices: ['Everybody', 'Only Phoebe', 'Only Ross'], a: 0,
@@ -151,6 +176,7 @@ export const datinglang: Clip = {
       mean: 'everybody knows this ＝ みんな知っていること。誰でも分かる決まり文句だ、と言っている。',
       trap: '一人が話しているので、その人だけの意見だと思いやすい。everybody ＝ みんな。',
       use: 'Everybody knows this place.（ここはみんな知ってる店だよ）' },
+
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'p2', seg: [45, 54], stem: '“Cushions the blow.” What does this phrase mean?',
       choices: ['Makes a fight end sooner', 'Makes bad news hurt less', 'Makes a joke out of it'], a: 1, retired: true,
       cue: '続く「put your dog to sleep」のたとえとつなげて。',
@@ -159,7 +185,9 @@ export const datinglang: Clip = {
       mean: 'cushion the blow ＝ 衝撃を和らげる。',
       trap: 'blow を「なぐる」と取ると、けんかの話に聞こえやすい。',
       use: 'I tried to cushion the blow.（やんわり伝えた）' },
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'i3', seg: [47, 78], stem: 'What does Ross understand at the end?',
+
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'i3', reveals: ['farm'], seg: [47, 78],
+ stem: 'What does Ross understand at the end?',
       ja: '最後に、ロスは何に気づく？',
       choices: ['His old dog died long ago', 'His dog lives on a farm', 'His friends are joking'], a: 0,
       choicesJa: ['昔の犬はずっと前に死んでいた', '犬は今も農場で暮らしている', '友だちが冗談を言っている'],
@@ -172,5 +200,16 @@ export const datinglang: Clip = {
       trap: 'ロスが農場の名前まで言うので、本当だと思いやすい。最後の Oh, my God. で気づく。',
 
       use: 'Wait, are you serious?（待って、本気で言ってる？）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'farm', seg: [48, 54], stem: 'Where do parents say the dog went?',
+      ja: '親は、犬がどこへ行ったと言う？',
+      choices: ['To live on a farm', 'To a new family', 'To an animal doctor'], a: 0,
+      choicesJa: ['農場で暮らしに', '新しい家族のところへ', '動物のお医者さんへ'],
+      cue: '「they tell you」のあと',
+      line: 'They tell you it *went off to live on some farm*.',
+      said: '「親は『犬は農場へ行った』って言うのよ」と話す。',
+      mean: 'went off to 〜 ＝ 〜へ行ってしまった。live on a farm ＝ 農場で暮らす。',
+      trap: '動物の病院などを思いやすい。行き先は最後の farm（農場）。',
+      use: 'He went off to live in Tokyo.（彼は東京で暮らしに行った）' },
   ],
 };
