@@ -90,16 +90,6 @@ export const michaelBlastPast: Clip = {
       trap: 'please が2回あるので音量の頼みに聞こえるが、静かにさせたいのは自分の番のため。',
       use: 'Quiet, everyone, this is the good part!（静かに、ここがいいところ！）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['hopes', 'exit'], seg: [79.5, 151],
-      stem: 'How does the mood change after Michael’s tape?', ja: 'マイケルのテープのあと、雰囲気はどう変わる？',
-      choices: ['Fun, then awkward', 'Fun, then angry', 'Sad, then fun'], a: 0,
-      choicesJa: ['楽しかったのが気まずくなる', '楽しかったのが怒った感じになる', '悲しかったのが楽しくなる'],
-      cue: '子どものマイケルの答えのあと',
-      said: '子どもの答えのあと、結婚や子どもについて聞かれ、マイケルは仕事を口実に出ていく。',
-      mean: 'awkward ＝ 気まずい。楽しいテープのあと、今の生活を聞かれて気まずくなる。',
-      trap: '最初はマイケルが得意げなので、最後まで楽しいと思いやすい。後半の質問を聞く。',
-      use: 'That was a little awkward.（ちょっと気まずかったね）' },
-
     { id: 'd2', skill: 'detail', level: 'B1', point: 'recess', seg: [85.2, 90.5], retired: true,
       stem: 'What does young Michael name as his favorite subject?',
       choices: ['Recess', 'Reading', 'Science'], a: 0,
@@ -164,6 +154,16 @@ export const michaelBlastPast: Clip = {
       mean: '断られる心配が、子どものころからあったと分かる。笑いの中に寂しさがある。',
       trap: '結婚や子どもの話だけ聞くと家庭的に見えるが、理由の部分に本音がある。',
       use: 'I just don’t want to be left out.（仲間外れになりたくないだけ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['hopes'], seg: [94.9, 139.8],
+      stem: 'How does the mood change after Michael’s tape?', ja: 'マイケルのテープのあと、雰囲気はどう変わる？',
+      choices: ['Fun, then awkward', 'Fun, then angry', 'Sad, then fun'], a: 0,
+      choicesJa: ['楽しかったのが気まずくなる', '楽しかったのが怒った感じになる', '悲しかったのが楽しくなる'],
+      cue: '子どものマイケルの答えのあと',
+      said: '子どものマイケルの答えのあと、結婚や子どもについて聞かれ、気まずい空気になる。',
+      mean: 'awkward ＝ 気まずい。楽しいテープのあと、今の生活を聞かれて気まずくなる。',
+      trap: '最初はマイケルが得意げなので、最後まで楽しいと思いやすい。後半の質問を聞く。',
+      use: 'That was a little awkward.（ちょっと気まずかったね）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'host', reveals: ['nicetalk'], seg: [100.8, 113],
       stem: 'How does the host feel about Michael’s answer?', ja: '司会者は、マイケルの答えをどう思っている？',
