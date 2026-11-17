@@ -197,8 +197,8 @@ export const firstComplaint: Clip = {
       cue: '「I know you」のあとの短い一語。',
       line: 'I know you *can* fail. I see failure in you.',
       said: '「君なら失敗できる。君の中に失敗が見える」と励ます。',
-      mean: 'can ＝「キャン」と強く短い。can’t は「キャーン(ト)」と少し長い。',
-      trap: '励ましなら can’t fail と思いやすい。次の I see failure で、目標が失敗だと分かる。',
+      mean: 'can を強くはっきり言う（「できる」の強調）。can’t なら最後で息が止まる感じがある。',
+      trap: '励ましなら can’t fail と思いやすい。次の I see failure で、目標は失敗。could なら「クッ」。',
       use: 'I know you can do it.（君ならできるよ）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'canfail', seg: [122.6, 126.3], retired: true,

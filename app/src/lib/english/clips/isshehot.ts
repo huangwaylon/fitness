@@ -107,7 +107,7 @@ export const isSheHot: Clip = {
       line: 'Five. *Five to five*.',
       said: '二回の挙手を数え、「5対5」と言う。',
       mean: 'five to five ＝ 5対5。同じ数で、決着がつかなかった。',
-      trap: 'nine to five（9時から5時）という決まった言い方につられやすい。five の v まで聞く。',
+      trap: 'nine to five（9時5時）につられやすい。最初が「ファイ」なら five、「フォー」なら four。',
       use: 'It’s three to two.（3対2だ）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'mythical', seg: [52.4, 62.4], retired: true,
@@ -154,7 +154,7 @@ export const isSheHot: Clip = {
       line: 'It’s a gut thing. — *That’s fair*.',
       said: '「直感の問題だ」に「もっともだ」と返す。',
       mean: 'That’s fair ＝ 一理ある、もっともだ。fair は「フェア」で r の響きで終わる。',
-      trap: 'That’s fine はよく聞く返事なので、つられやすい。fine なら最後に「ン」。',
+      trap: 'That’s fine はよく聞くので、つられやすい。fine なら最後に「ン」、rare なら「レ」で始まる。',
       use: 'That’s fair. I’ll try again.（もっともだね。もう一回やってみる）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'favor', seg: [71.5, 76.5],

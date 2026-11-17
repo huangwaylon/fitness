@@ -34,7 +34,7 @@ export const gryzzlBoxes: Clip = {
       line: '*Have you gotten* one of these Gryzzl boxes?',
       said: '「グリズルの箱、受け取った？」と聞く。',
       mean: 'gotten ＝ get の形（アメリカ英語）。t が軽い「ラ」の音で「ガルン」に近い。',
-      trap: 'gotten の t が弱く、got に聞こえやすい。最後の「ン」まで聞く。',
+      trap: 'gotten の t が弱く got に聞こえやすい。最後の「ン」まで聞く。Did you なら「ディジュ」で始まる。',
       use: 'Have you gotten my email?（私のメール届いた？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [8.4, 16.35],
@@ -196,7 +196,7 @@ export const gryzzlBoxes: Clip = {
       line: 'I started here when I was *20*, and now I’m old and gross and directionless.',
       said: '「ここに来たのは20歳。今は年寄り」と言う。',
       mean: 'twenty ＝ 20。今は30歳くらい。それを「年寄り」と大げさに言う。',
-      trap: 'すぐあとに 10 years ago が来るので ten に引かれやすい。when I was の直後を聞く。',
+      trap: 'あとの 10 years ago で ten に引かれやすい。twenty は「トゥエニ」、thirty は「サーティ」、twelve は「トゥエルヴ」。',
       use: 'I started here when I was twenty.（ここで働き始めたのは20歳のとき）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', retired: true, point: 'old', reveals: ['age'], seg: [107.8, 115.4],

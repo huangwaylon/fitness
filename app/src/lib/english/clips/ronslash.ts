@@ -23,7 +23,7 @@ export const ronSlash: Clip = {
       line: 'we need to cut expenditures by *32%*. — Let’s make it an even 40.',
       said: '「支出を32%減らす必要がある」に、ロンが「きりよく40に」と返す。',
       mean: 'thirty-two percent ＝ 32%。an even 40 ＝ きりのいい40。',
-      trap: '最後に聞こえる40に引かれやすい。もとの数と、ロンの上乗せを分けて聞く。',
+      trap: 'thirty-two は「サーティ」で始まる。23なら「トゥエンティ」。40はロンの上乗せ。',
       use: 'Let’s make it an even ten.（きりよく10にしよう）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'bat', seg: [19.3, 26.2],
@@ -117,7 +117,7 @@ export const ronSlash: Clip = {
       line: 'But *we’ve run out of* options.',
       said: '「でも、もう選択肢がない」と言う。',
       mean: 'we’ve run out of ～ ＝ もう〜を使い切った。’ve はほとんど聞こえない。',
-      trap: '’ve が消えるので run と ran で迷いやすい。ran なら「ア」と口が大きく開く。',
+      trap: 'we と run の間に小さな「ヴ」がある。なければ we run。ran なら「ア」と口が大きく開く。',
       use: 'Sorry, we’ve run out of milk.（すみません、牛乳を切らしています）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'zoo', seg: [79.5, 86.3],
@@ -220,7 +220,7 @@ export const ronSlash: Clip = {
       line: 'Leslie does *95%* of the work.',
       said: '「俺の主義のせいで、仕事の95%はレスリーがやっている」と言う。',
       mean: 'ninety-five ＝ 95。ほとんど全部を彼女一人がやっている。',
-      trap: 'ninety のあとの five が短く、90に聞こえやすい。最後まで聞く。',
+      trap: 'ninety のあとの five が短く、90に聞こえやすい。59なら「フィフティ」で始まる。',
       use: 'She does ninety percent of the cooking.（料理の9割は彼女がしている）' },
 
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'share', seg: [97.8, 104.6], retired: true,

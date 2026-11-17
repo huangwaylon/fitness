@@ -144,7 +144,7 @@ export const kneecapping: Clip = {
       line: 'Now the hit *goes down at four o’clock*.',
       said: '「決行は4時だ」と言う。',
       mean: 'go down ＝ ここでは「（計画が）実行される」。four o’clock は「フォーラクロック」。',
-      trap: '直前の One kneecapping の one が残りやすい。時刻は at の直後。',
+      trap: '直前の One kneecapping の one が残りやすい。two なら「トゥー」。at の直後は「フォー」。',
       use: 'Let’s meet at four o’clock sharp.（4時ちょうどに会おう）' },
 
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'noturn', reveals: ['four'], seg: [78.0, 83.5],

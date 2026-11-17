@@ -81,7 +81,7 @@ export const ronAprilTakeOver: Clip = {
       line: 'Leslie Knope single-handedly does the work of *four* people',
       said: '「レスリーが一人で4人分の仕事をしているからだ」と言う。',
       mean: 'the work of four people ＝ 4人分の仕事。single-handedly ＝ 一人だけで。',
-      trap: 'of four が for に聞こえやすい。直前の人数に引っぱられず、people の前を聞く。',
+      trap: 'of four が for に聞こえやすい。two なら「トゥー」、seven なら「セヴン」。people の前を聞く。',
       use: 'She runs the shop single-handedly.（彼女は一人で店を回している）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'slack', seg: [42.35, 52],

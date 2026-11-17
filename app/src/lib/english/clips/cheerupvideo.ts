@@ -175,7 +175,7 @@ export const michaelCheerUp: Clip = {
       line: 'I hope she *doesn’t* call us up on stage. That would suck.',
       said: '「舞台に呼ばれませんように。それは最悪」と言う。',
       mean: 'doesn’t の t はほぼ消え、「ダズン」と短い。次の That would suck で向きを確かめる。',
-      trap: 't が聞こえず does を選びやすい。最後の「ン」と次の文を聞く。',
+      trap: 't が聞こえず does を選びやすい。最後の「ン」を聞く。won’t なら「ウォウン」で始まる。',
       use: 'I hope it doesn’t rain tomorrow.（明日、雨が降りませんように）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'erin', seg: [108.7, 119.3],
@@ -245,7 +245,7 @@ export const michaelCheerUp: Clip = {
       line: 'Want me to *crank the thermostat to 90*?',
       said: '「暖房を90度まで上げようか」と言う。アメリカなので華氏で、約32℃。',
       mean: 'ninety ＝ 90。前が強く、後ろは短い。crank ＝ ぐっと上げる。',
-      trap: '19℃ならふつうの室温なので選びやすい。nineteen は後ろの「ティーン」が強く長い。',
+      trap: '19℃ならふつうの室温で選びやすい。nineteen は後ろが強く長い。eighty なら「エイ」で始まる。',
       use: 'Can you turn the heat up a bit?（暖房、少し上げてくれる？）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'mittens', reveals: ['ring'], seg: [156.2, 160.95],

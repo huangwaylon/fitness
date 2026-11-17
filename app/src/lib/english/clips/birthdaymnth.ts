@@ -102,7 +102,7 @@ export const birthdayMonth: Clip = {
       line: 'and some sort of joke gift and *makes a toast*.',
       said: '「冗談のプレゼントを渡して、乾杯のあいさつをする」と言う。',
       mean: 'make a toast ＝ 乾杯のあいさつをする。a が小さく短く、makes にくっつく。',
-      trap: 'a を落とすと makes toast ＝ パンを焼く、になる。小さな a があるか聞く。',
+      trap: 'a を落とすと makes toast（パンを焼く）。小さな a があるか聞く。the なら「ザ」が聞こえる。',
       use: 'Let’s make a toast to Ken!（ケンに乾杯しよう）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'twotypes', seg: [24.9, 29], keep: true,

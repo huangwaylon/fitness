@@ -129,7 +129,7 @@ export const ronMeditate: Clip = {
       line: 'What were you thinking about? — I *wasn’t thinking at all*.',
       said: '「何を考えていた？」に「何も考えてなかった」と返す。',
       mean: 'not ～ at all ＝ まったく〜ない。at all は「アロー」とつながる。',
-      trap: 'at all の t が軽い「ラ」の音になり、a lot に聞こえやすい。',
+      trap: 'at all の t が軽い「ラ」の音になり、a lot に聞こえやすい。was か wasn’t かは「ン」で聞く。',
       use: 'I didn’t sleep at all last night.（昨夜はまったく寝られなかった）' },
 
     { id: 'h1', skill: 'attitude', level: 'B1', point: 'praise', reveals: ['blank'], seg: [67.6, 76.8],
@@ -255,7 +255,7 @@ export const ronMeditate: Clip = {
       line: 'Oh, I *didn’t expect* you to enjoy it.',
       said: '「楽しむとは思ってなかったよ」と言う。',
       mean: 'didn’t の t はほぼ消え、「ディドン」と短い。expect と続けて言う。',
-      trap: 't が消えても「ン」は残る。did だけに聞こえたら、「ン」があるか聞く。',
+      trap: 't が消えても「ン」は残る。did なら「ン」がない。don’t なら「ドウン」と「ド」で始まる。',
       use: 'I didn’t expect to see you here!（ここで会うとは思わなかった！）' },
 
     { id: 'd4', skill: 'marker', level: 'B1', point: 'meat', seg: [111.3, 120.5],

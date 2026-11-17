@@ -83,7 +83,7 @@ export const verySober: Clip = {
       line: '“…you must feel awful.” — “I *don’t* feel awful.”',
       said: '「つらいよね」に「つらくなんかない」と返す。',
       mean: 'don’t は「ドン」と短い。t はほぼ消えるが、「ン」の音は残る。',
-      trap: '「ン」を聞き逃すと do に聞こえ、反対の意味になる。',
+      trap: '「ン」を聞き逃すと do に聞こえ、反対の意味になる。didn’t なら「ディドン」と「ディ」で始まる。',
       use: 'I don’t mind at all.（全然かまわないよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', reveals: ['candyjob', 'eighteen'], seg: [91.5, 136.5],

@@ -67,7 +67,7 @@ export const savings: Clip = {
       line: 'Well, you know, I’m *29*.',
       said: '「まあ、ほら、僕は29歳だし」と言う。',
       mean: 'twenty-nine ＝ 29。「まだ若いから」と、お金を使い切った言い訳にしている。',
-      trap: 'twenty の t は弱く「トゥエニー」に近い。nine だけ拾うと19に聞こえやすい。',
+      trap: 'twenty の t は弱く「トゥエニー」。nine だけ拾うと19に聞こえやすい。39なら「サーティ」で始まる。',
       use: 'I’m twenty-nine years old.（29歳です）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'savings', reveals: ['age'], seg: [36.5, 41.8],

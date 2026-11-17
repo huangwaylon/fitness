@@ -94,7 +94,7 @@ export const donnaPosts: Clip = {
       line: 'Twitter poll on a scale of *98 to 100*.',
       said: '「ツイッター投票：98から100の段階で」と読み上げる。',
       mean: 'on a scale of A to B ＝ AからBの段階で。一番下でも98という冗談。',
-      trap: 'eight は短く弱く、ninety だけに聞こえやすい。あとの less than 98 で確かめる。',
+      trap: 'eight が短く ninety だけに聞こえやすい。88なら「エイティ」で始まる。あとの less than 98 でも確かめる。',
       use: 'On a scale of one to ten?（10段階でいうと？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'poll', reveals: ['aint'], seg: [81.5, 93.3], retired: true,
@@ -150,7 +150,7 @@ export const donnaPosts: Clip = {
       line: 'I mean, I *thought that was* your thing.',
       said: '「それがあなたの持ち味だと思ってた」と言う。',
       mean: 'thought の t と that の th が重なり、一続きに聞こえる。',
-      trap: 'that が小さく、it に聞こえやすい。was まで聞く。',
+      trap: 'that が小さく、it に聞こえやすい。think なら「シンク」で、was もない。',
       use: 'I thought that was tomorrow!（それ明日だと思ってた！）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'thing', seg: [109.7, 117],

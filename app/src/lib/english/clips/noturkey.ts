@@ -44,7 +44,7 @@ export const noturkey: Clip = {
       line: 'Well, Phoebe *doesn’t* eat turkey.',
       said: '「だってフィービーはターキーを食べないし」と言う。',
       mean: 'doesn’t は「ダズン」と短く、最後の t はほぼ消える。いつもの話なので doesn’t。',
-      trap: '速いと didn’t と聞こえやすい。「ダ」か「ディ」かを聞く。',
+      trap: '速いと didn’t と聞こえやすい。「ダ」か「ディ」かを聞く。won’t なら「ウォウン」で始まる。',
       use: 'He doesn’t eat meat.（彼はお肉を食べないの）' },
 
     { id: 'h1', skill: 'humor', level: 'B1', point: 'delicious', seg: [6.2, 14.8],
@@ -206,8 +206,8 @@ export const noturkey: Clip = {
       cue: '「No, no」のあとの一語。',
       line: 'No, no, they *won’t*.',
       said: '「いや、余らないって」と、すぐに打ち消す。',
-      mean: 'won’t ＝ will not。「ウォウント」と「オウ」の音。want（ウォント）とは違う。',
-      trap: 'n’t が弱いと will に聞こえやすい。No, no のあとなので打ち消しの won’t。',
+      mean: 'won’t ＝ will not。「ウォウント」と「ウォ」で始まる。don’t は「ドウント」と「ド」で始まる。',
+      trap: 'n’t が弱いと will に聞こえやすい。最後の「ント」があれば打ち消し。',
       use: 'Don’t worry, it won’t happen again.（大丈夫、もうしないから）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'promise', reveals: ['outcome'], seg: [52.5, 63.4],

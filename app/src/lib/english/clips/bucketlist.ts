@@ -176,7 +176,7 @@ export const bucketList: Clip = {
       line: '*18 and four cents.*',
       said: '残高は「18ドルと4セント」と答える。',
       mean: 'eighteen ＝ 18（エイティーン）。four cents ＝ 4セント。',
-      trap: 'eighteen と eighty はまぎれやすい。eighteen は後ろの「ティーン」を強く長く言う。',
+      trap: 'eighteen は後ろの「ティーン」が強く長い。eighty なら前が強い。four は「フォー」で、forty ではない。',
       use: 'That’s eighteen dollars and four cents.（18ドル4セントです）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'leftover', reveals: ['left'], seg: [50.6, 55.55],
@@ -188,7 +188,7 @@ export const bucketList: Clip = {
       line: 'Whoa, still *a lot* left over.',
       said: '残高18ドルちょっとに「おお、まだたくさん残ってる」と言う。',
       mean: 'a lot ＝ たくさん。t が次の l の前でほぼ消え、「アラッ」と止まる。',
-      trap: '残高は少ないので、意味から a little を選びやすい。音の数で決める。little は2つの音。',
+      trap: '残高が少ないので a little を選びやすい。little は2つの音。a bit なら「アビッ」と b で始まる。',
       use: 'There’s still a lot left.（まだたくさん残ってるよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'disappoint', seg: [54.65, 64.3],
@@ -273,7 +273,7 @@ export const bucketList: Clip = {
       line: 'Andy, you said you *wanted to* be an action star.',
       said: '「アクションスターになりたいって言ってたよね」と言う。',
       mean: 'wanted to は「ウォニッタ」と短くなる。said に合わせて過去の形。',
-      trap: '-ed と to がくっつくので、want to に聞こえやすい。「ニッ」の小さな音があるか聞く。',
+      trap: '-ed と to がくっつき、want to に聞こえやすい。「ニッ」の音があるか聞く。were going to なら「ワゴナ」と長い。',
       use: 'I always wanted to try surfing.（ずっとサーフィンをやってみたかった）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'crazy', seg: [130.9, 141.4],

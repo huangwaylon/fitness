@@ -232,7 +232,7 @@ export const pamGivenUp: Clip = {
       line: '*What are you* blabbering about? Nothing happened.',
       said: '「何をぺらぺら言ってるんだ。何もなかった」と言う。',
       mean: 'What are you が「ワラユ」と一続き。t は軽い「ラ」の音になる。',
-      trap: '小さく短い are は were に聞こえやすい。ここは今の話なので are。',
+      trap: '小さく短い are は were に聞こえやすい。今の話なので are。have you been ならもっと長い。',
       use: 'What are you talking about?（何の話？）' },
 
     { id: 'a1', skill: 'detail', level: 'B1', point: 'nothing', reveals: ['blabber'], seg: [143.7, 152.4],

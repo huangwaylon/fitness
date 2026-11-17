@@ -153,7 +153,7 @@ export const ronFixes: Clip = {
       line: 'Listen up! I *have to* turn off the power for one minute.',
       said: '「みんな聞いて、1分だけ電気を切る」と知らせる。',
       mean: 'have to は「ハフタ」と一続きに聞こえる。v が次の t につられて f の音になる。',
-      trap: '「ハッタ」に近く had to と迷いやすいが、これからのことなので have to。',
+      trap: '「ハッタ」に近く had to と迷いやすいが、これからの話。want to なら「ワナ」。',
       use: 'I have to leave by six.（6時までに出ないと）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'power', seg: [88.5, 91.95], keep: true,

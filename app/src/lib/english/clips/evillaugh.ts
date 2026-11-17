@@ -48,7 +48,7 @@ export const evilLaugh: Clip = {
       line: '*Did you know* that there is a daycare center opening right here…',
       said: '「この建物に保育園ができるって知ってた？」と持ちかける。',
       mean: 'Did you know が「ディジュノウ」とつながる。d と y が合わさって「ジュ」。',
-      trap: '「ジュ」が聞こえたら did you。Do you なら「ドゥユ」に近い。',
+      trap: '「ジュ」が聞こえたら did you。Do you なら「ドゥユ」、Don’t you なら「ドンチュ」。',
       use: 'Did you know they’re closing early?（早く閉まるって知ってた？）' },
 
     { id: 'i1', skill: 'phrase', level: 'B2', point: 'idea', seg: [9.3, 15.5],

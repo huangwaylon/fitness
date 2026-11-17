@@ -1,18 +1,11 @@
+// A2 REVIEW 2026-11-17: keep 10, rewrite 8, retire 6, new 0
 // “Ron chooses love over meat | Parks and Recreation” (the official Parks and Recreation channel, Season 7): at
 // Donna's wedding, Ron tells Lucy that Tom said he'd marry her tomorrow; Tom cuts off Ron's food until he fixes it,
 // Ron's fix makes it bigger, and Tom ends up telling Lucy himself that he's all in.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 4–6 s ("Warm it up, please", a visual
-// gag), 57–63 s (no captions; whisper only), 85–87 s (the small hamburgers), 92–93 s ("strict life codes" vs
-// captions "life coach"), 127–131 s (camouflage), 201 s ("That's all I meant" vs captions "that's all I'm in").
-// EAR CHECK: 103.4 s h3 — “That’s way in the future, man” is taken as Tom's (whisper has it in his turn; the captions
-//   don't mark speakers), so “Don't call me man” is Ron's whole reply
-// EAR CHECK: 195.6 s r1 — the cut falls after “You just have to ignore him”, before Lucy's “So you didn’t mean…”
-//   (196.0 s)
-// EAR CHECK: 217 s nt1 — Lucy's “only dating you for the free dresses” is teasing, not cool; the key also stands on
-//   the words (“dating you”, and Tom's “I’m fine with that”)
-// REVIEW 2026-11-16: pass 7, fix 17, drop 0, new 0; ear checks 3
-//   Open: who says “I don’t even know what you’re talking about, us having not talked about” (163 s)? Taken as Tom;
-//   a2's stem no longer depends on it.
+// Segments from the captions, words from whisper (2026-11-16). Untested: 4–6 s (visual), 57–63 s (no captions),
+// 85–87 s, 92–93 s, 127–131 s, 201 s (the sources differ). Retired: the C2 tier (nt1–nt3), Tom's tangled denial (a2),
+// the ham-ball inference (i4) and the predict item (r1).
+// EAR CHECK: 103.4 s h3 — “That’s way in the future, man” is taken as Tom's, so “Don't call me man” is Ron's reply
 import type { Clip } from '../types.ts';
 
 export const loveOverMeat: Clip = {
@@ -21,193 +14,173 @@ export const loveOverMeat: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 50 %: the gift worry clashed with "100%"). New: a hedged reading, which "forever" refutes.
-    // why: propose ← "I'd marry her tomorrow" and "planned for tonight" run together; early days ← "finally feel
-    //   like" heard as a cautious start
     { id: 'g1', skill: 'gist', level: 'B1', point: 'forever', reveals: ['dress'], seg: [12.9, 43.4],
-      stem: 'Early on, what is Tom telling Ron about Lucy and himself?',
-      choices: ['He sees her as the one for good', 'He plans to propose to her tonight', 'He’s happy, but it’s early days yet'],
-      a: 0,
-      cue: '「100%」のあと、forever と tomorrow。',
+      stem: 'What does Tom tell Ron about Lucy?',
+      ja: 'トムはルーシーのことをロンに何と言う？',
+      choices: ['She is the one for him', 'He will propose tonight', 'It is too early to tell'], a: 0,
+      choicesJa: ['彼女こそ運命の人', '今夜プロポーズする', 'まだ早くて分からない'],
+      cue: '「100%」のあとの2文。',
       line: 'I finally feel like I’m with the person I’m gonna be *with forever*. *I’d marry her tomorrow.*',
       said: '「ずっと一緒にいる相手に出会えた。明日にでも結婚したい」と話す。',
-      mean: '今夜の予定から本気の気持ちへ。tomorrow は「それほど本気」のたとえ。',
-      trap: 'tonight と tomorrow が近く、今夜プロポーズに思える。finally は「やっと」。',
+      mean: 'be with ～ forever ＝ ずっと〜と一緒にいる。tomorrow は本気のたとえ。',
+      trap: 'tonight と tomorrow が近く、今夜プロポーズすると思いやすい。finally ＝ やっと。',
       use: 'I think she’s the one.（彼女が運命の人だと思う）' },
 
-    // R fix: K1 + V2 (blind 65 %). "Doesn't want to hear it" was defensible too: Ron plainly doesn't care. The key now
-    //   holds both (literal, won't guess); the distractors are knowing already and banning plans.
-    // why: knows ← "No" heard as "no need, I know"; no plans ← "No" heard as a ban on Tom's plan
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'guess', seg: [16.55, 22.5],
-      stem: 'Why does Ron’s one-word reply to “guess what…” get a laugh?',
-      choices: ['He takes the lead-in literally and won’t guess', 'He already knows the plan, so he needn’t guess',
-                'He’s telling Tom not to make plans tonight'], a: 0,
-      cue: '「guess what」のあとの一語と、Tom の続け方。',
+    { id: 'h1', skill: 'phrase', level: 'B1', point: 'guess', seg: [16.55, 22.5],
+      stem: 'What does Tom mean by “Guess what I have planned”?',
+      ja: 'トムの「Guess what I have planned」はどういう意味？',
+      choices: ['I have news for you', 'Please guess a number', 'I don’t know yet'], a: 0,
+      choicesJa: ['知らせたいことがある', '数を当ててみて', 'まだ分からない'],
+      cue: '「guess what」のあとと、Tom の続け方。',
       line: 'And *guess what* I have planned for tonight? — *No.* — As Donna’s butler of honor…',
-      said: '「今夜の計画、当ててみて」に、ロンは「いや」とだけ答える。',
-      mean: 'guess what は「聞いて」の前置き。ロンは字義どおり断っている。',
-      trap: 'No を「知ってる」や「やめろ」と取りやすいが、Tom はかまわず続ける。',
+      said: '「今夜の計画、何だと思う？」に、ロンは「いや」とだけ答える。トムはかまわず話す。',
+      mean: 'Guess what? ＝ ねえ聞いて。話を始める前置き。ロンは文字どおり当てるのを断っている。',
+      trap: 'guess（当てる）だけ聞くと、本当にクイズに聞こえる。トムは答えを待たずに話す。',
       use: 'Guess what? I got the job!（聞いて！仕事決まった！）' },
 
-    // why: part in the wedding ← "Donna's butler of honor" is Tom's own role; suit ← "baby blue brocade" is his own
-    //   outfit
     { id: 'd2', skill: 'detail', level: 'B1', point: 'dress', seg: [19.1, 26.6],
       stem: 'What surprise has Tom gotten for Lucy?',
-      choices: ['A dress that matches his outfit', 'A part in Donna’s wedding', 'A baby blue suit of her own'], a: 0,
+      ja: 'トムはルーシーにどんなサプライズを用意した？',
+      choices: ['A dress that matches his outfit', 'A big part in Donna’s wedding day', 'A blue suit of her own'], a: 0,
+      choicesJa: ['自分の服とおそろいのドレス', 'ドナの結婚式での大きな役', '彼女用の青いスーツ'],
       cue: '「As a surprise, I got」のあと。',
       line: 'Baby blue brocade. As a surprise, I got *a matching dress for Lucy*.',
       said: '「サプライズで、ルーシーにおそろいのドレスを買った」と言う。',
-      mean: 'matching ＝ おそろいの。自分の衣装と合わせたドレスを用意した。',
-      trap: 'butler of honor も brocade も Tom 自身の話。surprise のあとが贈り物。',
+      mean: 'matching ＝ おそろいの。自分の衣装に合わせたドレスを用意した。',
+      trap: 'butler of honor も blue brocade もトム自身の話。surprise のあとを聞く。',
       use: 'We got matching shirts for the trip.（旅行用におそろいのシャツを買った）' },
 
-    // why: 90% ← "hundred" half caught, heard as a lower guess; 110% ← the usual hype figure, which Tom might well use
-    { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [26.55, 33.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [26.55, 33.4], keep: true,
       stem: 'How sure is Tom that Lucy will love the gift?',
-      choices: ['90%', '100%', '110%'], a: 1, keep: true,
-      cue: '「with this gift?」のすぐあと。',
+      ja: 'ルーシーが喜ぶと、トムはどのくらい自信がある？',
+      choices: ['90%', '100%', '110%'], a: 1,
+      choicesJa: ['90パーセント', '100パーセント', '110パーセント'],
+      cue: '「With this gift?」のすぐあと。',
       line: 'With this gift? — *100%.* We’re so in sync.',
       said: '「喜ぶと思う？」に「100パーセント。息ぴったりだから」と答える。',
-      mean: '迷いなく言い切る。in sync ＝ 気持ちがぴったり合っている。',
-      trap: '大げさな Tom なら110%も言いそうだが、and ten は続かない。',
+      mean: 'a hundred percent ＝ 100%。in sync ＝ 気持ちがぴったり合っている。',
+      trap: '大げさなトムなら110%も言いそう。and ten は続かない。',
       use: 'I’m a hundred percent sure.（100パーセント確かだよ）' },
 
-    // R fix: V2 (blind 75 %: the title, "love over meat", points at food, and only the key had food). The "moved"
-    //   choice now has food too: "I brought my own" heard as an offer.
-    // why: offers food ← "if not, I brought my own" heard as a gift to the party; worried ← "bully" heard as the
-    //   negative word (いじめ), as if he disapproves
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'bully', seg: [33.0, 43.4],
-      stem: 'When Tom says he’d marry Lucy tomorrow, how interested is Ron?',
-      choices: ['Not very: food is more on his mind', 'Very: he offers to bring food to celebrate',
-                'Worried: he thinks Tom is rushing'], a: 0,
-      cue: '「son」のあと、話題の変え方。',
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'bully', seg: [33, 43.4],
+      stem: 'How interested is Ron in Tom’s news?',
+      ja: 'トムの話に、ロンはどのくらい興味がある？',
+      choices: ['Not very, he wants food', 'Very, he is so happy', 'Worried, it is too fast'], a: 0,
+      choicesJa: ['あまりない、食べ物が気になる', 'とても、すごく喜んでいる', '心配、早すぎる'],
+      cue: '「son」のあと、話の変え方。',
       line: '*Bully for you*, son. *More importantly*, do you have tri-tip for tonight?',
       said: '「そりゃよかったな」と言い、「それより、今夜の肉はある？」と続ける。',
-      mean: 'Bully for you は古風な「よかったね」で、少し気のない響き。',
-      trap: 'bully をいじめと取ると反対に聞こえる。More importantly のあとが関心事。',
-      use: 'Well, good for you.（へえ、よかったじゃない）' },
+      mean: 'Bully for you ＝ 古い言い方の「よかったね」。More importantly ＝ それより大事なのは。',
+      trap: 'bully を「いじめ」と思いやすい。More importantly のあとが本当の関心。',
+      use: 'More importantly, is there coffee?（それより、コーヒーある？）' },
 
-    // why: food ← "Good food" is listed first; love ← "the celebration of romantic love" is listed second
     { id: 'd3', skill: 'detail', level: 'B1', point: 'churches', seg: [45.5, 57.2],
-      stem: 'In Ron’s talk to the camera, what does he like most about weddings?',
-      choices: ['The buildings they are held in', 'The food that is served there', 'The love that they celebrate'], a: 0,
-      cue: '「most of all」のあとと、その理由。',
-      line: 'Good food, the celebration of romantic love, and *most of all, churches*… knew how to *construct an edifice*.',
+      stem: 'What does Ron like most about weddings?',
+      ja: 'ロンが結婚式で一番好きなのは何？',
+      choices: ['The churches', 'The good food', 'The romantic love'], a: 0,
+      choicesJa: ['教会', 'おいしい料理', '恋愛'],
+      cue: '「most of all」のあと。',
+      line: 'Good food, the celebration of romantic love, and *most of all, churches*…',
       said: '「料理、恋愛のお祝い、何より教会」と挙げ、建物の造りをほめる。',
-      mean: 'most of all ＝ 何よりも。教会を挙げる理由は宗教ではなく、建物の見事さ。',
-      trap: '3つ並ぶので最初の food に引っぱられやすい。most of all のあとが一番。',
+      mean: 'most of all ＝ 何よりも。教会の理由は宗教ではなく、建物の見事さ。',
+      trap: '3つ並ぶので、最初の food に引っぱられやすい。most of all のあとが一番。',
       use: 'Most of all, I love the quiet.（何より静かなのがいい）' },
 
-    // R fix: K1: "says sorry" overstated it; "I normally don't…, but" excuses, it doesn't apologize.
-    // why: won't discuss ← "I normally don't get involved" heard as a refusal; asks ← "I'll just say it" heard as
-    //   asking leave
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'leadin', seg: [62.9, 72.5],
-      stem: 'Before telling Lucy his news, what does Ron’s long lead-in do?',
-      choices: ['Excuses himself ahead of time for meddling', 'Says he won’t discuss Tom’s private life',
-                'Asks whether Lucy wants to hear news'], a: 0,
+      stem: 'Why does Ron say, “I normally don’t get involved…, but”?',
+      ja: 'ロンはなぜ「I normally don’t get involved…, but」と言う？',
+      choices: ['To say sorry before he meddles', 'To refuse to talk about it at all', 'To ask if she wants news'], a: 0,
+      choicesJa: ['口を出す前に断っておくため', 'その話をまったくしないため', '知らせを聞きたいか聞くため'],
       cue: '「normally」と、but のあと。',
       line: 'I *normally don’t get involved* in people’s personal affairs, *but*…',
       said: '「ふだんは人の私生活に口は出さないが、結婚式だとな」と前置きする。',
-      mean: '口出しする前の言い訳。「普段はしないけど」と断ってから本題に入る。',
-      trap: 'don’t get involved だけ聞くと断りに聞こえる。normally と but が例外の合図。',
+      mean: 'I normally don’t ～, but… ＝ ふだんは〜しないけど。例外を言う前の断り。',
+      trap: 'don’t get involved だけ聞くと、断りに聞こえる。normally と but が例外の合図。',
       use: 'I don’t usually say this, but…（普段は言わないけど…）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'sayit', seg: [68.85, 72.5],
       stem: 'Type the end: “but something about a wedding, ___.” (4 words)', answer: "i'll just say it",
-      cue: 'wedding のあと、短い4語。',
+      ja: '最後を書き取る：「but something about a wedding, ___.」（4語）',
+      cue: '「wedding」のあとの4語。',
       line: 'but something about a wedding, *I’ll just say it*.',
       said: '「結婚式ってやつは何かあってな、もう言ってしまおう」と言う。',
-      mean: 'I’ll は「アル」と弱く、just の t は say の前で消えて「ジャスセイ」。',
-      trap: 'I will と書きたくなるが、音は I’ll。just の t が聞こえなくても4語ある。',
+      mean: 'I’ll just say it ＝ はっきり言ってしまおう。I’ll は「アル」と短い。',
+      trap: 'just の t が say の前で消え、「ジャスセイ」に聞こえる。それでも4語ある。',
       use: 'I’ll just say it: I’m nervous.（はっきり言うと、緊張してる）' },
 
-    // R fix: V2 (blind 60 %: the key was the only warm choice). "Quite" read as "somewhat" is the new near miss, and
-    //   the segment now runs to "He said he'd marry you tomorrow" (79.2 s), which refutes it.
-    // why: a little ← "quite" read as "fairly"; fooled ← "taken" heard as "taken in" (だまされる)
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'taken', seg: [70.5, 80.0],
-      stem: 'What does Ron tell Lucy about Tom’s feelings?',
-      choices: ['He likes her very much', 'He likes her, just a little', 'He’s been fooled by her'], a: 0,
-      cue: '「I’ll just say it」のあと、with you の前。',
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'taken', seg: [70.5, 80],
+      stem: 'What does “Tom is quite taken with you” mean?',
+      ja: '「Tom is quite taken with you」はどういう意味？',
+      choices: ['Tom likes her very much', 'Tom likes her just a little', 'Tom has been fooled'], a: 0,
+      choicesJa: ['トムは彼女がとても好き', 'トムは彼女がほんの少し好き', 'トムはだまされた'],
+      cue: '「I’ll just say it」のあと。',
       line: 'Tom is *quite taken with you*. — He’s taken with me, huh?',
       said: '「トムは君にすっかり夢中だ」と言われ、「夢中なんだ、へえ」と聞き返す。',
-      mean: 'be taken with ～ ＝ ～に心ひかれている。少し古風な言い方。',
-      trap: 'quite を「まあまあ」と取りやすいが、ここは「かなり」。taken in とも違う。',
+      mean: 'be taken with ～ ＝ 〜に心ひかれている。少し古い言い方。quite ＝ かなり。',
+      trap: 'quite を「まあまあ」と取りやすい。ここは「かなり」。',
       use: 'I was quite taken with the city.（その街がすっかり気に入った）' },
 
-    // R fix: V2 (blind 55 %). "Say more" becomes "say it again more gently", a softer near miss.
-    // why: gently ← "walk back" heard as going back to her to redo it; walk away ← "walk" heard as leaving
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'walkback', seg: [86.75, 91.6],
-      stem: 'What does Tom want Ron to do about what he told Lucy?',
-      choices: ['Take back his words', 'Say it again more gently', 'Walk away and leave it'], a: 0,
-      cue: '「Ron,」のあと、what you said の前。',
+      stem: 'What does “walk back what you said” mean?',
+      ja: '「walk back what you said」はどういう意味？',
+      choices: ['Take back your words', 'Say it more gently', 'Walk away from it'], a: 0,
+      choicesJa: ['言ったことを取り消す', 'もっとやさしく言う', 'その場から立ち去る'],
+      cue: '「Ron,」のあと。',
       line: 'you have to *walk back* what you said. — Walk back *sounds like lying*.',
       said: '「言ったことを取り消して」と頼むと、「取り消しはうそみたいだ」と断られる。',
-      mean: 'walk back ＝ 発言を撤回する。本当の事を消すのはうそ、という考え。',
-      trap: '文字通り「歩いて戻る」と取りやすい。返事の lying が、言葉の話だと教えてくれる。',
-      use: 'He had to walk back his comments.（彼は発言を撤回するはめになった）' },
+      mean: 'walk back ＝ 発言を取り消す。本当のことを消すのはうそ、というロンの考え。',
+      trap: '文字どおり「歩いて戻る」と思いやすい。返事の lying で、言葉の話だと分かる。',
+      use: 'He had to walk back his words.（彼は発言を取り消すはめになった）' },
 
-    // R fix: V2 (blind 60 %: the island-laugh was a filler). New keyword trap from Ron's "Walk back sounds like
-    //   lying" a few seconds earlier.
-    // why: too far ahead ← "That's way in the future" is Tom's own line, easy to give to Ron; lying ← Ron's refusal
-    //   at 90 s, the last thing he objected to
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'man', seg: [101.4, 109.5],
-      stem: 'After Tom describes his future with Lucy, why does he snap at Ron?',
-      choices: ['Ron picks on one word and skips the problem', 'Ron says Tom’s plans are too far ahead',
-                'Ron won’t help, since it would mean lying'], a: 0,
-      cue: 'Ron の短い返事と、Tom の「That’s what…」。',
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'man', seg: [101.4, 109.5],
+      stem: 'What does Ron answer to Tom’s big plans?',
+      ja: 'トムの大きな計画に、ロンは何と答える？',
+      choices: ['Don’t call me “man.”', 'That sounds great, son.', 'That’s too far away.'], a: 0,
+      choicesJa: ['「man」と呼ぶな', 'いいね、息子よ', 'それは先すぎる'],
+      cue: 'Ron の短い返事。',
       line: 'That’s way in the future, man. — *Don’t call me “man.”* — *That’s what you took away from this?!*',
-      said: '夢を語る Tom に、ロンは「man と呼ぶな」とだけ返し、Tom がキレる。',
-      mean: '大問題の相談中に、呼び方だけに反応している。',
-      trap: 'That’s way in the future は Tom の言葉。ロンは一言だけ。',
+      said: '夢を語るトムに、ロンは「man と呼ぶな」とだけ返し、トムが怒る。',
+      mean: '大問題の相談中に、呼び方だけに反応する。That’s what you took away? ＝ そこ？',
+      trap: 'way in the future（ずっと先）はトムの言葉。ロンは一言だけ。',
       use: 'That’s what you got from all that?（あれ全部聞いて、そこ？）' },
 
-    // R fix: V2 (blind 60 %: "joking" was weak). New: a punishment for good, which "until" refutes.
-    // why: leave ← "Don't serve this man" is the bar script for throwing someone out; for good ← "No more food"
-    //   heard without "until"
-    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'food', seg: [110.5, 115.8],
-      stem: 'What is Tom doing when he tells the server not to serve Ron?',
-      choices: ['Holding back Ron’s food to make him act', 'Asking the staff to make Ron leave now',
-                'Cutting Ron off for good to punish him'], a: 0,
-      cue: '「Don’t serve this man」のあと、条件の言葉。',
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'food', seg: [110.5, 115.8],
+      stem: 'What does “No more food until he fixes” it mean for Ron?',
+      ja: '「No more food until he fixes」は、ロンにとってどういうこと？',
+      choices: ['He can eat once it’s fixed', 'He can never eat again', 'He must leave right now'], a: 0,
+      choicesJa: ['直したら食べられる', '二度と食べられない', '今すぐ出ていく'],
+      cue: '「Don’t serve this man」のあと。',
       line: 'Don’t serve this man. *No more food until he fixes* a giant disaster he’s created.',
-      said: '「この人に出さないで。自分の起こした大惨事を直すまで食べ物なし」と言う。',
-      mean: 'ロンの一番の弱点、食べ物を人質にしている。until が条件を示す。',
-      trap: '店から追い出す決まり文句に聞こえるが、until 以下で「直せば出す」と分かる。',
+      said: '「この人に出さないで。大惨事を直すまで食べ物なし」と言う。',
+      mean: 'until ～ ＝ 〜するまで。直せばまた出す、という条件。ロンの弱点の食べ物を使う。',
+      trap: 'No more food だけ聞くと、二度と食べられないと思いやすい。until 以下が条件。',
       use: 'No dessert until you finish your vegetables.（野菜を食べるまでデザートなし）' },
 
-    // R fix: V2 (blind 60 %: "a lion" made no sense). It's now "not a liar", which he does say three seconds later.
-    // why: lawyer ← the l and the vowels blur, and "I have something to tell you" sets up a confession about himself;
-    //   not a liar ← said at 124 s, in his correction; the "What?" in between shows the first line was the odd one
-    { id: 's1', skill: 'sound', level: 'B2', point: 'liar', seg: [116.4, 127.55],
-      stem: 'Fill the gap: “Lucy, I have something to tell you. I am ___.”',
+    { id: 's1', skill: 'sound', level: 'B1', point: 'liar', seg: [116.4, 127.55],
+      stem: 'Fill the gap: “Lucy, … I am ___.”',
+      ja: '空所を埋める：「Lucy, … I am ___.」',
       choices: ['a liar', 'not a liar', 'a lawyer'], a: 0,
-      cue: '「I am」のあと。次の文で本人が言い直す。',
+      choicesJa: ['うそつき', 'うそつきではない', '弁護士'],
+      cue: '「I am」のあと。',
       line: 'I am *a liar*. — What? — Well, no, I am *not a liar*. I have *never lied*…',
-      said: '「私はうそつきだ」と言い、すぐ「いや、うそはついたことがない」。',
-      mean: 'liar は「ライアー」で、最後の r は弱い。直後の lied が仲間の語。',
-      trap: 'lawyer（ローヤー）は最初の母音が違う。迷ったら、すぐあとの lied で確かめる。',
+      said: '「私はうそつきだ」と言い、すぐ「いや、うそはついたことがない」と言い直す。',
+      mean: 'liar ＝ うそつき。「ライアー」で、最後の r は弱い。',
+      trap: 'lawyer（ローヤー）は最初の音がちがう。すぐあとの lied（うそをついた）で確かめる。',
       use: 'I’m a terrible liar.（うそをつくのがすごく下手なんだ）' },
 
-    // R fix: V2 (blind 50 %). The takes-back choice now pairs "I am a liar" with Lucy's real confusion ("What is
-    //   happening right now?"), so it's a near miss that "no, I am not a liar" refutes.
-    // why: softens ← "he likes you a great deal" sounds like a gentler version; admits he lied ← he opens with "I am
-    //   a liar", and Lucy is indeed confused
     { id: 'g2', skill: 'gist', level: 'B2', point: 'fix', reveals: ['liar'], seg: [116.4, 151.3],
-      stem: 'How does Ron’s attempt to fix things with Lucy turn out?',
-      choices: ['He makes it bigger, adding more of Tom’s plans', 'He softens it, and Lucy calms down',
-                'He admits he lied, and Lucy is confused'], a: 0,
+      stem: 'How does Ron’s try to fix things with Lucy go?',
+      ja: 'ルーシーとのことを直そうとするロンは、どうなる？',
+      choices: ['He makes it even bigger', 'Lucy calms down at last', 'He says that he lied'], a: 0,
+      choicesJa: ['話をもっと大きくしてしまう', 'ルーシーがやっと落ち着く', 'うそをついたと言う'],
       cue: 'ロンの説明のあとの、Lucy の聞き返し。',
       line: 'he could imagine marrying you and *living on an island with your kids*. — Wait, now we’re on an island with *kids, plural*?',
       said: '「好きだと伝えたかっただけ」と言いつつ、結婚、島、子どもまで話してしまう。',
-      mean: '取り消すはずが、Tom の夢をさらに詳しく伝えて、話を大きくしてしまった。',
-      trap: 'I am a liar は撤回に聞こえるが、すぐ自分で否定する。now は「さらに」。',
+      mean: '取り消すはずが、トムの夢をさらにくわしく伝えて、話を大きくしてしまう。',
+      trap: 'I am a liar で、撤回したと思いやすい。すぐ自分で打ち消している。',
       use: 'That only made things worse.（それで余計にややこしくなった）' },
 
-    // R fix: V2 (blind 65 %: only the key had a reason tied to the scene). "Bring Lucy something" becomes a kind
-    //   reason with food in it, so food isn't the tell.
-    // why: cheer up ← "do you know where I can find" heard as a kind errand for her; shame ← the Japanese frame: a
-    //   sudden change of topic after an awkward moment read as 気まずさ
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'hamballs', reveals: ['food'], seg: [146.5, 151.3],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'hamballs', reveals: ['food'], seg: [146.5, 151.3], retired: true,
       stem: 'Why does Ron ask about the ham balls right after Lucy’s question?',
       choices: ['He thinks his job is done, so he can eat', 'He wants to cheer Lucy up with some food',
                 'He is changing the subject out of shame'], a: 0,
@@ -218,11 +191,7 @@ export const loveOverMeat: Clip = {
       trap: '急な話題の変更は気まずさにも見えるが、ロンは堂々としている。Now は「用件は終わり」。',
       use: 'Now, where’s the coffee?（さて、コーヒーはどこ？）' },
 
-    // R fix: V2 + N (blind 55 %). The stem no longer names Tom as the speaker (no name settles it), and the choices
-    //   are parallel "X, since/which…" with a puzzled near miss.
-    // why: puzzled ← "I don't even know what you're talking about" taken at face value; annoyed ← Ron did meddle
-    //   earlier, so a brush-off sounds like irritation
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'denial', seg: [153.0, 166.65],
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'denial', seg: [153.0, 166.65], retired: true,
       stem: 'When Ron says they haven’t talked yet, how does the denial come across?',
       choices: ['Rattled, which suggests Ron is right', 'Puzzled, since they really have talked',
                 'Annoyed, since Ron keeps getting involved'], a: 0,
@@ -233,9 +202,7 @@ export const loveOverMeat: Clip = {
       trap: '「分からない」を文字通り取ると、ただの困惑に見える。文が崩れるのは動揺の合図。',
       use: 'I have no idea what you mean.（何のことだか全然）' },
 
-    // anchor: 165.2–166.6 s, right after "what you're talking about": five words, "us having not talked about" in
-    //   both sources; grammar would rewrite them
-    { id: 'nt3', skill: 'dict', level: 'C2', point: 'denial', seg: [161.95, 166.65],
+    { id: 'nt3', skill: 'dict', level: 'C2', point: 'denial', seg: [161.95, 166.65], retired: true,
       stem: 'Type the end: “I don’t even know what you’re talking about, ___.” (5 words)',
       answer: 'us having not talked about',
       cue: 'about のあと、同じ about で終わる言い直し。',
@@ -245,37 +212,31 @@ export const loveOverMeat: Clip = {
       trap: '正しい文に直したくなるが、書き取りは聞こえた音を書く。having not の順番もそのまま。',
       use: 'I don’t know what you mean, honestly.（何のことだか、本当に分からない）' },
 
-    // R fix: V2 (blind 60 %: "keep quiet" was weak). New: the apology read as asking forgiveness (the Japanese frame).
-    // why: say sorry ← "I am sorry if I caused a problem" is said, but by Ron about himself; forgive ← an apology
-    //   heard as a request to be forgiven
     { id: 'i6', skill: 'infer', level: 'B2', point: 'cherish', seg: [166.65, 177.2],
-      stem: 'In Ron’s apology, what is he really urging Tom to do?',
-      choices: ['Tell Lucy openly how he feels', 'Say sorry to Lucy for Ron’s words', 'Forgive Ron for what he told Lucy'],
-      a: 0,
-      cue: '「no shame in」のあと、何をすることか。',
+      stem: 'What does Ron really want Tom to do?',
+      ja: 'ロンは本当はトムに何をしてほしい？',
+      choices: ['Tell Lucy how he feels', 'Say sorry to Lucy', 'Forgive Ron'], a: 0,
+      choicesJa: ['ルーシーに気持ちを伝える', 'ルーシーに謝る', 'ロンを許す'],
+      cue: '「no shame in」のあと。',
       line: 'there’s *no shame in declaring how you feel* to a person you cherish.',
       said: '「大切な人に気持ちを伝えるのは恥じゃない」と言い、ロンは謝る。',
-      mean: '謝る形で、Tom の背中を押している。no shame in ～ ＝ ～は恥じゃない。',
-      trap: 'sorry はロン自身の謝罪。Tom にさせたいのは、no shame in のあとの行動。',
+      mean: 'no shame in ～ing ＝ 〜するのは恥ずかしくない。謝る形で、トムの背中を押す。',
+      trap: 'sorry はロン自身の謝り。トムにさせたいのは no shame in のあと。',
       use: 'There’s no shame in asking for help.（助けを求めるのは恥じゃない）' },
 
-    // why: good name ← all the talk of lying earlier ("walk back sounds like lying"); bet ← "Michigan limestone" is
-    //   said, in a different relation
-    { id: 'd5', skill: 'detail', level: 'B2', point: 'cost', seg: [177.2, 189.0],
-      stem: 'As he leaves, what does Ron say helping them cost him?',
-      choices: ['The food, and a talk he’d have enjoyed', 'The food, and his good name for honesty',
-                'A bet about Michigan limestone'], a: 0,
-      cue: '「excuse me」のあと、missed と denied。',
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'cost', seg: [177.2, 189],
+      stem: 'What did Ron miss out on?',
+      ja: 'ロンは何を逃した？',
+      choices: ['The food', 'The dancing', 'The wedding'], a: 0,
+      choicesJa: ['料理', 'ダンス', '結婚式'],
+      cue: '「excuse me」のあと。',
       line: 'I *missed out on the food* and was *denied a fascinating conversation* about Michigan limestone…',
       said: '「食べ物を逃し、ミシガンの石灰岩の面白い話も聞けなかった」と言う。',
-      mean: 'miss out on ＝ 逃す。be denied ＝ 与えられない。どちらもロンには大きな損。',
-      trap: 'うその話が多かったので名誉と思いやすいが、挙げたのは食べ物と会話の2つ。',
+      mean: 'miss out on ～ ＝ 〜を逃す。ロンには大きな損。',
+      trap: 'wedding（結婚式）の場なので、式を逃したと思いやすい。on のあとを聞く。',
       use: 'I missed out on the free lunch.（無料のランチを逃した）' },
 
-    // R fix: V2 (blind 55 %: the thank-you was weak). New near miss: a question, but about Ron.
-    // why: agrees ← "this weird thing" invites a shared laugh about Ron; about Ron ← the right kind of move (a
-    //   question), aimed at the wrong man
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'didntmean', seg: [189.9, 195.6], then: [195.6, 198.4],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'didntmean', seg: [189.9, 195.6], retired: true, then: [195.6, 198.4],
       stem: 'After Tom tells Lucy to ignore Ron, what kind of reply is coming?',
       choices: ['A check on whether Tom meant it at all', 'A laugh that agrees Ron is a bit odd',
                 'A question about what Ron really meant'], a: 0,
@@ -286,13 +247,7 @@ export const loveOverMeat: Clip = {
       trap: '変わり者の話で笑って終わりそうだが、無視するのは Tom の気持ちの話でもある。',
       use: 'So you didn’t mean it?（じゃあ、本気じゃなかったの？）' },
 
-    // R fix: V2 (blind 50 %). The Lucy choice now has a reason a listener could hold: "ignore him" heard as "he
-    //   made it up", which "says exactly what he means" refutes.
-    // why: Ron ← the line is about Ron and calls him weird (right mechanism, wrong target); Lucy ← "You just have to
-    //   ignore him" heard as Ron having invented the story
-    // anchor: 190.4–193.3 s the "weird thing" is named as "says exactly what he means", which is only honesty;
-    //   196.0–197.9 s Lucy's "So you didn't mean what you said?" turns his excuse against him
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'didntmean', seg: [189.9, 198.4],
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'didntmean', seg: [189.9, 198.4], retired: true,
       stem: 'In Tom’s line about Ron’s “weird thing”, who is the joke on?',
       choices: ['Tom, who treats plain honesty as odd', 'Ron, who is too blunt to be around',
                 'Lucy, who believed a story Ron made up'], a: 0,
@@ -303,38 +258,31 @@ export const loveOverMeat: Clip = {
       trap: 'weird はロンへの言葉なので、笑われるのもロンと思いやすい。何を変と呼んだかを聞く。',
       use: 'He’s weirdly honest. It’s great.（彼、変なくらい正直。そこがいい）' },
 
-    // R fix: V2 (blind 55 %: "worn out" was weak). New keyword trap: "That's all I meant" follows at once.
-    // why: done talking ← "all in" plus "That's all I meant" heard as "that's all"; move in ← "in" heard as moving in
-    //   together
     { id: 'p4', skill: 'phrase', level: 'B2', point: 'allin', seg: [198.7, 202.3],
-      stem: 'When Lucy asks if he meant it, what does Tom tell her first?',
-      choices: ['That he’s completely serious', 'That he’s done talking about it', 'That he wants to move in'], a: 0,
-      cue: '「Look,」のあとの短い3語。',
+      stem: 'What does Tom mean by “I’m all in”?',
+      ja: 'トムの「I’m all in」はどういう意味？',
+      choices: ['He is completely serious', 'He is done talking', 'He wants to move in'], a: 0,
+      choicesJa: ['完全に本気だ', 'もう話は終わり', '一緒に住みたい'],
+      cue: '「Look,」のあとの3語。',
       line: 'Look, *I’m all in*.',
       said: '「いいかい、僕は本気だ」と答える。',
-      mean: 'all in ＝ ポーカーで全部賭けること。気持ちを全部かけている、本気だという意味。',
-      trap: 'all と in だけ拾うと「もう終わり」や「同居」に聞こえる。Look のあとの決意の一言。',
+      mean: 'all in ＝ ポーカーで全部かけること。気持ちを全部かけている、本気だ。',
+      trap: 'in から「中に入る、一緒に住む」と思いやすい。Look のあとの決意の一言。',
       use: 'If you’re in, I’m all in.（君がやるなら、僕も全力で）' },
 
-    // R fix: K1 + V2 (blind 70 %). "Crazy" is also what he feared, so "what was he afraid she'd think" had two
-    //   answers; the stem now sets "crazy" aside. "Angry" (a filler) becomes the opposite timing.
-    // why: joking ← "crazy" heard as kidding around; too late ← "gun" heard as a start signal, but the direction
-    //   (early vs late) lost
-    { id: 'p5', skill: 'phrase', level: 'B2', point: 'gun', seg: [201.4, 205.1],
-      stem: 'Besides “crazy”, what was Tom afraid Lucy would think of him?',
-      choices: ['That he was moving too fast', 'That he was only joking', 'That he had waited too long'], a: 0,
+    { id: 'p5', skill: 'phrase', level: 'C1', point: 'gun', seg: [201.4, 205.1],
+      stem: 'What does “jumping the gun” mean?',
+      ja: '「jumping the gun」はどういう意味？',
+      choices: ['Moving too fast', 'Only joking', 'Waiting too long'], a: 0,
+      choicesJa: ['先走る', '冗談を言う', '待ちすぎる'],
       cue: '「crazy or」のあと。',
       line: 'I didn’t want you to think I was crazy or *jumping the gun*.',
       said: '「頭がおかしいとか、先走ってるとか思われたくなかった」と言う。',
-      mean: 'jump the gun ＝ 号砲の前に飛び出す。早まる、先走るという意味。',
-      trap: 'gun はスタートの合図。遅れたのではなく、合図の前に飛び出す、つまり早すぎること。',
+      mean: 'jump the gun ＝ スタートの合図の前に飛び出す。早まる、先走る。',
+      trap: 'gun（銃）から、こわい話と思いやすい。陸上のスタートの合図のこと。',
       use: 'Let’s not jump the gun here.（ここは早まらないでおこう）' },
 
-    // why: gentle no ← "you just got out of a relationship" (Tom's own words) primes a polite refusal; real warning ←
-    //   "only… for the free dresses" taken at face value (the matching dress was his surprise)
-    // anchor: 199.2–211 s Tom's "I'm all in… I don't expect you to feel the same way"; 215.9–218 s she answers with a
-    //   joke about his gift and the present-tense "dating you", not a "but"; 219.7–220.6 s "I'm fine with that"
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'dresses', reveals: ['allin'], seg: [215.0, 221.0],
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'dresses', reveals: ['allin'], seg: [215.0, 221.0], retired: true,
       stem: 'How should Tom hear Lucy’s line about the free dresses?',
       choices: ['As a playful yes: she’s glad he feels this way', 'As a gentle no: she isn’t ready after her breakup',
                 'As a real warning: she cares more about gifts'], a: 0,

@@ -209,7 +209,7 @@ export const pikitis: Clip = {
       line: 'When I came to visit you at the school, *you were eating* a peach.',
       said: '「会いに行ったとき、桃を食べていた」と言う。',
       mean: 'were は小さく短く「ワ」くらいになる。came と同じ過去の話なので were。',
-      trap: '小さく短い were は you’re に聞こえやすい。came が過去なら、続きも過去。',
+      trap: '小さい were は you’re に聞こえやすい。came が過去なら続きも過去。weren’t なら「ン」が入る。',
       use: 'You were sleeping when I called.（電話したとき寝てたでしょ）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'holes', reveals: ['nailed', 'alibi', 'plum'], seg: [146.0, 191.0],

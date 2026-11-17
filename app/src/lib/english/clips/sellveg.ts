@@ -178,7 +178,7 @@ export const sellVeg: Clip = {
       line: '*What do you want* me to do?',
       said: '「僕に何をしろって？」と聞き返す。',
       mean: 'What do you want が「ワダユワン」と一続き。do と want の t は弱い。',
-      trap: 'do は小さく「ダ」くらいで、did や would とまぎれやすい。今の頼みなので do。',
+      trap: 'do は小さく「ダ」くらい。did なら「ディ」、would なら「ウ」で始まる。',
       use: 'What do you want for dinner?（夕飯、何がいい？）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'kick', reveals: ['manager'], seg: [67.15, 74],
@@ -224,7 +224,7 @@ export const sellVeg: Clip = {
       line: 'that says, “*Peas* be kind to others”?',
       said: '看板には「Peas be kind to others」と書いてある、と言う。',
       mean: 'peas（ピーズ、豆）と please（プリーズ）の音が近い、野菜のだじゃれ。',
-      trap: 'peace（ピース）も近いが、最後が「ス」。peas と please は最後が「ズ」。',
+      trap: 'peace（ピース）は最後が「ス」、pass は「パ」。peas と please は「ピー」「プリー」と最後が「ズ」。',
       use: 'Please be kind to others.（人には親切に）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'sign', seg: [73.6, 85.2], retired: true,
