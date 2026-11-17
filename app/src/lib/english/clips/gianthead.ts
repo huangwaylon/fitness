@@ -34,7 +34,7 @@ export const giantHead: Clip = {
       cue: '「I have a date」のすぐあと。', line: 'I have a date *tomorrow night*.',
       said: '「明日の夜デートがある」と報告する。',
       mean: 'tomorrow night ＝ 明日の夜。このあと場面がそのデートに変わる。',
-      trap: 'tonight と tomorrow night は出だしが同じ「トゥ」。そのあとの長さで聞き分ける。',
+      trap: '「トゥナイ」で終われば今夜、「トゥモロー・ナイ」なら明日の夜、「ネクスト」で始まれば来週末。',
       use: 'Are you free tomorrow night?（明日の夜あいてる？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'work', seg: [3.9, 8.7],

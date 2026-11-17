@@ -188,7 +188,7 @@ export const notShotgun: Clip = {
       line: 'Think what we could do if we *didn’t buy* this ring.',
       said: '「この指輪を買わなかったら、何ができるか考えて」と言う。',
       mean: 'if we didn’t ＝ もし〜しなかったら。didn’t は「ディドゥン」と弱く、t はほぼ消える。',
-      trap: 'n’t が消えると did に聞こえる。don’t なら「ドン」と音がちがう。家の話で、買わない話と分かる。',
+      trap: '「ディドゥン」と「ン」が残れば didn’t、「ディッ」で切れれば did、「ドン」なら don’t。家の話も買わない側。',
       use: 'What if we didn’t go?（行かなかったらどうなる？）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'benefits', seg: [102.2, 107.95],

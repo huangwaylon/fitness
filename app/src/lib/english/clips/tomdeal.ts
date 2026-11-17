@@ -283,7 +283,7 @@ export const tomNegotiate: Clip = {
       line: 'Every week— you can come *once a week*, it’s free.',
       said: '「毎週…週に1回来ていいよ、ただで」と言い直す。',
       mean: 'once a week ＝ 週に1回。最初の every week を、すぐ once a week に絞っている。',
-      trap: 'every が耳に残ると、毎日のように聞こえる。言い直したあとの数を聞く。',
+      trap: 'every が残ると毎日に聞こえる。言い直しが「ワンス」なら1回、「トワイス」なら2回。',
       use: 'You can come once a week.（週に1回来ていいよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [172.8, 175.9],

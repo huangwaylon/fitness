@@ -279,7 +279,7 @@ export const dwightVotes: Clip = {
       line: 'That would be *employee number three*',
       said: '「次は従業員番号3番」と読み上げる。',
       mean: 'three ＝ 3。パムの提案どおり、次に点の高い人を読み上げる。',
-      trap: 'thirteen なら後ろの「ティーン」が長く強い。thirty なら「サーティ」と前が強い。',
+      trap: 'thirteen なら「ティーン」が長く強い。thirty なら「サーティ」と前が強い。短い「スリー」なら3。',
       use: 'I’m in room three, not thirteen.（13号室じゃなくて3号室です）' },
 
     { id: 'c2', skill: 'humor', level: 'C2', point: 'doubled', seg: [218.1, 228.4], retired: true,

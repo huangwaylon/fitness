@@ -117,7 +117,7 @@ export const fartAttack: Clip = {
       line: 'He should be *out of here in a day or two*.',
       said: '「1日か2日で退院できるはず」と答える。',
       mean: 'out of here ＝ ここを出る（退院する）。軽くすんだ、という知らせ。',
-      trap: 'out of here だけ聞くと、今すぐ出るように聞こえる。in のあとの期間を聞く。',
+      trap: 'out of here だけだと今すぐに聞こえる。in のあとが「デイ」なら1、2日、「ウィーク」なら1、2週間。',
       use: 'I’ll be back in a day or two.（1、2日で戻ります）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'mild', seg: [87.6, 92.7],
@@ -270,7 +270,7 @@ export const fartAttack: Clip = {
       line: 'You are gonna have the future that *you’ve always* planned.',
       said: '「ずっと思い描いてきた未来が手に入る」と励ます。',
       mean: 'you’ve always planned ＝ 今までずっと計画してきた。’ve は弱く always につながる。',
-      trap: '’ve は短い v だけで消えやすい。v なら「ヴォ」とつながり、’d なら d で止まる。',
+      trap: '’ve は消えやすい。「ユヴォーウェイズ」なら you’ve、d で止まれば you’d、すぐ「オー」なら you always。',
       use: 'It’s the trip you’ve always wanted.（ずっと行きたかった旅だよ）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [133.1, 136.4],
