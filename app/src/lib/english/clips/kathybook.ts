@@ -1,12 +1,7 @@
-// REVIEW 2026-11-16: pass 3, fix 15, drop 2, new 0; ear checks 1
-// REVIEW Q: g1, m1, p1 and h2 are still near 50 % blind (the title gives away “what the gift reveals”; a learner who knows
-//   “actually” or “you better” can get m1 and p1 from the choices). Accept, or rework further?
-// REVIEW Q: a1 assumes the friend recalling the story is a woman (choices avoid pronouns; stem says “the friend”).
+// A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 4, new 3
 // “Chandler Secretly Loves Joey's Girlfriend | Friends” (the official Friends channel, Best of Season 4): Chandler
 // wraps a rare book for Kathy's birthday, and his friends point out what a gift like that says.
-// Segments from the captions, words from whisper (2026-11-16). Speakers other than Chandler and Phoebe aren't named
-// (stems say “a friend”). No predict item: the one clean pause (“It doesn't say that. … Does it?”) is too short to cut.
-// EAR CHECK: 59.0 s i4 — “Does it?” after the pause sounds unsure, not a confident challenge (key rests partly on tone)
+// Segments from the captions, words from whisper (2026-11-16). Speakers other than Chandler and Phoebe aren't named.
 import type { Clip } from '../types.ts';
 
 export const kathybook: Clip = {
@@ -15,62 +10,50 @@ export const kathybook: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: the title made the old key the only fit (V2, §9.4); now asks how the talk turns, all three about the gift
-    // why: reversed ← “so sweet” and “great” both sound like praise, so the order is easy to flip;
-    //      cost ← “expensive” in the last line, heard as a worry about money
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['secret'], seg: [0, 68.2],
-      stem: 'How do the friends’ reactions to the gift change during the scene?',
-      choices: ['Praise for the gift turns into teasing about what it reveals',
-                'Teasing about the gift turns into praise for what it reveals',
-                'Praise for the gift turns into worry about what it cost'], a: 0,
-      cue: '本が出てきてからの、友だちの反応の順番。',
-      said: 'みんなは最初、本の珍しさと手間をほめるが、途中から話の向きが変わる。',
-      mean: '「その贈り物、気持ちがバレバレだよ」とからかわれ、本人も不安になる。',
-      trap: 'great もほめ言葉に聞こえるので順番を逆に取りやすい。expensive は値段の心配ではなく比較。',
-      use: 'I got you a little something.（ちょっとしたものを用意したよ）' },
+    { id: 's2', skill: 'sound', level: 'B1', point: 'doyouguys', seg: [0, 3.2],
+      stem: 'Fill the gap: “Hey, ___ have any wrapping paper?”', ja: '空所に入るのは？ “Hey, ___ have any wrapping paper?”',
+      choices: ['do you guys', 'did you guys', 'do you get'], a: 0,
+      choicesJa: ['（今）みんな〜ある？', '（前に）みんな〜あった？', '〜を手に入れる？'],
+      cue: '最初の「Hey」のあと',
+      line: 'Hey, *do you guys* have any wrapping paper?',
+      said: '「ねえ、包装紙ある？」とみんなに聞く。',
+      mean: 'do you guys ＝ 「ドゥユガイズ」より「ジュガイズ」に近い。you guys ＝ みんな。',
+      trap: 'did you（ディジュ）とまぎれやすい。最初が「ジュ」だけなら do you。',
+      use: 'Do you guys have any tape?（誰かテープ持ってる？）' },
 
-    // R fix: the key was the only coherent story (V2); now three parallel “who owes what” choices
-    // why: she owes him ← “you said you ordered”, the you missed, so giver and receiver swap;
-    //      dinner ← “your birthday… months ago” suggests a missed celebration
     { id: 'g2', skill: 'gist', level: 'B1', point: 'promise', reveals: ['phoebe'], seg: [0, 18.8],
-      stem: 'What is the opening exchange with Phoebe about?',
-      choices: ['A present Chandler still owes her', 'A present she still owes Chandler',
-                'A birthday dinner Chandler still owes her'], a: 0,
-      cue: '「remember you said」のあとに注目。',
-      said: 'フィービーは「注文したけど、まだ届かないって言ってたよね」と言う。',
+      stem: 'What does Phoebe want from Chandler?', ja: 'フィービーはチャンドラーに何を求めている？',
+      choices: ['Her birthday present', 'Some wrapping paper', 'A birthday dinner'], a: 0,
+      choicesJa: ['自分の誕生日プレゼント', '包装紙', '誕生日のディナー'],
+      cue: '「remember you said」のあと',
+      said: '「注文した特別なものが、まだ届いてないって言ってたよね」と言う。',
       mean: '何か月も前の誕生日プレゼントを、チャンドラーはまだ渡していない。',
-      trap: 'you said you ordered の you はチャンドラー。主語を落とすと贈る側ともらう側が逆に。',
+      trap: '包装紙を探しているのはチャンドラー。フィービーは自分へのプレゼントを待っている。',
       use: 'Remember you said you’d call me?（電話するって言ってたよね）' },
 
-    // R fix: Kathy (absent) and Chandler (who asked for the paper) were fillers (K3); now three women in the room.
-    //   The answer rests on “Pheebs” in the reply, so no ear check
-    // why: Rachel, Monica ← two other women's voices in the room; only the address in the reply settles it
     { id: 'w1', skill: 'who', level: 'B1', point: 'phoebe', seg: [2.6, 8.6],
-      stem: 'Who asks if the wrapping paper is for a birthday present?',
+      stem: 'Who asks, “Is it for my birthday present?”', ja: '“Is it for my birthday present?” と聞くのは誰？',
       choices: ['Rachel', 'Phoebe', 'Monica'], a: 1,
-      cue: '質問のすぐあと、返事の最初の呼びかけ。',
+      choicesJa: ['レイチェル', 'フィービー', 'モニカ'],
+      cue: '返事の最初の呼びかけ',
       line: 'Oh, is it for *my* birthday present? — *Pheebs*, it was your birthday…',
-      said: '「わたしのプレゼント？」と聞いた人に、チャンドラーが「フィービー」と呼びかけて答える。',
-      mean: 'Pheebs は Phoebe の愛称。返事の呼びかけで、直前に話した人が分かる。',
+      said: '「わたしのプレゼント用？」と聞かれ、チャンドラーが「フィービー」と答える。',
+      mean: 'Pheebs ＝ フィービーの呼び名。返事の呼びかけで、話した人が分かる。',
       trap: '女性の声どうしは聞き分けにくい。返事の最初の呼びかけで決める。',
       use: 'Is this for me?（これ、わたしに？）' },
 
-    // why: last week ← “like” heard as a vague, recent time; a month ago ← the final s of “months” is easy to lose
-    { id: 'n1', skill: 'number', level: 'B2', point: 'months', reveals: ['phoebe'], seg: [5.3, 8.6],
-      stem: 'According to Chandler, when was Phoebe’s birthday?',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', reveals: ['phoebe'], seg: [5.3, 8.6],
+      stem: 'When was Phoebe’s birthday, says Chandler?', ja: 'チャンドラーによると、フィービーの誕生日はいつだった？',
       choices: ['Last week', 'A month ago', 'Months ago'], a: 2, keep: true,
-      cue: '「your birthday」のあと、like に続く語。',
+      choicesJa: ['先週', '1か月前', '何か月も前'],
+      cue: '「your birthday」のあと',
       line: 'Pheebs, it was your birthday, like, *months ago*.',
       said: '「フィービー、誕生日なんてもう何か月も前だよ」。',
-      mean: 'like は「〜くらい」のぼかし。何か月もたっているのに、まだ聞くのかという返し。',
+      mean: 'months ago ＝ 何か月も前。この like は「〜くらい」とぼかす言い方。',
       trap: 'months の s は弱く、a month と聞こえやすい。a があるかどうかで数が変わる。',
       use: 'That was, like, years ago.（それって何年も前の話だよ）' },
 
-    // R fix: “had come … yet” isn't grammatical (§9.5), so it's cut to 3 choices; the segment now reaches “yet”
-    //   (captions 14.6 s); the trap is now hasn't/hadn't
-    // why: hasn't ← present perfect is the textbook form, and z/d at the end is a small difference;
-    //      didn't ← only the d at the start is caught, and American English allows “didn't… yet”
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hadnt', reveals: ['promise'], seg: [8.2, 15.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hadnt', reveals: ['promise'], seg: [8.2, 15.3], retired: true,
       stem: 'Fill the gap: “…you ordered something special and it just ___ yet?”',
       choices: ['hasn’t come', 'hadn’t come', 'didn’t come'], a: 1,
       cue: '「it just」のすぐあと、短い語の終わりの音。',
@@ -80,11 +63,7 @@ export const kathybook: Clip = {
       trap: 'hasn’t と hadn’t は語尾の z と d の差だけ。you said の話なら hadn’t を疑う。',
       use: 'My order hasn’t come yet.（注文したものがまだ来ません）' },
 
-    // R fix: “admitting he forgot” contradicted the line and the key was the only evaluative choice (V2, K3, K6);
-    //   all three now mention a call
-    // why: go make a call ← “call” taken literally (今から電話); shop called ← “have a call” heard as
-    //      “had a call”, as if news came in
-    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'callin', reveals: ['promise'], seg: [8.2, 18.8],
+    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'callin', reveals: ['promise'], seg: [8.2, 18.8], retired: true,
       stem: 'What is Chandler doing with “Well, I have a call in about that”?',
       choices: ['Stalling her with talk of a pending call', 'Excusing himself to go make a call now',
                 'Telling her the shop called with news'], a: 0,
@@ -95,67 +74,51 @@ export const kathybook: Clip = {
       trap: 'call から「今から電話」「電話が来た」と取りやすい。Well で始まる返事はかわしの合図になりやすい。',
       use: 'I have a call in to the hotel.（ホテルに問い合わせ中です）' },
 
-    // R fix: the key was the only sensible choice (V2); choices now parallel (“It signals…”); seg starts before “okay”
-    //   so it no longer cuts it
-    // why: stressing the truth ← “actually” read as 実際に/本当に; changing the subject ← after his dodge,
-    //      “Okay. Actually…” sounds like a move away from her present
     { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [18.9, 23.6],
-      stem: 'When Chandler says “Actually, this is for…”, what does “Actually” do?',
-      choices: ['It signals he is correcting her guess', 'It signals he is stressing the truth',
-                'It signals he is changing the subject'], a: 0,
-      cue: '文の最初の一語。直前のフィービーの思い込みと比べて。',
+      stem: 'Why does Chandler say “Actually” here?', ja: 'チャンドラーはなぜここで “Actually” と言う？',
+      choices: ['To correct her guess', 'To say it is true', 'To change the topic'], a: 0,
+      choicesJa: ['フィービーの思い込みを直すため', '本当だと強調するため', '話題を変えるため'],
+      cue: '文の最初の一語',
       line: '*Actually*, this is for, uh, Kathy’s birthday.',
       said: '「実はね、これはキャシーの誕生日用なんだ」。',
-      mean: 'Actually は「いや、そうじゃなくて」。相手の思い込み（自分へのプレゼント）を直している。',
-      trap: '「実際に」「本当に」と訳すと、ただの強調に聞こえる。思い込みを直すときの合図と覚える。',
+      mean: 'Actually ＝ 実は、いや本当は。相手の思い込み（自分へのプレゼント）を直している。',
+      trap: '「実際に」と訳すと、ただの強調に聞こえやすい。思い込みを直すときの合図。',
       use: 'Actually, I ordered the fish.（いえ、わたしは魚を頼みました）' },
 
-    // R drop: d3 (“Who is the gift for?”) — never shipped, deleted. V3: m1's line and g1 already give it, and the
-    //   choices made it a 90 % blind guess
-
-    // R pass (seg start moved to 18.9 with m1 so “okay” isn't cut)
-    // why: signed ← “the author's grandchildren” later; toy rabbit ← “the Velveteen Rabbit” right after
     { id: 'd2', skill: 'detail', level: 'B1', point: 'book', seg: [18.9, 23.6],
-      stem: 'What exactly is the gift?',
-      choices: ['An early edition of her favorite book', 'A copy signed by her favorite author',
-                'A toy rabbit from her favorite story'], a: 0,
-      cue: '「It’s」のあと、favorite の前までの語。',
+      stem: 'What is the gift for Kathy?', ja: 'キャシーへの贈り物は何？',
+      choices: ['An old edition of a book', 'A book signed by the author', 'A toy rabbit from a story'], a: 0,
+      choicesJa: ['本の古い版', '作者のサイン入りの本', '物語に出てくるうさぎのおもちゃ'],
+      cue: '「It’s」のあと',
       line: 'It’s an *early edition* of her favorite *book*.',
-      said: '「彼女のお気に入りの本の、古い版なんだ」。',
-      mean: 'early edition ＝ 出版されて間もないころの版。古書として価値がある。',
-      trap: '後で author や rabbit が出てくるので、サインやぬいぐるみと取りやすい。物の名前は最初の説明で決める。',
+      said: '「彼女のお気に入りの本の、初期の版なんだ」。',
+      mean: 'early edition ＝ 出てすぐのころの版。古い本として価値がある。',
+      trap: 'あとで author（作者）や rabbit が出るので、サインやおもちゃだと思いやすい。',
       use: 'Do you have an older edition?（古い版はありますか）' },
 
-    // R fix: the stem quoted the touching line, so “touched” was obvious (V2, S2); “bored” was a filler (K3).
-    //   The stem no longer assumes one friend says both lines, and drops “she”. It mentions the book, so it reveals `book`
-    // why: shocked ← “Oh my God” heard as alarm at the gift; worried ← Chandler's “don't touch it” comes right after
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'rabbit', reveals: ['book'], seg: [23.3, 29.4],
-      stem: 'How does the friend who recalls a scene from the book sound?',
-      choices: ['Moved; it’s a much-loved story', 'Shocked; the gift seems too much',
-                'Worried; the book seems too fragile'], a: 0,
-      cue: '本の名前が出たあと、続く言葉の中身。',
-      line: 'Oh, my God, *when the boy’s love makes the rabbit real*.',
-      said: '本の名前が出ると、「男の子の愛でうさぎが本物になるところ！」と名場面を口にする。',
-      mean: '好きな話を思い出して、うっとりしている。贈り物への批判ではない。',
-      trap: 'Oh my God は驚きにも感動にも使う。続く言葉が贈り物の話か、物語の話かで決める。',
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'rabbit', reveals: ['book'], seg: [23.3, 29.4],
+      stem: 'In Kathy’s favorite book, what makes the rabbit real?', ja: 'キャシーの好きな本で、うさぎを本物にするのは何？',
+      choices: ['A boy’s love', 'A magic word', 'A birthday wish'], a: 0,
+      choicesJa: ['男の子の愛', '魔法の言葉', '誕生日の願いごと'],
+      cue: '「Oh, my God」のあと',
+      line: 'Oh, my God, when *the boy’s love* makes the rabbit real.',
+      said: '「男の子の愛でうさぎが本物になるところ！」と名場面を言う。',
+      mean: 'make 〜 real ＝ 〜を本物にする。好きな話を思い出して、うっとりしている。',
+      trap: '誕生日の話の流れなので、birthday wish と思いやすい。makes の前の言葉が答え。',
       use: 'Oh my God, I love that song!（うわ、その曲大好き！）' },
 
-    // R fix: the key was the only coherent choice (V2); the distractors are now his views too
-    // why: damaged ← “destructive” heard alone; dirty hands ← “your fingers” + “oils” read as her hands in particular
     { id: 'i3', skill: 'infer', level: 'B2', point: 'oils', seg: [29.1, 33.6],
-      stem: 'What does Chandler’s warning about “destructive oils” show?',
-      choices: ['He treats the book as very precious', 'He thinks the book is already damaged',
-                'He thinks her hands must be dirty'], a: 0,
-      cue: '「don’t」で始まる注意と、その理由。',
+      stem: 'Why does Chandler say “Don’t touch it”?', ja: 'チャンドラーはなぜ “Don’t touch it” と言う？',
+      choices: ['The book is very precious', 'The book is already broken', 'Her hands are dirty'], a: 0,
+      choicesJa: ['本がとても大切だから', '本がもう壊れているから', '彼女の手が汚れているから'],
+      cue: '「because」のあと',
       line: 'Okay, but *don’t touch it*, because your fingers have destructive oils.',
       said: '「触らないで。指の油が本を傷めるから」と注意する。',
-      mean: '誰の指にもある油まで気にするほど、この本を大事にしている。',
-      trap: 'destructive だけなら本が傷んでいる、fingers だけなら手が汚いと取りやすい。指の油は誰にでもある。',
+      mean: 'destructive ＝ 傷める、こわす。誰の指にもある油まで気にするほど、大事にしている。',
+      trap: 'fingers と oils だけ聞くと、手が汚れていると思いやすい。指の油は誰にでもある。',
       use: 'Please don’t touch the paintings.（絵に触らないでください）' },
 
-    // R fix: “rip the book” was a filler (K3); now three parallel hair jokes
-    // why: thinning ← the usual hair joke; huge ← big hair that might knock it over, a visual-joke reading
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'hair', seg: [29.1, 38.5],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'hair', seg: [29.1, 38.5], retired: true,
       stem: 'Why does the line about Ross’s hair get a laugh?',
       choices: ['It hints Ross’s hair is greasy', 'It hints Ross’s hair is thinning',
                 'It hints Ross’s hair is huge'], a: 0,
@@ -166,66 +129,85 @@ export const kathybook: Clip = {
       trap: '髪の冗談は「薄い」が定番なので選びやすい。直前の oils の話を受けた冗談か考える。',
       use: 'Then you’d better hide it from my dog.（それならうちの犬から隠さないと）' },
 
-    // R fix: the stem quoted the phrase under test (§9.2, S2) and the key was the only sensible choice (V2);
-    //   seg now ends after “hair” (captions 37.8 s)
-    // why: soft suggestion ← Japanese 〜したほうがいい is often mild; comparison ← “better” read as 比較
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'better', seg: [32.6, 38.5],
-      stem: 'In the reply about Ross’s hair, what kind of advice is given?',
-      choices: ['A firm warning: do it, or else', 'A soft suggestion: maybe do it',
-                'A comparison: someone does it better'], a: 0,
-      cue: 'Well, then のあと、keep の前の2語。',
+      stem: 'What does “you better keep it away” mean?', ja: '“you better keep it away” はどういう意味？',
+      choices: ['You really should do it', 'Do it only if you want', 'You do it better than him'], a: 0,
+      choicesJa: ['絶対にそうしたほうがいい', 'したいときだけすればいい', '彼よりうまくできる'],
+
+      cue: '「Well, then」のあと',
       line: 'Well, then *you better* keep it away from Ross’s hair.',
       said: '「それなら、ロスの髪から離しておいたほうがいいよ」。',
-      mean: 'you better は you’d better の会話形。「そうしないとまずいよ」という強めの忠告。',
-      trap: '日本語の「〜したほうがいい」より強い忠告。better を比べる意味に取らない。',
+      mean: 'you better ＝ you’d better（〜しないとまずいよ）。「〜したほうがいい」より強い。',
+      trap: 'better から「もっと上手」と比べる意味を思いやすい。',
+
       use: 'You better hurry, the train’s leaving.（急がないと電車が出るよ）' },
 
-    // R fix: the key was the only full list (V2, K5); now three parallel three-step lists. The audio never says
-    //   where he finally got it, so the stem asks what he did. seg ends at 49.4 (was 49.0, tight on “grandchildren”)
-    // why: author himself ← “the author's” heard, “grandchildren” lost; libraries ← “bookstores” half-heard, a place for old books
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'rare', seg: [35.5, 40],
+      stem: 'What does “pretty rare” mean here?', ja: 'ここでの “pretty rare” はどういう意味？',
+      choices: ['Quite hard to find', 'Very pretty to look at', 'A bit old and dirty'], a: 0,
+      choicesJa: ['かなり見つけにくい', '見た目がとてもきれい', '少し古くて汚い'],
+      cue: '「So this is」のあと',
+      line: 'So this is *pretty rare*. How did you get that?',
+      said: '「これ、かなり珍しいよね。どうやって手に入れたの？」。',
+      mean: 'pretty ＝ ここでは「かなり」。rare ＝ 珍しい、なかなかない。',
+      trap: 'pretty を「かわいい、きれい」と思いやすい。形容詞の前の pretty は「かなり」。',
+      use: 'This hotel is pretty nice.（このホテル、かなりいいね）' },
+
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['secret'], seg: [36, 68.2],
+      stem: 'Why do the friends tease Chandler?', ja: '友だちはなぜチャンドラーをからかう？',
+      choices: ['His gift shows he loves Kathy', 'His gift is very cheap', 'He wrapped the gift badly'], a: 0,
+      choicesJa: ['贈り物でキャシーが好きだと分かるから', '贈り物がとても安いから', '包み方が下手だから'],
+      cue: '「what a great way to say」',
+      line: 'what a great way to say *I secretly love your roommate’s girlfriend*.',
+      said: '「『同居人の彼女がひそかに好き』って伝えるのに最高だね」とからかう。',
+      mean: 'secretly ＝ こっそり。手間のかかる高い贈り物で、気持ちがバレると言っている。',
+      trap: 'great はほめ言葉に聞こえやすい。to say のあとの中身が、からかいの理由。',
+      use: 'I got you a little something.（ちょっとしたものを用意したよ）' },
+
     { id: 'd4', skill: 'detail', level: 'B2', point: 'how', reveals: ['couple'], seg: [38.4, 49.4],
-      stem: 'What did Chandler do to find the book?',
-      choices: ['Visited stores, spoke to dealers, phoned the author’s family',
-                'Visited stores, spoke to dealers, phoned the author himself',
-                'Visited libraries, spoke to dealers, phoned the author’s family'], a: 0,
-      cue: '「I just went to」から続く、3つの行動。',
-      line: 'I just went to a couple of *bookstores*, talked to a couple of *dealers*, called… the author’s *grandchildren*.',
-      said: '本屋を回り、古書のディーラーに話を聞き、作者の孫にまで電話したと言う。',
-      mean: '3つ並べて、どれだけ手を尽くしたかを伝えている。',
-      trap: 'the author’s だけ聞くと作者本人と取りやすい。動詞と相手を順に追う。',
+      stem: 'Who did Chandler call to find the book?', ja: '本を探すために、チャンドラーは誰に電話した？',
+      choices: ['The author’s grandchildren', 'The author’s children', 'The bookstore owners'], a: 0,
+      choicesJa: ['作者の孫たち', '作者の子どもたち', '本屋の店主たち'],
+      cue: '最後の「called」のあと',
+      line: 'I just went to a couple of bookstores, talked to a couple of dealers, *called… the author’s grandchildren*.',
+      said: '本屋を回り、ディーラーと話し、作者の孫にまで電話したと言う。',
+      mean: 'grandchildren ＝ 孫たち。3つ並べて、どれだけ手間をかけたかを伝えている。',
+      trap: 'children の部分だけ耳に残り、子どもたちだと思いやすい。前の grand を聞く。',
       use: 'I called a couple of shops.（いくつかの店に電話しました）' },
 
-    // R fix: the key was the only nuanced choice (V2, K6); the distractors are now nuanced readings too.
-    //   No ear check: the list right after contradicts the words
-    // why: honestly easy ← the words taken at face value; paid less ← “deal” as in a good price (ディール)
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'deal', seg: [38.4, 49.4],
-      stem: 'When Chandler says “it wasn’t a big deal”, what is he doing?',
-      choices: ['Playing down how hard he tried', 'Saying honestly it was easy to find',
-                'Hinting he paid less than it looks'], a: 0,
-      cue: 'その言葉のすぐあとに続く、した事の一覧。',
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'deal', seg: [38.4, 49.4],
+      stem: 'Why does Chandler say “It wasn’t a big deal”?', ja: 'チャンドラーはなぜ “It wasn’t a big deal” と言う？',
+      choices: ['He doesn’t want to sound proud', 'Finding the book was very easy', 'The book was very cheap'], a: 0,
+      choicesJa: ['自慢に聞こえたくないから', '本を見つけるのがとても簡単だったから', '本がとても安かったから'],
+      cue: 'すぐあとに続く話',
       line: 'Oh, it *wasn’t a big deal*. I just went to…',
-      said: '「大したことないよ」と言ってから、本屋、ディーラー、作者の孫と、した事を並べる。',
-      mean: '言葉とは逆に、大変な手間をかけた。控えめに言って、かえって本気さが出ている。',
-      trap: '言葉どおり「簡単」、deal から「安い」と取りやすい。あとに続く話で本音を見る。',
-      use: 'Oh, it was nothing, really.（いや、本当に大したことないよ）' },
+      said: '「大したことないよ」と言ってから、した事を並べる。',
+      mean: 'not a big deal ＝ 大したことない。本当は大変だったが、控えめに言っている。',
+      trap: '言葉どおり「簡単だった」と思いやすい。あとに続く手間の話で本音が分かる。',
+      use: 'Oh, it was no big deal.（いや、大したことないよ）' },
 
-    // R drop: p2 (“it wasn’t a big deal” = not much trouble) — never shipped, deleted. Same point as a2, and
-    //   “no big deal” is known vocabulary, so the choices answered it (V3)
-
-    // R pass (seg start 41.6 → 41.0: it began inside “a big deal”)
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'couple', seg: [41.0, 45.2],
-      stem: 'Type what Chandler says: “talked to ___ dealers.” (3 words)', answer: 'a couple of',
-      cue: '「bookstores」のあと。同じ言い方がくり返される。',
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [41.0, 45.2],
+      stem: 'Type what Chandler says: “talked to ___ dealers.” (3 words)', ja: 'チャンドラーの言葉を書こう：“talked to ___ dealers.”（3語）',
+      answer: 'a couple of',
+      cue: '「bookstores」のあと',
       line: 'I just went to a couple of bookstores, talked to *a couple of* dealers',
       said: '「本屋を何軒か回って、ディーラーにも何人か話を聞いた」。',
-      mean: 'a couple of ＝ 2つ3つ、いくつか。ちょうど2とは限らない、軽い言い方。',
-      trap: 'a couple of は「アカプラ」と一続きになり、of がほぼ消える。弱い語も数えて書く。',
+      mean: 'a couple of ＝ 2つ3つ、いくつか。ちょうど2とは限らない軽い言い方。',
+      trap: 'a couple of は「アカプラ」とひと続きになり、of がほぼ消える。',
       use: 'Give me a couple of minutes.（2、3分ちょうだい）' },
 
-    // R fix: the title gave away the yes/no key (V2, §9.4); now three readings that all fit the title, and no “she”
-    // why: urging ← “what a great way to say I… love” taken as sincere encouragement;
-    //      praising ← “great” taken literally
-    { id: 'a3', skill: 'attitude', level: 'C1', point: 'secret', seg: [50.4, 56.5],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sweet', seg: [46, 51],
+      stem: 'What does “That’s so sweet” mean here?', ja: 'ここでの “That’s so sweet” はどういう意味？',
+      choices: ['That’s very kind', 'That tastes good', 'That’s too much'], a: 0,
+      choicesJa: ['とても優しいね', 'おいしいね', 'やりすぎだよ'],
+      cue: '「Oh, honey」のあと',
+      line: 'called… the author’s grandchildren. — Oh, honey, *that’s so sweet*.',
+      said: '「まあ、なんて優しいの」と感心する。',
+      mean: 'sweet ＝ ここでは「優しい、心のこもった」。人の行動をほめる言い方。honey は親しい呼びかけ。',
+      trap: 'sweet をカタカナの「スイート（甘い）」と思いやすい。人の行動なら「優しい」。',
+      use: 'Thank you, that’s so sweet.（ありがとう、優しいね）' },
+
+    { id: 'a3', skill: 'attitude', level: 'C1', point: 'secret', seg: [50.4, 56.5], retired: true,
       stem: 'What is the friend doing with “what a great way to say…”?',
       choices: ['Teasing Chandler about what the gift gives away', 'Urging Chandler to tell Kathy how he feels',
                 'Praising the gift as a perfect birthday present'], a: 0,
@@ -236,30 +218,26 @@ export const kathybook: Clip = {
       trap: 'great はほめ言葉や応援に聞こえる。to say のあとが困った中身なら皮肉。',
       use: 'Great, just what I needed.（あーあ、それは困ったな）' },
 
-    // R fix: “sure nobody will notice” was a filler (K3); a confident challenge is now the main distractor (ear check)
-    // why: challenging ← “Does it?” read as a dare; the book ← “say” read as what the book's words say
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'doubt', seg: [50.4, 60.2],
-      stem: 'What does Chandler’s “Does it?”, right after “It doesn’t say that”, show?',
-      choices: ['He is starting to doubt his own denial', 'He is challenging them to prove it does',
-                'He is asking what the book itself says'], a: 0,
-      cue: '否定のあと、少し間をおいた短い質問。',
+    { id: 'i4', skill: 'attitude', level: 'B2', point: 'doubt', seg: [50.4, 60.2],
+      stem: 'How does Chandler feel when he asks “Does it?”', ja: '“Does it?” と聞くとき、チャンドラーはどんな気持ち？',
+      choices: ['Worried and unsure', 'Proud of his gift', 'Happy for Joey'], a: 0,
+      choicesJa: ['心配で、自信がない', '贈り物が自慢', 'ジョーイのために喜んでいる'],
+      cue: '少し間をおいた短い質問',
       line: 'It doesn’t say that. … *Does it?*',
-      said: '「そんなこと言ってないよ」と否定した直後、「…言ってる？」と聞き返す。',
-      mean: '言い切ったのに自信がなくなり、気持ちが表れているかもと不安になっている。',
-      trap: '強気の「言ってないよね？」とも取れるが、否定のあと間をおいた短い質問は、自信が揺らいだ合図。',
+      said: '「そんなこと言ってないよ」と言ったあと、「…言ってる？」と聞く。',
+      mean: 'Does it? ＝ そうなの？ 言い切ったのに自信がなくなり、不安になっている。',
+      trap: '最初は強く否定するので、平気だと思いやすい。あとの Does it? が本音。',
       use: 'It’s not too late, is it?（まだ間に合うよね？）' },
 
-    // R fix: the key was the only one about both gifts (V2, K5); all three now start “Joey's gift”
-    // why: forgot ← a cheap gift read as no real gift; Kathy will love it ← the “simple gift wins” sitcom script
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'orange', seg: [60.0, 68.4],
-      stem: 'Why does the question about Joey and an orange get a laugh?',
-      choices: ['Joey’s gift looks like nothing next to his', 'Joey’s gift shows he forgot her birthday',
-                'Joey’s gift is the one Kathy will love'], a: 0,
-      cue: '「meaningful and expensive」と比べて。',
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'orange', seg: [60.0, 68.4],
+      stem: 'What does Joey give Kathy, in the friend’s words?', ja: '友だちの話では、ジョーイはキャシーに何をあげる？',
+      choices: ['An orange', 'A book', 'Some flowers'], a: 0,
+      choicesJa: ['オレンジ', '本', '花'],
+      cue: '文の最後の言葉',
       line: 'when you get her something incredibly meaningful and expensive, and her boyfriend, Joey, gives her *an orange*?',
-      said: '「高くて意味のある物を贈り、彼氏のジョーイはオレンジ1個。どう見える？」。',
-      mean: '贈り物の差が大きすぎて、チャンドラーの気持ちが目立ってしまう、という誇張。',
-      trap: 'オレンジ自体に意味があると考えやすい。and でつながる二つの贈り物の差に注目する。',
+      said: '「高くて意味のある物を贈って、彼氏のジョーイはオレンジ1個。どう見える？」。',
+      mean: 'meaningful ＝ 意味のある、心のこもった。二人の贈り物の差が大きすぎる、と言っている。',
+      trap: 'book はチャンドラーの贈り物。ジョーイのは文の最後に出てくる。',
       use: 'How’s that going to look?（それ、どう見えると思う？）' },
   ]
 };

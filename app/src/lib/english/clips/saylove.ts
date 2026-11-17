@@ -1,9 +1,7 @@
+// A2 REVIEW 2026-11-17: keep 7, rewrite 5, retire 4, new 3
 // “The First Time Ross & Rachel Say "Love" | Friends” (the official Friends channel, Best of Season 2): Rachel tells
 // Ross she doesn't want everything planned for her; he fires back that he will keep planning, and the fight ends in
-// “I love you”.
-// Segments from the captions, words from whisper (2026-11-16). Whisper and the captions agree word for word.
-// REVIEW 2026-11-16: pass 6, fix 11, drop 0, new 0; ear checks 1
-// EAR CHECK: 34.4 s h1 — “Good, cause I love you” keeps the same hard, arguing tone as “tough” (key rests partly on tone); the laugh follows it
+// “I love you”. Segments from the captions, words from whisper (2026-11-16).
 import type { Clip } from '../types.ts';
 
 export const saylove: Clip = {
@@ -12,64 +10,58 @@ export const saylove: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: the key was the only choice about both of them; "scared to commit" was weak. A title-led distractor now (V2/K3)
-    // why: Barry ← his name is said, read as the topic; who says it first ← the title, "love" read as the fight's topic
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'clash', reveals: ['planning'], seg: [0.3, 34],
-      stem: 'What are Rachel and Ross really disagreeing about?',
-      choices: ['How much to plan their future', 'Whether Rachel misses Barry',
-                'Who should say “I love you” first'], a: 0,
-      cue: '二人とも同じ形の言い方で、自分の考えを言う。',
-      said: 'レイチェルは先のことを決められたくないと言い、ロスは二人の将来を考え続けると言い返す。',
-      mean: '関係そのものではなく、先の予定をどこまで決めるかのぶつかり合い。',
-      trap: '元カレの名前や scares が聞こえると、その話に見える。話の芯は何度も出る言葉で見る。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', reveals: ['planning'], seg: [0.3, 34],
+      stem: 'What are Rachel and Ross arguing about?', ja: 'レイチェルとロスは何について言い合っている？',
+      choices: ['Planning their future', 'Rachel’s old boyfriend', 'Being scared of love'], a: 0,
+      choicesJa: ['二人の将来の計画', 'レイチェルの元カレ', '恋がこわいこと'],
+      cue: '何度も出る言葉',
+      said: '「全部決められるのは嫌」「僕は将来の計画をやめない」と言い合う。',
+      mean: 'plan ＝ 計画する。先のことをどこまで決めるかで、ぶつかっている。',
+      trap: '元カレの名前や scares（こわがらせる）が聞こえて、その話だと思いやすい。',
       use: 'I don’t like having everything planned.（全部決められているのは苦手）' },
 
-    // R fix: the key was the only positive choice (K6/V2); a second "happy" choice now, refuted by "everything decided"
-    // why: ending it ← "but" after praise, read as a breakup preface; ready to plan ← "amazing" read as wanting more of it
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'amazing', reveals: ['clash'], seg: [0.3, 7.9],
-      stem: 'How does Rachel feel about the relationship itself?',
-      choices: ['Happy with it, but wants room', 'Unsure, and thinking of ending it',
-                'Happy with it, and ready to plan'], a: 0,
-      cue: '「listen」のあと、最初にほめる言葉。そのあとの but。',
-      line: 'what we have is *amazing*, but…',
-      said: '「今の関係は最高。でも…」と始めて、全部決められるのは嫌だと言う。',
-      mean: '関係には満足していて、不満は決められ方だけ。ほめてから本題に入る形。',
-      trap: 'ほめ言葉＋but は別れ話の前置きに聞こえやすい。but のあとの中身まで聞いて判断する。',
-      use: 'I love it here, but I need space.（ここは好き。でも少し一人の時間が要る）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', seg: [0.3, 7.9],
+      stem: 'What does Rachel think of their relationship?', ja: 'レイチェルは二人の関係をどう思っている？',
+      choices: ['It’s amazing', 'It’s boring', 'It’s almost over'], a: 0,
+      choicesJa: ['最高', '退屈', '終わりかけ'],
+      cue: '「listen」のあと',
+      line: 'Listen, what we have is *amazing*, but…',
+      said: '「聞いて。私たちの関係は最高。でも…」と話し始める。',
+      mean: 'what we have ＝ 私たちの関係。amazing ＝ 最高。but のあとに本題が来る。',
+      trap: 'すぐ but が来るので、別れ話だと思いやすい。関係そのものは amazing と言う。',
+      use: 'This place is amazing.（ここ、最高だね）' },
 
-    // why: no plans ← the opposite complaint, "decided" missed; scared ← "scares you" said a few lines later
     { id: 'd1', skill: 'detail', level: 'B2', point: 'barry', seg: [4.6, 12.5],
-      stem: 'What does Rachel say was one reason she left Barry?',
-      choices: ['Everything was decided for her', 'He never made any plans', 'He was scared of the future'], a: 0,
-      cue: '「Barry」の前、自分の人生をどう言うか。',
+      stem: 'What was one reason Rachel left Barry?', ja: 'レイチェルがバリーと別れた理由の一つは？',
+      choices: ['Everything was decided for her', 'He never made any plans', 'He was scared about the future'], a: 0,
+      choicesJa: ['何でも決められていた', '彼が計画を立てなかった', '彼が将来をこわがっていた'],
+      cue: '「Barry」の前',
       line: 'I do not want to have *everything decided for me*… it’s what I had with Barry',
-      said: '全部決められるのは嫌、バリーともそうだったから別れた、と言う。',
-      mean: 'it’s what I had の it が前の文を指す。二つの文をつなぐと理由が分かる。',
-      trap: '名前の近くだけ聞くと理由がつかめない。指す言葉は一つ前の文に戻って考える。',
+      said: '「全部決められるのは嫌。バリーとはそうだった。それで別れた」。',
+      mean: 'decided for me ＝ 人に決められる。it’s what I had ＝ 前もそうだった。',
+      trap: '名前のあたりだけ聞くと、理由がつかみにくい。理由は Barry の前。',
       use: 'That’s one of the reasons I moved.（それが引っ越した理由の一つ）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'wholelife', seg: [7.3, 9.7],
-      stem: 'Type what she says: “I spent my ___.” (4 words)', answer: 'whole life like that',
-      cue: '「I spent my」のあと、最後の2語はつながる。', line: 'I spent my *whole life like that*.',
+      stem: 'Type what she says: “I spent my ___.” (4 words)', ja: '彼女が言ったことを書こう：“I spent my ___.”（4語）',
+      answer: 'whole life like that',
+      cue: '「I spent my」のあと', line: 'I spent my *whole life like that*.',
       said: '「ずっとそういう人生だった」と過去を言う。',
       mean: 'whole life ＝ これまでの人生全部。like that は前の話を指す。',
-      trap: 'like と that がつながり「ライクザッ」と一続きになる。最後の t はほぼ消える。',
+      trap: 'like と that がつながり「ライクザッ」とひと続きになる。最後の t はほぼ消える。',
       use: 'I’ve lived here my whole life.（生まれてからずっとここに住んでいる）' },
 
-    // why: knowing ← "not" is short and weak before "knowing"; on her own ← "right now" read as "for a while, alone"
     { id: 'd2', skill: 'detail', level: 'B1', point: 'notknowing', seg: [11.8, 14.85],
-      stem: 'What does Rachel say she likes right now?',
-      choices: ['Not knowing what comes next', 'Knowing where things are going', 'Being on her own for a while'],
-      a: 0,
-      cue: '「I like」のすぐあと、短い一語に注意。', line: 'I like *not knowing* right now.',
+      stem: 'What does Rachel say she likes right now?', ja: 'レイチェルが今いいと言っていることは？',
+      choices: ['Not knowing what comes next', 'Knowing where things are going', 'Being alone for a while'], a: 0,
+      choicesJa: ['この先どうなるか分からないこと', 'この先どうなるか分かること', 'しばらく一人でいること'],
+      cue: '「I like」のすぐあと', line: 'I like *not knowing* right now.',
       said: '「今は、先が分からないのがいい」と言う。',
-      mean: '先が決まっていない状態を楽しみたい、という気持ち。',
-      trap: 'not が短く弱いので knowing だけが耳に残りやすい。動詞の前の小さな否定を聞き落とさない。',
+      mean: 'not knowing ＝ 分からないこと。先が決まっていない今を楽しみたい、という気持ち。',
+      trap: 'not が短く弱いので、knowing だけ耳に残りやすい。動詞の前の小さな not を聞く。',
       use: 'I like not having a plan.（予定がないのが好き）' },
 
-    // R fix: the key was the only "stay together" choice and the third was off-topic (V2/K6); both distractors rebuilt
-    // why: breaking up ← "if" heard as doubt about the relationship; only if he plans ← "be with me" + Ross's side, reversed
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'terms', reveals: ['amazing', 'deal'], seg: [11.9, 19],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'terms', reveals: ['amazing', 'deal'], seg: [11.9, 19], retired: true,
       stem: 'What does “if you want to be with me…” suggest Rachel wants?',
       choices: ['To stay together, but on her terms', 'To break up before it gets serious',
                 'To stay together if he plans more'], a: 0,
@@ -80,46 +72,52 @@ export const saylove: Clip = {
       trap: 'if で始まると相手の気持ちを疑っているように聞こえる。if の文のあとに何を求めるかで決める。',
       use: 'If you’re coming, be ready by six.（来たいなら6時までに準備して）' },
 
-    // why: deal ← katakana ディール = 取引; sort it out ← "deal with" = 処理する from the dictionary
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'deal', seg: [14.3, 19],
-      stem: 'At the end of that turn, what is Rachel telling Ross he must do?',
-      choices: ['Accept it as it is', 'Make a deal with her', 'Sort it out for her'], a: 0,
-      cue: '「if you want to be with me」のあと。',
+      stem: 'What does “deal with that” mean here?', ja: 'ここでの “deal with that” はどういう意味？',
+      choices: ['Accept it as it is', 'Make a deal with her', 'Fix the problem for her'], a: 0,
+      choicesJa: ['そのまま受け入れる', '彼女と取引する', '彼女のために問題を直す'],
+      cue: '「be with me」のあと',
+
       line: 'if you want to be with me, you’re going to have to *deal with that*.',
       said: '「一緒にいたいなら、それを受け入れて」と言う。',
-      mean: 'deal with it ＝ 気に入らなくても受け入れる、という強めの言い方。',
-      trap: 'deal を「取引」、deal with を「処理する」と取りやすい。相手が人の性格なら「受け入れる」。',
+      mean: 'deal with 〜 ＝ 〜を受け入れる、なんとかする。ここでは「嫌でも受け入れて」。',
+      trap: 'deal をカタカナの「ディール（取引）」と思いやすい。deal with でひとまとまり。',
       use: 'No Wi-Fi? We’ll have to deal with it.（Wi-Fi なし？ 仕方ないね）' },
 
-    // R fix: "gently" made the key the only nuanced choice (K6); each distractor now carries a manner word too
-    // why: taking it back ← Japanese すみません read as backing down; asking ← "if" heard as "whether"
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [14.3, 19],
-      stem: 'What is Rachel doing with “I’m sorry if…”?',
-      choices: ['Holding her ground, gently', 'Backing down a little, politely', 'Checking, kindly, if he is scared'],
-      a: 0,
-      cue: '「sorry」のあと、but で何が続くか。',
+      stem: 'What is Rachel doing with “I’m sorry if…”?', ja: '“I’m sorry if…” で、レイチェルは何をしている？',
+      choices: ['Being kind, but not changing', 'Saying sorry and changing her mind', 'Asking if Ross is scared'], a: 0,
+      choicesJa: ['やさしく言うが、考えは変えない', '謝って、ゆずる', 'ロスがこわがっているか聞く'],
+      cue: '「sorry」のあとの but',
       line: 'and *I’m sorry if that scares you, but*…',
-      said: '「怖がらせたならごめん。でも…」と前置きする。',
-      mean: '相手の気持ちに触れつつ、主張は通す形。本当の謝罪ではない。',
-      trap: '日本語の「すみません」と同じに聞くと謝っているように取れる。if と but がセットなら主張が来る。',
+      said: '「こわがらせたならごめん。でも…」と前置きする。',
+      mean: 'I’m sorry if 〜, but… ＝ 〜ならごめん、でも…。謝る形で、自分の考えは通す。',
+      trap: '日本語の「すみません」と同じに聞くと、ゆずったと思いやすい。but のあとが本音。',
       use: 'Sorry if that sounds rude, but I’m busy.（失礼に聞こえたらごめん、でも忙しいの）' },
 
-    // R fix: "Ross agrees to stop planning" was the mirror of the other distractor, so the odd one out was the key (V2)
-    // why: Rachel plans ← "Fine. I will." heard as agreeing to plan; drop it ← "we're not done" read as a pause in the fight
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'accept', reveals: ['planning'], seg: [14.3, 35.55],
-      stem: 'How is the disagreement settled?',
-      choices: ['Each accepts how the other is', 'Rachel gives in and agrees to plan', 'They agree to drop it for now'],
-      a: 0,
-      cue: '二人とも、短い同じ一語で相手の条件に答える。',
-      line: 'Okay, fine. … *Fine. I will.*',
-      said: 'ロスは彼女の条件に「分かった」、彼女はロスの条件に「いいよ」と答える。',
-      mean: 'どちらも自分のやり方は変えず、相手のやり方を受け入れて終わる。',
-      trap: 'I will を「計画する」と取りやすいが、何を will するのかは直前の文にある。省略は前を見る。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'accept', reveals: ['love'], seg: [14.3, 41.8],
+      stem: 'How does the fight end?', ja: '言い合いはどう終わる？',
+      choices: ['They say they love each other', 'Rachel leaves the room very angry', 'Ross says sorry to Rachel'], a: 0,
+      choicesJa: ['お互いに「愛してる」と言う', 'レイチェルが怒って出ていく', 'ロスがレイチェルに謝る'],
+      cue: '最後の「Good」のあと',
+      line: 'Fine. I will. — Good, cause *I love you*. … Well, *I love you too*.',
+      said: '「いいよ」「よし、だって愛してるから」「私も愛してる」。',
+      mean: 'Fine. I will. ＝ いいよ、そうする。けんかの調子のまま、最後は愛してると言い合う。',
+      trap: '強い言い方が続くので、けんか別れだと思いやすい。言葉は I love you。',
       use: 'Fine, we’ll do it your way.（いいよ、君のやり方でやろう）' },
 
-    // R fix: "explain her side again" was a filler (K3); now "agreeing, with a small request", from “Okay” + “understand”
-    // why: giving in ← "Okay" read as agreement; small request ← "Okay" heard as a yes, "you're going to have to" missed
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'mirror', reveals: ['deal'], seg: [23.2, 33.35],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'notdone', seg: [17, 22.5],
+      stem: 'What does Ross mean by “We’re not done”?', ja: '“We’re not done” で、ロスは何を言いたい？',
+      choices: ['He has more to say', 'He wants to stop now', 'He is happy now'], a: 0,
+      choicesJa: ['まだ言いたいことがある', 'もうやめたい', 'もう満足している'],
+      cue: '「Thank you」のあと',
+      line: 'Okay, fine. — Thank you. — *We’re not done.*',
+      said: '「わかった」「ありがとう」「まだ終わってないよ」。',
+      mean: 'We’re not done ＝ まだ終わっていない（話の続きがある）。done ＝ 終わった。',
+      trap: '「わかった」のあとなので、話が終わったと思いやすい。not done は「まだ」。',
+      use: 'Wait, I’m not done yet.（待って、まだ終わってない）' },
+
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'mirror', reveals: ['deal'], seg: [23.2, 33.35], retired: true,
       stem: 'When Ross answers with “Okay, then…”, what is he doing?',
       choices: ['Turning her own words back on her', 'Giving in, so the fight can end',
                 'Agreeing, but adding a small request'], a: 0,
@@ -130,45 +128,52 @@ export const saylove: Clip = {
       trap: 'Okay を聞くと受け入れたように思えるが、then のあとが反撃の合図。同じ言い方の繰り返しに気づく。',
       use: 'Okay, then here’s my side.（じゃあ、こっちの言い分も聞いて）' },
 
-    // R fix: g1's theme made "planning" the only on-topic choice (V2); a distractor now shares "plan" in the wrong relation
-    // why: telling her ← "understand" heard as him explaining feelings; asking her to plan ← "with you" in the wrong relation
     { id: 'd3', skill: 'detail', level: 'B1', point: 'planning', seg: [23.2, 30.1],
-      stem: 'What does Ross say he isn’t going to stop doing?',
+      stem: 'What does Ross say he isn’t going to stop doing?', ja: 'ロスが「やめない」と言っていることは？',
       choices: ['Planning his future with her', 'Telling her how he feels', 'Asking her to plan with him'], a: 0,
-      cue: '「stop」のすぐあとの動詞。',
+      choicesJa: ['彼女との将来を計画すること', '自分の気持ちを伝えること', '一緒に計画しようと頼むこと'],
+      cue: '「stop」のすぐあと',
       line: 'a guy who’s not going to stop *planning his future* with you',
       said: '「将来の計画をやめない男なんだ」と自分のことを言う。',
-      mean: 'a guy who’s… は自分のことを外から言う形で、強く言い切るときに使う。',
-      trap: 'not going to stop の否定が二重に聞こえて混乱しやすい。stop のあとの動詞を確かめる。',
+      mean: 'not going to stop 〜ing ＝ 〜するのをやめない。',
+      trap: 'not と stop で否定が重なり、混乱しやすい。stop のあとの動詞を聞く。',
       use: 'I’m not going to stop trying.（あきらめないよ）' },
 
-    // why: afraid of breaking up ← "end" heard alone as 終わる; she wants it ← he plans, so it must please her
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'endup', reveals: ['planning'], seg: [25.6, 30.15],
-      stem: 'What reason does Ross give for planning ahead?',
-      choices: ['He’s sure they’ll be together in the end', 'He’s afraid they’ll break up in the end',
-                'He thinks Rachel wants him to plan'], a: 0,
-      cue: '「because he knows」のあと。',
+      stem: 'Why does Ross keep planning?', ja: 'ロスはなぜ計画をやめない？',
+      choices: ['He’s sure they’ll stay together', 'He’s afraid they’ll break up', 'He thinks Rachel wants plans'], a: 0,
+      choicesJa: ['二人はずっと一緒だと信じている', '別れるのがこわい', 'レイチェルが計画を望んでいると思う'],
+      cue: '「because he knows」のあと',
       line: 'because he knows we’re going to *end up together*',
       said: '「最後は一緒になるって分かってるから」と理由を言う。',
-      mean: 'end up ＝ 結局〜になる。end（終わる）とは違い、行き着く先を言う。',
-      trap: 'end が聞こえると「終わる、別れる」と取りやすい。end up のあとの語で行き先が決まる。',
+      mean: 'end up 〜 ＝ 最後は〜になる。end（終わる）とはちがい、行き着く先を言う。',
+      trap: 'end が聞こえて「別れる」と思いやすい。end up together ＝ 最後は一緒。',
       use: 'We ended up staying an extra night.（結局もう一泊した）' },
 
-    // why: sorry ← Japanese frame (scaring someone calls for an apology); hurt ← "tough" read literally as 大変・厳しい
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'tough', seg: [29.6, 33.4],
-      stem: 'When Ross says “if that scares you…”, how does he sound?',
-      choices: ['Firm: it’s her problem to handle', 'Sorry: he doesn’t want to scare her',
-                'Hurt: he thinks she’s being harsh'], a: 0,
-      cue: '「scares you」のすぐあとの一語。',
+      stem: 'How does Ross sound when he says “tough”?', ja: '“tough” と言うとき、ロスはどんな感じ？',
+      choices: ['Strong and firm', 'Sorry and very kind', 'Sad and hurt'], a: 0,
+      choicesJa: ['強く、きっぱり', '申し訳なさそう', '悲しく、傷ついている'],
+      cue: '「scares you」のすぐあと',
       line: 'and if that scares you, *tough*',
-      said: '「それで怖いなら、知らないよ」と強く言い切る。',
-      mean: 'tough ＝ お気の毒さま、こっちは変えない。相手の不満を受け流す強い一言。',
-      trap: 'tough を「大変、つらい」と取ると傷ついているように聞こえる。文の頭に一語で来たら突き放し。',
+      said: '「それでこわいなら、知らないよ」と強く言い切る。',
+      mean: 'tough ＝ ここでは「知らないよ、仕方ないね」。相手の不満を受け流す強い一言。',
+      trap: 'tough を「つらい」と思うと、傷ついているように聞こえやすい。',
       use: 'You don’t like it? Tough.（嫌でも仕方ないね）' },
 
-    // R fix: the title made the only "love" choice the key (V2); a second choice now names “I love you”. reveals accept: its line shows "Fine. I will."
-    // why: admits she was right ← "Fine, I will" read as the fight ending in a win; a joke ← the angry tone heard as not meaning it
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'love', reveals: ['accept'], seg: [31.3, 35.55],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'love', seg: [31, 37],
+      stem: 'Who says “I love you” first?', ja: '先に “I love you” と言うのは誰？',
+      choices: ['Ross', 'Rachel', 'Both'], a: 0,
+      choicesJa: ['ロス', 'レイチェル', '二人同時'],
+      cue: '「Good」のあと',
+      line: 'Good, cause *I love you*. — Oh, yeah? — Yeah. — Well, I love you too.',
+      said: 'ロスが「だって愛してるから」と言い、レイチェルが「私も」と返す。',
+      mean: 'cause ＝ because（だって）。I love you too の too は「私も」。',
+      trap: 'レイチェルも言うので、先だと思いやすい。too は二番目の合図。',
+
+      use: 'Have a nice day. — You too.（よい一日を。—あなたもね）' },
+
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'love', reveals: ['accept'], seg: [31.3, 35.55], retired: true,
       stem: 'Why does the audience laugh at the end of this exchange?',
       choices: ['A love confession comes out like a threat', 'He gives up and admits she was right',
                 'He says “I love you” as a joke'], a: 0,
@@ -179,9 +184,7 @@ export const saylove: Clip = {
       trap: 'Good や Fine は話の終わりに聞こえやすい。笑いの前の一言が、どんな調子で何を言うかを聞く。',
       use: 'Good, because I need your help.（よかった、手を貸してほしいんだ）' },
 
-    // R fix: its line shows "I'm gonna kiss you", d4's key (N7); reveals kiss
-    // why: unsure ← "well" as Japanese えーと; disagreeing ← "well" as an objection marker
-    { id: 'm1', skill: 'marker', level: 'C1', point: 'well', reveals: ['kiss'], seg: [35.9, 41.8],
+    { id: 'm1', skill: 'marker', level: 'C1', point: 'well', reveals: ['kiss'], seg: [35.9, 41.8], retired: true,
       stem: 'Near the end, both keep starting lines with the same word. Why?',
       choices: ['Each line sounds like a comeback', 'Each one is unsure what to say',
                 'Each one is still disagreeing'], a: 0,
@@ -192,29 +195,37 @@ export const saylove: Clip = {
       trap: 'well を「えーと」と取ると迷っているように聞こえる。強く短い well は言い返しの合図。',
       use: 'Well, I think you’re wrong.（いや、それは違うと思う）' },
 
-    // R fix: the title ("Ross & Rachel Say Love") gave away "we" (V2); "we're saying" now tests the weak 've and the verb
-    // why: we're saying ← "we" kept, the weak 've heard as 're, "said" missed; you've ← "we" and "you" both weak before 've
     { id: 's1', skill: 'sound', level: 'B2', point: 'firsttime', seg: [36.35, 39.65],
-      stem: 'Fill the gap: “Well, that’s the first time ___ that.”',
+      stem: 'Fill the gap: “Well, that’s the first time ___ that.”', ja: '空所に入るのは？ “Well, that’s the first time ___ that.”',
       choices: ['we’ve said', 'we’re saying', 'you’ve said'], a: 0,
-      cue: '「first time」のあと、とても弱い短い音。',
+      choicesJa: ['私たちが言った', '私たちが言っている', 'あなたが言った'],
+      cue: '「first time」のあと',
       line: 'Well, that’s the first time *we’ve said* that.',
       said: '「これ、二人が初めて言ったね」と気づく。',
-      mean: 'we’ve の ’ve はほぼ聞こえず「ウィ」だけに近い。二人とも言ったので we。',
-      trap: '弱い ’ve は「ヴ」がほぼ消え、’re と区別しにくい。動詞が said か saying かで時制を決める。',
+      mean: 'we’ve said ＝ 私たちが（今まで）言った。’ve はほぼ聞こえず「ウィ」に近い。',
+      trap: '’ve の「ヴ」がほぼ消え、we’re とまぎれやすい。said か saying かで決める。',
       use: 'That’s the first time I’ve been here.（ここに来たのは初めて）' },
 
-    // R fix: "Call her" was a filler (K3); "Hug her" is as plausible as the key from the scene alone
-    // why: miss ← /k/ and /m/ both short before "you"; hug ← what follows "I love you too" in the usual script
     { id: 'd4', skill: 'detail', level: 'B1', point: 'kiss', seg: [38.6, 41.6],
-      stem: 'What does Ross say he’s going to do, at the very end?',
+      stem: 'What does Ross say he’s going to do, at the very end?', ja: '最後に、ロスは何をすると言う？',
       choices: ['Kiss her', 'Miss her', 'Hug her'], a: 0,
-      cue: '最後の「I’m gonna」のあとの動詞。',
+      choicesJa: ['キスする', '寂しく思う', 'ハグする'],
+      cue: '最後の「I’m gonna」のあと',
       line: 'Well, I’m gonna *kiss you*.',
       said: '「じゃあ、キスするよ」と、これも言い返す調子で言う。',
-      mean: 'I’m gonna ＝ これからすぐすること。宣言のように言っている。',
-      trap: '短い動詞は最初の音で決まる。kiss の k は息が強く出る。miss の m は口を閉じた音から入る。',
+      mean: 'I’m gonna ＝ I’m going to（〜するよ）。これからすぐすることを言う。',
+      trap: '短い動詞は最初の音で決まる。kiss の k は息が強く出る。miss は口を閉じた「ム」から。',
       use: 'I’m gonna grab a coffee.（ちょっとコーヒー買ってくる）' },
 
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'better', reveals: ['kiss'], seg: [39.6, 44],
+      stem: 'What does Rachel mean by “You better”?', ja: '“You better” で、レイチェルは何を言いたい？',
+      choices: ['You should do it', 'You can’t do that', 'You did it well'], a: 0,
+      choicesJa: ['ぜひそうして', 'あなたにはできない', 'よくできたね'],
+      cue: '最後の一言',
+      line: 'Well, I’m gonna kiss you. — Well, *you better*.',
+      said: '「じゃあキスするよ」「そうしてよね」。',
+      mean: 'you better ＝ you had better（〜したほうがいい）。ここでは「ぜひそうして」。',
+      trap: 'better を「もっと良い」と思いやすい。you better ＋動詞は「〜しなさい」。',
+      use: 'You better hurry.（急いだほうがいいよ）' },
   ]
 };
