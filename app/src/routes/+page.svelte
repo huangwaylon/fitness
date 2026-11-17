@@ -17,6 +17,7 @@
   import { weddingSheet } from '#lib/components/wedding/open.svelte.ts';
   import { hiking } from '#lib/components/hiking/open.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
+  import { sugoroku } from '#lib/sugoroku/open.svelte.ts';
   import { kenkou } from '#lib/components/health/open.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -35,7 +36,7 @@
   let zukanOpen = $state(false);
   let settingsOpen = $state(false);
   /** A full-height sheet is open: the island pauses under it, no coins fly. */
-  const sheetOpen = $derived(panelOpen || kenkou.open || zukanOpen || settingsOpen || trips.open || weddingSheet.open || hiking.open || english.open);
+  const sheetOpen = $derived(panelOpen || kenkou.open || zukanOpen || settingsOpen || trips.open || weddingSheet.open || hiking.open || english.open || sugoroku.open);
   /** しずえ's box's height while it shows: the island's say button (bottom right) stands over it. */
   let newsH = $state(0);
 

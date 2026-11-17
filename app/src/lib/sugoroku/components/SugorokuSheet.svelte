@@ -1,0 +1,334 @@
+<script lang="ts">
+  // 英語すごろく's sheet (docs/sugoroku.md "Rules"), its own chunk: a full sheet on the unified kit, its levels
+  // menu (続きから / 新しいゲーム / あそびかた) → だれが遊ぶ？ (2–4 seats: the members, the guest, villager friends, in the
+  // order picked) → the game (the board over the turn's panel: whose turn and the spinner, then the space's ことば,
+  // ぶん, イベント or ゴール) → 結果 (the ranking and 今日のことば). One phone passed round: no relay, no ベル. The game
+  // is saved after every step (save.ts), so ‹ or ✕ mid-game leaves it to 続きから. The island is paused under it.
+  import Sheet from '#lib/components/ui/Sheet.svelte';
+  import NavBar from '#lib/components/ui/NavBar.svelte';
+  import Icon from '#lib/components/ui/Icon.svelte';
+  import Avatar from '#lib/components/characters/Avatar.svelte';
+  import Board from './Board.svelte';
+  import WordTurn from './WordTurn.svelte';
+  import SentenceTurn from './SentenceTurn.svelte';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { now } from '#lib/time/clock.ts';
+  import { GUEST, PEOPLE } from '#lib/config/rules.ts';
+  import { i18n } from '#lib/i18n/index.ts';
+  import { CARDS } from '../cards.ts';
+  import { eventDone, finish, homeDone, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceDone, spin, swap, twice, wordScore,
+    type Game, type Seat } from '../game.ts';
+  import { HOME_BONUS } from '../game.ts';
+  import { loadWords, type Words } from '../words.ts';
+  import { loadSentences, pickSentence, type Sentence } from '../sentences.ts';
+  import { clearGame, loadGame, saveGame } from '../save.ts';
+  import { s } from '../i18n.ts';
+  import type { Who } from '#lib/types.ts';
+
+  let { open = $bindable() }: { open: boolean } = $props();
+  type Level = 'menu' | 'how' | 'setup' | 'play' | 'results';
+  let level = $state<Level>('menu');
+  let game = $state<Game | null>(null);
+  let saved = $state<Game | null>(null);
+  $effect(() => {
+    if (open) (saved = loadGame()), (level = 'menu');
+  });
+  const close = () => (open = false);
+
+  // the words and lines (their own chunks), asked for as the sheet opens
+  let words = $state<Words | null>(null);
+  let lines = $state<readonly (readonly [string, string])[] | null>(null);
+  let failed = $state(false);
+  function load() {
+    failed = false;
+    loadWords().then((w) => (words = w), () => (failed = true));
+    loadSentences().then((l) => (lines = l), () => (failed = true));
+  }
+  $effect(() => {
+    if (open && (!words || !lines)) load();
+  });
+
+  // ---- seats
+  const me = $derived<Who>(week.model?.me ?? 'A');
+  const nameOf = (w: Who) => (w === 'G' ? GUEST.villager : (week.view?.people[w].villagerName ?? PEOPLE[w].villager));
+  const FRIENDS = [['isabelle', 'しずえ'], ['tom-nook', 'たぬきち'], ['kk-slider', 'とたけけ'], ['blathers', 'フータ'], ['raymond', 'ジャック'],
+    ['judy', 'みすず'], ['marshal', 'ジュン'], ['dom', 'ちゃちゃまる']] as const;
+  const candidates = $derived<Seat[]>([
+    ...(me === 'B' ? (['B', 'A', 'G'] as const) : me === 'G' ? (['G', 'A', 'B'] as const) : (['A', 'B', 'G'] as const)).map((w) => ({ who: w, villager: null, name: nameOf(w) })),
+    ...FRIENDS.map(([id, ja]) => ({ who: null, villager: id, name: i18n.locale === 'en' ? id.replace(/-/g, ' ') : ja }))
+  ]);
+  const keyOf = (x: Seat) => x.villager ?? x.who ?? '';
+  let picked = $state<string[]>([]);
+  function toggle(x: Seat) {
+    const k = keyOf(x);
+    picked = picked.includes(k) ? picked.filter((p) => p !== k) : picked.length < MAX_PLAYERS ? [...picked, k] : picked;
+  }
+  function start() {
+    const seats = picked.map((k) => candidates.find((c) => keyOf(c) === k)!);
+    set(newGame(seats, `${now()}:${picked.join(',')}`));
+    level = 'play';
+  }
+  function setup() {
+    picked = candidates.slice(0, 2).map(keyOf);
+    level = 'setup';
+  }
+
+  // ---- the game: every step saved; the heads walk a space at a time to where the game has them
+  let shown = $state<number[]>([]);
+  let rolling = $state<number | null>(null);
+  let confirmEnd = $state(false);
+  function set(g: Game) {
+    game = g;
+    if (shown.length !== g.players.length) shown = g.players.map((p) => p.pos);
+    if (g.phase.k === 'end') {
+      clearGame();
+      saved = null;
+      level = 'results';
+    } else saveGame(g);
+  }
+  const walking = $derived(!!game && game.players.some((p, i) => shown[i] !== p.pos));
+  $effect(() => {
+    if (!walking || !game) return;
+    const target = game.players.map((p) => p.pos);
+    const id = setInterval(() => {
+      let moved = false;
+      shown = shown.map((v, i) => (v === target[i] ? v : ((moved = true), v + Math.sign(target[i] - v))));
+      if (!moved) clearInterval(id);
+    }, 160);
+    return () => clearInterval(id);
+  });
+  function resume() {
+    if (!saved) return;
+    shown = saved.players.map((p) => p.pos);
+    set(saved);
+    level = 'play';
+  }
+  function doSpin() {
+    if (!game || rolling !== null) return;
+    const next = spin(game);
+    const ph = next.phase;
+    const n = 'spun' in ph ? ph.spun : 1;
+    let k = 0;
+    rolling = 1;
+    const id = setInterval(() => {
+      rolling = (k++ % 6) + 1;
+      if (k < 8) return;
+      clearInterval(id);
+      rolling = null;
+      lastSpin = n;
+      set(next);
+    }, 70);
+  }
+  let lastSpin = $state(0);
+
+  const g = $derived(game);
+  const cur = $derived(g ? g.players[g.turn] : null);
+  const ph = $derived(g?.phase ?? null);
+  const lastRound = $derived(!!g && g.players.some((p) => p.home !== null));
+
+  /** The sentence for this ぶん space (the game's nth, none used twice). */
+  const line = $derived.by((): Sentence | null => {
+    if (!g || ph?.k !== 'sentence' || !lines) return null;
+    const used = new Set(g.made.filter((m) => m.kind === 'sentence').map((m) => m.text));
+    return pickSentence(lines, g.seed, g.n + g.made.length, used);
+  });
+
+  const card = $derived(ph?.k === 'event' ? CARDS[ph.card] : null);
+  const cardParts = (en: string) => en.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
+
+  const rank = $derived(g ? ranking(g) : []);
+  const headOf = (x: { who: Who | null; villager: string | null }) => ({ person: x.who ?? ('G' as const), villager: x.villager, worn: !x.villager });
+</script>
+
+<Sheet bind:open tunes label={s('title')} variant="full">
+  <div class="sg" data-sugoroku data-level={level}>
+    {#if level === 'menu'}
+      <div class="top"><NavBar pad title={s('title')} onclose={close} /></div>
+      <div class="body sheet-scroll">
+        <div class="hero card pad">
+          <p class="lead">{s('how2')}</p>
+          {#if saved}
+            <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
+          {/if}
+          <button type="button" class="btn" class:paper={!!saved} data-sfx="open" data-sg-new onclick={setup}>{s('newGame')}</button>
+          <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (level = 'how')}>{s('howTo')}</button>
+        </div>
+      </div>
+    {:else if level === 'how'}
+      <div class="top"><NavBar pad title={s('howTo')} onback={() => (level = 'menu')} onclose={close} /></div>
+      <div class="body sheet-scroll">
+        <ol class="card pad how">
+          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li>
+        </ol>
+      </div>
+    {:else if level === 'setup'}
+      <div class="top"><NavBar pad title={s('setupTitle')} onback={() => (level = 'menu')} onclose={close} /></div>
+      <div class="body sheet-scroll">
+        <p class="note">{s('setupNote')}</p>
+        <div class="seats" data-sg-seats>
+          {#each candidates as c, i (keyOf(c))}
+            {#if i === 3}<h3 class="sec-label wide">{s('friends')}</h3>{/if}
+            {@const n = picked.indexOf(keyOf(c))}
+            <button type="button" class="seat" class:on={n >= 0} aria-pressed={n >= 0} data-sfx="tick" data-sg-seat={keyOf(c)} onclick={() => toggle(c)}>
+              <Avatar {...headOf(c)} size={52} />
+              <span class="nm">{c.name}</span>
+              {#if n >= 0}<span class="ord">{n + 1}</span>{/if}
+            </button>
+          {/each}
+        </div>
+        <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={picked.length < MIN_PLAYERS} onclick={start}>{s('start')}</button>
+      </div>
+    {:else if level === 'play' && g && cur && ph}
+      <div class="top"><NavBar pad title={s('title')} onback={() => (level = 'menu')} onclose={close} /></div>
+      <div class="body sheet-scroll play" data-sg-turn={g.turn} data-sg-phase={ph.k}>
+        <div class="scores">
+          {#each g.players as p, i (i)}
+            <span class="score" class:now={i === g.turn} data-sg-score={i}>
+              <Avatar {...headOf(p)} size={28} /><b>{p.stars}</b>
+            </span>
+          {/each}
+          <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
+        </div>
+        <Board players={g.players} {shown} turn={g.turn} lucky={g.lucky} />
+        <div class="panel card pad">
+          {#if walking || rolling !== null}
+            <div class="spinning"><span class="die" data-sg-die>{rolling ?? lastSpin}</span><p>{rolling === null ? s('spun', { n: lastSpin }) : ''}</p></div>
+          {:else if ph.k === 'spin'}
+            <div class="who">
+              <Avatar {...headOf(cur)} size={64} />
+              <div>
+                <p class="turnof">{s('turnOf', { name: cur.name })}</p>
+                <p class="note">{s('passTo', { name: cur.name })}</p>
+              </div>
+            </div>
+            <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={doSpin}>{s('spin')}</button>
+            {#if twice(g)}<p class="note">{s('twice')}</p>{/if}
+          {:else if ph.k === 'word'}
+            {#if words}
+              {#key `${g.n}`}
+                <WordTurn rack={cur.rack} lucky={g.lucky} mult={ph.mult} {words}
+                  score={(w, c, h) => wordScore(g, w, c, h)}
+                  onplay={(w, h) => set(playWord(g, w, { common: !!words!.ja(w), ja: words!.ja(w), hinted: h }))}
+                  onswap={() => set(swap(g))} />
+              {/key}
+            {:else if failed}
+              <p class="note">{s('offline')}</p><button type="button" class="btn small" data-sfx="tick" onclick={load}>{s('retry')}</button>
+            {:else}<p class="note">{s('loading')}</p>{/if}
+          {:else if ph.k === 'sentence'}
+            {#if line}
+              {#key line.en}<SentenceTurn {line} seed={g.seed} ondone={(m) => set(sentenceDone(g, m, line.en, line.ja))} />{/key}
+            {:else if failed || lines}
+              <p class="note">{s('offline')}</p>
+              <button type="button" class="btn small" data-sfx="tick" onclick={() => set({ ...g, phase: { k: 'word', mult: 1, spun: ph.spun } })}>{s('next')}</button>
+            {:else}<p class="note">{s('loading')}</p>{/if}
+          {:else if ph.k === 'event' && card}
+            <div class="event" data-sg-event={ph.card}>
+              <h3 class="ttl">{s('eventTitle')}</h3>
+              <p class="en" lang="en">{#each cardParts(card.en) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else}{part.t}{/if}{/each}</p>
+              <p class="ja">{card.ja}</p>
+              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => set(eventDone(g))}>{s('ok')}</button>
+            </div>
+          {:else if ph.k === 'home'}
+            <div class="event" data-sg-home>
+              <Avatar {...headOf(cur)} size={64} />
+              <h3 class="ttl">{s('homeTitle')}</h3>
+              <p class="ja">{s('homePlace', { n: ph.place + 1, b: HOME_BONUS[ph.place] ?? 0 })}</p>
+              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => set(homeDone(g))}>{s('next')}</button>
+            </div>
+          {/if}
+        </div>
+        <div class="end">
+          {#if confirmEnd}
+            <span class="note">{s('endAsk')}</span>
+            <button type="button" class="btn small" data-sfx="confirm" data-sg-end-yes onclick={() => ((confirmEnd = false), set(finish(g)))}>{s('end')}</button>
+          {:else}
+            <button type="button" class="link" data-sfx="tick" data-sg-end onclick={() => (confirmEnd = true)}>{s('end')}</button>
+          {/if}
+        </div>
+      </div>
+    {:else if level === 'results' && g}
+      <div class="top"><NavBar pad title={s('results')} onback={() => (level = 'menu')} onclose={close} /></div>
+      <div class="body sheet-scroll" data-sg-results>
+        <div class="card pad podium">
+          <p class="win">{s('winner', { name: g.players[rank[0]].name })}</p>
+          {#each rank as i, k (i)}
+            {@const p = g.players[i]}
+            <div class="rrow" data-sg-rank={k}>
+              <span class="place">{s('place', { n: k + 1 })}</span>
+              <Avatar {...headOf(p)} size={40} />
+              <span class="nm">{p.name}</span>
+              <span class="st"><Icon name="star" size={18} soft /><b>{p.stars}</b></span>
+            </div>
+          {/each}
+        </div>
+        {#if g.made.length}
+          <h3 class="sec-label">{s('recap')}</h3>
+          <div class="card dense" role="list">
+            {#each g.made as m, i (i)}
+              <div class="row recap" role="listitem">
+                <Avatar {...headOf(g.players[m.p])} size={24} />
+                <span class="txt"><span lang="en" class="en2">{m.text}</span>{#if m.ja}<span class="ja2">{m.ja}</span>{/if}</span>
+                <span class="st"><Icon name="star" size={14} soft />{m.stars}</span>
+              </div>
+            {/each}
+          </div>
+        {/if}
+        <button type="button" class="btn" data-sfx="open" data-sg-again onclick={() => { picked = g.players.map(keyOf); level = 'setup'; }}>{s('again')}</button>
+      </div>
+    {/if}
+  </div>
+</Sheet>
+
+<style>
+  .sg { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .top { flex: none; background-color: var(--surface); }
+  .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px;
+    padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
+  .hero { display: flex; flex-direction: column; gap: 10px; }
+  .lead { margin: 0 0 4px; font: 700 var(--fs-body)/1.5 var(--font-ui); text-wrap: pretty; }
+  .how { margin: 0; padding-left: 28px !important; display: grid; gap: 8px; font-size: var(--fs-body); line-height: 1.5; }
+  .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
+  .seats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .wide { grid-column: 1 / -1; margin: 6px 0 0; }
+  .seat {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; margin: 0;
+    appearance: none; border: 0; border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 3px 0 var(--c-edge);
+    color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .seat.on { background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
+  .ord { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
+    background: var(--c-ink); color: var(--c-cream); font: 600 13px/1 var(--font-num); }
+  .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .play { gap: 8px; }
+  .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .score { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 2px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
+  .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
+  .score b { font: 600 16px/1 var(--font-num); }
+  .round { margin-left: auto; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
+  .panel { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 230px; justify-content: center; }
+  .who { display: flex; align-items: center; gap: 12px; }
+  .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .spinning { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .spinning p { margin: 0; font: 700 var(--fs-body)/1.2 var(--font-ui); min-height: 1.2em; }
+  .die { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 16px; background: var(--c-cream);
+    box-shadow: 0 4px 0 var(--c-edge); font: 600 36px/1 var(--font-num); }
+  .event { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .ttl { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .event .en { margin: 0; font: 500 20px/1.4 var(--font-body); text-wrap: pretty; }
+  .event .en b { background: color-mix(in srgb, var(--c-yuzu) 60%, transparent); border-radius: 4px; padding: 0 2px; }
+  .event .ja { margin: 0; font-size: var(--fs-s); color: var(--text-soft); }
+  .end { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+  .link { appearance: none; border: 0; background: none; padding: 10px; min-height: 44px; color: var(--text-soft); font: 500 var(--fs-s)/1.2 var(--font-ui); text-decoration: underline; cursor: pointer; }
+  .podium { display: flex; flex-direction: column; gap: 8px; }
+  .win { margin: 0 0 4px; text-align: center; font: 700 22px/1.3 var(--font-ui); }
+  .rrow { display: flex; align-items: center; gap: 10px; }
+  .place { width: 36px; font: 700 var(--fs-body)/1 var(--font-ui); }
+  .rrow .nm { flex: 1; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .st { display: inline-flex; align-items: center; gap: 3px; color: var(--c-gold); }
+  .st b { font: 600 18px/1 var(--font-num); color: var(--c-ink); }
+  .recap { display: flex !important; align-items: center; gap: 8px; }
+  .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .en2 { font: 600 var(--fs-body)/1.3 var(--font-body); }
+  .ja2 { font-size: var(--fs-s); color: var(--text-soft); }
+  .recap .st { font: 600 14px/1 var(--font-num); color: var(--c-ink); }
+</style>

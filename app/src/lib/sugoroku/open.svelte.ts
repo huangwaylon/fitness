@@ -1,0 +1,5 @@
+// 英語すごろく's always-loaded part (docs/sugoroku.md): its sheet, a lazySheet (its own chunk; the words and lines are
+// chunks of their own), opened by the leaf menu's すごろく pill (island/HudMenu.svelte) and mounted by the HUD (island/Hud.svelte).
+import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
+
+export const sugoroku = lazySheet(() => import('./components/SugorokuSheet.svelte'));

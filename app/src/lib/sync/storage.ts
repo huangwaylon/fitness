@@ -143,6 +143,8 @@ export const DEVICE = {
   englishBack: 'island.english.back',
   /** localStorage: `true` | `false`: English Study's むずかしめの質問を増やす on this phone (lib/english/prefs.ts; off by default). */
   englishHard: 'island.english.hard',
+  /** localStorage: 英語すごろく's game in play on this phone (lib/sugoroku/game.ts Game), so a game closed half-way resumes. */
+  sugoroku: 'island.sugoroku',
   /** localStorage: `{[who]: {[clip]: day}}`: the clips 別の動画にする passed over on this phone, each kept 14 days
    *  (lib/english/prefs.ts): today's clip skips them. */
   englishSkip: 'island.english.skip',

@@ -79,7 +79,9 @@ const ALLOW: Record<string, string[]> = {
   // store's model and send, the storage's keys), and sound's videoFocus (a lesson pauses the island's audio and sets
   // iOS's session to 'playback', so a clip plays on the silent switch)
   english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'sound'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
+  // 英語すごろく (docs/sugoroku.md): the game's pure rules and its sheet; English Study's deck only at build time
+  sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound'],
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english', 'sugoroku']
 };
 
 function files(dir: string): string[] {

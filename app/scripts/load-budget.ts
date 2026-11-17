@@ -35,7 +35,7 @@ const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
   'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/health/HealthSheet.svelte',
-  'src/lib/components/food/FoodScan.svelte', 'src/lib/scan/decode.ts'
+  'src/lib/components/food/FoodScan.svelte', 'src/lib/scan/decode.ts', 'src/lib/sugoroku/components/SugorokuSheet.svelte'
 ];
 
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');

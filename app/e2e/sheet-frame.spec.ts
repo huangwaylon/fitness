@@ -22,6 +22,7 @@ test('every full-height sheet fills the screen, its corners square', async ({ pa
     settings: () => fromMenu(page, 'settings'),
     zukan: () => fromMenu(page, 'zukan'),
     english: () => fromMenu(page, 'english'),
+    sugoroku: () => fromMenu(page, 'sugoroku'),
     travel: () => fromMenu(page, 'travel')
   };
   for (const [name, go] of Object.entries(open)) {
