@@ -258,13 +258,13 @@ export const buttOfJoke: Clip = {
     { id: 's1', skill: 'sound', level: 'B2', point: 'anybody', seg: [97.7, 102.6],
       stem: 'Fill the gap: “You know what? ___ seen my glasses?”',
       ja: 'すき間をうめよう：「You know what? ___ seen my glasses?」',
-      choices: ['Has anybody', 'Hasn’t anybody', 'Has somebody', 'Have any of you'], a: 0,
-      choicesJa: ['だれか〜した？（Has anybody）', 'だれも〜してないの？（Hasn’t anybody）', 'だれかが〜した（Has somebody）', 'みんなの中でだれか（Have any of you）'],
+      choices: ['Has anybody', 'Hasn’t anybody', 'Has somebody'], a: 0,
+      choicesJa: ['だれか〜した？（Has anybody）', 'だれも〜してないの？（Hasn’t anybody）', 'だれかが〜した（Has somebody）'],
       cue: '「You know what?」のあと',
       line: 'You know what? *Has anybody* seen my glasses?',
       said: '「そうだ、だれかぼくのめがね見なかった？」と聞く。',
       mean: 'Has anybody は「ハゼニバディ」とつながる。has は小さく短く言う。',
-      trap: 'Hasn’t と思いやすい。n’t なら「ン」が残る。',
+      trap: 'Hasn’t なら「ン」が残る。somebody なら「サム」で始まる。「エニ」なら anybody。',
       use: 'Has anybody seen my keys?（だれか、私のかぎ見なかった？）' },
   ]
 };

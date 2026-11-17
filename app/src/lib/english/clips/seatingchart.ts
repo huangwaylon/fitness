@@ -119,7 +119,7 @@ export const seatingChart: Clip = {
       line: 'Hey, so *where are* my parents gonna be?',
       said: '「で、うちの親はどこになるの？」と聞く。',
       mean: 'where are は「ウェアラー」とつながる。gonna be（これから）なので are。',
-      trap: 'つながると were に聞こえやすい。うしろの gonna で、これからの話と分かる。',
+      trap: 'were なら「ワー」、what なら「ワッ」と t で止まる。「ウェアラ」とつながれば where are。',
       use: 'So where are we gonna sit?（で、どこに座る？）' },
     { id: 'm2', skill: 'marker', level: 'B1', point: 'letssee', seg: [42, 47.8],
       stem: 'Monica says, “Oh, let’s see.” What does she mean?',
