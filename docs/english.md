@@ -17,16 +17,19 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
 - A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
   label: 大意 詳細 数字 誰が 本当の意味 気持ち 一言のねらい 笑いどころ 次の一言 つなぎ言葉 フレーズ 音の聞き分け 書き取り), a `level` (B1/B2/C1), a
   `point` and the points it `reveals`. A bank is 16–24 items; `clips.test.ts` runs the review rubric's mechanical checks
-  (a lesson under 16 only the schema, segments, wording, dictations and draws).
+  (a lesson under 16 only the schema, segments, wording, dictations and draws). A bank whose file has the line
+  `// A2 REVIEW` (reviewed for the A1–A2 learner, 2026-11-17) has the A2 rules: 12–24 live, gist ≥ 2, L ≥ 4, F ≥ 4
+  (phrase ≥ 1, sound + dict ≥ 1), I 2 to 40 %, humor and predict ≤ 1, each skill ≤ 5, C2 0–2; B1 45–65 %, B2 25–45 %,
+  C1 ≤ 15 %; a key-length tell with 6 characters of slack. The others keep the older rules until their review.
 - **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
-  first, then the best set of the rest (a bounded search): on play 2+ a C1 whenever one fits, the unseen before any
-  repeat, then the group quotas (play 1 L2 I2 F1 at n 6; play 2+ leans to interpretation), new points first; always
-  ≤ 1 dictation, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
+  first, then the best set of the rest (a bounded search): the unseen before any repeat, then the group quotas
+  (L I F: n 6 2 1 2, play 2+ 2 2 1; n 7 2 1 3 / 2 2 2; n 8 3 1 3 / 2 2 3), new points first; always ≤ 1 C1, ≤ 1
+  dictation, humor and predict, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
   are kept with its place; choices are shuffled per player unless `keep`.
 - **The native tier (C2):** 0 or 2–4 items a bank, ≤ 1 a point, skills infer / attitude / pragma / humor / sound /
   dict, notes 90–140 characters, not counted in the B1/B2/C1 shares; a stress item (a C2 `sound`) ships `retired` until
-  its ear check. The draw takes none on play 1 (one with `{ harder: true }`, the ⚙ むずかしめ opt-in), ≤ 1 on play 2,
-  1–2 from play 3 while one is unseen.
+  its ear check (an A2-reviewed bank: 0–2). The draw takes none unless `{ harder: true }` (the ⚙ むずかしめ opt-in),
+  then ≤ 1 a play, one while one is unseen.
 - Speed: `wpm` is words a minute over speech time from the captions, one measure for every clip
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
   the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test).
@@ -79,7 +82,7 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   situation is reachable one way only (never a chip as well): one row of pills at a time. Not courses: no order,
   nothing locked. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
   no referrer); offline or gone, a paper tile with the show's name.
-- **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into a first play; a C2 item's card
+- **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into the draw (≤ 1 a play; never without it); a C2 item's card
   carries a むずかしめ tag. Nothing is locked either way.
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch

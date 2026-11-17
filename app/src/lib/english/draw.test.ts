@@ -1,5 +1,5 @@
 // The draw (draw.ts) over a made-up bank of 20: the size by length, the gist first then clip order, the quotas (play 1
-// L2 I2 F1; play 2+ L1 I3 F1), a C1 on play 2+ always, the unseen before any repeat, new points first, ≤ 1 dict, points
+// L2 I1 F2; play 2+ L2 I2 F1), ≤ 1 C1 a play, C2 only when harder, the unseen before any repeat, new points first, ≤ 1 dict, points
 // and reveals, a predict's continuation, the same draw for the same seed; the history from listen rows; the choices' order.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
@@ -26,44 +26,43 @@ describe('draw', () => {
   it('6 under 90 s, 7 under 180 s, else 8', () => {
     expect([drawSize(68), drawSize(90), drawSize(179), drawSize(180)]).toEqual([6, 7, 7, 8]);
   });
-  it('play 1: an unseen gist first (the fewest reveals), then L2 I2 F1 in clip order, at most 2 C1', () => {
+  it('play 1: an unseen gist first (the fewest reveals), then L2 I1 F2 in clip order, at most 1 C1', () => {
     for (let s = 0; s < 30; s++) {
       const d = draw(clip, {}, 1, `A:test:1:${s}`);
       expect(d).toHaveLength(6);
       expect(d[0].id).toBe('g2');
-      expect(groups(d)).toEqual({ L: 2, I: 2, F: 1 });
+      expect(groups(d)).toEqual({ L: 2, I: 1, F: 2 });
       expect(d.slice(1).map((x) => x.seg[0])).toEqual(d.slice(1).map((x) => x.seg[0]).sort((a, b) => a - b));
-      expect(d.filter((x) => x.level === 'C1').length).toBeLessThanOrEqual(2);
+      expect(d.filter((x) => x.level === 'C1').length).toBeLessThanOrEqual(1);
     }
   });
-  it('play 2: the other gist, L1 I3 F1, a C1, the unseen first', () => {
+  it('play 2: the other gist, L2 I2 F1, the unseen first', () => {
     const one = draw(clip, {}, 1, 's');
     const seen: History = Object.fromEntries(one.map((x) => [x.id, { play: 1, ok: true }]));
     const two = draw(clip, seen, 2, 's2');
     expect(two[0].id).toBe('g1');
-    expect(groups(two)).toEqual({ L: 1, I: 3, F: 1 });
-    expect(two.some((x) => x.level === 'C1')).toBe(true);
+    expect(groups(two)).toEqual({ L: 2, I: 2, F: 1 });
     expect(two.slice(1).filter((x) => one.includes(x))).toEqual([]);
   });
-  it('play 2+: a C1 even when every C1 was seen; the unseen before any repeat', () => {
-    const c1s = new Set(bank.filter((x) => x.level === 'C1').map((x) => x.id));
-    const seenC1: History = Object.fromEntries([...c1s].map((id) => [id, { play: 1, ok: true }]));
-    for (let s = 0; s < 30; s++) expect(draw(clip, seenC1, 2, String(s)).some((x) => x.level === 'C1')).toBe(true);
+  it('≤ 1 C1 on every play; the unseen before any repeat', () => {
+    for (let s = 0; s < 30; s++) for (const play of [1, 2, 3]) expect(draw(clip, {}, play, String(s)).filter((x) => x.level === 'C1').length).toBeLessThanOrEqual(1);
     // all but three non-gist items seen: those three are in, whatever the quotas say
     const fresh = ['d1', 'm1', 's1'];
     const most: History = Object.fromEntries(bank.filter((x) => x.skill !== 'gist' && !fresh.includes(x.id)).map((x) => [x.id, { play: 1, ok: true }]));
     for (let s = 0; s < 30; s++) expect(draw(clip, most, 2, String(s)).map((x) => x.id)).toEqual(expect.arrayContaining(fresh));
   });
-  it('the native tier: none on play 1 (one when harder), ≤ 1 on play 2, 1–2 from play 3 while one is unseen', () => {
+  it('the native tier: never unless harder; then ≤ 1 a play, one while one is unseen', () => {
     const c2: Clip = { ...clip, questions: [...bank, q('z1', 'infer', 'C2'), q('z2', 'humor', 'C2'), q('z3', 'attitude', 'C2')] };
     const n2 = (d: Question[]) => d.filter((x) => x.level === 'C2').length;
     for (let s = 0; s < 30; s++) {
-      expect(n2(draw(c2, {}, 1, String(s)))).toBe(0);
-      expect(n2(draw(c2, {}, 1, String(s), { harder: true }))).toBe(1);
-      const seen: History = Object.fromEntries(draw(c2, {}, 1, String(s)).map((x) => [x.id, { play: 1, ok: true }]));
-      expect(n2(draw(c2, seen, 2, String(s)))).toBeLessThanOrEqual(1);
-      const three = n2(draw(c2, seen, 3, String(s)));
-      expect(three >= 1 && three <= 2).toBe(true);
+      const seen: History = {};
+      for (const play of [1, 2, 3, 4]) {
+        expect(n2(draw(c2, seen, play, String(s)))).toBe(0);
+        const d = draw(c2, seen, play, String(s), { harder: true });
+        if (play <= 3) expect(n2(d)).toBe(1); // z1–z3 unseen till then
+        else expect(n2(d)).toBeLessThanOrEqual(1);
+        for (const x of d) seen[x.id] = { play, ok: true };
+      }
     }
   });
   it('never two on a point, nor one revealing another; ≤ 1 dict, humor, predict', () => {

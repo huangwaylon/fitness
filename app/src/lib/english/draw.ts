@@ -1,9 +1,9 @@
 // A play's questions, drawn from the clip's bank (docs/english.md "Content", question-framework §3.3), pure and seeded:
 // the same draw comes back on a resume or the other phone. 6 items under 90 s, 7 under 180 s, else 8: a gist first,
-// then the best set of the rest (a bounded search): on play 2 and later a C1 whenever one fits, unseen items before any
-// repeat, then the group quotas (play 2 and later lean to interpretation), new points first; then clip order. The
-// native tier (C2): none on play 1 unless `harder` (then one), ≤ 1 on play 2, 1–2 from play 3. Never two
-// items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation.
+// then the best set of the rest (a bounded search): unseen items before any repeat, then the group quotas (form-heavy
+// for an A2 learner; play 2 and later trade a form item for an interpretive one), new points first; then clip order.
+// At most one C1 a play. The native tier (C2) only with `harder` (⚙ むずかしめ): then ≤ 1 a play, wanted while one
+// is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
 import type { Who } from '#lib/types.ts';
@@ -41,7 +41,7 @@ export function historyOf(rows: readonly EventRow[], me: Who, clip: string): { p
 export const drawSize = (dur: number): number => (dur < 90 ? 6 : dur < 180 ? 7 : 8);
 
 /** L / I / F a play takes (after the gist). */
-const QUOTAS: Record<number, [number, number, number][]> = { 6: [[2, 2, 1], [1, 3, 1]], 7: [[2, 3, 1], [1, 4, 1]], 8: [[3, 3, 1], [1, 4, 2]] };
+const QUOTAS: Record<number, [number, number, number][]> = { 6: [[2, 1, 2], [2, 2, 1]], 7: [[2, 1, 3], [2, 2, 2]], 8: [[3, 1, 3], [2, 2, 3]] };
 
 /** A string's 32-bit hash (FNV-1a). */
 function hash(s: string): number {
@@ -95,39 +95,36 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
   const cost = (q: Question) => tier(q) * 10 + (play === 1 && q.level === 'C1' ? 1 : 0) + r.get(q.id)!;
   const pool = all.filter((q) => q !== head && !(head && clash(head, q))).sort((a, b) => cost(a) - cost(b));
   const k = n - (head ? 1 : 0);
-  const hi = (q: Question) => q.level === 'C1' || q.level === 'C2';
-  const wantC1 = play >= 2 && pool.some(hi);
-  // the native tier (native-level.md §5): none on play 1 (one with `harder`), ≤ 1 on play 2, ≤ 2 from play 3; wanted on
-  // play 1 with `harder` and from play 3 while one is unseen
-  const c2Max = play === 1 ? (opts.harder ? 1 : 0) : play === 2 ? 1 : 2;
-  const c2Counts = (q: Question) => q.level === 'C2' && (play >= 3 ? unseen(q) : play === 1);
-  const wantC2 = (play >= 3 || (play === 1 && !!opts.harder)) && pool.some(c2Counts);
-  // what's left from each place in the pool: unseen items, C1 items, and each group's items
+  // the native tier (native-level.md §5) only with `harder`: ≤ 1 a play, wanted while one is unseen
+  const c2Max = opts.harder ? 1 : 0;
+  const c2Counts = (q: Question) => q.level === 'C2' && unseen(q);
+  const wantC2 = !!opts.harder && pool.some(c2Counts);
+  // what's left from each place in the pool: unseen items, unseen C2 items, and each group's items
   const after = pool.map((_, i) => {
     const left = pool.slice(i);
-    return { fresh: left.filter(unseen).length, c1: left.some(hi), c2: left.some(c2Counts), L: left.filter((q) => GROUP_OF[q.skill] === 'L').length, I: left.filter((q) => GROUP_OF[q.skill] === 'I').length, F: left.filter((q) => GROUP_OF[q.skill] === 'F').length };
+    return { fresh: left.filter(unseen).length, c2: left.some(c2Counts), L: left.filter((q) => GROUP_OF[q.skill] === 'L').length, I: left.filter((q) => GROUP_OF[q.skill] === 'I').length, F: left.filter((q) => GROUP_OF[q.skill] === 'F').length };
   });
 
-  // A draw's score, compared in order (the first six the more the better, the last the less): as many items as fit;
-  // the fewest past two of a skill; on play 2+ a C1 (or C2) when the bank has one that fits; a wanted C2; the most unseen (a repeat only
-  // when too few unseen fit); the quotas met (short, a group borrows); the least cost. Always, never relaxed: one item
-  // a point, no reveals or continuation clash, ≤ 1 dict, humor and predict, at most 2 C1 on play 1, the C2 limits.
-  type Score = [number, number, number, number, number, number, number];
+  // A draw's score, compared in order (the first five the more the better, the last the less): as many items as fit;
+  // the fewest past two of a skill; a wanted C2; the most unseen (a repeat only when too few unseen fit); the quotas
+  // met (short, a group borrows); the least cost. Always, never relaxed: one item a point, no reveals or continuation
+  // clash, ≤ 1 dict, humor and predict, ≤ 1 C1, the C2 limit.
+  type Score = [number, number, number, number, number, number];
   const better = (a: Score, b: Score) => {
-    for (let i = 0; i < 7; i++) if (a[i] !== b[i]) return i < 6 ? a[i] > b[i] : a[i] < b[i];
+    for (let i = 0; i < 6; i++) if (a[i] !== b[i]) return i < 5 ? a[i] > b[i] : a[i] < b[i];
     return false;
   };
   const chosen: Question[] = [];
   const skills = new Map<string, number>([['gist', head ? 1 : 0]]);
   const groups = { G: 0, L: 0, I: 0, F: 0 };
-  let over = 0, c1 = head?.level === 'C1' ? 1 : 0, hiN = head && hi(head) ? 1 : 0, c2 = 0, c2Got = 0, fresh = 0, total = 0, retries = 0;
+  let over = 0, c1 = head?.level === 'C1' ? 1 : 0, c2 = 0, c2Got = 0, fresh = 0, total = 0, retries = 0;
   const short = (room = 0, i = pool.length) =>
     (['L', 'I', 'F'] as const).reduce((s, g, j) => s + Math.max(0, quota[j] - groups[g] - Math.min(room, after[i]?.[g] ?? 0)), 0);
-  const score = (): Score => [chosen.length, -over, wantC1 && hiN > 0 ? 1 : 0, wantC2 && c2Got > 0 ? 1 : 0, fresh, -short(), total];
+  const score = (): Score => [chosen.length, -over, wantC2 && c2Got > 0 ? 1 : 0, fresh, -short(), total];
   const fits = (q: Question, perSkill = false) =>
     !chosen.includes(q) && !chosen.some((c) => clash(c, q)) &&
     !((q.skill === 'dict' || q.skill === 'humor' || q.skill === 'predict') && (skills.get(q.skill) ?? 0) >= 1) &&
-    !(perSkill && (skills.get(q.skill) ?? 0) >= 2) && !(play === 1 && q.level === 'C1' && c1 >= 2) && !(q.level === 'C2' && c2 >= c2Max);
+    !(perSkill && (skills.get(q.skill) ?? 0) >= 2) && !(q.level === 'C1' && c1 >= 1) && !(q.level === 'C2' && c2 >= c2Max);
   /** Adds an item; returns its undo. */
   const add = (q: Question) => {
     const sk = skills.get(q.skill) ?? 0, g = GROUP_OF[q.skill];
@@ -137,7 +134,6 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
     chosen.push(q);
     over += sk >= 2 ? 1 : 0;
     c1 += q.level === 'C1' ? 1 : 0;
-    hiN += hi(q) ? 1 : 0;
     c2 += q.level === 'C2' ? 1 : 0;
     c2Got += c2Counts(q) ? 1 : 0;
     fresh += unseen(q) ? 1 : 0;
@@ -148,7 +144,6 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
       retries -= missed(q) ? 1 : 0;
       fresh -= unseen(q) ? 1 : 0;
       c1 -= q.level === 'C1' ? 1 : 0;
-      hiN -= hi(q) ? 1 : 0;
       c2 -= q.level === 'C2' ? 1 : 0;
       c2Got -= c2Counts(q) ? 1 : 0;
       over -= sk >= 2 ? 1 : 0;
@@ -181,7 +176,7 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
     if (better(s, bestScore)) [best, bestScore] = [[...chosen], s];
     if (chosen.length === k || i === pool.length) return;
     const room = Math.min(k - chosen.length, pool.length - i);
-    const hope: Score = [chosen.length + room, -over, wantC1 && (hiN > 0 || after[i].c1) ? 1 : 0, wantC2 && (c2Got > 0 || after[i].c2) ? 1 : 0, fresh + Math.min(room, after[i].fresh), -short(room, i), total];
+    const hope: Score = [chosen.length + room, -over, wantC2 && (c2Got > 0 || after[i].c2) ? 1 : 0, fresh + Math.min(room, after[i].fresh), -short(room, i), total];
     if (!better(hope, bestScore)) return;
     if (fits(pool[i])) {
       const back = add(pool[i]);
