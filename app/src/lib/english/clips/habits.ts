@@ -100,9 +100,9 @@ export const habits: Clip = {
       use: 'Sorry, I laugh really loudly.（ごめん、笑い声が大きくて）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', seg: [20.3, 23.3],
-      stem: 'What does “I mean” do here?', ja: 'ここでの “I mean” は何をしている？',
-      choices: ['Says it more strongly', 'Fixes a mistake', 'Explains which habit he means'], a: 0,
-      choicesJa: ['もっと強く言う', 'まちがいを直す', 'どの癖のことか説明する'],
+      stem: 'Why does Chandler say “I mean” here?', ja: 'チャンドラーはなぜ、ここで「I mean」と言う？',
+      choices: ['To say it more strongly', 'To fix a mistake', 'To explain which habit'], a: 0,
+      choicesJa: ['もっと強く言うため', 'まちがいを直すため', 'どの癖か説明するため'],
       cue: 'snort の話のすぐあと',
       line: '*I mean*, what the hell is that thing?',
       said: '「つまりさ、あれ一体何なの？」と続ける。',

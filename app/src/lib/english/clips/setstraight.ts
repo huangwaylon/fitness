@@ -201,10 +201,9 @@ export const setStraight: Clip = {
       use: 'By the way, where did we park?（ところで、車どこに停めたっけ？）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'btw', seg: [101.5, 105],
-      stem: 'What does “By the way” do here?', ja: 'ここでの “By the way” は何をしている？',
-      choices: ['Starts a new question', 'Ends his whole speech'
-, 'Says sorry'], a: 0,
-      choicesJa: ['別の質問を始める', '話を終える', '謝る'],
+      stem: 'Why does Ben say “By the way” here?', ja: 'ベンはここでなぜ “By the way” と言う？',
+      choices: ['To start a new question', 'To end his whole speech', 'To say sorry for asking'], a: 0,
+      choicesJa: ['別の質問を始めるため', '話を終えるため', '聞いたことを謝るため'],
       cue: '2回目の「By the way」',
       line: '*By the way*, who is taking care of the kids right now?',
       said: '「ところで、今、子どもは誰が見てるの？」と聞く。',

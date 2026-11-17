@@ -81,9 +81,9 @@ export const ronBirthday: Clip = {
       use: 'I’m only going to say this once.（一度しか言わないよ）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'whydont', seg: [69.3, 75.15],
-      stem: 'What is Ron doing with “Why don’t you tell me…”?', ja: '“Why don’t you tell me…” で、ロンは何をしている？',
-      choices: ['Asking him to tell a story', 'Asking why he won’t talk', 'Making friendly small talk'], a: 0,
-      choicesJa: ['話をしてくれと頼んでいる', 'なぜ話さないのか聞いている', '気軽に世間話をしている'],
+      stem: 'Why does Ron say “Why don’t you tell me…”?', ja: 'ロンはなぜ “Why don’t you tell me…” と言う？',
+      choices: ['To ask him for a story', 'To ask why he won’t talk', 'To make friendly small talk'], a: 0,
+      choicesJa: ['話をしてくれと頼むため', 'なぜ話さないのか聞くため', '気軽に世間話をするため'],
       cue: '「heard anything」のあと',
       line: '*Why don’t you tell me* what she did for *your last birthday*?',
       said: '「何も聞いてない」と言われ、「じゃあ前の誕生日に彼女が何をしたか話せ」と言う。',

@@ -222,9 +222,9 @@ export const jerryPainting: Clip = {
       use: 'We’d like a written apology.（書面での謝罪をお願いします）' },
 
     { id: 'pg1', skill: 'pragma', level: 'B2', point: 'hear', seg: [159.05, 165.3],
-      stem: 'What is Chris doing with “we hear you, we understand you”?', ja: '“we hear you, we understand you” で、クリスは何をしている？',
-      choices: ['Calms her, promises nothing', 'Agrees to destroy it', 'Tells her to calm down'], a: 0,
-      choicesJa: ['落ち着かせるが、何も約束しない', 'こわすことに賛成する', '落ち着けと言う'],
+      stem: 'Why does Chris say “we hear you, we understand you”?', ja: 'クリスはなぜ「we hear you, we understand you」と言う？',
+      choices: ['To calm her, promising nothing', 'To agree to destroy it', 'To tell her to calm down'], a: 0,
+      choicesJa: ['何も約束せず、落ち着かせるため', 'こわすことに賛成するため', '落ち着けと言うため'],
       cue: '最後の「whatever we can」',
       line: 'we *hear you*, we *understand you*, and we are going to do *whatever we can*…',
       said: '「お気持ちは分かります。解決のためにできることは何でもします」と言う。',

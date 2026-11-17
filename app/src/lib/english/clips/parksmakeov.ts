@@ -114,9 +114,9 @@ export const parksMakeover: Clip = {
       use: 'The kitchen needs a top-to-bottom cleaning.（台所は全部掃除しないと）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'pushback', reveals: ['stick'], seg: [63.75, 68.45],
-      stem: 'What is Jerry doing with “I don’t know”?', ja: '“I don’t know” で、ジェリーは何をしている？',
-      choices: ['Gently saying no to it', 'Saying he doesn’t understand', 'Asking to call Chris first'], a: 0,
-      choicesJa: ['やんわり反対している', '分からないと言っている', '先にクリスに電話したいと言っている'],
+      stem: 'Why does Jerry say “I don’t know”?', ja: 'ジェリーはなぜ「I don’t know」と言う？',
+      choices: ['To gently say no to it', 'To say he doesn’t understand', 'To ask to call Chris first'], a: 0,
+      choicesJa: ['やんわり反対するため', '分からないと言うため', '先にクリスに電話したいと言うため'],
       cue: '最初の三語',
       line: '*I don’t know*. This really *isn’t what Chris asked* us to do.',
       said: '「どうかな。クリスに頼まれたこととちがうし」と言う。',

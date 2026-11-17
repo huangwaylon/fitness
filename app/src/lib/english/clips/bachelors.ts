@@ -181,14 +181,14 @@ export const threeBachelors: Clip = {
       use: 'Odd choice, but I respect it.（変わった選び方だけど、いいと思う）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'honor', seg: [119.4, 126.4],
-      stem: 'What is Andy doing with “Could you do me the honor?”', ja: '“Could you do me the honor?” で、アンディは何をしている？',
-      choices: ['Asking politely', 'Saying thank you', 'Saying sorry'], a: 0,
-      choicesJa: ['ていねいに頼んでいる', 'お礼を言っている', '謝っている'],
+      stem: 'Why does Andy say “Could you do me the honor?”', ja: 'アンディはなぜ「Could you do me the honor?」と言う？',
+      choices: ['To ask politely', 'To say thank you', 'To say sorry'], a: 0,
+      choicesJa: ['ていねいに頼むため', 'お礼を言うため', '謝るため'],
       cue: '「pass thrown by you」のあと',
       line: 'it’s every groom’s dream to catch a touchdown pass thrown by you. *Could you do me the honor?* — Yeah, let’s do it.',
       said: '「あなたのパスを受けるのが夢です。お願いできますか？」と頼み、「いいよ」と返事がくる。',
       mean: 'do me the honor ＝ 光栄なことをしてくれる。とてもていねいに頼む言い方。',
-      trap: 'honor（名誉）から、お礼を言っていると思いやすい。Could you…? は頼む形。',
+      trap: 'honor（名誉）から、お礼だと思いやすい。Could you…? は頼む形。',
       use: 'Could you take our picture, please?（写真を撮っていただけますか）' },
 
     // R fix: V2 (blind 70 %): "can't really throw" was a filler; now the star mocking him, after "Settle down"

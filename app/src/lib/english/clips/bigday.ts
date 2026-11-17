@@ -124,9 +124,9 @@ export const bigDay: Clip = {
       use: 'Besides, it’s too late to go out.（それに、出かけるにはもう遅い）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'cantalk', seg: [43.95, 49.2],
-      stem: 'What is Ben doing with “I can’t talk about this”?', ja: '“I can’t talk about this” で、ベンは何をしている？',
-      choices: ['Refusing to answer now', 'Giving a full answer', 'Asking them a question'], a: 0,
-      choicesJa: ['今は答えないと断っている', 'しっかり答えている', '記者に質問している'],
+      stem: 'Why does Ben say “I can’t talk about this”?', ja: 'ベンはなぜ「I can’t talk about this」と言う？',
+      choices: ['To say no to answering now', 'To give a full answer', 'To ask them a question'], a: 0,
+      choicesJa: ['今は答えないと断るため', 'しっかり答えるため', '記者に質問するため'],
       cue: '記者の質問への答え',
       line: 'any comment on the report that you’re running for Congress? — *I’m sorry, I can’t talk about this right now.*',
       said: '「出馬の話についてコメントは？」と聞かれ、「すみません、今は話せません」と答える。',
