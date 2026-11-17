@@ -265,7 +265,7 @@ export const aprilFired: Clip = {
       choicesJa: ['ジェリーがよく物を消すから', 'ジェリーが一度全部消したから', 'エイプリルが前にもやったから'],
       cue: '「10 years ago」の前の一文。',
       line: '*Jerry accidentally deletes things* all the time.',
-      said: '「ジェリーがしょっちゅう間違って消すから」と理由を言う。',
+      said: '「ジェリーがしょっちゅう、うっかり消すから」と理由を言う。',
       mean: 'accidentally ＝ うっかり。all the time ＝ しょっちゅう。',
       trap: '一度の大事故ではなく all the time（しょっちゅう）。回数の言葉まで聞く。',
       use: 'He loses his keys all the time.（彼はしょっちゅう鍵をなくす）' },

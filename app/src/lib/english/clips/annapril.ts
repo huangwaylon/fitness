@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 9, rewrite 10, retire 4, new 1
 // “Ann tortures April with her friendship | Parks and recreation” (the official Parks and Recreation channel, Season
 // 5): April needs a recommendation letter for vet school, and Ann's price is a week of being her friend; the week
 // ends with Ann's secret about Chris, a song, and a gift.
@@ -7,11 +8,6 @@
 // speaker unclear), 154–219 s (the song). Jerry names himself at 10.8 s (captions "Gage", whisper "Gergish"; never
 // asked). Ann is named at 133.6 s, April at 18.8 s, Chris at 140.4 s; turns are settled by words ("to Ann", "the
 // letter", "veterinary school").
-// REVIEW 2026-11-16: pass 5, fix 19, drop 0, new 0; ear checks 1
-//   Open: s1 stays about 60 % blind ("I can't tell if…" is a set phrase; the can/can't contrast is the point). h2 is
-//   about 50 %: a "why the laugh" stem points at the funny choice.
-// EAR CHECK: 219.5 s nt2 — captions “This never happened”, whisper “It's never happened”; the speaker is assumed
-//   April (she just said "It's amazing" about the song)
 import type { Clip } from '../types.ts';
 
 export const annApril: Clip = {
@@ -20,94 +16,79 @@ export const annApril: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: checking she heard ← "you know what?" read literally as a question (知ってる？); trying to end the call ←
-    //   the last one comes just before "Bye"
     { id: 'm1', skill: 'marker', level: 'B2', point: 'jerry', seg: [0, 12.6],
-      stem: 'What does Jerry keep doing in his phone message?',
-      choices: ['Changing what he wants done', 'Checking that she heard him', 'Trying to end the call'], a: 0,
-      cue: '新しい頼みの直前に入る、短い決まり文句。',
+      stem: 'Jerry keeps saying, “*Actually, you know what?*” What does it show?',
+      ja: 'ジェリーがくり返す「Actually, you know what?」は何を表している？',
+      choices: ['He keeps changing his mind', 'He checks that she heard him', 'He wants to end the call'], a: 0,
+      choicesJa: ['何度も考えを変えている', '聞こえたか確かめている', '電話を切りたい'],
+      cue: '新しい頼みの直前の言葉。',
       line: '*Actually, you know what?* Don’t tell him that I called… *You know what?* Let’s just pretend this didn’t happen',
-      said: '「戻ったら電話を」→「メールで」→「全部なかったことに」と頼みが変わる。',
+      said: '「戻ったら電話を」→「やっぱりメールで」→「全部なかったことに」と頼みが変わる。',
       mean: 'Actually, you know what? ＝ やっぱりさ。考えが変わった合図。',
-      trap: '「知ってる？」という質問ではない。返事を待たずに次の頼みが来ることで分かる。',
+      trap: '「知ってる？」という質問ではない。返事を待たずに次の頼みが来る。',
       use: 'Actually, you know what? Make it two.（やっぱり、2つにして）' },
 
-    // R fix: V2 + K1. "Keep a secret" was half true ("if you tell anyone, I will kill you"); "a ride to Bloomington"
-    //   (a keyword trap) replaces it.
-    // why: ride ← "veterinary school in Bloomington" heard as the errand; advice ← "thinking about applying to
-    //   veterinary school" heard as asking what Ann thinks
     { id: 'g1', skill: 'gist', level: 'B1', point: 'reco', reveals: ['secret'], seg: [12.8, 38.4],
-      stem: 'Why does April come to Ann in the first place?',
-      choices: ['She needs a letter from Ann', 'She needs a ride to Bloomington', 'She needs Ann’s advice on school'],
-      a: 0,
+      stem: 'Why does April come to Ann?',
+      ja: 'エイプリルはなぜアンのところに来た？',
+      choices: ['She needs a letter from Ann', 'She needs a ride to town', 'She needs advice on school'], a: 0,
+      choicesJa: ['アンに推薦状を書いてほしい', '町まで車で送ってほしい', '学校の相談をしたい'],
       cue: '「So, I really need」のあと。',
       line: 'So, I really need *a letter of recommendation*',
       said: '獣医学校に応募したいので、病院で働くアンに推薦状を書いてほしいと頼む。',
-      mean: '秘密は前置きで、本題は推薦状。So, I really need で頼みが始まる。',
-      trap: 'Bloomington や school は前置き。So のあとに本題が来る。',
+      mean: 'letter of recommendation ＝ 推薦状。So, I really need で頼みが始まる。',
+      trap: '学校の話が先に出るので相談と思いやすい。So のあとに本題が来る。',
       use: 'Could you write me a reference?（推薦状を書いてもらえますか）' },
 
-    // R fix: V2. "Working at a hospital" was off the topic; "already applied" is a second stage trap.
-    // why: accepted / already applied ← "applying… veterinary school" with "thinking about" lost, so only the stage
-    //   is in doubt
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'secret', seg: [12.8, 25.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'secret', seg: [12.8, 24.8],
       stem: 'What secret does April tell Ann?',
-      choices: ['She’s thinking of applying to vet school', 'She’s already applied to a vet school',
-                'She’s been accepted to a vet school'], a: 0,
-      cue: '「What’s your secret?」への答え。',
+      ja: 'エイプリルがアンに話す秘密は？',
+      choices: ['She may apply to vet school', 'She has already applied to one', 'She got into vet school'], a: 0,
+      choicesJa: ['獣医学校に応募するかもしれない', 'もう一つ応募した', '獣医学校に受かった'],
+      cue: '「secret?」への答え。',
       line: 'I’m *thinking about applying to veterinary school* in Bloomington.',
-      said: '「言ったら殺す」と前置きし、「獣医学校への応募を考えてる」と言う。',
-      mean: 'thinking about applying ＝ まだ考えている段階。',
-      trap: 'school だけだと合格の話に聞こえる。thinking about で段階を確かめる。',
+      said: '「だれにも言わないで」と前置きし、「獣医学校への応募を考えてる」と言う。',
+      mean: 'thinking about 〜ing ＝ 〜しようか考えている。まだ考えている段階。',
+      trap: 'school だけ聞くと合格の話に聞こえる。thinking about で段階を確かめる。',
       use: 'I’m thinking about applying for that job.（あの仕事に応募しようか考え中）' },
 
-    // why: nervous ← asking a favor is awkward, so the slip reads as nerves (the Japanese frame: 緊張して言い間違え);
-    //   flattering ← "janitor" missed, so naming Ann's job sounds like praise before the favor
-    // R fix: V2. "Checking whether Ann has changed jobs" was a filler; "flattering her" (also about the favor) replaces it.
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'janitor', reveals: ['reco'], seg: [29.0, 38.5],
-      stem: 'When April gets Ann’s job wrong, what is she doing?',
-      choices: ['Teasing her, even while asking a favor', 'Mixing it up, because she is nervous',
-                'Flattering her, to make the favor easier'], a: 0,
-      cue: '頼みごとの途中で、アンが一語で口をはさむ所。',
-      line: 'since you work in a hospital as a *janitor*… — *Nurse*. — I was wondering if maybe you would write one for me?',
-      said: '「病院で清掃員として働いてるから」と言いかけ、アンが「看護師」と直す。そのまま推薦状を頼む。',
-      mean: '頼みごとの最中でも、仕事を下に言ってからかう。エイプリルらしい意地悪。',
-      trap: '緊張のせいと取りやすいが、謝りも言い直しもせず、そのまま頼みを続けている。',
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'wonder', reveals: ['reco'], seg: [29.0, 38.5],
+      stem: '“I was wondering if maybe you would…?” April is…?',
+      ja: '「I was wondering if maybe you would…?」エイプリルは何をしている？',
+      choices: ['Asking for help politely', 'Saying no to Ann politely', 'Saying thank you to Ann'], a: 0,
+      choicesJa: ['ていねいに頼んでいる', 'アンにていねいに断っている', 'アンにお礼を言っている'],
+      cue: '「Nurse」のあとの文。',
+      line: '*I was wondering if maybe you would* write one for me?',
+      said: '「書いてもらえないかなと思って」と推薦状を頼む。',
+      mean: 'I was wondering if you would 〜 ＝ 〜してもらえないかなと思って。とてもていねいな頼み方。',
+      trap: 'wondering（不思議に思う）から質問に聞こえやすい。if you would 〜 は頼みの形。',
       use: 'I was wondering if you could help me.（手伝ってもらえないかなと思って）' },
 
-    // R fix: V2. The key was the only odd prank, so it stood out; "salt in her coffee" is a prank too.
-    // why: money ← h/m: "honey" heard as "money", and a purse is where money goes; salt in coffee ← "pouring" pulls
-    //   toward a drink, and it's the usual office prank
     { id: 'd2', skill: 'detail', level: 'B1', point: 'honey', seg: [39.6, 48.1],
-      stem: 'In her comment to the camera, what does Ann say April usually does?',
+      stem: 'What does Ann say April often does to her?',
+      ja: 'エイプリルはよくアンに何をする、とアンは言う？',
       choices: ['Pours honey in her purse', 'Takes money from her purse', 'Pours salt in her coffee'], a: 0,
-      cue: '「or」のあと、二つ目の意地悪。',
+      choicesJa: ['バッグにはちみつを注ぐ', 'バッグからお金を取る', 'コーヒーに塩を入れる'],
+      cue: '「or」のあと。',
       line: '…or *pouring honey in my purse*.',
       said: '「エイプリルはいつも、私のバッグにはちみつを注いだりする」と言う。',
-      mean: 'purse ＝ ハンドバッグ。子どもっぽい意地悪の例。',
-      trap: 'honey と money は最初の音だけの差。お金なら pouring（注ぐ）とは言わない。動詞も手がかり。',
-      use: 'Someone spilled coffee in my bag.（誰かがバッグにコーヒーをこぼした）' },
+      mean: 'purse ＝ ハンドバッグ。pour ＝ 注ぐ。子どもっぽいいたずらの例。',
+      trap: 'honey と money は最初の音だけの差。お金なら pouring（注ぐ）とは言わない。',
+      use: 'Someone spilled coffee in my bag.（だれかがバッグにコーヒーをこぼした）' },
 
-    // R fix: V2. "A free hand" was close to a filler; "a helping hand" is the literal "hand" reading. S4: the
-    //   segment was 15.4 s; it now starts at 41.0 s, after "between us".
-    // why: higher position ← "upper" read as rank (上司), and the letter is a work favor; helping hand ← "hand" read
-    //   literally, and she's about to help
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'upper', seg: [41.0, 55.0],
-      stem: 'In her comment to the camera, what does Ann say she has now?',
-      choices: ['Control over how things go between them', 'A higher position at work than April',
-                'A chance to give April a helping hand'], a: 0,
-      cue: '「But now」のあと。前の文と同じ言い方。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'upper', seg: [41.0, 52.5],
+      stem: 'Ann says, “Now *I have the upper hand*.” What does she mean?',
+      ja: '「Now I have the upper hand」とはどういう意味？',
+      choices: ['Now she is in control', 'Now she has a better job', 'Now she can help April'], a: 0,
+      choicesJa: ['今は自分が有利', '今は自分の仕事が上', '今はエイプリルを助けられる'],
+      cue: '「But now」のあと。',
       line: 'April always has *the upper hand*… But now *I have the upper hand*',
       said: '「いつも優位なのはエイプリル。でも今は私が優位」と言う。',
-      mean: 'the upper hand ＝ 優位、主導権。頼みごとをされた今、力関係が逆転した。',
-      trap: 'upper を地位、hand を手伝いと取りやすい。二人の力関係の話で、職場の上下ではない。',
+      mean: 'the upper hand ＝ 有利な立場、主導権。頼まれた今、力関係が逆になった。',
+      trap: 'upper を地位、hand を手伝いと思いやすい。二人の力関係の話。',
       use: 'This time, I have the upper hand.（今回は、こっちが有利だ）' },
 
-    // R fix: V2. "Use force to make April be nice" echoed "forced friendship" (g2's stem, the title's idea); all three
-    //   choices are now "She'll be…" plans.
-    // why: be kind so April likes her ← "crush" heard as "have a crush on" (好きになる); gives up on school ← "crush
-    //   her" with the letter as the leverage
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'crush', reveals: ['upper'], seg: [48.0, 55.0],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'crush', reveals: ['upper'], seg: [48.0, 55.0], retired: true,
       stem: 'What is funny about how Ann sums up her plan?',
       choices: ['She’ll be harsh to get kindness out of April', 'She’ll be kind so that April starts to like her',
                 'She’ll be harsh until April gives up on school'], a: 0,
@@ -118,50 +99,43 @@ export const annApril: Clip = {
       trap: 'crush には「好きになる」の意味もあるが、ここは後ろに into ～ が続く。',
       use: 'They pressured him into saying yes.（彼らは無理やり彼にイエスと言わせた）' },
 
-    // why: weekend ← "week with" runs together and is heard as "weekend"; two weeks ← "to spend the next week": "to"
-    //   heard as "two"
     { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [64.9, 69.7], keep: true,
-      stem: 'How long does Ann say April must spend with her?',
+      stem: 'How long must April spend with Ann?',
+      ja: 'エイプリルはどのくらいアンと過ごさなければならない？',
       choices: ['The next weekend', 'The next week', 'The next two weeks'], a: 1,
+      choicesJa: ['次の週末', 'これからの1週間', 'これからの2週間'],
       cue: '「spend the next」のあと。',
       line: 'you have to spend *the next week* with me and do everything I say.',
-      said: '「書く前に、1週間私と過ごして言うことを聞いて」と条件を出す。',
+      said: '「書く前に、1週間私と過ごして、言うことを全部聞いて」と条件を出す。',
       mean: 'the next week ＝ これからの1週間。期間つきの条件。',
       trap: 'week with が「ウィークウィズ」とつながり weekend に聞こえやすい。「エンド」は聞こえない。',
       use: 'I’ll be away for the next week.（これから1週間いません）' },
 
-    // R fix: V2 + N7. "As long as it lasts only a week" gave away n1's key; the mirror ranking replaces it.
-    // why: wants a servant ← "slave or something" is April's guess, heard as Ann's real wish; slave worse ← "so much
-    //   worse" caught without what it compares, so the usual ranking is assumed
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'worse', seg: [69.4, 75.9],
-      stem: 'Why does April’s last reply in this exchange get a laugh?',
-      choices: ['She finds being friends worse than being a slave', 'She thinks Ann wants a servant, not a friend',
-                'She finds being a slave worse than being friends'], a: 0,
-      cue: '「No」で始まる最後の返事。',
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'worse', seg: [69.4, 75.9],
+      stem: '“Be my friend.” — “That is *so much worse*.” Why funny?',
+      ja: '「友だちになって」「それはもっとひどい」。なぜおかしい？',
+      choices: ['Friends sounds worse than slave', 'Ann really wants a servant', 'Slave sounds worse than friends'], a: 0,
+      choicesJa: ['友だちのほうが奴隷よりひどく聞こえる', 'アンは本当は召し使いがほしい', '奴隷のほうが友だちよりひどく聞こえる'],
+      cue: '最後の No の返事。',
       line: 'So I have to be your slave or something? — No. You have to be my friend. — No, that is *so much worse*.',
       said: '「奴隷になれってこと？」「違う、友だちになって」「それはもっとひどい」と続く。',
-      mean: '友だちのほうが奴隷より嫌だという、ふつうと逆の順位づけが笑い。',
-      trap: '最後の No を断りとだけ取りやすい。so much worse で何と比べているかを聞く。',
+      mean: 'so much worse ＝ ずっとひどい。友だちのほうが嫌だという、ふつうと逆の順番。',
+      trap: '最後の No を断りとだけ思いやすい。worse で何と比べているかを聞く。',
       use: 'That’s even worse!（それはもっとひどい！）' },
 
-    // R fix: V2 + N7. "After this week" gave away n1's key; the future choice no longer names the time.
-    // why: will come to like ← the deal's aim (Ann's plan) heard as her claim, with the present "likes" missed; grumpy
-    //   with everyone ← "grumpiness" heard as April's nature, not a cover
     { id: 'i1', skill: 'infer', level: 'B2', point: 'deepdown', seg: [96.9, 104.5],
-      stem: 'In her second comment to the camera, what does Ann believe about April?',
-      choices: ['She likes Ann but hides it', 'She’ll come to like Ann in time', 'She’s grumpy with everyone alike'],
-      a: 0,
+      stem: 'What does Ann believe about April, “*deep down*”?',
+      ja: 'アンは、エイプリルが「deep down」ではどうだと思っている？',
+      choices: ['She likes Ann but hides it', 'She will like Ann someday', 'She is grumpy with everyone'], a: 0,
+      choicesJa: ['アンが好きだが隠している', 'いつかアンを好きになる', 'だれにでも不機嫌'],
       cue: '「I know」のあと。',
       line: 'she hides it underneath layers of sarcasm, resentment, and grumpiness, *I know, deep down somewhere, April likes me*.',
-      said: '「皮肉や不機嫌の下に隠してるけど、本当は私が好き」と言う。',
-      mean: '皮肉などは隠す層。本心は deep down の部分にある。',
-      trap: 'resentment や grumpiness は隠すための層。likes は今の話で、これからの話ではない。',
+      said: '「皮肉や不機嫌の下に隠してるけど、心の奥では私が好き」と言う。',
+      mean: 'deep down ＝ 心の奥では、本当は。皮肉などは本心を隠す層。',
+      trap: 'grumpiness（不機嫌）が強く聞こえる。それは隠すための層で、本心は deep down のあと。',
       use: 'Deep down, he’s a nice guy.（根はいい人なんだよ）' },
 
-    // R fix: V2. The key was the only choice with an image ("layers"); all three are images now.
-    // why: fishing ← "fracking for" sounds like "fishing for (compliments)", a chunk learners know; hunting down ←
-    //   "crush her into being nice" earlier, heard as the same plan
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'fracking', reveals: ['deepdown'], seg: [96.9, 107.7],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'fracking', reveals: ['deepdown'], seg: [96.9, 107.7], retired: true,
       stem: 'What image does Ann use to end her comment to the camera?',
       choices: ['Drilling to get at April’s buried friendship', 'Fishing for April to say nice things',
                 'Hunting April down until she gives in'], a: 0,
@@ -172,91 +146,76 @@ export const annApril: Clip = {
       trap: 'fishing for（～を引き出す）に音が近い。layers と deep down が、掘る話だと教える。',
       use: 'I’m just digging for the truth.（本当のことを掘り出そうとしてるだけ）' },
 
-    // R fix: V2. "Made up" was weak; "keeping Chris away from Ann" (the guard-dog friend) replaces it.
-    // why: offering to leave ← the polite script after "talk in private?", with her "No" heard as "no problem";
-    //   keeping Chris away ← her "No" heard as a refusal on Ann's behalf, with "say to me" lost
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'bestfriends', reveals: ['week'], seg: [130.15, 136.3],
-      stem: 'When Chris asks Ann to talk in private, what is April’s reply doing?',
-      choices: ['Using the deal as an excuse to listen in', 'Offering to leave so the two can talk',
-                'Keeping Chris away from Ann for a while'], a: 0,
-      cue: '文の最後の二語。',
-      line: 'Anything you can say to Ann, you can say to me, because we’re *best friends this week*.',
-      said: '「アンに言えることは私にも言える。今週は親友だから」と、その場に残る。',
-      mean: '「今週だけの親友」を逆手に取って、話を聞こうとしている。',
-      trap: 'No をアンを守る断りと取りやすいが、say to me と期限つきの this week が取引を示す。',
-      use: 'You can tell me. We’re friends, right?（言ってよ。友だちでしょ？）' },
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'private', seg: [130.15, 136.3],
+      stem: 'Chris asks Ann, “Do you want to talk *in private*?” Meaning?',
+      ja: 'クリスの「Do you want to talk in private?」はどういう意味？',
+      choices: ['Talk with just Ann', 'Talk with April too', 'Talk later at home'], a: 0,
+      choicesJa: ['アンとだけ話す', 'エイプリルも入れて話す', 'あとで家で話す'],
+      cue: '「Do you want to」のあと。',
+      line: 'Do you want to, uh, *talk in private*? — No. Anything you can say to Ann, you can say to me…',
+      said: '「二人で話せる？」に、エイプリルが「今週は親友だから」と残る。',
+      mean: 'in private ＝ 人のいない所で、二人だけで。',
+      trap: 'private（プライベート）から「家で」と思いやすい。in private は「二人だけで」。',
+      use: 'Can we talk in private?（二人で話せますか）' },
 
-    // R fix: V2. The key was the only choice naming April's questions; the choices are plainer and parallel.
-    // why: cheer up ← the friendship-week fun (PJs, white Russians) just before, heard as the reason; until Chris
-    //   returns ← "talk to you later" heard as Chris coming back soon
     { id: 'i2', skill: 'infer', level: 'B2', point: 'sing', seg: [149.4, 160.75],
-      stem: 'Why does Ann start to sing instead of answering?',
-      choices: ['To avoid talking about Chris yet', 'To cheer April up about school',
-                'To pass the time until Chris is back'], a: 0,
-      cue: '「Are you ready?」のあと、二人の答えのずれ。',
+      stem: 'Why does Ann start to sing?',
+      ja: 'アンはなぜ歌い出す？',
+      choices: ['To avoid talking about Chris', 'To cheer April up a little', 'To pass some time together'], a: 0,
+      choicesJa: ['クリスの話を避けるため', 'エイプリルを少し元気づけるため', '一緒に時間をつぶすため'],
+      cue: '「Are you ready?」のあと。',
       line: 'Are you ready? — For you to tell me what’s going on with Chris? Yes. — *No. To sing.*',
-      said: '「準備はいい？」「クリスの話をする準備？うん」「違う、歌う準備」と、歌い出す。',
-      mean: 'クリスの話をはぐらかすために歌に逃げている。期待を No で外す流れが笑い。',
-      trap: '直前のパジャマの話から「楽しませるため」と取りやすい。何を聞かれ、何で返したか。',
+      said: '「準備いい？」「クリスの話をする準備？うん」「違う、歌う準備」と歌い出す。',
+      mean: 'クリスの話をはぐらかすために歌に逃げている。what’s going on with 〜 ＝ 〜はどうなってるの。',
+      trap: 'パジャマの話のあとなので「楽しむため」と思いやすい。何を聞かれ、何で返したかを聞く。',
       use: 'Nice try changing the subject.（話をそらそうとしてもだめだよ）' },
 
-    // R fix: V2. "Already has a letter" was weak; "had enough of Ann" (the literal "or I'm leaving") replaces it.
-    // why: no longer wants ← "I don't care about the letter" heard as giving up the plan itself; had enough ← "or I'm
-    //   leaving" heard as the goal, not the threat
     { id: 'i3', skill: 'infer', level: 'C1', point: 'letter', reveals: ['reco'], seg: [161.0, 170.4],
-      stem: 'What does April’s last demand before Ann gives in show?',
-      choices: ['She’d give up the letter to hear Ann out', 'She no longer wants to go to vet school',
-                'She’s had enough of Ann and wants to leave'], a: 0,
+      stem: '“I don’t care about the letter.” What does it show?',
+      ja: '「でないと帰る、推薦状なんてどうでもいい」は何を表している？',
+      choices: ['She cares more about Ann', 'She doesn’t want vet school', 'She’s tired of Ann'], a: 0,
+      choicesJa: ['推薦状よりアンが心配', '獣医学校に行きたくない', 'アンにうんざりしている'],
       cue: '「or I’m leaving」のあと。',
       line: 'Tell me about Chris *or I’m leaving and I don’t care about the letter*.',
-      said: '歌でごまかすアンに、「クリスのことを話して。でないと帰る。推薦状なんてどうでもいい」と言う。',
-      mean: '取引の推薦状より、アンの悩みを聞くことを選んだ。本当は気にかけている。',
-      trap: '「どうでもいい」を進学をやめる話と取りやすい。比べているのは推薦状とアンの話。',
+      said: '「クリスのことを話して。でないと帰る。推薦状なんてどうでもいい」と言う。',
+      mean: '推薦状より、アンの悩みを聞くことを選んだ。本当はアンを気にかけている。',
+      trap: '「どうでもいい」を学校をやめる話と思いやすい。比べているのは推薦状とアンの話。',
       use: 'Forget the money. Just tell me what happened.（お金はいいから、何があったか話して）' },
 
-    // R fix: S3. The cue quoted "taking", a word only the key has; it now points at "and he's".
-    // why: told her no ← "a really long time" heard as a polite no (the Japanese frame: 返事が遅い＝断り); wants one
-    //   sooner ← "I want to have a baby" heard with the roles mixed
     { id: 'd4', skill: 'detail', level: 'B2', point: 'mind', seg: [170.2, 176.62],
-      stem: 'What is Ann so worried about with Chris?',
-      choices: ['He’s taking a long time to decide', 'He’s already told her he won’t help',
-                'He wants a baby sooner than she does'], a: 0,
-      cue: 'クリスの話の「and he’s」のあと。',
+      stem: 'What is Ann worried about with Chris?',
+      ja: 'アンはクリスの何が心配？',
+      choices: ['He’s slow to decide', 'He already said no', 'He wants a baby sooner'], a: 0,
+      choicesJa: ['なかなか決めてくれない', 'もう断られた', '彼のほうが早く赤ちゃんがほしい'],
+      cue: 'クリスについての話。',
       line: 'I want to have a baby… and he’s *taking a really long time to make up his mind*',
-      said: '「赤ちゃんがほしくてクリスにドナーを頼んだ。でも返事に時間がかかっている」。',
-      mean: 'make up one’s mind ＝ 決心する。まだ答えが出ていないことが不安の種。',
-      trap: '日本語では返事が遅い＝断りのこともあるが、ここはまだ決めていないだけ。',
+      said: '「赤ちゃんがほしくてクリスに頼んだ。でも返事にすごく時間がかかってる」と言う。',
+      mean: 'make up 人’s mind ＝ 決心する。まだ答えが出ていないのが不安。',
+      trap: '返事が遅い＝断り、と思いやすい。ここはまだ決めていないだけ。',
       use: 'Take your time making up your mind.（ゆっくり決めていいよ）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'freaking', seg: [173.3, 176.62],
       stem: 'Type what Ann says: “and it’s really ___.” (3 words)', answer: 'freaking me out',
+      ja: 'アンの言葉を書こう：「and it’s really ___.」（3語）',
       cue: '「and it’s really」のあと。',
       line: 'and it’s really *freaking me out*',
       said: '「それで、すごく不安でたまらない」と言う。',
-      mean: 'freak ～ out ＝ ひどく動揺させる。scare より口語的で、落ち着かない気持ち。',
+      mean: 'freak 人 out ＝ 人をひどく不安にさせる。くだけた言い方。',
       trap: '「フリーキンミアウ」と3語がつながる。最後の out の t はほぼ消えるが、落とさない。',
       use: 'Stop it, you’re freaking me out.（やめて、怖くなってきた）' },
 
-    // R fix: V2 + K1. "For once" made the key the only nuanced choice, and "offended" could be argued from “Of course
-    //   I do”. "Polite, not really interested" (refuted by "It's amazing") replaces it.
-    // why: bored ← "Everyone knows the song" heard as "it's overplayed"; polite ← "Of course I do" heard as a flat
-    //   reply, with "It's amazing" taken as a filler
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'song', seg: [191.8, 195.9],
-      stem: 'When Ann asks if she knows the song, how does April sound?',
-      choices: ['Truly excited, and not hiding it', 'Bored, as if it’s far too common', 'Polite, but not really interested'],
-      a: 0,
+      stem: 'How does April feel about the song?',
+      ja: 'エイプリルはその歌をどう思っている？',
+      choices: ['She really loves it', 'She finds it too common', 'She isn’t interested'], a: 0,
+      choicesJa: ['本当に大好き', 'ありふれていると思う', '興味がない'],
       cue: '最後の短い一言。',
       line: 'You know the song already? — Of course I do. Everyone knows the song. *It’s amazing.*',
-      said: '「この歌知ってたの？」「当たり前。最高の歌」と答える。',
-      mean: 'いつも冷めたエイプリルが It’s amazing と素直にほめる。本音がのぞく。',
-      trap: 'Everyone knows は「ありふれた」とも取れるが、最後の amazing で本気と分かる。',
+      said: '「この歌知ってたの？」「当たり前。みんな知ってる。最高」と答える。',
+      mean: 'It’s amazing ＝ 最高。いつも冷めたエイプリルが素直にほめている。',
+      trap: 'Everyone knows は「ありふれた」にも取れる。最後の amazing で本気と分かる。',
       use: 'Of course I know it. It’s a classic.（もちろん知ってる。名曲だよ）' },
 
-    // anchor: 193.4–195.4 s "Of course I do. Everyone knows the song. It's amazing."; 219.0–223.4 s "Good stuff. This
-    //   never happened.": praise, then an order to forget it — the enjoyment is what she hides
-    // R fix: V2. The key was the only warm choice; all three are now "she found…" feelings.
-    // why: embarrassing ← "Good stuff" read as dry sarcasm (her usual tone), so "never happened" sounds like disgust;
-    //   Ann's news ← right mechanism, wrong target: "this" heard as Ann's confession about Chris
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'song', seg: [218.6, 224.3], retired: true,
       stem: 'Right after the song, what is April trying not to say?',
       choices: ['That she found the duet with Ann fun', 'That she found the song embarrassing',
@@ -268,37 +227,30 @@ export const annApril: Clip = {
       trap: 'いつもの皮肉と取りやすいが、さっき amazing と言っている。「なかったことに」は、恥ずかしい本音を隠す決まり文句。',
       use: 'That was fun. Tell no one.（楽しかった。誰にも言うなよ）' },
 
-    // R fix: V2. "April begs" was weak; "Ann frees April, and lets the friendship drop" (off the hook, no need to
-    //   pretend) is the strong half-listen.
-    // why: holds the letter ← "letter of recommendation" heard with "here is" lost, plus the deal's terms; lets it drop
-    //   ← "off the hook" and "no need to pretend to be my friend anymore" heard as the last word
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', reveals: ['hook', 'book', 'reco', 'week'], seg: [224.0, 257.6],
-      stem: 'How does the week of forced friendship end?',
-      choices: ['Ann frees April, but calls her a friend anyway', 'Ann frees April, and lets the friendship drop',
-                'Ann holds the letter until April is nicer'], a: 0,
-      cue: '推薦状を渡すときの言葉と、そのあとの話。',
-      said: 'アンは推薦状を渡して取引を終えるが、「それでも友だち」と言う。エイプリルも贈り物で返す。',
-      mean: '取引で始まった友情が、取引のあとも続く。「痛い」も照れ隠し。',
-      trap: 'off the hook で終わりに聞こえるが、you’re my friend と続く。',
-      use: 'Deal’s done, but let’s stay in touch.（取引は終わり。でも連絡は取り合おう）' },
-    // R fix: V2. "Caught by Ann" was odd; the choices are now three states (free, in debt, stuck).
-    // why: stuck ← "hook" = 釣り針, as if Ann has hooked her; in debt ← being handed a letter heard as a debt
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'hook', reveals: ['reco'], seg: [224.0, 231.3],
-      stem: 'When Ann hands over the letter, what does she tell April?',
-      choices: ['She is free of the deal now', 'She is in debt to Ann now', 'She is stuck with Ann now'], a: 0,
+      stem: 'Ann gives the letter: “So *you’re off the hook*.” Meaning?',
+      ja: '推薦状を渡すアンの「So you’re off the hook」はどういう意味？',
+      choices: ['April is free from the deal', 'April owes Ann money now', 'April is stuck with Ann forever'], a: 0,
+      choicesJa: ['もう約束から自由', 'アンにお金を借りている', 'ずっとアンから離れられない'],
       cue: '「so you’re」のあと。',
       line: 'Here is your letter of recommendation, so *you’re off the hook*.',
-      said: '推薦状を渡し、「これで解放。もう友だちのふりはしなくていい」と言う。',
-      mean: 'off the hook ＝ 義務や責任から解放されて。釣り針から外れた魚のイメージ。',
-      trap: 'hook を「引っかける」と取ると逆の意味になる。off（外れる）が先に来ている。',
+      said: '推薦状を渡し、「これで自由。もう友だちのふりはしなくていい」と言う。',
+      mean: 'off the hook ＝ 義務から解放されて。釣り針から外れた魚のイメージ。',
+      trap: 'hook（引っかける）から「つかまった」と思いやすい。off（外れる）が先に来る。',
       use: 'You’re off the hook for tonight.（今夜は来なくていいよ）' },
 
-    // anchor: 229.9 s "Thank God", then 231.8–243.0 s "I can't tell if you actually hate me… but I had fun… I don't
-    //   care what you say, you're my friend": the doubt is kept, and the friendship claimed anyway
-    // R fix: V2. "Sure April secretly loves her" was easy to rule out; "thinks April has warmed to her" is subtler.
-    // why: hurt ← "Thank God" heard as a real rejection, and "I can't tell if you hate me" as pain; warmed to her ←
-    //   "I had fun hanging out with you" heard as about both of them, but she says she can't tell
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'canttell', seg: [229.4, 245.0],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', reveals: ['hook', 'gift', 'reco', 'week'], seg: [224.0, 257.6],
+      stem: 'How does the week of friendship end?',
+      ja: '1週間の友だち作戦はどう終わる？',
+      choices: ['Ann still calls April a friend', 'Ann lets the friendship end', 'Ann keeps the letter for now'], a: 0,
+      choicesJa: ['アンはそれでも友だちと言う', 'アンは友だち関係を終わらせる', 'アンは推薦状をまだ渡さない'],
+      cue: '推薦状を渡したあとの話。',
+      said: 'アンは推薦状を渡して約束を終えるが、「それでも友だち」と言う。エイプリルも贈り物で返す。',
+      mean: '取引で始まった友情が、取引のあとも続く。',
+      trap: 'off the hook（解放）で終わりに聞こえやすい。そのあと you’re my friend と続く。',
+      use: 'Deal’s done, but let’s stay in touch.（取引は終わり。でも連絡は取り合おう）' },
+
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'canttell', seg: [229.4, 245.0], retired: true,
       stem: 'What does Ann’s answer to “Thank God” say about how she sees April?',
       choices: ['She’ll call April a friend, hate or not', 'She thinks April has warmed to her at last',
                 'She’s hurt, and ready to let April go'], a: 0,
@@ -309,38 +261,43 @@ export const annApril: Clip = {
       trap: '「分からない」を傷ついた言葉と取りやすいが、but のあとで迷いごと受け入れている。前の「好きなはず」とも違う。',
       use: 'Say what you want. You’re stuck with me.（何と言っても、私からは離れられないよ）' },
 
-    // why: can ← the t of -n't drops, leaving a short "can"; couldn't ← the same -n't ending, with a past form
-    //   expected in a farewell
-    { id: 's1', skill: 'sound', level: 'B2', point: 'canttell', seg: [231.3, 234.9],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'canttell', seg: [231.3, 234.9],
       stem: 'Fill the gap: “I ___ tell if you actually hate me.”',
+      ja: '空いている所に入る語は？「I ___ tell if you actually hate me.」',
       choices: ['can’t', 'can', 'couldn’t'], a: 0,
-      cue: '文の最初、I のすぐあと。母音の長さに注目。',
+      choicesJa: ['〜できない', '〜できる', '〜できなかった'],
+      cue: 'I のすぐあと。',
       line: '*I can’t tell* if you actually hate me…',
       said: '「本当に私が嫌いなのか、こういう性格なのか分からない」と言う。',
-      mean: 'can’t は母音が長く強め（キャーン）、can は弱く短い（クン）。',
-      trap: 't が消えても can’t は母音が長い。can’t tell ＝ 見分けがつかない。',
+      mean: 'can’t tell ＝ 見分けがつかない、分からない。can’t は長く強い「キャーン」。',
+      trap: 't が消えても can’t は音が長い。can なら弱く短い「クン」。',
       use: 'I can’t tell if he’s joking.（彼が冗談を言ってるのか分からない）' },
 
-    // why: hands the letter ← "there" read as ほら (here you go); asks for a reply ← a pause after a heartfelt speech
-    //   heard as a turn offered
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'sothere', reveals: ['secret'], seg: [237.0, 245.1],
-      stem: 'What does Ann do with the two words that end her speech?',
-      choices: ['Ends her point and dares April to argue', 'Hands April the letter she wrote for her',
-                'Asks April to say something in return'], a: 0,
-      cue: '話の最後、短い決め台詞。',
+      stem: 'Ann ends with “*So there*.” What is she doing?',
+      ja: 'アンは「So there」で終える。何をしている？',
+      choices: ['Ending her point firmly', 'Handing over the letter', 'Asking April for a reply'], a: 0,
+      choicesJa: ['きっぱり言い切っている', '推薦状を渡している', 'エイプリルに返事を求めている'],
+      cue: '話の最後の短い一言。',
       line: 'I hope you get into veterinary school because I like you. *So there.*',
       said: '「獣医学校に受かってほしい。好きだから。以上」と言い切る。',
-      mean: 'So there. ＝ これで決まり、文句ある？ 言い返させない締めの一言。',
-      trap: 'there を「ほら、どうぞ」と取りやすいが、推薦状はもう渡している。言い切りの So there。',
+      mean: 'So there. ＝ 以上、文句ある？ 言い返させない締めの一言。',
+      trap: 'there を「はい、どうぞ」と思いやすい。推薦状はもう渡している。',
       use: 'I’m right, so there.（私が正しい。以上）' },
 
-    // anchor: 247.8–252.6 s "Baby naming book. I hope it works out with Chris, and if it doesn't, I hope it works out
-    //   with someone": a gift built on what Ann confessed at 170 s, and two plain wishes with no joke in them; it
-    //   follows April's "Thank God" (229.9 s)
-    // R fix: S1/V2. "After all her grumbling" pointed at a warm answer; the stem is now neutral.
-    // why: making fun ← right gift, sincerity flipped: April's dry style makes the book look like a joke; expects a no
-    //   ← scope shift: "if it doesn't", a backup wish, heard as her forecast
-    { id: 'nt3', skill: 'infer', level: 'C2', point: 'book', seg: [245.0, 253.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gift', seg: [245.0, 253.5],
+      stem: 'What gift does April give Ann?',
+      ja: 'エイプリルはアンに何を贈る？',
+      choices: ['A book of baby names', 'A song she wrote for Ann', 'A letter for school'], a: 0,
+      choicesJa: ['赤ちゃんの名前の本', 'アンのために作った歌', '学校の推薦状'],
+      cue: '「I got you something」のあと。',
+      line: 'I got you something too. *Baby naming book*. I hope it works out with Chris…',
+      said: '「私も買ってきた。赤ちゃんの名前の本。クリスとうまくいくといいね」と渡す。',
+      mean: 'I got you something ＝ あなたに何か買ってきた。work out ＝ うまくいく。',
+      trap: 'letter（推薦状）の話が続いていたので迷いやすい。渡すのは本。',
+      use: 'I got you something. I hope you like it.（プレゼントがあるの。気に入るといいな）' },
+
+    { id: 'nt3', skill: 'infer', level: 'C2', point: 'book', seg: [245.0, 253.5], retired: true,
       stem: 'What does April’s gift show?',
       choices: ['She listened, and wants Ann to be happy', 'She’s making fun of Ann’s plan for a baby',
                 'She expects Chris to say no to Ann'], a: 0,
@@ -350,6 +307,5 @@ export const annApril: Clip = {
       mean: 'アンの打ち明け話を覚えていて、合う贈り物を選んだ。皮肉抜きの I hope が二回。',
       trap: 'いつもの皮肉に見えやすいが、願いの文に冗談がない。if it doesn’t は予想でなく、だめな時の励まし。',
       use: 'If it doesn’t work out, something better will.（だめでも、もっといいことがあるよ）' },
-
   ]
 };
