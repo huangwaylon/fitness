@@ -145,7 +145,8 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
   const cmds = await from(page, n0, 'seekTo');
   expect(cmds.find((c) => c[0] === 'seekTo')?.[1]).toEqual([q0.seg[0], true]);
-  expect(cmds.find((c) => c[0] === 'pauseVideo')![2]).toBeGreaterThanOrEqual(q0.seg[1]);
+  // (and a little past it: player.svelte.ts SEG_TAIL, 0.4 s)
+  expect(cmds.find((c) => c[0] === 'pauseVideo')![2]).toBeGreaterThanOrEqual(q0.seg[1] + 0.3);
   // a second miss: the answer, ○ on it, the notes; the picks never marked, nothing coral
   await card.locator(`[data-choice="${miss2}"]`).click();
   await expect(card).toHaveAttribute('data-result', 'shown');

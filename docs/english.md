@@ -34,6 +34,10 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
 - Speed: `wpm` is words a minute over speech time from the captions, one measure for every clip
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
   the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test).
+- Segments: from YouTube's word timings (the same captions; whisper's punctuation for the sentence ends):
+  `npm run english:segs -- <captions dir> [--write [left.md]]` finds each item's line and plays it whole, from its
+  sentence's start and ≥ 1.5 s before it to its sentence's end and ≥ 1 s after; ≥ 5 s, ≤ 12 s where it can (a gist
+  ≤ 45 s, a dictation ≤ 8 s), never shorter than one that held the line already; a line it can't find is left and listed.
 - **The plan** (`plan.ts`): one order every phone offers the clips in, so both members meet the same clip most days
   without seeing each other's. A slow ramp by ease (wpm's rank 0.8, the rank of the bank's non-B1 share among live non-C2 items 0.2; a bank
   under 16 the mean; since 2026-11-17, for the A1–A2 learner), a bank with a `// A2 LATE:` line after all the others (as planned: a written place stays till a `--fresh` run),
@@ -159,8 +163,8 @@ a clip already in this set, of today's clip and of the next 2 open ones in the p
 
 The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, `origin=`): the
 `listening` handshake, `infoDelivery` for the time and the state, `command` for seekTo / playVideo / pauseVideo. No
-`iframe_api` script (it would need a third-party `script-src`). A segment pauses at its end (the time extrapolated
-between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
+`iframe_api` script (it would need a third-party `script-src`). A segment pauses 0.4 s past its end (the time
+extrapolated between deliveries, by 1 s at most for the stop: a stall not yet reported never pauses it early). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
 stopped), −5秒 and 0.75× (only when the frame's `availablePlaybackRates` offer more than 1) side by side, 字幕 at the row's end,

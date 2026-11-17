@@ -1,10 +1,10 @@
 // YouTube's embed driven over postMessage (docs/english.md "The player"): no iframe_api script (a third-party
 // script-src). The frame is told `listening` until it answers; it reports `onReady`, `infoDelivery` (the time, the
-// state) and `onError`; it's sent `command`s (seekTo, playVideo, pauseVideo). A segment pauses at its end: the time
-// between deliveries is extrapolated, checked every 100 ms. A play that doesn't start (iOS wants a tap on the video
-// itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality has been a no-op since
-// YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player is full width; the
-// quality it reports (`onPlaybackQualityChange`, or infoDelivery's `playbackQuality`) is told once a play (`onQuality`:
+// state) and `onError`; it's sent `command`s (seekTo, playVideo, pauseVideo). A segment pauses SEG_TAIL past its end:
+// the time between deliveries is extrapolated (≤ LEAP_S for the stop), checked every 100 ms. A play that doesn't start
+// (iOS wants a tap on the video itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality
+// has been a no-op since YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player
+// is full width; the quality it reports (`onPlaybackQualityChange`, or infoDelivery's `playbackQuality`) is told once a play (`onQuality`:
 // the log). Captions off, unless the lesson's 字幕 choice turns YouTube's own on (`setCaptions`; this player's, so a
 // lesson's: off again at the next): English, or Japanese (a Japanese track if the video has one, else YouTube's
 // auto-translation of the English; whether it took is told once a play: `onJa`, the log).
@@ -92,6 +92,11 @@ const STUCK_MS = 2_500;
 const SEEK_MS = 3_000;
 /** 日本語's outcome told this long into a play (the module loads once it plays). */
 const JA_MS = 5_000;
+/** A segment plays on this long past its end (s): a word's tail, the embed's own lag, never cut. */
+const SEG_TAIL = 0.4;
+/** The stop trusts the time extrapolated this far past the last delivery at most (s): a stall the frame hasn't told yet
+ *  never pauses a segment early. */
+const LEAP_S = 1;
 
 export class YtPlayer {
   state = $state<YtState>('loading');
@@ -147,9 +152,9 @@ export class YtPlayer {
     this.#tick = setInterval(this.#check, 100);
   }
 
-  /** Play from `from` s, pausing at `to` (null: to the end). */
+  /** Play from `from` s, pausing SEG_TAIL past `to` (null: to the end). */
   play(from: number, to: number | null): void {
-    this.#stopAt = to;
+    this.#stopAt = to === null ? null : to + SEG_TAIL;
     this.#seek = from;
     this.#seekAt = performance.now();
     this.#last = { t: from, at: performance.now() };
@@ -258,10 +263,15 @@ export class YtPlayer {
     this.#hello = setInterval(say, 250);
   };
 
+  /** The time now, extrapolated LEAP_S at most: what the stop and a state change go by. */
+  #sure(): number {
+    return Math.min(this.now(), this.#last.t + LEAP_S * this.rate);
+  }
+
   #set(st: YtState | null): void {
     if (!st || this.state === 'error') return;
     // the time as it was when the state changed (extrapolation goes on from there)
-    this.#last = { t: this.now(), at: performance.now() };
+    this.#last = { t: this.#sure(), at: performance.now() };
     const was = this.state;
     this.state = st;
     if (st === 'playing' || st === 'buffering') (this.stuck = false), (this.#started = true);
@@ -373,6 +383,6 @@ export class YtPlayer {
   #check = (): void => {
     const t = this.now();
     if (Math.abs(t - this.time) >= 0.1) this.time = Math.round(t * 10) / 10;
-    if (this.#stopAt !== null && this.#seek === null && this.state === 'playing' && t >= this.#stopAt) this.pause();
+    if (this.#stopAt !== null && this.#seek === null && this.state === 'playing' && this.#sure() >= this.#stopAt) this.pause();
   };
 }
