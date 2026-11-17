@@ -17,7 +17,7 @@
 import type { Clip } from '../types.ts';
 
 export const hypocrite: Clip = {
-  id: 'hypocrite', video: '4tjV7NtVW7A', title: 'Rachel Is a Hypocrite at Work', dur: 117, wpm: 167, band: 'mid',
+  id: 'hypocrite', video: '4tjV7NtVW7A', title: 'Rachel Is a Hypocrite at Work', dur: 117, wpm: 167, band: 'fast',
   tags: ['職場', '恋愛'],
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',

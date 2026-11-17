@@ -363,5 +363,14 @@ export const PLANNED: readonly string[] = [
   'killertuna',
   'sandscam',
   'influfight',
-  'samfriend'
+  'samfriend',
+  'bensondate',
+  'lewtrial',
+  'newicarly',
+  'auditionmess',
+  'nemesister',
+  'realityexpo',
+  'blinddate',
+  'mysteryparty',
+  'dutchkiss'
 ];

@@ -10,7 +10,7 @@
 import type { Clip } from '../types.ts';
 
 export const mamasDead: Clip = {
-  id: 'mamasdead', video: '-1YWcInBOgg', title: '"Well hey, your Mama\'s dead"', dur: 104, wpm: 167, band: 'mid',
+  id: 'mamasdead', video: '-1YWcInBOgg', title: '"Well hey, your Mama\'s dead"', dur: 104, wpm: 167, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',

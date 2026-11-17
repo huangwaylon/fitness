@@ -13,7 +13,7 @@ import type { Clip } from '../types.ts';
 
 export const ronDiane: Clip = {
   id: 'rondiane', video: 'jOoTPjSrFXw', title: 'Ron Swanson Tells Diane He Loves Her', dur: 181, wpm: 152,
-  band: 'slow', tags: ['恋愛', '家'],
+  band: 'mid', tags: ['恋愛', '家'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [

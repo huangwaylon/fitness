@@ -366,10 +366,23 @@ import { sandScam } from './sandscam.ts';
 import { shelbyFight } from './shelbyfight.ts';
 import { grandpaAssistant } from './grandpaasst.ts';
 import { firstPrank } from './firstprank.ts';
+import { newIcarly } from './newicarly.ts';
+import { blindDate } from './blinddate.ts';
+import { auditionDisaster } from './auditionmess.ts';
+import { mrsBensonCrashes } from './bensondate.ts';
+import { lewTrial } from './lewtrial.ts';
+import { mysteryParty } from './mysteryparty.ts';
+import { spencerRoastsCarly } from './nemesister.ts';
+import { realityExposed } from './realityexpo.ts';
+import { dutchKiss } from './dutchkiss.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
+  mysteryParty,
+  spencerRoastsCarly,
+  realityExposed,
   andyJamie,
+  lewTrial,
   rossList,
   michaelJim,
   rossMona,
@@ -378,14 +391,17 @@ export const CLIPS: readonly Clip[] = [
   dinnerplan,
   janicedump,
   movember,
+  auditionDisaster,
   datinglang,
   laundromat,
   dwightVsAndy,
   chickParent,
   shelbyFight,
   staceySwab,
+  newIcarly,
   chrisFlu,
   monicabroke,
+  dutchKiss,
   kevinTalk,
   daddyDisco,
   grandpaAssistant,
@@ -413,6 +429,7 @@ export const CLIPS: readonly Clip[] = [
   benCool,
   tobyTherapy,
   mykonos,
+  mrsBensonCrashes,
   rossBreak,
   birthdayGuide,
   benTreats,
@@ -478,15 +495,15 @@ export const CLIPS: readonly Clip[] = [
   newHairdo,
   ronDesk,
   partyEarly,
-  roomie,
-  furniture,
   ronShowHost,
   senatorOscar,
   leslieDate,
+  // ふつう
+  roomie,
+  furniture,
   ronDiane,
   marbleBox,
   stressSweat,
-  // ふつう
   centralperk,
   beefMilk,
   andyAcademy,
@@ -569,6 +586,7 @@ export const CLIPS: readonly Clip[] = [
   benArrested,
   imFine,
   aprilMen,
+  blindDate,
   joeyBroadwayAudition,
   tomHitsOnAnn,
   pumpJamm,
@@ -608,10 +626,10 @@ export const CLIPS: readonly Clip[] = [
   donnaPosts,
   rossMarvel,
   aprilWedding,
+  // 速い
   mamasDead,
   workBestie,
   hypocrite,
-  // 速い
   andySecret,
   dwightUrine,
   conesOfDunshire,

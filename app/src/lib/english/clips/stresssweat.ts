@@ -15,7 +15,7 @@
 import type { Clip } from '../types.ts';
 
 export const stressSweat: Clip = {
-  id: 'stresssweat', video: 'Xh1oUOm6EGQ', title: 'Andy\'s Stress Sweating', dur: 219, wpm: 152, band: 'slow',
+  id: 'stresssweat', video: 'Xh1oUOm6EGQ', title: 'Andy\'s Stress Sweating', dur: 219, wpm: 152, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',

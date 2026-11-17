@@ -14,7 +14,7 @@ import type { Clip } from '../types.ts';
 
 export const marbleBox: Clip = {
   id: 'marblebox', video: 'wPtS9WYTxDo', title: 'Time to put a marble in the box - The Office US', dur: 344, wpm: 152,
-  band: 'slow', tags: ['職場'],
+  band: 'mid', tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [

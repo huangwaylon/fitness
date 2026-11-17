@@ -16,7 +16,7 @@
 import type { Clip } from '../types.ts';
 
 export const roomie: Clip = {
-  id: 'roomie', video: 'VAPcpAwKtFc', title: 'You Want My Gum?', dur: 209, wpm: 152, band: 'slow',
+  id: 'roomie', video: 'VAPcpAwKtFc', title: 'You Want My Gum?', dur: 209, wpm: 152, band: 'mid',
   tags: ['家', '友だち'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
