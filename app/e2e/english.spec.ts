@@ -15,6 +15,7 @@ import { metaOf } from '../src/lib/english/catalog.ts';
 import { shownOf } from '../src/lib/english/collections.ts';
 import { hideAndShow } from './memory.ts';
 import { momentsOf } from '../src/lib/english/phrases.ts';
+import { splitUse } from '../src/lib/english/phrase-review.ts';
 import waitressScenes from '../src/lib/english/scenes/lm2MpPpkGL8.json' with { type: 'json' };
 import waitressEn from '../src/lib/english/transcripts/lm2MpPpkGL8.en.json' with { type: 'json' };
 import waitressJa from '../src/lib/english/transcripts/lm2MpPpkGL8.ja.json' with { type: 'json' };
@@ -850,6 +851,44 @@ test('別の動画にする: the next clip, and the one passed over stays skippe
   await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', next!);
   await sheet(page).locator('[data-en-gear]').click();
   await expect(sheet(page).locator('[data-en-hard]')).toHaveAttribute('aria-checked', 'true');
+});
+
+test('フレーズの復習: yesterday’s phrases above today’s clip, the Japanese and the clip’s line on a tap, its segment played; 覚えた / もう一回 only space them; 今日はスキップ for today', async ({ page }) => {
+  await fakeYoutube(page);
+  // yesterday's finished play of waitress, two questions with phrases met (the pinned day is 2026-11-04)
+  const qs = waitress.questions.filter((q) => !q.retired && q.line && q.use).slice(0, 2);
+  await page.addInitScript((r) => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const at = Date.parse('2026-11-03T20:00:00+09:00');
+    const data = { d: '2026-11-03', g: 'tvseed1', gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 60000, f: 1, r };
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: [{ id: 'seed-listen', type: 'listen', data, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person: 'A' }] }));
+  }, qs.map((q) => [q.id, 1, q.a, 0]));
+  await open(page);
+  const card = sheet(page).locator('[data-en-pr]');
+  // never shown before, met the same day: in key order
+  const order = qs.toSorted((a, b) => (a.id < b.id ? -1 : 1));
+  await expect(card).toHaveAttribute('data-en-pr', `waitress/${order[0].id}`);
+  await expect(card).toContainText('1/2');
+  await expect(card.locator('.en')).toHaveText(splitUse(order[0].use).en);
+  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toBeVisible();
+  await card.locator('[data-en-pr-show]').click();
+  await expect(card.locator('[data-en-pr-ja]')).toHaveText(splitUse(order[0].use).ja);
+  await expect(card.locator('.line')).toHaveText(order[0].line!.replace(/\*/g, ''));
+  await expect(card.locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'ready');
+  const n0 = (await ytCommands(page)).length;
+  await card.locator('[data-en-pr-hear]').click();
+  await expect.poll(async () => (await from(page, n0, 'seekTo'))[0]?.[1]).toEqual([order[0].seg[0], true]);
+  expect(await card.evaluate((el) => /不正解|間違|×|%|ざんねん/.test(el.textContent ?? ''))).toBe(false);
+  await card.locator('[data-en-pr-kept]').click();
+  await expect(card).toHaveAttribute('data-en-pr', `waitress/${order[1].id}`);
+  await card.locator('[data-en-pr-skip]').click();
+  await expect(card).toHaveCount(0);
+  const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('island.english.phrases') ?? '{}').A);
+  expect(kept).toEqual({ s: { [`waitress/${order[0].id}`]: ['2026-11-04', 1] }, day: ['2026-11-04', 3] });
+  // skipped for today: none after a reload
+  await open(page);
+  await expect(sheet(page).locator('[data-en-today]')).toBeVisible();
+  await expect(sheet(page).locator('[data-en-pr]')).toHaveCount(0);
 });
 
 test('the library: すべて 20 at a time with もっと見る, one chip row of the shows only, a lesson opened there goes back to it; a play left part-way first, 途中', async ({ page }) => {

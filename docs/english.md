@@ -111,6 +111,19 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
 - Leaving keeps the place on this phone: the clip, the question, the answers. A play whose まとめ was reached is
   finished, even if gone back from it: its next opening draws the next.
 
+## Phrase review
+
+フレーズの復習 (approved 2026-11-17; `phrase-review.ts`, `PhraseReview.svelte`): a card above 今日の動画 on home, only
+when phrases are due. The phrases are the `use` of the questions in my finished plays (`listen` rows with `f`); each
+comes back 1, 3, 7, 14, then every 30 days after it was last met in a play or shown here. At most 3 a day: those shown
+before first (the longest overdue first), then the never shown (the latest met first), one per English phrase.
+
+- One at a time: the English, 意味を見る → its Japanese, the clip's line (key words underlined) and the clip's player,
+  この場面を聞く playing the question's segment; then もう一回 (tomorrow again) or 覚えた (a step on). These only space
+  it: never a score, a percentage, red or ×. 今日はスキップ ends today's (the steps as they were).
+- Kept per player on this phone (`island.english.phrases`). Banks it needs are fetched (at most 4); one that doesn't
+  load is passed over, and the card never holds up today's clip. Counted: `act:english.phrase.<show | kept | again | skip>`.
+
 ## The player
 
 The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, `origin=`): the

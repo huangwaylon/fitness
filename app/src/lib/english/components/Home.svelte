@@ -1,5 +1,6 @@
 <script lang="ts">
-  // English Study's home (docs/english.md "The page"): three cards. 今日の動画: the first clip in the shared plan
+  // English Study's home (docs/english.md "The page"): three cards, under フレーズの復習's when phrases are due
+  // (PhraseReview). 今日の動画: the first clip in the shared plan
   // (plan.ts: the library's order) neither finished nor skipped (progress.ts dailyOf: once today's is finished, the
   // next; 別の動画にする shows the next and skips this one for 14
   // days: prefs.ts), its thumbnail, one meta line and
@@ -12,6 +13,7 @@
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import WeekProgress from './WeekProgress.svelte';
   import ClipRow from './ClipRow.svelte';
+  import PhraseReview from './PhraseReview.svelte';
   import Thumb from './Thumb.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -105,6 +107,7 @@
   </div>
   <div class="body sheet-scroll">
     {#if back}<p class="back" data-en-back>{s('back')}</p>{/if}
+    <PhraseReview {rows} {me} {today} />
     <article class="card pad today" data-en-today={shown.id}>
       <Thumb hero video={shown.video} show={shown.show} len={clock(shown.dur)} />
       <p class="kicker">{allDone && !other ? s('allDone') : doneToday && !other ? s('todayDone') : s('today')}</p>
