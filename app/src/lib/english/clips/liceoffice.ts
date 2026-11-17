@@ -235,7 +235,7 @@ export const liceOffice: Clip = {
       line: 'We *don’t want it to* last longer. It’s horrible.',
       said: '「長持ちしてほしくない。ひどいから」と言う。',
       mean: 'don’t の t は消え「ドン」。want it to は「ワニットゥ」とつながる。',
-      trap: 'don’t が小さく短いので、want it to だけに聞こえやすい。最初の「ドン」を聞く。',
+      trap: 'don’t が小さく、want it to に聞こえやすい。won’t なら「ウォウ」。最初の「ドン」を聞く。',
       use: 'I don’t want it to rain.（雨が降ってほしくない）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', seg: [234.6, 241.9],
@@ -270,7 +270,7 @@ export const liceOffice: Clip = {
       line: 'You look like a baby who suddenly aged *50 years*…',
       said: '「急に50歳老けた赤ちゃんみたい」と言う。',
       mean: 'fifty ＝ 50。最初の「フィフ」を強く言う。fifteen なら最後の「ティーン」がのびる。',
-      trap: '-teen と -ty は聞き分けにくい。最後がのびなければ fifty。',
+      trap: 'sixty は「シック」で始まる。「フィフ」で始まり、最後がのびなければ fifty。',
       use: 'My dad is fifty years old.（父は50歳です）' },
 
     { id: 'pr4', skill: 'pragma', level: 'B1', point: 'getyou', seg: [256, 264.5],

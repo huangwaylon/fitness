@@ -70,7 +70,7 @@ export const joeymakeup: Clip = {
       stem: 'What is Joey modeling for?',
       ja: 'ジョーイは何のモデルをする？',
       choices: ['Posters for a clinic', 'TV ads for a clinic', 'A fashion magazine'], a: 0,
-      choicesJa: ['無料診療所のポスター', '診療所のテレビCM', 'ファッション雑誌'],
+      choicesJa: ['診療所のポスター', '診療所のテレビCM', 'ファッション雑誌'],
       cue: '「you know those」のあと', line: 'you know those *posters for the City Free Clinic*?',
       said: '「市の無料診療所のポスター、知ってるでしょ」と言う。',
       mean: 'free clinic ＝ 無料の診療所。モデルといっても、病院のポスターの仕事。',
@@ -98,7 +98,7 @@ export const joeymakeup: Clip = {
       line: 'Do you know which one *you’re gonna* be?',
       said: '「どれの役になるか、分かってるの？」と聞く。',
       mean: 'you’re gonna ＝ you’re going to。「ヨガナ」と縮む。これからのことを聞く形。',
-      trap: 'gonna と wanna は似て聞こえる。「ガ」が聞こえれば going to。',
+      trap: 'wanna なら「ワナ」、you were なら「ユワ」。「ヨガナ」なら you’re going to。',
       use: 'What are you gonna order?（何を頼むつもり？）' },
 
     { id: 'i1', skill: 'phrase', level: 'B2', point: 'lyme', reveals: ['posters'], seg: [35, 43.4],
@@ -164,7 +164,7 @@ export const joeymakeup: Clip = {
       cue: '質問の最初の短い2語', line: '*Will you* make the mashed potatoes with the lumps?',
       said: '「ダマのあるマッシュポテト、作ってくれる？」と頼む。',
       mean: 'Will you ＝ 〜してくれる？「ウィリュ」とつながる。家族や友だちへの気軽な頼み方。',
-      trap: 'Would you と似て聞こえる。「ウィ」の音か、d の音がないかを聞く。',
+      trap: 'Would なら d の音、Can なら「キャ」の音。「ウィリュ」なら Will you。',
       use: 'Will you pass me the salt?（塩を取ってくれる？）' },
 
     { id: 'pr1', skill: 'phrase', level: 'B2', point: 'lumps', reveals: ['potatoes'], seg: [58.5, 65.5],

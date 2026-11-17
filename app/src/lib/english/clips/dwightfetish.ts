@@ -196,7 +196,7 @@ export const dwightFetish: Clip = {
       line: 'Now I know *a lot of these* warehouse guys…',
       said: '「倉庫の連中の多くが友だちなのは分かってる」と言う。',
       mean: 'a lot of ＝ たくさんの。「アラロヴ」とつながる。these は「ズィーズ」と長い。',
-      trap: 'those（ゾウズ）と these（ズィーズ）は似ている。「イー」の音なら these。',
+      trap: 'those は「ゾウズ」、all は「オール」。「アラロヴ」と「イー」なら a lot of these。',
       use: 'A lot of these shops close early.（このへんの店の多くは早く閉まる）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'ramble', reveals: ['minty', 'didit'], seg: [80.55, 93.3], retired: true,

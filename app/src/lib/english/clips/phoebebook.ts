@@ -35,7 +35,7 @@ export const phoebebook: Clip = {
       cue: '「You said」のすぐあとの短い音', line: 'You said *we were going to* get the kind with the baby.',
       said: '「赤ちゃんのほうにするって言ったじゃない」と返す。',
       mean: 'we were going to ＝ 〜するつもりだった。we were は「ウィワ」と短い。',
-      trap: 'we were は we’re と聞こえやすい。「ワ」の音があれば were。',
+      trap: 'we were は we’re と聞こえやすい。「ワ」があれば were、最後に「ント」なら weren’t。',
       use: 'I thought we were going to share.（分けるって話だったよね）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'book', reveals: ['great', 'about'], seg: [0, 35.5],

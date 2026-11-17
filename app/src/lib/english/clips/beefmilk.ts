@@ -241,7 +241,7 @@ export const beefMilk: Clip = {
       line: 'Milk costs three dollars a gallon… beef milk? That costs *sixty* a gallon.',
       said: '「牛乳は1ガロン3ドル。アナベルのビーフミルクは60ドル」と言う。',
       mean: 'sixty ＝ 60。最初の「シック」が強い。sixteen なら最後の「ティーン」がのびる。',
-      trap: '前の three dollars に引かれやすい。That costs のあとの数を聞く。',
+      trap: '「シックスティ」と短い「ティ」で終われば60。「ティーン」なら16、何もなければ6。',
       use: 'How much does it cost?（いくらですか）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'price', reveals: ['waitlist'], seg: [169.3, 184.2], retired: true,
@@ -288,7 +288,7 @@ export const beefMilk: Clip = {
       line: '*Shall we* discuss it in my yurt?',
       said: '「続きは私のゲルで話しましょうか」と誘う。',
       mean: 'Shall we 〜? ＝ 〜しましょうか。ていねいな誘い方。「シャルウィ」とつながる。',
-      trap: 'Should we と似て聞こえる。「シャル」の l の音なら Shall。',
+      trap: 'Should なら「シュド」、Can なら「キャン」。「シャル」の l の音なら Shall。',
       use: 'Shall we go?（行きましょうか）' },
 
     { id: 'x2', skill: 'dict', level: 'B1', point: 'sign', seg: [192.3, 197.0],

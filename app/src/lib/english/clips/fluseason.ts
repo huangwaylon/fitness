@@ -23,7 +23,7 @@ export const fluSeason: Clip = {
       line: 'Well, *I’d have to* check, but I’m pretty sure…',
       said: '「確認しないとだけど、たぶん大丈夫」と答える。',
       mean: 'I’d have to ＝ 〜しないといけないけど。I’d は I would で、控えめな前置き。',
-      trap: 'd がほとんど聞こえず、I have to と思いやすい。「アイド」の小さな d を聞く。',
+      trap: 'd が小さく、I have to と思いやすい。I’ll なら「ル」の音。小さな「ド」を聞く。',
       use: 'I’d have to ask my boss.（上司に聞いてみないと）' },
 
     { id: 'x2', skill: 'dict', level: 'B1', point: 'face', seg: [14.5, 19.5],

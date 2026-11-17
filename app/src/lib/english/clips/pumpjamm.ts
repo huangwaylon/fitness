@@ -209,7 +209,7 @@ export const pumpJamm: Clip = {
       line: 'When I was *four*, I thought that chocolate milk came from brown cows.',
       said: '「4歳のとき、チョコ牛乳は茶色い牛から出ると思っていた」と言う。',
       mean: 'four は短い一音。fourteen は後ろの「ティーン」が強く長い。',
-      trap: 'すぐあとに I thought が続き、語の終わりが長く聞こえやすい。',
+      trap: 'five なら「ファイヴ」、fourteen なら「ティーン」がつく。短い「フォー」なら four。',
       use: 'When I was four, I lived in Osaka.（4歳のとき大阪に住んでいた）' },
 
     { id: 'a1', skill: 'phrase', level: 'B2', point: 'meaningless', seg: [64.0, 71.15],

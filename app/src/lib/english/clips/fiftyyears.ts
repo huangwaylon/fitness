@@ -148,7 +148,7 @@ export const fiftyYears: Clip = {
       line: 'Leslie offered us *each 200 bucks*…',
       said: '「レスリーは一人200ドルくれると言った」と話す。',
       mean: 'bucks ＝ ドル（くだけた言い方）。each ＝ 一人ずつ。二人で400ドル。',
-      trap: 'each を聞き落とすと、二人で200ドルと思いやすい。数字の前の each を聞く。',
+      trap: '「トゥーハンドレッド」なら200。one hundred は「ワン」、twenty や thousand とも違う。',
       use: 'It’s ten bucks each.（一人10ドルね）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [41.2, 46.2],

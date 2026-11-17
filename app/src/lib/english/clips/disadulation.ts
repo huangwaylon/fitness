@@ -68,7 +68,7 @@ export const disadulation: Clip = {
       line: '*You’ve got to* learn, Jim.',
       said: '「ジム、お前は学ばなきゃいけない」と言う。',
       mean: 'You’ve got to ＝ 〜しなきゃだめだ。got to が「ガッタ」とつながり、ve はほぼ消える。',
-      trap: 'get to なら「〜させてもらえる」で意味が変わる。「ガッ」の音を聞く。',
+      trap: 'get to は「ゲッ」、going to は「ゴナ」。「ガッタ」なら got to。',
       use: 'You’ve got to try this place.（この店、絶対行ってみて）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'like', seg: [18, 23.75],
@@ -197,7 +197,7 @@ export const disadulation: Clip = {
       line: 'Two of those, *that’ll land* you in a world of hurt.',
       said: '「それが2つで、ひどい目にあうことになる」と言う。',
       mean: 'that’ll ＝ that will。「ザロー」と聞こえる。That’ll be $10. と同じ形。',
-      trap: 'that’d とまぎれやすい。最後が「ル」なら that’ll。',
+      trap: 'that’d なら「ド」、that land なら t がはっきり。「ザロー」なら that’ll。',
       use: 'That’ll be twelve dollars.（12ドルになります）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'flip', reveals: ['superior', 'dontknow'], seg: [43.9, 66],

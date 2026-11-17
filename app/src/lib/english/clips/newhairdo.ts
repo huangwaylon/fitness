@@ -218,7 +218,7 @@ export const newHairdo: Clip = {
       line: 'You *can’t* let yourself get taken advantage of.',
       said: '「利用されるままではだめ」と言う。',
       mean: 'can’t は「キャーン」と長く強い。t はほとんど聞こえない。taken advantage of ＝ 利用される。',
-      trap: 'can は「クン」と小さく短い。強く長い「キャーン」なら can’t。',
+      trap: 'can は「クン」と小さく、don’t は「ドン」。強く長い「キャーン」なら can’t。',
       use: 'You can’t park here.（ここには停められません）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'backatyou', seg: [173.2, 183.95],

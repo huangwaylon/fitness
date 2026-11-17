@@ -115,7 +115,7 @@ export const mostLovedDenmark: Clip = {
       line: 'And look what *they’ve done* for me.',
       said: '「町がしてくれたことを見て」と像を見せる。',
       mean: 'they’ve done ＝ してくれた（今も目の前にある）。’ve は小さく「ヴ」だけ。',
-      trap: 'they’d とまぎれやすい。「ゼイヴ」の v の音なら they’ve。',
+      trap: 'they’d なら「ド」、they did なら「ディド」。「ゼイヴ」の v なら they’ve。',
       use: 'Look what I’ve done!（見て、できたよ！）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'statue', seg: [46.3, 52.9],

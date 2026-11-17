@@ -78,7 +78,7 @@ export const weddingFund: Clip = {
       line: 'if you got married after you turned 30, *you’d* pay for it yourself.',
       said: '「30歳を過ぎて結婚するなら、自分で払うと思った」と言う。',
       mean: 'you’d ＝ you would。「もし〜なら…だろう」という話。d は小さく短い。',
-      trap: 'd がほとんど聞こえず、you と思いやすい。「ユード」の小さな d を聞く。',
+      trap: 'd が小さく、you と思いやすい。you’ll なら「ユール」。「ユード」の d を聞く。',
       use: 'I thought you’d like it.（気に入ると思ったんだ）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'assumed', seg: [24, 29],
@@ -100,7 +100,7 @@ export const weddingFund: Clip = {
       line: 'You bought the beach house *when I was 23*.',
       said: '「ビーチハウスを買ったのは、私が23歳のときでしょ」と言い返す。',
       mean: 'twenty-three ＝ 23。30歳まで7年もあった、と言いたい。',
-      trap: '直前に 30 が聞こえるので、迷いやすい。twenty の「トゥエ」で始まる。',
+      trap: '直前に 30 が聞こえて迷いやすい。「トゥエ」で始まり、three で終われば23。',
       use: 'I moved here when I was twenty.（20歳のときにここに来た）' },
 
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'age23', reveals: ['assumed', 'beach'], seg: [24, 36.4], retired: true,

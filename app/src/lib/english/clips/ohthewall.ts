@@ -258,7 +258,7 @@ export const ohTheWall: Clip = {
       line: 'We *have to* do something because people are losing it out there',
       said: '「何かしないと。みんな不安でどうにかなりそう」と言う。',
       mean: 'have to ＝ 〜しなければならない。「ハフタ」と縮む。losing it ＝ 取り乱している。',
-      trap: 'had to なら「ハッタ」。「ハフ」の f の音なら have to。',
+      trap: 'had to なら「ハッタ」、got to なら「ガッタ」。「ハフ」の f なら have to。',
       use: 'We have to leave now.（もう出なきゃ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'calm', seg: [172, 217],

@@ -22,7 +22,7 @@ export const goodHusband: Clip = {
       line: 'Ann Perkins, how are you feeling? — You don’t *wanna* know.',
       said: '「体調はどう？」と聞かれ、「知りたくないと思うよ」と答える。',
       mean: 'wanna ＝ want to。「ワナ」と縮む。You don’t wanna know ＝ 聞かない方がいいよ。',
-      trap: 'have to も「ハフタ」と縮むので迷いやすい。「ワナ」なら want to。',
+      trap: 'have to なら「ハフタ」、need to なら「ニード」。「ワナ」なら want to。',
       use: 'You don’t wanna know.（聞かない方がいいよ）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'asked', seg: [1.8, 8.38],
@@ -221,7 +221,7 @@ export const goodHusband: Clip = {
       line: 'if Ann needs Tylenol, *she can get it* herself.',
       said: '「痛み止めが要るなら、自分で取れる」と言う。',
       mean: 'can は小さく短く「クン」。get it は「ゲリッ」とつながる。',
-      trap: 'can’t は「キャーン」とはっきり長い。小さく短いなら can。',
+      trap: 'can’t は「キャーン」と長く、she’ll なら「シール」。小さく短い「クン」なら can。',
       use: 'You can get it yourself, right?（自分で取れるよね？）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'books', seg: [164.6, 171.25], retired: true,

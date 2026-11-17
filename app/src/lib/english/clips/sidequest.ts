@@ -126,7 +126,7 @@ export const sideQuest: Clip = {
       line: '*There’s got to be* something we can do.',
       said: '「何かできることがあるはず」と言う。',
       mean: 'There’s got to be ＝ きっと〜があるはず。got to が「ガッタ」と縮む。',
-      trap: 'going to も「ゴナ」と縮むので似る。「ガッタ」の音なら got to。',
+      trap: 'going to なら「ゴナ」、has to なら「ハズ」。「ガッタ」の音なら got to。',
       use: 'There’s got to be a way.（何か方法があるはず）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'cinder', seg: [68.2, 74.38],

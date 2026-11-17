@@ -255,7 +255,7 @@ export const bestBurger: Clip = {
       line: 'The commissary *will* continue to serve horrifying, artery-clogging hamburgers.',
       said: '「食堂は今後もハンバーガーを出し続けます」と言う。',
       mean: 'will ＝ 〜する（これから）。短く「ウィル」。won’t なら「ウォウント」と長い。',
-      trap: 'won’t の t は消えやすいので迷いやすい。「ウォウ」と長ければ won’t。',
+      trap: '「ウォウ」と長ければ won’t、「ウッド」なら would。短い「ウィル」なら will。',
       use: 'The store will open at ten.（お店は10時に開きます）' },
   ]
 };

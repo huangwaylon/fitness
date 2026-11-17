@@ -163,7 +163,7 @@ export const daveReturns: Clip = {
       line: 'Can I just please talk to you about this for *five minutes*?',
       said: '「この話を5分だけさせてくれない？」と頼む。',
       mean: 'for five minutes ＝ 5分間。短い時間を出して、頼みを小さく見せている。',
-      trap: 'five の v は弱く、fif- に聞こえやすい。fifteen なら後ろが長くのびる。',
+      trap: '「ファイヴ」の「アイ」なら five。fifteen は「ティーン」、fifty は「ティ」で終わる。',
       use: 'Can I have five minutes?（5分だけいいですか）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'bringup', seg: [137.6, 141.3],
@@ -231,7 +231,7 @@ export const daveReturns: Clip = {
       line: 'I’m scheduled to leave tomorrow on the *12:15* flight',
       said: '「明日12時15分の便で発つ予定」と言う。',
       mean: '時刻は twelve fifteen のように、数を二つ並べて言う。',
-      trap: 'fifteen と fifty は似ている。fifteen は最後の「ティーン」が長い。',
+      trap: 'fifteen は「ティーン」が長く、fifty は短い。oh five や two で始まる時刻とも分ける。',
       use: 'My train leaves at six fifteen.（電車は6時15分発です）' },
 
     { id: 'd5', skill: 'infer', level: 'B2', point: 'interview', seg: [172.4, 179.4],
