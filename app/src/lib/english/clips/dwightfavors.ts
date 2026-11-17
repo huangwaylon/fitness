@@ -1,18 +1,12 @@
-// REVIEW 2026-11-16: pass 9, fix 12, drop 1, new 0; ear checks 2
-// REVIEW open: none beyond the two ear checks.
+// A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 5, new 3
 // “Dwight's Favors - The Office US” (the official The Office channel, Best of Season 6): Dwight hands out bagels so
 // the office will owe him favors he can use against the man who took his co-manager job; Andy answers with favors of
 // his own, the two trade kindnesses all day, and the office pays Dwight back at once with a cheap gift card.
-// Segments from the captions, words from whisper (2026-11-16). Named in the audio: Dwight (20.6, 75.5, 193.1, 202.2,
-// 214.5 s), Stanley (6.4 s), Michael (27.4 s), Andy (158.1, 168.5 s), Jim (238.7 s). Talk ends at ≈ 253 s; whisper's
-// lines after that are a loop. Left out on purpose: 28–41 s (the girlfriend, "aphrodisiac" and "deer penis"), "I'm
-// taking one for/from my lady friend" (51.4 s; the sources disagree), the door and "Campbell"/"finished" (112–116 s),
-// "Not necessary. You didn't have to do that" (154.6 s: who says it isn't settled by a name), and the mushroom lines
-// (241–253 s: "this high" is a gesture, and the reply is "they don't"/"I don't").
-// EAR CHECK: 186.6 s r1 — the cut falls after “awfully complicated to make” and before “I will make everyone's tacos”
-//   (0.3 s gap)
-// EAR CHECK: 232 s g2 — captions “It's FROM everybody”, whisper “It's FOR everybody”: the key (everyone pays him back)
-//   reads best with “from”; it also stands on “What if Dwight dies and I still owe him” (214 s) and “no closer” (237 s)
+// Segments from the captions, words from whisper (2026-11-16). Named in the audio: Dwight (20.6, 75.5, 193.1 s),
+// Stanley (6.4 s), Michael (27.4 s), Andy (158.1, 168.5 s), Jim (238.7 s). Who says "I insist" and the fitness tip
+// isn't settled by a name, so those stems name no one. Left out: 28–41 s (girlfriend talk), 241–253 s.
+// EAR CHECK: 232 s g2 — captions “It's FROM everybody”, whisper “It's FOR everybody”; the key also stands on “no
+//   closer” (237 s).
 import type { Clip } from '../types.ts';
 
 export const dwightFavors: Clip = {
@@ -21,71 +15,55 @@ export const dwightFavors: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: wait ← "No, no, no" heard as manners (Stanley took one too soon); Michael ← Dwight brings Michael a bagel next
-    //   (26–47 s), so the first one seems saved for the boss
     { id: 'd1', skill: 'detail', level: 'B1', point: 'pumpernickel', seg: [4.7, 11.1],
-      stem: 'When Stanley says “Thank you”, why does Dwight say “No, no, no”?',
-      choices: ['He has a different kind saved just for Stanley', 'He wants Stanley to wait until everyone has one',
-                'He has to give the first one to Michael'], a: 0,
-      cue: '「No, no, no」のあと、I got に続く部分。',
+      stem: 'Why does Dwight say “No, no, no” to Stanley?',
+      ja: 'ドワイトがスタンリーに「No, no, no」と言うのはなぜ？',
+      choices: ['He has a special one for him', 'He wants him to wait', 'The first one is for Michael'], a: 0,
+      choicesJa: ['彼のために特別なのがある', '待ってほしい', '最初の一つはマイケルの分'],
+      cue: '「No, no, no」のあと',
       line: 'No, no, no. I got *a pumpernickel just for you*.',
-      said: '「待って、君には黒パンのベーグルを用意したんだ」と、別の種類を差し出す。',
-      mean: 'just for you ＝「君のためだけに」。一人ずつに合わせて、恩を売る下準備。',
-      trap: 'No が3回続くと「だめ」と止めたように聞こえる。no のあとに来る理由まで聞く。',
+      said: '「待って、君には黒パンのベーグルを用意したんだ」と別のを渡す。',
+      mean: 'just for you ＝ 君のためだけに。特別に選んだと伝える言い方。',
+      trap: 'No が続くので「だめ」と止めたと思いやすい。あとの just for you が理由。',
       use: 'I got this just for you.（これ、あなたのために買ったの）' },
 
-    // R drop: i1 (K1 + V1). "Oh, why? Is there a place closer that sells them?" reads two ways from the words alone: a
-    //   sincere question (he didn't know) or a rhetorical one (an authentic bagel means New York). Only his tone settles
-    //   it, and the blind pass got it at 55 %. Never shipped, so deleted; infer stays at 2 (i2, i3).
-
-    // R fix: V2 (75 % blind: "favor" is in the title, and the key was the only favor choice). The new near miss is the
-    //   literal "one" = one bagel; "welcome, it's free" keeps the "don't mention it" reading.
-    // why: one bagel ← "owe me one" with "one" heard as a bagel, the thing just handed out; welcome ← "don't mention it",
-    //   said just before, taken as the whole message
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'oweone', seg: [19.5, 26.5],
-      stem: 'What does Dwight mean by his reply to the thank-yous?',
-      choices: ['Each of them owes him something back later', 'Each of them owes him one bagel next time',
-                'Each of them is welcome; the bagels are free'], a: 0,
-      cue: '「don’t mention it」のあと、短い一言。',
+      stem: 'What does “You owe me one” mean?',
+      ja: '「You owe me one」はどういう意味？',
+      choices: ['You must do me a favor later', 'You must give me one bagel', 'You don’t need to thank me'], a: 0,
+      choicesJa: ['あとで私の頼みを聞いてね', '私にベーグルを一つちょうだい', 'お礼はいらないよ'],
+      cue: '「don’t mention it」のあと',
       line: 'Oh, *don’t mention it*. *You owe me one*.',
-      said: '「礼にはおよばないよ。そのかわり貸しひとつね」と全員に言う。',
-      mean: 'owe me one ＝「借りができたね」。お金ではなく、お返しの頼みごとを指す。',
-      trap: 'one を配ったベーグル1個と取りやすい。ここの one は頼みごと一つ。',
+      said: '「お礼なんていいよ。そのかわり、貸し一つね」とみんなに言う。',
+      mean: 'owe me one ＝ 私に借りが一つある。お金でなく、あとで頼みを聞いてもらう意味。',
+      trap: 'don’t mention it（お礼はいい）だけ聞くと、ただの親切と思いやすい。one は頼みごと一つ。',
       use: 'Thanks, I owe you one!（ありがとう、借りができたね）' },
 
-    // why: no ← "don't" + "mind" heard as a refusal (日本語の「結構です」の発想); later ← he has just said he ate two
-    //   sandwiches, so a hedge seems likely
-    // R fix: S4 (2.8 s, under 3 s). Now starts before "that you are hungry", 3.8 s.
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'mindif', seg: [45.75, 49.55],
-      stem: 'When Dwight offers Michael a bagel, what is Michael’s answer?',
-      choices: ['Yes, he’d be glad to take one', 'No, he is still too full to eat', 'He’ll have one later, if any are left'],
-      a: 0,
-      cue: '「Bagel?」への返事。don’t だけで決めない。',
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mindif', seg: [45.75, 49.55],
+      stem: 'What does Michael mean by “I don’t mind if I do”?',
+      ja: 'マイケルの「I don’t mind if I do」はどういう意味？',
+      choices: ['Yes, I’ll have one', 'No, I’m still full', 'Maybe later, thanks'], a: 0,
+      choicesJa: ['うん、一つもらう', 'いや、まだおなかいっぱい', 'あとでね、ありがとう'],
+      cue: '「Bagel?」のあと',
       line: 'Bagel? — *I don’t mind if I do*.',
       said: '「ベーグル？」に「じゃあ、いただこうかな」と答える。',
-      mean: 'I don’t mind if I do ＝ 勧められた物を受け取る決まり文句。「遠慮なく」。',
-      trap: 'don’t で断りに聞こえる。mind は「嫌がる」なので、「嫌じゃない」＝もらう。',
+      mean: 'I don’t mind if I do ＝ じゃあ遠慮なく。すすめられた物をもらうときの決まり文句。',
+      trap: 'don’t から断りと思いやすい。mind ＝ いやがる、なので「いやじゃない」＝もらう。',
       use: 'More cake? Don’t mind if I do.（ケーキもっと？じゃあ遠慮なく）' },
 
-    // R fix: V2 (50 % blind: "make friends" was a filler). The new near miss swaps "fired" for "quit"; "fired" is said.
-    // why: quit ← the right target and the right goal, with "fired" softened to the likelier office outcome; votes ←
-    //   "co-manager position" heard as an election he wants to win
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'motive', seg: [57.4, 67.6],
-      stem: 'In his comment to the camera, what does Dwight plan to use the favors for?',
-      choices: ['To get the man who took his job fired', 'To win votes for the co-manager job',
-                'To get the new co-manager to quit'], a: 0,
-      cue: '「a favor which he can use」のあと。',
-      line: '…a favor which he can use *to get someone fired who stole a co-manager position* from him',
-      said: 'ベーグルで恩を売り、その貸しで「共同部長の座を奪ったやつ」をクビにしたいと話す。',
-      mean: '親切は手段。目的は地位を取った相手への仕返し。',
-      trap: '辞めさせる、と丸めて覚えやすい。get + 人 + fired は「クビにさせる」。最後の語まで聞く。',
-      use: 'I’ll save that favor for later.（その貸しは取っておくよ）' },
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'motive', seg: [57.4, 67.6],
+      stem: 'What does Dwight want to use the favors for?',
+      ja: 'ドワイトは貸しを何に使いたい？',
+      choices: ['To get someone fired', 'To get a higher job', 'To make new friends'], a: 0,
+      choicesJa: ['ある人をクビにさせるため', 'もっと上の役職につくため', '新しい友だちを作るため'],
+      cue: '「which he can use」のあと',
+      line: '…a favor which he can use *to get someone fired* who stole a co-manager position from him',
+      said: '貸しを使って「部長の座を奪ったやつをクビにしたい」とカメラに話す。',
+      mean: 'get 人 fired ＝ 人をクビにさせる。親切は、仕返しのための手段。',
+      trap: '最初に friends と聞こえるので、友だち作りと思いやすい。use のあとが目的。',
+      use: 'Can I use this coupon?（このクーポン使えますか）' },
 
-    // why: coworkers ← "When did everyone get so cynical?" taken at face value: he blames them, so the joke seems aimed
-    //   at them; the man ← "get someone fired" heard as the scheme's target, so the joke's target too
-    // anchor: 58.9–66.7 s his own words lay out a cynical plan ("so they'll owe him a favor… to get someone fired"), then
-    //   70.2–72.2 s he complains about everyone else's cynicism
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'cynical', reveals: ['motive'], seg: [57.4, 72.8],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'cynical', reveals: ['motive'], seg: [57.4, 72.8], retired: true,
       stem: 'In Dwight’s comment to the camera, who is the joke on?',
       choices: ['Dwight, who can’t see his own cynicism', 'His coworkers, for doubting his kindness',
                 'The man who took the co-manager job'], a: 0,
@@ -96,72 +74,53 @@ export const dwightFavors: Clip = {
       trap: '嘆きの対象がみんななので、皮肉の的もみんなに見える。誰の行動が一番ひねくれているかを比べる。',
       use: 'Ugh, when did everyone get so serious?（もう、みんな、いつからそんなに真面目に？）' },
 
-    // anchor: 61.5–62.3 s "so they'll owe him" runs together at ~180 wpm: "they'll" ≈ "thel", "him" loses its h
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'theyllowe', seg: [59, 64.5],
-      stem: 'Type the fast stretch: “…for his friends so ___ a favor.” (3 words)', answer: "they'll owe him",
-      cue: '「friends so」のあと、a favor の前。',
-      // R fix: B1/S6 — the stars held "so", which isn't in the answer (the stem gives it).
+      stem: 'Type the fast part: “…for his friends so ___ a favor.” (3 words)', answer: "they'll owe him",
+      ja: '「…for his friends so ___ a favor.」の空所を書こう（3語）',
+      cue: '「friends so」のあと',
       line: '…for his friends so *they’ll owe him* a favor…',
-      said: '恩を着せるためにベーグルを買う、と言う。they’ll は「ゼル」、him は h が落ち、3語が一続き。',
-      mean: 'so they’ll ～ ＝「〜するように」。本音がさらっと出る。',
-      trap: 'him の h が消えて owe とつながり「オウイム」になる。弱い代名詞は前の語にくっついた音で探す。',
-      use: 'I’ll bring snacks so they’ll like me.（好かれるようにお菓子を持っていく）' },
+      said: '「友だちが自分に借りを作るように」ベーグルを買う、と言う。',
+      mean: 'they’ll は「ゼル」と短い。him は h が消えて「オウイム」とつながる。',
+      trap: 'him が消えたように聞こえやすい。owe のあとに小さな「イム」があれば him。',
+      use: 'I’ll call them so they’ll know.（分かるように電話しておく）' },
 
-    // R fix: V2 (75 % blind: the key was the only rivalry choice). Now three exchange patterns.
-    // why: call it even ← "Favor returned" (108 s) heard as the end of it, the polite script; asking ← "favor" heard
-    //   over and over, in the wrong relation (Dwight helps, Andy asks)
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'rivalry', seg: [75, 206.2],
-      stem: 'What goes on between Dwight and Andy through the middle of the clip?',
-      choices: ['They keep paying each other back, each time a bit more', 'Andy returns one favor, and they call it even',
-                'Andy keeps asking Dwight for favors, and Dwight says yes'], a: 0,
-      cue: '片方が親切をすると、もう片方は何をする？',
-      said: 'アンディがかばんを磨いてお返しをし、ドワイトは「すぐ返す」と宣言。昼食、タコスと親切が続く。',
-      mean: '親切で相手に借りを作らせる勝負。どちらも借りを負いたくない。',
-      trap: '「お返しした」で一件落着に聞こえやすい。誰が誰に、何のお返しをしているかを最後まで追う。',
-      use: 'Come on, this isn’t a contest.（ちょっと、張り合うことじゃないでしょ）' },
-
-    // R fix: V2 (70 % blind: "special oil" was a giveaway literal trap) + S1/K1 ("stress" made "only a moment" half
-    //   defensible, since "a little" is modest). Now asks what it took, with three concrete methods.
-    // why: quick wipe ← "a little" heard as a little time or work; shoe polish ← grease = 油, taken literally, with
-    //   "polishing my loafers" just before
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'elbow', seg: [84.6, 95.4],
-      stem: 'What does he say it took to fix up the briefcase?',
-      choices: ['Some hard rubbing by hand', 'Some oil from his shoe polish', 'A quick wipe with a cloth'], a: 0,
-      cue: '「worse for the wear」のあと、So に続く語。',
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'elbow', seg: [84.6, 95.4],
+      stem: 'What does “a little elbow grease” mean here?',
+      ja: 'ここでの「a little elbow grease」はどういう意味？',
+      choices: ['Some hard rubbing by hand', 'Some oil for his shoes', 'A quick wipe with a cloth'], a: 0,
+      choicesJa: ['手でしっかりこすること', '靴用の油を少し', '布でさっとふくこと'],
+      cue: '「worse for the wear」のあと',
       line: 'So, *a little elbow grease*, and she’s polished right up…',
-      said: 'くたびれたかばんを「ちょっと腕によりをかけて」磨き直したと言う。',
-      mean: 'elbow grease ＝ 手でこする労力。a little は謙遜。',
-      trap: 'grease を油、a little を短い時間と取りやすい。体の部位＋名詞の熟語は、まず比喩を疑う。',
+      said: 'アンディが、古いかばんを「ちょっとがんばって」ピカピカに磨いたと言う。',
+      mean: 'elbow grease ＝ 文字どおりは「ひじの油」、ここでは「手でこする力仕事」。',
+      trap: 'grease（油）から、本物の油と思いやすい。体を使う「がんばり」のこと。',
       use: 'It just needs some elbow grease.（ちょっと手間をかければきれいになる）' },
 
-    // why: never takes ← "Do not test my politeness" heard as a warning to keep away; list ← "thank you note" and
-    //   "RSVP" heard as checking other people's manners
     { id: 'i2', skill: 'infer', level: 'B2', point: 'rule', seg: [99.6, 112.3],
-      stem: 'In Dwight’s comment to the camera, what is his rule?',
-      choices: ['He pays back every kindness right away', 'He never takes gifts or favors from anyone',
-                'He keeps a list of who forgot to thank him'], a: 0,
-      cue: '「bam」「wham」のあとの短い語。',
+      stem: 'What is Dwight’s rule about favors?',
+      ja: 'ドワイトの、親切についての決まりは？',
+      choices: ['Pay back every kindness fast', 'Never take gifts from anyone', 'Keep a list of all favors'], a: 0,
+      choicesJa: ['親切にはすぐお返しする', '誰からも贈り物を受け取らない', '親切を全部リストにする'],
+      cue: '「bam」「wham」のあと',
       line: 'You give me a gift, bam! *Thank-you note*. … You do me a favor, wham! *Favor returned*.',
-      said: '「贈り物にはすぐ礼状、招待にはすぐ返事、親切にはすぐお返し」と効果音つきで並べる。',
-      mean: 'もらった恩は即座に返す、という決まり。借りを作らない主義。',
-      trap: '最後の警告が強いので「受け取らない」と取りやすい。bam のあとは、自分がすることを言っている。',
+      said: '「贈り物にはすぐ礼状、親切にはすぐお返し」と効果音つきで並べる。',
+      mean: 'Favor returned ＝ お返し済み。もらった親切はすぐ返す、という決まり。',
+      trap: '最後の Do not test my politeness が強いので、受け取らないと思いやすい。bam のあとは自分がすること。',
       use: 'You cooked, so I’ll do the dishes.（作ってくれたから、皿洗いは私が）' },
 
-    // why: back ← clenching while walking sounds like a back-care tip; stand up straight ← the jacket "straight as an
-    //   arrow" right after (134–139 s)
     { id: 'd3', skill: 'detail', level: 'B1', point: 'knees', seg: [118.3, 126.2],
-      stem: 'What does the walking tip claim to help with?',
-      choices: ['The pressure on your knees', 'The pain in your lower back', 'The way you stand up straight'], a: 0,
-      cue: '「you can really take」のあと。',
+      stem: 'What does the fitness tip help with?',
+      ja: '健康のコツは何に効く？',
+      choices: ['Your knees', 'Your lower back', 'The way you stand'], a: 0,
+      choicesJa: ['ひざ', '腰', '立ち方'],
+      cue: '「take the pressure off」のあと',
       line: 'you can really *take the pressure off your knees*.',
-      said: '「歩くときにお尻を締めると、ひざの負担が減る」という健康の豆知識。',
-      mean: 'take the pressure off ～ ＝ ～の負担を軽くする。体にも気持ちにも使う。',
-      trap: '体の話なので腰や姿勢を思い浮かべやすい。off のあとの名詞を最後まで聞く。',
+      said: '「歩くときにお尻を締めると、ひざの負担が減る」と教える。',
+      mean: 'take the pressure off 〜 ＝ 〜の負担を軽くする。体にも気持ちにも使う。',
+      trap: '体の話なので腰や姿勢を思いやすい。off のあとの knees（ひざ）を聞く。',
       use: 'That takes the pressure off me.（それで気が楽になる）' },
 
-    // why: buttoned ← "do not walk around with your jacket…" heard as a dress-code fix; too big ← the unknown word guessed
-    //   as "baggy"
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'jacket', seg: [132.2, 141.3],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'jacket', seg: [132.2, 141.3], retired: true,
       stem: 'From the words that follow, what is wrong with the jacket?',
       choices: ['It is sitting crooked on him', 'It is buttoned up the wrong way', 'It is too big across the back'],
       a: 0,
@@ -172,21 +131,42 @@ export const dwightFavors: Clip = {
       trap: '知らない語は勘で「大きい」「ボタン」と埋めやすい。直後の言い直しや反対語から意味を決める。',
       use: 'Your collar’s a little crooked.（えりがちょっと曲がってるよ）' },
 
-    // why: worried ← "not worried" with the n't lost: "I'm (not) worried"; thankful ← Andy's favors taken at face value
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'upgame', seg: [157.5, 163.1],
-      stem: 'In his comment to the camera, how does Dwight feel about Andy’s favors?',
-      choices: ['Pushed to try even harder himself', 'Worried that Andy will win everyone over',
-                'Thankful that someone is finally helping'], a: 0,
-      cue: '「but」のあとの2つの文。',
+      stem: 'How does Dwight feel about Andy’s favors?',
+      ja: 'ドワイトはアンディの親切をどう思う？',
+      choices: ['Ready to try harder', 'Worried Andy will win', 'Glad to get help'], a: 0,
+      choicesJa: ['もっとがんばる気になる', 'アンディが勝ちそうで心配', '助けてもらえてうれしい'],
+      cue: '「But」のあと',
       line: 'Andy is complicating things. *But I’m not worried*. This will only *up my game*.',
-      said: '「ややこしくなった。でも心配してない。むしろ本気が出る」。',
-      mean: 'up my game ＝ 自分のレベルを上げる。相手の親切を挑戦と受け取っている。',
-      trap: 'not が弱く「心配だ」に聞こえやすい。but のあとが本音。not の t の止めを聞く。',
+      said: '「ややこしくなった。でも心配してない。むしろ本気が出る」とカメラに話す。',
+      mean: 'up my game ＝ 自分のレベルを上げる。not worried ＝ 心配していない。',
+      trap: 'not が小さく聞こえ、心配していると思いやすい。but のあとが本音。',
       use: 'Okay, time to up my game.（よし、本気を出さなきゃ）' },
 
-    // why: book on manners ← "book of niceness" taken literally; on his own ← "Yep. Yep." heard as proud ownership
-    // R fix: S4 (15.5 s). Ends after "so I got lunch for everyone", 14.15 s.
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'page', seg: [166.8, 180.95],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'rivalry', reveals: ['lunch', 'allowme', 'insist'], seg: [158.0, 199.9],
+      stem: 'What do Dwight and Andy keep doing?',
+      ja: 'ドワイトとアンディは何をし続ける？',
+      choices: ['Doing more favors than the other', 'Asking each other for favors', 'Saying sorry to each other a lot'], a: 0,
+      choicesJa: ['相手より多く親切をする', 'おたがいに頼みごとをする', 'おたがいに何度も謝る'],
+      cue: '「Andy is complicating things」から',
+      said: 'アンディがお昼をおごると、ドワイトはタコスを作ると言い、二人とも「私がやる」とゆずらない。',
+      mean: '親切の張り合い。相手に借りを作らせたくて、どちらもゆずらない。',
+      trap: 'favor（頼みごと）が何度も聞こえるので、頼み合っていると思いやすい。二人とも「私がやる」側。',
+      use: 'Come on, this isn’t a contest.（ちょっと、張り合うことじゃないでしょ）' },
+
+    { id: 'w1', skill: 'who', level: 'B1', point: 'lunch', seg: [166.6, 171.0],
+      stem: 'Who bought lunch for everyone?',
+      ja: 'みんなに昼ごはんを買ったのは誰？',
+      choices: ['Andy', 'Dwight', 'Michael'], a: 0,
+      choicesJa: ['アンディ', 'ドワイト', 'マイケル'],
+      cue: '「What’s going on」のあと',
+      line: 'What’s going on in here? — *Andy bought lunch*.',
+      said: '「どうしたの？」に「アンディがお昼を買ってくれた」と答える。',
+      mean: 'bought lunch ＝ お昼をおごった。bought は buy（買う）の過去形。',
+      trap: 'ベーグルを配ったドワイトと思いやすい。bought lunch の前の名前を聞く。',
+      use: 'Let me buy lunch today.（今日のお昼は私がおごるよ）' },
+
+    { id: 'f3', skill: 'phrase', level: 'C1', point: 'page', seg: [166.8, 180.95], retired: true,
       stem: 'By the speaker’s own account, where did the lunch idea come from?',
       choices: ['He copied Dwight’s own trick', 'He read it in a book on manners', 'He thought it up all on his own'],
       a: 0,
@@ -197,12 +177,19 @@ export const dwightFavors: Clip = {
       trap: 'book を本物の本と取りやすい。直後の「朝食をおごったから」が答え合わせ。',
       use: 'I took a page out of your book.（あなたのやり方をまねたよ）' },
 
-    // R fix: V2 (50 % blind: the complaint was a filler). The new near miss is the right move (an offer) of the wrong
-    //   kind (teach, not do).
-    // why: show how ← "awfully complicated" heard as setting up a lesson, and Dwight likes to instruct; request ← a hard
-    //   job usually sets up asking for help
-    // predict: the segment stops after "to make"; the reveal plays "I will make everyone's tacos"
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'tacos', seg: [182.1, 186.6], then: [186.6, 189],
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'allowme', seg: [180.0, 188.8],
+      stem: 'What does Dwight mean by “Allow me”?',
+      ja: 'ドワイトの「Allow me」はどういう意味？',
+      choices: ['Let me do it for you', 'Please give me some time', 'Excuse me, please move'], a: 0,
+      choicesJa: ['私にやらせて', '少し時間をください', 'すみません、どいて'],
+      cue: '「Okay, well」のあと',
+      line: 'Okay, well, *allow me*. … I will make everyone’s tacos.',
+      said: '「では私に」と言い、「みんなのタコスは私が作る」と続ける。',
+      mean: 'Allow me ＝ 私にやらせて。手伝いを申し出る、ていねいな言い方。',
+      trap: 'allow（許す）から、許可を頼んでいると思いやすい。あとで自分がタコスを作ると言う。',
+      use: 'That looks heavy. Allow me.（重そう。持ちますよ）' },
+
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'tacos', seg: [182.1, 186.6], retired: true, then: [186.6, 189],
       stem: 'Right after the remark about the tacos, what kind of move comes next?',
       choices: ['An offer to make them for everyone', 'An offer to show everyone how',
                 'A request for someone to help him'], a: 0,
@@ -213,62 +200,65 @@ export const dwightFavors: Clip = {
       trap: '「大変」は助けを求める型に聞こえる。直前の Allow me が、自分がやる流れを示す。',
       use: 'That looks heavy. Here, allow me.（重そう。貸して、持つよ）' },
 
-    // why: wanna ← "gonna" and "wanna" share the "-nna" ending; can do ← the weak "I'm" lost; gonna get ← "do" is short
-    //   and swallowed before "this"
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [192.2, 196.7],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', seg: [191.2, 194.8],
       stem: 'Fill the gap: “Whoa, whoa, Dwight, ___ this.”',
-      choices: ['I’m gonna do', 'I wanna do', 'I can do', 'I’m gonna get'], a: 0,
-      cue: '「Dwight」のあと、主語から短い3語。',
+      ja: '「Whoa, whoa, Dwight, ___ this.」の空所は？',
+      choices: ['I’m gonna do', 'I wanna do', 'I can do'], a: 0,
+      choicesJa: ['私がやる', '私がやりたい', '私ならできる'],
+      cue: '「Dwight」のあと',
       line: 'Whoa, whoa, Dwight, *I’m gonna do* this.',
-      said: '「待って、これは僕がやるよ」。going to が gonna に縮む。',
-      mean: 'I’m gonna は「アムガナ」に近い。自分がやると申し出る形。',
-      trap: 'wanna と gonna は語尾が同じ。頭が g か w か、I’m の m があるかで分ける。',
+      said: '「待って、ドワイト、これは僕がやるよ」と言う。',
+      mean: 'I’m gonna ＝ I am going to（〜する）。「アムガナ」と短くつながる。',
+      trap: 'wanna は「ワナ」、can は「キャン」。「ガナ」と聞こえれば gonna。',
       use: 'I’m gonna grab some coffee.（ちょっとコーヒー買ってくる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'covered', seg: [192.2, 196.7],
-      stem: 'Type the answer after “relax”: “I ___.” (3 words)', answer: 'got it covered',
-      cue: '「relax」のあと。got と it がつながる。',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'covered', seg: [193.6, 197.2],
+      stem: 'Type what Dwight says after “relax”: “I ___.” (3 words)', answer: 'got it covered',
+      ja: '「relax」のあと「I ___.」の空所を書こう（3語）',
+      cue: '「relax」のあと',
       line: 'Hey, hey, hey, relax, I *got it covered*.',
-      said: '「まあまあ、落ち着いて。ちゃんとやるから」。got it は「ガディ」。',
-      mean: 'I got it covered ＝「任せて」。手伝いを断るときにも使う。',
-      trap: 'got it の t が弾み、一語に聞こえる。3語なので、つながりをほどいて書く。',
+      said: '「まあまあ、落ち着いて。ちゃんとやるから」と言う。',
+      mean: 'I got it covered ＝ 任せて。got it は「ガディ」とつながる。',
+      trap: 'got it がひと続きで一語に聞こえやすい。3語なので got と it に分けて書く。',
       use: 'Don’t worry about dinner. I got it covered.（夕食は任せて）' },
 
-    // R fix: V2 (70 % blind: the clip's theme made the debt choice obvious, and the apology was a filler). Three
-    //   "Brushing it off…" moves; the new near miss reads "owe" as money now.
-    // why: paid now ← owe = 借金, so money for the tacos; for free ← "Don't worry about it" taken as the whole reply
-    //   (the usual kind script)
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'justowe', reveals: ['oweone'], seg: [201.2, 206.2],
-      stem: 'When told “this is ridiculous”, what is Dwight’s reply really doing?',
-      choices: ['Brushing it off, then making it a debt for later', 'Brushing it off, then asking to be paid for it now',
-                'Brushing it off, and letting it go for free'], a: 0,
-      cue: '「Don’t worry about it」のあと、just のつく一言。',
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'insist', seg: [195.5, 199.9],
+      stem: 'What does “I insist” mean here?',
+      ja: 'ここでの「I insist」はどういう意味？',
+      choices: ['I really want to do it', 'I want you to do it instead', 'I’m not sure about it'], a: 0,
+      choicesJa: ['どうしても私がやりたい', 'かわりにあなたにやってほしい', 'それはよく分からない'],
+      cue: '「got it covered」のあと',
+      line: '*No, I insist*. — No, no, no, no, I *insist*.',
+      said: '二人とも「いや、ぜひ私が」とゆずらない。',
+      mean: 'I insist ＝ ぜひ（私が）。おごる、払う、手伝うときに、ゆずらない言い方。',
+      trap: 'No で始まるので、断っていると思いやすい。「自分がやる」と強く言っている。',
+      use: 'No, I insist. Let me pay.（いえ、ぜひ。私が払います）' },
+
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justowe', reveals: ['oweone'], seg: [201.2, 206.2],
+      stem: 'What does Dwight mean by “you can just owe me”?',
+      ja: 'ドワイトの「you can just owe me」はどういう意味？',
+      choices: ['Pay me back another time', 'Pay me for the tacos now', 'It’s free, so forget it'], a: 0,
+      choicesJa: ['いつか別のときに返して', 'タコス代を今払って', 'ただだから、気にしないで'],
+      cue: '「Don’t worry about it」のあと',
       line: '*Don’t worry about it*, you can *just owe me*.',
       said: '「ばかげてる」と言われ、「気にするな、貸しにしとけ」と返す。',
-      mean: '「気にしないで」は普通、見返りなしの意味。ここでは逆に借りを作らせる。',
-      trap: 'Don’t worry about it で親切に聞こえやすい。owe はお金とは限らない。',
-      use: 'Don’t worry about it, buy me lunch sometime.（気にしないで、今度お昼おごって）' },
+      mean: 'you can just owe me ＝ 貸しにしておけばいい。今はいいけど、あとで返してね。',
+      trap: 'Don’t worry about it から、ただの親切と思いやすい。owe me ＝ 私に借りがある。',
+      use: 'Don’t worry, you can pay me later.（気にしないで、あとで払えばいいよ）' },
 
-    // R fix: V2 (60 % blind: "cheaply" marked the key as the twist, and the Andy choice was weak). The new near miss
-    //   is the right payback in the wrong form (one by one).
-    // why: one by one ← the machine favor (209–222 s) heard as the first of many small paybacks; enough to use ←
-    //   "you're gonna owe me big time" (219 s) heard as a debt finally big enough
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['waste', 'motive'], seg: [201.2, 245.7],
-      stem: 'How does the favor plan turn out for Dwight in the end?',
-      choices: ['They clear their debts all at once with one small gift', 'They pay him back one by one with small favors',
-                'They now owe him enough for him to finally use it'], a: 0,
-      cue: '最後のプレゼントと、そのあとの一言。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['waste', 'motive'], seg: [201.2, 245.7],
+      stem: 'How does Dwight’s favor plan end?',
+      ja: 'ドワイトの貸しの計画はどうなる？',
+      choices: ['Everyone pays him back at once', 'Everyone owes him a big favor', 'Jim finally gets fired'], a: 0,
+      choicesJa: ['みんながまとめてお返しする', 'みんなが大きな借りを作る', 'ジムがついにクビになる'],
+      cue: '最後のプレゼントのあと',
       line: '*Starbucks gift card*. Surprise! … Damn it. I am *no closer* to taking Jim down.',
-      said: 'みんなから安いギフトカードを贈られ、「ジムを倒すのに一歩も近づいてない」とこぼす。',
-      mean: '全員がまとめて借りを返し、貸しは帳消し。集めた恩は使えずに終わる。',
-      trap: '途中の「大きな貸しだぞ」が残りやすいが、最後のカードで貸しは消える。結末は最後の一言で。',
+      said: 'みんなからギフトカードをもらい、「ジムを倒すのに全然近づいてない」とこぼす。',
+      mean: 'カード一枚で、みんなの借りがまとめて返された。貸しは使えずに終わる。',
+      trap: '途中の big time（大きな貸し）が残りやすい。最後の no closer で結果が分かる。',
       use: 'Here, now we’re even.（はい、これで貸し借りなし）' },
 
-    // R fix: V2 (50 % blind: the key was the only odd choice). The machine filler is replaced by the opposite
-    //   implication (death cancels the debt).
-    // why: way out ← "dies" + "still owe" heard as hoping the debt dies with him; glad ← "What if Dwight dies" heard as
-    //   a wish
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'ghost', seg: [213.6, 218.85],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'ghost', seg: [213.6, 218.85], retired: true,
       stem: 'Why does the worry about Dwight dying get a laugh?',
       choices: ['It makes a small debt the cause of a haunting', 'It treats his death as a way out of the debt',
                 'It hints the speaker would be glad to see him go'], a: 0,
@@ -279,30 +269,28 @@ export const dwightFavors: Clip = {
       trap: 'dies が強く響き、死を望む話に聞こえやすい。笑いの中心は最後の名詞。',
       use: 'That’s a recipe for disaster.（それは失敗のもとだよ）' },
 
-    // why: $50 ← fifteen/fifty: -teen vs -ty; $5 ← the "five" core heard and the "fif-" lost
     { id: 'n1', skill: 'number', level: 'B1', point: 'value', seg: [227.3, 235.3], keep: true,
-      stem: 'What value is the gift card said to have?',
+      stem: 'How much is the gift card worth?',
+      ja: 'ギフトカードはいくら分？',
       choices: ['$5', '$15', '$50'], a: 1,
-      cue: '「everybody」のあと、value の前の数。',
+      choicesJa: ['5ドル', '15ドル', '50ドル'],
+      cue: '「everybody」のあと',
       line: 'Starbucks gift card. Surprise! … *$15 value*.',
-      said: 'スターバックスのギフトカードを渡し、「15ドル相当」と言い添える。',
-      mean: 'value ＝ 相当額。「〜ドル相当」は景品や割引の説明でよく聞く言い方。',
-      trap: 'fifteen と fifty は似ている。-teen は語尾が長く強く、-ty は前が強く短い。',
+      said: 'ギフトカードを渡し、「15ドル分」と言い添える。',
+      mean: 'value ＝ 〜分（の価値）。景品や割引の説明でよく聞く。',
+      trap: '5ドルなら「ファイブ」だけ。fifteen は「フィフティーン」と後ろが長く、fifty は短い。',
       use: 'Sorry, was that fifteen or fifty?（すみません、15？それとも50？）' },
 
-    // R fix: V2 (55 % blind: the only negative feeling at the end of a scheme). Two "Frustrated…" choices now; the
-    //   reason is what the audio settles.
-    // why: Andy ← the favor war with Andy (75–206 s) taken as what he lost; calm, even ← the sigh "Ah" and the gift
-    //   card from everybody heard as a clean slate he accepts
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'waste', reveals: ['outcome'], seg: [236.2, 245.7],
-      stem: 'How does Dwight feel about his day at the very end?',
-      choices: ['Frustrated, because the day got him nowhere', 'Frustrated, because Andy beat him at favors',
-                'Calm, because everyone is now even with him'], a: 0,
-      cue: '最初の短い一言と、ため息のあとの一文。',
+      stem: 'How does Dwight feel at the end?',
+      ja: '最後、ドワイトはどんな気持ち？',
+      choices: ['Upset, the day was wasted', 'Upset, Andy beat him today', 'Calm, everyone is even'], a: 0,
+      choicesJa: ['がっかり、一日が無駄だった', 'くやしい、今日アンディに負けた', '落ち着いている、貸し借りなし'],
+      cue: '「Damn it」のあと',
       line: '*Damn it*. I am no closer… Ah, *what a waste of a day*.',
-      said: '「くそ、何も前に進んでない。ああ、無駄な一日だった」。',
-      mean: 'what a waste of ～ ＝「なんて〜の無駄」。がっかりといら立ちの決まった形。',
-      trap: '「Ah」はほっとした声にも聞こえる。no closer と waste が気持ちを決める。',
+      said: '「くそ、全然進んでない。ああ、無駄な一日だった」と言う。',
+      mean: 'what a waste of 〜 ＝ なんて〜の無駄。がっかりしたときの決まった言い方。',
+      trap: '「Ah」がほっとした声に聞こえやすい。waste of a day（一日の無駄）で決まる。',
       use: 'What a waste of time.（時間の無駄だった）' },
   ]
 };
