@@ -69,7 +69,7 @@ export const gingerbread: Clip = {
       line: 'drag this department into the 20th century. — Tom, *it’s the 21st century*.',
       said: '「この課を20世紀に引っぱりこむ」に、「トム、今は21世紀だよ」と返される。',
       mean: '21st ＝ twenty-first（21番目）。century ＝ 世紀。トムの言いまちがいを直している。',
-      trap: '20th（トゥエンティエス）はトムが言った語。直す側は「トゥエンティ・ファースト」と言う。',
+      trap: '20th（トゥエンティエス）はトムが言った語。19th は「ナインティーンス」。「トゥエンティ・ファースト」なら21世紀。',
       use: 'It’s the twenty-first of May.（5月21日です）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'wood', seg: [39.0, 44.5], keep: true,
@@ -139,7 +139,7 @@ export const gingerbread: Clip = {
       line: 'please don’t eat it ’cause it costs *$55 an ounce*.',
       said: '「作る時間がなかった。食べないで、1オンス55ドルだから」と言う。',
       mean: 'fifty-five ＝ 55。an ounce ＝ 1オンスあたり。高いから食べないで、と言っている。',
-      trap: 'fifty だけなら「フィフティ」で終わる。fifteen は「ティーン」。「フィフティ・ファイヴ」と続けば55。',
+      trap: '5 は「ファイヴ」だけ。15 は「ティーン」、50 は「フィフティ」で終わる。「フィフティ・ファイヴ」なら55。',
       use: 'It’s ten dollars a pound.（1ポンド10ドルです）' },
 
     { id: 'i2', retired: true, skill: 'infer', level: 'C1', point: 'silver', seg: [131.8, 145.2],
@@ -162,7 +162,7 @@ export const gingerbread: Clip = {
       line: 'I can handcraft *17-foot* canoes out of western red cedar',
       said: '「17フィートのカヌーなら手作りできるのに」と言う。',
       mean: 'seventeen ＝ 17。handcraft ＝ 手作りする。大きな物が作れる腕前を言っている。',
-      trap: 'seventy は「セヴンティ」と短い。seventeen は「ティーン」をのばす。twenty-seven は「トゥエンティ」で始まる。',
+      trap: '7 は「セヴン」だけ。70 は「セヴンティ」と短い。27 は「トゥエンティ」で始まる。「ティーン」をのばせば17。',
       use: 'It’s about seventeen feet long.（長さは17フィートくらい）' },
 
     { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'crackers', seg: [154.2, 161.1],

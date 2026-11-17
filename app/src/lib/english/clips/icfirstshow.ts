@@ -173,7 +173,7 @@ export const icFirstShow: Clip = {
       line: 'Until Sam superglued my drawstring closed and left me here *overnight*.',
       said: '「サムがひもを接着剤で閉じて、ひと晩ここに置いていった」と話す。',
       mean: 'overnight ＝ ひと晩じゅう、朝まで。楽しい思い出が、ひどい思い出に変わる。',
-      trap: 'night だけ聞くと短い時間にも思える。over が付くと「朝まで」。',
+      trap: 'an hour なら「アナウア」、two days なら「デイズ」が聞こえる。over-night は「朝まで」。',
       use: 'Can I leave my bag here overnight?（荷物をひと晩預けられますか）' },
 
     { id: 'd2', retired: true, skill: 'detail', level: 'B1', point: 'sack', seg: [137.8, 147],

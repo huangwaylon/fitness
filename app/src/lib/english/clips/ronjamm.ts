@@ -232,7 +232,7 @@ export const ronNoRegret: Clip = {
       line: 'I warned him several times to back off, and instead, he *attacked me twice*.',
       said: '「何度も下がれと言ったのに、あいつは2回おそってきた」と言う。',
       mean: 'twice ＝ 2回。「トゥワイス」。先に手を出したのは相手だ、という話。',
-      trap: 'several times は注意した回数。attacked me のすぐあとの「トゥワイス」が答え。',
+      trap: 'once は「ワンス」、three は「スリー」。several times は注意した回数。attacked me のあとの「トゥワイス」が答え。',
       use: 'I called you twice this morning.（今朝2回電話したよ）' },
 
     { id: 'i3', retired: true, skill: 'infer', level: 'C1', point: 'frail', seg: [89.9, 99.8],
