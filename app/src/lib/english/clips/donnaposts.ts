@@ -1,17 +1,12 @@
-// REVIEW 2026-11-16: pass 17, fix 6, drop 1 (a1), new 0; ear checks 1
-// REVIEW question: d1 now reads "Same hairdresser" as the shared hairdresser being the go-between ("Damn it,
-//   Typhoon!" then blames Typhoon); if the scene makes Typhoon someone else, the key wording needs another look
+// A2 REVIEW 2026-11-17: keep 9, rewrite 11, retire 3, new 0
+// A2 LATE: the title and Donna's hashtags are vulgar ("#BitchBoss"), and the hearing needs the show's backstory
 // “#BitchBoss | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at a hearing, Donna's
 // private posts about Leslie are read into the record; Leslie is hurt, older posts show Donna admires her, and the two
 // make up with half-apologies, a deal and matching lipsticks.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈258 s (music after; whisper loops "I don't
-// hate that" to the end). Left out on purpose: the hashtags and every line with the B-word (77.9–81.1, 189.4–190.6,
-// 195.9–205.9, 252.1–254.7 s), the lawsuit opening (14.9–26.2 s), "tweet nasty stuff…" (130.1–132.5 s), and the
-// backstory names (the recall, Jamm, Typhoon). No stem, choice, line or note quotes those; f2 stops at 130.1 s, and a3
-// starts at 254.7 s with almost no lead-in so that it doesn't replay the hashtag. Speakers who aren't named in the audio
-// stay unnamed in the stems ("the questioner", "the reply").
-// EAR CHECK: 90.2–92.3 s nt1 — both sources have "you know it ain't less than 98"; confirm "ain't" (no "isn't") before
-//   the C2 dictation keys on it
+// Segments from the captions, words from whisper (2026-11-16). Left out on purpose: the hashtags and every line with
+// the B-word (77.9–81.1, 189.4–190.6, 195.9–205.9, 252.1–254.7 s), the lawsuit opening (14.9–26.2 s), "tweet nasty
+// stuff…" (130.1–132.5 s), and the backstory names. No segment, stem, choice, line or note holds those. Speakers who
+// aren't named in the audio stay unnamed in the stems.
 import type { Clip } from '../types.ts';
 
 export const donnaPosts: Clip = {
@@ -20,115 +15,89 @@ export const donnaPosts: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R drop: a1 (V1 + K1). That the praise is a dig rests on what the hearing is about, which the segment never
-    //   says (Donna's own defence comes after the lawsuit lines left out at 14.9–26.2 s), and "let me first say…"
-    //   before questions is just as defensible as a softener; its tone ear check goes with it
-    // R fix: V2 (blind 50 %: "praise too" was weak); now a second "objecting" choice
-    // why: show of hands ← "does anyone else here…?" taken as a real question to the room; waste of time ← the
-    //   impatient "Okay, …" heard as the point, "double standard" missed
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'double', seg: [6.5, 14.9],
-      stem: 'When Leslie speaks up after the praise, what is her question doing?',
-      choices: ['Objecting that Donna is treated unfairly', 'Calling for a show of hands from the room',
-                'Objecting that the hearing is a waste of time'], a: 0,
-      cue: 'anyone else のあと、最後の二語。',
+      stem: 'What is Leslie doing with “a double standard”?',
+      ja: '「a double standard」で、レスリーは何をしている？',
+      choices: ['Saying it is unfair', 'Asking for a vote', 'Asking a real question'], a: 0,
+      choicesJa: ['不公平だと言っている', '投票を求めている', '本当に質問している'],
+      cue: '「anyone else」のあとの2語。',
       line: 'Okay, does anyone else here see a *double standard*?',
       said: '「ほかに、二重基準だと思う人はいない？」と割って入る。',
-      mean: '答えを求める質問ではなく抗議。なぜ彼女だけが責められるのか、という意味。',
-      trap: 'does anyone…? を本当の質問と取りやすい。会議で周りに問いかける形は、反対の意思表示に多い。',
+      mean: 'double standard ＝ 人によって基準が違うこと、不公平。答えを求めない抗議。',
+      trap: 'does anyone…? を本当の質問と思いやすい。会議でこう聞くのは反対の表明。',
       use: 'Isn’t that a bit of a double standard?（それってちょっと不公平じゃない？）' },
 
-    // R fix: K1 ("Same hairdresser" answers "via a third party": the go-between is the shared hairdresser, not
-    //   someone who shares it, which would be the questioner himself); the key now says so
-    // why: reporter ← "shocking twist… juicy story" sounds like a newscaster; coworker ← "the Parks Department" came
-    //   just before, the office-leak script; "Same hairdresser" answers it
     { id: 'd1', skill: 'detail', level: 'B1', point: 'thirdparty', seg: [37.2, 48.5],
-      stem: 'How did the questioner get into Donna’s private account?',
-      choices: ['Through the hairdresser they both go to', 'Through a reporter chasing after a juicy story',
-                'Through a coworker in her own department'], a: 0,
-      cue: 'third party のあとの、短い答え。',
+      stem: 'How did they get Donna’s private posts?',
+      ja: 'ドナの非公開の投稿を、どうやって手に入れた？',
+      choices: ['Through the same hairdresser', 'Through a news reporter', 'Through a coworker'], a: 0,
+      choicesJa: ['同じ美容師を通じて', '記者を通じて', '同僚を通じて'],
+      cue: '「third party」のあとの短い答え。',
       line: 'via a *third party*. — *Same hairdresser.*',
-      said: '「第三者を通じてアカウントを見た」と言い、「同じ美容師」と補う。',
-      mean: '二人が通う同じ美容師を通じて、非公開の投稿を見た、ということ。',
-      trap: 'juicy story（おいしいネタ）で記者を思い浮かべやすい。third party の正体は直後の短い答え。',
-      use: 'I heard it from a mutual friend.（共通の友人から聞いた）' },
+      said: '「第三者を通じて見た」と言い、「同じ美容師」と補う。',
+      mean: 'third party ＝ 第三者。二人が通う同じ美容師が、非公開の投稿を見せた。',
+      trap: 'juicy story（おいしいネタ）で記者を思いやすい。正体は直後の短い答え。',
+      use: 'I heard it from a friend of a friend.（友だちの友だちから聞いた）' },
 
-    // why: posts about them ← the whole hearing is about posts, so the motive sounds like one too; truth ← a
-    //   public-spirited script; the reply names only the brunch she didn't come to
     { id: 'i2', skill: 'infer', level: 'B2', point: 'brunch', seg: [48.4, 55.3],
-      stem: 'Why did the person who passed on Donna’s posts do it?',
-      choices: ['To get back at Donna for missing a party', 'To get back at Donna for posts about them',
-                'To help the hearing find out the truth'], a: 0,
-      cue: 'Why’d you do this? への返事、if のあと。',
+      stem: 'Why did the hairdresser pass on Donna’s posts?',
+      ja: '美容師はなぜドナの投稿を渡した？',
+      choices: ['Donna missed her brunch', 'Donna wrote about her', 'To help the hearing'], a: 0,
+      choicesJa: ['ドナがブランチに来なかったから', 'ドナに悪口を書かれたから', '公聴会を助けるため'],
+      cue: '「Why’d you do this?」への返事。',
       line: 'Maybe if you’d *bothered to come* to my … *brunch*, you’d know.',
       said: '「なんで？」に「私のブランチに来てくれてたら、分かったでしょうね」と返す。',
-      mean: '仕返しの理由は、パーティーに来なかったこと。bothered to で責めている。',
-      trap: '投稿の話の流れで、理由も投稿だと思いやすい。理由は if のあとにある。',
+      mean: 'bother to ～ ＝ わざわざ〜する。来なかったことへの仕返し。',
+      trap: '投稿の話の流れなので、理由も投稿と思いやすい。理由は if のあと。',
       use: 'You didn’t even bother to call.（電話もくれなかったじゃない）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'brunch', seg: [51.3, 55.3],
-      stem: 'Type the words: “Maybe if ___ come to my … brunch…” (3 words)', answer: "you'd bothered to",
-      cue: 'Maybe if のすぐあと、come の前。',
+      stem: 'Type it: “Maybe if ___ come to my … brunch…” (3 words)', answer: "you'd bothered to",
+      ja: '書き取る：「Maybe if ___ come to my … brunch…」（3語）',
+      cue: '「Maybe if」のすぐあと。',
       line: 'Maybe if *you’d bothered to* come to my … brunch, you’d know.',
-      said: '「ブランチに来る手間さえかけてくれてたら」。d は弱く短い。',
-      mean: 'you had bothered to の短縮。to は弱く、come につながる。',
-      trap: 'd が聞こえにくく you bothered と書きやすい。if＋過去の話なら had が入る。',
+      said: '「ブランチに来る手間さえかけてくれてたら」と言う。',
+      mean: 'you’d ＝ you had。d は小さく短い。to も小さく come につながる。',
+      trap: 'd が聞こえにくく、you bothered と書きやすい。過去の「もし」なら had が入る。',
       use: 'If you’d told me, I’d have come.（言ってくれたら来たのに）' },
 
-    // why: kept private ← her account "is set to private" was said earlier; admitting ← the Japanese frame: "Uh-oh"
-    //   heard as owning up before the bad news
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'recess', seg: [55.8, 64.4],
-      stem: 'When the posts are about to be read out, what is Donna doing?',
-      choices: ['Stalling, by asking for a short break', 'Asking that her posts be kept private',
-                'Admitting that her posts went too far'], a: 0,
-      cue: 'Uh-oh のあと、Can I で始まる頼み。',
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'recess', seg: [55.8, 64.4],
+      stem: 'Why does Donna ask for a “brief recess”?',
+      ja: 'ドナはなぜ「brief recess（少し休憩）」を頼む？',
+      choices: ['To stop the reading for now', 'To keep her posts private', 'To say sorry to Leslie'], a: 0,
+      choicesJa: ['読み上げを止めたいから', '投稿を秘密にしたいから', 'レスリーに謝りたいから'],
+      cue: '「Uh-oh」のあとの頼み。',
       line: '*Uh-oh.* Can I request a *brief recess*?',
       said: '「あーあ」とつぶやき、「少し休憩をもらえますか」と頼む。',
-      mean: 'recess は会議や裁判の休憩。読み上げを止めたくて、時間かせぎをしている。',
-      trap: 'Uh-oh で謝る流れを予想しやすい。困った直後の頼みごとは、その場をしのぐ手が多い。',
+      mean: 'recess ＝ 会議や裁判の休憩。読み上げを止めたくて、時間をかせいでいる。',
+      trap: 'Uh-oh で謝ると思いやすい。困った直後の頼みは、その場をしのぐため。',
       use: 'Can we take a short break?（少し休憩しませんか）' },
 
-    // R fix: V2 (blind 65 %: "turn the council against Donna alone" was weak); now an embarrass-and-apologize
-    //   script, refuted by Leslie's "I honestly don't know anymore" ending the exchange
-    // why: fired ← "fire you" is said just before the reading; apologizes at once ← the usual sitcom script after a
-    //   leak; "the respect of your employees" and "That's what you really think of me?" settle it
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'hearing', reveals: ['target'], seg: [55.8, 139.2],
-      stem: 'What do the posts read at the hearing do to Leslie and Donna?',
-      choices: ['They hurt Leslie and shake their trust', 'They get Donna fired from the department',
-                'They embarrass Donna, who apologizes at once'], a: 0,
-      cue: '読み上げのあと、二人のやりとりの最後まで。',
-      said: '投稿が読まれ、Leslie は「そう思ってたの？」と傷つく。',
-      mean: '責められるのは Leslie の管理能力。それ以上に、二人の信頼が揺らぐ。',
-      trap: '「クビ」が先に出るので、Donna の処分の話と思いやすい。読み上げのあとの会話で決まる。',
-      use: 'I honestly don’t know anymore.（正直、もう分からない）' },
-
-    // why: can't stop it ← "not me I'm worried about" heard as doubt in Leslie's promise; rather quit ← "not me" heard
-    //   as "I don't care about this job"
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'target', seg: [64.0, 70.0],
-      stem: 'What does Donna’s reply to Leslie’s promise suggest?',
-      choices: ['The posts will hurt Leslie more than her', 'Leslie can’t really stop them firing her',
-                'She’d rather quit than wait to be fired'], a: 0,
-      cue: 'fire you への返事。誰の話か、主語に注目。',
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'target', seg: [64, 70],
+      stem: 'Who is Donna worried about?',
+      ja: 'ドナは誰のことを心配している？',
+      choices: ['Leslie', 'Herself', 'The hairdresser'], a: 0,
+      choicesJa: ['レスリー', '自分', '美容師'],
+      cue: '「fire you」への返事。',
       line: 'I’m not going to let them *fire you*. — Yeah, *it’s not me* I’m worried about.',
       said: '「クビにはさせない」に「心配なのは私じゃないの」と返す。',
-      mean: '心配なのは、これから投稿を聞かされる Leslie のほう。',
-      trap: '「クビ」の話が続くので、自分の進退の話と取りやすい。it’s not X は「Xでなく別の人」を指す。',
+      mean: 'it’s not me I’m worried about ＝ 心配なのは私じゃない。これから悪口を聞くレスリーのこと。',
+      trap: 'クビの話が続くので、自分の心配と思いやすい。not me で「私ではない」。',
       use: 'It’s not the money I’m worried about.（心配なのはお金じゃない）' },
 
-    // why: 90 ← the weak "-eight" of ninety-eight is lost; 88 ← eighty/ninety blur in fast reading
     { id: 'n1', skill: 'number', level: 'B1', point: 'poll', seg: [81.5, 93.3], keep: true,
-      stem: 'In the poll, what scale is offered for how annoying Leslie is?',
+      stem: 'What scale does the poll use?',
+      ja: 'アンケートは、どんな段階で聞いている？',
       choices: ['88 to 100', '90 to 100', '98 to 100'], a: 2,
-      cue: 'scale of のあと。あとで同じ数がもう一度出る。',
+      choicesJa: ['88から100', '90から100', '98から100'],
+      cue: '「scale of」のあと。',
       line: 'Twitter poll on a scale of *98 to 100*.',
-      said: '「ツイッター投票：98から100のスケールで」と読み上げる。',
-      mean: 'scale of A to B ＝ AからBの段階で。下の数の高さに注目。',
+      said: '「ツイッター投票：98から100の段階で」と読み上げる。',
+      mean: 'on a scale of A to B ＝ AからBの段階で。一番下でも98という冗談。',
       trap: 'eight は短く弱く、ninety だけに聞こえやすい。あとの less than 98 で確かめる。',
       use: 'On a scale of one to ten?（10段階でいうと？）' },
 
-    // R fix: V2 (blind 75 %: "numbers too large" didn't sound like a joke at all); now a reversed-scale misreading
-    // why: TV fans ← "true blood fans" is read right after; scale mixed up ← "98 to 100" plus "less than 98" heard as
-    //   a scale that runs the wrong way
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'poll', reveals: ['aint'], seg: [81.5, 93.3],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'poll', reveals: ['aint'], seg: [81.5, 93.3], retired: true,
       stem: 'What makes the poll Donna posted a joke?',
       choices: ['Even its lowest choice means “very annoying”', 'It asks TV fans to judge a city official',
                 'It mixes up the top and bottom of the scale'], a: 0,
@@ -139,10 +108,7 @@ export const donnaPosts: Clip = {
       trap: '数字の向きや TV ファンに気を取られやすい。数字のジョークは、範囲の幅を見る。',
       use: 'Choose any time, as long as it’s noon.（何時でもいいよ、正午なら）' },
 
-    // C2: exact words in fast speech (non-standard "ain't")
-    // anchor: 90.24–92.32 s both sources have "you know it ain't less than 98" (captions "cause", whisper "Because"
-    //   before it), seven words in ≈2.1 s (≈200 wpm); grammar would write "isn't"
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'aint', reveals: ['poll'], seg: [87.6, 93.3],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'aint', reveals: ['poll'], seg: [87.6, 93.3], retired: true,
       stem: 'Type the words: “…you know ___ 98.” (4 words)', answer: "it ain't less than",
       cue: 'you know のすぐあと。文法より、聞こえた音を。',
       line: 'Because you know *it ain’t less than* 98.',
@@ -151,141 +117,138 @@ export const donnaPosts: Clip = {
       trap: '習った形に合わせて isn’t と書きたくなる。書き取りは、正しい文でなく言われた音を書く。',
       use: 'It ain’t over yet.（まだ終わっちゃいないよ）' },
 
-    // R fix: V2 (blind 55 %: the key was the only "respect"); a distractor now shares it
-    // why: council ← the hearing is held by the council, and "respect" is caught; town ← a "public trust" script for
-    //   a city official
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'hearing', reveals: ['target'], seg: [98.0, 139.2],
+      stem: 'How does Leslie feel after the posts are read?',
+      ja: '投稿が読まれたあと、レスリーはどう感じる？',
+      choices: ['Hurt and unsure', 'Happy and proud', 'Angry at the hairdresser'], a: 0,
+      choicesJa: ['傷ついて分からなくなる', 'うれしくて誇らしい', '美容師に怒っている'],
+      cue: '最後の「I honestly don’t know」。',
+      line: 'That’s what you really think of me? … *I honestly don’t know anymore.*',
+      said: '「それが本音？」「本当に嫌われてると思う？」「正直、もう分からない」と話す。',
+      mean: 'I honestly don’t know anymore ＝ 正直、もう分からない。二人の信頼が揺らいでいる。',
+      trap: '美容師への文句が先に出るので、怒りの話と思いやすい。最後の一言が今の気持ち。',
+      use: 'I honestly don’t know anymore.（正直、もう分からない）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'respect', seg: [102.2, 109.8],
-      stem: 'Besides control of her department, what does Leslie lack, says the questioner?',
-      choices: ['The respect of her own employees', 'The respect of the council members', 'The trust of the people in town'], a: 0,
-      cue: 'Not only のあと、don’t even に続く部分。',
+      stem: 'What else does Leslie not have, says the questioner?',
+      ja: '質問した人は、レスリーにほかに何がないと言う？',
+      choices: ['Her workers’ respect', 'The council’s respect', 'The town’s trust'], a: 0,
+      choicesJa: ['部下からの尊敬', '議会からの尊敬', '町の人の信頼'],
+      cue: '「don’t even have」のあと。',
       line: 'Not only do you have no control over your department, you don’t even have *the respect of your employees*.',
-      said: '「部署を管理できていないだけでなく、部下に尊敬すらされていない」と言う。',
-      mean: 'not only A, even B で、B のほうをより強く責めている。',
-      trap: '公聴会の場なので、議会や町の人の話と思いやすい。don’t even のあとの名詞まで聞く。',
+      said: '「部署を管理できないだけでなく、部下に尊敬すらされていない」と言う。',
+      mean: 'not only A, … even B ＝ Aだけでなく、Bさえも。employees ＝ 部下、社員。',
+      trap: '公聴会の場なので、議会や町の人の話と思いやすい。don’t even のあとを聞く。',
       use: 'Not only is it cheap, it’s good.（安いだけじゃなく、おいしい）' },
 
-    // why: it was ← "that" after "thought" loses its th and sounds like "it"; that's ← "that was" runs into one
-    //   syllable; think that's ← the -ght of "thought" drops before "that"
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thing', seg: [109.7, 115.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thing', seg: [109.7, 115],
       stem: 'Fill the gap: “I mean, I ___ your thing.”',
-      choices: ['thought it was', 'thought that was', 'thought that’s', 'think that’s'], a: 1,
-      cue: 'I mean のあと、your の前の短い音。',
+      ja: '空所を埋める：「I mean, I ___ your thing.」',
+      choices: ['thought it was', 'thought that was', 'think that’s'], a: 1,
+      choicesJa: ['それが〜だと思ってた', 'それが〜だと思ってた（that）', 'それが〜だと思う'],
+      cue: '「I mean」のあと、your の前。',
       line: 'I mean, I *thought that was* your thing.',
-      said: '「それがあなたの持ち味だと思ってた」。thought that がつながる。',
+      said: '「それがあなたの持ち味だと思ってた」と言う。',
       mean: 'thought の t と that の th が重なり、一続きに聞こえる。',
-      trap: 'that が弱いと it に聞こえやすい。was まで聞く。',
+      trap: 'that が小さく、it に聞こえやすい。was まで聞く。',
       use: 'I thought that was tomorrow!（それ明日だと思ってた！）' },
 
-    // why: job ← "thing" read as 担当 ("that's my thing" = my job); problem ← "your thing" heard as "your issue"
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'thing', seg: [109.7, 117.0],
-      stem: 'How does Donna explain that calling Leslie annoying isn’t an insult?',
-      choices: ['It’s Leslie’s trademark, part of her style', 'It’s Leslie’s job, as the one in charge',
-                'It’s Leslie’s problem, and not anyone else’s'], a: 0,
-      cue: 'I mean のあと、your で終わる一言。',
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'thing', seg: [109.7, 117],
+      stem: 'What does Donna mean by “your thing”?',
+      ja: 'ドナの「your thing」はどういう意味？',
+      choices: ['What makes you you', 'Your job as the boss', 'Your own problem'], a: 0,
+      choicesJa: ['あなたらしさ', '上司としての仕事', 'あなた自身の問題'],
+      cue: '「I mean」のあとの最後の語。',
       line: 'sometimes you’re kind of annoying. I mean, I thought that was *your thing*.',
       said: '「ちょっとうざい時もある。それが持ち味だと思ってた」と言う。',
-      mean: 'your thing ＝ その人らしさ。悪口ではなく、キャラの一部として言っている。',
-      trap: 'thing を「仕事」や「問題」と取りやすい。your thing は「その人らしさ」。',
+      mean: 'your thing ＝ その人らしさ、得意なこと。悪口ではなく、キャラの一部として言っている。',
+      trap: 'thing を「物」や「問題」と取りやすい。not my thing ＝ 好きじゃない、もよく使う。',
       use: 'Karaoke isn’t really my thing.（カラオケはあまり得意じゃない）' },
 
-    // why: surprise parties / thank-you notes ← the kind of upbeat, crafty things such a person would list (the
-    //   script); only the list's words settle it
     { id: 'd3', skill: 'detail', level: 'B1', point: 'list', reveals: ['thing'], seg: [114.6, 126.5],
-      stem: 'Which does Leslie name as one of her real “things”?',
-      choices: ['Thinking up cool nicknames for friends', 'Planning surprise parties for friends',
-                'Writing long thank-you notes to friends'], a: 0,
-      cue: 'My things are のあと、並ぶものの最後。',
+      stem: 'What does Leslie say is one of her real “things”?',
+      ja: 'レスリーは、本当の自分らしさは何だと言う？',
+      choices: ['Thinking up nicknames', 'Planning surprise parties', 'Writing thank-you notes'], a: 0,
+      choicesJa: ['あだ名を考えること', 'サプライズを計画すること', 'お礼の手紙を書くこと'],
+      cue: '「My things are」のあと、最後。',
       line: 'My things are making friendship bracelets… *thinking up really cool nicknames* for my friends.',
-      said: '「私らしいのは、友情ブレスレット作りや、友だちに最高のあだ名を考えること」と並べる。',
-      mean: 'うざさではなく、人を喜ばせることが自分の持ち味だ、と言い返している。',
-      trap: 'いかにも言いそうな事を思い浮かべて選びやすい。並べた物を最後まで聞く。',
+      said: '「私らしいのは、友情ブレスレット作りや、最高のあだ名を考えること」と並べる。',
+      mean: 'think up ＝ 考え出す。人を喜ばせることが自分らしさ、と言い返している。',
+      trap: 'いかにも言いそうなことを選びやすい。並べたものを最後まで聞く。',
       use: 'My thing is cooking for friends.（友だちに料理するのが好きなの）' },
 
-    // why: short break ← "blow off" read as skipping (blow off work = サボる); work news ← "about work" heard as the
-    //   usual reason a city worker posts
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'steam', seg: [126.2, 130.1],
-      stem: 'Why is Donna on Twitter at all, by her own account?',
-      choices: ['To let off the stress her job builds up', 'To take a short break from work now and then',
-                'To keep people posted on what’s new at work'], a: 0,
-      cue: 'Twitter のあと、about work の前。',
-      line: 'the only reason I’m even on Twitter is to *blow off steam* about work…',
-      said: '「ツイッターは仕事のうっぷん晴らしのため」と言う。',
-      mean: 'blow off steam ＝ たまった不満を吐き出す。本気で憎んではいない、という言い分。',
-      trap: 'blow off は「サボる」にも使うので休憩と取りやすい。steam が付けばうっぷん晴らし。',
+      stem: 'What does “blow off steam” mean?',
+      ja: '「blow off steam」はどういう意味？',
+      choices: ['Let out stress', 'Take a short break', 'Share work news'], a: 0,
+      choicesJa: ['ストレスを発散する', 'ちょっと休む', '仕事の話を伝える'],
+      cue: '「Twitter」のあと、about work の前。',
+      line: 'the only reason I’m even on Twitter is to *blow off steam* about work',
+      said: '「ツイッターは仕事のうさ晴らしのためだけ」と言う。',
+      mean: 'blow off steam ＝ たまった不満を吐き出す。本気で嫌ってはいない、という言い分。',
+      trap: 'blow off は「さぼる」にも使うので、休憩と思いやすい。steam（湯気）がつけば、うさ晴らし。',
       use: 'I go running to blow off steam.（うさ晴らしに走るんだ）' },
 
-    // why: worn out ← four quick answers heard as giving up; lies ← Leslie's "So you do think I'm annoying?" taken as
-    //   the right reading of the "Yes" (it answers "right now" only)
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'yes', seg: [153.2, 162.3],
-      stem: 'In Leslie’s run of yes-or-no questions, why is the last answer funny?',
-      choices: ['Her nonstop questions are what’s annoying him', 'He’s worn out and just agrees to anything',
-                'He finally admits his first answers were lies'], a: 0,
-      cue: '4つめの質問の、最後の二語。',
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'yes', seg: [153.2, 162.3],
+      stem: 'When does the man say Leslie is annoying?',
+      ja: '男の人は、レスリーがいつうざいと言う？',
+      choices: ['Right now', 'Every day', 'Never'], a: 0,
+      choicesJa: ['今', '毎日', '一度もない'],
+      cue: '4つめの質問と、その答え。',
       line: 'Do you think I’m being annoying *right now*? — *Yes.*',
-      said: '三つの質問に「ノー」、「今うざい？」にだけ「イエス」。',
-      mean: 'うざいのは性格ではなく、今この質問攻め。答えそのものが、質問の答えになっている。',
-      trap: '「イエス」で前の答えをひっくり返したと取りやすい。何に対するイエスかは、right now で決まる。',
+      said: '三つの質問に「ノー」、「今うざい？」にだけ「イエス」と答える。',
+      mean: 'right now ＝ 今。うざいのは、まさに今の質問攻め、という笑い。',
+      trap: '最初の質問に No と答えるので、Never を選びやすい。最後の質問の right now を聞く。',
       use: 'Am I talking too much right now?（今しゃべりすぎてる？）' },
 
-    // why: denies ← "because they love you" is said and sounds like the answer; sidesteps ← the long praise ("you ask a
-    //   lot… they love you") heard as the whole answer, missing the "But… ruffle some feathers" that follows
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'feathers', seg: [159.9, 174.1],
-      stem: 'How does the reply to “So you do think I’m annoying?” handle it?',
-      choices: ['It softens it: she pushes people very hard', 'It denies it: people love to work for her',
-                'It sidesteps it: he praises her and stops there'], a: 0,
-      cue: 'but のあと、driving people に続く部分。',
+    { id: 'p3', skill: 'pragma', level: 'C1', point: 'feathers', seg: [159.9, 174.1],
+      stem: 'How does he answer “So you do think I’m annoying?”',
+      ja: '「やっぱりうざいと思ってるの？」に、彼はどう答える？',
+      choices: ['Yes, but in a soft way', 'No, everyone loves her', 'He only praises her'], a: 0,
+      choicesJa: ['やんわり「そう」と言う', '「みんな君が好き」と否定する', 'ほめるだけ'],
+      cue: '「But」のあと。',
       line: 'people do what you ask *because they love you*. *But*… driving people as hard as you do can *ruffle some feathers*.',
       said: '「みんな君が好きで従う。でも追い立てすぎると反感も買う」と言う。',
-      mean: 'annoying とは言わず、ほめてから but で本音を言う。',
-      trap: 'love you が聞こえると否定に聞こえやすい。ほめ言葉のあとの but に本音が来る。',
+      mean: 'ruffle some feathers ＝ 人をいらだたせる。ほめてから but で本音を言う。',
+      trap: 'love you が聞こえると、否定に聞こえやすい。ほめ言葉のあとの but に本音。',
       use: 'I don’t want to ruffle any feathers.（波風を立てたくないんだ）' },
 
-    // why: hurt beside her ← "bullet" taken literally (撃たれる); hitting back ← "stepping up" heard as going on the
-    //   attack; "for me" makes it taking harm in her place
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'bullet', seg: [191.8, 195.6],
-      stem: 'In one of Donna’s older posts, what is Leslie doing for her?',
-      choices: ['Taking the heat so that Donna stays safe', 'Getting hurt while fighting next to Donna',
-                'Hitting back at the people who attack Donna'], a: 0,
-      cue: 'at these hearings のあと、for me の前。',
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'bullet', seg: [191.8, 195.6],
+      stem: 'What does “taking a bullet for me” mean here?',
+      ja: 'ここで「taking a bullet for me」はどういう意味？',
+      choices: ['Taking the blame for me', 'Getting hurt next to me', 'Fighting the people I hate'], a: 0,
+      choicesJa: ['私の代わりに責めを受ける', '私の横でけがをする', '私の嫌いな人と戦う'],
+      cue: '「at these hearings」のあと。',
       line: 'Leslie Knope is *stepping up* at these hearings and *taking a bullet for me*.',
-      said: '「Leslie は公聴会で私の身代わりになってる」という投稿。',
-      mean: 'take a bullet for ＝ 人の代わりに責めを受ける。本音は感謝。',
-      trap: 'bullet（弾）を文字通りに取ると、けがやけんかの話になる。for me が付けば「身代わり」。',
-      use: 'Thanks for taking the heat for me.（かばってくれてありがとう）' },
+      said: '「レスリーは公聴会で私の身代わりになってくれてる」という昔の投稿。',
+      mean: 'take a bullet for ～ ＝ 〜の代わりに責めを受ける、かばう。本音は感謝。',
+      trap: 'bullet（弾）から、けがやけんかの話と思いやすい。for me がつけば身代わり。',
+      use: 'Thanks for taking the blame for me.（かばってくれてありがとう）' },
 
-    // R fix: V2 (blind 60 %: "blames Donna" was weak); now a scope misreading of "one person's annoying"
-    // why: fully sorry ← "I'm sorry if I can be…" taken as a full apology (the Japanese すみません frame); only Donna
-    //   ← "one person's annoying" heard as a count (one person thinks so), not a change of label
     { id: 'a5', skill: 'attitude', level: 'C1', point: 'heroic', seg: [210.3, 220.2],
-      stem: 'How sorry does Leslie sound in her apology for being annoying?',
-      choices: ['Half sorry: she turns the flaw into a strength', 'Fully sorry: she admits she needs to change',
-                'Half sorry: she says only Donna finds her so'], a: 0,
-      cue: 'I’m sorry のあと、but に続く部分。',
+      stem: 'How sorry is Leslie for being annoying?',
+      ja: 'うざかったことを、レスリーはどのくらい謝っている？',
+      choices: ['Only a little sorry', 'Very, very sorry', 'Not sorry at all'], a: 0,
+      choicesJa: ['少しだけ', 'とても', 'まったく謝っていない'],
+      cue: '「I’m sorry」のあと、but に続く所。',
       line: 'I’m sorry if I can be a little annoying… *but* one person’s annoying is *another person’s inspiring and heroic*.',
       said: '「うざかったらごめん。でも、うざいは見方を変えれば英雄的」と言う。',
-      mean: 'sorry if は条件つきの謝罪。欠点を長所に言いかえ、半分は自己弁護。',
-      trap: 'sorry を聞くと全面的な謝罪と取りやすい。sorry if… but は「言い分もある」の形。',
+      mean: 'sorry if ～ ＝ もし〜ならごめん。条件つきの謝り方で、欠点を長所と言いかえる。',
+      trap: 'sorry を聞くと、全面的に謝っていると思いやすい。sorry if… but は半分だけ。',
       use: 'Sorry if I was rude earlier.（さっき失礼だったらごめん）' },
 
-    // why: Leslie eases off ← her "I'm sorry if I can be a little annoying" heard as a promise; Donna quits posting ←
-    //   the posts caused the trouble, and "Are you tweeting this?" keeps posts in view; the two "I can't promise…"
-    //   lines and "Deal." settle it
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'end', reveals: ['heroic', 'some'], seg: [210.3, 258.4],
-      stem: 'How do Leslie and Donna settle things at the end?',
-      choices: ['They make up, and neither promises to change', 'They make up, and Leslie vows to ease off',
-                'They make up, and Donna quits posting'], a: 0,
-      cue: '二人の I can’t promise… のあとの一語。',
-      said: '二人とも謝るが「変わる約束はできない」と言い、手を打つ。',
-      mean: 'お互い今のままでいることを認め合う仲直り。',
-      trap: '謝ったら直す約束、という型で読みやすい。I can’t promise… を最後まで聞くと、約束していない。',
-      use: 'Let’s agree to disagree.（意見の違いは認め合おう）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'end', reveals: ['heroic', 'some'], seg: [210.3, 251.5],
+      stem: 'How do Leslie and Donna end things?',
+      ja: 'レスリーとドナは、最後にどうなる？',
+      choices: ['They make up', 'They stop talking', 'Donna quits her job'], a: 0,
+      choicesJa: ['仲直りする', '口をきかなくなる', 'ドナが仕事を辞める'],
+      cue: '二人の謝罪と、プレゼント。',
+      said: '二人とも謝り、「変わる約束はできない」と言って「決まりね」。おそろいの化粧品を渡す。',
+      mean: 'make up ＝ 仲直りする。お互い今のままでいることを認め合う。',
+      trap: 'I can’t promise（約束できない）が続くので、うまくいかないと思いやすい。Deal で決着。',
+      use: 'Let’s make up. I’m sorry.（仲直りしよう。ごめんね）' },
 
-    // C2: what's withheld (cf. g1)
-    // anchor: 220.34–223.22 s "I'm sorry for writing those things", then 223.62–224.70 s "Some of those things."
-    //   narrows the apology; 230.26–232.56 s "I can't promise that I won't complain about it" confirms she keeps her view
-    // why: someone else wrote them ← "some" heard as splitting who wrote the posts (scope shift), though she says
-    //   "sorry for writing"; not sorry at all ← the narrowing heard as taking the whole apology back (too far)
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'some', seg: [220.05, 233.0],
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'some', seg: [220.05, 233.0], retired: true,
       stem: 'When Donna adds “Some of those things”, what is she not saying out loud?',
       choices: ['That she still means part of what she wrote', 'That someone else wrote the rest of the posts',
                 'That she isn’t sorry for any of the posts'], a: 0,
@@ -296,30 +259,28 @@ export const donnaPosts: Clip = {
       trap: 'some を「書いた人が別」や謝罪の取り消しと取りやすい。言い直しは、何を外したかを聞く。',
       use: 'I liked the movie. Parts of it.（映画、よかったよ。一部はね）' },
 
-    // why: one at a time ← "open each one… individually" comes right after; shopping ← "favorite lipsticks and nail
-    //   polishes" heard as a plan to buy them
     { id: 'd4', skill: 'detail', level: 'B1', point: 'present', seg: [234.2, 243.5],
-      stem: 'What is the schedule Leslie printed out for?',
-      choices: ['So they wear the same makeup at the same time', 'So Donna can open the gifts one at a time',
-                'So they can go shopping for makeup together'], a: 0,
-      cue: 'schedule のあと、so に続く部分。',
+      stem: 'Why did Leslie print out a schedule?',
+      ja: 'レスリーはなぜ予定表を印刷した？',
+      choices: ['To wear the makeup together', 'To open each gift slowly', 'To go shopping together'], a: 0,
+      choicesJa: ['一緒に化粧品をつけるため', 'プレゼントを一つずつ開けるため', '一緒に買い物に行くため'],
+      cue: '「schedule」のあと、so に続く所。',
       line: 'I got *the same ones*, too. I printed out a schedule *so we can wear them at the same time*.',
       said: '「同じ物を自分にも買った。同時につけられるように予定表も印刷した」と言う。',
-      mean: '仲直りのしるしに、おそろいの化粧を同じ日にする計画。',
+      mean: 'so we can ～ ＝ 〜できるように。at the same time ＝ 同時に。おそろいの計画。',
       trap: 'あとで each one と言うので、一つずつ開ける話と混ざりやすい。so のあとで目的を聞く。',
       use: 'Let’s wear matching shirts tomorrow.（明日おそろいのシャツを着よう）' },
 
-    // why: unhappy ← "don't hate" read literally as reluctant acceptance (the negative form heard as a complaint);
-    //   hurt ← "psycho" heard as an insult that stings
-    { id: 'a3', skill: 'attitude', level: 'C1', point: 'hate', seg: [254.7, 258.4],
-      stem: 'How does the clip’s last line show she feels about the new hashtag?',
-      choices: ['Pleased, though she says it in a low-key way', 'Unhappy, though she says she can live with it',
-                'Hurt, though she says it as a joke'], a: 0,
-      cue: '最後の一言。否定の形に注目。',
+    { id: 'a3', skill: 'phrase', level: 'B2', point: 'hate', seg: [254.7, 258.4],
+      stem: 'What does “I don’t hate that” mean?',
+      ja: '「I don’t hate that」はどういう意味？',
+      choices: ['I kind of like it', 'I really hate it', 'I don’t care at all'], a: 0,
+      choicesJa: ['けっこういい', '本当に嫌い', 'どうでもいい'],
+      cue: '最後の一言。',
       line: '…it’s *psycho boss*. — *I don’t hate that.*',
-      said: '新しいハッシュタグ案「サイコ・ボス」に、「それ、嫌いじゃない」と返す。',
-      mean: 'I don’t hate that ＝ 控えめな「いいね」。',
-      trap: '否定の形を、しぶしぶの了承と取りやすい。I don’t hate… は、たいてい好意。',
+      said: '新しいハッシュタグ案に「それ、嫌いじゃない」と返す。',
+      mean: 'I don’t hate that ＝ 悪くないね。控えめな「いいね」。',
+      trap: 'hate（嫌い）が聞こえるので、嫌がっていると思いやすい。don’t があれば「いいね」。',
       use: 'Pizza for dinner? I don’t hate that.（夕飯ピザ？悪くないね）' },
   ]
 };
