@@ -132,7 +132,7 @@ export const rentASwag: Clip = {
       line: 'and I’m *$46 under budget*.',
       said: '「今はこれが精一杯。しかも予算より46ドル安く済んだ」と言う。',
       mean: 'under budget ＝ 予算より安く済んだ。節約の自慢。',
-      trap: 'fourteen なら「ティーン」が長い。sixty は「シックスティ」で始まる。「フォーティ」のあと six まで聞けば46。',
+      trap: '「フォーティシックス」と最後まで聞けば46、「フォーティ」で終われば40、「フォーティーン」なら14、「シックスティ」なら60。',
       use: 'We came in under budget.（予算内で済みました）' },
 
     { id: 'i4', skill: 'detail', level: 'B1', point: 'cheap', seg: [119.4, 128.1],
@@ -194,8 +194,8 @@ export const rentASwag: Clip = {
 
     { id: 'i5', skill: 'detail', level: 'B2', point: 'groceries', seg: [163.6, 176.4],
       stem: 'What does Tom order besides pancakes?', ja: 'トムはパンケーキのほかに何を頼む？',
-      choices: ['Raw eggs and bread', 'Bacon and a cup of coffee', 'Fruit and juice'], a: 0,
-      choicesJa: ['生卵とパン', 'ベーコンとコーヒー1杯', 'フルーツとジュース'],
+      choices: ['Raw eggs and bread', 'Sausage and a cup of coffee', 'Fruit and juice'], a: 0,
+      choicesJa: ['生卵とパン', 'ソーセージとコーヒー1杯', 'フルーツとジュース'],
       cue: '「let me also get」のあと',
       line: '*12 eggs, uncooked*… 20 slices, untoasted… in a bag. — You want *a carton of eggs and a loaf of bread*?',
       said: 'パンケーキに加え、生卵12個と焼く前のパン20枚を袋で頼む。店員が聞き返す。',

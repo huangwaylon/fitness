@@ -32,7 +32,7 @@ export const dwightHimself: Clip = {
       line: '*Once a year*, Dwight holds a seminar',
       said: '「年に一度、ドワイトがセミナーを開く」と話す。',
       mean: 'once a year ＝ 年に1回。a は「〜につき」。once a week（週1回）も同じ形。',
-      trap: 'once と twice は似て聞こえやすい。「ワンス」は w、「トゥワイス」は t で始まる。',
+      trap: '「ワンス」なら1回、「トゥワイス」なら2回。最後が year（イヤー）か month（マンス）かも聞く。',
       use: 'I go to the dentist once a year.（歯医者には年に1回行く）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [13.5, 19.3], keep: true,
@@ -245,6 +245,7 @@ export const dwightHimself: Clip = {
       choices: ['Cheer like it’s a real fight', 'Tell him to stop now', 'Leave the room quietly'], a: 0,
       choicesJa: ['本物の試合のように盛り上げる', 'もうやめてと言う', '静かに部屋を出る'],
       cue: '見ている人たちの声',
+      line: 'He’s making you look like *such a fool*. … You two are *so evenly matched*.',
       said: '「もう片方の手は？」「ばかにされてるよ」「互角だね」と、試合のように声をかける。',
       mean: '止めずに実況して盛り上げている。ドワイトは本気で受けて戦い続ける。',
       trap: 'Oh my God を心配の声と思いやすい。そのあとの言葉は、止める話ではなく実況。',

@@ -186,7 +186,7 @@ export const rossMona: Clip = {
       line: 'I go away for *a few days*, I come back…',
       said: 'モナが「私が数日留守にして、帰ってきたら…」と言う。',
       mean: 'a few days ＝ 数日。go away ＝ 出かける、留守にする。',
-      trap: 'a few は聞こえても、次の語を落としやすい。weeks なら「ウィ」、hours なら「アワ」。ここは「デイズ」。',
+      trap: '「フュー」の次が「デイズ」なら数日。「ウィークス」なら weeks、「アワーズ」なら hours、「カプラ」と始まれば months。',
       use: 'I’ll be away for a few days.（数日留守にします）' },
     { id: 'h1', skill: 'humor', level: 'C1', point: 'irony', reveals: ['outcome'], seg: [32.6, 39.5], retired: true,
       stem: 'Why does Mona’s picture of coming home get a laugh?',

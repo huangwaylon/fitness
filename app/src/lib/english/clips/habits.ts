@@ -159,6 +159,7 @@ export const habits: Clip = {
       choices: ['They pick on each other’s habits', 'They agree his is the worst', 'They say sorry to each other'], a: 0,
       choicesJa: ['お互いの癖を言い合う', '彼の癖が最悪だと認める', 'お互いに謝る'],
       cue: '後半は、誰の癖の話か',
+      line: 'is it like a little annoying, or is it like when *Phoebe*…? … someone might get *what they actually ordered*.',
       said: '話はジョーイ、フィービー、ロスの癖へ移り、チャンドラーの欠点には戻らない。',
       mean: 'pick on 〜 ＝ 〜をとがめる。話をそらす作戦が当たり、みんなが互いの癖を言い始める。',
       trap: 'タイトルから、みんなが謝ると思いやすい。誰も謝らず、言い返している。',

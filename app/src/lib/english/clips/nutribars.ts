@@ -69,7 +69,7 @@ export const nutribars: Clip = {
       line: 'balloon up to 600 pounds and … a heart attack at *43*',
       said: '「600ポンドまで太って、43歳で心臓発作」という例を出す。',
       mean: 'at 43 ＝ 43歳で。極端な例を出して、それでも自由だと言っている。',
-      trap: '33 は「サーティ」、60 は「シックスティ」で始まる。「フォーティ」で終われば40、最後に「スリー」で43。',
+      trap: '「フォーティスリー」なら43。「フォーティ」で止まれば40、「サーティ」で始まれば33、「シックスティ」なら60。',
       use: 'I had my first kid at thirty-three.（33歳で最初の子が生まれた）' },
 
     // R fix: blind 60–85 % (the key was the only sincere reading, and the stem's "To me" pointed at it); the stem no
@@ -119,6 +119,7 @@ export const nutribars: Clip = {
       choices: ['Mostly off the topic', 'Angry, then friendly', 'Silly, then smart'], a: 0,
       choicesJa: ['ほとんど話がずれている', '最初は怒っていて、あとで親しげ', '最初はばかげていて、あとでかしこい'],
       cue: '質問の流れ全体',
+      line: 'how come Jesus made it *taste so good*? … *Corn’s a fruit.* … *Give me your number* so he can have it.',
       said: '食べ物について的外れな質問が続き、途中からアン本人への個人的な頼みに変わる。',
       mean: 'off the topic ＝ 話題からずれている。アンの説明は、ほとんど届いていない。',
       trap: '最後の質問だけで決めやすい。砂糖、ラザニア、電話番号…と全体の流れで見る。',
@@ -149,7 +150,7 @@ export const nutribars: Clip = {
     { id: 't2', skill: 'attitude', level: 'B1', point: 'ohboy', seg: [38.95, 46.5],
       stem: 'How does Ann feel after the corn syrup question?', ja: 'コーンシロップの質問のあと、アンはどんな気持ち？',
       choices: ['Worried by what he said', 'Happy that he asked', 'Laughing along with him'], a: 0,
-      choicesJa: ['彼の話にあきれて困っている', '聞いてくれてうれしい', '一緒に笑っている'],
+      choicesJa: ['彼の話に困っている', '聞いてくれてうれしい', '一緒に笑っている'],
       cue: '「bush」のあとの短い一言',
       line: 'Corn’s a fruit. Syrup comes from a bush. — *Oh, boy.*',
       said: '「コーンは果物、シロップは茂みから取れる」と言われ、アンは「やれやれ」とつぶやく。',

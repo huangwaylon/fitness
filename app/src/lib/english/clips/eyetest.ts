@@ -82,8 +82,8 @@ export const andyEyeTest: Clip = {
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [44.1, 48],
       stem: 'What can Ann help Andy with?', ja: 'アンは、何なら手当てできる？',
-      choices: ['Small cuts and bruises', 'His head and his eyes', 'His teeth'], a: 0,
-      choicesJa: ['小さな切り傷やあざ', '頭と目', '歯'],
+      choices: ['Small cuts and bruises', 'His head and his eyes', 'His teeth and his tongue'], a: 0,
+      choicesJa: ['小さな切り傷やあざ', '頭と目', '歯と舌'],
       cue: '「help you with」のあと',
       line: 'I can help you with *cuts and bruises*, but the other stuff, you’re gonna have to see *a real doctor*.',
       said: '「切り傷やあざなら手当てできる。ほかは本物の医者に診てもらって」と言う。',
@@ -109,14 +109,14 @@ export const andyEyeTest: Clip = {
       use: 'Says the guy who got lost twice.（2回も道に迷った人が言う？）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'insurance', seg: [52.4, 61.4],
-      stem: 'What does the speaker say insurance is for?', ja: 'この人は、保険は何のためだと言う？',
+      stem: 'What do they say insurance is for?', ja: '二人は、保険は何のためだと言う？',
       choices: ['When your car gets damaged', 'When your house gets damaged', 'When you get sick'], a: 0,
       choicesJa: ['車に何かあったとき', '家に何かあったとき', '病気になったとき'],
       cue: '「because」のあと',
       line: 'because *insurance is for if something bad happens to your car*.',
       said: '「保険は、車に何か悪いことが起きたときのためのもの」と言う。',
-      mean: '話し手は、保険を車の保険のことだと思いこんでいる。医療の保険を知らない。',
-      trap: '本当は病気の保険もあるので選びやすい。問われているのは、この人が言ったこと。',
+      mean: '二人は、保険を車の保険のことだと思いこんでいる。医療の保険を知らない。',
+      trap: '本当は病気の保険もあるので選びやすい。問われているのは、二人が言ったこと。',
       use: 'Insurance is for emergencies.（保険は緊急時のためのもの）' },
 
     // R fix: V2 (blind 70 %, right): “still owns a car” was weak; it’s now an embarrassed reading. The fond reading stays: the
@@ -202,9 +202,9 @@ export const andyEyeTest: Clip = {
       use: 'I wouldn’t worry about it.（気にしなくていいと思うよ）' },
 
     { id: 'm2', skill: 'marker', level: 'B2', point: 'imean', seg: [93.3, 100.8],
-      stem: 'After “Nope”, what does “Well, I mean, yeah” do?', ja: '“Nope” のあと、“Well, I mean, yeah” は何をしている？',
-      choices: ['Takes back his “no”', 'Says “no” more politely', 'Gives a reason for “no”'], a: 0,
-      choicesJa: ['「ない」を取り消す', '「ない」をていねいに言う', '「ない」の理由を言う'],
+      stem: 'What does “Well, I mean, yeah” mean here?', ja: 'ここでの “Well, I mean, yeah” はどういう意味？',
+      choices: ['Actually, yes, there is more', 'No, nothing else, thanks', 'No, and here’s why'], a: 0,
+      choicesJa: ['実は、まだある', 'ううん、ほかにはない、ありがとう', 'ないよ、理由はね'],
       cue: '「Nope」と「Okay」のあと',
       line: 'Nope. — Okay. — *Well, I mean, yeah*, I’ve got a weird rash…',
       said: '「ほかには？」に「ない」と答えたのに、「まあ、ていうか、ある」と並べ始める。',
@@ -279,8 +279,8 @@ export const andyEyeTest: Clip = {
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'divorce', seg: [159.4, 165.7],
       stem: 'How serious is the wife’s threat about glasses?', ja: 'メガネについての妻のおどしは、どのくらい本気？',
-      choices: ['Playful, she likes his face', 'Serious, she wants control', 'Worried about the cost'], a: 0,
-      choicesJa: ['冗談、彼の顔が好き', '本気、思いどおりにしたい', '値段が心配'],
+      choices: ['Playful, she likes his face', 'Serious, she wants control', 'Serious, she fears the cost'], a: 0,
+      choicesJa: ['冗談、彼の顔が好き', '本気、思いどおりにしたい', '本気、値段が心配'],
       cue: 'おどしの前の一文',
       line: 'I *like his face the way it is*. If you get glasses, I’ll divorce you.',
       said: '「メガネはだめ。今の顔が好きなの。メガネをかけたら離婚よ」と言う。',

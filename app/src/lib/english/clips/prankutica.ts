@@ -110,7 +110,7 @@ export const prankUtica: Clip = {
       line: 'Okay, you know what? You really *don’t need to* be updating me…',
       said: 'ジムが「ねえ、そんなに報告しなくていいよ」と言う。',
       mean: 'don’t need to ＝ 〜しなくていい。「ドンニートゥ」とつながり、t が消える。',
-      trap: 'need to だけだと逆の意味。didn’t なら「ディ」で始まる。ここは need の前に小さく「ドン」。',
+      trap: 'need の前に小さく「ドン」なら don’t need to、「ディドン」なら didn’t need to、すぐ「ニー」なら need to。',
       use: 'You don’t need to wait for me.（待たなくていいよ）' },
     { id: 'h2', skill: 'humor', level: 'C1', point: 'proof', reveals: ['wouldja'], seg: [72.3, 77.2], retired: true,
       stem: 'Why is the greeting to the security guard funny?',

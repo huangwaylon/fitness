@@ -98,7 +98,7 @@ export const bigFight: Clip = {
       line: 'I’m not mad *at all*. — Neither am I.',
       said: '「全然怒ってない」「私も」と言い合う。',
       mean: 'not 〜 at all ＝ 全然〜ない。t は軽い「ラ」の音で、「アロール」に聞こえる。',
-      trap: '直前に mad at you があるので同じ語を予想しやすい。最後が「ユー」か「オール」かを聞く。',
+      trap: '直前の mad at you につられやすい。「アロール」なら at all、「アッチュー」なら at you、「アフター」なら after all。',
       use: 'I don’t mind at all.（全然かまわないよ）' },
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'nooffense', seg: [52.0, 59.2],
       stem: 'What does “*No offense, but*” tell us?', ja: '「No offense, but」から何が分かる？',

@@ -30,7 +30,7 @@ export const aprilMen: Clip = {
       line: 'Still going strong *at 82*.',
       said: 'レスリーが「82歳でまだまだ元気」とほめる。',
       mean: 'eighty-two ＝ 82。going strong ＝ 元気で活躍している。',
-      trap: 'eighty と ninety、seventy は似て聞こえやすい。最初の「エイ」を聞く。',
+      trap: '「エイティ」で始まれば82、「セヴンティ」なら72、「ナインティ」なら92。最初の音を聞く。',
       use: 'She’s still going strong at ninety.（90歳でまだまだ元気だ）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'receipt', seg: [13.1, 18.1],
       stem: 'What does Paula say the “handkerchief” really is?', ja: 'ポーラは「ハンカチ」が本当は何だと言う？',

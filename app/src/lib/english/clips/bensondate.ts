@@ -150,7 +150,7 @@ export const mrsBensonCrashes: Clip = {
       line: 'if it makes you happy, Carly, *I’ll go out* on multiple dates with beautiful women.',
       said: 'スペンサーが「君がうれしいなら、美人と何回もデートするよ」と言う。',
       mean: 'I’ll ＝ I will（これからの約束）。’ll は小さく短く、ほぼ「ル」だけ。',
-      trap: '’ll が小さく、I go に聞こえやすい。I’d なら「アイド」と d が聞こえる。',
+      trap: 'I go に聞こえやすい。I go なら「アイゴー」、I’d なら「アイド」。間に小さな「ル」があれば I’ll。',
       use: 'I’ll go out and grab some coffee.（ちょっとコーヒー買ってくる）' },
     { id: 'i1', skill: 'infer', level: 'B2', point: 'caitlyns', seg: [165.3, 168.9], retired: true,
       stem: 'What does Spencer’s last request suggest about his past?',

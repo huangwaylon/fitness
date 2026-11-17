@@ -20,6 +20,7 @@ export const rossMarvel: Clip = {
       choices: ['How their parents treat them', 'A new gym near their old house', 'A stranger living with them'], a: 0,
       choicesJa: ['親の2人へのあつかい', '昔の家の近くの新しいジム', 'いっしょに住む知らない人'],
       cue: '最後の「love me more」',
+      line: 'this is exactly the kind of thing that makes her think *you guys love me more*…',
       said: '部屋の残し方や箱の差から、「親はロスの方を愛している」とモニカは思っている。',
       mean: 'you guys love me more ＝「親は（モニカより）ぼくを愛している」。親のあつかいの差の話。',
       trap: 'gym や stranger が聞こえるので、その話と思いやすい。どれも親のあつかいの例。',
@@ -93,7 +94,7 @@ export const rossMarvel: Clip = {
       line: 'Dad turned my room into a gym *20 minutes* after I moved out.',
       said: '「出て行って20分で、パパは部屋をジムにした」と言う。',
       mean: 'twenty minutes ＝ 20分。本当の時間ではなく「すぐに」という大げさな言い方。',
-      trap: '12 なら「トゥエルブ」と最後が「ブ」。「トゥエニ」のあとに minutes なら20分。',
+      trap: '「トゥエルブ」なら12、「トゥエニ」なら20。後ろが「ミニッツ」なら分、「デイズ」なら日、「ウィークス」なら週。',
       use: 'He was asleep five minutes after dinner.（夕食後5分で寝てた）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'asmuch', seg: [22.6, 27.4],

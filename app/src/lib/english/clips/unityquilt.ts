@@ -175,7 +175,7 @@ export const unityQuilt: Clip = {
       mean: '言いにくいことを最後まで言わずに止めている。相手に聞き返され、結局言うことになる。',
       trap: '言葉が止まると、単語を忘れたように聞こえる。言いにくい中身ほど途中で止まる。',
       use: 'Well, it’s not exactly… you know.（うーん、ちょっとその…ね）' },
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'technically', seg: [82.7, 89.5],
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'technically', seg: [82.7, 89.5], retired: true,
       stem: 'When the reply to “Where’s my square?” trails off, what is withheld?',
       choices: ['That the asker isn’t counted as a grown-up', 'That the asker isn’t really part of the family',
                 'That the asker’s square was simply forgotten'], a: 0,

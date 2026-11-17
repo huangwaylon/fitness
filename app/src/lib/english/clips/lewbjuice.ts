@@ -19,6 +19,7 @@ export const lewbJuice: Clip = {
       choices: ['Makes them say what they think', 'Makes them rude for no good reason', 'Makes them act very silly'], a: 0,
       choicesJa: ['思っていることを言わせる', 'わけもなく失礼にする', 'すごくふざけさせる'],
       cue: '「make you mean?」への答え',
+      line: 'Does Lewb juice make you mean? — No, it *just makes you honest*.',
       said: '思ったことを隠せなくなる。悪口も、相手へのあこがれも口に出る。',
       mean: 'it just makes you honest ＝ 意地悪にするのではなく、本音を言わせるだけ。',
       trap: '悪口だけ聞くと、失礼にする飲み物だと思いやすい。後半はほめ言葉も出てくる。',
@@ -84,7 +85,7 @@ export const lewbJuice: Clip = {
       line: 'No, it *just makes you honest*.',
       said: '「ううん、正直になるだけ」と答える。',
       mean: 'just ＝ 〜だけ。honest ＝ 正直な。悪口は意地悪ではなく、本音が出ているだけ。',
-      trap: 'honest、happy、hyper は出だしが似ている。honest は h を言わず「オネスト」。',
+      trap: '「オネスト」なら honest、「ハッピー」なら happy、「ハイパー」なら hyper。h の音がなければ honest。',
       use: 'It doesn’t hurt. It just feels cold.（痛くないよ。冷たいだけ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'feet', seg: [17.75, 21.45],
@@ -117,7 +118,7 @@ export const lewbJuice: Clip = {
       line: 'I wish you weren’t marrying my mother. — I wish you weren’t *her son*.',
       said: '「母と結婚しないでほしい」に、「君が彼女の息子でなければ」と返す。',
       mean: 'I wish you weren’t 〜 ＝ 君が〜でなければいいのに。同じ形で言い返している。',
-      trap: 'her son は短く、so young に聞こえやすい。前の my mother と結べば「彼女の息子」。',
+      trap: '「ハーサン」なら her son、「ソウヤング」なら so young、「ヒア」で終われば here。',
       use: 'I wish you weren’t leaving.（行かないでほしいな）' },
 
     // R fix: V2 (blind 65 %): the key was the only one fitting an honesty juice; now a near miss (resentful but
@@ -202,6 +203,7 @@ export const lewbJuice: Clip = {
       choices: ['Someone they must avoid arrives', 'Someone gets sick from it', 'The juice turns out unsafe'], a: 0,
       choicesJa: ['会いたくない人が来た', '誰かが飲んで具合が悪くなった', 'ジュースが危ないと分かった'],
       cue: '最後に出てくる名前と、その人の条件',
+      line: 'She said I could still drink Lewb juice *as long as I didn’t sell it*! — Guys, this is an *emergency*. We gotta go.',
       said: '「売らなければいい」と言った人が来たらしく、あわてて「緊急事態、行かなきゃ」と言う。',
       mean: 'emergency ＝ 緊急事態。売ってはいけない物を売っていたので、その人から逃げる。',
       trap: 'Poison Control（中毒の相談所）から、誰かが具合を悪くしたと思いやすい。そういう話は出ない。',

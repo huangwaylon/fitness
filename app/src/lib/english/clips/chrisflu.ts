@@ -268,7 +268,7 @@ export const chrisFlu: Clip = {
       line: '*You have to* get up off the floor now.',
       said: '「もう床から起きなきゃだめ」と言う。',
       mean: 'have to ＝ 〜しなければならない。「ハフタ」と、v が f のような音になる。',
-      trap: 'had to なら「ハッドゥ」、want to なら「ワナ」。「ハフ」と f の音が聞こえれば have to。',
+      trap: 'had to なら「ハットゥ」、want to なら「ワナ」。「ハフ」と f の音が聞こえれば have to。',
       use: 'I have to go now.（もう行かなきゃ）' },
 
     // R fix: V2 — "so tough" was weak; now "feel sorry for him", a fluent near miss ("breakdown" read as pity)

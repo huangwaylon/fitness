@@ -28,7 +28,7 @@ export const samFriend: Clip = {
       use: 'He’s a bit rough around the edges.（ちょっと粗削りな人だよ）' },
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'punch', seg: [10.86, 16.6],
-      stem: 'Who would punch her friend, says Sam?', ja: 'サムによると、友だちを殴るのは誰？',
+      stem: 'Who does Sam say would punch her friend?', ja: 'サムは、友だちを殴るのは誰だと言う？',
       choices: ['Anybody but Sam', 'Only Sam herself', 'Nobody at all'], a: 0,
       choicesJa: ['サム以外の誰でも', 'サムだけ', '誰も殴らない'],
       cue: '最初の文の主語',
@@ -134,7 +134,7 @@ export const samFriend: Clip = {
       line: '… Seven. — But I give Freddie a *negative two*.',
       said: '女の子には8、9、7点が付き、最後に「でもフレディはマイナス2」と言う。',
       mean: 'negative ＝ マイナス。出ていないフレディにまで点を付けて、からかっている。',
-      trap: '7 は「セヴン」、9 は「ナイン」。two の前に「ネガティヴ」があればマイナス2。',
+      trap: '7 は「セヴン」、9 は「ナイン」。「トゥー」だけなら2、前に「ネガティヴ」があればマイナス2。',
       use: 'I’d give it a nine out of ten.（10点中9点かな）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'quality', seg: [154.1, 159.3],

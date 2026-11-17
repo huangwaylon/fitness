@@ -49,13 +49,13 @@ export const parksMakeover: Clip = {
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'rank', seg: [15.0, 24.6], keep: true,
       stem: 'By the end of the talk about ranks, what number is Jerry?', ja: '順位の話の最後に、ジェリーは何番？',
-      choices: ['Number two', 'Number three', 'Number four'], a: 1,
-      choicesJa: ['2番', '3番', '4番'],
+      choices: ['Number one', 'Number two', 'Number three'], a: 2,
+      choicesJa: ['1番', '2番', '3番'],
       cue: '「Jerry, you’re」のあと',
       line: 'Fair enough. Jerry, *you’re number three*.',
       said: '最初は「2番」、すぐ「近すぎる」と下げて「3番」にする。',
       mean: 'number two ＝ 2番目、右腕。それを一つ下げて、ジェリーとの距離を取る。',
-      trap: '最初に聞こえる two が残りやすい。決まった数は、最後の you’re のあと。',
+      trap: '最初の「ツー」が残りやすい。you’re のあとが「スリー」なら3番。「ワン」は一度も出ない。',
       use: 'You’re my number two on this.（この件ではきみが右腕だ）' },
 
     { id: 'h2', skill: 'number', level: 'B1', point: 'two', seg: [19.4, 24.6], keep: true,
@@ -66,7 +66,7 @@ export const parksMakeover: Clip = {
       line: '*There’s only two of us.*',
       said: '「3番」と言われ、ジェリーが「二人しかいないけど」と返す。',
       mean: 'only two of us ＝ 私たち二人だけ。二人のチームで3番という扱いの軽さが笑い。',
-      trap: 'number three が耳に残り、3人だと思いやすい。返事の two を聞く。',
+      trap: 'number three の「スリー」が残りやすい。返事が「トゥー」なら2人。「フォー」はここでは出ない。',
       use: 'There are only two of us tonight.（今夜は二人だけです）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'fair', seg: [19.5, 23.5],
@@ -237,6 +237,7 @@ export const parksMakeover: Clip = {
       choices: ['Chris loves the old-logo plan', 'Chris loves the big makeover', 'Chris picks Jerry’s font'], a: 0,
       choicesJa: ['クリスが昔のロゴの案を気に入る', 'クリスが大改造を気に入る', 'クリスがジェリーの書体を選ぶ'],
       cue: '最後に持っていく案',
+      line: 'So, we take *the old logo from the 1970s*… — *This is amazing.*',
       said: '1970年代の古いロゴで限定グッズを作る案を出し、クリスに大絶賛される。',
       mean: 'limited edition ＝ 限定品。大改造ではなく、古いものを生かす案が通った。',
       trap: 'タイトルの makeover から、大改造が通ったと思いやすい。最後の案の中身を聞く。',

@@ -35,7 +35,7 @@ export const bossAway: Clip = {
       line: 'they put their *mouths completely over the spouts*.',
       said: '「なぜかポーニーの人は、水飲み場の口に口をすっぽりかぶせて飲む」と説明する。',
       mean: 'spout ＝ 水の出る口。そこに直接口をつけるのが問題。',
-      trap: 'mouths と hands、over と under は取りちがえやすい。名詞と前置詞を聞く。',
+      trap: '「マウズ」なら mouths、「ハンズ」なら hands。下から飲むなら「アンダー」が聞こえるはず。',
       use: 'Please don’t touch the spout.（注ぎ口にさわらないでください）' },
 
     // why: kiss hello ← "kissing everyone" taken literally, as a local greeting; one fountain ← "one water fountain"
@@ -266,6 +266,7 @@ export const bossAway: Clip = {
       choices: ['A simple fix works well', 'A simple fix costs too much', 'A simple fix fails'], a: 0,
       choicesJa: ['簡単な工夫がうまくいく', '簡単な工夫だが高すぎる', '簡単な工夫が失敗する'],
       cue: '最後の場面のほめ言葉',
+      line: 'Ha-ha! *I did it!* Good job, babe. *Simple, elegant, and cost-effective.*',
       said: '最後に出た案が成功し、「シンプルで上品で安上がり」とほめられる。',
       mean: 'cost-effective ＝ 安上がりで効果がある。部品を外すだけの手軽な解決で決着する。',
       trap: 'cost が聞こえて「高すぎる」と思いやすい。cost-effective は「安上がり」。',

@@ -23,6 +23,7 @@ export const pacMan: Clip = {
       choices: ['Whose turn it is', 'Who broke the game', 'Who paid for the game'], a: 0,
       choicesJa: ['ゲームの順番', 'だれがゲームをこわしたか', 'だれがゲームのお金をはらったか'],
       cue: '「I’m next」のあたり',
+      line: 'Okay, *I’m next*. … Phoebe’s *hogging the game*.',
       said: 'フィービーがゲームをゆずらず、モニカは「次は私」と言い続ける。',
       mean: 'I’m next ＝「次は私」。hogging ＝ ひとりじめ。順番のけんか。',
       trap: 'present（プレゼント）の話も出るので、お金の話と思いやすい。何度も出るのは next。',
@@ -167,8 +168,8 @@ export const pacMan: Clip = {
       use: 'Keep it. It’s a gift.（持ってて。プレゼントだから）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'love', reveals: ['gift'], seg: [32.3, 40.2],
-      stem: 'Do they want the friend to take the game back?',
-      ja: '友だちにゲームを持って帰ってほしい？',
+      stem: 'How do they answer the friend’s offer?',
+      ja: '友だちの「持って帰ろうか」に、どう答える？',
       choices: ['No, they want to keep it', 'Yes, to stop the fights', 'Only for a little while'], a: 0,
       choicesJa: ['いや、自分たちで持っていたい', 'うん、けんかをやめるため', '少しの間だけ'],
       cue: '返事の最初',

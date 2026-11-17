@@ -26,7 +26,7 @@ export const dwightVsAndy: Clip = {
       use: 'Thanks for waiting. I appreciate it.（待ってくれてありがとう。助かります）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduced', seg: [5.2, 10.9],
-      stem: 'Why does Dwight say “we’ve not been introduced”?', ja: 'ドワイトはなぜ「まだ紹介されていない」と言う？',
+      stem: 'Why does Dwight start with “I don’t believe…”?', ja: 'ドワイトはなぜ「I don’t believe…」と話し始める？',
       choices: ['To introduce himself', 'To say goodbye', 'To ask for help'], a: 0,
       choicesJa: ['自分から名乗るため', 'さよならを言うため', '助けを頼むため'],
       cue: '「Hello」のあと',
@@ -41,6 +41,7 @@ export const dwightVsAndy: Clip = {
       choices: ['Who has the higher job', 'Who knows more about film', 'Who sells the most'], a: 0,
       choicesJa: ['どちらの役職が上か', 'どちらが映画にくわしいか', 'どちらがいちばん売るか'],
       cue: '名乗ったあとの最初の質問',
+      line: 'So you’ll be *reporting to me*, then? — On the contrary. My title has “manager” in it, and I’m a director.',
       said: '自己紹介で役職を言い合い、どちらが上かで張り合う。映画の話もその続き。',
       mean: 'report to 〜 ＝ 〜の部下になる。映画の話も、自分が上だと言うための材料。',
       trap: '後半は映画の話が続くので、そちらだと思いやすい。最初の質問 reporting to me を聞く。',
@@ -123,7 +124,7 @@ export const dwightVsAndy: Clip = {
       line: 'I’ve seen *over 240* of them.',
       said: '「240本以上見た」と言う。',
       mean: 'over ＝ 〜より多く。「映画のことは何でも知っている」の理由として出した数。',
-      trap: '24 には hundred がない。214 は「フォーティーン」、2,400 は「サウザンド」。「ハンドレッド・フォーティ」なら240。',
+      trap: '「ハンドレッド・フォーティ」なら240、「フォーティーン」なら214、hundred なしは24、「サウザンド」は2,400。',
       use: 'I’ve been there over twenty times.（20回以上行ったよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'announce', seg: [36.1, 64],
@@ -131,6 +132,7 @@ export const dwightVsAndy: Clip = {
       choices: ['He picks a new number two', 'Everyone gets a pay raise', 'He picks a new number three'], a: 0,
       choicesJa: ['新しいナンバー2を選んだ', '全員の給料が上がる', '新しいナンバー3を選んだ'],
       cue: '「I have decided」のあと',
+      line: 'I have decided to make … *my new number two*.',
       said: 'マイケルが新しいナンバー2を発表し、アンディが大げさにほめる。',
       mean: 'number two ＝ 2番手、右腕。I have decided to 〜 ＝ 〜することに決めた。',
       trap: 'number three も pay raise も聞こえるが、決まったのは2番だけ。3番は not decided yet。',
@@ -203,7 +205,7 @@ export const dwightVsAndy: Clip = {
       line: 'like, *four miles* to the gallon? — Uh, *try double that*.',
       said: '「4マイルくらい？」に「その倍だね」と返す。つまり約8マイル。',
       mean: 'Try 〜 ＝ いや〜だよ、と相手の数を直す言い方。double that ＝ その2倍。',
-      trap: '最後に聞こえた four を選びやすい。double は2倍なので、4の2倍で8。',
+      trap: '「フォー」は4、「フォーティ」なら40。double は「2」ではなく「2倍」。4の2倍で8。',
       use: 'Ten minutes? Try an hour.（10分？いや1時間はかかるよ）' },
 
     // R fix: V2 (75 % blind): "saves fuel" was a filler. "Andy's guess was way off" (the correction read as a win) is
@@ -305,7 +307,7 @@ export const dwightVsAndy: Clip = {
       line: 'If I were an idiot, *I’d be* driving a Trans Am.',
       said: '「僕がバカなら、トランザムに乗ってるさ」と言い返す。',
       mean: 'I’d be ＝ 〜しているだろう。I’d の d はほとんど聞こえず、be につながる。',
-      trap: 'I’ll なら「アイル」の l、I’m なら be がない。If I were のあとは I’d be が来る。',
+      trap: '「アイル」と l が残れば I’ll be、be がなく「アイム」なら I’m、「アイ（ドゥ）ビー」なら I’d be。',
       use: 'If I were you, I’d take the train.（私なら電車で行くな）' },
   ]
 };

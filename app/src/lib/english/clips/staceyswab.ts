@@ -194,8 +194,8 @@ export const staceySwab: Clip = {
       use: 'One day, I could live in Paris.（いつかパリに住めるかも）' },
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'intern', seg: [105.4, 112],
       stem: 'How does Stacey want to help the web show?', ja: 'ステイシーはどんな形で番組を手伝いたい？',
-      choices: ['As an intern on the show', 'As much as she possibly can', 'As a teacher of interns'], a: 0,
-      choicesJa: ['番組のインターンとして', 'できるだけたくさん', 'インターンの先生として'],
+      choices: ['As an intern on the show', 'As a writer for the show', 'As a teacher of interns'], a: 0,
+      choicesJa: ['番組のインターンとして', '番組の脚本家として', 'インターンの先生として'],
       cue: '「serve you」のあと',
       line: 'I would sincerely love to serve you *in an internship capacity*.',
       said: 'ステイシーが「インターンとして、ぜひお役に立ちたい」と言う。',
@@ -231,6 +231,6 @@ export const staceySwab: Clip = {
       said: '「出ていって！」のあと、「大丈夫、いつものことだから」と言う。',
       mean: 'Get out of here ＝ 出ていけ。「うそでしょ！」の意味もあるが、ここは This always happens で追い出されたと分かる。',
       trap: '「うそ、すごい！」の意味もある。どちらかは、そのあとの「いつものこと」で決まる。',
-      use: 'Get out! You won the trip?（うそ！旅行当たったの？）' },
+      use: 'Get out of here, the floor’s wet!（ここから出て、床がぬれてるよ）' },
   ]
 };
