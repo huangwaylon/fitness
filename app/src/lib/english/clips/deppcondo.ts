@@ -1,18 +1,12 @@
-// REVIEW 2026-11-16: pass 9, fix 9, drop 1, new 0; ear checks 1
-// OPEN: the 53–71 s turns ("You're right… Well, you're not right", "your condo complex", "M. Shulman"): whisper
-//   splits speakers where the captions don't. If an ear check shows one speaker for "You're right… Well, you're not
-//   right", the dropped marker item m1 could come back.
+// A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 5, new 0
 // “It's Johnny Depp! - The Office US” (the official The Office channel, BEST OF SEASON 6): a coworker shows Jim a
 // photo of "Johnny Depp" taken at his condo complex; Jim plays along and teases him, and the coworker fights to keep
 // his excitement.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 71 s; whisper's repeated "go to the
-// mall" line after it is a hallucination. Untested on purpose: 4.6 s ("who" / "what that is"), 16.9–21 s (who says
-// the People line; the items there are speaker-free), 22.9–26 s (who owns the Pirates "idea"; h2 is speaker-free),
-// 53.5 s ("a little bit of" / "a little better reason"), 59.5–71 s (the "your condo complex" / mailbox / "M. Night
-// Shulman" turns: speakers unclear, and the punchline rests on a director's name). The coworker is never named, so
-// the stems call him "his coworker". Jim is settled by "Jim" (1.4 s) and "Halpert" (44.2 s).
-// EAR CHECK: 9.3 s nt1 — “Is it you?” is Jim's and “I am flattered” the coworker's (whisper splits the turns there;
-//   the captions add a “no” before “I am flattered”, which no key uses)
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 71 s. Untested on purpose: 4.6 s,
+// 16.9–21 s (who says the People line; the items there are speaker-free), 22.9–26 s, 53.5 s, 59.5–71 s (speakers
+// unclear, and the punchline rests on a director's name). The coworker is never named, so the stems call him "his
+// coworker". Jim is settled by "Jim" (1.4 s) and "Halpert" (44.2 s). m1 was deleted before it shipped.
+// EAR CHECK: 51.9 s d3 — “Well, it wasn't him” is Jim, about the Yankees game
 import type { Clip } from '../types.ts';
 
 export const deppCondo: Clip = {
@@ -21,49 +15,30 @@ export const deppCondo: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: looks like him ← "Is it you? — I am flattered" heard as the claim; filming near Scranton ← "Scranton" and
-    //   the "Pirates movie" talk joined into one story
     { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['where'], seg: [0.5, 22.8],
-      stem: 'What is Jim’s coworker trying to convince him of?',
-      choices: ['That Johnny Depp lives in his condo complex', 'That Johnny Depp looks a lot like him',
-                'That Johnny Depp is filming near Scranton'], a: 0,
-      cue: '写真の場所を聞かれたあとの答え。',
+      stem: 'What does Jim’s coworker want him to believe?',
+      ja: 'ジムの同僚は、ジムに何を信じてほしい？',
+      choices: ['Depp lives in his condo complex', 'Depp looks a lot like him', 'Depp is filming in Scranton'], a: 0,
+      choicesJa: ['デップが自分のマンションに住んでいる', 'デップが自分にそっくり', 'デップがスクラントンで撮影中'],
+      cue: '写真の場所を聞かれたあと。',
       line: 'That’s *Johnny Depp*. … In my *condo complex*.',
       said: '写真の男を見せて「ジョニー・デップだ」と言い、撮った場所は自分のマンションだと答える。',
-      mean: '有名人が近所に住んでいる、と同僚に信じてほしい場面。',
-      trap: 'flattered や Pirates も聞こえるが、話の中心は「どこで見たか」。場所の答えに注目。',
-      use: 'Guess who lives in my building.（うちの建物に誰が住んでると思う？）' },
+      mean: 'condo complex ＝ 分譲マンションの建物の集まり。有名人が近所に住んでいる、と信じてほしい。',
+      trap: '「これ君？」も聞こえるので、似ている話と思いやすい。話の中心は「どこで見たか」。',
+      use: 'Guess who lives in my building.（うちの建物にだれが住んでると思う？）' },
 
-    // R fix: V2/K6 (blind 70 %): the key was the only two-part, knowing choice; "helps prove it" is now "swept up",
-    //   built on the "Oh, my God. That's right" turn taken at face value
-    // why: swept up ← "Oh, my God. That's right. I read in People…" heard as sincere excitement; a star story of
-    //   his own ← the Roger Clemens memory heard as Jim offering his own sighting
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['tease'], seg: [0.5, 67],
-      stem: 'What is Jim mostly doing in this scene?',
-      choices: ['Playing along while poking fun at the story', 'Getting swept up in the story along with him',
-                'Sharing a star story of his own to match it'], a: 0,
-      cue: 'ジムの質問や返事の調子を、最後まで通して。',
-      said: '同僚の話に付き合って質問もするが、返事のたびに冗談をはさんでいる。',
-      mean: '本気で信じてはいない。信じたい同僚を、話を合わせながらからかっている。',
-      trap: '質問が多いと協力に聞こえるが、答えを本気で求めてはいない。返しの調子で判断。',
-      use: 'I’m just playing along.（話を合わせてるだけだよ）' },
-
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'look', seg: [6.3, 9.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'look', seg: [6, 9.2],
       stem: 'Type what he says twice, before “T-shirt, jeans.” (3 words)', answer: 'look at him',
-      cue: '「No」のすぐあと、同じ言葉が2回。',
+      ja: '「T-shirt, jeans」の前に2回言う3語を書こう。',
+      cue: '「No」のすぐあと。',
       line: '*Look at him*. Look at him. T-shirt, jeans.',
       said: '「ほら、見てよ。見て。Tシャツにジーンズ」と写真を見せる。',
       mean: 'look at him が「ルッカリム」とつながり、him の h はほぼ消える。',
-      trap: 'at の t は弾み、him は「イム」と弱くなる。3語を一つの音のかたまりとして聞く。',
+      trap: 'at の t は軽い「ラ」の音になり、him は「イム」と弱い。3語をひとかたまりで聞く。',
       use: 'Look at him go!（見て、あの走りっぷり！）' },
 
     // anchor: 7.8–11.8 s "Look at him… T-shirt, jeans." then "Is it you?" then "I am flattered": the plain look is
-    //   the dig, and the reply takes it as praise
-    // R fix: V2 (blind 50 %): the key was the only choice naming a mechanism; all three now give one, and Jim's is
-    //   the literal reading of "Is it you?"
-    // why: on Jim ← "Is it you?" heard as a sincere question, so Jim looks like the one who can't spot a star
-    //   (right mechanism, wrong target); on Depp ← "T-shirt, jeans" heard as the joke's target, a star shown plainly
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'flattered', seg: [6.4, 14],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'flattered', seg: [6.4, 14], retired: true,
       stem: 'At “Is it you?” and the reply to it, who is the joke on?',
       choices: ['The coworker, who hears a dig as praise', 'Jim, who mistakes a star for his coworker',
                 'Johnny Depp, who is shown dressed so plainly'], a: 0,
@@ -74,72 +49,67 @@ export const deppCondo: Clip = {
       trap: 'からかう側を笑いの的と取りやすい。返事が的外れなら、笑われているのは返事をした人。',
       use: 'I’ll take that as a compliment.（ほめ言葉として受け取っておくよ）' },
 
-    // R fix: V2 (blind 60 % in a draw): n1's and d2's stems say "condo", so the key was the only condo choice; the
-    //   parking lot is now a condo for sale (the "two-bedroom condo" Depp wants); stem names the speaker
-    // why: condo for sale ← "looking for a two-bedroom condo" joined to the photo; Yankees game ← a game is named
-    //   later in the clip
     { id: 'd1', skill: 'detail', level: 'B1', point: 'where', reveals: ['whered'], seg: [12.6, 16.5],
       stem: 'Where does Jim’s coworker say he took the photo?',
+      ja: '同僚は、写真をどこで撮ったと言う？',
       choices: ['At his condo complex', 'At a condo for sale downtown', 'At a Yankees game'], a: 0,
-      cue: '写真について聞かれた直後の答え。',
+      choicesJa: ['自分のマンション', '町なかの売り出し中のマンション', 'ヤンキースの試合'],
+      cue: '写真について聞かれた直後。',
       line: 'In my *condo complex*.',
-      said: '「どこで撮ったの」に「うちのマンションで」と答える。',
-      mean: 'condo complex ＝ 分譲マンションの敷地。自分の住まいで撮った、ということ。',
-      trap: 'Yankees game もあとで出てくるが、それはジムの昔の話。場所は質問の直後の答えで聞く。',
+      said: '「どこで撮ったの？」に「うちのマンションで」と答える。',
+      mean: 'in my condo complex ＝ 自分のマンションで。自分の住まいで撮った。',
+      trap: 'Yankees game もあとで出てくるが、それはジムの昔の話。質問の直後の答えを聞く。',
       use: 'I live in a condo near the station.（駅の近くのマンションに住んでる）' },
 
-    // why: When'd ← same shape, only the vowel differs; Why'd ← "wh-" + "d" heard, and "Why'd you take that?" is a
-    //   natural complaint about a photo
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whered', seg: [12.6, 16.5],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'whered', seg: [12.6, 16.5],
       stem: 'Fill the gap: “___ take that?”',
+      ja: '空いている所に入る言葉は？',
       choices: ['Where’d you', 'When’d you', 'Why’d you'], a: 0,
-      cue: '文の最初の短いかたまりと、それへの答え。',
+      choicesJa: ['どこで〜した？', 'いつ〜した？', 'なぜ〜した？'],
+      cue: '文の最初と、それへの答え。',
       line: '*Where’d you* take that?',
-      said: '「それ、どこで撮ったの？」と聞いている。',
-      mean: 'where did you が「ウェアジュ」と縮まる。did は d だけ残り、you とつながる。',
-      trap: 'when’d も why’d も短く弱い。直後の答えが場所なら where、と答えで確かめる。',
+      said: '「それ、どこで撮ったの？」と聞く。',
+      mean: 'where did you が「ウェアジュ」と縮む。did は d だけ残り、you とつながる。',
+      trap: 'when’d は「ウェンジュ」、why’d は「ワイジュ」。「ウェアジュ」なら where’d。答えも場所。',
       use: 'Where’d you get that jacket?（そのジャケット、どこで買ったの？）' },
 
-    // why: four ← "looking for a" runs "for a" into a four-like sound just before the number; one ← the article "a"
-    //   heard as "one"
     { id: 'n1', skill: 'number', level: 'B1', point: 'bedroom', seg: [17.9, 21.35], keep: true,
-      stem: 'According to the story, what kind of condo was Depp looking for?',
+      stem: 'What kind of condo was Depp looking for, says the story?',
+      ja: '話によると、デップはどんなマンションを探していた？',
       choices: ['A one-bedroom', 'A two-bedroom', 'A four-bedroom'], a: 1,
+      choicesJa: ['寝室1つ', '寝室2つ', '寝室4つ'],
       cue: '「condo」の直前の数。',
       line: 'he was looking for *a two-bedroom* condo in Scranton',
       said: '話によると、デップはスクラントンで寝室2つのマンションを探していた。',
       mean: 'two-bedroom ＝ 寝室が2つの部屋。間取りを言うときの決まった言い方。',
-      trap: '直前の for a が「フォーア」と聞こえ、four と混ざりやすい。数は名詞の直前で拾う。',
-      use: 'We need a two-bedroom near the beach.（ビーチ近くの2ベッドルームが要る）' },
+      trap: '直前の for a が「フォーア」と聞こえ、four と混ざりやすい。one なら「ワン」。ここは「トゥー」。',
+      use: 'We need a two-bedroom near the beach.（ビーチ近くの寝室2つの部屋が要る）' },
 
-    // why: people at work ← "People" heard as the plain noun ("people say"); local news ← a celebrity house hunt
-    //   sounds like a TV story
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'source', seg: [17.9, 21.35],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'source', seg: [17.9, 21.35],
       stem: 'Where does the story about Depp’s condo hunt come from?',
+      ja: 'デップがマンションを探しているという話は、どこから？',
       choices: ['An article in a magazine', 'Gossip from people at work', 'A story on the local news'], a: 0,
-      cue: '文の最初、「that he was」の前まで。',
+      choicesJa: ['雑誌の記事', '職場の人のうわさ', '地元のニュース'],
+      cue: '「that he was」の前。',
       line: 'I read in *People magazine* that he was looking for…',
       said: '「ピープル誌で読んだけど、デップは部屋を探してたって」と言う。',
       mean: 'People はここでは雑誌の名前。人づての話ではなく、記事が出どころ。',
-      trap: 'people を「人々」と取ると「誰かが言っていた」になる。直後の magazine まで聞いて判断。',
+      trap: 'people を「人々」と思うと「だれかが言っていた」になる。直後の magazine まで聞く。',
       use: 'I read in the paper that it’s closing.（閉店するって新聞で読んだ）' },
 
-    // why: give up ← "out" read as ending (やめる, 外れる); turn the photo over ← flip = 裏返す, the literal reading
-    //   with a photo in hand
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'flipping', seg: [18.3, 22.8],
-      stem: 'What does the short reaction right after the condo story mean?',
-      choices: ['I’m so excited I can’t stay calm', 'I’m about to give up on this', 'I’ll turn the photo over and check'],
-      a: 0,
-      cue: '「Scranton」のすぐあとの短い一言。',
+      stem: 'What does “I’m flipping out” mean here?',
+      ja: 'ここでの「I’m flipping out」の意味は？',
+      choices: ['I’m so excited', 'I’m giving up', 'I’ll turn it over'], a: 0,
+      choicesJa: ['すごく興奮している', 'もうあきらめる', 'ひっくり返してみる'],
+      cue: '「Scranton」のすぐあと。',
       line: '*I’m flipping out*, man.',
       said: '「もう、たまらないよ」と興奮を口にする。',
-      mean: 'flip out ＝ 気持ちが抑えられなくなる。ここでは大喜び。怒ったときにも使う。',
-      trap: 'flip を「裏返す」、out を「やめる」と取ると別の意味になる。句動詞はひとかたまりで覚える。',
+      mean: 'flip out ＝ 気持ちがおさえられなくなる。ここでは大喜び。怒ったときにも使う。',
+      trap: 'flip（ひっくり返す）から「裏返す」と思いやすい。flip out はひとかたまりで覚える。',
       use: 'When I saw the price, I flipped out.（値段を見て、取り乱しちゃった）' },
 
-    // why: a part for himself ← "my idea for the… movie" sets up a pitch, so a role sounds likely; shoot it in
-    //   Scranton ← "Scranton" was just said
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'pirates', seg: [22.4, 26.9],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'pirates', seg: [22.4, 26.9], retired: true,
       stem: 'What makes the “idea for the fourth Pirates movie” funny?',
       choices: ['The whole idea is just that one gets made', 'The idea is a part in it for himself',
                 'The idea is to shoot the film in Scranton'], a: 0,
@@ -150,37 +120,42 @@ export const deppCondo: Clip = {
       trap: 'idea と movie で役や筋書きを期待しやすい。前置きが大きいほど、中身を最後まで聞く。',
       use: 'I have a great idea: let’s eat.（いいこと思いついた。食べよう）' },
 
-    // R fix: V2 (blind 60 %) and a leak: "the magazine story" gave away d2's key; that choice is now a film quiz
-    // why: the way to a bar ← "where do I find…" read as a real question; a quiz ← "the Black Pearl" right after the
-    //   Pirates talk heard as a trivia question for Jim
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'sparrow', seg: [25.95, 38.95],
-      stem: 'When he asks Jim where to find “the Black Pearl”, what is he doing?',
-      choices: ['Acting out a pirate from the films', 'Asking Jim the way to a local bar',
-                'Quizzing Jim on the films’ details'], a: 0,
-      cue: '「Who’s that?」への答えと、その次の一言。',
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'sparrow', seg: [25.95, 38.95],
+      stem: 'Why does he ask “where do I find the Black Pearl?”',
+      ja: '彼はなぜ「where do I find the Black Pearl?」と聞く？',
+      choices: ['He’s acting like a movie pirate', 'He wants a bar’s address', 'He’s testing Jim on the movies'], a: 0,
+      choicesJa: ['映画の海賊のまねをしている', '店の場所を知りたい', '映画についてジムを試している'],
+      cue: '「Who’s that?」への答え。',
       line: 'where do I find *the Black Pearl*? … No, *I’m Captain Jack Sparrow*.',
-      said: '「ブラックパールはどこだ？」と聞き、「誰？」と返されると、役の名前を名乗る。',
-      mean: '映画の海賊になりきって、デップのものまねをしている。',
-      trap: 'where do I find を本当の質問と取りやすい。「誰？」への答えが役名なら、ものまね。',
-      use: 'Guess who I am.（私は誰でしょう）' },
+      said: '「ブラックパールはどこだ？」と聞き、「だれ？」と返されると、役の名前を名乗る。',
+      mean: '映画の海賊になりきって、デップのものまねをしている。I’m 〜 で役名を名乗る。',
+      trap: 'where do I find を本当の質問と思いやすい。「だれ？」への答えが役名なら、ものまね。',
+      use: 'Guess who I am.（私はだれでしょう）' },
 
-    // R fix: V2/K6 (blind 70 %): the key was the only choice with a motive; all three are now "doing X, to/since Y"
-    // why: really lost ← the other names sound like honest mix-ups; sound like a fan ← "John Dillinger" is another
-    //   Depp role, so the list sounds like film knowledge
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'tease', seg: [30.2, 44.75],
-      stem: 'When Jim answers with other names, what is he doing?',
-      choices: ['Pretending not to get it, to tease him', 'Naming other Depp roles, to sound like a fan',
-                'Mixing up the names, since he really is lost'], a: 0,
-      cue: '役名を2回言われたあとの返事と、最後の一言。',
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['tease'], seg: [26, 62.5],
+      stem: 'What is Jim mostly doing in this part?',
+      ja: 'この部分で、ジムはおもに何をしている？',
+      choices: ['Playing along and teasing him', 'Getting excited along with him', 'Telling his own star story'], a: 0,
+      choicesJa: ['話を合わせて、からかっている', 'いっしょに興奮している', '自分の有名人の話をしている'],
+      cue: 'ジムの返事の調子。',
+      said: '同僚の話に付き合って答えもするが、わざと外した名前を言ってからかう。',
+      mean: 'play along ＝ 話を合わせる。本気で信じてはいない。信じたい同僚をからかっている。',
+      trap: 'ジムも野球選手の話をするので、自分の話をしていると思いやすい。それは同僚が持ち出した話。',
+      use: 'I’m just playing along.（話を合わせてるだけだよ）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'tease', seg: [30.2, 44.75],
+      stem: 'Why does Jim say “Captain Crunch”?',
+      ja: 'ジムはなぜ「Captain Crunch」と言う？',
+      choices: ['To tease his friend', 'He really doesn’t know', 'To sound like a fan'], a: 0,
+      choicesJa: ['同僚をからかうため', '本当に分からないから', 'ファンのように見せるため'],
+      cue: '役名を2回言われたあとの返事。',
       line: 'No, I’m Captain Jack Sparrow. — *Captain Crunch*. … *Screw you*, Halpert.',
-      said: '役名を2回言われても、ジムは似た響きの別の名前で返し、同僚は怒る。',
-      mean: '分かっているのに、わざと外してからかっている。最後の Screw you がその証拠。',
-      trap: '名前を次々に言うので本気の当て推量に聞こえる。答えを言われたあとも外すなら、わざと。',
+      said: '役名を2回言われても、ジムは似た響きの別の名前で返し、同僚はおこる。',
+      mean: 'わざと外してからかっている。tease ＝ からかう。最後に同僚がおこるのが証拠。',
+      trap: '名前を次々に言うので、本気で当てようとしているように聞こえる。答えを聞いたあとも外すなら、わざと。',
       use: 'Okay, okay, I’m just messing with you.（ごめん、からかっただけ）' },
 
-    // why: furious ← "Screw you" is a strong phrase out of context; amused ← the light delivery heard as laughing
-    //   along with Jim
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'screw', reveals: ['tease', 'excited'], seg: [42.35, 47.95],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'screw', reveals: ['tease', 'excited'], seg: [42.35, 47.95], retired: true,
       stem: 'How does he feel as he says “Screw you, Halpert”?',
       choices: ['Fed up with being teased again', 'Furious enough to stop talking', 'Amused and happy to play along'],
       a: 0,
@@ -191,44 +166,32 @@ export const deppCondo: Clip = {
       trap: 'Screw you は強い言葉なので激怒に聞こえやすい。仲間内では軽い「うるさい」にもなる。',
       use: 'Oh, shut up. You know what I mean.（もう、うるさいな。分かるでしょ）' },
 
-    // R fix: V2/K5 (blind 60 %): the key was the only two-part choice; all three are now "fact, so request"
-    // why: bored now ← "not easy getting excited" read as "I can't get excited about this any more"; calm down ←
-    //   "getting excited" heard as about Jim
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'excited', seg: [43.8, 47.95],
-      stem: 'Right after “Screw you, Halpert”, what is he telling Jim?',
-      choices: ['Excitement is rare, so don’t spoil it', 'Excitement fades, so he’s bored of it now',
-                'Jim gets excited too easily, so calm down'], a: 0,
-      cue: '「You know」で始まる文の中身。',
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'excited', seg: [43.8, 47.95],
+      stem: 'What does he mean by “it’s not easy getting excited”?',
+      ja: '「it’s not easy getting excited」で言いたいことは？',
+      choices: ['Don’t spoil my fun', 'I’m bored with this', 'You get excited too easily'], a: 0,
+      choicesJa: ['楽しいのにじゃましないで', 'これにはあきた', '君はすぐ興奮しすぎ'],
+      cue: '「You know」で始まる文。',
       line: 'You know, it’s *not easy getting excited* about stuff.',
       said: '「何かにわくわくするのって、そう簡単じゃないんだぞ」と言う。',
-      mean: 'せっかく楽しんでいるのに水を差すな、という抗議。',
-      trap: 'not easy を「わくわくできない＝飽きた」と取りやすい。前の Screw you とつなげて聞く。',
+      mean: 'get excited ＝ わくわくする。せっかく楽しんでいるのに、じゃまするな、という抗議。',
+      trap: 'not easy から「わくわくできない＝あきた」と思いやすい。からかわれた直後の言葉。',
       use: 'Let me enjoy this, okay?（楽しませてよ、ね？）' },
 
-    // R fix: V2 (blind 55 %) and S1: whisper gives "At the Yankees game" to another speaker, so the stem now names
-    //   Clemens; "saw Depp there" became the coworker's own sighting, a keyword trap on "seen"
-    // why: change the subject ← a baseball name in the middle of a Depp talk sounds like a new topic; a sighting of
-    //   his own ← "you'd seen" with the weak "you'd" lost, heard as "I'd seen"
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'clemens', seg: [47.9, 52.7],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'clemens', seg: [47.9, 52.7],
       stem: 'Why does he bring up Roger Clemens?',
-      choices: ['To remind Jim of his own excitement', 'To change the subject to baseball',
-                'To top it with a sighting of his own'], a: 0,
-      cue: '「Remember how」のあとの you が誰か。',
+      ja: '彼はなぜロジャー・クレメンスの話を出す？',
+      choices: ['To remind Jim of his feelings', 'To talk about baseball instead', 'To tell his own story'], a: 0,
+      choicesJa: ['ジム自身の気持ちを思い出させるため', 'かわりに野球の話をするため', '自分の話をするため'],
+      cue: '「Remember how」のあとの you。',
       line: 'Remember how *you felt* when you thought you’d seen Roger Clemens',
       said: 'ジムが有名な野球選手を見たと思った時のことを持ち出す。',
-      mean: '「君だって有名人で興奮したじゃないか」と、ジム自身の経験で言い返している。',
-      trap: '急に野球の話が出るので話題を変えたと取りやすい。Remember how you… は相手の経験に訴える形。',
+      mean: 'Remember how you felt 〜? ＝ 〜のとき、どう感じたか覚えてる？ジム自身の経験で言い返している。',
+      trap: '急に野球の話が出るので、話題を変えたと思いやすい。you felt はジムの気持ち。',
       use: 'Remember how nervous you were?（君だって緊張してたでしょ）' },
 
-    // R fix: V2 (blind 55 %): the key was the only warm reply; "the game" became a second "Fair." reply about being
-    //   sure (the truth question again). Cue leak "felt" removed. The anchor and `said` no longer lean on the
-    //   "You're right… Well, you're not right" turns, whose speakers whisper splits; seg ends after "it wasn't him"
     // anchor: 48.3–51.2 s "Remember how you felt when you thought…" asks about a feeling, after "it's not easy
-    //   getting excited about stuff", not about whether the sighting was real
-    // why: a concession ← "thought you'd seen… it wasn't him" heard as him granting his own sighting may be wrong too
-    //   (right topic, wrong direction); just as sure ← "thought you'd seen" heard as being about certainty, not the
-    //   feeling (warm, but answers the truth question)
-    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'clemens', seg: [47.9, 52.7],
+    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'clemens', seg: [47.9, 52.7], retired: true,
       stem: 'Which reply from Jim would match what his coworker meant?',
       choices: ['Fair. It felt great, even if it was fake.', 'Right, so you admit it might not be Depp.',
                 'Fair. I was just as sure it was him.'], a: 0,
@@ -239,30 +202,26 @@ export const deppCondo: Clip = {
       trap: '「見たと思った」を、本物かどうかの話と取りやすい。思い出させているのが気持ちか事実かを聞く。',
       use: 'Fair enough. I get why you’re excited.（なるほどね、興奮する気持ちは分かる）' },
 
-    // R fix: the answer's apostrophe now matches the line's (’), so it equals the starred words
     { id: 'x2', skill: 'dict', level: 'B2', point: 'clemens', seg: [48, 51.48],
       stem: 'Type the words: “…when you thought ___ Roger Clemens” (2 words)', answer: "you'd seen",
-      cue: '「thought」の直後、とても短い2語。',
+      ja: '「thought」のあとの2語を書こう。',
+      cue: '「thought」の直後。',
       line: 'Remember how you felt when you thought *you’d seen* Roger Clemens',
       said: '「あの選手を見たと思った時の気持ち、覚えてる？」と聞く。',
-      mean: 'you’d は you had。had は d だけ残り、seen とつながる。',
-      trap: 'd が消えると you seen や you saw に聞こえやすい。弱い had を聞き落とさない。',
+      mean: 'you’d ＝ you had。had は d だけ残り、seen とつながる。',
+      trap: 'd が消えると you seen や you saw に聞こえやすい。小さな d を聞き落とさない。',
       use: 'I thought I’d seen it before.（前に見たことあると思った）' },
 
-    // why: never went ← "wasn't" and "game" heard together as missing the game; did meet him ← -n't lost, so it
-    //   sounds like "it was him"
     { id: 'd3', skill: 'detail', level: 'B1', point: 'clemens', seg: [48, 55],
       stem: 'What does Jim say about that time at the game?',
-      choices: ['It wasn’t really Clemens he saw', 'He never actually went to the game',
-                'He did get to meet Clemens there'], a: 0,
-      cue: '「Yeah, well」のすぐあと。',
+      ja: 'ジムは、その試合の時のことを何と言う？',
+      choices: ['It wasn’t really Clemens', 'He never went to the game', 'He met Clemens there'], a: 0,
+      choicesJa: ['本当はクレメンスではなかった', '試合には行っていない', 'そこでクレメンスに会った'],
+      cue: '「Yeah, well」のあと。',
       line: 'Yeah, well, *it wasn’t him*.',
       said: 'ジムは「まあ、本人じゃなかったけどね」と認める。',
-      mean: 'ジムも有名人を見たと勘違いしたことがある。同僚の写真も同じかも、と匂わせる返し。',
-      trap: 'wasn’t の t が消えると was に聞こえ、本当に会えた話になる。n の音が残るかを聞く。',
+      mean: 'it wasn’t him ＝ 本人ではなかった。ジムも有名人を見たと勘ちがいしたことがある。',
+      trap: 'wasn’t の t が消えると was に聞こえ、本当に会えた話になる。「ン」が残るかを聞く。',
       use: 'It wasn’t him after all.（結局、本人じゃなかった）' },
-
-    // R drop: m1 (marker) — the key needs "You're right. You're right." and "Well, you're not right" from one
-    //   speaker, but whisper marks a turn change at "Well" and no name settles it (§9.7). Never shipped, deleted.
   ]
 };
