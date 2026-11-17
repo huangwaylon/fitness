@@ -4,7 +4,7 @@
 // the library, 今週 1/3日, これまで 1本); ⚑ 報告 on the clip and a question, listed in ⚙'s 報告した内容; the player's
 // offline and unavailable states, 字幕 オフ / 英語 / 日本語 and 場面のあらすじ; セリフ (the transcript) follows the playhead, a line
 // tapped plays from there; a lesson left resumes where it was. The logic tier.
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, PINNED_DATE, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
@@ -22,6 +22,11 @@ import waitressJa from '../src/lib/english/transcripts/lm2MpPpkGL8.ja.json' with
 
 /** The clips as offered (the shared plan). */
 const PLAN = planOf(CLIPS);
+/** The clip these tests study, today's whatever the plan's order (plan-order.ts is re-planned as content changes):
+ *  every clip before it skipped (別の動画にする's own record, prefs.ts) on the pinned day, for each player. */
+const AHEAD = PLAN.slice(0, PLAN.findIndex((c) => c.id === waitress.id)).map((c) => c.id);
+/** The plan's clip after waitress (the next unfinished, unskipped one). */
+const AFTER = PLAN[AHEAD.length + 1];
 
 /** The card at place `i` of the lesson, and its question (this play's draw: by its id). */
 const cardAt = (p: Page, i: number) => p.locator(`dialog[open] [data-en-lesson] [data-en-q="${i}"]`);
@@ -47,6 +52,12 @@ const lesson = (p: Page) => sheet(p).locator('[data-en-lesson]');
 const at = (p: Page) => lesson(p).getAttribute('data-en-at');
 
 async function open(page: Page, q = '') {
+  await page.addInitScript(([ids, on]) => {
+    const k = 'island.english.skip';
+    if (localStorage.getItem(k) !== null) return; // a skip made in the test (or a second open) kept
+    const day = Object.fromEntries(ids.map((id) => [id, on]));
+    localStorage.setItem(k, JSON.stringify({ A: day, B: day, G: day }));
+  }, [AHEAD, PINNED_DATE.slice(0, 10)] as const);
   await page.goto(`?demo${q}`);
   await islandUp(page);
   await fromMenu(page, 'english');
@@ -115,36 +126,38 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await start(page);
   await lesson(page).locator('[data-en-to-q]').click();
   const card = lesson(page).locator('[data-en-q="0"]');
-  // q1 (the answer is the 2nd): a miss
+  // q1 (this draw's: its answer, segment and line from the bank, which content edits change): a miss
+  const q0 = await questionAt(page, 0);
+  const [miss1, miss2] = q0.choices!.flatMap((_, k) => (k === q0.a ? [] : [k]));
   // question 1 says what to do (its question is English) till the first pick
   await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから、合うものを選びましょう。何回聞いてもOK');
   const n0 = (await ytCommands(page)).length;
-  await card.locator('[data-choice="0"]').click();
+  await card.locator(`[data-choice="${miss1}"]`).click();
   await expect(card.locator('[data-en-howto]')).toHaveCount(0);
   await expect(card.locator('[data-en-nudge]')).toContainText('もう一度聞いてみましょう。');
-  await expect(card.locator('[data-en-nudge]')).toContainText((await questionAt(page, 0)).cue);
+  await expect(card.locator('[data-en-nudge]')).toContainText(q0.cue);
   // brought up only as far as it takes: the question and its choices stay on screen for the retry
   await expect(card.locator('[data-en-nudge]')).toBeInViewport();
   await expect(card.locator('.stem')).toBeInViewport();
   await expect(card.locator('[data-choice]').first()).toBeInViewport();
   await expect(card).toHaveAttribute('data-result', 'open');
   await expect(card.locator('[data-ans]')).toHaveCount(0);
-  // the segment replayed by itself: from 0, paused at 10 s
+  // the segment replayed by itself: from its start, paused at its end
   await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
   const cmds = await from(page, n0, 'seekTo');
-  expect(cmds.find((c) => c[0] === 'seekTo')?.[1]).toEqual([0, true]);
-  expect(cmds.find((c) => c[0] === 'pauseVideo')![2]).toBeGreaterThanOrEqual(10);
+  expect(cmds.find((c) => c[0] === 'seekTo')?.[1]).toEqual([q0.seg[0], true]);
+  expect(cmds.find((c) => c[0] === 'pauseVideo')![2]).toBeGreaterThanOrEqual(q0.seg[1]);
   // a second miss: the answer, ○ on it, the notes; the picks never marked, nothing coral
-  await card.locator('[data-choice="2"]').click();
+  await card.locator(`[data-choice="${miss2}"]`).click();
   await expect(card).toHaveAttribute('data-result', 'shown');
   await expect(card.locator('[data-en-reveal]')).toContainText('答えはこれ');
-  await expect(card.locator('[data-ans]')).toHaveAttribute('data-choice', '1');
+  await expect(card.locator('[data-ans]')).toHaveAttribute('data-choice', String(q0.a));
   // 意味 and 使えるフレーズ open; くわしく (言っていること, 迷いやすい点) opened by itself after a miss
   await expect(card.locator('[data-en-reveal] .phrase')).toBeVisible();
   await expect(card.locator('[data-en-more]')).toHaveAttribute('open', '');
   await expect(card.locator('[data-en-said]')).toBeVisible();
   await expect(card.locator('[data-en-reveal]')).toContainText('言っていること');
-  await expect(card.locator('[data-en-reveal] u')).toHaveText('hundred dollar advance');
+  await expect(card.locator('[data-en-reveal] u')).toHaveText(/\*(.+?)\*/.exec(q0.line!)![1]);
   await expect(card.locator('[data-en-nudge]')).toHaveCount(0);
   expect(await card.evaluate((el) => /不正解|間違|×|ざんねん/.test(el.textContent ?? ''))).toBe(false);
   // the next three choice items: right first ◎; a miss then right ○; a miss then 答えを見る
@@ -207,7 +220,7 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   expect(lines).toContain((await lesson(page).locator('[data-en-again] .ph').first().textContent())!.trim());
   await lesson(page).locator('[data-en-done]').click();
   // the main card goes on to the plan's next clip (the finished one isn't offered again today, not even as a row)
-  await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', PLAN[1].id);
+  await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', AFTER.id);
   await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toHaveText('▶ 始める');
   await expect(sheet(page).locator('[data-en-lib] [data-en-clip="waitress"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '1');
@@ -276,7 +289,7 @@ test('the player offline: a note in its place, the embed once back online; today
   await expect(lesson(page).locator('[data-yt-frame]')).toHaveCount(0);
   // the questions work offline all the same
   await lesson(page).locator('[data-en-to-q]').click();
-  await lesson(page).locator('[data-en-q="0"] [data-choice="1"]').click();
+  await lesson(page).locator(`[data-en-q="0"] [data-choice="${(await questionAt(page, 0)).a}"]`).click();
   await expect(lesson(page).locator('[data-en-q="0"]')).toHaveAttribute('data-result', 'first');
   await context.setOffline(false);
   await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'ready');
@@ -333,12 +346,13 @@ test('the controls: play / pause on from where it stopped, −5 秒, the scrubbe
   // on a question: its part from the card's この部分を聞く, none in the controls
   await lesson(page).locator('[data-en-to-q]').click();
   await expect(c.locator('[data-yt-seg]')).toHaveCount(0);
+  const start0 = (await questionAt(page, 0)).seg[0];
   const n2 = (await ytCommands(page)).length;
   await lesson(page).locator('[data-en-hear]').click();
   // (the move to the card's pause may land just before: the segment's seek and play follow, whatever came first)
   await expect.poll(async () => {
     const c2 = (await since(page, n2)).map((x) => JSON.stringify(x.slice(0, 2)));
-    const i = c2.indexOf(JSON.stringify(['seekTo', [0, true]]));
+    const i = c2.indexOf(JSON.stringify(['seekTo', [start0, true]]));
     return i >= 0 && c2[i + 1] === JSON.stringify(['playVideo', []]);
   }).toBe(true);
 });
