@@ -1,15 +1,8 @@
+// A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 7, new 2
 // “Time to put a marble in the box - The Office US” (the official The Office channel, BEST OF SEASON 5): Michael tries
 // to get the warehouse guys, Andy and Dwight to back or join the paper company he's starting; nobody does, the new boss
 // Charles has him walked out, and the office says goodbye in talking heads.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 31–34 s (Michael's answer: "Yeah" in the
-// captions, "No" in whisper), 42–44 s ("It doesn't sound like a sure thing" / "It'll sound like…"), 67–69 s (the pet:
-// "It's a gecko" in whisper, "I have to get go" in the captions), 264–281 s (Michael singing, mostly visual),
-// 307–313 s (innuendo about the new guy), and 321–344 s (whisper loops "Time to put a marble in the box").
-// EAR CHECK: 158.7 s r1 — the cut must fall after "…a part of the opportunity" and before "Um… Location is hard"
-// EAR CHECK: 315.5–317.0 s i5 — the captions "Old Critty outlives yet another boss", whisper "Old Creedy out, Liz. Yet
-//   another boss.": confirm "outlives" (the key rests on "yet another boss", which both have)
-// REVIEW 2026-11-16: pass 6, fix 16, drop 2, new 2; ear checks 2
-// Q: none open. Literal coverage was 3 (< 4) before the review; d3 (new) fills it.
+// Untested: 31–34 s, 42–44 s, 67–69 s (the pet), 264–281 s, 307–313 s (innuendo), 315–344 s (garbled, then a loop).
 import type { Clip } from '../types.ts';
 
 export const marbleBox: Clip = {
@@ -18,78 +11,47 @@ export const marbleBox: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: V2 — "talk the new boss into letting him stay" isn't in the segment at all; now "say goodbye", which the
-    //   clip's ending makes tempting (blind 55 % → ~40 %)
-    // why: bigger company ← "paper company" and the warehouse questions heard as job hunting; goodbye ← the clip ends
-    //   with farewells and "I'm out of here", so the whole clip can be filed as a send-off
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'recruit', seg: [3.0, 173.6],
-      stem: 'Across the clip, what is Michael trying to do?',
-      choices: ['Get people to join or back his new company', 'Find work at another, bigger paper company',
-                'Say goodbye to everyone before he leaves'], a: 0,
-      cue: '倉庫、Andy、Dwight と、相手を変えて頼む中身。',
-      said: '倉庫の人たちに広さを聞き、出資や参加の話をし、Andy や Dwight も誘う。',
-      mean: '自分で紙の会社を始めるため、仲間と支援を集めて回っている。',
-      trap: 'paper company が何度も出るので転職に、最後の別れで送別に聞こえる。頼みの中身を追う。',
-      use: 'I’m starting my own business.（自分で事業を始めるんだ）' },
-
-    // why: invest ← "Can I invest?" comes right after; work for him ← the recruiting script of the rest of the clip
     { id: 'd1', skill: 'detail', level: 'B1', point: 'space', seg: [16.8, 30.6],
-      stem: 'What does Michael ask the warehouse guys?',
-      choices: ['How much room a small paper company needs', 'Whether they would invest in his company',
-                'Whether they would come and work for him'], a: 0,
-      cue: '「warehouse space」のあたり、何の広さを聞いているか。',
+      stem: 'What does Michael ask the warehouse guys?', ja: 'マイケルは倉庫の二人に何を聞く？',
+      choices: ['How much space he needs', 'If they will invest', 'If they will work for him'], a: 0,
+      choicesJa: ['どのくらいの広さが必要か', '出資してくれるか', '自分の下で働くか'],
+      cue: '「You guys work in a warehouse」のあと',
       line: 'How much *warehouse space* do you think a paper company *would need*…?',
-      said: '「紙の会社なら倉庫はどのくらい要ると思う？」と聞き、最後は「ガレージくらい？」と言う。',
-      mean: '倉庫で働く二人に、新しい会社に必要な広さを相談している。',
-      trap: 'すぐあとに invest が出るので出資の話に聞こえやすい。最初の質問は広さ。',
+      said: 'マイケルが「紙の会社なら、倉庫はどのくらい要ると思う？」と聞く。',
+      mean: 'warehouse space ＝ 倉庫の広さ。How much 〜 do you think …? ＝ どのくらい〜だと思う？',
+      trap: 'あとで invest（出資する）の話が出るが、最初の質問は広さ。space を聞く。',
       use: 'How much space do you think we need?（どのくらいの広さが要ると思う？）' },
-
-    // why: 20 ← "-five" swallowed before "clients"; 35 ← the flapped t of "twenty" heard as the "th" of "thirty"
     { id: 'n1', skill: 'number', level: 'B1', point: 'clients', seg: [18.6, 27.4], keep: true,
-      stem: 'How many clients does Michael imagine the company having?',
+      stem: 'How many clients does Michael imagine having?', ja: 'マイケルは客が何社だと想定している？',
       choices: ['20', '25', '35'], a: 1,
-      cue: '「clients」の直前の数字。',
+      choicesJa: ['20社', '25社', '35社'],
+      cue: '「if it had, like」のあと',
       line: 'if it had, like, *25* clients?',
-      said: '「客が25社くらいなら」と仮定し、いずれ広げたいと付け加える。',
-      mean: 'like は「〜くらい」。正確な数ではなく、だいたいの見積もり。',
-      trap: 'twenty の t は弱く、five も clients の前で短くなる。数字の後半まで聞く。',
+      said: 'マイケルが「客が25社くらいなら」と言う。',
+      mean: 'twenty-five ＝ 25。like ＝ 〜くらい（だいたいの数）。client ＝ 客、取引先。',
+      trap: 'twenty で止めず、後ろの five まで聞く。35 なら「サーティ」で始まる。',
       use: 'There were, like, thirty people there.（30人くらいいたよ）' },
-
-    // R fix: V2 — "a little; a small amount" was a filler; now "would invest if it were safer", from “It doesn't sound
-    //   like a sure thing”
-    // why: want a share ← "Can I invest?" taken at face value, twice; if safer ← "doesn't sound like a sure thing" heard
-    //   as a real condition
     { id: 't1', skill: 'attitude', level: 'B1', point: 'tease', seg: [35.9, 50.4],
-      stem: 'When the warehouse guys ask “Can I invest?”, how serious are they?',
-      choices: ['Not at all; they are teasing him', 'Very; they want a share of it',
-                'Somewhat; they’d invest if it were safer'], a: 0,
-      cue: '少しあとの「I need you to know something」の続き。',
-      line: 'I need you to know something. *I’m messing with you.*',
-      said: '二人とも「出資したい」と言ってすぐ「金がない」と引き、最後に「からかってるだけ」と明かす。',
-      mean: 'mess with ＝ からかう。出資の話は最初から冗談。',
-      trap: 'sure thing じゃないと引くのも冗談の流れ。最後のひと言で確かめて。',
+      stem: 'Do the warehouse guys really want to invest?', ja: '倉庫の二人は、本当に出資したい？',
+      choices: ['No, they are joking', 'Yes, they really want to', 'Maybe, if it’s safe'], a: 0,
+      choicesJa: ['いいえ、冗談', 'はい、本当にしたい', '安全ならするかも'],
+      cue: '「I need you to know something」のあと',
+      line: 'Can I invest? … My money’s tied up. … I need you to know something. *I’m messing with you.*',
+      said: '「出資していい？」と言うが、「金は動かせない」と引き、「からかってるだけ」と言う。',
+      mean: 'mess with 〜 ＝ 〜をからかう。I’m messing with you ＝ からかってるだけだよ。',
+      trap: 'Can I invest? が聞こえるので、本気だと思いやすい。最後のひと言で冗談だと分かる。',
       use: 'Relax, I’m just messing with you.（落ち着いて、からかっただけ）' },
-
-    // R fix: V2 — "locked away in a bank safe" was a filler (blind 70 %); now "all gone", the other man's "tapped out"
-    // why: all gone ← "tapped out" right after, by the other man, heard as the same excuse; owes it ← "money's tied up"
-    //   heard as money promised to someone
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'tiedup', seg: [38.2, 41.5],
-      stem: 'What does “My money’s tied up” mean here?',
-      choices: ['It is all in other things right now', 'It is all gone; he has none left',
-                'It is all owed to somebody else'], a: 0,
-      cue: '直後のもう一人の短い言い訳とセットで。',
-      line: 'My money’s *tied up*. — I’m tapped out.',
-      said: '一人は「金は動かせない」、もう一人は「すっからかん」と言う。',
-      mean: 'tied up ＝ ほかに使っていて今は動かせない。ないとは言っていない。',
-      trap: 'tapped out（すっからかん）と同じに聞こえやすい。tied up は使い道がふさがっているだけ。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'tiedup', seg: [36.0, 41.5],
+      stem: 'What does “My money’s *tied up*” mean?', ja: '「My money’s tied up」の意味は？',
+      choices: ['It’s being used now', 'It is all gone', 'He owes it to someone'], a: 0,
+      choicesJa: ['今はほかに使っている', '全部なくなった', '人に借りている'],
+      cue: '「Can I invest?」のあと',
+      line: 'Can I invest? — Yeah. — *My money’s tied up.*',
+      said: '「出資していい？」「いいよ」「あ、お金は今動かせないんだ」と言う。',
+      mean: 'tied up ＝ （お金や時間が）ほかでふさがっている。文字どおりは「しばられた」。',
+      trap: 'お金がないという意味だと思いやすい。tied up はほかに使っていて動かせないだけ。',
       use: 'Sorry, I’m tied up all afternoon.（ごめん、午後はずっとふさがってる）' },
-
-    // R fix: V2 — "a boast" was the odd one out (blind 60 %); now "modest" (right target, wrong direction)
-    // why: argued hard ← "honestly tried" taken at face value; modest ← the Japanese frame: a short "I tried" heard as
-    //   謙遜, more done than said
-    // anchor: 34–50 s two fake offers, then "I'm messing with you"; 50.9 s a single "This doesn't sound like a good
-    //   idea"; 63.2 s Michael: "This will work. It has to work."
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'tried', reveals: ['dissuade', 'tease'], seg: [41.0, 65.9],
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'tried', reveals: ['dissuade', 'tease'], seg: [41.0, 65.9], retired: true,
       stem: 'After seeing the scene, how should we hear “I honestly tried”?',
       choices: ['As a stretch: one line after a lot of teasing', 'As true: he argued hard, but Michael ignored him',
                 'As modest: he did even more than he says here'], a: 0,
@@ -99,67 +61,67 @@ export const marbleBox: Clip = {
       mean: 'カメラへの一言が場面と食い違う。honestly を重ねるほど、言い訳らしく聞こえる。',
       trap: '言葉をそのまま、または謙遜と取りやすい。場面の反対は1回だけ。カメラの前の言葉は場面と比べる。',
       use: 'I tried. Well, sort of.（やってはみたよ。まあ、一応ね）' },
-
-    // R fix: V2 — "wish Michael luck" was a filler; now "stay out of the plan" (dis- heard as “away from”)
-    // why: persuade ← dissuade / persuade differ by one sound; stay out ← dis- heard as "keep away", about himself
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'dissuade', seg: [54.3, 58.4],
-      stem: 'What was he “just trying” to do, in his talking head?',
-      choices: ['Talk Michael out of the plan', 'Talk Michael into the plan', 'Stay out of Michael’s plan himself'], a: 0,
-      cue: '「trying to」のあとの動詞、その最初の音。',
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'dissuade', seg: [54.0, 59.0],
+      stem: 'What was he trying to do, “*dissuade* him”?', ja: '「dissuade him」とは何をしようとした？',
+      choices: ['Stop Michael’s plan', 'Help Michael’s plan', 'Join Michael’s plan'], a: 0,
+      choicesJa: ['マイケルの計画をやめさせる', 'マイケルの計画を手伝う', 'マイケルの計画に加わる'],
+      cue: '「He wants to start his own company」のあと',
       line: 'He wants to start his own company, and I was just trying to *dissuade* him.',
-      said: '「会社を始めたいと言うので、思いとどまらせようとしただけ」と言う。',
+      said: '「会社を始めたいと言うから、思いとどまらせようとしただけ」と言う。',
       mean: 'dissuade ＝ 説得してやめさせる。persuade（説得してやらせる）の反対。',
-      trap: 'dis- の音が弱いと persuade に聞こえ、意味が逆になる。最初の音に注意。',
+      trap: 'dis- の音が小さいと persuade に聞こえ、意味が逆になる。最初の「ディ」を聞く。',
       use: 'I tried to talk her out of it.（やめるように説得したんだけど）' },
-
-    // R new: d3 — the bank had 3 literal items (C2 needs ≥ 4). Blind read: 40 % ("a mouth to feed" is a strong pull).
-    //   The pet's name in the audio is disputed (gecko / "get go"), so the item never names it.
-    // why: something to feed ← "I have a mouth to feed" said just before, in the wrong relation (it's why the company
-    //   has to work); company ← the usual reason to get a pet, the broken script
     { id: 'd3', skill: 'detail', level: 'B1', point: 'pet', seg: [64.3, 75.9],
-      stem: 'Why does Michael say he got his pet?',
-      choices: ['To give people something to talk about', 'To have someone at home to feed and care for',
-                'To keep himself company in the evenings'], a: 0,
-      cue: '「stupidly got it because」のあと。',
+      stem: 'Why did Michael get his pet?', ja: 'マイケルはなぜペットを飼った？',
+      choices: ['To start conversations', 'To have something to feed', 'To feel less lonely'], a: 0,
+      choicesJa: ['会話のきっかけにするため', '世話する相手がほしくて', 'さびしくないように'],
+      cue: '「stupidly got it because」のあと',
       line: 'I thought it would be a great *conversation starter*. It has yet to start a conversation.',
-      said: '「会話のきっかけになると思った。まだ一度もならない」と言う。',
-      mean: 'conversation starter ＝ 話のきっかけ。期待外れを自分で認めている。',
-      trap: '直前の a mouth to feed で世話に聞こえるが、理由は because のあと。',
+      said: 'マイケルが「会話のきっかけになると思った。まだ一度もならない」と言う。',
+      mean: 'conversation starter ＝ 話のきっかけ。has yet to 〜 ＝ まだ〜していない。',
+      trap: '前の a mouth to feed（養う口）で世話の話に聞こえるが、理由は because のあと。',
       use: 'It’s a great conversation starter.（話のきっかけになるよ）' },
-
-    // R fix: S4 — the start cut into "starter"; B1 — the stem names the pet aside, d3's point → reveals pet
-    // why: new subject ← "anyway" often moves on; one more pet fact ← the pet aside goes on just before
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', reveals: ['pet'], seg: [73.0, 80.5],
-      stem: 'After the “conversation starter” aside, what does Michael’s next word do?',
-      choices: ['Brings him back to whether the company will work', 'Starts a new subject: how much money he has',
-                'Adds one more joke about the pet he bought'], a: 0,
-      cue: 'ペットの話が終わった直後、文頭の一語。',
-      line: '*Anyway*, I have no reason to believe that I can’t do this.',
-      said: 'ペットの話をしたあと、「とにかく、できないと思う理由はない」と言う。',
-      mean: 'Anyway ＝ 話を戻す合図。脱線の前の「うまくいくはず」に戻っている。',
-      trap: 'anyway は話題を変えるときにも使うが、ここは元の話に戻る使い方。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'anyway', reveals: ['pet'], seg: [73.0, 81.0],
+      stem: 'Why does Michael say “*Anyway*”?', ja: 'マイケルはなぜ「Anyway」と言う？',
+      choices: ['To go back to his point', 'To start a new topic', 'To make one more joke'], a: 0,
+      choicesJa: ['自分の話に戻るため', '新しい話を始めるため', 'もう一つ冗談を言うため'],
+      cue: 'ペットの話のあと',
+      line: 'It has yet to start a conversation. *Anyway*, I have no reason to believe that I can’t do this.',
+      said: 'マイケルが「とにかく、自分にできないと思う理由はない」と言う。',
+      mean: 'Anyway ＝ とにかく。わき道の話を終えて、元の話（会社はうまくいく）に戻る合図。',
+      trap: 'anyway は話を変える時にも使うが、ここは前の「うまくいく」に戻っている。',
       use: 'Anyway, where was I?（とにかく、どこまで話したっけ）' },
-
-    // R fix: V2 — the key named the pun outright ("climate as weather, not the economy"); it now describes the answer
-    // why: worldwide ← the next sentence; times are bad ← "In this climate?" heard as a warning that he accepts
     { id: 'h1', skill: 'humor', level: 'C1', point: 'climate', seg: [82.4, 92.5],
-      stem: 'Why does Michael’s reply to “In this climate?” get a laugh?',
-      choices: ['He answers as if it were about the weather', 'He means the company will sell around the world',
-                'He admits times are bad but says he doesn’t care'], a: 0,
-      cue: '質問の climate がどちらの意味か。返事の all がヒント。',
+      stem: 'Michael says “*In all climates*.” Why is it funny?', ja: 'マイケルの「In all climates」はなぜおかしい？',
+      choices: ['He thinks “climate” means weather', 'He will sell it all over the world', 'He says times are bad'], a: 0,
+      choicesJa: ['climate を天気の意味だと思っている', '世界中で売るつもりだ', '今は景気が悪いと言っている'],
+      cue: '「No way!」のあと',
       line: 'In this *climate*? — Yeah. *In all climates.*',
-      said: '「この（不景気な）時期に？」に「ああ、どんな気候でも」と返す。',
-      mean: 'climate はここで「経済の状況」。Michael は天気の気候だと取り違えている。',
-      trap: '次の worldwide で世界の話に聞こえるが、笑いは climate の取り違え。',
+      said: '「この景気で？」に、マイケルが「ああ、どんな気候でも」と言う。',
+      mean: 'in this climate ＝ このご時世に（景気の話）。climate はふつう「気候」。マイケルは気候の意味で返す。',
+      trap: '次の worldwide（世界中）で世界の話に聞こえるが、笑いは climate の取り違え。',
       use: 'In this economy?（このご時世に？）' },
-
-    // R fix: V2 — "the French" was close to absurd; now his family (the subject of his sentence: right words, wrong
-    //   target)
-    // why: Michael ← Andy is turning Michael down, so the joke seems aimed at the plan; his family ← "the Bernards" is
-    //   the subject, so they seem to be the butt
-    // anchor: 101.6 s "the Bernards have always maintained…" (his own family), then "cowardice" (an English word, about
-    //   himself) and "There's no word for it in English"
-    { id: 'nt3', skill: 'humor', level: 'C2', point: 'coward', seg: [99.0, 116.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'recruit', seg: [83.0, 115.0],
+      stem: 'What does Michael ask Andy to do?', ja: 'マイケルはアンディに何をしてほしい？',
+      choices: ['Join his new company', 'Lend him some money', 'Find him an office'], a: 0,
+      choicesJa: ['新しい会社に入る', 'お金を貸す', '事務所を探す'],
+      cue: '「worldwide」のあと',
+      line: 'I’m looking for some talented salesmen to *join me*. That’s where you come in.',
+      said: 'マイケルが「一緒にやる優秀な営業を探してる。そこで君だ」と言い、アンディは断る理由を話す。',
+      mean: 'join ＝ 加わる、仲間になる。salesman ＝ 営業の人。アンディは行きたいが、こわくて行かない。',
+      trap: 'invest（出資）の話は前の倉庫の二人とのこと。アンディには join me と言っている。',
+      use: 'Would you like to join us?（一緒にどう？）' },
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'comein', reveals: ['recruit'], seg: [90.0, 96.0],
+      stem: 'What does “*That’s where you come in*” mean?', ja: '「That’s where you come in」の意味は？',
+      choices: ['You are part of my plan', 'Please come inside', 'You came at a bad time'], a: 0,
+      choicesJa: ['君は計画の一部だ', '中に入って', '来るタイミングが悪い'],
+      cue: '「talented salesmen」のあと',
+      line: 'I’m looking for some talented salesmen to join me. *That’s where you come in.*',
+      said: 'マイケルが「優秀な営業を探してる。そこで君の出番だ」と言う。',
+      mean: 'That’s where you come in ＝ そこで君の出番だ。相手に役目があると伝える言い方。',
+      trap: 'come in（入る）から「中に入って」と思いやすい。ここは「話に入ってくる」＝出番。',
+      use: 'We need a driver. That’s where you come in.（運転手が要る。そこで君の出番）' },
+    { id: 'nt3', skill: 'humor', level: 'C2', point: 'coward', seg: [99.0, 116.6], retired: true,
       stem: 'In Andy’s talking head about “self-preservation”, who is the joke on?',
       choices: ['Andy, who dresses up his own fear', 'Michael, for thinking people will join him',
                 'His own family, whom he is making fun of'], a: 0,
@@ -169,29 +131,27 @@ export const marbleBox: Clip = {
       mean: '自分のこわがりを立派に言いかえ、英単語をフランス語扱い。笑われているのは本人。',
       trap: '断る相手や主語の家族への皮肉に聞こえるが、家族はほめている。的は話し手。',
       use: 'I’m not scared. I’m just careful.（怖くないよ。慎重なだけ）' },
-
-    // R drop: h2 (never shipped) — V2 (blind 70 %: "cowardice is an ordinary English word" is plain to any reader) and
-    //   the same point as nt3, which covers the same joke at C2
-    // R fix: S2/V2 — the stem quoted "just… right now", which answers it (blind 85 %); it now quotes "nugget" only, and
-    //   "nearly ready" becomes the gold-nugget reading
-    // why: valuable ← a nugget of gold, plus "lots of potential" right after; joke ← nugget = a fried chicken nugget,
-    //   read literally
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'nugget', seg: [134.0, 141.6],
-      stem: 'What does Michael mean by calling the company a “nugget” of an idea?',
-      choices: ['It is only a small, early idea so far', 'It is a really valuable idea already',
-                'It is a joke he isn’t serious about'], a: 0,
-      cue: '「just」と「right now」にはさまれた言い方。',
-      line: 'it’s just a *nugget of an idea* right now.',
-      said: '「今はまだ、アイデアのかけらにすぎない」と言う。',
-      mean: 'a nugget of ～ ＝ 小さなかたまり。「まだ始まったばかり」の案。',
-      trap: 'nugget を金塊と取ると「価値ある案」に聞こえる。前後の just と right now が「まだ」の合図。',
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'wellsee', seg: [133.0, 139.0],
+      stem: 'What does “*We’ll see*” mean here?', ja: 'ここでの「We’ll see」の意味は？',
+      choices: ['Maybe, maybe not', 'Let’s go and look', 'Yes, for sure'], a: 0,
+      choicesJa: ['どうなるかな', '見に行こう', 'うん、きっと'],
+      cue: '「Can you believe it?」のあと',
+      line: 'Your own paper company? — Can you believe it? — Well, *we’ll see. We’ll see.*',
+      said: '「自分の紙の会社？」「信じられる？」「まあ、どうなるかね」と言う。',
+      mean: 'We’ll see ＝ どうなるかな、様子を見よう。まだ分からない時の返事。',
+      trap: 'see（見る）から「見に行こう」と思いやすい。結果を待つ時の決まり文句。',
+      use: 'Can we go to the beach? — We’ll see.（海に行ける？—様子を見よう）' },
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'nugget', seg: [134.0, 141.6],
+      stem: 'What does “*a nugget of an idea*” mean?', ja: '「a nugget of an idea」の意味は？',
+      choices: ['Only a small idea so far', 'Already a great idea', 'Just a joke'], a: 0,
+      choicesJa: ['まだ小さなアイデア', 'もうすごいアイデア', 'ただの冗談'],
+      cue: '「we’ll see」のあと',
+      line: 'It’s *just a nugget of an idea* right now.',
+      said: 'マイケルが「今はまだ、アイデアのかけらにすぎない」と言う。',
+      mean: 'a nugget of 〜 ＝ 〜の小さなかたまり。just と right now で「まだ始まったばかり」。',
+      trap: 'nugget を金のかたまりと取ると「価値ある案」に聞こえる。just と right now が手がかり。',
       use: 'It’s just a rough idea for now.（今はまだざっくりした案だけ）' },
-
-    // R fix: V2 — "a question about pay" was the odd one out (blind 60 %); now a question about the office's location
-    // why: happy yes ← the warm "courageous venture… amazing opportunity" just before; where ← a new company's first
-    //   practical question
-    // EAR CHECK: the cut at 158.7 s
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'farm', seg: [149.4, 158.7], then: [158.7, 168.2],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'farm', seg: [149.4, 158.7], retired: true, then: [158.7, 168.2],
       stem: 'Right after Michael invites Dwight to be part of it, what kind of reply comes?',
       choices: ['A careful excuse that avoids a yes', 'A quick, happy yes to the offer',
                 'A question about where the office will be'], a: 0,
@@ -201,76 +161,55 @@ export const marbleBox: Clip = {
       mean: 'ほめ言葉だけで約束はしていない。誘われた瞬間に間が空き、断りの理由が始まる。',
       trap: 'ほめ言葉が続くと yes を期待しやすいが、自分のことは何も言っていない。',
       use: 'Um, let me think about it.（うーん、ちょっと考えさせて）' },
-
-    // R fix: V2 — the distractors now share the key's form (a move on the offer), not just a topic
-    // why: near the farm ← "location" and "farm" heard as a request about where the office goes; later ← "the
-    //   responsibilities" heard as a busy season that will end
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'farm', seg: [158.6, 168.2],
-      stem: 'What does Dwight’s answer about “location” do?',
-      choices: ['Turns the offer down without saying no', 'Sets a condition: an office near his farm',
-                'Puts off a yes until farm work slows down'], a: 0,
-      cue: '最初の間と、そのあと並べる理由。',
-      line: '*Um…* Location is hard for me, with the *farm* and the *responsibilities*.',
-      said: '少し間を置いて、「農場や責任があるから、場所が難しい」と言う。',
-      mean: '理由を並べて、はっきり no と言わずに断っている。',
-      trap: '場所の条件を出しているように聞こえるが、条件ではなく、断るための理由。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'farm', seg: [152.0, 162.0],
+      stem: 'What is Dwight doing with “Location is hard for me”?', ja: 'ドワイトの「Location is hard for me」は何をしている？',
+      choices: ['Saying no politely', 'Asking for a closer office', 'Saying yes, but later'], a: 0,
+      choicesJa: ['やんわり断っている', '近い事務所を頼んでいる', 'あとでならOKと言っている'],
+      cue: '「part of the opportunity」のあと',
+      line: '…to ask you to be a part of the opportunity. — *Um…* *Location is hard for me*, with the farm and the responsibilities.',
+      said: '誘われたドワイトが「うーん…農場や責任があって、場所が難しい」と言う。',
+      mean: 'It’s hard for me ＝ ちょっと難しい。理由を並べて、no と言わずに断っている。',
+      trap: '場所の条件を出していると思いやすい。Um…（うーん）の間と理由で、断りだと分かる。',
       use: 'It’s a bit hard for me right now.（今はちょっと難しいかな）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'pin', seg: [169.1, 174.0],
-      stem: 'Type the words: “Yeah, let’s ___ for now.” (5 words)', answer: 'put a pin in it',
-      cue: '「think about it」のすぐあと。同じ言い方がもう一度出る。',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'pin', seg: [169.1, 174.0], keep: true,
+      stem: 'Type the words: “Yeah, let’s ___ for now.” (5 words)', ja: '「Yeah, let’s ___ for now」の5語を書こう', answer: 'put a pin in it',
+      cue: '「So think about it」のあと',
       line: 'So think about it. — Yeah, let’s *put a pin in it* for now.',
       said: '「考えておいて」「うん、いったん保留にしよう」と言う。',
       mean: 'put a pin in it ＝ いったん保留。全部つながり「プラピニニッ」に近い。',
-      trap: 'a と it は弱く、ほとんど聞こえない。5語を手がかりに区切る。',
+      trap: 'a と it は小さく、ほとんど聞こえない。5語あると思って区切る。',
       use: 'Let’s put a pin in that.（その話はいったん保留で）' },
-
-    // why: stay at his side ← the first, longer picture (cradle him, sing him into death) heard as Dwight's choice;
-    //   captain himself ← "new captain" heard as Dwight taking over
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'battle', seg: [173.8, 187.6],
-      stem: 'In Dwight’s battlefield story, which choice is he making about Michael?',
-      choices: ['Let him go and follow the new boss', 'Stay at his side until the very end',
-                'Take over as the new boss himself'], a: 0,
-      cue: '2つの道の、後のほう。「Or」のあと。',
-      line: '*Or* you can *write him off*, *salute your new captain*…',
-      said: '「倒れた隊長を抱いて看取る道もあれば、見切って新しい隊長に敬礼する道もある」と言う。',
-      mean: 'Michael を見切り、新しい上司につく宣言。write off ＝ 見切る。',
-      trap: '前半が長く感動的なので、そちらを選ぶように聞こえる。結論は Or の後。',
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'battle', seg: [173.8, 194.0],
+      stem: 'In Dwight’s story, what will he do about Michael?', ja: 'ドワイトのたとえ話では、マイケルのことをどうする？',
+      choices: ['Follow the new boss', 'Stay with Michael', 'Become the boss'], a: 0,
+      choicesJa: ['新しい上司につく', 'マイケルのそばにいる', '自分が上司になる'],
+      cue: '「Or you can」のあと',
+      line: '*Or* you can *write him off*, *salute your new captain*, and follow him…',
+      said: 'ドワイトが「隊長を看取る道もあれば、見切って新しい隊長に敬礼する道もある」と言う。',
+      mean: 'write 〜 off ＝ 〜を見切る、あきらめる。captain ＝ 隊長（ここでは上司）。',
+      trap: '前半の看取る話が長いので、そちらを選ぶと思いやすい。結論は Or のあと。',
       use: 'I’ve written that idea off.（その案はもうあきらめた）' },
-
-    // R fix: V1/K2 — "no one goes with him" is told by the picture, not the words; the key is now the order to leave. S4:
-    //   the segment starts at Dwight's battlefield talk, so the evidence against "with Dwight" is inside it
-    // why: two weeks ← "It's my two weeks" heard as Michael getting his way; with Dwight ← the earlier invitation
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', reveals: ['twoweeks', 'battle'], seg: [173.8, 282.0],
-      stem: 'How does Michael’s last day end?',
-      choices: ['He is told to leave right away, not in two weeks', 'He finishes his two weeks and leaves on good terms',
-                'He walks out with Dwight as his first salesman'], a: 0,
-      cue: '新しい上司の「stand up」と、その返事。',
-      said: 'Dwight は新しい上司につき、Michael は「立って出ていって」と言われて去る。',
-      mean: '2週間を待たず、その場で追い出される終わり方。',
-      trap: 'two weeks や Dwight への誘いを覚えていると穏やかな終わりを想像しやすい。',
-      use: 'I’m out of here.（もう帰るね）' },
-
-    // R drop: s2 (never shipped) — V1: "I can't pretend I have seen that" makes no sense, so meaning alone picks
-    //   "haven't" (blind 65 %); a sound item has to be settled by the sound. Replaced by s3.
-    // R fix: V2 — the key was the clip's main fact against two outside reasons (blind 70 %); "rude" becomes "going to
-    //   work for a rival" (the "-ing… paper company" heard, "starting" missed)
-    // why: took things ← "you can't take anything" heard as the reason; work for a rival ← "competing paper company"
-    //   heard, "starting" missed
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'twoweeks', seg: [199.5, 211.8],
-      stem: 'Why does Charles say Michael can’t stay for his two weeks?',
-      choices: ['He is starting a rival paper company', 'He is going to work for a rival company',
-                'He has taken things from the office'], a: 0,
-      cue: '「Not if」で始まる、Charles の返事。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['twoweeks', 'battle'], seg: [194.0, 227.0],
+      stem: 'What happens to Michael at the end?', ja: '最後にマイケルはどうなる？',
+      choices: ['He is told to leave now', 'He stays two more weeks', 'Dwight leaves with him'], a: 0,
+      choicesJa: ['今すぐ出ていくように言われる', 'あと2週間残る', 'ドワイトが一緒に辞める'],
+      cue: '「Hey, Hank」のあと',
+      line: 'So I’m gonna ask you to *stand up, walk out*, and you can’t take anything.',
+      said: '新しい上司が「立って、出ていって。何も持っていってはいけない」と言う。',
+      mean: 'walk out ＝ 出ていく。two weeks ＝ 辞めるまでの2週間。それを待たずに追い出される。',
+      trap: 'マイケルが It’s my two weeks（あと2週間ある）と言うので、残れると思いやすい。',
+      use: 'Please stand up and come with me.（立って、一緒に来てください）' },
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'twoweeks', seg: [199.5, 211.8], keep: true,
+      stem: 'Why can’t Michael stay for his two weeks?', ja: 'なぜマイケルは2週間残れない？',
+      choices: ['He’s starting a rival company', 'He took things from the office', 'He will work for a rival'], a: 0,
+      choicesJa: ['ライバル会社を始めるから', '会社の物を持ち出したから', 'ライバル会社で働くから'],
+      cue: '「It’s my two weeks」のあと',
       line: '*Not if you’re starting a competing paper company*, Michael.',
-      said: '「競合する紙の会社を始めるなら、話は別だ」と言う。',
-      mean: 'competing ＝ 競合する。ライバル会社を作る人を残すわけにはいかない。',
-      trap: 'can’t take anything が聞こえるので持ち出しが理由に聞こえるが、それは出ていく条件。',
+      said: '新しい上司が「競合する紙の会社を始めるなら、話は別だ」と言う。',
+      mean: 'competing ＝ 競合する。Not if 〜 ＝ 〜なら話は別だ。',
+      trap: 'can’t take anything（何も持ち出せない）が前にあるので、持ち出しが理由に聞こえる。',
       use: 'Not if it rains.（雨なら話は別だよ）' },
-
-    // why: two weeks' pay ← "my two weeks" heard as vacation or money owed; keep things ← "you can't take anything"
-    //   just before, so immunity seems to be about his desk
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'twoweeks', seg: [205.0, 211.9],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'twoweeks', seg: [205.0, 211.9], retired: true,
       stem: 'What does Michael mean by “I have immunity”?',
       choices: ['He thinks they can’t make him leave yet', 'He thinks he is owed two weeks of pay',
                 'He thinks he can keep things from his desk'], a: 0,
@@ -280,12 +219,7 @@ export const marbleBox: Clip = {
       mean: 'two weeks ＝ 辞める前の2週間。その間は追い出されないと思っている。',
       trap: 'two weeks を休みや給料と取りやすい。immunity は「手出しできない」立場のこと。',
       use: 'I gave my two weeks’ notice.（2週間前に退職を伝えたよ）' },
-
-    // R fix: V2 — "politely thanks Hank" was a filler; now "begs Hank to let him stay" (the "loyal to you?" line read as
-    //   pleading)
-    // why: name mix-up ← "Hank?" said as a question, as if unsure of the name; begs ← "Hank… please" heard as Michael
-    //   pleading for himself
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'hank', seg: [212.2, 221.8],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'hank', seg: [212.2, 221.8], retired: true,
       stem: 'Why is Michael’s last line to Hank funny?',
       choices: ['He turns the order around onto the boss', 'He mixes up the guard’s name with Charles’s',
                 'He begs Hank to let him stay a while'], a: 0,
@@ -295,27 +229,17 @@ export const marbleBox: Clip = {
       mean: '追い出される側が、追い出す側を逆に追い出そうとしている。',
       trap: 'please が付くので自分のための頼みに聞こえる。escort の目的語の名前を聞く。',
       use: 'Nice try.（うまくやったつもりでしょ）' },
-
-    // R fix: V2/K6 — the key was the only concrete choice ("walk across the room", blind 60 %); the distractors are
-    //   concrete now too
-    // why: find him later ← "run into him at the mall" taken as a real plan; too shy ← the Japanese frame: holding back
-    //   out of 遠慮
-    { id: 't2', skill: 'attitude', level: 'C1', point: 'mall', seg: [235.5, 245.9],
-      stem: 'In the talking head about telling Michael, how much does the speaker care?',
-      choices: ['Not enough to walk across the room', 'Enough to look for him at the mall later',
-                'A lot, but too shy to walk over and say it'], a: 0,
-      cue: '「tell him」と言ったあとの、行かない理由。',
-      line: '*He’s all the way over there.* Maybe I’ll *run into him at the mall* someday.',
-      said: '伝えようかと言うが、「遠くにいるし、いつかモールで会うかも」で終わる。',
-      mean: 'all the way over there は大げさな言い訳。偶然任せ＝伝える気はほぼない。',
-      trap: 'mall で会う話を予定と取りやすいが、run into は偶然会うこと。',
-      use: 'Maybe I’ll run into her someday.（いつかばったり会うかもね）' },
-
-    // R fix: V2 — parallel wording; the key read as the only pointed choice (blind 55 %)
-    // why: too sad ← the pause read as being moved; not allowed ← "would like to" read as asking permission
-    // anchor: 291.9 s "I would like to say that I will miss him" → pause → 295.6 s "I would like to say that." (the wish
-    //   repeated, "I will miss him" never said as his own)
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'miss', seg: [291.3, 299.4],
+    { id: 't2', skill: 'phrase', level: 'B2', point: 'mall', seg: [236.0, 246.0],
+      stem: 'What does “*run into him* at the mall” mean?', ja: '「run into him at the mall」の意味は？',
+      choices: ['Meet him by chance', 'Run after him', 'Crash into him'], a: 0,
+      choicesJa: ['偶然会う', '追いかける', 'ぶつかる'],
+      cue: '「all the way over there」のあと',
+      line: 'He’s all the way over there. Maybe I’ll *run into him at the mall* someday.',
+      said: '「遠くにいるし。いつかモールでばったり会うかも」と言う。',
+      mean: 'run into 〜 ＝ 〜に偶然会う、ばったり会う。文字どおりは「走ってぶつかる」。',
+      trap: 'run（走る）から、追いかける話だと思いやすい。someday（いつか）とあるので偶然の話。',
+      use: 'I ran into my teacher at the station.（駅で先生にばったり会った）' },
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'miss', seg: [291.3, 299.4], retired: true,
       stem: 'In the talking head “I would like to say that…”, what is left unsaid?',
       choices: ['That he won’t really miss Michael at all', 'That he will miss him too much to say',
                 'That he isn’t allowed to say it on camera'], a: 0,
@@ -325,22 +249,17 @@ export const marbleBox: Clip = {
       mean: '「言いたい」をくり返すだけで、本当に寂しいとは言わない。言えない＝寂しくない。',
       trap: '間を感情がこみ上げたと取りやすい。願いの形のくり返しは、本心と逆のことが多い。',
       use: 'I’d love to say yes, but…（イエスと言いたいけど…）' },
-
-    // R new: s3 replaces s2. Blind read: 35 % (all four fit the gap; "I'd" and "I'll… them" are real sentences).
-    // why: I miss ← the weak 'll vanishes before m; I'd ← 'll and 'd are both one dark sound; them ← "him" and "'em"
-    //   are both weak and short
     { id: 's3', skill: 'sound', level: 'B2', point: 'dies', seg: [299.4, 304.4],
-      stem: 'Fill the gap: “___ when he dies.”',
-      choices: ['I’ll miss him', 'I miss him', 'I’d miss him', 'I’ll miss them'], a: 0,
-      cue: '文の最初、I のあとの弱い音。',
+      stem: 'Fill the gap: “___ when he dies.”', ja: '空所に入るのは？',
+      choices: ['I’ll miss him', 'I miss him', 'I’d miss him'], a: 0,
+      choicesJa: ['彼がいなくなったらさびしく思う', '彼がいなくてさびしい', '彼がいたらさびしく思うだろう'],
+      cue: '文の最初',
       line: '*I’ll miss him* when he dies.',
-      said: '「死んだら寂しく思う」と言い、今は寂しがる気はないと続ける。',
-      mean: 'I’ll の ll は暗い l で「アウ」に近く、miss の前で消えかける。未来の話。',
-      trap: 'll が消えると I miss に聞こえる。when ＋現在形の主節は will が多い。',
+      said: '「彼が死んだら、さびしく思うよ」と言う。',
+      mean: 'I’ll ＝ I will。ll は「アウ」に近く、miss の前で消えかける。when のあとは未来の話。',
+      trap: 'I’d なら「アイド」と d が聞こえる。I miss なら「アイ」のあとすぐ miss。ここは「アウ」の音がある。',
       use: 'I’ll call you when I get there.（着いたら電話するね）' },
-
-    // why: quit ← "another boss" heard as people leaving the company; retire ← an old man counting down
-    { id: 'i5', skill: 'infer', level: 'C1', point: 'marble', seg: [314.9, 320.5],
+    { id: 'i5', skill: 'infer', level: 'C1', point: 'marble', seg: [314.9, 320.5], retired: true,
       stem: 'In the last talking head, what does each marble in the box stand for?',
       choices: ['A boss he has outlasted at work', 'A coworker who left to join Michael',
                 'A day closer to when he can retire'], a: 0,
