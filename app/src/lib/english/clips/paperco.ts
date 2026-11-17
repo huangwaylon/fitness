@@ -1,61 +1,44 @@
-// REVIEW 2026-11-16: pass 7, fix 17, drop 0, new 0; ear checks 2
+// A2 REVIEW 2026-11-17: keep 4, rewrite 14, retire 5, new 1
 // “Michael Scott's 'Sad Keanu' Moment | The Office” (the official The Office channel, BEST OF SEASON 5 - The Office
 // US): the Michael Scott Paper Company's first days: an e-vite almost nobody answers, Michael griping about Pam and
-// Ryan, a gloomy talking head, a pancake luncheon that goes badly, and then a luncheon guest who calls and orders.
-// Segments from the captions, words from whisper (2026-11-16). Named in the audio: Michael (69 s whisper only;
-// "Michael Scott Paper Company" 2.8 s, 196 s), Pam (198.6 s), Ryan (121 s), Russell (201.5 s, 253.7 s). Who reads
-// out the e-vite numbers (20–46 s) is never named, so stems say "the speaker".
-// Untested: 47–61 s (the desktop photo: "naked pictures", "Jasmine's boobs", "you could be hot too"; skipped for
-// content), 72–75 s ("P is being a giant B"), 85–95 s (the copier fight: voices over each other, and whisper adds
-// "Go make the copies, Secretary" that the captions lack), 120.5–121 s ("sticky", whisper only), 153 s ("I'll take
-// them" vs "I'm taking"), 200–216 s (whisper's timings drift here and it repeats 216–235 s; "Go and tell them" /
-// "Don't tell them we have free delivery", "We already offer free delivery" are whisper only, the captions have
-// "we're free delivery"), 254–256 s (whisper "Yes! I made a sale!", captions "yes I failed"), 285–294 s (whisper
-// "Oh, I went to the bathroom", captions blank), 296 s on (whisper loops "I think it's a good job").
-// EAR CHECK: 262.0–263.4 s s1 — "Who would have thought" (both sources write "would"); s1 now offers "’d have" too:
-//   is the "would" really there, not "Who'd have"? If it's "who'd", make "’d have" the key.
-// EAR CHECK: 135.2–136.2 s h4 — whisper "I'll do you one better", captions "I'll do you want better"; the key needs
-//   "one better"
+// Ryan, a pancake luncheon that goes badly, and then a luncheon guest who calls and orders.
+// Segments from the captions, words from whisper (2026-11-16). Named in the audio: Michael, Pam (198.6 s), Ryan
+// (121 s), Russell. Whisper's timings drift at 200–260 s (it repeats 216–235 s); segments there follow the captions.
+// Untested: 47–61 s (content), 85–95 s (voices over each other), 254–256 s, 285 s on.
+// EAR CHECK: 135.2–136.2 s h4 (retired) — whisper "I'll do you one better", captions "I'll do you want better".
 import type { Clip } from '../types.ts';
 
-    // R fix: V2 (blind 65 %, cold 60 %): "a lot of regulars" was a filler. Now "ready for a rush of customers" ("I've
-    //   done absolutely everything… to prepare" read as confidence).
 export const paperco: Clip = {
   id: 'paperco', video: 'mywMUBxoLrY', title: "Michael Scott's 'Sad Keanu' Moment", dur: 318, wpm: 170, band: 'fast',
   tags: ['職場'],
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: a rush ← "I've done absolutely everything you can do to prepare" heard as expecting crowds; about to close
-    //   ← "wait and hope" heard as a last hope
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'luncheon', seg: [16.3, 24.8],
-      stem: 'What does the plan for the day suggest about the business so far?',
-      choices: ['It has hardly any customers yet', 'It is ready for a rush of customers', 'It is about to close for good'], a: 0,
-      cue: 'What should we do now? への答え。',
-      line: 'We *wait and hope that people show up* to the pancake luncheon.',
-      said: '「さて、どうする？」に「パンケーキの会に人が来るのを待って祈るだけ」と答える。',
-      mean: '客が来るかどうかも分からない、始まったばかりの会社だと分かる。',
-      trap: 'hope を最後の望み、準備万端を自信と取りやすい。show up ＝ 来る。',
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'luncheon', seg: [14.6, 21.0],
+      stem: 'What is the plan for the day?',
+      ja: 'その日の予定は何？',
+      choices: ['Wait for people to come', 'Call all their customers', 'Close the office early'], a: 0,
+      choicesJa: ['人が来るのを待つ', '客みんなに電話する', '早めに事務所を閉める'],
+      cue: '「What should we do now?」のあと',
+      line: 'What should we do now? — We *wait and hope that people show up* to the pancake luncheon.',
+      said: '「さて、どうする？」に「パンケーキの会に人が来るのを待って祈る」と答える。',
+      mean: 'show up ＝ 来る、顔を出す。wait and hope ＝ 待って、来てくれるよう願う。',
+      trap: 'call は「電話する」。電話の話はまだない。wait のあとが予定。',
       use: 'Let’s wait and see who shows up.（誰が来るか待ってみよう）' },
 
-    // why: one ← "one maybe" is said just before; six ← "six yeses" opens the list (numbers bound to the wrong answer)
-    { id: 'n1', skill: 'number', level: 'B1', point: 'noes', reveals: ['viewed'], seg: [29.3, 38.5],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'noes', reveals: ['viewed'], seg: [29.3, 38.5], keep: true,
       stem: 'How many people said no to the invitation?',
-      choices: ['One', 'Six', 'Eleven'], a: 2, keep: true,
-      cue: 'yeses、maybe に続く三つめ。',
+      ja: '招待に「行かない」と答えたのは何人？',
+      choices: ['One', 'Six', 'Eleven'], a: 2,
+      choicesJa: ['1人', '6人', '11人'],
+      cue: '「one maybe」のあと',
       line: 'Six yeses, one maybe, *only 11 noes*.',
       said: '招待の返事を「参加6人、未定1人、不参加はたった11人」と言う。',
-      mean: 'only を付けて、少ないと良いことのように言っている。',
-      trap: '数が続けて出るので、聞いた数を別の答えに結びつけやすい。数のあとの yes や no と対で聞く。',
+      mean: 'yeses ＝ 参加の返事、noes ＝ 不参加の返事。only ＝ たった。',
+      trap: 'Six は yes の数、One は maybe の数。noes のすぐ前の eleven が答え。',
       use: 'Two yeses and one maybe so far.（今のところ参加2人、未定1人）' },
 
-    // R fix: V2 (blind 55 %, cold 55 %): "as a joke" was far off. Now "hopeful, and they do show growing interest":
-    //   the frame right, the spin believed (sincerity flip).
-    // anchor: 36.5 s "only 11 noes" (only = few, said as a plus); 42.5–46.1 s "but of that group, 782 have viewed it"
-    //   (but + a big number, said as good news); the numbers themselves: 6 yeses against 782 who saw it and didn't answer
-    // why: bad news ← "only 11 noes" heard without "only", so the speaker seems glum (direction flip); growing
-    //   interest ← "782 have viewed it" taken on the speaker's terms (sincerity flip)
-    { id: 'c3', skill: 'infer', level: 'C2', point: 'viewed', seg: [29.3, 46.7],
+    { id: 'c3', skill: 'infer', level: 'C2', point: 'viewed', seg: [29.3, 46.7], retired: true,
       stem: 'How does the speaker frame the invite numbers, against what they show?',
       choices: ['As hopeful, though they show people ignoring it', 'As hopeful, and they do show growing interest',
                 'As bad news, though they show real interest'], a: 0,
@@ -66,66 +49,54 @@ export const paperco: Clip = {
       trap: 'only を聞き落とすと、本人が落ちこんで聞こえる。言い方の向きと数字の向きを分けて聞く。',
       use: 'Look on the bright side.（いい面を見ようよ）' },
 
-    // why: 788 ← the bigger number is said first (the last-heard number swap); 702 ← "seven… two" with "eighty" lost;
-    //   82 ← "seven hundred" lost
-    { id: 'n2', skill: 'number', level: 'B2', point: 'count', reveals: ['viewed'], seg: [34.3, 46.7],
-      stem: 'Of those who haven’t replied, how many have viewed the invite?',
-      choices: ['82', '702', '782', '788'], a: 2, keep: true,
-      cue: 'but of that group のあとの数。',
+    { id: 'n2', skill: 'number', level: 'B1', point: 'count', reveals: ['viewed'], seg: [34.3, 46.7], keep: true,
+      stem: 'Of those who haven’t replied, how many have viewed it?',
+      ja: '返事をしていない人のうち、何人が見た？',
+      choices: ['82', '702', '782', '788'], a: 2,
+      choicesJa: ['82人', '702人', '782人', '788人'],
+      cue: '「but of that group」のあと',
       line: '*788* not yet replied, but of that group, *782 have viewed it*.',
-      said: '「788人がまだ返事なし。でもそのうち782人は見てくれた」と言う。',
-      mean: 'seven eighty-two と、3けたを7と82に分けて読むことが多い。',
-      trap: '似た数が続くので、先に聞いた788と混ざりやすい。group のあとの数だけを聞く。',
+      said: '「788人がまだ返事なし。でもそのうち782人は見た」と言う。',
+      mean: '782は seven eighty-two と、7と82に分けて読む。',
+      trap: '788は返事なしの数。702なら「セブン・オー・ツー」、82なら7がない。「セブン・エイティ・ツー」が答え。',
       use: 'Seven forty-five works for me.（7時45分で大丈夫）' },
 
-    // R fix: V2 (blind 70 %, cold 75 %) + K6 ("surely" only in a distractor): now "saw it and will answer later",
-    //   the same first half with the speaker's spin.
-    // why: not opened yet ← "not yet replied" heard as not yet seen (yet = まだ); will answer soon ← "but of that
-    //   group… viewed it" heard as good news, the speaker's own spin; answer later ← "not yet" heard as "soon"
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'viewed', seg: [39.5, 46.7],
-      stem: 'What do the last two numbers really show about the invite?',
-      choices: ['Most people saw it and chose not to answer', 'Most people saw it and will answer later',
-                'Most people haven’t had time to open it yet'], a: 0,
-      cue: 'not yet replied と viewed it の差。',
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'viewed', seg: [39.5, 46.7],
+      stem: 'What do the numbers show about the invite?',
+      ja: '数字から、招待について何が分かる？',
+      choices: ['Most saw it but ignored it', 'Most will answer later', 'Most haven’t opened it yet'], a: 0,
+      choicesJa: ['ほとんどが見たのに無視した', 'ほとんどがあとで返事する', 'ほとんどがまだ開いていない'],
+      cue: '「not yet replied」のあと',
       line: '788 *not yet replied*, but of that group, 782 *have viewed it*.',
-      said: '返事のない788人のうち、782人は招待を開いている、と報告する。',
-      mean: '見たのに返事をしない＝来る気がない。本人は前向きに言うが、数字は無視を示す。',
-      trap: 'but のあとは良い知らせ、と取りやすい。数字が示すことを、言い方と分けて聞く。',
+      said: '返事のない788人のうち、782人は招待を見ている、と言う。',
+      mean: 'viewed it ＝ 見た。見たのに返事なし＝来る気がない。本人は明るく言っている。',
+      trap: 'not yet（まだ）から、まだ開いていないと思いやすい。viewed it で、もう見たと分かる。',
       use: 'He read my message but didn’t reply.（既読スルーされた）' },
 
-    // R fix: V2 (blind 70 %, cold 55 %): "getting along well" was weak. Now "Badly: no customers, but the three get
-    //   along" (bad for the wrong reason); the key is shorter.
-    // why: no customers ← the empty e-vite just before, and "I hired my best friends" heard as a happy team; sure it
-    //   will work ← "That'll show them"
-    //   heard as confidence
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'clash', reveals: ['nerves'], seg: [61.2, 107.6],
-      stem: 'How are things going inside the new company in this stretch?',
-      choices: ['Badly: the three of them keep clashing', 'Badly: no customers, but the three get along',
-                'Tensely, but Michael is sure it will work out'], a: 0,
-      cue: '電話の相手への愚痴と、そのあとの mistake。',
-      line: 'They’re *getting on my nerves*… *Maybe* the Michael Scott Paper Company *was a huge mistake*.',
-      said: '母親に二人の愚痴を言い、あとで「この会社は大失敗だったかも」と言う。',
-      mean: '三人だけの会社で、仲間同士がぶつかっている。',
-      trap: 'best friends で仲のいい職場を想像しやすい。そのあとの this is what I get が本音。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'nerves', seg: [61.2, 64.6],
+      stem: 'What does “getting on my nerves” mean?',
+      ja: '「getting on my nerves」はどういう意味？',
+      choices: ['Making me annoyed', 'Making me nervous', 'Getting along with me'], a: 0,
+      choicesJa: ['私をいらいらさせる', '私を緊張させる', '私と仲よくする'],
+      cue: '「They’re」のあと',
+      line: 'They’re *getting on my nerves*, Mom. Both of them.',
+      said: '電話で母親に「あの二人にいらいらする」とこぼす。',
+      mean: 'get on my nerves ＝ 私をいらいらさせる。人にも音にも使う。',
+      trap: 'nerves からナーバス（緊張）を思いやすい。get on 〜 nerves で「いらいら」。',
+      use: 'That noise is getting on my nerves.（あの音、いらいらする）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', reveals: ['nerves'], seg: [61.5, 106.5],
+      stem: 'How are things going in the new company?',
+      ja: '新しい会社の中はどんな様子？',
+      choices: ['Badly, they annoy each other', 'Well, they all get along', 'Busy, with lots of customers'], a: 0,
+      choicesJa: ['うまくいかず、いらいらし合う', '順調で、みんな仲がいい', '客が多くて忙しい'],
+      cue: '母親への電話から',
+      said: '母親に二人の愚痴を言い、コピー機の取り合いのあと「この会社は大失敗だったかも」と言う。',
+      mean: 'a huge mistake ＝ 大失敗。三人だけの会社で、仲間同士がぶつかっている。',
+      trap: 'best friends（親友）と聞こえるので、仲がいいと思いやすい。あとの this is what I get が本音。',
       use: 'This is what I get for helping.（助けたらこれだよ）' },
 
-    // why: nervous ← nerves = 神経, and katakana ナーバス; getting on well ← "getting on" heard, the rest lost (a near
-    //   phrase with the opposite meaning)
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'nerves', seg: [61.2, 64.6],
-      stem: 'What is Michael telling his mom about his two staff?',
-      choices: ['They are irritating him', 'They are making him nervous', 'They are getting on well with him'], a: 0,
-      cue: '「They’re getting」のあと、on に続く語。',
-      line: 'They’re *getting on my nerves*, Mom. Both of them.',
-      said: '電話で母親に「あの二人にイライラする」とこぼす。',
-      mean: 'get on someone’s nerves ＝ 人をイライラさせる。神経にさわる、に近い。',
-      trap: 'nerves からナーバス（緊張）を連想しやすい。get on ＋ nerves で「イライラ」。',
-      use: 'That noise is getting on my nerves.（あの音、イライラする）' },
-
-    // R fix: V2 (blind 70 %, cold 70 %): "on purpose to hurt them" was weak. Now "they can hear his mom's side"
-    //   ("hear you" with the wrong object).
-    // why: on mute ← a phone call plus "we can hear you" suggests a tech mix-up; his mom's side ← "hear you" heard as
-    //   the call itself being loud
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'initials', seg: [64.5, 72.3],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'initials', seg: [64.5, 72.3], retired: true,
       stem: 'Why does the reply “We can hear you” get a laugh?',
       choices: ['His letter code fools no one in the room', 'They can hear his mom’s side of the call too',
                 'He thought the phone call was on mute'], a: 0,
@@ -136,11 +107,7 @@ export const paperco: Clip = {
       trap: '電話の話なので、ミュートなど機械の話を考えやすい。R と P が誰かは、部屋の人数で分かる。',
       use: 'You know I can hear you, right?（聞こえてるって分かってるよね？）' },
 
-    // R fix: V2 (blind 70 %, cold 70 %): the key's "own company… own company" gave it away. Now it says the same
-    //   thing without the echo; "fire his friends" becomes "join a bigger paper company".
-    // why: go back ← "I should leave" heard as quitting to go back somewhere; a bigger company ← "paper company" caught,
-    //   "start my own" lost
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'ownco', seg: [94.9, 107.6],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'ownco', seg: [94.9, 107.6], retired: true,
       stem: 'Why is Michael’s plan to “show them” funny?',
       choices: ['His new plan is the very thing he already has', 'He’d go back to the job he left to start this one',
                 'He’d run off to join a bigger paper company'], a: 0,
@@ -151,78 +118,77 @@ export const paperco: Clip = {
       trap: 'leave を「元の職場に戻る」と取りやすい。leave のあとに何を始めると言ったかを聞く。',
       use: 'Fine. I’ll just do it myself.（いいよ。自分でやるから）' },
 
-    // R fix: V2 (blind 70 %, cold 55 %): "see the office" was a filler. Now "make them proud of him" (show = impress,
-    //   the wrong direction).
-    // why: proud of him ← show heard as "show them what I can do", in a good way; prove it works ← show as
-    //   "demonstrate", though he means to leave the company
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'showthem', reveals: ['ownco'], seg: [101.8, 107.6],
-      stem: 'What does Michael mean with his last three words?',
-      choices: ['That would teach them a lesson', 'That would make them proud of him', 'That would prove the company works'], a: 0,
-      cue: '自分の会社を始める、のすぐあと。',
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'showthem', seg: [101.8, 107.6],
+      stem: 'What does “That’ll show them” mean?',
+      ja: '「That’ll show them」はどういう意味？',
+      choices: ['They’ll learn a lesson', 'They’ll be proud of me', 'It will prove it works'], a: 0,
+      choicesJa: ['思い知らせてやる', '私を誇りに思うだろう', 'うまくいくと証明する'],
+      cue: '「start my own paper company」のあと',
       line: 'I should go and start my own paper company. *That’ll show them*.',
       said: '「自分の紙の会社を始めてやる。思い知らせてやる」と言う。',
-      mean: 'That’ll show them ＝「これで思い知るだろう」。見返してやる、という負けおしみ。',
-      trap: 'show を「見せる」「認めさせる」と取りやすい。すねた場面なら「思い知らせる」。',
+      mean: 'That’ll show them ＝ これで思い知るだろう。見返してやる、という負けおしみ。',
+      trap: 'show（見せる）から、ほめてもらう話と思いやすい。すねている場面なので「思い知らせる」。',
       use: 'I’ll finish first. That’ll show them.（一番に終わらせる。見返してやる）' },
 
-    // R fix: V2 (blind 35 %, cold 55 %): "go well with each other" can't be told from the key by sound (the
-    //   captions even write "complementary"), only by sense. Now "good for your health": nutritious, the point before.
-    // why: a compliment ← compliment = ほめ言葉, the same root; health ← "nutritious", the selling point just before
-    //   (the last-heard word)
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'free', seg: [108.4, 116.8],
-      stem: 'What does Michael’s last selling point about the pancakes mean?',
-      choices: ['They cost you nothing at all', 'They come with a compliment', 'They are good for your health'], a: 0,
-      cue: 'delicious、nutritious に続く三つめ。',
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'free', seg: [108.4, 116.8],
+      stem: 'What does “complimentary” mean here?',
+      ja: 'ここでの「complimentary」はどういう意味？',
+      choices: ['Free of charge', 'Said as praise', 'Good for health'], a: 0,
+      choicesJa: ['無料', 'ほめ言葉として', '体にいい'],
+      cue: '「nutritious」のあと',
       line: 'They are delicious. They are nutritious. They are *complimentary*.',
       said: '「おいしい、栄養満点、しかも無料」と呼びこむ。',
-      mean: 'complimentary ＝ 無料の。ホテルや機内でよく聞く。free の言いかえ。',
-      trap: '同じ音の compliment（ほめ言葉）系と混ざりやすい。サービスの場なら「無料」。',
+      mean: 'complimentary ＝ 無料の。ホテルや飛行機でよく聞く、free のていねいな言い方。',
+      trap: 'compliment（ほめ言葉）と似ているので迷いやすい。最初の Get your free pancakes で分かる。',
       use: 'Is breakfast complimentary?（朝食は無料ですか）' },
 
-    // R fix: V2 (blind 70 %, cold 70 %): "glad to take one" was a filler. Now "politely declines; he's on a call"
-    //   (the 遠慮 frame, and the phone).
-    // why: shy ← he keeps to his phone, which can look like nerves in a crowd; politely on a call ← a short refusal
-    //   read as 遠慮, and the phone as a call
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'texting', seg: [116.8, 124.1],
-      stem: 'When Michael offers Ryan a pancake, how does Ryan respond?',
-      choices: ['He can’t be bothered; he’s busy texting', 'He’s too shy to talk to the guests',
-                'He politely declines; he’s on a call'], a: 0,
-      cue: '「free pancake?」への短い返事。',
+      stem: 'How does Ryan feel about the free pancake?',
+      ja: 'ライアンは無料のパンケーキをどう思う？',
+      choices: ['Not interested, texting', 'Too shy to talk to him', 'Happy to take one'], a: 0,
+      choicesJa: ['興味がない、メール中', '恥ずかしくて彼と話せない', '喜んでもらう'],
+      cue: '「free pancake?」のあと',
       line: 'Young sir, would you like a free pancake? — *I’m texting.*',
-      said: '「パンケーキいかが？」に、Ryan は「メール中」とだけ返す。',
-      mean: '断る理由にもならない一言で、やる気のなさが出ている。Michael はすぐ叱る。',
-      trap: '短い返事を照れや遠慮と取りやすい。そのあと Michael が何を叱るかで態度が分かる。',
-      use: 'Sorry, I’m kind of busy right now.（ごめん、今ちょっと忙しい）' },
+      said: '「パンケーキいかが？」に、ライアンは「メール中」とだけ返す。',
+      mean: 'I’m texting ＝ メールしてる。断る理由にもならない一言で、やる気がない。',
+      trap: '短い返事を、恥ずかしがっていると思いやすい。すぐマイケルに叱られる。',
+      use: 'Sorry, I’m busy right now.（ごめん、今忙しい）' },
 
-    // R fix: V2 (blind 60 %, cold 55 %): "in charge" was weak. Now "cheering him up with a kind compliment" (the
-    //   praise form taken at face value).
-    // why: best-looking ← face = 顔, so "the face" heard as looks (literal reading); cheering up ← the line has the
-    //   form of praise
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'face', seg: [120.5, 126.8],
-      stem: 'When Michael calls Ryan the company’s face, what is he doing?',
-      choices: ['Pushing him to look and act the part', 'Praising him as the best-looking of them',
-                'Cheering him up with a kind compliment'], a: 0,
-      cue: '「Tuck in your shirt」のあとの一言。',
+      stem: 'Why does Michael say “You’re the face of this company”?',
+      ja: 'マイケルが「You’re the face of this company」と言うのはなぜ？',
+      choices: ['To make Ryan act better', 'To say Ryan looks good', 'To thank Ryan for his work'], a: 0,
+      choicesJa: ['ライアンにちゃんとさせるため', 'ライアンがかっこいいと言うため', 'ライアンの仕事にお礼を言うため'],
+      cue: '「Tuck in your shirt」のあと',
       line: 'Enough with the texting machine… *Tuck in your shirt*. *You’re the face of this company*.',
       said: '「シャツを入れろ。君はこの会社の顔なんだ」と言う。',
-      mean: 'the face of ＝ 外に向けた代表、看板。ほめ言葉の形で、ちゃんとしろと注意している。',
-      trap: 'face を「顔立ち」と取ると、見た目をほめる話に聞こえる。直前の注意とつなげて聞く。',
+      mean: 'the face of 〜 ＝ 〜の顔、代表。ほめる形で「ちゃんとしろ」と言っている。',
+      trap: 'face（顔）から、見た目をほめていると思いやすい。前の Tuck in your shirt とつなげる。',
       use: 'You’re the face of the team now.（今は君がチームの顔だよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'name', seg: [126.6, 130.3],
-      stem: 'Type the end: “We’re small, but we’re eager to ___.” (5 words)',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'name', seg: [126.6, 130.3], keep: true,
+      stem: 'Type what Michael says: “We’re small, but we’re eager to ___.” (5 words)',
       answer: 'make a name for ourselves',
-      cue: 'eager to のあと、つながる5語。',
+      ja: '「We’re small, but we’re eager to ___.」の空所を書こう（5語）',
+      cue: '「eager to」のあと',
       line: 'We’re small, but we’re eager to *make a name for ourselves*.',
       said: '「小さいけど、名を上げようと張り切ってる」と客に言う。',
-      mean: 'make a name for oneself ＝ 名を上げる。make‿a、name‿for がつながる。',
-      trap: 'a と for は弱く、ほとんど聞こえない。決まった形で補う。',
+      mean: 'make a name for ourselves ＝ 名を上げる。make a、name for がつながる。',
+      trap: 'a と for は小さく短く、ほとんど聞こえない。5語なので a と for も書く。',
       use: 'She made a name for herself in Tokyo.（彼女は東京で名を上げた）' },
 
-    // R fix: V2 (blind 70 %, cold 75 %): "a pancake instead" was weak, and the key was longest. Shorter key; "too new
-    //   to have cards" and "a pancake instead of a card".
-    // why: too new ← "I don't have a card" heard as an honest excuse; a pancake instead ← it's a pancake luncheon, so
-    //   that swap seems natural
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'card', seg: [130.0, 134.4],
+      stem: 'What does the guest ask Michael for?',
+      ja: '客はマイケルに何を求める？',
+      choices: ['A business card', 'A free pancake', 'His phone number'], a: 0,
+      choicesJa: ['名刺', '無料のパンケーキ', '彼の電話番号'],
+      cue: '「make a name」のあと',
+      line: '*Do you have a card?* — Nope.',
+      said: '客が「名刺ありますか？」と聞き、マイケルは「ない」と答える。',
+      mean: 'card ＝ ここでは名刺（business card）。仕事の場で連絡先を聞くときの言い方。',
+      trap: 'パンケーキの会なので、パンケーキを頼んだと思いやすい。Do you have a card? を聞く。',
+      use: 'Do you have a card?（名刺はお持ちですか）' },
+
     { id: 'h4', skill: 'humor', level: 'C1', point: 'card', seg: [130.6, 139.4], retired: true,
       stem: 'Why does the answer to “Do you have a card?” get a laugh?',
       choices: ['He promises better, then hands over scrap paper', 'He admits the company is too new to have cards',
@@ -234,26 +200,19 @@ export const paperco: Clip = {
       trap: '名刺がない理由の話と取りやすい。better と言ったあとに何を出したかを聞く。',
       use: 'I can do you one better.（もっといいのがあるよ）' },
 
-    // why: too thin ← "shaped like paper" heard as about thickness, not shape; cold ← "terrible" comes before any
-    //   reason, and a cold pancake is the usual complaint
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'shape', seg: [142.2, 149.8],
-      stem: 'What is wrong with the pancakes, according to the guest?',
-      choices: ['They aren’t round, so they cook unevenly', 'They are too thin, almost like paper',
-                'They are cold, since they were made early'], a: 0,
-      cue: '「in a circle」のあとの理由。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'shape', seg: [142.2, 149.8],
+      stem: 'What is wrong with the pancakes?',
+      ja: 'パンケーキの何がよくない？',
+      choices: ['They aren’t round', 'They are too thin', 'They are cold'], a: 0,
+      choicesJa: ['丸くない', '薄すぎる', '冷たい'],
+      cue: '「These are terrible」のあと',
       line: 'You gotta *make them in a circle so that they cook evenly*. — They’re *shaped like paper*.',
-      said: '「丸く焼かないと均一に焼けない」と言われ、「紙の形なんだ」と返す。',
-      mean: '紙の会社だからパンケーキも紙の形。こだわりのせいで、焼けむらができている。',
-      trap: 'paper から「薄い」を思いやすい。shaped like は形の話。',
+      said: '「丸く焼かないと、均一に焼けない」と言われ、「紙の形なんだ」と返す。',
+      mean: 'in a circle ＝ 丸く。shaped like paper ＝ 紙の形。紙の会社なので四角い。',
+      trap: 'paper（紙）から「薄い」と思いやすい。shaped like は形の話。',
       use: 'It’s shaped like a heart.（ハートの形をしている）' },
 
-    // R fix: S3: the cue had "real", a word only the key has; it now points at the dream and the next day.
-    // anchor: 169–177 s "I once had a dream… it was delicious", 182.5–187.2 s "in real life, it is disgusting. It is a
-    //   disgusting sandwich", 188.8–190.4 s "the reason I tell you this story": dream against real life, told about his
-    //   day (and at 95–99 s: "Maybe the Michael Scott Paper Company was a huge mistake")
-    // why: pays off ← he did act on the dream the next day, heard as the lesson (right target, wrong direction); odd
-    //   combinations ← "it was delicious" is the most stressed word, heard as the verdict
-    { id: 'c1', skill: 'infer', level: 'C2', point: 'dream', seg: [168.4, 191.8],
+    { id: 'c1', skill: 'infer', level: 'C2', point: 'dream', seg: [168.4, 191.8], retired: true,
       stem: 'Where was Michael’s sandwich story heading before the phone cut in?',
       choices: ['His dream company may turn out awful for real', 'Following a dream pays off, so he’ll keep going',
                 'Odd combinations can turn out to be delicious'], a: 0,
@@ -264,96 +223,79 @@ export const paperco: Clip = {
       trap: '最後まで聞けないので、強い delicious に引っぱられやすい。in real life の側が結論。',
       use: 'It sounded better in my head.（頭の中ではもっと良かったんだけど）' },
 
-    // R fix: V2 (blind 60 %, cold 65 %): "at the luncheon itself" was weak. Now "Michael calls a luncheon guest" (who
-    //   called whom: "Pick up the phone", "Oh, hi, Russell").
-    // why: Michael calls ← Michael is the boss and talks first ("Pick up the phone"); Ryan's client ← he
-    //   was texting all through the luncheon
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'sale', reveals: ['boxes'], seg: [195.5, 268.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'sale', reveals: ['boxes', 'delivery'], seg: [188.0, 232.0],
       stem: 'How does the company finally get some business?',
-      choices: ['A luncheon guest calls back and places an order', 'Michael calls a luncheon guest and talks him into it',
-                'Ryan brings in a client he’s been texting'], a: 0,
-      cue: '電話の相手の名乗り方と、注文の中身。',
+      ja: '会社はどうやって仕事をもらう？',
+      choices: ['A guest calls and orders', 'Michael calls a guest first', 'Ryan finds a new client'], a: 0,
+      choicesJa: ['会に来た客が電話で注文する', 'マイケルが先に客に電話する', 'ライアンが新しい客を見つける'],
+      cue: '「Pick up the phone」から',
       line: 'Oh, hi, *Russell from the pancake luncheon*… I can do *20 boxes*…',
-      said: 'パンケーキの会に来た Russell から電話があり、Pam が紙を20箱売る。',
-      mean: '会では空振りだったが、あとで客が電話をくれた。',
-      trap: 'こちらから売りこんだと考えやすい。Pick up the phone で、相手からの電話と分かる。',
+      said: 'パンケーキの会に来たラッセルから電話があり、パムが紙を20箱売る。',
+      mean: 'Pick up the phone ＝ 電話に出て。会では空振りだったが、あとで客から電話が来た。',
+      trap: 'こちらから売りこんだと思いやすい。Pick up the phone で、相手からの電話と分かる。',
       use: 'Thanks for calling back.（折り返しありがとう）' },
 
-    // why: a lower price ← "20 boxes at $43" comes soon after, heard as the offer; pancakes ← "free" + the pancake
-    //   luncheon (keyword trap)
     { id: 'd2', skill: 'detail', level: 'B1', point: 'delivery', seg: [216.5, 220.9],
-      stem: 'What does Pam offer the caller to win the order?',
-      choices: ['Free delivery on orders placed today', 'A lower price on a big order of paper',
-                'Free pancakes with every order today'], a: 0,
-      cue: '「I can offer you」のあと。',
+      stem: 'What does Pam offer the caller?',
+      ja: 'パムは電話の客に何を申し出る？',
+      choices: ['Free delivery', 'A lower price', 'Free pancakes'], a: 0,
+      choicesJa: ['配送無料', '値引き', '無料のパンケーキ'],
+      cue: '「I can offer you」のあと',
       line: 'I can offer you *free delivery* on any order…',
       said: '「今日のご注文はすべて配送無料にできます」と持ちかける。',
-      mean: '電話の客を逃がさないための特典。free delivery ＝ 配送料無料。',
-      trap: 'free が聞こえると、今日の主役のパンケーキを思いやすい。free のあとの名詞を聞く。',
+      mean: 'free delivery ＝ 配送無料。I can offer you 〜 ＝ 〜をご提供できます。',
+      trap: 'free が聞こえると、パンケーキを思いやすい。free のあとの delivery を聞く。',
       use: 'Is delivery free?（配送は無料ですか）' },
 
-    // why: $20 ← "20 boxes" said in the same breath; $34 ← forty-three heard with the digits swapped
-    { id: 'n3', skill: 'number', level: 'B1', point: 'boxes', seg: [228.3, 232],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'boxes', seg: [228.3, 232], keep: true,
       stem: 'What price per box does Pam offer?',
-      choices: ['$20', '$34', '$43'], a: 2, keep: true,
-      cue: '「20 boxes at」のあとの金額。',
+      ja: 'パムが出す1箱の値段は？',
+      choices: ['$20', '$34', '$43'], a: 2,
+      choicesJa: ['20ドル', '34ドル', '43ドル'],
+      cue: '「20 boxes at」のあと',
       line: 'I can do *20 boxes at $43 a box*.',
       said: '「20箱を1箱43ドルでお出しできます」と言う。',
-      mean: 'at ＋値段＋ a box ＝ 1箱あたりいくら。forty の t は弱く「フォーリー」に近い。',
-      trap: '20と43が同じ文に出るので入れかわりやすい。at のあとが値段、と覚えておく。',
+      mean: 'at 値段 a box ＝ 1箱あたり〜。forty の t は軽く「フォーリー」に近い。',
+      trap: '20は箱の数。34は「サーティ・フォー」、43は「フォーティ・スリー」。at のあとが値段。',
       use: 'It’s ten dollars a box.（1箱10ドルです）' },
 
-    // R fix: V2 (blind 60 %, cold 75 %): "taking back" was weak. Now "stalling while she works out the price" (her
-    //   "Just a second" before the price).
-    // why: money-back ← guarantee = 保証, which often means a refund; stalling ← she said "just a second" over the
-    //   price a moment earlier
     { id: 'p3', skill: 'pragma', level: 'B2', point: 'guarantee', seg: [239.4, 250.2],
-      stem: 'What is Pam doing as she keeps repeating one promise word?',
-      choices: ['Piling on reassurance to close the sale', 'Offering a money-back deal on the order',
-                'Stalling while she works out the price'], a: 0,
-      cue: '同じ語を何回言うか、その中身。',
+      stem: 'Why does Pam keep saying “guarantee”?',
+      ja: 'パムが「guarantee」をくり返すのはなぜ？',
+      choices: ['To help close the sale', 'To offer money back', 'To get time to think'], a: 0,
+      choicesJa: ['売る話をまとめるため', '返金を申し出るため', '考える時間をかせぐため'],
+      cue: '「20 boxes」のあと',
       line: 'I *guarantee* that you will be satisfied. ’Cause your satisfaction is our *guarantee*. We *guarantee* it.',
       said: '「ご満足を保証します。ご満足こそ保証です。保証します」と重ねる。',
-      mean: '中身のない約束をくり返して、安心させて契約を決めようとしている。言うほど意味が薄れる。',
-      trap: '返金保証や時間かせぎと取りやすい。値段はもう決まった。中身のないくり返しは押しの合図。',
-      use: 'I promise, you won’t regret it.（約束する、後悔しないよ）' },
+      mean: 'guarantee ＝ 保証する。何度も言って客を安心させ、注文を決めようとしている。',
+      trap: '保証から、返金の話と思いやすい。お金の話は出ない。安心させるためのくり返し。',
+      use: 'I guarantee you’ll like it.（絶対気に入るよ）' },
 
-    // R fix: V2 (blind 85 %, cold 60 %): "wouldn't have" was weak beside a set phrase. Now "’d have" (Who'd have
-    //   thought), so the full "would" has to be heard. Ear check rewritten for it.
-    // why: could have ← "woulda" and "coulda" differ only in the first sound, and the w is weak; ’d have ← "Who'd
-    //   have thought" is the same phrase, and a weak "would" sounds close to it
     { id: 's1', skill: 'sound', level: 'B2', point: 'thought', seg: [261.5, 268.3],
       stem: 'Fill the gap: “Who ___ thought that the thing that would save this company…”',
-      choices: ['would have', '’d have', 'could have'], a: 0,
-      cue: 'Who のすぐあと、弱く短い2音。',
+      ja: '「Who ___ thought that…」の空所は？',
+      choices: ['would have', 'should have', 'could have'], a: 0,
+      choicesJa: ['（誰が）思っただろう', '（誰が）思うべきだった', '（誰が）思えただろう'],
+      cue: '「Who」のあと',
       line: '*Who would have thought* that the thing that would save this company would be work and pancakes?',
-      said: '「会社を救うのが仕事とパンケーキとは」。',
-      mean: 'Who would have thought ＝ まさか。would have は「ウダ」に近い。',
-      trap: 'could は「ク」の息が出る。Who’d なら Who に d が付くだけで、ウがもう一つ来ない。',
+      said: '「会社を救うのが仕事とパンケーキだなんて、誰が思った？」と言う。',
+      mean: 'Who would have thought ＝ まさか、誰が思っただろう。would have は「ウダ」に近い。',
+      trap: 'should は「シュ」、could は「ク」で始まる。「ウダ」と聞こえれば would have。',
       use: 'Who would’ve thought it’d rain today?（今日雨なんて誰が思った？）' },
 
-    // R fix: V2 (blind 55 %, cold 65 %): "room to grow" was weak. Now "proud of the office, despite a rough day"
-    //   (right feeling, wrong object).
-    // why: ready to give up ← "ups and downs" and "don't have the biggest office" heard as the main point; proud of
-    //   the office ← "sounds like a lot" heard as a boast about the space
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'hearts', seg: [269.1, 284.1],
-      stem: 'How does Michael feel about his company at the end of the day?',
-      choices: ['Proud of his people, despite the small office', 'Proud of the office, despite a rough day',
-                'Ashamed of the office, and ready to give up'], a: 0,
-      cue: '「But we have」のあと。',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hearts', seg: [269.1, 284.1],
+      stem: 'How does Michael feel about his team at the end?',
+      ja: '最後、マイケルはチームをどう思っている？',
+      choices: ['Proud of his people', 'Sad about the office', 'Ready to give up'], a: 0,
+      choicesJa: ['仲間を誇りに思う', '事務所のことが悲しい', 'もうあきらめたい'],
+      cue: '「But we have」のあと',
       line: 'this day definitely had its *ups and downs*… *But we have people with the biggest hearts*.',
-      said: '「いい時も悪い時もあった。事務所は狭いけど、いちばん大きな心の仲間がいる」と言う。',
-      mean: 'but のあとが言いたいこと。狭さを認めたうえで、仲間を誇っている。',
-      trap: '前半の downs や狭さの話を結論と取りやすい。but のあとに本音が来る。',
+      said: '「いい時も悪い時もあった。事務所は狭いが、心の大きな仲間がいる」と言う。',
+      mean: 'ups and downs ＝ いい時と悪い時。but のあとで仲間を誇っている。',
+      trap: '前半の downs や狭さの話から、悲しいと思いやすい。but のあとが本音。',
       use: 'We had our ups and downs.（いろいろあったよ）' },
 
-    // R fix: V2 (blind 55 %, cold 70 %): "the staff" was weak. Now "Michael, for choosing such a tiny room" (right
-    //   target, wrong reason), so the "because… sounds like a lot" has to be heard.
-    // anchor: 273.8–280.6 s "which is a surprise because 165 square feet sounds like a lot": the surprise is his own
-    //   ("I realized"), and the reason he gives is that the number sounded big to him
-    // why: tiny room ← "we don't have the biggest office" heard as the joke itself; landlords ← "sounds like
-    //   a lot" heard as a jab at how rooms are sold (right mechanism, wrong target)
-    { id: 'c2', skill: 'humor', level: 'C2', point: 'office', seg: [272.85, 281.4],
+    { id: 'c2', skill: 'humor', level: 'C2', point: 'office', seg: [272.85, 281.4], retired: true,
       stem: 'In the remark about 165 square feet, who is the joke on?',
       choices: ['Michael, who thought the number meant a big room', 'Michael, for choosing such a tiny room to rent',
                 'Landlords, who make tiny rooms sound huge'], a: 0,
