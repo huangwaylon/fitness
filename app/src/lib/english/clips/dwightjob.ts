@@ -32,6 +32,7 @@ export const dwightNewJob: Clip = {
       choices: ['Selling himself for a new job', 'Showing off his new job', 'Saying why he quit his job'], a: 0,
       choicesJa: ['新しい仕事のために自分を売りこむ', '新しい仕事を自慢する', '仕事を辞めた理由を話す'],
       cue: '「on the job market」から',
+      line: 'I am officially *on the job market*. … *How would I describe myself?*',
       said: '会社を辞めたと言い、3部構成の履歴書、自分を表す言葉を並べ、今の仕事はつなぎだと言う。',
       mean: 'on the job market ＝ 仕事を探している。面接で自分を売りこむような話し方。',
       trap: '題名の new job から、新しい仕事の自慢と思いやすい。その仕事は「今のところ」だけ。',
@@ -82,7 +83,7 @@ export const dwightNewJob: Clip = {
       line: 'I’ve broken it down into *three parts*.',
       said: '「3つに分けた」と言い、そのあと3つの名前を順に言う。',
       mean: 'three parts ＝ 3つの部分。仕事、運動と特技、自分についての豆知識。',
-      trap: 'resume で終わるのは2つなので、2と思いやすい。3つ目は And のあと。',
+      trap: 'resume が2回なので2と思いやすい。「スリー」なら3、「トゥー」なら2、「フォー」なら4。',
       use: 'There are three parts to this.（これは3つに分かれています）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'trivia', seg: [11.4, 18.0],
@@ -129,7 +130,7 @@ export const dwightNewJob: Clip = {
       line: 'How would I describe myself? *Three words.*',
       said: '「自分をどう表すか？3語で」と言う。',
       mean: 'three words ＝ 3語。でもこのあと5つの言葉を並べる。',
-      trap: 'あとで5つ並べるので、5と思いやすい。言うと決めた数は「スリー」。',
+      trap: 'あとで5つ並べるので5と思いやすい。「スリー」なら3、「トゥー」なら2、「ファイブ」なら5。',
       use: 'In three words? Kind, funny, smart.（3語で？やさしい、面白い、頭がいい）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'confident', seg: [22.0, 33.0],
@@ -161,6 +162,7 @@ export const dwightNewJob: Clip = {
       choices: ['It’s just for now', 'He loves it a lot', 'He wants to go back'], a: 0,
       choicesJa: ['今だけのもの', 'とても気に入っている', '前の会社に戻りたい'],
       cue: '「on my horizon」のあと',
+      line: 'And, uh… *It’s fine for the time being*.',
       said: '「お金のため、職探しを続ける間」と言い、「今のところは、まあいい」と言う。',
       mean: 'fine for the time being ＝ 今のところはまあいい。次の仕事までのつなぎ。',
       trap: 'fine から、気に入っていると思いやすい。for the time being（今のところ）が大事。',

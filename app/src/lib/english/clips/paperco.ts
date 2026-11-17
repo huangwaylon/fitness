@@ -91,6 +91,7 @@ export const paperco: Clip = {
       choices: ['Badly, they annoy each other', 'Well, they all get along', 'Busy, with lots of customers'], a: 0,
       choicesJa: ['うまくいかず、いらいらし合う', '順調で、みんな仲がいい', '客が多くて忙しい'],
       cue: '母親への電話から',
+      line: 'I hired my best friends, and *this is what I get*? … Maybe the Michael Scott Paper Company was *a huge mistake*.',
       said: '母親に二人の愚痴を言い、コピー機の取り合いのあと「この会社は大失敗だったかも」と言う。',
       mean: 'a huge mistake ＝ 大失敗。三人だけの会社で、仲間同士がぶつかっている。',
       trap: 'best friends（親友）と聞こえるので、仲がいいと思いやすい。あとの this is what I get が本音。',

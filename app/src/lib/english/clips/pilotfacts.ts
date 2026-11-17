@@ -75,8 +75,8 @@ export const pilotFacts: Clip = {
       use: 'Who ate the cake? — Guilty.（ケーキ食べたの誰？—私です）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'temp', seg: [76.95, 81.0],
-      stem: 'Why has the young man come to the office?',
-      ja: '若い男性はなぜ会社に来た？',
+      stem: 'Why has Ryan come to the office?',
+      ja: 'ライアンはなぜ会社に来た？',
       choices: ['To start work today', 'To have a job interview', 'To drop off papers'], a: 0,
       choicesJa: ['今日から働くため', '面接を受けるため', '書類を届けるため'],
       cue: '「temp agency」のあと',
@@ -186,6 +186,7 @@ export const pilotFacts: Clip = {
       choices: ['Pretending to fire her', 'Really firing her', 'Giving her a new job'], a: 0,
       choicesJa: ['クビにするふりをしている', '本当にクビにしている', '新しい仕事を任せている'],
       cue: '「accomplice」から',
+      line: 'Just go along with it, okay? … *Just follow my lead*.',
       said: '新人に「話を合わせて」と頼み、パムに「最初に辞めてもらう。理由は盗み」と言う。',
       mean: '前もって新人に、話を合わせてと頼んでいた。クビの話はドッキリのお芝居。',
       trap: 'downsizing が本物らしく聞こえる。前の go along with it が手がかり。',
@@ -253,6 +254,7 @@ export const pilotFacts: Clip = {
       choices: ['Worried about their jobs', 'Happy about the news', 'Sure their jobs are safe'], a: 0,
       choicesJa: ['仕事がなくなるか心配', '知らせを喜んでいる', '自分の仕事は大丈夫と思っている'],
       cue: '「What does downsizing」から',
+      line: '*I bet it’s gonna be me*. … *Oh, damn it!*',
       said: '支店の縮小が発表され、「たぶん自分だ」「くそっ」という声が出る。',
       mean: 'I bet it’s gonna be me ＝ きっと自分だ。仕事を失うかもと心配している。',
       trap: 'もう一つの支店かもしれないので、安心と思いやすい。「自分だ」「くそっ」で分かる。',
@@ -313,7 +315,7 @@ export const pilotFacts: Clip = {
       line: 'This is the *third time*, and it wasn’t funny the first two times either, Jim.',
       said: '「これで3回目だ。前の2回も面白くなかった」とジムに言う。',
       mean: 'the third time ＝ 3回目。the first two times ＝ 最初の2回。',
-      trap: 'あとに two が聞こえるので2回と思いやすい。two は「前の2回」。third が答え。',
+      trap: 'あとの two に引かれやすいが「前の2回」のこと。「サード」なら3回目、「フォー」なら4回。',
       use: 'This is my third time in Tokyo.（東京は3回目です）' },
   ]
 };
