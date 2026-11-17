@@ -1,13 +1,11 @@
-// REVIEW 2026-11-16: pass 7, fix 15, drop 1, new 1; ear checks 0
-// REVIEW open: none. The a3 ear check is gone: "you've been a perfect gentleman… I am an insane weirdo" answers Ron's
-//   demand, so the words settle that it's Leslie's line.
+// A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 2
 // “Ron and Leslie get down to business | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // locked in a room until they talk, Leslie and Ron first plot a fake make-up for Ben, then she tries everything to
 // make him talk, and he gives her three minutes.
 // Segments from the captions, words from whisper (2026-11-16). Untested: 68–77 s (whisper only: the monitor
 // smashed), 124–132 s ("Talk to me" on a loop), the sung verses at 180–209 s (garbled in both), 173 s "Oh, that's
-// right" (speaker unclear), and 49–54 s ("We are not saying I was the problem… I will not let you lie to them":
-// whose lines is unclear). No who item and no predict item.
+// right" (speaker unclear), and 49–54 s (whose lines is unclear).
+// EAR CHECK: 143.5 s wanna — “You wanna talk?” is Leslie, and wanna (not want to) as whisper has it
 import type { Clip } from '../types.ts';
 
 export const ronLeslieLocked: Clip = {
@@ -16,78 +14,67 @@ export const ronLeslieLocked: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: ten years ← "10 hours" is the number they keep coming back to; a year ← "two" is short and weak before
-    //   "years"
     { id: 'n1', skill: 'number', level: 'B1', point: 'locks', seg: [3.7, 9.15], keep: true,
       stem: 'When were the locks on the room put in?',
+      ja: 'この部屋の鍵が付けられたのはいつ？',
       choices: ['A year ago', 'Two years ago', 'Ten years ago'], a: 1,
-      cue: '「magnetic locks」のすぐあとの数。',
+      choicesJa: ['1年前', '2年前', '10年前'],
+      cue: '「magnetic locks」のすぐあと。',
       line: 'They installed these magnetic locks *two years ago*.',
-      said: '「この磁石の鍵は2年前に付けられた。避ける方法はない」と言っている。',
-      mean: '鍵は新しくて頑丈なので、普通には出られない、という説明。',
-      trap: 'このあと 10 hours が何度も出るので ten に引かれやすい。years の直前の一語を聞く。',
+      said: '「この磁石の鍵は2年前に付けられた。避ける方法はない」と言う。',
+      mean: 'two years ago ＝ 2年前。鍵は新しく頑丈で、普通には出られない。',
+      trap: 'あとで ten hours が何度も出るので ten に引かれやすい。years の前を聞く。',
       use: 'They put in new locks two years ago.（2年前に新しい鍵を付けたんだ）' },
 
-    // why: break the window ← Ron's own plan, heard first; really talk ← what they're locked in to do, and the words
-    //   "talked it out" are in her plan
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'fake', reveals: ['madeup'], seg: [8.9, 37.0],
-      stem: 'How does Leslie suggest they get out of the room?',
-      choices: ['By telling Ben a story that they made peace', 'By breaking out through a window, wire or not',
-                'By really talking things through for ten hours'], a: 0,
-      cue: '「another way」のあと、何を伝えるつもりか。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['madeup'], seg: [8.9, 37.0],
+      stem: 'What is Leslie’s plan to get out?',
+      ja: '部屋から出るための、レスリーの作戦は？',
+      choices: ['Tell Ben they made up', 'Break the window', 'Talk for ten hours'], a: 0,
+      choicesJa: ['仲直りしたとベンに言う', '窓を割る', '10時間話し合う'],
+      cue: '「another way」のあと。',
       line: 'we’ll tell Ben that we *talked it out*, made up.',
-      said: '窓を割るという Ron に、少し待って「話し合って仲直りした」と伝えよう、と言う。',
-      mean: '本当に話すのではなく、話したふりで出る作戦。',
-      trap: 'talked it out で本当に話すように聞こえるが、wait a few minutes でふりと分かる。',
+      said: '「少し待って、話し合って仲直りしたとベンに言おう」と言う。',
+      mean: '本当に話すのではなく、話したふりをして出る作戦。',
+      trap: '本当に話すように聞こえるが、wait a few minutes（数分待つ）でふりと分かる。',
       use: 'Let’s just tell them we worked it out.（解決したって言っちゃおう）' },
 
-    // R fix: V2 (blind 55 %): the key was the only two-part choice; both distractors are two-part now
-    // why: thick glass ← breaking glass is the usual problem; alarm + guards ← "security" heard as an alarm system
     { id: 'd2', skill: 'detail', level: 'B1', point: 'window', seg: [12.0, 16.3],
-      stem: 'Why does Leslie warn Ron off punching the window?',
-      choices: ['There’s wire in it, and he’d cut his arm', 'The glass is too thick, and he’d hurt his hand',
-                'There’s an alarm on it, and guards would come'], a: 0,
+      stem: 'Why does Leslie stop Ron from punching the window?',
+      ja: 'レスリーはなぜ、窓をなぐろうとするロンを止める？',
+      choices: ['He will cut his arm', 'The glass is too thick', 'An alarm will ring'], a: 0,
+      choicesJa: ['腕を切ってしまう', 'ガラスが厚すぎる', '警報が鳴る'],
       cue: '「Ron」と呼んだすぐあと。',
       line: 'Ron, there’s *security wire* in there. You’ll *slice your arm open*.',
       said: '「ガラスに防犯ワイヤーが入ってる。腕を切るよ」と止める。',
-      mean: 'security wire ＝ ガラスに入った防犯ワイヤー。けがの心配をしている。',
-      trap: 'security を「警備員」と取りやすいが、続く wire と slice で、けがの話と分かる。',
+      mean: 'slice ＝ スパッと切る。ガラスの中にワイヤーが入っている。',
+      trap: 'security から「警報」を思いやすい。続く slice your arm でけがの話と分かる。',
       use: 'Careful, you’ll cut your hand.（気をつけて、手を切るよ）' },
 
-    // R fix: V2 (blind 70 %): "ten hours without food" was a filler; the new distractor keeps "sit here… ten hours"
-    //   and drops only the talking, so the "than" clause decides
-    // why: waiting ← "sit here… for 10 hours" heard, "talk about my feelings" missed; cut not so bad ← "bleed out" heard
-    //   as him playing down her warning
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'bleed', seg: [15.3, 21.2],
-      stem: 'What does Ron’s answer to her warning show?',
-      choices: ['He’d take an injury over talking about feelings', 'He’d take an injury over waiting here ten hours',
-                'He thinks the cut won’t be as bad as she says'], a: 0,
-      cue: '「I would rather」のあと、「than」の前と後。',
+      stem: 'What does Ron hate most?',
+      ja: 'ロンがいちばんいやなことは？',
+      choices: ['Talking about his feelings', 'Sitting in this room all day', 'Cutting his arm open'], a: 0,
+      choicesJa: ['自分の気持ちを話すこと', '一日この部屋に座っていること', '腕を切ること'],
+      cue: '「I would rather」のあと。',
       line: 'I would *rather bleed out than* sit here and *talk about my feelings* for 10 hours.',
-      said: '「10時間気持ちを話すなら、血を流すほうがまし」。',
-      mean: 'would rather A than B ＝ B よりは A。話し合いがそれほどいや。',
-      trap: 'sit here と 10 hours が残ると、待つのがいやに聞こえる。than のあとが本題。',
+      said: '「10時間気持ちを話すくらいなら、血を流すほうがまし」と言う。',
+      mean: 'would rather A than B ＝ B よりは A。けがより話し合いがいや。',
+      trap: 'bleed（血が出る）が先に聞こえ、けがの話と思いやすい。than のあとが答え。',
       use: 'I’d rather walk than wait an hour.（1時間待つなら歩くほうがいい）' },
 
-    // R fix: V2 (blind 60 %): "wrote a story" and "got ready to go out" fit nothing in the scene; the new
-    //   distractors are near chunks (catch up, come up with) a listener might hear for "made up"
-    // why: caught up ← "catch up" is the other "-ed up" chunk after talking; came up with a plan ← "make up" = 作る/作り話
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'madeup', seg: [20.4, 28.4],
-      stem: 'What will they claim to Ben, according to Leslie’s plan?',
-      choices: ['That they talked and are friends again', 'That they talked and caught up on old news',
-                'That they talked and came up with a plan'], a: 0,
-      cue: '「talked it out」のすぐあと、短い二語。',
+      stem: 'What does “made up” mean here?',
+      ja: 'ここでの「made up」の意味は？',
+      choices: ['Became friends again', 'Put on some makeup', 'Made a new plan together'], a: 0,
+      choicesJa: ['仲直りした', 'お化粧をした', '一緒に新しい計画を立てた'],
+      cue: '「talked it out」のすぐあと。',
       line: 'we’ll tell Ben that we talked it out, *made up*.',
-      said: '「話し合って、仲直りした」と Ben に伝えるつもりだ、と言っている。',
-      mean: 'make up ＝ 仲直りする。けんかのあとによく使う。',
-      trap: 'make up は「作り上げる」の意味もあり、計画の話に聞こえる。けんかの話の中なら「仲直り」。',
+      said: '「話し合って、仲直りした」とベンに伝えるつもりだ、と言う。',
+      mean: 'make up ＝ 仲直りする。けんかのあとによく使う。過去形は made up。',
+      trap: 'カタカナの「メイクアップ（お化粧）」を思いやすい。けんかの話なら「仲直り」。',
       use: 'Did you two make up yet?（二人、もう仲直りした？）' },
 
-    // R fix: K1: "something she never did" was defensible (the whole apology is invented); C is now the "for whatever"
-    //   reading, refuted by "heroically caring too much"
-    // why: apologizes for Ron's faults ← "you admitted… stubborn" is right after; so vague it's empty ← "for whatever"
-    //   heard without what follows
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'apology', seg: [27.5, 36.95],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'apology', seg: [27.5, 36.95], retired: true,
       stem: 'What’s funny about the apology Leslie plans to report?',
       choices: ['Her “fault” is really a way of praising herself', 'She would apologize for his faults instead of hers',
                 'Her apology is so vague that it means nothing'], a: 0,
@@ -98,24 +85,19 @@ export const ronLeslieLocked: Clip = {
       trap: 'for whatever で適当に謝ると聞こえるが、続く heroically で自慢と分かる。',
       use: 'I’m sorry I care so much.（気にかけすぎてごめんね）' },
 
-    // why: admits it but wants it quiet ← the question form read as a soft admission; wants a real apology ← he
-    //   asks for her to be "at fault", heard as a real demand, not a different lie
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'stubborn', seg: [36.5, 42.85],
-      stem: 'How does Ron react to his part in her story?',
-      choices: ['He wants their roles in the story swapped', 'He admits it but wants it kept quiet',
-                'He wants her to say sorry to him for real'], a: 0,
+      stem: 'Leslie’s story calls Ron stubborn. How does he feel?',
+      ja: 'レスリーの話ではロンは頑固。ロンはどう思っている？',
+      choices: ['He doesn’t like it', 'He thinks it’s true', 'He thinks it’s funny'], a: 0,
+      choicesJa: ['気に入らない', '本当だと思う', 'おもしろいと思う'],
       cue: '「Why」で始まる二つの質問。',
-      line: 'Why can’t the problem have been that *I was reasonable and you were at fault*?',
-      said: '「なんで俺が頑固なんだ。俺がまともで、君が悪かったことにすればいい」と言う。',
-      mean: 'うそをつくのは構わないが、自分が悪役なのは嫌だ、という不満。',
-      trap: 'Why do I have to…? は認めているようにも聞こえるが、続きで役を逆にしたいと分かる。',
+      line: '*Why do I have to be stubborn?* Why can’t the problem have been that I was reasonable…',
+      said: '「なんで俺が頑固なんだ。君が悪かったことにすればいい」と言う。',
+      mean: 'stubborn ＝ 頑固。うそをつくのはいいが、自分が悪者なのはいや。',
+      trap: 'Why do I have to…? は認めたようにも聞こえるが、続きで役を逆にしたいと分かる。',
       use: 'Why do I always have to be the bad guy?（なんでいつも私が悪者なの）' },
 
-    // R fix: K5/K6 (blind 60 %): the stem said "about Ron" and only the key was about Ron; the stem now asks what
-    //   nobody would believe, and all three choices are things in the scene
-    // why: the locked room ← the whole situation is odd, so "science fiction" seems to be about it; ever fought ←
-    //   "laugh really hard" heard without what it's aimed at
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'scifi', seg: [36.5, 49.0],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'scifi', seg: [36.5, 49.0], retired: true,
       stem: 'In Leslie’s “science fiction” answer, what would nobody believe?',
       choices: ['That Ron was the reasonable one', 'That they got locked in a room', 'That the two of them ever fought'],
       a: 0,
@@ -126,11 +108,7 @@ export const ronLeslieLocked: Clip = {
       trap: '閉じこめられた状況の話に聞こえるが、Because は直前の質問への答え。',
       use: 'That’s not exactly believable.（それはちょっと信じがたいね）' },
 
-    // R fix: V2 (blind 50 %): "Kindly… to win him back" was the weak one; now a hurt, giving-up reading of "Fine".
-    //   The ear check is gone: the words settle the speaker ("you've been a perfect gentleman" answers Ron's demand)
-    // why: sincerely taking the blame ← "Fine" heard as giving in, and she does name herself; hurt ← a flat "Fine"
-    //   read as 諦め
-    { id: 'a3', skill: 'attitude', level: 'C1', point: 'blame', seg: [52.45, 66.6],
+    { id: 'a3', skill: 'attitude', level: 'C1', point: 'blame', seg: [52.45, 66.6], retired: true,
       stem: 'How does Leslie mean her “Fine. I’ll tell them…”?',
       choices: ['Sarcastically: she is mocking the blame he wants', 'Sincerely: she is taking the blame to end it',
                 'Hurt: she is giving up on fixing things'], a: 0,
@@ -141,46 +119,53 @@ export const ronLeslieLocked: Clip = {
       trap: 'Fine は「折れた」に聞こえやすい。言い方が極端すぎたら皮肉を疑う。',
       use: 'Fine, it’s all my fault, then.（はいはい、全部私のせいね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'blue', seg: [63.2, 66.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'blue', seg: [62.6, 66.6],
       stem: 'Type what she says: “decided to ruin it ___ for no good reason.” (4 words)', answer: 'out of the blue',
-      cue: '「ruin it」のすぐあと、4語のかたまり。',
+      ja: '「ruin it」のあとの4語を書こう。',
+      cue: '「ruin it」のすぐあと。',
       line: 'decided to ruin it *out of the blue* for no good reason.',
-      said: '「理由もなく突然、友情を壊した」。out of the がつながって短く聞こえる。',
-      mean: 'out of the blue ＝ 前ぶれなく、突然。',
-      trap: 'of と the が弱く、「アウラダ」のように一続きになる。blue だけはっきり聞こえる。',
+      said: '「理由もなく突然、友情を壊した」と言う。',
+      mean: 'out of the blue ＝ 前ぶれなく、突然（青空から急に、のイメージ）。',
+      trap: 'of と the が小さく短く、「アウラダ」のようにひと続きになる。blue だけはっきり聞こえる。',
       use: 'He called me out of the blue.（彼から突然電話が来た）' },
 
-    // R fix: V2 (blind 50 %): "said in all seriousness" swapped for a hedge reading, a Japanese learner's frame
-    // why: corrects herself ← "I mean" as 「じゃなくて」; softens ← "I mean" heard as a hedge (「まあ」)
+    { id: 'gowith', skill: 'phrase', level: 'B1', point: 'gowith', seg: [63.5, 68.2],
+      stem: 'What does Ron mean by “Let’s go with that”?',
+      ja: 'ロンの「Let’s go with that」の意味は？',
+      choices: ['Let’s use that story', 'Let’s leave together now', 'Let’s talk about that'], a: 0,
+      choicesJa: ['その話でいこう', '今いっしょに出よう', 'そのことを話そう'],
+      cue: '「That sounds good」のあと。',
+      line: 'That sounds good. *Let’s go with that*.',
+      said: 'レスリーが悪者の話を聞いて、「いいね。それでいこう」と言う。',
+      mean: 'go with 〜 ＝ 〜に決める、〜でいく。案を選ぶときの決まり文句。',
+      trap: 'go から「一緒に行こう」と思いやすい。ここは「その案を選ぶ」。',
+      use: 'I’ll go with the chicken, please.（チキンにします）' },
+
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [81.9, 88.8],
-      stem: 'After “Everything’s different”, what does the next “I mean…” do?',
-      choices: ['Narrows “everything” down to examples', 'Takes back the word “everything” as wrong',
-                'Softens “everything”, as if unsure of it'], a: 0,
-      cue: '「different」のあとに並ぶ名詞。',
+      stem: 'What does “I mean” do after “Everything’s different”?',
+      ja: '「Everything’s different」のあとの「I mean」の働きは？',
+      choices: ['Gives some examples', 'Takes it back', 'Shows she is unsure'], a: 0,
+      choicesJa: ['例を挙げる', '言ったことを取り消す', '自信がないと示す'],
+      cue: '「different」のあとに並ぶもの。',
       line: 'Everything’s different. *I mean*, the furniture. The pictures.',
-      said: '「全部変わった。ほら、家具とか、写真とか」と例を挙げている。',
-      mean: 'この I mean ＝「つまり」「たとえば」。大まかな言葉を具体的にする。',
-      trap: 'I mean は言い直しにも使うが、ここは「全部」を否定していない。続く例を聞く。',
+      said: '「全部変わった。ほら、家具とか、写真とか」と言う。',
+      mean: 'この I mean ＝「つまり・たとえば」。大まかな言葉を具体的にする。',
+      trap: 'I mean は言い直しにも使うので「取り消し」と思いやすい。続く例を聞く。',
       use: 'It’s expensive. I mean, the rent alone…（高いよ。家賃だけでも…）' },
 
-    // why: doubts Craig did it ← "Did he?" heard as a real challenge to who changed it; upset ← the Japanese frame
-    //   「えっ、変えたの？」 as dismay
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'notice', seg: [88.4, 97.2],
-      stem: 'What does Ron’s short reply “Did he?” tell us?',
-      choices: ['He hadn’t noticed any of the changes', 'He doubts that Craig made the changes',
-                'He is upset about all of the changes'], a: 0,
-      cue: '「Did he?」のあと、自分について言うこと。',
+      stem: 'Ron says, “Did he?” What does he mean?',
+      ja: 'ロンの「Did he?」はどういう意味？',
+      choices: ['I didn’t notice that', 'I don’t believe you', 'I’m angry about that'], a: 0,
+      choicesJa: ['気づかなかった', '信じられない', 'それに怒っている'],
+      cue: '「Did he?」のあとの一文。',
       line: 'Did he? *I tried not to notice anything* when I worked here.',
       said: '「そうか？ここで働いていたときは、何も気づかないようにしてた」と言う。',
-      mean: 'Did he? は本当の質問ではなく「そうなの？」。気づいていなかったことを示す。',
-      trap: '疑問の形なので疑っているように聞こえる。続く文が答え合わせになる。',
+      mean: 'Did he? ＝「そうなの？」。本当の質問ではなく、知らなかったという返事。',
+      trap: '質問の形なので、疑っているように聞こえやすい。続く文が答え。',
       use: 'Oh, did they? I hadn’t noticed.（え、そうなの？気づかなかった）' },
 
-    // anchor: 94.4–99.7 s "…or learn anyone's name. You of all people should know that, Lauren." (both sources
-    //   have "Lauren"); "you of all people" shows he knows she's the one he knows best
-    // why: mixes her up ← "Craig changed everything" just before, so a name from the new office seems to slip in; old
-    //   nickname ← "you of all people" heard as warmth, so "Lauren" sounds like a fond private name
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'lauren', seg: [88.4, 100.4],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'lauren', seg: [88.4, 100.4], retired: true,
       stem: 'Why does Ron call Leslie by the wrong name at the end?',
       choices: ['To prove, as a joke, he never learned names', 'He mixes her up with someone at the new office',
                 'It is an old nickname he uses to tease her'], a: 0,
@@ -191,23 +176,7 @@ export const ronLeslieLocked: Clip = {
       trap: '言いまちがいや愛称に聞こえやすい。直前の言葉を実演していないかを聞く。',
       use: 'You of all people should get this.（あなたこそ分かるはずでしょ）' },
 
-    // why: talks it all through ← what the lock-in was meant to get; Leslie gives up ← the long "talk to me" stretch
-    //   and the silence after it
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', seg: [100.2, 217.0],
-      stem: 'How does Leslie’s effort to make Ron talk turn out?',
-      choices: ['He agrees to talk, but only for a short time', 'He opens up, and they talk through everything',
-                'She gives up, and they sit there in silence'], a: 0,
-      cue: '最後の Ron の一言。',
-      said: '賭けに乗り、黙り続けた Ron だが、最後の曲のくり返しで折れて、話すことに同意する。',
-      mean: '完全に折れたのではなく、条件つきの譲歩。',
-      trap: '長く黙っていたので、あきらめたように見える。最後の一言で決まる。',
-      use: 'Okay, you win. Five minutes.（分かった、負けたよ。5分だけね）' },
-
-    // R fix: S4: the segment ended at 109.35 s, inside "on"; now 109.8 s, after "Ron"
-    // anchor: 107.34–108.9 s both sources: "I choose sit here." (no "to", no "-ing")
-    // why: the grammar instinct writes "i choose to sit here"; "i'll just sit here" ← her "just sit here" is in the
-    //   line before
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'choose', seg: [105.85, 109.8],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'choose', seg: [105.85, 109.8], retired: true,
       stem: 'Type Ron’s answer to her two options: “___.” (4 words)', answer: 'i choose sit here',
       cue: '二つの選び方を聞いたあと、すぐの短い返事。',
       line: '…or we can just sit here doing nothing. — *I choose sit here.*',
@@ -216,24 +185,19 @@ export const ronLeslieLocked: Clip = {
       trap: '文法どおり choose to sit と書きたくなる。相手の言葉を借りた返事は形が崩れやすい。聞こえない to は足さない。',
       use: 'Pizza or pasta? — I choose pizza.（ピザかパスタ？ピザにする）' },
 
-    // R fix: V2 (blind 65 %): "Why do we / Why did we just…" don't fit a suggestion, so the key stood out. The
-    //   choices are now all natural suggestions; the weak "we" vs "you" decides
-    // why: Why don't you ← after "Come on, Ron" a "you" is expected, and we/you are both weak; Why won't you ←
-    //   don't/won't differ in the vowel; Why can't we ← can't with its t lost is short like don't
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whydont', seg: [107.2, 111.3],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'whydont', seg: [107.2, 111.3],
       stem: 'Fill the gap: “Come on, Ron. ___ just…”',
-      choices: ['Why don’t we', 'Why don’t you', 'Why won’t you', 'Why can’t we'], a: 0,
-      cue: '「Come on, Ron」のすぐあと、文の頭。',
+      ja: '空いている所に入る言葉は？',
+      choices: ['Why don’t we', 'Why don’t you', 'Why won’t you'], a: 0,
+      choicesJa: ['（いっしょに）〜しない？', '（あなたが）〜したら？', 'なぜ〜してくれないの？'],
+      cue: '「Come on, Ron」のすぐあと。',
       line: 'Come on, Ron. *Why don’t we* just…',
-      said: '「ちょっと〜しない？」と誘いかけて、さえぎられる。',
-      mean: 'Why don’t we…? ＝「〜しようよ」。t はほぼ消え「ワイドンウィ」。',
-      trap: 'Ron のあとなので you と思いやすい。弱い一語の母音「ウィ」を聞く。',
+      said: '「ねえロン、いっしょに〜しない？」と言いかけて、さえぎられる。',
+      mean: 'Why don’t we 〜? ＝「〜しようよ」。t はほぼ消え「ワイドンウィ」。',
+      trap: 'Ron と呼んだあとなので you と思いやすい。最後の「ウィ」を聞く。',
       use: 'Why don’t we grab lunch?（お昼食べに行かない？）' },
 
-    // R fix: V2 (blind 55 %): "invites her to sit beside him" swapped for the imperative reading of "Sit here!"
-    // why: agrees and sits ← "sit here" heard as a yes to her suggestion; tells her to sit ← "Sit here!" heard as an
-    //   order to her
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'sithere', reveals: ['choose', 'whydont'], seg: [107.2, 113.3],
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'sithere', reveals: ['choose', 'whydont'], seg: [107.2, 113.3], retired: true,
       stem: 'When Leslie starts “Why don’t we just…”, what does Ron do?',
       choices: ['Finishes her sentence his way to shut her down', 'Agrees with her plan and sits down to listen',
                 'Tells her to sit down and keep quiet'], a: 0,
@@ -244,87 +208,99 @@ export const ronLeslieLocked: Clip = {
       trap: 'sit here だけ聞くと誘いに聞こえる。同じ二語をくり返すのは「話さない」の意思表示。',
       use: 'Let’s just… — Go home? Yes, please.（もう…—帰る？賛成）' },
 
-    // R fix: V2 (blind 55 %): "nervous, but acting tough" was off-scene and the key read oddly; now two "sure" choices
-    //   that only "from now into infinity" tells apart, plus the money reading
-    // why: wants money ← "any amount of money" is heard; only for ten hours ← the lock-in's "10 hours" and "any length of
-    //   time" heard without "into infinity"
     { id: 'a4', skill: 'attitude', level: 'B2', point: 'bet', seg: [114.3, 124.2],
-      stem: 'How does Ron feel about Leslie’s bet that she can make him talk?',
-      choices: ['Sure he’ll win, however long it takes', 'Sure he’ll win, at least for the ten hours',
-                'Keen to win as much of her money as he can'], a: 0,
-      cue: '「I’ll take that bet」のあと、any が何回続くか。',
+      stem: 'How sure is Ron that he will win the bet?',
+      ja: 'ロンは、かけに勝つ自信がどのくらいある？',
+      choices: ['Completely sure', 'A little sure', 'Not sure at all'], a: 0, keep: true,
+      choicesJa: ['完全に自信がある', '少し自信がある', '全く自信がない'],
+      cue: '「I’ll take that bet」のあと。',
       line: 'I’ll take that bet at any odds… over *any length of time*, stretching from now *into infinity*.',
-      said: '「どんな倍率でも、いくらでも、どれだけ長くても、永遠に受けて立つ」と言う。',
-      mean: 'any を重ねて、絶対に負けないという自信を大げさに示している。',
-      trap: 'money や time で条件つきに聞こえる。最後の into infinity で「永遠に」。',
-      use: 'I’ll take that bet any day.（その賭け、いつでも受けるよ）' },
+      said: '「その賭け、受ける。どれだけ長くても、永遠に」と言う。',
+      mean: 'take that bet ＝ その賭けに乗る。any を重ねて、絶対負けないと言う。',
+      trap: '単語が難しく、迷っているように聞こえやすい。any が何度も続くのは強い自信。',
+      use: 'I’ll take that bet.（その賭け、乗った）' },
 
-    // R fix: V2 (blind 60 %): "find out which one he likes" was weak (she knows); now "You guys" heard as her
-    //   giving up on him
-    // why: telling the others ← "You guys" heard as a real announcement of what he likes; giving up ← "You guys" heard
-    //   as her turning away from Ron
     { id: 'i2', skill: 'infer', level: 'B2', point: 'bait', seg: [133.4, 145.2],
-      stem: 'What is Leslie up to with what she says about wood and plastic?',
-      choices: ['Saying things to provoke him into answering', 'Telling the others what Ron really likes',
-                'Giving up on him and chatting with the others'], a: 0,
-      cue: '「One word」と「Last chance」にはさまれた部分。',
+      stem: 'Why does Leslie say “wood is stupid”?',
+      ja: 'レスリーはなぜ「wood is stupid」と言う？',
+      choices: ['To get Ron to talk', 'She really thinks so', 'To tell the others about Ron'], a: 0,
+      choicesJa: ['ロンにしゃべらせるため', '本当にそう思っている', 'ほかの人にロンのことを話すため'],
+      cue: '「One word」のあと。',
       line: '*One word and this is over.* I think wood is stupid… Ron loves plastic.',
-      said: '「一言でいい」と言い、木はくだらない、Ron はプラスチック好き、と言う。',
-      mean: 'Ron が言い返したくなることを言って、口を開かせようとしている。',
-      trap: 'You guys で周りへの報告に聞こえるが、直前の one word が目的。',
+      said: '「一言でいいの」と言ってから、木はくだらない、ロンはプラスチック好き、と言う。',
+      mean: 'ロンが言い返したくなることを言って、口を開かせようとしている。',
+      trap: 'You guys（みんな）と呼ぶので周りへの話に思いやすい。直前の one word が目的。',
       use: 'Just say one word and I’ll stop.（一言言えばやめるから）' },
 
-    // R fix: V2 (blind 50 %): "make one mix" was a filler; "sing one song" keeps "song", so "choose" decides
-    // why: bring a dish ← a barbecue suggests food; sing a song ← "song" is heard, and she sings later
+    { id: 'wanna', skill: 'sound', level: 'B1', point: 'wanna', seg: [140.5, 145.2],
+      stem: 'Fill the gap: “Last chance, Ron. You ___ talk?”',
+      ja: '空いている所に入る語は？',
+      choices: ['wanna', 'gonna', 'gotta'], a: 0,
+      choicesJa: ['〜したい', '〜するつもり', '〜しなきゃ'],
+      cue: '「Last chance, Ron」のあと。',
+      line: 'Last chance, Ron. You *wanna* talk?',
+      said: '「最後のチャンスよ、ロン。話したい？」と聞く。',
+      mean: 'wanna ＝ want to が短くなった音。「ワナ」と聞こえる。誘うときによく使う。',
+      trap: 'gonna（ガナ）や gotta（ガラ）と似ている。最初が「ワ」なら wanna。',
+      use: 'Do you wanna get coffee?（コーヒー飲みに行かない？）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'mix', seg: [150.6, 158.95],
-      stem: 'For the barbecue mix, what did Leslie ask everyone to do?',
+      stem: 'For the mix, what did Leslie ask everyone to do?',
+      ja: 'ミックスCDのために、レスリーはみんなに何を頼んだ？',
       choices: ['Choose one song for it', 'Bring one dish to it', 'Sing one song for it'], a: 0,
+      choicesJa: ['1曲選ぶ', '料理を1品持ってくる', '1曲歌う'],
       cue: '「I asked everyone」のあと。',
       line: 'I asked everyone in the parks department to *choose one song*.',
-      said: '公園課の全員に、1曲ずつ選んでもらった、と言っている。',
-      mean: 'その曲を集めて、バーベキュー用のミックスCDを作った。',
-      trap: 'barbecue から料理を、song から歌うことを考えやすい。asked … to のあとの動詞が頼んだこと。',
-      use: 'Everyone picked one song.（みんな1曲ずつ選んだ）' },
+      said: '公園課の全員に、1曲ずつ選んでもらった、と言う。',
+      mean: 'choose ＝ 選ぶ。集めた曲で、バーベキュー用のCDを作った。',
+      trap: 'barbecue から料理を、song から歌うことを思いやすい。to のあとの動詞を聞く。',
+      use: 'Everyone, please choose one song.（みなさん、1曲ずつ選んでください）' },
 
-    // R fix: V2 (blind 55 %): "keeps her feelings hard" wasn't English anyone means; now "trap" read as a locked box
-    // why: can't stop thinking ← "trap" read as 罠, something she can't escape; keeps secrets ← a steel trap read as a
-    //   locked box
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'trap', seg: [161.6, 167.8],
-      stem: 'What does Leslie mean by what she says about her mind?',
-      choices: ['She forgets nothing about her friends', 'She can’t stop thinking about her friends',
-                'She keeps her friends’ secrets locked away'], a: 0,
-      cue: '「a fact I remember because」のあと。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'trap', seg: [161.6, 167.8],
+      stem: 'Leslie says her mind is a “steel trap.” What does that mean?',
+      ja: '頭が「steel trap」とは、どういう意味？',
+      choices: ['She remembers everything', 'She can’t stop thinking', 'She keeps secrets well'], a: 0,
+      choicesJa: ['何でも覚えている', '考えるのをやめられない', '秘密をよく守る'],
+      cue: '「Willie Nelson」のあと。',
       line: 'my mind is a *steel trap* of friendship nuggets.',
-      said: '「私の頭は友情の小ネタを逃さない鉄のわな」と言う。',
-      mean: 'a mind like a steel trap ＝ 一度覚えたら忘れない。',
-      trap: 'trap を「罠」や「金庫」と取ると別の意味に。remember のあとなら記憶の話。',
-      use: 'She has a mind like a steel trap.（彼女は記憶力がすごい）' },
+      said: '「私の頭は、友情の小ネタを逃さない鉄のわなだから」と言う。',
+      mean: 'steel trap ＝ 鉄のわな。一度つかまえたら放さない＝一度覚えたら忘れない。',
+      trap: 'trap（わな）から「秘密を閉じこめる」と思いやすい。直前の remember が手がかり。',
+      use: 'I never forget a face.（人の顔は絶対に忘れない）' },
 
-    // R drop: i3 (V1 + V2): the key (to bother him) came from the premise, not the segment, and the blind pass got it
-    //   at 60 %; the segment stopped before the words that show the tactic. Never shipped, so deleted
-    // R new: what she adds to Jerry's song, from the next two lines (both sources agree)
-    // why: loud ← a song played to annoy suggests volume; make him sing ← "sing along" heard as aimed at Ron
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'jerry', seg: [167.6, 180.4],
-      stem: 'Along with Jerry’s song, what does Leslie say she’ll do?',
-      choices: ['Sing along and look him in the eye throughout', 'Sing along and turn it up as loud as it goes',
-                'Sing along and make him sing the chorus'], a: 0,
-      cue: '「sing along」のあと、もう一つの予告。',
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', seg: [169.5, 180.4],
+      stem: 'What will Leslie do while she sings along?',
+      ja: '一緒に歌いながら、レスリーは何をすると言う？',
+      choices: ['Look Ron in the eye', 'Turn the music up loud', 'Jump up and down'], a: 0,
+      choicesJa: ['ロンの目をじっと見る', '音楽を大きくする', 'ぴょんぴょん跳ぶ'],
+      cue: '「sing along」のあと。',
       line: 'And I’m gonna sing along. And I’m gonna *maintain eye contact the whole time*.',
       said: 'ジェリーの曲で一緒に歌い、ずっと目を合わせる、と宣言する。',
-      mean: 'いやがることを重ねる作戦。maintain eye contact ＝ 目をそらさない。',
-      trap: 'sing along のあとも I’m gonna が続く。次の動詞まで聞く。',
+      mean: 'maintain eye contact ＝ 目をそらさない。いやがることを重ねる作戦。',
+      trap: 'あとで jumping up and down（跳ねる）も聞こえるが、それは歌の中のこと。',
       use: 'Try to keep eye contact when you talk.（話すときは目を合わせてね）' },
 
-    // why: ten ← "10 hours" earlier; thirty ← "three" with a long vowel sounds like "thirty"
-    // R fix: N7/B1: the stem says Ron agrees to talk, which is g2's key; reveals 'end' now
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [175.0, 217.0],
+      stem: 'How does it end for Ron and Leslie?',
+      ja: 'ロンとレスリーの話はどう終わる？',
+      choices: ['Ron agrees to talk a little', 'They talk about everything', 'Leslie gives up and stops'], a: 0,
+      choicesJa: ['ロンが少しだけ話すと決める', '二人で何もかも話す', 'レスリーがあきらめてやめる'],
+      cue: '最後のロンの一言。',
+      said: 'レスリーが変な歌をくり返すと、ロンが「やめろ」と言い、少し話すことに同意する。',
+      mean: '完全に折れたのではなく、時間を決めた譲歩。',
+      trap: '長く黙っていたので、レスリーがあきらめたように見える。最後の一言で決まる。',
+      use: 'Okay, you win. Five minutes.（分かった、負けたよ。5分だけね）' },
+
     { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['end'], seg: [213.0, 216.7], keep: true,
       stem: 'How long does Ron agree to talk with Leslie?',
+      ja: 'ロンはレスリーとどのくらい話すと言う？',
       choices: ['Three minutes', 'Ten minutes', 'Thirty minutes'], a: 0,
-      cue: '最後の一文、「minutes」の直前。',
+      choicesJa: ['3分', '10分', '30分'],
+      cue: '最後の一文。',
       line: 'I will speak with you for *three minutes*.',
-      said: '「3分だけ話してやる」と言っている。',
-      mean: '折れはしたが、時間は最小限。Ron らしい条件。',
-      trap: 'three と thirty は似ている。thirty なら「サーティ」と二音節で、t が弾む。',
+      said: '「3分だけ話してやる」と言う。',
+      mean: 'three minutes ＝ 3分。折れはしたが、時間は最小限。ロンらしい条件。',
+      trap: 'three と thirty は似ている。thirty は「サーティ」と2つの音で長い。',
       use: 'I can give you five minutes.（5分なら時間取れるよ）' },
   ]
 };
