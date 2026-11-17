@@ -1,14 +1,13 @@
-// REVIEW 2026-11-16: pass 9, fix 15, drop 0, new 0; ear checks 2
-//   (fixes: 14 blind-pass rebalances, w1 skill who → detail, and a broken character in w1's trap)
+// A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 10, new 4
 // “Pam Goes into Labor - The Office US” (the official The Office channel, Best of Season 6): Pam's contractions start
 // at the office; she stalls, admits she's scared, is talked round, and the office scrambles to get her and Jim out.
 // Segments from the captions, words from whisper (2026-11-16). The captions' word times run coarse (up to ≈ 1 s early
 // after 130 s), so boundaries sit in gaps both sources leave. Untested: 15–21.5 s (a sex joke), 86–103 s (crowd talk
-// overlaps; captions are empty), 187–200 s (the dictionary and dilation bits), the car ride (236–260 s; "saw" / "shot"
-// that deer differs), and "warn me at five minutes" / "four and three minutes" (captions: "Friday", "porn three"), used
-// only in notes and as distractors. The ambulance order's name is "Aaron" in both sources (Erin; spelling isn't tested).
-// EAR CHECK: 77.9 s nt2 — "as long as I can talk through it" (whisper) vs "as long as I can write" (captions)
-// EAR CHECK: 104.9 s nt3 — the stress in the second "I am not going" falls on "not" (captions write "NOT"); ship only once confirmed
+// overlaps), 187–200 s (the dictionary and dilation bits), the car ride (236–260 s), and "warn me at five minutes" /
+// "four and three minutes" (captions: "Friday", "porn three"). The ambulance order's name is "Aaron" in both sources (Erin).
+// EAR CHECK: 120.8 s g2 — “Pam, I'm scared… the best news is” is Jim (assumed from “babe” and the scene)
+// EAR CHECK: 184.5 s a2 — “You are telling me now…? Okay, great.” is annoyed (speaker unnamed)
+// EAR CHECK: 199.7 s keys — “I can't find my keys” and “Found them” (speaker unnamed)
 import type { Clip } from '../types.ts';
 
 export const pamLabor: Clip = {
@@ -17,21 +16,19 @@ export const pamLabor: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: 4:25 / 4:45 ← "thirty-five" heard with the wrong tens (twenty / forty), near sounds
     { id: 'n1', skill: 'number', level: 'B1', point: 'time', seg: [8.55, 13], keep: true,
-      stem: 'When someone asks if it’s midnight yet, what time is it?',
+      stem: 'What time is it when Pam’s pains start?',
+      ja: 'パムの痛みが始まったのは何時？',
       choices: ['4:25', '4:35', '4:45'], a: 1,
-      cue: '「midnight」の質問への返事、数字に注目。',
+      choicesJa: ['4時25分', '4時35分', '4時45分'],
+      cue: '「midnight」の質問への返事。',
       line: 'Is it midnight yet? — No, it’s *4:35*.',
       said: '「もう夜中の12時？」に「いや、4時35分」と答える。',
-      mean: '4:35 は four thirty-five と読む。時と分を分けて言う。',
-      trap: 'thirty は forty や twenty と混ざりやすい。くり返される2回目で確かめる。',
+      mean: '4:35 ＝ four thirty-five。時と分を分けて読む。',
+      trap: 'thirty は forty や twenty と混ざりやすい。すぐあとのくり返しで確かめる。',
       use: 'It’s a quarter to five.（5時15分前です）' },
 
-    // R fix: blind 80 %: "mixes up 4:35 with midnight" was a filler and named the time n1 asks; now a workday reading
-    // why: workday ← at 4:35, "almost made it" naturally means "nearly to 5 o'clock", the end of the day; arrived ←
-    //   "made it" literally = got somewhere, so it sounds like the trip to the hospital
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'midnight', reveals: ['time'], seg: [8.55, 14.95],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'midnight', reveals: ['time'], seg: [8.55, 14.95], retired: true,
       stem: 'Why is the comment right after the time is given funny?',
       choices: ['He calls a miss of seven-plus hours a near miss', 'He means she nearly held out till quitting time',
                 'He means they nearly got her to the hospital'], a: 0,
@@ -42,40 +39,31 @@ export const pamLabor: Clip = {
       trap: 'made it を「着いた」と取ると病院の話になる。何に間に合うのかを聞く。',
       use: 'We made it, just in time!（ギリギリ間に合った！）' },
 
-    // R fix: blind 75 %: "answer the push" cued resistance and the key was the only no; stem neutral, the feast
-    //   distractor added in place of the off-scene "finish her work"
-    // why: wait for Jim ← "Somebody get Jim" is heard just before; after the feast ← Ultra Feast is her own topic, so
-    //   it sounds like a condition
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'stall', reveals: ['feast'], seg: [21.5, 49.1],
-      stem: 'In the first minute, what does Pam do about going to the hospital?',
-      choices: ['She puts it off with one excuse after another', 'She agrees to go, but only once Jim is there',
-                'She agrees to go as soon as the feast is over'], a: 0,
-      cue: '「not yet」から、彼女が出す話題と言い方。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'stall', reveals: ['feast'], seg: [21.5, 49.1],
+      stem: 'What does Pam do at first about the hospital?',
+      ja: 'パムは、最初は病院のことをどうする？',
+      choices: ['She keeps saying not yet', 'She goes there right away', 'She calls her doctor'], a: 0,
+      choicesJa: ['「まだ」と言い続ける', 'すぐに行く', '医者に電話する'],
+      cue: 'マイケルに病院と言われたあと。',
       line: 'No, *not yet*, Michael.',
       said: '病院へと言われても「まだ」と断り、宴会の話を出したり平気だと言ったりする。',
-      mean: '理由をつけて出発を延ばしている。本当の理由はまだ言わない。',
-      trap: '直前に Jim の名前が出るが、彼を待つとは言っていない。名前より返事の中身。',
+      mean: 'not yet ＝ まだ。理由をつけて出発を先にのばしている。',
+      trap: 'みんなが急いでいるので、すぐ行くと思いやすい。パムの返事は no ばかり。',
       use: 'Can we do this later?（それ、あとにしない？）' },
 
-    // R fix: blind 70 %: "put off leaving" was the only choice tied to the hospital; key reworded, the invite
-    //   distractor now built on "Where's Kevin?"
-    // why: find Kevin ← "Where's Kevin?" comes right after, so it sounds like her request; eat first ← eating before
-    //   a long hospital stay is a common idea
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'feast', reveals: ['stall'], seg: [21.5, 34],
-      stem: 'When Pam suddenly mentions Ultra Feast, what is she doing?',
-      choices: ['Steering the talk away from the hospital', 'Asking Michael to go and find Kevin',
-                'Asking to eat something before she goes'], a: 0,
-      cue: '病院の話のすぐあと、急に変わる話題。',
+      stem: 'Why does Pam suddenly talk about Ultra Feast?',
+      ja: 'パムはなぜ急に「ウルトラ・フィースト」の話をする？',
+      choices: ['To change the subject', 'Because she is very hungry', 'To go and find Kevin'], a: 0,
+      choicesJa: ['話題を変えるため', 'とてもお腹がすいているから', 'ケビンを探しに行くため'],
+      cue: '病院の話のすぐあと。',
       line: 'No, not yet… *Oh, wow, it’s almost time for Ultra Feast.*',
-      said: '「まだいい」と言いかけて、急に「もうすぐウルトラ・フィーストの時間」と言い出す。',
-      mean: '話題を変えて病院の話から逃げている。Michael も「行かずに食べる気？」と返す。',
-      trap: '食事の話でも、Oh, wow の唐突さが合図。急な話題転換は逃げのサイン。',
+      said: '「まだいい」と言って、急に「もうすぐウルトラ・フィーストの時間」と言い出す。',
+      mean: 'Oh, wow で急に別の話。病院の話から逃げている。',
+      trap: '食事の話なので「お腹がすいた」と思いやすい。急な話題の変化は逃げの合図。',
       use: 'Oh, look at the time! Anyway…（あ、もうこんな時間！それより…）' },
 
-    // R fix: blind 50 %: the cat distractor was a filler; now a "cheap food" dig
-    // why: Kevin's food ← "cat food with Kevin" sounds like a dig at what Kevin brings; cheap ← "cat food" as the
-    //   stock put-down for bad, cheap food
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'catfood', seg: [27.5, 34.05],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'catfood', seg: [27.5, 34.05], retired: true,
       stem: 'Why does Michael bring up cat food?',
       choices: ['He mixes up the feast’s name with a cat food’s', 'He is making fun of the food Kevin usually brings',
                 'He is saying the feast’s food is cheap and bad'], a: 0,
@@ -86,10 +74,7 @@ export const pamLabor: Clip = {
       trap: 'cat food を悪口と取りやすいが、すぐに訂正が入る。訂正が来たら、前の言葉は勘違い。',
       use: 'I think you’re thinking of something else.（別のものと勘違いしてない？）' },
 
-    // R fix: blind 60 %: the key was the only cynical choice; the warm distractor became a cynical one the words refute
-    // why: old ritual ← "ceremony" heard without "made up"; no one enjoys it ← the cool tone heard, but aimed at the
-    //   meal ("pig out" says they love it)
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'ultra', seg: [32.7, 39.6],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'ultra', seg: [32.7, 39.6], retired: true,
       stem: 'What does the explanation of Ultra Feast suggest about it?',
       choices: ['It’s an excuse to overeat, dressed up as a ritual', 'It’s an old office ritual built around a big meal',
                 'It’s a ritual they keep up, though no one enjoys it'], a: 0,
@@ -100,34 +85,29 @@ export const pamLabor: Clip = {
       trap: 'ceremony だけだと伝統行事に聞こえる。in the name of は「本音は別」の合図。',
       use: 'It’s a “meeting,” but we just eat.（「会議」と言っても食べるだけ）' },
 
-    // R fix: blind 85 %: the stem named "pig", so the idiom answered it without the audio; stem names the moment,
-    //   distractors now a near sound and a potluck reading
-    // why: pick up ← "pig out" ≈ "pick up" when the g and t blur; bring dishes ← "together" plus a feast menu =
-    //   a potluck
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'ultra', seg: [32.7, 39.6],
-      stem: 'In the Ultra Feast explanation, what will they do together?',
-      choices: ['Eat as much as you like', 'Pick up food to share', 'Take turns bringing dishes'], a: 0,
-      cue: '「they can」のすぐあと、動詞と小さな語。',
+      stem: 'What does “pig out” mean?',
+      ja: '「pig out」の意味は？',
+      choices: ['Eat way too much', 'Pick up some food', 'Cook some pork'], a: 0,
+      choicesJa: ['たくさん食べすぎる', '食べ物を受け取る', '豚肉を料理する'],
+      cue: '「they can」のすぐあと。',
       line: 'so they can *pig out* together',
-      said: '「いっしょに思いきり食べるため」に作った、と言っている。',
-      mean: 'pig out ＝ がつがつたくさん食べる。くだけた言い方で、少しからかう響きがある。',
-      trap: 'pig out は pick up に聞こえやすい。動詞＋out は「とことん」の意味が多い。',
+      said: '「みんなで思いきり食べるために作った行事」と言う。',
+      mean: 'pig out ＝ がつがつたくさん食べる。pig（ぶた）を使ったくだけた言い方。',
+      trap: 'pig out は pick up（受け取る）に聞こえやすい。最初の音が「ピッグ」か「ピック」か。',
       use: 'Let’s pig out on pizza tonight.（今夜はピザを思いきり食べよう）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'norush', seg: [38.4, 43],
       stem: 'Type what Pam says: “There’s ___ to get to the hospital.” (2 words)', answer: 'no rush',
-      cue: '「There’s」のすぐあと、短い2語。',
+      ja: '「There’s」のあとの2語を書こう。',
+      cue: '「There’s」のすぐあと。',
       line: 'There’s *no rush* to get to the hospital.',
-      said: '「病院に急ぐ必要はない」と言う。',
+      said: '「病院に急ぐ必要はないわ」と言う。',
       mean: 'There’s no rush ＝ 急ぐ必要はない。相手の「早く」をやんわり止める言い方。',
-      trap: 'no と rush がつながり一続きに聞こえる。rush の r は舌をどこにもつけない音。',
+      trap: 'no と rush がひと続きに聞こえる。rush の r は舌をどこにもつけない音。',
       use: 'No rush, take your time.（急がないで、ごゆっくり）' },
 
-    // R fix: blind 60 %: fear was the only feeling on offer; "fed up" swapped for the 遠慮 reading, a stronger near miss
-    // why: the feast ← Ultra Feast is the last topic before it, so staying for the meal seems the reason; no fuss ←
-    //   the Japanese frame: playing it down read as 遠慮, not wanting to trouble the office
     // anchor: 107.2–110.6 s "I'm not going today because I can't do it. I don't think I can do it", then "I'm scared
-    //   too" (123.1 s): the clip itself names what the shrug hides
     // retired: with nt2 and nt3: one C2 alone is under the native tier’s 2; back with either
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'fear', reveals: ['norush'], seg: [38.4, 49.1], retired: true,
       stem: 'When Pam shrugs off getting there at all, what is she trying not to say?',
@@ -140,22 +120,7 @@ export const pamLabor: Clip = {
       trap: '直前の宴会の話や、職場への遠慮に結びつけやすい。平気だと強く言うほど、裏の気持ちを疑う。',
       use: 'Whatever happens, happens.（なるようになるさ）' },
 
-    // why: food ← the feast menu was just being described, so the pain sounds like something she ate; kicking ← the
-    //   baby is the topic, and kicks are the familiar pregnancy ache
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'minor', seg: [65.9, 79],
-      stem: 'When someone asks if she’s okay, how does Pam explain the pain?',
-      choices: ['As only a minor contraction', 'As only something she ate', 'As only the baby kicking'], a: 0,
-      cue: '「the doctor said」のあと、痛みの呼び名。',
-      line: 'the doctor said that it’s still considered a *minor contraction*',
-      said: '「先生によると、これはまだ軽い陣痛」と説明する。',
-      mean: 'contraction ＝ 陣痛（子宮の収縮）。minor ＝ 軽い。まだ病院は早い、という言い訳。',
-      trap: '直前まで宴会の料理の話なので、食べ物のせいと取りやすい。理由は医者の言葉として出てくる。',
-      use: 'It’s nothing serious, just a headache.（大したことない、ただの頭痛）' },
-
-    // why: backwards ← "as long as" heard as "until", so the rule seems to say she should go now; can't finish ← the
-    //   "um—" just before reads as her breaking off, so the rule would call it serious
     // anchor: 67.8–78.7 s asked "are you okay?" mid-pain, she answers with the whole rule, "minor contraction as long as I
-    //   can talk through it", and gets to the end of it
     // retired: the ear-check policy: the key needs “talk through it” (whisper), the captions have “write” (77.9 s)
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'minor', seg: [65.9, 79], retired: true,
       stem: 'Why is Pam’s answer about the doctor’s rule funny, mid-pain?',
@@ -168,24 +133,31 @@ export const pamLabor: Clip = {
       trap: 'as long as を「～まで」と取ると意味が逆になる。条件の文は、今それを満たしているかを見る。',
       use: 'As long as I can walk, I’m fine.（歩けるうちは大丈夫）' },
 
-    // R fix: blind 80 %: the key was the only two-part choice (§9.6); both distractors now have two steps too
-    // why: he warns her ← the contraction timing comes right after, so it sounds like the reason; the doctor ← the
-    //   doctor was quoted earlier, as the voice that decides
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'convince', reveals: ['fear', 'scared'], seg: [102.5, 135.2],
-      stem: 'How is Pam finally brought around to going?',
-      choices: ['He admits he’s scared too, then talks up the baby', 'He says the pains are close now, then insists',
-                'He quotes the doctor, then promises to stay by her'], a: 0,
-      cue: '「can’t do it」のあと、相手が自分について言うこと。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'minor', seg: [67, 79],
+      stem: 'What does Pam say the pain is?',
+      ja: 'パムは、その痛みを何だと言う？',
+      choices: ['Just a small contraction', 'Just something that she ate', 'Just the baby kicking'], a: 0,
+      choicesJa: ['ただの軽い陣痛', '食べた物のせい', '赤ちゃんがけっているだけ'],
+      cue: '「the doctor said」のあと。',
+      line: 'the doctor said that it’s still considered a *minor contraction*',
+      said: '「先生によると、話せるうちはまだ軽い陣痛」と説明する。',
+      mean: 'contraction ＝ 陣痛。minor ＝ 軽い。まだ病院は早い、という言い訳。',
+      trap: '直前まで料理の話なので、食べ物のせいと思いやすい。理由は医者の言葉の中。',
+      use: 'It’s nothing serious, just a headache.（大したことない、ただの頭痛）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'convince', reveals: ['fear', 'scared'], seg: [102.5, 135.2],
+      stem: 'What finally gets Pam to go?',
+      ja: '最後にパムが行く気になったのは、なぜ？',
+      choices: ['Jim says he is scared too', 'Michael calls an ambulance', 'The doctor calls her'], a: 0,
+      choicesJa: ['ジムも怖いと言う', 'マイケルが救急車を呼ぶ', '医者から電話が来る'],
+      cue: '「can’t do it」のあとのジムの話。',
       line: 'Pam, *I’m scared*, I’m real scared… But the *best news* is, we’re gonna have a baby today.',
-      said: '「できない」と言う彼女に、相手は「僕も怖い」と認め、「でも今日赤ちゃんに会える」と言う。',
-      mean: '怖さを打ち消さずに認め、楽しみに目を向けさせる。それで彼女も行く気になる。',
-      trap: '陣痛の間隔の話は、行くと決めたあとに出てくる。決め手は順番で確かめる。',
+      said: '「できない」と言うパムに、ジムは「僕も怖い。でも今日赤ちゃんに会える」と言う。',
+      mean: '怖さを打ち消さずに認め、楽しみに目を向けさせる。それでパムも行く気になる。',
+      trap: '救急車の話は、行くと決めたあとに出てくる。順番で確かめる。',
       use: 'I’m nervous too, but it’ll be fun.（私も緊張してる。でもきっと楽しいよ）' },
 
-    // why: on "I" ← the contrast reading (the others can go), the 「私は」 frame; on "am" ← the "yes I AM" pattern
-    //   learners know from arguments, heard as a comeback
     // anchor: 103.8–105.9 s "I'm not going", then at once the full "I am not going, okay?", to people still saying
-    //   "let's go": the same refusal made firmer, with nobody to contrast or contradict
     // retired: a C2 stress item, until its ear check (104.9 s)
     { id: 'nt3', skill: 'sound', level: 'C2', point: 'refuse', seg: [102.5, 107.15], retired: true,
       stem: 'In her second “I am not going”, where is the stress, and why?',
@@ -198,10 +170,7 @@ export const pamLabor: Clip = {
       trap: 'I を強めると「私は」の対比、am なら言い返し。くり返しは2回目で何を強めたかを聞く。',
       use: 'I am not eating that.（それは絶対食べない）' },
 
-    // R fix: blind 75 %: the key was the only two-part, only warm choice; distractors now parallel (feeling + act)
-    // why: annoyed ← "are you kidding me?" is often irritation, and she's holding everyone up; joking ← "kidding"
-    //   literally = 冗談, so it sounds like lightening the mood
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'kidding', reveals: ['fear'], seg: [106.2, 119.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'kidding', reveals: ['fear'], seg: [106.2, 119.1], retired: true,
       stem: 'When Pam says she can’t do it, how is the reply meant?',
       choices: ['Surprised she doubts herself, and backing her', 'Fed up with her stalling, and telling her off',
                 'Joking with her, to take some pressure off'], a: 0,
@@ -212,25 +181,19 @@ export const pamLabor: Clip = {
       trap: '怒りや冗談にも使う表現。どれかは後ろの一文で決まる。決まり文句は次の文とセットで。',
       use: 'Are you kidding? You were great!（何言ってるの、最高だったよ！）' },
 
-    // R fix: blind 70 %: the stem quoted the chunk under test (§9.2); now names the moment. "Allowed" (a filler)
-    //   became a "just try" reading
-    // why: easy ← "anyone can do this" heard alone = anybody could, so it's easy; just try ← "you can do this"
-    //   heard as the soft 「やればできる」, an urging, not a judgement of her
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'anyone', seg: [116.3, 120.8],
-      stem: 'Right after the “Are you kidding?”, what does the next line tell Pam?',
-      choices: ['She is the most able person for this', 'This is so easy that anybody could do it',
-                'She should try it, even if it goes badly'], a: 0,
-      cue: '「If anyone can …」の後半に来る主語。',
+    { id: 'f2', skill: 'pragma', level: 'B2', point: 'anyone', seg: [116.3, 120.8],
+      stem: 'What does “If anyone can…, you can” mean?',
+      ja: '「If anyone can…, you can」とはどういう意味？',
+      choices: ['You are the best for this', 'It is very easy for anyone', 'You should just try it'], a: 0,
+      choicesJa: ['君がいちばんできる人だ', 'とても簡単だ', 'とにかくやってみて'],
+      cue: '「Are you kidding?」のあと。',
       line: '*If anyone can do this, you can* do this.',
-      said: '「誰かにできるなら、それは君だ」とくり返す。',
-      mean: 'If anyone can, you can ＝ 君にできなければ誰にもできない。強い信頼を示す励まし。',
-      trap: '前半だけだと「誰でもできる＝簡単」に聞こえる。この文は後半の主語が主役。',
+      said: '「できる人がいるなら、それは君だ」と励ます。',
+      mean: '君にできなければだれにもできない＝君なら絶対できる。強い励まし。',
+      trap: '前半だけだと「だれでもできる＝簡単」に聞こえやすい。後半の you can が主役。',
       use: 'If anyone can fix it, you can.（直せる人がいるなら君だよ）' },
 
-    // R fix: blind 70 %: the key was the only two-part choice; the wait distractor now shares its "show" frame
-    // why: wait ← "I'm scared" heard as a reason to hold off; not ready ← "petrified" heard as doubt about becoming
-    //   a father
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'scared', reveals: ['fear'], seg: [119.1, 132.3],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'scared', reveals: ['fear'], seg: [119.1, 132.3], retired: true,
       stem: 'After the pep talk, why does he admit to Pam that he’s scared?',
       choices: ['To show she isn’t alone, then turn to the good news', 'To show they’re both shaky, so it’s fine to wait',
                 'To own up to his own doubts about being a father'], a: 0,
@@ -241,35 +204,31 @@ export const pamLabor: Clip = {
       trap: '怖いと言うと「待って」に聞こえるが、But のあとが本題。認めてから向きを変える型。',
       use: 'Honestly, I’m scared too. But we’ve got this.（正直、私も怖い。でも大丈夫）' },
 
-    // why: have it in ← "at" and "in" both shrink before "the"; head out to ← "have it at" ≈ ハヴィラッ is close to
-    //   "head out", and "head out" is said in the crowd before
     { id: 's1', skill: 'sound', level: 'B2', point: 'haveit', seg: [130.6, 135.2],
       stem: 'Fill the gap: “So let’s ___ the hospital.”',
+      ja: '空いている所に入る3語は？',
       choices: ['have it at', 'have it in', 'head out to'], a: 0,
-      cue: '「So let’s」のあと、つながった3語。',
+      choicesJa: ['〜で産む', '〜の中で産む', '〜へ出発する'],
+      cue: '「So let’s」のあと。',
       line: 'So let’s *have it at* the hospital.',
       said: '「だから病院で産もう」と言う。it は赤ちゃん。',
-      mean: 'have it at が「ハヴィラッ」とつながり、t はラ行に近い。',
-      trap: 'head out to でも意味は通るが、直前の have a baby を受けて have it。前の動詞が手がかり。',
-      use: 'Let’s have it at my place.（うちでやろうよ）' },
+      mean: 'have it at が「ハヴィラッ」とひと続き。t は軽い「ラ」の音になる。',
+      trap: 'head out to（〜へ出発）でも意味は通るが、前の have a baby を受けて have it。',
+      use: 'Let’s have lunch at the station.（駅でお昼にしよう）' },
 
-    // why: three ← "four and three minutes" is said right after, as the steps they missed; five ← "warn me at five
-    //   minutes" is the number said with weight
-    { id: 'n2', skill: 'number', level: 'B1', point: 'apart', seg: [135.2, 149.65], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'apart', seg: [135.2, 141], keep: true,
       stem: 'How far apart are the contractions now?',
+      ja: '今、陣痛は何分おき？',
       choices: ['Two minutes', 'Three minutes', 'Five minutes'], a: 0,
-      cue: '「contractions」の質問への、最初の答え。',
+      choicesJa: ['2分', '3分', '5分'],
+      cue: '「contractions」の質問への答え。',
       line: '*Two minutes* apart.',
       said: '陣痛の間隔を聞かれ、「2分おき」と答える。',
-      mean: 'two minutes apart ＝ 2分ごとに来る。間隔が短いほどお産が近い。',
-      trap: 'あとで five や three も出てくる。数字が続いたら、どの質問への答えかで選ぶ。',
+      mean: 'two minutes apart ＝ 2分ごとに来る。間隔が短いほど、お産が近い。',
+      trap: 'あとで five や three も出てくる。どの質問への答えかで選ぶ。',
       use: 'The buses come ten minutes apart.（バスは10分おきに来る）' },
 
-    // R fix: blind 65 %: "reminded of the time, since she asked" didn't fit the scene (she never asks); now a
-    //   literal "check the way" reading, and the key shares the distractors' "asked"
-    // why: which hospital ← "where you're going" read as a real question about a place; the way ← "you know where
-    //   you're going?" read literally, as a check that she knows the route
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'quiz', seg: [148.9, 161.95],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'quiz', seg: [148.9, 161.95], retired: true,
       stem: 'In the quick questions to Pam after “Pamela”, what is going on?',
       choices: ['She’s asked so that she says the plan herself', 'She’s asked which hospital she would like',
                 'She’s asked to confirm she knows the way'], a: 0,
@@ -280,34 +239,31 @@ export const pamLabor: Clip = {
       trap: 'where や what time を本当の質問と取りやすい。答えに Yes で応じたら、確認でなく後押し。',
       use: 'And what are we going to do? Win!（で、どうする？勝つ！）' },
 
-    // R fix: V4: a name plus its order is a detail, not a who told by voices; skill now `detail` (id kept)
-    // why: phones ← Stanley's order opens the list; water ← Meredith's order comes right before Erin's
     { id: 'w1', skill: 'detail', level: 'B1', point: 'stations', seg: [162.6, 169.05],
-      stem: 'In the burst of orders, what is Erin told to do?',
-      choices: ['Call an ambulance', 'Man the phones', 'Get a bottle of water'], a: 0,
-      cue: 'Erin の名前のすぐあとの動詞。',
+      stem: 'What is Erin asked to do?',
+      ja: 'エリンは何をするよう言われる？',
+      choices: ['Call an ambulance', 'Answer the phones', 'Get some water'], a: 0,
+      choicesJa: ['救急車を呼ぶ', '電話番をする', '水を持ってくる'],
+      cue: 'エリンの名前のすぐあと。',
       line: 'Erin, *call an ambulance*, please.',
-      said: '「Stanley は電話番、Meredith は水、Erin は救急車」と次々に指示する。',
-      mean: '名前を呼んでから用件を言う形。誰に何を頼んだかは名前の直後で決まる。',
-      trap: '指示が早口で並ぶので、となりの指示と混ざりやすい。名前と動詞の組で追う。',
+      said: '「スタンリーは電話番、メレディスは水、エリンは救急車」と次々に頼む。',
+      mean: '名前を呼んでから用件を言う形。だれに何を頼んだかは名前の直後で決まる。',
+      trap: '頼みごとが早口で並ぶので、となりの頼みと混ざりやすい。名前と動詞の組で聞く。',
       use: 'Ken, grab the bags. Amy, call a taxi.（ケンは荷物、エイミーはタクシーを）' },
 
-    // why: drive himself ← "we're driving ourselves" comes right after, so it sounds like the reason; cost ← the
-    //   familiar worry about what an ambulance costs
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'ambulance', seg: [167.7, 174.7],
-      stem: 'Why is the call for an ambulance turned down?',
-      choices: ['Ambulances are only for emergencies', 'Jim would rather drive Pam there himself',
-                'Calling one would cost them too much'], a: 0,
-      cue: '「No, no, no」のすぐあとの理由。',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'ambulance', seg: [167.7, 172.5],
+      stem: 'Why don’t they call an ambulance?',
+      ja: 'なぜ救急車を呼ばない？',
+      choices: ['It’s only for emergencies', 'Jim wants to drive her there', 'It would cost too much'], a: 0,
+      choicesJa: ['緊急のときだけのもの', 'ジムが自分で運転したい', 'お金がかかりすぎる'],
+      cue: '「No, no, no」のすぐあと。',
       line: 'No, no, no, *ambulances are emergencies only*.',
-      said: '救急車を呼べという指示を「だめだめ、救急車は緊急時だけ」と止める。',
-      mean: '出産は緊急ではない、という理屈。陣痛2分おきの場面なので、ずれている。',
-      trap: 'すぐあとの「自分たちで運転する」を理由と取りやすい。No のすぐ後ろが理由。',
+      said: '「だめだめ、救急車は緊急のときだけ」と止める。',
+      mean: 'emergencies only ＝ 緊急時のみ。陣痛2分おきなのに、という変な理屈。',
+      trap: 'すぐあとの「自分たちで運転する」を理由と思いやすい。No のすぐあとが理由。',
       use: 'This number is for emergencies only.（この番号は緊急時専用です）' },
 
-    // why: police drive ← cops and cars go together, and an escort comes later; both calls ← "you call…, I call…" heard
-    //   as splitting two calls
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'ambulance', seg: [167.7, 174.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'ambulance', seg: [167.7, 174.7], retired: true,
       stem: 'What does the line about calling the cops warn?',
       choices: ['A call for an ambulance would be reported', 'The police could drive Pam there instead',
                 'Both calls are needed, just to be safe'], a: 0,
@@ -318,32 +274,76 @@ export const pamLabor: Clip = {
       trap: '分担に聞こえるが、直前の No, no, no が反対の合図。対になった文は脅しのことも。',
       use: 'You touch my fries, I eat your cake.（私のポテトに手を出したら、ケーキ食べるよ）' },
 
-    // R fix: blind 60 %: "not allowed to drive a work car" had nothing in the scene behind it; now a role reading
-    // why: sit with Pam ← "I will drive you" heard as a split of jobs, so Jim's job is to look after her; no car ←
-    //   "we're driving ourselves" just before, so the problem sounds like a missing car
+    { id: 'actual', skill: 'marker', level: 'B2', point: 'actually', seg: [172.5, 175.5],
+      stem: 'What does “actually” show in “We’re driving ourselves, actually”?',
+      ja: '「We’re driving ourselves, actually」の actually の働きは？',
+      choices: ['A change of plan', 'A very big surprise', 'A strong no'], a: 0,
+      choicesJa: ['予定を変えること', '大きなおどろき', '強い「いいえ」'],
+      cue: '救急車の話のすぐあと。',
+      line: 'All right, *we’re driving ourselves, actually*.',
+      said: '救急車の話を受けて、「じゃあ、やっぱり自分たちで運転していく」と言う。',
+      mean: '文の最後の actually ＝「やっぱり・実は」。前の話と違う案を出す合図。',
+      trap: 'actually を「実際に」と訳すと、意味がつかみにくい。前の案を変えるときの一言。',
+      use: 'I’ll have tea, actually.（やっぱり紅茶にします）' },
+
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'condition', seg: [173.55, 178.5],
-      stem: 'Why is Jim told he shouldn’t drive?',
-      choices: ['He’s too shaken up to drive safely', 'He should sit in the back with Pam',
-                'He doesn’t have his own car here'], a: 0,
-      cue: '「Jim」の直後、no のあとの名詞。',
+      stem: 'What does “in no condition to drive” mean?',
+      ja: '「in no condition to drive」の意味は？',
+      choices: ['Too upset to drive safely', 'Has no car to drive', 'Does not have a license'], a: 0,
+      choicesJa: ['動揺していて安全に運転できない', '運転する車がない', '運転免許がない'],
+      cue: '「No, Jim」のあと。',
       line: 'Jim, you are *in no condition to drive*.',
-      said: '「Jim、君は運転できる状態じゃない。私が運転する」と言う。',
-      mean: 'in no condition to ～ ＝ ～できる状態にない。慌てた Jim を見ての言葉。',
-      trap: 'condition を「条件」と取ると役割の話に聞こえる。ここでは体や心の「状態」。',
+      said: '「ジム、君は運転できる状態じゃない。私が運転する」と言う。',
+      mean: 'in no condition to 〜 ＝ 〜できる状態じゃない。慌てたジムを見ての言葉。',
+      trap: 'condition を「条件」と思いやすい。ここは体や心の「状態」。',
       use: 'You’re in no condition to work today.（今日は働ける状態じゃないよ）' },
 
-    // R fix: blind 80 %: the key explained the sarcasm and "relieved… easier to carry" was a filler; all three now
-    //   give a feeling plus a reason from the scene
-    // why: amused ← "great" said lightly after a mix-up can be a laugh; calm ← "now" heard as "at least we know now"
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'gobag', seg: [180.5, 186.5],
-      stem: 'When he learns the go bag is empty, how is his “Okay, great” meant?',
-      choices: ['Annoyed; the news comes far too late', 'Calm; better to find out before they go',
-                'Amused; the mix-up strikes him as funny'], a: 0,
-      cue: '「telling me now」の now に込めた気持ち。',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'gobag', seg: [182.5, 186.5],
+      stem: 'The go bag is empty. How does the reply sound?',
+      ja: 'バッグは空っぽ。それへの返事はどんな気持ち？',
+      choices: ['Annoyed', 'Pleased', 'Relaxed'], a: 0,
+      choicesJa: ['いらいらしている', 'うれしい', 'リラックスしている'],
+      cue: '「telling me now」のあと。',
       line: 'You are telling me *now* that there is nothing in it? *Okay, great.*',
-      said: 'バッグが空だと聞き、「今それを言う？ ああ、最高だね」と返す。',
-      mean: 'great は皮肉で「最悪」。you are を縮めず、今さらの不満をぶつけている。',
-      trap: 'great を軽く取ると笑いに聞こえる。悪い知らせの直後の great は皮肉を疑う。',
-      use: 'Oh, great. Just what I needed.（ああ最高。ちょうど欲しかったよ）' },
+      said: 'バッグが空だと聞き、「今それを言う？ああ、最高だね」と返す。',
+      mean: '悪い知らせのあとの Okay, great ＝ 皮肉で「最悪だ」。now に不満が出ている。',
+      trap: 'great から「うれしい」と思いやすい。悪い知らせの直後の great は逆の意味。',
+      use: 'Oh, great. The train is late again.（あーあ、また電車が遅れてる）' },
+
+    { id: 'keys', skill: 'detail', level: 'B1', point: 'keys', seg: [197.5, 204.5],
+      stem: 'What can’t they find before leaving?',
+      ja: '出かける前に、何が見つからない？',
+      choices: ['The keys', 'The wallet', 'The phone'], a: 0,
+      choicesJa: ['かぎ', 'さいふ', '電話'],
+      cue: '「tape measure」の話のあと。',
+      line: 'Okay, I can’t find my *keys*, I cannot find my *keys*. — Found them.',
+      said: '「かぎが見つからない、見つからない」と慌て、すぐ「あった」となる。',
+      mean: 'can’t find ＝ 見つからない。cannot と言い直して焦りを強めている。',
+      trap: '少し前に I have my wallet（さいふは持った）と聞こえるので選びやすい。',
+      use: 'I can’t find my keys.（かぎが見つからない）' },
+
+    { id: 'luck', skill: 'phrase', level: 'B1', point: 'luck', seg: [204.5, 211],
+      stem: 'What does “Wish me luck” mean?',
+      ja: '「Wish me luck」の意味は？',
+      choices: ['Hope it goes well for me', 'Thank you for the nice gift', 'See you again very soon'], a: 0,
+      choicesJa: ['うまくいくよう祈ってて', 'プレゼントをありがとう', 'またすぐ会おうね'],
+      cue: 'みんなの「Good luck」のあと。',
+      line: 'Good luck, Pam. — Thank you. — *Wish me luck*.',
+      said: 'みんなが「がんばって」と送り出し、「幸運を祈ってて」と返す。',
+      mean: 'wish me luck ＝ うまくいくように祈ってて。大事なことの前の決まり文句。',
+      trap: 'Thank you のあとなので、お礼の続きと思いやすい。luck（運）が手がかり。',
+      use: 'I have a job interview. Wish me luck!（面接なんだ。祈っててね）' },
+
+    { id: 'traffic', skill: 'phrase', level: 'B1', point: 'traffic', seg: [224, 231.4],
+      stem: 'What does “What is the traffic like?” ask?',
+      ja: '「What is the traffic like?」は何を聞いている？',
+      choices: ['How busy the roads are', 'What the traffic rules are', 'Where the cars are parked'], a: 0,
+      choicesJa: ['道がどのくらい混んでいるか', '交通ルールは何か', '車がどこに止まっているか'],
+      cue: 'ドワイトの名前のあと。',
+      line: 'Dwight, *what is the traffic like*?',
+      said: '「ドワイト、道の混み具合はどう？」と聞く。',
+      mean: 'What is 〜 like? ＝「〜はどんな感じ？」。traffic ＝ 道の車の流れ。',
+      trap: 'like から「好き」を思いやすい。What … like? は様子を聞く言い方。',
+      use: 'What’s the traffic like to the airport?（空港までの道、混んでる？）' },
   ]
 };
