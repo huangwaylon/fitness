@@ -346,5 +346,12 @@ export const PLANNED: readonly string[] = [
   'empofmonth',
   'bigfight',
   'partyearly',
-  'blackeye'
+  'blackeye',
+  'andyjamie',
+  'laborroom',
+  'gingerbread',
+  'cakerush',
+  'tomfailure',
+  'jerryplace',
+  'lewbjuice'
 ];

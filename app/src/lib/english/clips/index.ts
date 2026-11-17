@@ -349,9 +349,17 @@ import { bigFight } from './bigfight.ts';
 import { joeyTeachesActing } from './joeyacting.ts';
 import { partyEarly } from './partyearly.ts';
 import { leaveTelescope } from './telescope.ts';
+import { cakeRush } from './cakerush.ts';
+import { lewbJuice } from './lewbjuice.ts';
+import { andyJamie } from './andyjamie.ts';
+import { gingerbread } from './gingerbread.ts';
+import { jerryPlace } from './jerryplace.ts';
+import { tomFailure } from './tomfailure.ts';
+import { laborroom } from './laborroom.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
+  andyJamie,
   rossList,
   michaelJim,
   rossMona,
@@ -398,11 +406,13 @@ export const CLIPS: readonly Clip[] = [
   ronRadio,
   dwightPunch,
   singlesNight,
+  gingerbread,
   dwightFetish,
   benpunch,
   dwightAppt,
   andyComputer,
   empOfMonth,
+  tomFailure,
   thiefOfJoy,
   benSaves,
   ronSelfDefense,
@@ -416,6 +426,7 @@ export const CLIPS: readonly Clip[] = [
   iChristmas,
   pilotOpening,
   pamprank,
+  laborroom,
   gameRoom,
   aprilGetFired,
   youngjim,
@@ -483,12 +494,14 @@ export const CLIPS: readonly Clip[] = [
   threeBachelors,
   nutribars,
   rachelJob,
+  cakeRush,
   heroes,
   donnaBully,
   joeyLie,
   carlyRoom,
   officeSetUp,
   joeyDog,
+  jerryPlace,
   saveJJs,
   unsexyRoadTrip,
   weddingFund,
@@ -518,6 +531,7 @@ export const CLIPS: readonly Clip[] = [
   twilightCapsule,
   habits,
   bossAway,
+  lewbJuice,
   animalControl,
   chardStand,
   leslieObama,
