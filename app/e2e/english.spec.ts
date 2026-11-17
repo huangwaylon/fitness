@@ -240,6 +240,7 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await lesson(page).locator('[data-en-to-q]').click();
   // the question's: a quiet link at the card's foot, under its choices, a full hit
   const qf = lesson(page).locator('[data-en-flag="0"]');
+  await expect(qf).toHaveAttribute('aria-label', 'この質問を報告');
   const [fb, lastChoice] = [(await qf.boundingBox())!, (await cardAt(page, 0).locator('[data-choice]').last().boundingBox())!];
   expect(fb.y).toBeGreaterThan(lastChoice.y + lastChoice.height - 1);
   expect(fb.height).toBeGreaterThanOrEqual(44);
@@ -626,6 +627,42 @@ test('場面のあらすじ’s beats: the strip shows the beat on now with its 
   await expect(list.locator(`[data-en-beat-row="${irony}"]`)).toHaveAttribute('aria-current', 'true');
 });
 
+test('ツール’s rows are a level below it: ‹ back to ツール, ✕ to the lesson; opened elsewhere (the strip, a question’s ⚑), ✕ only', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  await start(page);
+  const tools = page.locator('dialog[open] [data-en-tools-sheet]');
+  const top = (sel: string) => page.locator(`dialog[open]:has(${sel}) .navbar`).last();
+  // 場面のあらすじ一覧: ‹ ツール
+  await lesson(page).locator('[data-en-tools]').click();
+  await tools.locator('[data-en-tools-scenes]').click();
+  await expect(page.locator('dialog[open] [data-en-scenes]')).toBeVisible();
+  await top('[data-en-scenes]').locator('.back').click();
+  await expect(page.locator('dialog[open] [data-en-scenes]')).toHaveCount(0);
+  await expect(tools).toBeVisible();
+  // ⚑ この動画を報告: ‹ ツール; ✕ the lesson
+  await tools.locator('[data-en-flag="clip"]').click();
+  await expect(page.locator('dialog[open] [data-en-flag-sheet="clip"]')).toBeVisible();
+  await top('[data-en-flag-sheet]').locator('.back').click();
+  await expect(tools).toBeVisible();
+  await tools.locator('[data-en-flag="clip"]').click();
+  await top('[data-en-flag-sheet]').locator('.close').click();
+  await expect(page.locator('dialog[open] [data-en-flag-sheet]')).toHaveCount(0);
+  await expect(tools).toHaveCount(0);
+  // the strip's list and a question's ⚑: their own sheets, no ‹
+  await sheet(page).locator('[data-en-scene]').click();
+  await expect(top('[data-en-scenes]').locator('.back')).toHaveCount(0);
+  await expect(top('[data-en-scenes]').locator('.close')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await lesson(page).locator('[data-en-to-q]').click();
+  await lesson(page).locator('[data-en-flag="0"]').click();
+  await expect(top('[data-en-flag-sheet]').locator('.back')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  // the lesson's ‹: home, where it was opened
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
+});
+
 test('この動画のフレーズ: from ツール (which says it holds the answers) and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
@@ -659,8 +696,11 @@ test('この動画のフレーズ: from ツール (which says it holds the answe
   const cmds = await from(page, n0, 'seekTo');
   expect(cmds[0][1]).toEqual([moments[1].from, true]);
   expect(cmds.at(-1)![2]).toBeGreaterThanOrEqual(moments[1].to);
-  // ‹ the watch card; then from まとめ, ‹ back to it
+  // ‹ back to ツール (one level), ✕ the watch card; then from まとめ, ‹ back to it
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toBeVisible();
+  await page.locator('dialog[open]:has([data-en-tools-sheet]) .navbar .close').last().click();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toHaveCount(0);
   await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
   await lesson(page).locator('[data-en-to-q]').click();
   while (!(await lesson(page).locator('[data-en-end]').count())) await lesson(page).locator('[data-en-next]').click();
@@ -697,8 +737,11 @@ test('セリフ: from ツール when the bank has lines, every line in time orde
   await expect(rows.nth(4)).toHaveAttribute('aria-current', 'true');
   // playing on (8×): the mark follows the playhead
   await expect.poll(() => lvl.getAttribute('data-en-at')).not.toBe('4');
-  // ‹ the watch card
+  // ‹ back to ツール (it was opened there), its ✕ the watch card
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await page.locator('dialog[open] [data-en-tools-sheet]').waitFor();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toHaveCount(0);
   await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
   // a bank without lines: no セリフ (フレーズ stays)
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
@@ -778,7 +821,7 @@ test('別の動画にする: the next clip, and the one passed over stays skippe
   await expect(sheet(page).locator('[data-en-hard]')).toHaveAttribute('aria-checked', 'true');
 });
 
-test('the library: すべて 20 at a time with もっと見る, a show or a situation chip, a lesson opened there goes back to it; a play left part-way first, 途中', async ({ page }) => {
+test('the library: すべて 20 at a time with もっと見る, one chip row of the shows only, a lesson opened there goes back to it; a play left part-way first, 途中', async ({ page }) => {
   await fakeYoutube(page);
   await open(page);
   // a play left part-way on another clip than today's
@@ -794,6 +837,8 @@ test('the library: すべて 20 at a time with もっと見る, a show or a situ
     await lib.locator('[data-en-more]').click();
     await expect(rows).toHaveCount(Math.min(40, CLIPS.length));
   }
+  // one row of chips: すべて and the shows (the situations are 場面で選ぶ's tiles, never chips too)
+  expect(await lib.locator('[data-en-chip]').evaluateAll((els) => els.map((e) => e.getAttribute('data-en-chip')))).toEqual(['', ...new Set(PLAN.map((c) => metaOf(c).show))]);
   const parks = CLIPS.filter((c) => c.show === 'Parks and Recreation');
   await lib.locator('[data-en-chip="Parks"]').click();
   await expect(lib.locator('[data-en-chip="Parks"]')).toHaveAttribute('aria-pressed', 'true');
@@ -814,7 +859,7 @@ test('the library: すべて 20 at a time with もっと見る, a show or a situ
   await expect(sheet(page).locator('[data-en-lib] [data-en-clip]').first()).toHaveAttribute('data-en-clip', other.id);
 });
 
-test('collections on すべて (those with 4+ clips), each a level: its note, its clips in order, a lesson there goes back to it, ‹ the library', async ({ page }) => {
+test('場面で選ぶ on すべて (situations with 4+ clips, each once), each a level: its note, its clips in order, a lesson there goes back to it, ‹ the library', async ({ page }) => {
   await fakeYoutube(page);
   await open(page);
   const cols = shownOf(PLAN.map(metaOf));
@@ -824,7 +869,9 @@ test('collections on すべて (those with 4+ clips), each a level: its note, it
   await expect(lib.locator('[data-en-colrow]')).toHaveCount(cols.length);
   const work = cols.find((x) => x.c.id === 'work')!;
   const row = lib.locator('[data-en-colrow="work"]');
-  await expect(row).toHaveText(new RegExp(`職場の会話\\s*${work.clips.length}本`));
+  await expect(lib.locator('[data-en-cols]')).toBeVisible();
+  await expect(row).toHaveText(new RegExp(`職場\\s*${work.clips.length}本`));
+  expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await expect(row.locator('.count')).toHaveText(`${work.clips.length}本`); // none finished: no 0本完了
   // a chip's view has none
   await lib.locator('[data-en-chip="Friends"]').click();
@@ -832,7 +879,7 @@ test('collections on すべて (those with 4+ clips), each a level: its note, it
   await lib.locator('[data-en-chip=""]').click();
   await row.click();
   await expect(lib).toHaveAttribute('data-en-col', 'work');
-  await expect(lib.locator('.navbar h2')).toHaveText('職場の会話');
+  await expect(lib.locator('.navbar h2')).toHaveText('職場');
   await expect(lib.locator('[data-en-col-note]')).toHaveText('上司と同僚の会話');
   await expect(lib.locator('[data-en-chip]')).toHaveCount(0);
   const rows = lib.locator('[data-en-list] [data-en-clip]');

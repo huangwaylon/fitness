@@ -10,8 +10,13 @@ describe('collections', () => {
     expect(new Set(COLLECTIONS.map((c) => c.id)).size).toBe(COLLECTIONS.length);
     for (const c of COLLECTIONS) {
       for (const id of c.clips ?? []) expect(CLIPS.some((x) => x.id === id), `${c.id}: ${id}`).toBe(true);
-      for (const t of c.tags ?? []) expect(SITUATIONS, c.id).toContain(t);
+      for (const t of c.tags) expect(SITUATIONS, c.id).toContain(t);
     }
+  });
+
+  it('every situation in exactly one (no group shown twice), every clip’s situations known', () => {
+    for (const t of SITUATIONS) expect(COLLECTIONS.filter((c) => c.tags.includes(t)).length, t).toBe(1);
+    for (const c of CLIPS) for (const t of c.tags) expect(SITUATIONS, c.id).toContain(t);
   });
 
   it('holds the clips with its situations or its ids, in the library’s order; shows only with enough', () => {

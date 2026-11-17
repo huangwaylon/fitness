@@ -51,6 +51,13 @@ transcript is, since 2026-11-16: Transcripts).
 
 One sheet: home, the library, a clip's lesson (‹ back to where it was opened) and ⚙ (むずかしめの質問を増やす, 報告した内容).
 
+**Back (2026-11-17), as 設定's levels:** every pushed level has ‹ at the NavBar's top left and goes back exactly one
+level: ⚙, the library → home; a 場面 → the library; a lesson → where it was opened (home, the library with its chip, or
+the 場面); セリフ and この動画のフレーズ → what opened them (ツール, or まとめ). A paper sheet opened from ツール's row
+(場面のあらすじ一覧, ⚑ この動画を報告) closes and reopens ツール on its ‹ (as 図鑑's ‹ to 設定); opened from elsewhere (the
+あらすじ band, a question's ⚑) it has ✕ only. ✕ is always top right: on English Study's levels it closes the sheet, on a
+paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
+
 - **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
   もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, もう一度 (below), the
   next clips in the plan, すべて見る（N本）›. Today's clip is the first in the plan neither finished nor skipped
@@ -63,10 +70,12 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
   (never in its place), at most once a week: on a week with a study day and no clip finished again yet; a clip
   finished 7+ days ago (28+ once it's had two plays), the one with the most items not met first, then the oldest.
   Its sub line says 新しい質問; ignoring it changes nothing.
-- **The library:** one chip row (すべて, each show, each situation), the clips in order with the part-way first and the
-  finished last (✓, 2回), 20 at a time with もっと見る. On すべて, collections first (`collections.ts`: situation tags,
-  curated ids or both; shown with 4+ clips; 電話の英語, 断り方・お願い, 職場の会話, お店で, カメラに話す本音, 旅行), a row
-  「N本 · N本完了 ›」 and a level of its own: its note, its clips, no chips. Not courses: no order, nothing locked. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
+- **The library:** one chip row by show (すべて, each show), the clips in order with the part-way first and the
+  finished last (✓, 2回), 20 at a time with もっと見る. On すべて, **場面で選ぶ** first (`collections.ts`): a tile a
+  situation in two columns (職場, 友だち, 恋愛, 家, お願い・断り, お店 = 店・レストラン + 買い物, 電話, 旅行; a few curated
+  ids join; shown with 4+ clips), 「N本 · N本完了 ›」, each a level of its own: its note, its clips, no chips. Each
+  situation is reachable one way only (never a chip as well): one row of pills at a time. Not courses: no order,
+  nothing locked. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
   no referrer); offline or gone, a paper tile with the show's name.
 - **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into a first play; a C2 item's card
   carries a むずかしめ tag. Nothing is locked either way.

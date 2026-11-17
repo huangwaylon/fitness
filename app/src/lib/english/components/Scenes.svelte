@@ -4,15 +4,15 @@
   // with beats: finer steps), else the scene. `strip` false (a question open, or あらすじ off): no line, the list still
   // there for ツール. Tapped (or `open` from ツール): a sheet of every scene, its time then its line, and its beats under
   // it (time, category, line), the one on now marked; a chip row filters the beats by category; one tapped plays from
-  // there. Our own outline (scenes/<video>.json), never the lines.
+  // there; opened from ツール, its ‹ goes back there (`onback`). Our own outline (scenes/<video>.json), never the lines.
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { atTime, BEAT_KINDS, beatsByScene } from '../scenes.ts';
   import { clock, s } from '../i18n.ts';
   import type { Beat, BeatKind, Scene } from '../types.ts';
 
-  type Props = { scenes: readonly Scene[]; beats?: readonly Beat[]; time: number; onplay: (from: number) => void; strip: boolean; open: boolean };
-  let { scenes, beats, time, onplay, strip, open = $bindable() }: Props = $props();
+  type Props = { scenes: readonly Scene[]; beats?: readonly Beat[]; time: number; onplay: (from: number) => void; strip: boolean; open: boolean; onback?: (() => void) | null };
+  let { scenes, beats, time, onplay, strip, open = $bindable(), onback = null }: Props = $props();
   const at = $derived(atTime(scenes, time));
   const bAt = $derived(beats ? atTime(beats, time) : -1);
   const beat = $derived(beats?.[bAt]);
@@ -29,7 +29,7 @@
   <span class="ja">{beat?.ja ?? scenes[at].ja}</span><Icon name="chevron-right" size={16} />
 </button>{/if}
 
-<Sheet bind:open title={s('scenesTitle')} name="english-scenes">
+<Sheet bind:open title={s('scenesTitle')} {onback} name="english-scenes">
   <div class="list" data-en-scenes>
     <p class="note">{s('scenesNote')}</p>
     {#if beats && by}

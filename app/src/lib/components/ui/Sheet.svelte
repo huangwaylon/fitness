@@ -56,6 +56,8 @@
     title?: string;
     variant?: 'paper' | 'top' | 'pop' | 'full';
     onclose?: () => void;
+    /** ‹ (a paper sheet opened in place of its parent's row: ツール's): it closes, then this reopens the parent. */
+    onback?: (() => void) | null;
     /** A backdrop tap or Esc: false keeps the sheet open (トレイル's: a level inside goes back first). */
     ondismiss?: () => boolean;
     children: Snippet;
@@ -73,7 +75,7 @@
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
-  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
+  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, onback = null, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
   const forms = new Set<() => boolean>();
@@ -202,6 +204,9 @@
     return true;
   }
 
+  /** ‹: this closes, the parent (onback) reopens. */
+  const backUp = () => guard(() => ((open = false), onback?.()));
+
   /** A tap on the scrim (ui/scrim.ts). */
   function backdrop(e: MouseEvent) {
     if (onScrim(e, dlg) && dismissed()) open = false;
@@ -213,7 +218,7 @@
   {#if open || kept}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => guard(() => (open = false))} /></div>{/if}
+      {#if variant === 'paper'}<div class="bar"><NavBar {title} onback={onback ? backUp : null} onclose={() => guard(() => (open = false))} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}

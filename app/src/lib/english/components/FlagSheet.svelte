@@ -19,8 +19,10 @@
     n: number | null;
     /** The player's time now, s (null: none). */
     time: () => number | null;
+    /** Opened from ツール: ‹ back there. */
+    onback?: (() => void) | null;
   }
-  let { open = $bindable(), clip, q, n, time }: Props = $props();
+  let { open = $bindable(), clip, q, n, time, onback = null }: Props = $props();
   let kind = $state<EflagKind>('other');
   let note = $state('');
   let done = $state(false);
@@ -38,7 +40,7 @@
   }
 </script>
 
-<Sheet bind:open title={s('flag')} name="english-flag">
+<Sheet bind:open title={s('flag')} {onback} name="english-flag">
   <div class="fl" data-en-flag-sheet={n ?? 'clip'}>
     {#if done}
       <p class="thanks" data-en-flag-thanks>{s('flagThanks')}</p>

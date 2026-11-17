@@ -9,8 +9,8 @@
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
   // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度.
   // The bar has one labelled button, ツール (StudySheet): 字幕, its size, あらすじ, the scene list, セリフ, この動画のフレーズ,
-  // ⚑ この動画を報告 and the credit. この動画のフレーズ (ツール's, and まとめ's) is a level of its own under the same player,
-  // ‹ back to where it was (ClipPhrases); セリフ (a bank with transcript lines only) another, the whole transcript
+  // ⚑ この動画を報告 and the credit. Each opened from ツール has ‹ back to ツール. この動画のフレーズ (ツール's, and まとめ's) is
+  // a level of its own under the same player, ‹ back to where it was (ClipPhrases); セリフ (a bank with transcript lines only) another, the whole transcript
   // following the playhead (Transcript).
   // A bank with scenes shows 場面のあらすじ in one place, directly under the video (Scenes; ツール hides it on this phone):
   // on the watch card, at まとめ and in the levels, never on a question (a gist line would answer it).
@@ -243,20 +243,28 @@
   /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
   const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
   const flag = (i: number | null) => ((flagQ = i), (flagOpen = true));
-  /** ツール's rows. */
-  const fromTools = (to: 'scenes' | 'lines' | 'phrases' | 'flag') => (to === 'scenes' ? (sceneList = true) : to === 'flag' ? flag(null) : toStudy(to));
+  /** ツール's rows. What one opens is a level below ツール: its ‹ goes back to ツール (one level, as 図鑑's to 設定). */
+  let viaTools = $state(false);
+  const fromTools = (to: 'scenes' | 'lines' | 'phrases' | 'flag') => ((viaTools = true), to === 'scenes' ? (sceneList = true) : to === 'flag' ? flag(null) : toStudy(to));
+  const toTools = () => ((viaTools = false), (tools = true));
+  // closed by ✕ (or opened from elsewhere next time): no way back to ツール
+  $effect(() => {
+    if (!sceneList && !flagOpen && !study) untrack(() => (viaTools = false));
+  });
+  /** A level's ‹: back to where it was opened, the lesson's card or ツール. */
+  const studyBack = () => (toStudy(false), viaTools && toTools());
 </script>
 
 <section class="screen" role="presentation" data-en-lesson={clip.id} data-en-at={at} onpointerdown={input} onkeydown={input}>
   <div class="top">
-    {#if study}<NavBar pad title={study === 'lines' ? s('transcript') : s('phrases')} onback={() => toStudy(false)} {onclose} />
+    {#if study}<NavBar pad title={study === 'lines' ? s('transcript') : s('phrases')} onback={studyBack} {onclose} />
     {:else}<NavBar pad title={clip.title} {onback} {onclose} {trailing} />{/if}
   </div>
   {#snippet trailing()}
     <NavButton kind="tool" icon="list" text={s('tools')} sfx="open" popup data-en-tools onclick={() => (tools = true)} />
   {/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
-  {#if scenes}<Scenes {scenes} {beats} {strip} bind:open={sceneList} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
+  {#if scenes}<Scenes {scenes} {beats} {strip} bind:open={sceneList} onback={viaTools ? toTools : null} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
   <Controls {player} oncc={captions} />
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
@@ -319,7 +327,7 @@
               </details>
             </div>
           {/if}
-          <button type="button" class="quiet flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
+          <button type="button" class="quiet flag" aria-label={s('flagQRow')} data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
         </article>
       {/key}
     {:else}
@@ -358,7 +366,7 @@
   </div>
 </section>
 <StudySheet bind:open={tools} {player} onmode={captions} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} lines={!!full?.lines?.length} ongo={fromTools} credit={clip.credit} />
-<FlagSheet bind:open={flagOpen} {clip} q={flagQ === null ? null : (qs[flagQ] ?? null)} n={flagQ} time={() => (player ? player.now() : null)} />
+<FlagSheet bind:open={flagOpen} {clip} q={flagQ === null ? null : (qs[flagQ] ?? null)} n={flagQ} time={() => (player ? player.now() : null)} onback={viaTools && flagQ === null ? toTools : null} />
 
 <style>
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }

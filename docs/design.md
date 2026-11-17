@@ -234,7 +234,7 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 
 - **The title bar** is `ui/NavBar` on every sheet, panel and level: 48px, the title centred (18, `--font-ui` 700). ✕
   top-right closes the whole sheet from any level; ‹ top-left only on a level (or a sheet opened in place of its
-  parent's row: 図鑑, ‹ back to 設定); they never swap or move. Backdrop tap and Esc also close.
+  parent's row: 図鑑, ‹ back to 設定; English Study's ツール rows, ‹ back to ツール: `Sheet onback`); they never swap or move. Backdrop tap and Esc also close.
 - **A half-filled form asks first** (`ui/discard.svelte.ts`): while a form holds unsaved input (結婚式's task form,
   ごはん's recipe / custom food / quick editors), ✕, the backdrop, Esc and the editor's ‹ ask to discard
   (「入力した内容を破棄しますか？」 [破棄する] [編集を続ける]). Untouched, they close at once.
