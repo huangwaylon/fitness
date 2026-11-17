@@ -55,7 +55,7 @@ export const snowCones: Clip = {
       stem: 'What does “Why don’t you go…?” mean here?',
       ja: '「Why don’t you go…?」は、ここではどういう意味？',
       choices: ['Go and do that', 'Tell me the reason', 'You did it well'], a: 0,
-      choicesJa: ['それでもやってきたら', '理由を教えて', '上手にやったね'],
+      choicesJa: ['それをやってきたら', '理由を教えて', '上手にやったね'],
       cue: '最後の instead まで',
       line: '*Why don’t you go* solder a chair *instead*?',
       said: '「代わりに椅子でもはんだ付けしてきたら？」と言う。',

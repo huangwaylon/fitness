@@ -76,7 +76,7 @@ export const babySex: Clip = {
       stem: 'How long will the doctor be out?',
       ja: '医者はいつまで不在？',
       choices: ['For the rest of the day', 'For the rest of the week', 'Until later this morning'], a: 0,
-      choicesJa: ['今日はずっと', '今週はずっと', '今朝のうちだけ'],
+      choicesJa: ['今日はずっと', '今週はずっと', '今朝の少しあとまで'],
       cue: '「Oh no」のあと', line: 'Oh no, he’s *out for the rest of the day*.',
       said: '電話して「今日はもう戻らないって」と言う。',
       mean: 'be out ＝ 不在。the rest of the day ＝ 今日の残り全部。',

@@ -153,7 +153,7 @@ export const waitress: Clip = {
       stem: 'What does Terry tell Rachel?',
       ja: 'テリーはレイチェルに何と言う？',
       choices: ['Her work is really bad', 'She can have the money', 'She can go skiing'], a: 0,
-      choicesJa: ['仕事ぶりが本当にひどい', 'お金を貸してもいい', 'スキーに行ってもいい'],
+      choicesJa: ['仕事ぶりが本当にひどい', 'お金を前借りしてもいい', 'スキーに行ってもいい'],
       cue: '名前を2回呼んだあと',
       line: 'you’re a *terrible, terrible waitress*. Really, really awful.',
       said: 'テリーは頼みに答えず、「君はひどいウェイトレスだ」と言う。',

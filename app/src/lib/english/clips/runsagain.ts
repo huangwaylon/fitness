@@ -27,7 +27,7 @@ export const runsAgain: Clip = {
       stem: 'What does Ben tell Leslie at the start?',
       ja: '最初にベンはレスリーに何と言う？',
       choices: ['Leaving the council is best', 'She will be back there soon', 'She should get her things back'], a: 0,
-      choicesJa: ['議会を離れるのが一番いい', 'すぐ戻れる', '荷物を取りに戻るべき'],
+      choicesJa: ['議会を離れるのが一番いい', 'すぐそこに戻る', '荷物を取り戻すべき'],
       cue: '「trust me」まで',
       line: 'getting away from the city council is *absolutely the best thing for you*',
       said: '荷物を片付けるレスリーに、「議会を離れるのが一番だよ」と言う。',

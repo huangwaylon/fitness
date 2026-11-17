@@ -270,7 +270,7 @@ export const sebastian: Clip = {
     // A2: was an infer on why Jerry mentions his medication (long choices); now what the two share
     { id: 'i3', skill: 'detail', level: 'B1', point: 'meds', reveals: ['jerry'], seg: [63.6, 70.5],
       stem: 'What do Jerry and the horse both take?',
-      ja: 'ジェリーと馬が二人とも飲んでいるものは？',
+      ja: 'ジェリーと馬がどちらも飲んでいるものは？',
       choices: ['The same medicine', 'The same vitamins', 'The same food'], a: 0,
       choicesJa: ['同じ薬', '同じビタミン剤', '同じエサ'],
       cue: '「Yes, I am」のあと',
@@ -284,7 +284,7 @@ export const sebastian: Clip = {
       stem: 'Why does Ben say “I just gotta be honest”?',
       ja: 'ベンはなぜ「I just gotta be honest」と言う？',
       choices: ['He is about to disagree', 'He is about to say yes', 'He is about to say sorry'], a: 0,
-      choicesJa: ['反対の意見を言うため', '賛成するため', '謝るため'],
+      choicesJa: ['これから反対意見を言うから', 'これから賛成するから', 'これから謝るから'],
       cue: '「Yeah」のあとの中身',
       line: 'Yeah, I just *gotta be honest*. I don’t know what the big deal is.',
       said: '「うん、正直言うと、何がすごいのか分からない」と答える。',
