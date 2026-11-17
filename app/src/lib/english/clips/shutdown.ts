@@ -109,7 +109,7 @@ export const shutdown: Clip = {
       line: 'School is out in *two weeks*.',
       said: '「学校はあと2週間で休みに入る。子どもを一日中どうすればいいの」と言う。',
       mean: 'School is out ＝ 学校が休みに入る。公園が閉まると、休み中の行き場がなくなる。',
-      trap: '前に聞いた months（か月）に引っぱられやすい。two のあとの weeks まで聞く。',
+      trap: 'ten なら「テン」で始まる。two のあとが days、weeks、months のどれかまで聞く。',
       use: 'School’s out in a week.（あと1週間で学校が休みだ）' },
 
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'home', seg: [44.4, 49.6], retired: true,
@@ -154,7 +154,7 @@ export const shutdown: Clip = {
       line: 'we need to cut expenditures by *32%*.',
       said: '「赤字のため、支出を32パーセント減らす必要がある」と言う。',
       mean: 'cut 〜 by 32% ＝ 〜を32%減らす。expenditures ＝ 支出（硬い語）。',
-      trap: 'すぐあとに 40 が出るので、最後に聞いた数に引っぱられやすい。by のすぐあとを聞く。',
+      trap: '22なら「トゥエ」で始まる。thirty で止まれば30。40はすぐあとに出る別の数。',
       use: 'We need to cut costs by ten percent.（経費を10%削らないと）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], seg: [64.4, 72.3],

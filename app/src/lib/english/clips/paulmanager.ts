@@ -236,7 +236,7 @@ export const paulManager: Clip = {
       line: 'a prototype of the 2023 Pear phone. It has like *11 cameras*.',
       said: '「2023年モデルの試作品で、カメラが11個くらいある」と自慢する。',
       mean: '数の前の like ＝ だいたい、〜くらい。eleven は「イレヴン」。',
-      trap: 'eleven の最初の「イ」が弱いと seven に近い。seven なら「セ」で始まる。',
+      trap: 'seven なら「セ」、twenty なら「トゥエ」で始まる。「イレ」と聞こえたら11。',
       use: 'It takes like ten minutes.（10分くらいかかるよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'chickcard', seg: [250.3, 260.9],

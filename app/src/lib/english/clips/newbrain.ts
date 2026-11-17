@@ -44,7 +44,7 @@ export const joeyBrain: Clip = {
       said: '「僕の役が、長い眠りから目を覚ますんだ！」と話す。',
       mean: 'come out of a coma ＝ 意識が戻る。come out of ＝ 〜から出てくる。',
       trap: 'coming だけ聞くと、これから入る話にも聞こえやすい。out of まで聞けば「出てくる」。',
-      use: 'She’s finally coming out of her shell.（彼女、やっと打ち解けてきた）' },
+      use: 'He’s coming out of the store now.（彼、今お店から出てくるところ）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'coma', seg: [7.5, 12.6],
       stem: 'Type: “My character is ___ his coma!” (3 words)', answer: 'coming out of',

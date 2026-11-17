@@ -111,7 +111,7 @@ export const ronsKey: Clip = {
       cue: 'for the のあと、time の前。', line: 'You only get to see the second Twilight film *for the seventh time* once.',
       said: '「2作目を7回目に見られるのは一度きりなのに」と怒っている。',
       mean: 'for the seventh time ＝ 7回目に。同じ映画を何度も見るほど好き。',
-      trap: 'second（2作目）も聞こえるので2を選びやすい。time の前は seventh（セヴンス）。',
+      trap: 'second（2作目）も聞こえるので2を選びやすい。sixth は「シクス」、ここは「セヴンス」。',
       use: 'This is my third time here.（ここに来るのは3回目です）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'didmake', seg: [108.1, 114.2],

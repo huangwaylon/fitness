@@ -189,7 +189,7 @@ export const dwightVotes: Clip = {
       line: 'a nice tidy *quarter of a thousand dollars* from all of us.',
       said: '「きっちり1000ドルの4分の1、みんなから」と言う。',
       mean: 'quarter ＝ 4分の1。quarter of a thousand ＝ 250。わざと回りくどく言っている。',
-      trap: 'thousand だけ聞くと1000、quarter から25セントを思いやすい。1000の4分の1。',
+      trap: 'thousand だけだと1000、quarter から25を思いやすい。750なら three quarters と言う。',
       use: 'That’s a quarter of the price.（定価の4分の1だよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'notaking', reveals: ['jimwins'], seg: [150.9, 158.25],

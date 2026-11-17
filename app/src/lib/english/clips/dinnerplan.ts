@@ -270,7 +270,7 @@ export const dinnerplan: Clip = {
       line: 'I only have *six* wine glasses, so it will be me and Jan… and Angela and Andy.',
       said: '「グラスは6個だけ。だから僕とジャン、…、アンジェラとアンディ」と数える。',
       mean: 'I only have 〜 ＝ 〜しかない。6個 ＝ 6人。3組のカップルでちょうど埋まる。',
-      trap: 'only で少なく感じて4と思いやすい。sixteen なら「ティーン」が長い。six は短い一語。',
+      trap: 'only から少なく思いやすいが、four なら「フォー」。sixteen なら「ティーン」が長い。',
       use: 'I only have two tickets.（チケットは2枚しかない）' },
   ]
 };

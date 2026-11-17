@@ -60,7 +60,7 @@ export const iceClown: Clip = {
       line: 'I took a video of him at the hospital *an hour ago*.',
       said: '「1時間前に病院で彼の動画を撮った」と言う。',
       mean: 'an hour ago ＝ 1時間前。an と hour がつながり「アナワー」。',
-      trap: 'an が弱くつながるので、前に half があったように感じやすい。「ハーフ」は聞こえない。',
+      trap: '「ハーフ」は聞こえない。two hours なら「トゥー」、a day なら「デイ」。ここは an hour。',
       use: 'I called an hour ago.（1時間前に電話しました）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'hadto', seg: [19.6, 24.0],
@@ -127,7 +127,7 @@ export const iceClown: Clip = {
       line: 'But now, *20 years later*…',
       said: '「しかし今、20年がたち…」と式典が始まる。',
       mean: '20 years later ＝ 20年後。あとでレスリーも「20年前」と言う。',
-      trap: 'twelve なら最後が「ルヴ」、thirty なら「サー」で始まる。「トゥエンティ」なら20。',
+      trap: 'ten は「テン」、twelve は最後が「ルヴ」、thirty は「サー」。「トゥエンティ」なら20。',
       use: 'Twenty years later, we met again.（20年後、また会った）' },
 
     { id: 't1', skill: 'attitude', level: 'C1', point: 'possible', seg: [59.2, 70.2], retired: true,

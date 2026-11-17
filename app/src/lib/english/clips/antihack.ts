@@ -105,7 +105,7 @@ export const antiHack: Clip = {
       line: 'a press conference about the Pawnee Commons *in two hours*',
       said: '「2時間後に、コモンズについての記者会見がある」と言う。',
       mean: 'in two hours ＝ 今から2時間後。「2時間以内」ではなく、その時を指す。',
-      trap: 'two だけ聞いて単位を落としやすい。hours（時間）か days（日）かまで聞く。',
+      trap: 'an hour なら two がない。two のあと、hours（時間）か days（日）かまで聞く。',
       use: 'The bus leaves in two hours.（バスは2時間後に出る）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'typewriter', seg: [63.5, 66.7],
@@ -211,7 +211,7 @@ export const antiHack: Clip = {
       line: 'You’ve claimed construction will take *18 months*',
       said: '記者が「工事は18か月とのことですが、もっと長いと聞きました」と迫る。',
       mean: 'eighteen は後ろの「ティーン」を強く長く言う。eighty は前の「エイ」が強い。',
-      trap: 'much longer が続くので大きい数に引かれやすい。強く言う所と、months まで聞く。',
+      trap: '8なら「エイト」と短く、80は前が強い。「ティーン」が長く、months まで聞けば18か月。',
       use: 'It takes about eighteen minutes.（18分くらいかかる）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'deny', seg: [137.35, 142.0], retired: true,
