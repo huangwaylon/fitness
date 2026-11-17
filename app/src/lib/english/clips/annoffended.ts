@@ -21,7 +21,7 @@ export const annOffended: Clip = {
       line: 'I wish I could stay, I really do, but I *have to* go help Ann.',
       said: 'レスリーが「本当はいたいけど、アンを手伝いに行かなきゃ」と言う。',
       mean: 'have to ＝ 〜しなきゃ。「ハフタ」と短く聞こえる。',
-      trap: 'had to は「ハッドゥ」、want to は「ワナ」。ここは「ハフタ」。',
+      trap: 'had to は「ハットゥ」、want to は「ワナ」。ここは「ハフタ」。',
       use: 'I wish I could stay, but I have to go.（いたいけど、もう行かなきゃ）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'cram', seg: [0, 7.4],
       stem: 'Why does Ann need Leslie’s help tonight?', ja: 'アンはなぜ今夜レスリーの助けが要る？',

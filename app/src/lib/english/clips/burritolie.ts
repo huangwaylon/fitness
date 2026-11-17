@@ -122,7 +122,7 @@ export const jerryBurritoLie: Clip = {
       line: 'The mayor is going to divert *$2,500* to the parks',
       said: 'ポールが「市長が公園に2500ドル回す」と言う。',
       mean: 'twenty-five hundred ＝ 2,500。英語では「25の100」とも言う。divert ＝ 回す。',
-      trap: 'twenty-five hundred を 25 や 25,000 と思いやすい。hundred（百）を聞く。',
+      trap: '250 なら two-fifty。2,000 と 25,000 なら最後が「サウザンド」。ここは最後が「ハンドレッド」。',
       use: 'It costs twenty-five hundred yen.（2,500円です）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'security', seg: [74.4, 80.3],
       stem: 'What is the mayor’s money for?', ja: '市長のお金は何のため？',

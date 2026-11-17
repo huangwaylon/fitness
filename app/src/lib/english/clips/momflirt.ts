@@ -40,7 +40,7 @@ export const momFlirt: Clip = {
       line: 'Well, *now that* I’m a pushover, why not ask for 10?',
       said: 'ベンが「ぼくが押しに弱い男になった今、10台でも頼めば？」と言う。',
       mean: 'now that 〜 ＝ 〜になった今は。that は小さく短く「ザッ」。pushover ＝ 押しに弱い人。',
-      trap: 'not that なら「ナッ」と短く切れる。ここは「ナウ」と伸びて、that がはっきり続く。',
+      trap: 'not that なら「ナッ」と短く切れる。now, as なら「アズ」が聞こえる。ここは「ナウ」のあと that。',
       use: 'Now that you’re here, let’s start.（来てくれたし、始めよう）' },
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'yachts', reveals: ['topics'], seg: [21.0, 28.4], retired: true,
       stem: 'When Ben answers the news of the bigger request, how does he sound?',
@@ -268,7 +268,7 @@ export const momFlirt: Clip = {
       line: '*Four buses.* — *Two.* — *Deal.*',
       said: '「バス4台」「2台」「決まり」と短くやりとりする。',
       mean: 'Deal ＝ それで決まり。直前の数に「OK」と言う言葉。',
-      trap: '最初に聞こえる four を選びやすい。Deal は最後の Two への返事。',
+      trap: '10は最初の要求、four は次の数。Deal は最後の Two への返事。',
       use: 'Twenty dollars? — Fifteen. — Deal.（20ドル？—15。—決まり）' },
   ]
 };

@@ -260,7 +260,7 @@ export const ronChrisCrib: Clip = {
       line: 'that toxic crib you bought *won’t* be the last mistake you make.',
       said: 'ロンが「あの危ないベッドが、最後の失敗にはならない」と言う。',
       mean: 'won’t ＝ will not。「ウォウン」と口を丸め、t はほぼ聞こえない。',
-      trap: 'will なら「ウィル」で t がない。would は「ウッド」。ここは口を丸める「ウォウン」。',
+      trap: 'will なら「ウィル」、would なら「ウッド」。ここは口を丸めて「ウォウン」と伸ばす。',
       use: 'It won’t be easy.（簡単じゃないよ）' },
   ]
 };

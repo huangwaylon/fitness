@@ -50,7 +50,7 @@ export const roomie: Clip = {
       line: 'I’ve been staying at the Pawnee Super Suites Motel *for seven months*.',
       said: 'ベンが「ポーニーのモーテルに、もう7か月泊まってる」と言う。',
       mean: 'I’ve been staying 〜 for … ＝ …の間ずっと〜に泊まっている。month ＝ 月。',
-      trap: 'seven のあとの語を落としやすい。months（マンス）まで聞く。eleven なら「イレ」で始まる。',
+      trap: 'days なら「デイズ」、weeks なら「ウィークス」。eleven は「イレ」で始まる。ここは seven「マンス」。',
       use: 'I’ve been staying here for a week.（ここに1週間泊まっています）' },
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'motel', reveals: ['need'], seg: [18.0, 29.4],
       stem: 'How does Ben feel about the motel?', ja: 'ベンはモーテルのことをどう思っている？',

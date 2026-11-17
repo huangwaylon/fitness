@@ -212,13 +212,13 @@ export const treatTurnabout: Clip = {
       use: 'Look, but don’t be obvious.（見て、でもさりげなくね）' },
     { id: 'h1', skill: 'humor', level: 'B1', point: 'groban', reveals: ['fish'], seg: [72.9, 81.8],
       stem: 'What is the famous man behind them eating?', ja: '後ろの有名人は何を食べている？',
-      choices: ['His own fish', 'Tom’s sushi', 'A soft shell crab'], a: 0,
-      choicesJa: ['自分が持っていた魚', 'トムのすし', 'ソフトシェルクラブ'],
+      choices: ['His own fish', 'Tom’s sushi', 'Donna’s sushi'], a: 0,
+      choicesJa: ['自分が持っていた魚', 'トムのすし', 'ドナのすし'],
       cue: '「Josh Groban!」のあと',
       line: 'Josh Groban! — He’s eating *his own sushi*!',
       said: 'トムが「ジョシュ・グローバンだ！自分の魚のすしを食べてる！」と叫ぶ。',
       mean: 'his own ＝ 彼自身の。この店の魚は有名人のものだった。そこが笑いどころ。',
-      trap: 'soft shell crab（ソフトシェルクラブ）が聞こえるが、それは注文の声。',
+      trap: 'Look behind you（後ろを見て）のあとなので、二人のすしと思いやすい。his own を聞く。',
       use: 'That’s the coolest thing I’ve ever seen!（今まで見た中でいちばんかっこいい！）' },
   ]
 };

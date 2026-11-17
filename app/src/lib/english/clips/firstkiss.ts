@@ -41,7 +41,7 @@ export const benLeslieKiss: Clip = {
       line: 'I feel like we *have to at least* talk about it.',
       said: 'ベンが「せめて話し合うくらいはしないと」と言う。',
       mean: 'at least ＝ せめて。at last ＝ ついに。have to は「ハフタ」。',
-      trap: 'had to は「ハッドゥ」、at last は「ラースト」。ここは「ハフタ」と「リースト」。',
+      trap: 'had to は「ハットゥ」、at last は「ラースト」。ここは「ハフタ」と「リースト」。',
       use: 'Let’s at least try.（せめてやってみよう）' },
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'justme', reveals: ['liked'], seg: [39.9, 49],
       stem: 'Ben asks, “It’s not just me, right?” What is he checking?', ja: 'ベンの「It’s not just me, right?」は何を確かめている？',
