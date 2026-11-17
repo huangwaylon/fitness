@@ -145,7 +145,7 @@ export const youngjim: Clip = {
       cue: 'Dwight and I のすぐあと。', line: 'Dwight and I *used to* go on sales calls all the time.',
       said: '「ドワイトとは前によく営業に回った」と言う。',
       mean: 'used to ＝ 以前はよく〜した。「ユースタ」とつながる。',
-      trap: 'had to も「タ」で終わる。最初の「ユー」で聞き分ける。',
+      trap: 'had to なら「ハットゥ」、have to なら「ハフタ」。「ユー」で始まれば used to。',
       use: 'I used to live near here.（昔この近くに住んでたんだ）' },
     { id: 'h4', skill: 'humor', level: 'C1', point: 'warn', seg: [82.6, 92.6], retired: true,
       stem: 'Why does the end of Jim’s comment to the camera get a laugh?',

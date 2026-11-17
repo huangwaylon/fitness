@@ -209,8 +209,8 @@ export const ronpothole: Clip = {
     { id: 'p3', skill: 'pragma', level: 'C1', point: 'recall', seg: [186.5, 191.0],
       stem: 'Ron says, “I don’t recall inviting you in.” Meaning?',
       ja: 'ロンの「I don’t recall inviting you in」の意味は？',
-      choices: ['You weren’t invited in', 'I forgot I invited you', 'Why did you come in?'], a: 0,
-      choicesJa: ['君を招いてはいない', '招いたのを忘れた', 'なぜ入ってきたの？'],
+      choices: ['You weren’t invited in', 'I forgot I invited you', 'I asked you to come in'], a: 0,
+      choicesJa: ['君を招いてはいない', '招いたのを忘れた', '君を招き入れた'],
       cue: 'A, で始まる文。',
       line: 'A, *I don’t recall inviting you in here*.',
       said: '「まず、君を部屋に招いた覚えはない」と言う。',
@@ -297,7 +297,7 @@ export const ronpothole: Clip = {
       line: 'the *3-1-1* program is a moderate success.',
       said: '「311の制度は、まあまあの成功だ」と言う。',
       mean: '311 は市民が役所に困りごとを伝える番号。ここでは穴の通報のこと。',
-      trap: '911 はよく知る数なので引かれやすい。「スリー」で始まる。four なら「フォー」。',
+      trap: 'nine なら「ナイン」、four なら「フォー」で始まる。「スリー」で始まれば311。',
       use: 'Call 3-1-1 to report a pothole.（道路の穴は311に通報を）' },
   ]
 };

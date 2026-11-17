@@ -94,7 +94,7 @@ export const ronsReviews: Clip = {
       line: 'too sad for you to have *six cats*.',
       said: '「猫6匹も飼うなんて悲しすぎると思って、断った」と言う。',
       mean: 'six cats ＝ 6匹の猫。six のすぐあとに cats が来る。',
-      trap: 'sixteen は「ティーン」と長く、sixty は「シクスティ」。ここは「シックス」だけ。',
+      trap: 'two なら「トゥー」、sixteen は「ティーン」と長く、sixty は「シクスティ」。ここは「シックス」だけ。',
       use: 'I have two cats and a dog.（猫2匹と犬1匹を飼ってる）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'turndown', seg: [42.3, 48.2],

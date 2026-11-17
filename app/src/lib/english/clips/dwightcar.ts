@@ -69,7 +69,7 @@ export const dwightCar: Clip = {
       choices: ['A scratch and a sagging bumper', 'A dent and a sagging bumper', 'A scratch and two flat tires'], a: 0,
       choicesJa: ['傷と、下がったバンパー', 'へこみと、下がったバンパー', '傷と、パンクしたタイヤ2本'],
       cue: '短く言う二つの指摘。',
-      line: '*Scratch.* — That’s a racing stripe. — *Bumper sagging.*',
+      line: '*Scratch.* — It’s a racing stripe. — *Bumper sagging.*',
       said: '車を見ながら「傷」「バンパーが下がってる」と短く言う。',
       mean: 'scratch ＝ 傷。sag ＝ たれ下がる。欠点を並べて、車の値打ちを下げる。',
       trap: '車の欠点でよくある「へこみ」「パンク」を思いやすい。言った語そのものを聞く。',
