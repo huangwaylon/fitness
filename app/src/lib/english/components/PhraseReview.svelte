@@ -7,7 +7,7 @@
   import Icon from '#lib/components/ui/Icon.svelte';
   import Player from './Player.svelte';
   import { loadBank, metaById } from '../data.ts';
-  import { dueOf, leftToday, metOf, mineOf, rated, saveMine, skipped, type Key } from '../phrase-review.ts';
+  import { dueOf, leftToday, metOf, mineOf, rated, saveMine, skipped, unsaved, type Key } from '../phrase-review.ts';
   import { keyed, splitUse } from '../phrases.ts';
   import { s } from '../i18n.ts';
   import { count } from '#lib/sync/log.ts';
@@ -32,25 +32,30 @@
   onMount(() => {
     const left = leftToday(mine, today), due = dueOf(metOf(rows, me), mine, today);
     if (left <= 0 || !due.length) return;
-    let gone = false;
+    let closed = false;
     void (async () => {
-      const out: Card[] = [], seen = new Set<string>(), tried = new Set<string>();
+      const out: Card[] = [], seen = new Set<string>(), tried = new Set<string>(), lost: Key[] = [];
       for (const k of due) {
         if (out.length >= left) break;
         const [id, qid] = k.split('/'), m = metaById(id);
+        if (!m) lost.push(k);
         if (!m || (!tried.has(id) && tried.size >= BANKS)) continue;
         tried.add(id);
         const bank = await loadBank(m).catch(() => null);
         const q = bank?.questions.find((x) => x.id === qid);
+        if (bank && (!q || q.retired || !q.use)) lost.push(k);
         if (!q || q.retired || !q.use) continue;
         const u = splitUse(q.use), key = u.en.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
         out.push({ k, video: m.video, title: m.title, q, ...u });
       }
-      if (!gone) cards = out;
+      // a saved phrase whose clip or question is gone since: out of the saved list (it could never show again)
+      const dead = lost.filter((k) => mine.k?.[k]);
+      if (dead.length) saveMine(me, (mine = dead.reduce(unsaved, mineOf(me))));
+      if (!closed) cards = out;
     })();
-    return () => (gone = true);
+    return () => (closed = true);
   });
 
   function next(m: typeof mine, what: string): void {

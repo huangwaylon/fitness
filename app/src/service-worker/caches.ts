@@ -122,7 +122,7 @@ export const isFoodData = (path: string): boolean => /\/food\/(jan\/)?[\w-]+\.js
 /** English Study's banks (`english/c/<id>.<v>.json`, written by the build: lib/english/data.ts, catalog.ts bankPath):
  *  ~6.5 KB each, fetched when a lesson opens or home prefetches it, never precached; served cache first in a cache of
  *  their own that outlives builds (the name carries the clip's version, so a copy is never stale). フレーズ's deck files
- *  (`english/p/<n>.<v>.json`, catalog.ts shardPath, ~22 KB gzipped each) the same way. */
+ *  (`english/p/<n>.<v>.json`, catalog.ts shardPath, ~28 KB gzipped each) the same way. */
 export const ENGLISH_CACHE = 'island-english-v1';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
 const ENGLISH_SHARD = /\/english\/p\/(\d+)\.[0-9a-z]+\.json$/;

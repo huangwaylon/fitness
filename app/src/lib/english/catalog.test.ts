@@ -19,8 +19,11 @@ describe('the key words', () => {
     expect([...keyWordsOf('Hey, *Can’t* stop — *the Wi-Fi, man!* ok')]).toEqual(['can’t'.replace('’', ''), 'wifi', 'man']);
     expect(wordsOf('I can’t, OK?')).toEqual(['i', 'cant', 'ok']);
   });
-  it('a phrase shares one when one of its words is one (a whole word, never a part)', () => {
-    expect(inDeck(q({ use: 'Your turn.（あなたの番）' }))).toBe(true);
+  it('a phrase shares one when one of its words is one (a whole word, never a part; a common one only when it’s all of them)', () => {
+    expect(inDeck(q({ use: 'Use it.（使って）' }))).toBe(true);
+    expect(inDeck(q({ use: 'Your turn.（あなたの番）' }))).toBe(false);
+    expect(inDeck(q({ line: '*So* what can I do for you guys?', use: 'So, what’s new?（で、最近どう？）' }))).toBe(true);
+    expect(inDeck(q({ line: 'Jennifer will be out front *in three*.', use: 'Dinner’s ready in five.（あと5分でごはんだよ）' }))).toBe(false);
     expect(inDeck(q({ use: 'Bathrooms are there.（トイレはあそこ）' }))).toBe(false);
     expect(inDeck(q({ line: 'Can I use *the* bathroom?', use: 'The end.（おしまい）' }))).toBe(false);
   });
@@ -49,7 +52,7 @@ describe('a card', () => {
   });
   it('one per English phrase (any case or punctuation), the first in the clips’ order kept', () => {
     const deck = deckOf([clip('a', [q(), q({ id: 'q2', use: 'can I use your phone（電話いい？）' })]), clip('b', [q()])]);
-    expect(deck).toEqual([['a', 'q1', 10, 14, q().use, q().line]]);
+    expect(deck).toEqual([['a', 'q1', 10, 14, q().use, q().line, 'm']]);
   });
 });
 

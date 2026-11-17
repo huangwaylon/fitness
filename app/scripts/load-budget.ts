@@ -28,7 +28,7 @@ const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
 const ENGLISH_SHEET = 80 * 1024;
-/** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 8, 21–24 KB, 2,539 cards). */
+/** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */
 const ENGLISH_SHARD = 32 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
 const LAZY_NAMES = ['three.module'];

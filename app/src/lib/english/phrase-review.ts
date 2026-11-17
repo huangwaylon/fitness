@@ -20,7 +20,7 @@ export type Key = `${string}/${string}`;
 export interface Mine {
   /** Each phrase shown: the day, its step. */
   s: Record<Key, [LocalDate, number]>;
-  /** Each phrase フレーズ's ☆ saved: the day (never pruned; un-☆ takes it out, its `s` as it was). */
+  /** Each phrase フレーズ's ☆ saved: the day (never pruned, but its question or clip retired: PhraseReview; un-☆ takes it out, its `s` as it was). */
   k?: Record<Key, LocalDate>;
   /** Today's count shown (PER_DAY: skipped). */
   day?: [LocalDate, number];

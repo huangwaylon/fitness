@@ -7,7 +7,7 @@ import type { Who } from '#lib/types.ts';
 
 /** A shard of `n` cards over `clips` clips (cards cycle through the clips). */
 const shardOfN = (s: number, n: number, clips: number): PhraseEntry[] =>
-  Array.from({ length: n }, (_, i) => [`c${(s * 7 + i) % clips}`, `s${s}q${i}`, i, i + 3, `Phrase ${s}.${i}（フレーズ）`, `a *line*`] as const);
+  Array.from({ length: n }, (_, i) => [`c${(s * 7 + i) % clips}`, `s${s}q${i}`, i, i + 3, `Phrase ${s}.${i}（フレーズ）`, `a *line*`, `意味`] as const);
 const SHARD_CARDS = Array.from({ length: SHARDS }, (_, s) => shardOfN(s, 30, 12));
 
 /** Walk the deck as the page does: `sets` sets, each SET cards (or fewer at a round's end). */

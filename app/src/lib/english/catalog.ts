@@ -53,11 +53,11 @@ export const withTranscript = (m: ClipMeta, lines: readonly TranscriptLine[] | u
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
 export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}.json`;
 
-/** A card of フレーズ's deck (docs/english.md "フレーズ"): a question's phrase and where it's heard,
- *  `[clip, qid, from, to, use, line]`; the video and title come from the index. */
-export type PhraseEntry = readonly [clip: string, qid: string, from: number, to: number, use: string, line: string];
+/** A card of フレーズ's deck (docs/english.md "フレーズ"): a question's phrase, where it's heard and its 意味,
+ *  `[clip, qid, from, to, use, line, mean]`; the video and title come from the index. */
+export type PhraseEntry = readonly [clip: string, qid: string, from: number, to: number, use: string, line: string, mean: string];
 /** The deck's files (`english/p/<n>.<v>.json`), each a stable share of the whole library (`fnv32(clip/qid) % SHARDS`). */
-export const SHARDS = 8;
+export const SHARDS = 10;
 /** A card's `use` at most, English words. */
 const DECK_WORDS = 8;
 /** A card's segment at most, s. */
@@ -67,17 +67,20 @@ const CHARACTERS = new Set(('Rachel Ross Monica Chandler Joey Phoebe Gunther Jan
   'Ryan Andy Angela Kevin Oscar Stanley Phyllis Creed Meredith Kelly Toby Erin Darryl Jan Holly Gabe Leslie Ron Ann April Tom Chris ' +
   'Jerry Donna Craig Garry Carly Sam Freddie Spencer Gibby Lewbert').split(' '));
 const SKIPPED = new Set(['gist', 'humor', 'who', 'predict']);
+/** Words too common to tie a phrase to its line alone (unless they're all the line's key words: "*So* what…"). */
+const COMMON = new Set(('i you he she it its we they me him her us them my your his our their of to in on at for with from by and or ' +
+  'but so is are was were be been am do does did have has had this that just').split(' '));
 
 /** Whether a question makes a card: live, B1, not a gist, joke, voice or guess; its `use` ≤ DECK_WORDS English words with
- *  its Japanese in （…）, sharing a key word with its line (so ▶ plays the words taught), no character named; its
- *  segment ≤ DECK_SEG s. */
+ *  its Japanese in （…）, sharing a key word with its line (so ▶ plays the words taught: one not COMMON, or all of
+ *  them), no character named; its segment ≤ DECK_SEG s. */
 export function inDeck(q: Question): boolean {
   if (q.retired || q.level !== 'B1' || SKIPPED.has(q.skill) || !q.line || !q.use || q.seg[1] - q.seg[0] > DECK_SEG) return false;
   const { en, ja } = splitUse(q.use);
   const words = wordsOf(en);
   if (!ja || words.length > DECK_WORDS || en.split(/\s+/).some((w) => CHARACTERS.has(w.replace(/[^A-Za-z]/g, '')))) return false;
-  const keys = keyWordsOf(q.line);
-  return words.some((w) => keys.has(w));
+  const keys = keyWordsOf(q.line), shared = words.filter((w) => keys.has(w));
+  return shared.some((w) => !COMMON.has(w)) || (shared.length > 0 && [...keys].every((k) => words.includes(k)));
 }
 
 /** The deck: every card of the clips (in the plan's order), one per English `use` (any case or punctuation: the first kept). */
@@ -88,7 +91,7 @@ export function deckOf(clips: readonly Clip[]): PhraseEntry[] {
     const en = wordsOf(splitUse(q.use).en).join(' ');
     if (seen.has(en)) continue;
     seen.add(en);
-    out.push([c.id, q.id, q.seg[0], q.seg[1], q.use, q.line!]);
+    out.push([c.id, q.id, q.seg[0], q.seg[1], q.use, q.line!, q.mean]);
   }
   return out;
 }

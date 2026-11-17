@@ -118,7 +118,7 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
 
 フレーズの復習 (approved 2026-11-17; `phrase-review.ts`, `PhraseReview.svelte`): a card above 今日の動画 on home, only
 when phrases are due. The phrases are the `use` of the questions in my finished plays (`listen` rows with `f`) and
-those フレーズ's ☆ saved (`k`, the day; never pruned, un-☆ leaves the rest as it was); each comes back 1, 3, 7, 14,
+those フレーズ's ☆ saved (`k`, the day; never pruned but once its question or clip is retired, un-☆ leaves the rest as it was); each comes back 1, 3, 7, 14,
 then every 30 days after it was last met in a play, saved or shown here. At most 3 a day: those shown
 before first (the longest overdue first), then the never shown (the latest met first), one per English phrase.
 
@@ -133,19 +133,22 @@ before first (the longest overdue first), then the never shown (the latest met f
 A deck of the library's phrases, one card at a time. **The deck** (`catalog.ts deckOf`, at build time): a question's
 `use` makes a card when the question is live, B1, not a gist / humor / who / predict; the `use` has its Japanese in
 （…）, ≤ 8 English words, no character's name, and shares a key word with its `line` (the starred words, lower case,
-punctuation dropped, a / an / the aside, found as whole words of the English); its segment ≤ 15 s. One card per English
-phrase (the first in the plan's order). Entry `[clip, qid, from, to, use, line]`; the video and title from the index.
-It ships as 8 files, `english/p/<n>.<v>.json`, a card in `fnv(clip/qid) % 8` (each mixes the whole library; ~2,500
-cards, ~22 KB gzipped a file), their versions the index's `DECK`; the service worker keeps them as the banks (an older
-version of a file goes), never precached; `load-budget.ts` holds them to 8, each ≤ 32 KB gzipped.
+punctuation dropped, a / an / the aside, found as whole words of the English; a common one — pronoun, preposition, be /
+do / have, so, just — counts only when it is all the line's key words, as in "*So* what…"); its segment ≤ 15 s. One
+card per English phrase (the first in the plan's order). Entry `[clip, qid, from, to, use, line, mean]`; the video and
+title from the index. It ships as 10 files, `english/p/<n>.<v>.json`, a card in `fnv(clip/qid) % 10` (each mixes the
+whole library; ~2,400 cards, ~28 KB gzipped a file), their versions the index's `DECK`; the service worker keeps them
+as the banks (an older version of a file goes), never precached; `load-budget.ts` holds them to 10, each ≤ 32 KB
+gzipped.
 
 **The page** (`deck.ts`, `Phrases.svelte`): one card at a time, 5 a set. The order is seeded per player (the shards
 in a seeded order, each shard's cards too; each round a new order), the place kept on this phone
 (`island.english.deck`), so the tab comes back to the same card, face down. Passed over (back next round): a card of
 a clip already in this set, of today's clip and of the next 2 open ones in the plan (their lessons stay fresh).
 
-- Front: 1/5 · show · title, the phrase (the key words it shares with the line underlined), **意味を見る**. Back: its
-  Japanese, 動画では + the line (key words underlined), the clip's player (mounted at 意味を見る, so ▶ meets a ready
+- Front: the clip's thumbnail beside 1/5 and show · title, the phrase (the key words it shares with the line
+  underlined, punctuation outside), **意味を見る**. Back: its Japanese, 動画では + the line (key words underlined) and
+  its 意味 (small; it explains the line, so it sits under it), the clip's player (mounted at 意味を見る, so ▶ meets a ready
   frame within the tap; one frame at most, none on the front, gone on 次へ), **▶ この場面を聞く** (its segment, paused at
   its end), 声に出して言ってみよう, then ☆ 復習に入れる (paper; ★ 復習に入れました, tapped again: out) and 次へ ›.
 - After the 5th: 「5枚見ました · これまで Nフレーズ」 (cards revealed), もう5枚 / ホームへ. Never a score, %, red or ×.

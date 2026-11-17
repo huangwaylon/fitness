@@ -1,13 +1,14 @@
 <script lang="ts">
   // フレーズ (docs/english.md "フレーズ"): English Study's second tab, the deck (deck.ts) one card at a time, SET a set.
-  // Front: the phrase (its key words underlined), show · title, 意味を見る. Back: its Japanese, 動画では + the clip's line
-  // (the same words underlined), the clip's player (mounted at 意味を見る, so ▶ この場面を聞く meets a ready frame within
+  // Front: the clip's thumbnail with show · title, the phrase (its key words underlined), 意味を見る. Back: its Japanese,
+  // 動画では + the clip's line (the same words underlined) and its 意味, the clip's player (mounted at 意味を見る, so ▶ この場面を聞く meets a ready frame within
   // the tap: iOS), ☆ 復習に入れる beside 次へ ›, a say-it hint. After SET: 「5枚見ました · これまで N」, もう5枚 / ホームへ.
   // Never a score. The place is this phone's (deck.ts), so the tab comes back to the same card, face down.
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Player from './Player.svelte';
+  import Thumb from './Thumb.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { count } from '#lib/sync/log.ts';
@@ -47,7 +48,7 @@
   const view = $derived.by(() => {
     if (!card) return null;
     const m = metaById(card[0]), u = splitUse(card[4]), keys = keyWordsOf(card[5]);
-    return { k: keyOf(card), m, ...u, en: markedIn(u.en, keys), line: keyed(card[5]) };
+    return { k: keyOf(card), m, ...u, en: markedIn(u.en, keys), line: keyed(card[5]), mean: card[6] };
   });
   const isSaved = $derived(!!view && !!review.k?.[view.k]);
 
@@ -136,7 +137,10 @@
       </article>
     {:else if view}
       <article class="card pad deck" data-en-deck={view.k} data-face={open ? 'back' : 'front'}>
-        <p class="kicker"><span class="n">{c.set.length + 1}/{SET}</span>{#if view.m}<span lang="en">{` · ${view.m.show} · ${view.m.title}`}</span>{/if}</p>
+        <div class="head">
+          {#if view.m}<Thumb video={view.m.video} show={view.m.show} />{/if}
+          <p class="kicker"><span class="n">{c.set.length + 1}/{SET}</span>{#if view.m}<span class="t" lang="en">{`${view.m.show} · ${view.m.title}`}</span>{/if}</p>
+        </div>
         <p class="en" lang="en" data-en-deck-en>{@render marked(view.en)}</p>
         {#if !open}
           <button type="button" class="btn sky" data-sfx="tick" data-en-deck-show onclick={reveal}>{s('prShow')}</button>
@@ -145,9 +149,10 @@
           <div class="from">
             <p class="kicker">{s('deckFrom')}</p>
             <p class="line" lang="en" data-en-deck-line>{@render marked(view.line)}</p>
+            {#if view.mean}<p class="mean" data-en-deck-mean>{view.mean}</p>{/if}
           </div>
           {#if view.m}
-            {#key view.k}<div class="video"><Player video={view.m.video} title={view.m.title} bind:player /></div>{/key}
+            <div class="video"><Player video={view.m.video} title={view.m.title} bind:player /></div>
             <button type="button" class="btn small sky hear" data-sfx="tick" data-en-deck-hear disabled={!player || player.state === 'loading'} onclick={hear}>
               <Icon name="play" size={18} />{s('prHear')}
             </button>
@@ -177,14 +182,18 @@
   .card { flex: none; }
   .deck, .end, .note { display: grid; gap: 8px; }
   p { margin: 0; }
+  .head { display: flex; gap: 10px; align-items: center; min-width: 0; }
   .kicker { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .head .kicker { display: grid; white-space: normal; }
+  .t { font-weight: 600; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
   .n { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
   .en { font: 700 var(--fs-talk)/1.35 var(--font-ui); margin: 4px 0; }
-  u { text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
+  u { text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; text-decoration-skip-ink: none; }
   .ja { font-size: var(--fs-body); padding: 8px 10px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }
   .from { display: grid; gap: 2px; }
   .line { font-size: var(--fs-body); line-height: 1.45; font-style: italic; }
   .line u { font-style: normal; font-weight: 700; }
+  .mean { font-size: var(--fs-s); line-height: 1.45; color: var(--text-soft); margin-top: 2px; }
   .video { border-radius: var(--r-row); overflow: hidden; }
   .btn { margin: 0; }
   .btn.sky { --fill: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); --lip-c: var(--c-edge); color: var(--c-ink); }

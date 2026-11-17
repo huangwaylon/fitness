@@ -946,12 +946,14 @@ test('フレーズ: the tab bar on ホーム and フレーズ only; a card face 
   await expect(card.locator('[data-en-deck-en]')).toHaveText(splitUse(e[4]).en);
   await expect(card.locator('[data-en-deck-en] u').first()).toBeVisible();
   await expect(card).toContainText('1/5');
+  await expect(card.locator('[data-en-thumb] img')).toHaveAttribute('src', `https://i.ytimg.com/vi/${PLAN.find((c) => c.id === e[0])!.video}/mqdefault.jpg`);
   await expect(page.locator('[data-yt-frame]')).toHaveCount(0);
   // the back: the Japanese, the line (key words underlined), the player
   await card.locator('[data-en-deck-show]').click();
   await expect(card.locator('[data-en-deck-ja]')).toHaveText(splitUse(e[4]).ja);
   await expect(card.locator('[data-en-deck-line]')).toHaveText(e[5].replace(/\*/g, ''));
   await expect(card.locator('[data-en-deck-line] u').first()).toHaveText(e[5].match(/\*([^*]+)\*/)![1]);
+  await expect(card.locator('[data-en-deck-mean]')).toHaveText(e[6]);
   await expect(page.locator('[data-yt-frame]')).toHaveCount(1);
   await expect(card.locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'ready');
   const n0 = (await ytCommands(page)).length;
@@ -971,10 +973,10 @@ test('フレーズ: the tab bar on ホーム and フレーズ only; a card face 
 
 test('フレーズ: the same card face down after a lesson; ☆ 復習に入れる saves it apart from its schedule, home’s review has a saved one the next day; 5 a set, never two of one clip, then 5枚見ました with もう5枚 / ホームへ', async ({ page }) => {
   await fakeYoutube(page, { dur: 3000 });
-  // a phrase saved yesterday, never met: due today on home
+  // a phrase saved yesterday, never met: due today on home; one whose question is gone since: out of the list
   const q = waitress.questions.find((x) => !x.retired && x.use && x.line)!;
   await page.addInitScript((k) => {
-    if (localStorage.getItem('island.english.phrases') === null) localStorage.setItem('island.english.phrases', JSON.stringify({ A: { s: {}, k: { [k]: '2026-11-03' } } }));
+    if (localStorage.getItem('island.english.phrases') === null) localStorage.setItem('island.english.phrases', JSON.stringify({ A: { s: {}, k: { [k]: '2026-11-03', 'waitress/zzgone': '2026-11-03' } } }));
   }, `waitress/${q.id}`);
   await open(page);
   await expect(sheet(page).locator('[data-en-pr]')).toHaveAttribute('data-en-pr', `waitress/${q.id}`);
