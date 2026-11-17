@@ -34,7 +34,7 @@ export const andyAcademy: Clip = {
       line: 'The physical exam is *about three months away*.',
       said: '「体力試験まで、あと3か月くらい」と言う。',
       mean: 'A is 〜 away ＝ A まであと〜。physical exam ＝ 体力の試験。',
-      trap: 'months の th と s がつぶれて短く聞こえる。three のあとの語まで聞く。',
+      trap: 'three のあと「マンス」なら months、「ウィークス」なら weeks、「デイズ」なら days。months は短く聞こえる。',
       use: 'My birthday is two weeks away.（誕生日まであと2週間）' },
     { id: 'x1', skill: 'dict', level: 'B2', point: 'shape', seg: [18.1, 21.6],
       stem: 'Type what Andy says: “and I am ___.” (3 words)', answer: 'in terrible shape',

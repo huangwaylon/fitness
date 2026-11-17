@@ -217,6 +217,7 @@ export const cheesecakeBandits: Clip = {
       use: 'Then I’ll have to tell everyone.（そしたら、みんなに話すことになる）' },
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'tell', seg: [186.9, 193.3],
       stem: 'Type the middle: “No, because then ___ tell them what we did.” (4 words)',
+      ja: '真ん中を書き取る：「No, because then ___ tell them what we did.」（4語）',
       answer: "you're gonna have to",
       cue: 'No, because then のあと、tell の前の4語。',
       line: 'No, because then *you’re gonna have to* tell them what we did.',
