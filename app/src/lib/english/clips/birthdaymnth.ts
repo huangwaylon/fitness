@@ -114,7 +114,7 @@ export const birthdayMonth: Clip = {
       line: 'And there are *two types* of toasts.',
       said: '「乾杯のあいさつには2種類ある」と言う。',
       mean: 'two types ＝ 2種類。One is ～ と the other is ～ で、2つを順に言う。',
-      trap: 'two と to は同じ音で聞き流しやすい。One is と the other is も2つの印。',
+      trap: 'one は「ワン」、three は「スリー」。ここは「トゥー」。One is と the other is も2つの印。',
       use: 'There are two kinds of people.（人には2種類いる）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'agejoke', seg: [24.9, 29],

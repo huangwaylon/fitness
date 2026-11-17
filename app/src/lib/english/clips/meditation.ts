@@ -107,7 +107,7 @@ export const ronMeditation: Clip = {
       line: 'you and I are very different people, and we have often been *at odds*.',
       said: '「君と私はまったくちがう人間で、よくぶつかってきた」と言う。',
       mean: 'at odds ＝ 意見が合わない。at の t が軽い「ラ」の音になり、「アラッズ」とつながる。',
-      trap: 'at ease（気楽）とまぎれやすい。前の very different に合う語を選ぶ。',
+      trap: 'at ease（気楽）とまぎれやすい。最後が「ズ」なら odds。apart なら「パー」が聞こえる。',
       use: 'We’re at odds over the budget.（予算のことで意見が割れてる）' },
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'tomorrow', reveals: ['notsure'], seg: [54.4, 64.6],
       stem: 'How does Chris answer Ron’s “no”?',

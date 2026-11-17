@@ -177,7 +177,7 @@ export const womensAppreciation: Clip = {
       line: '*Conference room. Five minutes.* Women’s appreciation.',
       said: '「会議室、5分後。女性に感謝する会だ」と短く言う。',
       mean: '名詞を並べただけの短い指示。「5分後に会議室に集合」。',
-      trap: 'five と fifteen は長さが違う。-teen なら後ろが長く強くなる。',
+      trap: 'five は「ファイヴ」で短い。fifteen は後ろの「ティーン」が長い。two・ten は最初の音が違う。',
       use: 'Lobby, ten minutes. Don’t be late.（ロビーに10分後。遅れないで）' },
 
     { id: 'p6', skill: 'phrase', level: 'B2', point: 'thatsit', seg: [73.3, 78.8],

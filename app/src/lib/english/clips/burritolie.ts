@@ -241,7 +241,7 @@ export const jerryBurritoLie: Clip = {
       line: 'Are you kidding me? *Imagine what Tom would have said*.',
       said: 'ジェリーが「冗談でしょ。トムに何て言われたか想像してよ」と答える。',
       mean: 'Imagine what 〜 would have said ＝ 〜に何と言われたか想像して。からかわれるのが嫌。',
-      trap: 'Leslie がお金をもらえたので、彼女のためだと思いやすい。Tom の名前を聞く。',
+      trap: 'レスリーがお金をもらえたので、彼女のためだと思いやすい。Tom の名前を聞く。',
       use: 'Are you kidding me?（冗談でしょ？）' },
   ]
 };

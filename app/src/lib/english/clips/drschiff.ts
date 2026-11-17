@@ -175,7 +175,7 @@ export const rachelFlirtsDoctor: Clip = {
       line: 'Where are you from? *What do you do?* — *I’m a doctor*.',
       said: '「出身は？お仕事は？」と聞かれ、「医者です」と答える。',
       mean: 'What do you do? ＝ お仕事は何？ 診察中の医者に聞くのがおかしい。',
-      trap: '強めの言い方を自慢と思いやすいが、当たり前のことを言わされた戸惑い。',
+      trap: '仕事を聞くのは失礼と思いやすいが、ふつうの質問。診察中の医者に聞くからおかしい。',
       use: 'So, what do you do?（お仕事は何を？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'meant', seg: [100.6, 109.4],

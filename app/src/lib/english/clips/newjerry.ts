@@ -256,8 +256,8 @@ export const tomSwagger: Clip = {
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'fired', seg: [243.8, 250.6],
       stem: 'How did Jerry leave his job, he says?', ja: 'ジェリーは、自分はどうやって仕事を辞めたと言う？',
-      choices: ['He retired', 'He was fired', 'He quit'], a: 0,
-      choicesJa: ['退職した', 'クビになった', '自分で辞めた'],
+      choices: ['He retired', 'He was fired', 'He moved away'], a: 0,
+      choicesJa: ['退職した', 'クビになった', '引っ越した'],
       cue: '否定の文のあとの短い文',
       line: 'I *wasn’t fired*. I *retired*.',
       said: '「クビじゃない。退職したんだ」と言うが、「みんなそう言う」と返される。',

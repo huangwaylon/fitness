@@ -167,7 +167,7 @@ export const needyCall: Clip = {
       stem: 'Which words do you hear: “I ___ her. I left a message”?',
       ja: '「I ___ her. I left a message」どれが聞こえる？',
       choices: ['can call', 'can’t call', 'could call'], a: 1,
-      choicesJa: ['電話できる', '電話できない', '電話してもいい'],
+      choicesJa: ['電話できる', '電話できない', '電話できるかも'],
       cue: '最初の I のすぐあと',
       line: 'Why don’t you just call her? — *I can’t call* her. I left a message. I have some pride.',
       said: '「電話すれば？」に「電話できないよ。伝言は残したし、プライドがある」と言う。',

@@ -94,7 +94,7 @@ export const kneecapping: Clip = {
       ja: 'アンジェラはなぜ「you said you would be there for me」と言う？',
       choices: ['To remind him of his promise', 'To ask him to come along with her', 'To thank him for coming'], a: 0,
       choicesJa: ['約束を思い出させるため', '一緒に来てと頼むため', '来てくれたお礼のため'],
-      cue: 'Dwight の反対のすぐあと。',
+      cue: 'ドワイトの反対のすぐあと。',
       line: '…you said you would *be there for me*.',
       said: '反対されて、「支えてくれるって言ったじゃない」と返す。',
       mean: 'be there for ～ ＝ 〜の味方でいる、支える。約束を持ち出して、断りにくくする。',

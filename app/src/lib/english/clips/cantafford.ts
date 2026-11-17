@@ -119,7 +119,7 @@ export const cantAfford: Clip = {
       line: 'I’m gonna have *a cup of the* cucumber soup and, um, take care.',
       said: '「キュウリのスープをカップで」と頼む。',
       mean: 'a cup of ＝ 1杯の。of the は「アヴザ」と小さく短く言い、ひと息につながる。',
-      trap: 'the は短く弱く、消えたように聞こえる。that なら強く「ザッ」と言い、t で止まる。',
+      trap: 'the は弱く消えそうだが、of のあとに短い「ザ」が残る。that なら強く「ザッ」と t で止まる。',
       use: 'Can I get a slice of the cheesecake?（そのチーズケーキを1切れください）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'owe', seg: [110.6, 114.0], keep: true,

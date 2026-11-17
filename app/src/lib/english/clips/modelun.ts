@@ -132,7 +132,7 @@ export const leslieRedFlag: Clip = {
       choicesJa: ['不公平だと思う', '公平だと思う', '自分のせいだと思う'],
       cue: '「suddenly」の前後',
       line: 'I’ve *made an effort*, and I’ve shared my flags with him, and *suddenly* he doesn’t want to be friends?',
-      said: '「努力したし、弱点も見せたのに、急に友だちはやめたいなんて」と言う。',
+      said: '「私は努力してきたのに、急に友だちはやめたいなんて」と言う。',
       mean: 'I’ve made an effort ＝「努力してきた」。ここまでしたのに不公平、という不満。',
       trap: '最初の I understand に引っぱられやすい。and で行動を重ねるのは不満の前ぶれ。',
       use: 'I’ve made an effort, you know.（私だって努力したんだよ）' },

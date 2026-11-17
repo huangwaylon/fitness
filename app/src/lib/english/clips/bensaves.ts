@@ -206,7 +206,7 @@ export const benSaves: Clip = {
       line: 'is there any chance you can fix me *in the next 10 minutes*?',
       said: '「次の10分で治してもらえる可能性ってある？」と聞く。',
       mean: 'in the next 〜 minutes ＝ これから〜分以内に。本番に間に合わせたい。',
-      trap: 'すぐあとに医師の 30 が聞こえるので混ざりやすい。だれが言った数かを分けて聞く。',
+      trap: 'two は「トゥー」、ten は「テン」。すぐあとの30は医師が言う数。',
       use: 'Can you be here in the next hour?（1時間以内に来られる？）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'sure', seg: [147.3, 153.8],

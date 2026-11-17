@@ -110,7 +110,7 @@ export const bookSpoilers: Clip = {
       cue: '「proposes」のあと',
       line: 'Lori proposes to Joe, and *she says no*, even though she’s still in love with him',
       said: '「ローリーがジョーにプロポーズして、ジョーは断る。まだ好きなのに」と話す。',
-      mean: 'propose to 〜 ＝ 〜に結婚を申しこむ。Laurie は男性、Jo は女性。',
+      mean: 'propose to 〜 ＝ 〜に結婚を申しこむ。ローリーは男性、ジョーは女性。',
       trap: '名前の響きで男女を逆に思いやすい。she says no の she を聞く。',
       use: 'She said no, even though she liked him.（好きだったのに断った）' },
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'accident', seg: [45.0, 59.0],

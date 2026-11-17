@@ -261,7 +261,7 @@ export const annVibes: Clip = {
       cue: '「I was」のあとの言い方。', line: 'I was *on the fence* about whether I wanted to do it',
       said: '「行きたいかどうか、決めかねてた」と言う。',
       mean: 'on the fence ＝ どちらにも決めていない。フェンスの上で、どちらにも降りていない。',
-      trap: 'fence（壁）から「反対」を思いやすい。about whether が続けば、迷っている印。',
+      trap: 'fence（柵）から「反対」を思いやすい。about whether が続けば、迷っている印。',
       use: 'I’m still on the fence about the trip.（旅行に行くか、まだ迷ってる）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'gut', reveals: ['decide', 'lame'], seg: [185.9, 193.3],

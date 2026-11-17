@@ -171,10 +171,11 @@ export const ironkitchen: Clip = {
       choices: ['Joey', 'Ross', 'Chandler'], a: 1,
       choicesJa: ['ジョーイ', 'ロス', 'チャンドラー'],
       cue: '断ったあとに呼ばれる名前',
+      line: 'I told you I am not a part of this thing. — All right, look, *Ross*.',
       said: '「関わらない」と断ると、モニカが「いいわ、聞いて、ロス」と返す。',
       mean: '返事の最初の呼びかけで、だれに答えているかが分かる。',
       trap: '前に呼ばれたジョーイの名前が残りやすい。断った直後に呼ばれる名前を聞く。',
-      use: 'Okay, listen, Ross.（いい、聞いて、ロス）' },
+      use: 'Okay, listen to me.（いい、聞いて）' },
 
     { id: 'pr1', skill: 'phrase', level: 'B2', point: 'feelfor', seg: [38.6, 50.5],
       stem: 'What does “I feel for you” mean?',

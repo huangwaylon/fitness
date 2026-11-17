@@ -114,7 +114,7 @@ export const sideQuest: Clip = {
       line: 'If you’re not going to finish something *three months early*, then don’t accept the job.',
       said: '「3か月前に仕上げる気がないなら、仕事を受けるな」と怒る。',
       mean: 'three months early ＝ 3か月早く。ふつうは期限までで十分なので、無茶な話。',
-      trap: 'three はよく聞こえるが、そのあとの単位が速い。months は「マンス」と短い。',
+      trap: 'three のあとの単位が速い。デイズ・ウィークスでなく「マンス」なら months。',
       use: 'We finished three days early.（3日早く終わった）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [65.1, 68.25],

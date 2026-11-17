@@ -308,13 +308,13 @@ export const goodHusband: Clip = {
     { id: 'p4', skill: 'phrase', level: 'B2', point: 'askfor', seg: [219.2, 223.9],
       stem: 'What does “*a girl could ask for*” mean here?',
       ja: 'ここでの「a girl could ask for」はどういう意味？',
-      choices: ['The best there is', 'One girls ask out', 'More than she asked'], a: 0,
+      choices: ['The best there is', 'Someone girls ask out', 'More than she asked'], a: 0,
       choicesJa: ['これ以上ない最高の人', '女の子がデートに誘う人', '頼んだ以上のもの'],
       cue: '「most thoughtful」のあと',
       line: 'You’re the *nicest, most thoughtful* baby daddy *a girl could ask for*.',
       said: '「望める中で一番優しくて、思いやりのある赤ちゃんのパパ」と言う。',
       mean: 'the 〜est … anyone could ask for ＝ これ以上は望めないほど〜。最高のほめ言葉。',
       trap: 'ask for を「頼む」と取りやすい。最上級のあとなら「これ以上ない」。',
-      use: 'Best friend anyone could ask for.（これ以上ない親友）' },
+      use: 'You’re the best friend I could ask for.（あなたは最高の親友だよ）' },
   ]
 };

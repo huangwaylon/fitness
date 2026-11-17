@@ -273,13 +273,13 @@ export const ronLeslieLunch: Clip = {
     { id: 'mk1', skill: 'marker', level: 'B2', point: 'well', seg: [143.0, 150.3],
       stem: '“*Yeah, well*, there’s a way to fix that.” What does it do?',
       ja: '「Yeah, well, there’s a way to fix that」の yeah, well は何をしている？',
-      choices: ['Agrees, then turns to a fix', 'Agrees, then changes the topic', 'Doubts him and argues'], a: 0,
-      choicesJa: ['受け止めて、解決の話に向ける', '受け止めて、話題を変える', '疑って言い返す'],
+      choices: ['Agrees, then turns to a fix', 'Agrees, then says goodbye', 'Doubts him and argues'], a: 0,
+      choicesJa: ['受け止めて、解決の話に向ける', '受け止めて、別れを言う', '疑って言い返す'],
       cue: 'ロンの話の直後、最初の2語。',
       line: '*Yeah, well*, there’s a way to *fix that*.',
       said: '「うん、でもね、それを直す方法があるよ」と返す。',
       mean: 'yeah で受け止め、well で向きを変える。ぼやきから提案への切りかえ。',
-      trap: 'well を迷いや話題の変更と思いやすい。fix that の that はロンの話の続き。',
+      trap: 'well を迷いの声と思いやすい。直後の fix that（それを直す）が提案の合図。',
       use: 'Yeah, well, we can try again.（うん、でもまたやってみればいい）' },
   ]
 };

@@ -82,7 +82,7 @@ export const leslieAnnForum: Clip = {
       line: 'it’s been there for *almost a year*. — *Twelve months*.',
       said: '「穴はもう1年近く、12か月そのまま」と言う。',
       mean: 'almost a year を twelve months と言い直して、長さを強めている。',
-      trap: 'twelve と twenty はどちらも「トゥ」で始まる。twelve は最後が「ルヴ」で短い。',
+      trap: 'six は「スィ」で始まり、two は「トゥー」だけ。twelve は「ルヴ」、twenty は「ティ」で終わる。',
       use: 'It’s been like this for almost a year.（もう1年近くこのままです）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'support', seg: [93.6, 99.3],
@@ -245,7 +245,7 @@ export const leslieAnnForum: Clip = {
       line: 'and then when that’s done, *we’re gonna* put a park on the land.',
       said: '「それが済んだら、そこに公園を作るの」と言う。',
       mean: 'we’re gonna ＝ we are going to。「ウィアガナ」とひと続きになる。',
-      trap: 'wanna（ワナ）と似ている。gonna は「ガ」、wanna は「ワ」で始まる。',
+      trap: 'wanna は「ワ」で始まる。gotta は「ガラ」、gonna は「ガナ」と n の音。',
       use: 'We’re gonna need a bigger table.（もっと大きいテーブルがいるね）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [207.9, 212.4],
@@ -257,7 +257,7 @@ export const leslieAnnForum: Clip = {
       line: 'I’ve worked at the parks department for *six years*',
       said: '「公園課で6年働いてきた」と話す。',
       mean: 'I’ve worked 〜 for … ＝ …の間ずっと〜で働いている。',
-      trap: 'six と sixteen は最初が同じ。-teen なら「ティーン」と長く強く聞こえる。',
+      trap: 'four は「フォー」。six と sixteen は出だしが同じで、-teen なら「ティーン」と長い。',
       use: 'I’ve lived here for six years.（ここに住んで6年です）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'sandbox', seg: [207.9, 218.6], retired: true,

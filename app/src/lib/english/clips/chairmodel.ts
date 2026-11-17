@@ -208,7 +208,7 @@ export const chairModel: Clip = {
       line: 'every day I get *a little more* desperate.',
       said: '「毎日少しずつ必死になっていく」と言う。',
       mean: 'a little more は「アリルモア」とひと続き。little の t は軽い「ラ」の音で「リル」。',
-      trap: 'little の t が弱いと lot に聞こえやすい。「リ」か「ラ」か、母音を聞く。',
+      trap: 'little の t は軽い「ラ」で lot と迷いやすい。「リル」と2音なら little、bit は1音。',
       use: 'Could you make it a little more?（もう少し多めにできますか）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'page', seg: [91.7, 96.8],
@@ -220,7 +220,7 @@ export const chairModel: Clip = {
       line: 'kindly turn to *page 85*.',
       said: '全員に「カタログの85ページを開いてください」と呼びかける。',
       mean: 'turn to page 〜 ＝ 〜ページを開く。あのモデルが載っているページ。',
-      trap: 'eighty と eighteen は強く言う所が違う。eighty のあとの five まで聞く。',
+      trap: 'eighty と eighteen は強く言う所が違う。ninety ではなく eighty、そのあとの five まで聞く。',
       use: 'Please turn to page 85.（85ページを開いてください）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'notyet', seg: [100.5, 104.6],

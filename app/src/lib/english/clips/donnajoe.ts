@@ -16,8 +16,8 @@ export const donnaJoe: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'askfavor', seg: [0, 7.0],
-      stem: 'Ron says, “I need a favor.” What does he want?',
-      ja: '「I need to ask you for a favor.」で、ロンは何を求めている？',
+      stem: 'Ron asks Donna for “a favor.” What does he want?',
+      ja: 'ロンはドナに「a favor」を頼む。何を求めている？',
       choices: ['Her help with something', 'A date with her', 'Her advice on love'], a: 0,
       choicesJa: ['何かを手伝ってほしい', '彼女とのデート', '恋の相談'],
       cue: '「Yes」のあとの一文。',

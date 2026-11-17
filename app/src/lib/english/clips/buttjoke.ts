@@ -150,7 +150,7 @@ export const buttOfJoke: Clip = {
       line: 'Jerry? I don’t — I don’t think your computer is *plugged in*.',
       said: '「ジェリー？パソコン、電源が入ってないと思う」と言われる。',
       mean: 'plugged in ＝ コンセントにつながっている。I don’t think で、やんわり指摘。',
-      trap: 'I don’t think から、自信がないと思いやすい。やわらげる言い方。',
+      trap: '動かないので、こわれたと思いやすい。plugged in ＝ コンセントの話。',
       use: 'Is it plugged in?（コンセント、入ってる？）' },
     { id: 'g2', skill: 'gist', level: 'B1', point: 'mishaps', seg: [57, 101],
       stem: 'How does Jerry’s talk go?',

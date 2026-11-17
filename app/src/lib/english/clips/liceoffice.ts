@@ -26,7 +26,7 @@ export const liceOffice: Clip = {
       line: 'Between the foster homes and the orphanage, I had lice *22 times*.',
       said: '「里親の家と孤児院で、シラミには22回なった」と言う。',
       mean: 'twenty-two ＝ 22。〜 times ＝ 〜回。経験が多いので、任せてと言っている。',
-      trap: 'twenty で止めると20になる。twenty-two の最後の two まで聞く。',
+      trap: '12 は「トゥエルヴ」と短い。「トゥエニ」のあと two まで続けば22。',
       use: 'I’ve been to Paris three times.（パリには3回行ったことがある）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'pencils', seg: [7.4, 11.8],

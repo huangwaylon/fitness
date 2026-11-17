@@ -33,7 +33,7 @@ export const unsexyRoadTrip: Clip = {
       line: 'I need, like, a *sweatsuit* or something.',
       said: '「スウェットの上下か何かが要る。何も起きないって合図を出さないと」と言う。',
       mean: 'sweatsuit ＝ スウェットの上下。わざと色気のない服を選ぶ。',
-      trap: 'sweat と swim は始まりが同じ。sweat は「スウェッ」と短く、t で止まる。',
+      trap: 'swim なら「スウィ」。sweatshirt なら最後が「シャー」。ここは「スウェッスーッ」。',
       use: 'I’m just going to wear a sweatsuit.（スウェットで行くよ）' },
 
     { id: 't1', skill: 'attitude', level: 'B2', point: 'insane', reveals: ['dying'], seg: [11, 17.6],
@@ -49,8 +49,8 @@ export const unsexyRoadTrip: Clip = {
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'dying', seg: [13, 16.3],
       stem: 'What does “dying to be together” mean?', ja: '“dying to be together” はどういう意味？',
-      choices: ['They really want to be together', 'Being apart makes them very sad', 'They hate being together'], a: 0,
-      choicesJa: ['一緒になりたくてたまらない', '離れているのがとても悲しい', '一緒にいるのがいや'],
+      choices: ['They really want to be together', 'They are afraid to be together', 'They hate being together'], a: 0,
+      choicesJa: ['一緒になりたくてたまらない', '一緒になるのがこわい', '一緒にいるのがいや'],
       cue: '「so obvious」のあと',
       line: 'It’s so obvious *you’re dying to be together*.',
       said: '「二人が一緒になりたくてたまらないのは見え見え」と言う。',
