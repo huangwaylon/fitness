@@ -43,7 +43,7 @@ export const tomNegotiate: Clip = {
       stem: 'In how many cities is Andy’s show a big hit?',
       ja: 'アンディの番組は、いくつの都市で大人気？',
       choices: ['Three', 'Thirteen', 'Thirty'], a: 0,
-      choicesJa: ['3', '13', '30'],
+      choicesJa: ['3都市', '13都市', '30都市'],
       cue: '「huge ratings」のあと。',
       line: 'Andy’s show gets huge ratings in *three cities*.',
       said: '「アンディの番組は3つの都市で大人気だ」と、まず数字で押す。',
