@@ -256,7 +256,7 @@ export const noturkey: Clip = {
       said: '「僕はトリビアーニだから。これがうちのやり方」と言う。',
       mean: 'This is what we do ＝ うちはこういうもの。大食いは家族の特技、ということ。',
       trap: 'ターキーの習慣と思いやすい。直前の「丸ごと食べられる」につなげて聞く。',
-      use: 'We’re Japanese. This is what we do.（日本人だからね、これが普通）' },
+      use: 'I’m a nurse. This is what I do.（看護師だからね、これが私の仕事）' },
 
     { id: 'h2', skill: 'detail', level: 'B1', point: 'tribbiani', seg: [65.0, 75],
       stem: 'What does Joey say his family can do?',
