@@ -1,34 +1,33 @@
 <script lang="ts">
-  // 場面のあらすじ (docs/english.md "Scene summaries"): one calm line under the player and its controls, following the
-  // playhead (scenes.ts atTime): the beat on now with its category in front (a clip with beats: finer steps), else the
-  // scene. `paired` (字幕 英語 on): directly under the video, on its black, centred like a caption line, so YouTube's
-  // English and our Japanese gist read as a pair. Tapped: a sheet of every scene, its time then its line, and its beats
-  // under it (time, category, line), the one on now marked; a chip row filters the beats by category; one tapped plays
-  // from there. Our own outline (scenes/<video>.json), never the lines.
+  // 場面のあらすじ (docs/english.md "Scene summaries"): one calm line directly under the video, on its black (one height,
+  // two lines' worth), following the playhead (scenes.ts atTime): the beat on now with its category in front (a clip
+  // with beats: finer steps), else the scene. `strip` false (a question open, or あらすじ off): no line, the list still
+  // there for ツール. Tapped (or `open` from ツール): a sheet of every scene, its time then its line, and its beats under
+  // it (time, category, line), the one on now marked; a chip row filters the beats by category; one tapped plays from
+  // there. Our own outline (scenes/<video>.json), never the lines.
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { atTime, BEAT_KINDS, beatsByScene } from '../scenes.ts';
   import { clock, s } from '../i18n.ts';
   import type { Beat, BeatKind, Scene } from '../types.ts';
 
-  type Props = { scenes: readonly Scene[]; beats?: readonly Beat[]; time: number; onplay: (from: number) => void; paired?: boolean };
-  let { scenes, beats, time, onplay, paired = false }: Props = $props();
+  type Props = { scenes: readonly Scene[]; beats?: readonly Beat[]; time: number; onplay: (from: number) => void; strip: boolean; open: boolean };
+  let { scenes, beats, time, onplay, strip, open = $bindable() }: Props = $props();
   const at = $derived(atTime(scenes, time));
   const bAt = $derived(beats ? atTime(beats, time) : -1);
   const beat = $derived(beats?.[bAt]);
   /** Each scene's beats (indexes), and the categories present, in BEAT_KINDS' order. */
   const by = $derived(beats ? beatsByScene(scenes, beats) : null);
   const kinds = $derived(beats ? BEAT_KINDS.filter((k) => beats.some((b) => b.k === k)) : []);
-  let open = $state(false);
   let kind = $state<BeatKind | null>(null);
   const pick = (from: number) => ((open = false), onplay(from));
   const label = (k: BeatKind) => s(`beat.${k}`);
 </script>
 
-<button type="button" class="strip" class:paired data-sfx="open" aria-label={s('sceneOpen')} data-en-scene={at} data-en-beat={beat ? bAt : undefined} onclick={() => (open = true)}>
+{#if strip}<button type="button" class="strip" data-sfx="open" aria-label={s('sceneOpen')} data-en-scene={at} data-en-beat={beat ? bAt : undefined} onclick={() => (open = true)}>
   {#if beat}<span class="kind" data-en-beat-k={beat.k}>{label(beat.k)}</span>{/if}
   <span class="ja">{beat?.ja ?? scenes[at].ja}</span><Icon name="chevron-right" size={16} />
-</button>
+</button>{/if}
 
 <Sheet bind:open title={s('scenesTitle')} name="english-scenes">
   <div class="list" data-en-scenes>
@@ -67,19 +66,16 @@
 </Sheet>
 
 <style>
-  .strip { appearance: none; flex: none; display: flex; align-items: center; gap: 6px; min-height: var(--hit); width: 100%; margin: 0; border: 0;
-    padding: 0 calc(12px + var(--safe-right)) 0 calc(16px + var(--safe-left)); background: none; color: var(--text-soft); font: 500 var(--fs-s)/1.3 var(--font-ui);
-    text-align: left; cursor: pointer; border-bottom: 1.5px dashed var(--stitch); -webkit-tap-highlight-color: transparent; }
-  .strip:active { color: var(--text); }
-  .strip.paired { justify-content: center; text-align: center; border-bottom: 0; padding-left: calc(12px + var(--safe-left) + 22px); background: #000; color: rgb(255 255 255 / .92);
-    font: 700 var(--fs-body)/1.35 var(--font-ui); }
-  .strip.paired :global(svg) { color: rgb(255 255 255 / .5); }
-  .strip.paired .ja { flex: 0 1 auto; padding: 6px 0; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; text-wrap: balance; }
-  .ja { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .strip :global(svg) { flex: none; }
+  .strip { appearance: none; flex: none; display: flex; align-items: center; gap: 8px; width: 100%; margin: 0; border: 0;
+    /* one height, two lines' worth: the band never moves what's under it as the playhead goes on */
+    height: calc(2 * 1.35em + 12px); padding: 0 calc(12px + var(--safe-right)) 0 calc(16px + var(--safe-left)); background: #000; color: rgb(255 255 255 / .92);
+    font: 700 var(--fs-body)/1.35 var(--font-ui); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .strip:active { color: #fff; }
+  .strip :global(svg) { flex: none; color: rgb(255 255 255 / .5); }
+  .ja { flex: 1; min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; text-wrap: pretty; }
   /* a beat's category: a small sunk pill (the kit's tag), before the line */
   .kind { flex: none; padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); background: var(--ctl-off); }
-  .strip.paired .kind { color: rgb(255 255 255 / .8); background: rgb(255 255 255 / .16); }
+  .strip .kind { color: rgb(255 255 255 / .8); background: rgb(255 255 255 / .16); }
   .list { display: grid; gap: 8px; padding-bottom: calc(var(--safe-bottom) + 8px); }
   .note { margin: 0 4px 4px; font-size: var(--fs-s); color: var(--text-soft); }
   .kinds { display: flex; gap: 6px; overflow-x: auto; margin: 0 -12px; padding: 2px 12px 6px; scrollbar-width: none; }

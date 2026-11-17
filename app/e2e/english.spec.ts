@@ -135,6 +135,10 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect(card).toHaveAttribute('data-result', 'shown');
   await expect(card.locator('[data-en-reveal]')).toContainText('答えはこれ');
   await expect(card.locator('[data-ans]')).toHaveAttribute('data-choice', '1');
+  // 意味 and 使えるフレーズ open; くわしく (言っていること, 迷いやすい点) opened by itself after a miss
+  await expect(card.locator('[data-en-reveal] .phrase')).toBeVisible();
+  await expect(card.locator('[data-en-more]')).toHaveAttribute('open', '');
+  await expect(card.locator('[data-en-said]')).toBeVisible();
   await expect(card.locator('[data-en-reveal]')).toContainText('言っていること');
   await expect(card.locator('[data-en-reveal] u')).toHaveText('hundred dollar advance');
   await expect(card.locator('[data-en-nudge]')).toHaveCount(0);
@@ -152,6 +156,13 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
     else await cardAt(page, i).locator(`[data-choice="${x.a}"]`).click();
     await expect(cardAt(page, i)).toHaveAttribute('data-result', how);
     if (how !== 'shown') await expect(cardAt(page, i).locator('[data-en-reveal]')).toContainText(how === 'first' ? '◎ 聞き取れました' : '○ 聞き取れました');
+    // くわしく: closed on a first try (a tap opens it), open after a miss
+    const said = cardAt(page, i).locator('[data-en-said]');
+    if (how === 'first') {
+      await expect(said).toBeHidden();
+      await cardAt(page, i).locator('[data-en-more] summary').click();
+    }
+    await expect(said).toBeVisible();
   }
 });
 
@@ -209,7 +220,10 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await fakeYoutube(page);
   await open(page);
   await start(page);
-  await lesson(page).locator('[data-en-flag="clip"]').click();
+  // the clip's: ツール's row (none on the watch card)
+  await expect(lesson(page).locator('[data-en-flag]')).toHaveCount(0);
+  await lesson(page).locator('[data-en-tools]').click();
+  await page.locator('dialog[open] [data-en-tools-sheet] [data-en-flag="clip"]').click();
   const fs = page.locator('dialog[open] [data-en-flag-sheet="clip"]');
   await expect(fs).toContainText('この動画全体');
   await expect(fs.locator('[data-en-kind="other"]')).toHaveAttribute('aria-checked', 'true');
@@ -217,7 +231,12 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   await expect(page.locator('dialog[open] [data-en-flag-thanks]')).toBeVisible();
   await page.locator('dialog[open] [data-en-flag-thanks] + .btn').click();
   await lesson(page).locator('[data-en-to-q]').click();
-  await lesson(page).locator('[data-en-flag="0"]').click();
+  // the question's: a quiet link at the card's foot, under its choices, a full hit
+  const qf = lesson(page).locator('[data-en-flag="0"]');
+  const [fb, lastChoice] = [(await qf.boundingBox())!, (await cardAt(page, 0).locator('[data-choice]').last().boundingBox())!];
+  expect(fb.y).toBeGreaterThan(lastChoice.y + lastChoice.height - 1);
+  expect(fb.height).toBeGreaterThanOrEqual(44);
+  await qf.click();
   const fq = page.locator('dialog[open] [data-en-flag-sheet="0"]');
   const q0 = await questionAt(page, 0);
   await expect(fq).toContainText(`質問 1：${q0.stem}`);
@@ -277,6 +296,14 @@ test('the controls: play / pause on from where it stopped, −5 秒, the scrubbe
   await open(page);
   await start(page);
   const c = lesson(page).locator('[data-yt-controls]');
+  // ▶ −5秒 0.75× then 字幕 at the end, each a full 44 pt; no ⋯
+  await expect(c.locator('button')).toHaveCount(4);
+  const order = await c.locator('button').evaluateAll((els) => els.map((e) => Object.keys((e as HTMLElement).dataset).find((k) => k.startsWith('yt'))));
+  expect(order).toEqual(['ytToggle', 'ytBack5', 'ytRate', 'ytCc']);
+  for (const b of await c.locator('button').all()) {
+    const box = (await b.boundingBox())!;
+    expect(Math.min(box.width, box.height), await b.textContent() ?? '').toBeGreaterThanOrEqual(44);
+  }
   const n0 = (await ytCommands(page)).length;
   await c.locator('[data-yt-toggle="play"]').click();
   await expect(c.locator('[data-yt-toggle="pause"]')).toBeVisible();
@@ -330,6 +357,8 @@ test('no captions on the video, and an answer’s notes come into view (they sit
   await lesson(page).locator('[data-en-to-q]').click();
   const q = await questionAt(page, 0);
   await cardAt(page, 0).locator(`[data-choice="${q.a}"]`).click();
+  // brought up with the answered choice on top: the ○ row and the reveal's head both on screen
+  await expect(cardAt(page, 0).locator('[data-ans]')).toBeInViewport();
   await expect(cardAt(page, 0).locator('[data-en-reveal]')).toBeInViewport();
   await expect(cardAt(page, 0).locator('[data-en-reveal] .rhead')).toBeInViewport();
 });
@@ -402,15 +431,16 @@ test('字幕 日本語: a Japanese track the frame lists is asked for, and taken
   expect((await funcs(n0)).filter((f) => f.includes('translationLanguage'))).toEqual([]);
 });
 
-test('字幕の大きさ (字幕’s sheet, ⋯): 大 by default, sent each time captions load and when changed, kept on this phone; the sheet’s choice is the chip’s', async ({ page }) => {
+test('字幕の大きさ (ツール): 大 by default, sent each time captions load and when changed, kept on this phone; the sheet’s choice is the chip’s', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
   const funcs = async (n = 0) => (await ytCommands(page)).slice(n).map((c) => `${c[0]} ${JSON.stringify(c[1])}`);
   const size = (n: number) => `setOption ["captions","fontSize",${n}]`;
-  const more = lesson(page).locator('[data-en-cc-more]');
-  const sh = page.locator('dialog[open] [data-en-cc-sheet]');
-  await more.click();
+  const sh = page.locator('dialog[open] [data-en-tools-sheet]');
+  await lesson(page).locator('[data-en-tools]').click();
+  // the size chips a full 44 × 44 (polled: the sheet may still be rising)
+  await expect.poll(() => sh.locator('[data-en-cc-size]').evaluateAll((els) => Math.min(...els.map((e) => Math.min(e.getBoundingClientRect().width, e.getBoundingClientRect().height))))).toBeGreaterThanOrEqual(44);
   await expect(sh.locator('[data-en-cc-mode="off"]')).toHaveAttribute('aria-checked', 'true');
   await expect(sh.locator('[data-en-cc-size="1"]')).toHaveAttribute('aria-checked', 'true');
   await expect(sh.locator('[data-en-cc-size]')).toHaveText(['小', '中', '大', '特大']);
@@ -436,7 +466,7 @@ test('字幕の大きさ (字幕’s sheet, ⋯): 大 by default, sent each time
   await expect.poll(() => funcs(n2)).toEqual(['loadModule ["captions"]', 'setOption ["captions","track",{"languageCode":"en"}]', size(-1)]);
 });
 
-test('場面のあらすじ: the strip follows the playhead, its list seeks, under the video as 英語’s pair, あらすじ hides it on this phone; a clip without scenes shows none', async ({ page }) => {
+test('場面のあらすじ: one place, directly under the video, following the playhead, its list seeks; 字幕 never moves it; hidden on a question card, back at まとめ; ツール’s あらすじ hides it on this phone; a clip without scenes shows none', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
@@ -444,12 +474,11 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   const strip = lesson(page).locator('[data-en-scene]');
   await expect(strip).toHaveAttribute('data-en-scene', '0');
   await expect(strip.locator('.ja')).toHaveText(beats[0].ja);
-  // directly under the controls, one line, a full hit
-  const under = async (sel: string) => {
-    const [a, b] = [(await lesson(page).locator(sel).boundingBox())!, (await strip.boundingBox())!];
-    return Math.round(b.y) === Math.round(a.y + a.height);
-  };
-  await expect.poll(() => under('[data-yt-controls]')).toBe(true);
+  // directly under the video, a full hit
+  const top = async () => Math.round((await strip.boundingBox())!.y);
+  const frame = (await lesson(page).locator('[data-yt-frame]').boundingBox())!;
+  expect(await top()).toBe(Math.round(frame.y + frame.height));
+  const y0 = await top();
   expect((await strip.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   // the list: every scene, its time then its line, the one on now marked; one tapped plays from there
   await strip.click();
@@ -462,22 +491,35 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   await expect(page.locator('dialog[open] [data-en-scenes]')).toHaveCount(0);
   await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => JSON.stringify(c.slice(0, 2)))).toEqual([JSON.stringify(['seekTo', [scenes[3].t[0], true]]), JSON.stringify(['playVideo', []])]);
   await expect(strip).toHaveAttribute('data-en-scene', '3');
-  // 英語 on, mid-play: the line moves directly under the video (the pair); 日本語: back under the controls; the clip
-  // plays on through both (no seek, no new play)
+  // 英語, then 日本語, mid-play: the line stays where it is (no reflow); the clip plays on (no seek, no new play)
   const n1 = (await ytCommands(page)).length;
   const cc = lesson(page).locator('[data-yt-cc]');
+  const card = lesson(page).locator('[data-en-watch]');
+  const cardY = Math.round((await card.boundingBox())!.y);
   await cc.click();
   await expect(cc).toHaveAttribute('data-yt-cc', 'en');
-  await expect.poll(() => under('[data-yt-frame]')).toBe(true);
+  expect(await top()).toBe(y0);
   await cc.click();
   await expect(cc).toHaveAttribute('data-yt-cc', 'ja');
-  await expect.poll(() => under('[data-yt-controls]')).toBe(true);
+  expect(await top()).toBe(y0);
+  expect(Math.round((await card.boundingBox())!.y)).toBe(cardY);
   expect((await since(page, n1)).filter((c) => c[0] === 'seekTo' || c[0] === 'playVideo')).toEqual([]);
   // playing on (8×): the next scene
   await expect(strip).toHaveAttribute('data-en-scene', '4');
-  // あらすじ off (字幕's sheet): gone, and still off in the next lesson (this phone's)
-  const sw = page.locator('dialog[open] [data-en-cc-sheet] [data-en-scenes-toggle]');
-  await lesson(page).locator('[data-en-cc-more]').click();
+  // a question card: no line (a gist line would answer it); ツール's list still opens; まとめ: back
+  await lesson(page).locator('[data-en-to-q]').click();
+  await expect(cardAt(page, 0)).toBeVisible();
+  await expect(strip).toHaveCount(0);
+  await lesson(page).locator('[data-en-tools]').click();
+  await page.locator('dialog[open] [data-en-tools-sheet] [data-en-tools-scenes]').click();
+  await expect(rows).toHaveCount(scenes.length);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open] [data-en-scenes]')).toHaveCount(0);
+  while (!(await lesson(page).locator('[data-en-end]').count())) await lesson(page).locator('[data-en-next]').click();
+  await expect(strip).toBeVisible();
+  // あらすじ off (ツール): gone, and still off in the next lesson (this phone's)
+  const sw = page.locator('dialog[open] [data-en-tools-sheet] [data-en-scenes-toggle]');
+  await lesson(page).locator('[data-en-tools]').click();
   await expect(sw).toHaveAttribute('aria-checked', 'true');
   await sw.click();
   await expect(sw).toHaveAttribute('aria-checked', 'false');
@@ -486,15 +528,15 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   await start(page);
   await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
-  await lesson(page).locator('[data-en-cc-more]').click();
+  await lesson(page).locator('[data-en-tools]').click();
   await expect(sw).toHaveAttribute('aria-checked', 'false');
   await sw.click();
   await page.keyboard.press('Escape');
   await expect(lesson(page).locator('[data-en-scene]')).toBeVisible();
-  // a bank without scenes: neither the strip nor the switch
+  // a bank without scenes: neither the strip, the switch nor the list's row (today's clip is the plan's next now)
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
   let served = false;
-  await page.route('**/english/c/waitress.*.json', async (r) => {
+  await page.route('**/english/c/*.json', async (r) => {
     const { scenes: _, beats: __, ...bank } = (await (await r.fetch()).json()) as Record<string, unknown>;
     await r.fulfill({ json: bank });
     served = true;
@@ -505,9 +547,26 @@ test('場面のあらすじ: the strip follows the playhead, its list seeks, und
   await start(page);
   await expect.poll(() => served).toBe(true);
   await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
-  await lesson(page).locator('[data-en-cc-more]').click();
-  await expect(page.locator('dialog[open] [data-en-cc-sheet]')).toBeVisible();
+  await lesson(page).locator('[data-en-tools]').click();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toBeVisible();
   await expect(sw).toHaveCount(0);
+  await expect(page.locator('dialog[open] [data-en-tools-scenes]')).toHaveCount(0);
+});
+
+test('a question card shows no 場面のあらすじ line, whatever the playhead; ツール holds it one tap away', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  await start(page);
+  await expect(lesson(page).locator('[data-en-scene]')).toBeVisible();
+  await lesson(page).locator('[data-en-to-q]').click();
+  for (let i = 0; i < 2; i++) {
+    await expect(cardAt(page, i)).toBeVisible();
+    await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
+    expect(await cardAt(page, i).evaluate((el) => el.textContent ?? '')).not.toContain(waitressScenes.beats[0].ja);
+    await cardAt(page, i).locator('[data-en-hear]').click();
+    await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
+    await lesson(page).locator('[data-en-next]').click();
+  }
 });
 
 test('場面のあらすじ’s beats: the strip shows the beat on now with its category; the list groups them under their scenes, filters by category, and a beat tapped plays from there', async ({ page }) => {
@@ -553,15 +612,24 @@ test('場面のあらすじ’s beats: the strip shows the beat on now with its 
   await expect(strip).toHaveAttribute('data-en-beat', String(irony));
   await expect(strip.locator('[data-en-beat-k]')).toHaveText('皮肉');
   await expect(strip.locator('.ja')).toHaveText(beats[irony].ja);
+  // the same list from ツール's row, its filter there too
+  await lesson(page).locator('[data-en-tools]').click();
+  await page.locator('dialog[open] [data-en-tools-sheet] [data-en-tools-scenes]').click();
+  await expect(list.locator('[data-en-beat-filter]').first()).toBeVisible();
+  await expect(list.locator(`[data-en-beat-row="${irony}"]`)).toHaveAttribute('aria-current', 'true');
 });
 
-test('この動画のフレーズ: from the lesson’s bar and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {
+test('この動画のフレーズ: from ツール (which says it holds the answers) and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
   const moments = momentsOf(waitress);
   const page2 = lesson(page).locator('[data-en-phrases]');
-  await lesson(page).locator('[data-en-phrases-open]').click();
+  await lesson(page).locator('[data-en-tools]').click();
+  const row = page.locator('dialog[open] [data-en-tools-sheet] [data-en-phrases-open]');
+  await expect(row).toContainText('質問の答えと解説を含みます');
+  await row.click();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toHaveCount(0);
   await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('この動画のフレーズ');
   const cards = page2.locator('[data-en-moment]');
   await expect(cards).toHaveCount(moments.length);
@@ -595,13 +663,14 @@ test('この動画のフレーズ: from the lesson’s bar and from まとめ, t
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
 });
 
-test('セリフ: from the lesson’s bar when the bank has lines, every line in time order with its Japanese, the playhead’s line marked and a tap seeks; no button when the bank has none', async ({ page }) => {
+test('セリフ: from ツール when the bank has lines, every line in time order with its Japanese, the playhead’s line marked and a tap seeks; no row when the bank has none', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
   const lines = waitressEn.lines;
   const clockOf = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
-  await lesson(page).locator('[data-en-transcript-open]').click();
+  await lesson(page).locator('[data-en-tools]').click();
+  await page.locator('dialog[open] [data-en-tools-sheet] [data-en-transcript-open]').click();
   await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('セリフ');
   const lvl = lesson(page).locator('[data-en-transcript]');
   const rows = lvl.locator('[data-en-line]');
@@ -637,8 +706,9 @@ test('セリフ: from the lesson’s bar when the bank has lines, every line in 
   await fromMenu(page, 'english');
   await start(page);
   await expect.poll(() => served).toBe(true);
-  await expect(lesson(page).locator('[data-en-transcript-open]')).toHaveCount(0);
-  await expect(lesson(page).locator('[data-en-phrases-open]')).toBeVisible();
+  await lesson(page).locator('[data-en-tools]').click();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet] [data-en-phrases-open]')).toBeVisible();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet] [data-en-transcript-open]')).toHaveCount(0);
 });
 
 test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, paused when the page is hidden, the island’s “ambient” again after', async ({ page }) => {

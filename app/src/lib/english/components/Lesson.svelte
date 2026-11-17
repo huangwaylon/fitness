@@ -7,28 +7,33 @@
   // yet sent when the lesson is left (≥ 1 min). Its failures are logged (english.fail: the embed's, a play that doesn't
   // start; the bank's in data.ts).
   // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
-  // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度. この動画のフレーズ (the bar's
-  // list button, and まとめ's) is a level of its own under the same player, ‹ back to where it was (ClipPhrases);
-  // セリフ (the bar's file button, a bank with transcript lines only) another, the whole transcript following the
-  // playhead (Transcript).
-  // A bank with scenes shows 場面のあらすじ under the controls (Scenes; 字幕's sheet hides it on this phone); with 英語
-  // captions on, directly under the video instead, as the Japanese line paired with YouTube's English one.
+  // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度.
+  // The bar has one labelled button, ツール (StudySheet): 字幕, its size, あらすじ, the scene list, セリフ, この動画のフレーズ,
+  // ⚑ この動画を報告 and the credit. この動画のフレーズ (ツール's, and まとめ's) is a level of its own under the same player,
+  // ‹ back to where it was (ClipPhrases); セリフ (a bank with transcript lines only) another, the whole transcript
+  // following the playhead (Transcript).
+  // A bank with scenes shows 場面のあらすじ in one place, directly under the video (Scenes; ツール hides it on this phone):
+  // on the watch card, at まとめ and in the levels, never on a question (a gist line would answer it).
+  // One primary action a state: ▶ 全部見る (質問へ green once the clip has played), この部分を聞く, 次へ once answered,
+  // ▶ もう一度、通して見る at まとめ.
   import { onDestroy, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
+  import { count } from '#lib/sync/log.ts';
   import Player from './Player.svelte';
   import Controls from './Controls.svelte';
   import FlagSheet from './FlagSheet.svelte';
   import ClipPhrases from './ClipPhrases.svelte';
   import Transcript from './Transcript.svelte';
   import Scenes from './Scenes.svelte';
+  import StudySheet from './StudySheet.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { videoFocus } from '#lib/sound/sound.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
-  import type { YtPlayer } from '../player.svelte.ts';
-  import { againOf, answersOf, blank, dictate, heard, pick, reveal, type QState } from '../lesson.ts';
+  import type { CcMode, YtPlayer } from '../player.svelte.ts';
+  import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, type QState } from '../lesson.ts';
   import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
@@ -91,11 +96,20 @@
   let sentDay = $state<LocalDate | null>(null);
   let act: Active = newActive(saved?.unsent ?? 0, resume ? saved!.perQ : {});
   let player = $state<YtPlayer>();
-  /** With 英語 captions, the line sits under the video: the English and the Japanese gist read as a pair. */
-  const paired = $derived(player?.captions === 'en');
   let watched = $state(false);
+  /** The clip played (▶ 全部見る, or to its end): 質問へ the primary then. */
+  const played = $derived(watched || player?.state === 'ended');
   let flagQ = $state<number | null>(null);
   let flagOpen = $state(false);
+  let tools = $state(false);
+  let sceneList = $state(false);
+  /** 字幕 chosen (the chip or ツール), counted once a lesson (the log's act:english.cc). */
+  let ccTold = false;
+  function captions(m: CcMode): void {
+    if (!player) return;
+    player.setCaptions(m);
+    if (m !== 'off' && !ccTold) (ccTold = true), count('act:english.cc');
+  }
   let body: HTMLElement | undefined = $state();
   /** A level open over the lesson's place (kept): この動画のフレーズ, or セリフ when the bank has transcript lines. */
   type Level = false | 'phrases' | 'lines';
@@ -103,6 +117,10 @@
   const toStudy = (on: Level) => ((study = on), body?.scrollTo({ top: 0 }));
 
   const q = $derived<Question | null>(at >= 0 && at < len ? qs[at] : null);
+  /** まとめ (the bank in: till then a place past the watch card is its loading card). */
+  const end = $derived(bank === 'ready' && at === len);
+  /** 場面のあらすじ's line: on the watch card, at まとめ and in a level, never on a question. */
+  const strip = $derived(showScenes && (at === -1 || end || !!study));
   const cur = $derived(q ? st[at] : null);
   const today = () => localDateAt(week.model?.now ?? Date.now());
 
@@ -169,13 +187,14 @@
   }
   const seg = (x: Question) => player?.play(x.seg[0], x.seg[1]);
   /** What the learner just did on this card ('reveal' or 'nudge'), so only that scrolls into view, not a card come
-   *  back to. On an iPhone the notes sit under the choices, below the fold: they're brought up, the key row above. */
+   *  back to. On an iPhone the notes sit under the choices, below the fold: they're brought up, the ○ row on top (a
+   *  dictation's: the notes'). The nudge only as far as it takes: the question and its choices stay for the retry. */
   let fresh = $state<'reveal' | 'nudge' | null>(null);
   const intoView = (el: HTMLElement, what: 'reveal' | 'nudge') => {
     if (fresh !== what) return;
     fresh = null;
-    // the nudge only as far as it takes: the question and its choices stay on screen for the retry
-    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: what === 'nudge' ? 'nearest' : 'start' }));
+    const to = what === 'reveal' ? (el.parentElement?.querySelector<HTMLElement>('[data-ans]') ?? el) : el;
+    requestAnimationFrame(() => to.scrollIntoView({ behavior: 'smooth', block: what === 'nudge' ? 'nearest' : 'start' }));
   };
 
   function choose(i: number): void {
@@ -218,11 +237,13 @@
     const h = heard(r);
     return h.hit ? s('heardWords', h) : s('shown');
   };
-  const again = $derived(at === len ? againOf(qs, st) : []);
+  const again = $derived(end ? againOf(qs, st) : []);
   const phrase = (x: Question) => x.use.split('（')[0];
   /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
   const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
   const flag = (i: number | null) => ((flagQ = i), (flagOpen = true));
+  /** ツール's rows. */
+  const fromTools = (to: 'scenes' | 'lines' | 'phrases' | 'flag') => (to === 'scenes' ? (sceneList = true) : to === 'flag' ? flag(null) : toStudy(to));
 </script>
 
 <section class="screen" role="presentation" data-en-lesson={clip.id} data-en-at={at} onpointerdown={input} onkeydown={input}>
@@ -231,13 +252,11 @@
     {:else}<NavBar pad title={clip.title} {onback} {onclose} {trailing} />{/if}
   </div>
   {#snippet trailing()}
-    {#if full?.lines?.length}<NavButton kind="tool" icon="file" label={s('transcript')} sfx="open" data-en-transcript-open onclick={() => toStudy('lines')} />{/if}
-    <NavButton kind="tool" icon="list" label={s('phrases')} sfx="open" data-en-phrases-open onclick={() => toStudy('phrases')} />
+    <NavButton kind="tool" icon="list" text={s('tools')} sfx="open" popup data-en-tools onclick={() => (tools = true)} />
   {/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
-  {#if scenes && showScenes && paired}<Scenes {scenes} {beats} paired time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
-  <Controls {player} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} />
-  {#if scenes && showScenes && !paired}<Scenes {scenes} {beats} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
+  {#if scenes}<Scenes {scenes} {beats} {strip} bind:open={sceneList} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
+  <Controls {player} oncc={captions} />
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
       {#if study === 'lines' && full.lines}
@@ -247,10 +266,9 @@
       {/if}
     {:else if at === -1 && !study}
       <article class="card pad" data-en-watch>
-        <button type="button" class="flag" data-sfx="open" data-en-flag="clip" onclick={() => flag(null)}><Icon name="flag" size={14} />{s('flag')}</button>
         <p class="lead"><b>{s('watchHead')}</b><span class="meta">{s('watchNote')}</span></p>
-        <button type="button" class="btn sky" data-sfx="tick" data-en-watch-all onclick={() => ((watched = true), player?.play(0, null))}>
-          {watched || player?.state === 'ended' ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
+        <button type="button" class="btn" class:sky={!played} class:paper={played} data-sfx="tick" data-en-watch-all onclick={() => ((watched = true), player?.play(0, null))}>
+          {played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
       </article>
     {:else if bank !== 'ready'}
@@ -264,10 +282,9 @@
     {:else if q && cur}
       {#key at}
         <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
-          <button type="button" class="flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`), ...span(q) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
+          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
-          <button type="button" class="btn sky small" data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
+          <button type="button" class="btn hear" class:sky={!cur.r} class:paper={!!cur.r} class:small={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
             <div class="choices">
               {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}
@@ -288,14 +305,19 @@
               <p class="rhead">{head(cur)}</p>
               {#if cur.r.k === 'dict'}<p class="words" lang="en">{#each cur.r.words as w, i (i)}<span class:hit={w.hit} class:gap={!w.hit}>{w.w}</span>{' '}{/each}</p>{/if}
               {#if q.line}<p class="line" lang="en">{#each keyed(q.line) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>{/if}
-              <dl class="why">
-                <dt>{s('said')}</dt><dd>{q.said}</dd>
-                <dt>{s('mean')}</dt><dd>{q.mean}</dd>
-                <dt>{s('trap')}</dt><dd>{q.trap}</dd>
-              </dl>
+              <dl class="why"><dt>{s('mean')}</dt><dd>{q.mean}</dd></dl>
               <p class="phrase"><b>{s('use')}</b> <span lang="en">{q.use}</span></p>
+              <!-- the deeper notes folded; open by themselves after a miss, when the trap matters most -->
+              <details class="more" open={!clean(cur.r)} data-en-more>
+                <summary data-sfx="tick">{s('details')}<Icon name="chevron-down" size={16} /></summary>
+                <dl class="why">
+                  <dt>{s('said')}</dt><dd data-en-said>{q.said}</dd>
+                  <dt>{s('trap')}</dt><dd>{q.trap}</dd>
+                </dl>
+              </details>
             </div>
           {/if}
+          <button type="button" class="quiet flag" data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
         </article>
       {/key}
     {:else}
@@ -311,14 +333,16 @@
           </ul>
         {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
         <button type="button" class="btn sky" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}>{s('endWatch')}</button>
-        <button type="button" class="btn paper" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>{s('phrasesGo')}</button>
+        <button type="button" class="prow" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>
+          <span class="prl">{s('phrases')}</span><Icon name="chevron-right" size={18} />
+        </button>
       </article>
     {/if}
-    <p class="credit">{s('credit', { credit: clip.credit })}</p>
+    {#if !study && (at === -1 || end)}<p class="credit">{s('credit', { credit: clip.credit })}</p>{/if}
   </div>
   <div class="foot" class:off={study}>
     {#if at === -1}
-      <button type="button" class="btn" data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}</button>
+      <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}</button>
     {:else}
       <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => go(at - 1)}>{s('prev')}</button>
       {#if bank !== 'ready'}
@@ -326,11 +350,12 @@
       {:else if at < len}
         <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-next onclick={() => go(at + 1)}>{at === len - 1 ? s('toEnd') : s('next')}</button>
       {:else}
-        <button type="button" class="btn" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
+        <button type="button" class="btn paper" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
       {/if}
     {/if}
   </div>
 </section>
+<StudySheet bind:open={tools} {player} onmode={captions} scenes={scenes ? { on: showScenes, toggle: toggleScenes } : undefined} lines={!!full?.lines?.length} ongo={fromTools} credit={clip.credit} />
 <FlagSheet bind:open={flagOpen} {clip} q={flagQ === null ? null : (qs[flagQ] ?? null)} n={flagQ} time={() => (player ? player.now() : null)} />
 
 <style>
@@ -341,11 +366,10 @@
   .card p { margin: 0; }
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
   .tag.hard { padding: 0 7px; margin-left: 2px; }
-  .lead b, .card > .meta:first-of-type, .stem { padding-right: 64px; }
   .lead b { display: block; }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
-  .flag { position: absolute; top: 6px; right: 6px; appearance: none; border: 0; background: none; display: inline-flex; align-items: center; gap: 3px; min-height: var(--hit);
-    padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); cursor: pointer; }
+  /* ⚑ at the card's foot: quiet, out of the way of the stem and the choices */
+  .quiet.flag { justify-self: end; display: inline-flex; align-items: center; gap: 3px; margin: -4px -4px -8px 0; padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .btn { margin: 0; }
   .btn.sky { --fill: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); --lip-c: var(--c-edge); color: var(--c-ink); }
   .btn.small { justify-self: start; display: inline-flex; gap: 6px; align-items: center; }
@@ -358,7 +382,7 @@
   .nudge .meta { color: inherit; }
   .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); min-height: var(--hit); padding: 0 4px; cursor: pointer; justify-self: start; }
   .nudge .quiet { color: var(--c-ink-soft); text-decoration: underline; }
-  .reveal, .nudge { scroll-margin-top: 72px; }
+  .reveal, .nudge, .choice { scroll-margin-top: 8px; }
   .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }
   .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-leaf-text); }
   .line { font-style: italic; }
@@ -370,9 +394,15 @@
   .why dd { margin: 0 0 4px; }
   .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--c-card); font-size: var(--fs-body); }
   .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); margin-right: 4px; }
+  .more summary { display: flex; align-items: center; gap: 4px; min-height: var(--hit); margin: -6px 0; list-style: none; cursor: pointer;
+    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); -webkit-tap-highlight-color: transparent; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more[open] summary :global(svg) { rotate: 180deg; }
+  .more[open] .why { margin-top: 6px; }
   .again { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .seg { width: 100%; justify-content: flex-start; text-align: left; flex-wrap: wrap; height: auto; padding: 8px 14px; }
   .ph { color: var(--text-soft); font-size: var(--fs-s); }
+  .prow :global(svg) { flex: none; color: var(--text-soft); }
   .credit { margin: 4px 4px 0; font-size: 12px; color: var(--text-soft); }
   .foot { flex: none; display: flex; gap: 10px; padding: 10px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(12px + var(--safe-left)); background: var(--surface); }
   .foot .btn, .foot .btn-gap { flex: 1; }

@@ -71,14 +71,23 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
 - **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into a first play; a C2 item's card
   carries a むずかしめ tag. Nothing is locked either way.
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
-  question can be left unanswered, and まとめ is always reachable.
-- **この動画のフレーズ** (the lesson bar's list button, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
+  question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
+  card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
+  choices) while answering, 次へ (green) once answered, ▶ もう一度、通して見る at まとめ (完了 paper). A question card's
+  meta is 「質問 1/6 · 大意」; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
+- **ツール** (the lesson bar's one labelled button, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕): 字幕
+  オフ / 英語 / 日本語 and 字幕の大きさ (The player), the 場面のあらすじ switch, then 場面のあらすじ一覧, セリフ（全文） (a bank with
+  lines only) and この動画のフレーズ (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
+- **この動画のフレーズ** (ツール's row, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
   level under the same pinned player, ‹ back to where it was. The bank's quoted lines (every question's `line`, the
   retired too), once each, in time order; lines starting within a second are one moment, a card each: ▶ m:ss plays it,
   then each line (key words underlined), 言っていること, 意味 and the phrase. Only the questions' own short quotes,
   never a transcript.
 - **A miss:** the segment plays again by itself, a nudge with the `cue`, the choices as they were, and a quiet 答えを見る.
   A second miss shows 「答えはこれ」. Never red, ×, a sound or a percentage; ◎ first try, ○ second.
+- **The reveal:** the result, the line (key words underlined), 意味 and 使えるフレーズ; 言っていること and 迷いやすい点 under
+  「くわしく」 (a `<details>`), open by itself after a miss (anything not heard in full the first time), closed on ◎. It
+  scrolls up with the answered choice on top, so the ○ and the notes' head are both in view.
 - **書き取り:** the words heard are counted (「k/n 語 聞き取れました」; none: 「答えはこれ」, never a 0), the rest shown in the answer colour.
 - **まとめ:** the scenes worth hearing again (anything not ◎), the clip's phrases, 通して見る. It finishes the clip once
   six questions (all, if fewer) are answered or shown; else it says how many are left and goes to the first.
@@ -93,8 +102,8 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 between deliveries). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
 `playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
-stopped), −5秒, a scrubber with the time (never locked), 字幕 and its ⋯ sheet, and 0.75× only when the frame's `availablePlaybackRates` offer more than 1
-(a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
+stopped), −5秒 and 0.75× (only when the frame's `availablePlaybackRates` offer more than 1) side by side, 字幕 at the row's end,
+each a 44 pt target, and a scrubber with the time (never locked) (a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
 it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`
@@ -107,11 +116,9 @@ read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocume
 each play (`act:english.ccja.<track | tr | offer | none | silent>`: a Japanese track on, the translation on, offered
 only, no Japanese reported, nothing reported). Unverified on the iPhone: if the embed ignores it, the captions stay
 English or off. YouTube shows one caption track only, and the dialogue is never ours to render, so there are never two
-tracks: with 英語 on, 場面のあらすじ's line sits directly under the video instead, on its black and centred, the English
-caption and the Japanese gist read as a pair. ⋯ beside the chip opens 字幕's sheet: 言語 (the chip's choice),
+tracks. ツール (The page) holds 字幕 too (the chip's choice) and
 **字幕の大きさ** 小 / 中 / 大 / 特大 = `setOption` captions `fontSize` −1 / 0 / 1 / 2 (大 by default: the user found
-YouTube's own small; this phone's), sent each time the captions load and when it changes, and あらすじ (a clip with
-scenes). The e2e answer
+YouTube's own small; this phone's), sent each time the captions load and when it changes. The e2e answer
 the frame with a stand-in player.
 
 **The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
@@ -135,11 +142,14 @@ more is precached.
 `ja` ≤ 30 characters with the scenes' line rules, `k` in the set; no keys but `video`, `scenes`, `beats`. The bank
 carries `beats` as well (their version is in the scenes' hash).
 
-Under the controls (under the video with 字幕 英語: The player), one calm line: the scene at the playhead (`scenes.ts atTime`; in a gap, the one before), following
-it as it plays; with beats, the beat at the playhead instead, its category in a small pill before it. Tapped: a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
+One place, directly under the video, on its black, one fixed height (two lines' worth: 字幕 or the
+playhead never move what's under it): the scene at the playhead (`scenes.ts atTime`; in a gap, the one before), following
+it as it plays; with beats, the beat at the playhead instead, its category in a small pill before it. It shows on the watch card, at まとめ and in the levels
+(フレーズ, セリフ), never while a question card is open (a gist line would answer gist, infer and attitude items).
+Tapped, or from ツール's 場面のあらすじ一覧 (at any point, a question's too): a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
 there. With beats, the scenes are headers with their beats under them (time, category, line), and a chip row
-(すべて and the categories present) filters the beats; a header or a beat tapped plays from there. 字幕's sheet's あらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
-without scenes shows neither.
+(すべて and the categories present) filters the beats; a header or a beat tapped plays from there. ツール's 場面のあらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
+without scenes shows none of them.
 
 ## Transcripts
 
@@ -154,7 +164,7 @@ overlaps; `en` ≤ 200 characters, trimmed; the ja file's lines the en file's ow
 no English lines (names in katakana), every character in the trimmed font. The build adds `lines` to a library clip's
 bank, each with its `ja` when in, held to the clip's length (a file written before its clip joined the library needs no
 rewrite); the bank's file name carries the transcript's version (`catalog.ts withTranscript`); nothing more is
-precached. The lesson bar's セリフ button (a bank with lines only) opens the whole transcript as a level under the
+precached. ツール's セリフ（全文） row (a bank with lines only) opens the whole transcript as a level under the
 pinned player: the line at the playhead marked and kept in view (`scenes.ts atTime`; a touch or a wheel on the list
 holds the follow 6 s), one tapped plays from there, the Japanese under its English when in.
 
